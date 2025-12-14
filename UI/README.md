@@ -62,4 +62,3 @@ The UI communicates with TTS through:
 - `window.receiveMessage()` - Receive data from TTS
 
 See `Scripts/custom-ui-example.lua` for the LUA side implementation.
-

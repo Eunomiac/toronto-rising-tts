@@ -13,7 +13,9 @@ toronto-rising-tts/
 │   ├── index.html     # Main HTML file
 │   ├── styles.scss    # SCSS source file
 │   ├── styles.css     # Compiled CSS (auto-generated)
-│   └── script.js      # JavaScript for UI interactions
+│   ├── script.js      # Compiled JavaScript bundle (auto-generated)
+│   └── src/           # TypeScript source files
+│       └── script.ts  # TypeScript source with GSAP animations
 ├── Objects/           # Custom object definitions (optional)
 └── README.md          # This file
 ```
@@ -98,20 +100,32 @@ end
 
 ## Custom UI/HUD Development
 
-This project includes support for creating custom HTML-based user interfaces (HUDs) with SCSS styling.
+This project includes support for creating custom HTML-based user interfaces (HUDs) with:
+- **SCSS** for styling (compiled to CSS)
+- **TypeScript** for type-safe JavaScript (compiled and bundled with esbuild)
+- **GSAP** for high-performance animations (bundled automatically)
 
-### Building CSS from SCSS
+### Building Assets
 
+#### CSS from SCSS
 1. **One-time build**: Run `npm run build:css` to compile SCSS to CSS
 2. **Watch mode**: Run `npm run build:css:watch` to automatically recompile on SCSS changes
-3. **Auto-build**: The CSS is automatically generated when you save SCSS files (if using watch mode)
+
+#### JavaScript from TypeScript
+1. **One-time build**: Run `npm run build:js` to compile and bundle TypeScript (includes GSAP)
+2. **Watch mode**: Run `npm run build:js:watch` to automatically recompile on TypeScript changes
+
+#### Build Everything
+1. **One-time build**: Run `npm run build` to compile both CSS and JavaScript
+2. **Watch mode**: Run `npm run build:watch` to watch both SCSS and TypeScript files
 
 ### UI File Structure
 
 - `UI/index.html` - Main HTML structure for your custom UI
 - `UI/styles.scss` - SCSS source file with variables, mixins, and styles
 - `UI/styles.css` - Compiled CSS (auto-generated, do not edit directly)
-- `UI/script.js` - JavaScript for UI interactions and TTS communication
+- `UI/src/script.ts` - TypeScript source file (edit this)
+- `UI/script.js` - Compiled JavaScript bundle with GSAP (auto-generated, do not edit directly)
 
 ### Using Custom UI in TTS
 
@@ -131,24 +145,73 @@ The SCSS setup includes:
 - **Responsive design**: Media queries for different screen sizes
 - **Animations**: Fade-in and slide-in animations
 
+### TypeScript & GSAP Features
+
+The TypeScript setup includes:
+- **Full type safety** - Catch errors at compile time
+- **GSAP animations** - High-performance animations library (bundled automatically)
+- **Modern ES2020** - Latest JavaScript features
+- **Strict mode** - Enhanced type checking for better code quality
+
+#### GSAP Animation Examples
+
+The code includes several GSAP animation examples:
+- **Initial page load** - Fade-in and slide animations
+- **Button interactions** - Pulse, shake, and rotate effects
+- **Text updates** - Smooth transitions when updating player info
+- **Custom animations** - Request animations from TTS via messages
+
+#### Using GSAP in Your Code
+
+```typescript
+import { gsap } from "gsap";
+
+// Simple fade in
+gsap.to(element, { opacity: 1, duration: 0.5 });
+
+// Staggered animations
+gsap.from(panels, {
+    duration: 0.5,
+    x: -30,
+    opacity: 0,
+    stagger: 0.15
+});
+
+// Complex timeline
+const tl = gsap.timeline();
+tl.to(element1, { x: 100 })
+  .to(element2, { y: 50 }, "-=0.5");
+```
+
 ### Customizing the UI
 
 1. **Edit SCSS variables** in `UI/styles.scss` to change colors, spacing, etc.
 2. **Modify HTML structure** in `UI/index.html` to add/remove UI elements
-3. **Update JavaScript** in `UI/script.js` to handle new interactions
-4. **Rebuild CSS** using `npm run build:css` or watch mode
+3. **Update TypeScript** in `UI/src/script.ts` to handle new interactions and animations
+4. **Rebuild assets** using `npm run build` or watch mode
 
 ### Example Workflow
 
 ```bash
-# Start watching for SCSS changes
-npm run build:css:watch
+# Start watching for both SCSS and TypeScript changes
+npm run build:watch
 
-# In another terminal, edit your SCSS file
-# The CSS will automatically recompile
+# In your editor, edit:
+# - UI/styles.scss (for styling)
+# - UI/src/script.ts (for functionality and animations)
+
+# Assets automatically recompile on save
 
 # In TTS, reload your mod to see changes
 ```
+
+### TypeScript Development Tips
+
+1. **Type Safety** - The TypeScript compiler will catch errors before runtime
+2. **IntelliSense** - Get autocomplete and type hints in your editor
+3. **GSAP Types** - GSAP types are automatically included, so you get full autocomplete
+4. **Watch Mode** - Keep `npm run build:js:watch` running for instant compilation
+5. **Bundling** - GSAP is automatically bundled, so no need to include it separately in HTML
 
 ## Development Tips
 
@@ -157,7 +220,9 @@ npm run build:css:watch
 3. **Use the scripting zone** - Great for testing object interactions
 4. **Check the log** - TTS shows errors in the scripting log window
 5. **UI Development** - Use browser dev tools (F12) when testing HTML UI locally
-6. **SCSS Watch Mode** - Keep `npm run build:css:watch` running during UI development
+6. **Watch Mode** - Keep `npm run build:watch` running during development for auto-compilation
+7. **TypeScript Errors** - Check terminal output for type errors when building
+8. **GSAP Documentation** - See [GSAP Docs](https://greensock.com/docs/) for animation examples
 
 ## License
 

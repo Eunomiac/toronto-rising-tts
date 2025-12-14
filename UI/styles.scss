@@ -37,13 +37,13 @@ $spacing-unit: 16px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  
+
   &:hover {
     background-color: color.adjust($bg-color, $lightness: -10%);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
   }
-  
+
   &:active {
     transform: translateY(0);
   }
@@ -83,7 +83,7 @@ body {
   border-radius: $border-radius;
   margin-bottom: $spacing-unit;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  
+
   h1 {
     font-size: 24px;
     font-weight: bold;
@@ -97,21 +97,21 @@ body {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  
+
   // Custom scrollbar
   &::-webkit-scrollbar {
     width: 8px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: $secondary-color;
     border-radius: 4px;
-    
+
     &:hover {
       background: color.adjust($secondary-color, $lightness: -10%);
     }
@@ -121,7 +121,7 @@ body {
 // Panel component
 .panel {
   @include panel-style;
-  
+
   h2 {
     font-size: 18px;
     margin-bottom: $spacing-unit;
@@ -129,11 +129,11 @@ body {
     border-bottom: 2px solid $border-color;
     padding-bottom: 8px;
   }
-  
+
   p {
     margin: 8px 0;
     font-size: 14px;
-    
+
     span {
       font-weight: bold;
       color: $accent-color;
@@ -146,15 +146,15 @@ body {
   @include button-style($secondary-color);
   margin: 8px 8px 8px 0;
   min-width: 100px;
-  
+
   &.btn-primary {
     @include button-style($secondary-color);
   }
-  
+
   &.btn-secondary {
     @include button-style($border-color);
   }
-  
+
   &.btn-danger {
     @include button-style($accent-color);
   }
@@ -165,11 +165,11 @@ body {
   .hud-header h1 {
     font-size: 20px;
   }
-  
+
   .panel {
     padding: $spacing-unit * 0.75;
   }
-  
+
   .btn {
     width: 100%;
     margin: 8px 0;
@@ -204,4 +204,3 @@ body {
     transform: translateX(0);
   }
 }
-
