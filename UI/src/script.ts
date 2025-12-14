@@ -14,18 +14,6 @@ import type { TTSMessage, WindowWithTTS } from "./types/tts";
  */
 document.addEventListener("DOMContentLoaded", () => {
     console.log("Toronto Rising HUD initialized");
-    console.log("UI loaded in TTS context:", typeof window !== "undefined");
-
-    // Make test container very visible for debugging
-    const testContainer = document.getElementById("ui-test-container");
-    if (testContainer) {
-        testContainer.style.display = "block";
-        testContainer.style.visibility = "visible";
-        testContainer.style.opacity = "1";
-        console.log("Test container found and made visible");
-    } else {
-        console.error("Test container NOT FOUND!");
-    }
 
     // Set up event listeners
     setupEventListeners();
@@ -36,20 +24,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // Animate initial load
     animateInitialLoad();
 
-    // Watch for all message types from TTS (all preloaded and ready)
+    // Watch for dice results data from TTS
     setupDiceResultsWatcher();
-    setupNotificationWatcher();
-    setupMessageWatcher();
 
     // Also listen for broadcastToAll messages (fallback method)
     setupBroadcastListener();
 
     // Update test container status
-    updateUITestStatus("UI initialized and ready - TTS connected!");
+    updateUITestStatus("UI initialized and ready");
 
     // Log to console to confirm UI is loaded
     console.log("Toronto Rising UI loaded and ready!");
-    console.log("All watchers initialized");
 
     // Show login overlay on initial load (simulating user login)
     // In production, this would be triggered by TTS when a user actually logs in
@@ -787,277 +772,12 @@ function hideDiceResults(): void {
     }, "-=0.4");
 }
 
-/**
- * Set up a watcher for notification data from TTS
- * @param inputId - ID of the hidden input element
- */
-function setupNotificationWatcher(): void {
-    const notificationDataInput = document.getElementById("notification-data") as HTMLInputElement;
-    if (!notificationDataInput) {
-        console.warn("Notification data input not found");
-        return;
-    }
-
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === "attributes" && mutation.attributeName === "value") {
-                const newValue = notificationDataInput.value;
-                if (newValue && newValue.trim() !== "") {
-                    try {
-                        const data = JSON.parse(newValue) as TTSMessage;
-                        if (data.type === "notification") {
-                            showNotification(data);
-                            notificationDataInput.value = "";
-                        }
-                    } catch (e) {
-                        console.error("Error parsing notification data:", e);
-                    }
-                }
-            }
-        });
-    });
-
-    observer.observe(notificationDataInput, {
-        attributes: true,
-        attributeFilter: ["value"]
-    });
-
-    // Polling fallback
-    let lastValue = notificationDataInput.value;
-    setInterval(() => {
-        const currentValue = notificationDataInput.value;
-        if (currentValue !== lastValue && currentValue && currentValue.trim() !== "") {
-            lastValue = currentValue;
-            try {
-                const data = JSON.parse(currentValue) as TTSMessage;
-                if (data.type === "notification") {
-                    showNotification(data);
-                    notificationDataInput.value = "";
-                    lastValue = "";
-                }
-            } catch (e) {
-                console.error("Error parsing notification data:", e);
-            }
-        }
-    }, 100);
-}
-
-/**
- * Show notification with GSAP animation
- * @param data - Notification data from TTS
- */
-function showNotification(data: TTSMessage): void {
-    const overlay = document.getElementById("notification-overlay");
-    const container = document.getElementById("notification-container");
-    const icon = document.getElementById("notification-icon");
-    const title = document.getElementById("notification-title");
-    const message = document.getElementById("notification-message");
-
-    if (!overlay || !container || !title || !message) {
-        console.warn("Notification elements not found");
-        return;
-    }
-
-    const notificationTitle = (data.notificationTitle as string) || "Notification";
-    const notificationMessage = (data.notificationMessage as string) || "";
-    const notificationType = (data.notificationType as "info" | "success" | "warning" | "error") || "info";
-
-    title.textContent = notificationTitle;
-    message.textContent = notificationMessage;
-
-    // Set type-based styling
-    container.className = `notification-container notification-${notificationType}`;
-    if (icon) {
-        icon.className = `notification-icon notification-icon-${notificationType}`;
-        icon.textContent = notificationType === "success" ? "✓" : notificationType === "error" ? "✕" : notificationType === "warning" ? "⚠" : "ℹ";
-    }
-
-    gsap.set(overlay, { clearProps: "opacity" });
-    gsap.set(container, { clearProps: "all" });
-
-    overlay.classList.add("active");
-
-    const tl = gsap.timeline({
-        onComplete: () => {
-            setTimeout(() => {
-                hideNotification();
-            }, 4000);
-        }
-    });
-
-    tl.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.3 })
-        .fromTo(
-            container,
-            { opacity: 0, scale: 0.5, y: -50 },
-            { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: "back.out(1.7)" },
-            "-=0.1"
-        );
-}
-
-/**
- * Hide notification with fade out
- */
-function hideNotification(): void {
-    const overlay = document.getElementById("notification-overlay");
-    const container = document.getElementById("notification-container");
-
-    if (!overlay || !container) {
-        return;
-    }
-
-    const tl = gsap.timeline({
-        onComplete: () => {
-            gsap.set(overlay, { clearProps: "opacity" });
-            gsap.set(container, { clearProps: "all" });
-            overlay.classList.remove("active");
-        }
-    });
-
-    tl.to(container, { opacity: 0, scale: 0.8, y: -30, duration: 0.3 })
-        .to(overlay, { opacity: 0, duration: 0.2 }, "-=0.2");
-}
-
-/**
- * Set up a watcher for message data from TTS
- */
-function setupMessageWatcher(): void {
-    const messageDataInput = document.getElementById("message-data") as HTMLInputElement;
-    if (!messageDataInput) {
-        console.warn("Message data input not found");
-        return;
-    }
-
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === "attributes" && mutation.attributeName === "value") {
-                const newValue = messageDataInput.value;
-                if (newValue && newValue.trim() !== "") {
-                    try {
-                        const data = JSON.parse(newValue) as TTSMessage;
-                        if (data.type === "message") {
-                            showMessage(data);
-                            messageDataInput.value = "";
-                        }
-                    } catch (e) {
-                        console.error("Error parsing message data:", e);
-                    }
-                }
-            }
-        });
-    });
-
-    observer.observe(messageDataInput, {
-        attributes: true,
-        attributeFilter: ["value"]
-    });
-
-    // Polling fallback
-    let lastValue = messageDataInput.value;
-    setInterval(() => {
-        const currentValue = messageDataInput.value;
-        if (currentValue !== lastValue && currentValue && currentValue.trim() !== "") {
-            lastValue = currentValue;
-            try {
-                const data = JSON.parse(currentValue) as TTSMessage;
-                if (data.type === "message") {
-                    showMessage(data);
-                    messageDataInput.value = "";
-                    lastValue = "";
-                }
-            } catch (e) {
-                console.error("Error parsing message data:", e);
-            }
-        }
-    }, 100);
-}
-
-/**
- * Show message with GSAP animation
- * @param data - Message data from TTS
- */
-function showMessage(data: TTSMessage): void {
-    const overlay = document.getElementById("message-overlay");
-    const container = document.getElementById("message-container");
-    const header = document.getElementById("message-header");
-    const body = document.getElementById("message-body");
-    const footer = document.getElementById("message-footer");
-
-    if (!overlay || !container || !header || !body) {
-        console.warn("Message elements not found");
-        return;
-    }
-
-    const messageHeader = (data.messageHeader as string) || "";
-    const messageBody = (data.messageBody as string) || "";
-    const messageFooter = (data.messageFooter as string) || "";
-    const messageStyle = (data.messageStyle as "default" | "alert" | "confirm" | "prompt") || "default";
-
-    header.textContent = messageHeader;
-    body.textContent = messageBody;
-    if (footer) {
-        footer.textContent = messageFooter;
-    }
-
-    container.className = `message-container message-${messageStyle}`;
-
-    gsap.set(overlay, { clearProps: "opacity" });
-    gsap.set(container, { clearProps: "all" });
-
-    overlay.classList.add("active");
-
-    const tl = gsap.timeline({
-        onComplete: () => {
-            setTimeout(() => {
-                hideMessage();
-            }, 6000);
-        }
-    });
-
-    tl.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.4 })
-        .fromTo(
-            container,
-            { opacity: 0, scale: 0.3, rotationY: 180, z: -500 },
-            { opacity: 1, scale: 1, rotationY: 0, z: 0, duration: 0.8, ease: "back.out(1.7)" },
-            "-=0.2"
-        );
-}
-
-/**
- * Hide message with fade out
- */
-function hideMessage(): void {
-    const overlay = document.getElementById("message-overlay");
-    const container = document.getElementById("message-container");
-
-    if (!overlay || !container) {
-        return;
-    }
-
-    const tl = gsap.timeline({
-        onComplete: () => {
-            gsap.set(overlay, { clearProps: "opacity" });
-            gsap.set(container, { clearProps: "all" });
-            overlay.classList.remove("active");
-        }
-    });
-
-    tl.to(container, { opacity: 0, scale: 0.8, rotationY: -90, z: -300, duration: 0.5 })
-        .to(overlay, { opacity: 0, duration: 0.3 }, "-=0.3");
-}
-
 // Make functions available globally for TTS to call
 const windowWithTTS = window as WindowWithTTS & {
     showLoginOverlay?: () => void;
     hideLoginOverlay?: () => void;
     showDiceResults?: (data: TTSMessage) => void;
     hideDiceResults?: () => void;
-    showNotification?: (data: TTSMessage) => void;
-    hideNotification?: () => void;
-    showMessage?: (data: TTSMessage) => void;
-    hideMessage?: () => void;
-    setupDiceResultsWatcher?: () => void;
-    setupNotificationWatcher?: () => void;
-    setupMessageWatcher?: () => void;
 };
 
 if (typeof window !== "undefined") {
@@ -1069,11 +789,4 @@ if (typeof window !== "undefined") {
     windowWithTTS.hideLoginOverlay = hideLoginOverlay;
     windowWithTTS.showDiceResults = showDiceResults;
     windowWithTTS.hideDiceResults = hideDiceResults;
-    windowWithTTS.showNotification = showNotification;
-    windowWithTTS.hideNotification = hideNotification;
-    windowWithTTS.showMessage = showMessage;
-    windowWithTTS.hideMessage = hideMessage;
-    windowWithTTS.setupDiceResultsWatcher = setupDiceResultsWatcher;
-    windowWithTTS.setupNotificationWatcher = setupNotificationWatcher;
-    windowWithTTS.setupMessageWatcher = setupMessageWatcher;
 }

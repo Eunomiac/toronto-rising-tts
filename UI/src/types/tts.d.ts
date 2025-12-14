@@ -12,7 +12,7 @@ export interface TTSMessage {
     /** Button ID that triggered the action */
     buttonId?: string;
     /** Message type for routing */
-    type?: "playerUpdate" | "uiUpdate" | "animate" | "gameState" | "error" | "userLogin" | "diceResults" | "notification" | "message";
+    type?: "playerUpdate" | "uiUpdate" | "animate" | "gameState" | "error" | "userLogin" | "diceResults";
     /** Player name */
     name?: string;
     /** Player status */
@@ -35,20 +35,6 @@ export interface TTSMessage {
     isTotalFailure?: boolean;
     /** Has bestial failure */
     hasBestialFailure?: boolean;
-    /** Notification title */
-    notificationTitle?: string;
-    /** Notification message */
-    notificationMessage?: string;
-    /** Notification type (info, success, warning, error) */
-    notificationType?: "info" | "success" | "warning" | "error";
-    /** Message header */
-    messageHeader?: string;
-    /** Message body */
-    messageBody?: string;
-    /** Message footer */
-    messageFooter?: string;
-    /** Message style */
-    messageStyle?: "default" | "alert" | "confirm" | "prompt";
     /** Additional data */
     [key: string]: unknown;
 }

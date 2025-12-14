@@ -119,13 +119,17 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
     -- NOTE: Must be global - referenced in createButton as click_function="click_roll"
     click_roll = function(_, color)
         local spawnedDice = getSpawnedDice()
+        print("[DEBUG] click_roll called. color: " .. tostring(color) .. ", rollInProgress: " .. tostring(rollInProgress) .. ", spawnedDice count: " .. tostring(#spawnedDice))
         --Dice spam protection check
         local denyRoll = false
         if setting.maxCount > 0 and #spawnedDice >= setting.maxCount then
             denyRoll = true
+            print("[DEBUG] click_roll: Roll denied - max dice count reached (" .. tostring(#spawnedDice) .. "/" .. tostring(setting.maxCount) .. ")")
         end
         local anyRoll = anyRollInProgress(color)
+        print("[DEBUG] click_roll: anyRollInProgress: " .. tostring(anyRoll))
         if rollInProgress==nil and denyRoll==false and anyRoll==false then
+            print("[DEBUG] click_roll: Proceeding with dice spawn")
             --Find dice positions, moving previously spawned dice if needed
             for i, die in ipairs(spawnedDice) do
                 local pos_local = getLocalPointOnArc(i, #spawnedDice+1)
@@ -164,6 +168,7 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
             --Update data
             table.insert(spawnedDice, spawnedDie)
             setSpawnedDice(spawnedDice)
+            print("[DEBUG] click_roll: Die added to spawnedDice. Total count: " .. tostring(#spawnedDice))
             updateGlobalTable(color)
             updateRollTimers(color)
 
@@ -189,6 +194,7 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
             function_name="timer_rollDice", function_owner=rollerSelfRef,
             parameters = param
         })
+        print("[DEBUG] rollTimerUpdate: Timer created for timer_rollDice")
     end
 
     --Rolls all the dice and then launches monitoring
@@ -197,25 +203,34 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         -- NOTE: Must be global - accessed via who.getVar("rollInProgress") in anyRollInProgress
         rollInProgress = true
         local spawnedDice = getSpawnedDice()
+        print("[DEBUG] timer_rollDice called. color: " .. tostring(p and p.color or "nil") .. ", spawnedDice count: " .. tostring(#spawnedDice))
+        print("[DEBUG] timer_rollDice: rollInProgress set to true")
         -- NOTE: Must be global - called via startLuaCoroutine with string name "coroutine_rollDice"
         coroutine_rollDice = function()
             local spawnedDice = getSpawnedDice()
+            print("[DEBUG] coroutine_rollDice started. Rolling " .. tostring(#spawnedDice) .. " dice")
             for _, die in ipairs(spawnedDice) do
                 die.setLock(false)
                 die.randomize()
                 wait(0.1)
             end
+            print("[DEBUG] coroutine_rollDice: All dice randomized, calling monitorDice")
             monitorDice(p.color)
 
             return 1
         end
+        print("[DEBUG] timer_rollDice: Starting coroutine")
         startLuaCoroutine(rollerSelfRef, "coroutine_rollDice")
     end
 
     --Monitors dice to come to rest
     monitorDice = function(color)
+        local spawnedDice = getSpawnedDice()
+        print("[DEBUG] monitorDice called. color: " .. tostring(color) .. ", spawnedDice count: " .. tostring(#spawnedDice))
         -- NOTE: Must be global - called via startLuaCoroutine with string name "coroutine_monitorDice"
         coroutine_monitorDice = function()
+            local checkCount = 0
+            print("[DEBUG] coroutine_monitorDice started")
             repeat
                 -- Check ALL dice from ALL rollers (normal and hunger) for this color
                 local allRest = true
@@ -250,8 +265,13 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
                     end
                 end
 
+                checkCount = checkCount + 1
+                if checkCount % 10 == 0 then
+                    print("[DEBUG] coroutine_monitorDice: Still waiting... check #" .. tostring(checkCount) .. ", total dice being monitored: " .. tostring(#allDice))
+                end
                 coroutine.yield(0)
             until allRest == true
+            print("[DEBUG] coroutine_monitorDice: All dice at rest after " .. tostring(checkCount) .. " checks")
 
             -- Use a global flag to ensure only one instance displays results
             local resultsKey = "dice_results_displayed_" .. tostring(color)
@@ -282,10 +302,14 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
                     end
                 end
 
+                print("[DEBUG] coroutine_monitorDice: Roll complete. Total dice: " .. tostring(#allDice) .. ", print.individual: " .. tostring(setting.print.individual) .. ", print.total: " .. tostring(setting.print.total))
+
                 -- Display results once with all combined dice
                 if #allDice > 0 then
                     if setting.print.individual==true or setting.print.total==true then
                         displayResults(color)
+                    else
+                        print("[DEBUG] displayResults not called - both print.individual and print.total are false")
                     end
                 end
 
@@ -297,6 +321,8 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
                     function_owner=rollerSelfRef,
                     parameters={key=resultsKey}
                 })
+            else
+                print("[DEBUG] coroutine_monitorDice: Results already displayed by another roller, skipping")
             end
 
             finalizeRoll({color=color})
@@ -304,6 +330,7 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
 
             return 1
         end
+        print("[DEBUG] monitorDice: Starting coroutine_monitorDice")
         startLuaCoroutine(self, "coroutine_monitorDice")
     end
 
@@ -317,22 +344,28 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
     -- NOTE: Must be global - called via who.call("finalizeRoll", ...) in finalizeCoopRolls
     finalizeRoll = function(p)
         local color = p.color
+        print("[DEBUG] finalizeRoll called. color: " .. tostring(color) .. ", cleanupDelay: " .. tostring(setting.cleanupDelay))
         -- NOTE: Must be global - accessed via who.getVar("rollingHasStopped") in areOtherRollersRolling
         -- Using nil (not false) to indicate "not set" - checked with ~= true in areOtherRollersRolling
 ---@diagnostic disable-next-line: assign-type-mismatch
         rollingHasStopped = nil --Used for coop communication
         -- NOTE: Must be global - accessed via who.getVar("rollInProgress") in anyRollInProgress
         rollInProgress = false --Used for button lockout
+        print("[DEBUG] finalizeRoll: rollInProgress set to false")
         updateGlobalTable(nil)
 
         --Auto die removal
         if setting.cleanupDelay > -1 then
+            --Timer starting
+            print("[DEBUG] finalizeRoll: Setting up cleanup timer with delay " .. tostring(setting.cleanupDelay))
             Timer.destroy("clickRoller_cleanup_"..rollerSelfRef.getGUID())
             Timer.create({
                 identifier="clickRoller_cleanup_"..rollerSelfRef.getGUID(),
                 function_name="cleanupDice", function_owner=rollerSelfRef,
                 delay=setting.cleanupDelay,
             })
+        else
+            print("[DEBUG] finalizeRoll: No cleanup delay set (cleanupDelay: " .. tostring(setting.cleanupDelay) .. ")")
         end
     end
 
@@ -340,6 +373,7 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
     -- NOTE: Must be global - referenced in Timer.create as function_name="cleanupDice"
     cleanupDice = function()
         local spawnedDice = getSpawnedDice()
+        print("[DEBUG] cleanupDice called. Removing " .. tostring(#spawnedDice) .. " dice")
         for _, die in ipairs(spawnedDice) do
             if die ~= nil then
                 destroyObject(die)
@@ -350,6 +384,7 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
 ---@diagnostic disable-next-line: assign-type-mismatch
         rollInProgress = nil
         setSpawnedDice({})
+        print("[DEBUG] cleanupDice: Complete. rollInProgress set to nil, spawnedDice cleared")
 
         Timer.destroy("clickRoller_cleanup_"..rollerSelfRef.getGUID())
     end
@@ -358,6 +393,7 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         -- Combine dice from all rollers (normal and hunger) for this player color
         local allDice = {}
         local spawnedDice = getSpawnedDice()
+        print("[DEBUG] displayResults called. color: " .. tostring(color) .. ", this instance spawnedDice count: " .. tostring(#spawnedDice))
 
         -- Add dice from this instance
         for _, die in ipairs(spawnedDice) do
@@ -366,6 +402,7 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
 
         -- Combine dice from all other rollers of the same color (normal and hunger dice)
         addAllSpawnedDice(color, allDice)
+        print("[DEBUG] displayResults: After combining all dice, total count: " .. tostring(#allDice))
 
         --Use Global script for V5 calculations
         local s = ""
@@ -402,18 +439,6 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         if setting.print.total == true then
             results = Global.call("calculateV5DiceResults", diceData)
             s = s .. results.message
-
-            -- Summary debug message for testing messy critical logic
-            local summary = string.format(
-                "[DICE SUMMARY] Total: %d dice | Successes: %d | Messy Critical: %s | Total Failure: %s | Bestial Failure: %s | Result: %s",
-                #diceData,
-                results.totalSuccesses,
-                tostring(results.hasMessyCritical),
-                tostring(results.isTotalFailure),
-                tostring(results.hasBestialFailure),
-                results.message
-            )
-            print(summary)
         end
 
         -- Send results to UI for GSAP animation instead of print/broadcast
@@ -443,6 +468,7 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
             -- Send to UI via Global script (which has the Custom UI attached)
             -- Global.call() will execute the function in Global's script context where UI is available
             Global.call("sendDiceResultsToUI", uiData)
+            print("[DEBUG] displayResults: Sent dice results to UI via Global.call()")
         else
             -- Fallback to old method if results not calculated
             local stringColor = {1,1,1}
