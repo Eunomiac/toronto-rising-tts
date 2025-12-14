@@ -150,6 +150,8 @@ The SCSS setup includes:
 The TypeScript setup includes:
 - **Full type safety** - Catch errors at compile time
 - **GSAP animations** - High-performance animations library (bundled automatically)
+- **GSAP type definitions** - Built into the GSAP package (no @types/gsap needed)
+- **TTS type definitions** - Custom types in `UI/src/types/tts.d.ts` for TTS communication
 - **Modern ES2020** - Latest JavaScript features
 - **Strict mode** - Enhanced type checking for better code quality
 
