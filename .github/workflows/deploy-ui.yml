@@ -10,7 +10,8 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/deploy-ui.yml'
-  workflow_dispatch:  # Allow manual triggering
+  workflow_dispatch:  # Allow manual triggering from Actions tab
+  repository_dispatch:  # Allow triggering via API
 
 permissions:
   contents: read

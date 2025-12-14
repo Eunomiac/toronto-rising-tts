@@ -5,5 +5,8 @@
     Format: https://yourusername.github.io/toronto-rising-tts/index.html
 -->
 <ui>
-    <url>https://eunomiac.github.io/toronto-rising-tts/index.html</url>
+    <!-- TEST: Simple red box to verify UI loading works -->
+    <url>https://eunomiac.github.io/toronto-rising-tts/test.html</url>
+    <!-- PRODUCTION: Full UI (uncomment when test works) -->
+    <!-- <url>https://eunomiac.github.io/toronto-rising-tts/index.html</url> -->
 </ui>
