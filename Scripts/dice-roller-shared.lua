@@ -340,7 +340,6 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
     -- NOTE: Must be global - referenced in Timer.create as function_name="cleanupDice"
     cleanupDice = function()
         local spawnedDice = getSpawnedDice()
-        print("[DEBUG] cleanupDice called. Removing " .. tostring(#spawnedDice) .. " dice")
         for _, die in ipairs(spawnedDice) do
             if die ~= nil then
                 destroyObject(die)
@@ -351,7 +350,6 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
 ---@diagnostic disable-next-line: assign-type-mismatch
         rollInProgress = nil
         setSpawnedDice({})
-        print("[DEBUG] cleanupDice: Complete. rollInProgress set to nil, spawnedDice cleared")
 
         Timer.destroy("clickRoller_cleanup_"..rollerSelfRef.getGUID())
     end
@@ -404,7 +402,7 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         if setting.print.total == true then
             results = Global.call("calculateV5DiceResults", diceData)
             s = s .. results.message
-            
+
             -- Summary debug message for testing messy critical logic
             local summary = string.format(
                 "[DICE SUMMARY] Total: %d dice | Successes: %d | Messy Critical: %s | Total Failure: %s | Bestial Failure: %s | Result: %s",

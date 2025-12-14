@@ -17,15 +17,18 @@ function onLoad()
         print("[DEBUG] Global: Testing UI connection...")
 
         -- Try to set a test attribute to verify UI is working
-        local testSuccess = pcall(function()
+        local testSuccess, errorMsg = pcall(function()
             -- Try to access a test element (will fail if UI not loaded, but that's ok)
             UI.setAttribute("ui-test-status", "text", "UI Connected!")
         end)
 
         if testSuccess then
-            print("[DEBUG] Global: UI connection test successful")
+            print("[DEBUG] Global: UI connection test PASSED - UI is working!")
         else
-            print("[WARNING] Global: UI connection test failed - UI may not be fully loaded yet")
+            print("[WARNING] Global: UI connection test FAILED")
+            print("[WARNING] Global: Error: " .. tostring(errorMsg))
+            print("[WARNING] Global: UI may not be fully loaded yet, or element 'ui-test-status' not found")
+            print("[WARNING] Global: This is normal if the UI hasn't finished loading")
         end
     else
         print("[ERROR] Global: UI object is NOT available")
