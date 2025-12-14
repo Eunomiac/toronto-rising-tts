@@ -5,21 +5,7 @@
  */
 
 import { gsap } from "gsap";
-
-// Type definitions for TTS communication
-interface TTSMessage {
-    action?: string;
-    buttonId?: string;
-    type?: string;
-    name?: string;
-    status?: string;
-    [key: string]: unknown;
-}
-
-interface WindowWithTTS extends Window {
-    receiveMessage?: (data: TTSMessage) => void;
-    updatePlayerInfo?: (name: string, status: string) => void;
-}
+import type { TTSMessage, WindowWithTTS } from "./types/tts";
 
 // TTS API will be injected by Tabletop Simulator when available
 
@@ -335,12 +321,7 @@ function animatePanelExit(panelId: string): void {
 }
 
 // Make functions available globally for TTS to call
-interface WindowWithTTSExtended extends WindowWithTTS {
-    animatePanelEntrance?: (panelId: string) => void;
-    animatePanelExit?: (panelId: string) => void;
-}
-
-const windowWithTTS = window as WindowWithTTSExtended;
+const windowWithTTS = window as WindowWithTTS;
 
 if (typeof window !== "undefined") {
     windowWithTTS.receiveMessage = receiveMessage;

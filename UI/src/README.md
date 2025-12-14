@@ -42,10 +42,18 @@ tl.to(element1, { opacity: 0 })
 
 ### Type Definitions
 
-The project includes:
-- DOM types (built-in)
-- GSAP types (from the GSAP package)
-- Custom TTS message interfaces
+The project includes comprehensive type definitions:
+
+- **DOM types** - Built into TypeScript
+- **GSAP types** - Included with the GSAP package (no separate @types package needed)
+- **TTS types** - Custom type definitions in `types/tts.d.ts`:
+  - `TTSMessage` - Message structure for TTS ↔ UI communication
+  - `TTSPlayer` - Player information structure
+  - `TTSGameState` - Game state information
+  - `TTSAnimationRequest` - Animation request structure
+  - `WindowWithTTS` - Extended Window interface with TTS functions
+
+All types are properly exported and can be imported where needed.
 
 ### Output
 
