@@ -13,7 +13,7 @@ local version = "1.0.0"
 --]]
 function onLoad()
     print(string.format("%s v%s loaded!", scriptName, version))
-    
+
     -- Example: Set up a button
     -- self.createButton({
     --     click_function = "buttonClick",
@@ -62,4 +62,3 @@ end
 function onObjectEnterContainer(container, object)
     print(string.format("Object %s entered container %s", object.getName(), container.getName()))
 end
-

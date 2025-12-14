@@ -23,7 +23,10 @@ logs/
 *.json.bak
 *.lua.bak
 
+# Compiled CSS (source SCSS is tracked)
+UI/styles.css
+UI/styles.css.map
+
 # Build outputs
 dist/
 build/
-
