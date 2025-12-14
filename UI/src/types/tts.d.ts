@@ -12,7 +12,7 @@ export interface TTSMessage {
     /** Button ID that triggered the action */
     buttonId?: string;
     /** Message type for routing */
-    type?: "playerUpdate" | "uiUpdate" | "animate" | "gameState" | "error";
+    type?: "playerUpdate" | "uiUpdate" | "animate" | "gameState" | "error" | "userLogin";
     /** Player name */
     name?: string;
     /** Player status */
@@ -81,6 +81,10 @@ export interface WindowWithTTS extends Window {
     animatePanelEntrance?: (panelId: string) => void;
     /** Animate panel exit */
     animatePanelExit?: (panelId: string) => void;
+    /** Show login overlay */
+    showLoginOverlay?: () => void;
+    /** Hide login overlay */
+    hideLoginOverlay?: () => void;
 }
 
 /**
@@ -94,4 +98,3 @@ export interface TTSUIUpdate {
     /** New value */
     value: string | Record<string, string>;
 }
-

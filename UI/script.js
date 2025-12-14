@@ -4296,6 +4296,7 @@ var HUD = (() => {
     setupEventListeners();
     updatePlayerInfo("Player", "Active");
     animateInitialLoad();
+    showLoginOverlay();
   });
   function setupEventListeners() {
     const actionBtn = document.getElementById("action-btn");
@@ -4433,6 +4434,8 @@ var HUD = (() => {
       updateUI(data);
     } else if (data.type === "animate") {
       handleAnimationRequest(data);
+    } else if (data.type === "userLogin") {
+      showLoginOverlay();
     }
   }
   function updateUI(data) {
@@ -4513,12 +4516,92 @@ var HUD = (() => {
       });
     }
   }
+  function showLoginOverlay() {
+    const overlay = document.getElementById("login-overlay");
+    const message = document.getElementById("login-message");
+    if (!overlay || !message) {
+      console.warn("Login overlay elements not found");
+      return;
+    }
+    overlay.classList.add("active");
+    const tl = gsapWithCSS.timeline();
+    tl.fromTo(
+      message,
+      {
+        opacity: 0,
+        scale: 0.3,
+        rotationY: 180,
+        z: -500
+      },
+      {
+        opacity: 1,
+        scale: 1,
+        rotationY: 0,
+        z: 0,
+        duration: 1.2,
+        ease: "back.out(1.7)"
+      }
+    ).to(message, {
+      textShadow: "0 0 30px rgba(52, 152, 219, 0.8), 0 0 60px rgba(52, 152, 219, 0.5), 2px 2px 4px rgba(0, 0, 0, 0.8)",
+      duration: 0.3,
+      ease: "power2.out"
+    }).to(message, {
+      textShadow: "0 0 20px rgba(52, 152, 219, 0.5), 0 0 40px rgba(52, 152, 219, 0.3), 2px 2px 4px rgba(0, 0, 0, 0.8)",
+      duration: 0.3,
+      ease: "power2.in"
+    }).to(message, {
+      scale: 1.1,
+      duration: 0.2,
+      ease: "power2.out"
+    }).to(message, {
+      scale: 1,
+      duration: 0.2,
+      ease: "power2.in"
+    }).to(message, {
+      letterSpacing: "0.2em",
+      duration: 0.5,
+      ease: "power2.out"
+    }).to(message, {
+      letterSpacing: "0.1em",
+      duration: 0.3,
+      ease: "power2.in"
+    });
+    setTimeout(() => {
+      hideLoginOverlay();
+    }, 4e3);
+  }
+  function hideLoginOverlay() {
+    const overlay = document.getElementById("login-overlay");
+    const message = document.getElementById("login-message");
+    if (!overlay || !message) {
+      return;
+    }
+    const tl = gsapWithCSS.timeline({
+      onComplete: () => {
+        overlay.classList.remove("active");
+      }
+    });
+    tl.to(message, {
+      opacity: 0,
+      scale: 0.8,
+      rotationY: -90,
+      z: -300,
+      duration: 0.8,
+      ease: "power2.in"
+    }).to(overlay, {
+      opacity: 0,
+      duration: 0.3,
+      ease: "power2.out"
+    }, "-=0.5");
+  }
   var windowWithTTS = window;
   if (typeof window !== "undefined") {
     windowWithTTS.receiveMessage = receiveMessage;
     windowWithTTS.updatePlayerInfo = updatePlayerInfo;
     windowWithTTS.animatePanelEntrance = animatePanelEntrance;
     windowWithTTS.animatePanelExit = animatePanelExit;
+    windowWithTTS.showLoginOverlay = showLoginOverlay;
+    windowWithTTS.hideLoginOverlay = hideLoginOverlay;
   }
 })();
 /*! Bundled license information:

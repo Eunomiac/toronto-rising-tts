@@ -23,6 +23,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Animate initial load
     animateInitialLoad();
+
+    // Show login overlay on initial load (simulating user login)
+    // In production, this would be triggered by TTS when a user actually logs in
+    showLoginOverlay();
 });
 
 /**
@@ -215,6 +219,9 @@ function receiveMessage(data: TTSMessage): void {
     } else if (data.type === "animate") {
         // Handle custom animation requests
         handleAnimationRequest(data);
+    } else if (data.type === "userLogin") {
+        // Trigger login overlay when user logs in
+        showLoginOverlay();
     }
 }
 
@@ -320,12 +327,127 @@ function animatePanelExit(panelId: string): void {
     }
 }
 
+/**
+ * Show the full-screen login overlay with animated message
+ * This is triggered when a user logs in
+ */
+function showLoginOverlay(): void {
+    const overlay = document.getElementById("login-overlay");
+    const message = document.getElementById("login-message");
+
+    if (!overlay || !message) {
+        console.warn("Login overlay elements not found");
+        return;
+    }
+
+    // Activate the overlay
+    overlay.classList.add("active");
+
+    // Create a cool GSAP animation sequence
+    const tl = gsap.timeline();
+
+    // Step 1: Rotate and scale in with 3D effect
+    tl.fromTo(
+        message,
+        {
+            opacity: 0,
+            scale: 0.3,
+            rotationY: 180,
+            z: -500
+        },
+        {
+            opacity: 1,
+            scale: 1,
+            rotationY: 0,
+            z: 0,
+            duration: 1.2,
+            ease: "back.out(1.7)"
+        }
+    )
+    // Step 2: Add a glow pulse effect
+    .to(message, {
+        textShadow: "0 0 30px rgba(52, 152, 219, 0.8), 0 0 60px rgba(52, 152, 219, 0.5), 2px 2px 4px rgba(0, 0, 0, 0.8)",
+        duration: 0.3,
+        ease: "power2.out"
+    })
+    .to(message, {
+        textShadow: "0 0 20px rgba(52, 152, 219, 0.5), 0 0 40px rgba(52, 152, 219, 0.3), 2px 2px 4px rgba(0, 0, 0, 0.8)",
+        duration: 0.3,
+        ease: "power2.in"
+    })
+    // Step 3: Slight bounce for emphasis
+    .to(message, {
+        scale: 1.1,
+        duration: 0.2,
+        ease: "power2.out"
+    })
+    .to(message, {
+        scale: 1,
+        duration: 0.2,
+        ease: "power2.in"
+    })
+    // Step 4: Character-by-character reveal effect (simulated with letter spacing)
+    .to(message, {
+        letterSpacing: "0.2em",
+        duration: 0.5,
+        ease: "power2.out"
+    })
+    .to(message, {
+        letterSpacing: "0.1em",
+        duration: 0.3,
+        ease: "power2.in"
+    });
+
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+        hideLoginOverlay();
+    }, 4000);
+}
+
+/**
+ * Hide the login overlay with fade out animation
+ */
+function hideLoginOverlay(): void {
+    const overlay = document.getElementById("login-overlay");
+    const message = document.getElementById("login-message");
+
+    if (!overlay || !message) {
+        return;
+    }
+
+    // Animate out
+    const tl = gsap.timeline({
+        onComplete: () => {
+            overlay.classList.remove("active");
+        }
+    });
+
+    tl.to(message, {
+        opacity: 0,
+        scale: 0.8,
+        rotationY: -90,
+        z: -300,
+        duration: 0.8,
+        ease: "power2.in"
+    })
+    .to(overlay, {
+        opacity: 0,
+        duration: 0.3,
+        ease: "power2.out"
+    }, "-=0.5");
+}
+
 // Make functions available globally for TTS to call
-const windowWithTTS = window as WindowWithTTS;
+const windowWithTTS = window as WindowWithTTS & {
+    showLoginOverlay?: () => void;
+    hideLoginOverlay?: () => void;
+};
 
 if (typeof window !== "undefined") {
     windowWithTTS.receiveMessage = receiveMessage;
     windowWithTTS.updatePlayerInfo = updatePlayerInfo;
     windowWithTTS.animatePanelEntrance = animatePanelEntrance;
     windowWithTTS.animatePanelExit = animatePanelExit;
+    windowWithTTS.showLoginOverlay = showLoginOverlay;
+    windowWithTTS.hideLoginOverlay = hideLoginOverlay;
 }
