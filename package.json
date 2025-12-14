@@ -1,0 +1,17 @@
+{
+  "name": "toronto-rising-tts",
+  "version": "1.0.0",
+  "description": "Tabletop Simulator LUA modding project",
+  "scripts": {
+    "lint": "echo 'Install luacheck for linting: luarocks install luacheck'",
+    "format": "echo 'Install stylua for formatting: cargo install stylua'"
+  },
+  "keywords": [
+    "tabletop-simulator",
+    "lua",
+    "modding"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+
