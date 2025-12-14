@@ -317,28 +317,22 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
     -- NOTE: Must be global - called via who.call("finalizeRoll", ...) in finalizeCoopRolls
     finalizeRoll = function(p)
         local color = p.color
-        print("[DEBUG] finalizeRoll called. color: " .. tostring(color) .. ", cleanupDelay: " .. tostring(setting.cleanupDelay))
         -- NOTE: Must be global - accessed via who.getVar("rollingHasStopped") in areOtherRollersRolling
         -- Using nil (not false) to indicate "not set" - checked with ~= true in areOtherRollersRolling
 ---@diagnostic disable-next-line: assign-type-mismatch
         rollingHasStopped = nil --Used for coop communication
         -- NOTE: Must be global - accessed via who.getVar("rollInProgress") in anyRollInProgress
         rollInProgress = false --Used for button lockout
-        print("[DEBUG] finalizeRoll: rollInProgress set to false")
         updateGlobalTable(nil)
 
         --Auto die removal
         if setting.cleanupDelay > -1 then
-            --Timer starting
-            print("[DEBUG] finalizeRoll: Setting up cleanup timer with delay " .. tostring(setting.cleanupDelay))
             Timer.destroy("clickRoller_cleanup_"..rollerSelfRef.getGUID())
             Timer.create({
                 identifier="clickRoller_cleanup_"..rollerSelfRef.getGUID(),
                 function_name="cleanupDice", function_owner=rollerSelfRef,
                 delay=setting.cleanupDelay,
             })
-        else
-            print("[DEBUG] finalizeRoll: No cleanup delay set (cleanupDelay: " .. tostring(setting.cleanupDelay) .. ")")
         end
     end
 
