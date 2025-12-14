@@ -55,4 +55,3 @@ The compiled and bundled JavaScript is output to `../script.js` and includes:
 - Everything needed to run in TTS
 
 No need to include GSAP separately in HTML - it's all bundled!
-

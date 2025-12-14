@@ -5,8 +5,6 @@
   "scripts": {
     "build:css": "sass UI/styles.scss UI/styles.css",
     "build:css:watch": "sass --watch UI/styles.scss:UI/styles.css",
-    "build:ts": "tsc",
-    "build:ts:watch": "tsc --watch",
     "build:js": "esbuild UI/src/script.ts --bundle --outfile=UI/script.js --format=iife --global-name=HUD --target=es2020",
     "build:js:watch": "esbuild UI/src/script.ts --bundle --outfile=UI/script.js --format=iife --global-name=HUD --target=es2020 --watch",
     "build": "npm run build:css && npm run build:js",
@@ -25,9 +23,8 @@
     "gsap": "^3.12.5"
   },
   "devDependencies": {
+    "esbuild": "^0.19.11",
     "sass": "^1.77.0",
-    "typescript": "^5.3.3",
-    "@types/node": "^20.10.6",
-    "esbuild": "^0.19.11"
+    "typescript": "^5.3.3"
   }
 }

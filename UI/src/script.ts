@@ -21,8 +21,7 @@ interface WindowWithTTS extends Window {
     updatePlayerInfo?: (name: string, status: string) => void;
 }
 
-// Global reference to TTS API (will be injected by TTS)
-let ttsAPI: unknown = null;
+// TTS API will be injected by Tabletop Simulator when available
 
 /**
  * Initialize the HUD when the page loads
@@ -300,7 +299,7 @@ function handleAnimationRequest(data: TTSMessage): void {
  * Animate panel entrance
  * @param panelId - ID of the panel to animate
  */
-export function animatePanelEntrance(panelId: string): void {
+function animatePanelEntrance(panelId: string): void {
     const panel = document.getElementById(panelId);
     if (panel) {
         gsap.from(panel, {
@@ -317,7 +316,7 @@ export function animatePanelEntrance(panelId: string): void {
  * Animate panel exit
  * @param panelId - ID of the panel to animate
  */
-export function animatePanelExit(panelId: string): void {
+function animatePanelExit(panelId: string): void {
     const panel = document.getElementById(panelId);
     if (panel) {
         gsap.to(panel, {
@@ -335,10 +334,17 @@ export function animatePanelExit(panelId: string): void {
     }
 }
 
-// Export functions for TTS to call
-const windowWithTTS = window as WindowWithTTS;
+// Make functions available globally for TTS to call
+interface WindowWithTTSExtended extends WindowWithTTS {
+    animatePanelEntrance?: (panelId: string) => void;
+    animatePanelExit?: (panelId: string) => void;
+}
+
+const windowWithTTS = window as WindowWithTTSExtended;
+
 if (typeof window !== "undefined") {
     windowWithTTS.receiveMessage = receiveMessage;
     windowWithTTS.updatePlayerInfo = updatePlayerInfo;
+    windowWithTTS.animatePanelEntrance = animatePanelEntrance;
+    windowWithTTS.animatePanelExit = animatePanelExit;
 }
-
