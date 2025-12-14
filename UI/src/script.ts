@@ -340,6 +340,11 @@ function showLoginOverlay(): void {
         return;
     }
 
+    // Clear any inline styles left by previous GSAP animations
+    // This ensures the CSS classes can properly control visibility
+    gsap.set(overlay, { clearProps: "opacity" });
+    gsap.set(message, { clearProps: "all" });
+
     // Activate the overlay
     overlay.classList.add("active");
 
@@ -418,6 +423,10 @@ function hideLoginOverlay(): void {
     // Animate out
     const tl = gsap.timeline({
         onComplete: () => {
+            // Clear inline styles that GSAP set during animation
+            // This prevents inline styles from overriding CSS classes on subsequent shows
+            gsap.set(overlay, { clearProps: "opacity" });
+            gsap.set(message, { clearProps: "all" });
             overlay.classList.remove("active");
         }
     });

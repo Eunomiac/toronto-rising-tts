@@ -4523,6 +4523,8 @@ var HUD = (() => {
       console.warn("Login overlay elements not found");
       return;
     }
+    gsapWithCSS.set(overlay, { clearProps: "opacity" });
+    gsapWithCSS.set(message, { clearProps: "all" });
     overlay.classList.add("active");
     const tl = gsapWithCSS.timeline();
     tl.fromTo(
@@ -4578,6 +4580,8 @@ var HUD = (() => {
     }
     const tl = gsapWithCSS.timeline({
       onComplete: () => {
+        gsapWithCSS.set(overlay, { clearProps: "opacity" });
+        gsapWithCSS.set(message, { clearProps: "all" });
         overlay.classList.remove("active");
       }
     });
