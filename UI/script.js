@@ -4293,11 +4293,103 @@ var HUD = (() => {
   // UI/src/script.ts
   document.addEventListener("DOMContentLoaded", () => {
     console.log("Toronto Rising HUD initialized");
+    console.log("UI loaded in TTS context:", typeof window !== "undefined");
+    const testContainer = document.getElementById("ui-test-container");
+    if (testContainer) {
+      testContainer.style.display = "block";
+      testContainer.style.visibility = "visible";
+      testContainer.style.opacity = "1";
+      console.log("Test container found and made visible");
+    } else {
+      console.error("Test container NOT FOUND!");
+    }
     setupEventListeners();
     updatePlayerInfo("Player", "Active");
     animateInitialLoad();
+    setupDiceResultsWatcher();
+    setupNotificationWatcher();
+    setupMessageWatcher();
+    setupBroadcastListener();
+    updateUITestStatus("UI initialized and ready - TTS connected!");
+    console.log("Toronto Rising UI loaded and ready!");
+    console.log("All watchers initialized");
     showLoginOverlay();
   });
+  function updateUITestStatus(message) {
+    const statusElement = document.getElementById("ui-test-status");
+    if (statusElement) {
+      statusElement.textContent = `Status: ${message}`;
+    }
+  }
+  function setupBroadcastListener() {
+    window.addEventListener("message", (event) => {
+      if (event.data && typeof event.data === "string") {
+        if (event.data.startsWith("[DICE_RESULTS]")) {
+          const jsonData = event.data.substring("[DICE_RESULTS]".length);
+          try {
+            const data = JSON.parse(jsonData);
+            if (data.type === "diceResults") {
+              updateUITestStatus("Received via broadcast!");
+              showDiceResults(data);
+            }
+          } catch (e) {
+            console.error("Error parsing broadcast dice results:", e);
+          }
+        }
+      }
+    });
+    console.log("Broadcast listener set up");
+  }
+  function setupDiceResultsWatcher() {
+    const diceDataInput = document.getElementById("dice-results-data");
+    if (!diceDataInput) {
+      console.warn("Dice results data input not found");
+      return;
+    }
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "attributes" && mutation.attributeName === "value") {
+          const newValue = diceDataInput.value;
+          if (newValue && newValue.trim() !== "") {
+            try {
+              const data = JSON.parse(newValue);
+              if (data.type === "diceResults") {
+                updateUITestStatus("Received dice results!");
+                showDiceResults(data);
+                diceDataInput.value = "";
+              }
+            } catch (e) {
+              console.error("Error parsing dice results data:", e);
+              updateUITestStatus(`Error: ${e}`);
+            }
+          }
+        }
+      });
+    });
+    observer.observe(diceDataInput, {
+      attributes: true,
+      attributeFilter: ["value"]
+    });
+    let lastValue = diceDataInput.value;
+    setInterval(() => {
+      const currentValue = diceDataInput.value;
+      if (currentValue !== lastValue && currentValue && currentValue.trim() !== "") {
+        lastValue = currentValue;
+        try {
+          const data = JSON.parse(currentValue);
+          if (data.type === "diceResults") {
+            updateUITestStatus("Received dice results (polling)!");
+            showDiceResults(data);
+            diceDataInput.value = "";
+            lastValue = "";
+          }
+        } catch (e) {
+          console.error("Error parsing dice results data:", e);
+          updateUITestStatus(`Error: ${e}`);
+        }
+      }
+    }, 100);
+  }
   function setupEventListeners() {
     const actionBtn = document.getElementById("action-btn");
     const resetBtn = document.getElementById("reset-btn");
@@ -4436,6 +4528,8 @@ var HUD = (() => {
       handleAnimationRequest(data);
     } else if (data.type === "userLogin") {
       showLoginOverlay();
+    } else if (data.type === "diceResults") {
+      showDiceResults(data);
     }
   }
   function updateUI(data) {
@@ -4598,6 +4692,368 @@ var HUD = (() => {
       ease: "power2.out"
     }, "-=0.5");
   }
+  function showDiceResults(data) {
+    const overlay = document.getElementById("dice-results-overlay");
+    const container = document.getElementById("dice-results-container");
+    const header = document.getElementById("dice-results-header");
+    const values = document.getElementById("dice-values");
+    const results = document.getElementById("dice-results");
+    if (!overlay || !container || !header || !values || !results) {
+      console.warn("Dice results elements not found");
+      return;
+    }
+    const playerName = data.playerName || "";
+    const diceValues = data.diceValues || "";
+    const resultMessage = data.resultMessage || "";
+    const totalSuccesses = data.totalSuccesses || 0;
+    const hasMessyCritical = data.hasMessyCritical || false;
+    const isTotalFailure = data.isTotalFailure || false;
+    const hasBestialFailure = data.hasBestialFailure || false;
+    header.textContent = playerName ? `${playerName}'s Roll` : "Dice Roll";
+    values.textContent = diceValues || "";
+    let resultClass = "success";
+    if (hasMessyCritical) {
+      resultClass = "messy-critical";
+    } else if (isTotalFailure) {
+      resultClass = "failure";
+    } else if (totalSuccesses > 1) {
+      resultClass = "critical";
+    }
+    results.className = `dice-results ${resultClass}`;
+    results.textContent = resultMessage;
+    gsapWithCSS.set(overlay, { clearProps: "opacity" });
+    gsapWithCSS.set(container, { clearProps: "all" });
+    gsapWithCSS.set(header, { clearProps: "all" });
+    gsapWithCSS.set(values, { clearProps: "all" });
+    gsapWithCSS.set(results, { clearProps: "all" });
+    overlay.classList.add("active");
+    const tl = gsapWithCSS.timeline({
+      onComplete: () => {
+        setTimeout(() => {
+          hideDiceResults();
+        }, 5e3);
+      }
+    });
+    tl.fromTo(
+      overlay,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.4, ease: "power2.out" }
+    );
+    tl.fromTo(
+      container,
+      {
+        opacity: 0,
+        scale: 0.3,
+        rotationY: 180,
+        rotationX: -30,
+        z: -500,
+        y: 100
+      },
+      {
+        opacity: 1,
+        scale: 1,
+        rotationY: 0,
+        rotationX: 0,
+        z: 0,
+        y: 0,
+        duration: 1,
+        ease: "back.out(1.7)"
+      },
+      "-=0.2"
+    );
+    tl.fromTo(
+      header,
+      {
+        opacity: 0,
+        y: -50,
+        scale: 0.8
+      },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+        ease: "power3.out"
+      },
+      "-=0.5"
+    );
+    if (diceValues) {
+      tl.fromTo(
+        values,
+        {
+          opacity: 0,
+          x: -30
+        },
+        {
+          opacity: 0.9,
+          x: 0,
+          duration: 0.5,
+          ease: "power2.out"
+        },
+        "-=0.3"
+      );
+    }
+    tl.fromTo(
+      results,
+      {
+        opacity: 0,
+        scale: 0.5,
+        y: 50,
+        rotationZ: -5
+      },
+      {
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        rotationZ: 0,
+        duration: 0.8,
+        ease: "elastic.out(1, 0.5)"
+      },
+      "-=0.2"
+    );
+    if (hasMessyCritical || totalSuccesses > 1) {
+      tl.to(results, {
+        scale: 1.1,
+        duration: 0.3,
+        ease: "power2.out"
+      }).to(results, {
+        scale: 1,
+        duration: 0.3,
+        ease: "power2.in"
+      });
+    }
+    tl.to(results, {
+      textShadow: "0 0 30px currentColor, 0 0 60px currentColor, 2px 2px 4px rgba(0, 0, 0, 0.8)",
+      duration: 0.5,
+      ease: "power2.inOut",
+      yoyo: true,
+      repeat: 2
+    });
+  }
+  function hideDiceResults() {
+    const overlay = document.getElementById("dice-results-overlay");
+    const container = document.getElementById("dice-results-container");
+    if (!overlay || !container) {
+      return;
+    }
+    const tl = gsapWithCSS.timeline({
+      onComplete: () => {
+        gsapWithCSS.set(overlay, { clearProps: "opacity" });
+        gsapWithCSS.set(container, { clearProps: "all" });
+        overlay.classList.remove("active");
+      }
+    });
+    tl.to(container, {
+      opacity: 0,
+      scale: 0.8,
+      rotationY: -90,
+      rotationX: 30,
+      z: -300,
+      y: -50,
+      duration: 0.6,
+      ease: "power2.in"
+    }).to(overlay, {
+      opacity: 0,
+      duration: 0.3,
+      ease: "power2.out"
+    }, "-=0.4");
+  }
+  function setupNotificationWatcher() {
+    const notificationDataInput = document.getElementById("notification-data");
+    if (!notificationDataInput) {
+      console.warn("Notification data input not found");
+      return;
+    }
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "attributes" && mutation.attributeName === "value") {
+          const newValue = notificationDataInput.value;
+          if (newValue && newValue.trim() !== "") {
+            try {
+              const data = JSON.parse(newValue);
+              if (data.type === "notification") {
+                showNotification(data);
+                notificationDataInput.value = "";
+              }
+            } catch (e) {
+              console.error("Error parsing notification data:", e);
+            }
+          }
+        }
+      });
+    });
+    observer.observe(notificationDataInput, {
+      attributes: true,
+      attributeFilter: ["value"]
+    });
+    let lastValue = notificationDataInput.value;
+    setInterval(() => {
+      const currentValue = notificationDataInput.value;
+      if (currentValue !== lastValue && currentValue && currentValue.trim() !== "") {
+        lastValue = currentValue;
+        try {
+          const data = JSON.parse(currentValue);
+          if (data.type === "notification") {
+            showNotification(data);
+            notificationDataInput.value = "";
+            lastValue = "";
+          }
+        } catch (e) {
+          console.error("Error parsing notification data:", e);
+        }
+      }
+    }, 100);
+  }
+  function showNotification(data) {
+    const overlay = document.getElementById("notification-overlay");
+    const container = document.getElementById("notification-container");
+    const icon = document.getElementById("notification-icon");
+    const title = document.getElementById("notification-title");
+    const message = document.getElementById("notification-message");
+    if (!overlay || !container || !title || !message) {
+      console.warn("Notification elements not found");
+      return;
+    }
+    const notificationTitle = data.notificationTitle || "Notification";
+    const notificationMessage = data.notificationMessage || "";
+    const notificationType = data.notificationType || "info";
+    title.textContent = notificationTitle;
+    message.textContent = notificationMessage;
+    container.className = `notification-container notification-${notificationType}`;
+    if (icon) {
+      icon.className = `notification-icon notification-icon-${notificationType}`;
+      icon.textContent = notificationType === "success" ? "\u2713" : notificationType === "error" ? "\u2715" : notificationType === "warning" ? "\u26A0" : "\u2139";
+    }
+    gsapWithCSS.set(overlay, { clearProps: "opacity" });
+    gsapWithCSS.set(container, { clearProps: "all" });
+    overlay.classList.add("active");
+    const tl = gsapWithCSS.timeline({
+      onComplete: () => {
+        setTimeout(() => {
+          hideNotification();
+        }, 4e3);
+      }
+    });
+    tl.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.3 }).fromTo(
+      container,
+      { opacity: 0, scale: 0.5, y: -50 },
+      { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: "back.out(1.7)" },
+      "-=0.1"
+    );
+  }
+  function hideNotification() {
+    const overlay = document.getElementById("notification-overlay");
+    const container = document.getElementById("notification-container");
+    if (!overlay || !container) {
+      return;
+    }
+    const tl = gsapWithCSS.timeline({
+      onComplete: () => {
+        gsapWithCSS.set(overlay, { clearProps: "opacity" });
+        gsapWithCSS.set(container, { clearProps: "all" });
+        overlay.classList.remove("active");
+      }
+    });
+    tl.to(container, { opacity: 0, scale: 0.8, y: -30, duration: 0.3 }).to(overlay, { opacity: 0, duration: 0.2 }, "-=0.2");
+  }
+  function setupMessageWatcher() {
+    const messageDataInput = document.getElementById("message-data");
+    if (!messageDataInput) {
+      console.warn("Message data input not found");
+      return;
+    }
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "attributes" && mutation.attributeName === "value") {
+          const newValue = messageDataInput.value;
+          if (newValue && newValue.trim() !== "") {
+            try {
+              const data = JSON.parse(newValue);
+              if (data.type === "message") {
+                showMessage(data);
+                messageDataInput.value = "";
+              }
+            } catch (e) {
+              console.error("Error parsing message data:", e);
+            }
+          }
+        }
+      });
+    });
+    observer.observe(messageDataInput, {
+      attributes: true,
+      attributeFilter: ["value"]
+    });
+    let lastValue = messageDataInput.value;
+    setInterval(() => {
+      const currentValue = messageDataInput.value;
+      if (currentValue !== lastValue && currentValue && currentValue.trim() !== "") {
+        lastValue = currentValue;
+        try {
+          const data = JSON.parse(currentValue);
+          if (data.type === "message") {
+            showMessage(data);
+            messageDataInput.value = "";
+            lastValue = "";
+          }
+        } catch (e) {
+          console.error("Error parsing message data:", e);
+        }
+      }
+    }, 100);
+  }
+  function showMessage(data) {
+    const overlay = document.getElementById("message-overlay");
+    const container = document.getElementById("message-container");
+    const header = document.getElementById("message-header");
+    const body = document.getElementById("message-body");
+    const footer = document.getElementById("message-footer");
+    if (!overlay || !container || !header || !body) {
+      console.warn("Message elements not found");
+      return;
+    }
+    const messageHeader = data.messageHeader || "";
+    const messageBody = data.messageBody || "";
+    const messageFooter = data.messageFooter || "";
+    const messageStyle = data.messageStyle || "default";
+    header.textContent = messageHeader;
+    body.textContent = messageBody;
+    if (footer) {
+      footer.textContent = messageFooter;
+    }
+    container.className = `message-container message-${messageStyle}`;
+    gsapWithCSS.set(overlay, { clearProps: "opacity" });
+    gsapWithCSS.set(container, { clearProps: "all" });
+    overlay.classList.add("active");
+    const tl = gsapWithCSS.timeline({
+      onComplete: () => {
+        setTimeout(() => {
+          hideMessage();
+        }, 6e3);
+      }
+    });
+    tl.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.4 }).fromTo(
+      container,
+      { opacity: 0, scale: 0.3, rotationY: 180, z: -500 },
+      { opacity: 1, scale: 1, rotationY: 0, z: 0, duration: 0.8, ease: "back.out(1.7)" },
+      "-=0.2"
+    );
+  }
+  function hideMessage() {
+    const overlay = document.getElementById("message-overlay");
+    const container = document.getElementById("message-container");
+    if (!overlay || !container) {
+      return;
+    }
+    const tl = gsapWithCSS.timeline({
+      onComplete: () => {
+        gsapWithCSS.set(overlay, { clearProps: "opacity" });
+        gsapWithCSS.set(container, { clearProps: "all" });
+        overlay.classList.remove("active");
+      }
+    });
+    tl.to(container, { opacity: 0, scale: 0.8, rotationY: -90, z: -300, duration: 0.5 }).to(overlay, { opacity: 0, duration: 0.3 }, "-=0.3");
+  }
   var windowWithTTS = window;
   if (typeof window !== "undefined") {
     windowWithTTS.receiveMessage = receiveMessage;
@@ -4606,6 +5062,15 @@ var HUD = (() => {
     windowWithTTS.animatePanelExit = animatePanelExit;
     windowWithTTS.showLoginOverlay = showLoginOverlay;
     windowWithTTS.hideLoginOverlay = hideLoginOverlay;
+    windowWithTTS.showDiceResults = showDiceResults;
+    windowWithTTS.hideDiceResults = hideDiceResults;
+    windowWithTTS.showNotification = showNotification;
+    windowWithTTS.hideNotification = hideNotification;
+    windowWithTTS.showMessage = showMessage;
+    windowWithTTS.hideMessage = hideMessage;
+    windowWithTTS.setupDiceResultsWatcher = setupDiceResultsWatcher;
+    windowWithTTS.setupNotificationWatcher = setupNotificationWatcher;
+    windowWithTTS.setupMessageWatcher = setupMessageWatcher;
   }
 })();
 /*! Bundled license information:
@@ -4630,4 +5095,3 @@ gsap/CSSPlugin.js:
    * @author: Jack Doyle, jack@greensock.com
   *)
 */
-

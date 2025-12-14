@@ -14,6 +14,18 @@ import type { TTSMessage, WindowWithTTS } from "./types/tts";
  */
 document.addEventListener("DOMContentLoaded", () => {
     console.log("Toronto Rising HUD initialized");
+    console.log("UI loaded in TTS context:", typeof window !== "undefined");
+
+    // Make test container very visible for debugging
+    const testContainer = document.getElementById("ui-test-container");
+    if (testContainer) {
+        testContainer.style.display = "block";
+        testContainer.style.visibility = "visible";
+        testContainer.style.opacity = "1";
+        console.log("Test container found and made visible");
+    } else {
+        console.error("Test container NOT FOUND!");
+    }
 
     // Set up event listeners
     setupEventListeners();
@@ -33,10 +45,11 @@ document.addEventListener("DOMContentLoaded", () => {
     setupBroadcastListener();
 
     // Update test container status
-    updateUITestStatus("UI initialized and ready");
+    updateUITestStatus("UI initialized and ready - TTS connected!");
 
     // Log to console to confirm UI is loaded
     console.log("Toronto Rising UI loaded and ready!");
+    console.log("All watchers initialized");
 
     // Show login overlay on initial load (simulating user login)
     // In production, this would be triggered by TTS when a user actually logs in

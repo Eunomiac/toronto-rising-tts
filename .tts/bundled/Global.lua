@@ -136,3 +136,122 @@ end
 function onUpdate()
     --[[ Not used for dice calculations --]]
 end
+
+--[[
+    ============================================================================
+    UI Communication Functions
+    ============================================================================
+    All overlays are preloaded in index.html for instant display.
+    No page switching needed - just send data to the appropriate hidden input.
+    ============================================================================
+--]]
+
+--[[
+    Send dice results to the Custom UI
+    Called from dice roller scripts via Global.call()
+    @param uiData - Table with dice results data:
+        - playerName: string
+        - diceValues: string
+        - resultMessage: string
+        - totalSuccesses: number
+        - hasMessyCritical: boolean
+        - isTotalFailure: boolean
+        - hasBestialFailure: boolean
+--]]
+function sendDiceResultsToUI(uiData)
+    if not UI then
+        print("[ERROR] Global: UI not available - check Global.xml has correct URL")
+        return
+    end
+
+    print("[DEBUG] Global: Sending dice results to UI")
+
+    -- Encode data as JSON and send to the hidden input field
+    -- The JavaScript will detect this change and trigger GSAP animations
+    local jsonData = JSON.encode(uiData)
+
+    local success = pcall(function()
+        UI.setAttribute("dice-results-data", "value", jsonData)
+    end)
+
+    if success then
+        print("[DEBUG] Global: Sent dice results to UI: " .. jsonData)
+    else
+        print("[ERROR] Global: Failed to send data to UI - element 'dice-results-data' not found")
+        print("[ERROR] Global: Make sure index.html has: <input type=\"hidden\" id=\"dice-results-data\" value=\"\" />")
+    end
+end
+
+--[[
+    Send a notification to the Custom UI
+    @param notificationData - Table with notification data:
+        - title: string (required)
+        - message: string (required)
+        - type: "info" | "success" | "warning" | "error" (default: "info")
+--]]
+function sendNotificationToUI(notificationData)
+    if not UI then
+        print("[ERROR] Global: UI not available - check Global.xml has correct URL")
+        return
+    end
+
+    print("[DEBUG] Global: Sending notification to UI")
+
+    -- Prepare data with type
+    local uiData = {
+        type = "notification",
+        notificationTitle = notificationData.title or "Notification",
+        notificationMessage = notificationData.message or "",
+        notificationType = notificationData.type or "info"
+    }
+
+    local jsonData = JSON.encode(uiData)
+
+    local success = pcall(function()
+        UI.setAttribute("notification-data", "value", jsonData)
+    end)
+
+    if success then
+        print("[DEBUG] Global: Sent notification to UI: " .. jsonData)
+    else
+        print("[ERROR] Global: Failed to send notification - element 'notification-data' not found")
+    end
+end
+
+--[[
+    Send a message to the Custom UI
+    @param messageData - Table with message data:
+        - header: string (optional)
+        - body: string (required)
+        - footer: string (optional)
+        - style: "default" | "alert" | "confirm" | "prompt" (default: "default")
+--]]
+function sendMessageToUI(messageData)
+    if not UI then
+        print("[ERROR] Global: UI not available - check Global.xml has correct URL")
+        return
+    end
+
+    print("[DEBUG] Global: Sending message to UI")
+
+    -- Prepare data with type
+    local uiData = {
+        type = "message",
+        messageHeader = messageData.header or "",
+        messageBody = messageData.body or "",
+        messageFooter = messageData.footer or "",
+        messageStyle = messageData.style or "default"
+    }
+
+    local jsonData = JSON.encode(uiData)
+
+    local success = pcall(function()
+        UI.setAttribute("message-data", "value", jsonData)
+    end)
+
+    if success then
+        print("[DEBUG] Global: Sent message to UI: " .. jsonData)
+    else
+        print("[ERROR] Global: Failed to send message - element 'message-data' not found")
+    end
+end

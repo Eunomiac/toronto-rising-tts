@@ -10,6 +10,28 @@
 --]]
 function onLoad()
     print("V:tM V5 Dice System loaded")
+
+    -- Test if UI is available
+    if UI then
+        print("[DEBUG] Global: UI object is available")
+        print("[DEBUG] Global: Testing UI connection...")
+
+        -- Try to set a test attribute to verify UI is working
+        local testSuccess = pcall(function()
+            -- Try to access a test element (will fail if UI not loaded, but that's ok)
+            UI.setAttribute("ui-test-status", "text", "UI Connected!")
+        end)
+
+        if testSuccess then
+            print("[DEBUG] Global: UI connection test successful")
+        else
+            print("[WARNING] Global: UI connection test failed - UI may not be fully loaded yet")
+        end
+    else
+        print("[ERROR] Global: UI object is NOT available")
+        print("[ERROR] Global: Check that Global.xml has the correct URL")
+        print("[ERROR] Global: Current URL should be: https://eunomiac.github.io/toronto-rising-tts/index.html")
+    end
 end
 
 --[[
@@ -254,4 +276,26 @@ function sendMessageToUI(messageData)
     else
         print("[ERROR] Global: Failed to send message - element 'message-data' not found")
     end
+end
+
+--[[
+    Test function to verify UI is working
+    Call this from TTS console: Global.call("testUI")
+--]]
+function testUI()
+    if not UI then
+        print("[ERROR] Global: UI not available")
+        return
+    end
+
+    print("[TEST] Global: Testing UI connection...")
+
+    -- Try to send a test notification
+    sendNotificationToUI({
+        title = "UI Test",
+        message = "If you see this notification, the UI is working!",
+        type = "success"
+    })
+
+    print("[TEST] Global: Test notification sent. Check if it appears on screen.")
 end
