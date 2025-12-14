@@ -14,6 +14,50 @@
         </div>
     </div>
 
+    <!-- Hidden inputs for TTS to send data to different overlays -->
+    <input type="hidden" id="dice-results-data" value="" />
+    <input type="hidden" id="notification-data" value="" />
+    <input type="hidden" id="message-data" value="" />
+
+    <!-- Static UI Test Container - Always visible to confirm UI is working -->
+    <div id="ui-test-container" class="ui-test-container">
+        <div class="ui-test-content">
+            <p>UI Test Container - If you can see this, the UI is working!</p>
+            <p id="ui-test-status">Status: Waiting for dice roll...</p>
+        </div>
+    </div>
+
+    <!-- Dice Results Display (preloaded, hidden by default) -->
+    <div id="dice-results-overlay" class="dice-results-overlay">
+        <div id="dice-results-container" class="dice-results-container">
+            <div id="dice-results-header" class="dice-results-header"></div>
+            <div id="dice-results-content" class="dice-results-content">
+                <div id="dice-values" class="dice-values"></div>
+                <div id="dice-results" class="dice-results"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Display (preloaded, hidden by default) -->
+    <div id="notification-overlay" class="notification-overlay">
+        <div id="notification-container" class="notification-container">
+            <div id="notification-icon" class="notification-icon"></div>
+            <div id="notification-content" class="notification-content">
+                <div id="notification-title" class="notification-title"></div>
+                <div id="notification-message" class="notification-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Display (preloaded, hidden by default) -->
+    <div id="message-overlay" class="message-overlay">
+        <div id="message-container" class="message-container">
+            <div id="message-header" class="message-header"></div>
+            <div id="message-body" class="message-body"></div>
+            <div id="message-footer" class="message-footer"></div>
+        </div>
+    </div>
+
     <div id="hud-container">
         <div class="hud-header">
             <h1>Toronto Rising</h1>

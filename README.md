@@ -27,30 +27,54 @@ toronto-rising-tts/
 
 ## Setup Instructions
 
-### 1. Install TTS Modding Extension (Real-Time Editing)
+### 1. Install TTS Lua Extension (Real-Time Editing)
 
-The TTS Modding Extension allows you to edit LUA scripts in real-time while Tabletop Simulator is running. Here's how to set it up:
+The **Tabletop Simulator Lua** extension (by rolandostar) allows you to edit LUA scripts in real-time while Tabletop Simulator is running.
 
 #### Step 1: Install the Extension
 1. Open VS Code (or Cursor)
 2. Go to Extensions (Ctrl+Shift+X)
-3. Search for "**Tabletop Simulator Modding**" by **rockerBOO**
+3. Search for "**Tabletop Simulator Lua**" by **rolandostar**
 4. Click Install
 
-#### Step 2: Configure the Extension
-1. Open VS Code Settings (Ctrl+,)
-2. Search for "Tabletop Simulator"
-3. Configure the following settings:
-   - **TTS Modding: Lua Path**: Set to your Scripts folder path
-     - Example: `D:\Projects\.CODING\toronto-rising-tts\Scripts`
-   - **TTS Modding: Auto Upload**: Enable for automatic upload on save
-   - **TTS Modding: Port**: Default is 39998 (usually doesn't need changing)
+#### Step 2: Configure Script Save Location (Optional but Recommended)
+
+**Important**: By default, the extension saves scripts to a temp folder. To make it save directly to your `Scripts/` folder:
+
+**Option A: Use Directory Junction (Recommended)**
+1. Open PowerShell (as Administrator if needed)
+2. Navigate to your project folder:
+   ```powershell
+   cd D:\Projects\.CODING\toronto-rising-tts
+   ```
+3. Run the setup script:
+   ```powershell
+   .\setup-tts-symlink.ps1
+   ```
+   This creates a junction so the extension's temp folder points to your `Scripts/` folder.
+
+**Option B: Manual Junction Creation**
+1. Open PowerShell as Administrator
+2. Run:
+   ```powershell
+   $tempPath = "$env:LOCALAPPDATA\Temp\TabletopSimulator\Tabletop Simulator Lua"
+   $scriptsPath = "D:\Projects\.CODING\toronto-rising-tts\Scripts"
+   # Remove temp folder if it exists
+   if (Test-Path $tempPath) { Remove-Item $tempPath -Force -Recurse }
+   # Create junction
+   cmd /c mklink /J "`"$tempPath`"" "`"$scriptsPath`""
+   ```
+
+**Option C: Work with Temp Folder**
+- The extension will automatically add the temp folder to your workspace
+- Edit files there, then manually copy to `Scripts/` when needed
+- The temp folder is already in your workspace for convenience
 
 #### Step 3: Enable Modding in Tabletop Simulator
 1. Launch Tabletop Simulator
 2. Create or load a game
-3. The modding extension will automatically connect when you save a LUA file
-4. You should see connection status in the VS Code status bar
+3. In Cursor/VS Code, use Command Palette (Ctrl+Shift+P) → "**Get all Lua Scripts**"
+4. Scripts will appear in the workspace (either in Scripts/ or temp folder, depending on your setup)
 
 ### 2. Development Workflow
 

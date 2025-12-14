@@ -1,0 +1,205 @@
+{
+  "GUID": "29abe2",
+  "Name": "Custom_Model_Infinite_Bag",
+  "Transform": {
+    "posX": 2.02313423,
+    "posY": 1.77819943,
+    "posZ": 27.7770653,
+    "rotX": 5.23899e-7,
+    "rotY": 359.991516,
+    "rotZ": -2.21621008e-7,
+    "scaleX": 1.35000086,
+    "scaleY": 1.35000086,
+    "scaleZ": 1.35000086
+  },
+  "Nickname": "Normal Dice",
+  "Description": "Click once for as many dice you want to roll\nDice disappear after a few secondes",
+  "GMNotes": "",
+  "AltLookAngle": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "ColorDiffuse": {
+    "r": 1,
+    "g": 1,
+    "b": 1
+  },
+  "LayoutGroupSortIndex": 0,
+  "Value": 0,
+  "Locked": true,
+  "Grid": true,
+  "Snap": true,
+  "IgnoreFoW": false,
+  "MeasureMovement": false,
+  "DragSelectable": true,
+  "Autoraise": true,
+  "Sticky": true,
+  "Tooltip": true,
+  "GridProjection": false,
+  "HideWhenFaceDown": false,
+  "Hands": false,
+  "MaterialIndex": -1,
+  "MeshIndex": -1,
+  "CustomMesh": {
+    "MeshURL": "https://steamusercontent-a.akamaihd.net/ugc/868485988860654056/9B524E42B8156E3E84AF1A98BE92A2CE72E66E91/",
+    "DiffuseURL": "https://steamusercontent-a.akamaihd.net/ugc/2088037167743970485/E956C8BA2964267208EEF5CF182F866984FE51E7/",
+    "NormalURL": "",
+    "ColliderURL": "https://steamusercontent-a.akamaihd.net/ugc/868485988860654056/9B524E42B8156E3E84AF1A98BE92A2CE72E66E91/",
+    "Convex": true,
+    "MaterialIndex": 2,
+    "TypeIndex": 7,
+    "CustomShader": {
+      "SpecularColor": {
+        "r": 1,
+        "g": 1,
+        "b": 1
+      },
+      "SpecularIntensity": 0,
+      "SpecularSharpness": 2,
+      "FresnelStrength": 0
+    },
+    "CastShadows": true
+  },
+  "LuaScript": "--[[ Normal Dice Roller Instance --]]\r\n\r\nlocal diceRoller = require(\"Scripts.dice-roller-shared\")\r\n\r\n--Initialize the dice roller as a NORMAL dice roller\r\ndiceRoller.initDiceRoller(self, {\r\n    isHunger = false  -- This is a normal dice roller\r\n})",
+  "LuaScriptState": "[]",
+  "XmlUI": "",
+  "ContainedObjects": [
+    {
+      "GUID": "629a81",
+      "Name": "Custom_Dice",
+      "Transform": {
+        "posX": -0.143699154,
+        "posY": 2.25987482,
+        "posZ": -28.3764153,
+        "rotX": 38.8260727,
+        "rotY": 359.145416,
+        "rotZ": 54.6881828,
+        "scaleX": 1,
+        "scaleY": 1,
+        "scaleZ": 1
+      },
+      "Nickname": "",
+      "Description": "",
+      "GMNotes": "",
+      "AltLookAngle": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "ColorDiffuse": {
+        "r": 1,
+        "g": 1,
+        "b": 1
+      },
+      "LayoutGroupSortIndex": 0,
+      "Value": 0,
+      "Locked": false,
+      "Grid": true,
+      "Snap": true,
+      "IgnoreFoW": false,
+      "MeasureMovement": false,
+      "DragSelectable": true,
+      "Autoraise": true,
+      "Sticky": true,
+      "Tooltip": true,
+      "GridProjection": false,
+      "HideWhenFaceDown": false,
+      "Hands": false,
+      "CustomImage": {
+        "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/957476100395980607/FBE78762303A5315D6FB0697D051C7B49D955054/",
+        "ImageSecondaryURL": "",
+        "ImageScalar": 1,
+        "WidthScale": 0,
+        "CustomDice": {
+          "Type": 3
+        }
+      },
+      "LuaScript": "",
+      "LuaScriptState": "",
+      "XmlUI": "",
+      "RotationValues": [
+        {
+          "Value": "1",
+          "Rotation": {
+            "x": -38,
+            "y": 0,
+            "z": 234
+          }
+        },
+        {
+          "Value": "2",
+          "Rotation": {
+            "x": 38,
+            "y": 180,
+            "z": -233
+          }
+        },
+        {
+          "Value": "3",
+          "Rotation": {
+            "x": -38,
+            "y": 0,
+            "z": 20
+          }
+        },
+        {
+          "Value": "4",
+          "Rotation": {
+            "x": 38,
+            "y": 180,
+            "z": -17
+          }
+        },
+        {
+          "Value": "5",
+          "Rotation": {
+            "x": -38,
+            "y": 0,
+            "z": 90
+          }
+        },
+        {
+          "Value": "6",
+          "Rotation": {
+            "x": 38,
+            "y": 180,
+            "z": -161
+          }
+        },
+        {
+          "Value": "7",
+          "Rotation": {
+            "x": -38,
+            "y": 0,
+            "z": 307
+          }
+        },
+        {
+          "Value": "8",
+          "Rotation": {
+            "x": 38,
+            "y": 180,
+            "z": -304
+          }
+        },
+        {
+          "Value": "9",
+          "Rotation": {
+            "x": -38,
+            "y": 0,
+            "z": 163
+          }
+        },
+        {
+          "Value": "10",
+          "Rotation": {
+            "x": 38,
+            "y": 180,
+            "z": -90
+          }
+        }
+      ]
+    }
+  ]
+}
