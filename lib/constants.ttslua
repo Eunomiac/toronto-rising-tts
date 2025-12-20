@@ -5,9 +5,387 @@
 
 local C = {}
 
+-- Player ID map, using real-life player names as keys; will be manually updated with actual IDs when players first join.
+-- All state-based and other player data must be stored by player ID -- not color, or name.
+C.PlayerIDs = {
+  Storyteller = "@@@STORYTELLER_ID@@@",
+  Pixel = "@@@PIXEL_ID@@@",
+  Thaum = "@@@THAUM_ID@@@",
+  Roar = "@@@ROAR_ID@@@",
+  JRook = "@@@JRBOOK_ID@@@",
+  Hastur = "@@@HASTUR_ID@@@"
+}
+
+-- Static Player Data
+-- Player data manually updated by the Storyteller after each game. Does not need to be saved to state. When loaded, should be merged on top of state data into complete player data object.
+C.PlayerData = {
+		[C.PlayerIDs.Storyteller] = {
+      color = "Black",
+      playerName = "Storyteller",
+      charName = "Storyteller"
+		},
+    [C.PlayerIDs.Pixel] = {
+      color = "Brown",
+      playerName = "Pixel",
+      charName = "Evander Ashwood",
+      clan = "Lasombra",
+      generation = 9,
+      blood_potency = 3,
+      health = {
+        boxes = 7,
+        superficial_dmg = 0,
+        aggravated_dmg = 0
+      },
+      willpower = {
+        boxes = 5,
+        superficial_dmg = 0,
+        aggravated_dmg = 0
+      },
+      humanity = {
+        boxes = 10,
+        filled = 6,
+        stains = 2
+      },
+      attributes = {
+        Strength = {
+          dots = 2
+        },
+        Dexterity = {
+          dots = 2
+        },
+        Stamina = {
+          dots = 3
+        },
+        Intelligence = {
+          dots = 3
+        },
+        Wits = {
+          dots = 4
+        },
+        Resolve = {
+          dots = 2
+        },
+        Charisma = {
+          dots = 3
+        },
+        Manipulation = {
+          dots = 1
+        },
+        Composure = {
+          dots = 2
+        }
+      },
+      skills = {
+        ["Animal Ken"] = {
+          dots = 2,
+          specialties = {
+            "Dogs",
+            "Cats"
+          }
+        },
+        Bureaucracy = {
+          dots = 2
+        },
+        Crafts = {
+          dots = 2
+        }
+      },
+      disciplines = {
+        Oblivion = {
+          dots = 4,
+          powers = {
+            "Shadow Sight",
+            "Arms of Ahriman",
+            "Stygian Shroud",
+            "Shadow Perspective"
+          },
+          rites = {
+            {
+              level = 2,
+              name = "Name of the Father"
+            },
+            {
+              level = 4,
+              name = "Pit of Contemplation"
+            }
+          }
+        }
+      },
+      advantages = {
+        {
+          type = "background",
+          dots = 3,
+          tempDots = 2,
+          name = "Status (Camarilla)",
+          details = ""
+        },
+        {
+          type = "flaw",
+          dots = 2,
+          name = "Adversary",
+          details = "An angry justicar you wronged in the past"
+        }
+      },
+      experience = {
+        total = 0,
+        spent = 0,
+        purchaseLog = {
+          {
+            type = "discipline",
+            name = "Oblivion",
+            bought = 4,
+            cost = 20,
+            date = "2025-01-01"
+          }
+        }
+      }
+    },
+    [C.PlayerIDs.Thaum] = {
+      color = "Orange",
+      playerName = "Thaumaterge",
+      charName = "Aisling White",
+      clan = "Nosferatu",
+      generation = 9,
+      blood_potency = 3,
+      health = {
+        boxes = 7,
+        superficial_dmg = 0,
+        aggravated_dmg = 0
+      },
+      willpower = {
+        boxes = 5,
+        superficial_dmg = 0,
+        aggravated_dmg = 0
+      },
+      humanity = {
+        boxes = 10,
+        filled = 7,
+        stains = 0
+      },
+      attributes = {
+        Strength = {
+          dots = 2
+        },
+        Dexterity = {
+          dots = 2
+        },
+        Stamina = {
+          dots = 3
+        },
+        Intelligence = {
+          dots = 3
+        },
+        Wits = {
+          dots = 4
+        },
+        Resolve = {
+          dots = 2
+        },
+        Charisma = {
+          dots = 3
+        },
+        Manipulation = {
+          dots = 1
+        },
+        Composure = {
+          dots = 2
+        }
+      },
+      skills = {},
+      disciplines = {},
+      advantages = {},
+      experience = {
+        total = 0,
+        spent = 0,
+        purchaseLog = {}
+      }
+    },
+    [C.PlayerIDs.Roar] = {
+      color = "Red",
+      playerName = "Roarshack",
+      charName = "Arion McCall",
+      clan = "Tremere",
+      generation = 9,
+      blood_potency = 3,
+      health = {
+        boxes = 7,
+        superficial_dmg = 0,
+        aggravated_dmg = 0
+      },
+      willpower = {
+        boxes = 5,
+        superficial_dmg = 0,
+        aggravated_dmg = 0
+      },
+      humanity = {
+        boxes = 10,
+        filled = 7,
+        stains = 0
+      },
+      attributes = {
+        Strength = {
+          dots = 2
+        },
+        Dexterity = {
+          dots = 2
+        },
+        Stamina = {
+          dots = 3
+        },
+        Intelligence = {
+          dots = 3
+        },
+        Wits = {
+          dots = 4
+        },
+        Resolve = {
+          dots = 2
+        },
+        Charisma = {
+          dots = 3
+        },
+        Manipulation = {
+          dots = 1
+        },
+        Composure = {
+          dots = 2
+        }
+      },
+      skills = {},
+      disciplines = {},
+      advantages = {},
+      experience = {
+        total = 0,
+        spent = 0,
+        purchaseLog = {}
+      }
+    },
+    [C.PlayerIDs.JRook] = {
+      color = "Yellow",
+      playerName = "J. Rook",
+      charName = "Aidan Farthing",
+      clan = "Malkavian",
+      generation = 9,
+      blood_potency = 3,
+      health = {
+        boxes = 7,
+        superficial_dmg = 0,
+        aggravated_dmg = 0
+      },
+      willpower = {
+        boxes = 5,
+        superficial_dmg = 0,
+        aggravated_dmg = 0
+      },
+      humanity = {
+        boxes = 10,
+        filled = 7,
+        stains = 0
+      },
+      attributes = {
+        Strength = {
+          dots = 2
+        },
+        Dexterity = {
+          dots = 2
+        },
+        Stamina = {
+          dots = 3
+        },
+        Intelligence = {
+          dots = 3
+        },
+        Wits = {
+          dots = 4
+        },
+        Resolve = {
+          dots = 2
+        },
+        Charisma = {
+          dots = 3
+        },
+        Manipulation = {
+          dots = 1
+        },
+        Composure = {
+          dots = 2
+        }
+      },
+      skills = {},
+      disciplines = {},
+      advantages = {},
+      experience = {
+        total = 0,
+        spent = 0,
+        purchaseLog = {}
+      }
+    },
+    [C.PlayerIDs.Hastur] = {
+      color = "Green",
+      playerName = "Hastur",
+      charName = "Alyssa Farrell",
+      clan = "Ventrue",
+      generation = 9,
+      blood_potency = 3,
+      health = {
+        boxes = 7,
+        superficial_dmg = 0,
+        aggravated_dmg = 0
+      },
+      willpower = {
+        boxes = 5,
+        superficial_dmg = 0,
+        aggravated_dmg = 0
+      },
+      humanity = {
+        boxes = 10,
+        filled = 7,
+        stains = 0
+      },
+      attributes = {
+        Strength = {
+          dots = 2
+        },
+        Dexterity = {
+          dots = 2
+        },
+        Stamina = {
+          dots = 3
+        },
+        Intelligence = {
+          dots = 3
+        },
+        Wits = {
+          dots = 4
+        },
+        Resolve = {
+          dots = 2
+        },
+        Charisma = {
+          dots = 3
+        },
+        Manipulation = {
+          dots = 1
+        },
+        Composure = {
+          dots = 2
+        }
+      },
+      skills = {},
+      disciplines = {},
+      advantages = {},
+      experience = {
+        total = 0,
+        spent = 0,
+        purchaseLog = {}
+      }
+    }
+}
+
+
 -- Player Colors (standard TTS colors)
 C.PlayerColors = {
-    "White", "Blue", "Red", "Green", "Yellow", "Pink", "Purple", "Orange", "Brown", "Black", "Grey", "Teal"
+    "Black", "Brown", "Orange", "Red", "Yellow", "Green"
 }
 
 -- VTM5E Clans (from Heritage module)
@@ -17,23 +395,8 @@ C.Clans = {
 
 -- VTM5E Disciplines (from Heritage module)
 C.Disciplines = {
-    "Animalism", "Auspex", "Blood_Sorcery", "Celerity", "Dominate", "Fortitude",
+    "Animalism", "Auspex", "Blood Sorcery", "Celerity", "Dominate", "Fortitude",
     "Obfuscate", "Oblivion", "Potence", "Presence", "Protean"
-}
-
--- Discipline Abbreviations (useful for UI displays)
-C.DisciplineAbbreviations = {
-    Animalism = "Ani",
-    Auspex = "Aus",
-    Blood_Sorcery = "BSr",
-    Celerity = "Cel",
-    Dominate = "Dom",
-    Fortitude = "For",
-    Obfuscate = "Obf",
-    Oblivion = "Obv",
-    Potence = "Pot",
-    Presence = "Prs",
-    Protean = "Pro"
 }
 
 -- Game Phases (VTM5E-specific)
@@ -59,10 +422,6 @@ C.UI_IDS = {
 }
 
 -- Default Game Settings (VTM5E rules)
-C.DEFAULT_HUNGER = 0
-C.MAX_HUNGER = 5
-C.DEFAULT_WILLPOWER = 5
-C.DEFAULT_HEALTH = 7
 C.DICE_SUCCESS_THRESHOLD = 6
 C.DICE_CRITICAL_SUCCESS_VALUE = 10
 

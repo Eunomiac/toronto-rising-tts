@@ -2,8 +2,8 @@
     Debug/Testing Module (core/debug.ttslua)
 
     Provides testing and debugging utilities for the VTM5E module.
-    Functions are exposed globally (via _G) so they can be called from the TTS console
-    using the `lua` command (e.g., `lua testState()`).
+    Functions are exposed globally (assigned without 'local') so they can be called
+    from the TTS console using the `lua` command (e.g., `lua testState()`).
 
     Usage in TTS Console:
         lua testState()              -- Test state management
@@ -24,8 +24,54 @@ local Scenes = require("core.scenes")
 local C = require("lib.constants")
 
 --[[
+    File Logging Configuration
+    Uses TTS Tools extension's sendExternalMessage to write debug logs to files
+]]
+local LOG_DIR = "debug_logs"
+local LOG_EXTENSION = "txt"
+
+--[[
     Helper Functions
 ]]
+
+--- Gets current timestamp as a formatted string
+-- @return string Timestamp in format "YYYY-MM-DD HH:MM:SS"
+local function getTimestamp()
+    local time = os.time()
+    -- Lua 5.1 doesn't have os.date with format strings, so we use a workaround
+    -- For TTS, we'll use a simpler format
+    return tostring(time)
+end
+
+--- Writes content to a file in the workspace using TTS Tools extension
+-- @param filename string Name of the file (without extension)
+-- @param content string Content to write
+-- @param format string Optional format: "auto" (for JSON) or "none" (default: "none")
+local function writeToFile(filename, content, format)
+    format = format or "none"
+
+    -- Use sendExternalMessage to write to file
+    -- Don't set 'object' - that would write to .tts/objects/ directory
+    -- Without 'object', files are written to workspace directory
+    local fullName = LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION
+
+    -- Check if sendExternalMessage exists (TTS Tools extension)
+    ---@diagnostic disable-next-line: undefined-global
+    if sendExternalMessage then
+        ---@diagnostic disable-next-line: undefined-global
+        sendExternalMessage({
+            type = "write",
+            content = content,
+            name = fullName,
+            format = format
+        })
+        print("DEBUG: Log written to " .. fullName)
+    else
+        -- Fallback: just print if extension not available
+        print("DEBUG (file logging not available): " .. filename)
+        print(content)
+    end
+end
 
 --- Prints a formatted test header
 -- @param testName string Name of the test
@@ -35,7 +81,7 @@ local function printTestHeader(testName)
     print(string.rep("=", 60))
 end
 
---- Prints a formatted test result
+--- Prints a formatted test result and logs to file
 -- @param testName string Name of the test
 -- @param passed boolean Whether the test passed
 -- @param details string Optional details about the test
@@ -46,16 +92,38 @@ local function printTestResult(testName, passed, details)
     if details then
         print("  Details: " .. details)
     end
+
+    -- Also log to file
+    DEBUG.logTestToFile(testName, passed, details, "test_results")
 end
 
 --[[
     State Management Tests
 ]]
 
+--- Helper: Get the first seated player color
+-- Returns the color of the first player that is actually seated/connected
+-- Returns nil if no players are seated
+-- @return string|nil Player color or nil if no players seated
+local function getFirstSeatedPlayerColor()
+    for _, color in ipairs(C.PlayerColors) do
+        local player = Player[color]
+        if player and player.seated then
+            return color
+        end
+    end
+    return nil
+end
+
 --- Test basic state get/set operations
 -- Tests: S.getStateVal, S.setStateVal, nested access
 function DEBUG.testState()
     printTestHeader("State Management - Basic Operations")
+
+    -- Reset state to clean defaults before testing
+    -- This ensures old saved data doesn't contaminate the tests
+    print("Resetting game state to clean defaults...")
+    S.resetGameState()
 
     local passed = 0
     local failed = 0
@@ -75,13 +143,25 @@ function DEBUG.testState()
 
     -- Test 2: Nested state access
     do
-        S.setStateVal(5, "players", "Red", "hunger")
-        local result = S.getStateVal("players", "Red", "hunger")
-        if result == 5 then
-            printTestResult("Nested state access", true)
-            passed = passed + 1
+        local testColor = getFirstSeatedPlayerColor()
+        if testColor then
+            local playerID = S.getPlayerID(testColor)
+            if playerID then
+                S.setPlayerVal(testColor, "hunger", 5)
+                local result = S.getPlayerVal(testColor, "hunger")
+                if result == 5 then
+                    printTestResult("Nested state access", true, "Using player: " .. testColor .. " (ID: " .. playerID .. ")")
+                    passed = passed + 1
+                else
+                    printTestResult("Nested state access", false, "Expected 5, got " .. tostring(result))
+                    failed = failed + 1
+                end
+            else
+                printTestResult("Nested state access", false, "Could not find player ID for color: " .. testColor)
+                failed = failed + 1
+            end
         else
-            printTestResult("Nested state access", false, "Expected 5, got " .. tostring(result))
+            printTestResult("Nested state access", false, "No seated players found for test")
             failed = failed + 1
         end
     end
@@ -109,22 +189,45 @@ function DEBUG.testState()
     print("\n" .. string.rep("-", 60))
     print("State Tests: " .. passed .. " passed, " .. failed .. " failed")
     print(string.rep("-", 60))
+
+    -- Log summary to file
+    local summary = string.format("State Tests: %d passed, %d failed", passed, failed)
+    DEBUG.logToFile("INFO", summary, "debug_log")
+    DEBUG.logTestToFile("State Management - Basic Operations", failed == 0, summary, "test_results")
 end
 
 --- Test state persistence (save/load)
 -- Tests: onSave, JSON encoding/decoding, state restoration
 function DEBUG.testStatePersistence()
     printTestHeader("State Management - Persistence")
+    DEBUG.logToFile("INFO", "Starting testStatePersistence()", "debug_log")
+
+    -- Reset state to clean defaults before testing
+    print("Resetting game state to clean defaults...")
+    S.resetGameState()
 
     -- Set some test values
-    S.setStateVal(3, "players", "Blue", "hunger")
+    local testColor = getFirstSeatedPlayerColor()
+    if not testColor then
+        print("ERROR: No seated players found for persistence test")
+        return
+    end
+
+    local playerID = S.getPlayerID(testColor)
+    if not playerID then
+        print("ERROR: Could not find player ID for color: " .. testColor)
+        return
+    end
+
+    S.setPlayerVal(testColor, "hunger", 3)
     S.setStateVal("PLAY", "currentPhase")
     S.setStateVal("tension", "currentScene")
 
     -- Get current state
     local stateBefore = S.getGameState()
-    print("State before save:")
-    print("  Blue hunger: " .. tostring(stateBefore.players.Blue.hunger))
+    print("State before save (using player: " .. testColor .. ", ID: " .. playerID .. "):")
+    local playerData = stateBefore.playerData and stateBefore.playerData[playerID]
+    print("  " .. testColor .. " hunger: " .. tostring(playerData and playerData.hunger or "nil"))
     print("  Phase: " .. tostring(stateBefore.currentPhase))
     print("  Scene: " .. tostring(stateBefore.currentScene))
 
@@ -136,11 +239,12 @@ function DEBUG.testStatePersistence()
     local loadedState = JSON.decode(savedData)
     if loadedState then
         print("\nState after load:")
-        print("  Blue hunger: " .. tostring(loadedState.players.Blue.hunger))
+        local loadedPlayerData = loadedState.playerData and loadedState.playerData[playerID]
+        print("  " .. testColor .. " hunger: " .. tostring(loadedPlayerData and loadedPlayerData.hunger or "nil"))
         print("  Phase: " .. tostring(loadedState.currentPhase))
         print("  Scene: " .. tostring(loadedState.currentScene))
 
-        if loadedState.players.Blue.hunger == 3 and loadedState.currentPhase == "PLAY" then
+        if loadedPlayerData and loadedPlayerData.hunger == 3 and loadedState.currentPhase == "PLAY" then
             printTestResult("State persistence", true, "Values preserved correctly")
         else
             printTestResult("State persistence", false, "Values did not match")
@@ -148,6 +252,8 @@ function DEBUG.testStatePersistence()
     else
         printTestResult("State persistence", false, "Failed to decode JSON")
     end
+
+    DEBUG.logToFile("INFO", "Completed testStatePersistence()", "debug_log")
 end
 
 --[[
@@ -158,6 +264,7 @@ end
 -- Tests: Scenes.loadScene, Scenes.fadeToScene, Scenes.getCurrentScene
 function DEBUG.testScenes()
     printTestHeader("Scene Management")
+    DEBUG.logToFile("INFO", "Starting testScenes()", "debug_log")
 
     -- Test 1: List available scenes
     do
@@ -196,12 +303,15 @@ function DEBUG.testScenes()
         local currentScene = Scenes.getCurrentScene()
         print("Current scene after fade: " .. tostring(currentScene))
     end, 2.5)
+
+    DEBUG.logToFile("INFO", "Completed testScenes()", "debug_log")
 end
 
 --- Test all scene presets
 -- Loads each scene preset to verify they work
 function DEBUG.testAllScenes()
     printTestHeader("Scene Management - All Presets")
+    DEBUG.logToFile("INFO", "Starting testAllScenes()", "debug_log")
 
     local scenes = Scenes.listScenes()
     local successCount = 0
@@ -221,6 +331,10 @@ function DEBUG.testAllScenes()
     print("\n" .. string.rep("-", 60))
     print("Scene Tests: " .. successCount .. "/" .. #scenes .. " scenes loaded successfully")
     print(string.rep("-", 60))
+
+    local summary = string.format("Scene Tests: %d/%d scenes loaded successfully", successCount, #scenes)
+    DEBUG.logToFile("INFO", summary, "debug_log")
+    DEBUG.logToFile("INFO", "Completed testAllScenes()", "debug_log")
 end
 
 --[[
@@ -231,6 +345,7 @@ end
 -- Tests: Z.activateZones, Z.deactivateZones, zone state
 function DEBUG.testZones()
     printTestHeader("Zone Management")
+    DEBUG.logToFile("INFO", "Starting testZones()", "debug_log")
 
     -- Test 1: Check current zone state
     do
@@ -276,6 +391,7 @@ end
 -- Tests: M.forPlayers, M.setupPlayers, M.advancePhase
 function DEBUG.testMain()
     printTestHeader("Main Module")
+    DEBUG.logToFile("INFO", "Starting testMain()", "debug_log")
 
     -- Test 1: forPlayers iteration
     do
@@ -317,6 +433,7 @@ end
 -- Tests: updateUIDisplays, UI.setValue
 function DEBUG.testUI()
     printTestHeader("UI Display Updates")
+    DEBUG.logToFile("INFO", "Starting testUI()", "debug_log")
 
     -- Note: This requires the UI to be loaded and updateUIDisplays to be defined globally
 
@@ -336,14 +453,20 @@ function DEBUG.testUI()
 
     -- Test 3: Update player stats
     do
-        S.setStateVal(2, "players", "Red", "hunger")
-        S.setStateVal(4, "players", "Red", "willpower")
-        S.setStateVal(5, "players", "Red", "health")
-        updateUIDisplays()
-        printTestResult("Update player stats", true, "Should update Red player's stats")
+        local testColor = getFirstSeatedPlayerColor()
+        if testColor then
+            S.setPlayerVal(testColor, "hunger", 2)
+            -- Note: willpower and health are static data in C.PlayerData, not dynamic state
+            -- Only hunger is currently saved as dynamic state
+            updateUIDisplays()
+            printTestResult("Update player stats", true, "Should update " .. testColor .. " player's hunger")
+        else
+            printTestResult("Update player stats", false, "No seated players found for test")
+        end
     end
 
     print("\nNOTE: Visual verification required - check UI elements in game.")
+    DEBUG.logToFile("INFO", "Completed testUI()", "debug_log")
 end
 
 --[[
@@ -354,6 +477,7 @@ end
 -- Tests: Basic U.* functions
 function DEBUG.testUtilities()
     printTestHeader("Utility Functions")
+    DEBUG.logToFile("INFO", "Starting testUtilities()", "debug_log")
 
     -- Test 1: U.Type
     do
@@ -383,6 +507,8 @@ function DEBUG.testUtilities()
         print("U.filter({1,2,3,4,5}, even): {" .. table.concat(result, ",") .. "}")
         printTestResult("U.filter", #result == 2 and result[1] == 2 and result[2] == 4, "Filtered correctly")
     end
+
+    DEBUG.logToFile("INFO", "Completed testUtilities()", "debug_log")
 end
 
 --[[
@@ -393,14 +519,29 @@ end
 -- Tests that all modules work together
 function DEBUG.testIntegration()
     printTestHeader("Full Integration Test")
+    DEBUG.logToFile("INFO", "Starting testIntegration() - Running all tests", "debug_log")
+
+    -- Reset state to clean defaults before testing
+    print("Resetting game state to clean defaults...")
+    S.resetGameState()
 
     print("Running integration test sequence...")
 
     -- Step 1: Set game state
     print("\n1. Setting game state...")
-    S.setStateVal(3, "players", "Red", "hunger")
+    local testColor = getFirstSeatedPlayerColor()
+    if not testColor then
+        print("   ✗ ERROR: No seated players found for integration test")
+        return
+    end
+    local playerID = S.getPlayerID(testColor)
+    if not playerID then
+        print("   ✗ ERROR: Could not find player ID for color: " .. testColor)
+        return
+    end
+    S.setPlayerVal(testColor, "hunger", 3)
     S.setStateVal(C.Phases.PLAY, "currentPhase")
-    print("   ✓ State set")
+    print("   ✓ State set (using player: " .. testColor .. ", ID: " .. playerID .. ")")
 
     -- Step 2: Load scene
     print("\n2. Loading scene...")
@@ -419,11 +560,11 @@ function DEBUG.testIntegration()
 
     -- Step 5: Verify state
     print("\n5. Verifying final state...")
-    local finalHunger = S.getStateVal("players", "Red", "hunger")
+    local finalHunger = S.getPlayerVal(testColor, "hunger")
     local finalPhase = S.getStateVal("currentPhase")
     local finalScene = Scenes.getCurrentScene()
 
-    print("   Final hunger: " .. tostring(finalHunger))
+    print("   Final hunger (" .. testColor .. "): " .. tostring(finalHunger))
     print("   Final phase: " .. tostring(finalPhase))
     print("   Final scene: " .. tostring(finalScene))
 
@@ -440,6 +581,73 @@ function DEBUG.showState()
     printTestHeader("Current Game State")
     local state = S.getGameState()
     print(JSON.encode_pretty(state))
+end
+
+--- Logs complete gameState to a file before save
+-- Writes both raw and sanitized versions for comparison
+-- @param label string Optional label for the dump (default: "gameState_dump")
+function DEBUG.logStateToFile(label)
+    label = label or "gameState_dump"
+    local timestamp = getTimestamp()
+
+    -- Get both raw and sanitized states
+    local rawState = S.getGameState(false)
+    local sanitizedState = S.getGameState(true)
+
+    -- Build the dump content
+    local dumpContent = string.format(
+        "=== GAME STATE DUMP: %s ===\nTimestamp: %s\n\n",
+        label,
+        timestamp
+    )
+
+    -- Raw state
+    dumpContent = dumpContent .. "--- RAW STATE (gameState) ---\n"
+    local rawSuccess, rawJson = pcall(function()
+        return JSON.encode_pretty(rawState)
+    end)
+    if rawSuccess then
+        dumpContent = dumpContent .. rawJson .. "\n\n"
+    else
+        dumpContent = dumpContent .. "ERROR encoding raw state: " .. tostring(rawJson) .. "\n\n"
+    end
+
+    -- Sanitized state (what will be saved)
+    dumpContent = dumpContent .. "--- SANITIZED STATE (for save) ---\n"
+    local sanitizedSuccess, sanitizedJson = pcall(function()
+        return JSON.encode_pretty(sanitizedState)
+    end)
+    if sanitizedSuccess then
+        dumpContent = dumpContent .. sanitizedJson .. "\n\n"
+    else
+        dumpContent = dumpContent .. "ERROR encoding sanitized state: " .. tostring(sanitizedJson) .. "\n\n"
+    end
+
+    -- PlayerData structure details
+    dumpContent = dumpContent .. "--- PLAYERDATA STRUCTURE DETAILS ---\n"
+    if rawState.playerData then
+        dumpContent = dumpContent .. "Raw playerData type: " .. type(rawState.playerData) .. "\n"
+        dumpContent = dumpContent .. "Raw playerData key count: " .. #U.getKeys(rawState.playerData) .. "\n"
+        dumpContent = dumpContent .. "Raw playerData keys: " .. table.concat(U.getKeys(rawState.playerData), ", ") .. "\n\n"
+
+        for playerID, playerData in pairs(rawState.playerData) do
+            dumpContent = dumpContent .. string.format("Player[%s]: type=%s\n", tostring(playerID), type(playerData))
+            if type(playerData) == "table" then
+                dumpContent = dumpContent .. string.format("  Keys: %s\n", table.concat(U.getKeys(playerData), ", "))
+                for k, v in pairs(playerData) do
+                    dumpContent = dumpContent .. string.format("  [%s] = %s (type: %s)\n", tostring(k), tostring(v), type(v))
+                end
+            end
+            dumpContent = dumpContent .. "\n"
+        end
+    else
+        dumpContent = dumpContent .. "No playerData in raw state\n\n"
+    end
+
+    dumpContent = dumpContent .. string.rep("=", 60) .. "\n\n"
+
+    -- Write to file
+    DEBUG.logToFile("INFO", dumpContent, "gameState_dump")
 end
 
 --- Display current scene info
@@ -479,8 +687,14 @@ function DEBUG.setHunger(color, value)
         return
     end
 
-    S.setStateVal(value, "players", color, "hunger")
-    print("Set " .. color .. " player hunger to " .. tostring(value))
+    local playerID = S.getPlayerID(color)
+    if not playerID then
+        print("ERROR: Could not find player ID for color: " .. color)
+        return
+    end
+
+    S.setPlayerVal(color, "hunger", value)
+    print("Set " .. color .. " player (ID: " .. playerID .. ") hunger to " .. tostring(value))
 
     updateUIDisplays()
 end
@@ -525,6 +739,126 @@ function DEBUG.setPhase(phaseName)
 end
 
 --[[
+    File Logging Functions
+    These functions write debug information to files in the workspace using
+    the TTS Tools extension's sendExternalMessage API.
+]]
+
+--- Logs a message to a file with timestamp
+-- @param level string Log level: "INFO", "WARN", "ERROR", "DEBUG"
+-- @param message string Message to log
+-- @param filename string Optional filename (default: "debug_log")
+function DEBUG.logToFile(level, message, filename)
+    filename = filename or "debug_log"
+    local timestamp = getTimestamp()
+    local logEntry = string.format("[%s] [%s] %s\n", timestamp, level, message)
+
+    -- Append to existing file (we'll read existing content first if possible)
+    -- For now, we'll create a new entry each time - the extension handles file writing
+    writeToFile(filename, logEntry, "none")
+end
+
+--- Logs current game state to a file as JSON
+-- @param filename string Optional filename (default: "game_state")
+function DEBUG.logStateToFile(filename)
+    filename = filename or "game_state"
+    local state = S.getGameState()
+    local stateJson = JSON.encode_pretty(state)
+    local timestamp = getTimestamp()
+    local content = string.format("Game State Dump - %s\n%s\n", timestamp, stateJson)
+
+    writeToFile(filename, content, "auto")
+    print("DEBUG: Game state logged to " .. filename .. "." .. LOG_EXTENSION)
+end
+
+--- Logs current scene information to a file
+-- @param filename string Optional filename (default: "scene_info")
+function DEBUG.logSceneToFile(filename)
+    filename = filename or "scene_info"
+    local currentScene = Scenes.getCurrentScene()
+    local scene = Scenes.getScene(currentScene)
+    local timestamp = getTimestamp()
+
+    local content = string.format("Scene Information - %s\n", timestamp)
+    content = content .. string.format("Current Scene: %s\n", currentScene or "nil")
+    if scene then
+        content = content .. string.format("Scene Data:\n")
+        content = content .. JSON.encode_pretty(scene)
+    else
+        content = content .. "Scene data not found\n"
+    end
+    content = content .. "\n"
+
+    writeToFile(filename, content, "auto")
+    print("DEBUG: Scene info logged to " .. filename .. "." .. LOG_EXTENSION)
+end
+
+--- Logs zone information to a file
+-- @param filename string Optional filename (default: "zone_info")
+function DEBUG.logZonesToFile(filename)
+    filename = filename or "zone_info"
+    local zonesState = S.getStateVal("zones")
+    local timestamp = getTimestamp()
+
+    local content = string.format("Zone Information - %s\n", timestamp)
+    if zonesState then
+        content = content .. JSON.encode_pretty(zonesState)
+    else
+        content = content .. "No zone state found\n"
+    end
+    content = content .. "\n"
+
+    writeToFile(filename, content, "auto")
+    print("DEBUG: Zone info logged to " .. filename .. "." .. LOG_EXTENSION)
+end
+
+--- Logs a test result to a file
+-- @param testName string Name of the test
+-- @param passed boolean Whether the test passed
+-- @param details string Optional details
+-- @param filename string Optional filename (default: "test_results")
+function DEBUG.logTestToFile(testName, passed, details, filename)
+    filename = filename or "test_results"
+    local timestamp = getTimestamp()
+    local status = passed and "PASS" or "FAIL"
+
+    local content = string.format("[%s] %s: %s\n", timestamp, status, testName)
+    if details then
+        content = content .. string.format("  Details: %s\n", details)
+    end
+    content = content .. "\n"
+
+    writeToFile(filename, content, "none")
+end
+
+--- Logs all debug information to separate files
+-- Creates: game_state, scene_info, zone_info, and a general debug log
+function DEBUG.logAllToFiles()
+    print("DEBUG: Logging all information to files...")
+    DEBUG.logStateToFile("game_state")
+    DEBUG.logSceneToFile("scene_info")
+    DEBUG.logZonesToFile("zone_info")
+    DEBUG.logToFile("INFO", "Full debug dump completed", "debug_log")
+    print("DEBUG: All logs written to " .. LOG_DIR .. "/ directory")
+end
+
+--- Clears all log files (writes empty/header content to reset them)
+-- Called automatically on game load to start fresh logs
+function DEBUG.clearAllLogs()
+    local timestamp = getTimestamp()
+    local sessionHeader = string.format("=== DEBUG LOG SESSION STARTED - %s ===\n\n", timestamp)
+
+    -- Clear each log file by writing session header
+    writeToFile("debug_log", sessionHeader, "none")
+    writeToFile("game_state", sessionHeader, "none")
+    writeToFile("scene_info", sessionHeader, "none")
+    writeToFile("zone_info", sessionHeader, "none")
+    writeToFile("test_results", sessionHeader, "none")
+
+    print("DEBUG: All log files cleared (new session started)")
+end
+
+--[[
     Help/Documentation
 ]]
 
@@ -548,6 +882,14 @@ function DEBUG.help()
     print("  showState()              - Display current game state (JSON)")
     print("  showScene()              - Display current scene info")
     print("  showZones()              - Display zone status")
+    print("\nFILE LOGGING FUNCTIONS:")
+    print("  logToFile(level, msg, filename?) - Log a message to file")
+    print("  logStateToFile(filename?)       - Log game state to file (JSON)")
+    print("  logSceneToFile(filename?)       - Log scene info to file")
+    print("  logZonesToFile(filename?)       - Log zone info to file")
+    print("  logTestToFile(name, passed, details?, filename?) - Log test result")
+    print("  logAllToFiles()                   - Log all debug info to files")
+    print("  clearAllLogs()                    - Clear all log files (starts new session)")
     print("\nQUICK SETTERS:")
     print("  setHunger(color, value)  - Set player hunger (e.g., setHunger('Red', 3))")
     print("  changeScene(sceneName)   - Change scene (e.g., changeScene('elysium'))")
@@ -560,31 +902,41 @@ end
 --[[
     Expose Functions Globally
     These functions can be called from the TTS console via: lua functionName()
+    NOTE: In TTS Lua, assigning without 'local' makes variables global.
+    No need for _G syntax - just assign directly.
 ]]
 
 -- Expose all test functions
-_G.testState = DEBUG.testState
-_G.testStatePersistence = DEBUG.testStatePersistence
-_G.testScenes = DEBUG.testScenes
-_G.testAllScenes = DEBUG.testAllScenes
-_G.testZones = DEBUG.testZones
-_G.testMain = DEBUG.testMain
-_G.testUI = DEBUG.testUI
-_G.testUtilities = DEBUG.testUtilities
-_G.testIntegration = DEBUG.testIntegration
+testState = DEBUG.testState
+testStatePersistence = DEBUG.testStatePersistence
+testScenes = DEBUG.testScenes
+testAllScenes = DEBUG.testAllScenes
+testZones = DEBUG.testZones
+testMain = DEBUG.testMain
+testUI = DEBUG.testUI
+testUtilities = DEBUG.testUtilities
+testIntegration = DEBUG.testIntegration
 
 -- Expose inspection functions
-_G.showState = DEBUG.showState
-_G.showScene = DEBUG.showScene
-_G.showZones = DEBUG.showZones
+showState = DEBUG.showState
+showScene = DEBUG.showScene
+showZones = DEBUG.showZones
 
 -- Expose quick setters
-_G.setHunger = DEBUG.setHunger
-_G.changeScene = DEBUG.changeScene
-_G.setPhase = DEBUG.setPhase
+setHunger = DEBUG.setHunger
+changeScene = DEBUG.changeScene
+setPhase = DEBUG.setPhase
+
+-- Expose file logging functions
+logToFile = DEBUG.logToFile
+logStateToFile = DEBUG.logStateToFile
+logSceneToFile = DEBUG.logSceneToFile
+logZonesToFile = DEBUG.logZonesToFile
+logTestToFile = DEBUG.logTestToFile
+logAllToFiles = DEBUG.logAllToFiles
 
 -- Expose help
-_G.debugHelp = DEBUG.help
+debugHelp = DEBUG.help
 
 -- Auto-show help on load (optional - comment out if not desired)
 -- DEBUG.help()
