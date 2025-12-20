@@ -1,0 +1,291 @@
+<Defaults>
+
+	<Panel class="houseSelectionContainer"
+		showAnimation = "FadeIn"
+		hideAnimation = "FadeOut"
+		animationDuration = "1" />
+
+
+	<GridLayout class="houseSelectionGrid"
+		width = "1260"
+		height = "580"
+		offsetXY="0 50"
+		spacing = "20 20"
+		cellSize = "300 180"
+		childForceExpandWidth = "False"
+		childForceExpandHeight = "False"
+		constraintCount = "4" />
+
+	<Text class="houseSelectionHeader"
+		offsetXY = "0 -100" />
+
+	<Image class="houseFlag"
+		color="rgba(0.5, 0.5, 0.5, 1)"
+		outlineSize="50" />
+
+	<Image class="houseHover"
+		color = "rgba(0, 0, 0, 0)"
+		raycastTarget = "True"
+    onMouseDown="HUD_Click"
+    onMouseEnter="HUD_HoverOn"
+		onMouseExit="HUD_HoverOff" />
+
+	<Panel class="houseInfo"
+		rectAlignment="LowerCenter"
+		offsetXY="0 25"
+		height="250"
+		width="750" />
+
+	<Image class="houseInfo" active = "False"
+		showAnimation = "FadeIn"
+		hideAnimation = "FadeOut"
+		animationDuration = "0.5" />
+
+
+</Defaults>
+
+
+<Panel id="houseSelection_Brown" class="houseSelectionContainer" visibility="Brown" active="False">
+	<Text class="header houseSelectionHeader" visibility="Brown">Where Does Your House Rule?</Text>
+
+	<GridLayout id="houseSelection_Grid_Brown" class="houseSelectionGrid" visibility="Brown">
+		<Image id="houseFlag_Allwed_Brown" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739194792/C9B66702A87E6D1FDB5384B4F51A5D77D2634917/" />
+		<Image id="houseFlag_Blodyn_Brown" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253245/C9DBFEEB59A7B71D0A27FF280334271818FB26A0/" />
+		<Image id="houseFlag_Coden_Brown" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253338/EA28A27B464F7693CC133B4E2FE6015B8C5CF0E3/" />
+		<Image id="houseFlag_Crann_Brown" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253435/EE7BDEC5F7E46AC930644FC7533079F6879F5433/" />
+		<Image id="houseFlag_Dualak_Brown" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253510/A16DF1A670D95E1C866F918ACE227092DBE9352B/" />
+		<Image id="houseFlag_Gamam_Brown" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253616/87E88E5AC38BDC76F98654E1C280AA0A6E510C4E/" />
+		<Image id="houseFlag_Natar_Brown" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253752/97822A3B8F0A01116CE2B721BB52E25A4317C218/" />
+		<Image id="houseFlag_Olwyn_Brown" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253853/BB38AE3D3F420C0FD61BF814FD7775D462016AC8/" />
+		<Image id="houseFlag_Solad_Brown" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253975/092946C413889BB5FC5E0D3F65C4C5EE136396BE/" />
+		<Image id="houseFlag_Tiryll_Brown" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254148/DAC3E6F35DA73048387F0A2DEA8432C802AF83E3/" />
+		<Image id="houseFlag_Tork_Brown" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254244/C64C331492D2A1AE626A63DEDEEA15CA99F5AF7A/" />
+		<Image id="houseFlag_Wylio_Brown" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254331/8FD06EFCCF997781E5823A58C8DC3C3776866DD5/" />
+	</GridLayout>
+
+	<GridLayout id="houseSelection_Hover_Brown" class="houseSelectionGrid" visibility="Brown">
+		<Image id="houseHover_Allwed_Brown" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064378834884394002/629DFA1FF20E8312FD53C6B40F7C01D5381F645B/" />
+		<Image id="houseHover_Blodyn_Brown" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064378834884394105/50FCBE0642AA980ED388EEE3358505895907B535/" />
+		<Image id="houseHover_Coden_Brown" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064378834884394193/F9DAB3F9A3B249C7F5A0FB576FB1901E52020074/" />
+		<Image id="houseHover_Crann_Brown" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064378834884394270/7F967CE9A8DF946C5775216D420077BD388A3E48/" />
+		<Image id="houseHover_Dualak_Brown" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064378834884394354/A52102D206BC80A94A55A563ADDE4C4BE818A695/" />
+		<Image id="houseHover_Gamam_Brown" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064378834884394494/5AD3A41E15315326EA44F010D0E7C40FFDB0CC13/" />
+		<Image id="houseHover_Natar_Brown" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064378834884394650/256F84C6DEA770EBC2D7F96DB9B115A768C591B4/" />
+		<Image id="houseHover_Olwyn_Brown" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064378834884394763/79E3F5FE17D66CAB4A8D0996A6EA3A4D1A1A0BE8/" />
+		<Image id="houseHover_Solad_Brown" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064378834884394875/75674E72774048257EABD571E6513A8490AE8D49/" />
+		<Image id="houseHover_Tiryll_Brown" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064378834884394987/0884A6441E767199C11A9755D4363CB04D053D68/" />
+		<Image id="houseHover_Tork_Brown" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064378834884395067/8F70328EC617451173D614DCB51EC183E18241CD/" />
+		<Image id="houseHover_Wylio_Brown" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064378834884395165/B6683C4F9331084ECC935BE68801B78F391EB91C/" />
+	</GridLayout>
+
+	<Panel id="houseSelection_Info_Brown" class="houseInfo" visibility="Brown">
+		<Image id="houseInfo_Allwed_Brown" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739214623/8A74FFF57CD30479D7BFAF8A323FC789CAF4DAF6/" />
+		<Image id="houseInfo_Blodyn_Brown" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255352/7ECF25C031BE26C90B0064D4E6521DD05ACF0CFC/" />
+		<Image id="houseInfo_Coden_Brown" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255431/678153E6442F3A15FDD9A52432D3B2840255788A/" />
+		<Image id="houseInfo_Crann_Brown" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255504/D872B9758838A886F27979372EA8B7CEB31C80D4/" />
+		<Image id="houseInfo_Dualak_Brown" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255576/9B8A674E84D9DAD3FE22A9FC7070C186CEB81BCF/" />
+		<Image id="houseInfo_Gamam_Brown" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255640/312ACA995AFB8415BBD1518F3A49C165D2857BBD/" />
+		<Image id="houseInfo_Natar_Brown" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255716/6089C922A90A5F2511169FCE8767820B6956FC04/" />
+		<Image id="houseInfo_Olwyn_Brown" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255789/E042B09CC6F786AB87D23375B6348A3CD7DDB831/" />
+		<Image id="houseInfo_Solad_Brown" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255862/CEC024F5969932C149A773F0D38DEC5AA08BEC8D/" />
+		<Image id="houseInfo_Tiryll_Brown" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255947/4D10665945A6D1CF9C23D91551C0B2332380C487/" />
+		<Image id="houseInfo_Tork_Brown" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739256042/BAAA30C5C056B08BABFE3E00285ACAEB0E0C4E6A/" />
+		<Image id="houseInfo_Wylio_Brown" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739256140/55CF64F606A4CDB621C8139EF6B3972F9ED5F967/" />
+	</Panel>
+</Panel>
+
+<Panel id="houseSelection_Red" class="houseSelectionContainer" visibility="Red" active="False">
+	<Text class="header houseSelectionHeader" visibility="Red">Where Does Your House Rule?</Text>
+
+	<GridLayout id="houseSelection_Grid_Red" class="houseSelectionGrid" visibility="Red">
+		<Image id="houseFlag_Allwed_Red" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739194792/C9B66702A87E6D1FDB5384B4F51A5D77D2634917/" />
+		<Image id="houseFlag_Blodyn_Red" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253245/C9DBFEEB59A7B71D0A27FF280334271818FB26A0/" />
+		<Image id="houseFlag_Coden_Red" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253338/EA28A27B464F7693CC133B4E2FE6015B8C5CF0E3/" />
+		<Image id="houseFlag_Crann_Red" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253435/EE7BDEC5F7E46AC930644FC7533079F6879F5433/" />
+		<Image id="houseFlag_Dualak_Red" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253510/A16DF1A670D95E1C866F918ACE227092DBE9352B/" />
+		<Image id="houseFlag_Gamam_Red" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253616/87E88E5AC38BDC76F98654E1C280AA0A6E510C4E/" />
+		<Image id="houseFlag_Natar_Red" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253752/97822A3B8F0A01116CE2B721BB52E25A4317C218/" />
+		<Image id="houseFlag_Olwyn_Red" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253853/BB38AE3D3F420C0FD61BF814FD7775D462016AC8/" />
+		<Image id="houseFlag_Solad_Red" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253975/092946C413889BB5FC5E0D3F65C4C5EE136396BE/" />
+		<Image id="houseFlag_Tiryll_Red" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254148/DAC3E6F35DA73048387F0A2DEA8432C802AF83E3/" />
+		<Image id="houseFlag_Tork_Red" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254244/C64C331492D2A1AE626A63DEDEEA15CA99F5AF7A/" />
+		<Image id="houseFlag_Wylio_Red" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254331/8FD06EFCCF997781E5823A58C8DC3C3776866DD5/" />
+	</GridLayout>
+
+	<GridLayout id="houseSelection_Hover_Red" class="houseSelectionGrid" visibility="Red">
+		<Image id="houseHover_Allwed_Red" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254406/9003D12A2F60763746F70FD85B030CB56926FA3E/" />
+		<Image id="houseHover_Blodyn_Red" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254471/6AE191A3885504DDCD870F5C7468649C44CA96A1/" />
+		<Image id="houseHover_Coden_Red" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254535/09B0A8D11B1AA84576627FB9BB4663E3D0C2C313/" />
+		<Image id="houseHover_Crann_Red" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254636/5A255B7F1A880072A759FD565084B6ABFDB7432A/" />
+		<Image id="houseHover_Dualak_Red" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254731/39B09C3173BD729B98D0EAFF571FAAEF780D4C96/" />
+		<Image id="houseHover_Gamam_Red" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254820/69650201B8D22E1DA43BD7A09AA56832C1EA3474/" />
+		<Image id="houseHover_Natar_Red" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254903/5AC6BFDDAA21F465CAB49A5DCD2D872F28820AB2/" />
+		<Image id="houseHover_Olwyn_Red" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255012/F88D0A873C75A76D6146FFFF562727DA74C26ED7/" />
+		<Image id="houseHover_Solad_Red" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255078/CC8293A11AA2ED6E94B47E8F256F65585CC38542/" />
+		<Image id="houseHover_Tiryll_Red" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255138/93DB22680A4FE3D5FB849D7D3C5EAF5DA010748F/" />
+		<Image id="houseHover_Tork_Red" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255202/BB341225C631E5CFEB280744941AC0EA4CAA321A/" />
+		<Image id="houseHover_Wylio_Red" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255282/02152CB3502A02EEE60567CC01C6996416BBA4C7/" />
+	</GridLayout>
+
+	<Panel id="houseSelection_Info_Red" class="houseInfo" visibility="Red">
+		<Image id="houseInfo_Allwed_Red" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739214623/8A74FFF57CD30479D7BFAF8A323FC789CAF4DAF6/" />
+		<Image id="houseInfo_Blodyn_Red" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255352/7ECF25C031BE26C90B0064D4E6521DD05ACF0CFC/" />
+		<Image id="houseInfo_Coden_Red" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255431/678153E6442F3A15FDD9A52432D3B2840255788A/" />
+		<Image id="houseInfo_Crann_Red" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255504/D872B9758838A886F27979372EA8B7CEB31C80D4/" />
+		<Image id="houseInfo_Dualak_Red" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255576/9B8A674E84D9DAD3FE22A9FC7070C186CEB81BCF/" />
+		<Image id="houseInfo_Gamam_Red" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255640/312ACA995AFB8415BBD1518F3A49C165D2857BBD/" />
+		<Image id="houseInfo_Natar_Red" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255716/6089C922A90A5F2511169FCE8767820B6956FC04/" />
+		<Image id="houseInfo_Olwyn_Red" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255789/E042B09CC6F786AB87D23375B6348A3CD7DDB831/" />
+		<Image id="houseInfo_Solad_Red" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255862/CEC024F5969932C149A773F0D38DEC5AA08BEC8D/" />
+		<Image id="houseInfo_Tiryll_Red" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255947/4D10665945A6D1CF9C23D91551C0B2332380C487/" />
+		<Image id="houseInfo_Tork_Red" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739256042/BAAA30C5C056B08BABFE3E00285ACAEB0E0C4E6A/" />
+		<Image id="houseInfo_Wylio_Red" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739256140/55CF64F606A4CDB621C8139EF6B3972F9ED5F967/" />
+	</Panel>
+</Panel>
+
+<Panel id="houseSelection_Orange" class="houseSelectionContainer" visibility="Orange" active="False">
+	<Text class="header houseSelectionHeader" visibility="Orange">Where Does Your House Rule?</Text>
+
+	<GridLayout id="houseSelection_Grid_Orange" class="houseSelectionGrid" visibility="Orange">
+		<Image id="houseFlag_Allwed_Orange" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739194792/C9B66702A87E6D1FDB5384B4F51A5D77D2634917/" />
+		<Image id="houseFlag_Blodyn_Orange" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253245/C9DBFEEB59A7B71D0A27FF280334271818FB26A0/" />
+		<Image id="houseFlag_Coden_Orange" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253338/EA28A27B464F7693CC133B4E2FE6015B8C5CF0E3/" />
+		<Image id="houseFlag_Crann_Orange" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253435/EE7BDEC5F7E46AC930644FC7533079F6879F5433/" />
+		<Image id="houseFlag_Dualak_Orange" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253510/A16DF1A670D95E1C866F918ACE227092DBE9352B/" />
+		<Image id="houseFlag_Gamam_Orange" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253616/87E88E5AC38BDC76F98654E1C280AA0A6E510C4E/" />
+		<Image id="houseFlag_Natar_Orange" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253752/97822A3B8F0A01116CE2B721BB52E25A4317C218/" />
+		<Image id="houseFlag_Olwyn_Orange" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253853/BB38AE3D3F420C0FD61BF814FD7775D462016AC8/" />
+		<Image id="houseFlag_Solad_Orange" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253975/092946C413889BB5FC5E0D3F65C4C5EE136396BE/" />
+		<Image id="houseFlag_Tiryll_Orange" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254148/DAC3E6F35DA73048387F0A2DEA8432C802AF83E3/" />
+		<Image id="houseFlag_Tork_Orange" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254244/C64C331492D2A1AE626A63DEDEEA15CA99F5AF7A/" />
+		<Image id="houseFlag_Wylio_Orange" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254331/8FD06EFCCF997781E5823A58C8DC3C3776866DD5/" />
+	</GridLayout>
+
+	<GridLayout id="houseSelection_Hover_Orange" class="houseSelectionGrid" visibility="Orange">
+		<Image id="houseHover_Allwed_Orange" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254406/9003D12A2F60763746F70FD85B030CB56926FA3E/" />
+		<Image id="houseHover_Blodyn_Orange" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254471/6AE191A3885504DDCD870F5C7468649C44CA96A1/" />
+		<Image id="houseHover_Coden_Orange" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254535/09B0A8D11B1AA84576627FB9BB4663E3D0C2C313/" />
+		<Image id="houseHover_Crann_Orange" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254636/5A255B7F1A880072A759FD565084B6ABFDB7432A/" />
+		<Image id="houseHover_Dualak_Orange" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254731/39B09C3173BD729B98D0EAFF571FAAEF780D4C96/" />
+		<Image id="houseHover_Gamam_Orange" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254820/69650201B8D22E1DA43BD7A09AA56832C1EA3474/" />
+		<Image id="houseHover_Natar_Orange" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254903/5AC6BFDDAA21F465CAB49A5DCD2D872F28820AB2/" />
+		<Image id="houseHover_Olwyn_Orange" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255012/F88D0A873C75A76D6146FFFF562727DA74C26ED7/" />
+		<Image id="houseHover_Solad_Orange" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255078/CC8293A11AA2ED6E94B47E8F256F65585CC38542/" />
+		<Image id="houseHover_Tiryll_Orange" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255138/93DB22680A4FE3D5FB849D7D3C5EAF5DA010748F/" />
+		<Image id="houseHover_Tork_Orange" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255202/BB341225C631E5CFEB280744941AC0EA4CAA321A/" />
+		<Image id="houseHover_Wylio_Orange" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255282/02152CB3502A02EEE60567CC01C6996416BBA4C7/" />
+	</GridLayout>
+
+	<Panel id="houseSelection_Info_Orange" class="houseInfo" visibility="Orange">
+		<Image id="houseInfo_Allwed_Orange" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739214623/8A74FFF57CD30479D7BFAF8A323FC789CAF4DAF6/" />
+		<Image id="houseInfo_Blodyn_Orange" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255352/7ECF25C031BE26C90B0064D4E6521DD05ACF0CFC/" />
+		<Image id="houseInfo_Coden_Orange" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255431/678153E6442F3A15FDD9A52432D3B2840255788A/" />
+		<Image id="houseInfo_Crann_Orange" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255504/D872B9758838A886F27979372EA8B7CEB31C80D4/" />
+		<Image id="houseInfo_Dualak_Orange" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255576/9B8A674E84D9DAD3FE22A9FC7070C186CEB81BCF/" />
+		<Image id="houseInfo_Gamam_Orange" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255640/312ACA995AFB8415BBD1518F3A49C165D2857BBD/" />
+		<Image id="houseInfo_Natar_Orange" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255716/6089C922A90A5F2511169FCE8767820B6956FC04/" />
+		<Image id="houseInfo_Olwyn_Orange" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255789/E042B09CC6F786AB87D23375B6348A3CD7DDB831/" />
+		<Image id="houseInfo_Solad_Orange" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255862/CEC024F5969932C149A773F0D38DEC5AA08BEC8D/" />
+		<Image id="houseInfo_Tiryll_Orange" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255947/4D10665945A6D1CF9C23D91551C0B2332380C487/" />
+		<Image id="houseInfo_Tork_Orange" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739256042/BAAA30C5C056B08BABFE3E00285ACAEB0E0C4E6A/" />
+		<Image id="houseInfo_Wylio_Orange" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739256140/55CF64F606A4CDB621C8139EF6B3972F9ED5F967/" />
+	</Panel>
+</Panel>
+
+<Panel id="houseSelection_Yellow" class="houseSelectionContainer" visibility="Yellow" active="False">
+	<Text class="header houseSelectionHeader" visibility="Yellow">Where Does Your House Rule?</Text>
+
+	<GridLayout id="houseSelection_Grid_Yellow" class="houseSelectionGrid" visibility="Yellow">
+		<Image id="houseFlag_Allwed_Yellow" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739194792/C9B66702A87E6D1FDB5384B4F51A5D77D2634917/" />
+		<Image id="houseFlag_Blodyn_Yellow" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253245/C9DBFEEB59A7B71D0A27FF280334271818FB26A0/" />
+		<Image id="houseFlag_Coden_Yellow" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253338/EA28A27B464F7693CC133B4E2FE6015B8C5CF0E3/" />
+		<Image id="houseFlag_Crann_Yellow" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253435/EE7BDEC5F7E46AC930644FC7533079F6879F5433/" />
+		<Image id="houseFlag_Dualak_Yellow" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253510/A16DF1A670D95E1C866F918ACE227092DBE9352B/" />
+		<Image id="houseFlag_Gamam_Yellow" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253616/87E88E5AC38BDC76F98654E1C280AA0A6E510C4E/" />
+		<Image id="houseFlag_Natar_Yellow" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253752/97822A3B8F0A01116CE2B721BB52E25A4317C218/" />
+		<Image id="houseFlag_Olwyn_Yellow" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253853/BB38AE3D3F420C0FD61BF814FD7775D462016AC8/" />
+		<Image id="houseFlag_Solad_Yellow" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253975/092946C413889BB5FC5E0D3F65C4C5EE136396BE/" />
+		<Image id="houseFlag_Tiryll_Yellow" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254148/DAC3E6F35DA73048387F0A2DEA8432C802AF83E3/" />
+		<Image id="houseFlag_Tork_Yellow" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254244/C64C331492D2A1AE626A63DEDEEA15CA99F5AF7A/" />
+		<Image id="houseFlag_Wylio_Yellow" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254331/8FD06EFCCF997781E5823A58C8DC3C3776866DD5/" />
+	</GridLayout>
+
+	<GridLayout id="houseSelection_Hover_Yellow" class="houseSelectionGrid" visibility="Yellow">
+		<Image id="houseHover_Allwed_Yellow" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254406/9003D12A2F60763746F70FD85B030CB56926FA3E/" />
+		<Image id="houseHover_Blodyn_Yellow" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254471/6AE191A3885504DDCD870F5C7468649C44CA96A1/" />
+		<Image id="houseHover_Coden_Yellow" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254535/09B0A8D11B1AA84576627FB9BB4663E3D0C2C313/" />
+		<Image id="houseHover_Crann_Yellow" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254636/5A255B7F1A880072A759FD565084B6ABFDB7432A/" />
+		<Image id="houseHover_Dualak_Yellow" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254731/39B09C3173BD729B98D0EAFF571FAAEF780D4C96/" />
+		<Image id="houseHover_Gamam_Yellow" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254820/69650201B8D22E1DA43BD7A09AA56832C1EA3474/" />
+		<Image id="houseHover_Natar_Yellow" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254903/5AC6BFDDAA21F465CAB49A5DCD2D872F28820AB2/" />
+		<Image id="houseHover_Olwyn_Yellow" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255012/F88D0A873C75A76D6146FFFF562727DA74C26ED7/" />
+		<Image id="houseHover_Solad_Yellow" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255078/CC8293A11AA2ED6E94B47E8F256F65585CC38542/" />
+		<Image id="houseHover_Tiryll_Yellow" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255138/93DB22680A4FE3D5FB849D7D3C5EAF5DA010748F/" />
+		<Image id="houseHover_Tork_Yellow" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255202/BB341225C631E5CFEB280744941AC0EA4CAA321A/" />
+		<Image id="houseHover_Wylio_Yellow" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255282/02152CB3502A02EEE60567CC01C6996416BBA4C7/" />
+	</GridLayout>
+
+	<Panel id="houseSelection_Info_Yellow" class="houseInfo" visibility="Yellow">
+		<Image id="houseInfo_Allwed_Yellow" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739214623/8A74FFF57CD30479D7BFAF8A323FC789CAF4DAF6/" />
+		<Image id="houseInfo_Blodyn_Yellow" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255352/7ECF25C031BE26C90B0064D4E6521DD05ACF0CFC/" />
+		<Image id="houseInfo_Coden_Yellow" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255431/678153E6442F3A15FDD9A52432D3B2840255788A/" />
+		<Image id="houseInfo_Crann_Yellow" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255504/D872B9758838A886F27979372EA8B7CEB31C80D4/" />
+		<Image id="houseInfo_Dualak_Yellow" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255576/9B8A674E84D9DAD3FE22A9FC7070C186CEB81BCF/" />
+		<Image id="houseInfo_Gamam_Yellow" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255640/312ACA995AFB8415BBD1518F3A49C165D2857BBD/" />
+		<Image id="houseInfo_Natar_Yellow" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255716/6089C922A90A5F2511169FCE8767820B6956FC04/" />
+		<Image id="houseInfo_Olwyn_Yellow" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255789/E042B09CC6F786AB87D23375B6348A3CD7DDB831/" />
+		<Image id="houseInfo_Solad_Yellow" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255862/CEC024F5969932C149A773F0D38DEC5AA08BEC8D/" />
+		<Image id="houseInfo_Tiryll_Yellow" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255947/4D10665945A6D1CF9C23D91551C0B2332380C487/" />
+		<Image id="houseInfo_Tork_Yellow" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739256042/BAAA30C5C056B08BABFE3E00285ACAEB0E0C4E6A/" />
+		<Image id="houseInfo_Wylio_Yellow" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739256140/55CF64F606A4CDB621C8139EF6B3972F9ED5F967/" />
+	</Panel>
+</Panel>
+
+<Panel id="houseSelection_Green" class="houseSelectionContainer" visibility="Green" active="False">
+	<Text class="header houseSelectionHeader" visibility="Green">Where Does Your House Rule?</Text>
+
+	<GridLayout id="houseSelection_Grid_Green" class="houseSelectionGrid" visibility="Green">
+		<Image id="houseFlag_Allwed_Green" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739194792/C9B66702A87E6D1FDB5384B4F51A5D77D2634917/" />
+		<Image id="houseFlag_Blodyn_Green" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253245/C9DBFEEB59A7B71D0A27FF280334271818FB26A0/" />
+		<Image id="houseFlag_Coden_Green" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253338/EA28A27B464F7693CC133B4E2FE6015B8C5CF0E3/" />
+		<Image id="houseFlag_Crann_Green" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253435/EE7BDEC5F7E46AC930644FC7533079F6879F5433/" />
+		<Image id="houseFlag_Dualak_Green" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253510/A16DF1A670D95E1C866F918ACE227092DBE9352B/" />
+		<Image id="houseFlag_Gamam_Green" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253616/87E88E5AC38BDC76F98654E1C280AA0A6E510C4E/" />
+		<Image id="houseFlag_Natar_Green" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253752/97822A3B8F0A01116CE2B721BB52E25A4317C218/" />
+		<Image id="houseFlag_Olwyn_Green" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253853/BB38AE3D3F420C0FD61BF814FD7775D462016AC8/" />
+		<Image id="houseFlag_Solad_Green" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739253975/092946C413889BB5FC5E0D3F65C4C5EE136396BE/" />
+		<Image id="houseFlag_Tiryll_Green" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254148/DAC3E6F35DA73048387F0A2DEA8432C802AF83E3/" />
+		<Image id="houseFlag_Tork_Green" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254244/C64C331492D2A1AE626A63DEDEEA15CA99F5AF7A/" />
+		<Image id="houseFlag_Wylio_Green" class="houseFlag" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254331/8FD06EFCCF997781E5823A58C8DC3C3776866DD5/" />
+	</GridLayout>
+
+	<GridLayout id="houseSelection_Hover_Green" class="houseSelectionGrid" visibility="Green">
+		<Image id="houseHover_Allwed_Green" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254406/9003D12A2F60763746F70FD85B030CB56926FA3E/" />
+		<Image id="houseHover_Blodyn_Green" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254471/6AE191A3885504DDCD870F5C7468649C44CA96A1/" />
+		<Image id="houseHover_Coden_Green" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254535/09B0A8D11B1AA84576627FB9BB4663E3D0C2C313/" />
+		<Image id="houseHover_Crann_Green" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254636/5A255B7F1A880072A759FD565084B6ABFDB7432A/" />
+		<Image id="houseHover_Dualak_Green" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254731/39B09C3173BD729B98D0EAFF571FAAEF780D4C96/" />
+		<Image id="houseHover_Gamam_Green" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254820/69650201B8D22E1DA43BD7A09AA56832C1EA3474/" />
+		<Image id="houseHover_Natar_Green" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739254903/5AC6BFDDAA21F465CAB49A5DCD2D872F28820AB2/" />
+		<Image id="houseHover_Olwyn_Green" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255012/F88D0A873C75A76D6146FFFF562727DA74C26ED7/" />
+		<Image id="houseHover_Solad_Green" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255078/CC8293A11AA2ED6E94B47E8F256F65585CC38542/" />
+		<Image id="houseHover_Tiryll_Green" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255138/93DB22680A4FE3D5FB849D7D3C5EAF5DA010748F/" />
+		<Image id="houseHover_Tork_Green" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255202/BB341225C631E5CFEB280744941AC0EA4CAA321A/" />
+		<Image id="houseHover_Wylio_Green" class="houseHover" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255282/02152CB3502A02EEE60567CC01C6996416BBA4C7/" />
+	</GridLayout>
+
+	<Panel id="houseSelection_Info_Green" class="houseInfo" visibility="Green">
+		<Image id="houseInfo_Allwed_Green" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739214623/8A74FFF57CD30479D7BFAF8A323FC789CAF4DAF6/" />
+		<Image id="houseInfo_Blodyn_Green" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255352/7ECF25C031BE26C90B0064D4E6521DD05ACF0CFC/" />
+		<Image id="houseInfo_Coden_Green" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255431/678153E6442F3A15FDD9A52432D3B2840255788A/" />
+		<Image id="houseInfo_Crann_Green" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255504/D872B9758838A886F27979372EA8B7CEB31C80D4/" />
+		<Image id="houseInfo_Dualak_Green" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255576/9B8A674E84D9DAD3FE22A9FC7070C186CEB81BCF/" />
+		<Image id="houseInfo_Gamam_Green" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255640/312ACA995AFB8415BBD1518F3A49C165D2857BBD/" />
+		<Image id="houseInfo_Natar_Green" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255716/6089C922A90A5F2511169FCE8767820B6956FC04/" />
+		<Image id="houseInfo_Olwyn_Green" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255789/E042B09CC6F786AB87D23375B6348A3CD7DDB831/" />
+		<Image id="houseInfo_Solad_Green" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255862/CEC024F5969932C149A773F0D38DEC5AA08BEC8D/" />
+		<Image id="houseInfo_Tiryll_Green" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739255947/4D10665945A6D1CF9C23D91551C0B2332380C487/" />
+		<Image id="houseInfo_Tork_Green" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739256042/BAAA30C5C056B08BABFE3E00285ACAEB0E0C4E6A/" />
+		<Image id="houseInfo_Wylio_Green" class="houseInfo" image="http://cloud-3.steamusercontent.com/ugc/2064377962739256140/55CF64F606A4CDB621C8139EF6B3972F9ED5F967/" />
+	</Panel>
+</Panel>

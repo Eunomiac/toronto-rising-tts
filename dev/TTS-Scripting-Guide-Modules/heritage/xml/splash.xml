@@ -1,0 +1,329 @@
+
+<Defaults> <!-- Splash Displays -->
+  <Panel class="splash-backdrop" color="rgba(0, 0, 0, 0.98)" />
+  <Image class="splash-fill"
+    ignoreLayout="true"
+    preserveAspect="false"
+    height="100%" width="100%" />
+
+
+	<VerticalLayout class="splash-text"
+    rectAlignment="UpperCenter"
+		childAlignment="UpperCenter"
+		childForceExpandHeight="false"
+    offsetXY="0 -200" />
+
+  <VerticalLayout class="splash-intro"
+    height="260" width="1300"
+    padding="10 10 10 10"
+    spacing="5" />
+  <VerticalLayout class="splash-standings"
+    height="550" width="1100"
+    padding="50 50 10 10"
+    spacing="5" />
+  <VerticalLayout class="splash-chooseClan"
+    height="150" width="800"
+    padding="50 50 10 10"
+    offsetXY="0 -100"
+    spacing="5" />
+  <VerticalLayout class="splash-clanChoice"
+    height="135" width="675"
+    rectAlignment="UpperRight"
+    offsetXY="-100 -40"
+    scale="0.75"
+    padding="10 10 10 0"
+    spacing="5" />
+  <VerticalLayout class="splash-strandsOfTime"
+    height="60" width="1000"
+    rectAlignment="LowerCenter"
+    offsetXY="0 150"
+    padding="10 10 10 0"
+    spacing="5" />
+	<VerticalLayout class="splash-anarchRevolt"
+    height="60" width="1000"
+    rectAlignment="MiddleCenter"
+    spacing="5" />
+  <VerticalLayout class="splash-scoreAlert"
+    height="135" width="650"
+    rectAlignment="UpperLeft"
+    offsetXY="150 -30"
+    padding="10 10 10 0"
+    spacing="5" />
+  <VerticalLayout class="splash-gameStart splash-gameOver"
+    rectAlignment="MiddleCenter"
+    offsetXY="0 100"
+    height="100" width="700"
+    padding="50 50 10 10"
+    spacing="5" />
+	<VerticalLayout class="splash-gameStart"
+		height="300" width="1100"
+		offsetXY="0 -200"
+	/>
+  <VerticalLayout class="splash-gameOver" scale="1.5" />
+  <VerticalLayout class="splash-roundOver"
+    rectAlignment="MiddleCenter"
+    offsetXY="0 100"
+    height="150" width="600"
+    padding="50 50 10 10"
+    spacing="5" />
+  <VerticalLayout class="splash-roundStart"
+    rectAlignment="MiddleCenter"
+    offsetXY="0 100"
+    height="150" width="800"
+    padding="50 50 10 10"
+    spacing="5" />
+	<VerticalLayout class="splash-inquisition"
+		color="rgba(0, 0, 0, 1)"
+		height="200"
+		childAlignment="MiddleCenter"
+		childForceExpandWidth="false"
+		childForceExpandHeight="false"
+		rectAlignment="LowerCenter"
+		offsetXY="0 20" />
+	<HorizontalLayout class="splash-inquisition"
+		childAlignment="MiddleCenter"
+		childForceExpandWidth="false"
+		childForceExpandHeight="false"
+		padding = "50 50 0 0" />
+
+	<Text class="title"
+    alignment="MiddleCenter"
+    color="#FFFFFF"
+    fontStyle="Bold"
+    outline="#000000" outlineSize="2 2"
+    flexibleHeight="0"
+    flexibleWidth="1"
+    fontSize="64" />
+	<VerticalLayout class="splash-court"
+		color="rgba(0, 0, 0, 1)"
+		height="170"
+		width="1200"
+		childAlignment="MiddleCenter"
+		childForceExpandWidth="false"
+		childForceExpandHeight="false"
+		rectAlignment="LowerCenter"
+		offsetXY="0 150" />
+	<HorizontalLayout class="splash-court"
+		childAlignment="MiddleCenter"
+		childForceExpandWidth="false"
+		childForceExpandHeight="false"
+		preferredHeight = "64"
+		spacing = "15"
+		padding = "0 0 0 0" />
+  <Text class="subtitle"
+    alignment="MiddleCenter"
+    fontStyle="BoldAndItalic"
+    outline="#000000" outlineSize="2 2"
+    color="#FF0000"
+    flexibleHeight="0"
+    flexibleWidth="1"
+    fontSize="48" />
+  <Text class="body"
+    alignment="UpperCenter"
+    horizontalOverflow="Wrap"
+    color="#FFFFFF"
+    outline="#000000" outlineSize="2 2"
+    flexibleHeight="0"
+    flexibleWidth="1"
+    fontSize="42" />
+  <Text class="clanChoice" fontSize="32" />
+  <Text class="strandsOfTime" fontSize="32" />
+	<Text class="anarchRevolt" fontSize="32" rectAlignment="MiddleCenter" ignoreLayout="true" />
+  <Text class="game-over"
+    color="#FF0000"
+    outline="#FFFFFF" outlineSize="2 2" />
+  <Text class="roundOver roundStart"
+    ignoreLayout="True"
+    rectAlignment="MiddleCenter"
+    alignment="MiddleCenter" />
+  <Text class="roundsRemaining"
+    ignoreLayout="True"
+    fontSize="36"
+    offsetXY="-10 5"
+    rectAlignment="LowerRight"
+    alignment="LowerRight" />
+  <Text class="retain-init"
+    ignoreLayout="True"
+    fontSize="36"
+    offsetXY="0 -30"
+    rectAlignment="LowerCenter"
+    alignment="LowerCenter" />
+  <Text class="seize-init"
+    ignoreLayout="True"
+    offsetXY="0 -15"
+    fontSize="42"
+    rectAlignment="LowerCenter"
+    alignment="LowerCenter"
+    outline="#FFFFFF"
+    outlineSize="1 1"
+    color="#FF0000" />
+	<Text class="just-and" preferredWidth="170" flexibleWidth="0" />
+	<Text class="not-italic" fontStyle="Bold" />
+
+	<!-- <Text class="no-flex" flexibleWidth="0" /> -->
+
+</Defaults>
+<Defaults> <!-- Animations -->
+  <Panel class="fade" active="false"
+    showAnimation="FadeIn"
+    hideAnimation="FadeOut"
+    animationDuration="1" />
+  <VerticalLayout class="fade" active="false"
+    showAnimation="FadeIn"
+    hideAnimation="FadeOut"
+    animationDuration="1" />
+  <VerticalLayout class="grow" active="false"
+    showAnimation="Grow"
+    hideAnimation="Shrink"
+    animationDuration="1" />
+  <HorizontalLayout class="fade" active="false"
+    showAnimation="FadeIn"
+    hideAnimation="FadeOut"
+    animationDuration="1" />
+  <HorizontalLayout class="grow" active="false"
+    showAnimation="Grow"
+    hideAnimation="Shrink"
+    animationDuration="1" />
+  <Text class="fade" active="false"
+    showAnimation="FadeIn"
+    hideAnimation="FadeOut"
+    animationDuration="2" />
+</Defaults>
+
+<Panel id="splash-backdrop" class="splash-backdrop fade" active="false"></Panel>
+
+<Panel id="logoIntro" class="splash-panel fade" offsetXY="0 100">
+  <VerticalLayout class="splash-text splash-intro">
+    <Image class="splash-fill" image="ui-bg-3-1"></Image>
+    <Text id="logoIntro-title" class="title fade"></Text>
+    <Text id="logoIntro-subtitle" class="subtitle fade"></Text>
+    <Text id="logoIntro-body" class="body fade"></Text>
+  </VerticalLayout>
+</Panel>
+
+<Panel id="lastChapterStandingsNotice" class="splash-panel fade" offsetXY="0 -200">
+  <VerticalLayout class="splash-text splash-standings">
+    <Image class="splash-fill" image="ui-bg-2-1"></Image>
+    <Text id="lastChapterStandingsNotice-title" class="title"></Text>
+    <Text id="lastChapterStandingsNotice-subtitle1" class="title playerName fade" alignment="MiddleLeft"></Text>
+    <Text id="lastChapterStandingsNotice-subtitle2" class="title playerName fade"></Text>
+    <Text id="lastChapterStandingsNotice-subtitle3" class="title playerName fade" alignment="MiddleRight"></Text>
+    <Text class="vertical-spacer-2"></Text>
+    <Text id="lastChapterStandingsNotice-subtitle4" class="subtitle fade" alignment="MiddleLeft">Vanquished last Chapter,</Text>
+    <Text id="lastChapterStandingsNotice-subtitle5" class="title playerName fade"></Text>
+    <Text id="lastChapterStandingsNotice-subtitle6" class="subtitle fade" alignment="MiddleRight">will go first.</Text>
+  </VerticalLayout>
+</Panel>
+
+<Panel id="chooseClanNotice" class="splash-panel fade" active="false">
+  <VerticalLayout class="splash-text splash-chooseClan">
+    <Image class="splash-fill" image="ui-bg-6-1"></Image>
+    <Text id="chooseClanPlayer" class="title"></Text>
+    <Text class="subtitle" alignment="MiddleRight">... Choose Your Clan</Text>
+  </VerticalLayout>
+</Panel>
+
+<Panel id="chooseStrandsOfTimeNotice" class="splash-panel fade" active="false">
+  <VerticalLayout class="splash-text splash-strandsOfTime">
+    <Image class="splash-fill" image="ui-bg-6-1"></Image>
+    <Text class="subtitle strandsOfTime">As last Chapter's runner-up, you may choose a Strand of Time.</Text>
+  </VerticalLayout>
+</Panel>
+
+<Panel id="anarchRevoltNotice" class="splash-panel fade" active="false">
+  <VerticalLayout class="splash-text splash-anarchRevolt">
+    <!-- <Image class="splash-fill" image="ui-bg-6-1"></Image> -->
+    <Text id="anarchRevoltText" class="subtitle anarchRevolt"></Text>
+  </VerticalLayout>
+</Panel>
+
+<Panel id="clanChoiceAlert" class="splash-panel fade" active="false">
+  <VerticalLayout class="splash-text splash-clanChoice">
+    <!-- <Image class="splash-fill" image="ui-bg-6-1"></Image> -->
+    <Text id="RedClanChoice" class="subtitle clanChoice fade" color="Red" alignment="UpperLeft"></Text>
+    <Text id="YellowClanChoice" class="subtitle clanChoice fade" color="Yellow" alignment="MiddleLeft"></Text>
+    <Text id="BlueClanChoice" class="subtitle clanChoice fade" color="Blue" alignment="LowerLeft"></Text>
+  </VerticalLayout>
+</Panel>
+
+<Panel id="scoreAlert" class="splash-panel scoreAlert fade" active="False">
+  <VerticalLayout class="splash-text splash-scoreAlert">
+    <Image class="splash-fill" image="ui-bg-6-1"></Image>
+    <Text id="RedScore" class="subtitle clanChoice fade" color="Red" alignment="UpperRight"></Text>
+    <Text id="YellowScore" class="subtitle clanChoice fade" color="Yellow" alignment="MiddleRight"></Text>
+    <Text id="BlueScore" class="subtitle clanChoice fade" color="Blue" alignment="LowerRight"></Text>
+  </VerticalLayout>
+</Panel>
+
+<Panel id="gameStartNotice" class="splash-panel fade" active="False">
+
+  <VerticalLayout class="splash-text splash-gameStart">
+		<Image class="splash-fill" image="ui-bg-2-1"></Image>
+    <!-- <Image class="splash-fill" image="ui-bg-6-1"></Image> -->
+    <Text class="title">Starting Game ...</Text>
+		<Text id="factionRed" class="subtitle"></Text>
+		<Text id="factionYellow" class="subtitle"></Text>
+		<Text id="factionBlue" class="subtitle"></Text>
+  </VerticalLayout>
+</Panel>
+
+<Panel id="gameOverNotice" class="splash-panel fade" active="False">
+  <VerticalLayout class="splash-text splash-gameOver">
+    <Image class="splash-fill" image="ui-bg-6-1"></Image>
+    <Text class="title game-over">GAME OVER!</Text>
+  </VerticalLayout>
+</Panel>
+
+<Panel id="roundOverNotice" class="splash-panel fade" active="False">
+  <VerticalLayout class="splash-text splash-roundOver">
+    <!-- <Image class="splash-fill" image="ui-bg-4-1"></Image> -->
+    <Text id="roundOverNoticeText" class="title roundOver">End of Round 8</Text>
+    <Text id="roundsRemainingNoticeText" class="subtitle roundsRemaining fade" showAnimationDelay="1">1 Round Remains...</Text>
+  </VerticalLayout>
+</Panel>
+
+<Panel id="roundStartNotice" class="splash-panel fade" active="False">
+  <VerticalLayout class="splash-text splash-roundStart">
+    <!-- <Image class="splash-fill" image="ui-bg-6-1"></Image> -->
+    <Text id="roundStartNoticeText" class="title roundStart">Round 2</Text>
+    <Text id="retainInitiativeNotice" class="subtitle retain-init fade" showAnimationDelay="1"></Text>
+    <Text id="seizeInitiativeNotice" class="title seize-init fade" showAnimationDelay="1">Gaius Marcellus Seizes the Initiative!</Text>
+  </VerticalLayout>
+</Panel>
+
+<Panel id="inquisitionTrialNotice" class="splash-panel fade">
+	<VerticalLayout class="splash-text splash-inquisition">
+		<Text id="inquisitionTrialNotice_1" class="subtitle fade" color="White">The Inquisition convenes a trial:</Text>
+		<HorizontalLayout id="inquisitionTrialNotice_2" class="splash-inquisition fade" showAnimationDelay="1">
+			<Text id="inquisitionTrialNotice-elitist" class="title no-flex" color="#890E0A" alignment="MiddleRight" flexibleWidth="1"></Text>
+			<Text class="title just-and" color="#FFFFFF"> and </Text>
+			<Text id="inquisitionTrialNotice-egalitarian" class="title no-flex" color="#77dd77" alignment="MiddleLeft" flexibleWidth="1"></Text>
+		</HorizontalLayout>
+		<Text id="inquisitionTrialNotice_3" class="subtitle fade" color="White" showAnimationDelay="2">... are in <i>judices</i></Text>
+	</VerticalLayout>
+</Panel>
+
+
+<Panel id="courtVoteNotice" class="splash-panel fade">
+	<VerticalLayout class="splash-text splash-court">
+    <Image class="splash-fill" image="ui-bg-6-1"></Image>
+		<HorizontalLayout id="courtVoteNotice_1" class="splash-court fade" showAnimationDelay="1">
+			<Text class="subtitle not-italic" color="White" flexibleWidth="0">The Court confers the title of </Text>
+			<HorizontalLayout class="splash-court" padding="0 0 0 0" spacing="0">
+				<Text class="subtitle not-italic" color="White" flexibleWidth="0">'</Text>
+				<Text id="courtVoteNotice-title" class="subtitle no-flex not-italic" color="#FFD700" flexibleWidth="0">Harpy</Text>
+				<Text class="subtitle not-italic" color="White" flexibleWidth="0">' upon</Text>
+			</HorizontalLayout>
+		</HorizontalLayout>
+		<HorizontalLayout id="courtVoteNotice_2" class="splash-court fade" showAnimationDelay="2">
+			<Text class="subtitle not-italic" color="#FFFFFF" flexibleWidth="0">the</Text>
+			<Text id="courtVoteNotice-elitist" class="subtitle no-flex not-italic" color="#890E0A" flexibleWidth="0" active="false">Elitist</Text>
+			<Text id="courtVoteNotice-egalitarian" class="subtitle no-flex not-italic" color="#77dd77" flexibleWidth="0" active="false">Egalitarian</Text>
+			<Text class="subtitle not-italic" color="#FFFFFF" flexibleWidth="0">vampire with the most</Text>
+			<HorizontalLayout class="splash-court" padding="0 0 0 0" spacing="0">
+				<Text class="subtitle not-italic" color="#FF0000" flexibleWidth="0">Power</Text>
+				<Text class="subtitle not-italic" color="White" flexibleWidth="0">.</Text>
+			</HorizontalLayout>
+		</HorizontalLayout>
+	</VerticalLayout>
+</Panel>

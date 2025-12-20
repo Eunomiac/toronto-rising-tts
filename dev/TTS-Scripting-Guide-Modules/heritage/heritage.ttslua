@@ -1,0 +1,300 @@
+require("vscode/console")
+local M = require("core.main")
+local U = require("lib.utilities")
+local C = require("lib.constants")
+local S = require("core.state")
+local G = require("lib.guids")
+local Z = require("core.zones")
+local F = require("core.fourthRow")
+
+gameState = {}
+
+
+local turnLight = 1
+function HUD_testFunc1(player, value, id)
+	if value == "-2" then
+		M.clearProcessingSpots()
+	else
+		M.setupProcessingSpots()
+	end
+end
+function HUD_testFunc2(player, value, id)
+	if value == "-2" then
+		getObjectFromGUID(G.battlegrounds.i).call("Reset")
+	else
+		getObjectFromGUID(G.battlegrounds.i).call("Initialize")
+	end
+end
+function HUD_testFunc3(player, value, id)
+end
+
+
+
+function ActivateZones()
+	onObjectEnterZone = Z.onObjectEnterZone
+	onObjectLeaveZone = Z.onObjectLeaveZone
+	-- Z.refreshUI()
+end
+
+function DeactivateZones()
+	onObjectEnterZone = nil
+	onObjectLeaveZone = nil
+end
+
+onLoad = M.onLoad
+onPlayerTurn = M.onPlayerTurn
+tryObjectEnterContainer = M.tryObjectEnterContainer
+onPlayerAction = M.onPlayerAction
+onPlayerConnect = M.onPlayerConnect
+
+-- function onUpdate() console.update() end
+
+function onSave() return JSON.encode(gameState) end
+
+function HUD_refreshUI() M.refresh() end
+
+function HUD_resetGameState() S.resetGameState() end
+function HUD_setChapterStandings() M.askLastChapterStandings() end
+function HUD_setChapterData() M.askChapterData() end
+
+function HUD_debugCardZoom() M.zoomCard(Player.Red) end
+function HUD_debugClearZoom() M.clearZoom(Player.Red) end
+
+function HUD_checkSuspicion(player, value)
+  if (value == "-2") then
+    Z.hideSuspicion()
+		getObjectFromGUID(G.battlegrounds.d).call("EndTrial")
+  else
+    Z.showSuspicion()
+  end
+end
+function HUD_setupGame() M.gameSETUP() end
+function HUD_initGame() M.gameINIT() end
+function HUD_startGame() M.gameSTART() end
+function HUD_scoreGame() M.gameSCORE() end
+function HUD_missionsGame() M.gameMISSIONS() end
+function HUD_afterGame() M.gameAFTERMATH() end
+function HUD_endGame() M.gameEND() end
+
+function HUD_toggleZonesActive()
+	if onObjectEnterZone == nil then
+		Z.activateZones()
+	else
+		Z.deactivateZones()
+	end
+end
+
+function HUD_toggleZoneVisibility(player, value, id)
+	if value == "-2" then
+		Z.hideZones()
+	else
+		Z.showZones()
+	end
+end
+
+function HUD_toggleLightArrowVisibility(player, value, id)
+	if value == "-2" then
+		M.hideLightArrows()
+	else
+		M.showLightArrows()
+	end
+end
+
+HUD_overrideFirstPlayer =  M.setFirstPlayerOverride
+
+function HUD_toggleHavens(player, value, id)
+	if value == "-2" then
+		M.hideHavens()
+		M.hidePouches()
+	else
+		M.showHavens()
+		M.showPouches()
+	end
+end
+
+function HUD_showTraits(player, value)
+	if value == "-2" then
+		M.hidePlayerboardXML()
+	else
+		M.showUpdatedTraits()
+	end
+end
+function HUD_showStickers(player, value)
+	if value == "-2" then
+		M.hidePlayerboardXML()
+	else
+		M.showStickerUnlocks()
+	end
+end
+
+local isSwitchedStickerTraits
+function HUD_switchStickerTraits()
+	if isSwitchedStickerTraits == nil then
+		if S.isInPhase("AFTERMATH") then
+			isSwitchedStickerTraits = true
+		else
+			isSwitchedStickerTraits = false
+		end
+	end
+	if isSwitchedStickerTraits == true then
+		isSwitchedStickerTraits = false
+		HUD_showTraits()
+	else
+		isSwitchedStickerTraits = true
+		HUD_showStickers()
+	end
+end
+function HUD_processCardSpots() M.processSpot() end
+function HUD_updateTraits() return M.askTraitsUpdate() end
+function HUD_updateSticker() return M.askStickerUpdate() end
+
+
+function HUD_processCharacterDeck()
+	local charDeck =  U.findAboveObject(getObjectFromGUID(G.globalSpots.character), function(obj) return obj.type == "Deck" end)[1]
+  if not charDeck then return nil end
+	M.processDeck(charDeck, "character")
+end
+
+local truePos = {x = -3.67, y = 4, z = -2.14}
+local falsePos = {x = 3.81, y = 4, z = -2.22}
+
+function HUD_sortCharacterDeck()
+	local charDeck =  U.findAboveObject(getObjectFromGUID(G.globalSpots.character), function(obj) return obj.type == "Deck" end)[1]
+  if not charDeck then return nil end
+	local stagingPos = charDeck.getPosition()
+	stagingPos.y = stagingPos.y + 4
+
+	truePos.y = 4
+	falsePos.y = 4
+	local function sortCard(card, sortFunc)
+		if sortFunc == nil then sortFunc = function() return true end end
+
+		if sortFunc() then
+			card.setPositionSmooth(truePos)
+			card.setRotationSmooth({x = 0, y = 180, z = 0})
+			truePos.y = truePos.y + 0.2
+		else
+			card.setPositionSmooth(falsePos)
+			card.setRotationSmooth({x = 0, y = 180, z = 0})
+			falsePos.y = falsePos.y + 0.2
+		end
+	end
+	local function grabCard(card)
+		if card == nil then
+			charDeck.takeObject({
+				position = stagingPos,
+				smooth = false,
+				callback_function = function(card)
+					sortCard(card, function() return card.getDecals() ~= nil end)
+					if charDeck.remainder then
+						grabCard(charDeck.remainder)
+					else
+						grabCard()
+					end
+				end
+			})
+		else
+			sortCard(card, function() return card.getDecals() ~= nil end)
+		end
+	end
+	grabCard()
+end
+
+function HUD_toggleDebug()
+	local debugStatePanel = UI.getAttribute("debugStatePanel", "active") == "False" or UI.getAttribute("debugStatePanel", "active") == "false"
+
+	UI.setAttribute("debugStatePanel", "active", debugStatePanel)
+	UI.setAttribute("debugControls", "active", debugStatePanel)
+end
+
+function HUD_toggleHUD()
+	local debugStatePanel = UI.getAttribute("heritageHUDRed", "active") == "False" or UI.getAttribute("heritageHUDRed", "active") == "false"
+
+	UI.setAttribute("heritageHUDRed", "active", debugStatePanel)
+end
+
+function HUD_toggleTraitDebug()
+  if (UI.getAttribute("debugStatePanel", "active") == "False" or UI.getAttribute("debugStatePanel", "active") == "false") then return end
+  local debugTraitsPanel = UI.getAttribute("debugTraitsPanel", "active") == "False" or UI.getAttribute("debugTraitsPanel", "active") == "false"
+  UI.setAttribute("debugTraitsPanel", "active", debugTraitsPanel)
+end
+
+function HUD_toggleScores(player, value)
+  if (value == "-2") then
+		Z.hideScores()
+	else
+		Z.showScores()
+	end
+end
+
+function HUD_updateScore(player, value, id)
+	if value == "-2" then
+		M.showScoreboard()
+	else
+		M.updateScoreFromBoard()
+	end
+end
+
+function HUD_askRoundAndTurn()
+	M.askRoundAndTurn()
+end
+function HUD_debugEndGame()
+	M.setRoundAndTurn(9, 3)
+	M.advanceTurn()
+end
+
+function HUD_endCourtVote()
+	getObjectFromGUID(G.battlegrounds.g).call("EndVote")
+end
+
+
+function HUD_show(player, value, id)
+  local imageID = string.gsub(id, "hud", "")
+	if string.match(id, "MakeFourthRow") ~= nil and S.isInPhase("PLAY") then
+		F.spawnFourthRowBoard(player.color)
+		return
+	end
+
+  -- Get value of toggle element to see if it's currently toggled on
+  local curVal = UI.getValue(id)
+  if (UI.getValue(id) == "ON") then
+    UI.setValue(id, "")
+    UI.hide(imageID)
+    UI.setAttribute(id .. "Overlay", "color", "clear")
+    return
+  end
+  -- Check mouse key: If it's right-clicked, keep it open.
+  if (value == "-2") then
+    UI.setValue(id, "ON")
+  end
+  UI.show(imageID)
+end
+function HUD_hide(player, value, id)
+  if (UI.getValue(id) ~= "ON") then
+    UI.hide(string.gsub(id, "hud", ""))
+  end
+end
+function HUD_highlight(player, value, id)
+    local overlayID = id .. "Overlay"
+    UI.setAttribute(overlayID, "color", "#FFFFFF")
+end
+function HUD_dim(player, value, id)
+  if (UI.getValue(id) ~= "ON") then
+    local overlayID = id .. "Overlay"
+    UI.setAttribute(overlayID, "color", "clear")
+  end
+end
+function HUD_generateFourthRowBoard(player, value, id)
+
+
+
+end
+
+function HUD_cameraSet(player, value, id)
+  local zoomTarget = string.gsub(id, "camera", "")
+  if (value == "-2" and C.CameraAngles[zoomTarget .. "Wide"]) then
+    M.setCamera(player, zoomTarget .. "Wide")
+  else
+    M.setCamera(player, zoomTarget)
+  end
+end

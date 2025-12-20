@@ -1,0 +1,375 @@
+local U = require("lib.utilities")
+local C = require("lib.constants")
+local S = require("core.state")
+
+
+local G = {}
+
+-- Obligations
+	--X INIT: Deal to Locked Hover
+		--X START: Return to Haven
+-- Retainer
+	--X INIT: Deal to Hand
+		--X AFTERMATH: Deal to Table
+-- Clan Leader
+	--X INIT: Deal to Table if Clan Chosen
+		--X START: Return to Haven
+-- Assets
+	-- INIT: Deal to Hand
+		-- SCORING: Return to Haven
+-- Letters of Introduction
+	-- AFTERMATH: Deal to Hand
+		-- END: Return to Haven
+
+
+
+		-- if mode == "inactive" then
+		-- 	M.deactivateSpotlight(getSwivelLight())
+		-- else
+		-- 	local function parseParam(key)
+		-- 		local thisVal = swivelLightVals[mode][key]
+		-- 		if type(thisVal) == "table" and thisVal.Red ~= nil then
+		-- 			return thisVal[subRef]
+		-- 		else
+		-- 			return thisVal
+		-- 		end
+		-- 	end
+		-- 	local lightParams = {}
+		-- 	for _, key in pairs({"range", "angle", "intensity"}) do
+		-- 		lightParams[key] = parseParam(key)
+		-- 	end
+		-- 	local pos = parseParam("position")
+		-- 	local rot = parseParam("rotation")
+		-- 	local lightColor = parseParam("color")
+		-- 	log("CHANGING LIGHT")
+		-- 	log({lightParams = lightParams, position = pos, rotation = rot, color = lightColor})
+		-- 	getSwivelLight().setPositionSmooth(pos)
+		-- 	getSwivelLight().setRotationSmooth(rot)
+		-- 	getSwivelLight().setColorTint(lightColor)
+		-- 	M.setLightVals(getSwivelLight(), lightParams)
+		-- 	M.activateSpotlight(getSwivelLight())
+		-- end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+G.globalSpots = {
+	character = "20e59b",
+	charDiscard = "083e88",
+	strandOfTime = "d7029a",
+	unusedStrandOfTime = "c70be2",
+	mission = "eacf3f",
+	processing = {
+		strand = "d7029a",
+		letterOfIntroduction = "f5861d",
+		clanLeader = "bd8cd5",
+		era = "896eab",
+		character = "128223"
+	},
+	processingKey = {
+		id = "ebb684",
+		active = {x = -1.22, y = 1.97, z = 0.12},
+		inactive = {x = -1.22, y = -10, z = 0.12}
+	}
+}
+
+G.playerObjs = {
+	fourthRowBoard = "98b2b0",
+	Red = {
+		schemeSpot = "ce178f",
+		schemeDiscardSpot = "0f4771",
+		leaderSpot = "8880ab",
+		haven = "cb09de",
+		pouch = "524a6e"
+	},
+	Yellow = {
+		schemeSpot = "989a32",
+		schemeDiscardSpot = "e1a8c7",
+		leaderSpot = "d5c85b",
+		haven = "b9ea0d",
+		pouch = "56a44c"
+	},
+	Blue = {
+		schemeSpot = "66e043",
+		schemeDiscardSpot = "21a28a",
+		leaderSpot = "402e53",
+		haven = "c2ebbf",
+		pouch = "21bfc1"
+	}
+}
+
+G.zones = {
+	missionQueue = "c7d5d8",
+	charQueue = { "c8faa5", "af0603", "f1ec56", "4b7d04", "558327" },
+	ongoingSchemes = "83ba8c",
+	childeSource = "859a85",
+	bgDEndZone = "b5bbb2",
+	bgEZones = {
+		North = "0a1fa7",
+		South = "5f265e",
+		East = "620320",
+		West = "0cdb7a",
+		Fire = "997422"
+	},
+	bgFEndZone = "a168dd",
+	bgGEndZone = "14d203",
+	bgISabbatZone = "d5eaaa",
+	bgICamarillaZone = "c5edb2",
+	battlegroundZones = {
+		left = {"14d203"},
+		center = {"a79ca4"},
+		right = {"c41714"}
+	},
+	Red = {
+		aftermath = "c4d233",
+		bloodline = {
+			{ "220e11" },
+			{ "6da497", "5bd260", "5692f2" },
+			{ "bdd3e4", "cecc43", "c2ea32" }, { "f050ed", "b47d47", "2fca79" }, { "ebc824", "1e7a70", "6f3e4a" }
+		}
+	},
+	Yellow = {
+		aftermath = "dfb1df",
+		bloodline = {
+			{ "b8f1e2" },
+			{ "307a28", "3a5146", "5f450b" },
+			{ "56aae0", "fe9976", "0f358a" }, { "3d98ed", "859a85", "31cdad" }, { "f25eec", "d52957", "ad3c31" }
+		}
+	},
+	Blue = {
+		aftermath = "5b0818",
+		bloodline = {
+			{ "7ec073" },
+			{ "c3942c", "4864d4", "cdfdd3" },
+			{ "7ffefc", "3c5cbc", "a6ba72" }, { "ce176c", "0aa479", "5f5a39" }, { "b62156", "e06c45", "8e92a0" }
+		}
+	}
+}
+
+for color, zoneData in pairs(U.filter(G.zones, function(v, k) return U.isIn(k, {"Red","Yellow","Blue"}) end)) do
+	G.zones[color].all = U.flatten(zoneData.bloodline)
+end
+
+G.zones.allPlayer = U.flatten({G.zones.Red.all, G.zones.Yellow.all, G.zones.Blue.all})
+G.zones.allAftermath = U.map(C.Colors, function(col) return G.zones[col].aftermath end)
+
+function G.getBloodlineZones(color)
+	if color == nil then
+		return U.flatten(U.map(C.Colors, function(col) return G.getBloodlineZones(col) end))
+	end
+	-- log({GBLZones = G.zones[color]})
+	local bloodlineZones = U.map(G.zones[color].all, function(zoneGUID) return getObjectFromGUID(zoneGUID) end)
+	local fourthRowZones = S.getStateVal("playerZones", color)
+	if fourthRowZones == nil or #fourthRowZones == 0 then
+		return bloodlineZones
+	end
+	return U.concat(bloodlineZones, U.map(fourthRowZones, function(zoneGUID) return getObjectFromGUID(zoneGUID) end))
+end
+
+G.playerCards = {
+	Red = "7f82f3",
+	Yellow = "ba1cde",
+	Blue = "f9ff56"
+}
+G.storage = {
+	main = "1c0050",
+	spentAssets = "bcd555",
+	clan = {
+		Brujah    = "98a6cc",
+		Gangrel   = "5c13fb",
+		Lasombra  = "d28e5e",
+		Malkavian = "a8e20f",
+		Nosferatu = "35de9f",
+		Toreador  = "d147dc",
+		Tremere   = "138cbd",
+		Tzimisce  = "df911a",
+		Ventrue   = "4c884a"
+	}
+}
+
+G.tokenSources = {
+	power = "8b6a8b",
+	infamy = "0f088a",
+	exhaustion = "74fa00",
+	torpor = "74fa00"
+}
+
+G.battlegrounds = {
+	a = "d34811",
+	b = "a2cf25",
+	c = "265535",
+	d = "710eb1",
+	e = nil,
+	f = "b1d2ae",
+	g = "ae2779",
+	h = "dd4272",
+	i = "a80df7"
+}
+
+G.battlegrounds.left = G.battlegrounds.g
+G.battlegrounds.center = G.battlegrounds.i
+G.battlegrounds.right = G.battlegrounds.h
+
+G.charQueue = "afb371"
+
+G.lights = {
+	queue = "ec7de1",
+	swivel = "bd749a",
+	graveyardTop = "b462f2",
+	graveyardBottom = "5a69d4",
+	graveyardSky = "37941f",
+	battlegrounds = {
+		left = "bc4a8d",
+		center = "003166",
+		right = "a3427b"
+	},
+	title = "d0e7fc",
+	nextTitle = "ab022f"
+}
+
+G.tableSpots = {
+	clanMorality = {
+		Red = {x = 10.50, y = 3.29, z = 16.29},
+		Yellow = {x = 10.50, y = 2.80, z = 14.69},
+		Blue = {x = 10.50, y = 2.41, z = 13.10}
+	},
+	clanToken = {
+		Red = { x = -27, y = 0, z = -4.5 },
+		Yellow = { x = 0, y = 0, z = -4.5 },
+		Blue = { x = 27, y = 0, z = -4.5 }
+	},
+	claimedClanLeader = {
+		Red = { x = -23, y = 0, z = -28 },
+		Yellow = { x = 4, y = 0, z = -28 },
+		Blue = { x = 31, y = 0, z = -28 }
+	},
+	clanTokenVictory = {
+		Red = { x = -9.17, y = 9, z = 5.77 },
+		Yellow = { x = -9.17, y = 9, z = 5.77 - 1.7 },
+		Blue = { x = -9.17, y = 9, z = 5.77 - (2 * 1.7) },
+		scale = { x = 0.35, y = 1, z = 0.35 },
+		rotation = { x = 19.28, y = 180, z = 0 }
+	},
+	victory = {
+		table = { x = -0.74, y = 5.12, z = 1.82 },
+		board = { x = 0, y = 6, z = 1.64 },
+		rotation = { x = 19.28, y = 180, z = 0 }
+	},
+	chapterCard = { x = -13.50, y = -0.1, z = 0 },
+	deckStaging = {
+		Red = { x = -30, y = 1, z = -6.93 },
+		Yellow = { x = -3, y = 1, z = -6.93 },
+		Blue = { x = 24, y = 1, z = -6.93 }
+	},
+	fourthRowStaging = {
+		Red = {x = -27, y = 2, z = -29},
+		Yellow = {x = 0, y = 2, z = -29},
+		Blue = {x = 27, y = 2, z = -29}
+	},
+	stagingArea = {
+		Red = {x = -23, y = 1, z = -9},
+		Yellow = {x = 4, y = 1, z = -9},
+		Blue = {x = 31, y = 1, z = -9}
+	},
+	obligations = {
+		Red = {x = -20, y = 1.4, z = -2},
+		Yellow = {x = 10, y = 1.33, z = -1.22},
+		Blue = {x = 34, y = 1.4, z = -2},
+		rotation = {x = 45, y = 180, z = 0},
+		staging = {x = -43.08, y = 1, z = 21.98},
+		stagingRot = {x = 0, y = 135, z = 180}
+	},
+	anarchFire = {x = 3, y = 6, z = 17.5},
+	strandsOfTime = { x = -13, y = 1, z = 0 },
+	lockedSchemes = { x = -40, y = 1, z = 32},
+	unusedStrandsOfTime = { x = -42.48, y = 1, z = 32},
+	highlighters = {
+		clanSelection = {
+			active = { x = 0, y = 0.1, z = -21 },
+			inactive = { x = 0, y = -10, z = -21 }
+		},
+		turnIndicator = {
+			Red = {
+				strong = { x = -27, y = -0.31, z = -7 },
+				faint = { x = -27, y = -7.8, z = -7 },
+				inactive = { x = -27, y = -20, z = 15 }
+			},
+			Yellow = {
+				strong = { x = 0, y = -0.31, z = -7 },
+				faint = { x = 0, y = -7.8, z = -7 },
+				inactive = { x = 0, y = -20, z = 15 }
+			},
+			Blue = {
+				strong = { x = 27, y = -0.31, z = -7 },
+				faint = { x = 27, y = -7.8, z = -7 },
+				inactive = { x = 27, y = -20, z = 15 }
+			},
+		},
+		bgIndicator = {
+			left = {
+				active = { x = -10, y = 3.06, z = 19.02 },
+				inactive = { x = -10, y = -15, z = 19.02 }
+			},
+			center = {
+				active = { x = 0, y = 3.09, z = 19.05 },
+				inactive = { x = 0, y = -15, z = 19.02 }
+			},
+			right = {
+				active = { x = 10, y = 3.06, z = 19.02 },
+				inactive = { x = 10, y = -15, z = 19.02 }
+			}
+		}
+	}
+}
+
+G.chapterDecksStorage = "b6bddf"
+G.victoryBoard = "593a8d"
+G.victoryTable = "e157b5"
+
+G.highlighters = {
+	clanSelection = "2e6007",
+	turnIndicator = {
+		Red = "210fad",
+		Yellow = "9d08f2",
+		Blue = "84ceed"
+	},
+	bgIndicator = {
+		left = "eac658",
+		center = "cd7c93",
+		right = "cfbd29"
+	}
+}
+
+G.lockedObjects = {
+	"a97528", -- BG Riser Front
+	"bcc1e6", -- BG Riser Main
+	"142de3", -- Table Main
+	"21c450", -- Table Front
+	"6cc1dc" -- Chaoters Lectern
+}
+
+G.invisObjects = {
+	G.highlighters.clanSelection,
+	G.highlighters.turnIndicator.Red,
+	G.highlighters.turnIndicator.Yellow,
+	G.highlighters.turnIndicator.Blue,
+	-- G.highlighters.bgIndicator.left,
+	-- G.highlighters.bgIndicator.center,
+	-- G.highlighters.bgIndicator.right,
+	G.victoryTable
+}
+
+return G

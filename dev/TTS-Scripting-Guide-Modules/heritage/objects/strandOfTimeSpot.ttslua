@@ -1,0 +1,17 @@
+local M = require("core.main")
+local G = require("lib.guids")
+
+local isLoaded = false
+function onLoad() isLoaded = true end
+
+function onCollisionEnter(collision_info)
+	if isLoaded == false then return end
+	local strandOfTimeSpot = getObjectFromGUID(G.globalSpots.strandOfTime)
+	local colObj = collision_info.collision_object
+	if strandOfTimeSpot == nil or colObj == nil or not colObj.hasTag("StrandsOfTime") then return end
+	strandOfTimeSpot.highlightOff()
+	local strandPos = strandOfTimeSpot.getPosition()
+	strandPos.y = -0.1
+	colObj.setPositionSmooth(strandPos)
+	M.hideUnusedStrandsOfTime(colObj.guid)
+end

@@ -1,0 +1,115 @@
+local U = require("lib.utilities")
+local C = require("lib.constants")
+local G = require("lib.guids")
+local Z = require("core.zones")
+local M = require("core.main")
+local S = require("core.state")
+
+local objects, zones
+
+local function generateSnapPoints()
+	local xStart = 0.93
+	local xStep = -0.19
+	local yPos = 0.1
+	local zPos = {-0.4, 0, 0.4}
+	local snapPoints = {}
+
+	for i = 1, 11 do
+		for j = 1, 3 do
+			table.insert(snapPoints, {
+				position = {
+					x = xStart + (i - 1) * xStep,
+					y = yPos,
+					z = zPos[j]
+				},
+				rotation = {0, 0, 0},
+				rotation_snap = false,
+				tags = {"PoliticsToken"}
+			})
+		end
+	end
+
+	self.setSnapPoints(snapPoints)
+end
+
+function onLoad()
+	zones = {
+		bg = getObjectFromGUID(G.zones.battlegroundZones.right[1])
+	}
+	-- generateSnapPoints()
+end
+
+function onObjectEnterZone(zone, object)
+	if not S.isInPhase("PLAY") then return end
+	if zone.guid ~= zones.bg.guid then return end
+	M.deactivateSpotlight(getObjectFromGUID(G.lights.battlegrounds.right))
+end
+
+function GetFirstPlayer()
+	if zones == nil then return nil end
+	local moralityTokens = U.map(
+		Z.getTaggedZoneObjects(zones.bg, "PoliticsToken"),
+		function(token)
+			return {
+				obj = token,
+				clan = M.findClanTag(token),
+				spot = math.ceil(U.findSnapPoint(self, token) / 3)
+			}
+		end
+	)
+	if #moralityTokens ~= 3 then
+		U.alertGM("Error: Wrong number of Morality Tokens on Battleground H, can't GetFirstPlayer()")
+		return nil
+	end
+	table.sort(moralityTokens, function(a, b) return a.spot > b.spot end)
+	if moralityTokens[1].spot == moralityTokens[2].spot then
+		return M.getRoundFirstPlayer()
+	else
+		return M.getColorOfClan(moralityTokens[1].clan)
+	end
+end
+
+
+function UpdateMoralityToken(params)
+	local color = params.color
+	-- log("UPDATE MORALITY TOKEN CALLED: " .. color)
+	if color == nil then return end
+	local leaderClan = M.getClans()[color]
+	local leaderCard = Z.getClanLeader(color)
+	if leaderCard == nil then
+		return Wait.time(function() M.updateMoralityToken(color) end, 1)
+	end
+	local leaderName = leaderCard.getName()
+	local leaderMorality
+	if not leaderName then return nil end
+	if leaderCard.hasTag("DoubleSided") then
+		local leaders = U.split(leaderName, "|")
+		if (U.isFlipped(leaderCard)) then
+			leaderName = leaders[2]
+		else
+			leaderName = leaders[1]
+		end
+	end
+	if string.match(leaderName, ":M") ~= nil then
+		leaderMorality = "M"
+	else
+		leaderMorality = "C"
+	end
+	local moralityToken = M.getMoralityToken(color)
+	if moralityToken == nil then return Wait.time(function() M.updateMoralityToken(color) end, 1) end
+	local moralityPosition = moralityToken.getPosition()
+	if moralityToken == nil then
+		return Wait.time(function() M.updateMoralityToken(color) end, 1)
+	end
+	moralityPosition.y = moralityPosition.y + 1
+	local moralityRotation = moralityToken.getRotation()
+	if C.MoralityTokens[leaderClan] == leaderMorality then
+		moralityRotation.z = 0
+	else
+		moralityRotation.z = 180
+	end
+	moralityToken.setPosition(moralityPosition)
+	moralityToken.setRotation(moralityRotation)
+end
+
+function Reset() return end

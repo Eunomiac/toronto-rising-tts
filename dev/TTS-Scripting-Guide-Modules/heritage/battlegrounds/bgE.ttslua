@@ -1,0 +1,106 @@
+local U = require("lib.utilities")
+local G = require("lib.guids")
+local Z = require("core.zones")
+
+local BGE = {}
+
+		-- if object.hasTag("Ankh") and zone.guid == G.zones.bgEZones.Fire then
+		-- 	local dir
+		-- 	if object.hasTag("North") then dir = "North"
+		-- 	elseif object.hasTag("South") then dir = "South"
+		-- 	elseif object.hasTag("East") then dir = "East"
+		-- 	elseif object.hasTag("West") then dir = "West"
+		-- 	end
+
+		-- 	-- Count ankhs in fire. If there are three, burn the fourth and announce it.
+		-- 	if BGE.countBurnedAnkhs(dir) == 3 then
+		-- 		if dir == "North" then
+		-- 			UI.setAttributes("anarchRevoltText", {
+		-- 				color = "#000000",
+		-- 				outline = "#FFFFFF"
+		-- 			})
+		-- 			UI.setValue("anarchRevoltText", "London burns to the ground in the North!")
+		-- 		elseif dir == "South" then
+		-- 			UI.setAttributes("anarchRevoltText", {
+		-- 				color = "#FFFFFF",
+		-- 				outline = "#555555"
+		-- 			})
+		-- 			UI.setValue("anarchRevoltText", "Palermo burns to the ground in the South!")
+		-- 		elseif dir == "East" then
+		-- 			UI.setAttributes("anarchRevoltText", {
+		-- 				color = "#D2691E",
+		-- 				outline = "#8B4513"
+		-- 			})
+		-- 			UI.setValue("anarchRevoltText", "Prague burns to the ground in the East!")
+		-- 		else
+		-- 			UI.setAttributes("anarchRevoltText", {
+		-- 				color = "#00FFFF",
+		-- 				outline = "#008B8B"
+		-- 			})
+		-- 			UI.setValue("anarchRevoltText", "Madrid burns to the ground in the West!")
+		-- 		end
+		-- 		Wait.time(function()
+		-- 			U.splashUIElement("anarchRevoltNotice", 3)
+		-- 			local unburnedAnkh = BGE.getUnburnedAnkhs(dir)[1]
+		-- 			if unburnedAnkh then
+		-- 				BGE.burnAnkh(unburnedAnkh)
+		-- 			end
+		-- 		end, 1)
+		-- 	end
+		-- end
+
+local function parseAnkhPos(ankhObj)
+	local stringPos = ankhObj.getDescription()
+	stringPos = string.sub(stringPos,2,#stringPos-1)
+	local coords = U.split(stringPos, ",")
+	return {x = coords[1], y = coords[2], z = coords[3]}
+end
+
+function BGE.sendAnkhHome(ankhObj)
+	ankhObj.setPositionSmooth(parseAnkhPos(ankhObj))
+	ankhObj.setRotationSmooth({x = 13, y = 180, z = 180})
+end
+
+function BGE.countCityAnkhs(dir)
+	local cityZone = getObjectFromGUID(G.zones.bgEZones[dir])
+	return #Z.getTaggedZoneObjects(cityZone, {dir})
+end
+
+function BGE.getBurnedAnkhs(dir)
+	local fireZone = getObjectFromGUID(G.zones.bgEZones.Fire)
+	local ankhObjs = U.filter(fireZone.getObjects(), function(obj) return obj.hasTag(dir) end)
+	-- log({burnedAnkhs = ankhObjs})
+	return ankhObjs
+end
+
+function BGE.countBurnedAnkhs(dir) return #BGE.getBurnedAnkhs(dir) end
+
+function BGE.getUnburnedAnkhs(dir)
+	local burnedGUIDs = U.map(BGE.getBurnedAnkhs(dir), function(ankhObj) return ankhObj.guid end)
+	return U.filter(getObjectsWithAllTags({"Ankh", dir}), function(ankhObj)
+		return not U.isIn(ankhObj.guid, burnedGUIDs)
+	end)
+end
+
+function BGE.burnAnkh(ankhObj)
+	local burnPos = {
+		x = G.tableSpots.anarchFire.x + math.random(-120, 120) / 100,
+		y = G.tableSpots.anarchFire.y,
+		z = G.tableSpots.anarchFire.z + math.random(-120, 120) / 100
+	}
+	local burnRot = {
+		x = 0,
+		y = 180 + math.random(-30, 30),
+		z = 180
+	}
+
+	ankhObj.highlightOn({1,0,0}, 5)
+	ankhObj.setPositionSmooth(burnPos)
+	ankhObj.setRotation(burnRot)
+end
+
+
+
+
+
+return BGE

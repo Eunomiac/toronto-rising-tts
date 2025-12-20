@@ -1,0 +1,361 @@
+local C = require("kingsdilemma.lib.constants")
+local S = require("kingsdilemma.core.state")
+local U = require("lib.utilities")
+local P = require("kingsdilemma.core.players")
+local DIR = require("kingsdilemma.core.director")
+
+local hideButtonBack = true
+
+local thick = 0.12
+local gx, gy -- Global Offsets for calibrating against scan error
+
+local scanData
+local houseTitle, houseName, houseNum, player, color, screen
+
+local function getScreen() if screen == nil and player then screen = P.GetPlayerScreen(player) end; return screen end
+
+local buttonsData = {
+	count = 0,
+	counter = {
+		width = 0,
+		height = 0,
+		font = 800,
+		ox = 0.08,
+		oz = -0.08,
+		ow = 300,
+		oh = 300
+	},
+	toggleA = {
+		width = 300, height = 300, font = 400
+	},
+	toggleB = {
+		width = 300, height = 300, font = 400
+	},
+	txt = {
+		height = 500, font = 350, alignment = 3
+	},
+	editBox = {
+		width = 3800, height = 3600, font = 250, alignment = 2
+	}
+}
+local buttons = U.clone(buttonsData, true)
+
+function UpdatePrestige()
+	local scr = getScreen()
+	if scr then
+		scr.UI.setValue("prestigeElem", tostring(math.floor(GetPrestige())))
+	end
+end
+function UpdateCrave()
+	local scr = getScreen()
+	if scr then
+		scr.UI.setValue("craveElem", tostring(math.floor(GetPrestige())))
+	end
+end
+
+function GetPrestige()
+	if houseNum == nil then return nil end
+	local prestigeCount = #U.filter(self.getButtons(), function(bData)
+		return bData.label and bData.click_function and bData.label ~= "" and string.match(bData.click_function, "^toggleClick_prestige")
+	end) + houseNum / 100
+	if prestigeCount ~= S.getPlayerVal(player, "prestige") then
+		S.setPlayerVal(prestigeCount, player, "prestige")
+		UpdatePrestige()
+	end
+	return prestigeCount
+end
+
+function GetCrave()
+	if houseNum == nil then return nil end
+	local craveCount = #U.filter(self.getButtons(), function(bData)
+		return bData.label and bData.click_function and bData.label ~= "" and string.match(bData.click_function, "^toggleClick_crave")
+	end)
+	if craveCount ~= S.getPlayerVal(player, "crave") then
+		S.setPlayerVal(craveCount, player, "crave")
+		UpdateCrave()
+	end
+	return craveCount
+end
+
+local function createTextField(name)
+	-- local player = S.getPlayer(U.findColorTag(self))
+	-- log({colorTag = U.findColorTag(self), player = player})
+	if player == nil then return end
+	self.UI.setXmlTable({
+		{
+			tag = "InputField",
+			value = name,
+			attributes = {
+				visibility = color,
+				onEndEdit = "editTextField",
+				color = "Clear",
+				placeholder = " ",
+				textColor = "#000000",
+				font = "Fonts/Script2",
+				fontSize = "100",
+				width = "500",
+				height = "200",
+				rectAlignment = "MiddleCenter",
+				alignment = "MiddleLeft",
+				position = "13 -79 -15",
+				rotation = "0 0 180",
+				scale = "0.15 0.15 0.15"
+			}
+		}
+	})
+
+end
+
+local function initButtonsTable()
+	buttonsData.txt.width = scanData.textWidth
+	buttonsData.count = 0
+	buttons = U.clone(buttonsData)
+end
+
+local function forceSave(isResetting)
+	local data_to_save = { buttons = {} }
+	for i, v in pairs(buttons) do
+		if i ~= "count" then
+			if isResetting == true then
+				data_to_save.buttons[i] = ""
+			elseif v.label == "\u{2717}" then
+				data_to_save.buttons[i] = "u{2717}"
+			else
+				data_to_save.buttons[i] = v.label
+			end
+		end
+	end
+	if isResetting == true then
+		S.setPlayerVal(0, U.findColorTag(self), "prestige")
+		S.setPlayerVal(0, U.findColorTag(self), "crave")
+	else
+		S.setPlayerVal(GetPrestige(), U.findColorTag(self), "prestige")
+		S.setPlayerVal(GetCrave(), U.findColorTag(self), "crave")
+	end
+	local saved_data = JSON.encode_pretty(data_to_save)
+	self.script_state = saved_data
+	return saved_data
+end
+
+local function add(name, amount, alt_click)
+	if alt_click then amount = amount * 10 end
+	buttons[name].label = U.ToString(tonumber(buttons[name].label) + amount)
+	self.editButton(buttons[name])
+	forceSave()
+end
+
+local function createpm(name, type, x, z)
+	local button_parameters = {}
+	button_parameters.index = buttons.count
+	button_parameters.height = buttonsData[type].oh
+	button_parameters.width = buttonsData[type].ow
+	button_parameters.font_size = buttonsData[type].font * 0.7
+	self.setVar("add_" .. name, function(obj, color, alt_click) add(name, 1, alt_click) end)
+	button_parameters.click_function = "add_" .. name
+	button_parameters.label = "+"
+	button_parameters.function_owner = self
+	button_parameters.scale = { 0.1, 0.1, 0.1 }
+	if hideButtonBack then
+		button_parameters.color = { 1, 1, 1, 0 }
+		button_parameters.font_color = { 0, 0, 0, 100 }
+	end
+	button_parameters.position = { x + buttonsData[type].ox, thick, z + buttonsData[type].oz }
+	self.createButton(button_parameters)
+	buttons["p_" .. name] = button_parameters
+	buttons.count = buttons.count + 1
+
+	button_parameters.index = buttons.count
+	self.setVar("sub_" .. name, function(obj, color, alt_click) add(name, -1, alt_click) end)
+	button_parameters.click_function = "sub_" .. name
+	button_parameters.label = "-"
+	button_parameters.position = { x - buttonsData[type].ox, thick, z + buttonsData[type].oz }
+	self.createButton(button_parameters)
+	buttons["m_" .. name] = button_parameters
+	buttons.count = buttons.count + 1
+end
+
+local function clickedToggle(index)
+	if buttons[index].label == "" then
+		buttons[index].label = "\u{2717}"
+	else
+		buttons[index].label = ""
+	end
+	self.editButton(buttons[index])
+	forceSave()
+end
+
+local function setupButton(name, type, x, z)
+	local button_parameters = {}
+	button_parameters.index = buttons.count
+	button_parameters.height = buttonsData[type].height
+	button_parameters.width = buttonsData[type].width
+	button_parameters.font_size = buttonsData[type].font
+	if type == "counter" then
+		button_parameters.click_function = "Dud"
+		button_parameters.label = "0"
+		createpm(name, type, gx + x, gy + z)
+		button_parameters.index = buttons.count
+	elseif type == "toggleA" or type == "toggleB" then
+		self.setVar("toggleClick_" .. name, function() clickedToggle(name) end)
+		button_parameters.click_function = "toggleClick_" .. name
+		button_parameters.label = ""
+	else
+		button_parameters.click_function = "Dud"
+		button_parameters.label = "0"
+	end
+
+	if hideButtonBack then
+		button_parameters.color = { 1, 1, 1, 0 }
+		button_parameters.font_color = { 0, 0, 0, 100 }
+	end
+	button_parameters.scale = { 0.1, 0.1, 0.1 }
+	button_parameters.position = { gx + x, thick, gy + z }
+	button_parameters.function_owner = self
+
+	if buttons[name] ~= nil then
+		if buttons[name].label == "u{2717}" then
+			button_parameters.label = "\u{2717}"
+		else
+			button_parameters.label = buttons[name].label
+		end
+	end
+
+	-- if name == "crave39" and button_parameters.width == 0 or not button_parameters.width then
+	-- 	log("Width of Zero for Type '" .. type .. "' = " .. U.ToString(button_parameters.width))
+	-- 	log({buttons = U.clone(buttons, true), button_parameters == U.clone(button_parameters)})
+	-- end
+
+	if not button_parameters.width then
+		button_parameters.height = 300
+		button_parameters.width = 300
+		button_parameters.font_size = buttonsData[type].font
+		button_parameters.font_color = { 0, 0, 0, 100 }
+	end
+	self.createButton(button_parameters)
+	buttons[name] = button_parameters
+	buttons.count = buttons.count + 1
+end
+
+local function initCustomButtons()
+	-- local player = S.getPlayer(U.findColorTag(self))
+	-- log({player = player, colorTag = U.findColorTag(self)})
+	local houseName = S.getPlayerVal(player, "houseName") or ""
+	createTextField(houseName)
+
+	-- prestige tracker. Potentially worth simplifying the on_click to fill up to clicked square, rather than 1 by 1.
+	local dx = -2.05;
+	local dy = -0.545;
+	local p_unit = 0.069;
+	local number = 0
+	for i = 0, 9 do
+		for j = 0, 11 do
+			setupButton(string.format('prestige%d_%d', i, j), "toggleB",
+				dx + i * p_unit + (i > 4 and scanData.prestigeGap or 0),
+				dy + j * p_unit)
+			number = number + 1
+		end
+	end
+
+	-- crave tracker.
+	dy = 0.41
+	number = 0
+	for i = 0, 9 do
+		for j = 0, 5 do
+			setupButton('crave' .. number, "toggleB", dx + i * p_unit + (i > 4 and scanData.prestigeGap or 0), dy + j * p_unit)
+			number = number + 1
+		end
+	end
+
+	-- agenda trackers
+	dx = -0.63
+	dy = 0.728
+	for i = 0, 7 do
+		for j = 0, 2 do
+			setupButton(string.format('agenda%d_%d', i, j), "toggleB", dx + i * 0.072 + (i > 3 and scanData.agendaGap or 0),
+				dy + 0.105 * j)
+		end
+	end
+
+	-- achievement trackers
+	dx = scanData.achievementButtons.offsets.dx;
+	dy = scanData.achievementButtons.offsets.dy;
+	local zStart = scanData.achievementButtons.offsets.zStart;
+
+	-- narrative
+	setupButton('achievement1', 'toggleB', dx, zStart + dy)
+	local rowNum = 2
+	for _, bData in ipairs(scanData.achievementButtons.blocks) do
+		local numButtons = bData.num
+		local zFix = bData.zFix
+		local zScale = bData.zScale
+		for j = 0, numButtons do
+			setupButton("achievement" .. rowNum + j, "toggleB", dx, zFix + dy + (zScale * j))
+		end
+		rowNum = rowNum + numButtons + 1
+	end
+end
+
+function onLoad(saved_data)
+	-- log("LOADING HOUSE CARD")
+	-- Wait.time(function()
+		color = U.findColorTag(self)
+		if color == nil then return end
+		houseTitle = string.gsub(self.getName(), "^(.*) of.*$", "%1s")
+		houseName = string.gsub(self.getName(), "^.*of ", "")
+		houseNum = string.gsub(self.getDescription(), ".-(%d+)", "%1") * 1
+		player = S.getPlayer(color)
+		scanData = C.scanData[houseName]
+
+		-- log("The " .. houseTitle .. " of " .. houseName .. " is #" .. houseNum)
+
+		if scanData == nil then
+			return error("[House Card] Error: '" .. houseName .. "' is not a recognized House.")
+		end
+
+		gx = scanData.globalOffsets.gx
+		gy = scanData.globalOffsets.gy
+
+		initButtonsTable()
+
+		if saved_data ~= nil then
+			local loaded_data = JSON.decode(saved_data)
+			if loaded_data ~= nil then
+				for i, v in pairs(loaded_data.buttons) do
+					buttons[i] = { label = v }
+				end
+			end
+		end
+		initCustomButtons()
+
+		-- Wait.time(function()
+			GetPrestige()
+			GetCrave()
+		-- end, 2)
+
+
+	-- end, 5)
+end
+
+function Dud() return end
+
+function editTextField(_, houseName)
+	local pScreen = P.GetPlayerScreen(color)
+	U.sequence({
+		function()
+			S.setPlayerVal(houseName, player, "houseName")
+			return 0.5
+		end,
+		function()
+			pScreen.call("UpdateXMLTable")
+		end,
+		function()
+			pScreen.call("Activate")
+		end,
+		3,
+		function()
+			DIR.UpdateChronicleCardNames()
+		end
+	})
+end
+
+function ResetCard() forceSave(true) end

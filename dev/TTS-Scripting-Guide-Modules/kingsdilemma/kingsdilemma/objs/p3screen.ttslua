@@ -1,0 +1,438 @@
+
+local C = require("kingsdilemma.lib.constants")
+local U = require("lib.utilities")
+local OU = require("kingsdilemma.objects.objUtilities")
+local O = require("kingsdilemma.lib.objects")
+local S = require("kingsdilemma.core.state")
+local P = require("kingsdilemma.core.players")
+
+local HouseScreen = {}
+
+local HouseData = {
+	Blodyn = {
+		HouseScreen = {
+			top = "http://cloud-3.steamusercontent.com/ugc/2064377033366695909/2328B205458FE4E2846F8858304131D775002568/", -- "house-screenCenter"
+			bottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366695246/DE0CFBB00A5B5B0E718B451404D8F4B6DE7531A3/", -- "back-screenCenter"
+			leftTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366696176/8A080A07A2B4E0D15233003B6F788EFC89B80D6F/", -- "house-tab-screenFlapRight"
+			leftBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366695354/A9889B82BD2F8B1B7B088ABB969AB63E4D8A8C6E/", -- "back-tab-screenFlapLeft"
+			rightTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366695435/D767EF28F588CA82BBDF0A1229867F7FA6BDD825/", -- "back-tab-screenFlapRight"
+			rightBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366696081/4B43821A167CBD262A707117D31BA6EB3854C12D/" -- "house-tab-screenFlapLeft"
+		}
+	},
+	Coden = {
+		HouseScreen = {
+			top = "http://cloud-3.steamusercontent.com/ugc/2064377033366696288/4478CC3C3CCAD67A9A73B7CEBDF64290F4012B5A/", -- "house-screenCenter"
+			bottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366694905/BA2470172347B1E6C3E0F2BA5DCB44119E8AD436/", -- "back-screenCenter"
+			leftTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366696481/AE7FB65A741BB682803B7080B099D45EC2B51685/", -- "house-tab-screenFlapRight"
+			leftBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366695051/DF5946B039F9F85A590BBF726CCE6FBFDF4FD90B/", -- "back-tab-screenFlapLeft"
+			rightTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366695163/3A8D9D5122CCE95AF924709CD66FB39FF1CDD648/", -- "back-tab-screenFlapRight"
+			rightBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366696421/1F15C3BD7A5D49470E970ACD9EC7A880ECA8322C/" -- "house-tab-screenFlapLeft"
+		}
+	},
+	Gamam = {
+		HouseScreen = {
+			top = "http://cloud-3.steamusercontent.com/ugc/2064377033366697322/83621C8805464343E25EFF1B38C56536F7592277/", -- "house-screenCenter"
+			bottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366695246/DE0CFBB00A5B5B0E718B451404D8F4B6DE7531A3/", -- "back-screenCenter"
+			leftTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366697629/5A0083E82FC696F39674ED846BBA146A31DC8F01/", -- "house-tab-screenFlapRight"
+			leftBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366695354/A9889B82BD2F8B1B7B088ABB969AB63E4D8A8C6E/", -- "back-tab-screenFlapLeft"
+			rightTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366695435/D767EF28F588CA82BBDF0A1229867F7FA6BDD825/", -- "back-tab-screenFlapRight"
+			rightBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366697529/8A6E7CF0993BAFFB1C1B4495E880BC91E23942D1/" -- "house-tab-screenFlapLeft"
+		}
+	},
+	Natar = {
+		HouseScreen = {
+			top = "http://cloud-3.steamusercontent.com/ugc/2064377033366697727/2F6561BBDEC8456F1719C1E6211FBA02287AAAC3/", -- "house-screenCenter"
+			bottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366694571/7C0723DC5FAEB7E8B98C914C74EF5DD6C626E221/", -- "back-screenCenter"
+			leftTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366697956/13E59AFCCD716522A209A3231568D98FDAF98ABA/", -- "house-tab-screenFlapRight"
+			leftBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366694699/A1BCB2EE646EB64180923F62AC9B1054C0C76C06/", -- "back-tab-screenFlapLeft"
+			rightTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366694789/86BC0AD96BBB95004A36DD0DE8EF2BEB37A51222/", -- "back-tab-screenFlapRight"
+			rightBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366697885/ADD2B097DE4908B384C09766F3F9B14B5B976564/" -- "house-tab-screenFlapLeft"
+		}
+	},
+	Olwyn = {
+		HouseScreen = {
+			top = "http://cloud-3.steamusercontent.com/ugc/2064377033366082853/75AB016C3349F7269FEFABAC3814623D2508FF72/", -- "house-screenCenter"
+			bottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366091356/8BB69BF4756244B40037219F31A7CF87616109DD/", -- "back-screenCenter"
+			leftTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366083172/6E3BDBCB9FCB38BC07AB16C20282E21AFCA49D33/", -- "house-tab-screenFlapRight"
+			leftBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366659940/D47A151C1338BBF4D151E4F3DAEFB582400BF97C/", -- "back-tab-screenFlapLeft"
+			rightTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366660025/48FD1DEA1CBBBC459B612C0AD0BE991C6AF876A6/", -- "back-tab-screenFlapRight"
+			rightBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366083108/9414CA5CD6CD8582186AB12E883797530F273210/" -- "house-tab-screenFlapLeft"
+		}
+	},
+	Solad = {
+		HouseScreen = {
+			top = "http://cloud-3.steamusercontent.com/ugc/2064377033366698064/1E7A17EC8242159BEC9C5C1F4811F0D04194B702/", -- "house-screenCenter"
+			bottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366693770/A4FFD4FD9D0D8943A07A8A7AFD70E5F33FABCC1C/", -- "back-screenCenter"
+			leftTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366698356/23D937E1725FA8455279602BB4DFD654D4B6E8D5/", -- "house-tab-screenFlapRight"
+			leftBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366693946/D7CF43D8970F9EF6674F02E376321ED98102FA54/", -- "back-tab-screenFlapLeft"
+			rightTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366694021/0598CE8521757D98A5F1D2ADF805A55A54631AA9/", -- "back-tab-screenFlapRight"
+			rightBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366698266/9A971B6D9C9DA973C441F4C96BF79CB6884B9583/" -- "house-tab-screenFlapLeft"
+		}
+	},
+	Allwed = {
+		HouseScreen = {
+			top = "http://cloud-3.steamusercontent.com/ugc/2064377033366695535/61F8CAEFAF0978B77FE9C77F347EABE4FBC6DA95/", -- "house-screenCenter"
+			bottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366694905/BA2470172347B1E6C3E0F2BA5DCB44119E8AD436/", -- "back-screenCenter"
+			leftTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366695799/4E3A118FD56271C82294CC4A9A65620D6C3BDCBD/", -- "house-tab-screenFlapRight"
+			leftBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366695051/DF5946B039F9F85A590BBF726CCE6FBFDF4FD90B/", -- "back-tab-screenFlapLeft"
+			rightTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366695163/3A8D9D5122CCE95AF924709CD66FB39FF1CDD648/", -- "back-tab-screenFlapRight"
+			rightBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366695723/4EEC8EECE8B3D25AA4F4754CD682A3A46EB31C4D/" -- "house-tab-screenFlapLeft"
+		}
+	},
+	Crann = {
+		HouseScreen = {
+			top = "http://cloud-3.steamusercontent.com/ugc/2064377033366696586/DDAFCBDA6ECEDA36482768E371FD90D1B6FFFD38/", -- "house-screenCenter"
+			bottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366694103/F1FB846534BEC77EB9D34BBA508732F792A35BC9/", -- "back-screenCenter"
+			leftTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366696855/8C141506C944DF9201BE12A212AF97FC73938F66/", -- "house-tab-screenFlapRight"
+			leftBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366694312/64860EE59755032CB98BD53521CAD602F82D396D/", -- "back-tab-screenFlapLeft"
+			rightTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366694459/4EB40DC7AE1B5598D7A22DC638402660195E0D19/", -- "back-tab-screenFlapRight"
+			rightBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366696725/1B19152BDFE255FD6148BE564CEDAEDEF5B0B43F/" -- "house-tab-screenFlapLeft"
+		}
+	},
+	Dualak = {
+		HouseScreen = {
+			top = "http://cloud-3.steamusercontent.com/ugc/2064377033366696963/45FE34D3D6B1B0059D94780A6808959EF6B45D3F/", -- "house-screenCenter"
+			bottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366694103/F1FB846534BEC77EB9D34BBA508732F792A35BC9/", -- "back-screenCenter"
+			leftTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366697214/0A02D883744AF6ADCFBF59622A71D0895979658C/", -- "house-tab-screenFlapRight"
+			leftBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366694312/64860EE59755032CB98BD53521CAD602F82D396D/", -- "back-tab-screenFlapLeft"
+			rightTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366694459/4EB40DC7AE1B5598D7A22DC638402660195E0D19/", -- "back-tab-screenFlapRight"
+			rightBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366697122/EFBE9DB0E377218D67D41072FB7537CF4259BD3C/" -- "house-tab-screenFlapLeft"
+		}
+	},
+	Tiryll = {
+		HouseScreen = {
+			top = "http://cloud-3.steamusercontent.com/ugc/2064377033366698478/C37CA6E5F1591DE2E8BD70B06A52EA58A86402E0/", -- "house-screenCenter"
+			bottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366091356/8BB69BF4756244B40037219F31A7CF87616109DD/", -- "back-screenCenter"
+			leftTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366698723/1F7CA92DB5E425760072D1B1D6648CC1A89B078C/", -- "house-tab-screenFlapRight"
+			leftBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366659940/D47A151C1338BBF4D151E4F3DAEFB582400BF97C/", -- "back-tab-screenFlapLeft"
+			rightTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366660025/48FD1DEA1CBBBC459B612C0AD0BE991C6AF876A6/", -- "back-tab-screenFlapRight"
+			rightBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366698639/C51D2E0E795A44A587A4E99DB6C1C8AFF1399BC1/" -- "house-tab-screenFlapLeft"
+		}
+	},
+	Tork = {
+		HouseScreen = {
+			top = "http://cloud-3.steamusercontent.com/ugc/2064377033366698855/8B0E3E8031F505EAAD3CEAD04EEA0C3CC21D7803/", -- "house-screenCenter"
+			bottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366694571/7C0723DC5FAEB7E8B98C914C74EF5DD6C626E221/", -- "back-screenCenter"
+			leftTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366699094/6DE970D684877EEEE627E05248EC76D3A2E8ED91/", -- "house-tab-screenFlapRight"
+			leftBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366694699/A1BCB2EE646EB64180923F62AC9B1054C0C76C06/", -- "back-tab-screenFlapLeft"
+			rightTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366694789/86BC0AD96BBB95004A36DD0DE8EF2BEB37A51222/", -- "back-tab-screenFlapRight"
+			rightBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366699017/993091BCCE5B8EC31AED2A551D98C6C38167051D/" -- "house-tab-screenFlapLeft"
+		}
+	},
+	Wylio = {
+		HouseScreen = {
+			top = "http://cloud-3.steamusercontent.com/ugc/2064377033366699213/B24D56A5EA01FB75096920F3B05F0EB153B44731/", -- "house-screenCenter"
+			bottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366091356/8BB69BF4756244B40037219F31A7CF87616109DD/", -- "back-screenCenter"
+			leftTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366699616/77CD0E92B3518556F3E146D613757A70C695FB3C/", -- "house-tab-screenFlapRight"
+			leftBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366659940/D47A151C1338BBF4D151E4F3DAEFB582400BF97C/", -- "back-tab-screenFlapLeft"
+			rightTop = "http://cloud-3.steamusercontent.com/ugc/2064377033366660025/48FD1DEA1CBBBC459B612C0AD0BE991C6AF876A6/", -- "back-tab-screenFlapRight"
+			rightBottom = "http://cloud-3.steamusercontent.com/ugc/2064377033366699384/7D4BE95C4A8E6138ADD03E7F2AFB6C757E41BA8F/" -- "house-tab-screenFlapLeft"
+		}
+	}
+}
+
+local ObjectData = {
+		screenFlapLeft = {
+			source = O.SpawnSources.screenFlapLeft,
+			position = {9.10, 6.47, 41.09},
+			rotation = {87.76, 180.00, 45.00},
+			scale = {5, 1, 5},
+			data = {
+				Tags = {"HouseScreen"}
+			}
+		},
+		screenCenter = {
+			source = O.SpawnSources.screenCenter,
+			position = {0.00, 6.51, 40.00},
+			rotation = {87.76, 180.00, 0.00},
+			scale = {5, 1, 5},
+			data = {
+				Tags = {"HouseScreen"}
+			}
+		},
+		screenFlapRight = {
+			source = O.SpawnSources.screenFlapRight,
+			position = {-9.26, 6.47, 40.97},
+			rotation = {87.76, 180.00, 135.00},
+			scale = {5, 1, 5},
+			data = {
+				Tags = {"HouseScreen"}
+			}
+		},
+		houseCard = { -- This is at Player 0 position: Others should be moved to Player 0 position, too
+			source = O.SpawnSources.HouseCards,
+			isSpawning = false,
+			position = {0.00, 7.52, 40.95},
+			rotation = {83.90, 0.00, 0.00},
+			scale = {3.75, 1.00, 3.75},
+			data = {
+				Tags = {"HouseCard"}
+			}
+		},
+		zonePrivateAye = {
+			source = O.SpawnSources.zonePrivateAye,
+			position = {4.00, 1.46, 42.35},
+			rotation = {0.00, 180.00, 0.00},
+			scale = {4.94, 4.94, 4.94},
+			data = {
+				Tags = {"Zone_Counter", "Zone_PrivateUI", "PowerToken", "Zone_VoteAye"}
+			}
+		},
+		zonePrivateNay = {
+			source = O.SpawnSources.zonePrivateNay,
+			position = {-4.00, 1.46, 42.35},
+			rotation = {0.00, 180.00, 0.00},
+			scale = {4.94, 4.94, 4.94},
+			data = {
+				Tags = {"Zone_Counter", "Zone_PrivateUI", "PowerToken", "Zone_VoteNay"}
+			}
+		},
+		zonePrivatePower = {
+			source = O.SpawnSources.zonePrivatePower,
+			position = {8, 1.46, 48},
+			rotation = {0.00, 180.00, 0.00},
+			scale = {4.94, 4.94, 4.94},
+			data = {
+				Tags = {"Zone_Counter", "Zone_PrivateUI", "PowerToken"}
+			}
+		},
+		zonePrivateCoin = {
+			source = O.SpawnSources.zonePrivateCoin,
+			position = {-8, 1.46, 48},
+			rotation = {0.00, 180.00, 0.00},
+			scale = {4.94, 4.94, 4.94},
+			data = {
+				Tags = {"Zone_Counter", "Zone_PrivateUI", "CoinToken"}
+			}
+		},
+		zonePublic = {
+			source = O.SpawnSources.zonePublic,
+			position = {0.00, 3, 32.42},
+			rotation = {0, 180, 0},
+			scale = {5, 5, 5},
+			data = {
+				Tags = {"Zone_Counter", "Zone_PublicUI", "PowerToken"}
+			}
+		},
+		zoneHiderHouseCard = {
+			source = O.SpawnSources.zoneHiderHouseCard,
+			position = {7.34, 10.32, 40.54},
+			rotation = {88.00, 180.00, 0.00},
+			scale = {0.09, 0.37, 0.20},
+			data = {
+				Tags = false
+			}
+		},
+		zoneHiderGeneral = {
+			source = O.SpawnSources.zoneHiderGeneral,
+			position = {0.00, 0.44, 48.00},
+			rotation = {0.00, 180.00, 0.00},
+			scale = {21.5, 10, 5.00},
+			data = {
+				Tags = false
+			}
+		},
+		ayeCard = {
+			source = O.SpawnSources.ayeCard,
+			position = {4.00, 1.46, 42.50},
+			rotation = {0.00, 0.00, 0.00},
+			scale = {1.59, 1.00, 1.59},
+			data = {
+				Tags = {}
+			}
+		},
+		-- passCard = {
+		-- 	source = O.SpawnSources.passCard,
+		-- 	position = {0.00, 1.46, 42.50},
+		-- 	rotation = {0.00, 0.00, 0.00},
+		-- 	scale = {1.59, 1.00, 1.59},
+		-- 	data = {
+		-- 		Tags = {}
+		-- 	}
+		-- },
+		nayCard = {
+			source = O.SpawnSources.nayCard,
+			position = {-4.00, 1.46, 42.50},
+			rotation = {0.00, 0.00, 0.00},
+			scale = {1.59, 1.00, 1.59},
+			data = {
+				Tags = {}
+			}
+		},
+		lightBehind = {
+			source = O.SpawnSources.lightBehind,
+			position = {0.00, 20.81, 83.86},
+			rotation = {281.79, 180.00, 0.00},
+			scale = {1.00, 1.00, 1.00},
+			data = {
+				Tags = {}
+			}
+		},
+		lightFront = {
+			source = O.SpawnSources.lightFront,
+			position = {0.00, 2.30, 27.37},
+			rotation = {110, 180.00, 0.00},
+			scale = {1.00, 1.00, 1.00},
+			data = {
+				Tags = {}
+			}
+		},
+		lightVote = {
+			source = O.SpawnSources.lightVote,
+			position = {0.00, 9.60, 32.42},
+			rotation = {0.00, 180.00, 0.00},
+			scale = {1.00, 1.00, 1.00},
+			data = {
+				Tags = {}
+			}
+		},
+		plinthBase = {
+			source = O.SpawnSources.plinthBase,
+			position = {0.00, 1.58, 32.42},
+			rotation = {0.00, 180.00, 0.00},
+			scale = {0.8, 0.5, 0.8},
+			data = {
+				Tags = {}
+			}
+		},
+		plinthRiser = {
+			source = O.SpawnSources.plinthRiser,
+			position = {0.00, 1.5, 32.42},
+			rotation = {0.00, 180.00, 0.00},
+			scale = {0.5, 1.12, 0.5},
+			data = {
+				Tags = {"plinthRiser"}
+			}
+		}
+	}
+
+local function assignHouseCard(playerRef, houseName, isResettingHouseCard)
+	local player = S.getPlayer(playerRef)
+	if player == nil then return end
+
+	local houseCard = U.find(getObjects(), function(obj) return string.match(obj.getName(), "^.* of " .. houseName) end)
+	U.Assert("assignHouseCard", houseCard, "userdata")
+
+	local toTransform = P.getRotatedPlayerTransform(ObjectData.houseCard, player)
+
+	local isDone = false
+	U.sequence({
+		function()
+			houseCard.setPosition(toTransform.position)
+			houseCard.setRotation(toTransform.rotation)
+			houseCard.setScale(toTransform.scale)
+			houseCard.setTags({"HouseCard", player.color})
+			-- log({isResettingHouseCard = isResettingHouseCard})
+			if isResettingHouseCard then
+				houseCard.call("ResetCard")
+			end
+		end,
+		1,
+		function() houseCard.reload(); isDone = true end
+	})
+	return function() return isDone == true end
+end
+
+local function applyObjData(partName, playerRef, houseName)
+	local oParams = ObjectData[partName]
+	if oParams == nil then return end
+	if oParams.source == nil then return end
+	if oParams.isSpawning == false then return end
+
+	local player = S.getPlayer(playerRef)
+
+	local sourceObj = oParams.source()
+
+	-- Get object spawn data, from source object
+	if sourceObj == nil then return end
+	local spawnData = sourceObj.getData()
+
+	-- Overwrite spawnData with ObjectData.data entries
+	for key, val in pairs(oParams.data or {}) do
+		if key == "Tags" then
+			if val == false then
+				val = {}
+			elseif U.Type(val) == "table" then
+				val = U.concat(val, {partName})
+				if player ~= nil then
+					val = U.concat(val, {player.color})
+				end
+			end
+		end
+		spawnData[key] = val
+	end
+
+	-- Perform special operations depending on object type
+	-- ... Set Image URLs
+	if partName == "screenCenter" then
+		spawnData.CustomImage.ImageURL = HouseData[houseName].HouseScreen.top
+		spawnData.CustomImage.ImageSecondaryURL = HouseData[houseName].HouseScreen.bottom
+	elseif partName == "screenFlapLeft" then
+		spawnData.CustomImage.ImageURL = HouseData[houseName].HouseScreen.leftTop
+		spawnData.CustomImage.ImageSecondaryURL = HouseData[houseName].HouseScreen.leftBottom
+	elseif partName == "screenFlapRight" then
+		spawnData.CustomImage.ImageURL = HouseData[houseName].HouseScreen.rightTop
+		spawnData.CustomImage.ImageSecondaryURL = HouseData[houseName].HouseScreen.rightBottom
+	end
+
+	-- ... Assign Hidden Zones to players, dim color intensity, set GM Notes so they can be found later
+	if player and U.isIn(partName, {"zoneHiderHouseCard", "zoneHiderGeneral"}) then
+		spawnData.FogColor = player.color
+		local diffuseColor = Color[player.color]
+		diffuseColor.a = 0.15
+		spawnData.ColorDiffuse = Color(diffuseColor)
+		spawnData.GMNotes = "ZonePlayer" .. player.color
+	end
+
+	-- ... Apply proper Transform
+	local transformData = {
+		position = Vector(ObjectData[partName].position),
+		rotation = Vector(ObjectData[partName].rotation)
+	}
+
+	if player ~= nil then
+		transformData = P.getRotatedPlayerTransform(transformData, player, 0)
+	end
+
+	spawnData.Transform = {
+		posX = transformData.position.x,
+		posY = transformData.position.y,
+		posZ = transformData.position.z,
+		rotX = transformData.rotation.x,
+		rotY = transformData.rotation.y,
+		rotZ = transformData.rotation.z,
+		scaleX = ObjectData[partName].scale[1],
+		scaleY = ObjectData[partName].scale[2],
+		scaleZ = ObjectData[partName].scale[3]
+	}
+
+	return spawnData
+end
+
+function HouseScreen.Spawn(playerRef, houseName, isResettingHouseCard)
+	local player = S.getPlayer(playerRef)
+	-- log("Spawning '" .. houseName .. "' for Player #" .. playerNum)
+	P.ClearSeat(player.color)
+	if houseName == nil then return end
+	return U.map(ObjectData, function(objData, objName)
+		local spawnData
+		if objName == "houseCard" then
+			return assignHouseCard(playerRef, houseName, isResettingHouseCard)
+		else
+			spawnData = applyObjData(objName, playerRef, houseName) -- objData.source().getData()
+		end
+
+		if spawnData == nil then return end
+
+		local isSpawned = false
+		spawnObjectData({
+			data = spawnData,
+			callback_function = function() isSpawned = true end
+		})
+
+		return function() return isSpawned == true end
+	end)
+end
+
+
+return HouseScreen

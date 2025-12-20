@@ -1,0 +1,269 @@
+<!-- TURN TRACKER -->
+<Defaults>
+  <Image preserveAspect="true" raycastTarget="false" />
+  <VerticalLayout raycastTarget="false" />
+  <HorizontalLayout raycastTarget="false" />
+  <Panel class="turnTracker"
+    rectAlignment="LowerCenter"
+    width="80%"
+    childAlignment="LowerLeft"
+    height="5%"
+    offsetXY="0 100" />
+  <Image class="tracker-future" color="rgba(1, 1, 1, 0.5)" />
+  <Image class="tracker-hex" color="rgba(1, 1, 1, 1)" />
+  <Image class="tracker-past" color="clear" />
+  <Image class="tracker-current" color="clear" />
+</Defaults>
+<Panel id="turnTracker" class="turnTracker" active="false">
+  <HorizontalLayout class="turnTrackerLayer">
+
+    <Image id="tt-round-past-1" class="tracker-image tracker-hex tracker-past"
+        image="tt-round-past-1" />
+    <Image id="tt-round-past-1-turn-1" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+    <Image id="tt-round-past-1-turn-2" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+    <Image id="tt-round-past-1-turn-3" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+
+    <Image id="tt-round-past-2" class="tracker-image tracker-hex tracker-past"
+        image="tt-round-past-2" />
+    <Image id="tt-round-past-2-turn-1" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+    <Image id="tt-round-past-2-turn-2" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+    <Image id="tt-round-past-2-turn-3" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+
+    <Image id="tt-round-past-3" class="tracker-image tracker-hex tracker-past"
+        image="tt-round-past-3" />
+    <Image id="tt-round-past-3-turn-1" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+    <Image id="tt-round-past-3-turn-2" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+    <Image id="tt-round-past-3-turn-3" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+
+    <Image id="tt-round-past-4" class="tracker-image tracker-hex tracker-past"
+        image="tt-round-past-4" />
+    <Image id="tt-round-past-4-turn-1" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+    <Image id="tt-round-past-4-turn-2" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+    <Image id="tt-round-past-4-turn-3" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+
+    <Image id="tt-round-past-5" class="tracker-image tracker-hex tracker-past"
+        image="tt-round-past-5" />
+    <Image id="tt-round-past-5-turn-1" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark"/>
+    <Image id="tt-round-past-5-turn-2" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+    <Image id="tt-round-past-5-turn-3" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+
+    <Image id="tt-round-past-6" class="tracker-image tracker-hex tracker-past"
+        image="tt-round-past-6" />
+    <Image id="tt-round-past-6-turn-1" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+    <Image id="tt-round-past-6-turn-2" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+    <Image id="tt-round-past-6-turn-3" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+
+    <Image id="tt-round-past-7" class="tracker-image tracker-hex tracker-past"
+        image="tt-round-past-7" />
+    <Image id="tt-round-past-7-turn-1" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+    <Image id="tt-round-past-7-turn-2" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark"/>
+    <Image id="tt-round-past-7-turn-3" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+
+    <Image id="tt-round-past-8" class="tracker-image tracker-hex tracker-past"
+        image="tt-round-past-8" />
+    <Image id="tt-round-past-8-turn-1" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+    <Image id="tt-round-past-8-turn-2" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+    <Image id="tt-round-past-8-turn-3" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+
+    <Image id="tt-round-past-9" class="tracker-image tracker-hex tracker-past"
+        image="tt-round-past-9" />
+    <Image id="tt-round-past-9-turn-1" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+    <Image id="tt-round-past-9-turn-2" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+    <Image id="tt-round-past-9-turn-3" class="tracker-image tracker-turn tracker-past"
+        image="tt-turn-dark" />
+
+  </HorizontalLayout>
+  <HorizontalLayout class="turnTrackerLayer">
+
+    <Image id="tt-round-current-1" class="tracker-image tracker-hex tracker-current"
+        image="tt-round-current-1" />
+    <Image id="tt-round-current-1-turn-1" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-1-turn-2" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-1-turn-3" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+
+    <Image id="tt-round-current-2" class="tracker-image tracker-hex tracker-current"
+        image="tt-round-current-2" />
+    <Image id="tt-round-current-2-turn-1" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-2-turn-2" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-2-turn-3" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+
+    <Image id="tt-round-current-3" class="tracker-image tracker-hex tracker-current"
+        image="tt-round-current-3" />
+    <Image id="tt-round-current-3-turn-1" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-3-turn-2" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-3-turn-3" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+
+    <Image id="tt-round-current-4" class="tracker-image tracker-hex tracker-current"
+        image="tt-round-current-4" />
+    <Image id="tt-round-current-4-turn-1" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-4-turn-2" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-4-turn-3" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+
+    <Image id="tt-round-current-5" class="tracker-image tracker-hex tracker-current"
+        image="tt-round-current-5" />
+    <Image id="tt-round-current-5-turn-1" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-5-turn-2" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-5-turn-3" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+
+    <Image id="tt-round-current-6" class="tracker-image tracker-hex tracker-current"
+        image="tt-round-current-6" />
+    <Image id="tt-round-current-6-turn-1" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-6-turn-2" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-6-turn-3" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+
+    <Image id="tt-round-current-7" class="tracker-image tracker-hex tracker-current"
+        image="tt-round-current-7" />
+    <Image id="tt-round-current-7-turn-1" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-7-turn-2" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-7-turn-3" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+
+    <Image id="tt-round-current-8" class="tracker-image tracker-hex tracker-current"
+        image="tt-round-current-8" />
+    <Image id="tt-round-current-8-turn-1" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-8-turn-2" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-8-turn-3" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+
+    <Image id="tt-round-current-9" class="tracker-image tracker-hex tracker-current"
+        image="tt-round-current-9" />
+    <Image id="tt-round-current-9-turn-1" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-9-turn-2" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+    <Image id="tt-round-current-9-turn-3" class="tracker-image tracker-turn tracker-current"
+        image="tt-turn" />
+  </HorizontalLayout>
+  <HorizontalLayout class="turnTrackerLayer">
+
+    <Image id="tt-round-future-1" class="tracker-image tracker-hex tracker-future"
+        image="tt-round-future-1" />
+    <Image id="tt-round-future-1-turn-1" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-1-turn-2" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-1-turn-3" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+
+    <Image id="tt-round-future-2" class="tracker-image tracker-hex tracker-future"
+        image="tt-round-future-2" />
+    <Image id="tt-round-future-2-turn-1" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-2-turn-2" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-2-turn-3" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+
+    <Image id="tt-round-future-3" class="tracker-image tracker-hex tracker-future"
+        image="tt-round-future-3" />
+    <Image id="tt-round-future-3-turn-1" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-3-turn-2" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-3-turn-3" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+
+    <Image id="tt-round-future-4" class="tracker-image tracker-hex tracker-future"
+        image="tt-round-future-4" />
+    <Image id="tt-round-future-4-turn-1" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-4-turn-2" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-4-turn-3" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+
+    <Image id="tt-round-future-5" class="tracker-image tracker-hex tracker-future"
+        image="tt-round-future-5" />
+    <Image id="tt-round-future-5-turn-1" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-5-turn-2" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-5-turn-3" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+
+    <Image id="tt-round-future-6" class="tracker-image tracker-hex tracker-future"
+        image="tt-round-future-6" />
+    <Image id="tt-round-future-6-turn-1" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-6-turn-2" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-6-turn-3" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+
+    <Image id="tt-round-future-7" class="tracker-image tracker-hex tracker-future"
+        image="tt-round-future-7" />
+    <Image id="tt-round-future-7-turn-1" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-7-turn-2" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-7-turn-3" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+
+    <Image id="tt-round-future-8" class="tracker-image tracker-hex tracker-future"
+        image="tt-round-future-8" />
+    <Image id="tt-round-future-8-turn-1" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-8-turn-2" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-8-turn-3" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+
+    <Image id="tt-round-future-9" class="tracker-image tracker-hex tracker-future"
+        image="tt-round-future-9" />
+    <Image id="tt-round-future-9-turn-1" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-9-turn-2" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+    <Image id="tt-round-future-9-turn-3" class="tracker-image tracker-turn tracker-future"
+        image="tt-turn-dark" />
+
+  </HorizontalLayout>
+</Panel>

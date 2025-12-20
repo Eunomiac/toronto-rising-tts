@@ -1,0 +1,193 @@
+<Defaults> <!-- Baseline Defaults -->
+
+  <!-- <Panel padding="0 0 0 0" /> -->
+  <VerticalLayout
+    padding="0 0 0 0" spacing="0"
+    childAlignment="UpperCenter"
+    childForceExpandWidth="true"
+    childForceExpandHeight="false" />
+  <HorizontalLayout
+    padding="0 0 0 0" spacing="0"
+    childAlignment="MiddleLeft"
+    childForceExpandWidth="false"
+    childForceExpandHeight="true" />
+
+  <Image preserveAspect="true" raycastTarget="false" />
+
+  <Button
+    minWidth="150"
+    minHeight="30"
+    preferredWidth="150"
+    preferredHeight="30"
+    flexibleWidth="0"
+    flexibleHeight="0"
+    color="rgba(0.7,0.7,0.7,1)"
+    fontSize="16"
+    fontStyle="Bold" />
+
+  <Text class="vertical-spacer-0"
+    color="clear"
+    fontSize="4" />
+  <Text class="vertical-spacer-1"
+    color="clear"
+    fontSize="8" />
+  <Text class="vertical-spacer-2"
+    color="clear"
+    fontSize="16" />
+  <Text class="vertical-spacer-3"
+    color="clear"
+    fontSize="32" />
+
+  <VerticalLayout class="bullet-list"
+    childAlignment="UpperLeft" />
+
+</Defaults>
+<Defaults> <!-- Debug & Admin -->
+
+  <VerticalLayout class="buttonControls"
+    padding="10 10 5 5"
+    spacing="5"
+    rectAlignment="MiddleLeft"
+    childAlignment="UpperLeft"
+    width="160"
+    offsetXY="0 -90"
+    scale="0.5"
+    flexibleWidth="0"
+    flexibleHeight="0"
+    childForceExpandWidth="false"
+    childForceExpandHeight="false" />
+	<HorizontalLayout class="subButtonControls"
+		spacing="5"
+		offsetXY="75 50"
+		width="200"
+		height="500"
+		rectAlignment="MiddleLeft"
+    flexibleWidth="0"
+    flexibleHeight="0"
+    childForceExpandWidth="false"
+    childForceExpandHeight="false"
+	/>
+
+  <Panel class="debugState"
+    color="rgba(0,0,0,0.75)"
+    height="400"
+    width="350"
+    padding="5 5 5 5"
+    scale="0.75"
+    rectAlignment="MiddleLeft"
+    offsetXY="250 0" />
+
+  <Panel class="debugTraits"
+    height="900"
+    width="800"
+    rectAlignment="UpperRight"
+    offsetXY="-400 -100" />
+  <Text class="debugText" preferredWidth="200" alignment="UpperLeft" color="#FFFFFF" outline="#000000" outlineSize="1 1" />
+  <Text class="debugTraitsRed" offsetXY="0 0" />
+  <Text class="debugTraitsYellow" offsetXY="200 0" />
+  <Text class="debugTraitsBlue" offsetXY="400 0" />
+  <Text class="debugStickers" offsetXY="600 0" />
+
+
+  <Panel class="reminder-text"
+    color="Black"
+    padding="15 5 5 5"
+    scale="0.75"
+    outline="#FF0000" outlineSize="2 2" />
+  <Panel class="setup"
+    height="275" width="200"
+    rectAlignment="UpperLeft"
+    offsetXY="5 -375" />
+
+  <Panel class="aftermath"
+    height="450" width="400"
+    rectAlignment="UpperLeft"
+    offsetXY="5 -350" />
+
+  <Text class="reminder-heading reminder-bullet reminder-action"
+    color="#FFFFFF"
+    alignment="MiddleLeft"
+    outline="#000000" outlineSize="1 1"
+    flexibleHeight="0" />
+  <Text class="reminder-action" fontSize="24" fontStyle="Bold" outline="#550000" color="Red" />
+  <Text class="reminder-heading" fontSize="18" fontStyle="Bold" outline="#555500" color="Yellow" />
+
+</Defaults>
+
+
+<Panel id="adminControls" visibility="Host|Red" active="true">
+  <VerticalLayout class="buttonControls" visibility="Host|Red">
+		<Button onClick="HUD_setupGame" color="#770000">0 - SETUP</Button>
+		<Button onClick="HUD_initGame" color="#880000">1 - INIT</Button>
+		<Button onClick="HUD_startGame" color="#990000">2 - START</Button>
+		<Button onClick="HUD_endCourtVote" color="#99FF99" minWidth="100" preferredWidth="100">End Vote</Button>
+		<Button onClick="HUD_overrideFirstPlayer" color="#99FFFF" minWidth="100" preferredWidth="100">First Player</Button>
+		<Button onClick="HUD_askRoundAndTurn" color="#FFFF00" minWidth="100" preferredWidth="100">Fix Turn</Button>
+		<Button onClick="HUD_toggleHavens" color="#FFFF00" minWidth="100" preferredWidth="100">Havens</Button>
+		<Text class="vertical-spacer-2"></Text>
+		<Button onClick="HUD_scoreGame" color="#AA0000">3 - SCORING</Button>
+		<Button onClick="HUD_updateScore" color="#00FF00" minWidth="100" preferredWidth="100">Refresh</Button>
+		<Text class="vertical-spacer-2"></Text>
+		<Button onClick="HUD_missionsGame" color="#BB0000">4 - MISSIONS</Button>
+		<Button onClick="HUD_updateTraits" color="#00BBBB" minWidth="100" preferredWidth="100">+Trait</Button>
+		<Text class="vertical-spacer-2"></Text>
+		<Button onClick="HUD_afterGame" color="#CC0000">5 - AFTERMATH</Button>
+		<Button onClick="HUD_updateSticker" color="#00BBBB" minWidth="100" preferredWidth="100">+Sticker</Button>
+		<Button onClick="HUD_switchStickerTraits" color="#00FFFF" minWidth="100" preferredWidth="100">Switch</Button>
+		<Button onClick="HUD_processCardSpots" color="#FFFF00" minWidth="100" preferredWidth="100">Process</Button>
+		<Text class="vertical-spacer-2"></Text>
+		<Button onClick="HUD_endGame" color="#DD0000">6 - END</Button>
+		<Text class="vertical-spacer-2"></Text>
+		<!-- <Button onClick="HUD_recallNorth" color="#444444">North</Button>
+		<Button onClick="HUD_recallSouth" color="#FFFFFF">South</Button>
+		<Button onClick="HUD_recallEast" color="#D2691E">East</Button>
+		<Button onClick="HUD_recallWest" color="#40E0D0">West</Button> -->
+		<Button onClick="HUD_toggleDebug">Debug</Button>
+		<Button onClick="HUD_toggleHUD">HUD</Button>
+  </VerticalLayout>
+  <HorizontalLayout id="debugControls" class="subButtonControls" active="false" visibility="Host|Red">
+    <VerticalLayout class="buttonControls subButtonControls" visibility="Host|Red">
+			<Button id="debugToggleZones" onClick="HUD_toggleZonesActive" color="#00FF00">Zones (Active)</Button>
+      <Text class="vertical-spacer-3"></Text>
+      <Text class="vertical-spacer-3"></Text>
+      <Button onClick="HUD_toggleScores" color="#00FF00">SCORES</Button>
+      <Text class="vertical-spacer-1"></Text>
+      <Text class="vertical-spacer-1"></Text>
+      <Button onClick="HUD_showTraits" color="#00BBBB">TRAITS</Button>
+      <Button onClick="HUD_showStickers" color="#00BBBB">STICKERS</Button>
+    	<Text class="vertical-spacer-1"></Text>
+      <Button onClick="HUD_setChapterData" color="#993399">Chapter Text</Button>
+      <Text class="vertical-spacer-1"></Text>
+      <Text class="vertical-spacer-1"></Text>
+      <Text class="vertical-spacer-1"></Text>
+    	<Button onClick="HUD_processCharacterDeck" color="#FF8C00">Process CDeck</Button>
+			<Button onClick="HUD_sortCharacterDeck" color="#FF8C00">Sort CDeck</Button>
+      <Text class="vertical-spacer-2"></Text>
+      <Button onClick="HUD_toggleTraitDebug">View Traits</Button>
+      <Button onClick="HUD_toggleZoneVisibility">Zones</Button>
+      <Text class="vertical-spacer-2"></Text>
+    	<Button onClick="HUD_debugEndGame" color="#444444">End Game</Button>
+      <Text class="vertical-spacer-2"></Text>
+  	<Button onClick="HUD_refreshState">Refresh</Button>
+    </VerticalLayout>
+    <VerticalLayout class="buttonControls subButtonControls" visibility="Host|Red" ignoreLayout="true" offsetXY="75 0">
+      <Button id="debugZoomCard" onClick="HUD_debugCardZoom">Zoom</Button>
+      <Button id="debugClearZoom" onClick="HUD_debugClearZoom">End</Button>
+      <Text class="vertical-spacer-2"></Text>
+      <Button id="debugResetState" onClick="HUD_resetGameState" color="Red">Reset</Button>
+      <Text class="vertical-spacer-2"></Text>
+      <Button id="debugTestFunc1" onClick="HUD_testFunc1">TestFunc 1</Button>
+      <Button id="debugTestFunc2" onClick="HUD_testFunc2">TestFunc 2</Button>
+      <Button id="debugTestFunc3" onClick="HUD_testFunc3">TestFunc 3</Button>
+    </VerticalLayout>
+  </HorizontalLayout>
+  <Panel id="debugStatePanel" active="false" class="debugState">
+    <Text id="debugState" class="debugText"></Text>
+  </Panel>
+  <Panel id="debugTraitsPanel" active="false" class="debugState debugTraits">
+    <Text id="debugTraitsRed" class="debugText debugTraitsRed"></Text>
+    <Text id="debugTraitsYellow" class="debugText debugTraitsYellow"></Text>
+    <Text id="debugTraitsBlue" class="debugText debugTraitsBlue"></Text>
+    <Text id="debugStickers" class="debugText debugTraitsBlue debugStickers"></Text>
+  </Panel>
+</Panel>

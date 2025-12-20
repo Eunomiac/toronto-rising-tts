@@ -1,0 +1,559 @@
+<Defaults>
+	<Panel class="conseqs-query"
+		height="100%"
+		width="100%"
+		showAnimation = "FadeIn"
+		hideAnimation = "FadeOut"
+		animationDuration = "0.5"
+		childForceExpandHeight = "false"
+		childAlignment = "UpperLeft"
+		padding = "5 5 5 5"
+		offsetXY = "-400 300"
+		scale = "0.4 0.4 0.4" />
+
+	<VerticalLayout class="conseqs-query"
+		childAlignment = "UpperLeft" />
+
+	<HorizontalLayout class="conseqs-query"
+		preferredHeight = "140" flexibleHeight = "0"
+		padding = "10"
+		spacing = "20"
+		childAlignment = "UpperCenter"
+		childForceExpandWidth = "false"
+		childForceExpandHeight = "false" />
+
+	<Image class="conseqs-top"
+		preferredHeight = "100" flexibleHeight = "0" minHeight = "100"
+		image = "splash-border-above" />
+	<Image class="conseqs-bottom"
+		preferredHeight = "100" flexibleHeight = "0" minHeight = "100"
+		image = "splash-border-under" />
+	<Image class="conseqs-bg"
+		ignoreLayout = "true"
+		preserveAspect = "false"
+		height = "100%"
+		width = "150%"
+		image = "splash-bg" />
+	<Image class="conseqs-option"
+		raycastTarget = "true"
+    onMouseDown="Consequence_HUD_Click"
+    onMouseEnter="Consequence_HUD_HoverOn"
+		onMouseExit="Consequence_HUD_HoverOff" />
+	<Image class="outcome-pos" color="#1E87FF7F" />
+	<Image class="outcome-neg" color="#DA19177F" />
+	<Image class="consequence-off" color="#7F7F7F7F" />
+
+	<Text class="conseqs"
+		alignment = "MiddleCenter"
+		font = "Fonts/Friz"
+		resizeTextForBestFit = "false"
+		fontSize = "40"
+		showAnimation = ""
+		hideAnimation = ""
+		animationDuration = "0"
+		preferredWidth = "1000" minWidth = "1000"
+		color = "rgba(1,1,1,1)"
+		shadow = "rgba(0,0,0,1)"
+		shadowDistance = "1 -1"
+		verticalOverflow = "Overflow"
+		horizontalOverflow = "Wrap" />
+	<Text class="conseqs-option"
+		color = "#FFFFFF88"
+		font = "Fonts/CinzelBB"
+		fontSize = "45" />
+	<Text class="conseqs-player-prompt"
+		rectAlignment = "UpperCenter"
+		ignoreLayout = "true"
+		color = "#FFFFFF"
+		font = "Fonts/CinzelBB"
+		alignment = "UpperCenter"
+		shadow = "#000000"
+		shadowDistance = "2 -2"
+		fontSize = "70" />
+
+</Defaults>
+
+<Defaults> <!-- conseqs Query Defaults -->
+	<Panel class="conseqs-option"
+		preferredHeight = "120" flexibleHeight = "0"
+		preferredWidth = "120" flexibleWidth = "0" />
+</Defaults>
+
+<Panel id="consequencesQuery_Brown" class="conseqs-query" visibility="Brown" active="false">
+	<VerticalLayout class="conseqs-query">
+		<Image class="conseqs-top" />
+		<Text id="splashConsequencesPlayerPrompt_Brown" class="conseqs conseqs-player-prompt"></Text>
+		<VerticalLayout class="conseqs-query">
+			<Image class="conseqs-bg" />
+			<Text class="conseqs">Toggle the consequences displayed on the Dilemma.</Text>
+			<HorizontalLayout class="conseqs-query">
+				<Panel class="conseqs-option" active="true">
+					<Text class="conseqs conseqs-option" color="#1E87FFFF" alignment="MiddleRight">aye:</Text>
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Influence_Brown" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_P_P_Influence_Brown" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_P_N_Influence_Brown" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086290/F55E159C00E2080D80D611D01F23FBC017C0F383/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Wealth_Brown" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_P_P_Wealth_Brown" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_P_N_Wealth_Brown" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086582/D333DC740283F5FA46441A7F13EE99EF48D32E43/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Morale_Brown" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_P_P_Morale_Brown" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_P_N_Morale_Brown" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086451/83DF2EC085E2E2962B5558E63398A2233DED8F72/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Welfare_Brown" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_P_P_Welfare_Brown" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_P_N_Welfare_Brown" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086632/0C791FF1A340802553E5272E79F115BAD3619804/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Knowledge_Brown" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_P_P_Knowledge_Brown" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_P_N_Knowledge_Brown" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086385/0179A21A56DFBFC386BD4B0F0621F40FD8FC34B5/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Sticker_Brown" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_P_P_Sticker_Brown" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_P_N_Sticker_Brown" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086525/C92359F5300582C65B38061CD3C302BA2276CF7B/" />
+				</Panel>
+			</HorizontalLayout>
+
+			<HorizontalLayout class="conseqs-query">
+				<Panel class="conseqs-option">
+					<Text class="conseqs conseqs-option" color="#DA1917FF" alignment="MiddleRight">nay:</Text>
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Influence_Brown" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_N_P_Influence_Brown" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_N_N_Influence_Brown" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086290/F55E159C00E2080D80D611D01F23FBC017C0F383/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Wealth_Brown" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_N_P_Wealth_Brown" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_N_N_Wealth_Brown" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086582/D333DC740283F5FA46441A7F13EE99EF48D32E43/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Morale_Brown" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_N_P_Morale_Brown" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_N_N_Morale_Brown" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086451/83DF2EC085E2E2962B5558E63398A2233DED8F72/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Welfare_Brown" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_N_P_Welfare_Brown" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_N_N_Welfare_Brown" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086632/0C791FF1A340802553E5272E79F115BAD3619804/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Knowledge_Brown" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_N_P_Knowledge_Brown" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_N_N_Knowledge_Brown" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086385/0179A21A56DFBFC386BD4B0F0621F40FD8FC34B5/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Sticker_Brown" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_N_P_Sticker_Brown" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_N_N_Sticker_Brown" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086525/C92359F5300582C65B38061CD3C302BA2276CF7B/" />
+				</Panel>
+			</HorizontalLayout>
+		</VerticalLayout>
+		<Image class="conseqs-bottom" />
+	</VerticalLayout>
+</Panel>
+
+<Panel id="consequencesQuery_Red" class="conseqs-query" visibility="Red" active="false">
+	<VerticalLayout class="conseqs-query">
+		<Image class="conseqs-top" />
+		<Text id="splashConsequencesPlayerPrompt_Red" class="conseqs conseqs-player-prompt"></Text>
+		<VerticalLayout class="conseqs-query">
+			<Image class="conseqs-bg" />
+			<Text class="conseqs">Toggle the consequences displayed on the Dilemma.</Text>
+			<HorizontalLayout class="conseqs-query">
+				<Panel class="conseqs-option" active="true">
+					<Text class="conseqs conseqs-option" color="#1E87FFFF" alignment="MiddleRight">aye:</Text>
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Influence_Red" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_P_P_Influence_Red" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_P_N_Influence_Red" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086290/F55E159C00E2080D80D611D01F23FBC017C0F383/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Wealth_Red" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_P_P_Wealth_Red" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_P_N_Wealth_Red" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086582/D333DC740283F5FA46441A7F13EE99EF48D32E43/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Morale_Red" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_P_P_Morale_Red" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_P_N_Morale_Red" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086451/83DF2EC085E2E2962B5558E63398A2233DED8F72/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Welfare_Red" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_P_P_Welfare_Red" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_P_N_Welfare_Red" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086632/0C791FF1A340802553E5272E79F115BAD3619804/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Knowledge_Red" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_P_P_Knowledge_Red" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_P_N_Knowledge_Red" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086385/0179A21A56DFBFC386BD4B0F0621F40FD8FC34B5/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Sticker_Red" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_P_P_Sticker_Red" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_P_N_Sticker_Red" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086525/C92359F5300582C65B38061CD3C302BA2276CF7B/" />
+				</Panel>
+			</HorizontalLayout>
+
+			<HorizontalLayout class="conseqs-query">
+				<Panel class="conseqs-option">
+					<Text class="conseqs conseqs-option" color="#DA1917FF" alignment="MiddleRight">nay:</Text>
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Influence_Red" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_N_P_Influence_Red" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_N_N_Influence_Red" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086290/F55E159C00E2080D80D611D01F23FBC017C0F383/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Wealth_Red" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_N_P_Wealth_Red" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_N_N_Wealth_Red" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086582/D333DC740283F5FA46441A7F13EE99EF48D32E43/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Morale_Red" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_N_P_Morale_Red" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_N_N_Morale_Red" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086451/83DF2EC085E2E2962B5558E63398A2233DED8F72/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Welfare_Red" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_N_P_Welfare_Red" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_N_N_Welfare_Red" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086632/0C791FF1A340802553E5272E79F115BAD3619804/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Knowledge_Red" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_N_P_Knowledge_Red" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_N_N_Knowledge_Red" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086385/0179A21A56DFBFC386BD4B0F0621F40FD8FC34B5/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Sticker_Red" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_N_P_Sticker_Red" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_N_N_Sticker_Red" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086525/C92359F5300582C65B38061CD3C302BA2276CF7B/" />
+				</Panel>
+			</HorizontalLayout>
+		</VerticalLayout>
+		<Image class="conseqs-bottom" />
+	</VerticalLayout>
+</Panel>
+
+<Panel id="consequencesQuery_Orange" class="conseqs-query" visibility="Orange" active="false">
+	<VerticalLayout class="conseqs-query">
+		<Image class="conseqs-top" />
+		<Text id="splashConsequencesPlayerPrompt_Orange" class="conseqs conseqs-player-prompt"></Text>
+		<VerticalLayout class="conseqs-query">
+			<Image class="conseqs-bg" />
+			<Text class="conseqs">Toggle the consequences displayed on the Dilemma.</Text>
+			<HorizontalLayout class="conseqs-query">
+				<Panel class="conseqs-option" active="true">
+					<Text class="conseqs conseqs-option" color="#1E87FFFF" alignment="MiddleRight">aye:</Text>
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Influence_Orange" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_P_P_Influence_Orange" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_P_N_Influence_Orange" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086290/F55E159C00E2080D80D611D01F23FBC017C0F383/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Wealth_Orange" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_P_P_Wealth_Orange" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_P_N_Wealth_Orange" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086582/D333DC740283F5FA46441A7F13EE99EF48D32E43/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Morale_Orange" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_P_P_Morale_Orange" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_P_N_Morale_Orange" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086451/83DF2EC085E2E2962B5558E63398A2233DED8F72/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Welfare_Orange" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_P_P_Welfare_Orange" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_P_N_Welfare_Orange" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086632/0C791FF1A340802553E5272E79F115BAD3619804/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Knowledge_Orange" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_P_P_Knowledge_Orange" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_P_N_Knowledge_Orange" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086385/0179A21A56DFBFC386BD4B0F0621F40FD8FC34B5/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Sticker_Orange" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_P_P_Sticker_Orange" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_P_N_Sticker_Orange" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086525/C92359F5300582C65B38061CD3C302BA2276CF7B/" />
+				</Panel>
+			</HorizontalLayout>
+
+			<HorizontalLayout class="conseqs-query">
+				<Panel class="conseqs-option">
+					<Text class="conseqs conseqs-option" color="#DA1917FF" alignment="MiddleRight">nay:</Text>
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Influence_Orange" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_N_P_Influence_Orange" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_N_N_Influence_Orange" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086290/F55E159C00E2080D80D611D01F23FBC017C0F383/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Wealth_Orange" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_N_P_Wealth_Orange" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_N_N_Wealth_Orange" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086582/D333DC740283F5FA46441A7F13EE99EF48D32E43/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Morale_Orange" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_N_P_Morale_Orange" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_N_N_Morale_Orange" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086451/83DF2EC085E2E2962B5558E63398A2233DED8F72/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Welfare_Orange" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_N_P_Welfare_Orange" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_N_N_Welfare_Orange" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086632/0C791FF1A340802553E5272E79F115BAD3619804/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Knowledge_Orange" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_N_P_Knowledge_Orange" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_N_N_Knowledge_Orange" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086385/0179A21A56DFBFC386BD4B0F0621F40FD8FC34B5/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Sticker_Orange" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_N_P_Sticker_Orange" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_N_N_Sticker_Orange" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086525/C92359F5300582C65B38061CD3C302BA2276CF7B/" />
+				</Panel>
+			</HorizontalLayout>
+		</VerticalLayout>
+		<Image class="conseqs-bottom" />
+	</VerticalLayout>
+</Panel>
+
+<Panel id="consequencesQuery_Yellow" class="conseqs-query" visibility="Yellow" active="false">
+	<VerticalLayout class="conseqs-query">
+		<Image class="conseqs-top" />
+		<Text id="splashConsequencesPlayerPrompt_Yellow" class="conseqs conseqs-player-prompt"></Text>
+		<VerticalLayout class="conseqs-query">
+			<Image class="conseqs-bg" />
+			<Text class="conseqs">Toggle the consequences displayed on the Dilemma.</Text>
+			<HorizontalLayout class="conseqs-query">
+				<Panel class="conseqs-option" active="true">
+					<Text class="conseqs conseqs-option" color="#1E87FFFF" alignment="MiddleRight">aye:</Text>
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Influence_Yellow" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_P_P_Influence_Yellow" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_P_N_Influence_Yellow" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086290/F55E159C00E2080D80D611D01F23FBC017C0F383/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Wealth_Yellow" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_P_P_Wealth_Yellow" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_P_N_Wealth_Yellow" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086582/D333DC740283F5FA46441A7F13EE99EF48D32E43/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Morale_Yellow" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_P_P_Morale_Yellow" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_P_N_Morale_Yellow" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086451/83DF2EC085E2E2962B5558E63398A2233DED8F72/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Welfare_Yellow" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_P_P_Welfare_Yellow" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_P_N_Welfare_Yellow" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086632/0C791FF1A340802553E5272E79F115BAD3619804/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Knowledge_Yellow" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_P_P_Knowledge_Yellow" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_P_N_Knowledge_Yellow" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086385/0179A21A56DFBFC386BD4B0F0621F40FD8FC34B5/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Sticker_Yellow" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_P_P_Sticker_Yellow" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_P_N_Sticker_Yellow" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086525/C92359F5300582C65B38061CD3C302BA2276CF7B/" />
+				</Panel>
+			</HorizontalLayout>
+
+			<HorizontalLayout class="conseqs-query">
+				<Panel class="conseqs-option">
+					<Text class="conseqs conseqs-option" color="#DA1917FF" alignment="MiddleRight">nay:</Text>
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Influence_Yellow" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_N_P_Influence_Yellow" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_N_N_Influence_Yellow" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086290/F55E159C00E2080D80D611D01F23FBC017C0F383/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Wealth_Yellow" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_N_P_Wealth_Yellow" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_N_N_Wealth_Yellow" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086582/D333DC740283F5FA46441A7F13EE99EF48D32E43/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Morale_Yellow" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_N_P_Morale_Yellow" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_N_N_Morale_Yellow" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086451/83DF2EC085E2E2962B5558E63398A2233DED8F72/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Welfare_Yellow" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_N_P_Welfare_Yellow" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_N_N_Welfare_Yellow" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086632/0C791FF1A340802553E5272E79F115BAD3619804/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Knowledge_Yellow" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_N_P_Knowledge_Yellow" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_N_N_Knowledge_Yellow" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086385/0179A21A56DFBFC386BD4B0F0621F40FD8FC34B5/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Sticker_Yellow" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_N_P_Sticker_Yellow" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_N_N_Sticker_Yellow" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086525/C92359F5300582C65B38061CD3C302BA2276CF7B/" />
+				</Panel>
+			</HorizontalLayout>
+		</VerticalLayout>
+		<Image class="conseqs-bottom" />
+	</VerticalLayout>
+</Panel>
+
+<Panel id="consequencesQuery_Green" class="conseqs-query" visibility="Green" active="false">
+	<VerticalLayout class="conseqs-query">
+		<Image class="conseqs-top" />
+		<Text id="splashConsequencesPlayerPrompt_Green" class="conseqs conseqs-player-prompt"></Text>
+		<VerticalLayout class="conseqs-query">
+			<Image class="conseqs-bg" />
+			<Text class="conseqs">Toggle the consequences displayed on the Dilemma.</Text>
+			<HorizontalLayout class="conseqs-query">
+				<Panel class="conseqs-option" active="true">
+					<Text class="conseqs conseqs-option" color="#1E87FFFF" alignment="MiddleRight">aye:</Text>
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Influence_Green" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_P_P_Influence_Green" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_P_N_Influence_Green" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086290/F55E159C00E2080D80D611D01F23FBC017C0F383/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Wealth_Green" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_P_P_Wealth_Green" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_P_N_Wealth_Green" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086582/D333DC740283F5FA46441A7F13EE99EF48D32E43/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Morale_Green" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_P_P_Morale_Green" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_P_N_Morale_Green" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086451/83DF2EC085E2E2962B5558E63398A2233DED8F72/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Welfare_Green" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_P_P_Welfare_Green" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_P_N_Welfare_Green" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086632/0C791FF1A340802553E5272E79F115BAD3619804/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Knowledge_Green" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_P_P_Knowledge_Green" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_P_N_Knowledge_Green" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086385/0179A21A56DFBFC386BD4B0F0621F40FD8FC34B5/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_P_O_Sticker_Green" class="conseqs-option outcome-pos consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_P_P_Sticker_Green" class="conseqs-option outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_P_N_Sticker_Green" class="conseqs-option outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086525/C92359F5300582C65B38061CD3C302BA2276CF7B/" />
+				</Panel>
+			</HorizontalLayout>
+
+			<HorizontalLayout class="conseqs-query">
+				<Panel class="conseqs-option">
+					<Text class="conseqs conseqs-option" color="#DA1917FF" alignment="MiddleRight">nay:</Text>
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Influence_Green" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_N_P_Influence_Green" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+					<Image id="consequence_N_N_Influence_Green" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086290/F55E159C00E2080D80D611D01F23FBC017C0F383/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Wealth_Green" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_N_P_Wealth_Green" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+					<Image id="consequence_N_N_Wealth_Green" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086582/D333DC740283F5FA46441A7F13EE99EF48D32E43/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Morale_Green" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_N_P_Morale_Green" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+					<Image id="consequence_N_N_Morale_Green" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086451/83DF2EC085E2E2962B5558E63398A2233DED8F72/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Welfare_Green" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_N_P_Welfare_Green" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+					<Image id="consequence_N_N_Welfare_Green" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086632/0C791FF1A340802553E5272E79F115BAD3619804/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Knowledge_Green" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_N_P_Knowledge_Green" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+					<Image id="consequence_N_N_Knowledge_Green" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086385/0179A21A56DFBFC386BD4B0F0621F40FD8FC34B5/" />
+				</Panel>
+				<Panel class="conseqs-option">
+					<Image id="consequence_N_O_Sticker_Green" class="conseqs-option outcome-neg consequence-off" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_N_P_Sticker_Green" class="conseqs-option outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+					<Image id="consequence_N_N_Sticker_Green" class="conseqs-option outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086525/C92359F5300582C65B38061CD3C302BA2276CF7B/" />
+				</Panel>
+			</HorizontalLayout>
+		</VerticalLayout>
+		<Image class="conseqs-bottom" />
+	</VerticalLayout>
+</Panel>
+
+<Defaults> <!-- conseqs Sidebar Defaults -->
+	<Panel class="conseqs-sidebar"
+		width="140"
+		rectAlignment="MiddleRight"
+		showAnimation = "FadeIn"
+		hideAnimation = "FadeOut"
+		animationDuration = "0.5"
+		childForceExpandHeight = "false"
+		childAlignment = "UpperRight"
+		padding = "5 5 200 5" />
+
+	<VerticalLayout class="conseqs-sidebar"
+		spacing = "0"
+		padding = "0 0 0 0"
+		preferredHeight = "700" flexibleHeight = "0"
+		childAlignment = "UpperRight" />
+	<VerticalLayout class="conseqs-sidebar-comp"
+		spacing = "5"
+		childAlignment = "UpperCenter"
+		preferredWidth = "80" flexibleWidth = "0" minWidth = "80"
+		preferredHeight = "1000" flexibleHeight="1" minHeight = "10" />
+	<Image class="conseqs-display"
+		preferredHeight = "80" flexibleHeight = "0" minHeight = "80"
+		preferredWidth = "80" flexibleWidth = "0" minWidth = "80"
+		raycastTarget = "false" />
+	<Image class="outcome-pos" color="#1E87FFFF" />
+	<Image class="outcome-neg" color="#DA1917FF" />
+	<Image class="consequence-off" color="#7F7F7FFF" />
+</Defaults>
+
+<Panel id="consequencesSidebar" class="conseqs-sidebar" active="false">
+	<VerticalLayout class="conseqs-sidebar">
+		<VerticalLayout class="conseqs-sidebar-comp outcome-pos">
+				<Image id="conDisplay_P_P_Influence" class="conseqs-display outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+				<Image id="conDisplay_P_N_Influence" class="conseqs-display outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086290/F55E159C00E2080D80D611D01F23FBC017C0F383/" />
+				<Image id="conDisplay_P_P_Wealth" class="conseqs-display outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+				<Image id="conDisplay_P_N_Wealth" class="conseqs-display outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086582/D333DC740283F5FA46441A7F13EE99EF48D32E43/" />
+				<Image id="conDisplay_P_P_Morale" class="conseqs-display outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+				<Image id="conDisplay_P_N_Morale" class="conseqs-display outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086451/83DF2EC085E2E2962B5558E63398A2233DED8F72/" />
+				<Image id="conDisplay_P_P_Welfare" class="conseqs-display outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+				<Image id="conDisplay_P_N_Welfare" class="conseqs-display outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086632/0C791FF1A340802553E5272E79F115BAD3619804/" />
+				<Image id="conDisplay_P_P_Knowledge" class="conseqs-display outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+				<Image id="conDisplay_P_N_Knowledge" class="conseqs-display outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086385/0179A21A56DFBFC386BD4B0F0621F40FD8FC34B5/" />
+				<Image id="conDisplay_P_P_Sticker" class="conseqs-display outcome-pos consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+				<Image id="conDisplay_P_N_Sticker" class="conseqs-display outcome-pos consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086525/C92359F5300582C65B38061CD3C302BA2276CF7B/" />
+		</VerticalLayout>
+		<VerticalLayout class="conseqs-sidebar-comp outcome-neg">
+				<Image id="conDisplay_N_P_Influence" class="conseqs-display outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086692/35A052BAE3D1DE7690275E997FC8A311BCB45126/" />
+				<Image id="conDisplay_N_N_Influence" class="conseqs-display outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086290/F55E159C00E2080D80D611D01F23FBC017C0F383/" />
+				<Image id="conDisplay_N_P_Wealth" class="conseqs-display outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086953/8C2B0AA7B759B7A54A9D247DEC4CC051D816C7F2/" />
+				<Image id="conDisplay_N_N_Wealth" class="conseqs-display outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086582/D333DC740283F5FA46441A7F13EE99EF48D32E43/" />
+				<Image id="conDisplay_N_P_Morale" class="conseqs-display outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086816/4984CE9FDB57F38997C5F427D57ADFF0EADFCA97/" />
+				<Image id="conDisplay_N_N_Morale" class="conseqs-display outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086451/83DF2EC085E2E2962B5558E63398A2233DED8F72/" />
+				<Image id="conDisplay_N_P_Welfare" class="conseqs-display outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816087011/D9CB40218548A5908CC8A206532B2954A4A38DE4/" />
+				<Image id="conDisplay_N_N_Welfare" class="conseqs-display outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086632/0C791FF1A340802553E5272E79F115BAD3619804/" />
+				<Image id="conDisplay_N_P_Knowledge" class="conseqs-display outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086752/A10F3A24C725F9C75776C0F32CBCB310BFEEF879/" />
+				<Image id="conDisplay_N_N_Knowledge" class="conseqs-display outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086385/0179A21A56DFBFC386BD4B0F0621F40FD8FC34B5/" />
+				<Image id="conDisplay_N_P_Sticker" class="conseqs-display outcome-neg consequence-pos" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086890/81F3E2A67A194113625F2351DC4560F07C5330C9/" />
+				<Image id="conDisplay_N_N_Sticker" class="conseqs-display outcome-neg consequence-neg" active="false" image="http://cloud-3.steamusercontent.com/ugc/2064379389816086525/C92359F5300582C65B38061CD3C302BA2276CF7B/" />
+		</VerticalLayout>
+	</VerticalLayout>
+
+</Panel>

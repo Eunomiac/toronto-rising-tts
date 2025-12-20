@@ -1,0 +1,47 @@
+-- Great UI and spotlight opportunities
+local NOTES = [[
+	Board & Playspace
+		Get some kind of medieval background
+		Use a circular table, but only half of it (so it's semicircular) to ensure all players
+			can see both each other's votes AND aren't facing the board contents upside-down
+
+	Great UI and spotlight opportunities:
+		Aye/Nay/Pass (results in colored spotlight aimed in front of house card, where power tokens are placed)
+		Moderator/Leader (modifies turn order during voting phase, represented in UI AND by custom figurines or something)
+
+	Automation
+		At end of voting phase, power tokens can be counted and the outcome of the vote displayed
+		Power tokens for aye/nay can be moved to proper locations
+
+	Media
+		Remake "signing" decals so they fit in the damn signature space
+
+
+
+]]
+
+-- DEVELOPMENT
+require("vscode/console")
+ISDEBUGGING = false
+
+-- MODULES
+U = require("lib.utilities")
+C = require("kingsdilemma.lib.constants")
+O = require("kingsdilemma.lib.objects")
+S = require("kingsdilemma.core.state")
+L = require("kingsdilemma.core.lighting")
+V = require("kingsdilemma.core.voting")
+
+-- gameState Variable Initialization
+gameState = {}
+
+-- COMPONENTS
+require("kingsdilemma.debug")
+require("kingsdilemma.hud")
+require("kingsdilemma.listeners")
+
+function onExternalCommand(input)
+
+
+
+end

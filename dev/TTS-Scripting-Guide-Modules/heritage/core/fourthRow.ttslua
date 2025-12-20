@@ -1,0 +1,287 @@
+--#region Modules & Local Variables
+local U = require("lib.utilities")
+local S = require("core.state")
+local G = require("lib.guids")
+local C = require("lib.constants")
+local Z = require("core.zones")
+
+local F = {}
+
+local boardXML = {
+	locked = {
+		{
+			tag = "Panel",
+			attributes = {
+				width = "330",
+				height = "300",
+				position = "0 0 -55",
+				rotation = "0 0 180"
+			},
+			children = {
+				{
+					tag = "Button",
+					attributes = {
+						position = "-200 0 0",
+						onClick = "BOARD_Unlock",
+						fontStyle = "Bold",
+						height = "30",
+						width = "140",
+						rotation = "0 0 90",
+						color = "Clear",
+						-- color = "Green|Red|Yellow|rgba(0.78,0.78,0.78,0.5)",
+						fontSize = "18"
+					},
+					value = "  +  "
+				}
+			}
+		}
+	},
+	unlocked = {
+		{
+			tag = "Panel",
+			attributes = {
+				width = "330",
+				height = "300",
+				position = "0 0 -55",
+				rotation = "0 0 180"
+			},
+			children = {
+				{
+					tag = "Button",
+					attributes = {
+						position = "-200 0 0",
+						onClick = "BOARD_Lock",
+						fontStyle = "Bold",
+						height = "30",
+						width = "140",
+						rotation = "0 0 90",
+						color = "Green",
+						fontSize = "18"
+					},
+					value = "LOCK"
+				}
+			}
+		}
+	}
+}
+--#endregion
+
+function onLoad()
+	if self.guid == G.playerObjs.fourthRowBoard then
+		BOARD_Lock = nil
+		BOARD_Unlock = nil
+	elseif self.getLock() then
+		self.UI.setXmlTable(boardXML.locked)
+	else
+		self.highlightOn("Red")
+		self.UI.setXmlTable(boardXML.unlocked)
+	end
+end
+
+local function getColorOfBoard(board)
+	if board.hasTag("Red") then return "Red"
+	elseif board.hasTag("Yellow") then return "Yellow"
+	elseif board.hasTag("Blue") then return "Blue"
+	end
+end
+
+local function spawnBoard(color)
+	local sourceBoard = getObjectFromGUID(G.playerObjs.fourthRowBoard)
+	if sourceBoard == nil then return end
+	local board = sourceBoard.clone({position = G.tableSpots.fourthRowStaging[color]})
+	board.addTag(color)
+	board.setSnapPoints({
+		{
+			position = {x = -1.175, y = 0.1, z = 0.175},
+			rotation = {x = 0, y = 0, z = 180},
+			rotation_snap = true,
+			tags = {"Character"}
+		},
+		{
+			position = {x = 0, y = 0.1, z = 0.175},
+			rotation = {x = 0, y = 0, z = 180},
+			rotation_snap = true,
+			tags = {"Character"}
+		},
+		{
+			position = {x = 1.175, y = 0.1, z = 0.175},
+			rotation = {x = 0, y = 0, z = 180},
+			rotation_snap = true,
+			tags = {"Character"}
+		},
+		{
+			position = {x = -1.175, y = 0.1, z = -0.9},
+			rotation = {x = 0, y = 0, z = 180},
+			rotation_snap = true,
+			tags = {"TitleToken"}
+		},
+		{
+			position = {x = 0, y = 0.1, z = -0.9},
+			rotation = {x = 0, y = 0, z = 180},
+			rotation_snap = true,
+			tags = {"TitleToken"}
+		},
+		{
+			position = {x = 1.175, y = 0.1, z = -0.9},
+			rotation = {x = 0, y = 0, z = 180},
+			rotation_snap = true,
+			tags = {"TitleToken"}
+		}
+	})
+	return board
+end
+
+local function killZones(board)
+	local color = getColorOfBoard(board)
+	local boardData = F.decodeBoardData(board)
+	local playerZones = S.getStateVal("playerZones", color)
+	if playerZones == nil then return end
+	-- log({playerZonesAll = playerZones})
+	local boardZoneIDs = U.map(boardData, function(zn) return zn.guid end)
+	-- log({boardZoneIDs = boardZoneIDs})
+	playerZones = U.filter(playerZones, function(zoneID) return not U.isIn(zoneID, boardZoneIDs) end)
+	-- log({playerZonesFiltered = playerZones})
+	S.setStateVal(playerZones, "playerZones", color)
+	U.forEach(boardData, function(zn) zn.destruct() end)
+	Z.updateBloodlineZones()
+end
+
+local function spawnZones(board)
+	local color = getColorOfBoard(board)
+	local spacing = 0.1
+	local sourceZone = getObjectFromGUID(G.zones.childeSource)
+	if sourceZone == nil then return end
+	local zoneCenter = board.getPosition()
+	local boardSize = board.getBounds().size
+	zoneCenter.y = zoneCenter.y + 0.4
+	zoneCenter.z = zoneCenter.z + 0.5 * boardSize.z - 2.4
+	local sourceSize = sourceZone.getScale()
+	local xSpacing = sourceSize.x + spacing
+	local zones = {}
+	for i = -1, 1 do
+		local thisZone = sourceZone.clone({position = {
+			x = zoneCenter.x + (i * xSpacing),
+			y = zoneCenter.y,
+			z = zoneCenter.z
+		}})
+		thisZone.addTag("FourthRow")
+		table.insert(zones, thisZone)
+	end
+	local playerZones = S.getStateVal("playerZones", color)
+	if playerZones == nil then playerZones = {} end
+	playerZones = U.concat(playerZones, U.map(zones, function(zone) return zone.guid end))
+	S.setStateVal(playerZones, "playerZones", color)
+	board.setDescription(table.concat(U.map(zones, function(zone) return zone.guid end), ","))
+	Z.updateBloodlineZones()
+	return zones
+end
+
+function F.spawnFourthRowBoard(color)
+	if S.isInPhase({"PLAY", "SCORING", "MISSIONS", "AFTERMATH", "NONE"}) then
+		local board = spawnBoard(color)
+		F.unlockBoard(board, true)
+	end
+end
+
+local function saveAndLockContents(board)
+	local objs = U.findAboveObject(board, function(obj)
+		return obj.guid ~= board.guid and not U.isIn(obj.guid, G.lockedObjects)
+	end, {invert = true, box = true})
+	-- log(objs)
+	local objString = ""
+	U.forEach(objs, function(obj)
+		obj.setLock(true)
+		local objPos = obj.getPosition()
+		local pos = U.roundTableVals(board.positionToLocal(objPos), 2)
+		local posString = obj.guid .. ":" .. pos.x .. "," .. pos.y .. "," .. pos.z
+		if objString == "" then
+			objString = posString
+		else
+			objString = objString .. "|" .. posString
+		end
+		obj.setPosition({
+			x = objPos.x,
+			y = -30,
+			z = objPos.z
+		})
+	end)
+	Wait.time(function()
+		board.setDescription("@" .. objString)
+	end, 0.5)
+end
+
+function F.decodeBoardData(board)
+	-- description = <zoneString>@<savedObjString>
+		-- zoneString = "<guid>,<guid>,<guid>"
+		-- savedObjString = "<guid>:<x>,<y>,<z>", delim = "|", positions in LOCAL coordinates
+	local descSplit = U.split(board.getDescription(), "@")
+	local zoneIDString, savedObjString = descSplit[1], descSplit[2]
+	local boardData = {}
+	-- log({zoneIDString = zoneIDString, savedObjString = savedObjString, splitObjString = U.split(savedObjString, "|")})
+	if type(zoneIDString) == "string" and zoneIDString ~= "" then
+		return U.map(U.split(zoneIDString, ","), function(zoneID) return getObjectFromGUID(zoneID) end)
+	end
+	if type(savedObjString) == "string" and savedObjString ~= "" then
+		return U.map(U.split(savedObjString, "|"), function (objString, oString2)
+			-- log({objString = objString, oString2 = oString2})
+			local objSplit = U.split(objString, ":")
+			local objID, posString = objSplit[1], objSplit[2]
+			-- log({objId = objID, posString = posString})
+			local posTerms = U.map(U.split(posString, ","), function(numStr) return 1 * numStr end)
+			local localPos = {x = posTerms[1], y = posTerms[2], z = posTerms[3]}
+			local worldPos = board.positionToWorld(localPos)
+			-- log({posTerms = posTerms, localPos = localPos, worldPos = worldPos})
+			return {obj = getObjectFromGUID(objID), pos = worldPos}
+		end)
+	end
+end
+
+local function restoreBoardContents(board)
+	local boardData = F.decodeBoardData(board)
+	Wait.time(function()
+		-- log({boardData = boardData})
+	if boardData ~= nil then
+		for _, objData in pairs(boardData) do
+			local obj = objData.obj
+			if obj then
+				obj.setPosition(objData.pos)
+				Wait.time(function() obj.setLock(false) end, 0.5)
+			end
+		end
+	end
+end, 0.5)
+end
+
+function F.unlockBoard(board, isQuick)
+	if isQuick == true then
+		board.UI.setXmlTable(boardXML.unlocked)
+		board.setLock(false)
+		board.highlightOn("Red")
+	else
+		U.sequence({
+			function() board.setLock(false) end,
+			function() board.UI.setXmlTable(boardXML.unlocked) end,
+			function() killZones(board) end,
+			function() saveAndLockContents(board) end,
+			function() board.highlightOn("Red") end
+		}, 0.5, false)
+	end
+end
+
+function F.lockBoard(board)
+	U.sequence({
+		function() board.setLock(true) end,
+		function() board.UI.setXmlTable(boardXML.locked) end,
+		function() restoreBoardContents(board) end,
+		0.5,
+		function() board.highlightOn("Green", 1) end,
+		function() spawnZones(board) end
+	}, 0.5, false)
+end
+
+
+
+
+
+
+return F

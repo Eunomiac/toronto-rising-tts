@@ -8,6 +8,10 @@
 function onLoad()
     print("V:tM V5 Dice System loaded")
 
+    -- Ensure hand zone calculator functions are available globally
+    _G.printHandZonePositions = printHandZonePositions
+    _G.calculateHandZonePositions = calculateHandZonePositions
+
     -- Set up the dice results UI
     -- This creates a full-screen overlay panel for displaying dice results
     local diceResultsXml = [[
@@ -240,3 +244,71 @@ end
 function onUpdate()
     --[[ Not used for dice calculations --]]
 end
+
+--[[
+    Hand Zone Position Calculator Functions
+    Usage in Lua Scripting window: printHandZonePositions()
+]]
+
+function calculateHandZonePositions(numZones, radius, tableCenter)
+    numZones = numZones or 5
+    radius = radius or 50
+    tableCenter = tableCenter or {x = 0, y = 1.5, z = 0}
+
+    local startAngle = 180
+    local arcSpan = 180
+    -- Divide arc into (numZones - 1) segments to span from 180° to 360°
+    -- First zone at 180°, last zone at 360°
+    local angleStep = arcSpan / (numZones - 1)
+    local positions = {}
+
+    for i = 1, numZones do
+        -- First zone at 180°, last zone at 360°
+        local angleDeg = startAngle + (angleStep * (i - 1))
+        local angleRad = math.rad(angleDeg)
+        local x = math.sin(angleRad) * radius
+        local z = math.cos(angleRad) * radius
+
+        table.insert(positions, {
+            x = tableCenter.x + x,
+            y = tableCenter.y,
+            z = tableCenter.z + z
+        })
+    end
+
+    return positions
+end
+
+function printHandZonePositions(numZones, radius, tableCenter)
+    numZones = numZones or 5
+    radius = radius or 50
+    tableCenter = tableCenter or {x = 0, y = 1.5, z = 0}
+
+    local positions = calculateHandZonePositions(numZones, radius, tableCenter)
+
+    print("=== Hand Zone Positions ===")
+    print("Number of zones: " .. numZones)
+    print("Radius: " .. radius)
+    print("Table center: {x=" .. tableCenter.x .. ", y=" .. tableCenter.y .. ", z=" .. tableCenter.z .. "}")
+    print("")
+
+    for i, pos in ipairs(positions) do
+        -- Calculate angle for display (matches the calculation above)
+        local angleStep = 180 / (numZones - 1)
+        local angleDeg = 180 + (angleStep * (i - 1))
+        print("Zone " .. i .. " (angle: " .. string.format("%.1f", angleDeg) .. "°):")
+        print("  Position: {x=" .. string.format("%.2f", pos.x) .. ", y=" .. string.format("%.2f", pos.y) .. ", z=" .. string.format("%.2f", pos.z) .. "}")
+        print("")
+    end
+
+    print("=== Copy-paste friendly format ===")
+    for i, pos in ipairs(positions) do
+        print("Zone " .. i .. ": {x=" .. string.format("%.2f", pos.x) .. ", y=" .. string.format("%.2f", pos.y) .. ", z=" .. string.format("%.2f", pos.z) .. "}")
+    end
+
+    return positions
+end
+
+-- Explicitly assign to global scope for console++ and other systems
+_G.printHandZonePositions = printHandZonePositions
+_G.calculateHandZonePositions = calculateHandZonePositions

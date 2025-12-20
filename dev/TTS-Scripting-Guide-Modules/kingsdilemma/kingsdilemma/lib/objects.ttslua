@@ -1,0 +1,103 @@
+local U = require("lib.utilities")
+
+local O = {}
+
+ObjTable = {}
+
+local function memoGetFromGUID(guid)
+	if ObjTable[guid] == nil then
+		ObjTable[guid] = getObjectFromGUID(guid)
+	end
+	return ObjTable[guid]
+end
+
+local function generateGetterFunction(guid)
+	return function() return memoGetFromGUID(guid) end
+end
+
+O.SecretContainers = {
+	Envelopes = generateGetterFunction("e8b898"),
+	Stickers = generateGetterFunction("531d8d"),
+	MysteryStickers = generateGetterFunction("9c9b72")
+}
+
+O.UninteractableObjs = {
+	Table = generateGetterFunction("9909b3"),
+	Scales = generateGetterFunction("39b7dd"),
+	Lectern = generateGetterFunction("6cc1dc"),
+	Board = generateGetterFunction("ade6bc"),
+	DilemmaPlinth = generateGetterFunction("0e036e"),
+	StagingPlinth = generateGetterFunction("fed994"),
+	DebugTable = generateGetterFunction("f3538b")
+}
+
+O.MainStorage = generateGetterFunction("390beb")
+
+O.SpawnSources = {
+	chronicleCard = generateGetterFunction("10939d"),
+	screenFlapLeft = generateGetterFunction("d5842d"),
+	screenCenter = generateGetterFunction("1b818a"),
+	screenFlapRight = generateGetterFunction("dd1534"),
+	ayeCard = generateGetterFunction("437238"),
+	passCard = generateGetterFunction("d6e934"),
+	nayCard = generateGetterFunction("f0eb64"),
+	lightBehind = generateGetterFunction("05b53a"),
+	lightFront = generateGetterFunction("9bfae4"),
+	lightVote = generateGetterFunction("65fb31"),
+	plinthBase = generateGetterFunction("daa9ef"),
+	plinthRiser = generateGetterFunction("8f0ce1"),
+	zonePrivateAye = generateGetterFunction("065175"),
+	zonePrivateNay = generateGetterFunction("aab38f"),
+	zonePublic = generateGetterFunction("9100f3"),
+	zonePrivatePower = generateGetterFunction("5c34ee"),
+	zonePrivateCoin = generateGetterFunction("f02cb1"),
+	zoneHiderHouseCard = generateGetterFunction("12e119"),
+	zoneHiderGeneral = generateGetterFunction("0a34f7"),
+	stabilityToken = generateGetterFunction("e19593"),
+	influenceToken = generateGetterFunction("29b725"),
+	wealthToken = generateGetterFunction("c717a0"),
+	moraleToken = generateGetterFunction("0f25a8"),
+	welfareToken = generateGetterFunction("1ce1ca"),
+	knowledgeToken = generateGetterFunction("2071f2"),
+	powerToken1 = generateGetterFunction("432031"),
+	powerToken5 = generateGetterFunction("b58e4f"),
+	powerToken10 = generateGetterFunction("780288"),
+	coinToken1 = generateGetterFunction("fcb33c"),
+	coinToken5 = generateGetterFunction("5253b1"),
+}
+
+-- lua getObjectFromGUID("05b53a").getChildren()[1].getChildren()[2].getComponents()[2].set("intensity", 0)
+-- lua getObjectFromGUID("9bfae4").getChildren()[1].getChildren()[2].getComponents()[2].set("intensity", 0)
+-- lua getObjectFromGUID("65fb31").getChildren()[1].getChildren()[2].getComponents()[2].set("intensity", 0)
+-- lua log(getObjectFromGUID("05b53a").getTags()); log(getObjectFromGUID("9bfae4").getTags()); log(getObjectFromGUID("65fb31").getTags())
+
+O.Leader = {
+	Figure = generateGetterFunction("215a29"),
+	Light = generateGetterFunction("6f9e66")
+}
+
+O.Moderator = {
+	Figure = generateGetterFunction("078ee2"),
+	Light = generateGetterFunction("6a99d8")
+}
+
+O.Lights = {
+	MainBoardTop = generateGetterFunction("79ba9e"),
+	MainBoardBottom = generateGetterFunction("746f68"),
+	Debug = generateGetterFunction("a4527e")
+}
+
+O.Pieces = {
+	CoverCard = generateGetterFunction("533718"),
+	StabilityToken = generateGetterFunction("e19593"),
+	InfluenceToken = generateGetterFunction("29b725"),
+	WealthToken = generateGetterFunction("c717a0"),
+	MoraleToken = generateGetterFunction("0f25a8"),
+	WelfareToken = generateGetterFunction("1ce1ca"),
+	KnowledgeToken = generateGetterFunction("2071f2"),
+	BalancePlinth = generateGetterFunction("555cdb")
+}
+
+O.Get = memoGetFromGUID
+
+return O

@@ -1,0 +1,52 @@
+<Defaults> <!-- Debug Control Defaults -->
+	<HorizontalLayout class = "debugDisplayPanel"
+	  rectAlignment = "UpperRight"
+		height = "1500"
+		width = "250" />
+	<HorizontalLayout class="debugButtonPanel"
+		offsetXY = "0 -350" />
+
+	<Panel class = "codeDisplayPanel"
+		color = "rgba(0, 0, 0, 0.5)"
+		padding = "5 5 5 5"
+		height = "1500"
+		width = "250" />
+
+	<Text class = "codeDisplay"
+		fontSize = "8"
+		alignment = "UpperLeft" />
+</Defaults>
+
+<HorizontalLayout class="buttonPanel debugButtonPanel" visibility="Host">
+	<Button id="toggleElem_debugControls" class="buttonPanelToggle">►</Button>
+	<VerticalLayout id="debugControls" class="buttonBar" active="False">
+		<Button id="debug_logState">Log State</Button>
+		<Button id="debug_resetState">Reset State</Button>
+		<Button id="debug_resetPlayers">Reset Players</Button>
+		<Text class="spacer_10"></Text>
+		<Button id="debug_setArrows">Light Arrows</Button>
+		<Button id="debug_primeLights">Reset Lights</Button>
+		<Button id="debug_setLight">Set Light</Button>
+		<Text class="spacer_10"></Text>
+		<Button id="debug_testFunc1">Test Func 1</Button>
+		<Button id="debug_testFunc2">Test Func 2</Button>
+		<Button id="debug_testFunc3">Test Func 3</Button>
+		<Button id="debug_testFunc4">Test Func 4</Button>
+		<Button id="debug_testFunc5">Test Func 5</Button>
+		<Text class="spacer_10"></Text>
+		<Button id="prompt_assignHouseName">Name House</Button>
+		<!-- <Text class="spacer_5"></Text>
+		<Button id="extract_Envelopes">Ex Envelope</Button>
+		<Button id="extract_Stickers">Ex Stickers</Button>
+		<Button id="extract_MysteryStickers">Ex Mystery</Button> -->
+		<Text class="spacer_5"></Text>
+		<Button id="prompt_simClick">Sim Click</Button>
+	</VerticalLayout>
+</HorizontalLayout>
+
+<HorizontalLayout class="debugDisplayPanel">
+	<Button id="toggleElem_stateDisplayPanel" class="buttonPanelToggle">►</Button>
+	<Panel id="stateDisplayPanel" class="codeDisplayPanel" active="False">
+		<Text id="stateDisplay" class="codeDisplay"></Text>
+	</Panel>
+</HorizontalLayout>

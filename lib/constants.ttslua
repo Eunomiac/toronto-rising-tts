@@ -1,0 +1,46 @@
+--[[
+    Constants Library
+    Game constants, configuration values, and lookup tables.
+    These will be customized for the VTM5E module.
+]]
+
+local C = {}
+
+--[[
+    Color constants
+    Common colors used throughout the module
+]]
+C.Colors = {
+    Red = {1, 0, 0},
+    Green = {0, 1, 0},
+    Blue = {0, 0, 1},
+    White = {1, 1, 1},
+    Black = {0, 0, 0},
+    Yellow = {1, 1, 0},
+}
+
+--[[
+    Game state keys
+    Keys used in gameState table for different data types
+]]
+C.StateKeys = {
+    Phase = "phase",
+    Players = "players",
+    TurnOrder = "turnOrder",
+    -- Add more as needed
+}
+
+--[[
+    Phase constants
+    Different game phases/states
+]]
+C.Phases = {
+    Setup = "setup",
+    Playing = "playing",
+    Paused = "paused",
+    -- Add VTM5E-specific phases
+}
+
+-- TODO: Add VTM5E-specific constants (clans, disciplines, dice mechanics, etc.)
+
+return C

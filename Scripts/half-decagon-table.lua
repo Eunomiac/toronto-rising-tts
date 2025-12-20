@@ -1,0 +1,249 @@
+--[[
+    Half-Decagon Table Setup for Tabletop Simulator
+
+    This script provides functions to calculate player positions for a half-decagon table
+    where the Storyteller sits at the long flat side, and 5 players sit at the 5 straight
+    sides of the half-decagon.
+
+    IMPORTANT: This script calculates positions only. You must create and import a custom
+    3D model (OBJ file) to get the actual half-decagon table shape in TTS.
+
+    See HALF-DECAGON-TABLE-GUIDE.md for complete instructions on creating the 3D model.
+]]
+
+--[[
+    Calculates player positions for a half-decagon table layout.
+
+    A half-decagon has:
+    - One flat edge (long side) where the Storyteller sits
+    - Five straight sides forming a curved arc where players sit
+
+    Geometry:
+    - Full decagon has 10 sides, each interior angle = 144°
+    - Half-decagon uses 5 sides (180° arc)
+    - Each side spans 36° (180° / 5)
+    - Flat edge is at the top (0° / 360°)
+
+    @param tableRadius number - Distance from table center to edge (default: 50)
+    @param tableCenter Vector3 - Table center position (default: {x=0, y=1.5, z=0})
+    @param storytellerSide string - Which side for Storyteller: "top" or "bottom" (default: "top")
+    @return table - Table containing:
+        - storyteller: {position, rotation, angle}
+        - players: Array of {position, rotation, angle} for each of 5 players
+]]
+local function calculateHalfDecagonPositions(tableRadius, tableCenter, storytellerSide)
+    tableRadius = tableRadius or 50
+    tableCenter = tableCenter or {x = 0, y = 1.5, z = 0}
+    storytellerSide = storytellerSide or "top"
+
+    local results = {
+        storyteller = nil,
+        players = {}
+    }
+
+    -- Calculate positions for the 5 players on the curved arc
+    -- The arc spans from 90° to 270° (bottom half of circle)
+    -- Each player sits at the center of one of the 5 sides
+    local arcStart = 90   -- Start of arc (right side)
+    local arcEnd = 270    -- End of arc (left side)
+    local arcSpan = arcEnd - arcStart  -- 180 degrees
+    local sideAngle = arcSpan / 5     -- 36 degrees per side
+
+    for i = 1, 5 do
+        -- Calculate angle for center of each side
+        -- Side 1 starts at 90°, side 5 ends at 270°
+        -- Center of side i is at: 90° + (i - 0.5) * 36°
+        local angleDeg = arcStart + (i - 0.5) * sideAngle
+        local angleRad = math.rad(angleDeg)
+
+        -- Convert to Cartesian coordinates
+        -- In TTS: x = sin(angle) * radius, z = cos(angle) * radius
+        local x = math.sin(angleRad) * tableRadius
+        local z = math.cos(angleRad) * tableRadius
+
+        -- Calculate rotation to face table center
+        -- Rotation in TTS is around Y-axis (vertical)
+        -- Need to rotate 180° to face center (add 180 to angle)
+        local rotationY = angleDeg + 180
+        if rotationY >= 360 then
+            rotationY = rotationY - 360
+        end
+
+        local position = {
+            x = tableCenter.x + x,
+            y = tableCenter.y,
+            z = tableCenter.z + z
+        }
+
+        table.insert(results.players, {
+            position = position,
+            rotation = {x = 0, y = rotationY, z = 0},
+            angle = angleDeg
+        })
+    end
+
+    -- Calculate Storyteller position at the flat edge
+    -- Flat edge is at the top (0° / 360°)
+    -- Position Storyteller slightly further back from the edge
+    local storytellerDistance = tableRadius * 1.2  -- 20% further back
+    local storytellerAngle = 0  -- Top of circle
+
+    if storytellerSide == "bottom" then
+        storytellerAngle = 180  -- Bottom of circle
+    end
+
+    local storytellerAngleRad = math.rad(storytellerAngle)
+    local storytellerX = math.sin(storytellerAngleRad) * storytellerDistance
+    local storytellerZ = math.cos(storytellerAngleRad) * storytellerDistance
+
+    -- Storyteller faces the table center (180° rotation from their position)
+    local storytellerRotationY = storytellerAngle + 180
+    if storytellerRotationY >= 360 then
+        storytellerRotationY = storytellerRotationY - 360
+    end
+
+    results.storyteller = {
+        position = {
+            x = tableCenter.x + storytellerX,
+            y = tableCenter.y,
+            z = tableCenter.z + storytellerZ
+        },
+        rotation = {x = 0, y = storytellerRotationY, z = 0},
+        angle = storytellerAngle
+    }
+
+    return results
+end
+
+--[[
+    Prints calculated positions in a readable format for debugging.
+
+    @param tableRadius number - Distance from table center to edge
+    @param tableCenter Vector3 - Table center position
+    @param storytellerSide string - Which side for Storyteller: "top" or "bottom"
+]]
+local function printHalfDecagonPositions(tableRadius, tableCenter, storytellerSide)
+    tableRadius = tableRadius or 50
+    tableCenter = tableCenter or {x = 0, y = 1.5, z = 0}
+    storytellerSide = storytellerSide or "top"
+
+    local positions = calculateHalfDecagonPositions(tableRadius, tableCenter, storytellerSide)
+
+    print("=== Half-Decagon Table Positions ===")
+    print("Table Radius: " .. tableRadius)
+    print("Table Center: {x=" .. tableCenter.x .. ", y=" .. tableCenter.y .. ", z=" .. tableCenter.z .. "}")
+    print("Storyteller Side: " .. storytellerSide)
+    print("")
+
+    print("--- Storyteller Position ---")
+    print("  Position: {x=" .. string.format("%.2f", positions.storyteller.position.x) ..
+           ", y=" .. string.format("%.2f", positions.storyteller.position.y) ..
+           ", z=" .. string.format("%.2f", positions.storyteller.position.z) .. "}")
+    print("  Rotation: {x=" .. string.format("%.2f", positions.storyteller.rotation.x) ..
+           ", y=" .. string.format("%.2f", positions.storyteller.rotation.y) ..
+           ", z=" .. string.format("%.2f", positions.storyteller.rotation.z) .. "}")
+    print("  Angle: " .. string.format("%.1f", positions.storyteller.angle) .. "°")
+    print("")
+
+    print("--- Player Positions (5 players) ---")
+    for i, player in ipairs(positions.players) do
+        print("Player " .. i .. ":")
+        print("  Position: {x=" .. string.format("%.2f", player.position.x) ..
+               ", y=" .. string.format("%.2f", player.position.y) ..
+               ", z=" .. string.format("%.2f", player.position.z) .. "}")
+        print("  Rotation: {x=" .. string.format("%.2f", player.rotation.x) ..
+               ", y=" .. string.format("%.2f", player.rotation.y) ..
+               ", z=" .. string.format("%.2f", player.rotation.z) .. "}")
+        print("  Angle: " .. string.format("%.1f", player.angle) .. "°")
+        print("")
+    end
+
+    print("=== Copy-paste friendly format ===")
+    print("Storyteller:")
+    print("  Position: {x=" .. string.format("%.2f", positions.storyteller.position.x) ..
+           ", y=" .. string.format("%.2f", positions.storyteller.position.y) ..
+           ", z=" .. string.format("%.2f", positions.storyteller.position.z) .. "}")
+    print("  Rotation: {x=" .. string.format("%.2f", positions.storyteller.rotation.x) ..
+           ", y=" .. string.format("%.2f", positions.storyteller.rotation.y) ..
+           ", z=" .. string.format("%.2f", positions.storyteller.rotation.z) .. "}")
+    print("")
+    for i, player in ipairs(positions.players) do
+        print("Player " .. i .. ":")
+        print("  Position: {x=" .. string.format("%.2f", player.position.x) ..
+               ", y=" .. string.format("%.2f", player.position.y) ..
+               ", z=" .. string.format("%.2f", player.position.z) .. "}")
+        print("  Rotation: {x=" .. string.format("%.2f", player.rotation.x) ..
+               ", y=" .. string.format("%.2f", player.rotation.y) ..
+               ", z=" .. string.format("%.2f", player.rotation.z) .. "}")
+    end
+
+    return positions
+end
+
+--[[
+    Attempts to set player positions using TTS API.
+
+    NOTE: TTS doesn't have a direct API to set player positions programmatically.
+    This function provides the calculated positions that you can use manually or
+    with other tools/scripts.
+
+    @param tableRadius number - Distance from table center to edge
+    @param tableCenter Vector3 - Table center position
+    @param storytellerSide string - Which side for Storyteller: "top" or "bottom"
+]]
+local function setupHalfDecagonTable(tableRadius, tableCenter, storytellerSide)
+    tableRadius = tableRadius or 50
+    tableCenter = tableCenter or {x = 0, y = 1.5, z = 0}
+    storytellerSide = storytellerSide or "top"
+
+    local positions = calculateHalfDecagonPositions(tableRadius, tableCenter, storytellerSide)
+
+    print("=== Half-Decagon Table Setup ===")
+    print("Calculated positions:")
+    print("")
+
+    -- Print positions for manual setup
+    print("Storyteller position:")
+    print("  Use TTS camera controls or player movement to position at:")
+    print("  X: " .. string.format("%.2f", positions.storyteller.position.x))
+    print("  Y: " .. string.format("%.2f", positions.storyteller.position.y))
+    print("  Z: " .. string.format("%.2f", positions.storyteller.position.z))
+    print("  Rotation Y: " .. string.format("%.2f", positions.storyteller.rotation.y))
+    print("")
+
+    for i, player in ipairs(positions.players) do
+        print("Player " .. i .. " position:")
+        print("  X: " .. string.format("%.2f", player.position.x))
+        print("  Y: " .. string.format("%.2f", player.position.y))
+        print("  Z: " .. string.format("%.2f", player.position.z))
+        print("  Rotation Y: " .. string.format("%.2f", player.rotation.y))
+        print("")
+    end
+
+    print("NOTE: TTS doesn't allow scripting player positions directly.")
+    print("Players must position themselves manually or use hand zones.")
+    print("Consider creating hand zones at these positions using the Zones tool (F4).")
+
+    return positions
+end
+
+-- Expose functions globally for use in TTS console
+_G.calculateHalfDecagonPositions = calculateHalfDecagonPositions
+_G.printHalfDecagonPositions = printHalfDecagonPositions
+_G.setupHalfDecagonTable = setupHalfDecagonTable
+
+-- Example usage in TTS console:
+--[[
+    -- Basic usage with defaults
+    printHalfDecagonPositions()
+
+    -- Custom table size and position
+    printHalfDecagonPositions(60, {x=0, y=1.5, z=0}, "top")
+
+    -- Get positions programmatically
+    local positions = calculateHalfDecagonPositions(50, {x=0, y=1.5, z=0}, "top")
+    print("Storyteller at: " .. positions.storyteller.position.x .. ", " .. positions.storyteller.position.z)
+
+    -- Setup table (prints instructions)
+    setupHalfDecagonTable()
+]]

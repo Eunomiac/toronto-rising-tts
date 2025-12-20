@@ -1,0 +1,75 @@
+## Table of Contents
+
+* Using the API Documentation
+  * Left Column
+  * Right Column
+* Improving the Documentation
+* Tabletop Simulator Terminology
+  * Object
+  * Player
+  * Global Script
+  * Object Scripts
+  * GUID
+* Deprecated APIs
+
+# Introduction
+
+In this section, you will find details on all events/classes/functions specific to Tabletop Simulator's Lua scripting.
+For more general information on how the scripting language of Lua works and what it does on its own, you can review
+the [Official Lua Documentation](https://www.lua.org/docs.html).
+
+## Using the API Documentation {#using-the-api-documentation}
+
+### Left Column {#left-column}
+
+This is the top-level list of classes and other information needed when scripting with Lua in Tabletop Simulator. Event, Base and Object are the three pages you will use the most, with the rest referring to niche information you can access as you go. It is a good idea to familiarize yourself with the contents of those three pages in order to have a good high-level understanding of what scripting is capable of doing.
+
+### Right Column {#right-column}
+
+The Table of Contents will lay out the contents of the page you are on. It always starts with high-level summary information first and, if needed, detailed information towards the bottom. The xml version="1.0" encoding="UTF-8"?svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "<http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"next> to a summary element will take you directly down to the relevant detailed explanation below.
+
+## Improving the Documentation {#improving-the-documentation}
+
+This documentation is predominantly written in [Markdown](https://www.markdownguide.org/getting-started/)and is [available on Github](https://github.com/Berserk-Games/Tabletop-Simulator-API).
+If you encounter a mistake, and it's something you're able to fix yourself, then [pull requests](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests)are
+welcome. However, if you've identified a problem, but don't know how to fix it, please let us know by opening an [issue](https://github.com/Berserk-Games/Tabletop-Simulator-API/issues).
+
+---
+
+## Tabletop Simulator Terminology {#tabletop-simulator-terminology}
+
+### Object {#object}
+
+An in-game physical Object that currently exists in the scene. If an Object is placed inside of a bag/deck/etc, it stops existing and is no longer in the scene until it is pulled back out.
+
+### Player {#player}
+
+A person in the game. Each Player is assigned a color, with spectators being "Grey". If you are attempting to identify a Player, you would use the color of the seat they are in to do so.
+
+### Global Script {#global-script}
+
+Each game/save has a Global script, which is not attached to any particular Object.
+There is only one Global script, and it is always present.
+
+### Object Scripts {#object-scripts}
+
+Every in-game [Object](../object/)may also have a script attached to it.
+By default, newly created Objects do not have a script attached. However, you can choose to create/edit an Object's
+script from the Object's context menu (typically opened by right-clicking on the Object).
+
+### GUID {#guid}
+
+In Tabletop Simulator, a GUID is a unique 6-character [string](../types/)which can be used to identify in-game [Objects](../object/). GUIDs are automatically assigned when objects exist within the scene.
+If an object is duplicated, it will sometimes have the same GUID for 1 frame before the engine assigns a new GUID to the newer Object. Objects in containers (bags/decks/etc) do not automatically get new GUIDs assigned to them in this way. Only once their contents are moved out into the scene.
+
+#### Custom Deck Card GUIDs
+
+When you first create a custom deck, all cards within the deck share the same GUID. If you need to reference individual GUIDs of cards, then the way to solve this is to lay out all cards from the deck at the same time to allow new GUIDs to be assigned by the game. [This tool](http://steamcommunity.com/sharedfiles/filedetails/?id=1180142950)can be used to simplify the process.
+
+---
+
+## Deprecated APIs {#deprecated}
+
+Through-out this documentation you may come across Lua APIs that are labelled as [./#deprecated](./#deprecated). It is advised that you no longer use deprecated APIs. Typically, this is because newer/improved APIs have been introduced that better serve the same purpose.
+**Deprecated APIs will not be removed or stop working.**
+Existing mods may continue to use deprecated functionality without issue. It is however strongly recommended, that for the best experience you avoid use of deprecated APIs in new code.

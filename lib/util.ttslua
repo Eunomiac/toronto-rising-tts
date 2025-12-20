@@ -1,0 +1,73 @@
+--[[
+    Utility Functions Library
+    Shared utility functions for use across the module.
+    These will be extracted from the reference repos (King's Dilemma / VTM Heritage).
+]]
+
+local U = {}
+
+--[[
+    Type checking utility - Enhanced type checker for TTS objects
+    @param obj - Object to check type of
+    @return Type string
+]]
+function U.Type(obj)
+    if type(obj) == "userdata" then
+        return "Object"
+    end
+    return type(obj)
+end
+
+--[[
+    Table manipulation helpers
+    These will be populated with functions like map, filter, forEach, find, etc.
+    from the reference implementation.
+]]
+
+-- Placeholder: Will extract U.map, U.filter, U.forEach, U.find from reference repos
+function U.map(table, func)
+    -- TODO: Extract from reference implementation
+    local result = {}
+    for i, v in ipairs(table) do
+        result[i] = func(v)
+    end
+    return result
+end
+
+function U.filter(table, func)
+    -- TODO: Extract from reference implementation
+    local result = {}
+    for i, v in ipairs(table) do
+        if func(v) then
+            table.insert(result, v)
+        end
+    end
+    return result
+end
+
+function U.forEach(table, func)
+    -- TODO: Extract from reference implementation
+    for i, v in ipairs(table) do
+        func(v)
+    end
+end
+
+function U.find(table, predicate)
+    -- TODO: Extract from reference implementation
+    for i, v in ipairs(table) do
+        if predicate(v) then
+            return v
+        end
+    end
+    return nil
+end
+
+--[[
+    Coroutine and async helpers
+    Will extract U.RunSequence, U.waitUntil, U.Lerp, etc. from reference repos
+]]
+
+-- Placeholder for async/coroutine utilities
+-- TODO: Extract U.RunSequence, U.waitUntil, U.Lerp from reference repos
+
+return U

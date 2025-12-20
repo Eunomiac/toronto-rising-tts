@@ -1,0 +1,56 @@
+<Defaults>
+	<VerticalLayout class="adminContainer"
+		width = "800"
+		spacing = "0"
+		padding = "5 0 0 0"
+		rectAlignment = "UpperLeft"
+		offsetXY = "40 -10" />
+	<HorizontalLayout class="gameStatusDisplay"
+		childAlignment = "MiddleLeft"
+		preferredHeight = "25"
+		flexibleHeight = "0"
+		spacing = "10"
+		padding = "0 0 0 0" />
+	<Text class="gameStatusDisplay"
+		color = "Yellow"
+		alignment = "MiddleCenter"
+		fontSize = "14"
+		outline = "Black"
+		preferredHeight = "25"
+		font = "Fonts/FrizB" />
+</Defaults>
+
+<VerticalLayout class="adminContainer" visibility="Host">
+	<HorizontalLayout id="preflightDisplay" class="gameStatusDisplay" active="False">
+		<Text class="gameStatusDisplay" color="White">Initialize:</Text>
+		<Button id="initPreflight">Preflight</Button>
+	</HorizontalLayout>
+	<HorizontalLayout id="sessionInitDisplay" class="gameStatusDisplay" active="False">
+		<Text class="gameStatusDisplay" color="White">Initialize:</Text>
+		<Button id="initSession">Session</Button>
+	</HorizontalLayout>
+	<HorizontalLayout id="gameStatusDisplay" class="gameStatusDisplay" active="False">
+		<Text class="gameStatusDisplay" color="White">Current:</Text>
+		<Text id="currentGameModeDisplay" class="gameStatusDisplay"></Text>
+		<HorizontalLayout id="currentGamePhaseContainer" class="gameStatusDisplay" active="False">
+			<Text class="gameStatusDisplay" color="White"> ♦ </Text>
+			<Text id="currentGamePhaseDisplay" class="gameStatusDisplay"></Text>
+		</HorizontalLayout>
+		<Button id="advanceGamePhase">Advance To ►</Button>
+		<Text id="nextGameModeDisplay" class="gameStatusDisplay"></Text>
+		<HorizontalLayout id="nextGamePhaseContainer" class="gameStatusDisplay" active="False">
+			<Text class="gameStatusDisplay" color="White"> ♦ </Text>
+			<Text id="nextGamePhaseDisplay" class="gameStatusDisplay"></Text>
+		</HorizontalLayout>
+	</HorizontalLayout>
+
+	<HorizontalLayout class="buttonPanel">
+		<Button id="toggleElem_adminControls" class="buttonPanelToggle">►</Button>
+		<VerticalLayout id="adminControls" class="buttonBar" active="False">
+			<Button id="clearPlayers">Clear Players</Button>
+			<Button id="resetTable">Reset Table</Button>
+			<Text class="spacer_10"></Text>
+			<Button id="setChronicleType">Set Chronicle</Button>
+		</VerticalLayout>
+	</HorizontalLayout>
+</VerticalLayout>

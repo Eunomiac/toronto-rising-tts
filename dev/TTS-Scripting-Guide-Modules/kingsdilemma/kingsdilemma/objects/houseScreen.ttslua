@@ -1,0 +1,378 @@
+local C = require("kingsdilemma.lib.constants")
+local S = require("kingsdilemma.core.state")
+local U = require("lib.utilities")
+
+local ISDEBUGGING = false
+
+local player
+local alphas = {
+	global = 1,
+	name = 1,
+	prestige = 1,
+	crave = 1,
+	vote = 1,
+	score = 1
+}
+local scales = {
+	global = 1,
+	name = 1,
+	prestige = 1,
+	crave = 1,
+	vote = 1,
+	score = 1
+}
+
+function GetPlayer() return player end
+function GetColor() return player and Color[player.color] end
+function GetHouse() return player and S.getPlayerVal(player, "house") end
+function GetHouseName() return player and S.getPlayerVal(player, "houseName") end
+
+function GetPrestige() return player and S.getPlayerVal(player, "prestige") end
+function GetCrave() return player and S.getPlayerVal(player, "crave") end
+
+function SetAlpha(params)
+	U.forEach(params, function(alpha, key)
+		alphas[key] = alpha
+	end)
+	UpdateXMLTable()
+end
+
+function SetScale(params)
+	U.forEach(params, function(scale, key)
+		scales[key] = scale
+	end)
+	UpdateXMLTable()
+end
+
+
+-- local function getHouseCard() return player and getObjectsWithAllTags({"HouseCard", player.color})[1] end
+
+
+function onLoad()
+	if self.hasTag("SourceObj") then return end
+
+	local color = U.findColorTag(self)
+	if color == nil then return end
+	player = S.getPlayer(color)
+	U.Val("HouseScreen.onLoad()", self, player and U.isIn(color, Player.getAvailableColors()), "Unable to locate player from color tag '" .. U.ToString(color) .. "'")
+
+	-- DimmerOff()
+	UpdateXMLTable()
+end
+
+function DimmerOn() SetAlpha({global = 0.05}) end
+function DimmerOff() SetAlpha({global = 1}) end
+function Update() UpdateXMLTable() end
+
+function Activate()	return self.UI.show("rootPanel") end
+
+local function parseScale(val) return U.join({U.ToString(val), U.ToString(val), U.ToString(val)}, " ") end
+local function getRootPanelXML(children)
+	return {
+			tag = "Panel",
+			attributes = {
+				id = "rootPanel",
+				active = "false",
+				showAnimation = "FadeIn",
+				hideAnimation = "FadeOut",
+				animationDuration = "5",
+				height = "400",
+				width = "600",
+				color = ISDEBUGGING and U.GetHex(Color.White, 0.1) or "Clear",
+				rotation = "12 0 180",
+				position = "0 -100 -100"
+			},
+			children = children
+		 }
+end
+
+local function getNamePanelXML()
+	local childrenXML = {
+		{
+			tag = "Text",
+			value = GetHouseName() and "house" or C.HousePrefixes[GetHouse()],
+			attributes = {
+				ignoreLayout = "True",
+				rectAlignment = "UpperCenter",
+				height = "1500",
+				width = "3000",
+				offsetXY = GetHouseName() and "0 60" or "0 50",
+				color = U.GetHex(GetHouseName() and GetColor() or Color.Grey, alphas.global * alphas.name * (GetHouseName() and 1 or 0.5)),
+				-- outline = U.GetHex(Color.Black, alphas.global * alphas.name),
+				-- outlineSize = "15",
+				font = "Fonts/CinzelBB",
+				fontSize = "200",
+				scale = "0.2 0.2 0.2"
+			}
+		},
+		{
+			tag = "Text",
+			value = string.lower(GetHouseName() or GetHouse()),
+			attributes = {
+				ignoreLayout = "True",
+				rectAlignment = "UpperCenter",
+				height = "1500",
+				width = "3000",
+				color = U.GetHex(GetHouseName() and GetColor() or Color.Grey, alphas.global * alphas.name * (GetHouseName() and 1 or 0.5)),
+				outline = U.GetHex(Color.Black, alphas.global * alphas.name),
+				outlineSize = "15",
+				font = "Fonts/CinzelBB",
+				fontSize = "400",
+				scale = "0.2 0.2 0.2",
+				offsetXY = GetHouseName() and "0 10" or "0 0"
+			}
+		}
+	}
+
+	if GetHouseName() then
+		table.insert(childrenXML, {
+			tag = "Text",
+			value = "of " .. C.HousePrefixes[GetHouse()] .. " " .. GetHouse(),
+			attributes = {
+				ignoreLayout = "True",
+				rectAlignment = "UpperCenter",
+				height = "1500",
+				width = "3000",
+				offsetXY = "0 -25",
+				color = U.GetHex(GetColor():lerp(C.RootColors.PureBlack, 0), alphas.global * alphas.name),
+				-- outline = U.GetHex(Color.Black, alphas.global * alphas.name),
+				-- outlineSize = "15",
+				font = "Fonts/FrizSC",
+				fontSize = "100",
+				scale = "0.2 0.2 0.2"
+				}
+		})
+	end
+
+		return {
+			tag = "Panel",
+			attributes = {
+				id = "namePanel",
+				visibility = U.join(S.getOtherColors(player), "|"),
+				height = "200",
+				width = "600",
+				color = ISDEBUGGING and U.GetHex(Color(1, 0, 1, 0.1)) or "Clear",
+				position = "0 -10 0",
+				pivot = "0.5 0",
+				scale = parseScale(scales.global * scales.name * (GetHouseName() and 1 or 0.5))
+			},
+			children = childrenXML
+		}
+end
+
+local function getPrestigeCravePanelXML()
+	return {
+		tag = "Panel",
+		attributes = {
+			id = "prestigeCravePanel",
+			visibility = "",
+			height = "50",
+			width = "300",
+			rectAlignment = "LowerCenter",
+			-- offsetXY = "150 0",
+			-- scale = "0.75 0.75 0.75",
+			color = ISDEBUGGING and U.GetHex(Color(1, 0, 1, 0.2)) or "Clear"
+		},
+		children = {
+			{
+				tag = "Panel",
+				attributes = {
+					height = "50",
+					width = "50",
+					rectAlignment = "MiddleLeft",
+					pivot = "0 0",
+					offsetXY = "0 -25",
+					scale = parseScale(scales.global * scales.prestige),
+					color = ISDEBUGGING and U.GetHex(Color(1, 1, 0, 0.1)) or "Clear"
+				},
+				children = {
+					{
+						tag = "Image",
+						attributes = {
+							height = "280",
+							width = "350",
+							offsetXY = "0 0",
+							color = U.GetHex(Color.White, alphas.global * alphas.prestige),
+							scale = "0.2 0.2 0.2",
+							image = "prestigeIcon-bg"
+						},
+						children = {}
+					},
+					{
+						tag = "Image",
+						attributes = {
+							height = "280",
+							width = "350",
+							offsetXY = "0 0",
+							color = U.GetHex(C.RootColors.PureBlack, alphas.global * alphas.prestige),
+							scale = "0.2 0.2 0.2",
+							image = "prestigeIcon-border"
+						},
+						children = {}
+					},
+					{
+						tag = "Text",
+						value = math.floor(S.getPlayerVal(player, "prestige")),
+						attributes = {
+							id = "prestigeElem",
+							height = "500",
+							width = "1000",
+							font = "Fonts/FrizB",
+							fontSize = "160",
+							color = U.GetHex(C.RootColors.PureBlack, alphas.global * alphas.prestige),
+							outline = "#000000FF",
+							-- outlineSize = "5 -5",
+							scale = "0.2 0.2 0.2",
+							offsetXY = "0 -6"
+						}
+					}
+				}
+			},
+			{
+				tag = "Panel",
+				attributes = {
+					height = "50",
+					width = "50",
+					rectAlignment = "MiddleRight",
+					pivot = "1 0",
+					offsetXY = "0 -25",
+					scale = parseScale(scales.global * scales.crave),
+					color = ISDEBUGGING and U.GetHex(Color(0, 1, 1, 0.1)) or "Clear"
+				},
+				children = {
+					{
+						tag = "Image",
+						attributes = {
+							height = "280",
+							width = "350",
+							offsetXY = "0 0",
+							color = U.GetHex(Color.Black, alphas.global * alphas.prestige),
+							scale = "0.2 0.2 0.2",
+							image = "craveIcon-bg"
+						},
+						children = {}
+					},
+					{
+						tag = "Image",
+						attributes = {
+							height = "280",
+							width = "350",
+							offsetXY = "0 0",
+							color = U.GetHex(Color.Black, alphas.global * alphas.prestige),
+							scale = "0.2 0.2 0.2",
+							image = "craveIcon-border"
+						},
+						children = {}
+					},
+					{
+						tag = "Text",
+						value = math.floor(S.getPlayerVal(player, "crave")),
+						attributes = {
+							id = "craveElem",
+							height = "500",
+							width = "1000",
+							font = "Fonts/FrizB",
+							fontSize = "160",
+							color = U.GetHex(Color.White, alphas.global * alphas.prestige),
+							-- outline = "#FFFFFFFF",
+							-- outlineSize = "5 -5",
+							scale = "0.2 0.2 0.2",
+							offsetXY = "0 -8"
+						}
+					}
+				}
+			}
+		}
+	}
+end
+
+local function getVotePanelXML()
+	local voteStatus
+	if not (ISDEBUGGING or S.isInMode("VOTE")) then return {} end
+	local voteStatus = S.getPlayerVoteStatus(playerRef)
+	if ISDEBUGGING then
+		voteStatus = ({"Aye", "Nay", "Pass", "PassMod"})[U.randBetween(1, 4, true)]
+	end
+	if not voteStatus then return {} end
+
+	local children = {}
+
+	if voteStatus == "Aye" or voteStatus == "Nay" then
+		table.insert(children, {
+			tag = "Image",
+			attributes = {
+				height = "500",
+				width = "500",
+				color = U.GetHex(voteStatus == "Aye" and Color.Blue or Color.Red, 0.1 * alphas.global * alphas.vote),
+				outline = U.GetHex(C.RootColors.PureBlack, alphas.global * alphas.vote),
+				outlineSize = "5",
+				scale = "0.2 0.2 0.2",
+				image = "powerIcon"
+			}
+		})
+	end
+
+	local textXML = {
+		tag = "Text",
+		value = voteStatus,
+		attributes = {
+			height = "500",
+			width = "1000",
+			font = "Fonts/Script",
+			outline = U.GetHex(C.RootColors.PureBlack, alphas.global * alphas.vote),
+			outlineSize = "5",
+			scale = "0.2 0.2 0.2"
+		}
+	}
+
+	if voteStatus == "Aye" then
+		textXML.value = "Aye"
+		textXML.attributes.color = U.GetHex(Color.Blue, alphas.global * alphas.vote)
+		textXML.attributes.fontSize = "500"
+	elseif voteStatus == "Nay" then
+		textXML.value = "Nay"
+		textXML.attributes.color = U.GetHex(Color.Red, alphas.global * alphas.vote)
+		textXML.attributes.fontSize = "500"
+	elseif voteStatus == "Pass" then
+		textXML.value = "Gathering Power"
+		textXML.attributes.color = U.GetHex(C.RootColors.Amber, alphas.global * alphas.vote)
+		textXML.attributes.font = "Fonts/FrizI"
+		textXML.attributes.fontSize = "100"
+	elseif voteStatus == "PassMod" then
+		textXML.value = ""
+	end
+
+	table.insert(children, textXML)
+
+	return {
+		tag = "Panel",
+		attributes = {
+			id = "votePanel",
+			height = "100",
+			width = "100",
+			color = ISDEBUGGING and U.GetHex(Color.Blue, 0.2) or "Clear",
+			rectAlignment = "MiddleCenter",
+			offsetXY = "0 -75",
+			scale = parseScale(scales.global * scales.vote)
+		},
+		children = children
+	}
+end
+
+local function getScorePanelXML()
+	if not S.isInMode(C.Modes.END) then return {} end
+	U.AlertGM("Gotta code score panels!", Color.Purple)
+end
+
+
+function UpdateXMLTable()
+	if player == nil then return end
+	self.UI.setXmlTable({
+		getRootPanelXML({
+			getNamePanelXML(),
+			getPrestigeCravePanelXML(),
+			getVotePanelXML(),
+			getScorePanelXML()
+		})
+	})
+end

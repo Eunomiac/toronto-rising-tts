@@ -1,0 +1,173 @@
+local U = require("lib.utilities")
+local G = require("lib.guids")
+local Z = require("core.zones")
+local M = require("core.main")
+
+local queueCharSnaps, queueMissionSnaps
+local isPopulating = false
+local isRequeuing = false
+
+local function getCharacterDeck()
+	local deck = U.findAboveObject(getObjectFromGUID(G.globalSpots.character), function(obj) return obj.type == "Deck" end)[1]
+	if not deck then return nil end
+	return deck
+end
+local function getMissionDeck()
+	local deck = U.findAboveObject(getObjectFromGUID(G.globalSpots.mission), function(obj) return obj.type == "Deck" end)[1]
+	if not deck then return nil end
+	return deck
+end
+
+function onLoad()
+	queueCharSnaps = U.getSnapPoints(self, { z = 0.42 }, "x")
+	queueMissionSnaps = U.filter(U.getSnapPoints(self, { z = -0.43 }, "x"),
+					function(snap) return U.count(snap.tags) == 0 end)
+
+	local characterDeck = getCharacterDeck()
+	if characterDeck then characterDeck.randomize() end
+end
+
+function Populate_Missions()
+	local missionFuncs = {}
+	local missionDeck = getMissionDeck()
+	if not missionDeck then return U.alertGM("Error finding mission deck!") end
+
+	local missionDeckPos = missionDeck.getPosition()
+	missionDeckPos.y = missionDeckPos.y + 4
+	missionDeck.setLock(true)
+	missionDeck.setPosition(missionDeckPos)
+
+	-- table.insert(missionFuncs, 0.5)
+
+	local missionZone = getObjectFromGUID(G.zones.missionQueue)
+	local snapY = queueMissionSnaps[1].position.y
+	local objsInMissionZone = U.filter(missionZone.getObjects(true), function(obj)
+			local pos = obj.getPosition()
+			return pos.y > snapY and obj.guid ~= self.guid
+	end)
+	if (#objsInMissionZone > 0) then log(objsInMissionZone); return U.alertGM("Cards in way of Mission Queue!") end
+
+	local function dealMission(guid, slot)
+		local thisSnapPos = queueMissionSnaps[slot].position
+		missionDeck.takeObject({
+			guid = guid,
+			position = self.positionToWorld({
+				x = thisSnapPos.x,
+				y = thisSnapPos.y + 1,
+				z = thisSnapPos.z - 0.1
+			}),
+			rotation = { x = 25, y = 180, z = 0 },
+			callback_function = function(missionCard)
+				M.processObj(missionCard, "mission")
+			end
+		})
+	end
+
+	local GUIDs = U.map(U.filter(U.reverse(missionDeck.getObjects()), function(mission, index) return index <= 6 end), function(mission) return mission.guid end)
+	local assetGuid = table.remove(GUIDs, 6)
+	local missionGUIDs = GUIDs
+	for i = 5, 1, -1 do
+		table.insert(missionFuncs, function() dealMission(missionGUIDs[i], i) end)
+	end
+
+	table.insert(missionFuncs, function()
+		missionDeckPos.y = missionDeckPos.y + 1
+		missionDeck.takeObject({
+			position = missionDeckPos,
+			guid = assetGuid,
+			callback_function = function(assetCard)
+				M.processObj(assetCard, "asset")
+			end
+		})
+	end)
+
+	table.insert(missionFuncs, 1)
+	table.insert(missionFuncs, function() missionDeck.setLock(false) end)
+
+	U.sequence(missionFuncs, 0.25, false)
+end
+
+function Populate_Queue()
+	if isPopulating then isRequeuing = true; return end
+	isPopulating = true; isRequeuing = false
+
+	local curSlot = 5
+
+	for i = 5, 1, -1 do
+		local charCardZone = getObjectFromGUID(G.zones.charQueue[i])
+		local charCard = U.filter(charCardZone.getObjects(), function(obj) return obj.hasTag("Character") end)[1]
+		if charCard == nil then charCard = "NIL"
+		else charCard = charCard.guid end
+	end
+
+	-- Locate character cards currently on the board, and shift them right
+	local snapY = queueCharSnaps[1].position.y
+	local function shiftCharCard(cardZone, deltaSlots)
+		if deltaSlots == 0 then return end
+		local xStepPerSlot = 2.5
+		local translation = {
+			x = xStepPerSlot * deltaSlots,
+			y = 1,
+			z = 0
+		}
+		local card = Z.getCard(cardZone)
+		M.translateObj(card, translation)
+		translation.y = translation.y + 0.2
+		U.forEach(cardZone.getObjects(), function(obj)
+			if obj.guid == card.guid or obj.guid == self.guid then return end
+			local pos = obj.getPosition()
+			if pos.y <= snapY then return end
+			M.translateObj(obj, translation)
+			translation.y = translation.y + 0.02
+		end)
+	end
+
+	local charCardFuncs = {}
+
+	for i = 5, 1, -1 do
+		local charCardZone = getObjectFromGUID(G.zones.charQueue[i])
+		local charCard = Z.getCard(charCardZone, "ANY")
+		local deltaX = curSlot - i
+		if charCard ~= nil then
+			if deltaX > 0 then
+				table.insert(charCardFuncs, function() shiftCharCard(charCardZone, deltaX) end)
+			end
+			curSlot = curSlot - 1
+		end
+	end
+
+	-- Deal new character cards to remaining slots
+	local characterDeck = getCharacterDeck()
+	if not characterDeck then
+		isPopulating = false
+		isRequeuing = false
+		return U.alertGM("Error finding character deck!")
+	end
+
+	local function dealNextChar(slot)
+		local thisSnapPos = queueCharSnaps[slot].position
+		characterDeck.takeObject({
+			position = self.positionToWorld({
+					x = thisSnapPos.x,
+					y = thisSnapPos.y + 1,
+					z = thisSnapPos.z - 0.1
+			}),
+			rotation = { x = 25, y = 180, z = 0 },
+			-- callback_function = function(charCard)
+				-- M.processObj(charCard, "character")
+			-- end
+		})
+	end
+
+	for i = curSlot, 1, -1 do
+		table.insert(charCardFuncs, function() dealNextChar(i) end)
+	end
+
+	table.insert(charCardFuncs, 2)
+	table.insert(charCardFuncs, function()
+		isPopulating = false
+		if isRequeuing then Populate_Queue() end
+	end)
+
+	U.sequence(charCardFuncs, 0.25, false)
+end

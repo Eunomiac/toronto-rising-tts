@@ -1,0 +1,80 @@
+<!-- COLORBLOCK (for Buttons)
+ 		"(normalColor|highlightedColor|pressedColor|disabledColor)"
+			where each color is formatted as above, e.g.
+					"#FFFFFF|White|#C8C8C8|rgba(0.78,0.78,0.78,0.5)" -->
+
+<Defaults> <!-- Base Element Defaults -->
+	<VerticalLayout
+		active = "True"
+		width = "100"
+		padding = "0 0 0 0"
+		spacing = "3"
+		rectAlignment = "UpperLeft"
+		childAlignment = "UpperLeft"
+		raycastTarget =  "False"
+		childForceExpandWidth = "False"
+		childForceExpandHeight = "False" />
+
+	<HorizontalLayout
+	 	active = "True"
+		padding = "10 10 10 10"
+		spacing = "3"
+		rectAlignment = "UpperLeft"
+		childAlignment = "UpperLeft"
+		raycastTarget =  "False"
+		childForceExpandWidth = "False"
+		childForceExpandHeight = "False" />
+
+	<GridLayout
+		active = "True"
+		rectAlignment = "MiddleCenter"
+		raycastTarget = "False"
+		childForceExpandWidth = "False"
+		childForceExpandHeight = "False"
+		constraint = "FixedColumnCount" />
+
+	<Text
+		active = "True"
+		alignment = "UpperCenter"
+		fontSize = "20"
+		color = "White"
+		outline = "Black"
+		outlineSize = "2" />
+	<Text class = "spacer_3" preferredHeight = "3" />
+	<Text class = "spacer_5" preferredHeight = "5" />
+	<Text class = "spacer_10" preferredHeight = "10" />
+
+	<Button
+		active = "True"
+		colors = "#888888|#AAAAAA|#FFFFFF|rgba(0.5, 0.5, 0.5, 0.5)"
+		height = "25"
+		width = "100"
+		preferredHeight = "25"
+		preferredWidth = "100"
+		flexibleWidth = "0"
+		flexibleHeight = "0"
+		padding = "0 0 0 0"
+		onClick = "HUD_Click"
+		textAlignment = "MiddleCenter"
+		rectAlignment = "UpperLeft"
+		font = "Fonts/FrizB" />
+
+	<Button class = "buttonPanelToggle"
+		preferredWidth = "25"
+		offsetXY = "50 -15" />
+
+	<Image
+		active = "True"
+		preserveAspect = "True"
+		raycastTarget = "False" />
+</Defaults>
+
+<Defaults> <!-- Text Styling Defaults -->
+	<Text class="header"
+		font="Fonts/Title"
+		rectAlignment="UpperCenter"
+		fontSize="60"
+		alignment="UpperCenter" />
+	<Text class="bold" fontStyle="Bold" />
+	<Text class="smallcaps" font="Fonts/FrizSC" />
+</Defaults>

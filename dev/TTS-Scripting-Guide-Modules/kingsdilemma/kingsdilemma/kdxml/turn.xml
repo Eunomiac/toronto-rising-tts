@@ -1,0 +1,252 @@
+<Defaults>
+
+	<Panel class="turn-HUD-container"
+		height = "250"
+		width = "2000"
+		rectAlignment = "LowerCenter"
+		offsetXY = "0 0"
+		showAnimation = "FadeIn"
+		hideAnimation = "FadeOut"
+		animationDuration = "0.5" />
+	<Panel class="turn-HUD"
+		preferredHeight = "60" flexibleHeight = "0"
+		preferredWidth = "300" flexibleWidth = "0"
+		showAnimation = ""
+		hideAnimation = ""
+		animationDuration = "0" />
+
+	<Image class="turn-HUD-top"
+		ignoreLayout = "true"
+		height = "270"
+		width = "2000"
+		rectAlignment = "UpperCenter"
+		offsetXY = "0 20"
+		image = "splash-border-above" />
+
+	<Text class="turn-HUD"
+		alignment = "MiddleCenter"
+		font = "Fonts/Friz"
+		rectAlignment = "MiddleCenter"
+		resizeTextForBestFit = "False"
+		fontSize = "60"
+		color = "rgba(1, 1, 1, 0.5)"
+		shadow = "rgba(0, 0, 0, 1)"
+		active = "True"
+		shadowDistance = "1 -1"
+		verticalOverflow = "Overflow"
+		horizontalOverflow = "Overflow"
+		showAnimation = ""
+		hideAnimation = ""
+		animationDuration = "0" />
+
+	<VerticalLayout class="turn-HUD"
+		height = "400"
+		width = "2000"
+		offsetXY = "0 0"
+		rectAlignment = "UpperCenter"
+		childAlignment = "MiddleCenter"
+		childForceExpandWidth = "true"
+		childForceExpandHeight = "false"
+		showAnimation = "FadeIn"
+		hideAnimation = "FadeOut"
+		animationDuration = "0.5" />
+	<HorizontalLayout class="turn-HUD"
+		preferredHeight = "60" flexibleHeight = "0"
+		padding = "10"
+		spacing = "0"
+		childAlignment = "UpperCenter"
+		childForceExpandWidth = "false"
+		childForceExpandHeight = "false" />
+
+	<Image class="turn-HUD-button"
+		height = "60"
+		width = "300"
+		color = "rgba(0.6, 0.47, 0, 0.5)"
+		rectAlignment = "MiddleCenter"
+		image = "button-bg"
+		raycastTarget = "True"
+    onMouseDown="Turn_HUD_Click"
+    onMouseEnter="Turn_HUD_HoverOn"
+		onMouseExit="Turn_HUD_HoverOff" />
+	<Image class="button-vote-aye"
+		color = "rgba(0, 1, 1, 0.5)" />
+	<Image class="button-vote-nay"
+		color = "rgba(1, 0, 0, 0.5)" />
+
+
+	<Image class="turn-HUD-icon"
+		height = "250"
+		width = "250"
+		scale = "0.16 0.16 0.16"
+		outline="rgba(0, 0, 0, 1)"
+		outlineSize = "10"
+		color = "rgba(1, 0.87, 0, 0.5)"
+		rectAlignment = "MiddleCenter"
+		offsetXY = "90 0" />
+	<Image class="turn-moderator-icon" scale="0.25 0.25 0.25" />
+
+
+	<Text class="turn-HUD-button"
+		alignment = "MiddleCenter"
+		font = "Fonts/CinzelBB"
+		fontSize = "25" />
+	<Text class="text-with-icon" alignment = "UpperCenter" offsetXY="-15 5" />
+	<Text class="small-text" alignment = "LowerCenter" font="Fonts/FrizI" fontSize = "18" offsetXY="-15 -5" />
+	<Image class="turn-HUD-icon"  />
+
+</Defaults>
+
+<Panel id="turnHUD_Brown" class="turn-HUD-container" visibility="Brown" active="false">
+	<VerticalLayout class="turn-HUD">
+		<HorizontalLayout class="turn-HUD">
+			<Panel id="turnHUD_voteAye_container_Brown" class="turn-HUD" active="false">
+				<Image id="turnHUD_voteAye_Brown" class="turn-HUD-button button-vote-aye" image="button-bg" />
+				<Text id="turnHUD_voteAye_Text_Brown" class="turn-HUD turn-HUD-button button-vote-aye">Vote Aye</Text>
+			</Panel>
+			<Panel id="turnHUD_pass_container_Brown" class="turn-HUD" active="false">
+				<Image id="turnHUD_pass_Brown" class="turn-HUD-button button-pass" image="button-bg" />
+				<Text id="turnHUD_pass_Text_Brown" class="turn-HUD turn-HUD-button text-with-icon button-pass">Pass</Text>
+				<Text class="turn-HUD turn-HUD-button text-with-icon small-text button-pass">to Gather Power</Text>
+				<Image class="turn-HUD-icon" image="powerIcon" />
+			</Panel>
+			<Panel id="turnHUD_passMod_container_Brown" class="turn-HUD" active="false">
+				<Image id="turnHUD_passMod_Brown" class="turn-HUD-button button-pass-mod" image="button-bg" />
+				<Text id="turnHUD_passMod_Text_Brown" class="turn-HUD turn-HUD-button text-with-icon button-pass-mod">Pass</Text>
+				<Text class="turn-HUD turn-HUD-button text-with-icon small-text button-pass">to Become Moderator</Text>
+				<Image class="turn-HUD-icon turn-moderator-icon" image="moderatorIcon" />
+			</Panel>
+			<Panel id="turnHUD_voteNay_container_Brown" class="turn-HUD" active="false">
+				<Image id="turnHUD_voteNay_Brown" class="turn-HUD-button button-vote-nay" image="button-bg" />
+				<Text id="turnHUD_voteNay_Text_Brown" class="turn-HUD turn-HUD-button button-vote-nay">Vote Nay</Text>
+			</Panel>
+			<Panel id="turnHUD_stay_container_Brown" class="turn-HUD" active="false">
+				<Image id="turnHUD_stay_Brown" class="turn-HUD-button button-stay" image="button-bg" />
+				<Text id="turnHUD_stay_Text_Brown" class="turn-HUD turn-HUD-button button-stay">Stay</Text>
+			</Panel>
+		</HorizontalLayout>
+	</VerticalLayout>
+</Panel>
+
+<Panel id="turnHUD_Red" class="turn-HUD-container" visibility="Red" active="false">
+	<VerticalLayout class="turn-HUD">
+		<HorizontalLayout class="turn-HUD">
+			<Panel id="turnHUD_voteAye_container_Red" class="turn-HUD" active="false">
+				<Image id="turnHUD_voteAye_Red" class="turn-HUD-button button-vote-aye" image="button-bg" />
+				<Text id="turnHUD_voteAye_Text_Red" class="turn-HUD turn-HUD-button button-vote-aye">Vote Aye</Text>
+			</Panel>
+			<Panel id="turnHUD_pass_container_Red" class="turn-HUD" active="false">
+				<Image id="turnHUD_pass_Red" class="turn-HUD-button button-pass" image="button-bg" />
+				<Text id="turnHUD_pass_Text_Red" class="turn-HUD turn-HUD-button text-with-icon button-pass">Pass</Text>
+				<Text class="turn-HUD turn-HUD-button text-with-icon small-text button-pass">to Gather Power</Text>
+				<Image class="turn-HUD-icon" image="powerIcon" />
+			</Panel>
+			<Panel id="turnHUD_passMod_container_Red" class="turn-HUD" active="false">
+				<Image id="turnHUD_passMod_Red" class="turn-HUD-button button-pass-mod" image="button-bg" />
+				<Text id="turnHUD_passMod_Text_Red" class="turn-HUD turn-HUD-button text-with-icon button-pass-mod">Pass</Text>
+				<Text class="turn-HUD turn-HUD-button text-with-icon small-text button-pass">to Become Moderator</Text>
+				<Image class="turn-HUD-icon turn-moderator-icon" image="moderatorIcon" />
+			</Panel>
+			<Panel id="turnHUD_voteNay_container_Red" class="turn-HUD" active="false">
+				<Image id="turnHUD_voteNay_Red" class="turn-HUD-button button-vote-nay" image="button-bg" />
+				<Text id="turnHUD_voteNay_Text_Red" class="turn-HUD turn-HUD-button button-vote-nay">Vote Nay</Text>
+			</Panel>
+			<Panel id="turnHUD_stay_container_Red" class="turn-HUD" active="false">
+				<Image id="turnHUD_stay_Red" class="turn-HUD-button button-stay" image="button-bg" />
+				<Text id="turnHUD_stay_Text_Red" class="turn-HUD turn-HUD-button button-stay">Stay</Text>
+			</Panel>
+		</HorizontalLayout>
+	</VerticalLayout>
+</Panel>
+
+<Panel id="turnHUD_Orange" class="turn-HUD-container" visibility="Orange" active="false">
+	<VerticalLayout class="turn-HUD">
+		<HorizontalLayout class="turn-HUD">
+			<Panel id="turnHUD_voteAye_container_Orange" class="turn-HUD" active="false">
+				<Image id="turnHUD_voteAye_Orange" class="turn-HUD-button button-vote-aye" image="button-bg" />
+				<Text id="turnHUD_voteAye_Text_Orange" class="turn-HUD turn-HUD-button button-vote-aye">Vote Aye</Text>
+			</Panel>
+			<Panel id="turnHUD_pass_container_Orange" class="turn-HUD" active="false">
+				<Image id="turnHUD_pass_Orange" class="turn-HUD-button button-pass" image="button-bg" />
+				<Text id="turnHUD_pass_Text_Orange" class="turn-HUD turn-HUD-button text-with-icon button-pass">Pass</Text>
+				<Text class="turn-HUD turn-HUD-button text-with-icon small-text button-pass">to Gather Power</Text>
+				<Image class="turn-HUD-icon" image="powerIcon" />
+			</Panel>
+			<Panel id="turnHUD_passMod_container_Orange" class="turn-HUD" active="false">
+				<Image id="turnHUD_passMod_Orange" class="turn-HUD-button button-pass-mod" image="button-bg" />
+				<Text id="turnHUD_passMod_Text_Orange" class="turn-HUD turn-HUD-button text-with-icon button-pass-mod">Pass</Text>
+				<Text class="turn-HUD turn-HUD-button text-with-icon small-text button-pass">to Become Moderator</Text>
+				<Image class="turn-HUD-icon turn-moderator-icon" image="moderatorIcon" />
+			</Panel>
+			<Panel id="turnHUD_voteNay_container_Orange" class="turn-HUD" active="false">
+				<Image id="turnHUD_voteNay_Orange" class="turn-HUD-button button-vote-nay" image="button-bg" />
+				<Text id="turnHUD_voteNay_Text_Orange" class="turn-HUD turn-HUD-button button-vote-nay">Vote Nay</Text>
+			</Panel>
+			<Panel id="turnHUD_stay_container_Orange" class="turn-HUD" active="false">
+				<Image id="turnHUD_stay_Orange" class="turn-HUD-button button-stay" image="button-bg" />
+				<Text id="turnHUD_stay_Text_Orange" class="turn-HUD turn-HUD-button button-stay">Stay</Text>
+			</Panel>
+		</HorizontalLayout>
+	</VerticalLayout>
+</Panel>
+
+<Panel id="turnHUD_Yellow" class="turn-HUD-container" visibility="Yellow" active="false">
+	<VerticalLayout class="turn-HUD">
+		<HorizontalLayout class="turn-HUD">
+			<Panel id="turnHUD_voteAye_container_Yellow" class="turn-HUD" active="false">
+				<Image id="turnHUD_voteAye_Yellow" class="turn-HUD-button button-vote-aye" image="button-bg" />
+				<Text id="turnHUD_voteAye_Text_Yellow" class="turn-HUD turn-HUD-button button-vote-aye">Vote Aye</Text>
+			</Panel>
+			<Panel id="turnHUD_pass_container_Yellow" class="turn-HUD" active="false">
+				<Image id="turnHUD_pass_Yellow" class="turn-HUD-button button-pass" image="button-bg" />
+				<Text id="turnHUD_pass_Text_Yellow" class="turn-HUD turn-HUD-button text-with-icon button-pass">Pass</Text>
+				<Text class="turn-HUD turn-HUD-button text-with-icon small-text button-pass">to Gather Power</Text>
+				<Image class="turn-HUD-icon" image="powerIcon" />
+			</Panel>
+			<Panel id="turnHUD_passMod_container_Yellow" class="turn-HUD" active="false">
+				<Image id="turnHUD_passMod_Yellow" class="turn-HUD-button button-pass-mod" image="button-bg" />
+				<Text id="turnHUD_passMod_Text_Yellow" class="turn-HUD turn-HUD-button text-with-icon button-pass-mod">Pass</Text>
+				<Text class="turn-HUD turn-HUD-button text-with-icon small-text button-pass">to Become Moderator</Text>
+				<Image class="turn-HUD-icon turn-moderator-icon" image="moderatorIcon" />
+			</Panel>
+			<Panel id="turnHUD_voteNay_container_Yellow" class="turn-HUD" active="false">
+				<Image id="turnHUD_voteNay_Yellow" class="turn-HUD-button button-vote-nay" image="button-bg" />
+				<Text id="turnHUD_voteNay_Text_Yellow" class="turn-HUD turn-HUD-button button-vote-nay">Vote Nay</Text>
+			</Panel>
+			<Panel id="turnHUD_stay_container_Yellow" class="turn-HUD" active="false">
+				<Image id="turnHUD_stay_Yellow" class="turn-HUD-button button-stay" image="button-bg" />
+				<Text id="turnHUD_stay_Text_Yellow" class="turn-HUD turn-HUD-button button-stay">Stay</Text>
+			</Panel>
+		</HorizontalLayout>
+	</VerticalLayout>
+</Panel>
+
+<Panel id="turnHUD_Green" class="turn-HUD-container" visibility="Green" active="false">
+	<VerticalLayout class="turn-HUD">
+		<HorizontalLayout class="turn-HUD">
+			<Panel id="turnHUD_voteAye_container_Green" class="turn-HUD" active="false">
+				<Image id="turnHUD_voteAye_Green" class="turn-HUD-button button-vote-aye" image="button-bg" />
+				<Text id="turnHUD_voteAye_Text_Green" class="turn-HUD turn-HUD-button button-vote-aye">Vote Aye</Text>
+			</Panel>
+			<Panel id="turnHUD_pass_container_Green" class="turn-HUD" active="false">
+				<Image id="turnHUD_pass_Green" class="turn-HUD-button button-pass" image="button-bg" />
+				<Text id="turnHUD_pass_Text_Green" class="turn-HUD turn-HUD-button text-with-icon button-pass">Pass</Text>
+				<Text class="turn-HUD turn-HUD-button text-with-icon small-text button-pass">to Gather Power</Text>
+				<Image class="turn-HUD-icon" image="powerIcon" />
+			</Panel>
+			<Panel id="turnHUD_passMod_container_Green" class="turn-HUD" active="false">
+				<Image id="turnHUD_passMod_Green" class="turn-HUD-button button-pass-mod" image="button-bg" />
+				<Text id="turnHUD_passMod_Text_Green" class="turn-HUD turn-HUD-button text-with-icon button-pass-mod">Pass</Text>
+				<Text class="turn-HUD turn-HUD-button text-with-icon small-text button-pass">to Become Moderator</Text>
+				<Image class="turn-HUD-icon turn-moderator-icon" image="moderatorIcon" />
+			</Panel>
+			<Panel id="turnHUD_voteNay_container_Green" class="turn-HUD" active="false">
+				<Image id="turnHUD_voteNay_Green" class="turn-HUD-button button-vote-nay" image="button-bg" />
+				<Text id="turnHUD_voteNay_Text_Green" class="turn-HUD turn-HUD-button button-vote-nay">Vote Nay</Text>
+			</Panel>
+			<Panel id="turnHUD_stay_container_Green" class="turn-HUD" active="false">
+				<Image id="turnHUD_stay_Green" class="turn-HUD-button button-stay" image="button-bg" />
+				<Text id="turnHUD_stay_Text_Green" class="turn-HUD turn-HUD-button button-stay">Stay</Text>
+			</Panel>
+		</HorizontalLayout>
+	</VerticalLayout>
+</Panel>

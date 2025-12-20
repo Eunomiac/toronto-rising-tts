@@ -1,0 +1,206 @@
+local U = require("lib.utilities")
+local C = require("lib.constants")
+local G = require("lib.guids")
+-- local Z = require("core.zones")
+local M = require("core.main")
+local S = require("core.state")
+
+local objects, zones, snaps
+
+local tokenRot = {
+	camarilla = {
+		faceDown = {0, 180, 0},
+		faceUp = {0, 180, 180}
+	},
+	sabbat = {
+		faceDown = {0, 180, 0},
+		faceUp = {0, 180, 180}
+	}
+}
+
+local factionColors = {
+	Camarilla = "#FFDD99",
+	Anarchs = "#888888",
+	Sabbat = "#990000"
+}
+
+local function getFactions()
+	local state = Global.getTable("gameState")
+	return state.factions
+end
+
+local function setFactions(factionData)
+	local state = Global.getTable("gameState")
+	state.factions = factionData
+	Global.setTable("gameState", state)
+end
+
+local function isTokenHome(token)
+	local faction
+	if token.hasTag("Sabbat") then faction = "Sabbat"
+	else faction = "Camarilla" end
+	return #U.filter(token.getZones(), function(zone) return zone.hasTag(faction) end) == 1
+end
+
+local function getTokensAtHome(faction)
+	return U.filter(objects[string.lower(faction) .. "Tokens"], function(token) return isTokenHome(token) end)
+end
+local function getTokensAbroad(faction)
+	return U.filter(objects[string.lower(faction) .. "Tokens"], function(token) return not isTokenHome(token) end)
+end
+
+local function refreshFactionsUI()
+	local factions = getFactions()
+	if factions == nil then
+		for _, color in pairs(C.Colors) do
+			UI.setValue("faction" .. color, "")
+			UI.hide("factionDisplay" .. color)
+		end
+	else
+		for color, faction in pairs(factions) do
+			UI.setAttribute("faction" .. color, "color", factionColors[faction])
+			UI.setValue("faction" .. color, C.Names[color] .. " fights for the " .. faction .. ".")
+			UI.setAttribute("factionDisplay" .. color, "image", "faction-" .. string.lower(faction))
+			UI.show("factionDisplay" .. color)
+		end
+	end
+end
+
+function onLoad()
+	zones = {
+		bg = getObjectFromGUID(G.zones.battlegroundZones.center[1]),
+		sabbat = getObjectFromGUID(G.zones.bgISabbatZone),
+		camarilla = getObjectFromGUID(G.zones.bgICamarillaZone)
+	}
+	objects = {
+		camarillaTokens = getObjectsWithAllTags({"FactionToken", "Camarilla"}),
+		sabbatTokens = getObjectsWithAllTags({"FactionToken", "Sabbat"})
+	}
+
+	local snapPoints = self.getSnapPoints()
+
+	snaps = {
+		North = U.map(U.filter(snapPoints, function(sPt) return U.isIn("North", sPt.tags) end), function(sPt) return self.positionToWorld(sPt.position):add(Vector(0,1,0)) end),
+		South = U.map(U.filter(snapPoints, function(sPt) return U.isIn("South", sPt.tags) end), function(sPt) return self.positionToWorld(sPt.position):add(Vector(0,1,0)) end),
+		East = U.map(U.filter(snapPoints, function(sPt) return U.isIn("East", sPt.tags) end), function(sPt) return self.positionToWorld(sPt.position):add(Vector(0,1,0)) end),
+		West = U.map(U.filter(snapPoints, function(sPt) return U.isIn("West", sPt.tags) end), function(sPt) return self.positionToWorld(sPt.position):add(Vector(0,1,0)) end)
+	}
+
+	refreshFactionsUI()
+end
+
+function onObjectEnterZone(zone, object)
+	if not S.isInPhase("PLAY") then return end
+	if zone.guid ~= zones.bg.guid then return end
+	M.deactivateSpotlight(getObjectFromGUID(G.lights.battlegrounds.center))
+end
+
+-- local function sendTokenHome
+local function smoothMove(token, pos, faction)
+	local rot
+	if faction == nil then
+		if token.hasTag("Sabbat") then rot = tokenRot.sabbat.faceDown
+		else rot = tokenRot.camarilla.faceDown end
+	else
+		rot = tokenRot[faction].faceDown
+	end
+
+	token.setPosition(token.getPosition():add(Vector(0, 2, 0)))
+	token.setRotation(rot)
+	token.setPositionSmooth(pos)
+end
+
+function SendTokenHome(params)
+	local token = params
+	if params.token ~= nil then
+		token = params.token
+	end
+	local faction
+	if token.hasTag("Sabbat") then faction = "sabbat"
+	else faction = "camarilla" end
+	smoothMove(token, U.getScatterPosition(zones[faction], 1, 0.2), faction)
+end
+
+local function sendTokensHome()
+	local tokensAbroad = U.concat(getTokensAbroad("Sabbat"), getTokensAbroad("Camarilla"))
+	if #tokensAbroad > 0 then
+		local funcs = {}
+
+		for _, token in pairs(tokensAbroad) do
+			local faction
+			if token.hasTag("Sabbat") then faction = "sabbat"
+			else faction = "camarilla" end
+			table.insert(funcs, function()
+				smoothMove(token, U.getScatterPosition(zones[faction], 1, 0.2), faction)
+				return token
+			end)
+		end
+
+		U.sequence(funcs, 0.25)
+	end
+	return tokensAbroad
+end
+
+local function assignFactions()
+	local factions = U.shuffle({"Camarilla", "Anarchs", "Sabbat"})
+	factions = {
+		Red = factions[1],
+		Yellow = factions[2],
+		Blue = factions[3]
+	}
+	setFactions(factions)
+	refreshFactionsUI()
+end
+
+local function clearFactions()
+	setFactions(nil)
+	for _, color in pairs(C.Colors) do
+		UI.setValue("faction" .. color, "")
+		UI.hide("factionDisplay" .. color)
+	end
+end
+
+function Initialize()
+	U.waitRestingSequence({
+		assignFactions,
+		sendTokensHome,
+		function()
+			local funcs = {}
+
+			-- Once tokens are all home, randomize them and assign one Camarilla and one Sabbat token to random locations in each zone.
+			local sabbatAtHome = getTokensAtHome("Sabbat")
+			local camAtHome = getTokensAtHome("Camarilla")
+
+			if #sabbatAtHome ~= 9 then return U.alertGM("Only " .. #sabbatAtHome .. " Sabbat tokens at home; exiting.") end
+			if #camAtHome ~= 9 then return U.alertGM("Only " .. #camAtHome .. " Camarilla tokens at home; exiting.") end
+
+			U.shuffle(sabbatAtHome)
+			U.shuffle(camAtHome)
+
+			for _, snapPoints in pairs(snaps) do
+				U.shuffle(snapPoints)
+				local camToken = U.pop(camAtHome)
+				local sabToken = U.pop(sabbatAtHome)
+				local camSnap = snapPoints[1]
+				local sabSnap = snapPoints[2]
+				table.insert(funcs, function()
+					smoothMove(camToken, camSnap)
+					return camToken
+				end)
+				table.insert(funcs, function()
+					smoothMove(sabToken, sabSnap)
+					return sabToken
+				end)
+			end
+
+			U.sequence(funcs, 0.25)
+
+			return U.concat(sabbatAtHome, camAtHome)
+		end
+	})
+end
+
+function Reset()
+	clearFactions()
+	sendTokensHome()
+end

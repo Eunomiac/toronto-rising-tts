@@ -1,0 +1,92 @@
+local U = require("lib.utilities")
+
+local S = {}
+
+local function parseCode(val, isIncludingTraits)
+  if (val == nil) then return "nil" end
+  if (isIncludingTraits) then return JSON.encode_pretty(val.traits.Yellow) end
+  return JSON.encode_pretty(U.filter(val, function(val, key) return key ~= "traits" and key ~= "usedClanStickers" and key ~= "usedAbilityStickers" end))
+end
+
+function S.refreshStateDebug(stateData)
+  if (stateData == nil) then
+    stateData = Global.getTable("gameState")
+  end
+  UI.setValue("debugState", parseCode(stateData))
+  UI.setValue("debugTraitsRed", JSON.encode_pretty(stateData.traits.Red))
+  UI.setValue("debugTraitsYellow", JSON.encode_pretty(stateData.traits.Yellow))
+  UI.setValue("debugTraitsBlue", JSON.encode_pretty(stateData.traits.Blue))
+  UI.setValue("debugStickers", JSON.encode_pretty({
+		ABILITY = stateData.usedAbilityStickers,
+		CLAN = stateData.usedClanStickers
+	}))
+end
+
+function S.getGameState()
+  -- S.refreshStateDebug()
+  return Global.getTable("gameState")
+end
+function S.setGameState(data)
+  Global.setTable("gameState", data)
+  S.refreshStateDebug(data)
+  return
+end
+
+function S.getStateVal(key, subKey)
+  local state = Global.getTable("gameState")
+  -- S.refreshStateDebug(state)
+  if not state[key] then return state[key] end
+  if subKey then return state[key][subKey] end
+  return state[key]
+end
+
+function S.setStateVal(value, key, subKey)
+  local state = Global.getTable("gameState")
+  if (subKey) then
+      if (state[key] == nil) then state[key] = {} end
+      state[key][subKey] = value
+  else
+      state[key] = value
+  end
+  Global.setTable("gameState", state)
+  S.refreshStateDebug(state)
+end
+function S.setStateVals(stateData)
+  local state = Global.getTable("gameState")
+  for key, val in pairs(stateData) do
+    state[key] = val
+  end
+  Global.setTable("gameState", state)
+  S.refreshStateDebug(state)
+end
+function S.resetGameState()
+  local state = Global.getTable("gameState")
+  Global.setTable("gameState", {
+      turnOrder = nil,
+      clans = nil,
+      notes = nil,
+      lastChapterStandings = state.lastChapterStandings,
+			playerZones = state.playerZones,
+      chapterData = state.chapterData,
+      round = 0,
+      turn = 0,
+      traits = state.traits,
+			usedAbilityStickers = state.usedAbilityStickers,
+			usedClanStickers = state.usedClanStickers,
+			playerZonesLocked = false,
+			allZonesLocked = false,
+			gamePhase = "NONE"
+  })
+  S.refreshStateDebug()
+end
+
+function S.isInPhase(phases)
+	if type(phases) == "string" then phases = {phases} end
+	return U.isIn(S.getStateVal("gamePhase"), phases)
+end
+
+function S.isDebugging()
+	return UI.getAttribute("debugStatePanel", "active") == "True"
+end
+
+return S

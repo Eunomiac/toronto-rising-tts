@@ -1,0 +1,455 @@
+-- #region IMPORTS ~
+local DIR = require("kingsdilemma.core.director")
+local P = require("kingsdilemma.core.players")
+local O = require("kingsdilemma.lib.objects")
+local C = require("kingsdilemma.lib.constants")
+local U = require("lib.utilities")
+local S = require("kingsdilemma.core.state")
+local HouseScreen = require("kingsdilemma.objs.p3screen")
+local L = require("kingsdilemma.core.lighting")
+local V = require("kingsdilemma.core.voting")
+local OU = require("kingsdilemma.objects.objUtilities")
+local MSG = require("kingsdilemma.core.messaging")
+-- #endregion
+
+MessageQueue, QueueStatus = {}, {}
+
+local lineCount = 0
+local tokenCount = 1
+local testTable = {
+	playerData = {
+		Orange = {
+			prestige = 10
+		}
+	},
+	turnData = {
+		current = "Orange",
+		Orange = {
+			vote = false,
+			committedPower = 0
+		}
+	},
+	roundData = {}
+}
+local TESTFUNCS = {
+	Camera = function(button)
+		if button == "-2" then
+			P.SetCamera("BehindScreen", Turns.turn_color, "Brown")
+		else
+			local player = U.getHost()
+			local playerOptions = U.getKeys(C.CameraAngles)
+			player.showOptionsDialog("Which Camera Mode?", playerOptions, 1, function(_, i)
+				local cameraAngle = playerOptions[i]
+				if C.CameraAngles[cameraAngle].isPlayerAngle then
+					player.showOptionsDialog("Of which player?", Player.getAvailableColors(), 1, function(_, i)
+						local camRef = Player.getAvailableColors()[i]
+						P.SetCamera(cameraAngle, camRef, player)
+					end)
+				else
+					P.SetCamera(cameraAngle, player)
+				end
+			end)
+		end
+	end,
+	Token = function(button)
+		if button == "-2" then
+			U.getHost().showInputDialog("Enter count", "1", function(response) tokenCount = tonumber(response) or 0 end)
+		else
+			DIR.BumpToken("Morale", tokenCount)
+			DIR.BumpToken("Stability", tokenCount)
+			Wait.time(function() DIR.BumpToken("Morale", tokenCount * -1) end, 3)
+			Wait.time(function() DIR.BumpToken("Stability", tokenCount * -1) end, 3)
+		end
+	end,
+	Messaging = function(button)
+		if button == "-2" then
+			lineCount = 1
+		else
+			lineCount = lineCount + 1
+		end
+		local msgTable = {}
+		for i = 1, lineCount do
+			table.insert(msgTable, "This is line " .. i)
+		end
+		MSG.Splash(msgTable, "All", 10)
+
+
+		-- local queryResponse = {Yes = "true", No = "false"}
+		-- U.RunSequence({
+		-- 	function()
+		-- 		MSG.SplashQuery(
+		-- 			"Does this Envelope's Story Card contain special instructions?",
+		-- 			"Leader",
+		-- 			queryResponse,
+		-- 			Player.Yellow
+		-- 		)
+		-- 		return function() return queryResponse.response ~= nil end
+		-- 	end,
+		-- 	function() return 5 end,
+		-- 	function()
+		-- 		if queryResponse.response == "true" then
+		-- 			return MSG.Splash({
+		-- 				"Carry out instructions, then place",
+		-- 				"new Dilemmas above Dilemma Deck."
+		-- 			}, P.GetLeader(), 10)
+		-- 		else
+		-- 			return MSG.Splash("Then I'll just add them.")
+		-- 		end
+		-- 	end
+		-- })
+		-- if button == "-2" then
+		-- 	log(responseObj)
+		-- else
+		-- 	MSG.SplashQuery(
+		-- 		"Does this Envelope's Story Card contain special instructions?",
+		-- 		"Leader",
+		-- 		responseObj,
+		-- 		Player.Brown
+		-- 	)
+		-- end
+	end,
+	Transfer = function(button)
+		V.EndTurn(button ~= "-2")
+	end,
+	Fetcher = function(button)
+		if button == "-2" then
+			U.RunSequence({
+				function()
+					MSG.Splash("Checking for Chronicle Stickers")
+					local queryResponse = {Yes = "true", No = "false"}
+					return U.RunSequence({
+						function()
+							return MSG.SplashQuery(
+								"Does the Dilemma unlock a Chronicle Sticker?",
+								P.GetLeaderName(),
+								queryResponse,
+								P.GetLeader()
+							)
+						end,
+						function()
+							if queryResponse.response == "true" then
+								return DIR.PromptForSticker(P.GetLeader())
+							end
+						end
+					})
+				end
+			})
+		else
+			U.RunSequence({
+				function()
+					MSG.Splash("Checking for Chronicle Envelopes")
+					local queryResponse = {Yes = "true", No = "false"}
+					return U.RunSequence({
+						function()
+							return MSG.SplashQuery(
+								"Does the Dilemma unlock a Chronicle Envelope?",
+								P.GetLeaderName(),
+								queryResponse,
+								P.GetLeader()
+							)
+						end,
+						function()
+							if queryResponse.response == "true" then
+								return DIR.PromptForEnvelope(P.GetLeader())
+							end
+						end
+					})
+				end
+			})
+		end
+	end
+}
+
+function InitTestFuncButtons()
+	local count = 0
+	for i, name in ipairs(U.getKeys(TESTFUNCS)) do
+		count = count + 1
+		UI.setAttributes("debug_testFunc" .. count, {
+			text = "  T: " .. name,
+			colors = "#666666|#AAAAAA|#FFFFFF|rgba(0.5, 0.5, 0.5, 0.5)",
+			textAlignment = "MiddleLeft"
+		})
+	end
+	TESTFUNCS = U.getValues(TESTFUNCS)
+end
+
+
+
+-- #endregion
+
+-- #region Primary UI Event Functions
+local function toggleXmlElement(elemID, button)
+	-- log("Toggling " .. elemID)
+	if string.lower(UI.getAttribute(elemID, "active")) == "false" then
+		UI.setAttribute(elemID, "active", "true")
+		if elemID == "debugControls" then
+			UI.hide("splashScreen")
+			if button ~= "-2" then
+				Lighting.ambient_intensity = 1.5
+				Lighting.ambient_type = 1
+			end
+		end
+		UI.setAttribute("toggleElem_" .. elemID, "text", "▼")
+	else
+		UI.setAttribute(elemID, "active", "false")
+		if elemID == "debugControls" then
+			Lighting.ambient_intensity = 0
+		end
+		UI.setAttribute("toggleElem_" .. elemID, "text", "►")
+	end
+end
+local function promptSimClick(player, button)
+	local players = S.getPlayers()
+	if button == "-2" then
+		local otherColors = U.map(U.filter(players, function(pl)
+			return pl.color ~= player.color
+		end), function(pl) return pl.color end)
+		log("Simulating clicks on " .. U.join(otherColors, ", "))
+		local houses = U.shuffle(U.clone(C.Houses))
+		for _, col in pairs(otherColors) do
+			local clickElemID = "houseHUD_Button_" .. U.shift(houses)
+			log("Simulating " .. col .. " Player clicking '" .. clickElemID .. "'")
+			House_HUD_Click(Player[col], "-1", clickElemID)
+		end
+	else
+		local playerOptions = U.map(players, function(pl, i)
+			return "#" .. i .. " " .. pl.color .. " (" .. pl.steam_name .. ")"
+		end)
+		player.showOptionsDialog("Which player is clicking?", playerOptions, 1, function(_, i)
+			local targetPlayer = players[i]
+			player.showOptionsDialog("Which territory?", C.Houses, 1, function(houseName)
+				if houseName == nil then return end
+				local clickElemID = "houseHUD_Button_" .. houseName
+				log("Simulating " .. targetPlayer.color .. " Player clicking '" .. clickElemID .. "'")
+				House_HUD_Click(targetPlayer, "-1", clickElemID)
+			end)
+		end)
+	end
+end
+local function promptAssignHouseName(player)
+	local players = S.getPlayers()
+	local playerOptions = U.map(players, function(pl, i)
+		return "#" .. i .. " " .. pl.color .. " (" .. pl.steam_name .. ")"
+	end)
+	player.showOptionsDialog("Name which player's house?", playerOptions, 1, function(_, i)
+		local targetPlayer = players[i]
+		player.showInputDialog(
+			"What is their House Name?",
+			S.getPlayerVal(targetPlayer, "house"),
+			function (houseName)
+				U.sequence({
+					function()
+						S.setPlayerVal(houseName, targetPlayer, "houseName")
+						P.GetPlayerScreen(targetPlayer).call("UpdateXMLTable")
+						P.GetPlayerScreen(targetPlayer).call("Activate")
+					end,
+					3,
+					function()
+						DIR.UpdateChronicleCardNames()
+					end
+				})
+			end)
+	end)
+end
+
+function HUD_Click(player, button, id)
+	-- log({player = player, button = button, id = id})
+	if string.match(id, "^splashQuery_Option") then
+		local _, optionRef, color = unpack(U.split(id, "_"))
+		local stringIndex = string.gsub(optionRef, "Option", "")
+		MSG.QueryResponse(tonumber(stringIndex))
+	elseif string.match(id, "^toggleElem_") then
+		toggleXmlElement(string.gsub(id, "^toggleElem_", ""), button)
+	elseif id == "initPreflight" then
+		DIR.InitPreflight()
+	elseif id == "initSession" then
+		DIR.InitSession()
+	elseif id == "advanceGamePhase" then
+		DIR.ADVANCE()
+	elseif id == "prompt_simClick" then
+		promptSimClick(player, button)
+	elseif id == "prompt_assignHouseName" then
+		promptAssignHouseName(player)
+	elseif id == "clearPlayers" then
+		P.ClearSeats()
+	elseif id == "resetTable" then
+		DIR.RESET()
+	elseif id == "setChronicleType" then
+		DIR.SetChronicleType(true)
+	elseif string.match(id, "^debug_testFunc") then
+		id = string.gsub(id, "^debug_testFunc", "") * 1
+		TESTFUNCS[id](button, player)
+	elseif id == "debug_logState" then
+		log(JSON.encode_pretty(S.getGameState()))
+	elseif id == "debug_resetState" then
+		S.resetGameState()
+		Global.call("UpdatePhaseDisplay")
+	elseif id == "debug_primeLights" then
+		L.ResetLights()
+	elseif id == "debug_setLight" then
+		player.showInputDialog("Which light?",
+			"lightName, lightMode, playerColor",
+			function(response)
+				local rComps = U.split(response, ",")
+				local name, mode, pColor = rComps[1], rComps[2], rComps[3]
+				L.SetLightMode(name, mode, pColor)
+			end)
+	elseif id == "debug_resetPlayers" then
+		S.resetGameState(true)
+		Global.call("UpdatePhaseDisplay")
+	elseif id == "debug_setArrows" then
+		if button == "-1" then
+			L.ShowArrows()
+		else
+			L.HideArrows()
+		end
+	-- elseif string.match(id, "^extract_") then
+	-- 	local target = string.gsub(id, "^extract_", "")
+	-- 	U.AlertGM("Analyzing " .. target)
+	-- 	AE.Analyze(target)
+	elseif string.match(id, "^houseHover_") then
+		local houseName = string.match(id, "^houseHover_(.-)_.-$")
+		DIR.HouseHUDClick(player, houseName)
+	end
+end
+
+function HUD_HoverOn(player, returnString, id)
+	if string.match(id, "^houseHover_") then
+		local houseName = string.match(id, "^houseHover_(.-)_.-$")
+		DIR.HouseHUDHoverOn(player, houseName)
+	elseif string.match(id, "^splashQuery_") then
+		local _, optionRef, color = unpack(U.split(id, "_"))
+		UI.setAttribute(id, "color", "#FFD700FF")
+		UI.setAttribute("splashQueryText_" .. optionRef .. "_" .. color, "color", "#FFFFFFFF")
+	end
+end
+
+function HUD_HoverOff(player, returnString, id)
+	log({player = player, returnString = returnString, id = id})
+	if string.match(id, "^houseHover_") then
+		local houseName = string.match(id, "^houseHover_(.-)_.-$")
+		DIR.HouseHUDHoverOff(player, houseName)
+	elseif string.match(id, "^splashQuery_") then
+		local _, optionRef, color = unpack(U.split(id, "_"))
+		UI.setAttribute(id, "color", "#FFD70011")
+		UI.setAttribute("splashQueryText_" .. optionRef .. "_" .. color, "color", "#FFFFFF44")
+	end
+end
+
+function House_HUD_Click(player, _, id)
+	local _, _, houseName = unpack(U.split(id, "_"))
+	DIR.HouseHUDClick(player, houseName)
+end
+
+function House_HUD_HoverOn(player, _, id)
+	local _, _, buttonRef = unpack(U.split(id, "_"))
+	DIR.HouseHUDHoverOn(player, buttonRef)
+end
+
+function House_HUD_HoverOff(player, _, id)
+	local _, _, buttonRef = unpack(U.split(id, "_"))
+	DIR.HouseHUDHoverOff(player, buttonRef)
+end
+
+function Turn_HUD_Click(_, _, id)
+	local _, action, color = unpack(U.split(id, "_"))
+	DIR.TurnHUDClick(action, color)
+end
+
+function Turn_HUD_HoverOn(_, _, id)
+	local _, action, color = unpack(U.split(id, "_"))
+	UI.setAttribute("turnHUD_" .. action .. "_Text_" .. color, "color", "rgba(1,1,1,1)")
+	if action == "voteAye" then
+		UI.setAttribute(id, "color", "rgba(0,1,1,1)")
+	elseif action == "voteNay" then
+		UI.setAttribute(id, "color", "rgba(1,0,0,1)")
+	elseif action == "stay" then
+		UI.setAttribute(id, "color", "rgba(0.6, 0.47, 0, 1)")
+	else
+		UI.setAttribute(id, "color", "rgba(0.6, 0.47, 0, 1)")
+	end
+end
+
+function Turn_HUD_HoverOff(_, _, id)
+	local _, action, color = unpack(U.split(id, "_"))
+	UI.setAttribute("turnHUD_" .. action .. "_Text_" .. color, "color", "rgba(1,1,1,0.5)")
+	if id == "voteAye" then
+		UI.setAttribute(id, "color", "rgba(0,1,1,0.5)")
+	elseif id == "voteNay" then
+		UI.setAttribute(id, "color", "rgba(1,0,0,0.5)")
+	elseif id == "stay" then
+		UI.setAttribute(id, "color", "rgba(0.6, 0.47, 0,0.5)")
+	else
+		UI.setAttribute(id, "color", "rgba(0.6, 0.47, 0,0.5)")
+	end
+end
+
+function Consequence_HUD_Click(_, button, id)
+	local _, outcome, conType, resource, color = unpack(U.split(id, "_"))
+	UI.hide(id)
+	if conType ~= "O" then
+		UI.hide(string.gsub(string.gsub(id, "consequence", "conDisplay"), "_" .. color, ""))
+	end
+	if button == "-2" then
+		conType = "O"
+	else
+		conType = ({O = "P", P = "N", N = "O"})[conType]
+	end
+	S.setStateVal(conType, "roundState", "consequences", outcome, resource)
+	UI.show("consequence_" .. outcome .. "_" .. conType .. "_" .. resource .. "_" .. color)
+	if conType ~= "O" then
+		UI.show("conDisplay_" .. outcome .. "_" .. conType .. "_" .. resource)
+	end
+end
+
+function Consequence_HUD_HoverOn(_, _, id)
+	local _, outcome, conType, _ = unpack(U.split(id, "_"))
+	if conType == "O" then
+		UI.setAttribute(id, "color", "#7F7F7FFF")
+	elseif outcome == "P" then
+		UI.setAttribute(id, "color", "#1E87FFFF")
+	elseif outcome == "N" then
+		UI.setAttribute(id, "color", "#DA1917FF")
+	end
+end
+
+function Consequence_HUD_HoverOff(_, _, id)
+	local _, outcome, conType, _ = unpack(U.split(id, "_"))
+	if conType == "O" then
+		UI.setAttribute(id, "color", "#7F7F7F7F")
+	elseif outcome == "P" then
+		UI.setAttribute(id, "color", "#1E87FF7F")
+	elseif outcome == "N" then
+		UI.setAttribute(id, "color", "#DA19177F")
+	end
+
+
+end
+
+function FetcherHUD_Sticker(player, value)
+	DIR.ConfirmFetchSticker(player, value)
+end
+
+function FetcherHUD_Envelope(player, value)
+	DIR.ConfirmFetchEnvelope(player, value)
+end
+
+function UpdatePhaseDisplay()
+	local mode, phase = S.getStateVal("gameState", "gameMode"), S.getStateVal("gameState", "gamePhase")
+	UI.setValue("currentGameModeDisplay", mode)
+	if mode ~= phase then
+		UI.setValue("currentGamePhaseDisplay", phase)
+		UI.show("currentGamePhaseContainer")
+	else
+		UI.hide("currentGamePhaseContainer")
+	end
+	local nextMode, nextPhase = S.getNextPhase()
+	UI.setValue("nextGameModeDisplay", nextMode)
+	if nextMode ~= nextPhase then
+		UI.setValue("nextGamePhaseDisplay", nextPhase)
+		UI.show("nextGamePhaseContainer")
+	else
+		UI.hide("nextGamePhaseContainer")
+	end
+end
+-- #endregion

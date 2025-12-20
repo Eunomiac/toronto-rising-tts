@@ -1,0 +1,196 @@
+require("vscode/console")
+local O = require("kingsdilemma.lib.objects")
+local U = require("lib.utilities")
+local OU = require("kingsdilemma.objects.objUtilities")
+local S = require("kingsdilemma.core.state")
+local C = require("kingsdilemma.lib.constants")
+local L = require("kingsdilemma.core.lighting")
+local P = require("kingsdilemma.core.players")
+local MSG = require("kingsdilemma.core.messaging")
+local DIR = require("kingsdilemma.core.director")
+
+
+-- function GetSelectedObject()
+-- 	for _, player in pairs(Player.getPlayers()) do
+-- 		local selObjs = player.getSelectedObjects()
+-- 		if selObjs and #selObjs > 0 then
+-- 			return selObjs[1]
+-- 		end
+-- 	end
+-- 	return getObjectFromGUID("e19593")
+-- end
+
+-- local autoExecString = {
+-- 	">",
+-- 	"alias list ls -a",
+-- 	"alias show list -r"
+-- }
+
+-- U.forEach({
+-- 	oFocus = {
+-- 		"add /objectFocus Player",
+-- 		"call /GetSelectedObject",
+-- 		"set /objectFocus ~",
+-- 		"call /stringColorToRGB Pink",
+-- 		"add /hColor ~",
+-- 		"call /objectFocus/highlightOn /hColor 5",
+-- 		"echo 'Changing focus to highlighted object.'"
+-- 	}
+-- }, function (arrStr, name)
+-- 	console[name] = U.join(arrStr, ";")
+-- 	table.insert(autoExecString, "alias " .. name .. " exec -s /console/" .. name)
+-- end)
+
+
+-- console.autoexec = U.join(autoExecString, ";")
+
+
+-- alias pFocus exec -q "`set pFocus Turns/turn_color; echo Focus changed; ls pFocus"
+function onLoad(save_data)
+	S.InitializeGameState(save_data)
+	UI.show("sessionPreflightDisplay")
+end
+
+function onSave() return JSON.encode(S.getGameState()) end
+
+-- function onUpdate() console.update() end
+
+function onPlayerChangeColor(color)
+	if color == "Grey" then return end
+	local player = Player[color]
+
+	-- print(color)
+end
+
+function onPlayerTurnStart(pColor)
+	P.SetCamera("BehindScreen", pColor, "Brown")
+end
+
+function onPlayerAction(player, action, targets)
+	if action == Player.Action.Delete and #targets > 0 then
+		local coinOrPower = U.filter(
+			targets,
+			function(obj) return U.hasAnyTag(obj, {"PowerToken", "CoinToken"}) end
+		)
+
+		if #coinOrPower == 0 then return false end
+
+		if #coinOrPower == 1 then
+			OU.SplitObjByValue(coinOrPower[1])
+		else
+			OU.CombineObjsByValue(coinOrPower)
+		end
+
+		return false
+	end
+
+	return true
+end
+
+
+local function getBoundedPos(obj, xMin, xMax, zMin, zMax)
+	local pos = obj.getPosition()
+	if pos.x > xMax then pos.x = xMax end
+	if pos.x < xMin then pos.x = xMin end
+	if pos.z > zMax then pos.z = zMax end
+	if pos.z < zMin then pos.z = zMin end
+	return Vector(pos)
+end
+
+function onObjectDrop(pColor, obj)
+	if obj.hasTag("DebugObj") then return end
+	if S.isInPhase("SecretAgendas") and obj.hasTag("SecretAgenda") then
+		local player = S.getPlayer(pColor)
+		local handObjs = player.getHandObjects()
+		if U.find(handObjs, function(o) return o.guid == obj.guid end) then
+			return
+		end
+
+		obj.setLock(true)
+		local agendaPos = P.getRotatedPlayerTransform(C.Spots.Player.SecretAgenda, player, 0)
+		obj.setInvisibleTo(S.getOtherColors(player))
+		obj.setTags({"SecretAgenda", player.color, "Private", U.findTag(obj, U.map(C.SecretAgendas, function(sa) return "SA_" .. sa end))})
+		U.setPositionSlow(obj, agendaPos.position, 1)
+		U.setRotationSlow(obj, agendaPos.rotation, 1)
+		local nextPlayer = P.GetNextLeastPrestigious(pColor)
+		if not nextPlayer then
+			DIR.EndSecretAgendas()
+		else
+			-- U.Alert("Dealing To " .. nextPlayer.color)
+			local pNum = S.getPlayerNum(nextPlayer)
+			L.SetLightMode("lightPlayerSpotlight", "player" .. pNum)
+			-- L.SetLightMode("lightFront", "dim")
+			U.sequence(U.concat(
+				U.map(player.getHandObjects(), function(obj)
+					return function()
+						if obj.hasTag("SecretAgenda") then
+							obj.deal(1, nextPlayer.color)
+						end
+					end
+				end),
+				{
+					function()
+						MSG.Splash("Choose Your Secret Agenda", nextPlayer.color)
+					end
+				}))
+		end
+	elseif obj.hasTag("StabilityMarker") then
+		-- function onObjectDrop(_ obj)
+		-- 	if obj.hasTag("ResourceMarker") then
+		-- 		-- always track it with the light AND move it to nearest snap point
+		-- 		if not S.isInPhase("DilemmaResolution") then return end
+		-- 			-- but don't update StabilityMarker outside of DilemmaResolution
+		--    compares new position to roundState position (always)
+		-- 		adds or subtracts that amount from roundState.boardTokens.positions.StabilityMarker
+		-- 		moves the StabilityMarker to its new position
+		-- 	elseif obj.hasTag("StabilityMarker") then
+		-- 		-- always track it with the light
+		-- 		if not S.isInMode("PLAY") then return end
+		-- 		-- token positions are updated at start of every round anyways
+		-- 		set boardTokens.positions.StabilityMarker to new location
+		-- 	end
+
+		U.RunSequence({
+			function()
+				return {obj, 0.1}
+			end,
+			function()
+				obj.setPosition(getBoundedPos(
+					obj,
+					C.Spots.Board.StabilityToken.center.position.x,
+					C.Spots.Board.StabilityToken.center.position.x,
+					C.Spots.Board.StabilityToken.bottom.position.z,
+					C.Spots.Board.StabilityToken.top.position.z
+				))
+				return obj
+			end,
+			function() L.SetLightMode("lightStability", "on") end
+		})
+	elseif obj.hasTag("ResourceMarker") then
+		local resource = U.find({"Influence", "Wealth", "Morale", "Welfare", "Knowledge"}, function(res) return obj.hasTag(res) end)
+		if resource == nil then return end
+
+		U.RunSequence({
+			function() return {obj, 0.1} end,
+			function()
+				obj.setPosition(getBoundedPos(
+					obj,
+					C.Spots.Board.ResourceTokens[resource].center.position.x,
+					C.Spots.Board.ResourceTokens[resource].center.position.x,
+					C.Spots.Board.ResourceTokens[resource].bottom.position.z,
+					C.Spots.Board.ResourceTokens[resource].top.position.z
+				))
+				if S.isInMode(C.Modes.PLAY) then
+					DIR.BumpToken("Stability", DIR.GetStabilityBump())
+				end
+				return obj
+			end,
+			function()
+				if S.isInMode(C.Modes.PLAY) then
+					DIR.UpdateTokenLight("Stability")
+				end
+				return DIR.UpdateTokenLight(resource)
+			end
+		})
+	end
+end

@@ -1,0 +1,44 @@
+--[[
+    Global Script Entry Point
+    This is the main entry point for the TTS module.
+    It bootstraps the module by requiring core libraries and initializing the game state.
+]]
+
+-- Load shared utilities and constants
+local U = require("lib.util")
+local C = require("lib.constants")
+
+-- Load core modules
+local S = require("core.state")
+local M = require("core.main")
+
+-- Initialize game state table
+gameState = {}
+
+--[[
+    onLoad - Called when the game loads or is reset
+    @param saved_data - JSON string containing saved game state
+]]
+function onLoad(saved_data)
+    print("--- VTM5E Module Loaded ---")
+
+    -- Initialize game state from saved data or defaults
+    S.InitializeGameState(saved_data)
+
+    -- Initialize main module
+    M.Initialize()
+
+    -- Show basic UI confirmation
+    UI.setXml([[<Panel><Text text='VTM5E Module Loaded'/></Panel>]])
+
+    print("Module initialization complete.")
+end
+
+--[[
+    onSave - Called when the game is saved
+    @return JSON string containing game state to save
+]]
+function onSave()
+    local state = S.getGameState()
+    return JSON.encode(state)
+end

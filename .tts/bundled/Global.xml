@@ -1,12 +1,2 @@
 <!-- Xml UI. See documentation: https://api.tabletopsimulator.com/ui/introUI/ -->
-<!--
-    Custom UI hosted on GitHub Pages
-    Update the URL below with your actual GitHub Pages URL
-    Format: https://yourusername.github.io/toronto-rising-tts/index.html
--->
-<ui>
-    <!-- TEST: Simple red box to verify UI loading works -->
-    <url>https://eunomiac.github.io/toronto-rising-tts/test.html</url>
-    <!-- PRODUCTION: Full UI (uncomment when test works) -->
-    <!-- <url>https://eunomiac.github.io/toronto-rising-tts/index.html</url> -->
-</ui>
+<!-- UI is set via UI.setXml() in Global.lua onLoad() function -->

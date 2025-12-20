@@ -1,0 +1,780 @@
+local U = require("lib.utilities")
+local S = require("kingsdilemma.core.state")
+local C = require("kingsdilemma.lib.constants")
+local O = require("kingsdilemma.lib.objects")
+
+local L = {}
+
+local DefaultTransitionTime = 0.5
+
+local function generateLightModes(lightTag)
+	if U.isIn(lightTag, {"lightInfluence", "lightWealth", "lightMorale", "lightWelfare", "lightKnowledge"}) then
+		local resource = string.match(lightTag, "light(.*)")
+		local function getTokenPos()
+			local token = getObjectsWithTag(resource)[1]
+			if token == nil then
+				return Vector(C.Spots.Board.ResourceTokens[resource].center.position)
+			else
+				U.Assert("generateLightModes", token, "Object")
+				return token.getPosition()
+			end
+		end
+		return {
+			loadRotation = Vector(0, 0, 0),
+			default = "off",
+			off = function()
+				return {
+					enabled = false,
+					color = Color.Grey,
+					range = 66,
+					angle = 20,
+					intensity = 0.75,
+					rotation = Vector({0, 0, 0}),
+					position = getTokenPos():add(Vector({0, 2.5, 0}))
+				}
+			end,
+			ambient = function()
+				return {
+					enabled = true,
+					color = Color.Grey,
+					range = 66,
+					angle = 20,
+					intensity = 0.75,
+					rotation = Vector({0, 0, 0}),
+					position = getTokenPos():add(Vector({0, 2.5, 0}))
+				}
+			end,
+			momentumUp1 = function()
+				return {
+					enabled = true,
+					color = C.RootColors.Amber,
+					range = 66,
+					angle = 25,
+					intensity = 0.75,
+					rotation = Vector({-53.31, 0, 0}),
+					position = getTokenPos():add(Vector({0, 1.96, -2.38}))
+				}
+			end,
+			momentumUp2 = function()
+				return {
+					enabled = true,
+					color = Color.Yellow,
+					range = 66,
+					angle = 20,
+					intensity = 1.5,
+					rotation = Vector({-67.41, 0.00, 0.00}),
+					position = getTokenPos():add(Vector({0, 1.52, -3}))
+				}
+			end,
+			momentumDown1 = function()
+				return {
+					enabled = true,
+					color = C.RootColors.Amber,
+					range = 66,
+					angle = 25,
+					intensity = 0.75,
+					rotation = Vector({53.31, 0, 0}),
+					position = getTokenPos():add(Vector({0, 1.96, 2.38}))
+				}
+			end,
+			momentumDown2 = function()
+				return {
+					enabled = true,
+					color = Color.Yellow,
+					range = 66,
+					angle = 20,
+					intensity = 1.5,
+					rotation = Vector({67.41, 0.00, 0.00}),
+					position = getTokenPos():add(Vector({0, 1.52, 3}))
+				}
+			end
+		}
+	elseif lightTag == "lightPlayerSpotlight" then
+		return {
+			off = {
+				enabled = false,
+				rotation = Vector({0, 0, 0})
+			},
+			player1 = generateLightModes("player1"),
+			player2 = generateLightModes("player2"),
+			player3 = generateLightModes("player3"),
+			player4 = generateLightModes("player4"),
+			player5 = generateLightModes("player5")
+		}
+	elseif string.match(lightTag, "^player%d") then
+		local pIndex = string.match(lightTag, "%d") * 1
+		return function()
+			return {
+				enabled = true,
+				color = Color.Grey,
+				range = 60,
+				angle = 40,
+				intensity = 10,
+				--position = Vector({0.00, 30.00, 0.00}),
+				rotation = Vector({300, S.getPlayerAngle(Player.getAvailableColors()[pIndex]), 0})
+			}
+		end
+	end
+end
+
+L.LIGHTMODES = {
+	lightLectern = {
+		default = "ambient",
+		off = {
+			enabled = false
+		},
+		ambient = {
+			enabled = true,
+			color = Color.Grey,
+			range = 200,
+			angle = 70,
+			intensity = 2,
+			rotation = Vector(300, 0, 0)
+		},
+		spotlightChronicleCard = {
+			enabled = true,
+			color = Color.Grey:lerp(Color.Yellow, 0.25),
+			range = 200,
+			angle = 35,
+			intensity = 2,
+			rotation = Vector(312, 0, 0)
+		},
+		spotlightEnvelope = {
+			enabled = true,
+			color = Color.Grey,
+			range = 200,
+			angle = 30,
+			intensity = 2,
+			rotation = Vector(290, 0, 8)
+		},
+		spotlightSticker = {
+			enabled = true,
+			color = Color.Grey,
+			range = 200,
+			angle = 30,
+			intensity = 2,
+			rotation = Vector(290, 0, 352)
+		},
+		spotlightMystery = {
+			enabled = true,
+			color = Color.Grey,
+			range = 200,
+			angle = 33,
+			intensity = 2,
+			rotation = Vector(275, 0, 0)
+		},
+		spotlightPlinth = {
+			enabled = true,
+			color = Color.Grey,
+			range = 200,
+			angle = 30,
+			intensity = 2,
+			rotation = Vector(290, 0, 0)
+		},
+		spotlightTransit = {
+			enabled = true,
+			color = Color.Grey,
+			range = 200,
+			angle = 50,
+			intensity = 1,
+			rotation = Vector(304, 0, 0)
+		},
+		spotlightDilemmaDeck = {
+			enabled = true,
+			color = Color.Grey,
+			range = 200,
+			angle = 25,
+			intensity = 1.5,
+			rotation = Vector({342, 0.00, 0.00 })
+		},
+		storyCard = {
+			enabled = true,
+			color = Color.Grey,
+			range = 200,
+			angle = 25,
+			intensity = 1.5,
+			rotation = Vector({371.21, 0.00, 0.00 })
+		}
+	},
+	lightPlayerSpotlight = generateLightModes("lightPlayerSpotlight"),
+	lightMainTop = {
+		default = "ambient",
+		off = {
+			enabled = false
+		},
+		ambient = {
+			enabled = true,
+			color = Color.Grey,
+			range = 83,
+			angle = 60,
+			intensity = 1.5
+		}
+	},
+	lightMainBottom = {
+		default = "ambient",
+		off = {
+			enabled = false
+		},
+		ambient = {
+			enabled = true,
+			color = Color.Grey,
+			range = 83,
+			angle = 60,
+			intensity = 1.5
+		}
+	},
+	lightLeader = {
+		default = "off",
+		off = {
+			enabled = false
+		},
+		on = {
+			enabled = true,
+			color = Color(1, 1, 1),
+			range = 66,
+			angle = 30,
+			intensity = 4
+		}
+	},
+	lightModerator = {
+		default = "off",
+		off = {
+			enabled = false
+		},
+		on = {
+			enabled = true,
+			color = Color(1, 1, 1),
+			range = 66,
+			angle = 30,
+			intensity = 4
+		}
+	},
+	lightStability = {
+		loadRotation = Vector(0, 0, 0),
+		off = {
+			enabled = false,
+			color = Color(1, 1, 1),
+			range = 12,
+			angle = 20,
+			intensity = 1
+		},
+		on = function()
+			local stabilityToken = getObjectsWithTag("StabilityMarker")[1]
+			local stabilityPos = stabilityToken.getPosition()
+			local distRatio = C.Spots.Board.StabilityToken.center.position:distance(stabilityPos) / C.Spots.Board.StabilityToken.center.position:distance(C.Spots.Board.StabilityToken.top.position)
+			local lerpAngle = Vector(20,0,0):lerp(Vector(28,0,0), distRatio).x
+			local lerpIntensity = Vector(1,0,0):lerp(Vector(2,0,0), distRatio).x
+			local lerpRange = Vector(12,0,0):lerp(Vector(18,0,0), distRatio).x
+			local lerpColor
+			if distRatio <= 0.5 then
+				lerpColor = C.Colors.StabilityToken.center:lerp(C.Colors.StabilityToken.half, 2 * distRatio)
+			else
+				lerpColor = C.Colors.StabilityToken.half:lerp(C.Colors.StabilityToken.ends, 2 * (distRatio - 0.5))
+			end
+
+			stabilityPos.x = C.Spots.Board.StabilityToken.center.position.x
+			stabilityPos.z = math.min(
+				math.max(
+					stabilityPos.z,
+					C.Spots.Board.StabilityToken.bottom.position.z
+				),
+				C.Spots.Board.StabilityToken.top.position.z
+			)
+			-- log({distRatio = distRatio})
+			local lData = {
+				enabled = true,
+				color = lerpColor,
+				range = lerpRange,
+				angle = lerpAngle,
+				intensity = lerpIntensity,
+				position = stabilityPos:add(Vector(0, 4, 0))
+			}
+			-- log(lData)
+			return lData
+		end
+	},
+	lightInfluence = generateLightModes("lightInfluence"),
+	lightWealth = generateLightModes("lightWealth"),
+	lightMorale = generateLightModes("lightMorale"),
+	lightWelfare = generateLightModes("lightWelfare"),
+	lightKnowledge = generateLightModes("lightKnowledge"),
+	lightBalance = {
+		loadRotation = Vector({16.91, 0, 0}),
+		default = function()
+			if S.isInMode({"NONE", "SESSIONINIT", "CHRONSETUP"}) then
+				return "off"
+			else
+				return "on"
+			end
+		end,
+		off = {
+			enabled = false
+		},
+		on = {
+			enabled = true,
+			color = Color.Grey,
+			range = 30,
+			angle = 30,
+			intensity = 2,
+			rotation = Vector({16.91, 0, 0})
+		},
+		bright = {
+			enabled = true,
+			color = Color.White,
+			range = 40,
+			angle = 40,
+			intensity = 4,
+			rotation = Vector({16.91, 0, 0})
+		}
+	},
+	lightBehind = {
+		isPlayerLight = true,
+		isSpawned = true,
+		off = {
+			enabled = false
+		},
+		ambient = {
+			enabled = true,
+			color = Color.Grey,
+			range = 50,
+			angle = 60,
+			intensity = 4
+		},
+		dim = {
+			enabled = true,
+			color = Color.Grey,
+			range = 50,
+			angle = 60,
+			intensity = 2
+		}
+	},
+	lightFront = {
+		isPlayerLight = true,
+		isSpawned = true,
+		off = {
+			enabled = false,
+			color = Color.Grey,
+			range = 25,
+			angle = 85,
+			intensity = 4
+		},
+		ambient = {
+			enabled = true,
+			color = Color.Grey,
+			range = 25,
+			angle = 85,
+			intensity = 4
+		},
+		dim = {
+			enabled = true,
+			color = Color.Grey,
+			range = 25,
+			angle = 85,
+			intensity = 1
+		},
+		bright = {
+			enabled = true,
+			color = Color.White,
+			range = 25,
+			angle = 85,
+			intensity = 4
+		},
+		aye = {
+			enabled = true,
+			color = Color.Blue,
+			range = 25,
+			angle = 85,
+			intensity = 2.75
+		},
+		nay = {
+			enabled = true,
+			color = Color.Red,
+			range = 25,
+			angle = 85,
+			intensity = 1.5
+		}
+	},
+	lightVote = {
+		isPlayerLight = true,
+		isSpawned = true,
+		off = {
+			enabled = false,
+			color = Color.Grey,
+			range = 55,
+			angle = 57,
+			intensity = 1
+		},
+		ambient = {
+			enabled = true,
+			color = Color.Grey,
+			range = 55,
+			angle = 57,
+			intensity = 1
+		},
+		aye = {
+			enabled = true,
+			color = Color.Blue,
+			range = 55,
+			angle = 50,
+			intensity = 1
+		},
+		nay = {
+			enabled = true,
+			color = Color.Red,
+			range = 55,
+			angle = 50,
+			intensity = 1
+		}
+	},
+	lightDilemmaMain = {
+		loadRotation = Vector(180, 0, 0),
+		default = "off",
+		off = {
+			enabled = false,
+			rotation = Vector(180, 0, 0)
+		},
+		on = {
+			enabled = true,
+			color = Color.Grey,
+			range = 60,
+			angle = 100,
+			intensity = 2,
+			rotation = Vector(270, 0, 0) -- position = {0.00, 32.49, 26.14}
+		},
+		Aye = {
+			enabled = true,
+			color = Color.Blue,
+			range = 60,
+			angle = 100,
+			intensity = 2,
+			rotation = Vector(310, 0, 0) -- position = {0.00, 32.49, 26.14}
+		},
+		Nay = {
+			enabled = true,
+			color = Color.Red,
+			range = 60,
+			angle = 100,
+			intensity = 2,
+			rotation = Vector(310, 0, 0) -- position = {0.00, 32.49, 26.14}
+		}
+	},
+	lightDilemmaAye = {
+		loadRotation = Vector(10, 180, 180),
+		default = "off",
+		off = {
+			enabled = false,
+			rotation = Vector(10, 180, 180)
+		},
+		on = {
+			enabled = true,
+			color = Color.Blue,
+			range = 60,
+			angle = 40,
+			intensity = 2,
+			rotation = Vector(330, 180, 180) -- position = {9.32, 27.20, 39.96}
+		}
+	},
+	lightDilemmaNay = {
+		loadRotation = Vector(270, 0, 0),
+		default = "off",
+		off = {
+			enabled = false,
+			rotation = Vector(270, 0, 0)
+		},
+		on = {
+			enabled = true,
+			color = Color.Red,
+			range = 25,
+			angle = 20,
+			intensity = 2.5,
+			rotation = Vector({270.00, 73, 0.00}) -- position = {-18.52, 14.79, 38.96}
+		}
+	}
+}
+
+
+
+local function getComp(light, isSilent)
+	local lComp
+	if pcall(function() lComp = light.getChildren()[1].getChildren()[2].getComponents()[2] end) then
+		return lComp
+	elseif isSilent then
+		return nil
+	end
+	U.Val("getComp", light, U.isGameObject(light), "Invalid Light Object")
+	local lComp = light.getChildren()
+	U.Val("getComp", {light = light, children = lComp}, #lComp > 0, "Light has no Children")
+	lComp = lComp[1].getChildren()
+	U.Val("getComp", {light = light, grandchildren = lComp}, #lComp > 1, "Light has too few Grandchildren")
+	lComp = lComp[2].getComponents()
+	U.Val("getComp", {light = light, components = lComp}, #lComp > 1, "Light has too few components")
+	U.Val("getComp", {light = light, comp = lComp[2]}, lComp[2].name == "Light", "Can't find 'Light' component")
+	return lComp[2]
+end
+
+local function getLight(lightName, playerRef, isSilent)
+	local player
+	local tags = { lightName }
+	if playerRef ~= nil then
+		player = S.getPlayer(playerRef)
+		table.insert(tags, player.color)
+	end
+	local lights = getObjectsWithAllTags(tags)
+
+	U.Val("getLight", {tags = tags, lights = lights}, #lights > 0, "No lights found", {isSilent = isSilent})
+	U.Val("getLight", {tags = tags, lights = lights}, #lights < 2, "Multiple lights found", {isSilent = false, isThrowing = isSilent ~= true})
+
+	return lights[1]
+end
+
+local function getAllLights()
+	return U.filter(getObjects(), function(obj)
+		return obj.getChildren ~= nil
+				and obj.getChildren()[1] ~= nil
+				and string.match(obj.getChildren()[1].name, "^spotlight")
+				and getComp(obj, true).name == "Light"
+	end)
+end
+
+
+local function showArrow(light)
+	if light == nil then return U.forEach(getAllLights(), showArrow) end
+	light.AssetBundle.playLoopingEffect(0)
+	local playerColor = U.findColorTag(light)
+	if playerColor ~= nil then
+		return light.highlightOn(Color[playerColor])
+	else
+		return light.highlightOn(Color.White)
+	end
+end
+
+local function hideArrow(light)
+	if light == nil then return U.forEach(getAllLights(), hideArrow) end
+	light.AssetBundle.playLoopingEffect(1)
+	light.highlightOff()
+end
+
+
+
+local function setEnabled(light, enabled, transitionTime)
+	local lComp = getComp(light)
+	if lComp == nil then return end
+	if lComp.get("enabled") ~= enabled then
+		if transitionTime == nil then transitionTime = DefaultTransitionTime end
+		if enabled == true then
+			local finalIntensity = lComp.get("intensity")
+			lComp.set("intensity", 0)
+			lComp.set("enabled", true)
+			return U.Lerp(
+				function(intensity) lComp.set("intensity", intensity) end,
+				0,
+				finalIntensity,
+				transitionTime
+			)
+		else
+			local startingIntensity = lComp.get("intensity")
+			return U.RunSequence({
+				function()
+					return U.Lerp(
+						function(intensity) lComp.set("intensity", intensity) end,
+						startingIntensity,
+						0,
+						transitionTime
+					)
+				end,
+				function()
+					lComp.set("enabled", false)
+					return 0.5
+				end,
+				function()
+					lComp.set("intensity", startingIntensity)
+				end
+			})
+		end
+	end
+end
+local function setRange(light, range) getComp(light).set("range", range) end
+local function setIntensity(light, intensity) getComp(light).set("intensity", intensity) end
+local function setColor(light, color) getComp(light).set("color", Color(color)) end
+local function setAngle(light, angle) getComp(light).set("spotAngle", angle) end
+
+local function getEnabled(light) return getComp(light).get("enabled") end
+local function getRange(light) return getComp(light).get("range") end
+local function getIntensity(light) return getComp(light).get("intensity") end
+local function getColor(light) return getComp(light).get("color") end
+local function getAngle(light) return getComp(light).get("spotAngle") end
+
+function L.InitLights()
+	U.forEach(S.getStateVal("lights"), function(mData, lightName)
+		if U.Type(mData) == "string" then
+			L.SetLightMode(lightName, mData, nil, 0.5)
+		else
+			U.forEach(mData, function(mode, pColor)
+				L.SetLightMode(lightName, mode, pColor, 0.5)
+			end)
+		end
+	end)
+end
+
+local function setLightMode(lightName, mode, player, transitionTime, colorShift)
+	if transitionTime == nil then transitionTime = DefaultTransitionTime end
+	if U.Type(lightName) == "table" then
+		return U.map(lightName, function(lName) return setLightMode(lName, mode, player, transitionTime) end)
+	end
+
+	U.Val("setLightMode", lightName, U.Type(lightName) == "string" and L.LIGHTMODES[lightName] ~= nil, "Mode Data Not Found")
+	local lData; lData = L.LIGHTMODES[lightName]
+	local isSpawned = lData.isSpawned
+
+	if lData.isPlayerLight then
+		if player == nil then
+			return U.map(S.getPlayers(), function(player) return setLightMode(lightName, mode, player, transitionTime) end)
+		end
+		player = S.getPlayer(player)
+		U.Val("setLightMode", {lightName, player}, U.isPlayer(player), "Invalid Player")
+	else
+		U.Val("setLightMode", {lightName, player}, player == nil, "Player submitted to non-player light", {isThrowing = false})
+		player = nil
+	end
+
+	local light = getLight(lightName, player, true)
+	if light == nil and lData.isSpawned then return false end
+	U.Val("setLightMode", {lightName, player}, U.isGameObject(light), "No light found")
+
+	if player then
+		local sData = S.getStateVal("lights", lightName)
+		if sData == nil then sData = {} end
+		sData[player.color] = mode
+		S.setStateVal(sData, "lights", lightName)
+	else
+		S.setStateVal(mode, "lights", lightName)
+	end
+
+	if U.Type(mode) == "function" then mode = mode(player) end
+	U.Val("setLightMode", mode, U.Type(mode) == "string" and lData[mode] ~= nil, "No such mode for '" .. lightName .. "'")
+	lData = lData[mode]
+	if U.Type(lData) == "function" then lData = lData() end
+	if U.Type(lData) == "table" then lData = U.clone(lData) end
+
+	local function activateLight()
+		local afterVals = {}
+
+		if lData.enabled ~= nil then
+			if lData.enabled == getEnabled(light) then lData.enabled = nil
+			elseif lData.enabled == true then
+				setIntensity(light, 0)
+				setAngle(light, 0)
+				setEnabled(light, true)
+			else
+				afterVals.intensity = getIntensity(light)
+				afterVals.angle = getAngle(light)
+				lData.intensity = 0
+				lData.angle = 0
+			end
+		end
+
+		if lData.color ~= nil and colorShift then
+			lData.color = Color(lData.color):lerp(Color(colorShift), 0.5)
+		end
+
+		return U.RunSequence({
+			function()
+				local lerpFuncs = {}
+
+				if lData.range ~= nil then
+					table.insert(lerpFuncs, U.Lerp(function(range) setRange(light, range) end, getRange(light), lData.range, transitionTime))
+				end
+				if lData.intensity ~= nil then
+					table.insert(lerpFuncs, U.Lerp(function(intensity) setIntensity(light, intensity) end, getIntensity(light), lData.intensity, transitionTime))
+				end
+				if lData.angle ~= nil then
+					table.insert(lerpFuncs, U.Lerp(function(angle) setAngle(light, angle) end, getAngle(light), lData.angle, transitionTime))
+				end
+				if lData.color ~= nil then
+					table.insert(lerpFuncs, U.Lerp(function(color) setColor(light, color) end, getColor(light), lData.color, transitionTime))
+				end
+				if lData.rotation ~= nil then
+					table.insert(lerpFuncs, U.setRotationSlow(light, lData.rotation, transitionTime))
+				end
+				if lData.position ~= nil then
+					table.insert(lerpFuncs, U.setPositionSlow(light, lData.position, transitionTime))
+				end
+
+				return lerpFuncs
+			end,
+			function()
+				if lData.enabled == false then
+					setEnabled(light, false)
+					setIntensity(light, afterVals.intensity)
+					setAngle(light, afterVals.angle)
+				end
+			end
+		})
+	end
+
+	if isSpawned and not getComp(light, true) then
+		return U.waitUntil(activateLight, function() return not not getComp(light, true) end, false)
+	end
+
+	return activateLight()
+end
+
+function L.ResetLights()
+	U.forEach(L.LIGHTMODES, function(modes, name)
+		if modes.loadRotation then
+			local light = getLight(name)
+			local lComp = getComp(light)
+			if lComp == nil then return end
+			lComp.set("enabled", false)
+			light.setRotation(Vector(180, 0, 0))
+		end
+	end)
+end
+
+function L.PrimeLights()
+	U.forEach(L.LIGHTMODES, function(modes, name)
+		if modes.loadRotation then
+			local light = getLight(name)
+			local lComp = getComp(light)
+			if lComp == nil then return end
+			lComp.set("enabled", false)
+			light.setRotationSmooth(modes.loadRotation)
+		end
+	end)
+end
+
+function L.LoadLights(lightNames, lightMode, transitionTime, playerRef)
+	if U.Type(lightNames) == "string" then lightNames = {lightNames} end
+	if lightMode == nil then lightMode = "default" end
+	if transitionTime == nil then transitionTime = 3 end
+	local lightModes = U.clone(L.LIGHTMODES)
+	if U.Type(lightNames) == "table" then
+		lightModes = U.filter(lightModes, function(_, name) return U.isIn(name, lightNames) end)
+	end
+	-- log({lightNames = lightNames, lightMode = lightMode, transitionTime = transitionTime, playerRef = playerRef})
+	U.forEach(lightModes, function(modes, name)
+		if modes[lightMode] == nil then
+			U.AlertGM("No Such Mode: " .. U.ToString(lightMode) .. " for light '" .. U.ToString(name) .. "'")
+			return end
+		if lightMode == "default" then
+			setLightMode(name, modes[lightMode], playerRef, transitionTime)
+		else
+			setLightMode(name, lightMode, playerRef, transitionTime)
+		end
+	end)
+	return transitionTime
+end
+L.ShowArrows = showArrow
+L.HideArrows = hideArrow
+L.SetLightMode = setLightMode
+
+L.LerpEnable = setEnabled
+L.GetLight = getLight
+L.GetAllLights = getAllLights
+
+L.SetIntensity = setIntensity
+L.SetAngle = setAngle
+L.SetColor = setColor
+L.SetRange = setRange
+
+return L

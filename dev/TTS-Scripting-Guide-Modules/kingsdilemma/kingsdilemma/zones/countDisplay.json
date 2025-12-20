@@ -1,0 +1,117 @@
+[
+	{
+		"attributes": {
+			"rotation": "0 0 120",
+			"visibility": "Brown"
+		},
+		"children": [
+			{
+				"attributes": {
+					"active": "true",
+					"height": "150",
+					"id": "HUD",
+					"pivot": "0.5 0",
+					"position": "0 0 0",
+					"rotation": "-80 0 0",
+					"visibility": "",
+					"width": "200"
+				},
+				"children": [],
+				"tag": "Panel"
+			}
+		],
+		"tag": "Panel"
+	},
+	{
+		"attributes": {
+			"rotation": "0 0 60",
+			"visibility": "Red"
+		},
+		"children": [​​​​​​​ {
+				"attributes": {
+					"active": "true",
+					"height": "150",
+					"id": "HUD",
+					"pivot": "0.5 0",
+					"position": "0 0 0",
+					"rotation": "-80 0 0",
+					"visibility": "",
+					"width": "200"
+				},
+				"children": [​​​​​​​
+				],
+				"tag": "Panel"
+			}
+		],
+		"tag": "Panel"
+	},
+	{
+		"attributes": {
+			"rotation": "0 0 0",
+			"visibility": "Orange"
+		},
+		"children": [​​​​​​​ {
+				"attributes": {
+					"active": "true",
+					"height": "150",
+					"id": "HUD",
+					"pivot": "0.5 0",
+					"position": "0 0 0",
+					"rotation": "-80 0 0",
+					"visibility": "",
+					"width": "200"
+				},
+				"children": [​​​​​​​
+				],
+				"tag": "Panel"
+			}
+		],
+		"tag": "Panel"
+	},
+	{
+		"attributes": {
+			"rotation": "0 0 -60",
+			"visibility": "Yellow"
+		},
+		"children": [​​​​​​​ {
+				"attributes": {
+					"active": "true",
+					"height": "150",
+					"id": "HUD",
+					"pivot": "0.5 0",
+					"position": "0 0 0",
+					"rotation": "-80 0 0",
+					"visibility": "",
+					"width": "200"
+				},
+				"children": [​​​​​​​
+				],
+				"tag": "Panel"
+			}
+		],
+		"tag": "Panel"
+	},
+	{
+		"attributes": {
+			"rotation": "0 0 -120",
+			"visibility": "Green"
+		},
+		"children": [​​​​​​​ {
+				"attributes": {
+					"active": "true",
+					"height": "150",
+					"id": "HUD",
+					"pivot": "0.5 0",
+					"position": "0 0 0",
+					"rotation": "-80 0 0",
+					"visibility": "",
+					"width": "200"
+				},
+				"children": [​​​​​​​
+				],
+				"tag": "Panel"
+			}
+		],
+		"tag": "Panel"
+	}
+]

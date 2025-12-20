@@ -1,0 +1,86 @@
+--[[
+    Game State Management Module
+    Handles persistent game data storage, retrieval, and state transitions.
+    Pattern based on King's Dilemma state module.
+]]
+
+local S = {}
+local U = require("lib.util")
+local C = require("lib.constants")
+
+--[[
+    Initialize game state from saved data or set defaults
+    @param save_data - JSON string containing saved state, or empty string for new game
+]]
+function S.InitializeGameState(save_data)
+    if save_data and save_data ~= "" then
+        -- Load saved state
+        local loaded_data = JSON.decode(save_data)
+        gameState = loaded_data or {}
+    else
+        -- Initialize default state
+        gameState = {
+            phase = C.Phases.Setup,
+            players = {},
+            turnOrder = {},
+            -- Add default state fields as needed
+        }
+    end
+
+    -- Validate and sanitize loaded state
+    S.ValidateState()
+end
+
+--[[
+    Get current game state
+    @return Game state table
+]]
+function S.getGameState()
+    return gameState
+end
+
+--[[
+    Set a value in game state
+    @param key - State key (from C.StateKeys or custom)
+    @param value - Value to set
+]]
+function S.setStateVal(key, value)
+    gameState[key] = value
+end
+
+--[[
+    Get a value from game state
+    @param key - State key
+    @return Value or nil
+]]
+function S.getStateVal(key)
+    return gameState[key]
+end
+
+--[[
+    Check if game is in a specific phase
+    @param phase - Phase to check (from C.Phases)
+    @return Boolean
+]]
+function S.isInPhase(phase)
+    return gameState.phase == phase
+end
+
+--[[
+    Validate and sanitize game state
+    Ensures state has required fields and valid values
+]]
+function S.ValidateState()
+    -- TODO: Add validation logic
+    if not gameState.phase then
+        gameState.phase = C.Phases.Setup
+    end
+    if not gameState.players then
+        gameState.players = {}
+    end
+    if not gameState.turnOrder then
+        gameState.turnOrder = {}
+    end
+end
+
+return S

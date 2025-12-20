@@ -1,0 +1,139 @@
+local U = require("lib.utilities")
+local G = require("lib.guids")
+local M = require("core.main")
+local Z = require("core.zones")
+
+local bgZone, endZone
+
+function onLoad()
+	bgZone = getObjectFromGUID(G.zones.battlegroundZones.left[1])
+	endZone = getObjectFromGUID(G.zones.bgDEndZone)
+end
+
+function OnObjectEnterZone(params)
+	if bgZone == nil or endZone == nil then return end
+	local zone, object = params.zone, params.object
+
+	if object.hasTag("ClassToken") and zone.guid == endZone.guid then
+		if CheckForTrial() == true then
+			Z.showSuspicion()
+		end
+	end
+end
+
+local function leftToRightObjectSort(a, b) return b.getPosition().x > a.getPosition().x end
+local function leftToRightPosSort(a, b) return b.x < a.x end
+
+local function getTokens()
+	local classTokens = U.findAboveObject(
+		self,
+		function(obj) return obj.type == "Tile" and obj.hasTag("ClassToken") end,
+		{box = true}
+	)
+	table.sort(classTokens, leftToRightObjectSort)
+	return classTokens
+end
+
+local function getClassOfToken(token)
+	if U.isFlipped(token) then return "elitist"
+	else return "egalitarian" end
+end
+
+local function getLocationOfToken(token)
+	if token.getPosition().z < self.getPosition().z then return "judices"
+	else return "vaticanum" end
+end
+
+local function getTokenStatus()
+	return U.map(getTokens(), function(token) return {
+		class = getClassOfToken(token),
+		location = getLocationOfToken(token)
+	} end)
+end
+
+local function getTokenPositions()
+	local tokenPositions = {}
+	local snapPoints = U.map(self.getSnapPoints(),
+		function(snapData)
+			snapData.position.y = snapData.position.y + 0.5
+			return snapData.position
+		end)
+	local vaticanumSnaps = U.filter(snapPoints, function(pos) return pos.z < 0 end)
+	local judicesSnaps = U.filter(snapPoints, function(pos) return pos.z > 0 end)
+	table.sort(vaticanumSnaps, leftToRightPosSort)
+	table.sort(judicesSnaps, leftToRightPosSort)
+	for i = 1, 4 do
+		tokenPositions[i] = {vaticanum = self.positionToWorld(vaticanumSnaps[i]), judices = self.positionToWorld(judicesSnaps[i])}
+	end
+	return tokenPositions
+end
+
+local function getTokenData()
+	local tokenData = {}
+	local tokens = getTokens()
+	local status = getTokenStatus()
+	local snaps = getTokenPositions()
+	for i = 1, 4 do
+		tokenData[i] = {
+			token = tokens[i],
+			class = status[i].class,
+			location = status[i].location,
+			vaticanum = snaps[i].vaticanum,
+			judices = snaps[i].judices
+		}
+	end
+	return tokenData
+end
+
+function CheckForTrial()
+	-- log(getTokenData())
+	local judicesTokens = U.filter(getTokenData(),
+		function(tData) return tData.location == "judices"
+		end)
+	if #judicesTokens < 4 then return nil end
+	local elitistTokens = U.filter(judicesTokens, function(tData) return tData.class == "elitist" end)
+	if #elitistTokens == 1 then
+		UI.setValue("inquisitionTrialNotice-elitist", #elitistTokens .. " elitist")
+		UI.setValue("inquisitionTrialNotice-egalitarian", 4 - #elitistTokens .. " egalitarians")
+	elseif #elitistTokens == 3 then
+		UI.setValue("inquisitionTrialNotice-elitist", #elitistTokens .. " elitists")
+		UI.setValue("inquisitionTrialNotice-egalitarian", 4 - #elitistTokens .. " egalitarian")
+	else
+		UI.setValue("inquisitionTrialNotice-elitist", #elitistTokens .. " elitists")
+		UI.setValue("inquisitionTrialNotice-egalitarian", 4 - #elitistTokens .. " egalitarians")
+	end
+	UI.show("inquisitionTrialNotice")
+	UI.show("inquisitionTrialNotice_1")
+	UI.show("inquisitionTrialNotice_2")
+	UI.show("inquisitionTrialNotice_3")
+	return true
+end
+
+function EndTrial()
+	-- log("*** RETURN TO VATICANUM ***")
+	-- log(getTokenData())
+	U.forEach(getTokenData(),
+		function(tData)
+			tData.token.setPositionSmooth(tData.vaticanum)
+		end, 0.15)
+	UI.hide("inquisitionTrialNotice")
+	UI.hide("inquisitionTrialNotice_1")
+	UI.hide("inquisitionTrialNotice_2")
+	UI.hide("inquisitionTrialNotice_3")
+end
+
+function Reset()
+	local resetFuncs = {}
+	U.forEach(getTokenData(), function(tData, i)
+		U.sequence({
+			function() tData.token.setPositionSmooth(tData.vaticanum) end,
+			0.75,
+			function()
+				if getClassOfToken(tData.token) == "elitist" and i % 2 == 0
+					or getClassOfToken(tData.token) == "egalitarian" and i % 2 == 1 then
+						tData.token.flip()
+				end
+			end
+		}, 0.5, false)
+	end)
+end

@@ -1,0 +1,1933 @@
+local U = require("lib.utilities")
+local S = require("kingsdilemma.core.state")
+local C = require("kingsdilemma.lib.constants")
+local P = require("kingsdilemma.core.players")
+local O = require("kingsdilemma.lib.objects")
+local OU = require("kingsdilemma.objects.objUtilities")
+local V = require("kingsdilemma.core.voting")
+local L = require("kingsdilemma.core.lighting")
+local MSG = require("kingsdilemma.core.messaging")
+local HouseScreen = require("kingsdilemma.objs.p3screen")
+
+local DIR = {}
+local HOUSE_SELECTION, newPlayerColors = {}, {}
+
+local function getBoardTokens()
+	local tokens = {
+		Stability = getObjectsWithTag("StabilityMarker")[1],
+		resource = {}
+	}
+	local rTokens = getObjectsWithTag("ResourceMarker")
+	table.sort(rTokens, function(a, b) return a.getPosition().x < b.getPosition().x end)
+	tokens.resource.Influence = rTokens[1]
+	tokens.resource.Wealth = rTokens[2]
+	tokens.resource.Morale = rTokens[3]
+	tokens.resource.Welfare = rTokens[4]
+	tokens.resource.Knowledge = rTokens[5]
+	return tokens
+end
+
+local function getTokenPositionsFromBoard()
+	local board = O.UninteractableObjs.Board()
+	local boardTokens = getBoardTokens()
+	return {
+		Stability = OU.FindNearestSnapPoint(boardTokens.Stability, board),
+		Influence = OU.FindNearestSnapPoint(boardTokens.resource.Influence, board),
+		Wealth = OU.FindNearestSnapPoint(boardTokens.resource.Wealth, board),
+		Morale = OU.FindNearestSnapPoint(boardTokens.resource.Morale, board),
+		Welfare = OU.FindNearestSnapPoint(boardTokens.resource.Welfare, board),
+		Knowledge = OU.FindNearestSnapPoint(boardTokens.resource.Knowledge, board)
+	}
+end
+
+local function getTokenPositionsFromState()
+	return {
+		Influence = S.getStateVal("roundState", "boardTokens", "positions", "Influence"),
+		Wealth = S.getStateVal("roundState", "boardTokens", "positions", "Wealth"),
+		Morale = S.getStateVal("roundState", "boardTokens", "positions", "Morale"),
+		Welfare = S.getStateVal("roundState", "boardTokens", "positions", "Welfare"),
+		Knowledge = S.getStateVal("roundState", "boardTokens", "positions", "Knowledge"),
+	}
+end
+
+
+local function getTokenPositionDeltas(startPositions, endPositions)
+	local boardPositions = getTokenPositionsFromBoard()
+	local statePositions = getTokenPositionsFromState()
+	return {
+		Influence = endPositions.Influence - startPositions.Influence,
+		Wealth = endPositions.Wealth - startPositions.Wealth,
+		Morale = endPositions.Morale - startPositions.Morale,
+		Welfare = endPositions.Welfare - startPositions.Welfare,
+		Knowledge = endPositions.Knowledge - startPositions.Knowledge
+	}
+end
+
+local function getTokenMomentum(resource)
+	local startTurnData = S.getStateVal("roundState", "boardTokens")
+	if startTurnData == nil or startTurnData.momentum == nil or startTurnData.momentum[resource] == nil then
+		local token = getBoardTokens().resource[resource]
+		U.Assert("getTokenMomentum", token, "Object")
+		return U.isFlipped(token) and -1 or 1
+	else
+		return startTurnData.momentum[resource]
+	end
+end
+
+local function getTokenMomentums()
+	return {
+		Influence = getTokenMomentum("Influence"),
+		Wealth = getTokenMomentum("Wealth"),
+		Morale = getTokenMomentum("Morale"),
+		Welfare = getTokenMomentum("Welfare"),
+		Knowledge = getTokenMomentum("Knowledge"),
+	}
+end
+
+local function getUnboundTokenPositionsAfterApplyingMomentum()
+	local tokenMomentums = getTokenMomentums()
+	local curTokenPositions = getTokenPositionsFromBoard()
+	local positionDeltas = getTokenPositionDeltas(getTokenPositionsFromState(), curTokenPositions)
+	local newTokenPositions = U.clone(curTokenPositions)
+
+	U.iForEach(C.Resources, function(resource)
+		if tokenMomentums[resource] * positionDeltas[resource] > 0 then
+			-- moving in same direction: apply momentum
+			newTokenPositions[resource] = newTokenPositions[resource] + tokenMomentums[resource]
+		end
+	end)
+
+	return newTokenPositions
+end
+
+local function getStabilityTokenBumpsFromMomentum()
+	return getTokenPositionDeltas(
+		getTokenPositionsFromBoard(),
+		getUnboundTokenPositionsAfterApplyingMomentum()
+	)
+end
+
+local function getResourceTokenBumpsFromMomentum()
+	return getTokenPositionDeltas(
+		getTokenPositionsFromBoard(),
+		getUnboundTokenPositionsAfterApplyingMomentum()
+	)
+end
+
+local function bumpToken(token, unitForceVector, count, lightName)
+	local forceVector = Vector(unitForceVector):scale(count > 0 and Vector(1, 1, 1) or Vector(1, 1, -1))
+	local absCount = math.abs(count)
+	if absCount <= 3 then
+		if lightName then
+			Wait.time(function() DIR.UpdateTokenLight(lightName) end, 0.6)
+		end
+		return token.addForce(Vector(forceVector):scale(Vector(1, 1, math.abs(count))), 3)
+	else
+		local seqFuncs = {}
+		while absCount >= 3 do
+			absCount = absCount - 3
+			table.insert(seqFuncs, function() bumpToken(token, forceVector, 3, lightName) end)
+		end
+		while absCount >= 2 do
+			absCount = absCount - 2
+			table.insert(seqFuncs, function() bumpToken(token, forceVector, 2, lightName) end)
+		end
+		while absCount >= 1 do
+			absCount = absCount - 1
+			table.insert(seqFuncs, function() bumpToken(token, forceVector, 1, lightName) end)
+		end
+		return U.sequence(seqFuncs, 0.5)
+	end
+end
+
+local function bumpStabilityToken(count)
+	local forceVector = Vector(0, 15, 3.5)
+	return bumpToken(getBoardTokens().Stability, forceVector, count, "Stability")
+end
+
+local function bumpResourceToken(tokenName, count)
+	local forceVector = Vector(0, 15, 3.5)
+	return bumpToken(getBoardTokens().resource[tokenName], forceVector, count, tokenName)
+end
+
+function DIR.BumpToken(tokenName, count)
+	local tokenPos = getTokenPositionsFromBoard()
+	local min, max = 1, tokenName == "Stability" and 19 or 17
+	if tokenName == "Stability" and (tokenPos.Stability == 19 or tokenPos.Stability == 1) then
+		return 0
+	end
+	count = math.max(math.min(count, max - tokenPos[tokenName]), min - tokenPos[tokenName])
+	if tokenName == "Stability" then
+		return bumpStabilityToken(count)
+	elseif U.isIn(tokenName, C.Resources) then
+		return bumpResourceToken(tokenName, count)
+	end
+end
+
+function DIR.InitCountZones()
+	U.forEach(S.getPlayers(), function(player)
+		-- Player Private Power
+		local powerZone = P.GetPlayerZone(player, "Power")
+		if powerZone then
+			powerZone.call("SetCountTag", "PowerToken")
+			powerZone.call("SetColor", Color.Yellow)
+			powerZone.call("SetIcon", "powerIcon")
+			powerZone.call("SetIconColor", Color(C.RootColors.Amber):setAt("a", 0.6))
+			powerZone.call("Activate")
+		end
+
+		-- Player Private Coin
+		local coinZone = P.GetPlayerZone(player, "Coin")
+		if coinZone then
+			coinZone.call("SetCountTag", "CoinToken")
+			coinZone.call("SetColor", Color.Yellow)
+			coinZone.call("SetIcon", "coinIcon")
+			coinZone.call("SetIconColor", Color(C.RootColors.Amber):setAt("a", 0.6))
+			coinZone.call("Activate")
+		end
+
+		V.InitCountZones(player)
+	end)
+
+	-- Balance Plinth
+	local balanceZone = getObjectsWithTag("zoneBalance")[1]
+	if balanceZone then
+		balanceZone.call("SetCountTag", "PowerToken")
+		balanceZone.call("SetColor", Color.Yellow)
+		balanceZone.call("SetIcon", "powerIcon")
+		balanceZone.call("SetIconColor", Color(C.RootColors.Amber):setAt("a", 0.6))
+		balanceZone.call("Activate")
+	end
+end
+
+-- #region Initialization Functions~
+INITFUNCS = {
+	NONE = function()
+		return {
+			function()
+				S.setStateVal({}, "playerData")
+				P.ClearSeats()
+
+				S.UpdateSeatedPlayers()
+				return MSG.Splash("Resetting Table")
+			end
+		}
+	end,
+	SESSIONINIT = {
+		SeatPlayers = function()
+			return {
+				DIR.ADVANCE
+			}
+		end,
+		HouseSelection = function()
+			HOUSE_SELECTION = {}
+			newPlayerColors = {}
+			return {
+				function()
+					if #DIR.GetUnselectedPlayers() > 0 then
+						return U.RunSequence({
+							function() MSG.Splash("House Selection"); return 2 end,
+							DIR.InitHouseSelectionHUD
+						})
+					else
+						return 0
+					end
+				end,
+				function()
+					HOUSE_SELECTION.isComplete = nil
+					U.forEach(HOUSE_SELECTION, function(houseName, color)
+						-- log({RESOLVING = color, houseName = houseName})
+						if not color or not houseName then return end
+						local player = S.getPlayer(color)
+						table.insert(newPlayerColors, color)
+						S.setPlayerVal(houseName, player, "house")
+						S.setPlayerVal(nil, player, "houseName")
+					end)
+					UI.setAttribute("houseSelectionHUD", "active", "false")
+					-- UI.hide("houseSelectionHUD")
+					MSG.Splash("Setting Up Play Spaces", nil, 5)
+					return 0.5
+				end,
+				function()
+					return U.map(S.getPlayers(), function(player)
+						local house = S.getPlayerVal(player, "house")
+						return HouseScreen.Spawn(player, house, U.isIn(player.color, newPlayerColors))
+					end)
+				end,
+				function() return 2 end,
+				function() L.LoadLights({"lightBehind"}, "ambient"); return 1.5 end,
+				function()
+					P.ActivatePlayerScreenHUD()
+					return L.LoadLights({ "lightFront" }, "ambient")
+				end,
+				function()
+					U.AlertGM("All Done!")
+					return 1
+				end
+			}
+		end
+	},
+	CHRONSETUP = function()
+		U.Assert("INITFUNCS.CHRONSETUP", S.getStateVal("gameState", "gameCount") == 1)
+		local queryResponse = {Prologue = "D1", ["Main Story"] = "0"}
+		return {
+			function()
+				return MSG.SplashQuery(
+					"How do you want to start your\nChronicle of The King's Dilemma?",
+					"Host",
+					queryResponse,
+					S.getPlayer("Host")
+				)
+			end,
+			function() return P.SetCamera("Lectern") end,
+			function()
+				L.LoadLights({ "lightLectern" }, "default")
+				return MSG.Splash("Chronicle Setup")
+			end,
+			function()
+				S.setStateVal(({ ["D1"] = "Harald IV", ["0"] = "Harald V" })[queryResponse.response], "gameState", "kingName")
+				return DIR.OpenEnvelope(queryResponse.response)
+			end
+		}
+	end,
+	GAMESETUP = {
+		MainBoard = function()
+			return {
+				function()
+					P.SetCamera("MainBoard")
+					DIR.AddToDilemmaDeck()
+					return MSG.Splash("Board Setup")
+				end,
+				DIR.SpawnBoardTokens,
+				function()
+					V.ElevateBalance()
+					return L.SetLightMode("lightBalance", "bright", nil, 0.5)
+				end,
+				function()
+					DIR.InitCountZones()
+					V.SpawnBalanceTokens(3)
+					L.SetLightMode("lightBalance", "on", nil, 3)
+					return 1.5
+				end,
+				function() return P.SetCamera("BehindScreen") end,
+				function()
+					MSG.Splash("Distributing Power & Coin")
+					return {
+						DIR.SpawnStartingPlayerPower(),
+						DIR.SpawnStartingPlayerCoins()
+					}
+				end,
+				DIR.ADVANCE
+			}
+		end,
+		LeaderModerator = function()
+			local leader, moderator
+			return {
+				function()
+					MSG.Splash(P.GetLeaderName() .. " Is Most Prestigious")
+					L.SetLightMode("lightLeader", "on", nil, 2)
+					return 1
+				end,
+				function() return P.AssignLeader(leader) end,
+				function()
+					MSG.Splash(P.GetModeratorName() .. " Is Least Prestigious")
+					L.SetLightMode("lightModerator", "on", nil, 2)
+					return 1
+				end,
+				function() return P.AssignModerator(moderator) end,
+				DIR.ADVANCE
+			}
+		end,
+		LegacySetup = function()
+			return {
+				function()
+					P.SetCamera("MainBoard")
+					return MSG.Splash("Legacy Effects")
+				end,
+				function()
+					return MSG.Splash("Open Agendas")
+				end,
+				DIR.ADVANCE
+			}
+		end,
+		SecretAgendas = function()
+			local agendaDeck, agendaCard
+			return {
+				function()
+					agendaDeck = getObjectsWithTag("SecretAgenda")[1]
+					U.Val("SecretAgendas", agendaDeck, U.isGameObject(agendaDeck) and agendaDeck.type == "Deck")
+					P.SetCamera("Lectern")
+					return MSG.Splash("Secret Agendas")
+				end,
+				function()
+					agendaDeck.setLock(true)
+					L.SetLightMode("lightLectern", "spotlightDilemmaDeck", nil, 1)
+					return {
+						U.setPositionSlow(agendaDeck, Vector(C.Spots.Staging.SecretAgenda.High.position), 1),
+						U.setRotationSlow(agendaDeck, Vector(C.Spots.Staging.SecretAgenda.High.rotation), 1)
+					}
+				end,
+				function()
+					U.setPositionSlow(agendaDeck, Vector(C.Spots.Staging.SecretAgenda.Low.position), 0.5)
+					U.setRotationSlow(agendaDeck, Vector(C.Spots.Staging.SecretAgenda.Low.rotation), 0.5)
+					return 0.25
+				end,
+				function()
+					agendaDeck.shuffle()
+					return 0.5
+				end,
+				function()
+					local isSpawned = false
+					agendaCard = agendaDeck.takeObject({
+						position = Vector({ -0.01, 6.95, 24.41 }),
+						rotation = Vector({ 0, 0, 180 }),
+						callback_function = function(obj)
+							obj.setLock(true)
+							isSpawned = true
+						end
+					})
+					return function() return isSpawned == true end
+				end,
+				function()
+					return {
+						U.setRotationSlow(agendaCard, Vector(C.Spots.Staging.SecretAgenda.Burnt.rotation), 2),
+						U.setPositionSlow(agendaCard, Vector(C.Spots.Staging.SecretAgenda.Burnt.position), 2, "speedUp")
+					}
+				end,
+				function()
+					P.SetCamera("BehindScreen")
+					return P.DealAll(agendaDeck, P.GetLeastPrestigious())
+				end,
+				function()
+					L.SetLightMode("lightLectern", "off")
+					L.SetLightMode("lightPlayerSpotlight", "player" .. S.getPlayerNum(P.GetLeastPrestigious()))
+					L.SetLightMode("lightFront", "dim")
+					return MSG.Splash("Choose Your Secret Agenda", P.GetLeastPrestigious())
+				end
+			}
+		end,
+		PrepareFirstRound = function()
+			return {
+				function()
+					S.setStateVal(0, "roundState", "roundNum")
+					S.setStateVal(getTokenMomentums(), "roundState", "boardTokens", "momentum")
+					return DIR.ADVANCE()
+				end
+			}
+		end
+	},
+	PLAY = {
+		StartRound = function()
+			return {
+				function()
+					S.setStateVal(S.getStateVal("roundState", "roundNum") + 1, "roundState", "roundNum")
+					S.setStateVal(getTokenPositionsFromBoard(), "roundState", "boardTokens", "positions")
+					S.setStateVal(P.GetLeader().color, "roundState", "currentTurn")
+					S.setStateVal(false, "roundState", "passModClaimed")
+					S.setStateVal(0, "roundState", "ayeTotal")
+					S.setStateVal(0, "roundState", "nayTotal")
+					U.forEach(S.getPlayers(), function(player)
+						S.setStateVal(false, "turnState", player.color, "vote")
+						S.setStateVal(0, "turnState", player.color, "powerCommitted")
+					end)
+					return DIR.ADVANCE()
+				end
+			}
+		end,
+		DrawDilemma = function()
+			local coverCard = O.Pieces.CoverCard()
+			local dilemmaSource = U.findBelowObject(coverCard, function(obj) return obj.type == "Card" or obj.type == "Deck" end)
+			U.Val("DIR.DrawDilemmaCard", dilemmaSource, #dilemmaSource == 1)
+			dilemmaSource = dilemmaSource[1]
+			local dilemmaCard
+			S.setStateVal({}, "roundState", "consequences")
+			return {
+				function()
+					return {
+						P.SetCamera("DilemmaDraw"),
+						MSG.Splash("The Dilemma")
+					}
+				end,
+				function()
+					L.SetLightMode("lightLectern", "spotlightDilemmaDeck")
+					if dilemmaSource.type == "Deck" then
+						dilemmaSource.takeObject({
+							position = C.Spots.Staging.DilemmaDraw.position,
+							rotation = C.Spots.Staging.DilemmaDraw.rotation,
+							top = false,
+							callback_function = function(obj)
+								obj.setLock(true)
+								dilemmaCard = obj
+							end
+						})
+						return function() return dilemmaCard ~= nil end
+					elseif dilemmaSource.type == "Card" then
+						dilemmaCard = dilemmaSource
+						dilemmaCard.setLock(true)
+						return {
+							U.setPositionSlow(dilemmaCard, C.Spots.Staging.DilemmaDraw.position),
+							U.setRotationSlow(dilemmaCard, C.Spots.Staging.DilemmaDraw.rotation)
+						}
+					end
+				end,
+				function()
+					DIR.InitConsequencesQuery()
+					L.SetLightMode("lightLectern", "off", nil, 0.5)
+					L.SetLightMode("lightDilemmaMain", "on", nil, 2)
+					dilemmaCard.addTag("OnDisplay")
+					return {
+						U.setPositionSlow(dilemmaCard, C.Spots.Main.Dilemma.faceDown.position, 2, "speedUp"),
+						U.setRotationSlow(dilemmaCard, C.Spots.Main.Dilemma.faceDown.rotation, 2, "speedUp"),
+						U.setScaleSlow(dilemmaCard, C.Spots.Main.Dilemma.faceDown.scale, 2, "speedUp")
+					}
+				end,
+				function()
+					return {
+						L.SetLightMode("lightDilemmaAye", "on", nil, 1),
+						L.SetLightMode("lightDilemmaNay", "on", nil, 1)
+					}
+				end
+			}
+		end,
+		Discussion = function()
+			return {
+				function()
+					U.forEach(S.getPlayers(), function(player)
+						if string.lower(UI.getAttribute("consequencesQuery_" .. player.color, "active")) == "true" then
+							UI.hide("consequencesQuery_" .. player.color)
+						end
+					end)
+					P.SetCamera("BehindScreen")
+					return MSG.Splash("The Debate")
+				end
+			}
+		end,
+		Vote = function()
+			local queryResponse = {Yes = "true", No = "false"}
+			return {
+				function()
+					return MSG.SplashQuery(
+						"Is a vote required this round?",
+						P.GetLeaderName(),
+						queryResponse,
+						P.GetLeader()
+					)
+				end,
+				function()
+					if queryResponse.response == "true" then
+						return U.RunSequence({
+							function()
+								MSG.Splash("The Vote")
+								V.InitCountZones()
+								return V.SetVotingLights()
+							end,
+							function()
+								DIR.DisplayPassHUD(P.GetLeader())
+								return V.StartTurn(P.GetLeader())
+							end
+						})
+					else
+						return U.RunSequence({
+							function() return DIR.JumpToStatePhase(C.Modes.PLAY, C.Phases.PLAY.EndRound) end,
+							function() return DIR.InitializePhase() end
+						})
+					end
+				end
+			}
+		end,
+		VoteResolution = function()
+			return {
+				function()
+					UI.hide("consequencesSidebar")
+					return {
+						L.SetLightMode({"lightBehind"}, "ambient"),
+						L.SetLightMode({"lightFront"}, "dim"),
+						L.SetLightMode({"lightPlayerSpotlight"}, "off")
+					}
+				end,
+				function()
+					local nayTotal = S.getStateVal("roundState", "nayTotal")
+					local ayeTotal = S.getStateVal("roundState", "ayeTotal")
+					if ayeTotal == nayTotal then
+						local query = {Aye = "Aye", Nay = "Nay"}
+						return U.RunSequence({
+							function()
+								return L.SetLightMode({"lightPlayerSpotlight"}, "player" .. S.getPlayerNum(P.GetModerator()), nil, 1)
+							end,
+							function()
+								if ayeTotal == 0 then
+									MSG.Splash("Leadership falls to the Moderator, " .. P.GetModeratorName() .. ".")
+									P.AssignLeader(P.GetModerator())
+									return MSG.SplashQuery(
+										"Does the proposed resolution succeed?",
+										P.GetModeratorName(),
+										query,
+										P.GetModerator()
+									)
+								else
+									MSG.Splash({
+										"Tie.",
+										"The Moderator will cast the deciding vote."
+									})
+									return MSG.SplashQuery(
+										"Cast the tie-breaking vote.",
+										P.GetModeratorName(),
+										query,
+										P.GetModerator()
+									)
+								end
+							end,
+							function()
+								L.SetLightMode({"lightPlayerSpotlight"}, "off")
+								S.setStateVal(query.response, "roundState", "voteResult")
+								return 0
+							end
+						})
+					elseif ayeTotal > nayTotal then
+						S.setStateVal("Aye", "roundState", "voteResult")
+					else
+						S.setStateVal("Nay", "roundState", "voteResult")
+					end
+					return 0
+				end,
+				function()
+					if S.getStateVal("roundState", "voteResult") == "Aye" then
+						return MSG.Splash("The Resolution is Approved", nil, nil, {color = U.GetHex(Color.Blue)})
+					else
+						return MSG.Splash("The Resolution is Rejected", nil, nil, {color = U.GetHex(Color.Red)})
+					end
+				end,
+				function()
+					if S.getPlayerVoteStatus(P.GetLeader()) ~= S.getStateVal("roundState", "voteResult") then
+						local winningPlayers = U.filter(S.getPlayers(), function(player) return S.getPlayerVoteStatus(player) == S.getStateVal("roundState", "voteResult") end)
+						if #winningPlayers == 0 then return 0 end
+						table.sort(winningPlayers, function(playerA, playerB) return S.getPlayerPowerCommitted(playerA) > S.getPlayerPowerCommitted(playerB) end)
+						if #winningPlayers > 1 and S.getPlayerPowerCommitted(winningPlayers[1]) == S.getPlayerPowerCommitted(winningPlayers[2]) then
+							local tiedPlayers = U.filter(winningPlayers, function(player) return S.getPlayerPowerCommitted(player) == S.getPlayerPowerCommitted(winningPlayers[1]) end)
+							local queryResponse = {}
+							U.forEach(tiedPlayers, function(player) queryResponse[P.GetPlayerName(player)] = player end)
+							return U.RunSequence({
+								function()
+									return MSG.SplashQuery(
+										"Pass Leadership to which player?",
+										P.GetModeratorName(),
+										queryResponse,
+										P.GetModerator()
+									)
+								end,
+								function()
+									if P.GetModeratorName() == P.GetPlayerName(queryResponse.response) then
+										MSG.Splash(P.GetModeratorName() .. " retains Leadership.")
+									else
+										MSG.Splash(P.GetModeratorName() .. " assigns Leadership to " .. P.GetPlayerName(queryResponse.response) .. ".")
+									end
+									return P.AssignLeader(queryResponse.response)
+								end
+							})
+						else
+							return U.RunSequence({
+								function()
+									MSG.Splash(P.GetPlayerName(winningPlayers[1]) .. " claims Leadership.")
+									return P.AssignLeader(winningPlayers[1])
+								end
+							})
+						end
+					else
+						return 0
+					end
+				end,
+				function()
+					local passPlayers = U.filter(S.getPlayers(), function(player) return U.isIn(S.getPlayerVoteStatus(player), {"Pass", "PassMod"}) end)
+					if #passPlayers > 0 then
+						return U.RunSequence({
+							function()
+								MSG.Splash("Granting Coin for Abstaining")
+								U.forEach(passPlayers, function(player) L.SetLightMode("lightFront", "ambient", player, 1) end)
+								return 0.5
+							end,
+							unpack(U.iMap(passPlayers, function(player) return function()
+								return U.RunSequence({
+									function()
+										P.SpawnCoins(player, 1)
+										return {1.5, L.SetLightMode("lightFront", "bright", player, 0.5)}
+									end,
+									function()
+										L.SetLightMode("lightFront", "dim", player, 0.5)
+										return 0
+									end
+								})
+							end end))
+						})
+					end
+					return 0
+				end,
+				function()
+					local passPowerPlayers = U.filter(S.getPlayers(), function(player) return S.getPlayerVoteStatus(player) == "Pass" end)
+					local balanceZone = getObjectsWithTag("zoneBalance")[1]
+					local balancePower = OU.GetTotalValue(balanceZone, "PowerToken")
+					if #passPowerPlayers > 0 and balancePower >= #passPowerPlayers then
+						local powerPerPlayer = math.floor(balancePower / #passPowerPlayers)
+						if powerPerPlayer > 0 then
+							return U.RunSequence({
+								function()
+									U.forEach(passPowerPlayers, function(player) L.SetLightMode("lightFront", "ambient", player, 1) end)
+									MSG.Splash("Gathering Power")
+									return 0.5
+								end,
+								unpack(U.iMap(passPowerPlayers, function(player) return function()
+									return U.RunSequence({
+										function()
+											OU.TransferValue(
+												balanceZone,
+												P.GetPlayerZone(player, "Power"),
+												powerPerPlayer,
+												"PowerToken")
+											return {1.5, L.SetLightMode("lightFront", "bright", player, 0.5)}
+										end,
+										function()
+											L.SetLightMode("lightFront", "dim", player, 0.5)
+											return 0
+										end
+									})
+								end end))
+							})
+						end
+					end
+					return 0
+				end,
+				function()
+					local losingPlayers = U.filter(S.getPlayers(), function(player) return U.isIn(S.getPlayerVoteStatus(player), {"Aye", "Nay"}) and S.getPlayerVoteStatus(player) ~= S.getStateVal("roundState", "voteResult") end)
+					if #losingPlayers > 0 then
+						return U.RunSequence({
+							function()
+								U.forEach(losingPlayers, function(player) L.SetLightMode("lightFront", "ambient", player, 1) end)
+								MSG.Splash("Returning Power to Losing Players")
+								return 0.5
+							end,
+							unpack(U.iMap(losingPlayers, function(player) return
+								U.RunSequence({
+									function()
+										OU.TransferValue(
+											P.GetPlayerZone(player, "Public"),
+											P.GetPlayerZone(player, "Power"),
+											OU.GetTotalValue(P.GetPlayerZone(player, "Public"), "PowerToken"),
+											"PowerToken")
+										Wait.time(function() V.LowerRiser(player) end, 2)
+										return {1.5, L.SetLightMode("lightFront", "bright", player, 0.5)}
+									end,
+									function()
+										L.SetLightMode("lightFront", "dim", player, 0.5)
+										return 0
+									end
+								})
+							end))
+						})
+					end
+					return 0
+				end,
+				function()
+					local winningPlayers = U.filter(S.getPlayers(), function(player) return S.getPlayerVoteStatus(player) == S.getStateVal("roundState", "voteResult") end)
+					if #winningPlayers > 0 then
+						local balanceZone = getObjectsWithTag("zoneBalance")[1]
+						return U.RunSequence({
+							function()
+								U.forEach(winningPlayers, function(player) L.SetLightMode("lightFront", "ambient", player, 1) end)
+								MSG.Splash("Moving Committed Power to Balance")
+								return 0.5
+							end,
+							unpack(U.iMap(winningPlayers, function(player) return
+								U.RunSequence({
+									function()
+										Wait.time(function() V.LowerRiser(player) end, 2)
+										OU.TransferValue(
+											P.GetPlayerZone(player, "Public"),
+											balanceZone,
+											OU.GetTotalValue(P.GetPlayerZone(player, "Public"), "PowerToken"),
+											"PowerToken")
+										return {1.5, L.SetLightMode("lightFront", "bright", player, 0.5)}
+									end,
+									function()
+										L.SetLightMode("lightFront", "dim", player, 0.5)
+										return 0
+									end
+								})
+							end))
+						})
+					end
+					return 0
+				end,
+				function() return L.SetLightMode("lightVote", "off") end,
+				DIR.ADVANCE
+			}
+		end,
+		DisplayOutcome = function()
+			V.InitCountZones()
+			return {
+				function()
+					local voteResult = S.getStateVal("roundState", "voteResult")
+					if voteResult == nil then return 0 end
+
+					local dilemmaCard = getObjectsWithAllTags({ "Dilemma", "OnDisplay" })[1]
+					if dilemmaCard == nil then return U.AlertGM("No Dilemma Card Displayed!") end
+
+					P.SetCamera("DilemmaResult")
+					MSG.Splash("Rewards & Consequences")
+
+					L.SetLightMode("lightDilemmaAye", "off", nil, 0.5)
+					L.SetLightMode("lightDilemmaNay", "off", nil, 0.5)
+					L.SetLightMode("lightDilemmaMain", voteResult or "off", nil, 2)
+
+					if voteResult == nil then
+						S.setStateVal(C.Phases.EnvelopeCheck, "gameState", "gamePhase")
+						-- next 'DIR.ADVANCE' will move to EndRound
+						return 0
+					end
+
+					if voteResult == "Nay" then
+						dilemmaCard.alt_view_angle = Vector(0, 180, 180)
+					else
+						dilemmaCard.alt_view_angle = Vector(0, 0, 0)
+					end
+
+					return {
+						U.setPositionSlow(dilemmaCard, C.Spots.Main.Dilemma["faceUp" .. voteResult].position, 2),
+						U.setRotationSlow(dilemmaCard, C.Spots.Main.Dilemma["faceUp" .. voteResult].rotation, 2),
+						dilemmaCard
+					}
+				end,
+				DIR.ADVANCE
+			}
+		end,
+		ApplyChanges = function()
+			return {
+				function() return MSG.Splash("Apply Changes to Resources") end
+			}
+		end,
+		ApplyMomentum = function()
+			local resourceTokens = getBoardTokens().resource
+			local resourceDeltas = getTokenPositionDeltas(getTokenPositionsFromState(), getTokenPositionsFromBoard())
+			local resourceBumps = getResourceTokenBumpsFromMomentum()
+			local stabilityBumps = getStabilityTokenBumpsFromMomentum()
+			-- log({stateData = S.getStateVal("roundState", "boardTokens"), resourceDeltas = resourceDeltas, resourceBumps = resourceBumps, stabilityBumps = stabilityBumps})
+			return {
+				function() return MSG.Splash("Applying Momentum") end,
+				function()
+					return U.RunSequence(U.iMap(C.Resources, function(resource)
+						if resourceDeltas[resource] == 0 then return function() return 0 end end
+						if resourceBumps[resource] == 0 then
+							-- Token moved, but opposite direction to momentum: flip momentum
+							return function()
+								S.setStateVal(resourceDeltas[resource] > 0 and 1 or -1, "roundState", "boardTokens", "momentum", resource)
+								return U.RunSequence({
+									function()
+										resourceTokens[resource].flip()
+										return resourceTokens[resource]
+									end,
+									function() DIR.UpdateTokenLight(resource); return 0 end
+								})
+							end
+						else
+							-- Token moved in same direction to momentum: bump by momentum, bump stability, set momentum to 2
+							return function()
+								return U.RunSequence({
+									function()
+										return {
+											DIR.BumpToken("Stability", stabilityBumps[resource]),
+											DIR.BumpToken(resource, resourceBumps[resource])
+										}
+									end,
+									function()
+										S.setStateVal(resourceDeltas[resource] > 0 and 2 or -2, "roundState", "boardTokens", "momentum", resource)
+										return {
+											DIR.UpdateTokenLight(resource),
+											DIR.UpdateTokenLight("Stability")
+										}
+									end
+								})
+							end
+						end
+					end))
+				end,
+				DIR.ADVANCE
+			}
+		end,
+		StickerCheck = function()
+			return {
+				function()
+					MSG.Splash("Checking for Chronicle Stickers")
+					local queryResponse = {Yes = "true", No = "false"}
+					return U.RunSequence({
+						function()
+							return MSG.SplashQuery(
+								"Does the Dilemma unlock a Chronicle Sticker?",
+								P.GetLeaderName(),
+								queryResponse,
+								P.GetLeader()
+							)
+						end,
+						function()
+							if queryResponse.response == "true" then
+								return DIR.PromptForSticker(P.GetLeader())
+							end
+							return DIR.ADVANCE()
+						end
+					})
+				end
+			}
+		end,
+		EnvelopeCheck = function()
+			return {
+				function()
+					MSG.Splash("Checking for Chronicle Envelopes")
+					local queryResponse = {Yes = "true", No = "false"}
+					return U.RunSequence({
+						function()
+							return MSG.SplashQuery(
+								"Does the Dilemma unlock a Chronicle Envelope?",
+								P.GetLeaderName(),
+								queryResponse,
+								P.GetLeader()
+							)
+						end,
+						function()
+							if queryResponse.response == "true" then
+								return DIR.PromptForEnvelope(P.GetLeader())
+							end
+							return DIR.ADVANCE()
+						end
+					})
+				end
+			}
+		end,
+		EndRound = function()
+			return {
+				function()
+					local voteResult = S.getStateVal("roundState", "voteResult")
+					local dilemmaCard = getObjectsWithAllTags({ "Dilemma", "OnDisplay" })[1]
+					if dilemmaCard == nil then return U.AlertGM("No Dilemma Card Displayed!") end
+					L.SetLightMode("lightDilemmaMain", "off", nil, 2)
+					L.SetLightMode("lightLectern", "ambient")
+
+					dilemmaCard.removeTag("OnDisplay")
+					dilemmaCard.addTag("Played")
+
+					if voteResult == nil then
+						return U.RunSequence({
+							function()
+								return {
+									P.SetCamera("MainBoard"),
+									L.SetLightMode("lightLectern", "storyCard"),
+									U.setPositionSlow(dilemmaCard, Vector(C.Spots.Staging.StoryCard.Display.position):add(Vector(0, 5, 0)), 2),
+									U.setRotationSlow(dilemmaCard, C.Spots.Staging.StoryCard.Display.rotation, 2),
+									U.setScaleSlow(dilemmaCard, C.Spots.Staging.StoryCard.Display.scale, 2)
+								}
+							end,
+							function()
+								dilemmaCard.setLock(false)
+								dilemmaCard.removeTag("Played")
+								return { dilemmaCard, 0.5 }
+							end,
+							function()
+								local curPos = Vector(dilemmaCard.getPosition())
+								return function() return not dilemmaCard.getPosition():equals(curPos, 1) end
+							end,
+							function()
+								-- 'spoof' state so next DIR.ADVANCE jumps to StartRound
+								S.setStateVal(C.Modes.GAMESETUP, "gameState", "gameMode")
+								S.setStateVal(C.Phases.GAMESETUP.PrepareFirstRound, "gameState", "gamePhase")
+								return L.SetLightMode("lightLectern", "ambient")
+							end
+						})
+					end
+
+					local playedDilemmas = getObjectsWithAllTags({ "Dilemma", "Played" })
+					local dilemmaTransform = C.Spots.Main.Dilemma["board" .. voteResult][#playedDilemmas]
+
+					return U.RunSequence({
+						function()
+							dilemmaCard.setLock(false)
+							return {
+								U.setPositionSlow(dilemmaCard, dilemmaTransform.position, 2),
+								U.setRotationSlow(dilemmaCard, dilemmaTransform.rotation, 2),
+								U.setScaleSlow(dilemmaCard, dilemmaTransform.scale, 2)
+							}
+						end,
+						function()
+							-- Check Abdication
+							local stabilityToken = getObjectsWithTag("StabilityMarker")[1]
+							local stabilityZPos = stabilityToken.getPosition().z
+							if stabilityZPos > 9 or stabilityZPos < -15 then
+								return DIR.EndGame("Abdication")
+							end
+
+							-- Check King Death
+							local playedDilemmas = getObjectsWithAllTags({ "Dilemma", "Played" })
+							if #playedDilemmas == 10 then
+								return DIR.EndGame("Death")
+							elseif #playedDilemmas > 6 then
+								local queryResponse = {Yes = "true", No = "false"}
+								return U.RunSequence({
+									function()
+										return MSG.SplashQuery(
+											"Does the dilemma bear a skull icon?",
+											P.GetLeaderName(),
+											queryResponse,
+											P.GetLeader()
+										)
+									end,
+									function()
+										if queryResponse.response == "true" then
+											return DIR.EndGame("Death")
+										end
+
+										return DIR.InitializePhase()
+									end
+								})
+							else
+								DIR.JumpToStatePhase(C.Modes.PLAY, C.Phases.PLAY.StartRound)
+								return DIR.InitializePhase()
+							end
+						end
+					})
+				end
+			}
+		end
+	},
+	END = {
+		Score = function()
+			return {
+
+
+			}
+		end,
+		Realm = function()
+			return {
+
+
+			}
+		end,
+		Achievements = function()
+			return {
+
+
+			}
+		end,
+		Alignments = function()
+			return {
+
+
+			}
+		end,
+		Cleanup = function()
+			return {
+
+
+			}
+		end
+	}
+}
+-- #endregion
+
+-- #region Session Setup & Phase Control~
+function DIR.InitPreflight()
+	UI.hide("sessionPreflightDisplay")
+	UI.show("sessionInitDisplay")
+
+	Global.call("UpdatePhaseDisplay")
+	U.forEach(getObjectsWithTag("Private"), function(obj)
+		local color = U.findColorTag(obj)
+		if color then
+			obj.setInvisibleTo(S.getOtherColors(color))
+		end
+	end)
+	L.PrimeLights()
+	U.forEach(O.UninteractableObjs, function(oFunc)
+		oFunc().interactable = false
+		oFunc().gizmo_selectable = false
+	end)
+
+	-- #region DEBUG
+	console.load()
+	Global.call("InitTestFuncButtons") -- Assign names to test function buttons
+	-- #endregion
+
+	UI.setValue("gameNumText", "Game " .. S.getStateVal("gameState", "gameCount"))
+end
+
+
+function DIR.InitSession()
+	UI.hide("sessionInitDisplay")
+	UI.show("gameStatusDisplay")
+	return U.RunSequence({
+		function()
+			UI.hide("splashScreen")
+			return P.AssignPlayerColors()
+		end,
+		function() return MSG.Splash("Seating Players", nil, 1) end,
+		function()
+			P.InitializeSeats()
+			local players = S.getPlayers()
+			return {
+				function() return #U.filter(players, function(pl) return pl.getHandCount() == 0 end) == 0 end
+			}
+		end,
+		function()
+			DIR.InitCountZones()
+			return P.SetCamera("BehindScreen")
+		end,
+		function()
+			if S.isInMode(C.Modes.NONE) then
+				return DIR.ADVANCE()
+			end
+			return DIR.JumpToStatePhase()
+		end
+	})
+end
+
+function DIR.ADVANCE(waitFunc)
+	local mode, phase = S.getNextPhase()
+	local function startPhase()
+		S.setStateVal(mode, "gameState", "gameMode")
+		S.setStateVal(phase, "gameState", "gamePhase")
+		DIR.InitializePhase()
+	end
+
+	if waitFunc then
+		U.waitUntil(startPhase, waitFunc, false)
+	else
+		startPhase()
+	end
+end
+
+function DIR.RESET()
+	S.setStateVal("NONE", "gameState", "gameMode")
+	S.setStateVal("NONE", "gameState", "gamePhase")
+	HOUSE_SELECTION = {}
+	P.InitializeSeats()
+	DIR.InitializePhase()
+end
+
+function DIR.InitializePhase()
+	Global.call("UpdatePhaseDisplay")
+	local mode = S.getStateVal("gameState", "gameMode")
+	local phase = S.getStateVal("gameState", "gamePhase")
+	local seqFuncs = INITFUNCS[mode]
+	if U.Type(seqFuncs) == "table" then
+		seqFuncs = seqFuncs[phase]
+	end
+	if U.Type(seqFuncs) == "function" then
+		seqFuncs = seqFuncs()
+	end
+	U.RunSequence(seqFuncs)
+end
+
+function DIR.JumpToStatePhase(mode, phase)
+	if mode ~= nil then
+		S.setStateVal(mode, "gameState", "gameMode")
+		S.setStateVal(mode, "gameState", "gamePhase")
+	end
+	if phase ~= nil then
+		S.setStateVal(phase, "gameState", "gamePhase")
+	end
+
+	if S.isInPhase({"DrawDilemma", "Discussion", "Vote"}) then
+		DIR.InitConsequencesQuery()
+	end
+
+	-- ... further logic to resync game environment to whatever point in the game we're at.
+	P.ActivatePlayerScreenHUD()
+	return L.InitLights()
+end
+
+-- #endregion
+
+-- #region Chronicle Setup~
+function DIR.StartChronicle()
+	U.Assert("DIR.StartChronicle", U.isIn(S.getStateVal("gameState", "chronicleType"), { "Main", "Prologue" }))
+	local startingEnvelope = ({ Prologue = "D1", Main = "0" })[S.getStateVal("gameState", "chronicleType")]
+
+	return DIR.OpenEnvelope(startingEnvelope)
+end
+
+-- #region House Selection ~
+
+function DIR.GetUnselectedPlayers()
+	return U.filter(S.getPlayers(), function(player)
+		return not HOUSE_SELECTION[player.color] and not S.getPlayerVal(player, "house")
+	end)
+end
+
+local function houseUISetAll(prefix, attribute, value)
+	U.forEach(S.getPlayers(), function(player)
+		-- log("Setting '" .. attribute .. "' of '" .. prefix .. "_" .. player.color .. "' to '" .. value .. "'")
+		UI.setAttribute(prefix .. "_" .. player.color, attribute, value)
+	end)
+end
+local function isHouseClaimed(houseName) return S.getPlayerOfHouse(houseName) ~= false end
+local function getSelectingPlayer(houseName) return U.findIndex(HOUSE_SELECTION, function(hName) return houseName == hName end) end
+
+function DIR.InitHouseSelectionHUD()
+
+	if #DIR.GetUnselectedPlayers() == 0 then
+		HOUSE_SELECTION.isComplete = true
+	else
+		U.forEach(C.Houses, function(houseName)
+			if isHouseClaimed(houseName) then
+				local claimColor = S.getPlayerOfHouse(houseName)
+				log({claimColor = claimColor})
+				if U.isIn(claimColor, Player.getAvailableColors()) then
+					claimColor = Color[claimColor]
+					houseUISetAll("houseHUD_Dark_" .. houseName, "color", U.GetHex(Color(claimColor):lerp(Color.Black:setAt("a", 0.85), 0.5)))
+					houseUISetAll("houseHUD_Dark_" .. houseName, "active", "true")
+				else
+					claimColor = Color.Grey:lerp(Color(0, 0, 0, 0), 0.5)
+					houseUISetAll("houseHUD_Dark_" .. houseName, "color", U.GetHex(Color.Black:setAt("a", 0.85)))
+					houseUISetAll("houseHUD_Dark_" .. houseName, "active", "true")
+				end
+				log({["...claimColor"] = claimColor})
+				UI.setAttribute("houseHUD_BannerBW_" .. houseName, "color", U.GetHex(claimColor))
+				-- houseUISetAll("houseHUD_Overlay_" .. houseName, "color", U.GetHex(claimColor))
+				-- houseUISetAll("houseHUD_Overlay_" .. houseName, "active", "true")
+			end
+		end)
+		UI.show("houseSelectionHUD")
+	end
+	return function() return HOUSE_SELECTION.isComplete == true end
+end
+
+function DIR.UnselectHouse(houseName)
+	HOUSE_SELECTION[U.findIndex(HOUSE_SELECTION, function(hName) return houseName == hName end)] = nil
+	UI.setAttribute("houseHUD_BannerBW_" .. houseName, "color", U.GetHex(Color.White))
+	houseUISetAll("houseHUD_Overlay_" .. houseName, "color", U.GetHex(Color.White))
+	houseUISetAll("houseHUD_Overlay_" .. houseName, "active", "false")
+end
+
+function DIR.SelectHouse(player, houseName)
+	HOUSE_SELECTION[player.color] = houseName
+	UI.setAttribute("houseHUD_BannerBW_" .. houseName, "color", U.GetHex(Color[player.color]))
+	houseUISetAll("houseHUD_Overlay_" .. houseName, "color", U.GetHex(Color[player.color]))
+	houseUISetAll("houseHUD_Overlay_" .. houseName, "active", "true")
+	if #DIR.GetUnselectedPlayers() == 0 then
+		Wait.time(function() HOUSE_SELECTION.isComplete = true end, 1.5)
+	end
+end
+
+function DIR.HouseHUDClick(player, houseName)
+	if isHouseClaimed(houseName) then return end
+	if S.getPlayerHouse(player) then return end
+	if not U.isIn(houseName, C.Houses) then return end
+	local curSelection = getSelectingPlayer(houseName)
+	-- log({color = player.color, cur = houseName, prev = curSelection})
+	if curSelection ~= nil and curSelection ~= player.color then return end
+	local curHouse = HOUSE_SELECTION[player.color]
+	if curHouse ~= nil then DIR.UnselectHouse(curHouse) end
+	if curHouse ~= houseName then DIR.SelectHouse(player, houseName) end
+	-- log({HOUSESELECTION = HOUSE_SELECTION})
+end
+
+function DIR.HouseHUDHoverOn(player, houseName)
+	UI.show("houseHUD_Bright_" .. houseName .. "_" .. player.color)
+	UI.show("houseHUD_Info_" .. houseName .. "_" .. player.color)
+	if houseName == "Aontas" or U.isIn(houseName, C.Houses) then
+		UI.show("houseHUD_BannerColor_" .. houseName .. "_" .. player.color)
+	end
+end
+
+function DIR.HouseHUDHoverOff(player, houseName)
+	UI.hide("houseHUD_Bright_" .. houseName .. "_" .. player.color)
+	UI.hide("houseHUD_Info_" .. houseName .. "_" .. player.color)
+	UI.setAttribute("houseHUD_Bright_" .. houseName .. "_" .. player.color, "active", "false")
+	UI.setAttribute("houseHUD_Info_" .. houseName .. "_" .. player.color, "active", "false")
+	if houseName == "Aontas" or U.isIn(houseName, C.Houses) then
+		UI.hide("houseHUD_BannerColor_" .. houseName .. "_" .. player.color)
+		UI.setAttribute("houseHUD_BannerColor_" .. houseName .. "_" .. player.color, "active", "false")
+	end
+end
+
+-- #endregion
+
+-- #endregion
+
+
+
+-- #region Game Setup~
+function DIR.SpawnBoardTokens()
+	local seqFuncs = {}
+
+	table.insert(seqFuncs, function()
+		Wait.time(function() L.SetLightMode("lightStability", "on") end, 1)
+		return OU.SpawnFromSourceObj(O.SpawnSources.stabilityToken(), { "StabilityMarker" }, C.Spots.Board.StabilityToken.center, Vector(0, 1, 0))
+	end)
+
+	U.iForEach(C.Resources, function(resName)
+		table.insert(seqFuncs, function()
+			return U.RunSequence({
+				function()
+					return OU.SpawnFromSourceObj(
+						O.SpawnSources[string.lower(resName) .. "Token"](),
+						{ "ResourceMarker", resName },
+						C.Spots.Board.ResourceTokens[resName].center,
+						Vector(0, 1, 0)
+					)
+				end,
+				function()
+					local tk = getBoardTokens().resource[resName]
+					tk.setRotation(Vector(0, 180, U.randBetween(0, 1, true) * 180))
+					tk.addForce(Vector(-0.07, 30, 0), 3)
+					tk.addTorque(Vector(0, 0, 1.9), 3)
+					U.waitUntil(function() DIR.UpdateTokenLight(resName) end, {0.5, tk})
+					return tk
+				end
+			})
+		end)
+	end)
+
+	return U.RunSequence(seqFuncs, 1000, 1)
+end
+
+function DIR.EndSecretAgendas()
+	L.SetLightMode("lightLectern", "ambient")
+	L.SetLightMode("lightFront", "ambient")
+	L.SetLightMode("lightPlayerSpotlight", "off")
+
+	local heldAgendas = {}
+
+	U.forEach(S.getPlayers(), function(player)
+		heldAgendas = U.concat(heldAgendas, U.filter(player.getHandObjects(), function(obj) return obj.hasTag("SecretAgenda") end))
+	end)
+
+	U.forEach(heldAgendas, function(obj)
+		obj.use_hands = false
+		obj.setLock(true)
+		obj.setPositionSmooth(C.Spots.Staging.SecretAgenda.Burnt.position)
+		obj.setRotationSmooth(C.Spots.Staging.SecretAgenda.Burnt.rotation)
+		Wait.time(function() obj.use_hands = true end, 0.5)
+	end)
+	U.AlertGM("Secret Agendas Dealt!")
+end
+
+function DIR.SpawnStartingPlayerPower()
+	return U.RunSequence(U.map(S.getPlayers(), function(player)
+		local numPower = 8 + (S.getPlayerVal(player, "startingPowerBonus") or 0)
+		return function() return { 1, P.SpawnPower(player, numPower) } end
+	end))
+end
+
+function DIR.SpawnStartingPlayerCoins()
+	return U.RunSequence(U.map(S.getPlayers(), function(player)
+		local numCoins = 10 + (S.getPlayerVal(player, "startingCoinsBonus") or 0)
+		return function() return { 1, P.SpawnCoins(player, numCoins) } end
+	end))
+end
+
+-- #endregion
+
+-- #region Game Round~
+
+-- #region Opening Envelopes & Adding New Dilemmas~
+function DIR.PromptForSticker(player)
+	UI.setAttribute("stickerQuery_" .. player.color, "active", "false")
+	UI.setAttribute("stickerQuery_" .. player.color, "text", " ")
+	UI.show("stickerQuery_" .. player.color)
+end
+
+function DIR.ConfirmFetchSticker(player, stickerKey)
+	U.forEach(S.getPlayers(), function(ply) UI.hide("stickerQuery_" .. ply.color) end)
+	local query = {Yes = "true", No = "false"}
+	return U.RunSequence({
+		function()
+			return MSG.SplashQuery(
+				"Confirm Sticker Key '" .. stickerKey .. "'",
+				P.GetPlayerName(player),
+				query,
+				player
+			)
+		end,
+		function()
+			if query.response == "true" then
+				return DIR.FetchSticker(stickerKey)
+			else
+				return DIR.PromptForSticker(player)
+			end
+		end
+	})
+end
+
+function DIR.PromptForEnvelope(player)
+	UI.setAttribute("envelopeQuery_" .. player.color, "active", "false")
+	UI.setAttribute("envelopeQuery_" .. player.color, "text", " ")
+	UI.show("envelopeQuery_" .. player.color)
+end
+
+function DIR.ConfirmFetchEnvelope(player, envKey)
+	U.forEach(S.getPlayers(), function(ply) UI.hide("envelopeQuery_" .. ply.color) end)
+	local query = {Yes = "true", No = "false"}
+	return U.RunSequence({
+		function()
+			return MSG.SplashQuery(
+				"Confirm Envelope Key '" .. envKey .. "'",
+				P.GetPlayerName(player),
+				query,
+				player
+			)
+		end,
+		function()
+			if query.response == "true" then
+				return DIR.OpenEnvelope(envKey, false)
+			else
+				return DIR.PromptForEnvelope(player)
+			end
+		end
+	})
+end
+
+local function getDilemmaDeck()
+	local coverCard = O.Pieces.CoverCard()
+	return U.findBelowObject(coverCard, function(obj) return obj.type == "Card" or obj.type == "Deck" end)[1]
+end
+
+function DIR.FetchSticker(stickerKey)
+	local stickerContainer = O.SecretContainers.Stickers()
+	local stickerGUID = OU.FindContainedObjGUID(stickerContainer, function(objData)
+		return string.lower(objData.name) == string.lower(stickerKey)
+	end)
+
+	if not stickerGUID then
+		U.Alert("Sticker '" .. stickerKey .. "' Not Found! Check Case & Spelling", Color(1, 0, 0))
+		return
+	end
+
+	local sticker
+	local displayedDilemma = getObjectsWithAllTags({"Dilemma", "OnDisplay"})[1]
+
+	return U.RunSequence({
+		function()
+			P.SetCamera("Lectern")
+			if displayedDilemma ~= nil then
+				local yRot = displayedDilemma.getRotation().y
+				local outcome = yRot > 170 and "Nay" or "Aye"
+				return {
+					U.setPositionSlow(displayedDilemma, C.Spots.Main.Dilemma["faceUp" .. outcome .. "Shrink"].position, 0.5),
+					U.setScaleSlow(displayedDilemma, C.Spots.Main.Dilemma["faceUp" .. outcome .. "Shrink"].scale, 0.5),
+					L.SetLightMode("lightLectern", "spotlightSticker", nil, 0.25)
+				}
+			else
+				return L.SetLightMode("lightLectern", "spotlightSticker", nil, 0.25)
+			end
+		end,
+		function()
+			U.setPositionSlow(stickerContainer, C.Spots.Staging.Lectern.Stickers.position)
+			U.setRotationSlow(stickerContainer, C.Spots.Staging.Lectern.Stickers.rotation)
+			return { stickerContainer, L.SetLightMode("lightLectern", "spotlightPlinth", nil, 0.1) }
+		end,
+		function()
+			stickerContainer.takeObject({
+				position = C.Spots.Staging.Lectern.Display.position,
+				rotation = C.Spots.Staging.Lectern.Display.rotation,
+				guid = stickerGUID,
+				callback_function = function(obj)
+					sticker = obj
+					sticker.addTag("ChronicleSticker")
+					sticker.setLock(true)
+				end
+			})
+			return function() return sticker ~= nil end
+		end,
+		function()
+			U.setPositionSlow(stickerContainer, C.Spots.Storage.Stickers.position)
+			U.setRotationSlow(stickerContainer, C.Spots.Storage.Stickers.rotation)
+			return 0.3
+		end,
+		function() return L.SetLightMode("lightLectern", "spotlightTransit", nil, 0.3) end,
+		function()
+			sticker.setPositionSmooth(Vector(C.Spots.Staging.Sticker.Display.position):add(Vector(0, 5, 0)))
+			sticker.setRotationSmooth(Vector(C.Spots.Staging.Sticker.Display.rotation))
+			return {
+				sticker,
+				L.SetLightMode("lightLectern", "spotlightDilemmaDeck")
+			}
+		end,
+		function()
+			sticker.setLock(false)
+			Wait.frames(function() sticker.addForce(Vector(0, -1, 0), 3) end)
+			return {
+				sticker,
+				1.5
+			}
+		end,
+		function()
+			P.SetCamera("MainBoard")
+			return function()
+				return not Vector.equals(sticker.getPosition(),
+					Vector(C.Spots.Staging.Sticker.Display.position), 1)
+			end
+		end,
+		function() return L.SetLightMode({ "lightLectern" }, "ambient", nil, 0.5) end
+	})
+end
+
+function DIR.OpenEnvelope(envKey)
+	U.Assert("DIR.OpenEnvelope", envKey, "string")
+	local envContainer = O.SecretContainers.Envelopes()
+	U.Assert("DIR.OpenEnvelope", envContainer, "Object")
+
+	local envGUID = OU.FindContainedObjGUID(envContainer, function(objData)
+		return string.lower(objData.name) == string.lower(envKey)
+	end)
+
+	if not envGUID then
+		U.Alert("Envelope '" .. envKey .. "' Not Found! Check Case & Spelling", Color(1, 0, 0))
+		return
+	end
+
+	local displayedDilemma = getObjectsWithAllTags({"Dilemma", "OnDisplay"})[1]
+
+	local envDeck, storyCard
+
+	local seqFuncs = {
+		function()
+				P.SetCamera("Lectern")
+				if displayedDilemma ~= nil then
+					local yRot = displayedDilemma.getRotation().y
+					local outcome = yRot > 170 and "Nay" or "Aye"
+					return {
+						U.setPositionSlow(displayedDilemma, C.Spots.Main.Dilemma["faceUp" .. outcome .. "Shrink"].position, 0.5),
+						U.setScaleSlow(displayedDilemma, C.Spots.Main.Dilemma["faceUp" .. outcome .. "Shrink"].scale, 0.5),
+						L.SetLightMode("lightLectern", "spotlightEnvelope", nil, 0.25)
+					}
+				else
+					return L.SetLightMode("lightLectern", "spotlightEnvelope", nil, 0.25)
+				end
+		end,
+		function()
+			U.setPositionSlow(envContainer, C.Spots.Staging.Lectern.Envelopes.position)
+			U.setRotationSlow(envContainer, C.Spots.Staging.Lectern.Envelopes.rotation)
+			return { envContainer, L.SetLightMode("lightLectern", "spotlightPlinth", nil, 0.1) }
+		end,
+		function()
+			envContainer.takeObject({
+				position = C.Spots.Staging.Lectern.Display.position,
+				rotation = C.Spots.Staging.Lectern.Display.rotation,
+				guid = envGUID,
+				callback_function = function(obj)
+					envDeck = obj
+					envDeck.setLock(true)
+				end
+			})
+			return function() return envDeck ~= nil end
+		end,
+		function()
+			U.setPositionSlow(envContainer, C.Spots.Storage.Envelopes.position)
+			U.setRotationSlow(envContainer, C.Spots.Storage.Envelopes.rotation)
+			return 0.3
+		end,
+		function()
+			envDeck.takeObject({
+				position = C.Spots.Staging.Lectern.TopCard.position,
+				rotation = C.Spots.Staging.Lectern.TopCard.rotation,
+				-- smooth = false,
+				callback_function = function(obj)
+					storyCard = obj
+					storyCard.setTags({ "StoryCard" })
+					storyCard.setLock(true)
+					Wait.frames(function() storyCard.addForce(Vector(0, -1, 0), 3) end)
+				end
+			})
+			return function() return storyCard ~= nil end
+		end,
+		function()
+			return L.SetLightMode("lightLectern", "spotlightTransit", nil, 0.3)
+		end
+	}
+
+	table.insert(seqFuncs, function() return DIR.PresentStoryCard(storyCard, envDeck) end)
+
+	return U.RunSequence(seqFuncs)
+end
+
+function DIR.PresentStoryCard(storyCard, envDeck)
+	U.Assert("DIR.PresentStoryCard", storyCard, "Object")
+	return U.RunSequence({
+		function()
+			storyCard.setPositionSmooth(Vector(C.Spots.Staging.StoryCard.Display.position):add(Vector(0, 5, 0)))
+			storyCard.setRotationSmooth(Vector(C.Spots.Staging.StoryCard.Display.rotation))
+			return {
+				storyCard,
+				L.SetLightMode("lightLectern", "storyCard")
+			}
+		end,
+		function()
+			storyCard.setLock(false)
+			Wait.frames(function() storyCard.addForce(Vector(0, -1, 0), 3) end)
+			return {
+				storyCard,
+				1.5
+			}
+		end,
+		function()
+			return P.SetCamera("MainBoard")
+		end,
+		function()
+			L.SetLightMode({ "lightMainTop", "lightMainBottom" }, "ambient", nil, 2)
+			return function()
+				return not Vector.equals(storyCard.getPosition(),
+					Vector(C.Spots.Staging.StoryCard.Display.position), 1)
+			end
+		end,
+		function()
+			DIR.PromptLeaderToHandleEnvelope(envDeck)
+			return L.SetLightMode({ "lightLectern" }, "ambient", nil, 0.5)
+		end
+	})
+end
+
+function DIR.PromptLeaderToHandleEnvelope(envDeck)
+	local queryResponse = {Yes = "true", No = "false"}
+	return U.RunSequence({
+		function()
+			MSG.SplashQuery(
+				"Does this Envelope's Story Card\ncontain special instructions?",
+				"Leader",
+				queryResponse,
+				P.GetLeader()
+			)
+			return function() return queryResponse.response ~= nil end
+		end,
+		function()
+			if queryResponse.response == "true" then
+				return U.RunSequence({
+					function()
+						return {
+							U.setPositionSlow(envDeck, C.Spots.Main.Dilemma.aboveDeck.position),
+							U.setRotationSlow(envDeck, C.Spots.Main.Dilemma.aboveDeck.rotation)
+						}
+					end,
+					function()
+						envDeck.setLock(false)
+						MSG.Splash({
+							"Carry out instructions, then place",
+							"new Dilemmas above Dilemma Deck."
+						}, P.GetLeader().color, 4)
+						return {0.5, envDeck}
+					end
+				})
+			else
+				return DIR.AddToDilemmaDeck(envDeck)
+			end
+		end
+	})
+end
+
+function DIR.AddToDilemmaDeck(dilemmas)
+	local coverCard = O.Pieces.CoverCard()
+	U.Assert("DIR.AddToDilemmaDeck", coverCard, "Object")
+
+	local seqFuncs = {}
+
+	if dilemmas == nil then
+		dilemmas = U.findAboveObject(coverCard, function(obj) return obj.type == "Deck" or obj.type == "Card" end, {box = true})
+		U.Val("DIR.AddToDilemmaDeck", dilemmas, #dilemmas <= 1, "Multiple sources of dilemmas found above Cover Card. Consolidate them into a deck." )
+		dilemmas = dilemmas[1]
+		if dilemmas == nil then return 0 end
+		table.insert(seqFuncs, function()
+			return {
+				U.setPositionSlow(dilemmas, dilemmas.getPosition():add(Vector(0, 4, 4))),
+				U.setRotationSlow(dilemmas, coverCard.getRotation())
+			}
+		end)
+	end
+
+	U.Assert("DIR.AddToDilemmaDeck: Object Test", dilemmas, "Object")
+	U.Assert("DIR.AddToDilemmaDeck: Deck or Card Test", U.isIn(dilemmas.type, { "Card", "Deck" }))
+
+	coverCard.setLock(true)
+	dilemmas.setLock(true)
+
+	table.insert(seqFuncs, function()
+		return {
+			U.setPositionSlow(coverCard, coverCard.getPosition():add(Vector(0, 2, -3))),
+			U.setRotationSlow(coverCard, coverCard.getRotation():add(Vector(0, 0, 70)))
+		}
+	end)
+
+	local dilemmaCardDestPos = coverCard.getPosition():add(Vector(0, 4, 0))
+	local dilemmaCardDestRot = coverCard.getRotation()
+
+	local function addNextDilemma()
+		dilemmaCardDestPos:add(Vector(0, 0.4, 0))
+		if dilemmas.type == "Deck" then
+			dilemmas.takeObject({
+				position = dilemmaCardDestPos,
+				rotation = dilemmaCardDestRot,
+				callback_function = function(obj)
+					obj.setTags({ "Dilemma" })
+					obj.setLock(false)
+				end
+			})
+			if dilemmas.remainder ~= nil then
+				dilemmas = dilemmas.remainder
+			end
+			return 0.3
+		elseif dilemmas.type == "Card" then
+			dilemmas.setTags({ "Dilemma" })
+			dilemmas.setLock(false)
+			dilemmas.setPositionSmooth(dilemmaCardDestPos)
+			dilemmas.setRotationSmooth(dilemmaCardDestRot)
+			return 0.3
+		end
+	end
+
+	if dilemmas.type == "Deck" then
+		for i = 1, #dilemmas.getObjects() do
+			table.insert(seqFuncs, addNextDilemma)
+		end
+	else
+		table.insert(seqFuncs, addNextDilemma)
+	end
+
+	table.insert(seqFuncs, function()
+		return {
+			U.setPositionSlow(coverCard, C.Spots.Main.CoverCard.Closed.position),
+			U.setRotationSlow(coverCard, C.Spots.Main.CoverCard.Closed.rotation)
+		}
+	end)
+	table.insert(seqFuncs, function()
+		coverCard.setLock(false)
+		return { coverCard, 0.1 }
+	end)
+	table.insert(seqFuncs, function()
+		getDilemmaDeck().shuffle()
+	end)
+
+	return U.RunSequence(seqFuncs)
+end
+
+function DIR.InitConsequencesQuery(playerRef)
+	local player = playerRef == nil and P.GetLeader() or S.getPlayer(playerRef)
+	U.forEach({"Sticker", unpack(C.Resources)}, function(resource)
+		U.forEach({"P", "N"}, function(outcome)
+			local stateVal = S.getStateVal("roundState", "consequences", outcome, resource) or "O"
+			U.forEach({"O", "P", "N"}, function(conType)
+				if conType == "O" then
+					UI.setAttribute("consequence_" .. outcome .. "_" .. conType .. "_" .. resource .. "_" .. player.color, "active", tostring(conType == stateVal))
+				else
+					UI.setAttribute("consequence_" .. outcome .. "_" .. conType .. "_" .. resource .. "_" .. player.color, "active", tostring(conType == stateVal))
+					UI.setAttribute("conDisplay_" .. outcome .. "_" .. conType .. "_" .. resource, "active", tostring(conType == stateVal))
+				end
+			end)
+		end)
+	end)
+	if S.isInPhase("DrawDilemma") then
+		UI.show("consequencesQuery_" .. player.color)
+	end
+	UI.show("consequencesSidebar")
+	return 0.5
+end
+-- #endregion
+
+-- #region Voting~
+function DIR.DisplayPassHUD(playerRef)
+	local player = S.getPlayer(playerRef)
+	return U.RunSequence({
+		function()
+			UI.setAttribute("turnHUD_" .. player.color, "active", "false")
+			V.UpdateHUD(player, true)
+			return 0.5
+		end,
+		function()
+			UI.show("turnHUD_" .. player.color)
+			return 0.5
+		end
+	})
+end
+function DIR.TurnHUDClick(action, color)
+	U.RunSequence({
+		function()
+			UI.hide("turnHUD_" .. color)
+			return V.EndTurn(action == "passMod") end,
+		function()
+			local activePlayers = U.filter(Player.getAvailableColors(), function(pColor)
+				return pColor == S.getStateVal("roundState", "currentTurn") or U.isIn(S.getStateVal("turnState", pColor, "vote"), {false, "Aye", "Nay"})
+			end)
+			local playerIndex = U.findIndex(activePlayers, function(pColor) return pColor == S.getStateVal("roundState", "currentTurn") end)
+			local nextPlayer
+			if playerIndex == #activePlayers then
+				nextPlayer = activePlayers[1]
+			else
+				nextPlayer = activePlayers[playerIndex + 1]
+			end
+			-- log({activePlayers = activePlayers, playerIndex = playerIndex, nextPlayer = nextPlayer})
+			if P.GetLeader().color == nextPlayer or not U.isIn(S.getPlayerVoteStatus(nextPlayer), {false, "Aye", "Nay"}) then
+				return DIR.ADVANCE()
+				-- return 0
+			end
+			return U.RunSequence({
+				function()
+					DIR.DisplayPassHUD(nextPlayer)
+					return V.StartTurn(nextPlayer)
+				end
+			})
+		end
+	})
+end
+-- #endregion
+
+
+-- #region Momentum & Stability~
+function DIR.BumpStability(amount)
+
+
+end
+
+function DIR.ApplyTokenMomentum(resource)
+
+end
+
+
+function DIR.GetUpdatedTokenMomentum(token, resource)
+	local startTurnData = S.getStateVal("roundState", "boardTokens")
+	if startTurnData == nil then return DIR.GetTokenMomentum(token, resource) end
+
+	local startTurnPos = startTurnData[resource].pos
+	local startTurnMomentum = startTurnData[resource].momentum
+	local currentPos = OU.FindNearestSnapPoint(token, O.UninteractableObjs.Board())
+
+	if startTurnPos > currentPos then
+		if startTurnMomentum < 0 then
+			return 1
+		else
+			return 2
+		end
+	elseif startTurnPos < currentPos then
+		if startTurnMomentum > 0 then
+			return -1
+		else
+			return -2
+		end
+	else
+		return startTurnMomentum
+	end
+end
+
+function DIR.UpdateTokenLight(resource)
+	if resource == nil then return U.iMap(U.concat({"Stability"}, C.Resources), DIR.UpdateTokenLight) end
+	if resource == "Stability" then
+		return L.SetLightMode("lightStability", "on", nil, 0.5)
+	end
+	local momentum = getTokenMomentum(resource)
+	local dir = momentum < 0 and "Down" or "Up"
+	momentum = math.abs(momentum)
+	return L.SetLightMode("light" .. resource, "momentum" .. dir .. momentum, nil, 0.5)
+end
+
+function DIR.UpdateMomentum(resource)
+	if resource == nil then return U.map(C.Resources, DIR.UpdateMomentum) end
+	local token = getObjectsWithAllTags({ "ResourceMarker", resource })[1]
+	U.Assert("DIR.UpdateMomentum", token, "Object")
+	local newMomentum = DIR.GetUpdatedTokenMomentum(token, resource)
+	local newMomentumDir = newMomentum < 0 and "Down" or "Up"
+	local newMomentumVal = math.abs(newMomentum)
+
+	local seqFuncs = {}
+	if newMomentum < 0 ~= U.isFlipped(token) then
+		table.insert(seqFuncs, function()
+			token.flip();
+			return token
+		end)
+	end
+	table.insert(seqFuncs, function()
+		L.SetLightMode("light" .. resource, "momentum" .. newMomentumDir .. newMomentumVal)
+	end)
+	return U.RunSequence(seqFuncs)
+end
+
+function DIR.GetStabilityBump()
+	local stabilityPos = S.getStateVal("roundState", "boardTokens", "positions", "Stability")
+	local curPositions = getTokenPositionsFromBoard()
+	U.forEach(C.Resources, function(resource)
+		local prevPos = S.getStateVal("roundState", "boardTokens", "positions", resource)
+		local curPos = curPositions[resource]
+		local deltaPos = curPos - prevPos
+		stabilityPos = math.max(math.min(stabilityPos + deltaPos, 19), 1)
+	end)
+	local boardStabilityPos = curPositions.Stability
+	return stabilityPos - boardStabilityPos
+end
+-- #endregion
+
+
+-- #endregion
+
+-- #region End of Game~
+function DIR.EndGame(endTrigger)
+	if endTrigger == "Abdication" then
+		return MSG.Splash("The King has Abdicated the Throne")
+	elseif endTrigger == "Death" then
+		return MSG.Splash("The King Is Dead!")
+	end
+end
+
+function DIR.GetSecretAgenda(playerRef)
+	local player = S.getPlayer(playerRef)
+	local secretAgendaCard = getObjectsWithAllTags({player.color, "SecretAgenda"})
+	U.Val("DIR.GetSecretAgenda", secretAgendaCard, #secretAgendaCard == 1, "Unable to find " .. player.color .. "'s Secret Agenda!")
+	secretAgendaCard = secretAgendaCard[1]
+	local secretAgendaTag = U.find(secretAgendaCard.getTags(), function(tag) return string.match(tag, "^SA_") end)
+	U.Val("DIR.GetSecretAgenda", secretAgendaTag, U.Type(secretAgendaTag) == "string", "Unable to find " .. player.color .. "'s Secret Agenda type!")
+	return string.gsub(secretAgendaTag, "^SA_", "")
+end
+
+function DIR.GetSecretAgendaScore(playerRef)
+	local secretAgendaData = C.SecretAgendaData[DIR.GetSecretAgenda(playerRef)]
+	local tokenPositions = getTokenPositionsFromBoard()
+	if U.isIn("resPoints", secretAgendaData) then
+		--
+	end
+
+	local resFuncResult = secretAgendaData.resFunc()
+end
+
+-- function DIR.
+
+
+local function getUpdatedChronicleCardState(cScriptState)
+	local scriptState = JSON.decode(cScriptState)
+	local playerKeys = { "1", "8", "15", "22", "29" }
+	U.forEach(S.getPlayers(), function(player, i)
+		local houseName = S.getPlayerVal(player, "houseName") or ""
+		scriptState[playerKeys[i]] = houseName
+	end)
+	return JSON.encode(scriptState)
+end
+
+function DIR.PlaceChronicleCard(kingName)
+	local sourceObj = O.SpawnSources.chronicleCard()
+	local spawnData = sourceObj.getData()
+	local cCard
+	spawnData.Nickname = kingName
+	spawnData.Description = os.date("%b ") .. os.date("*t").day .. " '" .. os.date("*t").year - 2000
+	spawnData.Transform = OU.unfoldTransform(C.Spots.Main.ChronicleCard)
+	spawnData.Tags = { "Lectern", "ChronicleCardActive" }
+	spawnData.LuaScriptState = getUpdatedChronicleCardState(spawnData.LuaScriptState)
+	spawnObjectData({
+		data = spawnData,
+		callback_function = function(obj) cCard = obj end
+	})
+	return function()
+		-- log({ cCard = cCard })
+		return cCard ~= nil
+	end
+end
+
+function DIR.UpdateChronicleCardNames()
+	local cCard = getObjectsWithTag("ChronicleCardActive")[1]
+	if cCard == nil then return end
+	local cData = cCard.getData()
+	cCard.setCustomObject({ LuaScriptState = getUpdatedChronicleCardState(cData.LuaScriptState) })
+	cCard.reload()
+end
+
+-- #endregion
+
+
+return DIR

@@ -1,0 +1,4 @@
+local F = require("core.fourthRow")
+
+function BOARD_Lock() F.lockBoard(self) end
+function BOARD_Unlock() F.unlockBoard(self) end

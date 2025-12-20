@@ -4,44 +4,131 @@
     This script handles Vampire: The Masquerade 5th Edition dice mechanics
 --]]
 
---[[
-    The onLoad event is called after the game save finishes loading.
-    NOTE: Must be global (not local) - this is a TTS callback function.
---]]
+--[[ The onLoad event is called after the game save finishes loading. --]]
 function onLoad()
     print("V:tM V5 Dice System loaded")
 
-    -- Test if UI is available
+    -- Ensure hand zone calculator functions are available globally
+    _G.printHandZonePositions = printHandZonePositions
+    _G.calculateHandZonePositions = calculateHandZonePositions
+
+    -- Set up the dice results UI
+    -- This creates a full-screen overlay panel for displaying dice results
+    local diceResultsXml = [[
+        <!-- Hidden input for data communication -->
+        <InputField id="dice-results-data" width="1" height="1" position="-1000,-1000,0" active="false" />
+
+        <!-- Full-screen overlay for dice results (initially hidden) -->
+        <Panel id="dice-results-overlay" width="1920" height="1080" color="#000000" position="0,0,0" opacity="0" active="false">
+            <!-- Results container panel -->
+            <Panel id="dice-results-container" width="600" height="400" color="#1a1a2e" position="0,0,0" opacity="0">
+                <!-- Header text -->
+                <Text id="dice-results-header" fontSize="20" color="#ecf0f1" alignment="UpperCenter" position="0,-150,0" text="" />
+                <!-- Dice values text -->
+                <Text id="dice-values" fontSize="18" color="#bdc3c7" alignment="MiddleCenter" position="0,-50,0" text="" />
+                <!-- Results text (main display) -->
+                <Text id="dice-results" fontSize="32" color="#3498db" alignment="MiddleCenter" position="0,50,0" text="" />
+            </Panel>
+        </Panel>
+    ]]
+
     if UI then
-        print("[DEBUG] Global: UI object is available")
-        print("[DEBUG] Global: Testing UI connection...")
-
-        -- Try to set a test attribute to verify UI is working
-        local testSuccess, errorMsg = pcall(function()
-            -- Try to access a test element (will fail if UI not loaded, but that's ok)
-            UI.setAttribute("ui-test-status", "text", "UI Connected!")
-        end)
-
-        if testSuccess then
-            print("[DEBUG] Global: UI connection test PASSED - UI is working!")
-        else
-            print("[WARNING] Global: UI connection test FAILED")
-            print("[WARNING] Global: Error: " .. tostring(errorMsg))
-            print("[WARNING] Global: UI may not be fully loaded yet, or element 'ui-test-status' not found")
-            print("[WARNING] Global: This is normal if the UI hasn't finished loading")
-        end
+        UI.setXml(diceResultsXml)
+        print("[DEBUG] Global: Dice results UI set via UI.setXml()")
     else
-        print("[ERROR] Global: UI object is NOT available")
-        print("[ERROR] Global: Check that Global.xml has the correct URL")
-        print("[ERROR] Global: Current URL should be: https://eunomiac.github.io/toronto-rising-tts/index.html")
+        print("[ERROR] Global: UI object not available in onLoad")
     end
+end
+
+--[[
+    Send dice results to the Custom UI
+    Called from dice roller scripts via Global.call()
+    @param uiData - Table with dice results data
+--]]
+function sendDiceResultsToUI(uiData)
+    if not UI then
+        print("[ERROR] Global: UI not available")
+        return
+    end
+
+    print("[DEBUG] Global: Sending dice results to UI")
+
+    -- Extract data
+    local playerName = uiData.playerName or ""
+    local diceValues = uiData.diceValues or ""
+    local resultMessage = uiData.resultMessage or "No results"
+    local totalSuccesses = uiData.totalSuccesses or 0
+    local hasMessyCritical = uiData.hasMessyCritical or false
+    local isTotalFailure = uiData.isTotalFailure or false
+
+    -- Determine text color based on results
+    local resultColor = "#3498db"  -- Default blue
+    if hasMessyCritical then
+        resultColor = "#e74c3c"  -- Red for messy critical
+    elseif isTotalFailure then
+        resultColor = "#95a5a6"  -- Gray for failure
+    elseif totalSuccesses > 1 then
+        resultColor = "#f39c12"  -- Orange for critical
+    elseif totalSuccesses == 1 then
+        resultColor = "#2ecc71"  -- Green for success
+    end
+
+    -- Set header
+    local headerText = playerName ~= "" and (playerName .. "'s Roll") or "Dice Roll"
+    UI.setAttribute("dice-results-header", "text", headerText)
+
+    -- Set dice values (if provided)
+    if diceValues ~= "" then
+        UI.setAttribute("dice-values", "text", diceValues)
+    else
+        UI.setAttribute("dice-values", "text", "")
+    end
+
+    -- Set results
+    UI.setAttribute("dice-results", "text", resultMessage)
+    UI.setAttribute("dice-results", "color", resultColor)
+
+    -- Animate in: Show overlay, then animate container
+    -- Step 1: Activate and fade in overlay
+    UI.setAttribute("dice-results-overlay", "active", "true")
+    UI.setAttribute("dice-results-overlay", "opacity", "0")
+
+    -- Fade in overlay smoothly
+    Wait.time(function() UI.setAttribute("dice-results-overlay", "opacity", "0.2") end, 0.1)
+    Wait.time(function() UI.setAttribute("dice-results-overlay", "opacity", "0.4") end, 0.2)
+    Wait.time(function() UI.setAttribute("dice-results-overlay", "opacity", "0.6") end, 0.3)
+    Wait.time(function() UI.setAttribute("dice-results-overlay", "opacity", "0.7") end, 0.4)
+
+    -- Step 2: Show and animate container (fade in)
+    Wait.time(function()
+        UI.setAttribute("dice-results-container", "opacity", "0")
+        Wait.time(function() UI.setAttribute("dice-results-container", "opacity", "0.5") end, 0.1)
+        Wait.time(function() UI.setAttribute("dice-results-container", "opacity", "1") end, 0.2)
+        print("[DEBUG] Global: Dice results displayed: " .. resultMessage)
+    end, 0.5)
+
+    -- Step 3: After 5 seconds, fade out
+    Wait.time(function()
+        -- Fade out container
+        UI.setAttribute("dice-results-container", "opacity", "0.5")
+        Wait.time(function()
+            UI.setAttribute("dice-results-container", "opacity", "0")
+            -- Fade out overlay
+            Wait.time(function() UI.setAttribute("dice-results-overlay", "opacity", "0.5") end, 0.1)
+            Wait.time(function() UI.setAttribute("dice-results-overlay", "opacity", "0.3") end, 0.2)
+            Wait.time(function() UI.setAttribute("dice-results-overlay", "opacity", "0.1") end, 0.3)
+            Wait.time(function()
+                UI.setAttribute("dice-results-overlay", "opacity", "0")
+                UI.setAttribute("dice-results-overlay", "active", "false")
+            end, 0.4)
+        end, 0.2)
+    end, 5.0)
 end
 
 --[[
     Calculate V:tM V5 dice results
     @param diceData - Table of dice values with metadata: {value=number, isHunger=boolean}
     @return Table with results: {successes, totalSuccesses, hasMessyCritical, isTotalFailure, hasBestialFailure, message}
-    NOTE: Must be global (not local) - called via Global.call() from other scripts.
 --]]
 function calculateV5DiceResults(diceData)
     local successes = 0
@@ -139,7 +226,6 @@ end
     Format dice values for display
     @param diceData - Table of dice values: {value=number, isHunger=boolean}
     @return Formatted string of dice values
-    NOTE: Must be global (not local) - called via Global.call() from other scripts.
 --]]
 function formatDiceValues(diceData)
     local values = {}
@@ -154,151 +240,75 @@ function formatDiceValues(diceData)
     return table.concat(values, ", ")
 end
 
---[[
-    The onUpdate event is called once per frame.
-    NOTE: Must be global (not local) - this is a TTS callback function.
---]]
+--[[ The onUpdate event is called once per frame. --]]
 function onUpdate()
     --[[ Not used for dice calculations --]]
 end
 
 --[[
-    ============================================================================
-    UI Communication Functions
-    ============================================================================
-    All overlays are preloaded in index.html for instant display.
-    No page switching needed - just send data to the appropriate hidden input.
-    ============================================================================
---]]
+    Hand Zone Position Calculator Functions
+    Usage in Lua Scripting window: printHandZonePositions()
+]]
 
---[[
-    Send dice results to the Custom UI
-    Called from dice roller scripts via Global.call()
-    @param uiData - Table with dice results data:
-        - playerName: string
-        - diceValues: string
-        - resultMessage: string
-        - totalSuccesses: number
-        - hasMessyCritical: boolean
-        - isTotalFailure: boolean
-        - hasBestialFailure: boolean
---]]
-function sendDiceResultsToUI(uiData)
-    if not UI then
-        print("[ERROR] Global: UI not available - check Global.xml has correct URL")
-        return
+function calculateHandZonePositions(numZones, radius, tableCenter)
+    numZones = numZones or 5
+    radius = radius or 50
+    tableCenter = tableCenter or {x = 0, y = 1.5, z = 0}
+
+    local startAngle = 180
+    local arcSpan = 180
+    -- Divide arc into (numZones - 1) segments to span from 180° to 360°
+    -- First zone at 180°, last zone at 360°
+    local angleStep = arcSpan / (numZones - 1)
+    local positions = {}
+
+    for i = 1, numZones do
+        -- First zone at 180°, last zone at 360°
+        local angleDeg = startAngle + (angleStep * (i - 1))
+        local angleRad = math.rad(angleDeg)
+        local x = math.sin(angleRad) * radius
+        local z = math.cos(angleRad) * radius
+
+        table.insert(positions, {
+            x = tableCenter.x + x,
+            y = tableCenter.y,
+            z = tableCenter.z + z
+        })
     end
 
-    print("[DEBUG] Global: Sending dice results to UI")
-
-    -- Encode data as JSON and send to the hidden input field
-    -- The JavaScript will detect this change and trigger GSAP animations
-    local jsonData = JSON.encode(uiData)
-
-    local success = pcall(function()
-        UI.setAttribute("dice-results-data", "value", jsonData)
-    end)
-
-    if success then
-        print("[DEBUG] Global: Sent dice results to UI: " .. jsonData)
-    else
-        print("[ERROR] Global: Failed to send data to UI - element 'dice-results-data' not found")
-        print("[ERROR] Global: Make sure index.html has: <input type=\"hidden\" id=\"dice-results-data\" value=\"\" />")
-    end
+    return positions
 end
 
---[[
-    Send a notification to the Custom UI
-    @param notificationData - Table with notification data:
-        - title: string (required)
-        - message: string (required)
-        - type: "info" | "success" | "warning" | "error" (default: "info")
---]]
-function sendNotificationToUI(notificationData)
-    if not UI then
-        print("[ERROR] Global: UI not available - check Global.xml has correct URL")
-        return
+function printHandZonePositions(numZones, radius, tableCenter)
+    numZones = numZones or 5
+    radius = radius or 50
+    tableCenter = tableCenter or {x = 0, y = 1.5, z = 0}
+
+    local positions = calculateHandZonePositions(numZones, radius, tableCenter)
+
+    print("=== Hand Zone Positions ===")
+    print("Number of zones: " .. numZones)
+    print("Radius: " .. radius)
+    print("Table center: {x=" .. tableCenter.x .. ", y=" .. tableCenter.y .. ", z=" .. tableCenter.z .. "}")
+    print("")
+
+    for i, pos in ipairs(positions) do
+        -- Calculate angle for display (matches the calculation above)
+        local angleStep = 180 / (numZones - 1)
+        local angleDeg = 180 + (angleStep * (i - 1))
+        print("Zone " .. i .. " (angle: " .. string.format("%.1f", angleDeg) .. "°):")
+        print("  Position: {x=" .. string.format("%.2f", pos.x) .. ", y=" .. string.format("%.2f", pos.y) .. ", z=" .. string.format("%.2f", pos.z) .. "}")
+        print("")
     end
 
-    print("[DEBUG] Global: Sending notification to UI")
-
-    -- Prepare data with type
-    local uiData = {
-        type = "notification",
-        notificationTitle = notificationData.title or "Notification",
-        notificationMessage = notificationData.message or "",
-        notificationType = notificationData.type or "info"
-    }
-
-    local jsonData = JSON.encode(uiData)
-
-    local success = pcall(function()
-        UI.setAttribute("notification-data", "value", jsonData)
-    end)
-
-    if success then
-        print("[DEBUG] Global: Sent notification to UI: " .. jsonData)
-    else
-        print("[ERROR] Global: Failed to send notification - element 'notification-data' not found")
+    print("=== Copy-paste friendly format ===")
+    for i, pos in ipairs(positions) do
+        print("Zone " .. i .. ": {x=" .. string.format("%.2f", pos.x) .. ", y=" .. string.format("%.2f", pos.y) .. ", z=" .. string.format("%.2f", pos.z) .. "}")
     end
+
+    return positions
 end
 
---[[
-    Send a message to the Custom UI
-    @param messageData - Table with message data:
-        - header: string (optional)
-        - body: string (required)
-        - footer: string (optional)
-        - style: "default" | "alert" | "confirm" | "prompt" (default: "default")
---]]
-function sendMessageToUI(messageData)
-    if not UI then
-        print("[ERROR] Global: UI not available - check Global.xml has correct URL")
-        return
-    end
-
-    print("[DEBUG] Global: Sending message to UI")
-
-    -- Prepare data with type
-    local uiData = {
-        type = "message",
-        messageHeader = messageData.header or "",
-        messageBody = messageData.body or "",
-        messageFooter = messageData.footer or "",
-        messageStyle = messageData.style or "default"
-    }
-
-    local jsonData = JSON.encode(uiData)
-
-    local success = pcall(function()
-        UI.setAttribute("message-data", "value", jsonData)
-    end)
-
-    if success then
-        print("[DEBUG] Global: Sent message to UI: " .. jsonData)
-    else
-        print("[ERROR] Global: Failed to send message - element 'message-data' not found")
-    end
-end
-
---[[
-    Test function to verify UI is working
-    Call this from TTS console: Global.call("testUI")
---]]
-function testUI()
-    if not UI then
-        print("[ERROR] Global: UI not available")
-        return
-    end
-
-    print("[TEST] Global: Testing UI connection...")
-
-    -- Try to send a test notification
-    sendNotificationToUI({
-        title = "UI Test",
-        message = "If you see this notification, the UI is working!",
-        type = "success"
-    })
-
-    print("[TEST] Global: Test notification sent. Check if it appears on screen.")
-end
+-- Explicitly assign to global scope for console++ and other systems
+_G.printHandZonePositions = printHandZonePositions
+_G.calculateHandZonePositions = calculateHandZonePositions

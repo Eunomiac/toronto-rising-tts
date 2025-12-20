@@ -1,0 +1,859 @@
+
+<!-- HUD -->
+<Defaults>
+  <!-- Baseline -->
+  <Image preserveAspect="true" raycastTarget="false" />
+  <VerticalLayout raycastTarget="false" />
+  <HorizontalLayout raycastTarget="false" />
+
+	<!-- Faction Icons -->
+	<HorizontalLayout class="faction-icon-container"
+			rectAlignment="LowerRight"
+			padding="0 400 0 20"
+			spacing="0"
+			height="150" width="800"
+			scale="0.7"
+			childAlignment="LowerLeft"
+			childForceExpandHeight="true"
+			childForceExpandWidth="false" />
+
+  <!-- Camera Controls -->
+  <HorizontalLayout class="hud-camera-controls"
+    rectAlignment="LowerRight"
+    padding="0 0 0 0"
+    spacing="0"
+    height="28" width="800"
+    scale="0.7"
+    childAlignment="LowerRight"
+    childForceExpandHeight="true"
+    childForceExpandWidth="false" />
+
+
+  <Image class="camera-button"
+    raycastTarget="true"
+    onMouseDown="HUD_cameraSet"
+    onMouseEnter="HUD_highlight" onMouseExit="HUD_dim" />
+
+  <!-- Right Sidebar -->
+  <Panel class="hud-sidebar-right"
+    rectAlignment="LowerRight"
+    height="740" width="125"
+    offsetXY="0 100" />
+  <VerticalLayout class="hud-sidebar-right"
+    height="100%" width="100%"
+    childAlignment="LowerLeft"
+    childForceExpandHeight="false"
+    childForceExpandWidth="true" />
+
+  <!-- Right Sidebar Buttons -->
+  <Image class="hud-ref-button"
+    onMouseDown="HUD_show" onMouseUp="HUD_hide"
+    onMouseEnter="HUD_highlight" onMouseExit="HUD_dim" />
+  <Image class="hud-ref-button-base"
+    raycastTarget="true"
+    color="rgba(0.5, 0.5, 0.5, 1)" />
+  <Image class="hud-ref-button-overlay"
+    color="clear" />
+  <Image class="hud-ref-border"
+    rectAlignment="MiddleLeft" />
+
+  <!-- Popup Reference Images -->
+  <Image class="hud-ref-image" active="false" />
+  <Image class="hud-ref-image-clan" width="60%" />
+
+</Defaults>
+
+
+<Panel id="heritageHUDRed" visibility="Red">
+  <Panel id="hudSidebarRed" class="hud-sidebar-right" visibility="Red">
+    <VerticalLayout class="hud-sidebar-right">
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefBattlegroundsRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-battlegrounds" />
+      <Image id="hudRefAncillaeARed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-ancillaeA" />
+      <Image id="hudRefAncillaeBRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-ancillaeB" />
+      <Image id="hudRefAncillaeCRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-ancillaeC" />
+      <Image id="hudRefAncillaeDRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-ancillaeD" />
+      <Image id="hudRefAncillaeERed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-ancillaeE" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-gold-top" />
+      <Image id="hudRefBrujahRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanBrujah" />
+      <Image id="hudRefGangrelRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanGangrel" />
+      <Image id="hudRefLasombraRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanLasombra" />
+      <Image id="hudRefMalkavianRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanMalkavian" />
+      <Image id="hudRefNosferatuRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanNosferatu" />
+      <Image id="hudRefToreadorRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanToreador" />
+      <Image id="hudRefTremereRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanTremere" />
+      <Image id="hudRefTzimisceRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanTzimisce" />
+      <Image id="hudRefVentrueRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanVentrue" />
+      <Image class="hud-ref-border" image="hud-border-gold-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefTraits1Red"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-traits1" />
+      <Image id="hudRefTraits2Red"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-traits2" />
+      <Image id="hudRefTraits3Red"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-traits3" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefAssetsRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-assets" />
+      <Image id="hudRefPlayersRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-players" />
+      <Image id="hudRefSymbolsRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-symbols" />
+      <Image id="hudRefExpansionsRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-expansions" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-gold-top" />
+			<Image id="hudMakeFourthRowRed"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-fourthRow" />
+      <Image class="hud-ref-border" image="hud-border-gold-bottom" />
+
+    </VerticalLayout>
+    <VerticalLayout class="hud-sidebar-right">
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefBattlegroundsRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-battlegrounds" />
+      <Image id="hudRefAncillaeARedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-ancillaeA" />
+      <Image id="hudRefAncillaeBRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-ancillaeB" />
+      <Image id="hudRefAncillaeCRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-ancillaeC" />
+      <Image id="hudRefAncillaeDRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-ancillaeD" />
+      <Image id="hudRefAncillaeERedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-ancillaeE" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-gold-top" />
+      <Image id="hudRefBrujahRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanBrujah" />
+      <Image id="hudRefGangrelRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanGangrel" />
+      <Image id="hudRefLasombraRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanLasombra" />
+      <Image id="hudRefMalkavianRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanMalkavian" />
+      <Image id="hudRefNosferatuRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanNosferatu" />
+      <Image id="hudRefToreadorRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanToreador" />
+      <Image id="hudRefTremereRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanTremere" />
+      <Image id="hudRefTzimisceRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanTzimisce" />
+      <Image id="hudRefVentrueRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanVentrue" />
+      <Image class="hud-ref-border" image="hud-border-gold-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefTraits1RedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-traits1" />
+      <Image id="hudRefTraits2RedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-traits2" />
+      <Image id="hudRefTraits3RedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-traits3" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefAssetsRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-assets" />
+      <Image id="hudRefPlayersRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-players" />
+      <Image id="hudRefSymbolsRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-symbols" />
+      <Image id="hudRefExpansionsRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-expansions" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-gold-top" />
+			<Image id="hudMakeFourthRowRedOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-fourthRow" />
+      <Image class="hud-ref-border" image="hud-border-gold-bottom" />
+
+    </VerticalLayout>
+  </Panel>
+  <Panel childForceExpandWidth="false" childForceExpandHeight="false" visibility="Red">
+
+    <!-- Rules References -->
+    <Image id="RefPlayersRed" height="95%"
+      class="hud-ref-image"
+      image="ref-players" />
+    <Image id="RefBattlegroundsRed" height="80%"
+      class="hud-ref-image"
+      image="ref-battlegrounds" />
+    <Image id="RefSymbolsRed"
+      class="hud-ref-image" height="70%"
+      image="ref-symbols" />
+    <Image id="RefAssetsRed"
+      class="hud-ref-image" height="25%"
+      image="ref-assets" />
+    <Image id="RefAncillaeARed"
+      class="hud-ref-image" width="90%"
+      image="ref-ancillaeA" />
+    <Image id="RefAncillaeBRed"
+      class="hud-ref-image" width="90%"
+      image="ref-ancillaeB" />
+    <Image id="RefAncillaeCRed"
+      class="hud-ref-image" width="90%"
+      image="ref-ancillaeC" />
+    <Image id="RefAncillaeDRed"
+      class="hud-ref-image" width="90%"
+      image="ref-ancillaeD" />
+    <Image id="RefAncillaeERed"
+      class="hud-ref-image" width="90%"
+      image="ref-ancillaeE" />
+    <Image id="RefExpansionsRed"
+      class="hud-ref-image" height="90%"
+      image="ref-expansions" />
+
+    <!-- Clans -->
+    <Image id="RefBrujahRed"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanBrujah" />
+    <Image id="RefGangrelRed"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanGangrel" />
+    <Image id="RefLasombraRed"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanLasombra" />
+    <Image id="RefMalkavianRed"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanMalkavian" />
+    <Image id="RefNosferatuRed"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanNosferatu" />
+    <Image id="RefToreadorRed"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanToreador" />
+    <Image id="RefTremereRed"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanTremere" />
+    <Image id="RefTzimisceRed"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanTzimisce" />
+    <Image id="RefVentrueRed"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanVentrue" />
+
+	  <Image id="RefTraits1Red" width="95%"
+      class="hud-ref-image"
+      image="ref-traits1" />
+	  <Image id="RefTraits2Red" width="95%"
+      class="hud-ref-image"
+      image="ref-traits2" />
+	  <Image id="RefTraits3Red" width="95%"
+      class="hud-ref-image"
+      image="ref-traits3" />
+
+  </Panel>
+</Panel>
+
+<Panel id="heritageHUDYellow" visibility="Yellow">
+  <Panel id="hudSidebarYellow" class="hud-sidebar-right" visibility="Yellow">
+    <VerticalLayout class="hud-sidebar-right">
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefBattlegroundsYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-battlegrounds" />
+      <Image id="hudRefAncillaeAYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-ancillaeA" />
+      <Image id="hudRefAncillaeBYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-ancillaeB" />
+      <Image id="hudRefAncillaeCYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-ancillaeC" />
+      <Image id="hudRefAncillaeDYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-ancillaeD" />
+      <Image id="hudRefAncillaeEYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-ancillaeE" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-gold-top" />
+      <Image id="hudRefBrujahYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanBrujah" />
+      <Image id="hudRefGangrelYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanGangrel" />
+      <Image id="hudRefLasombraYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanLasombra" />
+      <Image id="hudRefMalkavianYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanMalkavian" />
+      <Image id="hudRefNosferatuYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanNosferatu" />
+      <Image id="hudRefToreadorYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanToreador" />
+      <Image id="hudRefTremereYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanTremere" />
+      <Image id="hudRefTzimisceYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanTzimisce" />
+      <Image id="hudRefVentrueYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanVentrue" />
+      <Image class="hud-ref-border" image="hud-border-gold-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefTraits1Yellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-traits1" />
+      <Image id="hudRefTraits2Yellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-traits2" />
+      <Image id="hudRefTraits3Yellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-traits3" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefAssetsYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-assets" />
+      <Image id="hudRefPlayersYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-players" />
+      <Image id="hudRefSymbolsYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-symbols" />
+      <Image id="hudRefExpansionsYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-expansions" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-gold-top" />
+			<Image id="hudMakeFourthRowYellow"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-fourthRow" />
+      <Image class="hud-ref-border" image="hud-border-gold-bottom" />
+
+    </VerticalLayout>
+    <VerticalLayout class="hud-sidebar-right">
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefBattlegroundsYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-battlegrounds" />
+      <Image id="hudRefAncillaeAYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-ancillaeA" />
+      <Image id="hudRefAncillaeBYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-ancillaeB" />
+      <Image id="hudRefAncillaeCYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-ancillaeC" />
+      <Image id="hudRefAncillaeDYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-ancillaeD" />
+      <Image id="hudRefAncillaeEYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-ancillaeE" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-gold-top" />
+      <Image id="hudRefBrujahYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanBrujah" />
+      <Image id="hudRefGangrelYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanGangrel" />
+      <Image id="hudRefLasombraYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanLasombra" />
+      <Image id="hudRefMalkavianYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanMalkavian" />
+      <Image id="hudRefNosferatuYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanNosferatu" />
+      <Image id="hudRefToreadorYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanToreador" />
+      <Image id="hudRefTremereYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanTremere" />
+      <Image id="hudRefTzimisceYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanTzimisce" />
+      <Image id="hudRefVentrueYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanVentrue" />
+      <Image class="hud-ref-border" image="hud-border-gold-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefTraits1YellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-traits1" />
+      <Image id="hudRefTraits2YellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-traits2" />
+      <Image id="hudRefTraits3YellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-traits3" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefAssetsYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-assets" />
+      <Image id="hudRefPlayersYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-players" />
+      <Image id="hudRefSymbolsYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-symbols" />
+      <Image id="hudRefExpansionsYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-expansions" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-gold-top" />
+			<Image id="hudMakeFourthRowYellowOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-fourthRow" />
+      <Image class="hud-ref-border" image="hud-border-gold-bottom" />
+
+    </VerticalLayout>
+  </Panel>
+  <Panel childForceExpandWidth="false" childForceExpandHeight="false" visibility="Yellow">
+
+    <!-- Rules References -->
+    <Image id="RefPlayersYellow" height="95%"
+      class="hud-ref-image"
+      image="ref-players" />
+    <Image id="RefBattlegroundsYellow" height="80%"
+      class="hud-ref-image"
+      image="ref-battlegrounds" />
+    <Image id="RefSymbolsYellow"
+      class="hud-ref-image" height="70%"
+      image="ref-symbols" />
+    <Image id="RefAssetsYellow"
+      class="hud-ref-image" height="25%"
+      image="ref-assets" />
+    <Image id="RefAncillaeAYellow"
+      class="hud-ref-image" width="90%"
+      image="ref-ancillaeA" />
+    <Image id="RefAncillaeBYellow"
+      class="hud-ref-image" width="90%"
+      image="ref-ancillaeB" />
+    <Image id="RefAncillaeCYellow"
+      class="hud-ref-image" width="90%"
+      image="ref-ancillaeC" />
+    <Image id="RefAncillaeDYellow"
+      class="hud-ref-image" width="90%"
+      image="ref-ancillaeD" />
+    <Image id="RefAncillaeEYellow"
+      class="hud-ref-image" width="90%"
+      image="ref-ancillaeE" />
+    <Image id="RefExpansionsYellow"
+      class="hud-ref-image" height="90%"
+      image="ref-expansions" />
+
+    <!-- Clans -->
+    <Image id="RefBrujahYellow"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanBrujah" />
+    <Image id="RefGangrelYellow"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanGangrel" />
+    <Image id="RefLasombraYellow"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanLasombra" />
+    <Image id="RefMalkavianYellow"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanMalkavian" />
+    <Image id="RefNosferatuYellow"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanNosferatu" />
+    <Image id="RefToreadorYellow"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanToreador" />
+    <Image id="RefTremereYellow"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanTremere" />
+    <Image id="RefTzimisceYellow"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanTzimisce" />
+    <Image id="RefVentrueYellow"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanVentrue" />
+
+	  <Image id="RefTraits1Yellow" width="95%"
+      class="hud-ref-image"
+      image="ref-traits1" />
+	  <Image id="RefTraits2Yellow" width="95%"
+      class="hud-ref-image"
+      image="ref-traits2" />
+	  <Image id="RefTraits3Yellow" width="95%"
+      class="hud-ref-image"
+      image="ref-traits3" />
+
+  </Panel>
+</Panel>
+
+<Panel id="heritageHUDBlue" visibility="Blue">
+  <Panel id="hudSidebarBlue" class="hud-sidebar-right" visibility="Blue">
+    <VerticalLayout class="hud-sidebar-right">
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefBattlegroundsBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-battlegrounds" />
+      <Image id="hudRefAncillaeABlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-ancillaeA" />
+      <Image id="hudRefAncillaeBBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-ancillaeB" />
+      <Image id="hudRefAncillaeCBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-ancillaeC" />
+      <Image id="hudRefAncillaeDBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-ancillaeD" />
+      <Image id="hudRefAncillaeEBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-ancillaeE" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-gold-top" />
+      <Image id="hudRefBrujahBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanBrujah" />
+      <Image id="hudRefGangrelBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanGangrel" />
+      <Image id="hudRefLasombraBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanLasombra" />
+      <Image id="hudRefMalkavianBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanMalkavian" />
+      <Image id="hudRefNosferatuBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanNosferatu" />
+      <Image id="hudRefToreadorBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanToreador" />
+      <Image id="hudRefTremereBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanTremere" />
+      <Image id="hudRefTzimisceBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanTzimisce" />
+      <Image id="hudRefVentrueBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-clanVentrue" />
+      <Image class="hud-ref-border" image="hud-border-gold-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefTraits1Blue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-traits1" />
+      <Image id="hudRefTraits2Blue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-traits2" />
+      <Image id="hudRefTraits3Blue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-traits3" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefAssetsBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-assets" />
+      <Image id="hudRefPlayersBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-players" />
+      <Image id="hudRefSymbolsBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-symbols" />
+      <Image id="hudRefExpansionsBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-expansions" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-gold-top" />
+			<Image id="hudMakeFourthRowBlue"
+        class="hud-ref-button hud-ref-button-base"
+        image="hud-toggle-fourthRow" />
+      <Image class="hud-ref-border" image="hud-border-gold-bottom" />
+
+    </VerticalLayout>
+    <VerticalLayout class="hud-sidebar-right">
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefBattlegroundsBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-battlegrounds" />
+      <Image id="hudRefAncillaeABlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-ancillaeA" />
+      <Image id="hudRefAncillaeBBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-ancillaeB" />
+      <Image id="hudRefAncillaeCBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-ancillaeC" />
+      <Image id="hudRefAncillaeDBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-ancillaeD" />
+      <Image id="hudRefAncillaeEBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-ancillaeE" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-gold-top" />
+      <Image id="hudRefBrujahBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanBrujah" />
+      <Image id="hudRefGangrelBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanGangrel" />
+      <Image id="hudRefLasombraBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanLasombra" />
+      <Image id="hudRefMalkavianBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanMalkavian" />
+      <Image id="hudRefNosferatuBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanNosferatu" />
+      <Image id="hudRefToreadorBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanToreador" />
+      <Image id="hudRefTremereBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanTremere" />
+      <Image id="hudRefTzimisceBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanTzimisce" />
+      <Image id="hudRefVentrueBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-clanVentrue" />
+      <Image class="hud-ref-border" image="hud-border-gold-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefTraits1BlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-traits1" />
+      <Image id="hudRefTraits2BlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-traits2" />
+      <Image id="hudRefTraits3BlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-traits3" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-silver-top" />
+      <Image id="hudRefAssetsBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-assets" />
+      <Image id="hudRefPlayersBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-players" />
+      <Image id="hudRefSymbolsBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-symbols" />
+      <Image id="hudRefExpansionsBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-expansions" />
+      <Image class="hud-ref-border" image="hud-border-silver-bottom" />
+
+      <Image class="hud-ref-border" image="hud-border-gold-top" />
+			<Image id="hudMakeFourthRowBlueOverlay"
+        class="hud-ref-button hud-ref-button-overlay"
+        image="hud-toggle-fourthRow" />
+      <Image class="hud-ref-border" image="hud-border-gold-bottom" />
+
+    </VerticalLayout>
+  </Panel>
+  <Panel childForceExpandWidth="false" childForceExpandHeight="false" visibility="Blue">
+
+    <!-- Rules References -->
+    <Image id="RefPlayersBlue" height="95%"
+      class="hud-ref-image"
+      image="ref-players" />
+    <Image id="RefBattlegroundsBlue" height="80%"
+      class="hud-ref-image"
+      image="ref-battlegrounds" />
+    <Image id="RefSymbolsBlue"
+      class="hud-ref-image" height="70%"
+      image="ref-symbols" />
+    <Image id="RefAssetsBlue"
+      class="hud-ref-image" height="25%"
+      image="ref-assets" />
+    <Image id="RefAncillaeABlue"
+      class="hud-ref-image" width="90%"
+      image="ref-ancillaeA" />
+    <Image id="RefAncillaeBBlue"
+      class="hud-ref-image" width="90%"
+      image="ref-ancillaeB" />
+    <Image id="RefAncillaeCBlue"
+      class="hud-ref-image" width="90%"
+      image="ref-ancillaeC" />
+    <Image id="RefAncillaeDBlue"
+      class="hud-ref-image" width="90%"
+      image="ref-ancillaeD" />
+    <Image id="RefAncillaeEBlue"
+      class="hud-ref-image" width="90%"
+      image="ref-ancillaeE" />
+    <Image id="RefExpansionsBlue"
+      class="hud-ref-image" height="90%"
+      image="ref-expansions" />
+
+    <!-- Clans -->
+    <Image id="RefBrujahBlue"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanBrujah" />
+    <Image id="RefGangrelBlue"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanGangrel" />
+    <Image id="RefLasombraBlue"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanLasombra" />
+    <Image id="RefMalkavianBlue"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanMalkavian" />
+    <Image id="RefNosferatuBlue"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanNosferatu" />
+    <Image id="RefToreadorBlue"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanToreador" />
+    <Image id="RefTremereBlue"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanTremere" />
+    <Image id="RefTzimisceBlue"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanTzimisce" />
+    <Image id="RefVentrueBlue"
+      class="hud-ref-image hud-ref-image-clan"
+      image="ref-clanVentrue" />
+
+	  <Image id="RefTraits1Blue" width="95%"
+      class="hud-ref-image"
+      image="ref-traits1" />
+	  <Image id="RefTraits2Blue" width="95%"
+      class="hud-ref-image"
+      image="ref-traits2" />
+	  <Image id="RefTraits3Blue" width="95%"
+      class="hud-ref-image"
+      image="ref-traits3" />
+
+  </Panel>
+</Panel>
+
+<Panel id="cameraControlPanel">
+	<HorizontalLayout class="faction-icon-container">
+    <Image id="factionDisplayRed"
+      class="faction-icon"
+      image="" />
+    <Image id="factionDisplayYellow"
+      class="faction-icon"
+      image="" />
+    <Image id="factionDisplayBlue"
+      class="faction-icon"
+      image="" />
+
+	</HorizontalLayout>
+  <HorizontalLayout class="hud-camera-controls">
+    <Image id="cameraZoomPlayerOne"
+      class="camera-button camera-button-zoom-player"
+      image="camera-zoom-player-one" />
+    <Image id="cameraZoomPlayerTwo"
+      class="camera-button camera-button-zoom-player"
+      image="camera-zoom-player-two" />
+    <Image id="cameraZoomPlayerThree"
+      class="camera-button camera-button-zoom-player"
+      image="camera-zoom-player-three" />
+    <Image id="cameraZoomQueue"
+      class="camera-button camera-button-zoom"
+      image="camera-zoom-queue" />
+    <Image id="cameraZoomBattlegrounds"
+      class="camera-button camera-button-zoom"
+      image="camera-zoom-battlegrounds" />
+    <Image id="cameraWideAngle"
+      class="camera-button"
+      image="camera-wide-angle" />
+  </HorizontalLayout>
+</Panel>

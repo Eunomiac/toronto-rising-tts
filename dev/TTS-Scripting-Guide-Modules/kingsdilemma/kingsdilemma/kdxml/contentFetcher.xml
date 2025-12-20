@@ -1,0 +1,256 @@
+<Defaults>
+	<Panel class="fetcher-query"
+		height="100%"
+		width="100%"
+		showAnimation = "FadeIn"
+		hideAnimation = "FadeOut"
+		animationDuration = "0.5"
+		childForceExpandHeight = "false"
+		childAlignment = "LowerCenter"
+		padding = "5 5 5 5"
+		offsetXY = "0 100" />
+
+
+	<VerticalLayout class="fetcher-query"
+		childAlignment = "UpperCenter" />
+
+	<HorizontalLayout class="fetcher-query"
+		preferredHeight = "140" flexibleHeight = "0"
+		padding = "10"
+		spacing = "20"
+		childAlignment = "UpperCenter"
+		childForceExpandWidth = "false"
+		childForceExpandHeight = "false" />
+
+	<Image class="fetcher-top"
+		preferredHeight = "100" flexibleHeight = "0" minHeight = "100"
+		image = "splash-border-above" />
+	<Image class="fetcher-bottom"
+		ignoreLayout = "true"
+		height = "100"
+		rectAlignment = "LowerCenter"
+		offsetXY = "0 -80"
+		preferredHeight = "100" flexibleHeight = "0" minHeight = "100"
+		image = "splash-border-under" />
+	<Image class="fetcher-bg"
+		ignoreLayout = "true"
+		preserveAspect = "false"
+		height = "100%"
+		width = "150%"
+		image = "splash-bg" />
+
+	<Panel class="fetcher-option"
+		preferredHeight = "120" flexibleHeight = "0"
+		preferredWidth = "120" flexibleWidth = "0" />
+	<Image class="fetcher-option"
+		raycastTarget = "true"
+    onMouseDown="Consequence_HUD_Click"
+    onMouseEnter="Consequence_HUD_HoverOn"
+		onMouseExit="Consequence_HUD_HoverOff" />
+	<Image class="outcome-pos" color="#1E87FF7F" />
+	<Image class="outcome-neg" color="#DA19177F" />
+	<Image class="consequence-off" color="#7F7F7F7F" />
+
+	<Text class="fetcher"
+		alignment = "MiddleCenter"
+		font = "Fonts/Friz"
+		resizeTextForBestFit = "false"
+		fontSize = "40"
+		showAnimation = ""
+		hideAnimation = ""
+		animationDuration = "0"
+		preferredWidth = "1000" minWidth = "1000"
+		color = "rgba(1,1,1,1)"
+		shadow = "rgba(0,0,0,1)"
+		shadowDistance = "1 -1"
+		verticalOverflow = "Overflow"
+		horizontalOverflow = "Wrap" />
+	<Text class="fetcher-option"
+		color = "#FFFFFF88"
+		font = "Fonts/CinzelBB"
+		fontSize = "45" />
+	<Text class="fetcher-player-prompt"
+		rectAlignment = "UpperCenter"
+		ignoreLayout = "true"
+		color = "#FFFFFF"
+		font = "Fonts/CinzelBB"
+		alignment = "UpperCenter"
+		shadow = "#000000"
+		shadowDistance = "2 -2"
+		fontSize = "70" />
+
+	<InputField class="fetcher"
+		colors = "#FFFFFF00|#FFFFFF00|#C8C8C800|#BBBBBB00"
+		lineType = "SingleLine"
+		characterValidation = "Alphanumeric"
+		characterLimit = "5"
+		font = "Fonts/FrizB"
+		alignment = "MiddleCenter"
+		fontSize = "70"
+		preferredHeight = "125" flexibleHeight = "0"
+		preferredWidth = "250" flexibleWidth = "0"
+		textColor = "#000000FF"
+		caretColor = "#00000000"
+		caretWidth = "0"
+		placeholder = " "
+		scale = "0.8 1 1" />
+
+
+	<InputField class="fetcher-sticker" onEndEdit="FetcherHUD_Sticker" />
+	<InputField class="fetcher-envelope" onEndEdit="FetcherHUD_Envelope" />
+	<Image class="fetcher-input"
+		ignoreLayout = "true"
+		rectAlignment = "LowerCenter"
+		height = "125"
+		width = "200"
+		offsetXY = "0 15"
+		scale = "1 1 1" />
+	<Image class="fetcher-sticker-bg" image="fetch-sticker-bg" color="#FFFFFF33" />
+	<Image class="fetcher-sticker-border" image="fetch-sticker-border" />
+	<Image class="fetcher-sticker-icon" image="fetch-sticker-icon" />
+	<Image class="fetcher-envelope-bg" image="fetch-envelope-bg" color="#FFFFFF33"  />
+	<Image class="fetcher-envelope-border" image="fetch-envelope-border" />
+	<Image class="fetcher-envelope-icon" image="fetch-envelope-icon" />
+</Defaults>
+
+<Panel id="stickerQuery_Brown" class="fetcher-query" visibility="Brown" active="false">
+	<VerticalLayout class="fetcher-query">
+		<Image class="fetcher-top" />
+		<VerticalLayout class="fetcher-query">
+			<Image class="fetcher-bg" />
+			<Text class="fetcher">Enter the Sticker key shown on the Dilemma.</Text>
+			<Image class="fetcher-input fetcher-sticker-bg" />
+			<Image class="fetcher-input fetcher-sticker-border" />
+			<Image class="fetcher-input fetcher-sticker-icon" />
+			<InputField class="fetcher fetcher-sticker"></InputField>
+		</VerticalLayout>
+		<Image class="fetcher-bottom" />
+	</VerticalLayout>
+</Panel>
+<Panel id="stickerQuery_Red" class="fetcher-query" visibility="Red" active="false">
+	<VerticalLayout class="fetcher-query">
+		<Image class="fetcher-top" />
+		<VerticalLayout class="fetcher-query">
+			<Image class="fetcher-bg" />
+			<Text class="fetcher">Enter the Sticker key shown on the Dilemma.</Text>
+			<Image class="fetcher-input fetcher-sticker-bg" />
+			<Image class="fetcher-input fetcher-sticker-border" />
+			<Image class="fetcher-input fetcher-sticker-icon" />
+			<InputField class="fetcher fetcher-sticker"></InputField>
+		</VerticalLayout>
+		<Image class="fetcher-bottom" />
+	</VerticalLayout>
+</Panel>
+<Panel id="stickerQuery_Orange" class="fetcher-query" visibility="Orange" active="false">
+	<VerticalLayout class="fetcher-query">
+		<Image class="fetcher-top" />
+		<VerticalLayout class="fetcher-query">
+			<Image class="fetcher-bg" />
+			<Text class="fetcher">Enter the Sticker key shown on the Dilemma.</Text>
+			<Image class="fetcher-input fetcher-sticker-bg" />
+			<Image class="fetcher-input fetcher-sticker-border" />
+			<Image class="fetcher-input fetcher-sticker-icon" />
+			<InputField class="fetcher fetcher-sticker"></InputField>
+		</VerticalLayout>
+		<Image class="fetcher-bottom" />
+	</VerticalLayout>
+</Panel>
+<Panel id="stickerQuery_Yellow" class="fetcher-query" visibility="Yellow" active="false">
+	<VerticalLayout class="fetcher-query">
+		<Image class="fetcher-top" />
+		<VerticalLayout class="fetcher-query">
+			<Image class="fetcher-bg" />
+			<Text class="fetcher">Enter the Sticker key shown on the Dilemma.</Text>
+			<Image class="fetcher-input fetcher-sticker-bg" />
+			<Image class="fetcher-input fetcher-sticker-border" />
+			<Image class="fetcher-input fetcher-sticker-icon" />
+			<InputField class="fetcher fetcher-sticker"></InputField>
+		</VerticalLayout>
+		<Image class="fetcher-bottom" />
+	</VerticalLayout>
+</Panel>
+<Panel id="stickerQuery_Green" class="fetcher-query" visibility="Green" active="false">
+	<VerticalLayout class="fetcher-query">
+		<Image class="fetcher-top" />
+		<VerticalLayout class="fetcher-query">
+			<Image class="fetcher-bg" />
+			<Text class="fetcher">Enter the Sticker key shown on the Dilemma.</Text>
+			<Image class="fetcher-input fetcher-sticker-bg" />
+			<Image class="fetcher-input fetcher-sticker-border" />
+			<Image class="fetcher-input fetcher-sticker-icon" />
+			<InputField class="fetcher fetcher-sticker"></InputField>
+		</VerticalLayout>
+		<Image class="fetcher-bottom" />
+	</VerticalLayout>
+</Panel>
+
+<Panel id="envelopeQuery_Brown" class="fetcher-query" visibility="Brown" active="false">
+	<VerticalLayout class="fetcher-query">
+		<Image class="fetcher-top" />
+		<VerticalLayout class="fetcher-query">
+			<Image class="fetcher-bg" />
+			<Text class="fetcher">Enter the Envelope key shown on the Dilemma.</Text>
+			<Image class="fetcher-input fetcher-envelope-bg" />
+			<Image class="fetcher-input fetcher-envelope-border" />
+			<Image class="fetcher-input fetcher-envelope-icon" />
+			<InputField class="fetcher fetcher-envelope"></InputField>
+		</VerticalLayout>
+		<Image class="fetcher-bottom" />
+	</VerticalLayout>
+</Panel>
+<Panel id="envelopeQuery_Red" class="fetcher-query" visibility="Red" active="false">
+	<VerticalLayout class="fetcher-query">
+		<Image class="fetcher-top" />
+		<VerticalLayout class="fetcher-query">
+			<Image class="fetcher-bg" />
+			<Text class="fetcher">Enter the Envelope key shown on the Dilemma.</Text>
+			<Image class="fetcher-input fetcher-envelope-bg" />
+			<Image class="fetcher-input fetcher-envelope-border" />
+			<Image class="fetcher-input fetcher-envelope-icon" />
+			<InputField class="fetcher fetcher-envelope"></InputField>
+		</VerticalLayout>
+		<Image class="fetcher-bottom" />
+	</VerticalLayout>
+</Panel>
+<Panel id="envelopeQuery_Orange" class="fetcher-query" visibility="Orange" active="false">
+	<VerticalLayout class="fetcher-query">
+		<Image class="fetcher-top" />
+		<VerticalLayout class="fetcher-query">
+			<Image class="fetcher-bg" />
+			<Text class="fetcher">Enter the Envelope key shown on the Dilemma.</Text>
+			<Image class="fetcher-input fetcher-envelope-bg" />
+			<Image class="fetcher-input fetcher-envelope-border" />
+			<Image class="fetcher-input fetcher-envelope-icon" />
+			<InputField class="fetcher fetcher-envelope"></InputField>
+		</VerticalLayout>
+		<Image class="fetcher-bottom" />
+	</VerticalLayout>
+</Panel>
+<Panel id="envelopeQuery_Yellow" class="fetcher-query" visibility="Yellow" active="false">
+	<VerticalLayout class="fetcher-query">
+		<Image class="fetcher-top" />
+		<VerticalLayout class="fetcher-query">
+			<Image class="fetcher-bg" />
+			<Text class="fetcher">Enter the Envelope key shown on the Dilemma.</Text>
+			<Image class="fetcher-input fetcher-envelope-bg" />
+			<Image class="fetcher-input fetcher-envelope-border" />
+			<Image class="fetcher-input fetcher-envelope-icon" />
+			<InputField class="fetcher fetcher-envelope"></InputField>
+		</VerticalLayout>
+		<Image class="fetcher-bottom" />
+	</VerticalLayout>
+</Panel>
+<Panel id="envelopeQuery_Green" class="fetcher-query" visibility="Green" active="false">
+	<VerticalLayout class="fetcher-query">
+		<Image class="fetcher-top" />
+		<VerticalLayout class="fetcher-query">
+			<Image class="fetcher-bg" />
+			<Text class="fetcher">Enter the Envelope key shown on the Dilemma.</Text>
+			<Image class="fetcher-input fetcher-envelope-bg" />
+			<Image class="fetcher-input fetcher-envelope-border" />
+			<Image class="fetcher-input fetcher-envelope-icon" />
+			<InputField class="fetcher fetcher-envelope"></InputField>
+		</VerticalLayout>
+		<Image class="fetcher-bottom" />
+	</VerticalLayout>
+</Panel>

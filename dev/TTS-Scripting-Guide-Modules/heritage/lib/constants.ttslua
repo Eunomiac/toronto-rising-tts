@@ -1,0 +1,147 @@
+local C = {}
+
+C.Clans = {
+    "Brujah", "Gangrel", "Lasombra", "Malkavian", "Nosferatu", "Toreador", "Tremere", "Tzimisce", "Ventrue"
+}
+
+C.Colors = {"Red", "Yellow", "Blue"}
+
+C.Names = {
+    Red = "Gaius Marcellus",
+    Yellow = "Baron Samedi",
+    Blue = "Jalan-Aayav"
+}
+
+C.MoralityTokens = {
+  Brujah = "M",
+  Gangrel = "M",
+  Lasombra = "C",
+  Malkavian = "C",
+  Nosferatu = "C",
+  Toreador = "C",
+  Tremere = "C",
+  Tzimisce = "M",
+  Ventrue = "C"
+}
+
+C.StickerTraits = { "Kindred", "Mortals", "Wealth", "Subterfuge", "Warfare", "Occult", "Cruelty", "Mercy",
+"Detachment", "Camarilla", "Sabbat", "Anarchs", "Animalism", "Auspex", "Celerity", "Dominate", "Fortitude",
+"Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Blood_Sorcery" }
+
+C.GamePhases = {
+	"NONE",
+	"SETUP",
+	"INIT",
+	"PLAY",
+	"SCORING",
+	"MISSIONS",
+	"AFTERMATH",
+	"END"
+}
+
+-- C.ObjectCategories = {
+-- 	mission = {"Mission", {"Mission"}},
+-- 	unlockedScheme = {"Clan Scheme", {"Card", "ClanScheme"}},
+-- 	lockedScheme = {"Clan Scheme (Locked)", {"Card", "ClanScheme", "LockedScheme"}},
+-- 	chapter = {"Chapter Card", {"ChapterCard"}},
+-- 	letterOfIntroduction = {"Letter of Introduction", {"Card", "LetterOfIntroduction"}},
+-- 	character = {"Character", {"Card", "Character"}},
+-- 	clan
+
+-- }
+
+C.CategoryColors = {
+	default = Color(0, 0, 0, 188/255),
+	strand = Color(139/255, 69/255, 19/255, 40/255),
+	letterOfIntroduction = Color(222/255, 184/255, 135/255, 40/255),
+	clanLeader = Color(0/255, 191/255, 255/255, 40/255),
+	era = Color(95/255, 158/255, 160/255, 40/255),
+	character = Color(106/255, 90/255, 205/255, 40/255)
+}
+
+C.CategoryNames = {
+	strand = "Strands of Time",
+	letterOfIntroduction = "Letters of Introduction",
+	clanLeader = "Clan Leaders",
+	era = "Era Cards",
+	character = "Characters"
+}
+
+C.TraitAbbvs = {
+	Animalism = "Ani",
+	Auspex = "Aus",
+	Blood_Sorcery = "BSr",
+	Celerity = "Cel",
+	Dominate = "Dom",
+	Fortitude = "For",
+	Obfuscate = "Obf",
+	Oblivion = "Obv",
+	Potence = "Pot",
+	Presence = "Prs",
+	Protean = "Pro"
+}
+
+C.CameraAngles = {
+  ZoomCard = {position = {x=-0.5,y=-2,z=4.75},pitch = 70.72,yaw = 0,distance = 11},
+  ZoomPlayerOne = {position = {x=-27,y=1,z=-14}, pitch = 75, yaw = 0, distance = 17.5},
+  ZoomPlayerTwo = {position = {x=0,y=1,z=-14}, pitch = 75, yaw = 0, distance = 17.5},
+  ZoomPlayerThree = {position = {x=27,y=1,z=-14}, pitch = 75, yaw = 0, distance = 17.5},
+  ZoomQueue = {position = {x=-0.5,y=1,z=3}, pitch = 70.72, yaw = 0, distance = 1},
+  ZoomBattlegrounds = {position = {x=0,y=5,z=10}, pitch = 76.43, yaw = 0, distance = 18},
+  WideAngle = {position = {x=0,y=10,z=-15}, pitch = 35, yaw = 0, distance = 50},
+  ZoomPlayerOneWide = {position = {x=-27,y=10,z=-25}, pitch = 45, yaw = 10, distance = 10},
+  ZoomPlayerTwoWide = {position = {x=0,y=10,z=-25}, pitch = 45, yaw = 0, distance = 10},
+  ZoomPlayerThreeWide = {position = {x=27,y=10,z=-25}, pitch = 45, yaw = 350, distance = 10},
+  ZoomQueueWide = {position = {x=0,y=5,z=5}, pitch = 56.43, yaw = 0, distance = 25},
+  ZoomBattlegroundsWide = {position = {x=0,y=5,z=5}, pitch = 56.43, yaw = 0, distance = 25},
+  WideAngleWide = {position = {x=0,y=10,z=-15}, pitch = 35, yaw = 0, distance = 100},
+	ClanSelection = {position = {x=0,y=5,z=-15}, pitch = 63, yaw = 0, distance = 30}
+}
+
+C.Ankhs = {"North", "South", "East", "West"}
+
+C.AnkhColors = {
+	North = {248/255,248/255,255/255},
+	South = {188/255,188/255,188/255},
+	East = {210/255, 105/255, 30/255},
+	West = {175/255,238/255,238/255}
+}
+
+C.Lighting = {
+	standard = {
+		ambient_intensity = 0.5546665, 	-- Range: 0 - 4
+		ambient_type = 1,								-- Range: 1, 2
+		light_intensity = 0.5333346,		-- Range: 0 - 4
+		lut_contribution = 0,						-- Range: 0 - 1
+		lut_index = 1,									-- Range: 1 - 114
+		lut_url = "",
+		reflection_intensity = 0				-- Range: 0 - 1
+	},
+	automating = {
+		ambient_intensity = 0,
+		ambient_type = 1,
+		light_intensity = 0,
+		lut_contribution = 0.6,
+		lut_index = 108,
+		lut_url = "",
+		reflection_intensity = 1
+	},
+	courtVote = {
+		ambient_intensity = 0.3,
+		ambient_type = 1,
+		light_intensity = 0.3,
+		lut_contribution = 0.2,
+		lut_index = 108,
+		lut_url = "",
+		reflection_intensity = 0
+	},
+	suspicion = {
+		ambient_intensity = 0,
+		light_intensity = 0,
+		lut_contribution = 1,
+		lut_index = 36, -- 36, 40, 48!, 77, 79, 92!, 95!, 105!!
+		reflection_intensity = 0
+	}
+}
+
+return C

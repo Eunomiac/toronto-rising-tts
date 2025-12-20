@@ -1,0 +1,335 @@
+local U = require("lib.utilities")
+local S = require("kingsdilemma.core.state")
+local C = require("kingsdilemma.lib.constants")
+local O = require("kingsdilemma.lib.objects")
+local OU = require("kingsdilemma.objects.objUtilities")
+
+local P = {}
+
+function P.InitializeSeats()
+	S.UpdateSeatedPlayers()
+
+	local seats = U.slice(Player.getColors(), 2, 6)
+	-- log({SeatColors = seats})
+	local players = S.getPlayers()
+
+	local function initSeat(color)
+		local angle = S.getPlayerAngle(color)
+		local handTransform = OU.RotateByAngle(U.clone(C.BaseHandTransform), angle)
+		local hZone = U.getHandZone(color)
+		if hZone == nil then
+			U.RunSequence({
+				function()
+					return spawnObjectData({
+						data = {
+							Name = "HandTrigger",
+							FogColor = color,
+							Transform = OU.unfoldTransform(handTransform)
+						}
+					})
+				end,
+				function()
+					Player[color].setHandTransform(handTransform)
+				end
+			})
+		else
+			Player[color].setHandTransform(handTransform)
+		end
+
+		P.SetCamera("BehindScreen", color)
+	end
+
+	seats = Player.getAvailableColors()
+	U.Assert("P.UpdatePlayerSeats - #seats", #seats >= 3 and #seats <= 5)
+	U.Assert("P.UpdatePlayerSeats - Requires between three and five seated players.", #players >= 3 and #players <= 5)
+
+	if #players < #seats then
+		local excessSeats = U.slice(seats, #players + 1, #seats)
+		seats = U.slice(seats, 1, #players)
+		U.forEach(excessSeats, function(sColor)
+			U.getHandZone(sColor).destruct()
+		end)
+	end
+
+	U.iForEach(seats, function(sColor) initSeat(sColor) end)
+end
+
+function P.ClearSeat(color)
+	if color == nil then return U.forEach(Player.getAvailableColors(), P.ClearSeat) end
+	local playerObjects = getObjectsWithTag(color)
+	local playerZones = U.filter(getObjects(), function(obj) return obj.getGMNotes() == "ZonePlayer" .. color end)
+
+	U.forEach(U.concat(playerObjects, playerZones), function(obj)
+		if obj.hasTag("HouseCard") then
+			obj.setTags({"HouseCard"})
+			obj.setPosition(C.Spots.Storage.HouseCard.position)
+			obj.setRotation(C.Spots.Storage.HouseCard.rotation)
+			obj.setScale(C.Spots.Storage.HouseCard.scale)
+		else
+			obj.destruct()
+		end
+	end)
+end
+function P.ClearSeats() return U.forEach(Player.getAvailableColors(), P.ClearSeat) end
+
+function P.getRotatedPlayerTransform(objOrTransform, player, fromAngle)
+	objOrTransform = U.clone(objOrTransform, true)
+	objOrTransform = OU.foldTransform(objOrTransform)
+	if fromAngle == nil then
+		fromAngle = OU.GetNearestAngle(objOrTransform, S.getSeatAngles())
+	end
+	local toAngle = S.getPlayerAngle(player)
+	return OU.RotateByAngle(objOrTransform, toAngle - fromAngle)
+end
+
+function P.RotateToPlayer(objs, player, fromAngle, fromTransform)
+	if U.Type(objs) ~= "table" then objs = {objs} end
+
+	return U.map(objs, function(obj)
+		local startPos = obj.getPosition()
+		local toData = P.getRotatedPlayerTransform(fromTransform or obj, player, fromAngle)
+		local endPos, endRot = toData.position, toData.rotation
+
+		return U.RunSequence({
+			function()
+				return U.setPositionSlow(obj, Vector(startPos):add(Vector(0, 2, 0)), 0.5)
+			end,
+			function()
+				return {
+					U.setPositionSlow(obj, Vector(endPos):add(Vector(0, 2, 0)), 1.5),
+					U.setRotationSlow(obj, endRot, 1.5)
+				}
+			end,
+			function()
+				return U.setPositionSlow(obj, endPos, 0.5)
+			end
+		})
+	end)
+end
+
+function P.AssignOpenSeat(player) player.changeColor(S.getOpenColors()[1]) end
+
+function P.AssignPlayerColors()
+	local openSeats = S.getOpenColors()
+	local spectators = Player.getSpectators()
+	-- log({openSeats = U.join(openSeats, ", "), spectators = U.join(U.iMap(spectators, function(spec) return spec.steam_name end), ", "), num = {#openSeats, #spectators}})
+	local seqFuncs = {}
+	while #openSeats > 0 and #spectators > 0 do
+		local player = U.shift(spectators)
+		local color = U.shift(openSeats)
+		table.insert(seqFuncs, function()
+			-- log({player = player.steam_name, color = color})
+			player.changeColor(color)
+			return 1
+		end)
+	end
+	return U.RunSequence(seqFuncs)
+end
+
+function P.SetCamera(cameraMode, playerRef, playerCamRef)
+	if playerRef == nil then return U.map(S.getPlayers(), function(player) return P.SetCamera(cameraMode, player) end) end
+
+	local player = S.getPlayer(playerRef)
+	local playerCam = player
+	if playerCamRef then
+		playerCam = S.getPlayer(playerCamRef)
+	end
+	local cameraData = U.clone(C.CameraAngles[cameraMode])
+
+	U.Val("P.SetCamera", cameraMode, cameraData ~= nil, "Not a valid camera mode")
+
+	if cameraData.isPlayerAngle and S.getPlayerAngle(player) then
+		cameraData.position = Vector(cameraData.position):rotateOver("y", S.getPlayerAngle(player))
+		cameraData.yaw = S.getPlayerAngle(player) + cameraData.yaw
+		cameraData.isPlayerAngle = nil
+	end
+
+	-- log(cameraData)
+	playerCam.lookAt(cameraData)
+	return 0.5
+end
+
+function P.DealAll(cards, playerRef)
+	local player = S.getPlayer(playerRef)
+	U.Val("P.DealAll", cards, U.Type(cards) == "table" or (U.Type(cards) == "userdata" and (cards.type == "Deck" or cards.type == "Card")))
+
+	local function dealNextCard()
+		if U.Type(cards) == "table" then
+			if #cards > 0 then
+				U.shift(cards).deal(1, player.color)
+			end
+		elseif cards.type == "Deck" then
+			cards.deal(1, player.color)
+			if cards.remainder ~= nil then
+				cards = {cards.remainder}
+			end
+		end
+		return 0.25
+	end
+
+
+
+	local numCards
+	if U.Type(cards) == "table" then numCards = #cards
+	elseif cards.type == "Deck" then numCards = #cards.getObjects()
+	else return error("P.DealAll: Must submit a deck, a card, or a table of cards.") end
+
+	-- log({cards, player.color, numCards})
+
+	local seqFuncs = {}
+
+	for i = 1, numCards do
+		table.insert(seqFuncs, dealNextCard)
+	end
+
+	U.RunSequence(seqFuncs)
+
+	return U.sequence(seqFuncs, 0.25)
+end
+
+function P.GetPlayerName(playerRef)
+	if S.getPlayerVal(playerRef, "houseName") then
+		return "House " .. S.getPlayerVal(playerRef, "houseName")
+	else
+		return S.getPlayerVal(playerRef, "house")
+	end
+end
+
+function P.GetMostPrestigious()
+	local prestigeData = U.map(S.getPlayers(), function(player)
+		return {
+			player = player,
+			prestige = S.getPlayerVal(player, "prestige")
+		}
+	end)
+	table.sort(prestigeData, function(a, b) return a.prestige > b.prestige end)
+	return prestigeData[1].player
+end
+
+function P.GetLeastPrestigious()
+	local prestigeData = U.map(S.getPlayers(), function(player)
+		return {
+			player = player,
+			prestige = S.getPlayerVal(player, "prestige")
+		}
+	end)
+	table.sort(prestigeData, function(a, b) return a.prestige < b.prestige end)
+	return prestigeData[1].player
+end
+
+function P.GetNextLeastPrestigious(playerRef)
+	local refPlayer = S.getPlayer(playerRef)
+	local refPrestige = S.getPlayerVal(refPlayer, "prestige")
+	local lesserPlayers = U.filter(S.getPlayers(), function(player) return S.getPlayerVal(player, "prestige") > refPrestige end)
+	if #lesserPlayers == 0 then return false end
+	local prestigeData = U.map(lesserPlayers, function(player)
+		return {
+			player = player,
+			prestige = S.getPlayerVal(player, "prestige")
+		}
+	end)
+	table.sort(prestigeData, function(a, b) return a.prestige < b.prestige end)
+	return prestigeData[1].player
+end
+
+function P.AssignLeader(playerRef)
+	if playerRef == nil then return P.AssignLeader(P.GetMostPrestigious()) end
+	local player = S.getPlayer(playerRef)
+	S.setStateVal(player.color, "gameState", "leader")
+	return {
+		P.RotateToPlayer(O.Leader.Figure(), player, 0, C.Spots.Storage.LeaderFigure),
+		P.RotateToPlayer(O.Leader.Light(), player, 0, C.Spots.Storage.LeaderLight)
+	}
+end
+
+function P.AssignModerator(playerRef)
+	if playerRef == nil then return P.AssignModerator(P.GetLeastPrestigious()) end
+	local player = S.getPlayer(playerRef)
+	S.setStateVal(player.color, "gameState", "moderator")
+	return {
+		P.RotateToPlayer(O.Moderator.Figure(), player, 0, C.Spots.Storage.ModeratorFigure),
+		P.RotateToPlayer(O.Moderator.Light(), player, 0, C.Spots.Storage.ModeratorLight)
+	}
+end
+
+function P.GetLeader() return S.getPlayer(S.getStateVal("gameState", "leader")) or P.GetMostPrestigious() end
+function P.GetModerator() return S.getPlayer(S.getStateVal("gameState", "moderator")) or P.GetLeastPrestigious() end
+function P.GetLeaderName() return P.GetPlayerName(P.GetLeader()) end
+function P.GetModeratorName() return P.GetPlayerName(P.GetModerator()) end
+
+function P.GetPlayerZone(playerRef, zoneRef)
+	local playerColor = S.getPlayer(playerRef).color
+	if zoneRef == "Aye" then
+		return getObjectsWithAllTags({playerColor, "Zone_VoteAye"})[1]
+	elseif zoneRef == "Nay" then
+		return getObjectsWithAllTags({playerColor, "Zone_VoteNay"})[1]
+	elseif zoneRef == "Pass" then
+		return getObjectsWithAllTags({playerColor, "Zone_VotePass"})[1]
+	elseif zoneRef == "Power" then
+		return getObjectsWithAllTags({playerColor, "zonePrivatePower"})[1]
+	elseif zoneRef == "Coin" then
+		return getObjectsWithAllTags({playerColor, "zonePrivateCoin"})[1]
+	elseif zoneRef == "Public" then
+		return getObjectsWithAllTags({playerColor, "Zone_PublicUI"})[1]
+	end
+end
+
+function P.GetPlayerCard(playerRef)
+	local player = S.getPlayer(playerRef)
+	U.Val("P.GetPlayerCard()", playerRef, U.isPlayer(player), "Not a player")
+	return getObjectsWithAllTags({"HouseCard", player.color})[1]
+end
+
+function P.GetPlayerScreen(playerRef)
+	local player = S.getPlayer(playerRef)
+	U.Val("P.GetPlayerScreen()", playerRef, U.isPlayer(player), "Not a player")
+	return getObjectsWithAllTags({"screenCenter", player.color})[1]
+end
+
+function P.ActivatePlayerScreenHUD(playerRef)
+	if playerRef == nil then return U.map(S.getPlayers(), P.ActivatePlayerScreenHUD) end
+	local houseScreen = P.GetPlayerScreen(playerRef)
+	if houseScreen == nil then return 0 end
+	houseScreen.call("Activate")
+	return 0.5
+end
+
+
+function P.SpawnPower(playerRef, numPower)
+	local powerZone = P.GetPlayerZone(playerRef, "Power")
+	local seqFuncs = {}
+
+	while math.floor(numPower / 10) > 0 and numPower > 10 do
+		numPower = numPower - 10
+		table.insert(seqFuncs, 1, function() return OU.SpawnToken(powerZone, "Power", 10) end)
+	end
+	while math.floor(numPower / 5) > 0 and numPower > 5 do
+		numPower = numPower - 5
+		table.insert(seqFuncs, 1, function() return OU.SpawnToken(powerZone, "Power", 5) end)
+	end
+	while numPower > 0 do
+		numPower = numPower - 1
+		table.insert(seqFuncs, 1, function() return OU.SpawnToken(powerZone, "Power", 1) end)
+	end
+
+	return U.RunSequence(seqFuncs, nil, 1)
+end
+
+function P.SpawnCoins(playerRef, numCoins)
+	local coinZone = P.GetPlayerZone(playerRef, "Coin")
+
+	local seqFuncs = {}
+
+	while math.floor(numCoins / 5) > 0 and numCoins > 5 do
+		numCoins = numCoins - 5
+		table.insert(seqFuncs, 1, function() return OU.SpawnToken(coinZone, "Coin", 5) end)
+	end
+	while numCoins > 0 do
+		numCoins = numCoins - 1
+		table.insert(seqFuncs, 1, function() return OU.SpawnToken(coinZone, "Coin", 1) end)
+	end
+
+	return U.RunSequence(seqFuncs, nil, 1)
+end
+
+return P

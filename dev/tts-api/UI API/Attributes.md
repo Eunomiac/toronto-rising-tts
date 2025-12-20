@@ -1,0 +1,265 @@
+## Table of Contents
+
+* Attribute types
+* Common Attributes
+  * General Attributes
+  * Text Attributes
+  * Image Attributes
+  * Appearance Attributes
+  * Layout Element Attributes
+  * Position/Size Attributes (Basic)
+  * Position/Size Attributes (Advanced)
+  * Dragging Attributes
+  * Animation Attributes
+  * Tooltip Attributes
+  * Event Attributes
+* Usage
+  * Single Element Attributes
+    * One Attribute
+    * Multiple Attributes
+    * Many Attributes
+
+# Attributes
+
+As mentioned in the [Introduction](../introUI/), attributes are modifiers that can be applied to elements. They can be applied to individual elements or to whole groups of them.
+> **Note: Important**
+> They consists of two parts, a **tag**and a **value**. **The value is always in quotation marks.**
+>
+## Attribute types {#attribute-types}
+
+For XML, most of the attribute types are self-explanatory, like string or float (See Lua Scripting section for details on those). However XML has some unique types.
+
+* `color`
+
+* **HTML 6 Char Hex**: `#FFFFFF` (white 100% opacity)
+* **8 Char Hex**: `#FFFFFFCC` (white 80% opacity)
+* **RGB Color**: `rgb(1,1,1)` (white 100% opacity)
+* **RGBA Color**: `rgba(1,1,1,0.8)` (white 80% opacity)
+* **Player Color**: ` White ` (white 100% opacity)
+* ` colorblock `
+
+* Color block values are used to specify the colors for elements such as buttons and input fields.
+* Format: **(normalColor|highlightedColor|pressedColor|disabledColor)**where each color is formatted as above, e.g. `#FFFFFF|White|#C8C8C8|rgba(0.78,0.78,0.78,0.5)`
+* ` boolean `
+
+* **True**: `1` or ` true `
+* **False**: `0` or ` false `
+
+## Common Attributes {#common-attributes}
+
+Elements all share some common attributes which are not repeated under their separate entries. They can be broker down into category.
+
+### General Attributes {#general-attributes}
+
+|Attribute Name|Description|Type / Options|Default Value|
+|---|---|---|---|
+|active|Specifies whether or not this element and its children are visible and contribute to layout. Modifying this via script will not trigger animations.|bool|` true `|
+|class|A list of classes, separated by spaces. An element will inherit attributes from any of its classes defined in [Defaults](../defaults/).|string|(none)|
+|id|A unique string used to identify the element from Lua scripting.|string|(none)|
+|visibility|A pipe-separated list of visibility targets. An element is always treated as inactive to players not specified here.|string|(visible to all)|
+
+> **Note: Visibility Targets**
+> Targets for the ` visibility ` attribute are as follows:
+>
+> * The game host: ` Host `
+> * Any promoted player (including the host): ` Admin `
+> * Every [player color](../../player/colors/): ` White `, ` Brown `, ` Red `, ` Orange `, ` Yellow `, ` Green `, ` Teal `, ` Blue `, ` Purple `, ` Pink `, ` Grey `, and ` Black `
+> * Every [team](../../player/instance/#team): ` Clubs `, ` Diamonds `, ` Hearts `, ` Spades `, ` Jokers `, and ` None `
+> Not setting the visibility attribute (or setting it to an empty string) does not limit the visibility of the element.
+> Multiple targets can be listed by separating them with a pipe (`|`). In this case if *any*of the targets applies to a player then the element will be active for that player.
+> Example: `"Red|Blue|Host"` would be visible to the red seat, blue seat, and the host of the server.
+>
+### Text Attributes {#text-attributes}
+
+Many, but not all, elements have a text attribute.
+
+|Attribute Name|Description|Type / Options|Default Value|
+|---|---|---|---|
+|text|Text to be displayed.|string|(none)|
+|alignment|Typographic alignment of the text within its bounding box.|UpperLeft UpperCenter UpperRight MiddleLeft MiddleCenter MiddleRight LowerLeft LowerCenter LowerRight|` MiddleCenter `|
+|color|Color of the text. Elements that also take an image ` color ` use ` textColor ` for this.|` color `|`#323232`|
+|fontStyle|Typographic emphasis on the text.|Normal Bold Italic BoldAndItalic|` Normal `|
+|fontSize|Height of the text in pixels.|float|`14`|
+|resizeTextForBestFit|If set then ` fontSize ` is ignored and the text will be sized to be as large as possible while still fitting within its bounding box.|` boolean `|` false `|
+|resizeTextMinSize|When ` resizeTextForBestFit ` is set, text will not be sized smaller than this.|float|`10`|
+|resizeTextMaxSize|When ` resizeTextForBestFit ` is set, text will not be sized larger than this.|float|`40`|
+|horizontalOverflow|Defines what happens when text extends beyond the left or right edges of its bounding box.|Wrap Overflow|` Overflow `|
+|verticalOverflow|Defines what happens when text extends beyond the top or bottom edges of its bounding box.|Truncate Overflow|` Truncate `|
+
+### Image Attributes {#image-attributes}
+
+Applies to elements with an image component. The string that ` image ` s all take is the **NAME THE IMAGE WAS GIVEN WHEN YOU PUT IT IN THE IN-GAME ASSET MANAGER**.
+
+|Attribute Name|Description|Type / Options|Default Value|
+|---|---|---|---|
+|image|Name of the image in the asset manager.|string|(none)|
+|preserveAspect|If set, the image will not stretch beyond its original aspect ratio, potentially leaving gaps around the image.|` boolean `|(varies)|
+|color|Color to tint the image, or a flat color to display if no image is given.|` color `|` clear ` or `#FFFFFF`|
+|type|Defines how the image is drawn.|Simple Sliced Filled Tiled|(varies)|
+|raycastTarget|If the element blocks clicks.|` boolean `|` true `|
+
+> **Tip: Tip**
+> It's also possible to use an image URL directly (as string) in the image field. Note that this will **NOT**cache the image.
+>
+### Appearance Attributes {#appearance-attributes}
+
+|Attribute Name|Description|Type / Options|Default Value|
+|---|---|---|---|
+|shadow|Defines the shadow color of this element.|` color `|(none)|
+|shadowDistance|Defines the distance of the shadow for this element.|float(x) float(y)|`1 -1`|
+|outline|Defines the outline color of this element.|` color `|(none)|
+|outlineSize|Defines the size of this elements outline.|float(x) float(y)|`1 -1`|
+
+### Layout Element Attributes {#layout-element-attributes}
+
+These will only apply to elements within a layout group.
+
+|Attribute Name|Description|Type / Options|Default Value|
+|---|---|---|---|
+|ignoreLayout|If this element ignores its parent's layout group behavior and treats it as a regular Panel. (This means it would obey regular position/size attributes.)|` boolean `|` false `|
+|minWidth|Elements will not be sized thinner than this.|float|(varies)|
+|minHeight|Elements will not be sized shorter than this.|float|(varies)|
+|preferredWidth|If there is space after ` minWidth ` s are sized, then element widths are sized according to this.|float|(varies)|
+|preferredHeight|If there is space after ` minHeight ` s are sized, then element heights are sized according to this.|float|(varies)|
+|flexibleWidth|If there is additional space after ` preferredWidth ` s are sized, defines how much the element expands to fill the available horizontal space, relative to other elements.|float|(varies)|
+|flexibleHeight|If there is additional space after ` preferredHeights ` s are sized, defines how much the element expands to fill the available vertical space, relative to other elements.|float|(varies)|
+
+> **Note: On Sizing Elements**
+> Minimum and preferred sizes are defined in regular units, while the flexible sizes are defined in relative units. If any layout element has flexible size greater than zero, it means that all the available space will be filled out. The relative flexible size values of the siblings determines how big a proportion of the available space each sibling fills out. Most commonly, flexible width and height is set to just 0 or 1.
+>
+### Position/Size Attributes (Basic) {#positionsize-attributes-basic}
+>
+> **Note: Important**
+> These attributes do not apply to elements that are direct children of layout groups. To size those elements see [Layout Element Attributes](#layout-element-attributes).
+|Attribute Name|Description|Type / Options|Default Value|
+|---|---|---|---|
+|rectAlignment|The element's anchor and pivot point, relative to its parent element.|UpperLeft UpperCenter UpperRight MiddleLeft MiddleCenter MiddleRight LowerLeft LowerCenter LowerRight|` MiddleCenter `|
+|width|The width of this element in pixels or as a percentage of the width of its parent.|float (fixed width) or a Percentage value|`100%`|
+|height|The height of this element in pixels or as a percentage of the height of its parent.|float (fixed width) or a Percentage value|`100%`|
+|offsetXY|An offset to the position of this element, e.g. a value of `-32 10` will cause this element to be 10 pixels up and 32 pixels to the left of where it would otherwise be.|float(x) float(y)|`0 0`|
+
+### Position/Size Attributes (Advanced) {#positionsize-attributes-advanced}
+
+These provide deeper access to Unity's [RectTransform](https://docs.unity3d.com/ScriptReference/RectTransform.html)properties.
+> **Note: Important**
+> Besides ` rotation ` and ` scale `, these attributes do not apply to elements that are direct children of layout groups. To size those elements see [Layout Element Attributes](#layout-element-attributes).
+
+|Attribute Name|Description|Type / Options|Default Value|
+|---|---|---|---|
+|anchorMin|The anchor point for the bottom-left corner of the element, where `0 0` is its parent's bottom-left corner and `1 1` is its parent's top-right corner.|float(x) float(y)|(varies)|
+|anchorMax|The anchor point for the top-right corner of the element, where `0 0` is its parent's bottom-left corner and `1 1` is its parent's top-right corner.|float(x) float(y)|(varies)|
+|sizeDelta|An offset to the size of the element, e.g. a value of `15 -20` will cause this element to be 15 pixels wider and 32 pixels shorter than what it would otherwise be.|float(x) float(y)|(varies)|
+|pivot|The pivot point this element is positioned, rotated, and scaled around. `0 0` is the element's bottom-left corner and `1 1` is its top-right corner.|float(x) float(y)|`0.5 0.5`|
+|position|An offset to the position of this element in 3D space. Z moves the element in and out.|float(x) float(y) float(z)|`0 0 0`|
+|rotation|Rotates the element in 3D space. X and Y tilt it like a dish, Z turns it like a steering wheel.|float(x) float(y) float(z)|`0 0 0`|
+|scale|Scales the component around its pivot. Note that this does not add more pixel detail, text with small font and other elements may appear pixelated or blurry. Z does not affect the thickness of the element (it is always flat), but does affect the transforms of its children.|float(x) float(y) float(z)|`1 1 1`|
+|offsetMin|An offset in pixels from ` anchorMin ` to be used as the bottom-left corner of the element.|float(x) float(y)|(varies)|
+|offsetMax|An offset in pixels from ` anchorMax ` to be used as the top-right corner of the element.|float(x) float(y)|(varies)|
+
+> **Warning: Mixing Attributes**
+> Some [Advanced Position/Size Attributes](#positionsize-attributes-advanced)affect the same underlying properties as the [Basic Position/Size Attributes](#positionsize-attributes-basic)and other Advanced Position/Size Attributes. Using these overlapping attributes on the same element will cause one attribute to be effectively overwritten, and may result in unexpected behaviour.
+> **Note: Elements in 3D Space**
+> Moving elements in 3D space can achieve parallax and perspective effects, but elements later in the XML will always be drawn on top of elements earlier in the same XML, and will not occlude as other 3d objects would. To avoid any visual glitches, try to make sure unrelated UI elements can't be seen overlapping when viewed from most angles. Global UI has no perspective and is always 2D.
+>
+### Dragging Attributes {#dragging-attributes}
+
+Allow users to move elements by clicking/dragging.
+> **Note: Note**
+> There is currently no reliable way to read the positions of elements, and dragged positions reset when the UI is reloaded.
+|Attribute Name|Description|Type / Options|Default Value|
+|---|---|---|---|
+|allowDragging|Allows the element to be dragged around. Does not work on child elements of layout groups)|` boolean `|` false `|
+|restrictDraggingToParentBounds|If set, prevents the element from being dragged outside the bounding box of its parent.|` boolean `|` true `|
+|returnToOriginalPositionWhenReleased|If this is set to true, then the element will return to its original position when it is released.|` boolean `|` true `|
+
+### Animation Attributes {#animation-attributes}
+
+|Attribute Name|Description|Type / Options|Default Value|
+|---|---|---|---|
+|showAnimation|Animation to play when `show()` is called for the element.|None Grow FadeIn SlideIn_Left SlideIn_Right SlideIn_Top SlideIn_Bottom|` None `|
+|hideAnimation|Animation to play when `hide()` is called for the element.|None Shrink FadeOut SlideOut_Left SlideOut_Right SlideOut_Top SlideOut_Bottom|` None `|
+|showAnimationDelay|Time in seconds to wait before playing this element's show animation. Useful for staggering the animations of multiple elements.|float|`0`|
+|hideAnimationDelay|Time in seconds to wait before playing this element's hide animation. Useful for staggering the animations of multiple elements.|float|`0`|
+|animationDuration|Time in seconds that show/hide animations take to play.|float|`0.25`|
+
+### Tooltip Attributes {#tooltip-attributes}
+
+Allow any element to have a tooltip (text that appears when the element is hovered over by the mouse).
+
+|Attribute Name|Description|Type / Options|Default Value|
+|---|---|---|---|
+|tooltip|Text to display when the element is hovered over.|string|(none)|
+|tooltipBorderColor|Color of the tooltip's border.|` color `|`#FFFFFF`|
+|tooltipBackgroundColor|Color of the tooltip's background.|` color `|`rgba(0,0,0,0.62)`|
+|tooltipBorderImage|Image used for the tooltip's border. See [Image Attributes](#image-attributes).|string| |
+|tooltipBackgroundImage|Image used for the tooltip's background. See [Image Attributes](#image-attributes).|string| |
+|tooltipTextColor|Color of the text within this tooltip.|` color `|`#FFFFFF`|
+|tooltipFontSize|Font size of the text within this tooltip.|` color `|`14`|
+|tooltipPosition|Position of this tooltip in relation to the element.|Above Below Left Right|` Right `|
+|tooltipOffset|Distance in pixels that this tooltip will appear from the element.|float|`8`|
+
+### Event Attributes {#event-attributes}
+
+Allows Lua scripting functions to be triggered by an element, through a variety of interactions. All elements have no events by default, listed below is the default value passed as the 2ndparameter to the triggered function.
+See the [Input Elements](../inputelements/)page for how to interact with Lua scripting.
+
+|Attribute Name|Description|Type / Options|Default Argument|
+|---|---|---|---|
+|onClick|Called when the mouse is pressed while over the element and then released while still over it.|string|The click button|
+|onMouseEnter|Called when the pointer enters the boundary of the element.|string|`"-1"`|
+|onMouseExit|Called when the pointer leaves the boundary of the element.|string|`"-1"`|
+|onDrag|Called every frame if the element is being dragged and has moved that frame.|string|` nil `|
+|onBeginDrag|Called once when the element starts being dragged.|string|` nil `|
+|onEndDrag|Called once when the element stops being dragged and the mouse button is released.|string|` nil `|
+|onMouseDown|Called when the mouse is pressed while over the element.|string|The click button|
+|onMouseUp|Called when the mouse is released, if it had previously been pressed while over the element (no matter where the cursor currently is).|string|The click button|
+|onSubmit|Called when the Enter key is pressed on an [Input Element](../inputelements/).|string|The value of the input element|
+
+> **Note: Note**
+> ` onClick `, ` onMouseDown ` and ` onMouseUp ` all pass the click button. They hold digits, but their data type is **string**. The possible values are:
+>
+> * `"-1"`: Left mouse button
+> * `"-2"`: Right mouse button
+> * `"-3"`: Middle mouse button
+> * `"1"`: Single touch
+> * `"2"`: Double touch
+> * `"3"`: Triple touch
+> ` onMouseEnter ` and ` onMouseExit ` also pass click buttons, but the value is always `"-1"`.
+
+---
+
+## Usage {#usage}
+
+### Single Element Attributes {#single-element-attributes}
+
+This is how you would assign attributes to a single element.
+
+#### One Attribute {#one-attribute}
+
+```lua
+<Button onClick="test">Hello</Button>
+```
+
+#### Multiple Attributes {#multiple-attributes}
+
+```lua
+<Button onClick="test" allowDragging="true">Hello</Button>
+```
+
+#### Many Attributes {#many-attributes}
+
+```lua
+<Button
+ height="100"
+ width="200"
+ color="blue"
+ onClick="test"
+ allowDragging="true"
+ rectAlignment="MiddleRight"
+ tooltip="Test Tooltip"
+ tooltipPosition="Above"
+ fontSize="32"
+ textColor="#ff0000"
+>Hello
+</Button>
+```

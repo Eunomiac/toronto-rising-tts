@@ -1,8 +1,0 @@
---[[ Normal Dice Roller Instance --]]
-
-local diceRoller = require("dice-roller-shared")
-
---Initialize the dice roller as a NORMAL dice roller
-diceRoller.initDiceRoller(self, {
-    isHunger = true  -- This is a normal dice roller
-})

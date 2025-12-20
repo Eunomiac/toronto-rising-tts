@@ -1,0 +1,1143 @@
+local U = {}
+
+function U.pFloat(num)
+    if (num) then
+        return math.ceil(num * 100) / 100
+    else
+        return 0
+    end
+end
+function U.pAngle(num, interval)
+  if not interval then interval = 45 end
+  return math.floor((num / interval) + 0.5) * interval
+end
+function U.pRotation(rot, interval)
+	return U.map(rot, function(rVal) return U.pAngle(rVal, interval) end)
+end
+
+function U.findAboveObject(obj, testFunc, params)
+	-- params:  invert = true/false
+	-- 					box = true/false (defaults to ray)
+	--					far = true/false (default limits distance to 5)
+	local guidTest
+	if params == nil then params = {} end
+	if testFunc == nil then testFunc = function() return true end end
+	if U.Type(testFunc) == "userdata" then
+		guidTest = testFunc.guid
+		testFunc = function(testObj) return testObj.guid == guidTest end
+	end
+
+	local castParams = {}
+
+	if params.invert == true then
+		castParams.direction = {0, -1, 0}
+	else
+		castParams.direction = {0, 1, 0}
+	end
+
+	local objBounds = obj.getBounds()
+	if params.box == true then
+    objBounds.center.y = objBounds.center.y + (0.5 * objBounds.size.y) + 2.5
+		if params.invert == true then
+			objBounds.center.y = objBounds.center.y - 5
+		end
+    objBounds.size.y = 5
+
+		castParams.type = 3
+		castParams.size = objBounds.size
+
+		if params.far ~= true then
+			castParams.max_distance = 0
+		end
+	end
+
+	castParams.origin = objBounds.center
+
+	if UI.getAttribute("debugStatePanel", "active") == "True" then
+		castParams.debug = true
+	end
+
+	local hitList = Physics.cast(castParams)
+	if not hitList then return {} end
+
+	return U.map(
+		U.filter(hitList, function(hitData)
+			return hitData ~= nil and hitData.hit_object ~= nil and hitData.hit_object.guid ~= obj.guid and testFunc(hitData.hit_object)
+		end), function(hitData)
+			return hitData.hit_object
+		end
+	)
+end
+
+function U.findBelowObject(obj, testFunc, params)
+	if params == nil then params = {} end
+	if params.invert == nil then params.invert = true end
+	return U.findAboveObject(obj, testFunc, params)
+end
+
+function U.isObjectAbove(obj, testObj, params)
+	return #U.findAboveObject(obj, testObj, params) > 0
+end
+
+function U.getScatterPosition(boundsOrPosOrObj, yShift, padPercentOrDiameter)
+	if yShift == nil then yShift = 2 end
+	if padPercentOrDiameter == nil then padPercentOrDiameter = 0 end
+	local center, size
+	if U.Type(boundsOrPosOrObj) == "userdata" then
+		if boundsOrPosOrObj.type == "Scripting" then
+			boundsOrPosOrObj = {
+				center = boundsOrPosOrObj.getPosition(),
+				size = boundsOrPosOrObj.getScale()
+			}
+		else
+			boundsOrPosOrObj = boundsOrPosOrObj.getBounds()
+		end
+	end
+	if U.Type(boundsOrPosOrObj) == "table" and boundsOrPosOrObj.center ~= nil and boundsOrPosOrObj.size ~= nil then
+		center = Vector(boundsOrPosOrObj.center):add(Vector(0, yShift, 0))
+		size = boundsOrPosOrObj.size
+	elseif U.Type(boundsOrPosOrObj) == "table" and boundsOrPosOrObj.x ~= nil and boundsOrPosOrObj.y ~= nil and boundsOrPosOrObj.z ~= nil then
+		center = Vector(boundsOrPosOrObj)
+		size = Vector(padPercentOrDiameter * 2, 0, padPercentOrDiameter * 2)
+		padPercentOrDiameter = 0
+	else
+		U.AlertGM("[U.scatterObjects] Error: Must provide a position, an object, or a table with 'center' and 'size'.")
+		return
+	end
+	local spanX = size.x * (1 - padPercentOrDiameter)
+	local spanZ = size.z * (1 - padPercentOrDiameter)
+	local mins = Vector(
+		center.x - 0.5 * spanX,
+		center.y,
+		center.z - 0.5 * spanZ
+	)
+	local maxs = Vector(
+		center.x + 0.5 * spanX,
+		center.y,
+		center.z + 0.5 * spanZ
+	)
+	local scatterVector = Vector(
+		U.randBetween(mins.x, maxs.x),
+		center.y,
+		U.randBetween(mins.z, maxs.z)
+	)
+	return scatterVector
+end
+
+local function checkSnapPoint(snapPoint, axis, coordsFilter)
+    if (snapPoint and snapPoint.position) then
+        if (axis and coordsFilter[axis]) then
+            local snapPos = math.ceil(snapPoint.position[axis] * 10) / 10
+            local testPos = math.ceil(coordsFilter[axis] * 10) / 10
+            return snapPos == testPos
+        end
+        return true
+    end
+    return false
+end
+
+function U.getSnapPoints(board, coordsFilter, sortAxis)
+    local snapPoints = {}
+    for _, point in ipairs(board.getSnapPoints()) do
+        local isValid = true
+        if (coordsFilter) then
+            for i, thisAxis in ipairs({"x", "y", "z"}) do
+                isValid = isValid and checkSnapPoint(point, thisAxis, coordsFilter)
+            end
+        end
+        if (isValid) then
+            table.insert(snapPoints, point)
+        end
+    end
+
+    if (sortAxis) then
+        table.sort(snapPoints, function(a,b) return a.position[sortAxis] > b.position[sortAxis] end)
+    end
+
+    return snapPoints
+end
+
+function U.findSnapPoint(snapPoints, pos, fuzziness)
+	local baseObj, snapObj
+		if U.Type(snapPoints) == "userdata" and snapPoints.getSnapPoints ~= nil then
+			baseObj = snapPoints
+			snapPoints = U.map(baseObj.getSnapPoints(), function(snapData)
+				snapData.position = baseObj.positionToWorld(snapData.position)
+				return snapData
+			end)
+		end
+		if U.Type(pos) == "userdata" and pos.getSnapPoints ~= nil then
+			snapObj = pos
+			pos = snapObj.getPosition()
+		end
+    fuzziness = fuzziness or 0.1
+    for slot, snap in ipairs(snapPoints) do
+        if (snap.position) then
+          snap = snap.position
+        end
+        local xPos = U.pFloat(pos.x)
+        local zPos = U.pFloat(pos.z)
+        local xSnap = U.pFloat(snap.x)
+        local zSnap = U.pFloat(snap.z)
+        local isXOkay = false
+        local isZOkay = false
+        if (pos.x == nil) then
+            isXOkay = true
+        elseif (xPos >= (xSnap - fuzziness) and xPos <= (xSnap + fuzziness)) then
+            isXOkay = true
+        end
+        if (pos.z == nil) then
+            isZOkay = true
+        elseif (zPos >= (zSnap - fuzziness) and zPos <= (zSnap + fuzziness)) then
+            isZOkay = true
+        end
+        if (isXOkay and isZOkay) then
+            return slot
+        end
+    end
+end
+
+function U.GetHex(color, newAlpha)
+	U.Val("U.GetHex()", color, color ~= nil, "Color is nil!")
+	if newAlpha ~= nil then
+		color = Color(color):setAt("a", newAlpha)
+	end
+	return "#" .. color:toHex(true)
+end
+
+function U.count(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
+
+function U.split(inputstr, sep)
+	if inputstr == nil then return {} end
+    if sep == nil then
+      sep = "%s"
+    else
+      inputstr = string.gsub(inputstr, sep .. " ", sep)
+    end
+    local t={}
+		if string.match(inputstr, "^" .. sep) then
+			table.insert(t, "")
+		end
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+      table.insert(t, str)
+    end
+    return t
+end
+
+function U.error(source, message, val)
+	local errString = "[" .. source .. "] " .. message
+	local valString
+
+	if val ~= "NOVAL" then
+		valString = nil
+	elseif U.Type(val) == "userdata" then
+		if U.isIn("getName", val) then
+			valString = "<" .. val.getName() .. ">"
+		else
+			valString = "<" .. val.guid or "unknown" .. ">"
+		end
+	elseif U.Type(val) == "table" then
+		valString = JSON.encode_pretty(val)
+	else
+		valString = U.ToString(val)
+	end
+
+	log({ErrorTraceback = debug.traceback()})
+
+	error(errString .. (valString and (": " .. valString) or ""), 3)
+end
+
+function U.Val(source, checkVal, testResult, errorMsg, params)
+	if testResult == true then return true end
+	if errorMsg == nil then errorMsg = "Validation Failed" end
+	if params == nil then params = {isSilent = false, isThrowing = true} end
+	if testResult ~= false then errorMsg = errorMsg .. " (Test Result = " .. U.ToString(testResult) .. ")" end
+
+	local errorMessage = "[" .. source .. "] " .. errorMsg
+	local valType; valType = U.Type(checkVal)
+	local valString; valString = U.ToString(checkVal)
+
+	if valType == "userdata" then
+		if U.isGameObject(checkVal) then
+			valType = checkVal.type
+		elseif U.isPlayer(checkVal) then
+			if checkVal.steam_id then
+				valType = "Player"
+			else
+				valType = "INVALID Player"
+			end
+		end
+		valString = "'" .. valString .. "'"
+	elseif valType == "table" then
+		if U.isArray(checkVal) then
+			valType = "array"
+		end
+		logStyle("validate", {0.8, 0.8, 0}, "\n\n{", "}")
+		log(checkVal, nil, "validate")
+		valString = "'" .. valString .. "' (SEE LOG)"
+	end
+
+	errorMessage = errorMessage .. " [VAL = " .. valString .. "] (" .. valType .. ")"
+
+	if params.isSilent then return false end
+
+	if params.isThrowing then
+		log(debug.traceback())
+		error(errorMessage, 2)
+	end
+
+	U.AlertGM(errorMessage, Color(1,0,0))
+	return false
+end
+
+function U.ToString(val) return val ~= nil and tostring(val) or "NIL" end
+function U.Type(val) return val ~= nil and type(val) or "nil" end
+
+function U.Assert(source, val, typeOrTest, tableType, isSilent)
+	local errorMessage
+	if typeOrTest == nil then typeOrTest = "check" end
+	if typeOrTest == "check" then
+		if val ~= true then
+			errorMessage = "Failed boolean check"
+		end
+	elseif U.Type(typeOrTest) == "function" then
+		local result = typeOrTest(val)
+		if result ~= true then
+			if result == false or result == nil then
+				errorMessage = "Test Failed for param '" .. U.ToString(val) .. "'"
+			else
+				errorMessage = "Test Failed - '" .. U.ToString(result) .. "'"
+			end
+		end
+	elseif U.Type(typeOrTest) == "string" then
+		if val == nil and typeOrTest ~= "nil" then
+			errorMessage = "Expected " .. typeOrTest .. ", got 'nil'"
+		elseif U.Type(val) == "table" and tableType ~= nil then
+			U.forEach(val, function(v)
+				if not U.Assert(source, v, tableType, nil, true) then
+					errorMessage = "Table elements must all be type '" .. tableType .. "' -- Check log for table output"
+				end
+			end)
+			if errorMessage ~= nil then
+				logStyle("assert", {0.8, 0.8, 0}, "\n\n{", "}")
+				log(val, nil, "assert")
+			end
+		elseif U.Type(val) == typeOrTest then return true
+		elseif typeOrTest == "Player" then
+			if not U.isPlayer(val) then
+				errorMessage = "Not a Valid Player: TOSTRING = '" .. U.ToString(val) .. "' TYPE = (" .. U.Type(val) .. "), STEAMID = '" .. U.ToString(val.steam_id) .. "'"
+			end
+		elseif typeOrTest == "PlayerColor" then
+			if not U.isIn(val, Player.getAvailableColors()) then
+				errorMessage = "Not a Valid Player Color: '" .. U.ToString(val) .. "' (" .. U.Type(val) .. ")"
+			end
+		elseif typeOrTest == "Object" then
+			if not U.isGameObject(val) then
+				errorMessage = "Not a Valid Game Object: TOSTRING = '" .. U.ToString(val) .. "' TYPE = (" .. U.Type(val) .. "), GUID = '" .. U.ToString(val.guid) .. "'"
+			end
+		elseif string.match(typeOrTest, "^%u") then
+			if not U.isGameObject(val) then
+				errorMessage = "Not a Valid Game Object: '" .. U.ToString(val) .. "' (" .. U.Type(val) .. ")"
+			elseif typeOrTest ~= val.type then
+				errorMessage = "Not a Valid " .. typeOrTest .. ": '" .. U.ToString(val) .. "' (" .. U.Type(val) .. ")"
+			end
+		else
+			errorMessage = "Not a Valid " .. typeOrTest .. ": '" .. U.ToString(val) .."' (" .. U.Type(val) .. ")"
+		end
+	end
+
+	if errorMessage ~= nil then
+		if not isSilent then
+			U.error(source, errorMessage, val)
+		end
+		return false
+	end
+
+	return true
+end
+
+function U.forEach(tbl, func)
+	U.Assert("U.forEach", tbl, "table")
+	U.Assert("U.forEach", func, "function")
+	for key, val in pairs(tbl) do
+		func(val, key)
+	end
+end
+
+function U.iForEach(tbl, func)
+	U.Assert("U.iForEach", tbl, "table")
+	U.Assert("U.iForEach", func, "function")
+	for key, val in ipairs(tbl) do
+		func(val, key)
+	end
+end
+
+-- function U.forEach(tbl, func, delayStep)
+-- 	if delayStep == nil then delayStep = 0 end
+
+-- 	local funcs = U.map(tbl, function(val, key) return function() func(val, key) end end)
+
+-- 	U.sequence(funcs, delayStep, false)
+-- end
+
+function U.waitRestingSequence(funcs, maxTime, isLoose)
+	-- funcs is a table of functions, each of which returns an object or a table of objects
+	-- U.waitRestingSequence will wait until the object is resting, before
+	-- calling the next function
+		-- can set a timeout optionally
+		-- can pass 'false' to have function error out rather than continue on timeout
+
+	local delay = 0.5
+	local objTargets
+
+	local function callNext()
+		if #funcs == 0 then return end
+		local func = table.remove(funcs, 1)
+		if U.Type(func) == "function" then
+			if objTargets ~= nil then
+				Wait.time(function()
+					Wait.condition(function()
+						objTargets = func(objTargets)
+						if objTargets ~= nil and U.Type(objTargets) ~= "table" then
+							objTargets = {objTargets}
+						end
+						callNext()
+					end, function()
+						if objTargets ~= nil and U.Type(objTargets) ~= "table" then
+							objTargets = {objTargets}
+						end
+						for _, objTarget in pairs(objTargets) do
+							if objTarget.loading_custom == true then return false end
+							if objTarget.resting ~= true then return false end
+						end
+						return true
+					end, maxTime)
+				end, delay)
+				delay = 0.5
+			else
+				objTargets = func(objTargets)
+				callNext()
+			end
+		elseif U.Type(func) == "number" then
+			delay = delay + func
+		end
+	end
+
+	callNext()
+end
+
+function U.map(tb, func)
+	U.Assert("U.map", tb, "table")
+	U.Assert("U.map", func, "function")
+  local new_table = {}
+  for k,v in pairs(tb) do
+    new_table[k] = func(v,k)
+  end
+  return new_table
+end
+
+function U.iMap(tb, func)
+	U.Assert("U.iMap", tb, "table")
+	U.Assert("U.iMap", func, "function")
+  local new_table = {}
+  for k,v in ipairs(tb) do
+    new_table[k] = func(v,k)
+  end
+  return new_table
+end
+
+function U.keyMap(tb, keyFunc, valFunc)
+	U.Assert("U.keyMap", tb, "table")
+	U.Assert("U.keyMap", keyFunc, "function")
+	U.Assert("U.keyMap", valFunc, "function")
+	local new_table = {}
+	for k,v in pairs(tb) do
+		new_table[keyFunc(k, v)] = valFunc(v,k)
+	end
+	return new_table
+end
+
+function U.filter(tb, func)
+	U.Assert("U.filter", tb, "table")
+	U.Assert("U.filter", func, "function")
+  local new_table = {}
+  local index = 0
+  for k,v in pairs(tb) do
+    index = index + 1
+    if (func(v, k)) then
+      if (k == index) then
+        table.insert(new_table, v)
+      else
+        new_table[k] = v
+      end
+    end
+  end
+  return new_table
+end
+
+function U.invert(tb)
+	local new_table = {}
+	for k,v in pairs(tb) do
+		if U.isIn(v, {"string", "number"}) then
+			new_table[v] = k
+		elseif U.isIn(v, {"boolean", "nil", "table", "function"}) then
+			new_table[JSON.encode(v)] = k
+		else
+			new_table.user_data = k
+		end
+	end
+	return new_table
+end
+
+function U.shuffle(arr)
+	for i = #arr, 2, -1 do
+		local j = math.random(i)
+		arr[i], arr[j] = arr[j], arr[i]
+	end
+	return arr
+end
+
+function U.concat(...)
+	local args = {...}
+	local tb = {}
+	U.forEach(args, function(arg)
+		if U.Type(arg) == "table" then
+			for i = 1, #arg do
+        tb[#tb+1] = arg[i]
+    	end
+		else
+			table.insert(tb, arg)
+		end
+	end)
+	return tb
+end
+
+function U.slice(arr, iStart, iEnd)
+	U.Assert("U.Slice", arr, "table")
+	if iStart == nil then iStart = 1 end
+	if iEnd == nil then iEnd = #arr end
+	U.Assert("U.Slice - Array start must be lower than end", iStart <= iEnd)
+	local newArr = {}
+	for i = iStart, iEnd do
+		table.insert(newArr, arr[i])
+	end
+	return newArr
+end
+
+function U.merge(...)
+	local args = {...}
+	U.Assert("U.merge", args[1], "table")
+	local newTable = U.clone(U.shift(args))
+	U.iForEach(args, function(nextTable)
+		U.Assert("U.merge", nextTable, "table")
+		nextTable = U.clone(nextTable)
+		U.forEach(nextTable, function(val, key)
+			if U.Type(val) == "table" then
+				if U.Type(newTable[key]) == "table" then
+					newTable[key] = U.merge(newTable[key], val)
+				else
+					newTable[key] = U.clone(val)
+				end
+			else
+				newTable[key] = val
+			end
+		end)
+	end)
+	return newTable
+end
+
+function U.join(tb, delim)
+	if delim == nil then delim = "|" end
+	local returnString = ""
+	for _, val in ipairs(tb) do
+		returnString = returnString .. delim .. val
+	end
+	return string.gsub(returnString, "^%s*" .. delim, "")
+end
+
+function U.pop(arr)
+	if U.Type(arr) ~= "table" or #arr == 0 then return nil end
+	return table.remove(arr)
+end
+function U.push(elem, arr) table.insert(arr, elem) end
+function U.shift(arr)
+	if U.Type(arr) ~= "table" or #arr == 0 then return nil end
+	return table.remove(arr, 1)
+end
+function U.unshift(elem, arr) table.insert(arr, 1, elem) end
+function U.pluck(arr, func)
+	local index = U.findIndex(arr, func)
+	return table.remove(arr, index)
+end
+
+function U.flatten(tb)
+	local newTable = {}
+	for _, val in pairs(tb) do
+		if U.Type(val) == "table" then
+			newTable = U.concat(newTable, U.flatten(val))
+		else
+			table.insert(newTable, val)
+		end
+	end
+	return newTable
+end
+
+function U.find(tb, func)
+	U.Assert("U.find", tb, "table")
+	U.Assert("U.find", func, "function")
+  for k,v in pairs(tb) do
+    if (func(v,k)) then return v end
+  end
+  return nil
+end
+
+function U.sumVals(tb)
+	local total = 0
+	U.forEach(U.getValues(tb), function(v) total = total + v end)
+	return total
+end
+
+function U.findIndex(tb, func)
+	U.Assert("U.findIndex", tb, "table")
+	U.Assert("U.findIndex", func, "function")
+  for k,v in pairs(tb) do
+    if (func(v,k)) then return k end
+  end
+	return nil
+end
+
+function U.compact(tb)
+
+
+end
+
+function U.reverse(tb)
+    local rev = {}
+    for i = #tb, 1, -1 do
+    	rev[#rev+1] = tb[i]
+    end
+    return rev
+end
+
+function U.isIn(elem, tb)
+	U.Assert("U.isIn", U.Type(tb) == "table" or U.Type(tb) == "userdata")
+
+	if U.Type(tb) == "table" then
+		-- check values first, before checking keys
+		for _, value in pairs(tb) do
+			if value == elem then
+				return true
+			end
+		end
+	end
+
+	-- check key
+	local function hasProperty(object, prop)
+			local t = object[prop]
+			if t == nil then error("Bad Property") end
+	end
+	if pcall(function() hasProperty(tb, elem) end) then
+		return true
+	end
+
+	return false
+end
+
+function U.isGameObject(val)
+	return val
+		and U.Type(val) == "userdata"
+		and U.ToString(val) ~= "LuaPlayer"
+		and val.guid ~= nil
+end
+
+function U.isPlayer(val)
+	return val
+		and U.Type(val) == "userdata"
+		and U.ToString(val) == "LuaPlayer"
+		and val.steam_id ~= nil
+end
+
+function U.isInstance(val, super)
+	super = U.ToString(super)
+	local mt = getmetatable(val)
+	while true do
+		if mt == nil then return false end
+		if U.ToString(mt) == super then return true end
+		mt = getmetatable(mt)
+	end
+end
+
+function U.isArray(val)
+	if U.Type(val) ~= "table" then return false end
+	if #val == 0 and #U.getKeys(val) > 0 then return false end
+	return true
+end
+
+function U.isFlipped(obj)
+  local zRot = U.pAngle(obj.getRotation().z, 90)
+  return zRot == 180
+end
+
+function U.splashUIElement(elemID, duration, delay)
+  if (duration == nil) then duration = 5 end
+  if (delay == nil or delay == 0) then
+    UI.show(elemID)
+    Wait.time(function() UI.hide(elemID) end, duration)
+  else
+    Wait.time(function() U.splashUIElement(elemID, duration, 0) end, delay)
+  end
+end
+
+function U.AlertGM(message, color)
+	if color == nil then color = Color(1, 1, 0) end
+	broadcastToColor(message, U.getHost().color, color)
+end
+function U.Alert(message, color)
+	if color == nil then color = Color(1, 1, 1) end
+	broadcastToAll(message, color)
+end
+
+function U.hasAnyTag(obj, tags)
+	for _, tag in pairs(tags) do
+		if obj.hasTag(tag) then return true end
+	end
+	return false
+end
+
+function U.findTag(obj, tagList)
+	for _, tag in pairs(tagList) do
+		if obj.hasTag(tag) then return tag end
+	end
+	return false
+end
+
+function U.findColorTag(obj)
+	U.Assert("U.findColorTag", obj, "userdata")
+	U.Assert("U.findColorTag", obj.hasTag, "function")
+	return U.find(Player.getAvailableColors(), function(color) return obj.hasTag(color) end)
+end
+
+local UIDS = {}
+function U.getUID(length)
+	if length == nil then length = 10 end
+  local chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  local uid = ""
+	while string.len(uid) < length do
+		local randomNumber = math.random(1, #chars)
+    uid = uid .. string.sub(chars, randomNumber, randomNumber)
+  end
+	if U.isIn(uid, UIDS) then
+		return U.getUID()
+	else
+		table.insert(UIDS, uid)
+		return uid
+	end
+end
+
+function U.getHost()
+	local hosts = U.filter(Player.getPlayers(), function(player) return player.host end)
+	if #hosts == 1 then return hosts[1] end
+	-- If there are multiple hosts, this is a hotseat game being debugged: Player.Brown is the assumed host.
+	return Player.Brown
+end
+
+function U.getZoneBounds(zone)
+	local zoneExtent = U.map(zone.getScale(), function(val) return 0.5 * val end)
+	local zonePos = zone.getPosition()
+	return U.map(zonePos, function(coord, axis) return {min = coord - zoneExtent[axis], max = coord + zoneExtent[axis]} end)
+end
+--#endregion
+
+function U.isInside(zone, pos, ignoreY)
+	if ignoreY == nil then ignoreY = true end
+	local zoneBounds = U.getZoneBounds(zone)
+	return pos.x >= zoneBounds.x.min and pos.x <= zoneBounds.x.max
+		and (ignoreY or pos.y >= zoneBounds.y.min and pos.y <= zoneBounds.y.max)
+		and pos.z >= zoneBounds.z.min and pos.z <= zoneBounds.z.max
+end
+
+function U.parsePosition(obj)
+	local posVals, rotVals
+	if U.Type(obj) ~= "userdata" then return end
+	local desc = obj.getDescription()
+	if U.Type(desc) ~= "string" or string.find(desc, "^{%d+.%d+, %d+.%d+, %d+.%d+}") == nil then return end
+	local posRotSplit = U.split(desc, "|")
+	local posString, rotString = posRotSplit[1], posRotSplit[2]
+	if U.Type(posString) == "string" then
+		posString = string.gsub(string.sub(posString, 2, #posString - 1), " ", "")
+		posVals = U.map(U.split(posString, ","), function(strVal) return 1 * strVal end)
+		if #posVals == 3 then
+			posVals = {x = posVals[1], y = posVals[2], z = posVals[3]}
+		end
+	end
+	if U.Type(rotString) == "string" then
+		rotString = string.gsub(string.sub(rotString, 2, #rotString - 1), " ", "")
+		rotVals = U.map(U.split(rotString, ","), function(strVal) return 1 * strVal end)
+		if #rotVals == 3 then
+			rotVals = {x = rotVals[1], y = rotVals[2], z = rotVals[3]}
+		end
+	end
+	return posVals, rotVals
+end
+
+function U.getHandZone(color)
+	return U.find(Hands.getHands(), function(hZone) return hZone.getData().FogColor == color end)
+end
+
+-- function U.try(fn, ...)
+--   local arg = {...}
+--   return xpcall(
+--     -- function wrapper to pass function arguments
+--     function(...) return fn(unpack(arg)) end,
+--     -- error function
+--     function(msg) return error(msg, 3) end
+--   )
+-- end
+
+function U.round(num, sigDigits)
+  if (sigDigits == nil) then sigDigits = 1 end
+  local roundMult = 10 ^ sigDigits
+	return (math.floor(num * roundMult + 0.5)) / roundMult
+end
+
+function U.roundTableVals(tb, sigDigits)
+  local newTable = {}
+  for key, val in pairs(tb) do
+    newTable[key] = U.round(val, sigDigits)
+  end
+  return newTable
+end
+
+function U.cycle(val, min, max)
+	local cycleRange = max - min
+	while val > max do
+		val = val - cycleRange
+	end
+	while val < min do
+		val = val + cycleRange
+	end
+	return val
+end
+
+
+function U.getValues(tb)
+	local values = {}
+	for _, val in pairs(tb) do
+		-- log({key = key, val = val})
+		table.insert(values, val)
+	end
+	return values
+end
+
+function U.getKeys(tb)
+	local keys = {}
+	for key in pairs(tb) do
+		table.insert(keys, key)
+	end
+	return keys
+end
+
+function U.changeLighting(params)
+	if params == nil then return nil end
+
+	U.sequence({
+		function()
+			for param, val in pairs(params) do
+				-- log("CHANGING " .. param .. " to " .. val)
+				if string.match(param, "^set") then
+					Lighting[param](val)
+				else
+					Lighting[param] = val
+				end
+			end
+		end,
+		Lighting.apply
+	}, 0.5)
+end
+
+function U.setRotationSlow(obj, rotation, duration, easing, isColliding)
+	if duration == nil then duration = 0.5 end
+	if isColliding == nil then isColliding = false end
+	return U.Lerp(function(rotation) obj.setRotationSmooth(rotation, isColliding, false) end, obj.getRotation(), rotation, duration, true, easing)
+end
+
+function U.setPositionSlow(obj, position, duration, easing, isColliding)
+	if duration == nil then duration = 0.5 end
+	if isColliding == nil then isColliding = false end
+	return U.Lerp(function(pos) obj.setPositionSmooth(pos, isColliding, false) end, obj.getPosition(), position, duration, false, easing)
+end
+
+function U.setScaleSlow(obj, scale, duration, easing)
+	if duration == nil then duration = 0.5 end
+	return U.Lerp(function(sc) obj.setScale(sc) end, obj.getScale(), scale, duration, false, easing)
+end
+
+-- WaitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
+	-- Delays execution of a function until a provided test function returns true.
+	-- @param afterFunc - {function} the function that will be called when the test returns true
+	-- @param testRef - {varies} a value that determines what the test function will be:
+			-- {function}: can define a test function directly, which must return true when some condition is met
+			-- {number}: executes the function when this many seconds have elapsed (can be 0 to run instantly)
+			-- {GameObject}: executes the function when the object has finished spawning *and* is at rest
+			-- {nil}: executes the function after a default delay of 0.5 s
+			-- {table}: a table containing any combination of the above will execute the function when ALL tests are passed
+					-- e.g. passing {gameObject, number, testFunc} will execute the function when
+					-- 			... <gameObject> has spawned and is at rest
+					--      ... at least <number> seconds have elapsed
+					--      ... AND <testFunc> returns 'true'
+  -- @param isForcing - {boolean} determines whether <afterFunc> will be called if WaitUntil times out before
+		                  -- the test function returns true (default = false)
+	-- @param maxWait - {number} the maximum number of frames to wait before timing out (default = 1000)
+	-- @param testFrequency - {number} how many frames to wait between each check of the test function (default = 15)
+function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
+	if afterFunc == nil then return end
+	if isForcing == nil then isForcing = false end
+	if maxWait == nil then maxWait = 1000 end
+	if testFrequency == nil then testFrequency = 15 end
+
+	local frameCount = 0
+	local hasWaited = false
+
+	-- parseCheckFunc(testRef): Converts testRef into a test function (recursively, if testRef is a table)
+	local function parseCheckFunc(tRef)
+		if tRef == nil then tRef = 0.5 end
+		if U.Type(tRef) == "function" then return tRef
+		elseif U.Type(tRef) == "number" then
+			testFrequency = math.max(1, math.min(testFrequency, tRef * 10))
+			return function() return frameCount >= (tRef * 30) end
+		elseif U.isGameObject(tRef) then
+			return function() return tRef and tRef.resting and not tRef.loading_custom end
+		elseif U.Type(tRef) == "table" then
+			local checkFuncs = U.map(tRef, function(tr) return parseCheckFunc(tr) end)
+			return function()
+				checkFuncs = U.filter(checkFuncs, function(cf) return cf() == false end)
+				return #checkFuncs == 0
+			end
+		end
+	end
+
+	local pCheckFunc = parseCheckFunc(testRef)
+
+	local afterReturnVal
+
+	function CheckCoroutine()
+		if pCheckFunc ~= nil then
+			while not pCheckFunc() do
+				local waitFrames = testFrequency
+				frameCount = frameCount + waitFrames
+				if frameCount > maxWait and not hasWaited then
+					log(debug.traceback())
+					hasWaited = true
+					if isForcing then
+						U.AlertGM("Coroutine Timeout: Forcing ResultFunc")
+						break
+					end
+					U.AlertGM("Coroutine Still Waiting! (See Log Traceback)")
+				end
+
+				while waitFrames > 0 do
+					coroutine.yield(0)
+					waitFrames = waitFrames - 1
+				end
+			end
+		end
+
+		if afterFunc ~= nil then
+			afterReturnVal = afterFunc()
+		end
+
+		return 1
+	end
+
+	startLuaCoroutine(self, "CheckCoroutine")
+
+	return function() return afterReturnVal ~= nil end
+end
+
+-- RunSequence({...functions}, maxWait, frequency)
+	-- Runs a series of functions sequentially via WaitUntil.
+	-- The return value of each function becomes the testRef that will determine when the next function in line is executed
+
+function U.RunSequence(funcs, maxWait, frequency)
+	U.Assert("U.RunSequence", funcs, "table", "function")
+
+	local isDone = false
+
+	local function runNextFunc(lastFuncReturnTest)
+		local thisFunc = U.shift(funcs)
+		U.waitUntil(function()
+			if thisFunc == nil then
+				isDone = true
+				return
+			end
+			runNextFunc(thisFunc())
+		end, lastFuncReturnTest, false, maxWait, frequency)
+	end
+
+	local func = U.shift(funcs)
+	if func == nil then
+		isDone = true
+	else
+		runNextFunc(func())
+	end
+	return function() return isDone == true end
+end
+
+
+
+-- local container = Containers.GetMainStorage()
+-- local fetchedObj, playerReply
+
+
+-- U.RunSequence({
+-- 	function() -- Take an object out of a container, clear its name, then delay the next function until
+-- 						 -- the retrieved object has finished spawning, has stopped moving, AND at least five
+-- 					   -- seconds have elapsed
+-- 		fetchedObj = container.takeObject({
+-- 			position = container.getPosition:add(Vector(0,3,0)),
+-- 			callback_function = function(obj) obj.setName("") end
+-- 		})
+-- 		return {fetchedObj, 5} -- <- the <testRef> that will determine execution of function #2: in this case,
+-- 													 --    a table containing the fetched object and the minimum delay in seconds.
+-- 	end,
+-- 	function() -- Prompt the Red player to name the object, and execute the third function
+-- 		         -- after the player has responded.
+-- 		Player.Red.showInputDialog(
+-- 			"What shall we name it?",
+-- 			"Fetched Object",
+-- 			function (fetchedObjName) fetchedObj.setName(fetchedObjName) end
+-- 		)
+-- 		return function() -- <- this <testRef> defines the test function directly, periodically checking
+-- 											--    the name and returning true when it has changed.
+-- 			return fetchedObj.getName() ~= ""
+-- 		end
+-- 	end,
+-- 	function() fetchedObj.highlightOn(Color.fromString("Red")) end, -- <- No <testRef> returned = default delay of 0.5s
+-- 	Lights.RaiseLighting, 			-- <- If no parameters and no <testRef> needed, can just list functions: they'll
+-- 	Containers.StowMainStorage  --    execute every 0.5s
+-- })
+
+-- - U.WaitSequence
+--   - accepts table of functions to run in sequence
+--   - runs function, storing return value to variable
+--     - each function's return value controls how the next function is run
+--       - if return type is ...
+--         - a game object: wait until object is finished spawning and is at rest
+--         - a number: wait that many seconds (return '0' to run next function instantly)
+--         - nil: wait the default delay of 0.5 seconds
+--         - a function: waits until the function returns 'true'
+--         - a table of the above: waits until ALL are passed (so a number would represent minimum amount of time to wait)
+
+function U.sequence(funcs, timeDelay)
+	timeDelay = timeDelay or 0.5 -- Set default value if none provided
+	local delay = 0 -- Initialize delay to 0
+	for i, func in ipairs(funcs) do
+			if U.Type(func) == "function" then
+				if delay == 0 then
+					func()
+				else
+					Wait.time(function()
+							func()
+					end, delay)
+				end
+				delay = delay + timeDelay -- Increment delay by timeDelay
+			elseif U.Type(func) == "number" then
+				delay = delay + func + timeDelay -- Increment delay by func + timeDelay
+			else
+				error("Invalid element in funcs table")
+			end
+	end
+	return delay
+end
+
+function U.roundVector(vec, sigDigits)
+	if sigDigits == nil then sigDigits = 2 end
+	return Vector(
+		U.round(vec[1], sigDigits),
+		U.round(vec[2], sigDigits),
+		U.round(vec[3], sigDigits)
+	)
+end
+
+function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing)
+	if duration == nil then duration = 0.5 end
+	if U.isInstance(paramStart, Vector) or U.isInstance(paramStart, Color) then
+		if paramStart:equals(paramEnd) then return 0 end
+	elseif U.Type(paramStart) == "number" then
+		if paramStart == paramEnd then return 0 end
+	end
+
+	if isRotationLerp then
+		local function parseAngleLerp(start, finish)
+			-- 350 -> 10,  -10 -> 350
+			if math.abs(finish - start) > math.abs(finish + 360 - start) then
+				finish = finish + 360
+			end
+			if math.abs(finish - start) > math.abs(finish - 360 - start) then
+				finish = finish - 360
+			end
+			return finish
+		end
+		paramEnd = Vector(
+			parseAngleLerp(paramStart.x, paramEnd.x),
+			parseAngleLerp(paramStart.y, paramEnd.y),
+			parseAngleLerp(paramStart.z, paramEnd.z)
+		)
+	end
+
+	local function getParam(t)
+		if t == 1 then return paramEnd end
+		if easing ~= nil then
+			if easing == "speedUp" then
+				t = t * t
+			end
+		end
+		if U.isInstance(paramStart, Vector) or U.isInstance(paramStart, Color) then
+			return paramStart:lerp(paramEnd, t)
+		elseif U.Type(paramStart) == "number" then
+			local deltaVal = paramEnd - paramStart
+			return paramStart + (deltaVal * t)
+		end
+	end
+
+	local startTime = os.time()
+
+	function LerpCoroutine()
+		local timeFrac = (os.time() - startTime)/duration
+		while timeFrac < 1 do
+			setFunc(getParam(timeFrac))
+			coroutine.yield(0)
+			timeFrac = (os.time() - startTime) / duration
+		end
+		setFunc(getParam(1))
+		return 1
+	end
+
+	startLuaCoroutine(self, "LerpCoroutine")
+
+	return duration
+end
+
+function U.randBetween(min, max, isInt)
+	if U.Type(min) ~= "number" or U.Type(max) ~= "number" then return end
+	if min > max then return end
+	if isInt == true then
+		return U.round(min + math.random() * (max - min), 0)
+	end
+	return min + math.random() * (max - min)
+end
+
+function U.clone(t, isDeepCloning)
+	if U.Type(t) ~= "table" then return t end
+  local t2 = {}
+  for k,v in pairs(t) do
+    t2[k] = v
+  end
+  return t2
+end
+
+return U

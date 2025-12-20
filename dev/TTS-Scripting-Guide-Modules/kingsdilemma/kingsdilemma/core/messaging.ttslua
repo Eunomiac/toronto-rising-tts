@@ -1,0 +1,91 @@
+local U = require("lib.utilities")
+local S = require("kingsdilemma.core.state")
+local C = require("kingsdilemma.lib.constants")
+
+local MSG = {}
+
+local DefaultDisplayTime = 1.5
+local DefaultDisplayBuffer = 0.5
+
+local defaultTextAttributes = {
+	color = U.GetHex(Color.White),
+	fontSize = "40",
+	font = "Fonts/Friz",
+	alignment = "MiddleCenter"
+}
+
+local function showPanel(panelID, displayTime)
+	UI.setAttribute(panelID, "active", "false")
+	UI.show(panelID)
+	return displayTime
+end
+
+local function hidePanel(panelID, displayBuffer) UI.hide(panelID); return displayBuffer + 0.5 end
+
+function MSG.Splash(messageLines, playerRef, displayTime, attributes)
+	attributes = U.merge(defaultTextAttributes, attributes or {})
+	local dTime, dBuffer = displayTime or DefaultDisplayTime, DefaultDisplayBuffer
+	if type(displayTime) == "table" then
+		dTime, dBuffer = displayTime.displayTime or DefaultDisplayTime, displayTime.displayBuffer or DefaultDisplayBuffer
+	end
+	if type(messageLines) ~= "table" then messageLines = {messageLines} end
+	local panelRef
+	if playerRef == nil then panelRef = "All"
+	else panelRef = S.getPlayer(playerRef).color end
+	local panelID, textID = "splashPanel_" .. panelRef, "splashText_" .. panelRef
+
+	return U.RunSequence({
+		function()
+			UI.setAttribute(panelID, "active", "false")
+			UI.setValue(textID, U.join(messageLines, "\n"))
+			if attributes then
+				UI.setAttributes(textID, attributes)
+			end
+			return showPanel(panelID, dTime)
+		end,
+		function()
+			return hidePanel(panelID, dBuffer)
+		end
+	})
+end
+
+local currentQuery
+function MSG.QueryResponse(index)
+	if currentQuery ~= nil then
+		Wait.time(function() currentQuery.response = currentQuery[U.getKeys(currentQuery)[index]] end, 0.25)
+	end
+	UI.hide("splashQuery_" .. currentQuery.player.color)
+end
+
+function MSG.SplashQuery(query, displayName, responseObj, playerRef)
+
+	currentQuery = responseObj
+
+	local player = S.getPlayer(playerRef)
+	-- log({query=query, displayName = displayName, responseObj = responseObj, playerRef = playerRef, player = player, pColor = player.color})
+
+	UI.setAttribute("splashQuery_" .. player.color, "active", "false")
+	UI.setValue("splashQueryPlayerPrompt_" .. player.color, displayName .. ":")
+	UI.setAttribute("splashQueryPlayerPrompt_" .. player.color, "color", U.GetHex(Color[player.color]:lerp(Color.White, 0.5)))
+	UI.setValue("splashQueryPrompt_" .. player.color, query)
+
+	local answerText = U.getKeys(responseObj)
+
+	for i = 1, #answerText do
+		UI.setAttribute("splashQueryContainer_Option" .. i .. "_" .. player.color, "active", "true")
+		UI.setValue("splashQueryText_Option" .. i .. "_" .. player.color, answerText[i])
+	end
+
+	for i = #answerText + 1, 5 do
+		UI.setAttribute("splashQueryContainer_Option" .. i .. "_" .. player.color, "active", "false")
+		UI.setValue("splashQueryText_Option" .. i .. "_" .. player.color, "")
+	end
+
+	UI.show("splashQuery_" .. player.color)
+
+	currentQuery.player = player
+
+	return function() return currentQuery.response ~= nil end
+end
+
+return MSG

@@ -1,0 +1,159 @@
+
+
+
+
+local LORE = {}
+
+LORE.REF = {
+	-- no 'title', assume title = key
+	["Lybra"] = {
+		subtitle = "Capital of Ankist",
+		body = [[
+			The king sits his throne in Lybra, the largest and wealthiest
+			city in Ankist. Located in the Crownlands of Aontas, the capital
+			is neutral ground --- and where we, the Council, hold our meetings.
+		]],
+		image = "map of Aontas with Lybra singled out"
+	},
+	["Flur"] = {
+		-- some don't need bodies; just put the subtitle over the image in a different way
+		subtitle = "Capital of the Dutchy of Blodyn",
+		image = "map of Blodyn"
+	},
+	["Duin"] = {
+		subtitle = "Capital of the Dutchy of Coden",
+		image = "map of Coden"
+	},
+	["Golden Harbor"] = {
+		subtitle = "Capital of the Dutchy of Gamam",
+		image = "map of Gamam"
+	},
+	["Natar"] = {
+		subtitle = "Capital of the Dutchy of Natar",
+		image = "map of Natar"
+	},
+	["Ferris"] = {
+		subtitle = "Capital of the Dutchy of Olwyn",
+		image = "map of Olwyn"
+	},
+	["Roinn"] = {
+		subtitle = "Capital of the Dutchy of Solad",
+		image = "map of Solad"
+	},
+	["Cleddyf"] = {
+		subtitle = "Capital of the Mark of Allwed",
+		image = "map of Allwed"
+	},
+	["Silgean"] = {
+		subtitle = "Capital of the Mark of Crann",
+		image = "map of Crann"
+	},
+	["Fair Thorn"] = {
+		subtitle = "Capital of the Mark of Dualak",
+		image = "map of Dualak"
+	},
+	["Tork"] = {
+		subtitle = "Capital of the Mark of Tork",
+		image = "map of Tork"
+	},
+	["Vandis"] = {
+		subtitle = "Capital of the Mark of Tyrill",
+		image = "map of Tyrill"
+	},
+	["Silver Sail"] = {
+		subtitle = "Capital of the Mark of Wylio",
+		image = "map of Wylio"
+	},
+	["The Council"] = {
+		subtitle = "Trusted Advisors to the King",
+		body = [[
+
+		]],
+		image = "???"
+	},
+	["Chamberlain"] = {
+		body = [[
+			Personal assistant to the King.
+			Deals with the <b>Council</b> on general
+			matters unworthy of the Crown's
+			full attention.
+		]],
+		image = "card on p.36"
+	},
+	["Royal Treasurer"] = {
+		body = [[
+			Charged with monitoring the <b>finances</b>
+			of Ankist, and matters relating to
+			the <b>economy</b> of the kingdom.
+		]],
+		image = "card on p.36"
+	},
+	["Guild Master/Mistress"] = {
+		represents = "The Merchants", -- a specific template for characters/representatives
+		body = [[
+
+		]],
+		image = "card from rulebook p. 19"
+	},
+	["Rector"] = {
+		represents = "The Scholars",
+	},
+	["Librarian Chancellor"] = {
+		represents = "The Scholars"
+	},
+	["High Commander"] = {
+		represents = "The Army"
+	},
+	["Royal Marshal"] = {
+		represents = "The Army"
+	},
+	["Tribune"] = {
+		represents = "The Common People"
+	},
+	["Prior Mother"] = {
+		represents = "The Cult"
+	},
+	["Holy Attendant"] = {
+		represents = "The Cult"
+	},
+	["First Judge"] = {
+		subtitle = "Chief of the Justice Court of Lybra",
+		body = [[
+
+		]]
+	},
+	["The Dutchies & the Heartland"] = {
+
+	},
+	["The Marks & The Borderlands"] = {
+		subtitle = "Violent and Unclaimed",
+		body = [[
+			(something about each of the six Marks)
+		]],
+		image = "???"
+	},
+	["Kauppias"] = {
+
+	},
+	["Mhuir"] = {
+
+	},
+	["Cidlada"] = {
+
+	}
+}
+
+
+
+function LORE.Show(loreRef)
+
+
+
+end
+
+
+
+
+
+
+return LORE

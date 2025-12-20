@@ -1,0 +1,511 @@
+ local P = require("kingsdilemma.core.players")
+local S = require("kingsdilemma.core.state")
+local U = require("lib.utilities")
+local O = require("kingsdilemma.lib.objects")
+local L = require("kingsdilemma.core.lighting")
+local C = require("kingsdilemma.lib.constants")
+local OU = require("kingsdilemma.objects.objUtilities")
+local MSG = require("kingsdilemma.core.messaging")
+
+
+local V = {}
+
+local riserPowerMax = 10
+local riserMaxElevation = Vector(0, 5, 0)
+local riserMinElevation = Vector(0, 2, 0)
+
+local function getVoteObjects(playerRef)
+	local player = S.getPlayer(playerRef)
+	return P.GetPlayerZone(player, "Aye"),
+		P.GetPlayerZone(player, "Nay"),
+		P.GetPlayerZone(player, "Public"),
+		getObjectsWithAllTags({"ayeCard", player.color})[1],
+		getObjectsWithAllTags({"nayCard", player.color})[1],
+		getObjectsWithAllTags({"PassCard", player.color})[1]
+end
+
+local function elevateRiser(playerRef, powerValue)
+	local player = S.getPlayer(playerRef)
+	local publicZone = P.GetPlayerZone(player, "Public")
+	local riser = getObjectsWithAllTags({player.color, "plinthRiser"})[1]
+	if powerValue == nil then powerValue = 0 end
+	if powerValue > riserPowerMax then powerValue = riserPowerMax end
+	local riserPos = riser.getPosition()
+	local riserElevation = Vector(riserMinElevation):lerp(Vector(riserMaxElevation), powerValue / riserPowerMax)
+	local deltaElevation = math.abs(riserPos.y - riserElevation.y)
+	riserPos:setAt("y", riserElevation.y)
+
+	-- Lock and simultaneously elevate any power tokens on riser
+	local powerTokens = U.filter(publicZone.getObjects(), function(obj) return obj.hasTag("PowerToken") end)
+	return {
+		U.Lerp(function(pos) riser.setPositionSmooth(pos) end, riser.getPosition(), riserPos, 3 * (deltaElevation / 3)),
+		unpack(U.map(powerTokens, function(token)
+			token.setLock(true)
+			Wait.time(function() token.setLock(false) end, 3 * (deltaElevation / 3) + 1)
+			return U.Lerp(function(pos) token.setPositionSmooth(pos) end, token.getPosition(), Vector(token.getPosition()):add(Vector(0, deltaElevation, 0)), 3 * (deltaElevation / 3))
+		end))
+	}
+end
+
+function V.LowerRiser(playerRef)
+	local player = S.getPlayer(playerRef)
+	local riser = getObjectsWithAllTags({player.color, "plinthRiser"})[1]
+	local riserPos = riser.getPosition()
+	local deltaElevation = math.abs(riserPos.y - C.TableHeight)
+	riserPos:setAt("y", C.TableHeight)
+	return U.Lerp(function(pos) riser.setPositionSmooth(pos) end, riser.getPosition(), riserPos, 3 * (deltaElevation / 3))
+end
+
+function V.ElevateBalance()
+	local plinth = O.Pieces.BalancePlinth()
+	local plinthPos = plinth.getPosition()
+	plinthPos.y = 3
+	return U.Lerp(function(pos) plinth.setPositionSmooth(pos) end, plinth.getPosition(), plinthPos, 1)
+end
+
+function V.LowerBalance()
+	local plinth = O.Pieces.BalancePlinth()
+	local plinthPos = plinth.getPosition()
+	plinthPos.y = 1.94
+	L.SetLightMode("lightBalance", "off", nil, 3)
+	return U.Lerp(function(pos) plinth.setPositionSmooth(pos) end, plinth.getPosition(), plinthPos, 1)
+end
+
+function V.SpawnBalanceTokens(numTokens)
+	local plinth = O.Pieces.BalancePlinth()
+	local seqFuncs = {}
+
+	local function spawnToken(tokenSize)
+		local sourceObj = O.SpawnSources["powerToken" .. tokenSize]()
+		local spawnData = sourceObj.getData()
+		spawnData.Value = tokenSize
+		spawnData.Transform = OU.unfoldTransform({
+			position = U.getScatterPosition(plinth, 3, 0.6),
+			rotation = Vector({
+				U.randBetween(-45, 45, true),
+				U.randBetween(-45, 45, true),
+				U.randBetween(-45, 45, true)
+			}),
+			scale = sourceObj.getScale()
+		})
+		spawnData.Tags = {"PowerToken", "Value" .. tokenSize}
+		spawnObjectData({
+			data = spawnData,
+			callback_function = function(obj)
+				obj.setLock(false)
+				Wait.frames(function() obj.addForce(Vector(0, -1, 0), 3) end)
+			end
+		})
+		return 0.1
+	end
+
+	while math.floor(numTokens / 10) > 0 do
+		numTokens = numTokens - 10
+		table.insert(seqFuncs, function() return spawnToken(10) end)
+	end
+	while math.floor(numTokens / 5) > 0 do
+		numTokens = numTokens - 5
+		table.insert(seqFuncs, function() return spawnToken(5) end)
+	end
+	while numTokens > 0 do
+		numTokens = numTokens - 1
+		table.insert(seqFuncs, function() return spawnToken(1) end)
+	end
+
+	return U.RunSequence(seqFuncs, nil, 1)
+end
+
+function V.SetVotingLights(playerRef)
+	if playerRef == nil then return U.map(S.getPlayers(), function(ply) return V.SetVotingLights(ply) end) end
+	local player = S.getPlayer(playerRef)
+	local playerColor = S.getPlayerColor(playerRef)
+	local currentPlayer = S.getStateVal("roundState", "currentTurn")
+	local voteStatus = S.getStateVal("turnState", playerColor, "vote")
+
+	if playerColor == currentPlayer then
+		local playerNum = S.getPlayerNum(player)
+		if voteStatus == false then
+			return {
+				L.SetLightMode("lightPlayerSpotlight", "player" .. playerNum, nil, 0.5),
+				L.SetLightMode("lightBehind", "ambient", player),
+				L.SetLightMode("lightFront", "ambient", player),
+				L.SetLightMode("lightVote", "ambient", player)
+			}
+		elseif voteStatus == "Aye" then
+			return {
+				L.SetLightMode("lightPlayerSpotlight", "player" .. playerNum, nil, 0.5, Color.Blue),
+				L.SetLightMode("lightBehind", "ambient", player),
+				L.SetLightMode("lightFront", "aye", player),
+				L.SetLightMode("lightVote", "aye", player)
+			}
+		elseif voteStatus == "Nay" then
+			return {
+				L.SetLightMode("lightPlayerSpotlight", "player" .. playerNum, nil, 0.5, Color.Red),
+				L.SetLightMode("lightBehind", "ambient", player),
+				L.SetLightMode("lightFront", "nay", player),
+				L.SetLightMode("lightVote", "nay", player)
+			}
+		else
+			return {
+				L.SetLightMode("lightPlayerSpotlight", "off", nil, 0.5),
+				L.SetLightMode("lightBehind", "dim", player),
+				L.SetLightMode("lightFront", "off", player),
+				L.SetLightMode("lightVote", "off", player)
+			}
+		end
+	else
+		if voteStatus == false then
+			return {
+				L.SetLightMode("lightBehind", "ambient", player),
+				L.SetLightMode("lightFront", "dim", player),
+				L.SetLightMode("lightVote", "ambient", player)
+			}
+		elseif voteStatus == "Aye" then
+			return {
+				L.SetLightMode("lightBehind", "ambient", player),
+				L.SetLightMode("lightFront", "aye", player),
+				L.SetLightMode("lightVote", "aye", player)
+			}
+		elseif voteStatus == "Nay" then
+			return {
+				L.SetLightMode("lightBehind", "ambient", player),
+				L.SetLightMode("lightFront", "nay", player),
+				L.SetLightMode("lightVote", "nay", player)
+			}
+		elseif voteStatus == "Pass" or voteStatus == "PassMod" then
+			return {
+				L.SetLightMode("lightBehind", "dim", player),
+				L.SetLightMode("lightFront", "off", player),
+				L.SetLightMode("lightVote", "off", player)
+			}
+		end
+	end
+end
+
+function V.InitCountZones(playerRef)
+	if playerRef == nil then return U.map(S.getPlayers(), V.InitCountZones) end
+	local player = S.getPlayer(playerRef)
+	local ayeZone, nayZone, publicZone, ayeCard, nayCard, passCard = getVoteObjects(player)
+	local voteStatus = S.getStateVal("turnState", player.color, "vote")
+
+	if not S.isInPhase("Vote") or voteStatus == false then
+		if ayeCard then
+			ayeCard.setPositionSmooth(ayeCard.getPosition():setAt("y", C.TableHeight))
+		end
+		if nayCard then
+			nayCard.setPositionSmooth(nayCard.getPosition():setAt("y", C.TableHeight))
+		end
+		if passCard then
+			passCard.setPositionSmooth(passCard.getPosition():setAt("y", C.TableHeight))
+			passCard.setRotationSmooth(passCard.getRotation():setAt("z", 0))
+			passCard.setLock(not S.isInPhase("Vote"))
+		end
+
+		if ayeZone then
+			ayeZone.call("SetCountTag", "PowerToken")
+			ayeZone.call("SetColor", Color(0, 1, 1, 1))
+			ayeZone.call("UnLinkPublic")
+		end
+		if nayZone then
+			nayZone.call("SetCountTag", "PowerToken")
+			nayZone.call("SetColor", Color(1, 0, 0, 1))
+			nayZone.call("UnLinkPublic")
+		end
+		if ayeZone and nayZone then
+			ayeZone.call("LinkToOpp", nayZone)
+			nayZone.call("LinkToOpp", ayeZone)
+		end
+
+		if ayeZone then ayeZone.call("Activate") end
+		if nayZone then nayZone.call("Activate") end
+		if publicZone then publicZone.call("Deactivate") end
+	elseif voteStatus == "Aye" then
+		if ayeCard then
+			ayeCard.setPositionSmooth(ayeCard.getPosition():setAt("y", C.TableHeight))
+		end
+		if nayCard then
+			nayCard.setPositionSmooth(nayCard.getPosition():setAt("y", C.TableHeight - 3))
+		end
+		if passCard then
+			passCard.setLock(true)
+			passCard.setPositionSmooth(passCard.getPosition():setAt("y", C.TableHeight - 3))
+		end
+		if ayeZone then
+			ayeZone.call("SetCountTag", "PowerToken")
+			ayeZone.call("SetColor",Color(0, 1, 1, 1))
+			ayeZone.call("UnLinkOpp")
+			if publicZone then ayeZone.call("LinkToPublic", publicZone) end
+		end
+		if publicZone then
+			publicZone.call("SetCountTag", "PowerToken")
+			publicZone.call("SetColor",Color(0, 1, 1, 1))
+			publicZone.call("SetScale", "0.4")
+			publicZone.call("SetIcon", "powerIcon")
+			publicZone.call("SetIconColor", Color(0, 0, 1))
+		end
+		if ayeZone then ayeZone.call("Activate") end
+		if nayZone then nayZone.call("Deactivate") end
+		if publicZone then publicZone.call("Activate") end
+	elseif voteStatus == "Nay" then
+		if ayeCard then
+			ayeCard.setPositionSmooth(ayeCard.getPosition():setAt("y", C.TableHeight - 3))
+		end
+		if nayCard then
+			nayCard.setPositionSmooth(nayCard.getPosition():setAt("y", C.TableHeight))
+		end
+		if passCard then
+			passCard.setLock(true)
+			passCard.setPositionSmooth(passCard.getPosition():setAt("y", C.TableHeight - 3))
+		end
+		if nayZone then
+			nayZone.call("SetCountTag", "PowerToken")
+			nayZone.call("SetColor", Color(1, 0, 0, 1))
+			nayZone.call("UnLinkOpp")
+			if publicZone then nayZone.call("LinkToPublic", publicZone) end
+		end
+		if publicZone then
+			publicZone.call("SetCountTag", "PowerToken")
+			publicZone.call("SetColor", Color(1, 0, 0, 1))
+			publicZone.call("SetScale", "0.4")
+			publicZone.call("SetIcon", "powerIcon")
+			publicZone.call("SetIconColor", Color(0.5, 0, 0))
+		end
+		if ayeZone then ayeZone.call("Deactivate") end
+		if nayZone then nayZone.call("Activate") end
+		if publicZone then publicZone.call("Activate") end
+	else
+		if ayeCard then
+			ayeCard.setPositionSmooth(ayeCard.getPosition():setAt("y", C.TableHeight - 3))
+		end
+		if nayCard then
+			nayCard.setPositionSmooth(nayCard.getPosition():setAt("y", C.TableHeight - 3))
+		end
+		if passCard then
+			passCard.setLock(true)
+			passCard.setPositionSmooth(passCard.getPosition():setAt("y", C.TableHeight))
+			passCard.setRotationSmooth(passCard.getRotation():setAt("z", 0))
+		end
+		if ayeZone then ayeZone.call("Deactivate") end
+		if nayZone then nayZone.call("Deactivate") end
+		if publicZone then publicZone.call("Deactivate") end
+	end
+end
+
+function V.StartTurn(playerRef)
+	local player = S.getPlayer(playerRef)
+	-- log("Starting Next Turn - " .. player.color)
+	return U.RunSequence({
+		function() S.setStateVal(player.color, "roundState", "currentTurn") end,
+		function()
+			V.InitCountZones(player)
+			return V.SetVotingLights(player)
+		end
+	})
+end
+
+function V.UpdateHUD(player, isForcing)
+	if isForcing == nil then isForcing = false end
+	if not isForcing and UI.getAttribute("turnHUD_" .. player.color, "active") == "false" then return end
+	local ayeZone, nayZone = getVoteObjects(player)
+	local voteStatus = S.getPlayerVoteStatus(player)
+	local ayeCount, nayCount = 0, 0
+
+	if ayeZone then ayeCount = ayeZone.call("GetCount") end
+	if nayZone then nayCount = nayZone.call("GetCount") end
+
+	local elemVisibility = {
+		voteAye = true,
+		voteNay = true,
+		passMod = true,
+		pass = true,
+		stay = true
+	}
+	local elemText = {
+		voteAye = "Vote Aye",
+		voteNay = "Vote Nay",
+		passMod = "Pass",
+		pass = "Pass",
+		stay = "Stay"
+	}
+
+	if voteStatus == false then
+		elemVisibility.voteAye = ayeCount > 0 and nayCount == 0
+		elemVisibility.voteNay = nayCount > 0 and ayeCount == 0
+		elemVisibility.passMod = ayeCount == 0 and nayCount == 0 and not S.getStateVal("roundState", "passModClaimed")
+		elemVisibility.pass = ayeCount == 0 and nayCount == 0
+		elemVisibility.stay = false
+	elseif voteStatus == "Aye" then
+		elemVisibility.voteAye = ayeCount > 0
+		elemVisibility.voteNay = false
+		elemVisibility.passMod = false
+		elemVisibility.pass = false
+		elemVisibility.stay = ayeCount == 0
+		elemText.voteAye = "Add Power"
+	elseif voteStatus == "Nay" then
+		elemVisibility.voteAye = false
+		elemVisibility.voteNay = nayCount > 0
+		elemVisibility.passMod = false
+		elemVisibility.pass = false
+		elemVisibility.stay = nayCount == 0
+		elemText.voteNay = "Add Power"
+	end
+
+	U.forEach(elemVisibility, function(isVisible, elemRef)
+		if isVisible then
+			UI.setValue("turnHUD_" .. elemRef .. "_Text_" .. player.color, elemText[elemRef])
+			UI.show("turnHUD_" .. elemRef .. "_container_" .. player.color)
+			UI.setAttribute("turnHUD_" .. elemRef .. "_container_" .. player.color, "active", "true")
+		else
+			UI.setAttribute("turnHUD_" .. elemRef .. "_container_" .. player.color, "active", "false")
+		end
+	end)
+end
+
+local function updateAyeTotal(addedPower)
+	S.setStateVal(S.getStateVal("roundState", "ayeTotal") + addedPower, "roundState", "ayeTotal")
+end
+
+local function updateNayTotal(addedPower)
+	S.setStateVal(S.getStateVal("roundState", "nayTotal") + addedPower, "roundState", "nayTotal")
+end
+
+function V.CheckForLeaderChange(playerRef)
+	local player = S.getPlayer(playerRef)
+	if player.color == P.GetLeader().color then return 0 end
+	local powerCommitted = U.map(S.getStateVal("turnState"), function(pData) return pData.powerCommitted end)
+	local playerPowerCommitted = powerCommitted[player.color]
+	powerCommitted[player.color] = nil
+	for pColor, power in pairs(powerCommitted) do
+		if pColor ~= player.color and power >= playerPowerCommitted then
+			return 0
+		end
+	end
+	return U.RunSequence({
+		function()
+			MSG.Splash({P.GetPlayerName(player) .. " has committed the most Power (" .. playerPowerCommitted .. ")",
+		"and claims Leadership over this vote."})
+			return P.AssignLeader(player)
+		end
+	})
+end
+
+function V.EndTurn(isPassMod)
+	local player = S.getPlayer(S.getStateVal("roundState", "currentTurn"))
+	local ayeZone, nayZone, publicZone, ayeCard, nayCard, passCard = getVoteObjects(player)
+	local voteStatus = S.getStateVal("turnState", player.color, "vote")
+
+	if voteStatus == false then
+		local ayeCount = ayeZone.call("GetCount")
+		local nayCount = nayZone.call("GetCount")
+		if ayeCount > 0 then
+			S.setStateVal("Aye", "turnState", player.color, "vote")
+			S.setStateVal(ayeCount, "turnState", player.color, "powerCommitted")
+			V.InitCountZones(player)
+			return U.RunSequence({
+				function()
+					MSG.Splash(P.GetPlayerName(player) .. " Votes 'Aye' with " .. ayeCount .. " Power", nil, nil, {color = U.GetHex(Color.Blue)})
+					elevateRiser(player, ayeCount)
+					return 2
+				end,
+				function()
+					OU.TransferObjects(ayeZone, publicZone, "PowerToken")
+					return V.SetVotingLights(player)
+				end,
+				function()
+					updateAyeTotal(ayeCount)
+					return V.CheckForLeaderChange(player)
+				end,
+				function() return 0 end
+			})
+		elseif nayCount > 0 then
+			S.setStateVal("Nay", "turnState", player.color, "vote")
+			S.setStateVal(nayCount, "turnState", player.color, "powerCommitted")
+			V.InitCountZones(player)
+			return U.RunSequence({
+				function()
+					MSG.Splash(P.GetPlayerName(player) .. " Votes 'Nay' with " .. nayCount .. " Power", nil, nil, {color = U.GetHex(Color.Red)})
+					return elevateRiser(player, nayCount) end,
+				function()
+					OU.TransferObjects(nayZone, publicZone, "PowerToken")
+					return V.SetVotingLights(player)
+				end,
+				function()
+					updateNayTotal(nayCount)
+					return V.CheckForLeaderChange(player)
+				end
+			})
+		elseif isPassMod then
+			S.setStateVal("PassMod", "turnState", player.color, "vote")
+			S.setStateVal(true, "roundState", "passModClaimed")
+			V.InitCountZones(player)
+			return U.RunSequence({
+				function()
+					MSG.Splash(P.GetPlayerName(player) .. " Passes to Become Moderator", nil, nil, {color = U.GetHex(Color.Yellow)})
+					return V.LowerRiser(player)
+				end,
+				function() return P.AssignModerator(player) end,
+				function() return V.SetVotingLights(player) end
+			})
+		else
+			S.setStateVal("Pass", "turnState", player.color, "vote")
+			V.InitCountZones(player)
+			return U.RunSequence({
+				function()
+					MSG.Splash(P.GetPlayerName(player) .. " Passes to Gather Power", nil, nil, {color = U.GetHex(C.RootColors.Amber)})
+					return V.LowerRiser(player)
+				end,
+				function() return V.SetVotingLights(player) end
+			})
+		end
+	elseif voteStatus == "Aye" then
+		local ayeCount = ayeZone.call("GetCount")
+		local totalAyeCount = ayeCount + S.getStateVal("turnState", player.color, "powerCommitted")
+		if ayeCount > 0 then
+			S.setStateVal(totalAyeCount, "turnState", player.color, "powerCommitted")
+			V.InitCountZones(player)
+			return U.RunSequence({
+				function()
+					MSG.Splash(P.GetPlayerName(player) .. " Supports 'Aye' with another " .. ayeCount .. " Power", nil, nil, {color = U.GetHex(Color.Blue)})
+					return elevateRiser(player, totalAyeCount) end,
+				function()
+					OU.TransferObjects(ayeZone, publicZone, "PowerToken")
+					return V.SetVotingLights(player)
+				end,
+				function()
+					updateAyeTotal(ayeCount)
+					return V.CheckForLeaderChange(player)
+				end
+			})
+		else
+			return U.RunSequence({
+				function() return MSG.Splash(P.GetPlayerName(player) .. " Stays", nil, nil, {color = U.GetHex(Color.Blue)}) end
+			})
+		end
+	elseif voteStatus == "Nay" then
+		local nayCount = nayZone.call("GetCount")
+		local totalNayCount = nayCount + S.getStateVal("turnState", player.color, "powerCommitted")
+		if nayCount > 0 then
+			S.setStateVal(totalNayCount, "turnState", player.color, "powerCommitted")
+			V.InitCountZones(player)
+			return U.RunSequence({
+				function()
+					MSG.Splash(P.GetPlayerName(player) .. " Supports 'Nay' with another " .. nayCount .. " Power", nil, nil, {color = U.GetHex(Color.Red)})
+					return elevateRiser(player, totalNayCount) end,
+				function()
+					OU.TransferObjects(nayZone, publicZone, "PowerToken")
+					return V.SetVotingLights(player)
+				end,
+				function()
+					updateNayTotal(nayCount)
+					return V.CheckForLeaderChange(player)
+				end
+			})
+		else
+			return U.RunSequence({
+				function() return MSG.Splash(P.GetPlayerName(player) .. " Stays", nil, nil, {color = U.GetHex(Color.Red)}) end
+			})
+		end
+	end
+end
+
+return V

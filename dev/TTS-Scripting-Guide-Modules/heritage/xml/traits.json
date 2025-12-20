@@ -1,0 +1,251 @@
+{
+	TRAITSXML: [​​​​​​
+		{
+			"children": [​​​​​​​
+				{
+					"attributes": {
+						"animationDuration": "2",
+						"class": "traits",
+						"color": "#000000",
+						"height": "360",
+						"hideAnimation": "FadeOut",
+						"position": "45 35 -15",
+						"rotation": "0 0 180",
+						"scale": "0.25 0.25 0.25 0.25",
+						"showAnimation": "FadeIn",
+						"width": "740"
+					},
+					"tag": "Panel"
+				},
+				{
+					"attributes": {
+						"color": "#999999",
+						"flexibleWidth": "0",
+						"fontSize": "32",
+						"fontStyle": "Bold"
+					},
+					"tag": "Text"
+				},
+				{
+					"attributes": {
+						"class": "gold",
+						"color": "#FFFF00"
+					},
+					"tag": "Text"
+				}
+			],
+			"tag": "Defaults"
+		},
+		{
+			"attributes": {
+				"class": "traits"
+			},
+			"children": [
+		​​​​  	{
+				"children": [
+					​​​{
+						"children": [ {
+							"attributes": {
+								"class": "gold"
+							},
+							"tag": "Text",
+							"value": "Kindred 2"
+						},
+						{
+							"attributes": {
+								"class": "gold"
+							},
+							"tag": "Text",
+							"value": "Wealth 2"
+						} ],
+						"tag": "HorizontalLayout"
+					},
+					{
+					"children": [​​​​​​​ {
+						"attributes": {
+							"class": "gold"
+						},
+						"tag": "Text",
+						"value": "Occult 1"
+					}, {
+						"attributes": {
+							"class": "gold"
+						},
+						"tag": "Text",
+						"value": "Subterfuge 3"
+					}, {
+						"attributes": {
+							"class": "gold"
+						},
+						"tag": "Text",
+						"value": "Warfare 2"
+					} ],
+					"tag": "HorizontalLayout"
+					},
+					{
+						"children": [​​​​​​​ {
+							"attributes": {
+								"class": "gold"
+							},
+							"tag": "Text",
+							"value": "Cruelty 1"
+						}, {
+							"attributes": {
+								"class": "gold"
+							},
+							"tag": "Text",
+							"value": "Detachment 2"
+						}, {
+							"attributes": {
+								"class": "gold"
+							},
+							"tag": "Text",
+							"value": "Mercy 1"
+						} ],
+						"tag": "HorizontalLayout"
+					},
+					{
+						"children": [​​​​​​​ {
+							"attributes": {
+								"class": "gold"
+							},
+							"tag": "Text",
+							"value": "Anarchs 2"
+						}, {
+							"attributes": {
+								"class": "gold"
+							},
+							"tag": "Text",
+							"value": "Camarilla 1"
+						} ],
+						"tag": "HorizontalLayout"
+					},
+					{
+						"children": [​​​​​​​ {
+							"attributes": {
+								"class": ""
+							},
+							"tag": "Text",
+							"value": "Obv 1"
+						}, {
+							"attributes": {
+								"class": ""
+							},
+							"tag": "Text",
+							"value": "Pot 2"
+						}, {
+							"attributes": {
+								"class": ""
+							},
+							"tag": "Text",
+							"value": "Pro 2"
+						} ],
+						"tag": "HorizontalLayout"
+					},
+					{
+						"attributes": {
+							"color": "#FFFFFF",
+							"fontSize": "36",
+							"height": "50",
+							"ignoreLayout": "true",
+							"rectAlignment": "LowerCenter"
+						},
+						"children": [​​​​​​​],
+						"tag": "Text",
+						"value": "There are 2 Gangrel stickers left."
+					}
+				],
+				"tag": "VerticalLayout"
+			} ],
+			"tag": "Panel"
+		}
+	],
+	STICKERXML: [​​​​​​​
+		{
+			"children": [​​​​​​​
+				{
+					"attributes": {
+						"animationDuration": "2",
+						"class": "traits",
+						"color": "#000000",
+						"height": "400",
+						"hideAnimation": "FadeOut",
+						"padding": "0 0 50 50",
+						"position": "35 35 -15",
+						"rotation": "0 0 180",
+						"scale": "0.25 0.25 0.25 0.25",
+						"showAnimation": "FadeIn",
+						"width": "800"
+					},
+					"tag": "Panel"
+				},
+				{
+					"attributes": {
+						"childAlignment": "UpperCenter",
+						"childForceExpandHeight": "false"
+					},
+					"tag": "VerticalLayout"
+				},
+				{
+					"attributes": {
+						"flexibleHeight": "0",
+						"preferredHeight": "50"
+					},
+					"tag": "HorizontalLayout"
+				},
+				{
+					"attributes": {
+						"color": "#999999",
+						"flexibleHeight": "0",
+						"flexibleWidth": "0",
+						"fontSize": "32",
+						"fontStyle": "Bold",
+						"preferredHeight": "50"
+					},
+					"tag": "Text"
+				},
+				{
+					"attributes": {
+						"class": "gold",
+						"color": "#FFFF00"
+					},
+					"tag": "Text"
+				}
+			],
+			"tag": "Defaults"
+		},
+		{
+			"attributes": {
+				"class": "traits"
+			},
+			"children": [​​​​​​
+				{
+					"children": [
+						​​​​{
+							"attributes": {
+								"color": "#FFFFFF",
+								"fontSize": "36"
+							},
+							"children": [​​​​​​​],
+							"tag": "Text",
+							"value": "Available Ability Stickers:"
+						},
+						{
+							"attributes": {
+								"color": "#FFFFFF",
+								"fontSize": "36"
+							},
+							"children": [​​​​​​​],
+							"flexibleHeight": "0",
+							"preferredHeight": "50",
+							"tag": "Text",
+							"value": ""
+						}
+					],
+					"tag": "VerticalLayout"
+				}
+			],
+			"tag": "Panel"
+		}
+	]
+}

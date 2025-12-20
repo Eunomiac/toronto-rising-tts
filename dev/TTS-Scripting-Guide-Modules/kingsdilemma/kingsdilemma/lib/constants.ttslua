@@ -1,0 +1,852 @@
+local C = {}
+
+C.SeatAngleSpan = 240
+
+C.TableRadius = 57
+
+C.TableHeight = 1.46 -- toCheck: lua log(tbl.getBounds().center:add(tbl.getBounds().offset):add(tbl.getBounds().size))
+C.BoardHeight = 1.92
+
+C.BaseHandTransform = {
+	position = Vector(0, 3, C.TableRadius),
+	rotation = Vector(0, 180, 0),
+	scale = Vector(12, 5, 4)
+}
+
+C.AdminID = "76561198002132577"
+
+C.SeatColors = {"Brown", "Red", "Orange", "Yellow", "Green"}
+
+C.Houses = {"Allwed", "Blodyn", "Coden", "Crann", "Dualak", "Gamam", "Natar", "Olwyn", "Solad", "Tiryll", "Tork", "Wylio"}
+C.HousePrefixes = {
+	Allwed = "the Mark of",
+	Blodyn = "the Dutchy of",
+	Coden = "the Dutchy of",
+	Crann = "the Mark of",
+	Dualak = "the Mark of",
+	Gamam = "the Dutchy of",
+	Natar = "the Dutchy of",
+	Olwyn = "the Dutchy of",
+	Solad = "the Dutchy of",
+	Tiryll = "the Mark of",
+	Tork = "the Mark of",
+	Wylio = "the Mark of"
+}
+
+C.Resources = {"Influence", "Wealth", "Morale", "Welfare", "Knowledge"}
+C.SecretAgendas = {"Extremist", "Greedy", "Moderate", "Opportunist", "Opulent", "Rebel"}
+C.SecretAgendaData = {
+	Extremist = {
+		-- if resPoints is missing, function assumed to return actual score
+		resFunc = function(_, allData)
+			local min, max = 20, 0
+			for _, spot in pairs(allData) do
+				if spot < min then min = spot end
+				if spot > max then max = spot end
+			end
+			return max - min
+		end,
+		coinPoints = {4, 2, 1}
+	},
+	Greedy = {
+		resFunc = function(resSpot)
+			return resSpot >= 13 or resSpot <= 5
+		end,
+		resPoints = {4, 7, 11, 7, 4, 0},
+		coinPoints = {8, 6, 4}
+	},
+	Moderate = {
+		resFunc = function(resSpot) return resSpot <= 13 and resSpot >= 5 end,
+		resPoints = {0, 6, 7, 10, 13, 14},
+		coinPoints = {5, 3, 1}
+	},
+	Opportunist = {
+		resFunc = function(resSpot) return resSpot <= 9 end,
+		resPoints = {0, 4, 7, 10, 14, 15},
+		coinPoints = {6, 4, 2}
+	},
+	Opulent = {
+		resFunc = function(resSpot) return resSpot >= 9 end,
+		resPoints = {0, 4, 7, 10, 14, 15},
+		coinPoints = {6, 4, 2}
+	},
+	Rebel = { -- *** WILL HAVE TO HANDLE THE CHECK FOR EXTRA CRAVE MANUALLY
+		resFunc = function(resSpot) return resSpot >= 13 or resSpot >= 5 end,
+		resPoints = {0, 9, 13, 17, 19, 20},
+		coinPoints = {3, 2, 1}
+	}
+}
+C.Modes = {
+	NONE = "NONE",
+	SESSIONINIT = "SESSIONINIT",
+	CHRONSETUP = "CHRONSETUP",
+	GAMESETUP = "GAMESETUP",
+	PLAY = "PLAY",
+	END = "END"
+}
+
+C.Phases = {
+	NONE = "NONE",
+	SESSIONINIT = {
+		SeatPlayers = "SeatPlayers",
+		HouseSelection = "HouseSelection"
+	},
+	CHRONSETUP = "CHRONSETUP",
+	GAMESETUP = {
+		MainBoard = "MainBoard",
+		LeaderModerator = "LeaderModerator",
+		LegacySetup = "LegacySetup",
+		SecretAgendas = "SecretAgendas",
+		PrepareFirstRound = "PrepareFirstRound"
+	},
+	PLAY = {
+		StartRound = "StartRound",
+		DrawDilemma = "DrawDilemma",
+		Discussion = "Discussion",
+		Vote = "Vote",
+		VoteResolution = "VoteResolution",
+		DisplayOutcome = "DisplayOutcome",
+		ApplyChanges = "ApplyChanges",
+		ApplyMomentum = "ApplyMomentum",
+		StickerCheck = "StickerCheck",
+		EnvelopeCheck = "EnvelopeCheck",
+		EndRound = "EndRound"
+	},
+	END = {
+		Score = "Score",
+		Realm = "Realm",
+		Achievements = "Achievements",
+		Alignments = "Alignments",
+		Cleanup = "Cleanup"
+	}
+}
+
+C.CameraAngles = {
+	BehindScreen = {
+		isPlayerAngle = true,
+		position = Vector({0,-14.25,1.5}),
+		pitch = 30.7,
+		yaw = 180,
+		distance = 75
+	},
+	Lectern = {
+		position = Vector({0,-6.25,74}),
+		pitch = 12.67,
+		yaw = 0,
+		distance = 75
+	},
+	DilemmaPlinth = {
+		position = Vector({0,-6.2,58.25}),
+		pitch = 14.34,
+		yaw = 0,
+		distance = 75
+	},
+	DilemmaDraw = {
+		position = Vector({0,13.11,30.15}),
+		pitch = 1.51,
+		yaw = 0,
+		distance = 75
+	},
+	DilemmaResult = {
+		position = Vector({0,0,40}),
+		pitch = 14.34,
+		yaw = 0,
+		distance = 75
+	},
+	MainBoard = {
+		position = Vector({0,-14.25,27.7}),
+		pitch = 30.67,
+		yaw = 0,
+		distance = 75
+	}
+}
+
+C.Spots = {
+	Storage = {
+		HouseCard = {
+			position = Vector({104.00, 29.25, -2.25}),
+			rotation = Vector({71.10, 180.00, 180.00}),
+			scale = Vector({0.30, 1.00, 0.30})
+		},
+		Envelopes = {
+			position = Vector({3.67, 7.25, 48.00}),
+			rotation = Vector({320.42, 0.00, 0.00}),
+			scale = Vector({0.19, 0.07, 0.10})
+		},
+		Stickers = {
+			position = Vector({-3.67, 7.25, 48.00}),
+			rotation = Vector({320.42, 0.00, 0.00}),
+			scale = Vector({0.19, 0.07, 0.10})
+		},
+		MysteryEnvelopes = {
+			position = Vector({0.00, 8.05, 50.27}),
+			rotation = Vector({0.00, 90.00, 320.42}),
+			scale = Vector({1.15, 0.23, 6.30})
+		},
+		LeaderLight = {
+			position = Vector({-7.78, 15.62, 35.10}),
+			rotation = Vector({0, 180, 0}),
+			scale = Vector({1, 1, 1})
+		},
+		LeaderFigure = {
+			position = Vector({-7.78, 5.51, 35.08}),
+			rotation = Vector({359.77, 359.86, 0.05}),
+			scale = Vector({1, 1, 1})
+		},
+		ModeratorLight = {
+			position = Vector({7.78, 15.68, 35.10}),
+			rotation = Vector({0, 180, 0}),
+			scale = Vector({1, 1, 1})
+		},
+		ModeratorFigure = {
+			position = Vector({7.78, 1.39, 35.10}),
+			rotation = Vector({0.00, 219.63, 0.00}),
+			scale = Vector({0.3, 0.3, 0.3})
+		},
+		SecretAgenda = {
+			position = Vector({0.00, 1.50, 33.79}),
+			rotation = Vector({0, 270, 180})
+		}
+	},
+	Staging = {
+		Lectern = {
+			Envelopes = {
+				position = Vector({0.00, 12.00, 45.50}),
+				rotation = Vector({285.00, 0.00, 0.00}),
+				scale = Vector({0.19, 0.07, 0.10})
+			},
+			Stickers = {
+				position = Vector({0.00, 12.00, 45.50}),
+				rotation = Vector({285.00, 0.00, 0.00}),
+				scale = Vector({0.19, 0.07, 0.10})
+			},
+			MysteryEnvelopes = {
+				position = Vector({0.00, 15.03, 50.28}),
+				rotation = Vector({0.00, 90.00, 270.00}),
+				scale = Vector({1.15, 0.23, 6.30})
+			},
+			Display = {
+				position = Vector({0.00, 12.00, 42.00}),
+				rotation = Vector({62.95, 179.98, 0.00}),
+				scale = Vector({1.59, 1.00, 1.59})
+			},
+			TopCard = {
+				position = Vector({0.00, 13.22, 40.62}),
+				rotation = Vector({62.95, 180.00, 0.00}),
+				scale = Vector({1.59, 1.00, 1.59})
+			},
+			RestOfDeck = {
+				position = Vector({0.00, 9.32, 41.94}),
+				rotation = Vector({0.00, 90.00, 0.00}),
+				scale = Vector({1.59, 1.00, 1.59})
+			}
+		},
+		StoryCard = {
+			Display = {
+				position = Vector({0, 1.94, 16.52}),
+				rotation = Vector({0, 180, 0}),
+				scale = Vector({1.59, 1.00, 1.59})
+			}
+		},
+		Sticker = {
+			Display = {
+				position = Vector({0.00, 3.81, 26.00}),
+				rotation = Vector({0.00, 180.00, 0.00}),
+				scale = Vector({1, 1, 1})
+			}
+		},
+		SecretAgenda = {
+			High = {
+				position = Vector({0.00, 15.00, 26.00}),
+				rotation = Vector({0.00, 180, 180.00})
+			},
+			Low = {
+				position = Vector({0.00, 5.37, 25.04}),
+				rotation = Vector({18, 180, 180.00})
+			},
+			Burnt = {
+				position = Vector({0.00, 2.27, 52.08}),
+				rotation = Vector(90, 500, 500)
+			}
+		},
+		DilemmaDraw = {
+			position = Vector({0.00, 7.05, 24.61}),
+			rotation = Vector({25.36, 180, 0})
+		}
+	},
+	Main = {
+		CoverCard = {
+			Closed = {
+				position = Vector({0.00, 6, 26.00}),
+				rotation = Vector({0.00, 270, 0.00}),
+				scale = Vector({2.55, 1.00, 2.57})
+			},
+			Open = {
+				position = Vector({0.00, 6.67, 23}),
+				rotation = Vector({0, 270, 290}),
+				scale = Vector({2.55, 1.00, 2.57})
+			}
+		},
+		ChronicleCard = {
+			position = Vector({0.00, 3.93, 37.12}),
+			rotation = Vector({78.09, 180.00, 0.00}),
+			scale = Vector({2.60, 1.00, 2.60})
+		},
+		Dilemma = {
+			deck = {
+				position = Vector({0.00, 6, 26.00}),
+				rotation = Vector({0.00, 90.00, 0.00}),
+				scale = Vector({1.59, 1.00, 1.59})
+			},
+			aboveDeck = {
+				position = Vector({0.00, 6, 26.00}),
+				rotation = Vector({0.00, 180.00, 0.00}),
+				scale = Vector({1.59, 1.00, 1.59})
+			},
+			faceDown = {
+				position = Vector({0.00, 28.51, 43.94}),
+				rotation = Vector(90, 180, 0),
+				scale = Vector(10, 1, 10)
+			},
+			faceUpAye = {
+				position = Vector({0, 0.81, 39.30}),
+				rotation = Vector({90, 0, 0}),
+				scale = Vector({10, 1.00, 10})
+			},
+			faceUpNay = {
+				position = Vector({0.00, 1.57, 39.30}),
+				rotation = Vector({270, 180, 0}),
+				scale = Vector({10, 1.00, 10})
+			},
+			faceUpAyeShrink = {
+				position = Vector({0.00, 1.18, 39.30}),
+				rotation = Vector({270, 180, 0}),
+				scale = Vector({5, 1, 5})
+			},
+			faceUpNayShrink = {
+				position = Vector({0.00, 1.5, 39.30}),
+				rotation = Vector({270, 180, 0}),
+				scale = Vector({5, 1.00, 5})
+			},
+			boardAye = {
+				{
+					position = Vector({-7.4, 4, 8.05}),
+					rotation = Vector({0, 90, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, 3.63}),
+					rotation = Vector({0, 90, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -0.80}),
+					rotation = Vector({0, 90, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -5.23}),
+					rotation = Vector({0, 90, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -9.65}),
+					rotation = Vector({0, 90, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -14.08}),
+					rotation = Vector({0, 90, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -14.08}),
+					rotation = Vector({0, 90, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -18.50}),
+					rotation = Vector({0, 90, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -18.74}),
+					rotation = Vector({0, 90, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -18.99}),
+					rotation = Vector({0, 90, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -19.23}),
+					rotation = Vector({0, 90, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -19.47}),
+					rotation = Vector({0, 90, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				}
+			},
+			boardNay = {
+				{
+					position = Vector({-7.4, 4, 8.05}),
+					rotation = Vector({0, 270, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, 3.63}),
+					rotation = Vector({0, 270, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -0.80}),
+					rotation = Vector({0, 270, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -5.23}),
+					rotation = Vector({0, 270, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -9.65}),
+					rotation = Vector({0, 270, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -14.08}),
+					rotation = Vector({0, 270, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -14.08}),
+					rotation = Vector({0, 270, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -18.50}),
+					rotation = Vector({0, 270, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -18.74}),
+					rotation = Vector({0, 270, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -18.99}),
+					rotation = Vector({0, 270, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -19.23}),
+					rotation = Vector({0, 270, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				},
+				{
+					position = Vector({-7.4, 4, -19.47}),
+					rotation = Vector({0, 270, 180}),
+					scale = Vector({1.59, 1, 1.59})
+				}
+			}
+		}
+	},
+	Board = {
+		StabilityToken = {
+			top = {
+				position = Vector({-4.83, C.BoardHeight, 9.43}),
+				rotation = Vector({0, 180, 0}),
+				scale = Vector({0.6, 1, 0.6})
+			},
+			center = {
+				position = Vector({-4.83, C.BoardHeight, -3.35}),
+				rotation = Vector({0, 180, 0}),
+				scale = Vector({0.6, 1, 0.6})
+			},
+			bottom = {
+				position = Vector({-4.83, C.BoardHeight, -15.91}),
+				rotation = Vector({0, 180, 0}),
+				scale = Vector({0.6, 1, 0.6})
+			}
+		},
+		ResourceTokens = {
+			Influence = {
+				top = {
+					position = Vector({-2.71, C.BoardHeight, 8.04}),
+					rotation = Vector({0, 180, 0}),
+					scale = Vector({0.6, 1, 0.6})
+				},
+				center = {
+					position = Vector({-2.71, C.BoardHeight, -3.18}),
+					rotation = Vector({0, 180, 0}),
+					scale = Vector({0.6, 1, 0.6})
+				},
+				bottom = {
+					position = Vector({-2.71, C.BoardHeight, -14.42}),
+					rotation = Vector({0, 180, 0}),
+					scale = Vector({0.6, 1, 0.6})
+				}
+			},
+			Wealth = {
+				top = {
+					position = Vector({-1.38, C.BoardHeight, 8.04}),
+					rotation = Vector({0, 180, 0}),
+					scale = Vector({0.6, 1, 0.6})
+				},
+				center = {
+					position = Vector({-1.38, C.BoardHeight, -3.20}),
+					rotation = Vector({0, 180, 0}),
+					scale = Vector({0.6, 1, 0.6})
+				},
+				bottom = {
+					position = Vector({-1.38, C.BoardHeight, -14.42}),
+					rotation = Vector({0, 180, 0}),
+					scale = Vector({0.6, 1, 0.6})
+				}
+			},
+			Morale = {
+				top = {
+					position = Vector({-0.02, C.BoardHeight, 8.04}),
+					rotation = Vector({0, 180, 0}),
+					scale = Vector({0.6, 1, 0.6})
+				},
+				center = {
+					position = Vector({-0.02, C.BoardHeight, -3.22}),
+					rotation = Vector({0, 180, 0}),
+					scale = Vector({0.6, 1, 0.6})
+				},
+				bottom = {
+					position = Vector({-0.02, C.BoardHeight, -14.42}),
+					rotation = Vector({0, 180, 0}),
+					scale = Vector({0.6, 1, 0.6})
+				}
+			},
+			Welfare = {
+				top = {
+					position = Vector({1.33, C.BoardHeight, 8.04}),
+					rotation = Vector({0, 180, 0}),
+					scale = Vector({0.6, 1, 0.6})
+				},
+				center = {
+					position = Vector({1.33, C.BoardHeight, -3.20}),
+					rotation = Vector({0, 180, 0}),
+					scale = Vector({0.6, 1, 0.6})
+				},
+				bottom = {
+					position = Vector({1.33, C.BoardHeight, -14.42}),
+					rotation = Vector({0, 180, 0}),
+					scale = Vector({0.6, 1, 0.6})
+				}
+			},
+			Knowledge = {
+				top = {
+					position = Vector({2.69, C.BoardHeight, 8.04}),
+					rotation = Vector({0, 180, 0}),
+					scale = Vector({0.6, 1, 0.6})
+				},
+				center = {
+					position = Vector({2.69, C.BoardHeight, -3.18}),
+					rotation = Vector({0, 180, 0}),
+					scale = Vector({0.6, 1, 0.6})
+				},
+				bottom = {
+					position = Vector({2.69, C.BoardHeight, -14.42}),
+					rotation = Vector({0, 180, 0}),
+					scale = Vector({0.6, 1, 0.6})
+				}
+			}
+		},
+		ChronicleStickers = {
+			top = {
+				position = Vector({4, C.BoardHeight, 20.55}),
+				rotation = Vector({0, 180, 0}),
+				scale = Vector({1,1,1})
+			},
+			center = {
+				position = Vector({4, C.BoardHeight, 16.05}),
+				rotation = Vector({0, 180, 0}),
+				scale = Vector({1,1,1})
+			},
+			bottom = {
+				position = Vector({-4, C.BoardHeight, 11.55}),
+				rotation = Vector({0, 180, 0}),
+				scale = Vector({1,1,1})
+			}
+		},
+		BalancePlinth = {
+			up = {
+				position = Vector({0, 3, -19.17}),
+				rotation = Vector({0, 0, 0}),
+				scale = Vector({0.33, 0.54, 0.33})
+			},
+			down = {
+				position = Vector({0, 1.75, -19.17}),
+				rotation = Vector(0, 0, 0)
+			}
+		}
+	},
+	Player = {
+		Power = {
+			position = Vector({8, 2, 48}),
+			rotation = Vector({0, 0, 0})
+		},
+		Coin = {
+			position = Vector({-8, 2, 48}),
+			rotation = Vector({0, 250, 0})
+		},
+		SecretAgenda = {
+			position = Vector({10.00, 7.00, 42.50}),
+			rotation = Vector({87.76, 0.00, 45.00})
+		}
+	}
+}
+
+C.RootColors = {
+	Amber = Color(1, 0.67, 0, 1),
+	PureBlack = Color(0, 0, 0, 1),
+	PureRed = Color(1, 0, 0, 1),
+	PureBlue = Color(0, 0, 1, 1)
+}
+
+C.Colors = {
+	StabilityToken = {
+		center = Color.White,
+		half = Color(C.RootColors.Amber),
+		ends = Color(C.RootColors.PureRed)
+	}
+}
+
+C.scanData = {
+	Blodyn = {
+		globalOffsets = {gx = 0.002, gy = 0.02},
+		textWidth = 3400,
+		nameOffsets = {dx = -0.16, dy = -0.8},
+		prestigeGap = 0.062,
+		agendaGap = 0.78,
+		achievementButtons = {
+			offsets = {dx = 1.31, dy = -0.64, zStart = 0.13},
+			blocks = {
+				{num = 4, zFix = 0.45, zScale = 0.065},
+				{num = 2, zFix = 0.94, zScale = 0.065},
+				{num = 2, zFix = 1.25, zScale = 0.065}
+			}
+		}
+	},
+	Coden = {
+		globalOffsets = {gx = 0, gy = 0},
+		textWidth = 3400,
+		nameOffsets = {dx = -0.16, dy = -0.8},
+		prestigeGap = 0.062,
+		agendaGap = 0.78,
+		achievementButtons = {
+			offsets = {dx = 1.31, dy = -0.64, zStart = 0.13},
+			blocks = {
+				{num = 2, zFix = 0.445, zScale = 0.065},
+				{num = 3, zFix = 0.785, zScale = 0.065},
+				{num = 2, zFix = 1.18, zScale = 0.065}
+			}
+		}
+	},
+	Gamam = {
+		globalOffsets = {gx = 0, gy = 0.02},
+		textWidth = 3400,
+		nameOffsets = {dx = -0.16, dy = -0.8},
+		prestigeGap = 0.062,
+		agendaGap = 0.78,
+		achievementButtons = {
+			offsets = {dx = 1.3, dy = -0.64, zStart = 0.13},
+			blocks = {
+				{num = 2, zFix = 0.45, zScale = 0.065},
+				{num = 3, zFix = 0.81, zScale = 0.065},
+				{num = 3, zFix = 1.17, zScale = 0.065}
+			}
+		}
+	},
+	Natar = {
+		globalOffsets = {gx = 0.004, gy = 0.01},
+		textWidth = 3400,
+		nameOffsets = {dx = -0.16, dy = -0.8},
+		prestigeGap = 0.062,
+		agendaGap = 0.78,
+		achievementButtons = {
+			offsets = {dx = 1.3, dy = -0.64, zStart = 0.13},
+			blocks = {
+				{num = 3, zFix = 0.43, zScale = 0.065},
+				{num = 2, zFix = 0.84, zScale = 0.065},
+				{num = 3, zFix = 1.1, zScale = 0.065}
+			}
+		}
+	},
+	Olwyn = {
+		globalOffsets = {gx = 0.005, gy = 0},
+		textWidth = 3400,
+		nameOffsets = {dx = -0.16, dy = -0.8},
+		prestigeGap = 0.062,
+		agendaGap = 0.78,
+		achievementButtons = {
+			offsets = {dx = 1.3, dy = -0.64, zStart = 0.13},
+			blocks = {
+				{num = 2, zFix = 0.49, zScale = 0.065},
+				{num = 2, zFix = 0.92, zScale = 0.065},
+				{num = 3, zFix = 1.25, zScale = 0.065}
+			}
+		}
+	},
+	Solad = {
+		globalOffsets = {gx = 0, gy = 0},
+		textWidth = 3600,
+		nameOffsets = {dx = -0.12, dy = -0.8},
+		prestigeGap = 0.065,
+		agendaGap = 0.79,
+		achievementButtons = {
+			offsets = {dx = 1.315, dy = -0.64, zStart = 0.14},
+			blocks = {
+				{num = 2, zFix = 0.44, zScale = 0.07},
+				{num = 2, zFix = 0.79, zScale = 0.07},
+				{num = 2, zFix = 1.12, zScale = 0.07}
+			}
+		}
+	},
+	Allwed = {
+		globalOffsets = {gx = 0.001, gy = 0.01},
+		textWidth = 3000,
+		nameOffsets = {dx = -0.19, dy = -0.8},
+		prestigeGap = 0.062,
+		agendaGap = 0.78,
+		achievementButtons = {
+			offsets = {dx = 1.3, dy = -0.64, zStart = 0.13},
+			blocks = {
+				{num = 2, zFix = 0.45, zScale = 0.065},
+				{num = 4, zFix = 0.86, zScale = 0.065},
+				{num = 3, zFix = 1.33, zScale = 0.065}
+			}
+		}
+	},
+	Crann = {
+		globalOffsets = {gx = 0.001, gy = 0.01},
+		textWidth = 3000,
+		nameOffsets = {dx = -0.19, dy = -0.8},
+		prestigeGap = 0.062,
+		agendaGap = 0.78,
+		achievementButtons = {
+			offsets = {dx = 1.305, dy = -0.64, zStart = 0.13},
+			blocks = {
+				{num = 2, zFix = 0.49, zScale = 0.065},
+				{num = 2, zFix = 0.85, zScale = 0.065},
+				{num = 3, zFix = 1.165, zScale = 0.065}
+			}
+		}
+	},
+	Dualak = {
+		globalOffsets = {gx = 0.001, gy = 0.01},
+		textWidth = 3000,
+		nameOffsets = {dx = -0.19, dy = -0.8},
+		prestigeGap = 0.062,
+		agendaGap = 0.78,
+		achievementButtons = {
+			offsets = {dx = 1.302, dy = -0.64, zStart = 0.13},
+			blocks = {
+				{num = 3, zFix = 0.411, zScale = 0.065},
+				{num = 2, zFix = 0.78, zScale = 0.065},
+				{num = 2, zFix = 1.1, zScale = 0.065}
+			}
+		}
+	},
+	Tiryll = {
+		globalOffsets = {gx = 0, gy = 0.01},
+		textWidth = 3400,
+		nameOffsets = {dx = -0.16, dy = -0.8},
+		prestigeGap = 0.062,
+		agendaGap = 0.78,
+		achievementButtons = {
+			offsets = {dx = 1.3, dy = -0.64, zStart = 0.14},
+			blocks = {
+				{num = 2, zFix = 0.46, zScale = 0.07},
+				{num = 2, zFix = 0.83, zScale = 0.07},
+				{num = 2, zFix = 1.15, zScale = 0.07}
+			}
+		}
+	},
+	Tork = {
+		globalOffsets = {gx = 0.002, gy = 0},
+		textWidth = 3400,
+		nameOffsets = {dx = -0.16, dy = -0.8},
+		prestigeGap = 0.062,
+		agendaGap = 0.78,
+		achievementButtons = {
+			offsets = {dx = 1.3, dy = -0.64, zStart = 0.13},
+			blocks = {
+				{num = 2, zFix = 0.46, zScale = 0.065},
+				{num = 2, zFix = 0.86, zScale = 0.065},
+				{num = 3, zFix = 1.19, zScale = 0.065}
+			}
+		}
+	},
+	Wylio = {
+		globalOffsets = {gx = 0, gy = 0.01},
+		textWidth = 3200,
+		nameOffsets = {dx = -0.18, dy = -0.8},
+		prestigeGap = 0.062,
+		agendaGap = 0.78,
+		achievementButtons = {
+			offsets = {dx = 1.305, dy = -0.64, zStart = 0.12},
+			blocks = {
+				{num = 3, zFix = 0.39, zScale = 0.065},
+				{num = 2, zFix = 0.79, zScale = 0.07},
+				{num = 3, zFix = 1.13, zScale = 0.065}
+			}
+		}
+	}
+}
+
+C.Images = {
+	Flags = {
+		Base = {
+			Allwed = "http://cloud-3.steamusercontent.com/ugc/2064377962739194792/C9B66702A87E6D1FDB5384B4F51A5D77D2634917/",
+			Blodyn = "http://cloud-3.steamusercontent.com/ugc/2064377962739253245/C9DBFEEB59A7B71D0A27FF280334271818FB26A0/",
+			Coden = "http://cloud-3.steamusercontent.com/ugc/2064377962739253338/EA28A27B464F7693CC133B4E2FE6015B8C5CF0E3/",
+			Crann = "http://cloud-3.steamusercontent.com/ugc/2064377962739253435/EE7BDEC5F7E46AC930644FC7533079F6879F5433/",
+			Dualak = "http://cloud-3.steamusercontent.com/ugc/2064377962739253510/A16DF1A670D95E1C866F918ACE227092DBE9352B/",
+			Gamam = "http://cloud-3.steamusercontent.com/ugc/2064377962739253616/87E88E5AC38BDC76F98654E1C280AA0A6E510C4E/",
+			Natar = "http://cloud-3.steamusercontent.com/ugc/2064377962739253752/97822A3B8F0A01116CE2B721BB52E25A4317C218/",
+			Olwyn = "http://cloud-3.steamusercontent.com/ugc/2064377962739253853/BB38AE3D3F420C0FD61BF814FD7775D462016AC8/",
+			Solad = "http://cloud-3.steamusercontent.com/ugc/2064377962739253975/092946C413889BB5FC5E0D3F65C4C5EE136396BE/",
+			Tiryll = "http://cloud-3.steamusercontent.com/ugc/2064377962739254148/DAC3E6F35DA73048387F0A2DEA8432C802AF83E3/",
+			Tork = "http://cloud-3.steamusercontent.com/ugc/2064377962739254244/C64C331492D2A1AE626A63DEDEEA15CA99F5AF7A/",
+			Wylio = "http://cloud-3.steamusercontent.com/ugc/2064377962739254331/8FD06EFCCF997781E5823A58C8DC3C3776866DD5/"
+		},
+		Claimed = {
+			Allwed = "http://cloud-3.steamusercontent.com/ugc/2064378834882481449/963A8B75C9B97BDFF3D39E9D2BA5A544938954E1/",
+			Blodyn = "http://cloud-3.steamusercontent.com/ugc/2064378834882481603/9BE1EE4AEAA99E52AEA5EED6FD4A7036E16A4A17/",
+			Coden = "http://cloud-3.steamusercontent.com/ugc/2064378834882481665/DA4FE160EBBB082B654F2092437D146CDDD345BE/",
+			Crann = "http://cloud-3.steamusercontent.com/ugc/2064378834882481723/16D0A4A74E791F5B809BD9CBE163D82BBDD70411/",
+			Dualak = "http://cloud-3.steamusercontent.com/ugc/2064378834882481782/135D0D733C7715712302D85A5934CDB4CA016C19/",
+			Gamam = "http://cloud-3.steamusercontent.com/ugc/2064378834882481847/21F19D0E431C93E5BAA92BD55E171162C550DCAE/",
+			Natar = "http://cloud-3.steamusercontent.com/ugc/2064378834882481904/BABC349974DA713FA78C507B6B87A239A758B140/",
+			Olwyn = "http://cloud-3.steamusercontent.com/ugc/2064378834882481956/263331DCE7B4ADEE222632B4BDCFF69C0CBFF479/",
+			Solad = "http://cloud-3.steamusercontent.com/ugc/2064378834882482018/DB4192485CD507073895CE07E0F82FD0BFB778FE/",
+			Tiryll = "http://cloud-3.steamusercontent.com/ugc/2064378834882482078/1F0131767099772ED3A445CB829A625EA609045E/",
+			Tork = "http://cloud-3.steamusercontent.com/ugc/2064378834882482152/FEFD89F47ED3313B7CDAD5DB233EA94C58A025D7/",
+			Wylio = "http://cloud-3.steamusercontent.com/ugc/2064378834882482218/BA59D16ACA1FB4220686BDBB50BA10DF076D4C62/"
+		},
+		HoverText = {
+			Allwed ="http://cloud-3.steamusercontent.com/ugc/2064377962739254406/9003D12A2F60763746F70FD85B030CB56926FA3E/",
+			Blodyn ="http://cloud-3.steamusercontent.com/ugc/2064377962739254471/6AE191A3885504DDCD870F5C7468649C44CA96A1/",
+			Coden ="http://cloud-3.steamusercontent.com/ugc/2064377962739254535/09B0A8D11B1AA84576627FB9BB4663E3D0C2C313/",
+			Crann ="http://cloud-3.steamusercontent.com/ugc/2064377962739254636/5A255B7F1A880072A759FD565084B6ABFDB7432A/",
+			Dualak ="http://cloud-3.steamusercontent.com/ugc/2064377962739254731/39B09C3173BD729B98D0EAFF571FAAEF780D4C96/",
+			Gamam ="http://cloud-3.steamusercontent.com/ugc/2064377962739254820/69650201B8D22E1DA43BD7A09AA56832C1EA3474/",
+			Natar ="http://cloud-3.steamusercontent.com/ugc/2064377962739254903/5AC6BFDDAA21F465CAB49A5DCD2D872F28820AB2/",
+			Olwyn ="http://cloud-3.steamusercontent.com/ugc/2064377962739255012/F88D0A873C75A76D6146FFFF562727DA74C26ED7/",
+			Solad ="http://cloud-3.steamusercontent.com/ugc/2064377962739255078/CC8293A11AA2ED6E94B47E8F256F65585CC38542/",
+			Tiryll ="http://cloud-3.steamusercontent.com/ugc/2064377962739255138/93DB22680A4FE3D5FB849D7D3C5EAF5DA010748F/",
+			Tork ="http://cloud-3.steamusercontent.com/ugc/2064377962739255202/BB341225C631E5CFEB280744941AC0EA4CAA321A/",
+			Wylio ="http://cloud-3.steamusercontent.com/ugc/2064377962739255282/02152CB3502A02EEE60567CC01C6996416BBA4C7/"
+		}
+	}
+}
+
+return C

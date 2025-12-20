@@ -1,0 +1,1322 @@
+--#region Modules & Local Variables
+local U = require("lib.utilities")
+local S = require("core.state")
+local G = require("lib.guids")
+local C = require("lib.constants")
+
+local Z = {}
+
+local uiData = {}
+local maxInfamy = 0
+local isCheckingSuspicion = false
+local isShowingPowerOnly = false
+local bloodlineZones = {}
+local higherBloodlineZones = {}
+local zoneThrottle = {}
+
+local battlegrounds = {
+	left = "g",
+	center = "f",
+	right = "b"
+}
+
+local function throttleZone(zone, func, delay)
+	if delay == nil then delay = 0.4 end
+	zoneThrottle[zone.guid] = true
+	Wait.time(function()
+		func()
+		zoneThrottle[zone.guid] = nil
+	end, delay)
+end
+
+local function isThrottled(zone) return zoneThrottle[zone.guid] == true end
+
+local function getBattleground(dir) return getObjectFromGUID(G.battlegrounds[battlegrounds[dir]]) end
+
+local function getBattlegroundOfZone(zone)
+	if U.isIn(zone.guid, G.zones.battlegroundZones.left) then return getBattleground("left") end
+	if U.isIn(zone.guid, G.zones.battlegroundZones.center) then return getBattleground("center") end
+	if U.isIn(zone.guid, G.zones.battlegroundZones.right) then return getBattleground("right") end
+	return nil
+end
+
+function Z.onLoad()
+	Z.updateBloodlineZones()
+end
+--#endregion
+
+function Z.updateBloodlineZones()
+	U.forEach(C.Colors, function(color)
+		higherBloodlineZones[G.zones[color].bloodline[2][2]] = G.zones[color].bloodline[1][1]
+		for i = 1, 3 do
+			higherBloodlineZones[G.zones[color].bloodline[i + 2][2]] = G.zones[color].bloodline[2][i]
+		end
+	end)
+end
+
+function Z.getZoneColor(zone)
+	if U.isIn(zone.guid, U.map(G.getBloodlineZones("Red"), function(zn) return zn.guid end)) then
+		return "Red"
+	elseif U.isIn(zone.guid, U.map(G.getBloodlineZones("Yellow"), function(zn) return zn.guid end)) then
+		return "Yellow"
+	elseif U.isIn(zone.guid, U.map(G.getBloodlineZones("Blue"), function(zn) return zn.guid end)) then
+		return "Blue"
+	end
+end
+
+function Z.isInOtherBloodlineZone(zone, object)
+	local zoneGUID = zone.guid
+	local objGUID = object.guid
+	local zonePosX = U.round(zone.getPosition().x, 0)
+	for _, otherZone in pairs(G.getBloodlineZones()) do
+		if zoneGUID ~= otherZone.guid and zonePosX ~= U.round(otherZone.getPosition().x, 0) then
+			if U.find(otherZone.getObjects(), function(obj) return obj.guid == objGUID end) ~= nil then
+				return true
+			end
+		end
+	end
+end
+
+function Z.isInHigherBloodlineZone(zone, object)
+	if higherBloodlineZones[zone.guid] == nil then return false end
+	local higherZone = getObjectFromGUID(higherBloodlineZones[zone.guid])
+	local hZoneCardIDs = U.map(Z.getCards(higherZone), function(card) return card.guid end)
+	return U.isIn(object.guid, hZoneCardIDs)
+
+	-- local zoneGUID = zone.guid
+	-- local objGUID = object.guid
+	-- local zonePosX = U.round(zone.getPosition().x, 0)
+	-- local zonePosZ = U.round(zone.getPosition().z, 0)
+	-- for _, otherZone in pairs(U.filter(bloodlineZones, function(oZone)
+	-- 	local oPos = oZone.getPosition()
+	-- 	return zoneGUID ~= oZone.guid and zonePosX == U.round(oPos.x, 0) and zonePosZ < U.round(oPos.z)
+	-- end)) do
+	-- 	if U.find(otherZone.getObjects(), function(obj) return obj.guid == objGUID end) ~= nil then
+	-- 		return true
+	-- 	end
+	-- end
+end
+
+function Z.getSnapPointsInZone(zone, object)
+	if object == nil then object = Global end
+	local snapPoints = object.getSnapPoints()
+	-- log(snapPoints)
+	local validSnapPoints = {}
+	for _, point in pairs(snapPoints) do
+		-- log({point = point})
+		if U.isInside(zone, object.positionToWorld(point.position)) then
+			-- log("IS INSIDE!")
+			table.insert(validSnapPoints, point)
+		end
+	end
+	return validSnapPoints
+end
+
+function Z.deactivateZones()
+	Global.call("DeactivateZones")
+	S.setStateVal(true, "allZonesLocked")
+	UI.setAttribute("debugToggleZones", "color", "#FF0000")
+	UI.setAttribute("debugToggleZones", "text", "Zones (Inactive)")
+end
+
+function Z.activateZones()
+	Global.call("ActivateZones")
+	S.setStateVal(false, "allZonesLocked")
+	UI.setAttribute("debugToggleZones", "color", "#00FF00")
+	UI.setAttribute("debugToggleZones", "text", "Zones (Active)")
+	-- Z.refreshUI()
+end
+
+function Z.hideZones()
+	Z.deactivateZones()
+	local zones = U.filter(getObjects(), function(obj) return obj.type == "Scripting" end)
+	S.setStateVal(true, "allZonesLocked")
+	Wait.time(function()
+		U.forEach(zones, function(zone)
+			local zonePos = zone.getPosition()
+			if zonePos.y > -30 then
+				zonePos.y = zonePos.y - 50
+			end
+			zone.setPosition(zonePos)
+		end)
+	end, 0.25)
+end
+
+function Z.showZones()
+	local zones = U.filter(getObjects(), function(obj) return obj.type == "Scripting" end)
+	if #zones > 0 and zones[1].getPosition().y < -30 then
+		U.forEach(zones, function(zone)
+			local zonePos = zone.getPosition()
+			zonePos.y = zonePos.y + 50
+			zone.setPosition(zonePos)
+		end)
+	end
+	Wait.time(Z.activateZones, 0.25)
+end
+
+function Z.spawnChildZones(color, centerPos, spacing)
+
+end
+
+function Z.writePosToTaggedObjectsInZone(zone, tags, mode, stateKey, stateSubKey)
+	if mode == nil then mode = "desc" end
+	U.forEach(Z.getTaggedZoneObjects(zone, tags), function(obj)
+		if mode == "clear" then return obj.setDescription("") end
+		local pos = obj.getPosition()
+		pos.y = pos.y + 0.5
+		local rot = obj.getRotation()
+		if mode == "desc" then
+			obj.setDescription("{" ..
+			U.round(pos.x, 2) ..
+			", " ..
+			U.round(pos.y, 2) ..
+			", " ..
+			U.round(pos.z, 2) .. "}|{" .. U.round(rot.x, 2) .. ", " .. U.round(rot.y, 2) .. ", " .. U.round(rot.z, 2) .. "}")
+		elseif mode == "state" and type(stateKey) == "string" then
+			S.setStateVal({ position = pos, rotation = rot }, stateKey, stateSubKey)
+		end
+	end)
+end
+
+-- *** Events ***
+
+function Z.onObjectEnterZone(zone, object)
+	-- log(zone.guid .. ": We're Here!")
+	if S.getStateVal("allZonesLocked") == true then return end
+	-- log(zone.guid .. ": Not Locked")
+	if Z.isAftermathZone(zone) then return end
+	-- log(zone.guid .. ": Not Aftermath")
+	if Z.isMainQueueZone(zone) then return end
+	-- log(zone.guid .. ": Not Main Queue")
+	if Z.isBattlegroundZone(zone) then return end
+	if S.isInPhase("INIT") and zone.hasTag("ClanLeader") and object.hasTag("ClanLeader") then
+		-- log(zone.guid .. ": INIT & Clan Leader")
+		local bg = getObjectFromGUID(G.battlegrounds.right)
+		if bg == nil then return end
+		local color = Z.getZoneColor(zone)
+		-- log("Unlocked. Color = " .. color)
+		if color == nil then return end
+		bg.call("UpdateMoralityToken", {color = color})
+		return
+	end
+	if Z.isPlayerCardZone(zone) and not S.isInPhase("AFTERMATH") then
+		-- log("Player Card Zone")
+		if S.getStateVal("playerZonesLocked") == true then return end
+		-- log("Not Locked")
+		throttleZone(zone, function()
+			-- log("Checking Phase")
+			if S.isInPhase({"AFTERMATH", "END"}) then return end
+			-- log("Player Zone, Phase OK, Aligning Card.")
+			Z.alignCard(zone)
+			Wait.time(function() Z.refreshUI(zone) end, 0.5)
+			if not S.isInPhase("PLAY") then return end
+			if object.type == "Card" then
+				-- object.use_hands = false
+				getObjectFromGUID(G.charQueue).call("Populate_Queue")
+			end
+			if isCheckingSuspicion and (object.hasTag("ExhaustTorpor") or object.hasTag("Infamy")) then
+				Wait.time(function()
+					if Z.isTorpored(zone) or object.hasTag("Infamy") then
+						Z.hideSuspicion()
+						getObjectFromGUID(G.battlegrounds.d).call("EndTrial")
+					end
+				end, 1)
+			end
+		end)
+		return
+	end
+	-- log("NOT Player Card Zone")
+	if not S.isInPhase("PLAY") then return end
+end
+
+function Z.onObjectLeaveZone(zone, object)
+
+	if S.getStateVal("allZonesLocked") == true then return end
+	if Z.isAftermathZone(zone) then return end
+	if Z.isMainQueueZone(zone) then return end
+	if Z.isBattlegroundZone(zone) then return end
+	if Z.isPlayerCardZone(zone) then
+		if object.type == "Card" then
+			object.use_hands = true
+		end
+		if object.hasTag("Character") or object.hasTag("ClanLeader") then
+			object.removeTag("TopChar")
+			object.removeTag("Monstrosity_1")
+			object.removeTag("Monstrosity_2")
+			object.removeTag("Monstrosity_3")
+			object.removeTag("Monstrosity_4")
+			object.sticky = true
+		end
+		if object.hasTag("ClanScheme") then object.setScale({ 1, 1, 1 }) end
+		if S.isInPhase({"AFTERMATH", "END"}) then return end
+		Wait.time(function()
+			Z.alignCard(zone)
+			Z.refreshUI(zone)
+		end, 0.5)
+		return
+	end
+	if not S.isInPhase("PLAY") then return end
+	-- if Z.isMainQueueZone(zone) and object.type == "Card" then
+		-- object.setRotation(U.pRotation(object.getRotation(), 180))
+end
+
+-- *** Zone Type Checking ***
+function Z.isPlayerCardZone(zone) return U.isIn(zone.guid, U.map(G.getBloodlineZones(), function(zn) return zn.guid end)) end
+
+function Z.isBattlegroundZone(zone) return U.isIn(zone.guid, U.flatten(G.zones.battlegroundZones)) end
+
+function Z.isMainQueueZone(zone) return U.isIn(zone.guid, U.flatten({ G.zones.missionQueue, G.zones.charQueue })) end
+
+function Z.isAftermathZone(zone) return U.isIn(zone.guid, G.zones.allAftermath) end
+
+-- *** Zone Object Retrieval ***
+function Z.getTaggedZoneObjects(zone, tags, requireAll)
+	local zoneObjs = zone.getObjects()
+	if type(tags) == "string" then
+		if tags == "ALL" or tags == "ANY" then return zoneObjs end
+		return U.filter(zoneObjs, function(obj) return obj.hasTag(tags) end)
+	end
+	if requireAll == true then
+		return U.filter(zoneObjs, function(obj)
+			for _, tag in pairs(tags) do
+				if not obj.hasTag(tag) then return false end
+			end
+			return true
+		end
+		)
+	else
+		return U.filter(zoneObjs, function(obj)
+			for _, tag in pairs(tags) do
+				if obj.hasTag(tag) then return true end
+			end
+			return false
+		end
+		)
+	end
+end
+
+function Z.getCards(zone, tags)
+	if tags == nil then tags = { "Character", "ClanLeader" } end
+	return U.filter(Z.getTaggedZoneObjects(zone, tags, false), function(obj) return obj.type == "Card" end)
+end
+
+function Z.getCard(zone, tags)
+	local cards = Z.getCards(zone, tags)
+	if #cards == 0 then return end
+	if #cards == 1 then return cards[1] end
+	-- table.sort({5, 2, 3, 1}, function(a, b) return b < a end) = {5, 3, 2, 1}
+
+	table.sort(cards, function(a, b) return b.getPosition().y < a.getPosition().y end);
+
+	return cards[1]
+end
+
+function Z.hasCard(zone) return Z.getCard(zone) ~= nil end
+
+function Z.getClanLeader(color)
+	local leaderZone = getObjectFromGUID(G.zones[color].bloodline[1][1])
+	return Z.getCard(leaderZone)
+end
+
+function Z.getCharQueueCards()
+	local charCards = {}
+	for i = 1, 5 do
+		local charCardZone = getObjectFromGUID(G.zones.charQueue[i])
+		local charCard = Z.getCard(charCardZone)
+		if charCard then
+			table.insert(charCards, charCard)
+		end
+	end
+	return charCards
+end
+
+function Z.getAnkhs(zone, dir)
+	return Z.getTaggedZoneObjects(zone, { "Ankh", dir }, true)
+end
+
+function Z.getPowerTokens(zone) return Z.getTaggedZoneObjects(zone, "Power") end
+
+function Z.getInfamyTokens(zone) return Z.getTaggedZoneObjects(zone, "Infamy") end
+
+function Z.getBoons(zone) return Z.getTaggedZoneObjects(zone, "Boon") end
+
+local function getExhaustionTorporTokens(zone) return Z.getTaggedZoneObjects(zone, "ExhaustTorpor") end
+
+function Z.getExhaustionTokens(zone)
+	return U.filter(getExhaustionTorporTokens(zone), function(token) return not U.isFlipped(token) end)
+end
+
+function Z.getTorporTokens(zone)
+	return U.filter(getExhaustionTorporTokens(zone), function(token) return U.isFlipped(token) end)
+end
+
+-- *** Zone Status Checking ***
+function Z.isTorpored(zone) return Z.isPlayerCardZone(zone) and Z.hasCard(zone) and #Z.getTorporTokens(zone) > 0 end
+
+function Z.isExhausted(zone) return Z.isPlayerCardZone(zone) and Z.hasCard(zone) and #Z.getExhaustionTokens(zone) > 0 end
+
+function Z.isEnemy(zone)
+	return Z.isPlayerCardZone(zone) and Z.hasCard(zone) and
+			#Z.getTaggedZoneObjects(zone, { "ClanScheme", "Brujah" }, true) > 0
+end
+
+function Z.hasTitle(zone)
+	return #Z.getTaggedZoneObjects(zone, {"TitleToken"}) > 0
+end
+
+function Z.countPower(zone, isCountingTorpored)
+	if Z.isPlayerCardZone(zone) and Z.hasCard(zone) then
+		if isCountingTorpored or not Z.isTorpored(zone) then
+			return #Z.getPowerTokens(zone)
+		end
+	end
+	return 0
+end
+
+function Z.countInfamy(zone, isCountingTorpored)
+	if Z.isPlayerCardZone(zone) and Z.hasCard(zone) then
+		if isCountingTorpored or not Z.isTorpored(zone) then
+			local function isIgnoringInfamy(card) return string.find(card.getDescription(), "IgnoreInfamyVP") end
+			if #U.filter(Z.getCards(zone), isIgnoringInfamy) > 0 then
+				if S.isInPhase("SCORING") then return 0 end
+			end
+			return #Z.getInfamyTokens(zone)
+		end
+	end
+	return 0
+end
+
+function Z.countBoons(zone, isCountingTorpored)
+	if Z.isPlayerCardZone(zone) and Z.hasCard(zone) then
+		if isCountingTorpored or not Z.isTorpored(zone) then
+			return #Z.getBoons(zone)
+		end
+	end
+	return 0
+end
+
+-- *** Scoring Bloodline ***
+function Z.scoreZone(zone) return Z.countPower(zone) + Z.countBoons(zone) - Z.countInfamy(zone) end
+
+function Z.scoreBloodline(color)
+	local scoreTotal = 0
+	for _, zone in pairs(G.getBloodlineZones(color)) do
+		scoreTotal = scoreTotal + Z.scoreZone(zone)
+	end
+	return scoreTotal
+end
+
+-- *** Overlays ***
+local function initXML(zone)
+	if uiData[zone.guid] == nil then uiData[zone.guid] = {} end
+end
+
+local function getStatusXML(statusData)
+	local XML = {
+		tag = "Panel",
+		attributes = {
+			class = "overlay",
+			height = "80",
+			rectAlignment = "MiddleCenter",
+			padding = "0 0 0 0",
+			position = "0 0 15",
+			rotation = "0 0 0",
+			spacing = "0",
+			width = "100",
+			color = statusData.color
+		},
+		children = {}
+	}
+
+	if statusData.torpor then
+		table.insert(XML.children, {
+			tag = "Image",
+			attributes = {
+				class = "torpor-overlay",
+				image = "overlay-torpor",
+				color = "rgba(1,1,1,0.95)",
+				ignoreLayout = "true"
+			},
+			children = {}
+		})
+	elseif statusData.exhaustion then
+		table.insert(XML.children, {
+			tag = "Image",
+			attributes = {
+				class = "exhaustion-overlay",
+				image = "overlay-exhaustion",
+				color = "rgba(1,1,1,0.95)",
+				ignoreLayout = "true"
+			},
+			children = {}
+		})
+	end
+
+	if statusData.suspicion then
+		XML = {
+			tag = "Panel",
+			attributes = {
+				class = "main",
+				height = "1000",
+				width = "100",
+				padding = "0 0 0 0",
+				position = "0 0 -900",
+				rotation = "-90 0 0"
+			},
+			children = {
+				{
+					tag = "Image",
+					attributes = {
+						height = "100",
+						width = "100",
+						scale = "2 2 2",
+						image = "overlay-spotlight"
+					},
+					children = {}
+				}
+			}
+		}
+	end
+
+	if statusData.enemy then
+		table.insert(XML.children, {
+			tag = "Image",
+			attributes = {
+				class = "enemy-overlay",
+				image = "overlay-enemy",
+				color = "rgba(1,1,1,1)",
+				ignoreLayout = "true"
+			},
+			children = {}
+		})
+	end
+
+	return XML
+end
+
+local function getScoreXML(scoreData)
+	local XMLData = {
+		tag = "Panel",
+		attributes = {
+			class = "main",
+			height = "300",
+			padding = "0 0 0 0",
+			pivot = "0.5 0",
+			position = "0 5 -300",
+			rotation = "-85 0 0",
+			spacing = "1",
+			width = "100",
+			outline = "#000000",
+			outlineSize = "10",
+			color = "rgba(0.2, 0, 0, 0.5)",
+			childForceExpandHeight = "true",
+			childForceExpandWidth = "true"
+		},
+		children = {}
+	}
+	if scoreData.boons ~= nil and scoreData.infamy ~= nil and scoreData.power ~= nil and scoreData.title ~= nil then
+		scoreData.totalValue = scoreData.power + scoreData.boons + scoreData.title - scoreData.infamy
+	end
+
+	if scoreData.power == 0 then scoreData.power = "" end
+	local powerPanelXML = {
+		tag = "Panel",
+		attributes = {
+			class = "powerPanel",
+			height = "100",
+			rectAlignment = "UpperLeft",
+			width = "30"
+		},
+		children = {
+			{
+				tag = "Text",
+				value = scoreData.power,
+				attributes = {
+					rectAlignment = "UpperRight",
+					height = "50",
+					class = "powerCount",
+					scale = "1 4 1",
+					color = "#FF0000",
+					fontSize = "25",
+					fontStyle = "Bold",
+					outline = "#660000",
+					id = "powerCount",
+					flexibleHeight = "0",
+					flexibleWidth = "0"
+				},
+				children = {}
+			}
+		}
+	}
+	if scoreData.boons == nil then
+		powerPanelXML.attributes.width = "100"
+		powerPanelXML.attributes.rectAlignment = "MiddleCenter"
+		if Z.hasTitle(scoreData.zone) then
+			-- log("HAS TITLE")
+			powerPanelXML.children = {}
+		else
+			powerPanelXML.children[1].attributes.rectAlignment = "MiddleCenter"
+			powerPanelXML.children[1].attributes.fontSize = "42"
+		end
+	end
+	table.insert(XMLData.children, powerPanelXML)
+	if scoreData.boons == nil then return XMLData end
+
+	if scoreData.boons == 0 then
+		scoreData.boons = ""
+	elseif scoreData.power ~= "" then
+		scoreData.boons = "+" .. scoreData.boons
+	end
+	table.insert(XMLData.children, {
+		tag = "Panel",
+		attributes = {
+			class = "boonPanel",
+			height = "100",
+			rectAlignment = "UpperCenter",
+			width = "30"
+		},
+		children = {
+			{
+				tag = "Text",
+				value = "" .. scoreData.boons,
+				attributes = {
+					rectAlignment = "UpperCenter",
+					height = "50",
+					class = "boonCount",
+					scale = "1 4 1",
+					color = "#DDDDDD",
+					fontSize = "25",
+					fontStyle = "Bold",
+					outline = "#999999",
+					id = "boonCount",
+					flexibleHeight = "0",
+					flexibleWidth = "0"
+				},
+				children = {}
+			}
+		}
+	})
+
+	if scoreData.title == 0 then
+		scoreData.title = ""
+	else
+		scoreData.title = "+" .. scoreData.title
+	end
+	if scoreData.title ~= "" then
+		table.insert(XMLData.children, {
+			tag = "Panel",
+			attributes = {
+				class = "titlePanel",
+				height = "100",
+				rectAlignment = "UpperCenter",
+				ignoreLayout = "True",
+				offsetXY = "0 100",
+				width = "35"
+			},
+			children = {
+				{
+					tag = "Text",
+					value = scoreData.title,
+					attributes = {
+						scale = "1 4 1",
+						color = "#000000",
+						outline = "#FFFFFF",
+						rectAlignment = "UpperLeft",
+						alignment = "UpperLeft",
+						height = "50",
+						class = "titleScore",
+						fontSize = "25",
+						fontStyle = "Bold",
+						id = "titleScore",
+						flexibleHeight = "0",
+						flexibleWidth = "0"
+					},
+					children = {}
+				}
+			}
+		})
+	end
+
+	if scoreData.infamy == 0 then scoreData.infamy = "" else scoreData.infamy = "-" .. scoreData.infamy end
+	table.insert(XMLData.children, {
+		tag = "Panel",
+		attributes = {
+			class = "infamyPanel",
+			height = "100",
+			rectAlignment = "UpperRight",
+			width = "35"
+		},
+		children = {
+			{
+				tag = "Text",
+				value = scoreData.infamy,
+				attributes = {
+					rectAlignment = "UpperLeft",
+					height = "50",
+					class = "infamyCount",
+					scale = "1 4 1",
+					color = "#FFFF00",
+					fontSize = "25",
+					fontStyle = "Bold",
+					outline = "#555500",
+					id = "infamyCount",
+					flexibleHeight = "0",
+					flexibleWidth = "0"
+				},
+				children = {}
+			}
+		}
+	})
+
+	if scoreData.totalValue == 0 then
+		scoreData.totalValue = "~"
+		if scoreData.infamy == "" and scoreData.power == "" and scoreData.boons == "" and scoreData.title == "" then
+			return {
+				tag = "Panel",
+				attributes = {
+					class = "main",
+					height = "300",
+					padding = "0 0 0 0",
+					pivot = "0.5 0",
+					position = "0 5 -300",
+					rotation = "-85 0 0",
+					spacing = "1",
+					width = "100",
+					outline = "#000000",
+					outlineSize = "10",
+					color = "rgba(0, 0, 0, 0.5)",
+					childForceExpandHeight = "true",
+					childForceExpandWidth = "true"
+				},
+				children = {
+					{
+						tag = "Panel",
+						attributes = {
+							class = "totalPanel",
+							height = "150",
+							rectAlignment = "MiddleCenter",
+							width = "100",
+							ignoreLayout = "true",
+							flexibleWidth = "0",
+							flexibleHeight = "0",
+							childForceExpandWidth = "false",
+							childForceExpandHeight = "false"
+						},
+						children = {
+							{
+								tag = "Text",
+								value = scoreData.totalValue,
+								attributes = {
+									id = "totalCount",
+									class = "totalCount",
+									scale = "1.5 3 1.5",
+									color = "#FFFFFF",
+									fontSize = "40",
+									fontStyle = "Bold",
+									outline = "#FF0000",
+									flexibleHeight = "0",
+									flexibleWidth = "0"
+								},
+								children = {}
+							}
+						}
+					}
+				}
+			}
+		end
+	end
+	table.insert(XMLData.children, {
+		tag = "Panel",
+		attributes = {
+			class = "totalPanel",
+			height = "150",
+			rectAlignment = "LowerCenter",
+			width = "100",
+			ignoreLayout = "true",
+			flexibleWidth = "0",
+			flexibleHeight = "0",
+			childForceExpandWidth = "false",
+			childForceExpandHeight = "false" },
+		children = {
+			{
+				tag = "Text",
+				value = scoreData.totalValue,
+				attributes = {
+					id = "totalCount",
+					class = "totalCount",
+					scale = "1.5 3 1.5",
+					color = "#FFFFFF",
+					fontSize = "40",
+					fontStyle = "Bold",
+					outline = "#FF0000",
+					flexibleHeight = "0",
+					flexibleWidth = "0"
+				},
+				children = {}
+			}
+		}
+	})
+
+	return XMLData
+end
+
+local function refreshStatusXML(zone)
+	if S.isInPhase({ "NONE", "SETUP" }) then
+		uiData[zone.guid].statusXML = nil
+		return
+	end
+
+	local statusData = {
+		torpor = Z.isTorpored(zone),
+		exhaustion = false,
+		suspicion = false,
+		enemy = Z.isEnemy(zone),
+		monstrosity = false,
+		color = "clear"
+	}
+
+	if statusData.torpor then
+		local ankhs = Z.getTaggedZoneObjects(zone, { "Ankh" })
+		if #ankhs > 0 then
+			local bg = getBattleground("center")
+			if bg ~= nil then
+				U.waitRestingSequence(U.map(ankhs, function(ankh) return function() return bg.call("SendObjectHome", ankh) end end))
+				-- U.forEach(ankhs, function(ankh) bg.call("SendObjectHome", ankh) end)
+				UI.setAttributes("anarchRevoltText", { color = nil, outline = nil })
+				UI.setValue("anarchRevoltText", "If a vampire caused the torpor, award them " .. #ankhs * 2 .. " Power.")
+				U.splashUIElement("anarchRevoltNotice", 3, 0.25)
+			end
+		end
+	end
+
+	if S.isInPhase("PLAY") and isCheckingSuspicion and not statusData.torpor then
+		statusData.exhaustion = false
+		if Z.countInfamy(zone) == maxInfamy then
+			Z.getCard(zone).highlightOn({ 1, 1, 1 })
+			statusData.suspicion = true
+		else
+			Z.getCard(zone).highlightOff()
+			statusData.color = "rgba(0, 0, 0, 0.98)"
+			statusData.suspicion = false
+		end
+	else
+		Z.getCard(zone).highlightOff()
+		statusData.suspicion = false
+		statusData.exhaustion = not statusData.torpor and S.isInPhase({ "INIT", "PLAY" }) and Z.isExhausted(zone)
+	end
+
+	uiData[zone.guid].statusXML = getStatusXML(statusData)
+end
+
+local function refreshScoreXML(zone)
+	-- ONLY if one has already been set
+	if uiData[zone.guid].scoreXML == nil then return end
+
+
+	local scoreData = { zone = zone, power = Z.countPower(zone) }
+
+	if isShowingPowerOnly == true and scoreData.power == 0 then
+		uiData[zone.guid].scoreXML = {}
+		return
+	end
+	if isShowingPowerOnly ~= true then
+		scoreData.infamy = Z.countInfamy(zone)
+		scoreData.boons = Z.countBoons(zone)
+		if Z.hasTitle(zone) then
+			scoreData.title = 2
+		else
+			scoreData.title = 0
+		end
+	end
+
+	uiData[zone.guid].scoreXML = getScoreXML(scoreData)
+end
+
+local function refreshXML(zone)
+	if not Z.hasCard(zone) then
+		uiData[zone.guid] = {}
+		return
+	end
+	initXML(zone)
+	refreshStatusXML(zone)
+	refreshScoreXML(zone)
+end
+
+local function refreshUI(zone)
+	if not S.isInPhase({ "INIT", "PLAY", "SCORING", "MISSIONS" }) then return end
+	refreshXML(zone)
+	if not uiData[zone.guid].statusXML and not uiData[zone.guid].scoreXML then
+		zone.UI.setXml("")
+		return
+	end
+	local XML = {}
+	if uiData[zone.guid].statusXML then
+		table.insert(XML, uiData[zone.guid].statusXML)
+	end
+	if uiData[zone.guid].scoreXML then
+		table.insert(XML, uiData[zone.guid].scoreXML)
+	end
+
+	zone.UI.setXmlTable(XML)
+end
+
+function Z.refreshUI(zone)
+	if zone == nil then
+		for _, z in pairs(G.getBloodlineZones()) do
+			refreshUI(z)
+		end
+	else
+		refreshUI(zone)
+	end
+end
+
+function Z.showScores()
+	for _, zone in pairs(G.getBloodlineZones()) do
+		initXML(zone)
+		uiData[zone.guid].scoreXML = {}
+	end
+	Z.refreshUI()
+end
+
+function Z.hideScores()
+	isShowingPowerOnly = false
+	for _, zone in pairs(G.getBloodlineZones()) do
+		initXML(zone)
+		uiData[zone.guid].scoreXML = nil
+	end
+	Z.refreshUI()
+end
+
+function Z.showPowerOnly()
+	isShowingPowerOnly = true
+	Z.showScores()
+end
+
+local function refreshMaxInfamy()
+	maxInfamy = 0
+	for _, zone in pairs(G.getBloodlineZones()) do
+		local infamyCount = Z.countInfamy(zone)
+		if infamyCount > maxInfamy then
+			maxInfamy = infamyCount
+		end
+	end
+end
+function Z.showSuspicion()
+	isCheckingSuspicion = true
+	refreshMaxInfamy()
+	for var, val in pairs(C.Lighting.suspicion) do
+		Lighting[var] = val
+	end
+	Lighting.apply()
+	Z.refreshUI()
+end
+
+function Z.hideSuspicion()
+	isCheckingSuspicion = false
+	maxInfamy = 0
+	for var, val in pairs(C.Lighting.standard) do
+		Lighting[var] = val
+	end
+	Lighting.apply()
+	Z.refreshUI()
+end
+
+local function checkToLockCard(zone)
+	local card = Z.getCard(zone)
+	if card == nil then return end
+	if S.isInPhase({"PLAY", "SCORING"}) and #Z.getTaggedZoneObjects(zone, {"Power", "Infamy", "Boon", "Ankh", "TitleToken", "ExhaustTorpor", "ClanScheme"}) > 0 then
+		card.setLock(true)
+	else
+		card.setLock(false)
+	end
+end
+
+local vertBases = {standard = -0.11, fourthRow = 0.17}
+local vertStep = 0.03
+local zoneVertDisp = 0.12
+local mDownDisp = 1
+
+function Z.alignCard(zone)
+	local vertBase = vertBases.standard
+	if zone.hasTag("FourthRow") then vertBase = vertBases.fourthRow end
+	local monstrosityTags = { "Monstrosity_1", "Monstrosity_2", "Monstrosity_3" }
+	local allTags = U.concat({ "TopChar" }, monstrosityTags)
+
+	local function switchCharCardTag(card, tag)
+		if tag == nil then return U.forEach(allTags, function(t) card.removeTag(t) end) end
+		if not U.isIn(tag, allTags) then return end
+		U.forEach(allTags, function(t)
+			if t == tag then
+				card.addTag(tag)
+			else
+				card.removeTag(t)
+			end
+		end)
+	end
+
+	local zonePos = zone.getPosition()
+	local topCardPos = U.clone(zonePos)
+	local zoneCharCards = U.filter(Z.getCards(zone), function(card)
+		return not Z.isInHigherBloodlineZone(zone, card)
+	end)
+	local cardRotation = zone.getRotation()
+	cardRotation.y = 180
+
+	local clans = S.getStateVal("clans")
+	local isTzimisce = clans ~= nil and clans[Z.getZoneColor(zone)] == "Tzimisce"
+
+	if #zoneCharCards == 0 then
+		zonePos.y = vertBase + zoneVertDisp
+		zone.setPosition(zonePos)
+	elseif #zoneCharCards == 1 or not isTzimisce then
+		if Z.isInOtherBloodlineZone(zone, zoneCharCards[1]) then return end
+		cardRotation.z = U.pAngle(zoneCharCards[1].getRotation().z, 180)
+		Wait.time(function()
+			local topCard = zoneCharCards[1]
+			switchCharCardTag(topCard, "TopChar")
+			topCardPos.y = vertBase
+			zonePos.y = topCardPos.y + zoneVertDisp
+			topCard.setRotation(cardRotation)
+			topCard.setPositionSmooth(topCardPos)
+			zone.setPosition(zonePos)
+			Wait.time(function() checkToLockCard(zone) end, 0.5)
+		end, 0.5)
+	else
+		cardRotation.z = U.pAngle(zoneCharCards[1].getRotation().z, 180)
+		-- Tzimisce with more than one character card: Craft Monstrosity
+		-- find newCard
+		local newCard = U.find(zoneCharCards, function(card) return not U.hasAnyTag(card, allTags) end)
+		if newCard ~= nil and Z.isInOtherBloodlineZone(zone, newCard) then return end
+
+		-- find topCard
+		local topCard = U.find(zoneCharCards, function(card) return card.hasTag("TopChar") end)
+
+		-- find monstrosity cards
+		local monstrosityCards = {}
+		for _, tag in ipairs(monstrosityTags) do
+			local thisCard = U.find(zoneCharCards,
+				function(card) return card.hasTag(tag) and not Z.isInHigherBloodlineZone(zone, card) end)
+			if thisCard then
+				-- thisCard.use_hands = false
+				if #monstrosityCards < 3 then
+					table.insert(monstrosityCards, thisCard)
+				end
+			end
+		end
+
+		-- log("Zone Char Cards: " .. #zoneCharCards)
+		-- log("Monstrosity Num: " .. #monstrosityCards)
+
+		-- re-examine cards, assigning them to new roles as appropriate
+		if topCard == nil then
+			topCard = table.remove(monstrosityCards, 1)
+			switchCharCardTag(topCard, "TopChar")
+		end
+
+		if newCard ~= nil then
+			if #monstrosityCards < 3 then
+				table.insert(monstrosityCards, newCard)
+			end
+		end
+
+		-- re-examine monstrosity cards and update their tags
+		-- for i = 1, #monstrosityCards do
+		-- 	local mCard = monstrosityCards[i]
+		-- 	switchCharCardTag(mCard, "Monstrosity_" .. i)
+		-- end
+
+		-- set top card position and zone position based on number of cards
+		topCardPos.y = vertBase + vertStep + (#monstrosityCards * vertStep)
+		zonePos.y = topCardPos.y + zoneVertDisp
+		topCard.setLock(true)
+		topCard.setRotation(cardRotation)
+		topCard.setPositionSmooth(topCardPos)
+		zone.setPosition(zonePos)
+
+		-- go through monstrosity card tags and set positions of those cards
+		local mPos = U.clone(topCardPos)
+		local lastCard
+		for i = 1, #monstrosityCards do
+			local mCard = monstrosityCards[i]
+			switchCharCardTag(mCard, "Monstrosity_" .. i)
+			-- log("i = " .. i .. ", #mCards = " .. #monstrosityCards)
+			mPos.y = mPos.y - vertStep
+			mPos.z = mPos.z - mDownDisp
+			mCard.setLock(true)
+			mCard.setRotation(cardRotation)
+			mCard.setPosition(mPos)
+			mCard.sticky = false
+			lastCard = mCard
+		end
+		if lastCard ~= nil then
+			-- log("Unlocking last card")
+			-- log(lastCard.getTags())
+			Wait.time(function() lastCard.setLock(false) end, 1)
+		end
+	end
+
+	-- now align Brujah enemy cards
+	local zoneSchemeCards = Z.getTaggedZoneObjects(zone, { "ClanScheme", "Brujah" }, true)
+	if #zoneSchemeCards == 0 then return end
+	if #zoneCharCards == 0 then
+		U.forEach(zoneSchemeCards, function(card)
+			card.setLock(false)
+			card.setScale({1, 1, 1})
+			card.use_hands = true
+		end)
+	else
+		local zoneBounds = U.getZoneBounds(zone)
+		for i = 1, #zoneSchemeCards do
+			local card = zoneSchemeCards[i]
+			if i == 1 then
+				card.setScale({ 0.33, 1, 0.33 })
+				card.setRotation({ x = 0, y = 180, z = 0 })
+				card.setPosition({
+					x = zoneBounds.x.max - 0.4,
+					y = topCardPos.y + 0.03,
+					z = zoneBounds.z.max - 0.4
+				})
+			else
+				card.setScale({ 1, 1, 1 })
+			end
+		end
+	end
+
+
+
+
+
+
+
+	-- if #zoneCharCards == 1 then
+	-- 	topCard = zoneCharCards[1]
+	-- 	topCardPos.y = vertBase
+	-- end
+
+	-- log({numCards = #zoneCharCards})
+
+	-- local function alignTopCard()
+
+	-- end
+	-- local function alignEnemySchemeCards()
+	-- 	local zoneBounds = U.getZoneBounds(zone)
+	-- 	for i = 1, #zoneSchemeCards do
+	-- 		local card = zoneSchemeCards[i]
+	-- 		if i == 1 then
+	-- 			card.setScale({ 0.33, 1, 0.33 })
+	-- 			card.setRotation({ x = 0, y = 180, z = 0 })
+	-- 			card.setPosition({
+	-- 					x = zoneBounds.x.max - 0.4,
+	-- 					y = 0.05,
+	-- 					z = zoneBounds.z.max - 0.4
+	-- 			})
+	-- 		else
+	-- 			card.setScale({1, 1, 1})
+	-- 		end
+	-- 	end
+	-- end
+	-- local function alignMonstrosityCards()
+	-- 	local zoneCharCards = Z.getCards(zone)
+	-- 	-- find monstrosityCards
+	-- 	local monstrosityCards = U.filter(zoneCharCards, function(card) return U.hasAnyTag(card, monstrosityTags) end)
+	-- 	-- find TopCard
+	-- 	local topCard = U.find(zoneCharCards, function(card) return card.hasTag("TopChar") end)
+	-- 	-- lock all top and monstrosity cards in zone
+	-- 	U.forEach(U.concat({topCard}, monstrosityCards), function(card) card.setLock(true) end)
+
+	-- 	for i = 1, #monstrosityCards do
+	-- 		local tag = monstrosityTags[i]
+	-- 		local card = U.find(monstrosityCards, function(card) return card.hasTag(tag) end)
+	-- 		card.setRotation({x=358.15, y = 180, z = 0})
+	-- 		card.setPosition({
+	-- 			x = topCardPos.x,
+	-- 			y = -0.13,
+	-- 			z = topCardPos.z - i
+	-- 		})
+	-- 		-- if this is the last monstrosity card, unlock it
+	-- 		if i == #monstrosityCards then
+	-- 			-- Wait.time(function() card.setLock(false) end, 0.5)
+	-- 		end
+	-- 	end
+	-- end
+
+	-- if #zoneCharCards == 1 then
+	-- 	zoneCharCards[1].addTag("TopChar")
+	-- 	topCardPos.y = -0.11
+	-- 	alignTopCard()
+	-- elseif #zoneCharCards > 1 then
+	-- 	local topCard = U.find(zoneCharCards, function(card) return card.hasTag("TopChar") end)
+	-- 	topCardPos.y = -0.09
+	-- 	alignTopCard()
+	-- 	local monstrosityCards = U.filter(zoneCharCards, function(card) return U.hasAnyTag(card, monstrosityTags) end)
+	-- 	if #zoneCharCards <= 4 then -- There's room for another monstrosity card
+	-- 		local newCard = U.find(zoneCharCards, function(card)
+	-- 			return not U.hasAnyTag(card, U.concat({ "TopChar" }, monstrosityTags)) end)
+	-- 		if topCard ~= nil and newCard ~= nil then
+	-- 			newCard.addTag("Monstrosity_" .. #monstrosityCards + 1)
+	-- 		end
+	-- 	end
+	-- 	alignMonstrosityCards()
+	-- end
+
+	-- zonePos.y = topCardPos.y + 0.12
+	-- zone.setPosition(zonePos)
+
+	-- -0.11, -0.08, -0
+	-- 		-- lock and elevate the top card
+	-- 		topCard.setLock(true)
+	-- 		Wait.time(function() topCard.setLock(false) end, 1)
+	-- 		local topPos = topCard.getPosition()
+	-- 		topCard.setPositionSmooth({
+	-- 				x = topPos.x,
+	-- 				y = minY + heightStep * (#monstrosityCards + 1),
+	-- 				z = topPos.z
+	-- 		})
+	-- 		local zonePos = zone.getPosition()
+	-- 		zone.setPosition({
+	-- 				x = zonePos.x,
+	-- 				y = 0.01 + heightStep * (#monstrosityCards + 1),
+	-- 				z = zonePos.z
+	-- 		})
+
+	-- 		for i = 1, #monstrosityCards + 1 do
+	-- 			local tag = "Monstrosity_" .. i
+	-- 			local thisCard = U.find(zoneCharCards, function(card) return card.hasTag(tag) end)
+	-- 			if thisCard ~= nil then
+	-- 				thisCard.setLock(true)
+	-- 				thisCard.setPositionSmooth({
+	-- 						x = topPos.x,
+	-- 						y = minY + heightStep * (#monstrosityCards + 1 - i),
+	-- 						z = topPos.z - vertStep * i
+	-- 				})
+	-- 				thisCard.setRotation({ x = 0, y = 180, z = 0 })
+	-- 				Wait.time(function() thisCard.setLock(false) end, 1)
+	-- 			end
+	-- 		end
+	-- 	end
+	-- end
+end
+
+function Z.discardEnemyScheme(enemyScheme)
+	if enemyScheme == nil then return end
+	local pos = enemyScheme.getPosition()
+	pos.y = pos.y + 0.5
+	enemyScheme.setPosition(pos)
+	enemyScheme.setScale({ 1, 1, 1 })
+	enemyScheme.setLock(false)
+	local playerColor
+	local clans = S.getStateVal("clans")
+	if clans == nil then return end
+	if clans.Red == "Brujah" then
+		playerColor = "Red"
+	elseif clans.Yellow == "Brujah" then
+		playerColor = "Yellow"
+	elseif clans.Blue == "Brujah" then
+		playerColor = "Blue"
+	else
+		return
+	end
+	local schemeDiscard = getObjectFromGUID(G.playerObjs[playerColor].schemeDiscardSpot)
+	pos = schemeDiscard.getPosition()
+	pos.y = pos.y + 0.5
+	enemyScheme.setPositionSmooth(pos)
+end
+
+function Z.discardTorporedVamps()
+	local discardPos = getObjectFromGUID(G.globalSpots.charDiscard).getPosition()
+	discardPos.y = discardPos.y + 1
+	for _, zone in pairs(G.getBloodlineZones()) do
+		if (Z.isTorpored(zone)) then
+			-- for _, obj in pairs(Z.getTaggedZoneObjects(zone, { "Power", "Infamy", "ExhaustTorpor" })) do
+			-- 	obj.destruct()
+			-- end
+			-- U.forEach(Z.getBoons(zone), function(boon)
+			-- 	local boonClan = string.gsub(boon.getName(), " Boon", "")
+			-- 	local clanChest = getObjectFromGUID(G.storage.clan[boonClan])
+			-- 	clanChest.putObject(boon)
+			-- end)
+			U.forEach(Z.getCards(zone), function(card)
+				card.setPosition(discardPos)
+				card.setLock(false)
+			end)
+			local enemyScheme = Z.getTaggedZoneObjects(zone, { "ClanScheme", "Brujah" }, true)[1]
+			if enemyScheme ~= nil then
+				Z.discardEnemyScheme(enemyScheme)
+			end
+		end
+	end
+end
+
+function Z.returnAnkhs(dir, isAwardingPower)
+	if isAwardingPower == nil then isAwardingPower = true end
+	if not S.isInPhase("PLAY") then isAwardingPower = false end
+
+	for _, zone in pairs(G.getBloodlineZones()) do
+		local returningAnkhs = Z.getAnkhs(zone, dir)
+		-- U.forEach(returningAnkhs, function(obj) BGE.sendAnkhHome(obj) end)
+		if (isAwardingPower and #returningAnkhs > 0) then
+			local powerBox = getObjectFromGUID(G.tokenSources.power);
+			local powerPos = zone.getPosition()
+			powerPos.y = powerPos.y + 1
+			powerBox.takeObject({
+				index = 1,
+				smooth = false,
+				position = powerPos
+			})
+		end
+	end
+end
+
+function Z.burnAnkhs(zone)
+	U.forEach(Z.getAnkhs(zone), function(obj)
+		-- BGE.burnAnkh(obj)
+	end)
+end
+
+function Z.makeSnapsForCourt()
+	local gameTable = getObjectFromGUID("142de3")
+	if gameTable == nil then return end
+
+	local function makeCourtSnap(zone)
+		zone.setScale({ x = 2.37, y = 0.56, z = 4 })
+		local snapPos = zone.getPosition()
+		snapPos.y = -0.11
+		snapPos.z = snapPos.z + 2.33
+		snapPos = gameTable.positionToLocal(snapPos)
+		return {
+			position = snapPos,
+			rotation = { x = 0, y = 0, z = 0 },
+			rotation_snap = true,
+			tags = { "TitleToken" }
+		}
+	end
+
+	-- local function transferSlotSnap(zone)
+	-- 	local cardTile = U.find(zone.getObjects(true), function(obj) return obj.type == "Block" end)
+	-- 	local cardTileSnap = cardTile.getSnapPoints()[1]
+	-- 	local snapPos = zone.getPosition()
+	-- 	snapPos.y = -0.11
+	-- 	if cardTile.getName() ~= "Clan Leader" then
+	-- 		cardTile.destruct()
+	-- 	else
+	-- 		cardTile.setSnapPoints({})
+	-- 	end
+	-- 	return {
+	-- 		position = table.positionToLocal(snapPos),
+	-- 		rotation = {x = 0, y = 0, z = 180},
+	-- 		rotation_snap = true,
+	-- 		tags = cardTileSnap.tags
+	-- 	}
+	-- end
+
+	-- local tableSnaps = U.concat(
+	-- 	U.map(G.getBloodlineZones(), makeCourtSnap),
+	-- 	U.map(G.getBloodlineZones(), transferSlotSnap)
+	-- )
+
+	local tableSnaps = U.map(G.getBloodlineZones(), makeCourtSnap)
+
+	gameTable.setSnapPoints(tableSnaps)
+end
+
+return Z

@@ -2,30 +2,12 @@
   "name": "toronto-rising-tts",
   "version": "1.0.0",
   "description": "Tabletop Simulator LUA modding project",
-  "scripts": {
-    "build:css": "sass UI/styles.scss UI/styles.css",
-    "build:css:watch": "sass --watch UI/styles.scss:UI/styles.css",
-    "build:js": "esbuild UI/src/script.ts --bundle --outfile=UI/script.js --format=iife --global-name=HUD --target=es2020",
-    "build:js:watch": "esbuild UI/src/script.ts --bundle --outfile=UI/script.js --format=iife --global-name=HUD --target=es2020 --watch",
-    "build": "npm run build:css && npm run build:js",
-    "build:watch": "npm-run-all --parallel build:css:watch build:js:watch",
-    "lint": "echo 'Install luacheck for linting: luarocks install luacheck'",
-    "format": "echo 'Install stylua for formatting: cargo install stylua'"
-  },
+  "scripts": {},
   "keywords": [
     "tabletop-simulator",
     "lua",
     "modding"
   ],
   "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "gsap": "^3.12.5"
-  },
-  "devDependencies": {
-    "esbuild": "^0.19.11",
-    "npm-run-all": "^4.1.5",
-    "sass": "^1.77.0",
-    "typescript": "^5.3.3"
-  }
+  "license": "MIT"
 }
