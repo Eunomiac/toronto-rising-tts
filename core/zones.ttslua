@@ -308,9 +308,10 @@ function Z.writePosToTaggedObjectsInZone(zone, tags, mode, stateKey, stateSubKey
             obj.setDescription(descString)
         elseif mode == "state" and U.Type(stateKey) == "string" then
             -- Save to game state
+            -- Convert Vector objects to tables (JSON can't encode userdata)
             local posRotData = {
-                position = pos,
-                rotation = rot
+                position = {x = pos.x, y = pos.y, z = pos.z},
+                rotation = {x = rot.x, y = rot.y, z = rot.z}
             }
             if stateSubKey then
                 S.setStateVal(posRotData, stateKey, stateSubKey, obj.guid)

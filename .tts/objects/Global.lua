@@ -1,314 +1,377 @@
 --[[
-    V:tM V5 Dice Calculation - Global Script
-    Shared dice calculation logic for all dice roller instances
-    This script handles Vampire: The Masquerade 5th Edition dice mechanics
---]]
+    Global Script Entry Point (global.ttslua)
+    This is the main entry point for the TTS module.
+    It bootstraps the module by requiring core libraries and initializing the game state.
+]]
 
---[[ The onLoad event is called after the game save finishes loading. --]]
-function onLoad()
-    print("V:tM V5 Dice System loaded")
+-- Load shared utilities and constants
+local U = require("lib.util")
+local C = require("lib.constants")
 
-    -- Ensure hand zone calculator functions are available globally
-    _G.printHandZonePositions = printHandZonePositions
-    _G.calculateHandZonePositions = calculateHandZonePositions
+-- Load core modules
+local S = require("core.state")
+local M = require("core.main")
+local Z = require("core.zones")
+local Scenes = require("core.scenes")
+local UIH = require("lib.ui_helpers")
 
-    -- Set up the dice results UI
-    -- This creates a full-screen overlay panel for displaying dice results
-    local diceResultsXml = [[
-        <!-- Hidden input for data communication -->
-        <InputField id="dice-results-data" width="1" height="1" position="-1000,-1000,0" active="false" />
+-- Load debug module (only in development - exposes test functions globally)
+local DEBUG = require("core.debug")
 
-        <!-- Full-screen overlay for dice results (initially hidden) -->
-        <Panel id="dice-results-overlay" width="1920" height="1080" color="#000000" position="0,0,0" opacity="0" active="false">
-            <!-- Results container panel -->
-            <Panel id="dice-results-container" width="600" height="400" color="#1a1a2e" position="0,0,0" opacity="0">
-                <!-- Header text -->
-                <Text id="dice-results-header" fontSize="20" color="#ecf0f1" alignment="UpperCenter" position="0,-150,0" text="" />
-                <!-- Dice values text -->
-                <Text id="dice-values" fontSize="18" color="#bdc3c7" alignment="MiddleCenter" position="0,-50,0" text="" />
-                <!-- Results text (main display) -->
-                <Text id="dice-results" fontSize="32" color="#3498db" alignment="MiddleCenter" position="0,50,0" text="" />
-            </Panel>
-        </Panel>
-    ]]
+-- Load Console++ integration (optional - enables external command support)
+-- This allows external tools to send commands to the game via onExternalMessage
+require("lib.console")
 
-    if UI then
-        UI.setXml(diceResultsXml)
-        print("[DEBUG] Global: Dice results UI set via UI.setXml()")
+-- Initialize game state table
+gameState = {}
+
+--[[
+    Load UI XML
+    NOTE: TTS requires XML to be loaded as a string via UI.setXml().
+
+    The UI XML is split into modular components using XML bundling:
+    - ui/hud.xml (main file with <Include> tags)
+    - ui/defaults.xml, ui/admin.xml, ui/player_hud.xml, ui/shared.xml
+
+    When you use "Save and Play", the TTS Tools extension:
+    1. Reads .tts/objects/Global.xml (which includes all components)
+    2. Bundles all <Include> tags into a single XML string
+    3. Saves the bundled result to .tts/bundled/Global.xml
+
+    TODO: After using "Save and Play", check .tts/bundled/Global.xml and embed
+    the bundled XML content as a string constant below, or find a way to load it automatically.
+]]
+local HUD_XML_PLACEHOLDER = [[<Panel><Text text='VTM5E Module Loaded - Use "Save and Play" to bundle XML, then embed bundled content from .tts/bundled/Global.xml'/></Panel>]]
+
+--[[
+    onLoad - Called when the game loads or is reset
+    @param saved_data - JSON string containing saved game state
+]]
+function onLoad(saved_data)
+    print("--- VTM5E Module Loaded ---")
+
+    -- Clear all debug logs to start fresh for this session
+    DEBUG.clearAllLogs()
+
+    -- Initialize game state from saved data or defaults
+    S.InitializeGameState(saved_data)
+
+    -- Initialize zones module
+    Z.onLoad()
+
+    -- Initialize main module
+    M.onLoad()
+
+    -- Initialize scenes module (loads default or saved scene)
+    Scenes.onLoad()
+
+    -- Load and display UI
+    -- TODO: Replace HUD_XML_PLACEHOLDER with actual XML content from ui/hud.xml
+    UI.setXml(HUD_XML_PLACEHOLDER)
+
+    -- Update UI displays with current state
+    updateUIDisplays()
+
+    -- Debug module help (optional - shows available test commands)
+    -- DEBUG.help()
+
+    print("Module initialization complete.")
+end
+
+--[[
+    onSave - Called when the game is saved
+    @return JSON string containing game state to save
+]]
+function onSave()
+    -- Wrap in pcall to catch any errors during save
+    -- This prevents the save system from crashing and repeating errors
+    local success, result = pcall(function()
+        -- Get save-safe state (whitelist approach - only includes explicitly listed fields)
+        local state = S.getGameState(true)
+
+        if state == nil then
+            return ""  -- Return empty string if state is nil
+        end
+
+        if type(state) ~= "table" then
+            print("WARNING: onSave() - state is not a table, type: " .. type(state))
+            return ""
+        end
+
+        -- Dump complete gameState to file before save
+        -- DEBUG.logStateToFile("BEFORE_SAVE")
+
+        -- Debug: Inspect players structure before encoding
+        if state.players then
+            print("DEBUG onSave: Inspecting players structure...")
+            print("DEBUG onSave: players type: " .. type(state.players))
+            print("DEBUG onSave: players keys count: " .. (state.players and #U.getKeys(state.players) or 0))
+
+            -- First, check what's actually in the raw gameState.players (before buildSaveState)
+            print("DEBUG onSave: Checking RAW gameState.players structure...")
+            local rawPlayers = S.getGameState(false).players
+            if rawPlayers then
+                print("DEBUG onSave: Raw players type: " .. type(rawPlayers))
+                print("DEBUG onSave: Raw players has " .. #U.getKeys(rawPlayers) .. " keys")
+
+                -- Check the "Red" entry specifically
+                if rawPlayers["Red"] then
+                    print("DEBUG onSave: Raw players['Red'] exists, type: " .. type(rawPlayers["Red"]))
+                    if type(rawPlayers["Red"]) == "table" then
+                        print("DEBUG onSave: Raw players['Red'] is a table with keys: " .. table.concat(U.getKeys(rawPlayers["Red"]), ", "))
+                        -- Check for metatable
+                        local mt = getmetatable(rawPlayers["Red"])
+                        if mt then
+                            print("DEBUG onSave: WARNING - players['Red'] has a metatable!")
+                            for k, v in pairs(mt) do
+                                print("DEBUG onSave:   metatable[" .. tostring(k) .. "] = " .. tostring(v) .. " (type: " .. type(v) .. ")")
+                            end
+                        end
+                        -- Try to access each field individually
+                        for key, val in pairs(rawPlayers["Red"]) do
+                            local keyType = type(key)
+                            local valType = type(val)
+                            print("DEBUG onSave:   Raw Red[" .. tostring(key) .. "] (key type: " .. keyType .. ") = " .. tostring(val) .. " (type: " .. valType .. ")")
+                        end
+                    else
+                        print("DEBUG onSave: Raw players['Red'] is NOT a table, it's: " .. type(rawPlayers["Red"]))
+                    end
+                end
+            end
+
+            -- Now check the sanitized version
+            print("DEBUG onSave: Checking SANITIZED state.players structure...")
+            for color, playerData in pairs(state.players) do
+                print("DEBUG onSave: Player " .. tostring(color) .. " type: " .. type(playerData))
+                if type(playerData) == "table" then
+                    print("DEBUG onSave: Player " .. tostring(color) .. " keys: " .. table.concat(U.getKeys(playerData), ", "))
+                    for key, val in pairs(playerData) do
+                        local valType = type(val)
+                        print("DEBUG onSave:   " .. tostring(key) .. " = " .. tostring(val) .. " (type: " .. valType .. ")")
+                    end
+                end
+            end
+
+            -- Try encoding just the "Red" entry to isolate the problem
+            if state.players["Red"] then
+                print("DEBUG onSave: Testing encoding of just 'Red' entry...")
+                local redSuccess, redResult = pcall(function()
+                    return JSON.encode({Red = state.players["Red"]})
+                end)
+                if not redSuccess then
+                    print("ERROR: onSave() - Failed to encode just 'Red' entry: " .. tostring(redResult))
+                else
+                    print("DEBUG onSave: Successfully encoded 'Red' entry")
+                end
+            end
+        end
+
+        -- Encode the save-safe state
+        local encoded = JSON.encode(state)
+        if encoded == nil then
+            print("WARNING: onSave() - JSON.encode returned nil")
+            return ""
+        end
+
+        return encoded
+    end)
+
+    if success then
+        return result or ""  -- Ensure we always return a string
     else
-        print("[ERROR] Global: UI object not available in onLoad")
+        -- Log error but don't crash - return empty string to allow save to continue
+        print("ERROR in onSave(): " .. tostring(result))
+        log({onSaveError = result, traceback = debug.traceback()})
+        DEBUG.logToFile("ERROR", "onSave() failed: " .. tostring(result), "debug_log")
+        return ""  -- Return empty string on error (TTS will save empty state)
     end
 end
 
 --[[
-    Send dice results to the Custom UI
-    Called from dice roller scripts via Global.call()
-    @param uiData - Table with dice results data
---]]
-function sendDiceResultsToUI(uiData)
-    if not UI then
-        print("[ERROR] Global: UI not available")
+    Zone Activation/Deactivation Functions
+    These functions are called by the zones module to enable/disable zone event handlers.
+]]
+function ActivateZones()
+    onObjectEnterZone = Z.onObjectEnterZone
+    onObjectLeaveZone = Z.onObjectLeaveZone
+end
+
+function DeactivateZones()
+    ---@diagnostic disable-next-line: assign-type-mismatch
+    onObjectEnterZone = nil  -- TTS allows nil to disable zone handlers
+    ---@diagnostic disable-next-line: assign-type-mismatch
+    onObjectLeaveZone = nil  -- TTS allows nil to disable zone handlers
+end
+
+--[[
+    UI Event Handlers
+    These functions are called by UI buttons via onClick attributes in the XML.
+]]
+
+--- Toggle panel visibility (collapse/expand)
+-- Used by toggle buttons (toggleElem_*) in the UI
+-- @param player Player The player who clicked the button
+-- @param button string Button value (typically "-1" for single click, "-2" for double click)
+-- @param id string The UI element ID (e.g., "toggleElem_storytellerControls")
+function HUD_togglePanel(player, button, id)
+    -- Extract the element ID by removing "toggleElem_" prefix
+    local elemID = string.gsub(id, "^toggleElem_", "")
+    UIH.toggleXmlElement(elemID, button)
+end
+
+--- Change scene preset
+-- Called when a scene button is clicked (e.g., "scene_elysium")
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID (e.g., "scene_elysium")
+function HUD_changeScene(player, button, id)
+    -- Extract scene name from ID (remove "scene_" prefix)
+    local sceneName = string.gsub(id, "^scene_", "")
+
+    -- Validate scene name
+    local scene = Scenes.getScene(sceneName)
+    if scene == nil then
+        U.AlertGM("HUD_changeScene: Invalid scene name: " .. tostring(sceneName))
         return
     end
 
-    print("[DEBUG] Global: Sending dice results to UI")
+    -- Load scene with smooth transition (2 seconds)
+    Scenes.fadeToScene(sceneName, 2.0)
 
-    -- Extract data
-    local playerName = uiData.playerName or ""
-    local diceValues = uiData.diceValues or ""
-    local resultMessage = uiData.resultMessage or "No results"
-    local totalSuccesses = uiData.totalSuccesses or 0
-    local hasMessyCritical = uiData.hasMessyCritical or false
-    local isTotalFailure = uiData.isTotalFailure or false
+    -- Update UI display
+    updateUIDisplays()
 
-    -- Determine text color based on results
-    local resultColor = "#3498db"  -- Default blue
-    if hasMessyCritical then
-        resultColor = "#e74c3c"  -- Red for messy critical
-    elseif isTotalFailure then
-        resultColor = "#95a5a6"  -- Gray for failure
-    elseif totalSuccesses > 1 then
-        resultColor = "#f39c12"  -- Orange for critical
-    elseif totalSuccesses == 1 then
-        resultColor = "#2ecc71"  -- Green for success
-    end
-
-    -- Set header
-    local headerText = playerName ~= "" and (playerName .. "'s Roll") or "Dice Roll"
-    UI.setAttribute("dice-results-header", "text", headerText)
-
-    -- Set dice values (if provided)
-    if diceValues ~= "" then
-        UI.setAttribute("dice-values", "text", diceValues)
-    else
-        UI.setAttribute("dice-values", "text", "")
-    end
-
-    -- Set results
-    UI.setAttribute("dice-results", "text", resultMessage)
-    UI.setAttribute("dice-results", "color", resultColor)
-
-    -- Animate in: Show overlay, then animate container
-    -- Step 1: Activate and fade in overlay
-    UI.setAttribute("dice-results-overlay", "active", "true")
-    UI.setAttribute("dice-results-overlay", "opacity", "0")
-
-    -- Fade in overlay smoothly
-    Wait.time(function() UI.setAttribute("dice-results-overlay", "opacity", "0.2") end, 0.1)
-    Wait.time(function() UI.setAttribute("dice-results-overlay", "opacity", "0.4") end, 0.2)
-    Wait.time(function() UI.setAttribute("dice-results-overlay", "opacity", "0.6") end, 0.3)
-    Wait.time(function() UI.setAttribute("dice-results-overlay", "opacity", "0.7") end, 0.4)
-
-    -- Step 2: Show and animate container (fade in)
-    Wait.time(function()
-        UI.setAttribute("dice-results-container", "opacity", "0")
-        Wait.time(function() UI.setAttribute("dice-results-container", "opacity", "0.5") end, 0.1)
-        Wait.time(function() UI.setAttribute("dice-results-container", "opacity", "1") end, 0.2)
-        print("[DEBUG] Global: Dice results displayed: " .. resultMessage)
-    end, 0.5)
-
-    -- Step 3: After 5 seconds, fade out
-    Wait.time(function()
-        -- Fade out container
-        UI.setAttribute("dice-results-container", "opacity", "0.5")
-        Wait.time(function()
-            UI.setAttribute("dice-results-container", "opacity", "0")
-            -- Fade out overlay
-            Wait.time(function() UI.setAttribute("dice-results-overlay", "opacity", "0.5") end, 0.1)
-            Wait.time(function() UI.setAttribute("dice-results-overlay", "opacity", "0.3") end, 0.2)
-            Wait.time(function() UI.setAttribute("dice-results-overlay", "opacity", "0.1") end, 0.3)
-            Wait.time(function()
-                UI.setAttribute("dice-results-overlay", "opacity", "0")
-                UI.setAttribute("dice-results-overlay", "active", "false")
-            end, 0.4)
-        end, 0.2)
-    end, 5.0)
+    print("HUD: Scene changed to " .. sceneName .. " by " .. player.color)
 end
 
---[[
-    Calculate V:tM V5 dice results
-    @param diceData - Table of dice values with metadata: {value=number, isHunger=boolean}
-    @return Table with results: {successes, totalSuccesses, hasMessyCritical, isTotalFailure, hasBestialFailure, message}
---]]
-function calculateV5DiceResults(diceData)
-    local successes = 0
-    local tens = {}
-    local hungerOnes = false
-    local totalSuccesses = 0
+--- Advance game phase
+-- Called when a phase button is clicked (e.g., "phase_play")
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID (e.g., "phase_play")
+function HUD_advancePhase(player, button, id)
+    -- Extract phase name from ID (remove "phase_" prefix)
+    local phaseName = string.gsub(id, "^phase_", "")
 
-    -- First pass: count successes and identify 10s and hunger 1s
-    for _, die in ipairs(diceData) do
-        local value = tonumber(die.value)
-        local isHunger = die.isHunger or false
-
-        if value >= 6 and value <= 10 then
-            successes = successes + 1
-            if value == 10 then
-                table.insert(tens, {value=value, isHunger=isHunger})
-            end
-        end
-
-        -- Check for bestial failure (hunger die showing 1)
-        if isHunger and value == 1 then
-            hungerOnes = true
-        end
-    end
-
-    -- Calculate paired 10s (criticals)
-    local pairedTens = 0
-    local hasHungerInPair = false
-
-    -- Count pairs of 10s
-    if #tens >= 2 then
-        -- Group 10s into pairs
-        local tensCount = #tens
-        pairedTens = math.floor(tensCount / 2)
-
-        -- Check if any pair includes a hunger die
-        -- Check all tens that are part of pairs
-        for i = 1, pairedTens * 2 do
-            if tens[i] and tens[i].isHunger then
-                hasHungerInPair = true
-                break
-            end
-        end
-
-        -- Each pair grants +2 bonus successes
-        -- The 10s are already counted as successes (6-10 = success)
-        -- So total = base successes + (pairs * 2 bonus)
-        totalSuccesses = successes + (pairedTens * 2)
-    else
-        totalSuccesses = successes
-    end
-
-    -- Determine special conditions
-    local hasMessyCritical = pairedTens > 0 and hasHungerInPair
-    local isTotalFailure = totalSuccesses == 0
-    local hasBestialFailure = hungerOnes and isTotalFailure
-
-    -- Build result message
-    local message = ""
-    if totalSuccesses > 1 then
-        message = message .. tostring(totalSuccesses) .. " Successes"
-    elseif totalSuccesses == 1 then
-        message = message .. "1 Success"
-    else
-        message = message .. "Total Failure"
-    end
-
-    if pairedTens > 0 then
-        if hasMessyCritical then
-            message = message .. " • Messy Critical!"
-        else
-            message = message .. " • Critical!"
-        end
-    end
-
-    if hasBestialFailure then
-        message = message .. " • POSSIBLE Bestial Failure (check if roll succeeded)"
-    elseif hungerOnes and not isTotalFailure then
-        message = message .. " • Hunger die showed 1 (check for bestial failure)"
-    end
-
-    return {
-        successes = successes,
-        totalSuccesses = totalSuccesses,
-        pairedTens = pairedTens,
-        hasMessyCritical = hasMessyCritical,
-        isTotalFailure = isTotalFailure,
-        hasBestialFailure = hasBestialFailure,
-        hungerOnes = hungerOnes,
-        message = message
+    -- Map UI button IDs to actual phase constants
+    local phaseMap = {
+        play = C.Phases.PLAY,
+        combat = C.Phases.COMBAT,
+        -- Add more phase mappings as needed
     }
-end
 
---[[
-    Format dice values for display
-    @param diceData - Table of dice values: {value=number, isHunger=boolean}
-    @return Formatted string of dice values
---]]
-function formatDiceValues(diceData)
-    local values = {}
-    for _, die in ipairs(diceData) do
-        local value = tonumber(die.value)
-        local display = tostring(value)
-        if die.isHunger then
-            display = display .. "H"  -- Mark hunger dice
-        end
-        table.insert(values, display)
+    local targetPhase = phaseMap[phaseName]
+    if targetPhase == nil then
+        U.AlertGM("HUD_advancePhase: Invalid phase: " .. tostring(phaseName))
+        return
     end
-    return table.concat(values, ", ")
+
+    -- Advance phase
+    M.advancePhase(targetPhase)
+
+    -- Update UI display
+    updateUIDisplays()
+
+    print("HUD: Phase advanced to " .. targetPhase .. " by " .. player.color)
 end
 
---[[ The onUpdate event is called once per frame. --]]
-function onUpdate()
-    --[[ Not used for dice calculations --]]
+--- Reset game state
+-- Called when the "Reset Game" button is clicked
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_resetGame(player, button, id)
+    -- Confirm reset (optional - you might want to add a confirmation dialog)
+    S.resetGameState()
+
+    -- Reset modules
+    Scenes.resetScene(0)  -- Instant reset
+
+    -- Update UI
+    updateUIDisplays()
+
+    print("HUD: Game reset by " .. player.color)
+    broadcastToAll("Game has been reset.", {1, 0, 0})
+end
+
+--- Save game state explicitly
+-- Called when the "Save State" button is clicked
+-- Note: TTS also calls onSave() automatically, but this can be used for explicit saves
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_saveState(player, button, id)
+    -- Trigger save (onSave will be called by TTS)
+    -- This is mainly for UI feedback
+    local state = S.getGameState()
+    local stateStr = JSON.encode(state)
+
+    print("HUD: Game state saved by " .. player.color)
+    broadcastToColor("Game state saved successfully.", {0, 1, 0}, player.color)
+end
+
+--- Toggle zones active/inactive
+-- Called when the "Toggle Zones" debug button is clicked
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_toggleZones(player, button, id)
+    -- Check current zone state
+    local zonesActive = S.getStateVal("zones", "allZonesLocked")
+
+    if zonesActive == true then
+        Z.activateZones()
+        broadcastToColor("Zones activated.", {0, 1, 0}, player.color)
+    else
+        Z.deactivateZones()
+        broadcastToColor("Zones deactivated.", {1, 0, 0}, player.color)
+    end
+
+    print("HUD: Zones toggled by " .. player.color)
+end
+
+--- Log current game state to console (debug function)
+-- Called when the "Log State" debug button is clicked
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_logState(player, button, id)
+    local state = S.getGameState()
+    print("=== GAME STATE ===")
+    print(JSON.encode_pretty(state))
+    print("==================")
+    broadcastToColor("Game state logged to console.", {0, 1, 1}, player.color)
 end
 
 --[[
-    Hand Zone Position Calculator Functions
-    Usage in Lua Scripting window: printHandZonePositions()
+    UI Display Update Functions
+    These functions update UI elements to reflect current game state.
 ]]
 
-function calculateHandZonePositions(numZones, radius, tableCenter)
-    numZones = numZones or 5
-    radius = radius or 50
-    tableCenter = tableCenter or {x = 0, y = 1.5, z = 0}
-
-    local startAngle = 180
-    local arcSpan = 180
-    -- Divide arc into (numZones - 1) segments to span from 180° to 360°
-    -- First zone at 180°, last zone at 360°
-    local angleStep = arcSpan / (numZones - 1)
-    local positions = {}
-
-    for i = 1, numZones do
-        -- First zone at 180°, last zone at 360°
-        local angleDeg = startAngle + (angleStep * (i - 1))
-        local angleRad = math.rad(angleDeg)
-        local x = math.sin(angleRad) * radius
-        local z = math.cos(angleRad) * radius
-
-        table.insert(positions, {
-            x = tableCenter.x + x,
-            y = tableCenter.y,
-            z = tableCenter.z + z
-        })
+--- Updates all UI displays with current game state
+-- Called after state changes (phase, scene, etc.)
+-- Exposed globally for testing/debugging
+function updateUIDisplays()
+    -- Update phase display
+    local currentPhase = S.getStateVal("currentPhase")
+    if currentPhase then
+        UI.setValue("currentPhaseDisplay", currentPhase)
     end
 
-    return positions
+    -- Update scene display
+    local currentScene = Scenes.getCurrentScene()
+    if currentScene then
+        UI.setValue("currentSceneDisplay", currentScene)
+    end
+
+    -- Update player stat displays
+    M.forPlayers(function(player, color)
+        local hunger = S.getStateVal("players", color, "hunger") or 0
+        local willpower = S.getStateVal("players", color, "willpower") or 5
+        local health = S.getStateVal("players", color, "health") or 7
+
+        UI.setValue("hungerVal_" .. color, tostring(hunger))
+        UI.setValue("willpowerVal_" .. color, tostring(willpower))
+        UI.setValue("healthVal_" .. color, tostring(health))
+    end)
 end
-
-function printHandZonePositions(numZones, radius, tableCenter)
-    numZones = numZones or 5
-    radius = radius or 50
-    tableCenter = tableCenter or {x = 0, y = 1.5, z = 0}
-
-    local positions = calculateHandZonePositions(numZones, radius, tableCenter)
-
-    print("=== Hand Zone Positions ===")
-    print("Number of zones: " .. numZones)
-    print("Radius: " .. radius)
-    print("Table center: {x=" .. tableCenter.x .. ", y=" .. tableCenter.y .. ", z=" .. tableCenter.z .. "}")
-    print("")
-
-    for i, pos in ipairs(positions) do
-        -- Calculate angle for display (matches the calculation above)
-        local angleStep = 180 / (numZones - 1)
-        local angleDeg = 180 + (angleStep * (i - 1))
-        print("Zone " .. i .. " (angle: " .. string.format("%.1f", angleDeg) .. "°):")
-        print("  Position: {x=" .. string.format("%.2f", pos.x) .. ", y=" .. string.format("%.2f", pos.y) .. ", z=" .. string.format("%.2f", pos.z) .. "}")
-        print("")
-    end
-
-    print("=== Copy-paste friendly format ===")
-    for i, pos in ipairs(positions) do
-        print("Zone " .. i .. ": {x=" .. string.format("%.2f", pos.x) .. ", y=" .. string.format("%.2f", pos.y) .. ", z=" .. string.format("%.2f", pos.z) .. "}")
-    end
-
-    return positions
-end
-
--- Explicitly assign to global scope for console++ and other systems
-_G.printHandZonePositions = printHandZonePositions
-_G.calculateHandZonePositions = calculateHandZonePositions

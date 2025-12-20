@@ -1,0 +1,46 @@
+<!-- Shared UI Elements -->
+<!-- Visible to all players -->
+
+<!-- Dice Results Display (shown after rolls) -->
+<Panel id="diceResultsPanel"
+  active="False"
+  width="600"
+  height="200"
+  color="rgba(0, 0, 0, 0.9)"
+  padding="20 20 20 20"
+  rectAlignment="MiddleCenter">
+
+  <VerticalLayout spacing="10" childAlignment="MiddleCenter">
+    <Text id="diceResultsPlayerName"
+      fontSize="24"
+      color="#FFD700"
+      fontStyle="Bold"
+      alignment="MiddleCenter" />
+
+    <Text id="diceResultsValues"
+      fontSize="20"
+      color="#FFFFFF"
+      alignment="MiddleCenter" />
+
+    <Text id="diceResultsMessage"
+      fontSize="18"
+      color="#00FF00"
+      alignment="MiddleCenter"
+      fontStyle="Bold" />
+  </VerticalLayout>
+</Panel>
+
+<!-- Scene Transition Overlay (optional, for dramatic effect) -->
+<Panel id="sceneTransitionOverlay"
+  active="False"
+  width="100%"
+  height="100%"
+  color="rgba(0, 0, 0, 0.8)"
+  rectAlignment="MiddleCenter">
+
+  <Text id="sceneTransitionText"
+    fontSize="32"
+    color="#FFFFFF"
+    alignment="MiddleCenter"
+    fontStyle="Bold" />
+</Panel>

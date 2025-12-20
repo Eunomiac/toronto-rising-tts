@@ -1,0 +1,83 @@
+<!-- Player HUD Panels -->
+<!-- Visible per player color -->
+
+<!-- Player HUD Panel - Red Player -->
+<Panel id="playerHud_Red" class="playerHudPanel" visibility="Red">
+  <VerticalLayout class="playerStats">
+    <Text class="statLabel" fontSize="20" color="#FFFFFF" fontStyle="Bold">Character Stats</Text>
+    <Text class="spacer_5"></Text>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Hunger:</Text>
+      <Text id="hungerVal_Red" class="statValue" color="#CC0000">0</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Willpower:</Text>
+      <Text id="willpowerVal_Red" class="statValue" color="#0066FF">5</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Health:</Text>
+      <Text id="healthVal_Red" class="statValue" color="#00AA00">7</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 7</Text>
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- Player HUD Panel - Blue Player -->
+<Panel id="playerHud_Blue" class="playerHudPanel" visibility="Blue">
+  <VerticalLayout class="playerStats">
+    <Text class="statLabel" fontSize="20" color="#FFFFFF" fontStyle="Bold">Character Stats</Text>
+    <Text class="spacer_5"></Text>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Hunger:</Text>
+      <Text id="hungerVal_Blue" class="statValue" color="#CC0000">0</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Willpower:</Text>
+      <Text id="willpowerVal_Blue" class="statValue" color="#0066FF">5</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Health:</Text>
+      <Text id="healthVal_Blue" class="statValue" color="#00AA00">7</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 7</Text>
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- Player HUD Panel - Green Player -->
+<Panel id="playerHud_Green" class="playerHudPanel" visibility="Green">
+  <VerticalLayout class="playerStats">
+    <Text class="statLabel" fontSize="20" color="#FFFFFF" fontStyle="Bold">Character Stats</Text>
+    <Text class="spacer_5"></Text>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Hunger:</Text>
+      <Text id="hungerVal_Green" class="statValue" color="#CC0000">0</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Willpower:</Text>
+      <Text id="willpowerVal_Green" class="statValue" color="#0066FF">5</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Health:</Text>
+      <Text id="healthVal_Green" class="statValue" color="#00AA00">7</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 7</Text>
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- Additional player panels can be added here for other colors (Yellow, Pink, Purple, Orange, Brown, Black, Grey, Teal) -->
+<!-- Pattern: playerHud_<Color>, hungerVal_<Color>, willpowerVal_<Color>, healthVal_<Color> -->

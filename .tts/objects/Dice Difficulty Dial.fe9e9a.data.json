@@ -2,15 +2,15 @@
   "GUID": "fe9e9a",
   "Name": "Custom_Model",
   "Transform": {
-    "posX": -98.9370956,
-    "posY": 0.7172428,
-    "posZ": -11.2666454,
-    "rotX": -0.0000112965945,
-    "rotY": 89.99431,
-    "rotZ": -0.00000650795846,
-    "scaleX": 2.499999,
-    "scaleY": 2.499999,
-    "scaleZ": 2.499999
+    "posX": -69.47474,
+    "posY": 8.771895,
+    "posZ": -6.640487,
+    "rotX": -6.919802e-8,
+    "rotY": 89.99653,
+    "rotZ": 9.9390725e-8,
+    "scaleX": 1.99999928,
+    "scaleY": 1.99999928,
+    "scaleZ": 1.99999928
   },
   "Nickname": "Dice Difficulty Dial",
   "Description": "Press Number Buttons to set table Dice Difficulty, click [b]Clear and Reset[/b] to clear all Dice and reset Difficulty to 6.\n\nNote that only the GM can interact with this object.",
@@ -40,7 +40,7 @@
   "HideWhenFaceDown": false,
   "Hands": false,
   "CustomMesh": {
-    "MeshURL": "https://steamusercontent-a.akamaihd.net/ugc/18145210454714211648/2917A14A8160B8B35AB261446C61C2734388A8F1/",
+    "MeshURL": "http://pastebin.com/raw/ThPbjFdb",
     "DiffuseURL": "https://steamusercontent-a.akamaihd.net/ugc/862862973954791914/E7C437B75184B9572909BB051CFC4244C31E7E22/",
     "NormalURL": "",
     "ColliderURL": "",
@@ -49,7 +49,7 @@
     "TypeIndex": 0,
     "CastShadows": true
   },
-  "LuaScript": "diffNumLabel = \"Set Difficulty to \"\r\n\r\nfunction onSave()\r\n    local data_to_save = {da=diceActive, wd=watchingDice}\r\n    saved_data = JSON.encode(data_to_save)\r\n    return saved_data\r\nend\r\n\r\nfunction onLoad(saved_data)\r\n    if saved_data ~= \"\" then\r\n        --Set up information off of loaded_data\r\n        local loaded_data = JSON.decode(saved_data)\r\n    end\r\n\r\n    createButtons()\r\nend\r\n\r\nfunction deleteDice(obj, color)\r\n    if color == Player.Black.color then\r\n        for i, obj in ipairs(getAllObjects()) do\r\n            if obj.name == \"Die_10\" then\r\n              obj.destroy()\r\n            end\r\n        end\r\n\r\n        setD10Diff(6, color)\r\n    end\r\nend\r\n\r\nfunction setD10Diff(num, color) \r\n    if color == Player.Black.color then\r\n        self.editButton({index=0, label=\"\"..num})\r\n        Global.setVar(\"d10Difficulty\", num)\r\n    end\r\nend\r\n\r\n--Button creation\r\nfunction createButtons()\r\n    self.createButton({click_function=\"click_none\", function_owner=self, position={0.005,0.05,0.05}, height=0, width=0, font_size=375, label=\"6\", font_color={1,1,1}})\r\n\r\n    --Spawns number buttons and assigns a function trigger for each\r\n    for i, pos in ipairs(buttonPositionList) do\r\n        self.createButton({\r\n            click_function=\"but\"..i, function_owner=self,\r\n            position=pos, height=150, width=150, tooltip = diffNumLabel..(i + 1)\r\n        })\r\n        local func = function(_,color) setD10Diff(i + 1, color) end\r\n        self.setVar(\"but\"..i, func)\r\n    end\r\n\r\n    --Spawns deleteCurrentDice button\r\n    self.createButton({\r\n        click_function=\"deleteDice\", function_owner=self,\r\n        position={0,0,0.73}, height=150, width=150, tooltip = \"Clear and Reset\"\r\n    })\r\n\r\n    \r\nend\r\n\r\n--Data table of positions for number buttons 1-9, in order\r\nbuttonPositionList = {\r\n    {-0.435,0,0.59}, {-0.693,0,0.22}, {-0.693,0,-0.22}, {-0.435,0,-0.59},\r\n    {0,0,-0.73}, {0.435,0,-0.59}, {0.693,0,-0.22}, {0.693,0,0.22}, {0.435,0,0.59}\r\n}",
+  "LuaScript": "diffNumLabel = \"Set Difficulty to \"\r\n\r\nfunction onSave()\r\n    local data_to_save = {da=diceActive, wd=watchingDice}\r\n    saved_data = JSON.encode(data_to_save)\r\n    return saved_data\r\nend\r\n\r\nfunction onLoad(saved_data)\r\n    if saved_data ~= \"\" then\r\n        --Set up information off of loaded_data\r\n        local loaded_data = JSON.decode(saved_data)\r\n    end\r\n\r\n    createButtons()\r\nend\r\n\r\nfunction deleteDice(obj, color)\r\n    if color == Player.Black.color then\r\n        for i, obj in ipairs(getAllObjects()) do\r\n            if obj.name == \"Die_10\" then\r\n              obj.destroy()\r\n            end\r\n        end\r\n\r\n        setD10Diff(6, color)\r\n    end\r\nend\r\n\r\nfunction setD10Diff(num, color) \r\n    if color == Player.Black.color then\r\n        self.editButton({index=0, label=\"\"..num})\r\n        Global.setVar(\"d10Difficulty\", num)\r\n    end\r\nend\r\n\r\n--Button creation\r\nfunction createButtons()\r\n    self.createButton({click_function=\"click_none\", function_owner=self, position={0.005,0.05,0.05}, height=0, width=0, font_size=375, label=\"6\", font_color={1,1,1}})\r\n\r\n    --Spawns number buttons and assigns a function trigger for each\r\n    for i, pos in ipairs(buttonPositionList) do\r\n        self.createButton({\r\n            click_function=\"but\"..i, function_owner=self,\r\n            position=pos, height=150, width=150, tooltip = diffNumLabel..(i + 1)\r\n        })\r\n        local func = function(_,color) setD10Diff(i + 1, color) end\r\n        self.setVar(\"but\"..i, func)\r\n    end\r\n\r\n    --Spawns deleteCurrentDice button\r\n    self.createButton({\r\n        click_function=\"deleteDice\", function_owner=self,\r\n        position={0,0,0.73}, height=150, width=150, tooltip = \"Clear and Reset\"\r\n    })\r\n\r\n    \r\nend\r\n\r\n--Data table of positions for number buttons 1-9, in order\r\nbuttonPositionList = {\r\n    {-0.435,0,0.59}, {-0.693,0,0.22}, {-0.693,0,-0.22}, {-0.435,0,-0.59},\r\n    {0,0,-0.73}, {0.435,0,-0.59}, {0.693,0,-0.22}, {0.693,0,0.22}, {0.435,0,0.59}\r\n}\r\n",
   "LuaScriptState": "[]",
   "XmlUI": ""
 }

@@ -74,11 +74,10 @@ function M.forPlayers(func)
         return
     end
 
-    for _, playerColor in ipairs(C.PlayerColors) do
-        local player = Player[playerColor]
-        if player then
-            func(player, playerColor)
-        end
+    -- Iterate over actually seated players, not all possible colors
+    -- This avoids errors when trying to access Player[color] for colors with no seated players
+    for _, player in ipairs(Player.getPlayers()) do
+        func(player, player.color)
     end
 end
 
@@ -188,9 +187,15 @@ function M.setCamera(player, cameraMode, lookAtPos)
 
     -- Convert string color to Player object
     if type(player) == "string" then
-        player = Player[player]
+        local playerColor = player  -- Save original string for error message
+        -- Safely check if player color exists before accessing
+        if not U.isIn(playerColor, Player.getAvailableColors()) then
+            U.AlertGM("M.setCamera: Invalid player color '" .. playerColor .. "'")
+            return
+        end
+        player = Player[playerColor]
         if player == nil then
-            U.AlertGM("M.setCamera: Invalid player color '" .. tostring(player) .. "'")
+            U.AlertGM("M.setCamera: No player seated in color '" .. playerColor .. "'")
             return
         end
     end

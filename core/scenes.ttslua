@@ -182,7 +182,7 @@ Scenes.SCENES = {
 -- ============================================================================
 
 --- Applies ambient lighting settings to TTS global lighting
--- Uses TTS Lighting API to set ambient lighting properties
+-- Uses U.changeLighting utility function to set ambient lighting properties
 -- @param ambientSettings table Table containing ambient lighting properties
 -- @param transitionTime number Optional. Duration for smooth transition (0 = instant)
 local function applyAmbientLighting(ambientSettings, transitionTime)
@@ -190,38 +190,11 @@ local function applyAmbientLighting(ambientSettings, transitionTime)
 
     transitionTime = transitionTime or 0
 
-    -- Get current lighting settings
-    local currentSettings = Lighting.get("AmbientIntensity")
-
-    -- If transition time is 0, apply instantly
-    if transitionTime <= 0 then
-        if ambientSettings.ambient_intensity ~= nil then
-            Lighting.set("AmbientIntensity", ambientSettings.ambient_intensity)
-        end
-        if ambientSettings.ambient_type ~= nil then
-            Lighting.set("AmbientType", ambientSettings.ambient_type)
-        end
-        if ambientSettings.light_intensity ~= nil then
-            Lighting.set("LightIntensity", ambientSettings.light_intensity)
-        end
-        if ambientSettings.lut_contribution ~= nil then
-            Lighting.set("LutContribution", ambientSettings.lut_contribution)
-        end
-        if ambientSettings.lut_index ~= nil then
-            Lighting.set("LutIndex", ambientSettings.lut_index)
-        end
-        if ambientSettings.reflection_intensity ~= nil then
-            Lighting.set("ReflectionIntensity", ambientSettings.reflection_intensity)
-        end
-    else
-        -- Smooth transition using coroutines
-        -- Note: TTS Lighting API doesn't support smooth transitions directly,
-        -- so we'll use U.Lerp for intensity values and step through other properties
-        -- Note: This requires the coroutine to be defined in Global context
-        -- For now, apply instantly if Global context is not available
-        print("Scenes: Smooth ambient transitions require Global context. Applying instantly.")
-        applyAmbientLighting(ambientSettings, 0)
-    end
+    -- Use U.changeLighting utility function which handles Lighting API correctly
+    -- It sets properties directly (e.g., Lighting.ambient_intensity = val) and calls Lighting.apply()
+    -- For now, we apply instantly regardless of transitionTime
+    -- TODO: Implement smooth transitions using U.Lerp if needed in the future
+    U.changeLighting(ambientSettings)
 end
 
 --- Coroutine for smooth ambient lighting transitions (Global context only)

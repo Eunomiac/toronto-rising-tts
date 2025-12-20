@@ -1,0 +1,108 @@
+<!-- Default Styles and Classes -->
+<!-- Common default styles and classes for UI elements -->
+
+<Defaults>
+  <!-- Baseline Layout Defaults -->
+  <Image preserveAspect="true" raycastTarget="false" />
+  <VerticalLayout raycastTarget="false" />
+  <HorizontalLayout raycastTarget="false" />
+
+  <!-- Button Styles -->
+  <Button
+    minWidth="150"
+    minHeight="30"
+    preferredWidth="150"
+    preferredHeight="30"
+    flexibleWidth="0"
+    flexibleHeight="0"
+    color="rgba(0.7,0.7,0.7,1)"
+    fontSize="16"
+    fontStyle="Bold" />
+
+  <!-- Text Spacers -->
+  <Text class="spacer_5" color="clear" fontSize="4" />
+  <Text class="spacer_10" color="clear" fontSize="8" />
+  <Text class="spacer_15" color="clear" fontSize="16" />
+  <Text class="spacer_20" color="clear" fontSize="32" />
+
+  <!-- Panel Styles -->
+  <Panel class="panel-base" color="rgba(0, 0, 0, 0.7)" padding="10 10 10 10" />
+  <Panel class="panel-dark" color="rgba(0, 0, 0, 0.85)" padding="10 10 10 10" />
+
+  <!-- Toggle Button Panel -->
+  <HorizontalLayout class="buttonPanel"
+    spacing="5"
+    padding="5 5 5 5"
+    childAlignment="MiddleLeft"
+    childForceExpandWidth="false" />
+
+  <Button class="buttonPanelToggle"
+    minWidth="25"
+    minHeight="25"
+    preferredWidth="25"
+    preferredHeight="25"
+    fontSize="14"
+    text="►"
+    color="rgba(0.5, 0.5, 0.5, 1)" />
+
+  <VerticalLayout class="buttonBar"
+    spacing="5"
+    padding="5 5 5 5"
+    childAlignment="UpperLeft"
+    active="False" />
+
+  <!-- Status Display Styles -->
+  <Text class="statusText"
+    fontSize="14"
+    alignment="MiddleLeft"
+    color="#FFFFFF"
+    outline="#000000"
+    outlineSize="1 1" />
+
+  <Text class="statusLabel"
+    fontSize="14"
+    alignment="MiddleLeft"
+    color="#CCCCCC"
+    outline="#000000"
+    outlineSize="1 1" />
+
+  <!-- Stat Display (Hunger, Willpower, Health) -->
+  <HorizontalLayout class="statDisplay"
+    spacing="10"
+    padding="5 5 5 5"
+    childAlignment="MiddleLeft"
+    childForceExpandWidth="false" />
+
+  <Text class="statLabel"
+    fontSize="16"
+    alignment="MiddleLeft"
+    color="#CCCCCC"
+    preferredWidth="100"
+    outline="#000000"
+    outlineSize="1 1" />
+
+  <Text class="statValue"
+    fontSize="18"
+    alignment="MiddleCenter"
+    color="#FFFFFF"
+    preferredWidth="50"
+    outline="#000000"
+    outlineSize="1 1"
+    fontStyle="Bold" />
+
+  <!-- Player HUD Container -->
+  <Panel class="playerHudPanel"
+    width="250"
+    height="150"
+    color="rgba(0, 0, 0, 0.7)"
+    padding="10 10 10 10"
+    rectAlignment="UpperRight"
+    offsetXY="-10 10" />
+
+  <!-- Stat Display Layout -->
+  <VerticalLayout class="playerStats"
+    spacing="8"
+    padding="5 5 5 5"
+    childAlignment="UpperLeft"
+    childForceExpandWidth="true" />
+</Defaults>
