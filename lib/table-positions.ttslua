@@ -1,37 +1,59 @@
 --[[
-    Half-Decagon Table Setup for Tabletop Simulator
+    Table Position Calculator Module (lib/table-positions.ttslua)
 
-    This script provides functions to calculate player positions for a half-decagon table
-    where the Storyteller sits at the long flat side, and 5 players sit at the 5 straight
-    sides of the half-decagon.
+    Provides functions to calculate player positions for a half-decagon table layout
+    where the Storyteller sits at the long flat side, and 5 players sit at the 5
+    straight sides of the half-decagon.
 
-    IMPORTANT: This script calculates positions only. You must create and import a custom
-    3D model (OBJ file) to get the actual half-decagon table shape in TTS.
+    IMPORTANT: This script calculates positions only. You must create and import a
+    custom 3D model (OBJ file) to get the actual half-decagon table shape in TTS.
 
-    See HALF-DECAGON-TABLE-GUIDE.md for complete instructions on creating the 3D model.
+    See dev/HALF-DECAGON-TABLE-GUIDE.md for complete instructions on creating the 3D model.
+
+    This module can be:
+    - Required as a module: local TablePos = require("lib.table-positions")
+    - Used directly via global functions (exposed for TTS console usage)
+
+    Usage:
+    ```lua
+    local TablePos = require("lib.table-positions")
+    local positions = TablePos.calculateHalfDecagonPositions(50, {x=0, y=1.5, z=0}, "top")
+    ```
+
+    Or use global functions in TTS console:
+    ```lua
+    printHalfDecagonPositions()
+    setupHalfDecagonTable(60, {x=0, y=1.5, z=0}, "top")
+    ```
 ]]
 
---[[
-    Calculates player positions for a half-decagon table layout.
+local TablePos = {}
 
-    A half-decagon has:
-    - One flat edge (long side) where the Storyteller sits
-    - Five straight sides forming a curved arc where players sit
+-- ============================================================================
+-- POSITION CALCULATION
+-- ============================================================================
 
-    Geometry:
-    - Full decagon has 10 sides, each interior angle = 144°
-    - Half-decagon uses 5 sides (180° arc)
-    - Each side spans 36° (180° / 5)
-    - Flat edge is at the top (0° / 360°)
-
-    @param tableRadius number - Distance from table center to edge (default: 50)
-    @param tableCenter Vector3 - Table center position (default: {x=0, y=1.5, z=0})
-    @param storytellerSide string - Which side for Storyteller: "top" or "bottom" (default: "top")
-    @return table - Table containing:
-        - storyteller: {position, rotation, angle}
-        - players: Array of {position, rotation, angle} for each of 5 players
-]]
-local function calculateHalfDecagonPositions(tableRadius, tableCenter, storytellerSide)
+--- Calculates player positions for a half-decagon table layout.
+--
+-- A half-decagon has:
+--   - One flat edge (long side) where the Storyteller sits
+--   - Five straight sides forming a curved arc where players sit
+--
+-- Geometry:
+--   - Full decagon has 10 sides, each interior angle = 144°
+--   - Half-decagon uses 5 sides (180° arc)
+--   - Each side spans 36° (180° / 5)
+--   - Flat edge is at the top (0° / 360°)
+--
+-- @param tableRadius number Distance from table center to edge (default: 50)
+-- @param tableCenter table Table center position {x, y, z} (default: {x=0, y=1.5, z=0})
+-- @param storytellerSide string Which side for Storyteller: "top" or "bottom" (default: "top")
+-- @return table Table containing:
+--   - storyteller: {position={x,y,z}, rotation={x,y,z}, angle=number}
+--   - players: Array of 5 {position={x,y,z}, rotation={x,y,z}, angle=number} entries
+--
+-- @usage local pos = TablePos.calculateHalfDecagonPositions(50, {x=0, y=1.5, z=0}, "top")
+function TablePos.calculateHalfDecagonPositions(tableRadius, tableCenter, storytellerSide)
     tableRadius = tableRadius or 50
     tableCenter = tableCenter or {x = 0, y = 1.5, z = 0}
     storytellerSide = storytellerSide or "top"
@@ -115,19 +137,24 @@ local function calculateHalfDecagonPositions(tableRadius, tableCenter, storytell
     return results
 end
 
---[[
-    Prints calculated positions in a readable format for debugging.
+-- ============================================================================
+-- UTILITY FUNCTIONS
+-- ============================================================================
 
-    @param tableRadius number - Distance from table center to edge
-    @param tableCenter Vector3 - Table center position
-    @param storytellerSide string - Which side for Storyteller: "top" or "bottom"
-]]
-local function printHalfDecagonPositions(tableRadius, tableCenter, storytellerSide)
+--- Prints calculated positions in a readable format for debugging.
+--
+-- @param tableRadius number Distance from table center to edge (default: 50)
+-- @param tableCenter table Table center position {x, y, z} (default: {x=0, y=1.5, z=0})
+-- @param storytellerSide string Which side for Storyteller: "top" or "bottom" (default: "top")
+-- @return table The calculated positions table
+--
+-- @usage TablePos.printHalfDecagonPositions()
+function TablePos.printHalfDecagonPositions(tableRadius, tableCenter, storytellerSide)
     tableRadius = tableRadius or 50
     tableCenter = tableCenter or {x = 0, y = 1.5, z = 0}
     storytellerSide = storytellerSide or "top"
 
-    local positions = calculateHalfDecagonPositions(tableRadius, tableCenter, storytellerSide)
+    local positions = TablePos.calculateHalfDecagonPositions(tableRadius, tableCenter, storytellerSide)
 
     print("=== Half-Decagon Table Positions ===")
     print("Table Radius: " .. tableRadius)
@@ -180,23 +207,24 @@ local function printHalfDecagonPositions(tableRadius, tableCenter, storytellerSi
     return positions
 end
 
---[[
-    Attempts to set player positions using TTS API.
-
-    NOTE: TTS doesn't have a direct API to set player positions programmatically.
-    This function provides the calculated positions that you can use manually or
-    with other tools/scripts.
-
-    @param tableRadius number - Distance from table center to edge
-    @param tableCenter Vector3 - Table center position
-    @param storytellerSide string - Which side for Storyteller: "top" or "bottom"
-]]
-local function setupHalfDecagonTable(tableRadius, tableCenter, storytellerSide)
+--- Provides calculated positions with setup instructions.
+--
+-- NOTE: TTS doesn't have a direct API to set player positions programmatically.
+-- This function provides the calculated positions that you can use manually or
+-- with other tools/scripts.
+--
+-- @param tableRadius number Distance from table center to edge (default: 50)
+-- @param tableCenter table Table center position {x, y, z} (default: {x=0, y=1.5, z=0})
+-- @param storytellerSide string Which side for Storyteller: "top" or "bottom" (default: "top")
+-- @return table The calculated positions table
+--
+-- @usage TablePos.setupHalfDecagonTable()
+function TablePos.setupHalfDecagonTable(tableRadius, tableCenter, storytellerSide)
     tableRadius = tableRadius or 50
     tableCenter = tableCenter or {x = 0, y = 1.5, z = 0}
     storytellerSide = storytellerSide or "top"
 
-    local positions = calculateHalfDecagonPositions(tableRadius, tableCenter, storytellerSide)
+    local positions = TablePos.calculateHalfDecagonPositions(tableRadius, tableCenter, storytellerSide)
 
     print("=== Half-Decagon Table Setup ===")
     print("Calculated positions:")
@@ -227,23 +255,14 @@ local function setupHalfDecagonTable(tableRadius, tableCenter, storytellerSide)
     return positions
 end
 
--- Expose functions globally for use in TTS console
-_G.calculateHalfDecagonPositions = calculateHalfDecagonPositions
-_G.printHalfDecagonPositions = printHalfDecagonPositions
-_G.setupHalfDecagonTable = setupHalfDecagonTable
+-- ============================================================================
+-- GLOBAL EXPORTS (for TTS console usage)
+-- ============================================================================
 
--- Example usage in TTS console:
---[[
-    -- Basic usage with defaults
-    printHalfDecagonPositions()
+-- Expose functions globally for use in TTS console (backwards compatibility)
+-- These can also be accessed via the module: require("lib.table-positions")
+_G.calculateHalfDecagonPositions = TablePos.calculateHalfDecagonPositions
+_G.printHalfDecagonPositions = TablePos.printHalfDecagonPositions
+_G.setupHalfDecagonTable = TablePos.setupHalfDecagonTable
 
-    -- Custom table size and position
-    printHalfDecagonPositions(60, {x=0, y=1.5, z=0}, "top")
-
-    -- Get positions programmatically
-    local positions = calculateHalfDecagonPositions(50, {x=0, y=1.5, z=0}, "top")
-    print("Storyteller at: " .. positions.storyteller.position.x .. ", " .. positions.storyteller.position.z)
-
-    -- Setup table (prints instructions)
-    setupHalfDecagonTable()
-]]
+return TablePos

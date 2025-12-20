@@ -1,0 +1,189 @@
+--[[
+    UI Helper Functions Module (lib/ui_helpers.ttslua)
+
+    Provides utility functions for common UI operations in TTS.
+    These functions simplify UI manipulation and follow patterns from the reference modules.
+
+    Functions included:
+    - toggleXmlElement: Toggle panel visibility with collapse/expand indicators
+    - UI.setAttributes: Batch set multiple UI attributes at once (wrapper if needed)
+    - Additional UI utilities as needed
+
+    Pattern extracted from Kings Dilemma hud.ttslua.
+]]
+
+local UIHelpers = {}
+
+-- ============================================================================
+-- UI ATTRIBUTE HELPERS
+-- ============================================================================
+
+--- Sets multiple UI attributes at once
+-- If TTS provides UI.setAttributes natively, this wrapper ensures compatibility.
+-- Otherwise, implements the functionality by iterating through attributes.
+--
+-- @param elementID string The ID of the UI element
+-- @param attrs table Table of attribute name-value pairs: {attributeName = value, ...}
+--
+-- @usage UI.setAttributes("myButton", {text = "Click Me", color = "Red", fontSize = 20})
+function UIHelpers.setAttributes(elementID, attrs)
+    if type(elementID) ~= "string" then
+        error("UIHelpers.setAttributes: elementID must be a string", 2)
+    end
+    if type(attrs) ~= "table" then
+        error("UIHelpers.setAttributes: attrs must be a table", 2)
+    end
+
+    -- Check if TTS provides UI.setAttributes natively
+    -- If it does, use it directly; otherwise, implement it
+    if UI.setAttributes and type(UI.setAttributes) == "function" then
+        -- TTS provides it natively
+        UI.setAttributes(elementID, attrs)
+    else
+        -- Implement it by iterating through attributes
+        for attrName, attrValue in pairs(attrs) do
+            UI.setAttribute(elementID, attrName, tostring(attrValue))
+        end
+    end
+end
+
+-- Expose as UI.setAttributes if not already available
+if not UI.setAttributes then
+    UI.setAttributes = UIHelpers.setAttributes
+end
+
+-- ============================================================================
+-- UI ELEMENT TOGGLE FUNCTIONS
+-- ============================================================================
+
+--- Toggles the visibility of a UI element using the "active" attribute
+-- This function implements the collapse/expand pattern commonly used in TTS UI panels.
+-- When an element is collapsed, it sets active="false". When expanded, active="true".
+-- Also updates a toggle button's text to show ▼ (expanded) or ► (collapsed).
+--
+-- The toggle button should have the ID pattern: "toggleElem_" + elementID
+-- The element being toggled should support the "active" attribute.
+--
+-- @param elemID string The ID of the UI element to toggle (without "toggleElem_" prefix)
+-- @param button string|nil Optional. Button value/state. Can be used for conditional logic.
+--                        Typically "-2" for double-click or other special actions.
+--
+-- @usage toggleXmlElement("debugControls", "-1")
+-- @usage In XML: <Button id="toggleElem_debugControls">►</Button>
+--        <VerticalLayout id="debugControls" active="False">...</VerticalLayout>
+--
+-- Pattern from Kings Dilemma hud.ttslua toggleXmlElement function
+function UIHelpers.toggleXmlElement(elemID, button)
+    if type(elemID) ~= "string" then
+        error("UIHelpers.toggleXmlElement: elemID must be a string", 2)
+    end
+
+    -- Get current active state (defaults to "false" if not set)
+    local currentActive = UI.getAttribute(elemID, "active")
+    local isCurrentlyActive = string.lower(tostring(currentActive)) == "true"
+
+    -- Toggle the active state
+    if not isCurrentlyActive then
+        -- Expand: set active to true
+        UI.setAttribute(elemID, "active", "true")
+
+        -- Update toggle button text to show expanded state (▼)
+        local toggleButtonID = "toggleElem_" .. elemID
+        UI.setAttribute(toggleButtonID, "text", "▼")
+    else
+        -- Collapse: set active to false
+        UI.setAttribute(elemID, "active", "false")
+
+        -- Update toggle button text to show collapsed state (►)
+        local toggleButtonID = "toggleElem_" .. elemID
+        UI.setAttribute(toggleButtonID, "text", "►")
+    end
+
+    -- Optional: Add conditional logic based on button parameter
+    -- This can be customized for specific elements if needed
+    if button and button == "-2" then
+        -- Double-click or special action logic (if needed)
+        -- Example: Additional behavior when double-clicking toggle
+    end
+end
+
+--- Sets a UI element to expanded state (visible)
+-- Convenience function to expand a panel without toggling.
+--
+-- @param elemID string The ID of the UI element to expand
+function UIHelpers.showXmlElement(elemID)
+    if type(elemID) ~= "string" then
+        error("UIHelpers.showXmlElement: elemID must be a string", 2)
+    end
+
+    UI.setAttribute(elemID, "active", "true")
+    local toggleButtonID = "toggleElem_" .. elemID
+    UI.setAttribute(toggleButtonID, "text", "▼")
+end
+
+--- Sets a UI element to collapsed state (hidden)
+-- Convenience function to collapse a panel without toggling.
+--
+-- @param elemID string The ID of the UI element to collapse
+function UIHelpers.hideXmlElement(elemID)
+    if type(elemID) ~= "string" then
+        error("UIHelpers.hideXmlElement: elemID must be a string", 2)
+    end
+
+    UI.setAttribute(elemID, "active", "false")
+    local toggleButtonID = "toggleElem_" .. elemID
+    UI.setAttribute(toggleButtonID, "text", "►")
+end
+
+--- Checks if a UI element is currently expanded (active)
+-- @param elemID string The ID of the UI element to check
+-- @return boolean True if element is active/expanded, false otherwise
+function UIHelpers.isXmlElementExpanded(elemID)
+    if type(elemID) ~= "string" then
+        error("UIHelpers.isXmlElementExpanded: elemID must be a string", 2)
+    end
+
+    local currentActive = UI.getAttribute(elemID, "active")
+    return string.lower(tostring(currentActive)) == "true"
+end
+
+-- ============================================================================
+-- UI VALUE HELPERS
+-- ============================================================================
+
+--- Safely sets a UI element's value, converting to string if needed
+-- @param elementID string The ID of the UI element
+-- @param value any The value to set (will be converted to string)
+function UIHelpers.setValue(elementID, value)
+    if type(elementID) ~= "string" then
+        error("UIHelpers.setValue: elementID must be a string", 2)
+    end
+
+    UI.setValue(elementID, tostring(value))
+end
+
+--- Safely gets a UI element's value and converts to number if possible
+-- @param elementID string The ID of the UI element
+-- @return string|number The value as a string, or number if it's a valid number
+function UIHelpers.getValue(elementID)
+    if type(elementID) ~= "string" then
+        error("UIHelpers.getValue: elementID must be a string", 2)
+    end
+
+    local value = UI.getValue(elementID)
+
+    -- Try to convert to number if it looks like a number
+    local numValue = tonumber(value)
+    if numValue ~= nil then
+        return numValue
+    end
+
+    return value
+end
+
+-- ============================================================================
+-- MODULE EXPORTS
+-- ============================================================================
+
+-- Export functions for use with require()
+return UIHelpers

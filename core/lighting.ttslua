@@ -1,0 +1,538 @@
+--[[
+    Lighting Control Module (core/lighting.ttslua)
+
+    Handles dynamic lighting control for TTS light objects with smooth transitions.
+    Extracted and adapted from Kings Dilemma lighting module patterns.
+
+    This module provides:
+    - Light mode system (predefined lighting configurations)
+    - Smooth transitions using coroutine-based interpolation
+    - State persistence (saves current light modes)
+    - Light object lookup and component access
+    - Batch operations (apply modes to multiple lights)
+
+    Light modes are stored in L.LIGHTMODES table and can be defined per-light.
+    Each mode specifies: enabled, color, range, angle, intensity, rotation, position.
+]]
+
+local L = {}
+local U = require("lib.util")
+local S = require("core.state")
+local C = require("lib.constants")
+
+-- ============================================================================
+-- CONFIGURATION
+-- ============================================================================
+
+-- Default transition time for light mode changes (in seconds)
+local DefaultTransitionTime = 0.5
+
+-- ============================================================================
+-- LIGHT MODE DEFINITIONS
+-- ============================================================================
+
+--- Light Mode Definitions Table
+--
+-- Each light can have multiple modes (e.g., "off", "ambient", "bright", "tension").
+-- Modes can be:
+--   - Tables: Static mode data {enabled=true, color=Color.White, ...}
+--   - Functions: Dynamic modes that calculate values at runtime: function() return {...} end
+--   - Strings: Default mode key (e.g., default = "ambient")
+--
+-- Mode properties:
+--   - enabled (boolean): Whether light is on/off
+--   - color (Color): Light color (Color object or table {r,g,b})
+--   - range (number): Light range/radius
+--   - angle (number): Spotlight angle (degrees)
+--   - intensity (number): Light intensity/brightness
+--   - rotation (Vector): Light rotation {x,y,z}
+--   - position (Vector): Light position {x,y,z}
+--
+-- Special properties:
+--   - default (string): Default mode to use when mode is "default"
+--   - isPlayerLight (boolean): If true, supports per-player modes
+--   - isSpawned (boolean): If true, waits for light to spawn before applying
+--   - loadRotation (Vector): Initial rotation when light loads
+--
+-- @usage L.LIGHTMODES.mainSpotlight = {
+--     default = "ambient",
+--     off = {enabled=false},
+--     ambient = {enabled=true, color=Color.Grey, range=100, intensity=1.5},
+--     bright = {enabled=true, color=Color.White, range=120, intensity=3.0}
+-- }
+L.LIGHTMODES = {
+    -- Example light modes - customize for VTM5E needs
+    -- Remove or adapt these examples to match your actual lights
+
+    -- Main ambient light example
+    mainLight = {
+        default = "ambient",
+        off = {
+            enabled = false
+        },
+        ambient = {
+            enabled = true,
+            color = Color.Grey,
+            range = 100,
+            angle = 60,
+            intensity = 1.5
+        },
+        bright = {
+            enabled = true,
+            color = Color.White,
+            range = 120,
+            angle = 60,
+            intensity = 3.0
+        },
+        dim = {
+            enabled = true,
+            color = Color.Grey,
+            range = 80,
+            angle = 60,
+            intensity = 0.75
+        },
+        tension = {
+            enabled = true,
+            color = Color(1, 0.2, 0.2), -- Red tint
+            range = 90,
+            angle = 45,
+            intensity = 2.0
+        }
+    },
+
+    -- Player spotlight example (per-player lights)
+    -- playerSpotlight = {
+    --     isPlayerLight = true,
+    --     default = "off",
+    --     off = {enabled = false},
+    --     ambient = {
+    --         enabled = true,
+    --         color = Color.Grey,
+    --         range = 50,
+    --         angle = 60,
+    --         intensity = 2.0
+    --     }
+    -- }
+}
+
+-- ============================================================================
+-- INTERNAL HELPER FUNCTIONS
+-- ============================================================================
+
+--- Gets the Light component from a TTS light object
+-- TTS lights have a nested structure: object -> child -> grandchild -> Light component
+-- This function navigates that structure to access the Light component.
+-- @param light Object The light object
+-- @param isSilent boolean If true, returns nil on error instead of throwing
+-- @return Component|nil The Light component, or nil if not found/error
+local function getLightComponent(light, isSilent)
+    local lComp
+
+    -- Try to get component (assuming standard TTS light structure)
+    if pcall(function()
+        lComp = light.getChildren()[1].getChildren()[2].getComponents()[2]
+    end) then
+        return lComp
+    elseif isSilent then
+        return nil
+    end
+
+    -- Detailed error checking if silent mode off
+    U.Val("getLightComponent", light, U.isGameObject(light), "Invalid Light Object")
+    local children = light.getChildren()
+    U.Val("getLightComponent", {light = light, children = children}, #children > 0, "Light has no Children")
+    local grandchildren = children[1].getChildren()
+    U.Val("getLightComponent", {light = light, grandchildren = grandchildren}, #grandchildren > 1,
+        "Light has too few Grandchildren")
+    local components = grandchildren[2].getComponents()
+    U.Val("getLightComponent", {light = light, components = components}, #components > 1,
+        "Light has too few components")
+    U.Val("getLightComponent", {light = light, comp = components[2]}, components[2].name == "Light",
+        "Can't find 'Light' component")
+    return components[2]
+end
+
+--- Finds a light object by name/tag
+-- Searches for lights with matching tags. Supports player-specific lights.
+-- @param lightName string The light name/tag to search for
+-- @param playerRef Player|string|nil Optional: Player object or color for player-specific lights
+-- @param isSilent boolean If true, returns nil on error instead of throwing
+-- @return Object|nil The light object, or nil if not found
+local function getLight(lightName, playerRef, isSilent)
+    local tags = {lightName}
+
+    if playerRef ~= nil then
+        local player = U.isPlayer(playerRef) and playerRef or Player[playerRef]
+        if player and player.color then
+            table.insert(tags, player.color)
+        end
+    end
+
+    local lights = getObjectsWithAllTags(tags)
+
+    U.Val("getLight", {tags = tags, lights = lights}, #lights > 0, "No lights found", {isSilent = isSilent})
+    U.Val("getLight", {tags = tags, lights = lights}, #lights < 2, "Multiple lights found",
+        {isSilent = false, isThrowing = isSilent ~= true})
+
+    return lights[1]
+end
+
+--- Gets all lights matching a tag (or all lights if no tag)
+-- @param tag string|nil Optional tag to filter by
+-- @return table Array of light objects
+local function getAllLights(tag)
+    local allObjects = getObjects()
+    return U.filter(allObjects, function(obj)
+        if obj.getChildren == nil then return false end
+        local children = obj.getChildren()
+        if #children == 0 then return false end
+        if not string.match(children[1].name or "", "^spotlight") then return false end
+        if getLightComponent(obj, true) == nil then return false end
+        if tag and not obj.hasTag(tag) then return false end
+        return true
+    end)
+end
+
+--- Sets light component property directly (low-level)
+local function setEnabled(light, enabled)
+    local comp = getLightComponent(light)
+    if comp then comp.set("enabled", enabled) end
+end
+
+local function setRange(light, range)
+    local comp = getLightComponent(light)
+    if comp then comp.set("range", range) end
+end
+
+local function setIntensity(light, intensity)
+    local comp = getLightComponent(light)
+    if comp then comp.set("intensity", intensity) end
+end
+
+local function setColor(light, color)
+    local comp = getLightComponent(light)
+    if comp then comp.set("color", Color(color)) end
+end
+
+local function setAngle(light, angle)
+    local comp = getLightComponent(light)
+    if comp then comp.set("spotAngle", angle) end
+end
+
+--- Gets light component property directly (low-level)
+local function getEnabled(light)
+    local comp = getLightComponent(light)
+    return comp and comp.get("enabled") or false
+end
+
+local function getRange(light)
+    local comp = getLightComponent(light)
+    return comp and comp.get("range") or 0
+end
+
+local function getIntensity(light)
+    local comp = getLightComponent(light)
+    return comp and comp.get("intensity") or 0
+end
+
+local function getColor(light)
+    local comp = getLightComponent(light)
+    return comp and comp.get("color") or Color.White
+end
+
+local function getAngle(light)
+    local comp = getLightComponent(light)
+    return comp and comp.get("spotAngle") or 0
+end
+
+-- ============================================================================
+-- CORE LIGHTING FUNCTIONS
+-- ============================================================================
+
+--- Sets a light to a specific mode with smooth transitions
+--
+-- This is the main function for controlling lights. It:
+--   1. Looks up the light mode definition
+--   2. Finds the light object by tag/name
+--   3. Saves the mode to game state
+--   4. Smoothly transitions all properties using U.Lerp
+--
+-- Supports per-player lights (if isPlayerLight=true in mode definition).
+-- Modes can be static tables or dynamic functions that calculate values.
+--
+-- @param lightName string The name/tag of the light (must exist in L.LIGHTMODES)
+-- @param mode string The mode name to apply (e.g., "off", "ambient", "bright")
+-- @param player Player|string|nil Optional: Player for player-specific lights
+-- @param transitionTime number Optional: Transition duration in seconds (default: 0.5)
+-- @return function|nil Returns completion function if using coroutines, or nil
+--
+-- @usage L.SetLightMode("mainLight", "ambient", nil, 1.0) -- Transition over 1 second
+-- @usage L.SetLightMode("playerSpotlight", "bright", "Red", 0.5) -- Player-specific light
+function L.SetLightMode(lightName, mode, player, transitionTime)
+    if transitionTime == nil then
+        transitionTime = DefaultTransitionTime
+    end
+
+    -- Support array of light names (batch operation)
+    if U.Type(lightName) == "table" then
+        return U.map(lightName, function(lName)
+            return L.SetLightMode(lName, mode, player, transitionTime)
+        end)
+    end
+
+    -- Validate light mode exists
+    U.Val("SetLightMode", lightName,
+        U.Type(lightName) == "string" and L.LIGHTMODES[lightName] ~= nil,
+        "Mode Data Not Found for light: " .. U.ToString(lightName))
+
+    local lData = L.LIGHTMODES[lightName]
+    local isSpawned = lData.isSpawned
+
+    -- Handle player-specific lights
+    if lData.isPlayerLight then
+        if player == nil then
+            -- Apply to all players if no player specified
+            local players = Player.getPlayers()
+            return U.map(players, function(p)
+                return L.SetLightMode(lightName, mode, p, transitionTime)
+            end)
+        end
+        -- Validate player
+        local playerObj = U.isPlayer(player) and player or Player[player]
+        U.Val("SetLightMode", {lightName, player},
+            U.isPlayer(playerObj), "Invalid Player")
+        player = playerObj
+    else
+        -- Non-player lights shouldn't have player parameter
+        U.Val("SetLightMode", {lightName, player}, player == nil,
+            "Player submitted to non-player light", {isThrowing = false})
+        player = nil
+    end
+
+    -- Find the light object
+    local light = getLight(lightName, player, true)
+    if light == nil and isSpawned then
+        -- Wait for light to spawn if it's a spawned light
+        return U.waitUntil(function()
+            return L.SetLightMode(lightName, mode, player, transitionTime)
+        end, function()
+            return getLight(lightName, player, true) ~= nil
+        end, false)
+    end
+
+    U.Val("SetLightMode", {lightName, player},
+        U.isGameObject(light), "No light found: " .. U.ToString(lightName))
+
+    -- Save mode to state
+    if player then
+        local sData = S.getStateVal("lights", lightName) or {}
+        sData[player.color] = mode
+        S.setStateVal(sData, "lights", lightName)
+    else
+        S.setStateVal(mode, "lights", lightName)
+    end
+
+    -- Resolve mode (could be function, string default, or table)
+    local modeData = mode
+    if U.Type(modeData) == "function" then
+        modeData = modeData(player)
+    elseif U.Type(modeData) == "string" and modeData == "default" then
+        modeData = lData.default or "off"
+    end
+
+    -- Get mode definition
+    U.Val("SetLightMode", modeData,
+        U.Type(modeData) == "string" and lData[modeData] ~= nil,
+        "No such mode '" .. U.ToString(modeData) .. "' for light '" .. U.ToString(lightName) .. "'")
+
+    local modeDef = lData[modeData]
+    if U.Type(modeDef) == "function" then
+        modeDef = modeDef(player) -- Dynamic mode calculation
+    end
+    if U.Type(modeDef) == "table" then
+        modeDef = U.clone(modeDef) -- Clone to avoid modifying original
+    end
+
+    -- Apply the light mode with smooth transitions
+    local function activateLight()
+        local afterVals = {}
+
+        -- Handle enabled state (special case: animate on/off)
+        if modeDef.enabled ~= nil then
+            if modeDef.enabled == getEnabled(light) then
+                modeDef.enabled = nil -- Skip if already in correct state
+            elseif modeDef.enabled == true then
+                -- Turn on: set intensity to 0 first, then fade in
+                setIntensity(light, 0)
+                setAngle(light, 0)
+                setEnabled(light, true)
+            else
+                -- Turn off: fade out, then disable
+                afterVals.intensity = getIntensity(light)
+                afterVals.angle = getAngle(light)
+                modeDef.intensity = 0
+                modeDef.angle = 0
+            end
+        end
+
+        -- Create lerp functions for each property that needs transitioning
+        return U.RunSequence({
+            function()
+                local lerpFuncs = {}
+
+                if modeDef.range ~= nil then
+                    table.insert(lerpFuncs, U.Lerp(function(range)
+                        setRange(light, range)
+                    end, getRange(light), modeDef.range, transitionTime))
+                end
+
+                if modeDef.intensity ~= nil then
+                    table.insert(lerpFuncs, U.Lerp(function(intensity)
+                        setIntensity(light, intensity)
+                    end, getIntensity(light), modeDef.intensity, transitionTime))
+                end
+
+                if modeDef.angle ~= nil then
+                    table.insert(lerpFuncs, U.Lerp(function(angle)
+                        setAngle(light, angle)
+                    end, getAngle(light), modeDef.angle, transitionTime))
+                end
+
+                if modeDef.color ~= nil then
+                    table.insert(lerpFuncs, U.Lerp(function(color)
+                        setColor(light, color)
+                    end, getColor(light), Color(modeDef.color), transitionTime))
+                end
+
+                if modeDef.rotation ~= nil then
+                    table.insert(lerpFuncs, U.setRotationSlow(light, Vector(modeDef.rotation), transitionTime))
+                end
+
+                if modeDef.position ~= nil then
+                    table.insert(lerpFuncs, U.setPositionSlow(light, Vector(modeDef.position), transitionTime))
+                end
+
+                return lerpFuncs
+            end,
+            function()
+                -- Finalize enabled state if turning off
+                if modeDef.enabled == false then
+                    setEnabled(light, false)
+                    setIntensity(light, afterVals.intensity)
+                    setAngle(light, afterVals.angle)
+                end
+            end
+        })
+    end
+
+    -- Wait for light component if needed
+    if isSpawned and getLightComponent(light, true) == nil then
+        return U.waitUntil(activateLight, function()
+            return getLightComponent(light, true) ~= nil
+        end, false)
+    end
+
+    return activateLight()
+end
+
+--- Loads saved light states from game state
+-- Called during initialization to restore lights to their saved states.
+-- @usage L.InitLights() -- Called in core/main.ttslua onLoad
+function L.InitLights()
+    local savedLights = S.getStateVal("lights") or {}
+
+    U.forEach(savedLights, function(mData, lightName)
+        if U.Type(mData) == "string" then
+            -- Simple mode (single string)
+            L.SetLightMode(lightName, mData, nil, 0.5)
+        elseif U.Type(mData) == "table" then
+            -- Per-player modes (table of color->mode)
+            U.forEach(mData, function(mode, pColor)
+                L.SetLightMode(lightName, mode, pColor, 0.5)
+            end)
+        end
+    end)
+end
+
+--- Resets all lights to their default/off states
+-- Useful for cleanup or game reset.
+-- @usage L.ResetLights() -- Cleanup after game ends
+function L.ResetLights()
+    U.forEach(L.LIGHTMODES, function(modes, name)
+        if modes.loadRotation then
+            local light = getLight(name)
+            if light then
+                local comp = getLightComponent(light)
+                if comp then
+                    comp.set("enabled", false)
+                    light.setRotation(Vector(180, 0, 0))
+                end
+            end
+        end
+    end)
+end
+
+--- Applies a mode to multiple lights at once
+-- Convenience function for batch operations.
+-- @param lightNames string|table Light name(s) to affect (string or array)
+-- @param lightMode string Mode to apply (default: "default")
+-- @param transitionTime number Transition duration (default: 3.0)
+-- @param playerRef Player|string|nil Optional: Player for player-specific lights
+-- @return number The transition time (for chaining)
+-- @usage L.LoadLights({"mainLight", "spotlight1"}, "ambient", 2.0)
+function L.LoadLights(lightNames, lightMode, transitionTime, playerRef)
+    if U.Type(lightNames) == "string" then
+        lightNames = {lightNames}
+    end
+    if lightMode == nil then
+        lightMode = "default"
+    end
+    if transitionTime == nil then
+        transitionTime = 3.0
+    end
+
+    -- Filter to only lights that exist in LIGHTMODES
+    local validLights = U.filter(L.LIGHTMODES, function(_, name)
+        return U.isIn(name, lightNames)
+    end)
+
+    U.forEach(validLights, function(modes, name)
+        if modes[lightMode] == nil then
+            U.AlertGM("No Such Mode: " .. U.ToString(lightMode) .. " for light '" .. U.ToString(name) .. "'")
+            return
+        end
+
+        if lightMode == "default" and U.Type(modes.default) == "string" then
+            L.SetLightMode(name, modes.default, playerRef, transitionTime)
+        else
+            L.SetLightMode(name, lightMode, playerRef, transitionTime)
+        end
+    end)
+
+    return transitionTime
+end
+
+-- ============================================================================
+-- PUBLIC API EXPORTS
+-- ============================================================================
+
+--- Gets a light object by name/tag
+-- @param lightName string The light name/tag
+-- @param playerRef Player|string|nil Optional: Player for player-specific lights
+-- @return Object|nil The light object
+-- @usage local light = L.GetLight("mainLight")
+L.GetLight = getLight
+
+--- Gets all lights (optionally filtered by tag)
+-- @param tag string|nil Optional tag to filter by
+-- @return table Array of light objects
+-- @usage local allLights = L.GetAllLights()
+L.GetAllLights = getAllLights
+
+-- Low-level property setters (for direct control without modes)
+L.SetIntensity = setIntensity
+L.SetAngle = setAngle
+L.SetColor = setColor
+L.SetRange = setRange
+
+return L

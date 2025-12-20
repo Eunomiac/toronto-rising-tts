@@ -1,0 +1,457 @@
+--[[
+    Scene Preset System Module (core/scenes.ttslua)
+
+    Manages scene presets for immersive VTM5E gameplay. Each scene preset defines:
+    - Ambient lighting (global table lighting)
+    - Individual light object modes (spotlights, etc.)
+    - Optional background music
+    - Scene-specific atmosphere settings
+
+    Scene transitions can be instant or smooth (with fade/duration).
+
+    Pattern: Combines lighting module patterns with ambient lighting control.
+    Integration: Uses L.SetLightMode for individual lights, Lighting API for ambient.
+]]
+
+local Scenes = {}
+local U = require("lib.util")
+local S = require("core.state")
+local C = require("lib.constants")
+local L = require("core.lighting")
+
+-- ============================================================================
+-- CONFIGURATION
+-- ============================================================================
+
+-- Default transition time for scene changes (in seconds)
+local DefaultTransitionTime = 2.0
+
+-- ============================================================================
+-- SCENE PRESET DEFINITIONS
+-- ============================================================================
+
+--- Scene Preset Structure
+--
+-- Each scene preset contains:
+--   ambient: Table with ambient lighting settings (see TTS Lighting API)
+--     - ambient_intensity (number): 0-4, brightness of ambient light
+--     - ambient_type (number): 1 or 2, type of ambient lighting
+--     - light_intensity (number): 0-4, brightness of directional light
+--     - lut_contribution (number): 0-1, color grading lookup table contribution
+--     - lut_index (number): 1-114, which LUT preset to use
+--     - reflection_intensity (number): 0-1, surface reflection intensity
+--   lights: Table of {name, mode} pairs for individual light objects
+--     - name (string): Light name/tag matching L.LIGHTMODES key
+--     - mode (string): Light mode name (e.g., "ambient", "bright", "dim")
+--   musicTrack (number, optional): Music track index (1-10, if tracks are configured)
+--   description (string, optional): Human-readable scene description
+
+Scenes.SCENES = {
+    -- Default/neutral scene
+    default = {
+        ambient = {
+            ambient_intensity = 0.5,
+            ambient_type = 1,
+            light_intensity = 0.5,
+            lut_contribution = 0.0,
+            lut_index = 1,
+            reflection_intensity = 0.0
+        },
+        lights = {},
+        description = "Default neutral lighting"
+    },
+
+    -- Elysium: Formal gathering place, elegant and refined
+    elysium = {
+        ambient = {
+            ambient_intensity = 1.2,
+            ambient_type = 1,
+            light_intensity = 1.0,
+            lut_contribution = 0.3,
+            lut_index = 108, -- Warm/amber tone
+            reflection_intensity = 0.3
+        },
+        lights = {
+            {name = "mainLight", mode = "bright"},
+            -- TODO: Add chandelier light if available: {name = "chandelier", mode = "elegant"}
+        },
+        description = "Elysium - Formal gathering place, elegant and refined"
+    },
+
+    -- Alley: Dark, gritty urban setting
+    alley = {
+        ambient = {
+            ambient_intensity = 0.15,
+            ambient_type = 2,
+            light_intensity = 0.2,
+            lut_contribution = 0.8,
+            lut_index = 36, -- Dark/blue tone
+            reflection_intensity = 0.0
+        },
+        lights = {
+            {name = "mainLight", mode = "dim"},
+            -- TODO: Add streetlamp light if available: {name = "streetlamp", mode = "dim"}
+        },
+        description = "Alley - Dark, gritty urban setting"
+    },
+
+    -- Haven: Personal sanctuary, comfortable and safe
+    haven = {
+        ambient = {
+            ambient_intensity = 0.8,
+            ambient_type = 1,
+            light_intensity = 0.7,
+            lut_contribution = 0.2,
+            lut_index = 105, -- Warm, cozy tone
+            reflection_intensity = 0.1
+        },
+        lights = {
+            {name = "mainLight", mode = "ambient"},
+        },
+        description = "Haven - Personal sanctuary, comfortable and safe"
+    },
+
+    -- Tension: Dramatic, suspenseful atmosphere
+    tension = {
+        ambient = {
+            ambient_intensity = 0.3,
+            ambient_type = 1,
+            light_intensity = 0.4,
+            lut_contribution = 0.6,
+            lut_index = 77, -- Dramatic red/dark tone
+            reflection_intensity = 0.0
+        },
+        lights = {
+            {name = "mainLight", mode = "tension"},
+            {name = "spotlightGM", mode = "on"},
+        },
+        description = "Tension - Dramatic, suspenseful atmosphere"
+    },
+
+    -- Combat: Intense, dynamic lighting
+    combat = {
+        ambient = {
+            ambient_intensity = 0.4,
+            ambient_type = 1,
+            light_intensity = 0.6,
+            lut_contribution = 0.5,
+            lut_index = 79, -- High contrast, intense tone
+            reflection_intensity = 0.1
+        },
+        lights = {
+            {name = "mainLight", mode = "tension"},
+        },
+        description = "Combat - Intense, dynamic lighting"
+    },
+
+    -- Suspicion: Paranoia-inducing, shadowy
+    suspicion = {
+        ambient = {
+            ambient_intensity = 0.0,
+            ambient_type = 1,
+            light_intensity = 0.0,
+            lut_contribution = 1.0,
+            lut_index = 92, -- Very dark, shadowy tone
+            reflection_intensity = 0.0
+        },
+        lights = {
+            {name = "mainLight", mode = "dim"},
+        },
+        description = "Suspicion - Paranoia-inducing, shadowy atmosphere"
+    },
+
+    -- Social: Normal social interaction, balanced
+    social = {
+        ambient = {
+            ambient_intensity = 0.7,
+            ambient_type = 1,
+            light_intensity = 0.6,
+            lut_contribution = 0.1,
+            lut_index = 1,
+            reflection_intensity = 0.2
+        },
+        lights = {
+            {name = "mainLight", mode = "ambient"},
+        },
+        description = "Social - Normal social interaction, balanced lighting"
+    }
+}
+
+-- ============================================================================
+-- HELPER FUNCTIONS
+-- ============================================================================
+
+--- Applies ambient lighting settings to TTS global lighting
+-- Uses TTS Lighting API to set ambient lighting properties
+-- @param ambientSettings table Table containing ambient lighting properties
+-- @param transitionTime number Optional. Duration for smooth transition (0 = instant)
+local function applyAmbientLighting(ambientSettings, transitionTime)
+    if ambientSettings == nil then return end
+
+    transitionTime = transitionTime or 0
+
+    -- Get current lighting settings
+    local currentSettings = Lighting.get("AmbientIntensity")
+
+    -- If transition time is 0, apply instantly
+    if transitionTime <= 0 then
+        if ambientSettings.ambient_intensity ~= nil then
+            Lighting.set("AmbientIntensity", ambientSettings.ambient_intensity)
+        end
+        if ambientSettings.ambient_type ~= nil then
+            Lighting.set("AmbientType", ambientSettings.ambient_type)
+        end
+        if ambientSettings.light_intensity ~= nil then
+            Lighting.set("LightIntensity", ambientSettings.light_intensity)
+        end
+        if ambientSettings.lut_contribution ~= nil then
+            Lighting.set("LutContribution", ambientSettings.lut_contribution)
+        end
+        if ambientSettings.lut_index ~= nil then
+            Lighting.set("LutIndex", ambientSettings.lut_index)
+        end
+        if ambientSettings.reflection_intensity ~= nil then
+            Lighting.set("ReflectionIntensity", ambientSettings.reflection_intensity)
+        end
+    else
+        -- Smooth transition using coroutines
+        -- Note: TTS Lighting API doesn't support smooth transitions directly,
+        -- so we'll use U.Lerp for intensity values and step through other properties
+        -- Note: This requires the coroutine to be defined in Global context
+        -- For now, apply instantly if Global context is not available
+        print("Scenes: Smooth ambient transitions require Global context. Applying instantly.")
+        applyAmbientLighting(ambientSettings, 0)
+    end
+end
+
+--- Coroutine for smooth ambient lighting transitions (Global context only)
+-- Interpolates intensity values while setting discrete properties
+-- NOTE: This function must be defined in Global context to work properly.
+-- If smooth transitions are needed, move this to global.ttslua.
+-- @param ambientSettings table Target ambient settings
+-- @param transitionTime number Duration of transition
+-- @return number Always returns 1 (indicates completion)
+--[[
+function coroutine_ambientTransition(ambientSettings, transitionTime)
+    if ambientSettings == nil then return 1 end
+
+    local startIntensity = Lighting.get("AmbientIntensity")
+    local targetIntensity = ambientSettings.ambient_intensity or startIntensity
+
+    -- Set discrete properties immediately (no smooth transition available for these)
+    if ambientSettings.ambient_type ~= nil then
+        Lighting.set("AmbientType", ambientSettings.ambient_type)
+    end
+    if ambientSettings.lut_contribution ~= nil then
+        Lighting.set("LutContribution", ambientSettings.lut_contribution)
+    end
+    if ambientSettings.lut_index ~= nil then
+        Lighting.set("LutIndex", ambientSettings.lut_index)
+    end
+    if ambientSettings.reflection_intensity ~= nil then
+        Lighting.set("ReflectionIntensity", ambientSettings.reflection_intensity)
+    end
+
+    -- Smooth transition for intensity values
+    if targetIntensity ~= startIntensity then
+        local lerpFunc = U.Lerp(function(val)
+            Lighting.set("AmbientIntensity", val)
+        end, startIntensity, targetIntensity, transitionTime)
+
+        local startLightIntensity = Lighting.get("LightIntensity")
+        local targetLightIntensity = ambientSettings.light_intensity or startLightIntensity
+        local lerpLightFunc = U.Lerp(function(val)
+            Lighting.set("LightIntensity", val)
+        end, startLightIntensity, targetLightIntensity, transitionTime)
+
+        -- Run both lerps in parallel
+        U.RunSequence({lerpFunc, lerpLightFunc})
+    end
+
+    return 1
+end
+--]]
+
+--- Applies individual light modes for a scene
+-- Uses L.SetLightMode for each light specified in the scene preset
+-- @param lights table Array of {name, mode} tables
+-- @param transitionTime number Optional. Transition time for light changes
+local function applySceneLights(lights, transitionTime)
+    if lights == nil or #lights == 0 then return end
+
+    transitionTime = transitionTime or DefaultTransitionTime
+
+    for _, lightConfig in ipairs(lights) do
+        if lightConfig.name and lightConfig.mode then
+            L.SetLightMode(lightConfig.name, lightConfig.mode, nil, transitionTime)
+        end
+    end
+end
+
+--- Plays background music track (if configured)
+-- Uses TTS MusicPlayer API to play a specific track
+-- Note: TTS uses 0-based indexing for tracks (0 = first track, 9 = 10th track)
+-- Note: Scene presets use 1-based indexing (1 = first track) for user-friendliness
+-- @param trackIndex number Optional. Music track index (1-10, converted to 0-9). If nil, pauses music.
+local function playSceneMusic(trackIndex)
+    if trackIndex == nil then
+        -- Pause music
+        MusicPlayer.pause()
+    else
+        -- Convert 1-based (user-friendly) to 0-based (TTS API)
+        -- Scene presets use 1-10, but TTS API uses 0-9
+        local apiTrackIndex = trackIndex - 1
+
+        if apiTrackIndex >= 0 and apiTrackIndex <= 9 then
+            MusicPlayer.setCurrentTrack(apiTrackIndex)
+            MusicPlayer.play()
+        else
+            print("Scenes: Warning - Invalid music track index: " .. tostring(trackIndex) .. " (must be 1-10)")
+        end
+    end
+end
+
+-- ============================================================================
+-- PUBLIC API
+-- ============================================================================
+
+--- Loads a scene preset instantly (no transition)
+-- Applies all scene settings immediately.
+-- @param sceneName string Name of the scene preset (key in Scenes.SCENES)
+-- @return boolean True if scene loaded successfully, false if scene not found
+--
+-- @usage Scenes.loadScene("elysium")
+function Scenes.loadScene(sceneName)
+    if type(sceneName) ~= "string" then
+        U.AlertGM("Scenes.loadScene: sceneName must be a string")
+        return false
+    end
+
+    local scene = Scenes.SCENES[sceneName]
+    if scene == nil then
+        U.AlertGM("Scenes.loadScene: Scene not found: " .. sceneName)
+        print("Scenes: Available scenes: " .. table.concat(U.getKeys(Scenes.SCENES), ", "))
+        return false
+    end
+
+    print("Scenes: Loading scene '" .. sceneName .. "' - " .. (scene.description or ""))
+
+    -- Apply ambient lighting (instant)
+    if scene.ambient then
+        applyAmbientLighting(scene.ambient, 0)
+    end
+
+    -- Apply individual lights (instant)
+    if scene.lights then
+        applySceneLights(scene.lights, 0)
+    end
+
+    -- Play music (if specified)
+    if scene.musicTrack ~= nil then
+        playSceneMusic(scene.musicTrack)
+    end
+
+    -- Save current scene to state
+    S.setStateVal(sceneName, "currentScene")
+
+    print("Scenes: Scene loaded successfully.")
+    return true
+end
+
+--- Smoothly transitions to a scene preset over a duration
+-- Uses coroutines and lerp functions for smooth transitions.
+-- @param sceneName string Name of the scene preset (key in Scenes.SCENES)
+-- @param transitionTime number Optional. Duration of transition in seconds (default: DefaultTransitionTime)
+-- @return boolean True if transition started successfully, false if scene not found
+--
+-- @usage Scenes.fadeToScene("tension", 3.0)
+function Scenes.fadeToScene(sceneName, transitionTime)
+    if type(sceneName) ~= "string" then
+        U.AlertGM("Scenes.fadeToScene: sceneName must be a string")
+        return false
+    end
+
+    local scene = Scenes.SCENES[sceneName]
+    if scene == nil then
+        U.AlertGM("Scenes.fadeToScene: Scene not found: " .. sceneName)
+        print("Scenes: Available scenes: " .. table.concat(U.getKeys(Scenes.SCENES), ", "))
+        return false
+    end
+
+    transitionTime = transitionTime or DefaultTransitionTime
+
+    print("Scenes: Fading to scene '" .. sceneName .. "' over " .. transitionTime .. " seconds")
+
+    -- Apply ambient lighting with transition
+    if scene.ambient then
+        applyAmbientLighting(scene.ambient, transitionTime)
+    end
+
+    -- Apply individual lights with transition (using lighting module's built-in transitions)
+    if scene.lights then
+        applySceneLights(scene.lights, transitionTime)
+    end
+
+    -- Play music immediately (no fade for music)
+    if scene.musicTrack ~= nil then
+        playSceneMusic(scene.musicTrack)
+    end
+
+    -- Save current scene to state
+    S.setStateVal(sceneName, "currentScene")
+
+    print("Scenes: Scene transition initiated.")
+    return true
+end
+
+--- Gets the current scene name from game state
+-- @return string|nil Current scene name, or nil if no scene is set
+function Scenes.getCurrentScene()
+    return S.getStateVal("currentScene")
+end
+
+--- Gets scene preset data by name
+-- @param sceneName string Name of the scene preset
+-- @return table|nil Scene preset data, or nil if not found
+function Scenes.getScene(sceneName)
+    if type(sceneName) ~= "string" then
+        return nil
+    end
+    return Scenes.SCENES[sceneName]
+end
+
+--- Lists all available scene names
+-- @return table Array of scene name strings
+function Scenes.listScenes()
+    return U.getKeys(Scenes.SCENES)
+end
+
+--- Initializes the scenes module
+-- Called from global.ttslua onLoad().
+-- Restores the last scene from saved state, or loads default scene.
+function Scenes.onLoad()
+    print("Scenes: Module loaded.")
+
+    -- Try to restore last scene from state
+    local savedScene = Scenes.getCurrentScene()
+    if savedScene and Scenes.SCENES[savedScene] then
+        print("Scenes: Restoring saved scene: " .. savedScene)
+        Scenes.loadScene(savedScene)
+    else
+        print("Scenes: No saved scene found, using default.")
+        Scenes.loadScene("default")
+    end
+end
+
+--- Resets scene to default
+-- Convenience function to return to default scene
+-- @param transitionTime number Optional. Transition duration (0 = instant)
+function Scenes.resetScene(transitionTime)
+    if transitionTime and transitionTime > 0 then
+        return Scenes.fadeToScene("default", transitionTime)
+    else
+        return Scenes.loadScene("default")
+    end
+end
+
+return Scenes

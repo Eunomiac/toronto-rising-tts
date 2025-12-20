@@ -1,5 +1,5 @@
 --[[
-    Global Script Entry Point
+    Global Script Entry Point (global.ttslua)
     This is the main entry point for the TTS module.
     It bootstraps the module by requiring core libraries and initializing the game state.
 ]]
@@ -11,9 +11,28 @@ local C = require("lib.constants")
 -- Load core modules
 local S = require("core.state")
 local M = require("core.main")
+local Z = require("core.zones")
+local Scenes = require("core.scenes")
+local UIH = require("lib.ui_helpers")
+
+-- Load debug module (only in development - exposes test functions globally)
+local DEBUG = require("core.debug")
 
 -- Initialize game state table
 gameState = {}
+
+--[[
+    Load UI XML
+    NOTE: TTS requires XML to be loaded as a string via UI.setXml().
+
+    If your TTS extension supports file reading, you can read ui/hud.xml here.
+    Otherwise, you'll need to embed the XML content as a string constant.
+
+    For now, using a minimal placeholder. To use the full UI:
+    1. Copy the contents of ui/hud.xml
+    2. Replace the HUD_XML_PLACEHOLDER below with the XML content as a string literal
+]]
+local HUD_XML_PLACEHOLDER = [[<Panel><Text text='VTM5E Module Loaded - Replace HUD_XML_PLACEHOLDER in global.ttslua with contents of ui/hud.xml'/></Panel>]]
 
 --[[
     onLoad - Called when the game loads or is reset
@@ -25,11 +44,24 @@ function onLoad(saved_data)
     -- Initialize game state from saved data or defaults
     S.InitializeGameState(saved_data)
 
-    -- Initialize main module
-    M.Initialize()
+    -- Initialize zones module
+    Z.onLoad()
 
-    -- Show basic UI confirmation
-    UI.setXml([[<Panel><Text text='VTM5E Module Loaded'/></Panel>]])
+    -- Initialize main module
+    M.onLoad()
+
+    -- Initialize scenes module (loads default or saved scene)
+    Scenes.onLoad()
+
+    -- Load and display UI
+    -- TODO: Replace HUD_XML_PLACEHOLDER with actual XML content from ui/hud.xml
+    UI.setXml(HUD_XML_PLACEHOLDER)
+
+    -- Update UI displays with current state
+    updateUIDisplays()
+
+    -- Debug module help (optional - shows available test commands)
+    -- DEBUG.help()
 
     print("Module initialization complete.")
 end
@@ -41,4 +73,193 @@ end
 function onSave()
     local state = S.getGameState()
     return JSON.encode(state)
+end
+
+--[[
+    Zone Activation/Deactivation Functions
+    These functions are called by the zones module to enable/disable zone event handlers.
+]]
+function ActivateZones()
+    onObjectEnterZone = Z.onObjectEnterZone
+    onObjectLeaveZone = Z.onObjectLeaveZone
+end
+
+function DeactivateZones()
+    ---@diagnostic disable-next-line: assign-type-mismatch
+    onObjectEnterZone = nil  -- TTS allows nil to disable zone handlers
+    ---@diagnostic disable-next-line: assign-type-mismatch
+    onObjectLeaveZone = nil  -- TTS allows nil to disable zone handlers
+end
+
+--[[
+    UI Event Handlers
+    These functions are called by UI buttons via onClick attributes in the XML.
+]]
+
+--- Toggle panel visibility (collapse/expand)
+-- Used by toggle buttons (toggleElem_*) in the UI
+-- @param player Player The player who clicked the button
+-- @param button string Button value (typically "-1" for single click, "-2" for double click)
+-- @param id string The UI element ID (e.g., "toggleElem_storytellerControls")
+function HUD_togglePanel(player, button, id)
+    -- Extract the element ID by removing "toggleElem_" prefix
+    local elemID = string.gsub(id, "^toggleElem_", "")
+    UIH.toggleXmlElement(elemID, button)
+end
+
+--- Change scene preset
+-- Called when a scene button is clicked (e.g., "scene_elysium")
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID (e.g., "scene_elysium")
+function HUD_changeScene(player, button, id)
+    -- Extract scene name from ID (remove "scene_" prefix)
+    local sceneName = string.gsub(id, "^scene_", "")
+
+    -- Validate scene name
+    local scene = Scenes.getScene(sceneName)
+    if scene == nil then
+        U.AlertGM("HUD_changeScene: Invalid scene name: " .. tostring(sceneName))
+        return
+    end
+
+    -- Load scene with smooth transition (2 seconds)
+    Scenes.fadeToScene(sceneName, 2.0)
+
+    -- Update UI display
+    updateUIDisplays()
+
+    print("HUD: Scene changed to " .. sceneName .. " by " .. player.color)
+end
+
+--- Advance game phase
+-- Called when a phase button is clicked (e.g., "phase_play")
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID (e.g., "phase_play")
+function HUD_advancePhase(player, button, id)
+    -- Extract phase name from ID (remove "phase_" prefix)
+    local phaseName = string.gsub(id, "^phase_", "")
+
+    -- Map UI button IDs to actual phase constants
+    local phaseMap = {
+        play = C.Phases.PLAY,
+        combat = C.Phases.COMBAT,
+        -- Add more phase mappings as needed
+    }
+
+    local targetPhase = phaseMap[phaseName]
+    if targetPhase == nil then
+        U.AlertGM("HUD_advancePhase: Invalid phase: " .. tostring(phaseName))
+        return
+    end
+
+    -- Advance phase
+    M.advancePhase(targetPhase)
+
+    -- Update UI display
+    updateUIDisplays()
+
+    print("HUD: Phase advanced to " .. targetPhase .. " by " .. player.color)
+end
+
+--- Reset game state
+-- Called when the "Reset Game" button is clicked
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_resetGame(player, button, id)
+    -- Confirm reset (optional - you might want to add a confirmation dialog)
+    S.resetGameState()
+
+    -- Reset modules
+    Scenes.resetScene(0)  -- Instant reset
+
+    -- Update UI
+    updateUIDisplays()
+
+    print("HUD: Game reset by " .. player.color)
+    broadcastToAll("Game has been reset.", {1, 0, 0})
+end
+
+--- Save game state explicitly
+-- Called when the "Save State" button is clicked
+-- Note: TTS also calls onSave() automatically, but this can be used for explicit saves
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_saveState(player, button, id)
+    -- Trigger save (onSave will be called by TTS)
+    -- This is mainly for UI feedback
+    local state = S.getGameState()
+    local stateStr = JSON.encode(state)
+
+    print("HUD: Game state saved by " .. player.color)
+    broadcastToColor("Game state saved successfully.", {0, 1, 0}, player.color)
+end
+
+--- Toggle zones active/inactive
+-- Called when the "Toggle Zones" debug button is clicked
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_toggleZones(player, button, id)
+    -- Check current zone state
+    local zonesActive = S.getStateVal("zones", "allZonesLocked")
+
+    if zonesActive == true then
+        Z.activateZones()
+        broadcastToColor("Zones activated.", {0, 1, 0}, player.color)
+    else
+        Z.deactivateZones()
+        broadcastToColor("Zones deactivated.", {1, 0, 0}, player.color)
+    end
+
+    print("HUD: Zones toggled by " .. player.color)
+end
+
+--- Log current game state to console (debug function)
+-- Called when the "Log State" debug button is clicked
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_logState(player, button, id)
+    local state = S.getGameState()
+    print("=== GAME STATE ===")
+    print(JSON.encode_pretty(state))
+    print("==================")
+    broadcastToColor("Game state logged to console.", {0, 1, 1}, player.color)
+end
+
+--[[
+    UI Display Update Functions
+    These functions update UI elements to reflect current game state.
+]]
+
+--- Updates all UI displays with current game state
+-- Called after state changes (phase, scene, etc.)
+-- Exposed globally for testing/debugging
+function updateUIDisplays()
+    -- Update phase display
+    local currentPhase = S.getStateVal("currentPhase")
+    if currentPhase then
+        UI.setValue("currentPhaseDisplay", currentPhase)
+    end
+
+    -- Update scene display
+    local currentScene = Scenes.getCurrentScene()
+    if currentScene then
+        UI.setValue("currentSceneDisplay", currentScene)
+    end
+
+    -- Update player stat displays
+    M.forPlayers(function(player, color)
+        local hunger = S.getStateVal("players", color, "hunger") or 0
+        local willpower = S.getStateVal("players", color, "willpower") or 5
+        local health = S.getStateVal("players", color, "health") or 7
+
+        UI.setValue("hungerVal_" .. color, tostring(hunger))
+        UI.setValue("willpowerVal_" .. color, tostring(willpower))
+        UI.setValue("healthVal_" .. color, tostring(health))
+    end)
 end

@@ -1,0 +1,422 @@
+--[[
+    Zone Management Module (core/zones.ttslua)
+
+    Handles zone-related operations including object queries, snap point alignment,
+    zone activation/deactivation, and state persistence patterns.
+    Extracted and adapted from Heritage module patterns.
+
+    This module provides:
+    - Zone activation/deactivation (event handler management)
+    - Object query functions (find objects in zones by tags)
+    - Snap point filtering (get snap points within zone bounds)
+    - State persistence helpers (save object positions)
+    - Basic zone utilities (visual management, containment checks)
+
+    NOTE: Many game-specific functions (scoring, status checking) are omitted and
+    should be adapted for VTM5E needs. The core patterns are preserved.
+]]
+
+local Z = {}
+local U = require("lib.util")
+local S = require("core.state")
+local C = require("lib.constants")
+
+-- ============================================================================
+-- INTERNAL STATE & HELPERS
+-- ============================================================================
+
+-- Throttling table to prevent rapid-fire zone events
+local zoneThrottle = {}
+
+--- Throttles zone events to prevent rapid repeated triggers
+-- @param zone Object The zone triggering the event
+-- @param func function The function to execute after delay
+-- @param delay number Delay in seconds before executing (default: 0.4)
+local function throttleZone(zone, func, delay)
+    if delay == nil then delay = 0.4 end
+    zoneThrottle[zone.guid] = true
+    Wait.time(function()
+        func()
+        zoneThrottle[zone.guid] = nil
+    end, delay)
+end
+
+--- Checks if a zone is currently throttled
+-- @param zone Object The zone to check
+-- @return boolean True if zone is throttled
+local function isThrottled(zone)
+    return zoneThrottle[zone.guid] == true
+end
+
+-- ============================================================================
+-- ZONE ACTIVATION & DEACTIVATION
+-- ============================================================================
+
+--- Activates zone event handlers (enables onObjectEnterZone/onObjectLeaveZone)
+-- Sets up global event handlers in Global context. Zones must be activated
+-- before they will respond to objects entering or leaving.
+-- @usage Z.activateZones() -- Called after game setup
+function Z.activateZones()
+    -- This assumes Global context has ActivateZones() function that sets:
+    --   onObjectEnterZone = Z.onObjectEnterZone
+    --   onObjectLeaveZone = Z.onObjectLeaveZone
+    if Global and Global.call then
+        Global.call("ActivateZones")
+    end
+    S.setStateVal(false, "zones", "allLocked")
+    print("Zones: Activated zone event handlers")
+end
+
+--- Deactivates zone event handlers (disables onObjectEnterZone/onObjectLeaveZone)
+-- Prevents zones from responding to object enter/leave events. Useful during
+-- setup phases or when temporarily disabling zone interactions.
+-- @usage Z.deactivateZones() -- Called during game reset
+function Z.deactivateZones()
+    -- This assumes Global context has DeactivateZones() function that sets:
+    --   onObjectEnterZone = nil
+    --   onObjectLeaveZone = nil
+    if Global and Global.call then
+        Global.call("DeactivateZones")
+    end
+    S.setStateVal(true, "zones", "allLocked")
+    print("Zones: Deactivated zone event handlers")
+end
+
+--- Hides all zones by moving them below the table
+-- Deactivates zones and moves all scripting zones (zones) downward to hide them visually.
+-- Useful for cleanup or when zones shouldn't be visible.
+-- @usage Z.hideZones() -- Cleanup after game ends
+function Z.hideZones()
+    Z.deactivateZones()
+    local zones = U.filter(getObjects(), function(obj)
+        return obj.type == "Scripting"
+    end)
+
+    if #zones == 0 then return end
+
+    S.setStateVal(true, "zones", "allLocked")
+    Wait.time(function()
+        U.forEach(zones, function(zone)
+            local zonePos = zone.getPosition()
+            if zonePos.y > -30 then
+                zonePos.y = zonePos.y - 50
+                zone.setPosition(zonePos)
+            end
+        end)
+    end, 0.25)
+end
+
+--- Shows all zones by moving them above the table
+-- Moves all scripting zones upward and activates them. Use to restore zone visibility
+-- after hiding them.
+-- @usage Z.showZones() -- Restore zones after cleanup
+function Z.showZones()
+    local zones = U.filter(getObjects(), function(obj)
+        return obj.type == "Scripting"
+    end)
+
+    if #zones > 0 and zones[1].getPosition().y < -30 then
+        U.forEach(zones, function(zone)
+            local zonePos = zone.getPosition()
+            zonePos.y = zonePos.y + 50
+            zone.setPosition(zonePos)
+        end)
+    end
+
+    Wait.time(Z.activateZones, 0.25)
+end
+
+-- ============================================================================
+-- OBJECT QUERY FUNCTIONS
+-- ============================================================================
+
+--- Gets objects in a zone that match specified tags
+-- Core function for querying zone contents. Supports single tag, multiple tags
+-- with AND/OR logic, or special "ALL"/"ANY" keywords.
+-- @param zone Object The zone to search in
+-- @param tags string|table Tag(s) to filter by:
+--   - string: Single tag name, or "ALL"/"ANY" to return all objects
+--   - table: Array of tags to match
+-- @param requireAll boolean If true, object must have ALL tags (AND logic);
+--   if false/nil, object needs ANY tag (OR logic). Only used when tags is a table.
+-- @return table Array of matching objects
+-- @usage local cards = Z.getTaggedZoneObjects(zone, "Card")
+-- @usage local items = Z.getTaggedZoneObjects(zone, {"Token", "Power"}, true) -- Must have both tags
+-- @usage local anyItems = Z.getTaggedZoneObjects(zone, {"Token", "Power"}, false) -- Has either tag
+-- @usage local all = Z.getTaggedZoneObjects(zone, "ALL") -- Returns all objects in zone
+function Z.getTaggedZoneObjects(zone, tags, requireAll)
+    local zoneObjs = zone.getObjects()
+
+    -- Handle string tags (single tag or special keywords)
+    if U.Type(tags) == "string" then
+        if tags == "ALL" or tags == "ANY" then
+            return zoneObjs
+        end
+        return U.filter(zoneObjs, function(obj)
+            return obj.hasTag(tags)
+        end)
+    end
+
+    -- Handle table of tags
+    if requireAll == true then
+        -- AND logic: object must have ALL tags
+        return U.filter(zoneObjs, function(obj)
+            for _, tag in pairs(tags) do
+                if not obj.hasTag(tag) then
+                    return false
+                end
+            end
+            return true
+        end)
+    else
+        -- OR logic: object needs ANY tag
+        return U.filter(zoneObjs, function(obj)
+            for _, tag in pairs(tags) do
+                if obj.hasTag(tag) then
+                    return true
+                end
+            end
+            return false
+        end)
+    end
+end
+
+--- Gets card objects in a zone, optionally filtered by tags
+-- Convenience function for finding cards. Defaults to common card tags.
+-- @param zone Object The zone to search in
+-- @param tags table|nil Optional: Tags to filter cards by (default: {"Character", "ClanLeader"})
+-- @return table Array of card objects
+-- @usage local cards = Z.getCards(zone)
+-- @usage local specificCards = Z.getCards(zone, {"Character", "Important"})
+function Z.getCards(zone, tags)
+    if tags == nil then
+        tags = {"Character", "Card"} -- Default tags - adapt for VTM5E
+    end
+    return U.filter(Z.getTaggedZoneObjects(zone, tags, false), function(obj)
+        return obj.type == "Card"
+    end)
+end
+
+--- Gets a single card from a zone (the topmost card if multiple exist)
+-- Returns the highest card (by Y position) if multiple cards are present.
+-- @param zone Object The zone to get card from
+-- @param tags table|nil Optional: Tags to filter cards by
+-- @return Object|nil The card object, or nil if no card found
+-- @usage local card = Z.getCard(zone)
+-- @usage if Z.getCard(zone) then print("Zone has a card") end
+function Z.getCard(zone, tags)
+    local cards = Z.getCards(zone, tags)
+    if #cards == 0 then
+        return nil
+    end
+    if #cards == 1 then
+        return cards[1]
+    end
+
+    -- Sort by Y position (highest first), return top card
+    table.sort(cards, function(a, b)
+        return b.getPosition().y < a.getPosition().y
+    end)
+
+    return cards[1]
+end
+
+--- Checks if a zone contains any cards
+-- @param zone Object The zone to check
+-- @return boolean True if zone has at least one card
+-- @usage if Z.hasCard(zone) then Z.alignCard(zone) end
+function Z.hasCard(zone)
+    return Z.getCard(zone) ~= nil
+end
+
+-- ============================================================================
+-- SNAP POINT UTILITIES
+-- ============================================================================
+
+--- Gets snap points from an object that fall within a zone's bounds
+-- Filters snap points by checking if their world positions are inside the zone.
+-- Useful for aligning objects to valid positions within zones.
+-- @param zone Object The zone to check snap points against
+-- @param object Object|nil The object with snap points (default: Global/table)
+-- @return table Array of snap point data that are within zone bounds
+-- @usage local validSnaps = Z.getSnapPointsInZone(zone, board)
+-- @usage local snaps = Z.getSnapPointsInZone(zone) -- Uses Global snap points
+function Z.getSnapPointsInZone(zone, object)
+    if object == nil then
+        object = Global -- Default to Global object's snap points
+    end
+
+    local snapPoints = object.getSnapPoints()
+    local validSnapPoints = {}
+
+    for _, point in pairs(snapPoints) do
+        -- Convert snap point local position to world position
+        local worldPos = object.positionToWorld(point.position)
+
+        -- Check if world position is inside zone bounds
+        if U.isInside(zone, worldPos) then
+            table.insert(validSnapPoints, point)
+        end
+    end
+
+    return validSnapPoints
+end
+
+-- ============================================================================
+-- STATE PERSISTENCE
+-- ============================================================================
+
+--- Saves positions and rotations of tagged objects in a zone
+-- Can save to object descriptions (for TTS persistence) or to game state.
+-- Useful for saving object layouts that should be restored later.
+-- @param zone Object The zone containing objects to save
+-- @param tags string|table Tag(s) to filter objects (uses getTaggedZoneObjects logic)
+-- @param mode string Save mode:
+--   - "desc" (default): Save to object.getDescription() as "{x,y,z}|{x,y,z}" format
+--   - "state": Save to game state at stateKey/stateSubKey
+--   - "clear": Clear object descriptions
+-- @param stateKey string Optional: State key for "state" mode (e.g., "zones", "savedPositions")
+-- @param stateSubKey string Optional: State sub-key for "state" mode (e.g., zone GUID)
+-- @usage Z.writePosToTaggedObjectsInZone(zone, "Card", "desc") -- Save to descriptions
+-- @usage Z.writePosToTaggedObjectsInZone(zone, {"Token", "Power"}, "state", "zones", zone.guid)
+function Z.writePosToTaggedObjectsInZone(zone, tags, mode, stateKey, stateSubKey)
+    if mode == nil then
+        mode = "desc"
+    end
+
+    U.forEach(Z.getTaggedZoneObjects(zone, tags), function(obj)
+        if mode == "clear" then
+            obj.setDescription("")
+            return
+        end
+
+        local pos = obj.getPosition()
+        pos.y = pos.y + 0.5 -- Slight offset for restoration
+        local rot = obj.getRotation()
+
+        if mode == "desc" then
+            -- Save to object description as "{x,y,z}|{x,y,z}"
+            local descString = string.format(
+                "{%s, %s, %s}|{%s, %s, %s}",
+                U.round(pos.x, 2),
+                U.round(pos.y, 2),
+                U.round(pos.z, 2),
+                U.round(rot.x, 2),
+                U.round(rot.y, 2),
+                U.round(rot.z, 2)
+            )
+            obj.setDescription(descString)
+        elseif mode == "state" and U.Type(stateKey) == "string" then
+            -- Save to game state
+            local posRotData = {
+                position = pos,
+                rotation = rot
+            }
+            if stateSubKey then
+                S.setStateVal(posRotData, stateKey, stateSubKey, obj.guid)
+            else
+                S.setStateVal(posRotData, stateKey, obj.guid)
+            end
+        end
+    end)
+end
+
+-- ============================================================================
+-- ZONE EVENT HANDLERS (STUBS FOR CUSTOMIZATION)
+-- ============================================================================
+
+--- Event handler called when an object enters a zone
+-- This is a stub function that should be customized for VTM5E-specific behavior.
+-- Called automatically by TTS when zones are activated and objects enter.
+--
+-- Typical pattern:
+--   1. Check if zones are locked (early return if locked)
+--   2. Check zone type (skip if not relevant)
+--   3. Check game phase (skip if wrong phase)
+--   4. Perform zone-specific logic (align objects, update UI, etc.)
+--   5. Use throttleZone() for operations that shouldn't fire too frequently
+--
+-- @param zone Object The zone the object entered
+-- @param object Object The object that entered the zone
+-- @usage -- Customize this function for VTM5E-specific zone behaviors
+-- @usage -- Example: Auto-align cards, check for scene triggers, etc.
+function Z.onObjectEnterZone(zone, object)
+    -- Check if zones are globally locked
+    if S.getStateVal("zones", "allLocked") == true then
+        return
+    end
+
+    -- TODO: Add VTM5E-specific zone entry logic here
+    -- Examples:
+    --   - Auto-align character cards
+    --   - Check for scene triggers
+    --   - Update UI displays
+    --   - Validate object placement
+
+    -- Example pattern (commented out - customize as needed):
+    -- if Z.hasCard(zone) and object.type == "Card" then
+    --     throttleZone(zone, function()
+    --         -- Align card, refresh UI, etc.
+    --         Z.alignCard(zone)
+    --         Wait.time(function()
+    --             -- Update UI or perform follow-up actions
+    --         end, 0.5)
+    --     end)
+    -- end
+end
+
+--- Event handler called when an object leaves a zone
+-- This is a stub function that should be customized for VTM5E-specific behavior.
+-- Called automatically by TTS when zones are activated and objects leave.
+--
+-- Typical pattern:
+--   1. Check if zones are locked (early return if locked)
+--   2. Check zone type (skip if not relevant)
+--   3. Perform cleanup (restore object properties, update UI, etc.)
+--
+-- @param zone Object The zone the object left
+-- @param object Object The object that left the zone
+-- @usage -- Customize this function for VTM5E-specific zone exit behaviors
+function Z.onObjectLeaveZone(zone, object)
+    -- Check if zones are globally locked
+    if S.getStateVal("zones", "allLocked") == true then
+        return
+    end
+
+    -- TODO: Add VTM5E-specific zone exit logic here
+    -- Examples:
+    --   - Restore object properties (unlock, restore scale, etc.)
+    --   - Update UI displays
+    --   - Clean up zone state
+
+    -- Example pattern (commented out - customize as needed):
+    -- if object.type == "Card" then
+    --     object.use_hands = true -- Restore hands usage
+    --     object.sticky = true -- Restore sticky property
+    -- end
+    --
+    -- Wait.time(function()
+    --     -- Re-align remaining objects, refresh UI
+    --     if Z.hasCard(zone) then
+    --         Z.alignCard(zone)
+    --     end
+    -- end, 0.5)
+end
+
+-- ============================================================================
+-- ZONE UTILITIES (ADDITIONAL HELPERS)
+-- ============================================================================
+
+--- Initializes the zones module (called during game setup)
+-- Sets up zone-related state and prepares zones for use.
+-- @usage Z.onLoad() -- Called from core/main.ttslua during initialization
+function Z.onLoad()
+    -- Initialize zone state if needed
+    if S.getStateVal("zones") == nil then
+        S.setStateVal({allLocked = false}, "zones")
+    end
+
+    print("Zones: Module initialized")
+end
+
+return Z

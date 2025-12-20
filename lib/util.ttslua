@@ -1,73 +1,1658 @@
---[[
-    Utility Functions Library
-    Shared utility functions for use across the module.
-    These will be extracted from the reference repos (King's Dilemma / VTM Heritage).
-]]
+-- lib/util.ttslua
+-- Utility Functions Library
+-- Extracted from Heritage/Kings Dilemma reference modules
+-- This file contains general-purpose utility functions for the VTM5E Tabletop Simulator module.
+--
+-- NOTE: TTS built-in globals are declared in .vscode/settings.json under Lua.diagnostics.globals
+-- This ensures the Lua Language Server recognizes them and doesn't show warnings.
+--
+-- ORGANIZATION:
+-- Functions are organized into logical sections:
+--   1. Math & Numeric Utilities (rounding, precision)
+--   2. Object & Physics Utilities (physics casts, object detection)
+--   3. Snap Point Utilities (board alignment)
+--   4. String & Data Utilities (hex conversion, splitting)
+--   5. Error Handling & Validation (type checking, assertions)
+--   6. Table Operations (functional programming helpers: map, filter, find, etc.)
+--   7. Tag Utilities (object tag checking)
+--   8. UI Utilities (UI element flashing)
+--   9. Debug & Logging (alerts, GM messaging)
+--  10. Player & Network Utilities (host detection, UID generation)
+--  11. Zone Utilities (zone bounds, containment checks)
+--  12. Lighting Utilities (global lighting changes)
+--  13. Animation & Interpolation (smooth object movement, rotation, scaling)
+--  14. Time & Sequence Utilities (coroutine-based async operations)
+--  15. Clone & Copy Utilities (table copying)
+--
+-- USAGE:
+--   local U = require("lib.util")
+--   local doubled = U.map({1,2,3}, function(x) return x*2 end)
+--   U.AlertGM("Warning message")
+--   U.waitUntil(function() doSomething() end, 5) -- Wait 5 seconds
+--
+-- IMPORTANT NOTES:
+--   - Coroutine functions (U.waitUntil, U.RunSequence, U.Lerp) require startLuaCoroutine(Global, "...")
+--   - In Global context, 'self' refers to Global
+--   - Many functions use U.Type() for enhanced type checking (handles TTS userdata types)
 
 local U = {}
 
---[[
-    Type checking utility - Enhanced type checker for TTS objects
-    @param obj - Object to check type of
-    @return Type string
-]]
-function U.Type(obj)
-    if type(obj) == "userdata" then
-        return "Object"
+-- ============================================================================
+-- MATH & NUMERIC UTILITIES
+-- ============================================================================
+
+--- Rounds a number to 2 decimal places (pFloat = "parse to float")
+-- @param num number The number to round (can be nil)
+-- @return number Rounded number, or 0 if num is nil
+-- @usage local pos = U.pFloat(3.14159) -- returns 3.14
+function U.pFloat(num)
+    if (num) then
+        return math.ceil(num * 100) / 100
+    else
+        return 0
     end
-    return type(obj)
 end
 
---[[
-    Table manipulation helpers
-    These will be populated with functions like map, filter, forEach, find, etc.
-    from the reference implementation.
-]]
-
--- Placeholder: Will extract U.map, U.filter, U.forEach, U.find from reference repos
-function U.map(table, func)
-    -- TODO: Extract from reference implementation
-    local result = {}
-    for i, v in ipairs(table) do
-        result[i] = func(v)
-    end
-    return result
+--- Rounds an angle to the nearest interval (useful for snapping rotations)
+-- @param num number The angle value to round
+-- @param interval number The interval to round to (default: 45 degrees)
+-- @return number The rounded angle
+-- @usage local snapped = U.pAngle(37, 45) -- returns 45
+-- @usage local snapped = U.pAngle(23, 15) -- returns 15
+function U.pAngle(num, interval)
+  if not interval then interval = 45 end
+  return math.floor((num / interval) + 0.5) * interval
 end
 
-function U.filter(table, func)
-    -- TODO: Extract from reference implementation
-    local result = {}
-    for i, v in ipairs(table) do
-        if func(v) then
-            table.insert(result, v)
+--- Rounds all components of a rotation vector to the nearest interval
+-- @param rot Vector Rotation vector {x, y, z} or table with numeric values
+-- @param interval number The interval to round each component to (default: 45 degrees)
+-- @return table Table with rounded rotation components
+-- @usage local snapped = U.pRotation({x=37, y=23, z=89}, 45) -- returns {x=45, y=45, z=90}
+function U.pRotation(rot, interval)
+	return U.map(rot, function(rVal) return U.pAngle(rVal, interval) end)
+end
+
+-- ============================================================================
+-- OBJECT & PHYSICS UTILITIES
+-- ============================================================================
+
+--- Performs a physics cast upward from an object to find objects above it
+-- Uses TTS Physics.cast to detect objects positioned above the given object.
+-- Can use either a ray cast (default) or box cast for detection.
+-- @param obj Object The object to cast from
+-- @param testFunc function|Object Optional: Filter function that returns true for valid objects, or an Object to find specifically
+-- @param params table Optional parameters:
+--   - invert (boolean): If true, casts downward instead of upward (default: false)
+--   - box (boolean): If true, uses box cast instead of ray cast (default: false)
+--   - far (boolean): If true, removes distance limit for box cast (default: false)
+-- @return table Array of objects found above (or below if invert=true)
+-- @usage local stackedCards = U.findAboveObject(card, function(obj) return obj.type == "Card" end)
+-- @usage local specificCard = U.findAboveObject(card, targetCardObj)
+-- @usage local objects = U.findAboveObject(card, nil, {box=true, far=true})
+function U.findAboveObject(obj, testFunc, params)
+	-- params:  invert = true/false
+	-- 					box = true/false (defaults to ray)
+	--					far = true/false (default limits distance to 5)
+	local guidTest
+	if params == nil then params = {} end
+	if testFunc == nil then testFunc = function() return true end end
+	if U.Type(testFunc) == "userdata" then
+		guidTest = testFunc.guid
+		testFunc = function(testObj) return testObj.guid == guidTest end
+	end
+
+	local castParams = {}
+
+	if params.invert == true then
+		castParams.direction = {0, -1, 0}
+	else
+		castParams.direction = {0, 1, 0}
+	end
+
+	local objBounds = obj.getBounds()
+	if params.box == true then
+    objBounds.center.y = objBounds.center.y + (0.5 * objBounds.size.y) + 2.5
+		if params.invert == true then
+			objBounds.center.y = objBounds.center.y - 5
+		end
+    objBounds.size.y = 5
+
+		castParams.type = 3
+		castParams.size = objBounds.size
+
+		if params.far ~= true then
+			castParams.max_distance = 0
+		end
+	end
+
+	castParams.origin = objBounds.center
+
+	if UI.getAttribute("debugStatePanel", "active") == "True" then
+		castParams.debug = true
+	end
+
+	local hitList = Physics.cast(castParams)
+	if not hitList then return {} end
+
+	return U.map(
+		U.filter(hitList, function(hitData)
+			return hitData ~= nil and hitData.hit_object ~= nil and hitData.hit_object.guid ~= obj.guid and testFunc(hitData.hit_object)
+		end), function(hitData)
+			return hitData.hit_object
+		end
+	)
+end
+
+--- Performs a physics cast downward from an object to find objects below it
+-- Convenience wrapper around U.findAboveObject with invert=true
+-- @param obj Object The object to cast from
+-- @param testFunc function|Object Optional: Filter function or target object
+-- @param params table Optional parameters (invert defaults to true)
+-- @return table Array of objects found below
+-- @usage local baseCard = U.findBelowObject(card)[1]
+function U.findBelowObject(obj, testFunc, params)
+	if params == nil then params = {} end
+	if params.invert == nil then params.invert = true end
+	return U.findAboveObject(obj, testFunc, params)
+end
+
+--- Checks if one object is positioned above another
+-- @param obj Object The base object
+-- @param testObj Object The object to check if it's above obj
+-- @param params table Optional parameters for the physics cast
+-- @return boolean True if testObj is found above obj
+-- @usage if U.isObjectAbove(baseCard, topCard) then print("Card is stacked") end
+function U.isObjectAbove(obj, testObj, params)
+	return #U.findAboveObject(obj, testObj, params) > 0
+end
+
+--- Calculates a random position within given bounds for scattering objects
+-- Useful for randomly placing tokens, cards, or other objects within a defined area.
+-- @param boundsOrPosOrObj table|Vector|Object Can be:
+--   - A bounds table with {center={x,y,z}, size={x,y,z}}
+--   - A position Vector {x, y, z}
+--   - A TTS Object (will use getBounds() or getPosition/getScale for Scripting objects)
+-- @param yShift number Vertical offset to add to Y position (default: 2)
+-- @param padPercentOrDiameter number Percentage to pad inward (0-1) or diameter if pos provided (default: 0)
+-- @return Vector Random position within the bounds, or nil on error
+-- @usage local pos = U.getScatterPosition(zone, 2, 0.1) -- Random position in zone, 2 units up, 10% padding
+-- @usage local pos = U.getScatterPosition({center={0,0,0}, size={10,0,10}}, 1) -- Random in 10x10 area
+function U.getScatterPosition(boundsOrPosOrObj, yShift, padPercentOrDiameter)
+	if yShift == nil then yShift = 2 end
+	if padPercentOrDiameter == nil then padPercentOrDiameter = 0 end
+	local center, size
+	if U.Type(boundsOrPosOrObj) == "userdata" then
+		if boundsOrPosOrObj.type == "Scripting" then
+			boundsOrPosOrObj = {
+				center = boundsOrPosOrObj.getPosition(),
+				size = boundsOrPosOrObj.getScale()
+			}
+		else
+			boundsOrPosOrObj = boundsOrPosOrObj.getBounds()
+		end
+	end
+	if U.Type(boundsOrPosOrObj) == "table" and boundsOrPosOrObj.center ~= nil and boundsOrPosOrObj.size ~= nil then
+		center = Vector(boundsOrPosOrObj.center):add(Vector(0, yShift, 0))
+		size = boundsOrPosOrObj.size
+	elseif U.Type(boundsOrPosOrObj) == "table" and boundsOrPosOrObj.x ~= nil and boundsOrPosOrObj.y ~= nil and boundsOrPosOrObj.z ~= nil then
+		center = Vector(boundsOrPosOrObj)
+		size = Vector(padPercentOrDiameter * 2, 0, padPercentOrDiameter * 2)
+		padPercentOrDiameter = 0
+	else
+		U.AlertGM("[U.scatterObjects] Error: Must provide a position, an object, or a table with 'center' and 'size'.")
+		return
+	end
+	local spanX = size.x * (1 - padPercentOrDiameter)
+	local spanZ = size.z * (1 - padPercentOrDiameter)
+	local mins = Vector(
+		center.x - 0.5 * spanX,
+		center.y,
+		center.z - 0.5 * spanZ
+	)
+	local maxs = Vector(
+		center.x + 0.5 * spanX,
+		center.y,
+		center.z + 0.5 * spanZ
+	)
+	local scatterVector = Vector(
+		U.randBetween(mins.x, maxs.x),
+		center.y,
+		U.randBetween(mins.z, maxs.z)
+	)
+	return scatterVector
+end
+
+-- Helper function for U.getSnapPoints - checks if a snap point matches coordinate filter
+local function checkSnapPoint(snapPoint, axis, coordsFilter)
+    if (snapPoint and snapPoint.position) then
+        if (axis and coordsFilter[axis]) then
+            local snapPos = math.ceil(snapPoint.position[axis] * 10) / 10
+            local testPos = math.ceil(coordsFilter[axis] * 10) / 10
+            return snapPos == testPos
+        end
+        return true
+    end
+    return false
+end
+
+--- Gets snap points from a board, optionally filtered by coordinates and sorted
+-- Snap points are predefined positions where objects can attach to boards.
+-- @param board Object The board/object to get snap points from (must have getSnapPoints method)
+-- @param coordsFilter table Optional: Filter by specific coordinates, e.g. {x=0, z=5}
+-- @param sortAxis string Optional: Axis to sort by ("x", "y", or "z"), sorts descending
+-- @return table Array of snap point data tables
+-- @usage local allPoints = U.getSnapPoints(board)
+-- @usage local xZeroPoints = U.getSnapPoints(board, {x=0})
+-- @usage local sorted = U.getSnapPoints(board, nil, "z") -- Sort by Z axis
+function U.getSnapPoints(board, coordsFilter, sortAxis)
+    local snapPoints = {}
+    for _, point in ipairs(board.getSnapPoints()) do
+        local isValid = true
+        if (coordsFilter) then
+            for i, thisAxis in ipairs({"x", "y", "z"}) do
+                isValid = isValid and checkSnapPoint(point, thisAxis, coordsFilter)
+            end
+        end
+        if (isValid) then
+            table.insert(snapPoints, point)
         end
     end
-    return result
-end
 
-function U.forEach(table, func)
-    -- TODO: Extract from reference implementation
-    for i, v in ipairs(table) do
-        func(v)
+    if (sortAxis) then
+        table.sort(snapPoints, function(a,b) return a.position[sortAxis] > b.position[sortAxis] end)
     end
+
+    return snapPoints
 end
 
-function U.find(table, predicate)
-    -- TODO: Extract from reference implementation
-    for i, v in ipairs(table) do
-        if predicate(v) then
-            return v
+--- Finds the nearest snap point to a given position
+-- Useful for auto-aligning objects to snap points on boards.
+-- @param snapPoints table|Object Either an array of snap point data, or an object with getSnapPoints method
+-- @param pos Vector|Object Position to search from, or object with getPosition method
+-- @param fuzziness number Tolerance for matching (default: 0.1)
+-- @return number|nil The slot index of the matching snap point, or nil if none found
+-- @usage local slot = U.findSnapPoint(board.getSnapPoints(), card.getPosition())
+-- @usage local slot = U.findSnapPoint(board, card, 0.2) -- Using objects directly with higher tolerance
+function U.findSnapPoint(snapPoints, pos, fuzziness)
+	local baseObj, snapObj
+		if U.Type(snapPoints) == "userdata" and snapPoints.getSnapPoints ~= nil then
+			baseObj = snapPoints
+			snapPoints = U.map(baseObj.getSnapPoints(), function(snapData)
+				snapData.position = baseObj.positionToWorld(snapData.position)
+				return snapData
+			end)
+		end
+		if U.Type(pos) == "userdata" and pos.getSnapPoints ~= nil then
+			snapObj = pos
+			pos = snapObj.getPosition()
+		end
+    fuzziness = fuzziness or 0.1
+    for slot, snap in ipairs(snapPoints) do
+        if (snap.position) then
+          snap = snap.position
+        end
+        local xPos = U.pFloat(pos.x)
+        local zPos = U.pFloat(pos.z)
+        local xSnap = U.pFloat(snap.x)
+        local zSnap = U.pFloat(snap.z)
+        local isXOkay = false
+        local isZOkay = false
+        if (pos.x == nil) then
+            isXOkay = true
+        elseif (xPos >= (xSnap - fuzziness) and xPos <= (xSnap + fuzziness)) then
+            isXOkay = true
+        end
+        if (pos.z == nil) then
+            isZOkay = true
+        elseif (zPos >= (zSnap - fuzziness) and zPos <= (zSnap + fuzziness)) then
+            isZOkay = true
+        end
+        if (isXOkay and isZOkay) then
+            return slot
         end
     end
-    return nil
 end
 
---[[
-    Coroutine and async helpers
-    Will extract U.RunSequence, U.waitUntil, U.Lerp, etc. from reference repos
-]]
+-- ============================================================================
+-- STRING & DATA UTILITIES
+-- ============================================================================
 
--- Placeholder for async/coroutine utilities
--- TODO: Extract U.RunSequence, U.waitUntil, U.Lerp from reference repos
+--- Converts a Color object to hexadecimal string format
+-- Useful for UI XML color attributes or saving colors as strings.
+-- @param color Color The TTS Color object to convert
+-- @param newAlpha number Optional: Override alpha channel (0-1)
+-- @return string Hex color string (e.g., "#FF0000FF")
+-- @usage local hex = U.GetHex(Color.Red) -- returns "#FF0000FF"
+-- @usage local hex = U.GetHex(Color.Blue, 0.5) -- returns "#0000FF80" (half transparent)
+function U.GetHex(color, newAlpha)
+	U.Val("U.GetHex()", color, color ~= nil, "Color is nil!")
+	if newAlpha ~= nil then
+		color = Color(color):setAt("a", newAlpha)
+	end
+	return "#" .. color:toHex(true)
+end
+
+--- Counts the number of elements in a table (handles nil values safely)
+-- Works with both array-style and dictionary-style tables.
+-- @param T table The table to count
+-- @return number The number of key-value pairs in the table
+-- @usage local len = U.count({a=1, b=2, c=3}) -- returns 3
+-- @usage local len = U.count({1, 2, 3, nil, 5}) -- counts all elements including nil keys
+function U.count(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
+
+--- Splits a string into an array by a delimiter
+-- Similar to string.split() in other languages. Handles edge cases like leading delimiters.
+-- @param inputstr string The string to split (can be nil, returns empty table)
+-- @param sep string The delimiter to split on (default: whitespace "%s")
+-- @return table Array of string segments
+-- @usage local parts = U.split("Red,Blue,Green", ",") -- returns {"Red", "Blue", "Green"}
+-- @usage local words = U.split("Hello World") -- returns {"Hello", "World"} (whitespace split)
+function U.split(inputstr, sep)
+	if inputstr == nil then return {} end
+    if sep == nil then
+      sep = "%s"
+    else
+      inputstr = string.gsub(inputstr, sep .. " ", sep)
+    end
+    local t={}
+		if string.match(inputstr, "^" .. sep) then
+			table.insert(t, "")
+		end
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+      table.insert(t, str)
+    end
+    return t
+end
+
+-- ============================================================================
+-- ERROR HANDLING & VALIDATION
+-- ============================================================================
+
+--- Enhanced error reporting with context and value logging
+-- Logs a full traceback and formats the error message with source context and value information.
+-- @param source string The name/context of where the error occurred (e.g., function name)
+-- @param message string The error message
+-- @param val any Optional: Value to include in error (use "NOVAL" to skip value logging)
+-- @return nil Always calls error(), never returns
+-- @usage U.error("setupPlayer", "Invalid player color", playerColor)
+function U.error(source, message, val)
+	local errString = "[" .. source .. "] " .. message
+	local valString
+
+	if val ~= "NOVAL" then
+		valString = nil
+	elseif U.Type(val) == "userdata" then
+		if U.isIn("getName", val) then
+			valString = "<" .. val.getName() .. ">"
+		else
+			valString = "<" .. val.guid or "unknown" .. ">"
+		end
+	elseif U.Type(val) == "table" then
+		valString = JSON.encode_pretty(val)
+	else
+		valString = U.ToString(val)
+	end
+
+	log({ErrorTraceback = debug.traceback()})
+
+	error(errString .. (valString and (": " .. valString) or ""), 3)
+end
+
+--- Validates a value and handles errors with customizable behavior
+-- Checks if a validation test passes, and either throws an error or alerts the GM based on params.
+-- @param source string Context/function name for error reporting
+-- @param checkVal any The value to validate
+-- @param testResult boolean|any If true, validation passes. If false or other, validation fails.
+-- @param errorMsg string Optional: Custom error message (default: "Validation Failed")
+-- @param params table Optional: {isSilent=false, isThrowing=true}
+--   - isSilent: If true, doesn't display error (just returns false)
+--   - isThrowing: If true, throws error; if false, just alerts GM and returns false
+-- @return boolean True if validation passed, false if failed
+-- @usage U.Val("setHunger", hunger, hunger >= 0 and hunger <= 5, "Hunger out of range")
+-- @usage if not U.Val("func", obj, obj ~= nil, "Object required", {isSilent=true}) then return end
+function U.Val(source, checkVal, testResult, errorMsg, params)
+	if testResult == true then return true end
+	if errorMsg == nil then errorMsg = "Validation Failed" end
+	if params == nil then params = {isSilent = false, isThrowing = true} end
+	if testResult ~= false then errorMsg = errorMsg .. " (Test Result = " .. U.ToString(testResult) .. ")" end
+
+	local errorMessage = "[" .. source .. "] " .. errorMsg
+	local valType; valType = U.Type(checkVal)
+	local valString; valString = U.ToString(checkVal)
+
+	if valType == "userdata" then
+		if U.isGameObject(checkVal) then
+			valType = checkVal.type
+		elseif U.isPlayer(checkVal) then
+			if checkVal.steam_id then
+				valType = "Player"
+			else
+				valType = "INVALID Player"
+			end
+		end
+		valString = "'" .. valString .. "'"
+	elseif valType == "table" then
+		if U.isArray(checkVal) then
+			valType = "array"
+		end
+		logStyle("validate", {0.8, 0.8, 0}, "\n\n{", "}")
+		log(checkVal, nil, "validate")
+		valString = "'" .. valString .. "' (SEE LOG)"
+	end
+
+	errorMessage = errorMessage .. " [VAL = " .. valString .. "] (" .. valType .. ")"
+
+	if params.isSilent then return false end
+
+	if params.isThrowing then
+		log(debug.traceback())
+		error(errorMessage, 2)
+	end
+
+	U.AlertGM(errorMessage, Color(1,0,0))
+	return false
+end
+
+--- Safe string conversion - returns "NIL" for nil values
+-- @param val any Value to convert
+-- @return string String representation, or "NIL" if nil
+-- @usage local str = U.ToString(obj) -- Returns object string or "NIL"
+function U.ToString(val) return val ~= nil and tostring(val) or "NIL" end
+
+--- Enhanced type checker - returns "nil" for nil values (standard Lua returns "nil" as string)
+-- @param val any Value to check type of
+-- @return string Type string ("table", "number", "userdata", "nil", etc.)
+-- @usage local t = U.Type(obj) -- Returns type, handles nil safely
+function U.Type(val) return val ~= nil and type(val) or "nil" end
+
+--- Type and condition assertion with detailed error reporting
+-- Validates that a value matches expected type or passes a test function.
+-- Supports many validation modes: type checking, custom test functions, table element validation, etc.
+-- @param source string Context for error reporting
+-- @param val any Value to validate
+-- @param typeOrTest string|function|"check" Validation mode:
+--   - "check": Validates val is true (boolean check)
+--   - "string": Type name to check against ("table", "number", "Player", "Object", etc.)
+--   - function: Custom test function that should return true if valid
+-- @param tableType string Optional: If val is a table, validate all elements are this type
+-- @param isSilent boolean Optional: If true, doesn't throw/alert, just returns false
+-- @return boolean True if assertion passes, false otherwise
+-- @usage U.Assert("setupPlayer", playerColor, "PlayerColor") -- Validates valid player color
+-- @usage U.Assert("processList", items, "table", "number") -- Validates array of numbers
+-- @usage U.Assert("checkValue", x, function(v) return v > 0 end) -- Custom validation
+function U.Assert(source, val, typeOrTest, tableType, isSilent)
+	local errorMessage
+	if typeOrTest == nil then typeOrTest = "check" end
+	if typeOrTest == "check" then
+		if val ~= true then
+			errorMessage = "Failed boolean check"
+		end
+	elseif U.Type(typeOrTest) == "function" then
+		local result = typeOrTest(val)
+		if result ~= true then
+			if result == false or result == nil then
+				errorMessage = "Test Failed for param '" .. U.ToString(val) .. "'"
+			else
+				errorMessage = "Test Failed - '" .. U.ToString(result) .. "'"
+			end
+		end
+	elseif U.Type(typeOrTest) == "string" then
+		if val == nil and typeOrTest ~= "nil" then
+			errorMessage = "Expected " .. typeOrTest .. ", got 'nil'"
+		elseif U.Type(val) == "table" and tableType ~= nil then
+			U.forEach(val, function(v)
+				if not U.Assert(source, v, tableType, nil, true) then
+					errorMessage = "Table elements must all be type '" .. tableType .. "' -- Check log for table output"
+				end
+			end)
+			if errorMessage ~= nil then
+				logStyle("assert", {0.8, 0.8, 0}, "\n\n{", "}")
+				log(val, nil, "assert")
+			end
+		elseif U.Type(val) == typeOrTest then return true
+		elseif typeOrTest == "Player" then
+			if not U.isPlayer(val) then
+				errorMessage = "Not a Valid Player: TOSTRING = '" .. U.ToString(val) .. "' TYPE = (" .. U.Type(val) .. "), STEAMID = '" .. U.ToString(val.steam_id) .. "'"
+			end
+		elseif typeOrTest == "PlayerColor" then
+			if not U.isIn(val, Player.getAvailableColors()) then
+				errorMessage = "Not a Valid Player Color: '" .. U.ToString(val) .. "' (" .. U.Type(val) .. ")"
+			end
+		elseif typeOrTest == "Object" then
+			if not U.isGameObject(val) then
+				errorMessage = "Not a Valid Game Object: TOSTRING = '" .. U.ToString(val) .. "' TYPE = (" .. U.Type(val) .. "), GUID = '" .. U.ToString(val.guid) .. "'"
+			end
+		elseif string.match(typeOrTest, "^%u") then
+			if not U.isGameObject(val) then
+				errorMessage = "Not a Valid Game Object: '" .. U.ToString(val) .. "' (" .. U.Type(val) .. ")"
+			elseif typeOrTest ~= val.type then
+				errorMessage = "Not a Valid " .. typeOrTest .. ": '" .. U.ToString(val) .. "' (" .. U.Type(val) .. ")"
+			end
+		else
+			errorMessage = "Not a Valid " .. typeOrTest .. ": '" .. U.ToString(val) .."' (" .. U.Type(val) .. ")"
+		end
+	end
+
+	if errorMessage ~= nil then
+		if not isSilent then
+			U.error(source, errorMessage, val)
+		end
+		return false
+	end
+
+	return true
+end
+
+-- ============================================================================
+-- TABLE OPERATIONS (Functional Programming Helpers)
+-- ============================================================================
+
+--- Iterates over all key-value pairs in a table (unordered)
+-- Executes a function for each element. Use for side effects, not transformation.
+-- @param tbl table The table to iterate over
+-- @param func function Function to call for each element: func(value, key)
+-- @usage U.forEach({a=1, b=2}, function(val, key) print(key .. "=" .. val) end)
+-- @usage U.forEach(players, function(player) player.promoted = true end)
+function U.forEach(tbl, func)
+	U.Assert("U.forEach", tbl, "table")
+	U.Assert("U.forEach", func, "function")
+	for key, val in pairs(tbl) do
+		func(val, key)
+	end
+end
+
+--- Iterates over array-style table in order (ipairs - integer indices only)
+-- Similar to U.forEach but preserves order for array-style tables.
+-- @param tbl table The array to iterate over
+-- @param func function Function to call for each element: func(value, index)
+-- @usage U.iForEach({10, 20, 30}, function(val, i) print(i .. ": " .. val) end)
+function U.iForEach(tbl, func)
+	U.Assert("U.iForEach", tbl, "table")
+	U.Assert("U.iForEach", func, "function")
+	for key, val in ipairs(tbl) do
+		func(val, key)
+	end
+end
+
+--- Executes a sequence of functions, waiting for objects to rest between each
+-- Each function should return an object or table of objects. The sequence waits until all returned objects
+-- have finished spawning and come to rest before executing the next function.
+-- Uses Wait.condition internally (not coroutines).
+-- @param funcs table Array of functions. Each function can optionally return an object/objects to wait for.
+--   Functions can also return numbers to add delay.
+-- @param maxTime number Optional: Maximum time to wait for objects to rest (default: nil, no timeout)
+-- @param isLoose boolean Optional: If false, errors on timeout; if true, continues anyway
+-- @usage U.waitRestingSequence({
+--   function() return spawnCard() end,  -- Wait for card to rest
+--   function() return spawnToken() end  -- Then wait for token to rest
+-- })
+function U.waitRestingSequence(funcs, maxTime, isLoose)
+	-- funcs is a table of functions, each of which returns an object or a table of objects
+	-- U.waitRestingSequence will wait until the object is resting, before
+	-- calling the next function
+		-- can set a timeout optionally
+		-- can pass 'false' to have function error out rather than continue on timeout
+
+	local delay = 0.5
+	local objTargets
+
+	local function callNext()
+		if #funcs == 0 then return end
+		local func = table.remove(funcs, 1)
+		if U.Type(func) == "function" then
+			if objTargets ~= nil then
+				Wait.time(function()
+					Wait.condition(function()
+						objTargets = func(objTargets)
+						if objTargets ~= nil and U.Type(objTargets) ~= "table" then
+							objTargets = {objTargets}
+						end
+						callNext()
+					end, function()
+						if objTargets ~= nil and U.Type(objTargets) ~= "table" then
+							objTargets = {objTargets}
+						end
+						for _, objTarget in pairs(objTargets) do
+							if objTarget.loading_custom == true then return false end
+							if objTarget.resting ~= true then return false end
+						end
+						return true
+					end, maxTime)
+				end, delay)
+				delay = 0.5
+			else
+				objTargets = func(objTargets)
+				callNext()
+			end
+		elseif U.Type(func) == "number" then
+			delay = delay + func
+		end
+	end
+
+	callNext()
+end
+
+--- Transforms a table by applying a function to each element
+-- Creates a new table where each value is the result of func(value, key).
+-- Preserves table structure (array vs dictionary).
+-- @param tb table The input table
+-- @param func function Transform function: newValue = func(value, key)
+-- @return table New table with transformed values
+-- @usage local doubled = U.map({1, 2, 3}, function(x) return x * 2 end) -- {2, 4, 6}
+-- @usage local guids = U.map(objects, function(obj) return obj.guid end) -- Extract GUIDs
+function U.map(tb, func)
+	U.Assert("U.map", tb, "table")
+	U.Assert("U.map", func, "function")
+  local new_table = {}
+  for k,v in pairs(tb) do
+    new_table[k] = func(v,k)
+  end
+  return new_table
+end
+
+--- Transforms an array-style table in order (preserves indices)
+-- Similar to U.map but uses ipairs for ordered iteration.
+-- @param tb table The input array
+-- @param func function Transform function: newValue = func(value, index)
+-- @return table New array with transformed values
+-- @usage local indexed = U.iMap({"a", "b"}, function(v, i) return i .. ":" .. v end) -- {"1:a", "2:b"}
+function U.iMap(tb, func)
+	U.Assert("U.iMap", tb, "table")
+	U.Assert("U.iMap", func, "function")
+  local new_table = {}
+  for k,v in ipairs(tb) do
+    new_table[k] = func(v,k)
+  end
+  return new_table
+end
+
+--- Transforms both keys and values of a table
+-- Applies keyFunc to keys and valFunc to values, creating a new table structure.
+-- @param tb table The input table
+-- @param keyFunc function Transform keys: newKey = keyFunc(oldKey, oldValue)
+-- @param valFunc function Transform values: newValue = valFunc(oldValue, oldKey)
+-- @return table New table with transformed keys and values
+-- @usage local reversed = U.keyMap({a=1, b=2}, function(k,v) return v end, function(v,k) return k end) -- {1="a", 2="b"}
+function U.keyMap(tb, keyFunc, valFunc)
+	U.Assert("U.keyMap", tb, "table")
+	U.Assert("U.keyMap", keyFunc, "function")
+	U.Assert("U.keyMap", valFunc, "function")
+	local new_table = {}
+	for k,v in pairs(tb) do
+		new_table[keyFunc(k, v)] = valFunc(v,k)
+	end
+	return new_table
+end
+
+--- Filters a table, returning only elements where func returns true
+-- Preserves table structure - arrays remain arrays, dictionaries remain dictionaries.
+-- @param tb table The input table
+-- @param func function Predicate function: keep element if func(value, key) returns true
+-- @return table New table containing only elements that passed the filter
+-- @usage local evens = U.filter({1,2,3,4,5}, function(x) return x % 2 == 0 end) -- {2, 4}
+-- @usage local cards = U.filter(objects, function(obj) return obj.type == "Card" end)
+function U.filter(tb, func)
+	U.Assert("U.filter", tb, "table")
+	U.Assert("U.filter", func, "function")
+  local new_table = {}
+  local index = 0
+  for k,v in pairs(tb) do
+    index = index + 1
+    if (func(v, k)) then
+      if (k == index) then
+        table.insert(new_table, v)
+      else
+        new_table[k] = v
+      end
+    end
+  end
+  return new_table
+end
+
+--- Inverts a table: swaps keys and values
+-- Creates a new table where old values become keys and old keys become values.
+-- Note: Only works with string/number values. Complex values are JSON-encoded.
+-- @param tb table The input table
+-- @return table New table with inverted key-value pairs
+-- @usage local reversed = U.invert({a=1, b=2}) -- {1="a", 2="b"}
+function U.invert(tb)
+	local new_table = {}
+	for k,v in pairs(tb) do
+		if U.isIn(v, {"string", "number"}) then
+			new_table[v] = k
+		elseif U.isIn(v, {"boolean", "nil", "table", "function"}) then
+			new_table[JSON.encode(v)] = k
+		else
+			new_table.user_data = k
+		end
+	end
+	return new_table
+end
+
+--- Randomly shuffles an array in-place (Fisher-Yates shuffle)
+-- Modifies the original array and returns it.
+-- @param arr table The array to shuffle
+-- @return table The same array (now shuffled)
+-- @usage U.shuffle({1, 2, 3, 4, 5}) -- Randomizes order
+-- @usage local shuffled = U.shuffle(playerOrder) -- Randomize player turn order
+function U.shuffle(arr)
+	for i = #arr, 2, -1 do
+		local j = math.random(i)
+		arr[i], arr[j] = arr[j], arr[i]
+	end
+	return arr
+end
+
+--- Concatenates multiple tables or values into a single array
+-- Flattens array arguments and adds non-table values directly.
+-- @param ... any Variable number of tables or values to concatenate
+-- @return table New array containing all elements
+-- @usage local combined = U.concat({1,2}, {3,4}, 5) -- {1, 2, 3, 4, 5}
+function U.concat(...)
+	local args = {...}
+	local tb = {}
+	U.forEach(args, function(arg)
+		if U.Type(arg) == "table" then
+			for i = 1, #arg do
+        tb[#tb+1] = arg[i]
+    	end
+		else
+			table.insert(tb, arg)
+		end
+	end)
+	return tb
+end
+
+--- Extracts a subarray (slice) from an array
+-- Similar to string.sub() but for arrays. Returns a new array containing elements from iStart to iEnd.
+-- @param arr table The input array
+-- @param iStart number Start index (default: 1)
+-- @param iEnd number End index (default: length of array)
+-- @return table New array containing the slice
+-- @usage local middle = U.slice({1,2,3,4,5}, 2, 4) -- {2, 3, 4}
+function U.slice(arr, iStart, iEnd)
+	U.Assert("U.Slice", arr, "table")
+	if iStart == nil then iStart = 1 end
+	if iEnd == nil then iEnd = #arr end
+	U.Assert("U.Slice - Array start must be lower than end", iStart <= iEnd)
+	local newArr = {}
+	for i = iStart, iEnd do
+		table.insert(newArr, arr[i])
+	end
+	return newArr
+end
+
+--- Deep merges multiple tables into a single table
+-- Recursively merges nested tables. Later arguments override earlier ones for conflicting keys.
+-- @param ... table Variable number of tables to merge
+-- @return table New table containing merged values
+-- @usage local merged = U.merge({a=1, b={x=1}}, {b={y=2}, c=3}) -- {a=1, b={x=1,y=2}, c=3}
+function U.merge(...)
+	local args = {...}
+	U.Assert("U.merge", args[1], "table")
+	local newTable = U.clone(U.shift(args))
+	U.iForEach(args, function(nextTable)
+		U.Assert("U.merge", nextTable, "table")
+		nextTable = U.clone(nextTable)
+		U.forEach(nextTable, function(val, key)
+			if U.Type(val) == "table" then
+				if U.Type(newTable[key]) == "table" then
+					newTable[key] = U.merge(newTable[key], val)
+				else
+					newTable[key] = U.clone(val)
+				end
+			else
+				newTable[key] = val
+			end
+		end)
+	end)
+	return newTable
+end
+
+--- Joins array values into a string with a delimiter
+-- @param tb table Array to join
+-- @param delim string Delimiter string (default: "|")
+-- @return string Joined string
+-- @usage local str = U.join({"a", "b", "c"}, ",") -- "a,b,c"
+function U.join(tb, delim)
+	if delim == nil then delim = "|" end
+	local returnString = ""
+	for _, val in ipairs(tb) do
+		returnString = returnString .. delim .. val
+	end
+	return string.gsub(returnString, "^%s*" .. delim, "")
+end
+
+--- Removes and returns the last element of an array (stack pop)
+-- @param arr table The array
+-- @return any The removed element, or nil if array is empty
+-- @usage local last = U.pop(myStack)
+function U.pop(arr)
+	if U.Type(arr) ~= "table" or #arr == 0 then return nil end
+	return table.remove(arr)
+end
+
+--- Adds an element to the end of an array (stack push)
+-- @param elem any Element to add
+-- @param arr table The array
+-- @usage U.push(newItem, myStack)
+function U.push(elem, arr) table.insert(arr, elem) end
+
+--- Removes and returns the first element of an array (queue dequeue)
+-- @param arr table The array
+-- @return any The removed element, or nil if array is empty
+-- @usage local first = U.shift(myQueue)
+function U.shift(arr)
+	if U.Type(arr) ~= "table" or #arr == 0 then return nil end
+	return table.remove(arr, 1)
+end
+
+--- Adds an element to the beginning of an array (queue enqueue)
+-- @param elem any Element to add
+-- @param arr table The array
+-- @usage U.unshift(newItem, myQueue)
+function U.unshift(elem, arr) table.insert(arr, 1, elem) end
+
+--- Finds, removes, and returns an element from an array matching a predicate
+-- @param arr table The array
+-- @param func function Predicate function: func(value, index) -> boolean
+-- @return any The removed element, or nil if not found
+-- @usage local item = U.pluck(items, function(v) return v.id == targetId end)
+function U.pluck(arr, func)
+	local index = U.findIndex(arr, func)
+	return table.remove(arr, index)
+end
+
+--- Flattens a nested table structure into a single-level array
+-- Recursively extracts all non-table values from nested tables.
+-- @param tb table Nested table structure
+-- @return table Flat array containing all values
+-- @usage local flat = U.flatten({{1,2}, {3, {4,5}}}) -- {1, 2, 3, 4, 5}
+function U.flatten(tb)
+	local newTable = {}
+	for _, val in pairs(tb) do
+		if U.Type(val) == "table" then
+			newTable = U.concat(newTable, U.flatten(val))
+		else
+			table.insert(newTable, val)
+		end
+	end
+	return newTable
+end
+
+--- Finds the first element in a table matching a predicate
+-- @param tb table The table to search
+-- @param func function Predicate function: func(value, key) -> boolean
+-- @return any The first matching element, or nil if none found
+-- @usage local card = U.find(cards, function(c) return c.guid == targetGuid end)
+-- @usage local player = U.find(players, function(p) return p.color == "Red" end)
+function U.find(tb, func)
+	U.Assert("U.find", tb, "table")
+	U.Assert("U.find", func, "function")
+  for k,v in pairs(tb) do
+    if (func(v,k)) then return v end
+  end
+  return nil
+end
+
+--- Sums all numeric values in a table
+-- Extracts all values and sums them. Ignores non-numeric values.
+-- @param tb table The table containing numeric values
+-- @return number The sum of all numeric values
+-- @usage local total = U.sumVals({a=10, b=20, c=30}) -- 60
+function U.sumVals(tb)
+	local total = 0
+	U.forEach(U.getValues(tb), function(v) total = total + v end)
+	return total
+end
+
+--- Finds the key/index of the first element matching a predicate
+-- @param tb table The table to search
+-- @param func function Predicate function: func(value, key) -> boolean
+-- @return any The key/index of the first matching element, or nil
+-- @usage local index = U.findIndex({10, 20, 30}, function(v) return v == 20 end) -- 2
+function U.findIndex(tb, func)
+	U.Assert("U.findIndex", tb, "table")
+	U.Assert("U.findIndex", func, "function")
+  for k,v in pairs(tb) do
+    if (func(v,k)) then return k end
+  end
+	return nil
+end
+
+--- Removes nil and false values from a table
+-- Creates a new table without nil or false values. Preserves table structure.
+-- @param tb table The input table
+-- @return table New table with nil/false values removed
+-- @usage local cleaned = U.compact({1, nil, 2, false, 3}) -- {1, 2, 3}
+function U.compact(tb)
+	U.Assert("U.compact", tb, "table")
+	local new_table = {}
+	for k, v in pairs(tb) do
+		if v ~= nil and v ~= false then
+			if U.isArray(tb) then
+				table.insert(new_table, v)
+			else
+				new_table[k] = v
+			end
+		end
+	end
+	return new_table
+end
+
+--- Reverses the order of an array
+-- @param tb table The input array
+-- @return table New array with elements in reverse order
+-- @usage local reversed = U.reverse({1, 2, 3}) -- {3, 2, 1}
+function U.reverse(tb)
+    local rev = {}
+    for i = #tb, 1, -1 do
+    	rev[#rev+1] = tb[i]
+    end
+    return rev
+end
+
+--- Checks if an element exists in a table (as a value) or as a key
+-- First checks if elem is a value in the table, then checks if it's a key.
+-- @param elem any The element to search for
+-- @param tb table|userdata The table to search in (can be TTS object for property check)
+-- @return boolean True if element is found as value or key
+-- @usage if U.isIn("Red", playerColors) then print("Red player found") end
+-- @usage if U.isIn(guid, objectTable) then print("Object tracked") end
+function U.isIn(elem, tb)
+	U.Assert("U.isIn", U.Type(tb) == "table" or U.Type(tb) == "userdata")
+
+	if U.Type(tb) == "table" then
+		-- check values first, before checking keys
+		for _, value in pairs(tb) do
+			if value == elem then
+				return true
+			end
+		end
+	end
+
+	-- check key
+	local function hasProperty(object, prop)
+			local t = object[prop]
+			if t == nil then error("Bad Property") end
+	end
+	if pcall(function() hasProperty(tb, elem) end) then
+		return true
+	end
+
+	return false
+end
+
+--- Checks if a value is a valid TTS game object
+-- Validates that the value is userdata, has a guid, and is not a Player.
+-- @param val any Value to check
+-- @return boolean True if value is a TTS game object
+-- @usage if U.isGameObject(obj) then obj.setPosition(Vector(0,0,0)) end
+function U.isGameObject(val)
+	return val
+		and U.Type(val) == "userdata"
+		and U.ToString(val) ~= "LuaPlayer"
+		and val.guid ~= nil
+end
+
+--- Checks if a value is a valid TTS Player object
+-- Validates that the value is userdata representing a Player with a steam_id.
+-- @param val any Value to check
+-- @return boolean True if value is a TTS Player
+-- @usage if U.isPlayer(player) then player.promoted = true end
+function U.isPlayer(val)
+	return val
+		and U.Type(val) == "userdata"
+		and U.ToString(val) == "LuaPlayer"
+		and val.steam_id ~= nil
+end
+
+--- Checks if a value is an instance of a given type (metatable check)
+-- Traverses the metatable chain to check for type inheritance.
+-- @param val any Value to check
+-- @param super string|any The supertype to check for
+-- @return boolean True if val is an instance of super
+-- @usage if U.isInstance(vec, Vector) then print("It's a vector!") end
+function U.isInstance(val, super)
+	super = U.ToString(super)
+	local mt = getmetatable(val)
+	while true do
+		if mt == nil then return false end
+		if U.ToString(mt) == super then return true end
+		mt = getmetatable(mt)
+	end
+end
+
+--- Checks if a table is array-like (sequential integer indices starting at 1)
+-- Returns false if table has non-sequential keys (even if length > 0).
+-- @param val any Value to check
+-- @return boolean True if table is array-like
+-- @usage if U.isArray(myTable) then U.iForEach(myTable, func) end
+function U.isArray(val)
+	if U.Type(val) ~= "table" then return false end
+	if #val == 0 and #U.getKeys(val) > 0 then return false end
+	return true
+end
+
+--- Checks if an object is flipped (rotated 180 degrees on Z axis)
+-- @param obj Object The TTS object to check
+-- @return boolean True if object's Z rotation is approximately 180 degrees
+-- @usage if U.isFlipped(card) then card.setRotation(Vector(0,0,0)) end
+function U.isFlipped(obj)
+  local zRot = U.pAngle(obj.getRotation().z, 90)
+  return zRot == 180
+end
+
+-- ============================================================================
+-- UI UTILITIES
+-- ============================================================================
+
+--- Temporarily shows a UI element then hides it (flash/splash effect)
+-- Useful for drawing attention to UI elements or showing temporary notifications.
+-- @param elemID string The UI element ID to show/hide
+-- @param duration number How long to show the element in seconds (default: 5)
+-- @param delay number Optional delay before showing (default: 0)
+-- @usage U.splashUIElement("notificationPanel", 3) -- Show for 3 seconds
+function U.splashUIElement(elemID, duration, delay)
+  if (duration == nil) then duration = 5 end
+  if (delay == nil or delay == 0) then
+    UI.show(elemID)
+    Wait.time(function() UI.hide(elemID) end, duration)
+  else
+    Wait.time(function() U.splashUIElement(elemID, duration, 0) end, delay)
+  end
+end
+
+-- ============================================================================
+-- DEBUG & LOGGING UTILITIES
+-- ============================================================================
+
+--- Alerts the game master (host) with a message
+-- Sends a message only to the host player using broadcastToColor.
+-- @param message string The message to send
+-- @param color Color Optional: Message color (default: Yellow)
+-- @usage U.AlertGM("Warning: Invalid state detected!")
+function U.AlertGM(message, color)
+	if color == nil then color = Color(1, 1, 0) end
+	broadcastToColor(message, U.getHost().color, color)
+end
+
+--- Alerts all players with a message
+-- Broadcasts a message to all connected players.
+-- @param message string The message to send
+-- @param color Color Optional: Message color (default: White)
+-- @usage U.Alert("Game starting in 10 seconds!")
+function U.Alert(message, color)
+	if color == nil then color = Color(1, 1, 1) end
+	broadcastToAll(message, color)
+end
+
+-- ============================================================================
+-- TAG UTILITIES
+-- ============================================================================
+
+--- Checks if an object has any of the specified tags
+-- @param obj Object The TTS object to check
+-- @param tags table Array of tag strings to check for
+-- @return boolean True if object has at least one of the tags
+-- @usage if U.hasAnyTag(card, {"Card", "Deck"}) then print("Is a card or deck") end
+function U.hasAnyTag(obj, tags)
+	for _, tag in pairs(tags) do
+		if obj.hasTag(tag) then return true end
+	end
+	return false
+end
+
+--- Finds the first tag from a list that the object has
+-- @param obj Object The TTS object to check
+-- @param tagList table Array of tag strings to check
+-- @return string|boolean The first matching tag, or false if none found
+-- @usage local typeTag = U.findTag(obj, {"Card", "Token", "Die"})
+function U.findTag(obj, tagList)
+	for _, tag in pairs(tagList) do
+		if obj.hasTag(tag) then return tag end
+	end
+	return false
+end
+
+--- Finds which player color tag an object has
+-- Checks if object has any tag matching a valid TTS player color.
+-- @param obj Object The TTS object to check
+-- @return string|nil The player color tag found, or nil if none
+-- @usage local owner = U.findColorTag(card) -- Returns "Red", "Blue", etc.
+function U.findColorTag(obj)
+	U.Assert("U.findColorTag", obj, "userdata")
+	U.Assert("U.findColorTag", obj.hasTag, "function")
+	return U.find(Player.getAvailableColors(), function(color) return obj.hasTag(color) end)
+end
+
+local UIDS = {}
+function U.getUID(length)
+	if length == nil then length = 10 end
+  local chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  local uid = ""
+	while string.len(uid) < length do
+		local randomNumber = math.random(1, #chars)
+    uid = uid .. string.sub(chars, randomNumber, randomNumber)
+  end
+	if U.isIn(uid, UIDS) then
+		return U.getUID()
+	else
+		table.insert(UIDS, uid)
+		return uid
+	end
+end
+
+function U.getHost()
+	local hosts = U.filter(Player.getPlayers(), function(player) return player.host end)
+	if #hosts == 1 then return hosts[1] end
+	-- If there are multiple hosts, this is a hotseat game being debugged: Player.Brown is the assumed host.
+	return Player.Brown
+end
+
+function U.getZoneBounds(zone)
+	local zoneExtent = U.map(zone.getScale(), function(val) return 0.5 * val end)
+	local zonePos = zone.getPosition()
+	return U.map(zonePos, function(coord, axis) return {min = coord - zoneExtent[axis], max = coord + zoneExtent[axis]} end)
+end
+
+function U.isInside(zone, pos, ignoreY)
+	if ignoreY == nil then ignoreY = true end
+	local zoneBounds = U.getZoneBounds(zone)
+	return pos.x >= zoneBounds.x.min and pos.x <= zoneBounds.x.max
+		and (ignoreY or pos.y >= zoneBounds.y.min and pos.y <= zoneBounds.y.max)
+		and pos.z >= zoneBounds.z.min and pos.z <= zoneBounds.z.max
+end
+
+function U.parsePosition(obj)
+	local posVals, rotVals
+	if U.Type(obj) ~= "userdata" then return end
+	local desc = obj.getDescription()
+	if U.Type(desc) ~= "string" or string.find(desc, "^{%d+.%d+, %d+.%d+, %d+.%d+}") == nil then return end
+	local posRotSplit = U.split(desc, "|")
+	local posString, rotString = posRotSplit[1], posRotSplit[2]
+	if U.Type(posString) == "string" then
+		posString = string.gsub(string.sub(posString, 2, #posString - 1), " ", "")
+		posVals = U.map(U.split(posString, ","), function(strVal) return 1 * strVal end)
+		if #posVals == 3 then
+			posVals = {x = posVals[1], y = posVals[2], z = posVals[3]}
+		end
+	end
+	if U.Type(rotString) == "string" then
+		rotString = string.gsub(string.sub(rotString, 2, #rotString - 1), " ", "")
+		rotVals = U.map(U.split(rotString, ","), function(strVal) return 1 * strVal end)
+		if #rotVals == 3 then
+			rotVals = {x = rotVals[1], y = rotVals[2], z = rotVals[3]}
+		end
+	end
+	return posVals, rotVals
+end
+
+function U.getHandZone(color)
+	return U.find(Hands.getHands(), function(hZone) return hZone.getData().FogColor == color end)
+end
+
+--- Rounds a number to a specified number of significant digits
+-- @param num number The number to round
+-- @param sigDigits number Number of decimal places (default: 1)
+-- @return number Rounded number
+-- @usage local rounded = U.round(3.14159, 2) -- 3.14
+function U.round(num, sigDigits)
+  if (sigDigits == nil) then sigDigits = 1 end
+  local roundMult = 10 ^ sigDigits
+	return (math.floor(num * roundMult + 0.5)) / roundMult
+end
+
+--- Rounds all numeric values in a table
+-- @param tb table The table containing numeric values
+-- @param sigDigits number Number of decimal places for rounding
+-- @return table New table with rounded values
+-- @usage local cleaned = U.roundTableVals({x=3.141, y=2.718}, 2) -- {x=3.14, y=2.72}
+function U.roundTableVals(tb, sigDigits)
+  local newTable = {}
+  for key, val in pairs(tb) do
+    newTable[key] = U.round(val, sigDigits)
+  end
+  return newTable
+end
+
+--- Wraps a value within a range (cycles around min/max)
+-- If value exceeds max, wraps to min. If below min, wraps to max.
+-- @param val number The value to wrap
+-- @param min number Minimum value
+-- @param max number Maximum value
+-- @return number Wrapped value within range
+-- @usage local wrapped = U.cycle(11, 0, 10) -- 1
+-- @usage local wrapped = U.cycle(-1, 0, 10) -- 10
+function U.cycle(val, min, max)
+	local cycleRange = max - min
+	while val > max do
+		val = val - cycleRange
+	end
+	while val < min do
+		val = val + cycleRange
+	end
+	return val
+end
+
+--- Extracts all values from a table into an array
+-- @param tb table The input table
+-- @return table Array containing all values (keys are lost)
+-- @usage local values = U.getValues({a=1, b=2, c=3}) -- {1, 2, 3} (order may vary)
+function U.getValues(tb)
+	local values = {}
+	for _, val in pairs(tb) do
+		-- log({key = key, val = val})
+		table.insert(values, val)
+	end
+	return values
+end
+
+--- Extracts all keys from a table into an array
+-- @param tb table The input table
+-- @return table Array containing all keys
+-- @usage local keys = U.getKeys({a=1, b=2, c=3}) -- {"a", "b", "c"} (order may vary)
+function U.getKeys(tb)
+	local keys = {}
+	for key in pairs(tb) do
+		table.insert(keys, key)
+	end
+	return keys
+end
+
+-- ============================================================================
+-- LIGHTING UTILITIES
+-- ============================================================================
+
+--- Changes global lighting with a delay
+-- Applies lighting changes and calls Lighting.apply after a delay.
+-- Parameters starting with "set" are treated as function calls (e.g., setLightColor).
+-- @param params table Table of lighting properties to change, e.g. {ambient_intensity=1.0, light_intensity=0.8}
+-- @return nil
+-- @usage U.changeLighting({ambient_intensity=0.5, light_intensity=0.3})
+function U.changeLighting(params)
+	if params == nil then return nil end
+
+	U.sequence({
+		function()
+			for param, val in pairs(params) do
+				-- log("CHANGING " .. param .. " to " .. val)
+				if string.match(param, "^set") then
+					Lighting[param](val)
+				else
+					Lighting[param] = val
+				end
+			end
+		end,
+		Lighting.apply
+	}, 0.5)
+end
+
+-- ============================================================================
+-- ANIMATION & INTERPOLATION UTILITIES
+-- ============================================================================
+
+--- Smoothly animates an object's rotation over time
+-- Uses U.Lerp internally to interpolate rotation values. Handles rotation wrapping (shortest path).
+-- @param obj Object The object to rotate
+-- @param rotation Vector Target rotation {x, y, z}
+-- @param duration number Animation duration in seconds (default: 0.5)
+-- @param easing string Optional easing mode: "speedUp" for acceleration, nil for linear
+-- @param isColliding boolean Whether object should collide during movement (default: false)
+-- @return number The duration (for chaining)
+-- @usage U.setRotationSlow(card, Vector(0,0,180), 1.0) -- Rotate card over 1 second
+function U.setRotationSlow(obj, rotation, duration, easing, isColliding)
+	if duration == nil then duration = 0.5 end
+	if isColliding == nil then isColliding = false end
+	return U.Lerp(function(rotation) obj.setRotationSmooth(rotation, isColliding, false) end, obj.getRotation(), rotation, duration, true, easing)
+end
+
+--- Smoothly animates an object's position over time
+-- Uses U.Lerp internally to interpolate position values.
+-- @param obj Object The object to move
+-- @param position Vector Target position {x, y, z}
+-- @param duration number Animation duration in seconds (default: 0.5)
+-- @param easing string Optional easing mode: "speedUp" for acceleration, nil for linear
+-- @param isColliding boolean Whether object should collide during movement (default: false)
+-- @return number The duration (for chaining)
+-- @usage U.setPositionSlow(token, Vector(10, 2, 5), 2.0) -- Move token over 2 seconds
+function U.setPositionSlow(obj, position, duration, easing, isColliding)
+	if duration == nil then duration = 0.5 end
+	if isColliding == nil then isColliding = false end
+	return U.Lerp(function(pos) obj.setPositionSmooth(pos, isColliding, false) end, obj.getPosition(), position, duration, false, easing)
+end
+
+--- Smoothly animates an object's scale over time
+-- Uses U.Lerp internally to interpolate scale values.
+-- @param obj Object The object to scale
+-- @param scale Vector Target scale {x, y, z}
+-- @param duration number Animation duration in seconds (default: 0.5)
+-- @param easing string Optional easing mode: "speedUp" for acceleration, nil for linear
+-- @return number The duration (for chaining)
+-- @usage U.setScaleSlow(object, Vector(2, 2, 2), 1.0) -- Double size over 1 second
+function U.setScaleSlow(obj, scale, duration, easing)
+	if duration == nil then duration = 0.5 end
+	return U.Lerp(function(sc) obj.setScale(sc) end, obj.getScale(), scale, duration, false, easing)
+end
+
+-- ============================================================================
+-- TIME & SEQUENCE UTILITIES (COROUTINE-BASED)
+-- ============================================================================
+
+--- Delays execution of a function until a condition is met (coroutine-based)
+--
+-- This is a powerful coroutine-based utility that waits until a condition is satisfied, then executes
+-- a function. Supports multiple test types and can wait for objects, time delays, custom conditions, or
+-- combinations thereof. Uses startLuaCoroutine internally, so must be called from Global context.
+--
+-- The testRef parameter determines what condition to wait for:
+--   - function: Custom test function that must return true when condition is met
+--   - number: Wait this many seconds before executing (0 = immediately)
+--   - GameObject: Wait until object has finished spawning AND is at rest
+--   - nil: Wait default 0.5 seconds
+--   - table: Array of any above types - waits until ALL conditions are met (AND logic)
+--
+-- @param afterFunc function The function to execute when condition is met
+-- @param testRef function|number|Object|table|nil Condition to wait for (see description above)
+-- @param isForcing boolean Optional: If true, executes afterFunc even if timeout (default: false)
+-- @param maxWait number Optional: Max frames to wait before timeout (default: 1000)
+-- @param testFrequency number Optional: Frames between condition checks (default: 15)
+-- @return function Returns a function that returns true when afterFunc has completed
+--
+-- @usage U.waitUntil(function() print("Done!") end, 5) -- Wait 5 seconds
+-- @usage U.waitUntil(function() moveCard() end, cardObj) -- Wait for card to rest
+-- @usage U.waitUntil(func, function() return condition == true end) -- Custom condition
+-- @usage U.waitUntil(func, {cardObj, 2, customTest}) -- Wait for all conditions
+--
+-- NOTE: Requires startLuaCoroutine(Global, "CheckCoroutine") - self refers to Global in Global context
+function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
+	if afterFunc == nil then return end
+	if isForcing == nil then isForcing = false end
+	if maxWait == nil then maxWait = 1000 end
+	if testFrequency == nil then testFrequency = 15 end
+
+	local frameCount = 0
+	local hasWaited = false
+
+	-- parseCheckFunc(testRef): Converts testRef into a test function (recursively, if testRef is a table)
+	local function parseCheckFunc(tRef)
+		if tRef == nil then tRef = 0.5 end
+		if U.Type(tRef) == "function" then return tRef
+		elseif U.Type(tRef) == "number" then
+			testFrequency = math.max(1, math.min(testFrequency, tRef * 10))
+			return function() return frameCount >= (tRef * 30) end
+		elseif U.isGameObject(tRef) then
+			return function() return tRef and tRef.resting and not tRef.loading_custom end
+		elseif U.Type(tRef) == "table" then
+			local checkFuncs = U.map(tRef, function(tr) return parseCheckFunc(tr) end)
+			return function()
+				checkFuncs = U.filter(checkFuncs, function(cf) return cf() == false end)
+				return #checkFuncs == 0
+			end
+		end
+	end
+
+	local pCheckFunc = parseCheckFunc(testRef)
+
+	local afterReturnVal
+
+	function CheckCoroutine()
+		if pCheckFunc ~= nil then
+			while not pCheckFunc() do
+				local waitFrames = testFrequency
+				frameCount = frameCount + waitFrames
+				if frameCount > maxWait and not hasWaited then
+					log(debug.traceback())
+					hasWaited = true
+					if isForcing then
+						U.AlertGM("Coroutine Timeout: Forcing ResultFunc")
+						break
+					end
+					U.AlertGM("Coroutine Still Waiting! (See Log Traceback)")
+				end
+
+				while waitFrames > 0 do
+					coroutine.yield(0)
+					waitFrames = waitFrames - 1
+				end
+			end
+		end
+
+		if afterFunc ~= nil then
+			afterReturnVal = afterFunc()
+		end
+
+		return 1
+	end
+
+	startLuaCoroutine(self, "CheckCoroutine")
+
+	return function() return afterReturnVal ~= nil end
+end
+
+--- Executes a sequence of functions sequentially with conditional delays (coroutine-based)
+--
+-- Runs functions one after another, where each function's return value determines when the next executes.
+-- The return value is used as testRef for U.waitUntil, so you can return:
+--   - A number (seconds to wait)
+--   - An object (wait until it rests)
+--   - A function (wait until it returns true)
+--   - A table (wait until all conditions met)
+--   - nil (default 0.5s delay)
+--
+-- This enables complex multi-step sequences like scene transitions: fade lights -> wait -> display text -> wait -> play sound.
+--
+-- @param funcs table Array of functions to execute sequentially
+-- @param maxWait number Optional: Maximum wait time per step (default: uses U.waitUntil default)
+-- @param frequency number Optional: Test frequency per step (default: uses U.waitUntil default)
+-- @return function Returns a function that returns true when sequence is complete
+--
+-- @usage U.RunSequence({
+--   function() fadeLights() return 1 end,  -- Wait 1 second after fading
+--   function() showText() return cardObj end,  -- Wait for card to rest after showing
+--   function() playSound() end  -- Default delay, then complete
+-- })
+--
+-- NOTE: Uses U.waitUntil internally, requires coroutine support in Global context
+function U.RunSequence(funcs, maxWait, frequency)
+	U.Assert("U.RunSequence", funcs, "table", "function")
+
+	local isDone = false
+
+	local function runNextFunc(lastFuncReturnTest)
+		local thisFunc = U.shift(funcs)
+		U.waitUntil(function()
+			if thisFunc == nil then
+				isDone = true
+				return
+			end
+			runNextFunc(thisFunc())
+		end, lastFuncReturnTest, false, maxWait, frequency)
+	end
+
+	local func = U.shift(funcs)
+	if func == nil then
+		isDone = true
+	else
+		runNextFunc(func())
+	end
+	return function() return isDone == true end
+end
+
+--- Executes a sequence of functions with fixed time delays (using Wait.time)
+--
+-- Simpler alternative to U.RunSequence that uses fixed delays between function calls.
+-- Each function is scheduled with Wait.time. Functions can be numbers to add extra delay.
+--
+-- @param funcs table Array of functions (and optional numbers for extra delay)
+-- @param timeDelay number Fixed delay in seconds between functions (default: 0.5)
+-- @return number Total delay time accumulated
+--
+-- @usage U.sequence({
+--   function() showUI() end,
+--   2,  -- Extra 2 second pause
+--   function() hideUI() end
+-- }, 1.0)  -- 1 second between each
+function U.sequence(funcs, timeDelay)
+	timeDelay = timeDelay or 0.5 -- Set default value if none provided
+	local delay = 0 -- Initialize delay to 0
+	for i, func in ipairs(funcs) do
+			if U.Type(func) == "function" then
+				if delay == 0 then
+					func()
+				else
+					Wait.time(function()
+							func()
+					end, delay)
+				end
+				delay = delay + timeDelay -- Increment delay by timeDelay
+			elseif U.Type(func) == "number" then
+				delay = delay + func + timeDelay -- Increment delay by func + timeDelay
+			else
+				error("Invalid element in funcs table")
+			end
+	end
+	return delay
+end
+
+--- Rounds all components of a Vector to specified precision
+-- @param vec Vector The vector to round
+-- @param sigDigits number Number of decimal places (default: 2)
+-- @return Vector New vector with rounded components
+-- @usage local rounded = U.roundVector(Vector(3.141, 2.718, 1.414), 2) -- Vector(3.14, 2.72, 1.41)
+function U.roundVector(vec, sigDigits)
+	if sigDigits == nil then sigDigits = 2 end
+	return Vector(
+		U.round(vec[1], sigDigits),
+		U.round(vec[2], sigDigits),
+		U.round(vec[3], sigDigits)
+	)
+end
+
+--- Interpolates a value over time using linear interpolation (coroutine-based)
+--
+-- Smoothly transitions a value from start to end over a duration by repeatedly calling a setter function.
+-- Supports numbers, Vectors, and Colors. For rotations, automatically handles shortest path (wraps 360°).
+--
+-- Uses coroutines internally, so must be called from a context that supports startLuaCoroutine.
+-- In Global context, use: startLuaCoroutine(Global, "LerpCoroutine")
+--
+-- Can be used in U.RunSequence by returning it from a function, or by returning a table of lerp
+-- functions for parallel animation of multiple properties.
+--
+-- @param setFunc function Setter function that receives the interpolated value: setFunc(currentValue)
+-- @param paramStart number|Vector|Color Starting value
+-- @param paramEnd number|Vector|Color Ending value
+-- @param duration number Duration in seconds (default: 0.5)
+-- @param isRotationLerp boolean If true, handles rotation wrapping (shortest path around 360°)
+-- @param easing string Optional: "speedUp" for acceleration, nil for linear
+-- @return number The duration (for chaining)
+--
+-- @usage U.Lerp(function(v) obj.setPositionSmooth(v) end, startPos, endPos, 1.0)
+-- @usage U.Lerp(function(r) light.setRotation(r) end, startRot, endRot, 0.5, true) -- Rotation lerp
+-- @usage local lerps = {U.Lerp(setX, 0, 10, 1), U.Lerp(setY, 0, 20, 1)} -- Parallel animation
+--
+-- NOTE: Requires startLuaCoroutine(Global, "LerpCoroutine") - self refers to Global in Global context
+function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing)
+	if duration == nil then duration = 0.5 end
+	if U.isInstance(paramStart, Vector) or U.isInstance(paramStart, Color) then
+		if paramStart:equals(paramEnd) then return 0 end
+	elseif U.Type(paramStart) == "number" then
+		if paramStart == paramEnd then return 0 end
+	end
+
+	if isRotationLerp then
+		local function parseAngleLerp(start, finish)
+			-- 350 -> 10,  -10 -> 350
+			if math.abs(finish - start) > math.abs(finish + 360 - start) then
+				finish = finish + 360
+			end
+			if math.abs(finish - start) > math.abs(finish - 360 - start) then
+				finish = finish - 360
+			end
+			return finish
+		end
+		paramEnd = Vector(
+			parseAngleLerp(paramStart.x, paramEnd.x),
+			parseAngleLerp(paramStart.y, paramEnd.y),
+			parseAngleLerp(paramStart.z, paramEnd.z)
+		)
+	end
+
+	local function getParam(t)
+		if t == 1 then return paramEnd end
+		if easing ~= nil then
+			if easing == "speedUp" then
+				t = t * t
+			end
+		end
+		if U.isInstance(paramStart, Vector) or U.isInstance(paramStart, Color) then
+			return paramStart:lerp(paramEnd, t)
+		elseif U.Type(paramStart) == "number" then
+			local deltaVal = paramEnd - paramStart
+			return paramStart + (deltaVal * t)
+		end
+	end
+
+	local startTime = os.time()
+
+	function LerpCoroutine()
+		local timeFrac = (os.time() - startTime)/duration
+		while timeFrac < 1 do
+			setFunc(getParam(timeFrac))
+			coroutine.yield(0)
+			timeFrac = (os.time() - startTime) / duration
+		end
+		setFunc(getParam(1))
+		return 1
+	end
+
+	startLuaCoroutine(self, "LerpCoroutine")
+
+	return duration
+end
+
+--- Generates a random number between min and max
+-- @param min number Minimum value (inclusive)
+-- @param max number Maximum value (inclusive)
+-- @param isInt boolean Optional: If true, returns integer; if false/nil, returns float
+-- @return number|nil Random number in range, or nil if invalid input
+-- @usage local roll = U.randBetween(1, 10, true) -- Random integer 1-10
+-- @usage local pos = U.randBetween(0.0, 1.0) -- Random float 0.0-1.0
+function U.randBetween(min, max, isInt)
+	if U.Type(min) ~= "number" or U.Type(max) ~= "number" then return end
+	if min > max then return end
+	if isInt == true then
+		return U.round(min + math.random() * (max - min), 0)
+	end
+	return min + math.random() * (max - min)
+end
+
+-- ============================================================================
+-- CLONE & COPY UTILITIES
+-- ============================================================================
+
+--- Creates a shallow copy of a table
+-- Note: This is currently a shallow copy (nested tables are not deeply cloned).
+-- The isDeepCloning parameter exists for future implementation but is not yet used.
+-- For deep copying nested structures, use U.merge with empty table.
+-- @param t table The table to clone
+-- @param isDeepCloning boolean Currently unused (placeholder for future deep copy)
+-- @return table New table with copied values (shallow copy)
+-- @usage local copy = U.clone(originalTable)
+-- @usage local deepCopy = U.merge({}, originalTable) -- Deep copy using merge
+function U.clone(t, isDeepCloning)
+	if U.Type(t) ~= "table" then return t end
+  local t2 = {}
+  for k,v in pairs(t) do
+    t2[k] = v
+  end
+  return t2
+end
 
 return U

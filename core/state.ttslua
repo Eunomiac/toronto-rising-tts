@@ -1,86 +1,285 @@
 --[[
-    Game State Management Module
+    Game State Management Module (core/state.ttslua)
+
     Handles persistent game data storage, retrieval, and state transitions.
-    Pattern based on King's Dilemma state module.
+    Pattern based on Kings Dilemma state module with nested state access support.
+
+    This module provides:
+    - Nested state access (get/set values at any depth)
+    - State initialization with default merging
+    - State validation and sanitization
+    - Phase management helpers
+
+    The global 'gameState' table is defined in global.ttslua and accessed here.
 ]]
 
 local S = {}
 local U = require("lib.util")
 local C = require("lib.constants")
 
---[[
-    Initialize game state from saved data or set defaults
-    @param save_data - JSON string containing saved state, or empty string for new game
-]]
-function S.InitializeGameState(save_data)
-    if save_data and save_data ~= "" then
-        -- Load saved state
-        local loaded_data = JSON.decode(save_data)
-        gameState = loaded_data or {}
-    else
-        -- Initialize default state
-        gameState = {
-            phase = C.Phases.Setup,
-            players = {},
-            turnOrder = {},
-            -- Add default state fields as needed
-        }
+-- ============================================================================
+-- INTERNAL HELPER FUNCTIONS (Nested State Access)
+-- ============================================================================
+
+--- Safely navigates through nested tables using variable arguments
+-- @param tableData table The root table to navigate
+-- @param ... string|number Variable number of keys to navigate through
+-- @return any The value at the end of the path, or nil if path doesn't exist
+-- @usage getFromTable(gameState, "players", "Red", "hunger") -- Returns hunger value for Red player
+local function getFromTable(tableData, ...)
+    local keys = {...}
+
+    while #keys > 0 do
+        U.Val("getFromTable()", tableData, tableData and U.Type(tableData) == "table",
+            "Cannot navigate past non-table.")
+        local thisKey = U.shift(keys)
+        tableData = tableData[thisKey]
+        if tableData == nil then return nil end
     end
 
-    -- Validate and sanitize loaded state
-    S.ValidateState()
+    return tableData
 end
 
---[[
-    Get current game state
-    @return Game state table
-]]
+--- Safely sets a value in a nested table, creating intermediate tables as needed
+-- @param value any The value to set
+-- @param tableData table The root table to modify
+-- @param ... string|number Variable number of keys (last key is where value is set)
+-- @return table The modified table (same reference as tableData)
+-- @usage setInTable(3, gameState, "players", "Red", "hunger") -- Sets Red player's hunger to 3
+local function setInTable(value, tableData, ...)
+    local keys = {...}
+    local finalKey = U.pop(keys)
+    local tableRef = tableData
+    local subTableKey, subTableData, subTableRef
+
+    -- Navigate to the parent of the target key, creating intermediate tables if needed
+    while #keys > 0 do
+        U.Val("setInTable()", tableData, tableData and U.Type(tableData) == "table",
+            "Cannot navigate past non-table.")
+        local thisKey = U.shift(keys)
+        if tableRef[thisKey] == nil then
+            subTableKey = thisKey
+            subTableData = {}
+            subTableRef = subTableData
+            break
+        end
+        tableRef = tableRef[thisKey]
+    end
+
+    -- Create any remaining intermediate tables
+    while #keys > 0 do
+        local thisKey = U.shift(keys)
+        subTableRef[thisKey] = {}
+        subTableRef = subTableRef[thisKey]
+    end
+
+    -- Set the final value, attaching newly created subtables if needed
+    if subTableKey ~= nil then
+        subTableRef[finalKey] = value
+        tableRef[subTableKey] = subTableData
+    else
+        tableRef[finalKey] = value
+    end
+
+    return tableData
+end
+
+-- ============================================================================
+-- DEFAULT STATE DEFINITION
+-- ============================================================================
+
+--- Returns the default game state structure
+-- This defines the initial state for a new game. All fields should have defaults.
+-- @return table Default game state structure
+function S.GetDefaultGameState()
+    return {
+        currentPhase = C.Phases.INIT,
+        players = U.map(C.PlayerColors, function(color)
+            return {
+                color = color,
+                hunger = C.DEFAULT_HUNGER,
+                willpower = 5,
+                health = 7,
+                isGM = (color == "Black"), -- Example: Black is GM/Storyteller
+                -- Add other player-specific defaults as needed
+            }
+        end),
+        lights = {}, -- Light states will be stored here
+        zones = {},  -- Zone-related data
+        scene = {
+            name = "",
+            description = "",
+            mood = "",
+        },
+        -- Add other top-level game state defaults
+    }
+end
+
+--- Merges default values into a target table recursively
+-- Ensures that new state keys are present in old saves (backward compatibility).
+-- @param target table The target table to merge into (modified in place)
+-- @param defaults table The default structure to merge from
+function S.mergeDefaults(target, defaults)
+    for k, v in pairs(defaults) do
+        if target[k] == nil then
+            target[k] = U.clone(v) -- Clone to avoid reference issues
+        elseif type(v) == "table" and type(target[k]) == "table" then
+            S.mergeDefaults(target[k], v) -- Recursively merge nested tables
+        end
+    end
+end
+
+-- ============================================================================
+-- STATE INITIALIZATION & RESET
+-- ============================================================================
+
+--- Initializes game state from saved data or creates defaults
+-- Merges loaded state with defaults to ensure all keys exist (backward compatibility).
+-- @param saved_data string|table|nil JSON string containing saved state, table of saved state, or nil/empty for new game
+-- @usage S.InitializeGameState(saved_data) -- Called in global.ttslua onLoad
+function S.InitializeGameState(saved_data)
+    if saved_data and saved_data ~= "" then
+        -- Decode JSON string if needed
+        if U.Type(saved_data) == "string" then
+            saved_data = JSON.decode(saved_data)
+        end
+
+        print("State: Loading saved game state.")
+
+        -- Start with defaults, then merge saved data (saved data takes precedence)
+        gameState = U.clone(S.GetDefaultGameState())
+        S.mergeDefaults(gameState, saved_data or {})
+
+        -- Apply saved data on top of defaults (overwrites defaults)
+        for k, v in pairs(saved_data or {}) do
+            gameState[k] = v
+        end
+    else
+        print("State: Initializing new game state.")
+        gameState = S.GetDefaultGameState()
+    end
+
+    -- Ensure all required fields exist (validation/sanitization)
+    S.validateState()
+
+    print("State: Current phase is " .. S.getStateVal("currentPhase"))
+end
+
+--- Resets game state to defaults
+-- @usage S.resetGameState() -- Start a new game
+function S.resetGameState()
+    print("State: Resetting game state to defaults.")
+    gameState = S.GetDefaultGameState()
+    S.validateState()
+end
+
+--- Validates and sanitizes game state
+-- Ensures all required fields exist and have valid values.
+-- Called automatically after initialization and reset.
+function S.validateState()
+    -- Ensure currentPhase exists and is valid
+    if not gameState.currentPhase or not U.isIn(gameState.currentPhase, C.Phases) then
+        gameState.currentPhase = C.Phases.INIT
+    end
+
+    -- Ensure players table exists and has correct structure
+    if not gameState.players then
+        gameState.players = {}
+    end
+
+    -- Ensure other required top-level tables exist
+    if not gameState.lights then gameState.lights = {} end
+    if not gameState.zones then gameState.zones = {} end
+    if not gameState.scene then gameState.scene = {} end
+end
+
+-- ============================================================================
+-- STATE ACCESS (Basic Get/Set)
+-- ============================================================================
+
+--- Gets the entire game state table
+-- @return table The gameState table
+-- @usage local state = S.getGameState()
 function S.getGameState()
     return gameState
 end
 
---[[
-    Set a value in game state
-    @param key - State key (from C.StateKeys or custom)
-    @param value - Value to set
-]]
-function S.setStateVal(key, value)
-    gameState[key] = value
+--- Sets the entire game state table
+-- Use with caution - prefer nested get/set functions for individual values.
+-- @param data table The new game state table
+-- @usage S.setGameState(newState)
+function S.setGameState(data)
+    gameState = data
+    S.validateState()
 end
 
---[[
-    Get a value from game state
-    @param key - State key
-    @return Value or nil
-]]
-function S.getStateVal(key)
-    return gameState[key]
+--- Sets multiple top-level state values at once
+-- Useful for bulk updates or batch operations.
+-- @param stateData table Table of key-value pairs to set
+-- @usage S.setStateVals({currentPhase = C.Phases.SCENE, scene = {name = "Opening Scene"}})
+function S.setStateVals(stateData)
+    for key, val in pairs(stateData) do
+        gameState[key] = val
+    end
+    S.validateState()
 end
 
---[[
-    Check if game is in a specific phase
-    @param phase - Phase to check (from C.Phases)
-    @return Boolean
-]]
+-- ============================================================================
+-- NESTED STATE ACCESS (Advanced Get/Set)
+-- ============================================================================
+
+--- Gets a nested state value using variable arguments
+-- Safely navigates through nested tables. Returns nil if path doesn't exist.
+-- @param ... string|number Variable number of keys to navigate through
+-- @return any The value at the end of the path, or nil
+-- @usage local hunger = S.getStateVal("players", "Red", "hunger")
+-- @usage local phase = S.getStateVal("currentPhase")
+function S.getStateVal(...)
+    return getFromTable(gameState, ...)
+end
+
+--- Sets a nested state value using variable arguments
+-- Creates intermediate tables automatically if needed.
+-- @param value any The value to set
+-- @param ... string|number Variable number of keys (last key is where value is set)
+-- @usage S.setStateVal(3, "players", "Red", "hunger")
+-- @usage S.setStateVal("Scene", "currentPhase")
+function S.setStateVal(value, ...)
+    setInTable(value, gameState, ...)
+end
+
+-- ============================================================================
+-- PHASE MANAGEMENT
+-- ============================================================================
+
+--- Sets the current game phase
+-- Validates that the phase exists in C.Phases before setting.
+-- @param phase string The phase to set (should match a value in C.Phases)
+-- @usage S.setCurrentPhase(C.Phases.SCENE)
+function S.setCurrentPhase(phase)
+    -- Validate phase exists
+    local isValid = false
+    for _, validPhase in pairs(C.Phases) do
+        if phase == validPhase then
+            isValid = true
+            break
+        end
+    end
+
+    if isValid then
+        S.setStateVal(phase, "currentPhase")
+        print("State: Game phase set to " .. phase)
+    else
+        U.AlertGM("Warning: Attempted to set invalid phase: " .. U.ToString(phase))
+    end
+end
+
+--- Checks if the game is currently in a specific phase
+-- @param phase string The phase to check
+-- @return boolean True if current phase matches
+-- @usage if S.isInPhase(C.Phases.COMBAT) then ... end
 function S.isInPhase(phase)
-    return gameState.phase == phase
-end
-
---[[
-    Validate and sanitize game state
-    Ensures state has required fields and valid values
-]]
-function S.ValidateState()
-    -- TODO: Add validation logic
-    if not gameState.phase then
-        gameState.phase = C.Phases.Setup
-    end
-    if not gameState.players then
-        gameState.players = {}
-    end
-    if not gameState.turnOrder then
-        gameState.turnOrder = {}
-    end
+    return S.getStateVal("currentPhase") == phase
 end
 
 return S

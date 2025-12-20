@@ -595,11 +595,11 @@ You have two options for applying textures:
 
 ## Step 4: Set Up Player Positions
 
-Use the `half-decagon-table.lua` script to calculate player positions:
+Use the `lib/table-positions.ttslua` script to calculate player positions:
 
 1. **Load the Script**:
-   - Copy `Scripts/half-decagon-table.lua` into your TTS mod
-   - Or paste it into the Global script
+   - The script is located at `lib/table-positions.ttslua` in the module
+   - Functions are available via module: `require("lib.table-positions")` or globally
 
 2. **Calculate Positions**:
    - Open TTS console (`~` key)
@@ -677,7 +677,7 @@ For more advanced features (animations, effects, etc.), you can create an AssetB
 
 ## Script Usage
 
-See `Scripts/half-decagon-table.lua` for functions to calculate player positions:
+See `lib/table-positions.ttslua` for functions to calculate player positions:
 
 ```lua
 -- Print all positions

@@ -1,11 +1,30 @@
 --[[
-    Shared Dice Roller Code - Complete Implementation
-    This file contains ALL dice roller functionality.
-    Instance scripts only need to require this and set isHunger flag.
+    Dice Roller Module (lib/dice-roller.ttslua)
 
-    The TTS Lua extension will automatically bundle this file when you use require().
+    Shared dice roller code for VTM5E dice system. This module provides complete
+    dice rolling functionality for both normal dice and hunger dice.
+
+    This module is designed to be required by object scripts (dice roller objects).
+    Each dice roller object should call DiceUtil.initDiceRoller() with appropriate
+    configuration (isHunger flag, custom settings, etc.).
+
+    Features:
+    - Supports normal dice and hunger dice (combined results)
+    - Smooth dice spawning and rolling animations
+    - V5 dice result calculation (successes, criticals, bestial failures)
+    - UI integration for dice result display
+    - Multi-roller support (cooperation mode)
+
+    Usage in object script:
+    ```lua
+    local DiceUtil = require("lib.dice-roller")
+    DiceUtil.initDiceRoller(self, {isHunger = false})  -- Normal dice
+    DiceUtil.initDiceRoller(self, {isHunger = true})   -- Hunger dice
+    ```
+
+    NOTE: The TTS Lua extension will automatically bundle this file when you use require().
     Enable "TTSLua: Include Other Files" in settings for this to work.
---]]
+]]
 
 local DiceUtil = {}
 
@@ -13,18 +32,23 @@ local DiceUtil = {}
     Initialize the dice roller
     @param rollerSelf - The self object (passed from instance script)
     @param config - Configuration table: {isHunger = true/false, customSettings = {...}}
---]]
+]]
 function DiceUtil.initDiceRoller(rollerSelf, config)
     -- Store self reference (will be used in closures)
     local rollerSelfRef = rollerSelf
     local isHunger = config.isHunger or false
 
-    -- Declare all functions as local first (for scope access within this function)
-    -- Then assign to global variables for TTS callbacks
+    -- Declare ALL helper functions as local (used only within this closure)
     local createButtons, getLocalPointOnArc, randomRotation, wait
     local updateGlobalTable, updateRollTimers, anyRollInProgress
     local monitorDice, displayResults, areOtherRollersRolling
-    local finalizeCoopRolls, addAllSpawnedDice, clearResultsFlag
+    local finalizeCoopRolls, addAllSpawnedDice
+
+    -- TTS callback functions MUST be global (assigned below without 'local' keyword).
+    -- These are TTS system callbacks that must exist in the object script's global scope.
+    -- Using diagnostic disable to suppress "global variable in lowercase initial" warnings
+    -- since these are intentionally global for TTS callback mechanisms.
+    ---@diagnostic disable: lowercase-global
 
     print("V:tM V5 Dice System Loaded for " .. (isHunger and "Hunger" or "Normal") .. " dice roller")
     print("[DEBUG] Initialization complete. rollerSelfRef GUID: " .. tostring(rollerSelfRef.getGUID()))
@@ -223,7 +247,8 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         startLuaCoroutine(rollerSelfRef, "coroutine_rollDice")
     end
 
-    --Monitors dice to come to rest
+    -- Monitors dice to come to rest
+    -- Local helper function (not a TTS callback, but called from coroutine)
     monitorDice = function(color)
         local spawnedDice = getSpawnedDice()
         print("[DEBUG] monitorDice called. color: " .. tostring(color) .. ", spawnedDice count: " .. tostring(#spawnedDice))
@@ -347,7 +372,7 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         print("[DEBUG] finalizeRoll called. color: " .. tostring(color) .. ", cleanupDelay: " .. tostring(setting.cleanupDelay))
         -- NOTE: Must be global - accessed via who.getVar("rollingHasStopped") in areOtherRollersRolling
         -- Using nil (not false) to indicate "not set" - checked with ~= true in areOtherRollersRolling
----@diagnostic disable-next-line: assign-type-mismatch
+        ---@diagnostic disable-next-line: assign-type-mismatch
         rollingHasStopped = nil --Used for coop communication
         -- NOTE: Must be global - accessed via who.getVar("rollInProgress") in anyRollInProgress
         rollInProgress = false --Used for button lockout
@@ -381,7 +406,7 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         end
 
         -- Using nil (not false) to indicate "not initialized" - checked with == nil in click_roll
----@diagnostic disable-next-line: assign-type-mismatch
+        ---@diagnostic disable-next-line: assign-type-mismatch
         rollInProgress = nil
         setSpawnedDice({})
         print("[DEBUG] cleanupDice: Complete. rollInProgress set to nil, spawnedDice cleared")
@@ -389,6 +414,7 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         Timer.destroy("clickRoller_cleanup_"..rollerSelfRef.getGUID())
     end
 
+    -- Local helper function (not a TTS callback)
     displayResults = function(color)
         -- Combine dice from all rollers (normal and hunger) for this player color
         local allDice = {}
@@ -480,8 +506,9 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         end
     end
 
-    --Updates global rolling table with its information
+    -- Updates global rolling table with its information
     -- Always register rollers (not just in coop mode) so we can combine normal and hunger dice
+    -- Local helper function (not a TTS callback)
     updateGlobalTable = function(color)
         local currentTable = Global.getTable("UCR_communication")
         if currentTable == nil then
@@ -492,7 +519,8 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         end
     end
 
-    --Updates roll timers for all devices currently rolling
+    -- Updates roll timers for all devices currently rolling
+    -- Local helper function (not a TTS callback)
     updateRollTimers = function(color)
         if setting.coop==true then
             local currentTable = Global.getTable("UCR_communication")
@@ -506,7 +534,8 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         end
     end
 
-    --Check if any other roller is rolling
+    -- Check if any other roller is rolling
+    -- Local helper function (not a TTS callback)
     areOtherRollersRolling = function(color)
         if setting.coop==true then
             local currentTable = Global.getTable("UCR_communication")
@@ -527,7 +556,8 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         end
     end
 
-    --Check if any other roller is rolling
+    -- Check if any other roller is rolling
+    -- Local helper function (not a TTS callback)
     anyRollInProgress = function(color)
         if setting.coop==true then
             local currentTable = Global.getTable("UCR_communication")
@@ -548,7 +578,8 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         end
     end
 
-    --Activate the finalize step on all dice of this color
+    -- Activate the finalize step on all dice of this color
+    -- Local helper function (not a TTS callback)
     finalizeCoopRolls = function(color)
         if setting.coop==true then
             local currentTable = Global.getTable("UCR_communication")
@@ -562,8 +593,9 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         end
     end
 
-    --Combines all spawnedDice tables from all rollers (normal and hunger) for the same player color
+    -- Combines all spawnedDice tables from all rollers (normal and hunger) for the same player color
     -- Always combines dice, not just in coop mode, so normal and hunger dice are combined
+    -- Local helper function (not a TTS callback)
     addAllSpawnedDice = function(color, targetArray)
         targetArray = targetArray or {}
         -- Get all rollers for this color from the communication table
@@ -583,7 +615,8 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         return targetArray
     end
 
-    --Finds a local point an an arc, given which point and the total # of points
+    -- Finds a local point on an arc, given which point and the total # of points
+    -- Local helper function (not a TTS callback)
     getLocalPointOnArc = function(i, points)
         i = i - 0.5
         local angle = setting.arc/(points)
@@ -594,7 +627,8 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         return {x=x,y=y,z=z}
     end
 
-    --Gets a random rotation vector
+    -- Gets a random rotation vector
+    -- Local helper function (not a TTS callback)
     randomRotation = function()
         --Credit for this function goes to Revinor (forums)
         local u1 = math.random();
@@ -620,13 +654,15 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         return {math.deg(xr),math.deg(yr),math.deg(zr)}
     end
 
-    --Coroutine delay, in seconds
+    -- Coroutine delay, in seconds
+    -- Local helper function (not a TTS callback)
     wait = function(time)
         local start = os.time()
         repeat coroutine.yield(0) until os.time() > start + time
     end
 
-    --Spawns the roll button or the "display roll locations" for setup mode
+    -- Spawns the roll button or the "display roll locations" for setup mode
+    -- Local helper function (not a TTS callback)
     createButtons = function()
         print("[DEBUG] createButtons called. setup mode: " .. tostring(setting.setup))
         if setting.setup ~= true then
@@ -648,22 +684,19 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
         end
     end
 
-    -- Assign local functions to global variables for TTS callbacks
-    -- This allows them to be called from global callbacks while keeping them accessible within the function scope
-    -- Using _G explicitly to assign to global scope (avoids shadowing the local variables)
-    _G.createButtons = createButtons
-    _G.getLocalPointOnArc = getLocalPointOnArc
-    _G.randomRotation = randomRotation
-    _G.wait = wait
-    _G.updateGlobalTable = updateGlobalTable
-    _G.updateRollTimers = updateRollTimers
-    _G.anyRollInProgress = anyRollInProgress
-    _G.monitorDice = monitorDice
-    _G.displayResults = displayResults
-    _G.areOtherRollersRolling = areOtherRollersRolling
-    _G.finalizeCoopRolls = finalizeCoopRolls
-    _G.addAllSpawnedDice = addAllSpawnedDice
-    _G.clearResultsFlag = clearResultsFlag
+    -- NOTE: Functions that MUST be global (TTS callbacks):
+    --   onSave, onLoad, click_roll, rollTimerUpdate, timer_rollDice,
+    --   coroutine_rollDice, coroutine_monitorDice, finalizeRoll, cleanupDice, clearResultsFlag
+    -- These are assigned above as globals because TTS requires them.
+    --
+    -- NOTE: Variables that MUST be global (accessed via getVar/setVar):
+    --   rollInProgress, rollingHasStopped, setting
+    -- These are accessed by other roller instances via getVar/setVar.
+    --
+    -- All other functions (createButtons, getLocalPointOnArc, etc.) are local
+    -- and only used within this closure - no need to expose them globally.
+
+    ---@diagnostic enable: lowercase-global
 end
 
 return DiceUtil

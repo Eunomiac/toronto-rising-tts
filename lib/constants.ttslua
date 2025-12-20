@@ -1,46 +1,143 @@
---[[
-    Constants Library
-    Game constants, configuration values, and lookup tables.
-    These will be customized for the VTM5E module.
-]]
+-- lib/constants.ttslua
+-- Constants Library
+-- Game constants, configuration values, and lookup tables for VTM5E module.
+-- Extracted and adapted from Heritage and Kings Dilemma reference modules.
 
 local C = {}
 
---[[
-    Color constants
-    Common colors used throughout the module
-]]
-C.Colors = {
-    Red = {1, 0, 0},
-    Green = {0, 1, 0},
-    Blue = {0, 0, 1},
-    White = {1, 1, 1},
-    Black = {0, 0, 0},
-    Yellow = {1, 1, 0},
+-- Player Colors (standard TTS colors)
+C.PlayerColors = {
+    "White", "Blue", "Red", "Green", "Yellow", "Pink", "Purple", "Orange", "Brown", "Black", "Grey", "Teal"
 }
 
---[[
-    Game state keys
-    Keys used in gameState table for different data types
-]]
-C.StateKeys = {
-    Phase = "phase",
-    Players = "players",
-    TurnOrder = "turnOrder",
-    -- Add more as needed
+-- VTM5E Clans (from Heritage module)
+C.Clans = {
+    "Banu Haqim", "Brujah", "Caitif", "Cappadocian", "Gangrel", "Giovanni", "Lasombra", "Malkavian", "Ministry", "Nosferatu", "Ravnos", "Salubri", "Thin-Blood", "Toreador", "Tremere", "Tzimisce", "Ventrue"
 }
 
---[[
-    Phase constants
-    Different game phases/states
-]]
+-- VTM5E Disciplines (from Heritage module)
+C.Disciplines = {
+    "Animalism", "Auspex", "Blood_Sorcery", "Celerity", "Dominate", "Fortitude",
+    "Obfuscate", "Oblivion", "Potence", "Presence", "Protean"
+}
+
+-- Discipline Abbreviations (useful for UI displays)
+C.DisciplineAbbreviations = {
+    Animalism = "Ani",
+    Auspex = "Aus",
+    Blood_Sorcery = "BSr",
+    Celerity = "Cel",
+    Dominate = "Dom",
+    Fortitude = "For",
+    Obfuscate = "Obf",
+    Oblivion = "Obv",
+    Potence = "Pot",
+    Presence = "Prs",
+    Protean = "Pro"
+}
+
+-- Game Phases (VTM5E-specific)
 C.Phases = {
-    Setup = "setup",
-    Playing = "playing",
-    Paused = "paused",
-    -- Add VTM5E-specific phases
+    INIT = "Initialization",
+    SETUP = "GameSetup",
+    SCENE = "Scene",
+    DOWNTIME = "Downtime",
+    COMBAT = "Combat",
+    AFTERMATH = "Aftermath",
+    END = "GameEnd"
 }
 
--- TODO: Add VTM5E-specific constants (clans, disciplines, dice mechanics, etc.)
+-- UI Element IDs (common or global UI elements)
+C.UI_IDS = {
+    GM_PANEL = "gmControlPanel",
+    PLAYER_HUD_PREFIX = "playerHud_", -- e.g., playerHud_Red
+    HUNGER_LABEL_PREFIX = "hungerVal_",
+    WILLPOWER_LABEL_PREFIX = "willpowerVal_",
+    HEALTH_LABEL_PREFIX = "healthVal_",
+    SCENE_BUTTON_PREFIX = "sceneBtn_",
+    DEBUG_PANEL = "debugStatePanel"
+}
+
+-- Default Game Settings (VTM5E rules)
+C.DEFAULT_HUNGER = 0
+C.MAX_HUNGER = 5
+C.DEFAULT_WILLPOWER = 5
+C.DEFAULT_HEALTH = 7
+C.DICE_SUCCESS_THRESHOLD = 6
+C.DICE_CRITICAL_SUCCESS_VALUE = 10
+
+-- Storyteller Color (GM role)
+C.STORYTELLER_COLOR = "Brown"  -- Can be changed to "Black" or another color
+
+-- Camera Angles (preset views for cinematic control)
+C.CameraAngles = {
+    OVERVIEW = {position = {x=0, y=10, z=-15}, pitch = 35, yaw = 0, distance = 50},
+    GM_VIEW = {position = {x=-30, y=30, z=0}, pitch = 45, yaw = 90, distance = 40},
+    -- Add more as needed for specific scenes
+}
+
+-- Light Presets (scene lighting configurations)
+C.LightModes = {
+    BRIGHT = {
+        ambient_intensity = 1.0,
+        light_intensity = 1.0,
+        ambient_type = 1,
+        color = {r=1, g=1, b=1}
+    },
+    DIM = {
+        ambient_intensity = 0.2,
+        light_intensity = 0.5,
+        ambient_type = 1,
+        color = {r=0.5, g=0.5, b=0.7}
+    },
+    TENSION = {
+        ambient_intensity = 0.3,
+        light_intensity = 0.8,
+        ambient_type = 1,
+        color = {r=1, g=0.2, b=0.2}
+    },
+    STANDARD = {
+        ambient_intensity = 0.5546665,
+        ambient_type = 1,
+        light_intensity = 0.5333346,
+        lut_contribution = 0,
+        lut_index = 1,
+        reflection_intensity = 0
+    }
+}
+
+-- Placeholder GUIDs (replace with actual GUIDs from your TTS objects)
+-- Search for "@@@@@@" to find and replace these placeholders
+C.GUIDS = {
+    -- Table object (if needed for reference)
+    TABLE = "@@@@@@TABLE@@@@@@",
+
+    -- Light objects (for scene lighting)
+    MAIN_LIGHT = "@@@@@@MAIN_LIGHT@@@@@@",
+    SPOTLIGHT_PLAYER = "@@@@@@SPOTLIGHT_PLAYER@@@@@@",
+
+    -- Hand zones (player hand zones)
+    HAND_WHITE = "@@@@@@HAND_WHITE@@@@@@",
+    HAND_BLUE = "@@@@@@HAND_BLUE@@@@@@",
+    HAND_RED = "@@@@@@HAND_RED@@@@@@",
+    HAND_GREEN = "@@@@@@HAND_GREEN@@@@@@",
+    HAND_YELLOW = "@@@@@@HAND_YELLOW@@@@@@",
+    HAND_PINK = "@@@@@@HAND_PINK@@@@@@",
+    HAND_PURPLE = "@@@@@@HAND_PURPLE@@@@@@",
+    HAND_ORANGE = "@@@@@@HAND_ORANGE@@@@@@",
+    HAND_BROWN = "@@@@@@HAND_BROWN@@@@@@",
+    HAND_BLACK = "@@@@@@HAND_BLACK@@@@@@",
+    HAND_GREY = "@@@@@@HAND_GREY@@@@@@",
+    HAND_TEAL = "@@@@@@HAND_TEAL@@@@@@",
+
+    -- Add other object GUIDs as needed (zones, boards, etc.)
+    -- Format: OBJECT_NAME = "@@@@@@OBJECT_NAME@@@@@@"
+}
+
+-- Helper function to get hand zone GUID by color
+function C.GetHandZoneGUID(color)
+    local guidKey = "HAND_" .. string.upper(color)
+    return (C.GUIDS[guidKey] or "@@@@@@HAND_") .. color .. "@@@@@@"
+end
 
 return C

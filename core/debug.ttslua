@@ -1,0 +1,592 @@
+--[[
+    Debug/Testing Module (core/debug.ttslua)
+
+    Provides testing and debugging utilities for the VTM5E module.
+    Functions are exposed globally (via _G) so they can be called from the TTS console
+    using the `lua` command (e.g., `lua testState()`).
+
+    Usage in TTS Console:
+        lua testState()              -- Test state management
+        lua testScenes()             -- Test scene presets
+        lua testUI()                 -- Test UI updates
+        lua debugHelp()              -- Show all available debug commands
+
+    NOTE: This module is for development/testing only.
+    Consider disabling or restricting access in production builds.
+]]
+
+local DEBUG = {}
+local U = require("lib.util")
+local S = require("core.state")
+local M = require("core.main")
+local Z = require("core.zones")
+local Scenes = require("core.scenes")
+local C = require("lib.constants")
+
+--[[
+    Helper Functions
+]]
+
+--- Prints a formatted test header
+-- @param testName string Name of the test
+local function printTestHeader(testName)
+    print("\n" .. string.rep("=", 60))
+    print("TEST: " .. testName)
+    print(string.rep("=", 60))
+end
+
+--- Prints a formatted test result
+-- @param testName string Name of the test
+-- @param passed boolean Whether the test passed
+-- @param details string Optional details about the test
+local function printTestResult(testName, passed, details)
+    local status = passed and "✓ PASS" or "✗ FAIL"
+    local color = passed and {0, 1, 0} or {1, 0, 0}
+    print(status .. ": " .. testName)
+    if details then
+        print("  Details: " .. details)
+    end
+end
+
+--[[
+    State Management Tests
+]]
+
+--- Test basic state get/set operations
+-- Tests: S.getStateVal, S.setStateVal, nested access
+function DEBUG.testState()
+    printTestHeader("State Management - Basic Operations")
+
+    local passed = 0
+    local failed = 0
+
+    -- Test 1: Set and get simple value
+    do
+        S.setStateVal("test_value", "testKey")
+        local result = S.getStateVal("testKey")
+        if result == "test_value" then
+            printTestResult("Set/Get simple value", true)
+            passed = passed + 1
+        else
+            printTestResult("Set/Get simple value", false, "Expected 'test_value', got '" .. tostring(result) .. "'")
+            failed = failed + 1
+        end
+    end
+
+    -- Test 2: Nested state access
+    do
+        S.setStateVal(5, "players", "Red", "hunger")
+        local result = S.getStateVal("players", "Red", "hunger")
+        if result == 5 then
+            printTestResult("Nested state access", true)
+            passed = passed + 1
+        else
+            printTestResult("Nested state access", false, "Expected 5, got " .. tostring(result))
+            failed = failed + 1
+        end
+    end
+
+    -- Test 3: Get non-existent value (should return nil)
+    do
+        local result = S.getStateVal("nonExistent", "key")
+        if result == nil then
+            printTestResult("Get non-existent value returns nil", true)
+            passed = passed + 1
+        else
+            printTestResult("Get non-existent value returns nil", false, "Expected nil, got " .. tostring(result))
+            failed = failed + 1
+        end
+    end
+
+    -- Test 4: Current phase access
+    do
+        local phase = S.getStateVal("currentPhase")
+        printTestResult("Get current phase", phase ~= nil, "Current phase: " .. tostring(phase))
+        if phase ~= nil then passed = passed + 1 else failed = failed + 1 end
+    end
+
+    -- Summary
+    print("\n" .. string.rep("-", 60))
+    print("State Tests: " .. passed .. " passed, " .. failed .. " failed")
+    print(string.rep("-", 60))
+end
+
+--- Test state persistence (save/load)
+-- Tests: onSave, JSON encoding/decoding, state restoration
+function DEBUG.testStatePersistence()
+    printTestHeader("State Management - Persistence")
+
+    -- Set some test values
+    S.setStateVal(3, "players", "Blue", "hunger")
+    S.setStateVal("PLAY", "currentPhase")
+    S.setStateVal("tension", "currentScene")
+
+    -- Get current state
+    local stateBefore = S.getGameState()
+    print("State before save:")
+    print("  Blue hunger: " .. tostring(stateBefore.players.Blue.hunger))
+    print("  Phase: " .. tostring(stateBefore.currentPhase))
+    print("  Scene: " .. tostring(stateBefore.currentScene))
+
+    -- Simulate save (encode to JSON)
+    local savedData = JSON.encode(stateBefore)
+    print("\nSaved data length: " .. #savedData .. " characters")
+
+    -- Simulate load (decode and restore)
+    local loadedState = JSON.decode(savedData)
+    if loadedState then
+        print("\nState after load:")
+        print("  Blue hunger: " .. tostring(loadedState.players.Blue.hunger))
+        print("  Phase: " .. tostring(loadedState.currentPhase))
+        print("  Scene: " .. tostring(loadedState.currentScene))
+
+        if loadedState.players.Blue.hunger == 3 and loadedState.currentPhase == "PLAY" then
+            printTestResult("State persistence", true, "Values preserved correctly")
+        else
+            printTestResult("State persistence", false, "Values did not match")
+        end
+    else
+        printTestResult("State persistence", false, "Failed to decode JSON")
+    end
+end
+
+--[[
+    Scene Management Tests
+]]
+
+--- Test scene loading and transitions
+-- Tests: Scenes.loadScene, Scenes.fadeToScene, Scenes.getCurrentScene
+function DEBUG.testScenes()
+    printTestHeader("Scene Management")
+
+    -- Test 1: List available scenes
+    do
+        local scenes = Scenes.listScenes()
+        print("Available scenes: " .. table.concat(scenes, ", "))
+        printTestResult("List scenes", #scenes > 0, #scenes .. " scenes found")
+    end
+
+    -- Test 2: Load a scene
+    do
+        local success = Scenes.loadScene("elysium")
+        printTestResult("Load scene (elysium)", success, success and "Scene loaded" or "Failed to load")
+    end
+
+    -- Test 3: Get current scene
+    do
+        local currentScene = Scenes.getCurrentScene()
+        printTestResult("Get current scene", currentScene == "elysium", "Current: " .. tostring(currentScene))
+    end
+
+    -- Test 4: Test invalid scene
+    do
+        local success = Scenes.loadScene("invalid_scene_name")
+        printTestResult("Load invalid scene (should fail)", not success, success and "Unexpectedly succeeded" or "Correctly failed")
+    end
+
+    -- Test 5: Fade to scene
+    do
+        print("\nFading to 'alley' scene (2 second transition)...")
+        local success = Scenes.fadeToScene("alley", 2.0)
+        printTestResult("Fade to scene", success, "Transition started")
+    end
+
+    -- Wait a moment and check
+    Wait.time(function()
+        local currentScene = Scenes.getCurrentScene()
+        print("Current scene after fade: " .. tostring(currentScene))
+    end, 2.5)
+end
+
+--- Test all scene presets
+-- Loads each scene preset to verify they work
+function DEBUG.testAllScenes()
+    printTestHeader("Scene Management - All Presets")
+
+    local scenes = Scenes.listScenes()
+    local successCount = 0
+
+    for _, sceneName in ipairs(scenes) do
+        print("\nTesting scene: " .. sceneName)
+        local success = Scenes.loadScene(sceneName)
+        if success then
+            successCount = successCount + 1
+            print("  ✓ Loaded successfully")
+            Wait.time(function() end, 0.5)  -- Brief delay between scenes
+        else
+            print("  ✗ Failed to load")
+        end
+    end
+
+    print("\n" .. string.rep("-", 60))
+    print("Scene Tests: " .. successCount .. "/" .. #scenes .. " scenes loaded successfully")
+    print(string.rep("-", 60))
+end
+
+--[[
+    Zone Management Tests
+]]
+
+--- Test zone activation/deactivation
+-- Tests: Z.activateZones, Z.deactivateZones, zone state
+function DEBUG.testZones()
+    printTestHeader("Zone Management")
+
+    -- Test 1: Check current zone state
+    do
+        local zonesLocked = S.getStateVal("zones", "allZonesLocked")
+        print("Current zone state (locked): " .. tostring(zonesLocked))
+        printTestResult("Get zone state", zonesLocked ~= nil, "State: " .. tostring(zonesLocked))
+    end
+
+    -- Test 2: Toggle zones
+    do
+        local initialState = S.getStateVal("zones", "allZonesLocked")
+        if initialState == true then
+            print("\nZones are currently locked. Activating...")
+            Z.activateZones()
+        else
+            print("\nZones are currently active. Deactivating...")
+            Z.deactivateZones()
+        end
+
+        Wait.time(function()
+            local newState = S.getStateVal("zones", "allZonesLocked")
+            print("New zone state (locked): " .. tostring(newState))
+            printTestResult("Toggle zones", newState ~= initialState, "Changed from " .. tostring(initialState) .. " to " .. tostring(newState))
+        end, 0.1)
+    end
+
+    -- Test 3: Show/hide zones (visual test)
+    do
+        print("\nHiding zones (moving below table)...")
+        Z.hideZones()
+        Wait.time(function()
+            print("Showing zones (moving above table)...")
+            Z.showZones()
+        end, 1.0)
+    end
+end
+
+--[[
+    Main Module Tests
+]]
+
+--- Test main module functions
+-- Tests: M.forPlayers, M.setupPlayers, M.advancePhase
+function DEBUG.testMain()
+    printTestHeader("Main Module")
+
+    -- Test 1: forPlayers iteration
+    do
+        local playerCount = 0
+        M.forPlayers(function(player, color)
+            playerCount = playerCount + 1
+            print("  Found player: " .. color)
+        end)
+        printTestResult("M.forPlayers iteration", playerCount > 0, playerCount .. " players iterated")
+    end
+
+    -- Test 2: Get current phase
+    do
+        local currentPhase = S.getStateVal("currentPhase")
+        print("Current phase: " .. tostring(currentPhase))
+        printTestResult("Get current phase", currentPhase ~= nil, "Phase: " .. tostring(currentPhase))
+    end
+
+    -- Test 3: Advance phase (if valid)
+    do
+        local initialPhase = S.getStateVal("currentPhase")
+        print("\nCurrent phase: " .. tostring(initialPhase))
+        print("Attempting to advance to PLAY phase...")
+        M.advancePhase(C.Phases.PLAY)
+
+        Wait.time(function()
+            local newPhase = S.getStateVal("currentPhase")
+            print("New phase: " .. tostring(newPhase))
+            printTestResult("Advance phase", newPhase == C.Phases.PLAY, "Changed to: " .. tostring(newPhase))
+        end, 0.1)
+    end
+end
+
+--[[
+    UI Tests
+]]
+
+--- Test UI display updates
+-- Tests: updateUIDisplays, UI.setValue
+function DEBUG.testUI()
+    printTestHeader("UI Display Updates")
+
+    -- Note: This requires the UI to be loaded and updateUIDisplays to be defined globally
+
+    -- Test 1: Update phase display
+    do
+        S.setStateVal("PLAY", "currentPhase")
+        updateUIDisplays()  -- Call the global function directly
+        printTestResult("Update UI phase display", true, "Should update currentPhaseDisplay")
+    end
+
+    -- Test 2: Update scene display
+    do
+        Scenes.loadScene("tension")
+        updateUIDisplays()
+        printTestResult("Update UI scene display", true, "Should update currentSceneDisplay")
+    end
+
+    -- Test 3: Update player stats
+    do
+        S.setStateVal(2, "players", "Red", "hunger")
+        S.setStateVal(4, "players", "Red", "willpower")
+        S.setStateVal(5, "players", "Red", "health")
+        updateUIDisplays()
+        printTestResult("Update player stats", true, "Should update Red player's stats")
+    end
+
+    print("\nNOTE: Visual verification required - check UI elements in game.")
+end
+
+--[[
+    Utility Tests
+]]
+
+--- Test utility functions
+-- Tests: Basic U.* functions
+function DEBUG.testUtilities()
+    printTestHeader("Utility Functions")
+
+    -- Test 1: U.Type
+    do
+        local result1 = U.Type({})
+        local result2 = U.Type("string")
+        local result3 = U.Type(123)
+        print("U.Type({}): " .. tostring(result1))
+        print("U.Type('string'): " .. tostring(result2))
+        print("U.Type(123): " .. tostring(result3))
+        printTestResult("U.Type", result1 == "table" and result2 == "string" and result3 == "number", "All types correct")
+    end
+
+    -- Test 2: U.map
+    do
+        local input = {1, 2, 3}
+        local result = U.map(input, function(x) return x * 2 end)
+        local expected = {2, 4, 6}
+        local match = result[1] == expected[1] and result[2] == expected[2] and result[3] == expected[3]
+        print("U.map({1,2,3}, x*2): {" .. table.concat(result, ",") .. "}")
+        printTestResult("U.map", match, "Transformed correctly")
+    end
+
+    -- Test 3: U.filter
+    do
+        local input = {1, 2, 3, 4, 5}
+        local result = U.filter(input, function(x) return x % 2 == 0 end)
+        print("U.filter({1,2,3,4,5}, even): {" .. table.concat(result, ",") .. "}")
+        printTestResult("U.filter", #result == 2 and result[1] == 2 and result[2] == 4, "Filtered correctly")
+    end
+end
+
+--[[
+    Integration Tests
+]]
+
+--- Test full module integration
+-- Tests that all modules work together
+function DEBUG.testIntegration()
+    printTestHeader("Full Integration Test")
+
+    print("Running integration test sequence...")
+
+    -- Step 1: Set game state
+    print("\n1. Setting game state...")
+    S.setStateVal(3, "players", "Red", "hunger")
+    S.setStateVal(C.Phases.PLAY, "currentPhase")
+    print("   ✓ State set")
+
+    -- Step 2: Load scene
+    print("\n2. Loading scene...")
+    local sceneSuccess = Scenes.loadScene("elysium")
+    print("   " .. (sceneSuccess and "✓" or "✗") .. " Scene loaded")
+
+    -- Step 3: Advance phase
+    print("\n3. Advancing phase...")
+    M.advancePhase(C.Phases.COMBAT)
+    print("   ✓ Phase advanced")
+
+    -- Step 4: Update UI
+    print("\n4. Updating UI...")
+    updateUIDisplays()
+    print("   ✓ UI updated")
+
+    -- Step 5: Verify state
+    print("\n5. Verifying final state...")
+    local finalHunger = S.getStateVal("players", "Red", "hunger")
+    local finalPhase = S.getStateVal("currentPhase")
+    local finalScene = Scenes.getCurrentScene()
+
+    print("   Final hunger: " .. tostring(finalHunger))
+    print("   Final phase: " .. tostring(finalPhase))
+    print("   Final scene: " .. tostring(finalScene))
+
+    local allGood = (finalHunger == 3 and finalPhase == C.Phases.COMBAT and finalScene == "elysium")
+    printTestResult("Integration test", allGood, allGood and "All checks passed" or "Some checks failed")
+end
+
+--[[
+    State Inspection Functions
+]]
+
+--- Display current game state (readable format)
+function DEBUG.showState()
+    printTestHeader("Current Game State")
+    local state = S.getGameState()
+    print(JSON.encode_pretty(state))
+end
+
+--- Display current scene info
+function DEBUG.showScene()
+    printTestHeader("Current Scene Info")
+    local currentScene = Scenes.getCurrentScene()
+    if currentScene then
+        local sceneData = Scenes.getScene(currentScene)
+        print("Current Scene: " .. currentScene)
+        print("Description: " .. (sceneData.description or "N/A"))
+        print("\nScene Data:")
+        print(JSON.encode_pretty(sceneData))
+    else
+        print("No scene currently set.")
+    end
+end
+
+--- Display zone status
+function DEBUG.showZones()
+    printTestHeader("Zone Status")
+    local zonesLocked = S.getStateVal("zones", "allZonesLocked")
+    print("Zones Locked: " .. tostring(zonesLocked))
+    print("Zone Events Active: " .. tostring(not zonesLocked))
+end
+
+--[[
+    Quick Test Functions (Single Commands)
+]]
+
+--- Quick test: Set player hunger
+-- @param color string Player color
+-- @param value number Hunger value (0-5)
+function DEBUG.setHunger(color, value)
+    if not color or not value then
+        print("Usage: setHunger(color, value)")
+        print("Example: setHunger('Red', 3)")
+        return
+    end
+
+    S.setStateVal(value, "players", color, "hunger")
+    print("Set " .. color .. " player hunger to " .. tostring(value))
+
+    updateUIDisplays()
+end
+
+--- Quick test: Change scene
+-- @param sceneName string Scene name
+function DEBUG.changeScene(sceneName)
+    if not sceneName then
+        print("Usage: changeScene(sceneName)")
+        print("Available scenes: " .. table.concat(Scenes.listScenes(), ", "))
+        return
+    end
+
+    Scenes.loadScene(sceneName)
+    print("Changed scene to: " .. sceneName)
+end
+
+--- Quick test: Set phase
+-- @param phaseName string Phase name (e.g., "PLAY", "COMBAT")
+function DEBUG.setPhase(phaseName)
+    if not phaseName then
+        print("Usage: setPhase(phaseName)")
+        print("Available phases: " .. table.concat(U.getValues(C.Phases), ", "))
+        return
+    end
+
+    -- Find matching phase constant
+    local targetPhase = nil
+    for _, phase in pairs(C.Phases) do
+        if string.upper(phaseName) == string.upper(phase) or string.upper(phaseName) == string.upper(string.match(phase, "(%w+)$")) then
+            targetPhase = phase
+            break
+        end
+    end
+
+    if targetPhase then
+        M.advancePhase(targetPhase)
+        print("Changed phase to: " .. targetPhase)
+    else
+        print("Invalid phase name. Available: " .. table.concat(U.getValues(C.Phases), ", "))
+    end
+end
+
+--[[
+    Help/Documentation
+]]
+
+--- Display help for all debug functions
+function DEBUG.help()
+    print("\n" .. string.rep("=", 70))
+    print("VTM5E MODULE - DEBUG/TESTING COMMANDS")
+    print(string.rep("=", 70))
+    print("\nUse these commands in the TTS console with: lua <command>()")
+    print("\nTESTING FUNCTIONS:")
+    print("  testState()              - Test state get/set operations")
+    print("  testStatePersistence()   - Test state save/load")
+    print("  testScenes()             - Test scene loading and transitions")
+    print("  testAllScenes()          - Test all scene presets")
+    print("  testZones()              - Test zone activation/deactivation")
+    print("  testMain()               - Test main module functions")
+    print("  testUI()                 - Test UI display updates")
+    print("  testUtilities()          - Test utility functions")
+    print("  testIntegration()        - Full integration test")
+    print("\nINSPECTION FUNCTIONS:")
+    print("  showState()              - Display current game state (JSON)")
+    print("  showScene()              - Display current scene info")
+    print("  showZones()              - Display zone status")
+    print("\nQUICK SETTERS:")
+    print("  setHunger(color, value)  - Set player hunger (e.g., setHunger('Red', 3))")
+    print("  changeScene(sceneName)   - Change scene (e.g., changeScene('elysium'))")
+    print("  setPhase(phaseName)      - Change phase (e.g., setPhase('PLAY'))")
+    print("\nHELP:")
+    print("  debugHelp()              - Show this help message")
+    print("\n" .. string.rep("=", 70))
+end
+
+--[[
+    Expose Functions Globally
+    These functions can be called from the TTS console via: lua functionName()
+]]
+
+-- Expose all test functions
+_G.testState = DEBUG.testState
+_G.testStatePersistence = DEBUG.testStatePersistence
+_G.testScenes = DEBUG.testScenes
+_G.testAllScenes = DEBUG.testAllScenes
+_G.testZones = DEBUG.testZones
+_G.testMain = DEBUG.testMain
+_G.testUI = DEBUG.testUI
+_G.testUtilities = DEBUG.testUtilities
+_G.testIntegration = DEBUG.testIntegration
+
+-- Expose inspection functions
+_G.showState = DEBUG.showState
+_G.showScene = DEBUG.showScene
+_G.showZones = DEBUG.showZones
+
+-- Expose quick setters
+_G.setHunger = DEBUG.setHunger
+_G.changeScene = DEBUG.changeScene
+_G.setPhase = DEBUG.setPhase
+
+-- Expose help
+_G.debugHelp = DEBUG.help
+
+-- Auto-show help on load (optional - comment out if not desired)
+-- DEBUG.help()
+
+return DEBUG
