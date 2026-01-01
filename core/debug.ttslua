@@ -414,13 +414,13 @@ function DEBUG.testMain()
     do
         local initialPhase = S.getStateVal("currentPhase")
         print("\nCurrent phase: " .. tostring(initialPhase))
-        print("Attempting to advance to PLAY phase...")
-        M.advancePhase(C.Phases.PLAY)
+        print("Attempting to advance to SCENE phase...")
+        M.advancePhase(C.Phases.SCENE)
 
         Wait.time(function()
             local newPhase = S.getStateVal("currentPhase")
             print("New phase: " .. tostring(newPhase))
-            printTestResult("Advance phase", newPhase == C.Phases.PLAY, "Changed to: " .. tostring(newPhase))
+            printTestResult("Advance phase", newPhase == C.Phases.SCENE, "Changed to: " .. tostring(newPhase))
         end, 0.1)
     end
 end
@@ -540,7 +540,7 @@ function DEBUG.testIntegration()
         return
     end
     S.setPlayerVal(testColor, "hunger", 3)
-    S.setStateVal(C.Phases.PLAY, "currentPhase")
+    S.setStateVal(C.Phases.SCENE, "currentPhase")
     print("   ✓ State set (using player: " .. testColor .. ", ID: " .. playerID .. ")")
 
     -- Step 2: Load scene

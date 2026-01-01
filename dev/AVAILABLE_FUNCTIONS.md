@@ -334,13 +334,19 @@
 ### Available Constants
 
 - `C.PlayerColors` - Array of player colors
-- `C.Phases` - Game phase constants
+- `C.PlayerIDs` - Player ID mapping (real names to IDs)
+- `C.PlayerData` - Static player character data (merged with state on load)
+- `C.Clans` - VTM5E clan names
+- `C.Disciplines` - VTM5E discipline names
+- `C.Phases` - Game phase constants (SESSION_START, SCENE, DOWNTIME, COMBAT, MEMORIAM, SESSION_END)
 - `C.UI_IDS` - UI element ID constants
-- `C.DEFAULT_HUNGER`, `C.MAX_HUNGER` - Hunger constants
-- `C.DEFAULT_WILLPOWER`, `C.MAX_WILLPOWER` - Willpower constants
-- `C.DEFAULT_HEALTH`, `C.MAX_HEALTH` - Health constants
-- `C.CameraAngles` - Camera preset positions
-- `C.LightModes` - Light mode definitions
+- `C.MAX_HUNGER` - Maximum hunger value (5, VTM5E scale is 0-5)
+- `C.DICE_SUCCESS_THRESHOLD` - Dice success threshold (6)
+- `C.DICE_CRITICAL_SUCCESS_VALUE` - Critical success value (10)
+- `C.STORYTELLER_COLOR` - Storyteller/GM player color
+- `C.CameraAngles` - Camera preset positions (placeholder structure)
+- `C.LightModes` - Light mode definitions (scene lighting presets)
+- `C.GUIDS` - Placeholder GUIDs for TTS objects
 
 ---
 

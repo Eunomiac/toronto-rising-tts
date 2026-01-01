@@ -357,7 +357,7 @@ lua showZones()
 
 ```lua
 lua setHunger("Red", 3)          -- Set Red player hunger to 3
-lua setHunger("Blue", 0)         -- Set Blue player hunger to 0
+lua setHunger("Brown", 0)        -- Set Brown player hunger to 0
 ```
 
 ### Scene Control

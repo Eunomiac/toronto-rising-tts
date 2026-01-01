@@ -350,7 +350,7 @@ end
 -- @param inputstr string The string to split (can be nil, returns empty table)
 -- @param sep string The delimiter to split on (default: whitespace "%s")
 -- @return table Array of string segments
--- @usage local parts = U.split("Red,Blue,Green", ",") -- returns {"Red", "Blue", "Green"}
+-- @usage local parts = U.split("Red,Orange,Green", ",") -- returns {"Red", "Orange", "Green"}
 -- @usage local words = U.split("Hello World") -- returns {"Hello", "World"} (whitespace split)
 function U.split(inputstr, sep)
 	if inputstr == nil then return {} end
@@ -1124,7 +1124,7 @@ end
 -- Checks if object has any tag matching a valid TTS player color.
 -- @param obj Object The TTS object to check
 -- @return string|nil The player color tag found, or nil if none
--- @usage local owner = U.findColorTag(card) -- Returns "Red", "Blue", etc.
+-- @usage local owner = U.findColorTag(card) -- Returns "Red", "Brown", "Orange", "Yellow", "Green", or "Black" (Storyteller)
 function U.findColorTag(obj)
 	U.Assert("U.findColorTag", obj, "userdata")
 	U.Assert("U.findColorTag", obj.hasTag, "function")

@@ -484,7 +484,7 @@ These are game-specific but demonstrate reusable patterns:
 
 | Category | Examples | Notes |
 |----------|----------|-------|
-| Player Colors | `C.PlayerColors = {"White", "Blue", ...}` | Standard TTS colors |
+| Player Colors | `C.PlayerColors = {"Brown", "Orange", "Red", "Yellow", "Green"}` | VTM5E player colors (Storyteller is Black) |
 | Game Phases | `C.Phases = {INIT, SETUP, PLAY, ...}` | VTM-specific phases |
 | UI Element IDs | `C.UI_IDS = {GM_PANEL = "gmControlPanel", ...}` | Consistent naming |
 | Default Values | `C.DEFAULT_HUNGER = 0, C.MAX_HUNGER = 5` | Game rules |

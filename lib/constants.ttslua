@@ -261,7 +261,7 @@ C.PlayerData = {
       }
     },
     [C.PlayerIDs.JRook] = {
-      color = "Pink",
+      color = "Yellow",
       playerName = "J. Rook",
       charName = "Aidan Farthing",
       clan = "Malkavian",
@@ -321,7 +321,7 @@ C.PlayerData = {
       }
     },
     [C.PlayerIDs.Hastur] = {
-      color = "Purple",
+      color = "Green",
       playerName = "Hastur",
       charName = "Alyssa Farrell",
       clan = "Ventrue",
@@ -383,9 +383,10 @@ C.PlayerData = {
 }
 
 
--- Player Colors (standard TTS colors)
+-- Player Colors (VTM5E-specific)
+-- Storyteller is always Black. Player colors are: Brown, Orange, Red, Yellow, Green (in that order)
 C.PlayerColors = {
-    "Black", "Brown", "Orange", "Red", "Yellow", "Green"
+    "Brown", "Orange", "Red", "Yellow", "Green"
 }
 
 -- VTM5E Clans (from Heritage module)
@@ -400,14 +401,14 @@ C.Disciplines = {
 }
 
 -- Game Phases (VTM5E-specific)
+-- Phases represent different stages of a VTM5E session
 C.Phases = {
-    INIT = "Initialization",
-    SETUP = "GameSetup",
-    SCENE = "Scene",
-    DOWNTIME = "Downtime",
-    COMBAT = "Combat",
-    AFTERMATH = "Aftermath",
-    END = "GameEnd"
+    SESSION_START = "SessionStart",  -- Beginning of session, setup, introductions
+    SCENE = "Scene",                  -- Active roleplay scenes
+    DOWNTIME = "Downtime",            -- Between-scenes activities, planning
+    COMBAT = "Combat",                -- Combat encounters
+    MEMORIAM = "Memoriam",            -- End-of-session reflection and XP
+    SESSION_END = "SessionEnd"        -- Session conclusion, cleanup
 }
 
 -- UI Element IDs (common or global UI elements)
@@ -425,8 +426,14 @@ C.UI_IDS = {
 C.DICE_SUCCESS_THRESHOLD = 6
 C.DICE_CRITICAL_SUCCESS_VALUE = 10
 
+-- Hunger Constants (VTM5E)
+-- Note: Willpower and Health do not have default values under V5 rules
+-- They are character-specific and stored in C.PlayerData
+C.MAX_HUNGER = 5  -- Maximum hunger value (0-5 scale)
+
 -- Storyteller Color (GM role)
-C.STORYTELLER_COLOR = "Brown"  -- Can be changed to "Black" or another color
+-- Storyteller is always Black in VTM5E
+C.STORYTELLER_COLOR = "Black"
 
 -- Camera Angles (preset views for cinematic control)
 C.CameraAngles = {
@@ -476,27 +483,41 @@ C.GUIDS = {
     SPOTLIGHT_PLAYER = "@@@@@@SPOTLIGHT_PLAYER@@@@@@",
 
     -- Hand zones (player hand zones)
-    HAND_WHITE = "@@@@@@HAND_WHITE@@@@@@",
-    HAND_BLUE = "@@@@@@HAND_BLUE@@@@@@",
-    HAND_RED = "@@@@@@HAND_RED@@@@@@",
-    HAND_GREEN = "@@@@@@HAND_GREEN@@@@@@",
-    HAND_YELLOW = "@@@@@@HAND_YELLOW@@@@@@",
-    HAND_PINK = "@@@@@@HAND_PINK@@@@@@",
-    HAND_PURPLE = "@@@@@@HAND_PURPLE@@@@@@",
-    HAND_ORANGE = "@@@@@@HAND_ORANGE@@@@@@",
+    -- Storyteller (Black) and player colors: Brown, Orange, Red, Yellow, Green
+    HAND_BLACK = "@@@@@@HAND_BLACK@@@@@@",  -- Storyteller
     HAND_BROWN = "@@@@@@HAND_BROWN@@@@@@",
-    HAND_BLACK = "@@@@@@HAND_BLACK@@@@@@",
-    HAND_GREY = "@@@@@@HAND_GREY@@@@@@",
-    HAND_TEAL = "@@@@@@HAND_TEAL@@@@@@",
+    HAND_ORANGE = "@@@@@@HAND_ORANGE@@@@@@",
+    HAND_RED = "@@@@@@HAND_RED@@@@@@",
+    HAND_YELLOW = "@@@@@@HAND_YELLOW@@@@@@",
+    HAND_GREEN = "@@@@@@HAND_GREEN@@@@@@",
 
     -- Add other object GUIDs as needed (zones, boards, etc.)
     -- Format: OBJECT_NAME = "@@@@@@OBJECT_NAME@@@@@@"
 }
 
--- Helper function to get hand zone GUID by color
+--- Gets the GUID string for a player's hand zone by color
+-- Returns the GUID from C.GUIDS if it exists, or nil if not found.
+-- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
+-- If a GUID is not found, returns nil so callers can handle the error appropriately.
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Yellow", "Green", or "Black" for Storyteller)
+-- @return string|nil GUID string if found, or nil if not found
+-- @usage local handGUID = C.GetHandZoneGUID("Red")
+-- @usage local handObj = getObjectFromGUID(C.GetHandZoneGUID("Red"))
 function C.GetHandZoneGUID(color)
+    if color == nil then
+        return nil
+    end
     local guidKey = "HAND_" .. string.upper(color)
-    return (C.GUIDS[guidKey] or "@@@@@@HAND_") .. color .. "@@@@@@"
+    local guid = C.GUIDS[guidKey]
+
+    -- If GUID is not found, return nil (don't create a placeholder - placeholders should only exist before GUIDs are set)
+    if guid == nil then
+        return nil
+    end
+
+    -- If GUID still contains placeholder markers, it hasn't been replaced yet
+    -- Return it as-is (caller should handle placeholder case if needed)
+    return guid
 end
 
 return C

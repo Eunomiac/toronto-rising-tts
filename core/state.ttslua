@@ -148,7 +148,7 @@ function S.GetDefaultGameState()
     end
 
     return {
-        currentPhase = C.Phases.INIT,
+        currentPhase = C.Phases.SESSION_START,
         playerData = playerData, -- Keyed by player ID, only dynamic values
         lights = {}, -- Light states will be stored here
         zones = {},  -- Zone-related data
@@ -274,7 +274,7 @@ end
 function S.validateState()
     -- Ensure currentPhase exists and is valid
     if not gameState.currentPhase or not U.isIn(gameState.currentPhase, C.Phases) then
-        gameState.currentPhase = C.Phases.INIT
+        gameState.currentPhase = C.Phases.SESSION_START
     end
 
     -- Ensure playerData table exists and has correct structure

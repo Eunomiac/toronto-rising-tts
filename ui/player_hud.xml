@@ -27,27 +27,53 @@
   </VerticalLayout>
 </Panel>
 
-<!-- Player HUD Panel - Blue Player -->
-<Panel id="playerHud_Blue" class="playerHudPanel" visibility="Blue">
+<!-- Player HUD Panel - Brown Player -->
+<Panel id="playerHud_Brown" class="playerHudPanel" visibility="Brown">
   <VerticalLayout class="playerStats">
     <Text class="statLabel" fontSize="20" color="#FFFFFF" fontStyle="Bold">Character Stats</Text>
     <Text class="spacer_5"></Text>
 
     <HorizontalLayout class="statDisplay">
       <Text class="statLabel">Hunger:</Text>
-      <Text id="hungerVal_Blue" class="statValue" color="#CC0000">0</Text>
+      <Text id="hungerVal_Brown" class="statValue" color="#CC0000">0</Text>
       <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
     </HorizontalLayout>
 
     <HorizontalLayout class="statDisplay">
       <Text class="statLabel">Willpower:</Text>
-      <Text id="willpowerVal_Blue" class="statValue" color="#0066FF">5</Text>
+      <Text id="willpowerVal_Brown" class="statValue" color="#0066FF">5</Text>
       <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
     </HorizontalLayout>
 
     <HorizontalLayout class="statDisplay">
       <Text class="statLabel">Health:</Text>
-      <Text id="healthVal_Blue" class="statValue" color="#00AA00">7</Text>
+      <Text id="healthVal_Brown" class="statValue" color="#00AA00">7</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 7</Text>
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- Player HUD Panel - Orange Player -->
+<Panel id="playerHud_Orange" class="playerHudPanel" visibility="Orange">
+  <VerticalLayout class="playerStats">
+    <Text class="statLabel" fontSize="20" color="#FFFFFF" fontStyle="Bold">Character Stats</Text>
+    <Text class="spacer_5"></Text>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Hunger:</Text>
+      <Text id="hungerVal_Orange" class="statValue" color="#CC0000">0</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Willpower:</Text>
+      <Text id="willpowerVal_Orange" class="statValue" color="#0066FF">5</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Health:</Text>
+      <Text id="healthVal_Orange" class="statValue" color="#00AA00">7</Text>
       <Text class="statLabel" fontSize="12" color="#888888">/ 7</Text>
     </HorizontalLayout>
   </VerticalLayout>
@@ -79,5 +105,31 @@
   </VerticalLayout>
 </Panel>
 
-<!-- Additional player panels can be added here for other colors (Yellow, Pink, Purple, Orange, Brown, Black, Grey, Teal) -->
+<!-- Player HUD Panel - Yellow Player -->
+<Panel id="playerHud_Yellow" class="playerHudPanel" visibility="Yellow">
+  <VerticalLayout class="playerStats">
+    <Text class="statLabel" fontSize="20" color="#FFFFFF" fontStyle="Bold">Character Stats</Text>
+    <Text class="spacer_5"></Text>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Hunger:</Text>
+      <Text id="hungerVal_Yellow" class="statValue" color="#CC0000">0</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Willpower:</Text>
+      <Text id="willpowerVal_Yellow" class="statValue" color="#0066FF">5</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Health:</Text>
+      <Text id="healthVal_Yellow" class="statValue" color="#00AA00">7</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 7</Text>
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
 <!-- Pattern: playerHud_<Color>, hungerVal_<Color>, willpowerVal_<Color>, healthVal_<Color> -->
+<!-- Valid player colors: Brown, Orange, Red, Yellow, Green (Storyteller is Black) -->
