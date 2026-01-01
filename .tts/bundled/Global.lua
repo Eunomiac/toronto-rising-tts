@@ -3209,7 +3209,7 @@ C.PlayerData = {
       }
     },
     [C.PlayerIDs.JRook] = {
-      color = "Yellow",
+      color = "Pink",
       playerName = "J. Rook",
       charName = "Aidan Farthing",
       clan = "Malkavian",
@@ -3269,7 +3269,7 @@ C.PlayerData = {
       }
     },
     [C.PlayerIDs.Hastur] = {
-      color = "Green",
+      color = "Purple",
       playerName = "Hastur",
       charName = "Alyssa Farrell",
       clan = "Ventrue",
