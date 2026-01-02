@@ -2023,6 +2023,7 @@ local M = require("core.main")
 local Z = require("core.zones")
 local Scenes = require("core.scenes")
 local C = require("lib.constants")
+local L = require("core.lighting")
 
 --[[
     File Logging Configuration
@@ -2030,6 +2031,10 @@ local C = require("lib.constants")
 ]]
 local LOG_DIR = "debug_logs"
 local LOG_EXTENSION = "txt"
+
+-- Cache for log file contents (to support append mode)
+-- Key: filename (without extension), Value: accumulated content string
+local logCache = {}
 
 --[[
     Helper Functions
@@ -2045,16 +2050,31 @@ local function getTimestamp()
 end
 
 --- Writes content to a file in the workspace using TTS Tools extension
+-- Supports append mode by maintaining an in-memory cache of file contents
 -- @param filename string Name of the file (without extension)
 -- @param content string Content to write
 -- @param format string Optional format: "auto" (for JSON) or "none" (default: "none")
-local function writeToFile(filename, content, format)
+-- @param append boolean If true, appends to existing cached content (default: true for logs, false for dumps)
+local function writeToFile(filename, content, format, append)
     format = format or "none"
+    append = append ~= false  -- Default to true (append mode) unless explicitly set to false
 
     -- Use sendExternalMessage to write to file
     -- Don't set 'object' - that would write to .tts/objects/ directory
     -- Without 'object', files are written to workspace directory
     local fullName = LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION
+
+    -- For append mode, maintain cache and accumulate content
+    if append then
+        if not logCache[filename] then
+            logCache[filename] = ""
+        end
+        logCache[filename] = logCache[filename] .. content
+        content = logCache[filename]  -- Write accumulated content
+    else
+        -- Overwrite mode: clear cache and write new content
+        logCache[filename] = content
+    end
 
     -- Check if sendExternalMessage exists (TTS Tools extension)
     ---@diagnostic disable-next-line: undefined-global
@@ -2184,6 +2204,60 @@ function DEBUG.testState()
         local phase = S.getStateVal("currentPhase")
         printTestResult("Get current phase", phase ~= nil, "Current phase: " .. tostring(phase))
         if phase ~= nil then passed = passed + 1 else failed = failed + 1 end
+    end
+
+    -- Test 5: mergeDefaults function
+    do
+        local target = {a = 1, b = {x = 10}}
+        local defaults = {b = {y = 20}, c = 3}
+        S.mergeDefaults(target, defaults)
+
+        local pass = (target.a == 1 and target.b.x == 10 and target.b.y == 20 and target.c == 3)
+        printTestResult("mergeDefaults", pass, pass and "Merged correctly" or "Merge failed")
+        if pass then passed = passed + 1 else failed = failed + 1 end
+    end
+
+    -- Test 6: resetGameState function
+    do
+        -- Set some values
+        S.setStateVal("test", "testKey")
+        S.setStateVal(999, "testNumber")
+
+        -- Reset
+        S.resetGameState()
+
+        -- Check that test values are gone and defaults are present
+        local testValue = S.getStateVal("testKey")
+        local defaultPhase = S.getStateVal("currentPhase")
+
+        local pass = (testValue == nil and defaultPhase == C.Phases.SESSION_START)
+        printTestResult("resetGameState", pass, pass and "Reset to defaults correctly" or "Reset failed")
+        if pass then passed = passed + 1 else failed = failed + 1 end
+    end
+
+    -- Test 7: Player data merging (mergePlayerData)
+    do
+        -- This test verifies that static player data from C.PlayerData merges correctly
+        local testColor = getFirstSeatedPlayerColor()
+        if testColor then
+            local playerID = S.getPlayerID(testColor)
+            if playerID then
+                local playerData = S.getPlayerData(testColor)
+                -- Player data should have both static (from C.PlayerData) and dynamic (from state) fields
+                local hasStatic = playerData and (playerData.color ~= nil or playerData.clan ~= nil)
+                local hasDynamic = playerData and playerData.hunger ~= nil
+
+                local pass = (hasStatic and hasDynamic)
+                printTestResult("Player data merging", pass, pass and "Static and dynamic data merged" or "Merge failed")
+                if pass then passed = passed + 1 else failed = failed + 1 end
+            else
+                printTestResult("Player data merging", false, "Could not find player ID")
+                failed = failed + 1
+            end
+        else
+            printTestResult("Player data merging", false, "No seated players for test")
+            failed = failed + 1
+        end
     end
 
     -- Summary
@@ -2415,13 +2489,13 @@ function DEBUG.testMain()
     do
         local initialPhase = S.getStateVal("currentPhase")
         print("\nCurrent phase: " .. tostring(initialPhase))
-        print("Attempting to advance to PLAY phase...")
-        M.advancePhase(C.Phases.PLAY)
+        print("Attempting to advance to SCENE phase...")
+        M.advancePhase(C.Phases.SCENE)
 
         Wait.time(function()
             local newPhase = S.getStateVal("currentPhase")
             print("New phase: " .. tostring(newPhase))
-            printTestResult("Advance phase", newPhase == C.Phases.PLAY, "Changed to: " .. tostring(newPhase))
+            printTestResult("Advance phase", newPhase == C.Phases.SCENE, "Changed to: " .. tostring(newPhase))
         end, 0.1)
     end
 end
@@ -2471,6 +2545,197 @@ function DEBUG.testUI()
 end
 
 --[[
+    Constants Module Tests (TOR-3)
+]]
+
+--- Test constants module structure and values
+-- Tests: C.PlayerColors, C.Phases, C.GUIDS, C.GetHandZoneGUID
+function DEBUG.testConstants()
+    printTestHeader("Constants Module")
+    DEBUG.logToFile("INFO", "Starting testConstants()", "debug_log")
+
+    local passed = 0
+    local failed = 0
+
+    -- Test 1: Player Colors
+    do
+        local expectedColors = {"Brown", "Orange", "Red", "Pink", "Purple"}
+        local allPresent = true
+        local missingColors = {}
+
+        for _, expectedColor in ipairs(expectedColors) do
+            local found = false
+            for _, actualColor in ipairs(C.PlayerColors) do
+                if actualColor == expectedColor then
+                    found = true
+                    break
+                end
+            end
+            if not found then
+                allPresent = false
+                table.insert(missingColors, expectedColor)
+            end
+        end
+
+        if allPresent and #C.PlayerColors == #expectedColors then
+            print("C.PlayerColors: {" .. table.concat(C.PlayerColors, ", ") .. "}")
+            printTestResult("Player Colors", true, "All " .. #expectedColors .. " colors present")
+            passed = passed + 1
+        else
+            local details = "Expected: {" .. table.concat(expectedColors, ", ") .. "}, Got: {" .. table.concat(C.PlayerColors, ", ") .. "}"
+            if #missingColors > 0 then
+                details = details .. ", Missing: {" .. table.concat(missingColors, ", ") .. "}"
+            end
+            printTestResult("Player Colors", false, details)
+            failed = failed + 1
+        end
+    end
+
+    -- Test 2: Storyteller Color
+    do
+        if C.STORYTELLER_COLOR == "Black" then
+            print("C.STORYTELLER_COLOR: " .. C.STORYTELLER_COLOR)
+            printTestResult("Storyteller Color", true, "Correctly set to Black")
+            passed = passed + 1
+        else
+            printTestResult("Storyteller Color", false, "Expected 'Black', got '" .. tostring(C.STORYTELLER_COLOR) .. "'")
+            failed = failed + 1
+        end
+    end
+
+    -- Test 3: Game Phases
+    do
+        local expectedPhases = {
+            "SessionStart", "Scene", "Downtime", "Combat", "Memoriam", "SessionEnd"
+        }
+        local allPhasesPresent = true
+        local missingPhases = {}
+
+        for _, expectedPhase in ipairs(expectedPhases) do
+            local found = false
+            for _, actualPhase in pairs(C.Phases) do
+                if actualPhase == expectedPhase then
+                    found = true
+                    break
+                end
+            end
+            if not found then
+                allPhasesPresent = false
+                table.insert(missingPhases, expectedPhase)
+            end
+        end
+
+        if allPhasesPresent then
+            print("C.Phases: " .. JSON.encode(C.Phases))
+            printTestResult("Game Phases", true, "All " .. #expectedPhases .. " phases present")
+            passed = passed + 1
+        else
+            printTestResult("Game Phases", false, "Missing phases: {" .. table.concat(missingPhases, ", ") .. "}")
+            failed = failed + 1
+        end
+    end
+
+    -- Test 4: HAND Zone GUIDs Structure
+    do
+        local expectedHandKeys = {"HAND_BLACK", "HAND_BROWN", "HAND_ORANGE", "HAND_RED", "HAND_PINK", "HAND_PURPLE"}
+        local allKeysPresent = true
+        local missingKeys = {}
+        local placeholderCount = 0
+
+        for _, key in ipairs(expectedHandKeys) do
+            if C.GUIDS[key] == nil then
+                allKeysPresent = false
+                table.insert(missingKeys, key)
+            elseif string.find(C.GUIDS[key], "@@@@@@") then
+                placeholderCount = placeholderCount + 1
+            end
+        end
+
+        if allKeysPresent then
+            local status = placeholderCount > 0 and " (" .. placeholderCount .. " placeholders need GUIDs)" or " (all GUIDs filled)"
+            print("HAND Zone GUIDs: All keys present" .. status)
+            printTestResult("HAND Zone GUIDs Structure", true, #expectedHandKeys .. " keys present" .. status)
+            passed = passed + 1
+        else
+            printTestResult("HAND Zone GUIDs Structure", false, "Missing keys: {" .. table.concat(missingKeys, ", ") .. "}")
+            failed = failed + 1
+        end
+    end
+
+    -- Test 5: GetHandZoneGUID Function
+    do
+        local testColors = {"Brown", "Orange", "Red", "Pink", "Purple", "Black"}
+        local allWork = true
+        local failedColors = {}
+
+        for _, color in ipairs(testColors) do
+            local guid = C.GetHandZoneGUID(color)
+            if guid == nil then
+                allWork = false
+                table.insert(failedColors, color .. " (returned nil)")
+            elseif string.find(guid, "@@@@@@") then
+                -- This is okay - it's a placeholder that needs to be filled
+                print("  " .. color .. ": " .. guid .. " (placeholder - needs GUID)")
+            else
+                print("  " .. color .. ": " .. guid .. " (GUID filled)")
+            end
+        end
+
+        if allWork then
+            printTestResult("GetHandZoneGUID Function", true, "All colors return valid GUIDs or placeholders")
+            passed = passed + 1
+        else
+            printTestResult("GetHandZoneGUID Function", false, "Failed for: {" .. table.concat(failedColors, ", ") .. "}")
+            failed = failed + 1
+        end
+    end
+
+    -- Test 6: Constants Structure (UI IDs, Dice Settings, etc.)
+    do
+        local checks = {
+            {name = "DICE_SUCCESS_THRESHOLD", value = C.DICE_SUCCESS_THRESHOLD, expected = 6},
+            {name = "DICE_CRITICAL_SUCCESS_VALUE", value = C.DICE_CRITICAL_SUCCESS_VALUE, expected = 10},
+            {name = "MAX_HUNGER", value = C.MAX_HUNGER, expected = 5},
+            {name = "UI_IDS table", value = C.UI_IDS, expected = "table"},
+        }
+
+        local allPass = true
+        for _, check in ipairs(checks) do
+            local pass = false
+            if check.expected == "table" then
+                pass = type(check.value) == "table"
+            else
+                pass = check.value == check.expected
+            end
+
+            if pass then
+                print("  " .. check.name .. ": " .. tostring(check.value))
+            else
+                print("  " .. check.name .. ": FAILED (expected " .. tostring(check.expected) .. ", got " .. tostring(check.value) .. ")")
+                allPass = false
+            end
+        end
+
+        if allPass then
+            printTestResult("Constants Structure", true, "All game settings present")
+            passed = passed + 1
+        else
+            printTestResult("Constants Structure", false, "Some constants missing or incorrect")
+            failed = failed + 1
+        end
+    end
+
+    -- Summary
+    print("\n" .. string.rep("-", 60))
+    print("Constants Tests: " .. passed .. " passed, " .. failed .. " failed")
+    print(string.rep("-", 60))
+
+    local summary = string.format("Constants Tests: %d passed, %d failed", passed, failed)
+    DEBUG.logToFile("INFO", summary, "debug_log")
+    DEBUG.logTestToFile("Constants Module", failed == 0, summary, "test_results")
+end
+
+--[[
     Utility Tests
 ]]
 
@@ -2513,6 +2778,586 @@ function DEBUG.testUtilities()
 end
 
 --[[
+    Lighting & Signal Fire Tests (Sequencing & Animation)
+]]
+
+--- Initializes all lighting and signal objects to OFF state
+-- Sets all signal fires, RING_FLARE, and player lights to OFF instantly
+-- Also sets ambient lighting to DARK mode
+-- Exposed globally as initLightingAndSignals()
+-- @usage initLightingAndSignals() -- Call from TTS console
+function DEBUG.initLightingAndSignals()
+    print("⚙️  Initializing: Setting all signal fires, RING_FLARE, player lights to OFF, and ambient to DARK")
+
+    -- Helper: Get signal fire object by color
+    local function getSignalFire(color)
+        local guid = C.GetSignalFireGUID(color)
+        if not guid then
+            return nil
+        end
+        return getObjectFromGUID(guid)
+    end
+
+    -- Helper: Get RING_FLARE object
+    local function getRingFlare()
+        local guid = C.GUIDS.RING_FLARE
+        if not guid then
+            return nil
+        end
+        return getObjectFromGUID(guid)
+    end
+
+    -- Helper: Get player light object by color
+    local function getPlayerLight(color)
+        local guid = C.GetPlayerLightGUID(color)
+        if not guid then
+            return nil
+        end
+        return getObjectFromGUID(guid)
+    end
+
+    -- Helper: Merge partial position with current position
+    local function mergePosition(obj, partialPos)
+        local currentPos = obj.getPosition()
+        local newPos = {
+            x = partialPos.x or currentPos.x,
+            y = partialPos.y or currentPos.y,
+            z = partialPos.z or currentPos.z
+        }
+        return Vector(newPos.x, newPos.y, newPos.z)
+    end
+
+    -- Helper: Set signal fire state (on/off) with optional animation
+    local function setSignalFireState(color, state, duration)
+        duration = duration or 0.0  -- Default to instant
+        local fire = getSignalFire(color)
+        if not fire then
+            print("⚠️  Signal fire not found for color: " .. tostring(color))
+            return false
+        end
+
+        local posData = C.ObjectPositions.SIGNAL_FIRE[state]
+        if not posData then
+            print("⚠️  Invalid signal fire state: " .. tostring(state))
+            return false
+        end
+
+        -- Merge partial position with current position
+        local targetPos = mergePosition(fire, posData.position)
+
+        if duration > 0 then
+            -- Use lerp for smooth animation
+            U.setPositionSlow(fire, targetPos, duration, nil, false)
+        else
+            -- Instant (no lerping)
+            fire.setPosition(targetPos)
+        end
+        return true
+    end
+
+    -- Helper: Set RING_FLARE state (on/off) with optional animation
+    local function setRingFlareState(state, duration)
+        duration = duration or 0.0  -- Default to instant
+        local flare = getRingFlare()
+        if not flare then
+            print("⚠️  RING_FLARE not found")
+            return false
+        end
+
+        local posData = C.ObjectPositions.RING_FLARE[state]
+        if not posData then
+            print("⚠️  Invalid RING_FLARE state: " .. tostring(state))
+            return false
+        end
+
+        -- Merge partial position with current position
+        local currentPos = flare.getPosition()
+        local targetPos = {
+            x = posData.position.x or currentPos.x,
+            y = posData.position.y or currentPos.y,
+            z = posData.position.z or currentPos.z
+        }
+        targetPos = Vector(targetPos.x, targetPos.y, targetPos.z)
+
+        if duration > 0 then
+            -- Use lerp for smooth animation
+            U.setPositionSlow(flare, targetPos, duration, nil, false)
+        else
+            -- Instant (no lerping)
+            flare.setPosition(targetPos)
+        end
+        return true
+    end
+
+    -- Helper: Convert player color to lighting module light name
+    -- Maps "Brown" -> "playerLightBrown", "Orange" -> "playerLightOrange", etc.
+    local function getPlayerLightName(color)
+        -- Capitalize first letter, lowercase rest
+        local first = string.upper(string.sub(color, 1, 1))
+        local rest = string.lower(string.sub(color, 2))
+        return "playerLight" .. first .. rest
+    end
+
+    -- Helper: Set player light mode using lighting module
+    -- Uses L.SetLightMode() which handles all properties (position, rotation, range, angle, intensity, enabled)
+    local function setPlayerLightMode(color, mode, duration)
+        duration = duration or 0.0  -- Default to instant
+        local lightName = getPlayerLightName(color)
+
+        if not L or not L.SetLightMode then
+            print("⚠️  Lighting module (L) or SetLightMode not available")
+            return false
+        end
+
+        if not L.LIGHTMODES[lightName] then
+            print("⚠️  Light mode not found for: " .. lightName)
+            return false
+        end
+
+        -- Use lighting module to set the mode
+        local success, result = pcall(function()
+            return L.SetLightMode(lightName, mode, color, duration)
+        end)
+
+        if not success then
+            print("⚠️  Error setting player light mode: " .. tostring(result))
+            return false
+        end
+
+        return true
+    end
+
+    local allSuccess = true
+
+    -- Set all signal fires to OFF (instant)
+    for _, color in ipairs(C.PlayerColors) do
+        local success = setSignalFireState(color, "off", 0.0)  -- 0 = instant
+        if not success then
+            allSuccess = false
+        end
+    end
+
+    -- Set RING_FLARE to OFF (instant)
+    local flareSuccess = setRingFlareState("off", 0.0)  -- 0 = instant
+    if not flareSuccess then
+        allSuccess = false
+    end
+
+    -- Set all player lights to OFF (instant)
+    for _, color in ipairs(C.PlayerColors) do
+        local success = setPlayerLightMode(color, "OFF", 0.0)  -- 0 = instant
+        if not success then
+            allSuccess = false
+        end
+    end
+
+    -- Set ambient lighting to DARK mode (instant)
+    if C.LightModes.DARK then
+        U.changeLighting(C.LightModes.DARK)
+        print("✅ Ambient lighting set to DARK mode")
+    else
+        print("⚠️  DARK mode not found in C.LightModes")
+        allSuccess = false
+    end
+
+    if allSuccess and flareSuccess then
+        print("✅ Initialization complete: All objects set to OFF state, ambient lighting set to DARK")
+    else
+        print("⚠️  Initialization completed with some errors")
+    end
+end
+
+--- Helper: Merge partial position with current position
+-- Handles partial position updates (e.g., {y=2.5} only changes Y axis)
+-- @param obj Object The object to get current position from
+-- @param partialPos table Partial position data (e.g., {y=2.5} or {x=1, z=3})
+-- @return Vector Complete position with partial values merged
+local function mergePosition(obj, partialPos)
+    local currentPos = obj.getPosition()
+    local newPos = {
+        x = partialPos.x or currentPos.x,
+        y = partialPos.y or currentPos.y,
+        z = partialPos.z or currentPos.z
+    }
+    return Vector(newPos.x, newPos.y, newPos.z)
+end
+
+--- Test lighting and signal fire manipulation with sequencing
+-- Tests: Signal fire positioning, lighting changes, U.RunSequence, U.Lerp, broadcasts
+function DEBUG.testLightingAndSignals()
+    printTestHeader("Lighting & Signal Fire Sequencing Test")
+    DEBUG.logToFile("INFO", "Starting testLightingAndSignals()", "debug_log")
+
+    local passed = 0
+    local failed = 0
+
+    -- Helper: Broadcast message to all players
+    local function broadcast(message, color)
+        color = color or {1, 1, 1}  -- Default white
+        broadcastToAll(message, color)
+        print("📢 " .. message)
+    end
+
+    -- Helper: Wait step with broadcast message
+    local function waitStep(message, waitTime)
+        waitTime = waitTime or 3.0
+        return function()
+            broadcast(message, {0.7, 0.7, 0.7})
+            return waitTime
+        end
+    end
+
+    -- Helper: Get signal fire object by color
+    local function getSignalFire(color)
+        local guid = C.GetSignalFireGUID(color)
+        if not guid then
+            return nil
+        end
+        return getObjectFromGUID(guid)
+    end
+
+    -- Helper: Get RING_FLARE object
+    local function getRingFlare()
+        local guid = C.GUIDS.RING_FLARE
+        if not guid then
+            return nil
+        end
+        return getObjectFromGUID(guid)
+    end
+
+    -- Helper: Get player light object by color
+    local function getPlayerLight(color)
+        local guid = C.GetPlayerLightGUID(color)
+        if not guid then
+            return nil
+        end
+        return getObjectFromGUID(guid)
+    end
+
+    -- Helper: Set signal fire state (on/off) with optional animation
+    local function setSignalFireState(color, state, duration)
+        duration = duration or 1.0
+        local fire = getSignalFire(color)
+        if not fire then
+            print("⚠️  Signal fire not found for color: " .. tostring(color))
+            return false
+        end
+
+        local posData = C.ObjectPositions.SIGNAL_FIRE[state]
+        if not posData then
+            print("⚠️  Invalid signal fire state: " .. tostring(state))
+            return false
+        end
+
+        -- Merge partial position with current position
+        local targetPos = mergePosition(fire, posData.position)
+
+        if duration > 0 then
+            -- Use lerp for smooth animation
+            U.setPositionSlow(fire, targetPos, duration, nil, false)
+        else
+            -- Instant (no lerping)
+            fire.setPosition(targetPos)
+        end
+        return true
+    end
+
+    -- Helper: Set RING_FLARE state (on/off) with optional animation
+    local function setRingFlareState(state, duration)
+        duration = duration or 0.0  -- Default to instant
+        local flare = getRingFlare()
+        if not flare then
+            print("⚠️  RING_FLARE not found")
+            return false
+        end
+
+        local posData = C.ObjectPositions.RING_FLARE[state]
+        if not posData then
+            print("⚠️  Invalid RING_FLARE state: " .. tostring(state))
+            return false
+        end
+
+        -- Merge partial position with current position
+        local currentPos = flare.getPosition()
+        local targetPos = {
+            x = posData.position.x or currentPos.x,
+            y = posData.position.y or currentPos.y,
+            z = posData.position.z or currentPos.z
+        }
+        targetPos = Vector(targetPos.x, targetPos.y, targetPos.z)
+
+        if duration > 0 then
+            -- Use lerp for smooth animation
+            U.setPositionSlow(flare, targetPos, duration, nil, false)
+        else
+            -- Instant (no lerping)
+            flare.setPosition(targetPos)
+        end
+        return true
+    end
+
+    -- Helper: Convert player color to lighting module light name
+    -- Maps "Brown" -> "playerLightBrown", "Orange" -> "playerLightOrange", etc.
+    local function getPlayerLightName(color)
+        -- Capitalize first letter, lowercase rest
+        local first = string.upper(string.sub(color, 1, 1))
+        local rest = string.lower(string.sub(color, 2))
+        return "playerLight" .. first .. rest
+    end
+
+    -- Helper: Set player light mode using lighting module
+    -- Uses L.SetLightMode() which handles all properties (position, rotation, range, angle, intensity, enabled)
+    local function setPlayerLightMode(color, mode, duration)
+        duration = duration or 0.0  -- Default to instant
+        local lightName = getPlayerLightName(color)
+
+        if not L or not L.SetLightMode then
+            print("⚠️  Lighting module (L) or SetLightMode not available")
+            return false
+        end
+
+        if not L.LIGHTMODES[lightName] then
+            print("⚠️  Light mode not found for: " .. lightName)
+            return false
+        end
+
+        -- Use lighting module to set the mode
+        local success, result = pcall(function()
+            return L.SetLightMode(lightName, mode, color, duration)
+        end)
+
+        if not success then
+            print("⚠️  Error setting player light mode: " .. tostring(result))
+            return false
+        end
+
+        return true
+    end
+
+    -- Test sequence using U.RunSequence
+    local sequenceFunctions = {}
+
+    -- Step 1: Initial broadcast
+    table.insert(sequenceFunctions, function()
+        broadcast("🔦 Starting Lighting & Signal Fire Test", {1, 1, 0.5})
+        return 2.0
+    end)
+
+    -- Step 2: INITIALIZATION - Use the extracted initialization function
+    table.insert(sequenceFunctions, function()
+        broadcast("⚙️  Initializing: Setting all signal fires, RING_FLARE, player lights to OFF, and ambient to DARK", {0.8, 0.8, 1})
+
+        -- Call the extracted initialization function
+        DEBUG.initLightingAndSignals()
+
+        printTestResult("Initialization", true, "All objects set to OFF state, ambient set to DARK")
+        passed = passed + 1
+
+        return 1.0  -- Brief pause after initialization
+    end)
+
+    -- Step 3: Wait after initialization
+    table.insert(sequenceFunctions, waitStep("Initialization complete, waiting 3 seconds...", 3.0))
+
+    -- Step 4: Test signal fire ON (Brown player)
+    table.insert(sequenceFunctions, function()
+        broadcast("🔥 Testing Signal Fire ON (Brown player)", {1, 0.5, 0})
+        local success = setSignalFireState("Brown", "on", 0.5)  -- 0.5 seconds for faster motion
+        if success then
+            printTestResult("Signal Fire ON (Brown)", true, "Fire moved to y=2.5")
+            passed = passed + 1
+        else
+            printTestResult("Signal Fire ON (Brown)", false, "Failed to move fire")
+            failed = failed + 1
+        end
+        return 4.0  -- Wait for animation
+    end)
+
+    -- Step 5: Wait after signal fire ON
+    table.insert(sequenceFunctions, waitStep("Signal Fire finished raising, waiting 3 seconds...", 3.0))
+
+    -- Step 6: Test signal fire OFF (Brown player)
+    table.insert(sequenceFunctions, function()
+        broadcast("💤 Testing Signal Fire OFF (Brown player)", {0.5, 0.5, 0.5})
+        local success = setSignalFireState("Brown", "off", 0.5)  -- 0.5 seconds for faster motion
+        if success then
+            printTestResult("Signal Fire OFF (Brown)", true, "Fire moved to y=-25")
+            passed = passed + 1
+        else
+            printTestResult("Signal Fire OFF (Brown)", false, "Failed to move fire")
+            failed = failed + 1
+        end
+        return 4.0  -- Wait for animation
+    end)
+
+    -- Step 7: Wait after signal fire OFF
+    table.insert(sequenceFunctions, waitStep("Signal Fire finished lowering, waiting 3 seconds...", 3.0))
+
+    -- Step 8: Test multiple signal fires ON (all player colors)
+    table.insert(sequenceFunctions, function()
+        broadcast("🔥 Testing All Signal Fires ON", {1, 0.5, 0})
+        local allSuccess = true
+        for _, color in ipairs(C.PlayerColors) do
+            local success = setSignalFireState(color, "on", 0.5)  -- 0.5 seconds for faster motion
+            if not success then
+                allSuccess = false
+            end
+        end
+        if allSuccess then
+            printTestResult("All Signal Fires ON", true, "All " .. #C.PlayerColors .. " fires activated")
+            passed = passed + 1
+        else
+            printTestResult("All Signal Fires ON", false, "Some fires failed")
+            failed = failed + 1
+        end
+        return 5.0  -- Wait for animations
+    end)
+
+    -- Step 9: Wait after all signal fires ON
+    table.insert(sequenceFunctions, waitStep("All Signal Fires finished raising, waiting 3 seconds...", 3.0))
+
+    -- Step 10: Lerp each player light from OFF to STANDARD (one after another)
+    table.insert(sequenceFunctions, function()
+        broadcast("💡 Testing Player Lights: OFF → STANDARD (sequential)", {1, 1, 0.5})
+        local allSuccess = true
+        local lerpDuration = 2.0
+
+        -- Create sequence for each player light
+        local lightSequence = {}
+        for _, color in ipairs(C.PlayerColors) do
+            table.insert(lightSequence, function()
+                broadcast("  → " .. color .. " light transitioning...", {0.8, 0.8, 1})
+                local success = setPlayerLightMode(color, "STANDARD", lerpDuration)
+                if not success then
+                    allSuccess = false
+                end
+                return lerpDuration + 0.5  -- Wait for animation + brief pause
+            end)
+        end
+
+        -- Run the sequence of light transitions
+        U.RunSequence(lightSequence)
+
+        if allSuccess then
+            printTestResult("Player Lights OFF→STANDARD", true, "All " .. #C.PlayerColors .. " lights transitioned")
+            passed = passed + 1
+        else
+            printTestResult("Player Lights OFF→STANDARD", false, "Some lights failed")
+            failed = failed + 1
+        end
+
+        -- Return total time for all lights (approximate)
+        return (lerpDuration + 0.5) * #C.PlayerColors
+    end)
+
+    -- Step 11: Wait after player lights transition
+    table.insert(sequenceFunctions, waitStep("All Player Lights finished transitioning, waiting 3 seconds...", 3.0))
+
+    -- Step 12: Instantly switch RING_FLARE to ON
+    table.insert(sequenceFunctions, function()
+        broadcast("✨ Testing RING_FLARE: Switching to ON (instant)", {1, 1, 0})
+        local success = setRingFlareState("on", 0.0)  -- 0 = instant
+        if success then
+            printTestResult("RING_FLARE ON", true, "RING_FLARE moved to y=-0.08")
+            passed = passed + 1
+        else
+            printTestResult("RING_FLARE ON", false, "Failed to move RING_FLARE")
+            failed = failed + 1
+        end
+        return 2.0  -- Brief pause to observe
+    end)
+
+    -- Step 13: Wait after RING_FLARE ON
+    table.insert(sequenceFunctions, waitStep("RING_FLARE switched ON, waiting 3 seconds...", 3.0))
+
+    -- Step 14: Instantly switch RING_FLARE to OFF
+    table.insert(sequenceFunctions, function()
+        broadcast("💤 Testing RING_FLARE: Switching to OFF (instant)", {0.5, 0.5, 0.5})
+        local success = setRingFlareState("off", 0.0)  -- 0 = instant
+        if success then
+            printTestResult("RING_FLARE OFF", true, "RING_FLARE moved to y=-60")
+            passed = passed + 1
+        else
+            printTestResult("RING_FLARE OFF", false, "Failed to move RING_FLARE")
+            failed = failed + 1
+        end
+        return 2.0  -- Brief pause to observe
+    end)
+
+    -- Step 15: Wait after RING_FLARE OFF
+    table.insert(sequenceFunctions, waitStep("RING_FLARE switched OFF, waiting 3 seconds...", 3.0))
+
+    -- Step 16: Simultaneously lerp all player lights from STANDARD to OFF
+    table.insert(sequenceFunctions, function()
+        broadcast("💤 Testing Player Lights: STANDARD → OFF (simultaneous)", {0.5, 0.5, 0.5})
+        local allSuccess = true
+        local lerpDuration = 2.0
+
+        -- Start all transitions simultaneously
+        for _, color in ipairs(C.PlayerColors) do
+            local success = setPlayerLightMode(color, "OFF", lerpDuration)
+            if not success then
+                allSuccess = false
+            end
+        end
+
+        if allSuccess then
+            printTestResult("Player Lights STANDARD→OFF", true, "All " .. #C.PlayerColors .. " lights transitioned simultaneously")
+            passed = passed + 1
+        else
+            printTestResult("Player Lights STANDARD→OFF", false, "Some lights failed")
+            failed = failed + 1
+        end
+
+        return lerpDuration + 1.0  -- Wait for animation to complete
+    end)
+
+    -- Step 17: Wait after simultaneous player lights OFF
+    table.insert(sequenceFunctions, waitStep("All Player Lights finished transitioning to OFF, waiting 3 seconds...", 3.0))
+
+    -- Step 18: Turn off all signal fires
+    table.insert(sequenceFunctions, function()
+        broadcast("💤 Turning Off All Signal Fires", {0.5, 0.5, 0.5})
+        local allSuccess = true
+        for _, color in ipairs(C.PlayerColors) do
+            local success = setSignalFireState(color, "off", 0.5)  -- 0.5 seconds for faster motion
+            if not success then
+                allSuccess = false
+            end
+        end
+        if allSuccess then
+            printTestResult("All Signal Fires OFF", true, "All fires deactivated")
+            passed = passed + 1
+        else
+            printTestResult("All Signal Fires OFF", false, "Some fires failed")
+            failed = failed + 1
+        end
+        return 4.0  -- Wait for animations
+    end)
+
+    -- Step 19: Final summary
+    table.insert(sequenceFunctions, function()
+        broadcast("✅ Lighting & Signal Fire Test Complete!", {0, 1, 0})
+        print("\n" .. string.rep("-", 60))
+        print("Lighting & Signal Fire Tests: " .. passed .. " passed, " .. failed .. " failed")
+        print(string.rep("-", 60))
+
+        local summary = string.format("Lighting & Signal Fire Tests: %d passed, %d failed", passed, failed)
+        DEBUG.logToFile("INFO", summary, "debug_log")
+        DEBUG.logTestToFile("Lighting & Signal Fire Sequencing", failed == 0, summary, "test_results")
+        return 0  -- No wait needed
+    end)
+
+    -- Execute the sequence
+    print("Starting sequence test with " .. #sequenceFunctions .. " steps...")
+    print("This will take approximately 2-3 minutes to complete.")
+    print("Watch for broadcast messages and visual changes.\n")
+
+    -- Use U.RunSequence to execute all steps
+    U.RunSequence(sequenceFunctions)
+end
+
+--[[
     Integration Tests
 ]]
 
@@ -2541,7 +3386,7 @@ function DEBUG.testIntegration()
         return
     end
     S.setPlayerVal(testColor, "hunger", 3)
-    S.setStateVal(C.Phases.PLAY, "currentPhase")
+    S.setStateVal(C.Phases.SCENE, "currentPhase")
     print("   ✓ State set (using player: " .. testColor .. ", ID: " .. playerID .. ")")
 
     -- Step 2: Load scene
@@ -2754,9 +3599,8 @@ function DEBUG.logToFile(level, message, filename)
     local timestamp = getTimestamp()
     local logEntry = string.format("[%s] [%s] %s\n", timestamp, level, message)
 
-    -- Append to existing file (we'll read existing content first if possible)
-    -- For now, we'll create a new entry each time - the extension handles file writing
-    writeToFile(filename, logEntry, "none")
+    -- Append to existing cached content
+    writeToFile(filename, logEntry, "none", true)
 end
 
 --- Logs current game state to a file as JSON
@@ -2768,7 +3612,8 @@ function DEBUG.logStateToFile(filename)
     local timestamp = getTimestamp()
     local content = string.format("Game State Dump - %s\n%s\n", timestamp, stateJson)
 
-    writeToFile(filename, content, "auto")
+    -- State dumps are overwritten (not appended) - each dump is a complete snapshot
+    writeToFile(filename, content, "auto", false)
     print("DEBUG: Game state logged to " .. filename .. "." .. LOG_EXTENSION)
 end
 
@@ -2790,7 +3635,8 @@ function DEBUG.logSceneToFile(filename)
     end
     content = content .. "\n"
 
-    writeToFile(filename, content, "auto")
+    -- Scene dumps are overwritten (not appended) - each dump is a complete snapshot
+    writeToFile(filename, content, "auto", false)
     print("DEBUG: Scene info logged to " .. filename .. "." .. LOG_EXTENSION)
 end
 
@@ -2809,7 +3655,8 @@ function DEBUG.logZonesToFile(filename)
     end
     content = content .. "\n"
 
-    writeToFile(filename, content, "auto")
+    -- Zone dumps are overwritten (not appended) - each dump is a complete snapshot
+    writeToFile(filename, content, "auto", false)
     print("DEBUG: Zone info logged to " .. filename .. "." .. LOG_EXTENSION)
 end
 
@@ -2829,7 +3676,8 @@ function DEBUG.logTestToFile(testName, passed, details, filename)
     end
     content = content .. "\n"
 
-    writeToFile(filename, content, "none")
+    -- Append to existing cached content
+    writeToFile(filename, content, "none", true)
 end
 
 --- Logs all debug information to separate files
@@ -2845,16 +3693,20 @@ end
 
 --- Clears all log files (writes empty/header content to reset them)
 -- Called automatically on game load to start fresh logs
+-- Also clears the in-memory cache
 function DEBUG.clearAllLogs()
     local timestamp = getTimestamp()
     local sessionHeader = string.format("=== DEBUG LOG SESSION STARTED - %s ===\n\n", timestamp)
 
-    -- Clear each log file by writing session header
-    writeToFile("debug_log", sessionHeader, "none")
-    writeToFile("game_state", sessionHeader, "none")
-    writeToFile("scene_info", sessionHeader, "none")
-    writeToFile("zone_info", sessionHeader, "none")
-    writeToFile("test_results", sessionHeader, "none")
+    -- Clear the cache
+    logCache = {}
+
+    -- Clear each log file by writing session header (overwrite mode)
+    writeToFile("debug_log", sessionHeader, "none", false)
+    writeToFile("game_state", sessionHeader, "none", false)
+    writeToFile("scene_info", sessionHeader, "none", false)
+    writeToFile("zone_info", sessionHeader, "none", false)
+    writeToFile("test_results", sessionHeader, "none", false)
 
     print("DEBUG: All log files cleared (new session started)")
 end
@@ -2870,7 +3722,8 @@ function DEBUG.help()
     print(string.rep("=", 70))
     print("\nUse these commands in the TTS console with: lua <command>()")
     print("\nTESTING FUNCTIONS:")
-    print("  testState()              - Test state get/set operations")
+    print("  testConstants()          - Test constants module (TOR-3)")
+    print("  testState()              - Test state get/set operations (TOR-5)")
     print("  testStatePersistence()   - Test state save/load")
     print("  testScenes()             - Test scene loading and transitions")
     print("  testAllScenes()          - Test all scene presets")
@@ -2878,6 +3731,7 @@ function DEBUG.help()
     print("  testMain()               - Test main module functions")
     print("  testUI()                 - Test UI display updates")
     print("  testUtilities()          - Test utility functions")
+    print("  testLightingAndSignals() - Test lighting & signal fires with sequencing")
     print("  testIntegration()        - Full integration test")
     print("\nINSPECTION FUNCTIONS:")
     print("  showState()              - Display current game state (JSON)")
@@ -2908,6 +3762,7 @@ end
 ]]
 
 -- Expose all test functions
+testConstants = DEBUG.testConstants
 testState = DEBUG.testState
 testStatePersistence = DEBUG.testStatePersistence
 testScenes = DEBUG.testScenes
@@ -2916,6 +3771,7 @@ testZones = DEBUG.testZones
 testMain = DEBUG.testMain
 testUI = DEBUG.testUI
 testUtilities = DEBUG.testUtilities
+testLightingAndSignals = DEBUG.testLightingAndSignals
 testIntegration = DEBUG.testIntegration
 
 -- Expose inspection functions
@@ -2939,10 +3795,668 @@ logAllToFiles = DEBUG.logAllToFiles
 -- Expose help
 debugHelp = DEBUG.help
 
+-- Expose initialization function
+initLightingAndSignals = DEBUG.initLightingAndSignals
+
 -- Auto-show help on load (optional - comment out if not desired)
 -- DEBUG.help()
 
 return DEBUG
+
+end)
+__bundle_register("core.lighting", function(require, _LOADED, __bundle_register, __bundle_modules)
+--[[
+    Lighting Control Module (core/lighting.ttslua)
+
+    Handles dynamic lighting control for TTS light objects with smooth transitions.
+    Extracted and adapted from Kings Dilemma lighting module patterns.
+
+    This module provides:
+    - Light mode system (predefined lighting configurations)
+    - Smooth transitions using coroutine-based interpolation
+    - State persistence (saves current light modes)
+    - Light object lookup and component access
+    - Batch operations (apply modes to multiple lights)
+
+    Light modes are stored in L.LIGHTMODES table and can be defined per-light.
+    Each mode specifies: enabled, color, range, angle, intensity, rotation, position.
+]]
+
+local L = {}
+local U = require("lib.util")
+local S = require("core.state")
+local C = require("lib.constants")
+
+-- ============================================================================
+-- CONFIGURATION
+-- ============================================================================
+
+-- Default transition time for light mode changes (in seconds)
+local DefaultTransitionTime = 0.5
+
+-- ============================================================================
+-- LIGHT MODE DEFINITIONS
+-- ============================================================================
+
+--- Light Mode Definitions Table
+--
+-- Each light can have multiple modes (e.g., "OFF", "STANDARD", "ambient", "bright", "tension").
+-- Modes can be:
+--   - Tables: Static mode data {enabled=true, color=Color.White, ...}
+--   - Functions: Dynamic modes that calculate values at runtime: function() return {...} end
+--   - Strings: Default mode key (e.g., default = "ambient")
+--
+-- Mode properties:
+--   - enabled (boolean): Whether light is on/off
+--   - color (Color): Light color (Color object or table {r,g,b})
+--   - range (number): Light range/radius
+--   - angle (number): Spotlight angle (degrees)
+--   - intensity (number): Light intensity/brightness
+--   - rotation (Vector): Light rotation {x,y,z}
+--   - position (Vector): Light position {x,y,z}
+--
+-- Special properties (at light definition level, not mode level):
+--   - default (string): Default mode to use when mode is "default"
+--   - isPlayerLight (boolean): If true, supports per-player modes
+--   - isSpawned (boolean): If true, waits for light to spawn before applying
+--   - loadRotation (Vector): Initial rotation when light loads
+--   - guid (string): If provided, uses GUID lookup instead of tag lookup (for lights without tags)
+--
+-- @usage L.LIGHTMODES.playerLightBrown = {
+--     guid = "f251e0",  -- Use GUID lookup instead of tags
+--     isPlayerLight = true,
+--     default = "OFF",
+--     OFF = {enabled=false, rotation=Vector(0,-72,0), position=Vector(-36.12,0,-110), ...},
+--     STANDARD = {enabled=true, rotation=Vector(0,-72,60), position=Vector(-29.75,22.6,-90), ...}
+-- }
+L.LIGHTMODES = {
+    -- Player lights (per-player spotlights)
+    -- These lights are found by GUID, not by tag
+    -- Each light has OFF and STANDARD modes
+    playerLightBrown = {
+        guid = C.GUIDS.PLAYER_LIGHT_BROWN,
+        isPlayerLight = true,
+        default = "OFF",
+        OFF = {
+            enabled = false,
+            rotation = Vector(0, -72, 0),
+            position = Vector(-36.12, 0, -110),
+            range = 40,
+            angle = 0,
+            intensity = 0
+        },
+        STANDARD = {
+            enabled = true,
+            rotation = Vector(0, -72, 60),
+            position = Vector(-29.75, 22.6, -90),
+            range = 40,
+            angle = 90,
+            intensity = 10
+        }
+    },
+    playerLightOrange = {
+        guid = C.GUIDS.PLAYER_LIGHT_ORANGE,
+        isPlayerLight = true,
+        default = "OFF",
+        OFF = {
+            enabled = false,
+            rotation = Vector(0.00, -36.00, 0.00),
+            position = Vector(-80.70, 0.00, -61.95),
+            range = 40,
+            angle = 0,
+            intensity = 0
+        },
+        STANDARD = {
+            enabled = true,
+            rotation = Vector(0.00, -36.00, 59.46),
+            position = Vector(-71.14, 22.60, -55.00),
+            range = 40,
+            angle = 90,
+            intensity = 10
+        }
+    },
+    playerLightRed = {
+        guid = C.GUIDS.PLAYER_LIGHT_RED,
+        isPlayerLight = true,
+        default = "OFF",
+        OFF = {
+            enabled = false,
+            rotation = Vector(0.00, 0.00, 0.00),
+            position = Vector(-106.17, 0.00, 0.00),
+            range = 40,
+            angle = 0,
+            intensity = 0
+        },
+        STANDARD = {
+            enabled = true,
+            rotation = Vector(0.00, 0.00, 59.46),
+            position = Vector(-86.17, 22.60, 0.00),
+            range = 40,
+            angle = 90,
+            intensity = 10
+        }
+    },
+    playerLightPink = {
+        guid = C.GUIDS.PLAYER_LIGHT_PINK,
+        isPlayerLight = true,
+        default = "OFF",
+        OFF = {
+            enabled = false,
+            rotation = Vector(0.00, 36.00, 0.00),
+            position = Vector(-80.70, 0.00, 61.95),
+            range = 40,
+            angle = 0,
+            intensity = 0
+        },
+        STANDARD = {
+            enabled = true,
+            rotation = Vector(0.00, 36.00, 59.46),
+            position = Vector(-71.14, 22.60, 55.00),
+            range = 40,
+            angle = 90,
+            intensity = 10
+        }
+    },
+    playerLightPurple = {
+        guid = C.GUIDS.PLAYER_LIGHT_PURPLE,
+        isPlayerLight = true,
+        default = "OFF",
+        OFF = {
+            enabled = false,
+            rotation = Vector(0.00, 72.00, 0.00),
+            position = Vector(-36.12, 0.00, 110),
+            range = 40,
+            angle = 0,
+            intensity = 0
+        },
+        STANDARD = {
+            enabled = true,
+            rotation = Vector(0.00, 72.00, 60),
+            position = Vector(-29.75, 22.60, 90),
+            range = 40,
+            angle = 90,
+            intensity = 10
+        }
+    }
+}
+
+-- ============================================================================
+-- INTERNAL HELPER FUNCTIONS
+-- ============================================================================
+
+--- Gets the Light component from a TTS light object
+-- TTS lights have a nested structure: object -> child -> grandchild -> Light component
+-- This function navigates that structure to access the Light component.
+-- @param light Object The light object
+-- @param isSilent boolean If true, returns nil on error instead of throwing
+-- @return Component|nil The Light component, or nil if not found/error
+local function getLightComponent(light, isSilent)
+    local lComp
+    local success, err = pcall(function()
+        lComp = light.getChildren()[1].getChildren()[2].getComponents()[2]
+    end)
+
+    if success and lComp then
+        return lComp
+    elseif isSilent then
+        return nil
+    end
+
+    -- Detailed error checking if silent mode off
+    U.Val("getLightComponent", light, U.isGameObject(light), "Invalid Light Object")
+    local children = light.getChildren()
+    U.Val("getLightComponent", {light = light, children = children}, #children > 0, "Light has no Children")
+    local grandchildren = children[1].getChildren()
+    U.Val("getLightComponent", {light = light, grandchildren = grandchildren}, #grandchildren > 1,
+        "Light has too few Grandchildren")
+    local components = grandchildren[2].getComponents()
+    U.Val("getLightComponent", {light = light, components = components}, #components > 1,
+        "Light has too few components")
+    U.Val("getLightComponent", {light = light, comp = components[2]}, components[2].name == "Light",
+        "Can't find 'Light' component")
+    return components[2]
+end
+
+--- Finds a light object by name/tag or GUID
+-- Searches for lights with matching tags, or uses GUID if specified in light mode definition.
+-- Supports player-specific lights.
+-- @param lightName string The light name/tag to search for (must exist in L.LIGHTMODES)
+-- @param playerRef Player|string|nil Optional: Player object or color for player-specific lights
+-- @param isSilent boolean If true, returns nil on error instead of throwing
+-- @return Object|nil The light object, or nil if not found
+local function getLight(lightName, playerRef, isSilent)
+    local lData = L.LIGHTMODES[lightName]
+    if not lData then
+        if isSilent then
+            return nil
+        else
+            U.Val("getLight", lightName, false, "Light mode not found: " .. tostring(lightName))
+        end
+    end
+
+    -- If light mode has a GUID, use GUID lookup instead of tags
+    if lData.guid then
+        local light = getObjectFromGUID(lData.guid)
+        if light == nil then
+            if isSilent then
+                return nil
+            else
+                U.Val("getLight", {lightName, guid = lData.guid}, false, "Light object not found for GUID: " .. tostring(lData.guid))
+            end
+        end
+        return light
+    end
+
+    -- Otherwise, use tag-based lookup (original behavior)
+    local tags = {lightName}
+
+    if playerRef ~= nil then
+        local player = U.isPlayer(playerRef) and playerRef or Player[playerRef]
+        if player and player.color then
+            table.insert(tags, player.color)
+        end
+    end
+
+    local lights = getObjectsWithAllTags(tags)
+
+    U.Val("getLight", {tags = tags, lights = lights}, #lights > 0, "No lights found", {isSilent = isSilent})
+    U.Val("getLight", {tags = tags, lights = lights}, #lights < 2, "Multiple lights found",
+        {isSilent = false, isThrowing = isSilent ~= true})
+
+    return lights[1]
+end
+
+--- Gets all lights matching a tag (or all lights if no tag)
+-- @param tag string|nil Optional tag to filter by
+-- @return table Array of light objects
+local function getAllLights(tag)
+    local allObjects = getObjects()
+    return U.filter(allObjects, function(obj)
+        if obj.getChildren == nil then return false end
+        local children = obj.getChildren()
+        if #children == 0 then return false end
+        if not string.match(children[1].name or "", "^spotlight") then return false end
+        if getLightComponent(obj, true) == nil then return false end
+        if tag and not obj.hasTag(tag) then return false end
+        return true
+    end)
+end
+
+--- Sets light component property directly (low-level)
+local function setEnabled(light, enabled)
+    local comp = getLightComponent(light, true)
+    if comp then comp.set("enabled", enabled) end
+end
+
+local function setRange(light, range)
+    local comp = getLightComponent(light, true)
+    if comp then comp.set("range", range) end
+end
+
+local function setIntensity(light, intensity)
+    local comp = getLightComponent(light, true)
+    if comp then comp.set("intensity", intensity) end
+end
+
+local function setColor(light, color)
+    local comp = getLightComponent(light, true)
+    if comp then comp.set("color", Color(color)) end
+end
+
+local function setAngle(light, angle)
+    local comp = getLightComponent(light, true)
+    if comp then comp.set("spotAngle", angle) end
+end
+
+--- Gets light component property directly (low-level)
+local function getEnabled(light)
+    local comp = getLightComponent(light, true)
+    return comp and comp.get("enabled") or false
+end
+
+local function getRange(light)
+    local comp = getLightComponent(light, true)
+    return comp and comp.get("range") or 0
+end
+
+local function getIntensity(light)
+    local comp = getLightComponent(light, true)
+    return comp and comp.get("intensity") or 0
+end
+
+local function getColor(light)
+    local comp = getLightComponent(light, true)
+    return comp and comp.get("color") or Color.White
+end
+
+local function getAngle(light)
+    local comp = getLightComponent(light, true)
+    return comp and comp.get("spotAngle") or 0
+end
+
+-- ============================================================================
+-- CORE LIGHTING FUNCTIONS
+-- ============================================================================
+
+--- Sets a light to a specific mode with smooth transitions
+--
+-- This is the main function for controlling lights. It:
+--   1. Looks up the light mode definition
+--   2. Finds the light object by tag/name or GUID (if guid property is set)
+--   3. Saves the mode to game state
+--   4. Smoothly transitions all properties using U.Lerp
+--
+-- Supports per-player lights (if isPlayerLight=true in mode definition).
+-- Modes can be static tables or dynamic functions that calculate values.
+--
+-- Light lookup methods:
+--   - Tag-based: Light mode has no 'guid' property, uses getObjectsWithAllTags()
+--   - GUID-based: Light mode has 'guid' property, uses getObjectFromGUID()
+--
+-- @param lightName string The name/tag of the light (must exist in L.LIGHTMODES)
+-- @param mode string The mode name to apply (e.g., "OFF", "STANDARD", "ambient", "bright")
+-- @param player Player|string|nil Optional: Player for player-specific lights
+-- @param transitionTime number Optional: Transition duration in seconds (default: 0.5)
+-- @return function|nil Returns completion function if using coroutines, or nil
+--
+-- @usage L.SetLightMode("playerLightBrown", "STANDARD", "Brown", 0.5) -- Player-specific light by GUID
+-- @usage L.SetLightMode("playerLightBrown", "OFF", nil, 1.0) -- Turn off player light (player optional for GUID-based lights)
+function L.SetLightMode(lightName, mode, player, transitionTime)
+    if transitionTime == nil then
+        transitionTime = DefaultTransitionTime
+    end
+
+    -- Support array of light names (batch operation)
+    if U.Type(lightName) == "table" then
+        return U.map(lightName, function(lName)
+            return L.SetLightMode(lName, mode, player, transitionTime)
+        end)
+    end
+
+    -- Validate light mode exists
+    U.Val("SetLightMode", lightName,
+        U.Type(lightName) == "string" and L.LIGHTMODES[lightName] ~= nil,
+        "Mode Data Not Found for light: " .. U.ToString(lightName))
+
+    local lData = L.LIGHTMODES[lightName]
+    local isSpawned = lData.isSpawned or false
+
+    -- Handle player-specific lights
+    -- For GUID-based lights, we don't need player data - the GUID is enough
+    -- The isPlayerLight flag is mainly for state saving purposes
+    if lData.isPlayerLight then
+        -- If using GUID lookup, player is optional (only needed for state saving)
+        if lData.guid then
+            -- GUID-based lookup: player is optional, only used for state saving
+            if player then
+                -- Try to resolve player object if provided (for state saving)
+                local playerObj = nil
+                if U.isPlayer(player) then
+                    playerObj = player
+                elseif type(player) == "string" then
+                    playerObj = Player[player]  -- May be nil if player not seated
+                end
+                player = playerObj  -- Can be nil, that's okay for GUID-based lights
+            end
+        else
+            -- Tag-based lookup: player is required
+            if player == nil then
+                -- Apply to all players if no player specified
+                local players = Player.getPlayers()
+                return U.map(players, function(p)
+                    return L.SetLightMode(lightName, mode, p, transitionTime)
+                end)
+            end
+            -- Validate player for tag-based lookup
+            local playerObj = nil
+            if U.isPlayer(player) then
+                playerObj = player
+            elseif type(player) == "string" then
+                playerObj = Player[player]
+            end
+
+            if not playerObj or not U.isPlayer(playerObj) then
+                error("SetLightMode: Invalid player reference for tag-based light '" .. tostring(lightName) .. "'. Player: " .. tostring(player) .. " (Player may not be seated)")
+            end
+            player = playerObj
+        end
+    else
+        -- Non-player lights shouldn't have player parameter
+        U.Val("SetLightMode", {lightName, player}, player == nil,
+            "Player submitted to non-player light", {isThrowing = false})
+        player = nil
+    end
+
+    -- Find the light object
+    local light = getLight(lightName, player, true)
+    if light == nil and isSpawned then
+        -- Wait for light to spawn if it's a spawned light
+        return U.waitUntil(function()
+            return L.SetLightMode(lightName, mode, player, transitionTime)
+        end, function()
+            return getLight(lightName, player, true) ~= nil
+        end, false)
+    end
+
+    U.Val("SetLightMode", {lightName, player},
+        U.isGameObject(light), "No light found: " .. U.ToString(lightName))
+
+    -- Save mode to state
+    -- For player lights, save per-player if player object is available
+    -- For GUID-based lights, player may be nil (that's okay)
+    if player and U.isPlayer(player) and player.color then
+        local sData = S.getStateVal("lights", lightName) or {}
+        sData[player.color] = mode
+        S.setStateVal(sData, "lights", lightName)
+    else
+        -- Save mode without player-specific data (works for both non-player lights and GUID-based player lights without player object)
+        S.setStateVal(mode, "lights", lightName)
+    end
+
+    -- Resolve mode (could be function, string default, or table)
+    local modeData = mode
+    if U.Type(modeData) == "function" then
+        modeData = modeData(player)
+    elseif U.Type(modeData) == "string" and modeData == "default" then
+        modeData = lData.default or "off"
+    end
+
+    -- Get mode definition
+    U.Val("SetLightMode", modeData,
+        U.Type(modeData) == "string" and lData[modeData] ~= nil,
+        "No such mode '" .. U.ToString(modeData) .. "' for light '" .. U.ToString(lightName) .. "'")
+
+    local modeDef = lData[modeData]
+    if U.Type(modeDef) == "function" then
+        modeDef = modeDef(player) -- Dynamic mode calculation
+    end
+    if U.Type(modeDef) == "table" then
+        modeDef = U.clone(modeDef) -- Clone to avoid modifying original
+    end
+
+    -- Apply the light mode with smooth transitions
+    local function activateLight()
+        local afterVals = {}
+
+        -- Handle enabled state (special case: animate on/off)
+        if modeDef.enabled ~= nil then
+            if modeDef.enabled == getEnabled(light) then
+                modeDef.enabled = nil -- Skip if already in correct state
+            elseif modeDef.enabled == true then
+                -- Turn on: set intensity to 0 first, then fade in
+                setIntensity(light, 0)
+                setAngle(light, 0)
+                setEnabled(light, true)
+            else
+                -- Turn off: fade out, then disable
+                afterVals.intensity = getIntensity(light)
+                afterVals.angle = getAngle(light)
+                modeDef.intensity = 0
+                modeDef.angle = 0
+            end
+        end
+
+        -- Create lerp functions for each property that needs transitioning
+        return U.RunSequence({
+            function()
+                local lerpFuncs = {}
+
+                if modeDef.range ~= nil then
+                    table.insert(lerpFuncs, U.Lerp(function(range)
+                        setRange(light, range)
+                    end, getRange(light), modeDef.range, transitionTime))
+                end
+
+                if modeDef.intensity ~= nil then
+                    table.insert(lerpFuncs, U.Lerp(function(intensity)
+                        setIntensity(light, intensity)
+                    end, getIntensity(light), modeDef.intensity, transitionTime))
+                end
+
+                if modeDef.angle ~= nil then
+                    table.insert(lerpFuncs, U.Lerp(function(angle)
+                        setAngle(light, angle)
+                    end, getAngle(light), modeDef.angle, transitionTime))
+                end
+
+                if modeDef.color ~= nil then
+                    table.insert(lerpFuncs, U.Lerp(function(color)
+                        setColor(light, color)
+                    end, getColor(light), Color(modeDef.color), transitionTime))
+                end
+
+                if modeDef.rotation ~= nil then
+                    table.insert(lerpFuncs, U.setRotationSlow(light, Vector(modeDef.rotation), transitionTime))
+                end
+
+                if modeDef.position ~= nil then
+                    table.insert(lerpFuncs, U.setPositionSlow(light, Vector(modeDef.position), transitionTime))
+                end
+
+                return lerpFuncs
+            end,
+            function()
+                -- Finalize enabled state if turning off
+                if modeDef.enabled == false then
+                    setEnabled(light, false)
+                    setIntensity(light, afterVals.intensity)
+                    setAngle(light, afterVals.angle)
+                end
+            end
+        })
+    end
+
+    -- Wait for light component if needed
+    if isSpawned and getLightComponent(light, true) == nil then
+        return U.waitUntil(activateLight, function()
+            return getLightComponent(light, true) ~= nil
+        end, false)
+    end
+
+    return activateLight()
+end
+
+--- Loads saved light states from game state
+-- Called during initialization to restore lights to their saved states.
+-- @usage L.InitLights() -- Called in core/main.ttslua onLoad
+function L.InitLights()
+    local savedLights = S.getStateVal("lights") or {}
+
+    U.forEach(savedLights, function(mData, lightName)
+        if U.Type(mData) == "string" then
+            -- Simple mode (single string)
+            L.SetLightMode(lightName, mData, nil, 0.5)
+        elseif U.Type(mData) == "table" then
+            -- Per-player modes (table of color->mode)
+            U.forEach(mData, function(mode, pColor)
+                L.SetLightMode(lightName, mode, pColor, 0.5)
+            end)
+        end
+    end)
+end
+
+--- Resets all lights to their default/off states
+-- Useful for cleanup or game reset.
+-- @usage L.ResetLights() -- Cleanup after game ends
+function L.ResetLights()
+    U.forEach(L.LIGHTMODES, function(modes, name)
+        if modes.loadRotation then
+            local light = getLight(name)
+            if light then
+                local comp = getLightComponent(light)
+                if comp then
+                    comp.set("enabled", false)
+                    light.setRotation(Vector(180, 0, 0))
+                end
+            end
+        end
+    end)
+end
+
+--- Applies a mode to multiple lights at once
+-- Convenience function for batch operations.
+-- @param lightNames string|table Light name(s) to affect (string or array)
+-- @param lightMode string Mode to apply (default: "default")
+-- @param transitionTime number Transition duration (default: 3.0)
+-- @param playerRef Player|string|nil Optional: Player for player-specific lights
+-- @return number The transition time (for chaining)
+-- @usage L.LoadLights({"playerLightBrown", "playerLightOrange"}, "STANDARD", 2.0)
+function L.LoadLights(lightNames, lightMode, transitionTime, playerRef)
+    if U.Type(lightNames) == "string" then
+        lightNames = {lightNames}
+    end
+    if lightMode == nil then
+        lightMode = "default"
+    end
+    if transitionTime == nil then
+        transitionTime = 3.0
+    end
+
+    -- Filter to only lights that exist in LIGHTMODES
+    local validLights = U.filter(L.LIGHTMODES, function(_, name)
+        return U.isIn(name, lightNames)
+    end)
+
+    U.forEach(validLights, function(modes, name)
+        if modes[lightMode] == nil then
+            U.AlertGM("No Such Mode: " .. U.ToString(lightMode) .. " for light '" .. U.ToString(name) .. "'")
+            return
+        end
+
+        if lightMode == "default" and U.Type(modes.default) == "string" then
+            L.SetLightMode(name, modes.default, playerRef, transitionTime)
+        else
+            L.SetLightMode(name, lightMode, playerRef, transitionTime)
+        end
+    end)
+
+    return transitionTime
+end
+
+-- ============================================================================
+-- PUBLIC API EXPORTS
+-- ============================================================================
+
+--- Gets a light object by name/tag
+-- @param lightName string The light name/tag
+-- @param playerRef Player|string|nil Optional: Player for player-specific lights
+-- @return Object|nil The light object
+-- @usage local light = L.GetLight("playerLightBrown")
+L.GetLight = getLight
+
+--- Gets all lights (optionally filtered by tag)
+-- @param tag string|nil Optional tag to filter by
+-- @return table Array of light objects
+-- @usage local allLights = L.GetAllLights()
+L.GetAllLights = getAllLights
+
+-- Low-level property setters (for direct control without modes)
+L.SetIntensity = setIntensity
+L.SetAngle = setAngle
+L.SetColor = setColor
+L.SetRange = setRange
+
+return L
 
 end)
 __bundle_register("lib.constants", function(require, _LOADED, __bundle_register, __bundle_modules)
@@ -2975,8 +4489,8 @@ C.PlayerData = {
     [C.PlayerIDs.Pixel] = {
       color = "Brown",
       playerName = "Pixel",
-      charName = "Evander Ashwood",
-      clan = "Lasombra",
+      charName = "Lord Lucien",
+      clan = "Toreador",
       generation = 9,
       blood_potency = 3,
       health = {
@@ -3331,9 +4845,10 @@ C.PlayerData = {
 }
 
 
--- Player Colors (standard TTS colors)
+-- Player Colors (VTM5E-specific)
+-- Storyteller is always Black. Player colors are: Brown, Orange, Red, Pink, Purple (in that order)
 C.PlayerColors = {
-    "Black", "Brown", "Orange", "Red", "Yellow", "Green"
+    "Brown", "Orange", "Red", "Pink", "Purple"
 }
 
 -- VTM5E Clans (from Heritage module)
@@ -3348,14 +4863,14 @@ C.Disciplines = {
 }
 
 -- Game Phases (VTM5E-specific)
+-- Phases represent different stages of a VTM5E session
 C.Phases = {
-    INIT = "Initialization",
-    SETUP = "GameSetup",
-    SCENE = "Scene",
-    DOWNTIME = "Downtime",
-    COMBAT = "Combat",
-    AFTERMATH = "Aftermath",
-    END = "GameEnd"
+    SESSION_START = "SessionStart",  -- Beginning of session, setup, introductions
+    SCENE = "Scene",                  -- Active roleplay scenes
+    DOWNTIME = "Downtime",            -- Between-scenes activities, planning
+    COMBAT = "Combat",                -- Combat encounters
+    MEMORIAM = "Memoriam",            -- End-of-session reflection and XP
+    SESSION_END = "SessionEnd"        -- Session conclusion, cleanup
 }
 
 -- UI Element IDs (common or global UI elements)
@@ -3373,8 +4888,14 @@ C.UI_IDS = {
 C.DICE_SUCCESS_THRESHOLD = 6
 C.DICE_CRITICAL_SUCCESS_VALUE = 10
 
+-- Hunger Constants (VTM5E)
+-- Note: Willpower and Health do not have default values under V5 rules
+-- They are character-specific and stored in C.PlayerData
+C.MAX_HUNGER = 5  -- Maximum hunger value (0-5 scale)
+
 -- Storyteller Color (GM role)
-C.STORYTELLER_COLOR = "Brown"  -- Can be changed to "Black" or another color
+-- Storyteller is always Black in VTM5E
+C.STORYTELLER_COLOR = "Black"
 
 -- Camera Angles (preset views for cinematic control)
 C.CameraAngles = {
@@ -3383,25 +4904,54 @@ C.CameraAngles = {
     -- Add more as needed for specific scenes
 }
 
+-- Object positions based on object state
+-- Only listed values should be changed
+C.ObjectPositions = {
+  SIGNAL_FIRE = {
+    on = {position = {y=2.5}},
+    off = {position = {y=-40}}
+  },
+  RING_FLARE = {
+    on = {position = {y=-0.08}},
+    off = {position = {y=-60}}
+  }
+}
+
 -- Light Presets (scene lighting configurations)
+-- Note: Color is controlled via LUT (Look-Up Table) indices, not a direct color property
+-- Use lut_index and lut_contribution for color grading effects
 C.LightModes = {
     BRIGHT = {
         ambient_intensity = 1.0,
         light_intensity = 1.0,
         ambient_type = 1,
-        color = {r=1, g=1, b=1}
+        lut_contribution = 0,
+        lut_index = 1,
+        reflection_intensity = 0
     },
     DIM = {
         ambient_intensity = 0.2,
         light_intensity = 0.5,
         ambient_type = 1,
-        color = {r=0.5, g=0.5, b=0.7}
+        lut_contribution = 0,
+        lut_index = 1,
+        reflection_intensity = 0
+    },
+    DARK = {
+        ambient_intensity = 0.0,
+        light_intensity = 0.0,
+        ambient_type = 1,
+        lut_contribution = 0,
+        lut_index = 1,
+        reflection_intensity = 0
     },
     TENSION = {
         ambient_intensity = 0.3,
         light_intensity = 0.8,
         ambient_type = 1,
-        color = {r=1, g=0.2, b=0.2}
+        lut_contribution = 0,
+        lut_index = 1,
+        reflection_intensity = 0
     },
     STANDARD = {
         ambient_intensity = 0.5546665,
@@ -3417,1011 +4967,151 @@ C.LightModes = {
 -- Search for "@@@@@@" to find and replace these placeholders
 C.GUIDS = {
     -- Table object (if needed for reference)
-    TABLE = "@@@@@@TABLE@@@@@@",
+    TABLE = "1a0c6d",
+    -- Map object (for the map of the city)
+    MAP = "996f38",
+
+    -- STORYTELLER OBJECTS
+    -- Storyteller Table (raised and behind players so they can't see it)
+    STORYTELLER_TABLE = "c64fe0",
+    -- Difficulty Dial (for setting difficulty of dice rolls
+    DIFFICULTY_DIAL = "fe9e9a",
 
     -- Light objects (for scene lighting)
-    MAIN_LIGHT = "@@@@@@MAIN_LIGHT@@@@@@",
-    SPOTLIGHT_PLAYER = "@@@@@@SPOTLIGHT_PLAYER@@@@@@",
+    MAIN_LIGHT = "7082b8",
+    LARGE_MAP_LIGHT = "16a7b8",
+    PLAYER_LIGHT_BROWN = "f251e0",
+    PLAYER_LIGHT_ORANGE = "d3356d",
+    PLAYER_LIGHT_RED = "0cd76a",
+    PLAYER_LIGHT_PINK = "937fac",
+    PLAYER_LIGHT_PURPLE = "b36dfe",
+
+    -- Ambient Objects (for effects)
+    AMBIENT_FOG = "fb25b1",
+    RING_FLARE = "210fad", -- circular ring of rising light, used to highlight table drops
 
     -- Hand zones (player hand zones)
-    HAND_WHITE = "@@@@@@HAND_WHITE@@@@@@",
-    HAND_BLUE = "@@@@@@HAND_BLUE@@@@@@",
-    HAND_RED = "@@@@@@HAND_RED@@@@@@",
-    HAND_GREEN = "@@@@@@HAND_GREEN@@@@@@",
-    HAND_YELLOW = "@@@@@@HAND_YELLOW@@@@@@",
-    HAND_PINK = "@@@@@@HAND_PINK@@@@@@",
-    HAND_PURPLE = "@@@@@@HAND_PURPLE@@@@@@",
-    HAND_ORANGE = "@@@@@@HAND_ORANGE@@@@@@",
-    HAND_BROWN = "@@@@@@HAND_BROWN@@@@@@",
-    HAND_BLACK = "@@@@@@HAND_BLACK@@@@@@",
-    HAND_GREY = "@@@@@@HAND_GREY@@@@@@",
-    HAND_TEAL = "@@@@@@HAND_TEAL@@@@@@",
+    -- Storyteller (Black) and player colors: Brown, Orange, Red, Pink, Purple
+    HAND_BLACK = "8981a0",  -- Storyteller
+    HAND_BROWN = "14b6cf",
+    HAND_ORANGE = "b9d1d9",
+    HAND_RED = "b13642",
+    HAND_PINK = "926600",
+    HAND_PURPLE = "e32d2c",
+
+    -- Scripting Zones
+    TABLE_DROP_ZONE = "af99b8", -- zone for table drops
+
+    -- Tombstone objects (for character tombstones)
+    TOMBSTONE_BROWN = "14b6cf",
+    TOMBSTONE_ORANGE = "b9d1d9",
+    TOMBSTONE_RED = "b13642",
+    TOMBSTONE_PINK = "926600",
+    TOMBSTONE_PURPLE = "e32d2c",
+
+    -- Signal fires (for players to signal need for Storyteller attention)
+    SIGNAL_FIRE_BROWN = "b0ffa8",
+    SIGNAL_FIRE_ORANGE = "7aa4ed",
+    SIGNAL_FIRE_RED = "cc2959",
+    SIGNAL_FIRE_PINK = "f1b7af",
+    SIGNAL_FIRE_PURPLE = "eac658",
 
     -- Add other object GUIDs as needed (zones, boards, etc.)
     -- Format: OBJECT_NAME = "@@@@@@OBJECT_NAME@@@@@@"
 }
 
--- Helper function to get hand zone GUID by color
+--- Gets the GUID string for a player's hand zone by color
+-- Returns the GUID from C.GUIDS if it exists, or nil if not found.
+-- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
+-- If a GUID is not found, returns nil so callers can handle the error appropriately.
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", "Purple", or "Black" for Storyteller)
+-- @return string|nil GUID string if found, or nil if not found
+-- @usage local handGUID = C.GetHandZoneGUID("Red")
+-- @usage local handObj = getObjectFromGUID(C.GetHandZoneGUID("Red"))
 function C.GetHandZoneGUID(color)
+    if color == nil then
+        return nil
+    end
     local guidKey = "HAND_" .. string.upper(color)
-    return (C.GUIDS[guidKey] or "@@@@@@HAND_") .. color .. "@@@@@@"
+    local guid = C.GUIDS[guidKey]
+
+    -- If GUID is not found, return nil (don't create a placeholder - placeholders should only exist before GUIDs are set)
+    if guid == nil then
+        return nil
+    end
+
+    -- If GUID still contains placeholder markers, it hasn't been replaced yet
+    -- Return it as-is (caller should handle placeholder case if needed)
+    return guid
+end
+
+--- Gets the GUID string for a signal fire by color
+-- Returns the GUID from C.GUIDS if it exists, or nil if not found.
+-- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
+-- If a GUID is not found, returns nil so callers can handle the error appropriately.
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", "Purple", or "Black" for Storyteller)
+-- @return string|nil GUID string if found, or nil if not found
+-- @usage local signalFireGUID = C.GetSignalFireGUID("Red")
+-- @usage local signalFireObj = getObjectFromGUID(C.GetSignalFireGUID("Red"))
+function C.GetSignalFireGUID(color)
+  if color == nil then
+      return nil
+  end
+  local guidKey = "SIGNAL_FIRE_" .. string.upper(color)
+  local guid = C.GUIDS[guidKey]
+
+  -- If GUID is not found, return nil (don't create a placeholder - placeholders should only exist before GUIDs are set)
+  if guid == nil then
+      return nil
+  end
+
+  -- If GUID still contains placeholder markers, it hasn't been replaced yet
+  -- Return it as-is (caller should handle placeholder case if needed)
+  return guid
+end
+
+--- Gets the GUID string for a tombstone by color
+-- Returns the GUID from C.GUIDS if it exists, or nil if not found.
+-- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
+-- If a GUID is not found, returns nil so callers can handle the error appropriately.
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", "Purple", or "Black" for Storyteller)
+-- @return string|nil GUID string if found, or nil if not found
+-- @usage local tombstoneGUID = C.GetTombstoneGUID("Red")
+-- @usage local tombstoneObj = getObjectFromGUID(C.GetTombstoneGUID("Red"))
+function C.GetTombstoneGUID(color)
+  if color == nil then
+      return nil
+  end
+  local guidKey = "TOMBSTONE_" .. string.upper(color)
+  local guid = C.GUIDS[guidKey]
+
+  -- If GUID is not found, return nil (don't create a placeholder - placeholders should only exist before GUIDs are set)
+  if guid == nil then
+      return nil
+  end
+
+  -- If GUID still contains placeholder markers, it hasn't been replaced yet
+  -- Return it as-is (caller should handle placeholder case if needed)
+  return guid
+end
+
+function C.GetPlayerLightGUID(color)
+  if color == nil then
+      return nil
+  end
+  local guidKey = "PLAYER_LIGHT_" .. string.upper(color)
+  local guid = C.GUIDS[guidKey]
+
+  if guid == nil then
+      return nil
+  end
+
+  -- If GUID still contains placeholder markers, it hasn't been replaced yet
+  -- Return it as-is (caller should handle placeholder case if needed)
+  return guid
 end
 
 return C
-
-end)
-__bundle_register("core.scenes", function(require, _LOADED, __bundle_register, __bundle_modules)
---[[
-    Scene Preset System Module (core/scenes.ttslua)
-
-    Manages scene presets for immersive VTM5E gameplay. Each scene preset defines:
-    - Ambient lighting (global table lighting)
-    - Individual light object modes (spotlights, etc.)
-    - Optional background music
-    - Scene-specific atmosphere settings
-
-    Scene transitions can be instant or smooth (with fade/duration).
-
-    Pattern: Combines lighting module patterns with ambient lighting control.
-    Integration: Uses L.SetLightMode for individual lights, Lighting API for ambient.
-]]
-
-local Scenes = {}
-local U = require("lib.util")
-local S = require("core.state")
-local C = require("lib.constants")
-local L = require("core.lighting")
-
--- ============================================================================
--- CONFIGURATION
--- ============================================================================
-
--- Default transition time for scene changes (in seconds)
-local DefaultTransitionTime = 2.0
-
--- ============================================================================
--- SCENE PRESET DEFINITIONS
--- ============================================================================
-
---- Scene Preset Structure
---
--- Each scene preset contains:
---   ambient: Table with ambient lighting settings (see TTS Lighting API)
---     - ambient_intensity (number): 0-4, brightness of ambient light
---     - ambient_type (number): 1 or 2, type of ambient lighting
---     - light_intensity (number): 0-4, brightness of directional light
---     - lut_contribution (number): 0-1, color grading lookup table contribution
---     - lut_index (number): 1-114, which LUT preset to use
---     - reflection_intensity (number): 0-1, surface reflection intensity
---   lights: Table of {name, mode} pairs for individual light objects
---     - name (string): Light name/tag matching L.LIGHTMODES key
---     - mode (string): Light mode name (e.g., "ambient", "bright", "dim")
---   musicTrack (number, optional): Music track index (1-10, if tracks are configured)
---   description (string, optional): Human-readable scene description
-
-Scenes.SCENES = {
-    -- Default/neutral scene
-    default = {
-        ambient = {
-            ambient_intensity = 0.5,
-            ambient_type = 1,
-            light_intensity = 0.5,
-            lut_contribution = 0.0,
-            lut_index = 1,
-            reflection_intensity = 0.0
-        },
-        lights = {},
-        description = "Default neutral lighting"
-    },
-
-    -- Elysium: Formal gathering place, elegant and refined
-    elysium = {
-        ambient = {
-            ambient_intensity = 1.2,
-            ambient_type = 1,
-            light_intensity = 1.0,
-            lut_contribution = 0.3,
-            lut_index = 108, -- Warm/amber tone
-            reflection_intensity = 0.3
-        },
-        lights = {
-            {name = "mainLight", mode = "bright"},
-            -- TODO: Add chandelier light if available: {name = "chandelier", mode = "elegant"}
-        },
-        description = "Elysium - Formal gathering place, elegant and refined"
-    },
-
-    -- Alley: Dark, gritty urban setting
-    alley = {
-        ambient = {
-            ambient_intensity = 0.15,
-            ambient_type = 2,
-            light_intensity = 0.2,
-            lut_contribution = 0.8,
-            lut_index = 36, -- Dark/blue tone
-            reflection_intensity = 0.0
-        },
-        lights = {
-            {name = "mainLight", mode = "dim"},
-            -- TODO: Add streetlamp light if available: {name = "streetlamp", mode = "dim"}
-        },
-        description = "Alley - Dark, gritty urban setting"
-    },
-
-    -- Haven: Personal sanctuary, comfortable and safe
-    haven = {
-        ambient = {
-            ambient_intensity = 0.8,
-            ambient_type = 1,
-            light_intensity = 0.7,
-            lut_contribution = 0.2,
-            lut_index = 105, -- Warm, cozy tone
-            reflection_intensity = 0.1
-        },
-        lights = {
-            {name = "mainLight", mode = "ambient"},
-        },
-        description = "Haven - Personal sanctuary, comfortable and safe"
-    },
-
-    -- Tension: Dramatic, suspenseful atmosphere
-    tension = {
-        ambient = {
-            ambient_intensity = 0.3,
-            ambient_type = 1,
-            light_intensity = 0.4,
-            lut_contribution = 0.6,
-            lut_index = 77, -- Dramatic red/dark tone
-            reflection_intensity = 0.0
-        },
-        lights = {
-            {name = "mainLight", mode = "tension"},
-            {name = "spotlightGM", mode = "on"},
-        },
-        description = "Tension - Dramatic, suspenseful atmosphere"
-    },
-
-    -- Combat: Intense, dynamic lighting
-    combat = {
-        ambient = {
-            ambient_intensity = 0.4,
-            ambient_type = 1,
-            light_intensity = 0.6,
-            lut_contribution = 0.5,
-            lut_index = 79, -- High contrast, intense tone
-            reflection_intensity = 0.1
-        },
-        lights = {
-            {name = "mainLight", mode = "tension"},
-        },
-        description = "Combat - Intense, dynamic lighting"
-    },
-
-    -- Suspicion: Paranoia-inducing, shadowy
-    suspicion = {
-        ambient = {
-            ambient_intensity = 0.0,
-            ambient_type = 1,
-            light_intensity = 0.0,
-            lut_contribution = 1.0,
-            lut_index = 92, -- Very dark, shadowy tone
-            reflection_intensity = 0.0
-        },
-        lights = {
-            {name = "mainLight", mode = "dim"},
-        },
-        description = "Suspicion - Paranoia-inducing, shadowy atmosphere"
-    },
-
-    -- Social: Normal social interaction, balanced
-    social = {
-        ambient = {
-            ambient_intensity = 0.7,
-            ambient_type = 1,
-            light_intensity = 0.6,
-            lut_contribution = 0.1,
-            lut_index = 1,
-            reflection_intensity = 0.2
-        },
-        lights = {
-            {name = "mainLight", mode = "ambient"},
-        },
-        description = "Social - Normal social interaction, balanced lighting"
-    }
-}
-
--- ============================================================================
--- HELPER FUNCTIONS
--- ============================================================================
-
---- Applies ambient lighting settings to TTS global lighting
--- Uses U.changeLighting utility function to set ambient lighting properties
--- @param ambientSettings table Table containing ambient lighting properties
--- @param transitionTime number Optional. Duration for smooth transition (0 = instant)
-local function applyAmbientLighting(ambientSettings, transitionTime)
-    if ambientSettings == nil then return end
-
-    transitionTime = transitionTime or 0
-
-    -- Use U.changeLighting utility function which handles Lighting API correctly
-    -- It sets properties directly (e.g., Lighting.ambient_intensity = val) and calls Lighting.apply()
-    -- For now, we apply instantly regardless of transitionTime
-    -- TODO: Implement smooth transitions using U.Lerp if needed in the future
-    U.changeLighting(ambientSettings)
-end
-
---- Coroutine for smooth ambient lighting transitions (Global context only)
--- Interpolates intensity values while setting discrete properties
--- NOTE: This function must be defined in Global context to work properly.
--- If smooth transitions are needed, move this to global.ttslua.
--- @param ambientSettings table Target ambient settings
--- @param transitionTime number Duration of transition
--- @return number Always returns 1 (indicates completion)
---[[
-function coroutine_ambientTransition(ambientSettings, transitionTime)
-    if ambientSettings == nil then return 1 end
-
-    local startIntensity = Lighting.get("AmbientIntensity")
-    local targetIntensity = ambientSettings.ambient_intensity or startIntensity
-
-    -- Set discrete properties immediately (no smooth transition available for these)
-    if ambientSettings.ambient_type ~= nil then
-        Lighting.set("AmbientType", ambientSettings.ambient_type)
-    end
-    if ambientSettings.lut_contribution ~= nil then
-        Lighting.set("LutContribution", ambientSettings.lut_contribution)
-    end
-    if ambientSettings.lut_index ~= nil then
-        Lighting.set("LutIndex", ambientSettings.lut_index)
-    end
-    if ambientSettings.reflection_intensity ~= nil then
-        Lighting.set("ReflectionIntensity", ambientSettings.reflection_intensity)
-    end
-
-    -- Smooth transition for intensity values
-    if targetIntensity ~= startIntensity then
-        local lerpFunc = U.Lerp(function(val)
-            Lighting.set("AmbientIntensity", val)
-        end, startIntensity, targetIntensity, transitionTime)
-
-        local startLightIntensity = Lighting.get("LightIntensity")
-        local targetLightIntensity = ambientSettings.light_intensity or startLightIntensity
-        local lerpLightFunc = U.Lerp(function(val)
-            Lighting.set("LightIntensity", val)
-        end, startLightIntensity, targetLightIntensity, transitionTime)
-
-        -- Run both lerps in parallel
-        U.RunSequence({lerpFunc, lerpLightFunc})
-    end
-
-    return 1
-end
---]]
-
---- Applies individual light modes for a scene
--- Uses L.SetLightMode for each light specified in the scene preset
--- @param lights table Array of {name, mode} tables
--- @param transitionTime number Optional. Transition time for light changes
-local function applySceneLights(lights, transitionTime)
-    if lights == nil or #lights == 0 then return end
-
-    transitionTime = transitionTime or DefaultTransitionTime
-
-    for _, lightConfig in ipairs(lights) do
-        if lightConfig.name and lightConfig.mode then
-            L.SetLightMode(lightConfig.name, lightConfig.mode, nil, transitionTime)
-        end
-    end
-end
-
---- Plays background music track (if configured)
--- Uses TTS MusicPlayer API to play a specific track
--- Note: TTS uses 0-based indexing for tracks (0 = first track, 9 = 10th track)
--- Note: Scene presets use 1-based indexing (1 = first track) for user-friendliness
--- @param trackIndex number Optional. Music track index (1-10, converted to 0-9). If nil, pauses music.
-local function playSceneMusic(trackIndex)
-    if trackIndex == nil then
-        -- Pause music
-        MusicPlayer.pause()
-    else
-        -- Convert 1-based (user-friendly) to 0-based (TTS API)
-        -- Scene presets use 1-10, but TTS API uses 0-9
-        local apiTrackIndex = trackIndex - 1
-
-        if apiTrackIndex >= 0 and apiTrackIndex <= 9 then
-            MusicPlayer.setCurrentTrack(apiTrackIndex)
-            MusicPlayer.play()
-        else
-            print("Scenes: Warning - Invalid music track index: " .. tostring(trackIndex) .. " (must be 1-10)")
-        end
-    end
-end
-
--- ============================================================================
--- PUBLIC API
--- ============================================================================
-
---- Loads a scene preset instantly (no transition)
--- Applies all scene settings immediately.
--- @param sceneName string Name of the scene preset (key in Scenes.SCENES)
--- @return boolean True if scene loaded successfully, false if scene not found
---
--- @usage Scenes.loadScene("elysium")
-function Scenes.loadScene(sceneName)
-    if type(sceneName) ~= "string" then
-        U.AlertGM("Scenes.loadScene: sceneName must be a string")
-        return false
-    end
-
-    local scene = Scenes.SCENES[sceneName]
-    if scene == nil then
-        U.AlertGM("Scenes.loadScene: Scene not found: " .. sceneName)
-        print("Scenes: Available scenes: " .. table.concat(U.getKeys(Scenes.SCENES), ", "))
-        return false
-    end
-
-    print("Scenes: Loading scene '" .. sceneName .. "' - " .. (scene.description or ""))
-
-    -- Apply ambient lighting (instant)
-    if scene.ambient then
-        applyAmbientLighting(scene.ambient, 0)
-    end
-
-    -- Apply individual lights (instant)
-    if scene.lights then
-        applySceneLights(scene.lights, 0)
-    end
-
-    -- Play music (if specified)
-    if scene.musicTrack ~= nil then
-        playSceneMusic(scene.musicTrack)
-    end
-
-    -- Save current scene to state
-    S.setStateVal(sceneName, "currentScene")
-
-    print("Scenes: Scene loaded successfully.")
-    return true
-end
-
---- Smoothly transitions to a scene preset over a duration
--- Uses coroutines and lerp functions for smooth transitions.
--- @param sceneName string Name of the scene preset (key in Scenes.SCENES)
--- @param transitionTime number Optional. Duration of transition in seconds (default: DefaultTransitionTime)
--- @return boolean True if transition started successfully, false if scene not found
---
--- @usage Scenes.fadeToScene("tension", 3.0)
-function Scenes.fadeToScene(sceneName, transitionTime)
-    if type(sceneName) ~= "string" then
-        U.AlertGM("Scenes.fadeToScene: sceneName must be a string")
-        return false
-    end
-
-    local scene = Scenes.SCENES[sceneName]
-    if scene == nil then
-        U.AlertGM("Scenes.fadeToScene: Scene not found: " .. sceneName)
-        print("Scenes: Available scenes: " .. table.concat(U.getKeys(Scenes.SCENES), ", "))
-        return false
-    end
-
-    transitionTime = transitionTime or DefaultTransitionTime
-
-    print("Scenes: Fading to scene '" .. sceneName .. "' over " .. transitionTime .. " seconds")
-
-    -- Apply ambient lighting with transition
-    if scene.ambient then
-        applyAmbientLighting(scene.ambient, transitionTime)
-    end
-
-    -- Apply individual lights with transition (using lighting module's built-in transitions)
-    if scene.lights then
-        applySceneLights(scene.lights, transitionTime)
-    end
-
-    -- Play music immediately (no fade for music)
-    if scene.musicTrack ~= nil then
-        playSceneMusic(scene.musicTrack)
-    end
-
-    -- Save current scene to state
-    S.setStateVal(sceneName, "currentScene")
-
-    print("Scenes: Scene transition initiated.")
-    return true
-end
-
---- Gets the current scene name from game state
--- @return string|nil Current scene name, or nil if no scene is set
-function Scenes.getCurrentScene()
-    return S.getStateVal("currentScene")
-end
-
---- Gets scene preset data by name
--- @param sceneName string Name of the scene preset
--- @return table|nil Scene preset data, or nil if not found
-function Scenes.getScene(sceneName)
-    if type(sceneName) ~= "string" then
-        return nil
-    end
-    return Scenes.SCENES[sceneName]
-end
-
---- Lists all available scene names
--- @return table Array of scene name strings
-function Scenes.listScenes()
-    return U.getKeys(Scenes.SCENES)
-end
-
---- Initializes the scenes module
--- Called from global.ttslua onLoad().
--- Restores the last scene from saved state, or loads default scene.
-function Scenes.onLoad()
-    print("Scenes: Module loaded.")
-
-    -- Try to restore last scene from state
-    local savedScene = Scenes.getCurrentScene()
-    if savedScene and Scenes.SCENES[savedScene] then
-        print("Scenes: Restoring saved scene: " .. savedScene)
-        Scenes.loadScene(savedScene)
-    else
-        print("Scenes: No saved scene found, using default.")
-        Scenes.loadScene("default")
-    end
-end
-
---- Resets scene to default
--- Convenience function to return to default scene
--- @param transitionTime number Optional. Transition duration (0 = instant)
-function Scenes.resetScene(transitionTime)
-    if transitionTime and transitionTime > 0 then
-        return Scenes.fadeToScene("default", transitionTime)
-    else
-        return Scenes.loadScene("default")
-    end
-end
-
-return Scenes
-
-end)
-__bundle_register("core.lighting", function(require, _LOADED, __bundle_register, __bundle_modules)
---[[
-    Lighting Control Module (core/lighting.ttslua)
-
-    Handles dynamic lighting control for TTS light objects with smooth transitions.
-    Extracted and adapted from Kings Dilemma lighting module patterns.
-
-    This module provides:
-    - Light mode system (predefined lighting configurations)
-    - Smooth transitions using coroutine-based interpolation
-    - State persistence (saves current light modes)
-    - Light object lookup and component access
-    - Batch operations (apply modes to multiple lights)
-
-    Light modes are stored in L.LIGHTMODES table and can be defined per-light.
-    Each mode specifies: enabled, color, range, angle, intensity, rotation, position.
-]]
-
-local L = {}
-local U = require("lib.util")
-local S = require("core.state")
-local C = require("lib.constants")
-
--- ============================================================================
--- CONFIGURATION
--- ============================================================================
-
--- Default transition time for light mode changes (in seconds)
-local DefaultTransitionTime = 0.5
-
--- ============================================================================
--- LIGHT MODE DEFINITIONS
--- ============================================================================
-
---- Light Mode Definitions Table
---
--- Each light can have multiple modes (e.g., "off", "ambient", "bright", "tension").
--- Modes can be:
---   - Tables: Static mode data {enabled=true, color=Color.White, ...}
---   - Functions: Dynamic modes that calculate values at runtime: function() return {...} end
---   - Strings: Default mode key (e.g., default = "ambient")
---
--- Mode properties:
---   - enabled (boolean): Whether light is on/off
---   - color (Color): Light color (Color object or table {r,g,b})
---   - range (number): Light range/radius
---   - angle (number): Spotlight angle (degrees)
---   - intensity (number): Light intensity/brightness
---   - rotation (Vector): Light rotation {x,y,z}
---   - position (Vector): Light position {x,y,z}
---
--- Special properties:
---   - default (string): Default mode to use when mode is "default"
---   - isPlayerLight (boolean): If true, supports per-player modes
---   - isSpawned (boolean): If true, waits for light to spawn before applying
---   - loadRotation (Vector): Initial rotation when light loads
---
--- @usage L.LIGHTMODES.mainSpotlight = {
---     default = "ambient",
---     off = {enabled=false},
---     ambient = {enabled=true, color=Color.Grey, range=100, intensity=1.5},
---     bright = {enabled=true, color=Color.White, range=120, intensity=3.0}
--- }
-L.LIGHTMODES = {
-    -- Example light modes - customize for VTM5E needs
-    -- Remove or adapt these examples to match your actual lights
-
-    -- Main ambient light example
-    mainLight = {
-        default = "ambient",
-        off = {
-            enabled = false
-        },
-        ambient = {
-            enabled = true,
-            color = Color.Grey,
-            range = 100,
-            angle = 60,
-            intensity = 1.5
-        },
-        bright = {
-            enabled = true,
-            color = Color.White,
-            range = 120,
-            angle = 60,
-            intensity = 3.0
-        },
-        dim = {
-            enabled = true,
-            color = Color.Grey,
-            range = 80,
-            angle = 60,
-            intensity = 0.75
-        },
-        tension = {
-            enabled = true,
-            color = Color(1, 0.2, 0.2), -- Red tint
-            range = 90,
-            angle = 45,
-            intensity = 2.0
-        }
-    },
-
-    -- Player spotlight example (per-player lights)
-    -- playerSpotlight = {
-    --     isPlayerLight = true,
-    --     default = "off",
-    --     off = {enabled = false},
-    --     ambient = {
-    --         enabled = true,
-    --         color = Color.Grey,
-    --         range = 50,
-    --         angle = 60,
-    --         intensity = 2.0
-    --     }
-    -- }
-}
-
--- ============================================================================
--- INTERNAL HELPER FUNCTIONS
--- ============================================================================
-
---- Gets the Light component from a TTS light object
--- TTS lights have a nested structure: object -> child -> grandchild -> Light component
--- This function navigates that structure to access the Light component.
--- @param light Object The light object
--- @param isSilent boolean If true, returns nil on error instead of throwing
--- @return Component|nil The Light component, or nil if not found/error
-local function getLightComponent(light, isSilent)
-    local lComp
-
-    -- Try to get component (assuming standard TTS light structure)
-    if pcall(function()
-        lComp = light.getChildren()[1].getChildren()[2].getComponents()[2]
-    end) then
-        return lComp
-    elseif isSilent then
-        return nil
-    end
-
-    -- Detailed error checking if silent mode off
-    U.Val("getLightComponent", light, U.isGameObject(light), "Invalid Light Object")
-    local children = light.getChildren()
-    U.Val("getLightComponent", {light = light, children = children}, #children > 0, "Light has no Children")
-    local grandchildren = children[1].getChildren()
-    U.Val("getLightComponent", {light = light, grandchildren = grandchildren}, #grandchildren > 1,
-        "Light has too few Grandchildren")
-    local components = grandchildren[2].getComponents()
-    U.Val("getLightComponent", {light = light, components = components}, #components > 1,
-        "Light has too few components")
-    U.Val("getLightComponent", {light = light, comp = components[2]}, components[2].name == "Light",
-        "Can't find 'Light' component")
-    return components[2]
-end
-
---- Finds a light object by name/tag
--- Searches for lights with matching tags. Supports player-specific lights.
--- @param lightName string The light name/tag to search for
--- @param playerRef Player|string|nil Optional: Player object or color for player-specific lights
--- @param isSilent boolean If true, returns nil on error instead of throwing
--- @return Object|nil The light object, or nil if not found
-local function getLight(lightName, playerRef, isSilent)
-    local tags = {lightName}
-
-    if playerRef ~= nil then
-        local player = U.isPlayer(playerRef) and playerRef or Player[playerRef]
-        if player and player.color then
-            table.insert(tags, player.color)
-        end
-    end
-
-    local lights = getObjectsWithAllTags(tags)
-
-    U.Val("getLight", {tags = tags, lights = lights}, #lights > 0, "No lights found", {isSilent = isSilent})
-    U.Val("getLight", {tags = tags, lights = lights}, #lights < 2, "Multiple lights found",
-        {isSilent = false, isThrowing = isSilent ~= true})
-
-    return lights[1]
-end
-
---- Gets all lights matching a tag (or all lights if no tag)
--- @param tag string|nil Optional tag to filter by
--- @return table Array of light objects
-local function getAllLights(tag)
-    local allObjects = getObjects()
-    return U.filter(allObjects, function(obj)
-        if obj.getChildren == nil then return false end
-        local children = obj.getChildren()
-        if #children == 0 then return false end
-        if not string.match(children[1].name or "", "^spotlight") then return false end
-        if getLightComponent(obj, true) == nil then return false end
-        if tag and not obj.hasTag(tag) then return false end
-        return true
-    end)
-end
-
---- Sets light component property directly (low-level)
-local function setEnabled(light, enabled)
-    local comp = getLightComponent(light)
-    if comp then comp.set("enabled", enabled) end
-end
-
-local function setRange(light, range)
-    local comp = getLightComponent(light)
-    if comp then comp.set("range", range) end
-end
-
-local function setIntensity(light, intensity)
-    local comp = getLightComponent(light)
-    if comp then comp.set("intensity", intensity) end
-end
-
-local function setColor(light, color)
-    local comp = getLightComponent(light)
-    if comp then comp.set("color", Color(color)) end
-end
-
-local function setAngle(light, angle)
-    local comp = getLightComponent(light)
-    if comp then comp.set("spotAngle", angle) end
-end
-
---- Gets light component property directly (low-level)
-local function getEnabled(light)
-    local comp = getLightComponent(light)
-    return comp and comp.get("enabled") or false
-end
-
-local function getRange(light)
-    local comp = getLightComponent(light)
-    return comp and comp.get("range") or 0
-end
-
-local function getIntensity(light)
-    local comp = getLightComponent(light)
-    return comp and comp.get("intensity") or 0
-end
-
-local function getColor(light)
-    local comp = getLightComponent(light)
-    return comp and comp.get("color") or Color.White
-end
-
-local function getAngle(light)
-    local comp = getLightComponent(light)
-    return comp and comp.get("spotAngle") or 0
-end
-
--- ============================================================================
--- CORE LIGHTING FUNCTIONS
--- ============================================================================
-
---- Sets a light to a specific mode with smooth transitions
---
--- This is the main function for controlling lights. It:
---   1. Looks up the light mode definition
---   2. Finds the light object by tag/name
---   3. Saves the mode to game state
---   4. Smoothly transitions all properties using U.Lerp
---
--- Supports per-player lights (if isPlayerLight=true in mode definition).
--- Modes can be static tables or dynamic functions that calculate values.
---
--- @param lightName string The name/tag of the light (must exist in L.LIGHTMODES)
--- @param mode string The mode name to apply (e.g., "off", "ambient", "bright")
--- @param player Player|string|nil Optional: Player for player-specific lights
--- @param transitionTime number Optional: Transition duration in seconds (default: 0.5)
--- @return function|nil Returns completion function if using coroutines, or nil
---
--- @usage L.SetLightMode("mainLight", "ambient", nil, 1.0) -- Transition over 1 second
--- @usage L.SetLightMode("playerSpotlight", "bright", "Red", 0.5) -- Player-specific light
-function L.SetLightMode(lightName, mode, player, transitionTime)
-    if transitionTime == nil then
-        transitionTime = DefaultTransitionTime
-    end
-
-    -- Support array of light names (batch operation)
-    if U.Type(lightName) == "table" then
-        return U.map(lightName, function(lName)
-            return L.SetLightMode(lName, mode, player, transitionTime)
-        end)
-    end
-
-    -- Validate light mode exists
-    U.Val("SetLightMode", lightName,
-        U.Type(lightName) == "string" and L.LIGHTMODES[lightName] ~= nil,
-        "Mode Data Not Found for light: " .. U.ToString(lightName))
-
-    local lData = L.LIGHTMODES[lightName]
-    local isSpawned = lData.isSpawned
-
-    -- Handle player-specific lights
-    if lData.isPlayerLight then
-        if player == nil then
-            -- Apply to all players if no player specified
-            local players = Player.getPlayers()
-            return U.map(players, function(p)
-                return L.SetLightMode(lightName, mode, p, transitionTime)
-            end)
-        end
-        -- Validate player
-        local playerObj = U.isPlayer(player) and player or Player[player]
-        U.Val("SetLightMode", {lightName, player},
-            U.isPlayer(playerObj), "Invalid Player")
-        player = playerObj
-    else
-        -- Non-player lights shouldn't have player parameter
-        U.Val("SetLightMode", {lightName, player}, player == nil,
-            "Player submitted to non-player light", {isThrowing = false})
-        player = nil
-    end
-
-    -- Find the light object
-    local light = getLight(lightName, player, true)
-    if light == nil and isSpawned then
-        -- Wait for light to spawn if it's a spawned light
-        return U.waitUntil(function()
-            return L.SetLightMode(lightName, mode, player, transitionTime)
-        end, function()
-            return getLight(lightName, player, true) ~= nil
-        end, false)
-    end
-
-    U.Val("SetLightMode", {lightName, player},
-        U.isGameObject(light), "No light found: " .. U.ToString(lightName))
-
-    -- Save mode to state
-    if player then
-        local sData = S.getStateVal("lights", lightName) or {}
-        sData[player.color] = mode
-        S.setStateVal(sData, "lights", lightName)
-    else
-        S.setStateVal(mode, "lights", lightName)
-    end
-
-    -- Resolve mode (could be function, string default, or table)
-    local modeData = mode
-    if U.Type(modeData) == "function" then
-        modeData = modeData(player)
-    elseif U.Type(modeData) == "string" and modeData == "default" then
-        modeData = lData.default or "off"
-    end
-
-    -- Get mode definition
-    U.Val("SetLightMode", modeData,
-        U.Type(modeData) == "string" and lData[modeData] ~= nil,
-        "No such mode '" .. U.ToString(modeData) .. "' for light '" .. U.ToString(lightName) .. "'")
-
-    local modeDef = lData[modeData]
-    if U.Type(modeDef) == "function" then
-        modeDef = modeDef(player) -- Dynamic mode calculation
-    end
-    if U.Type(modeDef) == "table" then
-        modeDef = U.clone(modeDef) -- Clone to avoid modifying original
-    end
-
-    -- Apply the light mode with smooth transitions
-    local function activateLight()
-        local afterVals = {}
-
-        -- Handle enabled state (special case: animate on/off)
-        if modeDef.enabled ~= nil then
-            if modeDef.enabled == getEnabled(light) then
-                modeDef.enabled = nil -- Skip if already in correct state
-            elseif modeDef.enabled == true then
-                -- Turn on: set intensity to 0 first, then fade in
-                setIntensity(light, 0)
-                setAngle(light, 0)
-                setEnabled(light, true)
-            else
-                -- Turn off: fade out, then disable
-                afterVals.intensity = getIntensity(light)
-                afterVals.angle = getAngle(light)
-                modeDef.intensity = 0
-                modeDef.angle = 0
-            end
-        end
-
-        -- Create lerp functions for each property that needs transitioning
-        return U.RunSequence({
-            function()
-                local lerpFuncs = {}
-
-                if modeDef.range ~= nil then
-                    table.insert(lerpFuncs, U.Lerp(function(range)
-                        setRange(light, range)
-                    end, getRange(light), modeDef.range, transitionTime))
-                end
-
-                if modeDef.intensity ~= nil then
-                    table.insert(lerpFuncs, U.Lerp(function(intensity)
-                        setIntensity(light, intensity)
-                    end, getIntensity(light), modeDef.intensity, transitionTime))
-                end
-
-                if modeDef.angle ~= nil then
-                    table.insert(lerpFuncs, U.Lerp(function(angle)
-                        setAngle(light, angle)
-                    end, getAngle(light), modeDef.angle, transitionTime))
-                end
-
-                if modeDef.color ~= nil then
-                    table.insert(lerpFuncs, U.Lerp(function(color)
-                        setColor(light, color)
-                    end, getColor(light), Color(modeDef.color), transitionTime))
-                end
-
-                if modeDef.rotation ~= nil then
-                    table.insert(lerpFuncs, U.setRotationSlow(light, Vector(modeDef.rotation), transitionTime))
-                end
-
-                if modeDef.position ~= nil then
-                    table.insert(lerpFuncs, U.setPositionSlow(light, Vector(modeDef.position), transitionTime))
-                end
-
-                return lerpFuncs
-            end,
-            function()
-                -- Finalize enabled state if turning off
-                if modeDef.enabled == false then
-                    setEnabled(light, false)
-                    setIntensity(light, afterVals.intensity)
-                    setAngle(light, afterVals.angle)
-                end
-            end
-        })
-    end
-
-    -- Wait for light component if needed
-    if isSpawned and getLightComponent(light, true) == nil then
-        return U.waitUntil(activateLight, function()
-            return getLightComponent(light, true) ~= nil
-        end, false)
-    end
-
-    return activateLight()
-end
-
---- Loads saved light states from game state
--- Called during initialization to restore lights to their saved states.
--- @usage L.InitLights() -- Called in core/main.ttslua onLoad
-function L.InitLights()
-    local savedLights = S.getStateVal("lights") or {}
-
-    U.forEach(savedLights, function(mData, lightName)
-        if U.Type(mData) == "string" then
-            -- Simple mode (single string)
-            L.SetLightMode(lightName, mData, nil, 0.5)
-        elseif U.Type(mData) == "table" then
-            -- Per-player modes (table of color->mode)
-            U.forEach(mData, function(mode, pColor)
-                L.SetLightMode(lightName, mode, pColor, 0.5)
-            end)
-        end
-    end)
-end
-
---- Resets all lights to their default/off states
--- Useful for cleanup or game reset.
--- @usage L.ResetLights() -- Cleanup after game ends
-function L.ResetLights()
-    U.forEach(L.LIGHTMODES, function(modes, name)
-        if modes.loadRotation then
-            local light = getLight(name)
-            if light then
-                local comp = getLightComponent(light)
-                if comp then
-                    comp.set("enabled", false)
-                    light.setRotation(Vector(180, 0, 0))
-                end
-            end
-        end
-    end)
-end
-
---- Applies a mode to multiple lights at once
--- Convenience function for batch operations.
--- @param lightNames string|table Light name(s) to affect (string or array)
--- @param lightMode string Mode to apply (default: "default")
--- @param transitionTime number Transition duration (default: 3.0)
--- @param playerRef Player|string|nil Optional: Player for player-specific lights
--- @return number The transition time (for chaining)
--- @usage L.LoadLights({"mainLight", "spotlight1"}, "ambient", 2.0)
-function L.LoadLights(lightNames, lightMode, transitionTime, playerRef)
-    if U.Type(lightNames) == "string" then
-        lightNames = {lightNames}
-    end
-    if lightMode == nil then
-        lightMode = "default"
-    end
-    if transitionTime == nil then
-        transitionTime = 3.0
-    end
-
-    -- Filter to only lights that exist in LIGHTMODES
-    local validLights = U.filter(L.LIGHTMODES, function(_, name)
-        return U.isIn(name, lightNames)
-    end)
-
-    U.forEach(validLights, function(modes, name)
-        if modes[lightMode] == nil then
-            U.AlertGM("No Such Mode: " .. U.ToString(lightMode) .. " for light '" .. U.ToString(name) .. "'")
-            return
-        end
-
-        if lightMode == "default" and U.Type(modes.default) == "string" then
-            L.SetLightMode(name, modes.default, playerRef, transitionTime)
-        else
-            L.SetLightMode(name, lightMode, playerRef, transitionTime)
-        end
-    end)
-
-    return transitionTime
-end
-
--- ============================================================================
--- PUBLIC API EXPORTS
--- ============================================================================
-
---- Gets a light object by name/tag
--- @param lightName string The light name/tag
--- @param playerRef Player|string|nil Optional: Player for player-specific lights
--- @return Object|nil The light object
--- @usage local light = L.GetLight("mainLight")
-L.GetLight = getLight
-
---- Gets all lights (optionally filtered by tag)
--- @param tag string|nil Optional tag to filter by
--- @return table Array of light objects
--- @usage local allLights = L.GetAllLights()
-L.GetAllLights = getAllLights
-
--- Low-level property setters (for direct control without modes)
-L.SetIntensity = setIntensity
-L.SetAngle = setAngle
-L.SetColor = setColor
-L.SetRange = setRange
-
-return L
 
 end)
 __bundle_register("core.state", function(require, _LOADED, __bundle_register, __bundle_modules)
@@ -4575,7 +5265,7 @@ function S.GetDefaultGameState()
     end
 
     return {
-        currentPhase = C.Phases.INIT,
+        currentPhase = C.Phases.SESSION_START,
         playerData = playerData, -- Keyed by player ID, only dynamic values
         lights = {}, -- Light states will be stored here
         zones = {},  -- Zone-related data
@@ -4701,7 +5391,7 @@ end
 function S.validateState()
     -- Ensure currentPhase exists and is valid
     if not gameState.currentPhase or not U.isIn(gameState.currentPhase, C.Phases) then
-        gameState.currentPhase = C.Phases.INIT
+        gameState.currentPhase = C.Phases.SESSION_START
     end
 
     -- Ensure playerData table exists and has correct structure
@@ -5470,7 +6160,7 @@ end
 -- @param inputstr string The string to split (can be nil, returns empty table)
 -- @param sep string The delimiter to split on (default: whitespace "%s")
 -- @return table Array of string segments
--- @usage local parts = U.split("Red,Blue,Green", ",") -- returns {"Red", "Blue", "Green"}
+-- @usage local parts = U.split("Red,Orange,Purple", ",") -- returns {"Red", "Orange", "Purple"}
 -- @usage local words = U.split("Hello World") -- returns {"Hello", "World"} (whitespace split)
 function U.split(inputstr, sep)
 	if inputstr == nil then return {} end
@@ -6244,7 +6934,7 @@ end
 -- Checks if object has any tag matching a valid TTS player color.
 -- @param obj Object The TTS object to check
 -- @return string|nil The player color tag found, or nil if none
--- @usage local owner = U.findColorTag(card) -- Returns "Red", "Blue", etc.
+-- @usage local owner = U.findColorTag(card) -- Returns "Red", "Brown", "Orange", "Pink", "Purple", or "Black" (Storyteller)
 function U.findColorTag(obj)
 	U.Assert("U.findColorTag", obj, "userdata")
 	U.Assert("U.findColorTag", obj.hasTag, "function")
@@ -6778,6 +7468,432 @@ end
 return U
 
 end)
+__bundle_register("core.scenes", function(require, _LOADED, __bundle_register, __bundle_modules)
+--[[
+    Scene Preset System Module (core/scenes.ttslua)
+
+    Manages scene presets for immersive VTM5E gameplay. Each scene preset defines:
+    - Ambient lighting (global table lighting)
+    - Individual light object modes (spotlights, etc.)
+    - Optional background music
+    - Scene-specific atmosphere settings
+
+    Scene transitions can be instant or smooth (with fade/duration).
+
+    Pattern: Combines lighting module patterns with ambient lighting control.
+    Integration: Uses L.SetLightMode for individual lights, Lighting API for ambient.
+]]
+
+local Scenes = {}
+local U = require("lib.util")
+local S = require("core.state")
+local C = require("lib.constants")
+local L = require("core.lighting")
+
+-- ============================================================================
+-- CONFIGURATION
+-- ============================================================================
+
+-- Default transition time for scene changes (in seconds)
+local DefaultTransitionTime = 2.0
+
+-- ============================================================================
+-- SCENE PRESET DEFINITIONS
+-- ============================================================================
+
+--- Scene Preset Structure
+--
+-- Each scene preset contains:
+--   ambient: Table with ambient lighting settings (see TTS Lighting API)
+--     - ambient_intensity (number): 0-4, brightness of ambient light
+--     - ambient_type (number): 1 or 2, type of ambient lighting
+--     - light_intensity (number): 0-4, brightness of directional light
+--     - lut_contribution (number): 0-1, color grading lookup table contribution
+--     - lut_index (number): 1-114, which LUT preset to use
+--     - reflection_intensity (number): 0-1, surface reflection intensity
+--   lights: Table of {name, mode} pairs for individual light objects
+--     - name (string): Light name/tag matching L.LIGHTMODES key
+--     - mode (string): Light mode name (e.g., "ambient", "bright", "dim")
+--   musicTrack (number, optional): Music track index (1-10, if tracks are configured)
+--   description (string, optional): Human-readable scene description
+
+Scenes.SCENES = {
+    -- Default/neutral scene (uses DARK mode)
+    default = {
+        ambient = C.LightModes.DARK,
+        lights = {},
+        description = "Default dark lighting"
+    },
+
+    -- Elysium: Formal gathering place, elegant and refined
+    elysium = {
+        ambient = {
+            ambient_intensity = 1.2,
+            ambient_type = 1,
+            light_intensity = 1.0,
+            lut_contribution = 0.3,
+            lut_index = 108, -- Warm/amber tone
+            reflection_intensity = 0.3
+        },
+        lights = {
+            {name = "mainLight", mode = "bright"},
+            -- TODO: Add chandelier light if available: {name = "chandelier", mode = "elegant"}
+        },
+        description = "Elysium - Formal gathering place, elegant and refined"
+    },
+
+    -- Alley: Dark, gritty urban setting
+    alley = {
+        ambient = {
+            ambient_intensity = 0.15,
+            ambient_type = 2,
+            light_intensity = 0.2,
+            lut_contribution = 0.8,
+            lut_index = 36, -- Dark/blue tone
+            reflection_intensity = 0.0
+        },
+        lights = {
+            {name = "mainLight", mode = "dim"},
+            -- TODO: Add streetlamp light if available: {name = "streetlamp", mode = "dim"}
+        },
+        description = "Alley - Dark, gritty urban setting"
+    },
+
+    -- Haven: Personal sanctuary, comfortable and safe
+    haven = {
+        ambient = {
+            ambient_intensity = 0.8,
+            ambient_type = 1,
+            light_intensity = 0.7,
+            lut_contribution = 0.2,
+            lut_index = 105, -- Warm, cozy tone
+            reflection_intensity = 0.1
+        },
+        lights = {
+            {name = "mainLight", mode = "ambient"},
+        },
+        description = "Haven - Personal sanctuary, comfortable and safe"
+    },
+
+    -- Tension: Dramatic, suspenseful atmosphere
+    tension = {
+        ambient = {
+            ambient_intensity = 0.3,
+            ambient_type = 1,
+            light_intensity = 0.4,
+            lut_contribution = 0.6,
+            lut_index = 77, -- Dramatic red/dark tone
+            reflection_intensity = 0.0
+        },
+        lights = {
+            {name = "mainLight", mode = "tension"},
+            {name = "spotlightGM", mode = "on"},
+        },
+        description = "Tension - Dramatic, suspenseful atmosphere"
+    },
+
+    -- Combat: Intense, dynamic lighting
+    combat = {
+        ambient = {
+            ambient_intensity = 0.4,
+            ambient_type = 1,
+            light_intensity = 0.6,
+            lut_contribution = 0.5,
+            lut_index = 79, -- High contrast, intense tone
+            reflection_intensity = 0.1
+        },
+        lights = {
+            {name = "mainLight", mode = "tension"},
+        },
+        description = "Combat - Intense, dynamic lighting"
+    },
+
+    -- Suspicion: Paranoia-inducing, shadowy
+    suspicion = {
+        ambient = {
+            ambient_intensity = 0.0,
+            ambient_type = 1,
+            light_intensity = 0.0,
+            lut_contribution = 1.0,
+            lut_index = 92, -- Very dark, shadowy tone
+            reflection_intensity = 0.0
+        },
+        lights = {
+            {name = "mainLight", mode = "dim"},
+        },
+        description = "Suspicion - Paranoia-inducing, shadowy atmosphere"
+    },
+
+    -- Social: Normal social interaction, balanced
+    social = {
+        ambient = {
+            ambient_intensity = 0.7,
+            ambient_type = 1,
+            light_intensity = 0.6,
+            lut_contribution = 0.1,
+            lut_index = 1,
+            reflection_intensity = 0.2
+        },
+        lights = {
+            {name = "mainLight", mode = "ambient"},
+        },
+        description = "Social - Normal social interaction, balanced lighting"
+    }
+}
+
+-- ============================================================================
+-- HELPER FUNCTIONS
+-- ============================================================================
+
+--- Applies ambient lighting settings to TTS global lighting
+-- Uses U.changeLighting utility function to set ambient lighting properties
+-- @param ambientSettings table Table containing ambient lighting properties
+-- @param transitionTime number Optional. Duration for smooth transition (0 = instant)
+local function applyAmbientLighting(ambientSettings, transitionTime)
+    if ambientSettings == nil then return end
+
+    transitionTime = transitionTime or 0
+
+    -- Use U.changeLighting utility function which handles Lighting API correctly
+    -- It sets properties directly (e.g., Lighting.ambient_intensity = val) and calls Lighting.apply()
+    -- For now, we apply instantly regardless of transitionTime
+    -- TODO: Implement smooth transitions using U.Lerp if needed in the future
+    U.changeLighting(ambientSettings)
+end
+
+--- Coroutine for smooth ambient lighting transitions (Global context only)
+-- Interpolates intensity values while setting discrete properties
+-- NOTE: This function must be defined in Global context to work properly.
+-- If smooth transitions are needed, move this to global.ttslua.
+-- @param ambientSettings table Target ambient settings
+-- @param transitionTime number Duration of transition
+-- @return number Always returns 1 (indicates completion)
+--[[
+function coroutine_ambientTransition(ambientSettings, transitionTime)
+    if ambientSettings == nil then return 1 end
+
+    local startIntensity = Lighting.get("AmbientIntensity")
+    local targetIntensity = ambientSettings.ambient_intensity or startIntensity
+
+    -- Set discrete properties immediately (no smooth transition available for these)
+    if ambientSettings.ambient_type ~= nil then
+        Lighting.set("AmbientType", ambientSettings.ambient_type)
+    end
+    if ambientSettings.lut_contribution ~= nil then
+        Lighting.set("LutContribution", ambientSettings.lut_contribution)
+    end
+    if ambientSettings.lut_index ~= nil then
+        Lighting.set("LutIndex", ambientSettings.lut_index)
+    end
+    if ambientSettings.reflection_intensity ~= nil then
+        Lighting.set("ReflectionIntensity", ambientSettings.reflection_intensity)
+    end
+
+    -- Smooth transition for intensity values
+    if targetIntensity ~= startIntensity then
+        local lerpFunc = U.Lerp(function(val)
+            Lighting.set("AmbientIntensity", val)
+        end, startIntensity, targetIntensity, transitionTime)
+
+        local startLightIntensity = Lighting.get("LightIntensity")
+        local targetLightIntensity = ambientSettings.light_intensity or startLightIntensity
+        local lerpLightFunc = U.Lerp(function(val)
+            Lighting.set("LightIntensity", val)
+        end, startLightIntensity, targetLightIntensity, transitionTime)
+
+        -- Run both lerps in parallel
+        U.RunSequence({lerpFunc, lerpLightFunc})
+    end
+
+    return 1
+end
+--]]
+
+--- Applies individual light modes for a scene
+-- Uses L.SetLightMode for each light specified in the scene preset
+-- @param lights table Array of {name, mode} tables
+-- @param transitionTime number Optional. Transition time for light changes
+local function applySceneLights(lights, transitionTime)
+    if lights == nil or #lights == 0 then return end
+
+    transitionTime = transitionTime or DefaultTransitionTime
+
+    for _, lightConfig in ipairs(lights) do
+        if lightConfig.name and lightConfig.mode then
+            L.SetLightMode(lightConfig.name, lightConfig.mode, nil, transitionTime)
+        end
+    end
+end
+
+--- Plays background music track (if configured)
+-- Uses TTS MusicPlayer API to play a specific track
+-- Note: TTS uses 0-based indexing for tracks (0 = first track, 9 = 10th track)
+-- Note: Scene presets use 1-based indexing (1 = first track) for user-friendliness
+-- @param trackIndex number Optional. Music track index (1-10, converted to 0-9). If nil, pauses music.
+local function playSceneMusic(trackIndex)
+    if trackIndex == nil then
+        -- Pause music
+        MusicPlayer.pause()
+    else
+        -- Convert 1-based (user-friendly) to 0-based (TTS API)
+        -- Scene presets use 1-10, but TTS API uses 0-9
+        local apiTrackIndex = trackIndex - 1
+
+        if apiTrackIndex >= 0 and apiTrackIndex <= 9 then
+            MusicPlayer.setCurrentTrack(apiTrackIndex)
+            MusicPlayer.play()
+        else
+            print("Scenes: Warning - Invalid music track index: " .. tostring(trackIndex) .. " (must be 1-10)")
+        end
+    end
+end
+
+-- ============================================================================
+-- PUBLIC API
+-- ============================================================================
+
+--- Loads a scene preset instantly (no transition)
+-- Applies all scene settings immediately.
+-- @param sceneName string Name of the scene preset (key in Scenes.SCENES)
+-- @return boolean True if scene loaded successfully, false if scene not found
+--
+-- @usage Scenes.loadScene("elysium")
+function Scenes.loadScene(sceneName)
+    if type(sceneName) ~= "string" then
+        U.AlertGM("Scenes.loadScene: sceneName must be a string")
+        return false
+    end
+
+    local scene = Scenes.SCENES[sceneName]
+    if scene == nil then
+        U.AlertGM("Scenes.loadScene: Scene not found: " .. sceneName)
+        print("Scenes: Available scenes: " .. table.concat(U.getKeys(Scenes.SCENES), ", "))
+        return false
+    end
+
+    print("Scenes: Loading scene '" .. sceneName .. "' - " .. (scene.description or ""))
+
+    -- Apply ambient lighting (instant)
+    if scene.ambient then
+        applyAmbientLighting(scene.ambient, 0)
+    end
+
+    -- Apply individual lights (instant)
+    if scene.lights then
+        applySceneLights(scene.lights, 0)
+    end
+
+    -- Play music (if specified)
+    if scene.musicTrack ~= nil then
+        playSceneMusic(scene.musicTrack)
+    end
+
+    -- Save current scene to state
+    S.setStateVal(sceneName, "currentScene")
+
+    print("Scenes: Scene loaded successfully.")
+    return true
+end
+
+--- Smoothly transitions to a scene preset over a duration
+-- Uses coroutines and lerp functions for smooth transitions.
+-- @param sceneName string Name of the scene preset (key in Scenes.SCENES)
+-- @param transitionTime number Optional. Duration of transition in seconds (default: DefaultTransitionTime)
+-- @return boolean True if transition started successfully, false if scene not found
+--
+-- @usage Scenes.fadeToScene("tension", 3.0)
+function Scenes.fadeToScene(sceneName, transitionTime)
+    if type(sceneName) ~= "string" then
+        U.AlertGM("Scenes.fadeToScene: sceneName must be a string")
+        return false
+    end
+
+    local scene = Scenes.SCENES[sceneName]
+    if scene == nil then
+        U.AlertGM("Scenes.fadeToScene: Scene not found: " .. sceneName)
+        print("Scenes: Available scenes: " .. table.concat(U.getKeys(Scenes.SCENES), ", "))
+        return false
+    end
+
+    transitionTime = transitionTime or DefaultTransitionTime
+
+    print("Scenes: Fading to scene '" .. sceneName .. "' over " .. transitionTime .. " seconds")
+
+    -- Apply ambient lighting with transition
+    if scene.ambient then
+        applyAmbientLighting(scene.ambient, transitionTime)
+    end
+
+    -- Apply individual lights with transition (using lighting module's built-in transitions)
+    if scene.lights then
+        applySceneLights(scene.lights, transitionTime)
+    end
+
+    -- Play music immediately (no fade for music)
+    if scene.musicTrack ~= nil then
+        playSceneMusic(scene.musicTrack)
+    end
+
+    -- Save current scene to state
+    S.setStateVal(sceneName, "currentScene")
+
+    print("Scenes: Scene transition initiated.")
+    return true
+end
+
+--- Gets the current scene name from game state
+-- @return string|nil Current scene name, or nil if no scene is set
+function Scenes.getCurrentScene()
+    return S.getStateVal("currentScene")
+end
+
+--- Gets scene preset data by name
+-- @param sceneName string Name of the scene preset
+-- @return table|nil Scene preset data, or nil if not found
+function Scenes.getScene(sceneName)
+    if type(sceneName) ~= "string" then
+        return nil
+    end
+    return Scenes.SCENES[sceneName]
+end
+
+--- Lists all available scene names
+-- @return table Array of scene name strings
+function Scenes.listScenes()
+    return U.getKeys(Scenes.SCENES)
+end
+
+--- Initializes the scenes module
+-- Called from global.ttslua onLoad().
+-- Restores the last scene from saved state, or loads default scene.
+function Scenes.onLoad()
+    print("Scenes: Module loaded.")
+
+    -- Try to restore last scene from state
+    local savedScene = Scenes.getCurrentScene()
+    if savedScene and Scenes.SCENES[savedScene] then
+        print("Scenes: Restoring saved scene: " .. savedScene)
+        Scenes.loadScene(savedScene)
+    else
+        print("Scenes: No saved scene found, using default.")
+        Scenes.loadScene("default")
+    end
+end
+
+--- Resets scene to default
+-- Convenience function to return to default scene
+-- @param transitionTime number Optional. Transition duration (0 = instant)
+function Scenes.resetScene(transitionTime)
+    if transitionTime and transitionTime > 0 then
+        return Scenes.fadeToScene("default", transitionTime)
+    else
+        return Scenes.loadScene("default")
+    end
+end
+
+return Scenes
+
+end)
 __bundle_register("core.zones", function(require, _LOADED, __bundle_register, __bundle_modules)
 --[[
     Zone Management Module (core/zones.ttslua)
@@ -7255,9 +8371,40 @@ function M.setupPlayers()
         print("Main: Promoted player " .. player.color)
     end
 
+    -- Set up tombstone visibility (each player's tombstone invisible to them)
+    M.setupTombstoneVisibility()
+
     -- TODO: Assign Storyteller role (e.g., Black or Brown player)
     -- TODO: Initialize player-specific data in game state (hunger, willpower, health, etc.)
     -- TODO: Set up player-specific UI elements
+end
+
+--[[
+    Sets up tombstone visibility so each player's tombstone is invisible to them
+    This prevents tombstones from blocking a player's view of the table.
+    Uses TTS setInvisibleTo() function to hide objects from specific players.
+]]
+function M.setupTombstoneVisibility()
+    print("Main: Setting up tombstone visibility.")
+
+    for _, color in ipairs(C.PlayerColors) do
+        local guid = C.GetTombstoneGUID(color)
+        if guid then
+            local tombstone = getObjectFromGUID(guid)
+            if tombstone then
+                -- Make this tombstone invisible to the player of this color
+                -- The tombstone will still be visible to other players and the Storyteller
+                tombstone.setInvisibleTo({color})
+                print("Main: Tombstone for " .. color .. " set invisible to " .. color .. " player")
+            else
+                print("Main: Warning - Tombstone object not found for " .. color .. " (GUID: " .. guid .. ")")
+            end
+        else
+            print("Main: Warning - No tombstone GUID found for " .. color)
+        end
+    end
+
+    print("Main: Tombstone visibility setup complete.")
 end
 
 --[[
@@ -7298,8 +8445,8 @@ end
 function M.syncPhase()
     local currentPhase = S.getStateVal("currentPhase")
     if currentPhase == nil then
-        print("Main: Warning - Current phase is nil, using INIT")
-        currentPhase = C.Phases.INIT
+        print("Main: Warning - Current phase is nil, using SESSION_START")
+        currentPhase = C.Phases.SESSION_START
         S.setCurrentPhase(currentPhase)
     end
 

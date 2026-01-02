@@ -1,0 +1,52 @@
+{
+  "GUID": "844170",
+  "Name": "Custom_Assetbundle",
+  "Transform": {
+    "posX": -68.3252258,
+    "posY": -2.647616,
+    "posZ": 0.0009616963,
+    "rotX": 0,
+    "rotY": 90,
+    "rotZ": 359.992676,
+    "scaleX": 10,
+    "scaleY": 10,
+    "scaleZ": 10
+  },
+  "Nickname": "TOMBSTONE_RED",
+  "Description": "",
+  "GMNotes": "",
+  "AltLookAngle": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "ColorDiffuse": {
+    "r": 1,
+    "g": 1,
+    "b": 1
+  },
+  "LayoutGroupSortIndex": 0,
+  "Value": 0,
+  "Locked": true,
+  "Grid": false,
+  "Snap": false,
+  "IgnoreFoW": false,
+  "MeasureMovement": false,
+  "DragSelectable": false,
+  "Autoraise": false,
+  "Sticky": false,
+  "Tooltip": false,
+  "GridProjection": false,
+  "HideWhenFaceDown": false,
+  "Hands": false,
+  "CustomAssetbundle": {
+    "AssetbundleURL": "https://steamusercontent-a.akamaihd.net/ugc/1474319191443509135/DAC765EA7C4B3419DBA445D1B642B8ACD7F67148/",
+    "AssetbundleSecondaryURL": "",
+    "MaterialIndex": 0,
+    "TypeIndex": 0,
+    "LoopingEffectIndex": 0
+  },
+  "LuaScript": "function onLoad()\r\n  self.setInvisibleTo({\"Red\"})\r\nend",
+  "LuaScriptState": "",
+  "XmlUI": ""
+}
