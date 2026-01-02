@@ -137,4 +137,6 @@ lua logAllToFiles()          -- Capture all debug info
 - Files are written to the workspace directory, so they're accessible immediately
 - The `debug_logs/` directory is gitignored (see `.gitignore`)
 - JSON files are automatically pretty-printed by the extension
-- Each call creates/overwrites the file (not append mode currently)
+- **Append Mode**: `logToFile()` and `logTestToFile()` append to files (maintains history)
+- **Overwrite Mode**: `logStateToFile()`, `logSceneToFile()`, and `logZonesToFile()` overwrite files (each is a complete snapshot)
+- The module maintains an in-memory cache of log contents to support append mode
