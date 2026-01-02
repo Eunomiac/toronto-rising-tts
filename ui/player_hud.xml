@@ -79,57 +79,57 @@
   </VerticalLayout>
 </Panel>
 
-<!-- Player HUD Panel - Green Player -->
-<Panel id="playerHud_Green" class="playerHudPanel" visibility="Green">
+<!-- Player HUD Panel - Pink Player -->
+<Panel id="playerHud_Pink" class="playerHudPanel" visibility="Pink">
   <VerticalLayout class="playerStats">
     <Text class="statLabel" fontSize="20" color="#FFFFFF" fontStyle="Bold">Character Stats</Text>
     <Text class="spacer_5"></Text>
 
     <HorizontalLayout class="statDisplay">
       <Text class="statLabel">Hunger:</Text>
-      <Text id="hungerVal_Green" class="statValue" color="#CC0000">0</Text>
+      <Text id="hungerVal_Pink" class="statValue" color="#CC0000">0</Text>
       <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
     </HorizontalLayout>
 
     <HorizontalLayout class="statDisplay">
       <Text class="statLabel">Willpower:</Text>
-      <Text id="willpowerVal_Green" class="statValue" color="#0066FF">5</Text>
+      <Text id="willpowerVal_Pink" class="statValue" color="#0066FF">5</Text>
       <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
     </HorizontalLayout>
 
     <HorizontalLayout class="statDisplay">
       <Text class="statLabel">Health:</Text>
-      <Text id="healthVal_Green" class="statValue" color="#00AA00">7</Text>
+      <Text id="healthVal_Pink" class="statValue" color="#00AA00">7</Text>
       <Text class="statLabel" fontSize="12" color="#888888">/ 7</Text>
     </HorizontalLayout>
   </VerticalLayout>
 </Panel>
 
-<!-- Player HUD Panel - Yellow Player -->
-<Panel id="playerHud_Yellow" class="playerHudPanel" visibility="Yellow">
+<!-- Player HUD Panel - Purple Player -->
+<Panel id="playerHud_Purple" class="playerHudPanel" visibility="Purple">
   <VerticalLayout class="playerStats">
     <Text class="statLabel" fontSize="20" color="#FFFFFF" fontStyle="Bold">Character Stats</Text>
     <Text class="spacer_5"></Text>
 
     <HorizontalLayout class="statDisplay">
       <Text class="statLabel">Hunger:</Text>
-      <Text id="hungerVal_Yellow" class="statValue" color="#CC0000">0</Text>
+      <Text id="hungerVal_Purple" class="statValue" color="#CC0000">0</Text>
       <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
     </HorizontalLayout>
 
     <HorizontalLayout class="statDisplay">
       <Text class="statLabel">Willpower:</Text>
-      <Text id="willpowerVal_Yellow" class="statValue" color="#0066FF">5</Text>
+      <Text id="willpowerVal_Purple" class="statValue" color="#0066FF">5</Text>
       <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
     </HorizontalLayout>
 
     <HorizontalLayout class="statDisplay">
       <Text class="statLabel">Health:</Text>
-      <Text id="healthVal_Yellow" class="statValue" color="#00AA00">7</Text>
+      <Text id="healthVal_Purple" class="statValue" color="#00AA00">7</Text>
       <Text class="statLabel" fontSize="12" color="#888888">/ 7</Text>
     </HorizontalLayout>
   </VerticalLayout>
 </Panel>
 
 <!-- Pattern: playerHud_<Color>, hungerVal_<Color>, willpowerVal_<Color>, healthVal_<Color> -->
-<!-- Valid player colors: Brown, Orange, Red, Yellow, Green (Storyteller is Black) -->
+<!-- Valid player colors: Brown, Orange, Red, Pink, Purple (Storyteller is Black) -->

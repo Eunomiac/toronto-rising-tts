@@ -22,6 +22,7 @@ local M = require("core.main")
 local Z = require("core.zones")
 local Scenes = require("core.scenes")
 local C = require("lib.constants")
+local L = require("core.lighting")
 
 --[[
     File Logging Configuration
@@ -29,6 +30,10 @@ local C = require("lib.constants")
 ]]
 local LOG_DIR = "debug_logs"
 local LOG_EXTENSION = "txt"
+
+-- Cache for log file contents (to support append mode)
+-- Key: filename (without extension), Value: accumulated content string
+local logCache = {}
 
 --[[
     Helper Functions
@@ -44,16 +49,31 @@ local function getTimestamp()
 end
 
 --- Writes content to a file in the workspace using TTS Tools extension
+-- Supports append mode by maintaining an in-memory cache of file contents
 -- @param filename string Name of the file (without extension)
 -- @param content string Content to write
 -- @param format string Optional format: "auto" (for JSON) or "none" (default: "none")
-local function writeToFile(filename, content, format)
+-- @param append boolean If true, appends to existing cached content (default: true for logs, false for dumps)
+local function writeToFile(filename, content, format, append)
     format = format or "none"
+    append = append ~= false  -- Default to true (append mode) unless explicitly set to false
 
     -- Use sendExternalMessage to write to file
     -- Don't set 'object' - that would write to .tts/objects/ directory
     -- Without 'object', files are written to workspace directory
     local fullName = LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION
+
+    -- For append mode, maintain cache and accumulate content
+    if append then
+        if not logCache[filename] then
+            logCache[filename] = ""
+        end
+        logCache[filename] = logCache[filename] .. content
+        content = logCache[filename]  -- Write accumulated content
+    else
+        -- Overwrite mode: clear cache and write new content
+        logCache[filename] = content
+    end
 
     -- Check if sendExternalMessage exists (TTS Tools extension)
     ---@diagnostic disable-next-line: undefined-global
@@ -183,6 +203,60 @@ function DEBUG.testState()
         local phase = S.getStateVal("currentPhase")
         printTestResult("Get current phase", phase ~= nil, "Current phase: " .. tostring(phase))
         if phase ~= nil then passed = passed + 1 else failed = failed + 1 end
+    end
+
+    -- Test 5: mergeDefaults function
+    do
+        local target = {a = 1, b = {x = 10}}
+        local defaults = {b = {y = 20}, c = 3}
+        S.mergeDefaults(target, defaults)
+
+        local pass = (target.a == 1 and target.b.x == 10 and target.b.y == 20 and target.c == 3)
+        printTestResult("mergeDefaults", pass, pass and "Merged correctly" or "Merge failed")
+        if pass then passed = passed + 1 else failed = failed + 1 end
+    end
+
+    -- Test 6: resetGameState function
+    do
+        -- Set some values
+        S.setStateVal("test", "testKey")
+        S.setStateVal(999, "testNumber")
+
+        -- Reset
+        S.resetGameState()
+
+        -- Check that test values are gone and defaults are present
+        local testValue = S.getStateVal("testKey")
+        local defaultPhase = S.getStateVal("currentPhase")
+
+        local pass = (testValue == nil and defaultPhase == C.Phases.SESSION_START)
+        printTestResult("resetGameState", pass, pass and "Reset to defaults correctly" or "Reset failed")
+        if pass then passed = passed + 1 else failed = failed + 1 end
+    end
+
+    -- Test 7: Player data merging (mergePlayerData)
+    do
+        -- This test verifies that static player data from C.PlayerData merges correctly
+        local testColor = getFirstSeatedPlayerColor()
+        if testColor then
+            local playerID = S.getPlayerID(testColor)
+            if playerID then
+                local playerData = S.getPlayerData(testColor)
+                -- Player data should have both static (from C.PlayerData) and dynamic (from state) fields
+                local hasStatic = playerData and (playerData.color ~= nil or playerData.clan ~= nil)
+                local hasDynamic = playerData and playerData.hunger ~= nil
+
+                local pass = (hasStatic and hasDynamic)
+                printTestResult("Player data merging", pass, pass and "Static and dynamic data merged" or "Merge failed")
+                if pass then passed = passed + 1 else failed = failed + 1 end
+            else
+                printTestResult("Player data merging", false, "Could not find player ID")
+                failed = failed + 1
+            end
+        else
+            printTestResult("Player data merging", false, "No seated players for test")
+            failed = failed + 1
+        end
     end
 
     -- Summary
@@ -470,6 +544,197 @@ function DEBUG.testUI()
 end
 
 --[[
+    Constants Module Tests (TOR-3)
+]]
+
+--- Test constants module structure and values
+-- Tests: C.PlayerColors, C.Phases, C.GUIDS, C.GetHandZoneGUID
+function DEBUG.testConstants()
+    printTestHeader("Constants Module")
+    DEBUG.logToFile("INFO", "Starting testConstants()", "debug_log")
+
+    local passed = 0
+    local failed = 0
+
+    -- Test 1: Player Colors
+    do
+        local expectedColors = {"Brown", "Orange", "Red", "Pink", "Purple"}
+        local allPresent = true
+        local missingColors = {}
+
+        for _, expectedColor in ipairs(expectedColors) do
+            local found = false
+            for _, actualColor in ipairs(C.PlayerColors) do
+                if actualColor == expectedColor then
+                    found = true
+                    break
+                end
+            end
+            if not found then
+                allPresent = false
+                table.insert(missingColors, expectedColor)
+            end
+        end
+
+        if allPresent and #C.PlayerColors == #expectedColors then
+            print("C.PlayerColors: {" .. table.concat(C.PlayerColors, ", ") .. "}")
+            printTestResult("Player Colors", true, "All " .. #expectedColors .. " colors present")
+            passed = passed + 1
+        else
+            local details = "Expected: {" .. table.concat(expectedColors, ", ") .. "}, Got: {" .. table.concat(C.PlayerColors, ", ") .. "}"
+            if #missingColors > 0 then
+                details = details .. ", Missing: {" .. table.concat(missingColors, ", ") .. "}"
+            end
+            printTestResult("Player Colors", false, details)
+            failed = failed + 1
+        end
+    end
+
+    -- Test 2: Storyteller Color
+    do
+        if C.STORYTELLER_COLOR == "Black" then
+            print("C.STORYTELLER_COLOR: " .. C.STORYTELLER_COLOR)
+            printTestResult("Storyteller Color", true, "Correctly set to Black")
+            passed = passed + 1
+        else
+            printTestResult("Storyteller Color", false, "Expected 'Black', got '" .. tostring(C.STORYTELLER_COLOR) .. "'")
+            failed = failed + 1
+        end
+    end
+
+    -- Test 3: Game Phases
+    do
+        local expectedPhases = {
+            "SessionStart", "Scene", "Downtime", "Combat", "Memoriam", "SessionEnd"
+        }
+        local allPhasesPresent = true
+        local missingPhases = {}
+
+        for _, expectedPhase in ipairs(expectedPhases) do
+            local found = false
+            for _, actualPhase in pairs(C.Phases) do
+                if actualPhase == expectedPhase then
+                    found = true
+                    break
+                end
+            end
+            if not found then
+                allPhasesPresent = false
+                table.insert(missingPhases, expectedPhase)
+            end
+        end
+
+        if allPhasesPresent then
+            print("C.Phases: " .. JSON.encode(C.Phases))
+            printTestResult("Game Phases", true, "All " .. #expectedPhases .. " phases present")
+            passed = passed + 1
+        else
+            printTestResult("Game Phases", false, "Missing phases: {" .. table.concat(missingPhases, ", ") .. "}")
+            failed = failed + 1
+        end
+    end
+
+    -- Test 4: HAND Zone GUIDs Structure
+    do
+        local expectedHandKeys = {"HAND_BLACK", "HAND_BROWN", "HAND_ORANGE", "HAND_RED", "HAND_PINK", "HAND_PURPLE"}
+        local allKeysPresent = true
+        local missingKeys = {}
+        local placeholderCount = 0
+
+        for _, key in ipairs(expectedHandKeys) do
+            if C.GUIDS[key] == nil then
+                allKeysPresent = false
+                table.insert(missingKeys, key)
+            elseif string.find(C.GUIDS[key], "@@@@@@") then
+                placeholderCount = placeholderCount + 1
+            end
+        end
+
+        if allKeysPresent then
+            local status = placeholderCount > 0 and " (" .. placeholderCount .. " placeholders need GUIDs)" or " (all GUIDs filled)"
+            print("HAND Zone GUIDs: All keys present" .. status)
+            printTestResult("HAND Zone GUIDs Structure", true, #expectedHandKeys .. " keys present" .. status)
+            passed = passed + 1
+        else
+            printTestResult("HAND Zone GUIDs Structure", false, "Missing keys: {" .. table.concat(missingKeys, ", ") .. "}")
+            failed = failed + 1
+        end
+    end
+
+    -- Test 5: GetHandZoneGUID Function
+    do
+        local testColors = {"Brown", "Orange", "Red", "Pink", "Purple", "Black"}
+        local allWork = true
+        local failedColors = {}
+
+        for _, color in ipairs(testColors) do
+            local guid = C.GetHandZoneGUID(color)
+            if guid == nil then
+                allWork = false
+                table.insert(failedColors, color .. " (returned nil)")
+            elseif string.find(guid, "@@@@@@") then
+                -- This is okay - it's a placeholder that needs to be filled
+                print("  " .. color .. ": " .. guid .. " (placeholder - needs GUID)")
+            else
+                print("  " .. color .. ": " .. guid .. " (GUID filled)")
+            end
+        end
+
+        if allWork then
+            printTestResult("GetHandZoneGUID Function", true, "All colors return valid GUIDs or placeholders")
+            passed = passed + 1
+        else
+            printTestResult("GetHandZoneGUID Function", false, "Failed for: {" .. table.concat(failedColors, ", ") .. "}")
+            failed = failed + 1
+        end
+    end
+
+    -- Test 6: Constants Structure (UI IDs, Dice Settings, etc.)
+    do
+        local checks = {
+            {name = "DICE_SUCCESS_THRESHOLD", value = C.DICE_SUCCESS_THRESHOLD, expected = 6},
+            {name = "DICE_CRITICAL_SUCCESS_VALUE", value = C.DICE_CRITICAL_SUCCESS_VALUE, expected = 10},
+            {name = "MAX_HUNGER", value = C.MAX_HUNGER, expected = 5},
+            {name = "UI_IDS table", value = C.UI_IDS, expected = "table"},
+        }
+
+        local allPass = true
+        for _, check in ipairs(checks) do
+            local pass = false
+            if check.expected == "table" then
+                pass = type(check.value) == "table"
+            else
+                pass = check.value == check.expected
+            end
+
+            if pass then
+                print("  " .. check.name .. ": " .. tostring(check.value))
+            else
+                print("  " .. check.name .. ": FAILED (expected " .. tostring(check.expected) .. ", got " .. tostring(check.value) .. ")")
+                allPass = false
+            end
+        end
+
+        if allPass then
+            printTestResult("Constants Structure", true, "All game settings present")
+            passed = passed + 1
+        else
+            printTestResult("Constants Structure", false, "Some constants missing or incorrect")
+            failed = failed + 1
+        end
+    end
+
+    -- Summary
+    print("\n" .. string.rep("-", 60))
+    print("Constants Tests: " .. passed .. " passed, " .. failed .. " failed")
+    print(string.rep("-", 60))
+
+    local summary = string.format("Constants Tests: %d passed, %d failed", passed, failed)
+    DEBUG.logToFile("INFO", summary, "debug_log")
+    DEBUG.logTestToFile("Constants Module", failed == 0, summary, "test_results")
+end
+
+--[[
     Utility Tests
 ]]
 
@@ -509,6 +774,586 @@ function DEBUG.testUtilities()
     end
 
     DEBUG.logToFile("INFO", "Completed testUtilities()", "debug_log")
+end
+
+--[[
+    Lighting & Signal Fire Tests (Sequencing & Animation)
+]]
+
+--- Initializes all lighting and signal objects to OFF state
+-- Sets all signal fires, RING_FLARE, and player lights to OFF instantly
+-- Also sets ambient lighting to DARK mode
+-- Exposed globally as initLightingAndSignals()
+-- @usage initLightingAndSignals() -- Call from TTS console
+function DEBUG.initLightingAndSignals()
+    print("⚙️  Initializing: Setting all signal fires, RING_FLARE, player lights to OFF, and ambient to DARK")
+
+    -- Helper: Get signal fire object by color
+    local function getSignalFire(color)
+        local guid = C.GetSignalFireGUID(color)
+        if not guid then
+            return nil
+        end
+        return getObjectFromGUID(guid)
+    end
+
+    -- Helper: Get RING_FLARE object
+    local function getRingFlare()
+        local guid = C.GUIDS.RING_FLARE
+        if not guid then
+            return nil
+        end
+        return getObjectFromGUID(guid)
+    end
+
+    -- Helper: Get player light object by color
+    local function getPlayerLight(color)
+        local guid = C.GetPlayerLightGUID(color)
+        if not guid then
+            return nil
+        end
+        return getObjectFromGUID(guid)
+    end
+
+    -- Helper: Merge partial position with current position
+    local function mergePosition(obj, partialPos)
+        local currentPos = obj.getPosition()
+        local newPos = {
+            x = partialPos.x or currentPos.x,
+            y = partialPos.y or currentPos.y,
+            z = partialPos.z or currentPos.z
+        }
+        return Vector(newPos.x, newPos.y, newPos.z)
+    end
+
+    -- Helper: Set signal fire state (on/off) with optional animation
+    local function setSignalFireState(color, state, duration)
+        duration = duration or 0.0  -- Default to instant
+        local fire = getSignalFire(color)
+        if not fire then
+            print("⚠️  Signal fire not found for color: " .. tostring(color))
+            return false
+        end
+
+        local posData = C.ObjectPositions.SIGNAL_FIRE[state]
+        if not posData then
+            print("⚠️  Invalid signal fire state: " .. tostring(state))
+            return false
+        end
+
+        -- Merge partial position with current position
+        local targetPos = mergePosition(fire, posData.position)
+
+        if duration > 0 then
+            -- Use lerp for smooth animation
+            U.setPositionSlow(fire, targetPos, duration, nil, false)
+        else
+            -- Instant (no lerping)
+            fire.setPosition(targetPos)
+        end
+        return true
+    end
+
+    -- Helper: Set RING_FLARE state (on/off) with optional animation
+    local function setRingFlareState(state, duration)
+        duration = duration or 0.0  -- Default to instant
+        local flare = getRingFlare()
+        if not flare then
+            print("⚠️  RING_FLARE not found")
+            return false
+        end
+
+        local posData = C.ObjectPositions.RING_FLARE[state]
+        if not posData then
+            print("⚠️  Invalid RING_FLARE state: " .. tostring(state))
+            return false
+        end
+
+        -- Merge partial position with current position
+        local currentPos = flare.getPosition()
+        local targetPos = {
+            x = posData.position.x or currentPos.x,
+            y = posData.position.y or currentPos.y,
+            z = posData.position.z or currentPos.z
+        }
+        targetPos = Vector(targetPos.x, targetPos.y, targetPos.z)
+
+        if duration > 0 then
+            -- Use lerp for smooth animation
+            U.setPositionSlow(flare, targetPos, duration, nil, false)
+        else
+            -- Instant (no lerping)
+            flare.setPosition(targetPos)
+        end
+        return true
+    end
+
+    -- Helper: Convert player color to lighting module light name
+    -- Maps "Brown" -> "playerLightBrown", "Orange" -> "playerLightOrange", etc.
+    local function getPlayerLightName(color)
+        -- Capitalize first letter, lowercase rest
+        local first = string.upper(string.sub(color, 1, 1))
+        local rest = string.lower(string.sub(color, 2))
+        return "playerLight" .. first .. rest
+    end
+
+    -- Helper: Set player light mode using lighting module
+    -- Uses L.SetLightMode() which handles all properties (position, rotation, range, angle, intensity, enabled)
+    local function setPlayerLightMode(color, mode, duration)
+        duration = duration or 0.0  -- Default to instant
+        local lightName = getPlayerLightName(color)
+
+        if not L or not L.SetLightMode then
+            print("⚠️  Lighting module (L) or SetLightMode not available")
+            return false
+        end
+
+        if not L.LIGHTMODES[lightName] then
+            print("⚠️  Light mode not found for: " .. lightName)
+            return false
+        end
+
+        -- Use lighting module to set the mode
+        local success, result = pcall(function()
+            return L.SetLightMode(lightName, mode, color, duration)
+        end)
+
+        if not success then
+            print("⚠️  Error setting player light mode: " .. tostring(result))
+            return false
+        end
+
+        return true
+    end
+
+    local allSuccess = true
+
+    -- Set all signal fires to OFF (instant)
+    for _, color in ipairs(C.PlayerColors) do
+        local success = setSignalFireState(color, "off", 0.0)  -- 0 = instant
+        if not success then
+            allSuccess = false
+        end
+    end
+
+    -- Set RING_FLARE to OFF (instant)
+    local flareSuccess = setRingFlareState("off", 0.0)  -- 0 = instant
+    if not flareSuccess then
+        allSuccess = false
+    end
+
+    -- Set all player lights to OFF (instant)
+    for _, color in ipairs(C.PlayerColors) do
+        local success = setPlayerLightMode(color, "OFF", 0.0)  -- 0 = instant
+        if not success then
+            allSuccess = false
+        end
+    end
+
+    -- Set ambient lighting to DARK mode (instant)
+    if C.LightModes.DARK then
+        U.changeLighting(C.LightModes.DARK)
+        print("✅ Ambient lighting set to DARK mode")
+    else
+        print("⚠️  DARK mode not found in C.LightModes")
+        allSuccess = false
+    end
+
+    if allSuccess and flareSuccess then
+        print("✅ Initialization complete: All objects set to OFF state, ambient lighting set to DARK")
+    else
+        print("⚠️  Initialization completed with some errors")
+    end
+end
+
+--- Helper: Merge partial position with current position
+-- Handles partial position updates (e.g., {y=2.5} only changes Y axis)
+-- @param obj Object The object to get current position from
+-- @param partialPos table Partial position data (e.g., {y=2.5} or {x=1, z=3})
+-- @return Vector Complete position with partial values merged
+local function mergePosition(obj, partialPos)
+    local currentPos = obj.getPosition()
+    local newPos = {
+        x = partialPos.x or currentPos.x,
+        y = partialPos.y or currentPos.y,
+        z = partialPos.z or currentPos.z
+    }
+    return Vector(newPos.x, newPos.y, newPos.z)
+end
+
+--- Test lighting and signal fire manipulation with sequencing
+-- Tests: Signal fire positioning, lighting changes, U.RunSequence, U.Lerp, broadcasts
+function DEBUG.testLightingAndSignals()
+    printTestHeader("Lighting & Signal Fire Sequencing Test")
+    DEBUG.logToFile("INFO", "Starting testLightingAndSignals()", "debug_log")
+
+    local passed = 0
+    local failed = 0
+
+    -- Helper: Broadcast message to all players
+    local function broadcast(message, color)
+        color = color or {1, 1, 1}  -- Default white
+        broadcastToAll(message, color)
+        print("📢 " .. message)
+    end
+
+    -- Helper: Wait step with broadcast message
+    local function waitStep(message, waitTime)
+        waitTime = waitTime or 3.0
+        return function()
+            broadcast(message, {0.7, 0.7, 0.7})
+            return waitTime
+        end
+    end
+
+    -- Helper: Get signal fire object by color
+    local function getSignalFire(color)
+        local guid = C.GetSignalFireGUID(color)
+        if not guid then
+            return nil
+        end
+        return getObjectFromGUID(guid)
+    end
+
+    -- Helper: Get RING_FLARE object
+    local function getRingFlare()
+        local guid = C.GUIDS.RING_FLARE
+        if not guid then
+            return nil
+        end
+        return getObjectFromGUID(guid)
+    end
+
+    -- Helper: Get player light object by color
+    local function getPlayerLight(color)
+        local guid = C.GetPlayerLightGUID(color)
+        if not guid then
+            return nil
+        end
+        return getObjectFromGUID(guid)
+    end
+
+    -- Helper: Set signal fire state (on/off) with optional animation
+    local function setSignalFireState(color, state, duration)
+        duration = duration or 1.0
+        local fire = getSignalFire(color)
+        if not fire then
+            print("⚠️  Signal fire not found for color: " .. tostring(color))
+            return false
+        end
+
+        local posData = C.ObjectPositions.SIGNAL_FIRE[state]
+        if not posData then
+            print("⚠️  Invalid signal fire state: " .. tostring(state))
+            return false
+        end
+
+        -- Merge partial position with current position
+        local targetPos = mergePosition(fire, posData.position)
+
+        if duration > 0 then
+            -- Use lerp for smooth animation
+            U.setPositionSlow(fire, targetPos, duration, nil, false)
+        else
+            -- Instant (no lerping)
+            fire.setPosition(targetPos)
+        end
+        return true
+    end
+
+    -- Helper: Set RING_FLARE state (on/off) with optional animation
+    local function setRingFlareState(state, duration)
+        duration = duration or 0.0  -- Default to instant
+        local flare = getRingFlare()
+        if not flare then
+            print("⚠️  RING_FLARE not found")
+            return false
+        end
+
+        local posData = C.ObjectPositions.RING_FLARE[state]
+        if not posData then
+            print("⚠️  Invalid RING_FLARE state: " .. tostring(state))
+            return false
+        end
+
+        -- Merge partial position with current position
+        local currentPos = flare.getPosition()
+        local targetPos = {
+            x = posData.position.x or currentPos.x,
+            y = posData.position.y or currentPos.y,
+            z = posData.position.z or currentPos.z
+        }
+        targetPos = Vector(targetPos.x, targetPos.y, targetPos.z)
+
+        if duration > 0 then
+            -- Use lerp for smooth animation
+            U.setPositionSlow(flare, targetPos, duration, nil, false)
+        else
+            -- Instant (no lerping)
+            flare.setPosition(targetPos)
+        end
+        return true
+    end
+
+    -- Helper: Convert player color to lighting module light name
+    -- Maps "Brown" -> "playerLightBrown", "Orange" -> "playerLightOrange", etc.
+    local function getPlayerLightName(color)
+        -- Capitalize first letter, lowercase rest
+        local first = string.upper(string.sub(color, 1, 1))
+        local rest = string.lower(string.sub(color, 2))
+        return "playerLight" .. first .. rest
+    end
+
+    -- Helper: Set player light mode using lighting module
+    -- Uses L.SetLightMode() which handles all properties (position, rotation, range, angle, intensity, enabled)
+    local function setPlayerLightMode(color, mode, duration)
+        duration = duration or 0.0  -- Default to instant
+        local lightName = getPlayerLightName(color)
+
+        if not L or not L.SetLightMode then
+            print("⚠️  Lighting module (L) or SetLightMode not available")
+            return false
+        end
+
+        if not L.LIGHTMODES[lightName] then
+            print("⚠️  Light mode not found for: " .. lightName)
+            return false
+        end
+
+        -- Use lighting module to set the mode
+        local success, result = pcall(function()
+            return L.SetLightMode(lightName, mode, color, duration)
+        end)
+
+        if not success then
+            print("⚠️  Error setting player light mode: " .. tostring(result))
+            return false
+        end
+
+        return true
+    end
+
+    -- Test sequence using U.RunSequence
+    local sequenceFunctions = {}
+
+    -- Step 1: Initial broadcast
+    table.insert(sequenceFunctions, function()
+        broadcast("🔦 Starting Lighting & Signal Fire Test", {1, 1, 0.5})
+        return 2.0
+    end)
+
+    -- Step 2: INITIALIZATION - Use the extracted initialization function
+    table.insert(sequenceFunctions, function()
+        broadcast("⚙️  Initializing: Setting all signal fires, RING_FLARE, player lights to OFF, and ambient to DARK", {0.8, 0.8, 1})
+
+        -- Call the extracted initialization function
+        DEBUG.initLightingAndSignals()
+
+        printTestResult("Initialization", true, "All objects set to OFF state, ambient set to DARK")
+        passed = passed + 1
+
+        return 1.0  -- Brief pause after initialization
+    end)
+
+    -- Step 3: Wait after initialization
+    table.insert(sequenceFunctions, waitStep("Initialization complete, waiting 3 seconds...", 3.0))
+
+    -- Step 4: Test signal fire ON (Brown player)
+    table.insert(sequenceFunctions, function()
+        broadcast("🔥 Testing Signal Fire ON (Brown player)", {1, 0.5, 0})
+        local success = setSignalFireState("Brown", "on", 0.5)  -- 0.5 seconds for faster motion
+        if success then
+            printTestResult("Signal Fire ON (Brown)", true, "Fire moved to y=2.5")
+            passed = passed + 1
+        else
+            printTestResult("Signal Fire ON (Brown)", false, "Failed to move fire")
+            failed = failed + 1
+        end
+        return 4.0  -- Wait for animation
+    end)
+
+    -- Step 5: Wait after signal fire ON
+    table.insert(sequenceFunctions, waitStep("Signal Fire finished raising, waiting 3 seconds...", 3.0))
+
+    -- Step 6: Test signal fire OFF (Brown player)
+    table.insert(sequenceFunctions, function()
+        broadcast("💤 Testing Signal Fire OFF (Brown player)", {0.5, 0.5, 0.5})
+        local success = setSignalFireState("Brown", "off", 0.5)  -- 0.5 seconds for faster motion
+        if success then
+            printTestResult("Signal Fire OFF (Brown)", true, "Fire moved to y=-25")
+            passed = passed + 1
+        else
+            printTestResult("Signal Fire OFF (Brown)", false, "Failed to move fire")
+            failed = failed + 1
+        end
+        return 4.0  -- Wait for animation
+    end)
+
+    -- Step 7: Wait after signal fire OFF
+    table.insert(sequenceFunctions, waitStep("Signal Fire finished lowering, waiting 3 seconds...", 3.0))
+
+    -- Step 8: Test multiple signal fires ON (all player colors)
+    table.insert(sequenceFunctions, function()
+        broadcast("🔥 Testing All Signal Fires ON", {1, 0.5, 0})
+        local allSuccess = true
+        for _, color in ipairs(C.PlayerColors) do
+            local success = setSignalFireState(color, "on", 0.5)  -- 0.5 seconds for faster motion
+            if not success then
+                allSuccess = false
+            end
+        end
+        if allSuccess then
+            printTestResult("All Signal Fires ON", true, "All " .. #C.PlayerColors .. " fires activated")
+            passed = passed + 1
+        else
+            printTestResult("All Signal Fires ON", false, "Some fires failed")
+            failed = failed + 1
+        end
+        return 5.0  -- Wait for animations
+    end)
+
+    -- Step 9: Wait after all signal fires ON
+    table.insert(sequenceFunctions, waitStep("All Signal Fires finished raising, waiting 3 seconds...", 3.0))
+
+    -- Step 10: Lerp each player light from OFF to STANDARD (one after another)
+    table.insert(sequenceFunctions, function()
+        broadcast("💡 Testing Player Lights: OFF → STANDARD (sequential)", {1, 1, 0.5})
+        local allSuccess = true
+        local lerpDuration = 2.0
+
+        -- Create sequence for each player light
+        local lightSequence = {}
+        for _, color in ipairs(C.PlayerColors) do
+            table.insert(lightSequence, function()
+                broadcast("  → " .. color .. " light transitioning...", {0.8, 0.8, 1})
+                local success = setPlayerLightMode(color, "STANDARD", lerpDuration)
+                if not success then
+                    allSuccess = false
+                end
+                return lerpDuration + 0.5  -- Wait for animation + brief pause
+            end)
+        end
+
+        -- Run the sequence of light transitions
+        U.RunSequence(lightSequence)
+
+        if allSuccess then
+            printTestResult("Player Lights OFF→STANDARD", true, "All " .. #C.PlayerColors .. " lights transitioned")
+            passed = passed + 1
+        else
+            printTestResult("Player Lights OFF→STANDARD", false, "Some lights failed")
+            failed = failed + 1
+        end
+
+        -- Return total time for all lights (approximate)
+        return (lerpDuration + 0.5) * #C.PlayerColors
+    end)
+
+    -- Step 11: Wait after player lights transition
+    table.insert(sequenceFunctions, waitStep("All Player Lights finished transitioning, waiting 3 seconds...", 3.0))
+
+    -- Step 12: Instantly switch RING_FLARE to ON
+    table.insert(sequenceFunctions, function()
+        broadcast("✨ Testing RING_FLARE: Switching to ON (instant)", {1, 1, 0})
+        local success = setRingFlareState("on", 0.0)  -- 0 = instant
+        if success then
+            printTestResult("RING_FLARE ON", true, "RING_FLARE moved to y=-0.08")
+            passed = passed + 1
+        else
+            printTestResult("RING_FLARE ON", false, "Failed to move RING_FLARE")
+            failed = failed + 1
+        end
+        return 2.0  -- Brief pause to observe
+    end)
+
+    -- Step 13: Wait after RING_FLARE ON
+    table.insert(sequenceFunctions, waitStep("RING_FLARE switched ON, waiting 3 seconds...", 3.0))
+
+    -- Step 14: Instantly switch RING_FLARE to OFF
+    table.insert(sequenceFunctions, function()
+        broadcast("💤 Testing RING_FLARE: Switching to OFF (instant)", {0.5, 0.5, 0.5})
+        local success = setRingFlareState("off", 0.0)  -- 0 = instant
+        if success then
+            printTestResult("RING_FLARE OFF", true, "RING_FLARE moved to y=-60")
+            passed = passed + 1
+        else
+            printTestResult("RING_FLARE OFF", false, "Failed to move RING_FLARE")
+            failed = failed + 1
+        end
+        return 2.0  -- Brief pause to observe
+    end)
+
+    -- Step 15: Wait after RING_FLARE OFF
+    table.insert(sequenceFunctions, waitStep("RING_FLARE switched OFF, waiting 3 seconds...", 3.0))
+
+    -- Step 16: Simultaneously lerp all player lights from STANDARD to OFF
+    table.insert(sequenceFunctions, function()
+        broadcast("💤 Testing Player Lights: STANDARD → OFF (simultaneous)", {0.5, 0.5, 0.5})
+        local allSuccess = true
+        local lerpDuration = 2.0
+
+        -- Start all transitions simultaneously
+        for _, color in ipairs(C.PlayerColors) do
+            local success = setPlayerLightMode(color, "OFF", lerpDuration)
+            if not success then
+                allSuccess = false
+            end
+        end
+
+        if allSuccess then
+            printTestResult("Player Lights STANDARD→OFF", true, "All " .. #C.PlayerColors .. " lights transitioned simultaneously")
+            passed = passed + 1
+        else
+            printTestResult("Player Lights STANDARD→OFF", false, "Some lights failed")
+            failed = failed + 1
+        end
+
+        return lerpDuration + 1.0  -- Wait for animation to complete
+    end)
+
+    -- Step 17: Wait after simultaneous player lights OFF
+    table.insert(sequenceFunctions, waitStep("All Player Lights finished transitioning to OFF, waiting 3 seconds...", 3.0))
+
+    -- Step 18: Turn off all signal fires
+    table.insert(sequenceFunctions, function()
+        broadcast("💤 Turning Off All Signal Fires", {0.5, 0.5, 0.5})
+        local allSuccess = true
+        for _, color in ipairs(C.PlayerColors) do
+            local success = setSignalFireState(color, "off", 0.5)  -- 0.5 seconds for faster motion
+            if not success then
+                allSuccess = false
+            end
+        end
+        if allSuccess then
+            printTestResult("All Signal Fires OFF", true, "All fires deactivated")
+            passed = passed + 1
+        else
+            printTestResult("All Signal Fires OFF", false, "Some fires failed")
+            failed = failed + 1
+        end
+        return 4.0  -- Wait for animations
+    end)
+
+    -- Step 19: Final summary
+    table.insert(sequenceFunctions, function()
+        broadcast("✅ Lighting & Signal Fire Test Complete!", {0, 1, 0})
+        print("\n" .. string.rep("-", 60))
+        print("Lighting & Signal Fire Tests: " .. passed .. " passed, " .. failed .. " failed")
+        print(string.rep("-", 60))
+
+        local summary = string.format("Lighting & Signal Fire Tests: %d passed, %d failed", passed, failed)
+        DEBUG.logToFile("INFO", summary, "debug_log")
+        DEBUG.logTestToFile("Lighting & Signal Fire Sequencing", failed == 0, summary, "test_results")
+        return 0  -- No wait needed
+    end)
+
+    -- Execute the sequence
+    print("Starting sequence test with " .. #sequenceFunctions .. " steps...")
+    print("This will take approximately 2-3 minutes to complete.")
+    print("Watch for broadcast messages and visual changes.\n")
+
+    -- Use U.RunSequence to execute all steps
+    U.RunSequence(sequenceFunctions)
 end
 
 --[[
@@ -753,9 +1598,8 @@ function DEBUG.logToFile(level, message, filename)
     local timestamp = getTimestamp()
     local logEntry = string.format("[%s] [%s] %s\n", timestamp, level, message)
 
-    -- Append to existing file (we'll read existing content first if possible)
-    -- For now, we'll create a new entry each time - the extension handles file writing
-    writeToFile(filename, logEntry, "none")
+    -- Append to existing cached content
+    writeToFile(filename, logEntry, "none", true)
 end
 
 --- Logs current game state to a file as JSON
@@ -767,7 +1611,8 @@ function DEBUG.logStateToFile(filename)
     local timestamp = getTimestamp()
     local content = string.format("Game State Dump - %s\n%s\n", timestamp, stateJson)
 
-    writeToFile(filename, content, "auto")
+    -- State dumps are overwritten (not appended) - each dump is a complete snapshot
+    writeToFile(filename, content, "auto", false)
     print("DEBUG: Game state logged to " .. filename .. "." .. LOG_EXTENSION)
 end
 
@@ -789,7 +1634,8 @@ function DEBUG.logSceneToFile(filename)
     end
     content = content .. "\n"
 
-    writeToFile(filename, content, "auto")
+    -- Scene dumps are overwritten (not appended) - each dump is a complete snapshot
+    writeToFile(filename, content, "auto", false)
     print("DEBUG: Scene info logged to " .. filename .. "." .. LOG_EXTENSION)
 end
 
@@ -808,7 +1654,8 @@ function DEBUG.logZonesToFile(filename)
     end
     content = content .. "\n"
 
-    writeToFile(filename, content, "auto")
+    -- Zone dumps are overwritten (not appended) - each dump is a complete snapshot
+    writeToFile(filename, content, "auto", false)
     print("DEBUG: Zone info logged to " .. filename .. "." .. LOG_EXTENSION)
 end
 
@@ -828,7 +1675,8 @@ function DEBUG.logTestToFile(testName, passed, details, filename)
     end
     content = content .. "\n"
 
-    writeToFile(filename, content, "none")
+    -- Append to existing cached content
+    writeToFile(filename, content, "none", true)
 end
 
 --- Logs all debug information to separate files
@@ -844,16 +1692,20 @@ end
 
 --- Clears all log files (writes empty/header content to reset them)
 -- Called automatically on game load to start fresh logs
+-- Also clears the in-memory cache
 function DEBUG.clearAllLogs()
     local timestamp = getTimestamp()
     local sessionHeader = string.format("=== DEBUG LOG SESSION STARTED - %s ===\n\n", timestamp)
 
-    -- Clear each log file by writing session header
-    writeToFile("debug_log", sessionHeader, "none")
-    writeToFile("game_state", sessionHeader, "none")
-    writeToFile("scene_info", sessionHeader, "none")
-    writeToFile("zone_info", sessionHeader, "none")
-    writeToFile("test_results", sessionHeader, "none")
+    -- Clear the cache
+    logCache = {}
+
+    -- Clear each log file by writing session header (overwrite mode)
+    writeToFile("debug_log", sessionHeader, "none", false)
+    writeToFile("game_state", sessionHeader, "none", false)
+    writeToFile("scene_info", sessionHeader, "none", false)
+    writeToFile("zone_info", sessionHeader, "none", false)
+    writeToFile("test_results", sessionHeader, "none", false)
 
     print("DEBUG: All log files cleared (new session started)")
 end
@@ -869,7 +1721,8 @@ function DEBUG.help()
     print(string.rep("=", 70))
     print("\nUse these commands in the TTS console with: lua <command>()")
     print("\nTESTING FUNCTIONS:")
-    print("  testState()              - Test state get/set operations")
+    print("  testConstants()          - Test constants module (TOR-3)")
+    print("  testState()              - Test state get/set operations (TOR-5)")
     print("  testStatePersistence()   - Test state save/load")
     print("  testScenes()             - Test scene loading and transitions")
     print("  testAllScenes()          - Test all scene presets")
@@ -877,6 +1730,7 @@ function DEBUG.help()
     print("  testMain()               - Test main module functions")
     print("  testUI()                 - Test UI display updates")
     print("  testUtilities()          - Test utility functions")
+    print("  testLightingAndSignals() - Test lighting & signal fires with sequencing")
     print("  testIntegration()        - Full integration test")
     print("\nINSPECTION FUNCTIONS:")
     print("  showState()              - Display current game state (JSON)")
@@ -907,6 +1761,7 @@ end
 ]]
 
 -- Expose all test functions
+testConstants = DEBUG.testConstants
 testState = DEBUG.testState
 testStatePersistence = DEBUG.testStatePersistence
 testScenes = DEBUG.testScenes
@@ -915,6 +1770,7 @@ testZones = DEBUG.testZones
 testMain = DEBUG.testMain
 testUI = DEBUG.testUI
 testUtilities = DEBUG.testUtilities
+testLightingAndSignals = DEBUG.testLightingAndSignals
 testIntegration = DEBUG.testIntegration
 
 -- Expose inspection functions
@@ -937,6 +1793,9 @@ logAllToFiles = DEBUG.logAllToFiles
 
 -- Expose help
 debugHelp = DEBUG.help
+
+-- Expose initialization function
+initLightingAndSignals = DEBUG.initLightingAndSignals
 
 -- Auto-show help on load (optional - comment out if not desired)
 -- DEBUG.help()

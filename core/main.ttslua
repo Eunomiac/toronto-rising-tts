@@ -48,9 +48,40 @@ function M.setupPlayers()
         print("Main: Promoted player " .. player.color)
     end
 
+    -- Set up tombstone visibility (each player's tombstone invisible to them)
+    M.setupTombstoneVisibility()
+
     -- TODO: Assign Storyteller role (e.g., Black or Brown player)
     -- TODO: Initialize player-specific data in game state (hunger, willpower, health, etc.)
     -- TODO: Set up player-specific UI elements
+end
+
+--[[
+    Sets up tombstone visibility so each player's tombstone is invisible to them
+    This prevents tombstones from blocking a player's view of the table.
+    Uses TTS setInvisibleTo() function to hide objects from specific players.
+]]
+function M.setupTombstoneVisibility()
+    print("Main: Setting up tombstone visibility.")
+
+    for _, color in ipairs(C.PlayerColors) do
+        local guid = C.GetTombstoneGUID(color)
+        if guid then
+            local tombstone = getObjectFromGUID(guid)
+            if tombstone then
+                -- Make this tombstone invisible to the player of this color
+                -- The tombstone will still be visible to other players and the Storyteller
+                tombstone.setInvisibleTo({color})
+                print("Main: Tombstone for " .. color .. " set invisible to " .. color .. " player")
+            else
+                print("Main: Warning - Tombstone object not found for " .. color .. " (GUID: " .. guid .. ")")
+            end
+        else
+            print("Main: Warning - No tombstone GUID found for " .. color)
+        end
+    end
+
+    print("Main: Tombstone visibility setup complete.")
 end
 
 --[[

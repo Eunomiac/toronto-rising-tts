@@ -47,18 +47,11 @@ local DefaultTransitionTime = 2.0
 --   description (string, optional): Human-readable scene description
 
 Scenes.SCENES = {
-    -- Default/neutral scene
+    -- Default/neutral scene (uses DARK mode)
     default = {
-        ambient = {
-            ambient_intensity = 0.5,
-            ambient_type = 1,
-            light_intensity = 0.5,
-            lut_contribution = 0.0,
-            lut_index = 1,
-            reflection_intensity = 0.0
-        },
+        ambient = C.LightModes.DARK,
         lights = {},
-        description = "Default neutral lighting"
+        description = "Default dark lighting"
     },
 
     -- Elysium: Formal gathering place, elegant and refined

@@ -27,8 +27,8 @@ C.PlayerData = {
     [C.PlayerIDs.Pixel] = {
       color = "Brown",
       playerName = "Pixel",
-      charName = "Evander Ashwood",
-      clan = "Lasombra",
+      charName = "Lord Lucien",
+      clan = "Toreador",
       generation = 9,
       blood_potency = 3,
       health = {
@@ -261,7 +261,7 @@ C.PlayerData = {
       }
     },
     [C.PlayerIDs.JRook] = {
-      color = "Yellow",
+      color = "Pink",
       playerName = "J. Rook",
       charName = "Aidan Farthing",
       clan = "Malkavian",
@@ -321,7 +321,7 @@ C.PlayerData = {
       }
     },
     [C.PlayerIDs.Hastur] = {
-      color = "Green",
+      color = "Purple",
       playerName = "Hastur",
       charName = "Alyssa Farrell",
       clan = "Ventrue",
@@ -384,9 +384,9 @@ C.PlayerData = {
 
 
 -- Player Colors (VTM5E-specific)
--- Storyteller is always Black. Player colors are: Brown, Orange, Red, Yellow, Green (in that order)
+-- Storyteller is always Black. Player colors are: Brown, Orange, Red, Pink, Purple (in that order)
 C.PlayerColors = {
-    "Brown", "Orange", "Red", "Yellow", "Green"
+    "Brown", "Orange", "Red", "Pink", "Purple"
 }
 
 -- VTM5E Clans (from Heritage module)
@@ -442,25 +442,54 @@ C.CameraAngles = {
     -- Add more as needed for specific scenes
 }
 
+-- Object positions based on object state
+-- Only listed values should be changed
+C.ObjectPositions = {
+  SIGNAL_FIRE = {
+    on = {position = {y=2.5}},
+    off = {position = {y=-40}}
+  },
+  RING_FLARE = {
+    on = {position = {y=-0.08}},
+    off = {position = {y=-60}}
+  }
+}
+
 -- Light Presets (scene lighting configurations)
+-- Note: Color is controlled via LUT (Look-Up Table) indices, not a direct color property
+-- Use lut_index and lut_contribution for color grading effects
 C.LightModes = {
     BRIGHT = {
         ambient_intensity = 1.0,
         light_intensity = 1.0,
         ambient_type = 1,
-        color = {r=1, g=1, b=1}
+        lut_contribution = 0,
+        lut_index = 1,
+        reflection_intensity = 0
     },
     DIM = {
         ambient_intensity = 0.2,
         light_intensity = 0.5,
         ambient_type = 1,
-        color = {r=0.5, g=0.5, b=0.7}
+        lut_contribution = 0,
+        lut_index = 1,
+        reflection_intensity = 0
+    },
+    DARK = {
+        ambient_intensity = 0.0,
+        light_intensity = 0.0,
+        ambient_type = 1,
+        lut_contribution = 0,
+        lut_index = 1,
+        reflection_intensity = 0
     },
     TENSION = {
         ambient_intensity = 0.3,
         light_intensity = 0.8,
         ambient_type = 1,
-        color = {r=1, g=0.2, b=0.2}
+        lut_contribution = 0,
+        lut_index = 1,
+        reflection_intensity = 0
     },
     STANDARD = {
         ambient_intensity = 0.5546665,
@@ -476,20 +505,54 @@ C.LightModes = {
 -- Search for "@@@@@@" to find and replace these placeholders
 C.GUIDS = {
     -- Table object (if needed for reference)
-    TABLE = "@@@@@@TABLE@@@@@@",
+    TABLE = "1a0c6d",
+    -- Map object (for the map of the city)
+    MAP = "996f38",
+
+    -- STORYTELLER OBJECTS
+    -- Storyteller Table (raised and behind players so they can't see it)
+    STORYTELLER_TABLE = "c64fe0",
+    -- Difficulty Dial (for setting difficulty of dice rolls
+    DIFFICULTY_DIAL = "fe9e9a",
 
     -- Light objects (for scene lighting)
-    MAIN_LIGHT = "@@@@@@MAIN_LIGHT@@@@@@",
-    SPOTLIGHT_PLAYER = "@@@@@@SPOTLIGHT_PLAYER@@@@@@",
+    MAIN_LIGHT = "7082b8",
+    LARGE_MAP_LIGHT = "16a7b8",
+    PLAYER_LIGHT_BROWN = "f251e0",
+    PLAYER_LIGHT_ORANGE = "d3356d",
+    PLAYER_LIGHT_RED = "0cd76a",
+    PLAYER_LIGHT_PINK = "937fac",
+    PLAYER_LIGHT_PURPLE = "b36dfe",
+
+    -- Ambient Objects (for effects)
+    AMBIENT_FOG = "fb25b1",
+    RING_FLARE = "210fad", -- circular ring of rising light, used to highlight table drops
 
     -- Hand zones (player hand zones)
-    -- Storyteller (Black) and player colors: Brown, Orange, Red, Yellow, Green
-    HAND_BLACK = "@@@@@@HAND_BLACK@@@@@@",  -- Storyteller
-    HAND_BROWN = "@@@@@@HAND_BROWN@@@@@@",
-    HAND_ORANGE = "@@@@@@HAND_ORANGE@@@@@@",
-    HAND_RED = "@@@@@@HAND_RED@@@@@@",
-    HAND_YELLOW = "@@@@@@HAND_YELLOW@@@@@@",
-    HAND_GREEN = "@@@@@@HAND_GREEN@@@@@@",
+    -- Storyteller (Black) and player colors: Brown, Orange, Red, Pink, Purple
+    HAND_BLACK = "8981a0",  -- Storyteller
+    HAND_BROWN = "14b6cf",
+    HAND_ORANGE = "b9d1d9",
+    HAND_RED = "b13642",
+    HAND_PINK = "926600",
+    HAND_PURPLE = "e32d2c",
+
+    -- Scripting Zones
+    TABLE_DROP_ZONE = "af99b8", -- zone for table drops
+
+    -- Tombstone objects (for character tombstones)
+    TOMBSTONE_BROWN = "14b6cf",
+    TOMBSTONE_ORANGE = "b9d1d9",
+    TOMBSTONE_RED = "b13642",
+    TOMBSTONE_PINK = "926600",
+    TOMBSTONE_PURPLE = "e32d2c",
+
+    -- Signal fires (for players to signal need for Storyteller attention)
+    SIGNAL_FIRE_BROWN = "b0ffa8",
+    SIGNAL_FIRE_ORANGE = "7aa4ed",
+    SIGNAL_FIRE_RED = "cc2959",
+    SIGNAL_FIRE_PINK = "f1b7af",
+    SIGNAL_FIRE_PURPLE = "eac658",
 
     -- Add other object GUIDs as needed (zones, boards, etc.)
     -- Format: OBJECT_NAME = "@@@@@@OBJECT_NAME@@@@@@"
@@ -499,7 +562,7 @@ C.GUIDS = {
 -- Returns the GUID from C.GUIDS if it exists, or nil if not found.
 -- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
 -- If a GUID is not found, returns nil so callers can handle the error appropriately.
--- @param color string Player color (e.g., "Red", "Brown", "Orange", "Yellow", "Green", or "Black" for Storyteller)
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", "Purple", or "Black" for Storyteller)
 -- @return string|nil GUID string if found, or nil if not found
 -- @usage local handGUID = C.GetHandZoneGUID("Red")
 -- @usage local handObj = getObjectFromGUID(C.GetHandZoneGUID("Red"))
@@ -518,6 +581,72 @@ function C.GetHandZoneGUID(color)
     -- If GUID still contains placeholder markers, it hasn't been replaced yet
     -- Return it as-is (caller should handle placeholder case if needed)
     return guid
+end
+
+--- Gets the GUID string for a signal fire by color
+-- Returns the GUID from C.GUIDS if it exists, or nil if not found.
+-- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
+-- If a GUID is not found, returns nil so callers can handle the error appropriately.
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", "Purple", or "Black" for Storyteller)
+-- @return string|nil GUID string if found, or nil if not found
+-- @usage local signalFireGUID = C.GetSignalFireGUID("Red")
+-- @usage local signalFireObj = getObjectFromGUID(C.GetSignalFireGUID("Red"))
+function C.GetSignalFireGUID(color)
+  if color == nil then
+      return nil
+  end
+  local guidKey = "SIGNAL_FIRE_" .. string.upper(color)
+  local guid = C.GUIDS[guidKey]
+
+  -- If GUID is not found, return nil (don't create a placeholder - placeholders should only exist before GUIDs are set)
+  if guid == nil then
+      return nil
+  end
+
+  -- If GUID still contains placeholder markers, it hasn't been replaced yet
+  -- Return it as-is (caller should handle placeholder case if needed)
+  return guid
+end
+
+--- Gets the GUID string for a tombstone by color
+-- Returns the GUID from C.GUIDS if it exists, or nil if not found.
+-- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
+-- If a GUID is not found, returns nil so callers can handle the error appropriately.
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", "Purple", or "Black" for Storyteller)
+-- @return string|nil GUID string if found, or nil if not found
+-- @usage local tombstoneGUID = C.GetTombstoneGUID("Red")
+-- @usage local tombstoneObj = getObjectFromGUID(C.GetTombstoneGUID("Red"))
+function C.GetTombstoneGUID(color)
+  if color == nil then
+      return nil
+  end
+  local guidKey = "TOMBSTONE_" .. string.upper(color)
+  local guid = C.GUIDS[guidKey]
+
+  -- If GUID is not found, return nil (don't create a placeholder - placeholders should only exist before GUIDs are set)
+  if guid == nil then
+      return nil
+  end
+
+  -- If GUID still contains placeholder markers, it hasn't been replaced yet
+  -- Return it as-is (caller should handle placeholder case if needed)
+  return guid
+end
+
+function C.GetPlayerLightGUID(color)
+  if color == nil then
+      return nil
+  end
+  local guidKey = "PLAYER_LIGHT_" .. string.upper(color)
+  local guid = C.GUIDS[guidKey]
+
+  if guid == nil then
+      return nil
+  end
+
+  -- If GUID still contains placeholder markers, it hasn't been replaced yet
+  -- Return it as-is (caller should handle placeholder case if needed)
+  return guid
 end
 
 return C
