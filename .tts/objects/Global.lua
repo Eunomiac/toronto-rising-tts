@@ -12,6 +12,7 @@ local C = require("lib.constants")
 local S = require("core.state")
 local M = require("core.main")
 local Z = require("core.zones")
+local L = require("core.lighting")
 local Scenes = require("core.scenes")
 local UIH = require("lib.ui_helpers")
 
