@@ -11,7 +11,7 @@
     - Partial position handling (only update specified axes)
 ]]
 
-local Objects = {}
+local O = {}
 local U = require("lib.util")
 local C = require("lib.constants")
 local G = require("lib.guids")
@@ -44,25 +44,25 @@ end
 -- @param state string State: "on" or "off"
 -- @param duration number Optional: Animation duration in seconds (default: 0.2)
 -- @return boolean True if successful, false otherwise
--- @usage Objects.SetSignalFireState("Brown", "on", 0.2)
-function Objects.SetSignalFireState(color, state, duration)
+-- @usage O.SetSignalFireState("Brown", "on", 0.2)
+function O.SetSignalFireState(color, state, duration)
     duration = duration or 0.2  -- Default to 0.2 seconds (3x faster than before)
-    
+
     local guid = G.GetSignalFireGUID(color)
     if not guid then
-        U.AlertGM("Objects.SetSignalFireState: No GUID found for color: " .. tostring(color))
+        U.AlertGM("O.SetSignalFireState: No GUID found for color: " .. tostring(color))
         return false
     end
-    
+
     local fire = getObjectFromGUID(guid)
     if not fire then
-        U.AlertGM("Objects.SetSignalFireState: Signal fire not found for color: " .. tostring(color))
+        U.AlertGM("O.SetSignalFireState: Signal fire not found for color: " .. tostring(color))
         return false
     end
 
     local posData = C.ObjectPositions.SIGNAL_FIRE[state]
     if not posData then
-        U.AlertGM("Objects.SetSignalFireState: Invalid state: " .. tostring(state))
+        U.AlertGM("O.SetSignalFireState: Invalid state: " .. tostring(state))
         return false
     end
 
@@ -76,7 +76,7 @@ function Objects.SetSignalFireState(color, state, duration)
         -- Instant (no lerping)
         fire.setPosition(targetPos)
     end
-    
+
     return true
 end
 
@@ -89,25 +89,25 @@ end
 -- @param state string State: "on" or "off"
 -- @param duration number Optional: Animation duration in seconds (default: 0.2)
 -- @return boolean True if successful, false otherwise
--- @usage Objects.SetHungerSmokeState("Brown", "on", 0.2)
-function Objects.SetHungerSmokeState(color, state, duration)
+-- @usage O.SetHungerSmokeState("Brown", "on", 0.2)
+function O.SetHungerSmokeState(color, state, duration)
     duration = duration or 0.2  -- Default to 0.2 seconds (3x faster than before)
-    
+
     local guid = G.GetHungerSmokeGUID(color)
     if not guid then
-        U.AlertGM("Objects.SetHungerSmokeState: No GUID found for color: " .. tostring(color))
+        U.AlertGM("O.SetHungerSmokeState: No GUID found for color: " .. tostring(color))
         return false
     end
-    
+
     local smoke = getObjectFromGUID(guid)
     if not smoke then
-        U.AlertGM("Objects.SetHungerSmokeState: Hunger smoke not found for color: " .. tostring(color))
+        U.AlertGM("O.SetHungerSmokeState: Hunger smoke not found for color: " .. tostring(color))
         return false
     end
 
     local posData = C.ObjectPositions.HUNGER_SMOKE[state]
     if not posData then
-        U.AlertGM("Objects.SetHungerSmokeState: Invalid state: " .. tostring(state))
+        U.AlertGM("O.SetHungerSmokeState: Invalid state: " .. tostring(state))
         return false
     end
 
@@ -121,7 +121,7 @@ function Objects.SetHungerSmokeState(color, state, duration)
         -- Instant (no lerping)
         smoke.setPosition(targetPos)
     end
-    
+
     return true
 end
 
@@ -133,25 +133,25 @@ end
 -- @param state string State: "on" or "off"
 -- @param duration number Optional: Animation duration in seconds (default: 0.2)
 -- @return boolean True if successful, false otherwise
--- @usage Objects.SetRingFlareState("on", 0.2)
-function Objects.SetRingFlareState(state, duration)
+-- @usage O.SetRingFlareState("on", 0.2)
+function O.SetRingFlareState(state, duration)
     duration = duration or 0.2  -- Default to 0.2 seconds
-    
+
     local guid = G.GUIDS.RING_FLARE
     if not guid then
-        U.AlertGM("Objects.SetRingFlareState: No GUID found for RING_FLARE")
+        U.AlertGM("O.SetRingFlareState: No GUID found for RING_FLARE")
         return false
     end
-    
+
     local flare = getObjectFromGUID(guid)
     if not flare then
-        U.AlertGM("Objects.SetRingFlareState: RING_FLARE not found")
+        U.AlertGM("O.SetRingFlareState: RING_FLARE not found")
         return false
     end
 
     local posData = C.ObjectPositions.RING_FLARE[state]
     if not posData then
-        U.AlertGM("Objects.SetRingFlareState: Invalid state: " .. tostring(state))
+        U.AlertGM("O.SetRingFlareState: Invalid state: " .. tostring(state))
         return false
     end
 
@@ -165,9 +165,8 @@ function Objects.SetRingFlareState(state, duration)
         -- Instant (no lerping)
         flare.setPosition(targetPos)
     end
-    
+
     return true
 end
 
-return Objects
-
+return O

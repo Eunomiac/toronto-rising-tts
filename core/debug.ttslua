@@ -24,7 +24,7 @@ local Scenes = require("core.scenes")
 local C = require("lib.constants")
 local G = require("lib.guids")
 local L = require("core.lighting")
-local Objects = require("core.objects")
+local O = require("core.objects")
 
 --[[
     File Logging Configuration
@@ -1016,7 +1016,7 @@ function DEBUG.initLightingAndSignals()
 
     -- Set all signal fires to OFF (instant) - using Objects module
     for _, color in ipairs(C.PlayerColors) do
-        local success = Objects.SetSignalFireState(color, "off", 0.0)  -- 0 = instant
+        local success = O.SetSignalFireState(color, "off", 0.0)  -- 0 = instant
         if not success then
             allSuccess = false
         end
@@ -1024,14 +1024,14 @@ function DEBUG.initLightingAndSignals()
 
     -- Set all hunger smoke to OFF (instant) - using Objects module
     for _, color in ipairs(C.PlayerColors) do
-        local success = Objects.SetHungerSmokeState(color, "off", 0.0)  -- 0 = instant
+        local success = O.SetHungerSmokeState(color, "off", 0.0)  -- 0 = instant
         if not success then
             allSuccess = false
         end
     end
 
     -- Set RING_FLARE to OFF (instant) - using Objects module
-    local flareSuccess = Objects.SetRingFlareState("off", 0.0)  -- 0 = instant
+    local flareSuccess = O.SetRingFlareState("off", 0.0)  -- 0 = instant
     if not flareSuccess then
         allSuccess = false
     end
@@ -1166,15 +1166,16 @@ function DEBUG.testLightingAndSignals()
     -- Step 3: Wait after initialization
     table.insert(sequenceFunctions, waitStep("Initialization complete, waiting 3 seconds...", 3.0))
 
-    -- Step 4: Test signal fire ON (Brown player)
+    -- Step 4: Test signal fire ON (random player)
     table.insert(sequenceFunctions, function()
-        broadcast("🔥 Testing Signal Fire ON (Brown player)", {1, 0.5, 0})
-        local success = Objects.SetSignalFireState("Brown", "on", 0.2)  -- 0.2 seconds (3x faster)
+        local testColor = getRandomPlayerColor()
+        broadcast("🔥 Testing Signal Fire ON (" .. testColor .. " player)", {1, 0.5, 0})
+        local success = O.SetSignalFireState(testColor, "on", 0.2)  -- 0.2 seconds (3x faster)
         if success then
-            printTestResult("Signal Fire ON (Brown)", true, "Fire moved to y=1.5")
+            printTestResult("Signal Fire ON (" .. testColor .. ")", true, "Fire moved to y=1.5")
             passed = passed + 1
         else
-            printTestResult("Signal Fire ON (Brown)", false, "Failed to move fire")
+            printTestResult("Signal Fire ON (" .. testColor .. ")", false, "Failed to move fire")
             failed = failed + 1
         end
         return 1.5  -- Wait for animation
@@ -1183,15 +1184,16 @@ function DEBUG.testLightingAndSignals()
     -- Step 5: Wait after signal fire ON
     table.insert(sequenceFunctions, waitStep("Signal Fire finished raising, waiting 3 seconds...", 3.0))
 
-    -- Step 6: Test signal fire OFF (Brown player)
+    -- Step 6: Test signal fire OFF (random player)
     table.insert(sequenceFunctions, function()
-        broadcast("💤 Testing Signal Fire OFF (Brown player)", {0.5, 0.5, 0.5})
-        local success = Objects.SetSignalFireState("Brown", "off", 0.2)  -- 0.2 seconds (3x faster)
+        local testColor = getRandomPlayerColor()
+        broadcast("💤 Testing Signal Fire OFF (" .. testColor .. " player)", {0.5, 0.5, 0.5})
+        local success = O.SetSignalFireState(testColor, "off", 0.2)  -- 0.2 seconds (3x faster)
         if success then
-            printTestResult("Signal Fire OFF (Brown)", true, "Fire moved to y=-7")
+            printTestResult("Signal Fire OFF (" .. testColor .. ")", true, "Fire moved to y=-7")
             passed = passed + 1
         else
-            printTestResult("Signal Fire OFF (Brown)", false, "Failed to move fire")
+            printTestResult("Signal Fire OFF (" .. testColor .. ")", false, "Failed to move fire")
             failed = failed + 1
         end
         return 1.5  -- Wait for animation
@@ -1205,7 +1207,7 @@ function DEBUG.testLightingAndSignals()
         broadcast("🔥 Testing All Signal Fires ON", {1, 0.5, 0})
         local allSuccess = true
         for _, color in ipairs(C.PlayerColors) do
-            local success = Objects.SetSignalFireState(color, "on", 0.2)  -- 0.2 seconds (3x faster)
+            local success = O.SetSignalFireState(color, "on", 0.2)  -- 0.2 seconds (3x faster)
             if not success then
                 allSuccess = false
             end
@@ -1263,7 +1265,7 @@ function DEBUG.testLightingAndSignals()
     -- Step 12: Instantly switch RING_FLARE to ON
     table.insert(sequenceFunctions, function()
         broadcast("✨ Testing RING_FLARE: Switching to ON (instant)", {1, 1, 0})
-        local success = Objects.SetRingFlareState("on", 0.0)  -- 0 = instant
+        local success = O.SetRingFlareState("on", 0.0)  -- 0 = instant
         if success then
             printTestResult("RING_FLARE ON", true, "RING_FLARE moved to y=-0.08")
             passed = passed + 1
@@ -1280,7 +1282,7 @@ function DEBUG.testLightingAndSignals()
     -- Step 14: Instantly switch RING_FLARE to OFF
     table.insert(sequenceFunctions, function()
         broadcast("💤 Testing RING_FLARE: Switching to OFF (instant)", {0.5, 0.5, 0.5})
-        local success = Objects.SetRingFlareState("off", 0.0)  -- 0 = instant
+        local success = O.SetRingFlareState("off", 0.0)  -- 0 = instant
         if success then
             printTestResult("RING_FLARE OFF", true, "RING_FLARE moved to y=-60")
             passed = passed + 1
@@ -1327,7 +1329,7 @@ function DEBUG.testLightingAndSignals()
         broadcast("💤 Turning Off All Signal Fires", {0.5, 0.5, 0.5})
         local allSuccess = true
         for _, color in ipairs(C.PlayerColors) do
-            local success = Objects.SetSignalFireState(color, "off", 0.2)  -- 0.2 seconds (3x faster)
+            local success = O.SetSignalFireState(color, "off", 0.2)  -- 0.2 seconds (3x faster)
             if not success then
                 allSuccess = false
             end
@@ -1345,7 +1347,7 @@ function DEBUG.testLightingAndSignals()
     -- Step 19: Test hunger smoke ON (Brown player)
     table.insert(sequenceFunctions, function()
         broadcast("💨 Testing Hunger Smoke ON (Brown player)", {0.8, 0.4, 0.8})
-        local success = Objects.SetHungerSmokeState("Brown", "on", 0.2)  -- 0.2 seconds (3x faster)
+        local success = O.SetHungerSmokeState("Brown", "on", 0.2)  -- 0.2 seconds (3x faster)
         if success then
             printTestResult("Hunger Smoke ON (Brown)", true, "Smoke moved to y=0.2")
             passed = passed + 1
@@ -1359,15 +1361,16 @@ function DEBUG.testLightingAndSignals()
     -- Step 20: Wait after hunger smoke ON
     table.insert(sequenceFunctions, waitStep("Hunger Smoke finished raising, waiting 3 seconds...", 3.0))
 
-    -- Step 21: Test hunger smoke OFF (Brown player)
+    -- Step 21: Test hunger smoke OFF (random player)
     table.insert(sequenceFunctions, function()
-        broadcast("💤 Testing Hunger Smoke OFF (Brown player)", {0.5, 0.5, 0.5})
-        local success = Objects.SetHungerSmokeState("Brown", "off", 0.2)  -- 0.2 seconds (3x faster)
+        local testColor = getRandomPlayerColor()
+        broadcast("💤 Testing Hunger Smoke OFF (" .. testColor .. " player)", {0.5, 0.5, 0.5})
+        local success = O.SetHungerSmokeState(testColor, "off", 0.2)  -- 0.2 seconds (3x faster)
         if success then
-            printTestResult("Hunger Smoke OFF (Brown)", true, "Smoke moved to y=-7")
+            printTestResult("Hunger Smoke OFF (" .. testColor .. ")", true, "Smoke moved to y=-7")
             passed = passed + 1
         else
-            printTestResult("Hunger Smoke OFF (Brown)", false, "Failed to move smoke")
+            printTestResult("Hunger Smoke OFF (" .. testColor .. ")", false, "Failed to move smoke")
             failed = failed + 1
         end
         return 1.5  -- Wait for animation
@@ -1381,7 +1384,7 @@ function DEBUG.testLightingAndSignals()
         broadcast("💨 Testing All Hunger Smoke ON", {0.8, 0.4, 0.8})
         local allSuccess = true
         for _, color in ipairs(C.PlayerColors) do
-            local success = Objects.SetHungerSmokeState(color, "on", 0.2)  -- 0.2 seconds (3x faster)
+            local success = O.SetHungerSmokeState(color, "on", 0.2)  -- 0.2 seconds (3x faster)
             if not success then
                 allSuccess = false
             end
@@ -1404,7 +1407,7 @@ function DEBUG.testLightingAndSignals()
         broadcast("💤 Turning Off All Hunger Smoke", {0.5, 0.5, 0.5})
         local allSuccess = true
         for _, color in ipairs(C.PlayerColors) do
-            local success = Objects.SetHungerSmokeState(color, "off", 0.2)  -- 0.2 seconds (3x faster)
+            local success = O.SetHungerSmokeState(color, "off", 0.2)  -- 0.2 seconds (3x faster)
             if not success then
                 allSuccess = false
             end
