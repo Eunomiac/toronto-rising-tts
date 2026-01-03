@@ -1,0 +1,340 @@
+# System Instructions for Toronto Rising TTS Project
+
+## Project Context
+
+This is a **Vampire: The Masquerade 5th Edition (VTM5E) Tabletop Simulator module** written in Lua. The codebase is organized into modular libraries and core game logic, following patterns extracted from Heritage and Kings Dilemma reference modules.
+
+**Key Technologies:**
+- Lua 5.1 (TTS scripting environment)
+- Tabletop Simulator API
+- Module-based architecture with `require()` system
+- TTS Tools extension for bundling
+
+## Critical Workflow Rules
+
+### Git Commits - MANDATORY
+
+**You MUST commit changes regularly without waiting for user prompts.** This is a core requirement.
+
+- Commit after completing logical units of work (features, fixes, refactoring)
+- Commit when documentation is updated
+- Commit when multiple related changes are made together
+- **Do NOT wait for explicit user requests to commit**
+
+**Commit Message Format:**
+- Use present tense ("Add feature" not "Added feature")
+- Start with a verb describing the action
+- Include a brief summary line, then detailed bullet points
+- Reference related issues when applicable
+
+**Example:**
+```
+Implement GUID-based player lighting system
+
+- Refactored lighting module to use GUID-based lookup for player lights
+- Player lights no longer require player data for control
+- Updated test functions to use new GUID library
+```
+
+## Code Organization
+
+### Directory Structure
+
+- `lib/` - Shared libraries and utilities (constants, guids, util)
+- `core/` - Core game logic modules (state, lighting, main, scenes, zones, debug)
+- `dev/` - Development tools, documentation, and reference materials
+- `ui/` - UI XML files and related resources
+- `.tts/` - TTS Tools extension output directory (auto-generated)
+
+### File Naming Conventions
+
+- Use `.ttslua` extension for Lua module files
+- Use `.md` for documentation files
+- Use `.xml` for UI definitions
+- Use `.lua` only for entry point files (e.g., `.tts/objects/Global.lua`)
+
+### Module Structure Pattern
+
+All modules follow this pattern:
+
+```lua
+-- lib/module_name.ttslua
+-- Module Description
+-- Brief explanation of purpose
+
+local ModuleName = {}
+local Dependency1 = require("lib.dependency1")
+local Dependency2 = require("core.dependency2")
+
+-- Module code here
+
+return ModuleName
+```
+
+## Code Style and Conventions
+
+### Naming Conventions
+
+- **Modules**: PascalCase for module names (`local C = require("lib.constants")`)
+- **Functions**: camelCase for function names (`function M.setupPlayers()`)
+- **Constants**: UPPER_SNAKE_CASE for constants (`C.MAX_HUNGER`)
+- **Variables**: camelCase for variables (`local playerColor`)
+- **Tables**: PascalCase for table names (`C.PlayerColors`)
+
+### Indentation and Formatting
+
+- Use **spaces, not tabs** (typically 4 spaces per indent level)
+- Maintain consistent indentation throughout files
+- Use double quotes for strings
+- Use string templates or `.join()` instead of direct concatenation
+
+### Comments and Documentation
+
+- Include JSDoc-style function headers with:
+  - `@param` for parameters
+  - `@return` for return values
+  - `@usage` for usage examples
+- Add inline comments for complex logic
+- Document module purpose at the top of each file
+
+### Error Handling
+
+- Use `pcall` for safe execution where appropriate
+- Use `U.Val()` for assertions and validation (from util library)
+- Provide clear, descriptive error messages
+- Validate inputs before processing
+- Return `nil` on error when appropriate, with clear error messages
+
+### Type Safety
+
+- Use strict type checking with `U.Type()` from util library
+- Validate function parameters before use
+- Use `U.isPlayer()`, `U.isGameObject()`, etc. for type validation
+- **Do NOT use `any` type** (this is Lua, but avoid loose typing)
+- **Do NOT use non-null assertion operator (`!`)**
+- **Do NOT cast to unknown** (e.g., `as unknown as T`)
+
+## Module Dependencies
+
+### Core Module Dependencies
+
+**Always require in this order:**
+1. `lib/constants` (C) - Game constants and configuration
+2. `lib/guids` (G) - GUID references for TTS objects
+3. `lib/util` (U) - Utility functions library
+4. `core/state` (S) - State management
+5. Other core modules as needed
+
+**Example:**
+```lua
+local M = {}
+local U = require("lib.util")
+local C = require("lib.constants")
+local G = require("lib.guids")
+local S = require("core.state")
+```
+
+### Module Loading Order
+
+Modules must be loaded in dependency order:
+1. Constants and utilities (`lib/`)
+2. Core modules (`core/`)
+3. Main game logic
+4. Debug/testing modules (development only)
+
+## Common Patterns and Best Practices
+
+### Before Writing New Code
+
+**ALWAYS check these first:**
+1. `dev/AVAILABLE_FUNCTIONS.md` - Comprehensive function reference
+2. `lib/util.ttslua` - 75+ utility functions (map, filter, find, etc.)
+3. Existing modules for similar patterns
+4. **Only create new functions if no existing function meets your needs**
+
+**Common mistakes to avoid:**
+- ❌ Writing custom `map`/`filter` when `U.map()`/`U.filter()` exist
+- ❌ Writing custom type checking when `U.Type()` exists
+- ❌ Writing custom state access when `S.getStateVal()`/`S.setStateVal()` exist
+- ❌ Duplicating functionality that already exists
+
+### State Management Pattern
+
+**Always use state module functions:**
+```lua
+-- ✅ CORRECT
+local hunger = S.getStateVal("players", playerColor, "hunger")
+S.setStateVal("players", playerColor, "hunger", 3)
+
+-- ❌ WRONG
+local hunger = S.state.players[playerColor].hunger  -- Direct access
+```
+
+### Player Iteration Pattern
+
+**Use the standard pattern:**
+```lua
+function M.forPlayers(callback)
+    for _, color in ipairs(C.PlayerColors) do
+        local player = Player[color]
+        if player then
+            callback(player, color)
+        end
+    end
+end
+```
+
+### GUID Access Pattern
+
+**Always use G library for GUIDs:**
+```lua
+-- ✅ CORRECT
+local guid = G.GetHandZoneGUID(color)
+local guid = G.GUIDS.PLAYER_LIGHT_BROWN
+
+-- ❌ WRONG
+local guid = C.GUIDS.PLAYER_LIGHT_BROWN  -- GUIDs moved to G library
+```
+
+### Error Validation Pattern
+
+**Use U.Val() for assertions:**
+```lua
+U.Val("functionName", {param1 = value1}, condition, "Error message if false")
+```
+
+### Coroutine Pattern
+
+**For async operations:**
+```lua
+-- Functions using U.waitUntil, U.RunSequence, U.Lerp require:
+startLuaCoroutine(Global, "CoroutineName")
+
+-- In Global context, 'self' refers to Global
+```
+
+## Testing Requirements
+
+### Test Functions
+
+- All test functions are in `core/debug.ttslua`
+- Test functions are exposed globally and callable from TTS console
+- Update test functions when adding new features
+- Document test requirements in `dev/TESTING.md`
+
+### Testing Before Committing
+
+- Verify changes work in TTS when possible
+- Run relevant test functions
+- Check console for errors
+- Verify UI updates correctly
+
+## Documentation Standards
+
+### When to Update Documentation
+
+- **Always** update documentation when making changes
+- Add examples for new functions
+- Document breaking changes
+- Keep README files current
+- Update `dev/AVAILABLE_FUNCTIONS.md` when adding new functions
+
+### Key Documentation Files
+
+- `dev/TESTING.md` - Testing guide and test functions
+- `dev/GUID_REQUIREMENTS.md` - GUID requirements and setup
+- `dev/AVAILABLE_FUNCTIONS.md` - Function reference (check before coding)
+- `dev/DEVELOPMENT_WORKFLOW.md` - Development workflow and best practices
+- `dev/EXTRACTABLE_FUNCTIONS_INDEX.md` - Reference patterns from other modules
+
+## Player Colors and IDs
+
+### Player Color System
+
+- **Storyteller**: Always "Black"
+- **Players**: "Brown", "Orange", "Red", "Pink", "Purple" (in that order)
+- **Important**: All state-based player data must be stored by **player ID**, not color or name
+- Player IDs are stored in `C.PlayerIDs` and must be manually updated
+
+### Color Usage
+
+- Use `C.PlayerColors` array for iteration
+- Use `C.STORYTELLER_COLOR` constant for Storyteller color
+- Validate colors before use
+
+## Common Issues and Solutions
+
+### Module Not Found
+- Check require paths match file locations
+- Verify file extensions (`.ttslua` not `.lua` for modules)
+- Check module is in correct directory
+
+### GUID Errors
+- Verify GUIDs in `lib/guids.ttslua` match actual TTS objects
+- Use `G.GetHandZoneGUID()`, `G.GetSignalFireGUID()`, etc. helper functions
+- Check console for "object not found" errors
+
+### State Persistence
+- Always use `S.getStateVal()` and `S.setStateVal()` for state access
+- Ensure state is saved before game reload
+- Check state structure matches expected format
+
+### UI Not Updating
+- Check UI element IDs match between XML and update functions
+- Verify player colors match (case-sensitive: "Red" not "red")
+- Ensure `updateUIDisplays()` is called after state changes
+
+## TTS-Specific Considerations
+
+### TTS API Context
+
+- `Global` context for global scripts
+- `self` refers to Global in global context
+- Object scripts have `self` referring to the object
+- Use `getObjectFromGUID()` for object lookup
+- Use `getObjectsWithAllTags()` for tag-based queries
+
+### Bundling System
+
+- TTS Tools extension bundles code automatically
+- Entry point: `.tts/objects/Global.lua`
+- Module files in workspace directory are bundled via `require()`
+- Use "Save and Play" to bundle and send to TTS
+
+### Coroutines
+
+- Coroutine functions require `startLuaCoroutine(Global, "FunctionName")`
+- Use `U.waitUntil()`, `U.RunSequence()`, `U.Lerp()` for async operations
+- Coroutines run in Global context
+
+## Code Completion Requirements
+
+### Always Include
+
+- Full code implementation (no placeholders)
+- Error checking and type validation
+- Clear inline comments and JSDoc headers
+- Appropriate error messages
+- Documentation updates when needed
+
+### Never Include
+
+- Placeholder code without implementation
+- `any` type usage
+- Non-null assertion operators (`!`)
+- Unknown type casts
+- Direct string concatenation (use templates or `.join()`)
+
+## Questions to Ask Before Coding
+
+1. Does this functionality already exist? (Check `dev/AVAILABLE_FUNCTIONS.md`)
+2. Is there a utility function I should use? (Check `lib/util.ttslua`)
+3. Am I following existing patterns? (Check similar code in codebase)
+4. Have I updated documentation? (Update relevant docs)
+5. Should I commit this? (Yes - commit after logical units of work)
+
+---
+
+**Last Updated**: After GUID library separation
+**Reference**: See `dev/DEVELOPMENT_WORKFLOW.md` for detailed workflow information
+
