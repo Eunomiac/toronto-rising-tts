@@ -478,13 +478,21 @@ function L.InitLights()
 
     U.forEach(savedLights, function(mData, lightName)
         if U.Type(mData) == "string" then
-            -- Simple mode (single string)
+            -- Simple mode (single string) - current format
             L.SetLightMode(lightName, mData, nil, 0.5)
         elseif U.Type(mData) == "table" then
-            -- Per-player modes (table of color->mode)
+            -- Legacy per-player modes (table of color->mode) - for backward compatibility
+            -- Convert to simple mode by taking the first mode found
+            -- This handles old save data that used per-player state
+            local firstMode = nil
             U.forEach(mData, function(mode, pColor)
-                L.SetLightMode(lightName, mode, pColor, 0.5)
+                if firstMode == nil then
+                    firstMode = mode
+                end
             end)
+            if firstMode then
+                L.SetLightMode(lightName, firstMode, nil, 0.5)
+            end
         end
     end)
 end
