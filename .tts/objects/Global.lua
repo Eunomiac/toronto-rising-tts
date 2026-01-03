@@ -59,6 +59,9 @@ function onLoad(saved_data)
     -- Initialize zones module
     Z.onLoad()
 
+    -- Initialize lighting system (restores saved light states)
+    L.InitLights()
+
     -- Initialize main module
     M.onLoad()
 
