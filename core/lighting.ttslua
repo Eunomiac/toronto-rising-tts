@@ -73,16 +73,16 @@ L.LIGHTMODES = {
         default = "OFF",
         OFF = {
             enabled = false,
-            rotation = Vector(0, -72, 0),
-            position = Vector(-36.12, 0, -110),
+            position = Vector(101.63, 0.00, -42.10),
+            rotation = Vector(0, -67.5, 0),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            rotation = Vector(0, -72, 60),
-            position = Vector(-29.75, 22.6, -90),
+            position = Vector(78.53, 23.00, -32.53),
+            rotation = Vector(-60, -67.5, 0),
             range = 40,
             angle = 90,
             intensity = 10
@@ -94,16 +94,16 @@ L.LIGHTMODES = {
         default = "OFF",
         OFF = {
             enabled = false,
-            rotation = Vector(0, -36.00, 0),
-            position = Vector(-80.70, 0, -61.95),
+            position = Vector(42.10, 0.00, -101.63),
+            rotation = Vector(0, -22.5, 0),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            rotation = Vector(0, -36.00, 59.46),
-            position = Vector(-71.14, 22.60, -55.00),
+            position = Vector(32.53, 23.00, -78.53),
+            rotation = Vector(-60, -22.5, 0),
             range = 40,
             angle = 90,
             intensity = 10
@@ -115,16 +115,16 @@ L.LIGHTMODES = {
         default = "OFF",
         OFF = {
             enabled = false,
-            rotation = Vector(0, 0, 0),
-            position = Vector(-110, 0, 0),
+            position = Vector(-42.10, 0.00, -101.63),
+            rotation = Vector(0, 22.5, 0),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            rotation = Vector(0, 0, 60),
-            position = Vector(-85, 23, 0),
+            position = Vector(-32.53, 23.00, -78.53),
+            rotation = Vector(-60, 22.5, 0),
             range = 40,
             angle = 90,
             intensity = 10
@@ -136,37 +136,16 @@ L.LIGHTMODES = {
         default = "OFF",
         OFF = {
             enabled = false,
-            rotation = Vector(0, 36, 0),
-            position = Vector(-80.70, 0, 61.95),
+            position = Vector(-101.63, 0.00, -42.10),
+            rotation = Vector(0, 67.5, 0),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            rotation = Vector(0, 36.00, 59.46),
-            position = Vector(-71.14, 22.60, 55.00),
-            range = 40,
-            angle = 90,
-            intensity = 10
-        }
-    },
-    playerLightPurple = {
-        guid = G.GUIDS.PLAYER_LIGHT_PURPLE,
-        isPlayerLight = true,
-        default = "OFF",
-        OFF = {
-            enabled = false,
-            rotation = Vector(0, 72.00, 0),
-            position = Vector(-36.12, 0, 110),
-            range = 40,
-            angle = 0,
-            intensity = 0
-        },
-        STANDARD = {
-            enabled = true,
-            rotation = Vector(0, 72.00, 60),
-            position = Vector(-29.75, 22.60, 90),
+            position = Vector(-78.53, 23.00, -32.53),
+            rotation = Vector(-60, 67.5, 0),
             range = 40,
             angle = 90,
             intensity = 10
@@ -399,10 +378,17 @@ function L.SetLightMode(lightName, mode, player, transitionTime)
     -- Save mode to state
     -- For player lights, save per-player if player object is available
     -- For GUID-based lights, player may be nil (that's okay)
-    if player and U.isPlayer(player) and player.color then
-        local sData = S.getStateVal("lights", lightName) or {}
-        sData[player.color] = mode
-        S.setStateVal(sData, "lights", lightName)
+    -- NOTE: Light lookup is completely independent of player presence - GUID-based lookup always works
+    if player and U.isPlayer(player) then
+        local playerColor = player.color
+        if playerColor then
+            local sData = S.getStateVal("lights", lightName) or {}
+            sData[playerColor] = mode
+            S.setStateVal(sData, "lights", lightName)
+        else
+            -- Player object exists but has no color - save as simple mode
+            S.setStateVal(mode, "lights", lightName)
+        end
     else
         -- Save mode without player-specific data (works for both non-player lights and GUID-based player lights without player object)
         S.setStateVal(mode, "lights", lightName)
