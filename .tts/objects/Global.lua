@@ -12,7 +12,6 @@ local C = require("lib.constants")
 local S = require("core.state")
 local M = require("core.main")
 local Z = require("core.zones")
-local L = require("core.lighting")
 local Scenes = require("core.scenes")
 local UIH = require("lib.ui_helpers")
 
@@ -59,9 +58,6 @@ function onLoad(saved_data)
 
     -- Initialize zones module
     Z.onLoad()
-
-    -- Initialize lighting system (restores saved light states)
-    L.InitLights()
 
     -- Initialize main module
     M.onLoad()
@@ -383,12 +379,13 @@ end
 --[[
     Expose primary libraries globally for console access
     This allows using lua U.<function>, S.<function>, etc. in the TTS console
+    NOTE: Assigning without 'local' makes variables global in Lua
 ]]
 U = U
 C = C
 S = S
 M = M
 Z = Z
-L = L
 Scenes = Scenes
 G = require("lib.guids")
+L = require("core.lighting")
