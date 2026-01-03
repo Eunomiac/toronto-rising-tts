@@ -379,3 +379,16 @@ function updateUIDisplays()
         UI.setValue("healthVal_" .. color, tostring(health))
     end)
 end
+
+--[[
+    Expose primary libraries globally for console access
+    This allows using lua U.<function>, S.<function>, etc. in the TTS console
+]]
+U = U
+C = C
+S = S
+M = M
+Z = Z
+L = L
+Scenes = Scenes
+G = require("lib.guids")

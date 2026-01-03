@@ -41,6 +41,29 @@ local U = {}
 -- MATH & NUMERIC UTILITIES
 -- ============================================================================
 
+--- Calculates the position of a point rotated around a center point in the XZ plane (horizontal)
+-- Maintains the distance from the center point while rotating by the specified angle.
+-- Useful for positioning objects in a circle around a center point.
+-- @param center Vector|table Center point to rotate around {x, y, z}
+-- @param radius number Distance from center to the point
+-- @param angleDeg number Rotation angle in degrees (0° = +Z axis, 90° = +X axis, 180° = -Z axis, 270° = -X axis)
+-- @param y number Optional: Y coordinate for the result (default: center.y)
+-- @return Vector New position after rotation
+-- @usage local pos = U.rotateAroundPoint({x=0, y=0, z=0}, 110, 0) -- Returns {x=0, y=0, z=110}
+-- @usage local pos = U.rotateAroundPoint({x=0, y=0, z=0}, 110, 90) -- Returns {x=110, y=0, z=0}
+-- @usage local pos = U.rotateAroundPoint({x=0, y=5, z=0}, 50, 45, 10) -- Rotated position with y=10
+function U.rotateAroundPoint(center, radius, angleDeg, y)
+    center = Vector(center)
+    local angleRad = math.rad(angleDeg)
+    
+    -- Calculate position in XZ plane (horizontal rotation around Y axis)
+    local x = center.x + math.sin(angleRad) * radius
+    local z = center.z + math.cos(angleRad) * radius
+    local resultY = y or center.y
+    
+    return Vector(x, resultY, z)
+end
+
 --- Rounds a number to 2 decimal places (pFloat = "parse to float")
 -- @param num number The number to round (can be nil)
 -- @return number Rounded number, or 0 if num is nil
@@ -1387,7 +1410,7 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
 			-- Use time-based waiting instead of frame counting
 			-- Capture the duration in the closure
 			local waitDuration = tRef  -- Duration in seconds
-			return function() 
+			return function()
 				if waitStartTime == nil then
 					waitStartTime = os.time()  -- Initialize start time on first check
 				end
@@ -1416,7 +1439,7 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
 				if waitStartTime ~= nil then
 					elapsedTime = os.time() - waitStartTime
 				end
-				
+
 				-- Check timeout (maxWait is now in seconds)
 				if elapsedTime > maxWait and not hasWaited then
 					log(debug.traceback())
