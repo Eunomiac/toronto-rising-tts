@@ -25,7 +25,7 @@ This is a **Vampire: The Masquerade 5th Edition (VTM5E) Tabletop Simulator modul
 - Use present tense ("Add feature" not "Added feature")
 - Start with a verb describing the action
 - Include a brief summary line, then detailed bullet points
-- Reference related issues when applicable
+- Reference related Linear issues when applicable (e.g., "TOR-123")
 
 **Example:**
 ```
@@ -34,7 +34,97 @@ Implement GUID-based player lighting system
 - Refactored lighting module to use GUID-based lookup for player lights
 - Player lights no longer require player data for control
 - Updated test functions to use new GUID library
+- Related: TOR-9, TOR-10
 ```
+
+### Linear Issue Tracking - MANDATORY
+
+**Linear is the source of truth for project state and task tracking.** You MUST keep Linear issues synchronized with code changes and development plans.
+
+#### When to Check Linear
+
+- **Before starting work**: Check Linear for current project state and assigned tasks
+- **When planning changes**: Review related Linear issues to understand requirements
+- **After completing work**: Update Linear issues to reflect completion and changes
+
+#### When to Update Linear Issues
+
+**You MUST update Linear issues in these situations:**
+
+1. **Completing Work**
+   - Mark issues as "Done" when features/fixes are complete
+   - Add comments summarizing what was implemented
+   - Include relevant commit hashes or PR references
+
+2. **Changing Development Plans**
+   - Update issue descriptions if requirements change
+   - Add comments explaining why plans changed
+   - Update status if work is blocked or deferred
+   - Create new issues if new tasks are identified
+
+3. **Making Architectural Changes**
+   - Update related issues if architecture decisions affect planned work
+   - Add comments documenting architectural decisions
+   - Link related issues if changes impact multiple areas
+
+4. **Discovering Issues or Blockers**
+   - Create new Linear issues for bugs or blockers discovered during work
+   - Update existing issues if blockers are found
+   - Add comments with details about the issue
+
+5. **Documentation Updates**
+   - Update issues if documentation changes affect planned features
+   - Add comments when documentation is updated for clarity
+
+#### Linear Issue Update Requirements
+
+**Always include in Linear updates:**
+- Clear description of what changed
+- Why the change was made (if not obvious)
+- Impact on other issues or features
+- Relevant code references (files, functions, commits)
+
+**Example Linear Comment:**
+```
+Completed GUID library separation (commit: 4c4f362)
+
+- Created lib/guids.ttslua with G library for all GUID references
+- Moved all GUID code from constants to guids library
+- Updated all code references (lighting, debug, main modules)
+- Updated documentation to reflect new structure
+
+This change improves code organization by separating GUID management
+from game constants. All GUID access now uses G library instead of C.
+
+Related issues: TOR-9 (completed), TOR-10 (completed)
+```
+
+#### Linear Issue Status Management
+
+- **In Progress**: Update when actively working on an issue
+- **Done**: Mark when work is complete and committed
+- **Blocked**: Update if work cannot proceed (with explanation)
+- **Canceled**: Update if work is no longer needed (with reason)
+
+#### Consistency Requirements
+
+**Linear issues MUST always be consistent with:**
+- Current codebase state (if issue says "done", code should reflect that)
+- Development plans (if plans change, issues must be updated)
+- Documentation (documentation should match issue descriptions)
+- Commit messages (commits should reference related Linear issues)
+
+**If you notice inconsistencies:**
+- Update Linear issues immediately to match reality
+- Add comments explaining any discrepancies
+- Ensure all related issues are synchronized
+
+#### Finding and Using Linear Issues
+
+- Check Linear for issues related to your current work
+- Reference Linear issue IDs (e.g., "TOR-123") in commit messages
+- Use Linear to understand project priorities and next tasks
+- Review Linear before making significant changes to understand context
 
 ## Code Organization
 
@@ -330,11 +420,12 @@ startLuaCoroutine(Global, "CoroutineName")
 1. Does this functionality already exist? (Check `dev/AVAILABLE_FUNCTIONS.md`)
 2. Is there a utility function I should use? (Check `lib/util.ttslua`)
 3. Am I following existing patterns? (Check similar code in codebase)
-4. Have I updated documentation? (Update relevant docs)
-5. Should I commit this? (Yes - commit after logical units of work)
+4. Have I checked Linear for related issues and current project state?
+5. Have I updated documentation? (Update relevant docs)
+6. Have I updated Linear issues to reflect any changes?
+7. Should I commit this? (Yes - commit after logical units of work)
 
 ---
 
 **Last Updated**: After GUID library separation
 **Reference**: See `dev/DEVELOPMENT_WORKFLOW.md` for detailed workflow information
-
