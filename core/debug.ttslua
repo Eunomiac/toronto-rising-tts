@@ -1263,7 +1263,7 @@ function DEBUG.testLightingAndSignals()
     -- Step 12: Instantly switch RING_FLARE to ON
     table.insert(sequenceFunctions, function()
         broadcast("✨ Testing RING_FLARE: Switching to ON (instant)", {1, 1, 0})
-        local success = setRingFlareState("on", 0.0)  -- 0 = instant
+        local success = Objects.SetRingFlareState("on", 0.0)  -- 0 = instant
         if success then
             printTestResult("RING_FLARE ON", true, "RING_FLARE moved to y=-0.08")
             passed = passed + 1
