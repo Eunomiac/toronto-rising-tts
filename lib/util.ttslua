@@ -1360,8 +1360,8 @@ end
 -- @param afterFunc function The function to execute when condition is met
 -- @param testRef function|number|Object|table|nil Condition to wait for (see description above)
 -- @param isForcing boolean Optional: If true, executes afterFunc even if timeout (default: false)
--- @param maxWait number Optional: Max frames to wait before timeout (default: 1000)
--- @param testFrequency number Optional: Frames between condition checks (default: 15)
+-- @param maxWait number Optional: Max seconds to wait before timeout (default: 60)
+-- @param testFrequency number Optional: Seconds between condition checks (default: 0.1)
 -- @return function Returns a function that returns true when afterFunc has completed
 --
 -- @usage U.waitUntil(function() print("Done!") end, 5) -- Wait 5 seconds
@@ -1373,10 +1373,10 @@ end
 function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
 	if afterFunc == nil then return end
 	if isForcing == nil then isForcing = false end
-	if maxWait == nil then maxWait = 1000 end
-	if testFrequency == nil then testFrequency = 15 end
+	if maxWait == nil then maxWait = 60 end  -- Default to 60 seconds (changed from frames)
+	if testFrequency == nil then testFrequency = 0.1 end  -- Default to 0.1 seconds between checks (changed from frames)
 
-	local frameCount = 0
+	local waitStartTime = nil  -- Start time for time-based waits
 	local hasWaited = false
 
 	-- parseCheckFunc(testRef): Converts testRef into a test function (recursively, if testRef is a table)
@@ -1384,8 +1384,16 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
 		if tRef == nil then tRef = 0.5 end
 		if U.Type(tRef) == "function" then return tRef
 		elseif U.Type(tRef) == "number" then
-			testFrequency = math.max(1, math.min(testFrequency, tRef * 10))
-			return function() return frameCount >= (tRef * 30) end
+			-- Use time-based waiting instead of frame counting
+			-- Capture the duration in the closure
+			local waitDuration = tRef  -- Duration in seconds
+			return function() 
+				if waitStartTime == nil then
+					waitStartTime = os.time()  -- Initialize start time on first check
+				end
+				local elapsed = os.time() - waitStartTime
+				return elapsed >= waitDuration
+			end
 		elseif U.isGameObject(tRef) then
 			return function() return tRef and tRef.resting and not tRef.loading_custom end
 		elseif U.Type(tRef) == "table" then
@@ -1404,9 +1412,13 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
 	function CheckCoroutine()
 		if pCheckFunc ~= nil then
 			while not pCheckFunc() do
-				local waitFrames = testFrequency
-				frameCount = frameCount + waitFrames
-				if frameCount > maxWait and not hasWaited then
+				local elapsedTime = 0
+				if waitStartTime ~= nil then
+					elapsedTime = os.time() - waitStartTime
+				end
+				
+				-- Check timeout (maxWait is now in seconds)
+				if elapsedTime > maxWait and not hasWaited then
 					log(debug.traceback())
 					hasWaited = true
 					if isForcing then
@@ -1416,9 +1428,12 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
 					U.AlertGM("Coroutine Still Waiting! (See Log Traceback)")
 				end
 
-				while waitFrames > 0 do
+				-- Yield for a short time (testFrequency is now in seconds)
+				-- Convert seconds to approximate frame yields (60 FPS = ~0.016s per frame)
+				-- Use a minimum of 1 frame yield to avoid tight loops
+				local yieldFrames = math.max(1, math.floor(testFrequency * 60))
+				for i = 1, yieldFrames do
 					coroutine.yield(0)
-					waitFrames = waitFrames - 1
 				end
 			end
 		end
