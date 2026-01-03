@@ -241,12 +241,12 @@ local function getLight(lightName, playerRef, isSilent)
         return light
     end
 
-    -- Otherwise, use tag-based lookup (original behavior)
+    -- Non-player lights can use tag-based lookup (fallback for lights without GUIDs)
     local tags = {lightName}
 
     if playerRef ~= nil then
         local player = U.isPlayer(playerRef) and playerRef or Player[playerRef]
-        if player and player.color then
+        if player and U.isPlayer(player) and player.color then
             table.insert(tags, player.color)
         end
     end
@@ -376,43 +376,25 @@ function L.SetLightMode(lightName, mode, player, transitionTime)
     local isSpawned = lData.isSpawned or false
 
     -- Handle player-specific lights
-    -- For GUID-based lights, we don't need player data - the GUID is enough
-    -- The isPlayerLight flag is mainly for state saving purposes
+    -- All player lights now use GUID-based lookup (no tag-based lookup)
+    -- Player parameter is optional and only used for state saving
     if lData.isPlayerLight then
-        -- If using GUID lookup, player is optional (only needed for state saving)
-        if lData.guid then
-            -- GUID-based lookup: player is optional, only used for state saving
-            if player then
-                -- Try to resolve player object if provided (for state saving)
-                local playerObj = nil
-                if U.isPlayer(player) then
-                    playerObj = player
-                elseif type(player) == "string" then
-                    playerObj = Player[player]  -- May be nil if player not seated
-                end
-                player = playerObj  -- Can be nil, that's okay for GUID-based lights
-            end
-        else
-            -- Tag-based lookup: player is required
-            if player == nil then
-                -- Apply to all players if no player specified
-                local players = Player.getPlayers()
-                return U.map(players, function(p)
-                    return L.SetLightMode(lightName, mode, p, transitionTime)
-                end)
-            end
-            -- Validate player for tag-based lookup
+        -- Player lights MUST have a GUID - this is required
+        if not lData.guid then
+            error("SetLightMode: Player light '" .. tostring(lightName) .. "' must have a GUID defined in LIGHTMODES")
+        end
+        
+        -- Resolve player object if provided (only needed for state saving)
+        -- Player can be nil - that's fine for GUID-based lights
+        if player then
             local playerObj = nil
             if U.isPlayer(player) then
                 playerObj = player
             elseif type(player) == "string" then
+                -- Try to get player object by color (may be nil if not seated)
                 playerObj = Player[player]
             end
-
-            if not playerObj or not U.isPlayer(playerObj) then
-                error("SetLightMode: Invalid player reference for tag-based light '" .. tostring(lightName) .. "'. Player: " .. tostring(player) .. " (Player may not be seated)")
-            end
-            player = playerObj
+            player = playerObj  -- Can be nil, that's okay for GUID-based lights
         end
     else
         -- Non-player lights shouldn't have player parameter
