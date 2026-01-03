@@ -37,12 +37,12 @@ local TablePos = {}
 --
 -- A half-decagon has:
 --   - One flat edge (long side) where the Storyteller sits
---   - Five straight sides forming a curved arc where players sit
+--   - Four straight sides forming a curved arc where players sit
 --
 -- Geometry:
 --   - Full decagon has 10 sides, each interior angle = 144°
---   - Half-decagon uses 5 sides (180° arc)
---   - Each side spans 36° (180° / 5)
+--   - Half-decagon uses 4 sides (180° arc)
+--   - Each side spans 45° (180° / 4)
 --   - Flat edge is at the top (0° / 360°)
 --
 -- @param tableRadius number Distance from table center to edge (default: 50)

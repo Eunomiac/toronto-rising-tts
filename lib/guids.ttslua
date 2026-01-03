@@ -66,7 +66,7 @@ G.GUIDS = {
 -- Returns the GUID from G.GUIDS if it exists, or nil if not found.
 -- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
 -- If a GUID is not found, returns nil so callers can handle the error appropriately.
--- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", "Purple", or "Black" for Storyteller)
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", or "Black" for Storyteller)
 -- @return string|nil GUID string if found, or nil if not found
 -- @usage local handGUID = G.GetHandZoneGUID("Red")
 -- @usage local handObj = getObjectFromGUID(G.GetHandZoneGUID("Red"))
@@ -91,7 +91,7 @@ end
 -- Returns the GUID from G.GUIDS if it exists, or nil if not found.
 -- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
 -- If a GUID is not found, returns nil so callers can handle the error appropriately.
--- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", "Purple", or "Black" for Storyteller)
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", or "Black" for Storyteller)
 -- @return string|nil GUID string if found, or nil if not found
 -- @usage local signalFireGUID = G.GetSignalFireGUID("Red")
 -- @usage local signalFireObj = getObjectFromGUID(G.GetSignalFireGUID("Red"))
@@ -116,7 +116,7 @@ end
 -- Returns the GUID from G.GUIDS if it exists, or nil if not found.
 -- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
 -- If a GUID is not found, returns nil so callers can handle the error appropriately.
--- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", "Purple", or "Black" for Storyteller)
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", or "Black" for Storyteller)
 -- @return string|nil GUID string if found, or nil if not found
 -- @usage local tombstoneGUID = G.GetTombstoneGUID("Red")
 -- @usage local tombstoneObj = getObjectFromGUID(G.GetTombstoneGUID("Red"))
@@ -141,7 +141,7 @@ end
 -- Returns the GUID from G.GUIDS if it exists, or nil if not found.
 -- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
 -- If a GUID is not found, returns nil so callers can handle the error appropriately.
--- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", "Purple", or "Black" for Storyteller)
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", or "Black" for Storyteller)
 -- @return string|nil GUID string if found, or nil if not found
 -- @usage local playerLightGUID = G.GetPlayerLightGUID("Red")
 -- @usage local playerLightObj = getObjectFromGUID(G.GetPlayerLightGUID("Red"))
