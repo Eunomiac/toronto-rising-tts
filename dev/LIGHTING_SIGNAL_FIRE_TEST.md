@@ -81,7 +81,7 @@ L.LIGHTMODES = {
             intensity = 10
         }
     },
-    -- ... similar entries for Orange, Red, Pink, Purple
+    -- ... similar entries for Orange, Red, Pink
 }
 ```
 

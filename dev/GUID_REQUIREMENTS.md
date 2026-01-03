@@ -11,7 +11,7 @@ This document lists all GUIDs that need to be filled in from your actual TTS ins
   - `HAND_ORANGE` = "b9d1d9"
   - `HAND_RED` = "b13642"
   - `HAND_PINK` = "926600"
-  - `HAND_PURPLE` = "e32d2c"
+  - `HAND_PURPLE` = "e32d2c" (not used - Purple player no longer in game)
 
 ### ⚠️ Optional GUIDs (For Future Features)
 
@@ -26,7 +26,7 @@ These GUIDs are placeholders and only needed if you plan to use these features:
 3. **PLAYER_LIGHT_ORANGE** = `d3356d` ✅ (filled)
 4. **PLAYER_LIGHT_RED** = `0cd76a` ✅ (filled)
 5. **PLAYER_LIGHT_PINK** = `937fac` ✅ (filled)
-6. **PLAYER_LIGHT_PURPLE** = `b36dfe` ✅ (filled)
+6. **PLAYER_LIGHT_PURPLE** = `b36dfe` ✅ (filled, but not used - Purple player no longer in game)
    - **Purpose**: Player-specific spotlight objects for lighting
    - **How to get**: Right-click the spotlight object → Scripting → Copy GUID
    - **Required for**: Player spotlight features (configured in lighting module)
