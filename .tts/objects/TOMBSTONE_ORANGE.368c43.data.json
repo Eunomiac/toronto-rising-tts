@@ -46,7 +46,7 @@
     "TypeIndex": 0,
     "LoopingEffectIndex": 0
   },
-  "LuaScript": "function onLoad()\r\n  self.setInvisibleTo({\"Orange\"})\r\nend",
+  "LuaScript": "function onLoad()\r\n  self.setInvisibleTo({\"Orange\"})\r\n  self.interactable = false\r\nend",
   "LuaScriptState": "",
   "XmlUI": ""
 }

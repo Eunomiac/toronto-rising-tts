@@ -501,16 +501,16 @@ L.LIGHTMODES = {
         default = "OFF",
         OFF = {
             enabled = false,
-            rotation = Vector(0, -72, 0),
-            position = Vector(-36.12, 0, -110),
+            position = Vector(101.63, 0.00, -42.10),
+            rotation = Vector(0, -67.5, 0),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            rotation = Vector(0, -72, 60),
-            position = Vector(-29.75, 22.6, -90),
+            position = Vector(78.53, 23.00, -32.53),
+            rotation = Vector(-60, -67.5, 0),
             range = 40,
             angle = 90,
             intensity = 10
@@ -522,16 +522,16 @@ L.LIGHTMODES = {
         default = "OFF",
         OFF = {
             enabled = false,
-            rotation = Vector(0, -36.00, 0),
-            position = Vector(-80.70, 0, -61.95),
+            position = Vector(42.10, 0.00, -101.63),
+            rotation = Vector(0, -22.5, 0),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            rotation = Vector(0, -36.00, 59.46),
-            position = Vector(-71.14, 22.60, -55.00),
+            position = Vector(32.53, 23.00, -78.53),
+            rotation = Vector(-60, -22.5, 0),
             range = 40,
             angle = 90,
             intensity = 10
@@ -543,16 +543,16 @@ L.LIGHTMODES = {
         default = "OFF",
         OFF = {
             enabled = false,
-            rotation = Vector(0, 0, 0),
-            position = Vector(-110, 0, 0),
+            position = Vector(-42.10, 0.00, -101.63),
+            rotation = Vector(0, 22.5, 0),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            rotation = Vector(0, 0, 60),
-            position = Vector(-85, 23, 0),
+            position = Vector(-32.53, 23.00, -78.53),
+            rotation = Vector(-60, 22.5, 0),
             range = 40,
             angle = 90,
             intensity = 10
@@ -564,37 +564,16 @@ L.LIGHTMODES = {
         default = "OFF",
         OFF = {
             enabled = false,
-            rotation = Vector(0, 36, 0),
-            position = Vector(-80.70, 0, 61.95),
+            position = Vector(-101.63, 0.00, -42.10),
+            rotation = Vector(0, 67.5, 0),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            rotation = Vector(0, 36.00, 59.46),
-            position = Vector(-71.14, 22.60, 55.00),
-            range = 40,
-            angle = 90,
-            intensity = 10
-        }
-    },
-    playerLightPurple = {
-        guid = G.GUIDS.PLAYER_LIGHT_PURPLE,
-        isPlayerLight = true,
-        default = "OFF",
-        OFF = {
-            enabled = false,
-            rotation = Vector(0, 72.00, 0),
-            position = Vector(-36.12, 0, 110),
-            range = 40,
-            angle = 0,
-            intensity = 0
-        },
-        STANDARD = {
-            enabled = true,
-            rotation = Vector(0, 72.00, 60),
-            position = Vector(-29.75, 22.60, 90),
+            position = Vector(-78.53, 23.00, -32.53),
+            rotation = Vector(-60, 67.5, 0),
             range = 40,
             angle = 90,
             intensity = 10
@@ -787,30 +766,16 @@ function L.SetLightMode(lightName, mode, player, transitionTime)
     local lData = L.LIGHTMODES[lightName]
     local isSpawned = lData.isSpawned or false
 
-    -- Handle player-specific lights (for state saving only)
-    -- All lights with GUIDs use GUID-based lookup (simplified logic)
-    -- Player parameter is optional and only used for state saving
-    if lData.isPlayerLight then
-        -- Resolve player object if provided (only needed for state saving)
-        -- Player can be nil - that's fine for GUID-based lights
-        if player then
-            local playerObj = nil
-            if U.isPlayer(player) then
-                playerObj = player
-            elseif type(player) == "string" then
-                -- Try to get player object by color (may be nil if not seated)
-                playerObj = Player[player]
-            end
-            player = playerObj  -- Can be nil, that's okay for GUID-based lights
-        end
-    else
+    -- Validate player parameter (only for non-player lights - player lights don't need it)
+    -- All lights use GUID-based lookup, so player parameter is not needed for finding lights
+    -- Player parameter is kept for backward compatibility but is not used
+    if not lData.isPlayerLight then
         -- Non-player lights shouldn't have player parameter
         U.Val("SetLightMode", {lightName, player}, player == nil,
             "Player submitted to non-player light", {isThrowing = false})
-        player = nil
     end
 
-    -- Find the light object
+    -- Find the light object (GUID-based lookup - completely independent of player presence)
     local light = getLight(lightName, true)
     if light == nil and isSpawned then
         -- Wait for light to spawn if it's a spawned light
@@ -821,20 +786,14 @@ function L.SetLightMode(lightName, mode, player, transitionTime)
         end, false)
     end
 
-    U.Val("SetLightMode", {lightName, player},
+    U.Val("SetLightMode", lightName,
         U.isGameObject(light), "No light found: " .. U.ToString(lightName))
 
     -- Save mode to state
-    -- For player lights, save per-player if player object is available
-    -- For GUID-based lights, player may be nil (that's okay)
-    if player and U.isPlayer(player) and player.color then
-        local sData = S.getStateVal("lights", lightName) or {}
-        sData[player.color] = mode
-        S.setStateVal(sData, "lights", lightName)
-    else
-        -- Save mode without player-specific data (works for both non-player lights and GUID-based player lights without player object)
-        S.setStateVal(mode, "lights", lightName)
-    end
+    -- Each light has a unique name (e.g., playerLightBrown), so we save the mode directly
+    -- No need for per-player state since the light name already identifies which player it's for
+    -- NOTE: Light lookup is completely independent of player presence - GUID-based lookup always works
+    S.setStateVal(mode, "lights", lightName)
 
     -- Resolve mode (could be function, string default, or table)
     local modeData = mode
@@ -947,13 +906,21 @@ function L.InitLights()
 
     U.forEach(savedLights, function(mData, lightName)
         if U.Type(mData) == "string" then
-            -- Simple mode (single string)
+            -- Simple mode (single string) - current format
             L.SetLightMode(lightName, mData, nil, 0.5)
         elseif U.Type(mData) == "table" then
-            -- Per-player modes (table of color->mode)
+            -- Legacy per-player modes (table of color->mode) - for backward compatibility
+            -- Convert to simple mode by taking the first mode found
+            -- This handles old save data that used per-player state
+            local firstMode = nil
             U.forEach(mData, function(mode, pColor)
-                L.SetLightMode(lightName, mode, pColor, 0.5)
+                if firstMode == nil then
+                    firstMode = mode
+                end
             end)
+            if firstMode then
+                L.SetLightMode(lightName, firstMode, nil, 0.5)
+            end
         end
     end)
 end
@@ -1067,7 +1034,6 @@ G.GUIDS = {
     PLAYER_LIGHT_PINK = "937fac",
 
     -- Ambient Objects (for effects)
-    AMBIENT_FOG = "fb25b1",
     RING_FLARE = "210fad", -- circular ring of rising light, used to highlight table drops
 
     -- Hand zones (player hand zones)
@@ -1092,6 +1058,12 @@ G.GUIDS = {
     SIGNAL_FIRE_ORANGE = "7aa4ed",
     SIGNAL_FIRE_RED = "cc2959",
     SIGNAL_FIRE_PINK = "f1b7af",
+
+    -- Hunger smoke (to indicate increasing hunger)
+    HUNGER_SMOKE_BROWN = "b0ffa8",
+    HUNGER_SMOKE_ORANGE = "7aa4ed",
+    HUNGER_SMOKE_RED = "cc2959",
+    HUNGER_SMOKE_PINK = "fb25b1",
 
     -- Add other object GUIDs as needed (zones, boards, etc.)
     -- Format: OBJECT_NAME = "@@@@@@OBJECT_NAME@@@@@@"
@@ -1648,8 +1620,12 @@ C.CameraAngles = {
 -- Only listed values should be changed
 C.ObjectPositions = {
   SIGNAL_FIRE = {
-    on = {position = {y=2.5}},
+    on = {position = {y=1.5}},
     off = {position = {y=-7}}
+  },
+  HUNGER_SMOKE = {
+    on = {position = {y = 0.2}},
+    off = {position = {y = -7}}
   },
   RING_FLARE = {
     on = {position = {y=-0.08}},

@@ -446,8 +446,12 @@ C.CameraAngles = {
 -- Only listed values should be changed
 C.ObjectPositions = {
   SIGNAL_FIRE = {
-    on = {position = {y=2.5}},
+    on = {position = {y=1.5}},
     off = {position = {y=-7}}
+  },
+  HUNGER_SMOKE = {
+    on = {position = {y = 0.2}},
+    off = {position = {y = -7}}
   },
   RING_FLARE = {
     on = {position = {y=-0.08}},

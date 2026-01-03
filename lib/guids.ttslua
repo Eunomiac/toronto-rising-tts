@@ -29,7 +29,6 @@ G.GUIDS = {
     PLAYER_LIGHT_PINK = "937fac",
 
     -- Ambient Objects (for effects)
-    AMBIENT_FOG = "fb25b1",
     RING_FLARE = "210fad", -- circular ring of rising light, used to highlight table drops
 
     -- Hand zones (player hand zones)
@@ -54,6 +53,12 @@ G.GUIDS = {
     SIGNAL_FIRE_ORANGE = "7aa4ed",
     SIGNAL_FIRE_RED = "cc2959",
     SIGNAL_FIRE_PINK = "f1b7af",
+
+    -- Hunger smoke (to indicate increasing hunger)
+    HUNGER_SMOKE_BROWN = "b0ffa8",
+    HUNGER_SMOKE_ORANGE = "7aa4ed",
+    HUNGER_SMOKE_RED = "cc2959",
+    HUNGER_SMOKE_PINK = "fb25b1",
 
     -- Add other object GUIDs as needed (zones, boards, etc.)
     -- Format: OBJECT_NAME = "@@@@@@OBJECT_NAME@@@@@@"
@@ -97,6 +102,31 @@ function G.GetSignalFireGUID(color)
       return nil
   end
   local guidKey = "SIGNAL_FIRE_" .. string.upper(color)
+  local guid = G.GUIDS[guidKey]
+
+  -- If GUID is not found, return nil (don't create a placeholder - placeholders should only exist before GUIDs are set)
+  if guid == nil then
+      return nil
+  end
+
+  -- If GUID still contains placeholder markers, it hasn't been replaced yet
+  -- Return it as-is (caller should handle placeholder case if needed)
+  return guid
+end
+
+--- Gets the GUID string for a hunger smoke object by color
+-- Returns the GUID from G.GUIDS if it exists, or nil if not found.
+-- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
+-- If a GUID is not found, returns nil so callers can handle the error appropriately.
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", or "Black" for Storyteller)
+-- @return string|nil GUID string if found, or nil if not found
+-- @usage local hungerSmokeGUID = G.GetHungerSmokeGUID("Red")
+-- @usage local hungerSmokeObj = getObjectFromGUID(G.GetHungerSmokeGUID("Red"))
+function G.GetHungerSmokeGUID(color)
+  if color == nil then
+      return nil
+  end
+  local guidKey = "HUNGER_SMOKE_" .. string.upper(color)
   local guid = G.GUIDS[guidKey]
 
   -- If GUID is not found, return nil (don't create a placeholder - placeholders should only exist before GUIDs are set)

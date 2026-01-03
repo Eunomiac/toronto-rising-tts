@@ -24,6 +24,7 @@ local Scenes = require("core.scenes")
 local C = require("lib.constants")
 local G = require("lib.guids")
 local L = require("core.lighting")
+local Objects = require("core.objects")
 
 --[[
     File Logging Configuration
@@ -968,107 +969,10 @@ end
 -- Exposed globally as initLightingAndSignals()
 -- @usage initLightingAndSignals() -- Call from TTS console
 function DEBUG.initLightingAndSignals()
-    print("⚙️  Initializing: Setting all signal fires, RING_FLARE, player lights to OFF, and ambient to DARK")
+    print("⚙️  Initializing: Setting all signal fires, hunger smoke, RING_FLARE, player lights to OFF, and ambient to DARK")
 
-    -- Helper: Get signal fire object by color
-    local function getSignalFire(color)
-        local guid = G.GetSignalFireGUID(color)
-        if not guid then
-            return nil
-        end
-        return getObjectFromGUID(guid)
-    end
-
-    -- Helper: Get RING_FLARE object
-    local function getRingFlare()
-        local guid = G.GUIDS.RING_FLARE
-        if not guid then
-            return nil
-        end
-        return getObjectFromGUID(guid)
-    end
-
-    -- Helper: Get player light object by color
-    local function getPlayerLight(color)
-        local guid = G.GetPlayerLightGUID(color)
-        if not guid then
-            return nil
-        end
-        return getObjectFromGUID(guid)
-    end
-
-    -- Helper: Merge partial position with current position
-    local function mergePosition(obj, partialPos)
-        local currentPos = obj.getPosition()
-        local newPos = {
-            x = partialPos.x or currentPos.x,
-            y = partialPos.y or currentPos.y,
-            z = partialPos.z or currentPos.z
-        }
-        return Vector(newPos.x, newPos.y, newPos.z)
-    end
-
-    -- Helper: Set signal fire state (on/off) with optional animation
-    local function setSignalFireState(color, state, duration)
-        duration = duration or 0.0  -- Default to instant
-        local fire = getSignalFire(color)
-        if not fire then
-            print("⚠️  Signal fire not found for color: " .. tostring(color))
-            return false
-        end
-
-        local posData = C.ObjectPositions.SIGNAL_FIRE[state]
-        if not posData then
-            print("⚠️  Invalid signal fire state: " .. tostring(state))
-            return false
-        end
-
-        -- Merge partial position with current position
-        local targetPos = mergePosition(fire, posData.position)
-
-        if duration > 0 then
-            -- Use lerp for smooth animation
-            U.setPositionSlow(fire, targetPos, duration, nil, false)
-        else
-            -- Instant (no lerping)
-            fire.setPosition(targetPos)
-        end
-        return true
-    end
-
-    -- Helper: Set RING_FLARE state (on/off) with optional animation
-    local function setRingFlareState(state, duration)
-        duration = duration or 0.0  -- Default to instant
-        local flare = getRingFlare()
-        if not flare then
-            print("⚠️  RING_FLARE not found")
-            return false
-        end
-
-        local posData = C.ObjectPositions.RING_FLARE[state]
-        if not posData then
-            print("⚠️  Invalid RING_FLARE state: " .. tostring(state))
-            return false
-        end
-
-        -- Merge partial position with current position
-        local currentPos = flare.getPosition()
-        local targetPos = {
-            x = posData.position.x or currentPos.x,
-            y = posData.position.y or currentPos.y,
-            z = posData.position.z or currentPos.z
-        }
-        targetPos = Vector(targetPos.x, targetPos.y, targetPos.z)
-
-        if duration > 0 then
-            -- Use lerp for smooth animation
-            U.setPositionSlow(flare, targetPos, duration, nil, false)
-        else
-            -- Instant (no lerping)
-            flare.setPosition(targetPos)
-        end
-        return true
-    end
+    -- NOTE: All object manipulation is done via Objects module
+    -- Debug functions should only call other functions, not perform game actions directly
 
     -- Helper: Convert player color to lighting module light name
     -- Maps "Brown" -> "playerLightBrown", "Orange" -> "playerLightOrange", etc.
@@ -1110,16 +1014,24 @@ function DEBUG.initLightingAndSignals()
 
     local allSuccess = true
 
-    -- Set all signal fires to OFF (instant)
+    -- Set all signal fires to OFF (instant) - using Objects module
     for _, color in ipairs(C.PlayerColors) do
-        local success = setSignalFireState(color, "off", 0.0)  -- 0 = instant
+        local success = Objects.SetSignalFireState(color, "off", 0.0)  -- 0 = instant
         if not success then
             allSuccess = false
         end
     end
 
-    -- Set RING_FLARE to OFF (instant)
-    local flareSuccess = setRingFlareState("off", 0.0)  -- 0 = instant
+    -- Set all hunger smoke to OFF (instant) - using Objects module
+    for _, color in ipairs(C.PlayerColors) do
+        local success = Objects.SetHungerSmokeState(color, "off", 0.0)  -- 0 = instant
+        if not success then
+            allSuccess = false
+        end
+    end
+
+    -- Set RING_FLARE to OFF (instant) - using Objects module
+    local flareSuccess = Objects.SetRingFlareState("off", 0.0)  -- 0 = instant
     if not flareSuccess then
         allSuccess = false
     end
@@ -1188,94 +1100,8 @@ function DEBUG.testLightingAndSignals()
         end
     end
 
-    -- Helper: Get signal fire object by color
-    local function getSignalFire(color)
-        local guid = G.GetSignalFireGUID(color)
-        if not guid then
-            return nil
-        end
-        return getObjectFromGUID(guid)
-    end
-
-    -- Helper: Get RING_FLARE object
-    local function getRingFlare()
-        local guid = G.GUIDS.RING_FLARE
-        if not guid then
-            return nil
-        end
-        return getObjectFromGUID(guid)
-    end
-
-    -- Helper: Get player light object by color
-    local function getPlayerLight(color)
-        local guid = G.GetPlayerLightGUID(color)
-        if not guid then
-            return nil
-        end
-        return getObjectFromGUID(guid)
-    end
-
-    -- Helper: Set signal fire state (on/off) with optional animation
-    local function setSignalFireState(color, state, duration)
-        duration = duration or 1.0
-        local fire = getSignalFire(color)
-        if not fire then
-            print("⚠️  Signal fire not found for color: " .. tostring(color))
-            return false
-        end
-
-        local posData = C.ObjectPositions.SIGNAL_FIRE[state]
-        if not posData then
-            print("⚠️  Invalid signal fire state: " .. tostring(state))
-            return false
-        end
-
-        -- Merge partial position with current position
-        local targetPos = mergePosition(fire, posData.position)
-
-        if duration > 0 then
-            -- Use lerp for smooth animation
-            U.setPositionSlow(fire, targetPos, duration, nil, false)
-        else
-            -- Instant (no lerping)
-            fire.setPosition(targetPos)
-        end
-        return true
-    end
-
-    -- Helper: Set RING_FLARE state (on/off) with optional animation
-    local function setRingFlareState(state, duration)
-        duration = duration or 0.0  -- Default to instant
-        local flare = getRingFlare()
-        if not flare then
-            print("⚠️  RING_FLARE not found")
-            return false
-        end
-
-        local posData = C.ObjectPositions.RING_FLARE[state]
-        if not posData then
-            print("⚠️  Invalid RING_FLARE state: " .. tostring(state))
-            return false
-        end
-
-        -- Merge partial position with current position
-        local currentPos = flare.getPosition()
-        local targetPos = {
-            x = posData.position.x or currentPos.x,
-            y = posData.position.y or currentPos.y,
-            z = posData.position.z or currentPos.z
-        }
-        targetPos = Vector(targetPos.x, targetPos.y, targetPos.z)
-
-        if duration > 0 then
-            -- Use lerp for smooth animation
-            U.setPositionSlow(flare, targetPos, duration, nil, false)
-        else
-            -- Instant (no lerping)
-            flare.setPosition(targetPos)
-        end
-        return true
-    end
+    -- NOTE: All object manipulation is done via Objects module
+    -- Debug functions should only call other functions, not perform game actions directly
 
     -- Helper: Convert player color to lighting module light name
     -- Maps "Brown" -> "playerLightBrown", "Orange" -> "playerLightOrange", etc.
@@ -1343,15 +1169,15 @@ function DEBUG.testLightingAndSignals()
     -- Step 4: Test signal fire ON (Brown player)
     table.insert(sequenceFunctions, function()
         broadcast("🔥 Testing Signal Fire ON (Brown player)", {1, 0.5, 0})
-        local success = setSignalFireState("Brown", "on", 0.5)  -- 0.5 seconds for faster motion
+        local success = Objects.SetSignalFireState("Brown", "on", 0.2)  -- 0.2 seconds (3x faster)
         if success then
-            printTestResult("Signal Fire ON (Brown)", true, "Fire moved to y=2.5")
+            printTestResult("Signal Fire ON (Brown)", true, "Fire moved to y=1.5")
             passed = passed + 1
         else
             printTestResult("Signal Fire ON (Brown)", false, "Failed to move fire")
             failed = failed + 1
         end
-        return 4.0  -- Wait for animation
+        return 1.5  -- Wait for animation
     end)
 
     -- Step 5: Wait after signal fire ON
@@ -1360,15 +1186,15 @@ function DEBUG.testLightingAndSignals()
     -- Step 6: Test signal fire OFF (Brown player)
     table.insert(sequenceFunctions, function()
         broadcast("💤 Testing Signal Fire OFF (Brown player)", {0.5, 0.5, 0.5})
-        local success = setSignalFireState("Brown", "off", 0.5)  -- 0.5 seconds for faster motion
+        local success = Objects.SetSignalFireState("Brown", "off", 0.2)  -- 0.2 seconds (3x faster)
         if success then
-            printTestResult("Signal Fire OFF (Brown)", true, "Fire moved to y=-25")
+            printTestResult("Signal Fire OFF (Brown)", true, "Fire moved to y=-7")
             passed = passed + 1
         else
             printTestResult("Signal Fire OFF (Brown)", false, "Failed to move fire")
             failed = failed + 1
         end
-        return 4.0  -- Wait for animation
+        return 1.5  -- Wait for animation
     end)
 
     -- Step 7: Wait after signal fire OFF
@@ -1379,7 +1205,7 @@ function DEBUG.testLightingAndSignals()
         broadcast("🔥 Testing All Signal Fires ON", {1, 0.5, 0})
         local allSuccess = true
         for _, color in ipairs(C.PlayerColors) do
-            local success = setSignalFireState(color, "on", 0.5)  -- 0.5 seconds for faster motion
+            local success = Objects.SetSignalFireState(color, "on", 0.2)  -- 0.2 seconds (3x faster)
             if not success then
                 allSuccess = false
             end
@@ -1391,7 +1217,7 @@ function DEBUG.testLightingAndSignals()
             printTestResult("All Signal Fires ON", false, "Some fires failed")
             failed = failed + 1
         end
-        return 5.0  -- Wait for animations
+        return 2.0  -- Wait for animations
     end)
 
     -- Step 9: Wait after all signal fires ON
@@ -1454,7 +1280,7 @@ function DEBUG.testLightingAndSignals()
     -- Step 14: Instantly switch RING_FLARE to OFF
     table.insert(sequenceFunctions, function()
         broadcast("💤 Testing RING_FLARE: Switching to OFF (instant)", {0.5, 0.5, 0.5})
-        local success = setRingFlareState("off", 0.0)  -- 0 = instant
+        local success = Objects.SetRingFlareState("off", 0.0)  -- 0 = instant
         if success then
             printTestResult("RING_FLARE OFF", true, "RING_FLARE moved to y=-60")
             passed = passed + 1
@@ -1501,7 +1327,7 @@ function DEBUG.testLightingAndSignals()
         broadcast("💤 Turning Off All Signal Fires", {0.5, 0.5, 0.5})
         local allSuccess = true
         for _, color in ipairs(C.PlayerColors) do
-            local success = setSignalFireState(color, "off", 0.5)  -- 0.5 seconds for faster motion
+            local success = Objects.SetSignalFireState(color, "off", 0.2)  -- 0.2 seconds (3x faster)
             if not success then
                 allSuccess = false
             end
@@ -1513,7 +1339,84 @@ function DEBUG.testLightingAndSignals()
             printTestResult("All Signal Fires OFF", false, "Some fires failed")
             failed = failed + 1
         end
-        return 4.0  -- Wait for animations
+        return 2.0  -- Wait for animations
+    end)
+
+    -- Step 19: Test hunger smoke ON (Brown player)
+    table.insert(sequenceFunctions, function()
+        broadcast("💨 Testing Hunger Smoke ON (Brown player)", {0.8, 0.4, 0.8})
+        local success = Objects.SetHungerSmokeState("Brown", "on", 0.2)  -- 0.2 seconds (3x faster)
+        if success then
+            printTestResult("Hunger Smoke ON (Brown)", true, "Smoke moved to y=0.2")
+            passed = passed + 1
+        else
+            printTestResult("Hunger Smoke ON (Brown)", false, "Failed to move smoke")
+            failed = failed + 1
+        end
+        return 1.5  -- Wait for animation
+    end)
+
+    -- Step 20: Wait after hunger smoke ON
+    table.insert(sequenceFunctions, waitStep("Hunger Smoke finished raising, waiting 3 seconds...", 3.0))
+
+    -- Step 21: Test hunger smoke OFF (Brown player)
+    table.insert(sequenceFunctions, function()
+        broadcast("💤 Testing Hunger Smoke OFF (Brown player)", {0.5, 0.5, 0.5})
+        local success = Objects.SetHungerSmokeState("Brown", "off", 0.2)  -- 0.2 seconds (3x faster)
+        if success then
+            printTestResult("Hunger Smoke OFF (Brown)", true, "Smoke moved to y=-7")
+            passed = passed + 1
+        else
+            printTestResult("Hunger Smoke OFF (Brown)", false, "Failed to move smoke")
+            failed = failed + 1
+        end
+        return 1.5  -- Wait for animation
+    end)
+
+    -- Step 22: Wait after hunger smoke OFF
+    table.insert(sequenceFunctions, waitStep("Hunger Smoke finished lowering, waiting 3 seconds...", 3.0))
+
+    -- Step 23: Test all hunger smoke ON (all player colors)
+    table.insert(sequenceFunctions, function()
+        broadcast("💨 Testing All Hunger Smoke ON", {0.8, 0.4, 0.8})
+        local allSuccess = true
+        for _, color in ipairs(C.PlayerColors) do
+            local success = Objects.SetHungerSmokeState(color, "on", 0.2)  -- 0.2 seconds (3x faster)
+            if not success then
+                allSuccess = false
+            end
+        end
+        if allSuccess then
+            printTestResult("All Hunger Smoke ON", true, "All " .. #C.PlayerColors .. " smoke activated")
+            passed = passed + 1
+        else
+            printTestResult("All Hunger Smoke ON", false, "Some smoke failed")
+            failed = failed + 1
+        end
+        return 2.0  -- Wait for animations
+    end)
+
+    -- Step 24: Wait after all hunger smoke ON
+    table.insert(sequenceFunctions, waitStep("All Hunger Smoke finished raising, waiting 3 seconds...", 3.0))
+
+    -- Step 25: Turn off all hunger smoke
+    table.insert(sequenceFunctions, function()
+        broadcast("💤 Turning Off All Hunger Smoke", {0.5, 0.5, 0.5})
+        local allSuccess = true
+        for _, color in ipairs(C.PlayerColors) do
+            local success = Objects.SetHungerSmokeState(color, "off", 0.2)  -- 0.2 seconds (3x faster)
+            if not success then
+                allSuccess = false
+            end
+        end
+        if allSuccess then
+            printTestResult("All Hunger Smoke OFF", true, "All smoke deactivated")
+            passed = passed + 1
+        else
+            printTestResult("All Hunger Smoke OFF", false, "Some smoke failed")
+            failed = failed + 1
+        end
+        return 2.0  -- Wait for animations
     end)
 
     -- Step 19: Final summary

@@ -1,0 +1,173 @@
+--[[
+    Object Manipulation Module (core/objects.ttslua)
+
+    Handles manipulation of game objects like signal fires and hunger smoke.
+    Provides functions for raising/lowering objects with smooth animations.
+
+    This module provides:
+    - Signal fire control (raise/lower)
+    - Hunger smoke control (raise/lower)
+    - Smooth position transitions using U.setPositionSlow
+    - Partial position handling (only update specified axes)
+]]
+
+local Objects = {}
+local U = require("lib.util")
+local C = require("lib.constants")
+local G = require("lib.guids")
+
+-- ============================================================================
+-- HELPER FUNCTIONS
+-- ============================================================================
+
+--- Merges partial position data with current object position
+-- Only updates specified axes, preserves others
+-- @param obj Object The TTS object
+-- @param partialPos table Partial position {x=?, y=?, z=?} (any can be nil)
+-- @return Vector Complete position vector
+local function mergePosition(obj, partialPos)
+    local currentPos = obj.getPosition()
+    local newPos = {
+        x = partialPos.x or currentPos.x,
+        y = partialPos.y or currentPos.y,
+        z = partialPos.z or currentPos.z
+    }
+    return Vector(newPos.x, newPos.y, newPos.z)
+end
+
+-- ============================================================================
+-- SIGNAL FIRE FUNCTIONS
+-- ============================================================================
+
+--- Sets signal fire state (on/off) with optional animation
+-- @param color string Player color (e.g., "Brown", "Orange", "Red", "Pink")
+-- @param state string State: "on" or "off"
+-- @param duration number Optional: Animation duration in seconds (default: 0.2)
+-- @return boolean True if successful, false otherwise
+-- @usage Objects.SetSignalFireState("Brown", "on", 0.2)
+function Objects.SetSignalFireState(color, state, duration)
+    duration = duration or 0.2  -- Default to 0.2 seconds (3x faster than before)
+    
+    local guid = G.GetSignalFireGUID(color)
+    if not guid then
+        U.AlertGM("Objects.SetSignalFireState: No GUID found for color: " .. tostring(color))
+        return false
+    end
+    
+    local fire = getObjectFromGUID(guid)
+    if not fire then
+        U.AlertGM("Objects.SetSignalFireState: Signal fire not found for color: " .. tostring(color))
+        return false
+    end
+
+    local posData = C.ObjectPositions.SIGNAL_FIRE[state]
+    if not posData then
+        U.AlertGM("Objects.SetSignalFireState: Invalid state: " .. tostring(state))
+        return false
+    end
+
+    -- Merge partial position with current position
+    local targetPos = mergePosition(fire, posData.position)
+
+    if duration > 0 then
+        -- Use lerp for smooth animation
+        U.setPositionSlow(fire, targetPos, duration, nil, false)
+    else
+        -- Instant (no lerping)
+        fire.setPosition(targetPos)
+    end
+    
+    return true
+end
+
+-- ============================================================================
+-- HUNGER SMOKE FUNCTIONS
+-- ============================================================================
+
+--- Sets hunger smoke state (on/off) with optional animation
+-- @param color string Player color (e.g., "Brown", "Orange", "Red", "Pink")
+-- @param state string State: "on" or "off"
+-- @param duration number Optional: Animation duration in seconds (default: 0.2)
+-- @return boolean True if successful, false otherwise
+-- @usage Objects.SetHungerSmokeState("Brown", "on", 0.2)
+function Objects.SetHungerSmokeState(color, state, duration)
+    duration = duration or 0.2  -- Default to 0.2 seconds (3x faster than before)
+    
+    local guid = G.GetHungerSmokeGUID(color)
+    if not guid then
+        U.AlertGM("Objects.SetHungerSmokeState: No GUID found for color: " .. tostring(color))
+        return false
+    end
+    
+    local smoke = getObjectFromGUID(guid)
+    if not smoke then
+        U.AlertGM("Objects.SetHungerSmokeState: Hunger smoke not found for color: " .. tostring(color))
+        return false
+    end
+
+    local posData = C.ObjectPositions.HUNGER_SMOKE[state]
+    if not posData then
+        U.AlertGM("Objects.SetHungerSmokeState: Invalid state: " .. tostring(state))
+        return false
+    end
+
+    -- Merge partial position with current position
+    local targetPos = mergePosition(smoke, posData.position)
+
+    if duration > 0 then
+        -- Use lerp for smooth animation
+        U.setPositionSlow(smoke, targetPos, duration, nil, false)
+    else
+        -- Instant (no lerping)
+        smoke.setPosition(targetPos)
+    end
+    
+    return true
+end
+
+-- ============================================================================
+-- RING_FLARE FUNCTIONS
+-- ============================================================================
+
+--- Sets RING_FLARE state (on/off) with optional animation
+-- @param state string State: "on" or "off"
+-- @param duration number Optional: Animation duration in seconds (default: 0.2)
+-- @return boolean True if successful, false otherwise
+-- @usage Objects.SetRingFlareState("on", 0.2)
+function Objects.SetRingFlareState(state, duration)
+    duration = duration or 0.2  -- Default to 0.2 seconds
+    
+    local guid = G.GUIDS.RING_FLARE
+    if not guid then
+        U.AlertGM("Objects.SetRingFlareState: No GUID found for RING_FLARE")
+        return false
+    end
+    
+    local flare = getObjectFromGUID(guid)
+    if not flare then
+        U.AlertGM("Objects.SetRingFlareState: RING_FLARE not found")
+        return false
+    end
+
+    local posData = C.ObjectPositions.RING_FLARE[state]
+    if not posData then
+        U.AlertGM("Objects.SetRingFlareState: Invalid state: " .. tostring(state))
+        return false
+    end
+
+    -- Merge partial position with current position
+    local targetPos = mergePosition(flare, posData.position)
+
+    if duration > 0 then
+        -- Use lerp for smooth animation
+        U.setPositionSlow(flare, targetPos, duration, nil, false)
+    else
+        -- Instant (no lerping)
+        flare.setPosition(targetPos)
+    end
+    
+    return true
+end
+
+return Objects
+

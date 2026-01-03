@@ -13,6 +13,7 @@ S = require("core.state")
 M = require("core.main")
 Z = require("core.zones")
 Scenes = require("core.scenes")
+Objects = require("core.objects")
 local UIH = require("lib.ui_helpers")
 
 -- Load debug module (only in development - exposes test functions globally)

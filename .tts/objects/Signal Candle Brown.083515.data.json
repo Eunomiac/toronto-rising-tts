@@ -1,18 +1,18 @@
 {
-  "GUID": "844170",
+  "GUID": "083515",
   "Name": "Custom_Assetbundle",
   "Transform": {
-    "posX": -26.79,
-    "posY": -2.65,
-    "posZ": -64.67,
+    "posX": 54.51,
+    "posY": -1.24,
+    "posZ": -22.58,
     "rotX": 0,
-    "rotY": 22.5000114,
+    "rotY": 292.5,
     "rotZ": 0,
-    "scaleX": 10,
-    "scaleY": 10,
-    "scaleZ": 10
+    "scaleX": 2,
+    "scaleY": 5,
+    "scaleZ": 2
   },
-  "Nickname": "TOMBSTONE_RED",
+  "Nickname": "Signal Candle Brown",
   "Description": "",
   "GMNotes": "",
   "AltLookAngle": {
@@ -21,9 +21,9 @@
     "z": 0
   },
   "ColorDiffuse": {
-    "r": 1,
-    "g": 1,
-    "b": 1
+    "r": 0.188733667,
+    "g": 0.0814143941,
+    "b": 0
   },
   "LayoutGroupSortIndex": 0,
   "Value": 0,
@@ -40,13 +40,13 @@
   "HideWhenFaceDown": false,
   "Hands": false,
   "CustomAssetbundle": {
-    "AssetbundleURL": "https://steamusercontent-a.akamaihd.net/ugc/1474319191443509135/DAC765EA7C4B3419DBA445D1B642B8ACD7F67148/",
+    "AssetbundleURL": "https://steamusercontent-a.akamaihd.net/ugc/1286291105826094816/AD1F046F7A90D9C567E99B9E2D9E7581D39C207A/",
     "AssetbundleSecondaryURL": "",
-    "MaterialIndex": 0,
+    "MaterialIndex": 2,
     "TypeIndex": 0,
     "LoopingEffectIndex": 0
   },
-  "LuaScript": "function onLoad()\r\n  self.setInvisibleTo({\"Red\"})\r\n  self.interactable = false\r\nend",
+  "LuaScript": "function onLoad()\r\n  self.interactable = false\r\nend\r\n",
   "LuaScriptState": "",
   "XmlUI": ""
 }
