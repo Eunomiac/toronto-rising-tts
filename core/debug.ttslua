@@ -22,6 +22,7 @@ local M = require("core.main")
 local Z = require("core.zones")
 local Scenes = require("core.scenes")
 local C = require("lib.constants")
+local G = require("lib.guids")
 local L = require("core.lighting")
 
 --[[
@@ -548,7 +549,7 @@ end
 ]]
 
 --- Test constants module structure and values
--- Tests: C.PlayerColors, C.Phases, C.GUIDS, C.GetHandZoneGUID
+-- Tests: C.PlayerColors, C.Phases, G.GUIDS, G.GetHandZoneGUID
 function DEBUG.testConstants()
     printTestHeader("Constants Module")
     DEBUG.logToFile("INFO", "Starting testConstants()", "debug_log")
@@ -642,10 +643,10 @@ function DEBUG.testConstants()
         local placeholderCount = 0
 
         for _, key in ipairs(expectedHandKeys) do
-            if C.GUIDS[key] == nil then
+            if G.GUIDS[key] == nil then
                 allKeysPresent = false
                 table.insert(missingKeys, key)
-            elseif string.find(C.GUIDS[key], "@@@@@@") then
+            elseif string.find(G.GUIDS[key], "@@@@@@") then
                 placeholderCount = placeholderCount + 1
             end
         end
@@ -668,7 +669,7 @@ function DEBUG.testConstants()
         local failedColors = {}
 
         for _, color in ipairs(testColors) do
-            local guid = C.GetHandZoneGUID(color)
+            local guid = G.GetHandZoneGUID(color)
             if guid == nil then
                 allWork = false
                 table.insert(failedColors, color .. " (returned nil)")
@@ -790,7 +791,7 @@ function DEBUG.initLightingAndSignals()
 
     -- Helper: Get signal fire object by color
     local function getSignalFire(color)
-        local guid = C.GetSignalFireGUID(color)
+        local guid = G.GetSignalFireGUID(color)
         if not guid then
             return nil
         end
@@ -799,7 +800,7 @@ function DEBUG.initLightingAndSignals()
 
     -- Helper: Get RING_FLARE object
     local function getRingFlare()
-        local guid = C.GUIDS.RING_FLARE
+        local guid = G.GUIDS.RING_FLARE
         if not guid then
             return nil
         end
@@ -808,7 +809,7 @@ function DEBUG.initLightingAndSignals()
 
     -- Helper: Get player light object by color
     local function getPlayerLight(color)
-        local guid = C.GetPlayerLightGUID(color)
+        local guid = G.GetPlayerLightGUID(color)
         if not guid then
             return nil
         end
@@ -1008,7 +1009,7 @@ function DEBUG.testLightingAndSignals()
 
     -- Helper: Get signal fire object by color
     local function getSignalFire(color)
-        local guid = C.GetSignalFireGUID(color)
+        local guid = G.GetSignalFireGUID(color)
         if not guid then
             return nil
         end
@@ -1017,7 +1018,7 @@ function DEBUG.testLightingAndSignals()
 
     -- Helper: Get RING_FLARE object
     local function getRingFlare()
-        local guid = C.GUIDS.RING_FLARE
+        local guid = G.GUIDS.RING_FLARE
         if not guid then
             return nil
         end
@@ -1026,7 +1027,7 @@ function DEBUG.testLightingAndSignals()
 
     -- Helper: Get player light object by color
     local function getPlayerLight(color)
-        local guid = C.GetPlayerLightGUID(color)
+        local guid = G.GetPlayerLightGUID(color)
         if not guid then
             return nil
         end

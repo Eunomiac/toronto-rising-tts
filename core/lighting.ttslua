@@ -19,6 +19,7 @@ local L = {}
 local U = require("lib.util")
 local S = require("core.state")
 local C = require("lib.constants")
+local G = require("lib.guids")
 
 -- ============================================================================
 -- CONFIGURATION
@@ -67,7 +68,7 @@ L.LIGHTMODES = {
     -- These lights are found by GUID, not by tag
     -- Each light has OFF and STANDARD modes
     playerLightBrown = {
-        guid = C.GUIDS.PLAYER_LIGHT_BROWN,
+        guid = G.GUIDS.PLAYER_LIGHT_BROWN,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -88,7 +89,7 @@ L.LIGHTMODES = {
         }
     },
     playerLightOrange = {
-        guid = C.GUIDS.PLAYER_LIGHT_ORANGE,
+        guid = G.GUIDS.PLAYER_LIGHT_ORANGE,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -109,7 +110,7 @@ L.LIGHTMODES = {
         }
     },
     playerLightRed = {
-        guid = C.GUIDS.PLAYER_LIGHT_RED,
+        guid = G.GUIDS.PLAYER_LIGHT_RED,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -130,7 +131,7 @@ L.LIGHTMODES = {
         }
     },
     playerLightPink = {
-        guid = C.GUIDS.PLAYER_LIGHT_PINK,
+        guid = G.GUIDS.PLAYER_LIGHT_PINK,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -151,7 +152,7 @@ L.LIGHTMODES = {
         }
     },
     playerLightPurple = {
-        guid = C.GUIDS.PLAYER_LIGHT_PURPLE,
+        guid = G.GUIDS.PLAYER_LIGHT_PURPLE,
         isPlayerLight = true,
         default = "OFF",
         OFF = {

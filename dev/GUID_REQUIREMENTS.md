@@ -36,7 +36,7 @@ These GUIDs are placeholders and only needed if you plan to use these features:
 1. **In TTS**: Right-click the object you want to get the GUID for
 2. **Select**: "Scripting" from the context menu
 3. **Copy**: The GUID string (6-character hex code)
-4. **In Code**: Replace the placeholder in `lib/constants.ttslua`:
+4. **In Code**: Replace the placeholder in `lib/guids.ttslua`:
    ```lua
    TABLE = "your_guid_here",  -- Remove @@@@@@ markers
    ```
@@ -50,7 +50,7 @@ These GUIDs are placeholders and only needed if you plan to use these features:
 - `testState()` - Tests state management (no GUIDs needed)
 - `testStatePersistence()` - Tests save/load (no GUIDs needed)
 
-The HAND zone GUIDs are already filled, so `C.GetHandZoneGUID()` will work correctly.
+The HAND zone GUIDs are already filled, so `G.GetHandZoneGUID()` will work correctly.
 
 ### Current Tests (Lighting Module)
 
@@ -67,7 +67,7 @@ lua testConstants()
 
 This will check:
 - ✅ All HAND zone GUIDs are present
-- ✅ `C.GetHandZoneGUID()` returns valid GUIDs (not nil)
+- ✅ `G.GetHandZoneGUID()` returns valid GUIDs (not nil)
 - ⚠️ Warns if any GUIDs still contain `@@@@@@` placeholders
 
 ## Notes

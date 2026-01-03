@@ -15,6 +15,7 @@
 local M = {}
 local U = require("lib.util")
 local C = require("lib.constants")
+local G = require("lib.guids")
 local S = require("core.state")
 -- Optional: Will be required when lighting/scene modules are integrated
 -- local L = require("core.lighting")
@@ -65,7 +66,7 @@ function M.setupTombstoneVisibility()
     print("Main: Setting up tombstone visibility.")
 
     for _, color in ipairs(C.PlayerColors) do
-        local guid = C.GetTombstoneGUID(color)
+        local guid = G.GetTombstoneGUID(color)
         if guid then
             local tombstone = getObjectFromGUID(guid)
             if tombstone then

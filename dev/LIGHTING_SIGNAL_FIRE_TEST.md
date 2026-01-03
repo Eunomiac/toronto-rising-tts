@@ -45,13 +45,13 @@ The test runs 8 sequential steps:
 ## Requirements
 
 ### Signal Fires
-- ✅ **GUIDs Already Filled**: All signal fire GUIDs are present in `C.GUIDS`
-- **Required Tags**: None (uses GUIDs directly via `C.GetSignalFireGUID()`)
-- **Object Setup**: Signal fires must exist in TTS with the GUIDs specified in constants
+- ✅ **GUIDs Already Filled**: All signal fire GUIDs are present in `G.GUIDS`
+- **Required Tags**: None (uses GUIDs directly via `G.GetSignalFireGUID()`)
+- **Object Setup**: Signal fires must exist in TTS with the GUIDs specified in guids library
 
 ### Lighting
 - **GUID-Based**: Player lights are found by GUID (not tags)
-- **GUIDs**: `C.GUIDS.PLAYER_LIGHT_BROWN`, `C.GUIDS.PLAYER_LIGHT_ORANGE`, etc.
+- **GUIDs**: `G.GUIDS.PLAYER_LIGHT_BROWN`, `G.GUIDS.PLAYER_LIGHT_ORANGE`, etc.
 - **Light Modes**: Each player light has `"OFF"` and `"STANDARD"` modes defined in `L.LIGHTMODES`
 
 ### Lighting Module Setup
@@ -61,7 +61,7 @@ The lighting module has player lights configured in `core/lighting.ttslua`:
 ```lua
 L.LIGHTMODES = {
     playerLightBrown = {
-        guid = C.GUIDS.PLAYER_LIGHT_BROWN,
+        guid = G.GUIDS.PLAYER_LIGHT_BROWN,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -113,12 +113,12 @@ lua testLightingAndSignals()
 ## Troubleshooting
 
 ### Signal Fires Don't Move
-- Check that GUIDs in `C.GUIDS` match actual TTS object GUIDs
+- Check that GUIDs in `G.GUIDS` match actual TTS object GUIDs
 - Verify objects exist in the game
 - Check console for error messages
 
 ### Player Lights Don't Change
-- Verify GUIDs in `C.GUIDS` match actual TTS object GUIDs (PLAYER_LIGHT_BROWN, etc.)
+- Verify GUIDs in `G.GUIDS` match actual TTS object GUIDs (PLAYER_LIGHT_BROWN, etc.)
 - Check that `L.LIGHTMODES` has entries for all player lights (playerLightBrown, etc.)
 - Ensure each light mode has "OFF" and "STANDARD" modes defined
 - Ensure lighting module is loaded (check for errors on game load)
