@@ -374,15 +374,10 @@ function L.SetLightMode(lightName, mode, player, transitionTime)
     local lData = L.LIGHTMODES[lightName]
     local isSpawned = lData.isSpawned or false
 
-    -- Handle player-specific lights
-    -- All player lights now use GUID-based lookup (no tag-based lookup)
+    -- Handle player-specific lights (for state saving only)
+    -- All lights with GUIDs use GUID-based lookup (simplified logic)
     -- Player parameter is optional and only used for state saving
     if lData.isPlayerLight then
-        -- Player lights MUST have a GUID - this is required
-        if not lData.guid then
-            error("SetLightMode: Player light '" .. tostring(lightName) .. "' must have a GUID defined in LIGHTMODES")
-        end
-        
         -- Resolve player object if provided (only needed for state saving)
         -- Player can be nil - that's fine for GUID-based lights
         if player then
