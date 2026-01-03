@@ -2,12 +2,12 @@
   "GUID": "f251e0",
   "Name": "Custom_Assetbundle",
   "Transform": {
-    "posX": -32.45,
+    "posX": -36.12,
     "posY": 0,
-    "posZ": -99.86,
-    "rotX": 0,
+    "posZ": -110,
+    "rotX": 2.66804268e-8,
     "rotY": 288,
-    "rotZ": 0.5109721,
+    "rotZ": 0.4891448,
     "scaleX": 1,
     "scaleY": 1,
     "scaleZ": 1
@@ -22,8 +22,8 @@
   },
   "ColorDiffuse": {
     "r": 0.525551438,
-    "g": 0.350671619,
-    "b": 0.350671619
+    "g": 0.3506715,
+    "b": 0.3506715
   },
   "Tags": [
     "Brown",

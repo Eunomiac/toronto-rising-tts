@@ -1058,26 +1058,25 @@ G.GUIDS = {
     DIFFICULTY_DIAL = "fe9e9a",
 
     -- Light objects (for scene lighting)
-    MAIN_LIGHT = "7082b8",
+    MAIN_LIGHT_LEFT = "7082b8",
+    MAIN_LIGHT_RIGHT = "700be8",
     LARGE_MAP_LIGHT = "16a7b8",
     PLAYER_LIGHT_BROWN = "f251e0",
     PLAYER_LIGHT_ORANGE = "d3356d",
     PLAYER_LIGHT_RED = "0cd76a",
     PLAYER_LIGHT_PINK = "937fac",
-    PLAYER_LIGHT_PURPLE = "b36dfe",
 
     -- Ambient Objects (for effects)
     AMBIENT_FOG = "fb25b1",
     RING_FLARE = "210fad", -- circular ring of rising light, used to highlight table drops
 
     -- Hand zones (player hand zones)
-    -- Storyteller (Black) and player colors: Brown, Orange, Red, Pink, Purple
+    -- Storyteller (Black) and player colors: Brown, Orange, Red, Pink
     HAND_BLACK = "8981a0",  -- Storyteller
     HAND_BROWN = "14b6cf",
     HAND_ORANGE = "b9d1d9",
     HAND_RED = "b13642",
     HAND_PINK = "926600",
-    HAND_PURPLE = "e32d2c",
 
     -- Scripting Zones
     TABLE_DROP_ZONE = "af99b8", -- zone for table drops
@@ -1087,14 +1086,12 @@ G.GUIDS = {
     TOMBSTONE_ORANGE = "b9d1d9",
     TOMBSTONE_RED = "b13642",
     TOMBSTONE_PINK = "926600",
-    TOMBSTONE_PURPLE = "e32d2c",
 
     -- Signal fires (for players to signal need for Storyteller attention)
     SIGNAL_FIRE_BROWN = "b0ffa8",
     SIGNAL_FIRE_ORANGE = "7aa4ed",
     SIGNAL_FIRE_RED = "cc2959",
     SIGNAL_FIRE_PINK = "f1b7af",
-    SIGNAL_FIRE_PURPLE = "eac658",
 
     -- Add other object GUIDs as needed (zones, boards, etc.)
     -- Format: OBJECT_NAME = "@@@@@@OBJECT_NAME@@@@@@"
@@ -1104,7 +1101,7 @@ G.GUIDS = {
 -- Returns the GUID from G.GUIDS if it exists, or nil if not found.
 -- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
 -- If a GUID is not found, returns nil so callers can handle the error appropriately.
--- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", "Purple", or "Black" for Storyteller)
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", or "Black" for Storyteller)
 -- @return string|nil GUID string if found, or nil if not found
 -- @usage local handGUID = G.GetHandZoneGUID("Red")
 -- @usage local handObj = getObjectFromGUID(G.GetHandZoneGUID("Red"))
@@ -1129,7 +1126,7 @@ end
 -- Returns the GUID from G.GUIDS if it exists, or nil if not found.
 -- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
 -- If a GUID is not found, returns nil so callers can handle the error appropriately.
--- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", "Purple", or "Black" for Storyteller)
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", or "Black" for Storyteller)
 -- @return string|nil GUID string if found, or nil if not found
 -- @usage local signalFireGUID = G.GetSignalFireGUID("Red")
 -- @usage local signalFireObj = getObjectFromGUID(G.GetSignalFireGUID("Red"))
@@ -1154,7 +1151,7 @@ end
 -- Returns the GUID from G.GUIDS if it exists, or nil if not found.
 -- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
 -- If a GUID is not found, returns nil so callers can handle the error appropriately.
--- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", "Purple", or "Black" for Storyteller)
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", or "Black" for Storyteller)
 -- @return string|nil GUID string if found, or nil if not found
 -- @usage local tombstoneGUID = G.GetTombstoneGUID("Red")
 -- @usage local tombstoneObj = getObjectFromGUID(G.GetTombstoneGUID("Red"))
@@ -1179,7 +1176,7 @@ end
 -- Returns the GUID from G.GUIDS if it exists, or nil if not found.
 -- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
 -- If a GUID is not found, returns nil so callers can handle the error appropriately.
--- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", "Purple", or "Black" for Storyteller)
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", or "Black" for Storyteller)
 -- @return string|nil GUID string if found, or nil if not found
 -- @usage local playerLightGUID = G.GetPlayerLightGUID("Red")
 -- @usage local playerLightObj = getObjectFromGUID(G.GetPlayerLightGUID("Red"))
@@ -1525,73 +1522,73 @@ C.PlayerData = {
         purchaseLog = {}
       }
     },
-    [C.PlayerIDs.Hastur] = {
-      color = "Purple",
-      playerName = "Hastur",
-      charName = "Alyssa Farrell",
-      clan = "Ventrue",
-      generation = 9,
-      blood_potency = 3,
-      health = {
-        boxes = 7,
-        superficial_dmg = 0,
-        aggravated_dmg = 0
-      },
-      willpower = {
-        boxes = 5,
-        superficial_dmg = 0,
-        aggravated_dmg = 0
-      },
-      humanity = {
-        boxes = 10,
-        filled = 7,
-        stains = 0
-      },
-      attributes = {
-        Strength = {
-          dots = 2
-        },
-        Dexterity = {
-          dots = 2
-        },
-        Stamina = {
-          dots = 3
-        },
-        Intelligence = {
-          dots = 3
-        },
-        Wits = {
-          dots = 4
-        },
-        Resolve = {
-          dots = 2
-        },
-        Charisma = {
-          dots = 3
-        },
-        Manipulation = {
-          dots = 1
-        },
-        Composure = {
-          dots = 2
-        }
-      },
-      skills = {},
-      disciplines = {},
-      advantages = {},
-      experience = {
-        total = 0,
-        spent = 0,
-        purchaseLog = {}
-      }
-    }
+    -- [C.PlayerIDs.Hastur] = {  -- Player no longer in game (Purple)
+    --   color = "Purple",
+    --   playerName = "Hastur",
+    --   charName = "Alyssa Farrell",
+    --   clan = "Ventrue",
+    --   generation = 9,
+    --   blood_potency = 3,
+    --   health = {
+    --     boxes = 7,
+    --     superficial_dmg = 0,
+    --     aggravated_dmg = 0
+    --   },
+    --   willpower = {
+    --     boxes = 5,
+    --     superficial_dmg = 0,
+    --     aggravated_dmg = 0
+    --   },
+    --   humanity = {
+    --     boxes = 10,
+    --     filled = 7,
+    --     stains = 0
+    --   },
+    --   attributes = {
+    --     Strength = {
+    --       dots = 2
+    --     },
+    --     Dexterity = {
+    --       dots = 2
+    --     },
+    --     Stamina = {
+    --       dots = 3
+    --     },
+    --     Intelligence = {
+    --       dots = 3
+    --     },
+    --     Wits = {
+    --       dots = 4
+    --     },
+    --     Resolve = {
+    --       dots = 2
+    --     },
+    --     Charisma = {
+    --       dots = 3
+    --     },
+    --     Manipulation = {
+    --       dots = 1
+    --     },
+    --     Composure = {
+    --       dots = 2
+    --     }
+    --   },
+    --   skills = {},
+    --   disciplines = {},
+    --   advantages = {},
+    --   experience = {
+    --     total = 0,
+    --     spent = 0,
+    --     purchaseLog = {}
+    --   }
+    -- }
 }
 
 
 -- Player Colors (VTM5E-specific)
--- Storyteller is always Black. Player colors are: Brown, Orange, Red, Pink, Purple (in that order)
+-- Storyteller is always Black. Player colors are: Brown, Orange, Red, Pink (in that order)
 C.PlayerColors = {
-    "Brown", "Orange", "Red", "Pink", "Purple"
+    "Brown", "Orange", "Red", "Pink"
 }
 
 -- VTM5E Clans (from Heritage module)
@@ -3555,7 +3552,7 @@ end
 -- Checks if object has any tag matching a valid TTS player color.
 -- @param obj Object The TTS object to check
 -- @return string|nil The player color tag found, or nil if none
--- @usage local owner = U.findColorTag(card) -- Returns "Red", "Brown", "Orange", "Pink", "Purple", or "Black" (Storyteller)
+-- @usage local owner = U.findColorTag(card) -- Returns "Red", "Brown", "Orange", "Pink", or "Black" (Storyteller)
 function U.findColorTag(obj)
 	U.Assert("U.findColorTag", obj, "userdata")
 	U.Assert("U.findColorTag", obj.hasTag, "function")
@@ -6424,7 +6421,7 @@ function DEBUG.testConstants()
 
     -- Test 1: Player Colors
     do
-        local expectedColors = {"Brown", "Orange", "Red", "Pink", "Purple"}
+        local expectedColors = {"Brown", "Orange", "Red", "Pink"}
         local allPresent = true
         local missingColors = {}
 
@@ -6502,7 +6499,7 @@ function DEBUG.testConstants()
 
     -- Test 4: HAND Zone GUIDs Structure
     do
-        local expectedHandKeys = {"HAND_BLACK", "HAND_BROWN", "HAND_ORANGE", "HAND_RED", "HAND_PINK", "HAND_PURPLE"}
+        local expectedHandKeys = {"HAND_BLACK", "HAND_BROWN", "HAND_ORANGE", "HAND_RED", "HAND_PINK"}
         local allKeysPresent = true
         local missingKeys = {}
         local placeholderCount = 0
@@ -6529,7 +6526,7 @@ function DEBUG.testConstants()
 
     -- Test 5: GetHandZoneGUID Function
     do
-        local testColors = {"Brown", "Orange", "Red", "Pink", "Purple", "Black"}
+        local testColors = {"Brown", "Orange", "Red", "Pink", "Black"}
         local allWork = true
         local failedColors = {}
 

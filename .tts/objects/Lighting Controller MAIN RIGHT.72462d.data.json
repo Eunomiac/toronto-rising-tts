@@ -1,19 +1,19 @@
 {
-  "GUID": "a9407a",
+  "GUID": "72462d",
   "Name": "Custom_Assetbundle",
   "Transform": {
-    "posX": 18,
-    "posY": 47.5613556,
-    "posZ": -35.73,
-    "rotX": 0.00000259327317,
-    "rotY": 89.99993,
-    "rotZ": -0.0000018885969,
-    "scaleX": 2.299999,
-    "scaleY": 2.299999,
-    "scaleZ": 2.299999
+    "posX": -16.3,
+    "posY": 47.56,
+    "posZ": -38.82638,
+    "rotX": 1.01777751e-13,
+    "rotY": 90.0088,
+    "rotZ": -0.00000241812086,
+    "scaleX": 1,
+    "scaleY": 1,
+    "scaleZ": 1
   },
-  "Nickname": "Lighting Controller PURPLE",
-  "Description": "b36dfe",
+  "Nickname": "Lighting Controller MAIN RIGHT",
+  "Description": "700be8",
   "GMNotes": "",
   "AltLookAngle": {
     "x": 0,

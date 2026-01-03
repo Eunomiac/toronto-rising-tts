@@ -2,11 +2,11 @@
   "GUID": "16a7b8",
   "Name": "Custom_Assetbundle",
   "Transform": {
-    "posX": -41.4192047,
-    "posY": 35.1863174,
-    "posZ": 0,
+    "posX": 0,
+    "posY": 25.5407524,
+    "posZ": -27.675087,
     "rotX": 0,
-    "rotY": 0,
+    "rotY": 270,
     "rotZ": 90,
     "scaleX": 1,
     "scaleY": 1,
@@ -14,7 +14,7 @@
   },
   "Nickname": "Map Light (Large)",
   "Description": "",
-  "GMNotes": "Range: 132\nAngle: 87.846\nIntensity: 10\nEnabled: false",
+  "GMNotes": "Range: 132\nAngle: 87.846\nIntensity: 3.645\nEnabled: false",
   "AltLookAngle": {
     "x": 0,
     "y": 0,
@@ -22,8 +22,8 @@
   },
   "ColorDiffuse": {
     "r": 0.525551438,
-    "g": 0.350671679,
-    "b": 0.350671679
+    "g": 0.35067156,
+    "b": 0.35067156
   },
   "Tags": [
     "mapLightLarge"

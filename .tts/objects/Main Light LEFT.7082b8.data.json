@@ -1,33 +1,32 @@
 {
-  "GUID": "b36dfe",
+  "GUID": "7082b8",
   "Name": "Custom_Assetbundle",
   "Transform": {
-    "posX": -36.12,
-    "posY": 0,
-    "posZ": 110,
-    "rotX": 2.66804268e-8,
-    "rotY": 71.99999,
-    "rotZ": 0.858995557,
+    "posX": -25.2158718,
+    "posY": 43.8674049,
+    "posZ": -13.318779,
+    "rotX": 36.50366,
+    "rotY": 0.00000132768344,
+    "rotZ": 349.8,
     "scaleX": 1,
     "scaleY": 1,
     "scaleZ": 1
   },
-  "Nickname": "PLAYER_LIGHT_PURPLE",
+  "Nickname": "Main Light LEFT",
   "Description": "",
-  "GMNotes": "Range: 40\nAngle: 90\nIntensity: 10\nEnabled: true",
+  "GMNotes": "Range: 132\nAngle: 115.2715212\nIntensity: 5\nEnabled: false",
   "AltLookAngle": {
     "x": 0,
     "y": 0,
     "z": 0
   },
   "ColorDiffuse": {
-    "r": 0.525551438,
-    "g": 0.350671619,
-    "b": 0.350671619
+    "r": 0.7607843,
+    "g": 0.7607843,
+    "b": 0.7607843
   },
   "Tags": [
-    "playerLight",
-    "Purple"
+    "mainLight"
   ],
   "LayoutGroupSortIndex": 0,
   "Value": 0,
@@ -37,7 +36,7 @@
   "IgnoreFoW": false,
   "MeasureMovement": false,
   "DragSelectable": false,
-  "Autoraise": false,
+  "Autoraise": true,
   "Sticky": false,
   "Tooltip": false,
   "GridProjection": false,

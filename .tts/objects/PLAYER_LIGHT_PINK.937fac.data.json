@@ -2,12 +2,12 @@
   "GUID": "937fac",
   "Name": "Custom_Assetbundle",
   "Transform": {
-    "posX": -80.7,
-    "posY": 0,
-    "posZ": 61.95,
-    "rotX": 1.33402134e-8,
-    "rotY": 35.9999962,
-    "rotZ": 0.6572818,
+    "posX": -80.69886,
+    "posY": 0.002696824,
+    "posZ": 61.94917,
+    "rotX": 0,
+    "rotY": 36,
+    "rotZ": 0.433930755,
     "scaleX": 1,
     "scaleY": 1,
     "scaleZ": 1
@@ -22,8 +22,8 @@
   },
   "ColorDiffuse": {
     "r": 0.525551438,
-    "g": 0.350671619,
-    "b": 0.350671619
+    "g": 0.3506715,
+    "b": 0.3506715
   },
   "Tags": [
     "Pink",

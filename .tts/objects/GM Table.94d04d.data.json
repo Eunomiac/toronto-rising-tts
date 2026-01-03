@@ -1,0 +1,46 @@
+{
+  "GUID": "94d04d",
+  "Name": "BlockRectangle",
+  "Transform": {
+    "posX": -4.77507569e-7,
+    "posY": 47.0383568,
+    "posZ": -52.63512,
+    "rotX": -0.00000190682158,
+    "rotY": 0.00000123305949,
+    "rotZ": -0.00000250065045,
+    "scaleX": 77.38321,
+    "scaleY": 1,
+    "scaleZ": 19.4481812
+  },
+  "Nickname": "GM Table",
+  "Description": "",
+  "GMNotes": "",
+  "AltLookAngle": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "ColorDiffuse": {
+    "r": 0.6784314,
+    "g": 0.6784314,
+    "b": 0.6784314,
+    "a": 0
+  },
+  "LayoutGroupSortIndex": 0,
+  "Value": 0,
+  "Locked": true,
+  "Grid": false,
+  "Snap": false,
+  "IgnoreFoW": false,
+  "MeasureMovement": false,
+  "DragSelectable": false,
+  "Autoraise": false,
+  "Sticky": false,
+  "Tooltip": false,
+  "GridProjection": false,
+  "HideWhenFaceDown": false,
+  "Hands": false,
+  "LuaScript": "function onLoad()\r\n  self.interactable = false\r\nend\r\n",
+  "LuaScriptState": "",
+  "XmlUI": ""
+}
