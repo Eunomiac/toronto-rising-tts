@@ -20,13 +20,13 @@ G.GUIDS = {
     DIFFICULTY_DIAL = "fe9e9a",
 
     -- Light objects (for scene lighting)
-    MAIN_LIGHT = "7082b8",
+    MAIN_LIGHT_LEFT = "7082b8",
+    MAIN_LIGHT_RIGHT = "700be8",
     LARGE_MAP_LIGHT = "16a7b8",
     PLAYER_LIGHT_BROWN = "f251e0",
     PLAYER_LIGHT_ORANGE = "d3356d",
     PLAYER_LIGHT_RED = "0cd76a",
     PLAYER_LIGHT_PINK = "937fac",
-    PLAYER_LIGHT_PURPLE = "b36dfe",
 
     -- Ambient Objects (for effects)
     AMBIENT_FOG = "fb25b1",
@@ -39,7 +39,6 @@ G.GUIDS = {
     HAND_ORANGE = "b9d1d9",
     HAND_RED = "b13642",
     HAND_PINK = "926600",
-    HAND_PURPLE = "e32d2c",
 
     -- Scripting Zones
     TABLE_DROP_ZONE = "af99b8", -- zone for table drops
@@ -49,14 +48,12 @@ G.GUIDS = {
     TOMBSTONE_ORANGE = "b9d1d9",
     TOMBSTONE_RED = "b13642",
     TOMBSTONE_PINK = "926600",
-    TOMBSTONE_PURPLE = "e32d2c",
 
     -- Signal fires (for players to signal need for Storyteller attention)
     SIGNAL_FIRE_BROWN = "b0ffa8",
     SIGNAL_FIRE_ORANGE = "7aa4ed",
     SIGNAL_FIRE_RED = "cc2959",
     SIGNAL_FIRE_PINK = "f1b7af",
-    SIGNAL_FIRE_PURPLE = "eac658",
 
     -- Add other object GUIDs as needed (zones, boards, etc.)
     -- Format: OBJECT_NAME = "@@@@@@OBJECT_NAME@@@@@@"
