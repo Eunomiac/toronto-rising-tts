@@ -50,7 +50,7 @@ local TablePos = {}
 -- @param storytellerSide string Which side for Storyteller: "top" or "bottom" (default: "top")
 -- @return table Table containing:
 --   - storyteller: {position={x,y,z}, rotation={x,y,z}, angle=number}
---   - players: Array of 5 {position={x,y,z}, rotation={x,y,z}, angle=number} entries
+--   - players: Array of 4 {position={x,y,z}, rotation={x,y,z}, angle=number} entries
 --
 -- @usage local pos = TablePos.calculateHalfDecagonPositions(50, {x=0, y=1.5, z=0}, "top")
 function TablePos.calculateHalfDecagonPositions(tableRadius, tableCenter, storytellerSide)
@@ -172,7 +172,7 @@ function TablePos.printHalfDecagonPositions(tableRadius, tableCenter, storytelle
     print("  Angle: " .. string.format("%.1f", positions.storyteller.angle) .. "°")
     print("")
 
-    print("--- Player Positions (5 players) ---")
+    print("--- Player Positions (4 players) ---")
     for i, player in ipairs(positions.players) do
         print("Player " .. i .. ":")
         print("  Position: {x=" .. string.format("%.2f", player.position.x) ..
