@@ -211,14 +211,12 @@ local function getLightComponent(light, isSilent)
     return components[2]
 end
 
---- Finds a light object by GUID (if available) or tag (fallback)
--- Always checks for GUID first - if GUID exists in light data, uses GUID lookup.
--- Falls back to tag-based lookup only if no GUID is defined.
+--- Finds a light object by GUID
+-- GUID is required for all lights - throws error if GUID is not defined in light data.
 -- @param lightName string The light name to search for (must exist in L.LIGHTMODES)
--- @param playerRef Player|string|nil Optional: Player object or color (ignored for GUID-based lights)
 -- @param isSilent boolean If true, returns nil on error instead of throwing
 -- @return Object|nil The light object, or nil if not found
-local function getLight(lightName, playerRef, isSilent)
+local function getLight(lightName, isSilent)
     local lData = L.LIGHTMODES[lightName]
     if not lData then
         if isSilent then
@@ -228,36 +226,24 @@ local function getLight(lightName, playerRef, isSilent)
         end
     end
 
-    -- Always check for GUID first - if it exists, use GUID lookup regardless of light type
-    if lData.guid then
-        local light = getObjectFromGUID(lData.guid)
-        if light == nil then
-            if isSilent then
-                return nil
-            else
-                U.Val("getLight", {lightName, guid = lData.guid}, false, "Light object not found for GUID: " .. tostring(lData.guid))
-            end
-        end
-        return light
-    end
-
-    -- Fallback to tag-based lookup only if no GUID is defined
-    local tags = {lightName}
-
-    if playerRef ~= nil then
-        local player = U.isPlayer(playerRef) and playerRef or Player[playerRef]
-        if player and U.isPlayer(player) and player.color then
-            table.insert(tags, player.color)
+    -- GUID is required for all lights
+    if not lData.guid then
+        if isSilent then
+            return nil
+        else
+            error("getLight: Light '" .. tostring(lightName) .. "' must have a GUID defined in LIGHTMODES")
         end
     end
 
-    local lights = getObjectsWithAllTags(tags)
-
-    U.Val("getLight", {tags = tags, lights = lights}, #lights > 0, "No lights found", {isSilent = isSilent})
-    U.Val("getLight", {tags = tags, lights = lights}, #lights < 2, "Multiple lights found",
-        {isSilent = false, isThrowing = isSilent ~= true})
-
-    return lights[1]
+    local light = getObjectFromGUID(lData.guid)
+    if light == nil then
+        if isSilent then
+            return nil
+        else
+            U.Val("getLight", {lightName, guid = lData.guid}, false, "Light object not found for GUID: " .. tostring(lData.guid))
+        end
+    end
+    return light
 end
 
 --- Gets all lights matching a tag (or all lights if no tag)
@@ -608,18 +594,11 @@ end
 -- PUBLIC API EXPORTS
 -- ============================================================================
 
---- Gets a light object by name/tag
--- @param lightName string The light name/tag
--- @param playerRef Player|string|nil Optional: Player for player-specific lights
+--- Gets a light object by name (requires GUID in light mode definition)
+-- @param lightName string The light name
 -- @return Object|nil The light object
 -- @usage local light = L.GetLight("playerLightBrown")
 L.GetLight = getLight
-
---- Gets all lights (optionally filtered by tag)
--- @param tag string|nil Optional tag to filter by
--- @return table Array of light objects
--- @usage local allLights = L.GetAllLights()
-L.GetAllLights = getAllLights
 
 -- Low-level property setters (for direct control without modes)
 L.SetIntensity = setIntensity
