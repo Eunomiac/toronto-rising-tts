@@ -320,66 +320,66 @@ C.PlayerData = {
         purchaseLog = {}
       }
     },
-    [C.PlayerIDs.Hastur] = {
-      color = "Purple",
-      playerName = "Hastur",
-      charName = "Alyssa Farrell",
-      clan = "Ventrue",
-      generation = 9,
-      blood_potency = 3,
-      health = {
-        boxes = 7,
-        superficial_dmg = 0,
-        aggravated_dmg = 0
-      },
-      willpower = {
-        boxes = 5,
-        superficial_dmg = 0,
-        aggravated_dmg = 0
-      },
-      humanity = {
-        boxes = 10,
-        filled = 7,
-        stains = 0
-      },
-      attributes = {
-        Strength = {
-          dots = 2
-        },
-        Dexterity = {
-          dots = 2
-        },
-        Stamina = {
-          dots = 3
-        },
-        Intelligence = {
-          dots = 3
-        },
-        Wits = {
-          dots = 4
-        },
-        Resolve = {
-          dots = 2
-        },
-        Charisma = {
-          dots = 3
-        },
-        Manipulation = {
-          dots = 1
-        },
-        Composure = {
-          dots = 2
-        }
-      },
-      skills = {},
-      disciplines = {},
-      advantages = {},
-      experience = {
-        total = 0,
-        spent = 0,
-        purchaseLog = {}
-      }
-    }
+    -- [C.PlayerIDs.Hastur] = {  -- Player no longer in game (Purple)
+    --   color = "Purple",
+    --   playerName = "Hastur",
+    --   charName = "Alyssa Farrell",
+    --   clan = "Ventrue",
+    --   generation = 9,
+    --   blood_potency = 3,
+    --   health = {
+    --     boxes = 7,
+    --     superficial_dmg = 0,
+    --     aggravated_dmg = 0
+    --   },
+    --   willpower = {
+    --     boxes = 5,
+    --     superficial_dmg = 0,
+    --     aggravated_dmg = 0
+    --   },
+    --   humanity = {
+    --     boxes = 10,
+    --     filled = 7,
+    --     stains = 0
+    --   },
+    --   attributes = {
+    --     Strength = {
+    --       dots = 2
+    --     },
+    --     Dexterity = {
+    --       dots = 2
+    --     },
+    --     Stamina = {
+    --       dots = 3
+    --     },
+    --     Intelligence = {
+    --       dots = 3
+    --     },
+    --     Wits = {
+    --       dots = 4
+    --     },
+    --     Resolve = {
+    --       dots = 2
+    --     },
+    --     Charisma = {
+    --       dots = 3
+    --     },
+    --     Manipulation = {
+    --       dots = 1
+    --     },
+    --     Composure = {
+    --       dots = 2
+    --     }
+    --   },
+    --   skills = {},
+    --   disciplines = {},
+    --   advantages = {},
+    --   experience = {
+    --     total = 0,
+    --     spent = 0,
+    --     purchaseLog = {}
+    --   }
+    -- }
 }
 
 
