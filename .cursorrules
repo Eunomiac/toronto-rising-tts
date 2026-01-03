@@ -342,7 +342,7 @@ startLuaCoroutine(Global, "CoroutineName")
 ### Player Color System
 
 - **Storyteller**: Always "Black"
-- **Players**: "Brown", "Orange", "Red", "Pink", "Purple" (in that order)
+- **Players**: "Brown", "Orange", "Red", "Pink" (in that order)
 - **Important**: All state-based player data must be stored by **player ID**, not color or name
 - Player IDs are stored in `C.PlayerIDs` and must be manually updated
 

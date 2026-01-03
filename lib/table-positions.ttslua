@@ -2,7 +2,7 @@
     Table Position Calculator Module (lib/table-positions.ttslua)
 
     Provides functions to calculate player positions for a half-decagon table layout
-    where the Storyteller sits at the long flat side, and 5 players sit at the 5
+    where the Storyteller sits at the long flat side, and 4 players sit at the 4
     straight sides of the half-decagon.
 
     IMPORTANT: This script calculates positions only. You must create and import a
@@ -63,18 +63,18 @@ function TablePos.calculateHalfDecagonPositions(tableRadius, tableCenter, storyt
         players = {}
     }
 
-    -- Calculate positions for the 5 players on the curved arc
+    -- Calculate positions for the 4 players on the curved arc
     -- The arc spans from 90° to 270° (bottom half of circle)
-    -- Each player sits at the center of one of the 5 sides
+    -- Each player sits at the center of one of the 4 sides
     local arcStart = 90   -- Start of arc (right side)
     local arcEnd = 270    -- End of arc (left side)
     local arcSpan = arcEnd - arcStart  -- 180 degrees
-    local sideAngle = arcSpan / 5     -- 36 degrees per side
+    local sideAngle = arcSpan / 4     -- 45 degrees per side
 
-    for i = 1, 5 do
+    for i = 1, 4 do
         -- Calculate angle for center of each side
-        -- Side 1 starts at 90°, side 5 ends at 270°
-        -- Center of side i is at: 90° + (i - 0.5) * 36°
+        -- Side 1 starts at 90°, side 4 ends at 270°
+        -- Center of side i is at: 90° + (i - 0.5) * 45°
         local angleDeg = arcStart + (i - 0.5) * sideAngle
         local angleRad = math.rad(angleDeg)
 

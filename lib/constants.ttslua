@@ -384,9 +384,9 @@ C.PlayerData = {
 
 
 -- Player Colors (VTM5E-specific)
--- Storyteller is always Black. Player colors are: Brown, Orange, Red, Pink, Purple (in that order)
+-- Storyteller is always Black. Player colors are: Brown, Orange, Red, Pink (in that order)
 C.PlayerColors = {
-    "Brown", "Orange", "Red", "Pink", "Purple"
+    "Brown", "Orange", "Red", "Pink"
 }
 
 -- VTM5E Clans (from Heritage module)
@@ -447,11 +447,11 @@ C.CameraAngles = {
 C.ObjectPositions = {
   SIGNAL_FIRE = {
     on = {position = {y=2.5}},
-    off = {position = {y=-40}}
+    off = {position = {y=-7}}
   },
   RING_FLARE = {
     on = {position = {y=-0.08}},
-    off = {position = {y=-60}}
+    off = {position = {y=-7}}
   }
 }
 

@@ -55,12 +55,12 @@ local U = {}
 function U.rotateAroundPoint(center, radius, angleDeg, y)
     center = Vector(center)
     local angleRad = math.rad(angleDeg)
-    
+
     -- Calculate position in XZ plane (horizontal rotation around Y axis)
     local x = center.x + math.sin(angleRad) * radius
     local z = center.z + math.cos(angleRad) * radius
     local resultY = y or center.y
-    
+
     return Vector(x, resultY, z)
 end
 
@@ -1147,7 +1147,7 @@ end
 -- Checks if object has any tag matching a valid TTS player color.
 -- @param obj Object The TTS object to check
 -- @return string|nil The player color tag found, or nil if none
--- @usage local owner = U.findColorTag(card) -- Returns "Red", "Brown", "Orange", "Pink", "Purple", or "Black" (Storyteller)
+-- @usage local owner = U.findColorTag(card) -- Returns "Red", "Brown", "Orange", "Pink", or "Black" (Storyteller)
 function U.findColorTag(obj)
 	U.Assert("U.findColorTag", obj, "userdata")
 	U.Assert("U.findColorTag", obj.hasTag, "function")

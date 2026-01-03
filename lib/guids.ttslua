@@ -33,7 +33,7 @@ G.GUIDS = {
     RING_FLARE = "210fad", -- circular ring of rising light, used to highlight table drops
 
     -- Hand zones (player hand zones)
-    -- Storyteller (Black) and player colors: Brown, Orange, Red, Pink, Purple
+    -- Storyteller (Black) and player colors: Brown, Orange, Red, Pink
     HAND_BLACK = "8981a0",  -- Storyteller
     HAND_BROWN = "14b6cf",
     HAND_ORANGE = "b9d1d9",

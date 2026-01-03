@@ -13,7 +13,7 @@ This guide explains how to create and implement a custom half-decagon table shap
 A half-decagon table has:
 
 - **One flat edge** (the long side) - where the Storyteller sits
-- **Five straight sides** forming a curved arc - where 5 players sit
+- **Four straight sides** forming a curved arc - where 4 players sit
 
 ## Step 1: Create the 3D Model
 

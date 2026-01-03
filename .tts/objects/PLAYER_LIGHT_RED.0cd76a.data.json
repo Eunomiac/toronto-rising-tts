@@ -2,12 +2,12 @@
   "GUID": "0cd76a",
   "Name": "Custom_Assetbundle",
   "Transform": {
-    "posX": -106.17,
+    "posX": -106.15,
     "posY": 0,
     "posZ": 0,
     "rotX": 0,
     "rotY": 0,
-    "rotZ": 0.259825379,
+    "rotZ": 0.048391033,
     "scaleX": 1,
     "scaleY": 1,
     "scaleZ": 1
@@ -22,8 +22,8 @@
   },
   "ColorDiffuse": {
     "r": 0.525551438,
-    "g": 0.350671917,
-    "b": 0.350671917
+    "g": 0.350671619,
+    "b": 0.350671619
   },
   "Tags": [
     "playerLight",
