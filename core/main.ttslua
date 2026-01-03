@@ -251,14 +251,29 @@ function M.setCamera(player, cameraMode, lookAtPos)
     -- Set camera mode to ThirdPerson for cinematic control
     player.setCameraMode("ThirdPerson")
 
-    -- Look at preset position or custom position
-    local targetPos = lookAtPos
-    if targetPos == nil and cameraPreset ~= nil and cameraPreset.position ~= nil then
-        targetPos = cameraPreset.position
+    -- Build camera data table for lookAt() - must include position, pitch, yaw, and distance
+    local cameraData = nil
+    if lookAtPos ~= nil then
+        -- Custom position provided - use it with defaults for pitch/yaw/distance
+        cameraData = {
+            position = lookAtPos,
+            pitch = 0,
+            yaw = 0,
+            distance = 40
+        }
+    elseif cameraPreset ~= nil then
+        -- Use full camera preset data (position, pitch, yaw, distance)
+        -- Clone to avoid modifying the original preset
+        cameraData = U.clone(cameraPreset)
+        if cameraData.position == nil then
+            U.AlertGM("M.setCamera: Camera preset '" .. tostring(cameraMode) .. "' has no position defined")
+            return
+        end
     end
 
-    if targetPos then
-        player.lookAt(targetPos)
+    if cameraData and cameraData.position then
+        -- lookAt() accepts a table with position, pitch, yaw, and distance
+        player.lookAt(cameraData)
         -- Reset to ThirdPerson after brief delay (prevents camera snapping back)
         Wait.time(function()
             player.setCameraMode("ThirdPerson")
