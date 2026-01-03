@@ -5,14 +5,14 @@
 ]]
 
 -- Load shared utilities and constants
-local U = require("lib.util")
-local C = require("lib.constants")
+U = require("lib.util")
+C = require("lib.constants")
 
 -- Load core modules
-local S = require("core.state")
-local M = require("core.main")
-local Z = require("core.zones")
-local Scenes = require("core.scenes")
+S = require("core.state")
+M = require("core.main")
+Z = require("core.zones")
+Scenes = require("core.scenes")
 local UIH = require("lib.ui_helpers")
 
 -- Load debug module (only in development - exposes test functions globally)
@@ -376,16 +376,6 @@ function updateUIDisplays()
     end)
 end
 
---[[
-    Expose primary libraries globally for console access
-    This allows using lua U.<function>, S.<function>, etc. in the TTS console
-    NOTE: Assigning without 'local' makes variables global in Lua
-]]
-U = U
-C = C
-S = S
-M = M
-Z = Z
-Scenes = Scenes
+-- Load additional modules that need global exposure
 G = require("lib.guids")
 L = require("core.lighting")
