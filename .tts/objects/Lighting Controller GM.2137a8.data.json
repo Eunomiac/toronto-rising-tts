@@ -1,19 +1,19 @@
 {
-  "GUID": "72462d",
+  "GUID": "2137a8",
   "Name": "Custom_Assetbundle",
   "Transform": {
-    "posX": 20.3999386,
-    "posY": 4.347309,
-    "posZ": 45.65,
-    "rotX": 1.52666627e-12,
-    "rotY": 270.035858,
-    "rotZ": -0.00000241812245,
+    "posX": 35.85,
+    "posY": 4.34,
+    "posZ": 52.89868,
+    "rotX": 0.00000222060157,
+    "rotY": 270,
+    "rotZ": -0.000001308032,
     "scaleX": 1,
     "scaleY": 1,
     "scaleZ": 1
   },
-  "Nickname": "Lighting Controller MAIN RIGHT",
-  "Description": "700be8",
+  "Nickname": "Lighting Controller GM",
+  "Description": "4148ba",
   "GMNotes": "",
   "AltLookAngle": {
     "x": 0,

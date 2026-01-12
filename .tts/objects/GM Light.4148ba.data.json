@@ -2,11 +2,11 @@
   "GUID": "4148ba",
   "Name": "Custom_Assetbundle",
   "Transform": {
-    "posX": 0,
-    "posY": 74.32244,
-    "posZ": -48.09749,
-    "rotX": 0,
-    "rotY": 0,
+    "posX": 4.104323,
+    "posY": 31.10974,
+    "posZ": 54.9311371,
+    "rotX": 9.131286,
+    "rotY": 180.027069,
     "rotZ": 0,
     "scaleX": 1,
     "scaleY": 1,
@@ -14,16 +14,16 @@
   },
   "Nickname": "GM Light",
   "Description": "",
-  "GMNotes": "Range: 66\nAngle: 311.249095212\nIntensity: 2.5\nEnabled: true",
+  "GMNotes": "Range: 64\nAngle: 46.8512\nIntensity: 2\nEnabled: true",
   "AltLookAngle": {
     "x": 0,
     "y": 0,
     "z": 0
   },
   "ColorDiffuse": {
-    "r": 0.7607843,
-    "g": 0.7607843,
-    "b": 0.7607843
+    "r": 1,
+    "g": 0.701960742,
+    "b": 0
   },
   "LayoutGroupSortIndex": 0,
   "Value": 0,

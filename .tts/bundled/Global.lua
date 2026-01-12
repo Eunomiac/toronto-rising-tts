@@ -57,6 +57,7 @@ S = require("core.state")
 M = require("core.main")
 Z = require("core.zones")
 Scenes = require("core.scenes")
+O = require("core.objects")
 local UIH = require("lib.ui_helpers")
 
 -- Load debug module (only in development - exposes test functions globally)
@@ -1020,7 +1021,7 @@ G.GUIDS = {
 
     -- STORYTELLER OBJECTS
     -- Storyteller Table (raised and behind players so they can't see it)
-    STORYTELLER_TABLE = "c64fe0",
+    STORYTELLER_TABLE = "94d04d",
     -- Difficulty Dial (for setting difficulty of dice rolls
     DIFFICULTY_DIAL = "fe9e9a",
 
@@ -1060,9 +1061,9 @@ G.GUIDS = {
     SIGNAL_FIRE_PINK = "f1b7af",
 
     -- Hunger smoke (to indicate increasing hunger)
-    HUNGER_SMOKE_BROWN = "b0ffa8",
-    HUNGER_SMOKE_ORANGE = "7aa4ed",
-    HUNGER_SMOKE_RED = "cc2959",
+    HUNGER_SMOKE_BROWN = "6ab1fb",
+    HUNGER_SMOKE_ORANGE = "4af4e7",
+    HUNGER_SMOKE_RED = "5d1338",
     HUNGER_SMOKE_PINK = "fb25b1",
 
     -- Add other object GUIDs as needed (zones, boards, etc.)
@@ -1107,6 +1108,31 @@ function G.GetSignalFireGUID(color)
       return nil
   end
   local guidKey = "SIGNAL_FIRE_" .. string.upper(color)
+  local guid = G.GUIDS[guidKey]
+
+  -- If GUID is not found, return nil (don't create a placeholder - placeholders should only exist before GUIDs are set)
+  if guid == nil then
+      return nil
+  end
+
+  -- If GUID still contains placeholder markers, it hasn't been replaced yet
+  -- Return it as-is (caller should handle placeholder case if needed)
+  return guid
+end
+
+--- Gets the GUID string for a hunger smoke object by color
+-- Returns the GUID from G.GUIDS if it exists, or nil if not found.
+-- Note: After placeholders are replaced with actual GUIDs, this will return real GUID strings.
+-- If a GUID is not found, returns nil so callers can handle the error appropriately.
+-- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", or "Black" for Storyteller)
+-- @return string|nil GUID string if found, or nil if not found
+-- @usage local hungerSmokeGUID = G.GetHungerSmokeGUID("Red")
+-- @usage local hungerSmokeObj = getObjectFromGUID(G.GetHungerSmokeGUID("Red"))
+function G.GetHungerSmokeGUID(color)
+  if color == nil then
+      return nil
+  end
+  local guidKey = "HUNGER_SMOKE_" .. string.upper(color)
   local guid = G.GUIDS[guidKey]
 
   -- If GUID is not found, return nil (don't create a placeholder - placeholders should only exist before GUIDs are set)
@@ -2415,6 +2441,20 @@ __bundle_register("lib.util", function(require, _LOADED, __bundle_register, __bu
 --   - Coroutine functions (U.waitUntil, U.RunSequence, U.Lerp) require startLuaCoroutine(Global, "...")
 --   - In Global context, 'self' refers to Global
 --   - Many functions use U.Type() for enhanced type checking (handles TTS userdata types)
+--
+-- COORDINATE SYSTEM CONVENTIONS (TTS Table Orientation):
+--   - Origin (0, 0, 0): Center of table
+--   - X-axis: Positive = RIGHT (toward right edge of table)
+--   - Y-axis: Positive = UP (perpendicular to table surface)
+--   - Z-axis: Positive = AWAY from players (toward back/far edge of table)
+--   - Table radius: 70 units from center to edge
+--   - Typical display height: ~Y = 20 units above table
+--
+-- ANGLE CONVENTIONS (for cylindrical/spherical coordinates):
+--   - angle = 0°:   Points in +Z direction (away from players, behind target)
+--   - angle = 90°:  Points in +X direction (to the right)
+--   - angle = 180°: Points in -Z direction (toward players, in front of target)
+--   - angle = 270°: Points in -X direction (to the left)
 
 local U = {}
 
@@ -2427,12 +2467,16 @@ local U = {}
 -- Useful for positioning objects in a circle around a center point.
 -- @param center Vector|table Center point to rotate around {x, y, z}
 -- @param radius number Distance from center to the point
--- @param angleDeg number Rotation angle in degrees (0° = +Z axis, 90° = +X axis, 180° = -Z axis, 270° = -X axis)
+-- @param angleDeg number Rotation angle in degrees
+--   - 0° = +Z axis (away from players, behind target)
+--   - 90° = +X axis (to the right)
+--   - 180° = -Z axis (toward players, in front of target)
+--   - 270° = -X axis (to the left)
 -- @param y number Optional: Y coordinate for the result (default: center.y)
 -- @return Vector New position after rotation
--- @usage local pos = U.rotateAroundPoint({x=0, y=0, z=0}, 110, 0) -- Returns {x=0, y=0, z=110}
--- @usage local pos = U.rotateAroundPoint({x=0, y=0, z=0}, 110, 90) -- Returns {x=110, y=0, z=0}
--- @usage local pos = U.rotateAroundPoint({x=0, y=5, z=0}, 50, 45, 10) -- Rotated position with y=10
+-- @usage local pos = U.rotateAroundPoint({x=0, y=0, z=0}, 110, 0) -- Returns {x=0, y=0, z=110} (behind)
+-- @usage local pos = U.rotateAroundPoint({x=0, y=0, z=0}, 110, 180) -- Returns {x=0, y=0, z=-110} (in front)
+-- @usage local pos = U.rotateAroundPoint({x=0, y=0, z=0}, 110, 90) -- Returns {x=110, y=0, z=0} (right)
 function U.rotateAroundPoint(center, radius, angleDeg, y)
     center = Vector(center)
     local angleRad = math.rad(angleDeg)
@@ -2443,6 +2487,108 @@ function U.rotateAroundPoint(center, radius, angleDeg, y)
     local resultY = y or center.y
 
     return Vector(x, resultY, z)
+end
+
+--- Converts XYZ coordinates to cylindrical coordinates relative to a center point
+-- Cylindrical coordinates represent a point as {radius, angle, height} where:
+--   - radius: Horizontal distance from center in XZ plane
+--   - angle: Rotation angle in degrees
+--     * 0° = +Z axis (away from players, behind target)
+--     * 90° = +X axis (to the right)
+--     * 180° = -Z axis (toward players, in front of target)
+--     * 270° = -X axis (to the left)
+--   - height: Vertical offset from center's Y coordinate
+-- @param pos Vector|table Position in XYZ coordinates {x, y, z}
+-- @param center Vector|table Center point to calculate relative to {x, y, z}
+-- @return table Cylindrical coordinates {radius, angle, height}
+-- @usage local cyl = U.XYZToCylindrical({x=10, y=5, z=0}, {x=0, y=0, z=0}) -- Returns {radius=10, angle=90, height=5}
+-- @usage local cyl = U.XYZToCylindrical(obj.getPosition(), centerObj.getPosition())
+function U.XYZToCylindrical(pos, center)
+	pos = Vector(pos)
+	-- Handle Object center references
+	if U.isGameObject(center) then
+		center = center.getPosition()
+	else
+		center = Vector(center)
+	end
+	local dx = pos.x - center.x
+	local dz = pos.z - center.z
+	local radius = math.sqrt(dx * dx + dz * dz)
+	local angle = math.atan2(dx, dz) * (180 / math.pi)  -- Convert to degrees
+	if angle < 0 then angle = angle + 360 end  -- Normalize to 0-360
+	local height = pos.y - center.y
+	return {radius = radius, angle = angle, height = height}
+end
+
+--- Converts XYZ coordinates to spherical coordinates relative to a center point
+-- Spherical coordinates represent a point as {radius, angle, angle2} where:
+--   - radius: 3D distance from center
+--   - angle: Horizontal rotation angle in degrees
+--     * 0° = +Z axis (away from players, behind target)
+--     * 90° = +X axis (to the right)
+--     * 180° = -Z axis (toward players, in front of target)
+--     * 270° = -X axis (to the left)
+--   - angle2: Elevation angle in degrees (0° = straight up, 90° = horizontal)
+-- @param pos Vector|table Position in XYZ coordinates {x, y, z}
+-- @param center Vector|table Center point to calculate relative to {x, y, z}
+-- @return table Spherical coordinates {radius, angle, angle2}
+-- @usage local sph = U.XYZToSpherical({x=10, y=0, z=0}, {x=0, y=0, z=0}) -- Returns {radius=10, angle=90, angle2=90}
+-- @usage local sph = U.XYZToSpherical(obj.getPosition(), centerObj.getPosition())
+function U.XYZToSpherical(pos, center)
+	pos = Vector(pos)
+	-- Handle Object center references
+	if U.isGameObject(center) then
+		center = center.getPosition()
+	else
+		center = Vector(center)
+	end
+	local dx = pos.x - center.x
+	local dy = pos.y - center.y
+	local dz = pos.z - center.z
+
+	-- Calculate 3D distance (radius)
+	local radius = math.sqrt(dx * dx + dy * dy + dz * dz)
+
+	-- Calculate horizontal angle (same as cylindrical)
+	local angle = math.atan2(dx, dz) * (180 / math.pi)  -- Convert to degrees
+	if angle < 0 then angle = angle + 360 end  -- Normalize to 0-360
+
+	-- Calculate elevation angle (angle2)
+	-- angle2 = 0° is straight up (positive Y), 90° is horizontal
+	local angle2 = 90  -- Default to horizontal if radius is 0
+	if radius > 0.001 then
+		angle2 = math.acos(dy / radius) * (180 / math.pi)  -- Convert to degrees
+	end
+
+	return {radius = radius, angle = angle, angle2 = angle2}
+end
+
+--- Calculates the 3D distance between two points
+-- Calculates the Euclidean distance in 3D space (includes X, Y, and Z components)
+-- @param pos1 Vector|table First position {x, y, z}
+-- @param pos2 Vector|table Second position {x, y, z}
+-- @return number 3D distance between the two points
+-- @usage local dist = U.Distance({x=0, y=0, z=0}, {x=3, y=4, z=0}) -- Returns 5
+-- @usage local dist = U.Distance(obj1.getPosition(), obj2.getPosition())
+function U.Distance(pos1, pos2)
+	pos1 = Vector(pos1)
+	pos2 = Vector(pos2)
+	return pos1:distance(pos2)
+end
+
+--- Calculates the horizontal distance between two points in the XZ plane (ignoring Y)
+-- Useful for calculating distances on a flat surface or table, ignoring vertical differences
+-- @param pos1 Vector|table First position {x, y, z}
+-- @param pos2 Vector|table Second position {x, y, z}
+-- @return number Distance in XZ plane (horizontal distance)
+-- @usage local dist = U.HorizontalDistance({x=0, y=0, z=0}, {x=3, y=5, z=4}) -- Returns 5 (ignores Y difference)
+-- @usage local dist = U.HorizontalDistance(obj1.getPosition(), obj2.getPosition())
+function U.HorizontalDistance(pos1, pos2)
+	pos1 = Vector(pos1)
+	pos2 = Vector(pos2)
+	local dx = pos1.x - pos2.x
+	local dz = pos1.z - pos2.z
+	return math.sqrt(dx * dx + dz * dz)
 end
 
 --- Rounds a number to 2 decimal places (pFloat = "parse to float")
@@ -3053,8 +3199,39 @@ function U.map(tb, func)
 	U.Assert("U.map", tb, "table")
 	U.Assert("U.map", func, "function")
   local new_table = {}
-  for k,v in pairs(tb) do
-    new_table[k] = func(v,k)
+  -- Check if table is array-like (has sequential numeric indices starting at 1)
+  local isArray = false
+  local maxIndex = 0
+  for k, v in pairs(tb) do
+    if type(k) == "number" and k > 0 and k == math.floor(k) then
+      if k > maxIndex then maxIndex = k end
+    else
+      -- Has non-numeric key, treat as dictionary
+      isArray = false
+      break
+    end
+  end
+  -- If all keys are sequential from 1 to maxIndex, it's an array
+  if maxIndex > 0 then
+    isArray = true
+    for i = 1, maxIndex do
+      if tb[i] == nil then
+        isArray = false
+        break
+      end
+    end
+  end
+
+  if isArray then
+    -- Preserve array structure
+    for i = 1, maxIndex do
+      new_table[i] = func(tb[i], i)
+    end
+  else
+    -- Dictionary structure
+    for k, v in pairs(tb) do
+      new_table[k] = func(v, k)
+    end
   end
   return new_table
 end
@@ -3104,13 +3281,42 @@ function U.filter(tb, func)
 	U.Assert("U.filter", tb, "table")
 	U.Assert("U.filter", func, "function")
   local new_table = {}
-  local index = 0
-  for k,v in pairs(tb) do
-    index = index + 1
-    if (func(v, k)) then
-      if (k == index) then
-        table.insert(new_table, v)
-      else
+  -- Check if table is array-like (has sequential numeric indices starting at 1)
+  local isArray = false
+  local maxIndex = 0
+  for k, v in pairs(tb) do
+    if type(k) == "number" and k > 0 and k == math.floor(k) then
+      if k > maxIndex then maxIndex = k end
+    else
+      -- Has non-numeric key, treat as dictionary
+      isArray = false
+      break
+    end
+  end
+  -- If all keys are sequential from 1 to maxIndex, it's an array
+  if maxIndex > 0 then
+    isArray = true
+    for i = 1, maxIndex do
+      if tb[i] == nil then
+        isArray = false
+        break
+      end
+    end
+  end
+
+  if isArray then
+    -- Preserve array structure
+    local newIndex = 1
+    for i = 1, maxIndex do
+      if func(tb[i], i) then
+        new_table[newIndex] = tb[i]
+        newIndex = newIndex + 1
+      end
+    end
+  else
+    -- Dictionary structure
+    for k, v in pairs(tb) do
+      if func(v, k) then
         new_table[k] = v
       end
     end
@@ -3698,8 +3904,693 @@ function U.changeLighting(params)
 end
 
 -- ============================================================================
+-- EASING FUNCTIONS (Internal)
+-- ============================================================================
+
+-- Internal easing function that applies intensity multiplier
+-- @param t number Normalized time (0 to 1)
+-- @param easeType string Easing type name
+-- @param intensity number Multiplier (0 = linear, 1 = standard, >1 = more dramatic)
+-- @return number Eased t value (0 to 1)
+local function applyEase(t, easeType, intensity)
+	if intensity == 0 or easeType == "linear" then return t end
+
+	local eased = t
+
+	if easeType == "powerIn" then
+		local power = 2 * intensity
+		eased = math.pow(t, power)
+	elseif easeType == "powerOut" then
+		local power = 2 * intensity
+		eased = 1 - math.pow(1 - t, power)
+	elseif easeType == "powerInOut" then
+		local power = 2 * intensity
+		if t < 0.5 then
+			eased = math.pow(2 * t, power) / 2
+		else
+			eased = 1 - math.pow(2 * (1 - t), power) / 2
+		end
+	elseif easeType == "sineIn" then
+		eased = 1 - math.cos(t * math.pi / 2)
+	elseif easeType == "sineOut" then
+		eased = math.sin(t * math.pi / 2)
+	elseif easeType == "sineInOut" then
+		eased = -(math.cos(math.pi * t) - 1) / 2
+	elseif easeType == "back" then
+		-- Overshoot easing: intensity controls overshoot distance
+		local c1 = 1.70158 * intensity
+		local c3 = c1 + 1
+		eased = 1 + c3 * math.pow(t - 1, 3) + c1 * math.pow(t - 1, 2)
+	elseif easeType == "bounce" then
+		-- Bounce easing: intensity controls bounce count
+		local n1 = 7.5625
+		local d1 = 2.75
+		local bounceCount = math.floor(intensity)
+		if t < 1 / d1 then
+			eased = n1 * t * t
+		elseif t < 2 / d1 then
+			eased = n1 * (t - 1.5 / d1) * (t - 1.5 / d1) + 0.75
+		elseif t < 2.5 / d1 then
+			eased = n1 * (t - 2.25 / d1) * (t - 2.25 / d1) + 0.9375
+		else
+			eased = n1 * (t - 2.625 / d1) * (t - 2.625 / d1) + 0.984375
+		end
+		-- Scale bounce effect by intensity
+		if intensity > 1 then
+			eased = eased * (1 + (intensity - 1) * 0.2)
+			if eased > 1 then eased = 1 end
+		end
+	end
+
+	-- Apply intensity multiplier (interpolate between linear and eased)
+	return t + (eased - t) * intensity
+end
+
+-- ============================================================================
 -- ANIMATION & INTERPOLATION UTILITIES
 -- ============================================================================
+
+-- Helper: Convert cylindrical coordinates to XYZ
+-- @param cylindrical table {radius, angle, height}
+-- @param center Vector Center point in XYZ
+-- @return Vector Position in XYZ coordinates
+local function cylindricalToXYZ(cylindrical, center)
+	center = Vector(center)
+	local angleRad = math.rad(cylindrical.angle)
+	return Vector(
+		center.x + cylindrical.radius * math.sin(angleRad),
+		center.y + cylindrical.height,
+		center.z + cylindrical.radius * math.cos(angleRad)
+	)
+end
+
+-- Helper: Convert spherical coordinates to XYZ
+-- @param spherical table {radius, angle, angle2}
+-- @param center Vector Center point in XYZ
+-- @return Vector Position in XYZ coordinates
+local function sphericalToXYZ(spherical, center)
+	center = Vector(center)
+	local angleRad = math.rad(spherical.angle)
+	-- Add 90° to angle2 to shift the coordinate system
+	-- New system: angle2=0 is perpendicular, angle2=-90 is above, angle2=+90 is below
+	local angle2Rad = math.rad(spherical.angle2 + 90)
+	-- Standard spherical coordinate formula
+	local horizontalRadius = spherical.radius * math.sin(angle2Rad)
+	return Vector(
+		center.x + horizontalRadius * math.sin(angleRad),
+		center.y + spherical.radius * math.cos(angle2Rad),
+		center.z + horizontalRadius * math.cos(angleRad)
+	)
+end
+
+-- Helper: Resolve position from PositionOrientationData (handles Objects and coordinate systems)
+-- @param data table PositionOrientationData
+-- @param coordinateSystem string "xy", "cylindrical", or "spherical"
+-- @return Vector|nil Position in XYZ, or nil if no position
+local function resolvePosition(data, coordinateSystem, center)
+	if data.position == nil then return nil end
+
+	center = center or Vector(0, 0, 0)
+
+	-- Handle Object reference
+	if U.isGameObject(data.position) then
+		return data.position.getPosition()
+	end
+
+	-- Handle coordinate system
+	if coordinateSystem == "cylindrical" then
+		local cyl = data.position
+		-- If Vector provided, interpret as {radius=x, angle=y, height=z}
+		if U.isInstance(cyl, Vector) then
+			cyl = {radius = cyl.x, angle = cyl.y, height = cyl.z}
+		end
+		return cylindricalToXYZ(cyl, center)
+	elseif coordinateSystem == "spherical" then
+		local sph = data.position
+		-- If Vector provided, interpret as {radius=x, angle=y, angle2=z}
+		if U.isInstance(sph, Vector) then
+			sph = {radius = sph.x, angle = sph.y, angle2 = sph.z}
+		end
+		return sphericalToXYZ(sph, center)
+	else
+		-- XY coordinates (default)
+		return Vector(data.position)
+	end
+end
+
+-- Helper: Resolve center from PositionOrientationData (handles Objects)
+-- @param data table PositionOrientationData
+-- @return Vector Center point in XYZ
+local function resolveCenter(data)
+	if data.center == nil then return Vector(0, 0, 0) end
+	if U.isGameObject(data.center) then
+		return data.center.getPosition()
+	end
+	return Vector(data.center)
+end
+
+--- Calculates rotation angles to face a target position from a source position
+-- Useful for making objects "look at" or face toward another object or position
+-- @param from Vector|table Source position {x, y, z}
+-- @param to Vector|table Target position {x, y, z}
+-- @return Vector Rotation angles in degrees {pitch, yaw, 0}
+-- @usage local rot = U.lookAtRotation(obj1.getPosition(), obj2.getPosition())
+-- @usage local rot = U.lookAtRotation({x=0, y=0, z=0}, {x=10, y=5, z=10})
+function U.lookAtRotation(from, to)
+	-- Debug: Check inputs (use print instead of U.error to avoid potential issues)
+	if from == nil then
+		print("ERROR: U.lookAtRotation - from parameter is nil")
+		return Vector(0, 0, 0)
+	end
+	if to == nil then
+		print("ERROR: U.lookAtRotation - to parameter is nil")
+		return Vector(0, 0, 0)
+	end
+
+	-- Extract x, y, z values from inputs (handles both Vector objects and tables)
+	local fromX, fromY, fromZ
+	local toX, toY, toZ
+
+	if type(from) == "table" then
+		fromX = from.x or from[1] or 0
+		fromY = from.y or from[2] or 0
+		fromZ = from.z or from[3] or 0
+	else
+		-- Try to get position if it's an object
+		local success, pos = pcall(function() return from.getPosition() end)
+		if success and pos then
+			fromX = pos.x or 0
+			fromY = pos.y or 0
+			fromZ = pos.z or 0
+		else
+			print("ERROR: U.lookAtRotation - Cannot extract coordinates from 'from' parameter")
+			return Vector(0, 0, 0)
+		end
+	end
+
+	if type(to) == "table" then
+		toX = to.x or to[1] or 0
+		toY = to.y or to[2] or 0
+		toZ = to.z or to[3] or 0
+	else
+		-- Try to get position if it's an object
+		local success, pos = pcall(function() return to.getPosition() end)
+		if success and pos then
+			toX = pos.x or 0
+			toY = pos.y or 0
+			toZ = pos.z or 0
+		else
+			print("ERROR: U.lookAtRotation - Cannot extract coordinates from 'to' parameter")
+			return Vector(0, 0, 0)
+		end
+	end
+
+	-- Calculate direction vector manually
+	local dx = toX - fromX
+	local dy = toY - fromY
+	local dz = toZ - fromZ
+	-- Calculate distance
+	local distance = math.sqrt(dx * dx + dy * dy + dz * dz)
+	if distance < 0.001 then
+		return Vector(0, 0, 0)
+	end
+
+	-- Normalize direction vector manually
+	local invDistance = 1.0 / distance
+	local normX = dx * invDistance
+	local normY = dy * invDistance
+	local normZ = dz * invDistance
+
+	-- Calculate rotation angles (convert radians to degrees)
+	-- Lua 5.1 doesn't have math.deg, so we multiply by 180/pi
+	local radToDeg = 180 / math.pi
+	-- Yaw: rotation around Y axis (horizontal rotation)
+	-- atan2(x, z) gives angle in XZ plane where 0° = +Z, 90° = +X
+	local yaw = math.atan2(normX, normZ) * radToDeg
+	-- Pitch: rotation around X axis (vertical rotation)
+	-- asin(-y) gives angle where positive pitch looks up
+	local pitch = math.asin(-normY) * radToDeg
+
+	-- NOTE: For point lights in TTS, rotation (0, 0, 0) faces downward (negative Y)
+	-- To make the light face the target, we need to add -90° to pitch
+	-- This aligns the light's forward direction with our coordinate system
+	pitch = pitch - 90
+
+	return Vector(pitch, yaw, 0)
+end
+
+-- Helper: Calculate look-at rotation from position to target (internal use)
+-- @param from Vector Source position
+-- @param to Vector Target position
+-- @return Vector Rotation angles in degrees
+local function calculateLookAtRotation(from, to)
+	return U.lookAtRotation(from, to)
+end
+
+-- Helper: Resolve orientation from PositionOrientationData (handles Objects)
+-- @param data table PositionOrientationData
+-- @param currentPos Vector Current position (for look-at calculations)
+-- @return Vector|nil Rotation in degrees, or nil if no orientation
+local function resolveOrientation(data, currentPos)
+	if data.orientation == nil then return nil end
+
+	if U.isGameObject(data.orientation) then
+		-- Calculate look-at rotation
+		local targetPos = data.orientation.getPosition()
+		return calculateLookAtRotation(currentPos, targetPos)
+	else
+		return Vector(data.orientation)
+	end
+end
+
+-- Helper: Interpolate rotation with shortest path wrapping
+-- @param start Vector Starting rotation
+-- @param finish Vector Ending rotation
+-- @param t number Interpolation factor (0 to 1)
+-- @return Vector Interpolated rotation
+local function lerpRotation(start, finish, t)
+	local function parseAngleLerp(startAngle, finishAngle)
+		if math.abs(finishAngle - startAngle) > math.abs(finishAngle + 360 - startAngle) then
+			finishAngle = finishAngle + 360
+		end
+		if math.abs(finishAngle - startAngle) > math.abs(finishAngle - 360 - startAngle) then
+			finishAngle = finishAngle - 360
+		end
+		return finishAngle
+	end
+
+	local adjustedFinish = Vector(
+		parseAngleLerp(start.x, finish.x),
+		parseAngleLerp(start.y, finish.y),
+		parseAngleLerp(start.z, finish.z)
+	)
+
+	return start:lerp(adjustedFinish, t)
+end
+
+--- Generates a pre-computed eased path for simple types (number, Color)
+-- Returns a table of interpolated values, one per frame (60 FPS)
+-- @param start number|Color Starting value
+-- @param end number|Color Ending value
+-- @param duration number Duration in seconds
+-- @param ease string Optional easing type (default: "sineInOut")
+-- @param easeIntensity number Optional intensity multiplier (default: 1.0)
+-- @return table Array of interpolated values
+-- @usage local alphaPath = U.GetEasedValue(0.0, 1.0, 1.0, "sineInOut", 1.0)
+function U.GetEasedValue(start, endVal, duration, ease, easeIntensity)
+	if duration == nil then duration = 0.5 end
+	if ease == nil then ease = "sineInOut" end
+	if easeIntensity == nil then easeIntensity = 1.0 end
+
+	local frames = math.ceil(duration * 60)  -- 60 FPS
+	local path = {}
+
+	for i = 0, frames do
+		local t = i / frames
+		local tEased = applyEase(t, ease, easeIntensity)
+
+		local value
+		if U.isInstance(start, Color) then
+			value = start:lerp(endVal, tEased)
+		else
+			-- Number interpolation
+			local delta = endVal - start
+			value = start + (delta * tEased)
+		end
+
+		table.insert(path, value)
+	end
+
+	return path
+end
+
+--- Generates a pre-computed eased path for positions and orientations
+-- Returns a table of PositionOrientationData, one per frame (60 FPS)
+-- If Object references are present, returns "DEFER" to signal deferred computation
+-- @param start table PositionOrientationData starting state
+-- @param end table PositionOrientationData ending state
+-- @param duration number Duration in seconds
+-- @param ease string Optional easing type (default: "sineInOut")
+-- @param easeIntensity number Optional intensity multiplier (default: 1.0)
+-- @param coordinateSystem string Optional: "xy", "cylindrical", or "spherical" (default: "xy")
+-- @return table|string Array of PositionOrientationData, or "DEFER" if Objects present
+-- @usage local path = U.GetEasedPath({position = Vector(0,0,0)}, {position = Vector(10,10,10)}, 1.0)
+function U.GetEasedPath(start, endVal, duration, ease, easeIntensity, coordinateSystem)
+	if duration == nil then duration = 0.5 end
+	if ease == nil then ease = "sineInOut" end
+	if easeIntensity == nil then easeIntensity = 1.0 end
+	if coordinateSystem == nil then coordinateSystem = "xy" end
+
+	-- Check for Object references (defer computation)
+	local hasObjects = false
+	if U.isGameObject(start.position) or U.isGameObject(endVal.position) then
+		hasObjects = true
+	end
+	if U.isGameObject(start.orientation) or U.isGameObject(endVal.orientation) then
+		hasObjects = true
+	end
+	if U.isGameObject(start.center) or U.isGameObject(endVal.center) then
+		hasObjects = true
+	end
+
+	if hasObjects then
+		return "DEFER"
+	end
+
+	-- Resolve centers (needed for coordinate conversion)
+	local startCenter = resolveCenter(start)
+	local endCenter = resolveCenter(endVal)
+	-- Use start center for both if end center is not specified
+	local center = endCenter or startCenter
+
+	-- For cylindrical/spherical, we need to interpolate in coordinate space, not XYZ
+	-- Extract coordinate values from start and end
+	local startCoord, endCoord
+	if coordinateSystem == "cylindrical" then
+		-- Extract cylindrical coordinates
+		local startCyl = start.position
+		local endCyl = endVal.position
+		if U.isInstance(startCyl, Vector) then
+			startCyl = {radius = startCyl.x, angle = startCyl.y, height = startCyl.z}
+		end
+		if U.isInstance(endCyl, Vector) then
+			endCyl = {radius = endCyl.x, angle = endCyl.y, height = endCyl.z}
+		end
+		startCoord = startCyl
+		endCoord = endCyl
+	elseif coordinateSystem == "spherical" then
+		-- Extract spherical coordinates
+		local startSph = start.position
+		local endSph = endVal.position
+		if U.isInstance(startSph, Vector) then
+			startSph = {radius = startSph.x, angle = startSph.y, angle2 = startSph.z}
+		end
+		if U.isInstance(endSph, Vector) then
+			endSph = {radius = endSph.x, angle = endSph.y, angle2 = endSph.z}
+		end
+		startCoord = startSph
+		endCoord = endSph
+	else
+		-- XY coordinates: convert to XYZ and lerp directly
+		local startPos = resolvePosition(start, coordinateSystem, startCenter)
+		local endPos = resolvePosition(endVal, coordinateSystem, endCenter)
+		startCoord = startPos
+		endCoord = endPos
+	end
+
+	-- For orientation, we need current position for look-at calculations
+	-- Use start position as fallback
+	local startPosXYZ = resolvePosition(start, coordinateSystem, startCenter)
+	local endPosXYZ = resolvePosition(endVal, coordinateSystem, endCenter)
+	local startRot = resolveOrientation(start, startPosXYZ or Vector(0, 0, 0))
+	local endRot = resolveOrientation(endVal, endPosXYZ or Vector(0, 0, 0))
+
+	-- Generate path
+	local frames = math.ceil(duration * 60)  -- 60 FPS
+	local path = {}
+
+	for i = 0, frames do
+		local t = i / frames
+		local tEased = applyEase(t, ease, easeIntensity)
+
+		local step = {}
+
+		-- Interpolate position
+		if startCoord ~= nil and endCoord ~= nil then
+			if coordinateSystem == "cylindrical" then
+				-- Interpolate in cylindrical coordinate space
+				-- Linear interpolation for all values - no wrapping or normalization
+				-- This allows any angle range (e.g., -500° to +300° = 800° rotation)
+				local angleDelta = endCoord.angle - startCoord.angle
+				local interpAngle = startCoord.angle + angleDelta * tEased
+				-- No wrapping needed - sin/cos handle any angle value correctly
+
+				local interpCyl = {
+					radius = startCoord.radius + (endCoord.radius - startCoord.radius) * tEased,
+					angle = interpAngle,
+					height = startCoord.height + (endCoord.height - startCoord.height) * tEased
+				}
+				-- Convert to XYZ
+				step.position = cylindricalToXYZ(interpCyl, center)
+			elseif coordinateSystem == "spherical" then
+				-- Interpolate in spherical coordinate space
+				-- Handle angle wrapping: use shortest path for angles, but preserve full rotations
+				local angleDelta = endCoord.angle - startCoord.angle
+				-- Check if delta is a multiple of 360° (preserve full rotations)
+				-- If it's exactly or close to a multiple of 360, preserve it as-is
+				local fullRotations = angleDelta / 360
+				local nearMultiple = math.abs(fullRotations - math.floor(fullRotations + 0.5)) < 0.01
+
+				-- If not a multiple of 360, normalize to shortest path (-180 to 180)
+				if not nearMultiple then
+					if angleDelta > 180 then
+						angleDelta = angleDelta - 360
+					elseif angleDelta < -180 then
+						angleDelta = angleDelta + 360
+					end
+				end
+
+				local interpAngle = startCoord.angle + angleDelta * tEased
+				-- Only wrap angle if we normalized it (not a multiple of 360)
+				-- This preserves multiple rotations (720°, 1080°, etc.)
+				if not nearMultiple then
+					interpAngle = U.cycle(interpAngle, 0, 360)
+				end
+
+				local interpSph = {
+					radius = startCoord.radius + (endCoord.radius - startCoord.radius) * tEased,
+					angle = interpAngle,
+					angle2 = startCoord.angle2 + (endCoord.angle2 - startCoord.angle2) * tEased
+				}
+				-- Convert to XYZ
+				step.position = sphericalToXYZ(interpSph, center)
+			else
+				-- XY coordinates: lerp directly
+				step.position = startCoord:lerp(endCoord, tEased)
+			end
+		elseif startCoord ~= nil then
+			if coordinateSystem == "cylindrical" then
+				step.position = cylindricalToXYZ(startCoord, center)
+			elseif coordinateSystem == "spherical" then
+				step.position = sphericalToXYZ(startCoord, center)
+			else
+				step.position = startCoord
+			end
+		elseif endCoord ~= nil then
+			if coordinateSystem == "cylindrical" then
+				step.position = cylindricalToXYZ(endCoord, center)
+			elseif coordinateSystem == "spherical" then
+				step.position = sphericalToXYZ(endCoord, center)
+			else
+				step.position = endCoord
+			end
+		end
+
+		-- Interpolate orientation
+		if startRot ~= nil and endRot ~= nil then
+			step.orientation = lerpRotation(startRot, endRot, tEased)
+		elseif startRot ~= nil then
+			step.orientation = startRot
+		elseif endRot ~= nil then
+			step.orientation = endRot
+		end
+
+		table.insert(path, step)
+	end
+
+	return path
+end
+
+--- Executes a pre-computed path step-by-step via coroutine
+-- @param path table Array of PositionOrientationData from U.GetEasedPath
+-- @param setFunc function Function that receives each step and applies it
+-- @return number Duration of the path
+-- @usage U.LerpPath(path, function(step) obj.setPositionSmooth(step.position) end)
+function U.LerpPath(path, setFunc)
+	if path == nil or #path == 0 then return 0 end
+	if setFunc == nil then return 0 end
+
+	local duration = #path / 60  -- Convert frames to seconds
+
+	-- Store coroutine function globally so startLuaCoroutine can find it
+	-- Use a unique name to avoid conflicts
+	local coroutineId = math.random(1000000, 9999999)
+	local coroutineName = "LerpPathCoroutine_" .. coroutineId
+
+	-- Define function in global scope (not as Global.field)
+	_G[coroutineName] = function()
+		for i = 1, #path do
+			if setFunc then
+				setFunc(path[i])
+			end
+			coroutine.yield(0)  -- One frame per step
+		end
+		-- Clean up after completion
+		_G[coroutineName] = nil
+		return 1
+	end
+
+	-- Try to start coroutine - use self (Global) if available, otherwise try _G
+	local success, err = pcall(function()
+		if self then
+			startLuaCoroutine(self, coroutineName)
+		else
+			startLuaCoroutine(_G, coroutineName)
+		end
+	end)
+	if not success then
+		U.error("U.LerpPath", "Failed to start coroutine: " .. tostring(err))
+		_G[coroutineName] = nil  -- Clean up on failure
+	end
+
+	return duration
+end
+
+--- Executes a path with Object references (resolves Objects at execution time)
+-- @param start table PositionOrientationData starting state
+-- @param end table PositionOrientationData ending state
+-- @param duration number Duration in seconds
+-- @param ease string Easing type
+-- @param easeIntensity number Intensity multiplier
+-- @param coordinateSystem string Coordinate system
+-- @param setFunc function Function that receives each step and applies it
+-- @return number Duration of the path
+function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinateSystem, setFunc)
+	if setFunc == nil then return 0 end
+
+	-- Resolve Object references
+	local startCenter = resolveCenter(start)
+	local endCenter = resolveCenter(endVal)
+
+	local startPos = resolvePosition(start, coordinateSystem, startCenter)
+	local endPos = resolvePosition(endVal, coordinateSystem, endCenter)
+
+	-- For orientation with Objects, we need to calculate look-at at each step
+	-- We'll generate the path on-the-fly
+	local frames = math.ceil(duration * 60)
+
+	-- Generate unique function name to avoid conflicts
+	local coroutineId = math.random(1000000, 9999999)
+	local coroutineName = "LerpDeferredCoroutine_" .. coroutineId
+
+	-- Store coroutine function globally so startLuaCoroutine can find it
+	_G[coroutineName] = function()
+		for i = 0, frames do
+			local t = i / frames
+			local tEased = applyEase(t, ease, easeIntensity)
+
+			local step = {}
+
+			-- Interpolate position
+			if startPos ~= nil and endPos ~= nil then
+				-- For cylindrical/spherical, we need to interpolate in coordinate space
+				if coordinateSystem == "cylindrical" then
+					-- Convert XYZ back to cylindrical for interpolation
+					local startCyl = U.XYZToCylindrical(startPos, startCenter)
+					local endCyl = U.XYZToCylindrical(endPos, endCenter)
+
+					-- Handle angle wrapping: use shortest path for angles, but preserve full rotations
+					local angleDelta = endCyl.angle - startCyl.angle
+					-- Linear interpolation - no wrapping or normalization
+					-- This allows any angle range (e.g., -500° to +300° = 800° rotation)
+					local interpAngle = startCyl.angle + angleDelta * tEased
+					-- No wrapping needed - sin/cos handle any angle value correctly
+
+					local interpCyl = {
+						radius = startCyl.radius + (endCyl.radius - startCyl.radius) * tEased,
+						angle = interpAngle,
+						height = startCyl.height + (endCyl.height - startCyl.height) * tEased
+					}
+					step.position = cylindricalToXYZ(interpCyl, endCenter or startCenter)
+				elseif coordinateSystem == "spherical" then
+					-- Convert XYZ back to spherical for interpolation
+					local startSph = U.XYZToSpherical(startPos, startCenter)
+					local endSph = U.XYZToSpherical(endPos, endCenter)
+
+					-- Linear interpolation - no wrapping or normalization
+					-- This allows any angle range (e.g., -500° to +300° = 800° rotation)
+					local angleDelta = endSph.angle - startSph.angle
+					local interpAngle = startSph.angle + angleDelta * tEased
+					-- No wrapping needed - sin/cos handle any angle value correctly
+
+					local interpSph = {
+						radius = startSph.radius + (endSph.radius - startSph.radius) * tEased,
+						angle = interpAngle,
+						angle2 = startSph.angle2 + (endSph.angle2 - startSph.angle2) * tEased
+					}
+					step.position = sphericalToXYZ(interpSph, endCenter or startCenter)
+				else
+					-- XY coordinates: lerp directly
+					step.position = startPos:lerp(endPos, tEased)
+				end
+			end
+
+			-- Handle orientation (may need to recalculate if Objects present)
+			if start.orientation ~= nil or endVal.orientation ~= nil then
+				local currentPos = step.position or startPos or Vector(0, 0, 0)
+
+				local startRot
+				if start.orientation ~= nil then
+					if U.isGameObject(start.orientation) then
+						local success, targetPos = pcall(function() return start.orientation.getPosition() end)
+						if success and targetPos then
+							startRot = calculateLookAtRotation(currentPos, targetPos)
+						else
+							startRot = Vector(0, 0, 0)
+						end
+					else
+						startRot = Vector(start.orientation)
+					end
+				end
+
+				local endRot
+				if endVal.orientation ~= nil then
+					if U.isGameObject(endVal.orientation) then
+						local success, targetPos = pcall(function() return endVal.orientation.getPosition() end)
+						if success and targetPos then
+							endRot = calculateLookAtRotation(currentPos, targetPos)
+						else
+							endRot = Vector(0, 0, 0)
+						end
+					else
+						endRot = Vector(endVal.orientation)
+					end
+				end
+
+				if startRot ~= nil and endRot ~= nil then
+					step.orientation = lerpRotation(startRot, endRot, tEased)
+				elseif startRot ~= nil then
+					step.orientation = startRot
+				elseif endRot ~= nil then
+					step.orientation = endRot
+				end
+			end
+
+			if setFunc then
+				setFunc(step)
+			end
+			coroutine.yield(0)
+		end
+		-- Clean up after completion
+		_G[coroutineName] = nil
+		return 1
+	end
+
+	-- Try to start coroutine - use self (Global) if available, otherwise try _G
+	local success, err = pcall(function()
+		if self then
+			startLuaCoroutine(self, coroutineName)
+		else
+			startLuaCoroutine(_G, coroutineName)
+		end
+	end)
+	if not success then
+		U.error("U.LerpDeferred", "Failed to start coroutine: " .. tostring(err))
+		_G[coroutineName] = nil  -- Clean up on failure
+	end
+
+	return duration
+end
 
 --- Smoothly animates an object's rotation over time
 -- Uses U.Lerp internally to interpolate rotation values. Handles rotation wrapping (shortest path).
@@ -3785,65 +4676,260 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
 
 	-- parseCheckFunc(testRef): Converts testRef into a test function (recursively, if testRef is a table)
 	local function parseCheckFunc(tRef)
-		if tRef == nil then tRef = 0.5 end
-		if U.Type(tRef) == "function" then return tRef
-		elseif U.Type(tRef) == "number" then
+		if tRef == nil then
+			U.error("U.waitUntil.parseCheckFunc", "tRef is nil, defaulting to 0.5 seconds")
+			tRef = 0.5
+		end
+
+		local tRefType = U.Type(tRef)
+		if tRefType == nil then
+			U.error("U.waitUntil.parseCheckFunc", "U.Type(tRef) returned nil for: " .. tostring(tRef))
+			return function() return true end
+		end
+
+		if tRefType == "function" then
+			return tRef
+		elseif tRefType == "number" then
 			-- Use time-based waiting instead of frame counting
 			-- Capture the duration in the closure
 			local waitDuration = tRef  -- Duration in seconds
+			if waitDuration == nil then
+				U.error("U.waitUntil.parseCheckFunc", "waitDuration is nil")
+				return function() return true end
+			end
 			return function()
 				if waitStartTime == nil then
 					waitStartTime = os.time()  -- Initialize start time on first check
 				end
+				if waitStartTime == nil then
+					U.error("U.waitUntil.parseCheckFunc", "waitStartTime is still nil after initialization")
+					return true
+				end
 				local elapsed = os.time() - waitStartTime
+				if elapsed == nil then
+					U.error("U.waitUntil.parseCheckFunc", "elapsed time calculation returned nil")
+					return true
+				end
 				return elapsed >= waitDuration
 			end
 		elseif U.isGameObject(tRef) then
-			return function() return tRef and tRef.resting and not tRef.loading_custom end
-		elseif U.Type(tRef) == "table" then
-			local checkFuncs = U.map(tRef, function(tr) return parseCheckFunc(tr) end)
 			return function()
-				checkFuncs = U.filter(checkFuncs, function(cf) return cf() == false end)
-				return #checkFuncs == 0
+				if tRef == nil then
+					U.error("U.waitUntil.parseCheckFunc", "tRef GameObject is nil in check function")
+					return true
+				end
+				if tRef.resting == nil then
+					U.error("U.waitUntil.parseCheckFunc", "tRef.resting is nil for GameObject: " .. tostring(tRef))
+					return true
+				end
+				if tRef.loading_custom == nil then
+					U.error("U.waitUntil.parseCheckFunc", "tRef.loading_custom is nil for GameObject: " .. tostring(tRef))
+					return true
+				end
+				return tRef.resting and not tRef.loading_custom
+			end
+		elseif tRefType == "table" then
+			if tRef == nil then
+				U.error("U.waitUntil.parseCheckFunc", "tRef table is nil")
+				return function() return true end
+			end
+			local checkFuncs = U.map(tRef, function(tr)
+				if tr == nil then
+					U.error("U.waitUntil.parseCheckFunc", "table element is nil")
+					return nil
+				end
+				return parseCheckFunc(tr)
+			end)
+			if checkFuncs == nil then
+				U.error("U.waitUntil.parseCheckFunc", "U.map returned nil for table: " .. tostring(tRef))
+				return function() return true end
+			end
+			return function()
+				if checkFuncs == nil then
+					U.error("U.waitUntil.parseCheckFunc", "checkFuncs is nil in check function")
+					return true
+				end
+				local checkFuncsLength = #checkFuncs
+				if checkFuncsLength == nil then
+					U.error("U.waitUntil.parseCheckFunc", "#checkFuncs returned nil, checkFuncs type: " .. U.Type(checkFuncs))
+					return true
+				end
+				if checkFuncsLength > 0 then
+					local filteredFuncs = U.filter(checkFuncs, function(cf)
+						if cf == nil then
+							U.error("U.waitUntil.parseCheckFunc", "checkFunc element is nil in filter")
+							return false
+						end
+						local cfType = U.Type(cf)
+						if cfType == nil then
+							U.error("U.waitUntil.parseCheckFunc", "U.Type(cf) returned nil")
+							return false
+						end
+						if cfType == "function" then
+							local success, result = pcall(function() return cf() end)
+							if not success then
+								U.error("U.waitUntil.parseCheckFunc", "Error calling check function: " .. tostring(result))
+								return false
+							end
+							if result == nil then
+								U.error("U.waitUntil.parseCheckFunc", "check function returned nil")
+								return false
+							end
+							return result == false
+						end
+						return false
+					end)
+					if filteredFuncs == nil then
+						U.error("U.waitUntil.parseCheckFunc", "U.filter returned nil")
+						return true
+					end
+					checkFuncs = filteredFuncs
+					local filteredLength = #checkFuncs
+					if filteredLength == nil then
+						U.error("U.waitUntil.parseCheckFunc", "#checkFuncs returned nil after filter, type: " .. U.Type(checkFuncs))
+						return true
+					end
+					return filteredLength == 0
+				end
+				return true
 			end
 		end
+		-- Fallback: return a function that always returns true
+		U.error("U.waitUntil.parseCheckFunc", "Unhandled tRef type: " .. tostring(tRefType) .. " for value: " .. tostring(tRef))
+		return function() return true end
+	end
+
+	if testRef == nil then
+		U.error("U.waitUntil", "testRef parameter is nil")
+		testRef = 0.5  -- Default to 0.5 seconds
 	end
 
 	local pCheckFunc = parseCheckFunc(testRef)
 
+	-- Debug: Verify pCheckFunc is valid
+	if pCheckFunc == nil then
+		U.error("U.waitUntil", "parseCheckFunc returned nil for testRef: " .. tostring(testRef) .. " (type: " .. U.Type(testRef) .. ")")
+		pCheckFunc = function() return true end  -- Fallback
+	else
+		local pCheckFuncType = U.Type(pCheckFunc)
+		if pCheckFuncType == nil then
+			U.error("U.waitUntil", "U.Type(pCheckFunc) returned nil")
+			pCheckFunc = function() return true end  -- Fallback
+		elseif pCheckFuncType ~= "function" then
+			U.error("U.waitUntil", "parseCheckFunc returned non-function: " .. tostring(pCheckFuncType) .. " for testRef: " .. tostring(testRef))
+			pCheckFunc = function() return true end  -- Fallback
+		end
+	end
+
 	local afterReturnVal
 
 	function CheckCoroutine()
-		if pCheckFunc ~= nil then
-			while not pCheckFunc() do
-				local elapsedTime = 0
-				if waitStartTime ~= nil then
-					elapsedTime = os.time() - waitStartTime
-				end
+		if pCheckFunc == nil then
+			U.error("U.waitUntil.CheckCoroutine", "pCheckFunc is nil")
+			return 1
+		end
 
-				-- Check timeout (maxWait is now in seconds)
-				if elapsedTime > maxWait and not hasWaited then
-					log(debug.traceback())
-					hasWaited = true
-					if isForcing then
-						U.AlertGM("Coroutine Timeout: Forcing ResultFunc")
-						break
+		local pCheckFuncType = U.Type(pCheckFunc)
+		if pCheckFuncType == nil then
+			U.error("U.waitUntil.CheckCoroutine", "U.Type(pCheckFunc) returned nil")
+			return 1
+		end
+
+		if pCheckFuncType ~= "function" then
+			U.error("U.waitUntil.CheckCoroutine", "pCheckFunc is not a function: " .. tostring(pCheckFuncType))
+			return 1
+		end
+
+		while true do
+			-- Safely call pCheckFunc
+			local success, checkResult = pcall(function()
+				if pCheckFunc == nil then
+					U.error("U.waitUntil.CheckCoroutine", "pCheckFunc is nil inside pcall")
+					return true
+				end
+				return pCheckFunc()
+			end)
+			if not success then
+				U.error("U.waitUntil.CheckCoroutine", "Error in check function: " .. tostring(checkResult))
+				break
+			end
+
+			if checkResult == nil then
+				U.error("U.waitUntil.CheckCoroutine", "check function returned nil")
+				break
+			end
+
+			if checkResult then
+				break  -- Condition met, exit loop
+			end
+
+			local elapsedTime = 0
+			if waitStartTime == nil then
+				U.error("U.waitUntil.CheckCoroutine", "waitStartTime is nil")
+			else
+				local currentTime = os.time()
+				if currentTime == nil then
+					U.error("U.waitUntil.CheckCoroutine", "os.time() returned nil")
+				else
+					elapsedTime = currentTime - waitStartTime
+					if elapsedTime == nil then
+						U.error("U.waitUntil.CheckCoroutine", "elapsedTime calculation returned nil (currentTime: " .. tostring(currentTime) .. ", waitStartTime: " .. tostring(waitStartTime) .. ")")
 					end
-					U.AlertGM("Coroutine Still Waiting! (See Log Traceback)")
 				end
+			end
 
-				-- Yield for a short time (testFrequency is now in seconds)
-				-- Convert seconds to approximate frame yields (60 FPS = ~0.016s per frame)
-				-- Use a minimum of 1 frame yield to avoid tight loops
-				local yieldFrames = math.max(1, math.floor(testFrequency * 60))
-				for i = 1, yieldFrames do
-					coroutine.yield(0)
+			-- Check timeout (maxWait is now in seconds)
+			if maxWait == nil then
+				U.error("U.waitUntil.CheckCoroutine", "maxWait is nil")
+				maxWait = 60
+			end
+			if elapsedTime > maxWait and not hasWaited then
+				log(debug.traceback())
+				hasWaited = true
+				if isForcing == nil then
+					U.error("U.waitUntil.CheckCoroutine", "isForcing is nil")
+					isForcing = false
 				end
+				if isForcing then
+					U.AlertGM("Coroutine Timeout: Forcing ResultFunc")
+					break
+				end
+				U.AlertGM("Coroutine Still Waiting! (See Log Traceback)")
+			end
+
+			-- Yield for a short time (testFrequency is now in seconds)
+			-- Convert seconds to approximate frame yields (60 FPS = ~0.016s per frame)
+			-- Use a minimum of 1 frame yield to avoid tight loops
+			if testFrequency == nil then
+				U.error("U.waitUntil.CheckCoroutine", "testFrequency is nil")
+				testFrequency = 0.1
+			end
+			local yieldFrames = math.max(1, math.floor(testFrequency * 60))
+			if yieldFrames == nil then
+				U.error("U.waitUntil.CheckCoroutine", "yieldFrames calculation returned nil")
+				yieldFrames = 1
+			end
+			for i = 1, yieldFrames do
+				coroutine.yield(0)
 			end
 		end
 
-		if afterFunc ~= nil then
-			afterReturnVal = afterFunc()
+		if afterFunc == nil then
+			U.error("U.waitUntil.CheckCoroutine", "afterFunc is nil")
+		else
+			local afterFuncType = U.Type(afterFunc)
+			if afterFuncType == nil then
+				U.error("U.waitUntil.CheckCoroutine", "U.Type(afterFunc) returned nil")
+			elseif afterFuncType ~= "function" then
+				U.error("U.waitUntil.CheckCoroutine", "afterFunc is not a function: " .. tostring(afterFuncType))
+			else
+				local success, result = pcall(function() return afterFunc() end)
+				if success then
+					afterReturnVal = result
+				else
+					U.error("U.waitUntil.CheckCoroutine", "Error in afterFunc: " .. tostring(result))
+				end
+			end
 		end
 
 		return 1
@@ -3956,7 +5042,8 @@ end
 --- Interpolates a value over time using linear interpolation (coroutine-based)
 --
 -- Smoothly transitions a value from start to end over a duration by repeatedly calling a setter function.
--- Supports numbers, Vectors, and Colors. For rotations, automatically handles shortest path (wraps 360°).
+-- Supports numbers, Vectors, Colors, pre-computed paths, and PositionOrientationData.
+-- For rotations, automatically handles shortest path (wraps 360°).
 --
 -- Uses coroutines internally, so must be called from a context that supports startLuaCoroutine.
 -- In Global context, use: startLuaCoroutine(Global, "LerpCoroutine")
@@ -3965,19 +5052,47 @@ end
 -- functions for parallel animation of multiple properties.
 --
 -- @param setFunc function Setter function that receives the interpolated value: setFunc(currentValue)
--- @param paramStart number|Vector|Color Starting value
--- @param paramEnd number|Vector|Color Ending value
--- @param duration number Duration in seconds (default: 0.5)
--- @param isRotationLerp boolean If true, handles rotation wrapping (shortest path around 360°)
--- @param easing string Optional: "speedUp" for acceleration, nil for linear
+-- @param paramStart number|Vector|Color|table Starting value, pre-computed path, or PositionOrientationData
+-- @param paramEnd number|Vector|Color|table Optional: Ending value or PositionOrientationData
+-- @param duration number Optional: Duration in seconds (default: 0.5)
+-- @param isRotationLerp boolean Optional: If true, handles rotation wrapping (shortest path around 360°)
+-- @param easing string Optional: Easing type ("speedUp" for backward compat, or new ease types)
 -- @return number The duration (for chaining)
 --
--- @usage U.Lerp(function(v) obj.setPositionSmooth(v) end, startPos, endPos, 1.0)
--- @usage U.Lerp(function(r) light.setRotation(r) end, startRot, endRot, 0.5, true) -- Rotation lerp
--- @usage local lerps = {U.Lerp(setX, 0, 10, 1), U.Lerp(setY, 0, 20, 1)} -- Parallel animation
+-- @usage U.Lerp(function(v) obj.setPositionSmooth(v) end, startPos, endPos, 1.0) -- Traditional
+-- @usage U.Lerp(function(step) obj.setPositionSmooth(step.position) end, path) -- Pre-computed path
+-- @usage U.Lerp(function(step) obj.setPositionSmooth(step.position) end, {position=Vector(0,0,0)}, {position=Vector(10,10,10)}, 2.0, false, "bounce") -- PositionOrientationData
 --
 -- NOTE: Requires startLuaCoroutine(Global, "LerpCoroutine") - self refers to Global in Global context
 function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing)
+	-- Check if paramStart is a pre-computed path (table of PositionOrientationData)
+	if U.Type(paramStart) == "table" and #paramStart > 0 then
+		-- Check if it's a path (has PositionOrientationData structure)
+		if paramStart[1].position ~= nil or paramStart[1].orientation ~= nil then
+			return U.LerpPath(paramStart, setFunc)
+		end
+	end
+
+	-- Check if paramStart is PositionOrientationData (new path-based lerp)
+	if U.Type(paramStart) == "table" and (paramStart.position ~= nil or paramStart.orientation ~= nil) then
+		if paramEnd == nil or U.Type(paramEnd) ~= "table" then
+			U.error("U.Lerp", "PositionOrientationData requires paramEnd to also be PositionOrientationData")
+		end
+
+		-- Generate path (may return "DEFER" if Objects present)
+		local coordinateSystem = "xy"  -- Default, could be made configurable
+		local path = U.GetEasedPath(paramStart, paramEnd, duration or 0.5, easing or "sineInOut", 1.0, coordinateSystem)
+
+		if path == "DEFER" then
+			-- Defer path generation - resolve Objects at execution time
+			return U.LerpDeferred(paramStart, paramEnd, duration or 0.5, easing or "sineInOut", 1.0, coordinateSystem, setFunc)
+		else
+			-- Use pre-computed path
+			return U.LerpPath(path, setFunc)
+		end
+	end
+
+	-- Existing behavior (backward compatible)
 	if duration == nil then duration = 0.5 end
 	if U.isInstance(paramStart, Vector) or U.isInstance(paramStart, Color) then
 		if paramStart:equals(paramEnd) then return 0 end
@@ -4031,7 +5146,8 @@ function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing)
 		return 1
 	end
 
-	startLuaCoroutine(self, "LerpCoroutine")
+	-- Use Global explicitly since this may be called from within coroutines
+	startLuaCoroutine(Global, "LerpCoroutine")
 
 	return duration
 end
@@ -4081,11 +5197,13 @@ __bundle_register("lib.console", function(require, _LOADED, __bundle_register, _
 require("lib.Console.console++")
 
 -- function prototype
+---@diagnostic disable-next-line: lowercase-global
 function onExternalCommand(command) end
 
 -- Overwrite onChat function if you rather be handled by onExternalMessage
 -- function onChat(message, player) end
 
+---@diagnostic disable-next-line: lowercase-global
 function onExternalMessage(data)
   if data.input ~= nil then onExternalCommand(data.input) end
   if data.command ~= nil then
@@ -5655,6 +6773,7 @@ end
 
 end)
 __bundle_register("core.debug", function(require, _LOADED, __bundle_register, __bundle_modules)
+---@diagnostic disable: lowercase-global
 --[[
     Debug/Testing Module (core/debug.ttslua)
 
@@ -5672,15 +6791,17 @@ __bundle_register("core.debug", function(require, _LOADED, __bundle_register, __
     Consider disabling or restricting access in production builds.
 ]]
 
-local DEBUG = {}
-local U = require("lib.util")
-local S = require("core.state")
-local M = require("core.main")
-local Z = require("core.zones")
-local Scenes = require("core.scenes")
-local C = require("lib.constants")
-local G = require("lib.guids")
-local L = require("core.lighting")
+DEBUG = {}
+U = require("lib.util")
+S = require("core.state")
+M = require("core.main")
+Z = require("core.zones")
+Scenes = require("core.scenes")
+C = require("lib.constants")
+G = require("lib.guids")
+L = require("core.lighting")
+O = require("core.objects")
+LightTest = require("core.light_test")
 
 --[[
     File Logging Configuration
@@ -6625,107 +7746,10 @@ end
 -- Exposed globally as initLightingAndSignals()
 -- @usage initLightingAndSignals() -- Call from TTS console
 function DEBUG.initLightingAndSignals()
-    print("⚙️  Initializing: Setting all signal fires, RING_FLARE, player lights to OFF, and ambient to DARK")
+    print("⚙️  Initializing: Setting all signal fires, hunger smoke, RING_FLARE, player lights to OFF, and ambient to DARK")
 
-    -- Helper: Get signal fire object by color
-    local function getSignalFire(color)
-        local guid = G.GetSignalFireGUID(color)
-        if not guid then
-            return nil
-        end
-        return getObjectFromGUID(guid)
-    end
-
-    -- Helper: Get RING_FLARE object
-    local function getRingFlare()
-        local guid = G.GUIDS.RING_FLARE
-        if not guid then
-            return nil
-        end
-        return getObjectFromGUID(guid)
-    end
-
-    -- Helper: Get player light object by color
-    local function getPlayerLight(color)
-        local guid = G.GetPlayerLightGUID(color)
-        if not guid then
-            return nil
-        end
-        return getObjectFromGUID(guid)
-    end
-
-    -- Helper: Merge partial position with current position
-    local function mergePosition(obj, partialPos)
-        local currentPos = obj.getPosition()
-        local newPos = {
-            x = partialPos.x or currentPos.x,
-            y = partialPos.y or currentPos.y,
-            z = partialPos.z or currentPos.z
-        }
-        return Vector(newPos.x, newPos.y, newPos.z)
-    end
-
-    -- Helper: Set signal fire state (on/off) with optional animation
-    local function setSignalFireState(color, state, duration)
-        duration = duration or 0.0  -- Default to instant
-        local fire = getSignalFire(color)
-        if not fire then
-            print("⚠️  Signal fire not found for color: " .. tostring(color))
-            return false
-        end
-
-        local posData = C.ObjectPositions.SIGNAL_FIRE[state]
-        if not posData then
-            print("⚠️  Invalid signal fire state: " .. tostring(state))
-            return false
-        end
-
-        -- Merge partial position with current position
-        local targetPos = mergePosition(fire, posData.position)
-
-        if duration > 0 then
-            -- Use lerp for smooth animation
-            U.setPositionSlow(fire, targetPos, duration, nil, false)
-        else
-            -- Instant (no lerping)
-            fire.setPosition(targetPos)
-        end
-        return true
-    end
-
-    -- Helper: Set RING_FLARE state (on/off) with optional animation
-    local function setRingFlareState(state, duration)
-        duration = duration or 0.0  -- Default to instant
-        local flare = getRingFlare()
-        if not flare then
-            print("⚠️  RING_FLARE not found")
-            return false
-        end
-
-        local posData = C.ObjectPositions.RING_FLARE[state]
-        if not posData then
-            print("⚠️  Invalid RING_FLARE state: " .. tostring(state))
-            return false
-        end
-
-        -- Merge partial position with current position
-        local currentPos = flare.getPosition()
-        local targetPos = {
-            x = posData.position.x or currentPos.x,
-            y = posData.position.y or currentPos.y,
-            z = posData.position.z or currentPos.z
-        }
-        targetPos = Vector(targetPos.x, targetPos.y, targetPos.z)
-
-        if duration > 0 then
-            -- Use lerp for smooth animation
-            U.setPositionSlow(flare, targetPos, duration, nil, false)
-        else
-            -- Instant (no lerping)
-            flare.setPosition(targetPos)
-        end
-        return true
-    end
+    -- NOTE: All object manipulation is done via Objects module
+    -- Debug functions should only call other functions, not perform game actions directly
 
     -- Helper: Convert player color to lighting module light name
     -- Maps "Brown" -> "playerLightBrown", "Orange" -> "playerLightOrange", etc.
@@ -6767,16 +7791,24 @@ function DEBUG.initLightingAndSignals()
 
     local allSuccess = true
 
-    -- Set all signal fires to OFF (instant)
+    -- Set all signal fires to OFF (instant) - using Objects module
     for _, color in ipairs(C.PlayerColors) do
-        local success = setSignalFireState(color, "off", 0.0)  -- 0 = instant
+        local success = O.SetSignalFireState(color, "off", 0.0)  -- 0 = instant
         if not success then
             allSuccess = false
         end
     end
 
-    -- Set RING_FLARE to OFF (instant)
-    local flareSuccess = setRingFlareState("off", 0.0)  -- 0 = instant
+    -- Set all hunger smoke to OFF (instant) - using Objects module
+    for _, color in ipairs(C.PlayerColors) do
+        local success = O.SetHungerSmokeState(color, "off", 0.0)  -- 0 = instant
+        if not success then
+            allSuccess = false
+        end
+    end
+
+    -- Set RING_FLARE to OFF (instant) - using Objects module
+    local flareSuccess = O.SetRingFlareState("off", 0.0)  -- 0 = instant
     if not flareSuccess then
         allSuccess = false
     end
@@ -6845,93 +7877,17 @@ function DEBUG.testLightingAndSignals()
         end
     end
 
-    -- Helper: Get signal fire object by color
-    local function getSignalFire(color)
-        local guid = G.GetSignalFireGUID(color)
-        if not guid then
-            return nil
+    -- NOTE: All object manipulation is done via O module
+    -- Debug functions should only call other functions, not perform game actions directly
+
+    -- Helper: Get a random player color for testing
+    -- @return string Random player color from C.PlayerColors
+    local function getRandomPlayerColor()
+        if #C.PlayerColors == 0 then
+            return "Brown"  -- Fallback if no colors available
         end
-        return getObjectFromGUID(guid)
-    end
-
-    -- Helper: Get RING_FLARE object
-    local function getRingFlare()
-        local guid = G.GUIDS.RING_FLARE
-        if not guid then
-            return nil
-        end
-        return getObjectFromGUID(guid)
-    end
-
-    -- Helper: Get player light object by color
-    local function getPlayerLight(color)
-        local guid = G.GetPlayerLightGUID(color)
-        if not guid then
-            return nil
-        end
-        return getObjectFromGUID(guid)
-    end
-
-    -- Helper: Set signal fire state (on/off) with optional animation
-    local function setSignalFireState(color, state, duration)
-        duration = duration or 1.0
-        local fire = getSignalFire(color)
-        if not fire then
-            print("⚠️  Signal fire not found for color: " .. tostring(color))
-            return false
-        end
-
-        local posData = C.ObjectPositions.SIGNAL_FIRE[state]
-        if not posData then
-            print("⚠️  Invalid signal fire state: " .. tostring(state))
-            return false
-        end
-
-        -- Merge partial position with current position
-        local targetPos = mergePosition(fire, posData.position)
-
-        if duration > 0 then
-            -- Use lerp for smooth animation
-            U.setPositionSlow(fire, targetPos, duration, nil, false)
-        else
-            -- Instant (no lerping)
-            fire.setPosition(targetPos)
-        end
-        return true
-    end
-
-    -- Helper: Set RING_FLARE state (on/off) with optional animation
-    local function setRingFlareState(state, duration)
-        duration = duration or 0.0  -- Default to instant
-        local flare = getRingFlare()
-        if not flare then
-            print("⚠️  RING_FLARE not found")
-            return false
-        end
-
-        local posData = C.ObjectPositions.RING_FLARE[state]
-        if not posData then
-            print("⚠️  Invalid RING_FLARE state: " .. tostring(state))
-            return false
-        end
-
-        -- Merge partial position with current position
-        local currentPos = flare.getPosition()
-        local targetPos = {
-            x = posData.position.x or currentPos.x,
-            y = posData.position.y or currentPos.y,
-            z = posData.position.z or currentPos.z
-        }
-        targetPos = Vector(targetPos.x, targetPos.y, targetPos.z)
-
-        if duration > 0 then
-            -- Use lerp for smooth animation
-            U.setPositionSlow(flare, targetPos, duration, nil, false)
-        else
-            -- Instant (no lerping)
-            flare.setPosition(targetPos)
-        end
-        return true
+        local randomIndex = math.random(1, #C.PlayerColors)
+        return C.PlayerColors[randomIndex]
     end
 
     -- Helper: Convert player color to lighting module light name
@@ -6997,35 +7953,36 @@ function DEBUG.testLightingAndSignals()
     -- Step 3: Wait after initialization
     table.insert(sequenceFunctions, waitStep("Initialization complete, waiting 3 seconds...", 3.0))
 
-    -- Step 4: Test signal fire ON (Brown player)
+    -- Step 4: Test signal fire ON (random player)
+    local randomSignalFireColor = getRandomPlayerColor()
     table.insert(sequenceFunctions, function()
-        broadcast("🔥 Testing Signal Fire ON (Brown player)", {1, 0.5, 0})
-        local success = setSignalFireState("Brown", "on", 0.5)  -- 0.5 seconds for faster motion
+        broadcast("🔥 Testing Signal Fire ON (" .. randomSignalFireColor .. " player)", {1, 0.5, 0})
+        local success = O.SetSignalFireState(randomSignalFireColor, "on", 0)  -- 0.2 seconds (3x faster)
         if success then
-            printTestResult("Signal Fire ON (Brown)", true, "Fire moved to y=2.5")
+            printTestResult("Signal Fire ON (" .. randomSignalFireColor .. ")", true, "Fire moved to y=1.5")
             passed = passed + 1
         else
-            printTestResult("Signal Fire ON (Brown)", false, "Failed to move fire")
+            printTestResult("Signal Fire ON (" .. randomSignalFireColor .. ")", false, "Failed to move fire")
             failed = failed + 1
         end
-        return 4.0  -- Wait for animation
+        return 1.5  -- Wait for animation
     end)
 
     -- Step 5: Wait after signal fire ON
     table.insert(sequenceFunctions, waitStep("Signal Fire finished raising, waiting 3 seconds...", 3.0))
 
-    -- Step 6: Test signal fire OFF (Brown player)
+    -- Step 6: Test signal fire OFF (random player)
     table.insert(sequenceFunctions, function()
-        broadcast("💤 Testing Signal Fire OFF (Brown player)", {0.5, 0.5, 0.5})
-        local success = setSignalFireState("Brown", "off", 0.5)  -- 0.5 seconds for faster motion
+        broadcast("💤 Testing Signal Fire OFF (" .. randomSignalFireColor .. " player)", {0.5, 0.5, 0.5})
+        local success = O.SetSignalFireState(randomSignalFireColor, "off", 0)  -- 0 seconds (instant)
         if success then
-            printTestResult("Signal Fire OFF (Brown)", true, "Fire moved to y=-25")
+            printTestResult("Signal Fire OFF (" .. randomSignalFireColor .. ")", true, "Fire moved to y=-7")
             passed = passed + 1
         else
-            printTestResult("Signal Fire OFF (Brown)", false, "Failed to move fire")
+            printTestResult("Signal Fire OFF (" .. randomSignalFireColor .. ")", false, "Failed to move fire")
             failed = failed + 1
         end
-        return 4.0  -- Wait for animation
+        return 1.5  -- Wait for animation
     end)
 
     -- Step 7: Wait after signal fire OFF
@@ -7036,7 +7993,7 @@ function DEBUG.testLightingAndSignals()
         broadcast("🔥 Testing All Signal Fires ON", {1, 0.5, 0})
         local allSuccess = true
         for _, color in ipairs(C.PlayerColors) do
-            local success = setSignalFireState(color, "on", 0.5)  -- 0.5 seconds for faster motion
+            local success = O.SetSignalFireState(color, "on", 0)  -- 0 seconds (instant)
             if not success then
                 allSuccess = false
             end
@@ -7048,7 +8005,7 @@ function DEBUG.testLightingAndSignals()
             printTestResult("All Signal Fires ON", false, "Some fires failed")
             failed = failed + 1
         end
-        return 5.0  -- Wait for animations
+        return 2.0  -- Wait for animations
     end)
 
     -- Step 9: Wait after all signal fires ON
@@ -7094,7 +8051,7 @@ function DEBUG.testLightingAndSignals()
     -- Step 12: Instantly switch RING_FLARE to ON
     table.insert(sequenceFunctions, function()
         broadcast("✨ Testing RING_FLARE: Switching to ON (instant)", {1, 1, 0})
-        local success = setRingFlareState("on", 0.0)  -- 0 = instant
+        local success = O.SetRingFlareState("on", 0.0)  -- 0 = instant
         if success then
             printTestResult("RING_FLARE ON", true, "RING_FLARE moved to y=-0.08")
             passed = passed + 1
@@ -7111,7 +8068,7 @@ function DEBUG.testLightingAndSignals()
     -- Step 14: Instantly switch RING_FLARE to OFF
     table.insert(sequenceFunctions, function()
         broadcast("💤 Testing RING_FLARE: Switching to OFF (instant)", {0.5, 0.5, 0.5})
-        local success = setRingFlareState("off", 0.0)  -- 0 = instant
+        local success = O.SetRingFlareState("off", 0.0)  -- 0 = instant
         if success then
             printTestResult("RING_FLARE OFF", true, "RING_FLARE moved to y=-60")
             passed = passed + 1
@@ -7125,53 +8082,135 @@ function DEBUG.testLightingAndSignals()
     -- Step 15: Wait after RING_FLARE OFF
     table.insert(sequenceFunctions, waitStep("RING_FLARE switched OFF, waiting 3 seconds...", 3.0))
 
+    -- Step 19: Test hunger smoke ON (Brown player)
+    local randomHungerSmokeColor = getRandomPlayerColor()
+    table.insert(sequenceFunctions, function()
+        broadcast("💨 Testing Hunger Smoke ON (" .. randomHungerSmokeColor .. " player)", {0.8, 0.4, 0.8})
+        local success = O.SetHungerSmokeState(randomHungerSmokeColor, "on", 0)  -- 0 seconds (instant)
+        if success then
+            printTestResult("Hunger Smoke ON (" .. randomHungerSmokeColor .. ")", true, "Smoke moved to y=0.2")
+            passed = passed + 1
+        else
+            printTestResult("Hunger Smoke ON (" .. randomHungerSmokeColor .. ")", false, "Failed to move smoke")
+            failed = failed + 1
+        end
+        return 1.5  -- Wait for animation
+    end)
+
+    -- Step 20: Wait after hunger smoke ON
+    table.insert(sequenceFunctions, waitStep("Hunger Smoke finished raising, waiting 3 seconds...", 3.0))
+
+    -- Step 21: Test hunger smoke OFF (random player)
+    table.insert(sequenceFunctions, function()
+        broadcast("💤 Testing Hunger Smoke OFF (" .. randomHungerSmokeColor .. " player)", {0.5, 0.5, 0.5})
+        local success = O.SetHungerSmokeState(randomHungerSmokeColor, "off", 0)  -- 0 seconds (instant)
+        if success then
+            printTestResult("Hunger Smoke OFF (" .. randomHungerSmokeColor .. ")", true, "Smoke moved to y=-7")
+            passed = passed + 1
+        else
+            printTestResult("Hunger Smoke OFF (" .. randomHungerSmokeColor .. ")", false, "Failed to move smoke")
+            failed = failed + 1
+        end
+        return 1.5  -- Wait for animation
+    end)
+
+    -- Step 22: Wait after hunger smoke OFF
+    table.insert(sequenceFunctions, waitStep("Hunger Smoke finished lowering, waiting 3 seconds...", 3.0))
+
+    -- Step 23: Test all hunger smoke ON (all player colors)
+    table.insert(sequenceFunctions, function()
+        broadcast("💨 Testing All Hunger Smoke ON", {0.8, 0.4, 0.8})
+        local allSuccess = true
+        for _, color in ipairs(C.PlayerColors) do
+            local success = O.SetHungerSmokeState(color, "on", 0)  -- 0 seconds (instant)
+            if not success then
+                allSuccess = false
+            end
+        end
+        if allSuccess then
+            printTestResult("All Hunger Smoke ON", true, "All " .. #C.PlayerColors .. " smoke activated")
+            passed = passed + 1
+        else
+            printTestResult("All Hunger Smoke ON", false, "Some smoke failed")
+            failed = failed + 1
+        end
+        return 2.0  -- Wait for animations
+    end)
+
+    -- Step 24: Wait after all hunger smoke ON
+    table.insert(sequenceFunctions, waitStep("All Hunger Smoke finished raising, waiting 3 seconds...", 3.0))
+
+    -- Step 25: Turn off all hunger smoke
+    table.insert(sequenceFunctions, function()
+        broadcast("💤 Turning Off All Hunger Smoke", {0.5, 0.5, 0.5})
+        local allSuccess = true
+        for _, color in ipairs(C.PlayerColors) do
+            local success = O.SetHungerSmokeState(color, "off", 0)  -- 0 seconds (instant)
+            if not success then
+                allSuccess = false
+            end
+        end
+        if allSuccess then
+            printTestResult("All Hunger Smoke OFF", true, "All smoke deactivated")
+            passed = passed + 1
+        else
+            printTestResult("All Hunger Smoke OFF", false, "Some smoke failed")
+            failed = failed + 1
+        end
+        return 2.0  -- Wait for animations
+    end)
+
+
+    -- Step 24: Wait after all hunger smoke OFF
+    table.insert(sequenceFunctions, waitStep("All Hunger Smoke finished lowering, waiting 3 seconds...", 3.0))
+
     -- Step 16: Simultaneously lerp all player lights from STANDARD to OFF
     table.insert(sequenceFunctions, function()
-        broadcast("💤 Testing Player Lights: STANDARD → OFF (simultaneous)", {0.5, 0.5, 0.5})
-        local allSuccess = true
-        local lerpDuration = 2.0
+      broadcast("💤 Testing Player Lights: STANDARD → OFF (simultaneous)", {0.5, 0.5, 0.5})
+      local allSuccess = true
+      local lerpDuration = 2.0
 
-        -- Start all transitions simultaneously
-        for _, color in ipairs(C.PlayerColors) do
-            local success = setPlayerLightMode(color, "OFF", lerpDuration)
-            if not success then
-                allSuccess = false
-            end
-        end
+      -- Start all transitions simultaneously
+      for _, color in ipairs(C.PlayerColors) do
+          local success = setPlayerLightMode(color, "OFF", lerpDuration)
+          if not success then
+              allSuccess = false
+          end
+      end
 
-        if allSuccess then
-            printTestResult("Player Lights STANDARD→OFF", true, "All " .. #C.PlayerColors .. " lights transitioned simultaneously")
-            passed = passed + 1
-        else
-            printTestResult("Player Lights STANDARD→OFF", false, "Some lights failed")
-            failed = failed + 1
-        end
+      if allSuccess then
+          printTestResult("Player Lights STANDARD→OFF", true, "All " .. #C.PlayerColors .. " lights transitioned simultaneously")
+          passed = passed + 1
+      else
+          printTestResult("Player Lights STANDARD→OFF", false, "Some lights failed")
+          failed = failed + 1
+      end
 
-        return lerpDuration + 1.0  -- Wait for animation to complete
-    end)
+      return lerpDuration + 1.0  -- Wait for animation to complete
+  end)
 
-    -- Step 17: Wait after simultaneous player lights OFF
-    table.insert(sequenceFunctions, waitStep("All Player Lights finished transitioning to OFF, waiting 3 seconds...", 3.0))
+  -- Step 17: Wait after simultaneous player lights OFF
+  table.insert(sequenceFunctions, waitStep("All Player Lights finished transitioning to OFF, waiting 3 seconds...", 3.0))
 
-    -- Step 18: Turn off all signal fires
-    table.insert(sequenceFunctions, function()
-        broadcast("💤 Turning Off All Signal Fires", {0.5, 0.5, 0.5})
-        local allSuccess = true
-        for _, color in ipairs(C.PlayerColors) do
-            local success = setSignalFireState(color, "off", 0.5)  -- 0.5 seconds for faster motion
-            if not success then
-                allSuccess = false
-            end
-        end
-        if allSuccess then
-            printTestResult("All Signal Fires OFF", true, "All fires deactivated")
-            passed = passed + 1
-        else
-            printTestResult("All Signal Fires OFF", false, "Some fires failed")
-            failed = failed + 1
-        end
-        return 4.0  -- Wait for animations
-    end)
+  -- Step 18: Turn off all signal fires
+  table.insert(sequenceFunctions, function()
+      broadcast("💤 Turning Off All Signal Fires", {0.5, 0.5, 0.5})
+      local allSuccess = true
+      for _, color in ipairs(C.PlayerColors) do
+          local success = O.SetSignalFireState(color, "off", 0.2)  -- 0.2 seconds (3x faster)
+          if not success then
+              allSuccess = false
+          end
+      end
+      if allSuccess then
+          printTestResult("All Signal Fires OFF", true, "All fires deactivated")
+          passed = passed + 1
+      else
+          printTestResult("All Signal Fires OFF", false, "Some fires failed")
+          failed = failed + 1
+      end
+      return 2.0  -- Wait for animations
+  end)
 
     -- Step 19: Final summary
     table.insert(sequenceFunctions, function()
@@ -7193,6 +8232,956 @@ function DEBUG.testLightingAndSignals()
 
     -- Use U.RunSequence to execute all steps
     U.RunSequence(sequenceFunctions)
+end
+
+--[[
+    Light Creation Feasibility Tests
+
+    These functions test the feasibility of creating custom point-source lights
+    programmatically instead of using third-party configurable lights.
+
+    See dev/LIGHT_CREATION_FEASIBILITY.md for detailed investigation.
+]]
+
+--- Test if "Light" is a spawnable built-in type
+-- @usage testSpawnLightType()
+function DEBUG.testSpawnLightType()
+    return LightTest.testSpawnLightType()
+end
+
+--- Test cloning an existing light object
+-- @param templateGUID string GUID of light object to clone
+-- @usage testCloneLight("abc123")
+function DEBUG.testCloneLight(templateGUID)
+    return LightTest.testCloneLight(templateGUID)
+end
+
+--- Inspect Light component properties
+-- @param lightGUID string GUID of light object to inspect
+-- @usage testInspectLight("abc123")
+function DEBUG.testInspectLight(lightGUID)
+    return LightTest.testInspectLight(lightGUID)
+end
+
+--- Test spawning a light from a template
+-- @param templateGUID string GUID of light template
+-- @param position Vector Position to spawn light (optional)
+-- @param rotation Vector Rotation of light (optional)
+-- @param config table Light configuration {enabled, range, intensity, color, angle} (optional)
+-- @usage testSpawnLight("abc123", Vector(0,5,0), Vector(0,0,0), {range=50, intensity=15})
+function DEBUG.testSpawnLight(templateGUID, position, rotation, config)
+    return LightTest.testSpawnLight(templateGUID, position, rotation, config)
+end
+
+--- Compare current light structure with potential new structure
+-- @param currentLightGUID string GUID of current configurable light
+-- @usage testCompareStructures("abc123")
+function DEBUG.testCompareStructures(currentLightGUID)
+    return LightTest.testCompareStructures(currentLightGUID)
+end
+
+--- Find all objects that might be lights
+-- @usage findPotentialLights()
+function DEBUG.findPotentialLights()
+    return LightTest.findPotentialLights()
+end
+
+--- Test easing and path generation functions
+-- Tests U.GetEasedValue, U.GetEasedPath, and enhanced U.Lerp with various scenarios
+--
+-- Required objects in scene (by GUID):
+--   - TEST_OBJ_1: Object to lerp (position/rotation tests)
+--   - TEST_OBJ_2: Object to lerp (parallel tests)
+--   - TEST_CENTER_OBJ: Object to use as center for orbital paths
+--   - TEST_TARGET_OBJ: Object to face/look at
+-- Global state for interactive test continuation
+local testWaitingForContinue = false
+
+-- Global function to continue to next test step (callable from console)
+--- Minimal test function to test just the look-at rotation
+-- Orients TEST_LIGHT to face TEST_TARGET_OBJ immediately
+-- Uses the same GUIDs as testEasing() for consistency
+-- @usage testLookAt()
+function testLookAt()
+	-- Local broadcast function for this test
+	local function broadcast(message, color)
+		if color == nil then color = {1, 1, 1} end
+		broadcastToAll(message, color)
+	end
+	-- Use the same GUIDs as testEasing
+	local TEST_LIGHT_GUID = "6e3ee4"  -- Same as TEST_LIGHT in testEasing
+	local TEST_TARGET_GUID = "199e6f"  -- Same as TEST_TARGET_OBJ in testEasing
+
+	local lightObj = getObjectFromGUID(TEST_LIGHT_GUID)
+	local targetObj = getObjectFromGUID(TEST_TARGET_GUID)
+
+	if not lightObj then
+		print("ERROR: testLookAt - TEST_LIGHT not found (GUID: " .. TEST_LIGHT_GUID .. ")")
+		broadcast("❌ testLookAt: Light object not found", {1, 0, 0})
+		return
+	end
+
+	if not targetObj then
+		print("ERROR: testLookAt - TEST_TARGET_OBJ not found (GUID: " .. TEST_TARGET_GUID .. ")")
+		broadcast("❌ testLookAt: Target object not found", {1, 0, 0})
+		return
+	end
+
+	print("testLookAt: Getting positions...")
+	local success1, lightPos = pcall(function() return lightObj.getPosition() end)
+	local success2, targetPos = pcall(function() return targetObj.getPosition() end)
+
+	if not success1 then
+		print("ERROR: testLookAt - Failed to get light position: " .. tostring(lightPos))
+		broadcast("❌ testLookAt: Failed to get light position", {1, 0, 0})
+		return
+	end
+
+	if not success2 then
+		print("ERROR: testLookAt - Failed to get target position: " .. tostring(targetPos))
+		broadcast("❌ testLookAt: Failed to get target position", {1, 0, 0})
+		return
+	end
+
+	if not lightPos then
+		print("ERROR: testLookAt - Light position is nil")
+		broadcast("❌ testLookAt: Light position is nil", {1, 0, 0})
+		return
+	end
+
+	if not targetPos then
+		print("ERROR: testLookAt - Target position is nil")
+		broadcast("❌ testLookAt: Target position is nil", {1, 0, 0})
+		return
+	end
+
+	print("testLookAt: Light position: " .. tostring(lightPos))
+	print("testLookAt: Target position: " .. tostring(targetPos))
+	print("testLookAt: Light position type: " .. U.Type(lightPos))
+	print("testLookAt: Target position type: " .. U.Type(targetPos))
+
+	-- Check if positions are valid Vectors
+	-- In TTS, Vector objects can be tables with metatables, so check for Vector methods instead
+	local lightIsVector = (lightPos ~= nil) and (type(lightPos.x) == "number" or lightPos.getX ~= nil or lightPos.subtract ~= nil)
+	local targetIsVector = (targetPos ~= nil) and (type(targetPos.x) == "number" or targetPos.getX ~= nil or targetPos.subtract ~= nil)
+
+	if not lightIsVector then
+		print("ERROR: testLookAt - Light position is not a Vector (type: " .. tostring(U.Type(lightPos)) .. ", has x: " .. tostring(lightPos and lightPos.x) .. ")")
+		broadcast("❌ testLookAt: Light position is not a Vector", {1, 0, 0})
+		return
+	end
+
+	if not targetIsVector then
+		print("ERROR: testLookAt - Target position is not a Vector (type: " .. tostring(U.Type(targetPos)) .. ", has x: " .. tostring(targetPos and targetPos.x) .. ")")
+		broadcast("❌ testLookAt: Target position is not a Vector", {1, 0, 0})
+		return
+	end
+
+	print("testLookAt: Calculating rotation...")
+	print("testLookAt: About to call U.lookAtRotation with:")
+	print("  from: " .. tostring(lightPos) .. " (type: " .. U.Type(lightPos) .. ")")
+	print("  to: " .. tostring(targetPos) .. " (type: " .. U.Type(targetPos) .. ")")
+
+	local success3, rotation = pcall(function() return U.lookAtRotation(lightPos, targetPos) end)
+
+	if not success3 then
+		print("ERROR: testLookAt - U.lookAtRotation failed: " .. tostring(rotation))
+		broadcast("❌ testLookAt: Rotation calculation failed", {1, 0, 0})
+		return
+	end
+
+	if not rotation then
+		print("ERROR: testLookAt - U.lookAtRotation returned nil")
+		broadcast("❌ testLookAt: Rotation calculation failed", {1, 0, 0})
+		return
+	end
+
+	print("testLookAt: Calculated rotation: " .. tostring(rotation))
+
+	print("testLookAt: Setting rotation...")
+	local success, err = pcall(function()
+		lightObj.setRotationSmooth(rotation, false, false)
+	end)
+
+	if not success then
+		print("ERROR: testLookAt - Failed to set rotation: " .. tostring(err))
+		broadcast("❌ testLookAt: Failed to set rotation", {1, 0, 0})
+		return
+	end
+
+	print("testLookAt: SUCCESS - Rotation set to: " .. tostring(rotation))
+	broadcast("✅ testLookAt: Rotation applied successfully", {0, 1, 0})
+end
+
+-- Usage: continueTest()
+function continueTest()
+	if testWaitingForContinue then
+		testWaitingForContinue = false  -- Signal to continue
+		print("✅ Continuing to next step...")
+		broadcastToAll("▶️ Test continuing...", {0, 1, 0})
+		return true
+	else
+		print("ℹ️ No test currently waiting for continuation")
+		return false
+	end
+end
+
+function DEBUG.testEasing()
+	printTestHeader("Easing and Path Generation")
+
+	-- Helper: Broadcast message to all players
+	local function broadcast(message, color)
+		color = color or {1, 1, 1}  -- Default white
+		broadcastToAll(message, color)
+		print("📢 " .. message)
+	end
+
+	broadcast("🎬 Starting Easing and Path Generation Tests", {0.8, 0.8, 1})
+
+  -- Test configuration constants
+	local TEST_GUIDS = {
+		TEST_LIGHT = "6e3ee4",  -- Replace with actual GUID for test object 1
+		TEST_BLOCK = "432c34",  -- Replace with actual GUID for test object 2
+		TEST_CENTER_OBJ = "9c3b86",  -- Replace with actual GUID for center object
+		TEST_TARGET_OBJ = "199e6f"   -- Replace with actual GUID for target object
+	}
+
+
+	local TEST_PARAMETERS = {
+		ORBITING_LIGHT = {
+			-- The "Orbiting Light" test should lerp `TEST_LIGHT` so that it orbits one full revolution around `TEST_TARGET_OBJ` using spherical coordinates.
+			-- The angle of rotation lerps from 0 to 360 (one full revolution), while the incidence angle (angle2) lerps from 35 to -35,
+			-- creating an off-kilter path that starts slightly higher and lowers as it proceeds. It should orient to face TEST_TARGET_OBJ at all times.
+			-- Note: position="CURRENT" means use the object's current position at test time, but we override angle2 to start at 35°
+			start = {
+				position = "CURRENT",  -- Will be resolved to light's current position in spherical coords
+				overrideAngle = 180,  -- Override angle to start at 0°
+				overrideAngle2 = 45,  -- Override angle2 to start at 35° (slightly higher)
+				center = "TEST_TARGET_OBJ",  -- Will be resolved to targetObj
+				orientation = "TEST_TARGET_OBJ"  -- Will be resolved to targetObj (face target)
+			},
+			-- End: same radius, angle from 0 to 360° (one full revolution), angle2 from 35° to -35°
+			endVal = {
+				position = {radius = "SAME", angle = "+800", angle2 = 135},  -- Relative angle (+360° from start), absolute angle2
+				center = "TEST_TARGET_OBJ",
+				orientation = "TEST_TARGET_OBJ"  -- Continue facing target
+			},
+			duration = 10.0,
+			ease = "sineInOut",
+			easeIntensity = 1.0,
+			coordinateSystem = "spherical",
+			objectToMove = "TEST_LIGHT"  -- Which object to animate
+		},
+		CYLINDRICAL_SPIRAL = {
+			-- The "Cylindrical Spiral" test should use cylindrical coordinates to lerp "TEST_LIGHT" from its current position to radius=0 units away from `TEST_CENTER_OBJ`, maintaining its height as it does so, and making two full revolutions around TEST_CENTER_OBJ, so that it "spirals in" to TEST_CENTER_OBJ.  Its orientation should always be downward (i.e. X=0, Y=90, Z=0)
+			-- Note: position="CURRENT" means use the object's current position at test time
+			start = {
+				position = "CURRENT",  -- Will be resolved to light's current position in cylindrical coords
+				center = "TEST_CENTER_OBJ",  -- Will be resolved to centerObj
+				orientation = Vector(0, 90, 0)  -- Downward
+			},
+			-- End: radius=0 (at center), same height, angle + 720° (2 full revolutions)
+			endVal = {
+				position = {radius = 0, angle = "+720", height = "SAME"},  -- Relative to start
+				center = "TEST_CENTER_OBJ",
+				orientation = Vector(0, 90, 0)  -- Continue downward
+			},
+			duration = 10.0,
+			ease = "sineInOut",
+			easeIntensity = 1.0,
+			coordinateSystem = "cylindrical",
+			objectToMove = "TEST_LIGHT"  -- Which object to animate
+		}
+	}
+
+
+
+	local TEST_DURATION = 10.0  -- 2 seconds per test
+
+	-- Helper: Get object by GUID or fail
+	local function getTestObject(guid, name)
+		local obj = getObjectFromGUID(guid)
+		if obj == nil then
+			printTestResult(name, false, "Missing object with GUID: " .. guid)
+			return nil
+		end
+		return obj
+	end
+
+	-- Helper: Resolve TEST_PARAMETERS into actual PositionOrientationData
+	-- Handles special values like "CURRENT", "SAME", "+360", object name strings, etc.
+	-- @param paramData table PositionOrientationData from TEST_PARAMETERS (may contain special values)
+	-- @param objects table Map of object names to actual objects (e.g., {TEST_LIGHT = obj, ...})
+	-- @param startData table|nil Resolved start data (for relative values like "SAME", "+360")
+	-- @param coordinateSystem string Coordinate system being used
+	-- @param objectToMove string|nil Name of object to move (for "CURRENT" position resolution)
+	-- @return table Resolved PositionOrientationData
+	local function resolveTestData(paramData, objects, startData, coordinateSystem, objectToMove)
+		local resolved = {}
+
+		-- Resolve position
+		if paramData.position ~= nil then
+			if paramData.position == "CURRENT" then
+				-- Use object's current position (will be converted to coordinate system if needed)
+				local objToMoveRef = objects[objectToMove or "TEST_LIGHT"]
+				if objToMoveRef then
+					local currentPos = objToMoveRef.getPosition()
+					local center = resolveTestData({center = paramData.center}, objects, nil, coordinateSystem, objectToMove).center
+					-- Convert center Object to Vector if needed
+					if U.isGameObject(center) then
+						center = center.getPosition()
+					else
+						center = Vector(center)
+					end
+					if coordinateSystem == "cylindrical" then
+						resolved.position = U.XYZToCylindrical(currentPos, center)
+					elseif coordinateSystem == "spherical" then
+						resolved.position = U.XYZToSpherical(currentPos, center)
+						-- Override angle to start at 0 if specified in paramData
+						if paramData.overrideAngle ~= nil then
+							resolved.position.angle = paramData.overrideAngle
+						end
+						-- Override angle2 if specified in paramData
+						if paramData.overrideAngle2 ~= nil then
+							resolved.position.angle2 = paramData.overrideAngle2
+						end
+					else
+						resolved.position = currentPos
+					end
+				else
+					U.error("resolveTestData", "CURRENT position requires objectToMove to be set")
+				end
+			elseif U.Type(paramData.position) == "table" and paramData.position.radius ~= nil then
+				-- Check if this is spherical or cylindrical coordinates
+				if paramData.position.angle2 ~= nil then
+					-- Spherical coordinates with relative values
+					local sph = {}
+					if paramData.position.radius == "SAME" and startData then
+						sph.radius = startData.position.radius
+					else
+						sph.radius = paramData.position.radius
+					end
+					if paramData.position.angle == "SAME" and startData then
+						sph.angle = startData.position.angle
+					elseif U.Type(paramData.position.angle) == "string" and paramData.position.angle:sub(1, 1) == "+" then
+						-- Relative angle (e.g., "+360", "+720")
+						local offset = tonumber(paramData.position.angle:sub(2))
+						sph.angle = (startData and startData.position.angle or 0) + offset
+					else
+						sph.angle = paramData.position.angle
+					end
+					if paramData.position.angle2 == "SAME" and startData then
+						sph.angle2 = startData.position.angle2
+					else
+						sph.angle2 = paramData.position.angle2
+					end
+					resolved.position = sph
+				else
+					-- Cylindrical coordinates with relative values
+					local cyl = {}
+					if paramData.position.radius == "SAME" and startData then
+						cyl.radius = startData.position.radius
+					else
+						cyl.radius = paramData.position.radius
+					end
+					if paramData.position.angle == "SAME" and startData then
+						cyl.angle = startData.position.angle
+					elseif U.Type(paramData.position.angle) == "string" and paramData.position.angle:sub(1, 1) == "+" then
+						-- Relative angle (e.g., "+360", "+720")
+						local offset = tonumber(paramData.position.angle:sub(2))
+						cyl.angle = (startData and startData.position.angle or 0) + offset
+					else
+						cyl.angle = paramData.position.angle
+					end
+					if paramData.position.height == "SAME" and startData then
+						cyl.height = startData.position.height
+					else
+						cyl.height = paramData.position.height
+					end
+					resolved.position = cyl
+				end
+			else
+				-- Direct value (Vector, table, etc.)
+				resolved.position = paramData.position
+			end
+		end
+
+		-- Resolve center
+		if paramData.center ~= nil then
+			if U.Type(paramData.center) == "string" and objects[paramData.center] then
+				resolved.center = objects[paramData.center]
+			else
+				resolved.center = paramData.center
+			end
+		end
+
+		-- Resolve orientation
+		if paramData.orientation ~= nil then
+			if U.Type(paramData.orientation) == "string" and objects[paramData.orientation] then
+				resolved.orientation = objects[paramData.orientation]
+			else
+				resolved.orientation = paramData.orientation
+			end
+		end
+
+		return resolved
+	end
+
+	-- Test 1: U.GetEasedValue (simple number interpolation)
+	broadcast("Test 1: GetEasedValue (Number)", {0.7, 0.7, 0.7})
+	print("\n--- Test 1: U.GetEasedValue (Number) ---")
+	local numberPath = U.GetEasedValue(0.0, 1.0, 1.0, "sineInOut", 1.0)
+	if numberPath and #numberPath > 0 then
+		printTestResult("GetEasedValue (Number)", true, "Generated " .. #numberPath .. " values")
+		broadcast("✅ Test 1 Passed: Generated " .. #numberPath .. " values", {0, 1, 0})
+	else
+		printTestResult("GetEasedValue (Number)", false, "Failed to generate path")
+		broadcast("❌ Test 1 Failed: Path generation failed", {1, 0, 0})
+	end
+
+	-- Test 2: U.GetEasedValue (Color interpolation)
+	broadcast("Test 2: GetEasedValue (Color)", {0.7, 0.7, 0.7})
+	print("\n--- Test 2: U.GetEasedValue (Color) ---")
+	local colorPath = U.GetEasedValue(Color(1, 0, 0), Color(0, 0, 1), 1.0, "sineInOut", 1.0)
+	if colorPath and #colorPath > 0 then
+		printTestResult("GetEasedValue (Color)", true, "Generated " .. #colorPath .. " values")
+		broadcast("✅ Test 2 Passed: Generated " .. #colorPath .. " color values", {0, 1, 0})
+	else
+		printTestResult("GetEasedValue (Color)", false, "Failed to generate path")
+		broadcast("❌ Test 2 Failed: Path generation failed", {1, 0, 0})
+	end
+
+	-- Test 3: Spherical Coordinate Transformation Validation
+	broadcast("Test 3: Spherical Coordinate Transformation", {0.7, 0.7, 0.7})
+	print("\n--- Test 3: Spherical Coordinate Transformation Validation ---")
+
+	-- Generate a 4-frame path: full 360° rotation at radius 15, horizontal plane (angle2=90°)
+	-- Expected positions: {0,0,15}, {15,0,0}, {0,0,-15}, {-15,0,0} (XZ plane circle)
+	local center = Vector(0, 0, 0)
+	local startSpherical = {radius = 15, angle = 0, angle2 = 90}   -- Horizontal plane, starting at +Z
+	local endSpherical = {radius = 15, angle = 360, angle2 = 90}   -- Full rotation, same elevation
+
+	local sphericalPath = U.GetEasedPath(
+		{position = startSpherical, center = center},
+		{position = endSpherical, center = center},
+		1.0,  -- 1 second duration
+		"linear",
+		1.0,
+		"spherical"
+	)
+
+	local testPassed = false
+	local errorMessage = ""
+
+	if sphericalPath and sphericalPath ~= "DEFER" and #sphericalPath >= 61 then
+		-- Expected positions at key angles (0°, 90°, 180°, 270°)
+		-- In TTS: angle 0° = +Z, 90° = +X, 180° = -Z, 270° = -X
+		-- With 61 frames (0-60), we check frames at t=0, 0.25, 0.5, 0.75
+		local frameIndices = {1, 16, 31, 46}  -- Frames 0, 15, 30, 45 (1-indexed: 1, 16, 31, 46)
+		local expectedPositions = {
+			Vector(0, 0, 15),    -- angle = 0° (frame 0, t=0)
+			Vector(15, 0, 0),     -- angle = 90° (frame 15, t=0.25)
+			Vector(0, 0, -15),    -- angle = 180° (frame 30, t=0.5)
+			Vector(-15, 0, 0)     -- angle = 270° (frame 45, t=0.75)
+		}
+
+		local allMatch = true
+		local mismatches = {}
+
+		for i = 1, #frameIndices do
+			local frameIdx = frameIndices[i]
+			if frameIdx > #sphericalPath then
+				allMatch = false
+				table.insert(mismatches, "Frame " .. (frameIdx - 1) .. ": Path too short")
+			else
+				local actualPos = sphericalPath[frameIdx].position
+				local expectedPos = expectedPositions[i]
+
+				if actualPos then
+					-- Allow small floating point differences (0.01 tolerance)
+					local tolerance = 0.01
+					local dx = math.abs(actualPos.x - expectedPos.x)
+					local dy = math.abs(actualPos.y - expectedPos.y)
+					local dz = math.abs(actualPos.z - expectedPos.z)
+
+					if dx > tolerance or dy > tolerance or dz > tolerance then
+						allMatch = false
+						table.insert(mismatches, string.format(
+							"Frame %d (angle ~%d°): Expected %s, got %s (diff: %.3f, %.3f, %.3f)",
+							frameIdx - 1, (i - 1) * 90, tostring(expectedPos), tostring(actualPos), dx, dy, dz
+						))
+					end
+				else
+					allMatch = false
+					table.insert(mismatches, "Frame " .. (frameIdx - 1) .. ": Missing position")
+				end
+			end
+		end
+
+		if allMatch then
+			testPassed = true
+			printTestResult("Spherical Coordinate Transformation", true, "All key positions (0°, 90°, 180°, 270°) match expected values")
+			broadcast("✅ Test 3 Passed: Spherical coordinates transform correctly", {0, 1, 0})
+		else
+			errorMessage = "Position mismatches:\n  " .. table.concat(mismatches, "\n  ")
+			printTestResult("Spherical Coordinate Transformation", false, errorMessage)
+			broadcast("❌ Test 3 Failed: Position mismatches detected", {1, 0, 0})
+		end
+	else
+		errorMessage = "Failed to generate path or path has fewer than 61 frames"
+		if sphericalPath == "DEFER" then
+			errorMessage = "Path generation was deferred (unexpected for static coordinates)"
+		elseif sphericalPath and #sphericalPath > 0 then
+			errorMessage = "Path has only " .. #sphericalPath .. " frames, expected 61"
+		end
+		printTestResult("Spherical Coordinate Transformation", false, errorMessage)
+		broadcast("❌ Test 3 Failed: " .. errorMessage, {1, 0, 0})
+	end
+
+	-- Test 4: Cylindrical Coordinate Transformation Validation
+	broadcast("Test 4: Cylindrical Coordinate Transformation", {0.7, 0.7, 0.7})
+	print("\n--- Test 4: Cylindrical Coordinate Transformation Validation ---")
+
+	-- Generate a 4-frame path: full 360° rotation at radius 15, height 0
+	-- Expected positions: {0,0,15}, {15,0,0}, {0,0,-15}, {-15,0,0} (XZ plane circle)
+	local startCylindrical = {radius = 15, angle = 0, height = 0}
+	local endCylindrical = {radius = 15, angle = 360, height = 0}
+
+	local cylindricalPath = U.GetEasedPath(
+		{position = startCylindrical, center = center},
+		{position = endCylindrical, center = center},
+		1.0,  -- 1 second duration
+		"linear",
+		1.0,
+		"cylindrical"
+	)
+
+	local test4Passed = false
+	local errorMessage4 = ""
+
+	if cylindricalPath and cylindricalPath ~= "DEFER" and #cylindricalPath >= 61 then
+		-- Expected positions at key angles (0°, 90°, 180°, 270°)
+		-- With 61 frames (0-60), we check frames at t=0, 0.25, 0.5, 0.75
+		local frameIndices4 = {1, 16, 31, 46}  -- Frames 0, 15, 30, 45 (1-indexed: 1, 16, 31, 46)
+		local expectedPositions4 = {
+			Vector(0, 0, 15),    -- angle = 0° (frame 0, t=0)
+			Vector(15, 0, 0),     -- angle = 90° (frame 15, t=0.25)
+			Vector(0, 0, -15),    -- angle = 180° (frame 30, t=0.5)
+			Vector(-15, 0, 0)     -- angle = 270° (frame 45, t=0.75)
+		}
+
+		local allMatch4 = true
+		local mismatches4 = {}
+
+		for i = 1, #frameIndices4 do
+			local frameIdx = frameIndices4[i]
+			if frameIdx > #cylindricalPath then
+				allMatch4 = false
+				table.insert(mismatches4, "Frame " .. (frameIdx - 1) .. ": Path too short")
+			else
+				local actualPos = cylindricalPath[frameIdx].position
+				local expectedPos = expectedPositions4[i]
+
+				if actualPos then
+					local tolerance = 0.01
+					local dx = math.abs(actualPos.x - expectedPos.x)
+					local dy = math.abs(actualPos.y - expectedPos.y)
+					local dz = math.abs(actualPos.z - expectedPos.z)
+
+					if dx > tolerance or dy > tolerance or dz > tolerance then
+						allMatch4 = false
+						table.insert(mismatches4, string.format(
+							"Frame %d (angle ~%d°): Expected %s, got %s (diff: %.3f, %.3f, %.3f)",
+							frameIdx - 1, (i - 1) * 90, tostring(expectedPos), tostring(actualPos), dx, dy, dz
+						))
+					end
+				else
+					allMatch4 = false
+					table.insert(mismatches4, "Frame " .. (frameIdx - 1) .. ": Missing position")
+				end
+			end
+		end
+
+		if allMatch4 then
+			test4Passed = true
+			printTestResult("Cylindrical Coordinate Transformation", true, "All key positions (0°, 90°, 180°, 270°) match expected values")
+			broadcast("✅ Test 4 Passed: Cylindrical coordinates transform correctly", {0, 1, 0})
+		else
+			errorMessage4 = "Position mismatches:\n  " .. table.concat(mismatches4, "\n  ")
+			printTestResult("Cylindrical Coordinate Transformation", false, errorMessage4)
+			broadcast("❌ Test 4 Failed: Position mismatches detected", {1, 0, 0})
+		end
+	else
+		errorMessage4 = "Failed to generate path or path has fewer than 61 frames"
+		if cylindricalPath == "DEFER" then
+			errorMessage4 = "Path generation was deferred (unexpected for static coordinates)"
+		elseif cylindricalPath and #cylindricalPath > 0 then
+			errorMessage4 = "Path has only " .. #cylindricalPath .. " frames, expected 61"
+		end
+		printTestResult("Cylindrical Coordinate Transformation", false, errorMessage4)
+		broadcast("❌ Test 4 Failed: " .. errorMessage4, {1, 0, 0})
+	end
+
+	-- Summary of validation tests
+	broadcast("✅ Validation Tests (1-4) Complete", {0, 1, 0})
+	print("\n" .. string.rep("=", 70))
+	print("VALIDATION TESTS COMPLETE")
+	print(string.rep("=", 70))
+	print("Basic validation tests completed. Proceeding to visual demonstrations...")
+	print(string.rep("=", 70))
+
+	-- Visual demonstration tests - These execute actual lerps and need to be sequenced
+	broadcast("🎬 Starting Visual Demonstration Tests", {1, 1, 0.5})
+	print("\n--- Visual Demonstration Tests (Sequenced) ---")
+	print("These tests will run sequentially so you can observe each animation.")
+	print("Waiting 2 seconds before starting animations...\n")
+
+	-- Get objects for animation tests
+	local testLight = getTestObject(TEST_GUIDS.TEST_LIGHT, "Test Light")
+	local testBlock = getTestObject(TEST_GUIDS.TEST_BLOCK, "Test Block")
+	local centerObj = getTestObject(TEST_GUIDS.TEST_CENTER_OBJ, "Center Object")
+	local targetObj = getTestObject(TEST_GUIDS.TEST_TARGET_OBJ, "Target Object")
+
+	-- Build sequence of animation tests
+	local animationSequence = {}
+
+	-- Initial delay before first animation
+	table.insert(animationSequence, function()
+		broadcast("⏳ Preparing animations...", {0.8, 0.8, 0.8})
+		return 2.0  -- 2 second pause before starting
+	end)
+
+	-- Helper: Execute a test from TEST_PARAMETERS
+	-- @param testName string Name of test in TEST_PARAMETERS
+	-- @param objects table Map of object names to actual objects
+	-- @return function|nil Test function to add to sequence, or nil if objects missing
+	local function createTestFromParameters(testName, objects)
+		local params = TEST_PARAMETERS[testName]
+		if not params then
+			U.error("createTestFromParameters", "Test not found: " .. testName)
+			return nil
+		end
+
+		-- Get the object to move
+		local objToMove = objects[params.objectToMove]
+		if not objToMove then
+			printTestResult(testName, false, "Missing object: " .. (params.objectToMove or "objectToMove not specified"))
+			return nil
+		end
+
+		-- Resolve start data (needed for relative end values)
+		local startData = resolveTestData(params.start, objects, nil, params.coordinateSystem, params.objectToMove)
+		-- Resolve end data (may use startData for relative values)
+		local endData = resolveTestData(params.endVal, objects, startData, params.coordinateSystem, params.objectToMove)
+
+		-- Check if any required objects are missing
+		local missingObjects = {}
+		if startData.center and U.Type(startData.center) == "string" then
+			table.insert(missingObjects, startData.center)
+		end
+		if endData.center and U.Type(endData.center) == "string" then
+			table.insert(missingObjects, endData.center)
+		end
+		if startData.orientation and U.Type(startData.orientation) == "string" then
+			table.insert(missingObjects, startData.orientation)
+		end
+		if endData.orientation and U.Type(endData.orientation) == "string" then
+			table.insert(missingObjects, endData.orientation)
+		end
+
+		for _, objName in ipairs(missingObjects) do
+			if not objects[objName] then
+				printTestResult(testName, false, "Missing object: " .. objName)
+				return nil
+			end
+		end
+
+		-- Return two functions: one for initialization/pause, one for the lerp
+		local initFunction = function()
+			-- Verify objToMove is still valid
+			if not objToMove then
+				printTestResult(testName, false, "Object to move became invalid")
+				return nil
+			end
+
+			local testDisplayName = testName:gsub("_", " ")
+			broadcast("🌍 Test: " .. testDisplayName, {0.8, 0.5, 1})
+			print("\n--- Test: " .. testDisplayName .. " ---")
+
+			-- Initialize: Move object to starting position and orientation
+			local startCenter = resolveTestData({center = startData.center}, objects, nil, params.coordinateSystem, params.objectToMove).center
+			if U.isGameObject(startCenter) then
+				startCenter = startCenter.getPosition()
+			else
+				startCenter = Vector(startCenter)
+			end
+
+			-- Convert start position to XYZ (stored in closure)
+			startPosXYZ = nil
+			if startData.position then
+				if params.coordinateSystem == "cylindrical" then
+					local cyl = startData.position
+					if cyl and cyl.radius ~= nil and cyl.angle ~= nil and cyl.height ~= nil then
+						local angleRad = math.rad(cyl.angle)
+						startPosXYZ = Vector(
+							startCenter.x + cyl.radius * math.sin(angleRad),
+							startCenter.y + cyl.height,
+							startCenter.z + cyl.radius * math.cos(angleRad)
+						)
+					end
+				elseif params.coordinateSystem == "spherical" then
+					local sph = startData.position
+					if sph and sph.radius ~= nil and sph.angle ~= nil and sph.angle2 ~= nil then
+						-- Use the same formula as sphericalToXYZ in util library
+						local angleRad = math.rad(sph.angle)
+						local angle2Rad = math.rad(sph.angle2)
+						startPosXYZ = Vector(
+							startCenter.x + sph.radius * math.sin(angle2Rad) * math.sin(angleRad),
+							startCenter.y + sph.radius * math.cos(angle2Rad),
+							startCenter.z + sph.radius * math.sin(angle2Rad) * math.cos(angleRad)
+						)
+					end
+				else
+					startPosXYZ = Vector(startData.position)
+				end
+			end
+
+			-- Set starting position FIRST (use setPosition for immediate placement during initialization)
+			if startPosXYZ and objToMove then
+				-- Use setPosition (not setPositionSmooth) for immediate placement during initialization
+				-- This ensures the object is at the correct position before calculating orientation
+				local success = pcall(function() objToMove.setPosition(startPosXYZ) end)
+				if not success then
+					printTestResult(testName, false, "Failed to set starting position")
+					return nil
+				end
+				print("Moved object to starting position: " .. tostring(startPosXYZ))
+
+				-- Return the object so U.RunSequence will wait for it to be at rest
+				-- This ensures the object is fully settled before the next function runs
+				return objToMove
+			else
+				printTestResult(testName, false, "Failed to resolve start position or object is nil")
+				return nil
+			end
+		end
+
+		-- Function to set orientation after object is at rest
+		local orientationFunction = function()
+			local testDisplayName = testName:gsub("_", " ")
+			-- Set starting orientation AFTER position is set and object is at rest
+			print("DEBUG: Object is at rest, setting orientation...")
+			print("  startData.orientation: " .. tostring(startData.orientation))
+			print("  objToMove: " .. tostring(objToMove))
+			print("  startPosXYZ: " .. tostring(startPosXYZ))
+
+			if startData.orientation and objToMove and startPosXYZ then
+				print("DEBUG: All conditions met, calculating orientation...")
+				local startRot
+				if U.isGameObject(startData.orientation) then
+					print("DEBUG: Orientation is a GameObject, getting position...")
+					-- Calculate look-at rotation using helper from util library
+					-- Use the starting position we just set
+					local success, targetPos = pcall(function() return startData.orientation.getPosition() end)
+					if success and targetPos then
+						print("DEBUG: Got target position: " .. tostring(targetPos))
+						local rotSuccess, rotResult = pcall(function()
+							return U.lookAtRotation(startPosXYZ, targetPos)
+						end)
+						if rotSuccess and rotResult then
+							startRot = rotResult
+							print("Calculated look-at rotation from " .. tostring(startPosXYZ) .. " to " .. tostring(targetPos))
+							print("  Result rotation: " .. tostring(startRot))
+						else
+							print("Warning: U.lookAtRotation failed: " .. tostring(rotResult))
+							startRot = Vector(0, 0, 0)
+						end
+					else
+						print("Warning: Failed to get target position for orientation calculation")
+						if not success then
+							print("  Error getting position from GameObject")
+						end
+						startRot = Vector(0, 0, 0)
+					end
+				else
+					print("DEBUG: Orientation is a direct Vector value")
+					-- Direct Vector value
+					startRot = Vector(startData.orientation)
+				end
+				if startRot then
+					print("DEBUG: Setting rotation to: " .. tostring(startRot))
+					local success, err = pcall(function() objToMove.setRotationSmooth(startRot, false, false) end)
+					if not success then
+						print("Warning: Failed to set rotation for " .. testName .. ": " .. tostring(err))
+					else
+						print("Set initial rotation to: " .. tostring(startRot))
+					end
+				else
+					print("Warning: startRot is nil")
+				end
+			else
+				print("DEBUG: Orientation setup skipped - missing conditions")
+				if not startData.orientation then print("  Missing: startData.orientation") end
+				if not objToMove then print("  Missing: objToMove") end
+				if not startPosXYZ then print("  Missing: startPosXYZ") end
+			end
+
+			-- Broadcast initialization complete
+			print("Object moved to starting position.")
+			local success = pcall(function()
+				broadcast("📍 Initialized: " .. testDisplayName .. " - Waiting for continuation...", {0.7, 0.7, 1})
+			end)
+			if not success then
+				print("Warning: Failed to broadcast initialization message")
+			end
+			print("💡 To continue, type in console: continueTest()")
+
+			-- Set up interactive pause
+			testWaitingForContinue = true  -- Signal that we're waiting
+
+			-- Return immediately - the lerp function will handle waiting
+			return 0.1
+		end
+
+		local lerpFunction = function()
+			local testDisplayName = testName:gsub("_", " ")
+
+			-- Wait for continuation to be triggered
+			if testWaitingForContinue then
+				broadcast("⏳ Waiting for continuation: " .. testDisplayName, {0.8, 0.8, 0.8})
+				print("Waiting for continueTest() to be called...")
+				print("   Type in console: continueTest()")
+
+				-- Wait for continuation by yielding in a loop
+				-- Since we're already in a coroutine, we can't use U.waitUntil (which starts its own coroutine)
+				local waitStartTime = os.time()
+				local maxWaitSeconds = 300  -- 5 minutes
+
+				while testWaitingForContinue do
+					local elapsed = os.time() - waitStartTime
+					if elapsed >= maxWaitSeconds then
+						broadcast("⏱️ Test timeout: " .. testDisplayName, {1, 0.5, 0})
+						print("Test timed out after 5 minutes. Use continueTest() to continue manually.")
+						return 1.0
+					end
+					coroutine.yield(0)  -- Yield one frame and check again next frame
+				end
+
+				print("Continuation received, proceeding with animation...")
+			end
+
+			-- Broadcast animation start
+			broadcast("▶️ " .. testDisplayName .. " Starting Animation", {0.8, 0.5, 1})
+
+			-- Generate path (will return "DEFER" if Object references present)
+			local path = U.GetEasedPath(startData, endData, params.duration, params.ease, params.easeIntensity, params.coordinateSystem)
+
+			local lerpDuration
+			if path == "DEFER" then
+				-- Use deferred execution for Object references
+				lerpDuration = U.LerpDeferred(startData, endData, params.duration, params.ease, params.easeIntensity, params.coordinateSystem, function(step)
+					if objToMove and step then
+						if step.position then
+							objToMove.setPositionSmooth(step.position, false, false)
+						end
+						if step.orientation then
+							objToMove.setRotationSmooth(step.orientation, false, false)
+						end
+					end
+				end)
+			else
+				-- Use pre-computed path
+				lerpDuration = U.LerpPath(path, function(step)
+					if objToMove and step then
+						if step.position then
+							objToMove.setPositionSmooth(step.position, false, false)
+						end
+						if step.orientation then
+							objToMove.setRotationSmooth(step.orientation, false, false)
+						end
+					end
+				end)
+			end
+
+			if lerpDuration and lerpDuration > 0 then
+				printTestResult(testDisplayName, true, "Lerp started, duration: " .. lerpDuration .. "s")
+				broadcast("▶️ " .. testDisplayName .. " Running: " .. lerpDuration .. "s", {0.8, 0.5, 1})
+				return lerpDuration + 1.0  -- Wait for animation + 1 second pause
+			else
+				printTestResult(testDisplayName, false, "Failed to start lerp")
+				broadcast("❌ " .. testDisplayName .. " Failed: Could not start lerp", {1, 0, 0})
+				return 1.0
+			end
+		end
+
+		-- Return three functions: init (returns object to wait for), orientation (runs after object is at rest), lerp
+		return initFunction, orientationFunction, lerpFunction
+	end
+
+	-- Build object map for test resolution
+	local testObjects = {
+		TEST_LIGHT = testLight,
+		TEST_BLOCK = testBlock,
+		TEST_CENTER_OBJ = centerObj,
+		TEST_TARGET_OBJ = targetObj
+	}
+
+	-- Test: ORBITING_LIGHT
+	local orbitingInit, orbitingOrientation, orbitingLerp = createTestFromParameters("ORBITING_LIGHT", testObjects)
+	if orbitingInit and orbitingOrientation and orbitingLerp then
+		table.insert(animationSequence, orbitingInit)        -- Initialization (returns object to wait for)
+		table.insert(animationSequence, orbitingOrientation) -- Orientation setup (runs after object is at rest)
+		table.insert(animationSequence, orbitingLerp)        -- Animation
+	end
+
+	-- Test: CYLINDRICAL_SPIRAL
+	local spiralInit, spiralOrientation, spiralLerp = createTestFromParameters("CYLINDRICAL_SPIRAL", testObjects)
+	if spiralInit and spiralOrientation and spiralLerp then
+		table.insert(animationSequence, spiralInit)        -- Initialization (returns object to wait for)
+		table.insert(animationSequence, spiralOrientation) -- Orientation setup (runs after object is at rest)
+		table.insert(animationSequence, spiralLerp)       -- Animation
+	end
+
+	-- Final summary function
+	table.insert(animationSequence, function()
+		broadcast("✅ All Animation Tests Complete!", {0, 1, 0})
+		print("\n" .. string.rep("=", 70))
+		print("EASING TEST SUMMARY")
+		print(string.rep("=", 70))
+		print("\nRequired Objects (set GUIDs in TEST_GUIDS constant):")
+		print("  - TEST_LIGHT: Light object to animate")
+		print("  - TEST_BLOCK: Block object (for future tests)")
+		print("  - TEST_CENTER_OBJ: Object to use as center for orbital/spiral paths")
+		print("  - TEST_TARGET_OBJ: Object to orbit around and face")
+		print("\nNote: Tests that require objects will be skipped if objects are missing.")
+		print("Replace placeholder GUIDs in TEST_GUIDS with actual object GUIDs from your scene.")
+		print(string.rep("=", 70))
+		return 0.5
+	end)
+
+		-- Execute animation sequence if we have any tests
+		if #animationSequence > 1 then  -- More than just the initial delay
+			broadcast("Starting " .. (#animationSequence - 1) .. " visual demonstration(s)...", {1, 1, 0.5})
+			print("Starting animation sequence with " .. (#animationSequence - 1) .. " visual demonstration(s)...")
+			print("Tests will demonstrate:")
+			print("  - Orbiting Light: Spherical coordinates with object-facing orientation")
+			print("  - Cylindrical Spiral: Spiraling in with fixed downward orientation")
+			U.RunSequence(animationSequence)
+	else
+		print("\nNo animation tests to run (missing required objects)")
+		-- Print summary immediately if no animations
+		print("\n" .. string.rep("=", 70))
+		print("EASING TEST SUMMARY")
+		print(string.rep("=", 70))
+		print("\nRequired Objects (set GUIDs in TEST_GUIDS constant):")
+		print("  - TEST_LIGHT: Light object to animate")
+		print("  - TEST_BLOCK: Block object (for future tests)")
+		print("  - TEST_CENTER_OBJ: Object to use as center for orbital/spiral paths")
+		print("  - TEST_TARGET_OBJ: Object to orbit around and face")
+		print("\nNote: Tests that require objects will be skipped if objects are missing.")
+		print("Replace placeholder GUIDs in TEST_GUIDS with actual object GUIDs from your scene.")
+		print(string.rep("=", 70))
+	end
 end
 
 --[[
@@ -7396,73 +9385,6 @@ function DEBUG.showState()
     printTestHeader("Current Game State")
     local state = S.getGameState()
     print(JSON.encode_pretty(state))
-end
-
---- Logs complete gameState to a file before save
--- Writes both raw and sanitized versions for comparison
--- @param label string Optional label for the dump (default: "gameState_dump")
-function DEBUG.logStateToFile(label)
-    label = label or "gameState_dump"
-    local timestamp = getTimestamp()
-
-    -- Get both raw and sanitized states
-    local rawState = S.getGameState(false)
-    local sanitizedState = S.getGameState(true)
-
-    -- Build the dump content
-    local dumpContent = string.format(
-        "=== GAME STATE DUMP: %s ===\nTimestamp: %s\n\n",
-        label,
-        timestamp
-    )
-
-    -- Raw state
-    dumpContent = dumpContent .. "--- RAW STATE (gameState) ---\n"
-    local rawSuccess, rawJson = pcall(function()
-        return JSON.encode_pretty(rawState)
-    end)
-    if rawSuccess then
-        dumpContent = dumpContent .. rawJson .. "\n\n"
-    else
-        dumpContent = dumpContent .. "ERROR encoding raw state: " .. tostring(rawJson) .. "\n\n"
-    end
-
-    -- Sanitized state (what will be saved)
-    dumpContent = dumpContent .. "--- SANITIZED STATE (for save) ---\n"
-    local sanitizedSuccess, sanitizedJson = pcall(function()
-        return JSON.encode_pretty(sanitizedState)
-    end)
-    if sanitizedSuccess then
-        dumpContent = dumpContent .. sanitizedJson .. "\n\n"
-    else
-        dumpContent = dumpContent .. "ERROR encoding sanitized state: " .. tostring(sanitizedJson) .. "\n\n"
-    end
-
-    -- PlayerData structure details
-    dumpContent = dumpContent .. "--- PLAYERDATA STRUCTURE DETAILS ---\n"
-    if rawState.playerData then
-        dumpContent = dumpContent .. "Raw playerData type: " .. type(rawState.playerData) .. "\n"
-        dumpContent = dumpContent .. "Raw playerData key count: " .. #U.getKeys(rawState.playerData) .. "\n"
-        dumpContent = dumpContent .. "Raw playerData keys: " .. table.concat(U.getKeys(rawState.playerData), ", ") .. "\n\n"
-
-        for playerID, playerData in pairs(rawState.playerData) do
-            dumpContent = dumpContent .. string.format("Player[%s]: type=%s\n", tostring(playerID), type(playerData))
-            if type(playerData) == "table" then
-                dumpContent = dumpContent .. string.format("  Keys: %s\n", table.concat(U.getKeys(playerData), ", "))
-                for k, v in pairs(playerData) do
-                    dumpContent = dumpContent .. string.format("  [%s] = %s (type: %s)\n", tostring(k), tostring(v), type(v))
-                end
-            end
-            dumpContent = dumpContent .. "\n"
-        end
-    else
-        dumpContent = dumpContent .. "No playerData in raw state\n\n"
-    end
-
-    dumpContent = dumpContent .. string.rep("=", 60) .. "\n\n"
-
-    -- Write to file
-    DEBUG.logToFile("INFO", dumpContent, "gameState_dump")
 end
 
 --- Display current scene info
@@ -7701,6 +9623,8 @@ function DEBUG.help()
     print("  testUI()                 - Test UI display updates")
     print("  testUtilities()          - Test utility functions")
     print("  testLightingAndSignals() - Test lighting & signal fires with sequencing")
+    print("  testEasing()             - Test easing and path generation functions")
+    print("  testLookAt()             - Test look-at rotation (minimal test)")
     print("  testIntegration()        - Full integration test")
     print("  runTests()               - Run all tests in sequence")
     print("\nINSPECTION FUNCTIONS:")
@@ -7742,6 +9666,7 @@ testMain = DEBUG.testMain
 testUI = DEBUG.testUI
 testUtilities = DEBUG.testUtilities
 testLightingAndSignals = DEBUG.testLightingAndSignals
+testEasing = DEBUG.testEasing
 testIntegration = DEBUG.testIntegration
 runTests = DEBUG.runTests
 
@@ -7769,10 +9694,586 @@ debugHelp = DEBUG.help
 -- Expose initialization function
 initLightingAndSignals = DEBUG.initLightingAndSignals
 
+-- Expose light test functions
+testSpawnLightType = DEBUG.testSpawnLightType
+testCloneLight = DEBUG.testCloneLight
+testInspectLight = DEBUG.testInspectLight
+testSpawnLight = DEBUG.testSpawnLight
+testCompareStructures = DEBUG.testCompareStructures
+findPotentialLights = DEBUG.findPotentialLights
+
 -- Auto-show help on load (optional - comment out if not desired)
 -- DEBUG.help()
 
 return DEBUG
+
+end)
+__bundle_register("core.light_test", function(require, _LOADED, __bundle_register, __bundle_modules)
+---@diagnostic disable: lowercase-global
+--[[
+    Light Test Module (core/light_test.ttslua)
+
+    Test functions for working with light objects from AssetBundles.
+    Lights must be imported as AssetBundles - this module provides utilities
+    to inspect, clone, and configure light objects.
+
+    Usage:
+    - Call test functions from TTS console
+    - Functions expect light objects to be AssetBundles (not built-in types)
+]]
+
+local LightTest = {}
+local U = require("lib.util")
+local G = require("lib.guids")
+
+-- ============================================================================
+-- TEST FUNCTIONS
+-- ============================================================================
+-- Note: All tests assume lights are imported as AssetBundles, not built-in types
+
+--- Clone an existing light object (from AssetBundle)
+-- @param templateGUID string GUID of light object to clone (must be AssetBundle)
+-- @usage LightTest.testCloneLight("abc123")
+function LightTest.testCloneLight(templateGUID)
+    print("=== Test: Cloning Light from AssetBundle ===")
+
+    if not templateGUID then
+        print("❌ Please provide a template GUID")
+        print("Usage: LightTest.testCloneLight('your-light-guid')")
+        return nil
+    end
+
+    local template = getObjectFromGUID(templateGUID)
+    if not template then
+        print("❌ Template light not found: " .. templateGUID)
+        return nil
+    end
+
+    print("✅ Template found, attempting clone...")
+
+    local success, clone = pcall(function()
+        return template.clone({
+            position = {0, 5, 0},
+            callback_function = function(obj)
+                print("✅ Clone created!")
+                print("Clone GUID:", obj.getGUID())
+
+                -- Try to find Light component
+                local lightComp = obj.getComponentInChildren("Light")
+                if lightComp then
+                    print("✅ Light component found in clone!")
+                    print("Current range:", lightComp.get("range"))
+                    print("Current intensity:", lightComp.get("intensity"))
+                    print("Current enabled:", lightComp.get("enabled"))
+                else
+                    print("❌ No Light component found in clone")
+                    -- Try to inspect structure
+                    local children = obj.getChildren()
+                    print("Clone has " .. #children .. " children")
+                    for i, child in ipairs(children) do
+                        print("  Child " .. i .. ": " .. (child.name or "unnamed"))
+                        local grandChildren = child.getChildren()
+                        if #grandChildren > 0 then
+                            for j, grandChild in ipairs(grandChildren) do
+                                print("    Grandchild " .. j .. ": " .. (grandChild.name or "unnamed"))
+                                local comps = grandChild.getComponents()
+                                print("      Components: " .. #comps)
+                                for k, comp in ipairs(comps) do
+                                    print("        " .. k .. ": " .. comp.name)
+                                end
+                            end
+                        end
+                    end
+                end
+
+                return obj
+            end
+        })
+    end)
+
+    if success and clone then
+        print("✅ Clone test successful!")
+        return clone
+    else
+        print("❌ Clone test failed")
+        print("Error:", clone)
+        return nil
+    end
+end
+
+--- Inspect Light component properties
+-- @param lightGUID string GUID of light object to inspect
+-- @usage LightTest.testInspectLight("abc123")
+function LightTest.testInspectLight(lightGUID)
+    print("=== Test: Inspecting Light Component ===")
+
+    if not lightGUID then
+        print("❌ Please provide a light GUID")
+        print("Usage: LightTest.testInspectLight('your-light-guid')")
+        return nil
+    end
+
+    local light = getObjectFromGUID(lightGUID)
+    if not light then
+        print("❌ Light not found: " .. lightGUID)
+        return nil
+    end
+
+    print("✅ Light object found")
+    print("Light GUID:", light.getGUID())
+    print("Light name:", light.getName())
+
+    -- Try direct component access
+    local lightComp = light.getComponent("Light")
+    if not lightComp then
+        print("Light component not found directly, searching in children...")
+        lightComp = light.getComponentInChildren("Light")
+    end
+
+    if lightComp then
+        print("✅ Light component found!")
+        print("Component name:", lightComp.name)
+
+        -- Get all available properties
+        local vars = lightComp.getVars()
+        print("\nAvailable Light properties:")
+        for name, varType in pairs(vars) do
+            local value = lightComp.get(name)
+            print(string.format("  %s (%s) = %s", name, varType, U.ToString(value)))
+        end
+
+        -- Test setting a property
+        print("\n--- Testing property modification ---")
+        local originalRange = lightComp.get("range")
+        print("Original range:", originalRange)
+        lightComp.set("range", originalRange + 10)
+        print("New range:", lightComp.get("range"))
+        lightComp.set("range", originalRange) -- Restore
+        print("Restored range:", lightComp.get("range"))
+
+        return lightComp
+    else
+        print("❌ No Light component found")
+        print("Attempting to find component structure...")
+
+        -- Inspect object structure
+        local children = light.getChildren()
+        print("Light has " .. #children .. " children")
+        for i, child in ipairs(children) do
+            print("  Child " .. i .. ": " .. (child.name or "unnamed"))
+            local comps = child.getComponents()
+            if #comps > 0 then
+                print("    Components:")
+                for j, comp in ipairs(comps) do
+                    print("      " .. j .. ": " .. comp.name)
+                end
+            end
+
+            local grandChildren = child.getChildren()
+            if #grandChildren > 0 then
+                print("    Grandchildren:")
+                for j, grandChild in ipairs(grandChildren) do
+                    print("      Grandchild " .. j .. ": " .. (grandChild.name or "unnamed"))
+                    local comps = grandChild.getComponents()
+                    if #comps > 0 then
+                        print("        Components:")
+                        for k, comp in ipairs(comps) do
+                            print("          " .. k .. ": " .. comp.name)
+                            if comp.name == "Light" then
+                                print("          ✅ FOUND LIGHT COMPONENT!")
+                                local vars = comp.getVars()
+                                print("          Properties:")
+                                for name, varType in pairs(vars) do
+                                    print("            " .. name .. " (" .. varType .. ")")
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        return nil
+    end
+end
+
+--- Spawn light from AssetBundle template
+-- @param templateGUID string GUID of light template (AssetBundle)
+-- @param position Vector Position to spawn light
+-- @param rotation Vector Rotation of light
+-- @param config table Light configuration {enabled, range, intensity, color, angle}
+-- @usage LightTest.testSpawnLight("abc123", Vector(0,5,0), Vector(0,0,0), {range=50, intensity=15})
+function LightTest.testSpawnLight(templateGUID, position, rotation, config)
+    print("=== Test: Spawning Light from AssetBundle Template ===")
+
+    config = config or {}
+    position = position or Vector(0, 5, 0)
+    rotation = rotation or Vector(0, 0, 0)
+
+    if not templateGUID then
+        print("❌ Please provide a template GUID")
+        return nil
+    end
+
+    local template = getObjectFromGUID(templateGUID)
+    if not template then
+        print("❌ Template not found: " .. templateGUID)
+        return nil
+    end
+
+    print("Spawning light at:", position)
+    print("With rotation:", rotation)
+    print("Config:", U.ToString(config))
+
+    local success, newLight = pcall(function()
+        return template.clone({
+            position = position,
+            rotation = rotation,
+            callback_function = function(obj)
+                print("✅ Light spawned!")
+
+                -- Find and configure Light component
+                local lightComp = obj.getComponentInChildren("Light")
+                if not lightComp then
+                    -- Try the nested structure from current implementation
+                    local children = obj.getChildren()
+                    if #children > 0 then
+                        local grandchildren = children[1].getChildren()
+                        if #grandchildren > 1 then
+                            local components = grandchildren[2].getComponents()
+                            if #components > 1 and components[2].name == "Light" then
+                                lightComp = components[2]
+                            end
+                        end
+                    end
+                end
+
+                if lightComp then
+                    print("✅ Light component found, configuring...")
+
+                    -- Apply configuration
+                    if config.enabled ~= nil then
+                        lightComp.set("enabled", config.enabled)
+                        print("  Set enabled:", config.enabled)
+                    end
+
+                    if config.range then
+                        lightComp.set("range", config.range)
+                        print("  Set range:", config.range)
+                    end
+
+                    if config.intensity then
+                        lightComp.set("intensity", config.intensity)
+                        print("  Set intensity:", config.intensity)
+                    end
+
+                    if config.color then
+                        lightComp.set("color", Color(config.color))
+                        print("  Set color:", U.ToString(config.color))
+                    end
+
+                    if config.angle then
+                        lightComp.set("spotAngle", config.angle)
+                        print("  Set spotAngle:", config.angle)
+                    end
+
+                    print("✅ Light configured successfully!")
+                else
+                    print("❌ Could not find Light component")
+                end
+
+                return obj
+            end
+        })
+    end)
+
+    if success and newLight then
+        print("✅ Light spawn test successful!")
+        print("New light GUID:", newLight.getGUID())
+        return newLight
+    else
+        print("❌ Light spawn test failed")
+        print("Error:", newLight)
+        return nil
+    end
+end
+
+--- Compare light structure (for debugging AssetBundle structure)
+-- @param currentLightGUID string GUID of light object to inspect
+-- @usage LightTest.testCompareStructures("abc123")
+function LightTest.testCompareStructures(currentLightGUID)
+    print("=== Test: Comparing Light Structures ===")
+
+    if not currentLightGUID then
+        print("❌ Please provide a light GUID")
+        return nil
+    end
+
+    local light = getObjectFromGUID(currentLightGUID)
+    if not light then
+        print("❌ Light not found: " .. currentLightGUID)
+        return nil
+    end
+
+    print("Analyzing current light structure...")
+
+    -- Current implementation pattern
+    print("\n--- Current Implementation Pattern ---")
+    local success, comp = pcall(function()
+        return light.getChildren()[1].getChildren()[2].getComponents()[2]
+    end)
+
+    if success and comp then
+        print("✅ Current nested structure works")
+        print("Component name:", comp.name)
+        local vars = comp.getVars()
+        print("Properties:")
+        for name, varType in pairs(vars) do
+            print("  " .. name .. " (" .. varType .. ")")
+        end
+    else
+        print("❌ Current nested structure failed")
+    end
+
+    -- Direct component access
+    print("\n--- Direct Component Access ---")
+    local directComp = light.getComponent("Light")
+    if directComp then
+        print("✅ Direct access works!")
+    else
+        print("❌ Direct access failed")
+    end
+
+    -- Component in children
+    print("\n--- Component in Children ---")
+    local childComp = light.getComponentInChildren("Light")
+    if childComp then
+        print("✅ getComponentInChildren works!")
+        print("Component name:", childComp.name)
+    else
+        print("❌ getComponentInChildren failed")
+    end
+
+    return {
+        nested = success and comp or nil,
+        direct = directComp,
+        inChildren = childComp
+    }
+end
+
+--- Helper: List all objects that might be lights
+-- @usage LightTest.findPotentialLights()
+function LightTest.findPotentialLights()
+    print("=== Finding Potential Light Objects ===")
+
+    local allObjects = getObjects()
+    local potentialLights = {}
+
+    for _, obj in ipairs(allObjects) do
+        if obj.getComponentInChildren then
+            local lightComp = obj.getComponentInChildren("Light")
+            if lightComp then
+                table.insert(potentialLights, {
+                    guid = obj.getGUID(),
+                    name = obj.getName(),
+                    component = lightComp
+                })
+            end
+        end
+    end
+
+    if #potentialLights > 0 then
+        print("✅ Found " .. #potentialLights .. " objects with Light components:")
+        for i, light in ipairs(potentialLights) do
+            print(string.format("  %d. %s (GUID: %s)", i, light.name, light.guid))
+        end
+    else
+        print("❌ No objects with Light components found")
+    end
+
+    return potentialLights
+end
+
+-- ============================================================================
+-- EXPORTS
+-- ============================================================================
+
+return LightTest
+
+end)
+__bundle_register("core.objects", function(require, _LOADED, __bundle_register, __bundle_modules)
+--[[
+    Object Manipulation Module (core/objects.ttslua)
+
+    Handles manipulation of game objects like signal fires and hunger smoke.
+    Provides functions for raising/lowering objects with smooth animations.
+
+    This module provides:
+    - Signal fire control (raise/lower)
+    - Hunger smoke control (raise/lower)
+    - Smooth position transitions using U.setPositionSlow
+    - Partial position handling (only update specified axes)
+]]
+
+local O = {}
+local U = require("lib.util")
+local C = require("lib.constants")
+local G = require("lib.guids")
+
+-- ============================================================================
+-- HELPER FUNCTIONS
+-- ============================================================================
+
+--- Merges partial position data with current object position
+-- Only updates specified axes, preserves others
+-- @param obj Object The TTS object
+-- @param partialPos table Partial position {x=?, y=?, z=?} (any can be nil)
+-- @return Vector Complete position vector
+local function mergePosition(obj, partialPos)
+    local currentPos = obj.getPosition()
+    local newPos = {
+        x = partialPos.x or currentPos.x,
+        y = partialPos.y or currentPos.y,
+        z = partialPos.z or currentPos.z
+    }
+    return Vector(newPos.x, newPos.y, newPos.z)
+end
+
+-- ============================================================================
+-- SIGNAL FIRE FUNCTIONS
+-- ============================================================================
+
+--- Sets signal fire state (on/off) with optional animation
+-- @param color string Player color (e.g., "Brown", "Orange", "Red", "Pink")
+-- @param state string State: "on" or "off"
+-- @param duration number Optional: Animation duration in seconds (default: 0.2)
+-- @return boolean True if successful, false otherwise
+-- @usage O.SetSignalFireState("Brown", "on", 0.2)
+function O.SetSignalFireState(color, state, duration)
+    duration = duration or 0.2  -- Default to 0.2 seconds (3x faster than before)
+
+    local guid = G.GetSignalFireGUID(color)
+    if not guid then
+        U.AlertGM("O.SetSignalFireState: No GUID found for color: " .. tostring(color))
+        return false
+    end
+
+    local fire = getObjectFromGUID(guid)
+    if not fire then
+        U.AlertGM("O.SetSignalFireState: Signal fire not found for color: " .. tostring(color))
+        return false
+    end
+
+    local posData = C.ObjectPositions.SIGNAL_FIRE[state]
+    if not posData then
+        U.AlertGM("O.SetSignalFireState: Invalid state: " .. tostring(state))
+        return false
+    end
+
+    -- Merge partial position with current position
+    local targetPos = mergePosition(fire, posData.position)
+
+    if duration > 0 then
+        -- Use lerp for smooth animation
+        U.setPositionSlow(fire, targetPos, duration, nil, false)
+    else
+        -- Instant (no lerping)
+        fire.setPosition(targetPos)
+    end
+
+    return true
+end
+
+-- ============================================================================
+-- HUNGER SMOKE FUNCTIONS
+-- ============================================================================
+
+--- Sets hunger smoke state (on/off) with optional animation
+-- @param color string Player color (e.g., "Brown", "Orange", "Red", "Pink")
+-- @param state string State: "on" or "off"
+-- @param duration number Optional: Animation duration in seconds (default: 0.2)
+-- @return boolean True if successful, false otherwise
+-- @usage O.SetHungerSmokeState("Brown", "on", 0.2)
+function O.SetHungerSmokeState(color, state, duration)
+    duration = duration or 0.2  -- Default to 0.2 seconds (3x faster than before)
+
+    local guid = G.GetHungerSmokeGUID(color)
+    if not guid then
+        U.AlertGM("O.SetHungerSmokeState: No GUID found for color: " .. tostring(color))
+        return false
+    end
+
+    local smoke = getObjectFromGUID(guid)
+    if not smoke then
+        U.AlertGM("O.SetHungerSmokeState: Hunger smoke not found for color: " .. tostring(color))
+        return false
+    end
+
+    local posData = C.ObjectPositions.HUNGER_SMOKE[state]
+    if not posData then
+        U.AlertGM("O.SetHungerSmokeState: Invalid state: " .. tostring(state))
+        return false
+    end
+
+    -- Merge partial position with current position
+    local targetPos = mergePosition(smoke, posData.position)
+
+    if duration > 0 then
+        -- Use lerp for smooth animation
+        U.setPositionSlow(smoke, targetPos, duration, nil, false)
+    else
+        -- Instant (no lerping)
+        smoke.setPosition(targetPos)
+    end
+
+    return true
+end
+
+-- ============================================================================
+-- RING_FLARE FUNCTIONS
+-- ============================================================================
+
+--- Sets RING_FLARE state (on/off) with optional animation
+-- @param state string State: "on" or "off"
+-- @param duration number Optional: Animation duration in seconds (default: 0.2)
+-- @return boolean True if successful, false otherwise
+-- @usage O.SetRingFlareState("on", 0.2)
+function O.SetRingFlareState(state, duration)
+    duration = duration or 0.2  -- Default to 0.2 seconds
+
+    local guid = G.GUIDS.RING_FLARE
+    if not guid then
+        U.AlertGM("O.SetRingFlareState: No GUID found for RING_FLARE")
+        return false
+    end
+
+    local flare = getObjectFromGUID(guid)
+    if not flare then
+        U.AlertGM("O.SetRingFlareState: RING_FLARE not found")
+        return false
+    end
+
+    local posData = C.ObjectPositions.RING_FLARE[state]
+    if not posData then
+        U.AlertGM("O.SetRingFlareState: Invalid state: " .. tostring(state))
+        return false
+    end
+
+    -- Merge partial position with current position
+    local targetPos = mergePosition(flare, posData.position)
+
+    if duration > 0 then
+        -- Use lerp for smooth animation
+        U.setPositionSlow(flare, targetPos, duration, nil, false)
+    else
+        -- Instant (no lerping)
+        flare.setPosition(targetPos)
+    end
+
+    return true
+end
+
+return O
 
 end)
 __bundle_register("core.scenes", function(require, _LOADED, __bundle_register, __bundle_modules)
@@ -8657,12 +11158,12 @@ local S = require("core.state")
     Sets up game systems and prepares for play.
 ]]
 function M.onLoad()
-    print("Main: Core module loaded.")
-    -- Initialize systems
-    M.setupPlayers()
-    M.syncPhase() -- Sync UI/features based on current phase
+  print("Main: Core module loaded.")
+  -- Initialize systems
+  M.setupPlayers()
+  M.syncPhase()   -- Sync UI/features based on current phase
 
-    print("Main: Module initialization complete.")
+  print("Main: Module initialization complete.")
 end
 
 --[[
@@ -8671,20 +11172,31 @@ end
     Pattern from Heritage M.setupPlayers / initialization globals.
 ]]
 function M.setupPlayers()
-    print("Main: Setting up players.")
+  print("Main: Setting up players.")
 
-    -- Promote all players (give them full permissions)
-    for _, player in ipairs(Player.getPlayers()) do
-        player.promoted = true
-        print("Main: Promoted player " .. player.color)
+  -- Promote all players (give them full permissions)
+  for _, player in ipairs(Player.getPlayers()) do
+    player.promoted = true
+    print("Main: Promoted player " .. player.color)
+  end
+
+  -- Set up tombstone visibility (each player's tombstone invisible to them)
+  M.setupTombstoneVisibility()
+
+  -- Make objects on Storyteller table invisible to all players
+
+  U.forEach(
+    U.findAboveObject(
+      getObjectFromGUID(G.GUIDS.STORYTELLER_TABLE), nil, { box = true, far = true }
+    ),
+    function(v)
+      v.setInvisibleTo({ "Brown", "Orange", "Red", "Pink" })
     end
+  )
 
-    -- Set up tombstone visibility (each player's tombstone invisible to them)
-    M.setupTombstoneVisibility()
-
-    -- TODO: Assign Storyteller role (e.g., Black or Brown player)
-    -- TODO: Initialize player-specific data in game state (hunger, willpower, health, etc.)
-    -- TODO: Set up player-specific UI elements
+  -- TODO: Assign Storyteller role (e.g., Black or Brown player)
+  -- TODO: Initialize player-specific data in game state (hunger, willpower, health, etc.)
+  -- TODO: Set up player-specific UI elements
 end
 
 --[[
@@ -8693,26 +11205,26 @@ end
     Uses TTS setInvisibleTo() function to hide objects from specific players.
 ]]
 function M.setupTombstoneVisibility()
-    print("Main: Setting up tombstone visibility.")
+  print("Main: Setting up tombstone visibility.")
 
-    for _, color in ipairs(C.PlayerColors) do
-        local guid = G.GetTombstoneGUID(color)
-        if guid then
-            local tombstone = getObjectFromGUID(guid)
-            if tombstone then
-                -- Make this tombstone invisible to the player of this color
-                -- The tombstone will still be visible to other players and the Storyteller
-                tombstone.setInvisibleTo({color})
-                print("Main: Tombstone for " .. color .. " set invisible to " .. color .. " player")
-            else
-                print("Main: Warning - Tombstone object not found for " .. color .. " (GUID: " .. guid .. ")")
-            end
-        else
-            print("Main: Warning - No tombstone GUID found for " .. color)
-        end
+  for _, color in ipairs(C.PlayerColors) do
+    local guid = G.GetTombstoneGUID(color)
+    if guid then
+      local tombstone = getObjectFromGUID(guid)
+      if tombstone then
+        -- Make this tombstone invisible to the player of this color
+        -- The tombstone will still be visible to other players and the Storyteller
+        tombstone.setInvisibleTo({ color })
+        print("Main: Tombstone for " .. color .. " set invisible to " .. color .. " player")
+      else
+        print("Main: Warning - Tombstone object not found for " .. color .. " (GUID: " .. guid .. ")")
+      end
+    else
+      print("Main: Warning - No tombstone GUID found for " .. color)
     end
+  end
 
-    print("Main: Tombstone visibility setup complete.")
+  print("Main: Tombstone visibility setup complete.")
 end
 
 --[[
@@ -8731,16 +11243,16 @@ end
     Pattern from Heritage M.forPlayers
 ]]
 function M.forPlayers(func)
-    if type(func) ~= "function" then
-        U.AlertGM("M.forPlayers: func parameter must be a function")
-        return
-    end
+  if type(func) ~= "function" then
+    U.AlertGM("M.forPlayers: func parameter must be a function")
+    return
+  end
 
-    -- Iterate over actually seated players, not all possible colors
-    -- This avoids errors when trying to access Player[color] for colors with no seated players
-    for _, player in ipairs(Player.getPlayers()) do
-        func(player, player.color)
-    end
+  -- Iterate over actually seated players, not all possible colors
+  -- This avoids errors when trying to access Player[color] for colors with no seated players
+  for _, player in ipairs(Player.getPlayers()) do
+    func(player, player.color)
+  end
 end
 
 --[[
@@ -8751,27 +11263,27 @@ end
     Pattern from Heritage M.syncPhase
 ]]
 function M.syncPhase()
-    local currentPhase = S.getStateVal("currentPhase")
-    if currentPhase == nil then
-        print("Main: Warning - Current phase is nil, using SESSION_START")
-        currentPhase = C.Phases.SESSION_START
-        S.setCurrentPhase(currentPhase)
-    end
+  local currentPhase = S.getStateVal("currentPhase")
+  if currentPhase == nil then
+    print("Main: Warning - Current phase is nil, using SESSION_START")
+    currentPhase = C.Phases.SESSION_START
+    S.setCurrentPhase(currentPhase)
+  end
 
-    print("Main: Syncing phase - " .. currentPhase)
+  print("Main: Syncing phase - " .. currentPhase)
 
-    -- TODO: Phase-specific logic
-    -- - Update UI visibility based on phase
-    -- - Enable/disable zone event handlers
-    -- - Update lighting for scene
-    -- - Show/hide phase-specific UI elements
+  -- TODO: Phase-specific logic
+  -- - Update UI visibility based on phase
+  -- - Enable/disable zone event handlers
+  -- - Update lighting for scene
+  -- - Show/hide phase-specific UI elements
 
-    -- Example: Hide/show zones based on phase
-    -- if currentPhase == C.Phases.SETUP then
-    --     -- Show setup zones
-    -- else
-    --     -- Hide setup zones
-    -- end
+  -- Example: Hide/show zones based on phase
+  -- if currentPhase == C.Phases.SETUP then
+  --     -- Show setup zones
+  -- else
+  --     -- Hide setup zones
+  -- end
 end
 
 --[[
@@ -8786,42 +11298,42 @@ end
     Pattern from Heritage manual phase functions (gameSETUP, gameSTART, etc.)
 ]]
 function M.advancePhase(newPhase)
-    if type(newPhase) ~= "string" then
-        U.AlertGM("M.advancePhase: newPhase must be a string")
-        return
+  if type(newPhase) ~= "string" then
+    U.AlertGM("M.advancePhase: newPhase must be a string")
+    return
+  end
+
+  -- Validate phase against constants
+  local isValidPhase = false
+  for _, phase in pairs(C.Phases) do
+    if phase == newPhase then
+      isValidPhase = true
+      break
     end
+  end
 
-    -- Validate phase against constants
-    local isValidPhase = false
-    for _, phase in pairs(C.Phases) do
-        if phase == newPhase then
-            isValidPhase = true
-            break
-        end
-    end
+  if not isValidPhase then
+    U.AlertGM("M.advancePhase: Invalid phase '" .. tostring(newPhase) .. "'")
+    return
+  end
 
-    if not isValidPhase then
-        U.AlertGM("M.advancePhase: Invalid phase '" .. tostring(newPhase) .. "'")
-        return
-    end
+  local oldPhase = S.getStateVal("currentPhase")
+  print("Main: Advancing phase from " .. tostring(oldPhase) .. " to " .. newPhase)
 
-    local oldPhase = S.getStateVal("currentPhase")
-    print("Main: Advancing phase from " .. tostring(oldPhase) .. " to " .. newPhase)
+  -- Update state
+  S.setCurrentPhase(newPhase)
 
-    -- Update state
-    S.setCurrentPhase(newPhase)
+  -- Trigger phase-specific setup
+  -- TODO: Add phase transition logic (lighting changes, UI updates, etc.)
+  -- Example:
+  -- if newPhase == C.Phases.PLAY then
+  --     -- Activate zones, update lighting, etc.
+  -- end
 
-    -- Trigger phase-specific setup
-    -- TODO: Add phase transition logic (lighting changes, UI updates, etc.)
-    -- Example:
-    -- if newPhase == C.Phases.PLAY then
-    --     -- Activate zones, update lighting, etc.
-    -- end
+  -- Sync UI and features
+  M.syncPhase()
 
-    -- Sync UI and features
-    M.syncPhase()
-
-    print("Main: Phase advancement complete.")
+  print("Main: Phase advancement complete.")
 end
 
 --[[
@@ -8839,76 +11351,76 @@ end
     Pattern from Heritage M.setCamera
 ]]
 function M.setCamera(player, cameraMode, lookAtPos)
-    -- Handle "ALL" case
-    if player == nil or player == "ALL" then
-        M.forPlayers(function(p, color)
-            M.setCamera(p, cameraMode, lookAtPos)
-        end)
-        return
-    end
+  -- Handle "ALL" case
+  if player == nil or player == "ALL" then
+    M.forPlayers(function(p, color)
+      M.setCamera(p, cameraMode, lookAtPos)
+    end)
+    return
+  end
 
-    -- Convert string color to Player object
-    if type(player) == "string" then
-        local playerColor = player  -- Save original string for error message
-        -- Safely check if player color exists before accessing
-        if not U.isIn(playerColor, Player.getAvailableColors()) then
-            U.AlertGM("M.setCamera: Invalid player color '" .. playerColor .. "'")
-            return
-        end
-        player = Player[playerColor]
-        if player == nil then
-            U.AlertGM("M.setCamera: No player seated in color '" .. playerColor .. "'")
-            return
-        end
+  -- Convert string color to Player object
+  if type(player) == "string" then
+    local playerColor = player     -- Save original string for error message
+    -- Safely check if player color exists before accessing
+    if not U.isIn(playerColor, Player.getAvailableColors()) then
+      U.AlertGM("M.setCamera: Invalid player color '" .. playerColor .. "'")
+      return
     end
-
-    if not U.isPlayer(player) then
-        U.AlertGM("M.setCamera: Invalid player object")
-        return
+    player = Player[playerColor]
+    if player == nil then
+      U.AlertGM("M.setCamera: No player seated in color '" .. playerColor .. "'")
+      return
     end
+  end
 
-    -- Get camera preset from constants
-    local cameraPreset = nil
-    if cameraMode and C.CameraAngles[cameraMode] then
-        cameraPreset = C.CameraAngles[cameraMode]
+  if not U.isPlayer(player) then
+    U.AlertGM("M.setCamera: Invalid player object")
+    return
+  end
+
+  -- Get camera preset from constants
+  local cameraPreset = nil
+  if cameraMode and C.CameraAngles[cameraMode] then
+    cameraPreset = C.CameraAngles[cameraMode]
+  end
+
+  if cameraPreset == nil and lookAtPos == nil then
+    U.AlertGM("M.setCamera: Invalid camera mode '" .. tostring(cameraMode) .. "' and no lookAtPos provided")
+    return
+  end
+
+  -- Set camera mode to ThirdPerson for cinematic control
+  player.setCameraMode("ThirdPerson")
+
+  -- Build camera data table for lookAt() - must include position, pitch, yaw, and distance
+  local cameraData = nil
+  if lookAtPos ~= nil then
+    -- Custom position provided - use it with defaults for pitch/yaw/distance
+    cameraData = {
+      position = lookAtPos,
+      pitch = 0,
+      yaw = 0,
+      distance = 40
+    }
+  elseif cameraPreset ~= nil then
+    -- Use full camera preset data (position, pitch, yaw, distance)
+    -- Clone to avoid modifying the original preset
+    cameraData = U.clone(cameraPreset)
+    if cameraData.position == nil then
+      U.AlertGM("M.setCamera: Camera preset '" .. tostring(cameraMode) .. "' has no position defined")
+      return
     end
+  end
 
-    if cameraPreset == nil and lookAtPos == nil then
-        U.AlertGM("M.setCamera: Invalid camera mode '" .. tostring(cameraMode) .. "' and no lookAtPos provided")
-        return
-    end
-
-    -- Set camera mode to ThirdPerson for cinematic control
-    player.setCameraMode("ThirdPerson")
-
-    -- Build camera data table for lookAt() - must include position, pitch, yaw, and distance
-    local cameraData = nil
-    if lookAtPos ~= nil then
-        -- Custom position provided - use it with defaults for pitch/yaw/distance
-        cameraData = {
-            position = lookAtPos,
-            pitch = 0,
-            yaw = 0,
-            distance = 40
-        }
-    elseif cameraPreset ~= nil then
-        -- Use full camera preset data (position, pitch, yaw, distance)
-        -- Clone to avoid modifying the original preset
-        cameraData = U.clone(cameraPreset)
-        if cameraData.position == nil then
-            U.AlertGM("M.setCamera: Camera preset '" .. tostring(cameraMode) .. "' has no position defined")
-            return
-        end
-    end
-
-    if cameraData and cameraData.position then
-        -- lookAt() accepts a table with position, pitch, yaw, and distance
-        player.lookAt(cameraData)
-        -- Reset to ThirdPerson after brief delay (prevents camera snapping back)
-        Wait.time(function()
-            player.setCameraMode("ThirdPerson")
-        end, 0.5)
-    end
+  if cameraData and cameraData.position then
+    -- lookAt() accepts a table with position, pitch, yaw, and distance
+    player.lookAt(cameraData)
+    -- Reset to ThirdPerson after brief delay (prevents camera snapping back)
+    Wait.time(function()
+      player.setCameraMode("ThirdPerson")
+    end, 0.5)
+  end
 end
 
 --[[
@@ -8922,24 +11434,24 @@ end
     Pattern from Heritage event delegation (onObjectDrop, onObjectEnterContainer)
 ]]
 function M.onObjectDrop(playerColor, droppedObject, zone)
-    if droppedObject == nil then return end
+  if droppedObject == nil then return end
 
-    print("Main: Object dropped - " .. droppedObject.name ..
-          (zone and (" in zone " .. zone.name) or "") ..
-          " by player " .. tostring(playerColor))
+  print("Main: Object dropped - " .. droppedObject.name ..
+    (zone and (" in zone " .. zone.name) or "") ..
+    " by player " .. tostring(playerColor))
 
-    -- TODO: Add VTM5E-specific drop logic
-    -- - Check if object has specific tags (e.g., "Dice", "Token", "Card")
-    -- - Handle dice roller interactions
-    -- - Handle token placement in zones
-    -- - Update game state based on object placement
+  -- TODO: Add VTM5E-specific drop logic
+  -- - Check if object has specific tags (e.g., "Dice", "Token", "Card")
+  -- - Handle dice roller interactions
+  -- - Handle token placement in zones
+  -- - Update game state based on object placement
 
-    -- Example:
-    -- if droppedObject.hasTag("Dice") then
-    --     -- Handle dice-specific logic
-    -- elseif zone and zone.hasTag("PlayerZone") then
-    --     -- Handle zone-specific logic via Z module
-    -- end
+  -- Example:
+  -- if droppedObject.hasTag("Dice") then
+  --     -- Handle dice-specific logic
+  -- elseif zone and zone.hasTag("PlayerZone") then
+  --     -- Handle zone-specific logic via Z module
+  -- end
 end
 
 --[[
@@ -8953,20 +11465,20 @@ end
     Pattern from Heritage M.onPlayerAction
 ]]
 function M.onPlayerAction(playerColor, action, clickState)
-    print("Main: Player action - " .. tostring(playerColor) .. ", " .. tostring(action))
+  print("Main: Player action - " .. tostring(playerColor) .. ", " .. tostring(action))
 
-    -- TODO: Add VTM5E-specific action handlers
-    -- - Dice rolling
-    -- - Discipline activation
-    -- - Willpower/hunger management
-    -- - Scene interaction
+  -- TODO: Add VTM5E-specific action handlers
+  -- - Dice rolling
+  -- - Discipline activation
+  -- - Willpower/hunger management
+  -- - Scene interaction
 
-    -- Example:
-    -- if action == "rollDice" then
-    --     -- Trigger dice roller logic
-    -- elseif action == "useDiscipline" then
-    --     -- Handle discipline usage
-    -- end
+  -- Example:
+  -- if action == "rollDice" then
+  --     -- Trigger dice roller logic
+  -- elseif action == "useDiscipline" then
+  --     -- Handle discipline usage
+  -- end
 end
 
 -- Legacy alias for backwards compatibility (if needed)

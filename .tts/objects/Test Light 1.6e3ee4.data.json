@@ -1,33 +1,32 @@
 {
-  "GUID": "0cd76a",
+  "GUID": "6e3ee4",
   "Name": "Custom_Assetbundle",
   "Transform": {
-    "posX": -42.1,
-    "posY": 0,
-    "posZ": -101.63,
-    "rotX": 359.3969,
-    "rotY": 22.5000019,
-    "rotZ": -1.33409515e-8,
+    "posX": -11.10953,
+    "posY": 16.7984581,
+    "posZ": -19.7343826,
+    "rotX": 0,
+    "rotY": 0,
+    "rotZ": 0,
     "scaleX": 1,
     "scaleY": 1,
     "scaleZ": 1
   },
-  "Nickname": "PLAYER_LIGHT_RED",
+  "Nickname": "Test Light 1",
   "Description": "",
-  "GMNotes": "Range: 40\nAngle: 90\nIntensity: 10\nEnabled: true",
+  "GMNotes": "Range: 46.8512\nAngle: 11.7128\nIntensity: 103.07264\nEnabled: true",
   "AltLookAngle": {
     "x": 0,
     "y": 0,
     "z": 0
   },
   "ColorDiffuse": {
-    "r": 0.525551438,
-    "g": 0.350670666,
-    "b": 0.350670666
+    "r": 1,
+    "g": 0,
+    "b": 0
   },
   "Tags": [
-    "playerLight",
-    "Red"
+    "mainLight"
   ],
   "LayoutGroupSortIndex": 0,
   "Value": 0,

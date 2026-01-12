@@ -1,11 +1,13 @@
 require("lib.Console.console++")
 
 -- function prototype
+---@diagnostic disable-next-line: lowercase-global
 function onExternalCommand(command) end
 
 -- Overwrite onChat function if you rather be handled by onExternalMessage
 -- function onChat(message, player) end
 
+---@diagnostic disable-next-line: lowercase-global
 function onExternalMessage(data)
   if data.input ~= nil then onExternalCommand(data.input) end
   if data.command ~= nil then

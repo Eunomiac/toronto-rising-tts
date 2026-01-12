@@ -1,0 +1,390 @@
+---@diagnostic disable: lowercase-global
+--[[
+    Light Test Module (core/light_test.ttslua)
+
+    Test functions for working with light objects from AssetBundles.
+    Lights must be imported as AssetBundles - this module provides utilities
+    to inspect, clone, and configure light objects.
+
+    Usage:
+    - Call test functions from TTS console
+    - Functions expect light objects to be AssetBundles (not built-in types)
+]]
+
+local LightTest = {}
+local U = require("lib.util")
+local G = require("lib.guids")
+
+-- ============================================================================
+-- TEST FUNCTIONS
+-- ============================================================================
+-- Note: All tests assume lights are imported as AssetBundles, not built-in types
+
+--- Clone an existing light object (from AssetBundle)
+-- @param templateGUID string GUID of light object to clone (must be AssetBundle)
+-- @usage LightTest.testCloneLight("abc123")
+function LightTest.testCloneLight(templateGUID)
+    print("=== Test: Cloning Light from AssetBundle ===")
+
+    if not templateGUID then
+        print("❌ Please provide a template GUID")
+        print("Usage: LightTest.testCloneLight('your-light-guid')")
+        return nil
+    end
+
+    local template = getObjectFromGUID(templateGUID)
+    if not template then
+        print("❌ Template light not found: " .. templateGUID)
+        return nil
+    end
+
+    print("✅ Template found, attempting clone...")
+
+    local success, clone = pcall(function()
+        return template.clone({
+            position = {0, 5, 0},
+            callback_function = function(obj)
+                print("✅ Clone created!")
+                print("Clone GUID:", obj.getGUID())
+
+                -- Try to find Light component
+                local lightComp = obj.getComponentInChildren("Light")
+                if lightComp then
+                    print("✅ Light component found in clone!")
+                    print("Current range:", lightComp.get("range"))
+                    print("Current intensity:", lightComp.get("intensity"))
+                    print("Current enabled:", lightComp.get("enabled"))
+                else
+                    print("❌ No Light component found in clone")
+                    -- Try to inspect structure
+                    local children = obj.getChildren()
+                    print("Clone has " .. #children .. " children")
+                    for i, child in ipairs(children) do
+                        print("  Child " .. i .. ": " .. (child.name or "unnamed"))
+                        local grandChildren = child.getChildren()
+                        if #grandChildren > 0 then
+                            for j, grandChild in ipairs(grandChildren) do
+                                print("    Grandchild " .. j .. ": " .. (grandChild.name or "unnamed"))
+                                local comps = grandChild.getComponents()
+                                print("      Components: " .. #comps)
+                                for k, comp in ipairs(comps) do
+                                    print("        " .. k .. ": " .. comp.name)
+                                end
+                            end
+                        end
+                    end
+                end
+
+                return obj
+            end
+        })
+    end)
+
+    if success and clone then
+        print("✅ Clone test successful!")
+        return clone
+    else
+        print("❌ Clone test failed")
+        print("Error:", clone)
+        return nil
+    end
+end
+
+--- Inspect Light component properties
+-- @param lightGUID string GUID of light object to inspect
+-- @usage LightTest.testInspectLight("abc123")
+function LightTest.testInspectLight(lightGUID)
+    print("=== Test: Inspecting Light Component ===")
+
+    if not lightGUID then
+        print("❌ Please provide a light GUID")
+        print("Usage: LightTest.testInspectLight('your-light-guid')")
+        return nil
+    end
+
+    local light = getObjectFromGUID(lightGUID)
+    if not light then
+        print("❌ Light not found: " .. lightGUID)
+        return nil
+    end
+
+    print("✅ Light object found")
+    print("Light GUID:", light.getGUID())
+    print("Light name:", light.getName())
+
+    -- Try direct component access
+    local lightComp = light.getComponent("Light")
+    if not lightComp then
+        print("Light component not found directly, searching in children...")
+        lightComp = light.getComponentInChildren("Light")
+    end
+
+    if lightComp then
+        print("✅ Light component found!")
+        print("Component name:", lightComp.name)
+
+        -- Get all available properties
+        local vars = lightComp.getVars()
+        print("\nAvailable Light properties:")
+        for name, varType in pairs(vars) do
+            local value = lightComp.get(name)
+            print(string.format("  %s (%s) = %s", name, varType, U.ToString(value)))
+        end
+
+        -- Test setting a property
+        print("\n--- Testing property modification ---")
+        local originalRange = lightComp.get("range")
+        print("Original range:", originalRange)
+        lightComp.set("range", originalRange + 10)
+        print("New range:", lightComp.get("range"))
+        lightComp.set("range", originalRange) -- Restore
+        print("Restored range:", lightComp.get("range"))
+
+        return lightComp
+    else
+        print("❌ No Light component found")
+        print("Attempting to find component structure...")
+
+        -- Inspect object structure
+        local children = light.getChildren()
+        print("Light has " .. #children .. " children")
+        for i, child in ipairs(children) do
+            print("  Child " .. i .. ": " .. (child.name or "unnamed"))
+            local comps = child.getComponents()
+            if #comps > 0 then
+                print("    Components:")
+                for j, comp in ipairs(comps) do
+                    print("      " .. j .. ": " .. comp.name)
+                end
+            end
+
+            local grandChildren = child.getChildren()
+            if #grandChildren > 0 then
+                print("    Grandchildren:")
+                for j, grandChild in ipairs(grandChildren) do
+                    print("      Grandchild " .. j .. ": " .. (grandChild.name or "unnamed"))
+                    local comps = grandChild.getComponents()
+                    if #comps > 0 then
+                        print("        Components:")
+                        for k, comp in ipairs(comps) do
+                            print("          " .. k .. ": " .. comp.name)
+                            if comp.name == "Light" then
+                                print("          ✅ FOUND LIGHT COMPONENT!")
+                                local vars = comp.getVars()
+                                print("          Properties:")
+                                for name, varType in pairs(vars) do
+                                    print("            " .. name .. " (" .. varType .. ")")
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        return nil
+    end
+end
+
+--- Spawn light from AssetBundle template
+-- @param templateGUID string GUID of light template (AssetBundle)
+-- @param position Vector Position to spawn light
+-- @param rotation Vector Rotation of light
+-- @param config table Light configuration {enabled, range, intensity, color, angle}
+-- @usage LightTest.testSpawnLight("abc123", Vector(0,5,0), Vector(0,0,0), {range=50, intensity=15})
+function LightTest.testSpawnLight(templateGUID, position, rotation, config)
+    print("=== Test: Spawning Light from AssetBundle Template ===")
+
+    config = config or {}
+    position = position or Vector(0, 5, 0)
+    rotation = rotation or Vector(0, 0, 0)
+
+    if not templateGUID then
+        print("❌ Please provide a template GUID")
+        return nil
+    end
+
+    local template = getObjectFromGUID(templateGUID)
+    if not template then
+        print("❌ Template not found: " .. templateGUID)
+        return nil
+    end
+
+    print("Spawning light at:", position)
+    print("With rotation:", rotation)
+    print("Config:", U.ToString(config))
+
+    local success, newLight = pcall(function()
+        return template.clone({
+            position = position,
+            rotation = rotation,
+            callback_function = function(obj)
+                print("✅ Light spawned!")
+
+                -- Find and configure Light component
+                local lightComp = obj.getComponentInChildren("Light")
+                if not lightComp then
+                    -- Try the nested structure from current implementation
+                    local children = obj.getChildren()
+                    if #children > 0 then
+                        local grandchildren = children[1].getChildren()
+                        if #grandchildren > 1 then
+                            local components = grandchildren[2].getComponents()
+                            if #components > 1 and components[2].name == "Light" then
+                                lightComp = components[2]
+                            end
+                        end
+                    end
+                end
+
+                if lightComp then
+                    print("✅ Light component found, configuring...")
+
+                    -- Apply configuration
+                    if config.enabled ~= nil then
+                        lightComp.set("enabled", config.enabled)
+                        print("  Set enabled:", config.enabled)
+                    end
+
+                    if config.range then
+                        lightComp.set("range", config.range)
+                        print("  Set range:", config.range)
+                    end
+
+                    if config.intensity then
+                        lightComp.set("intensity", config.intensity)
+                        print("  Set intensity:", config.intensity)
+                    end
+
+                    if config.color then
+                        lightComp.set("color", Color(config.color))
+                        print("  Set color:", U.ToString(config.color))
+                    end
+
+                    if config.angle then
+                        lightComp.set("spotAngle", config.angle)
+                        print("  Set spotAngle:", config.angle)
+                    end
+
+                    print("✅ Light configured successfully!")
+                else
+                    print("❌ Could not find Light component")
+                end
+
+                return obj
+            end
+        })
+    end)
+
+    if success and newLight then
+        print("✅ Light spawn test successful!")
+        print("New light GUID:", newLight.getGUID())
+        return newLight
+    else
+        print("❌ Light spawn test failed")
+        print("Error:", newLight)
+        return nil
+    end
+end
+
+--- Compare light structure (for debugging AssetBundle structure)
+-- @param currentLightGUID string GUID of light object to inspect
+-- @usage LightTest.testCompareStructures("abc123")
+function LightTest.testCompareStructures(currentLightGUID)
+    print("=== Test: Comparing Light Structures ===")
+
+    if not currentLightGUID then
+        print("❌ Please provide a light GUID")
+        return nil
+    end
+
+    local light = getObjectFromGUID(currentLightGUID)
+    if not light then
+        print("❌ Light not found: " .. currentLightGUID)
+        return nil
+    end
+
+    print("Analyzing current light structure...")
+
+    -- Current implementation pattern
+    print("\n--- Current Implementation Pattern ---")
+    local success, comp = pcall(function()
+        return light.getChildren()[1].getChildren()[2].getComponents()[2]
+    end)
+
+    if success and comp then
+        print("✅ Current nested structure works")
+        print("Component name:", comp.name)
+        local vars = comp.getVars()
+        print("Properties:")
+        for name, varType in pairs(vars) do
+            print("  " .. name .. " (" .. varType .. ")")
+        end
+    else
+        print("❌ Current nested structure failed")
+    end
+
+    -- Direct component access
+    print("\n--- Direct Component Access ---")
+    local directComp = light.getComponent("Light")
+    if directComp then
+        print("✅ Direct access works!")
+    else
+        print("❌ Direct access failed")
+    end
+
+    -- Component in children
+    print("\n--- Component in Children ---")
+    local childComp = light.getComponentInChildren("Light")
+    if childComp then
+        print("✅ getComponentInChildren works!")
+        print("Component name:", childComp.name)
+    else
+        print("❌ getComponentInChildren failed")
+    end
+
+    return {
+        nested = success and comp or nil,
+        direct = directComp,
+        inChildren = childComp
+    }
+end
+
+--- Helper: List all objects that might be lights
+-- @usage LightTest.findPotentialLights()
+function LightTest.findPotentialLights()
+    print("=== Finding Potential Light Objects ===")
+
+    local allObjects = getObjects()
+    local potentialLights = {}
+
+    for _, obj in ipairs(allObjects) do
+        if obj.getComponentInChildren then
+            local lightComp = obj.getComponentInChildren("Light")
+            if lightComp then
+                table.insert(potentialLights, {
+                    guid = obj.getGUID(),
+                    name = obj.getName(),
+                    component = lightComp
+                })
+            end
+        end
+    end
+
+    if #potentialLights > 0 then
+        print("✅ Found " .. #potentialLights .. " objects with Light components:")
+        for i, light in ipairs(potentialLights) do
+            print(string.format("  %d. %s (GUID: %s)", i, light.name, light.guid))
+        end
+    else
+        print("❌ No objects with Light components found")
+    end
+
+    return potentialLights
+end
+
+-- ============================================================================
+-- EXPORTS
+-- ============================================================================
+
+return LightTest

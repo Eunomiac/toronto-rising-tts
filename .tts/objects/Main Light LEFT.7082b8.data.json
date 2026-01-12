@@ -6,7 +6,7 @@
     "posY": 43.8674049,
     "posZ": -13.318779,
     "rotX": 36.50366,
-    "rotY": 0.00000477966023,
+    "rotY": 0.0000119491506,
     "rotZ": 349.8,
     "scaleX": 1,
     "scaleY": 1,
@@ -14,7 +14,7 @@
   },
   "Nickname": "Main Light LEFT",
   "Description": "",
-  "GMNotes": "Range: 132\nAngle: 115.2715212\nIntensity: 5\nEnabled: false",
+  "GMNotes": "Range: 132\nAngle: 115.2715212\nIntensity: 2.5\nEnabled: true",
   "AltLookAngle": {
     "x": 0,
     "y": 0,

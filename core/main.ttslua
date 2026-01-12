@@ -27,12 +27,12 @@ local S = require("core.state")
     Sets up game systems and prepares for play.
 ]]
 function M.onLoad()
-    print("Main: Core module loaded.")
-    -- Initialize systems
-    M.setupPlayers()
-    M.syncPhase() -- Sync UI/features based on current phase
+  print("Main: Core module loaded.")
+  -- Initialize systems
+  M.setupPlayers()
+  M.syncPhase()   -- Sync UI/features based on current phase
 
-    print("Main: Module initialization complete.")
+  print("Main: Module initialization complete.")
 end
 
 --[[
@@ -41,20 +41,31 @@ end
     Pattern from Heritage M.setupPlayers / initialization globals.
 ]]
 function M.setupPlayers()
-    print("Main: Setting up players.")
+  print("Main: Setting up players.")
 
-    -- Promote all players (give them full permissions)
-    for _, player in ipairs(Player.getPlayers()) do
-        player.promoted = true
-        print("Main: Promoted player " .. player.color)
+  -- Promote all players (give them full permissions)
+  for _, player in ipairs(Player.getPlayers()) do
+    player.promoted = true
+    print("Main: Promoted player " .. player.color)
+  end
+
+  -- Set up tombstone visibility (each player's tombstone invisible to them)
+  M.setupTombstoneVisibility()
+
+  -- Make objects on Storyteller table invisible to all players
+
+  U.forEach(
+    U.findAboveObject(
+      getObjectFromGUID(G.GUIDS.STORYTELLER_TABLE), nil, { box = true, far = true }
+    ),
+    function(v)
+      v.setInvisibleTo({ "Brown", "Orange", "Red", "Pink" })
     end
+  )
 
-    -- Set up tombstone visibility (each player's tombstone invisible to them)
-    M.setupTombstoneVisibility()
-
-    -- TODO: Assign Storyteller role (e.g., Black or Brown player)
-    -- TODO: Initialize player-specific data in game state (hunger, willpower, health, etc.)
-    -- TODO: Set up player-specific UI elements
+  -- TODO: Assign Storyteller role (e.g., Black or Brown player)
+  -- TODO: Initialize player-specific data in game state (hunger, willpower, health, etc.)
+  -- TODO: Set up player-specific UI elements
 end
 
 --[[
@@ -63,26 +74,26 @@ end
     Uses TTS setInvisibleTo() function to hide objects from specific players.
 ]]
 function M.setupTombstoneVisibility()
-    print("Main: Setting up tombstone visibility.")
+  print("Main: Setting up tombstone visibility.")
 
-    for _, color in ipairs(C.PlayerColors) do
-        local guid = G.GetTombstoneGUID(color)
-        if guid then
-            local tombstone = getObjectFromGUID(guid)
-            if tombstone then
-                -- Make this tombstone invisible to the player of this color
-                -- The tombstone will still be visible to other players and the Storyteller
-                tombstone.setInvisibleTo({color})
-                print("Main: Tombstone for " .. color .. " set invisible to " .. color .. " player")
-            else
-                print("Main: Warning - Tombstone object not found for " .. color .. " (GUID: " .. guid .. ")")
-            end
-        else
-            print("Main: Warning - No tombstone GUID found for " .. color)
-        end
+  for _, color in ipairs(C.PlayerColors) do
+    local guid = G.GetTombstoneGUID(color)
+    if guid then
+      local tombstone = getObjectFromGUID(guid)
+      if tombstone then
+        -- Make this tombstone invisible to the player of this color
+        -- The tombstone will still be visible to other players and the Storyteller
+        tombstone.setInvisibleTo({ color })
+        print("Main: Tombstone for " .. color .. " set invisible to " .. color .. " player")
+      else
+        print("Main: Warning - Tombstone object not found for " .. color .. " (GUID: " .. guid .. ")")
+      end
+    else
+      print("Main: Warning - No tombstone GUID found for " .. color)
     end
+  end
 
-    print("Main: Tombstone visibility setup complete.")
+  print("Main: Tombstone visibility setup complete.")
 end
 
 --[[
@@ -101,16 +112,16 @@ end
     Pattern from Heritage M.forPlayers
 ]]
 function M.forPlayers(func)
-    if type(func) ~= "function" then
-        U.AlertGM("M.forPlayers: func parameter must be a function")
-        return
-    end
+  if type(func) ~= "function" then
+    U.AlertGM("M.forPlayers: func parameter must be a function")
+    return
+  end
 
-    -- Iterate over actually seated players, not all possible colors
-    -- This avoids errors when trying to access Player[color] for colors with no seated players
-    for _, player in ipairs(Player.getPlayers()) do
-        func(player, player.color)
-    end
+  -- Iterate over actually seated players, not all possible colors
+  -- This avoids errors when trying to access Player[color] for colors with no seated players
+  for _, player in ipairs(Player.getPlayers()) do
+    func(player, player.color)
+  end
 end
 
 --[[
@@ -121,27 +132,27 @@ end
     Pattern from Heritage M.syncPhase
 ]]
 function M.syncPhase()
-    local currentPhase = S.getStateVal("currentPhase")
-    if currentPhase == nil then
-        print("Main: Warning - Current phase is nil, using SESSION_START")
-        currentPhase = C.Phases.SESSION_START
-        S.setCurrentPhase(currentPhase)
-    end
+  local currentPhase = S.getStateVal("currentPhase")
+  if currentPhase == nil then
+    print("Main: Warning - Current phase is nil, using SESSION_START")
+    currentPhase = C.Phases.SESSION_START
+    S.setCurrentPhase(currentPhase)
+  end
 
-    print("Main: Syncing phase - " .. currentPhase)
+  print("Main: Syncing phase - " .. currentPhase)
 
-    -- TODO: Phase-specific logic
-    -- - Update UI visibility based on phase
-    -- - Enable/disable zone event handlers
-    -- - Update lighting for scene
-    -- - Show/hide phase-specific UI elements
+  -- TODO: Phase-specific logic
+  -- - Update UI visibility based on phase
+  -- - Enable/disable zone event handlers
+  -- - Update lighting for scene
+  -- - Show/hide phase-specific UI elements
 
-    -- Example: Hide/show zones based on phase
-    -- if currentPhase == C.Phases.SETUP then
-    --     -- Show setup zones
-    -- else
-    --     -- Hide setup zones
-    -- end
+  -- Example: Hide/show zones based on phase
+  -- if currentPhase == C.Phases.SETUP then
+  --     -- Show setup zones
+  -- else
+  --     -- Hide setup zones
+  -- end
 end
 
 --[[
@@ -156,42 +167,42 @@ end
     Pattern from Heritage manual phase functions (gameSETUP, gameSTART, etc.)
 ]]
 function M.advancePhase(newPhase)
-    if type(newPhase) ~= "string" then
-        U.AlertGM("M.advancePhase: newPhase must be a string")
-        return
+  if type(newPhase) ~= "string" then
+    U.AlertGM("M.advancePhase: newPhase must be a string")
+    return
+  end
+
+  -- Validate phase against constants
+  local isValidPhase = false
+  for _, phase in pairs(C.Phases) do
+    if phase == newPhase then
+      isValidPhase = true
+      break
     end
+  end
 
-    -- Validate phase against constants
-    local isValidPhase = false
-    for _, phase in pairs(C.Phases) do
-        if phase == newPhase then
-            isValidPhase = true
-            break
-        end
-    end
+  if not isValidPhase then
+    U.AlertGM("M.advancePhase: Invalid phase '" .. tostring(newPhase) .. "'")
+    return
+  end
 
-    if not isValidPhase then
-        U.AlertGM("M.advancePhase: Invalid phase '" .. tostring(newPhase) .. "'")
-        return
-    end
+  local oldPhase = S.getStateVal("currentPhase")
+  print("Main: Advancing phase from " .. tostring(oldPhase) .. " to " .. newPhase)
 
-    local oldPhase = S.getStateVal("currentPhase")
-    print("Main: Advancing phase from " .. tostring(oldPhase) .. " to " .. newPhase)
+  -- Update state
+  S.setCurrentPhase(newPhase)
 
-    -- Update state
-    S.setCurrentPhase(newPhase)
+  -- Trigger phase-specific setup
+  -- TODO: Add phase transition logic (lighting changes, UI updates, etc.)
+  -- Example:
+  -- if newPhase == C.Phases.PLAY then
+  --     -- Activate zones, update lighting, etc.
+  -- end
 
-    -- Trigger phase-specific setup
-    -- TODO: Add phase transition logic (lighting changes, UI updates, etc.)
-    -- Example:
-    -- if newPhase == C.Phases.PLAY then
-    --     -- Activate zones, update lighting, etc.
-    -- end
+  -- Sync UI and features
+  M.syncPhase()
 
-    -- Sync UI and features
-    M.syncPhase()
-
-    print("Main: Phase advancement complete.")
+  print("Main: Phase advancement complete.")
 end
 
 --[[
@@ -209,76 +220,76 @@ end
     Pattern from Heritage M.setCamera
 ]]
 function M.setCamera(player, cameraMode, lookAtPos)
-    -- Handle "ALL" case
-    if player == nil or player == "ALL" then
-        M.forPlayers(function(p, color)
-            M.setCamera(p, cameraMode, lookAtPos)
-        end)
-        return
-    end
+  -- Handle "ALL" case
+  if player == nil or player == "ALL" then
+    M.forPlayers(function(p, color)
+      M.setCamera(p, cameraMode, lookAtPos)
+    end)
+    return
+  end
 
-    -- Convert string color to Player object
-    if type(player) == "string" then
-        local playerColor = player  -- Save original string for error message
-        -- Safely check if player color exists before accessing
-        if not U.isIn(playerColor, Player.getAvailableColors()) then
-            U.AlertGM("M.setCamera: Invalid player color '" .. playerColor .. "'")
-            return
-        end
-        player = Player[playerColor]
-        if player == nil then
-            U.AlertGM("M.setCamera: No player seated in color '" .. playerColor .. "'")
-            return
-        end
+  -- Convert string color to Player object
+  if type(player) == "string" then
+    local playerColor = player     -- Save original string for error message
+    -- Safely check if player color exists before accessing
+    if not U.isIn(playerColor, Player.getAvailableColors()) then
+      U.AlertGM("M.setCamera: Invalid player color '" .. playerColor .. "'")
+      return
     end
-
-    if not U.isPlayer(player) then
-        U.AlertGM("M.setCamera: Invalid player object")
-        return
+    player = Player[playerColor]
+    if player == nil then
+      U.AlertGM("M.setCamera: No player seated in color '" .. playerColor .. "'")
+      return
     end
+  end
 
-    -- Get camera preset from constants
-    local cameraPreset = nil
-    if cameraMode and C.CameraAngles[cameraMode] then
-        cameraPreset = C.CameraAngles[cameraMode]
+  if not U.isPlayer(player) then
+    U.AlertGM("M.setCamera: Invalid player object")
+    return
+  end
+
+  -- Get camera preset from constants
+  local cameraPreset = nil
+  if cameraMode and C.CameraAngles[cameraMode] then
+    cameraPreset = C.CameraAngles[cameraMode]
+  end
+
+  if cameraPreset == nil and lookAtPos == nil then
+    U.AlertGM("M.setCamera: Invalid camera mode '" .. tostring(cameraMode) .. "' and no lookAtPos provided")
+    return
+  end
+
+  -- Set camera mode to ThirdPerson for cinematic control
+  player.setCameraMode("ThirdPerson")
+
+  -- Build camera data table for lookAt() - must include position, pitch, yaw, and distance
+  local cameraData = nil
+  if lookAtPos ~= nil then
+    -- Custom position provided - use it with defaults for pitch/yaw/distance
+    cameraData = {
+      position = lookAtPos,
+      pitch = 0,
+      yaw = 0,
+      distance = 40
+    }
+  elseif cameraPreset ~= nil then
+    -- Use full camera preset data (position, pitch, yaw, distance)
+    -- Clone to avoid modifying the original preset
+    cameraData = U.clone(cameraPreset)
+    if cameraData.position == nil then
+      U.AlertGM("M.setCamera: Camera preset '" .. tostring(cameraMode) .. "' has no position defined")
+      return
     end
+  end
 
-    if cameraPreset == nil and lookAtPos == nil then
-        U.AlertGM("M.setCamera: Invalid camera mode '" .. tostring(cameraMode) .. "' and no lookAtPos provided")
-        return
-    end
-
-    -- Set camera mode to ThirdPerson for cinematic control
-    player.setCameraMode("ThirdPerson")
-
-    -- Build camera data table for lookAt() - must include position, pitch, yaw, and distance
-    local cameraData = nil
-    if lookAtPos ~= nil then
-        -- Custom position provided - use it with defaults for pitch/yaw/distance
-        cameraData = {
-            position = lookAtPos,
-            pitch = 0,
-            yaw = 0,
-            distance = 40
-        }
-    elseif cameraPreset ~= nil then
-        -- Use full camera preset data (position, pitch, yaw, distance)
-        -- Clone to avoid modifying the original preset
-        cameraData = U.clone(cameraPreset)
-        if cameraData.position == nil then
-            U.AlertGM("M.setCamera: Camera preset '" .. tostring(cameraMode) .. "' has no position defined")
-            return
-        end
-    end
-
-    if cameraData and cameraData.position then
-        -- lookAt() accepts a table with position, pitch, yaw, and distance
-        player.lookAt(cameraData)
-        -- Reset to ThirdPerson after brief delay (prevents camera snapping back)
-        Wait.time(function()
-            player.setCameraMode("ThirdPerson")
-        end, 0.5)
-    end
+  if cameraData and cameraData.position then
+    -- lookAt() accepts a table with position, pitch, yaw, and distance
+    player.lookAt(cameraData)
+    -- Reset to ThirdPerson after brief delay (prevents camera snapping back)
+    Wait.time(function()
+      player.setCameraMode("ThirdPerson")
+    end, 0.5)
+  end
 end
 
 --[[
@@ -292,24 +303,24 @@ end
     Pattern from Heritage event delegation (onObjectDrop, onObjectEnterContainer)
 ]]
 function M.onObjectDrop(playerColor, droppedObject, zone)
-    if droppedObject == nil then return end
+  if droppedObject == nil then return end
 
-    print("Main: Object dropped - " .. droppedObject.name ..
-          (zone and (" in zone " .. zone.name) or "") ..
-          " by player " .. tostring(playerColor))
+  print("Main: Object dropped - " .. droppedObject.name ..
+    (zone and (" in zone " .. zone.name) or "") ..
+    " by player " .. tostring(playerColor))
 
-    -- TODO: Add VTM5E-specific drop logic
-    -- - Check if object has specific tags (e.g., "Dice", "Token", "Card")
-    -- - Handle dice roller interactions
-    -- - Handle token placement in zones
-    -- - Update game state based on object placement
+  -- TODO: Add VTM5E-specific drop logic
+  -- - Check if object has specific tags (e.g., "Dice", "Token", "Card")
+  -- - Handle dice roller interactions
+  -- - Handle token placement in zones
+  -- - Update game state based on object placement
 
-    -- Example:
-    -- if droppedObject.hasTag("Dice") then
-    --     -- Handle dice-specific logic
-    -- elseif zone and zone.hasTag("PlayerZone") then
-    --     -- Handle zone-specific logic via Z module
-    -- end
+  -- Example:
+  -- if droppedObject.hasTag("Dice") then
+  --     -- Handle dice-specific logic
+  -- elseif zone and zone.hasTag("PlayerZone") then
+  --     -- Handle zone-specific logic via Z module
+  -- end
 end
 
 --[[
@@ -323,20 +334,20 @@ end
     Pattern from Heritage M.onPlayerAction
 ]]
 function M.onPlayerAction(playerColor, action, clickState)
-    print("Main: Player action - " .. tostring(playerColor) .. ", " .. tostring(action))
+  print("Main: Player action - " .. tostring(playerColor) .. ", " .. tostring(action))
 
-    -- TODO: Add VTM5E-specific action handlers
-    -- - Dice rolling
-    -- - Discipline activation
-    -- - Willpower/hunger management
-    -- - Scene interaction
+  -- TODO: Add VTM5E-specific action handlers
+  -- - Dice rolling
+  -- - Discipline activation
+  -- - Willpower/hunger management
+  -- - Scene interaction
 
-    -- Example:
-    -- if action == "rollDice" then
-    --     -- Trigger dice roller logic
-    -- elseif action == "useDiscipline" then
-    --     -- Handle discipline usage
-    -- end
+  -- Example:
+  -- if action == "rollDice" then
+  --     -- Trigger dice roller logic
+  -- elseif action == "useDiscipline" then
+  --     -- Handle discipline usage
+  -- end
 end
 
 -- Legacy alias for backwards compatibility (if needed)

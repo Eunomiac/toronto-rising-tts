@@ -1,18 +1,18 @@
 {
-  "GUID": "083515",
+  "GUID": "33141c",
   "Name": "Custom_Assetbundle",
   "Transform": {
-    "posX": 54.51,
-    "posY": -1.24,
-    "posZ": -22.58,
-    "rotX": 0,
-    "rotY": 292.5,
-    "rotZ": 0,
-    "scaleX": 2,
-    "scaleY": 5,
-    "scaleZ": 2
+    "posX": -36.59104,
+    "posY": 0.00007247925,
+    "posZ": -50.1175,
+    "rotX": 0.00008308012,
+    "rotY": 195.008453,
+    "rotZ": -4.80744347e-7,
+    "scaleX": 15.90302,
+    "scaleY": 10,
+    "scaleZ": 10
   },
-  "Nickname": "Signal Candle Brown",
+  "Nickname": "TOMBSTONE_PURPLE",
   "Description": "",
   "GMNotes": "",
   "AltLookAngle": {
@@ -21,32 +21,32 @@
     "z": 0
   },
   "ColorDiffuse": {
-    "r": 0.188733131,
-    "g": 0.08141395,
-    "b": 0
+    "r": 1,
+    "g": 1,
+    "b": 1
   },
   "LayoutGroupSortIndex": 0,
   "Value": 0,
-  "Locked": true,
+  "Locked": false,
   "Grid": false,
   "Snap": false,
   "IgnoreFoW": false,
   "MeasureMovement": false,
   "DragSelectable": false,
-  "Autoraise": false,
+  "Autoraise": true,
   "Sticky": false,
   "Tooltip": false,
   "GridProjection": false,
   "HideWhenFaceDown": false,
   "Hands": false,
   "CustomAssetbundle": {
-    "AssetbundleURL": "https://steamusercontent-a.akamaihd.net/ugc/1286291105826094816/AD1F046F7A90D9C567E99B9E2D9E7581D39C207A/",
+    "AssetbundleURL": "https://steamusercontent-a.akamaihd.net/ugc/1487830416936527139/B19E1C8827113B0C9E605212111E2244D504973D/",
     "AssetbundleSecondaryURL": "",
-    "MaterialIndex": 2,
+    "MaterialIndex": 0,
     "TypeIndex": 0,
     "LoopingEffectIndex": 0
   },
-  "LuaScript": "function onLoad()\r\n  self.interactable = false\r\nend\r\n",
+  "LuaScript": "function onLoad()\r\n  self.setInvisibleTo({\"Purple\"})\r\nend",
   "LuaScriptState": "",
   "XmlUI": ""
 }

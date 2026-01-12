@@ -14,16 +14,16 @@
   },
   "Nickname": "Map Light (Large)",
   "Description": "",
-  "GMNotes": "Range: 132\nAngle: 87.846\nIntensity: 3.645\nEnabled: false",
+  "GMNotes": "Range: 132\nAngle: 87.846\nIntensity: 1.8225\nEnabled: true",
   "AltLookAngle": {
     "x": 0,
     "y": 0,
     "z": 0
   },
   "ColorDiffuse": {
-    "r": 0.525551438,
-    "g": 0.3506713,
-    "b": 0.3506713
+    "r": 0.5254902,
+    "g": 0.494000852,
+    "b": 0.3490192
   },
   "Tags": [
     "mapLightLarge"

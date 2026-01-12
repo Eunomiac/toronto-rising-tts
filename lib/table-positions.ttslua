@@ -255,15 +255,4 @@ function TablePos.setupHalfDecagonTable(tableRadius, tableCenter, storytellerSid
     return positions
 end
 
--- ============================================================================
--- GLOBAL EXPORTS (for TTS console usage)
--- ============================================================================
-
--- Expose functions globally for use in TTS console (backwards compatibility)
--- These can also be accessed via the module: require("lib.table-positions")
--- NOTE: In TTS Lua, assigning without 'local' makes variables global.
-calculateHalfDecagonPositions = TablePos.calculateHalfDecagonPositions
-printHalfDecagonPositions = TablePos.printHalfDecagonPositions
-setupHalfDecagonTable = TablePos.setupHalfDecagonTable
-
 return TablePos

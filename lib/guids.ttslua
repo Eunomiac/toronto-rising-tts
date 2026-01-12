@@ -15,7 +15,7 @@ G.GUIDS = {
 
     -- STORYTELLER OBJECTS
     -- Storyteller Table (raised and behind players so they can't see it)
-    STORYTELLER_TABLE = "c64fe0",
+    STORYTELLER_TABLE = "94d04d",
     -- Difficulty Dial (for setting difficulty of dice rolls
     DIFFICULTY_DIAL = "fe9e9a",
 
@@ -55,9 +55,9 @@ G.GUIDS = {
     SIGNAL_FIRE_PINK = "f1b7af",
 
     -- Hunger smoke (to indicate increasing hunger)
-    HUNGER_SMOKE_BROWN = "b0ffa8",
-    HUNGER_SMOKE_ORANGE = "7aa4ed",
-    HUNGER_SMOKE_RED = "cc2959",
+    HUNGER_SMOKE_BROWN = "6ab1fb",
+    HUNGER_SMOKE_ORANGE = "4af4e7",
+    HUNGER_SMOKE_RED = "5d1338",
     HUNGER_SMOKE_PINK = "fb25b1",
 
     -- Add other object GUIDs as needed (zones, boards, etc.)
