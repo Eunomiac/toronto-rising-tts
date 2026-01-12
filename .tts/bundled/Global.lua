@@ -2515,7 +2515,7 @@ function U.XYZToCylindrical(pos, center)
 	local dz = pos.z - center.z
 	local radius = math.sqrt(dx * dx + dz * dz)
 	local angle = math.atan2(dx, dz) * (180 / math.pi)  -- Convert to degrees
-	if angle < 0 then angle = angle + 360 end  -- Normalize to 0-360
+	-- DO NOT normalize to 0-360 - preserve angle values for shortest path calculations
 	local height = pos.y - center.y
 	return {radius = radius, angle = angle, height = height}
 end
@@ -2551,13 +2551,16 @@ function U.XYZToSpherical(pos, center)
 
 	-- Calculate horizontal angle (same as cylindrical)
 	local angle = math.atan2(dx, dz) * (180 / math.pi)  -- Convert to degrees
-	if angle < 0 then angle = angle + 360 end  -- Normalize to 0-360
+	-- DO NOT normalize to 0-360 - preserve angle values for shortest path calculations
 
 	-- Calculate elevation angle (angle2)
-	-- angle2 = 0° is straight up (positive Y), 90° is horizontal
-	local angle2 = 90  -- Default to horizontal if radius is 0
+	-- New system: angle2 = 0° is perpendicular/horizontal, -90° is straight up, +90° is straight down
+	local angle2 = 0  -- Default to horizontal if radius is 0
 	if radius > 0.001 then
-		angle2 = math.acos(dy / radius) * (180 / math.pi)  -- Convert to degrees
+		-- Calculate using standard formula (0° = up, 90° = horizontal)
+		local standardAngle2 = math.acos(dy / radius) * (180 / math.pi)
+		-- Convert to new system: subtract 90 so 0° = horizontal, -90° = up, +90° = down
+		angle2 = standardAngle2 - 90
 	end
 
 	return {radius = radius, angle = angle, angle2 = angle2}
@@ -4057,13 +4060,13 @@ end
 -- @usage local rot = U.lookAtRotation(obj1.getPosition(), obj2.getPosition())
 -- @usage local rot = U.lookAtRotation({x=0, y=0, z=0}, {x=10, y=5, z=10})
 function U.lookAtRotation(from, to)
-	-- Debug: Check inputs (use print instead of U.error to avoid potential issues)
+	-- Validate inputs
 	if from == nil then
-		print("ERROR: U.lookAtRotation - from parameter is nil")
+		U.error("U.lookAtRotation", "from parameter is nil")
 		return Vector(0, 0, 0)
 	end
 	if to == nil then
-		print("ERROR: U.lookAtRotation - to parameter is nil")
+		U.error("U.lookAtRotation", "to parameter is nil")
 		return Vector(0, 0, 0)
 	end
 
@@ -4075,7 +4078,7 @@ function U.lookAtRotation(from, to)
 		fromX = from.x or from[1] or 0
 		fromY = from.y or from[2] or 0
 		fromZ = from.z or from[3] or 0
-	else
+	elseif U.isGameObject(from) then
 		-- Try to get position if it's an object
 		local success, pos = pcall(function() return from.getPosition() end)
 		if success and pos then
@@ -4083,16 +4086,19 @@ function U.lookAtRotation(from, to)
 			fromY = pos.y or 0
 			fromZ = pos.z or 0
 		else
-			print("ERROR: U.lookAtRotation - Cannot extract coordinates from 'from' parameter")
+			U.error("U.lookAtRotation", "Cannot extract coordinates from 'from' parameter", from)
 			return Vector(0, 0, 0)
 		end
+	else
+		U.error("U.lookAtRotation", "Unsupported 'from' parameter type", from)
+		return Vector(0, 0, 0)
 	end
 
 	if type(to) == "table" then
 		toX = to.x or to[1] or 0
 		toY = to.y or to[2] or 0
 		toZ = to.z or to[3] or 0
-	else
+	elseif U.isGameObject(to) then
 		-- Try to get position if it's an object
 		local success, pos = pcall(function() return to.getPosition() end)
 		if success and pos then
@@ -4100,9 +4106,12 @@ function U.lookAtRotation(from, to)
 			toY = pos.y or 0
 			toZ = pos.z or 0
 		else
-			print("ERROR: U.lookAtRotation - Cannot extract coordinates from 'to' parameter")
+			U.error("U.lookAtRotation", "Cannot extract coordinates from 'to' parameter", to)
 			return Vector(0, 0, 0)
 		end
+	else
+		U.error("U.lookAtRotation", "Unsupported 'to' parameter type", to)
+		return Vector(0, 0, 0)
 	end
 
 	-- Calculate direction vector manually
@@ -4319,9 +4328,28 @@ function U.GetEasedPath(start, endVal, duration, ease, easeIntensity, coordinate
 		if startCoord ~= nil and endCoord ~= nil then
 			if coordinateSystem == "cylindrical" then
 				-- Interpolate in cylindrical coordinate space
-				-- Linear interpolation for all values - no wrapping or normalization
-				-- This allows any angle range (e.g., -500° to +300° = 800° rotation)
+				-- Handle angle wrapping: use shortest path for angles, but preserve full rotations
 				local angleDelta = endCoord.angle - startCoord.angle
+				local absDelta = math.abs(angleDelta)
+
+				-- Only normalize to shortest path if delta is <= 360°
+				-- Large deltas (> 360°) are treated as explicit multi-rotation animations (e.g., +720°, +800°)
+				if absDelta <= 360 then
+					-- Check if delta is close to a multiple of 360° (explicit full rotation like 360° or -360°)
+					local fullRotations = absDelta / 360
+					local nearMultiple = math.abs(fullRotations - math.floor(fullRotations + 0.5)) < 0.01
+
+					-- If not a multiple of 360°, normalize to shortest path (-180 to +180)
+					if not nearMultiple then
+						if angleDelta > 180 then
+							angleDelta = angleDelta - 360  -- Go the other way (shorter)
+						elseif angleDelta < -180 then
+							angleDelta = angleDelta + 360  -- Go the other way (shorter)
+						end
+					end
+				end
+				-- If absDelta > 360, preserve the large rotation as-is (explicit multi-rotation)
+
 				local interpAngle = startCoord.angle + angleDelta * tEased
 				-- No wrapping needed - sin/cos handle any angle value correctly
 
@@ -4336,26 +4364,28 @@ function U.GetEasedPath(start, endVal, duration, ease, easeIntensity, coordinate
 				-- Interpolate in spherical coordinate space
 				-- Handle angle wrapping: use shortest path for angles, but preserve full rotations
 				local angleDelta = endCoord.angle - startCoord.angle
-				-- Check if delta is a multiple of 360° (preserve full rotations)
-				-- If it's exactly or close to a multiple of 360, preserve it as-is
-				local fullRotations = angleDelta / 360
-				local nearMultiple = math.abs(fullRotations - math.floor(fullRotations + 0.5)) < 0.01
+				local absDelta = math.abs(angleDelta)
 
-				-- If not a multiple of 360, normalize to shortest path (-180 to 180)
-				if not nearMultiple then
-					if angleDelta > 180 then
-						angleDelta = angleDelta - 360
-					elseif angleDelta < -180 then
-						angleDelta = angleDelta + 360
+				-- Only normalize to shortest path if delta is <= 360°
+				-- Large deltas (> 360°) are treated as explicit multi-rotation animations (e.g., +720°, +800°)
+				if absDelta <= 360 then
+					-- Check if delta is close to a multiple of 360° (explicit full rotation like 360° or -360°)
+					local fullRotations = absDelta / 360
+					local nearMultiple = math.abs(fullRotations - math.floor(fullRotations + 0.5)) < 0.01
+
+					-- If not a multiple of 360°, normalize to shortest path (-180 to +180)
+					if not nearMultiple then
+						if angleDelta > 180 then
+							angleDelta = angleDelta - 360  -- Go the other way (shorter)
+						elseif angleDelta < -180 then
+							angleDelta = angleDelta + 360  -- Go the other way (shorter)
+						end
 					end
 				end
+				-- If absDelta > 360, preserve the large rotation as-is (explicit multi-rotation)
 
 				local interpAngle = startCoord.angle + angleDelta * tEased
-				-- Only wrap angle if we normalized it (not a multiple of 360)
-				-- This preserves multiple rotations (720°, 1080°, etc.)
-				if not nearMultiple then
-					interpAngle = U.cycle(interpAngle, 0, 360)
-				end
+				-- No wrapping needed - sin/cos handle any angle value correctly
 
 				local interpSph = {
 					radius = startCoord.radius + (endCoord.radius - startCoord.radius) * tEased,
@@ -4491,8 +4521,26 @@ function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinate
 
 					-- Handle angle wrapping: use shortest path for angles, but preserve full rotations
 					local angleDelta = endCyl.angle - startCyl.angle
-					-- Linear interpolation - no wrapping or normalization
-					-- This allows any angle range (e.g., -500° to +300° = 800° rotation)
+					local absDelta = math.abs(angleDelta)
+
+					-- Only normalize to shortest path if delta is <= 360°
+					-- Large deltas (> 360°) are treated as explicit multi-rotation animations (e.g., +720°, +800°)
+					if absDelta <= 360 then
+						-- Check if delta is close to a multiple of 360° (explicit full rotation like 360° or -360°)
+						local fullRotations = absDelta / 360
+						local nearMultiple = math.abs(fullRotations - math.floor(fullRotations + 0.5)) < 0.01
+
+						-- If not a multiple of 360°, normalize to shortest path (-180 to +180)
+						if not nearMultiple then
+							if angleDelta > 180 then
+								angleDelta = angleDelta - 360  -- Go the other way (shorter)
+							elseif angleDelta < -180 then
+								angleDelta = angleDelta + 360  -- Go the other way (shorter)
+							end
+						end
+					end
+					-- If absDelta > 360, preserve the large rotation as-is (explicit multi-rotation)
+
 					local interpAngle = startCyl.angle + angleDelta * tEased
 					-- No wrapping needed - sin/cos handle any angle value correctly
 
@@ -4507,9 +4555,28 @@ function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinate
 					local startSph = U.XYZToSpherical(startPos, startCenter)
 					local endSph = U.XYZToSpherical(endPos, endCenter)
 
-					-- Linear interpolation - no wrapping or normalization
-					-- This allows any angle range (e.g., -500° to +300° = 800° rotation)
+					-- Handle angle wrapping: use shortest path for angles, but preserve full rotations
 					local angleDelta = endSph.angle - startSph.angle
+					local absDelta = math.abs(angleDelta)
+
+					-- Only normalize to shortest path if delta is <= 360°
+					-- Large deltas (> 360°) are treated as explicit multi-rotation animations (e.g., +720°, +800°)
+					if absDelta <= 360 then
+						-- Check if delta is close to a multiple of 360° (explicit full rotation like 360° or -360°)
+						local fullRotations = absDelta / 360
+						local nearMultiple = math.abs(fullRotations - math.floor(fullRotations + 0.5)) < 0.01
+
+						-- If not a multiple of 360°, normalize to shortest path (-180 to +180)
+						if not nearMultiple then
+							if angleDelta > 180 then
+								angleDelta = angleDelta - 360  -- Go the other way (shorter)
+							elseif angleDelta < -180 then
+								angleDelta = angleDelta + 360  -- Go the other way (shorter)
+							end
+						end
+					end
+					-- If absDelta > 360, preserve the large rotation as-is (explicit multi-rotation)
+
 					local interpAngle = startSph.angle + angleDelta * tEased
 					-- No wrapping needed - sin/cos handle any angle value correctly
 
@@ -4677,15 +4744,10 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
 	-- parseCheckFunc(testRef): Converts testRef into a test function (recursively, if testRef is a table)
 	local function parseCheckFunc(tRef)
 		if tRef == nil then
-			U.error("U.waitUntil.parseCheckFunc", "tRef is nil, defaulting to 0.5 seconds")
-			tRef = 0.5
+			tRef = 0.5  -- Default to 0.5 seconds
 		end
 
 		local tRefType = U.Type(tRef)
-		if tRefType == nil then
-			U.error("U.waitUntil.parseCheckFunc", "U.Type(tRef) returned nil for: " .. tostring(tRef))
-			return function() return true end
-		end
 
 		if tRefType == "function" then
 			return tRef
@@ -4693,169 +4755,68 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
 			-- Use time-based waiting instead of frame counting
 			-- Capture the duration in the closure
 			local waitDuration = tRef  -- Duration in seconds
-			if waitDuration == nil then
-				U.error("U.waitUntil.parseCheckFunc", "waitDuration is nil")
-				return function() return true end
-			end
 			return function()
 				if waitStartTime == nil then
 					waitStartTime = os.time()  -- Initialize start time on first check
 				end
-				if waitStartTime == nil then
-					U.error("U.waitUntil.parseCheckFunc", "waitStartTime is still nil after initialization")
-					return true
-				end
 				local elapsed = os.time() - waitStartTime
-				if elapsed == nil then
-					U.error("U.waitUntil.parseCheckFunc", "elapsed time calculation returned nil")
-					return true
-				end
 				return elapsed >= waitDuration
 			end
 		elseif U.isGameObject(tRef) then
 			return function()
-				if tRef == nil then
-					U.error("U.waitUntil.parseCheckFunc", "tRef GameObject is nil in check function")
-					return true
-				end
-				if tRef.resting == nil then
-					U.error("U.waitUntil.parseCheckFunc", "tRef.resting is nil for GameObject: " .. tostring(tRef))
-					return true
-				end
-				if tRef.loading_custom == nil then
-					U.error("U.waitUntil.parseCheckFunc", "tRef.loading_custom is nil for GameObject: " .. tostring(tRef))
-					return true
-				end
-				return tRef.resting and not tRef.loading_custom
+				-- Safe access with fallback values
+				local resting = tRef.resting or false
+				local loading = tRef.loading_custom or false
+				return resting and not loading
 			end
 		elseif tRefType == "table" then
-			if tRef == nil then
-				U.error("U.waitUntil.parseCheckFunc", "tRef table is nil")
-				return function() return true end
-			end
 			local checkFuncs = U.map(tRef, function(tr)
-				if tr == nil then
-					U.error("U.waitUntil.parseCheckFunc", "table element is nil")
-					return nil
-				end
 				return parseCheckFunc(tr)
 			end)
-			if checkFuncs == nil then
-				U.error("U.waitUntil.parseCheckFunc", "U.map returned nil for table: " .. tostring(tRef))
-				return function() return true end
-			end
 			return function()
-				if checkFuncs == nil then
-					U.error("U.waitUntil.parseCheckFunc", "checkFuncs is nil in check function")
-					return true
-				end
-				local checkFuncsLength = #checkFuncs
-				if checkFuncsLength == nil then
-					U.error("U.waitUntil.parseCheckFunc", "#checkFuncs returned nil, checkFuncs type: " .. U.Type(checkFuncs))
-					return true
-				end
-				if checkFuncsLength > 0 then
-					local filteredFuncs = U.filter(checkFuncs, function(cf)
-						if cf == nil then
-							U.error("U.waitUntil.parseCheckFunc", "checkFunc element is nil in filter")
-							return false
-						end
-						local cfType = U.Type(cf)
-						if cfType == nil then
-							U.error("U.waitUntil.parseCheckFunc", "U.Type(cf) returned nil")
-							return false
-						end
-						if cfType == "function" then
+				if checkFuncs and #checkFuncs > 0 then
+					checkFuncs = U.filter(checkFuncs, function(cf)
+						if cf and U.Type(cf) == "function" then
 							local success, result = pcall(function() return cf() end)
-							if not success then
-								U.error("U.waitUntil.parseCheckFunc", "Error calling check function: " .. tostring(result))
-								return false
+							if success then
+								return result == false
 							end
-							if result == nil then
-								U.error("U.waitUntil.parseCheckFunc", "check function returned nil")
-								return false
-							end
-							return result == false
 						end
 						return false
 					end)
-					if filteredFuncs == nil then
-						U.error("U.waitUntil.parseCheckFunc", "U.filter returned nil")
-						return true
-					end
-					checkFuncs = filteredFuncs
-					local filteredLength = #checkFuncs
-					if filteredLength == nil then
-						U.error("U.waitUntil.parseCheckFunc", "#checkFuncs returned nil after filter, type: " .. U.Type(checkFuncs))
-						return true
-					end
-					return filteredLength == 0
+					return #checkFuncs == 0
 				end
 				return true
 			end
 		end
 		-- Fallback: return a function that always returns true
-		U.error("U.waitUntil.parseCheckFunc", "Unhandled tRef type: " .. tostring(tRefType) .. " for value: " .. tostring(tRef))
 		return function() return true end
 	end
 
 	if testRef == nil then
-		U.error("U.waitUntil", "testRef parameter is nil")
 		testRef = 0.5  -- Default to 0.5 seconds
 	end
 
 	local pCheckFunc = parseCheckFunc(testRef)
 
-	-- Debug: Verify pCheckFunc is valid
-	if pCheckFunc == nil then
-		U.error("U.waitUntil", "parseCheckFunc returned nil for testRef: " .. tostring(testRef) .. " (type: " .. U.Type(testRef) .. ")")
+	-- Ensure pCheckFunc is valid (parseCheckFunc always returns a function, but be safe)
+	if pCheckFunc == nil or U.Type(pCheckFunc) ~= "function" then
 		pCheckFunc = function() return true end  -- Fallback
-	else
-		local pCheckFuncType = U.Type(pCheckFunc)
-		if pCheckFuncType == nil then
-			U.error("U.waitUntil", "U.Type(pCheckFunc) returned nil")
-			pCheckFunc = function() return true end  -- Fallback
-		elseif pCheckFuncType ~= "function" then
-			U.error("U.waitUntil", "parseCheckFunc returned non-function: " .. tostring(pCheckFuncType) .. " for testRef: " .. tostring(testRef))
-			pCheckFunc = function() return true end  -- Fallback
-		end
 	end
 
 	local afterReturnVal
 
 	function CheckCoroutine()
-		if pCheckFunc == nil then
-			U.error("U.waitUntil.CheckCoroutine", "pCheckFunc is nil")
-			return 1
-		end
-
-		local pCheckFuncType = U.Type(pCheckFunc)
-		if pCheckFuncType == nil then
-			U.error("U.waitUntil.CheckCoroutine", "U.Type(pCheckFunc) returned nil")
-			return 1
-		end
-
-		if pCheckFuncType ~= "function" then
-			U.error("U.waitUntil.CheckCoroutine", "pCheckFunc is not a function: " .. tostring(pCheckFuncType))
+		if pCheckFunc == nil or U.Type(pCheckFunc) ~= "function" then
 			return 1
 		end
 
 		while true do
 			-- Safely call pCheckFunc
-			local success, checkResult = pcall(function()
-				if pCheckFunc == nil then
-					U.error("U.waitUntil.CheckCoroutine", "pCheckFunc is nil inside pcall")
-					return true
-				end
-				return pCheckFunc()
-			end)
+			local success, checkResult = pcall(function() return pCheckFunc() end)
 			if not success then
-				U.error("U.waitUntil.CheckCoroutine", "Error in check function: " .. tostring(checkResult))
-				break
-			end
-
-			if checkResult == nil then
-				U.error("U.waitUntil.CheckCoroutine", "check function returned nil")
+				-- Log error but don't crash - just break the loop
+				log({waitUntilError = checkResult, traceback = debug.traceback()})
 				break
 			end
 
@@ -4863,33 +4824,16 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
 				break  -- Condition met, exit loop
 			end
 
+			-- Calculate elapsed time
 			local elapsedTime = 0
-			if waitStartTime == nil then
-				U.error("U.waitUntil.CheckCoroutine", "waitStartTime is nil")
-			else
-				local currentTime = os.time()
-				if currentTime == nil then
-					U.error("U.waitUntil.CheckCoroutine", "os.time() returned nil")
-				else
-					elapsedTime = currentTime - waitStartTime
-					if elapsedTime == nil then
-						U.error("U.waitUntil.CheckCoroutine", "elapsedTime calculation returned nil (currentTime: " .. tostring(currentTime) .. ", waitStartTime: " .. tostring(waitStartTime) .. ")")
-					end
-				end
+			if waitStartTime ~= nil then
+				elapsedTime = os.time() - waitStartTime
 			end
 
 			-- Check timeout (maxWait is now in seconds)
-			if maxWait == nil then
-				U.error("U.waitUntil.CheckCoroutine", "maxWait is nil")
-				maxWait = 60
-			end
 			if elapsedTime > maxWait and not hasWaited then
 				log(debug.traceback())
 				hasWaited = true
-				if isForcing == nil then
-					U.error("U.waitUntil.CheckCoroutine", "isForcing is nil")
-					isForcing = false
-				end
 				if isForcing then
 					U.AlertGM("Coroutine Timeout: Forcing ResultFunc")
 					break
@@ -4900,35 +4844,19 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
 			-- Yield for a short time (testFrequency is now in seconds)
 			-- Convert seconds to approximate frame yields (60 FPS = ~0.016s per frame)
 			-- Use a minimum of 1 frame yield to avoid tight loops
-			if testFrequency == nil then
-				U.error("U.waitUntil.CheckCoroutine", "testFrequency is nil")
-				testFrequency = 0.1
-			end
 			local yieldFrames = math.max(1, math.floor(testFrequency * 60))
-			if yieldFrames == nil then
-				U.error("U.waitUntil.CheckCoroutine", "yieldFrames calculation returned nil")
-				yieldFrames = 1
-			end
 			for i = 1, yieldFrames do
 				coroutine.yield(0)
 			end
 		end
 
-		if afterFunc == nil then
-			U.error("U.waitUntil.CheckCoroutine", "afterFunc is nil")
-		else
-			local afterFuncType = U.Type(afterFunc)
-			if afterFuncType == nil then
-				U.error("U.waitUntil.CheckCoroutine", "U.Type(afterFunc) returned nil")
-			elseif afterFuncType ~= "function" then
-				U.error("U.waitUntil.CheckCoroutine", "afterFunc is not a function: " .. tostring(afterFuncType))
+		if afterFunc ~= nil and U.Type(afterFunc) == "function" then
+			local success, result = pcall(function() return afterFunc() end)
+			if success then
+				afterReturnVal = result
 			else
-				local success, result = pcall(function() return afterFunc() end)
-				if success then
-					afterReturnVal = result
-				else
-					U.error("U.waitUntil.CheckCoroutine", "Error in afterFunc: " .. tostring(result))
-				end
+				-- Log error but don't crash
+				log({waitUntilAfterFuncError = result, traceback = debug.traceback()})
 			end
 		end
 
@@ -8355,50 +8283,27 @@ function testLookAt()
 		return
 	end
 
-	print("testLookAt: Light position: " .. tostring(lightPos))
-	print("testLookAt: Target position: " .. tostring(targetPos))
-	print("testLookAt: Light position type: " .. U.Type(lightPos))
-	print("testLookAt: Target position type: " .. U.Type(targetPos))
-
-	-- Check if positions are valid Vectors
-	-- In TTS, Vector objects can be tables with metatables, so check for Vector methods instead
-	local lightIsVector = (lightPos ~= nil) and (type(lightPos.x) == "number" or lightPos.getX ~= nil or lightPos.subtract ~= nil)
-	local targetIsVector = (targetPos ~= nil) and (type(targetPos.x) == "number" or targetPos.getX ~= nil or targetPos.subtract ~= nil)
-
-	if not lightIsVector then
-		print("ERROR: testLookAt - Light position is not a Vector (type: " .. tostring(U.Type(lightPos)) .. ", has x: " .. tostring(lightPos and lightPos.x) .. ")")
+	-- Validate positions are Vector-like (have x, y, z properties)
+	if not (lightPos and (type(lightPos.x) == "number" or lightPos.getX ~= nil)) then
+		print("ERROR: testLookAt - Light position is not a valid Vector")
 		broadcast("❌ testLookAt: Light position is not a Vector", {1, 0, 0})
 		return
 	end
 
-	if not targetIsVector then
-		print("ERROR: testLookAt - Target position is not a Vector (type: " .. tostring(U.Type(targetPos)) .. ", has x: " .. tostring(targetPos and targetPos.x) .. ")")
+	if not (targetPos and (type(targetPos.x) == "number" or targetPos.getX ~= nil)) then
+		print("ERROR: testLookAt - Target position is not a valid Vector")
 		broadcast("❌ testLookAt: Target position is not a Vector", {1, 0, 0})
 		return
 	end
 
-	print("testLookAt: Calculating rotation...")
-	print("testLookAt: About to call U.lookAtRotation with:")
-	print("  from: " .. tostring(lightPos) .. " (type: " .. U.Type(lightPos) .. ")")
-	print("  to: " .. tostring(targetPos) .. " (type: " .. U.Type(targetPos) .. ")")
-
+	-- Calculate rotation
 	local success3, rotation = pcall(function() return U.lookAtRotation(lightPos, targetPos) end)
 
-	if not success3 then
+	if not success3 or not rotation then
 		print("ERROR: testLookAt - U.lookAtRotation failed: " .. tostring(rotation))
 		broadcast("❌ testLookAt: Rotation calculation failed", {1, 0, 0})
 		return
 	end
-
-	if not rotation then
-		print("ERROR: testLookAt - U.lookAtRotation returned nil")
-		broadcast("❌ testLookAt: Rotation calculation failed", {1, 0, 0})
-		return
-	end
-
-	print("testLookAt: Calculated rotation: " .. tostring(rotation))
-
-	print("testLookAt: Setting rotation...")
 	local success, err = pcall(function()
 		lightObj.setRotationSmooth(rotation, false, false)
 	end)
@@ -8456,13 +8361,13 @@ function DEBUG.testEasing()
 			start = {
 				position = "CURRENT",  -- Will be resolved to light's current position in spherical coords
 				overrideAngle = 180,  -- Override angle to start at 0°
-				overrideAngle2 = 45,  -- Override angle2 to start at 35° (slightly higher)
+				overrideAngle2 = -20,  -- Override angle2 to start at 35° (slightly higher)
 				center = "TEST_TARGET_OBJ",  -- Will be resolved to targetObj
 				orientation = "TEST_TARGET_OBJ"  -- Will be resolved to targetObj (face target)
 			},
 			-- End: same radius, angle from 0 to 360° (one full revolution), angle2 from 35° to -35°
 			endVal = {
-				position = {radius = "SAME", angle = "+800", angle2 = 135},  -- Relative angle (+360° from start), absolute angle2
+				position = {radius = "SAME", angle = "+800", angle2 = 20},  -- Relative angle (+360° from start), absolute angle2
 				center = "TEST_TARGET_OBJ",
 				orientation = "TEST_TARGET_OBJ"  -- Continue facing target
 			},
@@ -8970,60 +8875,36 @@ function DEBUG.testEasing()
 		local orientationFunction = function()
 			local testDisplayName = testName:gsub("_", " ")
 			-- Set starting orientation AFTER position is set and object is at rest
-			print("DEBUG: Object is at rest, setting orientation...")
-			print("  startData.orientation: " .. tostring(startData.orientation))
-			print("  objToMove: " .. tostring(objToMove))
-			print("  startPosXYZ: " .. tostring(startPosXYZ))
-
 			if startData.orientation and objToMove and startPosXYZ then
-				print("DEBUG: All conditions met, calculating orientation...")
 				local startRot
 				if U.isGameObject(startData.orientation) then
-					print("DEBUG: Orientation is a GameObject, getting position...")
 					-- Calculate look-at rotation using helper from util library
 					-- Use the starting position we just set
 					local success, targetPos = pcall(function() return startData.orientation.getPosition() end)
 					if success and targetPos then
-						print("DEBUG: Got target position: " .. tostring(targetPos))
 						local rotSuccess, rotResult = pcall(function()
 							return U.lookAtRotation(startPosXYZ, targetPos)
 						end)
 						if rotSuccess and rotResult then
 							startRot = rotResult
-							print("Calculated look-at rotation from " .. tostring(startPosXYZ) .. " to " .. tostring(targetPos))
-							print("  Result rotation: " .. tostring(startRot))
 						else
 							print("Warning: U.lookAtRotation failed: " .. tostring(rotResult))
 							startRot = Vector(0, 0, 0)
 						end
 					else
 						print("Warning: Failed to get target position for orientation calculation")
-						if not success then
-							print("  Error getting position from GameObject")
-						end
 						startRot = Vector(0, 0, 0)
 					end
 				else
-					print("DEBUG: Orientation is a direct Vector value")
 					-- Direct Vector value
 					startRot = Vector(startData.orientation)
 				end
 				if startRot then
-					print("DEBUG: Setting rotation to: " .. tostring(startRot))
 					local success, err = pcall(function() objToMove.setRotationSmooth(startRot, false, false) end)
 					if not success then
 						print("Warning: Failed to set rotation for " .. testName .. ": " .. tostring(err))
-					else
-						print("Set initial rotation to: " .. tostring(startRot))
 					end
-				else
-					print("Warning: startRot is nil")
 				end
-			else
-				print("DEBUG: Orientation setup skipped - missing conditions")
-				if not startData.orientation then print("  Missing: startData.orientation") end
-				if not objToMove then print("  Missing: objToMove") end
-				if not startPosXYZ then print("  Missing: startPosXYZ") end
 			end
 
 			-- Broadcast initialization complete

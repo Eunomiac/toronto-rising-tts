@@ -34,6 +34,20 @@
 --   - Coroutine functions (U.waitUntil, U.RunSequence, U.Lerp) require startLuaCoroutine(Global, "...")
 --   - In Global context, 'self' refers to Global
 --   - Many functions use U.Type() for enhanced type checking (handles TTS userdata types)
+--
+-- COORDINATE SYSTEM CONVENTIONS (TTS Table Orientation):
+--   - Origin (0, 0, 0): Center of table
+--   - X-axis: Positive = RIGHT (toward right edge of table)
+--   - Y-axis: Positive = UP (perpendicular to table surface)
+--   - Z-axis: Positive = AWAY from players (toward back/far edge of table)
+--   - Table radius: 70 units from center to edge
+--   - Typical display height: ~Y = 20 units above table
+--
+-- ANGLE CONVENTIONS (for cylindrical/spherical coordinates):
+--   - angle = 0°:   Points in +Z direction (away from players, behind target)
+--   - angle = 90°:  Points in +X direction (to the right)
+--   - angle = 180°: Points in -Z direction (toward players, in front of target)
+--   - angle = 270°: Points in -X direction (to the left)
 
 local U = {}
 
@@ -46,12 +60,16 @@ local U = {}
 -- Useful for positioning objects in a circle around a center point.
 -- @param center Vector|table Center point to rotate around {x, y, z}
 -- @param radius number Distance from center to the point
--- @param angleDeg number Rotation angle in degrees (0° = +Z axis, 90° = +X axis, 180° = -Z axis, 270° = -X axis)
+-- @param angleDeg number Rotation angle in degrees
+--   - 0° = +Z axis (away from players, behind target)
+--   - 90° = +X axis (to the right)
+--   - 180° = -Z axis (toward players, in front of target)
+--   - 270° = -X axis (to the left)
 -- @param y number Optional: Y coordinate for the result (default: center.y)
 -- @return Vector New position after rotation
--- @usage local pos = U.rotateAroundPoint({x=0, y=0, z=0}, 110, 0) -- Returns {x=0, y=0, z=110}
--- @usage local pos = U.rotateAroundPoint({x=0, y=0, z=0}, 110, 90) -- Returns {x=110, y=0, z=0}
--- @usage local pos = U.rotateAroundPoint({x=0, y=5, z=0}, 50, 45, 10) -- Rotated position with y=10
+-- @usage local pos = U.rotateAroundPoint({x=0, y=0, z=0}, 110, 0) -- Returns {x=0, y=0, z=110} (behind)
+-- @usage local pos = U.rotateAroundPoint({x=0, y=0, z=0}, 110, 180) -- Returns {x=0, y=0, z=-110} (in front)
+-- @usage local pos = U.rotateAroundPoint({x=0, y=0, z=0}, 110, 90) -- Returns {x=110, y=0, z=0} (right)
 function U.rotateAroundPoint(center, radius, angleDeg, y)
     center = Vector(center)
     local angleRad = math.rad(angleDeg)
@@ -62,6 +80,111 @@ function U.rotateAroundPoint(center, radius, angleDeg, y)
     local resultY = y or center.y
 
     return Vector(x, resultY, z)
+end
+
+--- Converts XYZ coordinates to cylindrical coordinates relative to a center point
+-- Cylindrical coordinates represent a point as {radius, angle, height} where:
+--   - radius: Horizontal distance from center in XZ plane
+--   - angle: Rotation angle in degrees
+--     * 0° = +Z axis (away from players, behind target)
+--     * 90° = +X axis (to the right)
+--     * 180° = -Z axis (toward players, in front of target)
+--     * 270° = -X axis (to the left)
+--   - height: Vertical offset from center's Y coordinate
+-- @param pos Vector|table Position in XYZ coordinates {x, y, z}
+-- @param center Vector|table Center point to calculate relative to {x, y, z}
+-- @return table Cylindrical coordinates {radius, angle, height}
+-- @usage local cyl = U.XYZToCylindrical({x=10, y=5, z=0}, {x=0, y=0, z=0}) -- Returns {radius=10, angle=90, height=5}
+-- @usage local cyl = U.XYZToCylindrical(obj.getPosition(), centerObj.getPosition())
+function U.XYZToCylindrical(pos, center)
+	pos = Vector(pos)
+	-- Handle Object center references
+	if U.isGameObject(center) then
+		center = center.getPosition()
+	else
+		center = Vector(center)
+	end
+	local dx = pos.x - center.x
+	local dz = pos.z - center.z
+	local radius = math.sqrt(dx * dx + dz * dz)
+	local angle = math.atan2(dx, dz) * (180 / math.pi)  -- Convert to degrees
+	-- DO NOT normalize to 0-360 - preserve angle values for shortest path calculations
+	local height = pos.y - center.y
+	return {radius = radius, angle = angle, height = height}
+end
+
+--- Converts XYZ coordinates to spherical coordinates relative to a center point
+-- Spherical coordinates represent a point as {radius, angle, angle2} where:
+--   - radius: 3D distance from center
+--   - angle: Horizontal rotation angle in degrees
+--     * 0° = +Z axis (away from players, behind target)
+--     * 90° = +X axis (to the right)
+--     * 180° = -Z axis (toward players, in front of target)
+--     * 270° = -X axis (to the left)
+--   - angle2: Elevation angle in degrees (0° = straight up, 90° = horizontal)
+-- @param pos Vector|table Position in XYZ coordinates {x, y, z}
+-- @param center Vector|table Center point to calculate relative to {x, y, z}
+-- @return table Spherical coordinates {radius, angle, angle2}
+-- @usage local sph = U.XYZToSpherical({x=10, y=0, z=0}, {x=0, y=0, z=0}) -- Returns {radius=10, angle=90, angle2=90}
+-- @usage local sph = U.XYZToSpherical(obj.getPosition(), centerObj.getPosition())
+function U.XYZToSpherical(pos, center)
+	pos = Vector(pos)
+	-- Handle Object center references
+	if U.isGameObject(center) then
+		center = center.getPosition()
+	else
+		center = Vector(center)
+	end
+	local dx = pos.x - center.x
+	local dy = pos.y - center.y
+	local dz = pos.z - center.z
+
+	-- Calculate 3D distance (radius)
+	local radius = math.sqrt(dx * dx + dy * dy + dz * dz)
+
+	-- Calculate horizontal angle (same as cylindrical)
+	local angle = math.atan2(dx, dz) * (180 / math.pi)  -- Convert to degrees
+	-- DO NOT normalize to 0-360 - preserve angle values for shortest path calculations
+
+	-- Calculate elevation angle (angle2)
+	-- New system: angle2 = 0° is perpendicular/horizontal, -90° is straight up, +90° is straight down
+	local angle2 = 0  -- Default to horizontal if radius is 0
+	if radius > 0.001 then
+		-- Calculate using standard formula (0° = up, 90° = horizontal)
+		local standardAngle2 = math.acos(dy / radius) * (180 / math.pi)
+		-- Convert to new system: subtract 90 so 0° = horizontal, -90° = up, +90° = down
+		angle2 = standardAngle2 - 90
+	end
+
+	return {radius = radius, angle = angle, angle2 = angle2}
+end
+
+--- Calculates the 3D distance between two points
+-- Calculates the Euclidean distance in 3D space (includes X, Y, and Z components)
+-- @param pos1 Vector|table First position {x, y, z}
+-- @param pos2 Vector|table Second position {x, y, z}
+-- @return number 3D distance between the two points
+-- @usage local dist = U.Distance({x=0, y=0, z=0}, {x=3, y=4, z=0}) -- Returns 5
+-- @usage local dist = U.Distance(obj1.getPosition(), obj2.getPosition())
+function U.Distance(pos1, pos2)
+	pos1 = Vector(pos1)
+	pos2 = Vector(pos2)
+	return pos1:distance(pos2)
+end
+
+--- Calculates the horizontal distance between two points in the XZ plane (ignoring Y)
+-- Useful for calculating distances on a flat surface or table, ignoring vertical differences
+-- @param pos1 Vector|table First position {x, y, z}
+-- @param pos2 Vector|table Second position {x, y, z}
+-- @return number Distance in XZ plane (horizontal distance)
+-- @usage local dist = U.HorizontalDistance({x=0, y=0, z=0}, {x=3, y=5, z=4}) -- Returns 5 (ignores Y difference)
+-- @usage local dist = U.HorizontalDistance(obj1.getPosition(), obj2.getPosition())
+function U.HorizontalDistance(pos1, pos2)
+	pos1 = Vector(pos1)
+	pos2 = Vector(pos2)
+	local dx = pos1.x - pos2.x
+	local dz = pos1.z - pos2.z
+	return math.sqrt(dx * dx + dz * dz)
 end
 
 --- Rounds a number to 2 decimal places (pFloat = "parse to float")
@@ -672,8 +795,39 @@ function U.map(tb, func)
 	U.Assert("U.map", tb, "table")
 	U.Assert("U.map", func, "function")
   local new_table = {}
-  for k,v in pairs(tb) do
-    new_table[k] = func(v,k)
+  -- Check if table is array-like (has sequential numeric indices starting at 1)
+  local isArray = false
+  local maxIndex = 0
+  for k, v in pairs(tb) do
+    if type(k) == "number" and k > 0 and k == math.floor(k) then
+      if k > maxIndex then maxIndex = k end
+    else
+      -- Has non-numeric key, treat as dictionary
+      isArray = false
+      break
+    end
+  end
+  -- If all keys are sequential from 1 to maxIndex, it's an array
+  if maxIndex > 0 then
+    isArray = true
+    for i = 1, maxIndex do
+      if tb[i] == nil then
+        isArray = false
+        break
+      end
+    end
+  end
+
+  if isArray then
+    -- Preserve array structure
+    for i = 1, maxIndex do
+      new_table[i] = func(tb[i], i)
+    end
+  else
+    -- Dictionary structure
+    for k, v in pairs(tb) do
+      new_table[k] = func(v, k)
+    end
   end
   return new_table
 end
@@ -723,13 +877,42 @@ function U.filter(tb, func)
 	U.Assert("U.filter", tb, "table")
 	U.Assert("U.filter", func, "function")
   local new_table = {}
-  local index = 0
-  for k,v in pairs(tb) do
-    index = index + 1
-    if (func(v, k)) then
-      if (k == index) then
-        table.insert(new_table, v)
-      else
+  -- Check if table is array-like (has sequential numeric indices starting at 1)
+  local isArray = false
+  local maxIndex = 0
+  for k, v in pairs(tb) do
+    if type(k) == "number" and k > 0 and k == math.floor(k) then
+      if k > maxIndex then maxIndex = k end
+    else
+      -- Has non-numeric key, treat as dictionary
+      isArray = false
+      break
+    end
+  end
+  -- If all keys are sequential from 1 to maxIndex, it's an array
+  if maxIndex > 0 then
+    isArray = true
+    for i = 1, maxIndex do
+      if tb[i] == nil then
+        isArray = false
+        break
+      end
+    end
+  end
+
+  if isArray then
+    -- Preserve array structure
+    local newIndex = 1
+    for i = 1, maxIndex do
+      if func(tb[i], i) then
+        new_table[newIndex] = tb[i]
+        newIndex = newIndex + 1
+      end
+    end
+  else
+    -- Dictionary structure
+    for k, v in pairs(tb) do
+      if func(v, k) then
         new_table[k] = v
       end
     end
@@ -1317,8 +1500,757 @@ function U.changeLighting(params)
 end
 
 -- ============================================================================
+-- EASING FUNCTIONS (Internal)
+-- ============================================================================
+
+-- Internal easing function that applies intensity multiplier
+-- @param t number Normalized time (0 to 1)
+-- @param easeType string Easing type name
+-- @param intensity number Multiplier (0 = linear, 1 = standard, >1 = more dramatic)
+-- @return number Eased t value (0 to 1)
+local function applyEase(t, easeType, intensity)
+	if intensity == 0 or easeType == "linear" then return t end
+
+	local eased = t
+
+	if easeType == "powerIn" then
+		local power = 2 * intensity
+		eased = math.pow(t, power)
+	elseif easeType == "powerOut" then
+		local power = 2 * intensity
+		eased = 1 - math.pow(1 - t, power)
+	elseif easeType == "powerInOut" then
+		local power = 2 * intensity
+		if t < 0.5 then
+			eased = math.pow(2 * t, power) / 2
+		else
+			eased = 1 - math.pow(2 * (1 - t), power) / 2
+		end
+	elseif easeType == "sineIn" then
+		eased = 1 - math.cos(t * math.pi / 2)
+	elseif easeType == "sineOut" then
+		eased = math.sin(t * math.pi / 2)
+	elseif easeType == "sineInOut" then
+		eased = -(math.cos(math.pi * t) - 1) / 2
+	elseif easeType == "back" then
+		-- Overshoot easing: intensity controls overshoot distance
+		local c1 = 1.70158 * intensity
+		local c3 = c1 + 1
+		eased = 1 + c3 * math.pow(t - 1, 3) + c1 * math.pow(t - 1, 2)
+	elseif easeType == "bounce" then
+		-- Bounce easing: intensity controls bounce count
+		local n1 = 7.5625
+		local d1 = 2.75
+		local bounceCount = math.floor(intensity)
+		if t < 1 / d1 then
+			eased = n1 * t * t
+		elseif t < 2 / d1 then
+			eased = n1 * (t - 1.5 / d1) * (t - 1.5 / d1) + 0.75
+		elseif t < 2.5 / d1 then
+			eased = n1 * (t - 2.25 / d1) * (t - 2.25 / d1) + 0.9375
+		else
+			eased = n1 * (t - 2.625 / d1) * (t - 2.625 / d1) + 0.984375
+		end
+		-- Scale bounce effect by intensity
+		if intensity > 1 then
+			eased = eased * (1 + (intensity - 1) * 0.2)
+			if eased > 1 then eased = 1 end
+		end
+	end
+
+	-- Apply intensity multiplier (interpolate between linear and eased)
+	return t + (eased - t) * intensity
+end
+
+-- ============================================================================
 -- ANIMATION & INTERPOLATION UTILITIES
 -- ============================================================================
+
+-- Helper: Convert cylindrical coordinates to XYZ
+-- @param cylindrical table {radius, angle, height}
+-- @param center Vector Center point in XYZ
+-- @return Vector Position in XYZ coordinates
+local function cylindricalToXYZ(cylindrical, center)
+	center = Vector(center)
+	local angleRad = math.rad(cylindrical.angle)
+	return Vector(
+		center.x + cylindrical.radius * math.sin(angleRad),
+		center.y + cylindrical.height,
+		center.z + cylindrical.radius * math.cos(angleRad)
+	)
+end
+
+-- Helper: Convert spherical coordinates to XYZ
+-- @param spherical table {radius, angle, angle2}
+-- @param center Vector Center point in XYZ
+-- @return Vector Position in XYZ coordinates
+local function sphericalToXYZ(spherical, center)
+	center = Vector(center)
+	local angleRad = math.rad(spherical.angle)
+	-- Add 90° to angle2 to shift the coordinate system
+	-- New system: angle2=0 is perpendicular, angle2=-90 is above, angle2=+90 is below
+	local angle2Rad = math.rad(spherical.angle2 + 90)
+	-- Standard spherical coordinate formula
+	local horizontalRadius = spherical.radius * math.sin(angle2Rad)
+	return Vector(
+		center.x + horizontalRadius * math.sin(angleRad),
+		center.y + spherical.radius * math.cos(angle2Rad),
+		center.z + horizontalRadius * math.cos(angleRad)
+	)
+end
+
+-- Helper: Resolve position from PositionOrientationData (handles Objects and coordinate systems)
+-- @param data table PositionOrientationData
+-- @param coordinateSystem string "xy", "cylindrical", or "spherical"
+-- @return Vector|nil Position in XYZ, or nil if no position
+local function resolvePosition(data, coordinateSystem, center)
+	if data.position == nil then return nil end
+
+	center = center or Vector(0, 0, 0)
+
+	-- Handle Object reference
+	if U.isGameObject(data.position) then
+		return data.position.getPosition()
+	end
+
+	-- Handle coordinate system
+	if coordinateSystem == "cylindrical" then
+		local cyl = data.position
+		-- If Vector provided, interpret as {radius=x, angle=y, height=z}
+		if U.isInstance(cyl, Vector) then
+			cyl = {radius = cyl.x, angle = cyl.y, height = cyl.z}
+		end
+		return cylindricalToXYZ(cyl, center)
+	elseif coordinateSystem == "spherical" then
+		local sph = data.position
+		-- If Vector provided, interpret as {radius=x, angle=y, angle2=z}
+		if U.isInstance(sph, Vector) then
+			sph = {radius = sph.x, angle = sph.y, angle2 = sph.z}
+		end
+		return sphericalToXYZ(sph, center)
+	else
+		-- XY coordinates (default)
+		return Vector(data.position)
+	end
+end
+
+-- Helper: Resolve center from PositionOrientationData (handles Objects)
+-- @param data table PositionOrientationData
+-- @return Vector Center point in XYZ
+local function resolveCenter(data)
+	if data.center == nil then return Vector(0, 0, 0) end
+	if U.isGameObject(data.center) then
+		return data.center.getPosition()
+	end
+	return Vector(data.center)
+end
+
+--- Calculates rotation angles to face a target position from a source position
+-- Useful for making objects "look at" or face toward another object or position
+-- @param from Vector|table Source position {x, y, z}
+-- @param to Vector|table Target position {x, y, z}
+-- @return Vector Rotation angles in degrees {pitch, yaw, 0}
+-- @usage local rot = U.lookAtRotation(obj1.getPosition(), obj2.getPosition())
+-- @usage local rot = U.lookAtRotation({x=0, y=0, z=0}, {x=10, y=5, z=10})
+function U.lookAtRotation(from, to)
+	-- Validate inputs
+	if from == nil then
+		U.error("U.lookAtRotation", "from parameter is nil")
+		return Vector(0, 0, 0)
+	end
+	if to == nil then
+		U.error("U.lookAtRotation", "to parameter is nil")
+		return Vector(0, 0, 0)
+	end
+
+	-- Extract x, y, z values from inputs (handles both Vector objects and tables)
+	local fromX, fromY, fromZ
+	local toX, toY, toZ
+
+	if type(from) == "table" then
+		fromX = from.x or from[1] or 0
+		fromY = from.y or from[2] or 0
+		fromZ = from.z or from[3] or 0
+	elseif U.isGameObject(from) then
+		-- Try to get position if it's an object
+		local success, pos = pcall(function() return from.getPosition() end)
+		if success and pos then
+			fromX = pos.x or 0
+			fromY = pos.y or 0
+			fromZ = pos.z or 0
+		else
+			U.error("U.lookAtRotation", "Cannot extract coordinates from 'from' parameter", from)
+			return Vector(0, 0, 0)
+		end
+	else
+		U.error("U.lookAtRotation", "Unsupported 'from' parameter type", from)
+		return Vector(0, 0, 0)
+	end
+
+	if type(to) == "table" then
+		toX = to.x or to[1] or 0
+		toY = to.y or to[2] or 0
+		toZ = to.z or to[3] or 0
+	elseif U.isGameObject(to) then
+		-- Try to get position if it's an object
+		local success, pos = pcall(function() return to.getPosition() end)
+		if success and pos then
+			toX = pos.x or 0
+			toY = pos.y or 0
+			toZ = pos.z or 0
+		else
+			U.error("U.lookAtRotation", "Cannot extract coordinates from 'to' parameter", to)
+			return Vector(0, 0, 0)
+		end
+	else
+		U.error("U.lookAtRotation", "Unsupported 'to' parameter type", to)
+		return Vector(0, 0, 0)
+	end
+
+	-- Calculate direction vector manually
+	local dx = toX - fromX
+	local dy = toY - fromY
+	local dz = toZ - fromZ
+	-- Calculate distance
+	local distance = math.sqrt(dx * dx + dy * dy + dz * dz)
+	if distance < 0.001 then
+		return Vector(0, 0, 0)
+	end
+
+	-- Normalize direction vector manually
+	local invDistance = 1.0 / distance
+	local normX = dx * invDistance
+	local normY = dy * invDistance
+	local normZ = dz * invDistance
+
+	-- Calculate rotation angles (convert radians to degrees)
+	-- Lua 5.1 doesn't have math.deg, so we multiply by 180/pi
+	local radToDeg = 180 / math.pi
+	-- Yaw: rotation around Y axis (horizontal rotation)
+	-- atan2(x, z) gives angle in XZ plane where 0° = +Z, 90° = +X
+	local yaw = math.atan2(normX, normZ) * radToDeg
+	-- Pitch: rotation around X axis (vertical rotation)
+	-- asin(-y) gives angle where positive pitch looks up
+	local pitch = math.asin(-normY) * radToDeg
+
+	-- NOTE: For point lights in TTS, rotation (0, 0, 0) faces downward (negative Y)
+	-- To make the light face the target, we need to add -90° to pitch
+	-- This aligns the light's forward direction with our coordinate system
+	pitch = pitch - 90
+
+	return Vector(pitch, yaw, 0)
+end
+
+-- Helper: Calculate look-at rotation from position to target (internal use)
+-- @param from Vector Source position
+-- @param to Vector Target position
+-- @return Vector Rotation angles in degrees
+local function calculateLookAtRotation(from, to)
+	return U.lookAtRotation(from, to)
+end
+
+-- Helper: Resolve orientation from PositionOrientationData (handles Objects)
+-- @param data table PositionOrientationData
+-- @param currentPos Vector Current position (for look-at calculations)
+-- @return Vector|nil Rotation in degrees, or nil if no orientation
+local function resolveOrientation(data, currentPos)
+	if data.orientation == nil then return nil end
+
+	if U.isGameObject(data.orientation) then
+		-- Calculate look-at rotation
+		local targetPos = data.orientation.getPosition()
+		return calculateLookAtRotation(currentPos, targetPos)
+	else
+		return Vector(data.orientation)
+	end
+end
+
+-- Helper: Interpolate rotation with shortest path wrapping
+-- @param start Vector Starting rotation
+-- @param finish Vector Ending rotation
+-- @param t number Interpolation factor (0 to 1)
+-- @return Vector Interpolated rotation
+local function lerpRotation(start, finish, t)
+	local function parseAngleLerp(startAngle, finishAngle)
+		if math.abs(finishAngle - startAngle) > math.abs(finishAngle + 360 - startAngle) then
+			finishAngle = finishAngle + 360
+		end
+		if math.abs(finishAngle - startAngle) > math.abs(finishAngle - 360 - startAngle) then
+			finishAngle = finishAngle - 360
+		end
+		return finishAngle
+	end
+
+	local adjustedFinish = Vector(
+		parseAngleLerp(start.x, finish.x),
+		parseAngleLerp(start.y, finish.y),
+		parseAngleLerp(start.z, finish.z)
+	)
+
+	return start:lerp(adjustedFinish, t)
+end
+
+--- Generates a pre-computed eased path for simple types (number, Color)
+-- Returns a table of interpolated values, one per frame (60 FPS)
+-- @param start number|Color Starting value
+-- @param end number|Color Ending value
+-- @param duration number Duration in seconds
+-- @param ease string Optional easing type (default: "sineInOut")
+-- @param easeIntensity number Optional intensity multiplier (default: 1.0)
+-- @return table Array of interpolated values
+-- @usage local alphaPath = U.GetEasedValue(0.0, 1.0, 1.0, "sineInOut", 1.0)
+function U.GetEasedValue(start, endVal, duration, ease, easeIntensity)
+	if duration == nil then duration = 0.5 end
+	if ease == nil then ease = "sineInOut" end
+	if easeIntensity == nil then easeIntensity = 1.0 end
+
+	local frames = math.ceil(duration * 60)  -- 60 FPS
+	local path = {}
+
+	for i = 0, frames do
+		local t = i / frames
+		local tEased = applyEase(t, ease, easeIntensity)
+
+		local value
+		if U.isInstance(start, Color) then
+			value = start:lerp(endVal, tEased)
+		else
+			-- Number interpolation
+			local delta = endVal - start
+			value = start + (delta * tEased)
+		end
+
+		table.insert(path, value)
+	end
+
+	return path
+end
+
+--- Generates a pre-computed eased path for positions and orientations
+-- Returns a table of PositionOrientationData, one per frame (60 FPS)
+-- If Object references are present, returns "DEFER" to signal deferred computation
+-- @param start table PositionOrientationData starting state
+-- @param end table PositionOrientationData ending state
+-- @param duration number Duration in seconds
+-- @param ease string Optional easing type (default: "sineInOut")
+-- @param easeIntensity number Optional intensity multiplier (default: 1.0)
+-- @param coordinateSystem string Optional: "xy", "cylindrical", or "spherical" (default: "xy")
+-- @return table|string Array of PositionOrientationData, or "DEFER" if Objects present
+-- @usage local path = U.GetEasedPath({position = Vector(0,0,0)}, {position = Vector(10,10,10)}, 1.0)
+function U.GetEasedPath(start, endVal, duration, ease, easeIntensity, coordinateSystem)
+	if duration == nil then duration = 0.5 end
+	if ease == nil then ease = "sineInOut" end
+	if easeIntensity == nil then easeIntensity = 1.0 end
+	if coordinateSystem == nil then coordinateSystem = "xy" end
+
+	-- Check for Object references (defer computation)
+	local hasObjects = false
+	if U.isGameObject(start.position) or U.isGameObject(endVal.position) then
+		hasObjects = true
+	end
+	if U.isGameObject(start.orientation) or U.isGameObject(endVal.orientation) then
+		hasObjects = true
+	end
+	if U.isGameObject(start.center) or U.isGameObject(endVal.center) then
+		hasObjects = true
+	end
+
+	if hasObjects then
+		return "DEFER"
+	end
+
+	-- Resolve centers (needed for coordinate conversion)
+	local startCenter = resolveCenter(start)
+	local endCenter = resolveCenter(endVal)
+	-- Use start center for both if end center is not specified
+	local center = endCenter or startCenter
+
+	-- For cylindrical/spherical, we need to interpolate in coordinate space, not XYZ
+	-- Extract coordinate values from start and end
+	local startCoord, endCoord
+	if coordinateSystem == "cylindrical" then
+		-- Extract cylindrical coordinates
+		local startCyl = start.position
+		local endCyl = endVal.position
+		if U.isInstance(startCyl, Vector) then
+			startCyl = {radius = startCyl.x, angle = startCyl.y, height = startCyl.z}
+		end
+		if U.isInstance(endCyl, Vector) then
+			endCyl = {radius = endCyl.x, angle = endCyl.y, height = endCyl.z}
+		end
+		startCoord = startCyl
+		endCoord = endCyl
+	elseif coordinateSystem == "spherical" then
+		-- Extract spherical coordinates
+		local startSph = start.position
+		local endSph = endVal.position
+		if U.isInstance(startSph, Vector) then
+			startSph = {radius = startSph.x, angle = startSph.y, angle2 = startSph.z}
+		end
+		if U.isInstance(endSph, Vector) then
+			endSph = {radius = endSph.x, angle = endSph.y, angle2 = endSph.z}
+		end
+		startCoord = startSph
+		endCoord = endSph
+	else
+		-- XY coordinates: convert to XYZ and lerp directly
+		local startPos = resolvePosition(start, coordinateSystem, startCenter)
+		local endPos = resolvePosition(endVal, coordinateSystem, endCenter)
+		startCoord = startPos
+		endCoord = endPos
+	end
+
+	-- For orientation, we need current position for look-at calculations
+	-- Use start position as fallback
+	local startPosXYZ = resolvePosition(start, coordinateSystem, startCenter)
+	local endPosXYZ = resolvePosition(endVal, coordinateSystem, endCenter)
+	local startRot = resolveOrientation(start, startPosXYZ or Vector(0, 0, 0))
+	local endRot = resolveOrientation(endVal, endPosXYZ or Vector(0, 0, 0))
+
+	-- Generate path
+	local frames = math.ceil(duration * 60)  -- 60 FPS
+	local path = {}
+
+	for i = 0, frames do
+		local t = i / frames
+		local tEased = applyEase(t, ease, easeIntensity)
+
+		local step = {}
+
+		-- Interpolate position
+		if startCoord ~= nil and endCoord ~= nil then
+			if coordinateSystem == "cylindrical" then
+				-- Interpolate in cylindrical coordinate space
+				-- Handle angle wrapping: use shortest path for angles, but preserve full rotations
+				local angleDelta = endCoord.angle - startCoord.angle
+				local absDelta = math.abs(angleDelta)
+
+				-- Only normalize to shortest path if delta is <= 360°
+				-- Large deltas (> 360°) are treated as explicit multi-rotation animations (e.g., +720°, +800°)
+				if absDelta <= 360 then
+					-- Check if delta is close to a multiple of 360° (explicit full rotation like 360° or -360°)
+					local fullRotations = absDelta / 360
+					local nearMultiple = math.abs(fullRotations - math.floor(fullRotations + 0.5)) < 0.01
+
+					-- If not a multiple of 360°, normalize to shortest path (-180 to +180)
+					if not nearMultiple then
+						if angleDelta > 180 then
+							angleDelta = angleDelta - 360  -- Go the other way (shorter)
+						elseif angleDelta < -180 then
+							angleDelta = angleDelta + 360  -- Go the other way (shorter)
+						end
+					end
+				end
+				-- If absDelta > 360, preserve the large rotation as-is (explicit multi-rotation)
+
+				local interpAngle = startCoord.angle + angleDelta * tEased
+				-- No wrapping needed - sin/cos handle any angle value correctly
+
+				local interpCyl = {
+					radius = startCoord.radius + (endCoord.radius - startCoord.radius) * tEased,
+					angle = interpAngle,
+					height = startCoord.height + (endCoord.height - startCoord.height) * tEased
+				}
+				-- Convert to XYZ
+				step.position = cylindricalToXYZ(interpCyl, center)
+			elseif coordinateSystem == "spherical" then
+				-- Interpolate in spherical coordinate space
+				-- Handle angle wrapping: use shortest path for angles, but preserve full rotations
+				local angleDelta = endCoord.angle - startCoord.angle
+				local absDelta = math.abs(angleDelta)
+
+				-- Only normalize to shortest path if delta is <= 360°
+				-- Large deltas (> 360°) are treated as explicit multi-rotation animations (e.g., +720°, +800°)
+				if absDelta <= 360 then
+					-- Check if delta is close to a multiple of 360° (explicit full rotation like 360° or -360°)
+					local fullRotations = absDelta / 360
+					local nearMultiple = math.abs(fullRotations - math.floor(fullRotations + 0.5)) < 0.01
+
+					-- If not a multiple of 360°, normalize to shortest path (-180 to +180)
+					if not nearMultiple then
+						if angleDelta > 180 then
+							angleDelta = angleDelta - 360  -- Go the other way (shorter)
+						elseif angleDelta < -180 then
+							angleDelta = angleDelta + 360  -- Go the other way (shorter)
+						end
+					end
+				end
+				-- If absDelta > 360, preserve the large rotation as-is (explicit multi-rotation)
+
+				local interpAngle = startCoord.angle + angleDelta * tEased
+				-- No wrapping needed - sin/cos handle any angle value correctly
+
+				local interpSph = {
+					radius = startCoord.radius + (endCoord.radius - startCoord.radius) * tEased,
+					angle = interpAngle,
+					angle2 = startCoord.angle2 + (endCoord.angle2 - startCoord.angle2) * tEased
+				}
+				-- Convert to XYZ
+				step.position = sphericalToXYZ(interpSph, center)
+			else
+				-- XY coordinates: lerp directly
+				step.position = startCoord:lerp(endCoord, tEased)
+			end
+		elseif startCoord ~= nil then
+			if coordinateSystem == "cylindrical" then
+				step.position = cylindricalToXYZ(startCoord, center)
+			elseif coordinateSystem == "spherical" then
+				step.position = sphericalToXYZ(startCoord, center)
+			else
+				step.position = startCoord
+			end
+		elseif endCoord ~= nil then
+			if coordinateSystem == "cylindrical" then
+				step.position = cylindricalToXYZ(endCoord, center)
+			elseif coordinateSystem == "spherical" then
+				step.position = sphericalToXYZ(endCoord, center)
+			else
+				step.position = endCoord
+			end
+		end
+
+		-- Interpolate orientation
+		if startRot ~= nil and endRot ~= nil then
+			step.orientation = lerpRotation(startRot, endRot, tEased)
+		elseif startRot ~= nil then
+			step.orientation = startRot
+		elseif endRot ~= nil then
+			step.orientation = endRot
+		end
+
+		table.insert(path, step)
+	end
+
+	return path
+end
+
+--- Executes a pre-computed path step-by-step via coroutine
+-- @param path table Array of PositionOrientationData from U.GetEasedPath
+-- @param setFunc function Function that receives each step and applies it
+-- @return number Duration of the path
+-- @usage U.LerpPath(path, function(step) obj.setPositionSmooth(step.position) end)
+function U.LerpPath(path, setFunc)
+	if path == nil or #path == 0 then return 0 end
+	if setFunc == nil then return 0 end
+
+	local duration = #path / 60  -- Convert frames to seconds
+
+	-- Store coroutine function globally so startLuaCoroutine can find it
+	-- Use a unique name to avoid conflicts
+	local coroutineId = math.random(1000000, 9999999)
+	local coroutineName = "LerpPathCoroutine_" .. coroutineId
+
+	-- Define function in global scope (not as Global.field)
+	_G[coroutineName] = function()
+		for i = 1, #path do
+			if setFunc then
+				setFunc(path[i])
+			end
+			coroutine.yield(0)  -- One frame per step
+		end
+		-- Clean up after completion
+		_G[coroutineName] = nil
+		return 1
+	end
+
+	-- Try to start coroutine - use self (Global) if available, otherwise try _G
+	local success, err = pcall(function()
+		if self then
+			startLuaCoroutine(self, coroutineName)
+		else
+			startLuaCoroutine(_G, coroutineName)
+		end
+	end)
+	if not success then
+		U.error("U.LerpPath", "Failed to start coroutine: " .. tostring(err))
+		_G[coroutineName] = nil  -- Clean up on failure
+	end
+
+	return duration
+end
+
+--- Executes a path with Object references (resolves Objects at execution time)
+-- @param start table PositionOrientationData starting state
+-- @param end table PositionOrientationData ending state
+-- @param duration number Duration in seconds
+-- @param ease string Easing type
+-- @param easeIntensity number Intensity multiplier
+-- @param coordinateSystem string Coordinate system
+-- @param setFunc function Function that receives each step and applies it
+-- @return number Duration of the path
+function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinateSystem, setFunc)
+	if setFunc == nil then return 0 end
+
+	-- Resolve Object references
+	local startCenter = resolveCenter(start)
+	local endCenter = resolveCenter(endVal)
+
+	local startPos = resolvePosition(start, coordinateSystem, startCenter)
+	local endPos = resolvePosition(endVal, coordinateSystem, endCenter)
+
+	-- For orientation with Objects, we need to calculate look-at at each step
+	-- We'll generate the path on-the-fly
+	local frames = math.ceil(duration * 60)
+
+	-- Generate unique function name to avoid conflicts
+	local coroutineId = math.random(1000000, 9999999)
+	local coroutineName = "LerpDeferredCoroutine_" .. coroutineId
+
+	-- Store coroutine function globally so startLuaCoroutine can find it
+	_G[coroutineName] = function()
+		for i = 0, frames do
+			local t = i / frames
+			local tEased = applyEase(t, ease, easeIntensity)
+
+			local step = {}
+
+			-- Interpolate position
+			if startPos ~= nil and endPos ~= nil then
+				-- For cylindrical/spherical, we need to interpolate in coordinate space
+				if coordinateSystem == "cylindrical" then
+					-- Convert XYZ back to cylindrical for interpolation
+					local startCyl = U.XYZToCylindrical(startPos, startCenter)
+					local endCyl = U.XYZToCylindrical(endPos, endCenter)
+
+					-- Handle angle wrapping: use shortest path for angles, but preserve full rotations
+					local angleDelta = endCyl.angle - startCyl.angle
+					local absDelta = math.abs(angleDelta)
+
+					-- Only normalize to shortest path if delta is <= 360°
+					-- Large deltas (> 360°) are treated as explicit multi-rotation animations (e.g., +720°, +800°)
+					if absDelta <= 360 then
+						-- Check if delta is close to a multiple of 360° (explicit full rotation like 360° or -360°)
+						local fullRotations = absDelta / 360
+						local nearMultiple = math.abs(fullRotations - math.floor(fullRotations + 0.5)) < 0.01
+
+						-- If not a multiple of 360°, normalize to shortest path (-180 to +180)
+						if not nearMultiple then
+							if angleDelta > 180 then
+								angleDelta = angleDelta - 360  -- Go the other way (shorter)
+							elseif angleDelta < -180 then
+								angleDelta = angleDelta + 360  -- Go the other way (shorter)
+							end
+						end
+					end
+					-- If absDelta > 360, preserve the large rotation as-is (explicit multi-rotation)
+
+					local interpAngle = startCyl.angle + angleDelta * tEased
+					-- No wrapping needed - sin/cos handle any angle value correctly
+
+					local interpCyl = {
+						radius = startCyl.radius + (endCyl.radius - startCyl.radius) * tEased,
+						angle = interpAngle,
+						height = startCyl.height + (endCyl.height - startCyl.height) * tEased
+					}
+					step.position = cylindricalToXYZ(interpCyl, endCenter or startCenter)
+				elseif coordinateSystem == "spherical" then
+					-- Convert XYZ back to spherical for interpolation
+					local startSph = U.XYZToSpherical(startPos, startCenter)
+					local endSph = U.XYZToSpherical(endPos, endCenter)
+
+					-- Handle angle wrapping: use shortest path for angles, but preserve full rotations
+					local angleDelta = endSph.angle - startSph.angle
+					local absDelta = math.abs(angleDelta)
+
+					-- Only normalize to shortest path if delta is <= 360°
+					-- Large deltas (> 360°) are treated as explicit multi-rotation animations (e.g., +720°, +800°)
+					if absDelta <= 360 then
+						-- Check if delta is close to a multiple of 360° (explicit full rotation like 360° or -360°)
+						local fullRotations = absDelta / 360
+						local nearMultiple = math.abs(fullRotations - math.floor(fullRotations + 0.5)) < 0.01
+
+						-- If not a multiple of 360°, normalize to shortest path (-180 to +180)
+						if not nearMultiple then
+							if angleDelta > 180 then
+								angleDelta = angleDelta - 360  -- Go the other way (shorter)
+							elseif angleDelta < -180 then
+								angleDelta = angleDelta + 360  -- Go the other way (shorter)
+							end
+						end
+					end
+					-- If absDelta > 360, preserve the large rotation as-is (explicit multi-rotation)
+
+					local interpAngle = startSph.angle + angleDelta * tEased
+					-- No wrapping needed - sin/cos handle any angle value correctly
+
+					local interpSph = {
+						radius = startSph.radius + (endSph.radius - startSph.radius) * tEased,
+						angle = interpAngle,
+						angle2 = startSph.angle2 + (endSph.angle2 - startSph.angle2) * tEased
+					}
+					step.position = sphericalToXYZ(interpSph, endCenter or startCenter)
+				else
+					-- XY coordinates: lerp directly
+					step.position = startPos:lerp(endPos, tEased)
+				end
+			end
+
+			-- Handle orientation (may need to recalculate if Objects present)
+			if start.orientation ~= nil or endVal.orientation ~= nil then
+				local currentPos = step.position or startPos or Vector(0, 0, 0)
+
+				local startRot
+				if start.orientation ~= nil then
+					if U.isGameObject(start.orientation) then
+						local success, targetPos = pcall(function() return start.orientation.getPosition() end)
+						if success and targetPos then
+							startRot = calculateLookAtRotation(currentPos, targetPos)
+						else
+							startRot = Vector(0, 0, 0)
+						end
+					else
+						startRot = Vector(start.orientation)
+					end
+				end
+
+				local endRot
+				if endVal.orientation ~= nil then
+					if U.isGameObject(endVal.orientation) then
+						local success, targetPos = pcall(function() return endVal.orientation.getPosition() end)
+						if success and targetPos then
+							endRot = calculateLookAtRotation(currentPos, targetPos)
+						else
+							endRot = Vector(0, 0, 0)
+						end
+					else
+						endRot = Vector(endVal.orientation)
+					end
+				end
+
+				if startRot ~= nil and endRot ~= nil then
+					step.orientation = lerpRotation(startRot, endRot, tEased)
+				elseif startRot ~= nil then
+					step.orientation = startRot
+				elseif endRot ~= nil then
+					step.orientation = endRot
+				end
+			end
+
+			if setFunc then
+				setFunc(step)
+			end
+			coroutine.yield(0)
+		end
+		-- Clean up after completion
+		_G[coroutineName] = nil
+		return 1
+	end
+
+	-- Try to start coroutine - use self (Global) if available, otherwise try _G
+	local success, err = pcall(function()
+		if self then
+			startLuaCoroutine(self, coroutineName)
+		else
+			startLuaCoroutine(_G, coroutineName)
+		end
+	end)
+	if not success then
+		U.error("U.LerpDeferred", "Failed to start coroutine: " .. tostring(err))
+		_G[coroutineName] = nil  -- Clean up on failure
+	end
+
+	return duration
+end
 
 --- Smoothly animates an object's rotation over time
 -- Uses U.Lerp internally to interpolate rotation values. Handles rotation wrapping (shortest path).
@@ -1404,9 +2336,15 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
 
 	-- parseCheckFunc(testRef): Converts testRef into a test function (recursively, if testRef is a table)
 	local function parseCheckFunc(tRef)
-		if tRef == nil then tRef = 0.5 end
-		if U.Type(tRef) == "function" then return tRef
-		elseif U.Type(tRef) == "number" then
+		if tRef == nil then
+			tRef = 0.5  -- Default to 0.5 seconds
+		end
+
+		local tRefType = U.Type(tRef)
+
+		if tRefType == "function" then
+			return tRef
+		elseif tRefType == "number" then
 			-- Use time-based waiting instead of frame counting
 			-- Capture the duration in the closure
 			local waitDuration = tRef  -- Duration in seconds
@@ -1418,51 +2356,101 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
 				return elapsed >= waitDuration
 			end
 		elseif U.isGameObject(tRef) then
-			return function() return tRef and tRef.resting and not tRef.loading_custom end
-		elseif U.Type(tRef) == "table" then
-			local checkFuncs = U.map(tRef, function(tr) return parseCheckFunc(tr) end)
 			return function()
-				checkFuncs = U.filter(checkFuncs, function(cf) return cf() == false end)
-				return #checkFuncs == 0
+				-- Safe access with fallback values
+				local resting = tRef.resting or false
+				local loading = tRef.loading_custom or false
+				return resting and not loading
+			end
+		elseif tRefType == "table" then
+			local checkFuncs = U.map(tRef, function(tr)
+				return parseCheckFunc(tr)
+			end)
+			return function()
+				if checkFuncs and #checkFuncs > 0 then
+					checkFuncs = U.filter(checkFuncs, function(cf)
+						if cf and U.Type(cf) == "function" then
+							local success, result = pcall(function() return cf() end)
+							if success then
+								return result == false
+							end
+						end
+						return false
+					end)
+					return #checkFuncs == 0
+				end
+				return true
 			end
 		end
+		-- Fallback: return a function that always returns true
+		return function() return true end
+	end
+
+	if testRef == nil then
+		testRef = 0.5  -- Default to 0.5 seconds
 	end
 
 	local pCheckFunc = parseCheckFunc(testRef)
 
+	-- Ensure pCheckFunc is valid (parseCheckFunc always returns a function, but be safe)
+	if pCheckFunc == nil or U.Type(pCheckFunc) ~= "function" then
+		pCheckFunc = function() return true end  -- Fallback
+	end
+
 	local afterReturnVal
 
 	function CheckCoroutine()
-		if pCheckFunc ~= nil then
-			while not pCheckFunc() do
-				local elapsedTime = 0
-				if waitStartTime ~= nil then
-					elapsedTime = os.time() - waitStartTime
-				end
+		if pCheckFunc == nil or U.Type(pCheckFunc) ~= "function" then
+			return 1
+		end
 
-				-- Check timeout (maxWait is now in seconds)
-				if elapsedTime > maxWait and not hasWaited then
-					log(debug.traceback())
-					hasWaited = true
-					if isForcing then
-						U.AlertGM("Coroutine Timeout: Forcing ResultFunc")
-						break
-					end
-					U.AlertGM("Coroutine Still Waiting! (See Log Traceback)")
-				end
+		while true do
+			-- Safely call pCheckFunc
+			local success, checkResult = pcall(function() return pCheckFunc() end)
+			if not success then
+				-- Log error but don't crash - just break the loop
+				log({waitUntilError = checkResult, traceback = debug.traceback()})
+				break
+			end
 
-				-- Yield for a short time (testFrequency is now in seconds)
-				-- Convert seconds to approximate frame yields (60 FPS = ~0.016s per frame)
-				-- Use a minimum of 1 frame yield to avoid tight loops
-				local yieldFrames = math.max(1, math.floor(testFrequency * 60))
-				for i = 1, yieldFrames do
-					coroutine.yield(0)
+			if checkResult then
+				break  -- Condition met, exit loop
+			end
+
+			-- Calculate elapsed time
+			local elapsedTime = 0
+			if waitStartTime ~= nil then
+				elapsedTime = os.time() - waitStartTime
+			end
+
+			-- Check timeout (maxWait is now in seconds)
+			if elapsedTime > maxWait and not hasWaited then
+				log(debug.traceback())
+				hasWaited = true
+				if isForcing then
+					U.AlertGM("Coroutine Timeout: Forcing ResultFunc")
+					break
 				end
+				U.AlertGM("Coroutine Still Waiting! (See Log Traceback)")
+			end
+
+			-- Yield for a short time (testFrequency is now in seconds)
+			-- Convert seconds to approximate frame yields (60 FPS = ~0.016s per frame)
+			-- Use a minimum of 1 frame yield to avoid tight loops
+			local yieldFrames = math.max(1, math.floor(testFrequency * 60))
+			for i = 1, yieldFrames do
+				coroutine.yield(0)
 			end
 		end
 
-		if afterFunc ~= nil then
-			afterReturnVal = afterFunc()
+		if afterFunc ~= nil and U.Type(afterFunc) == "function" then
+			local success, result = pcall(function() return afterFunc() end)
+			if success then
+				afterReturnVal = result
+			else
+				-- Log error but don't crash
+				log({waitUntilAfterFuncError = result, traceback = debug.traceback()})
+			end
 		end
 
 		return 1
@@ -1575,7 +2563,8 @@ end
 --- Interpolates a value over time using linear interpolation (coroutine-based)
 --
 -- Smoothly transitions a value from start to end over a duration by repeatedly calling a setter function.
--- Supports numbers, Vectors, and Colors. For rotations, automatically handles shortest path (wraps 360°).
+-- Supports numbers, Vectors, Colors, pre-computed paths, and PositionOrientationData.
+-- For rotations, automatically handles shortest path (wraps 360°).
 --
 -- Uses coroutines internally, so must be called from a context that supports startLuaCoroutine.
 -- In Global context, use: startLuaCoroutine(Global, "LerpCoroutine")
@@ -1584,19 +2573,47 @@ end
 -- functions for parallel animation of multiple properties.
 --
 -- @param setFunc function Setter function that receives the interpolated value: setFunc(currentValue)
--- @param paramStart number|Vector|Color Starting value
--- @param paramEnd number|Vector|Color Ending value
--- @param duration number Duration in seconds (default: 0.5)
--- @param isRotationLerp boolean If true, handles rotation wrapping (shortest path around 360°)
--- @param easing string Optional: "speedUp" for acceleration, nil for linear
+-- @param paramStart number|Vector|Color|table Starting value, pre-computed path, or PositionOrientationData
+-- @param paramEnd number|Vector|Color|table Optional: Ending value or PositionOrientationData
+-- @param duration number Optional: Duration in seconds (default: 0.5)
+-- @param isRotationLerp boolean Optional: If true, handles rotation wrapping (shortest path around 360°)
+-- @param easing string Optional: Easing type ("speedUp" for backward compat, or new ease types)
 -- @return number The duration (for chaining)
 --
--- @usage U.Lerp(function(v) obj.setPositionSmooth(v) end, startPos, endPos, 1.0)
--- @usage U.Lerp(function(r) light.setRotation(r) end, startRot, endRot, 0.5, true) -- Rotation lerp
--- @usage local lerps = {U.Lerp(setX, 0, 10, 1), U.Lerp(setY, 0, 20, 1)} -- Parallel animation
+-- @usage U.Lerp(function(v) obj.setPositionSmooth(v) end, startPos, endPos, 1.0) -- Traditional
+-- @usage U.Lerp(function(step) obj.setPositionSmooth(step.position) end, path) -- Pre-computed path
+-- @usage U.Lerp(function(step) obj.setPositionSmooth(step.position) end, {position=Vector(0,0,0)}, {position=Vector(10,10,10)}, 2.0, false, "bounce") -- PositionOrientationData
 --
 -- NOTE: Requires startLuaCoroutine(Global, "LerpCoroutine") - self refers to Global in Global context
 function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing)
+	-- Check if paramStart is a pre-computed path (table of PositionOrientationData)
+	if U.Type(paramStart) == "table" and #paramStart > 0 then
+		-- Check if it's a path (has PositionOrientationData structure)
+		if paramStart[1].position ~= nil or paramStart[1].orientation ~= nil then
+			return U.LerpPath(paramStart, setFunc)
+		end
+	end
+
+	-- Check if paramStart is PositionOrientationData (new path-based lerp)
+	if U.Type(paramStart) == "table" and (paramStart.position ~= nil or paramStart.orientation ~= nil) then
+		if paramEnd == nil or U.Type(paramEnd) ~= "table" then
+			U.error("U.Lerp", "PositionOrientationData requires paramEnd to also be PositionOrientationData")
+		end
+
+		-- Generate path (may return "DEFER" if Objects present)
+		local coordinateSystem = "xy"  -- Default, could be made configurable
+		local path = U.GetEasedPath(paramStart, paramEnd, duration or 0.5, easing or "sineInOut", 1.0, coordinateSystem)
+
+		if path == "DEFER" then
+			-- Defer path generation - resolve Objects at execution time
+			return U.LerpDeferred(paramStart, paramEnd, duration or 0.5, easing or "sineInOut", 1.0, coordinateSystem, setFunc)
+		else
+			-- Use pre-computed path
+			return U.LerpPath(path, setFunc)
+		end
+	end
+
+	-- Existing behavior (backward compatible)
 	if duration == nil then duration = 0.5 end
 	if U.isInstance(paramStart, Vector) or U.isInstance(paramStart, Color) then
 		if paramStart:equals(paramEnd) then return 0 end
@@ -1650,7 +2667,8 @@ function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing)
 		return 1
 	end
 
-	startLuaCoroutine(self, "LerpCoroutine")
+	-- Use Global explicitly since this may be called from within coroutines
+	startLuaCoroutine(Global, "LerpCoroutine")
 
 	return duration
 end

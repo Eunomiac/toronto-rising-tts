@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 --[[
     Debug/Testing Module (core/debug.ttslua)
 
@@ -15,16 +16,17 @@
     Consider disabling or restricting access in production builds.
 ]]
 
-local DEBUG = {}
-local U = require("lib.util")
-local S = require("core.state")
-local M = require("core.main")
-local Z = require("core.zones")
-local Scenes = require("core.scenes")
-local C = require("lib.constants")
-local G = require("lib.guids")
-local L = require("core.lighting")
-local O = require("core.objects")
+DEBUG = {}
+U = require("lib.util")
+S = require("core.state")
+M = require("core.main")
+Z = require("core.zones")
+Scenes = require("core.scenes")
+C = require("lib.constants")
+G = require("lib.guids")
+L = require("core.lighting")
+O = require("core.objects")
+LightTest = require("core.light_test")
 
 --[[
     File Logging Configuration
@@ -1177,15 +1179,15 @@ function DEBUG.testLightingAndSignals()
     table.insert(sequenceFunctions, waitStep("Initialization complete, waiting 3 seconds...", 3.0))
 
     -- Step 4: Test signal fire ON (random player)
+    local randomSignalFireColor = getRandomPlayerColor()
     table.insert(sequenceFunctions, function()
-        local testColor = getRandomPlayerColor()
-        broadcast("🔥 Testing Signal Fire ON (" .. testColor .. " player)", {1, 0.5, 0})
-        local success = O.SetSignalFireState(testColor, "on", 0.2)  -- 0.2 seconds (3x faster)
+        broadcast("🔥 Testing Signal Fire ON (" .. randomSignalFireColor .. " player)", {1, 0.5, 0})
+        local success = O.SetSignalFireState(randomSignalFireColor, "on", 0)  -- 0.2 seconds (3x faster)
         if success then
-            printTestResult("Signal Fire ON (" .. testColor .. ")", true, "Fire moved to y=1.5")
+            printTestResult("Signal Fire ON (" .. randomSignalFireColor .. ")", true, "Fire moved to y=1.5")
             passed = passed + 1
         else
-            printTestResult("Signal Fire ON (" .. testColor .. ")", false, "Failed to move fire")
+            printTestResult("Signal Fire ON (" .. randomSignalFireColor .. ")", false, "Failed to move fire")
             failed = failed + 1
         end
         return 1.5  -- Wait for animation
@@ -1196,14 +1198,13 @@ function DEBUG.testLightingAndSignals()
 
     -- Step 6: Test signal fire OFF (random player)
     table.insert(sequenceFunctions, function()
-        local testColor = getRandomPlayerColor()
-        broadcast("💤 Testing Signal Fire OFF (" .. testColor .. " player)", {0.5, 0.5, 0.5})
-        local success = O.SetSignalFireState(testColor, "off", 0.2)  -- 0.2 seconds (3x faster)
+        broadcast("💤 Testing Signal Fire OFF (" .. randomSignalFireColor .. " player)", {0.5, 0.5, 0.5})
+        local success = O.SetSignalFireState(randomSignalFireColor, "off", 0)  -- 0 seconds (instant)
         if success then
-            printTestResult("Signal Fire OFF (" .. testColor .. ")", true, "Fire moved to y=-7")
+            printTestResult("Signal Fire OFF (" .. randomSignalFireColor .. ")", true, "Fire moved to y=-7")
             passed = passed + 1
         else
-            printTestResult("Signal Fire OFF (" .. testColor .. ")", false, "Failed to move fire")
+            printTestResult("Signal Fire OFF (" .. randomSignalFireColor .. ")", false, "Failed to move fire")
             failed = failed + 1
         end
         return 1.5  -- Wait for animation
@@ -1217,7 +1218,7 @@ function DEBUG.testLightingAndSignals()
         broadcast("🔥 Testing All Signal Fires ON", {1, 0.5, 0})
         local allSuccess = true
         for _, color in ipairs(C.PlayerColors) do
-            local success = O.SetSignalFireState(color, "on", 0.2)  -- 0.2 seconds (3x faster)
+            local success = O.SetSignalFireState(color, "on", 0)  -- 0 seconds (instant)
             if not success then
                 allSuccess = false
             end
@@ -1306,63 +1307,16 @@ function DEBUG.testLightingAndSignals()
     -- Step 15: Wait after RING_FLARE OFF
     table.insert(sequenceFunctions, waitStep("RING_FLARE switched OFF, waiting 3 seconds...", 3.0))
 
-    -- Step 16: Simultaneously lerp all player lights from STANDARD to OFF
-    table.insert(sequenceFunctions, function()
-        broadcast("💤 Testing Player Lights: STANDARD → OFF (simultaneous)", {0.5, 0.5, 0.5})
-        local allSuccess = true
-        local lerpDuration = 2.0
-
-        -- Start all transitions simultaneously
-        for _, color in ipairs(C.PlayerColors) do
-            local success = setPlayerLightMode(color, "OFF", lerpDuration)
-            if not success then
-                allSuccess = false
-            end
-        end
-
-        if allSuccess then
-            printTestResult("Player Lights STANDARD→OFF", true, "All " .. #C.PlayerColors .. " lights transitioned simultaneously")
-            passed = passed + 1
-        else
-            printTestResult("Player Lights STANDARD→OFF", false, "Some lights failed")
-            failed = failed + 1
-        end
-
-        return lerpDuration + 1.0  -- Wait for animation to complete
-    end)
-
-    -- Step 17: Wait after simultaneous player lights OFF
-    table.insert(sequenceFunctions, waitStep("All Player Lights finished transitioning to OFF, waiting 3 seconds...", 3.0))
-
-    -- Step 18: Turn off all signal fires
-    table.insert(sequenceFunctions, function()
-        broadcast("💤 Turning Off All Signal Fires", {0.5, 0.5, 0.5})
-        local allSuccess = true
-        for _, color in ipairs(C.PlayerColors) do
-            local success = O.SetSignalFireState(color, "off", 0.2)  -- 0.2 seconds (3x faster)
-            if not success then
-                allSuccess = false
-            end
-        end
-        if allSuccess then
-            printTestResult("All Signal Fires OFF", true, "All fires deactivated")
-            passed = passed + 1
-        else
-            printTestResult("All Signal Fires OFF", false, "Some fires failed")
-            failed = failed + 1
-        end
-        return 2.0  -- Wait for animations
-    end)
-
     -- Step 19: Test hunger smoke ON (Brown player)
+    local randomHungerSmokeColor = getRandomPlayerColor()
     table.insert(sequenceFunctions, function()
-        broadcast("💨 Testing Hunger Smoke ON (Brown player)", {0.8, 0.4, 0.8})
-        local success = O.SetHungerSmokeState("Brown", "on", 0.2)  -- 0.2 seconds (3x faster)
+        broadcast("💨 Testing Hunger Smoke ON (" .. randomHungerSmokeColor .. " player)", {0.8, 0.4, 0.8})
+        local success = O.SetHungerSmokeState(randomHungerSmokeColor, "on", 0)  -- 0 seconds (instant)
         if success then
-            printTestResult("Hunger Smoke ON (Brown)", true, "Smoke moved to y=0.2")
+            printTestResult("Hunger Smoke ON (" .. randomHungerSmokeColor .. ")", true, "Smoke moved to y=0.2")
             passed = passed + 1
         else
-            printTestResult("Hunger Smoke ON (Brown)", false, "Failed to move smoke")
+            printTestResult("Hunger Smoke ON (" .. randomHungerSmokeColor .. ")", false, "Failed to move smoke")
             failed = failed + 1
         end
         return 1.5  -- Wait for animation
@@ -1373,14 +1327,13 @@ function DEBUG.testLightingAndSignals()
 
     -- Step 21: Test hunger smoke OFF (random player)
     table.insert(sequenceFunctions, function()
-        local testColor = getRandomPlayerColor()
-        broadcast("💤 Testing Hunger Smoke OFF (" .. testColor .. " player)", {0.5, 0.5, 0.5})
-        local success = O.SetHungerSmokeState(testColor, "off", 0.2)  -- 0.2 seconds (3x faster)
+        broadcast("💤 Testing Hunger Smoke OFF (" .. randomHungerSmokeColor .. " player)", {0.5, 0.5, 0.5})
+        local success = O.SetHungerSmokeState(randomHungerSmokeColor, "off", 0)  -- 0 seconds (instant)
         if success then
-            printTestResult("Hunger Smoke OFF (" .. testColor .. ")", true, "Smoke moved to y=-7")
+            printTestResult("Hunger Smoke OFF (" .. randomHungerSmokeColor .. ")", true, "Smoke moved to y=-7")
             passed = passed + 1
         else
-            printTestResult("Hunger Smoke OFF (" .. testColor .. ")", false, "Failed to move smoke")
+            printTestResult("Hunger Smoke OFF (" .. randomHungerSmokeColor .. ")", false, "Failed to move smoke")
             failed = failed + 1
         end
         return 1.5  -- Wait for animation
@@ -1394,7 +1347,7 @@ function DEBUG.testLightingAndSignals()
         broadcast("💨 Testing All Hunger Smoke ON", {0.8, 0.4, 0.8})
         local allSuccess = true
         for _, color in ipairs(C.PlayerColors) do
-            local success = O.SetHungerSmokeState(color, "on", 0.2)  -- 0.2 seconds (3x faster)
+            local success = O.SetHungerSmokeState(color, "on", 0)  -- 0 seconds (instant)
             if not success then
                 allSuccess = false
             end
@@ -1417,7 +1370,7 @@ function DEBUG.testLightingAndSignals()
         broadcast("💤 Turning Off All Hunger Smoke", {0.5, 0.5, 0.5})
         local allSuccess = true
         for _, color in ipairs(C.PlayerColors) do
-            local success = O.SetHungerSmokeState(color, "off", 0.2)  -- 0.2 seconds (3x faster)
+            local success = O.SetHungerSmokeState(color, "off", 0)  -- 0 seconds (instant)
             if not success then
                 allSuccess = false
             end
@@ -1431,6 +1384,58 @@ function DEBUG.testLightingAndSignals()
         end
         return 2.0  -- Wait for animations
     end)
+
+
+    -- Step 24: Wait after all hunger smoke OFF
+    table.insert(sequenceFunctions, waitStep("All Hunger Smoke finished lowering, waiting 3 seconds...", 3.0))
+
+    -- Step 16: Simultaneously lerp all player lights from STANDARD to OFF
+    table.insert(sequenceFunctions, function()
+      broadcast("💤 Testing Player Lights: STANDARD → OFF (simultaneous)", {0.5, 0.5, 0.5})
+      local allSuccess = true
+      local lerpDuration = 2.0
+
+      -- Start all transitions simultaneously
+      for _, color in ipairs(C.PlayerColors) do
+          local success = setPlayerLightMode(color, "OFF", lerpDuration)
+          if not success then
+              allSuccess = false
+          end
+      end
+
+      if allSuccess then
+          printTestResult("Player Lights STANDARD→OFF", true, "All " .. #C.PlayerColors .. " lights transitioned simultaneously")
+          passed = passed + 1
+      else
+          printTestResult("Player Lights STANDARD→OFF", false, "Some lights failed")
+          failed = failed + 1
+      end
+
+      return lerpDuration + 1.0  -- Wait for animation to complete
+  end)
+
+  -- Step 17: Wait after simultaneous player lights OFF
+  table.insert(sequenceFunctions, waitStep("All Player Lights finished transitioning to OFF, waiting 3 seconds...", 3.0))
+
+  -- Step 18: Turn off all signal fires
+  table.insert(sequenceFunctions, function()
+      broadcast("💤 Turning Off All Signal Fires", {0.5, 0.5, 0.5})
+      local allSuccess = true
+      for _, color in ipairs(C.PlayerColors) do
+          local success = O.SetSignalFireState(color, "off", 0.2)  -- 0.2 seconds (3x faster)
+          if not success then
+              allSuccess = false
+          end
+      end
+      if allSuccess then
+          printTestResult("All Signal Fires OFF", true, "All fires deactivated")
+          passed = passed + 1
+      else
+          printTestResult("All Signal Fires OFF", false, "Some fires failed")
+          failed = failed + 1
+      end
+      return 2.0  -- Wait for animations
+  end)
 
     -- Step 19: Final summary
     table.insert(sequenceFunctions, function()
@@ -1452,6 +1457,909 @@ function DEBUG.testLightingAndSignals()
 
     -- Use U.RunSequence to execute all steps
     U.RunSequence(sequenceFunctions)
+end
+
+--[[
+    Light Creation Feasibility Tests
+
+    These functions test the feasibility of creating custom point-source lights
+    programmatically instead of using third-party configurable lights.
+
+    See dev/LIGHT_CREATION_FEASIBILITY.md for detailed investigation.
+]]
+
+--- Test if "Light" is a spawnable built-in type
+-- @usage testSpawnLightType()
+function DEBUG.testSpawnLightType()
+    return LightTest.testSpawnLightType()
+end
+
+--- Test cloning an existing light object
+-- @param templateGUID string GUID of light object to clone
+-- @usage testCloneLight("abc123")
+function DEBUG.testCloneLight(templateGUID)
+    return LightTest.testCloneLight(templateGUID)
+end
+
+--- Inspect Light component properties
+-- @param lightGUID string GUID of light object to inspect
+-- @usage testInspectLight("abc123")
+function DEBUG.testInspectLight(lightGUID)
+    return LightTest.testInspectLight(lightGUID)
+end
+
+--- Test spawning a light from a template
+-- @param templateGUID string GUID of light template
+-- @param position Vector Position to spawn light (optional)
+-- @param rotation Vector Rotation of light (optional)
+-- @param config table Light configuration {enabled, range, intensity, color, angle} (optional)
+-- @usage testSpawnLight("abc123", Vector(0,5,0), Vector(0,0,0), {range=50, intensity=15})
+function DEBUG.testSpawnLight(templateGUID, position, rotation, config)
+    return LightTest.testSpawnLight(templateGUID, position, rotation, config)
+end
+
+--- Compare current light structure with potential new structure
+-- @param currentLightGUID string GUID of current configurable light
+-- @usage testCompareStructures("abc123")
+function DEBUG.testCompareStructures(currentLightGUID)
+    return LightTest.testCompareStructures(currentLightGUID)
+end
+
+--- Find all objects that might be lights
+-- @usage findPotentialLights()
+function DEBUG.findPotentialLights()
+    return LightTest.findPotentialLights()
+end
+
+--- Test easing and path generation functions
+-- Tests U.GetEasedValue, U.GetEasedPath, and enhanced U.Lerp with various scenarios
+--
+-- Required objects in scene (by GUID):
+--   - TEST_OBJ_1: Object to lerp (position/rotation tests)
+--   - TEST_OBJ_2: Object to lerp (parallel tests)
+--   - TEST_CENTER_OBJ: Object to use as center for orbital paths
+--   - TEST_TARGET_OBJ: Object to face/look at
+-- Global state for interactive test continuation
+local testWaitingForContinue = false
+
+-- Global function to continue to next test step (callable from console)
+--- Minimal test function to test just the look-at rotation
+-- Orients TEST_LIGHT to face TEST_TARGET_OBJ immediately
+-- Uses the same GUIDs as testEasing() for consistency
+-- @usage testLookAt()
+function testLookAt()
+	-- Local broadcast function for this test
+	local function broadcast(message, color)
+		if color == nil then color = {1, 1, 1} end
+		broadcastToAll(message, color)
+	end
+	-- Use the same GUIDs as testEasing
+	local TEST_LIGHT_GUID = "6e3ee4"  -- Same as TEST_LIGHT in testEasing
+	local TEST_TARGET_GUID = "199e6f"  -- Same as TEST_TARGET_OBJ in testEasing
+
+	local lightObj = getObjectFromGUID(TEST_LIGHT_GUID)
+	local targetObj = getObjectFromGUID(TEST_TARGET_GUID)
+
+	if not lightObj then
+		print("ERROR: testLookAt - TEST_LIGHT not found (GUID: " .. TEST_LIGHT_GUID .. ")")
+		broadcast("❌ testLookAt: Light object not found", {1, 0, 0})
+		return
+	end
+
+	if not targetObj then
+		print("ERROR: testLookAt - TEST_TARGET_OBJ not found (GUID: " .. TEST_TARGET_GUID .. ")")
+		broadcast("❌ testLookAt: Target object not found", {1, 0, 0})
+		return
+	end
+
+	print("testLookAt: Getting positions...")
+	local success1, lightPos = pcall(function() return lightObj.getPosition() end)
+	local success2, targetPos = pcall(function() return targetObj.getPosition() end)
+
+	if not success1 then
+		print("ERROR: testLookAt - Failed to get light position: " .. tostring(lightPos))
+		broadcast("❌ testLookAt: Failed to get light position", {1, 0, 0})
+		return
+	end
+
+	if not success2 then
+		print("ERROR: testLookAt - Failed to get target position: " .. tostring(targetPos))
+		broadcast("❌ testLookAt: Failed to get target position", {1, 0, 0})
+		return
+	end
+
+	if not lightPos then
+		print("ERROR: testLookAt - Light position is nil")
+		broadcast("❌ testLookAt: Light position is nil", {1, 0, 0})
+		return
+	end
+
+	if not targetPos then
+		print("ERROR: testLookAt - Target position is nil")
+		broadcast("❌ testLookAt: Target position is nil", {1, 0, 0})
+		return
+	end
+
+	-- Validate positions are Vector-like (have x, y, z properties)
+	if not (lightPos and (type(lightPos.x) == "number" or lightPos.getX ~= nil)) then
+		print("ERROR: testLookAt - Light position is not a valid Vector")
+		broadcast("❌ testLookAt: Light position is not a Vector", {1, 0, 0})
+		return
+	end
+
+	if not (targetPos and (type(targetPos.x) == "number" or targetPos.getX ~= nil)) then
+		print("ERROR: testLookAt - Target position is not a valid Vector")
+		broadcast("❌ testLookAt: Target position is not a Vector", {1, 0, 0})
+		return
+	end
+
+	-- Calculate rotation
+	local success3, rotation = pcall(function() return U.lookAtRotation(lightPos, targetPos) end)
+
+	if not success3 or not rotation then
+		print("ERROR: testLookAt - U.lookAtRotation failed: " .. tostring(rotation))
+		broadcast("❌ testLookAt: Rotation calculation failed", {1, 0, 0})
+		return
+	end
+	local success, err = pcall(function()
+		lightObj.setRotationSmooth(rotation, false, false)
+	end)
+
+	if not success then
+		print("ERROR: testLookAt - Failed to set rotation: " .. tostring(err))
+		broadcast("❌ testLookAt: Failed to set rotation", {1, 0, 0})
+		return
+	end
+
+	print("testLookAt: SUCCESS - Rotation set to: " .. tostring(rotation))
+	broadcast("✅ testLookAt: Rotation applied successfully", {0, 1, 0})
+end
+
+-- Usage: continueTest()
+function continueTest()
+	if testWaitingForContinue then
+		testWaitingForContinue = false  -- Signal to continue
+		print("✅ Continuing to next step...")
+		broadcastToAll("▶️ Test continuing...", {0, 1, 0})
+		return true
+	else
+		print("ℹ️ No test currently waiting for continuation")
+		return false
+	end
+end
+
+function DEBUG.testEasing()
+	printTestHeader("Easing and Path Generation")
+
+	-- Helper: Broadcast message to all players
+	local function broadcast(message, color)
+		color = color or {1, 1, 1}  -- Default white
+		broadcastToAll(message, color)
+		print("📢 " .. message)
+	end
+
+	broadcast("🎬 Starting Easing and Path Generation Tests", {0.8, 0.8, 1})
+
+  -- Test configuration constants
+	local TEST_GUIDS = {
+		TEST_LIGHT = "6e3ee4",  -- Replace with actual GUID for test object 1
+		TEST_BLOCK = "432c34",  -- Replace with actual GUID for test object 2
+		TEST_CENTER_OBJ = "9c3b86",  -- Replace with actual GUID for center object
+		TEST_TARGET_OBJ = "199e6f"   -- Replace with actual GUID for target object
+	}
+
+
+	local TEST_PARAMETERS = {
+		ORBITING_LIGHT = {
+			-- The "Orbiting Light" test should lerp `TEST_LIGHT` so that it orbits one full revolution around `TEST_TARGET_OBJ` using spherical coordinates.
+			-- The angle of rotation lerps from 0 to 360 (one full revolution), while the incidence angle (angle2) lerps from 35 to -35,
+			-- creating an off-kilter path that starts slightly higher and lowers as it proceeds. It should orient to face TEST_TARGET_OBJ at all times.
+			-- Note: position="CURRENT" means use the object's current position at test time, but we override angle2 to start at 35°
+			start = {
+				position = "CURRENT",  -- Will be resolved to light's current position in spherical coords
+				overrideAngle = 180,  -- Override angle to start at 0°
+				overrideAngle2 = -20,  -- Override angle2 to start at 35° (slightly higher)
+				center = "TEST_TARGET_OBJ",  -- Will be resolved to targetObj
+				orientation = "TEST_TARGET_OBJ"  -- Will be resolved to targetObj (face target)
+			},
+			-- End: same radius, angle from 0 to 360° (one full revolution), angle2 from 35° to -35°
+			endVal = {
+				position = {radius = "SAME", angle = "+800", angle2 = 20},  -- Relative angle (+360° from start), absolute angle2
+				center = "TEST_TARGET_OBJ",
+				orientation = "TEST_TARGET_OBJ"  -- Continue facing target
+			},
+			duration = 10.0,
+			ease = "sineInOut",
+			easeIntensity = 1.0,
+			coordinateSystem = "spherical",
+			objectToMove = "TEST_LIGHT"  -- Which object to animate
+		},
+		CYLINDRICAL_SPIRAL = {
+			-- The "Cylindrical Spiral" test should use cylindrical coordinates to lerp "TEST_LIGHT" from its current position to radius=0 units away from `TEST_CENTER_OBJ`, maintaining its height as it does so, and making two full revolutions around TEST_CENTER_OBJ, so that it "spirals in" to TEST_CENTER_OBJ.  Its orientation should always be downward (i.e. X=0, Y=90, Z=0)
+			-- Note: position="CURRENT" means use the object's current position at test time
+			start = {
+				position = "CURRENT",  -- Will be resolved to light's current position in cylindrical coords
+				center = "TEST_CENTER_OBJ",  -- Will be resolved to centerObj
+				orientation = Vector(0, 90, 0)  -- Downward
+			},
+			-- End: radius=0 (at center), same height, angle + 720° (2 full revolutions)
+			endVal = {
+				position = {radius = 0, angle = "+720", height = "SAME"},  -- Relative to start
+				center = "TEST_CENTER_OBJ",
+				orientation = Vector(0, 90, 0)  -- Continue downward
+			},
+			duration = 10.0,
+			ease = "sineInOut",
+			easeIntensity = 1.0,
+			coordinateSystem = "cylindrical",
+			objectToMove = "TEST_LIGHT"  -- Which object to animate
+		}
+	}
+
+
+
+	local TEST_DURATION = 10.0  -- 2 seconds per test
+
+	-- Helper: Get object by GUID or fail
+	local function getTestObject(guid, name)
+		local obj = getObjectFromGUID(guid)
+		if obj == nil then
+			printTestResult(name, false, "Missing object with GUID: " .. guid)
+			return nil
+		end
+		return obj
+	end
+
+	-- Helper: Resolve TEST_PARAMETERS into actual PositionOrientationData
+	-- Handles special values like "CURRENT", "SAME", "+360", object name strings, etc.
+	-- @param paramData table PositionOrientationData from TEST_PARAMETERS (may contain special values)
+	-- @param objects table Map of object names to actual objects (e.g., {TEST_LIGHT = obj, ...})
+	-- @param startData table|nil Resolved start data (for relative values like "SAME", "+360")
+	-- @param coordinateSystem string Coordinate system being used
+	-- @param objectToMove string|nil Name of object to move (for "CURRENT" position resolution)
+	-- @return table Resolved PositionOrientationData
+	local function resolveTestData(paramData, objects, startData, coordinateSystem, objectToMove)
+		local resolved = {}
+
+		-- Resolve position
+		if paramData.position ~= nil then
+			if paramData.position == "CURRENT" then
+				-- Use object's current position (will be converted to coordinate system if needed)
+				local objToMoveRef = objects[objectToMove or "TEST_LIGHT"]
+				if objToMoveRef then
+					local currentPos = objToMoveRef.getPosition()
+					local center = resolveTestData({center = paramData.center}, objects, nil, coordinateSystem, objectToMove).center
+					-- Convert center Object to Vector if needed
+					if U.isGameObject(center) then
+						center = center.getPosition()
+					else
+						center = Vector(center)
+					end
+					if coordinateSystem == "cylindrical" then
+						resolved.position = U.XYZToCylindrical(currentPos, center)
+					elseif coordinateSystem == "spherical" then
+						resolved.position = U.XYZToSpherical(currentPos, center)
+						-- Override angle to start at 0 if specified in paramData
+						if paramData.overrideAngle ~= nil then
+							resolved.position.angle = paramData.overrideAngle
+						end
+						-- Override angle2 if specified in paramData
+						if paramData.overrideAngle2 ~= nil then
+							resolved.position.angle2 = paramData.overrideAngle2
+						end
+					else
+						resolved.position = currentPos
+					end
+				else
+					U.error("resolveTestData", "CURRENT position requires objectToMove to be set")
+				end
+			elseif U.Type(paramData.position) == "table" and paramData.position.radius ~= nil then
+				-- Check if this is spherical or cylindrical coordinates
+				if paramData.position.angle2 ~= nil then
+					-- Spherical coordinates with relative values
+					local sph = {}
+					if paramData.position.radius == "SAME" and startData then
+						sph.radius = startData.position.radius
+					else
+						sph.radius = paramData.position.radius
+					end
+					if paramData.position.angle == "SAME" and startData then
+						sph.angle = startData.position.angle
+					elseif U.Type(paramData.position.angle) == "string" and paramData.position.angle:sub(1, 1) == "+" then
+						-- Relative angle (e.g., "+360", "+720")
+						local offset = tonumber(paramData.position.angle:sub(2))
+						sph.angle = (startData and startData.position.angle or 0) + offset
+					else
+						sph.angle = paramData.position.angle
+					end
+					if paramData.position.angle2 == "SAME" and startData then
+						sph.angle2 = startData.position.angle2
+					else
+						sph.angle2 = paramData.position.angle2
+					end
+					resolved.position = sph
+				else
+					-- Cylindrical coordinates with relative values
+					local cyl = {}
+					if paramData.position.radius == "SAME" and startData then
+						cyl.radius = startData.position.radius
+					else
+						cyl.radius = paramData.position.radius
+					end
+					if paramData.position.angle == "SAME" and startData then
+						cyl.angle = startData.position.angle
+					elseif U.Type(paramData.position.angle) == "string" and paramData.position.angle:sub(1, 1) == "+" then
+						-- Relative angle (e.g., "+360", "+720")
+						local offset = tonumber(paramData.position.angle:sub(2))
+						cyl.angle = (startData and startData.position.angle or 0) + offset
+					else
+						cyl.angle = paramData.position.angle
+					end
+					if paramData.position.height == "SAME" and startData then
+						cyl.height = startData.position.height
+					else
+						cyl.height = paramData.position.height
+					end
+					resolved.position = cyl
+				end
+			else
+				-- Direct value (Vector, table, etc.)
+				resolved.position = paramData.position
+			end
+		end
+
+		-- Resolve center
+		if paramData.center ~= nil then
+			if U.Type(paramData.center) == "string" and objects[paramData.center] then
+				resolved.center = objects[paramData.center]
+			else
+				resolved.center = paramData.center
+			end
+		end
+
+		-- Resolve orientation
+		if paramData.orientation ~= nil then
+			if U.Type(paramData.orientation) == "string" and objects[paramData.orientation] then
+				resolved.orientation = objects[paramData.orientation]
+			else
+				resolved.orientation = paramData.orientation
+			end
+		end
+
+		return resolved
+	end
+
+	-- Test 1: U.GetEasedValue (simple number interpolation)
+	broadcast("Test 1: GetEasedValue (Number)", {0.7, 0.7, 0.7})
+	print("\n--- Test 1: U.GetEasedValue (Number) ---")
+	local numberPath = U.GetEasedValue(0.0, 1.0, 1.0, "sineInOut", 1.0)
+	if numberPath and #numberPath > 0 then
+		printTestResult("GetEasedValue (Number)", true, "Generated " .. #numberPath .. " values")
+		broadcast("✅ Test 1 Passed: Generated " .. #numberPath .. " values", {0, 1, 0})
+	else
+		printTestResult("GetEasedValue (Number)", false, "Failed to generate path")
+		broadcast("❌ Test 1 Failed: Path generation failed", {1, 0, 0})
+	end
+
+	-- Test 2: U.GetEasedValue (Color interpolation)
+	broadcast("Test 2: GetEasedValue (Color)", {0.7, 0.7, 0.7})
+	print("\n--- Test 2: U.GetEasedValue (Color) ---")
+	local colorPath = U.GetEasedValue(Color(1, 0, 0), Color(0, 0, 1), 1.0, "sineInOut", 1.0)
+	if colorPath and #colorPath > 0 then
+		printTestResult("GetEasedValue (Color)", true, "Generated " .. #colorPath .. " values")
+		broadcast("✅ Test 2 Passed: Generated " .. #colorPath .. " color values", {0, 1, 0})
+	else
+		printTestResult("GetEasedValue (Color)", false, "Failed to generate path")
+		broadcast("❌ Test 2 Failed: Path generation failed", {1, 0, 0})
+	end
+
+	-- Test 3: Spherical Coordinate Transformation Validation
+	broadcast("Test 3: Spherical Coordinate Transformation", {0.7, 0.7, 0.7})
+	print("\n--- Test 3: Spherical Coordinate Transformation Validation ---")
+
+	-- Generate a 4-frame path: full 360° rotation at radius 15, horizontal plane (angle2=90°)
+	-- Expected positions: {0,0,15}, {15,0,0}, {0,0,-15}, {-15,0,0} (XZ plane circle)
+	local center = Vector(0, 0, 0)
+	local startSpherical = {radius = 15, angle = 0, angle2 = 90}   -- Horizontal plane, starting at +Z
+	local endSpherical = {radius = 15, angle = 360, angle2 = 90}   -- Full rotation, same elevation
+
+	local sphericalPath = U.GetEasedPath(
+		{position = startSpherical, center = center},
+		{position = endSpherical, center = center},
+		1.0,  -- 1 second duration
+		"linear",
+		1.0,
+		"spherical"
+	)
+
+	local testPassed = false
+	local errorMessage = ""
+
+	if sphericalPath and sphericalPath ~= "DEFER" and #sphericalPath >= 61 then
+		-- Expected positions at key angles (0°, 90°, 180°, 270°)
+		-- In TTS: angle 0° = +Z, 90° = +X, 180° = -Z, 270° = -X
+		-- With 61 frames (0-60), we check frames at t=0, 0.25, 0.5, 0.75
+		local frameIndices = {1, 16, 31, 46}  -- Frames 0, 15, 30, 45 (1-indexed: 1, 16, 31, 46)
+		local expectedPositions = {
+			Vector(0, 0, 15),    -- angle = 0° (frame 0, t=0)
+			Vector(15, 0, 0),     -- angle = 90° (frame 15, t=0.25)
+			Vector(0, 0, -15),    -- angle = 180° (frame 30, t=0.5)
+			Vector(-15, 0, 0)     -- angle = 270° (frame 45, t=0.75)
+		}
+
+		local allMatch = true
+		local mismatches = {}
+
+		for i = 1, #frameIndices do
+			local frameIdx = frameIndices[i]
+			if frameIdx > #sphericalPath then
+				allMatch = false
+				table.insert(mismatches, "Frame " .. (frameIdx - 1) .. ": Path too short")
+			else
+				local actualPos = sphericalPath[frameIdx].position
+				local expectedPos = expectedPositions[i]
+
+				if actualPos then
+					-- Allow small floating point differences (0.01 tolerance)
+					local tolerance = 0.01
+					local dx = math.abs(actualPos.x - expectedPos.x)
+					local dy = math.abs(actualPos.y - expectedPos.y)
+					local dz = math.abs(actualPos.z - expectedPos.z)
+
+					if dx > tolerance or dy > tolerance or dz > tolerance then
+						allMatch = false
+						table.insert(mismatches, string.format(
+							"Frame %d (angle ~%d°): Expected %s, got %s (diff: %.3f, %.3f, %.3f)",
+							frameIdx - 1, (i - 1) * 90, tostring(expectedPos), tostring(actualPos), dx, dy, dz
+						))
+					end
+				else
+					allMatch = false
+					table.insert(mismatches, "Frame " .. (frameIdx - 1) .. ": Missing position")
+				end
+			end
+		end
+
+		if allMatch then
+			testPassed = true
+			printTestResult("Spherical Coordinate Transformation", true, "All key positions (0°, 90°, 180°, 270°) match expected values")
+			broadcast("✅ Test 3 Passed: Spherical coordinates transform correctly", {0, 1, 0})
+		else
+			errorMessage = "Position mismatches:\n  " .. table.concat(mismatches, "\n  ")
+			printTestResult("Spherical Coordinate Transformation", false, errorMessage)
+			broadcast("❌ Test 3 Failed: Position mismatches detected", {1, 0, 0})
+		end
+	else
+		errorMessage = "Failed to generate path or path has fewer than 61 frames"
+		if sphericalPath == "DEFER" then
+			errorMessage = "Path generation was deferred (unexpected for static coordinates)"
+		elseif sphericalPath and #sphericalPath > 0 then
+			errorMessage = "Path has only " .. #sphericalPath .. " frames, expected 61"
+		end
+		printTestResult("Spherical Coordinate Transformation", false, errorMessage)
+		broadcast("❌ Test 3 Failed: " .. errorMessage, {1, 0, 0})
+	end
+
+	-- Test 4: Cylindrical Coordinate Transformation Validation
+	broadcast("Test 4: Cylindrical Coordinate Transformation", {0.7, 0.7, 0.7})
+	print("\n--- Test 4: Cylindrical Coordinate Transformation Validation ---")
+
+	-- Generate a 4-frame path: full 360° rotation at radius 15, height 0
+	-- Expected positions: {0,0,15}, {15,0,0}, {0,0,-15}, {-15,0,0} (XZ plane circle)
+	local startCylindrical = {radius = 15, angle = 0, height = 0}
+	local endCylindrical = {radius = 15, angle = 360, height = 0}
+
+	local cylindricalPath = U.GetEasedPath(
+		{position = startCylindrical, center = center},
+		{position = endCylindrical, center = center},
+		1.0,  -- 1 second duration
+		"linear",
+		1.0,
+		"cylindrical"
+	)
+
+	local test4Passed = false
+	local errorMessage4 = ""
+
+	if cylindricalPath and cylindricalPath ~= "DEFER" and #cylindricalPath >= 61 then
+		-- Expected positions at key angles (0°, 90°, 180°, 270°)
+		-- With 61 frames (0-60), we check frames at t=0, 0.25, 0.5, 0.75
+		local frameIndices4 = {1, 16, 31, 46}  -- Frames 0, 15, 30, 45 (1-indexed: 1, 16, 31, 46)
+		local expectedPositions4 = {
+			Vector(0, 0, 15),    -- angle = 0° (frame 0, t=0)
+			Vector(15, 0, 0),     -- angle = 90° (frame 15, t=0.25)
+			Vector(0, 0, -15),    -- angle = 180° (frame 30, t=0.5)
+			Vector(-15, 0, 0)     -- angle = 270° (frame 45, t=0.75)
+		}
+
+		local allMatch4 = true
+		local mismatches4 = {}
+
+		for i = 1, #frameIndices4 do
+			local frameIdx = frameIndices4[i]
+			if frameIdx > #cylindricalPath then
+				allMatch4 = false
+				table.insert(mismatches4, "Frame " .. (frameIdx - 1) .. ": Path too short")
+			else
+				local actualPos = cylindricalPath[frameIdx].position
+				local expectedPos = expectedPositions4[i]
+
+				if actualPos then
+					local tolerance = 0.01
+					local dx = math.abs(actualPos.x - expectedPos.x)
+					local dy = math.abs(actualPos.y - expectedPos.y)
+					local dz = math.abs(actualPos.z - expectedPos.z)
+
+					if dx > tolerance or dy > tolerance or dz > tolerance then
+						allMatch4 = false
+						table.insert(mismatches4, string.format(
+							"Frame %d (angle ~%d°): Expected %s, got %s (diff: %.3f, %.3f, %.3f)",
+							frameIdx - 1, (i - 1) * 90, tostring(expectedPos), tostring(actualPos), dx, dy, dz
+						))
+					end
+				else
+					allMatch4 = false
+					table.insert(mismatches4, "Frame " .. (frameIdx - 1) .. ": Missing position")
+				end
+			end
+		end
+
+		if allMatch4 then
+			test4Passed = true
+			printTestResult("Cylindrical Coordinate Transformation", true, "All key positions (0°, 90°, 180°, 270°) match expected values")
+			broadcast("✅ Test 4 Passed: Cylindrical coordinates transform correctly", {0, 1, 0})
+		else
+			errorMessage4 = "Position mismatches:\n  " .. table.concat(mismatches4, "\n  ")
+			printTestResult("Cylindrical Coordinate Transformation", false, errorMessage4)
+			broadcast("❌ Test 4 Failed: Position mismatches detected", {1, 0, 0})
+		end
+	else
+		errorMessage4 = "Failed to generate path or path has fewer than 61 frames"
+		if cylindricalPath == "DEFER" then
+			errorMessage4 = "Path generation was deferred (unexpected for static coordinates)"
+		elseif cylindricalPath and #cylindricalPath > 0 then
+			errorMessage4 = "Path has only " .. #cylindricalPath .. " frames, expected 61"
+		end
+		printTestResult("Cylindrical Coordinate Transformation", false, errorMessage4)
+		broadcast("❌ Test 4 Failed: " .. errorMessage4, {1, 0, 0})
+	end
+
+	-- Summary of validation tests
+	broadcast("✅ Validation Tests (1-4) Complete", {0, 1, 0})
+	print("\n" .. string.rep("=", 70))
+	print("VALIDATION TESTS COMPLETE")
+	print(string.rep("=", 70))
+	print("Basic validation tests completed. Proceeding to visual demonstrations...")
+	print(string.rep("=", 70))
+
+	-- Visual demonstration tests - These execute actual lerps and need to be sequenced
+	broadcast("🎬 Starting Visual Demonstration Tests", {1, 1, 0.5})
+	print("\n--- Visual Demonstration Tests (Sequenced) ---")
+	print("These tests will run sequentially so you can observe each animation.")
+	print("Waiting 2 seconds before starting animations...\n")
+
+	-- Get objects for animation tests
+	local testLight = getTestObject(TEST_GUIDS.TEST_LIGHT, "Test Light")
+	local testBlock = getTestObject(TEST_GUIDS.TEST_BLOCK, "Test Block")
+	local centerObj = getTestObject(TEST_GUIDS.TEST_CENTER_OBJ, "Center Object")
+	local targetObj = getTestObject(TEST_GUIDS.TEST_TARGET_OBJ, "Target Object")
+
+	-- Build sequence of animation tests
+	local animationSequence = {}
+
+	-- Initial delay before first animation
+	table.insert(animationSequence, function()
+		broadcast("⏳ Preparing animations...", {0.8, 0.8, 0.8})
+		return 2.0  -- 2 second pause before starting
+	end)
+
+	-- Helper: Execute a test from TEST_PARAMETERS
+	-- @param testName string Name of test in TEST_PARAMETERS
+	-- @param objects table Map of object names to actual objects
+	-- @return function|nil Test function to add to sequence, or nil if objects missing
+	local function createTestFromParameters(testName, objects)
+		local params = TEST_PARAMETERS[testName]
+		if not params then
+			U.error("createTestFromParameters", "Test not found: " .. testName)
+			return nil
+		end
+
+		-- Get the object to move
+		local objToMove = objects[params.objectToMove]
+		if not objToMove then
+			printTestResult(testName, false, "Missing object: " .. (params.objectToMove or "objectToMove not specified"))
+			return nil
+		end
+
+		-- Resolve start data (needed for relative end values)
+		local startData = resolveTestData(params.start, objects, nil, params.coordinateSystem, params.objectToMove)
+		-- Resolve end data (may use startData for relative values)
+		local endData = resolveTestData(params.endVal, objects, startData, params.coordinateSystem, params.objectToMove)
+
+		-- Check if any required objects are missing
+		local missingObjects = {}
+		if startData.center and U.Type(startData.center) == "string" then
+			table.insert(missingObjects, startData.center)
+		end
+		if endData.center and U.Type(endData.center) == "string" then
+			table.insert(missingObjects, endData.center)
+		end
+		if startData.orientation and U.Type(startData.orientation) == "string" then
+			table.insert(missingObjects, startData.orientation)
+		end
+		if endData.orientation and U.Type(endData.orientation) == "string" then
+			table.insert(missingObjects, endData.orientation)
+		end
+
+		for _, objName in ipairs(missingObjects) do
+			if not objects[objName] then
+				printTestResult(testName, false, "Missing object: " .. objName)
+				return nil
+			end
+		end
+
+		-- Return two functions: one for initialization/pause, one for the lerp
+		local initFunction = function()
+			-- Verify objToMove is still valid
+			if not objToMove then
+				printTestResult(testName, false, "Object to move became invalid")
+				return nil
+			end
+
+			local testDisplayName = testName:gsub("_", " ")
+			broadcast("🌍 Test: " .. testDisplayName, {0.8, 0.5, 1})
+			print("\n--- Test: " .. testDisplayName .. " ---")
+
+			-- Initialize: Move object to starting position and orientation
+			local startCenter = resolveTestData({center = startData.center}, objects, nil, params.coordinateSystem, params.objectToMove).center
+			if U.isGameObject(startCenter) then
+				startCenter = startCenter.getPosition()
+			else
+				startCenter = Vector(startCenter)
+			end
+
+			-- Convert start position to XYZ (stored in closure)
+			startPosXYZ = nil
+			if startData.position then
+				if params.coordinateSystem == "cylindrical" then
+					local cyl = startData.position
+					if cyl and cyl.radius ~= nil and cyl.angle ~= nil and cyl.height ~= nil then
+						local angleRad = math.rad(cyl.angle)
+						startPosXYZ = Vector(
+							startCenter.x + cyl.radius * math.sin(angleRad),
+							startCenter.y + cyl.height,
+							startCenter.z + cyl.radius * math.cos(angleRad)
+						)
+					end
+				elseif params.coordinateSystem == "spherical" then
+					local sph = startData.position
+					if sph and sph.radius ~= nil and sph.angle ~= nil and sph.angle2 ~= nil then
+						-- Use the same formula as sphericalToXYZ in util library
+						local angleRad = math.rad(sph.angle)
+						local angle2Rad = math.rad(sph.angle2)
+						startPosXYZ = Vector(
+							startCenter.x + sph.radius * math.sin(angle2Rad) * math.sin(angleRad),
+							startCenter.y + sph.radius * math.cos(angle2Rad),
+							startCenter.z + sph.radius * math.sin(angle2Rad) * math.cos(angleRad)
+						)
+					end
+				else
+					startPosXYZ = Vector(startData.position)
+				end
+			end
+
+			-- Set starting position FIRST (use setPosition for immediate placement during initialization)
+			if startPosXYZ and objToMove then
+				-- Use setPosition (not setPositionSmooth) for immediate placement during initialization
+				-- This ensures the object is at the correct position before calculating orientation
+				local success = pcall(function() objToMove.setPosition(startPosXYZ) end)
+				if not success then
+					printTestResult(testName, false, "Failed to set starting position")
+					return nil
+				end
+				print("Moved object to starting position: " .. tostring(startPosXYZ))
+
+				-- Return the object so U.RunSequence will wait for it to be at rest
+				-- This ensures the object is fully settled before the next function runs
+				return objToMove
+			else
+				printTestResult(testName, false, "Failed to resolve start position or object is nil")
+				return nil
+			end
+		end
+
+		-- Function to set orientation after object is at rest
+		local orientationFunction = function()
+			local testDisplayName = testName:gsub("_", " ")
+			-- Set starting orientation AFTER position is set and object is at rest
+			if startData.orientation and objToMove and startPosXYZ then
+				local startRot
+				if U.isGameObject(startData.orientation) then
+					-- Calculate look-at rotation using helper from util library
+					-- Use the starting position we just set
+					local success, targetPos = pcall(function() return startData.orientation.getPosition() end)
+					if success and targetPos then
+						local rotSuccess, rotResult = pcall(function()
+							return U.lookAtRotation(startPosXYZ, targetPos)
+						end)
+						if rotSuccess and rotResult then
+							startRot = rotResult
+						else
+							print("Warning: U.lookAtRotation failed: " .. tostring(rotResult))
+							startRot = Vector(0, 0, 0)
+						end
+					else
+						print("Warning: Failed to get target position for orientation calculation")
+						startRot = Vector(0, 0, 0)
+					end
+				else
+					-- Direct Vector value
+					startRot = Vector(startData.orientation)
+				end
+				if startRot then
+					local success, err = pcall(function() objToMove.setRotationSmooth(startRot, false, false) end)
+					if not success then
+						print("Warning: Failed to set rotation for " .. testName .. ": " .. tostring(err))
+					end
+				end
+			end
+
+			-- Broadcast initialization complete
+			print("Object moved to starting position.")
+			local success = pcall(function()
+				broadcast("📍 Initialized: " .. testDisplayName .. " - Waiting for continuation...", {0.7, 0.7, 1})
+			end)
+			if not success then
+				print("Warning: Failed to broadcast initialization message")
+			end
+			print("💡 To continue, type in console: continueTest()")
+
+			-- Set up interactive pause
+			testWaitingForContinue = true  -- Signal that we're waiting
+
+			-- Return immediately - the lerp function will handle waiting
+			return 0.1
+		end
+
+		local lerpFunction = function()
+			local testDisplayName = testName:gsub("_", " ")
+
+			-- Wait for continuation to be triggered
+			if testWaitingForContinue then
+				broadcast("⏳ Waiting for continuation: " .. testDisplayName, {0.8, 0.8, 0.8})
+				print("Waiting for continueTest() to be called...")
+				print("   Type in console: continueTest()")
+
+				-- Wait for continuation by yielding in a loop
+				-- Since we're already in a coroutine, we can't use U.waitUntil (which starts its own coroutine)
+				local waitStartTime = os.time()
+				local maxWaitSeconds = 300  -- 5 minutes
+
+				while testWaitingForContinue do
+					local elapsed = os.time() - waitStartTime
+					if elapsed >= maxWaitSeconds then
+						broadcast("⏱️ Test timeout: " .. testDisplayName, {1, 0.5, 0})
+						print("Test timed out after 5 minutes. Use continueTest() to continue manually.")
+						return 1.0
+					end
+					coroutine.yield(0)  -- Yield one frame and check again next frame
+				end
+
+				print("Continuation received, proceeding with animation...")
+			end
+
+			-- Broadcast animation start
+			broadcast("▶️ " .. testDisplayName .. " Starting Animation", {0.8, 0.5, 1})
+
+			-- Generate path (will return "DEFER" if Object references present)
+			local path = U.GetEasedPath(startData, endData, params.duration, params.ease, params.easeIntensity, params.coordinateSystem)
+
+			local lerpDuration
+			if path == "DEFER" then
+				-- Use deferred execution for Object references
+				lerpDuration = U.LerpDeferred(startData, endData, params.duration, params.ease, params.easeIntensity, params.coordinateSystem, function(step)
+					if objToMove and step then
+						if step.position then
+							objToMove.setPositionSmooth(step.position, false, false)
+						end
+						if step.orientation then
+							objToMove.setRotationSmooth(step.orientation, false, false)
+						end
+					end
+				end)
+			else
+				-- Use pre-computed path
+				lerpDuration = U.LerpPath(path, function(step)
+					if objToMove and step then
+						if step.position then
+							objToMove.setPositionSmooth(step.position, false, false)
+						end
+						if step.orientation then
+							objToMove.setRotationSmooth(step.orientation, false, false)
+						end
+					end
+				end)
+			end
+
+			if lerpDuration and lerpDuration > 0 then
+				printTestResult(testDisplayName, true, "Lerp started, duration: " .. lerpDuration .. "s")
+				broadcast("▶️ " .. testDisplayName .. " Running: " .. lerpDuration .. "s", {0.8, 0.5, 1})
+				return lerpDuration + 1.0  -- Wait for animation + 1 second pause
+			else
+				printTestResult(testDisplayName, false, "Failed to start lerp")
+				broadcast("❌ " .. testDisplayName .. " Failed: Could not start lerp", {1, 0, 0})
+				return 1.0
+			end
+		end
+
+		-- Return three functions: init (returns object to wait for), orientation (runs after object is at rest), lerp
+		return initFunction, orientationFunction, lerpFunction
+	end
+
+	-- Build object map for test resolution
+	local testObjects = {
+		TEST_LIGHT = testLight,
+		TEST_BLOCK = testBlock,
+		TEST_CENTER_OBJ = centerObj,
+		TEST_TARGET_OBJ = targetObj
+	}
+
+	-- Test: ORBITING_LIGHT
+	local orbitingInit, orbitingOrientation, orbitingLerp = createTestFromParameters("ORBITING_LIGHT", testObjects)
+	if orbitingInit and orbitingOrientation and orbitingLerp then
+		table.insert(animationSequence, orbitingInit)        -- Initialization (returns object to wait for)
+		table.insert(animationSequence, orbitingOrientation) -- Orientation setup (runs after object is at rest)
+		table.insert(animationSequence, orbitingLerp)        -- Animation
+	end
+
+	-- Test: CYLINDRICAL_SPIRAL
+	local spiralInit, spiralOrientation, spiralLerp = createTestFromParameters("CYLINDRICAL_SPIRAL", testObjects)
+	if spiralInit and spiralOrientation and spiralLerp then
+		table.insert(animationSequence, spiralInit)        -- Initialization (returns object to wait for)
+		table.insert(animationSequence, spiralOrientation) -- Orientation setup (runs after object is at rest)
+		table.insert(animationSequence, spiralLerp)       -- Animation
+	end
+
+	-- Final summary function
+	table.insert(animationSequence, function()
+		broadcast("✅ All Animation Tests Complete!", {0, 1, 0})
+		print("\n" .. string.rep("=", 70))
+		print("EASING TEST SUMMARY")
+		print(string.rep("=", 70))
+		print("\nRequired Objects (set GUIDs in TEST_GUIDS constant):")
+		print("  - TEST_LIGHT: Light object to animate")
+		print("  - TEST_BLOCK: Block object (for future tests)")
+		print("  - TEST_CENTER_OBJ: Object to use as center for orbital/spiral paths")
+		print("  - TEST_TARGET_OBJ: Object to orbit around and face")
+		print("\nNote: Tests that require objects will be skipped if objects are missing.")
+		print("Replace placeholder GUIDs in TEST_GUIDS with actual object GUIDs from your scene.")
+		print(string.rep("=", 70))
+		return 0.5
+	end)
+
+		-- Execute animation sequence if we have any tests
+		if #animationSequence > 1 then  -- More than just the initial delay
+			broadcast("Starting " .. (#animationSequence - 1) .. " visual demonstration(s)...", {1, 1, 0.5})
+			print("Starting animation sequence with " .. (#animationSequence - 1) .. " visual demonstration(s)...")
+			print("Tests will demonstrate:")
+			print("  - Orbiting Light: Spherical coordinates with object-facing orientation")
+			print("  - Cylindrical Spiral: Spiraling in with fixed downward orientation")
+			U.RunSequence(animationSequence)
+	else
+		print("\nNo animation tests to run (missing required objects)")
+		-- Print summary immediately if no animations
+		print("\n" .. string.rep("=", 70))
+		print("EASING TEST SUMMARY")
+		print(string.rep("=", 70))
+		print("\nRequired Objects (set GUIDs in TEST_GUIDS constant):")
+		print("  - TEST_LIGHT: Light object to animate")
+		print("  - TEST_BLOCK: Block object (for future tests)")
+		print("  - TEST_CENTER_OBJ: Object to use as center for orbital/spiral paths")
+		print("  - TEST_TARGET_OBJ: Object to orbit around and face")
+		print("\nNote: Tests that require objects will be skipped if objects are missing.")
+		print("Replace placeholder GUIDs in TEST_GUIDS with actual object GUIDs from your scene.")
+		print(string.rep("=", 70))
+	end
 end
 
 --[[
@@ -1655,73 +2563,6 @@ function DEBUG.showState()
     printTestHeader("Current Game State")
     local state = S.getGameState()
     print(JSON.encode_pretty(state))
-end
-
---- Logs complete gameState to a file before save
--- Writes both raw and sanitized versions for comparison
--- @param label string Optional label for the dump (default: "gameState_dump")
-function DEBUG.logStateToFile(label)
-    label = label or "gameState_dump"
-    local timestamp = getTimestamp()
-
-    -- Get both raw and sanitized states
-    local rawState = S.getGameState(false)
-    local sanitizedState = S.getGameState(true)
-
-    -- Build the dump content
-    local dumpContent = string.format(
-        "=== GAME STATE DUMP: %s ===\nTimestamp: %s\n\n",
-        label,
-        timestamp
-    )
-
-    -- Raw state
-    dumpContent = dumpContent .. "--- RAW STATE (gameState) ---\n"
-    local rawSuccess, rawJson = pcall(function()
-        return JSON.encode_pretty(rawState)
-    end)
-    if rawSuccess then
-        dumpContent = dumpContent .. rawJson .. "\n\n"
-    else
-        dumpContent = dumpContent .. "ERROR encoding raw state: " .. tostring(rawJson) .. "\n\n"
-    end
-
-    -- Sanitized state (what will be saved)
-    dumpContent = dumpContent .. "--- SANITIZED STATE (for save) ---\n"
-    local sanitizedSuccess, sanitizedJson = pcall(function()
-        return JSON.encode_pretty(sanitizedState)
-    end)
-    if sanitizedSuccess then
-        dumpContent = dumpContent .. sanitizedJson .. "\n\n"
-    else
-        dumpContent = dumpContent .. "ERROR encoding sanitized state: " .. tostring(sanitizedJson) .. "\n\n"
-    end
-
-    -- PlayerData structure details
-    dumpContent = dumpContent .. "--- PLAYERDATA STRUCTURE DETAILS ---\n"
-    if rawState.playerData then
-        dumpContent = dumpContent .. "Raw playerData type: " .. type(rawState.playerData) .. "\n"
-        dumpContent = dumpContent .. "Raw playerData key count: " .. #U.getKeys(rawState.playerData) .. "\n"
-        dumpContent = dumpContent .. "Raw playerData keys: " .. table.concat(U.getKeys(rawState.playerData), ", ") .. "\n\n"
-
-        for playerID, playerData in pairs(rawState.playerData) do
-            dumpContent = dumpContent .. string.format("Player[%s]: type=%s\n", tostring(playerID), type(playerData))
-            if type(playerData) == "table" then
-                dumpContent = dumpContent .. string.format("  Keys: %s\n", table.concat(U.getKeys(playerData), ", "))
-                for k, v in pairs(playerData) do
-                    dumpContent = dumpContent .. string.format("  [%s] = %s (type: %s)\n", tostring(k), tostring(v), type(v))
-                end
-            end
-            dumpContent = dumpContent .. "\n"
-        end
-    else
-        dumpContent = dumpContent .. "No playerData in raw state\n\n"
-    end
-
-    dumpContent = dumpContent .. string.rep("=", 60) .. "\n\n"
-
-    -- Write to file
-    DEBUG.logToFile("INFO", dumpContent, "gameState_dump")
 end
 
 --- Display current scene info
@@ -1960,6 +2801,8 @@ function DEBUG.help()
     print("  testUI()                 - Test UI display updates")
     print("  testUtilities()          - Test utility functions")
     print("  testLightingAndSignals() - Test lighting & signal fires with sequencing")
+    print("  testEasing()             - Test easing and path generation functions")
+    print("  testLookAt()             - Test look-at rotation (minimal test)")
     print("  testIntegration()        - Full integration test")
     print("  runTests()               - Run all tests in sequence")
     print("\nINSPECTION FUNCTIONS:")
@@ -2001,6 +2844,7 @@ testMain = DEBUG.testMain
 testUI = DEBUG.testUI
 testUtilities = DEBUG.testUtilities
 testLightingAndSignals = DEBUG.testLightingAndSignals
+testEasing = DEBUG.testEasing
 testIntegration = DEBUG.testIntegration
 runTests = DEBUG.runTests
 
@@ -2027,6 +2871,14 @@ debugHelp = DEBUG.help
 
 -- Expose initialization function
 initLightingAndSignals = DEBUG.initLightingAndSignals
+
+-- Expose light test functions
+testSpawnLightType = DEBUG.testSpawnLightType
+testCloneLight = DEBUG.testCloneLight
+testInspectLight = DEBUG.testInspectLight
+testSpawnLight = DEBUG.testSpawnLight
+testCompareStructures = DEBUG.testCompareStructures
+findPotentialLights = DEBUG.findPotentialLights
 
 -- Auto-show help on load (optional - comment out if not desired)
 -- DEBUG.help()
