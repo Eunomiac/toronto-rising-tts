@@ -2112,6 +2112,39 @@ function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinate
 	local startPos = resolvePosition(start, coordinateSystem, startCenter)
 	local endPos = resolvePosition(endVal, coordinateSystem, endCenter)
 
+	-- Helper: Resolve coordinate data without losing rotations
+	-- Prefers explicit coordinate tables/vectors over XYZ conversions
+	local function resolveCoordData(position, coordSystem, center)
+		if position == nil then return nil end
+		if U.isGameObject(position) then
+			local pos = position.getPosition()
+			if coordSystem == "cylindrical" then
+				return U.XYZToCylindrical(pos, center)
+			elseif coordSystem == "spherical" then
+				return U.XYZToSpherical(pos, center)
+			end
+			return nil
+		end
+		if coordSystem == "cylindrical" then
+			if U.isInstance(position, Vector) then
+				return {radius = position.x, angle = position.y, height = position.z, angleMode = position.angleMode}
+			elseif U.Type(position) == "table" and position.radius ~= nil and position.angle ~= nil then
+				return position
+			elseif U.Type(position) == "table" and position.x ~= nil and position.y ~= nil and position.z ~= nil then
+				return U.XYZToCylindrical(position, center)
+			end
+		elseif coordSystem == "spherical" then
+			if U.isInstance(position, Vector) then
+				return {radius = position.x, angle = position.y, angle2 = position.z, angleMode = position.angleMode}
+			elseif U.Type(position) == "table" and position.radius ~= nil and position.angle ~= nil then
+				return position
+			elseif U.Type(position) == "table" and position.x ~= nil and position.y ~= nil and position.z ~= nil then
+				return U.XYZToSpherical(position, center)
+			end
+		end
+		return nil
+	end
+
 	-- For orientation with Objects, we need to calculate look-at at each step
 	-- We'll generate the path on-the-fly
 	local frames = math.ceil(duration * 60)
@@ -2132,11 +2165,10 @@ function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinate
 			if startPos ~= nil and endPos ~= nil then
 				-- For cylindrical/spherical, we need to interpolate in coordinate space
 				if coordinateSystem == "cylindrical" then
-					-- Convert XYZ back to cylindrical for interpolation
-					local startCyl = U.XYZToCylindrical(startPos, startCenter)
-					local endCyl = U.XYZToCylindrical(endPos, endCenter)
+					local startCyl = resolveCoordData(start.position, "cylindrical", startCenter) or U.XYZToCylindrical(startPos, startCenter)
+					local endCyl = resolveCoordData(endVal.position, "cylindrical", endCenter) or U.XYZToCylindrical(endPos, endCenter)
 
-					local angleMode = (endVal.position and endVal.position.angleMode) or (start.position and start.position.angleMode) or "direct"
+					local angleMode = (endCyl and endCyl.angleMode) or (startCyl and startCyl.angleMode) or "direct"
 					local interpAngle = lerpAngle(startCyl.angle, endCyl.angle, tEased, angleMode)
 
 					local interpCyl = {
@@ -2146,11 +2178,10 @@ function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinate
 					}
 					step.position = cylindricalToXYZ(interpCyl, endCenter or startCenter)
 				elseif coordinateSystem == "spherical" then
-					-- Convert XYZ back to spherical for interpolation
-					local startSph = U.XYZToSpherical(startPos, startCenter)
-					local endSph = U.XYZToSpherical(endPos, endCenter)
+					local startSph = resolveCoordData(start.position, "spherical", startCenter) or U.XYZToSpherical(startPos, startCenter)
+					local endSph = resolveCoordData(endVal.position, "spherical", endCenter) or U.XYZToSpherical(endPos, endCenter)
 
-					local angleMode = (endVal.position and endVal.position.angleMode) or (start.position and start.position.angleMode) or "direct"
+					local angleMode = (endSph and endSph.angleMode) or (startSph and startSph.angleMode) or "direct"
 					local interpAngle = lerpAngle(startSph.angle, endSph.angle, tEased, angleMode)
 
 					local interpSph = {

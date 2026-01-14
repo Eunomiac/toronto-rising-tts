@@ -1662,7 +1662,7 @@ function DEBUG.testEasing()
 				center = "TEST_TARGET_OBJ",  -- Will be resolved to targetObj
 				orientation = "TEST_TARGET_OBJ"  -- Will be resolved to targetObj (face target)
 			},
-			-- End: same radius, angle from 0 to 360° (one full revolution), angle2 from 35° to -35°
+			-- End: same radius, angle +800° (multi-revolution), angle2 from 35° to -35°
 			endVal = {
 				position = {radius = "SAME", angle = "+800", angle2 = 20},  -- Relative angle (+360° from start), absolute angle2
 				center = "TEST_TARGET_OBJ",
@@ -1872,11 +1872,11 @@ function DEBUG.testEasing()
 	broadcast("Test 3: Spherical Coordinate Transformation", {0.7, 0.7, 0.7})
 	print("\n--- Test 3: Spherical Coordinate Transformation Validation ---")
 
-	-- Generate a 4-frame path: full 360° rotation at radius 15, horizontal plane (angle2=90°)
+	-- Generate a 4-frame path: full 360° rotation at radius 15, horizontal plane (angle2=0°)
 	-- Expected positions: {0,0,15}, {15,0,0}, {0,0,-15}, {-15,0,0} (XZ plane circle)
 	local center = Vector(0, 0, 0)
-	local startSpherical = {radius = 15, angle = 0, angle2 = 90}   -- Horizontal plane, starting at +Z
-	local endSpherical = {radius = 15, angle = 360, angle2 = 90}   -- Full rotation, same elevation
+	local startSpherical = {radius = 15, angle = 0, angle2 = 0}   -- Horizontal plane, starting at +Z
+	local endSpherical = {radius = 15, angle = 360, angle2 = 0}   -- Full rotation, same elevation
 
 	local sphericalPath = U.GetEasedPath(
 		{position = startSpherical, center = center},
