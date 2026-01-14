@@ -1653,6 +1653,7 @@ function DEBUG.testEasing()
 		ORBITING_LIGHT = {
 			-- The "Orbiting Light" test should lerp `TEST_LIGHT` so that it orbits around `TEST_TARGET_OBJ` using spherical coordinates
 			-- Note: Use CURRENT radius but explicit angle/angle2 to control the start direction.
+			-- Optional: parallelLerps can run extra U.Lerp() calls alongside the position/orientation lerp.
 			start = {
 				position = {radius = "CURRENT", angle = 0, angle2 = -20},  -- Use current radius, explicit angles
 				center = "TEST_TARGET_OBJ",  -- Will be resolved to targetObj
@@ -1883,6 +1884,54 @@ function DEBUG.testEasing()
 		end
 
 		return resolved
+	end
+
+	-- Helper: Build and run parallel lerps from test definitions
+	-- parallelLerps entries support:
+	--   - target: object name in testObjects (optional, defaults to objectToMove)
+	--   - setFunc: function(value, targetObj) to apply values (required if no setter)
+	--   - setter: string method name to call on target (e.g., "setColorTint")
+	--   - getStart: function(targetObj) -> value (optional)
+	--   - getEnd: function(targetObj) -> value (optional)
+	--   - start / endVal: explicit values (numbers, Vectors, Colors)
+	--   - duration / easing / isRotationLerp: override defaults (optional)
+	local function runParallelLerps(lerps, objects, objToMove, defaultDuration, defaultEase)
+		if not lerps or #lerps == 0 then return 0 end
+		local maxDuration = 0
+		for _, lerpDef in ipairs(lerps) do
+			local targetObj = objToMove
+			if lerpDef.target ~= nil then
+				targetObj = objects[lerpDef.target] or lerpDef.target
+			end
+
+			local setFunc = lerpDef.setFunc
+			if setFunc == nil and lerpDef.setter ~= nil and targetObj ~= nil then
+				local method = targetObj[lerpDef.setter]
+				if U.Type(method) == "function" then
+					setFunc = function(val) method(targetObj, val) end
+				end
+			end
+			U.Val("runParallelLerps", setFunc, U.Type(setFunc) == "function", "Parallel lerp requires setFunc or valid setter")
+
+			local startVal = lerpDef.start
+			if lerpDef.getStart ~= nil then
+				startVal = lerpDef.getStart(targetObj)
+			end
+			local endVal = lerpDef.endVal
+			if lerpDef.getEnd ~= nil then
+				endVal = lerpDef.getEnd(targetObj)
+			end
+
+			local lerpDuration = lerpDef.duration or defaultDuration
+			local lerpEasing = lerpDef.easing or defaultEase
+			local isRotationLerp = lerpDef.isRotationLerp or false
+
+			local duration = U.Lerp(setFunc, startVal, endVal, lerpDuration, isRotationLerp, lerpEasing)
+			if duration and duration > maxDuration then
+				maxDuration = duration
+			end
+		end
+		return maxDuration
 	end
 
 	-- Test 1: U.GetEasedValue (simple number interpolation)
@@ -2168,9 +2217,7 @@ function DEBUG.testEasing()
 
 			-- Initialize: Move object to starting position and orientation
 			local startCenter = resolveTestData({center = startData.center}, objects, nil, params.coordinateSystem, params.objectToMove).center
-			if U.isGameObject(startCenter) then
-				startCenter = startCenter.getPosition()
-			else
+			if not U.isGameObject(startCenter) then
 				startCenter = Vector(startCenter)
 			end
 
@@ -2314,10 +2361,13 @@ function DEBUG.testEasing()
 				end)
 			end
 
-			if lerpDuration and lerpDuration > 0 then
+			local parallelDuration = runParallelLerps(params.parallelLerps, objects, objToMove, params.duration, params.ease)
+			local totalDuration = math.max(lerpDuration or 0, parallelDuration or 0)
+
+			if totalDuration > 0 then
 				printTestResult(testDisplayName, true, "Lerp started, duration: " .. lerpDuration .. "s")
-				broadcast("▶️ " .. testDisplayName .. " Running: " .. lerpDuration .. "s", {0.8, 0.5, 1})
-				return lerpDuration + 1.0  -- Wait for animation + 1 second pause
+				broadcast("▶️ " .. testDisplayName .. " Running: " .. totalDuration .. "s", {0.8, 0.5, 1})
+				return totalDuration + 1.0  -- Wait for animation + 1 second pause
 			else
 				printTestResult(testDisplayName, false, "Failed to start lerp")
 				broadcast("❌ " .. testDisplayName .. " Failed: Could not start lerp", {1, 0, 0})
