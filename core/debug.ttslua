@@ -445,6 +445,16 @@ function DEBUG.testZones()
         end
     end
 
+	-- Helper: Pause until continueTest() is called
+	local function pauseStep(message)
+		return function()
+			broadcast(message, {0.8, 0.8, 1})
+			print("💡 To continue, type in console: continueTest()")
+			testWaitingForContinue = true
+			return function() return testWaitingForContinue == false end
+		end
+	end
+
     -- Helper: Get all scripting zones on the table
     local function getAllZones()
         return U.filter(getObjects(), function(obj)
@@ -1638,6 +1648,16 @@ function DEBUG.testEasing()
 		print("📢 " .. message)
 	end
 
+	-- Helper: Pause until continueTest() is called
+	local function pauseStep(message)
+		return function()
+			broadcast(message, {0.8, 0.8, 1})
+			print("💡 To continue, type in console: continueTest()")
+			testWaitingForContinue = true
+			return function() return testWaitingForContinue == false end
+		end
+	end
+
 	broadcast("🎬 Starting Easing and Path Generation Tests", {0.8, 0.8, 1})
 
   -- Test configuration constants
@@ -2417,6 +2437,7 @@ function DEBUG.testEasing()
 		table.insert(animationSequence, orbitingInit)        -- Initialization (returns object to wait for)
 		table.insert(animationSequence, orbitingOrientation) -- Orientation setup (runs after object is at rest)
 		table.insert(animationSequence, orbitingLerp)        -- Animation
+		table.insert(animationSequence, pauseStep("⏸️ Orbiting Light complete - inspect TEST_LIGHT, then continue."))
 	end
 
 	-- Test: CYLINDRICAL_SPIRAL
