@@ -2258,44 +2258,33 @@ function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinate
 				end
 			end
 
-			-- Handle orientation (may need to recalculate if Objects present)
+			-- Handle orientation (lock to target object if provided)
 			if start.orientation ~= nil or endVal.orientation ~= nil then
 				local currentPos = step.position or startPos or Vector(0, 0, 0)
-
-				local startRot
-				if start.orientation ~= nil then
-					if U.isGameObject(start.orientation) then
-						local success, targetPos = pcall(function() return start.orientation.getPosition() end)
-						if success and targetPos then
-							startRot = calculateLookAtRotation(currentPos, targetPos)
-						else
-							startRot = Vector(0, 0, 0)
-						end
-					else
-						startRot = Vector(start.orientation)
-					end
+				local targetObj = nil
+				if U.isGameObject(endVal.orientation) then
+					targetObj = endVal.orientation
+				elseif U.isGameObject(start.orientation) then
+					targetObj = start.orientation
 				end
 
-				local endRot
-				if endVal.orientation ~= nil then
-					if U.isGameObject(endVal.orientation) then
-						local success, targetPos = pcall(function() return endVal.orientation.getPosition() end)
-						if success and targetPos then
-							endRot = calculateLookAtRotation(currentPos, targetPos)
-						else
-							endRot = Vector(0, 0, 0)
-						end
+				if targetObj ~= nil then
+					local success, targetPos = pcall(function() return targetObj.getPosition() end)
+					if success and targetPos then
+						step.orientation = calculateLookAtRotation(currentPos, targetPos)
 					else
-						endRot = Vector(endVal.orientation)
+						step.orientation = Vector(0, 0, 0)
 					end
-				end
-
-				if startRot ~= nil and endRot ~= nil then
-					step.orientation = lerpRotation(startRot, endRot, tEased)
-				elseif startRot ~= nil then
-					step.orientation = startRot
-				elseif endRot ~= nil then
-					step.orientation = endRot
+				else
+					local startRot = start.orientation ~= nil and Vector(start.orientation) or nil
+					local endRot = endVal.orientation ~= nil and Vector(endVal.orientation) or nil
+					if startRot ~= nil and endRot ~= nil then
+						step.orientation = lerpRotation(startRot, endRot, tEased)
+					elseif startRot ~= nil then
+						step.orientation = startRot
+					elseif endRot ~= nil then
+						step.orientation = endRot
+					end
 				end
 			end
 
