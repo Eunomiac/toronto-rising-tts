@@ -121,7 +121,10 @@ end
 --     * 90° = +X axis (to the right)
 --     * 180° = -Z axis (toward players, in front of target)
 --     * 270° = -X axis (to the left)
---   - angle2: Elevation angle in degrees (0° = straight up, 90° = horizontal)
+--   - angle2: Elevation angle in degrees
+--     * 0° = perpendicular/horizontal (level with center)
+--     * -90° = straight up (above center)
+--     * +90° = straight down (below center)
 -- @param pos Vector|table Position in XYZ coordinates {x, y, z}
 -- @param center Vector|table Center point to calculate relative to {x, y, z}
 -- @return table Spherical coordinates {radius, angle, angle2}
@@ -1599,6 +1602,55 @@ local function sphericalToXYZ(spherical, center)
 	)
 end
 
+-- Helper: Resolve an angle target and determine if it is relative
+-- @param startAngle number Starting angle in degrees
+-- @param endAngle number|string Ending angle (number) or relative string like "+360" or "-90"
+-- @return number, boolean Resolved absolute end angle, and whether it was relative
+local function resolveAngleTarget(startAngle, endAngle)
+	if U.Type(endAngle) == "string" then
+		local sign = string.sub(endAngle, 1, 1)
+		local magnitude = tonumber(string.sub(endAngle, 2))
+		if (sign ~= "+" and sign ~= "-") or magnitude == nil then
+			U.error("resolveAngleTarget", "Invalid angle string format; expected '+X' or '-X'", endAngle)
+			return startAngle, false
+		end
+		local delta = magnitude * (sign == "-" and -1 or 1)
+		return startAngle + delta, true
+	end
+	return endAngle, false
+end
+
+-- Helper: Normalize delta to shortest path (-180 to +180)
+-- @param delta number Angle delta in degrees
+-- @return number Normalized delta
+local function normalizeShortestDelta(delta)
+	while delta > 180 do
+		delta = delta - 360
+	end
+	while delta < -180 do
+		delta = delta + 360
+	end
+	return delta
+end
+
+-- Helper: Interpolate an angle with optional shortest-path logic
+-- @param startAngle number Starting angle in degrees
+-- @param endAngle number|string Ending angle (number) or relative string like "+360" or "-90"
+-- @param t number Normalized interpolation factor (0 to 1)
+-- @param angleMode string|"direct"|"shortest" Optional interpolation mode (default: "direct")
+-- @return number Interpolated angle in degrees (unwrapped)
+local function lerpAngle(startAngle, endAngle, t, angleMode)
+	angleMode = angleMode or "direct"
+	U.Val("lerpAngle", startAngle, U.Type(startAngle) == "number", "startAngle must be a number")
+	U.Val("lerpAngle", endAngle, U.Type(endAngle) == "number" or U.Type(endAngle) == "string", "endAngle must be a number or '+X'/'-X' string")
+	local resolvedEnd, isRelative = resolveAngleTarget(startAngle, endAngle)
+	local delta = resolvedEnd - startAngle
+	if angleMode == "shortest" and not isRelative then
+		delta = normalizeShortestDelta(delta)
+	end
+	return startAngle + delta * t
+end
+
 -- Helper: Resolve position from PositionOrientationData (handles Objects and coordinate systems)
 -- @param data table PositionOrientationData
 -- @param coordinateSystem string "xy", "cylindrical", or "spherical"
@@ -1632,6 +1684,21 @@ local function resolvePosition(data, coordinateSystem, center)
 		-- XY coordinates (default)
 		return Vector(data.position)
 	end
+end
+
+--- Resolves a PositionOrientationData position into XYZ coordinates
+-- Uses the same conversion logic as internal utilities (cylindrical/spherical/xy).
+-- @param data table PositionOrientationData-like table with a `position` field
+-- @param coordinateSystem string "xy", "cylindrical", or "spherical"
+-- @param center Vector|table Optional center for cylindrical/spherical conversions
+-- @return Vector|nil Position in XYZ coordinates
+-- @usage local pos = U.resolvePositionData({position = {radius=10, angle=90, height=5}}, "cylindrical", Vector(0,0,0))
+function U.resolvePositionData(data, coordinateSystem, center)
+	U.Assert("U.resolvePositionData", data, "table")
+	if coordinateSystem == nil then
+		coordinateSystem = "xy"
+	end
+	return resolvePosition(data, coordinateSystem, center)
 end
 
 -- Helper: Resolve center from PositionOrientationData (handles Objects)
@@ -1918,33 +1985,12 @@ function U.GetEasedPath(start, endVal, duration, ease, easeIntensity, coordinate
 		local step = {}
 
 		-- Interpolate position
+
 		if startCoord ~= nil and endCoord ~= nil then
 			if coordinateSystem == "cylindrical" then
 				-- Interpolate in cylindrical coordinate space
-				-- Handle angle wrapping: use shortest path for angles, but preserve full rotations
-				local angleDelta = endCoord.angle - startCoord.angle
-				local absDelta = math.abs(angleDelta)
-
-				-- Only normalize to shortest path if delta is <= 360°
-				-- Large deltas (> 360°) are treated as explicit multi-rotation animations (e.g., +720°, +800°)
-				if absDelta <= 360 then
-					-- Check if delta is close to a multiple of 360° (explicit full rotation like 360° or -360°)
-					local fullRotations = absDelta / 360
-					local nearMultiple = math.abs(fullRotations - math.floor(fullRotations + 0.5)) < 0.01
-
-					-- If not a multiple of 360°, normalize to shortest path (-180 to +180)
-					if not nearMultiple then
-						if angleDelta > 180 then
-							angleDelta = angleDelta - 360  -- Go the other way (shorter)
-						elseif angleDelta < -180 then
-							angleDelta = angleDelta + 360  -- Go the other way (shorter)
-						end
-					end
-				end
-				-- If absDelta > 360, preserve the large rotation as-is (explicit multi-rotation)
-
-				local interpAngle = startCoord.angle + angleDelta * tEased
-				-- No wrapping needed - sin/cos handle any angle value correctly
+				local angleMode = endCoord.angleMode or startCoord.angleMode or "direct"
+				local interpAngle = lerpAngle(startCoord.angle, endCoord.angle, tEased, angleMode)
 
 				local interpCyl = {
 					radius = startCoord.radius + (endCoord.radius - startCoord.radius) * tEased,
@@ -1955,30 +2001,8 @@ function U.GetEasedPath(start, endVal, duration, ease, easeIntensity, coordinate
 				step.position = cylindricalToXYZ(interpCyl, center)
 			elseif coordinateSystem == "spherical" then
 				-- Interpolate in spherical coordinate space
-				-- Handle angle wrapping: use shortest path for angles, but preserve full rotations
-				local angleDelta = endCoord.angle - startCoord.angle
-				local absDelta = math.abs(angleDelta)
-
-				-- Only normalize to shortest path if delta is <= 360°
-				-- Large deltas (> 360°) are treated as explicit multi-rotation animations (e.g., +720°, +800°)
-				if absDelta <= 360 then
-					-- Check if delta is close to a multiple of 360° (explicit full rotation like 360° or -360°)
-					local fullRotations = absDelta / 360
-					local nearMultiple = math.abs(fullRotations - math.floor(fullRotations + 0.5)) < 0.01
-
-					-- If not a multiple of 360°, normalize to shortest path (-180 to +180)
-					if not nearMultiple then
-						if angleDelta > 180 then
-							angleDelta = angleDelta - 360  -- Go the other way (shorter)
-						elseif angleDelta < -180 then
-							angleDelta = angleDelta + 360  -- Go the other way (shorter)
-						end
-					end
-				end
-				-- If absDelta > 360, preserve the large rotation as-is (explicit multi-rotation)
-
-				local interpAngle = startCoord.angle + angleDelta * tEased
-				-- No wrapping needed - sin/cos handle any angle value correctly
+				local angleMode = endCoord.angleMode or startCoord.angleMode or "direct"
+				local interpAngle = lerpAngle(startCoord.angle, endCoord.angle, tEased, angleMode)
 
 				local interpSph = {
 					radius = startCoord.radius + (endCoord.radius - startCoord.radius) * tEased,
@@ -2112,30 +2136,8 @@ function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinate
 					local startCyl = U.XYZToCylindrical(startPos, startCenter)
 					local endCyl = U.XYZToCylindrical(endPos, endCenter)
 
-					-- Handle angle wrapping: use shortest path for angles, but preserve full rotations
-					local angleDelta = endCyl.angle - startCyl.angle
-					local absDelta = math.abs(angleDelta)
-
-					-- Only normalize to shortest path if delta is <= 360°
-					-- Large deltas (> 360°) are treated as explicit multi-rotation animations (e.g., +720°, +800°)
-					if absDelta <= 360 then
-						-- Check if delta is close to a multiple of 360° (explicit full rotation like 360° or -360°)
-						local fullRotations = absDelta / 360
-						local nearMultiple = math.abs(fullRotations - math.floor(fullRotations + 0.5)) < 0.01
-
-						-- If not a multiple of 360°, normalize to shortest path (-180 to +180)
-						if not nearMultiple then
-							if angleDelta > 180 then
-								angleDelta = angleDelta - 360  -- Go the other way (shorter)
-							elseif angleDelta < -180 then
-								angleDelta = angleDelta + 360  -- Go the other way (shorter)
-							end
-						end
-					end
-					-- If absDelta > 360, preserve the large rotation as-is (explicit multi-rotation)
-
-					local interpAngle = startCyl.angle + angleDelta * tEased
-					-- No wrapping needed - sin/cos handle any angle value correctly
+					local angleMode = (endVal.position and endVal.position.angleMode) or (start.position and start.position.angleMode) or "direct"
+					local interpAngle = lerpAngle(startCyl.angle, endCyl.angle, tEased, angleMode)
 
 					local interpCyl = {
 						radius = startCyl.radius + (endCyl.radius - startCyl.radius) * tEased,
@@ -2148,30 +2150,8 @@ function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinate
 					local startSph = U.XYZToSpherical(startPos, startCenter)
 					local endSph = U.XYZToSpherical(endPos, endCenter)
 
-					-- Handle angle wrapping: use shortest path for angles, but preserve full rotations
-					local angleDelta = endSph.angle - startSph.angle
-					local absDelta = math.abs(angleDelta)
-
-					-- Only normalize to shortest path if delta is <= 360°
-					-- Large deltas (> 360°) are treated as explicit multi-rotation animations (e.g., +720°, +800°)
-					if absDelta <= 360 then
-						-- Check if delta is close to a multiple of 360° (explicit full rotation like 360° or -360°)
-						local fullRotations = absDelta / 360
-						local nearMultiple = math.abs(fullRotations - math.floor(fullRotations + 0.5)) < 0.01
-
-						-- If not a multiple of 360°, normalize to shortest path (-180 to +180)
-						if not nearMultiple then
-							if angleDelta > 180 then
-								angleDelta = angleDelta - 360  -- Go the other way (shorter)
-							elseif angleDelta < -180 then
-								angleDelta = angleDelta + 360  -- Go the other way (shorter)
-							end
-						end
-					end
-					-- If absDelta > 360, preserve the large rotation as-is (explicit multi-rotation)
-
-					local interpAngle = startSph.angle + angleDelta * tEased
-					-- No wrapping needed - sin/cos handle any angle value correctly
+					local angleMode = (endVal.position and endVal.position.angleMode) or (start.position and start.position.angleMode) or "direct"
+					local interpAngle = lerpAngle(startSph.angle, endSph.angle, tEased, angleMode)
 
 					local interpSph = {
 						radius = startSph.radius + (endSph.radius - startSph.radius) * tEased,

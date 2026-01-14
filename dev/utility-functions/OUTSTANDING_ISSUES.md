@@ -33,37 +33,24 @@
 
 ## Issue 2: Angle Wrapping Preventing Multiple Revolutions
 
-**Problem:** Angles above 360° are still being prematurely wrapped to 0-360 range, preventing multiple revolutions (e.g., `"+720"` only rotates 80° instead of 720°).
+**Problem:** Some paths still appear to behave as if angles are being wrapped, preventing multi-revolution rotations.
 
-**Expected Behavior:**
-- Start angle: `0°`, End angle: `"+720"` → Should rotate 720° (2 full revolutions)
-- Start angle: `-500°`, End angle: `"+300"` → Should rotate 800° total
-- Large angle deltas (> 360°) should be preserved as-is without wrapping
+**Expected Behavior (Simplified):**
+- Raw angle values are preserved end-to-end (no wrapping or bounding).
+- `0° → +720°` rotates two full revolutions.
+- `-500° → +300°` rotates 800° total.
 
-**Current Behavior:**
-- `"+720"` appears to be wrapping to `80°` (720 mod 360 = 0, but maybe getting 80 somehow)
-- Animation only completes ~90° instead of full rotation
-- Large angle deltas are still being cycled/wrapped
+**Current Approach (Simplified):**
+- **No wrapping** in coordinate conversion or interpolation.
+- **Default interpolation mode is direct** (start → end with raw angles).
+- **Shortest path is optional** via `angleMode = "shortest"` in position data.
+- **String end angles** (e.g., `"+720"`, `"-90"`) always force direct rotation.
 
 **Location:**
-- `lib/util.ttslua` - `U.GetEasedPath()` function (cylindrical and spherical coordinate interpolation)
-- `lib/util.ttslua` - `U.LerpDeferred()` function (cylindrical and spherical coordinate interpolation)
-- `lib/util.ttslua` - `U.XYZToCylindrical()` function (removed normalization, but issue persists)
-- `lib/util.ttslua` - `U.XYZToSpherical()` function (removed normalization, but issue persists)
-- `core/debug.ttslua` - `resolveTestData()` function (when parsing `"+720"` strings)
+- `lib/util.ttslua` - `U.GetEasedPath()` and `U.LerpDeferred()` (angle interpolation)
+- `core/debug.ttslua` - `resolveTestData()` (parsing `"+X"`/`"-X"` strings)
 
-**Attempted Fixes:**
-1. Removed `U.cycle()` wrapping calls from interpolation code
-2. Removed angle normalization from `U.XYZToCylindrical()` and `U.XYZToSpherical()`
-3. Added check to preserve large deltas (> 360°) in shortest path logic
-
-**Status:** **STILL NOT WORKING** - Angles are still being wrapped/cycled despite attempted fixes.
-
-**Root Cause Analysis Needed:**
-- Check if `resolveTestData()` is correctly handling `"+720"` string notation
-- Verify that angle deltas are being preserved through the entire interpolation pipeline
-- Check if there are other places where angles are being normalized or wrapped
-- May need to trace through a specific test case (e.g., ORBITING_LIGHT with `"+800"`) to find where wrapping occurs
+**Status:** **NEEDS VERIFICATION** - Logic updated, but must validate against ORBITING_LIGHT and CYLINDRICAL_SPIRAL tests.
 
 ---
 
@@ -141,118 +128,51 @@
 
 ---
 
-## Issue 4: Rotation Direction - Shortest Path Not Always Used
+## Issue 4: Rotation Direction - Optional Shortest Path
 
-**Problem:** With rotations, the direction is ambiguous. Rotating from 270° to 250° could animate the long way around (270° → 360° → 250° = +340°) or the short way (270° → 250° = -20°). The general behavior should always be "shortest path" unless explicitly a full rotation multiple.
+**Problem:** Some rotations should use the shortest path, but others should follow the direct raw angle delta.
 
-**Expected Behavior:**
-- **Shortest path by default:** 270° to 250° = -20° (not +340°)
-- **Shortest path by default:** 10° to 350° = +20° (not -340°)
-- **Preserve full rotations:** 0° to 720° = +720° (explicit multiple of 360)
-- **Preserve full rotations:** 0° to -720° = -720° (explicit multiple of 360)
-
-**Current Behavior:**
-- After removing all wrapping/normalization, rotations always go the "positive direction" or "linear direction"
-- 270° to 250° would interpolate as +340° (long way) instead of -20° (short way)
-- This creates unnecessary rotation animation
+**Expected Behavior (Simplified):**
+- **Direct by default:** start → end uses raw angles (no wrapping).
+- **Shortest when requested:** normalize delta to -180..180 when `angleMode = "shortest"`.
+- **Forced direction strings:** `"+720"`/`"-90"` always rotate in that direction.
 
 **Location:**
-- `lib/util.ttslua` - `U.GetEasedPath()` function (angle interpolation in cylindrical/spherical)
-- `lib/util.ttslua` - `U.LerpDeferred()` function (angle interpolation when resolving Object positions)
+- `lib/util.ttslua` - `U.GetEasedPath()` and `U.LerpDeferred()` (angle interpolation)
+- `core/debug.ttslua` - `resolveTestData()` (angle string parsing)
 
-**Solution Needed:**
-1. **For absolute angles:** Always normalize to shortest path (-180° to +180°) unless delta is exactly a multiple of 360°
-2. **For relative angles (e.g., "+720"):** Preserve the full rotation (already handled in `resolveTestData()`)
-3. **Detection logic:** If `angleDelta` is close to ±360°, ±720°, etc. (within tolerance), preserve it; otherwise normalize to shortest path
-
-**Current Implementation Status:**
-- **`U.GetEasedPath()` - Spherical (line 1934-1950):** HAS shortest path logic, but still wraps with `U.cycle()` (line 1956)
-- **`U.GetEasedPath()` - Cylindrical (line 1919-1933):** NO shortest path logic - just linear interpolation
-- **`U.LerpDeferred()` - Spherical (line 2104-2119):** NO shortest path logic - just linear interpolation
-- **`U.LerpDeferred()` - Cylindrical (line 2086-2102):** NO shortest path logic - just linear interpolation
-
-**Implementation Needed:**
-Apply shortest path logic to ALL angle interpolation points:
-```lua
-local angleDelta = endCoord.angle - startCoord.angle
-
--- Check if delta is close to a multiple of 360° (full rotation)
--- This preserves explicit full rotations like +720°, +1080°, etc.
-local fullRotations = angleDelta / 360
-local nearMultiple = math.abs(fullRotations - math.floor(fullRotations + 0.5)) < 0.01
-
--- If not a multiple, normalize to shortest path (-180 to +180)
-if not nearMultiple then
-    if angleDelta > 180 then
-        angleDelta = angleDelta - 360  -- Go the other way (shorter)
-    elseif angleDelta < -180 then
-        angleDelta = angleDelta + 360  -- Go the other way (shorter)
-    end
-end
-
--- Then interpolate: startAngle + angleDelta * t
-local interpAngle = startCoord.angle + angleDelta * tEased
--- DO NOT wrap - sin/cos handle any angle value correctly
-```
-
-**Places to Update:**
-1. `U.GetEasedPath()` - Cylindrical interpolation (line ~1923)
-2. `U.GetEasedPath()` - Spherical interpolation (line ~1937) - Remove `U.cycle()` call
-3. `U.LerpDeferred()` - Cylindrical interpolation (line ~2092)
-4. `U.LerpDeferred()` - Spherical interpolation (line ~2111)
-
-**Reference:** User notes this is similar to behavior needed in kingsdilemma module.
+**Status:** **NEEDS VERIFICATION** - Validate `angleMode` for both cylindrical and spherical paths.
 
 ---
 
-## Central Feature: Smart Angle Interpolation System
+## Central Feature: Smart Angle Interpolation System (Simplified)
 
-**Status:** **TO BE IMPLEMENTED** - This is now a central feature requirement, not a future enhancement.
+**Status:** **IN PROGRESS** - Unified angle interpolation is now centralized and DRY.
 
 **Specification:**
 
 ### Start Angle
-- Must always be a **number** (absolute angle in degrees)
-- Direction only matters when compared to the end angle
+- Always a **number** (absolute angle in degrees).
 
-### End Angle - Number
-- Calculate full 360° revolutions between start and end
-- Use shortest path for the remainder (normalized to -180° to +180° range)
-- Preserve the number of full rotations
-- **Examples:**
-  - Start 270°, End 250° → Rotate -20° (shortest path, no full rotations)
-  - Start 0°, End 720° → Rotate +720° (2 full rotations, ends at same position as start)
-  - Start 10°, End 350° → Rotate -20° (shortest path: 340° difference normalized to -20°)
+### End Angle - Number (Default Behavior)
+- Interpolates directly from start → end with raw angle values.
+- No wrapping or bounding is applied.
+
+### End Angle - Number (Shortest Path Mode)
+- If `angleMode = "shortest"`, normalize delta to -180..180.
+- Use only when shortest-path behavior is desired.
 
 ### End Angle - String (with "+" or "-" prefix)
-- **Force rotation direction** based on sign
-- **"+" prefix:** Positive direction (increasing angle)
-- **"-" prefix:** Negative direction (decreasing angle)
-- Calculate and preserve full 360° rotations from the offset value
-- **Examples:**
-  - Start 270°, End "+800" → Rotate +800° total (270° → 1070°, or normalized: 270° with 2 full rotations)
-  - Start 270°, End "-20" → Rotate -20° (270° → 250°)
-  - Start 0°, End "+720" → Rotate +720° (2 full rotations)
-  - Start 350°, End "-20" → Rotate -20° (350° → 330°, NOT +340°)
+- **Force rotation direction** based on sign.
+- **"+" prefix:** Positive direction (increasing angle).
+- **"-" prefix:** Negative direction (decreasing angle).
+- Always treated as direct rotation (no shortest normalization).
 
 **Implementation Requirements:**
-1. Update `U.GetEasedPath()` to parse and handle angle values according to this specification
-2. Update `U.LerpDeferred()` to use the same angle resolution logic
-3. Update `resolveTestData()` in debug tests to match this behavior
-4. Ensure full rotations are preserved and counted correctly
-5. Apply to both cylindrical and spherical coordinate systems (`angle` field)
-6. Potentially apply to `angle2` in spherical coordinates (future consideration)
-
-**Use Cases:**
-- Precise control over rotation direction (clockwise vs counter-clockwise)
-- Multi-rotation animations (spinning objects, orbiting cameras/lights)
-- Avoiding unexpected shortest-path behavior when direction matters
-
-**Current Status:**
-- Basic string parsing exists in `resolveTestData()` but doesn't fully implement this specification
-- Shortest path logic exists but doesn't properly handle full rotations with number inputs
-- Need to refactor angle interpolation throughout the codebase
+1. Use a shared angle interpolation helper in `U.GetEasedPath()` and `U.LerpDeferred()`.
+2. Keep coordinate conversions centralized (no debug-side reimplementation).
+3. Apply to both cylindrical and spherical coordinate systems (`angle` field).
 
 ---
 
-**Last Updated:** After fixing shortest path logic to preserve large rotations
+**Last Updated:** After simplifying angle interpolation and removing wrapping

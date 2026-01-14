@@ -1719,6 +1719,7 @@ function DEBUG.testEasing()
 	-- @param objectToMove string|nil Name of object to move (for "CURRENT" position resolution)
 	-- @return table Resolved PositionOrientationData
 	local function resolveTestData(paramData, objects, startData, coordinateSystem, objectToMove)
+
 		local resolved = {}
 
 		-- Resolve position
@@ -1765,10 +1766,16 @@ function DEBUG.testEasing()
 					end
 					if paramData.position.angle == "SAME" and startData then
 						sph.angle = startData.position.angle
-					elseif U.Type(paramData.position.angle) == "string" and paramData.position.angle:sub(1, 1) == "+" then
-						-- Relative angle (e.g., "+360", "+720")
+					elseif U.Type(paramData.position.angle) == "string" then
+						-- Relative angle (e.g., "+360", "-90")
+						local sign = paramData.position.angle:sub(1, 1)
 						local offset = tonumber(paramData.position.angle:sub(2))
-						sph.angle = (startData and startData.position.angle or 0) + offset
+						if (sign == "+" or sign == "-") and offset ~= nil then
+							local delta = offset * (sign == "-" and -1 or 1)
+							sph.angle = (startData and startData.position.angle or 0) + delta
+						else
+							U.error("resolveTestData", "Invalid angle string; expected '+X' or '-X'", paramData.position.angle)
+						end
 					else
 						sph.angle = paramData.position.angle
 					end
@@ -1777,6 +1784,7 @@ function DEBUG.testEasing()
 					else
 						sph.angle2 = paramData.position.angle2
 					end
+					sph.angleMode = paramData.position.angleMode
 					resolved.position = sph
 				else
 					-- Cylindrical coordinates with relative values
@@ -1788,10 +1796,16 @@ function DEBUG.testEasing()
 					end
 					if paramData.position.angle == "SAME" and startData then
 						cyl.angle = startData.position.angle
-					elseif U.Type(paramData.position.angle) == "string" and paramData.position.angle:sub(1, 1) == "+" then
-						-- Relative angle (e.g., "+360", "+720")
+					elseif U.Type(paramData.position.angle) == "string" then
+						-- Relative angle (e.g., "+360", "-90")
+						local sign = paramData.position.angle:sub(1, 1)
 						local offset = tonumber(paramData.position.angle:sub(2))
-						cyl.angle = (startData and startData.position.angle or 0) + offset
+						if (sign == "+" or sign == "-") and offset ~= nil then
+							local delta = offset * (sign == "-" and -1 or 1)
+							cyl.angle = (startData and startData.position.angle or 0) + delta
+						else
+							U.error("resolveTestData", "Invalid angle string; expected '+X' or '-X'", paramData.position.angle)
+						end
 					else
 						cyl.angle = paramData.position.angle
 					end
@@ -1800,6 +1814,7 @@ function DEBUG.testEasing()
 					else
 						cyl.height = paramData.position.height
 					end
+					cyl.angleMode = paramData.position.angleMode
 					resolved.position = cyl
 				end
 			else
@@ -2121,31 +2136,7 @@ function DEBUG.testEasing()
 			-- Convert start position to XYZ (stored in closure)
 			startPosXYZ = nil
 			if startData.position then
-				if params.coordinateSystem == "cylindrical" then
-					local cyl = startData.position
-					if cyl and cyl.radius ~= nil and cyl.angle ~= nil and cyl.height ~= nil then
-						local angleRad = math.rad(cyl.angle)
-						startPosXYZ = Vector(
-							startCenter.x + cyl.radius * math.sin(angleRad),
-							startCenter.y + cyl.height,
-							startCenter.z + cyl.radius * math.cos(angleRad)
-						)
-					end
-				elseif params.coordinateSystem == "spherical" then
-					local sph = startData.position
-					if sph and sph.radius ~= nil and sph.angle ~= nil and sph.angle2 ~= nil then
-						-- Use the same formula as sphericalToXYZ in util library
-						local angleRad = math.rad(sph.angle)
-						local angle2Rad = math.rad(sph.angle2)
-						startPosXYZ = Vector(
-							startCenter.x + sph.radius * math.sin(angle2Rad) * math.sin(angleRad),
-							startCenter.y + sph.radius * math.cos(angle2Rad),
-							startCenter.z + sph.radius * math.sin(angle2Rad) * math.cos(angleRad)
-						)
-					end
-				else
-					startPosXYZ = Vector(startData.position)
-				end
+				startPosXYZ = U.resolvePositionData({position = startData.position}, params.coordinateSystem, startCenter)
 			end
 
 			-- Set starting position FIRST (use setPosition for immediate placement during initialization)
@@ -2250,6 +2241,7 @@ function DEBUG.testEasing()
 
 			-- Broadcast animation start
 			broadcast("▶️ " .. testDisplayName .. " Starting Animation", {0.8, 0.5, 1})
+
 
 			-- Generate path (will return "DEFER" if Object references present)
 			local path = U.GetEasedPath(startData, endData, params.duration, params.ease, params.easeIntensity, params.coordinateSystem)

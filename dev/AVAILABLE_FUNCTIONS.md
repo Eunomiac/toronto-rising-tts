@@ -144,7 +144,11 @@
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
+| `U.GetEasedPath(start, endVal, duration, ease, easeIntensity, coordinateSystem)` | Pre-compute eased path for PositionOrientationData | Generate orbit path |
 | `U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing)` | Interpolate value over time | Smooth position/rotation changes |
+| `U.LerpPath(path, setFunc)` | Execute a pre-computed path | Apply eased path |
+| `U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinateSystem, setFunc)` | Execute deferred path with Object refs | Dynamic targets |
+| `U.resolvePositionData(data, coordinateSystem, center)` | Convert coordinate data to XYZ | Debug/test utilities |
 | `U.setPositionSlow(obj, position, duration, easing, isColliding)` | Animate position smoothly | Slide object |
 | `U.setRotationSlow(obj, rotation, duration, easing, isColliding)` | Animate rotation smoothly | Rotate object |
 | `U.setScaleSlow(obj, scale, duration, easing)` | Animate scale smoothly | Grow/shrink object |

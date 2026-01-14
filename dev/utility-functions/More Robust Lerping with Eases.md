@@ -131,9 +131,14 @@ U.GetEasedPath(
 --    -- "cylindrical": Position vectors are interpreted as {radius, angle, height}.
 --       -- If Vector provided: Vector(x, y, z) = {radius=x, angle=y, height=z}
 --       -- If table provided: {radius=5, angle=90, height=2}
+--       -- Optional: angleMode = "direct" (default) or "shortest"
+--          -- "direct": Always interpolate start → end with raw angle values (no wrapping).
+--          -- "shortest": Normalize delta to -180..180 when end angle is a number.
+--          -- String end angles like "+720"/"-90" always force direct rotation.
 --    -- "spherical": Position vectors are interpreted as {radius, angle, angle2}.
 --       -- If Vector provided: Vector(x, y, z) = {radius=x, angle=y, angle2=z}
 --       -- If table provided: {radius=5, angle=90, angle2=45}
+--       -- Optional: angleMode = "direct" (default) or "shortest" (same behavior as cylindrical)
 -- return: A table of PositionOrientationData objects, one per frame (60 FPS).
 --    -- All positions are converted to XYZ coordinates (cylindrical/spherical converted automatically).
 --    -- If Object references present in start/end, returns "DEFER" (computation deferred to execution time).
@@ -159,7 +164,7 @@ local orbitPath = U.GetEasedPath(
   "cylindrical"
 )
 -- Returns ~180 frames (3 seconds at 60 FPS) in XYZ coordinates, automatically converted from cylindrical
--- Note: 0° → 360° uses shortest path logic (ends at same position with 1 full rotation)
+-- Note: 0° → 360° is treated as a direct rotation by default (one full revolution)
 
 -- Example: Forced rotation direction (positive, 2 full rotations)
 local forcedRotation = U.GetEasedPath(
@@ -170,13 +175,13 @@ local forcedRotation = U.GetEasedPath(
   1.0,
   "cylindrical"
 )
--- Forces +720° rotation (2 full rotations) regardless of shortest path
--- Starts at 270°, rotates +720° to 990° (normalized: 270°)
+-- Forces +720° rotation (2 full rotations)
+-- Starts at 270°, rotates +720° to 990° (raw angle preserved)
 
 -- Example: Shortest path rotation (number vs number)
 local shortestPath = U.GetEasedPath(
-  {position = {radius = 5, angle = 270, height = 2}, center = Vector(0, 0, 0)},
-  {position = {radius = 5, angle = 250, height = 2}, center = Vector(0, 0, 0)},
+  {position = {radius = 5, angle = 270, height = 2, angleMode = "shortest"}, center = Vector(0, 0, 0)},
+  {position = {radius = 5, angle = 250, height = 2, angleMode = "shortest"}, center = Vector(0, 0, 0)},
   2.0,
   "sineInOut",
   1.0,
