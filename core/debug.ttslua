@@ -1654,15 +1654,13 @@ function DEBUG.testEasing()
 			-- The "Orbiting Light" test should lerp `TEST_LIGHT` so that it orbits one full revolution around `TEST_TARGET_OBJ` using spherical coordinates.
 			-- The angle of rotation lerps from 0 to 360 (one full revolution), while the incidence angle (angle2) lerps from 35 to -35,
 			-- creating an off-kilter path that starts slightly higher and lowers as it proceeds. It should orient to face TEST_TARGET_OBJ at all times.
-			-- Note: position="CURRENT" means use the object's current position at test time, but we override angle2 to start at 35°
+			-- Note: Use CURRENT radius but explicit angle/angle2 to control the start direction.
 			start = {
-				position = "CURRENT",  -- Will be resolved to light's current position in spherical coords
-				overrideAngle = 180,  -- Override angle to start at 0°
-				overrideAngle2 = -20,  -- Override angle2 to start at 35° (slightly higher)
+				position = {radius = "CURRENT", angle = 180, angle2 = -20},  -- Use current radius, explicit angles
 				center = "TEST_TARGET_OBJ",  -- Will be resolved to targetObj
 				orientation = "TEST_TARGET_OBJ"  -- Will be resolved to targetObj (face target)
 			},
-			-- End: same radius, angle +800° (multi-revolution), angle2 from 35° to -35°
+			-- End: same radius, angle +800° (multi-revolution), angle2 from -20° to 20°
 			endVal = {
 				position = {radius = "SAME", angle = "+800", angle2 = 20},  -- Relative angle (+360° from start), absolute angle2
 				center = "TEST_TARGET_OBJ",
@@ -1722,6 +1720,35 @@ function DEBUG.testEasing()
 
 		local resolved = {}
 
+		-- Helper: Resolve CURRENT coordinate values (per-field) for cylindrical/spherical
+		local function getCurrentCoord()
+			local objToMoveRef = objects[objectToMove or "TEST_LIGHT"]
+			if not objToMoveRef then
+				U.error("resolveTestData", "CURRENT field requires objectToMove to be set")
+				return nil
+			end
+			local currentPos = objToMoveRef.getPosition()
+			local centerVal = paramData.center
+			if centerVal ~= nil then
+				if U.Type(centerVal) == "string" and objects[centerVal] then
+					centerVal = objects[centerVal]
+				end
+				if U.isGameObject(centerVal) then
+					centerVal = centerVal.getPosition()
+				else
+					centerVal = Vector(centerVal)
+				end
+			else
+				centerVal = Vector(0, 0, 0)
+			end
+			if coordinateSystem == "cylindrical" then
+				return U.XYZToCylindrical(currentPos, centerVal)
+			elseif coordinateSystem == "spherical" then
+				return U.XYZToSpherical(currentPos, centerVal)
+			end
+			return nil
+		end
+
 		-- Resolve position
 		if paramData.position ~= nil then
 			if paramData.position == "CURRENT" then
@@ -1759,13 +1786,20 @@ function DEBUG.testEasing()
 				if paramData.position.angle2 ~= nil then
 					-- Spherical coordinates with relative values
 					local sph = {}
+					local currentCoord = nil
 					if paramData.position.radius == "SAME" and startData then
 						sph.radius = startData.position.radius
+					elseif paramData.position.radius == "CURRENT" then
+						currentCoord = currentCoord or getCurrentCoord()
+						sph.radius = currentCoord and currentCoord.radius
 					else
 						sph.radius = paramData.position.radius
 					end
 					if paramData.position.angle == "SAME" and startData then
 						sph.angle = startData.position.angle
+					elseif paramData.position.angle == "CURRENT" then
+						currentCoord = currentCoord or getCurrentCoord()
+						sph.angle = currentCoord and currentCoord.angle
 					elseif U.Type(paramData.position.angle) == "string" then
 						-- Relative angle (e.g., "+360", "-90")
 						local sign = paramData.position.angle:sub(1, 1)
@@ -1781,6 +1815,9 @@ function DEBUG.testEasing()
 					end
 					if paramData.position.angle2 == "SAME" and startData then
 						sph.angle2 = startData.position.angle2
+					elseif paramData.position.angle2 == "CURRENT" then
+						currentCoord = currentCoord or getCurrentCoord()
+						sph.angle2 = currentCoord and currentCoord.angle2
 					else
 						sph.angle2 = paramData.position.angle2
 					end
@@ -1789,13 +1826,20 @@ function DEBUG.testEasing()
 				else
 					-- Cylindrical coordinates with relative values
 					local cyl = {}
+					local currentCoord = nil
 					if paramData.position.radius == "SAME" and startData then
 						cyl.radius = startData.position.radius
+					elseif paramData.position.radius == "CURRENT" then
+						currentCoord = currentCoord or getCurrentCoord()
+						cyl.radius = currentCoord and currentCoord.radius
 					else
 						cyl.radius = paramData.position.radius
 					end
 					if paramData.position.angle == "SAME" and startData then
 						cyl.angle = startData.position.angle
+					elseif paramData.position.angle == "CURRENT" then
+						currentCoord = currentCoord or getCurrentCoord()
+						cyl.angle = currentCoord and currentCoord.angle
 					elseif U.Type(paramData.position.angle) == "string" then
 						-- Relative angle (e.g., "+360", "-90")
 						local sign = paramData.position.angle:sub(1, 1)
@@ -1811,6 +1855,9 @@ function DEBUG.testEasing()
 					end
 					if paramData.position.height == "SAME" and startData then
 						cyl.height = startData.position.height
+					elseif paramData.position.height == "CURRENT" then
+						currentCoord = currentCoord or getCurrentCoord()
+						cyl.height = currentCoord and currentCoord.height
 					else
 						cyl.height = paramData.position.height
 					end
