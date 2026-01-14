@@ -1651,12 +1651,10 @@ function DEBUG.testEasing()
 
 	local TEST_PARAMETERS = {
 		ORBITING_LIGHT = {
-			-- The "Orbiting Light" test should lerp `TEST_LIGHT` so that it orbits one full revolution around `TEST_TARGET_OBJ` using spherical coordinates.
-			-- The angle of rotation lerps from 0 to 360 (one full revolution), while the incidence angle (angle2) lerps from 35 to -35,
-			-- creating an off-kilter path that starts slightly higher and lowers as it proceeds. It should orient to face TEST_TARGET_OBJ at all times.
+			-- The "Orbiting Light" test should lerp `TEST_LIGHT` so that it orbits around `TEST_TARGET_OBJ` using spherical coordinates
 			-- Note: Use CURRENT radius but explicit angle/angle2 to control the start direction.
 			start = {
-				position = {radius = "CURRENT", angle = 180, angle2 = -20},  -- Use current radius, explicit angles
+				position = {radius = "CURRENT", angle = 0, angle2 = -20},  -- Use current radius, explicit angles
 				center = "TEST_TARGET_OBJ",  -- Will be resolved to targetObj
 				orientation = "TEST_TARGET_OBJ"  -- Will be resolved to targetObj (face target)
 			},
@@ -1733,9 +1731,7 @@ function DEBUG.testEasing()
 				if U.Type(centerVal) == "string" and objects[centerVal] then
 					centerVal = objects[centerVal]
 				end
-				if U.isGameObject(centerVal) then
-					centerVal = centerVal.getPosition()
-				else
+				if not U.isGameObject(centerVal) then
 					centerVal = Vector(centerVal)
 				end
 			else
@@ -1757,10 +1753,8 @@ function DEBUG.testEasing()
 				if objToMoveRef then
 					local currentPos = objToMoveRef.getPosition()
 					local center = resolveTestData({center = paramData.center}, objects, nil, coordinateSystem, objectToMove).center
-					-- Convert center Object to Vector if needed
-					if U.isGameObject(center) then
-						center = center.getPosition()
-					else
+					-- Convert center to Vector only if not an Object (Object preserves yaw)
+					if not U.isGameObject(center) then
 						center = Vector(center)
 					end
 					if coordinateSystem == "cylindrical" then

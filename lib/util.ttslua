@@ -90,16 +90,21 @@ end
 --     * 90° = +X axis (to the right)
 --     * 180° = -Z axis (toward players, in front of target)
 --     * 270° = -X axis (to the left)
+--     * If center is a GameObject, angle is relative to the object's yaw rotation
 --   - height: Vertical offset from center's Y coordinate
 -- @param pos Vector|table Position in XYZ coordinates {x, y, z}
--- @param center Vector|table Center point to calculate relative to {x, y, z}
+-- @param center Vector|table|Object Center point to calculate relative to {x, y, z}
+-- @param centerYaw number Optional yaw offset in degrees when center is not an Object
 -- @return table Cylindrical coordinates {radius, angle, height}
 -- @usage local cyl = U.XYZToCylindrical({x=10, y=5, z=0}, {x=0, y=0, z=0}) -- Returns {radius=10, angle=90, height=5}
 -- @usage local cyl = U.XYZToCylindrical(obj.getPosition(), centerObj.getPosition())
-function U.XYZToCylindrical(pos, center)
+function U.XYZToCylindrical(pos, center, centerYaw)
 	pos = Vector(pos)
 	-- Handle Object center references
+	local yawOffset = centerYaw or 0
 	if U.isGameObject(center) then
+		local centerRot = center.getRotation()
+		yawOffset = centerRot and centerRot.y or 0
 		center = center.getPosition()
 	else
 		center = Vector(center)
@@ -108,6 +113,7 @@ function U.XYZToCylindrical(pos, center)
 	local dz = pos.z - center.z
 	local radius = math.sqrt(dx * dx + dz * dz)
 	local angle = math.atan2(dx, dz) * (180 / math.pi)  -- Convert to degrees
+	angle = angle - yawOffset
 	-- DO NOT normalize to 0-360 - preserve angle values for shortest path calculations
 	local height = pos.y - center.y
 	return {radius = radius, angle = angle, height = height}
@@ -121,19 +127,24 @@ end
 --     * 90° = +X axis (to the right)
 --     * 180° = -Z axis (toward players, in front of target)
 --     * 270° = -X axis (to the left)
+--     * If center is a GameObject, angle is relative to the object's yaw rotation
 --   - angle2: Elevation angle in degrees
 --     * 0° = perpendicular/horizontal (level with center)
 --     * -90° = straight up (above center)
 --     * +90° = straight down (below center)
 -- @param pos Vector|table Position in XYZ coordinates {x, y, z}
--- @param center Vector|table Center point to calculate relative to {x, y, z}
+-- @param center Vector|table|Object Center point to calculate relative to {x, y, z}
+-- @param centerYaw number Optional yaw offset in degrees when center is not an Object
 -- @return table Spherical coordinates {radius, angle, angle2}
 -- @usage local sph = U.XYZToSpherical({x=10, y=0, z=0}, {x=0, y=0, z=0}) -- Returns {radius=10, angle=90, angle2=90}
 -- @usage local sph = U.XYZToSpherical(obj.getPosition(), centerObj.getPosition())
-function U.XYZToSpherical(pos, center)
+function U.XYZToSpherical(pos, center, centerYaw)
 	pos = Vector(pos)
 	-- Handle Object center references
+	local yawOffset = centerYaw or 0
 	if U.isGameObject(center) then
+		local centerRot = center.getRotation()
+		yawOffset = centerRot and centerRot.y or 0
 		center = center.getPosition()
 	else
 		center = Vector(center)
@@ -147,6 +158,7 @@ function U.XYZToSpherical(pos, center)
 
 	-- Calculate horizontal angle (same as cylindrical)
 	local angle = math.atan2(dx, dz) * (180 / math.pi)  -- Convert to degrees
+	angle = angle - yawOffset
 	-- DO NOT normalize to 0-360 - preserve angle values for shortest path calculations
 
 	-- Calculate elevation angle (angle2)
@@ -1571,11 +1583,19 @@ end
 
 -- Helper: Convert cylindrical coordinates to XYZ
 -- @param cylindrical table {radius, angle, height}
--- @param center Vector Center point in XYZ
+-- @param center Vector|Object Center point in XYZ (Object applies yaw offset)
+-- @param centerYaw number Optional yaw offset in degrees when center is not an Object
 -- @return Vector Position in XYZ coordinates
-local function cylindricalToXYZ(cylindrical, center)
-	center = Vector(center)
-	local angleRad = math.rad(cylindrical.angle)
+local function cylindricalToXYZ(cylindrical, center, centerYaw)
+	local yawOffset = centerYaw or 0
+	if U.isGameObject(center) then
+		local centerRot = center.getRotation()
+		yawOffset = centerRot and centerRot.y or 0
+		center = center.getPosition()
+	else
+		center = Vector(center)
+	end
+	local angleRad = math.rad(cylindrical.angle + yawOffset)
 	return Vector(
 		center.x + cylindrical.radius * math.sin(angleRad),
 		center.y + cylindrical.height,
@@ -1585,11 +1605,19 @@ end
 
 -- Helper: Convert spherical coordinates to XYZ
 -- @param spherical table {radius, angle, angle2}
--- @param center Vector Center point in XYZ
+-- @param center Vector|Object Center point in XYZ (Object applies yaw offset)
+-- @param centerYaw number Optional yaw offset in degrees when center is not an Object
 -- @return Vector Position in XYZ coordinates
-local function sphericalToXYZ(spherical, center)
-	center = Vector(center)
-	local angleRad = math.rad(spherical.angle)
+local function sphericalToXYZ(spherical, center, centerYaw)
+	local yawOffset = centerYaw or 0
+	if U.isGameObject(center) then
+		local centerRot = center.getRotation()
+		yawOffset = centerRot and centerRot.y or 0
+		center = center.getPosition()
+	else
+		center = Vector(center)
+	end
+	local angleRad = math.rad(spherical.angle + yawOffset)
 	-- Add 90° to angle2 to shift the coordinate system
 	-- New system: angle2=0 is perpendicular, angle2=-90 is above, angle2=+90 is below
 	local angle2Rad = math.rad(spherical.angle2 + 90)
@@ -1654,8 +1682,9 @@ end
 -- Helper: Resolve position from PositionOrientationData (handles Objects and coordinate systems)
 -- @param data table PositionOrientationData
 -- @param coordinateSystem string "xy", "cylindrical", or "spherical"
+-- @param centerYaw number Optional yaw offset in degrees when center is not an Object
 -- @return Vector|nil Position in XYZ, or nil if no position
-local function resolvePosition(data, coordinateSystem, center)
+local function resolvePosition(data, coordinateSystem, center, centerYaw)
 	if data.position == nil then return nil end
 
 	center = center or Vector(0, 0, 0)
@@ -1672,14 +1701,14 @@ local function resolvePosition(data, coordinateSystem, center)
 		if U.isInstance(cyl, Vector) then
 			cyl = {radius = cyl.x, angle = cyl.y, height = cyl.z}
 		end
-		return cylindricalToXYZ(cyl, center)
+		return cylindricalToXYZ(cyl, center, centerYaw)
 	elseif coordinateSystem == "spherical" then
 		local sph = data.position
 		-- If Vector provided, interpret as {radius=x, angle=y, angle2=z}
 		if U.isInstance(sph, Vector) then
 			sph = {radius = sph.x, angle = sph.y, angle2 = sph.z}
 		end
-		return sphericalToXYZ(sph, center)
+		return sphericalToXYZ(sph, center, centerYaw)
 	else
 		-- XY coordinates (default)
 		return Vector(data.position)
@@ -1691,25 +1720,36 @@ end
 -- @param data table PositionOrientationData-like table with a `position` field
 -- @param coordinateSystem string "xy", "cylindrical", or "spherical"
 -- @param center Vector|table Optional center for cylindrical/spherical conversions
+-- @param centerYaw number Optional yaw offset in degrees when center is not an Object
 -- @return Vector|nil Position in XYZ coordinates
 -- @usage local pos = U.resolvePositionData({position = {radius=10, angle=90, height=5}}, "cylindrical", Vector(0,0,0))
-function U.resolvePositionData(data, coordinateSystem, center)
+function U.resolvePositionData(data, coordinateSystem, center, centerYaw)
 	U.Assert("U.resolvePositionData", data, "table")
 	if coordinateSystem == nil then
 		coordinateSystem = "xy"
 	end
-	return resolvePosition(data, coordinateSystem, center)
+	return resolvePosition(data, coordinateSystem, center, centerYaw)
 end
 
--- Helper: Resolve center from PositionOrientationData (handles Objects)
+-- Helper: Resolve center data from PositionOrientationData (handles Objects)
+-- @param data table PositionOrientationData
+-- @return table {pos=Vector, yaw=number}
+local function resolveCenterData(data)
+	if data.center == nil then
+		return {pos = Vector(0, 0, 0), yaw = 0}
+	end
+	if U.isGameObject(data.center) then
+		local rot = data.center.getRotation()
+		return {pos = data.center.getPosition(), yaw = rot and rot.y or 0}
+	end
+	return {pos = Vector(data.center), yaw = 0}
+end
+
+-- Helper: Resolve center position only (backward compatible)
 -- @param data table PositionOrientationData
 -- @return Vector Center point in XYZ
 local function resolveCenter(data)
-	if data.center == nil then return Vector(0, 0, 0) end
-	if U.isGameObject(data.center) then
-		return data.center.getPosition()
-	end
-	return Vector(data.center)
+	return resolveCenterData(data).pos
 end
 
 --- Calculates rotation angles to face a target position from a source position
@@ -1927,8 +1967,10 @@ function U.GetEasedPath(start, endVal, duration, ease, easeIntensity, coordinate
 	end
 
 	-- Resolve centers (needed for coordinate conversion)
-	local startCenter = resolveCenter(start)
-	local endCenter = resolveCenter(endVal)
+	local startCenterData = resolveCenterData(start)
+	local endCenterData = resolveCenterData(endVal)
+	local startCenter = startCenterData.pos
+	local endCenter = endCenterData.pos
 	-- Use start center for both if end center is not specified
 	local center = endCenter or startCenter
 
@@ -1961,16 +2003,16 @@ function U.GetEasedPath(start, endVal, duration, ease, easeIntensity, coordinate
 		endCoord = endSph
 	else
 		-- XY coordinates: convert to XYZ and lerp directly
-		local startPos = resolvePosition(start, coordinateSystem, startCenter)
-		local endPos = resolvePosition(endVal, coordinateSystem, endCenter)
+		local startPos = resolvePosition(start, coordinateSystem, startCenter, startCenterData.yaw)
+		local endPos = resolvePosition(endVal, coordinateSystem, endCenter, endCenterData.yaw)
 		startCoord = startPos
 		endCoord = endPos
 	end
 
 	-- For orientation, we need current position for look-at calculations
 	-- Use start position as fallback
-	local startPosXYZ = resolvePosition(start, coordinateSystem, startCenter)
-	local endPosXYZ = resolvePosition(endVal, coordinateSystem, endCenter)
+	local startPosXYZ = resolvePosition(start, coordinateSystem, startCenter, startCenterData.yaw)
+	local endPosXYZ = resolvePosition(endVal, coordinateSystem, endCenter, endCenterData.yaw)
 	local startRot = resolveOrientation(start, startPosXYZ or Vector(0, 0, 0))
 	local endRot = resolveOrientation(endVal, endPosXYZ or Vector(0, 0, 0))
 
@@ -1998,7 +2040,7 @@ function U.GetEasedPath(start, endVal, duration, ease, easeIntensity, coordinate
 					height = startCoord.height + (endCoord.height - startCoord.height) * tEased
 				}
 				-- Convert to XYZ
-				step.position = cylindricalToXYZ(interpCyl, center)
+				step.position = cylindricalToXYZ(interpCyl, center, startCenterData.yaw)
 			elseif coordinateSystem == "spherical" then
 				-- Interpolate in spherical coordinate space
 				local angleMode = endCoord.angleMode or startCoord.angleMode or "direct"
@@ -2010,24 +2052,24 @@ function U.GetEasedPath(start, endVal, duration, ease, easeIntensity, coordinate
 					angle2 = startCoord.angle2 + (endCoord.angle2 - startCoord.angle2) * tEased
 				}
 				-- Convert to XYZ
-				step.position = sphericalToXYZ(interpSph, center)
+				step.position = sphericalToXYZ(interpSph, center, startCenterData.yaw)
 			else
 				-- XY coordinates: lerp directly
 				step.position = startCoord:lerp(endCoord, tEased)
 			end
 		elseif startCoord ~= nil then
 			if coordinateSystem == "cylindrical" then
-				step.position = cylindricalToXYZ(startCoord, center)
+				step.position = cylindricalToXYZ(startCoord, center, startCenterData.yaw)
 			elseif coordinateSystem == "spherical" then
-				step.position = sphericalToXYZ(startCoord, center)
+				step.position = sphericalToXYZ(startCoord, center, startCenterData.yaw)
 			else
 				step.position = startCoord
 			end
 		elseif endCoord ~= nil then
 			if coordinateSystem == "cylindrical" then
-				step.position = cylindricalToXYZ(endCoord, center)
+				step.position = cylindricalToXYZ(endCoord, center, startCenterData.yaw)
 			elseif coordinateSystem == "spherical" then
-				step.position = sphericalToXYZ(endCoord, center)
+				step.position = sphericalToXYZ(endCoord, center, startCenterData.yaw)
 			else
 				step.position = endCoord
 			end
@@ -2106,22 +2148,24 @@ function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinate
 	if setFunc == nil then return 0 end
 
 	-- Resolve Object references
-	local startCenter = resolveCenter(start)
-	local endCenter = resolveCenter(endVal)
+	local startCenterData = resolveCenterData(start)
+	local endCenterData = resolveCenterData(endVal)
+	local startCenter = startCenterData.pos
+	local endCenter = endCenterData.pos
 
-	local startPos = resolvePosition(start, coordinateSystem, startCenter)
-	local endPos = resolvePosition(endVal, coordinateSystem, endCenter)
+	local startPos = resolvePosition(start, coordinateSystem, startCenter, startCenterData.yaw)
+	local endPos = resolvePosition(endVal, coordinateSystem, endCenter, endCenterData.yaw)
 
 	-- Helper: Resolve coordinate data without losing rotations
 	-- Prefers explicit coordinate tables/vectors over XYZ conversions
-	local function resolveCoordData(position, coordSystem, center)
+	local function resolveCoordData(position, coordSystem, center, centerYaw)
 		if position == nil then return nil end
 		if U.isGameObject(position) then
 			local pos = position.getPosition()
 			if coordSystem == "cylindrical" then
-				return U.XYZToCylindrical(pos, center)
+				return U.XYZToCylindrical(pos, center, centerYaw)
 			elseif coordSystem == "spherical" then
-				return U.XYZToSpherical(pos, center)
+				return U.XYZToSpherical(pos, center, centerYaw)
 			end
 			return nil
 		end
@@ -2131,7 +2175,7 @@ function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinate
 			elseif U.Type(position) == "table" and position.radius ~= nil and position.angle ~= nil then
 				return position
 			elseif U.Type(position) == "table" and position.x ~= nil and position.y ~= nil and position.z ~= nil then
-				return U.XYZToCylindrical(position, center)
+				return U.XYZToCylindrical(position, center, centerYaw)
 			end
 		elseif coordSystem == "spherical" then
 			if U.isInstance(position, Vector) then
@@ -2139,7 +2183,7 @@ function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinate
 			elseif U.Type(position) == "table" and position.radius ~= nil and position.angle ~= nil then
 				return position
 			elseif U.Type(position) == "table" and position.x ~= nil and position.y ~= nil and position.z ~= nil then
-				return U.XYZToSpherical(position, center)
+				return U.XYZToSpherical(position, center, centerYaw)
 			end
 		end
 		return nil
@@ -2165,8 +2209,8 @@ function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinate
 			if startPos ~= nil and endPos ~= nil then
 				-- For cylindrical/spherical, we need to interpolate in coordinate space
 				if coordinateSystem == "cylindrical" then
-					local startCyl = resolveCoordData(start.position, "cylindrical", startCenter) or U.XYZToCylindrical(startPos, startCenter)
-					local endCyl = resolveCoordData(endVal.position, "cylindrical", endCenter) or U.XYZToCylindrical(endPos, endCenter)
+					local startCyl = resolveCoordData(start.position, "cylindrical", startCenter, startCenterData.yaw) or U.XYZToCylindrical(startPos, startCenter, startCenterData.yaw)
+					local endCyl = resolveCoordData(endVal.position, "cylindrical", endCenter, endCenterData.yaw) or U.XYZToCylindrical(endPos, endCenter, endCenterData.yaw)
 
 					local angleMode = (endCyl and endCyl.angleMode) or (startCyl and startCyl.angleMode) or "direct"
 					local interpAngle = lerpAngle(startCyl.angle, endCyl.angle, tEased, angleMode)
@@ -2176,10 +2220,10 @@ function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinate
 						angle = interpAngle,
 						height = startCyl.height + (endCyl.height - startCyl.height) * tEased
 					}
-					step.position = cylindricalToXYZ(interpCyl, endCenter or startCenter)
+					step.position = cylindricalToXYZ(interpCyl, endCenter or startCenter, endCenterData.yaw)
 				elseif coordinateSystem == "spherical" then
-					local startSph = resolveCoordData(start.position, "spherical", startCenter) or U.XYZToSpherical(startPos, startCenter)
-					local endSph = resolveCoordData(endVal.position, "spherical", endCenter) or U.XYZToSpherical(endPos, endCenter)
+					local startSph = resolveCoordData(start.position, "spherical", startCenter, startCenterData.yaw) or U.XYZToSpherical(startPos, startCenter, startCenterData.yaw)
+					local endSph = resolveCoordData(endVal.position, "spherical", endCenter, endCenterData.yaw) or U.XYZToSpherical(endPos, endCenter, endCenterData.yaw)
 
 					local angleMode = (endSph and endSph.angleMode) or (startSph and startSph.angleMode) or "direct"
 					local interpAngle = lerpAngle(startSph.angle, endSph.angle, tEased, angleMode)
@@ -2189,7 +2233,7 @@ function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinate
 						angle = interpAngle,
 						angle2 = startSph.angle2 + (endSph.angle2 - startSph.angle2) * tEased
 					}
-					step.position = sphericalToXYZ(interpSph, endCenter or startCenter)
+					step.position = sphericalToXYZ(interpSph, endCenter or startCenter, endCenterData.yaw)
 				else
 					-- XY coordinates: lerp directly
 					step.position = startPos:lerp(endPos, tEased)

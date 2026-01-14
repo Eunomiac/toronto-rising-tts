@@ -135,10 +135,12 @@ U.GetEasedPath(
 --          -- "direct": Always interpolate start → end with raw angle values (no wrapping).
 --          -- "shortest": Normalize delta to -180..180 when end angle is a number.
 --          -- String end angles like "+720"/"-90" always force direct rotation.
+--       -- If center is a GameObject, angle is relative to the object's yaw rotation.
 --    -- "spherical": Position vectors are interpreted as {radius, angle, angle2}.
 --       -- If Vector provided: Vector(x, y, z) = {radius=x, angle=y, angle2=z}
 --       -- If table provided: {radius=5, angle=90, angle2=45}
 --       -- Optional: angleMode = "direct" (default) or "shortest" (same behavior as cylindrical)
+--       -- If center is a GameObject, angle is relative to the object's yaw rotation.
 -- return: A table of PositionOrientationData objects, one per frame (60 FPS).
 --    -- All positions are converted to XYZ coordinates (cylindrical/spherical converted automatically).
 --    -- If Object references present in start/end, returns "DEFER" (computation deferred to execution time).
