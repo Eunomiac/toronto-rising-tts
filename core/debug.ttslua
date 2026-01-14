@@ -1945,8 +1945,9 @@ function DEBUG.testEasing()
 		for _, lerpDef in ipairs(lerps) do
 			local targetObj = objToMove
 			if lerpDef.target ~= nil then
-				targetObj = objects[lerpDef.target] or lerpDef.target
+				targetObj = objects[lerpDef.target] or U.getObject(lerpDef.target, true) or lerpDef.target
 			end
+			targetObj = U.getObject(targetObj, true) or targetObj
 			U.Val("runParallelLerps", targetObj, targetObj ~= nil, "Parallel lerp target not found")
 
 			local setFunc = lerpDef.setFunc
@@ -2799,11 +2800,12 @@ end
 -- @param center Vector|table Optional center position (default: table center at object's current Y)
 -- @usage lua DEBUG.tableRotateTo(obj, 30, 180)
 function DEBUG.tableRotateTo(obj, distance, angle, center)
-    U.Val("DEBUG.tableRotateTo", obj, U.isGameObject(obj), "obj must be a valid GameObject")
+    local resolvedObj = U.getObject(obj, true) or obj
+    U.Val("DEBUG.tableRotateTo", resolvedObj, U.isGameObject(resolvedObj), "obj must be a valid GameObject or GUID")
     U.Val("DEBUG.tableRotateTo", distance, U.Type(distance) == "number", "distance must be a number")
     U.Val("DEBUG.tableRotateTo", angle, U.Type(angle) == "number", "angle must be a number")
 
-    local objPos = obj.getPosition()
+    local objPos = resolvedObj.getPosition()
     local centerPos
     if center ~= nil then
         centerPos = Vector(center)
@@ -2812,8 +2814,8 @@ function DEBUG.tableRotateTo(obj, distance, angle, center)
     end
 
     local targetPos = U.rotateAroundPoint(centerPos, distance, angle, centerPos.y)
-    obj.setPosition(targetPos)
-    print("DEBUG.tableRotateTo: Moved " .. obj.getName() .. " to " .. tostring(targetPos))
+    resolvedObj.setPosition(targetPos)
+    print("DEBUG.tableRotateTo: Moved " .. resolvedObj.getName() .. " to " .. tostring(targetPos))
 end
 
 --[[

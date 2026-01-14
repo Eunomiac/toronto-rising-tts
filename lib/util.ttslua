@@ -1154,6 +1154,33 @@ function U.findIndex(tb, func)
 	return nil
 end
 
+--- Resolves a GameObject from an object reference or GUID string
+-- Returns the object if already a GameObject, or looks it up by GUID.
+-- @param ref Object|string Reference object or GUID string
+-- @param isSilent boolean If true, returns nil on failure instead of throwing
+-- @return Object|nil Resolved GameObject or nil
+-- @usage local obj = U.getObject("abc123")
+-- @usage local obj = U.getObject(someObj)
+function U.getObject(ref, isSilent)
+	if U.isGameObject(ref) then return ref end
+	if U.Type(ref) == "string" then
+		local obj = getObjectFromGUID(ref)
+		if obj then return obj end
+		if not isSilent then
+			U.error("U.getObject", "No object found for GUID", ref)
+		end
+		return nil
+	end
+	if U.Type(ref) == "table" and ref.guid ~= nil then
+		local obj = getObjectFromGUID(ref.guid)
+		if obj then return obj end
+	end
+	if not isSilent then
+		U.error("U.getObject", "Invalid object reference", ref)
+	end
+	return nil
+end
+
 --- Removes nil and false values from a table
 -- Creates a new table without nil or false values. Preserves table structure.
 -- @param tb table The input table
