@@ -1947,12 +1947,13 @@ function DEBUG.testEasing()
 			if lerpDef.target ~= nil then
 				targetObj = objects[lerpDef.target] or lerpDef.target
 			end
+			U.Val("runParallelLerps", targetObj, targetObj ~= nil, "Parallel lerp target not found")
 
 			local setFunc = lerpDef.setFunc
 			if setFunc == nil and lerpDef.setter ~= nil and targetObj ~= nil then
 				local method = targetObj[lerpDef.setter]
 				if U.Type(method) == "function" then
-					setFunc = function(val) method(targetObj, val) end
+					setFunc = function(val, obj) method(obj, val) end
 				end
 			end
 			U.Val("runParallelLerps", setFunc, U.Type(setFunc) == "function", "Parallel lerp requires setFunc or valid setter")
@@ -1970,7 +1971,15 @@ function DEBUG.testEasing()
 			local lerpEasing = lerpDef.easing or defaultEase
 			local isRotationLerp = lerpDef.isRotationLerp or false
 
-			local duration = U.Lerp(setFunc, startVal, endVal, lerpDuration, isRotationLerp, lerpEasing)
+			local duration = U.Lerp(function(val)
+				if targetObj == nil then
+					return nil
+				end
+				if setFunc == nil then
+					return nil
+				end
+				return setFunc(val, targetObj)
+			end, startVal, endVal, lerpDuration, isRotationLerp, lerpEasing)
 			if duration and duration > maxDuration then
 				maxDuration = duration
 			end
