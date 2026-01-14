@@ -1681,7 +1681,7 @@ function DEBUG.testEasing()
 			},
 			-- End: same radius, angle +800° (multi-revolution), angle2 from -20° to 20°
 			endVal = {
-				position = {radius = {mult = 2}, angle = "+800", angle2 = 20},  -- Radius doubles, angle relative, angle2 absolute
+				position = {radius = {mult = 2}, angle = "+720", angle2 = 20},  -- Radius doubles, angle relative, angle2 absolute
 				center = "TEST_TARGET_OBJ",
 				orientation = "TEST_TARGET_OBJ"  -- Continue facing target
 			},
@@ -2790,6 +2790,32 @@ function DEBUG.setPhase(phaseName)
     end
 end
 
+--- Debug helper: Move an object to a world-angle position around table center
+-- Positions an object at a given distance and world angle around the table center.
+-- Uses U.rotateAroundPoint to keep angle conventions consistent.
+-- @param obj Object|table|userdata TTS object to move (GameObject)
+-- @param distance number Distance from center in world units
+-- @param angle number World angle in degrees (0 = +Z, 90 = +X, 180 = -Z, 270 = -X)
+-- @param center Vector|table Optional center position (default: table center at object's current Y)
+-- @usage lua DEBUG.tableRotateTo(obj, 30, 180)
+function DEBUG.tableRotateTo(obj, distance, angle, center)
+    U.Val("DEBUG.tableRotateTo", obj, U.isGameObject(obj), "obj must be a valid GameObject")
+    U.Val("DEBUG.tableRotateTo", distance, U.Type(distance) == "number", "distance must be a number")
+    U.Val("DEBUG.tableRotateTo", angle, U.Type(angle) == "number", "angle must be a number")
+
+    local objPos = obj.getPosition()
+    local centerPos
+    if center ~= nil then
+        centerPos = Vector(center)
+    else
+        centerPos = Vector(0, objPos.y, 0)
+    end
+
+    local targetPos = U.rotateAroundPoint(centerPos, distance, angle, centerPos.y)
+    obj.setPosition(targetPos)
+    print("DEBUG.tableRotateTo: Moved " .. obj.getName() .. " to " .. tostring(targetPos))
+end
+
 --[[
     File Logging Functions
     These functions write debug information to files in the workspace using
@@ -2994,6 +3020,7 @@ showZones = DEBUG.showZones
 setHunger = DEBUG.setHunger
 changeScene = DEBUG.changeScene
 setPhase = DEBUG.setPhase
+tableRotateTo = DEBUG.tableRotateTo
 
 -- Expose file logging functions
 logToFile = DEBUG.logToFile
