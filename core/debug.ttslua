@@ -1661,7 +1661,7 @@ function DEBUG.testEasing()
 			},
 			-- End: same radius, angle +800° (multi-revolution), angle2 from -20° to 20°
 			endVal = {
-				position = {radius = "SAME", angle = "+800", angle2 = 20},  -- Relative angle (+360° from start), absolute angle2
+				position = {radius = {mult = 2}, angle = "+800", angle2 = 20},  -- Radius doubles, angle relative, angle2 absolute
 				center = "TEST_TARGET_OBJ",
 				orientation = "TEST_TARGET_OBJ"  -- Continue facing target
 			},
@@ -1669,7 +1669,27 @@ function DEBUG.testEasing()
 			ease = "sineInOut",
 			easeIntensity = 1.0,
 			coordinateSystem = "spherical",
-			objectToMove = "TEST_LIGHT"  -- Which object to animate
+			objectToMove = "TEST_LIGHT",  -- Which object to animate
+			parallelLerps = {
+				{
+					target = "TEST_LIGHT",
+					setFunc = function(val, obj) L.SetColor(obj, val) end,
+					start = Color(1, 1, 1),
+					endVal = Color(1, 0, 0)
+				},
+				{
+					target = "TEST_LIGHT",
+					setFunc = function(val, obj) L.SetAngle(obj, val) end,
+					getStart = function(obj) return L.GetAngle(obj) end,
+					getEnd = function(obj) return L.GetAngle(obj) * 0.1 end
+				},
+				{
+					target = "TEST_LIGHT",
+					setFunc = function(val, obj) L.SetIntensity(obj, val) end,
+					getStart = function(obj) return L.GetIntensity(obj) end,
+					getEnd = function(obj) return L.GetIntensity(obj) * 2 end
+				}
+			}
 		},
 		CYLINDRICAL_SPIRAL = {
 			-- The "Cylindrical Spiral" test should use cylindrical coordinates to lerp "TEST_LIGHT" from its current position to radius=0 units away from `TEST_CENTER_OBJ`, maintaining its height as it does so, and making two full revolutions around TEST_CENTER_OBJ, so that it "spirals in" to TEST_CENTER_OBJ.  Its orientation should always be downward (i.e. X=0, Y=90, Z=0)
@@ -1784,6 +1804,8 @@ function DEBUG.testEasing()
 					local currentCoord = nil
 					if paramData.position.radius == "SAME" and startData then
 						sph.radius = startData.position.radius
+					elseif U.Type(paramData.position.radius) == "table" and paramData.position.radius.mult and startData then
+						sph.radius = startData.position.radius * paramData.position.radius.mult
 					elseif paramData.position.radius == "CURRENT" then
 						currentCoord = currentCoord or getCurrentCoord()
 						sph.radius = currentCoord and currentCoord.radius
@@ -1824,6 +1846,8 @@ function DEBUG.testEasing()
 					local currentCoord = nil
 					if paramData.position.radius == "SAME" and startData then
 						cyl.radius = startData.position.radius
+					elseif U.Type(paramData.position.radius) == "table" and paramData.position.radius.mult and startData then
+						cyl.radius = startData.position.radius * paramData.position.radius.mult
 					elseif paramData.position.radius == "CURRENT" then
 						currentCoord = currentCoord or getCurrentCoord()
 						cyl.radius = currentCoord and currentCoord.radius

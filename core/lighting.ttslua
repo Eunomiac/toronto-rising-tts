@@ -570,5 +570,9 @@ L.SetIntensity = setIntensity
 L.SetAngle = setAngle
 L.SetColor = setColor
 L.SetRange = setRange
+L.GetIntensity = getIntensity
+L.GetAngle = getAngle
+L.GetColor = getColor
+L.GetRange = getRange
 
 return L

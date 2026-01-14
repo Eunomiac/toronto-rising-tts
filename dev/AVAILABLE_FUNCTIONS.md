@@ -158,6 +158,14 @@
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `U.changeLighting(params)` | Apply global lighting changes | Scene lighting |
+| `L.SetColor(light, color)` | Set light color immediately | `L.SetColor(lightObj, Color.Red)` |
+| `L.SetRange(light, range)` | Set light range immediately | `L.SetRange(lightObj, 30)` |
+| `L.SetAngle(light, angle)` | Set light cone angle immediately | `L.SetAngle(lightObj, 45)` |
+| `L.SetIntensity(light, intensity)` | Set light intensity immediately | `L.SetIntensity(lightObj, 12)` |
+| `L.GetColor(light)` | Get light color | `local c = L.GetColor(lightObj)` |
+| `L.GetRange(light)` | Get light range | `local r = L.GetRange(lightObj)` |
+| `L.GetAngle(light)` | Get light cone angle | `local a = L.GetAngle(lightObj)` |
+| `L.GetIntensity(light)` | Get light intensity | `local i = L.GetIntensity(lightObj)` |
 
 ### 1.11 Clone & Copy Utilities
 
