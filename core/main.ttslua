@@ -350,6 +350,46 @@ function M.onPlayerAction(playerColor, action, clickState)
   -- end
 end
 
+--[[
+    Handle player color/seat selection
+    Triggered when a player chooses a seat color (Brown, Orange, Red, Pink).
+    Extracts their steam_id and ensures they have a state entry. New players get
+    a minimal entry and the GM is notified to set up their character details.
+
+    @param color string The color the player selected. "Grey" = disconnect (ignored).
+]]
+function M.onPlayerChangeColor(color)
+    -- Ignore disconnects (TTS passes "Grey" when a player disconnects)
+    if color == "Grey" then
+        return
+    end
+
+    -- Only act when a player selects a defined seat color (not Black/Storyteller, not spectator)
+    if not U.isIn(color, C.PlayerColors) then
+        return
+    end
+
+    local player = Player[color]
+    if player == nil or not U.isPlayer(player) then
+        return
+    end
+
+    local playerID = S.getStorageID(player)
+    if playerID == nil then
+        return
+    end
+
+    -- Check if they already have state data
+    if gameState and gameState.playerData and gameState.playerData[playerID] then
+        -- Update their color in case they switched seats
+        gameState.playerData[playerID].color = color
+        return
+    end
+
+    -- New player: initialize state and notify GM
+    S.initNewPlayer(playerID, color, player.steam_name)
+end
+
 -- Legacy alias for backwards compatibility (if needed)
 M.Initialize = M.onLoad
 

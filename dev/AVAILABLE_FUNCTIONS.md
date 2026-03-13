@@ -220,7 +220,9 @@
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
-| `S.getPlayerID(playerRef)` | Get player ID from player reference | Convert Player to string |
+| `S.getStorageID(player)` | Get steam_id for a Player object | Used internally for state keys |
+| `S.getPlayerID(playerRef)` | Get player ID from player or color | `S.getPlayerID(Player.Brown)` or `S.getPlayerID("Red")` |
+| `S.initNewPlayer(playerID, color, steamName)` | Initialize new player state, notify GM | Called when player selects seat |
 | `S.getPlayerData(playerRef)` | Get player's state data | Access player state |
 | `S.setPlayerVal(playerRef, key, value)` | Set player-specific value | `S.setPlayerVal("Red", "hunger", 3)` |
 | `S.getPlayerVal(playerRef, key)` | Get player-specific value | `S.getPlayerVal("Red", "hunger")` |
@@ -347,7 +349,7 @@
 ### Available Constants
 
 - `C.PlayerColors` - Array of player colors
-- `C.PlayerIDs` - Player ID mapping (real names to IDs)
+- `C.StorytellerID` - Hard-coded Storyteller Steam ID. Other IDs extracted on seat selection
 - `C.PlayerData` - Static player character data (merged with state on load)
 - `C.Clans` - VTM5E clan names
 - `C.Disciplines` - VTM5E discipline names

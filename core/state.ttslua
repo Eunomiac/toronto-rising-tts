@@ -133,19 +133,16 @@ end
 
 --- Returns the default game state structure
 -- This defines the initial state for a new game. Only dynamic values are stored here.
--- Static player data comes from C.PlayerData and is merged on load.
+-- Storyteller gets an entry from C.StorytellerID. Other players are added when they select a seat.
+-- Static character data is in C.PlayerData and merged on load.
 -- @return table Default game state structure
 function S.GetDefaultGameState()
-    -- Create playerData as a dictionary keyed by player ID (from C.PlayerIDs)
-    -- Only dynamic values are stored here (values that change during gameplay)
-    -- Static character data is in C.PlayerData and merged on load
     local playerData = {}
-    for playerKey, playerID in pairs(C.PlayerIDs) do
-        playerData[playerID] = {
-            hunger = 0, -- Only dynamic values are stored in state
-            -- Add other dynamic values here as needed (willpower current, health current, etc.)
-        }
-    end
+    -- Storyteller is the only hard-coded player; others are added dynamically on seat selection
+    playerData[C.StorytellerID] = {
+        hunger = 0,
+        color = "Black"
+    }
 
     return {
         currentPhase = C.Phases.SESSION_START,
@@ -177,32 +174,39 @@ end
 
 --- Merges C.PlayerData on top of gameState.playerData with conflict detection
 -- Static character data (from constants) is merged on top of dynamic state data.
+-- Players only in gameState.playerData (new players not yet set up) get minimal merged data.
 -- Throws an error if there are conflicts (indicating dynamic data was incorrectly saved).
 -- @param statePlayerData table The playerData from gameState (dynamic values only)
 -- @return table Complete player data with static and dynamic merged
 function S.mergePlayerData(statePlayerData)
     local merged = {}
 
-    -- For each player ID in C.PlayerData
+    -- First pass: merge C.PlayerData (static) with gameState.playerData (dynamic)
     for playerID, staticData in pairs(C.PlayerData) do
-        -- Start with the static data (from constants)
         merged[playerID] = U.clone(staticData)
-
-        -- Overlay dynamic data from state (if it exists)
         local dynamicData = statePlayerData and statePlayerData[playerID]
         if dynamicData then
-            -- Check for conflicts (keys that exist in both but have different values)
             for key, dynamicValue in pairs(dynamicData) do
                 if staticData[key] ~= nil then
-                    -- This is a conflict - dynamic data shouldn't override static data
                     error(string.format(
                         "CONFLICT: Player ID '%s' has key '%s' in both C.PlayerData (static: %s) and gameState.playerData (dynamic: %s). " ..
                         "Dynamic values should only contain gameplay-state values, not character data.",
                         tostring(playerID), tostring(key), tostring(staticData[key]), tostring(dynamicValue)
                     ))
                 end
-                -- Safe to add - this is a dynamic value that doesn't exist in static data
                 merged[playerID][key] = dynamicValue
+            end
+        end
+    end
+
+    -- Second pass: add players in state but not in C.PlayerData (new players awaiting GM setup)
+    if statePlayerData then
+        for playerID, dynamicData in pairs(statePlayerData) do
+            if merged[playerID] == nil and type(dynamicData) == "table" then
+                merged[playerID] = U.clone(dynamicData)
+                -- Add minimal placeholder static fields so lookups don't fail
+                merged[playerID].playerName = merged[playerID].playerName or ("Player " .. tostring(playerID):sub(-6))
+                merged[playerID].charName = merged[playerID].charName or "Unassigned"
             end
         end
     end
@@ -326,7 +330,7 @@ local function buildSaveState()
                 -- Extract only dynamic values from the complete merged playerData
                 -- Static character data comes from C.PlayerData and should NOT be saved
                 -- List of dynamic fields that should be saved (add more as needed)
-                local dynamicFields = {"hunger"}  -- Currently only hunger is dynamic
+                local dynamicFields = {"hunger", "color"}
                 local dynamicPlayerData = {}
 
                 for _, fieldName in ipairs(dynamicFields) do
@@ -514,33 +518,95 @@ end
 -- PLAYER DATA HELPERS
 -- ============================================================================
 
+--- Gets the storage ID for a Player object (steam_id as string, or steam_name for spectators)
+-- Used as the key for gameState.playerData. Storyteller is normalized to C.StorytellerID.
+-- @param player Player TTS Player object
+-- @return string|nil Player ID string, or nil if player is invalid
+-- @usage local id = S.getStorageID(Player.Brown)
+function S.getStorageID(player)
+    if player == nil or not U.isPlayer(player) then
+        return nil
+    end
+    -- Spectators/local players may have "Player N" as steam_name; use that if no real steam_id
+    if string.match(player.steam_name or " ", "^Player ") then
+        return player.steam_name
+    end
+    local steamID = tostring(player.steam_id)
+    -- Normalize Storyteller to hard-coded ID
+    if steamID == C.StorytellerID then
+        return C.StorytellerID
+    end
+    return steamID
+end
+
+--- Initializes a new player's state entry when they first select a seat
+-- Creates minimal dynamic data and notifies the GM to set up character details.
+-- @param playerID string The player's steam_id (storage ID)
+-- @param color string The seat color they selected (e.g. "Brown")
+-- @param steamName string Optional. Player's Steam display name for the broadcast message
+function S.initNewPlayer(playerID, color, steamName)
+    if gameState == nil or gameState.playerData == nil then
+        print("[State] initNewPlayer: gameState not initialized")
+        return
+    end
+    if gameState.playerData[playerID] ~= nil then
+        return -- Already has data
+    end
+
+    -- Create minimal dynamic state (same structure as GetDefaultGameState)
+    gameState.playerData[playerID] = {
+        hunger = 0,
+        color = color
+    }
+
+    local displayName = steamName or playerID
+    local msg = string.format(
+        "New player joined: %s (ID: %s) selected %s. Please add their character data to C.PlayerData in lib/constants.ttslua.",
+        displayName, playerID, color
+    )
+    U.AlertGM(msg, Color(1, 0.85, 0))
+    print("[State] " .. msg)
+end
+
 --- Gets the player ID for a player object or color string
--- Looks up the player ID from C.PlayerData based on the player's color
+-- For Player objects: returns getStorageID (steam_id or C.StorytellerID).
+-- For color strings: finds the player ID that has that color in gameState.playerData.
 -- @param playerRef Player|string Player object or color string
 -- @return string|nil Player ID if found, nil otherwise
 -- @usage local playerID = S.getPlayerID(player) or S.getPlayerID("Red")
 function S.getPlayerID(playerRef)
-    local playerColor = nil
-
-    -- Extract color from playerRef
-    if type(playerRef) == "userdata" then
-        -- Assume it's a Player object
-        playerColor = playerRef.color
-    elseif type(playerRef) == "string" then
-        -- Assume it's a color string
-        playerColor = playerRef
-    else
+    if playerRef == nil then
         return nil
     end
 
-    if not playerColor then
-        return nil
+    -- Player object: use getStorageID
+    if type(playerRef) == "userdata" and U.isPlayer(playerRef) then
+        return S.getStorageID(playerRef)
     end
 
-    -- Search C.PlayerData for a matching color
-    for playerID, playerData in pairs(C.PlayerData) do
-        if playerData.color == playerColor then
-            return playerID
+    -- String: could be color or already a player ID
+    if type(playerRef) == "string" then
+        -- If it's a known player ID (in playerData), return it
+        if gameState and gameState.playerData and gameState.playerData[playerRef] then
+            return playerRef
+        end
+        -- If it's Storyteller ID, return it
+        if playerRef == C.StorytellerID then
+            return C.StorytellerID
+        end
+        -- Assume it's a color: find who has this color in playerData
+        if gameState and gameState.playerData then
+            for playerID, pData in pairs(gameState.playerData) do
+                if type(pData) == "table" and pData.color == playerRef then
+                    return playerID
+                end
+            end
+        end
+        -- Fallback: check C.PlayerData for color match (for Storyteller or pre-configured players)
+        for pid, pData in pairs(C.PlayerData) do
+            if pData.color == playerRef then
+                return pid
+            end
         end
     end
 
