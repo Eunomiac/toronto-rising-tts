@@ -1,1 +1,20 @@
-<!-- Xml UI. See documentation: https://api.tabletopsimulator.com/ui/introUI/ -->
+<!-- Main HUD - VTM5E Module -->
+<!-- This file uses XML bundling with <Include> to combine modular UI components -->
+<!-- The TTS Tools extension will bundle all includes when using "Save and Play" -->
+<!-- Keep in sync with ui/hud.xml - edit the ui/*.xml files, this file is the bundle entry -->
+
+<!-- 1. Tag-based defaults (include first) -->
+<Include src="ui/defaults_tags" />
+
+<!-- 2. General shared classes -->
+<Include src="ui/defaults_classes" />
+
+<!-- 3. Storyteller HUD (Host|Black): layout + 4 panels -->
+<Include src="ui/storyteller/hud_storyteller_defaults" />
+<Include src="ui/storyteller/hud_storyteller" />
+
+<!-- 4. Player HUD (per-color panels) -->
+<Include src="ui/player/hud_player" />
+
+<!-- 5. Shared UI (dice results, scene transition overlay) -->
+<Include src="ui/shared/hud_shared" />

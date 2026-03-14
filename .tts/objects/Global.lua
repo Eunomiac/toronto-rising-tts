@@ -28,21 +28,13 @@ gameState = {}
 
 --[[
     Load UI XML
-    NOTE: TTS requires XML to be loaded as a string via UI.setXml().
-
-    The UI XML is split into modular components using XML bundling:
-    - ui/hud.xml (main file with <Include> tags)
-    - ui/defaults.xml, ui/admin.xml, ui/player_hud.xml, ui/shared.xml
-
-    When you use "Save and Play", the TTS Tools extension:
-    1. Reads .tts/objects/Global.xml (which includes all components)
-    2. Bundles all <Include> tags into a single XML string
-    3. Saves the bundled result to .tts/bundled/Global.xml
-
-    TODO: After using "Save and Play", check .tts/bundled/Global.xml and embed
-    the bundled XML content as a string constant below, or find a way to load it automatically.
+    The UI XML uses TTS Tools bundling:
+    - .tts/objects/Global.xml contains <Include src="ui/..." /> tags
+    - ui/hud.xml is the source (sync to .tts/objects/Global.xml)
+    - On "Save and Play", the extension bundles all Includes and sends to TTS
+    - No hardcoded XML in Lua; the bundled XML comes from the extension
+    - refreshLightDebugPanel() injects dynamic spotlight rows at <!-- LIGHT_TABLE_ROWS -->
 ]]
-local HUD_XML_PLACEHOLDER = [[<Panel><Text text='VTM5E Module Loaded - Use "Save and Play" to bundle XML, then embed bundled content from .tts/bundled/Global.xml'/></Panel>]]
 
 --[[
     onLoad - Called when the game loads or is reset
@@ -50,6 +42,12 @@ local HUD_XML_PLACEHOLDER = [[<Panel><Text text='VTM5E Module Loaded - Use "Save
 ]]
 function onLoad(saved_data)
     print("--- VTM5E Module Loaded ---")
+
+    -- Print host Steam ID for hardcoding into C.StorytellerID (lib/constants.ttslua)
+    local host = U.getHost and U.getHost()
+    if host and host.steam_id then
+        print("Host Steam ID (use for C.StorytellerID in lib/constants.ttslua): " .. tostring(host.steam_id))
+    end
 
     -- Clear all debug logs to start fresh for this session
     DEBUG.clearAllLogs()
@@ -66,9 +64,9 @@ function onLoad(saved_data)
     -- Initialize scenes module (loads default or saved scene)
     Scenes.onLoad()
 
-    -- Load and display UI
-    -- TODO: Replace HUD_XML_PLACEHOLDER with actual XML content from ui/hud.xml
-    UI.setXml(HUD_XML_PLACEHOLDER)
+    -- UI XML is set by TTS Tools extension from bundled .tts/objects/Global.xml
+    -- Inject dynamic spotlight rows into the LIGHT_TABLE_ROWS placeholder
+    LightDebug.refreshLightDebugPanel()
 
     -- Update UI displays with current state
     updateUIDisplays()
@@ -209,6 +207,16 @@ end
     These functions are called by UI buttons via onClick attributes in the XML.
 ]]
 
+--- Select storyteller panel (mutually exclusive: one panel open at a time)
+-- Used by toggle buttons (toggle_lighting, toggle_scenes, etc.) in bottom-right bar
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID (e.g., "toggle_lighting")
+function HUD_selectStorytellerPanel(player, button, id)
+    local panelKey = string.gsub(id, "^toggle_", "")
+    UIH.selectStorytellerPanel(panelKey)
+end
+
 --- Toggle panel visibility (collapse/expand)
 -- Used by toggle buttons (toggleElem_*) in the UI
 -- @param player Player The player who clicked the button
@@ -308,7 +316,7 @@ function HUD_saveState(player, button, id)
     local stateStr = JSON.encode(state)
 
     print("HUD: Game state saved by " .. player.color)
-    broadcastToColor("Game state saved successfully.", {0, 1, 0}, player.color)
+    broadcastToColor("Game state saved successfully.", player.color, {0, 1, 0})
 end
 
 --- Toggle zones active/inactive
@@ -322,13 +330,46 @@ function HUD_toggleZones(player, button, id)
 
     if zonesActive == true then
         Z.activateZones()
-        broadcastToColor("Zones activated.", {0, 1, 0}, player.color)
+        broadcastToColor("Zones activated.", player.color, {0, 1, 0})
     else
         Z.deactivateZones()
-        broadcastToColor("Zones deactivated.", {1, 0, 0}, player.color)
+        broadcastToColor("Zones deactivated.", player.color, {1, 0, 0})
     end
 
     print("HUD: Zones toggled by " .. player.color)
+end
+
+--- Update a spotlight's Color, Range, Angle, Intensity from the light debug panel
+-- Called when the "Update" button is clicked for a specific light row
+-- @param player Player The player who clicked the button
+-- @param value string The GUID of the light object (passed from onClick)
+-- @param id string The UI element ID (e.g., "lightUpdate_4148ba")
+function HUD_lightUpdate(player, value, id)
+    local guid = value
+    if type(guid) ~= "string" or guid == "" then
+        broadcastToColor("Light Debug: Invalid GUID.", player.color, {1, 0, 0})
+        return
+    end
+    local colorVal = UI.getValue("lightColor_" .. guid) or ""
+    local rangeVal = UI.getValue("lightRange_" .. guid) or ""
+    local angleVal = UI.getValue("lightAngle_" .. guid) or ""
+    local intensityVal = UI.getValue("lightIntensity_" .. guid) or ""
+    local success = LightDebug.applyLightUpdate(guid, colorVal, rangeVal, angleVal, intensityVal)
+    if success then
+        broadcastToColor("Light updated.", player.color, {0, 1, 0})
+    else
+        broadcastToColor("Light Debug: Failed to update light.", player.color, {1, 0, 0})
+    end
+end
+
+--- Refresh the light debug panel (repopulate the spotlight list)
+-- Called when the "Refresh" button is clicked; rescans all objects for spotlights
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID (e.g., "lightDebugRefresh")
+function HUD_lightRefresh(player, button, id)
+    LightDebug.refreshLightDebugPanel()
+    broadcastToColor("Light debug panel refreshed.", player.color, {0, 1, 0})
 end
 
 --- Log current game state to console (debug function)
@@ -341,7 +382,7 @@ function HUD_logState(player, button, id)
     print("=== GAME STATE ===")
     print(JSON.encode_pretty(state))
     print("==================")
-    broadcastToColor("Game state logged to console.", {0, 1, 1}, player.color)
+    broadcastToColor("Game state logged to console.", player.color, {0, 1, 1})
 end
 
 --[[
@@ -380,3 +421,4 @@ end
 -- Load additional modules that need global exposure
 G = require("lib.guids")
 L = require("core.lighting")
+LightDebug = require("core.light_debug")

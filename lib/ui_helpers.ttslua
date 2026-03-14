@@ -148,6 +148,54 @@ function UIHelpers.isXmlElementExpanded(elemID)
 end
 
 -- ============================================================================
+-- STORYTELLER PANEL TOGGLE
+-- ============================================================================
+
+--- Panel keys and their corresponding panel/toggle IDs for the storyteller HUD.
+local STORYTELLER_PANELS = {
+    lighting = { panel = "panel_lighting", toggle = "toggle_lighting" },
+    scenes = { panel = "panel_scenes", toggle = "toggle_scenes" },
+    pcs = { panel = "panel_pcs", toggle = "toggle_pcs" },
+    phases = { panel = "panel_phases", toggle = "toggle_phases" },
+}
+
+--- Wrapper for the pop-out content (all 4 panels). Hidden when none selected.
+local STORYTELLER_CONTENT_AREA_ID = "storytellerContentArea"
+
+--- Inactive toggle button colors (dark grey/gold border)
+local TOGGLE_COLORS_INACTIVE = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+
+--- Active toggle button colors (bright gold highlight)
+local TOGGLE_COLORS_ACTIVE = "#B8860B|#FFD700|#FFA500|#B8860B"
+
+--- Selects a storyteller panel (mutually exclusive: only one open at a time).
+-- Shows the content area, hides all panels, shows the selected one, and updates toggle button highlight.
+-- Mirrors the admin arrow-toggle pattern: content pops out when a button is clicked.
+--
+-- @param panelKey string One of: "lighting", "scenes", "pcs", "phases"
+--
+-- @usage UIHelpers.selectStorytellerPanel("lighting")
+function UIHelpers.selectStorytellerPanel(panelKey)
+    if type(panelKey) ~= "string" then
+        error("UIHelpers.selectStorytellerPanel: panelKey must be a string", 2)
+    end
+
+    local selected = STORYTELLER_PANELS[panelKey]
+    if selected == nil then
+        return
+    end
+
+    -- Show the content area (like expanding the admin arrow panel)
+    UI.setAttribute(STORYTELLER_CONTENT_AREA_ID, "active", "true")
+
+    -- Hide all panels and set the selected one visible; update toggle colors
+    for key, ids in pairs(STORYTELLER_PANELS) do
+        UI.setAttribute(ids.panel, "active", key == panelKey and "true" or "false")
+        UI.setAttribute(ids.toggle, "colors", key == panelKey and TOGGLE_COLORS_ACTIVE or TOGGLE_COLORS_INACTIVE)
+    end
+end
+
+-- ============================================================================
 -- UI VALUE HELPERS
 -- ============================================================================
 

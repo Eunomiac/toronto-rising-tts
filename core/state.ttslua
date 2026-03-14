@@ -172,14 +172,37 @@ function S.mergeDefaults(target, defaults)
     end
 end
 
+--- Sanitizes saved playerData by removing keys that belong in C.PlayerData (static).
+-- Fixes corrupted saves where static data was incorrectly persisted.
+-- @param statePlayerData table The playerData from saved state (modified in place)
+local function sanitizeSavedPlayerData(statePlayerData)
+    if not statePlayerData or type(statePlayerData) ~= "table" then
+        return
+    end
+    for playerID, dynamicData in pairs(statePlayerData) do
+        if type(dynamicData) == "table" and C.PlayerData[playerID] then
+            local staticData = C.PlayerData[playerID]
+            for key, _ in pairs(dynamicData) do
+                if staticData[key] ~= nil then
+                    print("[State] Sanitizing: Removing static key '" .. tostring(key) .. "' from saved playerData for player '" .. tostring(playerID) .. "'")
+                    dynamicData[key] = nil
+                end
+            end
+        end
+    end
+end
+
 --- Merges C.PlayerData on top of gameState.playerData with conflict detection
 -- Static character data (from constants) is merged on top of dynamic state data.
 -- Players only in gameState.playerData (new players not yet set up) get minimal merged data.
--- Throws an error if there are conflicts (indicating dynamic data was incorrectly saved).
+-- Conflicts are resolved by preferring static data (sanitization should prevent recurrence).
 -- @param statePlayerData table The playerData from gameState (dynamic values only)
 -- @return table Complete player data with static and dynamic merged
 function S.mergePlayerData(statePlayerData)
     local merged = {}
+
+    -- Sanitize saved data first: remove any static keys that were incorrectly persisted
+    sanitizeSavedPlayerData(statePlayerData)
 
     -- First pass: merge C.PlayerData (static) with gameState.playerData (dynamic)
     for playerID, staticData in pairs(C.PlayerData) do
@@ -188,13 +211,11 @@ function S.mergePlayerData(statePlayerData)
         if dynamicData then
             for key, dynamicValue in pairs(dynamicData) do
                 if staticData[key] ~= nil then
-                    error(string.format(
-                        "CONFLICT: Player ID '%s' has key '%s' in both C.PlayerData (static: %s) and gameState.playerData (dynamic: %s). " ..
-                        "Dynamic values should only contain gameplay-state values, not character data.",
-                        tostring(playerID), tostring(key), tostring(staticData[key]), tostring(dynamicValue)
-                    ))
+                    -- Skip conflicting key: static wins (should be rare after sanitization)
+                    print("[State] Skipping dynamic key '" .. tostring(key) .. "' for player '" .. tostring(playerID) .. "' (using static value)")
+                else
+                    merged[playerID][key] = dynamicValue
                 end
-                merged[playerID][key] = dynamicValue
             end
         end
     end
@@ -340,10 +361,12 @@ local function buildSaveState()
                         if fieldType == "number" then
                             dynamicPlayerData[fieldName] = fieldVal
                         elseif fieldType == "string" then
-                            -- Try to convert string numbers to actual numbers
+                            -- color is player seat (e.g. "Black") - save as string; hunger may be numeric string
                             local num = tonumber(fieldVal)
                             if num then
                                 dynamicPlayerData[fieldName] = num
+                            elseif fieldName == "color" then
+                                dynamicPlayerData[fieldName] = fieldVal
                             else
                                 print("[WARNING] buildSaveState: Player ID '" .. tostring(playerID) .. "' " .. fieldName .. " is non-numeric string: " .. tostring(fieldVal))
                             end

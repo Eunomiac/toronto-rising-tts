@@ -1,0 +1,27 @@
+<!-- Light Panel -->
+<!-- Debug panel for inspecting/editing spotlights. Rows injected by LightDebug.refreshLightDebugPanel() -->
+
+<Panel id="panel_lighting" active="False" color="#FFD700" padding="2 2 2 2" preferredHeight="330" flexibleHeight="0">  <!-- Gold border -->
+  <Panel color="#000000" padding="4 4 4 4">  <!-- Black background -->
+    <VerticalLayout spacing="2" padding="0 0 0 0" childForceExpandHeight="false" flexibleHeight="0" flexibleWidth="0" preferredHeight="330" preferredWidth="500" childForceExpandWidth="false">
+      <Text fontSize="9" color="#FFD700">Light Debug Panel</Text>
+      <Text fontSize="8" color="#DAA520">Color (r,g,b), Range, Angle, Intensity, Update</Text>
+      <VerticalScrollView preferredWidth="500" preferredHeight="210" minHeight="120" flexibleHeight="0" flexibleWidth="0" verticalScrollbarVisibility="AutoHide" color="#000000" scrollbarBackgroundColor="#333333">
+        <TableLayout id="lightTableContainer" columnWidths="70 70 55 55 35 35 35 28" cellBackgroundColor="#000000" rowBackgroundColor="#000000" cellPadding="0 0 0 0" cellSpacing="2" autoCalculateHeight="true">
+          <Row preferredHeight="22">
+            <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Name</Text></Cell>
+            <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Pos</Text></Cell>
+            <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Rot</Text></Cell>
+            <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Color</Text></Cell>
+            <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Range</Text></Cell>
+            <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Angle</Text></Cell>
+            <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Int</Text></Cell>
+            <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Upd</Text></Cell>
+          </Row>
+          <Row id="lightTableRowsPlaceholder" preferredHeight="0"><Cell columnSpan="8"/></Row>
+        </TableLayout>
+      </VerticalScrollView>
+      <Button id="lightDebugRefresh" onClick="HUD_lightRefresh" preferredWidth="80" fontSize="9" color="#444444">Refresh</Button>
+    </VerticalLayout>
+  </Panel>
+</Panel>

@@ -1,16 +1,23 @@
 <!-- Main HUD - VTM5E Module -->
-<!-- This file uses XML bundling with <Include> to combine modular UI components -->
-<!-- The TTS Tools extension will bundle all includes when using "Save and Play" -->
-<!-- This bundled XML is then loaded in Global.lua via UI.setXml() -->
+<!-- Root bundle file; no layout applied here. Include order matters for TTS defaults. -->
+<!-- The TTS Tools extension bundles when using "Save and Play"; loaded via UI.setXml() -->
 
-<!-- Include Defaults (styles and classes) -->
-<Include src="ui/defaults" />
+<!-- 1. Tag-based defaults (include first) -->
+<Include src="ui/defaults_tags" />
 
-<!-- Include Admin/Storyteller Panel -->
-<Include src="ui/admin" />
+<!-- 2. General shared classes -->
+<Include src="ui/defaults_classes" />
 
-<!-- Include Player HUD Panels -->
-<Include src="ui/player_hud" />
+<!-- 3. Storyteller HUD (Host|Black): layout + 4 panels -->
+<Include src="ui/storyteller/hud_storyteller_defaults" />
 
-<!-- Include Shared UI Elements -->
-<Include src="ui/shared" />
+<Panel id="HUD_PANEL" padding="10 10 10 10">
+  <Include src="ui/storyteller/hud_storyteller" />
+
+  <!-- 4. Player HUD (per-color panels) -->
+  <Include src="ui/player/hud_player" />
+
+  <!-- 5. Shared UI (dice results, scene transition overlay) -->
+  <Include src="ui/shared/hud_shared" />
+
+</Panel>

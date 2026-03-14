@@ -2936,11 +2936,13 @@ function DEBUG.clearAllLogs()
     logCache = {}
 
     -- Clear each log file by writing session header (overwrite mode)
+    -- Note: test_results is NOT written here to avoid TTS Tools opening it on every Save & Play.
+    -- It gets cleared when runTests() starts, or on first logTestToFile() call.
     writeToFile("debug_log", sessionHeader, "none", false)
     writeToFile("game_state", sessionHeader, "none", false)
     writeToFile("scene_info", sessionHeader, "none", false)
     writeToFile("zone_info", sessionHeader, "none", false)
-    writeToFile("test_results", sessionHeader, "none", false)
+    logCache["test_results"] = sessionHeader  -- Clear cache only; no file write on load
 
     print("DEBUG: All log files cleared (new session started)")
 end
