@@ -8,7 +8,7 @@
 <!-- 2. General shared classes -->
 <Include src="ui/defaults_classes" />
 
-<!-- 3. Storyteller HUD (Host|Black): layout + 4 panels -->
+<!-- 3. Storyteller HUD (Host|Black): Heritage admin panel + sidebar + camera -->
 <Include src="ui/storyteller/hud_storyteller_defaults" />
 
 <Panel id="HUD_PANEL" padding="10 10 10 10">

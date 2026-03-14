@@ -1,50 +1,107 @@
 <!-- Storyteller HUD Layout -->
 <!-- Visibility: Host|Black (Storyteller/GM) -->
-<!-- Bottom-right: toggle bar (anchor) + pop-out content with 4 panels -->
+<!-- Reproduces Heritage admin.xml: left-side game phase controls + debug panels -->
+<!-- Also includes sidebar (reference toggles) and camera bar via sub-includes -->
 
-<Panel padding="0 0 0 0">
-  <HorizontalLayout id="storytellerRoot" height="100%" width="100%" visibility="Host|Black" >
+<Panel id="adminControls" visibility="Host|Black" active="true">
 
-    <!-- Left Column -->
-    <VerticalLayout id="storytellerLeftColumn" preferredWidth="200" flexibleWidth="0">
-      <Text>Left Column</Text>
+  <!-- ================================================================ -->
+  <!-- Main Button Column (left side, half-scale)                       -->
+  <!-- Game phase progression: SETUP -> INIT -> START -> SCORING ->     -->
+  <!--   MISSIONS -> AFTERMATH -> END                                   -->
+  <!-- ================================================================ -->
+  <VerticalLayout class="storyteller_buttonControls" visibility="Host|Black">
+    <Button onClick="HUD_setupGame" color="#770000">0 - SETUP</Button>
+    <Button onClick="HUD_initGame" color="#880000">1 - INIT</Button>
+    <Button onClick="HUD_startGame" color="#990000">2 - START</Button>
+    <Button class="smallButton" onClick="HUD_endCourtVote" color="#99FF99">End Vote</Button>
+    <Button class="smallButton" onClick="HUD_overrideFirstPlayer" color="#99FFFF">First Player</Button>
+    <Button class="smallButton" onClick="HUD_askRoundAndTurn" color="#FFFF00">Fix Turn</Button>
+    <Button class="smallButton" onClick="HUD_toggleHavens" color="#FFFF00">Havens</Button>
+    <Text class="spacer_15"></Text>
+    <Button onClick="HUD_scoreGame" color="#AA0000">3 - SCORING</Button>
+    <Button class="smallButton" onClick="HUD_updateScore" color="#00FF00">Refresh</Button>
+    <Text class="spacer_15"></Text>
+    <Button onClick="HUD_missionsGame" color="#BB0000">4 - MISSIONS</Button>
+    <Button class="smallButton" onClick="HUD_updateTraits" color="#00BBBB">+Trait</Button>
+    <Text class="spacer_15"></Text>
+    <Button onClick="HUD_afterGame" color="#CC0000">5 - AFTERMATH</Button>
+    <Button class="smallButton" onClick="HUD_updateSticker" color="#00BBBB">+Sticker</Button>
+    <Button class="smallButton" onClick="HUD_switchStickerTraits" color="#00FFFF">Switch</Button>
+    <Button class="smallButton" onClick="HUD_processCardSpots" color="#FFFF00">Process</Button>
+    <Text class="spacer_15"></Text>
+    <Button onClick="HUD_endGame" color="#DD0000">6 - END</Button>
+    <Text class="spacer_15"></Text>
+    <Button onClick="HUD_toggleDebug">Debug</Button>
+    <Button onClick="HUD_toggleHUD">HUD</Button>
+  </VerticalLayout>
 
+  <!-- ================================================================ -->
+  <!-- Debug Sub-Panel (hidden by default, toggled by Debug button)     -->
+  <!-- ================================================================ -->
+  <HorizontalLayout id="debugControls" class="storyteller_subButtonControls" active="false" visibility="Host|Black">
+
+    <!-- Debug Left Column -->
+    <VerticalLayout class="storyteller_buttonControls storyteller_subButtonControls" visibility="Host|Black">
+      <Button id="debugToggleZones" onClick="HUD_toggleZonesActive" color="#00FF00">Zones (Active)</Button>
+      <Text class="spacer_20"></Text>
+      <Text class="spacer_20"></Text>
+      <Button onClick="HUD_toggleScores" color="#00FF00">SCORES</Button>
+      <Text class="spacer_5"></Text>
+      <Text class="spacer_5"></Text>
+      <Button onClick="HUD_showTraits" color="#00BBBB">TRAITS</Button>
+      <Button onClick="HUD_showStickers" color="#00BBBB">STICKERS</Button>
+      <Text class="spacer_5"></Text>
+      <Button onClick="HUD_setChapterData" color="#993399">Chapter Text</Button>
+      <Text class="spacer_5"></Text>
+      <Text class="spacer_5"></Text>
+      <Text class="spacer_5"></Text>
+      <Button onClick="HUD_processCharacterDeck" color="#FF8C00">Process CDeck</Button>
+      <Button onClick="HUD_sortCharacterDeck" color="#FF8C00">Sort CDeck</Button>
+      <Text class="spacer_15"></Text>
+      <Button onClick="HUD_toggleTraitDebug">View Traits</Button>
+      <Button onClick="HUD_toggleZoneVisibility">Zones</Button>
+      <Text class="spacer_15"></Text>
+      <Button onClick="HUD_debugEndGame" color="#444444">End Game</Button>
+      <Text class="spacer_15"></Text>
+      <Button onClick="HUD_refreshState">Refresh</Button>
     </VerticalLayout>
 
-    <!-- Center Column -->
-    <VerticalLayout id="storytellerCenterColumn" preferredWidth="500" flexibleWidth="0">
-
-
-
+    <!-- Debug Right Column (offset right) -->
+    <VerticalLayout class="storyteller_buttonControls storyteller_subButtonControls" visibility="Host|Black" ignoreLayout="true" offsetXY="75 0">
+      <Button id="debugZoomCard" onClick="HUD_debugCardZoom">Zoom</Button>
+      <Button id="debugClearZoom" onClick="HUD_debugClearZoom">End</Button>
+      <Text class="spacer_15"></Text>
+      <Button id="debugResetState" onClick="HUD_resetGameState" color="Red">Reset</Button>
+      <Text class="spacer_15"></Text>
+      <Button id="debugTestFunc1" onClick="HUD_testFunc1">TestFunc 1</Button>
+      <Button id="debugTestFunc2" onClick="HUD_testFunc2">TestFunc 2</Button>
+      <Button id="debugTestFunc3" onClick="HUD_testFunc3">TestFunc 3</Button>
     </VerticalLayout>
 
-    <!-- Right Column -->
-    <VerticalLayout id="storytellerRightColumn" preferredWidth="200" flexibleWidth="0">
-
-
-
-
-
-
-  <HorizontalLayout class="buttonPanel" spacing="5" padding="5 5 5 5" childAlignment="LowerRight" childForceExpandWidth="false" childForceExpandHeight="false">
-    <!-- Pop-out content: hidden by default, shown when a panel is selected -->
-    <VerticalLayout id="storytellerContentArea" class="buttonBar" active="False" spacing="0" childAlignment="BottomRight" childForceExpandWidth="false" childForceExpandHeight="false">
-      <Include src="panel_lighting" />
-      <Include src="panel_scenes" />
-      <Include src="panel_pcs" />
-      <Include src="panel_phases" />
-    </VerticalLayout>
-
-    <!-- Anchor: vertical stack of 4 toggle buttons (always visible) -->
-    <HorizontalLayout id="storytellerButtonBar" flexibleHeight="0" spacing="2" ignoreLayout="true" width="600" height="30" rectAlignment="LowerRight" offsetXY="-30 0" rotation="0 0 -90">
-      <Button id="toggle_phases" class="storyteller_toggleButton" onClick="HUD_selectStorytellerPanel" text="PHASES"/>
-      <Button id="toggle_pcs" class="storyteller_toggleButton" onClick="HUD_selectStorytellerPanel" text="PCs" />
-      <Button id="toggle_scenes" class="storyteller_toggleButton" onClick="HUD_selectStorytellerPanel" text="SCENES" />
-      <Button id="toggle_lighting" class="storyteller_toggleButton" onClick="HUD_selectStorytellerPanel" text="LIGHTING" />
-    </HorizontalLayout>
   </HorizontalLayout>
 
+  <!-- ================================================================ -->
+  <!-- Debug State Display Panel                                        -->
+  <!-- ================================================================ -->
+  <Panel id="debugStatePanel" active="false" class="debugPanel">
+    <Text id="debugState" class="debugText"></Text>
+  </Panel>
 
-    </VerticalLayout>
-</HorizontalLayout>
+  <!-- ================================================================ -->
+  <!-- Debug Traits Display Panel                                       -->
+  <!-- ================================================================ -->
+  <Panel id="debugTraitsPanel" active="false" class="debugPanel storyteller_debugTraits">
+    <Text id="debugTraitsRed" class="debugText storyteller_debugTraitsRed"></Text>
+    <Text id="debugTraitsYellow" class="debugText storyteller_debugTraitsYellow"></Text>
+    <Text id="debugTraitsBlue" class="debugText storyteller_debugTraitsBlue"></Text>
+    <Text id="debugStickers" class="debugText storyteller_debugTraitsBlue storyteller_debugStickers"></Text>
+  </Panel>
+
+  <!-- ================================================================ -->
+  <!-- Sidebar (reference image toggles) and Camera bar                 -->
+  <!-- ================================================================ -->
+  <Include src="panel_sidebar" />
+  <Include src="panel_camera" />
+
 </Panel>

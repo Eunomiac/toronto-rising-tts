@@ -13,13 +13,14 @@ ui/
   hud.xml                 → Root bundle file; includes all submodules in order
 
   storyteller/
-    hud_storyteller_defaults.xml  → Classes for storyteller layout (storyteller_root, etc.)
-    hud_storyteller.xml           → Layout/scaffolding (toggle bar + content area with panel includes)
-    panel_lighting.xml           → Light Debug Panel structure
-    panel_scenes.xml             → Scenes Panel structure
-    panel_pcs.xml                → PCs Panel structure
-    panel_phases.xml             → Phases Panel structure
-    (panel_X_defaults.xml        → Optional; add when panel needs component-specific classes)
+    hud_storyteller_defaults.xml  → Classes for admin panel, sidebar, and camera controls
+    hud_storyteller.xml           → Heritage admin panel layout (game phases, debug controls)
+    panel_sidebar.xml             → Right sidebar (reference image toggles + popup images)
+    panel_camera.xml              → Camera control bar + faction icons
+    panel_lighting.xml            → (empty - removed during Heritage migration)
+    panel_scenes.xml              → (empty - removed during Heritage migration)
+    panel_pcs.xml                 → (empty - removed during Heritage migration)
+    panel_phases.xml              → (empty - removed during Heritage migration)
 
   player/
     hud_player.xml        → Player HUD panels (character stats per color)
@@ -85,5 +86,7 @@ UI positioning uses a **conceptual 3 columns × 4 rows grid** (no physical `Grid
 - Visibility: `Host|Black` for Storyteller, `Red`/`Brown`/etc. for players
 - Button onClick handlers must be global functions (e.g. `HUD_changeScene`)
 - UI element IDs must match handler expectations in `Global.lua`
-- Panel IDs for storyteller: `panel_lighting`, `panel_scenes`, `panel_pcs`, `panel_phases`
-- Toggle IDs: `toggle_lighting`, `toggle_scenes`, `toggle_pcs`, `toggle_phases`
+- Admin panel ID: `adminControls` (Heritage admin button column + debug panels)
+- Sidebar panel ID: `hudSidebarHost` (reference image toggles)
+- Camera panel ID: `cameraControlPanel` (camera zoom buttons + faction icons)
+- Debug panel IDs: `debugControls`, `debugStatePanel`, `debugTraitsPanel`

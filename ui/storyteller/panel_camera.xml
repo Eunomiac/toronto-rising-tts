@@ -1,0 +1,36 @@
+<!-- Camera Control Panel -->
+<!-- Bottom-right: faction icons + camera zoom buttons -->
+<!-- Reproduces Heritage hud.xml camera controls -->
+
+<Panel id="cameraControlPanel">
+
+  <!-- Faction Icons (above camera bar) -->
+  <HorizontalLayout class="storyteller_factionIconContainer">
+    <Image id="factionDisplayRed" image="" />
+    <Image id="factionDisplayYellow" image="" />
+    <Image id="factionDisplayBlue" image="" />
+  </HorizontalLayout>
+
+  <!-- Camera Zoom Buttons -->
+  <HorizontalLayout class="storyteller_cameraControls">
+    <Image id="cameraZoomPlayerOne"
+      class="storyteller_cameraButton"
+      image="camera-zoom-player-one" />
+    <Image id="cameraZoomPlayerTwo"
+      class="storyteller_cameraButton"
+      image="camera-zoom-player-two" />
+    <Image id="cameraZoomPlayerThree"
+      class="storyteller_cameraButton"
+      image="camera-zoom-player-three" />
+    <Image id="cameraZoomQueue"
+      class="storyteller_cameraButton"
+      image="camera-zoom-queue" />
+    <Image id="cameraZoomBattlegrounds"
+      class="storyteller_cameraButton"
+      image="camera-zoom-battlegrounds" />
+    <Image id="cameraWideAngle"
+      class="storyteller_cameraButton"
+      image="camera-wide-angle" />
+  </HorizontalLayout>
+
+</Panel>

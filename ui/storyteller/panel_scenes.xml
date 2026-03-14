@@ -1,14 +1,1 @@
-<!-- Scenes Panel -->
-<!-- Scene preset controls (Default, Elysium, Alley, etc.) -->
-
-<VerticalLayout id="panel_scenes" active="False" spacing="5" padding="10 10 10 10">
-  <Text class="storyteller_heading">Scene Controls</Text>
-  <Button id="scene_default" onClick="HUD_changeScene">Default</Button>
-  <Button id="scene_elysium" onClick="HUD_changeScene">Elysium</Button>
-  <Button id="scene_alley" onClick="HUD_changeScene">Alley</Button>
-  <Button id="scene_haven" onClick="HUD_changeScene">Haven</Button>
-  <Button id="scene_tension" onClick="HUD_changeScene">Tension</Button>
-  <Button id="scene_combat" onClick="HUD_changeScene">Combat</Button>
-  <Button id="scene_suspicion" onClick="HUD_changeScene">Suspicion</Button>
-  <Button id="scene_social" onClick="HUD_changeScene">Social</Button>
-</VerticalLayout>
+<!-- Scenes Panel (removed during Heritage migration) -->

@@ -1,0 +1,280 @@
+<!-- Sidebar Panel -->
+<!-- Right-side reference image toggles for Host|Black -->
+<!-- Reproduces Heritage hud.xml sidebar: dual-layer buttons (base + overlay) -->
+<!-- Mouse-down shows reference popup, right-click toggles it on -->
+
+<Panel id="hudSidebarHost" class="storyteller_sidebar" visibility="Host|Black">
+
+  <!-- ================================================================ -->
+  <!-- Base Layer: toggle button images (grey-tinted, clickable)        -->
+  <!-- ================================================================ -->
+  <VerticalLayout class="storyteller_sidebarLayout">
+
+    <!-- Battlegrounds Group (silver borders) -->
+    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image id="hudRefBattlegroundsHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-battlegrounds" />
+    <Image id="hudRefAncillaeAHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-ancillaeA" />
+    <Image id="hudRefAncillaeBHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-ancillaeB" />
+    <Image id="hudRefAncillaeCHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-ancillaeC" />
+    <Image id="hudRefAncillaeDHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-ancillaeD" />
+    <Image id="hudRefAncillaeEHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-ancillaeE" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" />
+
+    <!-- Clans Group (gold borders) -->
+    <Image class="imageBorder" image="hud-border-gold-top" />
+    <Image id="hudRefBrujahHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-clanBrujah" />
+    <Image id="hudRefGangrelHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-clanGangrel" />
+    <Image id="hudRefLasombraHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-clanLasombra" />
+    <Image id="hudRefMalkavianHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-clanMalkavian" />
+    <Image id="hudRefNosferatuHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-clanNosferatu" />
+    <Image id="hudRefToreadorHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-clanToreador" />
+    <Image id="hudRefTremereHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-clanTremere" />
+    <Image id="hudRefTzimisceHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-clanTzimisce" />
+    <Image id="hudRefVentrueHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-clanVentrue" />
+    <Image class="imageBorder" image="hud-border-gold-bottom" />
+
+    <!-- Traits Group (silver borders) -->
+    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image id="hudRefTraits1Host"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-traits1" />
+    <Image id="hudRefTraits2Host"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-traits2" />
+    <Image id="hudRefTraits3Host"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-traits3" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" />
+
+    <!-- Misc Group (silver borders) -->
+    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image id="hudRefAssetsHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-assets" />
+    <Image id="hudRefPlayersHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-players" />
+    <Image id="hudRefSymbolsHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-symbols" />
+    <Image id="hudRefExpansionsHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-expansions" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" />
+
+    <!-- Fourth Row (gold borders) -->
+    <Image class="imageBorder" image="hud-border-gold-top" />
+    <Image id="hudMakeFourthRowHost"
+      class="storyteller_refButton imageButtonBase"
+      image="hud-toggle-fourthRow" />
+    <Image class="imageBorder" image="hud-border-gold-bottom" />
+
+  </VerticalLayout>
+
+  <!-- ================================================================ -->
+  <!-- Overlay Layer: hover highlight (transparent, turns white)        -->
+  <!-- ================================================================ -->
+  <VerticalLayout class="storyteller_sidebarLayout">
+
+    <!-- Battlegrounds Group -->
+    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image id="hudRefBattlegroundsHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-battlegrounds" />
+    <Image id="hudRefAncillaeAHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-ancillaeA" />
+    <Image id="hudRefAncillaeBHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-ancillaeB" />
+    <Image id="hudRefAncillaeCHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-ancillaeC" />
+    <Image id="hudRefAncillaeDHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-ancillaeD" />
+    <Image id="hudRefAncillaeEHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-ancillaeE" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" />
+
+    <!-- Clans Group -->
+    <Image class="imageBorder" image="hud-border-gold-top" />
+    <Image id="hudRefBrujahHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-clanBrujah" />
+    <Image id="hudRefGangrelHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-clanGangrel" />
+    <Image id="hudRefLasombraHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-clanLasombra" />
+    <Image id="hudRefMalkavianHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-clanMalkavian" />
+    <Image id="hudRefNosferatuHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-clanNosferatu" />
+    <Image id="hudRefToreadorHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-clanToreador" />
+    <Image id="hudRefTremereHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-clanTremere" />
+    <Image id="hudRefTzimisceHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-clanTzimisce" />
+    <Image id="hudRefVentrueHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-clanVentrue" />
+    <Image class="imageBorder" image="hud-border-gold-bottom" />
+
+    <!-- Traits Group -->
+    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image id="hudRefTraits1HostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-traits1" />
+    <Image id="hudRefTraits2HostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-traits2" />
+    <Image id="hudRefTraits3HostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-traits3" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" />
+
+    <!-- Misc Group -->
+    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image id="hudRefAssetsHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-assets" />
+    <Image id="hudRefPlayersHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-players" />
+    <Image id="hudRefSymbolsHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-symbols" />
+    <Image id="hudRefExpansionsHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-expansions" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" />
+
+    <!-- Fourth Row -->
+    <Image class="imageBorder" image="hud-border-gold-top" />
+    <Image id="hudMakeFourthRowHostOverlay"
+      class="storyteller_refButton imageButtonOverlay"
+      image="hud-toggle-fourthRow" />
+    <Image class="imageBorder" image="hud-border-gold-bottom" />
+
+  </VerticalLayout>
+
+</Panel>
+
+<!-- ================================================================== -->
+<!-- Reference Image Popups (fullscreen, hidden by default)             -->
+<!-- Shown by HUD_show when sidebar buttons are clicked                 -->
+<!-- ================================================================== -->
+<Panel class="popupImageContainer" visibility="Host|Black">
+
+  <!-- Rules References -->
+  <Image id="RefPlayersHost" height="95%"
+    class="popupImage"
+    image="ref-players" />
+  <Image id="RefBattlegroundsHost" height="80%"
+    class="popupImage"
+    image="ref-battlegrounds" />
+  <Image id="RefSymbolsHost"
+    class="popupImage" height="70%"
+    image="ref-symbols" />
+  <Image id="RefAssetsHost"
+    class="popupImage" height="25%"
+    image="ref-assets" />
+  <Image id="RefAncillaeAHost"
+    class="popupImage" width="90%"
+    image="ref-ancillaeA" />
+  <Image id="RefAncillaeBHost"
+    class="popupImage" width="90%"
+    image="ref-ancillaeB" />
+  <Image id="RefAncillaeCHost"
+    class="popupImage" width="90%"
+    image="ref-ancillaeC" />
+  <Image id="RefAncillaeDHost"
+    class="popupImage" width="90%"
+    image="ref-ancillaeD" />
+  <Image id="RefAncillaeEHost"
+    class="popupImage" width="90%"
+    image="ref-ancillaeE" />
+  <Image id="RefExpansionsHost"
+    class="popupImage" height="90%"
+    image="ref-expansions" />
+
+  <!-- Clans -->
+  <Image id="RefBrujahHost"
+    class="popupImage popupImageNarrow"
+    image="ref-clanBrujah" />
+  <Image id="RefGangrelHost"
+    class="popupImage popupImageNarrow"
+    image="ref-clanGangrel" />
+  <Image id="RefLasombraHost"
+    class="popupImage popupImageNarrow"
+    image="ref-clanLasombra" />
+  <Image id="RefMalkavianHost"
+    class="popupImage popupImageNarrow"
+    image="ref-clanMalkavian" />
+  <Image id="RefNosferatuHost"
+    class="popupImage popupImageNarrow"
+    image="ref-clanNosferatu" />
+  <Image id="RefToreadorHost"
+    class="popupImage popupImageNarrow"
+    image="ref-clanToreador" />
+  <Image id="RefTremereHost"
+    class="popupImage popupImageNarrow"
+    image="ref-clanTremere" />
+  <Image id="RefTzimisceHost"
+    class="popupImage popupImageNarrow"
+    image="ref-clanTzimisce" />
+  <Image id="RefVentrueHost"
+    class="popupImage popupImageNarrow"
+    image="ref-clanVentrue" />
+
+  <!-- Traits -->
+  <Image id="RefTraits1Host" width="95%"
+    class="popupImage"
+    image="ref-traits1" />
+  <Image id="RefTraits2Host" width="95%"
+    class="popupImage"
+    image="ref-traits2" />
+  <Image id="RefTraits3Host" width="95%"
+    class="popupImage"
+    image="ref-traits3" />
+
+</Panel>

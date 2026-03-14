@@ -1,26 +1,107 @@
 <!-- Storyteller HUD Defaults -->
-<!-- Classes for layout elements and multi-component use. Include before hud_storyteller. -->
+<!-- Heritage admin panel + sidebar + camera classes. Include before hud_storyteller. -->
 
 <Defaults>
-  <!-- Storyteller root container (bottom-right) -->
-  <VerticalLayout class="storyteller_root"
-    width="520"
+
+  <!-- ================================================================ -->
+  <!-- Admin Panel Classes (left-side button controls)                   -->
+  <!-- ================================================================ -->
+
+  <!-- Main button column: left-aligned, half-scale, vertically stacked -->
+  <VerticalLayout class="storyteller_buttonControls"
+    padding="10 10 5 5"
     spacing="5"
-    padding="10 10 10 10"
+    rectAlignment="MiddleLeft"
+    childAlignment="UpperLeft"
+    width="160"
+    offsetXY="0 -90"
+    scale="0.5"
+    flexibleWidth="0"
+    flexibleHeight="0"
+    childForceExpandWidth="false"
+    childForceExpandHeight="false" />
+
+  <!-- Debug sub-panel: horizontal row of button columns offset right -->
+  <HorizontalLayout class="storyteller_subButtonControls"
+    spacing="5"
+    offsetXY="75 50"
+    width="200"
+    height="500"
+    rectAlignment="MiddleLeft"
+    flexibleWidth="0"
+    flexibleHeight="0"
+    childForceExpandWidth="false"
+    childForceExpandHeight="false" />
+
+  <!-- Debug traits overlay panel (positioning specific to storyteller layout) -->
+  <Panel class="storyteller_debugTraits"
+    height="900"
+    width="800"
+    rectAlignment="UpperRight"
+    offsetXY="-400 -100" />
+
+  <!-- Per-color debug trait text offsets -->
+  <Text class="storyteller_debugTraitsRed" offsetXY="0 0" />
+  <Text class="storyteller_debugTraitsYellow" offsetXY="200 0" />
+  <Text class="storyteller_debugTraitsBlue" offsetXY="400 0" />
+  <Text class="storyteller_debugStickers" offsetXY="600 0" />
+
+  <!-- ================================================================ -->
+  <!-- Sidebar Classes (right-side reference image toggles)             -->
+  <!-- ================================================================ -->
+
+  <!-- Faction icon container (bottom-right, above camera bar) -->
+  <HorizontalLayout class="storyteller_factionIconContainer"
     rectAlignment="LowerRight"
-    offsetXY="10 10" />
+    padding="0 400 0 20"
+    spacing="0"
+    height="150"
+    width="800"
+    scale="0.7"
+    childAlignment="LowerLeft"
+    childForceExpandHeight="true"
+    childForceExpandWidth="false" />
 
-  <!-- Storyteller toggle button (inactive state) -->
-  <Button class="storyteller_toggleButton"
-    preferredWidth="120"
-    preferredHeight="40"
-    fontSize="12"
-    fontStyle="Bold"
-    colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+  <!-- Camera control bar (bottom-right row) -->
+  <HorizontalLayout class="storyteller_cameraControls"
+    rectAlignment="LowerRight"
+    padding="0 0 0 0"
+    spacing="0"
+    height="28"
+    width="800"
+    scale="0.7"
+    childAlignment="LowerRight"
+    childForceExpandHeight="true"
+    childForceExpandWidth="false" />
 
-  <!-- Storyteller panel heading -->
-  <Text class="storyteller_heading"
-    fontSize="16"
-    color="#FFD700"
-    fontStyle="Bold" />
+  <!-- Camera button: clickable image with hover handlers -->
+  <Image class="storyteller_cameraButton"
+    raycastTarget="true"
+    onMouseDown="HUD_cameraSet"
+    onMouseEnter="HUD_highlight"
+    onMouseExit="HUD_dim" />
+
+  <!-- Right sidebar panel container -->
+  <Panel class="storyteller_sidebar"
+    rectAlignment="LowerRight"
+    height="740"
+    width="125"
+    offsetXY="0 100" />
+
+  <!-- Right sidebar inner vertical layout -->
+  <VerticalLayout class="storyteller_sidebarLayout"
+    height="100%"
+    width="100%"
+    childAlignment="LowerLeft"
+    childForceExpandHeight="false"
+    childForceExpandWidth="true" />
+
+  <!-- Reference toggle button: show/hide on mouse events -->
+  <Image class="storyteller_refButton"
+    onMouseDown="HUD_show"
+    onMouseUp="HUD_hide"
+    onMouseEnter="HUD_highlight"
+    onMouseExit="HUD_dim" />
+
+
 </Defaults>

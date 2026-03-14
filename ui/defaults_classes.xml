@@ -12,35 +12,74 @@
   <Panel class="panel-base" color="rgba(0, 0, 0, 0.7)" padding="10 10 10 10" />
   <Panel class="panel-dark" color="rgba(0, 0, 0, 0.85)" padding="10 10 10 10" />
 
-  <!-- Toggle Button Panel (storyteller scaffold) -->
-  <HorizontalLayout class="buttonPanel"
-    spacing="5"
-    padding="5 5 5 5"
-    childAlignment="MiddleLeft"
-    childForceExpandWidth="false" />
+  <!-- Button Sizes -->
+  <Button class="smallButton"
+    minWidth="100"
+    preferredWidth="100" />
 
-  <Button class="buttonPanelToggle"
-    minWidth="25"
-    minHeight="25"
-    preferredWidth="25"
-    preferredHeight="25"
-    fontSize="14"
-    text="►"
+  <!-- Debug Panel Styles -->
+  <Panel class="debugPanel"
+    color="rgba(0,0,0,0.75)"
+    height="400"
+    width="350"
+    padding="5 5 5 5"
+    scale="0.75"
+    rectAlignment="MiddleLeft"
+    offsetXY="250 0" />
+
+  <Text class="debugText"
+    preferredWidth="200"
+    alignment="UpperLeft"
+    color="#FFFFFF"
+    outline="#000000"
+    outlineSize="1 1" />
+
+  <!-- Reminder/Alert Panel Styles -->
+  <Panel class="reminderPanel"
+    color="Black"
+    padding="15 5 5 5"
+    scale="0.75"
+    outline="#FF0000"
+    outlineSize="2 2" />
+
+  <Text class="reminderHeading reminderAction"
+    color="#FFFFFF"
+    alignment="MiddleLeft"
+    outline="#000000"
+    outlineSize="1 1"
+    flexibleHeight="0" />
+  <Text class="reminderAction"
+    fontSize="24"
+    fontStyle="Bold"
+    outline="#550000"
+    color="Red" />
+  <Text class="reminderHeading"
+    fontSize="18"
+    fontStyle="Bold"
+    outline="#555500"
+    color="Yellow" />
+
+  <!-- Image Button Layers (base + overlay for hover highlight pattern) -->
+  <Image class="imageButtonBase"
+    raycastTarget="true"
     color="rgba(0.5, 0.5, 0.5, 1)" />
 
-  <VerticalLayout class="buttonBar"
-    spacing="5"
-    padding="5 5 5 5"
-    childAlignment="UpperLeft"
-    active="False" />
+  <Image class="imageButtonOverlay"
+    color="clear" />
 
-  <!-- Admin/Storyteller Container (positioning overridden per use) -->
-  <VerticalLayout class="adminContainer"
-    width="400"
-    spacing="5"
-    padding="10 10 10 10"
-    rectAlignment="UpperLeft"
-    offsetXY="10 10" />
+  <Image class="imageBorder"
+    rectAlignment="MiddleLeft" />
+
+  <!-- Popup Image Styles (hidden fullscreen image popups) -->
+  <Image class="popupImage"
+    active="false" />
+
+  <Image class="popupImageNarrow"
+    width="60%" />
+
+  <Panel class="popupImageContainer"
+    childForceExpandWidth="false"
+    childForceExpandHeight="false" />
 
   <!-- Status Display Styles -->
   <Text class="statusText"
