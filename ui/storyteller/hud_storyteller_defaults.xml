@@ -1,0 +1,26 @@
+<!-- Storyteller HUD Defaults -->
+<!-- Classes for layout elements and multi-component use. Include before hud_storyteller. -->
+
+<Defaults>
+  <!-- Storyteller root container (bottom-right) -->
+  <VerticalLayout class="storyteller_root"
+    width="520"
+    spacing="5"
+    padding="10 10 10 10"
+    rectAlignment="LowerRight"
+    offsetXY="10 10" />
+
+  <!-- Storyteller toggle button (inactive state) -->
+  <Button class="storyteller_toggleButton"
+    preferredWidth="120"
+    preferredHeight="40"
+    fontSize="12"
+    fontStyle="Bold"
+    colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+
+  <!-- Storyteller panel heading -->
+  <Text class="storyteller_heading"
+    fontSize="16"
+    color="#FFD700"
+    fontStyle="Bold" />
+</Defaults>
