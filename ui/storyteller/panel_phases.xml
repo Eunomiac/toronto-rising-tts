@@ -1,0 +1,22 @@
+<!-- Phases Panel -->
+<!-- Phase controls, utilities, debug. Current phase/scene display. -->
+
+<VerticalLayout id="panel_phases" active="False" spacing="5" padding="10 10 10 10">
+  <Text class="storyteller_heading">Phase Control</Text>
+  <HorizontalLayout spacing="10" padding="5 5 5 5" childAlignment="MiddleLeft">
+    <Text fontSize="14" color="#CCCCCC" preferredWidth="120">Current Phase:</Text>
+    <Text id="currentPhaseDisplay" fontSize="14" color="#FFFFFF">Initialization</Text>
+  </HorizontalLayout>
+  <HorizontalLayout spacing="10" padding="5 5 5 5" childAlignment="MiddleLeft">
+    <Text fontSize="14" color="#CCCCCC" preferredWidth="120">Current Scene:</Text>
+    <Text id="currentSceneDisplay" fontSize="14" color="#FFFFFF">default</Text>
+  </HorizontalLayout>
+  <Button id="phase_play" onClick="HUD_advancePhase" color="#00AA00">Enter Play</Button>
+  <Button id="phase_combat" onClick="HUD_advancePhase" color="#AA0000">Enter Combat</Button>
+  <Text fontSize="14" color="#FFD700" fontStyle="Bold">Utilities</Text>
+  <Button id="utility_reset" onClick="HUD_resetGame" color="#AA0000">Reset Game</Button>
+  <Button id="utility_save" onClick="HUD_saveState" color="#00AA00">Save State</Button>
+  <Text fontSize="14" color="#FF6666" fontStyle="Bold">Debug</Text>
+  <Button id="debug_zones" onClick="HUD_toggleZones" color="#00FF00">Toggle Zones</Button>
+  <Button id="debug_logState" onClick="HUD_logState" color="#6666FF">Log State</Button>
+</VerticalLayout>

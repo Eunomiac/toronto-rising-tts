@@ -1,24 +1,7 @@
-<!-- Default Styles and Classes -->
-<!-- Common default styles and classes for UI elements -->
+<!-- General Shared Classes -->
+<!-- Include after defaults_tags; used across storyteller, player, shared. -->
 
 <Defaults>
-  <!-- Baseline Layout Defaults -->
-  <Image preserveAspect="true" raycastTarget="false" />
-  <VerticalLayout raycastTarget="false" />
-  <HorizontalLayout raycastTarget="false" />
-
-  <!-- Button Styles -->
-  <Button
-    minWidth="150"
-    minHeight="30"
-    preferredWidth="150"
-    preferredHeight="30"
-    flexibleWidth="0"
-    flexibleHeight="0"
-    color="rgba(0.7,0.7,0.7,1)"
-    fontSize="16"
-    fontStyle="Bold" />
-
   <!-- Text Spacers -->
   <Text class="spacer_5" color="clear" fontSize="4" />
   <Text class="spacer_10" color="clear" fontSize="8" />
@@ -29,7 +12,7 @@
   <Panel class="panel-base" color="rgba(0, 0, 0, 0.7)" padding="10 10 10 10" />
   <Panel class="panel-dark" color="rgba(0, 0, 0, 0.85)" padding="10 10 10 10" />
 
-  <!-- Toggle Button Panel -->
+  <!-- Toggle Button Panel (storyteller scaffold) -->
   <HorizontalLayout class="buttonPanel"
     spacing="5"
     padding="5 5 5 5"
@@ -51,6 +34,14 @@
     childAlignment="UpperLeft"
     active="False" />
 
+  <!-- Admin/Storyteller Container (positioning overridden per use) -->
+  <VerticalLayout class="adminContainer"
+    width="400"
+    spacing="5"
+    padding="10 10 10 10"
+    rectAlignment="UpperLeft"
+    offsetXY="10 10" />
+
   <!-- Status Display Styles -->
   <Text class="statusText"
     fontSize="14"
@@ -66,7 +57,7 @@
     outline="#000000"
     outlineSize="1 1" />
 
-  <!-- Stat Display (Hunger, Willpower, Health) -->
+  <!-- Stat Display (Hunger, Willpower, Health - player HUD) -->
   <HorizontalLayout class="statDisplay"
     spacing="10"
     padding="5 5 5 5"

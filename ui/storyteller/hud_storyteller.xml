@@ -1,0 +1,50 @@
+<!-- Storyteller HUD Layout -->
+<!-- Visibility: Host|Black (Storyteller/GM) -->
+<!-- Bottom-right: toggle bar (anchor) + pop-out content with 4 panels -->
+
+<Panel padding="0 0 0 0">
+  <HorizontalLayout id="storytellerRoot" height="100%" width="100%" visibility="Host|Black" >
+
+    <!-- Left Column -->
+    <VerticalLayout id="storytellerLeftColumn" preferredWidth="200" flexibleWidth="0">
+      <Text>Left Column</Text>
+
+    </VerticalLayout>
+
+    <!-- Center Column -->
+    <VerticalLayout id="storytellerCenterColumn" preferredWidth="500" flexibleWidth="0">
+
+
+
+    </VerticalLayout>
+
+    <!-- Right Column -->
+    <VerticalLayout id="storytellerRightColumn" preferredWidth="200" flexibleWidth="0">
+
+
+
+
+
+
+  <HorizontalLayout class="buttonPanel" spacing="5" padding="5 5 5 5" childAlignment="LowerRight" childForceExpandWidth="false" childForceExpandHeight="false">
+    <!-- Pop-out content: hidden by default, shown when a panel is selected -->
+    <VerticalLayout id="storytellerContentArea" class="buttonBar" active="False" spacing="0" childAlignment="BottomRight" childForceExpandWidth="false" childForceExpandHeight="false">
+      <Include src="panel_lighting" />
+      <Include src="panel_scenes" />
+      <Include src="panel_pcs" />
+      <Include src="panel_phases" />
+    </VerticalLayout>
+
+    <!-- Anchor: vertical stack of 4 toggle buttons (always visible) -->
+    <HorizontalLayout id="storytellerButtonBar" flexibleHeight="0" spacing="2" ignoreLayout="true" width="600" height="30" rectAlignment="LowerRight" offsetXY="-30 0" rotation="0 0 -90">
+      <Button id="toggle_phases" class="storyteller_toggleButton" onClick="HUD_selectStorytellerPanel" text="PHASES"/>
+      <Button id="toggle_pcs" class="storyteller_toggleButton" onClick="HUD_selectStorytellerPanel" text="PCs" />
+      <Button id="toggle_scenes" class="storyteller_toggleButton" onClick="HUD_selectStorytellerPanel" text="SCENES" />
+      <Button id="toggle_lighting" class="storyteller_toggleButton" onClick="HUD_selectStorytellerPanel" text="LIGHTING" />
+    </HorizontalLayout>
+  </HorizontalLayout>
+
+
+    </VerticalLayout>
+</HorizontalLayout>
+</Panel>

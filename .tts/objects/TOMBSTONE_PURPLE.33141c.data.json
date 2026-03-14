@@ -5,7 +5,7 @@
     "posX": -52.3097038,
     "posY": -5.13,
     "posZ": -16.9998989,
-    "rotX": 0.0008460264,
+    "rotX": 0.0008460269,
     "rotY": 252,
     "rotZ": 0.000007655927,
     "scaleX": 15.90302,
@@ -46,7 +46,7 @@
     "TypeIndex": 0,
     "LoopingEffectIndex": 0
   },
-  "LuaScript": "function onLoad()\r\n  self.setInvisibleTo({\"Purple\"})\r\nend",
+  "LuaScript": "function onLoad()\r\n  self.interactable = false\r\nend\r\n",
   "LuaScriptState": "",
   "XmlUI": ""
 }

@@ -46,7 +46,7 @@
     "TypeIndex": 0,
     "LoopingEffectIndex": 0
   },
-  "LuaScript": "function onLoad()\r\n  self.setInvisibleTo({\"Red\"})\r\n  self.interactable = false\r\nend",
+  "LuaScript": "function onLoad(save_state)\r\n\tself.addContextMenuItem(\"Apply Settings\", apply, false)\r\n\tapply()\r\nend\r\n\r\nfunction apply()\r\n\tlocal outputs = {}\r\n\tfor i, line in ipairs(splitLines(self.getGMNotes())) do\r\n\t\tlocal st, en, cap = string.find(line, \": (.+)$\")\r\n\t\toutputs[i] = cap\r\n\tend\r\n\toutputs[1] = tonumber(outputs[1])\r\n\toutputs[2] = tonumber(outputs[2])\r\n\toutputs[3] = tonumber(outputs[3])\r\n\tif outputs[4] == \"true\" then\r\n\t\toutputs[4] = true\r\n\telse\r\n\t\toutputs[4] = false\r\n\tend\r\n\r\n\tlocal children = self.getChildren()\r\n\tif not children or not children[1] then return end\r\n\tlocal c1Children = children[1].getChildren()\r\n\tif not c1Children or not c1Children[2] then return end\r\n\tlocal comps = c1Children[2].getComponents()\r\n\tif not comps or not comps[2] then return end\r\n\tlocal lightComp = comps[2]\r\n\r\n\tif outputs[1] then\r\n\t\tlightComp.set(\"range\", outputs[1])\r\n\tend\r\n\tif outputs[2] then\r\n\t\tlightComp.set(\"spotAngle\", outputs[2])\r\n\tend\r\n\tlightComp.set(\"color\", self.getColorTint())\r\n\tif outputs[3] then\r\n\t\tlightComp.set(\"intensity\", outputs[3])\r\n\tend\r\n\tlightComp.set(\"enabled\", outputs[4])\r\nend\r\n\r\n\r\nfunction splitLines(input)\r\n    local outputs = {}\r\n    for output in input:gmatch(\"[^\\n]+\") do\r\n        table.insert(outputs, output)\r\n    end\r\n    return outputs\r\nend",
   "LuaScriptState": "",
   "XmlUI": ""
 }

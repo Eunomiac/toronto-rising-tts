@@ -2,12 +2,12 @@
   "GUID": "fe9e9a",
   "Name": "Custom_Model",
   "Transform": {
-    "posX": 35.85,
-    "posY": 4.575672,
-    "posZ": 46.80532,
-    "rotX": 0.00000189714012,
-    "rotY": 0.0270852223,
-    "rotZ": 0.00000241035127,
+    "posX": -15.1757727,
+    "posY": 15.2060595,
+    "posZ": -90.9496841,
+    "rotX": 0.0000142910585,
+    "rotY": 359.9815,
+    "rotZ": -0.0000274033027,
     "scaleX": 5,
     "scaleY": 5,
     "scaleZ": 5
@@ -27,7 +27,7 @@
   },
   "LayoutGroupSortIndex": 0,
   "Value": 0,
-  "Locked": true,
+  "Locked": false,
   "Grid": true,
   "Snap": true,
   "IgnoreFoW": false,
@@ -49,7 +49,7 @@
     "TypeIndex": 0,
     "CastShadows": true
   },
-  "LuaScript": "diffNumLabel = \"Set Difficulty to \"\r\n\r\nfunction onSave()\r\n    local data_to_save = {da=diceActive, wd=watchingDice}\r\n    saved_data = JSON.encode(data_to_save)\r\n    return saved_data\r\nend\r\n\r\nfunction onLoad(saved_data)\r\n    if saved_data ~= \"\" then\r\n        --Set up information off of loaded_data\r\n        local loaded_data = JSON.decode(saved_data)\r\n    end\r\n\r\n    createButtons()\r\nend\r\n\r\nfunction deleteDice(obj, color)\r\n    if color == Player.Black.color then\r\n        for i, obj in ipairs(getAllObjects()) do\r\n            if obj.name == \"Die_10\" then\r\n              obj.destroy()\r\n            end\r\n        end\r\n\r\n        setD10Diff(6, color)\r\n    end\r\nend\r\n\r\nfunction setD10Diff(num, color) \r\n    if color == Player.Black.color then\r\n        self.editButton({index=0, label=\"\"..num})\r\n        Global.setVar(\"d10Difficulty\", num)\r\n    end\r\nend\r\n\r\n--Button creation\r\nfunction createButtons()\r\n    self.createButton({click_function=\"click_none\", function_owner=self, position={0.005,0.05,0.05}, height=0, width=0, font_size=375, label=\"6\", font_color={1,1,1}})\r\n\r\n    --Spawns number buttons and assigns a function trigger for each\r\n    for i, pos in ipairs(buttonPositionList) do\r\n        self.createButton({\r\n            click_function=\"but\"..i, function_owner=self,\r\n            position=pos, height=150, width=150, tooltip = diffNumLabel..(i + 1)\r\n        })\r\n        local func = function(_,color) setD10Diff(i + 1, color) end\r\n        self.setVar(\"but\"..i, func)\r\n    end\r\n\r\n    --Spawns deleteCurrentDice button\r\n    self.createButton({\r\n        click_function=\"deleteDice\", function_owner=self,\r\n        position={0,0,0.73}, height=150, width=150, tooltip = \"Clear and Reset\"\r\n    })\r\n\r\n    \r\nend\r\n\r\n--Data table of positions for number buttons 1-9, in order\r\nbuttonPositionList = {\r\n    {-0.435,0,0.59}, {-0.693,0,0.22}, {-0.693,0,-0.22}, {-0.435,0,-0.59},\r\n    {0,0,-0.73}, {0.435,0,-0.59}, {0.693,0,-0.22}, {0.693,0,0.22}, {0.435,0,0.59}\r\n}\r\n",
+  "LuaScript": "function onLoad(save_state)\r\n\tself.addContextMenuItem(\"Apply Settings\", apply, false)\r\n\tapply()\r\nend\r\n\r\nfunction apply()\r\n\tlocal outputs = {}\r\n\tfor i, line in ipairs(splitLines(self.getGMNotes())) do\r\n\t\tlocal st, en, cap = string.find(line, \": (.+)$\")\r\n\t\toutputs[i] = cap\r\n\tend\r\n\toutputs[1] = tonumber(outputs[1])\r\n\toutputs[2] = tonumber(outputs[2])\r\n\toutputs[3] = tonumber(outputs[3])\r\n\tif outputs[4] == \"true\" then\r\n\t\toutputs[4] = true\r\n\telse\r\n\t\toutputs[4] = false\r\n\tend\r\n\r\n\tlocal lightComp = self.getChildren()[1] and self.getChildren()[1].getChildren()[2] and self.getChildren()[1].getChildren()[2].getComponents()[2]\r\n\tif not lightComp then\r\n\t\treturn\r\n\tend\r\n\r\n\tif outputs[1] then\r\n\t\tlightComp.set(\"range\", outputs[1])\r\n\tend\r\n\tif outputs[2] then\r\n\t\tlightComp.set(\"spotAngle\", outputs[2])\r\n\tend\r\n\tlightComp.set(\"color\", self.getColorTint())\r\n\tif outputs[3] then\r\n\t\tlightComp.set(\"intensity\", outputs[3])\r\n\tend\r\n\tlightComp.set(\"enabled\", outputs[4])\r\nend\r\n\r\n\r\nfunction splitLines(input)\r\n    local outputs = {}\r\n    for output in input:gmatch(\"[^\\n]+\") do\r\n        table.insert(outputs, output)\r\n    end\r\n    return outputs\r\nend",
   "LuaScriptState": "[]",
   "XmlUI": ""
 }

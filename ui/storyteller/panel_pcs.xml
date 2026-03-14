@@ -1,0 +1,7 @@
+<!-- PCs Panel -->
+<!-- Player/character controls. Placeholder for future expansion. -->
+
+<VerticalLayout id="panel_pcs" active="False" spacing="5" padding="10 10 10 10">
+  <Text class="storyteller_heading">PCs</Text>
+  <Text fontSize="12" color="#AAAAAA">Player/character controls - coming soon</Text>
+</VerticalLayout>

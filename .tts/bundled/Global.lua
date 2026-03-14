@@ -72,21 +72,13 @@ gameState = {}
 
 --[[
     Load UI XML
-    NOTE: TTS requires XML to be loaded as a string via UI.setXml().
-
-    The UI XML is split into modular components using XML bundling:
-    - ui/hud.xml (main file with <Include> tags)
-    - ui/defaults.xml, ui/admin.xml, ui/player_hud.xml, ui/shared.xml
-
-    When you use "Save and Play", the TTS Tools extension:
-    1. Reads .tts/objects/Global.xml (which includes all components)
-    2. Bundles all <Include> tags into a single XML string
-    3. Saves the bundled result to .tts/bundled/Global.xml
-
-    TODO: After using "Save and Play", check .tts/bundled/Global.xml and embed
-    the bundled XML content as a string constant below, or find a way to load it automatically.
+    The UI XML uses TTS Tools bundling:
+    - .tts/objects/Global.xml contains <Include src="ui/..." /> tags
+    - ui/hud.xml is the source (sync to .tts/objects/Global.xml)
+    - On "Save and Play", the extension bundles all Includes and sends to TTS
+    - No hardcoded XML in Lua; the bundled XML comes from the extension
+    - refreshLightDebugPanel() injects dynamic spotlight rows at <!-- LIGHT_TABLE_ROWS -->
 ]]
-local HUD_XML_PLACEHOLDER = [[<Panel><Text text='VTM5E Module Loaded - Use "Save and Play" to bundle XML, then embed bundled content from .tts/bundled/Global.xml'/></Panel>]]
 
 --[[
     onLoad - Called when the game loads or is reset
@@ -94,6 +86,12 @@ local HUD_XML_PLACEHOLDER = [[<Panel><Text text='VTM5E Module Loaded - Use "Save
 ]]
 function onLoad(saved_data)
     print("--- VTM5E Module Loaded ---")
+
+    -- Print host Steam ID for hardcoding into C.StorytellerID (lib/constants.ttslua)
+    local host = U.getHost and U.getHost()
+    if host and host.steam_id then
+        print("Host Steam ID (use for C.StorytellerID in lib/constants.ttslua): " .. tostring(host.steam_id))
+    end
 
     -- Clear all debug logs to start fresh for this session
     DEBUG.clearAllLogs()
@@ -110,9 +108,9 @@ function onLoad(saved_data)
     -- Initialize scenes module (loads default or saved scene)
     Scenes.onLoad()
 
-    -- Load and display UI
-    -- TODO: Replace HUD_XML_PLACEHOLDER with actual XML content from ui/hud.xml
-    UI.setXml(HUD_XML_PLACEHOLDER)
+    -- UI XML is set by TTS Tools extension from bundled .tts/objects/Global.xml
+    -- Inject dynamic spotlight rows into the LIGHT_TABLE_ROWS placeholder
+    LightDebug.refreshLightDebugPanel()
 
     -- Update UI displays with current state
     updateUIDisplays()
@@ -253,6 +251,16 @@ end
     These functions are called by UI buttons via onClick attributes in the XML.
 ]]
 
+--- Select storyteller panel (mutually exclusive: one panel open at a time)
+-- Used by toggle buttons (toggle_lighting, toggle_scenes, etc.) in bottom-right bar
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID (e.g., "toggle_lighting")
+function HUD_selectStorytellerPanel(player, button, id)
+    local panelKey = string.gsub(id, "^toggle_", "")
+    UIH.selectStorytellerPanel(panelKey)
+end
+
 --- Toggle panel visibility (collapse/expand)
 -- Used by toggle buttons (toggleElem_*) in the UI
 -- @param player Player The player who clicked the button
@@ -352,7 +360,7 @@ function HUD_saveState(player, button, id)
     local stateStr = JSON.encode(state)
 
     print("HUD: Game state saved by " .. player.color)
-    broadcastToColor("Game state saved successfully.", {0, 1, 0}, player.color)
+    broadcastToColor("Game state saved successfully.", player.color, {0, 1, 0})
 end
 
 --- Toggle zones active/inactive
@@ -366,13 +374,46 @@ function HUD_toggleZones(player, button, id)
 
     if zonesActive == true then
         Z.activateZones()
-        broadcastToColor("Zones activated.", {0, 1, 0}, player.color)
+        broadcastToColor("Zones activated.", player.color, {0, 1, 0})
     else
         Z.deactivateZones()
-        broadcastToColor("Zones deactivated.", {1, 0, 0}, player.color)
+        broadcastToColor("Zones deactivated.", player.color, {1, 0, 0})
     end
 
     print("HUD: Zones toggled by " .. player.color)
+end
+
+--- Update a spotlight's Color, Range, Angle, Intensity from the light debug panel
+-- Called when the "Update" button is clicked for a specific light row
+-- @param player Player The player who clicked the button
+-- @param value string The GUID of the light object (passed from onClick)
+-- @param id string The UI element ID (e.g., "lightUpdate_4148ba")
+function HUD_lightUpdate(player, value, id)
+    local guid = value
+    if type(guid) ~= "string" or guid == "" then
+        broadcastToColor("Light Debug: Invalid GUID.", player.color, {1, 0, 0})
+        return
+    end
+    local colorVal = UI.getValue("lightColor_" .. guid) or ""
+    local rangeVal = UI.getValue("lightRange_" .. guid) or ""
+    local angleVal = UI.getValue("lightAngle_" .. guid) or ""
+    local intensityVal = UI.getValue("lightIntensity_" .. guid) or ""
+    local success = LightDebug.applyLightUpdate(guid, colorVal, rangeVal, angleVal, intensityVal)
+    if success then
+        broadcastToColor("Light updated.", player.color, {0, 1, 0})
+    else
+        broadcastToColor("Light Debug: Failed to update light.", player.color, {1, 0, 0})
+    end
+end
+
+--- Refresh the light debug panel (repopulate the spotlight list)
+-- Called when the "Refresh" button is clicked; rescans all objects for spotlights
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID (e.g., "lightDebugRefresh")
+function HUD_lightRefresh(player, button, id)
+    LightDebug.refreshLightDebugPanel()
+    broadcastToColor("Light debug panel refreshed.", player.color, {0, 1, 0})
 end
 
 --- Log current game state to console (debug function)
@@ -385,7 +426,7 @@ function HUD_logState(player, button, id)
     print("=== GAME STATE ===")
     print(JSON.encode_pretty(state))
     print("==================")
-    broadcastToColor("Game state logged to console.", {0, 1, 1}, player.color)
+    broadcastToColor("Game state logged to console.", player.color, {0, 1, 1})
 end
 
 --[[
@@ -424,6 +465,456 @@ end
 -- Load additional modules that need global exposure
 G = require("lib.guids")
 L = require("core.lighting")
+LightDebug = require("core.light_debug")
+
+end)
+__bundle_register("core.light_debug", function(require, _LOADED, __bundle_register, __bundle_modules)
+--[[
+    Light Debug Panel Module (core/light_debug.ttslua)
+
+    Provides a debugging panel for the Black player's HUD to inspect and edit
+    all spotlight objects in the game. Uses structure-based detection: scans every
+    object for a Light component at children[1].children[2].components[2] and
+    confirms it has spotlight-specific properties (e.g. spotAngle). No name or
+    pre-registration required.
+
+    Functions:
+    - findAllSpotlights(): Scans all objects by hierarchy + spotAngle, returns spotlights
+    - getLightData(obj): Extracts name, position, rotation, color, range, angle, intensity
+    - parseGMNotes(gmNotes): Parses Range, Angle, Intensity, Enabled from GMNotes
+    - applyLightUpdate(guid, colorStr, range, angle, intensity): Applies edits to a light
+    - buildLightTableXML(lights): Builds XML table rows for the HUD panel
+    - refreshLightDebugPanel(): Scans lights, builds XML, merges into HUD, updates UI
+]]
+
+local LightDebug = {}
+
+-- Placeholder element in the XML that gets replaced with dynamic table rows
+-- Using Panel element (not comment) so it survives TTS XML serialize/deserialize
+-- Search for id attribute (attribute order may vary in TTS serialization)
+local LIGHT_TABLE_PLACEHOLDER_ID = "lightTableRowsPlaceholder"
+
+-- ============================================================================
+-- LIGHT IDENTIFICATION AND DATA EXTRACTION
+-- ============================================================================
+
+--- Checks if a component is a real Unity Light (spotlight) by requiring multiple Light-specific properties.
+-- Reduces false positives: non-Light components rarely have spotAngle AND range AND intensity.
+-- @param comp Component The component to validate
+-- @return boolean True if component has all required Light properties
+local function isRealLightComponent(comp)
+    if not comp or not comp.get then
+        return false
+    end
+    local spotAngle = comp.get("spotAngle")
+    local range = comp.get("range")
+    local intensity = comp.get("intensity")
+    -- Unity Light (spotlight) has spotAngle, range, intensity - all numbers
+    return type(spotAngle) == "number"
+        and type(range) == "number"
+        and type(intensity) == "number"
+end
+
+--- Finds a spotlight component in an object using TTS getComponentsInChildren
+-- Only searches for components named "Light" (no fallback to all components - that caused false positives).
+-- Validates with isRealLightComponent to require spotAngle, range, intensity.
+-- @param obj Object The root object (e.g. Custom_Assetbundle)
+-- @return Component|nil The first valid Light component, or nil
+local function getLightComponent(obj)
+    if obj == nil then
+        return nil
+    end
+    if not obj.getComponentsInChildren then
+        return nil
+    end
+    -- Only use "Light" filter - do NOT fall back to all components (causes false positives)
+    local ok, lights = pcall(function() return obj.getComponentsInChildren("Light") end)
+    if not ok or not lights or #lights == 0 then
+        return nil
+    end
+    for _, comp in ipairs(lights) do
+        if isRealLightComponent(comp) then
+            return comp
+        end
+    end
+    return nil
+end
+
+--- Checks if an object is a spotlight by structure only (no name checks)
+-- Recursively scans the object hierarchy for a component with spotAngle
+-- @param obj Object The object to check
+-- @return boolean True if object has a spotlight component anywhere in its tree
+local function isSpotlight(obj)
+    return getLightComponent(obj) ~= nil
+end
+
+--- Checks if an object's name indicates it is a controllable light (not a decorative prop).
+-- Excludes e.g. "Signal Fire Pink", "Signal Candle Brown" - props with light for glow effect.
+-- Includes e.g. "GM Light", "PLAYER_LIGHT_RED", "Main Light LEFT".
+-- @param obj Object The object to check
+-- @return boolean True if name contains "light" (case-insensitive)
+local function hasLightInName(obj)
+    if obj == nil then return false end
+    local name = ""
+    local data = obj.getData and obj.getData()
+    if data and data.Nickname and data.Nickname ~= "" then
+        name = data.Nickname
+    elseif obj.getName and obj.getName() then
+        name = obj.getName() or ""
+    end
+    return string.find(string.lower(name), "light") ~= nil
+end
+
+--- Splits a string by newlines into an array
+-- @param input string The string to split
+-- @return table Array of non-empty lines
+local function splitLines(input)
+    local outputs = {}
+    for output in (input or ""):gmatch("[^\n]+") do
+        table.insert(outputs, output)
+    end
+    return outputs
+end
+
+--- Parses GMNotes string for Range, Angle, Intensity, Enabled
+-- @param gmNotes string The GMNotes content
+-- @return table {range, angle, intensity, enabled}
+local function parseGMNotes(gmNotes)
+    local result = { range = nil, angle = nil, intensity = nil, enabled = true }
+    for _, line in ipairs(splitLines(gmNotes)) do
+        local _, _, value = string.find(line, ":%s*(.+)$")
+        if value then
+            if string.match(line, "^Range:") then
+                result.range = tonumber(value)
+            elseif string.match(line, "^Angle:") then
+                result.angle = tonumber(value)
+            elseif string.match(line, "^Intensity:") then
+                result.intensity = tonumber(value)
+            elseif string.match(line, "^Enabled:") then
+                result.enabled = (value == "true")
+            end
+        end
+    end
+    return result
+end
+
+--- Converts a TTS Color to "r,g,b" string (0-1 range)
+-- @param color Color TTS Color object
+-- @return string "r,g,b" format
+local function colorToRgbString(color)
+    if color == nil then
+        return "1,1,1"
+    end
+    local r = (color.r or color[1] or 1)
+    local g = (color.g or color[2] or 1)
+    local b = (color.b or color[3] or 1)
+    return string.format("%.2f,%.2f,%.2f", r, g, b)
+end
+
+--- Parses "r,g,b" or "r g b" string to Color (0-1 range)
+-- @param str string Input like "0.76,0.76,0.76"
+-- @return Color|nil TTS Color or nil if invalid
+local function parseColorString(str)
+    if str == nil or type(str) ~= "string" then
+        return nil
+    end
+    local parts = {}
+    for part in string.gmatch(str, "[^,%s]+") do
+        table.insert(parts, tonumber(part))
+    end
+    if #parts >= 3 then
+        local r = math.max(0, math.min(1, parts[1] or 1))
+        local g = math.max(0, math.min(1, parts[2] or 1))
+        local b = math.max(0, math.min(1, parts[3] or 1))
+        return Color(r, g, b)
+    end
+    return nil
+end
+
+--- Rounds a number to one decimal place
+-- @param n number
+-- @return string String representation rounded to 1 decimal
+local function round1(n)
+    if n == nil then return "0" end
+    return string.format("%.1f", tonumber(n) or 0)
+end
+
+--- Formats position as "{x, y, z}"
+local function formatPosition(pos)
+    if pos == nil then return "{0, 0, 0}" end
+    local x = pos.x or pos[1] or 0
+    local y = pos.y or pos[2] or 0
+    local z = pos.z or pos[3] or 0
+    return "{" .. round1(x) .. ", " .. round1(y) .. ", " .. round1(z) .. "}"
+end
+
+--- Formats rotation as "{x, y, z}" (degrees)
+local function formatRotation(rot)
+    if rot == nil then return "{0, 0, 0}" end
+    local x = rot.x or rot[1] or 0
+    local y = rot.y or rot[2] or 0
+    local z = rot.z or rot[3] or 0
+    return "{" .. round1(x) .. ", " .. round1(y) .. ", " .. round1(z) .. "}"
+end
+
+-- ============================================================================
+-- PUBLIC API
+-- ============================================================================
+
+--- Finds all spotlight objects in the game
+-- Scans getObjects() recursively for any object with a component that has spotAngle
+-- @return table Array of spotlight objects
+function LightDebug.findAllSpotlights()
+    local allObjects = getObjects()
+    if allObjects == nil then
+        print("[LightDebug] getObjects() returned nil")
+        return {}
+    end
+    -- Use pairs() since getObjects() may return non-sequential keys
+    local count = 0
+    for _ in pairs(allObjects) do count = count + 1 end
+    if count == 0 then
+        print("[LightDebug] getObjects() returned empty table")
+        return {}
+    end
+    local lights = {}
+    for _, obj in pairs(allObjects) do
+        -- Must have a Light component AND "light" in the name (excludes Signal Fire, Signal Candle, etc.)
+        if isSpotlight(obj) and hasLightInName(obj) then
+            table.insert(lights, obj)
+        end
+    end
+    local names = {}
+    for _, obj in ipairs(lights) do
+        local data = obj.getData and obj.getData()
+        local n = (data and data.Nickname and data.Nickname ~= "" and data.Nickname) or (obj.getName and obj.getName()) or (obj.getGUID and obj.getGUID()) or "?"
+        table.insert(names, tostring(n))
+    end
+    print("[LightDebug] Found " .. #lights .. " spotlight(s): " .. table.concat(names, ", "))
+    return lights
+end
+
+--- Extracts display data from a spotlight object
+-- Nickname from getData().Nickname, else getName(). Position/rotation from getPosition/getRotation.
+-- @param obj Object The spotlight object
+-- @return table {guid, name, position, rotation, color, range, angle, intensity}
+function LightDebug.getLightData(obj)
+    if obj == nil then
+        return nil
+    end
+    local guid = obj.getGUID and obj.getGUID() or ""
+    local nickname = "Unknown"
+    local data = obj.getData and obj.getData()
+    if data and data.Nickname and data.Nickname ~= "" then
+        nickname = data.Nickname
+    elseif obj.getDescription and obj.getDescription() and obj.getDescription() ~= "" then
+        nickname = obj.getDescription()
+    elseif obj.getName and obj.getName() and obj.getName() ~= "" then
+        nickname = obj.getName()
+    end
+
+    local pos = obj.getPosition and obj.getPosition() or {0, 0, 0}
+    local rot = obj.getRotation and obj.getRotation() or {0, 0, 0}
+    local color = obj.getColorTint and obj.getColorTint() or Color.White
+    local gmParsed = parseGMNotes(obj.getGMNotes and obj.getGMNotes() or "")
+    local range = gmParsed.range
+    local angle = gmParsed.angle
+    local intensity = gmParsed.intensity
+
+    if range == nil or angle == nil or intensity == nil then
+        local comp = getLightComponent(obj)
+        if comp then
+            range = range or comp.get and comp.get("range") or 128
+            angle = angle or comp.get and comp.get("spotAngle") or 90
+            intensity = intensity or comp.get and comp.get("intensity") or 1
+        else
+            range = range or 128
+            angle = angle or 90
+            intensity = intensity or 1
+        end
+    end
+
+    return {
+        guid = guid,
+        name = nickname,
+        position = formatPosition(pos),
+        rotation = formatRotation(rot),
+        color = colorToRgbString(color),
+        range = tostring(range or 128),
+        angle = tostring(angle or 90),
+        intensity = tostring(intensity or 1)
+    }
+end
+
+--- Applies updates from the debug panel to a spotlight
+-- Updates GMNotes, ColorTint, then calls the light's apply() function
+-- @param guid string The light object's GUID
+-- @param colorStr string Color as "r,g,b"
+-- @param rangeStr string Range value
+-- @param angleStr string Angle value (spotAngle)
+-- @param intensityStr string Intensity value
+-- @return boolean Success
+function LightDebug.applyLightUpdate(guid, colorStr, rangeStr, angleStr, intensityStr)
+    local obj = getObjectFromGUID(guid)
+    if obj == nil then
+        print("LightDebug: Object not found for GUID " .. tostring(guid))
+        return false
+    end
+    if not isSpotlight(obj) then
+        print("LightDebug: Object " .. tostring(guid) .. " is not a spotlight")
+        return false
+    end
+    local comp = getLightComponent(obj)
+    if comp == nil then
+        print("LightDebug: Could not get light component for " .. tostring(guid))
+        return false
+    end
+    local color = parseColorString(colorStr)
+    if color then
+        obj.setColorTint(color)
+        comp.set("color", color)
+    end
+    local range = tonumber(rangeStr)
+    local angle = tonumber(angleStr)
+    local intensity = tonumber(intensityStr)
+    if range ~= nil then
+        comp.set("range", range)
+    end
+    if angle ~= nil then
+        comp.set("spotAngle", angle)
+    end
+    if intensity ~= nil then
+        comp.set("intensity", intensity)
+    end
+    -- Update GMNotes for lights that use that pattern (preserves Enabled)
+    local gmNotes = obj.getGMNotes() or ""
+    local enabled = "true"
+    for _, line in ipairs(splitLines(gmNotes)) do
+        if string.match(line, "^Enabled:") then
+            local _, _, val = string.find(line, ":%s*(.+)$")
+            enabled = (val == "true") and "true" or "false"
+            break
+        end
+    end
+    local newNotes = string.format("Range: %s\nAngle: %s\nIntensity: %s\nEnabled: %s",
+        tostring(range or ""),
+        tostring(angle or ""),
+        tostring(intensity or ""),
+        enabled
+    )
+    obj.setGMNotes(newNotes)
+    if obj.call and type(obj.call) == "function" then
+        local ok = pcall(function()
+            obj.call("apply")
+        end)
+        if not ok then
+            -- apply() may not exist on all lights; that's fine
+        end
+    end
+    return true
+end
+
+--- Builds the XML string for the light table rows (TableLayout Row/Cell structure)
+-- Each row: Name, Position, Rotation, Color (InputField), Range (InputField),
+--           Angle (InputField), Intensity (InputField), Update Button
+-- @param lights table Array of light data tables from getLightData
+-- @return string XML fragment (Row elements to replace placeholder)
+function LightDebug.buildLightTableXML(lights)
+    if lights == nil or #lights == 0 then
+        return [[<Row preferredHeight="22"><Cell columnSpan="8"><Text fontSize="9" color="#CCAA00">No spotlight objects found.</Text></Cell></Row>]]
+    end
+    local rows = {}
+    for i, ld in ipairs(lights) do
+        local safeName = (ld.name or "Unknown"):gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
+        local xml = string.format([[
+<Row preferredHeight="22">
+  <Cell><Text fontSize="8" color="#FFD700">%s</Text></Cell>
+  <Cell><Text fontSize="8" color="#E6C200">%s</Text></Cell>
+  <Cell><Text fontSize="8" color="#CCAA00">%s</Text></Cell>
+  <Cell overrideGlobalCellPadding="true" padding="0 0 0 0"><InputField id="lightColor_%s" fontSize="11" textColor="#000000" placeholder="r,g,b" padding="0 0 0 0">%s</InputField></Cell>
+  <Cell overrideGlobalCellPadding="true" padding="0 0 0 0"><InputField id="lightRange_%s" fontSize="11" textColor="#000000" placeholder="R" padding="0 0 0 0">%s</InputField></Cell>
+  <Cell overrideGlobalCellPadding="true" padding="0 0 0 0"><InputField id="lightAngle_%s" fontSize="11" textColor="#000000" placeholder="A" padding="0 0 0 0">%s</InputField></Cell>
+  <Cell overrideGlobalCellPadding="true" padding="0 0 0 0"><InputField id="lightIntensity_%s" fontSize="11" textColor="#000000" placeholder="I" padding="0 0 0 0">%s</InputField></Cell>
+  <Cell><Button id="lightUpdate_%s" onClick="HUD_lightUpdate('%s')" preferredWidth="24" preferredHeight="20" minWidth="24" minHeight="20" fontSize="10" tooltip="Update">✅</Button></Cell>
+</Row>]],
+            safeName,
+            ld.position or "{0,0,0}",
+            ld.rotation or "{0,0,0}",
+            ld.guid, ld.color or "1,1,1",
+            ld.guid, ld.range or "128",
+            ld.guid, ld.angle or "90",
+            ld.guid, ld.intensity or "1",
+            ld.guid, ld.guid or ""
+        )
+        table.insert(rows, xml)
+    end
+    return table.concat(rows, "\n")
+end
+
+--- Refreshes the light debug panel in the HUD
+-- Gets current UI XML, replaces LIGHT_TABLE_ROWS placeholder with table content, sets XML
+-- Call after UI.setXml() with the base HUD that includes the placeholder
+function LightDebug.refreshLightDebugPanel()
+    local xml = UI.getXml()
+    if xml == nil or xml == "" then
+        print("[LightDebug] Cannot refresh: UI XML is empty or nil")
+        return
+    end
+    local lights = LightDebug.findAllSpotlights()
+    print("[LightDebug] Found " .. tostring(#lights) .. " spotlight(s)")
+    for i, obj in ipairs(lights) do
+        local guid = obj.getGUID and obj.getGUID() or "?"
+        local name = (obj.getData and obj.getData() or {}).Nickname or obj.getName and obj.getName() or "?"
+        print(string.format("[LightDebug]   [%d] guid=%s name=%s", i, guid, name))
+    end
+    local dataList = {}
+    for _, obj in ipairs(lights) do
+        local data = LightDebug.getLightData(obj)
+        if data then
+            table.insert(dataList, data)
+        end
+    end
+    local tableXml = LightDebug.buildLightTableXML(dataList)
+    -- Replace placeholder Row element (TableLayout expects Row children)
+    -- Search by id= since attribute order may vary in TTS serialization
+    local idPattern = 'id="' .. LIGHT_TABLE_PLACEHOLDER_ID .. '"'
+    local idIdx = xml:find(idPattern, 1, true)
+    if idIdx then
+        -- Find tag start: last "<Row" before idIdx (our placeholder)
+        local startIdx = nil
+        local pos = 1
+        while true do
+            local found = xml:find("<Row", pos, true)
+            if not found or found > idIdx then break end
+            startIdx = found
+            pos = found + 1
+        end
+        -- Find matching closing tag </Row> (Row may have Cell children)
+        local endTag = "</Row>"
+        local endIdx = xml:find(endTag, idIdx, true)
+        if not endIdx then
+            print("[LightDebug] Placeholder Row malformed - no closing </Row>")
+            return
+        end
+        endIdx = endIdx + #endTag - 1  -- Include the ">"
+        local before = xml:sub(1, startIdx - 1)
+        local after = xml:sub(endIdx + 1)
+        local newXml = before .. tableXml .. after
+        local setOk, setErr = pcall(function() UI.setXml(newXml) end)
+        if not setOk then
+            print("[LightDebug] UI.setXml failed: " .. tostring(setErr))
+        end
+    else
+        print("[LightDebug] Placeholder not found in UI XML - table rows not injected")
+    end
+end
+
+--- Returns the placeholder element id used in XML (for injection)
+function LightDebug.getPlaceholder()
+    return "lightTableRowsPlaceholder"
+end
+
+return LightDebug
 
 end)
 __bundle_register("core.lighting", function(require, _LOADED, __bundle_register, __bundle_modules)
@@ -1209,18 +1700,18 @@ __bundle_register("lib.constants", function(require, _LOADED, __bundle_register,
 
 local C = {}
 
--- Storyteller ID (hard-coded). Replace with your actual Steam ID.
+-- Storyteller ID (Steam ID). Same as Kings Dilemma C.AdminID for reuse across TTS projects.
 -- All other player IDs are extracted dynamically when players choose a seat color.
-C.StorytellerID = "@@@STORYTELLER_ID@@@"
+C.StorytellerID = "76561198002132577"
 C.PlayerIDs = {
-  Storyteller = "@@@STORYTELLER_ID@@@"
+  Storyteller = "76561198002132577"
 }
 
 -- Static Player Data
 -- Keyed by player ID (steam_id). Storyteller uses C.StorytellerID. Other players are added by the GM when they set up character details (after a player joins and selects a seat).
 -- When a new player selects a seat, their steam_id is extracted and a minimal dynamic entry is created in gameState.playerData. The GM is notified to add full character data here.
 C.PlayerData = {
-    [C.PlayerIDs.Storyteller] = {
+    [C.StorytellerID] = {
       color = "Black",
       playerName = "Storyteller",
       charName = "Storyteller"
@@ -1531,14 +2022,37 @@ function S.mergeDefaults(target, defaults)
     end
 end
 
+--- Sanitizes saved playerData by removing keys that belong in C.PlayerData (static).
+-- Fixes corrupted saves where static data was incorrectly persisted.
+-- @param statePlayerData table The playerData from saved state (modified in place)
+local function sanitizeSavedPlayerData(statePlayerData)
+    if not statePlayerData or type(statePlayerData) ~= "table" then
+        return
+    end
+    for playerID, dynamicData in pairs(statePlayerData) do
+        if type(dynamicData) == "table" and C.PlayerData[playerID] then
+            local staticData = C.PlayerData[playerID]
+            for key, _ in pairs(dynamicData) do
+                if staticData[key] ~= nil then
+                    print("[State] Sanitizing: Removing static key '" .. tostring(key) .. "' from saved playerData for player '" .. tostring(playerID) .. "'")
+                    dynamicData[key] = nil
+                end
+            end
+        end
+    end
+end
+
 --- Merges C.PlayerData on top of gameState.playerData with conflict detection
 -- Static character data (from constants) is merged on top of dynamic state data.
 -- Players only in gameState.playerData (new players not yet set up) get minimal merged data.
--- Throws an error if there are conflicts (indicating dynamic data was incorrectly saved).
+-- Conflicts are resolved by preferring static data (sanitization should prevent recurrence).
 -- @param statePlayerData table The playerData from gameState (dynamic values only)
 -- @return table Complete player data with static and dynamic merged
 function S.mergePlayerData(statePlayerData)
     local merged = {}
+
+    -- Sanitize saved data first: remove any static keys that were incorrectly persisted
+    sanitizeSavedPlayerData(statePlayerData)
 
     -- First pass: merge C.PlayerData (static) with gameState.playerData (dynamic)
     for playerID, staticData in pairs(C.PlayerData) do
@@ -1547,13 +2061,11 @@ function S.mergePlayerData(statePlayerData)
         if dynamicData then
             for key, dynamicValue in pairs(dynamicData) do
                 if staticData[key] ~= nil then
-                    error(string.format(
-                        "CONFLICT: Player ID '%s' has key '%s' in both C.PlayerData (static: %s) and gameState.playerData (dynamic: %s). " ..
-                        "Dynamic values should only contain gameplay-state values, not character data.",
-                        tostring(playerID), tostring(key), tostring(staticData[key]), tostring(dynamicValue)
-                    ))
+                    -- Skip conflicting key: static wins (should be rare after sanitization)
+                    print("[State] Skipping dynamic key '" .. tostring(key) .. "' for player '" .. tostring(playerID) .. "' (using static value)")
+                else
+                    merged[playerID][key] = dynamicValue
                 end
-                merged[playerID][key] = dynamicValue
             end
         end
     end
@@ -1699,10 +2211,12 @@ local function buildSaveState()
                         if fieldType == "number" then
                             dynamicPlayerData[fieldName] = fieldVal
                         elseif fieldType == "string" then
-                            -- Try to convert string numbers to actual numbers
+                            -- color is player seat (e.g. "Black") - save as string; hunger may be numeric string
                             local num = tonumber(fieldVal)
                             if num then
                                 dynamicPlayerData[fieldName] = num
+                            elseif fieldName == "color" then
+                                dynamicPlayerData[fieldName] = fieldVal
                             else
                                 print("[WARNING] buildSaveState: Player ID '" .. tostring(playerID) .. "' " .. fieldName .. " is non-numeric string: " .. tostring(fieldVal))
                             end
@@ -2378,6 +2892,7 @@ end
 -- @usage local specificCard = U.findAboveObject(card, targetCardObj)
 -- @usage local objects = U.findAboveObject(card, nil, {box=true, far=true})
 function U.findAboveObject(obj, testFunc, params)
+  if obj == nil then return {} end
 	-- params:  invert = true/false
 	-- 					box = true/false (defaults to ray)
 	--					far = true/false (default limits distance to 5)
@@ -9439,11 +9954,13 @@ function DEBUG.clearAllLogs()
     logCache = {}
 
     -- Clear each log file by writing session header (overwrite mode)
+    -- Note: test_results is NOT written here to avoid TTS Tools opening it on every Save & Play.
+    -- It gets cleared when runTests() starts, or on first logTestToFile() call.
     writeToFile("debug_log", sessionHeader, "none", false)
     writeToFile("game_state", sessionHeader, "none", false)
     writeToFile("scene_info", sessionHeader, "none", false)
     writeToFile("zone_info", sessionHeader, "none", false)
-    writeToFile("test_results", sessionHeader, "none", false)
+    logCache["test_results"] = sessionHeader  -- Clear cache only; no file write on load
 
     print("DEBUG: All log files cleared (new session started)")
 end
@@ -11522,6 +12039,54 @@ function UIHelpers.isXmlElementExpanded(elemID)
 
     local currentActive = UI.getAttribute(elemID, "active")
     return string.lower(tostring(currentActive)) == "true"
+end
+
+-- ============================================================================
+-- STORYTELLER PANEL TOGGLE
+-- ============================================================================
+
+--- Panel keys and their corresponding panel/toggle IDs for the storyteller HUD.
+local STORYTELLER_PANELS = {
+    lighting = { panel = "panel_lighting", toggle = "toggle_lighting" },
+    scenes = { panel = "panel_scenes", toggle = "toggle_scenes" },
+    pcs = { panel = "panel_pcs", toggle = "toggle_pcs" },
+    phases = { panel = "panel_phases", toggle = "toggle_phases" },
+}
+
+--- Wrapper for the pop-out content (all 4 panels). Hidden when none selected.
+local STORYTELLER_CONTENT_AREA_ID = "storytellerContentArea"
+
+--- Inactive toggle button colors (dark grey/gold border)
+local TOGGLE_COLORS_INACTIVE = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+
+--- Active toggle button colors (bright gold highlight)
+local TOGGLE_COLORS_ACTIVE = "#B8860B|#FFD700|#FFA500|#B8860B"
+
+--- Selects a storyteller panel (mutually exclusive: only one open at a time).
+-- Shows the content area, hides all panels, shows the selected one, and updates toggle button highlight.
+-- Mirrors the admin arrow-toggle pattern: content pops out when a button is clicked.
+--
+-- @param panelKey string One of: "lighting", "scenes", "pcs", "phases"
+--
+-- @usage UIHelpers.selectStorytellerPanel("lighting")
+function UIHelpers.selectStorytellerPanel(panelKey)
+    if type(panelKey) ~= "string" then
+        error("UIHelpers.selectStorytellerPanel: panelKey must be a string", 2)
+    end
+
+    local selected = STORYTELLER_PANELS[panelKey]
+    if selected == nil then
+        return
+    end
+
+    -- Show the content area (like expanding the admin arrow panel)
+    UI.setAttribute(STORYTELLER_CONTENT_AREA_ID, "active", "true")
+
+    -- Hide all panels and set the selected one visible; update toggle colors
+    for key, ids in pairs(STORYTELLER_PANELS) do
+        UI.setAttribute(ids.panel, "active", key == panelKey and "true" or "false")
+        UI.setAttribute(ids.toggle, "colors", key == panelKey and TOGGLE_COLORS_ACTIVE or TOGGLE_COLORS_INACTIVE)
+    end
 end
 
 -- ============================================================================

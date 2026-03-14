@@ -260,6 +260,7 @@ end
 -- @usage local specificCard = U.findAboveObject(card, targetCardObj)
 -- @usage local objects = U.findAboveObject(card, nil, {box=true, far=true})
 function U.findAboveObject(obj, testFunc, params)
+  if obj == nil then return {} end
 	-- params:  invert = true/false
 	-- 					box = true/false (defaults to ray)
 	--					far = true/false (default limits distance to 5)

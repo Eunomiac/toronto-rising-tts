@@ -1,4 +1,4 @@
 function onLoad()
-  self.setInvisibleTo({"Orange"})
+  self.setInvisibleTo({"Pink"})
   self.interactable = false
 end

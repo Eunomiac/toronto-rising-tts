@@ -1,1 +1,486 @@
-<!-- Xml UI. See documentation: https://api.tabletopsimulator.com/ui/introUI/ -->
+<!-- Main HUD - VTM5E Module -->
+<!-- This file uses XML bundling with <Include> to combine modular UI components -->
+<!-- The TTS Tools extension will bundle all includes when using "Save and Play" -->
+<!-- Keep in sync with ui/hud.xml - edit the ui/*.xml files, this file is the bundle entry -->
+
+<!-- 1. Tag-based defaults (include first) -->
+<!-- include ui/defaults_tags -->
+<!-- Tag-Based Defaults -->
+<!-- Include first; applies to elements with no class. No layout applied in this file. -->
+
+<Defaults>
+  <!-- Baseline Layout Defaults -->
+  <Image preserveAspect="true" raycastTarget="false" />
+  <VerticalLayout raycastTarget="false" />
+  <HorizontalLayout raycastTarget="false" />
+
+  <!-- Button Base Styles -->
+  <Button
+    minWidth="150"
+    minHeight="30"
+    preferredWidth="150"
+    preferredHeight="30"
+    flexibleWidth="0"
+    flexibleHeight="0"
+    color="rgba(0.7,0.7,0.7,1)"
+    fontSize="16"
+    fontStyle="Bold" />
+</Defaults>
+
+<!-- include ui/defaults_tags -->
+
+<!-- 2. General shared classes -->
+<!-- include ui/defaults_classes -->
+<!-- General Shared Classes -->
+<!-- Include after defaults_tags; used across storyteller, player, shared. -->
+
+<Defaults>
+  <!-- Text Spacers -->
+  <Text class="spacer_5" color="clear" fontSize="4" />
+  <Text class="spacer_10" color="clear" fontSize="8" />
+  <Text class="spacer_15" color="clear" fontSize="16" />
+  <Text class="spacer_20" color="clear" fontSize="32" />
+
+  <!-- Panel Styles -->
+  <Panel class="panel-base" color="rgba(0, 0, 0, 0.7)" padding="10 10 10 10" />
+  <Panel class="panel-dark" color="rgba(0, 0, 0, 0.85)" padding="10 10 10 10" />
+
+  <!-- Toggle Button Panel (storyteller scaffold) -->
+  <HorizontalLayout class="buttonPanel"
+    spacing="5"
+    padding="5 5 5 5"
+    childAlignment="MiddleLeft"
+    childForceExpandWidth="false" />
+
+  <Button class="buttonPanelToggle"
+    minWidth="25"
+    minHeight="25"
+    preferredWidth="25"
+    preferredHeight="25"
+    fontSize="14"
+    text="►"
+    color="rgba(0.5, 0.5, 0.5, 1)" />
+
+  <VerticalLayout class="buttonBar"
+    spacing="5"
+    padding="5 5 5 5"
+    childAlignment="UpperLeft"
+    active="False" />
+
+  <!-- Admin/Storyteller Container (positioning overridden per use) -->
+  <VerticalLayout class="adminContainer"
+    width="400"
+    spacing="5"
+    padding="10 10 10 10"
+    rectAlignment="UpperLeft"
+    offsetXY="10 10" />
+
+  <!-- Status Display Styles -->
+  <Text class="statusText"
+    fontSize="14"
+    alignment="MiddleLeft"
+    color="#FFFFFF"
+    outline="#000000"
+    outlineSize="1 1" />
+
+  <Text class="statusLabel"
+    fontSize="14"
+    alignment="MiddleLeft"
+    color="#CCCCCC"
+    outline="#000000"
+    outlineSize="1 1" />
+
+  <!-- Stat Display (Hunger, Willpower, Health - player HUD) -->
+  <HorizontalLayout class="statDisplay"
+    spacing="10"
+    padding="5 5 5 5"
+    childAlignment="MiddleLeft"
+    childForceExpandWidth="false" />
+
+  <Text class="statLabel"
+    fontSize="16"
+    alignment="MiddleLeft"
+    color="#CCCCCC"
+    preferredWidth="100"
+    outline="#000000"
+    outlineSize="1 1" />
+
+  <Text class="statValue"
+    fontSize="18"
+    alignment="MiddleCenter"
+    color="#FFFFFF"
+    preferredWidth="50"
+    outline="#000000"
+    outlineSize="1 1"
+    fontStyle="Bold" />
+
+  <!-- Player HUD Container -->
+  <Panel class="playerHudPanel"
+    width="250"
+    height="150"
+    color="rgba(0, 0, 0, 0.7)"
+    padding="10 10 10 10"
+    rectAlignment="UpperRight"
+    offsetXY="-10 10" />
+
+  <!-- Stat Display Layout -->
+  <VerticalLayout class="playerStats"
+    spacing="8"
+    padding="5 5 5 5"
+    childAlignment="UpperLeft"
+    childForceExpandWidth="true" />
+</Defaults>
+
+<!-- include ui/defaults_classes -->
+
+<!-- 3. Storyteller HUD (Host|Black): layout + 4 panels -->
+<!-- include ui/storyteller/hud_storyteller_defaults -->
+<!-- Storyteller HUD Defaults -->
+<!-- Classes for layout elements and multi-component use. Include before hud_storyteller. -->
+
+<Defaults>
+  <!-- Storyteller root container (bottom-right) -->
+  <VerticalLayout class="storyteller_root"
+    width="520"
+    spacing="5"
+    padding="10 10 10 10"
+    rectAlignment="LowerRight"
+    offsetXY="10 10" />
+
+  <!-- Storyteller toggle button (inactive state) -->
+  <Button class="storyteller_toggleButton"
+    preferredWidth="120"
+    preferredHeight="40"
+    fontSize="12"
+    fontStyle="Bold"
+    colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+
+  <!-- Storyteller panel heading -->
+  <Text class="storyteller_heading"
+    fontSize="16"
+    color="#FFD700"
+    fontStyle="Bold" />
+</Defaults>
+
+<!-- include ui/storyteller/hud_storyteller_defaults -->
+<!-- include ui/storyteller/hud_storyteller -->
+<!-- Storyteller HUD Layout -->
+<!-- Visibility: Host|Black (Storyteller/GM) -->
+<!-- Bottom-right: toggle bar (anchor) + pop-out content with 4 panels -->
+
+<Panel padding="0 0 0 0">
+  <HorizontalLayout id="storytellerRoot" height="100%" width="100%" visibility="Host|Black" >
+
+    <!-- Left Column -->
+    <VerticalLayout id="storytellerLeftColumn" preferredWidth="200" flexibleWidth="0">
+      <Text>Left Column</Text>
+
+    </VerticalLayout>
+
+    <!-- Center Column -->
+    <VerticalLayout id="storytellerCenterColumn" preferredWidth="500" flexibleWidth="0">
+
+
+
+    </VerticalLayout>
+
+    <!-- Right Column -->
+    <VerticalLayout id="storytellerRightColumn" preferredWidth="200" flexibleWidth="0">
+
+
+
+
+
+
+  <HorizontalLayout class="buttonPanel" spacing="5" padding="5 5 5 5" childAlignment="LowerRight" childForceExpandWidth="false" childForceExpandHeight="false">
+    <!-- Pop-out content: hidden by default, shown when a panel is selected -->
+    <VerticalLayout id="storytellerContentArea" class="buttonBar" active="False" spacing="0" childAlignment="BottomRight" childForceExpandWidth="false" childForceExpandHeight="false">
+      <!-- include panel_lighting -->
+      <!-- Light Panel -->
+      <!-- Debug panel for inspecting/editing spotlights. Rows injected by LightDebug.refreshLightDebugPanel() -->
+
+      <Panel id="panel_lighting" active="False" color="#FFD700" padding="2 2 2 2" preferredHeight="330" flexibleHeight="0">  <!-- Gold border -->
+        <Panel color="#000000" padding="4 4 4 4">  <!-- Black background -->
+          <VerticalLayout spacing="2" padding="0 0 0 0" childForceExpandHeight="false" flexibleHeight="0" flexibleWidth="0" preferredHeight="330" preferredWidth="500" childForceExpandWidth="false">
+            <Text fontSize="9" color="#FFD700">Light Debug Panel</Text>
+            <Text fontSize="8" color="#DAA520">Color (r,g,b), Range, Angle, Intensity, Update</Text>
+            <VerticalScrollView preferredWidth="500" preferredHeight="210" minHeight="120" flexibleHeight="0" flexibleWidth="0" verticalScrollbarVisibility="AutoHide" color="#000000" scrollbarBackgroundColor="#333333">
+              <TableLayout id="lightTableContainer" columnWidths="70 70 55 55 35 35 35 28" cellBackgroundColor="#000000" rowBackgroundColor="#000000" cellPadding="0 0 0 0" cellSpacing="2" autoCalculateHeight="true">
+                <Row preferredHeight="22">
+                  <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Name</Text></Cell>
+                  <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Pos</Text></Cell>
+                  <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Rot</Text></Cell>
+                  <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Color</Text></Cell>
+                  <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Range</Text></Cell>
+                  <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Angle</Text></Cell>
+                  <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Int</Text></Cell>
+                  <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Upd</Text></Cell>
+                </Row>
+                <Row id="lightTableRowsPlaceholder" preferredHeight="0"><Cell columnSpan="8"/></Row>
+              </TableLayout>
+            </VerticalScrollView>
+            <Button id="lightDebugRefresh" onClick="HUD_lightRefresh" preferredWidth="80" fontSize="9" color="#444444">Refresh</Button>
+          </VerticalLayout>
+        </Panel>
+      </Panel>
+
+      <!-- include panel_lighting -->
+      <!-- include panel_scenes -->
+      <!-- Scenes Panel -->
+      <!-- Scene preset controls (Default, Elysium, Alley, etc.) -->
+
+      <VerticalLayout id="panel_scenes" active="False" spacing="5" padding="10 10 10 10">
+        <Text class="storyteller_heading">Scene Controls</Text>
+        <Button id="scene_default" onClick="HUD_changeScene">Default</Button>
+        <Button id="scene_elysium" onClick="HUD_changeScene">Elysium</Button>
+        <Button id="scene_alley" onClick="HUD_changeScene">Alley</Button>
+        <Button id="scene_haven" onClick="HUD_changeScene">Haven</Button>
+        <Button id="scene_tension" onClick="HUD_changeScene">Tension</Button>
+        <Button id="scene_combat" onClick="HUD_changeScene">Combat</Button>
+        <Button id="scene_suspicion" onClick="HUD_changeScene">Suspicion</Button>
+        <Button id="scene_social" onClick="HUD_changeScene">Social</Button>
+      </VerticalLayout>
+
+      <!-- include panel_scenes -->
+      <!-- include panel_pcs -->
+      <!-- PCs Panel -->
+      <!-- Player/character controls. Placeholder for future expansion. -->
+
+      <VerticalLayout id="panel_pcs" active="False" spacing="5" padding="10 10 10 10">
+        <Text class="storyteller_heading">PCs</Text>
+        <Text fontSize="12" color="#AAAAAA">Player/character controls - coming soon</Text>
+      </VerticalLayout>
+
+      <!-- include panel_pcs -->
+      <!-- include panel_phases -->
+      <!-- Phases Panel -->
+      <!-- Phase controls, utilities, debug. Current phase/scene display. -->
+
+      <VerticalLayout id="panel_phases" active="False" spacing="5" padding="10 10 10 10">
+        <Text class="storyteller_heading">Phase Control</Text>
+        <HorizontalLayout spacing="10" padding="5 5 5 5" childAlignment="MiddleLeft">
+          <Text fontSize="14" color="#CCCCCC" preferredWidth="120">Current Phase:</Text>
+          <Text id="currentPhaseDisplay" fontSize="14" color="#FFFFFF">Initialization</Text>
+        </HorizontalLayout>
+        <HorizontalLayout spacing="10" padding="5 5 5 5" childAlignment="MiddleLeft">
+          <Text fontSize="14" color="#CCCCCC" preferredWidth="120">Current Scene:</Text>
+          <Text id="currentSceneDisplay" fontSize="14" color="#FFFFFF">default</Text>
+        </HorizontalLayout>
+        <Button id="phase_play" onClick="HUD_advancePhase" color="#00AA00">Enter Play</Button>
+        <Button id="phase_combat" onClick="HUD_advancePhase" color="#AA0000">Enter Combat</Button>
+        <Text fontSize="14" color="#FFD700" fontStyle="Bold">Utilities</Text>
+        <Button id="utility_reset" onClick="HUD_resetGame" color="#AA0000">Reset Game</Button>
+        <Button id="utility_save" onClick="HUD_saveState" color="#00AA00">Save State</Button>
+        <Text fontSize="14" color="#FF6666" fontStyle="Bold">Debug</Text>
+        <Button id="debug_zones" onClick="HUD_toggleZones" color="#00FF00">Toggle Zones</Button>
+        <Button id="debug_logState" onClick="HUD_logState" color="#6666FF">Log State</Button>
+      </VerticalLayout>
+
+      <!-- include panel_phases -->
+    </VerticalLayout>
+
+    <!-- Anchor: vertical stack of 4 toggle buttons (always visible) -->
+    <HorizontalLayout id="storytellerButtonBar" flexibleHeight="0" spacing="2" ignoreLayout="true" width="600" height="30" rectAlignment="LowerRight" offsetXY="-30 0" rotation="0 0 -90">
+      <Button id="toggle_phases" class="storyteller_toggleButton" onClick="HUD_selectStorytellerPanel" text="PHASES"/>
+      <Button id="toggle_pcs" class="storyteller_toggleButton" onClick="HUD_selectStorytellerPanel" text="PCs" />
+      <Button id="toggle_scenes" class="storyteller_toggleButton" onClick="HUD_selectStorytellerPanel" text="SCENES" />
+      <Button id="toggle_lighting" class="storyteller_toggleButton" onClick="HUD_selectStorytellerPanel" text="LIGHTING" />
+    </HorizontalLayout>
+  </HorizontalLayout>
+
+
+    </VerticalLayout>
+</HorizontalLayout>
+</Panel>
+<!-- include ui/storyteller/hud_storyteller -->
+
+<!-- 4. Player HUD (per-color panels) -->
+<!-- include ui/player/hud_player -->
+<!-- Player HUD Panels -->
+<!-- Visible per player color -->
+
+<!-- Player HUD Panel - Red Player -->
+<Panel id="playerHud_Red" class="playerHudPanel" visibility="Red">
+  <VerticalLayout class="playerStats">
+    <Text class="statLabel" fontSize="20" color="#FFFFFF" fontStyle="Bold">Character Stats</Text>
+    <Text class="spacer_5"></Text>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Hunger:</Text>
+      <Text id="hungerVal_Red" class="statValue" color="#CC0000">0</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Willpower:</Text>
+      <Text id="willpowerVal_Red" class="statValue" color="#0066FF">5</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Health:</Text>
+      <Text id="healthVal_Red" class="statValue" color="#00AA00">7</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 7</Text>
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- Player HUD Panel - Brown Player -->
+<Panel id="playerHud_Brown" class="playerHudPanel" visibility="Brown">
+  <VerticalLayout class="playerStats">
+    <Text class="statLabel" fontSize="20" color="#FFFFFF" fontStyle="Bold">Character Stats</Text>
+    <Text class="spacer_5"></Text>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Hunger:</Text>
+      <Text id="hungerVal_Brown" class="statValue" color="#CC0000">0</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Willpower:</Text>
+      <Text id="willpowerVal_Brown" class="statValue" color="#0066FF">5</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Health:</Text>
+      <Text id="healthVal_Brown" class="statValue" color="#00AA00">7</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 7</Text>
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- Player HUD Panel - Orange Player -->
+<Panel id="playerHud_Orange" class="playerHudPanel" visibility="Orange">
+  <VerticalLayout class="playerStats">
+    <Text class="statLabel" fontSize="20" color="#FFFFFF" fontStyle="Bold">Character Stats</Text>
+    <Text class="spacer_5"></Text>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Hunger:</Text>
+      <Text id="hungerVal_Orange" class="statValue" color="#CC0000">0</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Willpower:</Text>
+      <Text id="willpowerVal_Orange" class="statValue" color="#0066FF">5</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Health:</Text>
+      <Text id="healthVal_Orange" class="statValue" color="#00AA00">7</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 7</Text>
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- Player HUD Panel - Pink Player -->
+<Panel id="playerHud_Pink" class="playerHudPanel" visibility="Pink">
+  <VerticalLayout class="playerStats">
+    <Text class="statLabel" fontSize="20" color="#FFFFFF" fontStyle="Bold">Character Stats</Text>
+    <Text class="spacer_5"></Text>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Hunger:</Text>
+      <Text id="hungerVal_Pink" class="statValue" color="#CC0000">0</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Willpower:</Text>
+      <Text id="willpowerVal_Pink" class="statValue" color="#0066FF">5</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Health:</Text>
+      <Text id="healthVal_Pink" class="statValue" color="#00AA00">7</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 7</Text>
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- Player HUD Panel - Purple Player -->
+<Panel id="playerHud_Purple" class="playerHudPanel" visibility="Purple">
+  <VerticalLayout class="playerStats">
+    <Text class="statLabel" fontSize="20" color="#FFFFFF" fontStyle="Bold">Character Stats</Text>
+    <Text class="spacer_5"></Text>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Hunger:</Text>
+      <Text id="hungerVal_Purple" class="statValue" color="#CC0000">0</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Willpower:</Text>
+      <Text id="willpowerVal_Purple" class="statValue" color="#0066FF">5</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 5</Text>
+    </HorizontalLayout>
+
+    <HorizontalLayout class="statDisplay">
+      <Text class="statLabel">Health:</Text>
+      <Text id="healthVal_Purple" class="statValue" color="#00AA00">7</Text>
+      <Text class="statLabel" fontSize="12" color="#888888">/ 7</Text>
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- Pattern: playerHud_<Color>, hungerVal_<Color>, willpowerVal_<Color>, healthVal_<Color> -->
+<!-- Valid player colors: Brown, Orange, Red, Pink (Storyteller is Black) -->
+
+<!-- include ui/player/hud_player -->
+
+<!-- 5. Shared UI (dice results, scene transition overlay) -->
+<!-- include ui/shared/hud_shared -->
+<!-- Shared UI Elements -->
+<!-- Visible to all players -->
+
+<!-- Dice Results Display (shown after rolls) -->
+<Panel id="diceResultsPanel"
+  active="False"
+  width="600"
+  height="200"
+  color="rgba(0, 0, 0, 0.9)"
+  padding="20 20 20 20"
+  rectAlignment="MiddleCenter">
+
+  <VerticalLayout spacing="10" childAlignment="MiddleCenter">
+    <Text id="diceResultsPlayerName"
+      fontSize="24"
+      color="#FFD700"
+      fontStyle="Bold"
+      alignment="MiddleCenter" />
+
+    <Text id="diceResultsValues"
+      fontSize="20"
+      color="#FFFFFF"
+      alignment="MiddleCenter" />
+
+    <Text id="diceResultsMessage"
+      fontSize="18"
+      color="#00FF00"
+      alignment="MiddleCenter"
+      fontStyle="Bold" />
+  </VerticalLayout>
+</Panel>
+
+<!-- Scene Transition Overlay (optional, for dramatic effect) -->
+<Panel id="sceneTransitionOverlay"
+  active="False"
+  width="100%"
+  height="100%"
+  color="rgba(0, 0, 0, 0.8)"
+  rectAlignment="MiddleCenter">
+
+  <Text id="sceneTransitionText"
+    fontSize="32"
+    color="#FFFFFF"
+    alignment="MiddleCenter"
+    fontStyle="Bold" />
+</Panel>
+
+<!-- include ui/shared/hud_shared -->
