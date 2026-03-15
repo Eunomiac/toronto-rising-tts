@@ -30,6 +30,22 @@ C.PlayerColors = {
     "Brown", "Orange", "Red", "Pink", "Purple"
 }
 
+-- Game Phases (VTM5E / Toronto Rising)
+-- Stored in state as currentPhase; validated via U.isIn(phase, C.Phases).
+-- Player HUD: "main" = majority of gameplay (Humanity stain/heal); "end" = end-of-session (e.g. Remorse).
+C.Phases = {
+    SESSION_START = "SessionStart",
+    SCENE = "Scene",
+    DOWNTIME = "Downtime",
+    COMBAT = "Combat",
+    MEMORIAM = "Memoriam",
+    SESSION_END = "SessionEnd",
+    PLAY = "Play",
+    WAKING = "waking",
+    MAIN = "main",
+    END = "end"
+}
+
 C.CHRONICLE_DATA = {
 	PCS = {
 		lucien = {
