@@ -65,8 +65,8 @@ function onLoad(saved_data)
     Scenes.onLoad()
 
     -- UI XML is set by TTS Tools extension from bundled .tts/objects/Global.xml
-    -- LightDebug panel removed during Heritage migration
-    -- LightDebug.refreshLightDebugPanel()
+    -- Inject dynamic spotlight rows into the LIGHT_TABLE_ROWS placeholder
+    LightDebug.refreshLightDebugPanel()
 
     -- Update UI displays with current state
     UpdateUIDisplays()
@@ -205,399 +205,256 @@ end
 --[[
     UI Event Handlers
     These functions are called by UI buttons via onClick attributes in the XML.
-    Heritage admin panel migration -- see dev/HUD_FUNCTIONS.md for pre-migration reference.
 ]]
 
--- =====================================================================
--- Admin Panel: Game Phase Controls (left-side button column)
--- =====================================================================
-
---- Phase 0: Setup game board and components
-function HUD_setupGame(player, value, id)
-    broadcastToColor("HUD_setupGame: Not yet implemented.", player.color, {1, 0, 0})
+--- Select storyteller panel (mutually exclusive: one panel open at a time)
+-- Used by toggle buttons (toggle_lighting, toggle_scenes, etc.) in bottom-right bar
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID (e.g., "toggle_lighting")
+function HUD_selectStorytellerPanel(player, button, id)
+    local panelKey = string.gsub(id, "^toggle_", "")
+    UIH.selectStorytellerPanel(panelKey)
 end
 
---- Phase 1: Initialize game state and deal starting hands
-function HUD_initGame(player, value, id)
-    broadcastToColor("HUD_initGame: Not yet implemented.", player.color, {1, 0, 0})
+--- Toggle panel visibility (collapse/expand)
+-- Used by toggle buttons (toggleElem_*) in the UI
+-- @param player Player The player who clicked the button
+-- @param button string Button value (typically "-1" for single click, "-2" for double click)
+-- @param id string The UI element ID (e.g., "toggleElem_storytellerControls")
+function HUD_togglePanel(player, button, id)
+    -- Extract the element ID by removing "toggleElem_" prefix
+    local elemID = string.gsub(id, "^toggleElem_", "")
+    UIH.toggleXmlElement(elemID, button)
 end
 
---- Phase 2: Start gameplay (begin round 1)
-function HUD_startGame(player, value, id)
-    broadcastToColor("HUD_startGame: Not yet implemented.", player.color, {1, 0, 0})
+--- Change scene preset
+-- Called when a scene button is clicked (e.g., "scene_elysium")
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID (e.g., "scene_elysium")
+function HUD_changeScene(player, button, id)
+    -- Extract scene name from ID (remove "scene_" prefix)
+    local sceneName = string.gsub(id, "^scene_", "")
+
+    -- Validate scene name
+    local scene = Scenes.getScene(sceneName)
+    if scene == nil then
+        U.AlertGM("HUD_changeScene: Invalid scene name: " .. tostring(sceneName))
+        return
+    end
+
+    -- Load scene with smooth transition (2 seconds)
+    Scenes.fadeToScene(sceneName, 2.0)
+
+    -- Update UI display
+    UpdateUIDisplays()
+
+    print("HUD: Scene changed to " .. sceneName .. " by " .. player.color)
 end
 
---- End an active court vote on battleground G
-function HUD_endCourtVote(player, value, id)
-    broadcastToColor("HUD_endCourtVote: Not yet implemented.", player.color, {1, 0, 0})
+--- Advance game phase
+-- Called when a phase button is clicked (e.g., "phase_play")
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID (e.g., "phase_play")
+function HUD_advancePhase(player, button, id)
+    -- Extract phase name from ID (remove "phase_" prefix)
+    local phaseName = string.gsub(id, "^phase_", "")
+
+    -- Map UI button IDs to actual phase constants
+    local phaseMap = {
+        play = C.Phases.PLAY,
+        combat = C.Phases.COMBAT,
+        -- Add more phase mappings as needed
+    }
+
+    local targetPhase = phaseMap[phaseName]
+    if targetPhase == nil then
+        U.AlertGM("HUD_advancePhase: Invalid phase: " .. tostring(phaseName))
+        return
+    end
+
+    -- Advance phase
+    M.advancePhase(targetPhase)
+
+    -- Update UI display
+    UpdateUIDisplays()
+
+    print("HUD: Phase advanced to " .. targetPhase .. " by " .. player.color)
 end
 
---- Override the first player selection
-function HUD_overrideFirstPlayer(player, value, id)
-    broadcastToColor("HUD_overrideFirstPlayer: Not yet implemented.", player.color, {1, 0, 0})
+--- Reset game state
+-- Called when the "Reset Game" button is clicked
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_resetGame(player, button, id)
+    -- Confirm reset (optional - you might want to add a confirmation dialog)
+    S.resetGameState()
+
+    -- Reset modules
+    Scenes.resetScene(0)  -- Instant reset
+
+    -- Update UI
+    UpdateUIDisplays()
+
+    print("HUD: Game reset by " .. player.color)
+    broadcastToAll("Game has been reset.", {1, 0, 0})
 end
 
---- Prompt to manually set round and turn numbers
-function HUD_askRoundAndTurn(player, value, id)
-    broadcastToColor("HUD_askRoundAndTurn: Not yet implemented.", player.color, {1, 0, 0})
+--- Save game state explicitly
+-- Called when the "Save State" button is clicked
+-- Note: TTS also calls onSave() automatically, but this can be used for explicit saves
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_saveState(player, button, id)
+    -- Trigger save (onSave will be called by TTS)
+    -- This is mainly for UI feedback
+    local state = S.getGameState()
+    local stateStr = JSON.encode(state)
+
+    print("HUD: Game state saved by " .. player.color)
+    broadcastToColor("Game state saved successfully.", player.color, {0, 1, 0})
 end
 
---- Toggle haven and pouch visibility
-function HUD_toggleHavens(player, value, id)
-    broadcastToColor("HUD_toggleHavens: Not yet implemented.", player.color, {1, 0, 0})
-end
+--- Toggle zones active/inactive
+-- Called when the "Toggle Zones" debug button is clicked
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_toggleZones(player, button, id)
+    -- Check current zone state
+    local zonesActive = S.getStateVal("zones", "allZonesLocked")
 
---- Phase 3: Enter scoring phase
-function HUD_scoreGame(player, value, id)
-    broadcastToColor("HUD_scoreGame: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Refresh/update scoreboard display
-function HUD_updateScore(player, value, id)
-    broadcastToColor("HUD_updateScore: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Phase 4: Enter missions phase
-function HUD_missionsGame(player, value, id)
-    broadcastToColor("HUD_missionsGame: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Prompt to add/update a trait for a player
-function HUD_updateTraits(player, value, id)
-    broadcastToColor("HUD_updateTraits: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Phase 5: Enter aftermath phase
-function HUD_afterGame(player, value, id)
-    broadcastToColor("HUD_afterGame: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Prompt to add/update a sticker for a player
-function HUD_updateSticker(player, value, id)
-    broadcastToColor("HUD_updateSticker: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Toggle between sticker and trait views
-function HUD_switchStickerTraits(player, value, id)
-    broadcastToColor("HUD_switchStickerTraits: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Process card spots during aftermath
-function HUD_processCardSpots(player, value, id)
-    broadcastToColor("HUD_processCardSpots: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Phase 6: End game and finalize
-function HUD_endGame(player, value, id)
-    broadcastToColor("HUD_endGame: Not yet implemented.", player.color, {1, 0, 0})
-end
-
--- =====================================================================
--- Admin Panel: UI Toggle Controls
--- =====================================================================
-
---- Toggle debug panel and debug controls visibility
-function HUD_toggleDebug(player, value, id)
-    local isHidden = UI.getAttribute("debugStatePanel", "active") == "False"
-        or UI.getAttribute("debugStatePanel", "active") == "false"
-    UI.setAttribute("debugStatePanel", "active", isHidden)
-    UI.setAttribute("debugControls", "active", isHidden)
-end
-
---- Toggle the reference sidebar HUD visibility
-function HUD_toggleHUD(player, value, id)
-    local isHidden = UI.getAttribute("hudSidebarHost", "active") == "False"
-        or UI.getAttribute("hudSidebarHost", "active") == "false"
-    UI.setAttribute("hudSidebarHost", "active", isHidden)
-end
-
--- =====================================================================
--- Admin Panel: Debug Sub-Panel Controls
--- =====================================================================
-
---- Toggle zone activation (enable/disable zone event handlers)
-function HUD_toggleZonesActive(player, value, id)
-    if onObjectEnterZone == nil then
+    if zonesActive == true then
         Z.activateZones()
         broadcastToColor("Zones activated.", player.color, {0, 1, 0})
     else
         Z.deactivateZones()
         broadcastToColor("Zones deactivated.", player.color, {1, 0, 0})
     end
+
+    print("HUD: Zones toggled by " .. player.color)
 end
 
---- Toggle score overlay visibility
-function HUD_toggleScores(player, value, id)
-    broadcastToColor("HUD_toggleScores: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Show/hide updated traits display
-function HUD_showTraits(player, value, id)
-    broadcastToColor("HUD_showTraits: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Show/hide sticker unlocks display
-function HUD_showStickers(player, value, id)
-    broadcastToColor("HUD_showStickers: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Prompt to set chapter data text
-function HUD_setChapterData(player, value, id)
-    broadcastToColor("HUD_setChapterData: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Process character deck cards
-function HUD_processCharacterDeck(player, value, id)
-    broadcastToColor("HUD_processCharacterDeck: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Sort character deck by decal presence
-function HUD_sortCharacterDeck(player, value, id)
-    broadcastToColor("HUD_sortCharacterDeck: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Toggle debug traits panel visibility (only if debug panel is open)
-function HUD_toggleTraitDebug(player, value, id)
-    local debugOpen = UI.getAttribute("debugStatePanel", "active")
-    if debugOpen == "False" or debugOpen == "false" then
+--- Update a spotlight's Color, Range, Angle, Intensity from the light debug panel
+-- Called when the "Update" button is clicked for a specific light row
+-- @param player Player The player who clicked the button
+-- @param value string The GUID of the light object (passed from onClick)
+-- @param id string The UI element ID (e.g., "lightUpdate_4148ba")
+function HUD_lightUpdate(player, value, id)
+    local guid = value
+    if type(guid) ~= "string" or guid == "" then
+        broadcastToColor("Light Debug: Invalid GUID.", player.color, {1, 0, 0})
         return
     end
-    local isHidden = UI.getAttribute("debugTraitsPanel", "active") == "False"
-        or UI.getAttribute("debugTraitsPanel", "active") == "false"
-    UI.setAttribute("debugTraitsPanel", "active", isHidden)
+    local colorVal = UI.getValue("lightColor_" .. guid) or ""
+    local rangeVal = UI.getValue("lightRange_" .. guid) or ""
+    local angleVal = UI.getValue("lightAngle_" .. guid) or ""
+    local intensityVal = UI.getValue("lightIntensity_" .. guid) or ""
+    local success = LightDebug.applyLightUpdate(guid, colorVal, rangeVal, angleVal, intensityVal)
+    if success then
+        broadcastToColor("Light updated.", player.color, {0, 1, 0})
+    else
+        broadcastToColor("Light Debug: Failed to update light.", player.color, {1, 0, 0})
+    end
 end
 
---- Toggle zone visual overlay visibility
-function HUD_toggleZoneVisibility(player, value, id)
-    broadcastToColor("HUD_toggleZoneVisibility: Not yet implemented.", player.color, {1, 0, 0})
+--- Refresh the light debug panel (repopulate the spotlight list)
+-- Called when the "Refresh" button is clicked; rescans all objects for spotlights
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID (e.g., "lightDebugRefresh")
+function HUD_lightRefresh(player, button, id)
+    LightDebug.refreshLightDebugPanel()
+    broadcastToColor("Light debug panel refreshed.", player.color, {0, 1, 0})
 end
 
---- Force end game (set round 9, turn 3 and advance)
-function HUD_debugEndGame(player, value, id)
-    broadcastToColor("HUD_debugEndGame: Not yet implemented.", player.color, {1, 0, 0})
+--- Log current game state to console (debug function)
+-- Called when the "Log State" debug button is clicked
+-- @param player Player The player who clicked the button
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_logState(player, button, id)
+    local state = S.getGameState()
+    print("=== GAME STATE ===")
+    print(JSON.encode_pretty(state))
+    print("==================")
+    broadcastToColor("Game state logged to console.", player.color, {0, 1, 1})
 end
 
---- Refresh game state and UI
-function HUD_refreshState(player, value, id)
-    broadcastToColor("HUD_refreshState: Not yet implemented.", player.color, {1, 0, 0})
+--- Print entire game state to host console and to game chat (chunked).
+-- Called when the Storyteller left-panel "Print State" button is clicked.
+-- TTS Lua cannot write to files; full state is printed to console and broadcast to chat.
+-- @param player Player The player who clicked (Host/Black)
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_printState(player, button, id)
+    local state = S.getGameState()
+    local jsonStr = JSON.encode_pretty(state)
+    if not jsonStr or jsonStr == "" then
+        broadcastToAll("Game state is empty.", {1, 0.5, 0})
+        return
+    end
+    -- Always print full state to host console
+    print("=== GAME STATE ===")
+    print(jsonStr)
+    print("==================")
+    -- Broadcast to game chat in chunks (TTS chat has a message length limit)
+    local chunkSize = 450
+    local len = #jsonStr
+    broadcastToAll("--- Game state (host console has full dump) ---", {0.7, 0.7, 1})
+    for start = 1, len, chunkSize do
+        local chunk = string.sub(jsonStr, start, start + chunkSize - 1)
+        broadcastToAll(chunk, {0.85, 0.85, 0.9})
+    end
+    broadcastToAll("--- End state ---", {0.7, 0.7, 1})
 end
 
---- Debug: zoom camera to a card
-function HUD_debugCardZoom(player, value, id)
-    broadcastToColor("HUD_debugCardZoom: Not yet implemented.", player.color, {1, 0, 0})
-end
+--[[
+    Sidebar reference popup handlers (Heritage-style)
+    Called by storyteller sidebar Image buttons: onMouseDown/Up/Enter/Exit.
+    id is the button element id (e.g. hudRefBattlegroundsHost); popup id is "Ref..." (strip "hud").
+]]
 
---- Debug: clear card zoom
-function HUD_debugClearZoom(player, value, id)
-    broadcastToColor("HUD_debugClearZoom: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Reset all game state to defaults
-function HUD_resetGameState(player, value, id)
-    S.resetGameState()
-    broadcastToAll("Game state has been reset.", {1, 0, 0})
-end
-
---- Test function slot 1 (development use)
-function HUD_testFunc1(player, value, id)
-    broadcastToColor("HUD_testFunc1: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Test function slot 2 (development use)
-function HUD_testFunc2(player, value, id)
-    broadcastToColor("HUD_testFunc2: Not yet implemented.", player.color, {1, 0, 0})
-end
-
---- Test function slot 3 (development use)
-function HUD_testFunc3(player, value, id)
-    broadcastToColor("HUD_testFunc3: Not yet implemented.", player.color, {1, 0, 0})
-end
-
--- =====================================================================
--- Sidebar: Reference Image Toggle Handlers
--- =====================================================================
-
---- Show reference image on mouse-down; right-click (value "-2") toggles it on
--- Heritage pattern: strips "hud" prefix from button ID to derive the popup image ID
+--- Show reference popup for sidebar button. Right-click (value "-2") keeps it open via ON state.
 function HUD_show(player, value, id)
     local imageID = string.gsub(id, "hud", "")
-
-    -- Check if currently toggled on
+    -- If already toggled ON (right-click pin), turn off and return
     if UI.getValue(id) == "ON" then
         UI.setValue(id, "")
         UI.hide(imageID)
         UI.setAttribute(id .. "Overlay", "color", "clear")
         return
     end
-
-    -- Right-click: toggle on (stays visible after mouse-up)
+    -- Right-click: mark as ON so HUD_hide does not close the popup
     if value == "-2" then
         UI.setValue(id, "ON")
     end
-
     UI.show(imageID)
 end
 
---- Hide reference image on mouse-up (unless toggled on via right-click)
+--- Hide reference popup on mouse up unless it was right-click pinned (ON).
 function HUD_hide(player, value, id)
     if UI.getValue(id) ~= "ON" then
         UI.hide(string.gsub(id, "hud", ""))
     end
 end
 
---- Highlight sidebar button overlay on hover (set to white)
+--- Hover highlight: set overlay to white.
 function HUD_highlight(player, value, id)
-    UI.setAttribute(id .. "Overlay", "color", "#FFFFFF")
+    local overlayID = id .. "Overlay"
+    UI.setAttribute(overlayID, "color", "#FFFFFF")
 end
 
---- Dim sidebar button overlay on hover-exit (reset to clear, unless toggled on)
+--- Hover end: dim overlay back to clear unless popup is pinned ON.
 function HUD_dim(player, value, id)
     if UI.getValue(id) ~= "ON" then
-        UI.setAttribute(id .. "Overlay", "color", "clear")
+        local overlayID = id .. "Overlay"
+        UI.setAttribute(overlayID, "color", "clear")
     end
-end
-
--- =====================================================================
--- Camera Controls
--- =====================================================================
-
---- Set camera to a predefined angle; right-click uses wide variant
--- Strips "camera" prefix from button ID to derive the camera target key
-function HUD_cameraSet(player, value, id)
-    local zoomTarget = string.gsub(id, "camera", "")
-    if value == "-2" and C.CameraAngles and C.CameraAngles[zoomTarget .. "Wide"] then
-        M.setCamera(player, zoomTarget .. "Wide")
-    else
-        M.setCamera(player, zoomTarget)
-    end
-end
-
--- =====================================================================
--- King's Dilemma HUD Handlers (KD_ prefix)
--- Reference template stubs. See dev/KD_HUD_REFERENCE.md for details.
--- =====================================================================
-
---- Generic KD button click handler; routes by element ID pattern
-function KD_Click(player, value, id)
-    if string.match(id, "^kd_splashQuery_Option") then
-        broadcastToColor("KD_Click (splash query): " .. id .. " -- Not yet implemented.", player.color, {1, 0.5, 0})
-    elseif string.match(id, "^kd_toggleElem_") then
-        local elemID = string.gsub(id, "^kd_toggleElem_", "")
-        if string.lower(UI.getAttribute(elemID, "active") or "false") == "false" then
-            UI.setAttribute(elemID, "active", "true")
-            UI.setAttribute(id, "text", "\226\150\188")
-        else
-            UI.setAttribute(elemID, "active", "false")
-            UI.setAttribute(id, "text", "\226\150\186")
-        end
-    elseif string.match(id, "^kd_houseHover_") then
-        broadcastToColor("KD_Click (house grid): " .. id .. " -- Not yet implemented.", player.color, {1, 0.5, 0})
-    else
-        broadcastToColor("KD_Click: " .. id .. " -- Not yet implemented.", player.color, {1, 0.5, 0})
-    end
-end
-
---- Generic KD hover-on handler
-function KD_HoverOn(player, value, id)
-    if string.match(id, "^kd_houseHover_") then
-        broadcastToColor("KD_HoverOn (house): " .. id, player.color, {0.5, 0.5, 0.5})
-    elseif string.match(id, "^kd_splashQuery_") then
-        UI.setAttribute(id, "color", "#FFD700FF")
-        local _, optionRef, color = id:match("^kd_splashQuery_(Option%d+)_(.+)$")
-        if optionRef and color then
-            UI.setAttribute("kd_splashQueryText_" .. optionRef .. "_" .. color, "color", "#FFFFFFFF")
-        end
-    end
-end
-
---- Generic KD hover-off handler
-function KD_HoverOff(player, value, id)
-    if string.match(id, "^kd_houseHover_") then
-        -- no-op for stub
-    elseif string.match(id, "^kd_splashQuery_") then
-        UI.setAttribute(id, "color", "#FFD70011")
-        local _, optionRef, color = id:match("^kd_splashQuery_(Option%d+)_(.+)$")
-        if optionRef and color then
-            UI.setAttribute("kd_splashQueryText_" .. optionRef .. "_" .. color, "color", "#FFFFFF44")
-        end
-    end
-end
-
---- KD interactive house map click handler
-function KD_House_Click(player, value, id)
-    broadcastToColor("KD_House_Click: " .. id .. " -- Not yet implemented.", player.color, {1, 0.5, 0})
-end
-
---- KD interactive house map hover-on handler
-function KD_House_HoverOn(player, value, id)
-    broadcastToColor("KD_House_HoverOn: " .. id, player.color, {0.5, 0.5, 0.5})
-end
-
---- KD interactive house map hover-off handler
-function KD_House_HoverOff(player, value, id)
-    -- no-op for stub
-end
-
---- KD turn voting button click handler
-function KD_Turn_Click(player, value, id)
-    broadcastToColor("KD_Turn_Click: " .. id .. " -- Not yet implemented.", player.color, {1, 0.5, 0})
-end
-
---- KD turn voting button hover-on; brightens button color
-function KD_Turn_HoverOn(player, value, id)
-    local parts = {id:match("^kd_turnHUD_(.-)_(.+)$")}
-    local action, color = parts[1], parts[2]
-    if action and color then
-        UI.setAttribute("kd_turnHUD_" .. action .. "_Text_" .. color, "color", "rgba(1,1,1,1)")
-        if action == "voteAye" then
-            UI.setAttribute(id, "color", "rgba(0,1,1,1)")
-        elseif action == "voteNay" then
-            UI.setAttribute(id, "color", "rgba(1,0,0,1)")
-        else
-            UI.setAttribute(id, "color", "rgba(0.6, 0.47, 0, 1)")
-        end
-    end
-end
-
---- KD turn voting button hover-off; dims button color
-function KD_Turn_HoverOff(player, value, id)
-    local parts = {id:match("^kd_turnHUD_(.-)_(.+)$")}
-    local action, color = parts[1], parts[2]
-    if action and color then
-        UI.setAttribute("kd_turnHUD_" .. action .. "_Text_" .. color, "color", "rgba(1,1,1,0.5)")
-        if action == "voteAye" then
-            UI.setAttribute(id, "color", "rgba(0,1,1,0.5)")
-        elseif action == "voteNay" then
-            UI.setAttribute(id, "color", "rgba(1,0,0,0.5)")
-        else
-            UI.setAttribute(id, "color", "rgba(0.6, 0.47, 0, 0.5)")
-        end
-    end
-end
-
---- KD consequence toggle click handler
-function KD_Consequence_Click(player, value, id)
-    broadcastToColor("KD_Consequence_Click: " .. id .. " -- Not yet implemented.", player.color, {1, 0.5, 0})
-end
-
---- KD consequence hover-on handler
-function KD_Consequence_HoverOn(player, value, id)
-    broadcastToColor("KD_Consequence_HoverOn: " .. id, player.color, {0.5, 0.5, 0.5})
-end
-
---- KD consequence hover-off handler
-function KD_Consequence_HoverOff(player, value, id)
-    -- no-op for stub
-end
-
---- KD sticker key input submit handler
-function KD_Fetcher_Sticker(player, value, id)
-    broadcastToColor("KD_Fetcher_Sticker: entered '" .. (value or "") .. "' -- Not yet implemented.", player.color, {1, 0.5, 0})
-end
-
---- KD envelope key input submit handler
-function KD_Fetcher_Envelope(player, value, id)
-    broadcastToColor("KD_Fetcher_Envelope: entered '" .. (value or "") .. "' -- Not yet implemented.", player.color, {1, 0.5, 0})
 end
 
 --[[
@@ -609,13 +466,16 @@ end
 -- Called after state changes (phase, scene, etc.)
 -- Exposed globally for testing/debugging
 function UpdateUIDisplays()
-    -- Update debug state display if visible
-    local debugState = S.getGameState()
-    if debugState then
-        local stateStr = JSON.encode_pretty(debugState)
-        if stateStr then
-            UI.setValue("debugState", stateStr)
-        end
+    -- Update phase display
+    local currentPhase = S.getStateVal("currentPhase")
+    if currentPhase then
+        UI.setValue("currentPhaseDisplay", currentPhase)
+    end
+
+    -- Update scene display
+    local currentScene = Scenes.getCurrentScene()
+    if currentScene then
+        UI.setValue("currentSceneDisplay", currentScene)
     end
 
     -- Update player stat displays
