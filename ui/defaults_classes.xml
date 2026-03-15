@@ -65,7 +65,8 @@
     color="rgba(0.5, 0.5, 0.5, 1)" />
 
   <Image class="imageButtonOverlay"
-    color="clear" />
+    color="clear"
+    raycastTarget="false" />
 
   <Image class="imageBorder"
     rectAlignment="MiddleLeft" />

@@ -9,18 +9,12 @@
 <!-- 2. General shared classes -->
 <Include src="ui/defaults_classes" />
 
-<!-- 3. Storyteller HUD (Host|Black): Heritage admin panel + sidebar + camera -->
+<!-- 3. Storyteller HUD (Host|Black): layout + 4 panels -->
 <Include src="ui/storyteller/hud_storyteller_defaults" />
 <Include src="ui/storyteller/hud_storyteller" />
 
-<!-- 4. King's Dilemma HUD defaults -->
-<Include src="ui/kingsdilemma/hud_kd_defaults" />
-
-<!-- 5. Player HUD (per-color panels) -->
+<!-- 4. Player HUD (per-color panels) -->
 <Include src="ui/player/hud_player" />
 
-<!-- 6. Shared UI (dice results, scene transition overlay) -->
+<!-- 5. Shared UI (dice results, scene transition overlay) -->
 <Include src="ui/shared/hud_shared" />
-
-<!-- 7. King's Dilemma HUD panels -->
-<Include src="ui/kingsdilemma/hud_kd" />
