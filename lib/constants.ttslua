@@ -27,40 +27,157 @@ C.PlayerData = {
 -- Player Colors (VTM5E-specific)
 -- Storyteller is always Black. Player colors are: Brown, Orange, Red, Pink (in that order)
 C.PlayerColors = {
-    "Brown", "Orange", "Red", "Pink"
+    "Brown", "Orange", "Red", "Pink", "Purple"
 }
 
--- VTM5E Clans (from Heritage module)
+C.CHRONICLE_DATA = {
+	PCS = {
+		lucien = {
+			name = "Lord Lucien",
+      color = "Red"
+		},
+		fomorach = {
+			name = "Fomórach",
+      color = "Purple"
+		},
+		blackCaesar = {
+			name = "Black Caesar",
+      color = "Brown"
+		},
+		aishe = {
+			name = "Aishe Tache",
+      color = "Pink"
+		},
+		rashid = {
+			name = "Rashid Abdulrahman",
+      color = "Orange"
+		}
+	},
+	disciplines = {
+		animalism = {
+			name = "Animalism"
+		},
+		auspex = {
+			name = "Auspex"
+		},
+		bloodSorcery = {
+			name = "Blood Sorcery"
+		},
+		celerity = {
+			name = "Celerity"
+		},
+		dominate = {
+			name = "Dominate"
+		},
+		fortitude = {
+			name = "Fortitude"
+		},
+		obfuscate = {
+			name = "Obfuscate"
+		},
+		oblivion = {
+			name = "Oblivion"
+		},
+		potence = {
+			name = "Potence"
+		},
+		presence = {
+			name = "Presence"
+		},
+		protean = {
+			name = "Protean"
+		}
+	},
+	coteries = {
+		autarkis = {
+			name = "Autarkis",
+			inCoterieRef = false
+		},
+		beesHive = {
+			name = "Bee's Hive",
+			inCoterieRef = true
+		},
+		colorBlitz = {
+			name = "Color Blitz",
+			inCoterieRef = false
+		},
+		fiveKeys = {
+			name = "the Five Keys",
+			inCoterieRef = true
+		},
+		harpies = {
+			name = "the Harpies",
+			inCoterieRef = true
+		},
+		houseRustovich = {
+			name = "the House of Rustovich",
+			inCoterieRef = false
+		},
+		ironGuard = {
+			name = "the Iron Guard",
+			inCoterieRef = true
+		},
+		jarvisJacks = {
+			name = "the Jarvis Jacks",
+			inCoterieRef = false
+		},
+		line = {
+			name = "the Line",
+			inCoterieRef = true
+		},
+		menInBlack = {
+			name = "the Men-In-Black",
+			inCoterieRef = false
+		},
+		midnightMass = {
+			name = "the Midnight Mass at St. Michael's",
+			inCoterieRef = true
+		},
+		moonClub = {
+			name = "the Moon Club",
+			inCoterieRef = true
+		},
+		nightwolves = {
+			name = "the Nightwolves",
+			inCoterieRef = false
+		},
+		openSanctum = {
+			name = "Open Sanctum",
+			inCoterieRef = false
+		},
+		petitioners = {
+			name = "Petitioners",
+			inCoterieRef = true
+		},
+		princesCourt = {
+			name = "the Prince's Court",
+			inCoterieRef = false
+		},
+		redeemers = {
+			name = "the Redeemers",
+			inCoterieRef = true
+		},
+		redFlag = {
+			name = "Red Flag",
+			inCoterieRef = true
+		},
+		regencyUniversityChantry = {
+			name = "the Regency of the University Chantry",
+			inCoterieRef = true
+		},
+		scarlettAndBoys = {
+			name = "Scarlett & the Boys",
+			  inCoterieRef = true
+		},
+		wychwoodHecata = {
+			name = "the Wychwood Hecata",
+			inCoterieRef = true
+		}
+	}
+}
+    -- VTM5E Clans (from Heritage module)
 C.Clans = {
     "Banu Haqim", "Brujah", "Caitif", "Cappadocian", "Gangrel", "Giovanni", "Lasombra", "Malkavian", "Ministry", "Nosferatu", "Ravnos", "Salubri", "Thin-Blood", "Toreador", "Tremere", "Tzimisce", "Ventrue"
-}
-
--- VTM5E Disciplines (from Heritage module)
-C.Disciplines = {
-    "Animalism", "Auspex", "Blood Sorcery", "Celerity", "Dominate", "Fortitude",
-    "Obfuscate", "Oblivion", "Potence", "Presence", "Protean"
-}
-
--- Game Phases (VTM5E-specific)
--- Phases represent different stages of a VTM5E session
-C.Phases = {
-    SESSION_START = "SessionStart",  -- Beginning of session, setup, introductions
-    SCENE = "Scene",                  -- Active roleplay scenes
-    DOWNTIME = "Downtime",            -- Between-scenes activities, planning
-    COMBAT = "Combat",                -- Combat encounters
-    MEMORIAM = "Memoriam",            -- End-of-session reflection and XP
-    SESSION_END = "SessionEnd"        -- Session conclusion, cleanup
-}
-
--- UI Element IDs (common or global UI elements)
-C.UI_IDS = {
-    GM_PANEL = "gmControlPanel",
-    PLAYER_HUD_PREFIX = "playerHud_", -- e.g., playerHud_Red
-    HUNGER_LABEL_PREFIX = "hungerVal_",
-    WILLPOWER_LABEL_PREFIX = "willpowerVal_",
-    HEALTH_LABEL_PREFIX = "healthVal_",
-    SCENE_BUTTON_PREFIX = "sceneBtn_",
-    DEBUG_PANEL = "debugStatePanel"
 }
 
 -- Default Game Settings (VTM5E rules)
