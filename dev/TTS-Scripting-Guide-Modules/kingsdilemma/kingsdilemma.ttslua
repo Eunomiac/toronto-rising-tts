@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 -- Great UI and spotlight opportunities
 local NOTES = [[
 	Board & Playspace

@@ -1,3 +1,4 @@
+---@diagnostic disable: deprecated, duplicate-set-field, undefined-global, lowercase-global, cast-local-type, undefined-field, need-check-nil, param-type-mismatch
 require("lib.Console.console")
 
 if not console.plusplus then

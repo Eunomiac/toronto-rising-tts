@@ -286,7 +286,7 @@ local function getPrestigeCravePanelXML()
 	}
 end
 
-local function getVotePanelXML()
+local function getVotePanelXML(playerRef)
 	local voteStatus
 	if not (ISDEBUGGING or S.isInMode("VOTE")) then return {} end
 	local voteStatus = S.getPlayerVoteStatus(playerRef)
@@ -371,7 +371,7 @@ function UpdateXMLTable()
 		getRootPanelXML({
 			getNamePanelXML(),
 			getPrestigeCravePanelXML(),
-			getVotePanelXML(),
+			getVotePanelXML(player),
 			getScorePanelXML()
 		})
 	})

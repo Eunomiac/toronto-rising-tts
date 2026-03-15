@@ -1,0 +1,81 @@
+<!-- KD Splash Screen + Messages + Queries (Red) -->
+<!-- Multi-purpose overlay: title screen, game messages, and player prompts -->
+
+<!-- ===== Splash Title Screen (global, active by default) ===== -->
+<Panel id="kd_splashScreen" class="kd_splashPanel kd_splashScreen" active="true">
+  <VerticalLayout class="kd_splashRoot">
+    <VerticalLayout class="kd_splashImageContainer">
+      <Image class="kd_splashBorderTop" />
+      <Image class="kd_splashBg" />
+      <Image class="kd_splashBorderBottom" />
+    </VerticalLayout>
+    <VerticalLayout class="kd_splashContent">
+      <Text id="kd_splashText_All" class="kd_splashText kd_splashIntro">The King's Dilemma</Text>
+      <Text id="kd_gameNumText" class="kd_splashText kd_splashIntroSub"></Text>
+    </VerticalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- ===== Splash Message Panels ===== -->
+<Panel id="kd_splashHUD" class="kd_splashPanel kd_splashHud">
+  <!-- All-player message -->
+  <VerticalLayout id="kd_splashPanel_All" class="kd_splashRoot" active="false">
+    <VerticalLayout class="kd_splashImageContainer">
+      <Image class="kd_splashBorderTop" />
+      <Image class="kd_splashBg" />
+      <Image class="kd_splashBorderBottom" />
+    </VerticalLayout>
+    <VerticalLayout class="kd_splashContent">
+      <Text id="kd_splashMsgText_All" class="kd_splashText">A Line Of Text</Text>
+    </VerticalLayout>
+  </VerticalLayout>
+
+  <!-- Red-only message -->
+  <VerticalLayout id="kd_splashPanel_Red" class="kd_splashRoot" visibility="Red" active="false">
+    <VerticalLayout class="kd_splashImageContainer">
+      <Image class="kd_splashBorderTop" />
+      <Image class="kd_splashBg" />
+      <Image class="kd_splashBorderBottom" />
+    </VerticalLayout>
+    <VerticalLayout class="kd_splashContent">
+      <Text id="kd_splashMsgText_Red" class="kd_splashText">A Line Of Text</Text>
+    </VerticalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- ===== Splash Query (Red only) ===== -->
+<Panel id="kd_splashQuery_Red" class="kd_splashPanel kd_splashQuery" visibility="Red" active="false">
+  <VerticalLayout class="kd_splashRoot">
+    <VerticalLayout class="kd_splashImageContainer">
+      <Image class="kd_splashBorderTop" />
+      <Image class="kd_splashBg" />
+      <Image class="kd_splashBorderBottom" />
+    </VerticalLayout>
+    <VerticalLayout class="kd_splashContent">
+      <Text id="kd_splashQueryPlayerPrompt_Red" class="kd_splashText kd_playerPrompt">Leader</Text>
+      <Text id="kd_splashQueryPrompt_Red" class="kd_splashText kd_splashQueryPrompt">This is a test query.</Text>
+      <HorizontalLayout class="kd_splashQueryRow">
+        <Panel id="kd_splashQueryContainer_Option1_Red" class="kd_splashOption" active="false">
+          <Image id="kd_splashQuery_Option1_Red" class="kd_splashOptionImage" />
+          <Text id="kd_splashQueryText_Option1_Red" class="kd_splashText kd_splashOptionText">Yes</Text>
+        </Panel>
+        <Panel id="kd_splashQueryContainer_Option2_Red" class="kd_splashOption" active="false">
+          <Image id="kd_splashQuery_Option2_Red" class="kd_splashOptionImage" />
+          <Text id="kd_splashQueryText_Option2_Red" class="kd_splashText kd_splashOptionText">No</Text>
+        </Panel>
+        <Panel id="kd_splashQueryContainer_Option3_Red" class="kd_splashOption" active="false">
+          <Image id="kd_splashQuery_Option3_Red" class="kd_splashOptionImage" />
+          <Text id="kd_splashQueryText_Option3_Red" class="kd_splashText kd_splashOptionText">Maybe</Text>
+        </Panel>
+        <Panel id="kd_splashQueryContainer_Option4_Red" class="kd_splashOption" active="false">
+          <Image id="kd_splashQuery_Option4_Red" class="kd_splashOptionImage" />
+          <Text id="kd_splashQueryText_Option4_Red" class="kd_splashText kd_splashOptionText"></Text>
+        </Panel>
+        <Panel id="kd_splashQueryContainer_Option5_Red" class="kd_splashOption" active="false">
+          <Image id="kd_splashQuery_Option5_Red" class="kd_splashOptionImage" />
+          <Text id="kd_splashQueryText_Option5_Red" class="kd_splashText kd_splashOptionText"></Text>
+        </Panel>
+      </HorizontalLayout>
+    </VerticalLayout>
+  </VerticalLayout>
+</Panel>

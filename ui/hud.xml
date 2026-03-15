@@ -11,13 +11,19 @@
 <!-- 3. Storyteller HUD (Host|Black): Heritage admin panel + sidebar + camera -->
 <Include src="ui/storyteller/hud_storyteller_defaults" />
 
+<!-- 4. King's Dilemma HUD (reference templates) -->
+<Include src="ui/kingsdilemma/hud_kd_defaults" />
+
 <Panel id="HUD_PANEL" padding="10 10 10 10">
   <Include src="ui/storyteller/hud_storyteller" />
 
-  <!-- 4. Player HUD (per-color panels) -->
+  <!-- 5. Player HUD (per-color panels) -->
   <Include src="ui/player/hud_player" />
 
-  <!-- 5. Shared UI (dice results, scene transition overlay) -->
+  <!-- 6. Shared UI (dice results, scene transition overlay) -->
   <Include src="ui/shared/hud_shared" />
+
+  <!-- 7. King's Dilemma HUD panels (Brown=turn, Red=splash, Pink=houseGrid, Orange=fetcher) -->
+  <Include src="ui/kingsdilemma/hud_kd" />
 
 </Panel>

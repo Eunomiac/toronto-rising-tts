@@ -1,0 +1,10 @@
+<!-- King's Dilemma HUD Panels -->
+<!-- Reference templates for future HUD adjustments. -->
+<!-- Color assignments: Host|Black=admin+debug, Brown=turn, Red=splash, Pink=houseGrid, Orange=fetcher -->
+
+<Include src="ui/kingsdilemma/panel_kd_admin" />
+<Include src="ui/kingsdilemma/panel_kd_debug" />
+<Include src="ui/kingsdilemma/panel_kd_turn" />
+<Include src="ui/kingsdilemma/panel_kd_splash" />
+<Include src="ui/kingsdilemma/panel_kd_houseGrid" />
+<Include src="ui/kingsdilemma/panel_kd_fetcher" />

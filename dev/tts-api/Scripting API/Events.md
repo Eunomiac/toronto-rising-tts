@@ -1,3 +1,8 @@
+# Events
+
+Games frequently need to execute code in response to some action, interaction, or change taking place in the game,
+collectively referred to as *events*.
+
 ## Table of Contents
 
 * Event Handlers
@@ -84,11 +89,6 @@
   * tryRotate(...)
   * tryStateChange(...)
 
-# Events
-
-Games frequently need to execute code in response to some action, interaction, or change taking place in the game,
-collectively referred to as *events*.
-
 ## Event Handlers {#event-handlers}
 
 Event handlers are **functions you define**, that Tabletop Simulator calls.
@@ -135,7 +135,7 @@ If you define a function using the name of an Object Event Handler in your [Glob
 
 As described above, you may declare these functions in the [Global script](../intro/#global-script)or in [Object scripts](../intro/#object-scripts).
 
-|Function Name|Description| |
+|Function Name|Description||
 |---|---|---|
 |onBlindfold( ` player ` player, ` boolean ` blindfolded)|Called when a player puts on or takes off their blindfold.|[#onblindfold](#onblindfold)|
 |onChat( ` string ` message, ` player ` sender)|Called when a user sends an in-game chat message.|[#onchat](#onchat)|
@@ -148,12 +148,12 @@ As described above, you may declare these functions in the [Global script](../in
 |onObjectDestroy( ` object ` object)|Called whenever an object is about to be destroyed.|[#onobjectdestroy](#onobjectdestroy)|
 |onObjectDrop( ` string ` player_color, ` object ` object)|Called when an object is dropped by a player.|[#onobjectdrop](#onobjectdrop)|
 |onObjectEnterContainer( ` object ` container, ` object ` object)|Called when an object enters a container. Includes decks|[#onobjectentercontainer](#onobjectentercontainer)|
-|onObjectEnterScriptingZone( ` object ` zone, ` object ` object)|` deprecated ` Use [onObjectEnterZone(...)](#onobjectenterzone). Called when an object enters a scripting zone.| |
+|onObjectEnterScriptingZone( ` object ` zone, ` object ` object)|` deprecated ` Use [onObjectEnterZone(...)](#onobjectenterzone). Called when an object enters a scripting zone.||
 |onObjectEnterZone( ` object ` zone, ` object ` object)|Called when an object enters a zone.|[#onobjectenterzone](#onobjectenterzone)|
 |onObjectFlick( ` object ` object, ` string ` player_color, ` vector ` impulse)|Called when a player flicks an object.|[#onobjectflick](#onobjectflick)|
 |onObjectHover( ` string ` player_color, ` object ` object)|Called when the object being hovered over by a player's pointer (cursor) changes.|[#onobjecthover](#onobjecthover)|
 |onObjectLeaveContainer( ` object ` container, ` object ` object)|Called when an object leaves a container.|[#onobjectleavecontainer](#onobjectleavecontainer)|
-|onObjectLeaveScriptingZone( ` object ` zone, ` object ` object)|` deprecated ` Use [onObjectLeaveZone(...)](#onobjectleavezone). Called when an object leaves a scripting zone.| |
+|onObjectLeaveScriptingZone( ` object ` zone, ` object ` object)|` deprecated ` Use [onObjectLeaveZone(...)](#onobjectleavezone). Called when an object leaves a scripting zone.||
 |onObjectLeaveZone( ` object ` zone, ` object ` object)|Called when an object leaves a zone.|[#onobjectleavezone](#onobjectleavezone)|
 |onObjectLoopingEffect( ` object ` object, ` int ` index)|Called whenever the looping effect of an [AssetBundle](../behavior/assetbundle/) is activated.|[#onobjectloopingeffect](#onobjectloopingeffect)|
 |onObjectNumberTyped( ` object ` object, ` string ` player_color, ` int ` number, ` boolean ` alt)|Called when a player types a number whilst hovering over an object.|[#onobjectnumbertyped](#onobjectnumbertyped)|
@@ -185,7 +185,7 @@ As described above, you may declare these functions in the [Global script](../in
 
 As described above, you may declare these functions in the [Global script](../intro/#global-script).
 
-|Function Name|Description| |
+|Function Name|Description |
 |---|---|---|
 |filterObjectEnterContainer( ` object ` container, ` object ` object)|` deprecated ` Use [tryObjectEnterContainer(...)](#tryobjectentercontainer). Called when an object attempts to enter a container.| |
 |onZoneGroupSort( ` object ` zone, ` table ` group, ` boolean ` reversed)|Called when sorting is required for a group of objects being laid out by a layout zone.|[#onzonegroupsort](#onzonegroupsort)|
@@ -1002,6 +1002,8 @@ action is being attempted.
 |Select|Add the targets to the player's selection.|
 |Under|Move the targets underneath objects below them on table.|
 
+##### Examples: Preventing Actions {#onplayeraction-flip-example}
+>
 > **Example: Example**
 > Prevent more than 2 objects being flipped over at a time.
 >

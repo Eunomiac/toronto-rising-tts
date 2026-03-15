@@ -69,7 +69,7 @@ function onLoad(saved_data)
     -- LightDebug.refreshLightDebugPanel()
 
     -- Update UI displays with current state
-    updateUIDisplays()
+    UpdateUIDisplays()
 
     -- Debug module help (optional - shows available test commands)
     -- DEBUG.help()
@@ -472,6 +472,134 @@ function HUD_cameraSet(player, value, id)
     end
 end
 
+-- =====================================================================
+-- King's Dilemma HUD Handlers (KD_ prefix)
+-- Reference template stubs. See dev/KD_HUD_REFERENCE.md for details.
+-- =====================================================================
+
+--- Generic KD button click handler; routes by element ID pattern
+function KD_Click(player, value, id)
+    if string.match(id, "^kd_splashQuery_Option") then
+        broadcastToColor("KD_Click (splash query): " .. id .. " -- Not yet implemented.", player.color, {1, 0.5, 0})
+    elseif string.match(id, "^kd_toggleElem_") then
+        local elemID = string.gsub(id, "^kd_toggleElem_", "")
+        if string.lower(UI.getAttribute(elemID, "active") or "false") == "false" then
+            UI.setAttribute(elemID, "active", "true")
+            UI.setAttribute(id, "text", "\226\150\188")
+        else
+            UI.setAttribute(elemID, "active", "false")
+            UI.setAttribute(id, "text", "\226\150\186")
+        end
+    elseif string.match(id, "^kd_houseHover_") then
+        broadcastToColor("KD_Click (house grid): " .. id .. " -- Not yet implemented.", player.color, {1, 0.5, 0})
+    else
+        broadcastToColor("KD_Click: " .. id .. " -- Not yet implemented.", player.color, {1, 0.5, 0})
+    end
+end
+
+--- Generic KD hover-on handler
+function KD_HoverOn(player, value, id)
+    if string.match(id, "^kd_houseHover_") then
+        broadcastToColor("KD_HoverOn (house): " .. id, player.color, {0.5, 0.5, 0.5})
+    elseif string.match(id, "^kd_splashQuery_") then
+        UI.setAttribute(id, "color", "#FFD700FF")
+        local _, optionRef, color = id:match("^kd_splashQuery_(Option%d+)_(.+)$")
+        if optionRef and color then
+            UI.setAttribute("kd_splashQueryText_" .. optionRef .. "_" .. color, "color", "#FFFFFFFF")
+        end
+    end
+end
+
+--- Generic KD hover-off handler
+function KD_HoverOff(player, value, id)
+    if string.match(id, "^kd_houseHover_") then
+        -- no-op for stub
+    elseif string.match(id, "^kd_splashQuery_") then
+        UI.setAttribute(id, "color", "#FFD70011")
+        local _, optionRef, color = id:match("^kd_splashQuery_(Option%d+)_(.+)$")
+        if optionRef and color then
+            UI.setAttribute("kd_splashQueryText_" .. optionRef .. "_" .. color, "color", "#FFFFFF44")
+        end
+    end
+end
+
+--- KD interactive house map click handler
+function KD_House_Click(player, value, id)
+    broadcastToColor("KD_House_Click: " .. id .. " -- Not yet implemented.", player.color, {1, 0.5, 0})
+end
+
+--- KD interactive house map hover-on handler
+function KD_House_HoverOn(player, value, id)
+    broadcastToColor("KD_House_HoverOn: " .. id, player.color, {0.5, 0.5, 0.5})
+end
+
+--- KD interactive house map hover-off handler
+function KD_House_HoverOff(player, value, id)
+    -- no-op for stub
+end
+
+--- KD turn voting button click handler
+function KD_Turn_Click(player, value, id)
+    broadcastToColor("KD_Turn_Click: " .. id .. " -- Not yet implemented.", player.color, {1, 0.5, 0})
+end
+
+--- KD turn voting button hover-on; brightens button color
+function KD_Turn_HoverOn(player, value, id)
+    local parts = {id:match("^kd_turnHUD_(.-)_(.+)$")}
+    local action, color = parts[1], parts[2]
+    if action and color then
+        UI.setAttribute("kd_turnHUD_" .. action .. "_Text_" .. color, "color", "rgba(1,1,1,1)")
+        if action == "voteAye" then
+            UI.setAttribute(id, "color", "rgba(0,1,1,1)")
+        elseif action == "voteNay" then
+            UI.setAttribute(id, "color", "rgba(1,0,0,1)")
+        else
+            UI.setAttribute(id, "color", "rgba(0.6, 0.47, 0, 1)")
+        end
+    end
+end
+
+--- KD turn voting button hover-off; dims button color
+function KD_Turn_HoverOff(player, value, id)
+    local parts = {id:match("^kd_turnHUD_(.-)_(.+)$")}
+    local action, color = parts[1], parts[2]
+    if action and color then
+        UI.setAttribute("kd_turnHUD_" .. action .. "_Text_" .. color, "color", "rgba(1,1,1,0.5)")
+        if action == "voteAye" then
+            UI.setAttribute(id, "color", "rgba(0,1,1,0.5)")
+        elseif action == "voteNay" then
+            UI.setAttribute(id, "color", "rgba(1,0,0,0.5)")
+        else
+            UI.setAttribute(id, "color", "rgba(0.6, 0.47, 0, 0.5)")
+        end
+    end
+end
+
+--- KD consequence toggle click handler
+function KD_Consequence_Click(player, value, id)
+    broadcastToColor("KD_Consequence_Click: " .. id .. " -- Not yet implemented.", player.color, {1, 0.5, 0})
+end
+
+--- KD consequence hover-on handler
+function KD_Consequence_HoverOn(player, value, id)
+    broadcastToColor("KD_Consequence_HoverOn: " .. id, player.color, {0.5, 0.5, 0.5})
+end
+
+--- KD consequence hover-off handler
+function KD_Consequence_HoverOff(player, value, id)
+    -- no-op for stub
+end
+
+--- KD sticker key input submit handler
+function KD_Fetcher_Sticker(player, value, id)
+    broadcastToColor("KD_Fetcher_Sticker: entered '" .. (value or "") .. "' -- Not yet implemented.", player.color, {1, 0.5, 0})
+end
+
+--- KD envelope key input submit handler
+function KD_Fetcher_Envelope(player, value, id)
+    broadcastToColor("KD_Fetcher_Envelope: entered '" .. (value or "") .. "' -- Not yet implemented.", player.color, {1, 0.5, 0})
+end
+
 --[[
     UI Display Update Functions
     These functions update UI elements to reflect current game state.
@@ -480,7 +608,7 @@ end
 --- Updates all UI displays with current game state
 -- Called after state changes (phase, scene, etc.)
 -- Exposed globally for testing/debugging
-function updateUIDisplays()
+function UpdateUIDisplays()
     -- Update debug state display if visible
     local debugState = S.getGameState()
     if debugState then

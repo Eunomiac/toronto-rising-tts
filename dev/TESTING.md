@@ -515,7 +515,7 @@ lua debugHelp()                  -- Show all commands
 
 **Solution:**
 
-- Manually trigger update: Ensure `updateUIDisplays()` is called after state changes
+- Manually trigger update: Ensure `UpdateUIDisplays()` is called after state changes
 - Check UI element IDs match between XML and update function
 - Verify player colors match (e.g., "Red" vs "red")
 

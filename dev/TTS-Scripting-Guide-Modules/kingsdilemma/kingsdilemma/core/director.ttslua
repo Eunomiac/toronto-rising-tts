@@ -1,3 +1,4 @@
+---@diagnostic disable: deprecated
 local U = require("lib.utilities")
 local S = require("kingsdilemma.core.state")
 local C = require("kingsdilemma.lib.constants")
@@ -1373,7 +1374,7 @@ function DIR.ConfirmFetchEnvelope(player, envKey)
 		end,
 		function()
 			if query.response == "true" then
-				return DIR.OpenEnvelope(envKey, false)
+				return DIR.OpenEnvelope(envKey)
 			else
 				return DIR.PromptForEnvelope(player)
 			end

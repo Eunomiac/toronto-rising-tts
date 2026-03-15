@@ -1,3 +1,4 @@
+---@diagnostic disable: deprecated, duplicate-set-field, undefined-global, lowercase-global
 if not console then
     console = {}
 

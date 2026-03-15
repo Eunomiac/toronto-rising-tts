@@ -254,11 +254,13 @@ function OU.SplitObjByValue(obj)
 
 	for i = 1, obj.value / newValue do
 		table.insert(seqFuncs, function()
+      if spawnSource ~= nil then
 			OU.SpawnFromSourceObj(spawnSource, tags, {
 				position = U.getScatterPosition(Vector(position), 1, 1),
-				rotation = spawnSource.getRotation(),
-				scale = spawnSource.getScale()
-			})
+          rotation = spawnSource.getRotation(),
+          scale = spawnSource.getScale()
+        })
+      end
 		end)
 	end
 
@@ -309,11 +311,13 @@ function OU.CombineObjsByValue(objs)
 		local tags = {"CoinToken", "Value" .. val}
 		for i = 1, spawnDataCoin[spawnDataKey] do
 			table.insert(seqFuncs, function()
-				OU.SpawnFromSourceObj(spawnSource, tags, {
-					position = U.getScatterPosition(Vector(position), 1, 1),
-					rotation = spawnSource.getRotation(),
-					scale = spawnSource.getScale()
-				})
+        if spawnSource ~= nil then
+          OU.SpawnFromSourceObj(spawnSource, tags, {
+            position = U.getScatterPosition(Vector(position), 1, 1),
+            rotation = spawnSource.getRotation(),
+            scale = spawnSource.getScale()
+          })
+        end
 			end)
 		end
 	end)
@@ -323,8 +327,8 @@ end
 
 function OU.TransferValue(fromZone, toZone, amount, tag)
 	U.Val("OU.TransferValue", fromZone, U.Type(fromZone) == "userdata" and fromZone.type == "Scripting", "From-zone is not a zone.")
-	U.Val("OU.TransferValue", toZones, U.Type(toZone) == "userdata" and toZone.type == "Scripting", "To-zone is not a zone.")
-	U.Val("OU.TransferValue", amounts, amount == "ALL" or U.Type(amount) == "number", "Amount must be 'ALL' or a number.")
+	U.Val("OU.TransferValue", toZone, U.Type(toZone) == "userdata" and toZone.type == "Scripting", "To-zone is not a zone.")
+	U.Val("OU.TransferValue", amount, amount == "ALL" or U.Type(amount) == "number", "Amount must be 'ALL' or a number.")
 
 	local fromJumpFuncs, fromSpawnFuncs = {}, {}
 

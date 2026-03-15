@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 require("vscode/console")
 local O = require("kingsdilemma.lib.objects")
 local U = require("lib.utilities")

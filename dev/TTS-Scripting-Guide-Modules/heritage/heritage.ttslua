@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 require("vscode/console")
 local M = require("core.main")
 local U = require("lib.utilities")

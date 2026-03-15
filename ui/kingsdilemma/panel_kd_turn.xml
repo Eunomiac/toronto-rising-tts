@@ -1,0 +1,39 @@
+<!-- KD Turn Voting HUD (Brown) -->
+<!-- Bottom-of-screen voting bar with 5 options: Vote Aye, Pass, Pass (Moderator), Vote Nay, Stay -->
+
+<Panel id="kd_turnHUD_Brown" class="kd_turnContainer" visibility="Brown" active="false">
+  <VerticalLayout class="kd_turnLayout">
+    <HorizontalLayout class="kd_turnRow">
+
+      <Panel id="kd_turnHUD_voteAye_container_Brown" class="kd_turnPanel" active="false">
+        <Image id="kd_turnHUD_voteAye_Brown" class="kd_turnButton kd_turnButtonAye" image="button-bg" />
+        <Text id="kd_turnHUD_voteAye_Text_Brown" class="kd_turnText kd_turnButtonText kd_turnButtonAye">Vote Aye</Text>
+      </Panel>
+
+      <Panel id="kd_turnHUD_pass_container_Brown" class="kd_turnPanel" active="false">
+        <Image id="kd_turnHUD_pass_Brown" class="kd_turnButton" image="button-bg" />
+        <Text id="kd_turnHUD_pass_Text_Brown" class="kd_turnText kd_turnButtonText kd_turnTextWithIcon">Pass</Text>
+        <Text class="kd_turnText kd_turnButtonText kd_turnTextWithIcon kd_turnSmallText">to Gather Power</Text>
+        <Image class="kd_turnIcon" image="powerIcon" />
+      </Panel>
+
+      <Panel id="kd_turnHUD_passMod_container_Brown" class="kd_turnPanel" active="false">
+        <Image id="kd_turnHUD_passMod_Brown" class="kd_turnButton" image="button-bg" />
+        <Text id="kd_turnHUD_passMod_Text_Brown" class="kd_turnText kd_turnButtonText kd_turnTextWithIcon">Pass</Text>
+        <Text class="kd_turnText kd_turnButtonText kd_turnTextWithIcon kd_turnSmallText">to Become Moderator</Text>
+        <Image class="kd_turnIcon kd_turnModeratorIcon" image="moderatorIcon" />
+      </Panel>
+
+      <Panel id="kd_turnHUD_voteNay_container_Brown" class="kd_turnPanel" active="false">
+        <Image id="kd_turnHUD_voteNay_Brown" class="kd_turnButton kd_turnButtonNay" image="button-bg" />
+        <Text id="kd_turnHUD_voteNay_Text_Brown" class="kd_turnText kd_turnButtonText kd_turnButtonNay">Vote Nay</Text>
+      </Panel>
+
+      <Panel id="kd_turnHUD_stay_container_Brown" class="kd_turnPanel" active="false">
+        <Image id="kd_turnHUD_stay_Brown" class="kd_turnButton" image="button-bg" />
+        <Text id="kd_turnHUD_stay_Text_Brown" class="kd_turnText kd_turnButtonText">Stay</Text>
+      </Panel>
+
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>

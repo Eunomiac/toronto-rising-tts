@@ -372,7 +372,7 @@ startLuaCoroutine(Global, "CoroutineName")
 ### UI Not Updating
 - Check UI element IDs match between XML and update functions
 - Verify player colors match (case-sensitive: "Red" not "red")
-- Ensure `updateUIDisplays()` is called after state changes
+- Ensure `UpdateUIDisplays()` is called after state changes
 
 ## TTS-Specific Considerations
 

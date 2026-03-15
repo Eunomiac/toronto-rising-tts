@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 local M = require("core.main")
 local G = require("lib.guids")
 

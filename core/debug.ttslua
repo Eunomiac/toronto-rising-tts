@@ -699,24 +699,24 @@ end
 ]]
 
 --- Test UI display updates
--- Tests: updateUIDisplays, UI.setValue
+-- Tests: UpdateUIDisplays, UI.setValue
 function DEBUG.testUI()
     printTestHeader("UI Display Updates")
     DEBUG.logToFile("INFO", "Starting testUI()", "debug_log")
 
-    -- Note: This requires the UI to be loaded and updateUIDisplays to be defined globally
+    -- Note: This requires the UI to be loaded and UpdateUIDisplays to be defined globally
 
     -- Test 1: Update phase display
     do
         S.setStateVal("PLAY", "currentPhase")
-        updateUIDisplays()  -- Call the global function directly
+        UpdateUIDisplays()  -- Call the global function directly
         printTestResult("Update UI phase display", true, "Should update currentPhaseDisplay")
     end
 
     -- Test 2: Update scene display
     do
         Scenes.loadScene("tension")
-        updateUIDisplays()
+        UpdateUIDisplays()
         printTestResult("Update UI scene display", true, "Should update currentSceneDisplay")
     end
 
@@ -727,7 +727,7 @@ function DEBUG.testUI()
             S.setPlayerVal(testColor, "hunger", 2)
             -- Note: willpower and health are static data in C.PlayerData, not dynamic state
             -- Only hunger is currently saved as dynamic state
-            updateUIDisplays()
+            UpdateUIDisplays()
             printTestResult("Update player stats", true, "Should update " .. testColor .. " player's hunger")
         else
             printTestResult("Update player stats", false, "No seated players found for test")
@@ -2675,7 +2675,7 @@ function DEBUG.testIntegration()
 
     -- Step 4: Update UI
     print("\n4. Updating UI...")
-    updateUIDisplays()
+    UpdateUIDisplays()
     print("   ✓ UI updated")
 
     -- Step 5: Verify state
@@ -2749,7 +2749,7 @@ function DEBUG.setHunger(color, value)
     S.setPlayerVal(color, "hunger", value)
     print("Set " .. color .. " player (ID: " .. playerID .. ") hunger to " .. tostring(value))
 
-    updateUIDisplays()
+    UpdateUIDisplays()
 end
 
 --- Quick test: Change scene

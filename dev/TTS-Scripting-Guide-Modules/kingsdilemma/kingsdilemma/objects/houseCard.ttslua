@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 local C = require("kingsdilemma.lib.constants")
 local S = require("kingsdilemma.core.state")
 local U = require("lib.utilities")
@@ -43,13 +44,13 @@ local buttons = U.clone(buttonsData, true)
 function UpdatePrestige()
 	local scr = getScreen()
 	if scr then
-		scr.UI.setValue("prestigeElem", tostring(math.floor(GetPrestige())))
+		scr.UI.setValue("prestigeElem", tostring(math.floor(GetPrestige() or 0)))
 	end
 end
 function UpdateCrave()
 	local scr = getScreen()
 	if scr then
-		scr.UI.setValue("craveElem", tostring(math.floor(GetPrestige())))
+		scr.UI.setValue("craveElem", tostring(math.floor(GetPrestige() or 0)))
 	end
 end
 

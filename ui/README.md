@@ -6,7 +6,7 @@ The UI is split into modular components using XML bundling via the TTS Tools ext
 
 ### File Structure
 
-```
+```text
 ui/
   defaults_tags.xml       → Tag-based defaults only (include first)
   defaults_classes.xml    → General shared classes (submitButton, statusLabel, etc.)
@@ -53,7 +53,7 @@ ui/
 **Future agents and contributors MUST follow these conventions when creating or editing TTS UI classes.**
 
 | Scope | Convention | Examples |
-|-------|------------|----------|
+| ------- | ---------- | -------- |
 | **General (shared across components)** | No prefix | `submitButton`, `statusLabel`, `panelBase` |
 | **Area-specific** | `area_` prefix | `storyteller_root`, `storyteller_toggleButton`, `storyteller_heading` |
 | **Component-specific** | `componentName_elementRole` | `lightPanel_tableRow` |

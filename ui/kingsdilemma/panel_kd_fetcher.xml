@@ -1,0 +1,34 @@
+<!-- KD Content Fetcher (Orange) -->
+<!-- Sticker and envelope key input panels -->
+
+<!-- ===== Sticker Key Input ===== -->
+<Panel id="kd_stickerQuery_Orange" class="kd_fetcherQuery" visibility="Orange" active="false">
+  <VerticalLayout class="kd_fetcherLayout">
+    <Image class="kd_fetcherBorderTop" />
+    <VerticalLayout class="kd_fetcherLayout">
+      <Image class="kd_fetcherBg" />
+      <Text class="kd_fetcherText">Enter the Sticker key shown on the Dilemma.</Text>
+      <Image class="kd_fetcherInputDecor kd_fetcherStickerBg" />
+      <Image class="kd_fetcherInputDecor kd_fetcherStickerBorder" />
+      <Image class="kd_fetcherInputDecor kd_fetcherStickerIcon" />
+      <InputField class="kd_fetcherInput kd_fetcherSticker"></InputField>
+    </VerticalLayout>
+    <Image class="kd_fetcherBorderBottom" />
+  </VerticalLayout>
+</Panel>
+
+<!-- ===== Envelope Key Input ===== -->
+<Panel id="kd_envelopeQuery_Orange" class="kd_fetcherQuery" visibility="Orange" active="false">
+  <VerticalLayout class="kd_fetcherLayout">
+    <Image class="kd_fetcherBorderTop" />
+    <VerticalLayout class="kd_fetcherLayout">
+      <Image class="kd_fetcherBg" />
+      <Text class="kd_fetcherText">Enter the Envelope key shown on the Dilemma.</Text>
+      <Image class="kd_fetcherInputDecor kd_fetcherEnvelopeBg" />
+      <Image class="kd_fetcherInputDecor kd_fetcherEnvelopeBorder" />
+      <Image class="kd_fetcherInputDecor kd_fetcherEnvelopeIcon" />
+      <InputField class="kd_fetcherInput kd_fetcherEnvelope"></InputField>
+    </VerticalLayout>
+    <Image class="kd_fetcherBorderBottom" />
+  </VerticalLayout>
+</Panel>
