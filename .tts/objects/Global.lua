@@ -414,6 +414,63 @@ function HUD_printState(player, button, id)
 end
 
 --[[
+    Debug test button handlers (admin panel)
+    Each calls the corresponding test from core/debug.ttslua (exposed as globals by that module).
+]]
+
+function HUD_debugRunTests(player, button, id)
+    if runTests then runTests() else broadcastToAll("runTests not loaded", {1, 0.5, 0}) end
+end
+
+function HUD_debugTestConstants(player, button, id)
+    if testConstants then testConstants() else broadcastToAll("testConstants not loaded", {1, 0.5, 0}) end
+end
+
+function HUD_debugTestState(player, button, id)
+    if testState then testState() else broadcastToAll("testState not loaded", {1, 0.5, 0}) end
+end
+
+function HUD_debugTestStatePersistence(player, button, id)
+    if testStatePersistence then testStatePersistence() else broadcastToAll("testStatePersistence not loaded", {1, 0.5, 0}) end
+end
+
+function HUD_debugTestScenes(player, button, id)
+    if testScenes then testScenes() else broadcastToAll("testScenes not loaded", {1, 0.5, 0}) end
+end
+
+function HUD_debugTestAllScenes(player, button, id)
+    if testAllScenes then testAllScenes() else broadcastToAll("testAllScenes not loaded", {1, 0.5, 0}) end
+end
+
+function HUD_debugTestZones(player, button, id)
+    if testZones then testZones() else broadcastToAll("testZones not loaded", {1, 0.5, 0}) end
+end
+
+function HUD_debugTestMain(player, button, id)
+    if testMain then testMain() else broadcastToAll("testMain not loaded", {1, 0.5, 0}) end
+end
+
+function HUD_debugTestUI(player, button, id)
+    if testUI then testUI() else broadcastToAll("testUI not loaded", {1, 0.5, 0}) end
+end
+
+function HUD_debugTestUtilities(player, button, id)
+    if testUtilities then testUtilities() else broadcastToAll("testUtilities not loaded", {1, 0.5, 0}) end
+end
+
+function HUD_debugTestLightingAndSignals(player, button, id)
+    if testLightingAndSignals then testLightingAndSignals() else broadcastToAll("testLightingAndSignals not loaded", {1, 0.5, 0}) end
+end
+
+function HUD_debugTestEasing(player, button, id)
+    if testEasing then testEasing() else broadcastToAll("testEasing not loaded", {1, 0.5, 0}) end
+end
+
+function HUD_debugTestIntegration(player, button, id)
+    if testIntegration then testIntegration() else broadcastToAll("testIntegration not loaded", {1, 0.5, 0}) end
+end
+
+--[[
     Sidebar reference popup handlers (Heritage-style)
     Called by storyteller sidebar Image buttons: onMouseDown/Up/Enter/Exit.
     id is the button element id (e.g. hudRefBattlegroundsHost); popup id is "Ref..." (strip "hud").
