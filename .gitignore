@@ -42,3 +42,8 @@ UI/src/**/*.js.map
 dist/
 build/
 dev/TTS-Scripting-Guide-Modules/*_Save_*.json
+# Ignore contents of these dirs (not the dirs themselves, so negation can work)
+.tts/bundled/*
+.tts/objects/*
+# Exception: keep Global.lua in objects tracked (source of truth)
+!.tts/objects/Global.lua
