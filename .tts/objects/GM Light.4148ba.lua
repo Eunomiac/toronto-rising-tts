@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 function onLoad(save_state)
 	self.addContextMenuItem("Apply Settings", apply, false)
 	apply()

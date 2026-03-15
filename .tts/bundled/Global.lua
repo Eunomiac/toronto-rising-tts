@@ -429,6 +429,78 @@ function HUD_logState(player, button, id)
     broadcastToColor("Game state logged to console.", player.color, {0, 1, 1})
 end
 
+--- Print entire game state to host console and to game chat (chunked).
+-- Called when the Storyteller left-panel "Print State" button is clicked.
+-- TTS Lua cannot write to files; full state is printed to console and broadcast to chat.
+-- @param player Player The player who clicked (Host/Black)
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_printState(player, button, id)
+    local state = S.getGameState()
+    local jsonStr = JSON.encode_pretty(state)
+    if not jsonStr or jsonStr == "" then
+        broadcastToAll("Game state is empty.", {1, 0.5, 0})
+        return
+    end
+    -- Always print full state to host console
+    print("=== GAME STATE ===")
+    print(jsonStr)
+    print("==================")
+    -- Broadcast to game chat in chunks (TTS chat has a message length limit)
+    local chunkSize = 450
+    local len = #jsonStr
+    broadcastToAll("--- Game state (host console has full dump) ---", {0.7, 0.7, 1})
+    for start = 1, len, chunkSize do
+        local chunk = string.sub(jsonStr, start, start + chunkSize - 1)
+        broadcastToAll(chunk, {0.85, 0.85, 0.9})
+    end
+    broadcastToAll("--- End state ---", {0.7, 0.7, 1})
+end
+
+--[[
+    Sidebar reference popup handlers (Heritage-style)
+    Called by storyteller sidebar Image buttons: onMouseDown/Up/Enter/Exit.
+    id is the button element id (e.g. hudRefBattlegroundsHost); popup id is "Ref..." (strip "hud").
+]]
+
+--- Show reference popup for sidebar button. Right-click (value "-2") keeps it open via ON state.
+function HUD_show(player, value, id)
+    local imageID = string.gsub(id, "hud", "")
+    -- If already toggled ON (right-click pin), turn off and return
+    if UI.getValue(id) == "ON" then
+        UI.setValue(id, "")
+        UI.hide(imageID)
+        UI.setAttribute(id .. "Overlay", "color", "clear")
+        return
+    end
+    -- Right-click: mark as ON so HUD_hide does not close the popup
+    if value == "-2" then
+        UI.setValue(id, "ON")
+    end
+    UI.show(imageID)
+end
+
+--- Hide reference popup on mouse up unless it was right-click pinned (ON).
+function HUD_hide(player, value, id)
+    if UI.getValue(id) ~= "ON" then
+        UI.hide(string.gsub(id, "hud", ""))
+    end
+end
+
+--- Hover highlight: set overlay to white.
+function HUD_highlight(player, value, id)
+    local overlayID = id .. "Overlay"
+    UI.setAttribute(overlayID, "color", "#FFFFFF")
+end
+
+--- Hover end: dim overlay back to clear unless popup is pinned ON.
+function HUD_dim(player, value, id)
+    if UI.getValue(id) ~= "ON" then
+        local overlayID = id .. "Overlay"
+        UI.setAttribute(overlayID, "color", "clear")
+    end
+end
+
 --[[
     UI Display Update Functions
     These functions update UI elements to reflect current game state.
@@ -5437,6 +5509,7 @@ return U
 
 end)
 __bundle_register("lib.console", function(require, _LOADED, __bundle_register, __bundle_modules)
+---@diagnostic disable: deprecated
 require("lib.Console.console++")
 
 -- function prototype
@@ -5510,6 +5583,7 @@ end
 
 end)
 __bundle_register("lib.Console.console++", function(require, _LOADED, __bundle_register, __bundle_modules)
+---@diagnostic disable: deprecated, duplicate-set-field, undefined-global, lowercase-global, cast-local-type, undefined-field, need-check-nil, param-type-mismatch
 require("lib.Console.console")
 
 if not console.plusplus then
@@ -6601,6 +6675,7 @@ end
 
 end)
 __bundle_register("lib.Console.console", function(require, _LOADED, __bundle_register, __bundle_modules)
+---@diagnostic disable: deprecated, duplicate-set-field, undefined-global, lowercase-global
 if not console then
     console = {}
 
@@ -7717,24 +7792,24 @@ end
 ]]
 
 --- Test UI display updates
--- Tests: updateUIDisplays, UI.setValue
+-- Tests: UpdateUIDisplays, UI.setValue
 function DEBUG.testUI()
     printTestHeader("UI Display Updates")
     DEBUG.logToFile("INFO", "Starting testUI()", "debug_log")
 
-    -- Note: This requires the UI to be loaded and updateUIDisplays to be defined globally
+    -- Note: This requires the UI to be loaded and UpdateUIDisplays to be defined globally
 
     -- Test 1: Update phase display
     do
         S.setStateVal("PLAY", "currentPhase")
-        updateUIDisplays()  -- Call the global function directly
+        UpdateUIDisplays()  -- Call the global function directly
         printTestResult("Update UI phase display", true, "Should update currentPhaseDisplay")
     end
 
     -- Test 2: Update scene display
     do
         Scenes.loadScene("tension")
-        updateUIDisplays()
+        UpdateUIDisplays()
         printTestResult("Update UI scene display", true, "Should update currentSceneDisplay")
     end
 
@@ -7745,7 +7820,7 @@ function DEBUG.testUI()
             S.setPlayerVal(testColor, "hunger", 2)
             -- Note: willpower and health are static data in C.PlayerData, not dynamic state
             -- Only hunger is currently saved as dynamic state
-            updateUIDisplays()
+            UpdateUIDisplays()
             printTestResult("Update player stats", true, "Should update " .. testColor .. " player's hunger")
         else
             printTestResult("Update player stats", false, "No seated players found for test")
@@ -9693,7 +9768,7 @@ function DEBUG.testIntegration()
 
     -- Step 4: Update UI
     print("\n4. Updating UI...")
-    updateUIDisplays()
+    UpdateUIDisplays()
     print("   ✓ UI updated")
 
     -- Step 5: Verify state
@@ -9767,7 +9842,7 @@ function DEBUG.setHunger(color, value)
     S.setPlayerVal(color, "hunger", value)
     print("Set " .. color .. " player (ID: " .. playerID .. ") hunger to " .. tostring(value))
 
-    updateUIDisplays()
+    UpdateUIDisplays()
 end
 
 --- Quick test: Change scene

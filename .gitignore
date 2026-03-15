@@ -41,3 +41,4 @@ UI/src/**/*.js.map
 # Build outputs
 dist/
 build/
+dev/TTS-Scripting-Guide-Modules/*_Save_*.json

@@ -45,35 +45,75 @@
   <Panel class="panel-base" color="rgba(0, 0, 0, 0.7)" padding="10 10 10 10" />
   <Panel class="panel-dark" color="rgba(0, 0, 0, 0.85)" padding="10 10 10 10" />
 
-  <!-- Toggle Button Panel (storyteller scaffold) -->
-  <HorizontalLayout class="buttonPanel"
-    spacing="5"
-    padding="5 5 5 5"
-    childAlignment="MiddleLeft"
-    childForceExpandWidth="false" />
+  <!-- Button Sizes -->
+  <Button class="smallButton"
+    minWidth="100"
+    preferredWidth="100" />
 
-  <Button class="buttonPanelToggle"
-    minWidth="25"
-    minHeight="25"
-    preferredWidth="25"
-    preferredHeight="25"
-    fontSize="14"
-    text="►"
+  <!-- Debug Panel Styles -->
+  <Panel class="debugPanel"
+    color="rgba(0,0,0,0.75)"
+    height="400"
+    width="350"
+    padding="5 5 5 5"
+    scale="0.75"
+    rectAlignment="MiddleLeft"
+    offsetXY="250 0" />
+
+  <Text class="debugText"
+    preferredWidth="200"
+    alignment="UpperLeft"
+    color="#FFFFFF"
+    outline="#000000"
+    outlineSize="1 1" />
+
+  <!-- Reminder/Alert Panel Styles -->
+  <Panel class="reminderPanel"
+    color="Black"
+    padding="15 5 5 5"
+    scale="0.75"
+    outline="#FF0000"
+    outlineSize="2 2" />
+
+  <Text class="reminderHeading reminderAction"
+    color="#FFFFFF"
+    alignment="MiddleLeft"
+    outline="#000000"
+    outlineSize="1 1"
+    flexibleHeight="0" />
+  <Text class="reminderAction"
+    fontSize="24"
+    fontStyle="Bold"
+    outline="#550000"
+    color="Red" />
+  <Text class="reminderHeading"
+    fontSize="18"
+    fontStyle="Bold"
+    outline="#555500"
+    color="Yellow" />
+
+  <!-- Image Button Layers (base + overlay for hover highlight pattern) -->
+  <Image class="imageButtonBase"
+    raycastTarget="true"
     color="rgba(0.5, 0.5, 0.5, 1)" />
 
-  <VerticalLayout class="buttonBar"
-    spacing="5"
-    padding="5 5 5 5"
-    childAlignment="UpperLeft"
-    active="False" />
+  <Image class="imageButtonOverlay"
+    color="clear"
+    raycastTarget="false" />
 
-  <!-- Admin/Storyteller Container (positioning overridden per use) -->
-  <VerticalLayout class="adminContainer"
-    width="400"
-    spacing="5"
-    padding="10 10 10 10"
-    rectAlignment="UpperLeft"
-    offsetXY="10 10" />
+  <Image class="imageBorder"
+    rectAlignment="MiddleLeft" />
+
+  <!-- Popup Image Styles (hidden fullscreen image popups) -->
+  <Image class="popupImage"
+    active="false" />
+
+  <Image class="popupImageNarrow"
+    width="60%" />
+
+  <Panel class="popupImageContainer"
+    childForceExpandWidth="false"
+    childForceExpandHeight="false" />
 
   <!-- Status Display Styles -->
   <Text class="statusText"
@@ -136,162 +176,543 @@
 <!-- 3. Storyteller HUD (Host|Black): layout + 4 panels -->
 <!-- include ui/storyteller/hud_storyteller_defaults -->
 <!-- Storyteller HUD Defaults -->
-<!-- Classes for layout elements and multi-component use. Include before hud_storyteller. -->
+<!-- Heritage admin panel + sidebar + camera classes. Include before hud_storyteller. -->
 
 <Defaults>
-  <!-- Storyteller root container (bottom-right) -->
-  <VerticalLayout class="storyteller_root"
-    width="520"
+
+  <!-- ================================================================ -->
+  <!-- Admin Panel Classes (left-side button controls)                   -->
+  <!-- ================================================================ -->
+
+  <!-- Main button column: left-aligned, half-scale, vertically stacked -->
+  <VerticalLayout class="storyteller_buttonControls"
+    padding="10 10 5 5"
     spacing="5"
-    padding="10 10 10 10"
+    rectAlignment="MiddleLeft"
+    childAlignment="UpperLeft"
+    width="160"
+    offsetXY="0 -90"
+    scale="0.5"
+    flexibleWidth="0"
+    flexibleHeight="0"
+    childForceExpandWidth="false"
+    childForceExpandHeight="false" />
+
+  <!-- Debug sub-panel: horizontal row of button columns offset right -->
+  <HorizontalLayout class="storyteller_subButtonControls"
+    spacing="5"
+    offsetXY="75 50"
+    width="200"
+    height="500"
+    rectAlignment="MiddleLeft"
+    flexibleWidth="0"
+    flexibleHeight="0"
+    childForceExpandWidth="false"
+    childForceExpandHeight="false" />
+
+  <!-- Debug traits overlay panel (positioning specific to storyteller layout) -->
+  <Panel class="storyteller_debugTraits"
+    height="900"
+    width="800"
+    rectAlignment="UpperRight"
+    offsetXY="-400 -100" />
+
+  <!-- Per-color debug trait text offsets -->
+  <Text class="storyteller_debugTraitsRed" offsetXY="0 0" />
+  <Text class="storyteller_debugTraitsYellow" offsetXY="200 0" />
+  <Text class="storyteller_debugTraitsBlue" offsetXY="400 0" />
+  <Text class="storyteller_debugStickers" offsetXY="600 0" />
+
+  <!-- ================================================================ -->
+  <!-- Sidebar Classes (right-side reference image toggles)             -->
+  <!-- ================================================================ -->
+
+  <!-- Faction icon container (bottom-right, above camera bar) -->
+  <HorizontalLayout class="storyteller_factionIconContainer"
     rectAlignment="LowerRight"
-    offsetXY="10 10" />
+    padding="0 400 0 20"
+    spacing="0"
+    height="150"
+    width="800"
+    scale="0.7"
+    childAlignment="LowerLeft"
+    childForceExpandHeight="true"
+    childForceExpandWidth="false" />
 
-  <!-- Storyteller toggle button (inactive state) -->
-  <Button class="storyteller_toggleButton"
-    preferredWidth="120"
-    preferredHeight="40"
-    fontSize="12"
-    fontStyle="Bold"
-    colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+  <!-- Camera control bar (bottom-right row) -->
+  <HorizontalLayout class="storyteller_cameraControls"
+    rectAlignment="LowerRight"
+    padding="0 0 0 0"
+    spacing="0"
+    height="28"
+    width="800"
+    scale="0.7"
+    childAlignment="LowerRight"
+    childForceExpandHeight="true"
+    childForceExpandWidth="false" />
 
-  <!-- Storyteller panel heading -->
-  <Text class="storyteller_heading"
-    fontSize="16"
-    color="#FFD700"
-    fontStyle="Bold" />
+  <!-- Camera button: clickable image with hover handlers -->
+  <Image class="storyteller_cameraButton"
+    raycastTarget="true"
+    onMouseDown="HUD_cameraSet"
+    onMouseEnter="HUD_highlight"
+    onMouseExit="HUD_dim" />
+
+  <!-- Right sidebar panel container -->
+  <Panel class="storyteller_sidebar"
+    rectAlignment="LowerRight"
+    height="740"
+    width="125"
+    offsetXY="0 100" />
+
+  <!-- Right sidebar inner vertical layout -->
+  <VerticalLayout class="storyteller_sidebarLayout"
+    height="100%"
+    width="100%"
+    childAlignment="LowerLeft"
+    childForceExpandHeight="false"
+    childForceExpandWidth="true" />
+
+  <!-- Reference toggle button: show/hide on mouse events -->
+  <Image class="storyteller_refButton"
+    onMouseDown="HUD_show"
+    onMouseUp="HUD_hide"
+    onMouseEnter="HUD_highlight"
+    onMouseExit="HUD_dim" />
+
+
 </Defaults>
 
 <!-- include ui/storyteller/hud_storyteller_defaults -->
 <!-- include ui/storyteller/hud_storyteller -->
 <!-- Storyteller HUD Layout -->
 <!-- Visibility: Host|Black (Storyteller/GM) -->
-<!-- Bottom-right: toggle bar (anchor) + pop-out content with 4 panels -->
+<!-- Reproduces Heritage admin.xml: left-side game phase controls + debug panels -->
+<!-- Also includes sidebar (reference toggles) and camera bar via sub-includes -->
 
-<Panel padding="0 0 0 0">
-  <HorizontalLayout id="storytellerRoot" height="100%" width="100%" visibility="Host|Black" >
+<Panel id="adminControls" visibility="Host|Black" active="true">
 
-    <!-- Left Column -->
-    <VerticalLayout id="storytellerLeftColumn" preferredWidth="200" flexibleWidth="0">
-      <Text>Left Column</Text>
+  <!-- ================================================================ -->
+  <!-- Main Button Column (left side, half-scale)                       -->
+  <!-- Game phase progression: SETUP -> INIT -> START -> SCORING ->     -->
+  <!--   MISSIONS -> AFTERMATH -> END                                   -->
+  <!-- ================================================================ -->
+  <VerticalLayout class="storyteller_buttonControls" visibility="Host|Black">
+    <Button onClick="HUD_setupGame" color="#770000">0 - SETUP</Button>
+    <Button onClick="HUD_initGame" color="#880000">1 - INIT</Button>
+    <Button onClick="HUD_startGame" color="#990000">2 - START</Button>
+    <Button class="smallButton" onClick="HUD_endCourtVote" color="#99FF99">End Vote</Button>
+    <Button class="smallButton" onClick="HUD_overrideFirstPlayer" color="#99FFFF">First Player</Button>
+    <Button class="smallButton" onClick="HUD_askRoundAndTurn" color="#FFFF00">Fix Turn</Button>
+    <Button class="smallButton" onClick="HUD_toggleHavens" color="#FFFF00">Havens</Button>
+    <Text class="spacer_15"></Text>
+    <Button onClick="HUD_scoreGame" color="#AA0000">3 - SCORING</Button>
+    <Button class="smallButton" onClick="HUD_updateScore" color="#00FF00">Refresh</Button>
+    <Text class="spacer_15"></Text>
+    <Button onClick="HUD_missionsGame" color="#BB0000">4 - MISSIONS</Button>
+    <Button class="smallButton" onClick="HUD_updateTraits" color="#00BBBB">+Trait</Button>
+    <Text class="spacer_15"></Text>
+    <Button onClick="HUD_afterGame" color="#CC0000">5 - AFTERMATH</Button>
+    <Button class="smallButton" onClick="HUD_updateSticker" color="#00BBBB">+Sticker</Button>
+    <Button class="smallButton" onClick="HUD_switchStickerTraits" color="#00FFFF">Switch</Button>
+    <Button class="smallButton" onClick="HUD_processCardSpots" color="#FFFF00">Process</Button>
+    <Text class="spacer_15"></Text>
+    <Button onClick="HUD_endGame" color="#DD0000">6 - END</Button>
+    <Text class="spacer_15"></Text>
+    <Button onClick="HUD_printState">Print State</Button>
+    <Button onClick="HUD_toggleHUD">HUD</Button>
+  </VerticalLayout>
 
+  <!-- ================================================================ -->
+  <!-- Debug Sub-Panel (hidden by default, toggled by Debug button)     -->
+  <!-- ================================================================ -->
+  <HorizontalLayout id="debugControls" class="storyteller_subButtonControls" active="false" visibility="Host|Black">
+
+    <!-- Debug Left Column -->
+    <VerticalLayout class="storyteller_buttonControls storyteller_subButtonControls" visibility="Host|Black">
+      <Button id="debugToggleZones" onClick="HUD_toggleZonesActive" color="#00FF00">Zones (Active)</Button>
+      <Text class="spacer_20"></Text>
+      <Text class="spacer_20"></Text>
+      <Button onClick="HUD_toggleScores" color="#00FF00">SCORES</Button>
+      <Text class="spacer_5"></Text>
+      <Text class="spacer_5"></Text>
+      <Button onClick="HUD_showTraits" color="#00BBBB">TRAITS</Button>
+      <Button onClick="HUD_showStickers" color="#00BBBB">STICKERS</Button>
+      <Text class="spacer_5"></Text>
+      <Button onClick="HUD_setChapterData" color="#993399">Chapter Text</Button>
+      <Text class="spacer_5"></Text>
+      <Text class="spacer_5"></Text>
+      <Text class="spacer_5"></Text>
+      <Button onClick="HUD_processCharacterDeck" color="#FF8C00">Process CDeck</Button>
+      <Button onClick="HUD_sortCharacterDeck" color="#FF8C00">Sort CDeck</Button>
+      <Text class="spacer_15"></Text>
+      <Button onClick="HUD_toggleTraitDebug">View Traits</Button>
+      <Button onClick="HUD_toggleZoneVisibility">Zones</Button>
+      <Text class="spacer_15"></Text>
+      <Button onClick="HUD_debugEndGame" color="#444444">End Game</Button>
+      <Text class="spacer_15"></Text>
+      <Button onClick="HUD_refreshState">Refresh</Button>
     </VerticalLayout>
 
-    <!-- Center Column -->
-    <VerticalLayout id="storytellerCenterColumn" preferredWidth="500" flexibleWidth="0">
-
-
-
+    <!-- Debug Right Column (offset right) -->
+    <VerticalLayout class="storyteller_buttonControls storyteller_subButtonControls" visibility="Host|Black" ignoreLayout="true" offsetXY="75 0">
+      <Button id="debugZoomCard" onClick="HUD_debugCardZoom">Zoom</Button>
+      <Button id="debugClearZoom" onClick="HUD_debugClearZoom">End</Button>
+      <Text class="spacer_15"></Text>
+      <Button id="debugResetState" onClick="HUD_resetGameState" color="Red">Reset</Button>
+      <Text class="spacer_15"></Text>
+      <Button id="debugTestFunc1" onClick="HUD_testFunc1">TestFunc 1</Button>
+      <Button id="debugTestFunc2" onClick="HUD_testFunc2">TestFunc 2</Button>
+      <Button id="debugTestFunc3" onClick="HUD_testFunc3">TestFunc 3</Button>
     </VerticalLayout>
 
-    <!-- Right Column -->
-    <VerticalLayout id="storytellerRightColumn" preferredWidth="200" flexibleWidth="0">
-
-
-
-
-
-
-  <HorizontalLayout class="buttonPanel" spacing="5" padding="5 5 5 5" childAlignment="LowerRight" childForceExpandWidth="false" childForceExpandHeight="false">
-    <!-- Pop-out content: hidden by default, shown when a panel is selected -->
-    <VerticalLayout id="storytellerContentArea" class="buttonBar" active="False" spacing="0" childAlignment="BottomRight" childForceExpandWidth="false" childForceExpandHeight="false">
-      <!-- include panel_lighting -->
-      <!-- Light Panel -->
-      <!-- Debug panel for inspecting/editing spotlights. Rows injected by LightDebug.refreshLightDebugPanel() -->
-
-      <Panel id="panel_lighting" active="False" color="#FFD700" padding="2 2 2 2" preferredHeight="330" flexibleHeight="0">  <!-- Gold border -->
-        <Panel color="#000000" padding="4 4 4 4">  <!-- Black background -->
-          <VerticalLayout spacing="2" padding="0 0 0 0" childForceExpandHeight="false" flexibleHeight="0" flexibleWidth="0" preferredHeight="330" preferredWidth="500" childForceExpandWidth="false">
-            <Text fontSize="9" color="#FFD700">Light Debug Panel</Text>
-            <Text fontSize="8" color="#DAA520">Color (r,g,b), Range, Angle, Intensity, Update</Text>
-            <VerticalScrollView preferredWidth="500" preferredHeight="210" minHeight="120" flexibleHeight="0" flexibleWidth="0" verticalScrollbarVisibility="AutoHide" color="#000000" scrollbarBackgroundColor="#333333">
-              <TableLayout id="lightTableContainer" columnWidths="70 70 55 55 35 35 35 28" cellBackgroundColor="#000000" rowBackgroundColor="#000000" cellPadding="0 0 0 0" cellSpacing="2" autoCalculateHeight="true">
-                <Row preferredHeight="22">
-                  <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Name</Text></Cell>
-                  <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Pos</Text></Cell>
-                  <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Rot</Text></Cell>
-                  <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Color</Text></Cell>
-                  <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Range</Text></Cell>
-                  <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Angle</Text></Cell>
-                  <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Int</Text></Cell>
-                  <Cell><Text fontSize="8" color="#FFD700" fontStyle="Bold">Upd</Text></Cell>
-                </Row>
-                <Row id="lightTableRowsPlaceholder" preferredHeight="0"><Cell columnSpan="8"/></Row>
-              </TableLayout>
-            </VerticalScrollView>
-            <Button id="lightDebugRefresh" onClick="HUD_lightRefresh" preferredWidth="80" fontSize="9" color="#444444">Refresh</Button>
-          </VerticalLayout>
-        </Panel>
-      </Panel>
-
-      <!-- include panel_lighting -->
-      <!-- include panel_scenes -->
-      <!-- Scenes Panel -->
-      <!-- Scene preset controls (Default, Elysium, Alley, etc.) -->
-
-      <VerticalLayout id="panel_scenes" active="False" spacing="5" padding="10 10 10 10">
-        <Text class="storyteller_heading">Scene Controls</Text>
-        <Button id="scene_default" onClick="HUD_changeScene">Default</Button>
-        <Button id="scene_elysium" onClick="HUD_changeScene">Elysium</Button>
-        <Button id="scene_alley" onClick="HUD_changeScene">Alley</Button>
-        <Button id="scene_haven" onClick="HUD_changeScene">Haven</Button>
-        <Button id="scene_tension" onClick="HUD_changeScene">Tension</Button>
-        <Button id="scene_combat" onClick="HUD_changeScene">Combat</Button>
-        <Button id="scene_suspicion" onClick="HUD_changeScene">Suspicion</Button>
-        <Button id="scene_social" onClick="HUD_changeScene">Social</Button>
-      </VerticalLayout>
-
-      <!-- include panel_scenes -->
-      <!-- include panel_pcs -->
-      <!-- PCs Panel -->
-      <!-- Player/character controls. Placeholder for future expansion. -->
-
-      <VerticalLayout id="panel_pcs" active="False" spacing="5" padding="10 10 10 10">
-        <Text class="storyteller_heading">PCs</Text>
-        <Text fontSize="12" color="#AAAAAA">Player/character controls - coming soon</Text>
-      </VerticalLayout>
-
-      <!-- include panel_pcs -->
-      <!-- include panel_phases -->
-      <!-- Phases Panel -->
-      <!-- Phase controls, utilities, debug. Current phase/scene display. -->
-
-      <VerticalLayout id="panel_phases" active="False" spacing="5" padding="10 10 10 10">
-        <Text class="storyteller_heading">Phase Control</Text>
-        <HorizontalLayout spacing="10" padding="5 5 5 5" childAlignment="MiddleLeft">
-          <Text fontSize="14" color="#CCCCCC" preferredWidth="120">Current Phase:</Text>
-          <Text id="currentPhaseDisplay" fontSize="14" color="#FFFFFF">Initialization</Text>
-        </HorizontalLayout>
-        <HorizontalLayout spacing="10" padding="5 5 5 5" childAlignment="MiddleLeft">
-          <Text fontSize="14" color="#CCCCCC" preferredWidth="120">Current Scene:</Text>
-          <Text id="currentSceneDisplay" fontSize="14" color="#FFFFFF">default</Text>
-        </HorizontalLayout>
-        <Button id="phase_play" onClick="HUD_advancePhase" color="#00AA00">Enter Play</Button>
-        <Button id="phase_combat" onClick="HUD_advancePhase" color="#AA0000">Enter Combat</Button>
-        <Text fontSize="14" color="#FFD700" fontStyle="Bold">Utilities</Text>
-        <Button id="utility_reset" onClick="HUD_resetGame" color="#AA0000">Reset Game</Button>
-        <Button id="utility_save" onClick="HUD_saveState" color="#00AA00">Save State</Button>
-        <Text fontSize="14" color="#FF6666" fontStyle="Bold">Debug</Text>
-        <Button id="debug_zones" onClick="HUD_toggleZones" color="#00FF00">Toggle Zones</Button>
-        <Button id="debug_logState" onClick="HUD_logState" color="#6666FF">Log State</Button>
-      </VerticalLayout>
-
-      <!-- include panel_phases -->
-    </VerticalLayout>
-
-    <!-- Anchor: vertical stack of 4 toggle buttons (always visible) -->
-    <HorizontalLayout id="storytellerButtonBar" flexibleHeight="0" spacing="2" ignoreLayout="true" width="600" height="30" rectAlignment="LowerRight" offsetXY="-30 0" rotation="0 0 -90">
-      <Button id="toggle_phases" class="storyteller_toggleButton" onClick="HUD_selectStorytellerPanel" text="PHASES"/>
-      <Button id="toggle_pcs" class="storyteller_toggleButton" onClick="HUD_selectStorytellerPanel" text="PCs" />
-      <Button id="toggle_scenes" class="storyteller_toggleButton" onClick="HUD_selectStorytellerPanel" text="SCENES" />
-      <Button id="toggle_lighting" class="storyteller_toggleButton" onClick="HUD_selectStorytellerPanel" text="LIGHTING" />
-    </HorizontalLayout>
   </HorizontalLayout>
 
+  <!-- ================================================================ -->
+  <!-- Debug State Display Panel                                        -->
+  <!-- ================================================================ -->
+  <Panel id="debugStatePanel" active="false" class="debugPanel">
+    <Text id="debugState" class="debugText"></Text>
+  </Panel>
+
+  <!-- ================================================================ -->
+  <!-- Debug Traits Display Panel                                       -->
+  <!-- ================================================================ -->
+  <Panel id="debugTraitsPanel" active="false" class="debugPanel storyteller_debugTraits">
+    <Text id="debugTraitsRed" class="debugText storyteller_debugTraitsRed"></Text>
+    <Text id="debugTraitsYellow" class="debugText storyteller_debugTraitsYellow"></Text>
+    <Text id="debugTraitsBlue" class="debugText storyteller_debugTraitsBlue"></Text>
+    <Text id="debugStickers" class="debugText storyteller_debugTraitsBlue storyteller_debugStickers"></Text>
+  </Panel>
+
+  <!-- ================================================================ -->
+  <!-- Sidebar (reference image toggles) and Camera bar                 -->
+  <!-- ================================================================ -->
+  <!-- include panel_sidebar -->
+  <!-- Sidebar Panel -->
+  <!-- Right-side reference image toggles for Host|Black -->
+  <!-- Reproduces Heritage hud.xml sidebar: dual-layer buttons (base + overlay) -->
+  <!-- Mouse-down shows reference popup, right-click toggles it on -->
+
+  <Panel id="hudSidebarHost" class="storyteller_sidebar" visibility="Host|Black">
+
+    <!-- ================================================================ -->
+    <!-- Base Layer: toggle button images (grey-tinted, clickable)        -->
+    <!-- ================================================================ -->
+    <VerticalLayout class="storyteller_sidebarLayout">
+
+      <!-- Battlegrounds Group (silver borders) -->
+      <Image class="imageBorder" image="hud-border-silver-top" />
+      <Image id="hudRefBattlegroundsHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-battlegrounds" />
+      <Image id="hudRefAncillaeAHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-ancillaeA" />
+      <Image id="hudRefAncillaeBHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-ancillaeB" />
+      <Image id="hudRefAncillaeCHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-ancillaeC" />
+      <Image id="hudRefAncillaeDHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-ancillaeD" />
+      <Image id="hudRefAncillaeEHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-ancillaeE" />
+      <Image class="imageBorder" image="hud-border-silver-bottom" />
+
+      <!-- Clans Group (gold borders) -->
+      <Image class="imageBorder" image="hud-border-gold-top" />
+      <Image id="hudRefBrujahHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-clanBrujah" />
+      <Image id="hudRefGangrelHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-clanGangrel" />
+      <Image id="hudRefLasombraHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-clanLasombra" />
+      <Image id="hudRefMalkavianHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-clanMalkavian" />
+      <Image id="hudRefNosferatuHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-clanNosferatu" />
+      <Image id="hudRefToreadorHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-clanToreador" />
+      <Image id="hudRefTremereHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-clanTremere" />
+      <Image id="hudRefTzimisceHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-clanTzimisce" />
+      <Image id="hudRefVentrueHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-clanVentrue" />
+      <Image class="imageBorder" image="hud-border-gold-bottom" />
+
+      <!-- Traits Group (silver borders) -->
+      <Image class="imageBorder" image="hud-border-silver-top" />
+      <Image id="hudRefTraits1Host"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-traits1" />
+      <Image id="hudRefTraits2Host"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-traits2" />
+      <Image id="hudRefTraits3Host"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-traits3" />
+      <Image class="imageBorder" image="hud-border-silver-bottom" />
+
+      <!-- Misc Group (silver borders) -->
+      <Image class="imageBorder" image="hud-border-silver-top" />
+      <Image id="hudRefAssetsHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-assets" />
+      <Image id="hudRefPlayersHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-players" />
+      <Image id="hudRefSymbolsHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-symbols" />
+      <Image id="hudRefExpansionsHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-expansions" />
+      <Image class="imageBorder" image="hud-border-silver-bottom" />
+
+      <!-- Fourth Row (gold borders) -->
+      <Image class="imageBorder" image="hud-border-gold-top" />
+      <Image id="hudMakeFourthRowHost"
+        class="storyteller_refButton imageButtonBase"
+        image="hud-toggle-fourthRow" />
+      <Image class="imageBorder" image="hud-border-gold-bottom" />
 
     </VerticalLayout>
-</HorizontalLayout>
+
+    <!-- ================================================================ -->
+    <!-- Overlay Layer: hover highlight (transparent, turns white)        -->
+    <!-- ================================================================ -->
+    <VerticalLayout class="storyteller_sidebarLayout">
+
+      <!-- Battlegrounds Group -->
+      <Image class="imageBorder" image="hud-border-silver-top" />
+      <Image id="hudRefBattlegroundsHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-battlegrounds" />
+      <Image id="hudRefAncillaeAHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-ancillaeA" />
+      <Image id="hudRefAncillaeBHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-ancillaeB" />
+      <Image id="hudRefAncillaeCHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-ancillaeC" />
+      <Image id="hudRefAncillaeDHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-ancillaeD" />
+      <Image id="hudRefAncillaeEHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-ancillaeE" />
+      <Image class="imageBorder" image="hud-border-silver-bottom" />
+
+      <!-- Clans Group -->
+      <Image class="imageBorder" image="hud-border-gold-top" />
+      <Image id="hudRefBrujahHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-clanBrujah" />
+      <Image id="hudRefGangrelHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-clanGangrel" />
+      <Image id="hudRefLasombraHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-clanLasombra" />
+      <Image id="hudRefMalkavianHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-clanMalkavian" />
+      <Image id="hudRefNosferatuHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-clanNosferatu" />
+      <Image id="hudRefToreadorHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-clanToreador" />
+      <Image id="hudRefTremereHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-clanTremere" />
+      <Image id="hudRefTzimisceHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-clanTzimisce" />
+      <Image id="hudRefVentrueHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-clanVentrue" />
+      <Image class="imageBorder" image="hud-border-gold-bottom" />
+
+      <!-- Traits Group -->
+      <Image class="imageBorder" image="hud-border-silver-top" />
+      <Image id="hudRefTraits1HostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-traits1" />
+      <Image id="hudRefTraits2HostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-traits2" />
+      <Image id="hudRefTraits3HostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-traits3" />
+      <Image class="imageBorder" image="hud-border-silver-bottom" />
+
+      <!-- Misc Group -->
+      <Image class="imageBorder" image="hud-border-silver-top" />
+      <Image id="hudRefAssetsHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-assets" />
+      <Image id="hudRefPlayersHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-players" />
+      <Image id="hudRefSymbolsHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-symbols" />
+      <Image id="hudRefExpansionsHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-expansions" />
+      <Image class="imageBorder" image="hud-border-silver-bottom" />
+
+      <!-- Fourth Row -->
+      <Image class="imageBorder" image="hud-border-gold-top" />
+      <Image id="hudMakeFourthRowHostOverlay"
+        class="storyteller_refButton imageButtonOverlay"
+        image="hud-toggle-fourthRow" />
+      <Image class="imageBorder" image="hud-border-gold-bottom" />
+
+    </VerticalLayout>
+
+  </Panel>
+
+  <!-- ================================================================== -->
+  <!-- Reference Image Popups (fullscreen, hidden by default)             -->
+  <!-- Shown by HUD_show when sidebar buttons are clicked                 -->
+  <!-- ================================================================== -->
+  <Panel class="popupImageContainer" visibility="Host|Black">
+
+    <!-- Rules References -->
+    <Image id="RefPlayersHost" height="95%"
+      class="popupImage"
+      image="ref-players" />
+    <Image id="RefBattlegroundsHost" height="80%"
+      class="popupImage"
+      image="ref-battlegrounds" />
+    <Image id="RefSymbolsHost"
+      class="popupImage" height="70%"
+      image="ref-symbols" />
+    <Image id="RefAssetsHost"
+      class="popupImage" height="25%"
+      image="ref-assets" />
+    <Image id="RefAncillaeAHost"
+      class="popupImage" width="90%"
+      image="ref-ancillaeA" />
+    <Image id="RefAncillaeBHost"
+      class="popupImage" width="90%"
+      image="ref-ancillaeB" />
+    <Image id="RefAncillaeCHost"
+      class="popupImage" width="90%"
+      image="ref-ancillaeC" />
+    <Image id="RefAncillaeDHost"
+      class="popupImage" width="90%"
+      image="ref-ancillaeD" />
+    <Image id="RefAncillaeEHost"
+      class="popupImage" width="90%"
+      image="ref-ancillaeE" />
+    <Image id="RefExpansionsHost"
+      class="popupImage" height="90%"
+      image="ref-expansions" />
+
+    <!-- Clans -->
+    <Image id="RefBrujahHost"
+      class="popupImage popupImageNarrow"
+      image="ref-clanBrujah" />
+    <Image id="RefGangrelHost"
+      class="popupImage popupImageNarrow"
+      image="ref-clanGangrel" />
+    <Image id="RefLasombraHost"
+      class="popupImage popupImageNarrow"
+      image="ref-clanLasombra" />
+    <Image id="RefMalkavianHost"
+      class="popupImage popupImageNarrow"
+      image="ref-clanMalkavian" />
+    <Image id="RefNosferatuHost"
+      class="popupImage popupImageNarrow"
+      image="ref-clanNosferatu" />
+    <Image id="RefToreadorHost"
+      class="popupImage popupImageNarrow"
+      image="ref-clanToreador" />
+    <Image id="RefTremereHost"
+      class="popupImage popupImageNarrow"
+      image="ref-clanTremere" />
+    <Image id="RefTzimisceHost"
+      class="popupImage popupImageNarrow"
+      image="ref-clanTzimisce" />
+    <Image id="RefVentrueHost"
+      class="popupImage popupImageNarrow"
+      image="ref-clanVentrue" />
+
+    <!-- Traits -->
+    <Image id="RefTraits1Host" width="95%"
+      class="popupImage"
+      image="ref-traits1" />
+    <Image id="RefTraits2Host" width="95%"
+      class="popupImage"
+      image="ref-traits2" />
+    <Image id="RefTraits3Host" width="95%"
+      class="popupImage"
+      image="ref-traits3" />
+
+  </Panel>
+
+  <!-- include panel_sidebar -->
+  <!-- include panel_camera -->
+  <!-- Camera Control Panel -->
+  <!-- Bottom-right: faction icons + camera zoom buttons -->
+  <!-- Reproduces Heritage hud.xml camera controls -->
+
+  <Panel id="cameraControlPanel">
+
+    <!-- Faction Icons (above camera bar) -->
+    <HorizontalLayout class="storyteller_factionIconContainer">
+      <Image id="factionDisplayRed" image="" />
+      <Image id="factionDisplayYellow" image="" />
+      <Image id="factionDisplayBlue" image="" />
+    </HorizontalLayout>
+
+    <!-- Camera Zoom Buttons -->
+    <HorizontalLayout class="storyteller_cameraControls">
+      <Image id="cameraZoomPlayerOne"
+        class="storyteller_cameraButton"
+        image="camera-zoom-player-one" />
+      <Image id="cameraZoomPlayerTwo"
+        class="storyteller_cameraButton"
+        image="camera-zoom-player-two" />
+      <Image id="cameraZoomPlayerThree"
+        class="storyteller_cameraButton"
+        image="camera-zoom-player-three" />
+      <Image id="cameraZoomQueue"
+        class="storyteller_cameraButton"
+        image="camera-zoom-queue" />
+      <Image id="cameraZoomBattlegrounds"
+        class="storyteller_cameraButton"
+        image="camera-zoom-battlegrounds" />
+      <Image id="cameraWideAngle"
+        class="storyteller_cameraButton"
+        image="camera-wide-angle" />
+    </HorizontalLayout>
+
+  </Panel>
+
+  <!-- include panel_camera -->
+
 </Panel>
+
 <!-- include ui/storyteller/hud_storyteller -->
 
 <!-- 4. Player HUD (per-color panels) -->
