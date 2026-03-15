@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 local row_labels = {"Color", "Range", "Angle", "Intensity"}
 local label_z = {-1.05, -1.13, -1.09, -1.34}
 

@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 function onLoad()
     -- self.interactable = false;
     self.createButton({
