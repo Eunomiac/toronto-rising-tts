@@ -107,86 +107,127 @@ C.CHRONICLE_DATA = {
 	coteries = {
 		autarkis = {
 			name = "Autarkis",
+      affiliation = "Independent",
 			inCoterieRef = false
 		},
 		beesHive = {
 			name = "Bee's Hive",
+      affiliation = "Camarilla",
 			inCoterieRef = true
 		},
 		colorBlitz = {
 			name = "Color Blitz",
+      affiliation = "Anarch",
 			inCoterieRef = false
 		},
+    deepSix = {
+      name = "Deep Six",
+      affiliation = "Sabbat",
+      inCoterieRef = false
+    },
 		fiveKeys = {
 			name = "the Five Keys",
+      affiliation = "Camarilla",
 			inCoterieRef = true
 		},
+    freeChantry = {
+      name = "the Free Chantry",
+      affiliation = "Camarilla",
+      inCoterieRef = true
+    },
+    flyCooks = {
+      name = "the Fly Cooks",
+      affiliation = "Independent",
+      inCoterieRef = false
+    },
+    goodDoctors = {
+      name = "the Good Doctors",
+      affiliation = "Anarch",
+      inCoterieRef = true
+    },
 		harpies = {
 			name = "the Harpies",
+      affiliation = "Camarilla",
 			inCoterieRef = true
 		},
 		houseRustovich = {
 			name = "the House of Rustovich",
+      affiliation = "Anarch",
 			inCoterieRef = false
 		},
 		ironGuard = {
 			name = "the Iron Guard",
+      affiliation = "Camarilla",
 			inCoterieRef = true
 		},
 		jarvisJacks = {
 			name = "the Jarvis Jacks",
+      affiliation = "Anarch",
 			inCoterieRef = false
 		},
 		line = {
 			name = "the Line",
+      affiliation = "Anarch",
 			inCoterieRef = true
 		},
 		menInBlack = {
 			name = "the Men-In-Black",
+      affiliation = "Anarch",
 			inCoterieRef = false
 		},
 		midnightMass = {
 			name = "the Midnight Mass at St. Michael's",
+      affiliation = "Camarilla",
 			inCoterieRef = true
 		},
 		moonClub = {
 			name = "the Moon Club",
+      affiliation = "Camarilla",
 			inCoterieRef = true
 		},
 		nightwolves = {
 			name = "the Nightwolves",
+      affiliation = "Anarch",
 			inCoterieRef = false
 		},
 		openSanctum = {
 			name = "Open Sanctum",
+      affiliation = "Anarch",
 			inCoterieRef = false
 		},
 		petitioners = {
 			name = "Petitioners",
-			inCoterieRef = true
+      affiliation = "Independent",
+			inCoterieRef = false
 		},
 		princesCourt = {
 			name = "the Prince's Court",
+      affiliation = "Camarilla",
 			inCoterieRef = false
 		},
 		redeemers = {
 			name = "the Redeemers",
+      affiliation = "Anarch",
 			inCoterieRef = true
 		},
 		redFlag = {
 			name = "Red Flag",
+      affiliation = "Anarch",
 			inCoterieRef = true
 		},
 		regencyUniversityChantry = {
 			name = "the Regency of the University Chantry",
+      affiliation = "Camarilla",
 			inCoterieRef = true
 		},
 		scarlettAndBoys = {
 			name = "Scarlett & the Boys",
+      affiliation = "Camarilla",
 			  inCoterieRef = true
 		},
 		wychwoodHecata = {
 			name = "the Wychwood Hecata",
+      affiliation = "Independent",
 			inCoterieRef = true
 		}
 	}

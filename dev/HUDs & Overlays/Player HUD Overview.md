@@ -188,11 +188,11 @@ When Deactivated:
 
 #### `CorePanel_Map` Elements
 
-1. **Panel: Main Map** --- Full-height map of Toronto, positioned left-of-center. Also contains all `mapOverlay_` and `mapPin_` images.
-2. **Button Panel LEFT** --- A `VerticalLayout` column of image-buttons that toggle various overlays on/off, to the immediate left of the map
-3. **Button Panel RIGHT** --- A `VerticalLayout` column of 36 image-buttons corresponding to the 36 Districts of Toronto, for toggling display of them
-4. **Panel: District Card** --- Displays the active `districtCard_` image, if any.
-5. **Panel: Site Card** --- Displays the active `siteCard_` image, if any.
+1. **Panel: `mapPanel_main`** --- Full-height map of Toronto, positioned left-of-center. Also contains all `mapOverlay_` and `mapPin_` images.
+2. **Button Panel LEFT: `mapPanel_overlayToggles`** --- A `VerticalLayout` column of image-buttons that toggle various overlays on/off, to the immediate left of the map
+3. **Button Panel RIGHT: `mapPanel_districtToggles`** --- A `VerticalLayout` column of 36 image-buttons corresponding to the 36 Districts of Toronto, for toggling display of them
+4. **Panel: `mapPanel_districtCard`** --- Displays the active `districtCard_` image, if any.
+5. **Panel: `mapPanel_siteCard`** --- Displays the active `siteCard_` image, if any.
 
 ##### **Button Panel LEFT: Overlay Toggles**
 
@@ -320,54 +320,380 @@ Assets the HUD expects. Canonical keys: **resonance** — choleric, melancholic,
 | `dot_humanity_impaired` | Impaired (stain overflow). |
 | `dot_bloodPotency` | One Blood Potency dot (repeat per cell). |
 | `statusPanel_Resonance_<resonanceKey>` | One per resonance key: choleric, melancholic, phlegmatic, sanguine, ischemic, mercurial, primal. |
+| `refPanel_Humanity_<HumanityScore>` | Shown in `refPanel_Humanity` when Humanity track is hovered over. One per Humanity value (1–10). |
+| `refPanel_Humanity_impaired` | Shown in `refPanel_Humanity` when any Humanity cell is impaired. |
+| `refPanel_BloodPotency_<BloodPotencyValue>` | Shown in `refPanel_BloodPotency` when Blood Potency track is hovered over. One per Blood Potency value (1–5). |
 
 ### Reference Panels
 
-| Asset | Purpose |
-| ------- | -------- |
-| `refPanel_ChronicleTenets` | Chronicle Tenets reference. |
-| `refPanel_SocialCombat` | Social Combat reference. |
-| `refPanel_PhysicalCombat` | Physical Combat reference. |
-| `refPanel_Frenzy` | Frenzy reference. |
-| `refPanel_Rolls` | Rolls reference. |
-| `refPanel_Memoriam` | Memoriam reference. |
-| `refPanel_Projects` | Projects reference. |
-| `refPanel_Experience` | Experience reference. |
-| `refPanel_Humanity` | Humanity reference container; content image goes inside it. |
-| `refPanel_Humanity_<HumanityScore>` | Content image inside the container; one per Humanity value (1–10). |
-| `refPanel_Humanity_impaired` | Shown when any cell is impaired. |
-| `refPanel_BloodPotency` | Blood Potency reference. |
-| `refPanel_BloodPotency_<BloodPotencyValue>` | One per Blood Potency value. |
-| Coteries reference | Grid: one image/button per coterie in `C.CHRONICLE_DATA.coteries` **where `inCoterieRef = true`** (beesHive, fiveKeys, harpies, ironGuard, line, midnightMass, moonClub, petitioners, redeemers, redFlag, regencyUniversityChantry, scarlettAndBoys, wychwoodHecata). Popup panel image per coterie (e.g. `refPanel_Coterie_<coterieKey>` or per-chronicle naming). |
+#### Image Button Toggles
+
+| Asset | Purpose | Done? |
+| ------- | -------- | -------- |
+
+| `toggle_PrincesCourt_inactive` | Inactive Princes Court toggle. | ✅ |
+| `toggle_PrincesCourt_hover` | Hovering over Princes Court toggle. | ✅ |
+| `toggle_PrincesCourt_active` | Active Princes Court toggle. | ✅ |
+| `toggle_Coteries_inactive` | Inactive Coteries toggle. | ✅ |
+| `toggle_Coteries_hover` | Hovering over Coteries toggle. | ✅ |
+| `toggle_Coteries_active` | Active Coteries toggle. | ✅ |
+| `toggle_ChronicleTenets_inactive` | Inactive Chronicle Tenets toggle. | ✅ |
+| `toggle_ChronicleTenets_hover` | Hovering over Chronicle Tenets toggle. | ✅ |
+| `toggle_ChronicleTenets_active` | Active Chronicle Tenets toggle. | ✅ |
+| `toggle_SocialCombat_inactive` | Inactive Social Combat toggle. | ✅ |
+| `toggle_SocialCombat_hover` | Hovering over Social Combat toggle. | ✅ |
+| `toggle_SocialCombat_active` | Active Social Combat toggle. | ✅ |
+| `toggle_PhysicalCombat_inactive` | Inactive Physical Combat toggle. | ✅ |
+| `toggle_PhysicalCombat_hover` | Hovering over Physical Combat toggle. | ✅ |
+| `toggle_PhysicalCombat_active` | Active Physical Combat toggle. | ✅ |
+| `toggle_Frenzy_inactive` | Inactive Frenzy toggle. | ✅ |
+| `toggle_Frenzy_hover` | Hovering over Frenzy toggle. | ✅ |
+| `toggle_Frenzy_active` | Active Frenzy toggle. | ✅ |
+| `toggle_Rolls_inactive` | Inactive Rolls toggle. | ✅ |
+| `toggle_Rolls_hover` | Hovering over Rolls toggle. | ✅ |
+| `toggle_Rolls_active` | Active Rolls toggle. | ✅ |
+| `toggle_Memoriam_inactive` | Inactive Memoriam toggle. | ✅ |
+| `toggle_Memoriam_hover` | Hovering over Memoriam toggle. | ✅ |
+| `toggle_Memoriam_active` | Active Memoriam toggle. | ✅ |
+| `toggle_Projects_inactive` | Inactive Projects toggle. | ✅ |
+| `toggle_Projects_hover` | Hovering over Projects toggle. | ✅ |
+| `toggle_Projects_active` | Active Projects toggle. | ✅ |
+| `toggle_Experience_inactive` | Inactive Experience toggle. | ✅ |
+| `toggle_Experience_hover` | Hovering over Experience toggle. | ✅ |
+| `toggle_Experience_active` | Active Experience toggle. | ✅ |
+
+#### Panel Images
+
+| Asset | Purpose | Done? |
+| ------- | -------- | -------- |
+| `refPanel_ChronicleTenets` | Chronicle Tenets reference. | ❌ |
+| `refPanel_SocialCombat` | Social Combat reference. | ❌ |
+| `refPanel_PhysicalCombat` | Physical Combat reference. | ❌ |
+| `refPanel_Frenzy` | Frenzy reference. | ❌ |
+| `refPanel_Rolls` | Rolls reference. | ❌ |
+| `refPanel_Memoriam` | Memoriam reference. | ❌ |
+| `refPanel_Projects` | Projects reference. | ❌ |
+| `refPanel_Experience` | Experience reference. | ❌ |
+
+#### Nested Reference Panels
+
+##### Coteries Reference
+
+###### Coteries Reference: Grid Images (Toggle Buttons)
+
+The coterie grid should display a button for each coterie in `C.CHRONICLE_DATA.coteries` **where `inCoterieRef = true`**. The buttons should be displayed in a grid, centered on the screen, and separated vertically into groups by the `affiliation` field of the coterie. Currently, 14 coteries are set to be in the coterie reference, divided between three groups. Each button is a 250x150 px image. See the [Coterie Grid Layout Mockup](./Coterie%20Grid%20Layout%20Mockup.png) for a depiction of the layout.
+
+Note that, since there are odd numbers of coteries in some groups, a `GridLayout` element will not be able to display them all in a single row. Instead, you will need to use `HorizontalLayout` elements to display each row, centered within a parent `VerticalLayout` element.
+
+Since the coterie infograpic popup will be shown over top of the grid, `_active` versions of each button are unnecessary; only `_inactive` and `_hover` versions are needed.
+
+1. **Camarilla Coteries** --- Nine Camarilla coteries: `beesHive`, `fiveKeys`, `freeChantry`, `harpies`, `ironGuard`, `midnightMass`, `moonClub`, `regencyUniversityChantry`, `scarlettAndBoys`, arranged in two rows, one row of five, the other row of four.
+2. **Anarch Coteries** --- Four Anarch coteries: `goodDoctors`, `line`, `redeemers`, `redFlag`, arranged in one row of four.
+3. **Independent Coteries** --- One independent coterie: `wychwoodHecata`, arranged in one row of one.
+
+| Asset | Purpose | Done? |
+| ------- | -------- | -------- |
+| `toggle_beesHive_inactive` | Inactive beesHive toggle. | ✅ |
+| `toggle_beesHive_hover` | Hovering over beesHive toggle. | ✅ |
+| `toggle_fiveKeys_inactive` | Inactive fiveKeys toggle. | ✅ |
+| `toggle_fiveKeys_hover` | Hovering over fiveKeys toggle. | ✅ |
+| `toggle_freeChantry_inactive` | Inactive freeChantry toggle. | ✅ |
+| `toggle_freeChantry_hover` | Hovering over freeChantry toggle. | ✅ |
+| `toggle_harpies_inactive` | Inactive harpies toggle. | ✅ |
+| `toggle_harpies_hover` | Hovering over harpies toggle. | ✅ |
+| `toggle_ironGuard_inactive` | Inactive ironGuard toggle. | ✅ |
+| `toggle_ironGuard_hover` | Hovering over ironGuard toggle. | ✅ |
+| `toggle_midnightMass_inactive` | Inactive midnightMass toggle. | ✅ |
+| `toggle_midnightMass_hover` | Hovering over midnightMass toggle. | ✅ |
+| `toggle_moonClub_inactive` | Inactive moonClub toggle. | ✅ |
+| `toggle_moonClub_hover` | Hovering over moonClub toggle. | ✅ |
+| `toggle_regencyUniversityChantry_inactive` | Inactive regencyUniversityChantry toggle. | ✅ |
+| `toggle_regencyUniversityChantry_hover` | Hovering over regencyUniversityChantry toggle. | ✅ |
+| `toggle_scarlettAndBoys_inactive` | Inactive scarlettAndBoys toggle. | ✅ |
+| `toggle_scarlettAndBoys_hover` | Hovering over scarlettAndBoys toggle. | ✅ |
+| `toggle_goodDoctors_inactive` | Inactive goodDoctors toggle. | ✅ |
+| `toggle_goodDoctors_hover` | Hovering over goodDoctors toggle. | ✅ |
+| `toggle_line_inactive` | Inactive line toggle. | ✅ |
+| `toggle_line_hover` | Hovering over line toggle. | ✅ |
+| `toggle_redeemers_inactive` | Inactive redeemers toggle. | ✅ |
+| `toggle_redeemers_hover` | Hovering over redeemers toggle. | ✅ |
+| `toggle_redFlag_inactive` | Inactive redFlag toggle. | ✅ |
+| `toggle_redFlag_hover` | Hovering over redFlag toggle. | ✅ |
+| `toggle_wychwoodHecata_inactive` | Inactive wychwoodHecata toggle. | ✅ |
+| `toggle_wychwoodHecata_hover` | Hovering over wychwoodHecata toggle. | ✅ |
+
+###### Coteries Reference: Popup Panel Images
+
+These panel images come in a wide variety of sizes, and so should be sized individually as appropriate. Using `preferredHeight` or `preferredWidth` depending on whether the image is wider than it is tall, or taller than it is wide, may be the best way to go.
+
+| Asset | Purpose | Done? |
+| ------- | -------- | -------- |
+| `refPanel_Coteries_beesHive` | Bees Hive coterie reference. | ✅ |
+| `refPanel_Coteries_fiveKeys` | Five Keys coterie reference. | ✅ |
+| `refPanel_Coteries_freeChantry` | Free Chantry coterie reference. | ✅ |
+| `refPanel_Coteries_harpies` | Harpies coterie reference. | ✅ |
+| `refPanel_Coteries_ironGuard` | Iron Guard coterie reference. | ✅ |
+| `refPanel_Coteries_midnightMass` | Midnight Mass coterie reference. | ✅ |
+| `refPanel_Coteries_moonClub` | Moon Club coterie reference. | ✅ |
+| `refPanel_Coteries_regencyUniversityChantry` | Regency University Chantry coterie reference. | ✅ |
+| `refPanel_Coteries_scarlettAndBoys` | Scarlett and Boys coterie reference. | ✅ |
+| `refPanel_Coteries_goodDoctors` | Good Doctors coterie reference. | ✅ |
+| `refPanel_Coteries_line` | Line coterie reference. | ✅ |
+| `refPanel_Coteries_redeemers` | Redeemers coterie reference. | ✅ |
+| `refPanel_Coteries_redFlag` | Red Flag coterie reference. | ✅ |
+| `refPanel_Coteries_wychwoodHecata` | Wychwood Hecata coterie reference. | ✅ |
+
+##### Prince's Court Reference
+
+###### Prince's Court Reference: Row Images (Toggle Buttons)
+
+###### Prince's Court Reference: Popup Panel Images
+
 | Prince's Court reference | Row of PC images (one per other PC): keys from `C.CHRONICLE_DATA.PCS` — lucien, fomorach, blackCaesar, aishe, rashid. Each has `name` and `color`. Popup: character sheet per PC (e.g. `refPanel_PC_<pcKey>` or by color). |
 
 ### Core Panel — Map
 
-| Asset | Purpose |
-| ------- | -------- |
-| Main map image | Full-height Toronto map (name TBD). |
-| `mapOverlay_<overlayKey>` | One per overlay toggle; initial keys: streets, districts, sites, domains (same size as map). |
-| `toggleOverlay_<overlayKey>` | Button for overlay (active + inactive states if separate). |
-| `mapOverlay_<districtKey>` | District overlay when district is selected or hovered; same layer as other map overlays. |
-| `districtCard_<districtKey>` | District card image. |
-| `toggleDistrict_<districtKey>` | District button; 36 district keys (see list below). |
-| `mapPin_<siteKey>` | Site pin. |
-| `siteCard_<siteKey>` | Site card. |
-| `mapPin_<playerColor>` | Player position pin per color (e.g. Brown, Orange, Red, Pink). |
+#### Core Panel Map: `mapPanel_main`
 
-**District keys (36):** Annex, BayStFinancial, Bennington, Cabbagetown, CentreIsland, Chinatown, Corktown, Danforth, DeerPark, Discovery, DistilleryDist, DonRavine, DupontByTheCastle, GayVillage, HarbordVillage, Humewood, LakeOntario, LibertyVillage, LittleItaly, LittlePortugal, PATH, RegentPark, Riverdale, Rosedale, Sewers, StJamesTown, Streets, Subway, Summerhill, Waterfront, WestQueenWest, Wychwood, YongeBloorMuseum, YongeDundasHospital, YongeStreet, Yorkville.
+These images are all the same size, and should be stacked in the order they appear in the table below, with the first image on the bottom and the last image on the top.
 
-### Status Overlays (full-screen, click-through)
+| Asset | Purpose | Done? |
+| ------- | -------- | -------- |
+| `mapBase` | Full-height Toronto map. | ✅ |
+| `mapOverlay_Annex` | Map overlay highlighting the Annex district. | ✅ |
+| `mapOverlay_BayStFinancial` | Map overlay highlighting the Bay St. Financial district. | ✅ |
+| `mapOverlay_Bennington` | Map overlay highlighting the Bennington district. | ✅ |
+| `mapOverlay_Cabbagetown` | Map overlay highlighting the Cabbagetown district. | ✅ |
+| `mapOverlay_CentreIsland` | Map overlay highlighting the Centre Island district. | ✅ |
+| `mapOverlay_Chinatown` | Map overlay highlighting the Chinatown district. | ✅ |
+| `mapOverlay_Corktown` | Map overlay highlighting the Corktown district. | ✅ |
+| `mapOverlay_Danforth` | Map overlay highlighting the Danforth district. | ✅ |
+| `mapOverlay_DeerPark` | Map overlay highlighting the DeerPark district. | ✅ |
+| `mapOverlay_Discovery` | Map overlay highlighting the Discovery district. | ✅ |
+| `mapOverlay_DistilleryDist` | Map overlay highlighting the DistilleryDist district. | ✅ |
+| `mapOverlay_DonRavine` | Map overlay highlighting the DonRavine district. | ✅ |
+| `mapOverlay_DupontByTheCastle` | Map overlay highlighting the DupontByTheCastle district. | ✅ |
+| `mapOverlay_GayVillage` | Map overlay highlighting the GayVillage district. | ✅ |
+| `mapOverlay_HarbordVillage` | Map overlay highlighting the HarbordVillage district. | ✅ |
+| `mapOverlay_Humewood` | Map overlay highlighting the Humewood district. | ✅ |
+| `mapOverlay_LakeOntario` | Map overlay highlighting the LakeOntario district. | ✅ |
+| `mapOverlay_LibertyVillage` | Map overlay highlighting the LibertyVillage district. | ✅ |
+| `mapOverlay_LittleItaly` | Map overlay highlighting the LittleItaly district. | ✅ |
+| `mapOverlay_LittlePortugal` | Map overlay highlighting the LittlePortugal district. | ✅ |
+| `mapOverlay_RegentPark` | Map overlay highlighting the RegentPark district. | ✅ |
+| `mapOverlay_Riverdale` | Map overlay highlighting the Riverdale district. | ✅ |
+| `mapOverlay_Rosedale` | Map overlay highlighting the Rosedale district. | ✅ |
+| `mapOverlay_StJamesTown` | Map overlay highlighting the StJamesTown district. | ✅ |
+| `mapOverlay_Summerhill` | Map overlay highlighting the Summerhill district. | ✅ |
+| `mapOverlay_Waterfront` | Map overlay highlighting the Waterfront district. | ✅ |
+| `mapOverlay_WestQueenWest` | Map overlay highlighting the WestQueenWest district. | ✅ |
+| `mapOverlay_Wychwood` | Map overlay highlighting the Wychwood district. | ✅ |
+| `mapOverlay_YongeBloorMuseum` | Map overlay highlighting the YongeBloorMuseum district. | ✅ |
+| `mapOverlay_YongeDundasHospital` | Map overlay highlighting the YongeDundasHospital district. | ✅ |
+| `mapOverlay_YongeStreet` | Map overlay highlighting the YongeStreet district. | ✅ |
+| `mapOverlay_Yorkville` | Map overlay highlighting the Yorkville district. | ✅ |
+| `mapOverlay_localRoads` | Local roads overlay for all local roads. | ✅ |
+| `mapOverlay_majorRoads` | Major roads overlay for all major roads. | ✅ |
+| `mapOverlay_districtsAll` | Districts overlay for all districts. | ✅ |
+| `mapOverlay_majorSites` | Major sites overlay for all major sites. | ✅ |
+| `mapOverlay_domains` | Domains overlay for all domains. | ✅ |
+| `mapPin_<siteKey>` | Site pin. | ❌ |
+| `mapPin_Brown` | Player position pin for Brown player. | ❌ |
+| `mapPin_Orange` | Player position pin for Orange player. | ❌ |
+| `mapPin_Red` | Player position pin for Red player. | ❌ |
+| `mapPin_Pink` | Player position pin for Pink player. | ❌ |
+| `mapPin_Purple` | Player position pin for Purple player. | ❌ |
 
-| Asset | Purpose |
-| ------- | -------- |
-| `overlay_hunger_3`, `overlay_hunger_4`, `overlay_hunger_5` | Shown when Hunger is 3, 4, or 5 respectively. |
-| `overlay_humanity_impaired` | At least one Humanity cell impaired. |
-| `overlay_frenzy_<frenzyKey>` | Frenzy keys: hunger, fear, fury. |
-| `overlay_ridingTheWave` | Riding the Wave (when frenzy overlay visible). |
-| `overlay_health_impaired` | Health track full (superficial or aggravated). |
-| `overlay_torpor` | Torpor. |
-| `overlay_spotlight` | Spotlight. |
+#### Core Panel Map: `mapPanel_overlayToggles`
+
+| Asset | Purpose | Done? |
+| ------- | -------- | -------- |
+| `toggleOverlay_districtsAll_inactive` | Button to toggle the districtsAll overlay, in its inactive state | ✅ |
+| `toggleOverlay_districtsAll_hover` | Button to toggle the districtsAll overlay, in its hover state | ✅ |
+| `toggleOverlay_districtsAll_active` | Button to toggle the districtsAll overlay, in its active state | ✅ |
+| `toggleOverlay_domains_inactive` | Button to toggle the domains overlay, in its inactive state | ✅ |
+| `toggleOverlay_domains_hover` | Button to toggle the domains overlay, in its hover state | ✅ |
+| `toggleOverlay_domains_active` | Button to toggle the domains overlay, in its active state | ✅ |
+| `toggleOverlay_localRoads_inactive` | Button to toggle the localRoads overlay, in its inactive state | ✅ |
+| `toggleOverlay_localRoads_hover` | Button to toggle the localRoads overlay, in its hover state | ✅ |
+| `toggleOverlay_localRoads_active` | Button to toggle the localRoads overlay, in its active state | ✅ |
+| `toggleOverlay_majorRoads_inactive` | Button to toggle the majorRoads overlay, in its inactive state | ✅ |
+| `toggleOverlay_majorRoads_hover` | Button to toggle the majorRoads overlay, in its hover state | ✅ |
+| `toggleOverlay_majorRoads_active` | Button to toggle the majorRoads overlay, in its active state | ✅ |
+| `toggleOverlay_majorSites_inactive` | Button to toggle the majorSites overlay, in its inactive state | ✅ |
+| `toggleOverlay_majorSites_hover` | Button to toggle the majorSites overlay, in its hover state | ✅ |
+| `toggleOverlay_majorSites_active` | Button to toggle the majorSites overlay, in its active state | ✅ |
+
+#### Core Panel Map: `mapPanel_districtToggles`
+
+| Asset | Purpose | Done? |
+| ------- | -------- | -------- |
+| `toggleDistrict_Annex_inactive` | Button to toggle the Annex district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_Annex_hover` | Button to toggle the Annex district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_Annex_active` | Button to toggle the Annex district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_BayStFinancial_inactive` | Button to toggle the BayStFinancial district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_BayStFinancial_hover` | Button to toggle the BayStFinancial district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_BayStFinancial_active` | Button to toggle the BayStFinancial district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_Bennington_inactive` | Button to toggle the Bennington district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_Bennington_hover` | Button to toggle the Bennington district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_Bennington_active` | Button to toggle the Bennington district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_Cabbagetown_inactive` | Button to toggle the Cabbagetown district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_Cabbagetown_hover` | Button to toggle the Cabbagetown district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_Cabbagetown_active` | Button to toggle the Cabbagetown district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_CentreIsland_inactive` | Button to toggle the CentreIsland district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_CentreIsland_hover` | Button to toggle the CentreIsland district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_CentreIsland_active` | Button to toggle the CentreIsland district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_Chinatown_inactive` | Button to toggle the Chinatown district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_Chinatown_hover` | Button to toggle the Chinatown district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_Chinatown_active` | Button to toggle the Chinatown district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_Corktown_inactive` | Button to toggle the Corktown district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_Corktown_hover` | Button to toggle the Corktown district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_Corktown_active` | Button to toggle the Corktown district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_Danforth_inactive` | Button to toggle the Danforth district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_Danforth_hover` | Button to toggle the Danforth district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_Danforth_active` | Button to toggle the Danforth district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_DeerPark_inactive` | Button to toggle the DeerPark district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_DeerPark_hover` | Button to toggle the DeerPark district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_DeerPark_active` | Button to toggle the DeerPark district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_Discovery_inactive` | Button to toggle the Discovery district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_Discovery_hover` | Button to toggle the Discovery district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_Discovery_active` | Button to toggle the Discovery district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_DistilleryDist_inactive` | Button to toggle the DistilleryDist district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_DistilleryDist_hover` | Button to toggle the DistilleryDist district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_DistilleryDist_active` | Button to toggle the DistilleryDist district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_DonRavine_inactive` | Button to toggle the DonRavine district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_DonRavine_hover` | Button to toggle the DonRavine district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_DonRavine_active` | Button to toggle the DonRavine district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_DupontByTheCastle_inactive` | Button to toggle the DupontByTheCastle district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_DupontByTheCastle_hover` | Button to toggle the DupontByTheCastle district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_DupontByTheCastle_active` | Button to toggle the DupontByTheCastle district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_GayVillage_inactive` | Button to toggle the GayVillage district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_GayVillage_hover` | Button to toggle the GayVillage district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_GayVillage_active` | Button to toggle the GayVillage district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_HarbordVillage_inactive` | Button to toggle the HarbordVillage district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_HarbordVillage_hover` | Button to toggle the HarbordVillage district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_HarbordVillage_active` | Button to toggle the HarbordVillage district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_Humewood_inactive` | Button to toggle the Humewood district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_Humewood_hover` | Button to toggle the Humewood district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_Humewood_active` | Button to toggle the Humewood district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_LakeOntario_inactive` | Button to toggle the LakeOntario district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_LakeOntario_hover` | Button to toggle the LakeOntario district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_LakeOntario_active` | Button to toggle the LakeOntario district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_LibertyVillage_inactive` | Button to toggle the LibertyVillage district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_LibertyVillage_hover` | Button to toggle the LibertyVillage district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_LibertyVillage_active` | Button to toggle the LibertyVillage district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_LittleItaly_inactive` | Button to toggle the LittleItaly district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_LittleItaly_hover` | Button to toggle the LittleItaly district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_LittleItaly_active` | Button to toggle the LittleItaly district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_LittlePortugal_inactive` | Button to toggle the LittlePortugal district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_LittlePortugal_hover` | Button to toggle the LittlePortugal district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_LittlePortugal_active` | Button to toggle the LittlePortugal district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_PATH_inactive` | Button to toggle the PATH district card, in its inactive state (there is no overlay for this district) | ✅ |
+| `toggleDistrict_PATH_hover` | Button to toggle the PATH district card, in its hover state (there is no overlay for this district) | ✅ |
+| `toggleDistrict_PATH_active` | Button to toggle the PATH district card, in its active state (there is no overlay for this district) | ✅ |
+| `toggleDistrict_RegentPark_inactive` | Button to toggle the RegentPark district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_RegentPark_hover` | Button to toggle the RegentPark district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_RegentPark_active` | Button to toggle the RegentPark district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_Riverdale_inactive` | Button to toggle the Riverdale district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_Riverdale_hover` | Button to toggle the Riverdale district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_Riverdale_active` | Button to toggle the Riverdale district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_Rosedale_inactive` | Button to toggle the Rosedale district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_Rosedale_hover` | Button to toggle the Rosedale district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_Rosedale_active` | Button to toggle the Rosedale district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_Sewers_inactive` | Button to toggle the Sewers district card, in its inactive state (there is no overlay for this district) | ✅ |
+| `toggleDistrict_Sewers_hover` | Button to toggle the Sewers district card, in its hover state (there is no overlay for this district) | ✅ |
+| `toggleDistrict_Sewers_active` | Button to toggle the Sewers district card, in its active state (there is no overlay for this district) | ✅ |
+| `toggleDistrict_StJamesTown_inactive` | Button to toggle the StJamesTown district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_StJamesTown_hover` | Button to toggle the StJamesTown district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_StJamesTown_active` | Button to toggle the StJamesTown district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_Streets_inactive` | Button to toggle the Streets district card, in its inactive state (there is no overlay for this district) | ✅ |
+| `toggleDistrict_Streets_hover` | Button to toggle the Streets district card, in its hover state (there is no overlay for this district) | ✅ |
+| `toggleDistrict_Streets_active` | Button to toggle the Streets district card, in its active state (there is no overlay for this district) | ✅ |
+| `toggleDistrict_Subway_inactive` | Button to toggle the Subway district card, in its inactive state (there is no overlay for this district) | ✅ |
+| `toggleDistrict_Subway_hover` | Button to toggle the Subway district card, in its hover state (there is no overlay for this district) | ✅ |
+| `toggleDistrict_Subway_active` | Button to toggle the Subway district card, in its active state (there is no overlay for this district) | ✅ |
+| `toggleDistrict_Summerhill_inactive` | Button to toggle the Summerhill district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_Summerhill_hover` | Button to toggle the Summerhill district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_Summerhill_active` | Button to toggle the Summerhill district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_Waterfront_inactive` | Button to toggle the Waterfront district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_Waterfront_hover` | Button to toggle the Waterfront district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_Waterfront_active` | Button to toggle the Waterfront district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_WestQueenWest_inactive` | Button to toggle the WestQueenWest district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_WestQueenWest_hover` | Button to toggle the WestQueenWest district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_WestQueenWest_active` | Button to toggle the WestQueenWest district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_Wychwood_inactive` | Button to toggle the Wychwood district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_Wychwood_hover` | Button to toggle the Wychwood district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_Wychwood_active` | Button to toggle the Wychwood district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_YongeBloorMuseum_inactive` | Button to toggle the YongeBloorMuseum district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_YongeBloorMuseum_hover` | Button to toggle the YongeBloorMuseum district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_YongeBloorMuseum_active` | Button to toggle the YongeBloorMuseum district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_YongeDundasHospital_inactive` | Button to toggle the YongeDundasHospital district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_YongeDundasHospital_hover` | Button to toggle the YongeDundasHospital district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_YongeDundasHospital_active` | Button to toggle the YongeDundasHospital district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_YongeStreet_inactive` | Button to toggle the YongeStreet district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_YongeStreet_hover` | Button to toggle the YongeStreet district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_YongeStreet_active` | Button to toggle the YongeStreet district overlay and district card, in its active state | ✅ |
+| `toggleDistrict_Yorkville_inactive` | Button to toggle the Yorkville district overlay and district card, in its inactive state | ✅ |
+| `toggleDistrict_Yorkville_hover` | Button to toggle the Yorkville district overlay and district card, in its hover state | ✅ |
+| `toggleDistrict_Yorkville_active` | Button to toggle the Yorkville district overlay and district card, in its active state | ✅ |
+
+#### Core Panel Map: `mapPanel_districtCard`
+
+| Asset | Purpose | Done? |
+| ------- | -------- | -------- |
+| `districtCard_Annex` | District card image for the Annex. | ✅ |
+| `districtCard_BayStFinancial` | District card image for BayStFinancial. | ✅ |
+| `districtCard_Bennington` | District card image for Bennington. | ✅ |
+| `districtCard_Cabbagetown` | District card image for Cabbagetown. | ✅ |
+| `districtCard_CentreIsland` | District card image for CentreIsland. | ✅ |
+| `districtCard_Chinatown` | District card image for Chinatown. | ✅ |
+| `districtCard_Corktown` | District card image for Corktown. | ✅ |
+| `districtCard_Danforth` | District card image for Danforth. | ✅ |
+| `districtCard_DeerPark` | District card image for DeerPark. | ✅ |
+| `districtCard_Discovery` | District card image for Discovery. | ✅ |
+| `districtCard_DistilleryDist` | District card image for DistilleryDist. | ✅ |
+| `districtCard_DonRavine` | District card image for DonRavine. | ✅ |
+| `districtCard_DupontByTheCastle` | District card image for DupontByTheCastle. | ✅ |
+| `districtCard_GayVillage` | District card image for GayVillage. | ✅ |
+| `districtCard_HarbordVillage` | District card image for HarbordVillage. | ✅ |
+| `districtCard_Humewood` | District card image for Humewood. | ✅ |
+| `districtCard_LakeOntario` | District card image for LakeOntario. | ✅ |
+| `districtCard_LibertyVillage` | District card image for LibertyVillage. | ✅ |
+| `districtCard_LittleItaly` | District card image for LittleItaly. | ✅ |
+| `districtCard_LittlePortugal` | District card image for LittlePortugal. | ✅ |
+| `districtCard_PATH` | District card image for PATH. | ✅ |
+| `districtCard_RegentPark` | District card image for RegentPark. | ✅ |
+| `districtCard_Riverdale` | District card image for Riverdale. | ✅ |
+| `districtCard_Rosedale` | District card image for Rosedale. | ✅ |
+| `districtCard_Sewers` | District card image for Sewers. | ✅ |
+| `districtCard_StJamesTown` | District card image for StJamesTown. | ✅ |
+| `districtCard_Streets` | District card image for Streets. | ✅ |
+| `districtCard_Subway` | District card image for Subway. | ✅ |
+| `districtCard_Summerhill` | District card image for Summerhill. | ✅ |
+| `districtCard_Waterfront` | District card image for Waterfront. | ✅ |
+| `districtCard_WestQueenWest` | District card image for WestQueenWest. | ✅ |
+| `districtCard_Wychwood` | District card image for Wychwood. | ✅ |
+| `districtCard_YongeBloorMuseum` | District card image for YongeBloorMuseum. | ✅ |
+| `districtCard_YongeDundasHospital` | District card image for YongeDundasHospital. | ✅ |
+| `districtCard_YongeStreet` | District card image for YongeStreet. | ✅ |
+| `districtCard_Yorkville` | District card image for Yorkville. | ✅ |
+
+#### Core Panel Map: `mapPanel_siteCard`
+
+| Asset | Purpose | Done? |
+| ------- | -------- | -------- |
+| `siteCard_<siteKey>` | Site card image. | ❌ |
+
+
+| Asset | Purpose | Done? |
+| ------- | -------- | -------- |
+| `overlay_hunger_3`, `overlay_hunger_4`, `overlay_hunger_5` | Shown when Hunger is 3, 4, or 5 respectively. | ❌ |
+| `overlay_humanity_impaired` | At least one Humanity cell impaired. | ❌ |
+| `overlay_frenzy_<frenzyKey>` | Frenzy keys: hunger, fear, fury. | ❌ |
+| `overlay_ridingTheWave` | Riding the Wave (when frenzy overlay visible). | ❌ |
+| `overlay_health_impaired` | Health track full (superficial or aggravated). | ❌ |
+| `overlay_torpor` | Torpor. | ❌ |
+| `overlay_spotlight` | Spotlight. | ❌ |
 
 ### Core Panel — Character Sheet
 
