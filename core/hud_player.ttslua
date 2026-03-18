@@ -1,0 +1,540 @@
+--- Player HUD (Right Sidebar + Coterie Reference Grid) handlers
+-- This module provides:
+-- - Global UI event handlers referenced by `ui/player/panel_right_sidebar.xml`
+-- - State-driven show/hide for core panels, reference panels, and right sidebar button active layers
+-- - Click-and-hold behavior for non-nested reference panels (temporary overlays)
+-- - Click-and-hold behavior for nested coterie popups inside the coteries grid
+--
+-- State paths (per plan):
+-- - `playerData.hud.activeCorePanel` : "map" | "sheet" | nil
+-- - `playerData.hud.reference.<key>` :
+--    - nested: `coteries` / `princesCourt` are tables (nil = closed)
+--    - nestedless: booleans (true = persistent-open; currently defaults to false)
+-- - `playerData.hud.reference.coteries.<coterieKey>` : boolean (true while holding popup)
+
+local U = require("lib.util")
+local C = require("lib.constants")
+local S = require("core.state")
+local Main = require("core.main")
+
+local HUDP = {}
+
+-- PlayerID -> temporary nestedless reference panel key for click-and-hold
+-- While this is set, Update will override the visible reference panel.
+local tempHoldRefByPlayerID = {}
+
+-- PlayerID -> currently hovered right-sidebar base button id (overlay is id.."_hover")
+-- Used so UpdateUIDisplays doesn't wipe hover highlight.
+local currentHoverBaseIdByPlayerID = {}
+
+-- Allowed nestedless top-level reference keys (from the spec)
+local NESTEDLESS_REF_KEYS = {
+    chronicleTenets = true,
+    rolls = true,
+    socialCombat = true,
+    physicalCombat = true,
+    frenzy = true,
+    memoriam = true,
+    projects = true,
+    experience = true
+}
+
+-- Allowed coterie keys for the coteries reference grid
+-- (Only those with inCoterieRef=true in C.CHRONICLE_DATA.coteries)
+local ALLOWED_COTERIES_IN_REF = {}
+do
+    local coteries = C.CHRONICLE_DATA and C.CHRONICLE_DATA.coteries or nil
+    if type(coteries) == "table" then
+        for coterieKey, coterieData in pairs(coteries) do
+            if type(coterieData) == "table" and coterieData.inCoterieRef == true then
+                ALLOWED_COTERIES_IN_REF[coterieKey] = true
+            end
+        end
+    end
+end
+
+--- Expected coterie grid layout (by spec ordering).
+-- We validate that these keys exist in constants and have inCoterieRef=true.
+local EXPECTED_COTERIE_GRID_GROUPS = {
+    -- Camarilla split into two rows in the spec.
+    { name = "Camarilla", keys = { "beesHive", "fiveKeys", "freeChantry", "harpies", "ironGuard", "midnightMass", "moonClub", "regencyUniversityChantry", "scarlettAndBoys" } },
+    { name = "Anarch", keys = { "goodDoctors", "line", "redeemers", "redFlag" } },
+    { name = "Independent", keys = { "wychwoodHecata" } }
+}
+
+--- Validates coterie keys/layout groups against `C.CHRONICLE_DATA.coteries`.
+-- Prints warnings to the log if anything mismatches.
+-- This is a safety net: XML is static, so we validate the data contract here.
+local function validateCoterieGridLayout()
+    local expectedKeySet = {}
+    for _, group in ipairs(EXPECTED_COTERIE_GRID_GROUPS) do
+        if type(group) == "table" and type(group.keys) == "table" then
+            for _, k in ipairs(group.keys) do
+                expectedKeySet[k] = true
+            end
+        end
+    end
+
+    -- Validate all constants coteries marked for ref exist in our expected grid.
+    local coteries = C.CHRONICLE_DATA and C.CHRONICLE_DATA.coteries or nil
+    if type(coteries) == "table" then
+        for coterieKey, coterieData in pairs(coteries) do
+            if type(coterieData) == "table" and coterieData.inCoterieRef == true then
+                if expectedKeySet[coterieKey] ~= true then
+                    print("[HUD Player] Coterie grid validation warning: missing in expected layout: " .. tostring(coterieKey))
+                end
+            end
+        end
+    end
+
+    -- Validate each expected key exists, is inCoterieRef, and affiliation matches the expected group.
+    for _, group in ipairs(EXPECTED_COTERIE_GRID_GROUPS) do
+        if type(group) == "table" and type(group.keys) == "table" then
+            for _, key in ipairs(group.keys) do
+                local data = coteries and coteries[key] or nil
+                if type(data) ~= "table" then
+                    print("[HUD Player] Coterie grid validation warning: unknown key in constants: " .. tostring(key))
+                else
+                    if data.inCoterieRef ~= true then
+                        print("[HUD Player] Coterie grid validation warning: expected inCoterieRef=true but got " .. tostring(data.inCoterieRef) .. " for " .. tostring(key))
+                    end
+                    if tostring(data.affiliation) ~= tostring(group.name) then
+                        print("[HUD Player] Coterie grid validation warning: affiliation mismatch for " .. tostring(key) .. " expected " .. tostring(group.name) .. " got " .. tostring(data.affiliation))
+                    end
+                end
+            end
+        end
+    end
+
+    -- Validate allowed keys equals expected keys (no extras).
+    for k, _ in pairs(ALLOWED_COTERIES_IN_REF) do
+        if expectedKeySet[k] ~= true then
+            print("[HUD Player] Coterie grid validation warning: extra inCoterieRef key not in expected layout: " .. tostring(k))
+        end
+    end
+end
+
+validateCoterieGridLayout()
+
+--- Sets a UI element's `active` attribute.
+-- @param elementID string
+-- @param isActive boolean
+local function setActive(elementID, isActive)
+    if type(elementID) ~= "string" then
+        return
+    end
+    UI.setAttribute(elementID, "active", isActive and "true" or "false")
+end
+
+--- Sets right-sidebar overlay visibility without causing layout reflow.
+-- We keep the overlay element `active="true"` so it always occupies layout space,
+-- and only toggle the image tint `color` between "#FFFFFF" (visible) and "clear" (hidden).
+-- @param elementID string
+-- @param isVisible boolean
+local function setSidebarOverlay(elementID, isVisible)
+    if type(elementID) ~= "string" then
+        return
+    end
+    UI.setAttribute(elementID, "active", "true")
+    UI.setAttribute(elementID, "color", isVisible and "#FFFFFF" or "clear")
+end
+
+--- Returns the storage player id and seat color for a given `player`.
+-- @param player Player
+-- @return string|nil playerID
+-- @return string|nil color
+local function getPlayerIDAndColor(player)
+    if player == nil then
+        return nil, nil
+    end
+    local playerID = S.getStorageID and S.getStorageID(player) or nil
+    if not playerID then
+        playerID = S.getPlayerID and S.getPlayerID(player) or nil
+    end
+    local color = nil
+    if type(player) == "userdata" and player.color then
+        color = tostring(player.color)
+    end
+    if color == nil then
+        local pData = S.getPlayerData and S.getPlayerData(player) or nil
+        if type(pData) == "table" then
+            color = pData.color
+        end
+    end
+    if type(color) ~= "string" then
+        color = nil
+    end
+    return playerID, color
+end
+
+--- Parses right sidebar base button id to determine what action it represents.
+-- @param id string
+-- @param color string
+-- @return table|nil { kind = "core"|"reference", coreKey = "map"|"sheet" } or { kind="reference", refKey=..., nested=bool }
+local function parseRightSidebarId(id, color)
+    if type(id) ~= "string" then
+        return nil
+    end
+
+    if id:find("_core_map_") ~= nil then
+        return { kind = "core", coreKey = "map" }
+    end
+    if id:find("_core_sheet_") ~= nil then
+        return { kind = "core", coreKey = "sheet" }
+    end
+
+    if id:find("_ref_coteries_") ~= nil then
+        return { kind = "reference", refKey = "coteries", nested = true }
+    end
+    if id:find("_ref_princesCourt_") ~= nil then
+        return { kind = "reference", refKey = "princesCourt", nested = true }
+    end
+
+    -- Nestedless / other references: extract between "playerHud_RSidebarBtn_ref_" and "_<Color>"
+    local refPrefix = "playerHud_RSidebarBtn_ref_"
+    local suffix = "_" .. tostring(color or "")
+    if color and id:sub(1, #refPrefix) == refPrefix and id:sub(-#suffix) == suffix then
+        local refKey = id:sub(#refPrefix + 1, #id - #suffix)
+        if NESTEDLESS_REF_KEYS[refKey] == true then
+            return { kind = "reference", refKey = refKey, nested = false }
+        end
+    end
+
+    return nil
+end
+
+--- Parses coterie grid button base id to extract the `coterieKey`.
+-- @param id string
+-- @param color string
+-- @return string|nil
+local function parseCoterieKeyFromGridId(id, color)
+    if type(id) ~= "string" or type(color) ~= "string" then
+        return nil
+    end
+
+    local prefix = "playerHud_coterieGridBtn_"
+    local suffix = "_" .. color
+    if id:sub(1, #prefix) ~= prefix then
+        return nil
+    end
+    if id:sub(-#suffix) ~= suffix then
+        return nil
+    end
+
+    local key = id:sub(#prefix + 1, #id - #suffix)
+    if type(key) ~= "string" or key == "" then
+        return nil
+    end
+    return key
+end
+
+--- Shows/hides the UI for one player.
+-- - Core panels: controlled by `playerData.hud.activeCorePanel`
+-- - Reference panels: only one visible at a time
+-- - Right sidebar button active layers: mirror the currently-visible panel
+-- - Coterie popup images: shown while holding (state-driven)
+-- @param player Player
+-- @param color string
+function HUDP.updatePlayerUI(player, color)
+    local playerID, resolvedColor = getPlayerIDAndColor(player)
+    local seatColor = color or resolvedColor
+    if not playerID or type(seatColor) ~= "string" then
+        return
+    end
+
+    local pData = S.getPlayerData and S.getPlayerData(player) or nil
+    if type(pData) ~= "table" or type(pData.hud) ~= "table" or type(pData.hud.reference) ~= "table" then
+        return
+    end
+
+    local hud = pData.hud
+    local ref = hud.reference
+
+    local currentHoverBaseId = currentHoverBaseIdByPlayerID[playerID]
+
+    -- Apply temporary nestedless hold override (click-and-hold)
+    local tempRefKey = tempHoldRefByPlayerID[playerID]
+    local showRefKey = nil
+    if type(tempRefKey) == "string" then
+        showRefKey = tempRefKey
+    else
+        -- Persistent nested reference panels
+        if type(ref.coteries) == "table" then
+            showRefKey = "coteries"
+        elseif type(ref.princesCourt) == "table" then
+            showRefKey = "princesCourt"
+        else
+            -- Persistent nestedless reference panels (currently default false)
+            local orderedKeys = {
+                "chronicleTenets",
+                "socialCombat",
+                "physicalCombat",
+                "frenzy",
+                "rolls",
+                "memoriam",
+                "projects",
+                "experience"
+            }
+            for _, k in ipairs(orderedKeys) do
+                if ref[k] == true then
+                    showRefKey = k
+                    break
+                end
+            end
+        end
+    end
+
+    -- Core panels
+    setActive("playerHud_corePanel_map_" .. seatColor, hud.activeCorePanel == "map")
+    setActive("playerHud_corePanel_sheet_" .. seatColor, hud.activeCorePanel == "sheet")
+
+    -- Top-level reference panels
+    setActive("playerHud_refPanel_coteries_" .. seatColor, showRefKey == "coteries")
+    setActive("playerHud_refPanel_princesCourt_" .. seatColor, showRefKey == "princesCourt")
+
+    for refKey, _ in pairs(NESTEDLESS_REF_KEYS) do
+        setActive("playerHud_refPanel_" .. refKey .. "_" .. seatColor, showRefKey == refKey)
+    end
+
+    -- Right Sidebar active overlays (mirror showRefKey)
+    -- Ensure hover/active overlay elements always occupy layout space.
+    -- (We hide via `color="clear"` instead of toggling `active="false"`.)
+    setSidebarOverlay("playerHud_RSidebarBtn_core_map_" .. seatColor .. "_hover", currentHoverBaseId == ("playerHud_RSidebarBtn_core_map_" .. seatColor))
+    setSidebarOverlay("playerHud_RSidebarBtn_core_sheet_" .. seatColor .. "_hover", currentHoverBaseId == ("playerHud_RSidebarBtn_core_sheet_" .. seatColor))
+
+    setSidebarOverlay("playerHud_RSidebarBtn_ref_coteries_" .. seatColor .. "_hover", currentHoverBaseId == ("playerHud_RSidebarBtn_ref_coteries_" .. seatColor))
+    setSidebarOverlay("playerHud_RSidebarBtn_ref_princesCourt_" .. seatColor .. "_hover", currentHoverBaseId == ("playerHud_RSidebarBtn_ref_princesCourt_" .. seatColor))
+    for refKey, _ in pairs(NESTEDLESS_REF_KEYS) do
+        setSidebarOverlay("playerHud_RSidebarBtn_ref_" .. refKey .. "_" .. seatColor .. "_hover",
+            currentHoverBaseId == ("playerHud_RSidebarBtn_ref_" .. refKey .. "_" .. seatColor))
+    end
+
+    -- Active overlays reflect currently-visible core/reference panels.
+    setSidebarOverlay("playerHud_RSidebarBtn_core_map_" .. seatColor .. "_active", hud.activeCorePanel == "map")
+    setSidebarOverlay("playerHud_RSidebarBtn_core_sheet_" .. seatColor .. "_active", hud.activeCorePanel == "sheet")
+
+    setSidebarOverlay("playerHud_RSidebarBtn_ref_coteries_" .. seatColor .. "_active", showRefKey == "coteries")
+    setSidebarOverlay("playerHud_RSidebarBtn_ref_princesCourt_" .. seatColor .. "_active", showRefKey == "princesCourt")
+
+    for refKey, _ in pairs(NESTEDLESS_REF_KEYS) do
+        setSidebarOverlay("playerHud_RSidebarBtn_ref_" .. refKey .. "_" .. seatColor .. "_active", showRefKey == refKey)
+    end
+
+    -- Coterie popup images (only when coteries panel is visible)
+    local showCoteries = showRefKey == "coteries"
+    for coterieKey, _ in pairs(ALLOWED_COTERIES_IN_REF) do
+        local popupID = "playerHud_coteriePopup_" .. coterieKey .. "_" .. seatColor
+        if showCoteries and type(ref.coteries) == "table" and ref.coteries[coterieKey] == true then
+            setActive(popupID, true)
+        else
+            setActive(popupID, false)
+        end
+    end
+end
+
+--- Shows/updates all players.
+function HUDP.updateAllUI()
+    Main.forPlayers(function(player, color)
+        HUDP.updatePlayerUI(player, color)
+    end)
+end
+
+-- ============================================================================
+-- Global UI EVENT HANDLERS (referenced by XML)
+-- ============================================================================
+
+--- Hover on: show the sidebar button hover layer.
+function HUD_playerRightSidebar_hoverOn(player, value, id)
+    if type(id) ~= "string" then
+        return
+    end
+    local playerID, _ = getPlayerIDAndColor(player)
+    if type(playerID) ~= "string" then
+        return
+    end
+    currentHoverBaseIdByPlayerID[playerID] = id
+    setSidebarOverlay(id .. "_hover", true)
+end
+
+--- Hover off: hide the sidebar button hover layer.
+function HUD_playerRightSidebar_hoverOff(player, value, id)
+    if type(id) ~= "string" then
+        return
+    end
+    local playerID, _ = getPlayerIDAndColor(player)
+    if type(playerID) ~= "string" then
+        return
+    end
+    currentHoverBaseIdByPlayerID[playerID] = nil
+    setSidebarOverlay(id .. "_hover", false)
+end
+
+--- Mouse down on a sidebar base button.
+-- Implements:
+-- - Core panel toggles (persistent)
+-- - Coteries/Prince's Court toggles (persistent nested panels)
+-- - Nestedless reference panels (click-and-hold temporary overlay)
+function HUD_playerRightSidebar_mouseDown(player, value, id)
+    local playerID, color = getPlayerIDAndColor(player)
+    if not playerID or type(id) ~= "string" then
+        return
+    end
+    if type(color) ~= "string" then
+        -- Fallback: try to parse color from id suffix
+        color = S.getPlayerData and (S.getPlayerData(player) or {}).color or nil
+    end
+
+    local action = parseRightSidebarId(id, color)
+    if action == nil then
+        return
+    end
+
+    -- Clicking any right-sidebar button cancels an existing temp hold unless it's itself a nestedless hold.
+    if action.kind ~= "reference" or action.nested == true then
+        tempHoldRefByPlayerID[playerID] = nil
+    end
+
+    if action.kind == "core" then
+        local current = S.getStateVal("playerData", playerID, "hud", "activeCorePanel")
+        local nextVal = nil
+        if current == action.coreKey then
+            nextVal = nil
+        else
+            nextVal = action.coreKey
+        end
+        S.setStateVal(nextVal, "playerData", playerID, "hud", "activeCorePanel")
+        HUDP.updatePlayerUI(player, color)
+        return
+    end
+
+    if action.kind == "reference" then
+        if action.nested == true then
+            local currentRefVal = S.getStateVal("playerData", playerID, "hud", "reference", action.refKey)
+            local isOpen = type(currentRefVal) == "table"
+
+            if isOpen then
+                S.setStateVal(nil, "playerData", playerID, "hud", "reference", action.refKey)
+            else
+                -- Open this nested panel, close the sibling, and close nestedless persistent panels.
+                S.setStateVal({}, "playerData", playerID, "hud", "reference", action.refKey)
+
+                local otherNested = action.refKey == "coteries" and "princesCourt" or "coteries"
+                S.setStateVal(nil, "playerData", playerID, "hud", "reference", otherNested)
+
+                -- Nestedless persistent panels: force hidden
+                for nestedlessKey, _ in pairs(NESTEDLESS_REF_KEYS) do
+                    S.setStateVal(false, "playerData", playerID, "hud", "reference", nestedlessKey)
+                end
+            end
+
+            HUDP.updatePlayerUI(player, color)
+            return
+        end
+
+        -- Nestedless reference panels: click-and-hold temporary overlay
+        if action.nested == false then
+            tempHoldRefByPlayerID[playerID] = action.refKey
+            HUDP.updatePlayerUI(player, color)
+        end
+    end
+end
+
+--- Mouse up on a sidebar base button.
+-- Implements:
+-- - Restore persistent reference panel after nestedless hold ends
+function HUD_playerRightSidebar_mouseUp(player, value, id)
+    local playerID, color = getPlayerIDAndColor(player)
+    if not playerID or type(id) ~= "string" then
+        return
+    end
+
+    local action = parseRightSidebarId(id, color)
+    if action == nil then
+        return
+    end
+
+    if action.kind == "reference" and action.nested == false then
+        -- Nestedless references are "hold-to-show" overlays.
+        -- Clear the temp hold on *any* mouseUp for any nestedless ref button.
+        -- This prevents a stuck overlay when the user drags off one nestedless panel
+        -- and releases on a different nestedless panel.
+        if tempHoldRefByPlayerID[playerID] ~= nil then
+            tempHoldRefByPlayerID[playerID] = nil
+            HUDP.updatePlayerUI(player, color)
+        end
+    else
+        -- Safety: if a temp hold somehow exists, clear it for non-nestedless interactions.
+        tempHoldRefByPlayerID[playerID] = nil
+        HUDP.updatePlayerUI(player, color)
+    end
+end
+
+--- Grid hover on: show the hover tile.
+function HUD_playerCoteriesGrid_hoverOn(player, value, id)
+    if type(id) ~= "string" then
+        return
+    end
+    setActive(id .. "_hover", true)
+end
+
+--- Grid hover off: hide the hover tile.
+function HUD_playerCoteriesGrid_hoverOff(player, value, id)
+    if type(id) ~= "string" then
+        return
+    end
+    setActive(id .. "_hover", false)
+end
+
+--- Mouse down on a coteries grid button.
+-- Shows the coterie popup while the mouse is held down and records it in state.
+function HUD_playerCoteriesGrid_mouseDown(player, value, id)
+    local playerID, color = getPlayerIDAndColor(player)
+    if not playerID or type(id) ~= "string" or type(color) ~= "string" then
+        return
+    end
+
+    local coterieKey = parseCoterieKeyFromGridId(id, color)
+    if type(coterieKey) ~= "string" then
+        return
+    end
+    if ALLOWED_COTERIES_IN_REF[coterieKey] ~= true then
+        return
+    end
+
+    -- Ensure the coteries nested table exists
+    local refCoteries = S.getStateVal("playerData", playerID, "hud", "reference", "coteries")
+    if type(refCoteries) ~= "table" then
+        S.setStateVal({}, "playerData", playerID, "hud", "reference", "coteries")
+    end
+
+    -- Mark the nested popup as active while held
+    S.setStateVal(true, "playerData", playerID, "hud", "reference", "coteries", coterieKey)
+
+    local popupID = "playerHud_coteriePopup_" .. coterieKey .. "_" .. color
+    setActive(popupID, true)
+end
+
+--- Mouse up on a coteries grid button.
+-- Hides the coterie popup and clears the nested state key.
+function HUD_playerCoteriesGrid_mouseUp(player, value, id)
+    local playerID, color = getPlayerIDAndColor(player)
+    if not playerID or type(id) ~= "string" or type(color) ~= "string" then
+        return
+    end
+
+    local coterieKey = parseCoterieKeyFromGridId(id, color)
+    if type(coterieKey) ~= "string" then
+        return
+    end
+    if ALLOWED_COTERIES_IN_REF[coterieKey] ~= true then
+        return
+    end
+
+    S.setStateVal(nil, "playerData", playerID, "hud", "reference", "coteries", coterieKey)
+
+    local popupID = "playerHud_coteriePopup_" .. coterieKey .. "_" .. color
+    setActive(popupID, false)
+end
+
+return HUDP
+

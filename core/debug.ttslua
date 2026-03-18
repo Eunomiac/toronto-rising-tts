@@ -715,9 +715,15 @@ function DEBUG.testUI()
 
     -- Test 2: Update scene display
     do
-        Scenes.loadScene("tension")
-        UpdateUIDisplays()
-        printTestResult("Update UI scene display", true, "Should update currentSceneDisplay")
+        local ok, err = pcall(function()
+            Scenes.loadScene("tension")
+        end)
+        if ok then
+            UpdateUIDisplays()
+            printTestResult("Update UI scene display", true, "Should update currentSceneDisplay")
+        else
+            printTestResult("Update UI scene display", false, "Scenes.loadScene('tension') failed: " .. tostring(err))
+        end
     end
 
     -- Test 3: Update player stats
@@ -731,6 +737,163 @@ function DEBUG.testUI()
             printTestResult("Update player stats", true, "Should update " .. testColor .. " player's hunger")
         else
             printTestResult("Update player stats", false, "No seated players found for test")
+        end
+    end
+
+    -- Test 4: Core panel toggles (map/sheet)
+    do
+        local testColor = getFirstSeatedPlayerColor()
+        if testColor then
+            local playerID = S.getPlayerID(testColor)
+            if playerID then
+                -- Reset only HUD-related state for this player
+                S.setStateVal(nil, "playerData", playerID, "hud", "activeCorePanel")
+                S.setStateVal(nil, "playerData", playerID, "hud", "reference", "coteries")
+                S.setStateVal(nil, "playerData", playerID, "hud", "reference", "princesCourt")
+
+                local refKeys = {
+                    "chronicleTenets",
+                    "rolls",
+                    "socialCombat",
+                    "physicalCombat",
+                    "frenzy",
+                    "memoriam",
+                    "projects",
+                    "experience"
+                }
+                for _, k in ipairs(refKeys) do
+                    S.setStateVal(false, "playerData", playerID, "hud", "reference", k)
+                end
+
+                UpdateUIDisplays()
+
+                local function isActive(elementID)
+                    local v = UI.getAttribute(elementID, "active")
+                    return string.lower(tostring(v)) == "true"
+                end
+
+                local mapPanelID = "playerHud_corePanel_map_" .. testColor
+                local sheetPanelID = "playerHud_corePanel_sheet_" .. testColor
+                local mapActiveOverlayID = "playerHud_RSidebarBtn_core_map_" .. testColor .. "_active"
+                local sheetActiveOverlayID = "playerHud_RSidebarBtn_core_sheet_" .. testColor .. "_active"
+
+                printTestResult(
+                    "Core toggle initial state (both hidden)",
+                    (not isActive(mapPanelID)) and (not isActive(sheetPanelID)) and (not isActive(mapActiveOverlayID)) and (not isActive(sheetActiveOverlayID)),
+                    "Expected map/sheet panels and active overlays hidden"
+                )
+
+                -- Toggle MAP ON
+                HUD_playerRightSidebar_mouseDown(Player[testColor], "-1", "playerHud_RSidebarBtn_core_map_" .. testColor)
+                UpdateUIDisplays()
+
+                local mapOn = isActive(mapPanelID) and isActive(mapActiveOverlayID) and (not isActive(sheetPanelID)) and (not isActive(sheetActiveOverlayID))
+                printTestResult("Core toggle MAP on", mapOn, "Expected map panel visible; sheet hidden")
+
+                -- Toggle MAP OFF
+                HUD_playerRightSidebar_mouseDown(Player[testColor], "-1", "playerHud_RSidebarBtn_core_map_" .. testColor)
+                UpdateUIDisplays()
+
+                local mapOff = (not isActive(mapPanelID)) and (not isActive(sheetPanelID))
+                printTestResult("Core toggle MAP off", mapOff, "Expected both core panels hidden")
+
+                -- Toggle SHEET ON
+                HUD_playerRightSidebar_mouseDown(Player[testColor], "-1", "playerHud_RSidebarBtn_core_sheet_" .. testColor)
+                UpdateUIDisplays()
+
+                local sheetOn = isActive(sheetPanelID) and isActive(sheetActiveOverlayID) and (not isActive(mapPanelID)) and (not isActive(mapActiveOverlayID))
+                printTestResult("Core toggle SHEET on", sheetOn, "Expected sheet panel visible; map hidden")
+            else
+                printTestResult("Core toggle", false, "Could not resolve player ID for " .. testColor)
+            end
+        else
+            printTestResult("Core toggle", false, "No seated players found for test")
+        end
+    end
+
+    -- Test 5: Coteries toggle + grid visibility
+    do
+        local testColor = getFirstSeatedPlayerColor()
+        if testColor then
+            local playerID = S.getPlayerID(testColor)
+            if playerID then
+                -- Close any previous state
+                S.setStateVal(nil, "playerData", playerID, "hud", "reference", "coteries")
+                S.setStateVal(nil, "playerData", playerID, "hud", "reference", "princesCourt")
+                UpdateUIDisplays()
+
+                local function isActive(elementID)
+                    local v = UI.getAttribute(elementID, "active")
+                    return string.lower(tostring(v)) == "true"
+                end
+
+                local coteriesPanelID = "playerHud_refPanel_coteries_" .. testColor
+                local coteriesActiveOverlayID = "playerHud_RSidebarBtn_ref_coteries_" .. testColor .. "_active"
+
+                printTestResult(
+                    "Coteries toggle initial state (grid hidden)",
+                    (not isActive(coteriesPanelID)) and (not isActive(coteriesActiveOverlayID)),
+                    "Expected coteries grid and active overlay hidden"
+                )
+
+                -- Toggle COTERIES ON
+                HUD_playerRightSidebar_mouseDown(Player[testColor], "-1", "playerHud_RSidebarBtn_ref_coteries_" .. testColor)
+                UpdateUIDisplays()
+
+                local coteriesOn = isActive(coteriesPanelID) and isActive(coteriesActiveOverlayID)
+                printTestResult("Coteries toggle ON", coteriesOn, "Expected coteries grid visible")
+
+                -- Toggle COTERIES OFF
+                HUD_playerRightSidebar_mouseDown(Player[testColor], "-1", "playerHud_RSidebarBtn_ref_coteries_" .. testColor)
+                UpdateUIDisplays()
+
+                local coteriesOff = (not isActive(coteriesPanelID)) and (not isActive(coteriesActiveOverlayID))
+                printTestResult("Coteries toggle OFF", coteriesOff, "Expected coteries grid hidden")
+            else
+                printTestResult("Coteries toggle", false, "Could not resolve player ID for " .. testColor)
+            end
+        else
+            printTestResult("Coteries toggle", false, "No seated players found for test")
+        end
+    end
+
+    -- Test 6: Coterie popup overlay hold/hide (beesHive)
+    do
+        local testColor = getFirstSeatedPlayerColor()
+        if testColor then
+            local playerID = S.getPlayerID(testColor)
+            if playerID then
+                -- Ensure coteries panel is open
+                S.setStateVal({}, "playerData", playerID, "hud", "reference", "coteries")
+                S.setStateVal(nil, "playerData", playerID, "hud", "reference", "princesCourt")
+                UpdateUIDisplays()
+
+                local function isActive(elementID)
+                    local v = UI.getAttribute(elementID, "active")
+                    return string.lower(tostring(v)) == "true"
+                end
+
+                local gridBtnID = "playerHud_coterieGridBtn_beesHive_" .. testColor
+                local popupID = "playerHud_coteriePopup_beesHive_" .. testColor
+
+                -- Start holding
+                HUD_playerCoteriesGrid_mouseDown(Player[testColor], "-1", gridBtnID)
+                UpdateUIDisplays()
+
+                local popupShown = isActive(popupID)
+                printTestResult("Coterie popup shown on mouseDown", popupShown, "Expected beesHive popup visible while held")
+
+                -- Release
+                HUD_playerCoteriesGrid_mouseUp(Player[testColor], "-1", gridBtnID)
+                UpdateUIDisplays()
+
+                local popupHidden = not isActive(popupID)
+                printTestResult("Coterie popup hidden on mouseUp", popupHidden, "Expected beesHive popup hidden on release")
+            else
+                printTestResult("Coterie popup", false, "Could not resolve player ID for " .. testColor)
+            end
+        else
+            printTestResult("Coterie popup", false, "No seated players found for test")
         end
     end
 
@@ -2818,6 +2981,338 @@ function DEBUG.tableRotateTo(obj, distance, angle, center)
     print("DEBUG.tableRotateTo: Moved " .. resolvedObj.getName() .. " to " .. tostring(targetPos))
 end
 
+-- ============================================================================
+-- Look-at calibration + 3D positioning helpers (console/admin use)
+-- ============================================================================
+
+-- Vars stored on each object to correct its default forward direction
+-- when rotation is not adjusted by a look-at function.
+local LOOKAT_VAR_PITCH = "lookAtOffsetPitchDeg"
+local LOOKAT_VAR_YAW = "lookAtOffsetYawDeg"
+local LOOKAT_VAR_ROLL = "lookAtOffsetRollDeg"
+
+--- Resolves a TTS GameObject from either a GUID string or an object reference.
+-- @param objOrGuid Object|string TTS object or GUID
+-- @param source string Debug call site label for errors
+-- @return table|userdata GameObject
+local function resolveDebugObject(objOrGuid, source)
+    local resolved = U.getObject(objOrGuid, true)
+    if resolved ~= nil then
+        return resolved
+    end
+    if U.isGameObject(objOrGuid) then
+        return objOrGuid
+    end
+    U.error(source, "objOrGuid must be a valid GameObject or GUID string", objOrGuid)
+    return nil -- U.error throws; this return is for completeness
+end
+
+--- Safely reads a numeric `obj.getVar(varName)` value.
+-- Returns nil if var missing or not numeric.
+-- @param obj userdata GameObject
+-- @param varName string Variable name
+-- @return number|nil
+local function safeGetVarNumber(obj, varName)
+    if obj == nil or obj.getVar == nil then return nil end
+    local ok, val = pcall(function()
+        return obj.getVar(varName)
+    end)
+    if not ok then return nil end
+    if val == nil then return nil end
+    if type(val) == "number" then return val end
+    if type(val) == "string" then
+        return tonumber(val)
+    end
+    return nil
+end
+
+--- Safely writes a numeric `obj.setVar(varName, number)` value.
+-- @param obj userdata GameObject
+-- @param varName string Variable name
+-- @param value number
+local function safeSetVarNumber(obj, varName, value)
+    if obj == nil or obj.setVar == nil then
+        U.error("DEBUG.safeSetVarNumber", "Object does not support setVar()", obj)
+        return
+    end
+    obj.setVar(varName, value)
+end
+
+--- Resolves a target position from either:
+-- 1) an Object (uses getPosition())
+-- 2) a table/Vector {x,y,z}
+-- @param targetOrPos Object|table|userdata
+-- @param source string Debug call site label
+-- @return Vector
+local function resolveTargetPosition(targetOrPos, source)
+    if targetOrPos == nil then
+        U.error(source, "lookAtTargetOrPos cannot be nil")
+        return Vector(0, 0, 0)
+    end
+
+    -- Accept GUID strings for targets as well.
+    -- This keeps setRotationLookAt() consistent with other DEBUG helpers that accept GUIDs.
+    if U.Type(targetOrPos) == "string" then
+        local targetObj = U.getObject(targetOrPos, true)
+        if targetObj ~= nil then
+            return targetObj.getPosition()
+        end
+    end
+
+    if U.isGameObject(targetOrPos) then
+        local pos = targetOrPos.getPosition()
+        U.Val(source, pos, pos ~= nil, "Target object's getPosition() failed")
+        return pos
+    end
+
+    -- Accept Vector userdata or a table-like {x,y,z} or {[1],[2],[3]}
+    local ok, vec = pcall(function()
+        return Vector(targetOrPos)
+    end)
+    if not ok or vec == nil then
+        U.error(source, "lookAtTargetOrPos must be a GameObject or a {x,y,z} table/Vector", targetOrPos)
+    end
+    return vec
+end
+
+--- Internal helper: Resolves the configured center object (or fallback to table center).
+-- If the GUID isn't set or can't be resolved, returns Vector(0,0,0).
+-- @return table|userdata Vector|GameObject (GameObject preserves local frame conversions)
+local function resolveCenterArg()
+    local centerGuid = S.getStateVal("debug", "centerObjGuid")
+    if type(centerGuid) == "string" and centerGuid ~= "" then
+        local centerObj = U.getObject(centerGuid, true)
+        if centerObj ~= nil then
+            return centerObj
+        end
+    end
+    return Vector(0, 0, 0)
+end
+
+--- Gets the per-object look-at correction offset.
+-- If the calibration vars are missing on the object, returns Vector(0,0,0).
+-- @param objOrGuid Object|string GameObject or GUID
+-- @return Vector
+function DEBUG.getLookAtOffset(objOrGuid)
+    local obj = resolveDebugObject(objOrGuid, "DEBUG.getLookAtOffset")
+
+    local pitch = safeGetVarNumber(obj, LOOKAT_VAR_PITCH)
+    local yaw = safeGetVarNumber(obj, LOOKAT_VAR_YAW)
+    local roll = safeGetVarNumber(obj, LOOKAT_VAR_ROLL)
+
+    -- Default when calibration vars are absent.
+    if pitch == nil and yaw == nil and roll == nil then
+        return Vector(0, 0, 0)
+    end
+
+    return Vector(pitch or 0, yaw or 0, roll or 0)
+end
+
+--- Applies a look-at rotation, adjusted by the per-object calibration offset (if present).
+-- @param objOrGuid Object|string GameObject or GUID
+-- @param lookAtTargetOrPos Object|table|Vector target object or position
+-- @param useCalibration boolean Optional; default is true
+function DEBUG.setRotationLookAt(objOrGuid, lookAtTargetOrPos, useCalibration)
+    local obj = resolveDebugObject(objOrGuid, "DEBUG.setRotationLookAt")
+    local targetPos = resolveTargetPosition(lookAtTargetOrPos, "DEBUG.setRotationLookAt")
+
+    local baseRot = U.lookAtRotation(obj.getPosition(), targetPos)
+    if baseRot == nil or baseRot.x == nil or baseRot.y == nil or baseRot.z == nil then
+        U.error("DEBUG.setRotationLookAt", "U.lookAtRotation failed", baseRot)
+        return
+    end
+
+    local offset = Vector(0, 0, 0)
+    if useCalibration == nil or useCalibration ~= false then
+        offset = DEBUG.getLookAtOffset(obj)
+    end
+    if offset == nil or offset.x == nil or offset.y == nil or offset.z == nil then
+        offset = Vector(0, 0, 0)
+    end
+
+    local finalRot = Vector(
+        baseRot.x + offset.x,
+        baseRot.y + offset.y,
+        baseRot.z + offset.z
+    )
+
+    local ok = false
+    local err = nil
+    if obj.setRotation ~= nil then
+        ok, err = pcall(function()
+            obj.setRotation(finalRot)
+        end)
+    end
+
+    if not ok then
+        -- Fallback for objects that may only support smooth rotation.
+        if obj.setRotationSmooth ~= nil then
+            local ok2 = pcall(function()
+                obj.setRotationSmooth(finalRot, false, false)
+            end)
+            if not ok2 then
+                U.error("DEBUG.setRotationLookAt", "Failed to set object rotation", err)
+                return
+            end
+        else
+            U.error("DEBUG.setRotationLookAt", "Object has neither setRotation nor setRotationSmooth()", obj)
+            return
+        end
+    end
+
+    local objName = (obj.getName and obj.getName()) or "Object"
+    print("DEBUG.setRotationLookAt: Set rotation for " .. tostring(objName) .. " to " .. tostring(finalRot) .. " (base=" .. tostring(baseRot) .. ", offset=" .. tostring(offset) .. ")")
+end
+
+--- Calibrates per-object look-at offset vars so the object correctly aims at the target.
+-- This is meant for admin/setup time.
+-- @param objOrGuid Object|string GameObject or GUID
+-- @param lookAtTargetOrPos Object|table|Vector target object or position
+-- @param roundIntervalDeg number Optional rounding interval in degrees (default: 90)
+function DEBUG.calibrateLookAtOffset(objOrGuid, lookAtTargetOrPos, roundIntervalDeg)
+    local obj = resolveDebugObject(objOrGuid, "DEBUG.calibrateLookAtOffset")
+    local targetPos = resolveTargetPosition(lookAtTargetOrPos, "DEBUG.calibrateLookAtOffset")
+
+    local interval = roundIntervalDeg
+    if interval == nil then interval = 90 end
+    U.Val("DEBUG.calibrateLookAtOffset", interval, U.Type(interval) == "number" and interval > 0, "roundIntervalDeg must be a positive number")
+
+    local baseRot = U.lookAtRotation(obj.getPosition(), targetPos)
+    local currentRot = obj.getRotation()
+
+    if baseRot == nil or baseRot.x == nil or baseRot.y == nil or baseRot.z == nil then
+        U.error("DEBUG.calibrateLookAtOffset", "U.lookAtRotation returned nil/invalid Vector", baseRot)
+        return
+    end
+    if currentRot == nil or currentRot.x == nil or currentRot.y == nil or currentRot.z == nil then
+        U.error("DEBUG.calibrateLookAtOffset", "obj.getRotation() returned nil/invalid Vector", currentRot)
+        return
+    end
+
+    local baseRounded = Vector(
+        U.pAngle(baseRot.x, interval),
+        U.pAngle(baseRot.y, interval),
+        U.pAngle(baseRot.z, interval)
+    )
+    local currentRounded = Vector(
+        U.pAngle(currentRot.x, interval),
+        U.pAngle(currentRot.y, interval),
+        U.pAngle(currentRot.z, interval)
+    )
+
+    local offset = Vector(
+        currentRounded.x - baseRounded.x,
+        currentRounded.y - baseRounded.y,
+        currentRounded.z - baseRounded.z
+    )
+
+    safeSetVarNumber(obj, LOOKAT_VAR_PITCH, offset.x)
+    safeSetVarNumber(obj, LOOKAT_VAR_YAW, offset.y)
+    safeSetVarNumber(obj, LOOKAT_VAR_ROLL, offset.z)
+
+    print(
+        "DEBUG.calibrateLookAtOffset: Stored offset " ..
+        tostring(offset) ..
+        " (baseRounded=" .. tostring(baseRounded) .. ", currentRounded=" .. tostring(currentRounded) .. ")"
+    )
+end
+
+--- Sets the center object used for coordinate conversions in the positioning helpers.
+-- Stores the object GUID in game state (session-oriented; save whitelist may exclude it).
+-- @param objOrGuid Object|string GameObject or GUID string
+function DEBUG.setCenterObject(objOrGuid)
+    local obj = resolveDebugObject(objOrGuid, "DEBUG.setCenterObject")
+
+    local guid = nil
+    if obj.getGUID ~= nil then
+        guid = obj.getGUID()
+    end
+    if guid == nil then
+        guid = obj.guid
+    end
+    if guid == nil or U.Type(guid) ~= "string" then
+        U.error("DEBUG.setCenterObject", "Object GUID could not be resolved", guid)
+        return
+    end
+
+    S.setStateVal(guid, "debug", "centerObjGuid")
+    print("DEBUG.setCenterObject: Stored center GUID = " .. tostring(guid))
+end
+
+--- Clears the stored center object GUID used for coordinate conversions.
+function DEBUG.clearCenterObject()
+    S.setStateVal(nil, "debug", "centerObjGuid")
+    print("DEBUG.clearCenterObject: Cleared stored center GUID")
+end
+
+--- Positions an object in cylindrical coordinates relative to the stored center.
+-- If `lookAtTargetOrPos` is provided, also applies a calibration-aware look-at rotation.
+function DEBUG.setPositionCylindrical(objOrGuid, radius, angleDeg, height, lookAtTargetOrPos)
+    local obj = resolveDebugObject(objOrGuid, "DEBUG.setPositionCylindrical")
+    U.Val("DEBUG.setPositionCylindrical", radius, U.Type(radius) == "number", "radius must be a number")
+    U.Val("DEBUG.setPositionCylindrical", angleDeg, U.Type(angleDeg) == "number", "angleDeg must be a number")
+    U.Val("DEBUG.setPositionCylindrical", height, U.Type(height) == "number", "height must be a number")
+
+    local centerArg = resolveCenterArg()
+    local xyz = U.resolvePositionData(
+        { position = { radius = radius, angle = angleDeg, height = height } },
+        "cylindrical",
+        centerArg
+    )
+    if xyz == nil then
+        U.error("DEBUG.setPositionCylindrical", "Failed to resolve cylindrical coordinates to XYZ")
+        return
+    end
+
+    if obj.setPosition == nil then
+        U.error("DEBUG.setPositionCylindrical", "Object does not support setPosition()", obj)
+        return
+    end
+
+    obj.setPosition(xyz)
+
+    if lookAtTargetOrPos ~= nil then
+        DEBUG.setRotationLookAt(obj, lookAtTargetOrPos, true)
+    end
+
+    local objName = (obj.getName and obj.getName()) or "Object"
+    print("DEBUG.setPositionCylindrical: Moved " .. tostring(objName) .. " to " .. tostring(xyz))
+end
+
+--- Positions an object in spherical coordinates relative to the stored center.
+-- If `lookAtTargetOrPos` is provided, also applies a calibration-aware look-at rotation.
+function DEBUG.setPositionSpherical(objOrGuid, radius, angleDeg, angle2Deg, lookAtTargetOrPos)
+    local obj = resolveDebugObject(objOrGuid, "DEBUG.setPositionSpherical")
+    U.Val("DEBUG.setPositionSpherical", radius, U.Type(radius) == "number", "radius must be a number")
+    U.Val("DEBUG.setPositionSpherical", angleDeg, U.Type(angleDeg) == "number", "angleDeg must be a number")
+    U.Val("DEBUG.setPositionSpherical", angle2Deg, U.Type(angle2Deg) == "number", "angle2Deg must be a number")
+
+    local centerArg = resolveCenterArg()
+    local xyz = U.resolvePositionData(
+        { position = { radius = radius, angle = angleDeg, angle2 = angle2Deg } },
+        "spherical",
+        centerArg
+    )
+    if xyz == nil then
+        U.error("DEBUG.setPositionSpherical", "Failed to resolve spherical coordinates to XYZ")
+        return
+    end
+
+    if obj.setPosition == nil then
+        U.error("DEBUG.setPositionSpherical", "Object does not support setPosition()", obj)
+        return
+    end
+
+    obj.setPosition(xyz)
+
+    if lookAtTargetOrPos ~= nil then
+        DEBUG.setRotationLookAt(obj, lookAtTargetOrPos, true)
+    end
+
+    local objName = (obj.getName and obj.getName()) or "Object"
+    print("DEBUG.setPositionSpherical: Moved " .. tostring(objName) .. " to " .. tostring(xyz))
+end
+
 --[[
     File Logging Functions
     These functions write debug information to files in the workspace using
@@ -2988,6 +3483,17 @@ function DEBUG.help()
     print("  setHunger(color, value)  - Set player hunger (e.g., setHunger('Red', 3))")
     print("  changeScene(sceneName)   - Change scene (e.g., changeScene('elysium'))")
     print("  setPhase(phaseName)      - Change phase (e.g., setPhase('PLAY'))")
+    print("  DEBUG.getLookAtOffset(obj)    - Read stored look-at calibration offset (Vector)")
+    print("  DEBUG.calibrateLookAtOffset(obj, target, roundIntervalDeg?)")
+    print("                          - Calibrate per-object look-at correction using current rotation")
+    print("  DEBUG.setRotationLookAt(obj, target, useCalibration?)")
+    print("                          - Apply look-at rotation (uses calibration by default)")
+    print("  DEBUG.setCenterObject(centerObjOrGuid) - Store center object for coordinate conversions")
+    print("  DEBUG.clearCenterObject()              - Clear stored center object")
+    print("  DEBUG.setPositionCylindrical(obj, radius, angleDeg, height, target?)")
+    print("                          - Position using cylindrical coords relative to stored center")
+    print("  DEBUG.setPositionSpherical(obj, radius, angleDeg, angle2Deg, target?)")
+    print("                          - Position using spherical coords relative to stored center")
     print("\nHELP:")
     print("  debugHelp()              - Show this help message")
     print("\n" .. string.rep("=", 70))

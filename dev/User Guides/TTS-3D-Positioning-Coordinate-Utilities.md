@@ -40,6 +40,79 @@ These conventions are used by `U.XYZToCylindrical(...)`, `U.XYZToSpherical(...)`
 
 Important: if you provide spherical `angle2`, be consistent with the above definition (the implementation internally shifts `angle2` by `+90` when converting to XYZ).
 
+## Admin/Debug setup helpers (core/debug.ttslua)
+
+The `DEBUG` module is intended for admin/setup-time console commands (not active-play scripting). Use it to:
+
+- calibrate a per-object “look-at” correction offset (because some spotlight assets face a different default direction at rotation `0,0,0`)
+- store a reusable cylindrical/spherical “center” reference (so you don't have to pass `centerObjOrGuid` repeatedly)
+
+### 1) `DEBUG.getLookAtOffset(objOrGuid)`
+
+Reads the stored per-object look-at correction offset for `objOrGuid`.
+
+If the calibration vars do not exist on the object, this defaults to `Vector(0, 0, 0)`.
+
+```lua
+-- lua DEBUG.getLookAtOffset(lightObjOrGuid)
+```
+
+### 2) `DEBUG.calibrateLookAtOffset(objOrGuid, lookAtTargetOrPos, roundIntervalDeg?)`
+
+Calibrates a per-object look-at correction offset so the object aims at the target.
+
+This computes a rounded delta between:
+
+- the base rotation from `U.lookAtRotation(...)`
+- the object's current rotation (rounded to the given interval)
+
+```lua
+-- lua DEBUG.calibrateLookAtOffset(lightObjOrGuid, targetObjOrPos, 90)
+```
+
+### 3) `DEBUG.setRotationLookAt(objOrGuid, lookAtTargetOrPos, useCalibration?)`
+
+Applies a look-at rotation to `objOrGuid`, optionally using calibration by default.
+
+`lookAtTargetOrPos` can be a `GameObject`, a GUID string, or a `{x,y,z}`/`Vector` position.
+
+If calibration vars do not exist, it behaves as if the offset were `Vector(0,0,0)`.
+
+```lua
+-- lua DEBUG.setRotationLookAt(lightObjOrGuid, targetObjOrPos)
+```
+
+### 4) `DEBUG.setCenterObject(centerObjOrGuid)` / `DEBUG.clearCenterObject()`
+
+Stores (or clears) the center reference used by the cylindrical/spherical positioning helpers.
+
+If you haven't set a center yet (or it's not resolvable), cylindrical/spherical positioning falls back to `Vector(0,0,0)`.
+
+```lua
+-- lua DEBUG.setCenterObject(centerObjOrGuid)
+-- lua DEBUG.clearCenterObject()
+```
+
+### 5) `DEBUG.setPositionCylindrical(objOrGuid, radius, angleDeg, height, lookAtTargetOrPos?)`
+
+Positions `objOrGuid` using cylindrical coordinates relative to the stored center.
+
+If `lookAtTargetOrPos` is provided, it also rotates the object using `DEBUG.setRotationLookAt(...)`.
+
+```lua
+-- lua DEBUG.setPositionCylindrical(objOrGuid, 15, 90, 5, targetOrPos?)
+```
+
+### 6) `DEBUG.setPositionSpherical(objOrGuid, radius, angleDeg, angle2Deg, lookAtTargetOrPos?)`
+
+Positions `objOrGuid` using spherical coordinates relative to the stored center.
+
+If `lookAtTargetOrPos` is provided, it also rotates the object using `DEBUG.setRotationLookAt(...)`.
+
+```lua
+-- lua DEBUG.setPositionSpherical(objOrGuid, 20, 45, -30, targetOrPos?)
+```
+
 ## Core utilities for cylindrical/spherical work (`lib/util.ttslua`)
 
 ### 1) `U.rotateAroundPoint(center, radius, angleDeg, y)`

@@ -20,6 +20,9 @@
   <!-- 5. Player HUD (per-color panels) -->
   <Include src="ui/player/hud_player" />
 
+  <!-- 5b. Player HUD Right Sidebar + Coteries reference grid -->
+  <Include src="ui/player/panel_right_sidebar_entry.xml" />
+
   <!-- 6. Shared UI (dice results, scene transition overlay) -->
   <Include src="ui/shared/hud_shared" />
 

@@ -1,0 +1,7 @@
+<!-- Player HUD Right Sidebar (bundled entry) -->
+<!-- Split into includes for maintainability and correct <Defaults> ordering. -->
+
+<Include src="panel_right_sidebar_defaults.xml" />
+<Include src="panel_right_sidebar_layers.xml" />
+<Include src="panel_right_sidebar_buttons.xml" />
+

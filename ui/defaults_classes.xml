@@ -73,6 +73,7 @@
 
   <!-- Popup Image Styles (hidden fullscreen image popups) -->
   <Image class="popupImage"
+    width="90%"
     active="false" />
 
   <Image class="popupImageNarrow"

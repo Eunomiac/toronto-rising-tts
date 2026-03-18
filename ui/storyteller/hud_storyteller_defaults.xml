@@ -92,6 +92,7 @@
   <VerticalLayout class="storyteller_sidebarLayout"
     height="100%"
     width="100%"
+    spacing="0"
     childAlignment="LowerLeft"
     childForceExpandHeight="false"
     childForceExpandWidth="true" />

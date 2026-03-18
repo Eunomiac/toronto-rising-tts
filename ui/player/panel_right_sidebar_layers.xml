@@ -1,0 +1,181 @@
+<!-- ===================================================================== -->
+<!-- Per-player UI blocks                                                  -->
+<!-- ===================================================================== -->
+
+<!-- **************************** Core Layer **************************** -->
+
+<!-- ============================= Red Core Layer ============================= -->
+<Panel id="playerHud_coreLayer_Red" class="playerHud_coreLayer" visibility="Red">
+    <Panel id="playerHud_corePanel_map_Red" active="false" />
+    <Panel id="playerHud_corePanel_sheet_Red" active="false" />
+</Panel>
+
+<!-- ============================= Brown Core Layer ============================= -->
+<Panel id="playerHud_coreLayer_Brown" class="playerHud_coreLayer" visibility="Brown">
+    <Panel id="playerHud_corePanel_map_Brown" active="false" />
+    <Panel id="playerHud_corePanel_sheet_Brown" active="false" />
+</Panel>
+
+<!-- ============================= Orange Core Layer ============================= -->
+<Panel id="playerHud_coreLayer_Orange" class="playerHud_coreLayer" visibility="Orange">
+    <Panel id="playerHud_corePanel_map_Orange" active="false" />
+    <Panel id="playerHud_corePanel_sheet_Orange" active="false" />
+</Panel>
+
+<!-- ============================= Pink Core Layer ============================= -->
+<Panel id="playerHud_coreLayer_Pink" class="playerHud_coreLayer" visibility="Pink">
+    <Panel id="playerHud_corePanel_map_Pink" active="false" />
+    <Panel id="playerHud_corePanel_sheet_Pink" active="false" />
+</Panel>
+
+<!-- ============================= Purple Core Layer ============================= -->
+<Panel id="playerHud_coreLayer_Purple" class="playerHud_coreLayer" visibility="Purple">
+    <Panel id="playerHud_corePanel_map_Purple" active="false" />
+    <Panel id="playerHud_corePanel_sheet_Purple" active="false" />
+</Panel>
+
+<!-- **************************** Reference Layer **************************** -->
+
+<!-- ============================= Red Reference Layer ============================= -->
+<Panel id="playerHud_referenceLayer_Red" visibility="Red">
+    <Image id="playerHud_refPanel_princesCourt_Red" active="false" class="popupImage" image="refPanel_PrincesCourt" />
+    <Image id="playerHud_refPanel_chronicleTenets_Red" active="false" class="popupImage" image="refPanel_ChronicleTenets" />
+    <Image id="playerHud_refPanel_rolls_Red" active="false" class="popupImage" image="refPanel_Rolls" />
+    <Image id="playerHud_refPanel_socialCombat_Red" active="false" class="popupImage" image="refPanel_SocialCombat" />
+    <Image id="playerHud_refPanel_physicalCombat_Red" active="false" class="popupImage" image="refPanel_PhysicalCombat" />
+    <Image id="playerHud_refPanel_frenzy_Red" active="false" class="popupImage" image="refPanel_Frenzy" />
+    <Image id="playerHud_refPanel_experience_Red" active="false" class="popupImage" image="refPanel_Experience" />
+    <Image id="playerHud_refPanel_projects_Red" active="false" class="popupImage" image="refPanel_Projects" />
+    <Image id="playerHud_refPanel_memoriam_Red" active="false" class="popupImage" image="refPanel_Memoriam" />
+
+    <Panel id="playerHud_refPanel_coteries_Red" class="coterie-reference" active="false">
+        <!-- Coteries grid (buttons only inactive/hover variants) -->
+        <VerticalLayout class="coterie-grid">
+            <!-- Spacer Row -->
+            <HorizontalLayout class="coterie-grid-row">
+            </HorizontalLayout>
+            <!-- Camarilla Group -->
+            <HorizontalLayout class="coterie-grid-row" preferredWidth="1250">
+                <Panel id="playerHud_coterieGridBtnWrap_beesHive_Red">
+                    <Image id="playerHud_coterieGridBtn_beesHive_Red" image="toggle_beesHive_inactive" raycastTarget="true"
+                        onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
+                        onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+                    <Image id="playerHud_coterieGridBtn_beesHive_Red_hover" image="toggle_beesHive_hover" active="false" />
+                </Panel>
+                <Panel id="playerHud_coterieGridBtnWrap_fiveKeys_Red">
+                    <Image id="playerHud_coterieGridBtn_fiveKeys_Red" image="toggle_fiveKeys_inactive"   raycastTarget="true"
+                        onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
+                        onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+                    <Image id="playerHud_coterieGridBtn_fiveKeys_Red_hover" image="toggle_fiveKeys_hover"   active="false" />
+                </Panel>
+                <Panel id="playerHud_coterieGridBtnWrap_freeChantry_Red">
+                    <Image id="playerHud_coterieGridBtn_freeChantry_Red" image="toggle_freeChantry_inactive"   raycastTarget="true"
+                        onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
+                        onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+                    <Image id="playerHud_coterieGridBtn_freeChantry_Red_hover" image="toggle_freeChantry_hover"  active="false" />
+                </Panel>
+                <Panel id="playerHud_coterieGridBtnWrap_harpies_Red">
+                    <Image id="playerHud_coterieGridBtn_harpies_Red" image="toggle_harpies_inactive" raycastTarget="true"
+                        onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
+                        onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+                    <Image id="playerHud_coterieGridBtn_harpies_Red_hover" image="toggle_harpies_hover" active="false" />
+                </Panel>
+                <Panel id="playerHud_coterieGridBtnWrap_ironGuard_Red">
+                    <Image id="playerHud_coterieGridBtn_ironGuard_Red" image="toggle_ironGuard_inactive" raycastTarget="true"
+                        onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
+                        onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+                    <Image id="playerHud_coterieGridBtn_ironGuard_Red_hover" image="toggle_ironGuard_hover" active="false" />
+                </Panel>
+            </HorizontalLayout>
+
+            <HorizontalLayout class="coterie-grid-row">
+                <Panel id="playerHud_coterieGridBtnWrap_midnightMass_Red">
+                    <Image id="playerHud_coterieGridBtn_midnightMass_Red" image="toggle_midnightMass_inactive" raycastTarget="true"
+                        onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
+                        onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+                    <Image id="playerHud_coterieGridBtn_midnightMass_Red_hover" image="toggle_midnightMass_hover" active="false" />
+                </Panel>
+                <Panel id="playerHud_coterieGridBtnWrap_moonClub_Red">
+                    <Image id="playerHud_coterieGridBtn_moonClub_Red" image="toggle_moonClub_inactive" raycastTarget="true"
+                        onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
+                        onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+                    <Image id="playerHud_coterieGridBtn_moonClub_Red_hover" image="toggle_moonClub_hover" active="false" />
+                </Panel>
+                <Panel id="playerHud_coterieGridBtnWrap_regencyUniversityChantry_Red">
+                    <Image id="playerHud_coterieGridBtn_regencyUniversityChantry_Red" image="toggle_regencyUniversityChantry_inactive" raycastTarget="true"
+                        onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
+                        onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+                    <Image id="playerHud_coterieGridBtn_regencyUniversityChantry_Red_hover" image="toggle_regencyUniversityChantry_hover" active="false" />
+                </Panel>
+                <Panel id="playerHud_coterieGridBtnWrap_scarlettAndBoys_Red">
+                    <Image id="playerHud_coterieGridBtn_scarlettAndBoys_Red" image="toggle_scarlettAndBoys_inactive" raycastTarget="true"
+                        onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
+                        onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+                    <Image id="playerHud_coterieGridBtn_scarlettAndBoys_Red_hover" image="toggle_scarlettAndBoys_hover" active="false" />
+                </Panel>
+            </HorizontalLayout>
+            <!-- Anarch Group -->
+            <HorizontalLayout class="coterie-grid-row">
+                <Panel id="playerHud_coterieGridBtnWrap_goodDoctors_Red">
+                    <Image id="playerHud_coterieGridBtn_goodDoctors_Red" image="toggle_goodDoctors_inactive" raycastTarget="true"
+                        onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
+                        onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+                    <Image id="playerHud_coterieGridBtn_goodDoctors_Red_hover" image="toggle_goodDoctors_hover" active="false" />
+                </Panel>
+                <Panel id="playerHud_coterieGridBtnWrap_line_Red">
+                    <Image id="playerHud_coterieGridBtn_line_Red" image="toggle_line_inactive" raycastTarget="true"
+                        onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
+                        onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+                    <Image id="playerHud_coterieGridBtn_line_Red_hover" image="toggle_line_hover" active="false" />
+                </Panel>
+                <Panel id="playerHud_coterieGridBtnWrap_redeemers_Red">
+                    <Image id="playerHud_coterieGridBtn_redeemers_Red" image="toggle_redeemers_inactive" raycastTarget="true"
+                        onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
+                        onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+                    <Image id="playerHud_coterieGridBtn_redeemers_Red_hover" image="toggle_redeemers_hover" active="false" />
+                </Panel>
+                <Panel id="playerHud_coterieGridBtnWrap_redFlag_Red">
+                    <Image id="playerHud_coterieGridBtn_redFlag_Red" image="toggle_redFlag_inactive" raycastTarget="true"
+                        onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
+                        onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+                    <Image id="playerHud_coterieGridBtn_redFlag_Red_hover" image="toggle_redFlag_hover" active="false" />
+                </Panel>
+            </HorizontalLayout>
+
+            <!-- Independent Group -->
+            <HorizontalLayout class="coterie-grid-row" preferredWidth="250">
+                <Panel id="playerHud_coterieGridBtnWrap_wychwoodHecata_Red">
+                    <Image id="playerHud_coterieGridBtn_wychwoodHecata_Red" image="toggle_wychwoodHecata_inactive" raycastTarget="true"
+                        onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
+                        onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+                    <Image id="playerHud_coterieGridBtn_wychwoodHecata_Red_hover" image="toggle_wychwoodHecata_hover" active="false" />
+                </Panel>
+            </HorizontalLayout>
+        </VerticalLayout>
+
+        <!-- Coterie popup overlay images (shown while holding coterie button) -->
+        <Image id="playerHud_coteriePopup_beesHive_Red" active="false" class="popupImage" image="refPanel_Coteries_beesHive" />
+        <Image id="playerHud_coteriePopup_fiveKeys_Red" active="false" class="popupImage" image="refPanel_Coteries_fiveKeys" />
+        <Image id="playerHud_coteriePopup_freeChantry_Red" active="false" class="popupImage" image="refPanel_Coteries_freeChantry" />
+        <Image id="playerHud_coteriePopup_harpies_Red" active="false" class="popupImage" image="refPanel_Coteries_harpies" />
+        <Image id="playerHud_coteriePopup_ironGuard_Red" active="false" class="popupImage" image="refPanel_Coteries_ironGuard" />
+        <Image id="playerHud_coteriePopup_midnightMass_Red" active="false" class="popupImage" image="refPanel_Coteries_midnightMass" />
+        <Image id="playerHud_coteriePopup_moonClub_Red" active="false" class="popupImage" image="refPanel_Coteries_moonClub" />
+        <Image id="playerHud_coteriePopup_regencyUniversityChantry_Red" active="false" class="popupImage" image="refPanel_Coteries_regencyUniversityChantry" />
+        <Image id="playerHud_coteriePopup_scarlettAndBoys_Red" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndBoys" />
+        <Image id="playerHud_coteriePopup_goodDoctors_Red" active="false" class="popupImage" image="refPanel_Coteries_goodDoctors" />
+        <Image id="playerHud_coteriePopup_line_Red" active="false" class="popupImage" image="refPanel_Coteries_line" />
+        <Image id="playerHud_coteriePopup_redeemers_Red" active="false" class="popupImage" image="refPanel_Coteries_redeemers" />
+        <Image id="playerHud_coteriePopup_redFlag_Red" active="false" class="popupImage" image="refPanel_Coteries_redFlag" />
+        <Image id="playerHud_coteriePopup_wychwoodHecata_Red" active="false" class="popupImage" image="refPanel_Coteries_wychwoodHecata" />
+    </Panel>
+</Panel>
+
+<!-- ============================= Brown Reference Layer ============================= -->
+
+<!-- ============================= Orange Reference Layer ============================= -->
+
+<!-- ============================= Pink Reference Layer ============================= -->
+
+<!-- ============================ Purple Reference Layer ============================= -->
+

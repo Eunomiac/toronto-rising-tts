@@ -15,6 +15,7 @@ Z = require("core.zones")
 Scenes = require("core.scenes")
 O = require("core.objects")
 local UIH = require("lib.ui_helpers")
+local HUDP = require("core.hud_player")
 
 -- Load debug module (only in development - exposes test functions globally)
 local DEBUG = require("core.debug")
@@ -544,6 +545,9 @@ function UpdateUIDisplays()
         UI.setValue("hungerVal_" .. color, tostring(hunger))
         UI.setValue("willpowerVal_" .. color, tostring(willpower))
         UI.setValue("healthVal_" .. color, tostring(health))
+
+        -- Player HUD (Right Sidebar + Core/Reference visibility)
+        HUDP.updatePlayerUI(player, color)
     end)
 end
 

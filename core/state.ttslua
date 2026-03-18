@@ -129,6 +129,29 @@ end
 -- DEFAULT STATE DEFINITION
 -- ============================================================================
 
+--- Returns default per-player HUD state.
+-- Stored under `playerData.hud` for each player.
+-- @return table
+local function getDefaultPlayerHUD()
+    return {
+        activeCorePanel = nil,
+        reference = {
+            -- Nested panels: nil until opened (Lua will create tables keyed by internal ids)
+            coteries = nil,
+            princesCourt = nil,
+
+            -- Nestedless reference panels: booleans default to false (hidden)
+            chronicleTenets = false,
+            socialCombat = false,
+            physicalCombat = false,
+            frenzy = false,
+            rolls = false,
+            memoriam = false,
+            projects = false,
+            experience = false
+        }
+    }
+end
 
 
 --- Returns the default game state structure
@@ -141,7 +164,8 @@ function S.GetDefaultGameState()
     -- Storyteller is the only hard-coded player; others are added dynamically on seat selection
     playerData[C.StorytellerID] = {
         hunger = 0,
-        color = "Black"
+        color = "Black",
+        hud = getDefaultPlayerHUD()
     }
 
     return {
@@ -311,6 +335,58 @@ function S.validateState()
     if not gameState.lights then gameState.lights = {} end
     if not gameState.zones then gameState.zones = {} end
     if not gameState.scene then gameState.scene = {} end
+
+    -- Ensure HUD subtree exists for every player
+    if gameState.playerData and type(gameState.playerData) == "table" then
+        for _, playerData in pairs(gameState.playerData) do
+            if type(playerData) == "table" then
+                if type(playerData.hud) ~= "table" then
+                    playerData.hud = getDefaultPlayerHUD()
+                end
+
+                -- activeCorePanel is either nil or one of the known core panel keys
+                if playerData.hud.activeCorePanel ~= nil then
+                    if playerData.hud.activeCorePanel ~= "map" and playerData.hud.activeCorePanel ~= "sheet" then
+                        playerData.hud.activeCorePanel = nil
+                    end
+                end
+
+                if type(playerData.hud.reference) ~= "table" then
+                    playerData.hud.reference = {}
+                end
+
+                local ref = playerData.hud.reference
+
+                -- Nested panels can be nil or a table
+                if ref.coteries ~= nil and type(ref.coteries) ~= "table" then
+                    ref.coteries = nil
+                end
+                if ref.princesCourt ~= nil and type(ref.princesCourt) ~= "table" then
+                    ref.princesCourt = nil
+                end
+
+                -- Nestedless reference panels: booleans default to false
+                local boolRefDefaults = {
+                    chronicleTenets = false,
+                    socialCombat = false,
+                    physicalCombat = false,
+                    frenzy = false,
+                    rolls = false,
+                    memoriam = false,
+                    projects = false,
+                    experience = false
+                }
+
+                for k, defaultVal in pairs(boolRefDefaults) do
+                    if ref[k] == nil then
+                        ref[k] = defaultVal
+                    elseif type(ref[k]) ~= "boolean" then
+                        ref[k] = defaultVal
+                    end
+                end
+            end
+        end
+    end
 end
 
 -- ============================================================================
@@ -351,7 +427,9 @@ local function buildSaveState()
                 -- Extract only dynamic values from the complete merged playerData
                 -- Static character data comes from C.PlayerData and should NOT be saved
                 -- List of dynamic fields that should be saved (add more as needed)
-                local dynamicFields = {"hunger", "color"}
+                -- Only dynamic fields should be persisted.
+                -- `hud` is player UI display state (including reference overlay selections).
+                local dynamicFields = {"hunger", "color", "hud"}
                 local dynamicPlayerData = {}
 
                 for _, fieldName in ipairs(dynamicFields) do
@@ -371,6 +449,9 @@ local function buildSaveState()
                                 print("[WARNING] buildSaveState: Player ID '" .. tostring(playerID) .. "' " .. fieldName .. " is non-numeric string: " .. tostring(fieldVal))
                             end
                         elseif fieldType == "boolean" then
+                            dynamicPlayerData[fieldName] = fieldVal
+                        elseif fieldType == "table" then
+                            -- Allow JSON-serializable tables (Lua state values are validated by S.setStateVal).
                             dynamicPlayerData[fieldName] = fieldVal
                         else
                             print("[WARNING] buildSaveState: Player ID '" .. tostring(playerID) .. "' has non-serializable " .. fieldName .. " type: " .. fieldType)
@@ -579,7 +660,8 @@ function S.initNewPlayer(playerID, color, steamName)
     -- Create minimal dynamic state (same structure as GetDefaultGameState)
     gameState.playerData[playerID] = {
         hunger = 0,
-        color = color
+        color = color,
+        hud = U.clone(getDefaultPlayerHUD())
     }
 
     local displayName = steamName or playerID

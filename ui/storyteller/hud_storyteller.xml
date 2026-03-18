@@ -46,7 +46,6 @@
   <!-- ================================================================ -->
   <!-- Sidebar (reference image toggles) and Camera bar                 -->
   <!-- ================================================================ -->
-  <Include src="panel_sidebar" />
   <Include src="panel_camera" />
 
 </Panel>
