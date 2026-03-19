@@ -135,6 +135,19 @@ end
 local function getDefaultPlayerHUD()
     return {
         activeCorePanel = nil,
+        map = {
+            overlays = {
+                streets = false,
+                districts = false,
+                sites = false,
+                domains = false
+            },
+            location = {
+                district = nil,
+                site = nil,
+                position = nil -- { x, y } in UI space relative to the map corner (set by storyteller later)
+            }
+        },
         reference = {
             -- Nested panels: nil until opened (Lua will create tables keyed by internal ids)
             coteries = nil,
@@ -383,6 +396,41 @@ function S.validateState()
                     elseif type(ref[k]) ~= "boolean" then
                         ref[k] = defaultVal
                     end
+                end
+
+                -- Ensure map subtree exists for the HUD.
+                if type(playerData.hud.map) ~= "table" then
+                    playerData.hud.map = {}
+                end
+
+                local map = playerData.hud.map
+
+                if type(map.overlays) ~= "table" then
+                    map.overlays = {}
+                end
+
+                local overlayKeys = { "streets", "districts", "sites", "domains" }
+                for _, key in ipairs(overlayKeys) do
+                    if map.overlays[key] == nil then
+                        map.overlays[key] = false
+                    elseif type(map.overlays[key]) ~= "boolean" then
+                        map.overlays[key] = false
+                    end
+                end
+
+                if type(map.location) ~= "table" then
+                    map.location = {}
+                end
+
+                local loc = map.location
+                if loc.district ~= nil and type(loc.district) ~= "string" then
+                    loc.district = nil
+                end
+                if loc.site ~= nil and type(loc.site) ~= "string" then
+                    loc.site = nil
+                end
+                if loc.position ~= nil and type(loc.position) ~= "table" then
+                    loc.position = nil
                 end
             end
         end

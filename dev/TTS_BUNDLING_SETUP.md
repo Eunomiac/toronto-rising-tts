@@ -179,3 +179,31 @@ print(Test.message)
 ```
 
 If this works, bundling is functioning. If not, check extension configuration.
+
+---
+## XML Color Template Generator (per-player XML)
+
+This repo includes a small helper script to expand per-player XML templates into generated bundles.
+
+### What it does
+- Templates live in `dev/xml_templates/*.template.xml`.
+- Any template root that contains the placeholder token `@@color@@` is duplicated once per `C.PlayerColors` value.
+- For each generated output, all `@@color@@` occurrences inside the template root are replaced with the target player color string.
+
+### Where it writes outputs
+- Generator output directory: `ui/player/generated/`
+- Output naming convention: `<templateBase>_generated.xml`
+  - Example: `dev/xml_templates/panel_map_core.template.xml` -> `ui/player/generated/panel_map_core_generated.xml`
+
+### How to run it
+From repo root:
+```bash
+node dev/scripts/xml_color_template_generator.js --templateDir "dev/xml_templates" --outputDir "ui/player/generated"
+```
+
+### How generated XML is included
+- Include the generated output via an entry include file under `ui/` (to keep include order stable).
+- Example:
+  - `ui/player/panel_map_core_generated_entry.xml` includes `ui/player/generated/panel_map_core_generated.xml`
+
+If you change templates, re-run the generator before using TTS Tools "Save and Play".

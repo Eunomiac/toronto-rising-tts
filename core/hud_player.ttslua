@@ -27,6 +27,88 @@ local tempHoldRefByPlayerID = {}
 -- Used so UpdateUIDisplays doesn't wipe hover highlight.
 local currentHoverBaseIdByPlayerID = {}
 
+-- ============================================================================
+-- CorePanel_Map runtime interaction state
+-- ============================================================================
+
+-- PlayerID -> overlayKey currently hovered in the map overlay toggle column.
+local mapHoverOverlayKeyByPlayerID = {}
+
+-- PlayerID -> districtKey currently hovered in the map district toggle column.
+local mapHoverDistrictKeyByPlayerID = {}
+
+-- PlayerID -> districtKey clicked/selected on the map.
+-- Transient runtime override (not persisted to playerData.hud.map.location).
+local mapActiveDistrictByPlayerID = {}
+
+-- Overlay keys currently implemented in the spec.
+local MAP_OVERLAY_KEYS = { "streets", "districts", "sites", "domains" }
+
+local MAP_OVERLAY_KEY_SET = {}
+do
+    for _, key in ipairs(MAP_OVERLAY_KEYS) do
+        MAP_OVERLAY_KEY_SET[key] = true
+    end
+end
+
+-- All 36 district keys (toggle list + card list).
+local MAP_DISTRICT_KEYS = {
+    "Annex",
+    "BayStFinancial",
+    "Bennington",
+    "Cabbagetown",
+    "CentreIsland",
+    "Chinatown",
+    "Corktown",
+    "Danforth",
+    "DeerPark",
+    "Discovery",
+    "DistilleryDist",
+    "DonRavine",
+    "DupontByTheCastle",
+    "GayVillage",
+    "HarbordVillage",
+    "Humewood",
+    "LakeOntario",
+    "LibertyVillage",
+    "LittleItaly",
+    "LittlePortugal",
+    "PATH",
+    "RegentPark",
+    "Riverdale",
+    "Rosedale",
+    "Sewers",
+    "StJamesTown",
+    "Streets",
+    "Subway",
+    "Summerhill",
+    "Waterfront",
+    "WestQueenWest",
+    "Wychwood",
+    "YongeBloorMuseum",
+    "YongeDundasHospital",
+    "YongeStreet",
+    "Yorkville"
+}
+
+local MAP_NO_OVERLAY_DISTRICTS = {
+    PATH = true,
+    Sewers = true,
+    Streets = true,
+    Subway = true
+}
+
+local MAP_DISTRICT_KEYS_WITH_OVERLAY = {}
+local MAP_DISTRICT_KEY_SET = {}
+do
+    for _, key in ipairs(MAP_DISTRICT_KEYS) do
+        MAP_DISTRICT_KEY_SET[key] = true
+        if MAP_NO_OVERLAY_DISTRICTS[key] ~= true then
+            MAP_DISTRICT_KEYS_WITH_OVERLAY[key] = true
+        end
+    end
+end
+
 -- Allowed nestedless top-level reference keys (from the spec)
 local NESTEDLESS_REF_KEYS = {
     chronicleTenets = true,
@@ -139,6 +221,21 @@ local function setSidebarOverlay(elementID, isVisible)
     UI.setAttribute(elementID, "color", isVisible and "#FFFFFF" or "clear")
 end
 
+--- Sets a UI element's `active` + `color` tint, without causing hard crashes.
+-- @param elementID string
+-- @param isVisible boolean
+local function setTintVisibility(elementID, isVisible)
+    if type(elementID) ~= "string" then
+        return
+    end
+    -- Some map elements may be omitted depending on district overlay availability.
+    -- `pcall` prevents hard UI runtime errors if an element id doesn't exist.
+    pcall(function()
+        UI.setAttribute(elementID, "active", "true")
+        UI.setAttribute(elementID, "color", isVisible and "#FFFFFF" or "clear")
+    end)
+end
+
 --- Returns the storage player id and seat color for a given `player`.
 -- @param player Player
 -- @return string|nil playerID
@@ -201,6 +298,59 @@ local function parseRightSidebarId(id, color)
     end
 
     return nil
+end
+
+--- Parses a map overlay toggle button base id to extract `overlayKey`.
+-- Base id format:
+-- - `playerHud_mapOverlayToggle_<overlayKey>_<Color>`
+-- @param id string
+-- @param seatColor string
+-- @return string|nil
+local function parseMapOverlayToggleKeyFromId(id, seatColor)
+    if type(id) ~= "string" or type(seatColor) ~= "string" then
+        return nil
+    end
+    local prefix = "playerHud_mapOverlayToggle_"
+    local suffix = "_" .. seatColor
+    if id:sub(1, #prefix) ~= prefix then
+        return nil
+    end
+    if id:sub(-#suffix) ~= suffix then
+        return nil
+    end
+    local overlayKey = id:sub(#prefix + 1, #id - #suffix)
+    if overlayKey == "" then
+        return nil
+    end
+    if MAP_OVERLAY_KEY_SET[overlayKey] ~= true then
+        return nil
+    end
+    return overlayKey
+end
+
+--- Parses a map district toggle button base id to extract `districtKey`.
+-- Base id format:
+-- - `playerHud_mapDistrictToggle_<districtKey>_<Color>`
+-- @param id string
+-- @param seatColor string
+-- @return string|nil
+local function parseMapDistrictToggleKeyFromId(id, seatColor)
+    if type(id) ~= "string" or type(seatColor) ~= "string" then
+        return nil
+    end
+    local prefix = "playerHud_mapDistrictToggle_"
+    local suffix = "_" .. seatColor
+    if id:sub(1, #prefix) ~= prefix then
+        return nil
+    end
+    if id:sub(-#suffix) ~= suffix then
+        return nil
+    end
+    local districtKey = id:sub(#prefix + 1, #id - #suffix)
+    if districtKey == "" then
+        return nil
+    end
+    return districtKey
 end
 
 --- Parses coterie grid button base id to extract the `coterieKey`.
@@ -288,12 +438,86 @@ function HUDP.updatePlayerUI(player, color)
     setActive("playerHud_corePanel_map_" .. seatColor, hud.activeCorePanel == "map")
     setActive("playerHud_corePanel_sheet_" .. seatColor, hud.activeCorePanel == "sheet")
 
+    -- Map overlays/district selection (overlays persisted; district selection is transient).
+    local showMap = hud.activeCorePanel == "map"
+    local hudMap = hud.map
+    local overlaysState = (hudMap and hudMap.overlays) or {}
+    local locationState = (hudMap and hudMap.location) or {}
+
+    local locationDistrictKey = (locationState and locationState.district) or nil
+    local hoverOverlayKey = mapHoverOverlayKeyByPlayerID[playerID]
+    local hoverDistrictKey = mapHoverDistrictKeyByPlayerID[playerID]
+    local activeDistrictKey = mapActiveDistrictByPlayerID[playerID]
+
+    if not showMap then
+        -- District click/hover are transient: clear runtime selection whenever map closes.
+        mapHoverOverlayKeyByPlayerID[playerID] = nil
+        mapHoverDistrictKeyByPlayerID[playerID] = nil
+        mapActiveDistrictByPlayerID[playerID] = nil
+        hoverOverlayKey = nil
+        hoverDistrictKey = nil
+        activeDistrictKey = nil
+    end
+
+    -- Precedence for district effective selection:
+    -- 1) hover
+    -- 2) transient click override
+    -- 3) persisted player location district
+    local effectiveDistrictKey = nil
+    if type(hoverDistrictKey) == "string" and MAP_DISTRICT_KEY_SET[hoverDistrictKey] == true then
+        effectiveDistrictKey = hoverDistrictKey
+    elseif type(activeDistrictKey) == "string" and MAP_DISTRICT_KEY_SET[activeDistrictKey] == true then
+        effectiveDistrictKey = activeDistrictKey
+    elseif type(locationDistrictKey) == "string" and MAP_DISTRICT_KEY_SET[locationDistrictKey] == true then
+        effectiveDistrictKey = locationDistrictKey
+    end
+
     -- Top-level reference panels
     setActive("playerHud_refPanel_coteries_" .. seatColor, showRefKey == "coteries")
     setActive("playerHud_refPanel_princesCourt_" .. seatColor, showRefKey == "princesCourt")
 
     for refKey, _ in pairs(NESTEDLESS_REF_KEYS) do
         setActive("playerHud_refPanel_" .. refKey .. "_" .. seatColor, showRefKey == refKey)
+    end
+
+    -- Overlay buttons + overlay images
+    for _, overlayKey in ipairs(MAP_OVERLAY_KEYS) do
+        local overlayOn = (type(overlaysState) == "table" and overlaysState[overlayKey] == true) or false
+        local showOverlayImage = showMap and (overlayOn or hoverOverlayKey == overlayKey)
+
+        -- Main map overlay image
+        setTintVisibility("playerHud_mapOverlay_" .. overlayKey .. "_" .. seatColor, showOverlayImage)
+
+        -- Overlay toggle highlight layers
+        local showHoverLayer = showMap and (hoverOverlayKey == overlayKey) and (not overlayOn)
+        setTintVisibility("playerHud_mapOverlayToggle_" .. overlayKey .. "_" .. seatColor .. "_hover", showHoverLayer)
+
+        setTintVisibility("playerHud_mapOverlayToggle_" .. overlayKey .. "_" .. seatColor .. "_active", showMap and overlayOn)
+    end
+
+    -- District selection: district overlays (when available) + district cards + button highlight layers
+    for _, districtKey in ipairs(MAP_DISTRICT_KEYS) do
+        local showDistrict = showMap and (effectiveDistrictKey == districtKey)
+
+        -- District cards are always present.
+        setTintVisibility("playerHud_districtCard_" .. districtKey .. "_" .. seatColor, showDistrict)
+
+        -- District overlays are omitted for PATH / Sewers / Streets / Subway.
+        if MAP_DISTRICT_KEYS_WITH_OVERLAY[districtKey] == true then
+            setTintVisibility("playerHud_mapOverlay_" .. districtKey .. "_" .. seatColor, showDistrict)
+        end
+
+        local showDistrictActiveLayer = showMap and (activeDistrictKey == districtKey)
+        local showDistrictHoverLayer = showMap and (hoverDistrictKey == districtKey) and (not showDistrictActiveLayer)
+
+        setTintVisibility(
+            "playerHud_mapDistrictToggle_" .. districtKey .. "_" .. seatColor .. "_active",
+            showDistrictActiveLayer
+        )
+        setTintVisibility(
+            "playerHud_mapDistrictToggle_" .. districtKey .. "_" .. seatColor .. "_hover",
+            showDistrictHoverLayer
+        )
     end
 
     -- Right Sidebar active overlays (mirror showRefKey)
@@ -534,6 +758,135 @@ function HUD_playerCoteriesGrid_mouseUp(player, value, id)
 
     local popupID = "playerHud_coteriePopup_" .. coterieKey .. "_" .. color
     setActive(popupID, false)
+end
+
+-- ============================================================================
+-- CorePanel_Map event handlers
+-- ============================================================================
+
+--- Overlay toggle: mouse enter -> set transient hover overlayKey.
+function HUD_playerMap_overlayToggle_hoverOn(player, value, id)
+    local playerID, seatColor = getPlayerIDAndColor(player)
+    if not playerID or type(id) ~= "string" or type(seatColor) ~= "string" then
+        return
+    end
+
+    local overlayKey = parseMapOverlayToggleKeyFromId(id, seatColor)
+    if type(overlayKey) ~= "string" then
+        return
+    end
+
+    mapHoverOverlayKeyByPlayerID[playerID] = overlayKey
+    HUDP.updatePlayerUI(player, seatColor)
+end
+
+--- Overlay toggle: mouse exit -> clear transient hover overlayKey (if still matching).
+function HUD_playerMap_overlayToggle_hoverOff(player, value, id)
+    local playerID, seatColor = getPlayerIDAndColor(player)
+    if not playerID or type(id) ~= "string" or type(seatColor) ~= "string" then
+        return
+    end
+
+    local overlayKey = parseMapOverlayToggleKeyFromId(id, seatColor)
+    if type(overlayKey) ~= "string" then
+        return
+    end
+
+    if mapHoverOverlayKeyByPlayerID[playerID] == overlayKey then
+        mapHoverOverlayKeyByPlayerID[playerID] = nil
+        HUDP.updatePlayerUI(player, seatColor)
+    end
+end
+
+--- Overlay toggle: mouse down -> toggle persisted overlay visibility.
+function HUD_playerMap_overlayToggle_mouseDown(player, value, id)
+    local playerID, seatColor = getPlayerIDAndColor(player)
+    if not playerID or type(id) ~= "string" or type(seatColor) ~= "string" then
+        return
+    end
+
+    local overlayKey = parseMapOverlayToggleKeyFromId(id, seatColor)
+    if type(overlayKey) ~= "string" then
+        return
+    end
+
+    local curr = S.getStateVal and S.getStateVal("playerData", playerID, "hud", "map", "overlays", overlayKey) or nil
+    local isOn = curr == true
+    local nextVal = not isOn
+
+    S.setStateVal(
+        nextVal,
+        "playerData",
+        playerID,
+        "hud",
+        "map",
+        "overlays",
+        overlayKey
+    )
+
+    HUDP.updatePlayerUI(player, seatColor)
+end
+
+--- District toggle: mouse enter -> set transient hover district selection.
+function HUD_playerMap_districtToggle_hoverOn(player, value, id)
+    local playerID, seatColor = getPlayerIDAndColor(player)
+    if not playerID or type(id) ~= "string" or type(seatColor) ~= "string" then
+        return
+    end
+
+    local districtKey = parseMapDistrictToggleKeyFromId(id, seatColor)
+    if type(districtKey) ~= "string" then
+        return
+    end
+    if MAP_DISTRICT_KEY_SET[districtKey] ~= true then
+        return
+    end
+
+    mapHoverDistrictKeyByPlayerID[playerID] = districtKey
+    HUDP.updatePlayerUI(player, seatColor)
+end
+
+--- District toggle: mouse exit -> clear transient hover district selection (if still matching).
+function HUD_playerMap_districtToggle_hoverOff(player, value, id)
+    local playerID, seatColor = getPlayerIDAndColor(player)
+    if not playerID or type(id) ~= "string" or type(seatColor) ~= "string" then
+        return
+    end
+
+    local districtKey = parseMapDistrictToggleKeyFromId(id, seatColor)
+    if type(districtKey) ~= "string" then
+        return
+    end
+
+    if mapHoverDistrictKeyByPlayerID[playerID] == districtKey then
+        mapHoverDistrictKeyByPlayerID[playerID] = nil
+        HUDP.updatePlayerUI(player, seatColor)
+    end
+end
+
+--- District toggle: mouse down -> toggle transient override district selection.
+function HUD_playerMap_districtToggle_mouseDown(player, value, id)
+    local playerID, seatColor = getPlayerIDAndColor(player)
+    if not playerID or type(id) ~= "string" or type(seatColor) ~= "string" then
+        return
+    end
+
+    local districtKey = parseMapDistrictToggleKeyFromId(id, seatColor)
+    if type(districtKey) ~= "string" then
+        return
+    end
+    if MAP_DISTRICT_KEY_SET[districtKey] ~= true then
+        return
+    end
+
+    local curr = mapActiveDistrictByPlayerID[playerID]
+    if curr == districtKey then
+        mapActiveDistrictByPlayerID[playerID] = nil
+    else
+        mapActiveDistrictByPlayerID[playerID] = districtKey
+    end
+
+    HUDP.updatePlayerUI(player, seatColor)
 end
 
 return HUDP

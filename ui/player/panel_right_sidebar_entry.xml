@@ -2,6 +2,7 @@
 <!-- Split into includes for maintainability and correct <Defaults> ordering. -->
 
 <Include src="panel_right_sidebar_defaults.xml" />
+<Include src="panel_map_core_defaults.xml" />
 <Include src="panel_right_sidebar_layers.xml" />
 <Include src="panel_right_sidebar_buttons.xml" />
 

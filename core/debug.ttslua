@@ -811,7 +811,136 @@ function DEBUG.testUI()
         end
     end
 
-    -- Test 5: Coteries toggle + grid visibility
+    -- Test 5: Map overlay + district hover/click verification
+    do
+        local testColor = getFirstSeatedPlayerColor()
+        if testColor then
+            local playerID = S.getPlayerID(testColor)
+            if playerID then
+                local function isActive(elementID)
+                    local v = UI.getAttribute(elementID, "active")
+                    return string.lower(tostring(v)) == "true"
+                end
+
+                    local function isTintVisible(elementID)
+                        local c = UI.getAttribute(elementID, "color")
+                        return string.lower(tostring(c)) == "#ffffff"
+                    end
+
+                -- Ensure HUD state is consistent for map tests.
+                S.setStateVal(nil, "playerData", playerID, "hud", "activeCorePanel")
+                S.setStateVal(nil, "playerData", playerID, "hud", "reference", "coteries")
+                S.setStateVal(nil, "playerData", playerID, "hud", "reference", "princesCourt")
+
+                -- Set persisted location district (used when click override is cleared).
+                S.setStateVal("Bennington", "playerData", playerID, "hud", "map", "location", "district")
+
+                -- Ensure all persisted overlay toggles start disabled.
+                local overlayKeys = { "streets", "districts", "sites", "domains" }
+                for _, k in ipairs(overlayKeys) do
+                    S.setStateVal(false, "playerData", playerID, "hud", "map", "overlays", k)
+                end
+
+                UpdateUIDisplays()
+
+                -- Open MAP core panel.
+                HUD_playerRightSidebar_mouseDown(Player[testColor], "-1", "playerHud_RSidebarBtn_core_map_" .. testColor)
+                UpdateUIDisplays()
+
+                local streetsOverlayToggleID = "playerHud_mapOverlayToggle_streets_" .. testColor
+                local streetsOverlayImageID = "playerHud_mapOverlay_streets_" .. testColor
+                local streetsOverlayToggleHoverLayerID = "playerHud_mapOverlayToggle_streets_" .. testColor .. "_hover"
+                local streetsOverlayToggleActiveLayerID = "playerHud_mapOverlayToggle_streets_" .. testColor .. "_active"
+
+                -- 1) Overlay toggle OFF -> ON via click
+                local overlayInitiallyHidden = not isTintVisible(streetsOverlayImageID)
+                printTestResult(
+                    "Map overlay initial hidden (streets)",
+                    overlayInitiallyHidden,
+                    "Expected streets overlay image hidden"
+                )
+
+                HUD_playerMap_overlayToggle_mouseDown(Player[testColor], "-1", streetsOverlayToggleID)
+                UpdateUIDisplays()
+
+                local overlayNowVisible = isTintVisible(streetsOverlayImageID) and isTintVisible(streetsOverlayToggleActiveLayerID)
+                printTestResult(
+                    "Map overlay click toggles ON (streets)",
+                    overlayNowVisible,
+                    "Expected streets overlay image + active highlight visible"
+                )
+
+                -- 2) Overlay toggle ON -> OFF via click again
+                HUD_playerMap_overlayToggle_mouseDown(Player[testColor], "-1", streetsOverlayToggleID)
+                UpdateUIDisplays()
+
+                local overlayNowHidden = not isTintVisible(streetsOverlayImageID) and not isTintVisible(streetsOverlayToggleActiveLayerID)
+                printTestResult(
+                    "Map overlay click toggles OFF (streets)",
+                    overlayNowHidden,
+                    "Expected streets overlay image + active highlight hidden"
+                )
+
+                -- 3) District hover: Annex (has overlay asset) should show overlay + card.
+                local annexToggleID = "playerHud_mapDistrictToggle_Annex_" .. testColor
+                local annexOverlayID = "playerHud_mapOverlay_Annex_" .. testColor
+                local annexCardID = "playerHud_districtCard_Annex_" .. testColor
+
+                HUD_playerMap_districtToggle_hoverOn(Player[testColor], "-1", annexToggleID)
+                UpdateUIDisplays()
+
+                local annexHoverVisible = isTintVisible(annexOverlayID) and isTintVisible(annexCardID)
+                local annexHoverBaseHighlight = isTintVisible("playerHud_mapDistrictToggle_Annex_" .. testColor .. "_hover")
+                printTestResult(
+                    "District hover shows overlay + card (Annex)",
+                    annexHoverVisible and annexHoverBaseHighlight,
+                    "Expected Annex overlay + card visible while hovered"
+                )
+
+                -- 4) District click sets transient active override:
+                -- Hover off should keep Annex visible until toggled off again.
+                HUD_playerMap_districtToggle_mouseDown(Player[testColor], "-1", annexToggleID)
+                UpdateUIDisplays()
+
+                local annexActiveHighlight = isTintVisible("playerHud_mapDistrictToggle_Annex_" .. testColor .. "_active")
+                printTestResult(
+                    "District click sets active highlight (Annex)",
+                    annexActiveHighlight,
+                    "Expected Annex active highlight visible"
+                )
+
+                HUD_playerMap_districtToggle_hoverOff(Player[testColor], "-1", annexToggleID)
+                UpdateUIDisplays()
+
+                local annexStillVisibleAfterHoverOff = isTintVisible(annexOverlayID) and isTintVisible(annexCardID) and isTintVisible("playerHud_mapDistrictToggle_Annex_" .. testColor .. "_active")
+                printTestResult(
+                    "District active persists after hover off (Annex)",
+                    annexStillVisibleAfterHoverOff,
+                    "Expected Annex overlay + card still visible while active override remains"
+                )
+
+                -- 5) Clicking again clears override -> revert to persisted location district (Bennington).
+                HUD_playerMap_districtToggle_mouseDown(Player[testColor], "-1", annexToggleID)
+                UpdateUIDisplays()
+
+                local benningtonOverlayID = "playerHud_mapOverlay_Bennington_" .. testColor
+                local benningtonCardID = "playerHud_districtCard_Bennington_" .. testColor
+                local benningtonVisible = isTintVisible(benningtonCardID) and isTintVisible(benningtonOverlayID)
+                local annexHidden = not isTintVisible(annexOverlayID) and not isTintVisible(annexCardID)
+                printTestResult(
+                    "District click off reverts to persisted location district (Bennington)",
+                    benningtonVisible and annexHidden,
+                    "Expected Bennington overlay/card visible; Annex overlay/card hidden"
+                )
+            else
+                printTestResult("Map overlay + district tests", false, "Could not resolve player ID for " .. testColor)
+            end
+        else
+            printTestResult("Map overlay + district tests", false, "No seated players found for test")
+        end
+    end
+
+    -- Test 6: Coteries toggle + grid visibility
     do
         local testColor = getFirstSeatedPlayerColor()
         if testColor then
@@ -3116,6 +3245,11 @@ function DEBUG.setRotationLookAt(objOrGuid, lookAtTargetOrPos, useCalibration)
     local obj = resolveDebugObject(objOrGuid, "DEBUG.setRotationLookAt")
     local targetPos = resolveTargetPosition(lookAtTargetOrPos, "DEBUG.setRotationLookAt")
 
+    if obj == nil then
+      U.error("DEBUG.setRotationLookAt", "Object is nil", objOrGuid)
+      return
+    end
+
     local baseRot = U.lookAtRotation(obj.getPosition(), targetPos)
     if baseRot == nil or baseRot.x == nil or baseRot.y == nil or baseRot.z == nil then
         U.error("DEBUG.setRotationLookAt", "U.lookAtRotation failed", baseRot)
@@ -3177,6 +3311,11 @@ function DEBUG.calibrateLookAtOffset(objOrGuid, lookAtTargetOrPos, roundInterval
     if interval == nil then interval = 90 end
     U.Val("DEBUG.calibrateLookAtOffset", interval, U.Type(interval) == "number" and interval > 0, "roundIntervalDeg must be a positive number")
 
+    if obj == nil then
+      U.error("DEBUG.calibrateLookAtOffset", "Object is nil", objOrGuid)
+      return
+    end
+
     local baseRot = U.lookAtRotation(obj.getPosition(), targetPos)
     local currentRot = obj.getRotation()
 
@@ -3223,6 +3362,11 @@ end
 function DEBUG.setCenterObject(objOrGuid)
     local obj = resolveDebugObject(objOrGuid, "DEBUG.setCenterObject")
 
+    if obj == nil then
+      U.error("DEBUG.setCenterObject", "Object is nil", objOrGuid)
+      return
+    end
+
     local guid = nil
     if obj.getGUID ~= nil then
         guid = obj.getGUID()
@@ -3264,6 +3408,11 @@ function DEBUG.setPositionCylindrical(objOrGuid, radius, angleDeg, height, lookA
         return
     end
 
+    if obj == nil then
+        U.error("DEBUG.setPositionCylindrical", "Object is nil", objOrGuid)
+        return
+    end
+
     if obj.setPosition == nil then
         U.error("DEBUG.setPositionCylindrical", "Object does not support setPosition()", obj)
         return
@@ -3295,6 +3444,11 @@ function DEBUG.setPositionSpherical(objOrGuid, radius, angleDeg, angle2Deg, look
     )
     if xyz == nil then
         U.error("DEBUG.setPositionSpherical", "Failed to resolve spherical coordinates to XYZ")
+        return
+    end
+
+    if obj == nil then
+        U.error("DEBUG.setPositionSpherical", "Object is nil", objOrGuid)
         return
     end
 
