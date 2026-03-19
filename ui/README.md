@@ -90,3 +90,50 @@ UI positioning uses a **conceptual 3 columns × 4 rows grid** (no physical `Grid
 - Sidebar panel ID: `hudSidebarHost` (reference image toggles)
 - Camera panel ID: `cameraControlPanel` (camera zoom buttons + faction icons)
 - Debug panel IDs: `debugControls`, `debugStatePanel`, `debugTraitsPanel`
+
+---
+
+## Per-Color XML Template Generator
+
+Some UI components need the same XML duplicated once per player color (from `lib/constants.ttslua` `C.PlayerColors`).
+To keep those components maintainable, this repo uses a small template system that expands `@@color@@` placeholders into per-color XML.
+
+### Files & locations
+
+- Template sources: `dev/xml_templates/*.template.xml`
+- Generator output: `ui/player/generated/*_generated.xml`
+- Generated bundles are typically pulled in via an entry include file (example: `ui/player/panel_map_core_generated_entry.xml`).
+
+### Token contract
+
+- Placeholder token: `@@color@@` (exact substring).
+- Replacement values: the exact player color strings from `C.PlayerColors` (case-sensitive).
+
+### Template requirements (important)
+
+- Each `*.template.xml` file must contain **exactly one root element**.
+- The template must include `@@color@@` somewhere **inside that root element** (e.g. `id="...@@color@@..."` and `visibility="@@color@@"`).
+- The generator expands **the entire root element** for each player color by replacing all `@@color@@` occurrences inside the root.
+
+### How to run
+
+From repo root:
+
+```bash
+node dev/scripts/xml_color_template_generator.js --templateDir "dev/xml_templates" --outputDir "ui/player/generated"
+```
+
+It will also validate that no `@@color@@` tokens remain in the generated outputs.
+
+### How to wire into the HUD bundle
+
+1. Ensure your component XML (or the relevant parent XML) includes the generated entry file.
+   - Example: `ui/player/panel_right_sidebar_layers.xml` includes `panel_map_core_generated_entry.xml`.
+2. That entry file includes the generated XML:
+   - Example: `ui/player/panel_map_core_generated_entry.xml` includes `generated/panel_map_core_generated.xml`.
+
+### Adding a new per-color template
+
+1. Create `dev/xml_templates/<name>.template.xml` with a single root element and `@@color@@` placeholders inside it.
+2. Run the generator (command above).
+3. Update the appropriate `ui/**/panel_*.xml` include chain to reference the new generated output via an entry include file.

@@ -1,0 +1,98 @@
+<!-- Player HUD CorePanel_Map defaults -->
+
+<Defaults>
+  <!-- ===================== Map stacking layers ===================== -->
+  <!-- Overlays/district overlays/district cards should stack exactly. -->
+  <Image class="mapStackLayer"
+    rectAlignment="MiddleCenter"
+    raycastTarget="false"
+    active="false"
+    color="clear" />
+
+  <!-- District card stack layers (top-left aligned in their container). -->
+  <Image class="mapCardLayer"
+    rectAlignment="UpperLeft"
+    raycastTarget="false"
+    active="false"
+    color="clear" />
+
+  <!-- Map base image should always be visible while the core panel is active. -->
+  <Image class="mapStackBase"
+    rectAlignment="MiddleCenter"
+    raycastTarget="false"
+    active="true"
+    color="#FFFFFF" />
+
+  <!-- ===================== Toggle button layers ===================== -->
+  <!-- Base images own the raycast target and wire to handlers. -->
+  <Image class="mapOverlayToggle_base"
+    raycastTarget="true"
+    onMouseDown="HUD_playerMap_overlayToggle_mouseDown"
+    onMouseEnter="HUD_playerMap_overlayToggle_hoverOn"
+    onMouseExit="HUD_playerMap_overlayToggle_hoverOff" />
+
+  <Image class="mapDistrictToggle_base"
+    raycastTarget="true"
+    onMouseDown="HUD_playerMap_districtToggle_mouseDown"
+    onMouseEnter="HUD_playerMap_districtToggle_hoverOn"
+    onMouseExit="HUD_playerMap_districtToggle_hoverOff" />
+
+  <!-- Hover/active button layers: keep them in layout space, toggle visibility via `color`. -->
+  <Image class="mapToggleOverlayLayer"
+    rectAlignment="MiddleCenter"
+    raycastTarget="false"
+    active="false"
+    color="clear" />
+
+  <!-- ===================== Layout defaults ===================== -->
+  <HorizontalLayout class="mapPanel_layout"
+    spacing="0"
+    childAlignment="UpperLeft"
+    childForceExpandWidth="false"
+    childForceExpandHeight="false" />
+
+  <VerticalLayout class="mapPanel_overlayToggles"
+    spacing="0"
+    childAlignment="UpperCenter"
+    childForceExpandWidth="false"
+    childForceExpandHeight="false"
+    flexibleHeight="0"
+    flexibleWidth="0" />
+
+  <Panel class="mapPanel_main"
+    rectAlignment="MiddleCenter"
+    flexibleHeight="0"
+    flexibleWidth="0"
+    preferredWidth="1200"
+    preferredHeight="640" />
+
+  <VerticalLayout class="mapPanel_districtColumn"
+    spacing="0"
+    childAlignment="UpperCenter"
+    childForceExpandWidth="false"
+    childForceExpandHeight="false" />
+
+  <VerticalLayout class="mapPanel_districtToggles"
+    spacing="0"
+    childAlignment="UpperCenter"
+    flexibleHeight="0"
+    flexibleWidth="0"
+    childForceExpandWidth="false"
+    childForceExpandHeight="false" />
+
+  <Panel class="mapPanel_districtCardContainer"
+    rectAlignment="UpperLeft"
+    flexibleHeight="0"
+    flexibleWidth="0"
+    preferredWidth="300"
+    preferredHeight="200" />
+
+  <!-- Site card placeholder container (yet to implement sites/pins). -->
+  <Panel class="mapPanel_siteCardContainer"
+    rectAlignment="UpperLeft"
+    flexibleHeight="0"
+    flexibleWidth="0"
+    preferredWidth="300"
+    preferredHeight="200" />
+</Defaults>
+
