@@ -1,14 +1,67 @@
 <!-- Right Sidebar reference layer template (cloned per player color via @@color@@) -->
 <Panel id="playerHud_referenceLayer_@@color@@" visibility="@@color@@">
-  <Image id="playerHud_refPanel_princesCourt_@@color@@" active="false" class="popupImage" image="refPanel_PrincesCourt" />
+
+  <Defaults>
+
+    <Image rectAlignment="MiddleLeft" />
+  </Defaults>
+
   <Image id="playerHud_refPanel_chronicleTenets_@@color@@" active="false" class="popupImage" image="refPanel_ChronicleTenets" />
   <Image id="playerHud_refPanel_rolls_@@color@@" active="false" class="popupImage" image="refPanel_Rolls" />
   <Image id="playerHud_refPanel_socialCombat_@@color@@" active="false" class="popupImage" image="refPanel_SocialCombat" />
   <Image id="playerHud_refPanel_physicalCombat_@@color@@" active="false" class="popupImage" image="refPanel_PhysicalCombat" />
   <Image id="playerHud_refPanel_frenzy_@@color@@" active="false" class="popupImage" image="refPanel_Frenzy" />
+  <Image id="playerHud_refPanel_recovery_@@color@@" active="false" class="popupImage" image="refPanel_Recovery" />
+  <Image id="playerHud_refPanel_resonance_@@color@@" active="false" class="popupImage" image="refPanel_Resonance" />
   <Image id="playerHud_refPanel_experience_@@color@@" active="false" class="popupImage" image="refPanel_Experience" />
+  <Image id="playerHud_refPanel_advantages_@@color@@" active="false" class="popupImage" image="refPanel_Advantages" />
   <Image id="playerHud_refPanel_projects_@@color@@" active="false" class="popupImage" image="refPanel_Projects" />
   <Image id="playerHud_refPanel_memoriam_@@color@@" active="false" class="popupImage" image="refPanel_Memoriam" />
+
+  <Panel id="playerHud_refPanel_princesCourt_@@color@@" class="princesCourt-reference" active="false">
+    <HorizontalLayout class="princesCourt-row">
+      <Panel id="playerHud_princesCourtBtnWrap_lucien_@@color@@" visibility="Host|Black|Orange|Brown|Pink|Purple">
+        <Image id="playerHud_princesCourtBtn_lucien_@@color@@" image="toggle_lucien_inactive" raycastTarget="true"
+          onMouseDown="HUD_playerPrincesCourt_mouseDown"
+          onMouseUp="HUD_playerPrincesCourt_mouseUp"
+          onMouseEnter="HUD_playerPrincesCourt_hoverOn"
+          onMouseExit="HUD_playerPrincesCourt_hoverOff" />
+        <Image id="playerHud_princesCourtBtn_lucien_@@color@@" image="toggle_lucien_hover" active="false" />
+      </Panel>
+      <Panel id="playerHud_princesCourtBtnWrap_fomorach_@@color@@" visibility="Host|Black|Red|Orange|Brown|Pink">
+        <Image id="playerHud_princesCourtBtn_fomorach_@@color@@" image="toggle_fomorach_inactive" raycastTarget="true"
+          onMouseDown="HUD_playerPrincesCourt_mouseDown"
+          onMouseUp="HUD_playerPrincesCourt_mouseUp"
+          onMouseEnter="HUD_playerPrincesCourt_hoverOn"
+          onMouseExit="HUD_playerPrincesCourt_hoverOff" />
+        <Image id="playerHud_princesCourtBtn_fomorach_@@color@@" image="toggle_fomorach_hover" active="false" />
+      </Panel>
+      <Panel id="playerHud_princesCourtBtnWrap_blackCaesar_@@color@@" visibility="Host|Black|Red|Orange|Pink|Purple">
+        <Image id="playerHud_princesCourtBtn_blackCaesar_@@color@@" image="toggle_blackCaesar_inactive" raycastTarget="true"
+          onMouseDown="HUD_playerPrincesCourt_mouseDown"
+          onMouseUp="HUD_playerPrincesCourt_mouseUp"
+          onMouseEnter="HUD_playerPrincesCourt_hoverOn"
+          onMouseExit="HUD_playerPrincesCourt_hoverOff" />
+        <Image id="playerHud_princesCourtBtn_blackCaesar_@@color@@" image="toggle_blackCaesar_hover" active="false" />
+      </Panel>
+      <Panel id="playerHud_princesCourtBtnWrap_aishe_@@color@@" visibility="Host|Black|Red|Orange|Brown|Purple">
+        <Image id="playerHud_princesCourtBtn_aishe_@@color@@" image="toggle_aishe_inactive" raycastTarget="true"
+          onMouseDown="HUD_playerPrincesCourt_mouseDown"
+          onMouseUp="HUD_playerPrincesCourt_mouseUp"
+          onMouseEnter="HUD_playerPrincesCourt_hoverOn"
+          onMouseExit="HUD_playerPrincesCourt_hoverOff" />
+        <Image id="playerHud_princesCourtBtn_aishe_@@color@@" image="toggle_aishe_hover" active="false" />
+      </Panel>
+      <Panel id="playerHud_princesCourtBtnWrap_rashid_@@color@@" visibility="Host|Black|Red|Brown|Pink|Purple">
+        <Image id="playerHud_princesCourtBtn_rashid_@@color@@" image="toggle_rashid_inactive" raycastTarget="true"
+          onMouseDown="HUD_playerPrincesCourt_mouseDown"
+          onMouseUp="HUD_playerPrincesCourt_mouseUp"
+          onMouseEnter="HUD_playerPrincesCourt_hoverOn"
+          onMouseExit="HUD_playerPrincesCourt_hoverOff" />
+        <Image id="playerHud_princesCourtBtn_rashid_@@color@@" image="toggle_rashid_hover" active="false" />
+      </Panel>
+    </HorizontalLayout>
+  </Panel>
 
   <Panel id="playerHud_refPanel_coteries_@@color@@" class="coterie-reference" active="false">
     <VerticalLayout class="coterie-grid">
@@ -143,4 +196,3 @@
     <Image id="playerHud_coteriePopup_wychwoodHecata_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_wychwoodHecata" />
   </Panel>
 </Panel>
-

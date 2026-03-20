@@ -5,23 +5,26 @@
   <!-- Overlays/district overlays/district cards should stack exactly. -->
   <Image class="mapStackLayer"
     rectAlignment="MiddleCenter"
+    width="900"
+    flexibleWidth="0"
+    preserveAspect="true"
     raycastTarget="false"
-    active="false"
-    color="clear" />
+    active="false"/>
 
   <!-- District card stack layers (top-left aligned in their container). -->
   <Image class="mapCardLayer"
     rectAlignment="UpperLeft"
     raycastTarget="false"
-    active="false"
-    color="clear" />
+    active="false"/>
 
   <!-- Map base image should always be visible while the core panel is active. -->
   <Image class="mapStackBase"
     rectAlignment="MiddleCenter"
+    width="2400"
+    flexibleWidth="0"
+    preserveAspect="true"
     raycastTarget="false"
-    active="true"
-    color="#FFFFFF" />
+    active="true" />
 
   <!-- ===================== Toggle button layers ===================== -->
   <!-- Base images own the raycast target and wire to handlers. -->
@@ -39,32 +42,90 @@
 
   <!-- Hover/active button layers: keep them in layout space, toggle visibility via `color`. -->
   <Image class="mapToggleOverlayLayer"
-    rectAlignment="MiddleCenter"
     raycastTarget="false"
     active="false"
     color="clear" />
 
   <!-- ===================== Layout defaults ===================== -->
+    <!-- <Panel flexibleWidth="0" flexibleHeight="0" rectAlignment="MiddleCenter" width="100%" height="100%" />
+  <VerticalLayout flexibleWidth="0" flexibleHeight="0" spacing="0" childForceExpandWidth="false" childForceExpandHeight="false" />
+  <HorizontalLayout flexibleWidth="0" flexibleHeight="0" spacing="0" /> -->
+
+  <Panel class="playerHud_coreLayer"
+    rectAlignment="LeftCenter"
+    width="100%"
+    height="200%"
+    offsetXY="0 0"
+    active="false" />
+
   <HorizontalLayout class="mapPanel_layout"
     spacing="0"
-    childAlignment="UpperLeft"
+    rectAlignment="UpperRight"
+    childAlignment="UpperCenter"
+    offsetXY="0 0"
+    color="rgba(0,255,0,0.15)"
     childForceExpandWidth="false"
-    childForceExpandHeight="false" />
-
-  <VerticalLayout class="mapPanel_overlayToggles"
+    childForceExpandHeight="false"
+    flexibleWidth="0.2"
+    width="80%"
+    height="200%"
+    preferredWidth="0"
+    preferredHeight="2000" />
+  <Panel class="mapPanel_overlayToggles"
     spacing="0"
     childAlignment="UpperCenter"
     childForceExpandWidth="false"
     childForceExpandHeight="false"
+    preferredHeight="500"
+    preferredWidth="150"
     flexibleHeight="0"
     flexibleWidth="0" />
 
-  <Panel class="mapPanel_main"
+  <VerticalLayout class="mapPanel_overlayToggles"
+    spacing="0"
+    childForceExpandWidth="false"
+    childForceExpandHeight="false"
+    preferredHeight="500"
+    preferredWidth="150"
+    flexibleHeight="0"
+    flexibleWidth="0" />
+
+  <!-- Fixed-size viewport (constant window). -->
+  <Panel class="mapPanel_viewport"
     rectAlignment="MiddleCenter"
     flexibleHeight="0"
     flexibleWidth="0"
-    preferredWidth="1200"
-    preferredHeight="640" />
+    height="200%"
+    preferredHeight="1200"
+    preferredWidth="900"
+    childForceExpandWidth="true"
+    childForceExpandHeight="true" />
+
+  <!-- Draggable content panel (larger than the viewport). -->
+  <Panel class="mapPanel_draggable"
+    rectAlignment="MiddleCenter"
+    preferredHeight="100%"
+    preferredWidth="600"
+    flexibleHeight="0"
+    flexibleWidth="0"
+    offsetXY="0 0"
+    allowDragging="true"
+    onBeginDrag="HUD_playerMap_dragBegin"
+    onEndDrag="HUD_playerMap_dragEnd"
+    returnToOriginalPositionWhenReleased="false"
+    restrictDraggingToParentBounds="false" />
+
+  <Panel class="mapPanel_recenterButton"
+    rectAlignment="UpperLeft"
+    height="50"
+    width="50"
+    preferredHeight="50"
+    preferredWidth="50"
+    flexibleHeight="0"
+    flexibleWidth="0"
+    offsetXY="40 -40"
+    color="rgba(255,0,0,1)"
+    active="false" />
 
   <VerticalLayout class="mapPanel_districtColumn"
     spacing="0"
@@ -75,10 +136,12 @@
   <VerticalLayout class="mapPanel_districtToggles"
     spacing="0"
     childAlignment="UpperCenter"
+    preferredWidth="150"
     flexibleHeight="0"
     flexibleWidth="0"
     childForceExpandWidth="false"
-    childForceExpandHeight="false" />
+    childForceExpandHeight="false"
+    color="rgba(255,0,0,1)"/>
 
   <Panel class="mapPanel_districtCardContainer"
     rectAlignment="UpperLeft"
@@ -95,4 +158,3 @@
     preferredWidth="300"
     preferredHeight="200" />
 </Defaults>
-

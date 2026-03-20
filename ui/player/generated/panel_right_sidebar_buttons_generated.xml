@@ -1,24 +1,12 @@
 <Panel
   id="playerHud_rightSidebar_Brown"
   visibility="Brown"
-  rectAlignment="UpperRight"
-  height="420"
-  width="125"
-  offsetXY="0 -100"
+  class="playerHud_rightSidebar"
 >
   <!-- Base layer -->
-  <VerticalLayout class="storyteller_sidebarLayout" childAlignment="UpperCenter">
+  <VerticalLayout class="playerHud_sidebarLayout">
     <Image class="imageBorder" image="hud-border-silver-top" />
 
-    <Image
-      id="playerHud_RSidebarBtn_core_map_Brown"
-      image="toggle_CorePanel_Map_inactive"
-      raycastTarget="true"
-      onMouseDown="HUD_playerRightSidebar_mouseDown"
-      onMouseUp="HUD_playerRightSidebar_mouseUp"
-      onMouseEnter="HUD_playerRightSidebar_hoverOn"
-      onMouseExit="HUD_playerRightSidebar_hoverOff"
-    />
     <Image
       id="playerHud_RSidebarBtn_core_sheet_Brown"
       image="toggle_CorePanel_Sheet_inactive"
@@ -28,9 +16,15 @@
       onMouseEnter="HUD_playerRightSidebar_hoverOn"
       onMouseExit="HUD_playerRightSidebar_hoverOff"
     />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
-
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image
+      id="playerHud_RSidebarBtn_core_map_Brown"
+      image="toggle_CorePanel_Map_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
     <Image
       id="playerHud_RSidebarBtn_ref_princesCourt_Brown"
       image="toggle_PrincesCourt_inactive"
@@ -97,12 +91,39 @@
       onMouseEnter="HUD_playerRightSidebar_hoverOn"
       onMouseExit="HUD_playerRightSidebar_hoverOff"
     />
+    <Image
+      id="playerHud_RSidebarBtn_ref_recovery_Brown"
+      image="toggle_Recovery_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
+    <Image
+      id="playerHud_RSidebarBtn_ref_resonance_Brown"
+      image="toggle_Resonance_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
     <Image class="imageBorder" image="hud-border-silver-bottom" />
 
     <Image class="imageBorder" image="hud-border-silver-top" />
     <Image
       id="playerHud_RSidebarBtn_ref_experience_Brown"
       image="toggle_Experience_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
+    <Image
+      id="playerHud_RSidebarBtn_ref_advantages_Brown"
+      image="toggle_Advantages_inactive"
       raycastTarget="true"
       onMouseDown="HUD_playerRightSidebar_mouseDown"
       onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -131,81 +152,69 @@
   </VerticalLayout>
 
   <!-- Hover overlay layer -->
-  <VerticalLayout class="storyteller_sidebarLayout">
-    <Image class="imageBorder" image="hud-border-silver-top" />
-    <Image id="playerHud_RSidebarBtn_core_map_Brown_hover" image="toggle_CorePanel_Map_hover" active="false" />
+  <VerticalLayout class="playerHud_sidebarLayout">
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_core_sheet_Brown_hover" image="toggle_CorePanel_Sheet_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
-
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image id="playerHud_RSidebarBtn_core_map_Brown_hover" image="toggle_CorePanel_Map_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_princesCourt_Brown_hover" image="toggle_PrincesCourt_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_coteries_Brown_hover" image="toggle_Coteries_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_chronicleTenets_Brown_hover" image="toggle_ChronicleTenets_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_rolls_Brown_hover" image="toggle_Rolls_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_socialCombat_Brown_hover" image="toggle_SocialCombat_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_physicalCombat_Brown_hover" image="toggle_PhysicalCombat_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_frenzy_Brown_hover" image="toggle_Frenzy_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image id="playerHud_RSidebarBtn_ref_recovery_Brown_hover" image="toggle_Recovery_hover" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_resonance_Brown_hover" image="toggle_Resonance_hover" active="false" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_experience_Brown_hover" image="toggle_Experience_hover" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_advantages_Brown_hover" image="toggle_Advantages_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_projects_Brown_hover" image="toggle_Projects_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_memoriam_Brown_hover" image="toggle_Memoriam_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
   </VerticalLayout>
 
   <!-- Active overlay layer -->
-  <VerticalLayout class="storyteller_sidebarLayout">
-    <Image class="imageBorder" image="hud-border-silver-top" />
-    <Image id="playerHud_RSidebarBtn_core_map_Brown_active" image="toggle_CorePanel_Map_active" active="false" />
-    <Image id="playerHud_RSidebarBtn_core_sheet_Brown_active" image="toggle_CorePanel_Sheet_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
-
-    <Image class="imageBorder" image="hud-border-silver-top" />
-    <Image id="playerHud_RSidebarBtn_ref_princesCourt_Brown_active" image="toggle_PrincesCourt_active" active="false" />
-    <Image id="playerHud_RSidebarBtn_ref_coteries_Brown_active" image="toggle_Coteries_active" active="false" />
+  <VerticalLayout class="playerHud_sidebarLayout">
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
+    <Image id="playerHud_RSidebarBtn_core_sheet_Brown_active" class="long_active" image="toggle_CorePanel_Sheet_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_core_map_Brown_active" class="long_active" image="toggle_CorePanel_Map_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_princesCourt_Brown_active" class="long_active" image="toggle_PrincesCourt_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_coteries_Brown_active" class="long_active" image="toggle_Coteries_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_chronicleTenets_Brown_active" image="toggle_ChronicleTenets_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_rolls_Brown_active" image="toggle_Rolls_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_socialCombat_Brown_active" image="toggle_SocialCombat_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_physicalCombat_Brown_active" image="toggle_PhysicalCombat_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_frenzy_Brown_active" image="toggle_Frenzy_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image id="playerHud_RSidebarBtn_ref_recovery_Brown_active" image="toggle_Recovery_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_resonance_Brown_active" image="toggle_Resonance_active" active="false" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_experience_Brown_active" image="toggle_Experience_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_advantages_Brown_active" image="toggle_Advantages_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_projects_Brown_active" image="toggle_Projects_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_memoriam_Brown_active" image="toggle_Memoriam_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
   </VerticalLayout>
 </Panel>
 
 <Panel
   id="playerHud_rightSidebar_Orange"
   visibility="Orange"
-  rectAlignment="UpperRight"
-  height="420"
-  width="125"
-  offsetXY="0 -100"
+  class="playerHud_rightSidebar"
 >
   <!-- Base layer -->
-  <VerticalLayout class="storyteller_sidebarLayout" childAlignment="UpperCenter">
+  <VerticalLayout class="playerHud_sidebarLayout">
     <Image class="imageBorder" image="hud-border-silver-top" />
 
-    <Image
-      id="playerHud_RSidebarBtn_core_map_Orange"
-      image="toggle_CorePanel_Map_inactive"
-      raycastTarget="true"
-      onMouseDown="HUD_playerRightSidebar_mouseDown"
-      onMouseUp="HUD_playerRightSidebar_mouseUp"
-      onMouseEnter="HUD_playerRightSidebar_hoverOn"
-      onMouseExit="HUD_playerRightSidebar_hoverOff"
-    />
     <Image
       id="playerHud_RSidebarBtn_core_sheet_Orange"
       image="toggle_CorePanel_Sheet_inactive"
@@ -215,9 +224,15 @@
       onMouseEnter="HUD_playerRightSidebar_hoverOn"
       onMouseExit="HUD_playerRightSidebar_hoverOff"
     />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
-
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image
+      id="playerHud_RSidebarBtn_core_map_Orange"
+      image="toggle_CorePanel_Map_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
     <Image
       id="playerHud_RSidebarBtn_ref_princesCourt_Orange"
       image="toggle_PrincesCourt_inactive"
@@ -284,12 +299,39 @@
       onMouseEnter="HUD_playerRightSidebar_hoverOn"
       onMouseExit="HUD_playerRightSidebar_hoverOff"
     />
+    <Image
+      id="playerHud_RSidebarBtn_ref_recovery_Orange"
+      image="toggle_Recovery_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
+    <Image
+      id="playerHud_RSidebarBtn_ref_resonance_Orange"
+      image="toggle_Resonance_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
     <Image class="imageBorder" image="hud-border-silver-bottom" />
 
     <Image class="imageBorder" image="hud-border-silver-top" />
     <Image
       id="playerHud_RSidebarBtn_ref_experience_Orange"
       image="toggle_Experience_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
+    <Image
+      id="playerHud_RSidebarBtn_ref_advantages_Orange"
+      image="toggle_Advantages_inactive"
       raycastTarget="true"
       onMouseDown="HUD_playerRightSidebar_mouseDown"
       onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -318,81 +360,69 @@
   </VerticalLayout>
 
   <!-- Hover overlay layer -->
-  <VerticalLayout class="storyteller_sidebarLayout">
-    <Image class="imageBorder" image="hud-border-silver-top" />
-    <Image id="playerHud_RSidebarBtn_core_map_Orange_hover" image="toggle_CorePanel_Map_hover" active="false" />
+  <VerticalLayout class="playerHud_sidebarLayout">
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_core_sheet_Orange_hover" image="toggle_CorePanel_Sheet_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
-
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image id="playerHud_RSidebarBtn_core_map_Orange_hover" image="toggle_CorePanel_Map_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_princesCourt_Orange_hover" image="toggle_PrincesCourt_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_coteries_Orange_hover" image="toggle_Coteries_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_chronicleTenets_Orange_hover" image="toggle_ChronicleTenets_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_rolls_Orange_hover" image="toggle_Rolls_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_socialCombat_Orange_hover" image="toggle_SocialCombat_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_physicalCombat_Orange_hover" image="toggle_PhysicalCombat_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_frenzy_Orange_hover" image="toggle_Frenzy_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image id="playerHud_RSidebarBtn_ref_recovery_Orange_hover" image="toggle_Recovery_hover" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_resonance_Orange_hover" image="toggle_Resonance_hover" active="false" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_experience_Orange_hover" image="toggle_Experience_hover" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_advantages_Orange_hover" image="toggle_Advantages_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_projects_Orange_hover" image="toggle_Projects_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_memoriam_Orange_hover" image="toggle_Memoriam_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
   </VerticalLayout>
 
   <!-- Active overlay layer -->
-  <VerticalLayout class="storyteller_sidebarLayout">
-    <Image class="imageBorder" image="hud-border-silver-top" />
-    <Image id="playerHud_RSidebarBtn_core_map_Orange_active" image="toggle_CorePanel_Map_active" active="false" />
-    <Image id="playerHud_RSidebarBtn_core_sheet_Orange_active" image="toggle_CorePanel_Sheet_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
-
-    <Image class="imageBorder" image="hud-border-silver-top" />
-    <Image id="playerHud_RSidebarBtn_ref_princesCourt_Orange_active" image="toggle_PrincesCourt_active" active="false" />
-    <Image id="playerHud_RSidebarBtn_ref_coteries_Orange_active" image="toggle_Coteries_active" active="false" />
+  <VerticalLayout class="playerHud_sidebarLayout">
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
+    <Image id="playerHud_RSidebarBtn_core_sheet_Orange_active" class="long_active" image="toggle_CorePanel_Sheet_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_core_map_Orange_active" class="long_active" image="toggle_CorePanel_Map_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_princesCourt_Orange_active" class="long_active" image="toggle_PrincesCourt_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_coteries_Orange_active" class="long_active" image="toggle_Coteries_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_chronicleTenets_Orange_active" image="toggle_ChronicleTenets_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_rolls_Orange_active" image="toggle_Rolls_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_socialCombat_Orange_active" image="toggle_SocialCombat_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_physicalCombat_Orange_active" image="toggle_PhysicalCombat_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_frenzy_Orange_active" image="toggle_Frenzy_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image id="playerHud_RSidebarBtn_ref_recovery_Orange_active" image="toggle_Recovery_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_resonance_Orange_active" image="toggle_Resonance_active" active="false" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_experience_Orange_active" image="toggle_Experience_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_advantages_Orange_active" image="toggle_Advantages_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_projects_Orange_active" image="toggle_Projects_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_memoriam_Orange_active" image="toggle_Memoriam_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
   </VerticalLayout>
 </Panel>
 
 <Panel
   id="playerHud_rightSidebar_Red"
   visibility="Red"
-  rectAlignment="UpperRight"
-  height="420"
-  width="125"
-  offsetXY="0 -100"
+  class="playerHud_rightSidebar"
 >
   <!-- Base layer -->
-  <VerticalLayout class="storyteller_sidebarLayout" childAlignment="UpperCenter">
+  <VerticalLayout class="playerHud_sidebarLayout">
     <Image class="imageBorder" image="hud-border-silver-top" />
 
-    <Image
-      id="playerHud_RSidebarBtn_core_map_Red"
-      image="toggle_CorePanel_Map_inactive"
-      raycastTarget="true"
-      onMouseDown="HUD_playerRightSidebar_mouseDown"
-      onMouseUp="HUD_playerRightSidebar_mouseUp"
-      onMouseEnter="HUD_playerRightSidebar_hoverOn"
-      onMouseExit="HUD_playerRightSidebar_hoverOff"
-    />
     <Image
       id="playerHud_RSidebarBtn_core_sheet_Red"
       image="toggle_CorePanel_Sheet_inactive"
@@ -402,9 +432,15 @@
       onMouseEnter="HUD_playerRightSidebar_hoverOn"
       onMouseExit="HUD_playerRightSidebar_hoverOff"
     />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
-
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image
+      id="playerHud_RSidebarBtn_core_map_Red"
+      image="toggle_CorePanel_Map_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
     <Image
       id="playerHud_RSidebarBtn_ref_princesCourt_Red"
       image="toggle_PrincesCourt_inactive"
@@ -471,12 +507,39 @@
       onMouseEnter="HUD_playerRightSidebar_hoverOn"
       onMouseExit="HUD_playerRightSidebar_hoverOff"
     />
+    <Image
+      id="playerHud_RSidebarBtn_ref_recovery_Red"
+      image="toggle_Recovery_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
+    <Image
+      id="playerHud_RSidebarBtn_ref_resonance_Red"
+      image="toggle_Resonance_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
     <Image class="imageBorder" image="hud-border-silver-bottom" />
 
     <Image class="imageBorder" image="hud-border-silver-top" />
     <Image
       id="playerHud_RSidebarBtn_ref_experience_Red"
       image="toggle_Experience_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
+    <Image
+      id="playerHud_RSidebarBtn_ref_advantages_Red"
+      image="toggle_Advantages_inactive"
       raycastTarget="true"
       onMouseDown="HUD_playerRightSidebar_mouseDown"
       onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -505,81 +568,69 @@
   </VerticalLayout>
 
   <!-- Hover overlay layer -->
-  <VerticalLayout class="storyteller_sidebarLayout">
-    <Image class="imageBorder" image="hud-border-silver-top" />
-    <Image id="playerHud_RSidebarBtn_core_map_Red_hover" image="toggle_CorePanel_Map_hover" active="false" />
+  <VerticalLayout class="playerHud_sidebarLayout">
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_core_sheet_Red_hover" image="toggle_CorePanel_Sheet_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
-
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image id="playerHud_RSidebarBtn_core_map_Red_hover" image="toggle_CorePanel_Map_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_princesCourt_Red_hover" image="toggle_PrincesCourt_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_coteries_Red_hover" image="toggle_Coteries_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_chronicleTenets_Red_hover" image="toggle_ChronicleTenets_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_rolls_Red_hover" image="toggle_Rolls_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_socialCombat_Red_hover" image="toggle_SocialCombat_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_physicalCombat_Red_hover" image="toggle_PhysicalCombat_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_frenzy_Red_hover" image="toggle_Frenzy_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image id="playerHud_RSidebarBtn_ref_recovery_Red_hover" image="toggle_Recovery_hover" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_resonance_Red_hover" image="toggle_Resonance_hover" active="false" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_experience_Red_hover" image="toggle_Experience_hover" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_advantages_Red_hover" image="toggle_Advantages_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_projects_Red_hover" image="toggle_Projects_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_memoriam_Red_hover" image="toggle_Memoriam_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
   </VerticalLayout>
 
   <!-- Active overlay layer -->
-  <VerticalLayout class="storyteller_sidebarLayout">
-    <Image class="imageBorder" image="hud-border-silver-top" />
-    <Image id="playerHud_RSidebarBtn_core_map_Red_active" image="toggle_CorePanel_Map_active" active="false" />
-    <Image id="playerHud_RSidebarBtn_core_sheet_Red_active" image="toggle_CorePanel_Sheet_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
-
-    <Image class="imageBorder" image="hud-border-silver-top" />
-    <Image id="playerHud_RSidebarBtn_ref_princesCourt_Red_active" image="toggle_PrincesCourt_active" active="false" />
-    <Image id="playerHud_RSidebarBtn_ref_coteries_Red_active" image="toggle_Coteries_active" active="false" />
+  <VerticalLayout class="playerHud_sidebarLayout">
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
+    <Image id="playerHud_RSidebarBtn_core_sheet_Red_active" class="long_active" image="toggle_CorePanel_Sheet_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_core_map_Red_active" class="long_active" image="toggle_CorePanel_Map_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_princesCourt_Red_active" class="long_active" image="toggle_PrincesCourt_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_coteries_Red_active" class="long_active" image="toggle_Coteries_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_chronicleTenets_Red_active" image="toggle_ChronicleTenets_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_rolls_Red_active" image="toggle_Rolls_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_socialCombat_Red_active" image="toggle_SocialCombat_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_physicalCombat_Red_active" image="toggle_PhysicalCombat_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_frenzy_Red_active" image="toggle_Frenzy_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image id="playerHud_RSidebarBtn_ref_recovery_Red_active" image="toggle_Recovery_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_resonance_Red_active" image="toggle_Resonance_active" active="false" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_experience_Red_active" image="toggle_Experience_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_advantages_Red_active" image="toggle_Advantages_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_projects_Red_active" image="toggle_Projects_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_memoriam_Red_active" image="toggle_Memoriam_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
   </VerticalLayout>
 </Panel>
 
 <Panel
   id="playerHud_rightSidebar_Pink"
   visibility="Pink"
-  rectAlignment="UpperRight"
-  height="420"
-  width="125"
-  offsetXY="0 -100"
+  class="playerHud_rightSidebar"
 >
   <!-- Base layer -->
-  <VerticalLayout class="storyteller_sidebarLayout" childAlignment="UpperCenter">
+  <VerticalLayout class="playerHud_sidebarLayout">
     <Image class="imageBorder" image="hud-border-silver-top" />
 
-    <Image
-      id="playerHud_RSidebarBtn_core_map_Pink"
-      image="toggle_CorePanel_Map_inactive"
-      raycastTarget="true"
-      onMouseDown="HUD_playerRightSidebar_mouseDown"
-      onMouseUp="HUD_playerRightSidebar_mouseUp"
-      onMouseEnter="HUD_playerRightSidebar_hoverOn"
-      onMouseExit="HUD_playerRightSidebar_hoverOff"
-    />
     <Image
       id="playerHud_RSidebarBtn_core_sheet_Pink"
       image="toggle_CorePanel_Sheet_inactive"
@@ -589,9 +640,15 @@
       onMouseEnter="HUD_playerRightSidebar_hoverOn"
       onMouseExit="HUD_playerRightSidebar_hoverOff"
     />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
-
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image
+      id="playerHud_RSidebarBtn_core_map_Pink"
+      image="toggle_CorePanel_Map_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
     <Image
       id="playerHud_RSidebarBtn_ref_princesCourt_Pink"
       image="toggle_PrincesCourt_inactive"
@@ -658,12 +715,39 @@
       onMouseEnter="HUD_playerRightSidebar_hoverOn"
       onMouseExit="HUD_playerRightSidebar_hoverOff"
     />
+    <Image
+      id="playerHud_RSidebarBtn_ref_recovery_Pink"
+      image="toggle_Recovery_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
+    <Image
+      id="playerHud_RSidebarBtn_ref_resonance_Pink"
+      image="toggle_Resonance_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
     <Image class="imageBorder" image="hud-border-silver-bottom" />
 
     <Image class="imageBorder" image="hud-border-silver-top" />
     <Image
       id="playerHud_RSidebarBtn_ref_experience_Pink"
       image="toggle_Experience_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
+    <Image
+      id="playerHud_RSidebarBtn_ref_advantages_Pink"
+      image="toggle_Advantages_inactive"
       raycastTarget="true"
       onMouseDown="HUD_playerRightSidebar_mouseDown"
       onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -692,81 +776,69 @@
   </VerticalLayout>
 
   <!-- Hover overlay layer -->
-  <VerticalLayout class="storyteller_sidebarLayout">
-    <Image class="imageBorder" image="hud-border-silver-top" />
-    <Image id="playerHud_RSidebarBtn_core_map_Pink_hover" image="toggle_CorePanel_Map_hover" active="false" />
+  <VerticalLayout class="playerHud_sidebarLayout">
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_core_sheet_Pink_hover" image="toggle_CorePanel_Sheet_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
-
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image id="playerHud_RSidebarBtn_core_map_Pink_hover" image="toggle_CorePanel_Map_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_princesCourt_Pink_hover" image="toggle_PrincesCourt_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_coteries_Pink_hover" image="toggle_Coteries_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_chronicleTenets_Pink_hover" image="toggle_ChronicleTenets_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_rolls_Pink_hover" image="toggle_Rolls_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_socialCombat_Pink_hover" image="toggle_SocialCombat_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_physicalCombat_Pink_hover" image="toggle_PhysicalCombat_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_frenzy_Pink_hover" image="toggle_Frenzy_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image id="playerHud_RSidebarBtn_ref_recovery_Pink_hover" image="toggle_Recovery_hover" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_resonance_Pink_hover" image="toggle_Resonance_hover" active="false" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_experience_Pink_hover" image="toggle_Experience_hover" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_advantages_Pink_hover" image="toggle_Advantages_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_projects_Pink_hover" image="toggle_Projects_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_memoriam_Pink_hover" image="toggle_Memoriam_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
   </VerticalLayout>
 
   <!-- Active overlay layer -->
-  <VerticalLayout class="storyteller_sidebarLayout">
-    <Image class="imageBorder" image="hud-border-silver-top" />
-    <Image id="playerHud_RSidebarBtn_core_map_Pink_active" image="toggle_CorePanel_Map_active" active="false" />
-    <Image id="playerHud_RSidebarBtn_core_sheet_Pink_active" image="toggle_CorePanel_Sheet_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
-
-    <Image class="imageBorder" image="hud-border-silver-top" />
-    <Image id="playerHud_RSidebarBtn_ref_princesCourt_Pink_active" image="toggle_PrincesCourt_active" active="false" />
-    <Image id="playerHud_RSidebarBtn_ref_coteries_Pink_active" image="toggle_Coteries_active" active="false" />
+  <VerticalLayout class="playerHud_sidebarLayout">
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
+    <Image id="playerHud_RSidebarBtn_core_sheet_Pink_active" class="long_active" image="toggle_CorePanel_Sheet_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_core_map_Pink_active" class="long_active" image="toggle_CorePanel_Map_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_princesCourt_Pink_active" class="long_active" image="toggle_PrincesCourt_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_coteries_Pink_active" class="long_active" image="toggle_Coteries_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_chronicleTenets_Pink_active" image="toggle_ChronicleTenets_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_rolls_Pink_active" image="toggle_Rolls_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_socialCombat_Pink_active" image="toggle_SocialCombat_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_physicalCombat_Pink_active" image="toggle_PhysicalCombat_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_frenzy_Pink_active" image="toggle_Frenzy_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image id="playerHud_RSidebarBtn_ref_recovery_Pink_active" image="toggle_Recovery_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_resonance_Pink_active" image="toggle_Resonance_active" active="false" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_experience_Pink_active" image="toggle_Experience_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_advantages_Pink_active" image="toggle_Advantages_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_projects_Pink_active" image="toggle_Projects_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_memoriam_Pink_active" image="toggle_Memoriam_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
   </VerticalLayout>
 </Panel>
 
 <Panel
   id="playerHud_rightSidebar_Purple"
   visibility="Purple"
-  rectAlignment="UpperRight"
-  height="420"
-  width="125"
-  offsetXY="0 -100"
+  class="playerHud_rightSidebar"
 >
   <!-- Base layer -->
-  <VerticalLayout class="storyteller_sidebarLayout" childAlignment="UpperCenter">
+  <VerticalLayout class="playerHud_sidebarLayout">
     <Image class="imageBorder" image="hud-border-silver-top" />
 
-    <Image
-      id="playerHud_RSidebarBtn_core_map_Purple"
-      image="toggle_CorePanel_Map_inactive"
-      raycastTarget="true"
-      onMouseDown="HUD_playerRightSidebar_mouseDown"
-      onMouseUp="HUD_playerRightSidebar_mouseUp"
-      onMouseEnter="HUD_playerRightSidebar_hoverOn"
-      onMouseExit="HUD_playerRightSidebar_hoverOff"
-    />
     <Image
       id="playerHud_RSidebarBtn_core_sheet_Purple"
       image="toggle_CorePanel_Sheet_inactive"
@@ -776,9 +848,15 @@
       onMouseEnter="HUD_playerRightSidebar_hoverOn"
       onMouseExit="HUD_playerRightSidebar_hoverOff"
     />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
-
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image
+      id="playerHud_RSidebarBtn_core_map_Purple"
+      image="toggle_CorePanel_Map_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
     <Image
       id="playerHud_RSidebarBtn_ref_princesCourt_Purple"
       image="toggle_PrincesCourt_inactive"
@@ -845,12 +923,39 @@
       onMouseEnter="HUD_playerRightSidebar_hoverOn"
       onMouseExit="HUD_playerRightSidebar_hoverOff"
     />
+    <Image
+      id="playerHud_RSidebarBtn_ref_recovery_Purple"
+      image="toggle_Recovery_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
+    <Image
+      id="playerHud_RSidebarBtn_ref_resonance_Purple"
+      image="toggle_Resonance_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
     <Image class="imageBorder" image="hud-border-silver-bottom" />
 
     <Image class="imageBorder" image="hud-border-silver-top" />
     <Image
       id="playerHud_RSidebarBtn_ref_experience_Purple"
       image="toggle_Experience_inactive"
+      raycastTarget="true"
+      onMouseDown="HUD_playerRightSidebar_mouseDown"
+      onMouseUp="HUD_playerRightSidebar_mouseUp"
+      onMouseEnter="HUD_playerRightSidebar_hoverOn"
+      onMouseExit="HUD_playerRightSidebar_hoverOff"
+    />
+    <Image
+      id="playerHud_RSidebarBtn_ref_advantages_Purple"
+      image="toggle_Advantages_inactive"
       raycastTarget="true"
       onMouseDown="HUD_playerRightSidebar_mouseDown"
       onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -879,56 +984,56 @@
   </VerticalLayout>
 
   <!-- Hover overlay layer -->
-  <VerticalLayout class="storyteller_sidebarLayout">
-    <Image class="imageBorder" image="hud-border-silver-top" />
-    <Image id="playerHud_RSidebarBtn_core_map_Purple_hover" image="toggle_CorePanel_Map_hover" active="false" />
+  <VerticalLayout class="playerHud_sidebarLayout">
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_core_sheet_Purple_hover" image="toggle_CorePanel_Sheet_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
-
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image id="playerHud_RSidebarBtn_core_map_Purple_hover" image="toggle_CorePanel_Map_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_princesCourt_Purple_hover" image="toggle_PrincesCourt_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_coteries_Purple_hover" image="toggle_Coteries_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_chronicleTenets_Purple_hover" image="toggle_ChronicleTenets_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_rolls_Purple_hover" image="toggle_Rolls_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_socialCombat_Purple_hover" image="toggle_SocialCombat_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_physicalCombat_Purple_hover" image="toggle_PhysicalCombat_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_frenzy_Purple_hover" image="toggle_Frenzy_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image id="playerHud_RSidebarBtn_ref_recovery_Purple_hover" image="toggle_Recovery_hover" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_resonance_Purple_hover" image="toggle_Resonance_hover" active="false" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_experience_Purple_hover" image="toggle_Experience_hover" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_advantages_Purple_hover" image="toggle_Advantages_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_projects_Purple_hover" image="toggle_Projects_hover" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_memoriam_Purple_hover" image="toggle_Memoriam_hover" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
   </VerticalLayout>
 
   <!-- Active overlay layer -->
-  <VerticalLayout class="storyteller_sidebarLayout">
-    <Image class="imageBorder" image="hud-border-silver-top" />
-    <Image id="playerHud_RSidebarBtn_core_map_Purple_active" image="toggle_CorePanel_Map_active" active="false" />
-    <Image id="playerHud_RSidebarBtn_core_sheet_Purple_active" image="toggle_CorePanel_Sheet_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
-
-    <Image class="imageBorder" image="hud-border-silver-top" />
-    <Image id="playerHud_RSidebarBtn_ref_princesCourt_Purple_active" image="toggle_PrincesCourt_active" active="false" />
-    <Image id="playerHud_RSidebarBtn_ref_coteries_Purple_active" image="toggle_Coteries_active" active="false" />
+  <VerticalLayout class="playerHud_sidebarLayout">
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
+    <Image id="playerHud_RSidebarBtn_core_sheet_Purple_active" class="long_active" image="toggle_CorePanel_Sheet_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_core_map_Purple_active" class="long_active" image="toggle_CorePanel_Map_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_princesCourt_Purple_active" class="long_active" image="toggle_PrincesCourt_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_coteries_Purple_active" class="long_active" image="toggle_Coteries_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_chronicleTenets_Purple_active" image="toggle_ChronicleTenets_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_rolls_Purple_active" image="toggle_Rolls_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_socialCombat_Purple_active" image="toggle_SocialCombat_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_physicalCombat_Purple_active" image="toggle_PhysicalCombat_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_frenzy_Purple_active" image="toggle_Frenzy_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image id="playerHud_RSidebarBtn_ref_recovery_Purple_active" image="toggle_Recovery_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_resonance_Purple_active" image="toggle_Resonance_active" active="false" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
 
-    <Image class="imageBorder" image="hud-border-silver-top" />
+    <Image class="imageBorder" image="hud-border-silver-top" color="clear" />
     <Image id="playerHud_RSidebarBtn_ref_experience_Purple_active" image="toggle_Experience_active" active="false" />
+    <Image id="playerHud_RSidebarBtn_ref_advantages_Purple_active" image="toggle_Advantages_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_projects_Purple_active" image="toggle_Projects_active" active="false" />
     <Image id="playerHud_RSidebarBtn_ref_memoriam_Purple_active" image="toggle_Memoriam_active" active="false" />
-    <Image class="imageBorder" image="hud-border-silver-bottom" />
+    <Image class="imageBorder" image="hud-border-silver-bottom" color="clear" />
   </VerticalLayout>
 </Panel>

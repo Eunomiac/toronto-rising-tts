@@ -137,10 +137,11 @@ local function getDefaultPlayerHUD()
         activeCorePanel = nil,
         map = {
             overlays = {
-                streets = false,
-                districts = false,
-                sites = false,
-                domains = false
+                districtsAll = false,
+                domains = false,
+                majorRoads = false,
+                localRoads = false,
+                majorSites = false
             },
             location = {
                 district = nil,
@@ -160,6 +161,9 @@ local function getDefaultPlayerHUD()
             frenzy = false,
             rolls = false,
             memoriam = false,
+            recovery = false,
+            resonance = false,
+            advantages = false,
             projects = false,
             experience = false
         }
@@ -386,6 +390,9 @@ function S.validateState()
                     frenzy = false,
                     rolls = false,
                     memoriam = false,
+                    recovery = false,
+                    resonance = false,
+                    advantages = false,
                     projects = false,
                     experience = false
                 }
@@ -409,7 +416,7 @@ function S.validateState()
                     map.overlays = {}
                 end
 
-                local overlayKeys = { "streets", "districts", "sites", "domains" }
+                local overlayKeys = { "districtsAll", "domains", "localRoads", "majorRoads", "majorSites" }
                 for _, key in ipairs(overlayKeys) do
                     if map.overlays[key] == nil then
                         map.overlays[key] = false

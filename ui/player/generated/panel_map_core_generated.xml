@@ -6,75 +6,107 @@
 >
   <HorizontalLayout class="mapPanel_layout">
     <!-- LEFT: Overlay toggles -->
-    <VerticalLayout class="mapPanel_overlayToggles">
-      <!-- Overlay: streets -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_streets_Brown" image="toggleOverlay_streets_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_streets_Brown_hover" image="toggleOverlay_streets_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_streets_Brown_active" image="toggleOverlay_streets_active" />
+    <!-- Modeled after right sidebar button layering: base + hover + active stacks. -->
+    <Panel class="mapPanel_overlayToggles">
+      <!-- Base layer -->
+      <VerticalLayout class="mapPanel_overlayToggles">
+        <Image id="playerHud_mapOverlayToggle_districtsAll_Brown"
+         class="mapOverlayToggle_base" image="toggleOverlay_districtsAll_inactive" />
+        <Image id="playerHud_mapOverlayToggle_domains_Brown"
+         class="mapOverlayToggle_base" image="toggleOverlay_domains_inactive" />
+        <Image id="playerHud_mapOverlayToggle_localRoads_Brown"
+         class="mapOverlayToggle_base" image="toggleOverlay_localRoads_inactive" />
+        <Image id="playerHud_mapOverlayToggle_majorRoads_Brown"
+         class="mapOverlayToggle_base" image="toggleOverlay_majorRoads_inactive" />
+        <Image id="playerHud_mapOverlayToggle_majorSites_Brown"
+         class="mapOverlayToggle_base" image="toggleOverlay_majorSites_inactive" />
+      </VerticalLayout>
 
-      <!-- Overlay: districts -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_districts_Brown" image="toggleOverlay_districts_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_districts_Brown_hover" image="toggleOverlay_districts_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_districts_Brown_active" image="toggleOverlay_districts_active" />
+      <!-- Hover overlay layer -->
+      <VerticalLayout class="mapPanel_overlayToggles">
+        <Image id="playerHud_mapOverlayToggle_districtsAll_Brown_hover" image="toggleOverlay_districtsAll_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_domains_Brown_hover" image="toggleOverlay_domains_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_localRoads_Brown_hover" image="toggleOverlay_localRoads_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_majorRoads_Brown_hover" image="toggleOverlay_majorRoads_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_majorSites_Brown_hover" image="toggleOverlay_majorSites_hover" active="false" />
+      </VerticalLayout>
 
-      <!-- Overlay: sites -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_sites_Brown" image="toggleOverlay_sites_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_sites_Brown_hover" image="toggleOverlay_sites_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_sites_Brown_active" image="toggleOverlay_sites_active" />
+      <!-- Active overlay layer -->
+      <VerticalLayout class="mapPanel_overlayToggles">
+        <Image id="playerHud_mapOverlayToggle_districtsAll_Brown_active" active="false" image="toggleOverlay_districtsAll_active" />
+        <Image id="playerHud_mapOverlayToggle_domains_Brown_active" active="false" image="toggleOverlay_domains_active" />
+        <Image id="playerHud_mapOverlayToggle_localRoads_Brown_active" active="false" image="toggleOverlay_localRoads_active" />
+        <Image id="playerHud_mapOverlayToggle_majorRoads_Brown_active" active="false" image="toggleOverlay_majorRoads_active" />
+        <Image id="playerHud_mapOverlayToggle_majorSites_Brown_active" active="false" image="toggleOverlay_majorSites_active" />
+      </VerticalLayout>
+    </Panel>
 
-      <!-- Overlay: domains -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_domains_Brown" image="toggleOverlay_domains_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_domains_Brown_hover" image="toggleOverlay_domains_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_domains_Brown_active" image="toggleOverlay_domains_active" />
-    </VerticalLayout>
+    <!-- CENTER: Main stacked map (fixed viewport + draggable larger content). -->
+    <Panel class="mapPanel_viewport" id="playerHud_mapViewport_Brown" color="rgba(0, 255, 0, 0.15)">
+      <!-- <Panel class="mapPanel_draggable" color="rgba(0, 255, 255, 0.15)" id="playerHud_mapDraggable_Brown"> -->
+        <Image class="mapStackBase" id="playerHud_mapBase_Brown" image="mapBase" height="2000" flexibleHeight="0" preserveAspect="true" />
 
-    <!-- CENTER: Main stacked map -->
-    <Panel class="mapPanel_main">
-      <Image class="mapStackBase" id="playerHud_mapBase_Brown" image="mapBase" />
+        <!-- Overlay images (persisted toggles + hover preview via color tint in Lua) -->
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_majorRoads_Brown" image="mapOverlay_majorRoads" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_localRoads_Brown" image="mapOverlay_localRoads" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_districtsAll_Brown" image="mapOverlay_districtsAll" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_majorSites_Brown" image="mapOverlay_majorSites" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_domains_Brown" image="mapOverlay_domains" />
 
-      <!-- Overlay images (persisted toggles + hover preview via color tint in Lua) -->
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_streets_Brown" image="mapOverlay_streets" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_districts_Brown" image="mapOverlay_districts" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_sites_Brown" image="mapOverlay_sites" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_domains_Brown" image="mapOverlay_domains" />
+        <!-- District overlays (missing overlay for PATH / Sewers / Streets / Subway) -->
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Annex_Brown" image="mapOverlay_Annex" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_BayStFinancial_Brown" image="mapOverlay_BayStFinancial" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Bennington_Brown" image="mapOverlay_Bennington" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Cabbagetown_Brown" image="mapOverlay_Cabbagetown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_CentreIsland_Brown" image="mapOverlay_CentreIsland" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Chinatown_Brown" image="mapOverlay_Chinatown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Corktown_Brown" image="mapOverlay_Corktown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Danforth_Brown" image="mapOverlay_Danforth" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DeerPark_Brown" image="mapOverlay_DeerPark" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Discovery_Brown" image="mapOverlay_Discovery" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DistilleryDist_Brown" image="mapOverlay_DistilleryDist" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DonRavine_Brown" image="mapOverlay_DonRavine" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DupontByTheCastle_Brown" image="mapOverlay_DupontByTheCastle" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_GayVillage_Brown" image="mapOverlay_GayVillage" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_HarbordVillage_Brown" image="mapOverlay_HarbordVillage" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Humewood_Brown" image="mapOverlay_Humewood" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LakeOntario_Brown" image="mapOverlay_LakeOntario" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LibertyVillage_Brown" image="mapOverlay_LibertyVillage" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LittleItaly_Brown" image="mapOverlay_LittleItaly" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LittlePortugal_Brown" image="mapOverlay_LittlePortugal" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_RegentPark_Brown" image="mapOverlay_RegentPark" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Riverdale_Brown" image="mapOverlay_Riverdale" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Rosedale_Brown" image="mapOverlay_Rosedale" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_StJamesTown_Brown" image="mapOverlay_StJamesTown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Summerhill_Brown" image="mapOverlay_Summerhill" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Waterfront_Brown" image="mapOverlay_Waterfront" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_WestQueenWest_Brown" image="mapOverlay_WestQueenWest" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Wychwood_Brown" image="mapOverlay_Wychwood" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeBloorMuseum_Brown" image="mapOverlay_YongeBloorMuseum" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeDundasHospital_Brown" image="mapOverlay_YongeDundasHospital" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeStreet_Brown" image="mapOverlay_YongeStreet" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Yorkville_Brown" image="mapOverlay_Yorkville" />
+      <!-- </Panel> -->
 
-      <!-- District overlays (missing overlay for PATH / Sewers / Streets / Subway) -->
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Annex_Brown" image="mapOverlay_Annex" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_BayStFinancial_Brown" image="mapOverlay_BayStFinancial" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Bennington_Brown" image="mapOverlay_Bennington" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Cabbagetown_Brown" image="mapOverlay_Cabbagetown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_CentreIsland_Brown" image="mapOverlay_CentreIsland" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Chinatown_Brown" image="mapOverlay_Chinatown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Corktown_Brown" image="mapOverlay_Corktown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Danforth_Brown" image="mapOverlay_Danforth" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DeerPark_Brown" image="mapOverlay_DeerPark" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Discovery_Brown" image="mapOverlay_Discovery" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DistilleryDist_Brown" image="mapOverlay_DistilleryDist" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DonRavine_Brown" image="mapOverlay_DonRavine" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DupontByTheCastle_Brown" image="mapOverlay_DupontByTheCastle" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_GayVillage_Brown" image="mapOverlay_GayVillage" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_HarbordVillage_Brown" image="mapOverlay_HarbordVillage" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Humewood_Brown" image="mapOverlay_Humewood" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LakeOntario_Brown" image="mapOverlay_LakeOntario" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LibertyVillage_Brown" image="mapOverlay_LibertyVillage" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LittleItaly_Brown" image="mapOverlay_LittleItaly" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LittlePortugal_Brown" image="mapOverlay_LittlePortugal" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_RegentPark_Brown" image="mapOverlay_RegentPark" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Riverdale_Brown" image="mapOverlay_Riverdale" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Rosedale_Brown" image="mapOverlay_Rosedale" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_StJamesTown_Brown" image="mapOverlay_StJamesTown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Summerhill_Brown" image="mapOverlay_Summerhill" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Waterfront_Brown" image="mapOverlay_Waterfront" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_WestQueenWest_Brown" image="mapOverlay_WestQueenWest" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Wychwood_Brown" image="mapOverlay_Wychwood" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeBloorMuseum_Brown" image="mapOverlay_YongeBloorMuseum" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeDundasHospital_Brown" image="mapOverlay_YongeDundasHospital" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeStreet_Brown" image="mapOverlay_YongeStreet" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Yorkville_Brown" image="mapOverlay_Yorkville" />
+      <!-- Recenter button (stays fixed in viewport; does not pan with map content) -->
+      <Panel class="mapPanel_recenterButton">
+        <Image
+          id="playerHud_mapRecenterBtn_Brown"
+          image="toggle_mapRecenter_inactive"
+          raycastTarget="true"
+          onMouseEnter="HUD_playerMap_recenter_hoverOn"
+          onMouseExit="HUD_playerMap_recenter_hoverOff"
+          onMouseUp="HUD_playerMap_recenter_mouseUp"/>
+
+        <Image
+          id="playerHud_mapRecenterBtn_Brown_hover"
+          image="toggle_mapRecenter_hover"
+          raycastTarget="false"
+          active="false"/>
+        </Panel>
     </Panel>
 
     <!-- RIGHT: District toggles + district cards -->
-    <VerticalLayout class="mapPanel_districtColumn">
       <VerticalLayout class="mapPanel_districtToggles">
         <!-- District toggles (base + hover + active layers) -->
 
@@ -227,6 +259,10 @@
         <Image class="mapToggleOverlayLayer" id="playerHud_mapDistrictToggle_Yorkville_Brown_active" image="toggleDistrict_Yorkville_active" />
       </VerticalLayout>
 
+
+  </HorizontalLayout>
+
+
       <!-- District cards stack -->
       <Panel id="playerHud_mapPanel_districtCard_Brown" class="mapPanel_districtCardContainer">
         <Image class="mapCardLayer" id="playerHud_districtCard_Annex_Brown" image="districtCard_Annex" />
@@ -269,8 +305,6 @@
 
       <!-- Site cards placeholder (not implemented yet) -->
       <Panel id="playerHud_mapPanel_siteCard_Brown" class="mapPanel_siteCardContainer" />
-    </VerticalLayout>
-  </HorizontalLayout>
 </Panel>
 
 <Panel
@@ -281,75 +315,107 @@
 >
   <HorizontalLayout class="mapPanel_layout">
     <!-- LEFT: Overlay toggles -->
-    <VerticalLayout class="mapPanel_overlayToggles">
-      <!-- Overlay: streets -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_streets_Orange" image="toggleOverlay_streets_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_streets_Orange_hover" image="toggleOverlay_streets_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_streets_Orange_active" image="toggleOverlay_streets_active" />
+    <!-- Modeled after right sidebar button layering: base + hover + active stacks. -->
+    <Panel class="mapPanel_overlayToggles">
+      <!-- Base layer -->
+      <VerticalLayout class="mapPanel_overlayToggles">
+        <Image id="playerHud_mapOverlayToggle_districtsAll_Orange"
+         class="mapOverlayToggle_base" image="toggleOverlay_districtsAll_inactive" />
+        <Image id="playerHud_mapOverlayToggle_domains_Orange"
+         class="mapOverlayToggle_base" image="toggleOverlay_domains_inactive" />
+        <Image id="playerHud_mapOverlayToggle_localRoads_Orange"
+         class="mapOverlayToggle_base" image="toggleOverlay_localRoads_inactive" />
+        <Image id="playerHud_mapOverlayToggle_majorRoads_Orange"
+         class="mapOverlayToggle_base" image="toggleOverlay_majorRoads_inactive" />
+        <Image id="playerHud_mapOverlayToggle_majorSites_Orange"
+         class="mapOverlayToggle_base" image="toggleOverlay_majorSites_inactive" />
+      </VerticalLayout>
 
-      <!-- Overlay: districts -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_districts_Orange" image="toggleOverlay_districts_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_districts_Orange_hover" image="toggleOverlay_districts_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_districts_Orange_active" image="toggleOverlay_districts_active" />
+      <!-- Hover overlay layer -->
+      <VerticalLayout class="mapPanel_overlayToggles">
+        <Image id="playerHud_mapOverlayToggle_districtsAll_Orange_hover" image="toggleOverlay_districtsAll_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_domains_Orange_hover" image="toggleOverlay_domains_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_localRoads_Orange_hover" image="toggleOverlay_localRoads_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_majorRoads_Orange_hover" image="toggleOverlay_majorRoads_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_majorSites_Orange_hover" image="toggleOverlay_majorSites_hover" active="false" />
+      </VerticalLayout>
 
-      <!-- Overlay: sites -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_sites_Orange" image="toggleOverlay_sites_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_sites_Orange_hover" image="toggleOverlay_sites_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_sites_Orange_active" image="toggleOverlay_sites_active" />
+      <!-- Active overlay layer -->
+      <VerticalLayout class="mapPanel_overlayToggles">
+        <Image id="playerHud_mapOverlayToggle_districtsAll_Orange_active" active="false" image="toggleOverlay_districtsAll_active" />
+        <Image id="playerHud_mapOverlayToggle_domains_Orange_active" active="false" image="toggleOverlay_domains_active" />
+        <Image id="playerHud_mapOverlayToggle_localRoads_Orange_active" active="false" image="toggleOverlay_localRoads_active" />
+        <Image id="playerHud_mapOverlayToggle_majorRoads_Orange_active" active="false" image="toggleOverlay_majorRoads_active" />
+        <Image id="playerHud_mapOverlayToggle_majorSites_Orange_active" active="false" image="toggleOverlay_majorSites_active" />
+      </VerticalLayout>
+    </Panel>
 
-      <!-- Overlay: domains -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_domains_Orange" image="toggleOverlay_domains_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_domains_Orange_hover" image="toggleOverlay_domains_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_domains_Orange_active" image="toggleOverlay_domains_active" />
-    </VerticalLayout>
+    <!-- CENTER: Main stacked map (fixed viewport + draggable larger content). -->
+    <Panel class="mapPanel_viewport" id="playerHud_mapViewport_Orange" color="rgba(0, 255, 0, 0.15)">
+      <!-- <Panel class="mapPanel_draggable" color="rgba(0, 255, 255, 0.15)" id="playerHud_mapDraggable_Orange"> -->
+        <Image class="mapStackBase" id="playerHud_mapBase_Orange" image="mapBase" height="2000" flexibleHeight="0" preserveAspect="true" />
 
-    <!-- CENTER: Main stacked map -->
-    <Panel class="mapPanel_main">
-      <Image class="mapStackBase" id="playerHud_mapBase_Orange" image="mapBase" />
+        <!-- Overlay images (persisted toggles + hover preview via color tint in Lua) -->
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_majorRoads_Orange" image="mapOverlay_majorRoads" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_localRoads_Orange" image="mapOverlay_localRoads" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_districtsAll_Orange" image="mapOverlay_districtsAll" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_majorSites_Orange" image="mapOverlay_majorSites" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_domains_Orange" image="mapOverlay_domains" />
 
-      <!-- Overlay images (persisted toggles + hover preview via color tint in Lua) -->
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_streets_Orange" image="mapOverlay_streets" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_districts_Orange" image="mapOverlay_districts" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_sites_Orange" image="mapOverlay_sites" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_domains_Orange" image="mapOverlay_domains" />
+        <!-- District overlays (missing overlay for PATH / Sewers / Streets / Subway) -->
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Annex_Orange" image="mapOverlay_Annex" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_BayStFinancial_Orange" image="mapOverlay_BayStFinancial" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Bennington_Orange" image="mapOverlay_Bennington" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Cabbagetown_Orange" image="mapOverlay_Cabbagetown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_CentreIsland_Orange" image="mapOverlay_CentreIsland" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Chinatown_Orange" image="mapOverlay_Chinatown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Corktown_Orange" image="mapOverlay_Corktown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Danforth_Orange" image="mapOverlay_Danforth" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DeerPark_Orange" image="mapOverlay_DeerPark" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Discovery_Orange" image="mapOverlay_Discovery" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DistilleryDist_Orange" image="mapOverlay_DistilleryDist" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DonRavine_Orange" image="mapOverlay_DonRavine" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DupontByTheCastle_Orange" image="mapOverlay_DupontByTheCastle" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_GayVillage_Orange" image="mapOverlay_GayVillage" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_HarbordVillage_Orange" image="mapOverlay_HarbordVillage" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Humewood_Orange" image="mapOverlay_Humewood" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LakeOntario_Orange" image="mapOverlay_LakeOntario" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LibertyVillage_Orange" image="mapOverlay_LibertyVillage" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LittleItaly_Orange" image="mapOverlay_LittleItaly" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LittlePortugal_Orange" image="mapOverlay_LittlePortugal" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_RegentPark_Orange" image="mapOverlay_RegentPark" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Riverdale_Orange" image="mapOverlay_Riverdale" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Rosedale_Orange" image="mapOverlay_Rosedale" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_StJamesTown_Orange" image="mapOverlay_StJamesTown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Summerhill_Orange" image="mapOverlay_Summerhill" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Waterfront_Orange" image="mapOverlay_Waterfront" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_WestQueenWest_Orange" image="mapOverlay_WestQueenWest" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Wychwood_Orange" image="mapOverlay_Wychwood" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeBloorMuseum_Orange" image="mapOverlay_YongeBloorMuseum" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeDundasHospital_Orange" image="mapOverlay_YongeDundasHospital" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeStreet_Orange" image="mapOverlay_YongeStreet" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Yorkville_Orange" image="mapOverlay_Yorkville" />
+      <!-- </Panel> -->
 
-      <!-- District overlays (missing overlay for PATH / Sewers / Streets / Subway) -->
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Annex_Orange" image="mapOverlay_Annex" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_BayStFinancial_Orange" image="mapOverlay_BayStFinancial" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Bennington_Orange" image="mapOverlay_Bennington" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Cabbagetown_Orange" image="mapOverlay_Cabbagetown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_CentreIsland_Orange" image="mapOverlay_CentreIsland" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Chinatown_Orange" image="mapOverlay_Chinatown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Corktown_Orange" image="mapOverlay_Corktown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Danforth_Orange" image="mapOverlay_Danforth" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DeerPark_Orange" image="mapOverlay_DeerPark" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Discovery_Orange" image="mapOverlay_Discovery" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DistilleryDist_Orange" image="mapOverlay_DistilleryDist" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DonRavine_Orange" image="mapOverlay_DonRavine" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DupontByTheCastle_Orange" image="mapOverlay_DupontByTheCastle" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_GayVillage_Orange" image="mapOverlay_GayVillage" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_HarbordVillage_Orange" image="mapOverlay_HarbordVillage" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Humewood_Orange" image="mapOverlay_Humewood" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LakeOntario_Orange" image="mapOverlay_LakeOntario" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LibertyVillage_Orange" image="mapOverlay_LibertyVillage" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LittleItaly_Orange" image="mapOverlay_LittleItaly" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LittlePortugal_Orange" image="mapOverlay_LittlePortugal" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_RegentPark_Orange" image="mapOverlay_RegentPark" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Riverdale_Orange" image="mapOverlay_Riverdale" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Rosedale_Orange" image="mapOverlay_Rosedale" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_StJamesTown_Orange" image="mapOverlay_StJamesTown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Summerhill_Orange" image="mapOverlay_Summerhill" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Waterfront_Orange" image="mapOverlay_Waterfront" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_WestQueenWest_Orange" image="mapOverlay_WestQueenWest" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Wychwood_Orange" image="mapOverlay_Wychwood" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeBloorMuseum_Orange" image="mapOverlay_YongeBloorMuseum" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeDundasHospital_Orange" image="mapOverlay_YongeDundasHospital" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeStreet_Orange" image="mapOverlay_YongeStreet" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Yorkville_Orange" image="mapOverlay_Yorkville" />
+      <!-- Recenter button (stays fixed in viewport; does not pan with map content) -->
+      <Panel class="mapPanel_recenterButton">
+        <Image
+          id="playerHud_mapRecenterBtn_Orange"
+          image="toggle_mapRecenter_inactive"
+          raycastTarget="true"
+          onMouseEnter="HUD_playerMap_recenter_hoverOn"
+          onMouseExit="HUD_playerMap_recenter_hoverOff"
+          onMouseUp="HUD_playerMap_recenter_mouseUp"/>
+
+        <Image
+          id="playerHud_mapRecenterBtn_Orange_hover"
+          image="toggle_mapRecenter_hover"
+          raycastTarget="false"
+          active="false"/>
+        </Panel>
     </Panel>
 
     <!-- RIGHT: District toggles + district cards -->
-    <VerticalLayout class="mapPanel_districtColumn">
       <VerticalLayout class="mapPanel_districtToggles">
         <!-- District toggles (base + hover + active layers) -->
 
@@ -502,6 +568,10 @@
         <Image class="mapToggleOverlayLayer" id="playerHud_mapDistrictToggle_Yorkville_Orange_active" image="toggleDistrict_Yorkville_active" />
       </VerticalLayout>
 
+
+  </HorizontalLayout>
+
+
       <!-- District cards stack -->
       <Panel id="playerHud_mapPanel_districtCard_Orange" class="mapPanel_districtCardContainer">
         <Image class="mapCardLayer" id="playerHud_districtCard_Annex_Orange" image="districtCard_Annex" />
@@ -544,8 +614,6 @@
 
       <!-- Site cards placeholder (not implemented yet) -->
       <Panel id="playerHud_mapPanel_siteCard_Orange" class="mapPanel_siteCardContainer" />
-    </VerticalLayout>
-  </HorizontalLayout>
 </Panel>
 
 <Panel
@@ -556,75 +624,107 @@
 >
   <HorizontalLayout class="mapPanel_layout">
     <!-- LEFT: Overlay toggles -->
-    <VerticalLayout class="mapPanel_overlayToggles">
-      <!-- Overlay: streets -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_streets_Red" image="toggleOverlay_streets_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_streets_Red_hover" image="toggleOverlay_streets_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_streets_Red_active" image="toggleOverlay_streets_active" />
+    <!-- Modeled after right sidebar button layering: base + hover + active stacks. -->
+    <Panel class="mapPanel_overlayToggles">
+      <!-- Base layer -->
+      <VerticalLayout class="mapPanel_overlayToggles">
+        <Image id="playerHud_mapOverlayToggle_districtsAll_Red"
+         class="mapOverlayToggle_base" image="toggleOverlay_districtsAll_inactive" />
+        <Image id="playerHud_mapOverlayToggle_domains_Red"
+         class="mapOverlayToggle_base" image="toggleOverlay_domains_inactive" />
+        <Image id="playerHud_mapOverlayToggle_localRoads_Red"
+         class="mapOverlayToggle_base" image="toggleOverlay_localRoads_inactive" />
+        <Image id="playerHud_mapOverlayToggle_majorRoads_Red"
+         class="mapOverlayToggle_base" image="toggleOverlay_majorRoads_inactive" />
+        <Image id="playerHud_mapOverlayToggle_majorSites_Red"
+         class="mapOverlayToggle_base" image="toggleOverlay_majorSites_inactive" />
+      </VerticalLayout>
 
-      <!-- Overlay: districts -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_districts_Red" image="toggleOverlay_districts_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_districts_Red_hover" image="toggleOverlay_districts_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_districts_Red_active" image="toggleOverlay_districts_active" />
+      <!-- Hover overlay layer -->
+      <VerticalLayout class="mapPanel_overlayToggles">
+        <Image id="playerHud_mapOverlayToggle_districtsAll_Red_hover" image="toggleOverlay_districtsAll_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_domains_Red_hover" image="toggleOverlay_domains_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_localRoads_Red_hover" image="toggleOverlay_localRoads_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_majorRoads_Red_hover" image="toggleOverlay_majorRoads_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_majorSites_Red_hover" image="toggleOverlay_majorSites_hover" active="false" />
+      </VerticalLayout>
 
-      <!-- Overlay: sites -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_sites_Red" image="toggleOverlay_sites_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_sites_Red_hover" image="toggleOverlay_sites_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_sites_Red_active" image="toggleOverlay_sites_active" />
+      <!-- Active overlay layer -->
+      <VerticalLayout class="mapPanel_overlayToggles">
+        <Image id="playerHud_mapOverlayToggle_districtsAll_Red_active" active="false" image="toggleOverlay_districtsAll_active" />
+        <Image id="playerHud_mapOverlayToggle_domains_Red_active" active="false" image="toggleOverlay_domains_active" />
+        <Image id="playerHud_mapOverlayToggle_localRoads_Red_active" active="false" image="toggleOverlay_localRoads_active" />
+        <Image id="playerHud_mapOverlayToggle_majorRoads_Red_active" active="false" image="toggleOverlay_majorRoads_active" />
+        <Image id="playerHud_mapOverlayToggle_majorSites_Red_active" active="false" image="toggleOverlay_majorSites_active" />
+      </VerticalLayout>
+    </Panel>
 
-      <!-- Overlay: domains -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_domains_Red" image="toggleOverlay_domains_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_domains_Red_hover" image="toggleOverlay_domains_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_domains_Red_active" image="toggleOverlay_domains_active" />
-    </VerticalLayout>
+    <!-- CENTER: Main stacked map (fixed viewport + draggable larger content). -->
+    <Panel class="mapPanel_viewport" id="playerHud_mapViewport_Red" color="rgba(0, 255, 0, 0.15)">
+      <!-- <Panel class="mapPanel_draggable" color="rgba(0, 255, 255, 0.15)" id="playerHud_mapDraggable_Red"> -->
+        <Image class="mapStackBase" id="playerHud_mapBase_Red" image="mapBase" height="2000" flexibleHeight="0" preserveAspect="true" />
 
-    <!-- CENTER: Main stacked map -->
-    <Panel class="mapPanel_main">
-      <Image class="mapStackBase" id="playerHud_mapBase_Red" image="mapBase" />
+        <!-- Overlay images (persisted toggles + hover preview via color tint in Lua) -->
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_majorRoads_Red" image="mapOverlay_majorRoads" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_localRoads_Red" image="mapOverlay_localRoads" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_districtsAll_Red" image="mapOverlay_districtsAll" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_majorSites_Red" image="mapOverlay_majorSites" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_domains_Red" image="mapOverlay_domains" />
 
-      <!-- Overlay images (persisted toggles + hover preview via color tint in Lua) -->
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_streets_Red" image="mapOverlay_streets" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_districts_Red" image="mapOverlay_districts" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_sites_Red" image="mapOverlay_sites" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_domains_Red" image="mapOverlay_domains" />
+        <!-- District overlays (missing overlay for PATH / Sewers / Streets / Subway) -->
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Annex_Red" image="mapOverlay_Annex" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_BayStFinancial_Red" image="mapOverlay_BayStFinancial" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Bennington_Red" image="mapOverlay_Bennington" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Cabbagetown_Red" image="mapOverlay_Cabbagetown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_CentreIsland_Red" image="mapOverlay_CentreIsland" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Chinatown_Red" image="mapOverlay_Chinatown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Corktown_Red" image="mapOverlay_Corktown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Danforth_Red" image="mapOverlay_Danforth" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DeerPark_Red" image="mapOverlay_DeerPark" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Discovery_Red" image="mapOverlay_Discovery" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DistilleryDist_Red" image="mapOverlay_DistilleryDist" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DonRavine_Red" image="mapOverlay_DonRavine" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DupontByTheCastle_Red" image="mapOverlay_DupontByTheCastle" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_GayVillage_Red" image="mapOverlay_GayVillage" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_HarbordVillage_Red" image="mapOverlay_HarbordVillage" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Humewood_Red" image="mapOverlay_Humewood" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LakeOntario_Red" image="mapOverlay_LakeOntario" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LibertyVillage_Red" image="mapOverlay_LibertyVillage" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LittleItaly_Red" image="mapOverlay_LittleItaly" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LittlePortugal_Red" image="mapOverlay_LittlePortugal" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_RegentPark_Red" image="mapOverlay_RegentPark" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Riverdale_Red" image="mapOverlay_Riverdale" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Rosedale_Red" image="mapOverlay_Rosedale" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_StJamesTown_Red" image="mapOverlay_StJamesTown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Summerhill_Red" image="mapOverlay_Summerhill" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Waterfront_Red" image="mapOverlay_Waterfront" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_WestQueenWest_Red" image="mapOverlay_WestQueenWest" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Wychwood_Red" image="mapOverlay_Wychwood" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeBloorMuseum_Red" image="mapOverlay_YongeBloorMuseum" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeDundasHospital_Red" image="mapOverlay_YongeDundasHospital" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeStreet_Red" image="mapOverlay_YongeStreet" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Yorkville_Red" image="mapOverlay_Yorkville" />
+      <!-- </Panel> -->
 
-      <!-- District overlays (missing overlay for PATH / Sewers / Streets / Subway) -->
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Annex_Red" image="mapOverlay_Annex" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_BayStFinancial_Red" image="mapOverlay_BayStFinancial" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Bennington_Red" image="mapOverlay_Bennington" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Cabbagetown_Red" image="mapOverlay_Cabbagetown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_CentreIsland_Red" image="mapOverlay_CentreIsland" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Chinatown_Red" image="mapOverlay_Chinatown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Corktown_Red" image="mapOverlay_Corktown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Danforth_Red" image="mapOverlay_Danforth" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DeerPark_Red" image="mapOverlay_DeerPark" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Discovery_Red" image="mapOverlay_Discovery" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DistilleryDist_Red" image="mapOverlay_DistilleryDist" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DonRavine_Red" image="mapOverlay_DonRavine" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DupontByTheCastle_Red" image="mapOverlay_DupontByTheCastle" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_GayVillage_Red" image="mapOverlay_GayVillage" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_HarbordVillage_Red" image="mapOverlay_HarbordVillage" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Humewood_Red" image="mapOverlay_Humewood" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LakeOntario_Red" image="mapOverlay_LakeOntario" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LibertyVillage_Red" image="mapOverlay_LibertyVillage" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LittleItaly_Red" image="mapOverlay_LittleItaly" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LittlePortugal_Red" image="mapOverlay_LittlePortugal" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_RegentPark_Red" image="mapOverlay_RegentPark" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Riverdale_Red" image="mapOverlay_Riverdale" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Rosedale_Red" image="mapOverlay_Rosedale" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_StJamesTown_Red" image="mapOverlay_StJamesTown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Summerhill_Red" image="mapOverlay_Summerhill" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Waterfront_Red" image="mapOverlay_Waterfront" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_WestQueenWest_Red" image="mapOverlay_WestQueenWest" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Wychwood_Red" image="mapOverlay_Wychwood" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeBloorMuseum_Red" image="mapOverlay_YongeBloorMuseum" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeDundasHospital_Red" image="mapOverlay_YongeDundasHospital" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeStreet_Red" image="mapOverlay_YongeStreet" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Yorkville_Red" image="mapOverlay_Yorkville" />
+      <!-- Recenter button (stays fixed in viewport; does not pan with map content) -->
+      <Panel class="mapPanel_recenterButton">
+        <Image
+          id="playerHud_mapRecenterBtn_Red"
+          image="toggle_mapRecenter_inactive"
+          raycastTarget="true"
+          onMouseEnter="HUD_playerMap_recenter_hoverOn"
+          onMouseExit="HUD_playerMap_recenter_hoverOff"
+          onMouseUp="HUD_playerMap_recenter_mouseUp"/>
+
+        <Image
+          id="playerHud_mapRecenterBtn_Red_hover"
+          image="toggle_mapRecenter_hover"
+          raycastTarget="false"
+          active="false"/>
+        </Panel>
     </Panel>
 
     <!-- RIGHT: District toggles + district cards -->
-    <VerticalLayout class="mapPanel_districtColumn">
       <VerticalLayout class="mapPanel_districtToggles">
         <!-- District toggles (base + hover + active layers) -->
 
@@ -777,6 +877,10 @@
         <Image class="mapToggleOverlayLayer" id="playerHud_mapDistrictToggle_Yorkville_Red_active" image="toggleDistrict_Yorkville_active" />
       </VerticalLayout>
 
+
+  </HorizontalLayout>
+
+
       <!-- District cards stack -->
       <Panel id="playerHud_mapPanel_districtCard_Red" class="mapPanel_districtCardContainer">
         <Image class="mapCardLayer" id="playerHud_districtCard_Annex_Red" image="districtCard_Annex" />
@@ -819,8 +923,6 @@
 
       <!-- Site cards placeholder (not implemented yet) -->
       <Panel id="playerHud_mapPanel_siteCard_Red" class="mapPanel_siteCardContainer" />
-    </VerticalLayout>
-  </HorizontalLayout>
 </Panel>
 
 <Panel
@@ -831,75 +933,107 @@
 >
   <HorizontalLayout class="mapPanel_layout">
     <!-- LEFT: Overlay toggles -->
-    <VerticalLayout class="mapPanel_overlayToggles">
-      <!-- Overlay: streets -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_streets_Pink" image="toggleOverlay_streets_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_streets_Pink_hover" image="toggleOverlay_streets_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_streets_Pink_active" image="toggleOverlay_streets_active" />
+    <!-- Modeled after right sidebar button layering: base + hover + active stacks. -->
+    <Panel class="mapPanel_overlayToggles">
+      <!-- Base layer -->
+      <VerticalLayout class="mapPanel_overlayToggles">
+        <Image id="playerHud_mapOverlayToggle_districtsAll_Pink"
+         class="mapOverlayToggle_base" image="toggleOverlay_districtsAll_inactive" />
+        <Image id="playerHud_mapOverlayToggle_domains_Pink"
+         class="mapOverlayToggle_base" image="toggleOverlay_domains_inactive" />
+        <Image id="playerHud_mapOverlayToggle_localRoads_Pink"
+         class="mapOverlayToggle_base" image="toggleOverlay_localRoads_inactive" />
+        <Image id="playerHud_mapOverlayToggle_majorRoads_Pink"
+         class="mapOverlayToggle_base" image="toggleOverlay_majorRoads_inactive" />
+        <Image id="playerHud_mapOverlayToggle_majorSites_Pink"
+         class="mapOverlayToggle_base" image="toggleOverlay_majorSites_inactive" />
+      </VerticalLayout>
 
-      <!-- Overlay: districts -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_districts_Pink" image="toggleOverlay_districts_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_districts_Pink_hover" image="toggleOverlay_districts_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_districts_Pink_active" image="toggleOverlay_districts_active" />
+      <!-- Hover overlay layer -->
+      <VerticalLayout class="mapPanel_overlayToggles">
+        <Image id="playerHud_mapOverlayToggle_districtsAll_Pink_hover" image="toggleOverlay_districtsAll_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_domains_Pink_hover" image="toggleOverlay_domains_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_localRoads_Pink_hover" image="toggleOverlay_localRoads_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_majorRoads_Pink_hover" image="toggleOverlay_majorRoads_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_majorSites_Pink_hover" image="toggleOverlay_majorSites_hover" active="false" />
+      </VerticalLayout>
 
-      <!-- Overlay: sites -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_sites_Pink" image="toggleOverlay_sites_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_sites_Pink_hover" image="toggleOverlay_sites_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_sites_Pink_active" image="toggleOverlay_sites_active" />
+      <!-- Active overlay layer -->
+      <VerticalLayout class="mapPanel_overlayToggles">
+        <Image id="playerHud_mapOverlayToggle_districtsAll_Pink_active" active="false" image="toggleOverlay_districtsAll_active" />
+        <Image id="playerHud_mapOverlayToggle_domains_Pink_active" active="false" image="toggleOverlay_domains_active" />
+        <Image id="playerHud_mapOverlayToggle_localRoads_Pink_active" active="false" image="toggleOverlay_localRoads_active" />
+        <Image id="playerHud_mapOverlayToggle_majorRoads_Pink_active" active="false" image="toggleOverlay_majorRoads_active" />
+        <Image id="playerHud_mapOverlayToggle_majorSites_Pink_active" active="false" image="toggleOverlay_majorSites_active" />
+      </VerticalLayout>
+    </Panel>
 
-      <!-- Overlay: domains -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_domains_Pink" image="toggleOverlay_domains_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_domains_Pink_hover" image="toggleOverlay_domains_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_domains_Pink_active" image="toggleOverlay_domains_active" />
-    </VerticalLayout>
+    <!-- CENTER: Main stacked map (fixed viewport + draggable larger content). -->
+    <Panel class="mapPanel_viewport" id="playerHud_mapViewport_Pink" color="rgba(0, 255, 0, 0.15)">
+      <!-- <Panel class="mapPanel_draggable" color="rgba(0, 255, 255, 0.15)" id="playerHud_mapDraggable_Pink"> -->
+        <Image class="mapStackBase" id="playerHud_mapBase_Pink" image="mapBase" height="2000" flexibleHeight="0" preserveAspect="true" />
 
-    <!-- CENTER: Main stacked map -->
-    <Panel class="mapPanel_main">
-      <Image class="mapStackBase" id="playerHud_mapBase_Pink" image="mapBase" />
+        <!-- Overlay images (persisted toggles + hover preview via color tint in Lua) -->
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_majorRoads_Pink" image="mapOverlay_majorRoads" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_localRoads_Pink" image="mapOverlay_localRoads" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_districtsAll_Pink" image="mapOverlay_districtsAll" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_majorSites_Pink" image="mapOverlay_majorSites" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_domains_Pink" image="mapOverlay_domains" />
 
-      <!-- Overlay images (persisted toggles + hover preview via color tint in Lua) -->
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_streets_Pink" image="mapOverlay_streets" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_districts_Pink" image="mapOverlay_districts" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_sites_Pink" image="mapOverlay_sites" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_domains_Pink" image="mapOverlay_domains" />
+        <!-- District overlays (missing overlay for PATH / Sewers / Streets / Subway) -->
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Annex_Pink" image="mapOverlay_Annex" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_BayStFinancial_Pink" image="mapOverlay_BayStFinancial" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Bennington_Pink" image="mapOverlay_Bennington" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Cabbagetown_Pink" image="mapOverlay_Cabbagetown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_CentreIsland_Pink" image="mapOverlay_CentreIsland" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Chinatown_Pink" image="mapOverlay_Chinatown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Corktown_Pink" image="mapOverlay_Corktown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Danforth_Pink" image="mapOverlay_Danforth" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DeerPark_Pink" image="mapOverlay_DeerPark" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Discovery_Pink" image="mapOverlay_Discovery" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DistilleryDist_Pink" image="mapOverlay_DistilleryDist" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DonRavine_Pink" image="mapOverlay_DonRavine" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DupontByTheCastle_Pink" image="mapOverlay_DupontByTheCastle" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_GayVillage_Pink" image="mapOverlay_GayVillage" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_HarbordVillage_Pink" image="mapOverlay_HarbordVillage" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Humewood_Pink" image="mapOverlay_Humewood" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LakeOntario_Pink" image="mapOverlay_LakeOntario" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LibertyVillage_Pink" image="mapOverlay_LibertyVillage" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LittleItaly_Pink" image="mapOverlay_LittleItaly" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LittlePortugal_Pink" image="mapOverlay_LittlePortugal" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_RegentPark_Pink" image="mapOverlay_RegentPark" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Riverdale_Pink" image="mapOverlay_Riverdale" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Rosedale_Pink" image="mapOverlay_Rosedale" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_StJamesTown_Pink" image="mapOverlay_StJamesTown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Summerhill_Pink" image="mapOverlay_Summerhill" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Waterfront_Pink" image="mapOverlay_Waterfront" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_WestQueenWest_Pink" image="mapOverlay_WestQueenWest" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Wychwood_Pink" image="mapOverlay_Wychwood" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeBloorMuseum_Pink" image="mapOverlay_YongeBloorMuseum" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeDundasHospital_Pink" image="mapOverlay_YongeDundasHospital" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeStreet_Pink" image="mapOverlay_YongeStreet" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Yorkville_Pink" image="mapOverlay_Yorkville" />
+      <!-- </Panel> -->
 
-      <!-- District overlays (missing overlay for PATH / Sewers / Streets / Subway) -->
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Annex_Pink" image="mapOverlay_Annex" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_BayStFinancial_Pink" image="mapOverlay_BayStFinancial" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Bennington_Pink" image="mapOverlay_Bennington" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Cabbagetown_Pink" image="mapOverlay_Cabbagetown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_CentreIsland_Pink" image="mapOverlay_CentreIsland" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Chinatown_Pink" image="mapOverlay_Chinatown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Corktown_Pink" image="mapOverlay_Corktown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Danforth_Pink" image="mapOverlay_Danforth" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DeerPark_Pink" image="mapOverlay_DeerPark" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Discovery_Pink" image="mapOverlay_Discovery" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DistilleryDist_Pink" image="mapOverlay_DistilleryDist" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DonRavine_Pink" image="mapOverlay_DonRavine" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DupontByTheCastle_Pink" image="mapOverlay_DupontByTheCastle" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_GayVillage_Pink" image="mapOverlay_GayVillage" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_HarbordVillage_Pink" image="mapOverlay_HarbordVillage" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Humewood_Pink" image="mapOverlay_Humewood" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LakeOntario_Pink" image="mapOverlay_LakeOntario" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LibertyVillage_Pink" image="mapOverlay_LibertyVillage" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LittleItaly_Pink" image="mapOverlay_LittleItaly" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LittlePortugal_Pink" image="mapOverlay_LittlePortugal" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_RegentPark_Pink" image="mapOverlay_RegentPark" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Riverdale_Pink" image="mapOverlay_Riverdale" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Rosedale_Pink" image="mapOverlay_Rosedale" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_StJamesTown_Pink" image="mapOverlay_StJamesTown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Summerhill_Pink" image="mapOverlay_Summerhill" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Waterfront_Pink" image="mapOverlay_Waterfront" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_WestQueenWest_Pink" image="mapOverlay_WestQueenWest" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Wychwood_Pink" image="mapOverlay_Wychwood" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeBloorMuseum_Pink" image="mapOverlay_YongeBloorMuseum" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeDundasHospital_Pink" image="mapOverlay_YongeDundasHospital" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeStreet_Pink" image="mapOverlay_YongeStreet" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Yorkville_Pink" image="mapOverlay_Yorkville" />
+      <!-- Recenter button (stays fixed in viewport; does not pan with map content) -->
+      <Panel class="mapPanel_recenterButton">
+        <Image
+          id="playerHud_mapRecenterBtn_Pink"
+          image="toggle_mapRecenter_inactive"
+          raycastTarget="true"
+          onMouseEnter="HUD_playerMap_recenter_hoverOn"
+          onMouseExit="HUD_playerMap_recenter_hoverOff"
+          onMouseUp="HUD_playerMap_recenter_mouseUp"/>
+
+        <Image
+          id="playerHud_mapRecenterBtn_Pink_hover"
+          image="toggle_mapRecenter_hover"
+          raycastTarget="false"
+          active="false"/>
+        </Panel>
     </Panel>
 
     <!-- RIGHT: District toggles + district cards -->
-    <VerticalLayout class="mapPanel_districtColumn">
       <VerticalLayout class="mapPanel_districtToggles">
         <!-- District toggles (base + hover + active layers) -->
 
@@ -1052,6 +1186,10 @@
         <Image class="mapToggleOverlayLayer" id="playerHud_mapDistrictToggle_Yorkville_Pink_active" image="toggleDistrict_Yorkville_active" />
       </VerticalLayout>
 
+
+  </HorizontalLayout>
+
+
       <!-- District cards stack -->
       <Panel id="playerHud_mapPanel_districtCard_Pink" class="mapPanel_districtCardContainer">
         <Image class="mapCardLayer" id="playerHud_districtCard_Annex_Pink" image="districtCard_Annex" />
@@ -1094,8 +1232,6 @@
 
       <!-- Site cards placeholder (not implemented yet) -->
       <Panel id="playerHud_mapPanel_siteCard_Pink" class="mapPanel_siteCardContainer" />
-    </VerticalLayout>
-  </HorizontalLayout>
 </Panel>
 
 <Panel
@@ -1106,75 +1242,107 @@
 >
   <HorizontalLayout class="mapPanel_layout">
     <!-- LEFT: Overlay toggles -->
-    <VerticalLayout class="mapPanel_overlayToggles">
-      <!-- Overlay: streets -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_streets_Purple" image="toggleOverlay_streets_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_streets_Purple_hover" image="toggleOverlay_streets_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_streets_Purple_active" image="toggleOverlay_streets_active" />
+    <!-- Modeled after right sidebar button layering: base + hover + active stacks. -->
+    <Panel class="mapPanel_overlayToggles">
+      <!-- Base layer -->
+      <VerticalLayout class="mapPanel_overlayToggles">
+        <Image id="playerHud_mapOverlayToggle_districtsAll_Purple"
+         class="mapOverlayToggle_base" image="toggleOverlay_districtsAll_inactive" />
+        <Image id="playerHud_mapOverlayToggle_domains_Purple"
+         class="mapOverlayToggle_base" image="toggleOverlay_domains_inactive" />
+        <Image id="playerHud_mapOverlayToggle_localRoads_Purple"
+         class="mapOverlayToggle_base" image="toggleOverlay_localRoads_inactive" />
+        <Image id="playerHud_mapOverlayToggle_majorRoads_Purple"
+         class="mapOverlayToggle_base" image="toggleOverlay_majorRoads_inactive" />
+        <Image id="playerHud_mapOverlayToggle_majorSites_Purple"
+         class="mapOverlayToggle_base" image="toggleOverlay_majorSites_inactive" />
+      </VerticalLayout>
 
-      <!-- Overlay: districts -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_districts_Purple" image="toggleOverlay_districts_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_districts_Purple_hover" image="toggleOverlay_districts_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_districts_Purple_active" image="toggleOverlay_districts_active" />
+      <!-- Hover overlay layer -->
+      <VerticalLayout class="mapPanel_overlayToggles">
+        <Image id="playerHud_mapOverlayToggle_districtsAll_Purple_hover" image="toggleOverlay_districtsAll_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_domains_Purple_hover" image="toggleOverlay_domains_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_localRoads_Purple_hover" image="toggleOverlay_localRoads_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_majorRoads_Purple_hover" image="toggleOverlay_majorRoads_hover" active="false" />
+        <Image id="playerHud_mapOverlayToggle_majorSites_Purple_hover" image="toggleOverlay_majorSites_hover" active="false" />
+      </VerticalLayout>
 
-      <!-- Overlay: sites -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_sites_Purple" image="toggleOverlay_sites_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_sites_Purple_hover" image="toggleOverlay_sites_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_sites_Purple_active" image="toggleOverlay_sites_active" />
+      <!-- Active overlay layer -->
+      <VerticalLayout class="mapPanel_overlayToggles">
+        <Image id="playerHud_mapOverlayToggle_districtsAll_Purple_active" active="false" image="toggleOverlay_districtsAll_active" />
+        <Image id="playerHud_mapOverlayToggle_domains_Purple_active" active="false" image="toggleOverlay_domains_active" />
+        <Image id="playerHud_mapOverlayToggle_localRoads_Purple_active" active="false" image="toggleOverlay_localRoads_active" />
+        <Image id="playerHud_mapOverlayToggle_majorRoads_Purple_active" active="false" image="toggleOverlay_majorRoads_active" />
+        <Image id="playerHud_mapOverlayToggle_majorSites_Purple_active" active="false" image="toggleOverlay_majorSites_active" />
+      </VerticalLayout>
+    </Panel>
 
-      <!-- Overlay: domains -->
-      <Image class="mapOverlayToggle_base" id="playerHud_mapOverlayToggle_domains_Purple" image="toggleOverlay_domains_inactive" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_domains_Purple_hover" image="toggleOverlay_domains_hover" />
-      <Image class="mapToggleOverlayLayer" id="playerHud_mapOverlayToggle_domains_Purple_active" image="toggleOverlay_domains_active" />
-    </VerticalLayout>
+    <!-- CENTER: Main stacked map (fixed viewport + draggable larger content). -->
+    <Panel class="mapPanel_viewport" id="playerHud_mapViewport_Purple" color="rgba(0, 255, 0, 0.15)">
+      <!-- <Panel class="mapPanel_draggable" color="rgba(0, 255, 255, 0.15)" id="playerHud_mapDraggable_Purple"> -->
+        <Image class="mapStackBase" id="playerHud_mapBase_Purple" image="mapBase" height="2000" flexibleHeight="0" preserveAspect="true" />
 
-    <!-- CENTER: Main stacked map -->
-    <Panel class="mapPanel_main">
-      <Image class="mapStackBase" id="playerHud_mapBase_Purple" image="mapBase" />
+        <!-- Overlay images (persisted toggles + hover preview via color tint in Lua) -->
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_majorRoads_Purple" image="mapOverlay_majorRoads" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_localRoads_Purple" image="mapOverlay_localRoads" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_districtsAll_Purple" image="mapOverlay_districtsAll" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_majorSites_Purple" image="mapOverlay_majorSites" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_domains_Purple" image="mapOverlay_domains" />
 
-      <!-- Overlay images (persisted toggles + hover preview via color tint in Lua) -->
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_streets_Purple" image="mapOverlay_streets" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_districts_Purple" image="mapOverlay_districts" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_sites_Purple" image="mapOverlay_sites" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_domains_Purple" image="mapOverlay_domains" />
+        <!-- District overlays (missing overlay for PATH / Sewers / Streets / Subway) -->
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Annex_Purple" image="mapOverlay_Annex" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_BayStFinancial_Purple" image="mapOverlay_BayStFinancial" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Bennington_Purple" image="mapOverlay_Bennington" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Cabbagetown_Purple" image="mapOverlay_Cabbagetown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_CentreIsland_Purple" image="mapOverlay_CentreIsland" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Chinatown_Purple" image="mapOverlay_Chinatown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Corktown_Purple" image="mapOverlay_Corktown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Danforth_Purple" image="mapOverlay_Danforth" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DeerPark_Purple" image="mapOverlay_DeerPark" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Discovery_Purple" image="mapOverlay_Discovery" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DistilleryDist_Purple" image="mapOverlay_DistilleryDist" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DonRavine_Purple" image="mapOverlay_DonRavine" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_DupontByTheCastle_Purple" image="mapOverlay_DupontByTheCastle" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_GayVillage_Purple" image="mapOverlay_GayVillage" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_HarbordVillage_Purple" image="mapOverlay_HarbordVillage" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Humewood_Purple" image="mapOverlay_Humewood" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LakeOntario_Purple" image="mapOverlay_LakeOntario" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LibertyVillage_Purple" image="mapOverlay_LibertyVillage" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LittleItaly_Purple" image="mapOverlay_LittleItaly" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_LittlePortugal_Purple" image="mapOverlay_LittlePortugal" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_RegentPark_Purple" image="mapOverlay_RegentPark" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Riverdale_Purple" image="mapOverlay_Riverdale" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Rosedale_Purple" image="mapOverlay_Rosedale" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_StJamesTown_Purple" image="mapOverlay_StJamesTown" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Summerhill_Purple" image="mapOverlay_Summerhill" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Waterfront_Purple" image="mapOverlay_Waterfront" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_WestQueenWest_Purple" image="mapOverlay_WestQueenWest" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Wychwood_Purple" image="mapOverlay_Wychwood" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeBloorMuseum_Purple" image="mapOverlay_YongeBloorMuseum" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeDundasHospital_Purple" image="mapOverlay_YongeDundasHospital" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeStreet_Purple" image="mapOverlay_YongeStreet" />
+        <Image class="mapStackLayer" id="playerHud_mapOverlay_Yorkville_Purple" image="mapOverlay_Yorkville" />
+      <!-- </Panel> -->
 
-      <!-- District overlays (missing overlay for PATH / Sewers / Streets / Subway) -->
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Annex_Purple" image="mapOverlay_Annex" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_BayStFinancial_Purple" image="mapOverlay_BayStFinancial" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Bennington_Purple" image="mapOverlay_Bennington" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Cabbagetown_Purple" image="mapOverlay_Cabbagetown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_CentreIsland_Purple" image="mapOverlay_CentreIsland" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Chinatown_Purple" image="mapOverlay_Chinatown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Corktown_Purple" image="mapOverlay_Corktown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Danforth_Purple" image="mapOverlay_Danforth" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DeerPark_Purple" image="mapOverlay_DeerPark" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Discovery_Purple" image="mapOverlay_Discovery" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DistilleryDist_Purple" image="mapOverlay_DistilleryDist" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DonRavine_Purple" image="mapOverlay_DonRavine" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_DupontByTheCastle_Purple" image="mapOverlay_DupontByTheCastle" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_GayVillage_Purple" image="mapOverlay_GayVillage" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_HarbordVillage_Purple" image="mapOverlay_HarbordVillage" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Humewood_Purple" image="mapOverlay_Humewood" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LakeOntario_Purple" image="mapOverlay_LakeOntario" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LibertyVillage_Purple" image="mapOverlay_LibertyVillage" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LittleItaly_Purple" image="mapOverlay_LittleItaly" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_LittlePortugal_Purple" image="mapOverlay_LittlePortugal" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_RegentPark_Purple" image="mapOverlay_RegentPark" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Riverdale_Purple" image="mapOverlay_Riverdale" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Rosedale_Purple" image="mapOverlay_Rosedale" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_StJamesTown_Purple" image="mapOverlay_StJamesTown" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Summerhill_Purple" image="mapOverlay_Summerhill" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Waterfront_Purple" image="mapOverlay_Waterfront" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_WestQueenWest_Purple" image="mapOverlay_WestQueenWest" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Wychwood_Purple" image="mapOverlay_Wychwood" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeBloorMuseum_Purple" image="mapOverlay_YongeBloorMuseum" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeDundasHospital_Purple" image="mapOverlay_YongeDundasHospital" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_YongeStreet_Purple" image="mapOverlay_YongeStreet" />
-      <Image class="mapStackLayer" id="playerHud_mapOverlay_Yorkville_Purple" image="mapOverlay_Yorkville" />
+      <!-- Recenter button (stays fixed in viewport; does not pan with map content) -->
+      <Panel class="mapPanel_recenterButton">
+        <Image
+          id="playerHud_mapRecenterBtn_Purple"
+          image="toggle_mapRecenter_inactive"
+          raycastTarget="true"
+          onMouseEnter="HUD_playerMap_recenter_hoverOn"
+          onMouseExit="HUD_playerMap_recenter_hoverOff"
+          onMouseUp="HUD_playerMap_recenter_mouseUp"/>
+
+        <Image
+          id="playerHud_mapRecenterBtn_Purple_hover"
+          image="toggle_mapRecenter_hover"
+          raycastTarget="false"
+          active="false"/>
+        </Panel>
     </Panel>
 
     <!-- RIGHT: District toggles + district cards -->
-    <VerticalLayout class="mapPanel_districtColumn">
       <VerticalLayout class="mapPanel_districtToggles">
         <!-- District toggles (base + hover + active layers) -->
 
@@ -1327,6 +1495,10 @@
         <Image class="mapToggleOverlayLayer" id="playerHud_mapDistrictToggle_Yorkville_Purple_active" image="toggleDistrict_Yorkville_active" />
       </VerticalLayout>
 
+
+  </HorizontalLayout>
+
+
       <!-- District cards stack -->
       <Panel id="playerHud_mapPanel_districtCard_Purple" class="mapPanel_districtCardContainer">
         <Image class="mapCardLayer" id="playerHud_districtCard_Annex_Purple" image="districtCard_Annex" />
@@ -1369,6 +1541,4 @@
 
       <!-- Site cards placeholder (not implemented yet) -->
       <Panel id="playerHud_mapPanel_siteCard_Purple" class="mapPanel_siteCardContainer" />
-    </VerticalLayout>
-  </HorizontalLayout>
 </Panel>

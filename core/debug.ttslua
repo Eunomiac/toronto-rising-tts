@@ -758,6 +758,9 @@ function DEBUG.testUI()
                     "physicalCombat",
                     "frenzy",
                     "memoriam",
+                    "recovery",
+                    "resonance",
+                    "advantages",
                     "projects",
                     "experience"
                 }
@@ -836,7 +839,7 @@ function DEBUG.testUI()
                 S.setStateVal("Bennington", "playerData", playerID, "hud", "map", "location", "district")
 
                 -- Ensure all persisted overlay toggles start disabled.
-                local overlayKeys = { "streets", "districts", "sites", "domains" }
+                local overlayKeys = { "districtsAll", "domains", "localRoads", "majorRoads", "majorSites" }
                 for _, k in ipairs(overlayKeys) do
                     S.setStateVal(false, "playerData", playerID, "hud", "map", "overlays", k)
                 end
@@ -847,10 +850,32 @@ function DEBUG.testUI()
                 HUD_playerRightSidebar_mouseDown(Player[testColor], "-1", "playerHud_RSidebarBtn_core_map_" .. testColor)
                 UpdateUIDisplays()
 
-                local streetsOverlayToggleID = "playerHud_mapOverlayToggle_streets_" .. testColor
-                local streetsOverlayImageID = "playerHud_mapOverlay_streets_" .. testColor
-                local streetsOverlayToggleHoverLayerID = "playerHud_mapOverlayToggle_streets_" .. testColor .. "_hover"
-                local streetsOverlayToggleActiveLayerID = "playerHud_mapOverlayToggle_streets_" .. testColor .. "_active"
+                -- Verify draggable wrapper pan was applied on map open.
+                local draggableID = "playerHud_mapDraggable_" .. testColor
+                local function parseOffsetXY(offsetXY)
+                    local s = tostring(offsetXY)
+                    local xStr, yStr = s:match("(%-?%d+%.?%d*)%s+(%-?%d+%.?%d*)")
+                    if xStr == nil or yStr == nil then
+                        return nil, nil
+                    end
+                    return tonumber(xStr), tonumber(yStr)
+                end
+
+                local expectedBenningtonPanX = 60
+                local expectedBenningtonPanY = 160
+                local initOffsetXY = UI.getAttribute(draggableID, "offsetXY")
+                local initPanX, initPanY = parseOffsetXY(initOffsetXY)
+
+                printTestResult(
+                    "Map draggable offset set on open (Bennington)",
+                    initPanX == expectedBenningtonPanX and initPanY == expectedBenningtonPanY,
+                    "Expected offsetXY " .. tostring(expectedBenningtonPanX) .. " " .. tostring(expectedBenningtonPanY) .. ", got " .. tostring(initOffsetXY)
+                )
+
+                local streetsOverlayToggleID = "playerHud_mapOverlayToggle_majorRoads_" .. testColor
+                local streetsOverlayImageID = "playerHud_mapOverlay_majorRoads_" .. testColor
+                local streetsOverlayToggleHoverLayerID = "playerHud_mapOverlayToggle_majorRoads_" .. testColor .. "_hover"
+                local streetsOverlayToggleActiveLayerID = "playerHud_mapOverlayToggle_majorRoads_" .. testColor .. "_active"
 
                 -- 1) Overlay toggle OFF -> ON via click
                 local overlayInitiallyHidden = not isTintVisible(streetsOverlayImageID)
@@ -864,6 +889,16 @@ function DEBUG.testUI()
                 UpdateUIDisplays()
 
                 local overlayNowVisible = isTintVisible(streetsOverlayImageID) and isTintVisible(streetsOverlayToggleActiveLayerID)
+                local postToggleOffsetXY = UI.getAttribute(draggableID, "offsetXY")
+                local postPanX, postPanY = parseOffsetXY(postToggleOffsetXY)
+                local panPreservedAfterOverlayToggle = postPanX == expectedBenningtonPanX and postPanY == expectedBenningtonPanY
+
+                printTestResult(
+                    "Map pan preserved after overlay toggle",
+                    panPreservedAfterOverlayToggle,
+                    "Expected offsetXY to remain at " .. tostring(expectedBenningtonPanX) .. " " .. tostring(expectedBenningtonPanY) .. ", got " .. tostring(postToggleOffsetXY)
+                )
+
                 printTestResult(
                     "Map overlay click toggles ON (streets)",
                     overlayNowVisible,
@@ -932,6 +967,27 @@ function DEBUG.testUI()
                     benningtonVisible and annexHidden,
                     "Expected Bennington overlay/card visible; Annex overlay/card hidden"
                 )
+
+                -- 6) Recenter button should pan back to persisted location even after manual transient override.
+                -- Force a different transient district by hovering, then click recenter and verify offset matches Bennington base.
+                HUD_playerMap_districtToggle_hoverOn(Player[testColor], "-1", annexToggleID)
+                UpdateUIDisplays()
+
+                local recenterBtnID = "playerHud_mapRecenterBtn_" .. testColor
+                HUD_playerMap_recenter_mouseUp(Player[testColor], "-1", recenterBtnID)
+                UpdateUIDisplays()
+
+                -- Verify after animation completes to avoid flaky exact comparisons.
+                Wait.time(function()
+                    local afterRecenterOffsetXY = UI.getAttribute(draggableID, "offsetXY")
+                    local afterRecenterX, afterRecenterY = parseOffsetXY(afterRecenterOffsetXY)
+                    local panMatchesBennington = afterRecenterX == expectedBenningtonPanX and afterRecenterY == expectedBenningtonPanY
+                    printTestResult(
+                        "Recenter button pans back to persisted location (Bennington)",
+                        panMatchesBennington,
+                        "Expected offsetXY to become " .. tostring(expectedBenningtonPanX) .. " " .. tostring(expectedBenningtonPanY) .. ", got " .. tostring(afterRecenterOffsetXY)
+                    )
+                end, 0.25)
             else
                 printTestResult("Map overlay + district tests", false, "Could not resolve player ID for " .. testColor)
             end
@@ -3597,6 +3653,312 @@ function DEBUG.clearAllLogs()
 end
 
 --[[
+    Custom UI Asset Upload Helpers
+    These functions spawn temporary Custom_Token objects from generated manifest data.
+    Use these tokens with Cloud Manager "Upload All Loaded Files", then save and run
+    the Node merge script to update top-level CustomUIAssets.
+]]
+
+local DEBUG_UPLOAD_GMNOTES_PREFIX = "debug-custom-ui-upload:"
+local DEBUG_UPLOAD_TAG = "debug-custom-ui-upload"
+local DEBUG_UPLOAD_MANIFEST_MODULE = "lib.custom_ui_upload_manifest"
+local DEBUG_UPLOAD_MANIFEST_MODULE_ALT = "lib/custom_ui_upload_manifest"
+DEBUG.customUiUploadManifest = nil
+
+-- Static preload so bundlers that only track literal require() calls include this module.
+-- If not present yet, keep going; users can regenerate and Save & Play.
+do
+    local ok, preloadManifest = pcall(function()
+        return require("lib.custom_ui_upload_manifest")
+    end)
+    if ok and U.Type(preloadManifest) == "table" then
+        DEBUG.customUiUploadManifest = preloadManifest
+    end
+end
+
+--- Parse an optional options table for upload spawn settings.
+-- @param options table|nil
+-- @param assetCount number|nil
+-- @return table Parsed options with defaults
+local function parseUploadOptions(options, assetCount)
+    local resolved = options or {}
+    local spawnX = resolved.startX
+    local spawnY = resolved.startY
+    local spawnZ = resolved.startZ
+    local gap = resolved.gap
+    local columns = resolved.columns
+    local offset = resolved.offset
+    local limit = resolved.limit
+
+    local count = assetCount
+    if U.Type(count) ~= "number" or count < 1 then
+        count = 1
+    end
+
+    -- Auto-size columns when not provided:
+    -- keep rows compact while avoiding very wide spawn grids.
+    local autoColumns = math.ceil(math.sqrt(count))
+    if autoColumns < 4 then autoColumns = 4 end
+    if autoColumns > 12 then autoColumns = 12 end
+
+    if U.Type(spawnX) ~= "number" then spawnX = 0 end
+    if U.Type(spawnY) ~= "number" then spawnY = 3 end
+    if U.Type(spawnZ) ~= "number" then spawnZ = 0 end
+    if U.Type(gap) ~= "number" or gap <= 0 then gap = 2 end
+    if U.Type(columns) ~= "number" or columns < 1 then columns = autoColumns end
+    if U.Type(offset) ~= "number" or offset < 0 then offset = 0 end
+    if U.Type(limit) ~= "number" or limit < 1 then limit = 999999 end
+
+    return {
+        startX = spawnX,
+        startY = spawnY,
+        startZ = spawnZ,
+        gap = gap,
+        columns = math.floor(columns),
+        offset = math.floor(offset),
+        limit = math.floor(limit)
+    }
+end
+
+--- Normalize a manifest-like table into an asset list.
+-- Accepted shapes:
+--   { assets = { { name = "...", fileUrl = "file:///..." }, ... } }
+--   { { name = "...", fileUrl = "file:///..." }, ... }
+-- @param manifest table Manifest object or direct asset array
+-- @return table|nil Array of normalized assets, or nil on validation failure
+local function normalizeUploadManifest(manifest)
+    if U.Type(manifest) ~= "table" then
+        print("DEBUG.spawnCustomUiUploadBatchFromManifest: manifest must be a table")
+        return nil
+    end
+
+    local assets = manifest.assets
+    if U.Type(assets) ~= "table" then
+        assets = manifest
+    end
+    if U.Type(assets) ~= "table" then
+        print("DEBUG.spawnCustomUiUploadBatchFromManifest: manifest.assets must be a table")
+        return nil
+    end
+
+    local normalized = {}
+    local seenNames = {}
+
+    for i, asset in ipairs(assets) do
+        if U.Type(asset) ~= "table" then
+            print("DEBUG: Skipping non-table asset at index " .. tostring(i))
+        else
+            local name = asset.name or asset.Name or asset.assetName
+            local fileUrl = asset.fileUrl or asset.url or asset.URL
+            if U.Type(name) ~= "string" or name == "" then
+                print("DEBUG: Skipping asset with invalid name at index " .. tostring(i))
+            elseif U.Type(fileUrl) ~= "string" or fileUrl == "" then
+                print("DEBUG: Skipping asset '" .. name .. "' with invalid fileUrl/url")
+            elseif not string.find(fileUrl, "^file:///") then
+                print("DEBUG: Skipping asset '" .. name .. "' because URL is not file:/// (" .. tostring(fileUrl) .. ")")
+            elseif seenNames[name] then
+                print("DEBUG: Skipping duplicate asset name '" .. name .. "'")
+            else
+                seenNames[name] = true
+                table.insert(normalized, {
+                    name = name,
+                    fileUrl = fileUrl
+                })
+            end
+        end
+    end
+
+    if #normalized == 0 then
+        print("DEBUG.spawnCustomUiUploadBatchFromManifest: no valid assets found")
+        return nil
+    end
+
+    return normalized
+end
+
+--- Spawn a batch of temporary Custom_Token objects from a manifest table.
+-- @param manifest table Manifest object (with .assets) or direct assets array
+-- @param options table|nil Optional controls: startX/startY/startZ/gap/columns/offset/limit
+-- @return number Count of spawned tokens
+function DEBUG.spawnCustomUiUploadBatchFromManifest(manifest, options)
+    local assets = normalizeUploadManifest(manifest)
+    if assets == nil then
+        return 0
+    end
+
+    local opts = parseUploadOptions(options, #assets)
+    local spawned = 0
+    local processed = 0
+
+    for i, asset in ipairs(assets) do
+        if i > opts.offset and spawned < opts.limit then
+            local row = math.floor(processed / opts.columns)
+            local col = processed % opts.columns
+
+            local spawnPos = {
+                x = opts.startX + (col * opts.gap),
+                y = opts.startY,
+                z = opts.startZ + (row * opts.gap)
+            }
+
+            ---@diagnostic disable-next-line: undefined-global
+            local obj = spawnObject({
+                type = "Custom_Token",
+                position = spawnPos,
+                sound = false
+            })
+
+            if obj ~= nil then
+                obj.setName(asset.name)
+                obj.setGMNotes(DEBUG_UPLOAD_GMNOTES_PREFIX .. asset.name)
+                if obj.setTags ~= nil then
+                    obj.setTags({ DEBUG_UPLOAD_TAG, asset.name })
+                end
+                obj.setCustomObject({
+                    image = asset.fileUrl,
+                    thickness = 0.2,
+                    merge_distance = 15,
+                    stackable = false
+                })
+                spawned = spawned + 1
+                processed = processed + 1
+            else
+                print("DEBUG: Failed to spawn token for " .. asset.name)
+            end
+        end
+    end
+
+    print("DEBUG.spawnCustomUiUploadBatchFromManifest: Spawned " .. tostring(spawned) .. " uploader tokens")
+    return spawned
+end
+
+--- Spawn a batch from a JSON string generated by build-upload-manifest.js.
+-- @param manifestJson string JSON string containing { assets: [ {name,fileUrl}, ... ] }
+-- @param options table|nil Optional controls: startX/startY/startZ/gap/columns/offset/limit
+-- @return number Count of spawned tokens
+function DEBUG.spawnCustomUiUploadBatchFromJson(manifestJson, options)
+    if U.Type(manifestJson) ~= "string" or manifestJson == "" then
+        print("DEBUG.spawnCustomUiUploadBatchFromJson: manifestJson must be a non-empty string")
+        return 0
+    end
+
+    local ok, parsed = pcall(function()
+        return JSON.decode(manifestJson)
+    end)
+    if not ok or U.Type(parsed) ~= "table" then
+        print("DEBUG.spawnCustomUiUploadBatchFromJson: failed to parse JSON manifest")
+        return 0
+    end
+
+    return DEBUG.spawnCustomUiUploadBatchFromManifest(parsed, options)
+end
+
+--- Load a generated custom UI upload manifest Lua module via require().
+-- This requires Save & Play after regenerating the module file.
+-- @param moduleName string|nil Optional module name (default: lib.custom_ui_upload_manifest)
+-- @param forceReload boolean|nil If true, clears require cache before loading (default: true)
+-- @return table|nil Loaded manifest table or nil on failure
+function DEBUG.loadCustomUiUploadManifest(moduleName, forceReload)
+    local targetModule = moduleName
+    if U.Type(targetModule) ~= "string" or targetModule == "" then
+        targetModule = DEBUG_UPLOAD_MANIFEST_MODULE
+    end
+    local shouldForceReload = forceReload
+    if shouldForceReload == nil then
+        shouldForceReload = true
+    end
+
+    if shouldForceReload then
+        if U.Type(package) == "table" and U.Type(package.loaded) == "table" then
+            package.loaded[targetModule] = nil
+            package.loaded[DEBUG_UPLOAD_MANIFEST_MODULE_ALT] = nil
+        end
+    end
+
+    local ok, manifest = pcall(function()
+        return require(targetModule)
+    end)
+    local firstErr = manifest
+
+    if not ok then
+        local okAlt, manifestAlt = pcall(function()
+            return require(DEBUG_UPLOAD_MANIFEST_MODULE_ALT)
+        end)
+        if okAlt then
+            manifest = manifestAlt
+            ok = true
+            targetModule = DEBUG_UPLOAD_MANIFEST_MODULE_ALT
+        else
+            print("DEBUG.loadCustomUiUploadManifest: failed to require module '" .. tostring(targetModule) .. "'")
+            print("  require error: " .. tostring(firstErr))
+            print("  fallback require error (" .. DEBUG_UPLOAD_MANIFEST_MODULE_ALT .. "): " .. tostring(manifestAlt))
+            return nil
+        end
+    end
+
+    if U.Type(manifest) ~= "table" then
+        print("DEBUG.loadCustomUiUploadManifest: module '" .. tostring(targetModule) .. "' did not return a table")
+        return nil
+    end
+
+    DEBUG.customUiUploadManifest = manifest
+    local count = 0
+    if U.Type(manifest.assets) == "table" then
+        count = #manifest.assets
+    end
+    print("DEBUG.loadCustomUiUploadManifest: loaded " .. tostring(count) .. " assets from " .. tostring(targetModule))
+    return manifest
+end
+
+--- Spawn a batch from the default generated manifest module.
+-- @param options table|nil Optional controls: startX/startY/startZ/gap/columns/offset/limit
+-- @param moduleName string|nil Optional module name override
+-- @return number Count of spawned tokens
+function DEBUG.spawnCustomUiUploadBatch(options, moduleName)
+    -- Always force reload so this uses the latest generated manifest file.
+    local manifest = DEBUG.loadCustomUiUploadManifest(moduleName, true)
+    if U.Type(manifest) ~= "table" then
+        print("DEBUG.spawnCustomUiUploadBatch: no manifest loaded")
+        return 0
+    end
+    return DEBUG.spawnCustomUiUploadBatchFromManifest(manifest, options)
+end
+
+--- Delete spawned uploader tokens created by DEBUG.spawnCustomUiUploadBatchFromManifest().
+-- @return number Count of deleted objects
+function DEBUG.clearCustomUiUploadTokens()
+    local allObjects = getAllObjects()
+    local deleted = 0
+
+    for _, obj in ipairs(allObjects) do
+        if obj ~= nil and obj.getGMNotes ~= nil then
+            local notes = obj.getGMNotes()
+            local matchesNotes = U.Type(notes) == "string" and string.find(notes, "^" .. DEBUG_UPLOAD_GMNOTES_PREFIX) ~= nil
+            local matchesTag = false
+            if obj.getTags ~= nil then
+                local tags = obj.getTags()
+                if U.Type(tags) == "table" then
+                    for _, tag in ipairs(tags) do
+                        if tag == DEBUG_UPLOAD_TAG then
+                            matchesTag = true
+                            break
+                        end
+                    end
+                end
+            end
+
+            if matchesNotes or matchesTag then
+                obj.destruct()
+                deleted = deleted + 1
+            end
+        end
+    end
+
+    print("DEBUG.clearCustomUiUploadTokens: Deleted " .. tostring(deleted) .. " uploader tokens (matched by tag or GM notes)")
+    return deleted
+end
+
+--[[
     Help/Documentation
 ]]
 
@@ -3648,6 +4010,16 @@ function DEBUG.help()
     print("                          - Position using cylindrical coords relative to stored center")
     print("  DEBUG.setPositionSpherical(obj, radius, angleDeg, angle2Deg, target?)")
     print("                          - Position using spherical coords relative to stored center")
+    print("  DEBUG.spawnCustomUiUploadBatchFromManifest(manifest, options?)")
+    print("                          - Spawn temporary upload tokens from manifest table")
+    print("  DEBUG.spawnCustomUiUploadBatchFromJson(jsonString, options?)")
+    print("                          - Spawn temporary upload tokens from JSON manifest string")
+    print("  DEBUG.loadCustomUiUploadManifest(moduleName?)")
+    print("                          - Require generated manifest module (default: lib.custom_ui_upload_manifest)")
+    print("  DEBUG.spawnCustomUiUploadBatch(options?, moduleName?)")
+    print("                          - Spawn from loaded/default manifest module")
+    print("  DEBUG.clearCustomUiUploadTokens()")
+    print("                          - Delete temporary upload tokens created by debug uploader")
     print("\nHELP:")
     print("  debugHelp()              - Show this help message")
     print("\n" .. string.rep("=", 70))
@@ -3685,6 +4057,11 @@ setHunger = DEBUG.setHunger
 changeScene = DEBUG.changeScene
 setPhase = DEBUG.setPhase
 tableRotateTo = DEBUG.tableRotateTo
+spawnCustomUiUploadBatchFromManifest = DEBUG.spawnCustomUiUploadBatchFromManifest
+spawnCustomUiUploadBatchFromJson = DEBUG.spawnCustomUiUploadBatchFromJson
+spawnCustomUiUploadBatch = DEBUG.spawnCustomUiUploadBatch
+loadCustomUiUploadManifest = DEBUG.loadCustomUiUploadManifest
+clearCustomUiUploadTokens = DEBUG.clearCustomUiUploadTokens
 
 -- Expose file logging functions
 logToFile = DEBUG.logToFile
@@ -3710,5 +4087,8 @@ findPotentialLights = DEBUG.findPotentialLights
 
 -- Auto-show help on load (optional - comment out if not desired)
 -- DEBUG.help()
+
+-- Auto-load generated custom UI upload manifest module if available.
+DEBUG.loadCustomUiUploadManifest()
 
 return DEBUG

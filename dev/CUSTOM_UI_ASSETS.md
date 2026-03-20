@@ -2,16 +2,50 @@
 
 Only assets referenced by the current UI are listed. Source: Heritage and King's Dilemma TTS saves.
 
-## Pasting into your save file
+## Automated batch workflow (pilot)
 
-1. Close TTS so the save file isn’t locked.
-2. Open your Toronto Rising save `.json` and find the **CustomUIAssets** (or **CustomAssets**) section.
-3. Open **`dev/CUSTOM_UI_ASSETS.json`** in this repo.
-4. Copy the **entire file contents** (the JSON array from `[` to `]`).
-5. In the save JSON, replace the existing `CustomUIAssets` value with that array — i.e. the line(s) that look like `"CustomUIAssets": [ ... ]` should become `"CustomUIAssets":` followed by the pasted array.
-6. Save the `.json` and reopen the save in TTS.
+This workflow avoids manually copying each URL into `CustomUIAssets`.
 
-Alternatively, add assets in-game via **Modding > Custom UI Assets** using the Name + URL table below.
+### Preferred: one command-palette task
+
+Use VS Code command palette: **Run Task** -> `Custom UI Assets: Full Pipeline (Build -> Pause -> Merge)`.
+
+The task prompts for:
+
+- Relative image folder (example: `assets\images\new_images`)
+- Save name/number (example: `123`, `TS_Save_123`, or `TS_Save_123.json`)
+
+What the task does:
+
+1. Builds manifest files from images.
+2. Prints TTS manual steps and pauses for Enter:
+   - Save & Play
+   - `lua DEBUG.spawnCustomUiUploadBatch()`
+   - Cloud Manager -> Upload All Loaded Files
+   - Save game
+3. Merges hosted URLs into top-level `CustomUIAssets` (or `CustomAssets`) by `Name`.
+4. Prints cleanup reminder:
+   - `lua DEBUG.clearCustomUiUploadTokens()`
+
+### Manual/advanced tasks
+
+If you prefer to run steps individually:
+
+1. `Custom UI Assets: Build Manifest from Image Files`
+2. `Custom UI Assets: Merge Hosted URLs into Save CustomUIAssets`
+3. `Custom UI Assets: TTS Image Cache Clear` (optional, images cache only)
+
+Validation rules:
+
+- Duplicate filename stems are rejected.
+- Stems must match `[A-Za-z0-9._-]+` for stable UI asset names.
+
+Generated files are overwritten each run:
+
+- `dev/custom-ui-assets/manifest.json`
+- `dev/custom-ui-assets/manifest.lua`
+- `lib/custom_ui_upload_manifest.ttslua`
+- `dev/custom-ui-assets/generated-assets.json` (after merge)
 
 ---
 

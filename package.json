@@ -2,7 +2,10 @@
   "name": "toronto-rising-tts",
   "version": "1.0.0",
   "description": "Tabletop Simulator LUA modding project",
-  "scripts": {},
+  "scripts": {
+    "custom-ui-assets:manifest": "node tools/custom-ui-assets/build-upload-manifest.js",
+    "custom-ui-assets:merge": "node tools/custom-ui-assets/merge-custom-ui-assets.js"
+  },
   "keywords": [
     "tabletop-simulator",
     "lua",

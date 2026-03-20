@@ -3,6 +3,17 @@
   <VerticalLayout flexibleWidth="0" flexibleHeight="0" spacing="0" childForceExpandWidth="false" childForceExpandHeight="false" />
   <HorizontalLayout flexibleWidth="0" flexibleHeight="0" spacing="0" />
 
+  <Panel class="playerHud_rightSidebar"
+    rectAlignment="UpperRight"
+    height="650"
+    width="175"
+    offsetXY="0 -100"
+    padding="0 0 0 0"
+  />
+  <VerticalLayout class="playerHud_sidebarLayout" rectAlignment="UpperRight" active="true" ignoreLayout="true" preferredWidth="175" childForceExpandHeight="false" childForceExpandWidth="false" flexibleWidth="0" childAlignment="UpperRight" spacing="0" />
+  <Image rectAlignment="UpperRight" preferredHeight="30" flexibleWidth="0" flexibleHeight="0" preserveAspect="true" />
+  <Image class="imageBorder" preferredWidth="135" />
+  <Image class="long_active" preferredWidth="200" minWidth="200" />
 
   <Panel class="playerHud_coreLayer"
     rectAlignment="MiddleCenter"
@@ -34,4 +45,3 @@
     flexibleHeight="0"
     flexibleWidth="0" />
 </Defaults>
-
