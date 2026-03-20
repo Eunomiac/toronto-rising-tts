@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+  "Lua.runtime.version": "Lua 5.1",
+  "Lua.diagnostics.globals": [
+    "UI",
+    "Wait",
+    "WebRequest",
+    "JSON",
+    "Player",
+    "Color",
+    "Vector",
+    "Lighting",
+    "Physics",
+    "Hands",
+    "Notes",
+    "MusicPlayer",
+    "Print",
+    "log",
+    "broadcastToAll",
+    "startLuaCoroutine",
+    "getObjectFromGUID",
+    "getObjects",
+    "getObjectsWithTag",
+    "spawnObject",
+    "spawnObjectJSON",
+    "destroyObject"
+  ]
+}
