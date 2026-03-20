@@ -157,6 +157,7 @@ local STORYTELLER_PANELS = {
     scenes = { panel = "panel_scenes", toggle = "toggle_scenes" },
     pcs = { panel = "panel_pcs", toggle = "toggle_pcs" },
     phases = { panel = "panel_phases", toggle = "toggle_phases" },
+    npcs = { panel = "panel_npcs", toggle = "toggle_npcs" },
 }
 
 --- Wrapper for the pop-out content (all 4 panels). Hidden when none selected.
@@ -172,7 +173,7 @@ local TOGGLE_COLORS_ACTIVE = "#B8860B|#FFD700|#FFA500|#B8860B"
 -- Shows the content area, hides all panels, shows the selected one, and updates toggle button highlight.
 -- Mirrors the admin arrow-toggle pattern: content pops out when a button is clicked.
 --
--- @param panelKey string One of: "lighting", "scenes", "pcs", "phases"
+-- @param panelKey string One of: "lighting", "scenes", "pcs", "phases", "npcs"
 --
 -- @usage UIHelpers.selectStorytellerPanel("lighting")
 function UIHelpers.selectStorytellerPanel(panelKey)

@@ -1,4 +1,4 @@
----@diagnostic disable: deprecated
+---@diagnostic disable
 local U = require("lib.utilities")
 local S = require("kingsdilemma.core.state")
 local C = require("kingsdilemma.lib.constants")

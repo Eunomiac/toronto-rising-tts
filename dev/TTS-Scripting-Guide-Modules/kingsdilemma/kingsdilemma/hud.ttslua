@@ -1,3 +1,4 @@
+---@diagnostic disable
 ---@diagnostic disable: deprecated
 -- #region IMPORTS ~
 local DIR = require("kingsdilemma.core.director")

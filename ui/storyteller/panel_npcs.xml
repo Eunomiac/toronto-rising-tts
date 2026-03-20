@@ -1,0 +1,27 @@
+<!-- Storyteller NPC spawn / lighting panel (dynamic rows injected by core/npcs.ttslua) -->
+<!-- TTS: layout children use preferred*/flexible* (UI Attributes). Panel padding => layout group. -->
+<Panel id="panel_npcs" active="false" padding="0 0 0 0" flexibleHeight="1" flexibleWidth="1" minHeight="240">
+  <VerticalLayout padding="4" spacing="4" childForceExpandWidth="true" childForceExpandHeight="false">
+    <Text fontSize="12" color="#FFD700" fontStyle="Bold">NPCs</Text>
+    <VerticalScrollView
+      horizontal="false"
+      vertical="true"
+      preferredHeight="250"
+      minHeight="200"
+      flexibleWidth="1"
+      flexibleHeight="1"
+      verticalScrollbarVisibility="AutoHide"
+      horizontalScrollbarVisibility="AutoHide">
+      <VerticalLayout spacing="2" childForceExpandWidth="true" childForceExpandHeight="false">
+        <TableLayout
+          columnWidths="80 36 120 40 160 36"
+          cellBackgroundColor="rgba(0,0,0,0.25)"
+          autoCalculateHeight="true">
+          <Row id="npcPanelRowsPlaceholder" preferredHeight="4">
+            <Cell columnSpan="6"><Text fontSize="1" color="#333333"> </Text></Cell>
+          </Row>
+        </TableLayout>
+      </VerticalLayout>
+    </VerticalScrollView>
+  </VerticalLayout>
+</Panel>

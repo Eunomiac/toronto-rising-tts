@@ -101,6 +101,21 @@ If `lookAtTargetOrPos` is provided, it also rotates the object using `DEBUG.setR
 
 ```lua
 -- lua DEBUG.setPositionCylindrical(objOrGuid, 15, 90, 5, targetOrPos?)
+
+-- BROWN ON: lua DEBUG.setPositionCylindrical("f251e0", 78, 180 - (2*36), 23, "14b6cf")
+-- BROWN OFF: lua DEBUG.setPositionCylindrical("f251e0", 100, 180 - (2*36), 50, "14b6cf")
+
+-- ORANGE ON: lua DEBUG.setPositionCylindrical("d3356d", 78, 180 - 36, 23, "b9d1d9")
+-- ORANGE OFF: lua DEBUG.setPositionCylindrical("d3356d", 100, 180 - 36, 50, "b9d1d9")
+
+-- RED ON: lua DEBUG.setPositionCylindrical("0cd76a", 78, 180, 23, "b13642")
+-- RED OFF: lua DEBUG.setPositionCylindrical("0cd76a", 100, 180, 50, "b13642")
+
+-- PINK ON: lua DEBUG.setPositionCylindrical("937fac", 78, 180 + 36, 23, "926600")
+-- PINK OFF: lua DEBUG.setPositionCylindrical("937fac", 100, 180 + 36, 50, "926600")
+
+-- PURPLE ON: lua DEBUG.setPositionCylindrical("86117d", 78, 180 + (2*36), 23, "33141c")
+-- PURPLE OFF: lua DEBUG.setPositionCylindrical("86117d", 100, 180 + (2*36), 50, "33141c")
 ```
 
 ### 6) `DEBUG.setPositionSpherical(objOrGuid, radius, angleDeg, angle2Deg, lookAtTargetOrPos?)`

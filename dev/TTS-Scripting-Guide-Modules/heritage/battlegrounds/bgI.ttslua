@@ -1,3 +1,4 @@
+---@diagnostic disable
 local U = require("lib.utilities")
 local C = require("lib.constants")
 local G = require("lib.guids")

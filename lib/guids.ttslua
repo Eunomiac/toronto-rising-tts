@@ -10,20 +10,18 @@ local G = {}
 G.GUIDS = {
     -- Table object (if needed for reference)
     TABLE = "1a0c6d",
-    -- Map object (for the map of the city)
-    MAP = "996f38",
 
     -- STORYTELLER OBJECTS
     -- Storyteller Table (raised and behind players so they can't see it)
-    STORYTELLER_TABLE = "94d04d",
-    -- Difficulty Dial (for setting difficulty of dice rolls
-    DIFFICULTY_DIAL = "fe9e9a",
+    STORYTELLER_TABLE = "6e517a",
 
     -- Light objects (for scene lighting)
     MAIN_LIGHT_LEFT = "573771",
     MAIN_LIGHT_RIGHT = "13466d",
 
     NPC_LIGHT_MID = "46ab05",
+    -- Template spotlight object to clone for each spawned NPC (same hierarchy as player lights).
+    NPC_LIGHT_CLONE_TEMPLATE = "46ab05",
 
     LARGE_MAP_LIGHT = "16a7b8",
     PLAYER_LIGHT_BROWN = "f251e0",
@@ -42,16 +40,17 @@ G.GUIDS = {
     HAND_ORANGE = "b9d1d9",
     HAND_RED = "b13642",
     HAND_PINK = "926600",
+    HAND_PURPLE = "33141c",
 
     -- Scripting Zones
     TABLE_DROP_ZONE = "af99b8", -- zone for table drops
 
     -- Tombstone objects (for character tombstones)
-    -- TOMBSTONE_BROWN = "14b6cf",
-    -- TOMBSTONE_ORANGE = "b9d1d9",
-    -- TOMBSTONE_RED = "b13642",
-    -- TOMBSTONE_PINK = "926600",
-    -- TOMBSTONE_PURPLE = "e32d2c",
+    TOMBSTONE_BROWN = "94e987",
+    TOMBSTONE_ORANGE = "368c43",
+    TOMBSTONE_RED = "844170",
+    TOMBSTONE_PINK = "da649d",
+    TOMBSTONE_PURPLE = "33141c",
 
     -- Signal fires (for players to signal need for Storyteller attention)
     SIGNAL_FIRE_BROWN = "b0ffa8",

@@ -195,6 +195,9 @@ function S.GetDefaultGameState()
             description = "",
             mood = "",
         },
+        npcs = {
+            instances = {},
+        },
         -- Add other top-level game state defaults
     }
 end
@@ -352,6 +355,13 @@ function S.validateState()
     if not gameState.lights then gameState.lights = {} end
     if not gameState.zones then gameState.zones = {} end
     if not gameState.scene then gameState.scene = {} end
+
+    if not gameState.npcs or type(gameState.npcs) ~= "table" then
+        gameState.npcs = { instances = {} }
+    end
+    if not gameState.npcs.instances or type(gameState.npcs.instances) ~= "table" then
+        gameState.npcs.instances = {}
+    end
 
     -- Ensure HUD subtree exists for every player
     if gameState.playerData and type(gameState.playerData) == "table" then
@@ -606,6 +616,21 @@ local function buildSaveState()
         if gameState.scene.name then saveState.scene.name = gameState.scene.name end
         if gameState.scene.description then saveState.scene.description = gameState.scene.description end
         if gameState.scene.mood then saveState.scene.mood = gameState.scene.mood end
+    end
+
+    if gameState.npcs and type(gameState.npcs) == "table" and gameState.npcs.instances and type(gameState.npcs.instances) == "table" then
+        saveState.npcs = { instances = {} }
+        for npcName, rec in pairs(gameState.npcs.instances) do
+            if type(npcName) == "string" and type(rec) == "table" then
+                saveState.npcs.instances[npcName] = {
+                    figurineGuid = rec.figurineGuid,
+                    lightGuid = rec.lightGuid,
+                    areaKey = rec.areaKey,
+                    slotIndex = rec.slotIndex,
+                    npcLightMode = rec.npcLightMode,
+                }
+            end
+        end
     end
 
     return saveState

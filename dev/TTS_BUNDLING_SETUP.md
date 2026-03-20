@@ -8,8 +8,16 @@ Based on the [TTS Tools documentation](https://sebaestschjin.github.io/tts-tools
 
 **Important**: The TTS Tools extension works with files in the `.tts/objects/` directory. This is the "output directory" where the extension stores scripts it reads from TTS.
 
-1. **Entry Point**: `.tts/objects/Global.lua` is the main script file the extension works with
-2. **Module Files**: Your module files (e.g., `lib/util.ttslua`, `core/state.ttslua`) are in the workspace directory
+### Global script source of truth (read this)
+
+- **TTS may overwrite** `.tts/objects/Global.lua` when you reload the game or sync from TTS. Treat that file as **volatile**.
+- It should stay a **stub** only: `require("global.global_script")`.
+- **All global game logic** lives in **`global/global_script.ttslua`** (same `require()` roots as `lib/` and `core/`). Edit that file, not the stub, when adding `onLoad`, HUD handlers, etc.
+
+See also [`global/README.md`](../global/README.md).
+
+1. **Entry Point (stub)**: `.tts/objects/Global.lua` is what the extension bundles first; it should only `require("global.global_script")`.
+2. **Module Files**: Your module files (e.g., `lib/util.ttslua`, `core/state.ttslua`, `global/global_script.ttslua`) are in the workspace directory
 3. **Require Syntax**: Use dot notation: `require("lib.util")` for `lib/util.lua` or `lib/util.ttslua`
 4. **Bundling Process**: When you use "Save and Play":
    - Extension reads `.tts/objects/Global.lua`
@@ -20,21 +28,19 @@ Based on the [TTS Tools documentation](https://sebaestschjin.github.io/tts-tools
 
 ## Workflow
 
-### Recommended Workflow:
+### Recommended Workflow
 
-1. **Edit entry point**: Work directly in `.tts/objects/Global.lua` (this is what the extension reads from)
-2. **Edit module files**: Edit files in `lib/` and `core/` directories directly
-3. **Bundle and send**: Use "Save and Play" - extension will:
+1. **Edit global logic**: Use **`global/global_script.ttslua`** (not the `.tts/objects/Global.lua` stub).
+2. **Edit other modules**: Edit files in `lib/` and `core/` (and `global/` if you split further) directly.
+3. **Keep the stub**: If TTS overwrote `.tts/objects/Global.lua`, restore it to only `require("global.global_script")` (see comments in that file).
+4. **Bundle and send**: Use "Save and Play" - extension will:
    - Read `.tts/objects/Global.lua`
-   - Resolve all `require()` calls from workspace directory
+   - Resolve all `require()` calls from workspace directory (including `global.global_script`)
    - Bundle everything together
    - Send to TTS
 
-**Note**: The `.tts/objects/Global.lua` file is your main entry point. There's no need for a separate `global.ttslua` file - work directly in `.tts/objects/Global.lua`.
+### Working with Bundled Only
 
-**Note**: The extension does NOT automatically sync `global.ttslua` to `.tts/objects/Global.lua`. You must manually keep them in sync, or work directly in `.tts/objects/Global.lua`.
-
-### Working with Bundled Only:
 1. Edit `.tts/bundled/Global.lua` directly
 2. Use "Save and Play (Bundled)" to send as-is (no bundling)
 
@@ -43,6 +49,7 @@ Based on the [TTS Tools documentation](https://sebaestschjin.github.io/tts-tools
 ### Issue 0: Connection Refused (ECONNREFUSED 127.0.0.1:39999)
 
 **Symptom**: Error in Extension Host: `Error: connect ECONNREFUSED 127.0.0.1:39999`
+
 - "Save & Play" doesn't work
 - "Load Objects" doesn't work
 - Extension can't communicate with TTS
@@ -84,20 +91,22 @@ Based on the [TTS Tools documentation](https://sebaestschjin.github.io/tts-tools
 
 **Symptom**: Changes don't appear in TTS
 
-**Root Cause**: The extension reads from `.tts/objects/Global.lua`. Make sure you're editing the correct file.
+**Root Cause**: The extension reads from `.tts/objects/Global.lua` for the bundle **entry**, but TTS may have replaced that file. Logic belongs in `global/global_script.ttslua`.
 
 **Solution**:
-- Always edit `.tts/objects/Global.lua` directly (this is your main entry point)
-- The extension reads from this file when bundling
-- Module files in `lib/` and `core/` are resolved automatically during bundling
 
-**Important**: The `.tts/objects/` directory is what the extension uses as the source of truth for bundling. Work directly in `.tts/objects/Global.lua`.
+- Restore `.tts/objects/Global.lua` to the repo stub (`require("global.global_script")`) if it was overwritten.
+- Edit **`global/global_script.ttslua`** for global script changes.
+- Module files in `lib/`, `core/`, and `global/` are resolved automatically during bundling.
+
+**Important**: The `.tts/objects/` directory is the extension’s sync target; **`global/global_script.ttslua`** is the source of truth for global Lua logic.
 
 ### Issue 2: Require Path Errors
 
 **Symptom**: `Tried to require "lib.util", but no such module has been registered`
 
 **Solution**:
+
 - Ensure files exist: `lib/util.ttslua` or `lib/util.lua`
 - Check require path uses dots: `require("lib.util")` not `require("lib/util")`
 - Verify workspace root is correct (extension searches from workspace directory)
@@ -108,6 +117,7 @@ Based on the [TTS Tools documentation](https://sebaestschjin.github.io/tts-tools
 **Symptom**: Files with `++` or other special chars in names
 
 **Solution**:
+
 - The bundler handles `console++.lua` correctly
 - Use `require("lib.Console.console++")` as-is
 - If issues persist, consider renaming to `console_plus_plus.lua`
@@ -115,6 +125,7 @@ Based on the [TTS Tools documentation](https://sebaestschjin.github.io/tts-tools
 ### Issue 4: Extension Settings
 
 **Correct Settings** (for TTS Tools extension):
+
 ```json
 {
   "ttsEditor.includePath": ".",
@@ -123,18 +134,23 @@ Based on the [TTS Tools documentation](https://sebaestschjin.github.io/tts-tools
 ```
 
 **Explanation**:
+
 - `ttsEditor.includePath`: Relative path from workspace root where modules are located. Default is `"src"`, but since our files are in the root (`lib/`, `core/`), we use `"."` (current directory).
 - `ttsEditor.enableMessages`: Enables handling of custom messages from TTS (for external command support).
 
 **Old Settings** (for older extension - remove these):
+
 - `TTSLua.includeOtherFiles` - Not used by TTS Tools
 - `TTSLua.bundleSearchPattern` - Not used by TTS Tools
 - `TTSLua.includeOtherFilesPaths` - Not used by TTS Tools
 
 ## File Structure
 
-```
+```text
 workspace/
+├── global/
+│   ├── global_script.ttslua   # Global game logic (edit this)
+│   └── README.md
 ├── lib/
 │   ├── util.ttslua
 │   ├── constants.ttslua
@@ -148,7 +164,7 @@ workspace/
 │   └── ...
 └── .tts/
     ├── objects/
-    │   └── Global.lua     # Main entry point (you edit this)
+    │   └── Global.lua     # Stub only: require("global.global_script") — may be overwritten by TTS
     └── bundled/
         └── Global.lua     # Bundled output (generated, not edited)
 ```
@@ -166,42 +182,50 @@ workspace/
 Create a simple test:
 
 **test.lua**:
+
 ```lua
 local Test = {}
 Test.message = "Hello from test module"
 return Test
 ```
 
-**.tts/objects/Global.lua** (add temporarily):
+**`global/global_script.ttslua`** (add temporarily at end of file, then remove after test):
+
 ```lua
 local Test = require("test")
 print(Test.message)
 ```
 
-If this works, bundling is functioning. If not, check extension configuration.
+Or keep the stub and add the same two lines to a scratch module required from `global_script`. If bundling works, TTS receives the full tree. If not, check extension configuration (and that `global/` is on the include path like `lib/`).
 
 ---
+
 ## XML Color Template Generator (per-player XML)
 
 This repo includes a small helper script to expand per-player XML templates into generated bundles.
 
 ### What it does
+
 - Templates live in `dev/xml_templates/*.template.xml`.
 - Any template root that contains the placeholder token `@@color@@` is duplicated once per `C.PlayerColors` value.
 - For each generated output, all `@@color@@` occurrences inside the template root are replaced with the target player color string.
 
 ### Where it writes outputs
+
 - Generator output directory: `ui/player/generated/`
 - Output naming convention: `<templateBase>_generated.xml`
   - Example: `dev/xml_templates/panel_map_core.template.xml` -> `ui/player/generated/panel_map_core_generated.xml`
 
 ### How to run it
+
 From repo root:
+
 ```bash
 node dev/scripts/xml_color_template_generator.js --templateDir "dev/xml_templates" --outputDir "ui/player/generated"
 ```
 
 ### How generated XML is included
+
 - Include the generated output via an entry include file under `ui/` (to keep include order stable).
 - Example:
   - `ui/player/panel_map_core_generated_entry.xml` includes `ui/player/generated/panel_map_core_generated.xml`

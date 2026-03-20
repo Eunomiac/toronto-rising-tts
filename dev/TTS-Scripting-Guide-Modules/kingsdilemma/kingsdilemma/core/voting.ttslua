@@ -1,4 +1,5 @@
- local P = require("kingsdilemma.core.players")
+---@diagnostic disable
+local P = require("kingsdilemma.core.players")
 local S = require("kingsdilemma.core.state")
 local U = require("lib.utilities")
 local O = require("kingsdilemma.lib.objects")

@@ -35,7 +35,7 @@ ui/
 1. **Source Files**: Edit the modular XML files in `ui/`
 2. **Root File**: `ui/hud.xml` includes defaults and submodules in the correct order
 3. **Bundling**: When you use "Save and Play", the TTS Tools extension reads `.tts/objects/Global.xml`, resolves all `<Include>` tags (including nested ones), bundles into a single XML string, and saves to `.tts/bundled/Global.xml`
-4. **Loading**: The bundled XML is loaded in `.tts/objects/Global.lua` via `UI.setXml()`
+4. **Loading**: The bundled XML is loaded from the global script (`global/global_script.ttslua`, via the `.tts/objects/Global.lua` stub) via `UI.setXml()` where applicable
 
 ### Workflow
 
@@ -85,7 +85,7 @@ UI positioning uses a **conceptual 3 columns × 4 rows grid** (no physical `Grid
 - Paths in `<Include>` are resolved from the workspace directory
 - Visibility: `Host|Black` for Storyteller, `Red`/`Brown`/etc. for players
 - Button onClick handlers must be global functions (e.g. `HUD_changeScene`)
-- UI element IDs must match handler expectations in `Global.lua`
+- UI element IDs must match handler expectations in `global/global_script.ttslua`
 - Admin panel ID: `adminControls` (Heritage admin button column + debug panels)
 - Sidebar panel ID: `hudSidebarHost` (reference image toggles)
 - Camera panel ID: `cameraControlPanel` (camera zoom buttons + faction icons)

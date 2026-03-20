@@ -1,3 +1,4 @@
+---@diagnostic disable
 local S = require("kingsdilemma.core.state")
 local U = require("lib.utilities")
 local V = require("kingsdilemma.core.voting")

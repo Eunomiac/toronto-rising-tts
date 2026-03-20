@@ -1,3 +1,4 @@
+---@diagnostic disable
 -- #region IMPORTS ~
 local U = require("lib.utilities")
 local C = require("kingsdilemma.lib.constants")

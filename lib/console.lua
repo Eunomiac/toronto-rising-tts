@@ -1,4 +1,4 @@
----@diagnostic disable: deprecated
+---@diagnostic disable
 require("lib.Console.console++")
 
 -- function prototype

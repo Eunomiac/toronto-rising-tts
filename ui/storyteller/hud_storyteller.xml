@@ -48,4 +48,6 @@
   <!-- ================================================================ -->
   <Include src="panel_camera" />
 
+  <Include src="panel_storyteller_toolbar" />
+
 </Panel>

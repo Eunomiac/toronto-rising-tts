@@ -1,0 +1,40 @@
+<!-- Storyteller bottom-right tool bar + pop-out panels (Host|Black) -->
+<Panel id="storytellerToolbarRoot" visibility="Host|Black" rectAlignment="LowerRight" offsetXY="-10 200" width="430" height="380">
+  <VerticalLayout spacing="4" childAlignment="LowerRight">
+    <HorizontalLayout spacing="3" childAlignment="MiddleRight" height="36">
+      <Button id="toggle_lighting" text="Light" minWidth="56" fontSize="10"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+        onClick="HUD_selectStorytellerPanel" />
+      <Button id="toggle_scenes" text="Scenes" minWidth="56" fontSize="10"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+        onClick="HUD_selectStorytellerPanel" />
+      <Button id="toggle_pcs" text="PCs" minWidth="56" fontSize="10"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+        onClick="HUD_selectStorytellerPanel" />
+      <Button id="toggle_phases" text="Phases" minWidth="56" fontSize="10"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+        onClick="HUD_selectStorytellerPanel" />
+      <Button id="toggle_npcs" text="NPCs" minWidth="56" fontSize="10"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+        onClick="HUD_selectStorytellerPanel" />
+    </HorizontalLayout>
+    <!-- padding: Panel acts as layout group (TTS Layout/Grouping). Inner VL uses flexibleHeight so children get real vertical space. -->
+    <Panel id="storytellerContentArea" active="false" width="410" height="310" padding="0 0 0 0" color="rgba(0.06,0.06,0.08,0.94)">
+      <VerticalLayout padding="8" spacing="4" flexibleHeight="1" childForceExpandHeight="true" childForceExpandWidth="true">
+        <Panel id="panel_lighting" active="false">
+          <Text fontSize="11" color="#AAAAAA">Lighting: use Light Debug panel / scene tools.</Text>
+        </Panel>
+        <Panel id="panel_scenes" active="false">
+          <Text fontSize="11" color="#AAAAAA">Scenes: TBD.</Text>
+        </Panel>
+        <Panel id="panel_pcs" active="false">
+          <Text fontSize="11" color="#AAAAAA">PCs: TBD.</Text>
+        </Panel>
+        <Panel id="panel_phases" active="false">
+          <Text fontSize="11" color="#AAAAAA">Phases: TBD.</Text>
+        </Panel>
+        <Include src="panel_npcs" />
+      </VerticalLayout>
+    </Panel>
+  </VerticalLayout>
+</Panel>

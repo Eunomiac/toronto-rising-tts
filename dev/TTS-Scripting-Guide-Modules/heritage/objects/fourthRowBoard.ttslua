@@ -1,3 +1,4 @@
+---@diagnostic disable
 local F = require("core.fourthRow")
 
 function BOARD_Lock() F.lockBoard(self) end

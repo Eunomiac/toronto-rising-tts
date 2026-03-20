@@ -1,3 +1,4 @@
+---@diagnostic disable
 local C = require("kingsdilemma.lib.constants")
 local S = require("kingsdilemma.core.state")
 local U = require("lib.utilities")

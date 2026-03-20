@@ -1,0 +1,190 @@
+--[[
+    Static NPC layout and character definitions for core/npcs.ttslua.
+    Replace image URLs with your uploaded workshop / cloud assets before play.
+]]
+
+local D = {}
+
+D.lights = {
+  off = {
+    enabled = false,
+    color = Color(1, 1, 1),
+    range = 10,
+    intensity = 0,
+    angle = 0,
+    lookAtYShift = 0.6,
+    positionYShift = 0.2,
+    distance = -20,
+  },
+  standard = {
+    enabled = true,
+    color = Color(1, 1, 1),
+    range = 10,
+    intensity = 3,
+    angle = 40,
+    lookAtYShift = 0.1,
+    positionYShift = 0.4,
+    distance = -15,
+  },
+  spotlight = {
+    enabled = true,
+    color = Color(1, 1, 1),
+    range = 10,
+    intensity = 8,
+    angle = 35,
+    lookAtYShift = 0.2,
+    positionYShift = 0.3,
+    distance = -15,
+  },
+}
+
+D.areas = {
+  centerForward = {
+    rotation = 0,
+    distance = 100,
+    groundLevel = -40,
+    positions = {
+      { x = 0,   z = 0 },
+      { x = 25,  z = 5 },
+      { x = -25, z = 5 },
+      { x = 50,  z = 10 },
+      { x = -50, z = 10 },
+      { x = 75,  z = 15 },
+      { x = -75, z = 15 },
+    },
+  },
+  nearLeft = {
+    rotation = 80,
+    distance = 80,
+    groundLevel = -40,
+    positions = {
+      { x = 0,   z = 0 },
+      { x = 25,  z = 5 },
+      { x = -25, z = 5 },
+      { x = 50,  z = 10 },
+      { x = -50, z = 10 },
+      { x = 75,  z = 15 },
+      { x = -75, z = 15 },
+    },
+  },
+  farLeft = {
+    rotation = 70,
+    distance = 180,
+    groundLevel = 0,
+    positions = {
+      { x = 0,   z = 0 },
+      { x = 25,  z = 5 },
+      { x = -25, z = 5 },
+      { x = 50,  z = 10 },
+      { x = -50, z = 10 },
+      { x = 75,  z = 15 },
+      { x = -75, z = 15 },
+    },
+  },
+}
+
+--[[
+    Sample entry: set figurine.images to valid TTS asset URLs before use.
+    Group "demoBand" exists for testing group spawn from the Storyteller NPC panel.
+]]
+D.characters = {
+  adrianVarga = {
+    name = "adrianVarga",
+    fullName = "Adrian Varga",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/9558698844120632238/281007CD62586A43E6D576A71B58BDE9C6AAE057/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/9558698844120632238/281007CD62586A43E6D576A71B58BDE9C6AAE057/",
+      },
+      scale = 53,
+    },
+    groups = {
+      fiveKeys = 2
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  jesseSharp = {
+    name = "jesseSharp",
+    fullName = "Jesse Sharp",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/14927147918263494121/CAD37ABD35D46A52F29BC611CA1B22857710C9AB/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/14927147918263494121/CAD37ABD35D46A52F29BC611CA1B22857710C9AB/",
+      },
+      scale = 50,
+    },
+    groups = {
+      fiveKeys = 3,
+      princesCourt = 9
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  myleneHamelin = {
+    name = "myleneHamelin",
+    fullName = "Mylene Hamelin",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/9819170352074723454/BBB6F488873DB783562A8E4E7E9319CE7272BE28/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/9819170352074723454/BBB6F488873DB783562A8E4E7E9319CE7272BE28/",
+      },
+      scale = 47,
+    },
+    groups = {
+      fiveKeys = 1,
+      princesCourt = 6
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  stirlingSiskin = {
+    name = "stirlingSiskin",
+    fullName = "Stirling Siskin",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/12159357351469150128/E14F3F92C365D9432683266DCE79A1275A83133D/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/12159357351469150128/E14F3F92C365D9432683266DCE79A1275A83133D/",
+      },
+      scale = 57,
+    },
+    groups = {
+      fiveKeys = 4,
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  zuriOluwusi = {
+    name = "zuriOluwusi",
+    fullName = "Zuri Oluwusi",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/15250094509673807186/A95E9AEDD510B5A16008744BB11E22B253262C54/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/15250094509673807186/A95E9AEDD510B5A16008744BB11E22B253262C54/",
+      },
+      scale = 53,
+    },
+    groups = {
+      fiveKeys = 5
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+}
+
+return D
