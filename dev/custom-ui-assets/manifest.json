@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-03-19T06:59:58.263Z",
+  "generatedAt": "2026-03-22T12:05:54.534Z",
   "inputDirectory": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Map Panel\\Map Overlays",
-  "count": 36,
+  "count": 37,
   "assets": [
     {
       "name": "mapOverlay_Annex",
@@ -92,6 +92,11 @@
       "name": "mapOverlay_Humewood",
       "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Map Panel\\Map Overlays\\mapOverlay_Humewood.webp",
       "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Map Panel/Map Overlays/mapOverlay_Humewood.webp"
+    },
+    {
+      "name": "mapOverlay_LakeOntario",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Map Panel\\Map Overlays\\mapOverlay_LakeOntario.webp",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Map Panel/Map Overlays/mapOverlay_LakeOntario.webp"
     },
     {
       "name": "mapOverlay_LibertyVillage",

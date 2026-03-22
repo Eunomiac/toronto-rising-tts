@@ -20,6 +20,7 @@ local M = {
     { name = "mapOverlay_GayVillage", fileUrl = "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Map Panel/Map Overlays/mapOverlay_GayVillage.webp" },
     { name = "mapOverlay_HarbordVillage", fileUrl = "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Map Panel/Map Overlays/mapOverlay_HarbordVillage.webp" },
     { name = "mapOverlay_Humewood", fileUrl = "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Map Panel/Map Overlays/mapOverlay_Humewood.webp" },
+    { name = "mapOverlay_LakeOntario", fileUrl = "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Map Panel/Map Overlays/mapOverlay_LakeOntario.webp" },
     { name = "mapOverlay_LibertyVillage", fileUrl = "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Map Panel/Map Overlays/mapOverlay_LibertyVillage.webp" },
     { name = "mapOverlay_LittleItaly", fileUrl = "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Map Panel/Map Overlays/mapOverlay_LittleItaly.webp" },
     { name = "mapOverlay_LittlePortugal", fileUrl = "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Map Panel/Map Overlays/mapOverlay_LittlePortugal.webp" },

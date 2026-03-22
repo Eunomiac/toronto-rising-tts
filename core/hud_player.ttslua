@@ -729,7 +729,7 @@ function HUDP.updatePlayerUI(player, color)
         -- Main map overlay image
         setTintVisibility("playerHud_mapOverlay_" .. overlayKey .. "_" .. seatColor, showOverlayImage)
 
-        -- Overlay toggle highlight layers
+        -- Overlay toggle hover/active: keep `active="true"`, hide via `color="clear"` (setTintVisibility).
         local showHoverLayer = showMap and (hoverOverlayKey == overlayKey) and (not overlayOn)
         setTintVisibility("playerHud_mapOverlayToggle_" .. overlayKey .. "_" .. seatColor .. "_hover", showHoverLayer)
 
