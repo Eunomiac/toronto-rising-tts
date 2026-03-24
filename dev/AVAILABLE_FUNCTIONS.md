@@ -91,6 +91,12 @@
 | `U.roundTableVals(tb, sigDigits)` | Round all numeric values in table | Clean data |
 | `U.randBetween(min, max, isInt)` | Random number in range | Dice-like rolls |
 | `U.cycle(val, min, max)` | Wrap value within range | Circular increments |
+| `U.rotateAroundPoint(center, radius, angle, y)` | Calculate position rotated around center | Position objects in circle |
+| `U.XYZToCylindrical(pos, center)` | Convert XYZ to cylindrical coords | Get angle/radius from position |
+| `U.XYZToSpherical(pos, center)` | Convert XYZ to spherical coords | 3D angle calculations |
+| `U.Distance(pos1, pos2)` | 3D distance between points | Object proximity |
+| `U.HorizontalDistance(pos1, pos2)` | Distance in XZ plane only | Table-top distance |
+| `U.RotateToFrom(frameRefs, toAngle, fromAngle, origin)` | Rotate objects/frames in cylindrical coords | Rotate objects around point |
 
 ### 1.4 Object & Physics Utilities
 

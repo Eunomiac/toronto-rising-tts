@@ -182,6 +182,199 @@ function U.XYZToSpherical(pos, center, centerYaw, centerPitch)
 	return {radius = radius, angle = angle, angle2 = angle2}
 end
 
+--- Rotates objects or frames around a center point in cylindrical coordinates
+-- This versatile function facilitates determining and applying positions and orientations
+-- in cylindrical coordinates. It can rotate single objects or groups of objects as rigid bodies.
+-- @param frameRefs FrameRef|FrameRef[] Single FrameRef or array of FrameRefs where:
+--   - FrameRef is either a Frame or an ObjectRef from which a Frame can be derived
+--   - Frame is a table with position (Vector) and optional rotation (Vector, defaults to {0,0,0})
+--   - ObjectRef can be a string (GUID), table with guid field, or GameObject
+--   - Any ObjectRef will have its position/rotation updated in the game world
+-- @param toAngleRef AngleRef Target angle reference where:
+--   - AngleRef is either an AngleXZ (number in degrees) or a FrameRef
+--   - If FrameRef, the angle is calculated from origin to the FrameRef's position
+--   - If fromAngleRef is provided and toAngleRef is a FrameRef, it's treated as relative
+-- @param fromAngleRef AngleRef Optional source angle reference:
+--   - If provided, rotation goes from this angle to toAngleRef
+--   - If omitted, uses current position's angle from origin
+-- @param originRef Vector Optional origin point (defaults to {0,0,0})
+-- @return Frame|Frame[] Single Frame or array of Frames after rotation
+-- @usage -- Rotate object to face 90 degrees (east)
+-- @usage local result = U.RotateToFrom(obj, 90)
+-- @usage -- Rotate multiple objects as a group 180 degrees
+-- @usage local results = U.RotateToFrom({obj1, obj2, obj3}, 180)
+-- @usage -- Rotate from 45 to 270 degrees around custom origin
+-- @usage local result = U.RotateToFrom(frame, 270, 45, Vector(5, 0, 5))
+function U.RotateToFrom(frameRefs, toAngleRef, fromAngleRef, originRef)
+    -- Validate required parameters
+    U.Val("U.RotateToFrom", {frameRefs = frameRefs}, frameRefs ~= nil, "frameRefs parameter is required")
+    U.Val("U.RotateToFrom", {toAngleRef = toAngleRef}, toAngleRef ~= nil, "toAngleRef parameter is required")
+    
+    -- Set default origin if not provided
+    local origin = originRef and Vector(originRef) or Vector(0, 0, 0)
+    
+    -- Helper function to get a Frame from a FrameRef
+    local function getFrame(frameRef)
+        -- If it's already a Frame (table with position field)
+        if U.Type(frameRef) == "table" and frameRef.position then
+            local frame = {
+                position = Vector(frameRef.position),
+                rotation = frameRef.rotation and Vector(frameRef.rotation) or Vector(0, 0, 0)
+            }
+            return frame
+        end
+        
+        -- If it's an ObjectRef, get the object and extract its Frame
+        local obj = U.getObject(frameRef, true)  -- Silent mode
+        if obj then
+            return {
+                position = obj.getPosition(),
+                rotation = obj.getRotation()
+            }
+        end
+        
+        -- Invalid FrameRef
+        U.error("U.RotateToFrom.getFrame", "Invalid FrameRef - must be a Frame table or valid ObjectRef", frameRef)
+        return nil
+    end
+    
+    -- Helper function to derive an AngleXZ from an AngleRef
+    local function getAngleXZ(angleRef)
+        -- If it's already a number, return it
+        if U.Type(angleRef) == "number" then
+            return angleRef
+        end
+        
+        -- If it's a FrameRef, calculate the angle from origin to position
+        local frame = getFrame(angleRef)
+        if frame then
+            local cylindrical = U.XYZToCylindrical(frame.position, origin)
+            return cylindrical.angle
+        end
+        
+        U.error("U.RotateToFrom.getAngleXZ", "Invalid AngleRef - must be a number or valid FrameRef", angleRef)
+        return 0
+    end
+    
+    -- Helper function to calculate the angle delta with proper handling
+    local function calculateAngleDelta(fromAngle, toAngle)
+        -- Calculate the shortest path delta
+        local delta = toAngle - fromAngle
+        
+        -- Adjust for shortest path (-180 to 180)
+        while delta > 180 do delta = delta - 360 end
+        while delta < -180 do delta = delta + 360 end
+        
+        return delta
+    end
+    
+    -- Helper function for cylindrical to XYZ conversion
+    local function cylindricalToXYZ(cylindrical, center)
+        center = Vector(center)
+        local angleRad = math.rad(cylindrical.angle)
+        return Vector(
+            center.x + cylindrical.radius * math.sin(angleRad),
+            center.y + cylindrical.height,
+            center.z + cylindrical.radius * math.cos(angleRad)
+        )
+    end
+    
+    -- Determine if we're working with a single FrameRef or an array
+    local isSingleFrame = U.Type(frameRefs) ~= "table" or frameRefs.position ~= nil or U.Type(frameRefs) == "string" or U.isGameObject(frameRefs)
+    
+    -- Convert single FrameRef to array for uniform processing
+    local frameRefArray = isSingleFrame and {frameRefs} or frameRefs
+    
+    -- Process each FrameRef to get current frames and calculate center of mass for groups
+    local frames = {}
+    local centerOfMass = Vector(0, 0, 0)
+    local totalFrames = 0
+    
+    for i, frameRef in ipairs(frameRefArray) do
+        local frame = getFrame(frameRef)
+        if frame then
+            frames[i] = {
+                ref = frameRef,
+                frame = frame,
+                object = U.getObject(frameRef, true)  -- Try to get object if it's an ObjectRef
+            }
+            centerOfMass = centerOfMass + frame.position
+            totalFrames = totalFrames + 1
+        end
+    end
+    
+    -- Calculate center of mass for group rotation
+    if totalFrames > 0 then
+        centerOfMass = centerOfMass / totalFrames
+    end
+    
+    -- For groups, use center of mass to determine angles; for single objects, use their position
+    local angleCalculationPoint = isSingleFrame and frames[1].frame.position or centerOfMass
+    
+    -- Calculate the target angle
+    local toAngle = getAngleXZ(toAngleRef)
+    
+    -- Calculate the source angle
+    local fromAngle
+    if fromAngleRef then
+        fromAngle = getAngleXZ(fromAngleRef)
+    else
+        -- If no fromAngle provided, calculate from current position
+        local cylindrical = U.XYZToCylindrical(angleCalculationPoint, origin)
+        fromAngle = cylindrical.angle
+    end
+    
+    -- If fromAngleRef was provided and toAngleRef is a FrameRef, treat toAngle as relative
+    if fromAngleRef and (U.Type(toAngleRef) ~= "number") then
+        -- toAngle is relative to fromAngle
+        toAngle = fromAngle + toAngle
+    end
+    
+    -- Calculate the rotation delta
+    local angleDelta = calculateAngleDelta(fromAngle, toAngle)
+    
+    -- Process each frame
+    local resultFrames = {}
+    
+    for i, frameData in ipairs(frames) do
+        local currentFrame = frameData.frame
+        
+        -- Convert current position to cylindrical coordinates
+        local cylindrical = U.XYZToCylindrical(currentFrame.position, origin)
+        
+        -- Apply the rotation
+        cylindrical.angle = cylindrical.angle + angleDelta
+        
+        -- Convert back to XYZ
+        local newPosition = cylindricalToXYZ(cylindrical, origin)
+        
+        -- Calculate new rotation - maintain orientation relative to origin
+        -- The object should rotate by the same angle delta on the Y axis
+        local newRotation = Vector(
+            currentFrame.rotation.x,
+            currentFrame.rotation.y + angleDelta,
+            currentFrame.rotation.z
+        )
+        
+        -- Create the new frame
+        local newFrame = {
+            position = newPosition,
+            rotation = newRotation
+        }
+        
+        -- Apply to object if it exists
+        if frameData.object then
+            frameData.object.setPositionSmooth(newPosition, false, false)
+            frameData.object.setRotationSmooth(newRotation, false, false)
+        end
+        
+        resultFrames[i] = newFrame
+    end
+    
+    -- Return single Frame or array based on input
+    return isSingleFrame and resultFrames[1] or resultFrames
+end
+
 --- Calculates the 3D distance between two points
 -- Calculates the Euclidean distance in 3D space (includes X, Y, and Z components)
 -- @param pos1 Vector|table First position {x, y, z}
