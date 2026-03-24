@@ -1508,10 +1508,10 @@ function NPCS.refreshStorytellerUI()
         end)
     end
 
-    -- TTS applies setXml asynchronously (UI.loading). Re-select NPC tab after load so visibility matches merged XML.
+    -- TTS applies setXml asynchronously (UI.loading). Re-apply NPC tab visibility after load (forceOpen: avoid toggle-close on same tab).
     Wait.condition(function()
         pcall(function()
-            UIH.selectStorytellerPanel("npcs")
+            UIH.selectStorytellerPanel("npcs", true)
         end)
         pcall(function()
             NPCS.syncAdminNpcPanelXmlDumpButton()
