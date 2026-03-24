@@ -187,12 +187,15 @@ local TOGGLE_COLORS_ACTIVE = "#B8860B|#FFD700|#FFA500|#B8860B"
 --- Selects a storyteller panel (mutually exclusive: only one open at a time).
 -- Shows the content area, hides all panels, shows the selected one, and updates toggle button highlight.
 -- Clicking the same top button again hides the content area (all toggles inactive), so the panel can be dismissed without switching tabs.
+-- When `forceOpen` is true, the same-tab collapse is skipped (e.g. after `UI.setXml` when the NPC panel was already open).
 -- Mirrors the admin arrow-toggle pattern: content pops out when a button is clicked.
 --
 -- @param panelKey string One of: "lighting", "scenes", "pcs", "phases", "npcs"
+-- @param forceOpen boolean|nil If true, always apply the open-panel branch (no toggle-close).
 --
 -- @usage UIHelpers.selectStorytellerPanel("lighting")
-function UIHelpers.selectStorytellerPanel(panelKey)
+-- @usage UIHelpers.selectStorytellerPanel("npcs", true)
+function UIHelpers.selectStorytellerPanel(panelKey, forceOpen)
     if type(panelKey) ~= "string" then
         error("UIHelpers.selectStorytellerPanel: panelKey must be a string", 2)
     end
@@ -203,7 +206,7 @@ function UIHelpers.selectStorytellerPanel(panelKey)
     end
 
     -- Re-click active tab: collapse pop-out (no other control closed it before).
-    if storytellerUiElementIsActive(STORYTELLER_CONTENT_AREA_ID) and storytellerUiElementIsActive(selected.panel) then
+    if forceOpen ~= true and storytellerUiElementIsActive(STORYTELLER_CONTENT_AREA_ID) and storytellerUiElementIsActive(selected.panel) then
         UI.setAttribute(STORYTELLER_CONTENT_AREA_ID, "active", "false")
         for _, ids in pairs(STORYTELLER_PANELS) do
             UI.setAttribute(ids.panel, "active", "false")
