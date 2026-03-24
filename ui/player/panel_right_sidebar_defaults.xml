@@ -3,17 +3,14 @@
   <VerticalLayout flexibleWidth="0" flexibleHeight="0" spacing="0" childForceExpandWidth="false" childForceExpandHeight="false" />
   <HorizontalLayout flexibleWidth="0" flexibleHeight="0" spacing="0" />
 
+  <!-- Right sidebar column: matches map hover stacks; gold borders are 150×50 (hud_map_toggleBorder from map defaults). -->
   <Panel class="playerHud_rightSidebar"
     rectAlignment="UpperRight"
-    height="650"
+    height="750"
     width="175"
     offsetXY="0 -100"
     padding="0 0 0 0"
   />
-  <VerticalLayout class="playerHud_sidebarLayout" rectAlignment="UpperRight" active="true" ignoreLayout="true" preferredWidth="175" childForceExpandHeight="false" childForceExpandWidth="false" flexibleWidth="0" childAlignment="UpperRight" spacing="0" />
-  <Image rectAlignment="UpperRight" preferredHeight="30" flexibleWidth="0" flexibleHeight="0" preserveAspect="true" />
-  <Image class="imageBorder" preferredWidth="135" />
-  <Image class="long_active" preferredWidth="200" minWidth="200" />
 
   <Panel class="playerHud_coreLayer"
     rectAlignment="MiddleCenter"
@@ -44,4 +41,60 @@
     childAlignment="MiddleCenter"
     flexibleHeight="0"
     flexibleWidth="0" />
+
+  <!-- Sidebar toggle rows: 30px tall; 175px row for sheet/map/princes/coteries active art, 150px for the rest. -->
+  <Image class="RSidebar_btn_base_wide"
+    preferredHeight="30"
+    preferredWidth="175"
+    flexibleHeight="0"
+    flexibleWidth="0"
+    preserveAspect="true"
+    raycastTarget="true"
+    type="Simple"
+  />
+  <Image class="RSidebar_btn_base_narrow"
+    preferredHeight="30"
+    preferredWidth="150"
+    flexibleHeight="0"
+    flexibleWidth="0"
+    preserveAspect="true"
+    raycastTarget="true"
+    type="Simple"
+  />
+  <Image class="RSidebar_btn_hover_wide"
+    preferredHeight="30"
+    preferredWidth="175"
+    flexibleHeight="0"
+    flexibleWidth="0"
+    preserveAspect="true"
+    raycastTarget="false"
+    color="clear"
+  />
+  <Image class="RSidebar_btn_hover_narrow"
+    preferredHeight="30"
+    preferredWidth="150"
+    flexibleHeight="0"
+    flexibleWidth="0"
+    preserveAspect="true"
+    raycastTarget="false"
+    color="clear"
+  />
+  <Image class="RSidebar_btn_active_wide"
+    preferredHeight="30"
+    preferredWidth="175"
+    flexibleHeight="0"
+    flexibleWidth="0"
+    preserveAspect="true"
+    raycastTarget="false"
+    color="clear"
+  />
+  <Image class="RSidebar_btn_active_narrow"
+    preferredHeight="30"
+    preferredWidth="150"
+    flexibleHeight="0"
+    flexibleWidth="0"
+    preserveAspect="true"
+    raycastTarget="false"
+    color="clear"
+  />
 </Defaults>

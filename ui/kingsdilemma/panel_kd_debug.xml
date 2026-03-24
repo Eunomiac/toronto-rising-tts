@@ -1,7 +1,7 @@
-<!-- KD Debug Panel (Host|Black) -->
+<!-- KD Debug Panel (Black) -->
 <!-- Debug buttons and state display panel -->
 
-<HorizontalLayout class="kd_buttonPanel kd_debugButtonPanel" visibility="Host|Black">
+<HorizontalLayout class="kd_buttonPanel kd_debugButtonPanel" visibility="Black">
   <Button id="kd_toggleElem_kd_debugControls" class="kd_button kd_buttonPanelToggle">&#9658;</Button>
   <VerticalLayout id="kd_debugControls" class="kd_buttonBar" active="False">
     <Button id="kd_debug_logState" class="kd_button">Log State</Button>
@@ -24,7 +24,7 @@
   </VerticalLayout>
 </HorizontalLayout>
 
-<HorizontalLayout class="kd_debugDisplayPanel" visibility="Host|Black">
+<HorizontalLayout class="kd_debugDisplayPanel" visibility="Black">
   <Button id="kd_toggleElem_kd_stateDisplayPanel" class="kd_button kd_buttonPanelToggle">&#9658;</Button>
   <Panel id="kd_stateDisplayPanel" class="kd_codeDisplayPanel" active="False">
     <Text id="kd_stateDisplay" class="kd_codeDisplay"></Text>

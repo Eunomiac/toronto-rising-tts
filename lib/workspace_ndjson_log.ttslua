@@ -1,0 +1,74 @@
+--[[
+    Append NDJSON lines to a workspace file via TTS Tools sendExternalMessage (same transport as DEBUG.writeWorkspaceFile).
+    In-memory buffer per path; each append rewrites the full file (TTS has no native append).
+]]
+
+local U = require("lib.util")
+
+local M = {}
+
+--- @type table<string, string[]>
+local buffers = {}
+
+--- Clear buffer and optionally truncate the workspace file (call once per debug run).
+--- @param relativePath string
+function M.beginSession(relativePath)
+    if U.Type(relativePath) ~= "string" or relativePath == "" then
+        return
+    end
+    buffers[relativePath] = {}
+    ---@diagnostic disable-next-line: undefined-global
+    if sendExternalMessage then
+        ---@diagnostic disable-next-line: undefined-global
+        sendExternalMessage({
+            type = "write",
+            content = "",
+            name = relativePath,
+            format = "none",
+        })
+    end
+end
+
+--- Append one NDJSON object (rewrites file with full buffer).
+--- @param relativePath string
+--- @param payload table
+function M.append(relativePath, payload)
+    if U.Type(relativePath) ~= "string" or relativePath == "" then
+        return
+    end
+    if U.Type(payload) ~= "table" then
+        payload = { message = tostring(payload) }
+    end
+    if payload.sessionId == nil then
+        payload.sessionId = "workspace"
+    end
+    payload.timestamp = (os and os.time) and os.time() or 0
+    local jsonPart
+    if JSON and U.Type(JSON.encode) == "function" then
+        jsonPart = JSON.encode(payload)
+    else
+        jsonPart = tostring(payload.message or "log")
+    end
+    -- Human-skimmable prefix; next line is machine JSON (NDJSON-friendly two-line record).
+    local head = string.format(
+        "-- [%s] %s | %s\n",
+        tostring(payload.hypothesisId or "-"),
+        tostring(payload.location or "-"),
+        tostring(payload.message or "-")
+    )
+    local line = head .. jsonPart
+    buffers[relativePath] = buffers[relativePath] or {}
+    table.insert(buffers[relativePath], line)
+    ---@diagnostic disable-next-line: undefined-global
+    if sendExternalMessage then
+        ---@diagnostic disable-next-line: undefined-global
+        sendExternalMessage({
+            type = "write",
+            content = table.concat(buffers[relativePath], "\n"),
+            name = relativePath,
+            format = "none",
+        })
+    end
+end
+
+return M

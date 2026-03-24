@@ -1,120 +1,152 @@
-<!-- Player HUD CorePanel_Map defaults -->
+<!-- Player HUD CorePanel_Map defaults (map layout + toggle stacks + draggable viewport) -->
 
 <Defaults>
-  <!-- ===================== Map stacking layers ===================== -->
-  <!-- Overlays/district overlays/district cards should stack exactly. -->
-  <Image class="mapStackLayer"
-    rectAlignment="MiddleCenter"
-    width="900"
-    flexibleWidth="0"
-    preserveAspect="true"
-    raycastTarget="false"
-    active="false"/>
-
-  <!-- District card stack layers (top-left aligned in their container). -->
-  <Image class="mapCardLayer"
-    rectAlignment="UpperLeft"
-    raycastTarget="false"
-    active="false"/>
-
-  <!-- Map base image should always be visible while the core panel is active. -->
-  <Image class="mapStackBase"
-    rectAlignment="MiddleCenter"
-    width="2400"
-    flexibleWidth="0"
-    preserveAspect="true"
-    raycastTarget="false"
-    active="true" />
-
-  <!-- ===================== Toggle button layers ===================== -->
-  <!-- Base images own the raycast target and wire to handlers. -->
-  <Image class="mapOverlayToggle_base"
-    raycastTarget="true"
-    onMouseDown="HUD_playerMap_overlayToggle_mouseDown"
-    onMouseEnter="HUD_playerMap_overlayToggle_hoverOn"
-    onMouseExit="HUD_playerMap_overlayToggle_hoverOff" />
-
-  <Image class="mapDistrictToggle_base"
-    raycastTarget="true"
-    onMouseDown="HUD_playerMap_districtToggle_mouseDown"
-    onMouseEnter="HUD_playerMap_districtToggle_hoverOn"
-    onMouseExit="HUD_playerMap_districtToggle_hoverOff" />
-
-  <!-- Hover/active button layers: keep them in layout space, toggle visibility via `color`. -->
-  <Image class="mapToggleOverlayLayer"
-    raycastTarget="false"
-    active="false"
-    color="clear" />
-
-  <!-- ===================== Layout defaults ===================== -->
-    <!-- <Panel flexibleWidth="0" flexibleHeight="0" rectAlignment="MiddleCenter" width="100%" height="100%" />
-  <VerticalLayout flexibleWidth="0" flexibleHeight="0" spacing="0" childForceExpandWidth="false" childForceExpandHeight="false" />
-  <HorizontalLayout flexibleWidth="0" flexibleHeight="0" spacing="0" /> -->
-
+  <!-- Core map root layer (visibility per seat color on the generated panel id). -->
   <Panel class="playerHud_coreLayer"
     rectAlignment="LeftCenter"
     width="100%"
     height="200%"
     offsetXY="0 0"
-    active="false" />
+    active="false"
+  />
 
-  <HorizontalLayout class="mapPanel_layout"
-    spacing="0"
-    rectAlignment="UpperRight"
-    childAlignment="UpperCenter"
+  <HorizontalLayout class="hud_map_parent_container"
+    childForceExpandWidth="false"
+    childForceExpandHeight="true"
+    width="1700"
+    height="1000"
+    childAlignment="MiddleRight"
+    rectAlignment="MiddleLeft"
     offsetXY="0 0"
-    color="rgba(0,255,0,0.15)"
-    childForceExpandWidth="false"
+  />
+
+  <Panel class="hover_button_panel_container"
+    flexibleWidth="0"
     childForceExpandHeight="false"
-    flexibleWidth="0.2"
-    width="80%"
-    height="200%"
-    preferredWidth="0"
-    preferredHeight="2000" />
-  <Panel class="mapPanel_overlayToggles"
-    spacing="0"
     childAlignment="UpperCenter"
-    childForceExpandWidth="false"
-    childForceExpandHeight="false"
-    preferredHeight="500"
+  />
+
+  <VerticalLayout class="hover_button_panel"
+    height="150"
+    width="150"
+  />
+
+  <Image class="hud_map_toggleBorder"
+    preferredHeight="50"
     preferredWidth="150"
     flexibleHeight="0"
-    flexibleWidth="0" />
+    flexibleWidth="0"
+    preserveAspect="false"
+    padding="0 0 0 0"
+    raycastTarget="false"
+  />
 
-  <VerticalLayout class="mapPanel_overlayToggles"
-    spacing="0"
-    childForceExpandWidth="false"
-    childForceExpandHeight="false"
-    preferredHeight="500"
+  <Image class="hud_map_toggleBorderSilver"
+    preferredHeight="50"
     preferredWidth="150"
     flexibleHeight="0"
-    flexibleWidth="0" />
+    flexibleWidth="0"
+    preserveAspect="false"
+    padding="0 0 0 0"
+    raycastTarget="false"
+  />
 
-  <!-- Fixed-size viewport (constant window). -->
-  <Panel class="mapPanel_viewport"
-    rectAlignment="MiddleCenter"
+  <Image class="hover_button"
+    preferredHeight="25"
+    preferredWidth="150"
     flexibleHeight="0"
     flexibleWidth="0"
-    height="200%"
-    preferredHeight="1200"
-    preferredWidth="900"
-    childForceExpandWidth="true"
-    childForceExpandHeight="true" />
+  />
 
-  <!-- Draggable content panel (larger than the viewport). -->
-  <Panel class="mapPanel_draggable"
-    rectAlignment="MiddleCenter"
-    preferredHeight="100%"
-    preferredWidth="600"
+  <Image class="hover_button_thin"
+    preferredHeight="20"
+    preferredWidth="175"
     flexibleHeight="0"
     flexibleWidth="0"
-    offsetXY="0 0"
+  />
+
+  <Image class="hover_button_base"
+    raycastTarget="true"
+    type="Simple"
+  />
+
+  <Image class="hover_button_hover"
+    raycastTarget="false"
+    color="clear"
+  />
+
+  <Image class="hover_button_active"
+    raycastTarget="false"
+    color="clear"
+  />
+
+  <Image class="hover_button_base_overlay"
+    onMouseDown="HUD_playerMap_overlayToggle_mouseDown"
+    onMouseEnter="HUD_playerMap_overlayToggle_hoverOn"
+    onMouseExit="HUD_playerMap_overlayToggle_hoverOff"
+  />
+
+  <Image class="hover_button_base_district"
+    raycastTarget="true"
+    onMouseDown="HUD_playerMap_districtToggle_mouseDown"
+    onMouseEnter="HUD_playerMap_districtToggle_hoverOn"
+    onMouseExit="HUD_playerMap_districtToggle_hoverOff"
+  />
+
+  <Panel class="hud_map_center_container"
+    preferredWidth="1900"
+    flexibleWidth="0"
+    minHeight="2500"
+    rectAlignment="MiddleCenter"
+    preferredHeight="2500"
+    offsetXY="0 -500"
+    flexibleHeight="0"
+  />
+
+  <Panel class="hud_map_draggable_container"
     allowDragging="true"
+    restrictDraggingToParentBounds="true"
+    raycastTarget="true"
     onBeginDrag="HUD_playerMap_dragBegin"
     onEndDrag="HUD_playerMap_dragEnd"
     returnToOriginalPositionWhenReleased="false"
-    restrictDraggingToParentBounds="false" />
+  />
 
+  <Image class="hud_map_image"
+    height="2000"
+    preserveAspect="true"
+    rectAlignment="MiddleCenter"
+  />
+
+  <Image class="hud_map_image_base"
+    raycastTarget="false"
+  />
+
+  <!-- Lua uses setTintVisibility (color #FFFFFF vs clear); keep active true so tint applies. -->
+  <Image class="hud_map_image_overlay"
+    raycastTarget="false"
+    active="true"
+    color="clear"
+    rectAlignment="MiddleCenter"
+  />
+
+  <Panel class="hud_map_district_card_container"
+    rectAlignment="LowerLeft"
+    offsetXY="50 50"
+    width="600"
+    height="400"
+  />
+
+  <Image class="hud_map_district_card"
+    width="600"
+    preserveAspect="true"
+    raycastTarget="false"
+    active="true"
+    color="clear"
+    rectAlignment="UpperLeft"
+  />
+
+  <!-- Recenter: fixed in viewport; sibling of draggable map stack. -->
   <Panel class="mapPanel_recenterButton"
     rectAlignment="UpperLeft"
     height="50"
@@ -124,37 +156,14 @@
     flexibleHeight="0"
     flexibleWidth="0"
     offsetXY="40 -40"
-    color="rgba(255,0,0,1)"
-    active="false" />
+    ignoreLayout="true"
+  />
 
-  <VerticalLayout class="mapPanel_districtColumn"
-    spacing="0"
-    childAlignment="UpperCenter"
-    childForceExpandWidth="false"
-    childForceExpandHeight="false" />
-
-  <VerticalLayout class="mapPanel_districtToggles"
-    spacing="0"
-    childAlignment="UpperCenter"
-    preferredWidth="150"
-    flexibleHeight="0"
-    flexibleWidth="0"
-    childForceExpandWidth="false"
-    childForceExpandHeight="false"
-    color="rgba(255,0,0,1)"/>
-
-  <Panel class="mapPanel_districtCardContainer"
-    rectAlignment="UpperLeft"
-    flexibleHeight="0"
-    flexibleWidth="0"
-    preferredWidth="300"
-    preferredHeight="200" />
-
-  <!-- Site card placeholder container (yet to implement sites/pins). -->
   <Panel class="mapPanel_siteCardContainer"
     rectAlignment="UpperLeft"
     flexibleHeight="0"
     flexibleWidth="0"
     preferredWidth="300"
-    preferredHeight="200" />
+    preferredHeight="200"
+  />
 </Defaults>

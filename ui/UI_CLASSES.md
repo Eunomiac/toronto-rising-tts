@@ -166,7 +166,7 @@ Pattern for fullscreen reference image popups that are hidden by default and sho
 
 ## Storyteller Area Classes (`hud_storyteller_defaults.xml`)
 
-These classes are scoped to the storyteller/GM HUD (`visibility="Host|Black"`). They use the `storyteller_` prefix to avoid collisions with player or shared UI.
+These classes are scoped to the storyteller/GM HUD (`visibility="Black"`). They use the `storyteller_` prefix to avoid collisions with player or shared UI.
 
 ### Admin Panel Layout
 

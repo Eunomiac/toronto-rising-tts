@@ -1,7 +1,7 @@
-<!-- KD Admin Panel (Host|Black) -->
+<!-- KD Admin Panel (Black) -->
 <!-- Game flow controls: preflight, session init, game status, admin tools -->
 
-<VerticalLayout class="kd_adminContainer" visibility="Host|Black">
+<VerticalLayout class="kd_adminContainer" visibility="Black">
   <HorizontalLayout id="kd_preflightDisplay" class="kd_gameStatusDisplay" active="False">
     <Text class="kd_gameStatusDisplay" color="White">Initialize:</Text>
     <Button id="kd_initPreflight" class="kd_button">Preflight</Button>

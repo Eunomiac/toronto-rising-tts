@@ -1,9 +1,9 @@
 <!-- Sidebar Panel -->
-<!-- Right-side reference image toggles for Host|Black -->
+<!-- Right-side reference image toggles for Black -->
 <!-- Reproduces Heritage hud.xml sidebar: dual-layer buttons (base + overlay) -->
 <!-- Mouse-down shows reference popup, right-click toggles it on -->
 
-<Panel id="hudSidebarHost" class="storyteller_sidebar" visibility="Host|Black">
+<Panel id="hudSidebarHost" class="storyteller_sidebar" visibility="Black">
 
   <!-- ================================================================ -->
   <!-- Base Layer: toggle button images (grey-tinted, clickable)        -->
@@ -203,7 +203,7 @@
 <!-- Reference Image Popups (fullscreen, hidden by default)             -->
 <!-- Shown by HUD_show when sidebar buttons are clicked                 -->
 <!-- ================================================================== -->
-<Panel class="popupImageContainer" visibility="Host|Black">
+<Panel class="popupImageContainer" visibility="Black">
 
   <!-- Rules References -->
   <Image id="RefPlayersHost" height="95%"

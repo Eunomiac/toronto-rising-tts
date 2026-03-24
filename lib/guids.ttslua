@@ -20,8 +20,8 @@ G.GUIDS = {
     MAIN_LIGHT_RIGHT = "13466d",
 
     NPC_LIGHT_MID = "46ab05",
-    -- Template spotlight object to clone for each spawned NPC (same hierarchy as player lights).
-    NPC_LIGHT_CLONE_TEMPLATE = "46ab05",
+    -- Legacy reference only: NPC spotlights are spawned from `lib/npcs_light_spawn_defaults.ttslua`, not clone().
+    NPC_LIGHT_CLONE_TEMPLATE = "4148ba",
 
     LARGE_MAP_LIGHT = "16a7b8",
     PLAYER_LIGHT_BROWN = "f251e0",

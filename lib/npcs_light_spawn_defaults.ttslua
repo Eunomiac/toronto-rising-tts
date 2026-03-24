@@ -1,0 +1,68 @@
+--[[
+    Default TTS ObjectState for NPC spotlights spawned via `spawnObjectData`.
+
+    Source snapshot: `dev/NPC Object Spawning & Spotlighting/NPC Light Object Data.jsonc`
+    When you change the workshop asset or object flags in-game, update that JSONC and mirror edits here.
+
+    Per spawn, `core/npcs.ttslua` deep-clones this table, clears `GUID`, sets `Nickname` / `Tags`, and passes
+    `spawnObjectData({ data = copy, position = ... })` so world position overrides `Transform`.
+
+    `LuaScript` / `LuaScriptState` are empty: paired lights are driven by `core/lighting` + `registerDynamicLightModes`.
+    If you need `object_spotlight_persist` on spawned instances, paste the bundled object script from TTS Tools here
+    and set `LuaScriptState` to match (see the JSONC example).
+]]
+
+local M = {}
+
+--- Save-format table for `spawnObjectData({ data = ... })` (PascalCase keys match `Object.getData()`).
+M.NPC_LIGHT_OBJECT_DATA_DEFAULTS = {
+    GUID = "",
+    Name = "Custom_Assetbundle",
+    Transform = {
+        posX = 0.0,
+        posY = -7.0,
+        posZ = 85.0,
+        rotX = 330.5,
+        rotY = 180.0,
+        rotZ = 180.0,
+        scaleX = 1.0,
+        scaleY = 1.0,
+        scaleZ = 1.0,
+    },
+    Nickname = "",
+    Description = "",
+    GMNotes = "Range: 128\nAngle: 124.7178944\nIntensity: 1.1\nEnabled: true",
+    AltLookAngle = {
+        x = 0.0,
+        y = 0.0,
+        z = 0.0,
+    },
+    ColorDiffuse = { r = 0.76, g = 0.76, b = 0.76 },
+    Tags = { "npc_light" },
+    LayoutGroupSortIndex = 0,
+    Value = 0,
+    Locked = true,
+    Grid = false,
+    Snap = false,
+    IgnoreFoW = false,
+    MeasureMovement = false,
+    DragSelectable = false,
+    Autoraise = true,
+    Sticky = false,
+    Tooltip = false,
+    GridProjection = false,
+    HideWhenFaceDown = false,
+    Hands = false,
+    CustomAssetbundle = {
+        AssetbundleURL = "https://steamusercontent-a.akamaihd.net/ugc/1667980476488958906/639B7FC2EF736A1A6B6B3B29DB728F37C9B618D9/",
+        AssetbundleSecondaryURL = "",
+        MaterialIndex = 0,
+        TypeIndex = 0,
+        LoopingEffectIndex = 0,
+    },
+    LuaScript = "",
+    LuaScriptState = "",
+    XmlUI = "",
+}
+
+return M

@@ -4,6 +4,26 @@
 <Defaults>
 
   <!-- ================================================================ -->
+  <!-- Defaults Classes (shared across all storyteller panels)           -->
+  <!-- ================================================================ -->
+
+  <Text class="hud_storyteller_header" fontSize="12" color="#FFDD00" flexibleWidth="1"/>
+  <Text class="hud_storyteller_label"	fontSize="11" color="#FFD700"  />
+
+  <Row class="hud_storyteller_button_row" preferredHeight="20" minHeight="20" spacing="0" childForceExpandWidth="false" childForceExpandHeight="false" />
+  <HorizontalLayout class="hud_storyteller_button_row" preferredHeight="20" minHeight="20" spacing="0" childForceExpandWidth="false" childForceExpandHeight="false" />
+
+  <Button class="hud_storyteller_button" fontSize="9" height="20" preferredHeight="20" minHeight="20" minWidth="40" flexibleHeight="0" flexibleWidth="0" />
+  <Button class="hud_storyteller_button_label" width="40" preferredWidth="40" />
+  <Button class="hud_storyteller_button_icon" fontSize="20" width="20" minWidth="20" preferredWidth="20" />
+  <Button class="hud_storyteller_button_icon_off" color="#666666" />
+  <Button class="hud_storyteller_button_icon_on" color="#FFDD00" />
+
+  <Row class="hud_storyteller_header" height="30" preferredHeight="30" flexibleHeight="0" childForceExpandHeight="false" childForceExpandWidth="true" />
+  <Cell class="hud_storyteller_wide" columnSpan="6" childForceExpandWidth="true" />
+  <Cell class="hud_storyteller_label" childForceExpandWidth="true" />
+
+  <!-- ================================================================ -->
   <!-- Admin Panel Classes (left-side button controls)                   -->
   <!-- ================================================================ -->
 
@@ -20,31 +40,6 @@
     flexibleHeight="0"
     childForceExpandWidth="false"
     childForceExpandHeight="false" />
-
-  <!-- Debug sub-panel: horizontal row of button columns offset right -->
-  <HorizontalLayout class="storyteller_subButtonControls"
-    spacing="5"
-    offsetXY="75 50"
-    width="200"
-    height="500"
-    rectAlignment="MiddleLeft"
-    flexibleWidth="0"
-    flexibleHeight="0"
-    childForceExpandWidth="false"
-    childForceExpandHeight="false" />
-
-  <!-- Debug traits overlay panel (positioning specific to storyteller layout) -->
-  <Panel class="storyteller_debugTraits"
-    height="900"
-    width="800"
-    rectAlignment="UpperRight"
-    offsetXY="-400 -100" />
-
-  <!-- Per-color debug trait text offsets -->
-  <Text class="storyteller_debugTraitsRed" offsetXY="0 0" />
-  <Text class="storyteller_debugTraitsYellow" offsetXY="200 0" />
-  <Text class="storyteller_debugTraitsBlue" offsetXY="400 0" />
-  <Text class="storyteller_debugStickers" offsetXY="600 0" />
 
   <!-- ================================================================ -->
   <!-- Sidebar Classes (right-side reference image toggles)             -->
@@ -103,6 +98,20 @@
     onMouseUp="HUD_hide"
     onMouseEnter="HUD_highlight"
     onMouseExit="HUD_dim" />
+
+
+  <!-- Existing-NPC Controls -->
+
+  <Row class="hud_storyteller_areas" />
+  <Cell class="hud_storyteller_areas" childForceExpandHeight="false" />
+  <Cell class="hud_storyteller_areas hud_storyteller_header" childForceExpandHeight="false" childForceExpandWidth="false" />
+  <HorizontalLayout class="hud_storyteller_areas" childForceExpandHeight="false" childForceExpandWidth="false" />
+
+  <!-- Spawn NPC Controls -->
+
+  <!-- Spawn Individuals -->
+
+  <HorizontalLayout class="hud_storyteller_spawn" />
 
 
 </Defaults>

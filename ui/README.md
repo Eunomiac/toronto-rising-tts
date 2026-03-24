@@ -83,7 +83,7 @@ UI positioning uses a **conceptual 3 columns × 4 rows grid** (no physical `Grid
 
 - XML bundling uses `/` separators (not dots like `require`)
 - Paths in `<Include>` are resolved from the workspace directory
-- Visibility: `Host|Black` for Storyteller, `Red`/`Brown`/etc. for players
+- Visibility: `Black` for Storyteller, `Red`/`Brown`/etc. for players
 - Button onClick handlers must be global functions (e.g. `HUD_changeScene`)
 - UI element IDs must match handler expectations in `global/global_script.ttslua`
 - Admin panel ID: `adminControls` (Heritage admin button column + debug panels)

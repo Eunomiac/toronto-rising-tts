@@ -1,0 +1,265 @@
+{
+  "LuaScriptState": {
+    "currentPhase": "SessionStart",
+    "currentScene": "default",
+    "lights": {
+      "npcLight_02f0d0": "standard",
+      "npcLight_0f27a7": "standard",
+      "npcLight_100b8c": "standard",
+      "npcLight_1713ca": "standard",
+      "npcLight_1b8eb6": "standard",
+      "npcLight_1d5474": "standard",
+      "npcLight_23f207": "standard",
+      "npcLight_31ec0a": "standard",
+      "npcLight_3a2c15": "standard",
+      "npcLight_3a624a": "standard",
+      "npcLight_40e818": "standard",
+      "npcLight_5efade": "standard",
+      "npcLight_69673e": "standard",
+      "npcLight_70737e": "standard",
+      "npcLight_70e9af": "standard",
+      "npcLight_7b7d5a": "standard",
+      "npcLight_83f723": "standard",
+      "npcLight_ab5052": "standard",
+      "npcLight_af73ce": "standard",
+      "npcLight_b97219": "standard",
+      "npcLight_cec41a": "standard",
+      "npcLight_d8d214": "standard",
+      "npcLight_e0817b": "standard",
+      "npcLight_ebb895": "standard",
+      "npcLight_faede8": "standard",
+      "npcLight_fc2dc6": "standard",
+      "playerLightBrown": "STANDARD",
+      "playerLightOrange": "STANDARD",
+      "playerLightPink": "STANDARD",
+      "playerLightPurple": "STANDARD",
+      "playerLightRed": "STANDARD"
+    },
+    "npcs": {
+      "instances": {
+        "adrianVarga": {
+          "areaKey": "centerForward",
+          "figurineGuid": "d5e399",
+          "lightGuid": "e0817b",
+          "npcLightMode": "standard",
+          "slotIndex": 2
+        },
+        "alexandra": {
+          "areaKey": "nearLeft",
+          "figurineGuid": "868479",
+          "lightGuid": "5efade",
+          "npcLightMode": "standard",
+          "slotIndex": 5
+        },
+        "alexisHoltt": {
+          "areaKey": "farRight",
+          "figurineGuid": "76baa4",
+          "lightGuid": "70e9af",
+          "npcLightMode": "standard",
+          "slotIndex": 2
+        },
+        "averyInnis": {
+          "areaKey": "farRight",
+          "figurineGuid": "1c1d9b",
+          "lightGuid": "fc2dc6",
+          "npcLightMode": "standard",
+          "slotIndex": 3
+        },
+        "benedictKincaid": {
+          "areaKey": "farRight",
+          "figurineGuid": "e2a5bf",
+          "lightGuid": "1713ca",
+          "npcLightMode": "standard",
+          "slotIndex": 1
+        },
+        "calvinWallace": {
+          "areaKey": "nearLeft",
+          "figurineGuid": "f20f2d",
+          "lightGuid": "69673e",
+          "npcLightMode": "standard",
+          "slotIndex": 3
+        },
+        "christianne": {
+          "areaKey": "farLeft",
+          "figurineGuid": "6a5345",
+          "lightGuid": "cec41a",
+          "npcLightMode": "standard",
+          "slotIndex": 6
+        },
+        "damienAbanda": {
+          "areaKey": "nearLeft",
+          "figurineGuid": "d2b499",
+          "lightGuid": "100b8c",
+          "npcLightMode": "standard",
+          "slotIndex": 2
+        },
+        "damienKline": {
+          "areaKey": "farLeft",
+          "figurineGuid": "c5f482",
+          "lightGuid": "3a624a",
+          "npcLightMode": "standard",
+          "slotIndex": 4
+        },
+        "drIrenaVoss": {
+          "areaKey": "farLeft",
+          "figurineGuid": "437166",
+          "lightGuid": "ab5052",
+          "npcLightMode": "standard",
+          "slotIndex": 2
+        },
+        "eddie": {
+          "areaKey": "farRight",
+          "figurineGuid": "e8a428",
+          "lightGuid": "b97219",
+          "npcLightMode": "standard",
+          "slotIndex": 4
+        },
+        "evangelineDupont": {
+          "areaKey": "farLeft",
+          "figurineGuid": "d4a758",
+          "lightGuid": "0f27a7",
+          "npcLightMode": "standard",
+          "slotIndex": 1
+        },
+        "georgieStJames": {
+          "areaKey": "nearRight",
+          "figurineGuid": "53c40f",
+          "lightGuid": "31ec0a",
+          "npcLightMode": "standard",
+          "slotIndex": 2
+        },
+        "jesseSharp": {
+          "areaKey": "centerForward",
+          "figurineGuid": "d837d5",
+          "lightGuid": "40e818",
+          "npcLightMode": "standard",
+          "slotIndex": 3
+        },
+        "lexiMadi": {
+          "areaKey": "farRight",
+          "figurineGuid": "1f13eb",
+          "lightGuid": "1b8eb6",
+          "npcLightMode": "standard",
+          "slotIndex": 5
+        },
+        "lucasMerrow": {
+          "areaKey": "farLeft",
+          "figurineGuid": "c7fcde",
+          "lightGuid": "af73ce",
+          "npcLightMode": "standard",
+          "slotIndex": 3
+        },
+        "myleneHamelin": {
+          "areaKey": "centerForward",
+          "figurineGuid": "4fae9b",
+          "lightGuid": "02f0d0",
+          "npcLightMode": "standard",
+          "slotIndex": 1
+        },
+        "profEthanKeen": {
+          "areaKey": "nearLeft",
+          "figurineGuid": "f9edc7",
+          "lightGuid": "ebb895",
+          "npcLightMode": "standard",
+          "slotIndex": 4
+        },
+        "raduIancu": {
+          "areaKey": "farLeft",
+          "figurineGuid": "0be600",
+          "lightGuid": "faede8",
+          "npcLightMode": "standard",
+          "slotIndex": 5
+        },
+        "ren": {
+          "areaKey": "nearRight",
+          "figurineGuid": "8808a4",
+          "lightGuid": "83f723",
+          "npcLightMode": "standard",
+          "slotIndex": 5
+        },
+        "rosie": {
+          "areaKey": "nearLeft",
+          "figurineGuid": "b74dc3",
+          "lightGuid": "70737e",
+          "npcLightMode": "standard",
+          "slotIndex": 1
+        },
+        "scottTempo": {
+          "areaKey": "nearRight",
+          "figurineGuid": "3abd19",
+          "lightGuid": "7b7d5a",
+          "npcLightMode": "standard",
+          "slotIndex": 4
+        },
+        "stirlingSiskin": {
+          "areaKey": "centerForward",
+          "figurineGuid": "7d6e88",
+          "lightGuid": "d8d214",
+          "npcLightMode": "standard",
+          "slotIndex": 4
+        },
+        "vanceVogel": {
+          "areaKey": "nearRight",
+          "figurineGuid": "36ee35",
+          "lightGuid": "3a2c15",
+          "npcLightMode": "standard",
+          "slotIndex": 3
+        },
+        "victorVex": {
+          "areaKey": "nearRight",
+          "figurineGuid": "2f5d5a",
+          "lightGuid": "23f207",
+          "npcLightMode": "standard",
+          "slotIndex": 1
+        },
+        "zuriOluwusi": {
+          "areaKey": "centerForward",
+          "figurineGuid": "28500a",
+          "lightGuid": "1d5474",
+          "npcLightMode": "standard",
+          "slotIndex": 5
+        }
+      }
+    },
+    "playerData": {
+      "76561198002132577": {
+        "color": "Black",
+        "hud": {
+          "map": {
+            "location": [],
+            "overlays": {
+              "districts": false,
+              "districtsAll": false,
+              "domains": false,
+              "localRoads": false,
+              "majorRoads": false,
+              "majorSites": false,
+              "sites": false,
+              "streets": false
+            }
+          },
+          "reference": {
+            "advantages": false,
+            "chronicleTenets": false,
+            "experience": false,
+            "frenzy": false,
+            "memoriam": false,
+            "physicalCombat": false,
+            "projects": false,
+            "recovery": false,
+            "resonance": false,
+            "rolls": false,
+            "socialCombat": false
+          }
+        },
+        "hunger": 0
+      }
+    },
+    "scene": {
+      "description": "",
+      "mood": "",
+      "name": ""
+    },
+    "zones": []
+  }
+}

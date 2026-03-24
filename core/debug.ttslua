@@ -97,6 +97,52 @@ local function writeToFile(filename, content, format, append)
     end
 end
 
+--- Writes content to an arbitrary path under the workspace via TTS Tools (sendExternalMessage).
+--- Does not use log append cache; each call overwrites that file path.
+--- @param relativePath string Path relative to workspace root, e.g. "debug_logs/npcs_panel.txt"
+--- @param content string
+--- @param format string|nil "none" or "auto" (default "none")
+--- @param silent boolean|nil If true, do not print confirmation (for high-frequency writes)
+--- @return boolean
+function DEBUG.writeWorkspaceFile(relativePath, content, format, silent)
+    format = format or "none"
+    if U.Type(relativePath) ~= "string" or relativePath == "" then
+        print("DEBUG.writeWorkspaceFile: invalid relativePath")
+        return false
+    end
+    if U.Type(content) ~= "string" then
+        content = tostring(content)
+    end
+    ---@diagnostic disable-next-line: undefined-global
+    if sendExternalMessage then
+        ---@diagnostic disable-next-line: undefined-global
+        sendExternalMessage({
+            type = "write",
+            content = content,
+            name = relativePath,
+            format = format
+        })
+        if not silent then
+            print("DEBUG: Wrote workspace file " .. relativePath)
+        end
+        return true
+    end
+    print("DEBUG.writeWorkspaceFile: sendExternalMessage not available (TTS Tools extension?)")
+    return false
+end
+
+--- Clear debug NDJSON buffer and truncate workspace log (same path as NPC lighting instrumentation).
+--- TTS console: lua DEBUG.beginWorkspaceDebugSession()
+function DEBUG.beginWorkspaceDebugSession()
+    local ok, W = pcall(require, "lib.workspace_ndjson_log")
+    if not ok or W == nil or U.Type(W.beginSession) ~= "function" then
+        print("DEBUG.beginWorkspaceDebugSession: lib.workspace_ndjson_log unavailable")
+        return
+    end
+    W.beginSession("debug_workspace_ndjson.log")
+    print("DEBUG: began workspace debug session -> debug_workspace_ndjson.log (buffer cleared)")
+end
+
 --- Prints a formatted test header
 -- @param testName string Name of the test
 local function printTestHeader(testName)

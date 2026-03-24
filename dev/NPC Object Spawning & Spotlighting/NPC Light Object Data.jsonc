@@ -1,0 +1,51 @@
+{
+  // Canonical Lua defaults for spawn: lib/npcs_light_spawn_defaults.ttslua (NPC_LIGHT_OBJECT_DATA_DEFAULTS).
+  // Edit the .ttslua table for in-game spawns; keep this JSONC as a readable export / diff reference.
+  "GUID": "02f0d0",
+  "Name": "Custom_Assetbundle",
+  "Transform": {
+    "posX": 0.0,
+    "posY": -7.0,
+    "posZ": 85.0,
+    "rotX": 330.5,
+    "rotY": 180.0,
+    "rotZ": 180.0,
+    "scaleX": 1.0,
+    "scaleY": 1.0,
+    "scaleZ": 1.0
+  },
+  "Nickname": "NPC Light <npcKeyHere>",
+  "Description": "",
+  "GMNotes": "Range: 128\nAngle: 124.7178944\nIntensity: 1.1\nEnabled: true", // I suspect these are now unused, as they were the method by which the previous object script loaded and applied lighting values.
+  "AltLookAngle": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+  },
+  "ColorDiffuse": {"r": 0.76, "g": 0.76, "b": 0.76},
+  "Tags": ["npc_light"],
+  "LayoutGroupSortIndex": 0,
+  "Value": 0,
+  "Locked": true,
+  "Grid": false,
+  "Snap": false,
+  "IgnoreFoW": false,
+  "MeasureMovement": false,
+  "DragSelectable": false,
+  "Autoraise": true,
+  "Sticky": false,
+  "Tooltip": false,
+  "GridProjection": false,
+  "HideWhenFaceDown": false,
+  "Hands": false,
+  "CustomAssetbundle": {
+    "AssetbundleURL": "https://steamusercontent-a.akamaihd.net/ugc/1667980476488958906/639B7FC2EF736A1A6B6B3B29DB728F37C9B618D9/",
+    "AssetbundleSecondaryURL": "",
+    "MaterialIndex": 0,
+    "TypeIndex": 0,
+    "LoopingEffectIndex": 0
+  },
+  "LuaScript": "-- Bundled by luabundle {\"version\":\"1.7.0\"}\n\n/** Bundled Script Logic lives in lib/object_spotlight_persist.ttslua (bundled via require).\nRemoved from this example document for brevity. **/",
+  "LuaScriptState": "{\"color\":{\"a\":1,\"b\":1,\"g\":1,\"r\":1},\"enabled\":true,\"intensity\":3,\"position\":{\"x\":0,\"y\":-7.03772115707397,\"z\":85},\"range\":100,\"rotation\":{\"x\":330.548309326172,\"y\":180,\"z\":180},\"spotAngle\":40,\"v\":1}", // Is this the data that we can manipulate during a spawnObjectData call, to pre-configure the light?
+  "XmlUI": ""
+}

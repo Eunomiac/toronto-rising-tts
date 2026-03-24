@@ -1,29 +1,24 @@
 <!-- Storyteller HUD Layout -->
-<!-- Visibility: Host|Black (Storyteller/GM) -->
+<!-- Visibility: Black (Storyteller/GM) -->
 <!-- Reproduces Heritage admin.xml: left-side game phase controls + debug panels -->
 <!-- Also includes sidebar (reference toggles) and camera bar via sub-includes -->
 
-<Panel id="adminControls" visibility="Host|Black" active="true">
+<Panel id="adminControls" visibility="Host" active="true">
 
   <!-- ================================================================ -->
   <!-- Main Button Column (left side): Print State + debug test buttons  -->
   <!-- ================================================================ -->
-  <VerticalLayout class="storyteller_buttonControls" visibility="Host|Black">
+  <VerticalLayout class="storyteller_buttonControls" visibility="Host" rectAlignment="UpperLeft" offsetXY="50 0">
     <Button onClick="HUD_printState">Print State</Button>
     <Text class="spacer_15"></Text>
     <Button onClick="HUD_debugRunTests" color="#AA00AA">Run All Tests</Button>
-    <Button class="smallButton" onClick="HUD_debugTestConstants" color="#8888FF">Constants</Button>
-    <Button class="smallButton" onClick="HUD_debugTestState" color="#8888FF">State</Button>
-    <Button class="smallButton" onClick="HUD_debugTestStatePersistence" color="#8888FF">State Persistence</Button>
-    <Button class="smallButton" onClick="HUD_debugTestScenes" color="#8888FF">Scenes</Button>
-    <Button class="smallButton" onClick="HUD_debugTestAllScenes" color="#8888FF">All Scenes</Button>
-    <Button class="smallButton" onClick="HUD_debugTestZones" color="#8888FF">Zones</Button>
-    <Button class="smallButton" onClick="HUD_debugTestMain" color="#8888FF">Main</Button>
-    <Button class="smallButton" onClick="HUD_debugTestUI" color="#8888FF">UI</Button>
-    <Button class="smallButton" onClick="HUD_debugTestUtilities" color="#8888FF">Utilities</Button>
     <Button class="smallButton" onClick="HUD_debugTestLightingAndSignals" color="#8888FF">Lighting &amp; Signals</Button>
     <Button class="smallButton" onClick="HUD_debugTestEasing" color="#8888FF">Easing</Button>
-    <Button class="smallButton" onClick="HUD_debugTestIntegration" color="#8888FF">Integration</Button>
+    <Text class="spacer_15"></Text>
+    <Button id="toggle_npcPanelXmlDump" class="smallButton" fontSize="9" minHeight="22" preferredHeight="22"
+      text="NPC XML → IDE (off)"
+      colors="#666666|#555555|#777777|rgba(0.22,0.22,0.22,0.45)"
+      onClick="HUD_toggleNpcPanelXmlDump" />
   </VerticalLayout>
 
   <!-- ================================================================ -->
@@ -31,16 +26,6 @@
   <!-- ================================================================ -->
   <Panel id="debugStatePanel" active="false" class="debugPanel">
     <Text id="debugState" class="debugText"></Text>
-  </Panel>
-
-  <!-- ================================================================ -->
-  <!-- Debug Traits Display Panel                                       -->
-  <!-- ================================================================ -->
-  <Panel id="debugTraitsPanel" active="false" class="debugPanel storyteller_debugTraits">
-    <Text id="debugTraitsRed" class="debugText storyteller_debugTraitsRed"></Text>
-    <Text id="debugTraitsYellow" class="debugText storyteller_debugTraitsYellow"></Text>
-    <Text id="debugTraitsBlue" class="debugText storyteller_debugTraitsBlue"></Text>
-    <Text id="debugStickers" class="debugText storyteller_debugTraitsBlue storyteller_debugStickers"></Text>
   </Panel>
 
   <!-- ================================================================ -->

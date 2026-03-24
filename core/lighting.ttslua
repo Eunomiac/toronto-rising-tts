@@ -64,6 +64,53 @@ local DefaultTransitionTime = 0.5
 --     STANDARD = {enabled=true, rotation=Vector(0,-72,60), position=Vector(-29.75,22.6,-90), ...}
 -- }
 L.LIGHTMODES = {
+    -- Main table lights
+    mainLightLeft = {
+      guid = G.GUIDS.MAIN_LIGHT_LEFT,
+      isPlayerLight = false,
+      default = "STANDARD",
+      OFF = {
+        enabled = false,
+        position = Vector(0.00, 80.00, -35.00),
+        rotation = Vector(0, 0, 0),
+        range = 128,
+        angle = 0,
+        intensity = 0,
+        color = Color(255/255, 0/255, 0/255)
+      },
+      STANDARD = {
+        enabled = true,
+        position = Vector(-45.00, 50.00, 0),
+        rotation = Vector(30.00, -50.00, 0.00),
+        range = 80,
+        angle = 80,
+        intensity = 4,
+        color = Color(255/255, 0/255, 0/255)
+      }
+    },
+    mainLightRight = {
+      guid = G.GUIDS.MAIN_LIGHT_RIGHT,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+        enabled = false,
+        position = Vector(0.00, 80.00, -35.00),
+        rotation = Vector(0, 0, 0),
+        range = 128,
+        angle = 0,
+        intensity = 0,
+        color = Color(255/255, 0/255, 0/255)
+      },
+      STANDARD = {
+        enabled = true,
+        position = Vector(45.00, 50.00, 0),
+        rotation = Vector(30.00, 50.00, 0.00),
+        range = 80,
+        angle = 80,
+        intensity = 4,
+        color = Color(255/255, 0/255, 0/255)
+      }
+    },
     -- Player lights (per-player spotlights)
     -- These lights are found by GUID, not by tag
     -- Each light has OFF and STANDARD modes
@@ -85,7 +132,7 @@ L.LIGHTMODES = {
             rotation = Vector(321.31, 288.01, 0.00),
             range = 40,
             angle = 90,
-            intensity = 10
+            intensity = 3
         }
     },
     playerLightOrange = {
@@ -106,7 +153,7 @@ L.LIGHTMODES = {
             rotation = Vector(322.75, 324.01, 0.00),
             range = 40,
             angle = 90,
-            intensity = 10
+            intensity = 3
         }
     },
     playerLightRed = {
@@ -127,7 +174,7 @@ L.LIGHTMODES = {
             rotation = Vector(321.68, 0.00, 0.00),
             range = 40,
             angle = 90,
-            intensity = 10
+            intensity = 3
         }
     },
     playerLightPink = {
@@ -148,7 +195,7 @@ L.LIGHTMODES = {
             rotation = Vector(321.88, 35.99, 0.00),
             range = 40,
             angle = 90,
-            intensity = 10
+            intensity = 3
         }
     },
     playerLightPurple = {
@@ -169,7 +216,7 @@ L.LIGHTMODES = {
             rotation = Vector(320.73, 72.01, 0.00),
             range = 40,
             angle = 90,
-            intensity = 10
+            intensity = 3
         }
     }
 }
@@ -178,36 +225,94 @@ L.LIGHTMODES = {
 -- INTERNAL HELPER FUNCTIONS
 -- ============================================================================
 
---- Gets the Light component from a TTS light object
--- TTS lights have a nested structure: object -> child -> grandchild -> Light component
--- This function navigates that structure to access the Light component.
--- @param light Object The light object
--- @param isSilent boolean If true, returns nil on error instead of throwing
--- @return Component|nil The Light component, or nil if not found/error
+--- True if this component behaves like a Unity spotlight (avoids wrong index / non-Light components).
+--- @param comp Component|nil
+--- @return boolean
+local function isRealLightComponent(comp)
+    if comp == nil or comp.get == nil then
+        return false
+    end
+    local spotAngle = comp.get("spotAngle")
+    local range = comp.get("range")
+    local intensity = comp.get("intensity")
+    return type(spotAngle) == "number" and type(range) == "number" and type(intensity) == "number"
+end
+
+--- Gets the Light component from a TTS spotlight root object.
+--- Resolution order matches core/light_test.ttslua (inspect/spawn helpers that behave correctly in-game):
+--- 1) getComponentInChildren("Light")  2) enumerate getComponentsInChildren("Light"), first spotlight-like
+--- 3) nested child[1].child[2].components[2] only if its .name is "Light" (same as LightTest fallback).
+--- @param light Object The light object
+--- @param isSilent boolean If true, returns nil on error instead of throwing
+--- @return Component|nil The Light component, or nil if not found/error
 local function getLightComponent(light, isSilent)
+    if light == nil then
+        if isSilent then
+            return nil
+        end
+        U.Val("getLightComponent", light, false, "nil light")
+    end
+
+    -- 1) Same primary API as LightTest.testInspectLight / testSpawnLight
+    local okSingle, singleComp = pcall(function()
+        if light.getComponentInChildren == nil then
+            return nil
+        end
+        return light.getComponentInChildren("Light")
+    end)
+    if okSingle and singleComp ~= nil then
+        local nm = singleComp.name
+        if nm == "Light" or isRealLightComponent(singleComp) then
+            return singleComp
+        end
+    end
+
+    -- 2) Every "Light" component (depth-first list); prefer one that looks like a spotlight
+    local okChildren, lights = pcall(function()
+        if light.getComponentsInChildren == nil then
+            return nil
+        end
+        return light.getComponentsInChildren("Light")
+    end)
+    if okChildren and lights and #lights > 0 then
+        for _, comp in ipairs(lights) do
+            if isRealLightComponent(comp) then
+                return comp
+            end
+        end
+    end
+
+    -- 3) Legacy nested path — LightTest.testSpawnLight uses components[2].name == "Light" (no spotlight property probe)
     local lComp
-    local success, err = pcall(function()
+    local success = pcall(function()
         lComp = light.getChildren()[1].getChildren()[2].getComponents()[2]
     end)
-
-    if success and lComp then
+    if success and lComp ~= nil and lComp.name == "Light" then
         return lComp
-    elseif isSilent then
+    end
+
+    if isSilent then
         return nil
     end
 
-    -- Detailed error checking if silent mode off
     U.Val("getLightComponent", light, U.isGameObject(light), "Invalid Light Object")
     local children = light.getChildren()
-    U.Val("getLightComponent", {light = light, children = children}, #children > 0, "Light has no Children")
+    U.Val("getLightComponent", { light = light, children = children }, #children > 0, "Light has no Children")
     local grandchildren = children[1].getChildren()
-    U.Val("getLightComponent", {light = light, grandchildren = grandchildren}, #grandchildren > 1,
-        "Light has too few Grandchildren")
+    U.Val(
+        "getLightComponent",
+        { light = light, grandchildren = grandchildren },
+        #grandchildren > 1,
+        "Light has too few Grandchildren"
+    )
     local components = grandchildren[2].getComponents()
-    U.Val("getLightComponent", {light = light, components = components}, #components > 1,
-        "Light has too few components")
-    U.Val("getLightComponent", {light = light, comp = components[2]}, components[2].name == "Light",
-        "Can't find 'Light' component")
+    U.Val("getLightComponent", { light = light, components = components }, #components > 1, "Light has too few components")
+    U.Val(
+        "getLightComponent",
+        { light = light, comp = components[2] },
+        components[2] and components[2].name == "Light",
+        "Can't find 'Light' component"
+    )
     return components[2]
 end
 
@@ -321,113 +426,174 @@ end
 --- Sets a light to a specific mode with smooth transitions
 --
 -- This is the main function for controlling lights. It:
---   1. Looks up the light mode definition
---   2. Finds the light object by GUID (GUID is required for all lights)
---   3. Saves the mode to game state
+--   1. Resolves `lightRef` (registered name, raw object GUID, or nested array of those)
+--   2. Finds the light object (via L.LIGHTMODES[ref].guid or getObjectFromGUID(ref))
+--   3. For registered lights, saves the mode key to game state; raw GUID + inline table does not
 --   4. Smoothly transitions all properties using U.Lerp
 --
 -- Supports per-player lights (if isPlayerLight=true in mode definition).
 -- Modes can be static tables or dynamic functions that calculate values.
 --
--- All lights must have a GUID defined in their light mode definition.
---
--- @param lightName string The name of the light (must exist in L.LIGHTMODES)
--- @param mode string The mode name to apply (e.g., "OFF", "STANDARD", "ambient", "bright")
--- @param player Player|string|nil Optional: Player for player-specific lights
+-- @param lightRef string|table Registered key in L.LIGHTMODES, or an object GUID string, or an array of either (nested arrays recurse)
+-- @param mode string|function|table For registered lights: mode name / resolver. For raw GUID `lightRef`: **must** be a full mode table (enabled, intensity, range, …)
+-- @param player Player|string|nil Optional: Player for player-specific lights (registered modes only)
 -- @param transitionTime number Optional: Transition duration in seconds (default: 0.5)
--- @return function|nil Returns completion function if using coroutines, or nil
---
--- @usage L.SetLightMode("playerLightBrown", "STANDARD", "Brown", 0.5) -- Player-specific light by GUID
--- @usage L.SetLightMode("playerLightBrown", "OFF", nil, 1.0) -- Turn off player light (player optional for GUID-based lights)
-function L.SetLightMode(lightName, mode, player, transitionTime)
+-- @return function|nil|table Returns completion function if using coroutines, or nil; batch calls return a table of per-ref results
+-- @usage L.SetLightMode("playerLightBrown", "STANDARD", "Brown", 0.5)
+-- @usage L.SetLightMode("playerLightBrown", "OFF", nil, 1.0)
+-- @usage L.SetLightMode("a1b2c3", { enabled = true, intensity = 2, range = 120, angle = 120 }, nil, 0) -- object GUID, inline mode (not in LIGHTMODES)
+
+-- L.SetLightMode("573771", { enabled = true, intensity = 5, range = 30 }, nil, 0)
+function L.SetLightMode(lightRef, mode, player, transitionTime)
     if transitionTime == nil then
         transitionTime = DefaultTransitionTime
     end
 
-    -- Support array of light names (batch operation)
-    if U.Type(lightName) == "table" then
-        return U.map(lightName, function(lName)
-            return L.SetLightMode(lName, mode, player, transitionTime)
+    -- Array of refs: recurse so nested arrays flatten to per-string calls
+    if U.Type(lightRef) == "table" then
+        return U.map(lightRef, function(ref)
+            return L.SetLightMode(ref, mode, player, transitionTime)
         end)
     end
 
-    -- Validate light mode exists
-    U.Val("SetLightMode", lightName,
-        U.Type(lightName) == "string" and L.LIGHTMODES[lightName] ~= nil,
-        "Mode Data Not Found for light: " .. U.ToString(lightName))
+    U.Val("SetLightMode", lightRef, U.Type(lightRef) == "string", "lightRef must be a string or table of strings")
 
-    local lData = L.LIGHTMODES[lightName]
-    local isSpawned = lData.isSpawned or false
+    local lData = L.LIGHTMODES[lightRef]
+    local light
+    local isSpawned = false
+    local modeDef
 
-    -- Validate player parameter (only for non-player lights - player lights don't need it)
-    -- All lights use GUID-based lookup, so player parameter is not needed for finding lights
-    -- Player parameter is kept for backward compatibility but is not used
-    if not lData.isPlayerLight then
-        -- Non-player lights shouldn't have player parameter
-        U.Val("SetLightMode", {lightName, player}, player == nil,
-            "Player submitted to non-player light", {isThrowing = false})
-    end
+    if lData ~= nil then
+        isSpawned = lData.isSpawned or false
 
-    -- Find the light object (GUID-based lookup - completely independent of player presence)
-    local light = getLight(lightName, true)
-    if light == nil and isSpawned then
-        -- Wait for light to spawn if it's a spawned light
-        return U.waitUntil(function()
-            return L.SetLightMode(lightName, mode, player, transitionTime)
-        end, function()
-            return getLight(lightName, true) ~= nil
-        end, false)
-    end
+        if not lData.isPlayerLight then
+            U.Val("SetLightMode", { lightRef, player }, player == nil,
+                "Player submitted to non-player light", { isThrowing = false })
+        end
 
-    U.Val("SetLightMode", lightName,
-        U.isGameObject(light), "No light found: " .. U.ToString(lightName))
+        light = getLight(lightRef, true)
+        if light == nil and isSpawned then
+            return U.waitUntil(function()
+                return L.SetLightMode(lightRef, mode, player, transitionTime)
+            end, function()
+                return getLight(lightRef, true) ~= nil
+            end, false)
+        end
 
-    -- Save mode to state
-    -- Each light has a unique name (e.g., playerLightBrown), so we save the mode directly
-    -- No need for per-player state since the light name already identifies which player it's for
-    -- NOTE: Light lookup is completely independent of player presence - GUID-based lookup always works
-    S.setStateVal(mode, "lights", lightName)
+        U.Val("SetLightMode", lightRef, U.isGameObject(light), "No light found: " .. U.ToString(lightRef))
 
-    -- Resolve mode (could be function, string default, or table)
-    local modeData = mode
-    if U.Type(modeData) == "function" then
-        modeData = modeData(player)
-    elseif U.Type(modeData) == "string" and modeData == "default" then
-        modeData = lData.default or "off"
-    end
+        S.setStateVal(mode, "lights", lightRef)
 
-    -- Get mode definition
-    U.Val("SetLightMode", modeData,
-        U.Type(modeData) == "string" and lData[modeData] ~= nil,
-        "No such mode '" .. U.ToString(modeData) .. "' for light '" .. U.ToString(lightName) .. "'")
+        local modeData = mode
+        if U.Type(modeData) == "function" then
+            modeData = modeData(player)
+        elseif U.Type(modeData) == "string" and modeData == "default" then
+            modeData = lData.default or "off"
+        end
 
-    local modeDef = lData[modeData]
-    if U.Type(modeDef) == "function" then
-        modeDef = modeDef(player) -- Dynamic mode calculation
-    end
-    if U.Type(modeDef) == "table" then
-        modeDef = U.clone(modeDef) -- Clone to avoid modifying original
+        U.Val("SetLightMode", modeData,
+            U.Type(modeData) == "string" and lData[modeData] ~= nil,
+            "No such mode '" .. U.ToString(modeData) .. "' for light '" .. U.ToString(lightRef) .. "'")
+
+        modeDef = lData[modeData]
+        if U.Type(modeDef) == "function" then
+            modeDef = modeDef(player)
+        end
+        if U.Type(modeDef) == "table" then
+            modeDef = U.clone(modeDef)
+        end
+    else
+        light = getObjectFromGUID(lightRef)
+        U.Val("SetLightMode", lightRef, U.isGameObject(light),
+            "lightRef not in L.LIGHTMODES and not a valid object GUID: " .. U.ToString(lightRef))
+
+        U.Val("SetLightMode", { lightRef, mode }, U.Type(mode) == "table",
+            "When lightRef is a raw object GUID, mode must be a full lighting mode table")
+
+        modeDef = U.clone(mode)
     end
 
     -- Apply the light mode with smooth transitions
     local function activateLight()
         local afterVals = {}
 
-        -- Handle enabled state (special case: animate on/off)
+        -- Handle enabled state (special case: animate on/off).
+        -- Do not use a single equality check vs getEnabled alone: both can be false while the
+        -- light is mid-transition or inconsistent (enabled vs intensity), which used to nil out
+        -- `enabled` and skip the real turn-off / turn-on setup for NPC toggles.
+        local MIN_VISIBLE_INTENSITY = 0.05
         if modeDef.enabled ~= nil then
-            if modeDef.enabled == getEnabled(light) then
-                modeDef.enabled = nil -- Skip if already in correct state
-            elseif modeDef.enabled == true then
-                -- Turn on: set intensity to 0 first, then fade in
+            local compOn = getEnabled(light)
+            local curI = getIntensity(light)
+            if modeDef.enabled == true then
+                if (not compOn) or (curI < MIN_VISIBLE_INTENSITY) then
+                    setIntensity(light, 0)
+                    setAngle(light, 0)
+                    setEnabled(light, true)
+                else
+                    modeDef.enabled = nil
+                end
+            elseif modeDef.enabled == false then
+                if compOn then
+                    afterVals.intensity = curI
+                    afterVals.angle = getAngle(light)
+                    modeDef.intensity = 0
+                    modeDef.angle = 0
+                else
+                    modeDef.enabled = nil
+                end
+            end
+        end
+
+        -- Instant apply: skip RunSequence/waitUntil coroutines entirely. Overlapping async steps
+        -- from prior SetLightMode calls could otherwise run finalize/lerps out of order and leave
+        -- the light disabled.
+        if transitionTime <= 0 then
+            local function applyRotationPos()
+                if modeDef.rotation ~= nil then
+                    pcall(function()
+                        light.setRotation(Vector(modeDef.rotation), false)
+                    end)
+                end
+                if modeDef.position ~= nil then
+                    pcall(function()
+                        light.setPosition(Vector(modeDef.position), false)
+                    end)
+                end
+            end
+            if modeDef.enabled == false and afterVals.intensity ~= nil then
+                if modeDef.range ~= nil then
+                    setRange(light, modeDef.range)
+                end
+                if modeDef.color ~= nil then
+                    setColor(light, Color(modeDef.color))
+                end
                 setIntensity(light, 0)
                 setAngle(light, 0)
-                setEnabled(light, true)
+                applyRotationPos()
+                setEnabled(light, false)
+                setIntensity(light, afterVals.intensity)
+                setAngle(light, afterVals.angle)
             else
-                -- Turn off: fade out, then disable
-                afterVals.intensity = getIntensity(light)
-                afterVals.angle = getAngle(light)
-                modeDef.intensity = 0
-                modeDef.angle = 0
+                if modeDef.range ~= nil then
+                    setRange(light, modeDef.range)
+                end
+                if modeDef.intensity ~= nil then
+                    setIntensity(light, modeDef.intensity)
+                end
+                if modeDef.angle ~= nil then
+                    setAngle(light, modeDef.angle)
+                end
+                if modeDef.color ~= nil then
+                    setColor(light, Color(modeDef.color))
+                end
+                applyRotationPos()
+                if modeDef.enabled == false then
+                    setEnabled(light, false)
+                end
+            end
+            return function()
+                return true
             end
         end
 
@@ -498,9 +664,15 @@ function L.InitLights()
     local savedLights = S.getStateVal("lights") or {}
 
     U.forEach(savedLights, function(mData, lightName)
+        -- Dynamic NPC keys (npcLight_<guid>) are registered in NPCS.restoreAfterStateLoad when
+        -- objects exist; skip here to avoid U.Val throwing before registration. NPCS.reapply… fixes them.
+        if U.Type(lightName) == "string" and L.LIGHTMODES[lightName] == nil then
+            return
+        end
         if U.Type(mData) == "string" then
             -- Simple mode (single string) - current format
-            L.SetLightMode(lightName, mData, nil, 0.5)
+            local t = (U.Type(lightName) == "string" and string.sub(lightName, 1, 9) == "npcLight_") and 0 or 0.5
+            L.SetLightMode(lightName, mData, nil, t)
         elseif U.Type(mData) == "table" then
             -- Legacy per-player modes (table of color->mode) - for backward compatibility
             -- Convert to simple mode by taking the first mode found
@@ -512,7 +684,8 @@ function L.InitLights()
                 end
             end)
             if firstMode then
-                L.SetLightMode(lightName, firstMode, nil, 0.5)
+                local t = (U.Type(lightName) == "string" and string.sub(lightName, 1, 9) == "npcLight_") and 0 or 0.5
+                L.SetLightMode(lightName, firstMode, nil, t)
             end
         end
     end)

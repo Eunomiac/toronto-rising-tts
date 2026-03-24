@@ -23,7 +23,7 @@ Each KD HUD type is assigned to a unique player color so all can be viewed simul
 
 ## Implemented Panels
 
-### 1. Admin Panel (`admin.xml`) -- Host|Black
+### 1. Admin Panel (`admin.xml`) -- Black
 
 Host-only administrative controls for game flow management.
 
@@ -44,7 +44,7 @@ Host-only administrative controls for game flow management.
 
 ---
 
-### 2. Debug Panel (`debug.xml`) -- Host|Black
+### 2. Debug Panel (`debug.xml`) -- Black
 
 Host-only debug controls and state display.
 

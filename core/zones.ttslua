@@ -62,6 +62,7 @@ function Z.activateZones()
     --   onObjectLeaveZone = Z.onObjectLeaveZone
     if Global and Global.call then
         Global.call("ActivateZones")
+
     end
     S.setStateVal(false, "zones", "allLocked")
     print("Zones: Activated zone event handlers")

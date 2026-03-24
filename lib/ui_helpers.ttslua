@@ -163,6 +163,21 @@ local STORYTELLER_PANELS = {
 --- Wrapper for the pop-out content (all 4 panels). Hidden when none selected.
 local STORYTELLER_CONTENT_AREA_ID = "storytellerContentArea"
 
+--- @param elementId string
+--- @return boolean True if TTS reports the element as active.
+local function storytellerUiElementIsActive(elementId)
+    if UI.getAttribute == nil or type(elementId) ~= "string" then
+        return false
+    end
+    local ok, v = pcall(function()
+        return UI.getAttribute(elementId, "active")
+    end)
+    if not ok or v == nil then
+        return false
+    end
+    return string.lower(tostring(v)) == "true"
+end
+
 --- Inactive toggle button colors (dark grey/gold border)
 local TOGGLE_COLORS_INACTIVE = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
 
@@ -171,6 +186,7 @@ local TOGGLE_COLORS_ACTIVE = "#B8860B|#FFD700|#FFA500|#B8860B"
 
 --- Selects a storyteller panel (mutually exclusive: only one open at a time).
 -- Shows the content area, hides all panels, shows the selected one, and updates toggle button highlight.
+-- Clicking the same top button again hides the content area (all toggles inactive), so the panel can be dismissed without switching tabs.
 -- Mirrors the admin arrow-toggle pattern: content pops out when a button is clicked.
 --
 -- @param panelKey string One of: "lighting", "scenes", "pcs", "phases", "npcs"
@@ -183,6 +199,16 @@ function UIHelpers.selectStorytellerPanel(panelKey)
 
     local selected = STORYTELLER_PANELS[panelKey]
     if selected == nil then
+        return
+    end
+
+    -- Re-click active tab: collapse pop-out (no other control closed it before).
+    if storytellerUiElementIsActive(STORYTELLER_CONTENT_AREA_ID) and storytellerUiElementIsActive(selected.panel) then
+        UI.setAttribute(STORYTELLER_CONTENT_AREA_ID, "active", "false")
+        for _, ids in pairs(STORYTELLER_PANELS) do
+            UI.setAttribute(ids.panel, "active", "false")
+            UI.setAttribute(ids.toggle, "colors", TOGGLE_COLORS_INACTIVE)
+        end
         return
     end
 

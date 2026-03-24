@@ -8,27 +8,78 @@ local NPCS = {}
 
 local U = require("lib.util")
 local S = require("core.state")
-local G = require("lib.guids")
 local L = require("core.lighting")
 local DATA = require("lib.npcs_data")
+local NLIGHT = require("lib.npcs_light_spawn_defaults")
 local UIH = require("lib.ui_helpers")
 
 NPCS.characters = DATA.characters or {}
 NPCS.lights = DATA.lights or {}
 NPCS.areas = DATA.areas or {}
 
+--- Default path for NPC panel row XML snapshots (TTS Tools workspace write).
+NPCS.NPC_PANEL_XML_WORKSPACE_PATH = "debug_logs/npcs_storyteller_panel.txt"
+--- Admin HUD button id (Host panel, left column).
+NPCS.ADMIN_NPC_XML_DUMP_BUTTON_ID = "toggle_npcPanelXmlDump"
+
+--- TEMP (layout experiments): when true, `refreshStorytellerUI` does not splice rows or call setXml — use static XML from `ui/storyteller/panel_npcs.xml` only.
+--- Revert to false (or delete this flag) when finished; NPC panel buttons need Lua-generated `npcRoute*` ids to dispatch.
+NPCS.DISABLE_STORYTELLER_NPC_PANEL_XML_REFRESH = false
+
 local TAG_FIG = "npc_figurine"
 local TAG_LIT = "npc_light"
 local GM_PREFIX = "npcInstance:"
 
+--- Area key whose `distance` / `rotation = 0` define canonical slot layout in table XZ (similarity about origin).
+local REF_AREA_KEY = "centerForward"
+
 --- While true, instance uses spotlight mode until mouse up (not persisted).
 local spotlightHeld = {}
+
+--- When true, each successful NPC storyteller panel XML refresh writes rows to the IDE workspace (TTS Tools).
+local autoDumpStorytellerNpcPanelXml = false
+--- Cached DEBUG.writeWorkspaceFile after first resolve (avoid require on every refresh).
+local cachedWriteWorkspaceFile = nil
 
 --- Ephemeral click payloads for dynamic NPC panel (replaced only after a successful UI refresh).
 local clickRoutes = {}
 local clickRouteSeq = 0
 --- When non-nil, `newClickRoute` registers into `.routes` / `.seq` instead of mutating `clickRoutes` (atomic commit after setXml).
 local clickRouteBuild = nil
+
+--- After a successful NPC panel `UI.setXml`, equals `computeNpcPanelLayoutFingerprint()`; used to skip redundant full-XML rebuilds.
+local lastNpcPanelLayoutFingerprint = nil
+
+--- World offset from figurine root position to NPC spotlight spawn (matches prior clone placement).
+local NPC_LIGHT_SPAWN_OFFSET = { x = 3, y = 8, z = 3 }
+
+--- Deep-clone TTS object state for `spawnObjectData` and clear `GUID` so the engine assigns a new id (avoids mutating live template data).
+--- @param data table|nil
+--- @return table|nil
+local function cloneObjectDataForSpawn(data)
+    if U.Type(data) ~= "table" then
+        return nil
+    end
+    if JSON ~= nil and U.Type(JSON.encode) == "function" and U.Type(JSON.decode) == "function" then
+        local encOk, encoded = pcall(function()
+            return JSON.encode(data)
+        end)
+        if encOk and U.Type(encoded) == "string" then
+            local decOk, decoded = pcall(function()
+                return JSON.decode(encoded)
+            end)
+            if decOk and U.Type(decoded) == "table" then
+                decoded.GUID = ""
+                return decoded
+            end
+        end
+    end
+    local shallow = U.clone(data)
+    if U.Type(shallow) == "table" then
+        shallow.GUID = ""
+    end
+    return shallow
+end
 
 --- Avoid C# null-ref when alerting: U.AlertGM uses U.getHost().color (host may be missing in edge setups).
 --- @param message string
@@ -171,29 +222,94 @@ function NPCS.findNextFreeSlotIndex(areaKey)
     return nil
 end
 
+--- Prefer `preferred` when it is valid and free; otherwise first free slot.
+--- @param areaKey string
+--- @param preferred number|nil
+--- @return number|nil
+local function resolveSlotForMove(areaKey, preferred)
+    local area = NPCS.areas[areaKey]
+    if not area or U.Type(area.positions) ~= "table" then
+        return nil
+    end
+    local n = #area.positions
+    if U.Type(preferred) == "number" and preferred >= 1 and preferred <= n then
+        local occ = NPCS.getOccupiedSlots(areaKey)
+        if occ[preferred] == nil then
+            return preferred
+        end
+    end
+    return NPCS.findNextFreeSlotIndex(areaKey)
+end
+
+--- Rotate (x, z) in the horizontal plane by `rad` around Y (same matrix as legacy slot offsets).
+--- @param x number
+--- @param z number
+--- @param rad number
+--- @return number, number
+local function rotateXZ(x, z, rad)
+    local cr, sr = math.cos(rad), math.sin(rad)
+    return x * cr - z * sr, x * sr + z * cr
+end
+
+--- Slot world position about table origin (0,0 in XZ). Canonical layout from `REF_AREA_KEY`: center on +Z at
+--- refDistance, offsets (slot.x, slot.z). We rotate by `-area.rotation` (matches sin·D / cos·D pivot, fixes mirror).
+--- Center ring uses scale sCenter = distance/refDistance; slot spread uses sSpread = 1 + (sCenter-1)*spreadBlend
+--- so spread stays tight on outer rings unless `spreadBlend` (0..1) is set toward 1 (full similarity).
 --- @param areaKey string
 --- @param slotIndex number
 --- @return Vector
 function NPCS.computeSlotWorldPosition(areaKey, slotIndex)
     local area = NPCS.areas[areaKey]
-    local slot = area.positions[slotIndex]
-    local rad = math.rad(area.rotation)
-    local cr, sr = math.cos(rad), math.sin(rad)
-    local rx = slot.x * cr - slot.z * sr
-    local rz = slot.x * sr + slot.z * cr
-    local cx = math.sin(rad) * area.distance
-    local cz = math.cos(rad) * area.distance
-    return Vector(cx + rx, area.groundLevel, cz + rz)
+    local refA = NPCS.areas[REF_AREA_KEY]
+    local refDist = refA and tonumber(refA.distance) or nil
+    local slot
+    if refA and U.Type(refA.positions) == "table" then
+        slot = refA.positions[slotIndex]
+    end
+    if slot == nil then
+        slot = area.positions[slotIndex]
+    end
+    if refDist == nil or refDist < 1e-6 then
+        local rad = math.rad(area.rotation)
+        local rx, rz = rotateXZ(slot.x, slot.z, rad)
+        local cx = math.sin(rad) * area.distance
+        local cz = math.cos(rad) * area.distance
+        return Vector(cx + rx, area.groundLevel, cz + rz)
+    end
+    local radNeg = -math.rad(area.rotation)
+    local rxO, rzO = rotateXZ(0, refDist, radNeg)
+    local rxD, rzD = rotateXZ(slot.x, slot.z, radNeg)
+    local sCenter = tonumber(area.distance) / refDist
+    if sCenter ~= sCenter or sCenter < 0 then
+        sCenter = 1
+    end
+    local blend = tonumber(area.spreadBlend)
+    if blend ~= blend then
+        blend = 0
+    end
+    if blend < 0 then
+        blend = 0
+    elseif blend > 1 then
+        blend = 1
+    end
+    local sSpread = 1 + (sCenter - 1) * blend
+    return Vector(rxO * sCenter + rxD * sSpread, area.groundLevel, rzO * sCenter + rzD * sSpread)
 end
 
 --- Figurine_Custom pivot sits at the bottom of the mesh; world Y = area groundLevel places feet on the plane.
+--- Yaw matches the whole area facing the table center: use the area pivot (distance + rotation, offset 0,0),
+--- not each slot's world position — per-slot atan2 fans the group and breaks rigid "table" placement.
 --- @param figurine Object
 --- @param areaKey string
 --- @param slotIndex number
 function NPCS.applyFigurinePlacement(figurine, areaKey, slotIndex)
+    local area = NPCS.areas[areaKey]
     local pos = NPCS.computeSlotWorldPosition(areaKey, slotIndex)
     figurine.setPosition(pos)
-    local yawDeg = math.atan2(-pos.x, -pos.z) * (180 / math.pi)
+    local rad = math.rad(area.rotation)
+    local pivotX = math.sin(rad) * area.distance
+    local pivotZ = math.cos(rad) * area.distance
+    local yawDeg = math.atan2(-pivotX, -pivotZ) * (180 / math.pi)
     figurine.setRotation(Vector(0, yawDeg, 0))
 end
 
@@ -306,9 +422,12 @@ function NPCS.applyCurrentLightMode(npcName, transitionTime)
     if transitionTime == nil then
         transitionTime = 0.35
     end
-    pcall(function()
+    local ok, err = pcall(function()
         L.SetLightMode(reg, modeKey, nil, transitionTime)
     end)
+    if not ok then
+        print("[NPCS] applyCurrentLightMode SetLightMode failed: " .. tostring(err))
+    end
 end
 
 --- @param obj Object
@@ -348,8 +467,11 @@ end
 --- @param npcName string
 --- @param areaKey string
 --- @param slotIndex number
+--- @param opts table|nil optional: deferUiRefresh — when true, skip storyteller NPC panel rebuild (caller refreshes once, e.g. group spawn).
 --- @return boolean, string|nil error
-function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex)
+function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
+    opts = U.Type(opts) == "table" and opts or {}
+    local deferUiRefresh = opts.deferUiRefresh == true
     if not validateNpcNameKey(npcName) then
         return false, "Invalid npc name (use letters, numbers, underscore only)."
     end
@@ -366,12 +488,6 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex)
     if U.Type(front) ~= "string" or front == "" then
         return false, "Set figurine.images.front in lib/npcs_data for " .. npcName
     end
-    local templateGuid = G.GUIDS.NPC_LIGHT_CLONE_TEMPLATE or ""
-    local template = getObjectFromGUID(templateGuid)
-    if template == nil then
-        return false, "Missing NPC_LIGHT_CLONE_TEMPLATE GUID in lib/guids.ttslua"
-    end
-
     local spawnPos
     local posOk, posErr = pcall(function()
         spawnPos = NPCS.computeSlotWorldPosition(areaKey, slotIndex)
@@ -380,42 +496,14 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex)
         return false, "NPC spawn (position): " .. tostring(posErr)
     end
 
-    local fig
-    ---@diagnostic disable-next-line: undefined-global
-    local okObj, errObj = pcall(function()
-        ---@diagnostic disable-next-line: undefined-global
-        fig = spawnObject({
-            type = "Figurine_Custom",
-            position = spawnPos,
-            rotation = Vector(0, 0, 0),
-            scale = Vector(1, 1, 1),
-        })
-    end)
-    if not okObj or fig == nil then
-        return false, "NPC spawn (spawnObject): " .. tostring(errObj)
-    end
-
-    local okName, errName = pcall(function()
-        fig.setName(def.name or npcName)
-    end)
-    if not okName then
-        return false, "NPC spawn (setName): " .. tostring(errName)
-    end
-
-    local okNotes, errNotes = pcall(function()
-        fig.setGMNotes(GM_PREFIX .. npcName)
-    end)
-    if not okNotes then
-        return false, "NPC spawn (setGMNotes): " .. tostring(errNotes)
-    end
-
-    if fig.setTags then
-        local okTags, errTags = pcall(function()
-            fig.setTags({ TAG_FIG })
-        end)
-        if not okTags then
-            return false, "NPC spawn (setTags): " .. tostring(errTags)
-        end
+    --- Final facing matches `applyFigurinePlacement` so the cutout is not briefly wrong-rotated at spawn.
+    local areaForSpawn = NPCS.areas[areaKey]
+    local yawDeg = 0
+    if areaForSpawn then
+        local rad = math.rad(areaForSpawn.rotation)
+        local pivotX = math.sin(rad) * areaForSpawn.distance
+        local pivotZ = math.cos(rad) * areaForSpawn.distance
+        yawDeg = math.atan2(-pivotX, -pivotZ) * (180 / math.pi)
     end
 
     --- Save JSON: CustomImage.ImageScalar (float). Not Transform scale. Lua setCustomObject uses snake_case `image_scalar`.
@@ -427,52 +515,98 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex)
         imageScalar = 500
     end
 
-    local okCust, errCust = pcall(function()
-        fig.setCustomObject({
-            image = front,
-            image_secondary = back,
-            image_scalar = imageScalar,
-            --- Save JSON: CustomFigurine.UseMinimalCollider — minimal standee collider in Lua API.
-            use_minimal_collider = true,
+    --- Figurine: `spawnObject` (not `spawnObjectData`) keeps `sound = false` — the Base API documents `sound` only on
+    --- `spawnObject` / `paste`, not on `spawnObjectData`. A full `spawnObjectData` + `CustomImage` blob could embed
+    --- Nickname/GMNotes/Locked in one table, but we keep this path for quiet spawns unless TTS adds a data-spawn mute.
+    ---
+    --- `callback_function` runs when the figurine is fully spawned (DOM-ready analogue); only `setCustomObject` must
+    --- wait for that — name/notes/tags could theoretically race on some builds, so they stay in the same callback.
+    ---
+    --- Placement is already correct via `position` / `rotation` above, so we skip `applyFigurinePlacement` and
+    --- `getPosition` here (same slot math as `computeSlotWorldPosition` + yaw).
+    local spawnedFig
+    ---@diagnostic disable-next-line: undefined-global
+    local okObj, errObj = pcall(function()
+        ---@diagnostic disable-next-line: undefined-global
+        spawnedFig = spawnObject({
+            type = "Figurine_Custom",
+            position = { spawnPos.x, spawnPos.y, spawnPos.z },
+            rotation = { 0, yawDeg, 0 },
+            scale = { 1, 1, 1 },
+            sound = false,
+            callback_function = function(fig)
+                if fig == nil then
+                    print("[NPCS] spawn callback: nil figurine for " .. tostring(npcName))
+                    safeAlertGM("NPCS spawn: nil figurine for " .. tostring(npcName))
+                    return
+                end
+                local postOk, postErr = pcall(function()
+                    fig.setName(def.name or npcName)
+                    fig.setGMNotes(GM_PREFIX .. npcName)
+                    if fig.setTags then
+                        fig.setTags({ TAG_FIG })
+                    end
+                    fig.setCustomObject({
+                        image = front,
+                        image_secondary = back,
+                        image_scalar = imageScalar,
+                        use_minimal_collider = true,
+                    })
+                    fig.setLock(true)
+
+                    --- Light: `spawnObjectData` from embedded save-shape defaults (lib/npcs_light_spawn_defaults.ttslua).
+                    --- No in-world template object required — unlike `Object.clone()`, `spawnObject` / `spawnObjectData` do not.
+                    local defaults = NLIGHT.NPC_LIGHT_OBJECT_DATA_DEFAULTS
+                    if U.Type(defaults) ~= "table" then
+                        error("NPC_LIGHT_OBJECT_DATA_DEFAULTS missing (lib/npcs_light_spawn_defaults)")
+                    end
+                    local lightData = cloneObjectDataForSpawn(defaults)
+                    if lightData == nil then
+                        error("NPC light spawn data copy failed for " .. npcName)
+                    end
+                    lightData.Nickname = "NPC Light " .. npcName
+                    lightData.Tags = { TAG_LIT }
+
+                    local lx = spawnPos.x + NPC_LIGHT_SPAWN_OFFSET.x
+                    local ly = spawnPos.y + NPC_LIGHT_SPAWN_OFFSET.y
+                    local lz = spawnPos.z + NPC_LIGHT_SPAWN_OFFSET.z
+                    ---@diagnostic disable-next-line: undefined-global
+                    local lit = spawnObjectData({
+                        data = lightData,
+                        position = { lx, ly, lz },
+                    })
+                    if lit == nil then
+                        error("spawnObjectData returned nil for NPC light " .. npcName)
+                    end
+                    local lg = lit.getGUID and lit.getGUID() or ""
+                    if lg == "" then
+                        error("spawned NPC light has no GUID for " .. npcName)
+                    end
+                    registerDynamicLightModes(npcName, lg)
+                    local rec = {
+                        figurineGuid = fig.getGUID(),
+                        lightGuid = lg,
+                        areaKey = areaKey,
+                        slotIndex = slotIndex,
+                        npcLightMode = "standard",
+                    }
+                    setInstanceRecord(npcName, rec)
+                    S.setStateVal("standard", "lights", NPCS.lightRegistryName(lg))
+                    NPCS.applyCurrentLightMode(npcName, 0)
+                    if not deferUiRefresh then
+                        NPCS.refreshStorytellerUIIfVisible()
+                    end
+                end)
+                if not postOk then
+                    print("[NPCS] spawn follow-up failed: " .. tostring(postErr))
+                    safeAlertGM("NPCS spawn follow-up: " .. tostring(postErr))
+                end
+            end,
         })
     end)
-
-    local okLock, errLock = pcall(function()
-        fig.setLock(true)
-    end)
-
-    Wait.time(function()
-        local postOk, postErr = pcall(function()
-            NPCS.applyFigurinePlacement(fig, areaKey, slotIndex)
-            local figPos = fig.getPosition()
-            ---@diagnostic disable-next-line: undefined-global
-            local lit = template.clone({ position = Vector(figPos.x + 3, figPos.y + 8, figPos.z + 3) })
-            if lit == nil then
-                error("clone spotlight returned nil for " .. npcName)
-            end
-            lit.setName("NPC Light " .. npcName)
-            if lit.setTags then
-                lit.setTags({ TAG_LIT })
-            end
-            local lg = lit.getGUID and lit.getGUID() or ""
-            registerDynamicLightModes(npcName, lg)
-            local rec = {
-                figurineGuid = fig.getGUID(),
-                lightGuid = lg,
-                areaKey = areaKey,
-                slotIndex = slotIndex,
-                npcLightMode = "standard",
-            }
-            setInstanceRecord(npcName, rec)
-            S.setStateVal("standard", "lights", NPCS.lightRegistryName(lg))
-            NPCS.applyCurrentLightMode(npcName, 0.5)
-            NPCS.refreshStorytellerUIIfVisible()
-        end)
-        if not postOk then
-            print("[NPCS] spawn follow-up failed: " .. tostring(postErr))
-            safeAlertGM("NPCS spawn follow-up: " .. tostring(postErr))
-        end
-    end, 0.15)
+    if not okObj or spawnedFig == nil then
+        return false, "NPC spawn (spawnObject): " .. tostring(errObj)
+    end
 
     return true, nil
 end
@@ -496,13 +630,15 @@ end
 
 --- @param npcName string
 --- @param areaKey string
+--- @param opts table|nil optional: skipUiRefresh — when true, do not rebuild NPC panel (batch moveGroup / chained callers refresh once).
 --- @return boolean, string|nil
-function NPCS.moveNpcToArea(npcName, areaKey)
+function NPCS.moveNpcToArea(npcName, areaKey, opts)
+    opts = U.Type(opts) == "table" and opts or {}
     local rec = getInstances()[npcName]
     if rec == nil then
         return false, "NPC not spawned."
     end
-    local slot = NPCS.findNextFreeSlotIndex(areaKey)
+    local slot = resolveSlotForMove(areaKey, rec.slotIndex)
     if slot == nil then
         return false, "No free slot in area."
     end
@@ -517,7 +653,9 @@ function NPCS.moveNpcToArea(npcName, areaKey)
     rec.slotIndex = slot
     setInstanceRecord(npcName, rec)
     NPCS.applyCurrentLightMode(npcName, 0)
-    NPCS.refreshStorytellerUIIfVisible()
+    if not opts.skipUiRefresh then
+        NPCS.refreshStorytellerUIIfVisible()
+    end
     return true, nil
 end
 
@@ -547,7 +685,7 @@ function NPCS.spawnGroup(groupId, areaKey)
             local captureName = row.name
             local captureIdx = row.idx
             Wait.time(function()
-                local ok, err = NPCS.spawnNpcAtSlot(captureName, areaKey, captureIdx)
+                local ok, err = NPCS.spawnNpcAtSlot(captureName, areaKey, captureIdx, { deferUiRefresh = true })
                 if not ok then
                     safeAlertGM("NPCS group spawn: " .. tostring(err))
                 end
@@ -570,13 +708,15 @@ function NPCS.clearArea(areaKey)
         end
     end
     for _, name in ipairs(toRemove) do
-        NPCS.removeNpc(name)
+        NPCS.removeNpc(name, { skipUiRefresh = true })
     end
     NPCS.refreshStorytellerUIIfVisible()
 end
 
 --- @param npcName string
-function NPCS.removeNpc(npcName)
+--- @param opts table|nil optional: skipUiRefresh — when true, do not rebuild NPC panel (caller refreshes once).
+function NPCS.removeNpc(npcName, opts)
+    opts = U.Type(opts) == "table" and opts or {}
     local rec = getInstances()[npcName]
     if rec == nil then
         return
@@ -599,13 +739,15 @@ function NPCS.removeNpc(npcName)
     S.setStateVal(lights, "lights")
     spotlightHeld[npcName] = nil
     setInstanceRecord(npcName, nil)
-    NPCS.refreshStorytellerUIIfVisible()
+    if not opts.skipUiRefresh then
+        NPCS.refreshStorytellerUIIfVisible()
+    end
 end
 
 function NPCS.destroyAllWorldAndState()
     local names = U.getKeys(getInstances())
     for _, name in ipairs(names) do
-        NPCS.removeNpc(name)
+        NPCS.removeNpc(name, { skipUiRefresh = true })
     end
     setAllInstances({})
     local lights = U.clone(S.getStateVal("lights") or {})
@@ -631,20 +773,21 @@ function NPCS.toggleOffStandard(npcName)
     end
     setInstanceRecord(npcName, rec)
     S.setStateVal(rec.npcLightMode, "lights", NPCS.lightRegistryName(rec.lightGuid))
-    NPCS.applyCurrentLightMode(npcName, 0.35)
+    -- Instant transition avoids overlapping coroutine sequences stomping enable/intensity.
+    NPCS.applyCurrentLightMode(npcName, 0)
     NPCS.refreshStorytellerUIIfVisible()
 end
 
 --- @param npcName string
 function NPCS.spotlightPress(npcName)
     spotlightHeld[npcName] = true
-    NPCS.applyCurrentLightMode(npcName, 0.2)
+    NPCS.applyCurrentLightMode(npcName, 0)
 end
 
 --- @param npcName string
 function NPCS.spotlightRelease(npcName)
     spotlightHeld[npcName] = nil
-    NPCS.applyCurrentLightMode(npcName, 0.35)
+    NPCS.applyCurrentLightMode(npcName, 0)
 end
 
 --- @return string[]
@@ -662,19 +805,21 @@ function NPCS.collectGroupIds()
     return list
 end
 
---- Re-register dynamic lights and prune bad saves. Call after S.InitializeGameState, before L.InitLights.
+--- Re-register dynamic lights and prune orphan `lights` keys. Call after S.InitializeGameState, before L.InitLights.
+--- IMPORTANT: Never drop instance rows when `getObjectFromGUID` is nil on the first onLoad frame — objects can
+--- appear slightly later; dropping them removed all NPC state and made Storyteller buttons no-ops.
 function NPCS.restoreAfterStateLoad()
     local inst = getInstances()
     local cleaned = {}
     for name, rec in pairs(inst) do
         if U.Type(rec) == "table" and rec.figurineGuid and rec.lightGuid then
+            if rec.npcLightMode ~= "off" and rec.npcLightMode ~= "standard" then
+                rec.npcLightMode = "standard"
+            end
+            cleaned[name] = rec
             local fig = getObjectFromGUID(rec.figurineGuid)
             local lit = getObjectFromGUID(rec.lightGuid)
             if fig ~= nil and lit ~= nil then
-                if rec.npcLightMode ~= "off" and rec.npcLightMode ~= "standard" then
-                    rec.npcLightMode = "standard"
-                end
-                cleaned[name] = rec
                 registerDynamicLightModes(name, rec.lightGuid)
             end
         end
@@ -682,11 +827,17 @@ function NPCS.restoreAfterStateLoad()
     setAllInstances(cleaned)
 
     local lights = U.clone(S.getStateVal("lights") or {})
+    local inUse = {}
+    for _, r in pairs(cleaned) do
+        if U.Type(r) == "table" and U.Type(r.lightGuid) == "string" then
+            inUse[r.lightGuid] = true
+        end
+    end
     local changed = false
     for k, _ in pairs(lights) do
         if U.Type(k) == "string" and string.sub(k, 1, 8) == "npcLight_" then
             local g = string.sub(k, 9)
-            if getObjectFromGUID(g) == nil then
+            if not inUse[g] then
                 lights[k] = nil
                 changed = true
             end
@@ -694,6 +845,19 @@ function NPCS.restoreAfterStateLoad()
     end
     if changed then
         S.setStateVal(lights, "lights")
+    end
+end
+
+--- Register LIGHTMODES (if objects exist) and apply each instance's `npcLightMode` with instant transition.
+--- Call after L.InitLights and again on a short defer so late-spawning objects still get a pass.
+function NPCS.reapplyAllNpcLightsFromInstances()
+    for name, rec in pairs(getInstances()) do
+        if U.Type(rec) == "table" and rec.lightGuid and getObjectFromGUID(rec.lightGuid) ~= nil then
+            if getObjectFromGUID(rec.figurineGuid or "") ~= nil then
+                registerDynamicLightModes(name, rec.lightGuid)
+                NPCS.applyCurrentLightMode(name, 0)
+            end
+        end
     end
 end
 
@@ -720,11 +884,14 @@ function NPCS.dispatchNpcUiClick(id)
         local movers = {}
         for name, rec in pairs(getInstances()) do
             if rec and rec.areaKey == p.fromArea then
-                table.insert(movers, name)
+                table.insert(movers, { name = name, slot = U.Type(rec.slotIndex) == "number" and rec.slotIndex or 0 })
             end
         end
-        for _, name in ipairs(movers) do
-            NPCS.moveNpcToArea(name, p.toArea)
+        table.sort(movers, function(a, b)
+            return a.slot < b.slot
+        end)
+        for _, m in ipairs(movers) do
+            NPCS.moveNpcToArea(m.name, p.toArea, { skipUiRefresh = true })
         end
         NPCS.refreshStorytellerUIIfVisible()
     elseif p.kind == "moveOne" then
@@ -789,7 +956,7 @@ function NPCS.refreshStorytellerUIDeferred()
     end, 0.12)
 end
 
---- Refresh only when the NPC panel is shown (safe for UpdateUIDisplays / onLoad).
+--- Refresh only when the NPC panel is shown (safe for frequent callers; cheap no-op when hidden).
 function NPCS.refreshStorytellerUIIfVisible()
     if UI.getAttribute == nil then
         NPCS.refreshStorytellerUI()
@@ -805,30 +972,203 @@ local function isUiDocumentLoading()
     return UI.loading == true
 end
 
---- Rebuild NPC panel dynamic rows (Row id npcPanelRowsPlaceholder, same pattern as LightDebug).
-function NPCS.refreshStorytellerUI()
-    if isUiDocumentLoading() then
-        Wait.condition(function()
-            NPCS.refreshStorytellerUI()
-        end, function()
-            return not isUiDocumentLoading()
-        end)
-        return
-    end
+--- Legacy: first-load / old saves; removed from `UI.getXml()` after the first successful splice.
+local PLACEHOLDER_ROW_ID = "npcPanelRowsPlaceholder"
+--- Stable anchor for the NPC panel grid; inner `<Row>` markup is replaced on every refresh.
+local NPC_PANEL_TABLE_LAYOUT_ID = "npcPanelNpcsTable"
 
-    local xml = UI.getXml and UI.getXml() or nil
-    if xml == nil or xml == "" then
-        print("[NPCS] refreshStorytellerUI: UI.getXml() returned empty — cannot inject rows.")
-        return
+--- Find the inclusive range of inner XML inside `<TableLayout id="...">` (balanced nested layouts).
+--- @param xml string
+--- @param tableId string
+--- @return integer|nil innerStart first character index of content to replace
+--- @return integer|nil innerEnd last character index of content to replace (inclusive; may be < innerStart when empty)
+local function findNpcPanelTableInnerRange(xml, tableId)
+    if U.Type(xml) ~= "string" or xml == "" or U.Type(tableId) ~= "string" or tableId == "" then
+        return nil, nil
     end
-    local placeholderId = "npcPanelRowsPlaceholder"
+    local idDouble = 'id="' .. tableId .. '"'
+    local idSingle = "id='" .. tableId .. "'"
+    local pos = 1
+    while true do
+        local openStart = xml:find("<TableLayout", pos, true)
+        if not openStart then
+            return nil, nil
+        end
+        local openEnd = xml:find(">", openStart, true)
+        if not openEnd then
+            return nil, nil
+        end
+        local openTag = xml:sub(openStart, openEnd)
+        if string.find(openTag, idDouble, 1, true) or string.find(openTag, idSingle, 1, true) then
+            local innerStart = openEnd + 1
+            local scan = innerStart
+            local depth = 1
+            while depth > 0 do
+                local nextOpen = xml:find("<TableLayout", scan, true)
+                local nextClose = xml:find("</TableLayout>", scan, true)
+                if not nextClose then
+                    return nil, nil
+                end
+                if nextOpen and nextOpen < nextClose then
+                    depth = depth + 1
+                    scan = nextOpen + #"<TableLayout"
+                else
+                    depth = depth - 1
+                    if depth == 0 then
+                        return innerStart, nextClose - 1
+                    end
+                    scan = nextClose + #"</TableLayout>"
+                end
+            end
+            return nil, nil
+        end
+        pos = openStart + 1
+    end
+end
+
+--- Replace NPC panel table body: prefer `TableLayout id=npcPanelNpcsTable` (survives every refresh); else legacy placeholder row.
+--- @param xml string
+--- @param tableXml string
+--- @return string|nil merged
+--- @return string|nil err
+local function spliceNpcPanelRowsIntoUiXml(xml, tableXml)
+    if U.Type(xml) ~= "string" or xml == "" then
+        return nil, "empty xml"
+    end
+    if U.Type(tableXml) ~= "string" then
+        return nil, "empty tableXml"
+    end
+    local innerStart, innerEnd = findNpcPanelTableInnerRange(xml, NPC_PANEL_TABLE_LAYOUT_ID)
+    if innerStart ~= nil and innerEnd ~= nil then
+        return xml:sub(1, innerStart - 1) .. tableXml .. xml:sub(innerEnd + 1), nil
+    end
+    local placeholderId = PLACEHOLDER_ROW_ID
     if not string.find(xml, placeholderId, 1, true) then
-        print("[NPCS] refreshStorytellerUI: placeholder id not in getXml (panel may still be inactive). Open NPCs tab again or check bundled XML. Xml length: " .. tostring(#xml))
+        return nil, "placeholder id not in xml"
+    end
+    local idIdx = xml:find('id="' .. placeholderId .. '"', 1, true)
+    if not idIdx then
+        idIdx = xml:find("id='" .. placeholderId .. "'", 1, true)
+    end
+    if not idIdx then
+        return nil, "could not locate id attribute for placeholder row"
+    end
+    local startIdx = nil
+    local pos = 1
+    while true do
+        local found = xml:find("<Row", pos, true)
+        if not found or found > idIdx then
+            break
+        end
+        startIdx = found
+        pos = found + 1
+    end
+    if startIdx == nil then
+        return nil, "could not find opening <Row for placeholder"
+    end
+    local endTag = "</Row>"
+    local endIdx = xml:find(endTag, idIdx, true)
+    if not endIdx then
+        return nil, "placeholder Row has no closing </Row>"
+    end
+    endIdx = endIdx + #endTag - 1
+    local before = xml:sub(1, startIdx - 1)
+    local after = xml:sub(endIdx + 1)
+    return before .. tableXml .. after, nil
+end
+
+--- @return function|false|nil
+local function resolveWriteWorkspaceFile()
+    if cachedWriteWorkspaceFile == false then
+        return nil
+    end
+    if cachedWriteWorkspaceFile ~= nil then
+        return cachedWriteWorkspaceFile
+    end
+    local ok, DBG = pcall(require, "core.debug")
+    if ok and DBG ~= nil and U.Type(DBG.writeWorkspaceFile) == "function" then
+        cachedWriteWorkspaceFile = DBG.writeWorkspaceFile
+        return cachedWriteWorkspaceFile
+    end
+    cachedWriteWorkspaceFile = false
+    return nil
+end
+
+--- Readable text file body for the current dynamic rows snapshot.
+--- @param tableXml string
+--- @param routeBuild table|nil
+--- @return string
+local function formatNpcPanelSnapshotFileContent(tableXml, routeBuild)
+    local ts = tostring(os and os.time and os.time() or 0)
+    local nRoutes = 0
+    if routeBuild ~= nil and U.Type(routeBuild.routes) == "table" then
+        nRoutes = #U.getKeys(routeBuild.routes)
+    end
+    return table.concat({
+        string.rep("=", 72),
+        "Toronto Rising — NPC Storyteller panel (dynamic rows)",
+        "TableLayout id: " .. NPC_PANEL_TABLE_LAYOUT_ID .. " (legacy placeholder: " .. PLACEHOLDER_ROW_ID .. ")",
+        string.format("Generated os.time: %s", ts),
+        string.format("Ephemeral click routes in this snapshot: %d (npcRoute*)", nRoutes),
+        string.rep("=", 72),
+        "",
+        "--- Dynamic row XML ---",
+        "",
+        tableXml,
+        "",
+    }, "\n")
+end
+
+--- Writes row XML to workspace; used by auto-dump and shares formatting with manual dump.
+--- @param tableXml string
+--- @param routeBuild table|nil
+--- @param silent boolean|nil
+--- @return boolean
+local function writeNpcPanelSnapshotToWorkspace(tableXml, routeBuild, silent)
+    local fn = resolveWriteWorkspaceFile()
+    if fn == nil then
+        return false
+    end
+    if U.Type(tableXml) ~= "string" then
+        return false
+    end
+    return fn(NPCS.NPC_PANEL_XML_WORKSPACE_PATH, formatNpcPanelSnapshotFileContent(tableXml, routeBuild), "none", silent == true)
+end
+
+--- @return boolean
+function NPCS.isAutoDumpStorytellerNpcPanelXmlEnabled()
+    return autoDumpStorytellerNpcPanelXml == true
+end
+
+--- @param enabled boolean
+function NPCS.setAutoDumpStorytellerNpcPanelXmlEnabled(enabled)
+    autoDumpStorytellerNpcPanelXml = enabled == true
+end
+
+--- Updates admin toggle colors/text (grey = off, green = on). Safe if UI not loaded.
+function NPCS.syncAdminNpcPanelXmlDumpButton()
+    local id = NPCS.ADMIN_NPC_XML_DUMP_BUTTON_ID
+    if UI.getAttribute == nil or id == nil or id == "" then
         return
     end
+    local on = autoDumpStorytellerNpcPanelXml == true
+    --- TTS Button colors: Normal|Highlighted|Pressed|Disabled
+    local colorsOff = "#666666|#555555|#777777|rgba(0.22,0.22,0.22,0.45)"
+    local colorsOn = "#2E8B57|#3CB371|#228B22|rgba(0.12,0.45,0.22,0.85)"
+    pcall(function()
+        UI.setAttribute(id, "colors", on and colorsOn or colorsOff)
+        UI.setAttribute(id, "text", on and "NPC XML → IDE (on)" or "NPC XML → IDE (off)")
+    end)
+end
 
-    --- Build routes off the live table until setXml succeeds — avoids clearing clickRoutes then bailing (stale button ids).
-    local routeBuild = { routes = {}, seq = 0 }
+--- Build XML for rows inside `TableLayout id=npcPanelNpcsTable` (same markup as refreshStorytellerUI).
+--- @param routeBuild table { routes: table, seq: number }
+--- @return string
+local function buildStorytellerNpcPanelRowsXml(routeBuild)
+    if U.Type(routeBuild) ~= "table" or U.Type(routeBuild.routes) ~= "table" or U.Type(routeBuild.seq) ~= "number" then
+        return ""
+    end
+    local prevBuild = clickRouteBuild
     clickRouteBuild = routeBuild
 
     local areas = sortedAreaKeys()
@@ -848,26 +1188,27 @@ function NPCS.refreshStorytellerUI()
         table.sort(list, function(a, b)
             return a.slot < b.slot
         end)
-        local areaEsc = xmlEscape(ak)
+        local aLabel = NPCS.areas[ak].label
         local headerBits = {
             string.format(
-                [[<Row preferredHeight="26"><Cell columnSpan="6"><HorizontalLayout spacing="4"><Text fontSize="11" color="#FFD700">Area: %s</Text>]],
-                areaEsc
+                [[<Row class="hud_storyteller_areas hud_storyteller_button_row"><Cell class="hud_storyteller_areas hud_storyteller_wide"><HorizontalLayout class="hud_storyteller_button_row hud_storyteller_areas"><Text class="hud_storyteller_label">%s</Text>]],
+                aLabel
             ),
         }
         for _, a in ipairs(areas) do
             if a ~= ak then
+                local aLabel = NPCS.areas[a].label
                 local rid = newClickRoute({ kind = "moveGroup", fromArea = ak, toArea = a })
                 table.insert(headerBits, string.format(
-                    [[<Button id="%s" fontSize="9" preferredHeight="22" onClick="HUD_npcDispatch">To %s</Button>]],
+                    [[<Button id="%s" class="hud_storyteller_button hud_storyteller_button_label" onClick="HUD_npcDispatch">%s</Button>]],
                     rid,
-                    xmlEscape(a)
+                    xmlEscape(aLabel)
                 ))
             end
         end
         local clearId = newClickRoute({ kind = "clearArea", areaKey = ak })
         table.insert(headerBits, string.format(
-            [[<Button id="%s" fontSize="9" preferredHeight="22" colors="#662222|#AA3333|#FF6666|#AA3333" onClick="HUD_npcDispatch">Clear</Button></HorizontalLayout></Cell></Row>]],
+            [[<Button id="%s" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">×</Button></HorizontalLayout></Cell></Row>]],
             clearId
         ))
         table.insert(rowsXml, table.concat(headerBits, ""))
@@ -876,7 +1217,7 @@ function NPCS.refreshStorytellerUI()
             local n = entry.name
             local rec = getInstances()[n]
             local mode = rec and rec.npcLightMode or "standard"
-            local litLabel = (mode == "off") and "Light: OFF" or "Light: STD"
+            local litClass = (mode == "off") and "hud_storyteller_button_icon_off" or "hud_storyteller_button_icon_on"
             local toggleId = newClickRoute({ kind = "toggleLight", npcName = n })
             local spotId = newClickRoute({ kind = "spot", npcName = n })
             local statsId = newClickRoute({ kind = "stats", npcName = n })
@@ -884,25 +1225,26 @@ function NPCS.refreshStorytellerUI()
             local moveBits = {}
             for _, ta in ipairs(areas) do
                 if ta ~= ak then
+                    local aLabel = NPCS.areas[ta].label
                     local mid = newClickRoute({ kind = "moveOne", npcName = n, toArea = ta })
                     table.insert(moveBits, string.format(
-                        [[<Button id="%s" fontSize="9" preferredHeight="22" onClick="HUD_npcDispatch">%s</Button>]],
+                        [[<Button id="%s" class="hud_storyteller_button hud_storyteller_button_label" onClick="HUD_npcDispatch">%s</Button>]],
                         mid,
-                        xmlEscape(ta)
+                        xmlEscape(aLabel)
                     ))
                 end
             end
             table.insert(rowsXml, string.format([[
-<Row preferredHeight="28">
-  <Cell><Button id="%s" fontSize="9" preferredWidth="72" onClick="HUD_npcDispatch">%s</Button></Cell>
-  <Cell><Button id="%s" fontSize="9" preferredWidth="28" colors="#444466|#666688|#8888AA|#666688" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button></Cell>
-  <Cell><Text fontSize="10" color="#EEEEEE">%s</Text></Cell>
-  <Cell><Button id="%s" fontSize="8" onClick="HUD_npcDispatch">Stats</Button></Cell>
-  <Cell><HorizontalLayout spacing="2">%s</HorizontalLayout></Cell>
-  <Cell><Button id="%s" fontSize="8" colors="#662222|#AA3333|#FF6666|#AA3333" onClick="HUD_npcDispatch">X</Button></Cell>
+<Row class="hud_storyteller_areas hud_storyteller_button_row">
+  <Cell class="hud_storyteller_areas"><Button id="%s" class="hud_storyteller_button hud_storyteller_button_label %s" onClick="HUD_npcDispatch">⊚</Button></Cell>
+  <Cell class="hud_storyteller_areas"><Button id="%s" class="hud_storyteller_button hud_storyteller_button_icon" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button></Cell>
+  <Cell class="hud_storyteller_areas"><Text class="hud_storyteller_label">%s</Text></Cell>
+  <Cell class="hud_storyteller_areas"><Button id="%s" class="hud_storyteller_button hud_storyteller_button_label" onClick="HUD_npcDispatch">Stats</Button></Cell>
+  <Cell class="hud_storyteller_areas"><HorizontalLayout class="hud_storyteller_areas">%s</HorizontalLayout></Cell>
+  <Cell class="hud_storyteller_areas"><Button id="%s" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">X</Button></Cell>
 </Row>]],
                 toggleId,
-                litLabel,
+                litClass,
                 spotId,
                 xmlEscape((NPCS.characters[n] and NPCS.characters[n].fullName) or n),
                 statsId,
@@ -912,29 +1254,38 @@ function NPCS.refreshStorytellerUI()
         end
     end
 
-    table.insert(rowsXml, [[<Row preferredHeight="26"><Cell columnSpan="6"><Text fontSize="12" fontStyle="Bold" color="#FFE066">Spawn - individuals</Text></Cell></Row>]])
+    table.insert(rowsXml, [[<Row class="hud_storyteller_header"><Cell class="hud_storyteller_wide"><Text class="hud_storyteller_header">Individuals</Text></Cell></Row>]])
     for npcName, def in pairs(NPCS.characters) do
         if getInstances()[npcName] == nil then
             local bits = {}
             for _, ak in ipairs(areas) do
                 if NPCS.areaHasFreeSlot(ak) then
+                    local aLabel = NPCS.areas[ak].label
                     local sid = newClickRoute({ kind = "spawnOne", npcName = npcName, areaKey = ak })
                     table.insert(bits, string.format(
-                        [[<Button id="%s" fontSize="9" preferredHeight="22" onClick="HUD_npcDispatch">%s</Button>]],
+                        [[<Button id="%s" class="hud_storyteller_button hud_storyteller_button_label" onClick="HUD_npcDispatch">%s</Button>]],
                         sid,
-                        xmlEscape(ak)
+                        xmlEscape(aLabel)
+                    ))
+                    table.insert(bits, string.format(
+                        [[<Button id="%s" class="hud_storyteller_button hud_storyteller_button_label" onClick="HUD_npcDispatch">%s</Button>]],
+                        sid,
+                        xmlEscape(aLabel)
+                    ))
+                    table.insert(bits, string.format(
+                        [[<Button id="%s" class="hud_storyteller_button hud_storyteller_button_label" onClick="HUD_npcDispatch">%s</Button>]],
+                        sid,
+                        xmlEscape(aLabel)
                     ))
                 end
             end
             if #bits > 0 then
                 local displayName = xmlEscape(def.fullName or npcName)
-                local rowH = math.max(36, 12 + #bits * 24)
                 local rowXml = string.format(
-                    [[<Row preferredHeight="%d">
-  <Cell columnSpan="3"><Text fontSize="11" fontStyle="Bold" color="#FFFFFF" alignment="UpperLeft">%s</Text></Cell>
-  <Cell columnSpan="3"><VerticalLayout spacing="2" childForceExpandWidth="true" childForceExpandHeight="false">%s</VerticalLayout></Cell>
+                    [[<Row class="hud_storyteller_button_row">
+  <Cell><Text class="hud_storyteller_label">%s</Text></Cell>
+  <Cell columnSpan="5"><HorizontalLayout class="hud_storyteller_button_row">%s</HorizontalLayout></Cell>
 </Row>]],
-                    rowH,
                     displayName,
                     table.concat(bits, "")
                 )
@@ -943,27 +1294,25 @@ function NPCS.refreshStorytellerUI()
         end
     end
 
-    table.insert(rowsXml, [[<Row preferredHeight="26"><Cell columnSpan="6"><Text fontSize="12" fontStyle="Bold" color="#FFE066">Spawn - groups (empty area only)</Text></Cell></Row>]])
+    table.insert(rowsXml, [[<Row class="hud_storyteller_header"><Cell class="hud_storyteller_wide"><Text class="hud_storyteller_header">Groups</Text></Cell></Row>]])
     for _, gid in ipairs(NPCS.collectGroupIds()) do
         local bits = {}
         for _, ak in ipairs(areas) do
             if NPCS.isAreaCompletelyEmpty(ak) then
                 local gid2 = newClickRoute({ kind = "spawnGroup", groupId = gid, areaKey = ak })
                 table.insert(bits, string.format(
-                    [[<Button id="%s" fontSize="9" preferredHeight="22" onClick="HUD_npcDispatch">%s</Button>]],
+                    [[<Button id="%s" class="hud_storyteller_button hud_storyteller_button_label" onClick="HUD_npcDispatch">%s</Button>]],
                     gid2,
                     xmlEscape(ak)
                 ))
             end
         end
         if #bits > 0 then
-            local rowH = math.max(36, 12 + #bits * 24)
             table.insert(rowsXml, string.format(
-                [[<Row preferredHeight="%d">
-  <Cell columnSpan="3"><Text fontSize="11" fontStyle="Bold" color="#EEEEEE" alignment="UpperLeft">%s</Text></Cell>
-  <Cell columnSpan="3"><VerticalLayout spacing="2" childForceExpandWidth="true" childForceExpandHeight="false">%s</VerticalLayout></Cell>
+                [[<Row class="hud_storyteller_button_row">
+  <Cell><Text class="hud_storyteller_label">%s</Text></Cell>
+  <Cell columnSpan="5"><HorizontalLayout class="hud_storyteller_button_row">%s</HorizontalLayout></Cell>
 </Row>]],
-                rowH,
                 xmlEscape(gid),
                 table.concat(bits, "")
             ))
@@ -981,41 +1330,165 @@ function NPCS.refreshStorytellerUI()
     end
 
     local tableXml = table.concat(rowsXml, "\n")
-    local idIdx = xml:find('id="' .. placeholderId .. '"', 1, true)
-    if not idIdx then
-        idIdx = xml:find("id='" .. placeholderId .. "'", 1, true)
-    end
-    if not idIdx then
-        print("[NPCS] refreshStorytellerUI: could not locate id attribute for placeholder row.")
-        clickRouteBuild = nil
+    clickRouteBuild = prevBuild
+    return tableXml
+end
+
+--- Write generated NPC storyteller panel XML to the IDE workspace (TTS Tools sendExternalMessage).
+--- Default file: debug_logs/npcs_storyteller_panel.txt
+--- @param opts table|nil includeRoutes: include JSON map of npcRoute* payloads; includeMergedFullUi: append full UI XML after splice (large); path: relative workspace path
+function NPCS.dumpStorytellerPanelXmlToWorkspace(opts)
+    opts = U.Type(opts) == "table" and opts or {}
+    local includeRoutes = opts.includeRoutes == true
+    local includeMerged = opts.includeMergedFullUi == true
+    local relPath = U.Type(opts.path) == "string" and opts.path ~= "" and opts.path or NPCS.NPC_PANEL_XML_WORKSPACE_PATH
+
+    local okD, DBG = pcall(require, "core.debug")
+    if not okD or DBG == nil or U.Type(DBG.writeWorkspaceFile) ~= "function" then
+        print("[NPCS] dumpStorytellerPanelXmlToWorkspace: core.debug writeWorkspaceFile unavailable")
         return
     end
-    local startIdx = nil
-    local pos = 1
-    while true do
-        local found = xml:find("<Row", pos, true)
-        if not found or found > idIdx then
-            break
+
+    local rb = { routes = {}, seq = 0 }
+    local tableXml = buildStorytellerNpcPanelRowsXml(rb)
+    local ts = tostring(os and os.time and os.time() or 0)
+    local nRoutes = #U.getKeys(rb.routes)
+    local parts = {
+        string.rep("=", 72),
+        "Toronto Rising — NPC Storyteller panel (dynamic rows)",
+        "This is the XML spliced into TableLayout id: " .. NPC_PANEL_TABLE_LAYOUT_ID .. " (or legacy placeholder row).",
+        string.format("Generated os.time: %s", ts),
+        string.format("Ephemeral click routes in this snapshot: %d (npcRoute*)", nRoutes),
+        string.rep("=", 72),
+        "",
+        "--- Section A: Dynamic row XML only ---",
+        "",
+        tableXml,
+        "",
+    }
+    if includeRoutes then
+        table.insert(parts, "--- Section B: npcRoute id → payload (JSON, debug) ---")
+        table.insert(parts, "")
+        if JSON and U.Type(JSON.encode_pretty) == "function" then
+            table.insert(parts, JSON.encode_pretty(rb.routes))
+        else
+            table.insert(parts, tostring(rb.routes))
         end
-        startIdx = found
-        pos = found + 1
+        table.insert(parts, "")
     end
-    if startIdx == nil then
-        print("[NPCS] refreshStorytellerUI: could not find opening <Row for placeholder.")
-        clickRouteBuild = nil
+    if includeMerged then
+        table.insert(parts, "--- Section C: Full UI XML after splice (current UI.getXml + Section A) ---")
+        table.insert(parts, "")
+        local xml = UI.getXml and UI.getXml() or nil
+        if U.Type(xml) ~= "string" or xml == "" then
+            table.insert(parts, "(skipped: UI.getXml() empty — load game / open UI)")
+        else
+            local merged, err = spliceNpcPanelRowsIntoUiXml(xml, tableXml)
+            if merged then
+                table.insert(parts, merged)
+            else
+                table.insert(parts, "(splice failed: " .. tostring(err) .. ")")
+            end
+        end
+        table.insert(parts, "")
+    end
+
+    DBG.writeWorkspaceFile(relPath, table.concat(parts, "\n"), "none")
+    print("[NPCS] dumpStorytellerPanelXmlToWorkspace: wrote " .. relPath)
+end
+
+--- Fingerprint of instance layout + spawn/group affordances that drive `buildStorytellerNpcPanelRowsXml`.
+--- Cheap vs `UI.getXml()` + `UI.setXml()`; must stay in sync with row builder logic.
+--- @return string
+local function computeNpcPanelLayoutFingerprint()
+    local inst = getInstances()
+    local occLines = {}
+    for name, rec in pairs(inst) do
+        if U.Type(rec) == "table" then
+            table.insert(occLines, string.format(
+                "O:%s|%s|%s|%s",
+                tostring(name),
+                tostring(rec.areaKey),
+                tostring(rec.slotIndex),
+                tostring(rec.npcLightMode or "standard")
+            ))
+        end
+    end
+    table.sort(occLines)
+
+    local areas = sortedAreaKeys()
+    local charNames = U.getKeys(NPCS.characters or {})
+    table.sort(charNames)
+    local spawnLines = {}
+    for _, npcName in ipairs(charNames) do
+        if inst[npcName] == nil then
+            for _, ak in ipairs(areas) do
+                if NPCS.areaHasFreeSlot(ak) then
+                    table.insert(spawnLines, "S:" .. tostring(npcName) .. "@" .. tostring(ak))
+                end
+            end
+        end
+    end
+    table.sort(spawnLines)
+
+    local groupLines = {}
+    for _, gid in ipairs(NPCS.collectGroupIds()) do
+        for _, ak in ipairs(areas) do
+            if NPCS.isAreaCompletelyEmpty(ak) then
+                table.insert(groupLines, "G:" .. tostring(gid) .. "@" .. tostring(ak))
+            end
+        end
+    end
+    table.sort(groupLines)
+
+    return table.concat(occLines, "\n")
+        .. "\n--\n"
+        .. table.concat(spawnLines, "\n")
+        .. "\n--\n"
+        .. table.concat(groupLines, "\n")
+end
+
+--- Rebuild NPC panel dynamic rows inside TableLayout id=npcPanelNpcsTable (legacy: placeholder row id).
+function NPCS.refreshStorytellerUI()
+    if NPCS.DISABLE_STORYTELLER_NPC_PANEL_XML_REFRESH then
         return
     end
-    local endTag = "</Row>"
-    local endIdx = xml:find(endTag, idIdx, true)
-    if not endIdx then
-        print("[NPCS] refreshStorytellerUI: placeholder Row has no closing </Row>.")
-        clickRouteBuild = nil
+    if isUiDocumentLoading() then
+        Wait.condition(function()
+            NPCS.refreshStorytellerUI()
+        end, function()
+            return not isUiDocumentLoading()
+        end)
         return
     end
-    endIdx = endIdx + #endTag - 1
-    local before = xml:sub(1, startIdx - 1)
-    local after = xml:sub(endIdx + 1)
-    local newXml = before .. tableXml .. after
+
+    local layoutFp = computeNpcPanelLayoutFingerprint()
+    if lastNpcPanelLayoutFingerprint ~= nil and layoutFp == lastNpcPanelLayoutFingerprint then
+        return
+    end
+
+    local xml = UI.getXml and UI.getXml() or nil
+    if xml == nil or xml == "" then
+        print("[NPCS] refreshStorytellerUI: UI.getXml() returned empty — cannot inject rows.")
+        return
+    end
+    local idPat = 'id="' .. NPC_PANEL_TABLE_LAYOUT_ID .. '"'
+    local idPat2 = "id='" .. NPC_PANEL_TABLE_LAYOUT_ID .. "'"
+    local hasTable = string.find(xml, idPat, 1, true) or string.find(xml, idPat2, 1, true)
+    local hasLegacy = string.find(xml, PLACEHOLDER_ROW_ID, 1, true)
+    if not hasTable and not hasLegacy then
+        print("[NPCS] refreshStorytellerUI: no NPC table anchor in getXml (need id=" .. NPC_PANEL_TABLE_LAYOUT_ID .. " or legacy " .. PLACEHOLDER_ROW_ID .. "). Panel inactive or old bundle. Xml length: " .. tostring(#xml))
+        return
+    end
+
+    --- Routes are accumulated in routeBuild during XML build; committed only after setXml succeeds.
+    local routeBuild = { routes = {}, seq = 0 }
+    local tableXml = buildStorytellerNpcPanelRowsXml(routeBuild)
+    local newXml, spliceErr = spliceNpcPanelRowsIntoUiXml(xml, tableXml)
+    if newXml == nil then
+        print("[NPCS] refreshStorytellerUI: " .. tostring(spliceErr))
+        return
+    end
     local setOk, setErr = pcall(function()
         UI.setXml(newXml)
     end)
@@ -1027,10 +1500,21 @@ function NPCS.refreshStorytellerUI()
     clickRoutes = routeBuild.routes
     clickRouteSeq = routeBuild.seq
     clickRouteBuild = nil
+    lastNpcPanelLayoutFingerprint = layoutFp
+
+    if autoDumpStorytellerNpcPanelXml then
+        pcall(function()
+            writeNpcPanelSnapshotToWorkspace(tableXml, routeBuild, true)
+        end)
+    end
+
     -- TTS applies setXml asynchronously (UI.loading). Re-select NPC tab after load so visibility matches merged XML.
     Wait.condition(function()
         pcall(function()
             UIH.selectStorytellerPanel("npcs")
+        end)
+        pcall(function()
+            NPCS.syncAdminNpcPanelXmlDumpButton()
         end)
     end, function()
         return not isUiDocumentLoading()

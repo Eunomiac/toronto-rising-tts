@@ -17,8 +17,8 @@ local UIH = require("lib.ui_helpers")
 local HUDP = require("core.hud_player")
 NPCS = require("core.npcs")
 
--- Load debug module (only in development - exposes test functions globally)
-local DEBUG = require("core.debug")
+-- Load debug module (only in development). Must be global so TTS console `lua DEBUG.foo()` works.
+DEBUG = require("core.debug")
 
 -- Load Console++ integration (optional - enables external command support)
 -- This allows external tools to send commands to the game via onExternalMessage
@@ -68,6 +68,12 @@ function onLoad(saved_data)
     -- Restore spawned NPC spotlight registrations before applying saved light modes
     NPCS.restoreAfterStateLoad()
     L.InitLights()
+    NPCS.reapplyAllNpcLightsFromInstances()
+    -- Objects can resolve one frame late on load; second pass restores NPC lights + registrations.
+    Wait.time(function()
+        NPCS.restoreAfterStateLoad()
+        NPCS.reapplyAllNpcLightsFromInstances()
+    end, 0.35)
 
     -- UI XML is set by TTS Tools extension from bundled .tts/objects/Global.xml
     -- Inject dynamic spotlight rows into the LIGHT_TABLE_ROWS placeholder
@@ -75,6 +81,13 @@ function onLoad(saved_data)
 
     -- Update UI displays with current state
     UpdateUIDisplays()
+
+    -- NPC panel rows are not refreshed from `UpdateUIDisplays` (perf). After state restore, merge once if that panel is visible.
+    Wait.time(function()
+        if NPCS and NPCS.refreshStorytellerUIIfVisible then
+            NPCS.refreshStorytellerUIIfVisible()
+        end
+    end, 0.15)
 
     -- Debug module help (optional - shows available test commands)
     -- DEBUG.help()
@@ -484,6 +497,20 @@ function HUD_debugTestEasing(player, button, id)
     if testEasing then testEasing() else broadcastToAll("testEasing not loaded", {1, 0.5, 0}) end
 end
 
+--- Toggles auto-export of NPC storyteller panel row XML to the IDE workspace (TTS Tools) on each panel refresh.
+--- Admin button: grey (off), green (on).
+function HUD_toggleNpcPanelXmlDump(player, button, id)
+    if NPCS == nil or NPCS.setAutoDumpStorytellerNpcPanelXmlEnabled == nil then
+        return
+    end
+    local nextOn = not NPCS.isAutoDumpStorytellerNpcPanelXmlEnabled()
+    NPCS.setAutoDumpStorytellerNpcPanelXmlEnabled(nextOn)
+    NPCS.syncAdminNpcPanelXmlDumpButton()
+    if nextOn and NPCS.refreshStorytellerUIIfVisible then
+        NPCS.refreshStorytellerUIIfVisible()
+    end
+end
+
 function HUD_debugTestIntegration(player, button, id)
     if testIntegration then testIntegration() else broadcastToAll("testIntegration not loaded", {1, 0.5, 0}) end
 end
@@ -567,19 +594,36 @@ function UpdateUIDisplays()
         HUDP.updatePlayerUI(player, color)
     end)
 
-    -- Avoid rebuilding NPC XML while the panel is hidden: UI.getXml() may not contain npcPanelRowsPlaceholder.
-    if NPCS and NPCS.refreshStorytellerUIIfVisible then
-        NPCS.refreshStorytellerUIIfVisible()
+    -- NPC storyteller panel: do not refresh here. `UpdateUIDisplays` runs on phase/scene/etc.; a full
+    -- `UI.getXml` + `UI.setXml` rebuild is very expensive. The panel updates when NPCs change and when
+    -- the NPC tab is opened (`HUD_selectStorytellerPanel` → deferred refresh).
+
+    if NPCS and NPCS.syncAdminNpcPanelXmlDumpButton then
+        pcall(function()
+            NPCS.syncAdminNpcPanelXmlDumpButton()
+        end)
     end
+end
+
+--- Resolve UI element id for NPC panel controls (onClick / mouse handlers).
+--- TTS sometimes passes the element id in `value` instead of `id`.
+--- @param value any
+--- @param id any
+--- @return string|nil
+local function resolveNpcPanelRouteId(value, id)
+    if type(id) == "string" and id ~= "" then
+        return id
+    end
+    if type(value) == "string" and string.match(value, "^npcRoute%d+$") then
+        return value
+    end
+    return nil
 end
 
 --- Routed NPC panel button clicks (dynamic ids: npcRouteN).
 --- TTS passes (player, value, id); value is mouse button string for Button (e.g. "-1").
 function HUD_npcDispatch(player, value, id)
-    local routeId = id
-    if (routeId == nil or routeId == "") and type(value) == "string" and string.match(value, "^npcRoute%d+$") then
-        routeId = value
-    end
+    local routeId = resolveNpcPanelRouteId(value, id)
     local dOk, dErr = pcall(function()
         if NPCS and NPCS.dispatchNpcUiClick then
             NPCS.dispatchNpcUiClick(routeId)
@@ -591,16 +635,18 @@ function HUD_npcDispatch(player, value, id)
 end
 
 --- Hold-to-spotlight: mouse down on ◎ control.
-function HUD_npcSpotDown(player, button, id)
-    if NPCS and NPCS.dispatchNpcSpotDown then
-        NPCS.dispatchNpcSpotDown(id)
+function HUD_npcSpotDown(player, value, id)
+    local routeId = resolveNpcPanelRouteId(value, id)
+    if NPCS and NPCS.dispatchNpcSpotDown and routeId then
+        NPCS.dispatchNpcSpotDown(routeId)
     end
 end
 
 --- Hold-to-spotlight: mouse up on ◎ control.
-function HUD_npcSpotUp(player, button, id)
-    if NPCS and NPCS.dispatchNpcSpotUp then
-        NPCS.dispatchNpcSpotUp(id)
+function HUD_npcSpotUp(player, value, id)
+    local routeId = resolveNpcPanelRouteId(value, id)
+    if NPCS and NPCS.dispatchNpcSpotUp and routeId then
+        NPCS.dispatchNpcSpotUp(routeId)
     end
 end
 

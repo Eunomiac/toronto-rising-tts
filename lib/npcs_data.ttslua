@@ -19,7 +19,7 @@ D.lights = {
   standard = {
     enabled = true,
     color = Color(1, 1, 1),
-    range = 10,
+    range = 100,
     intensity = 3,
     angle = 40,
     lookAtYShift = 0.1,
@@ -29,20 +29,26 @@ D.lights = {
   spotlight = {
     enabled = true,
     color = Color(1, 1, 1),
-    range = 10,
+    range = 100,
     intensity = 8,
-    angle = 35,
-    lookAtYShift = 0.2,
+    angle = 50,
+    lookAtYShift = 0.1,
     positionYShift = 0.3,
-    distance = -15,
+    distance = -20,
   },
 }
 
+--[[
+    Optional per area: spreadBlend (0..1, default 0). Scales how much farther `distance` widens slot spacing:
+    spreadBlend 0 = same lateral packing as centerForward; 1 = full similarity (spacing grows with distance).
+]]
 D.areas = {
   centerForward = {
+    label = "CF",
     rotation = 0,
     distance = 100,
-    groundLevel = -40,
+    groundLevel = -60,
+    spreadBlend = 0,
     positions = {
       { x = 0,   z = 0 },
       { x = 25,  z = 5 },
@@ -54,9 +60,43 @@ D.areas = {
     },
   },
   nearLeft = {
-    rotation = 80,
-    distance = 80,
+    label = "◀",
+    rotation = -20,
+    distance = 130,
+    groundLevel = -50,
+    spreadBlend = 0,
+    positions = {
+      { x = 0,   z = 0 },
+      { x = 25,  z = 5 },
+      { x = -25, z = 5 },
+      { x = 50,  z = 10 },
+      { x = -50, z = 10 },
+      { x = 75,  z = 15 },
+      { x = -75, z = 15 },
+    },
+  },
+  nearRight = {
+    label = "▶",
+    rotation = 20,
+    distance = 130,
+    groundLevel = -50,
+    spreadBlend = 0,
+    positions = {
+      { x = 0,   z = 0 },
+      { x = 25,  z = 5 },
+      { x = -25, z = 5 },
+      { x = 50,  z = 10 },
+      { x = -50, z = 10 },
+      { x = 75,  z = 15 },
+      { x = -75, z = 15 },
+    },
+  },
+  farRight = {
+    label = "▶▶",
+    rotation = 40,
+    distance = 160,
     groundLevel = -40,
+    spreadBlend = 0,
     positions = {
       { x = 0,   z = 0 },
       { x = 25,  z = 5 },
@@ -68,9 +108,11 @@ D.areas = {
     },
   },
   farLeft = {
-    rotation = 70,
-    distance = 180,
-    groundLevel = 0,
+    label = "◀◀",
+    rotation = -40,
+    distance = 160,
+    groundLevel = -40,
+    spreadBlend = 0,
     positions = {
       { x = 0,   z = 0 },
       { x = 25,  z = 5 },
@@ -94,14 +136,280 @@ D.characters = {
     figurine = {
       images = {
         front =
-        "https://steamusercontent-a.akamaihd.net/ugc/9558698844120632238/281007CD62586A43E6D576A71B58BDE9C6AAE057/",
+        "https://steamusercontent-a.akamaihd.net/ugc/12474241378119829812/1F8C9C4374E4BB587D551FC5B1A3AED1BB3ABB2B/",
         back =
-        "https://steamusercontent-a.akamaihd.net/ugc/9558698844120632238/281007CD62586A43E6D576A71B58BDE9C6AAE057/",
+        "https://steamusercontent-a.akamaihd.net/ugc/12474241378119829812/1F8C9C4374E4BB587D551FC5B1A3AED1BB3ABB2B/",
       },
       scale = 53,
     },
     groups = {
       fiveKeys = 2
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  alexandra = {
+    name = "alexandra",
+    fullName = "Alexandra",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/11648768264219466487/3682360C8DE4DF5B9E644C070C9BE83B11CEBD14/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/11648768264219466487/3682360C8DE4DF5B9E644C070C9BE83B11CEBD14/",
+      },
+      scale = 53,
+    },
+    groups = {
+      redeemers = 2
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  alexisHoltt = {
+    name = "alexisHoltt",
+    fullName = "Alexis Holtt",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/17807937982927959683/359EA34CF089DCDE2A2348CB0967A29F86A52FEC/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/17807937982927959683/359EA34CF089DCDE2A2348CB0967A29F86A52FEC/",
+      },
+      scale = 53,
+    },
+    groups = {
+      petitioners = 2
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  averyInnis = {
+    name = "averyInnis",
+    fullName = "Avery Innis",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/9454498514072933553/9DC5344168E11D8ACE5F836D2847DFE0CE495351/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/9454498514072933553/9DC5344168E11D8ACE5F836D2847DFE0CE495351/",
+      },
+      scale = 53,
+    },
+    groups = {
+      petitioners = 3
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  benedictKincaid = {
+    name = "benedictKincaid",
+    fullName = "Benedict Kincaid",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/11038379578645526037/B2F6F2CF8C41B8D3C2DC4B8D43F48515789466EA/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/11038379578645526037/B2F6F2CF8C41B8D3C2DC4B8D43F48515789466EA/",
+      },
+      scale = 53,
+    },
+    groups = {
+      petitioners = 1
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  calvinWallace = {
+    name = "calvinWallace",
+    fullName = "Calvin Wallace",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/17238076161191780731/388786F7DEBA992464F202946491B12460C0E9E4/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/17238076161191780731/388786F7DEBA992464F202946491B12460C0E9E4/",
+      },
+      scale = 53,
+    },
+    groups = {
+      redFlag = 3
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  christianne = {
+    name = "christianne",
+    fullName = "Christianne",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/13435591319862486034/2C188DD11A9A9E147D0383B96DCF64F8F9820D0A/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/13435591319862486034/2C188DD11A9A9E147D0383B96DCF64F8F9820D0A/",
+      },
+      scale = 57,
+    },
+    groups = {
+      harpies = 2
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  damienAbanda = {
+    name = "damienAbanda",
+    fullName = "Damien Abanda",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/9703291637540598019/0EB21913E4DB904485E307859FD1DF7309AC2CC5/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/9703291637540598019/0EB21913E4DB904485E307859FD1DF7309AC2CC5/",
+      },
+      scale = 53,
+    },
+    groups = {
+      redFlag = 2
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  damienKline = {
+    name = "damienKline",
+    fullName = "Damien Kline",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/17089197402012388637/4D6D0D41E91D44FB5CA9EF782C406C890BB24812/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/17089197402012388637/4D6D0D41E91D44FB5CA9EF782C406C890BB24812/",
+      },
+      scale = 53,
+    },
+    groups = {
+      regencyUniversityChantry = 4
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  deaconReal = {
+    name = "deaconReal",
+    fullName = "Deacon Lucenzo Reál",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/17386210984610209135/75E27F293907ACB4CC531301573A8094161889CC/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/17386210984610209135/75E27F293907ACB4CC531301573A8094161889CC/",
+      },
+      scale = 53,
+    },
+    groups = {
+      midnightMass = 3
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  drIrenaVoss = {
+    name = "drIrenaVoss",
+    fullName = "Dr. Irena Voss",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/14921128357468775052/393423DD10B041AEE2BE9157A989B1E9FCFBD4FA/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/14921128357468775052/393423DD10B041AEE2BE9157A989B1E9FCFBD4FA/",
+      },
+      scale = 53,
+    },
+    groups = {
+      regencyUniversityChantry = 2
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  eddie = {
+    name = "eddie",
+    fullName = "Eddie",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/14134054229634278835/869F3C56857BA1DEE98DEA38957CC71FB8C79521/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/14134054229634278835/869F3C56857BA1DEE98DEA38957CC71FB8C79521/",
+      },
+      scale = 53,
+    },
+    groups = {
+      petitioners = 4
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  evangelineDupont = {
+    name = "evangelineDupont",
+    fullName = "Evangeline Dupont",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/12895566308249268204/0F90C3EF43E32644E7025E079FECE31AE7BAFBCF/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/12895566308249268204/0F90C3EF43E32644E7025E079FECE31AE7BAFBCF/",
+      },
+      scale = 53,
+    },
+    groups = {
+      regencyUniversityChantry = 1
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  fatherDiaz = {
+    name = "fatherDiaz",
+    fullName = "Father Emiliano Diaz",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/15029532166850288811/7DA124D0D28CAB04F8F6BFDDB07E45FFE72D6369/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/15029532166850288811/7DA124D0D28CAB04F8F6BFDDB07E45FFE72D6369/",
+      },
+      scale = 53,
+    },
+    groups = {
+      midnightMass = 1
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  georgieStJames = {
+    name = "georgieStJames",
+    fullName = "Georgie St. James",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/14714288399066740585/6FB27F104E896A36C1B8CE23FABDD3F4F085F978/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/14714288399066740585/6FB27F104E896A36C1B8CE23FABDD3F4F085F978/",
+      },
+      scale = 53,
+    },
+    groups = {
+      moonClub = 2
     },
     stats = {
       note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
@@ -113,9 +421,9 @@ D.characters = {
     figurine = {
       images = {
         front =
-        "https://steamusercontent-a.akamaihd.net/ugc/14927147918263494121/CAD37ABD35D46A52F29BC611CA1B22857710C9AB/",
+        "https://steamusercontent-a.akamaihd.net/ugc/11174638799452596369/45496F542FCC5109B320DAC5BB34E49BFCB15D0B/",
         back =
-        "https://steamusercontent-a.akamaihd.net/ugc/14927147918263494121/CAD37ABD35D46A52F29BC611CA1B22857710C9AB/",
+        "https://steamusercontent-a.akamaihd.net/ugc/11174638799452596369/45496F542FCC5109B320DAC5BB34E49BFCB15D0B/",
       },
       scale = 50,
     },
@@ -127,15 +435,72 @@ D.characters = {
       note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
     },
   },
+  kai = {
+    name = "kai",
+    fullName = "Kai",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/13993992240724786112/43F45FEC3387B1BCB6306973E4E7822A079EDEDD/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/13993992240724786112/43F45FEC3387B1BCB6306973E4E7822A079EDEDD/",
+      },
+      scale = 53,
+    },
+    groups = {
+      redeemers = 4
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  lexiMadi = {
+    name = "lexiMadi",
+    fullName = "Lexi Madi",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/14524672878071384464/660BAEE7AF9A982FCBCF613DE4AC524EAB3D8D0E/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/14524672878071384464/660BAEE7AF9A982FCBCF613DE4AC524EAB3D8D0E/",
+      },
+      scale = 53,
+    },
+    groups = {
+      petitioners = 5
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  lucasMerrow = {
+    name = "lucasMerrow",
+    fullName = "Lucas Merrow",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/9379532325372726501/C585E5B703D03CC5AF6A199A26C02733500451A6/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/9379532325372726501/C585E5B703D03CC5AF6A199A26C02733500451A6/",
+      },
+      scale = 53,
+    },
+    groups = {
+      regencyUniversityChantry = 3
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
   myleneHamelin = {
     name = "myleneHamelin",
     fullName = "Mylene Hamelin",
     figurine = {
       images = {
         front =
-        "https://steamusercontent-a.akamaihd.net/ugc/9819170352074723454/BBB6F488873DB783562A8E4E7E9319CE7272BE28/",
+        "https://steamusercontent-a.akamaihd.net/ugc/13087248077049093238/839D8B1B502EA10D1B3321268D7F6407A04CF3FC/",
         back =
-        "https://steamusercontent-a.akamaihd.net/ugc/9819170352074723454/BBB6F488873DB783562A8E4E7E9319CE7272BE28/",
+        "https://steamusercontent-a.akamaihd.net/ugc/13087248077049093238/839D8B1B502EA10D1B3321268D7F6407A04CF3FC/",
       },
       scale = 47,
     },
@@ -147,20 +512,229 @@ D.characters = {
       note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
     },
   },
+  profEthanKeen = {
+    name = "profEthanKeen",
+    fullName = "Prof. Ethan Keen",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/15685427461294094007/985E5C01BCC8FD9849239BCA7790A745907B7A83/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/15685427461294094007/985E5C01BCC8FD9849239BCA7790A745907B7A83/",
+      },
+      scale = 53,
+    },
+    groups = {
+      redFlag = 4
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  raduIancu = {
+    name = "raduIancu",
+    fullName = "Radu Iancu",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/16297133406364301080/4DB1EA36E26823F6E89265E46E37590CA2866FDD/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/16297133406364301080/4DB1EA36E26823F6E89265E46E37590CA2866FDD/",
+      },
+      scale = 53,
+    },
+    groups = {
+      regencyUniversityChantry = 5
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  ren = {
+    name = "ren",
+    fullName = "Ren",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/12411227296917210465/B29C7DF01EF7EB8D9D448C141549634E27F08E9D/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/12411227296917210465/B29C7DF01EF7EB8D9D448C141549634E27F08E9D/",
+      },
+      scale = 53,
+    },
+    groups = {
+      redeemers = 1
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  rosie = {
+    name = "rosie",
+    fullName = "Rosie",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/12985372654504541941/9BBB8150C05AF5DF0ABEDF3A41725BD6461BCDD1/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/12985372654504541941/9BBB8150C05AF5DF0ABEDF3A41725BD6461BCDD1/",
+      },
+      scale = 53,
+    },
+    groups = {
+      redFlag = 1
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  scottTempo = {
+    name = "scottTempo",
+    fullName = "Scott Tempo",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/15558678646465292274/929A62E50D9BFB554C0BFF6620E7BC534D67AE3F/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/15558678646465292274/929A62E50D9BFB554C0BFF6620E7BC534D67AE3F/",
+      },
+      scale = 53,
+    },
+    groups = {
+      moonClub = 4
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  sisterCicione = {
+    name = "sisterCicione",
+    fullName = "Sister Genoveva Cicione",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/17506154914654136264/07FF2D752F41839671C069424D0CCD359A247B0E/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/17506154914654136264/07FF2D752F41839671C069424D0CCD359A247B0E/",
+      },
+      scale = 53,
+    },
+    groups = {
+      midnightMass = 2
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
   stirlingSiskin = {
     name = "stirlingSiskin",
     fullName = "Stirling Siskin",
     figurine = {
       images = {
         front =
-        "https://steamusercontent-a.akamaihd.net/ugc/12159357351469150128/E14F3F92C365D9432683266DCE79A1275A83133D/",
+        "https://steamusercontent-a.akamaihd.net/ugc/15739432863616294239/C3E2E8F1DD31D20E3E34AB9A60F7010ED6B379E0/",
         back =
-        "https://steamusercontent-a.akamaihd.net/ugc/12159357351469150128/E14F3F92C365D9432683266DCE79A1275A83133D/",
+        "https://steamusercontent-a.akamaihd.net/ugc/15739432863616294239/C3E2E8F1DD31D20E3E34AB9A60F7010ED6B379E0/",
       },
       scale = 57,
     },
     groups = {
       fiveKeys = 4,
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  theAristocrat = {
+    name = "theAristocrat",
+    fullName = "The Aristocrat",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/11060472654098078914/4FEF0859D093A3DEBF499D18DC339CA2DF641DE4/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/11060472654098078914/4FEF0859D093A3DEBF499D18DC339CA2DF641DE4/",
+      },
+      scale = 53,
+    },
+    groups = {
+      harpies = 1
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  tyler = {
+    name = "tyler",
+    fullName = "Tyler",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/15547073567928913187/B16CA24B34A4F2580F19853751F8A7E3D686C5AF/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/15547073567928913187/B16CA24B34A4F2580F19853751F8A7E3D686C5AF/",
+      },
+      scale = 53,
+    },
+    groups = {
+      redeemers = 3
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  vanceVogel = {
+    name = "vanceVogel",
+    fullName = "Vance Vogel",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/12016783423065307501/0E9460ABC9D1482712966EA13EAA5FCCAB70BB63/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/12016783423065307501/0E9460ABC9D1482712966EA13EAA5FCCAB70BB63/",
+      },
+      scale = 53,
+    },
+    groups = {
+      moonClub = 3
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  victorVex = {
+    name = "victorVex",
+    fullName = "Victor Vex",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/18228912782013072682/1F02D0787B51B0B0871808A8E2AD26438E926D52/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/18228912782013072682/1F02D0787B51B0B0871808A8E2AD26438E926D52/",
+      },
+      scale = 53,
+    },
+    groups = {
+      moonClub = 1
+    },
+    stats = {
+      note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
+    },
+  },
+  xavier = {
+    name = "xavier",
+    fullName = "Xavier Whitchurch",
+    figurine = {
+      images = {
+        front =
+        "https://steamusercontent-a.akamaihd.net/ugc/14435702104097865194/EB10E4F09F567EF4A795D84A9E006F059A52D81B/",
+        back =
+        "https://steamusercontent-a.akamaihd.net/ugc/14435702104097865194/EB10E4F09F567EF4A795D84A9E006F059A52D81B/",
+      },
+      scale = 53,
+    },
+    groups = {
+      harpies = 3
     },
     stats = {
       note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
@@ -172,9 +746,9 @@ D.characters = {
     figurine = {
       images = {
         front =
-        "https://steamusercontent-a.akamaihd.net/ugc/15250094509673807186/A95E9AEDD510B5A16008744BB11E22B253262C54/",
+        "https://steamusercontent-a.akamaihd.net/ugc/17832430563748350076/BD83C9B2F98A474B2E77E903CAA09D9644EC23F4/",
         back =
-        "https://steamusercontent-a.akamaihd.net/ugc/15250094509673807186/A95E9AEDD510B5A16008744BB11E22B253262C54/",
+        "https://steamusercontent-a.akamaihd.net/ugc/17832430563748350076/BD83C9B2F98A474B2E77E903CAA09D9644EC23F4/",
       },
       scale = 53,
     },
