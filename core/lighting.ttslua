@@ -441,7 +441,7 @@ end
 -- @return function|nil|table Returns completion function if using coroutines, or nil; batch calls return a table of per-ref results
 -- @usage L.SetLightMode("playerLightBrown", "STANDARD", "Brown", 0.5)
 -- @usage L.SetLightMode("playerLightBrown", "OFF", nil, 1.0)
--- @usage L.SetLightMode("a1b2c3", { enabled = true, intensity = 2, range = 120, angle = 120 }, nil, 0) -- object GUID, inline mode (not in LIGHTMODES)
+-- @usage L.SetLightMode("4148ba", { enabled = true, intensity = 5, range = 120, angle = 120 }, nil, 0) -- object GUID, inline mode (not in LIGHTMODES)
 
 -- L.SetLightMode("573771", { enabled = true, intensity = 5, range = 30 }, nil, 0)
 function L.SetLightMode(lightRef, mode, player, transitionTime)
