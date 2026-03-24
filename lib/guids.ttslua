@@ -8,8 +8,19 @@ local G = {}
 -- Placeholder GUIDs (replace with actual GUIDs from your TTS objects)
 -- Search for "@@@@@@" to find and replace these placeholders
 G.GUIDS = {
-    -- Table object (if needed for reference)
-    TABLE = "1a0c6d",
+    -- Table objects
+    TABLES = {
+      TABLE_A = "92ac34",
+      TABLE_A_LEAF_NEAR_LEFT = "6db794",
+      TABLE_A_LEAF_NEAR_RIGHT = "443d5a",
+      TABLE_A_LEAF_FAR_LEFT = "f09667",
+      TABLE_A_LEAF_FAR_RIGHT = "66f42d",
+      TABLE_B = "b086ae",
+      TABLE_B1 = "c52bcd",
+      TABLE_B2 = "f14ede",
+      TABLE_B3 = "323c52",
+      TABLE_B4 = "ad8530"
+    },
 
     -- STORYTELLER OBJECTS
     -- Storyteller Table (raised and behind players so they can't see it)
@@ -19,11 +30,6 @@ G.GUIDS = {
     MAIN_LIGHT_LEFT = "573771",
     MAIN_LIGHT_RIGHT = "13466d",
 
-    NPC_LIGHT_MID = "46ab05",
-    -- Legacy reference only: NPC spotlights are spawned from `lib/npcs_light_spawn_defaults.ttslua`, not clone().
-    NPC_LIGHT_CLONE_TEMPLATE = "4148ba",
-
-    LARGE_MAP_LIGHT = "16a7b8",
     PLAYER_LIGHT_BROWN = "f251e0",
     PLAYER_LIGHT_ORANGE = "d3356d",
     PLAYER_LIGHT_RED = "0cd76a",
@@ -45,12 +51,6 @@ G.GUIDS = {
     -- Scripting Zones
     TABLE_DROP_ZONE = "af99b8", -- zone for table drops
 
-    -- Tombstone objects (for character tombstones)
-    TOMBSTONE_BROWN = "94e987",
-    TOMBSTONE_ORANGE = "368c43",
-    TOMBSTONE_RED = "844170",
-    TOMBSTONE_PINK = "da649d",
-    TOMBSTONE_PURPLE = "33141c",
 
     -- Signal fires (for players to signal need for Storyteller attention)
     SIGNAL_FIRE_BROWN = "b0ffa8",

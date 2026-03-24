@@ -1,0 +1,33 @@
+---
+description: Default Miro board URL for Toronto Rising (MCP and collaboration)
+alwaysApply: true
+---
+
+# Toronto Rising — Miro board
+
+When the user asks about the **Toronto Rising** Miro board, or when using Miro MCP tools (`context_explore`, `context_get`, `board_list_items`, `doc_create`, `diagram_create`, `table_create`, etc.), use this board unless they specify another URL.
+
+**Board URL (canonical for `miro_url` in MCP calls):**
+
+`https://miro.com/app/board/uXjVGfp9Sdk=/`
+
+**Same board, share link (browser / teammates):**
+
+`https://miro.com/app/board/uXjVGfp9Sdk=/?share_link_id=32892026226`
+
+## Usage
+
+- Pass the **canonical** URL above as `miro_url` unless the task requires a specific widget; then append `?moveToWidget=<id>` or `&moveToWidget=<id>` as documented for each tool.
+- Do not invent or substitute a different board ID for Toronto Rising work in this repository.
+
+## Discovering content (read this board correctly)
+
+`context_explore` and board-level `context_get` only surface **high-level** item kinds (frames, Miro documents, tables, prototypes, diagrams). This board is mostly **text** widgets, **shapes**, **sticky_note**, **card**, **image**, etc., so those tools can look “empty” even when the canvas is full.
+
+To **inventory or extract** ordinary objects:
+
+1. Use **`board_list_items`** on the canonical board URL with `limit` (e.g. 100–1000).
+2. Optionally set **`item_type`** to narrow results: `text`, `sticky_note`, `shape`, `frame`, `image`, `card`, `embed`, etc. (see MCP tool schema).
+3. If **`has_more`** is true, pass **`nextCursor`** from the response to fetch the next page until done.
+
+Each listed item includes **`data.content`** (often HTML for text), **`position`**, **`parent`**, and a **`miro_url`** with `moveToWidget` for deep links. Use **`context_get`** with that item URL when you need an AI-oriented summary of a **specific** widget (where supported).
