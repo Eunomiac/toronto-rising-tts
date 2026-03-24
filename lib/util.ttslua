@@ -2140,7 +2140,7 @@ end
 -- @param path table Array of PositionOrientationData from U.GetEasedPath
 -- @param setFunc function Function that receives each step and applies it
 -- @return number Duration of the path
--- @usage U.LerpPath(path, function(step) obj.setPositionSmooth(step.position) end)
+-- @usage U.LerpPath(path, function(step) obj.setPosition(step.position, false) end)
 function U.LerpPath(path, setFunc)
 	if path == nil or #path == 0 then return 0 end
 	if setFunc == nil then return 0 end
@@ -2354,7 +2354,7 @@ end
 function U.setRotationSlow(obj, rotation, duration, easing, isColliding)
 	if duration == nil then duration = 0.5 end
 	if isColliding == nil then isColliding = false end
-	return U.Lerp(function(rotation) obj.setRotationSmooth(rotation, isColliding, false) end, obj.getRotation(), rotation, duration, true, easing)
+	return U.Lerp(function(rot) obj.setRotation(rot, isColliding) end, obj.getRotation(), rotation, duration, true, easing)
 end
 
 --- Smoothly animates an object's position over time
@@ -2369,7 +2369,7 @@ end
 function U.setPositionSlow(obj, position, duration, easing, isColliding)
 	if duration == nil then duration = 0.5 end
 	if isColliding == nil then isColliding = false end
-	return U.Lerp(function(pos) obj.setPositionSmooth(pos, isColliding, false) end, obj.getPosition(), position, duration, false, easing)
+	return U.Lerp(function(pos) obj.setPosition(pos, isColliding) end, obj.getPosition(), position, duration, false, easing)
 end
 
 --- Smoothly animates an object's scale over time
@@ -2670,9 +2670,9 @@ end
 -- @param easing string Optional: Easing type ("speedUp" for backward compat, or new ease types)
 -- @return number The duration (for chaining)
 --
--- @usage U.Lerp(function(v) obj.setPositionSmooth(v) end, startPos, endPos, 1.0) -- Traditional
--- @usage U.Lerp(function(step) obj.setPositionSmooth(step.position) end, path) -- Pre-computed path
--- @usage U.Lerp(function(step) obj.setPositionSmooth(step.position) end, {position=Vector(0,0,0)}, {position=Vector(10,10,10)}, 2.0, false, "bounce") -- PositionOrientationData
+-- @usage U.Lerp(function(v) obj.setPosition(v, false) end, startPos, endPos, 1.0) -- Traditional
+-- @usage U.Lerp(function(step) obj.setPosition(step.position, false) end, path) -- Pre-computed path
+-- @usage U.Lerp(function(step) obj.setPosition(step.position, false) end, {position=Vector(0,0,0)}, {position=Vector(10,10,10)}, 2.0, false, "bounce") -- PositionOrientationData
 --
 -- NOTE: Requires startLuaCoroutine(Global, "LerpCoroutine") - self refers to Global in Global context
 function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing)

@@ -371,37 +371,6 @@ function NPCS.buildResolvedLightModeTable(npcName, modeKey)
     return out
 end
 
---- @param npcName string
---- @param lightGuid string
-local function registerDynamicLightModes(npcName, lightGuid)
-    local reg = NPCS.lightRegistryName(lightGuid)
-    local function makeFn(modeKey)
-        return function()
-            local t = NPCS.buildResolvedLightModeTable(npcName, modeKey)
-            if t == nil then
-                return {
-                    enabled = false,
-                    intensity = 0,
-                    angle = 0,
-                    range = 10,
-                    color = Color(1, 1, 1),
-                    position = Vector(0, 20, 0),
-                    rotation = Vector(0, 0, 0),
-                }
-            end
-            return t
-        end
-    end
-    L.LIGHTMODES[reg] = {
-        guid = lightGuid,
-        isSpawned = true,
-        default = "standard",
-        off = makeFn("off"),
-        standard = makeFn("standard"),
-        spotlight = makeFn("spotlight"),
-    }
-end
-
 --- @param lightGuid string
 local function unregisterDynamicLightModes(lightGuid)
     L.unregisterLightModeEntry(NPCS.lightRegistryName(lightGuid))
@@ -417,7 +386,7 @@ function NPCS.applyCurrentLightMode(npcName, transitionTime)
     local reg = NPCS.lightRegistryName(rec.lightGuid)
     local modeKey = spotlightHeld[npcName] and "spotlight" or (rec.npcLightMode or "standard")
     if L.LIGHTMODES[reg] == nil then
-        registerDynamicLightModes(npcName, rec.lightGuid)
+        L.registerNpcSpotlightModes(npcName, rec.lightGuid)
     end
     if transitionTime == nil then
         transitionTime = 0.35
@@ -582,7 +551,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                     if lg == "" then
                         error("spawned NPC light has no GUID for " .. npcName)
                     end
-                    registerDynamicLightModes(npcName, lg)
+                    L.registerNpcSpotlightModes(npcName, lg)
                     local rec = {
                         figurineGuid = fig.getGUID(),
                         lightGuid = lg,
@@ -591,7 +560,6 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                         npcLightMode = "standard",
                     }
                     setInstanceRecord(npcName, rec)
-                    S.setStateVal("standard", "lights", NPCS.lightRegistryName(lg))
                     NPCS.applyCurrentLightMode(npcName, 0)
                     if not deferUiRefresh then
                         NPCS.refreshStorytellerUIIfVisible()
@@ -772,7 +740,6 @@ function NPCS.toggleOffStandard(npcName)
         rec.npcLightMode = "off"
     end
     setInstanceRecord(npcName, rec)
-    S.setStateVal(rec.npcLightMode, "lights", NPCS.lightRegistryName(rec.lightGuid))
     -- Instant transition avoids overlapping coroutine sequences stomping enable/intensity.
     NPCS.applyCurrentLightMode(npcName, 0)
     NPCS.refreshStorytellerUIIfVisible()
@@ -805,7 +772,8 @@ function NPCS.collectGroupIds()
     return list
 end
 
---- Re-register dynamic lights and prune orphan `lights` keys. Call after S.InitializeGameState, before L.InitLights.
+--- Sanitize `npcs.instances` and register NPC spotlight rows on `L.LIGHTMODES` when both objects exist.
+--- Call after `S.InitializeGameState`, before `L.InitLights`. Orphan `gameState.lights` keys are pruned by `L.cleanupLightsState`.
 --- IMPORTANT: Never drop instance rows when `getObjectFromGUID` is nil on the first onLoad frame — objects can
 --- appear slightly later; dropping them removed all NPC state and made Storyteller buttons no-ops.
 function NPCS.restoreAfterStateLoad()
@@ -820,45 +788,11 @@ function NPCS.restoreAfterStateLoad()
             local fig = getObjectFromGUID(rec.figurineGuid)
             local lit = getObjectFromGUID(rec.lightGuid)
             if fig ~= nil and lit ~= nil then
-                registerDynamicLightModes(name, rec.lightGuid)
+                L.registerNpcSpotlightModes(name, rec.lightGuid)
             end
         end
     end
     setAllInstances(cleaned)
-
-    local lights = U.clone(S.getStateVal("lights") or {})
-    local inUse = {}
-    for _, r in pairs(cleaned) do
-        if U.Type(r) == "table" and U.Type(r.lightGuid) == "string" then
-            inUse[r.lightGuid] = true
-        end
-    end
-    local changed = false
-    for k, _ in pairs(lights) do
-        if U.Type(k) == "string" and string.sub(k, 1, 8) == "npcLight_" then
-            local g = string.sub(k, 9)
-            if not inUse[g] then
-                lights[k] = nil
-                changed = true
-            end
-        end
-    end
-    if changed then
-        S.setStateVal(lights, "lights")
-    end
-end
-
---- Register LIGHTMODES (if objects exist) and apply each instance's `npcLightMode` with instant transition.
---- Call after L.InitLights and again on a short defer so late-spawning objects still get a pass.
-function NPCS.reapplyAllNpcLightsFromInstances()
-    for name, rec in pairs(getInstances()) do
-        if U.Type(rec) == "table" and rec.lightGuid and getObjectFromGUID(rec.lightGuid) ~= nil then
-            if getObjectFromGUID(rec.figurineGuid or "") ~= nil then
-                registerDynamicLightModes(name, rec.lightGuid)
-                NPCS.applyCurrentLightMode(name, 0)
-            end
-        end
-    end
 end
 
 --- Escape text for XML body.

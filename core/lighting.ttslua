@@ -21,6 +21,11 @@ local S = require("core.state")
 local C = require("lib.constants")
 local G = require("lib.guids")
 
+-- Last-wins: each SetLightMode bumps this; in-flight lerp steps no-op when stale.
+local transitionEpoch = {}
+-- InitLights first-pass misses (object not ready); deferred pass retries these keys only.
+local initLightsRetryKeys = {}
+
 -- ============================================================================
 -- CONFIGURATION
 -- ============================================================================
@@ -64,6 +69,30 @@ local DefaultTransitionTime = 0.5
 --     STANDARD = {enabled=true, rotation=Vector(0,-72,60), position=Vector(-29.75,22.6,-90), ...}
 -- }
 L.LIGHTMODES = {
+    -- GM light  lua L.SetLightMode(G.GUIDS.GM_LIGHT, {position=Vector({0,60,-85}), rotation=Vector({-33, 180, 0}), intensity=5, range=80, angle=90})
+    gmLight = {
+      guid = G.GUIDS.GM_LIGHT,
+      isPlayerLight = false,
+      default = "STANDARD",
+      OFF = {
+        enabled = false,
+        position = Vector({0, 60, -850}),
+        rotation = Vector({-33, 180, 0}),
+        range = 80,
+        angle = 0,
+        intensity = 0,
+        color = Color(255/255, 0/255, 0/255)
+      },
+      STANDARD = {
+        enabled = true,
+        position = Vector({0, 60, -85}),
+        rotation = Vector({-33, 180, 0}),
+        range = 80,
+        angle = 90,
+        intensity = 5,
+        color = Color(255/255, 200/255, 200/255)
+      }
+    },
     -- Main table lights
     mainLightLeft = {
       guid = G.GUIDS.MAIN_LIGHT_LEFT,
@@ -351,6 +380,156 @@ local function getLight(lightName, isSilent)
     return light
 end
 
+--- TTS object GUIDs in this project are six hex characters.
+--- @param s string|nil
+--- @return boolean
+local function isProbablyObjectGuid(s)
+    if U.Type(s) ~= "string" then
+        return false
+    end
+    return string.match(s, "^%x%x%x%x%x%x$") ~= nil
+end
+
+--- JSON-safe shallow copy of a mode table for persistence (raw-GUID / inline modes).
+--- @param mt table|nil
+--- @return table|nil
+local function sanitizeModeForPersistence(mt)
+    if U.Type(mt) ~= "table" then
+        return nil
+    end
+    local out = {}
+    for k, val in pairs(mt) do
+        if U.Type(k) ~= "string" then
+        elseif U.isInstance(val, Vector) then
+            out[k] = { x = val.x, y = val.y, z = val.z }
+        elseif U.isInstance(val, Color) then
+            out[k] = { r = val.r or val[1], g = val.g or val[2], b = val.b or val[3] }
+        elseif U.Type(val) == "number" or U.Type(val) == "string" or U.Type(val) == "boolean" then
+            out[k] = val
+        elseif U.Type(val) == "table" and val.x ~= nil and val.y ~= nil and val.z ~= nil then
+            out[k] = { x = val.x, y = val.y, z = val.z }
+        elseif U.Type(val) == "table" and val.r ~= nil and val.g ~= nil and val.b ~= nil then
+            out[k] = { r = val.r, g = val.g, b = val.b }
+        end
+    end
+    return out
+end
+
+--- True if `v` is a valid `gameState.lights` value (mode name or inline snapshot).
+--- @param v any
+--- @return boolean
+local function isValidLightsStateValue(v)
+    if U.Type(v) == "string" and v ~= "" then
+        return true
+    end
+    if U.Type(v) ~= "table" then
+        return false
+    end
+    return v.enabled ~= nil or v.range ~= nil or v.intensity ~= nil or v.angle ~= nil or v.color ~= nil
+        or v.position ~= nil or v.rotation ~= nil
+end
+
+--- Resolve spotlight **object** for a registry key, `npcLight_<guid>`, or six-char GUID. Requires usable Light component.
+--- @param lightRef string
+--- @param silent boolean|nil If false, validate errors throw
+--- @return Object|nil
+function L.GetLight(lightRef, silent)
+    if silent == nil then
+        silent = true
+    end
+    if U.Type(lightRef) ~= "string" then
+        if silent then
+            return nil
+        end
+        U.Val("GetLight", lightRef, false, "lightRef must be string")
+    end
+
+    local obj
+    if L.LIGHTMODES[lightRef] then
+        obj = getLight(lightRef, silent)
+    elseif string.sub(lightRef, 1, 9) == "npcLight_" then
+        local g = string.sub(lightRef, 10)
+        obj = getObjectFromGUID(g)
+    elseif isProbablyObjectGuid(lightRef) then
+        obj = getObjectFromGUID(lightRef)
+    else
+        if silent then
+            return nil
+        end
+        U.Val("GetLight", lightRef, false, "Unknown light key: " .. tostring(lightRef))
+    end
+
+    if obj == nil then
+        return nil
+    end
+    if getLightComponent(obj, true) == nil then
+        return nil
+    end
+    return obj
+end
+
+--- Drop orphan / malformed `gameState.lights` rows. Mutates state via `S.setStateVal`.
+function L.cleanupLightsState()
+    local lights = S.getStateVal("lights")
+    if U.Type(lights) ~= "table" then
+        return
+    end
+    local cleaned = U.clone(lights)
+    local changed = false
+    for k, v in pairs(cleaned) do
+        if U.Type(k) ~= "string" then
+            cleaned[k] = nil
+            changed = true
+        elseif not isValidLightsStateValue(v) then
+            cleaned[k] = nil
+            changed = true
+        elseif L.GetLight(k, true) == nil then
+            cleaned[k] = nil
+            changed = true
+        end
+    end
+    if changed then
+        S.setStateVal(cleaned, "lights")
+    end
+end
+
+--- Register NPC spotlight modes on `L.LIGHTMODES` (runtime wiring; does not touch save state).
+--- Lazy-requires `core.npcs` to avoid load-order issues (npcs already requires this module).
+--- @param npcName string
+--- @param lightGuid string
+function L.registerNpcSpotlightModes(npcName, lightGuid)
+    if U.Type(npcName) ~= "string" or U.Type(lightGuid) ~= "string" or lightGuid == "" then
+        return
+    end
+    local NPCS = require("core.npcs")
+    local reg = NPCS.lightRegistryName(lightGuid)
+    local function makeFn(modeKey)
+        return function()
+            local t = NPCS.buildResolvedLightModeTable(npcName, modeKey)
+            if t == nil then
+                return {
+                    enabled = false,
+                    intensity = 0,
+                    angle = 0,
+                    range = 10,
+                    color = Color(1, 1, 1),
+                    position = Vector(0, 20, 0),
+                    rotation = Vector(0, 0, 0),
+                }
+            end
+            return t
+        end
+    end
+    L.LIGHTMODES[reg] = {
+        guid = lightGuid,
+        isSpawned = true,
+        default = "standard",
+        off = makeFn("off"),
+        standard = makeFn("standard"),
+        spotlight = makeFn("spotlight"),
+    }
+end
+
 --- Gets all lights matching a tag (or all lights if no tag)
 -- @param tag string|nil Optional tag to filter by
 -- @return table Array of light objects
@@ -428,8 +607,8 @@ end
 -- This is the main function for controlling lights. It:
 --   1. Resolves `lightRef` (registered name, raw object GUID, or nested array of those)
 --   2. Finds the light object (via L.LIGHTMODES[ref].guid or getObjectFromGUID(ref))
---   3. For registered lights, saves the mode key to game state; raw GUID + inline table does not
---   4. Smoothly transitions all properties using U.Lerp
+--   3. Persists to `gameState.lights` after mode resolves (registered: mode key string; raw GUID: sanitized inline table)
+--   4. Smoothly transitions using U.Lerp; overlapping calls for the same `lightRef` invalidate prior epochs (last wins)
 --
 -- Supports per-player lights (if isPlayerLight=true in mode definition).
 -- Modes can be static tables or dynamic functions that calculate values.
@@ -482,8 +661,6 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
 
         U.Val("SetLightMode", lightRef, U.isGameObject(light), "No light found: " .. U.ToString(lightRef))
 
-        S.setStateVal(mode, "lights", lightRef)
-
         local modeData = mode
         if U.Type(modeData) == "function" then
             modeData = modeData(player)
@@ -502,6 +679,8 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
         if U.Type(modeDef) == "table" then
             modeDef = U.clone(modeDef)
         end
+
+        S.setStateVal(modeData, "lights", lightRef)
     else
         light = getObjectFromGUID(lightRef)
         U.Val("SetLightMode", lightRef, U.isGameObject(light),
@@ -511,10 +690,23 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
             "When lightRef is a raw object GUID, mode must be a full lighting mode table")
 
         modeDef = U.clone(mode)
+        local safePersist = sanitizeModeForPersistence(modeDef)
+        if safePersist and next(safePersist) ~= nil then
+            S.setStateVal(safePersist, "lights", lightRef)
+        end
     end
+
+    transitionEpoch[lightRef] = (transitionEpoch[lightRef] or 0) + 1
+    local myEpoch = transitionEpoch[lightRef]
 
     -- Apply the light mode with smooth transitions
     local function activateLight()
+        if transitionEpoch[lightRef] ~= myEpoch then
+            return function()
+                return true
+            end
+        end
+
         local afterVals = {}
 
         -- Handle enabled state (special case: animate on/off).
@@ -549,6 +741,11 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
         -- from prior SetLightMode calls could otherwise run finalize/lerps out of order and leave
         -- the light disabled.
         if transitionTime <= 0 then
+            if transitionEpoch[lightRef] ~= myEpoch then
+                return function()
+                    return true
+                end
+            end
             local function applyRotationPos()
                 if modeDef.rotation ~= nil then
                     pcall(function()
@@ -604,39 +801,65 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
 
                 if modeDef.range ~= nil then
                     table.insert(lerpFuncs, U.Lerp(function(range)
+                        if transitionEpoch[lightRef] ~= myEpoch then
+                            return
+                        end
                         setRange(light, range)
                     end, getRange(light), modeDef.range, transitionTime))
                 end
 
                 if modeDef.intensity ~= nil then
                     table.insert(lerpFuncs, U.Lerp(function(intensity)
+                        if transitionEpoch[lightRef] ~= myEpoch then
+                            return
+                        end
                         setIntensity(light, intensity)
                     end, getIntensity(light), modeDef.intensity, transitionTime))
                 end
 
                 if modeDef.angle ~= nil then
                     table.insert(lerpFuncs, U.Lerp(function(angle)
+                        if transitionEpoch[lightRef] ~= myEpoch then
+                            return
+                        end
                         setAngle(light, angle)
                     end, getAngle(light), modeDef.angle, transitionTime))
                 end
 
                 if modeDef.color ~= nil then
                     table.insert(lerpFuncs, U.Lerp(function(color)
+                        if transitionEpoch[lightRef] ~= myEpoch then
+                            return
+                        end
                         setColor(light, color)
                     end, getColor(light), Color(modeDef.color), transitionTime))
                 end
 
+                -- Transform lerps use inline U.Lerp (not U.setPositionSlow) so epoch guards apply every tick.
                 if modeDef.rotation ~= nil then
-                    table.insert(lerpFuncs, U.setRotationSlow(light, Vector(modeDef.rotation), transitionTime))
+                    table.insert(lerpFuncs, U.Lerp(function(rot)
+                        if transitionEpoch[lightRef] ~= myEpoch then
+                            return
+                        end
+                        light.setRotation(rot, false)
+                    end, light.getRotation(), Vector(modeDef.rotation), transitionTime, true))
                 end
 
                 if modeDef.position ~= nil then
-                    table.insert(lerpFuncs, U.setPositionSlow(light, Vector(modeDef.position), transitionTime))
+                    table.insert(lerpFuncs, U.Lerp(function(pos)
+                        if transitionEpoch[lightRef] ~= myEpoch then
+                            return
+                        end
+                        light.setPosition(pos, false)
+                    end, light.getPosition(), Vector(modeDef.position), transitionTime, false))
                 end
 
                 return lerpFuncs
             end,
             function()
+                if transitionEpoch[lightRef] ~= myEpoch then
+                    return
+                end
                 -- Finalize enabled state if turning off
                 if modeDef.enabled == false then
                     setEnabled(light, false)
@@ -657,38 +880,80 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
     return activateLight()
 end
 
---- Loads saved light states from game state
--- Called during initialization to restore lights to their saved states.
--- @usage L.InitLights() -- Called in core/main.ttslua onLoad
-function L.InitLights()
-    local savedLights = S.getStateVal("lights") or {}
+--- Apply one entry from `gameState.lights` during load (`transitionT` should be 0).
+--- @return boolean true if applied or skipped intentionally; false if deferred (retry later)
+local function tryApplySavedLight(lightName, mData, transitionT)
+    if U.Type(lightName) ~= "string" then
+        return true
+    end
+    if U.Type(mData) ~= "string" and U.Type(mData) ~= "table" then
+        return true
+    end
 
-    U.forEach(savedLights, function(mData, lightName)
-        -- Dynamic NPC keys (npcLight_<guid>) are registered in NPCS.restoreAfterStateLoad when
-        -- objects exist; skip here to avoid U.Val throwing before registration. NPCS.reapply… fixes them.
-        if U.Type(lightName) == "string" and L.LIGHTMODES[lightName] == nil then
-            return
+    if string.sub(lightName, 1, 9) == "npcLight_" and L.LIGHTMODES[lightName] == nil then
+        return false
+    end
+
+    if L.LIGHTMODES[lightName] ~= nil then
+        if L.GetLight(lightName, true) == nil then
+            return false
         end
         if U.Type(mData) == "string" then
-            -- Simple mode (single string) - current format
-            local t = (U.Type(lightName) == "string" and string.sub(lightName, 1, 9) == "npcLight_") and 0 or 0.5
-            L.SetLightMode(lightName, mData, nil, t)
-        elseif U.Type(mData) == "table" then
-            -- Legacy per-player modes (table of color->mode) - for backward compatibility
-            -- Convert to simple mode by taking the first mode found
-            -- This handles old save data that used per-player state
+            pcall(function()
+                L.SetLightMode(lightName, mData, nil, transitionT)
+            end)
+        else
             local firstMode = nil
-            U.forEach(mData, function(mode, pColor)
-                if firstMode == nil then
+            U.forEach(mData, function(mode, _)
+                if firstMode == nil and U.Type(mode) == "string" then
                     firstMode = mode
                 end
             end)
             if firstMode then
-                local t = (U.Type(lightName) == "string" and string.sub(lightName, 1, 9) == "npcLight_") and 0 or 0.5
-                L.SetLightMode(lightName, firstMode, nil, t)
+                pcall(function()
+                    L.SetLightMode(lightName, firstMode, nil, transitionT)
+                end)
             end
         end
+        return true
+    end
+
+    if isProbablyObjectGuid(lightName) and U.Type(mData) == "table" then
+        if L.GetLight(lightName, true) == nil then
+            return false
+        end
+        pcall(function()
+            L.SetLightMode(lightName, mData, nil, transitionT)
+        end)
+        return true
+    end
+
+    return true
+end
+
+--- Loads saved light states: cleanup, apply all keys with instant transitions, record misses for deferred pass.
+function L.InitLights()
+    L.cleanupLightsState()
+    initLightsRetryKeys = {}
+    local savedLights = S.getStateVal("lights") or {}
+    U.forEach(savedLights, function(mData, lightName)
+        if not tryApplySavedLight(lightName, mData, 0) then
+            initLightsRetryKeys[lightName] = true
+        end
     end)
+end
+
+--- Second pass after load (late-spawned objects). Call from `Wait.time` in global onLoad.
+function L.InitLightsDeferred()
+    L.cleanupLightsState()
+    local savedLights = S.getStateVal("lights") or {}
+    for lightName, _ in pairs(initLightsRetryKeys) do
+        local mData = savedLights[lightName]
+        if mData ~= nil then
+            tryApplySavedLight(lightName, mData, 0)
+        end
+    end
+    initLightsRetryKeys = {}
 end
 
 --- Resets all lights to their default/off states
@@ -762,12 +1027,6 @@ end
 -- ============================================================================
 -- PUBLIC API EXPORTS
 -- ============================================================================
-
---- Gets a light object by name (requires GUID in light mode definition)
--- @param lightName string The light name
--- @return Object|nil The light object
--- @usage local light = L.GetLight("playerLightBrown")
-L.GetLight = getLight
 
 -- Low-level property setters (for direct control without modes)
 L.SetIntensity = setIntensity

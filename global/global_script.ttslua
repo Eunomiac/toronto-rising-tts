@@ -65,14 +65,11 @@ function onLoad(saved_data)
     -- Initialize scenes module (loads default or saved scene)
     Scenes.onLoad()
 
-    -- Restore spawned NPC spotlight registrations before applying saved light modes
+    -- NPC instances + `L.LIGHTMODES` registration for spawned spotlights, then single lighting pipeline
     NPCS.restoreAfterStateLoad()
     L.InitLights()
-    NPCS.reapplyAllNpcLightsFromInstances()
-    -- Objects can resolve one frame late on load; second pass restores NPC lights + registrations.
     Wait.time(function()
-        NPCS.restoreAfterStateLoad()
-        NPCS.reapplyAllNpcLightsFromInstances()
+        L.InitLightsDeferred()
     end, 0.35)
 
     -- UI XML is set by TTS Tools extension from bundled .tts/objects/Global.xml
@@ -103,6 +100,9 @@ function onSave()
     -- Wrap in pcall to catch any errors during save
     -- This prevents the save system from crashing and repeating errors
     local success, result = pcall(function()
+        if L ~= nil and L.cleanupLightsState ~= nil then
+            L.cleanupLightsState()
+        end
         -- Get save-safe state (whitelist approach - only includes explicitly listed fields)
         local state = S.getGameState(true)
 

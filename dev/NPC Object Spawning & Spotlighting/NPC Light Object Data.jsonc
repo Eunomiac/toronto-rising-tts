@@ -45,7 +45,7 @@
     "TypeIndex": 0,
     "LoopingEffectIndex": 0
   },
-  "LuaScript": "-- Bundled by luabundle {\"version\":\"1.7.0\"}\n\n/** Bundled Script Logic lives in lib/object_spotlight_persist.ttslua (bundled via require).\nRemoved from this example document for brevity. **/",
+  "LuaScript": "-- Leave empty: spotlights use global L.InitLights + gameState.lights (see lib/npcs_light_spawn_defaults.ttslua).",
   "LuaScriptState": "{\"color\":{\"a\":1,\"b\":1,\"g\":1,\"r\":1},\"enabled\":true,\"intensity\":3,\"position\":{\"x\":0,\"y\":-7.03772115707397,\"z\":85},\"range\":100,\"rotation\":{\"x\":330.548309326172,\"y\":180,\"z\":180},\"spotAngle\":40,\"v\":1}", // Is this the data that we can manipulate during a spawnObjectData call, to pre-configure the light?
   "XmlUI": ""
 }

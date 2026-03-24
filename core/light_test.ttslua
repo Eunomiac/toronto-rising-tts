@@ -14,6 +14,7 @@
 local LightTest = {}
 local U = require("lib.util")
 local G = require("lib.guids")
+local L = require("core.lighting")
 
 -- ============================================================================
 -- TEST FUNCTIONS
@@ -238,35 +239,38 @@ function LightTest.testSpawnLight(templateGUID, position, rotation, config)
                 end
 
                 if lightComp then
-                    print("✅ Light component found, configuring...")
+                    print("✅ Light component found, configuring via L.SetLightMode...")
 
-                    -- Apply configuration
-                    if config.enabled ~= nil then
-                        lightComp.set("enabled", config.enabled)
-                        print("  Set enabled:", config.enabled)
+                    local g = obj.getGUID and obj.getGUID() or nil
+                    if g then
+                        local mode = {
+                            enabled = config.enabled ~= false,
+                            position = obj.getPosition(),
+                            rotation = obj.getRotation(),
+                        }
+                        if config.range ~= nil then
+                            mode.range = config.range
+                        end
+                        if config.intensity ~= nil then
+                            mode.intensity = config.intensity
+                        end
+                        if config.angle ~= nil then
+                            mode.angle = config.angle
+                        end
+                        if config.color ~= nil then
+                            mode.color = Color(config.color)
+                        end
+                        local okLm, errLm = pcall(function()
+                            L.SetLightMode(g, mode, nil, 0)
+                        end)
+                        if okLm then
+                            print("✅ Light configured successfully!")
+                        else
+                            print("❌ L.SetLightMode failed:", errLm)
+                        end
+                    else
+                        print("❌ No GUID on spawned object")
                     end
-
-                    if config.range then
-                        lightComp.set("range", config.range)
-                        print("  Set range:", config.range)
-                    end
-
-                    if config.intensity then
-                        lightComp.set("intensity", config.intensity)
-                        print("  Set intensity:", config.intensity)
-                    end
-
-                    if config.color then
-                        lightComp.set("color", Color(config.color))
-                        print("  Set color:", U.ToString(config.color))
-                    end
-
-                    if config.angle then
-                        lightComp.set("spotAngle", config.angle)
-                        print("  Set spotAngle:", config.angle)
-                    end
-
-                    print("✅ Light configured successfully!")
                 else
                     print("❌ Could not find Light component")
                 end

@@ -49,17 +49,17 @@ function M.setupPlayers()
     print("Main: Promoted player " .. player.color)
   end
 
-  -- Set up tombstone visibility (each player's tombstone invisible to them)
-  M.setupTombstoneVisibility()
+  -- Set up throne visibility (each player's throne invisible to them)
+  M.setupThroneVisibility()
 
   -- Make objects on Storyteller table invisible to all players
-
+  getObjectFromGUID(G.GUIDS.GM_TABLE).setInvisibleTo(C.PlayerColors)
   U.forEach(
     U.findAboveObject(
-      getObjectFromGUID(G.GUIDS.STORYTELLER_TABLE), nil, { box = true, far = true }
+      getObjectFromGUID(G.GUIDS.GM_TABLE), nil, { box = true, far = true }
     ),
     function(v)
-      v.setInvisibleTo({ "Brown", "Orange", "Red", "Pink" })
+      v.setInvisibleTo(C.PlayerColors)
     end
   )
 
@@ -69,31 +69,31 @@ function M.setupPlayers()
 end
 
 --[[
-    Sets up tombstone visibility so each player's tombstone is invisible to them
-    This prevents tombstones from blocking a player's view of the table.
+    Sets up throne visibility so each player's throne is invisible to them
+    This prevents thrones from blocking a player's view of the table.
     Uses TTS setInvisibleTo() function to hide objects from specific players.
 ]]
-function M.setupTombstoneVisibility()
-  print("Main: Setting up tombstone visibility.")
+function M.setupThroneVisibility()
+  print("Main: Setting up throne visibility.")
 
   for _, color in ipairs(C.PlayerColors) do
-    local guid = G.GetTombstoneGUID(color)
+    local guid = G.GetThroneGUID(color)
     if guid then
-      local tombstone = getObjectFromGUID(guid)
-      if tombstone then
-        -- Make this tombstone invisible to the player of this color
-        -- The tombstone will still be visible to other players and the Storyteller
-        tombstone.setInvisibleTo({ color })
-        print("Main: Tombstone for " .. color .. " set invisible to " .. color .. " player")
+      local throne = getObjectFromGUID(guid)
+      if throne then
+        -- Make this throne invisible to the player of this color
+        -- The throne will still be visible to other players and the Storyteller
+        throne.setInvisibleTo({ color })
+        print("Main: throne for " .. color .. " set invisible to " .. color .. " player")
       else
-        print("Main: Warning - Tombstone object not found for " .. color .. " (GUID: " .. guid .. ")")
+        print("Main: Warning - throne object not found for " .. color .. " (GUID: " .. guid .. ")")
       end
     else
-      print("Main: Warning - No tombstone GUID found for " .. color)
+      print("Main: Warning - No throne GUID found for " .. color)
     end
   end
 
-  print("Main: Tombstone visibility setup complete.")
+  print("Main: throne visibility setup complete.")
 end
 
 --[[

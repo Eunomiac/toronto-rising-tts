@@ -1,20 +1,20 @@
 <!-- Storyteller bottom-right tool bar + pop-out panels (Black) -->
-<Panel id="storytellerToolbarRoot" visibility="Black" rectAlignment="UpperLeft" offsetXY="10 100" width="800" height="800">
+<Panel id="storytellerToolbarRoot" visibility="Black" rectAlignment="UpperLeft" offsetXY="50 200" width="800" height="800">
   <VerticalLayout spacing="4" childAlignment="LowerLeft" height="36">
-    <HorizontalLayout spacing="3" childAlignment="MiddleRight" minHeight="36" preferredHeight="36" flexibleHeight="0">
-      <Button id="toggle_lighting" text="Light" minWidth="56" fontSize="10"
+    <HorizontalLayout rectAlignment="UpperLeft" ignoreLayout="true" spacing="3" childAlignment="MiddleLeft" width="200" height="20" offsetXY="0 20">
+      <Button id="toggle_lighting" text="Light" minWidth="16" fontSize="8"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
         onClick="HUD_selectStorytellerPanel" />
-      <Button id="toggle_scenes" text="Scenes" minWidth="56" fontSize="10"
+      <Button id="toggle_scenes" text="Scenes" minWidth="16" fontSize="8"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
         onClick="HUD_selectStorytellerPanel" />
-      <Button id="toggle_pcs" text="PCs" minWidth="56" fontSize="10"
+      <Button id="toggle_pcs" text="PCs" minWidth="16" fontSize="8"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
         onClick="HUD_selectStorytellerPanel" />
-      <Button id="toggle_phases" text="Phases" minWidth="56" fontSize="10"
+      <Button id="toggle_phases" text="Phases" minWidth="16" fontSize="8"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
         onClick="HUD_selectStorytellerPanel" />
-      <Button id="toggle_npcs" text="NPCs" minWidth="56" fontSize="10"
+      <Button id="toggle_npcs" text="NPCs" minWidth="16" fontSize="8"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
         onClick="HUD_selectStorytellerPanel" />
     </HorizontalLayout>

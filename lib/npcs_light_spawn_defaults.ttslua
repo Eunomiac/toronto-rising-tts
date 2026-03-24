@@ -7,9 +7,7 @@
     Per spawn, `core/npcs.ttslua` deep-clones this table, clears `GUID`, sets `Nickname` / `Tags`, and passes
     `spawnObjectData({ data = copy, position = ... })` so world position overrides `Transform`.
 
-    `LuaScript` / `LuaScriptState` are empty: paired lights are driven by `core/lighting` + `registerDynamicLightModes`.
-    If you need `object_spotlight_persist` on spawned instances, paste the bundled object script from TTS Tools here
-    and set `LuaScriptState` to match (see the JSONC example).
+    `LuaScript` / `LuaScriptState` are empty: paired lights are driven by `core/lighting` + `L.registerNpcSpotlightModes` + `gameState.lights`.
 ]]
 
 local M = {}

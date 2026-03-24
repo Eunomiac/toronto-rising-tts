@@ -533,28 +533,30 @@ local function buildSaveState()
         end
     end
 
-    -- Copy lights data (only serializable fields)
+    -- Copy lights data (mode string and/or JSON-safe inline mode tables)
     if gameState.lights then
         saveState.lights = {}
         for lightName, lightData in pairs(gameState.lights) do
-            if type(lightData) == "table" then
-                -- Light data might be a mode string or a table of per-player modes
-                if type(lightData) == "string" then
-                    saveState.lights[lightName] = lightData
-                else
-                    -- Per-player modes - copy only serializable values
-                    local cleanLightData = {}
-                    for key, val in pairs(lightData) do
-                        if type(key) == "string" and (type(val) == "string" or type(val) == "number" or type(val) == "boolean") then
-                            cleanLightData[key] = val
-                        end
-                    end
-                    if next(cleanLightData) ~= nil then
-                        saveState.lights[lightName] = cleanLightData
-                    end
-                end
+            if type(lightName) ~= "string" and type(lightName) ~= "number" then
             elseif type(lightData) == "string" then
                 saveState.lights[lightName] = lightData
+            elseif type(lightData) == "table" then
+                local cleanLightData = {}
+                for key, val in pairs(lightData) do
+                    if type(key) == "string" then
+                        local vt = type(val)
+                        if vt == "string" or vt == "number" or vt == "boolean" then
+                            cleanLightData[key] = val
+                        elseif vt == "table" and val.x ~= nil and val.y ~= nil and val.z ~= nil then
+                            cleanLightData[key] = { x = val.x, y = val.y, z = val.z }
+                        elseif vt == "table" and val.r ~= nil and val.g ~= nil and val.b ~= nil then
+                            cleanLightData[key] = { r = val.r, g = val.g, b = val.b }
+                        end
+                    end
+                end
+                if next(cleanLightData) ~= nil then
+                    saveState.lights[lightName] = cleanLightData
+                end
             end
         end
     end

@@ -17,6 +17,7 @@
 ]]
 
 local LightDebug = {}
+local L = require("core.lighting")
 
 -- Placeholder element in the XML that gets replaced with dynamic table rows
 -- Using Panel element (not comment) so it survives TTS XML serialize/deserialize
@@ -301,27 +302,43 @@ function LightDebug.applyLightUpdate(guid, colorStr, rangeStr, angleStr, intensi
     local color = parseColorString(colorStr)
     if color then
         obj.setColorTint(color)
-        comp.set("color", color)
     end
     local range = tonumber(rangeStr)
     local angle = tonumber(angleStr)
     local intensity = tonumber(intensityStr)
+    local enabled = comp.get("enabled") ~= false
+    local pos = obj.getPosition and obj.getPosition() or Vector(0, 0, 0)
+    local rot = obj.getRotation and obj.getRotation() or Vector(0, 0, 0)
+    local mode = {
+        enabled = enabled,
+        position = pos,
+        rotation = rot,
+    }
+    if color ~= nil then
+        mode.color = color
+    end
     if range ~= nil then
-        comp.set("range", range)
+        mode.range = range
     end
     if angle ~= nil then
-        comp.set("spotAngle", angle)
+        mode.angle = angle
     end
     if intensity ~= nil then
-        comp.set("intensity", intensity)
+        mode.intensity = intensity
     end
-    -- Update GMNotes for lights that use that pattern (preserves Enabled)
+    local okApply = pcall(function()
+        L.SetLightMode(guid, mode, nil, 0)
+    end)
+    if not okApply then
+        print("LightDebug: L.SetLightMode failed for " .. tostring(guid))
+        return false
+    end
     local gmNotes = obj.getGMNotes() or ""
-    local enabled = "true"
+    local enabledStr = enabled and "true" or "false"
     for _, line in ipairs(splitLines(gmNotes)) do
         if string.match(line, "^Enabled:") then
             local _, _, val = string.find(line, ":%s*(.+)$")
-            enabled = (val == "true") and "true" or "false"
+            enabledStr = (val == "true") and "true" or "false"
             break
         end
     end
@@ -329,17 +346,9 @@ function LightDebug.applyLightUpdate(guid, colorStr, rangeStr, angleStr, intensi
         tostring(range or ""),
         tostring(angle or ""),
         tostring(intensity or ""),
-        enabled
+        enabledStr
     )
     obj.setGMNotes(newNotes)
-    if obj.call and type(obj.call) == "function" then
-        local ok = pcall(function()
-            obj.call("apply")
-        end)
-        if not ok then
-            -- apply() may not exist on all lights; that's fine
-        end
-    end
     return true
 end
 

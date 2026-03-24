@@ -24,7 +24,8 @@ G.GUIDS = {
 
     -- STORYTELLER OBJECTS
     -- Storyteller Table (raised and behind players so they can't see it)
-    STORYTELLER_TABLE = "6e517a",
+    GM_TABLE = "6e517a",
+    GM_LIGHT = "4148ba",
 
     -- Light objects (for scene lighting)
     MAIN_LIGHT_LEFT = "573771",
@@ -64,7 +65,10 @@ G.GUIDS = {
     HUNGER_SMOKE_ORANGE = "4af4e7",
     HUNGER_SMOKE_RED = "5d1338",
     HUNGER_SMOKE_PINK = "fb25b1",
-    HUNGER_SMOKE_PURPLE = "f20164"
+    HUNGER_SMOKE_PURPLE = "f20164",
+
+    -- Thrones (for players to sit on)
+    THRONE_PINK = "570f9b",
 
     -- Add other object GUIDs as needed (zones, boards, etc.)
     -- Format: OBJECT_NAME = "@@@@@@OBJECT_NAME@@@@@@"
@@ -151,13 +155,13 @@ end
 -- If a GUID is not found, returns nil so callers can handle the error appropriately.
 -- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", or "Black" for Storyteller)
 -- @return string|nil GUID string if found, or nil if not found
--- @usage local tombstoneGUID = G.GetTombstoneGUID("Red")
--- @usage local tombstoneObj = getObjectFromGUID(G.GetTombstoneGUID("Red"))
-function G.GetTombstoneGUID(color)
+-- @usage local throneGUID = G.GetThroneGUID("Red")
+-- @usage local throneObj = getObjectFromGUID(G.GetThroneGUID("Red"))
+function G.GetThroneGUID(color)
   if color == nil then
       return nil
   end
-  local guidKey = "TOMBSTONE_" .. string.upper(color)
+  local guidKey = "THRONE_" .. string.upper(color)
   local guid = G.GUIDS[guidKey]
 
   -- If GUID is not found, return nil (don't create a placeholder - placeholders should only exist before GUIDs are set)
