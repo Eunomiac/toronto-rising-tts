@@ -8,6 +8,7 @@ U = require("lib.util")
 C = require("lib.constants")
 
 -- Load core modules
+
 S = require("core.state")
 M = require("core.main")
 Z = require("core.zones")
@@ -653,4 +654,5 @@ end
 -- Load additional modules that need global exposure (after handlers; onLoad runs later so L exists)
 G = require("lib.guids")
 L = require("core.lighting")
+R = require("lib.rotational-seat-layout")
 LightDebug = require("core.light_debug")

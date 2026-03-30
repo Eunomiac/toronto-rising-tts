@@ -51,10 +51,11 @@ local mapPanStateByPlayerID = {}
 local mapPanAnimTokenByPlayerID = {}
 -- PlayerID -> incrementing token used to cancel debounce timers
 local mapPanHoverTokenByPlayerID = {}
--- PlayerID -> true while the map draggable is being dragged by the user
-local mapPanIsDraggingByPlayerID = {}
--- PlayerID -> true once the user has manually dragged (we stop auto-pan to avoid fighting them)
-local mapPanUserHasDraggedByPlayerID = {}
+-- PlayerID -> nav position y-value set by the map navigation buttons
+-- When set, district hover-off returns the map to this nav y (instead of the persisted district).
+local mapPanNavYByPlayerID = {}
+-- PlayerID -> true when nav position is active (hover-off returns to nav y)
+local mapPanNavIsActiveByPlayerID = {}
 
 -- Overlay keys currently implemented in the spec.
 local MAP_OVERLAY_KEYS = { "districtsAll", "domains", "localRoads", "majorRoads", "majorSites" }
@@ -66,44 +67,57 @@ do
     end
 end
 
--- All 36 district keys (toggle list + card list).
+-- District -> vertical pan y-value configuration (vertical-only dragging).
+-- Edit these values to change where each district pans the map.
 local MAP_DISTRICT_KEYS = {
-    "Annex",
-    "BayStFinancial",
-    "Bennington",
-    "Cabbagetown",
-    "CentreIsland",
-    "Chinatown",
-    "Corktown",
-    "Danforth",
-    "DeerPark",
-    "Discovery",
-    "DistilleryDist",
-    "DonRavine",
-    "DupontByTheCastle",
-    "GayVillage",
-    "HarbordVillage",
-    "Humewood",
-    "LakeOntario",
-    "LibertyVillage",
-    "LittleItaly",
-    "LittlePortugal",
-    "PATH",
-    "RegentPark",
-    "Riverdale",
-    "Rosedale",
-    "Sewers",
-    "StJamesTown",
-    "Streets",
-    "Subway",
-    "Summerhill",
-    "Waterfront",
-    "WestQueenWest",
-    "Wychwood",
-    "YongeBloorMuseum",
-    "YongeDundasHospital",
-    "YongeStreet",
-    "Yorkville"
+
+   -- Very top
+    Bennington = -225,
+    Danforth = -225,
+    DeerPark = -225,
+    DonRavine = -225,
+    Humewood = -225,
+    Rosedale = -225,
+
+    -- Upper
+    Annex = -150,
+    DupontByTheCastle = -180,
+    StJamesTown = -180,
+    Summerhill = -190,
+    Wychwood = -170,
+    Yorkville = -160,
+
+    -- Middle
+    Cabbagetown = 0,
+    Discovery = -25,
+    GayVillage = -50,
+    HarbordVillage = 75,
+    Riverdale = 25,
+    YongeBloorMuseum = 50,
+    YongeDundasHospital = 75,
+    YongeStreet = 80,
+
+    -- Lower
+    BayStFinancial = 160,
+    Chinatown = 200,
+    Corktown = 96,
+    LittleItaly = 160,
+    LittlePortugal = 180,
+    RegentPark = 120,
+    Waterfront = 425,
+    WestQueenWest = 160,
+
+    -- Very Bottom
+    CentreIsland = 500,
+    DistilleryDist = 225,
+    LakeOntario = 500,
+    LibertyVillage = 400,
+
+    -- No Change
+    PATH = 0, --nil
+    Sewers = 0, --nil
+    Streets = 0, --nil
+    Subway = 0 --nil
 }
 
 local MAP_NO_OVERLAY_DISTRICTS = {
@@ -116,34 +130,13 @@ local MAP_NO_OVERLAY_DISTRICTS = {
 local MAP_DISTRICT_KEYS_WITH_OVERLAY = {}
 local MAP_DISTRICT_KEY_SET = {}
 do
-    for _, key in ipairs(MAP_DISTRICT_KEYS) do
-        MAP_DISTRICT_KEY_SET[key] = true
-        if MAP_NO_OVERLAY_DISTRICTS[key] ~= true then
-            MAP_DISTRICT_KEYS_WITH_OVERLAY[key] = true
+    for districtKey, _ in pairs(MAP_DISTRICT_KEYS) do
+        MAP_DISTRICT_KEY_SET[districtKey] = true
+        if MAP_NO_OVERLAY_DISTRICTS[districtKey] ~= true then
+            MAP_DISTRICT_KEYS_WITH_OVERLAY[districtKey] = true
         end
     end
 end
-
-local MAP_DISTRICT_INDEX_BY_KEY = {}
-do
-    for i, key in ipairs(MAP_DISTRICT_KEYS) do
-        -- Use 0-based index for easier row/col math.
-        MAP_DISTRICT_INDEX_BY_KEY[key] = i - 1
-    end
-end
-
--- Viewport and draggable content sizing must match the XML defaults.
--- (If you change those values in XML, update these constants too.)
-local MAP_VIEWPORT_W = 1200
-local MAP_VIEWPORT_H = 640
-local MAP_DRAGGABLE_W = 1800
-local MAP_DRAGGABLE_H = 960
-
-local MAP_COLS = 6
-local MAP_ROWS = 6
-
-local MAP_STEP_X = (MAP_DRAGGABLE_W - MAP_VIEWPORT_W) / (MAP_COLS - 1) -- e.g. 600/5 = 120
-local MAP_STEP_Y = (MAP_DRAGGABLE_H - MAP_VIEWPORT_H) / (MAP_ROWS - 1) -- e.g. 320/5 = 64
 
 local function roundToInt(n)
     if type(n) ~= "number" then
@@ -155,23 +148,56 @@ local function roundToInt(n)
     return math.ceil(n - 0.5)
 end
 
--- District -> draggable offset lookup (precomputed).
--- This is a transient runtime convenience and can be tuned visually.
-local MAP_PAN_OFFSET_BY_KEY = {}
+-- District -> vertical pan offset (derived from MAP_DISTRICT_KEYS).
+-- Normalize values via tonumber so edits can be numeric or numeric strings.
+local MAP_PAN_OFFSET_Y_BY_KEY = {}
 do
-    for _, districtKey in ipairs(MAP_DISTRICT_KEYS) do
-        local index0 = MAP_DISTRICT_INDEX_BY_KEY[districtKey]
-        local row = math.floor(index0 / MAP_COLS)
-        local col = index0 - (row * MAP_COLS)
-
-        local offsetX = (2.5 - col) * MAP_STEP_X
-        local offsetY = (2.5 - row) * MAP_STEP_Y
-
-        MAP_PAN_OFFSET_BY_KEY[districtKey] = {
-            x = roundToInt(offsetX),
-            y = roundToInt(offsetY)
-        }
+    for districtKey, y in pairs(MAP_DISTRICT_KEYS) do
+        -- If a district has no overlay, we still show its card, but hovering it must not pan the map.
+        -- We represent "no pan" by omitting the district from the pan lookup table (so reads return nil).
+        if MAP_NO_OVERLAY_DISTRICTS[districtKey] ~= true then
+            local yNum = tonumber(y)
+            if type(yNum) ~= "number" then
+                yNum = 0
+            end
+            MAP_PAN_OFFSET_Y_BY_KEY[districtKey] = yNum
+        end
     end
+end
+
+-- Map navigation targets for the up/down buttons.
+-- These are manually configured to define what "top" and "bottom" mean on screen.
+local MAP_PAN_TOP_Y = -225
+local MAP_PAN_BOTTOM_Y = 225
+local MAP_PAN_MIDDLE_Y = 0
+
+local function getOrCreateMapPanState(playerID)
+    if type(playerID) ~= "string" then
+        return nil
+    end
+    local s = mapPanStateByPlayerID[playerID]
+    if type(s) ~= "table" then
+        s = { y = 0 }
+        mapPanStateByPlayerID[playerID] = s
+    end
+    if type(s.y) ~= "number" then
+        s.y = 0
+    end
+    return s
+end
+
+--- Sets map draggable position (horizontal component forced to 0 for vertical-only drag).
+-- @param seatColor string
+-- @param y number
+local function applyMapOffset(seatColor, y)
+    if type(seatColor) ~= "string" or type(y) ~= "number" then
+        return
+    end
+    local draggableId = "playerHud_mapDraggable_" .. seatColor
+    local offsetStr = "0 " .. tostring(roundToInt(y))
+    pcall(function()
+        UI.setAttribute(draggableId, "offsetXY", offsetStr)
+    end)
 end
 
 --- Applies an initial pan position for the map draggable panel.
@@ -185,40 +211,11 @@ local function setMapPanForDistrict(seatColor, districtKey)
     if MAP_DISTRICT_KEY_SET[districtKey] ~= true then
         return
     end
-    local draggableId = "playerHud_mapDraggable_" .. seatColor
-    local offsets = MAP_PAN_OFFSET_BY_KEY[districtKey]
-    if type(offsets) ~= "table" or type(offsets.x) ~= "number" or type(offsets.y) ~= "number" then
+    local y = MAP_PAN_OFFSET_Y_BY_KEY[districtKey]
+    if type(y) ~= "number" then
         return
     end
-    local offsetStr = tostring(offsets.x) .. " " .. tostring(offsets.y)
-    pcall(function()
-        UI.setAttribute(draggableId, "offsetXY", offsetStr)
-    end)
-end
-
-local function getOrCreateMapPanState(playerID)
-    if type(playerID) ~= "string" then
-        return nil
-    end
-    local s = mapPanStateByPlayerID[playerID]
-    if type(s) ~= "table" then
-        s = { x = 0, y = 0 }
-        mapPanStateByPlayerID[playerID] = s
-    end
-    if type(s.x) ~= "number" then s.x = 0 end
-    if type(s.y) ~= "number" then s.y = 0 end
-    return s
-end
-
-local function applyMapOffset(seatColor, x, y)
-    if type(seatColor) ~= "string" or type(x) ~= "number" or type(y) ~= "number" then
-        return
-    end
-    local draggableId = "playerHud_mapDraggable_" .. seatColor
-    local offsetStr = tostring(roundToInt(x)) .. " " .. tostring(roundToInt(y))
-    pcall(function()
-        UI.setAttribute(draggableId, "offsetXY", offsetStr)
-    end)
+    applyMapOffset(seatColor, y)
 end
 
 local function easeOutCubic(t)
@@ -228,18 +225,17 @@ local function easeOutCubic(t)
     return 1 - (inv * inv * inv)
 end
 
-local function animateMapPanTo(playerID, seatColor, targetX, targetY, durationSeconds)
+local function animateMapPanTo(playerID, seatColor, targetY, durationSeconds)
     if type(playerID) ~= "string" or type(seatColor) ~= "string" then
         return
     end
-    if type(targetX) ~= "number" or type(targetY) ~= "number" then
+    if type(targetY) ~= "number" then
         return
     end
     if type(durationSeconds) ~= "number" or durationSeconds <= 0 then
-        applyMapOffset(seatColor, targetX, targetY)
+        applyMapOffset(seatColor, targetY)
         local s = getOrCreateMapPanState(playerID)
         if s then
-            s.x = targetX
             s.y = targetY
         end
         return
@@ -253,8 +249,8 @@ local function animateMapPanTo(playerID, seatColor, targetX, targetY, durationSe
     local token = (mapPanAnimTokenByPlayerID[playerID] or 0) + 1
     mapPanAnimTokenByPlayerID[playerID] = token
 
-    local startX, startY = s.x, s.y
-    local dx, dy = (targetX - startX), (targetY - startY)
+    local startY = s.y
+    local dy = targetY - startY
 
     local step = 0.03 -- ~33 FPS
     local steps = math.max(1, math.floor((durationSeconds / step) + 0.5))
@@ -264,29 +260,19 @@ local function animateMapPanTo(playerID, seatColor, targetX, targetY, durationSe
         if mapPanAnimTokenByPlayerID[playerID] ~= token then
             return
         end
-        if mapPanIsDraggingByPlayerID[playerID] == true then
-            return
-        end
-        if mapPanUserHasDraggedByPlayerID[playerID] == true then
-            return
-        end
 
         currentStep = currentStep + 1
         local t = currentStep / steps
         local e = easeOutCubic(t)
-        local x = startX + (dx * e)
         local y = startY + (dy * e)
 
-        applyMapOffset(seatColor, x, y)
-        s.x = x
+        applyMapOffset(seatColor, y)
         s.y = y
 
         if currentStep < steps then
             Wait.time(tick, step)
         else
-            -- snap to exact target at end
-            applyMapOffset(seatColor, targetX, targetY)
-            s.x = targetX
+            applyMapOffset(seatColor, targetY)
             s.y = targetY
         end
     end
@@ -298,18 +284,12 @@ local function requestMapPanToDistrict(playerID, seatColor, districtKey, opts)
     if type(playerID) ~= "string" or type(seatColor) ~= "string" or type(districtKey) ~= "string" then
         return
     end
-    if mapPanIsDraggingByPlayerID[playerID] == true then
-        return
-    end
-    if mapPanUserHasDraggedByPlayerID[playerID] == true then
-        return
-    end
     if MAP_DISTRICT_KEY_SET[districtKey] ~= true then
         return
     end
 
-    local offsets = MAP_PAN_OFFSET_BY_KEY[districtKey]
-    if type(offsets) ~= "table" or type(offsets.x) ~= "number" or type(offsets.y) ~= "number" then
+    local targetY = MAP_PAN_OFFSET_Y_BY_KEY[districtKey]
+    if type(targetY) ~= "number" then
         return
     end
 
@@ -318,7 +298,7 @@ local function requestMapPanToDistrict(playerID, seatColor, districtKey, opts)
         duration = opts.duration
     end
 
-    animateMapPanTo(playerID, seatColor, offsets.x, offsets.y, duration)
+    animateMapPanTo(playerID, seatColor, targetY, duration)
 end
 
 -- Allowed nestedless top-level reference keys (from the spec)
@@ -671,31 +651,37 @@ function HUDP.updatePlayerUI(player, color)
         mapHoverOverlayKeyByPlayerID[playerID] = nil
         mapHoverDistrictKeyByPlayerID[playerID] = nil
         mapActiveDistrictByPlayerID[playerID] = nil
+        mapPanNavIsActiveByPlayerID[playerID] = false
+        mapPanNavYByPlayerID[playerID] = nil
         hoverOverlayKey = nil
         hoverDistrictKey = nil
         activeDistrictKey = nil
 
         -- Reset recenter button visuals.
-        setTintVisibility("playerHud_mapRecenterBtn_" .. seatColor, true)
-        setTintVisibility("playerHud_mapRecenterBtn_" .. seatColor .. "_hover", false)
+        setTintVisibility("playerHud_mapRecenter_" .. seatColor, true)
+        setTintVisibility("playerHud_mapRecenter_" .. seatColor .. "_hover", false)
     end
 
     -- Apply initial pan exactly once when the map core panel becomes active.
     if showMap and not wasMapActive then
         local targetDistrictKey = locationDistrictKey
-        if type(targetDistrictKey) ~= "string" or MAP_DISTRICT_KEY_SET[targetDistrictKey] ~= true then
-            targetDistrictKey = "Bennington"
+        local y = nil
+        if type(targetDistrictKey) == "string" and MAP_DISTRICT_KEY_SET[targetDistrictKey] == true then
+            setMapPanForDistrict(seatColor, targetDistrictKey)
+            y = MAP_PAN_OFFSET_Y_BY_KEY[targetDistrictKey]
+        else
+            -- No storyteller-preset district yet: default to configured midpoint.
+            applyMapOffset(seatColor, MAP_PAN_MIDDLE_Y)
+            y = MAP_PAN_MIDDLE_Y
         end
-        setMapPanForDistrict(seatColor, targetDistrictKey)
+
         -- Initialize pan controller state to this same position (so animations start from the correct place).
-        local offsets = MAP_PAN_OFFSET_BY_KEY[targetDistrictKey]
         local s = getOrCreateMapPanState(playerID)
-        if s and type(offsets) == "table" and type(offsets.x) == "number" and type(offsets.y) == "number" then
-            s.x = offsets.x
-            s.y = offsets.y
+        if s and type(y) == "number" then
+            s.y = y
         end
-        -- Reset drag suppression on each open (new session of map viewing).
-        mapPanUserHasDraggedByPlayerID[playerID] = false
+        mapPanNavIsActiveByPlayerID[playerID] = false
+        mapPanNavYByPlayerID[playerID] = nil
     end
 
     mapWasActiveByPlayerID[playerID] = showMap
@@ -737,7 +723,7 @@ function HUDP.updatePlayerUI(player, color)
     end
 
     -- District selection: district overlays (when available) + district cards + button highlight layers
-    for _, districtKey in ipairs(MAP_DISTRICT_KEYS) do
+    for districtKey, _ in pairs(MAP_DISTRICT_KEYS) do
         local showDistrict = showMap and (effectiveDistrictKey == districtKey)
 
         -- District cards are always present.
@@ -1087,10 +1073,6 @@ function HUD_playerMap_districtToggle_hoverOn(player, value, id)
     HUDP.updatePlayerUI(player, seatColor)
 
     -- Smooth hover-pan (debounced to avoid thrash when skimming buttons).
-    if mapPanUserHasDraggedByPlayerID[playerID] == true or mapPanIsDraggingByPlayerID[playerID] == true then
-        return
-    end
-
     local token = (mapPanHoverTokenByPlayerID[playerID] or 0) + 1
     mapPanHoverTokenByPlayerID[playerID] = token
 
@@ -1126,10 +1108,6 @@ function HUD_playerMap_districtToggle_hoverOff(player, value, id)
 
     -- When hover ends, ease back toward the current "base" selection:
     -- active override (click) -> persisted location district -> default.
-    if mapPanUserHasDraggedByPlayerID[playerID] == true or mapPanIsDraggingByPlayerID[playerID] == true then
-        return
-    end
-
     local token = (mapPanHoverTokenByPlayerID[playerID] or 0) + 1
     mapPanHoverTokenByPlayerID[playerID] = token
 
@@ -1143,12 +1121,22 @@ function HUD_playerMap_districtToggle_hoverOff(player, value, id)
             return
         end
 
+        -- If we are in a nav position (set by mapPanUp/mapPanDown), return to that nav y.
+        -- Only do this if there's no active district click override.
+        if mapPanNavIsActiveByPlayerID[playerID] == true
+            and type(mapPanNavYByPlayerID[playerID]) == "number"
+            and mapActiveDistrictByPlayerID[playerID] == nil then
+            animateMapPanTo(playerID, seatColor, mapPanNavYByPlayerID[playerID], 0.20)
+            return
+        end
+
         local baseDistrict = mapActiveDistrictByPlayerID[playerID]
         if type(baseDistrict) ~= "string" then
             baseDistrict = S.getStateVal and S.getStateVal("playerData", playerID, "hud", "map", "location", "district") or nil
         end
         if type(baseDistrict) ~= "string" or MAP_DISTRICT_KEY_SET[baseDistrict] ~= true then
-            baseDistrict = "Bennington"
+            animateMapPanTo(playerID, seatColor, MAP_PAN_MIDDLE_Y, 0.20)
+            return
         end
 
         requestMapPanToDistrict(playerID, seatColor, baseDistrict, { duration = 0.20 })
@@ -1179,43 +1167,128 @@ function HUD_playerMap_districtToggle_mouseDown(player, value, id)
 
     HUDP.updatePlayerUI(player, seatColor)
 
-    -- Click should pan immediately (no debounce), unless user has dragged manually.
-    if mapPanUserHasDraggedByPlayerID[playerID] == true or mapPanIsDraggingByPlayerID[playerID] == true then
-        return
-    end
+    -- User clicked a district: cancel any active nav up/down position.
+    mapPanNavIsActiveByPlayerID[playerID] = false
+    mapPanNavYByPlayerID[playerID] = nil
 
+    -- Click should pan immediately (no debounce), unless user has dragged manually.
     local next = mapActiveDistrictByPlayerID[playerID]
     if type(next) ~= "string" then
         next = S.getStateVal and S.getStateVal("playerData", playerID, "hud", "map", "location", "district") or nil
     end
     if type(next) ~= "string" or MAP_DISTRICT_KEY_SET[next] ~= true then
-        next = "Bennington"
+        animateMapPanTo(playerID, seatColor, MAP_PAN_MIDDLE_Y, 0.18)
+        return
     end
     requestMapPanToDistrict(playerID, seatColor, next, { duration = 0.18 })
 end
 
 -- ============================================================================
--- Map draggable drag handlers (suppress auto-pan)
+-- Map navigation buttons (pan up/down)
 -- ============================================================================
 
-function HUD_playerMap_dragBegin(player, value, id)
-    local playerID, seatColor = getPlayerIDAndColor(player)
-    if type(playerID) ~= "string" or type(seatColor) ~= "string" then
+--- Hover on pan up: show hover tint, hide base.
+function HUD_playerMap_panUp_hoverOn(player, value, id)
+    local _, seatColor = getPlayerIDAndColor(player)
+    if type(seatColor) ~= "string" then
         return
     end
-    mapPanIsDraggingByPlayerID[playerID] = true
-    mapPanUserHasDraggedByPlayerID[playerID] = true
-    -- Cancel any in-progress hover debounce/animations.
-    mapPanHoverTokenByPlayerID[playerID] = (mapPanHoverTokenByPlayerID[playerID] or 0) + 1
-    mapPanAnimTokenByPlayerID[playerID] = (mapPanAnimTokenByPlayerID[playerID] or 0) + 1
+    setTintVisibility("playerHud_mapPanUp_" .. seatColor, false)
+    setTintVisibility("playerHud_mapPanUp_" .. seatColor .. "_hover", true)
 end
 
-function HUD_playerMap_dragEnd(player, value, id)
+--- Hover off pan up: show base tint, hide hover.
+function HUD_playerMap_panUp_hoverOff(player, value, id)
     local playerID, seatColor = getPlayerIDAndColor(player)
     if type(playerID) ~= "string" or type(seatColor) ~= "string" then
         return
     end
-    mapPanIsDraggingByPlayerID[playerID] = false
+    setTintVisibility("playerHud_mapPanUp_" .. seatColor, true)
+    setTintVisibility("playerHud_mapPanUp_" .. seatColor .. "_hover", false)
+
+    -- If a district is currently toggled on, restore pan to that district when leaving the pan button.
+    local activeDistrict = mapActiveDistrictByPlayerID[playerID]
+    if type(activeDistrict) == "string" and MAP_DISTRICT_KEY_SET[activeDistrict] == true then
+        requestMapPanToDistrict(playerID, seatColor, activeDistrict, { duration = 0.18 })
+    end
+end
+
+--- Click pan up: move map so the top-aligned configured area is visible.
+function HUD_playerMap_panUp_mouseUp(player, value, id)
+    local playerID, seatColor = getPlayerIDAndColor(player)
+    if type(playerID) ~= "string" or type(seatColor) ~= "string" then
+        return
+    end
+    if type(MAP_PAN_TOP_Y) ~= "number" then
+        return
+    end
+
+    -- Cancel hover debounce + any in-flight animation.
+    mapPanHoverTokenByPlayerID[playerID] = (mapPanHoverTokenByPlayerID[playerID] or 0) + 1
+    mapPanAnimTokenByPlayerID[playerID] = (mapPanAnimTokenByPlayerID[playerID] or 0) + 1
+
+    -- Nav override: hover-off returns to this y.
+    mapPanNavIsActiveByPlayerID[playerID] = true
+    mapPanNavYByPlayerID[playerID] = MAP_PAN_TOP_Y
+
+    -- Clear only transient hover highlight.
+    -- Keep active selected district so pan-button usage doesn't wipe user selection.
+    mapHoverDistrictKeyByPlayerID[playerID] = nil
+
+    animateMapPanTo(playerID, seatColor, MAP_PAN_TOP_Y, 0.18)
+    HUDP.updatePlayerUI(player, seatColor)
+end
+
+--- Hover on pan down: show hover tint, hide base.
+function HUD_playerMap_panDown_hoverOn(player, value, id)
+    local _, seatColor = getPlayerIDAndColor(player)
+    if type(seatColor) ~= "string" then
+        return
+    end
+    setTintVisibility("playerHud_mapPanDown_" .. seatColor, false)
+    setTintVisibility("playerHud_mapPanDown_" .. seatColor .. "_hover", true)
+end
+
+--- Hover off pan down: show base tint, hide hover.
+function HUD_playerMap_panDown_hoverOff(player, value, id)
+    local playerID, seatColor = getPlayerIDAndColor(player)
+    if type(playerID) ~= "string" or type(seatColor) ~= "string" then
+        return
+    end
+    setTintVisibility("playerHud_mapPanDown_" .. seatColor, true)
+    setTintVisibility("playerHud_mapPanDown_" .. seatColor .. "_hover", false)
+
+    -- If a district is currently toggled on, restore pan to that district when leaving the pan button.
+    local activeDistrict = mapActiveDistrictByPlayerID[playerID]
+    if type(activeDistrict) == "string" and MAP_DISTRICT_KEY_SET[activeDistrict] == true then
+        requestMapPanToDistrict(playerID, seatColor, activeDistrict, { duration = 0.18 })
+    end
+end
+
+--- Click pan down: move map so the bottom-aligned configured area is visible.
+function HUD_playerMap_panDown_mouseUp(player, value, id)
+    local playerID, seatColor = getPlayerIDAndColor(player)
+    if type(playerID) ~= "string" or type(seatColor) ~= "string" then
+        return
+    end
+    if type(MAP_PAN_BOTTOM_Y) ~= "number" then
+        return
+    end
+
+    -- Cancel hover debounce + any in-flight animation.
+    mapPanHoverTokenByPlayerID[playerID] = (mapPanHoverTokenByPlayerID[playerID] or 0) + 1
+    mapPanAnimTokenByPlayerID[playerID] = (mapPanAnimTokenByPlayerID[playerID] or 0) + 1
+
+    -- Nav override: hover-off returns to this y.
+    mapPanNavIsActiveByPlayerID[playerID] = true
+    mapPanNavYByPlayerID[playerID] = MAP_PAN_BOTTOM_Y
+
+    -- Clear only transient hover highlight.
+    -- Keep active selected district so pan-button usage doesn't wipe user selection.
+    mapHoverDistrictKeyByPlayerID[playerID] = nil
+
+    animateMapPanTo(playerID, seatColor, MAP_PAN_BOTTOM_Y, 0.18)
+    HUDP.updatePlayerUI(player, seatColor)
 end
 
 -- ============================================================================
@@ -1228,8 +1301,8 @@ function HUD_playerMap_recenter_hoverOn(player, value, id)
     if type(seatColor) ~= "string" then
         return
     end
-    setTintVisibility("playerHud_mapRecenterBtn_" .. seatColor, false)
-    setTintVisibility("playerHud_mapRecenterBtn_" .. seatColor .. "_hover", true)
+    setTintVisibility("playerHud_mapRecenter_" .. seatColor, false)
+    setTintVisibility("playerHud_mapRecenter_" .. seatColor .. "_hover", true)
 end
 
 --- Hover off: restore inactive base image.
@@ -1238,8 +1311,8 @@ function HUD_playerMap_recenter_hoverOff(player, value, id)
     if type(seatColor) ~= "string" then
         return
     end
-    setTintVisibility("playerHud_mapRecenterBtn_" .. seatColor, true)
-    setTintVisibility("playerHud_mapRecenterBtn_" .. seatColor .. "_hover", false)
+    setTintVisibility("playerHud_mapRecenter_" .. seatColor, true)
+    setTintVisibility("playerHud_mapRecenter_" .. seatColor .. "_hover", false)
 end
 
 --- Click recenter: smoothly pan back to the player's persisted location district.
@@ -1254,8 +1327,9 @@ function HUD_playerMap_recenter_mouseUp(player, value, id)
     mapPanHoverTokenByPlayerID[playerID] = (mapPanHoverTokenByPlayerID[playerID] or 0) + 1
     mapPanAnimTokenByPlayerID[playerID] = (mapPanAnimTokenByPlayerID[playerID] or 0) + 1
 
-    mapPanIsDraggingByPlayerID[playerID] = false
-    mapPanUserHasDraggedByPlayerID[playerID] = false
+    -- User action: cancel nav position override so hover-off returns to persisted selection.
+    mapPanNavIsActiveByPlayerID[playerID] = false
+    mapPanNavYByPlayerID[playerID] = nil
 
     -- Clear transient district selection so UI reflects the location district immediately.
     mapHoverDistrictKeyByPlayerID[playerID] = nil
@@ -1263,7 +1337,9 @@ function HUD_playerMap_recenter_mouseUp(player, value, id)
 
     local districtKey = S.getStateVal and S.getStateVal("playerData", playerID, "hud", "map", "location", "district") or nil
     if type(districtKey) ~= "string" or MAP_DISTRICT_KEY_SET[districtKey] ~= true then
-        districtKey = "Bennington"
+        animateMapPanTo(playerID, seatColor, MAP_PAN_MIDDLE_Y, 0.22)
+        HUDP.updatePlayerUI(player, seatColor)
+        return
     end
 
     requestMapPanToDistrict(playerID, seatColor, districtKey, { duration = 0.22 })

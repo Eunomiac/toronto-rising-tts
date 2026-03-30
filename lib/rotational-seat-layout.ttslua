@@ -1,0 +1,1008 @@
+--[[
+    Rotational seat layout (lib/rotational-seat-layout.ttslua)
+
+    - generateRotationalCoordinates: validate template naming (ROLE_SUFFIX), segment vs map;
+      playerToPositionMap keys are arbitrary strings (not limited to TTS player colors),
+      compute rigid frames per player color around centerPoint, write paste-ready FrameReference Lua.
+    - spawnSeatObjectsFromTemplate: tag templates; for each non-template seat, move existing
+      `{seat}Object`-tagged pieces whose Name/Nickname matches each template slot (same ROLE_COLOR
+      pattern as templates), clone only missing slots; orphans are left in place, write GUID map.
+    - clearGeneratedSeatObjects: destruct `{seatKey}Object`-tagged objects for listed seat keys,
+      except template sourceObjects and except seat keys named in blacklist (set and/or array).
+
+    Requires TTS Tools sendExternalMessage for file export on generate + spawn; paths are under .tts/output/ (see core.debug).
+
+    Usage:
+        local R = require("lib.rotational-seat-layout")
+        local computed = R.generateRotationalCoordinates({ ... }, center, n, a1, map, "Red")
+        R.spawnSeatObjectsFromTemplate(computed, { ... })
+        R.clearGeneratedSeatObjects({ ... }, computed.playerToPositionMap, { NPC_SEAT = true })
+]]
+
+local U = require("lib.util")
+local DEBUG = require("core.debug")
+
+local M = {}
+
+--- Maximum allowed angular error (degrees) between template anchor azimuth and nearest nominal segment.
+local MAX_SEGMENT_ANGLE_ERROR_DEG = 3
+
+local DEFAULT_FRAME_REFS_PATH = "debug_logs/seat_layout_frame_refs.lua"
+local DEFAULT_GUID_MAP_PATH = "debug_logs/seat_layout_guids.lua"
+local DEFAULT_FRAME_REFS_VAR = "SEAT_LAYOUT_FRAME_REFS"
+local DEFAULT_GUID_MAP_VAR = "SEAT_LAYOUT_OBJECT_GUIDS"
+local DEFAULT_GUID_TRANSFORMS_VAR = "SEAT_LAYOUT_OBJECT_TRANSFORMS"
+
+--- @param s string
+--- @return string
+local function trim(s)
+    if U.Type(s) ~= "string" then
+        return ""
+    end
+    return (string.gsub(s, "^%s*(.-)%s*$", "%1"))
+end
+
+local function assertSendExternalMessage()
+    if sendExternalMessage == nil then
+        error("rotational-seat-layout: sendExternalMessage is nil; TTS Tools extension is required to write workspace files")
+    end
+end
+
+--- Shortest signed delta from fromDeg to toDeg in (-180, 180].
+--- @param fromDeg number
+--- @param toDeg number
+--- @return number
+local function shortestSignedDelta(fromDeg, toDeg)
+    local d = toDeg - fromDeg
+    while d > 180 do
+        d = d - 360
+    end
+    while d < -180 do
+        d = d + 360
+    end
+    return d
+end
+
+--- @param thetaRef number
+--- @param numSegments number
+--- @param angleSegmentOne number
+--- @return number inferredSegment1Based
+--- @return number minAbsErrorDeg
+local function inferNearestSegment(thetaRef, numSegments, angleSegmentOne)
+    local stepDeg = 360 / numSegments
+    local bestK = 1
+    local bestErr = 1e9
+    for k = 1, numSegments do
+        local thetaK = angleSegmentOne + (k - 1) * stepDeg
+        local err = math.abs(shortestSignedDelta(thetaRef, thetaK))
+        if err < bestErr then
+            bestErr = err
+            bestK = k
+        end
+    end
+    return bestK, bestErr
+end
+
+--- @param angleSegmentOne number
+--- @param numSegments number
+--- @param segmentIndex1Based number
+--- @return number
+local function segmentNominalAzimuthDeg(angleSegmentOne, numSegments, segmentIndex1Based)
+    local stepDeg = 360 / numSegments
+    return angleSegmentOne + (segmentIndex1Based - 1) * stepDeg
+end
+
+--- True if string matches ROLE_UPPERPATTERN (suffix is one or more A–Z).
+--- @param s string
+--- @return boolean
+local function matchesRoleColorPattern(s)
+    local role, suffix = string.match(s, "^(.+)_(%u+)$")
+    if role == nil or suffix == nil or role == "" then
+        return false
+    end
+    return true
+end
+
+--- Same naming rules as templates: object Name, else Custom Name (Nickname in data).
+--- @param obj Object
+--- @return string|nil
+local function tryMatchingDisplayName(obj)
+    if obj == nil then
+        return nil
+    end
+    local nameRaw = obj.getName and obj.getName() or ""
+    local name = trim(nameRaw)
+    if name ~= "" and matchesRoleColorPattern(name) then
+        return name
+    end
+    local data = obj.getData and obj.getData() or {}
+    local nick = trim(data.Nickname or "")
+    if nick ~= "" and matchesRoleColorPattern(nick) then
+        return nick
+    end
+    return nil
+end
+
+--- @param obj Object
+--- @param index number
+--- @return string displayName
+local function resolveTemplateDisplayName(obj, index)
+    local d = tryMatchingDisplayName(obj)
+    if d ~= nil then
+        return d
+    end
+    local nameRaw = obj.getName and obj.getName() or ""
+    local data = obj.getData and obj.getData() or {}
+    error(
+        "rotational-seat-layout: template object index "
+            .. tostring(index)
+            .. " has no valid ROLE_COLOR name or Nickname (tried Name='"
+            .. tostring(nameRaw)
+            .. "', Nickname='"
+            .. tostring(data.Nickname or "")
+            .. "')"
+    )
+end
+
+--- @param displayName string
+--- @return string roleKey
+--- @return string suffixUpper
+local function parseRoleAndSuffix(displayName)
+    local role, suffix = string.match(displayName, "^(.+)_(%u+)$")
+    if role == nil or suffix == nil or role == "" then
+        error("rotational-seat-layout: invalid ROLE_COLOR display name '" .. tostring(displayName) .. "'")
+    end
+    return role, suffix
+end
+
+--- @param t table
+--- @return string[]
+local function sortedStringKeys(t)
+    local ks = {}
+    for k, _ in pairs(t) do
+        if U.Type(k) == "string" then
+            table.insert(ks, k)
+        end
+    end
+    table.sort(ks)
+    return ks
+end
+
+--- @param s string
+--- @return string
+local function luaTableKeyToken(s)
+    if string.match(s, "^[%a_][%w_]*$") then
+        return s
+    end
+    local esc = string.gsub(s, "\\", "\\\\")
+    esc = string.gsub(esc, "\"", "\\\"")
+    return "[\"" .. esc .. "\"]"
+end
+
+--- Fixed three decimals for stable, human-readable paste; avoids `%.6g` scientific notation on near-zero reference frames.
+--- @param v Vector|table
+--- @return string
+local function formatVectorExpr(v)
+    v = Vector(v)
+    return string.format("Vector(%.3f, %.3f, %.3f)", v.x, v.y, v.z)
+end
+
+--- Flat keys: `ROLEKEY_` .. `string.upper(seatKey)` (e.g. `HUNGER_SMOKE_BROWN`). Ambiguous seat/role
+--- combinations can collide; duplicates error at export time.
+--- @param varName string
+--- @param nested table<string, table<string, { position: Vector, rotation: Vector }>>
+--- @return string
+local function serializeFrameRefsLua(varName, nested)
+    local flatRows = {}
+    local seenFlat = {}
+    for _, seatKey in ipairs(sortedStringKeys(nested)) do
+        local roleMap = nested[seatKey]
+        for _, roleKey in ipairs(sortedStringKeys(roleMap)) do
+            local fr = roleMap[roleKey]
+            local flatKey = roleKey .. "_" .. string.upper(seatKey)
+            if seenFlat[flatKey] ~= nil then
+                error(
+                    "rotational-seat-layout: duplicate flat frame ref key '"
+                        .. flatKey
+                        .. "' (role/seat naming collision); rename a role or seat id"
+                )
+            end
+            seenFlat[flatKey] = true
+            table.insert(flatRows, { key = flatKey, fr = fr })
+        end
+    end
+    table.sort(flatRows, function(a, b)
+        return a.key < b.key
+    end)
+
+    local lines = {}
+    table.insert(lines, "-- Generated by lib.rotational-seat-layout (FrameReference map). Paste where `Vector` is global (TTS).")
+    table.insert(lines, "-- Keys: ROLEKEY_UPPERSEATKEY (e.g. HUNGER_SMOKE_BROWN).")
+    table.insert(lines, varName .. " = {")
+    for _, row in ipairs(flatRows) do
+        local keyTok = luaTableKeyToken(row.key)
+        table.insert(
+            lines,
+            "  "
+                .. keyTok
+                .. " = { position = "
+                .. formatVectorExpr(row.fr.position)
+                .. ", rotation = "
+                .. formatVectorExpr(row.fr.rotation)
+                .. " },"
+        )
+    end
+    table.insert(lines, "}")
+    return table.concat(lines, "\n")
+end
+
+--- @param varName string
+--- @param nested table<string, table<string, string>>
+--- @return string
+local function serializeGuidMapLua(varName, nested)
+    local flatRows = {}
+    local seenFlat = {}
+    for _, seatKey in ipairs(sortedStringKeys(nested)) do
+        local roleMap = nested[seatKey]
+        for _, roleKey in ipairs(sortedStringKeys(roleMap)) do
+            local flatKey = roleKey .. "_" .. string.upper(seatKey)
+            if seenFlat[flatKey] ~= nil then
+                error(
+                    "rotational-seat-layout: duplicate flat GUID key '"
+                        .. flatKey
+                        .. "' (role/seat naming collision); rename a role or seat id"
+                )
+            end
+            seenFlat[flatKey] = true
+            table.insert(flatRows, { key = flatKey, guid = roleMap[roleKey] })
+        end
+    end
+    table.sort(flatRows, function(a, b)
+        return a.key < b.key
+    end)
+
+    local lines = {}
+    table.insert(lines, "-- Generated by lib.rotational-seat-layout (object GUID map).")
+    table.insert(lines, "-- Keys: ROLEKEY_UPPERSEATKEY (e.g. HUNGER_SMOKE_BROWN).")
+    table.insert(lines, varName .. " = {")
+    for _, row in ipairs(flatRows) do
+        local keyTok = luaTableKeyToken(row.key)
+        table.insert(lines, "  " .. keyTok .. " = \"" .. row.guid .. "\",")
+    end
+    table.insert(lines, "}")
+    return table.concat(lines, "\n")
+end
+
+--- @param varName string
+--- @param nested table<string, table<string, { position: Vector, rotation: Vector }>>
+--- @return string
+local function serializeObjectTransformsLua(varName, nested)
+    local lines = {}
+    table.insert(lines, "-- Generated by lib.rotational-seat-layout (live object transforms at write time).")
+    table.insert(lines, varName .. " = {")
+    for _, color in ipairs(sortedStringKeys(nested)) do
+        table.insert(lines, "  [\"" .. color .. "\"] = {")
+        local roleMap = nested[color]
+        for _, role in ipairs(sortedStringKeys(roleMap)) do
+            local fr = roleMap[role]
+            local keyTok = luaTableKeyToken(role)
+            table.insert(
+                lines,
+                "    "
+                    .. keyTok
+                    .. " = { position = "
+                    .. formatVectorExpr(fr.position)
+                    .. ", rotation = "
+                    .. formatVectorExpr(fr.rotation)
+                    .. " },"
+            )
+        end
+        table.insert(lines, "  },")
+    end
+    table.insert(lines, "}")
+    return table.concat(lines, "\n")
+end
+
+--- Apply seat ownership/color to hand zones for valid TTS player colors.
+--- Uses Hand Zone API `setValue(playerColor)` for ownership; tint is applied as cosmetic best-effort.
+--- Non-player seat keys (e.g. NPC_SEAT) are ignored.
+--- @param obj Object|nil
+--- @param roleKey string
+--- @param seatKey string
+local function maybeSetHandZoneSeatColor(obj, roleKey, seatKey)
+    if obj == nil then
+        return
+    end
+    if U.Type(roleKey) ~= "string" or U.Type(seatKey) ~= "string" then
+        return
+    end
+    if string.find(roleKey, "HAND_ZONE", 1, true) == nil then
+        return
+    end
+    local okOwner, ownerErr = pcall(function()
+        -- For HandTrigger objects, setValue(stringColor) sets hand owner color per TTS docs.
+        obj.setValue(seatKey)
+    end)
+    if not okOwner then
+        print(
+            "[rotational-seat-layout] seat '"
+                .. seatKey
+                .. "' role '"
+                .. roleKey
+                .. "': could not set hand-zone owner via setValue: "
+                .. tostring(ownerErr)
+        )
+    end
+    local okRgb, colorOrErr = pcall(function()
+        ---@diagnostic disable-next-line: undefined-global
+        return stringColorToRGB(seatKey)
+    end)
+    if not okRgb or U.Type(colorOrErr) ~= "table" then
+        -- Not a valid TTS player color seat; leave unchanged.
+        return
+    end
+    local okTint, tintErr = pcall(function()
+        obj.setColorTint(colorOrErr)
+    end)
+    if not okTint then
+        print(
+            "[rotational-seat-layout] seat '"
+                .. seatKey
+                .. "' role '"
+                .. roleKey
+                .. "': could not set hand-zone color: "
+                .. tostring(tintErr)
+        )
+    end
+end
+
+--- Place an object at an exact transform while avoiding collision-based displacement.
+--- Uses smooth APIs with collide=false when available, then falls back to immediate setters.
+--- @param obj Object
+--- @param pos Vector
+--- @param rot Vector
+local function placeObjectExact(obj, pos, rot)
+    local posTbl = { x = pos.x, y = pos.y, z = pos.z }
+    local rotTbl = { x = rot.x, y = rot.y, z = rot.z }
+
+    local okPos = false
+    local okRot = false
+
+    local okPosSmooth = pcall(function()
+        obj.setPositionSmooth(posTbl, false, true)
+    end)
+    if okPosSmooth then
+        okPos = true
+    else
+        local okPosImmediate = pcall(function()
+            obj.setPosition(posTbl)
+        end)
+        okPos = okPosImmediate
+    end
+
+    local okRotSmooth = pcall(function()
+        obj.setRotationSmooth(rotTbl, false, true)
+    end)
+    if okRotSmooth then
+        okRot = true
+    else
+        local okRotImmediate = pcall(function()
+            obj.setRotation(rotTbl)
+        end)
+        okRot = okRotImmediate
+    end
+
+    if not okPos or not okRot then
+        error(
+            "rotational-seat-layout: placeObjectExact failed (okPos="
+                .. tostring(okPos)
+                .. ", okRot="
+                .. tostring(okRot)
+                .. ")"
+        )
+    end
+end
+
+--- @param playerColor string
+--- @return string
+local function objectTagForPlayerColor(playerColor)
+    return playerColor .. "Object"
+end
+
+--- @param keys string[]
+--- @return string[]
+local function dedupeSeatKeysPreserveOrder(keys)
+    local seen = {}
+    local out = {}
+    for _, k in ipairs(keys) do
+        if not seen[k] then
+            seen[k] = true
+            table.insert(out, k)
+        end
+    end
+    return out
+end
+
+--- Array of seat ids, or map whose string keys are seat ids (e.g. playerToPositionMap).
+--- @param seatKeys table
+--- @return string[]
+local function collectSeatKeys(seatKeys)
+    if U.Type(seatKeys) ~= "table" then
+        error("rotational-seat-layout: seatKeys must be a table")
+    end
+    local raw = {}
+    if #seatKeys > 0 then
+        for i = 1, #seatKeys do
+            local k = seatKeys[i]
+            if U.Type(k) ~= "string" or k == "" then
+                error("rotational-seat-layout: seatKeys[" .. tostring(i) .. "] must be a non-empty string")
+            end
+            table.insert(raw, k)
+        end
+    else
+        for k, _ in pairs(seatKeys) do
+            if U.Type(k) ~= "string" or k == "" then
+                error("rotational-seat-layout: seatKeys map keys must be non-empty strings")
+            end
+            table.insert(raw, k)
+        end
+    end
+    return dedupeSeatKeysPreserveOrder(raw)
+end
+
+--- Blacklist: truthy `blacklist[seatKey]`, or `seatKey` appears as an array element.
+--- @param blacklist table|nil
+--- @param seatKey string
+--- @return boolean
+local function isSeatKeyBlacklisted(blacklist, seatKey)
+    if blacklist == nil then
+        return false
+    end
+    if U.Type(blacklist) ~= "table" then
+        error("rotational-seat-layout: blacklist must be a table or nil")
+    end
+    if blacklist[seatKey] then
+        return true
+    end
+    for _, entry in ipairs(blacklist) do
+        if entry == seatKey then
+            return true
+        end
+    end
+    return false
+end
+
+--- @param obj Object
+--- @param tag string
+local function mergeObjectTag(obj, tag)
+    local tags = obj.getTags and obj.getTags() or {}
+    if U.Type(tags) ~= "table" then
+        tags = {}
+    end
+    for _, t in ipairs(tags) do
+        if t == tag then
+            return
+        end
+    end
+    table.insert(tags, tag)
+    obj.setTags(tags)
+end
+
+--- Validate inputs, compute frames, write frame-ref workspace file. On success returns a table consumed by spawnSeatObjectsFromTemplate.
+---
+--- @param sourceObjects Object[]|string[]|table[] ordered template objects (anchor = index 1)
+--- @param centerPoint Vector|table
+--- @param numSegments number
+--- @param angleSegmentOne number degrees, azimuth of segment 1 (0° = +Z; higher segment indices = larger angle, clockwise as seen from +Y)
+--- @param playerToPositionMap table<string, number> keys are arbitrary seat labels (TTS player colors, NPC seat ids, etc.); values are 1-based segment indices
+--- @param referencePlayerColor string Which seat owns the template objects; every template name suffix must be _`string.upper(referencePlayerColor)` (e.g. "Red" / "NPC_WOLF" -> _RED / _NPC_WOLF — suffix uses A–Z only per pattern)
+--- @param options table|nil { frameRefsRelativePath?, frameRefsVarName? }
+--- @return table computed bundle for spawn
+function M.generateRotationalCoordinates(
+    sourceObjects,
+    centerPoint,
+    numSegments,
+    angleSegmentOne,
+    playerToPositionMap,
+    referencePlayerColor,
+    options
+)
+    options = options or {}
+    if U.Type(sourceObjects) ~= "table" or #sourceObjects < 1 then
+        error("rotational-seat-layout: sourceObjects must be a non-empty array")
+    end
+    if U.Type(numSegments) ~= "number" or numSegments < 1 or math.floor(numSegments) ~= numSegments then
+        error("rotational-seat-layout: numSegments must be a positive integer")
+    end
+    if U.Type(angleSegmentOne) ~= "number" then
+        error("rotational-seat-layout: angleSegmentOne must be a number (degrees)")
+    end
+    if U.Type(playerToPositionMap) ~= "table" then
+        error("rotational-seat-layout: playerToPositionMap must be a table")
+    end
+    if U.Type(referencePlayerColor) ~= "string" or referencePlayerColor == "" then
+        error("rotational-seat-layout: referencePlayerColor must be a non-empty string")
+    end
+
+    local refUpper = string.upper(referencePlayerColor)
+    local mapCopy = {}
+    for c, seg in pairs(playerToPositionMap) do
+        if U.Type(c) ~= "string" or c == "" then
+            error("rotational-seat-layout: playerToPositionMap keys must be non-empty strings")
+        end
+        if U.Type(seg) ~= "number" or seg < 1 or seg > numSegments or math.floor(seg) ~= seg then
+            error(
+                "rotational-seat-layout: segment for '"
+                    .. c
+                    .. "' must be integer 1.."
+                    .. tostring(numSegments)
+                    .. " (got "
+                    .. tostring(seg)
+                    .. ")"
+            )
+        end
+        mapCopy[c] = seg
+    end
+
+    local sourceFrames = {}
+    local roleKeysOrdered = {}
+
+    for i = 1, #sourceObjects do
+        local ref = sourceObjects[i]
+        local obj = U.getObject(ref, true)
+        if obj == nil then
+            error("rotational-seat-layout: could not resolve sourceObjects[" .. tostring(i) .. "] to an Object")
+        end
+        local disp = resolveTemplateDisplayName(obj, i)
+        local roleKey, suffixUpper = parseRoleAndSuffix(disp)
+        if suffixUpper ~= refUpper then
+            error(
+                "rotational-seat-layout: template object "
+                    .. tostring(i)
+                    .. " ('"
+                    .. disp
+                    .. "') has suffix '_"
+                    .. suffixUpper
+                    .. "' but referencePlayerColor '"
+                    .. referencePlayerColor
+                    .. "' requires suffix '_"
+                    .. refUpper
+                    .. "'"
+            )
+        end
+        roleKeysOrdered[i] = roleKey
+        sourceFrames[i] = {
+            position = obj.getPosition(),
+            rotation = obj.getRotation(),
+        }
+    end
+
+    local anchorPos = sourceFrames[1].position
+    local cyl = U.XYZToCylindrical(anchorPos, centerPoint)
+    local thetaRef = cyl.angle
+    local inferredSeg, angErr = inferNearestSegment(thetaRef, numSegments, angleSegmentOne)
+    if angErr > MAX_SEGMENT_ANGLE_ERROR_DEG then
+        error(
+            "rotational-seat-layout: template anchor azimuth is "
+                .. string.format("%.2f", angErr)
+                .. "° off the nearest nominal seat (max "
+                .. tostring(MAX_SEGMENT_ANGLE_ERROR_DEG)
+                .. "°). Check centerPoint, numSegments, angleSegmentOne, and template placement."
+        )
+    end
+
+    local mapSeg = mapCopy[referencePlayerColor]
+    if mapSeg == nil then
+        error("rotational-seat-layout: playerToPositionMap missing entry for referencePlayerColor '" .. referencePlayerColor .. "'")
+    end
+    if mapSeg ~= inferredSeg then
+        error(
+            "rotational-seat-layout: inferred reference seat segment is "
+                .. tostring(inferredSeg)
+                .. " but playerToPositionMap['"
+                .. referencePlayerColor
+                .. "'] = "
+                .. tostring(mapSeg)
+                .. " (azimuth error to nearest seat was "
+                .. string.format("%.2f", angErr)
+                .. "°)"
+        )
+    end
+
+    local horizR = U.HorizontalDistance(anchorPos, centerPoint)
+    if horizR < 1e-4 then
+        error("rotational-seat-layout: template anchor is too close to centerPoint in XZ (radius ~0)")
+    end
+
+    local byColor = {}
+    local nestedFrameExport = {}
+
+    for playerColor, seg in pairs(mapCopy) do
+        local thetaK = segmentNominalAzimuthDeg(angleSegmentOne, numSegments, seg)
+        local deltaDeg = shortestSignedDelta(thetaRef, thetaK)
+        local ordered = {}
+        local byRole = {}
+        for i = 1, #sourceFrames do
+            local fr = U.frameAfterRigidYawAboutCenter(centerPoint, sourceFrames[i], deltaDeg)
+            ordered[i] = fr
+            local rk = roleKeysOrdered[i]
+            if byRole[rk] ~= nil then
+                error(
+                    "rotational-seat-layout: duplicate role key '"
+                        .. rk
+                        .. "' for color "
+                        .. playerColor
+                        .. " (check template names)"
+                )
+            end
+            byRole[rk] = fr
+        end
+        byColor[playerColor] = {
+            frames = ordered,
+            byRoleKey = byRole,
+        }
+        nestedFrameExport[playerColor] = byRole
+    end
+
+    local framePath = options.frameRefsRelativePath or DEFAULT_FRAME_REFS_PATH
+    local frameVar = options.frameRefsVarName or DEFAULT_FRAME_REFS_VAR
+    assertSendExternalMessage()
+    local frameLua = serializeFrameRefsLua(frameVar, nestedFrameExport)
+    local okWrite = DEBUG.writeWorkspaceFile(framePath, frameLua, "none", false)
+    if not okWrite then
+        error("rotational-seat-layout: DEBUG.writeWorkspaceFile failed for frame refs at '" .. framePath .. "'")
+    end
+
+    return {
+        referencePlayerColor = referencePlayerColor,
+        centerPoint = centerPoint,
+        numSegments = numSegments,
+        angleSegmentOne = angleSegmentOne,
+        playerToPositionMap = mapCopy,
+        roleKeysOrdered = roleKeysOrdered,
+        byColor = byColor,
+        frameRefsRelativePath = framePath,
+        frameRefsVarName = frameVar,
+    }
+end
+
+--- Tag templates; for non-template seats, move existing tagged objects that match each template slot
+--- by ROLE key (Name or Nickname in ROLE_SUFFIX pattern; suffix may differ per seat), clone only missing slots, write GUID map.
+---
+--- @param computed table return value of generateRotationalCoordinates (includes referencePlayerColor)
+--- @param sourceObjects same ordered list as passed to generateRotationalCoordinates
+--- @param options table|nil { guidMapRelativePath?, guidMapVarName?, guidTransformsVarName? }
+function M.spawnSeatObjectsFromTemplate(computed, sourceObjects, options)
+    options = options or {}
+    if U.Type(computed) ~= "table" or computed.byColor == nil or computed.playerToPositionMap == nil then
+        error("rotational-seat-layout: computed must be the return value of generateRotationalCoordinates")
+    end
+    if U.Type(computed.referencePlayerColor) ~= "string" or computed.referencePlayerColor == "" then
+        error("rotational-seat-layout: computed.referencePlayerColor is missing")
+    end
+    if U.Type(sourceObjects) ~= "table" or #sourceObjects < 1 then
+        error("rotational-seat-layout: sourceObjects must be a non-empty array")
+    end
+
+    local referencePlayerColor = computed.referencePlayerColor
+
+    assertSendExternalMessage()
+
+    local templateGuidSet = {}
+    local srcObjs = {}
+    for i = 1, #sourceObjects do
+        local obj = U.getObject(sourceObjects[i], true)
+        if obj == nil then
+            error("rotational-seat-layout: could not resolve sourceObjects[" .. tostring(i) .. "] at spawn time")
+        end
+        srcObjs[i] = obj
+        local g = obj.getGUID and obj.getGUID() or ""
+        if g == "" then
+            error("rotational-seat-layout: template object at index " .. tostring(i) .. " has no GUID")
+        end
+        templateGuidSet[g] = true
+    end
+
+    local templateTag = objectTagForPlayerColor(referencePlayerColor)
+    for i = 1, #srcObjs do
+        mergeObjectTag(srcObjs[i], templateTag)
+    end
+
+    --- [color] = { [i] = guid } for non-template colors (moved or cloned)
+    local cloneGuidByColorIndex = {}
+    --- [color] = { [i] = Object } for non-template colors (moved or cloned)
+    local seatObjByColorIndex = {}
+
+    for color, pack in pairs(computed.byColor) do
+        if color ~= referencePlayerColor then
+            local frames = pack.frames
+            if U.Type(frames) ~= "table" or #frames ~= #srcObjs then
+                error("rotational-seat-layout: internal error: frame count mismatch for color '" .. color .. "'")
+            end
+            local seatTag = objectTagForPlayerColor(color)
+            local tagged = getObjectsWithTag(seatTag)
+            local byRole = {}
+            local skippedNoPattern = 0
+            if U.Type(tagged) == "table" then
+                for _, o in ipairs(tagged) do
+                    if o ~= nil and o.getGUID then
+                        local og = o.getGUID()
+                        if not templateGuidSet[og] then
+                            local disp = tryMatchingDisplayName(o)
+                            if disp ~= nil then
+                                local role, _ = parseRoleAndSuffix(disp)
+                                if byRole[role] ~= nil then
+                                    error(
+                                        "rotational-seat-layout: seat '"
+                                            .. color
+                                            .. "' has two tagged objects with role '"
+                                            .. role
+                                            .. "' (from Name/Nickname); cannot pick one to move"
+                                    )
+                                end
+                                byRole[role] = o
+                            else
+                                skippedNoPattern = skippedNoPattern + 1
+                            end
+                        end
+                    end
+                end
+            end
+            if skippedNoPattern > 0 then
+                print(
+                    "[rotational-seat-layout] seat '"
+                        .. color
+                        .. "': "
+                        .. tostring(skippedNoPattern)
+                        .. " tagged object(s) have no ROLE_COLOR Name/Nickname (not moved); new clones may duplicate them."
+                )
+            end
+
+            cloneGuidByColorIndex[color] = {}
+            seatObjByColorIndex[color] = {}
+            for i = 1, #srcObjs do
+                local src = srcObjs[i]
+                local fr = frames[i]
+                local pos = Vector(fr.position)
+                local rot = Vector(fr.rotation)
+                local expectedName = resolveTemplateDisplayName(src, i)
+                local expectedRole, _ = parseRoleAndSuffix(expectedName)
+                local existing = byRole[expectedRole]
+                if existing ~= nil then
+                    byRole[expectedRole] = nil
+                    local okMv, errMv = pcall(function()
+                        placeObjectExact(existing, pos, rot)
+                    end)
+                    if not okMv then
+                        error(
+                            "rotational-seat-layout: move failed for seat '"
+                                .. color
+                                .. "' object matching role '"
+                                .. expectedRole
+                                .. "': "
+                                .. tostring(errMv)
+                        )
+                    end
+                    mergeObjectTag(existing, seatTag)
+                    maybeSetHandZoneSeatColor(existing, expectedRole, color)
+                    local eg = existing.getGUID and existing.getGUID() or ""
+                    if eg == "" then
+                        error(
+                            "rotational-seat-layout: moved object has empty GUID for color '"
+                                .. color
+                                .. "' slot '"
+                                .. expectedRole
+                                .. "'"
+                        )
+                    end
+                    cloneGuidByColorIndex[color][i] = eg
+                    seatObjByColorIndex[color][i] = existing
+                else
+                    local okCl, newObjOrErr = pcall(function()
+                        return src.clone({
+                            position = { x = pos.x, y = pos.y, z = pos.z },
+                            rotation = { x = rot.x, y = rot.y, z = rot.z },
+                        })
+                    end)
+                    if not okCl then
+                        error(
+                            "rotational-seat-layout: clone failed for color '"
+                                .. color
+                                .. "' index "
+                                .. tostring(i)
+                                .. ": "
+                                .. tostring(newObjOrErr)
+                        )
+                    end
+                    local newObj = newObjOrErr
+                    if newObj == nil then
+                        error(
+                            "rotational-seat-layout: clone returned nil for color '"
+                                .. color
+                                .. "' index "
+                                .. tostring(i)
+                                .. " (role "
+                                .. tostring(computed.roleKeysOrdered[i])
+                                .. ")"
+                        )
+                    end
+                    mergeObjectTag(newObj, seatTag)
+                    local okPlaceCl, errPlaceCl = pcall(function()
+                        placeObjectExact(newObj, pos, rot)
+                    end)
+                    if not okPlaceCl then
+                        error(
+                            "rotational-seat-layout: post-clone exact placement failed for color '"
+                                .. color
+                                .. "' role '"
+                                .. expectedRole
+                                .. "': "
+                                .. tostring(errPlaceCl)
+                        )
+                    end
+                    maybeSetHandZoneSeatColor(newObj, expectedRole, color)
+                    local ng = newObj.getGUID and newObj.getGUID() or ""
+                    if ng == "" then
+                        error(
+                            "rotational-seat-layout: cloned object has empty GUID for color '"
+                                .. color
+                                .. "' index "
+                                .. tostring(i)
+                                .. ")"
+                        )
+                    end
+                    cloneGuidByColorIndex[color][i] = ng
+                    seatObjByColorIndex[color][i] = newObj
+                end
+            end
+
+            local orphanCount = 0
+            for _role, o in pairs(byRole) do
+                if o ~= nil then
+                    orphanCount = orphanCount + 1
+                end
+            end
+            if orphanCount > 0 then
+                print(
+                    "[rotational-seat-layout] seat '"
+                        .. color
+                        .. "': "
+                        .. tostring(orphanCount)
+                        .. " tagged object(s) did not match any template slot (left in place)."
+                )
+            end
+        end
+    end
+
+    local guidNested = {}
+    local transformNested = {}
+    for color, _ in pairs(computed.playerToPositionMap) do
+        guidNested[color] = {}
+        transformNested[color] = {}
+        local framesPack = computed.byColor[color]
+        if framesPack == nil then
+            error("rotational-seat-layout: internal error: missing byColor entry for '" .. color .. "'")
+        end
+        for i = 1, #computed.roleKeysOrdered do
+            local rk = computed.roleKeysOrdered[i]
+            if guidNested[color][rk] ~= nil then
+                error("rotational-seat-layout: internal error: duplicate role key in guid export '" .. rk .. "'")
+            end
+            local guid = ""
+            if color == referencePlayerColor then
+                guid = srcObjs[i].getGUID()
+                local obj = srcObjs[i]
+                transformNested[color][rk] = {
+                    position = obj.getPosition(),
+                    rotation = obj.getRotation(),
+                }
+            else
+                local byIdx = cloneGuidByColorIndex[color]
+                if U.Type(byIdx) ~= "table" then
+                    error("rotational-seat-layout: internal error: missing clone GUID table for '" .. color .. "'")
+                end
+                guid = byIdx[i] or ""
+                local objByIdx = seatObjByColorIndex[color]
+                if U.Type(objByIdx) ~= "table" or objByIdx[i] == nil then
+                    error("rotational-seat-layout: internal error: missing moved/cloned object for color '" .. color .. "' index " .. tostring(i))
+                end
+                transformNested[color][rk] = {
+                    position = objByIdx[i].getPosition(),
+                    rotation = objByIdx[i].getRotation(),
+                }
+            end
+            if guid == nil or guid == "" then
+                error(
+                    "rotational-seat-layout: could not resolve object GUID for color '"
+                        .. color
+                        .. "' role '"
+                        .. rk
+                        .. "' (index "
+                        .. tostring(i)
+                        .. ")"
+                )
+            end
+            guidNested[color][rk] = guid
+        end
+    end
+
+    local guidPath = options.guidMapRelativePath or DEFAULT_GUID_MAP_PATH
+    local guidVar = options.guidMapVarName or DEFAULT_GUID_MAP_VAR
+    local tfVar = options.guidTransformsVarName or DEFAULT_GUID_TRANSFORMS_VAR
+    local guidLua = serializeGuidMapLua(guidVar, guidNested)
+    local tfLua = serializeObjectTransformsLua(tfVar, transformNested)
+    local outputLua = guidLua .. "\n\n" .. tfLua
+    local okGWrite = DEBUG.writeWorkspaceFile(guidPath, outputLua, "none", false)
+    if not okGWrite then
+        error("rotational-seat-layout: DEBUG.writeWorkspaceFile failed for GUID map at '" .. guidPath .. "'")
+    end
+end
+
+--- Destruct every object with tag `{seatKey}Object` for each listed seat key, except objects in
+--- `sourceObjects` (templates are never removed). Seat keys listed in `blacklist` are skipped
+--- entirely (no objects with that tag are destroyed by this call).
+---
+--- `seatKeys` may be an array of strings or a map whose keys are seat ids (e.g. `computed.playerToPositionMap`).
+--- `blacklist` may be a set (`{ NPC_SEAT = true, Brown = true }`) and/or an array (`{ "NPC_SEAT", "Brown" }`).
+---
+--- Does not write workspace files and does not require `sendExternalMessage`.
+---
+--- @param sourceObjects Object[]|string[]|table[] same template list as generate/spawn; GUIDs never destroyed
+--- @param seatKeys table array of seat id strings, or map (keys = seat ids)
+--- @param blacklist table|nil seat ids to preserve
+--- @return number count of successfully destructed objects
+function M.clearGeneratedSeatObjects(sourceObjects, seatKeys, blacklist)
+    if U.Type(sourceObjects) ~= "table" or #sourceObjects < 1 then
+        error("rotational-seat-layout: sourceObjects must be a non-empty array")
+    end
+
+    local templateGuidSet = {}
+    for i = 1, #sourceObjects do
+        local obj = U.getObject(sourceObjects[i], true)
+        if obj == nil then
+            error("rotational-seat-layout: could not resolve sourceObjects[" .. tostring(i) .. "] for clear")
+        end
+        local g = obj.getGUID and obj.getGUID() or ""
+        if g == "" then
+            error("rotational-seat-layout: template object at index " .. tostring(i) .. " has no GUID")
+        end
+        templateGuidSet[g] = true
+    end
+
+    local keys = collectSeatKeys(seatKeys)
+    local destroyed = 0
+
+    for _, seatKey in ipairs(keys) do
+        if not isSeatKeyBlacklisted(blacklist, seatKey) then
+            local tag = objectTagForPlayerColor(seatKey)
+            local tagged = getObjectsWithTag(tag)
+            if U.Type(tagged) == "table" then
+                for _, o in ipairs(tagged) do
+                    if o ~= nil and o.getGUID then
+                        local og = o.getGUID()
+                        if not templateGuidSet[og] then
+                            local okD, errD = pcall(function()
+                                o.destruct()
+                            end)
+                            if not okD then
+                                error(
+                                    "rotational-seat-layout: destruct failed for seat '"
+                                        .. seatKey
+                                        .. "' object "
+                                        .. og
+                                        .. ": "
+                                        .. tostring(errD)
+                                )
+                            end
+                            destroyed = destroyed + 1
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return destroyed
+end
+
+return M

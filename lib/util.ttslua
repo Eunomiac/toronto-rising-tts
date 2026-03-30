@@ -48,6 +48,8 @@
 --   - angle = 90°:  Points in +X direction (to the right)
 --   - angle = 180°: Points in -Z direction (toward players, in front of target)
 --   - angle = 270°: Points in -X direction (to the left)
+--   - Increasing angle: clockwise around the table when viewed from above (+Y), like a clock face
+--     with 12 o'clock at +Z, 3 at +X, 6 at -Z, 9 at -X (see rotateAroundPoint: x=sin(θ)*r, z=cos(θ)*r)
 
 local U = {}
 
@@ -373,6 +375,38 @@ function U.RotateToFrom(frameRefs, toAngleRef, fromAngleRef, originRef)
     
     -- Return single Frame or array based on input
     return isSingleFrame and resultFrames[1] or resultFrames
+end
+
+--- Computes a new frame after a rigid rotation around the vertical axis through `center` (XZ / Y-up), without mutating objects.
+-- Matches the position and rotation math used inside `U.RotateToFrom` (cylindrical about center + yaw delta).
+-- @param center Vector|table Origin in XZ for cylindrical coordinates {x,y,z}
+-- @param frame table `{ position = Vector|table, rotation = Vector|table|nil }`
+-- @param deltaDeg number Signed yaw delta in degrees (same sign convention as RotateToFrom)
+-- @return table `{ position = Vector, rotation = Vector }`
+function U.frameAfterRigidYawAboutCenter(center, frame, deltaDeg)
+    center = Vector(center)
+    if U.Type(frame) ~= "table" or frame.position == nil then
+        U.error("U.frameAfterRigidYawAboutCenter", "frame must be a table with position", frame)
+    end
+    if U.Type(deltaDeg) ~= "number" then
+        U.error("U.frameAfterRigidYawAboutCenter", "deltaDeg must be a number", deltaDeg)
+    end
+
+    local pos = Vector(frame.position)
+    local rot = frame.rotation and Vector(frame.rotation) or Vector(0, 0, 0)
+    local cylindrical = U.XYZToCylindrical(pos, center)
+    cylindrical.angle = cylindrical.angle + deltaDeg
+    local angleRad = math.rad(cylindrical.angle)
+    local newPosition = Vector(
+        center.x + cylindrical.radius * math.sin(angleRad),
+        center.y + cylindrical.height,
+        center.z + cylindrical.radius * math.cos(angleRad)
+    )
+    local newRotation = Vector(rot.x, rot.y + deltaDeg, rot.z)
+    return {
+        position = newPosition,
+        rotation = newRotation
+    }
 end
 
 --- Calculates the 3D distance between two points

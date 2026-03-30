@@ -29,11 +29,11 @@
       "npcLight_ebb895": "standard",
       "npcLight_faede8": "standard",
       "npcLight_fc2dc6": "standard",
-      "playerLightBrown": "STANDARD",
-      "playerLightOrange": "STANDARD",
-      "playerLightPink": "STANDARD",
-      "playerLightPurple": "STANDARD",
-      "playerLightRed": "STANDARD"
+      "playerLight1Brown": "STANDARD",
+      "playerLight1Orange": "STANDARD",
+      "playerLight1Pink": "STANDARD",
+      "playerLight1Purple": "STANDARD",
+      "playerLight1Red": "STANDARD"
     },
     "npcs": {
       "instances": {

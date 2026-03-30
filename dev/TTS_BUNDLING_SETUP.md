@@ -87,6 +87,19 @@ See also [`global/README.md`](../global/README.md).
 
 **Note**: The External Editor API must be enabled in TTS for the extension to work. This is a TTS setting, not an extension setting.
 
+### Issue 0b: Port 39998 already in use (EADDRINUSE)
+
+**Symptom**: Local tooling (for example the [TTS MCP server](TTS_MCP.md)) fails with `listen EADDRINUSE` on `127.0.0.1:39998`, or the MCP logs mention that **port 39998** is already in use.
+
+**Root cause**: In the External Editor protocol, **your editor** (or bridge process) must listen on **39998** so Tabletop Simulator can open **outbound** connections to deliver `print` output, errors, return values, etc. Only **one** process at a time can bind that port.
+
+**What to do**:
+
+1. Quit or disable other External Editor integrations that listen on **39998** (e.g. another VS Code / Cursor extension talking to TTS at the same time).
+2. Or stop the other tool, then start the MCP / bridge again.
+
+See [TTS_MCP.md](TTS_MCP.md) for setup and Cursor configuration.
+
 ### Issue 1: Extension Not Reading Your Script
 
 **Symptom**: Changes don't appear in TTS

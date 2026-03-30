@@ -12,7 +12,8 @@
     - Batch operations (apply modes to multiple lights)
 
     Light modes are stored in L.LIGHTMODES table and can be defined per-light.
-    Each mode specifies: enabled, color, range, angle, intensity, rotation, position.
+    Mode fields are optional patches: missing fields are left unchanged on apply.
+    Common fields are: enabled, color, range, angle, intensity, rotation, position.
 ]]
 
 local L = {}
@@ -45,7 +46,7 @@ local DefaultTransitionTime = 0.5
 --   - Functions: Dynamic modes that calculate values at runtime: function() return {...} end
 --   - Strings: Default mode key (e.g., default = "ambient")
 --
--- Mode properties:
+-- Mode properties (all optional; omitted fields are not changed):
 --   - enabled (boolean): Whether light is on/off
 --   - color (Color): Light color (Color object or table {r,g,b})
 --   - range (number): Light range/radius
@@ -61,13 +62,27 @@ local DefaultTransitionTime = 0.5
 --   - loadRotation (Vector): Initial rotation when light loads
 --   - guid (string): Required - GUID of the light object (all lights must have GUID)
 --
--- @usage L.LIGHTMODES.playerLightBrown = {
+-- @usage L.LIGHTMODES.playerLight1Brown = {
 --     guid = "f251e0",  -- Use GUID lookup instead of tags
 --     isPlayerLight = true,
 --     default = "OFF",
 --     OFF = {enabled=false, rotation=Vector(0,-72,0), position=Vector(-36.12,0,-110), ...},
 --     STANDARD = {enabled=true, rotation=Vector(0,-72,60), position=Vector(-29.75,22.6,-90), ...}
 -- }
+
+
+function manualPlayerLight2Setup()
+
+  -- These are the "STANDARD" modes for the 2nd player lights
+  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_BROWN, { enabled = true,
+  color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_ORANGE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_RED, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_PINK, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_PURPLE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+
+  -- "OFF" modes should change only by having the angle go to zero.
+end
 L.LIGHTMODES = {
     -- GM light  lua L.SetLightMode(G.GUIDS.GM_LIGHT, {position=Vector({0,60,-85}), rotation=Vector({-33, 180, 0}), intensity=5, range=80, angle=90})
     gmLight = {
@@ -85,7 +100,7 @@ L.LIGHTMODES = {
       },
       STANDARD = {
         enabled = true,
-        position = Vector({0, 60, -85}),
+        position = Vector({0, 60, -95}),
         rotation = Vector({-33, 180, 0}),
         range = 80,
         angle = 90,
@@ -112,7 +127,7 @@ L.LIGHTMODES = {
         position = Vector(-45.00, 50.00, 0),
         rotation = Vector(30.00, -50.00, 0.00),
         range = 80,
-        angle = 80,
+        angle = 110,
         intensity = 4,
         color = Color(255/255, 0/255, 0/255)
       }
@@ -135,7 +150,7 @@ L.LIGHTMODES = {
         position = Vector(45.00, 50.00, 0),
         rotation = Vector(30.00, 50.00, 0.00),
         range = 80,
-        angle = 80,
+        angle = 110,
         intensity = 4,
         color = Color(255/255, 0/255, 0/255)
       }
@@ -143,50 +158,50 @@ L.LIGHTMODES = {
     -- Player lights (per-player spotlights)
     -- These lights are found by GUID, not by tag
     -- Each light has OFF and STANDARD modes
-    playerLightBrown = {
-        guid = G.GUIDS.PLAYER_LIGHT_BROWN,
+    playerLight1Brown = {
+        guid = G.GUIDS.PLAYER_LIGHT_1_BROWN,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
             enabled = false,
-            position = Vector(95.11, 50.00, -30.90),
-            rotation = Vector(0, 18, 270),
+            position = Vector(88.168, 50.000, -71.353),
+            rotation = Vector(270.000, -36.000, 0.000),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            position = Vector(74.18, 23.00, -24.10),
-            rotation = Vector(321.31, 288.01, 0.00),
+            position = Vector(75.237, 23.000, -53.554),
+            rotation = Vector(321.680, -36.000, 0.000),
             range = 40,
             angle = 90,
             intensity = 3
         }
     },
-    playerLightOrange = {
-        guid = G.GUIDS.PLAYER_LIGHT_ORANGE,
+    playerLight1Orange = {
+        guid = G.GUIDS.PLAYER_LIGHT_1_ORANGE,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
             enabled = false,
-            position = Vector(58.78, 50.00, -80.90),
-            rotation = Vector(0.00, 54, 270.00),
+            position = Vector(46.353, 50.000, -92.658),
+            rotation = Vector(270.000, -18.000, 0.000),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            position = Vector(45.85, 23.00, -63.10),
-            rotation = Vector(322.75, 324.01, 0.00),
+            position = Vector(39.554, 23.000, -71.735),
+            rotation = Vector(321.680, -18.000, 0.000),
             range = 40,
             angle = 90,
             intensity = 3
         }
     },
-    playerLightRed = {
-        guid = G.GUIDS.PLAYER_LIGHT_RED,
+    playerLight1Red = {
+        guid = G.GUIDS.PLAYER_LIGHT_1_RED,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -206,46 +221,126 @@ L.LIGHTMODES = {
             intensity = 3
         }
     },
-    playerLightPink = {
-        guid = G.GUIDS.PLAYER_LIGHT_PINK,
+    playerLight1Pink = {
+        guid = G.GUIDS.PLAYER_LIGHT_1_PINK,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
             enabled = false,
-            position = Vector(-58.78, 50.00, -80.90),
-            rotation = Vector(0.00, 306.00, 90.00),
+            position = Vector(-46.353, 50.000, -92.658),
+            rotation = Vector(270.000, 18.000, 0.000),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            position = Vector(-45.85, 23.00, -63.10),
-            rotation = Vector(321.88, 35.99, 0.00),
+            position = Vector(-39.554, 23.000, -71.735),
+            rotation = Vector(321.680, 18.000, 0.000),
             range = 40,
             angle = 90,
             intensity = 3
         }
     },
-    playerLightPurple = {
-        guid = G.GUIDS.PLAYER_LIGHT_PURPLE,
+    playerLight1Purple = {
+        guid = G.GUIDS.PLAYER_LIGHT_1_PURPLE,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
             enabled = false,
-            position = Vector(-95.11, 50.00, -30.90),
-            rotation = Vector(0.00, 342.00, 90.00),
+            position = Vector(-88.168, 50.000, -71.353),
+            rotation = Vector(270.000, 36.000, 0.000),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            position = Vector(-74.18, 23.00, -24.10),
-            rotation = Vector(320.73, 72.01, 0.00),
+            position = Vector(-75.237, 23.000, -53.554),
+            rotation = Vector(321.680, 36.000, 0.000),
             range = 40,
             angle = 90,
             intensity = 3
+        }
+    },
+    playerLight2Brown = {
+        guid = G.GUIDS.PLAYER_LIGHT_2_BROWN,
+        isPlayerLight = true,
+        default = "OFF",
+        OFF = {
+            enabled = false,
+            angle = 0
+        },
+        STANDARD = {
+            enabled = true,
+            color = Color(100 / 255, 200 / 255, 255 / 255),
+            intensity = 5,
+            range = 80,
+            angle = 90
+        }
+    },
+    playerLight2Orange = {
+        guid = G.GUIDS.PLAYER_LIGHT_2_ORANGE,
+        isPlayerLight = true,
+        default = "OFF",
+        OFF = {
+            enabled = false,
+            angle = 0
+        },
+        STANDARD = {
+            enabled = true,
+            color = Color(100 / 255, 200 / 255, 255 / 255),
+            intensity = 5,
+            range = 80,
+            angle = 90
+        }
+    },
+    playerLight2Red = {
+        guid = G.GUIDS.PLAYER_LIGHT_2_RED,
+        isPlayerLight = true,
+        default = "OFF",
+        OFF = {
+            enabled = false,
+            angle = 0
+        },
+        STANDARD = {
+            enabled = true,
+            color = Color(100 / 255, 200 / 255, 255 / 255),
+            intensity = 5,
+            range = 80,
+            angle = 90
+        }
+    },
+    playerLight2Pink = {
+        guid = G.GUIDS.PLAYER_LIGHT_2_PINK,
+        isPlayerLight = true,
+        default = "OFF",
+        OFF = {
+            enabled = false,
+            angle = 0
+        },
+        STANDARD = {
+            enabled = true,
+            color = Color(100 / 255, 200 / 255, 255 / 255),
+            intensity = 5,
+            range = 80,
+            angle = 90
+        }
+    },
+    playerLight2Purple = {
+        guid = G.GUIDS.PLAYER_LIGHT_2_PURPLE,
+        isPlayerLight = true,
+        default = "OFF",
+        OFF = {
+            enabled = false,
+            angle = 0
+        },
+        STANDARD = {
+            enabled = true,
+            color = Color(100 / 255, 200 / 255, 255 / 255),
+            intensity = 5,
+            range = 80,
+            angle = 90
         }
     }
 }
@@ -618,11 +713,34 @@ end
 -- @param player Player|string|nil Optional: Player for player-specific lights (registered modes only)
 -- @param transitionTime number Optional: Transition duration in seconds (default: 0.5)
 -- @return function|nil|table Returns completion function if using coroutines, or nil; batch calls return a table of per-ref results
--- @usage L.SetLightMode("playerLightBrown", "STANDARD", "Brown", 0.5)
--- @usage L.SetLightMode("playerLightBrown", "OFF", nil, 1.0)
+-- @usage L.SetLightMode("playerLight1Brown", "STANDARD", "Brown", 0.5)
+-- @usage L.SetLightMode("playerLight1Brown", "OFF", nil, 1.0)
 -- @usage L.SetLightMode("4148ba", { enabled = true, intensity = 5, range = 120, angle = 120 }, nil, 0) -- object GUID, inline mode (not in LIGHTMODES)
 
 -- L.SetLightMode("573771", { enabled = true, intensity = 5, range = 30 }, nil, 0)
+
+function workspaceSandbox()
+  L.SetLightMode("playerLight1Brown", "STANDARD", "Brown", 5)
+  L.SetLightMode("playerLight1Orange", "STANDARD", "Orange", 5)
+  L.SetLightMode("playerLight1Red", "STANDARD", "Red", 5)
+  L.SetLightMode("playerLight1Pink", "STANDARD", "Pink", 5)
+  L.SetLightMode("playerLight1Brown", "STANDARD", "Brown", 5)
+
+  L.SetLightMode("playerLight1Brown", "OFF", "Brown", 0.5)
+  L.SetLightMode("playerLight1Orange", "OFF", "Orange", 0.5)
+  L.SetLightMode("playerLight1Red", "OFF", "Red", 0.5)
+  L.SetLightMode("playerLight1Pink", "OFF", "Pink", 0.5)
+  L.SetLightMode("playerLight1Brown", "OFF", "Brown", 0.5)
+
+  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_BROWN, { enabled = true,
+  color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_ORANGE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_RED, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_PINK, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_PURPLE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+end
+
+
 function L.SetLightMode(lightRef, mode, player, transitionTime)
     if transitionTime == nil then
         transitionTime = DefaultTransitionTime
@@ -981,7 +1099,7 @@ end
 -- @param transitionTime number Transition duration (default: 3.0)
 -- @param playerRef Player|string|nil Optional: Player for player-specific lights
 -- @return number The transition time (for chaining)
--- @usage L.LoadLights({"playerLightBrown", "playerLightOrange"}, "STANDARD", 2.0)
+-- @usage L.LoadLights({"playerLight1Brown", "playerLight1Orange"}, "STANDARD", 2.0)
 function L.LoadLights(lightNames, lightMode, transitionTime, playerRef)
     if U.Type(lightNames) == "string" then
         lightNames = {lightNames}

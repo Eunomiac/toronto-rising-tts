@@ -51,7 +51,7 @@ The test runs 8 sequential steps:
 
 ### Lighting
 - **GUID-Based**: Player lights are found by GUID (not tags)
-- **GUIDs**: `G.GUIDS.PLAYER_LIGHT_BROWN`, `G.GUIDS.PLAYER_LIGHT_ORANGE`, etc.
+- **GUIDs**: `G.GUIDS.PLAYER_LIGHT_1_BROWN`, `G.GUIDS.PLAYER_LIGHT_1_ORANGE`, etc.
 - **Light Modes**: Each player light has `"OFF"` and `"STANDARD"` modes defined in `L.LIGHTMODES`
 
 ### Lighting Module Setup
@@ -60,8 +60,8 @@ The lighting module has player lights configured in `core/lighting.ttslua`:
 
 ```lua
 L.LIGHTMODES = {
-    playerLightBrown = {
-        guid = G.GUIDS.PLAYER_LIGHT_BROWN,
+    playerLight1Brown = {
+        guid = G.GUIDS.PLAYER_LIGHT_1_BROWN,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -118,8 +118,8 @@ lua testLightingAndSignals()
 - Check console for error messages
 
 ### Player Lights Don't Change
-- Verify GUIDs in `G.GUIDS` match actual TTS object GUIDs (PLAYER_LIGHT_BROWN, etc.)
-- Check that `L.LIGHTMODES` has entries for all player lights (playerLightBrown, etc.)
+- Verify GUIDs in `G.GUIDS` match actual TTS object GUIDs (PLAYER_LIGHT_1_BROWN, etc.)
+- Check that `L.LIGHTMODES` has entries for all player lights (playerLight1Brown, etc.)
 - Ensure each light mode has "OFF" and "STANDARD" modes defined
 - Ensure lighting module is loaded (check for errors on game load)
 

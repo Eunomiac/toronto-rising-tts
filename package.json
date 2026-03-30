@@ -4,7 +4,12 @@
   "description": "Tabletop Simulator LUA modding project",
   "scripts": {
     "custom-ui-assets:manifest": "node tools/custom-ui-assets/build-upload-manifest.js",
-    "custom-ui-assets:merge": "node tools/custom-ui-assets/merge-custom-ui-assets.js"
+    "custom-ui-assets:merge": "node tools/custom-ui-assets/merge-custom-ui-assets.js",
+    "tts-bridge:build": "tsc -p tools/tts-bridge/tsconfig.json",
+    "tts-bridge:test": "vitest run --config tools/tts-bridge/vitest.config.ts",
+    "tts-mcp:build": "npm run tts-bridge:build && tsc -p tools/tts-mcp/tsconfig.json",
+    "tts-mcp:start": "node tools/tts-mcp/dist/index.js",
+    "tts:smoke": "node tools/tts-bridge/scripts/smoke-test.mjs"
   },
   "keywords": [
     "tabletop-simulator",
@@ -12,5 +17,29 @@
     "modding"
   ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.28.0",
+    "luaparse": "^0.3.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Eunomiac/toronto-rising-tts.git"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Eunomiac/toronto-rising-tts/issues"
+  },
+  "homepage": "https://github.com/Eunomiac/toronto-rising-tts#readme"
 }

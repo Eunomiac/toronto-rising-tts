@@ -13,107 +13,41 @@
   <HorizontalLayout class="hud_map_parent_container"
     childForceExpandWidth="false"
     childForceExpandHeight="true"
-    width="1700"
-    height="1000"
-    childAlignment="MiddleRight"
+    width="1550"
+    height="50%"
+    childAlignment="MiddleLeft"
     rectAlignment="MiddleLeft"
-    offsetXY="0 0"
+    offsetXY="40 0"
   />
 
-  <Panel class="hover_button_panel_container"
-    flexibleWidth="0"
-    childForceExpandHeight="false"
-    childAlignment="UpperCenter"
-  />
+  <Panel class="hud_map_hover_button_panel_wrapper"
+    rectAlignment="UpperRight"
+    minWidth="150"
+   />
 
-  <VerticalLayout class="hover_button_panel"
-    height="150"
-    width="150"
-  />
-
-  <Image class="hud_map_toggleBorder"
-    preferredHeight="50"
-    preferredWidth="150"
-    flexibleHeight="0"
-    flexibleWidth="0"
-    preserveAspect="false"
-    padding="0 0 0 0"
-    raycastTarget="false"
-  />
-
-  <Image class="hud_map_toggleBorderSilver"
-    preferredHeight="50"
-    preferredWidth="150"
-    flexibleHeight="0"
-    flexibleWidth="0"
-    preserveAspect="false"
-    padding="0 0 0 0"
-    raycastTarget="false"
-  />
-
-  <Image class="hover_button"
-    preferredHeight="25"
-    preferredWidth="150"
-    flexibleHeight="0"
-    flexibleWidth="0"
-  />
-
-  <Image class="hover_button_thin"
-    preferredHeight="20"
-    preferredWidth="175"
-    flexibleHeight="0"
-    flexibleWidth="0"
-  />
-
-  <Image class="hover_button_base"
-    raycastTarget="true"
-    type="Simple"
-  />
-
-  <Image class="hover_button_hover"
-    raycastTarget="false"
-    color="clear"
-  />
-
-  <Image class="hover_button_active"
-    raycastTarget="false"
-    color="clear"
-  />
-
-  <Image class="hover_button_base_overlay"
-    onMouseDown="HUD_playerMap_overlayToggle_mouseDown"
-    onMouseEnter="HUD_playerMap_overlayToggle_hoverOn"
-    onMouseExit="HUD_playerMap_overlayToggle_hoverOff"
-  />
-
-  <Image class="hover_button_base_district"
-    raycastTarget="true"
-    onMouseDown="HUD_playerMap_districtToggle_mouseDown"
-    onMouseEnter="HUD_playerMap_districtToggle_hoverOn"
-    onMouseExit="HUD_playerMap_districtToggle_hoverOff"
-  />
 
   <Panel class="hud_map_center_container"
-    preferredWidth="1900"
+    preferredWidth="1225"
     flexibleWidth="0"
-    minHeight="2500"
+    minHeight="2100"
     rectAlignment="MiddleCenter"
-    preferredHeight="2500"
+    preferredHeight="2100"
     offsetXY="0 -500"
     flexibleHeight="0"
+    color="rgba(0, 0, 0, 1)"
   />
 
   <Panel class="hud_map_draggable_container"
-    allowDragging="true"
+    height="1600"
+    width="1225"
+    allowDragging="false"
     restrictDraggingToParentBounds="true"
     raycastTarget="true"
-    onBeginDrag="HUD_playerMap_dragBegin"
-    onEndDrag="HUD_playerMap_dragEnd"
     returnToOriginalPositionWhenReleased="false"
   />
 
   <Image class="hud_map_image"
-    height="2000"
+    width="100%"
     preserveAspect="true"
     rectAlignment="MiddleCenter"
   />
@@ -130,11 +64,52 @@
     rectAlignment="MiddleCenter"
   />
 
+  <Image class="hover_button_base_overlay"
+    onMouseDown="HUD_playerMap_overlayToggle_mouseDown"
+    onMouseEnter="HUD_playerMap_overlayToggle_hoverOn"
+    onMouseExit="HUD_playerMap_overlayToggle_hoverOff"
+  />
+
+  <Image class="hover_button_base_district"
+    raycastTarget="true"
+    onMouseDown="HUD_playerMap_districtToggle_mouseDown"
+    onMouseEnter="HUD_playerMap_districtToggle_hoverOn"
+    onMouseExit="HUD_playerMap_districtToggle_hoverOff"
+  />
+
+  <Panel class="hud_map_navigation_panel"
+    ignoreLayout="true"
+    rectAlignment="UpperLeft"
+    offsetXY="150 -20"
+    height="200"
+    width="100"
+  />
+
+  <Image class="hud_map_hover_button_pan"
+    preferredHeight="25"
+    minHeight="25"
+    preserveAspect="true"
+    flexibleHeight="0"
+    flexibleWidth="0"
+    />
+
+<Image class="hud_map_hover_button_recenter"
+    preferredHeight="50"
+    minHeight="50"
+    preserveAspect="true"
+    flexibleHeight="0"
+    flexibleWidth="0"
+    />
+
+
+
+
   <Panel class="hud_map_district_card_container"
     rectAlignment="LowerLeft"
     offsetXY="50 50"
     width="600"
     height="400"
+    ignoreLayout="true"
   />
 
   <Image class="hud_map_district_card"

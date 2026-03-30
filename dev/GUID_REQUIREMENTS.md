@@ -22,11 +22,11 @@ These GUIDs are placeholders and only needed if you plan to use these features:
    - **How to get**: Right-click the table → Scripting → Copy GUID
    - **Required for**: Advanced table calculations (optional)
 
-2. **PLAYER_LIGHT_BROWN** = `f251e0` ✅ (filled)
-3. **PLAYER_LIGHT_ORANGE** = `d3356d` ✅ (filled)
-4. **PLAYER_LIGHT_RED** = `0cd76a` ✅ (filled)
-5. **PLAYER_LIGHT_PINK** = `937fac` ✅ (filled)
-6. **PLAYER_LIGHT_PURPLE** = `b36dfe` ✅ (filled, but not used - Purple player no longer in game)
+2. **PLAYER_LIGHT_1_BROWN** = `f251e0` ✅ (filled)
+3. **PLAYER_LIGHT_1_ORANGE** = `d3356d` ✅ (filled)
+4. **PLAYER_LIGHT_1_RED** = `0cd76a` ✅ (filled)
+5. **PLAYER_LIGHT_1_PINK** = `937fac` ✅ (filled)
+6. **PLAYER_LIGHT_1_PURPLE** = `b36dfe` ✅ (filled, but not used - Purple player no longer in game)
    - **Purpose**: Player-specific spotlight objects for lighting
    - **How to get**: Right-click the spotlight object → Scripting → Copy GUID
    - **Required for**: Player spotlight features (configured in lighting module)

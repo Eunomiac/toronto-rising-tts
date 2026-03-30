@@ -80,7 +80,7 @@ end
 
 --- Checks if an object's name indicates it is a controllable light (not a decorative prop).
 -- Excludes e.g. "Signal Fire Pink", "Signal Candle Brown" - props with light for glow effect.
--- Includes e.g. "GM Light", "PLAYER_LIGHT_RED", "Main Light LEFT".
+-- Includes e.g. "GM Light", "PLAYER_LIGHT_1_RED", "Main Light LEFT".
 -- @param obj Object The object to check
 -- @return boolean True if name contains "light" (case-insensitive)
 local function hasLightInName(obj)

@@ -34,6 +34,80 @@
     outline="#000000"
     outlineSize="1 1" />
 
+  <!-- Hover Button Panel Styles -->
+
+
+  <Panel class="hover_button_panel_container"
+    flexibleWidth="0"
+    flexibleHeight="0"
+    preferredWidth="150"
+    minWidth="150"
+    rectAlignment="UpperRight"
+  />
+
+  <Panel class="hover_button_panel_container_wide"
+    preferredWidth="175"
+    minWidth="175"
+  />
+
+  <VerticalLayout class="hover_button_panel"
+    height="100%"
+    rectAlignment="UpperLeft"
+    childAlignment="UpperLeft"
+  />
+
+  <VerticalLayout class="hover_button_panel_wide" width="175"/>
+
+  <VerticalLayout class="hover_button_panel_right"
+    rectAlignment="UpperRight"
+    childAlignment="UpperRight"
+  />
+
+  <Image class="hover_button_panel_border"
+    preferredHeight="50"
+    preferredWidth="150"
+    flexibleHeight="0"
+    flexibleWidth="0"
+    preserveAspect="false"
+    padding="0 0 0 0"
+    raycastTarget="false"
+  />
+
+  <Image class="hover_button_panel_border_short"
+    preferredHeight="30"
+  />
+  <Image class="hover_button"
+    preferredHeight="25"
+    preferredWidth="150"
+    flexibleHeight="0"
+    flexibleWidth="0"
+  />
+
+  <Image class="hover_button_wide"
+    preferredWidth="175" />
+
+  <Image class="hover_button_thin"
+    preferredHeight="20"
+    preferredWidth="175"
+    flexibleHeight="0"
+    flexibleWidth="0"
+  />
+
+  <Image class="hover_button_base"
+    raycastTarget="true"
+    type="Simple"
+  />
+
+  <Image class="hover_button_hover"
+    raycastTarget="false"
+    color="clear"
+  />
+
+  <Image class="hover_button_active"
+    raycastTarget="false"
+    color="clear"
+  />
+
   <!-- Reminder/Alert Panel Styles -->
   <Panel class="reminderPanel"
     color="Black"

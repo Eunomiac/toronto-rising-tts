@@ -1,0 +1,398 @@
+{
+  "lucien": {
+    "name": "Lord Lucien St. Clair",
+    "clan": "Toreador",
+    "clanBanes": [
+      {
+        "name": "The Curse of Rapture",
+        "subtitleLabel": "Fixation",
+        "subtitleValue": "Stories",
+        "notes": ""
+      }
+    ],
+    "generation": "Tenth",
+    "titles": ["Prince"],
+    "predatorType": "Tithe Collector",
+    "sire": {
+      "name": "Oliver Gagnon",
+      "description": "",
+      "notes": ""
+    },
+    "childer": [
+      {
+        "name": "Damien Abanda",
+        "embraceYear": 1915,
+        "description": "",
+        "notes": ""
+      }
+    ],
+    "birthPlace": "Lucerne, Switzerland",
+    "birthYear": 1864,
+    "embracePlace": "Paris, France",
+    "embraceYear": 1889,
+    "attributes": {
+      "strength": 1,
+      "dexterity": 3,
+      "stamina": 2,
+      "charisma": 4,
+      "manipulation": 3,
+      "composure": 3,
+      "intelligence": 2,
+      "wits": 2,
+      "resolve": 2
+    },
+    "skills": {
+      "athletics": 2,
+      "brawl": 0,
+      "craft": 1,
+      "drive": 0,
+      "firearms": 2,
+      "larceny": 1,
+      "melee": 0,
+      "stealth": 1,
+      "survival": 0,
+      "animalKen": 0,
+      "etiquette": 3,
+      "insight": 2,
+      "intimidation": 1,
+      "leadership": 3,
+      "performance": 1,
+      "persuasion": 3,
+      "streetwise": 1,
+      "subterfuge": 2,
+      "academics": 1,
+      "awareness": 2,
+      "finance": 0,
+      "investigation": 1,
+      "medicine": 0,
+      "occult": 1,
+      "politics": 1,
+      "science": 0,
+      "technology": 1
+    },
+    "specialties": [
+      {
+        "skill": "athletics",
+        "type": "archaic",
+        "name": "Molotov Cocktails",
+        "decade": 1940
+      },
+      {
+        "skill": "craft",
+        "type": "archaic",
+        "name": "Art Nouveau",
+        "decade": 1890
+      },
+      {
+        "skill": "etiquette",
+        "type": "standard",
+        "name": "Camarilla"
+      },
+      {
+        "skill": "leadership",
+        "type": "standard",
+        "name": "Kindred"
+      },
+      {
+        "skill": "performance",
+        "type": "archaic",
+        "name": "Swing Dancing",
+        "decade": 1920
+      },
+      {
+        "skill": "academics",
+        "type": "archaic",
+        "name": "Theosophy",
+        "decade": 1890
+      },
+      {
+        "skill": "investigation",
+        "type": "archaic",
+        "name": "Investigative Journalism",
+        "decade": 1970
+      }
+    ],
+    "health": { "value": 5, "superficial": 0, "aggravated": 0 },
+    "willpower": { "value": 5, "superficial": 0, "aggravated": 0 },
+    "humanity": { "value": 7, "stains": 0 },
+    "bloodPotency": 2,
+    "disciplines": {
+      "presence": {
+        "value": 3,
+        "powers": [
+          { "name": "Awe", "level": 1, "notes": "" },
+          { "name": "Chimerstry", "level": 2, "notes": "" },
+          { "name": "Passion Leech", "level": 3, "notes": "Amalgam: Auspex 2" },
+          { "name": "Fata Morgana", "level": 3, "notes": "" }
+        ]
+      },
+      "auspex": {
+        "value": 2,
+        "powers": [
+          { "name": "Heightened Senses", "level": 1, "notes": "" },
+          { "name": "Premonition", "level": 2, "notes": "" },
+          { "name": "Serendipitous Speech", "level": 2, "notes": "Amalgam: Presence 2" }
+        ]
+      },
+      "celerity": {
+        "value": 1,
+        "powers": [
+          { "name": "Rapid Reflexes", "level": 1, "notes": "" }
+        ]
+      },
+      "animalism": {
+        "value": 1,
+        "powers": [
+          { "name": "Bond Famulus", "level": 1, "notes": "Sylvain (Owl)" }
+        ]
+      }
+    },
+    "convictions": [
+      {
+        "description": "Drama Over Caution",
+        "touchstone": {
+          "name": "Miriam Ravenscroft",
+          "description": "Curator, Royal Ontario Museum; Adjunct Professor, University of Toronto",
+          "notes": [
+            "Excitable and animated in the topics of her passions, to the point of lacking tact and social graces.",
+            "Specifically the curator for Manuscripts and Rare Texts, technically subordinate to the ROM's head Co-Chief Curator, Arts and Culture, Chen Shen.",
+            "Notoriously clumsy in any circumstance outside an archive.",
+            "Secretly publishes raunchy historical fiction under a nomme de plume, and is simultaneously proud and ashamed of the quality of her work.",
+            "There are rumors floating she has recently acquired an authentic fragment of important kindred lore/mystical significance for study."
+          ]
+        }
+      },
+      { "description": "Results Sanctify the Method" },
+      { "description": "You Must Take Care of Your Friends First" }
+    ],
+    "ambition": "",
+    "languages": ["German", "French", "English", "Spanish", "Greek"],
+    "backgrounds": [
+      {
+        "name": "Status",
+        "focus": "Camarilla",
+        "value": 5,
+        "notes": "",
+        "source": { "book": "", "page": 0 }
+      },
+      {
+        "name": "Status",
+        "focus": "Clan Toreador",
+        "value": 2,
+        "notes": "",
+        "source": { "book": "", "page": 0 }
+      },
+      {
+        "name": "Mawla",
+        "focus": "Damien Abanda",
+        "value": 2,
+        "notes": "",
+        "source": { "book": "", "page": 0 }
+      },
+      {
+        "name": "Mawla",
+        "focus": "Evanescent Blue",
+        "value": 2,
+        "notes": "",
+        "source": { "book": "", "page": 0 }
+      },
+      {
+        "name": "Mawla",
+        "focus": "Merrick Singh",
+        "value": 1,
+        "notes": "",
+        "source": { "book": "", "page": 0 }
+      }
+    ],
+    "merits": [
+      {
+        "name": "Luck of the Devil",
+        "focus": "",
+        "value": 4,
+        "description": "",
+        "rules": "",
+        "notes": "",
+        "source": { "book": "", "page": 0 }
+      },
+      {
+        "name": "Beautiful",
+        "focus": "",
+        "value": 2,
+        "description": "",
+        "rules": "",
+        "notes": "",
+        "source": { "book": "", "page": 0 }
+      },
+      {
+        "name": "Linguistics",
+        "focus": "",
+        "value": 1,
+        "description": "",
+        "rules": "",
+        "notes": "",
+        "source": { "book": "", "page": 0 }
+      },
+      {
+        "name": "Ingénue",
+        "focus": "",
+        "value": 1,
+        "description": "",
+        "rules": "",
+        "notes": "",
+        "source": { "book": "", "page": 0 }
+      }
+    ],
+    "flaws": [
+      {
+        "name": "The Curse of Rapture",
+        "focus": "",
+        "value": 1,
+        "description": "",
+        "rules": "",
+        "notes": "",
+        "source": { "book": "", "page": 0 }
+      }
+    ],
+    "bloodline": {
+      "name": "Descendant of the Count of St. Germain",
+      "description": "The Count of Saint Germain was the Enlightenment's most enduring enigma: a man who appeared in the courts of Louis XV and Peter the Great with the same youthful face and effortless grace. He was the ultimate polyglot, capable of shifting between a dozen languages with such flawless inflection that even natives claimed him as their own. His true power, however, lay in his casual intimacy with the past. To hear him speak was to be transported; he described the marriage at Cana or the councils of Nero not as a scholar, but as an eyewitness, weaving himself into the tapestry of history with a charm that made the impossible seem mundane.\n\nThose who carry his blood are the Scheherazades of Elysium, inheriting his uncanny ability to belong everywhere and to weave tales that transcend trivialities like “truth” or “falsehood”. A descendant of the Count never sounds like a foreigner, no matter how far they travel, and their voices carry the weight of an era long since buried. They are masters of weaving tales that resonate with the soul, using their rhetorical talents to persuade and spellbind. In a world of neon and noise, they remain the captivating voice at the campfire, awing their peers with forgotten secrets and the effortless poise of a soul that has seen the rise and fall of a thousand kings and queens.",
+      "merits": [
+        {
+          "name": "Cosmopolitan Communicator",
+          "value": 1,
+          "description": "",
+          "rules": "When you purchase this Merit, gain a free Language. The Linguistics Merit provides two languages per dot, instead of one. When you speak to someone in a language that is their native tongue but not the regional default, gain a +2 bonus on Etiquette rolls.",
+          "notes": "",
+          "purchased": true
+        },
+        {
+          "name": "Courtly Ties",
+          "value": 2,
+          "description": "The Count made easy friends wherever he travelled, and you have inherited his natural gregariousness.",
+          "rules": "Gain up to four dots, limited by your Sect Status, to spread among Mawla Backgrounds. You cannot purchase a Mawla Background greater than two with this Merit.",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "Storyteller's Gift",
+          "value": 3,
+          "description": "When you enter Memoriam, you may bring up to five other willing people with you by telling them the story of the Memoriam, weaving them into the narrative.",
+          "rules": "They must be present to hear your story and, for each person you wish to include, either you or they must Rouse the Blood. During the Memoriam, these guests may participate in the story and contribute to challenges as if they were actually there. This does not actually rewrite history, however: It is a result of your flair for storytelling, nothing more. The results of the Memoriam should be reframed after the fact to explain whatever happened in terms of the reality of that historical event (e.g., tasks performed by targets of this ability were actually achieved by you, by others who were really there, or by happenstance).",
+          "notes": "",
+          "purchased": true
+        },
+        {
+          "name": "Painting the Mind's Eye",
+          "value": 4,
+          "description": "Your tales transcend the written word and become something else entirely, something alive in the minds of others.",
+          "rules": "You may purchase Chimerstry as a Presence 2 power, then Fata Morgana as a Presence 3 power, without amalgam requirements, and you may purchase these even if you have already purchased those levels of Presence.",
+          "notes": "",
+          "purchased": true
+        },
+        {
+          "name": "Rousing Rhetoric",
+          "value": 5,
+          "description": "The Count's power to charm with the spoken word was legendary.",
+          "rules": "When your dice pool involves Performance, Persuasion or Leadership, you can set any single die to a 10 after rolling.",
+          "notes": "",
+          "purchased": false
+        }
+      ]
+    },
+    "loresheet": {
+      "name": "The Week of Nightmares",
+      "description": "Kindred debate when exactly the Week of Nightmares fell, with some claiming it landed just prior to the turn of the millennium, while others conflate it with the supposed commencement of Gehenna. In truth, the “Week” of Nightmares sprawled across years, sweeping up several thousand vampires in its wave. During the Week, an impossibly ancient vampire arose and purged its own clan: the Ravnos. Thin-blooded vampires emerged with omens and portents as the Red Star, Anthelios, blazed in the night sky.\n\nYou witnessed the mania of the Week of Nightmares and survived it, manipulated the chaos to your own advantage, or you studied the actions of those who did. Now you watch for signs of dooms to come.",
+      "merits": [
+        {
+          "name": "Oral History",
+          "value": 1,
+          "description": "You have heard and told the tale of the Week of Nightmares countless times, and you know exactly what to embellish and which parts to conceal. Your telling of the tale is popular in Elysia, where you are sometimes invited to speak as historian and entertainer. Important Kindred from all over come to hear your retelling.",
+          "rules": "Add three dice to Performance dice pools to tests to tell the story.",
+          "notes": "",
+          "purchased": true
+        },
+        {
+          "name": "Ravnos Remains",
+          "value": 2,
+          "description": "Prior to the Week of Nightmares, the Ravnos were a clan; now, they have little more than a bloodline. You know some Ravnos remnants and perhaps share their grudge against the Gangrel who left them to annihilation.",
+          "rules": "You have three dots of Mawla representing this group of contacts. They carry news and warnings to you, and can perhaps be convinced to cast mighty illusions once per chronicle, but association with them is frowned upon, if discovered.",
+          "notes": "",
+          "purchased": true
+        },
+        {
+          "name": "I Was There",
+          "value": 3,
+          "description": "You didn't just hear about it, you were on the front line. Your reputation as a survivor and on-the-spot veteran of the Week of Nightmares grants you Status among Kindred historians, occultists, Ravnos, and Gehenna cultists alike.",
+          "rules": "Once per story, you can use this Status to earn a minor boon from one of those groups or from a prominent courtier in the domain with a sudden interest.",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "The Red Star",
+          "value": 4,
+          "description": "Anthelios (NASA designation 28978 IXION), called Wormwood, harbinger of Gehenna, still glows in the sky, to your eyes at least. You believe it looks back at you, changing you somehow.",
+          "rules": "Once per story, you can either reduce your Hunger to a rating of two or gain a die to the pools of one Discipline for a night by staring at the star for 10 minutes.",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "Blood of Zapathasura",
+          "value": 5,
+          "description": "The Ravnos Antediluvian met Final Death in July 1999 at the hands of parties unknown, armed with advanced weaponry and the power of the sun. Before he died, he drained vitae from all his clan, driving them to frenzy and cannibalism in his death throes. Thick, sentient ropes of his vitae stained the ground in Bangladesh where he fell. The noonday sun did not destroy it all.",
+          "rules": "You own a small vial containing the Blood of the Ravnos Antediluvian. What you do with this vitae is up to you, and what it does to anyone who imbibes it is up to the Storyteller.",
+          "notes": "",
+          "purchased": false
+        }
+      ]
+    },
+    "timeline": [
+      {
+        "era": "Pre-Embrace",
+        "startYear": 1864,
+        "endYear": 1889,
+        "details": "Grew up poor, picked out of a crowd by pure chance (very open to Memoriam interpretation)",
+        "locations": ["Lucerne, Switzerland", "Paris, France"]
+      },
+      {
+        "era": "A Time of Lineage",
+        "startYear": 1889,
+        "endYear": 1915,
+        "affiliation": "camarilla",
+        "details": "The Gilded Cage\nUnder the meticulous tutelage of Oliver Gagnon, Lucien is taught the grandeur of his lineage and home, and forged into an ideal pupil. He moved through the salons of the Heartland, a living model of his sire's impeccable tastes, internalizing the rigid protocols of the Camarilla until the weight of the \"Great Game\" (the geopolitical mishmash that led to World War I) dawned. In 1915, at the close of this era, Lucien Embraced Damien Abanda as his childe before their westward flight to Mexico.",
+        "locations": ["Paris, France"]
+      },
+      {
+        "era": "A Time of Adversity",
+        "startYear": 1915,
+        "endYear": 1945,
+        "affiliation": "anarch",
+        "details": "Three decades of consecutive adversity began when Lucien reached Revolutionary Mexico with no support network, no Camarilla safety net, and his newly Embraced childe Damien at his side. As they moved north through unstable domains, Lucien embraced Anarch nights during the Revolt, finding both freedom and disorder, while his mentorship of Damien was increasingly undercut by the same excesses Lucien himself could not resist. By the end of this era, Lucien was believed destroyed and was left torpid beneath the Mojave sands. The exact cause of that fall remains deliberately ambiguous.",
+        "locations": ["Celaya, Mexico", "Los Angeles, America"]
+      },
+      {
+        "era": "A Time of Torpor",
+        "startYear": 1945,
+        "endYear": 1958,
+        "affiliation": "nil",
+        "details": "Buried in the Mojave and unable to find blood enough to rise, Lucien remained in prolonged torpor while history moved on without him. In his absence, he came to believe a Gangrel Anarch pack connected to Damien had betrayed him, and that Damien's failures of judgment helped make both the torpor and the long abandonment possible. Damien never found him; the guilt of that failure, and the realization that Lucien had been left rather than avenged, became one of the catalysts that hardened Damien and pushed him toward Red Flag. Lucien was eventually unearthed by Fomorach and carried to Toronto.",
+        "locations": ["Mojave Desert, USA"]
+      },
+      {
+        "era": "A Time of Reinvention",
+        "startYear": 1967,
+        "endYear": 1999,
+        "affiliation": "camarilla",
+        "details": "After his recovery, Lucien shed the entitled \"golden child\" posture of his early unlife and recast himself as a man of ideals, conviction, and discipline. Having seen Anarch disorganization firsthand, and recognizing the Camarilla as the only organized resistance to the Sabbat in that period, he chose Montreal as a proving ground to demonstrate his loyalty to the Ivory Tower and prove his Anarch era was not his final identity. He was also, true to form, drawn to where the story was most dangerous and consequential. Montreal scarred him: nightmares, terror, and direct confrontation with the Sabbat left lasting trauma. But he emerged tempered and galvanized, no longer polished courtly potential but a leader who could plausibly claim a prince's burden.",
+        "locations": ["Toronto, Canada", "Montreal, Canada"]
+      },
+      {
+        "era": "A Time of Legacy",
+        "startYear": 1999,
+        "endYear": 2004,
+        "affiliation": "camarilla",
+        "details": "Lucien left Montreal for Toronto as the Week of Nightmares began (June 28 to July 4, 1999). Near Kingston, violence involving Gangrel and Ravnos drew him into the chaos tied to the destruction of the Ravnos Antediluvian; he survived and came away with Evanescent Blue and Merrick in tow (full incident details remain for Memoriam play). On returning to Toronto, Lucien placed Merrick under Oliver's care, judging Oliver's freer temperament better suited to shelter him. This era marks Lucien's transition from survivor-storyteller to domain architect, with personal legend and political legacy becoming inseparable.",
+        "locations": ["Toronto, Canada"]
+      }
+    ]
+  }
+}

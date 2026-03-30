@@ -31,11 +31,17 @@ G.GUIDS = {
     MAIN_LIGHT_LEFT = "573771",
     MAIN_LIGHT_RIGHT = "13466d",
 
-    PLAYER_LIGHT_BROWN = "f251e0",
-    PLAYER_LIGHT_ORANGE = "d3356d",
-    PLAYER_LIGHT_RED = "0cd76a",
-    PLAYER_LIGHT_PINK = "937fac",
-    PLAYER_LIGHT_PURPLE = "86117d",
+    PLAYER_LIGHT_1_BROWN = "f251e0",
+    PLAYER_LIGHT_1_ORANGE = "d3356d",
+    PLAYER_LIGHT_1_RED = "0cd76a",
+    PLAYER_LIGHT_1_PINK = "937fac",
+    PLAYER_LIGHT_1_PURPLE = "86117d",
+
+    PLAYER_LIGHT_2_BROWN = "9b5685",
+    PLAYER_LIGHT_2_ORANGE = "6eebdf",
+    PLAYER_LIGHT_2_RED = "41bbba",
+    PLAYER_LIGHT_2_PINK = "1736cb",
+    PLAYER_LIGHT_2_PURPLE = "cf2fe0",
 
     -- Ambient Objects (for effects)
     RING_FLARE = "210fad", -- circular ring of rising light, used to highlight table drops
@@ -68,7 +74,11 @@ G.GUIDS = {
     HUNGER_SMOKE_PURPLE = "f20164",
 
     -- Thrones (for players to sit on)
-    THRONE_PINK = "570f9b",
+    THRONE_RED = "474c0d",
+    THRONE_ORANGE = "c3a355",
+    THRONE_BROWN = "8f512e",
+    THRONE_PINK = "18bd33",
+    THRONE_PURPLE = "823f86",
 
     -- Add other object GUIDs as needed (zones, boards, etc.)
     -- Format: OBJECT_NAME = "@@@@@@OBJECT_NAME@@@@@@"

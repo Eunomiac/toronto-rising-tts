@@ -1,0 +1,3147 @@
+{
+  "PCs": {
+    "aishe": {
+      "name": "Aishe Tache",
+      "clan": "Malkavian",
+      "clanBanes": [
+        {
+          "name": "The Curse of the Moon",
+          "subtitleLabel": "Derangement",
+          "subtitleValue": "Persistent Delusion",
+          "notes": "The Cards Are Always Right",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "generation": "Eighth",
+      "titles": [
+        "Malkavian Primogen"
+      ],
+      "predatorType": "Siren",
+      "sire": {
+        "name": "Lady Aveline Dubois",
+        "description": [
+          "7th Generation Malkavian",
+          "Embraced shortly before the French Revolution",
+          "Anarch loyalist",
+          "High Humanity",
+          "Wanderer by nature",
+          "Derangement: Bipolar Disorder",
+          "More focused on signs or omens"
+        ],
+        "notes": ""
+      },
+      "childer": [],
+      "birthPlace": "Brasov, Romania",
+      "birthYear": 1799,
+      "embracePlace": "Louisiana, USA",
+      "embraceYear": 1834,
+      "attributes": {
+        "strength": 1,
+        "dexterity": 2,
+        "stamina": 2,
+        "charisma": 3,
+        "manipulation": 4,
+        "composure": 3,
+        "intelligence": 2,
+        "wits": 2,
+        "resolve": 3
+      },
+      "skills": {
+        "athletics": 1,
+        "brawl": 1,
+        "craft": 0,
+        "drive": 0,
+        "firearms": 0,
+        "larceny": 0,
+        "melee": 0,
+        "stealth": 0,
+        "survival": 0,
+        "animalKen": 0,
+        "etiquette": 3,
+        "insight": 3,
+        "intimidation": 2,
+        "leadership": 2,
+        "performance": 1,
+        "persuasion": 3,
+        "streetwise": 0,
+        "subterfuge": 4,
+        "academics": 0,
+        "awareness": 1,
+        "finance": 0,
+        "investigation": 0,
+        "medicine": 0,
+        "occult": 2,
+        "politics": 2,
+        "science": 0,
+        "technology": 0
+      },
+      "specialties": [
+        {
+          "skill": "insight",
+          "type": "standard",
+          "name": "Omens"
+        },
+        {
+          "skill": "leadership",
+          "type": "standard",
+          "name": "Malkavian"
+        },
+        {
+          "skill": "performance",
+          "type": "archaic",
+          "name": "Disco",
+          "decade": 1970
+        },
+        {
+          "skill": "performance",
+          "type": "archaic",
+          "name": "Fortune-Telling",
+          "decade": 1810
+        },
+        {
+          "skill": "persuasion",
+          "type": "standard",
+          "name": "Seduction"
+        },
+        {
+          "skill": "occult",
+          "type": "archaic",
+          "name": "Mediumship",
+          "decade": 1880
+        }
+      ],
+      "health": {
+        "value": 5,
+        "superficial": 0,
+        "aggravated": 0
+      },
+      "willpower": {
+        "value": 6,
+        "superficial": 0,
+        "aggravated": 0
+      },
+      "humanity": {
+        "value": 7,
+        "stains": 0
+      },
+      "bloodPotency": 2,
+      "disciplines": {
+        "auspex": {
+          "value": 3,
+          "powers": [
+            {
+              "name": "Heightened Senses",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Premonition",
+              "level": 2,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Scry the Soul",
+              "level": 3,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Doomsaying",
+              "level": 3,
+              "notes": "Amalgam: Dominate 3",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        },
+        "dominate": {
+          "value": 3,
+          "powers": [
+            {
+              "name": "Cloud Memory",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Dementation",
+              "level": 2,
+              "notes": "Amalgam: Obfuscate 2",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "The Forgetful Mind",
+              "level": 3,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        },
+        "obfuscate": {
+          "value": 2,
+          "powers": [
+            {
+              "name": "Cloak of Shadows",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Unseen Passage",
+              "level": 2,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        },
+        "fortitude": {
+          "value": 1,
+          "powers": [
+            {
+              "name": "Unswayable Mind",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        }
+      },
+      "convictions": [
+        {
+          "description": "You Must Take Care Of Yourself First",
+          "notes": [
+            "Ultimately, no one has your best interest at heart except for you.",
+            "While everyone is ultimately in it for themselves and maybe for their loved ones.",
+            "But no one will prioritize you, but you."
+          ],
+          "touchstone": {
+            "name": "Kade Phillips",
+            "description": "Hair Stylist",
+            "notes": [
+              "Big Hearted Man who cares deeply for his family and friends.",
+              "Connects easily with others and commands love and respect, even in his less than manly profession.",
+              "He's the kind of Man Aishe raised her sons to be like.",
+              "There is a deep anger within him; he often spends time with people who stoke it."
+            ]
+          }
+        },
+        {
+          "description": "Keep Every Door Open",
+          "notes": [
+            "With so many oceans of time allies may turn to foes and vice versa",
+            "Keeping a door open is useful, even if unsatisfying at the time"
+          ],
+          "touchstone": {
+            "name": "Camille Bouschar",
+            "notes": [
+              "Recent Divorcee",
+              "Survived an Unhappy Marriage for 30+ years",
+              "Stroke up a friendship with Aishe a few years before her divorce",
+              "Her Daughter, Marie, blames Aishe for her Parent's divorce",
+              "Camille Reminds Aishe of who she could have been had she not met her Sire"
+            ]
+          }
+        },
+        {
+          "description": "Keep Everyone Guessing",
+          "notes": [
+            "Keep your enemies and allies guessing."
+          ],
+          "touchstone": {
+            "name": "Katrine Cousteau",
+            "notes": [
+              "Daughter of owner of an Occult Shop -- The Threefold Exchange, in Chinatown",
+              "While the owner is (somewhat) legit, Katrine takes advantage -- of her mother, of her customers, of everyone",
+              "Actually a full time swindler selling people \"magical\" solutions to their mundane problems",
+              "Katrine stokes Aishe's duplicitous nature"
+            ]
+          }
+        }
+      ],
+      "ambition": "",
+      "languages": [
+        "German",
+        "English"
+      ],
+      "backgrounds": [
+        {
+          "name": "Status",
+          "focus": "Camarilla",
+          "value": 4,
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Status",
+          "focus": "Clan Malkavian",
+          "value": 4,
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "merits": [
+        {
+          "name": "Stunning",
+          "focus": "",
+          "value": 4,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Blood Hound",
+          "focus": "",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "flaws": [
+        {
+          "name": "The Curse of the Moon",
+          "focus": "",
+          "value": 3,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Prey Exclusion",
+          "focus": "The Addled",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Enemy",
+          "focus": "Marie Bouschard",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": [
+            "Daughter of Camille Bouschard",
+            "Blames Aishe for her parent's divorce (She's Right)",
+            "College Girl",
+            "Age 22"
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "bloodline": {
+        "name": "Descendant of the Pythia",
+        "description": "There are few things mortals fear more than the future, for it is the ultimate unknown. And as long as that fear has existed, people have sought ways to pierce the veil of tomorrow, to embrace their destined paths or halt them entirely. Most who claim such insight are liars or charlatans.\n\nOne was not.\n\nThe Pythia, Oracle of Delphi, truly saw what was to come. She gazed upon futures both radiant and terrible, and unlike others, she learned not to fight them. She accepted them.\n\nChosen of Apollo, God of the Sun, the Pythia advised kings, generals, and nobles. Through dreams sent by her divine patron, the future was unveiled to her with merciless clarity.\n\nYet even foresight offers no sanctuary.\n\nShe vanished for thirteen nights.\n\nWhen the Pythia returned to her temple, she was transformed. Her skin deathly pale, her teeth stained red. Apollo's light no longer answered her prayers. That very night, in an act of sacrilege that shattered the sanctity of Delphi, she Embraced her fellow priestesses. From this desecration was born a new lineage of vampires who see what must come, and who must endure the curse of foreknowledge.",
+        "merits": [
+          {
+            "name": "Seeing the Omens",
+            "value": 1,
+            "description": "The legacy of the Pythia sings in your Blood, gifting you with an affinity for interpreting omens.",
+            "rules": "Gain one dot of Insight and the Insight (Omens) Specialty.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "The Dark Between the Stars",
+            "value": 2,
+            "description": "Where the Pythias of the Oracle at Delphi used prophecy to aid others, you leverage your power to serve yourself.",
+            "rules": "At the end of each session, you may ask the Storyteller one question related to your Ambition or current Desire. The Storyteller will provide the answer in the form of a clue or omen before the start of the next session.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "Portent",
+            "value": 3,
+            "description": "The mechanics of fate itself begin to reveal themselves to you.",
+            "rules": "At the end of each session, roll a Hunger die and set it aside. Until the end of the next session, you may replace any rolled Hunger die (whether yours or not) with the die you set aside. If doing so changes the result of the roll into a Messy Critical or a Bestial Failure, you also recover one point of Superficial Willpower damage.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Follower of Motes",
+            "value": 4,
+            "description": "The skeins of destiny weave through all things and into all people, and you have learned to pluck those strings.",
+            "rules": "At the end of each session, you may assign two dots among new Contacts, Allies, and/or Influence Backgrounds, representing strangers who do not know you, but whom your insights into the future have granted you leverage or the precise words to say to get what you want. You must choose the focus of these Backgrounds when you assign them. They persist until the end of the next session.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "The Deck of Wandering Stars",
+            "value": 5,
+            "description": "Pythia's lineage evolved and adapted over the centuries, incorporating the prognostications of other cultures into their own. The Tarot has been a symbol of Pythian prescience for centuries, and there is no greater symbol of this affinity than the Deck of Wandering Stars, a powerful artifact of which you are the current keeper.",
+            "rules": "Appearing as a slightly worn set of Tarot cards, the Deck contains only the Major Arcana. Once per scene, you may perform a reading with the Deck, focusing on a specific use of Auspex that you must define at the time, and use in the same scene or in the next. If you do, gain a bonus equal to your Blood Surge bonus on any roll required for that power, and automatically succeed at any Rouse Checks required. Additionally, only fate itself can separate you from the Deck of Wandering Stars: if you lose it, or it is stolen, circumstances will conspire to return it to your hands within three days and three nights.",
+            "notes": "",
+            "purchased": false
+          }
+        ]
+      },
+      "loresheet": {
+        "name": "The Cobweb",
+        "description": "You're never truly alone. Not anymore. Not even if you want to be. Not even if you try to be.\n\nThe Cobweb catches so many thoughts in its sticky strands, sends them skittering further inside, or reverberating out to the far edges. You're not always sure the thoughts you're hearing are from now. Some feel like they've been stuck for years and have just shaken loose. Others taste like tomorrow.\n\nThe Cobweb, also known as the Madness Network, is a psychic network to which all Malkavians are linked. No two clan members describe it exactly the same way. For some, it's a constant low murmuring in their Blood. Others describe it as a kind of hivemind operating alongside their own cognition. Many, even most, Malkavians are only reminded of its presence a few times a year, like a sudden burst of static on a forgotten radio.\n\nNo one knows the Cobweb's ultimate purpose, though it's been used to summon a gathering of Oracles together with a subconscious imperative dubbed The Call. Some suspect Malkav himself uses the Network to view the world through his descendants' eyes and ears, or that he simply is the Network.",
+        "merits": [
+          {
+            "name": "A Break in the Static",
+            "value": 1,
+            "description": "The Cobweb is just barely perceptible to you.",
+            "rules": "You catch sporadic snatches of conversation, often just a few distinct words or images. It's enough to piece together an order or a call for aid, though you're unable to respond.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Step into My Parlor",
+            "value": 2,
+            "description": "You can communicate over the Network with other Malkavians nearby.",
+            "rules": "These discussions are heavily abstract, limited to short phrases, simple images, and strong emotions.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Across the Web",
+            "value": 3,
+            "description": "Your voice is one of the strongest on the Cobweb.",
+            "rules": "You can hold more involved conversations with Malkavians in your city. Once per story you may initiate the Call, sending impressions of the time and gathering place to all who can hear. This does not guarantee obedience.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Pluck the Strands",
+            "value": 4,
+            "description": "Your connection to your Cainite ancestors and descendants is powerful.",
+            "rules": "Once per story, you may use the cobweb to piggyback on your sire's or one of your childer's senses. You are only an observer, and cannot control their responses or their movements.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Malkav's Will",
+            "value": 5,
+            "description": "The entity in the Cobweb is awake and aware.",
+            "rules": "Malkav, or a consciousness pretending to be him, speaks to you directly via the Network. Once per story, you may ask the Storyteller to divulge a secret about another Malkavian or reveal what orders the mind in the Cobweb wants you to follow.",
+            "notes": "",
+            "purchased": false
+          }
+        ]
+      },
+      "timeline": [
+        {
+          "era": "Pre-Embrace",
+          "startYear": 1799,
+          "endYear": 1834,
+          "affiliation": "nil",
+          "details": "I was born in Brașov to a father with money but no standing. He treated everything as an asset, including me. When a minor noble named Nicolae Strandza needed his useless son married off to settle debts, my father saw an opportunity. The bargain was simple: legitimacy for him, solvency for Strandza, and Andrei for me.\n\nMy husband was twice my age and half my worth. A fool made respectable by a ring is still a fool. He drank, embarrassed himself, and disappointed his father as thoroughly after marriage as before it. What he did give me were three children, Elena, Vlad, and Gheorghiu, and they became the center of my life. I managed the household, shielded his reputation, dragged him to bed at night, and learned not to look when his eyes lingered on younger women.\n\nWhen our youngest left for university, Andrei decided we should travel to New Orleans, claiming culture but seeking only new vices in a more exotic setting. With my children gone, I followed him out of duty and habit.\n\nThere, with little left to occupy me, I found the occult. Through it I met Lady Aveline Dubois. She offered me something I had never truly known, companionship, understanding, and the awakening of parts of myself long neglected. I wondered what it might be like to kiss her; I did not remain wondering for long.\n\nThe night before our return voyage, she invited me to her parlor. I remember little of what followed.\n\nI died in New Orleans.",
+          "locations": [
+            "Brasov, Romania",
+            "Louisiana, USA"
+          ]
+        },
+        {
+          "era": "A Time of Lineage",
+          "startYear": 1834,
+          "endYear": 1865,
+          "affiliation": "anarch",
+          "details": "I awoke in the lodgings Andrei and I shared, reborn into hunger and clarity. He lay nearby, drunk on wine and opium, reeking of another woman’s perfume. Before he could fully see me, I tore out his throat. His blood was sweet, and my feeding was savage, my Beast taking vengeance for years of quiet humiliation. He did not deserve it, but that knowledge came later.\n\nLady Aveline was there when I returned to myself. The massacre proved convenient; abandoned dresses and mangled remains led the authorities to assume animals had killed us both. Even now, I refuse to feed on the addled, it reminds me too much of my mortal sorrow.\n\nFor many nights after, I remained at Aveline’s side. I learned her madness and loved her through it, through her manic brilliance and her crushing despair. From her I learned the truths of blood, and of our blood in particular. I learned divination, and soon mastered it. The cards see everything, even what we wish they would not.\n\nShamefully, those nights were the happiest of my unlife.\n\nThen she was gone. I woke alone, with only a message left behind: “The Line in Blood shall meet twice. Then no more.” I did not understand then.\n\nBut I was alone now, and I had to learn how to survive.",
+          "locations": [
+            "Louisiana, USA"
+          ]
+        },
+        {
+          "era": "A Time of Intrigue",
+          "startYear": 1882,
+          "endYear": 1912,
+          "affiliation": "camarilla",
+          "details": "I never truly belonged among my sire’s sect. The Anarchs could smell my upbringing on me, as if death had done nothing to strip away class, habit, or belief. Even in undeath, we carry our mortal selves longer than we ever carried our lives.\n\nHiding one night in the cellar of an abandoned farmstead, I fed on an escaped criminal and found a plain deck of Tarot cards. I read them, and they told me to return to New Orleans and seek the Emperor.\n\nSo I presented myself to Camarilla court. Even Anarchs must bow to Tradition. That was when I saw Prince Doran, young in manner if not in years, full of hope and possessed of a vision. In that moment, I knew my future lay with the Camarilla.\n\nBut the Ivory Tower demands its price. What I did to earn my place there is not something I will ever repeat. It hollowed me. My admission was written in blood, the ink mixed with the ashes of countless Kindred.\n\nNow, I find myself wondering if it was ever worth the cost.",
+          "locations": [
+            "Louisiana, USA"
+          ]
+        },
+        {
+          "era": "A Time of Dominion",
+          "startYear": 1912,
+          "endYear": 1955,
+          "affiliation": "camarilla",
+          "details": "Prince Doran’s vision was vast, but New Orleans was a nest of violence and schemes. I had joined the Ivory Tower as little more than a neonate, a whisper amid the roar of Camarilla politics, and I had no one to guide me.\n\nThere was one advantage to my bloodline. Malkavians are feared for their madness, but valued for their insight. Those who knew my lineage sought my services, and I spent those years currying favor with local tyrants, rising carefully through ambition, insight, and deceit in equal measure.\n\nIt was then I crafted my persona, a carefully constructed madness that served me better than honesty ever could. I gave the powerful colorful names, riddles dressed as jokes, and let rivals exhaust themselves searching for meanings that may or may not have existed.\n\nMy visions served my goals, and my prince’s. I averted disasters, turned Garou aside, and unraveled the designs of the Magi through quiet manipulation. In the end, it mattered little. Doran met his final death in 1955, and his dream died with him.\n\nIn the aftermath, I found myself reflecting on the fragments of humanity I had left behind.",
+          "locations": [
+            "Louisiana, USA"
+          ]
+        },
+        {
+          "era": "A Time of Remorse",
+          "startYear": 1955,
+          "endYear": 1984,
+          "affiliation": "camarilla",
+          "details": "Marcel Guilbeau succeeded Doran as prince, though he ruled only in name, a puppet for his brother. Whatever New Orleans might have become died with Doran, and my own ambition dimmed for a time. I continued to play my role at court, but without conviction. Doran dreamed of a Carthage reborn, Kine and Kindred existing openly together. I see now how foolish that was. We are predators, and they are prey.\n\nAnd yet, we were all Kine once.\n\nIn those years, I opened a small shop, harmless, respectable, where bored, upper-middle-class women came for palm readings and questions about love. They were vapid, lost, and sad, and they reminded me painfully of my mortal self. Unlike the usual charlatans, I gave them truths they could actually use. Some were grateful. Some were not.\n\nI cannot say exactly what I learned during those long nights of quiet charity, but they filled a hollow I had not realized was there.",
+          "locations": [
+            "Louisiana, USA"
+          ]
+        },
+        {
+          "era": "A Time of Dominion",
+          "startYear": 1999,
+          "endYear": 2025,
+          "affiliation": "camarilla",
+          "details": "These nights mark the second time I met my sire. I found her lingering outside my little shop, and when we spoke for the first time in over a century, it felt, briefly, as though we had never parted. But I had changed. I had learned to guard my heart, and she saw it immediately.\n\nWe argued. Time had driven a wedge between us deeper than the night she abandoned me. I had forgiven her for that, but she would never forgive me for joining the Ivory Tower, for becoming the prince’s oracle. She said our Gift was never meant to serve them, that I had betrayed her.\n\nShe was older, wiser, and far freer than I had ever been, living openly, surviving on insight, charm, and truth. She still carried the same spark that once drew me in. I loved and hated her for it. She did not change. I did.\n\nAnd the cruelest truth was that she was right. I am the Ivory Tower. I serve myself by serving the status quo.\n\nWhen she rushed me, I thought my unlife was ending. I was never a fighter. Instead, she embraced me, not with blood, but with arms, and my heart thundered in my chest. Afterward, a postcard arrived, sent to the wrong address, bearing the image of the CN Tower. One reading was enough to understand it.\n\nToronto was where true dominion waited. Where I might build something lasting. I relocated quietly, my history in New Orleans earning me a place. I kept my head down.\n\nUntil now. Now, it is do or die.",
+          "locations": [
+            "Toronto, Canada"
+          ]
+        }
+      ]
+    },
+    "blackCaesar": {
+      "name": "Henri \"Black\" Caesar",
+      "clan": "Tremere",
+      "clanBanes": [
+        {
+          "name": "The Curse of Fallen Blood",
+          "subtitleLabel": "",
+          "subtitleValue": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "generation": "Eighth",
+      "titles": [
+        "Sheriff"
+      ],
+      "predatorType": "Blood Leech",
+      "sire": {
+        "name": "Jervais bani Tremere",
+        "description": "",
+        "notes": [
+          "A key player in the behind-the-scenes affairs of Clan Tremere during its early days within Europe before the Camarilla's formation.",
+          "His loyalty to Goratrix made him a Sabbat spy in later years, and he embraced Caesar for the sole purpose of having another agent in the New World.",
+          "Seemingly met Final Death at the hands of Caesar, who loathed him for forcing him to be a double agent."
+        ]
+      },
+      "childer": [
+        {
+          "name": "Severin Koslov",
+          "embraceYear": 2023,
+          "description": "",
+          "notes": [
+            "An Eastern-European immigrant who was formerly a worker with the Brotherhood of Carpenters union before his Embrace. Has the sort of wisdom one would expect from his age and humble background.",
+            "Was selected for the Embrace by Caesar due to his stubbornness. His insistence on finding out strange numbers not adding up on finances (which may have been a Masquerade breach) ended up convincing Caesar to bring him into the fold.",
+            "Currently a Ward of the Hecata who is still under Accounting, with the Bokor training him in the study of Oblivion."
+          ]
+        }
+      ],
+      "birthPlace": "Asante Empire",
+      "birthYear": 1699,
+      "embracePlace": "Spanish Florida, USA",
+      "embraceYear": 1735,
+      "attributes": {
+        "strength": 2,
+        "dexterity": 2,
+        "stamina": 1,
+        "charisma": 2,
+        "manipulation": 3,
+        "composure": 3,
+        "intelligence": 4,
+        "wits": 2,
+        "resolve": 3
+      },
+      "skills": {
+        "athletics": 1,
+        "brawl": 0,
+        "craft": 1,
+        "drive": 0,
+        "firearms": 0,
+        "larceny": 2,
+        "melee": 1,
+        "stealth": 3,
+        "survival": 2,
+        "animalKen": 0,
+        "etiquette": 0,
+        "insight": 2,
+        "intimidation": 3,
+        "leadership": 1,
+        "performance": 0,
+        "persuasion": 0,
+        "streetwise": 2,
+        "subterfuge": 1,
+        "academics": 2,
+        "awareness": 2,
+        "finance": 0,
+        "investigation": 1,
+        "medicine": 1,
+        "occult": 3,
+        "politics": 1,
+        "science": 1,
+        "technology": 0
+      },
+      "specialties": [
+        {
+          "skill": "craft",
+          "type": "archaic",
+          "name": "Clock-work",
+          "decade": 1740
+        },
+        {
+          "skill": "melee",
+          "type": "standard",
+          "name": "Tire Machèt"
+        },
+        {
+          "skill": "stealth",
+          "type": "standard",
+          "name": "vs. Kindred"
+        },
+        {
+          "skill": "academics",
+          "type": "archaic",
+          "name": "Stellar Navigation",
+          "decade": 1740
+        },
+        {
+          "skill": "awareness",
+          "type": "standard",
+          "name": "Smell"
+        },
+        {
+          "skill": "occult",
+          "type": "archaic",
+          "name": "Mediumship",
+          "decade": 1880
+        },
+        {
+          "skill": "science",
+          "type": "archaic",
+          "name": "Alchemy",
+          "decade": 1740
+        }
+      ],
+      "health": {
+        "value": 4,
+        "superficial": 0,
+        "aggravated": 0
+      },
+      "willpower": {
+        "value": 6,
+        "superficial": 0,
+        "aggravated": 0
+      },
+      "humanity": {
+        "value": 5,
+        "stains": 0
+      },
+      "bloodPotency": 2,
+      "disciplines": {
+        "oblivion": {
+          "value": 3,
+          "powers": [
+            {
+              "name": "Shroud Sight",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Unliving Anchor",
+              "level": 2,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Ligare Mortuos",
+              "level": 3,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Liens du Vévè",
+              "level": 3,
+              "notes": "Amalgam: Dominate 2",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ],
+          "ceremonies": [
+            {
+              "name": "Summon Spirit",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Nekyia",
+              "level": 2,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Host Spirit",
+              "level": 3,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        },
+        "auspex": {
+          "value": 2,
+          "powers": [
+            {
+              "name": "Sense the Unseen",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Dream Domineer",
+              "level": 2,
+              "notes": "Amalgam: Dominate 2",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        },
+        "bloodSorcery": {
+          "value": 2,
+          "powers": [
+            {
+              "name": "A Taste for Blood",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Scour Secrets",
+              "level": 2,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ],
+          "rituals": [
+            {
+              "name": "Oneiromancy",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Depths of Nightmare",
+              "level": 2,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        },
+        "dominate": {
+          "value": 2,
+          "powers": [
+            {
+              "name": "Compel",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Mesmerize",
+              "level": 2,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        },
+        "celerity": {
+          "value": 2,
+          "powers": [
+            {
+              "name": "Rapid Reflexes",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Fleetness",
+              "level": 2,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        },
+        "potence": {
+          "value": 1,
+          "powers": [
+            {
+              "name": "Soaring Leap",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        }
+      },
+      "convictions": [
+        {
+          "description": "My Soldiers Must Be Able To Handle Anything",
+          "notes": [
+            "Chief Keira Vaughn is the chief of Toronto's police department who, after briefly catching a Masquerade breach before it was scrubbed (one of Mara's dramatic murders of a political official), has been investigating what she believes is a conspiracy of criminals who can commit impossible feats of strength and speed operating in the city.",
+            "Caesar admires her for how many lieutenants she's been able to bring into the fold and convince them fully.",
+            "Her stern leadership reminds him of his days as a ship captain."
+          ],
+          "touchstone": {
+            "name": "Keira Vaughan",
+            "description": "Police Chief, Toronto Police",
+            "notes": [
+              "Chief of Toronto's police department; briefly caught a Masquerade breach before it was scrubbed (one of Mara's dramatic murders of a political official).",
+              "Has been investigating what she believes is a conspiracy of criminals capable of impossible feats of strength and speed in the city.",
+              "Caesar admires how many lieutenants she's brought into the fold and convinced fully.",
+              "Her stern leadership reminds him of his days as a ship captain."
+            ]
+          }
+        },
+        {
+          "description": "The Captain Always Saves Himself First"
+        },
+        {
+          "description": "Reward Success, Excoriate Failure",
+          "notes": [
+            "Retained from Black Caesar's days following the Path of Power and the Inner Voice during his tenure as a member of the Sabbat.",
+            "Slightly more likely to result in Stains when violated, compared to other Convictions."
+          ]
+        }
+      ],
+      "ambition": "",
+      "languages": [
+        "Asante Twi",
+        "English"
+      ],
+      "backgrounds": [
+        {
+          "name": "Status",
+          "focus": "Camarilla",
+          "value": 3,
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Status",
+          "focus": "Clan Tremere",
+          "value": 1,
+          "notes": [
+            "As a result of his shady history as the founder of a minor House with a bad reputation and for his time as a \"double agent\" in the Sabbat, many of his Clan look at him with suspicion for his seeming lack of loyalty to the ideals of the Pyramid.",
+            "Despite this, his 3 centuries in the Clan still commands respect."
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Herd",
+          "focus": "Court Prisoners",
+          "value": 2,
+          "notes": [
+            "There is said to be a hidden room within Casa Loma creatively titled \"Room 101\" where it is said that Thin-bloods are sent to when found by the new Sheriff. Despite the rumors nobody knows what this room looks like except for the victims already trapped there. And who in the Camarilla would speak up for a Duskborn?",
+            "During the conflict for Praxis, Black Caesar populated his dungeon with two members of the Moon Club, which he seized under false pretenses."
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Mawla",
+          "focus": "Baron's Bleak Bokor",
+          "value": 2,
+          "notes": [
+            "Caesar and the Bokor both had a hand in shaping what Kindred society would look like in the Caribbean when they both meddled in the Haitian Revolution. Neither man asked too many questions about the other's \"boss\".",
+            "They were also both founding members of House High Saturday, with the Samedi's involvement being crucial for their understanding of Necromancy. He may not be a member today, but is still on good terms with Caesar."
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Contact",
+          "focus": "Christopher Giovanni Jr.",
+          "value": 2,
+          "notes": [
+            "29 year old \"made man\" who just received the Proxy Kiss but is stuck with cooking the books for the family.",
+            "Forced to serve as the middle man between Caesar and Bacchus, which he hates because both men scare him.",
+            "Still does his job dutifully because he wants to get Embraced while he's still good-looking."
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Retainer",
+          "focus": "Jean Ducheski-Francois III",
+          "value": 2,
+          "notes": [
+            "Jean and his family are the culmination of 100 years of Caesar's work to make his own personal mystic soldiers.",
+            "The patriarch himself is mild-mannered and charming with the air of an academic. Much older than he looks."
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Retainer",
+          "focus": "Jezdimir Ducheski",
+          "value": 1,
+          "notes": [
+            "Despite hailing from the Ducheski stronghold in Poland, Jezdimir has little knowledge on his family's purpose.",
+            "Looks and acts like an Eastern European hooligan; his petty criminal background is a surprising asset in redwork."
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "merits": [
+        {
+          "name": "Bloodhound",
+          "focus": "",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "flaws": [
+        {
+          "name": "Dark Secret",
+          "focus": "Former Sabbat",
+          "value": 2,
+          "description": "",
+          "rules": "",
+          "notes": [
+            "Caesar's sire, Jervais, sought him out specifically to use as a double agent who could work around the Tremere of the Camarilla while assisting House Goratrix: the Tremere Antitribu. He was an unwitting pawn... at first.",
+            "Driven to despair by his role as a catspaw for his sire alongside watching the horrors that took place in the USA over the course of a century made him fully turn to the Sabbat, believing himself forsaken by the Lwa.",
+            "Parts of this are known, but this is spun by Caesar as him actually being a double agent for House Tremere against the Sabbat. In fact, he takes credit for assisting in the 1998 ritual that crippled the Sabbat defectors."
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Groveling Worm",
+          "focus": "",
+          "value": 2,
+          "description": "",
+          "rules": "",
+          "notes": [
+            "In a mix of pleasure and penance he draws more blood than needed for his appeasements to the Lwa."
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Prey Exclusion",
+          "focus": "Mortals",
+          "value": 2,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Shunned",
+          "focus": "Anarchs",
+          "value": 2,
+          "description": "",
+          "rules": "",
+          "notes": [
+            "Caesar's reputation for being a \"Blood Leech\" is known and is especially reviled by the Anarchs.",
+            "This is exacerbated even further due to him specifically targeting Duskborn and Caitiffs."
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Folkloric Bane",
+          "focus": "Salt",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": [
+            "Whether because Black Caesar has developed the vulnerabilities of the spirits, or because of his time spent on the open ocean, a barrier of salt represents a psychological obstacle that he must force himself to overcome."
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Knowledge Hungry",
+          "focus": "Wraiths",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Mark of the Betrayer",
+          "focus": "",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Blood of the Betrayer",
+          "focus": "",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "bloodline": {
+        "name": "Bani Gwo-Samdi",
+        "description": "Tremere doctrine on the subject of Blood Sorcery focuses on the strength of the thaumaturge's will and their mastery over Blood. Yet the relatively young magicians of House High Saturday also sought power from forces stronger than themselves: the “Lwa”, as the various houngans of the House called them, said to be spiritual intermediaries to the divine. Before the collapse of the Pyramid, most Tremere viewed the warlocks of House High Saturday as weak for seeking power via submission to these Lwa, and even more decried them for their practice of discussing the secrets of Thaumaturgy with non-Tremere.\n\nTonight, however, House High Saturday's most vocal detractors are dead; their clan has lost its power to compel adherence to orthodoxy; and their open trading of knowledge has given them an understanding of something most Tremere have little comprehension of: Oblivion.\n\nYour bloodline descends from this 300-year-old tradition of Vodou willworkers, their secrets being your birthright and your undead flesh being another body in service to the great Lwa. Staying true to the naming convention that spans all the way back to the (supposed) days of House Tremere's origins as a gathering of mortal magicians, most houngans identify themselves with the honorific of “bani Gwo-samdi”, roughly meaning “of House High Saturday”.",
+        "merits": [
+          {
+            "name": "Friends on the Other Side",
+            "value": 1,
+            "description": "House High Saturday members don't just rely on each other; they have the wisdom of the Lwa to seek out as well, although these spirits can be just as capricious and petty as they can be useful.",
+            "rules": "Once per chapter, you can meditate on a solution to a problem, providing you have enough time and the materials for enticing the proper Lwa, allowing you to roll two dice in a Skill you don't possess or adding two automatic successes in an area you already have familiarity with.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "Veves & Chants",
+            "value": 2,
+            "description": "You learn Oblivion at the in-clan rate and do not need to drink the Blood of another Kindred to learn it.",
+            "rules": "When you select Oblivion Powers, you may only select powers that grant Ranks in the Spectral School of Oblivion. Upon learning your first dot of Oblivion, you also gain a one-dot Folkloric Bane or Block Flaw.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "Crossroads Bargain",
+            "value": 3,
+            "description": "House High Saturday always had allies outside the Pyramid and at least one group of necromancy practitioners who didn't want to kill them: the Samedi of the Hecata.",
+            "rules": "Gain four dots to allocate between Contacts and Mawla assigned to Hecata. Calling on these Backgrounds invokes a transactional relationship, where a favor will be asked in exchange for the Hecata's aid.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "Dernière Gorgée",
+            "value": 4,
+            "description": "When you take another Kindred's vitae, you steal a trace of their passage and leave a faint stain of your own in return. The House calls it the dernière gorgée: the \"final draught\" that lingers in the Blood like a bitter aftertaste, waiting for the moment the cup shatters.",
+            "rules": "When another vampire dies, if you have tasted their vitae since your last feeding, you immediately become aware of their Final Death. Once per story, you may burn the last of their Blood from your system as they cross over by making a Rouse Check. If you do, the vampire returns as a wraith three hours after midnight, three nights after their death, at the location where they died.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Crise de Lwa",
+            "value": 5,
+            "description": "While their Hecata counterparts usually take a more iron-fisted approach to dealing with wraiths, High Saturday necromancers have cultivated a loyal retinue of ghosts at their side by giving them praise and offerings. The most precious offering being a Kindred's most valuable resource: their body. You have the curse and blessing of being a “cheval”, a necromancer uniquely susceptible to possession and said to be favored by the Lwa.",
+            "rules": "- Upon purchasing this Merit, replace an Oblivion power of level two or greater with \"Unliving Anchor\". You do not need to satisfy the Amalgam prerequisite.\n- Instead of being only able to anchor one wraith to yourself, you can instead anchor a number of wraiths equal to your Oblivion dots.\n- You gain a +2 bonus when using Host Spirit targeting one of them.\n- Your entourage of spirits is passionate, but they are not mindless servants. Any failure on a Ceremony roll is treated as a Total Failure, resulting in one of your attendant spirits possessing you without your permission to pursue their own goals for the remainder of the scene.",
+            "notes": [
+              "Jean Ducheski-Francois I: Former first-mate and revenant of Caesar's from the late 1700s. The closest wraith to Caesar as both men have known each other for 3 centuries. Very level-headed and tactically minded but also becomes overly worried about his captain easily. Can take drastic measures in an attempt at protection.",
+              "Rebecca Rossellini: A ghoul from the Giovanni gifted to Caesar that was killed in an internal spat during the early 1900s. Her mere presence makes the Hecata uncomfortable due to her hatred of her former family. Most intimidating wraith of the trio. Sees her relationship with Caesar as transactional and a path towards revenge.",
+              "Ponticulus: A sorcerer turned wraith even older than Caesar that bonded with him from a fragment of Ceoris during the 2000s. Even in death he has a steady control over magic. He supports Caesar's rebuilding of High Saturday out of the desire to control what he sees as a potential figurehead of the Clan. Gets power-hungry on behalf of Caesar."
+            ],
+            "purchased": true
+          }
+        ]
+      },
+      "loresheet": {
+        "name": "Revenant Family Ducheski",
+        "description": "The Ducheski were once the Krevcheski, a family of scholars in Eastern Europe patronized by its nobles. The Tzimisce subjected them to years of experimentation, transforming the family into revenants, a hereditary line of ghouls born with a semblance of vampiric vitae in their veins but afflicted with a craving for the real thing. For a time, they served the clan faithfully, developing a knack for creating advanced clockwork devices for siege warfare and torture.\n\nWhen war broke out between the Tremere and the Tzimisce, the Krevcheski betrayed their masters, pledged fealty to the Tremere, and took their new name. They have served the clan in secret ever since, maintaining the Warlock's libraries, sanctums, and laboratories. The family is in decline; few are permitted to continue their line and even fewer are allowed to join the clan as Kindred. At least one member of this illustrious family is at your service.\n\nUnless stated otherwise, purchasing any level of this loresheet for the first time provides Retainer (•), representing the revenant. A Ducheski revenant is a ghoul built as a Weak Mortal that always has access to Auspex 1 and Blood Sorcery 1.",
+        "merits": [
+          {
+            "name": "Nourishing Blood",
+            "value": 1,
+            "description": "While a revenant's vitae is nowhere near as potent as the Kindred, drinking it can be just as sustaining.",
+            "rules": "When you feed from your Ducheski revenant, they are not subject to the Human slake penalty of your Blood Potency. Feeding from them never risks a Blood Bond. The revenant is still harmed by your feeding like a human would be.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Personal Library",
+            "value": 2,
+            "description": "The Ducheskis hold a wealth of knowledge within their dilapidated ancestral strongholds. Your revenant has added their personal library of ancient texts to yours, increasing your understanding of the world's mysteries.",
+            "rules": "Choose two of these three Skills: Academics, Investigation, or Occult. Whenever you make a test with any Specialty in your chosen Skills, you receive one extra die, in addition to any applicable bonuses.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Research Team",
+            "value": 3,
+            "description": "You have a tight-knit family unit of three to five Ducheski revenants in your care.",
+            "rules": "You receive Retainer (••) to represent them. Once per story, when you task your research team with studying a new Ritual, their dedication and teamwork allow you to learn the Ritual in half of the usual learning time.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "Ritual Assistant",
+            "value": 4,
+            "description": "Your Ducheski revenant has a special aptitude for the story of Blood Sorcery, and can help enhance your magical techniques.",
+            "rules": "When your revenant is present and helps you prepare a known Ritual, the Difficulty of the roll to activate it is reduced by 1. If more than one Ritual Assistant is present, the Ritual pool increases by one die for every two Ritual Assistants present after the first.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Ducheski Invention",
+            "value": 5,
+            "description": "You own a one-of-a-kind Ducheski creation.",
+            "rules": "This could be one of their infamous clockwork devices, or even a modern technological marvel designed by a revenant in your service. Give the invention a name and function, and choose a Skill. Your Storyteller will name up to three components that make its function possible. The invention is a Specialty of that Skill that provides three extra dice when the invention is used in tasks involving that Skill. If it is damaged or destroyed, any Ducheski in your service knows how to fix it, if they have all the components available.",
+            "notes": "",
+            "purchased": false
+          }
+        ]
+      },
+      "timeline": [
+        {
+          "era": "Pre-Embrace",
+          "startYear": 1699,
+          "endYear": 1735,
+          "affiliation": "nil",
+          "details": "Born in the Asante Empire as the mixed race son of a soldier with no real knowledge of his mother, he is put into slavery at a young age when he is told his father has gone missing and has assumedly abandoned his duties.\n\nAt age 15 he is packed into a ship as he and thousands of others are purchased by Dutch landowners and taken to the colonies in the New World. He lives a torturous life underneath many changing masters, one of which happens to be the murderous privateer known as Edward \"Blackbeard\" Teach.\n\nAlmost the entirety of \"Black Caesar's\" mortal life was spent in slavery with half of it being as an indentured servant in the Asante Empire and the other half as a chattel slave in the Americas. He was sold from owner to owner until eventually he was set to be executed for an attempted escape which technically went as scheduled. However his death was staged as Jervais took the opportunity to recruit a nobody to serve as a loyal spy for him.",
+          "locations": [
+            "Asante Empire, Africa",
+            "Colonies, the Americas",
+            "Spanish Florida, Americas"
+          ]
+        },
+        {
+          "era": "A Time of Violence",
+          "startYear": 1735,
+          "endYear": 1804,
+          "affiliation": "camarilla",
+          "details": "For mortals, legends of the fearsome corsair \"Black Caesar\" begin to spread around both the Atlantic and the Pacific as he commits atrocities on behalf of his sire for House Goratrix which are reported as if they were acts of piracy.\n\n\"I don't care whose blood you'll have me shed. I felt nothing but fear when I was alive. Now I'll give the world a name and an image to fear in return.\"",
+          "locations": [
+            "Spanish Florida, Americas",
+            "Vienna, Austria",
+            "Sailing the Oceans",
+            "New South Wales, Australia",
+            "Port-au-Prince, Haiti"
+          ]
+        },
+        {
+          "era": "A Time of Lineage",
+          "startYear": 1804,
+          "endYear": 1860,
+          "affiliation": "camarilla",
+          "details": "During the period after the Haitian Revolution, what would become House High Saturday begins to unify and formalize their interactions with \"the Lwa\". They skirt around the laws of the Tremere regarding teaching outsiders but the reward outweighs the risk. Caesar is assisted by a small group of clanmates, but also his Ducheski revenants and even a member of the burgeoning Samedi bloodline: the Bokor, who is instrumental to the House's understanding of Necromancy.\n\n\"Times are changing, brothers and sisters! Let us walk into this future of radiant moonlight hand in hand with gods old and new!\"",
+          "locations": [
+            "Port-au-Prince, Haiti",
+            "Sailing the Oceans"
+          ]
+        },
+        {
+          "era": "A Time of Excess",
+          "startYear": 1871,
+          "endYear": 1919,
+          "affiliation": "camarilla",
+          "details": "Counting up all the profits from his bloody work for Jervais makes Caesar both powerful in the mortal world and within the Pyramid as he is promoted to Magister while he continues his spy work for Goratrix. As he looks at the state of his people in the Americas, he begins to grow disillusioned with his role in vampiric society. Busywork takes him from the Americas to the Prime Chantry in Vienna to report his earnings and discoveries to the Council of Seven.\n\n\"Of course, my lord. Magister Caesar bani Gwo-samdi lives to serve. I would like to make a report regarding a most intriguing Malkavian I met...\"",
+          "locations": [
+            "Florida, USA",
+            "Louisiana, USA",
+            "Vienna, Austria"
+          ]
+        },
+        {
+          "era": "Interlude",
+          "startYear": 1919,
+          "endYear": 1930,
+          "affiliation": "camarilla",
+          "details": "On orders to assist Carna, the new Regent of Milwaukee, Caesar is sent as a mercenary from the Council to fight against the Lupine horde threatening to siege the city. He forms a bond with the new Prince who fought on the front lines: Terrence Merik. Saving an Apprentice by the name of Mortius from final death at the hands of a werewolf, Caesar is given a Life Boon.",
+          "locations": [
+            "Vienna, Austria",
+            "Milwaukee, USA"
+          ]
+        },
+        {
+          "era": "A Time of Faith",
+          "startYear": 1930,
+          "endYear": 1998,
+          "affiliation": "sabbat",
+          "details": "Having a full breakdown, Black Caesar makes a complete turn to the Sabbat when he pursued his sire Jervais to Toledo and openly murders him. No longer abiding by the Masquerade or his spy act, he is spurred further into the Sword of Caine's philosophy as he believes the Lwa have left him without their blessings which leaves him searching for meaning within House Goratrix not just as an infiltrator but as one of their war-time leaders in Canada.\n\n\"Lilith awakened Caine... and yet we are expected to remain asleep, our eyes shut to the injustice of this profane, kine-ruled world. No more. No. More.\"",
+          "locations": [
+            "Toledo, Spain",
+            "Montreal, Canada"
+          ]
+        },
+        {
+          "era": "A Time of Dominion",
+          "startYear": 1998,
+          "endYear": 2025,
+          "affiliation": "camarilla",
+          "details": "After surviving the Tremere Antitribu's near extinction due to the sacrifice of one of the Lwa bound to him, Caesar's loyalty in the Sabbat wanes as he begins to reattune himself to his prior faith. Making a dangerous journey from the borders of Canada to the States he cashed in his life boon with Mortius of the Milwaukee Chantry to concoct a story claiming his time in the Sabbat was a double agent plot that was masterfully crafted by the Council. When the Prime Chantry falls years later nobody can disprove this fabricated tale. With a hunger to rebuild the now basically defunct House High Saturday he makes his way to Toronto. His masterful infiltration of a Sabbat stronghold, and limited ties to the University Chantry following Scheer's fall made him the top pick for Ulrich's sheriff, a title he assumed in 2020 shortly after Ulrich became Prince. After a few years of loyal service, the Prince granted him the right of Embrace: Severin Koslov, who has since been placed as a ward of the Bleak Bokor to learn the arts of necromancy from the true masters.\n\n\"I know what a city on the brink looks like. Trust me. Toronto needs a firm hand.\"",
+          "locations": [
+            "Milwaukee, USA",
+            "Toronto, Canada"
+          ]
+        }
+      ]
+    },
+    "fomorach": {
+      "name": "Fomórach",
+      "clan": "Nosferatu",
+      "clanBanes": [
+        {
+          "name": "The Curse of the Broken Mirror",
+          "subtitleLabel": "Disfigurement",
+          "subtitleValue": "Atavistic Throwback",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "generation": "Eighth",
+      "titles": [
+        "Nosferatu Primogen"
+      ],
+      "predatorType": "Extortionist",
+      "sire": {
+        "name": "Drake",
+        "description": "",
+        "notes": ""
+      },
+      "childer": [
+        {
+          "name": "\"Mara\" Oksana Ziva",
+          "embraceYear": 1932,
+          "description": "",
+          "notes": [
+            "Leaned into her Wendigo ancestry, joining the Sabbat and embracing the Path of Orion",
+            "Prefers to target a well-secured government official, sneaking in and violently murdering them in a spectacularly gory manner, then waiting for their security detail to arrive so she can murder them too",
+            "Rumors in Toronto of a terrorist cell, warped vigilante, or simple psychopath since Mara wants people to know she's coming: the more prepared they are, the better the hunt"
+          ]
+        },
+        {
+          "name": "\"Palis\" Yusuf bin Yafa",
+          "embraceYear": 1950,
+          "description": "",
+          "notes": [
+            "Online handle: sko1VikingsFan69",
+            "Social Nosferatu; an influencer online; VTuber streamer; hides his face via motion graphics",
+            "Rants about politics while gaming Fortnite (ironically) and League of Legends (semi-professionally): the more toxic the environment, the better the rants",
+            "Has a bond with I.Q. for being looked down upon for their use of technology despite being necessary"
+          ]
+        }
+      ],
+      "birthPlace": "Belfast, Ireland",
+      "birthYear": 1769,
+      "embracePlace": "Pennsylvania, USA",
+      "embraceYear": 1786,
+      "attributes": {
+        "strength": 3,
+        "dexterity": 1,
+        "stamina": 3,
+        "charisma": 2,
+        "manipulation": 2,
+        "composure": 3,
+        "intelligence": 2,
+        "wits": 4,
+        "resolve": 2
+      },
+      "skills": {
+        "athletics": 2,
+        "brawl": 2,
+        "craft": 0,
+        "drive": 0,
+        "firearms": 0,
+        "larceny": 0,
+        "melee": 0,
+        "stealth": 1,
+        "survival": 1,
+        "animalKen": 1,
+        "etiquette": 1,
+        "insight": 2,
+        "intimidation": 3,
+        "leadership": 1,
+        "performance": 0,
+        "persuasion": 0,
+        "streetwise": 2,
+        "subterfuge": 2,
+        "academics": 1,
+        "awareness": 3,
+        "finance": 0,
+        "investigation": 2,
+        "medicine": 0,
+        "occult": 0,
+        "politics": 3,
+        "science": 0,
+        "technology": 1
+      },
+      "specialties": [
+        {
+          "skill": "academics",
+          "type": "archaic",
+          "name": "Dead Reckoning",
+          "decade": 1780
+        },
+        {
+          "skill": "intimidation",
+          "type": "standard",
+          "name": "Coercion"
+        },
+        {
+          "skill": "investigation",
+          "type": "standard",
+          "name": "Surveillance"
+        },
+        {
+          "skill": "subterfuge",
+          "type": "standard",
+          "name": "Dumb Brute"
+        },
+        {
+          "skill": "technology",
+          "type": "archaic",
+          "name": "Vintage Car Repair",
+          "decade": 1950
+        }
+      ],
+      "health": {
+        "value": 6,
+        "superficial": 0,
+        "aggravated": 0
+      },
+      "willpower": {
+        "value": 5,
+        "superficial": 0,
+        "aggravated": 0
+      },
+      "humanity": {
+        "value": 6,
+        "stains": 0
+      },
+      "bloodPotency": 2,
+      "disciplines": {
+        "animalism": {
+          "value": 2,
+          "powers": [
+            {
+              "name": "Bond Famulus",
+              "level": 1,
+              "notes": "Robin (Raccoon)",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Animal Messenger",
+              "level": 2,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        },
+        "obfuscate": {
+          "value": 2,
+          "powers": [
+            {
+              "name": "Cloak of Shadow",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Unseen Passage",
+              "level": 2,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        },
+        "potence": {
+          "value": 2,
+          "powers": [
+            {
+              "name": "Lethal Body",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Prowess",
+              "level": 2,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        },
+        "auspex": {
+          "value": 1,
+          "powers": [
+            {
+              "name": "Sense the Unseen",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        },
+        "protean": {
+          "value": 3,
+          "powers": [
+            {
+              "name": "Eyes of the Beast",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Squirm",
+              "level": 2,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Shapeshift",
+              "level": 3,
+              "notes": "Arctic Wolf",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "???",
+              "level": 3,
+              "notes": "Amalgam: Auspex 1",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        }
+      },
+      "convictions": [
+        {
+          "description": "Clan Over Sect",
+          "touchstone": {
+            "name": "Vincenzo \"Enzo\" Caruso",
+            "description": "Retired Hitman w/ Blissfully Ignorant Family",
+            "notes": [
+              "Was once a Made Man for the Toronto Mafia against the wishes of his family, eventually becoming a hitman by virtue of his dedication to the Familia",
+              "Has now retired on his blood money and started a blissfully ignorant family, spending his time on charity and feeding stray dogs",
+              "Keeps a hidden phone on his person at all times, though he's almost forgotten about it by now. The Don still has his number",
+              "Fomórach has been following him since his childhood in the form of an arctic wolf (which Enzo believes to be several generations of huskies)"
+            ]
+          }
+        },
+        {
+          "description": "Survival at any Cost"
+        },
+        {
+          "description": "The British Must Be Destroyed (Anachronistic Conviction)",
+          "touchstone": {
+            "name": "Percival Cavendish",
+            "description": "Descendant of Lord who Stripped Fomórach's family of land in Ireland",
+            "notes": [
+              "Descendant of Lord Cavendish who, in 1845, leapt on Fomórach's former family in Ireland the moment the potato blight made their estates vulnerable to financial takeover",
+              "In an attempt to curry favor, I.Q. approached Fomórach with the \"gift\" of having uncovered Percival's identity, which earned I.Q. some favor from the Nosferatu Primogen",
+              "Since then, Fomórach has been actively and with extreme pettiness ruining Percival's life",
+              "If Percival ever confronts Fomórach, only then will he learn why his life has been ruined... and then he will die"
+            ]
+          }
+        }
+      ],
+      "ambition": "",
+      "languages": [
+        "Irish Gaelic",
+        "English"
+      ],
+      "backgrounds": [
+        {
+          "name": "Status",
+          "focus": "Camarilla",
+          "value": 4,
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Status",
+          "focus": "Clan Nosferatu",
+          "value": 5,
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Contact",
+          "focus": "UwU_byte_me",
+          "value": 3,
+          "notes": [
+            "a.k.a. Siobhan Kelleher",
+            "Hacker / internet security professional; legitimately employed and genuinely professional",
+            "Legitimate employment gives her access to limited spytech and surveillance equipment",
+            "Has monitoring tripwires set in various parts of the city to warn of suspicious electronic activity",
+            "A massive fan of I.Q.'s VTube channel"
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Herd",
+          "focus": "Indebted Homeless",
+          "value": 2,
+          "notes": [
+            "Fomórach has terrorized a small group of homeless people who reside in the subway tunnels",
+            "He extorts them for blood under threat of death, though provides them with money, drugs, or even ghouling (letting them survive without food or warmth)",
+            "Tells them they're free to report him to the police: no one will believe them"
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Chasse",
+          "focus": "P.A.T.H.",
+          "value": 2,
+          "notes": "Domain claim currently suspended due to a domain conflict in the area.",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "merits": [
+        {
+          "name": "Side Hustler",
+          "focus": "",
+          "value": 2,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "flaws": [
+        {
+          "name": "Starving Decay",
+          "focus": "",
+          "value": 2,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Living in the Past",
+          "focus": "",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Enemy",
+          "focus": "Kiera Vaughan",
+          "value": 2,
+          "description": "",
+          "rules": "",
+          "notes": [
+            "Currently leading an investigation into Mara, Fomórach's eldest childe",
+            "Her investigation is bringing her closer to the homeless community Fomórach has coerced into silence",
+            "Her skill at getting to the truth, and convincing others to come along with her, is a looming threat"
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Curse of the Broken Mirror",
+          "focus": "",
+          "value": 3,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Dark Secret",
+          "focus": "Wendigo",
+          "value": 2,
+          "description": "",
+          "rules": "",
+          "notes": [
+            "The Wendigo is a notorious vampire who is on the Red List",
+            "Everyone thinks his bloodline was annihilated, but Fomórach is one of his last remaining descendants"
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Disease Vector",
+          "focus": "",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "bloodline": {
+        "name": "Descendant of the Wendigo",
+        "description": "In the colonial nights of the far north, across moonlit plains where those few brave souls built their outposts, the legend of the Wendigo haunted their campfires: a creature of ice and hunger, an avatar of deprivation given claws and fangs, an embodiment of famine and cold. Such was the name given to one of the first Nosferatu to journey to the New World: a feral, monstrous thing, perhaps even a wight, it nevertheless Embraced at least one other to ensure its ravenous Blood survived the ages.\n\nWinter and hunger were its kin. Cold could not touch the Wendigo, and death by freezing did not close a meal. The Blood remembered the taste of bodies found stiff in the snow, the last thin pulse of starvation in the veins. It learned to sustain life without relieving deprivation. It learned to skinwalk, slipping into the hides of winter predators, moving as wolf or owl.\n\nYou descend from this creature of myth. Hunger and winter are your playthings, as well: You endure them both, and you make everyone else endure them, too.",
+        "merits": [
+          {
+            "name": "Curse of the Wendigo",
+            "value": 1,
+            "description": "The cold and the hungry will do anything, agree to anything, to live another day.",
+            "rules": "Your Blood gains the ability to sustain mortals in place of food and heat. However, this does not satiate their hunger or comfort them with warmth, it merely keeps them alive. Such mortals continue to suffer the effects of starvation or hypothermia, up to but not including the point of incapacitation.\n\nGain a +2 bonus to Intimidation or Persuasion rolls when exploiting the effects of this deprivation in another.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "Veins of Winter",
+            "value": 2,
+            "description": "The Wendigo is a creature of winter as much as hunger, and your Blood carries this affinity.",
+            "rules": "You are immune to the effects of cold temperatures.\n\nAdditionally, you may feed from the frozen corpses of mortals that perished from starvation or hypothermia as if they were still alive (but you cannot reduce your Hunger to 0 by feeding on that which is already dead). Such blood is always intensely ischemic and never carries a dyscrasia.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Skinwalker",
+            "value": 3,
+            "description": "You share the Wendigo's ability to skinwalk.",
+            "rules": "Gain Protean as an in-clan Discipline. You must choose a winter predator when given the choice of an animal form.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "Father of Monsters",
+            "value": 4,
+            "description": "Whether or not the Wendigo truly was a wight, you have inherited Blood tainted with a corrupting power, which spreads to your ghouls.",
+            "rules": "Any ghouls that you have purchased as Retainers gain an additional Discipline dot from among those you have learned, and increase their tier by one level: RETAINER ●: Average, RETAINER ●●: Gifted, RETAINER ●●●: Deadly. If you have a famulus, your famulus' tier increases to Gifted. This power warps your ghouls physically, afflicting each with the Repulsive Flaw as they grow both gaunt and monstrous.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Feast or Famine",
+            "value": 5,
+            "description": "Hunger both drives and sustains you, as it did the Wendigo of legend.",
+            "rules": "You gain the ability to sense the hunger and cravings of other Kindred. You know when any Kindred you can see is at Hunger 4 or above or under the effect of a Compulsion.\n\nWhile fully sated at Hunger 0, your monstrous appearance relaxes into something more human: While still hideous, your appearance alone will not risk breaching the Masquerade if seen by mortals. Additionally, if you would take a Stain for any reason, you may instead increase your Hunger by one. Finally, your ability to sense hunger in others extends to knowing when another Kindred is fully sated at Hunger 0.\n\nWhile starving at Hunger 5, treat your Blood Potency as one higher for all purposes. Whenever you would make a Rouse Check for any reason, make an additional Rouse Check and choose which roll to keep. Finally, you retain control during hunger frenzy and do not need to spend Willpower to act. Instead, you gain a Compulsion to feed: All actions that are not dedicated to slaking your thirst suffer a -2 penalty for the duration of the frenzy. All other mechanics of hunger frenzy still apply.",
+            "notes": "",
+            "purchased": false
+          }
+        ]
+      },
+      "loresheet": {
+        "name": "The Whisper-Weaver",
+        "description": "Kindred speak of Toronto as a city that's lost its leaders, those respected elders who heeded the call of the Beckoning, abandoning their havens and their schemes to fight a war in the east on behalf of sleeping gods. Drake's names come up as examples: the Vault, the Oubliette, and especially the Whisper-Weaver; the mysterious bogeyman in black silks who haunted the Court long before anyone ever heard of Fort York. He's gone, they say, just like Steele, like Bellanger, like so many others who once gave Toronto its sense of strength and stability.\n\nBut you? You know better. Drake may have left the city above, but he only went as far as the city below. For Toronto isn't one city, but two: the Toronto everyone sees above ground, and the Toronto beneath, a world of memories frozen in two hundred years of strata.\n\nDown here, there are storm tunnels older than any zoning law and gaps in foundations that were built before Canada was a country. Hidden corridors, closed-off basements, abandoned subway stations and derelict utility pathways weave through this undercity. Down here, Toronto's oldest sovereign still sits his throne, unknown and unrecognized by every Kindred in the city above, save a very precious few.\n\nYou have earned Drake's trust, enough that he calls upon you, places you in important roles, and challenges you. Where other elders trade in Blood, secrets are his currency. He's careful and deliberate with every piece of information he shares. If you're searching for answers, he might reveal them, but not without a cost, and always in a way that draws you deeper into his complex web. And if there ever comes a night when Drake asks you which move he should make in the city's shadowy game, you'll know it means the story of his “leaving” has finally become more useful as a weapon than as a disguise.",
+        "merits": [
+          {
+            "name": "The Shadow Speaks",
+            "value": 1,
+            "description": "You are fortunate enough to be among the few people Drake trusts.",
+            "rules": "In addition to being aware that the Nosferatu elder remains in Toronto, once per story, you may meet with Drake in a secluded location of his choice. There, he'll reveal what he knows about one secret you're after.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "The Labyrinth",
+            "value": 2,
+            "description": "Drake's knowledge of Toronto's hidden paths is unparalleled.",
+            "rules": "Once per story, Drake will reveal a secret hard-to-detect vantage point from which you can spy on someone. Beyond that, you're on your own: make a loud noise or otherwise reveal your presence and your perfect camouflage loses its use.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Forgotten Friends",
+            "value": 3,
+            "description": "Drake always favoured outcasts, easily overlooked and easily dismissed.",
+            "rules": "They're the people that go unnoticed, like janitors, sanitation workers, or food workers. Once per story, Drake can hook you up with someone who can get you inside, or get you the info you need from the inside, for a price. The individual counts as Retainers (••) for the session, but reverts to Contacts (•) if you spend Experience to make the Background permanent.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "Whisper-Weaving",
+            "value": 4,
+            "description": "You have gained your own talents at gathering secrets.",
+            "rules": "When you purchase this Merit, gain free Skill Specialties in Investigation (Espionage) and Insight (Secrets). Once per story, you can gain three pieces of secret information through your personal surveillance or close bonds with your network of spies.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Phantom's Proxy",
+            "value": 5,
+            "description": "Drake trusts you more than anyone else.",
+            "rules": "When you purchase this Merit, gain Mawla: Drake (•••). Additionally, once per story, Drake will ask your advice on what action he should take to influence Toronto's politics, and take it to make permanent change in the city.",
+            "notes": "",
+            "purchased": false
+          }
+        ]
+      },
+      "timeline": [
+        {
+          "era": "Pre-Embrace",
+          "startYear": 1769,
+          "endYear": 1786,
+          "affiliation": "nil",
+          "details": "- Had lots of \"spare\" siblings, but more survived than expected, leaving their small patch of land unable to feed 6–8 growing young men and women.\n- \"Third brother had a flair for whittling; father sold three of our five cows to get him an apprenticeship as a carpenter\"; he gave away heirloom jewelry to provide dowries for two sisters.\n- By the time it got to Fomórach, there wasn't much left to support him; he'd have to go on his own.\n- Decided to become an indentured servant so he could get a plot of land in the New World, \"the golden land\".\n- Arrived in the New World circa 1785, to a terribly mismanaged colony that was obvious to him even before he arrived, on the boat.\n- Realized that everyone was a Puritan, which made him uncomfortable given he was a Catholic.\n- Drake was attracted to him as a source of information, something he became very good at: getting into earshot of important people, and feeding Drake information.\n- Drake ghouled him early, but he was able to keep functioning while starving even as others suffered. Drake saw his ability to gather information while under intense stress; his \"resting dumb face\" combined with covert intelligence made it easy for others to forget he was there and listening; and he was one of the few who were ghouled with the taint of permanent starvation who didn't abandon his mental faculties.\n- After taking him to another colony further north and seeing him repeat that talent for ingratiating himself and gleaning intel despite suffering, Drake concluded he was something special.\n- After Drake escaped a werewolf encounter, he began to see the value of another pair of eyes, and the fragility of his lineage as the only childe of the Wendigo. He needed to ensure his blood survived the ages.",
+          "locations": [
+            "Belfast, Ireland",
+            "East Coast Colonies"
+          ]
+        },
+        {
+          "era": "A Time of Lineage",
+          "startYear": 1786,
+          "endYear": 1838,
+          "affiliation": "camarilla",
+          "details": "Following the collapse of his new home, Fomórach traveled the colonies with Drake learning the ins and outs of vampirism. Hunted by puritans in the summer and haunted by hunger in winter (and werewolves all year 'round), he learned what it truly meant to be a Descendant of the Wendigo.",
+          "locations": [
+            "East Coast Colonies",
+            "Fort York, Canada"
+          ]
+        },
+        {
+          "era": "A Time of Violence",
+          "startYear": 1838,
+          "endYear": 1841,
+          "affiliation": "camarilla",
+          "details": "Newly released by his sire, Fomórach traveled by boat back to the land of his ancestors. He hoped to find his family, to lend them the fruits of his struggles: life eternal and freedom from hunger were within his ability to grant, even if the cost would be high. Instead, he found his ancestral home raped and pillaged by the British. Enraged beyond measure, Fomórach left for London and proceeded to cut a bloody swath through the neighborhoods of the perpetrators of the Famine. It was only by the mercy of the London Nosferatu Primogen that he survived, and even then he was delivered back to Toronto staked in a coffin.",
+          "locations": [
+            "London, England"
+          ]
+        },
+        {
+          "era": "A Time of Legacy",
+          "startYear": 1841,
+          "endYear": 1948,
+          "affiliation": "camarilla",
+          "details": "After his episode in London, it took Drake time to trust Fomórach with responsibility again. Long decades were spent making him understand the risks he took and the favors he burned with his reckless actions. Drake did not take kindly to being forced to reveal Fomórach's bloodline, and needed time to not totally extinct. Fomórach did not want that; he knew then that at the time of course, intrigue. Fomórach delved deeper into the mystery of his bloodline and took steps to ensure it would not be so threatened again. Traveling to the Ukraine, he took advantage of the Holodomor to seek out a candidate with the fortitude enough not to totally accept the nature of the blood. The vampire is a beast of hunger after all, and the Wendigo is even more so. Mara was well-suited to the blood, too well suited, and Fomórach watched history repeat itself in his childe as she rejected the order and safety of the Camarilla to pursue her own personal crusade which continues to this day. His other childe, sired during the founding of Israel and the resulting Palestinian diaspora (known as the Nakba), remained loyal though his choices in other areas remains questionable.",
+          "locations": [
+            "London, England",
+            "Toronto, Canada",
+            "Ukraine",
+            "Palestine/Israel"
+          ]
+        },
+        {
+          "era": "A Time of Adversity",
+          "startYear": 1958,
+          "endYear": 1984,
+          "affiliation": "camarilla",
+          "details": "The Camarilla runs on tradition, but favors are a close second. It was a favor, long ago, that bolstered the growth of Toronto as a bastion of kindred society in the 1850s and now 100 years later it has been called in. Transmitted through the blood like the curse of vampirism itself, it passed from sire to childe. Oliver Gagnon called for aid on behalf of his childe Lucien, and the childe of Drake answered. Picking up Lucien from the Mojave desert turned out to be the easy part. Driving back up to Toronto together...\n\nWell.\n\nLets just say it was an exciting five years and leave it at that.\n\n(The details surrounding Fomórach and Lucien's time on the road are intentionally left vague for now; they will be explored in more detail during play in a Memoriam sequence.)",
+          "locations": [
+            "On the Road, USA",
+            "Toronto, Canada"
+          ]
+        },
+        {
+          "era": "A Time of Dominion",
+          "startYear": 1999,
+          "endYear": 2025,
+          "affiliation": "camarilla",
+          "details": "Like many elders facing The Beckoning, Drake was forced to face his impermanence. Not mortality, because he had no intention of dying, but to be forced to leave one's unlife's work is hardly a pleasant thing. With this in mind, Drake began to train Fomórach into a suitable successor. No more was he merely a trusted liegbreaker and solver of problems, now he must be made ready to handle the rigors of Camarilla politics. Fomórach was involved in the process of rulership far earlier than most would expect, participating in the primogen council's meeting from behind his sire's veil for years before said sire's \"beckoning\" in 2022, when Fomórach took his place as Nosferatu Primogen and *de facto* leader of Clan Nosferatu in Toronto.\n\nDrake, however, was never Beckoned, and remains hidden in the dark places beneath the city, his continued presence known to very few.",
+          "locations": [
+            "Toronto, Canada"
+          ]
+        }
+      ]
+    },
+    "lucien": {
+      "name": "Lord Lucien St. Clair",
+      "clan": "Toreador",
+      "clanBanes": [
+        {
+          "name": "The Curse of Rapture",
+          "subtitleLabel": "Fixation",
+          "subtitleValue": "Stories",
+          "notes": ""
+        }
+      ],
+      "generation": "Tenth",
+      "titles": [
+        "Prince"
+      ],
+      "predatorType": "Tithe Collector",
+      "sire": {
+        "name": "Oliver Gagnon",
+        "description": "",
+        "notes": ""
+      },
+      "childer": [
+        {
+          "name": "Damien Abanda",
+          "embraceYear": 1915,
+          "description": "",
+          "notes": ""
+        }
+      ],
+      "birthPlace": "Lucerne, Switzerland",
+      "birthYear": 1864,
+      "embracePlace": "Paris, France",
+      "embraceYear": 1889,
+      "attributes": {
+        "strength": 1,
+        "dexterity": 3,
+        "stamina": 2,
+        "charisma": 4,
+        "manipulation": 3,
+        "composure": 3,
+        "intelligence": 2,
+        "wits": 2,
+        "resolve": 2
+      },
+      "skills": {
+        "athletics": 2,
+        "brawl": 0,
+        "craft": 1,
+        "drive": 0,
+        "firearms": 2,
+        "larceny": 1,
+        "melee": 0,
+        "stealth": 1,
+        "survival": 0,
+        "animalKen": 0,
+        "etiquette": 3,
+        "insight": 2,
+        "intimidation": 1,
+        "leadership": 3,
+        "performance": 1,
+        "persuasion": 3,
+        "streetwise": 1,
+        "subterfuge": 2,
+        "academics": 1,
+        "awareness": 2,
+        "finance": 0,
+        "investigation": 1,
+        "medicine": 0,
+        "occult": 1,
+        "politics": 1,
+        "science": 0,
+        "technology": 1
+      },
+      "specialties": [
+        {
+          "skill": "athletics",
+          "type": "archaic",
+          "name": "Molotov Cocktails",
+          "decade": 1940
+        },
+        {
+          "skill": "craft",
+          "type": "archaic",
+          "name": "Art Nouveau",
+          "decade": 1890
+        },
+        {
+          "skill": "etiquette",
+          "type": "standard",
+          "name": "Camarilla"
+        },
+        {
+          "skill": "leadership",
+          "type": "standard",
+          "name": "Kindred"
+        },
+        {
+          "skill": "performance",
+          "type": "archaic",
+          "name": "Swing Dancing",
+          "decade": 1920
+        },
+        {
+          "skill": "academics",
+          "type": "archaic",
+          "name": "Theosophy",
+          "decade": 1890
+        },
+        {
+          "skill": "investigation",
+          "type": "archaic",
+          "name": "Investigative Journalism",
+          "decade": 1970
+        }
+      ],
+      "health": {
+        "value": 5,
+        "superficial": 0,
+        "aggravated": 0
+      },
+      "willpower": {
+        "value": 5,
+        "superficial": 0,
+        "aggravated": 0
+      },
+      "humanity": {
+        "value": 7,
+        "stains": 0
+      },
+      "bloodPotency": 2,
+      "disciplines": {
+        "presence": {
+          "value": 3,
+          "powers": [
+            {
+              "name": "Awe",
+              "level": 1,
+              "notes": ""
+            },
+            {
+              "name": "Chimerstry",
+              "level": 2,
+              "notes": ""
+            },
+            {
+              "name": "Passion Leech",
+              "level": 3,
+              "notes": "Amalgam: Auspex 2"
+            },
+            {
+              "name": "Fata Morgana",
+              "level": 3,
+              "notes": ""
+            }
+          ]
+        },
+        "auspex": {
+          "value": 2,
+          "powers": [
+            {
+              "name": "Heightened Senses",
+              "level": 1,
+              "notes": ""
+            },
+            {
+              "name": "Premonition",
+              "level": 2,
+              "notes": ""
+            },
+            {
+              "name": "Serendipitous Speech",
+              "level": 2,
+              "notes": "Amalgam: Presence 2"
+            }
+          ]
+        },
+        "celerity": {
+          "value": 1,
+          "powers": [
+            {
+              "name": "Rapid Reflexes",
+              "level": 1,
+              "notes": ""
+            }
+          ]
+        },
+        "animalism": {
+          "value": 1,
+          "powers": [
+            {
+              "name": "Bond Famulus",
+              "level": 1,
+              "notes": "Sylvain (Owl)"
+            }
+          ]
+        }
+      },
+      "convictions": [
+        {
+          "description": "Drama Over Caution",
+          "touchstone": {
+            "name": "Miriam Ravenscroft",
+            "description": "Curator, Royal Ontario Museum; Adjunct Professor, University of Toronto",
+            "notes": [
+              "Excitable and animated in the topics of her passions, to the point of lacking tact and social graces.",
+              "Specifically the curator for Manuscripts and Rare Texts, technically subordinate to the ROM's head Co-Chief Curator, Arts and Culture, Chen Shen.",
+              "Notoriously clumsy in any circumstance outside an archive.",
+              "Secretly publishes raunchy historical fiction under a nomme de plume, and is simultaneously proud and ashamed of the quality of her work.",
+              "There are rumors floating she has recently acquired an authentic fragment of important kindred lore/mystical significance for study."
+            ]
+          }
+        },
+        {
+          "description": "Results Sanctify the Method"
+        },
+        {
+          "description": "You Must Take Care of Your Friends First"
+        }
+      ],
+      "ambition": "",
+      "languages": [
+        "German",
+        "French",
+        "English",
+        "Spanish",
+        "Greek"
+      ],
+      "backgrounds": [
+        {
+          "name": "Status",
+          "focus": "Camarilla",
+          "value": 5,
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Status",
+          "focus": "Clan Toreador",
+          "value": 2,
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Mawla",
+          "focus": "Damien Abanda",
+          "value": 2,
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Mawla",
+          "focus": "Evanescent Blue",
+          "value": 2,
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Mawla",
+          "focus": "Merrick Singh",
+          "value": 1,
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "merits": [
+        {
+          "name": "Luck of the Devil",
+          "focus": "",
+          "value": 4,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Beautiful",
+          "focus": "",
+          "value": 2,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Linguistics",
+          "focus": "",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Ingénue",
+          "focus": "",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "flaws": [
+        {
+          "name": "The Curse of Rapture",
+          "focus": "",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "bloodline": {
+        "name": "Descendant of the Count of St. Germain",
+        "description": "The Count of Saint Germain was the Enlightenment's most enduring enigma: a man who appeared in the courts of Louis XV and Peter the Great with the same youthful face and effortless grace. He was the ultimate polyglot, capable of shifting between a dozen languages with such flawless inflection that even natives claimed him as their own. His true power, however, lay in his casual intimacy with the past. To hear him speak was to be transported; he described the marriage at Cana or the councils of Nero not as a scholar, but as an eyewitness, weaving himself into the tapestry of history with a charm that made the impossible seem mundane.\n\nThose who carry his blood are the Scheherazades of Elysium, inheriting his uncanny ability to belong everywhere and to weave tales that transcend trivialities like “truth” or “falsehood”. A descendant of the Count never sounds like a foreigner, no matter how far they travel, and their voices carry the weight of an era long since buried. They are masters of weaving tales that resonate with the soul, using their rhetorical talents to persuade and spellbind. In a world of neon and noise, they remain the captivating voice at the campfire, awing their peers with forgotten secrets and the effortless poise of a soul that has seen the rise and fall of a thousand kings and queens.",
+        "merits": [
+          {
+            "name": "Cosmopolitan Communicator",
+            "value": 1,
+            "description": "",
+            "rules": "When you purchase this Merit, gain a free Language. The Linguistics Merit provides two languages per dot, instead of one. When you speak to someone in a language that is their native tongue but not the regional default, gain a +2 bonus on Etiquette rolls.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "Courtly Ties",
+            "value": 2,
+            "description": "The Count made easy friends wherever he travelled, and you have inherited his natural gregariousness.",
+            "rules": "Gain up to four dots, limited by your Sect Status, to spread among Mawla Backgrounds. You cannot purchase a Mawla Background greater than two with this Merit.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Storyteller's Gift",
+            "value": 3,
+            "description": "When you enter Memoriam, you may bring up to five other willing people with you by telling them the story of the Memoriam, weaving them into the narrative.",
+            "rules": "They must be present to hear your story and, for each person you wish to include, either you or they must Rouse the Blood. During the Memoriam, these guests may participate in the story and contribute to challenges as if they were actually there. This does not actually rewrite history, however: It is a result of your flair for storytelling, nothing more. The results of the Memoriam should be reframed after the fact to explain whatever happened in terms of the reality of that historical event (e.g., tasks performed by targets of this ability were actually achieved by you, by others who were really there, or by happenstance).",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "Painting the Mind's Eye",
+            "value": 4,
+            "description": "Your tales transcend the written word and become something else entirely, something alive in the minds of others.",
+            "rules": "You may purchase Chimerstry as a Presence 2 power, then Fata Morgana as a Presence 3 power, without amalgam requirements, and you may purchase these even if you have already purchased those levels of Presence.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "Rousing Rhetoric",
+            "value": 5,
+            "description": "The Count's power to charm with the spoken word was legendary.",
+            "rules": "When your dice pool involves Performance, Persuasion or Leadership, you can set any single die to a 10 after rolling.",
+            "notes": "",
+            "purchased": false
+          }
+        ]
+      },
+      "loresheet": {
+        "name": "The Week of Nightmares",
+        "description": "Kindred debate when exactly the Week of Nightmares fell, with some claiming it landed just prior to the turn of the millennium, while others conflate it with the supposed commencement of Gehenna. In truth, the “Week” of Nightmares sprawled across years, sweeping up several thousand vampires in its wave. During the Week, an impossibly ancient vampire arose and purged its own clan: the Ravnos. Thin-blooded vampires emerged with omens and portents as the Red Star, Anthelios, blazed in the night sky.\n\nYou witnessed the mania of the Week of Nightmares and survived it, manipulated the chaos to your own advantage, or you studied the actions of those who did. Now you watch for signs of dooms to come.",
+        "merits": [
+          {
+            "name": "Oral History",
+            "value": 1,
+            "description": "You have heard and told the tale of the Week of Nightmares countless times, and you know exactly what to embellish and which parts to conceal. Your telling of the tale is popular in Elysia, where you are sometimes invited to speak as historian and entertainer. Important Kindred from all over come to hear your retelling.",
+            "rules": "Add three dice to Performance dice pools to tests to tell the story.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "Ravnos Remains",
+            "value": 2,
+            "description": "Prior to the Week of Nightmares, the Ravnos were a clan; now, they have little more than a bloodline. You know some Ravnos remnants and perhaps share their grudge against the Gangrel who left them to annihilation.",
+            "rules": "You have three dots of Mawla representing this group of contacts. They carry news and warnings to you, and can perhaps be convinced to cast mighty illusions once per chronicle, but association with them is frowned upon, if discovered.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "I Was There",
+            "value": 3,
+            "description": "You didn't just hear about it, you were on the front line. Your reputation as a survivor and on-the-spot veteran of the Week of Nightmares grants you Status among Kindred historians, occultists, Ravnos, and Gehenna cultists alike.",
+            "rules": "Once per story, you can use this Status to earn a minor boon from one of those groups or from a prominent courtier in the domain with a sudden interest.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "The Red Star",
+            "value": 4,
+            "description": "Anthelios (NASA designation 28978 IXION), called Wormwood, harbinger of Gehenna, still glows in the sky, to your eyes at least. You believe it looks back at you, changing you somehow.",
+            "rules": "Once per story, you can either reduce your Hunger to a rating of two or gain a die to the pools of one Discipline for a night by staring at the star for 10 minutes.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Blood of Zapathasura",
+            "value": 5,
+            "description": "The Ravnos Antediluvian met Final Death in July 1999 at the hands of parties unknown, armed with advanced weaponry and the power of the sun. Before he died, he drained vitae from all his clan, driving them to frenzy and cannibalism in his death throes. Thick, sentient ropes of his vitae stained the ground in Bangladesh where he fell. The noonday sun did not destroy it all.",
+            "rules": "You own a small vial containing the Blood of the Ravnos Antediluvian. What you do with this vitae is up to you, and what it does to anyone who imbibes it is up to the Storyteller.",
+            "notes": "",
+            "purchased": false
+          }
+        ]
+      },
+      "timeline": [
+        {
+          "era": "Pre-Embrace",
+          "startYear": 1864,
+          "endYear": 1889,
+          "details": "Grew up poor, picked out of a crowd by pure chance (very open to Memoriam interpretation)",
+          "locations": [
+            "Lucerne, Switzerland",
+            "Paris, France"
+          ]
+        },
+        {
+          "era": "A Time of Lineage",
+          "startYear": 1889,
+          "endYear": 1915,
+          "affiliation": "camarilla",
+          "details": "The Gilded Cage\nUnder the meticulous tutelage of Oliver Gagnon, Lucien is taught the grandeur of his lineage and home, and forged into an ideal pupil. He moved through the salons of the Heartland, a living model of his sire's impeccable tastes, internalizing the rigid protocols of the Camarilla until the weight of the \"Great Game\" (the geopolitical mishmash that led to World War I) dawned. In 1915, at the close of this era, Lucien Embraced Damien Abanda as his childe before their westward flight to Mexico.",
+          "locations": [
+            "Paris, France"
+          ]
+        },
+        {
+          "era": "A Time of Adversity",
+          "startYear": 1915,
+          "endYear": 1945,
+          "affiliation": "anarch",
+          "details": "Three decades of consecutive adversity began when Lucien reached Revolutionary Mexico with no support network, no Camarilla safety net, and his newly Embraced childe Damien at his side. As they moved north through unstable domains, Lucien embraced Anarch nights during the Revolt, finding both freedom and disorder, while his mentorship of Damien was increasingly undercut by the same excesses Lucien himself could not resist. By the end of this era, Lucien was believed destroyed and was left torpid beneath the Mojave sands. The exact cause of that fall remains deliberately ambiguous.",
+          "locations": [
+            "Celaya, Mexico",
+            "Los Angeles, America"
+          ]
+        },
+        {
+          "era": "A Time of Torpor",
+          "startYear": 1945,
+          "endYear": 1958,
+          "affiliation": "nil",
+          "details": "Buried in the Mojave and unable to find blood enough to rise, Lucien remained in prolonged torpor while history moved on without him. In his absence, he came to believe a Gangrel Anarch pack connected to Damien had betrayed him, and that Damien's failures of judgment helped make both the torpor and the long abandonment possible. Damien never found him; the guilt of that failure, and the realization that Lucien had been left rather than avenged, became one of the catalysts that hardened Damien and pushed him toward Red Flag. Lucien was eventually unearthed by Fomórach and carried to Toronto.",
+          "locations": [
+            "Mojave Desert, USA"
+          ]
+        },
+        {
+          "era": "A Time of Reinvention",
+          "startYear": 1967,
+          "endYear": 1999,
+          "affiliation": "camarilla",
+          "details": "After his recovery, Lucien shed the entitled \"golden child\" posture of his early unlife and recast himself as a man of ideals, conviction, and discipline. Having seen Anarch disorganization firsthand, and recognizing the Camarilla as the only organized resistance to the Sabbat in that period, he chose Montreal as a proving ground to demonstrate his loyalty to the Ivory Tower and prove his Anarch era was not his final identity. He was also, true to form, drawn to where the story was most dangerous and consequential. Montreal scarred him: nightmares, terror, and direct confrontation with the Sabbat left lasting trauma. But he emerged tempered and galvanized, no longer polished courtly potential but a leader who could plausibly claim a prince's burden.",
+          "locations": [
+            "Toronto, Canada",
+            "Montreal, Canada"
+          ]
+        },
+        {
+          "era": "A Time of Legacy",
+          "startYear": 1999,
+          "endYear": 2004,
+          "affiliation": "camarilla",
+          "details": "Lucien left Montreal for Toronto as the Week of Nightmares began (June 28 to July 4, 1999). Near Kingston, violence involving Gangrel and Ravnos drew him into the chaos tied to the destruction of the Ravnos Antediluvian; he survived and came away with Evanescent Blue and Merrick in tow (full incident details remain for Memoriam play). On returning to Toronto, Lucien placed Merrick under Oliver's care, judging Oliver's freer temperament better suited to shelter him. This era marks Lucien's transition from survivor-storyteller to domain architect, with personal legend and political legacy becoming inseparable.",
+          "locations": [
+            "Toronto, Canada"
+          ]
+        }
+      ]
+    },
+    "rashid": {
+      "name": "Rashid Abdulrahman",
+      "clan": "Banu Haqim",
+      "clanBanes": [
+        {
+          "name": "The Curse of Insatiable Thirst",
+          "subtitleLabel": "",
+          "subtitleValue": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "The Curse of Growing Darkness",
+          "subtitleLabel": "",
+          "subtitleValue": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "The Curse of Obsession",
+          "subtitleLabel": "Obsession",
+          "subtitleValue": "Peacemaking",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "generation": "Eighth",
+      "titles": [
+        "Vizier Caste",
+        "Seneschal"
+      ],
+      "predatorType": "Scene Queen",
+      "sire": {
+        "name": "Laleh bint Saif (The Piece-Taker)",
+        "description": "",
+        "notes": [
+          "Ultimately became the Piece-Taker of Toronto legend."
+        ]
+      },
+      "childer": [],
+      "birthPlace": "Diriyah, Ottoman Empire",
+      "birthYear": 1774,
+      "embracePlace": "Diriyah, Ottoman Empire",
+      "embraceYear": 1811,
+      "attributes": {
+        "strength": 1,
+        "dexterity": 2,
+        "stamina": 2,
+        "charisma": 3,
+        "manipulation": 2,
+        "composure": 3,
+        "intelligence": 4,
+        "wits": 2,
+        "resolve": 3
+      },
+      "skills": {
+        "athletics": 1,
+        "brawl": 0,
+        "craft": 0,
+        "drive": 0,
+        "firearms": 0,
+        "larceny": 1,
+        "melee": 1,
+        "stealth": 2,
+        "survival": 0,
+        "animalKen": 0,
+        "etiquette": 2,
+        "insight": 2,
+        "intimidation": 1,
+        "leadership": 3,
+        "performance": 0,
+        "persuasion": 3,
+        "streetwise": 0,
+        "subterfuge": 1,
+        "academics": 0,
+        "awareness": 2,
+        "finance": 0,
+        "investigation": 1,
+        "medicine": 0,
+        "occult": 3,
+        "politics": 2,
+        "science": 0,
+        "technology": 0
+      },
+      "specialties": [
+        {
+          "skill": "etiquette",
+          "type": "standard",
+          "name": "Muslims"
+        },
+        {
+          "skill": "persuasion",
+          "type": "standard",
+          "name": "Camarilla"
+        },
+        {
+          "skill": "politics",
+          "type": "standard",
+          "name": "Camarilla"
+        }
+      ],
+      "health": {
+        "value": 5,
+        "superficial": 0,
+        "aggravated": 0
+      },
+      "willpower": {
+        "value": 6,
+        "superficial": 0,
+        "aggravated": 0
+      },
+      "humanity": {
+        "value": 6,
+        "stains": 0
+      },
+      "bloodPotency": 2,
+      "disciplines": {
+        "bloodSorcery": {
+          "value": 4,
+          "powers": [
+            {
+              "name": "Corrosive Vitae",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Scour Secrets",
+              "level": 2,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Ripples of the Heart",
+              "level": 3,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Fulminating Vitae",
+              "level": 4,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Compel Aapilu",
+              "level": 4,
+              "notes": "Amalgam: Dominate 2",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ],
+          "rituals": [
+            {
+              "name": "Lahsu Awakening",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Arnu Awakening",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Truth of Blood",
+              "level": 2,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Eyes of the Past",
+              "level": 3,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Memoria Sanguinis",
+              "level": 3,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Invisible Chains of Binding",
+              "level": 4,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        },
+        "celerity": {
+          "value": 1,
+          "powers": [
+            {
+              "name": "Fluent Swiftness",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        },
+        "obfuscate": {
+          "value": 3,
+          "powers": [
+            {
+              "name": "Silence of Death",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Unseen Passage",
+              "level": 2,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Ghost in the Machine",
+              "level": 3,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        },
+        "presence": {
+          "value": 1,
+          "powers": [
+            {
+              "name": "Awe",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        },
+        "dominate": {
+          "value": 2,
+          "powers": [
+            {
+              "name": "Compel",
+              "level": 1,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            },
+            {
+              "name": "Mesmerize",
+              "level": 2,
+              "notes": "",
+              "source": {
+                "book": "",
+                "page": 0
+              }
+            }
+          ]
+        }
+      },
+      "convictions": [
+        {
+          "description": "The City Must Not Burn"
+        },
+        {
+          "description": "Diplomacy Over Coercion"
+        },
+        {
+          "description": "The Court Must Be Protected"
+        }
+      ],
+      "ambition": "",
+      "languages": [
+        "Arabic",
+        "English"
+      ],
+      "backgrounds": [
+        {
+          "name": "Status",
+          "focus": "Camarilla",
+          "value": 4,
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Status",
+          "focus": "Banu Haqim",
+          "value": 3,
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Fame",
+          "focus": "Muslim Community",
+          "value": 1,
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Contact",
+          "focus": "???",
+          "value": 1,
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Influence",
+          "focus": "Finance",
+          "value": 3,
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "merits": [
+        {
+          "name": "Object of Power",
+          "focus": "Ur-Shulgi's Promise",
+          "value": 1,
+          "description": "A black band of wrought-iron permanently affixed to Rashid's finger, causing blackened skin where it touches his flesh.",
+          "rules": [
+            "Once per story, after rolling for a Blood Sorcery power or Ritual, you may set one Hunger die to a 10."
+          ],
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "flaws": [
+        {
+          "name": "Arcane Curse",
+          "focus": "Magic Sparks Fires",
+          "value": 2,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Rat in a Cage",
+          "focus": "",
+          "value": 2,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Dark Secret",
+          "focus": "The Doom of Diriyah",
+          "value": 2,
+          "description": "",
+          "rules": "",
+          "notes": [
+            "Rashid, taking impulsive advantage of a lucky turn of events, staked the Prince of Diriyah, leading to a chain-reaction of events that caused the sacking of the city.",
+            "Were it to be discovered, it would undermine Rashid's entire professed worldview as a builder of cities."
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Knowledge Hungry",
+          "focus": "Iron Praxis",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Burn Scars",
+          "focus": "Ring Forearm",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Crisis of Identity",
+          "focus": "",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Vein-Tapper",
+          "focus": "",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Resonance Sensitivity",
+          "focus": "Phlegmatic",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Prey Exclusion",
+          "focus": "Non-Muslims",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Cursed Object",
+          "focus": "Ur-Shulgi's Promise",
+          "value": 1,
+          "description": "A black band of wrought-iron permanently affixed to Rashid's finger, causing blackened skin where it touches his flesh.",
+          "rules": "",
+          "notes": [
+            "Plants thoughts and impressions originating from Ur-Shulgi in his head, causing distractions or encouraging him to lean into his darker natures."
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Curse of Obsession",
+          "focus": "",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": [
+            "Obsessed with a vision that has everyone on the same side.",
+            "CANNOT take action against someone unless they have already rejected his best attempts at a diplomatic solution, and MUST engage in peace talks in good faith."
+          ],
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        },
+        {
+          "name": "Curse of Growing Darkness",
+          "focus": "",
+          "value": 0,
+          "description": "",
+          "rules": "",
+          "notes": "0-dot flaw",
+          "source": {
+            "book": "",
+            "page": 0
+          }
+        }
+      ],
+      "bloodline": {
+        "name": "Descendant of Ur-Shulgi",
+        "description": "Ur-Shulgi is spoken of as something worse than an elder: an ancient Assamite horror from the oldest wars, entombed beneath Alamut for centuries before rising as the Black Shepherd. When he woke, he judged his clan, culled the unworthy, and shattered the Tremere's centuries-old blood curse with sheer will. Those who carry his lineage inherit heat that does not fear flame, patience for plans measured in centuries, and the certainty that obedience is taken, not requested.",
+        "merits": [
+          {
+            "name": "The Silent King",
+            "value": 1,
+            "description": "A sliver of Ur-Shulgi's domineering presence lives in your Blood.",
+            "rules": "Once per session, when you attempt to command deference from a vampire whose applicable Status is lower than yours, you may re-roll one die.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "Veins Ablaze",
+            "value": 2,
+            "description": "You carry an inner heat that refuses to panic before flame.",
+            "rules": "Reduce the Difficulty of rolls to resist frenzy triggered by fire by 2 (minimum Difficulty 1).",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Architect of Eternity",
+            "value": 3,
+            "description": "You think in centuries, laying foundations whose harvest may not be yours.",
+            "rules": "Once per story, when you Launch a Project during a Memoriam, the Launch Roll automatically succeeds. In the present, when spending Goal dots to reduce that Project Die, you may treat your Goal dots as doubled for that purpose.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "Herald of Destruction",
+            "value": 4,
+            "description": "Ur-Shulgi's infamous wrath can flare through you at the perfect moment.",
+            "rules": "Once per session, after rolling, you may set one Hunger die to 10 if doing so would produce a Messy Critical.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "Breaker of Chains",
+            "value": 5,
+            "description": "Your Blood remembers how to unmake bindings other Kindred accept as inevitable.",
+            "rules": "Gain the Unbondable Merit. Additionally, if you feed a thrall a full Rouse Check's worth of vitae, it immediately breaks their regnant's Blood Bond. You cannot create Blood Bonds of your own.",
+            "notes": "",
+            "purchased": false
+          }
+        ]
+      },
+      "loresheet": {
+        "name": "Nephilim",
+        "description": "The Nephilim are a modern cult fixated on the Dream of Constantinople: a vampire “utopia” once upheld by a Trinity of philosophers (Michael, the Dracon, and Antonius) before crusade-era catastrophe and corruption tore it apart. Nephilim seek perfection as a path to rebuilding that idealized city, either as true believers preparing a new Trinity or as wary observers watching a dangerous movement gather momentum.",
+        "merits": [
+          {
+            "name": "To Build the Dream",
+            "value": 1,
+            "description": "You study the people and politics required to raise a new Constantinople.",
+            "rules": "Gain the Persuasion (Camarilla) and Politics (Camarilla) Specialties.",
+            "notes": "",
+            "purchased": true
+          },
+          {
+            "name": "The Architect's Wisdom",
+            "value": 2,
+            "description": "You've absorbed Antonius' lessons on governance and the structures that hold a domain together.",
+            "rules": "Add 2 dice to Politics pools involving domain governance. Once per story, you may decisively mediate a court dispute, defusing escalation and quashing imminent violence through action or authority.",
+            "notes": "Corrected to 2-dot merit per PDF.",
+            "purchased": true
+          },
+          {
+            "name": "The Angel's Grace",
+            "value": 3,
+            "description": "You carry the spark of Michael's ability to inspire and steady others against the Beast.",
+            "rules": "Add 1 die to Insight rolls to gauge another's Beast. Once per story, spend 1 Willpower to let another vampire re-roll up to 3 dice when resisting frenzy.",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "The Dragon's Disciple",
+            "value": 4,
+            "description": "You count yourself among the Dracon's disciples and know how his surviving shadow might be found.",
+            "rules": "The Dracon functions as a 5-dot Mawla, aiding you with mediation, compromise, and the work of forging a “new Constantinople.”",
+            "notes": "",
+            "purchased": false
+          },
+          {
+            "name": "The Trinity Reborn",
+            "value": 5,
+            "description": "You believe prophecy names you as part of the new Trinity that will rebuild the Dream, whatever it costs.",
+            "rules": "Once per story, before making a Remorse test, you may remove up to 5 Stains earned in pursuit of bringing about the new Trinity.",
+            "notes": "",
+            "purchased": false
+          }
+        ]
+      },
+      "timeline": [
+        {
+          "era": "Pre-Embrace",
+          "startYear": 1774,
+          "endYear": 1811,
+          "affiliation": "nil",
+          "details": "In life, a former Sufi involved in the rise of Wahabism and the ensuing Ottoman-Wahabi war.",
+          "locations": [
+            "Diriyah, Ottoman Empire"
+          ]
+        },
+        {
+          "era": "A Time of Violence",
+          "startYear": 1811,
+          "endYear": 1839,
+          "affiliation": "independent",
+          "details": "Embraced directly into the Web of Knives as a Warrior Caste spy.\n\nThrough total luck, he impulsively seized opportunity to assassinate a powerful Kindred enemy: the Ventrue Prince of Diriyah, Ibrahim Kethüda.\n\nUnintended consequences abounded: the Prince's many agreements and negotiations keeping Diriyah's enemies at bay died with the Prince, and the city burned within a fortnight.\n\nIn this, Rashid was forced to face the scope of the suffering he could wreak with a single careless act, and began to question his role in his clan and the responsibility of power.\n\nRashid still keeps the ring he lifted out of the ashes that remained after he staked the Prince and left him to face the Sun, as a reminder of a mistake he will never make again.\n\nHis sire, who would become the Piece-Taker, was equally devastated; it was here that she took her famous vow of silence and began her path towards becoming the militantly isolationist autarkis of Toronto.\n\n(Dark Secret: if this ever gets out, it would invalidate his entire professed worldview.)",
+          "locations": [
+            "Diriyah, Ottoman Empire",
+            "Alamut, Afghanistan"
+          ]
+        },
+        {
+          "era": "A Time of Faith",
+          "startYear": 1839,
+          "endYear": 1893,
+          "affiliation": "independent",
+          "details": "After spending twenty years at Alamut trying to reconcile his clan's teachings with the disaster of Diriyah, Rashid became so disillusioned with Clan Assamite that he abandoned Alamut in search of a better path forward.\n\nHaving learned about the Dream of Constantinople in the great library at Alamut, and hearing of the Tanzimat Reforms currently underway in Constantinople, the city of Michael's Dream became his next destination in his quest to find a way to exist without being an avatar of destruction.\n\nRashid's interest in the Dream did not go unnoticed, and he was approached by Sofia Mavridì, a Nephilim of Clan Toreador and a descendant of Michael the Archangel himself.\n\nFirst, she was an asset in Rashid's investigations into Constantinople's history, but the more time they spent together, the more convinced Rashid became that the Nephilim was the very path forward he was looking for: a path of creation, not destruction; a promise to build instead of to ruin.\n\nSofia was more than happy to induct him into the followers of Michael's Dream.",
+          "locations": [
+            "Alamut, Afghanistan",
+            "Constantinople, Ottoman Empire"
+          ]
+        },
+        {
+          "era": "A Time of Sorcery",
+          "startYear": 1893,
+          "endYear": 1922,
+          "affiliation": "independent",
+          "details": "Devoted to pursuing Michael's Dream as a member of the Nephilim, when Rashid discovered that Sofia was a descendant of Michael himself, he recalled writings in the library at Alamut relating to travelling through ancestral blood memories.\n\nReturning to Alamut, he suffered the presence of his despised clan to study the sorcerous teachings he needed to help Sofia unlock the memories in her blood.\n\nReturning to Constantinople, armed with new magic, he was successful, more than successful; in a Blood Sorcery ritual, he and Sofia encountered a memory, or reflection of Michael.\n\nThe Archangel revealed the monstrous truth of Rashid's ancestor, Ur-Shulgi, but delivered a prophecy: for everything that Ur-Shulgi would destroy upon his awakening, Rashid would rebuild.\n\nWhen he awoke from the ritual trance, the ring from Diriyah glowed a deep red, and Michael had given it its name: \"Ur-Shulgi's Promise\". With this realization, it seared his flesh and blackened his finger, binding permanently to his hand.",
+          "locations": [
+            "Alamut, Afghanistan",
+            "Constantinople, Ottoman Empire"
+          ]
+        },
+        {
+          "era": "A Time of Lineage",
+          "startYear": 1922,
+          "endYear": 1998,
+          "affiliation": "independent",
+          "details": "Having discovered the truth of his lineage, and armed with the prophecy of the Archangel, Rashid had been searching for his sire for three decades.\n\nBut Laleh bint Saif had not been seen for over a century, and the trail had long gone cold.\n\nFinally, Rashid learned of a mysterious autarkis in Toronto, Canada, the Piece-Taker, whose description and activities were very familiar to him.\n\nWielding the same ritual that he used with Sofia, Rashid was able to confirm that this was indeed his sire, and so, he finally set sail across the Atlantic.\n\nHis sire took him in and sheltered him within her protected domain, where he found many of the answers he was looking for.",
+          "locations": [
+            "Various Locations, Europe",
+            "Toronto, Canada"
+          ]
+        },
+        {
+          "era": "A Time of Dominion",
+          "startYear": 1998,
+          "endYear": 2025,
+          "affiliation": "camarilla",
+          "details": "Rashid felt it immediately when Ur-Shulgi rose: the ring spasmed, blazed with light, and from then on he could hear the whispers of the blood god always in the back of his mind.\n\nKnowing that this was the time that Michael's prophecy spoke of, he left the shelter of his sire's domain and quietly began planning how he could become the force for order that Michael said would balance every act of Ur-Shulgi's chaos.\n\nAfter cultivating contacts and informants, he learned of the now-Banu Haqim's plan to join the Camarilla, and travelled to Denmark to assist in the forging of the Odense Pact.\n\nRashid returned to Toronto with a singular purpose: to finally realize Michael's Dream in the city he had claimed as his own.",
+          "locations": [
+            "Toronto, Canada",
+            "Odense, Denmark"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -280,10 +280,10 @@ end
 ```lua
 -- ✅ CORRECT
 local guid = G.GetHandZoneGUID(color)
-local guid = G.GUIDS.PLAYER_LIGHT_BROWN
+local guid = G.GUIDS.PLAYER_LIGHT_1_BROWN
 
 -- ❌ WRONG
-local guid = C.GUIDS.PLAYER_LIGHT_BROWN  -- GUIDs moved to G library
+local guid = C.GUIDS.PLAYER_LIGHT_1_BROWN  -- GUIDs moved to G library
 ```
 
 ### Error Validation Pattern

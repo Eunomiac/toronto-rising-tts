@@ -30,10 +30,15 @@ LightTest = require("core.light_test")
 
 --[[
     File Logging Configuration
-    Uses TTS Tools extension's sendExternalMessage to write debug logs to files
+    TTS Tools (sendExternalMessage type "write"): the `name` field is written under
+    **workspaceFolder/.tts/output/<name>** (not the repo root). Same for logToFile and writeWorkspaceFile.
+    See tts-editor handleWriteMessage → writeOutputFile(..., "output").
 ]]
 local LOG_DIR = "debug_logs"
 local LOG_EXTENSION = "txt"
+
+--- Prefix where the VS Code extension materializes custom writes (relative to workspace folder).
+local TTS_TOOLS_OUTPUT_PREFIX = ".tts/output"
 
 -- Cache for log file contents (to support append mode)
 -- Key: filename (without extension), Value: accumulated content string
@@ -62,9 +67,8 @@ local function writeToFile(filename, content, format, append)
     format = format or "none"
     append = append ~= false  -- Default to true (append mode) unless explicitly set to false
 
-    -- Use sendExternalMessage to write to file
-    -- Don't set 'object' - that would write to .tts/objects/ directory
-    -- Without 'object', files are written to workspace directory
+    -- Use sendExternalMessage to write to file.
+    -- Don't set `object`; with only `name`, TTS Tools writes to .tts/output/<name>.
     local fullName = LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION
 
     -- For append mode, maintain cache and accumulate content
@@ -89,7 +93,7 @@ local function writeToFile(filename, content, format, append)
             name = fullName,
             format = format
         })
-        print("DEBUG: Log written to " .. fullName)
+        print("DEBUG: Log written to " .. TTS_TOOLS_OUTPUT_PREFIX .. "/" .. fullName)
     else
         -- Fallback: just print if extension not available
         print("DEBUG (file logging not available): " .. filename)
@@ -97,9 +101,9 @@ local function writeToFile(filename, content, format, append)
     end
 end
 
---- Writes content to an arbitrary path under the workspace via TTS Tools (sendExternalMessage).
+--- Writes content via TTS Tools (sendExternalMessage type "write"). File appears as **workspace/.tts/output/<relativePath>**.
 --- Does not use log append cache; each call overwrites that file path.
---- @param relativePath string Path relative to workspace root, e.g. "debug_logs/npcs_panel.txt"
+--- @param relativePath string Path suffix under .tts/output, e.g. "debug_logs/npcs_panel.txt"
 --- @param content string
 --- @param format string|nil "none" or "auto" (default "none")
 --- @param silent boolean|nil If true, do not print confirmation (for high-frequency writes)
@@ -123,7 +127,11 @@ function DEBUG.writeWorkspaceFile(relativePath, content, format, silent)
             format = format
         })
         if not silent then
-            print("DEBUG: Wrote workspace file " .. relativePath)
+            print("DEBUG: Wrote " .. TTS_TOOLS_OUTPUT_PREFIX .. "/" .. relativePath)
+            print(
+                "DEBUG: TTS Tools stores custom writes under .tts/output/ (first workspace folder if multi-root). "
+                    .. "Enable custom messages (ttsEditor.enableMessages) if writes are ignored."
+            )
         end
         return true
     end
@@ -907,7 +915,7 @@ function DEBUG.testUI()
                     return tonumber(xStr), tonumber(yStr)
                 end
 
-                local expectedBenningtonPanX = 60
+                local expectedBenningtonPanX = 0
                 local expectedBenningtonPanY = 160
                 local initOffsetXY = UI.getAttribute(draggableID, "offsetXY")
                 local initPanX, initPanY = parseOffsetXY(initOffsetXY)
@@ -1019,7 +1027,7 @@ function DEBUG.testUI()
                 HUD_playerMap_districtToggle_hoverOn(Player[testColor], "-1", annexToggleID)
                 UpdateUIDisplays()
 
-                local recenterBtnID = "playerHud_mapRecenterBtn_" .. testColor
+                local recenterBtnID = "playerHud_mapRecenter_" .. testColor
                 HUD_playerMap_recenter_mouseUp(Player[testColor], "-1", recenterBtnID)
                 UpdateUIDisplays()
 
@@ -1375,47 +1383,80 @@ end
 -- Exposed globally as initLightingAndSignals()
 -- @usage initLightingAndSignals() -- Call from TTS console
 function DEBUG.initLightingAndSignals()
-    print("⚙️  Initializing: Setting all signal fires, hunger smoke, RING_FLARE, player lights to OFF, and ambient to DARK")
+    print("⚙️  Initializing: Setting all signal fires, hunger smoke, RING_FLARE, player lights, and main lights to OFF, and ambient to DARK")
 
     -- NOTE: All object manipulation is done via Objects module
     -- Debug functions should only call other functions, not perform game actions directly
 
-    -- Helper: Convert player color to lighting module light name
-    -- Maps "Brown" -> "playerLightBrown", "Orange" -> "playerLightOrange", etc.
-    local function getPlayerLightName(color)
+    -- Helper: Convert player color to both lighting module light names
+    -- Maps "Brown" -> {"playerLight1Brown", "playerLight2Brown"}, etc.
+    local function getPlayerLightNames(color)
         -- Capitalize first letter, lowercase rest
         local first = string.upper(string.sub(color, 1, 1))
         local rest = string.lower(string.sub(color, 2))
-        return "playerLight" .. first .. rest
+        return {
+            "playerLight1" .. first .. rest,
+            "playerLight2" .. first .. rest
+        }
+    end
+
+    -- Helper: Set main table lights using lighting module
+    local function setMainLightsMode(mode, duration)
+        duration = duration or 0.0  -- Default to instant
+        if not L or not L.SetLightMode then
+            print("⚠️  Lighting module (L) or SetLightMode not available")
+            return false
+        end
+
+        local mainLights = { "mainLightLeft", "mainLightRight" }
+        local allSuccess = true
+        for _, lightName in ipairs(mainLights) do
+            if not L.LIGHTMODES[lightName] then
+                print("⚠️  Light mode not found for: " .. lightName)
+                allSuccess = false
+            else
+                local success, result = pcall(function()
+                    return L.SetLightMode(lightName, mode, nil, duration)
+                end)
+                if not success then
+                    print("⚠️  Error setting main light mode: " .. tostring(result))
+                    allSuccess = false
+                end
+            end
+        end
+        return allSuccess
     end
 
     -- Helper: Set player light mode using lighting module
     -- Uses L.SetLightMode() which handles all properties (position, rotation, range, angle, intensity, enabled)
     local function setPlayerLightMode(color, mode, duration)
         duration = duration or 0.0  -- Default to instant
-        local lightName = getPlayerLightName(color)
-
         if not L or not L.SetLightMode then
             print("⚠️  Lighting module (L) or SetLightMode not available")
             return false
         end
 
-        if not L.LIGHTMODES[lightName] then
-            print("⚠️  Light mode not found for: " .. lightName)
-            return false
+        local lightNames = getPlayerLightNames(color)
+        local allSuccess = true
+
+        for _, lightName in ipairs(lightNames) do
+            if not L.LIGHTMODES[lightName] then
+                print("⚠️  Light mode not found for: " .. lightName)
+                allSuccess = false
+            else
+                -- Use lighting module to set the mode
+                local success, result = pcall(function()
+                    return L.SetLightMode(lightName, mode, color, duration)
+                end)
+
+                if not success then
+                    print("⚠️  Error setting player light mode: " .. tostring(result))
+                    allSuccess = false
+                end
+            end
         end
 
-        -- Use lighting module to set the mode
-        local success, result = pcall(function()
-            return L.SetLightMode(lightName, mode, color, duration)
-        end)
-
-        if not success then
-            print("⚠️  Error setting player light mode: " .. tostring(result))
-            return false
-        end
-
-        return true
+        return allSuccess
     end
 
     local allSuccess = true
@@ -1448,6 +1489,12 @@ function DEBUG.initLightingAndSignals()
         if not success then
             allSuccess = false
         end
+    end
+
+    -- Set main table lights to OFF (instant)
+    local mainLightsOffSuccess = setMainLightsMode("OFF", 0.0)
+    if not mainLightsOffSuccess then
+        allSuccess = false
     end
 
     -- Set ambient lighting to DARK mode (instant)
@@ -1519,42 +1566,75 @@ function DEBUG.testLightingAndSignals()
         return C.PlayerColors[randomIndex]
     end
 
-    -- Helper: Convert player color to lighting module light name
-    -- Maps "Brown" -> "playerLightBrown", "Orange" -> "playerLightOrange", etc.
-    local function getPlayerLightName(color)
+    -- Helper: Convert player color to both lighting module light names
+    -- Maps "Brown" -> {"playerLight1Brown", "playerLight2Brown"}, etc.
+    local function getPlayerLightNames(color)
         -- Capitalize first letter, lowercase rest
         local first = string.upper(string.sub(color, 1, 1))
         local rest = string.lower(string.sub(color, 2))
-        return "playerLight" .. first .. rest
+        return {
+            "playerLight1" .. first .. rest,
+            "playerLight2" .. first .. rest
+        }
+    end
+
+    -- Helper: Set main table lights using lighting module
+    local function setMainLightsMode(mode, duration)
+        duration = duration or 0.0  -- Default to instant
+        if not L or not L.SetLightMode then
+            print("⚠️  Lighting module (L) or SetLightMode not available")
+            return false
+        end
+
+        local mainLights = { "mainLightLeft", "mainLightRight" }
+        local allSuccess = true
+        for _, lightName in ipairs(mainLights) do
+            if not L.LIGHTMODES[lightName] then
+                print("⚠️  Light mode not found for: " .. lightName)
+                allSuccess = false
+            else
+                local success, result = pcall(function()
+                    return L.SetLightMode(lightName, mode, nil, duration)
+                end)
+                if not success then
+                    print("⚠️  Error setting main light mode: " .. tostring(result))
+                    allSuccess = false
+                end
+            end
+        end
+        return allSuccess
     end
 
     -- Helper: Set player light mode using lighting module
     -- Uses L.SetLightMode() which handles all properties (position, rotation, range, angle, intensity, enabled)
     local function setPlayerLightMode(color, mode, duration)
         duration = duration or 0.0  -- Default to instant
-        local lightName = getPlayerLightName(color)
-
         if not L or not L.SetLightMode then
             print("⚠️  Lighting module (L) or SetLightMode not available")
             return false
         end
 
-        if not L.LIGHTMODES[lightName] then
-            print("⚠️  Light mode not found for: " .. lightName)
-            return false
+        local lightNames = getPlayerLightNames(color)
+        local allSuccess = true
+
+        for _, lightName in ipairs(lightNames) do
+            if not L.LIGHTMODES[lightName] then
+                print("⚠️  Light mode not found for: " .. lightName)
+                allSuccess = false
+            else
+                -- Use lighting module to set the mode
+                local success, result = pcall(function()
+                    return L.SetLightMode(lightName, mode, color, duration)
+                end)
+
+                if not success then
+                    print("⚠️  Error setting player light mode: " .. tostring(result))
+                    allSuccess = false
+                end
+            end
         end
 
-        -- Use lighting module to set the mode
-        local success, result = pcall(function()
-            return L.SetLightMode(lightName, mode, color, duration)
-        end)
-
-        if not success then
-            print("⚠️  Error setting player light mode: " .. tostring(result))
-            return false
-        end
-
-        return true
+        return allSuccess
     end
 
     -- Test sequence using U.RunSequence
@@ -1568,7 +1648,7 @@ function DEBUG.testLightingAndSignals()
 
     -- Step 2: INITIALIZATION - Use the extracted initialization function
     table.insert(sequenceFunctions, function()
-        broadcast("⚙️  Initializing: Setting all signal fires, RING_FLARE, player lights to OFF, and ambient to DARK", {0.8, 0.8, 1})
+        broadcast("⚙️  Initializing: Setting all signal fires, RING_FLARE, player lights, and main lights to OFF, and ambient to DARK", {0.8, 0.8, 1})
 
         -- Call the extracted initialization function
         DEBUG.initLightingAndSignals()
@@ -1640,7 +1720,25 @@ function DEBUG.testLightingAndSignals()
     -- Step 9: Wait after all signal fires ON
     table.insert(sequenceFunctions, waitStep("All Signal Fires finished raising, waiting 3 seconds...", 3.0))
 
-    -- Step 10: Lerp each player light from OFF to STANDARD (one after another)
+    -- Step 10: Turn on main table lights
+    table.insert(sequenceFunctions, function()
+        broadcast("💡 Turning Main Table Lights ON", {1, 1, 0.6})
+        local lerpDuration = 2.0
+        local success = setMainLightsMode("STANDARD", lerpDuration)
+        if success then
+            printTestResult("Main Lights ON", true, "mainLightLeft and mainLightRight transitioned to STANDARD")
+            passed = passed + 1
+        else
+            printTestResult("Main Lights ON", false, "Failed to transition one or both main lights")
+            failed = failed + 1
+        end
+        return lerpDuration + 0.5
+    end)
+
+    -- Step 11: Wait after main lights ON
+    table.insert(sequenceFunctions, waitStep("Main table lights are ON, waiting 3 seconds...", 3.0))
+
+    -- Step 12: Lerp each player light from OFF to STANDARD (one after another)
     table.insert(sequenceFunctions, function()
         broadcast("💡 Testing Player Lights: OFF → STANDARD (sequential)", {1, 1, 0.5})
         local allSuccess = true
@@ -1662,22 +1760,23 @@ function DEBUG.testLightingAndSignals()
         -- Run the sequence of light transitions
         U.RunSequence(lightSequence)
 
+        local totalPlayerLights = #C.PlayerColors * 2
         if allSuccess then
-            printTestResult("Player Lights OFF→STANDARD", true, "All " .. #C.PlayerColors .. " lights transitioned")
+            printTestResult("Player Lights OFF→STANDARD", true, "All " .. totalPlayerLights .. " lights transitioned")
             passed = passed + 1
         else
             printTestResult("Player Lights OFF→STANDARD", false, "Some lights failed")
             failed = failed + 1
         end
 
-        -- Return total time for all lights (approximate)
+        -- Return total time for all player colors (approximate)
         return (lerpDuration + 0.5) * #C.PlayerColors
     end)
 
-    -- Step 11: Wait after player lights transition
+    -- Step 13: Wait after player lights transition
     table.insert(sequenceFunctions, waitStep("All Player Lights finished transitioning, waiting 3 seconds...", 3.0))
 
-    -- Step 12: Instantly switch RING_FLARE to ON
+    -- Step 14: Instantly switch RING_FLARE to ON
     table.insert(sequenceFunctions, function()
         broadcast("✨ Testing RING_FLARE: Switching to ON (instant)", {1, 1, 0})
         local success = O.SetRingFlareState("on", 0.0)  -- 0 = instant
@@ -1691,10 +1790,10 @@ function DEBUG.testLightingAndSignals()
         return 2.0  -- Brief pause to observe
     end)
 
-    -- Step 13: Wait after RING_FLARE ON
+    -- Step 15: Wait after RING_FLARE ON
     table.insert(sequenceFunctions, waitStep("RING_FLARE switched ON, waiting 3 seconds...", 3.0))
 
-    -- Step 14: Instantly switch RING_FLARE to OFF
+    -- Step 16: Instantly switch RING_FLARE to OFF
     table.insert(sequenceFunctions, function()
         broadcast("💤 Testing RING_FLARE: Switching to OFF (instant)", {0.5, 0.5, 0.5})
         local success = O.SetRingFlareState("off", 0.0)  -- 0 = instant
@@ -1708,7 +1807,7 @@ function DEBUG.testLightingAndSignals()
         return 2.0  -- Brief pause to observe
     end)
 
-    -- Step 15: Wait after RING_FLARE OFF
+    -- Step 17: Wait after RING_FLARE OFF
     table.insert(sequenceFunctions, waitStep("RING_FLARE switched OFF, waiting 3 seconds...", 3.0))
 
     -- Step 19: Test hunger smoke ON (Brown player)
@@ -1793,7 +1892,7 @@ function DEBUG.testLightingAndSignals()
     -- Step 24: Wait after all hunger smoke OFF
     table.insert(sequenceFunctions, waitStep("All Hunger Smoke finished lowering, waiting 3 seconds...", 3.0))
 
-    -- Step 16: Simultaneously lerp all player lights from STANDARD to OFF
+    -- Step 18: Simultaneously lerp all player lights from STANDARD to OFF
     table.insert(sequenceFunctions, function()
       broadcast("💤 Testing Player Lights: STANDARD → OFF (simultaneous)", {0.5, 0.5, 0.5})
       local allSuccess = true
@@ -1807,8 +1906,9 @@ function DEBUG.testLightingAndSignals()
           end
       end
 
+      local totalPlayerLights = #C.PlayerColors * 2
       if allSuccess then
-          printTestResult("Player Lights STANDARD→OFF", true, "All " .. #C.PlayerColors .. " lights transitioned simultaneously")
+          printTestResult("Player Lights STANDARD→OFF", true, "All " .. totalPlayerLights .. " lights transitioned simultaneously")
           passed = passed + 1
       else
           printTestResult("Player Lights STANDARD→OFF", false, "Some lights failed")
@@ -1818,10 +1918,28 @@ function DEBUG.testLightingAndSignals()
       return lerpDuration + 1.0  -- Wait for animation to complete
   end)
 
-  -- Step 17: Wait after simultaneous player lights OFF
+  -- Step 19: Wait after simultaneous player lights OFF
   table.insert(sequenceFunctions, waitStep("All Player Lights finished transitioning to OFF, waiting 3 seconds...", 3.0))
 
-  -- Step 18: Turn off all signal fires
+  -- Step 20: Turn main table lights OFF with duration
+  table.insert(sequenceFunctions, function()
+      broadcast("💤 Turning Main Table Lights OFF", {0.5, 0.5, 0.5})
+      local lerpDuration = 2.0
+      local success = setMainLightsMode("OFF", lerpDuration)
+      if success then
+          printTestResult("Main Lights OFF", true, "mainLightLeft and mainLightRight transitioned to OFF")
+          passed = passed + 1
+      else
+          printTestResult("Main Lights OFF", false, "Failed to transition one or both main lights")
+          failed = failed + 1
+      end
+      return lerpDuration + 0.5
+  end)
+
+  -- Step 21: Wait after main lights OFF
+  table.insert(sequenceFunctions, waitStep("Main table lights are OFF, waiting 3 seconds...", 3.0))
+
+  -- Step 22: Turn off all signal fires
   table.insert(sequenceFunctions, function()
       broadcast("💤 Turning Off All Signal Fires", {0.5, 0.5, 0.5})
       local allSuccess = true
@@ -1841,7 +1959,7 @@ function DEBUG.testLightingAndSignals()
       return 2.0  -- Wait for animations
   end)
 
-    -- Step 19: Final summary
+    -- Step 23: Final summary
     table.insert(sequenceFunctions, function()
         broadcast("✅ Lighting & Signal Fire Test Complete!", {0, 1, 0})
         print("\n" .. string.rep("-", 60))
@@ -3599,7 +3717,7 @@ function DEBUG.logStateToFile(filename)
 
     -- State dumps are overwritten (not appended) - each dump is a complete snapshot
     writeToFile(filename, content, "auto", false)
-    print("DEBUG: Game state logged to " .. filename .. "." .. LOG_EXTENSION)
+    print("DEBUG: Game state logged to " .. TTS_TOOLS_OUTPUT_PREFIX .. "/" .. LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION)
 end
 
 --- Logs current scene information to a file
@@ -3622,7 +3740,7 @@ function DEBUG.logSceneToFile(filename)
 
     -- Scene dumps are overwritten (not appended) - each dump is a complete snapshot
     writeToFile(filename, content, "auto", false)
-    print("DEBUG: Scene info logged to " .. filename .. "." .. LOG_EXTENSION)
+    print("DEBUG: Scene info logged to " .. TTS_TOOLS_OUTPUT_PREFIX .. "/" .. LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION)
 end
 
 --- Logs zone information to a file
@@ -3642,7 +3760,7 @@ function DEBUG.logZonesToFile(filename)
 
     -- Zone dumps are overwritten (not appended) - each dump is a complete snapshot
     writeToFile(filename, content, "auto", false)
-    print("DEBUG: Zone info logged to " .. filename .. "." .. LOG_EXTENSION)
+    print("DEBUG: Zone info logged to " .. TTS_TOOLS_OUTPUT_PREFIX .. "/" .. LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION)
 end
 
 --- Logs a test result to a file
@@ -3673,7 +3791,7 @@ function DEBUG.logAllToFiles()
     DEBUG.logSceneToFile("scene_info")
     DEBUG.logZonesToFile("zone_info")
     DEBUG.logToFile("INFO", "Full debug dump completed", "debug_log")
-    print("DEBUG: All logs written to " .. LOG_DIR .. "/ directory")
+    print("DEBUG: All logs written under " .. TTS_TOOLS_OUTPUT_PREFIX .. "/" .. LOG_DIR .. "/")
 end
 
 --- Clears all log files (writes empty/header content to reset them)

@@ -1,0 +1,529 @@
+{
+  "aishe": {
+    "name": "Aishe Tache",
+    "clan": "Malkavian",
+    "clanBanes": [
+      {
+        "name": "The Curse of the Moon",
+        "subtitleLabel": "Derangement",
+        "subtitleValue": "Persistent Delusion",
+        "notes": "The Cards Are Always Right",
+        "source": {
+          "book": "",
+          "page": 0
+        }
+      }
+    ],
+    "generation": "Eighth",
+    "titles": ["Malkavian Primogen"],
+    "predatorType": "Siren",
+    "sire": {
+      "name": "Lady Aveline Dubois",
+      "description": [
+        "7th Generation Malkavian",
+        "Embraced shortly before the French Revolution",
+        "Anarch loyalist",
+        "High Humanity",
+        "Wanderer by nature",
+        "Derangement: Bipolar Disorder",
+        "More focused on signs or omens"
+      ],
+      "notes": ""
+    },
+    "childer": [],
+    "birthPlace": "Brasov, Romania",
+    "birthYear": 1799,
+    "embracePlace": "Louisiana, USA",
+    "embraceYear": 1834,
+    "attributes": {
+      "strength": 1,
+      "dexterity": 2,
+      "stamina": 2,
+      "charisma": 3,
+      "manipulation": 4,
+      "composure": 3,
+      "intelligence": 2,
+      "wits": 2,
+      "resolve": 3
+    },
+    "skills": {
+      "athletics": 1,
+      "brawl": 1,
+      "craft": 0,
+      "drive": 0,
+      "firearms": 0,
+      "larceny": 0,
+      "melee": 0,
+      "stealth": 0,
+      "survival": 0,
+      "animalKen": 0,
+      "etiquette": 3,
+      "insight": 3,
+      "intimidation": 2,
+      "leadership": 2,
+      "performance": 1,
+      "persuasion": 3,
+      "streetwise": 0,
+      "subterfuge": 4,
+      "academics": 0,
+      "awareness": 1,
+      "finance": 0,
+      "investigation": 0,
+      "medicine": 0,
+      "occult": 2,
+      "politics": 2,
+      "science": 0,
+      "technology": 0
+    },
+    "specialties": [
+      {
+        "skill": "insight",
+        "type": "standard",
+        "name": "Omens"
+      },
+      {
+        "skill": "leadership",
+        "type": "standard",
+        "name": "Malkavian"
+      },
+      {
+        "skill": "performance",
+        "type": "archaic",
+        "name": "Disco",
+        "decade": 1970
+      },
+      {
+        "skill": "performance",
+        "type": "archaic",
+        "name": "Fortune-Telling",
+        "decade": 1810
+      },
+      {
+        "skill": "persuasion",
+        "type": "standard",
+        "name": "Seduction"
+      },
+      {
+        "skill": "occult",
+        "type": "archaic",
+        "name": "Mediumship",
+        "decade": 1880
+      }
+    ],
+    "health": {
+      "value": 5,
+      "superficial": 0,
+      "aggravated": 0
+    },
+    "willpower": {
+      "value": 6,
+      "superficial": 0,
+      "aggravated": 0
+    },
+    "humanity": {
+      "value": 7,
+      "stains": 0
+    },
+    "bloodPotency": 2,
+    "disciplines": {
+      "auspex": {
+        "value": 3,
+        "powers": [
+          {
+            "name": "Heightened Senses",
+            "level": 1,
+            "notes": "",
+            "source": {
+              "book": "",
+              "page": 0
+            }
+          },
+          {
+            "name": "Premonition",
+            "level": 2,
+            "notes": "",
+            "source": {
+              "book": "",
+              "page": 0
+            }
+          },
+          {
+            "name": "Scry the Soul",
+            "level": 3,
+            "notes": "",
+            "source": {
+              "book": "",
+              "page": 0
+            }
+          },
+          {
+            "name": "Doomsaying",
+            "level": 3,
+            "notes": "Amalgam: Dominate 3",
+            "source": {
+              "book": "",
+              "page": 0
+            }
+          }
+        ]
+      },
+      "dominate": {
+        "value": 3,
+        "powers": [
+          {
+            "name": "Cloud Memory",
+            "level": 1,
+            "notes": "",
+            "source": {
+              "book": "",
+              "page": 0
+            }
+          },
+          {
+            "name": "Dementation",
+            "level": 2,
+            "notes": "Amalgam: Obfuscate 2",
+            "source": {
+              "book": "",
+              "page": 0
+            }
+          },
+          {
+            "name": "The Forgetful Mind",
+            "level": 3,
+            "notes": "",
+            "source": {
+              "book": "",
+              "page": 0
+            }
+          }
+        ]
+      },
+      "obfuscate": {
+        "value": 2,
+        "powers": [
+          {
+            "name": "Cloak of Shadows",
+            "level": 1,
+            "notes": "",
+            "source": {
+              "book": "",
+              "page": 0
+            }
+          },
+          {
+            "name": "Unseen Passage",
+            "level": 2,
+            "notes": "",
+            "source": {
+              "book": "",
+              "page": 0
+            }
+          }
+        ]
+      },
+      "fortitude": {
+        "value": 1,
+        "powers": [
+          {
+            "name": "Unswayable Mind",
+            "level": 1,
+            "notes": "",
+            "source": {
+              "book": "",
+              "page": 0
+            }
+          }
+        ]
+      }
+    },
+    "convictions": [
+      {
+        "description": "You Must Take Care Of Yourself First",
+        "notes": [
+          "Ultimately, no one has your best interest at heart except for you.",
+          "While everyone is ultimately in it for themselves and maybe for their loved ones.",
+          "But no one will prioritize you, but you."
+        ],
+        "touchstone": {
+          "name": "Kade Phillips",
+          "description": "Hair Stylist",
+          "notes": [
+            "Big Hearted Man who cares deeply for his family and friends.",
+            "Connects easily with others and commands love and respect, even in his less than manly profession.",
+            "He's the kind of Man Aishe raised her sons to be like.",
+            "There is a deep anger within him; he often spends time with people who stoke it."
+          ]
+        }
+      },
+      {
+        "description": "Keep Every Door Open",
+        "notes": [
+          "With so many oceans of time allies may turn to foes and vice versa",
+          "Keeping a door open is useful, even if unsatisfying at the time"
+        ],
+        "touchstone": {
+          "name": "Camille Bouschar",
+          "notes": [
+            "Recent Divorcee",
+            "Survived an Unhappy Marriage for 30+ years",
+            "Stroke up a friendship with Aishe a few years before her divorce",
+            "Her Daughter, Marie, blames Aishe for her Parent's divorce",
+            "Camille Reminds Aishe of who she could have been had she not met her Sire"
+          ]
+        }
+      },
+      {
+        "description": "Keep Everyone Guessing",
+        "notes": ["Keep your enemies and allies guessing."],
+        "touchstone": {
+          "name": "Katrine Cousteau",
+          "notes": [
+            "Daughter of owner of an Occult Shop -- The Threefold Exchange, in Chinatown",
+            "While the owner is (somewhat) legit, Katrine takes advantage -- of her mother, of her customers, of everyone",
+            "Actually a full time swindler selling people \"magical\" solutions to their mundane problems",
+            "Katrine stokes Aishe's duplicitous nature"
+          ]
+        }
+      }
+    ],
+    "ambition": "",
+    "languages": [
+      "German",
+      "English"
+    ],
+    "backgrounds": [
+      {
+        "name": "Status",
+        "focus": "Camarilla",
+        "value": 4,
+        "notes": "",
+        "source": {
+          "book": "",
+          "page": 0
+        }
+      },
+      {
+        "name": "Status",
+        "focus": "Clan Malkavian",
+        "value": 4,
+        "notes": "",
+        "source": {
+          "book": "",
+          "page": 0
+        }
+      }
+    ],
+    "merits": [
+      {
+        "name": "Stunning",
+        "focus": "",
+        "value": 4,
+        "description": "",
+        "rules": "",
+        "notes": "",
+        "source": {
+          "book": "",
+          "page": 0
+        }
+      },
+      {
+        "name": "Blood Hound",
+        "focus": "",
+        "value": 1,
+        "description": "",
+        "rules": "",
+        "notes": "",
+        "source": {
+          "book": "",
+          "page": 0
+        }
+      }
+    ],
+    "flaws": [
+      {
+        "name": "The Curse of the Moon",
+        "focus": "",
+        "value": 3,
+        "description": "",
+        "rules": "",
+        "notes": "",
+        "source": {
+          "book": "",
+          "page": 0
+        }
+      },
+      {
+        "name": "Prey Exclusion",
+        "focus": "The Addled",
+        "value": 1,
+        "description": "",
+        "rules": "",
+        "notes": "",
+        "source": {
+          "book": "",
+          "page": 0
+        }
+      },
+      {
+        "name": "Enemy",
+        "focus": "Marie Bouschard",
+        "value": 1,
+        "description": "",
+        "rules": "",
+        "notes": [
+          "Daughter of Camille Bouschard",
+          "Blames Aishe for her parent's divorce (She's Right)",
+          "College Girl",
+          "Age 22"
+        ],
+        "source": {
+          "book": "",
+          "page": 0
+        }
+      }
+    ],
+    "bloodline": {
+      "name": "Descendant of the Pythia",
+      "description": "There are few things mortals fear more than the future, for it is the ultimate unknown. And as long as that fear has existed, people have sought ways to pierce the veil of tomorrow, to embrace their destined paths or halt them entirely. Most who claim such insight are liars or charlatans.\n\nOne was not.\n\nThe Pythia, Oracle of Delphi, truly saw what was to come. She gazed upon futures both radiant and terrible, and unlike others, she learned not to fight them. She accepted them.\n\nChosen of Apollo, God of the Sun, the Pythia advised kings, generals, and nobles. Through dreams sent by her divine patron, the future was unveiled to her with merciless clarity.\n\nYet even foresight offers no sanctuary.\n\nShe vanished for thirteen nights.\n\nWhen the Pythia returned to her temple, she was transformed. Her skin deathly pale, her teeth stained red. Apollo's light no longer answered her prayers. That very night, in an act of sacrilege that shattered the sanctity of Delphi, she Embraced her fellow priestesses. From this desecration was born a new lineage of vampires who see what must come, and who must endure the curse of foreknowledge.",
+      "merits": [
+        {
+          "name": "Seeing the Omens",
+          "value": 1,
+          "description": "The legacy of the Pythia sings in your Blood, gifting you with an affinity for interpreting omens.",
+          "rules": "Gain one dot of Insight and the Insight (Omens) Specialty.",
+          "notes": "",
+          "purchased": true
+        },
+        {
+          "name": "The Dark Between the Stars",
+          "value": 2,
+          "description": "Where the Pythias of the Oracle at Delphi used prophecy to aid others, you leverage your power to serve yourself.",
+          "rules": "At the end of each session, you may ask the Storyteller one question related to your Ambition or current Desire. The Storyteller will provide the answer in the form of a clue or omen before the start of the next session.",
+          "notes": "",
+          "purchased": true
+        },
+        {
+          "name": "Portent",
+          "value": 3,
+          "description": "The mechanics of fate itself begin to reveal themselves to you.",
+          "rules": "At the end of each session, roll a Hunger die and set it aside. Until the end of the next session, you may replace any rolled Hunger die (whether yours or not) with the die you set aside. If doing so changes the result of the roll into a Messy Critical or a Bestial Failure, you also recover one point of Superficial Willpower damage.",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "Follower of Motes",
+          "value": 4,
+          "description": "The skeins of destiny weave through all things and into all people, and you have learned to pluck those strings.",
+          "rules": "At the end of each session, you may assign two dots among new Contacts, Allies, and/or Influence Backgrounds, representing strangers who do not know you, but whom your insights into the future have granted you leverage or the precise words to say to get what you want. You must choose the focus of these Backgrounds when you assign them. They persist until the end of the next session.",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "The Deck of Wandering Stars",
+          "value": 5,
+          "description": "Pythia's lineage evolved and adapted over the centuries, incorporating the prognostications of other cultures into their own. The Tarot has been a symbol of Pythian prescience for centuries, and there is no greater symbol of this affinity than the Deck of Wandering Stars, a powerful artifact of which you are the current keeper.",
+          "rules": "Appearing as a slightly worn set of Tarot cards, the Deck contains only the Major Arcana. Once per scene, you may perform a reading with the Deck, focusing on a specific use of Auspex that you must define at the time, and use in the same scene or in the next. If you do, gain a bonus equal to your Blood Surge bonus on any roll required for that power, and automatically succeed at any Rouse Checks required. Additionally, only fate itself can separate you from the Deck of Wandering Stars: if you lose it, or it is stolen, circumstances will conspire to return it to your hands within three days and three nights.",
+          "notes": "",
+          "purchased": false
+        }
+      ]
+    },
+    "loresheet": {
+      "name": "The Cobweb",
+      "description": "You're never truly alone. Not anymore. Not even if you want to be. Not even if you try to be.\n\nThe Cobweb catches so many thoughts in its sticky strands, sends them skittering further inside, or reverberating out to the far edges. You're not always sure the thoughts you're hearing are from now. Some feel like they've been stuck for years and have just shaken loose. Others taste like tomorrow.\n\nThe Cobweb, also known as the Madness Network, is a psychic network to which all Malkavians are linked. No two clan members describe it exactly the same way. For some, it's a constant low murmuring in their Blood. Others describe it as a kind of hivemind operating alongside their own cognition. Many, even most, Malkavians are only reminded of its presence a few times a year, like a sudden burst of static on a forgotten radio.\n\nNo one knows the Cobweb's ultimate purpose, though it's been used to summon a gathering of Oracles together with a subconscious imperative dubbed The Call. Some suspect Malkav himself uses the Network to view the world through his descendants' eyes and ears, or that he simply is the Network.",
+      "merits": [
+        {
+          "name": "A Break in the Static",
+          "value": 1,
+          "description": "The Cobweb is just barely perceptible to you.",
+          "rules": "You catch sporadic snatches of conversation, often just a few distinct words or images. It's enough to piece together an order or a call for aid, though you're unable to respond.",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "Step into My Parlor",
+          "value": 2,
+          "description": "You can communicate over the Network with other Malkavians nearby.",
+          "rules": "These discussions are heavily abstract, limited to short phrases, simple images, and strong emotions.",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "Across the Web",
+          "value": 3,
+          "description": "Your voice is one of the strongest on the Cobweb.",
+          "rules": "You can hold more involved conversations with Malkavians in your city. Once per story you may initiate the Call, sending impressions of the time and gathering place to all who can hear. This does not guarantee obedience.",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "Pluck the Strands",
+          "value": 4,
+          "description": "Your connection to your Cainite ancestors and descendants is powerful.",
+          "rules": "Once per story, you may use the cobweb to piggyback on your sire's or one of your childer's senses. You are only an observer, and cannot control their responses or their movements.",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "Malkav's Will",
+          "value": 5,
+          "description": "The entity in the Cobweb is awake and aware.",
+          "rules": "Malkav, or a consciousness pretending to be him, speaks to you directly via the Network. Once per story, you may ask the Storyteller to divulge a secret about another Malkavian or reveal what orders the mind in the Cobweb wants you to follow.",
+          "notes": "",
+          "purchased": false
+        }
+      ]
+    },
+    "timeline": [
+      {
+        "era": "Pre-Embrace",
+        "startYear": 1799,
+        "endYear": 1834,
+        "affiliation": "nil",
+        "details": "I was born in Brașov to a father with money but no standing. He treated everything as an asset, including me. When a minor noble named Nicolae Strandza needed his useless son married off to settle debts, my father saw an opportunity. The bargain was simple: legitimacy for him, solvency for Strandza, and Andrei for me.\n\nMy husband was twice my age and half my worth. A fool made respectable by a ring is still a fool. He drank, embarrassed himself, and disappointed his father as thoroughly after marriage as before it. What he did give me were three children, Elena, Vlad, and Gheorghiu, and they became the center of my life. I managed the household, shielded his reputation, dragged him to bed at night, and learned not to look when his eyes lingered on younger women.\n\nWhen our youngest left for university, Andrei decided we should travel to New Orleans, claiming culture but seeking only new vices in a more exotic setting. With my children gone, I followed him out of duty and habit.\n\nThere, with little left to occupy me, I found the occult. Through it I met Lady Aveline Dubois. She offered me something I had never truly known, companionship, understanding, and the awakening of parts of myself long neglected. I wondered what it might be like to kiss her; I did not remain wondering for long.\n\nThe night before our return voyage, she invited me to her parlor. I remember little of what followed.\n\nI died in New Orleans.",
+        "locations": ["Brasov, Romania", "Louisiana, USA"]
+      },
+      {
+        "era": "A Time of Lineage",
+        "startYear": 1834,
+        "endYear": 1865,
+        "affiliation": "anarch",
+        "details": "I awoke in the lodgings Andrei and I shared, reborn into hunger and clarity. He lay nearby, drunk on wine and opium, reeking of another woman’s perfume. Before he could fully see me, I tore out his throat. His blood was sweet, and my feeding was savage, my Beast taking vengeance for years of quiet humiliation. He did not deserve it, but that knowledge came later.\n\nLady Aveline was there when I returned to myself. The massacre proved convenient; abandoned dresses and mangled remains led the authorities to assume animals had killed us both. Even now, I refuse to feed on the addled, it reminds me too much of my mortal sorrow.\n\nFor many nights after, I remained at Aveline’s side. I learned her madness and loved her through it, through her manic brilliance and her crushing despair. From her I learned the truths of blood, and of our blood in particular. I learned divination, and soon mastered it. The cards see everything, even what we wish they would not.\n\nShamefully, those nights were the happiest of my unlife.\n\nThen she was gone. I woke alone, with only a message left behind: “The Line in Blood shall meet twice. Then no more.” I did not understand then.\n\nBut I was alone now, and I had to learn how to survive.",
+        "locations": ["Louisiana, USA"]
+      },
+      {
+        "era": "A Time of Intrigue",
+        "startYear": 1882,
+        "endYear": 1912,
+        "affiliation": "camarilla",
+        "details": "I never truly belonged among my sire’s sect. The Anarchs could smell my upbringing on me, as if death had done nothing to strip away class, habit, or belief. Even in undeath, we carry our mortal selves longer than we ever carried our lives.\n\nHiding one night in the cellar of an abandoned farmstead, I fed on an escaped criminal and found a plain deck of Tarot cards. I read them, and they told me to return to New Orleans and seek the Emperor.\n\nSo I presented myself to Camarilla court. Even Anarchs must bow to Tradition. That was when I saw Prince Doran, young in manner if not in years, full of hope and possessed of a vision. In that moment, I knew my future lay with the Camarilla.\n\nBut the Ivory Tower demands its price. What I did to earn my place there is not something I will ever repeat. It hollowed me. My admission was written in blood, the ink mixed with the ashes of countless Kindred.\n\nNow, I find myself wondering if it was ever worth the cost.",
+        "locations": ["Louisiana, USA"]
+      },
+      {
+        "era": "A Time of Dominion",
+        "startYear": 1912,
+        "endYear": 1955,
+        "affiliation": "camarilla",
+        "details": "Prince Doran’s vision was vast, but New Orleans was a nest of violence and schemes. I had joined the Ivory Tower as little more than a neonate, a whisper amid the roar of Camarilla politics, and I had no one to guide me.\n\nThere was one advantage to my bloodline. Malkavians are feared for their madness, but valued for their insight. Those who knew my lineage sought my services, and I spent those years currying favor with local tyrants, rising carefully through ambition, insight, and deceit in equal measure.\n\nIt was then I crafted my persona, a carefully constructed madness that served me better than honesty ever could. I gave the powerful colorful names, riddles dressed as jokes, and let rivals exhaust themselves searching for meanings that may or may not have existed.\n\nMy visions served my goals, and my prince’s. I averted disasters, turned Garou aside, and unraveled the designs of the Magi through quiet manipulation. In the end, it mattered little. Doran met his final death in 1955, and his dream died with him.\n\nIn the aftermath, I found myself reflecting on the fragments of humanity I had left behind.",
+        "locations": ["Louisiana, USA"]
+      },
+      {
+        "era": "A Time of Remorse",
+        "startYear": 1955,
+        "endYear": 1984,
+        "affiliation": "camarilla",
+        "details": "Marcel Guilbeau succeeded Doran as prince, though he ruled only in name, a puppet for his brother. Whatever New Orleans might have become died with Doran, and my own ambition dimmed for a time. I continued to play my role at court, but without conviction. Doran dreamed of a Carthage reborn, Kine and Kindred existing openly together. I see now how foolish that was. We are predators, and they are prey.\n\nAnd yet, we were all Kine once.\n\nIn those years, I opened a small shop, harmless, respectable, where bored, upper-middle-class women came for palm readings and questions about love. They were vapid, lost, and sad, and they reminded me painfully of my mortal self. Unlike the usual charlatans, I gave them truths they could actually use. Some were grateful. Some were not.\n\nI cannot say exactly what I learned during those long nights of quiet charity, but they filled a hollow I had not realized was there.",
+        "locations": ["Louisiana, USA"]
+      },
+      {
+        "era": "A Time of Dominion",
+        "startYear": 1999,
+        "endYear": 2025,
+        "affiliation": "camarilla",
+        "details": "These nights mark the second time I met my sire. I found her lingering outside my little shop, and when we spoke for the first time in over a century, it felt, briefly, as though we had never parted. But I had changed. I had learned to guard my heart, and she saw it immediately.\n\nWe argued. Time had driven a wedge between us deeper than the night she abandoned me. I had forgiven her for that, but she would never forgive me for joining the Ivory Tower, for becoming the prince’s oracle. She said our Gift was never meant to serve them, that I had betrayed her.\n\nShe was older, wiser, and far freer than I had ever been, living openly, surviving on insight, charm, and truth. She still carried the same spark that once drew me in. I loved and hated her for it. She did not change. I did.\n\nAnd the cruelest truth was that she was right. I am the Ivory Tower. I serve myself by serving the status quo.\n\nWhen she rushed me, I thought my unlife was ending. I was never a fighter. Instead, she embraced me, not with blood, but with arms, and my heart thundered in my chest. Afterward, a postcard arrived, sent to the wrong address, bearing the image of the CN Tower. One reading was enough to understand it.\n\nToronto was where true dominion waited. Where I might build something lasting. I relocated quietly, my history in New Orleans earning me a place. I kept my head down.\n\nUntil now. Now, it is do or die.",
+        "locations": ["Toronto, Canada"]
+      }
+    ]
+  }
+}

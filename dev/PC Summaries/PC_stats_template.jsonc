@@ -1,0 +1,326 @@
+{
+  "key": { //
+    "name": "",
+    "clan": "",
+    "clanBanes": [
+      {
+        "name": "",
+        "subtitleLabel": "",
+        "subtitleValue": "",
+        "notes": "",
+        "source": {
+          "book": "",
+          "page": 0
+        }
+      }
+    ],
+    "generation": "",
+    "title": "",
+    "predatorType": "",
+    "sire": {
+      "name": "",
+      "description": "",
+      "notes": ""
+    },
+    "childer": [
+      {
+        "name": "",
+        "embraceYear": 0,
+        "description": "",
+        "notes": ""
+      }
+    ],
+    "birthPlace": "",
+    "birthYear": 0,
+    "embracePlace": "",
+    "embraceYear": 0,
+    "attributes": {
+      "strength": 0,
+      "dexterity": 0,
+      "stamina": 0,
+      "charisma": 0,
+      "manipulation": 0,
+      "composure": 0,
+      "intelligence": 0,
+      "wits": 0,
+      "resolve": 0
+    },
+    "skills": {
+      "athletics": 0,
+      "brawl": 0,
+      "craft": 0,
+      "drive": 0,
+      "firearms": 0,
+      "larceny": 0,
+      "melee": 0,
+      "stealth": 0,
+      "survival": 0,
+      "animalKen": 0,
+      "etiquette": 0,
+      "insight": 0,
+      "intimidation": 0,
+      "leadership": 0,
+      "performance": 0,
+      "persuasion": 0,
+      "streetwise": 0,
+      "subterfuge": 0,
+      "academics": 0,
+      "awareness": 0,
+      "finance": 0,
+      "investigation": 0,
+      "medicine": 0,
+      "occult": 0,
+      "politics": 0,
+      "science": 0,
+      "technology": 0
+    },
+    "specialties": [
+      {
+        "skill": "",
+        "type": "", // "standard" or "archaic"
+        "name": "",
+        "decade": 0 // archaic only
+      }
+    ],
+    "health": {
+      "value": 0,
+      "superficial": 0,
+      "aggravated": 0
+    },
+    "willpower": {
+      "value": 0,
+      "superficial": 0,
+      "aggravated": 0
+    },
+    "humanity": {
+      "value": 0,
+      "stains": 0
+    },
+    "bloodPotency": 0,
+    "disciplines": {
+      "key": { // key = "animalism", "auspex", "bloodSorcery", "celerity", "dominate", "fortitude", "obfuscate", "oblivion", "potence", "presence", "protean"
+        "value": 0,
+        "powers": [
+          {
+            "name": "",
+            "level": 0,
+            "notes": "",
+            "source": {
+              "book": "",
+              "page": 0
+            }
+          }
+        ],
+        "rituals": [ // Blood Sorcery only
+          {
+            "name": "",
+            "level": 0,
+            "notes": "",
+            "source": {
+              "book": "",
+              "page": 0
+            }
+          }
+        ],
+        "ceremonies": [ // Oblivion only
+          {
+            "name": "",
+            "level": 0,
+            "notes": "",
+            "source": {
+              "book": "",
+              "page": 0
+            }
+          }
+        ]
+      }
+    },
+    "convictions": [
+      {
+        "description": "",
+        "touchstone": { // Optional; not all Convictions have a Touchstone
+          "name": "",
+          "description": "",
+          "notes": ""
+        }
+      }
+    ],
+    "ambition": "",
+    "backgrounds": [
+      {
+        "name": "", // e.g. "Status" for "Status: Camarilla"
+        "focus": "", // e.g. "Camarilla" for "Status: Camarilla"
+        "value": 0,
+        "notes": "",
+        "source": {
+          "book": "",
+          "page": 0
+        }
+      }
+    ],
+    "merits": [
+      {
+        "name": "",
+        "value": 0,
+        "notes": "",
+        "source": {
+          "book": "",
+          "page": 0
+        }
+      }
+    ],
+    "languages": [ // First one listed is native tongue
+
+    ],
+    "flaws": [
+      {
+        "name": "",
+        "focus": "",
+        "value": 0,
+        "description": "",
+        "rules": "",
+        "notes": "",
+        "source": {
+          "book": "",
+          "page": 0
+        }
+      }
+    ],
+    "bloodline": {
+      "name": "",
+      "description": "",
+      "merits": [
+        {
+          "name": "",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "",
+          "value": 2,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "",
+          "value": 3,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "",
+          "value": 4,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "",
+          "value": 5,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "purchased": false
+        }
+      ]
+    },
+    "loresheet": {
+      "name": "",
+      "description": "",
+      "merits": [
+        {
+          "name": "",
+          "value": 1,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "",
+          "value": 2,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "",
+          "value": 3,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "",
+          "value": 4,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "purchased": false
+        },
+        {
+          "name": "",
+          "value": 5,
+          "description": "",
+          "rules": "",
+          "notes": "",
+          "purchased": false
+        }
+      ]
+    }
+  },
+  "timeline": [
+    {
+      "era": "Pre-Embrace",
+      "startYear": 0,
+      "endYear": 0,
+      "details": "",
+      "locations": []
+    },
+    {
+      "era": "A Time of [X]",
+      "startYear": 0,
+      "endYear": 0,
+      "details": "",
+      "locations": []
+    },
+    {
+      "era": "A Time of [X]",
+      "startYear": 0,
+      "endYear": 0,
+      "details": "",
+      "locations": []
+    },
+    {
+      "era": "A Time of [X]",
+      "startYear": 0,
+      "endYear": 0,
+      "details": "",
+      "locations": []
+    },
+    {
+      "era": "A Time of [X]",
+      "startYear": 0,
+      "endYear": 0,
+      "details": "",
+      "locations": []
+    },
+    {
+      "era": "A Time of [X]",
+      "startYear": 0,
+      "endYear": 0,
+      "details": "",
+      "locations": []
+    }
+  ]
+}
