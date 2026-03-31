@@ -76,12 +76,25 @@ async function main() {
   }
 
   const buildScript = path.resolve("tools/custom-ui-assets/build-upload-manifest.js");
+  const convertScript = path.resolve("tools/custom-ui-assets/convert-png-to-webp.js");
   const mergeByNameScript = path.resolve("tools/custom-ui-assets/merge-custom-ui-assets-from-save-name.js");
 
-  console.log("=== Step 1/2: Build manifest files ===");
+  console.log("=== Step 1/3: Convert PNG files to WEBP ===");
+  const convertExit = runNodeScript(convertScript, [
+    "--input",
+    inputDir,
+  ]);
+  if (convertExit !== 0) {
+    process.exit(convertExit);
+  }
+
+  console.log("");
+  console.log("=== Step 2/3: Build manifest files (WEBP only) ===");
   const buildExit = runNodeScript(buildScript, [
     "--input",
     inputDir,
+    "--extensions",
+    "webp",
     "--out",
     "dev/custom-ui-assets/manifest.json",
     "--luaOut",
@@ -103,7 +116,7 @@ async function main() {
   await waitForEnter("Press Enter after you finish the manual TTS steps...");
 
   console.log("");
-  console.log("=== Step 2/2: Merge hosted URLs into save CustomUIAssets ===");
+  console.log("=== Step 3/3: Merge hosted URLs into save CustomUIAssets ===");
   const mergeExit = runNodeScript(mergeByNameScript, [
     "--saveName",
     saveName,

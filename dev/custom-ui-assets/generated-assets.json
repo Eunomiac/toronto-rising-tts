@@ -1,22 +1,62 @@
 [
   {
     "Type": 0,
-    "Name": "refPanel_Advantages",
-    "URL": "https://steamusercontent-a.akamaihd.net/ugc/14962192832908640662/D30C8E444E8036E2F268C8A2C3A17BB5C13BB972/"
+    "Name": "toggle_Advantages_active",
+    "URL": "https://steamusercontent-a.akamaihd.net/ugc/17028419570636999846/D9F26028FE1F56AF90D5CC4A9AEA123AEE6BC91A/"
   },
   {
     "Type": 0,
-    "Name": "refPanel_ChronicleTenets",
-    "URL": "https://steamusercontent-a.akamaihd.net/ugc/17746415676960390934/86005CEA6866C8AA2C2BC96370777DEF3C3658F6/"
+    "Name": "toggle_Advantages_hover",
+    "URL": "https://steamusercontent-a.akamaihd.net/ugc/18324641055729788077/4963730FA99BE53FBE526E3E3C75489C795D1431/"
   },
   {
     "Type": 0,
-    "Name": "refPanel_Memoriam",
-    "URL": "https://steamusercontent-a.akamaihd.net/ugc/12292195875623945476/684C7C351951FBB8605C80A8B146D9F52749F1B2/"
+    "Name": "toggle_Advantages_inactive",
+    "URL": "https://steamusercontent-a.akamaihd.net/ugc/11324184335377129399/9A6C8E57723495F89631001E162E7A6AC8FE7362/"
   },
   {
     "Type": 0,
-    "Name": "refPanel_Projects",
-    "URL": "https://steamusercontent-a.akamaihd.net/ugc/9740046696454846166/9B79B9F8F48DC158D6C3B8CE040F79B4F41560DF/"
+    "Name": "toggle_Experience_active",
+    "URL": "https://steamusercontent-a.akamaihd.net/ugc/14937611676930722554/0F871074B4C30BD43D87A84A765EB3A5747FC2D6/"
+  },
+  {
+    "Type": 0,
+    "Name": "toggle_Experience_hover",
+    "URL": "https://steamusercontent-a.akamaihd.net/ugc/12407873722989812990/AFA3303BB88A7945C603ED60170E0FCC592C6C7F/"
+  },
+  {
+    "Type": 0,
+    "Name": "toggle_Experience_inactive",
+    "URL": "https://steamusercontent-a.akamaihd.net/ugc/15941462811770476718/BEB87BAA28FCC6BF80489BFA870B077E1E10CD92/"
+  },
+  {
+    "Type": 0,
+    "Name": "toggle_Memoriam_active",
+    "URL": "https://steamusercontent-a.akamaihd.net/ugc/18182594990350493042/8D569622D86A097383AF91079E73F393F2C58D6E/"
+  },
+  {
+    "Type": 0,
+    "Name": "toggle_Memoriam_hover",
+    "URL": "https://steamusercontent-a.akamaihd.net/ugc/11478879986788073748/5C854D8DD3C9372CDFEEDA6D993A9537AA74F9C5/"
+  },
+  {
+    "Type": 0,
+    "Name": "toggle_Memoriam_inactive",
+    "URL": "https://steamusercontent-a.akamaihd.net/ugc/16289697898034963785/915147C4DED8E150015EDEE4FE0DC71F91EC1608/"
+  },
+  {
+    "Type": 0,
+    "Name": "toggle_Projects_active",
+    "URL": "https://steamusercontent-a.akamaihd.net/ugc/14261893325264169388/B73820341E2C3EE53CE9C6A155E07FC3275BD052/"
+  },
+  {
+    "Type": 0,
+    "Name": "toggle_Projects_hover",
+    "URL": "https://steamusercontent-a.akamaihd.net/ugc/11288286819810679522/47FE4FC891F2BFC3157C002C1C45D371E79D5EAD/"
+  },
+  {
+    "Type": 0,
+    "Name": "toggle_Projects_inactive",
+    "URL": "https://steamusercontent-a.akamaihd.net/ugc/11210707087051055321/EF66BEF2281EE1D17A0465B1F613AEDAA05149FA/"
   }
 ]

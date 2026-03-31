@@ -1,172 +1,67 @@
 {
-  "generatedAt": "2026-03-22T18:28:06.044Z",
-  "inputDirectory": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts",
-  "count": 33,
+  "generatedAt": "2026-03-31T15:20:11.428Z",
+  "inputDirectory": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4",
+  "count": 12,
   "assets": [
     {
-      "name": "adrianVarga",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\adrianVarga.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/adrianVarga.webp"
+      "name": "toggle_Advantages_active",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Advantages_active.webp",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Advantages_active.webp"
     },
     {
-      "name": "alexandra",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\alexandra.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/alexandra.webp"
+      "name": "toggle_Advantages_hover",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Advantages_hover.webp",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Advantages_hover.webp"
     },
     {
-      "name": "alexisHoltt",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\alexisHoltt.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/alexisHoltt.webp"
+      "name": "toggle_Advantages_inactive",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Advantages_inactive.webp",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Advantages_inactive.webp"
     },
     {
-      "name": "averyInnis",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\averyInnis.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/averyInnis.webp"
+      "name": "toggle_Experience_active",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Experience_active.webp",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Experience_active.webp"
     },
     {
-      "name": "benedictKincaid",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\benedictKincaid.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/benedictKincaid.webp"
+      "name": "toggle_Experience_hover",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Experience_hover.webp",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Experience_hover.webp"
     },
     {
-      "name": "calvinWallace",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\calvinWallace.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/calvinWallace.webp"
+      "name": "toggle_Experience_inactive",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Experience_inactive.webp",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Experience_inactive.webp"
     },
     {
-      "name": "christianne",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\christianne.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/christianne.webp"
+      "name": "toggle_Memoriam_active",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Memoriam_active.webp",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Memoriam_active.webp"
     },
     {
-      "name": "damienAbanda",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\damienAbanda.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/damienAbanda.webp"
+      "name": "toggle_Memoriam_hover",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Memoriam_hover.webp",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Memoriam_hover.webp"
     },
     {
-      "name": "damienKline",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\damienKline.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/damienKline.webp"
+      "name": "toggle_Memoriam_inactive",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Memoriam_inactive.webp",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Memoriam_inactive.webp"
     },
     {
-      "name": "deaconReal",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\deaconReal.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/deaconReal.webp"
+      "name": "toggle_Projects_active",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Projects_active.webp",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Projects_active.webp"
     },
     {
-      "name": "drIrenaVoss",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\drIrenaVoss.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/drIrenaVoss.webp"
+      "name": "toggle_Projects_hover",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Projects_hover.webp",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Projects_hover.webp"
     },
     {
-      "name": "eddie",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\eddie.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/eddie.webp"
-    },
-    {
-      "name": "evangelineDupont",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\evangelineDupont.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/evangelineDupont.webp"
-    },
-    {
-      "name": "fatherDiaz",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\fatherDiaz.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/fatherDiaz.webp"
-    },
-    {
-      "name": "georgieSt.James",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\georgieSt.James.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/georgieSt.James.webp"
-    },
-    {
-      "name": "jesseSharp",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\jesseSharp.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/jesseSharp.webp"
-    },
-    {
-      "name": "kai",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\kai.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/kai.webp"
-    },
-    {
-      "name": "lexiMadi",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\lexiMadi.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/lexiMadi.webp"
-    },
-    {
-      "name": "lucasMerrow",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\lucasMerrow.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/lucasMerrow.webp"
-    },
-    {
-      "name": "myleneHamelin",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\myleneHamelin.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/myleneHamelin.webp"
-    },
-    {
-      "name": "profEthanKeen",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\profEthanKeen.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/profEthanKeen.webp"
-    },
-    {
-      "name": "raduIancu",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\raduIancu.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/raduIancu.webp"
-    },
-    {
-      "name": "ren",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\ren.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/ren.webp"
-    },
-    {
-      "name": "rosie",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\rosie.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/rosie.webp"
-    },
-    {
-      "name": "scottTempo",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\scottTempo.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/scottTempo.webp"
-    },
-    {
-      "name": "sisterCicione",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\sisterCicione.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/sisterCicione.webp"
-    },
-    {
-      "name": "stirlingSiskin",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\stirlingSiskin.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/stirlingSiskin.webp"
-    },
-    {
-      "name": "theAristocrat",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\theAristocrat.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/theAristocrat.webp"
-    },
-    {
-      "name": "tyler",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\tyler.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/tyler.webp"
-    },
-    {
-      "name": "vanceVogel",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\vanceVogel.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/vanceVogel.webp"
-    },
-    {
-      "name": "victorVex",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\victorVex.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/victorVex.webp"
-    },
-    {
-      "name": "xavier",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\xavier.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/xavier.webp"
-    },
-    {
-      "name": "zuriOlawusi",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Cutouts\\zuriOlawusi.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Cutouts/zuriOlawusi.webp"
+      "name": "toggle_Projects_inactive",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Projects_inactive.webp",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Projects_inactive.webp"
     }
   ]
 }

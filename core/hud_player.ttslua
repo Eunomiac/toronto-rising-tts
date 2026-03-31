@@ -57,8 +57,26 @@ local mapPanNavYByPlayerID = {}
 -- PlayerID -> true when nav position is active (hover-off returns to nav y)
 local mapPanNavIsActiveByPlayerID = {}
 
--- Overlay keys currently implemented in the spec.
-local MAP_OVERLAY_KEYS = { "districtsAll", "domains", "localRoads", "majorRoads", "majorSites" }
+local MAP_OVERLAY_KEYS = {
+    "districtsAll",
+    "localRoads",
+    "majorRoads",
+    "majorSites",
+    "domain_theCourt",
+    "domain_fiveKeys",
+    "domain_moonClub",
+    "domain_universityChantry",
+    "domain_freeChantry",
+    "domain_ironGuard",
+    "domain_scarlett",
+    "domain_anarchFreeZone",
+    "domain_hecata",
+    "domain_bertrice",
+    "domain_islandDevil",
+    "domain_domainConflicts",
+    "domain_barrens",
+    "domain_theRack"
+}
 
 local MAP_OVERLAY_KEY_SET = {}
 do

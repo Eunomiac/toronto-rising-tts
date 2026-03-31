@@ -49,9 +49,6 @@ function M.setupPlayers()
     print("Main: Promoted player " .. player.color)
   end
 
-  -- Set up throne visibility (each player's throne invisible to them)
-  M.setupThroneVisibility()
-
   -- Make objects on Storyteller table invisible to all players
   getObjectFromGUID(G.GUIDS.GM_TABLE).setInvisibleTo(C.PlayerColors)
   U.forEach(
@@ -66,34 +63,6 @@ function M.setupPlayers()
   -- TODO: Assign Storyteller role (e.g., Black or Brown player)
   -- TODO: Initialize player-specific data in game state (hunger, willpower, health, etc.)
   -- TODO: Set up player-specific UI elements
-end
-
---[[
-    Sets up throne visibility so each player's throne is invisible to them
-    This prevents thrones from blocking a player's view of the table.
-    Uses TTS setInvisibleTo() function to hide objects from specific players.
-]]
-function M.setupThroneVisibility()
-  print("Main: Setting up throne visibility.")
-
-  for _, color in ipairs(C.PlayerColors) do
-    local guid = G.GetThroneGUID(color)
-    if guid then
-      local throne = getObjectFromGUID(guid)
-      if throne then
-        -- Make this throne invisible to the player of this color
-        -- The throne will still be visible to other players and the Storyteller
-        throne.setInvisibleTo({ color })
-        print("Main: throne for " .. color .. " set invisible to " .. color .. " player")
-      else
-        print("Main: Warning - throne object not found for " .. color .. " (GUID: " .. guid .. ")")
-      end
-    else
-      print("Main: Warning - No throne GUID found for " .. color)
-    end
-  end
-
-  print("Main: throne visibility setup complete.")
 end
 
 --[[

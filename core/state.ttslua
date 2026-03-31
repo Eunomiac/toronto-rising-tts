@@ -138,10 +138,23 @@ local function getDefaultPlayerHUD()
         map = {
             overlays = {
                 districtsAll = false,
-                domains = false,
-                majorRoads = false,
                 localRoads = false,
-                majorSites = false
+                majorRoads = false,
+                majorSites = false,
+                domain_theCourt = false,
+                domain_fiveKeys = false,
+                domain_moonClub = false,
+                domain_universityChantry = false,
+                domain_freeChantry = false,
+                domain_ironGuard = false,
+                domain_scarlett = false,
+                domain_anarchFreeZone = false,
+                domain_hecata = false,
+                domain_bertrice = false,
+                domain_islandDevil = false,
+                domain_domainConflicts = false,
+                domain_barrens = false,
+                domain_theRack = false
             },
             location = {
                 district = nil,
@@ -426,7 +439,26 @@ function S.validateState()
                     map.overlays = {}
                 end
 
-                local overlayKeys = { "districtsAll", "domains", "localRoads", "majorRoads", "majorSites" }
+                local overlayKeys = {
+                    "districtsAll",
+                    "localRoads",
+                    "majorRoads",
+                    "majorSites",
+                    "domain_theCourt",
+                    "domain_fiveKeys",
+                    "domain_moonClub",
+                    "domain_universityChantry",
+                    "domain_freeChantry",
+                    "domain_ironGuard",
+                    "domain_scarlett",
+                    "domain_anarchFreeZone",
+                    "domain_hecata",
+                    "domain_bertrice",
+                    "domain_islandDevil",
+                    "domain_domainConflicts",
+                    "domain_barrens",
+                    "domain_theRack"
+                }
                 for _, key in ipairs(overlayKeys) do
                     if map.overlays[key] == nil then
                         map.overlays[key] = false

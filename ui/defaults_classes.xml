@@ -52,8 +52,11 @@
 
   <VerticalLayout class="hover_button_panel"
     height="100%"
+    spacing="0"
     rectAlignment="UpperLeft"
     childAlignment="UpperLeft"
+    childForceExpandHeight="false"
+    childForceExpandWidth="false"
   />
 
   <VerticalLayout class="hover_button_panel_wide" width="175"/>
@@ -64,38 +67,45 @@
   />
 
   <Image class="hover_button_panel_border"
-    preferredHeight="50"
     preferredWidth="150"
+    minWidth="150"
+    preferredHeight="50"
+    minHeight="50"
     flexibleHeight="0"
     flexibleWidth="0"
-    preserveAspect="false"
-    padding="0 0 0 0"
+    preserveAspect="true"
     raycastTarget="false"
   />
 
   <Image class="hover_button_panel_border_short"
     preferredHeight="30"
+    minHeight="30"
   />
   <Image class="hover_button"
+    minWidth="150"
+    minHeight="25"
     preferredHeight="25"
+    preserveAspect="false"
     preferredWidth="150"
     flexibleHeight="0"
     flexibleWidth="0"
   />
 
   <Image class="hover_button_wide"
-    preferredWidth="175" />
+    preferredWidth="175"
+    minWidth="175"  />
 
   <Image class="hover_button_thin"
     preferredHeight="20"
+    minHeight="20"
     preferredWidth="175"
+    minWidth="175"
     flexibleHeight="0"
     flexibleWidth="0"
   />
 
   <Image class="hover_button_base"
     raycastTarget="true"
-    type="Simple"
   />
 
   <Image class="hover_button_hover"

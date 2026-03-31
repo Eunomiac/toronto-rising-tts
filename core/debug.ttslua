@@ -893,7 +893,26 @@ function DEBUG.testUI()
                 S.setStateVal("Bennington", "playerData", playerID, "hud", "map", "location", "district")
 
                 -- Ensure all persisted overlay toggles start disabled.
-                local overlayKeys = { "districtsAll", "domains", "localRoads", "majorRoads", "majorSites" }
+                local overlayKeys = {
+                    "districtsAll",
+                    "localRoads",
+                    "majorRoads",
+                    "majorSites",
+                    "domain_theCourt",
+                    "domain_fiveKeys",
+                    "domain_moonClub",
+                    "domain_universityChantry",
+                    "domain_freeChantry",
+                    "domain_ironGuard",
+                    "domain_scarlett",
+                    "domain_anarchFreeZone",
+                    "domain_hecata",
+                    "domain_bertrice",
+                    "domain_islandDevil",
+                    "domain_domainConflicts",
+                    "domain_barrens",
+                    "domain_theRack"
+                }
                 for _, k in ipairs(overlayKeys) do
                     S.setStateVal(false, "playerData", playerID, "hud", "map", "overlays", k)
                 end

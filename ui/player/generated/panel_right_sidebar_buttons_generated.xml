@@ -5,17 +5,8 @@
 >
   <Panel class="hover_button_panel_container">
     <!-- Base layer: 750 = (50+150+50)+(50+180+50)+(50+120+50) -->
-    <VerticalLayout class="hover_button_panel hover_button_panel_right" height="750">
+    <VerticalLayout class="hover_button_panel hover_button_panel_right">
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
-      <Image
-        id="playerHud_RSidebarBtn_core_sheet_Brown"
-        class="hover_button hover_button_base"
-        image="toggle_CorePanel_Sheet_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
       <Image
         id="playerHud_RSidebarBtn_core_map_Brown"
         class="hover_button hover_button_base"
@@ -53,6 +44,7 @@
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+      <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Brown"
@@ -109,6 +101,7 @@
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+      <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Brown"
@@ -152,11 +145,6 @@
     <VerticalLayout class="hover_button_panel hover_button_panel_right" height="750">
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
-        id="playerHud_RSidebarBtn_core_sheet_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_CorePanel_Sheet_hover"
-      />
-      <Image
         id="playerHud_RSidebarBtn_core_map_Brown_hover"
         class="hover_button hover_button_hover"
         image="toggle_CorePanel_Map_hover"
@@ -177,6 +165,8 @@
         image="toggle_ChronicleTenets_hover"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Brown_hover"
@@ -209,6 +199,8 @@
         image="toggle_Resonance_hover"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Brown_hover"
@@ -236,11 +228,6 @@
     <VerticalLayout class="hover_button_panel hover_button_panel_right  hover_button_panel_wide" height="750">
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
-        id="playerHud_RSidebarBtn_core_sheet_Brown_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_CorePanel_Sheet_active"
-      />
-      <Image
         id="playerHud_RSidebarBtn_core_map_Brown_active"
         class="hover_button hover_button_wide hover_button_active"
         image="toggle_CorePanel_Map_active"
@@ -261,6 +248,8 @@
         image="toggle_ChronicleTenets_active"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Brown_active"
@@ -293,6 +282,8 @@
         image="toggle_Resonance_active"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Brown_active"
@@ -326,17 +317,8 @@
 >
   <Panel class="hover_button_panel_container">
     <!-- Base layer: 750 = (50+150+50)+(50+180+50)+(50+120+50) -->
-    <VerticalLayout class="hover_button_panel hover_button_panel_right" height="750">
+    <VerticalLayout class="hover_button_panel hover_button_panel_right">
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
-      <Image
-        id="playerHud_RSidebarBtn_core_sheet_Orange"
-        class="hover_button hover_button_base"
-        image="toggle_CorePanel_Sheet_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
       <Image
         id="playerHud_RSidebarBtn_core_map_Orange"
         class="hover_button hover_button_base"
@@ -374,6 +356,7 @@
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+      <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Orange"
@@ -430,6 +413,7 @@
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+      <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Orange"
@@ -473,11 +457,6 @@
     <VerticalLayout class="hover_button_panel hover_button_panel_right" height="750">
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
-        id="playerHud_RSidebarBtn_core_sheet_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_CorePanel_Sheet_hover"
-      />
-      <Image
         id="playerHud_RSidebarBtn_core_map_Orange_hover"
         class="hover_button hover_button_hover"
         image="toggle_CorePanel_Map_hover"
@@ -498,6 +477,8 @@
         image="toggle_ChronicleTenets_hover"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Orange_hover"
@@ -530,6 +511,8 @@
         image="toggle_Resonance_hover"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Orange_hover"
@@ -557,11 +540,6 @@
     <VerticalLayout class="hover_button_panel hover_button_panel_right  hover_button_panel_wide" height="750">
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
-        id="playerHud_RSidebarBtn_core_sheet_Orange_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_CorePanel_Sheet_active"
-      />
-      <Image
         id="playerHud_RSidebarBtn_core_map_Orange_active"
         class="hover_button hover_button_wide hover_button_active"
         image="toggle_CorePanel_Map_active"
@@ -582,6 +560,8 @@
         image="toggle_ChronicleTenets_active"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Orange_active"
@@ -614,6 +594,8 @@
         image="toggle_Resonance_active"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Orange_active"
@@ -647,17 +629,8 @@
 >
   <Panel class="hover_button_panel_container">
     <!-- Base layer: 750 = (50+150+50)+(50+180+50)+(50+120+50) -->
-    <VerticalLayout class="hover_button_panel hover_button_panel_right" height="750">
+    <VerticalLayout class="hover_button_panel hover_button_panel_right">
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
-      <Image
-        id="playerHud_RSidebarBtn_core_sheet_Red"
-        class="hover_button hover_button_base"
-        image="toggle_CorePanel_Sheet_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
       <Image
         id="playerHud_RSidebarBtn_core_map_Red"
         class="hover_button hover_button_base"
@@ -695,6 +668,7 @@
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+      <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Red"
@@ -751,6 +725,7 @@
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+      <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Red"
@@ -794,11 +769,6 @@
     <VerticalLayout class="hover_button_panel hover_button_panel_right" height="750">
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
-        id="playerHud_RSidebarBtn_core_sheet_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_CorePanel_Sheet_hover"
-      />
-      <Image
         id="playerHud_RSidebarBtn_core_map_Red_hover"
         class="hover_button hover_button_hover"
         image="toggle_CorePanel_Map_hover"
@@ -819,6 +789,8 @@
         image="toggle_ChronicleTenets_hover"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Red_hover"
@@ -851,6 +823,8 @@
         image="toggle_Resonance_hover"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Red_hover"
@@ -878,11 +852,6 @@
     <VerticalLayout class="hover_button_panel hover_button_panel_right  hover_button_panel_wide" height="750">
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
-        id="playerHud_RSidebarBtn_core_sheet_Red_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_CorePanel_Sheet_active"
-      />
-      <Image
         id="playerHud_RSidebarBtn_core_map_Red_active"
         class="hover_button hover_button_wide hover_button_active"
         image="toggle_CorePanel_Map_active"
@@ -903,6 +872,8 @@
         image="toggle_ChronicleTenets_active"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Red_active"
@@ -935,6 +906,8 @@
         image="toggle_Resonance_active"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Red_active"
@@ -968,17 +941,8 @@
 >
   <Panel class="hover_button_panel_container">
     <!-- Base layer: 750 = (50+150+50)+(50+180+50)+(50+120+50) -->
-    <VerticalLayout class="hover_button_panel hover_button_panel_right" height="750">
+    <VerticalLayout class="hover_button_panel hover_button_panel_right">
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
-      <Image
-        id="playerHud_RSidebarBtn_core_sheet_Pink"
-        class="hover_button hover_button_base"
-        image="toggle_CorePanel_Sheet_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
       <Image
         id="playerHud_RSidebarBtn_core_map_Pink"
         class="hover_button hover_button_base"
@@ -1016,6 +980,7 @@
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+      <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Pink"
@@ -1072,6 +1037,7 @@
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+      <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Pink"
@@ -1115,11 +1081,6 @@
     <VerticalLayout class="hover_button_panel hover_button_panel_right" height="750">
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
-        id="playerHud_RSidebarBtn_core_sheet_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_CorePanel_Sheet_hover"
-      />
-      <Image
         id="playerHud_RSidebarBtn_core_map_Pink_hover"
         class="hover_button hover_button_hover"
         image="toggle_CorePanel_Map_hover"
@@ -1140,6 +1101,8 @@
         image="toggle_ChronicleTenets_hover"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Pink_hover"
@@ -1172,6 +1135,8 @@
         image="toggle_Resonance_hover"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Pink_hover"
@@ -1199,11 +1164,6 @@
     <VerticalLayout class="hover_button_panel hover_button_panel_right  hover_button_panel_wide" height="750">
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
-        id="playerHud_RSidebarBtn_core_sheet_Pink_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_CorePanel_Sheet_active"
-      />
-      <Image
         id="playerHud_RSidebarBtn_core_map_Pink_active"
         class="hover_button hover_button_wide hover_button_active"
         image="toggle_CorePanel_Map_active"
@@ -1224,6 +1184,8 @@
         image="toggle_ChronicleTenets_active"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Pink_active"
@@ -1256,6 +1218,8 @@
         image="toggle_Resonance_active"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Pink_active"
@@ -1289,17 +1253,8 @@
 >
   <Panel class="hover_button_panel_container">
     <!-- Base layer: 750 = (50+150+50)+(50+180+50)+(50+120+50) -->
-    <VerticalLayout class="hover_button_panel hover_button_panel_right" height="750">
+    <VerticalLayout class="hover_button_panel hover_button_panel_right">
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
-      <Image
-        id="playerHud_RSidebarBtn_core_sheet_Purple"
-        class="hover_button hover_button_base"
-        image="toggle_CorePanel_Sheet_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
       <Image
         id="playerHud_RSidebarBtn_core_map_Purple"
         class="hover_button hover_button_base"
@@ -1337,6 +1292,7 @@
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+      <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Purple"
@@ -1393,6 +1349,7 @@
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+      <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Purple"
@@ -1436,11 +1393,6 @@
     <VerticalLayout class="hover_button_panel hover_button_panel_right" height="750">
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
-        id="playerHud_RSidebarBtn_core_sheet_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_CorePanel_Sheet_hover"
-      />
-      <Image
         id="playerHud_RSidebarBtn_core_map_Purple_hover"
         class="hover_button hover_button_hover"
         image="toggle_CorePanel_Map_hover"
@@ -1461,6 +1413,8 @@
         image="toggle_ChronicleTenets_hover"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Purple_hover"
@@ -1493,6 +1447,8 @@
         image="toggle_Resonance_hover"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Purple_hover"
@@ -1520,11 +1476,6 @@
     <VerticalLayout class="hover_button_panel hover_button_panel_right  hover_button_panel_wide" height="750">
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
-        id="playerHud_RSidebarBtn_core_sheet_Purple_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_CorePanel_Sheet_active"
-      />
-      <Image
         id="playerHud_RSidebarBtn_core_map_Purple_active"
         class="hover_button hover_button_wide hover_button_active"
         image="toggle_CorePanel_Map_active"
@@ -1545,6 +1496,8 @@
         image="toggle_ChronicleTenets_active"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Purple_active"
@@ -1577,6 +1530,8 @@
         image="toggle_Resonance_active"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+
+          <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Purple_active"

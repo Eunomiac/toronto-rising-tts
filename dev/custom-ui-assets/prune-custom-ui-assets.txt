@@ -1,0 +1,66 @@
+# One custom asset Name per line.
+# Lines beginning with # are ignored.
+# Example:
+# hud-toggle-assets
+# ref-players
+
+border-gold-left-bottom
+border-gold-left-top
+border-silver-left-bottom
+border-silver-left-top
+border-silver-right-bottom
+border-silver-right-top
+hud-border-gold-bottom
+hud-border-gold-top
+hud-border-silver-bottom
+hud-border-silver-top
+hud-toggle-ancillaeA
+hud-toggle-ancillaeB
+hud-toggle-ancillaeC
+hud-toggle-ancillaeD
+hud-toggle-ancillaeE
+hud-toggle-assets
+hud-toggle-battlegrounds
+hud-toggle-clanBrujah
+hud-toggle-clanGangrel
+hud-toggle-clanLasombra
+hud-toggle-clanMalkavian
+hud-toggle-clanNosferatu
+hud-toggle-clanToreador
+hud-toggle-clanTremere
+hud-toggle-clanTzimisce
+hud-toggle-clanVentrue
+hud-toggle-expansions
+hud-toggle-fourthRow
+hud-toggle-players
+hud-toggle-symbols
+hud-toggle-traits1
+hud-toggle-traits2
+hud-toggle-traits3
+moderatorIcon
+powerIcon
+ref-ancillaeA
+ref-ancillaeB
+ref-ancillaeC
+ref-ancillaeD
+ref-ancillaeE
+ref-assets
+ref-battlegrounds
+ref-clanBrujah
+ref-clanGangrel
+ref-clanLasombra
+ref-clanMalkavian
+ref-clanNosferatu
+ref-clanToreador
+ref-clanTremere
+ref-clanTzimisce
+ref-clanVentrue
+ref-expansions
+ref-players
+ref-symbols
+ref-traits1
+ref-traits2
+ref-traits3
+splash-bg
+splash-border-above
+splash-border-under

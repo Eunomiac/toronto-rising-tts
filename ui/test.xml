@@ -1,0 +1,46 @@
+<Panel
+    id="paper_root"
+    active="true"
+    rectAlignment="MiddleCenter"
+    width="1000"
+    height="1294"
+    color="#000000"
+    outline="#FFFF00"
+    outlineSize="3 3"
+    position="0 0 0"
+    rotation="90 0 0"
+    pivot="0.5 0.5"
+>
+    <Panel
+        id="marker_red"
+        color="#FF0000"
+        width="18"
+        height="18"
+        rectAlignment="UpperLeft"
+        offsetXY="36 -36"
+    />
+    <Panel
+        id="marker_green"
+        color="#00FF00"
+        width="18"
+        height="18"
+        rectAlignment="UpperLeft"
+        offsetXY="220 -260"
+    />
+    <Panel
+        id="marker_cyan"
+        color="#00FFFF"
+        width="18"
+        height="18"
+        rectAlignment="UpperLeft"
+        offsetXY="620 -900"
+    />
+    <Panel
+        id="marker_yellow"
+        color="#FFFF00"
+        width="18"
+        height="18"
+        rectAlignment="UpperLeft"
+        offsetXY="930 -1200"
+    />
+</Panel>

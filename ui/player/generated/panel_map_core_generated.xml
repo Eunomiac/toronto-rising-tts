@@ -6,7 +6,7 @@
 >
   <HorizontalLayout class="hud_map_parent_container">
     <Panel class="hud_map_hover_button_panel_wrapper">
-      <Panel class="hover_button_panel_container" height="225">
+      <Panel class="hover_button_panel_container" height="725">
         <!--
         Border Dimensions: 150x50    Count: 2
         Base Dimensions: 150x25      Count: 5
@@ -16,21 +16,11 @@
         Total Height: 2*50 + 5*25 = 225
         -->
         <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border" image="border-gold-right-top" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" />
           <Image
             id="playerHud_mapOverlayToggle_districtsAll_Brown"
             class="hover_button hover_button_base hover_button_base_overlay"
             image="toggleOverlay_districtsAll_inactive"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_domains_Brown"
-            class="hover_button hover_button_base hover_button_base_overlay"
-            image="toggleOverlay_domains_inactive"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_localRoads_Brown"
-            class="hover_button hover_button_base hover_button_base_overlay"
-            image="toggleOverlay_localRoads_inactive"
           />
           <Image
             id="playerHud_mapOverlayToggle_majorRoads_Brown"
@@ -38,28 +28,101 @@
             image="toggleOverlay_majorRoads_inactive"
           />
           <Image
+            id="playerHud_mapOverlayToggle_localRoads_Brown"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_localRoads_inactive"
+          />
+          <Image
             id="playerHud_mapOverlayToggle_majorSites_Brown"
             class="hover_button hover_button_base hover_button_base_overlay"
             image="toggleOverlay_majorSites_inactive"
           />
-          <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" />
+
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_Brown"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_theCourt_inactive"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_Brown"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_fiveKeys_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_Brown"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_moonClub_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_Brown"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_universityChantry_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_Brown"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_freeChantry_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_Brown"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_ironGuard_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_Brown"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_scarlett_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_Brown"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_anarchFreeZone_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_Brown"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_hecata_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_Brown"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_bertrice_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_Brown"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_islandDevil_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_Brown"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_domainConflicts_inactive"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_Brown"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_barrens_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_Brown"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_theRack_inactive"
+          />
         </VerticalLayout>
         <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image
             id="playerHud_mapOverlayToggle_districtsAll_Brown_hover"
             class="hover_button hover_button_hover"
             image="toggleOverlay_districtsAll_hover"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_domains_Brown_hover"
-            class="hover_button hover_button_hover"
-            image="toggleOverlay_domains_hover"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_localRoads_Brown_hover"
-            class="hover_button hover_button_hover"
-            image="toggleOverlay_localRoads_hover"
           />
           <Image
             id="playerHud_mapOverlayToggle_majorRoads_Brown_hover"
@@ -67,28 +130,100 @@
             image="toggleOverlay_majorRoads_hover"
           />
           <Image
+            id="playerHud_mapOverlayToggle_localRoads_Brown_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_localRoads_hover"
+          />
+          <Image
             id="playerHud_mapOverlayToggle_majorSites_Brown_hover"
             class="hover_button hover_button_hover"
             image="toggleOverlay_majorSites_hover"
           />
-          <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_Brown_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_theCourt_hover"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_Brown_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_fiveKeys_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_Brown_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_moonClub_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_Brown_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_universityChantry_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_Brown_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_freeChantry_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_Brown_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_ironGuard_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_Brown_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_scarlett_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_Brown_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_anarchFreeZone_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_Brown_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_hecata_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_Brown_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_bertrice_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_Brown_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_islandDevil_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_Brown_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_domainConflicts_hover"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_Brown_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_barrens_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_Brown_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_theRack_hover"
+          />
         </VerticalLayout>
         <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image
             id="playerHud_mapOverlayToggle_districtsAll_Brown_active"
             class="hover_button hover_button_active"
             image="toggleOverlay_districtsAll_active"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_domains_Brown_active"
-            class="hover_button hover_button_active"
-            image="toggleOverlay_domains_active"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_localRoads_Brown_active"
-            class="hover_button hover_button_active"
-            image="toggleOverlay_localRoads_active"
           />
           <Image
             id="playerHud_mapOverlayToggle_majorRoads_Brown_active"
@@ -96,11 +231,93 @@
             image="toggleOverlay_majorRoads_active"
           />
           <Image
+            id="playerHud_mapOverlayToggle_localRoads_Brown_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_localRoads_active"
+          />
+          <Image
             id="playerHud_mapOverlayToggle_majorSites_Brown_active"
             class="hover_button hover_button_active"
             image="toggleOverlay_majorSites_active"
           />
-          <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_Brown_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_theCourt_active"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_Brown_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_fiveKeys_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_Brown_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_moonClub_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_Brown_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_universityChantry_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_Brown_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_freeChantry_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_Brown_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_ironGuard_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_Brown_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_scarlett_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_Brown_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_anarchFreeZone_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_Brown_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_hecata_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_Brown_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_bertrice_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_Brown_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_islandDevil_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_Brown_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_domainConflicts_active"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_Brown_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_barrens_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_Brown_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_theRack_active"
+          />
         </VerticalLayout>
       </Panel>
     </Panel>
@@ -128,11 +345,20 @@
           id="playerHud_mapOverlay_majorSites_Brown"
           image="mapOverlay_majorSites"
         />
-        <Image
-          class="hud_map_image hud_map_image_overlay"
-          id="playerHud_mapOverlay_domains_Brown"
-          image="mapOverlay_domains"
-        />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_theCourt_Brown" image="mapOverlay_domain_theCourt" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_fiveKeys_Brown" image="mapOverlay_domain_fiveKeys" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_moonClub_Brown" image="mapOverlay_domain_moonClub" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_universityChantry_Brown" image="mapOverlay_domain_universityChantry" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_freeChantry_Brown" image="mapOverlay_domain_freeChantry" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_ironGuard_Brown" image="mapOverlay_domain_ironGuard" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_scarlett_Brown" image="mapOverlay_domain_scarlett" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_anarchFreeZone_Brown" image="mapOverlay_domain_anarchFreeZone" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_hecata_Brown" image="mapOverlay_domain_hecata" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_bertrice_Brown" image="mapOverlay_domain_bertrice" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_islandDevil_Brown" image="mapOverlay_domain_islandDevil" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_domainConflicts_Brown" image="mapOverlay_domain_domainConflicts" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_barrens_Brown" image="mapOverlay_domain_barrens" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_theRack_Brown" image="mapOverlay_domain_theRack" />
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Annex_Brown" image="mapOverlay_Annex" />
         <Image
           class="hud_map_image hud_map_image_overlay"
@@ -366,7 +592,7 @@
         Max Width: 175
         Total Height: 2*50 + 36*20 = 900
         -->
-        <VerticalLayout class="hover_button_panel">
+        <VerticalLayout class="hover_button_panel" childAlignment="UpperLeft" spacing="0">
           <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" />
           <Image
             class="hover_button hover_button_thin hover_button_base hover_button_base_district"
@@ -946,7 +1172,7 @@
 >
   <HorizontalLayout class="hud_map_parent_container">
     <Panel class="hud_map_hover_button_panel_wrapper">
-      <Panel class="hover_button_panel_container" height="225">
+      <Panel class="hover_button_panel_container" height="725">
         <!--
         Border Dimensions: 150x50    Count: 2
         Base Dimensions: 150x25      Count: 5
@@ -956,21 +1182,11 @@
         Total Height: 2*50 + 5*25 = 225
         -->
         <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border" image="border-gold-right-top" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" />
           <Image
             id="playerHud_mapOverlayToggle_districtsAll_Orange"
             class="hover_button hover_button_base hover_button_base_overlay"
             image="toggleOverlay_districtsAll_inactive"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_domains_Orange"
-            class="hover_button hover_button_base hover_button_base_overlay"
-            image="toggleOverlay_domains_inactive"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_localRoads_Orange"
-            class="hover_button hover_button_base hover_button_base_overlay"
-            image="toggleOverlay_localRoads_inactive"
           />
           <Image
             id="playerHud_mapOverlayToggle_majorRoads_Orange"
@@ -978,28 +1194,101 @@
             image="toggleOverlay_majorRoads_inactive"
           />
           <Image
+            id="playerHud_mapOverlayToggle_localRoads_Orange"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_localRoads_inactive"
+          />
+          <Image
             id="playerHud_mapOverlayToggle_majorSites_Orange"
             class="hover_button hover_button_base hover_button_base_overlay"
             image="toggleOverlay_majorSites_inactive"
           />
-          <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" />
+
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_Orange"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_theCourt_inactive"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_Orange"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_fiveKeys_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_Orange"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_moonClub_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_Orange"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_universityChantry_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_Orange"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_freeChantry_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_Orange"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_ironGuard_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_Orange"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_scarlett_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_Orange"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_anarchFreeZone_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_Orange"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_hecata_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_Orange"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_bertrice_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_Orange"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_islandDevil_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_Orange"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_domainConflicts_inactive"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_Orange"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_barrens_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_Orange"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_theRack_inactive"
+          />
         </VerticalLayout>
         <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image
             id="playerHud_mapOverlayToggle_districtsAll_Orange_hover"
             class="hover_button hover_button_hover"
             image="toggleOverlay_districtsAll_hover"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_domains_Orange_hover"
-            class="hover_button hover_button_hover"
-            image="toggleOverlay_domains_hover"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_localRoads_Orange_hover"
-            class="hover_button hover_button_hover"
-            image="toggleOverlay_localRoads_hover"
           />
           <Image
             id="playerHud_mapOverlayToggle_majorRoads_Orange_hover"
@@ -1007,28 +1296,100 @@
             image="toggleOverlay_majorRoads_hover"
           />
           <Image
+            id="playerHud_mapOverlayToggle_localRoads_Orange_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_localRoads_hover"
+          />
+          <Image
             id="playerHud_mapOverlayToggle_majorSites_Orange_hover"
             class="hover_button hover_button_hover"
             image="toggleOverlay_majorSites_hover"
           />
-          <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_Orange_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_theCourt_hover"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_Orange_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_fiveKeys_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_Orange_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_moonClub_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_Orange_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_universityChantry_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_Orange_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_freeChantry_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_Orange_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_ironGuard_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_Orange_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_scarlett_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_Orange_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_anarchFreeZone_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_Orange_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_hecata_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_Orange_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_bertrice_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_Orange_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_islandDevil_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_Orange_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_domainConflicts_hover"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_Orange_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_barrens_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_Orange_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_theRack_hover"
+          />
         </VerticalLayout>
         <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image
             id="playerHud_mapOverlayToggle_districtsAll_Orange_active"
             class="hover_button hover_button_active"
             image="toggleOverlay_districtsAll_active"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_domains_Orange_active"
-            class="hover_button hover_button_active"
-            image="toggleOverlay_domains_active"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_localRoads_Orange_active"
-            class="hover_button hover_button_active"
-            image="toggleOverlay_localRoads_active"
           />
           <Image
             id="playerHud_mapOverlayToggle_majorRoads_Orange_active"
@@ -1036,11 +1397,93 @@
             image="toggleOverlay_majorRoads_active"
           />
           <Image
+            id="playerHud_mapOverlayToggle_localRoads_Orange_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_localRoads_active"
+          />
+          <Image
             id="playerHud_mapOverlayToggle_majorSites_Orange_active"
             class="hover_button hover_button_active"
             image="toggleOverlay_majorSites_active"
           />
-          <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_Orange_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_theCourt_active"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_Orange_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_fiveKeys_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_Orange_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_moonClub_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_Orange_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_universityChantry_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_Orange_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_freeChantry_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_Orange_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_ironGuard_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_Orange_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_scarlett_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_Orange_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_anarchFreeZone_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_Orange_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_hecata_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_Orange_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_bertrice_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_Orange_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_islandDevil_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_Orange_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_domainConflicts_active"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_Orange_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_barrens_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_Orange_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_theRack_active"
+          />
         </VerticalLayout>
       </Panel>
     </Panel>
@@ -1068,11 +1511,20 @@
           id="playerHud_mapOverlay_majorSites_Orange"
           image="mapOverlay_majorSites"
         />
-        <Image
-          class="hud_map_image hud_map_image_overlay"
-          id="playerHud_mapOverlay_domains_Orange"
-          image="mapOverlay_domains"
-        />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_theCourt_Orange" image="mapOverlay_domain_theCourt" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_fiveKeys_Orange" image="mapOverlay_domain_fiveKeys" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_moonClub_Orange" image="mapOverlay_domain_moonClub" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_universityChantry_Orange" image="mapOverlay_domain_universityChantry" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_freeChantry_Orange" image="mapOverlay_domain_freeChantry" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_ironGuard_Orange" image="mapOverlay_domain_ironGuard" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_scarlett_Orange" image="mapOverlay_domain_scarlett" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_anarchFreeZone_Orange" image="mapOverlay_domain_anarchFreeZone" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_hecata_Orange" image="mapOverlay_domain_hecata" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_bertrice_Orange" image="mapOverlay_domain_bertrice" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_islandDevil_Orange" image="mapOverlay_domain_islandDevil" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_domainConflicts_Orange" image="mapOverlay_domain_domainConflicts" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_barrens_Orange" image="mapOverlay_domain_barrens" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_theRack_Orange" image="mapOverlay_domain_theRack" />
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Annex_Orange" image="mapOverlay_Annex" />
         <Image
           class="hud_map_image hud_map_image_overlay"
@@ -1306,7 +1758,7 @@
         Max Width: 175
         Total Height: 2*50 + 36*20 = 900
         -->
-        <VerticalLayout class="hover_button_panel">
+        <VerticalLayout class="hover_button_panel" childAlignment="UpperLeft" spacing="0">
           <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" />
           <Image
             class="hover_button hover_button_thin hover_button_base hover_button_base_district"
@@ -1886,7 +2338,7 @@
 >
   <HorizontalLayout class="hud_map_parent_container">
     <Panel class="hud_map_hover_button_panel_wrapper">
-      <Panel class="hover_button_panel_container" height="225">
+      <Panel class="hover_button_panel_container" height="725">
         <!--
         Border Dimensions: 150x50    Count: 2
         Base Dimensions: 150x25      Count: 5
@@ -1896,21 +2348,11 @@
         Total Height: 2*50 + 5*25 = 225
         -->
         <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border" image="border-gold-right-top" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" />
           <Image
             id="playerHud_mapOverlayToggle_districtsAll_Red"
             class="hover_button hover_button_base hover_button_base_overlay"
             image="toggleOverlay_districtsAll_inactive"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_domains_Red"
-            class="hover_button hover_button_base hover_button_base_overlay"
-            image="toggleOverlay_domains_inactive"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_localRoads_Red"
-            class="hover_button hover_button_base hover_button_base_overlay"
-            image="toggleOverlay_localRoads_inactive"
           />
           <Image
             id="playerHud_mapOverlayToggle_majorRoads_Red"
@@ -1918,28 +2360,101 @@
             image="toggleOverlay_majorRoads_inactive"
           />
           <Image
+            id="playerHud_mapOverlayToggle_localRoads_Red"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_localRoads_inactive"
+          />
+          <Image
             id="playerHud_mapOverlayToggle_majorSites_Red"
             class="hover_button hover_button_base hover_button_base_overlay"
             image="toggleOverlay_majorSites_inactive"
           />
-          <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" />
+
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_Red"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_theCourt_inactive"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_Red"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_fiveKeys_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_Red"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_moonClub_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_Red"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_universityChantry_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_Red"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_freeChantry_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_Red"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_ironGuard_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_Red"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_scarlett_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_Red"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_anarchFreeZone_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_Red"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_hecata_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_Red"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_bertrice_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_Red"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_islandDevil_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_Red"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_domainConflicts_inactive"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_Red"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_barrens_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_Red"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_theRack_inactive"
+          />
         </VerticalLayout>
         <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image
             id="playerHud_mapOverlayToggle_districtsAll_Red_hover"
             class="hover_button hover_button_hover"
             image="toggleOverlay_districtsAll_hover"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_domains_Red_hover"
-            class="hover_button hover_button_hover"
-            image="toggleOverlay_domains_hover"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_localRoads_Red_hover"
-            class="hover_button hover_button_hover"
-            image="toggleOverlay_localRoads_hover"
           />
           <Image
             id="playerHud_mapOverlayToggle_majorRoads_Red_hover"
@@ -1947,28 +2462,100 @@
             image="toggleOverlay_majorRoads_hover"
           />
           <Image
+            id="playerHud_mapOverlayToggle_localRoads_Red_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_localRoads_hover"
+          />
+          <Image
             id="playerHud_mapOverlayToggle_majorSites_Red_hover"
             class="hover_button hover_button_hover"
             image="toggleOverlay_majorSites_hover"
           />
-          <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_Red_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_theCourt_hover"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_Red_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_fiveKeys_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_Red_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_moonClub_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_Red_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_universityChantry_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_Red_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_freeChantry_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_Red_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_ironGuard_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_Red_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_scarlett_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_Red_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_anarchFreeZone_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_Red_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_hecata_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_Red_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_bertrice_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_Red_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_islandDevil_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_Red_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_domainConflicts_hover"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_Red_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_barrens_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_Red_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_theRack_hover"
+          />
         </VerticalLayout>
         <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image
             id="playerHud_mapOverlayToggle_districtsAll_Red_active"
             class="hover_button hover_button_active"
             image="toggleOverlay_districtsAll_active"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_domains_Red_active"
-            class="hover_button hover_button_active"
-            image="toggleOverlay_domains_active"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_localRoads_Red_active"
-            class="hover_button hover_button_active"
-            image="toggleOverlay_localRoads_active"
           />
           <Image
             id="playerHud_mapOverlayToggle_majorRoads_Red_active"
@@ -1976,11 +2563,93 @@
             image="toggleOverlay_majorRoads_active"
           />
           <Image
+            id="playerHud_mapOverlayToggle_localRoads_Red_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_localRoads_active"
+          />
+          <Image
             id="playerHud_mapOverlayToggle_majorSites_Red_active"
             class="hover_button hover_button_active"
             image="toggleOverlay_majorSites_active"
           />
-          <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_Red_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_theCourt_active"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_Red_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_fiveKeys_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_Red_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_moonClub_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_Red_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_universityChantry_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_Red_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_freeChantry_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_Red_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_ironGuard_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_Red_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_scarlett_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_Red_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_anarchFreeZone_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_Red_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_hecata_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_Red_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_bertrice_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_Red_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_islandDevil_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_Red_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_domainConflicts_active"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_Red_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_barrens_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_Red_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_theRack_active"
+          />
         </VerticalLayout>
       </Panel>
     </Panel>
@@ -2008,11 +2677,20 @@
           id="playerHud_mapOverlay_majorSites_Red"
           image="mapOverlay_majorSites"
         />
-        <Image
-          class="hud_map_image hud_map_image_overlay"
-          id="playerHud_mapOverlay_domains_Red"
-          image="mapOverlay_domains"
-        />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_theCourt_Red" image="mapOverlay_domain_theCourt" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_fiveKeys_Red" image="mapOverlay_domain_fiveKeys" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_moonClub_Red" image="mapOverlay_domain_moonClub" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_universityChantry_Red" image="mapOverlay_domain_universityChantry" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_freeChantry_Red" image="mapOverlay_domain_freeChantry" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_ironGuard_Red" image="mapOverlay_domain_ironGuard" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_scarlett_Red" image="mapOverlay_domain_scarlett" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_anarchFreeZone_Red" image="mapOverlay_domain_anarchFreeZone" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_hecata_Red" image="mapOverlay_domain_hecata" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_bertrice_Red" image="mapOverlay_domain_bertrice" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_islandDevil_Red" image="mapOverlay_domain_islandDevil" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_domainConflicts_Red" image="mapOverlay_domain_domainConflicts" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_barrens_Red" image="mapOverlay_domain_barrens" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_theRack_Red" image="mapOverlay_domain_theRack" />
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Annex_Red" image="mapOverlay_Annex" />
         <Image
           class="hud_map_image hud_map_image_overlay"
@@ -2246,7 +2924,7 @@
         Max Width: 175
         Total Height: 2*50 + 36*20 = 900
         -->
-        <VerticalLayout class="hover_button_panel">
+        <VerticalLayout class="hover_button_panel" childAlignment="UpperLeft" spacing="0">
           <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" />
           <Image
             class="hover_button hover_button_thin hover_button_base hover_button_base_district"
@@ -2826,7 +3504,7 @@
 >
   <HorizontalLayout class="hud_map_parent_container">
     <Panel class="hud_map_hover_button_panel_wrapper">
-      <Panel class="hover_button_panel_container" height="225">
+      <Panel class="hover_button_panel_container" height="725">
         <!--
         Border Dimensions: 150x50    Count: 2
         Base Dimensions: 150x25      Count: 5
@@ -2836,21 +3514,11 @@
         Total Height: 2*50 + 5*25 = 225
         -->
         <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border" image="border-gold-right-top" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" />
           <Image
             id="playerHud_mapOverlayToggle_districtsAll_Pink"
             class="hover_button hover_button_base hover_button_base_overlay"
             image="toggleOverlay_districtsAll_inactive"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_domains_Pink"
-            class="hover_button hover_button_base hover_button_base_overlay"
-            image="toggleOverlay_domains_inactive"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_localRoads_Pink"
-            class="hover_button hover_button_base hover_button_base_overlay"
-            image="toggleOverlay_localRoads_inactive"
           />
           <Image
             id="playerHud_mapOverlayToggle_majorRoads_Pink"
@@ -2858,28 +3526,101 @@
             image="toggleOverlay_majorRoads_inactive"
           />
           <Image
+            id="playerHud_mapOverlayToggle_localRoads_Pink"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_localRoads_inactive"
+          />
+          <Image
             id="playerHud_mapOverlayToggle_majorSites_Pink"
             class="hover_button hover_button_base hover_button_base_overlay"
             image="toggleOverlay_majorSites_inactive"
           />
-          <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" />
+
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_Pink"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_theCourt_inactive"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_Pink"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_fiveKeys_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_Pink"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_moonClub_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_Pink"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_universityChantry_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_Pink"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_freeChantry_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_Pink"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_ironGuard_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_Pink"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_scarlett_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_Pink"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_anarchFreeZone_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_Pink"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_hecata_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_Pink"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_bertrice_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_Pink"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_islandDevil_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_Pink"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_domainConflicts_inactive"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_Pink"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_barrens_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_Pink"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_theRack_inactive"
+          />
         </VerticalLayout>
         <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image
             id="playerHud_mapOverlayToggle_districtsAll_Pink_hover"
             class="hover_button hover_button_hover"
             image="toggleOverlay_districtsAll_hover"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_domains_Pink_hover"
-            class="hover_button hover_button_hover"
-            image="toggleOverlay_domains_hover"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_localRoads_Pink_hover"
-            class="hover_button hover_button_hover"
-            image="toggleOverlay_localRoads_hover"
           />
           <Image
             id="playerHud_mapOverlayToggle_majorRoads_Pink_hover"
@@ -2887,28 +3628,100 @@
             image="toggleOverlay_majorRoads_hover"
           />
           <Image
+            id="playerHud_mapOverlayToggle_localRoads_Pink_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_localRoads_hover"
+          />
+          <Image
             id="playerHud_mapOverlayToggle_majorSites_Pink_hover"
             class="hover_button hover_button_hover"
             image="toggleOverlay_majorSites_hover"
           />
-          <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_Pink_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_theCourt_hover"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_Pink_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_fiveKeys_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_Pink_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_moonClub_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_Pink_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_universityChantry_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_Pink_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_freeChantry_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_Pink_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_ironGuard_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_Pink_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_scarlett_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_Pink_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_anarchFreeZone_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_Pink_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_hecata_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_Pink_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_bertrice_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_Pink_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_islandDevil_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_Pink_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_domainConflicts_hover"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_Pink_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_barrens_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_Pink_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_theRack_hover"
+          />
         </VerticalLayout>
         <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image
             id="playerHud_mapOverlayToggle_districtsAll_Pink_active"
             class="hover_button hover_button_active"
             image="toggleOverlay_districtsAll_active"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_domains_Pink_active"
-            class="hover_button hover_button_active"
-            image="toggleOverlay_domains_active"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_localRoads_Pink_active"
-            class="hover_button hover_button_active"
-            image="toggleOverlay_localRoads_active"
           />
           <Image
             id="playerHud_mapOverlayToggle_majorRoads_Pink_active"
@@ -2916,11 +3729,93 @@
             image="toggleOverlay_majorRoads_active"
           />
           <Image
+            id="playerHud_mapOverlayToggle_localRoads_Pink_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_localRoads_active"
+          />
+          <Image
             id="playerHud_mapOverlayToggle_majorSites_Pink_active"
             class="hover_button hover_button_active"
             image="toggleOverlay_majorSites_active"
           />
-          <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_Pink_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_theCourt_active"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_Pink_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_fiveKeys_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_Pink_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_moonClub_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_Pink_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_universityChantry_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_Pink_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_freeChantry_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_Pink_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_ironGuard_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_Pink_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_scarlett_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_Pink_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_anarchFreeZone_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_Pink_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_hecata_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_Pink_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_bertrice_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_Pink_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_islandDevil_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_Pink_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_domainConflicts_active"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_Pink_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_barrens_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_Pink_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_theRack_active"
+          />
         </VerticalLayout>
       </Panel>
     </Panel>
@@ -2948,11 +3843,20 @@
           id="playerHud_mapOverlay_majorSites_Pink"
           image="mapOverlay_majorSites"
         />
-        <Image
-          class="hud_map_image hud_map_image_overlay"
-          id="playerHud_mapOverlay_domains_Pink"
-          image="mapOverlay_domains"
-        />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_theCourt_Pink" image="mapOverlay_domain_theCourt" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_fiveKeys_Pink" image="mapOverlay_domain_fiveKeys" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_moonClub_Pink" image="mapOverlay_domain_moonClub" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_universityChantry_Pink" image="mapOverlay_domain_universityChantry" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_freeChantry_Pink" image="mapOverlay_domain_freeChantry" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_ironGuard_Pink" image="mapOverlay_domain_ironGuard" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_scarlett_Pink" image="mapOverlay_domain_scarlett" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_anarchFreeZone_Pink" image="mapOverlay_domain_anarchFreeZone" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_hecata_Pink" image="mapOverlay_domain_hecata" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_bertrice_Pink" image="mapOverlay_domain_bertrice" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_islandDevil_Pink" image="mapOverlay_domain_islandDevil" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_domainConflicts_Pink" image="mapOverlay_domain_domainConflicts" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_barrens_Pink" image="mapOverlay_domain_barrens" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_theRack_Pink" image="mapOverlay_domain_theRack" />
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Annex_Pink" image="mapOverlay_Annex" />
         <Image
           class="hud_map_image hud_map_image_overlay"
@@ -3186,7 +4090,7 @@
         Max Width: 175
         Total Height: 2*50 + 36*20 = 900
         -->
-        <VerticalLayout class="hover_button_panel">
+        <VerticalLayout class="hover_button_panel" childAlignment="UpperLeft" spacing="0">
           <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" />
           <Image
             class="hover_button hover_button_thin hover_button_base hover_button_base_district"
@@ -3766,7 +4670,7 @@
 >
   <HorizontalLayout class="hud_map_parent_container">
     <Panel class="hud_map_hover_button_panel_wrapper">
-      <Panel class="hover_button_panel_container" height="225">
+      <Panel class="hover_button_panel_container" height="725">
         <!--
         Border Dimensions: 150x50    Count: 2
         Base Dimensions: 150x25      Count: 5
@@ -3776,21 +4680,11 @@
         Total Height: 2*50 + 5*25 = 225
         -->
         <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border" image="border-gold-right-top" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" />
           <Image
             id="playerHud_mapOverlayToggle_districtsAll_Purple"
             class="hover_button hover_button_base hover_button_base_overlay"
             image="toggleOverlay_districtsAll_inactive"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_domains_Purple"
-            class="hover_button hover_button_base hover_button_base_overlay"
-            image="toggleOverlay_domains_inactive"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_localRoads_Purple"
-            class="hover_button hover_button_base hover_button_base_overlay"
-            image="toggleOverlay_localRoads_inactive"
           />
           <Image
             id="playerHud_mapOverlayToggle_majorRoads_Purple"
@@ -3798,28 +4692,101 @@
             image="toggleOverlay_majorRoads_inactive"
           />
           <Image
+            id="playerHud_mapOverlayToggle_localRoads_Purple"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_localRoads_inactive"
+          />
+          <Image
             id="playerHud_mapOverlayToggle_majorSites_Purple"
             class="hover_button hover_button_base hover_button_base_overlay"
             image="toggleOverlay_majorSites_inactive"
           />
-          <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" />
+
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_Purple"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_theCourt_inactive"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_Purple"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_fiveKeys_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_Purple"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_moonClub_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_Purple"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_universityChantry_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_Purple"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_freeChantry_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_Purple"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_ironGuard_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_Purple"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_scarlett_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_Purple"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_anarchFreeZone_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_Purple"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_hecata_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_Purple"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_bertrice_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_Purple"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_islandDevil_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_Purple"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_domainConflicts_inactive"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_Purple"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_barrens_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_Purple"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_theRack_inactive"
+          />
         </VerticalLayout>
         <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image
             id="playerHud_mapOverlayToggle_districtsAll_Purple_hover"
             class="hover_button hover_button_hover"
             image="toggleOverlay_districtsAll_hover"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_domains_Purple_hover"
-            class="hover_button hover_button_hover"
-            image="toggleOverlay_domains_hover"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_localRoads_Purple_hover"
-            class="hover_button hover_button_hover"
-            image="toggleOverlay_localRoads_hover"
           />
           <Image
             id="playerHud_mapOverlayToggle_majorRoads_Purple_hover"
@@ -3827,28 +4794,100 @@
             image="toggleOverlay_majorRoads_hover"
           />
           <Image
+            id="playerHud_mapOverlayToggle_localRoads_Purple_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_localRoads_hover"
+          />
+          <Image
             id="playerHud_mapOverlayToggle_majorSites_Purple_hover"
             class="hover_button hover_button_hover"
             image="toggleOverlay_majorSites_hover"
           />
-          <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_Purple_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_theCourt_hover"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_Purple_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_fiveKeys_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_Purple_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_moonClub_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_Purple_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_universityChantry_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_Purple_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_freeChantry_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_Purple_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_ironGuard_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_Purple_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_scarlett_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_Purple_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_anarchFreeZone_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_Purple_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_hecata_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_Purple_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_bertrice_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_Purple_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_islandDevil_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_Purple_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_domainConflicts_hover"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_Purple_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_barrens_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_Purple_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_theRack_hover"
+          />
         </VerticalLayout>
         <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image
             id="playerHud_mapOverlayToggle_districtsAll_Purple_active"
             class="hover_button hover_button_active"
             image="toggleOverlay_districtsAll_active"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_domains_Purple_active"
-            class="hover_button hover_button_active"
-            image="toggleOverlay_domains_active"
-          />
-          <Image
-            id="playerHud_mapOverlayToggle_localRoads_Purple_active"
-            class="hover_button hover_button_active"
-            image="toggleOverlay_localRoads_active"
           />
           <Image
             id="playerHud_mapOverlayToggle_majorRoads_Purple_active"
@@ -3856,11 +4895,93 @@
             image="toggleOverlay_majorRoads_active"
           />
           <Image
+            id="playerHud_mapOverlayToggle_localRoads_Purple_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_localRoads_active"
+          />
+          <Image
             id="playerHud_mapOverlayToggle_majorSites_Purple_active"
             class="hover_button hover_button_active"
             image="toggleOverlay_majorSites_active"
           />
-          <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_Purple_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_theCourt_active"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_Purple_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_fiveKeys_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_Purple_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_moonClub_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_Purple_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_universityChantry_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_Purple_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_freeChantry_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_Purple_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_ironGuard_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_Purple_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_scarlett_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_Purple_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_anarchFreeZone_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_Purple_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_hecata_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_Purple_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_bertrice_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_Purple_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_islandDevil_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_Purple_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_domainConflicts_active"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_Purple_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_barrens_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_Purple_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_theRack_active"
+          />
         </VerticalLayout>
       </Panel>
     </Panel>
@@ -3888,11 +5009,20 @@
           id="playerHud_mapOverlay_majorSites_Purple"
           image="mapOverlay_majorSites"
         />
-        <Image
-          class="hud_map_image hud_map_image_overlay"
-          id="playerHud_mapOverlay_domains_Purple"
-          image="mapOverlay_domains"
-        />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_theCourt_Purple" image="mapOverlay_domain_theCourt" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_fiveKeys_Purple" image="mapOverlay_domain_fiveKeys" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_moonClub_Purple" image="mapOverlay_domain_moonClub" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_universityChantry_Purple" image="mapOverlay_domain_universityChantry" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_freeChantry_Purple" image="mapOverlay_domain_freeChantry" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_ironGuard_Purple" image="mapOverlay_domain_ironGuard" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_scarlett_Purple" image="mapOverlay_domain_scarlett" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_anarchFreeZone_Purple" image="mapOverlay_domain_anarchFreeZone" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_hecata_Purple" image="mapOverlay_domain_hecata" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_bertrice_Purple" image="mapOverlay_domain_bertrice" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_islandDevil_Purple" image="mapOverlay_domain_islandDevil" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_domainConflicts_Purple" image="mapOverlay_domain_domainConflicts" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_barrens_Purple" image="mapOverlay_domain_barrens" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_theRack_Purple" image="mapOverlay_domain_theRack" />
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Annex_Purple" image="mapOverlay_Annex" />
         <Image
           class="hud_map_image hud_map_image_overlay"
@@ -4126,7 +5256,7 @@
         Max Width: 175
         Total Height: 2*50 + 36*20 = 900
         -->
-        <VerticalLayout class="hover_button_panel">
+        <VerticalLayout class="hover_button_panel" childAlignment="UpperLeft" spacing="0">
           <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" />
           <Image
             class="hover_button hover_button_thin hover_button_base hover_button_base_district"

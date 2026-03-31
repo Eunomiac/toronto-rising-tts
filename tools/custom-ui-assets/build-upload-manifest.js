@@ -135,7 +135,7 @@ function main() {
   const outputPath = args.out;
   const luaOut = args.luaOut || "";
   const moduleOut = args.moduleOut || "";
-  const extensionsCsv = args.extensions || "png,jpg,jpeg,webp";
+  const extensionsCsv = args.extensions || "webp";
 
   if (!inputDir) {
     throw new Error("Required argument missing: --input <directory>");

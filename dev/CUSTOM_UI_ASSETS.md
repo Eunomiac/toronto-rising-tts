@@ -17,14 +17,15 @@ The task prompts for:
 
 What the task does:
 
-1. Builds manifest files from images.
-2. Prints TTS manual steps and pauses for Enter:
+1. Scans the target folder for `.png` files and converts each to `.webp` with ffmpeg (lossless WEBP, alpha preserved), then deletes the converted `.png` files.
+2. Builds manifest files from `.webp` images only.
+3. Prints TTS manual steps and pauses for Enter:
    - Save & Play
    - `lua DEBUG.spawnCustomUiUploadBatch()`
    - Cloud Manager -> Upload All Loaded Files
    - Save game
-3. Merges hosted URLs into top-level `CustomUIAssets` (or `CustomAssets`) by `Name`.
-4. Prints cleanup reminder:
+4. Merges hosted URLs into top-level `CustomUIAssets` (or `CustomAssets`) by `Name`.
+5. Prints cleanup reminder:
    - `lua DEBUG.clearCustomUiUploadTokens()`
 
 ### Manual/advanced tasks
@@ -33,7 +34,17 @@ If you prefer to run steps individually:
 
 1. `Custom UI Assets: Build Manifest from Image Files`
 2. `Custom UI Assets: Merge Hosted URLs into Save CustomUIAssets`
-3. `Custom UI Assets: TTS Image Cache Clear` (optional, images cache only)
+3. `Custom UI Assets: List Custom UI Assets in Save`
+4. `Custom UI Assets: Prune Custom UI Assets in Save`
+5. `Custom UI Assets: TTS Image Cache Clear` (optional, images cache only)
+
+`List` prints all top-level entries from `CustomUIAssets` (or fallback `CustomAssets`) for the requested save.
+
+`Prune` removes entries by exact `Name` match using:
+
+- `dev/custom-ui-assets/prune-custom-ui-assets.txt`
+- One asset name per line
+- Empty lines and lines beginning with `#` are ignored
 
 Validation rules:
 
@@ -131,3 +142,38 @@ Generated files are overwritten each run:
 ---
 
 **Total: 65 assets.** House grid images use direct Steam Cloud URLs in XML and do not need Custom UI Asset entries.
+
+---
+
+## Object XML positioning experiment (paper face)
+
+This repo now includes an object-attached XML experiment for `TABLE B3`:
+
+- XML root include: `.tts/objects/TABLE B3.323c52.xml` -> `<Include src="ui/test.xml" />`
+- XML layout source: `ui/test.xml`
+- Main bounds-assisted fit script: `ui/ui_test_script.ttslua`
+- Object wrapper script: `.tts/objects/TABLE B3.323c52.lua` (minimal `require("ui.ui_test_script")`)
+
+### What it renders
+
+- One black parent panel (`paper_root`) with yellow outline.
+- Four tiny absolute-position marker panels:
+  - `marker_red`
+  - `marker_green`
+  - `marker_cyan`
+  - `marker_yellow`
+
+### Calibration loop
+
+1. Save and Play.
+2. Inspect in-game output from `[TABLE B3 XML TEST]` log line.
+3. If panel is too large/small, tune `PIXELS_PER_UNIT` in `ui/ui_test_script.ttslua`.
+4. If panel floats too far from the surface, tune `FACE_SURFACE_OFFSET` in `ui/ui_test_script.ttslua`.
+5. If panel is on the wrong face, switch `FACE` (`top`, `front`, `right`) and adjust `FACE_ROTATION` in `ui/ui_test_script.ttslua`.
+6. For marker placement tests, edit each marker's `offsetXY` in `ui/test.xml`.
+
+### Acceptance checks
+
+- Panel border matches target object face bounds.
+- Marker positions move predictably when `offsetXY` changes.
+- Rotating the object keeps panel dimensions stable (uses `getBoundsNormalized()`).
