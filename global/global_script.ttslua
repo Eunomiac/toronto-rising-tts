@@ -283,6 +283,43 @@ function HUD_changeScene(player, button, id)
     print("HUD: Scene changed to " .. sceneName .. " by " .. player.color)
 end
 
+local ADMIN_LIGHT_SCENE_BUTTONS = {
+    dark = "adminScene_dark",
+    standard = "adminScene_standard",
+    bright = "adminScene_bright",
+}
+
+local ADMIN_LIGHT_SCENE_BUTTON_COLORS_INACTIVE = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+local ADMIN_LIGHT_SCENE_BUTTON_COLORS_ACTIVE = "#B8860B|#FFD700|#FFA500|#B8860B"
+
+--- Sync radio-button visuals for storyteller admin lighting scene controls.
+local function syncAdminLightSceneButtons()
+    local currentScene = Scenes and Scenes.getCurrentScene and Scenes.getCurrentScene() or nil
+    for sceneKey, buttonId in pairs(ADMIN_LIGHT_SCENE_BUTTONS) do
+        local isActive = currentScene == sceneKey
+        local ok, _ = pcall(function()
+            UI.setAttribute(buttonId, "colors", isActive and ADMIN_LIGHT_SCENE_BUTTON_COLORS_ACTIVE or ADMIN_LIGHT_SCENE_BUTTON_COLORS_INACTIVE)
+        end)
+        if not ok then
+            -- Buttons may not exist in some XML bundles; fail silently.
+        end
+    end
+end
+
+--- Storyteller admin: select one of the lighting scenes (dark/standard/bright).
+function HUD_selectAdminLightingScene(player, button, id)
+    local sceneName = string.gsub(id or "", "^adminScene_", "")
+    if sceneName ~= "dark" and sceneName ~= "standard" and sceneName ~= "bright" then
+        U.AlertGM("HUD_selectAdminLightingScene: Invalid scene id: " .. tostring(id))
+        return
+    end
+
+    local success = Scenes.fadeToScene(sceneName, 0.5)
+    if success then
+        UpdateUIDisplays()
+    end
+end
+
 --- Advance game phase
 -- Called when a phase button is clicked (e.g., "phase_play")
 -- @param player Player The player who clicked the button
@@ -580,6 +617,8 @@ function UpdateUIDisplays()
     if currentScene then
         UI.setValue("currentSceneDisplay", currentScene)
     end
+
+    syncAdminLightSceneButtons()
 
     -- Update player stat displays
     M.forPlayers(function(player, color)

@@ -10,6 +10,13 @@
   <!-- ================================================================ -->
   <VerticalLayout class="storyteller_buttonControls" visibility="Host" rectAlignment="UpperLeft" offsetXY="50 0">
     <Button onClick="HUD_printState">Print State</Button>
+    <Text class="spacer_10"></Text>
+    <Button id="adminScene_dark" class="smallButton" onClick="HUD_selectAdminLightingScene"
+      colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)">DARK</Button>
+    <Button id="adminScene_standard" class="smallButton" onClick="HUD_selectAdminLightingScene"
+      colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)">STANDARD</Button>
+    <Button id="adminScene_bright" class="smallButton" onClick="HUD_selectAdminLightingScene"
+      colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)">BRIGHT</Button>
     <Text class="spacer_15"></Text>
     <Button onClick="HUD_debugRunTests" color="#AA00AA">Run All Tests</Button>
     <Button class="smallButton" onClick="HUD_debugTestLightingAndSignals" color="#8888FF">Lighting &amp; Signals</Button>

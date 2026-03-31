@@ -53,6 +53,116 @@ Scenes.SCENES = {
         lights = {},
         description = "Default dark lighting"
     },
+    dark = {
+        ambient = C.LightModes.DARK,
+        lightStages = {
+            {
+                refs = "__all_registered__",
+                mode = "OFF",
+                duration = 5.0
+            }
+        },
+        description = "Admin dark mode - all registered lights OFF"
+    },
+    standard = {
+        ambient = C.LightModes.DARK,
+        lightStages = {
+            {
+                delay = 0.0,
+                duration = 5.0,
+                mode = "STANDARD",
+                refs = {
+                    "playerLight1Red",
+                    "playerLight2Red",
+                }
+            },
+            {
+                delay = 1.0,
+                duration = 4.0,
+                mode = "STANDARD",
+                refs = {
+                    "playerLight1Orange",
+                    "playerLight2Orange",
+                    "playerLight1Pink",
+                    "playerLight2Pink",
+                }
+            },
+            {
+                delay = 2.0,
+                duration = 3.0,
+                mode = "STANDARD",
+                refs = {
+                    "playerLight1Brown",
+                    "playerLight2Brown",
+                    "playerLight1Purple",
+                    "playerLight2Purple",
+                }
+            },
+            {
+                delay = 4.0,
+                duration = 5.0,
+                mode = "STANDARD",
+                refs = {
+                    "mainLightLeft",
+                    "mainLightRight",
+                }
+            }
+        },
+        description = "Admin standard mode - staggered player/main lighting"
+    },
+    bright = {
+        ambient = {
+            ambient_intensity = 1,
+            ambient_type = 1,
+            light_intensity = 1,
+            lut_contribution = 0,
+            lut_index = 1,
+            reflection_intensity = 0
+        },
+        lightStages = {
+            {
+                delay = 0.0,
+                duration = 5.0,
+                mode = "STANDARD",
+                refs = {
+                    "playerLight1Red",
+                    "playerLight2Red",
+                }
+            },
+            {
+                delay = 1.0,
+                duration = 4.0,
+                mode = "STANDARD",
+                refs = {
+                    "playerLight1Orange",
+                    "playerLight2Orange",
+                    "playerLight1Pink",
+                    "playerLight2Pink",
+                }
+            },
+            {
+                delay = 2.0,
+                duration = 3.0,
+                mode = "STANDARD",
+                refs = {
+                    "playerLight1Brown",
+                    "playerLight2Brown",
+                    "playerLight1Purple",
+                    "playerLight2Purple",
+                }
+            },
+            {
+                delay = 4.0,
+                duration = 5.0,
+                mode = "STANDARD",
+                refs = {
+                    "mainLightLeft",
+                    "mainLightRight",
+                }
+            }
+        },
+        description = "Admin bright mode - 25% ambient and staggered lighting"
+    },
 
     -- Elysium: Formal gathering place, elegant and refined
     elysium = {
@@ -254,6 +364,148 @@ local function applySceneLights(lights, transitionTime)
     end
 end
 
+--- Returns stage refs normalized to an array of light references.
+--- Supports:
+--- - stage.refs = "__all_registered__"
+--- - stage.refs = "lightName"
+--- - stage.refs = { "lightA", "lightB" }
+--- - legacy stage.name / stage.lightRef
+--- @param stage table
+--- @return table
+local function getStageRefs(stage)
+    if stage == nil or type(stage) ~= "table" then
+        return {}
+    end
+
+    local refs = stage.refs or stage.lightRef or stage.name
+    if refs == "__all_registered__" then
+        return U.getKeys(L.LIGHTMODES or {})
+    end
+    if type(refs) == "string" then
+        return { refs }
+    end
+    if type(refs) == "table" then
+        return refs
+    end
+    return {}
+end
+
+--- Resolve a requested mode string against a registered light's available keys.
+--- Falls back to case variants for convenience (OFF/off, STANDARD/standard).
+--- @param lightRef string
+--- @param requestedMode string
+--- @return string|nil
+local function resolveModeForRegisteredLight(lightRef, requestedMode)
+    if type(lightRef) ~= "string" or type(requestedMode) ~= "string" then
+        return nil
+    end
+
+    local lData = L.LIGHTMODES and L.LIGHTMODES[lightRef]
+    if type(lData) ~= "table" then
+        return requestedMode
+    end
+
+    if requestedMode == "default" and type(lData.default) == "string" and lData[lData.default] ~= nil then
+        return lData.default
+    end
+
+    if lData[requestedMode] ~= nil then
+        return requestedMode
+    end
+
+    local lower = string.lower(requestedMode)
+    if lData[lower] ~= nil then
+        return lower
+    end
+
+    local upper = string.upper(requestedMode)
+    if lData[upper] ~= nil then
+        return upper
+    end
+
+    return nil
+end
+
+--- Returns true when the persisted light state already matches the target mode string.
+--- For non-string modes we conservatively return false (apply).
+--- @param lightRef string
+--- @param mode any
+--- @return boolean
+local function lightAlreadyAtTargetMode(lightRef, mode)
+    if type(lightRef) ~= "string" or type(mode) ~= "string" then
+        return false
+    end
+    local current = S.getStateVal("lights", lightRef)
+    return type(current) == "string" and current == mode
+end
+
+--- Applies staged light transitions with defaults and idempotent skip behavior.
+--- Stage schema (all optional, with defaults):
+--- - refs/lightRef/name: light ref(s)
+--- - mode: target mode key (default "default")
+--- - player: player context (default nil)
+--- - delay: start delay seconds (default 0)
+--- - duration: transition seconds (default transitionTime/default)
+--- @param stages table
+--- @param transitionTime number
+--- @param allowDelays boolean
+local function applySceneLightStages(stages, transitionTime, allowDelays)
+    if stages == nil or type(stages) ~= "table" or #stages == 0 then
+        return
+    end
+
+    local fallbackDuration = transitionTime or DefaultTransitionTime
+    if fallbackDuration == nil then
+        fallbackDuration = DefaultTransitionTime
+    end
+
+    for _, stage in ipairs(stages) do
+        if type(stage) == "table" then
+            local stageDelay = tonumber(stage.delay) or 0
+            if not allowDelays then
+                stageDelay = 0
+            end
+
+            local requestedMode = stage.mode
+            if requestedMode == nil then
+                requestedMode = "default"
+            end
+            local stagePlayer = stage.player
+            local stageDuration = tonumber(stage.duration)
+            if stageDuration == nil then
+                stageDuration = fallbackDuration
+            end
+
+            local refsToApply = {}
+            for _, lightRef in ipairs(getStageRefs(stage)) do
+                if type(lightRef) == "string" and lightRef ~= "" then
+                    local resolvedMode = requestedMode
+                    if type(requestedMode) == "string" then
+                        resolvedMode = resolveModeForRegisteredLight(lightRef, requestedMode)
+                    end
+
+                    if resolvedMode ~= nil and not lightAlreadyAtTargetMode(lightRef, resolvedMode) then
+                        table.insert(refsToApply, {
+                            ref = lightRef,
+                            mode = resolvedMode,
+                        })
+                    end
+                end
+            end
+
+            if #refsToApply > 0 then
+                Wait.time(function()
+                    for _, applyRef in ipairs(refsToApply) do
+                        pcall(function()
+                            L.SetLightMode(applyRef.ref, applyRef.mode, stagePlayer, stageDuration)
+                        end)
+                    end
+                end, stageDelay)
+            end
+        end
+    end
+end
+
 --- Plays background music track (if configured)
 -- Uses TTS MusicPlayer API to play a specific track
 -- Note: TTS uses 0-based indexing for tracks (0 = first track, 9 = 10th track)
@@ -275,6 +527,46 @@ local function playSceneMusic(trackIndex)
             print("Scenes: Warning - Invalid music track index: " .. tostring(trackIndex) .. " (must be 1-10)")
         end
     end
+end
+
+--- Shared scene application used by loadScene and fadeToScene.
+--- @param sceneName string
+--- @param transitionTime number
+--- @param allowDelays boolean
+--- @return boolean
+local function applySceneByName(sceneName, transitionTime, allowDelays)
+    local scene = Scenes.SCENES[sceneName]
+    if scene == nil then
+        U.AlertGM("Scenes: Scene not found: " .. tostring(sceneName))
+        print("Scenes: Available scenes: " .. table.concat(U.getKeys(Scenes.SCENES), ", "))
+        return false
+    end
+
+    local effectiveTransition = transitionTime
+    if effectiveTransition == nil then
+        effectiveTransition = DefaultTransitionTime
+    end
+
+    -- Apply ambient lighting first.
+    if scene.ambient then
+        applyAmbientLighting(scene.ambient, effectiveTransition)
+    end
+
+    -- New staged system (preferred when present).
+    if scene.lightStages ~= nil and type(scene.lightStages) == "table" and #scene.lightStages > 0 then
+        applySceneLightStages(scene.lightStages, effectiveTransition, allowDelays == true)
+    -- Legacy per-light list remains supported.
+    elseif scene.lights then
+        applySceneLights(scene.lights, effectiveTransition)
+    end
+
+    -- Music remains immediate.
+    if scene.musicTrack ~= nil then
+        playSceneMusic(scene.musicTrack)
+    end
+
+    S.setStateVal(sceneName, "currentScene")
+    return true
 end
 
 -- ============================================================================
@@ -301,27 +593,11 @@ function Scenes.loadScene(sceneName)
     end
 
     print("Scenes: Loading scene '" .. sceneName .. "' - " .. (scene.description or ""))
-
-    -- Apply ambient lighting (instant)
-    if scene.ambient then
-        applyAmbientLighting(scene.ambient, 0)
+    local ok = applySceneByName(sceneName, 0, false)
+    if ok then
+        print("Scenes: Scene loaded successfully.")
     end
-
-    -- Apply individual lights (instant)
-    if scene.lights then
-        applySceneLights(scene.lights, 0)
-    end
-
-    -- Play music (if specified)
-    if scene.musicTrack ~= nil then
-        playSceneMusic(scene.musicTrack)
-    end
-
-    -- Save current scene to state
-    S.setStateVal(sceneName, "currentScene")
-
-    print("Scenes: Scene loaded successfully.")
-    return true
+    return ok
 end
 
 --- Smoothly transitions to a scene preset over a duration
@@ -347,27 +623,11 @@ function Scenes.fadeToScene(sceneName, transitionTime)
     transitionTime = transitionTime or DefaultTransitionTime
 
     print("Scenes: Fading to scene '" .. sceneName .. "' over " .. transitionTime .. " seconds")
-
-    -- Apply ambient lighting with transition
-    if scene.ambient then
-        applyAmbientLighting(scene.ambient, transitionTime)
+    local ok = applySceneByName(sceneName, transitionTime, true)
+    if ok then
+        print("Scenes: Scene transition initiated.")
     end
-
-    -- Apply individual lights with transition (using lighting module's built-in transitions)
-    if scene.lights then
-        applySceneLights(scene.lights, transitionTime)
-    end
-
-    -- Play music immediately (no fade for music)
-    if scene.musicTrack ~= nil then
-        playSceneMusic(scene.musicTrack)
-    end
-
-    -- Save current scene to state
-    S.setStateVal(sceneName, "currentScene")
-
-    print("Scenes: Scene transition initiated.")
-    return true
+    return ok
 end
 
 --- Gets the current scene name from game state
