@@ -1,0 +1,133 @@
+--[[
+  Full-screen player HUD overlay Images (conditions + hunger).
+  Visibility: UI.show / UI.hide (triggers XML showAnimation / hideAnimation per TTS API).
+  Do not mix UI.setAttribute("active"/"color") with show/hide on the same elements — that can
+  desync TTS’s animation state. Broken XML (two classes each setting showAnimation; FadeOut as
+  showAnimation) prevented hides; see panel_overlays_defaults.xml overlay_anim_* classes.
+]]
+---@diagnostic disable: undefined-global
+
+local HO = {}
+
+local C = require("lib.constants")
+local S = require("core.state")
+
+--- elementId -> last visibility we applied (incremental UI.show / UI.hide)
+local lastVisible = {}
+
+local HUNGER_LEVELS = { 1, 2, 3, 4, 5 }
+
+--- @param seatColor string
+--- @return string[]
+local function allManagedOverlayIdsForSeat(seatColor)
+  if type(seatColor) ~= "string" then
+    return {}
+  end
+  local ids = {
+    "overlay_willpower_impaired_" .. seatColor,
+    "overlay_health_impaired_" .. seatColor,
+    "overlay_humanity_impaired_" .. seatColor,
+    "overlay_frenzy_" .. seatColor,
+    "overlay_blindfold_" .. seatColor,
+  }
+  for _, n in ipairs(HUNGER_LEVELS) do
+    ids[#ids + 1] = "overlay_hunger_" .. n .. "_" .. seatColor
+  end
+  return ids
+end
+
+--- Merge condition hudChanges and hunger-only overlays for one seat.
+--- @param playerID string|nil
+--- @param seatColor string
+--- @return table<string, boolean> ids that should be visible
+local function computeDesiredVisibility(playerID, seatColor)
+  local want = {}
+  if type(playerID) == "string" and playerID ~= "" and playerID ~= C.StorytellerID then
+    local conditions = S.getStateVal("playerData", playerID, "conditions")
+    if type(conditions) == "table" then
+      for _, cond in pairs(conditions) do
+        if type(cond) == "table" and type(cond.hudChanges) == "table" then
+          for elId, on in pairs(cond.hudChanges) do
+            if on and type(elId) == "string" then
+              want[elId] = true
+            end
+          end
+        end
+      end
+    end
+  end
+
+  -- Hunger overlays: exactly one level 1..5, or none at 0 (stat-driven; not conditions)
+  for _, n in ipairs(HUNGER_LEVELS) do
+    want["overlay_hunger_" .. n .. "_" .. seatColor] = nil
+  end
+  if type(seatColor) == "string" then
+    local hg = 0
+    if type(playerID) == "string" and playerID ~= "" and playerID ~= C.StorytellerID then
+      hg = tonumber(S.getStateVal("playerData", playerID, "stats", "hunger")) or 0
+    else
+      hg = tonumber(S.getPlayerVal(seatColor, "hunger")) or 0
+    end
+    if hg >= 1 and hg <= 5 then
+      want["overlay_hunger_" .. hg .. "_" .. seatColor] = true
+    end
+  end
+
+  return want
+end
+
+--- @param elementId string
+--- @param shouldShow boolean
+local function applyOverlayVisibility(elementId, shouldShow)
+  if type(elementId) ~= "string" or type(shouldShow) ~= "boolean" then
+    return
+  end
+  local prev = lastVisible[elementId]
+  if prev == shouldShow then
+    return
+  end
+  -- Default XML state is hidden; avoid a redundant hide on first sync
+  if prev == nil and not shouldShow then
+    lastVisible[elementId] = false
+    return
+  end
+  local applyOk, _applyErr = pcall(function()
+    if shouldShow then
+      UI.show(elementId)
+    else
+      UI.hide(elementId)
+    end
+  end)
+  if applyOk then
+    lastVisible[elementId] = shouldShow
+  end
+end
+
+--- Refresh overlay visibility for every player color row.
+function HO.syncAll()
+  for _, seatColor in ipairs(C.PlayerColors) do
+    local playerID = nil
+    local ok, pidOrErr = pcall(function()
+      return C.GetPlayerID(seatColor)
+    end)
+    if ok and type(pidOrErr) == "string" then
+      playerID = pidOrErr
+    end
+    local want = computeDesiredVisibility(playerID, seatColor)
+    local ids = allManagedOverlayIdsForSeat(seatColor)
+    -- Hides first, then shows: avoids overlapping hunger images if an old level is still
+    -- animating when the next level is shown.
+    for _, eid in ipairs(ids) do
+      if want[eid] ~= true then
+        applyOverlayVisibility(eid, false)
+      end
+    end
+    for _, eid in ipairs(ids) do
+      if want[eid] == true then
+        applyOverlayVisibility(eid, true)
+      end
+    end
+  end
+end
+
+return HO

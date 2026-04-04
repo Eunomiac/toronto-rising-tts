@@ -420,9 +420,7 @@ These conditions are applied to the player's `"conditions"` table as follows:
   conditions = {
     torpor = {
       statChanges = {},
-      hudChanges = {
-        ["overlay_torpor_" .. playerData.color] = true
-      },
+      hudChanges = {},
       lightingModeChanges = {
         ["PLAYER_LIGHT_2_" .. U.upper(playerData.color)] = "OFF"
       },

@@ -1,0 +1,31 @@
+<!-- Player HUD Overlays defaults -->
+<!-- Agent guidance: dev/TTS_BUNDLING_SETUP.md (generator); dev/HUDs & Overlays/Player HUD Overview.md (overlays). -->
+<!-- TTS: UI.show / UI.hide play showAnimation / hideAnimation. Each element needs BOTH attributes on -->
+<!-- the same class merge — splitting fade into two classes that both set showAnimation broke hides -->
+<!-- (hideAnimation never set; FadeOut/Shrink assigned incorrectly as showAnimation). -->
+
+<Defaults>
+  <Image class="player_overlay"
+    active="false"
+    height="100%"
+    width="100%"
+    preserveAspect="false"
+    raycastTarget="false"
+  />
+
+  <Image class="overlay_anim_fade"
+    showAnimation="FadeIn"
+    hideAnimation="FadeOut"
+    animationDuration="0.3"
+  />
+  <Image class="overlay_anim_grow"
+    showAnimation="FadeIn"
+    hideAnimation="FadeOut"
+    animationDuration="0.35"
+  />
+  <Image class="overlay_anim_slide_top"
+    showAnimation="SlideIn_Top"
+    hideAnimation="SlideOut_Top"
+    animationDuration="0.35"
+  />
+</Defaults>

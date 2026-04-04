@@ -49,13 +49,15 @@
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Brown_xpDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Brown_xpApply" />
           <Text class="pcs_prefix_hg">Hg:</Text>
-          <Text class="pcs_hunger_val" id="pcs_hungerVal_Brown">0</Text>
+          <Text class="pcs_hunger_dots" id="pcs_hungerDots_Brown"></Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Brown_hungerUp" text="▲" />
           <Text class="pcs_buf_hunger" id="pcs_bufHunger_Brown">+0</Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Brown_hungerDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_hunger" id="pcs_Brown_hungerApply" />
           <Button class="pcs_btn pcs_btn_torpor pcs_btn_palette_torpor" id="pcs_Brown_torporClear" />
           <Text class="pcs_torpor_lbl" id="pcs_torporLabel_Brown"> </Text>
+          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_frenzy" id="pcs_Brown_frenzyToggle" text="Frenzy○" />
+          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_blindfold" id="pcs_Brown_blindfoldToggle" text="Blind○" />
         </HorizontalLayout>
       </VerticalLayout>
     </Panel>
@@ -106,13 +108,15 @@
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Orange_xpDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Orange_xpApply" />
           <Text class="pcs_prefix_hg">Hg:</Text>
-          <Text class="pcs_hunger_val" id="pcs_hungerVal_Orange">0</Text>
+          <Text class="pcs_hunger_dots" id="pcs_hungerDots_Orange"></Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Orange_hungerUp" text="▲" />
           <Text class="pcs_buf_hunger" id="pcs_bufHunger_Orange">+0</Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Orange_hungerDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_hunger" id="pcs_Orange_hungerApply" />
           <Button class="pcs_btn pcs_btn_torpor pcs_btn_palette_torpor" id="pcs_Orange_torporClear" />
           <Text class="pcs_torpor_lbl" id="pcs_torporLabel_Orange"> </Text>
+          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_frenzy" id="pcs_Orange_frenzyToggle" text="Frenzy○" />
+          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_blindfold" id="pcs_Orange_blindfoldToggle" text="Blind○" />
         </HorizontalLayout>
       </VerticalLayout>
     </Panel>
@@ -163,13 +167,15 @@
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Red_xpDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Red_xpApply" />
           <Text class="pcs_prefix_hg">Hg:</Text>
-          <Text class="pcs_hunger_val" id="pcs_hungerVal_Red">0</Text>
+          <Text class="pcs_hunger_dots" id="pcs_hungerDots_Red"></Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Red_hungerUp" text="▲" />
           <Text class="pcs_buf_hunger" id="pcs_bufHunger_Red">+0</Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Red_hungerDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_hunger" id="pcs_Red_hungerApply" />
           <Button class="pcs_btn pcs_btn_torpor pcs_btn_palette_torpor" id="pcs_Red_torporClear" />
           <Text class="pcs_torpor_lbl" id="pcs_torporLabel_Red"> </Text>
+          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_frenzy" id="pcs_Red_frenzyToggle" text="Frenzy○" />
+          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_blindfold" id="pcs_Red_blindfoldToggle" text="Blind○" />
         </HorizontalLayout>
       </VerticalLayout>
     </Panel>
@@ -220,13 +226,15 @@
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Pink_xpDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Pink_xpApply" />
           <Text class="pcs_prefix_hg">Hg:</Text>
-          <Text class="pcs_hunger_val" id="pcs_hungerVal_Pink">0</Text>
+          <Text class="pcs_hunger_dots" id="pcs_hungerDots_Pink"></Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Pink_hungerUp" text="▲" />
           <Text class="pcs_buf_hunger" id="pcs_bufHunger_Pink">+0</Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Pink_hungerDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_hunger" id="pcs_Pink_hungerApply" />
           <Button class="pcs_btn pcs_btn_torpor pcs_btn_palette_torpor" id="pcs_Pink_torporClear" />
           <Text class="pcs_torpor_lbl" id="pcs_torporLabel_Pink"> </Text>
+          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_frenzy" id="pcs_Pink_frenzyToggle" text="Frenzy○" />
+          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_blindfold" id="pcs_Pink_blindfoldToggle" text="Blind○" />
         </HorizontalLayout>
       </VerticalLayout>
     </Panel>
@@ -277,13 +285,15 @@
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Purple_xpDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Purple_xpApply" />
           <Text class="pcs_prefix_hg">Hg:</Text>
-          <Text class="pcs_hunger_val" id="pcs_hungerVal_Purple">0</Text>
+          <Text class="pcs_hunger_dots" id="pcs_hungerDots_Purple"></Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Purple_hungerUp" text="▲" />
           <Text class="pcs_buf_hunger" id="pcs_bufHunger_Purple">+0</Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Purple_hungerDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_hunger" id="pcs_Purple_hungerApply" />
           <Button class="pcs_btn pcs_btn_torpor pcs_btn_palette_torpor" id="pcs_Purple_torporClear" />
           <Text class="pcs_torpor_lbl" id="pcs_torporLabel_Purple"> </Text>
+          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_frenzy" id="pcs_Purple_frenzyToggle" text="Frenzy○" />
+          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_blindfold" id="pcs_Purple_blindfoldToggle" text="Blind○" />
         </HorizontalLayout>
       </VerticalLayout>
     </Panel>

@@ -27,6 +27,7 @@ Scenes = require("core.scenes")
 O = require("core.objects")
 local UIH = require("lib.ui_helpers")
 local HUDP = require("core.hud_player")
+local HO = require("core.hud_overlays")
 NPCS = require("core.npcs")
 PCST = require("core.pc_storyteller_panel")
 
@@ -101,6 +102,7 @@ function GlobalRegisterTrackerDisplay(cfg)
     TRACKER_DISPLAY = {
         damageTrack = cfg.damageTrack,
         humanityTrack = cfg.humanityTrack,
+        hungerTrack = cfg.hungerTrack,
         sheetImages = cfg.sheetImages,
     }
 end
@@ -712,6 +714,8 @@ function UpdateUIDisplays()
         -- Player HUD (Right Sidebar + Core/Reference visibility)
         HUDP.updatePlayerUI(player, color)
     end)
+
+    HO.syncAll()
 
     -- NPC storyteller panel: do not refresh here. `UpdateUIDisplays` runs on phase/scene/etc.; a full
     -- `UI.getXml` + `UI.setXml` rebuild is very expensive. The panel updates when NPCs change and when

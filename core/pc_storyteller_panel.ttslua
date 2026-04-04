@@ -77,6 +77,15 @@ local function safeSetValue(elementId, text)
   end)
 end
 
+--- @param elementId string
+--- @param attr string
+--- @param val string|number|boolean
+local function safeSetAttr(elementId, attr, val)
+  pcall(function()
+    UI.setAttribute(elementId, attr, tostring(val))
+  end)
+end
+
 --- Chronicle character display name for a seat (PlayerData.charName or PCS.name).
 --- @param pid string|nil
 --- @return string
@@ -118,6 +127,9 @@ function PCST.refreshRow(color)
   safeSetValue("pcs_charFullName_" .. color, charFull ~= "" and charFull or "—")
 
   if pid == nil or pid == C.StorytellerID then
+    safeSetValue("pcs_hungerDots_" .. color, "")
+    safeSetAttr("pcs_" .. color .. "_frenzyToggle", "text", "—")
+    safeSetAttr("pcs_" .. color .. "_blindfoldToggle", "text", "—")
     return
   end
 
@@ -129,12 +141,16 @@ function PCST.refreshRow(color)
   local xp = S.getStateVal("playerData", pid, "stats", "xp")
   safeSetValue("pcs_xpVal_" .. color, tostring(xp or 0))
 
-  local hg = S.getPlayerVal(color, "hunger")
-  safeSetValue("pcs_hungerVal_" .. color, tostring(hg or 0))
+  safeSetValue("pcs_hungerDots_" .. color, P.formatHungerDotLine(color))
 
   local torporOn = S.getStateVal("playerData", pid, "conditions", "torpor") ~= nil
   -- Short label avoids narrow Text wrapping one character per line next to the Torpor button.
   safeSetValue("pcs_torporLabel_" .. color, torporOn and "● active" or "○ clear")
+
+  local frenzyOn = S.getStateVal("playerData", pid, "conditions", "hudFrenzy") ~= nil
+  local blindOn = S.getStateVal("playerData", pid, "conditions", "hudBlindfold") ~= nil
+  safeSetAttr("pcs_" .. color .. "_frenzyToggle", "text", frenzyOn and "Frenzy●" or "Frenzy○")
+  safeSetAttr("pcs_" .. color .. "_blindfoldToggle", "text", blindOn and "Blind●" or "Blind○")
 
   safeSetValue("pcs_bufHPA_" .. color, string.format("%+d", b.hAgg))
   safeSetValue("pcs_bufHPS_" .. color, string.format("%+d", b.hSup))
@@ -247,9 +263,24 @@ function PCST.onHudClick(player, _button, id)
   elseif action == "torporClear" then
     P.storytellerClearTorpor(color)
     PCST.refreshCharacterSheetsForColor(color)
+  elseif action == "frenzyToggle" then
+    if S.getStateVal("playerData", pid, "conditions", "hudFrenzy") ~= nil then
+      P.setConditionEntry(pid, "hudFrenzy", nil)
+    else
+      P.setConditionEntry(pid, "hudFrenzy", P.makeHudFrenzyCondition(pid))
+    end
+    PCST.refreshCharacterSheetsForColor(color)
+  elseif action == "blindfoldToggle" then
+    if S.getStateVal("playerData", pid, "conditions", "hudBlindfold") ~= nil then
+      P.setConditionEntry(pid, "hudBlindfold", nil)
+    else
+      P.setConditionEntry(pid, "hudBlindfold", P.makeHudBlindfoldCondition(pid))
+    end
+    PCST.refreshCharacterSheetsForColor(color)
   end
 
   PCST.refreshRow(color)
+  P.refreshHudOverlays()
 end
 
 return PCST

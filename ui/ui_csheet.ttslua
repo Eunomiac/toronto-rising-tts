@@ -26,6 +26,10 @@ local CSHEET_TRACKER_DISPLAY = {
     stain = "⊛",
     impaired = "⊘",
   },
+  hungerTrack = {
+    empty = "◎",
+    full = "◍",
+  },
   sheetImages = {
     health = {
       undamaged = "box_white",

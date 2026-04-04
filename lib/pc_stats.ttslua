@@ -40,6 +40,14 @@ local function humanityTrackGlyphs()
   return "_", "O", "*", "I"
 end
 
+--- Push Global UI overlay visibility (UI.show/hide) after PC state changes.
+function P.refreshHudOverlays()
+  pcall(function()
+    local HO = require("core.hud_overlays")
+    HO.syncAll()
+  end)
+end
+
 --- Which automated UI id updates apply per sheet page (`CSHEET_PAGE_<n>_<COLOR>`).
 --- Add rows when you add page 3..8 XML: `"main"` = attrs/skills/trackers/BP/humanity (no discipline dots);
 --- `"disciplines"` = discipline dot-lines only; `"none"` = skip this pipeline (custom ids / later profile).
@@ -203,6 +211,7 @@ function P.applyDamageOrHeal(playerRef, which, superficialDelta, aggravatedDelta
   S.setStateVal(na, "playerData", playerID, "stats", which, "aggravated")
   P.syncDamageDerivedConditions(playerID)
   P.applyActiveConditionPresentation(playerID)
+  P.refreshHudOverlays()
 end
 
 --- @param playerID string
@@ -295,6 +304,32 @@ function P.makeTorporCondition(playerID)
     statChanges = {},
     hudChanges = { ["overlay_torpor_" .. col] = true },
     lightingModeChanges = { ["playerLight2" .. col] = "OFF" },
+    removalCriteria = "indefinite"
+  }
+end
+
+--- Storyteller-toggled HUD frenzy image (no stat or lighting effects).
+--- @param playerID string
+--- @return table
+function P.makeHudFrenzyCondition(playerID)
+  local pd = S.getPlayerData(playerID) or {}
+  local col = pd.color or "Brown"
+  return {
+    statChanges = {},
+    hudChanges = { ["overlay_frenzy_" .. col] = true },
+    removalCriteria = "indefinite"
+  }
+end
+
+--- Storyteller-toggled blindfold overlay (no stat or lighting effects).
+--- @param playerID string
+--- @return table
+function P.makeHudBlindfoldCondition(playerID)
+  local pd = S.getPlayerData(playerID) or {}
+  local col = pd.color or "Brown"
+  return {
+    statChanges = {},
+    hudChanges = { ["overlay_blindfold_" .. col] = true },
     removalCriteria = "indefinite"
   }
 end
@@ -468,6 +503,7 @@ function P.applyHumanityStainDelta(playerRef, stainDelta)
     end
   end
   P.applyActiveConditionPresentation(playerID)
+  P.refreshHudOverlays()
 end
 
 --- Whether collision creates impaired box (last humanity slot touched by stains from right).
@@ -496,6 +532,7 @@ function P.clearHumanityStains(playerRef)
     P.setConditionEntry(playerID, "impairedHumanity", nil)
   end
   P.applyActiveConditionPresentation(playerID)
+  P.refreshHudOverlays()
 end
 
 --- @param playerRef any
@@ -525,6 +562,7 @@ function P.applyHumanityBaseDelta(playerRef, delta)
     end
   end
   P.applyActiveConditionPresentation(playerID)
+  P.refreshHudOverlays()
 end
 
 --- Storyteller string: configurable undamaged / superficial / aggravated (defaults O / / X)
@@ -600,6 +638,35 @@ function P.formatHumanityTrackText(playerRef)
     end
   end
   return table.concat(slotModes, "")
+end
+
+--- Storyteller strip: `MAX_HUNGER` dots using Global `hungerTrack` glyphs (from CSHEET).
+--- @param seatColor string
+--- @return string
+function P.formatHungerDotLine(seatColor)
+  if type(seatColor) ~= "string" then
+    return ""
+  end
+  local g = getMergedTrackerDisplay()
+  local ht = g and g.hungerTrack
+  local empty = type(ht) == "table" and tostring(ht.empty or "") or ""
+  local glyphFull = type(ht) == "table" and tostring(ht.full or "") or ""
+  if empty == "" then
+    empty = "o"
+  end
+  if glyphFull == "" then
+    glyphFull = "O"
+  end
+  local hg = tonumber(S.getPlayerVal(seatColor, "hunger")) or 0
+  local maxDots = tonumber(C.MAX_HUNGER) or 5
+  if maxDots < 1 then
+    maxDots = 5
+  end
+  local chars = {}
+  for i = 1, maxDots do
+    chars[#chars + 1] = (i <= hg) and glyphFull or empty
+  end
+  return table.concat(chars, "")
 end
 
 --- Build XML attribute updates for character sheet objects.
@@ -812,6 +879,7 @@ function P.storytellerClearTorpor(playerRef)
   P.setConditionEntry(playerID, "torpor", nil)
   P.syncDamageDerivedConditions(playerID)
   P.applyActiveConditionPresentation(playerID)
+  P.refreshHudOverlays()
 end
 
 return P

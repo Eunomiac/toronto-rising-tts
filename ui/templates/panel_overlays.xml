@@ -1,0 +1,20 @@
+<!-- TARGET: ui/player/panel_overlays.xml -->
+<!-- Agent guidance: dev/TTS_BUNDLING_SETUP.md (generator); dev/HUDs & Overlays/Player HUD Overview.md (map panels). -->
+<!-- Visibility: TTS `UI.show` / `UI.hide` play showAnimation/hideAnimation (tts-api UI API/Attributes.md). -->
+<Panel id="playerHud_overlays_@@color@@" class="playerHud_overlaysLayer" visibility="@@color@@">
+
+  <Image id="overlay_willpower_impaired_@@color@@" image="overlay_willpower_impaired" class="player_overlay"  />
+
+  <Image id="overlay_health_impaired_@@color@@" image="overlay_health_impaired" class="player_overlay"  />
+  <Image id="overlay_humanity_impaired_@@color@@" image="overlay_humanity_impaired" class="player_overlay"  />
+
+  <Image id="overlay_frenzy_@@color@@" image="overlay_frenzy" class="player_overlay overlay_anim_grow" />
+
+  <Image id="overlay_hunger_5_@@color@@" image="overlay_hunger_5" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_4_@@color@@" image="overlay_hunger_4" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_3_@@color@@" image="overlay_hunger_3" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_2_@@color@@" image="overlay_hunger_2" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_1_@@color@@" image="overlay_hunger_1" class="player_overlay overlay_anim_fade" />
+
+  <Image id="overlay_blindfold_@@color@@" image="overlay_blindfold" class="player_overlay overlay_anim_slide_top" />
+</Panel>

@@ -10,24 +10,36 @@
 <Include src="defaults_classes" />
 
 <!-- 3. Storyteller HUD (Black): admin panel + sidebar + camera defaults -->
-<Include src="storyteller/hud_storyteller_defaults" />
+<Panel id="HUD_PANEL_BLACK" class="hud_root_panel" visibility="Host">
+  <!-- 3a. Storyteller HUD defaults -->
+  <Include src="storyteller/hud_storyteller_defaults" />
+  <Include src="storyteller/panel_pcs_defaults" />
 
-<!-- 3b. Storyteller PCs panel typography + button palettes -->
-<Include src="storyteller/panel_pcs_defaults" />
-
-<!-- 4. King's Dilemma HUD (reference templates) -->
-<!-- <Include src="kingsdilemma/hud_kd_defaults" /> -->
-
-<Panel id="HUD_PANEL">
+  <!-- 3b. Storyteller HUD -->
   <Include src="storyteller/hud_storyteller" />
+</Panel>
 
-  <!-- 5. Player HUD (per-color panels) -->
-  <!-- <Include src="player/hud_player" /> -->
+<!-- 4. Player HUD (per-color panels) -->
+<Panel id="HUD_PANEL_PLAYER" class="hud_root_panel">
 
-  <!-- 5b. Player HUD Right Sidebar + Coteries reference grid -->
-  <Include src="player/panel_right_sidebar_entry.xml" />
+  <!-- Defaults -->
+  <Include src="player/panel_overlays_defaults.xml" />
+  <Include src="player/panel_right_sidebar_defaults.xml" />
+  <Include src="player/panel_map_core_defaults.xml" />
 
-  <!-- 6. Shared UI (dice results, scene transition overlay) -->
-  <!-- <Include src="shared/hud_shared" /> -->
+  <!-- 4a. Player HUD Overlays -->
+  <Include src="player/panel_overlays.xml" />
+
+  <!-- 4a. Player HUD Right Sidebar -->
+
+  <!-- Map panels (generated per player color) -->
+  <Include src="player/panel_map_core.xml" />
+
+  <!-- Right sidebar buttons (generated per player color) -->
+  <Include src="player/panel_right_sidebar_buttons.xml" />
+
+  <!-- Reference layer (generated per player color) -->
+  <Include src="player/panel_right_sidebar_referenceLayer.xml" />
+
 
 </Panel>

@@ -1,0 +1,92 @@
+<!-- Generated file. Edit ui/templates/panel_overlays.xml only. -->
+<!-- Agent guidance: dev/TTS_BUNDLING_SETUP.md; dev/HUDs & Overlays/Player HUD Overview.md. -->
+
+<Panel id="playerHud_overlays_Brown" class="playerHud_overlaysLayer" visibility="Brown">
+
+  <Image id="overlay_willpower_impaired_Brown" image="overlay_willpower_impaired" class="player_overlay"  />
+
+  <Image id="overlay_health_impaired_Brown" image="overlay_health_impaired" class="player_overlay"  />
+  <Image id="overlay_humanity_impaired_Brown" image="overlay_humanity_impaired" class="player_overlay"  />
+
+  <Image id="overlay_frenzy_Brown" image="overlay_frenzy" class="player_overlay overlay_anim_grow" />
+
+  <Image id="overlay_hunger_5_Brown" image="overlay_hunger_5" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_4_Brown" image="overlay_hunger_4" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_3_Brown" image="overlay_hunger_3" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_2_Brown" image="overlay_hunger_2" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_1_Brown" image="overlay_hunger_1" class="player_overlay overlay_anim_fade" />
+
+  <Image id="overlay_blindfold_Brown" image="overlay_blindfold" class="player_overlay overlay_anim_slide_top" />
+</Panel>
+
+<Panel id="playerHud_overlays_Orange" class="playerHud_overlaysLayer" visibility="Orange">
+
+  <Image id="overlay_willpower_impaired_Orange" image="overlay_willpower_impaired" class="player_overlay"  />
+
+  <Image id="overlay_health_impaired_Orange" image="overlay_health_impaired" class="player_overlay"  />
+  <Image id="overlay_humanity_impaired_Orange" image="overlay_humanity_impaired" class="player_overlay"  />
+
+  <Image id="overlay_frenzy_Orange" image="overlay_frenzy" class="player_overlay overlay_anim_grow" />
+
+  <Image id="overlay_hunger_5_Orange" image="overlay_hunger_5" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_4_Orange" image="overlay_hunger_4" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_3_Orange" image="overlay_hunger_3" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_2_Orange" image="overlay_hunger_2" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_1_Orange" image="overlay_hunger_1" class="player_overlay overlay_anim_fade" />
+
+  <Image id="overlay_blindfold_Orange" image="overlay_blindfold" class="player_overlay overlay_anim_slide_top" />
+</Panel>
+
+<Panel id="playerHud_overlays_Red" class="playerHud_overlaysLayer" visibility="Red">
+
+  <Image id="overlay_willpower_impaired_Red" image="overlay_willpower_impaired" class="player_overlay"  />
+
+  <Image id="overlay_health_impaired_Red" image="overlay_health_impaired" class="player_overlay"  />
+  <Image id="overlay_humanity_impaired_Red" image="overlay_humanity_impaired" class="player_overlay"  />
+
+  <Image id="overlay_frenzy_Red" image="overlay_frenzy" class="player_overlay overlay_anim_grow" />
+
+  <Image id="overlay_hunger_5_Red" image="overlay_hunger_5" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_4_Red" image="overlay_hunger_4" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_3_Red" image="overlay_hunger_3" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_2_Red" image="overlay_hunger_2" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_1_Red" image="overlay_hunger_1" class="player_overlay overlay_anim_fade" />
+
+  <Image id="overlay_blindfold_Red" image="overlay_blindfold" class="player_overlay overlay_anim_slide_top" />
+</Panel>
+
+<Panel id="playerHud_overlays_Pink" class="playerHud_overlaysLayer" visibility="Pink">
+
+  <Image id="overlay_willpower_impaired_Pink" image="overlay_willpower_impaired" class="player_overlay"  />
+
+  <Image id="overlay_health_impaired_Pink" image="overlay_health_impaired" class="player_overlay"  />
+  <Image id="overlay_humanity_impaired_Pink" image="overlay_humanity_impaired" class="player_overlay"  />
+
+  <Image id="overlay_frenzy_Pink" image="overlay_frenzy" class="player_overlay overlay_anim_grow" />
+
+  <Image id="overlay_hunger_5_Pink" image="overlay_hunger_5" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_4_Pink" image="overlay_hunger_4" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_3_Pink" image="overlay_hunger_3" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_2_Pink" image="overlay_hunger_2" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_1_Pink" image="overlay_hunger_1" class="player_overlay overlay_anim_fade" />
+
+  <Image id="overlay_blindfold_Pink" image="overlay_blindfold" class="player_overlay overlay_anim_slide_top" />
+</Panel>
+
+<Panel id="playerHud_overlays_Purple" class="playerHud_overlaysLayer" visibility="Purple">
+
+  <Image id="overlay_willpower_impaired_Purple" image="overlay_willpower_impaired" class="player_overlay"  />
+
+  <Image id="overlay_health_impaired_Purple" image="overlay_health_impaired" class="player_overlay"  />
+  <Image id="overlay_humanity_impaired_Purple" image="overlay_humanity_impaired" class="player_overlay"  />
+
+  <Image id="overlay_frenzy_Purple" image="overlay_frenzy" class="player_overlay overlay_anim_grow" />
+
+  <Image id="overlay_hunger_5_Purple" image="overlay_hunger_5" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_4_Purple" image="overlay_hunger_4" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_3_Purple" image="overlay_hunger_3" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_2_Purple" image="overlay_hunger_2" class="player_overlay overlay_anim_fade" />
+  <Image id="overlay_hunger_1_Purple" image="overlay_hunger_1" class="player_overlay overlay_anim_fade" />
+
+  <Image id="overlay_blindfold_Purple" image="overlay_blindfold" class="player_overlay overlay_anim_slide_top" />
+</Panel>

@@ -1,7 +1,7 @@
 <!-- Classes for Storyteller PCs panel (`panel_pcs.xml`). Seat tint `color` stays per-Panel; ids and row label text stay on elements. -->
 <!-- Agent guidance: dev/tts-api/UI API/Defaults.md -->
 <Defaults>
-  <Panel class="pcs_panel_root" padding="6 6 6 6" width="540" />
+  <Panel class="pcs_panel_root" padding="6 6 6 6" width="620" />
   <VerticalLayout class="pcs_root_vl" spacing="8" childAlignment="UpperLeft" childForceExpandWidth="false" />
 
   <Panel class="pcs_seat_block" padding="6 8 6 8" />
@@ -26,7 +26,8 @@
 
   <Text class="pcs_xp_val" fontSize="13" color="#CCE8FF" preferredWidth="68" minWidth="64" flexibleWidth="0" alignment="MiddleLeft" />
   <Text class="pcs_hunger_val" fontSize="12" color="#FFE0C2" preferredWidth="40" minWidth="36" flexibleWidth="0" alignment="MiddleLeft" />
-  <Text class="pcs_torpor_lbl" fontSize="11" color="#F0F0F0" preferredWidth="88" minWidth="88" flexibleWidth="0" alignment="MiddleLeft" />
+  <Text class="pcs_hunger_dots" fontSize="22" fontStyle="Bold" color="#FFE0C2" preferredWidth="90" minWidth="72" flexibleWidth="0" alignment="MiddleLeft" />
+  <Text class="pcs_torpor_lbl" fontSize="11" color="#F0F0F0" preferredWidth="72" minWidth="72" flexibleWidth="0" alignment="MiddleLeft" />
 
   <!-- Shared button base; pair with a palette class. `text` and `id` stay on the element. -->
   <Button class="pcs_btn" onClick="HUD_pcPanel" textColor="#FFFFFFFF" height="26" fontSize="12" flexibleWidth="0" />
@@ -35,6 +36,7 @@
   <Button class="pcs_btn_apply_58" preferredWidth="58" minWidth="58" text="Apply" />
   <Button class="pcs_btn_clear_52" preferredWidth="52" minWidth="52" text="Clear" />
   <Button class="pcs_btn_torpor" preferredWidth="76" minWidth="76" text="Torpor" />
+  <Button class="pcs_btn_cond" preferredWidth="86" minWidth="80" fontSize="10" height="26" />
 
   <Button class="pcs_btn_palette_agg" colors="#662222|#883333|#991111|rgba(0.5,0.1,0.1,0.4)" />
   <Button class="pcs_btn_palette_sup" colors="#444444|#555555|#666666|rgba(0.2,0.2,0.2,0.4)" />
@@ -45,4 +47,6 @@
   <Button class="pcs_btn_palette_xp" colors="#224466|#335577|#4466AA|rgba(0.1,0.2,0.3,0.4)" />
   <Button class="pcs_btn_palette_hunger" colors="#663311|#884422|#AA5522|rgba(0.3,0.15,0.05,0.4)" />
   <Button class="pcs_btn_palette_torpor" colors="#441122|#552233|#663344|rgba(0.2,0.05,0.1,0.4)" />
+  <Button class="pcs_btn_palette_frenzy" colors="#662200|#883300|#AA4400|rgba(0.35,0.1,0,0.45)" />
+  <Button class="pcs_btn_palette_blindfold" colors="#222233|#333344|#444466|rgba(0.12,0.12,0.2,0.45)" />
 </Defaults>

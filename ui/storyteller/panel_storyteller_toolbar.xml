@@ -1,6 +1,6 @@
 <!-- Storyteller bottom-right tool bar + pop-out panels (Black) -->
 <!-- Agent guidance: dev/HUD_FUNCTIONS.md; dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md (NPCs toggle). -->
-<Panel id="storytellerToolbarRoot" visibility="Black" rectAlignment="UpperLeft" offsetXY="50 200" width="800" height="800">
+<Panel id="storytellerToolbarRoot" visibility="Host" rectAlignment="UpperLeft" offsetXY="50 200" width="800" height="800">
   <VerticalLayout spacing="4" childAlignment="LowerLeft" height="36">
     <HorizontalLayout rectAlignment="UpperLeft" ignoreLayout="true" spacing="3" childAlignment="MiddleLeft" width="200" height="20" offsetXY="0 20">
       <Button id="toggle_lighting" text="Light" minWidth="16" fontSize="8"
