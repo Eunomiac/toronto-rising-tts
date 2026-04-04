@@ -76,9 +76,9 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
     <!-- Dexterity dots -->
     <Image id="dot_off_dexterity_1" image="dot_blank" class="dot dot_standard" offsetXY="28.5 -74.5" />
     <Image id="dot_on_dexterity_1" image="dot_yellow" class="dot dot_standard" offsetXY="28.5 -74.5" />
-    <Image id="dot_off_dexterity_2" image="dot_blank" class="dot dot_standard" offsetXY="31.9 -74.5" />
+    <Image id="dot_off_dexterity_2" image="dot_blank" class="dot dot_standard" offsetXY="31.9 -74.5" active="true" />
     <Image id="dot_on_dexterity_2" image="dot_yellow" class="dot dot_standard" offsetXY="31.9 -74.5" />
-    <Image id="dot_off_dexterity_3" image="dot_blank" class="dot dot_standard" offsetXY="35.3 -74.5" />
+    <Image id="dot_off_dexterity_3" image="dot_blank" class="dot dot_standard" offsetXY="35.3 -74.5" active="true" />
     <Image id="dot_on_dexterity_3" image="dot_yellow" class="dot dot_standard" offsetXY="35.3 -74.5" />
     <Image id="dot_off_dexterity_4" image="dot_blank" class="dot dot_standard" offsetXY="38.7 -74.5" />
     <Image id="dot_on_dexterity_4" image="dot_yellow" class="dot dot_standard" offsetXY="38.7 -74.5" />
@@ -547,14 +547,14 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
     <Image id="box_impaired_humanity_6" image="box_red" class="box box_standard" offsetXY="32 -185.15" />
     <Image id="box_stain_humanity_6" image="box_black" class="box box_standard" offsetXY="32 -185.15" />
     <Image id="box_on_humanity_7" image="box_white" class="box box_standard" offsetXY="36.2 -185.15" />
-    <Image id="box_impaired_humanity_7" image="box_red" class="box box_standard" offsetXY="36.2 -185.15" active="true" />
+    <Image id="box_impaired_humanity_7" image="box_red" class="box box_standard" offsetXY="36.2 -185.15"  />
     <Image id="box_stain_humanity_7" image="box_black" class="box box_standard" offsetXY="36.2 -185.15" />
     <Image id="box_on_humanity_8" image="box_white" class="box box_standard" offsetXY="40.4 -185.15" />
     <Image id="box_impaired_humanity_8" image="box_red" class="box box_standard" offsetXY="40.4 -185.15" />
-    <Image id="box_stain_humanity_8" image="box_black" class="box box_standard" offsetXY="40.4 -185.15" active="true" />
+    <Image id="box_stain_humanity_8" image="box_black" class="box box_standard" offsetXY="40.4 -185.15"  />
     <Image id="box_on_humanity_9" image="box_white" class="box box_standard" offsetXY="44.6 -185.15" />
     <Image id="box_impaired_humanity_9" image="box_red" class="box box_standard" offsetXY="44.6 -185.15" />
-    <Image id="box_stain_humanity_9" image="box_black" class="box box_standard" offsetXY="44.6 -185.15" active="true"/>
+    <Image id="box_stain_humanity_9" image="box_black" class="box box_standard" offsetXY="44.6 -185.15" />
     <Image id="box_on_humanity_10" image="box_white" class="box box_standard" offsetXY="48.8 -185.15" />
     <Image id="box_impaired_humanity_10" image="box_red" class="box box_standard" offsetXY="48.8 -185.15" />
     <Image id="box_stain_humanity_10" image="box_black" class="box box_standard" offsetXY="48.8 -185.15" active="true" />
