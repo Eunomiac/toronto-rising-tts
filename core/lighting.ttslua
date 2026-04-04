@@ -84,6 +84,16 @@ function manualPlayerLight2Setup()
   L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_PINK, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
   L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_PURPLE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
 
+
+  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_1_RED, {
+    enabled = true,
+    position = Vector(0.00, 23.00, -65.00),
+    rotation = Vector(330, 0.00, 0.00),
+    range = 50,
+    angle = 75,
+    intensity = 2
+}, "Red", 2)
+
   -- "OFF" modes should change only by having the angle go to zero.
 end
 L.LIGHTMODES = {
@@ -128,11 +138,11 @@ L.LIGHTMODES = {
       STANDARD = {
         enabled = true,
         position = Vector(-45.00, 50.00, 0),
-        rotation = Vector(30.00, -50.00, 0.00),
-        range = 80,
-        angle = 110,
+        rotation = Vector(0, -50.00, 0.00),
+        range = 90,
+        angle = 140,
         intensity = 4,
-        color = Color(255/255, 0/255, 0/255)
+        color = Color(100 / 255, 200 / 255, 255 / 255)
       }
     },
     mainLightRight = {
@@ -151,11 +161,11 @@ L.LIGHTMODES = {
       STANDARD = {
         enabled = true,
         position = Vector(45.00, 50.00, 0),
-        rotation = Vector(30.00, 50.00, 0.00),
-        range = 80,
-        angle = 110,
+        rotation = Vector(0.00, 50.00, 0.00),
+        range = 90,
+        angle = 140,
         intensity = 4,
-        color = Color(255/255, 0/255, 0/255)
+        color = Color(100 / 255, 200 / 255, 255 / 255)
       }
     },
     -- Player lights (per-player spotlights)
@@ -175,11 +185,11 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            position = Vector(75.237, 23.000, -53.554),
-            rotation = Vector(321.680, -36.000, 0.000),
-            range = 40,
-            angle = 90,
-            intensity = 3
+            position = Vector(67.595, 23.000, -43.037),
+            rotation = Vector(330, -36.000, 0.000),
+            range = 50,
+            angle = 75,
+            intensity = 2
         }
     },
     playerLight1Orange = {
@@ -196,11 +206,11 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            position = Vector(39.554, 23.000, -71.735),
-            rotation = Vector(321.680, -18.000, 0.000),
-            range = 40,
-            angle = 90,
-            intensity = 3
+            position = Vector(35.537, 23.000, -59.371),
+            rotation = Vector(330, -18.000, 0.000),
+            range = 50,
+            angle = 75,
+            intensity = 2
         }
     },
     playerLight1Red = {
@@ -217,11 +227,11 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            position = Vector(0.00, 23.00, -78.00),
-            rotation = Vector(321.68, 0.00, 0.00),
-            range = 40,
-            angle = 90,
-            intensity = 3
+            position = Vector(0.000, 23.000, -65.000),
+            rotation = Vector(330, 0.00, 0.00),
+            range = 50,
+            angle = 75,
+            intensity = 2
         }
     },
     playerLight1Pink = {
@@ -238,11 +248,11 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            position = Vector(-39.554, 23.000, -71.735),
-            rotation = Vector(321.680, 18.000, 0.000),
-            range = 40,
-            angle = 90,
-            intensity = 3
+            position = Vector(-35.537, 23.000, -59.371),
+            rotation = Vector(330, 18.000, 0.000),
+            range = 50,
+            angle = 75,
+            intensity = 2
         }
     },
     playerLight1Purple = {
@@ -259,11 +269,11 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            position = Vector(-75.237, 23.000, -53.554),
-            rotation = Vector(321.680, 36.000, 0.000),
-            range = 40,
-            angle = 90,
-            intensity = 3
+            position = Vector(-67.595, 23.000, -43.037),
+            rotation = Vector(330, 36.000, 0.000),
+            range = 50,
+            angle = 75,
+            intensity = 2
         }
     },
     playerLight2Brown = {

@@ -352,7 +352,13 @@ The above steps would proceed as follows:
 
 ### Text Assets
 
-For now, text assets are needed only for Specialties in the Character Sheet data processed above, and will be implemented later.
+#### `stats.specialties`
+
+To be implemented later.
+
+#### `stats.xp`
+
+The `text` attribute of the `<Text id="xp_text">` element must always be set to the player's current XP level, as a number, including "0".
 
 ## Storyteller Controls
 
@@ -474,3 +480,9 @@ Stains should be applied as described in the section "##### Example: `stats.huma
     }
   }
 ```
+
+### XP Controls
+
+* **XP Tracker Display:** A `<Text>` object with the `text` attribute set to render the player's current XP level, as a number.
+* **XP Control:** A blue "▲" button and a blue "▼" button, with a `<Text>` element separating them, displaying "+0" by default. Pressing the "▲" button should increase the value in this display by 1, and the player's XP level by 1. Pressing the "▼" button should decrease the value in this display by 1, (allowing negative numbers). Alone, these buttons should not change the player's state: This is simply a way for the Storyteller to set the player's XP level.
+* **Apply Button:** Located horizontally on the same row as the XP Tracker Display and XP Control, a blue "Apply" button. Pressing this button should apply the current value in the XP Control to the player's state, and reset the display to "+0".

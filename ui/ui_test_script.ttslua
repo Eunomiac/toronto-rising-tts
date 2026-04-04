@@ -10,7 +10,7 @@ local USE_NEGATIVE_FACE_NORMAL = false
 local LOCAL_POSITION_NUDGE = "0 0 -25"
 local APPLY_DYNAMIC_SIZE = false
 local APPLY_XML_TRANSFORMS = false
-local DEBUG = true
+local DEBUG = false
 local BOUNDS_MAX_ATTEMPTS = 25
 local BOUNDS_RETRY_SECONDS = 0.2
 
@@ -210,7 +210,7 @@ local function waitForBoundsAndApply(attempt)
 end
 
 function onLoad(script_state)
-  self.interactable = false
+  self.interactable = true
   Wait.time(function()
     waitForBoundsAndApply(1)
   end, 0.2)

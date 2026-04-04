@@ -124,6 +124,10 @@ R.spawnSeatObjectsFromTemplate(computed, sourceObjects)
 * PLAYER_CHAIR_RED = "474c0d"
 * PLAYER_LIGHT_2_RED = "41bbba"
 * HUNGER_SMOKE_RED = "5d1338"
+* CSHEET_PAGE_1_RED = "f10182"
+* CSHEET_PAGE_2_RED = "357ba5"
+* DICE_NORMAL_RED = "a3ae6c"
+* DICE_HUNGER_RED = "6d1c15"
 
 ```lua
 
@@ -134,7 +138,17 @@ local sourceObjects = {
     getObjectFromGUID("0cd76a"),
     getObjectFromGUID("474c0d"),
     getObjectFromGUID("41bbba"),
-    getObjectFromGUID("5d1338")
+    getObjectFromGUID("5d1338"),
+    getObjectFromGUID("f10182"),
+    getObjectFromGUID("357ba5"),
+    getObjectFromGUID("a3ae6c"),
+    getObjectFromGUID("6d1c15")
+}
+
+local sourceObjects = {
+    getObjectFromGUID("b13642"), -- player hand zone is first object
+    getObjectFromGUID("a3ae6c"),
+    getObjectFromGUID("6d1c15")
 }
 
 local centerPoint = { x = 0, y = 0, z = 50 }

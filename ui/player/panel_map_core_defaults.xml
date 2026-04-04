@@ -51,13 +51,14 @@
     width="100%"
     preserveAspect="true"
     rectAlignment="MiddleCenter"
+    raycastTarget="false"
   />
 
   <Image class="hud_map_image_base"
     raycastTarget="false"
   />
 
-  <!-- Lua uses setTintVisibility (color #FFFFFF vs clear); keep active true so tint applies. -->
+  <!-- Stacked map overlays: Lua uses setMapStackImageVisibility (active + #FFFFFF vs inactive). Toggle buttons still use tint/clear. -->
   <Image class="hud_map_image_overlay"
     raycastTarget="false"
     active="true"

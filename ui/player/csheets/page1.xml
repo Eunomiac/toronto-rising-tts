@@ -58,7 +58,7 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
   <Text class="xp_text" fontSize="82" fontStyle="Bold" scale="0.1 0.1 0.1" color="#FFDD00" rectAlignment="LowerCenter" alignment="MiddleCenter" offsetXY="-6.7 7" outline="#000000" outlineSize="2 2" shadow="#000000" shadowDistance="5 -5" />
 </Defaults>
 
-<Panel id="paper_root" active="true" rectAlignment="MiddleCenter" width="154.5" height="200" position="0 0 -21" rotation="0 0 180" pivot="0.5 0.5">
+<Panel id="paper_root" rectAlignment="MiddleCenter" width="154.5" height="200" position="0 0 -21" rotation="0 0 180" pivot="0.5 0.5">
 
   <!-- === ATTRIBUTES === -->
   <Panel id="attributes_panel">
@@ -76,9 +76,9 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
     <!-- Dexterity dots -->
     <Image id="dot_off_dexterity_1" image="dot_blank" class="dot dot_standard" offsetXY="28.5 -74.5" />
     <Image id="dot_on_dexterity_1" image="dot_yellow" class="dot dot_standard" offsetXY="28.5 -74.5" />
-    <Image id="dot_off_dexterity_2" image="dot_blank" class="dot dot_standard" offsetXY="31.9 -74.5" active="true" />
+    <Image id="dot_off_dexterity_2" image="dot_blank" class="dot dot_standard" offsetXY="31.9 -74.5" />
     <Image id="dot_on_dexterity_2" image="dot_yellow" class="dot dot_standard" offsetXY="31.9 -74.5" />
-    <Image id="dot_off_dexterity_3" image="dot_blank" class="dot dot_standard" offsetXY="35.3 -74.5" active="true" />
+    <Image id="dot_off_dexterity_3" image="dot_blank" class="dot dot_standard" offsetXY="35.3 -74.5" />
     <Image id="dot_on_dexterity_3" image="dot_yellow" class="dot dot_standard" offsetXY="35.3 -74.5" />
     <Image id="dot_off_dexterity_4" image="dot_blank" class="dot dot_standard" offsetXY="38.7 -74.5" />
     <Image id="dot_on_dexterity_4" image="dot_yellow" class="dot dot_standard" offsetXY="38.7 -74.5" />
@@ -468,18 +468,18 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
 
     <!-- Health dots -->
     <Image id="box_on_health_1" image="box_white" class="box box_standard" offsetXY="11 -173.05" />
-    <Image id="box_agg_health_1" image="box_red_x" class="box box_standard" offsetXY="11 -173.05" active="true" />
+    <Image id="box_agg_health_1" image="box_red_x" class="box box_standard" offsetXY="11 -173.05" />
     <Image id="box_sup_health_1" image="box_grey_slash" class="box box_standard" offsetXY="11 -173.05" />
     <Image id="box_on_health_2" image="box_white" class="box box_standard" offsetXY="15.2 -173.05" />
     <Image id="box_agg_health_2" image="box_red_x" class="box box_standard" offsetXY="15.2 -173.05" />
-    <Image id="box_sup_health_2" image="box_grey_slash" class="box box_standard" offsetXY="15.2 -173.05" active="true" />
+    <Image id="box_sup_health_2" image="box_grey_slash" class="box box_standard" offsetXY="15.2 -173.05" />
     <Image id="box_on_health_3" image="box_white" class="box box_standard" offsetXY="19.4 -173.05" />
     <Image id="box_agg_health_3" image="box_red_x" class="box box_standard" offsetXY="19.4 -173.05" />
-    <Image id="box_sup_health_3" image="box_grey_slash" class="box box_standard" offsetXY="19.4 -173.05" active="true" />
-    <Image id="box_on_health_4" image="box_white" class="box box_standard" offsetXY="23.6 -173.05" active="true" />
+    <Image id="box_sup_health_3" image="box_grey_slash" class="box box_standard" offsetXY="19.4 -173.05" />
+    <Image id="box_on_health_4" image="box_white" class="box box_standard" offsetXY="23.6 -173.05" />
     <Image id="box_agg_health_4" image="box_red_x" class="box box_standard" offsetXY="23.6 -173.05" />
     <Image id="box_sup_health_4" image="box_grey_slash" class="box box_standard" offsetXY="23.6 -173.05" />
-    <Image id="box_on_health_5" image="box_white" class="box box_standard" offsetXY="27.8 -173.05" active="true" />
+    <Image id="box_on_health_5" image="box_white" class="box box_standard" offsetXY="27.8 -173.05" />
     <Image id="box_agg_health_5" image="box_red_x" class="box box_standard" offsetXY="27.8 -173.05" />
     <Image id="box_sup_health_5" image="box_grey_slash" class="box box_standard" offsetXY="27.8 -173.05" />
     <Image id="box_on_health_6" image="box_white" class="box box_standard" offsetXY="32 -173.05" />
@@ -499,17 +499,17 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
     <Image id="box_sup_health_10" image="box_grey_slash" class="box box_standard" offsetXY="48.8 -173.05" />
     <!-- Willpower dots --> />
     <Image id="box_agg_willpower_1" image="box_red_x" class="box box_standard" offsetXY="99.4 -173.05" />
-    <Image id="box_sup_willpower_1" image="box_grey_slash" class="box box_standard" offsetXY="99.4 -173.05" active="true" />
+    <Image id="box_sup_willpower_1" image="box_grey_slash" class="box box_standard" offsetXY="99.4 -173.05" />
     <Image id="box_on_willpower_2" image="box_white" class="box box_standard" offsetXY="103.6 -173.05" />
     <Image id="box_agg_willpower_2" image="box_red_x" class="box box_standard" offsetXY="103.6 -173.05" />
-    <Image id="box_sup_willpower_2" image="box_grey_slash" class="box box_standard" offsetXY="103.6 -173.05" active="true" />
-    <Image id="box_on_willpower_3" image="box_white" class="box box_standard" offsetXY="107.8 -173.05" active="true" />
+    <Image id="box_sup_willpower_2" image="box_grey_slash" class="box box_standard" offsetXY="103.6 -173.05" />
+    <Image id="box_on_willpower_3" image="box_white" class="box box_standard" offsetXY="107.8 -173.05" />
     <Image id="box_agg_willpower_3" image="box_red_x" class="box box_standard" offsetXY="107.8 -173.05" />
     <Image id="box_sup_willpower_3" image="box_grey_slash" class="box box_standard" offsetXY="107.8 -173.05" />
-    <Image id="box_on_willpower_4" image="box_white" class="box box_standard" offsetXY="112 -173.05" active="true" />
+    <Image id="box_on_willpower_4" image="box_white" class="box box_standard" offsetXY="112 -173.05" />
     <Image id="box_agg_willpower_4" image="box_red_x" class="box box_standard" offsetXY="112 -173.05" />
     <Image id="box_sup_willpower_4" image="box_grey_slash" class="box box_standard" offsetXY="112 -173.05" />
-    <Image id="box_on_willpower_5" image="box_white" class="box box_standard" offsetXY="116.2 -173.05" active="true" />
+    <Image id="box_on_willpower_5" image="box_white" class="box box_standard" offsetXY="116.2 -173.05" />
     <Image id="box_agg_willpower_5" image="box_red_x" class="box box_standard" offsetXY="116.2 -173.05" />
     <Image id="box_sup_willpower_5" image="box_grey_slash" class="box box_standard" offsetXY="116.2 -173.05" />
     <Image id="box_on_willpower_6" image="box_white" class="box box_standard" offsetXY="120.4 -173.05" />
@@ -528,22 +528,22 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
     <Image id="box_agg_willpower_10" image="box_red_x" class="box box_standard" offsetXY="137.2 -173.05" />
     <Image id="box_sup_willpower_10" image="box_grey_slash" class="box box_standard" offsetXY="137.2 -173.05" />
     <!-- Humanity dots -->
-    <Image id="box_on_humanity_1" image="box_white" class="box box_standard" offsetXY="11 -185.15" active="true" />
+    <Image id="box_on_humanity_1" image="box_white" class="box box_standard" offsetXY="11 -185.15" />
     <Image id="box_impaired_humanity_1" image="box_red" class="box box_standard" offsetXY="11 -185.15" />
     <Image id="box_stain_humanity_1" image="box_black" class="box box_standard" offsetXY="11 -185.15" />
-    <Image id="box_on_humanity_2" image="box_white" class="box box_standard" offsetXY="15.2 -185.15" active="true" />
+    <Image id="box_on_humanity_2" image="box_white" class="box box_standard" offsetXY="15.2 -185.15" />
     <Image id="box_impaired_humanity_2" image="box_red" class="box box_standard" offsetXY="15.2 -185.15" />
     <Image id="box_stain_humanity_2" image="box_black" class="box box_standard" offsetXY="15.2 -185.15" />
-    <Image id="box_on_humanity_3" image="box_white" class="box box_standard" offsetXY="19.4 -185.15" active="true" />
+    <Image id="box_on_humanity_3" image="box_white" class="box box_standard" offsetXY="19.4 -185.15" />
     <Image id="box_impaired_humanity_3" image="box_red" class="box box_standard" offsetXY="19.4 -185.15" />
     <Image id="box_stain_humanity_3" image="box_black" class="box box_standard" offsetXY="19.4 -185.15" />
-    <Image id="box_on_humanity_4" image="box_white" class="box box_standard" offsetXY="23.6 -185.15" active="true" />
+    <Image id="box_on_humanity_4" image="box_white" class="box box_standard" offsetXY="23.6 -185.15" />
     <Image id="box_impaired_humanity_4" image="box_red" class="box box_standard" offsetXY="23.6 -185.15" />
     <Image id="box_stain_humanity_4" image="box_black" class="box box_standard" offsetXY="23.6 -185.15" />
-    <Image id="box_on_humanity_5" image="box_white" class="box box_standard" offsetXY="27.8 -185.15" active="true" />
+    <Image id="box_on_humanity_5" image="box_white" class="box box_standard" offsetXY="27.8 -185.15" />
     <Image id="box_impaired_humanity_5" image="box_red" class="box box_standard" offsetXY="27.8 -185.15" />
     <Image id="box_stain_humanity_5" image="box_black" class="box box_standard" offsetXY="27.8 -185.15" />
-    <Image id="box_on_humanity_6" image="box_white" class="box box_standard" offsetXY="32 -185.15" active="true" />
+    <Image id="box_on_humanity_6" image="box_white" class="box box_standard" offsetXY="32 -185.15" />
     <Image id="box_impaired_humanity_6" image="box_red" class="box box_standard" offsetXY="32 -185.15" />
     <Image id="box_stain_humanity_6" image="box_black" class="box box_standard" offsetXY="32 -185.15" />
     <Image id="box_on_humanity_7" image="box_white" class="box box_standard" offsetXY="36.2 -185.15" />
@@ -557,7 +557,7 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
     <Image id="box_stain_humanity_9" image="box_black" class="box box_standard" offsetXY="44.6 -185.15" />
     <Image id="box_on_humanity_10" image="box_white" class="box box_standard" offsetXY="48.8 -185.15" />
     <Image id="box_impaired_humanity_10" image="box_red" class="box box_standard" offsetXY="48.8 -185.15" />
-    <Image id="box_stain_humanity_10" image="box_black" class="box box_standard" offsetXY="48.8 -185.15" active="true" />
+    <Image id="box_stain_humanity_10" image="box_black" class="box box_standard" offsetXY="48.8 -185.15" />
 
     <!-- Blood Potency dots -->
     <Image id="dot_off_bloodPotency_1" image="dot_large_blank" class="dot dot_large" offsetXY="103.3 -184.2" />
@@ -572,7 +572,7 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
     <Image id="dot_on_bloodPotency_5" image="dot_large_red" class="dot dot_large" offsetXY="130.5 -184.2" />
 
     <!-- XP -->
-    <Text class="xp_text" text="5" />
+    <Text class="xp_text" text="" />
   </Panel>
 
 </Panel>

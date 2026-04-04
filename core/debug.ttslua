@@ -886,6 +886,11 @@ function DEBUG.testUI()
                         return string.lower(tostring(c)) == "#ffffff"
                     end
 
+                    --- Stacked map Images use setMapStackImageVisibility (active + tint); toggles/cards stay tint-only.
+                    local function isMapStackImageVisible(elementID)
+                        return isActive(elementID) and isTintVisible(elementID)
+                    end
+
                 -- Ensure HUD state is consistent for map tests.
                 S.setStateVal(nil, "playerData", playerID, "hud", "activeCorePanel")
                 S.setStateVal(nil, "playerData", playerID, "hud", "reference", "coteries")
@@ -953,7 +958,7 @@ function DEBUG.testUI()
                 local streetsOverlayToggleActiveLayerID = "playerHud_mapOverlayToggle_majorRoads_" .. testColor .. "_active"
 
                 -- 1) Overlay toggle OFF -> ON via click
-                local overlayInitiallyHidden = not isTintVisible(streetsOverlayImageID)
+                local overlayInitiallyHidden = not isMapStackImageVisible(streetsOverlayImageID)
                 printTestResult(
                     "Map overlay initial hidden (streets)",
                     overlayInitiallyHidden,
@@ -963,7 +968,7 @@ function DEBUG.testUI()
                 HUD_playerMap_overlayToggle_mouseDown(Player[testColor], "-1", streetsOverlayToggleID)
                 UpdateUIDisplays()
 
-                local overlayNowVisible = isTintVisible(streetsOverlayImageID) and isTintVisible(streetsOverlayToggleActiveLayerID)
+                local overlayNowVisible = isMapStackImageVisible(streetsOverlayImageID) and isTintVisible(streetsOverlayToggleActiveLayerID)
                 local postToggleOffsetXY = UI.getAttribute(draggableID, "offsetXY")
                 local postPanX, postPanY = parseOffsetXY(postToggleOffsetXY)
                 local panPreservedAfterOverlayToggle = postPanX == expectedBenningtonPanX and postPanY == expectedBenningtonPanY
@@ -984,7 +989,7 @@ function DEBUG.testUI()
                 HUD_playerMap_overlayToggle_mouseDown(Player[testColor], "-1", streetsOverlayToggleID)
                 UpdateUIDisplays()
 
-                local overlayNowHidden = not isTintVisible(streetsOverlayImageID) and not isTintVisible(streetsOverlayToggleActiveLayerID)
+                local overlayNowHidden = not isMapStackImageVisible(streetsOverlayImageID) and not isTintVisible(streetsOverlayToggleActiveLayerID)
                 printTestResult(
                     "Map overlay click toggles OFF (streets)",
                     overlayNowHidden,
@@ -999,7 +1004,7 @@ function DEBUG.testUI()
                 HUD_playerMap_districtToggle_hoverOn(Player[testColor], "-1", annexToggleID)
                 UpdateUIDisplays()
 
-                local annexHoverVisible = isTintVisible(annexOverlayID) and isTintVisible(annexCardID)
+                local annexHoverVisible = isMapStackImageVisible(annexOverlayID) and isTintVisible(annexCardID)
                 local annexHoverBaseHighlight = isTintVisible("playerHud_mapDistrictToggle_Annex_" .. testColor .. "_hover")
                 printTestResult(
                     "District hover shows overlay + card (Annex)",
@@ -1022,7 +1027,7 @@ function DEBUG.testUI()
                 HUD_playerMap_districtToggle_hoverOff(Player[testColor], "-1", annexToggleID)
                 UpdateUIDisplays()
 
-                local annexStillVisibleAfterHoverOff = isTintVisible(annexOverlayID) and isTintVisible(annexCardID) and isTintVisible("playerHud_mapDistrictToggle_Annex_" .. testColor .. "_active")
+                local annexStillVisibleAfterHoverOff = isMapStackImageVisible(annexOverlayID) and isTintVisible(annexCardID) and isTintVisible("playerHud_mapDistrictToggle_Annex_" .. testColor .. "_active")
                 printTestResult(
                     "District active persists after hover off (Annex)",
                     annexStillVisibleAfterHoverOff,
@@ -1035,8 +1040,8 @@ function DEBUG.testUI()
 
                 local benningtonOverlayID = "playerHud_mapOverlay_Bennington_" .. testColor
                 local benningtonCardID = "playerHud_districtCard_Bennington_" .. testColor
-                local benningtonVisible = isTintVisible(benningtonCardID) and isTintVisible(benningtonOverlayID)
-                local annexHidden = not isTintVisible(annexOverlayID) and not isTintVisible(annexCardID)
+                local benningtonVisible = isTintVisible(benningtonCardID) and isMapStackImageVisible(benningtonOverlayID)
+                local annexHidden = not isMapStackImageVisible(annexOverlayID) and not isTintVisible(annexCardID)
                 printTestResult(
                     "District click off reverts to persisted location district (Bennington)",
                     benningtonVisible and annexHidden,

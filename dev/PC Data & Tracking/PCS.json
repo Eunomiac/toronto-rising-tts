@@ -134,6 +134,7 @@
         "base": 2,
         "temp": 0
       },
+      "xp": 5,
       "disciplines": {
         "auspex": {
           "base": 3,
@@ -718,6 +719,7 @@
         "base": 2,
         "temp": 0
       },
+      "xp": 3,
       "disciplines": {
         "oblivion": {
           "base": 3,
@@ -1520,6 +1522,7 @@
         "base": 2,
         "temp": 0
       },
+      "xp": 5,
       "disciplines": {
         "animalism": {
           "base": 2,
@@ -2163,6 +2166,7 @@
         "base": 2,
         "temp": 0
       },
+      "xp": 0,
       "disciplines": {
         "presence": {
           "base": 3,
@@ -2704,6 +2708,7 @@
         "base": 2,
         "temp": 0
       },
+      "xp": 6,
       "disciplines": {
         "bloodSorcery": {
           "base": 4,
