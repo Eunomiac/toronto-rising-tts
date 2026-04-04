@@ -1,0 +1,8 @@
+---@diagnostic disable: undefined-global
+-- Agent guidance: dev/TESTING.md; dev/TTS_BUNDLING_SETUP.md (UI workflow).
+-- Layout for `paper_root` and all dynamic elements is defined in page XML (position, size, rotation, offsets).
+
+--- Enables pointer interaction on the sheet object. UI geometry is not driven from Lua.
+function onLoad(script_state)
+  self.interactable = true
+end

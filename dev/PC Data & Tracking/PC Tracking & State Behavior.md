@@ -1,29 +1,31 @@
 # Setting, Saving, and Loading PC State Data, and Refreshing XML Elements
 
-## PC State Data: Current Structure
-
-PC (and Storyteller) data is collected in the `playerData` table, where each player's data is keyed by their player ID number.  The current structure of each player's `playerData` entry is as follows:
-
-```jsonc
-    {
-        "color": "Black", // The player's color, as a string
-        "hud": PlayerHUDData, // The player's HUD data, saving overlay states and map location, is stored here. As changing this is beyond the scope of this document, it is not detailed here.
-        "hunger": 0 // The player's hunger level, as a number from 0 to 5
-    }
-```
-
-## PC State Data: Augmentation
-
-1. The "hunger" field should be removed, as it will be folded into the data structures defined below.
-2. The "stats" field should be added. The "stats" table will hold a variety of data relating to the current state of the character. Its definition will be built incrementally over the course of this document.
-
-### Context Regarding the PCs' Character Sheets
+## Context Regarding the PCs' Character Sheets
 
 To reduce the need for numerous dynamic XML elements to be present in the Character Sheet XML (so they can be toggled on/off as needed to display proper stat values), the majority of each PCs stats have been embedded into the image files that will be used for each page of the PCs' character sheets. Thus, it is unnecessary to dynamically activate each PC's entire range of stats; only when something *changes* will one of the `active="false"` elements in the Character Sheet XML need to be toggled to `active="true"`.
 
 Nevertheless, for simplicity and clarity, a PC's full stat block will be stored in their `stats` table, and the necessary changes (i.e. dynamic XML elements) will need to be derived from this table.
 
-### `PCStatsPartA`: `stats.attributes`, `stats.skills`, and `stats.specialties`
+## Source Data for Initial `playerData` Entries
+
+The source data for the initial `playerData` entries is stored in the `PCs.json` file. When first populating the `playerData` table, derive all values from that file. (Note: Not all values will be used; only those defined as this document progresses as `PCStatsPartA`, `PCStatsPartB`, `PCStatsPartC`, `PCStatsPartD`, and `PCStatsPartE` are defined.)
+
+The steam ID numbers (used as keys in the `playerData` table) are stored in the `C.PlayerIDs` table in `lib/constants.ttslua`, along with the player's name and color, as well as the character key (used to lookup the character data from the `PCs.json` file) and full name.
+
+### Example: Initial `playerData` Entry for Thaumaterge
+
+```jsonc
+    "76561198062386601": {
+        "charKey": "fomorach",
+        "charName": "Fomórach",
+        "color": "Brown",
+        "hud": PlayerHUDData, // As changing this is beyond the scope of this document, it is not detailed here.
+        "playerName": "Thaumaterge",
+        "stats": PCStatsPartA & PCStatsPartB & PCStatsPartC & PCStatsPartD & PCStatsPartE
+    }
+```
+
+## `PCStatsPartA`: `stats.attributes`, `stats.skills`, and `stats.specialties`
 
 Both attributes and skills are simple 5-dot dotlines of matching size and shape. The only variation is in the position of each dotline on the sheet, and the addition of "specialties" to the skill dotlines.
 
@@ -55,7 +57,7 @@ Each attribute and each skill should be recorded in state following the followin
 * For **skills**, all twenty-seven skills should be recorded in the `stats.skills` table.
 * For **specialties**, an array containing one `Specialty` object for each of the PC's specialties should be recorded in the `stats.specialties` table.
 
-#### Example: `PCStatsPartA`
+### Example: `PCStatsPartA`
 
 ```jsonc
     "stats": {
@@ -135,7 +137,7 @@ Each attribute and each skill should be recorded in state following the followin
     }
 ```
 
-### `PCStatsPartB`: `stats.health`, `stats.willpower`, `stats.humanity`, `stats.xp`, and `stats.bloodPotency`
+## `PCStatsPartB`: `stats.health`, `stats.willpower`, `stats.humanity`, `stats.xp`, and `stats.bloodPotency`
 
 * `stats.health`, `stats.willpower` and `stats.humanity` are 10-box boxlines of matching size and shape. They vary in their position on the character sheet, and in what needs to be dynamically tracked in `playerData.stats`, as shown below. **Importantly**, these stats have *not* been baked into the character sheet image; they are fully dynamic and the appropriate image for each slot will need to be toggled to the `active="true"` state.
 
@@ -167,7 +169,7 @@ Each attribute and each skill should be recorded in state following the followin
   }
 ```
 
-#### Example: `PCStatsPartB`
+### Example: `PCStatsPartB`
 
 ```jsonc
     "stats": {
@@ -197,7 +199,7 @@ Each attribute and each skill should be recorded in state following the followin
     }
 ```
 
-### `PCStatsPartC`: `stats.disciplines`
+## `PCStatsPartC`: `stats.disciplines`
 
 At present, each discipline should be recorded as a `BasicStat` object, with the `base` value being the player's current discipline level (as baked into the character sheet image), and the `temp` value being the player's current temporary discipline bonus or penalty.
 
@@ -210,7 +212,7 @@ Future augmentation may enable the addition or removal of specific discipline po
   }
 ```
 
-#### Example: `PCStatsPartC`
+### Example: `PCStatsPartC`
 
 ```jsonc
     "stats": {
@@ -223,7 +225,7 @@ Future augmentation may enable the addition or removal of specific discipline po
     }
 ```
 
-### `PCStatsPartD`: `stats.backgrounds`, `stats.merits`, `stats.flaws`, `stats.bloodline` and `stats.loresheet`
+## `PCStatsPartD`: `stats.backgrounds`, `stats.merits`, `stats.flaws`, `stats.bloodline` and `stats.loresheet`
 
 To be implemented later. For now, lay the groundwork for these data structures by assigning them an empty array.
 
@@ -237,7 +239,7 @@ To be implemented later. For now, lay the groundwork for these data structures b
   }
 ```
 
-### `PCStatsPartE`: `stats.conditions`
+## `PCStatsPartE`: `stats.conditions`
 
 To be implemented later. For now, lay the groundwork for this data structure by assigning it an empty table. Conditions will be assigned by key, and removed by setting the value to `null`. The key for each condition should be a string, and the value should be an object with the following properties:
 
@@ -259,6 +261,10 @@ To be implemented later. For now, lay the groundwork for this data structure by 
 ```
 
 ## Dynamic HUD Updates
+
+Importantly, the HUD being updated is an object-based HUD, not a global HUD. Each page of each player's character sheet will `require` the same script: `ui/ui_csheet.ttslua`. This script must be able to determine both the page number and the player from the object it has been required by, so that it can in turn derive the necessary player data from the correct `playerData` table.
+
+This can all be derived from the Nickname of the object the script is attached to, for all character sheet pages are named in the form: `CSHEET_PAGE_<page_number>_<PLAYER_COLOR>`, e.g. `CSHEET_PAGE_1_BROWN`, `CSHEET_PAGE_2_ORANGE`, etc. A (case-insensitive) helper function, `C.GetPlayerID`, has been defined in `lib/constants.ttslua` to derive the player ID from a player reference (player name, character key, or---as in this case---a player color).
 
 ### Image Assets
 

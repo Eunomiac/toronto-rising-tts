@@ -465,32 +465,24 @@ function HUD_logState(player, button, id)
     broadcastToColor("Game state logged to console.", player.color, {0, 1, 1})
 end
 
---- Print entire game state to host console and to game chat (chunked).
+--- Pretty-print full game state to workspace file via TTS Tools (same path as DEBUG.logStateToFile).
+-- Writes **.tts/output/debug_logs/game_state.txt** (overwrites each click). See dev/DEBUG_FILE_LOGGING.md.
 -- Called when the Storyteller left-panel "Print State" button is clicked.
--- TTS Lua cannot write to files; full state is printed to console and broadcast to chat.
 -- @param player Player The player who clicked (Host/Black)
 -- @param button string Button value
 -- @param id string The UI element ID
 function HUD_printState(player, button, id)
-    local state = S.getGameState()
-    local jsonStr = JSON.encode_pretty(state)
-    if not jsonStr or jsonStr == "" then
-        broadcastToAll("Game state is empty.", {1, 0.5, 0})
+    if not DEBUG or type(DEBUG.logStateToFile) ~= "function" then
+        broadcastToColor("Print State: DEBUG.logStateToFile missing.", player.color, {1, 0.5, 0})
         return
     end
-    -- Always print full state to host console
-    print("=== GAME STATE ===")
-    print(jsonStr)
-    print("==================")
-    -- Broadcast to game chat in chunks (TTS chat has a message length limit)
-    local chunkSize = 450
-    local len = #jsonStr
-    broadcastToAll("--- Game state (host console has full dump) ---", {0.7, 0.7, 1})
-    for start = 1, len, chunkSize do
-        local chunk = string.sub(jsonStr, start, start + chunkSize - 1)
-        broadcastToAll(chunk, {0.85, 0.85, 0.9})
-    end
-    broadcastToAll("--- End state ---", {0.7, 0.7, 1})
+    -- Delegates to core/debug.ttslua: JSON.encode_pretty + writeToFile (sendExternalMessage, format "auto")
+    DEBUG.logStateToFile("game_state")
+    broadcastToColor(
+        "Game state written to .tts/output/debug_logs/game_state.txt (enable TTS Editor custom messages if missing).",
+        player.color,
+        {0, 1, 1}
+    )
 end
 
 --[[

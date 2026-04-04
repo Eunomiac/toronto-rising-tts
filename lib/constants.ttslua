@@ -11,7 +11,12 @@ local C = {}
 -- All other player IDs are extracted dynamically when players choose a seat color.
 C.StorytellerID = "76561198002132577"
 C.PlayerIDs = {
-  Storyteller = "76561198002132577"
+  Storyteller = "76561198002132577",
+  PixelPuzzler = "76561198071469619",
+  Roarshack = "76561199015564654",
+  Hastur = "76561198045820450",
+  JRook = "76561198068906854",
+  Thaumaterge = "76561198062386601"
 }
 
 -- Static Player Data
@@ -22,8 +27,58 @@ C.PlayerData = {
       color = "Black",
       playerName = "Storyteller",
       charName = "Storyteller"
+    },
+    [C.PlayerIDs.Thaumaterge] = {
+      color = "Brown",
+      playerName = "Thaumaterge",
+      charKey = "fomorach",
+      charName = "Fomórach"
+    },
+    [C.PlayerIDs.Hastur] = {
+      color = "Orange",
+      playerName = "Hastur",
+      charKey = "rashid",
+      charName = "Rashid Abdulrahman"
+    },
+    [C.PlayerIDs.PixelPuzzler] = {
+      color = "Red",
+      playerName = "PixelPuzzler",
+      charKey = "lucien",
+      charName = "Lord Lucien"
+    },
+    [C.PlayerIDs.JRook] = {
+      color = "Pink",
+      playerName = "JRook",
+      charKey = "aishe",
+      charName = "Aishe Tache"
+    },
+    [C.PlayerIDs.Roarshack] = {
+      color = "Purple",
+      playerName = "Roarshack",
+      charKey = "blackCaesar",
+      charName = "Black Caesar"
     }
 }
+
+-- playerRef can be a color, a player name, or a character key
+C.GetPlayerID = function(playerRef)
+  if type(playerRef) == "string" then
+    if C.PlayerIDs[playerRef] then
+      return C.PlayerIDs[playerRef]
+    end
+    if C.PlayerData[playerRef] then
+      return playerRef
+    end
+    -- Otherwise, we must search the C.PlayerData table for a matching color, playerName, or character key.
+    -- To avoid overly strict failures, we will make all comparisons case-insensitive.
+    for playerID, playerData in pairs(C.PlayerData) do
+      if string.lower(playerData.color) == string.lower(playerRef) or string.lower(playerData.playerName) == string.lower(playerRef) or string.lower(playerData.charKey) == string.lower(playerRef) then
+        return playerID
+      end
+    end
+  end
+  error("Invalid player reference: " .. tostring(playerRef))
+end
 
 
 -- Player Colors (VTM5E-specific)
