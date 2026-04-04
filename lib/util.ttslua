@@ -3,6 +3,10 @@
 -- Extracted from Heritage/Kings Dilemma reference modules
 -- This file contains general-purpose utility functions for the VTM5E Tabletop Simulator module.
 --
+-- Agent guidance: dev/AVAILABLE_FUNCTIONS.md; dev/EXTRACTABLE_FUNCTIONS_INDEX.md;
+-- dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md; dev/Utility Function - RotateToFrom.md;
+-- dev/utility-functions/More Robust Lerping with Eases.md.
+--
 -- NOTE: TTS built-in globals are declared in .vscode/settings.json under Lua.diagnostics.globals
 -- This ensures the Lua Language Server recognizes them and doesn't show warnings.
 --
@@ -2773,7 +2777,18 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
 		return 1
 	end
 
-	startLuaCoroutine(self, "CheckCoroutine")
+	--- Spawn/callback contexts often have no `self`. TTS expects the Global script object for coroutines, not `_G`.
+	local _okCo, _coErr = pcall(function()
+		local coTarget = self
+		if coTarget == nil then
+			---@diagnostic disable-next-line: undefined-global
+			coTarget = Global ~= nil and Global or _G
+		end
+		startLuaCoroutine(coTarget, "CheckCoroutine")
+	end)
+	if not _okCo then
+		log({ waitUntilCoroutineStartFailed = tostring(_coErr) })
+	end
 
 	return function() return afterReturnVal ~= nil end
 end

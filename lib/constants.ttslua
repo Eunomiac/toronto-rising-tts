@@ -2,6 +2,8 @@
 -- Constants Library
 -- Game constants, configuration values, and lookup tables for VTM5E module.
 -- Extracted and adapted from Heritage and Kings Dilemma reference modules.
+--
+-- Agent guidance: dev/HUDs & Overlays/Player HUD Overview.md (C.CHRONICLE_DATA, phases); dev/EXTRACTABLE_FUNCTIONS_INDEX.md.
 
 local C = {}
 

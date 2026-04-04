@@ -1,4 +1,5 @@
 <!-- KD Admin Panel (Black) -->
+<!-- Agent guidance: dev/EXTRACTABLE_FUNCTIONS_INDEX.md. -->
 <!-- Game flow controls: preflight, session init, game status, admin tools -->
 
 <VerticalLayout class="kd_adminContainer" visibility="Black">

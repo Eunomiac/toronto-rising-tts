@@ -8,6 +8,8 @@
     `spawnObjectData({ data = copy, position = ... })` so world position overrides `Transform`.
 
     `LuaScript` / `LuaScriptState` are empty: paired lights are driven by `core/lighting` + `L.registerNpcSpotlightModes` + `gameState.lights`.
+
+    Agent guidance: dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md; dev/DEBUG_FILE_LOGGING.md (.tts/output paths when exporting).
 ]]
 
 local M = {}
@@ -20,7 +22,7 @@ M.NPC_LIGHT_OBJECT_DATA_DEFAULTS = {
         posX = 0.0,
         posY = -7.0,
         posZ = 85.0,
-        rotX = 330.5,
+        rotX = 315,
         rotY = 180.0,
         rotZ = 180.0,
         scaleX = 1.0,

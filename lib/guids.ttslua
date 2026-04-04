@@ -2,6 +2,8 @@
 -- GUIDs Library
 -- Centralized repository for all hard-coded GUID references.
 -- Separated from constants to keep GUID management isolated.
+--
+-- Agent guidance: dev/DEVELOPMENT_WORKFLOW.md (GUID troubleshooting); dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md (e.g. NPC_LIGHT_CLONE_TEMPLATE).
 
 local G = {}
 

@@ -1,6 +1,8 @@
 --[[
     Append NDJSON lines via TTS Tools sendExternalMessage type "write" (same as DEBUG.writeWorkspaceFile).
     Files land under workspaceFolder/.tts/output/<relativePath>. In-memory buffer per path; each send rewrites the file.
+
+    Agent guidance: dev/DEBUG_FILE_LOGGING.md.
 ]]
 
 local U = require("lib.util")

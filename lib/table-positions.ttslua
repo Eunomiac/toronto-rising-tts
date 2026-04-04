@@ -8,11 +8,13 @@
     IMPORTANT: This script calculates positions only. You must create and import a
     custom 3D model (OBJ file) to get the actual half-decagon table shape in TTS.
 
-    See dev/HALF-DECAGON-TABLE-GUIDE.md for complete instructions on creating the 3D model.
+    Layout/coordinates: dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md; dev/Rotational Coordinate Generator.md (seat polygon patterns).
 
     This module can be:
     - Required as a module: local TablePos = require("lib.table-positions")
     - Used directly via global functions (exposed for TTS console usage)
+
+    Agent guidance: dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md; dev/Rotational Coordinate Generator.md.
 
     Usage:
     ```lua

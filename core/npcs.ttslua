@@ -2,6 +2,8 @@
     NPC spawning, areas, paired spotlights, and Storyteller HUD integration.
     Data: lib/npcs_data.ttslua (NPCS.characters, NPCS.lights, NPCS.areas).
     Spec: dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md
+    Related: dev/NPC Object Spawning & Spotlighting/NPC Light Object Data.jsonc; dev/Game State Data.jsonc;
+    dev/Chronicle Data/NPCS_*.md (content keys); dev/HUD_FUNCTIONS.md (Storyteller NPC panel); dev/DEBUG_FILE_LOGGING.md.
 ]]
 
 local NPCS = {}
@@ -36,6 +38,27 @@ local REF_AREA_KEY = "centerForward"
 --- While true, instance uses spotlight mode until mouse up (not persisted).
 local spotlightHeld = {}
 
+--- Spawn callback only: `buildResolvedLightModeTable` prefers this object over `getObjectFromGUID` (GUID index can lag the live `fig`).
+local lightAlignFigOverride = {}
+
+--- Custom_Assetbundle spotlights: `L.GetLight` can be true while `loading_custom` is still true; component `set` calls are then ignored (matches `U.waitUntil` object-resting checks in `lib.util`).
+--- @param lightGuid string
+--- @param reg string `npcLight_<guid>`
+--- @return boolean
+local function npcSpotlightReadyForApply(lightGuid, reg)
+    if U.Type(lightGuid) ~= "string" or lightGuid == "" or U.Type(reg) ~= "string" or reg == "" then
+        return false
+    end
+    local litObj = getObjectFromGUID(lightGuid)
+    if litObj == nil then
+        return false
+    end
+    if litObj.loading_custom == true then
+        return false
+    end
+    return L.GetLight(reg, true) ~= nil
+end
+
 --- When true, each successful NPC storyteller panel XML refresh writes rows to the IDE workspace (TTS Tools).
 local autoDumpStorytellerNpcPanelXml = false
 --- Cached DEBUG.writeWorkspaceFile after first resolve (avoid require on every refresh).
@@ -52,6 +75,8 @@ local lastNpcPanelLayoutFingerprint = nil
 
 --- World offset from figurine root position to NPC spotlight spawn (matches prior clone placement).
 local NPC_LIGHT_SPAWN_OFFSET = { x = 3, y = 8, z = 3 }
+--- After `npcSpotlightReadyForApply`, extra wall-clock delay before `SetLightMode` so the spotlight beam reliably applies on spawn.
+local NPC_LIGHT_POST_READY_DELAY_SEC = 1.5
 
 --- Deep-clone TTS object state for `spawnObjectData` and clear `GUID` so the engine assigns a new id (avoids mutating live template data).
 --- @param data table|nil
@@ -79,6 +104,68 @@ local function cloneObjectDataForSpawn(data)
         shallow.GUID = ""
     end
     return shallow
+end
+
+--- Save-format `data` for `spawnObjectData` (`Figurine_Custom` + `CustomImage` keys match `Object.getData()`).
+--- Spawning this way embeds image URLs from the first frame; `spawnObject({ type = "Figurine_Custom" })` + callback
+--- `setCustomObject` can still trigger an empty Custom Figurine / Custom Asset dialog on some TTS builds even when URLs are valid.
+--- @param spawnPos { x: number, y: number, z: number }
+--- @param yawDeg number
+--- @param nickname string
+--- @param gmNotes string
+--- @param tags table
+--- @param imageURL string
+--- @param imageSecondaryURL string
+--- @param imageScalar number
+--- @return table
+local function buildNpcFigurineSpawnData(spawnPos, yawDeg, nickname, gmNotes, tags, imageURL, imageSecondaryURL, imageScalar)
+    return {
+        GUID = "",
+        Name = "Figurine_Custom",
+        Transform = {
+            posX = spawnPos.x,
+            posY = spawnPos.y,
+            posZ = spawnPos.z,
+            rotX = 0,
+            rotY = yawDeg,
+            rotZ = 0,
+            scaleX = 1,
+            scaleY = 1,
+            scaleZ = 1,
+        },
+        Nickname = nickname,
+        Description = "",
+        GMNotes = gmNotes,
+        AltLookAngle = { x = 0, y = 0, z = 0 },
+        ColorDiffuse = { r = 1, g = 1, b = 1 },
+        LayoutGroupSortIndex = 0,
+        Value = 0,
+        Locked = true,
+        Grid = false,
+        Snap = false,
+        IgnoreFoW = false,
+        MeasureMovement = false,
+        DragSelectable = true,
+        Autoraise = true,
+        Sticky = false,
+        Tooltip = false,
+        GridProjection = false,
+        HideWhenFaceDown = false,
+        Hands = false,
+        CustomImage = {
+            ImageURL = imageURL,
+            ImageSecondaryURL = imageSecondaryURL,
+            ImageScalar = imageScalar,
+            WidthScale = 0,
+        },
+        CustomFigurine = {
+            UseMinimalCollider = true,
+        },
+        LuaScript = "",
+        LuaScriptState = "",
+        XmlUI = "",
+        Tags = tags,
+    }
 end
 
 --- Avoid C# null-ref when alerting: U.AlertGM uses U.getHost().color (host may be missing in edge setups).
@@ -331,7 +418,10 @@ function NPCS.buildResolvedLightModeTable(npcName, modeKey)
     if rec == nil then
         return nil
     end
-    local fig = getObjectFromGUID(rec.figurineGuid or "")
+    local fig = lightAlignFigOverride[npcName]
+    if fig == nil or not U.isGameObject(fig) then
+        fig = getObjectFromGUID(rec.figurineGuid or "")
+    end
     if fig == nil then
         return nil
     end
@@ -484,25 +574,25 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
         imageScalar = 500
     end
 
-    --- Figurine: `spawnObject` (not `spawnObjectData`) keeps `sound = false` — the Base API documents `sound` only on
-    --- `spawnObject` / `paste`, not on `spawnObjectData`. A full `spawnObjectData` + `CustomImage` blob could embed
-    --- Nickname/GMNotes/Locked in one table, but we keep this path for quiet spawns unless TTS adds a data-spawn mute.
-    ---
-    --- `callback_function` runs when the figurine is fully spawned (DOM-ready analogue); only `setCustomObject` must
-    --- wait for that — name/notes/tags could theoretically race on some builds, so they stay in the same callback.
-    ---
-    --- Placement is already correct via `position` / `rotation` above, so we skip `applyFigurinePlacement` and
-    --- `getPosition` here (same slot math as `computeSlotWorldPosition` + yaw).
+    --- Figurine: `spawnObjectData` with embedded `CustomImage` (URLs in save-shape) avoids the empty Custom Figurine
+    --- import dialog that `spawnObject({ type = "Figurine_Custom" })` + `setCustomObject` can show before images apply.
+    --- Trade-off: `spawnObjectData` has no `sound = false` knob (Base API); brief spawn sound vs silent `spawnObject`.
+    local figData = buildNpcFigurineSpawnData(
+        spawnPos,
+        yawDeg,
+        def.name or npcName,
+        GM_PREFIX .. npcName,
+        { TAG_FIG },
+        front,
+        back,
+        imageScalar
+    )
     local spawnedFig
     ---@diagnostic disable-next-line: undefined-global
     local okObj, errObj = pcall(function()
         ---@diagnostic disable-next-line: undefined-global
-        spawnedFig = spawnObject({
-            type = "Figurine_Custom",
-            position = { spawnPos.x, spawnPos.y, spawnPos.z },
-            rotation = { 0, yawDeg, 0 },
-            scale = { 1, 1, 1 },
-            sound = false,
+        spawnedFig = spawnObjectData({
+            data = figData,
             callback_function = function(fig)
                 if fig == nil then
                     print("[NPCS] spawn callback: nil figurine for " .. tostring(npcName))
@@ -510,17 +600,6 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                     return
                 end
                 local postOk, postErr = pcall(function()
-                    fig.setName(def.name or npcName)
-                    fig.setGMNotes(GM_PREFIX .. npcName)
-                    if fig.setTags then
-                        fig.setTags({ TAG_FIG })
-                    end
-                    fig.setCustomObject({
-                        image = front,
-                        image_secondary = back,
-                        image_scalar = imageScalar,
-                        use_minimal_collider = true,
-                    })
                     fig.setLock(true)
 
                     --- Light: `spawnObjectData` from embedded save-shape defaults (lib/npcs_light_spawn_defaults.ttslua).
@@ -560,7 +639,29 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                         npcLightMode = "standard",
                     }
                     setInstanceRecord(npcName, rec)
-                    NPCS.applyCurrentLightMode(npcName, 0)
+                    --- Defer: applying modes inside this callback can deadlock TTS until the callback returns. The
+                    --- spotlight Custom_Assetbundle also needs `npcSpotlightReadyForApply` plus a short post-ready delay
+                    --- before `SetLightMode` takes effect (see `NPC_LIGHT_POST_READY_DELAY_SEC`).
+                    local deferFig = fig
+                    local deferLg = lg
+                    Wait.time(function()
+                        local reg = NPCS.lightRegistryName(deferLg)
+                        Wait.condition(function()
+                            Wait.time(function()
+                                lightAlignFigOverride[npcName] = deferFig
+                                local applyOk, applyErr = pcall(function()
+                                    NPCS.applyCurrentLightMode(npcName, 0)
+                                end)
+                                lightAlignFigOverride[npcName] = nil
+                                if not applyOk then
+                                    print("[NPCS] deferred applyCurrentLightMode failed: " .. tostring(applyErr))
+                                    safeAlertGM("NPCS spawn light apply: " .. tostring(applyErr))
+                                end
+                            end, NPC_LIGHT_POST_READY_DELAY_SEC)
+                        end, function()
+                            return npcSpotlightReadyForApply(deferLg, reg)
+                        end)
+                    end, 0)
                     if not deferUiRefresh then
                         NPCS.refreshStorytellerUIIfVisible()
                     end
@@ -573,7 +674,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
         })
     end)
     if not okObj or spawnedFig == nil then
-        return false, "NPC spawn (spawnObject): " .. tostring(errObj)
+        return false, "NPC spawn (spawnObjectData figurine): " .. tostring(errObj)
     end
 
     return true, nil

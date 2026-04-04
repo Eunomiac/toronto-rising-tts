@@ -213,34 +213,33 @@ Or keep the stub and add the same two lines to a scratch module required from `g
 
 ---
 
-## XML Color Template Generator (per-player XML)
+## XML UI template generator
 
-This repo includes a small helper script to expand per-player XML templates into generated bundles.
+Helper script for player (and other) UI XML that is generated from templates.
 
 ### What it does
 
-- Templates live in `dev/xml_templates/*.template.xml`.
-- Any template root that contains the placeholder token `@@color@@` is duplicated once per `C.PlayerColors` value.
-- For each generated output, all `@@color@@` occurrences inside the template root are replaced with the target player color string.
+- Templates live in `ui/templates/*.xml`.
+- The first non-empty line of each template must be `<!-- TARGET: path/from/repo/root.xml -->`.
+- If the template root contains `@@color@@`, it is duplicated once per `C.PlayerColors` value (from `lib/constants.ttslua`); otherwise a single root is written (pass-through).
+- Each output file begins with a banner pointing back to the template source.
 
 ### Where it writes outputs
 
-- Generator output directory: `ui/player/generated/`
-- Output naming convention: `<templateBase>_generated.xml`
-  - Example: `dev/xml_templates/panel_map_core.template.xml` -> `ui/player/generated/panel_map_core_generated.xml`
+- Whatever path is declared in the template `TARGET` line (for example `ui/player/panel_map_core_generated.xml`).
 
 ### How to run it
 
 From repo root:
 
 ```bash
-node dev/scripts/xml_color_template_generator.js --templateDir "dev/xml_templates" --outputDir "ui/player/generated"
+node dev/scripts/xml_color_template_generator.js
 ```
+
+Optional: `--templateDir` (defaults to `ui/templates`), `--token` (defaults to `@@color@@`).
 
 ### How generated XML is included
 
-- Include the generated output via an entry include file under `ui/` (to keep include order stable).
-- Example:
-  - `ui/player/panel_map_core_generated_entry.xml` includes `ui/player/generated/panel_map_core_generated.xml`
+- Include the output file directly from other `ui/**/*.xml` files (for example `ui/player/panel_right_sidebar_layers.xml`).
 
 If you change templates, re-run the generator before using TTS Tools "Save and Play".

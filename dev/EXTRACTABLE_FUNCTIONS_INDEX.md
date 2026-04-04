@@ -343,7 +343,7 @@
 
 | File | Purpose | Extractable Elements |
 |------|---------|---------------------|
-| `hud.xml` | Main HUD with role-based visibility | Panel structure, button patterns, role-based visibility (`visibility="Red"` for GM) |
+| `Global.xml` | Main HUD with role-based visibility | Panel structure, button patterns, role-based visibility (`visibility="Red"` for GM) |
 | `admin.xml` | GM/admin controls | Debug panel structure, toggle buttons |
 | `splash.xml` | Splash/startup screen | Modal dialog pattern |
 | `turn-tracker.xml` | Turn tracking UI | Sequential display pattern |
@@ -356,7 +356,7 @@
 
 | File | Purpose | Extractable Elements |
 |------|---------|---------------------|
-| `hud.xml` | Main HUD | Panel structure |
+| `Global.xml` | Main HUD | Panel structure |
 | `admin.xml` | Admin/debug panel | Toggle panels, debug controls |
 | `debug.xml` | Debug interface | Test function buttons |
 | `splash.xml` | Splash screen | Modal pattern |
@@ -585,7 +585,7 @@ scenes = {
 5. `core/lighting.ttslua` - Extract lighting control from Kings Dilemma
 6. `core/zones.ttslua` - Extract zone patterns (simplified)
 7. `core/scenes.ttslua` - NEW: Scene preset system
-8. `ui/hud.xml` - Adapt from templates
+8. `ui/Global.xml` - Adapt from templates
 9. `ui/admin.xml` - GM controls
 10. `ui/splash.xml` - Modal patterns
 

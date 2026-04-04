@@ -1,4 +1,5 @@
 <!-- General Shared Classes -->
+<!-- Agent guidance: dev/TTS_BUNDLING_SETUP.md; dev/HUDs & Overlays/Player HUD Overview.md; dev/tts-api/UI API/ (Defaults, Attributes). -->
 <!-- Include after defaults_tags; used across storyteller, player, shared. -->
 
 <Defaults>

@@ -14,6 +14,9 @@
     Light modes are stored in L.LIGHTMODES table and can be defined per-light.
     Mode fields are optional patches: missing fields are left unchanged on apply.
     Common fields are: enabled, color, range, angle, intensity, rotation, position.
+
+    Agent guidance: dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md (paired spotlights);
+    dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md.
 ]]
 
 local L = {}
@@ -988,11 +991,15 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
         })
     end
 
-    -- Wait for light component if needed
+    -- Wait for light component if needed (Custom_Assetbundle spotlights: object exists before Unity Light is ready).
+    -- `U.waitUntil` + `CheckCoroutine` is unreliable from spawn callbacks; `Wait.condition` is the TTS-native queue.
     if isSpawned and getLightComponent(light, true) == nil then
-        return U.waitUntil(activateLight, function()
+        Wait.condition(function()
+            activateLight()
+        end, function()
             return getLightComponent(light, true) ~= nil
-        end, false)
+        end)
+        return
     end
 
     return activateLight()

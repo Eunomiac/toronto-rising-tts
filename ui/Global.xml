@@ -1,0 +1,30 @@
+<!-- Main HUD - VTM5E Module -->
+<!-- Agent guidance: dev/TTS_BUNDLING_SETUP.md (bundling + XML templates); dev/HUD_FUNCTIONS.md; dev/HUDs & Overlays/Player HUD Overview.md; dev/tts-api/UI API/ (XML elements). -->
+<!-- Root bundle file; no layout applied here. Include order matters for TTS defaults. -->
+<!-- The TTS Tools extension bundles when using "Save and Play"; loaded via UI.setXml() -->
+
+<!-- 1. Tag-based defaults (include first); includes are relative to ui/ -->
+<Include src="defaults_tags" />
+
+<!-- 2. General shared classes -->
+<Include src="defaults_classes" />
+
+<!-- 3. Storyteller HUD (Black): Heritage admin panel + sidebar + camera -->
+<Include src="storyteller/hud_storyteller_defaults" />
+
+<!-- 4. King's Dilemma HUD (reference templates) -->
+<!-- <Include src="kingsdilemma/hud_kd_defaults" /> -->
+
+<Panel id="HUD_PANEL">
+  <Include src="storyteller/hud_storyteller" />
+
+  <!-- 5. Player HUD (per-color panels) -->
+  <!-- <Include src="player/hud_player" /> -->
+
+  <!-- 5b. Player HUD Right Sidebar + Coteries reference grid -->
+  <Include src="player/panel_right_sidebar_entry.xml" />
+
+  <!-- 6. Shared UI (dice results, scene transition overlay) -->
+  <!-- <Include src="shared/hud_shared" /> -->
+
+</Panel>

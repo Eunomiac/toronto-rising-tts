@@ -1,4 +1,5 @@
 <!-- Tag-Based Defaults -->
+<!-- Agent guidance: dev/TTS_BUNDLING_SETUP.md; dev/tts-api/UI API/Defaults.md. -->
 <!-- Include first; applies to elements with no class. No layout applied in this file. -->
 
 <Defaults>

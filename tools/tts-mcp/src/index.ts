@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 /**
  * MCP stdio server: execute Lua in Tabletop Simulator via the External Editor API (localhost 39998/39999).
+ *
+ * Agent guidance: dev/TTS_MCP.md; dev/TTS_BUNDLING_SETUP.md (ports 39998/39999); dev/tts-api/Getting Started/External Editor API.md.
  */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";

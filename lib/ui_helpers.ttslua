@@ -10,6 +10,8 @@
     - Additional UI utilities as needed
 
     Pattern extracted from Kings Dilemma hud.ttslua.
+
+    Agent guidance: dev/HUD_FUNCTIONS.md; dev/HUDs & Overlays/Player HUD Overview.md.
 ]]
 
 local UIHelpers = {}

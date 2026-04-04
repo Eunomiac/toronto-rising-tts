@@ -1,4 +1,5 @@
 <!-- Player HUD Right Sidebar (bundled entry) -->
+<!-- Agent guidance: dev/HUDs & Overlays/Player HUD Overview.md; dev/TTS_BUNDLING_SETUP.md (generated includes). -->
 <!-- Split into includes for maintainability and correct <Defaults> ordering. -->
 
 <Include src="panel_right_sidebar_defaults.xml" />

@@ -11,6 +11,8 @@
 --    - nested: `coteries` / `princesCourt` are tables (nil = closed)
 --    - nestedless: booleans (true = persistent-open; currently defaults to false)
 -- - `playerData.hud.reference.coteries.<coterieKey>` : boolean (true while holding popup)
+--
+-- Agent guidance: dev/HUDs & Overlays/Player HUD Overview.md; dev/TESTING.md.
 
 local U = require("lib.util")
 local C = require("lib.constants")

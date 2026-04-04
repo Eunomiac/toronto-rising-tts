@@ -1,6 +1,17 @@
 --[[
     Global script (canonical source). Tabletop Simulator loads .tts/objects/Global.lua, which
     only require()s this file. Edit here — not .tts/objects/Global.lua (that file may be overwritten on reload).
+
+    Agent guidance (dev/ documentation for this project):
+    DEVELOPMENT_WORKFLOW.md, TESTING.md, TTS_BUNDLING_SETUP.md, DEBUG_FILE_LOGGING.md, TTS_MCP.md,
+    HUD_FUNCTIONS.md, HUDs & Overlays/Player HUD Overview.md,
+    NPC Object Spawning & Spotlighting/NPC Object Overview.md,
+    AVAILABLE_FUNCTIONS.md, EXTRACTABLE_FUNCTIONS_INDEX.md,
+    User Guides/TTS-3D-Positioning-Coordinate-Utilities.md,
+    Rotational Coordinate Generator.md, Utility Function - RotateToFrom.md,
+    utility-functions/More Robust Lerping with Eases.md, Game State Data.jsonc,
+    Chronicle Data/ (NPC reference for data keys), custom-ui-assets/ (image manifest outputs),
+    tts-api/ (in-repo TTS Scripting + UI API reference; start at tts-api/Getting Started/).
 ]]
 
 -- Load shared utilities and constants
@@ -31,8 +42,8 @@ gameState = {}
 --[[
     Load UI XML
     The UI XML uses TTS Tools bundling:
-    - .tts/objects/Global.xml contains <Include src="ui/..." /> tags
-    - ui/hud.xml is the source (sync to .tts/objects/Global.xml)
+    - .tts/objects/Global.xml is a stub: <Include src="ui/Global.xml" /> (volatile; restore if TTS overwrites)
+    - ui/Global.xml is the canonical root bundle for global UI XML
     - On "Save and Play", the extension bundles all Includes and sends to TTS
     - No hardcoded XML in Lua; the bundled XML comes from the extension
     - refreshLightDebugPanel() injects dynamic spotlight rows at <!-- LIGHT_TABLE_ROWS -->

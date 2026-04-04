@@ -12,6 +12,8 @@
     - State persistence helpers (save object positions)
     - Basic zone utilities (visual management, containment checks)
 
+    Agent guidance: dev/AVAILABLE_FUNCTIONS.md; dev/EXTRACTABLE_FUNCTIONS_INDEX.md (zone patterns).
+
     NOTE: Many game-specific functions (scoring, status checking) are omitted and
     should be adapted for VTM5E needs. The core patterns are preserved.
 ]]

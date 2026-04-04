@@ -10,6 +10,8 @@
     - Event delegation to other modules
     - Camera and scene control utilities
     - Game initialization and setup sequences
+
+    Agent guidance: dev/DEVELOPMENT_WORKFLOW.md; dev/AVAILABLE_FUNCTIONS.md; dev/EXTRACTABLE_FUNCTIONS_INDEX.md.
 ]]
 
 local M = {}

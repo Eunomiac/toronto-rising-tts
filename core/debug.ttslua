@@ -14,6 +14,8 @@
 
     NOTE: This module is for development/testing only.
     Consider disabling or restricting access in production builds.
+
+    Agent guidance: dev/DEBUG_FILE_LOGGING.md; dev/TESTING.md; dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md (admin helpers).
 ]]
 
 DEBUG = {}

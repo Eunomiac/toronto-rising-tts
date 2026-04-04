@@ -1,4 +1,5 @@
 <!-- KD Debug Panel (Black) -->
+<!-- Agent guidance: dev/EXTRACTABLE_FUNCTIONS_INDEX.md; dev/TESTING.md. -->
 <!-- Debug buttons and state display panel -->
 
 <HorizontalLayout class="kd_buttonPanel kd_debugButtonPanel" visibility="Black">

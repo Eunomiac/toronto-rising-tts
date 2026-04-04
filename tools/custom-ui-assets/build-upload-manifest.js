@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 "use strict";
 
+// Agent guidance: dev/TTS_BUNDLING_SETUP.md; outputs consumed by lib/custom_ui_upload_manifest.ttslua (see dev/custom-ui-assets/).
+
 const fs = require("fs");
 const path = require("path");
 

@@ -1,12 +1,18 @@
 ---@diagnostic disable: undefined-global
-
-local M = {}
+-- Agent guidance: dev/TESTING.md; dev/TTS_BUNDLING_SETUP.md (UI workflow).
 
 local PIXELS_PER_UNIT = 115
 local FACE = "top"
-local FACE_SURFACE_OFFSET = 0.05
-local FACE_ROTATION = "90 0 0"
+local FACE_SURFACE_OFFSET = -5
+local FACE_COORDINATE_MODE = "uv_inverted"
+local FACE_ROTATION_BASE = "0 0 0"
+local USE_NEGATIVE_FACE_NORMAL = false
+local LOCAL_POSITION_NUDGE = "0 0 -25"
+local APPLY_DYNAMIC_SIZE = false
+local APPLY_XML_TRANSFORMS = false
 local DEBUG = true
+local BOUNDS_MAX_ATTEMPTS = 25
+local BOUNDS_RETRY_SECONDS = 0.2
 
 local function asPositiveNumber(value, fallback)
   local numberValue = tonumber(value)
@@ -31,32 +37,93 @@ local function getFaceDimensions(bounds, faceName)
 end
 
 local function getFacePosition(bounds, faceName)
+  local sideSign = USE_NEGATIVE_FACE_NORMAL and -1 or 1
+
   if faceName == "top" then
-    return string.format("0 %.4f 0", (asPositiveNumber(bounds.y, 1) / 2) + FACE_SURFACE_OFFSET)
+    return string.format(
+      "0 %.4f 0",
+      sideSign * ((asPositiveNumber(bounds.y, 1) / 2) + FACE_SURFACE_OFFSET)
+    )
   end
   if faceName == "front" then
-    return string.format("0 0 %.4f", (asPositiveNumber(bounds.z, 1) / 2) + FACE_SURFACE_OFFSET)
+    return string.format(
+      "0 0 %.4f",
+      sideSign * ((asPositiveNumber(bounds.z, 1) / 2) + FACE_SURFACE_OFFSET)
+    )
   end
   if faceName == "right" then
-    return string.format("%.4f 0 0", (asPositiveNumber(bounds.x, 1) / 2) + FACE_SURFACE_OFFSET)
+    return string.format(
+      "%.4f 0 0",
+      sideSign * ((asPositiveNumber(bounds.x, 1) / 2) + FACE_SURFACE_OFFSET)
+    )
   end
 
   return "0 0 0"
 end
 
-local function applyPaperBoundsToUi(obj)
-  if obj == nil or obj.UI == nil then
+local function getFaceRotation(faceName, coordinateMode)
+  if coordinateMode == "uv_inverted" then
+    if faceName == "top" then
+      return "0 0 180"
+    end
+    if faceName == "front" then
+      return "0 180 180"
+    end
+    if faceName == "right" then
+      return "180 0 180"
+    end
+  end
+
+  return FACE_ROTATION_BASE
+end
+
+local function parseVector3(value)
+  local x, y, z = string.match(value, "^%s*([%-%d%.]+)%s+([%-%d%.]+)%s+([%-%d%.]+)%s*$")
+  return tonumber(x) or 0, tonumber(y) or 0, tonumber(z) or 0
+end
+
+local function addVector3(base, nudge)
+  local bx, by, bz = parseVector3(base)
+  local nx, ny, nz = parseVector3(nudge)
+  return string.format("%.4f %.4f %.4f", bx + nx, by + ny, bz + nz)
+end
+
+local function getBestBounds()
+  local function hasUsableBounds(bounds)
+    if bounds == nil then
+      return false
+    end
+    return (asPositiveNumber(bounds.x, 0) > 0)
+      and (asPositiveNumber(bounds.y, 0) > 0)
+      and (asPositiveNumber(bounds.z, 0) > 0)
+  end
+
+  if self.getVisualBoundsNormalized ~= nil then
+    local visualBounds = self.getVisualBoundsNormalized()
+    if hasUsableBounds(visualBounds) then
+      return visualBounds, "visual"
+    end
+  end
+
+  local colliderBounds = self.getBoundsNormalized()
+  if hasUsableBounds(colliderBounds) then
+    return colliderBounds, "collider"
+  end
+
+  return colliderBounds, "collider_zero"
+end
+
+local function applyPaperBoundsToUi()
+  if self == nil or self.UI == nil then
     return
   end
 
-  if obj.UI.loading then
-    Wait.time(function()
-      applyPaperBoundsToUi(obj)
-    end, 0.1)
+  if self.UI.loading then
+    Wait.time(applyPaperBoundsToUi, 0.1)
     return
   end
 
-  local bounds = obj.getBoundsNormalized()
+  local bounds, boundsSource = getBestBounds()
   if bounds == nil then
     return
   end
@@ -64,42 +131,87 @@ local function applyPaperBoundsToUi(obj)
   local faceWidthUnits, faceHeightUnits = getFaceDimensions(bounds, FACE)
   local widthPixels = math.max(1, math.floor(faceWidthUnits * PIXELS_PER_UNIT))
   local heightPixels = math.max(1, math.floor(faceHeightUnits * PIXELS_PER_UNIT))
-  local panelPosition = getFacePosition(bounds, FACE)
+  local panelPosition = addVector3(getFacePosition(bounds, FACE), LOCAL_POSITION_NUDGE)
+  local computedRotation = getFaceRotation(FACE, FACE_COORDINATE_MODE)
 
-  obj.UI.setAttributes("paper_root", {
-    width = tostring(widthPixels),
-    height = tostring(heightPixels),
-    position = panelPosition,
-    rotation = FACE_ROTATION,
-    rectAlignment = "MiddleCenter",
-    pivot = "0.5 0.5"
-  })
+  if APPLY_XML_TRANSFORMS then
+    if APPLY_DYNAMIC_SIZE then
+      self.UI.setAttributes("paper_root", {
+        width = tostring(widthPixels),
+        height = tostring(heightPixels),
+        position = panelPosition,
+        rotation = computedRotation,
+        rectAlignment = "MiddleCenter",
+        pivot = "0.5 0.5"
+      })
+    else
+      self.UI.setAttributes("paper_root", {
+        position = panelPosition,
+        rotation = computedRotation,
+        rectAlignment = "MiddleCenter",
+        pivot = "0.5 0.5"
+      })
+    end
+  end
 
   if DEBUG then
     print(string.format(
-      "[TABLE B3 XML TEST] face=%s bounds=(%.3f, %.3f, %.3f) panel=%dx%d pos=%s",
+      "[OBJECT XML TEST] face=%s mode=%s applyTransforms=%s dynamicSize=%s bounds=(%.3f, %.3f, %.3f) panel=%dx%d pos=%s rot=%s",
       FACE,
+      boundsSource,
+      tostring(APPLY_XML_TRANSFORMS),
+      tostring(APPLY_DYNAMIC_SIZE),
       asPositiveNumber(bounds.x, 0),
       asPositiveNumber(bounds.y, 0),
       asPositiveNumber(bounds.z, 0),
       widthPixels,
       heightPixels,
-      panelPosition
+      panelPosition,
+      computedRotation
     ))
   end
 end
 
-function M.onLoad(obj)
-  if obj == nil then
+local function waitForBoundsAndApply(attempt)
+  local currentAttempt = tonumber(attempt) or 1
+  local bounds, boundsSource = getBestBounds()
+
+  local hasUsableBounds = bounds ~= nil
+    and asPositiveNumber(bounds.x, 0) > 0
+    and asPositiveNumber(bounds.y, 0) > 0
+    and asPositiveNumber(bounds.z, 0) > 0
+
+  if hasUsableBounds then
+    applyPaperBoundsToUi()
     return
   end
 
-  obj.interactable = false
-  obj.setInvisibleTo({"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey"})
+  if currentAttempt >= BOUNDS_MAX_ATTEMPTS then
+    if DEBUG then
+      local bx = bounds ~= nil and asPositiveNumber(bounds.x, 0) or 0
+      local by = bounds ~= nil and asPositiveNumber(bounds.y, 0) or 0
+      local bz = bounds ~= nil and asPositiveNumber(bounds.z, 0) or 0
+      print(string.format(
+        "[OBJECT XML TEST] bounds not ready after %d attempts (mode=%s bounds=(%.3f, %.3f, %.3f))",
+        currentAttempt,
+        tostring(boundsSource),
+        bx,
+        by,
+        bz
+      ))
+    end
+    applyPaperBoundsToUi()
+    return
+  end
 
   Wait.time(function()
-    applyPaperBoundsToUi(obj)
-  end, 0.2)
+    waitForBoundsAndApply(currentAttempt + 1)
+  end, BOUNDS_RETRY_SECONDS)
 end
 
-return M
+function onLoad(script_state)
+  self.interactable = false
+  Wait.time(function()
+    waitForBoundsAndApply(1)
+  end, 0.2)
+end

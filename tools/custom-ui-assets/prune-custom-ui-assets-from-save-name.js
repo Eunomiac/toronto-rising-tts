@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 "use strict";
 
+// Agent guidance: dev/TTS_BUNDLING_SETUP.md; dev/custom-ui-assets/prune-custom-ui-assets.txt.
+
 const fs = require("fs");
 const path = require("path");
 

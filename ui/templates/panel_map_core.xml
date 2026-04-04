@@ -1,0 +1,1167 @@
+<!-- TARGET: ui/player/panel_map_core_generated.xml -->
+<!-- Agent guidance: dev/TTS_BUNDLING_SETUP.md (generator); dev/HUDs & Overlays/Player HUD Overview.md (map panels). -->
+<Panel
+  id="playerHud_corePanel_map_@@color@@"
+  class="playerHud_coreLayer"
+  visibility="@@color@@"
+  active="false"
+>
+  <HorizontalLayout class="hud_map_parent_container">
+    <Panel class="hud_map_hover_button_panel_wrapper">
+      <Panel class="hover_button_panel_container" height="725">
+        <!--
+        Border Dimensions: 150x50    Count: 2
+        Base Dimensions: 150x25      Count: 5
+        Hover Dimensions: 150x25     Count: 5
+        Active Dimensions: 150x25    Count: 5
+        Max Width: 150
+        Total Height: 2*50 + 5*25 = 225
+        -->
+        <VerticalLayout class="hover_button_panel">
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" />
+          <Image
+            id="playerHud_mapOverlayToggle_districtsAll_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_districtsAll_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_majorRoads_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_majorRoads_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_localRoads_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_localRoads_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_majorSites_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_majorSites_inactive"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" />
+
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_theCourt_inactive"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_fiveKeys_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_moonClub_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_universityChantry_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_freeChantry_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_ironGuard_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_scarlett_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_anarchFreeZone_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_hecata_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_bertrice_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_islandDevil_inactive"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_domainConflicts_inactive"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_barrens_inactive"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_@@color@@"
+            class="hover_button hover_button_base hover_button_base_overlay"
+            image="toggleOverlay_domain_theRack_inactive"
+          />
+        </VerticalLayout>
+        <VerticalLayout class="hover_button_panel">
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_districtsAll_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_districtsAll_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_majorRoads_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_majorRoads_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_localRoads_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_localRoads_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_majorSites_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_majorSites_hover"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_theCourt_hover"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_fiveKeys_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_moonClub_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_universityChantry_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_freeChantry_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_ironGuard_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_scarlett_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_anarchFreeZone_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_hecata_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_bertrice_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_islandDevil_hover"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_domainConflicts_hover"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_barrens_hover"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_@@color@@_hover"
+            class="hover_button hover_button_hover"
+            image="toggleOverlay_domain_theRack_hover"
+          />
+        </VerticalLayout>
+        <VerticalLayout class="hover_button_panel">
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_districtsAll_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_districtsAll_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_majorRoads_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_majorRoads_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_localRoads_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_localRoads_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_majorSites_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_majorSites_active"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theCourt_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_theCourt_active"
+          />
+          <Text class="spacer_10" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_fiveKeys_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_fiveKeys_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_moonClub_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_moonClub_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_universityChantry_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_universityChantry_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_freeChantry_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_freeChantry_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_ironGuard_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_ironGuard_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_scarlett_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_scarlett_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_anarchFreeZone_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_anarchFreeZone_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_hecata_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_hecata_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_bertrice_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_bertrice_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_islandDevil_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_islandDevil_active"
+          />
+          <Text class="spacer_20" preferredHeight="15" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_domainConflicts_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_domainConflicts_active"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_barrens_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_barrens_active"
+          />
+          <Image
+            id="playerHud_mapOverlayToggle_domain_theRack_@@color@@_active"
+            class="hover_button hover_button_active"
+            image="toggleOverlay_domain_theRack_active"
+          />
+        </VerticalLayout>
+      </Panel>
+    </Panel>
+
+    <Panel class="hud_map_center_container" id="playerHud_mapViewport_@@color@@">
+      <Panel class="hud_map_draggable_container" id="playerHud_mapDraggable_@@color@@">
+        <Image class="hud_map_image hud_map_image_base" id="playerHud_mapBase_@@color@@" image="mapBase" />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_majorRoads_@@color@@"
+          image="mapOverlay_majorRoads"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_localRoads_@@color@@"
+          image="mapOverlay_localRoads"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_districtsAll_@@color@@"
+          image="mapOverlay_districtsAll"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_majorSites_@@color@@"
+          image="mapOverlay_majorSites"
+        />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_theCourt_@@color@@" image="mapOverlay_domain_theCourt" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_fiveKeys_@@color@@" image="mapOverlay_domain_fiveKeys" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_moonClub_@@color@@" image="mapOverlay_domain_moonClub" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_universityChantry_@@color@@" image="mapOverlay_domain_universityChantry" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_freeChantry_@@color@@" image="mapOverlay_domain_freeChantry" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_ironGuard_@@color@@" image="mapOverlay_domain_ironGuard" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_scarlett_@@color@@" image="mapOverlay_domain_scarlett" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_anarchFreeZone_@@color@@" image="mapOverlay_domain_anarchFreeZone" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_hecata_@@color@@" image="mapOverlay_domain_hecata" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_bertrice_@@color@@" image="mapOverlay_domain_bertrice" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_islandDevil_@@color@@" image="mapOverlay_domain_islandDevil" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_domainConflicts_@@color@@" image="mapOverlay_domain_domainConflicts" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_barrens_@@color@@" image="mapOverlay_domain_barrens" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_theRack_@@color@@" image="mapOverlay_domain_theRack" />
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Annex_@@color@@" image="mapOverlay_Annex" />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_BayStFinancial_@@color@@"
+          image="mapOverlay_BayStFinancial"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_Bennington_@@color@@"
+          image="mapOverlay_Bennington"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_Cabbagetown_@@color@@"
+          image="mapOverlay_Cabbagetown"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_CentreIsland_@@color@@"
+          image="mapOverlay_CentreIsland"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_Chinatown_@@color@@"
+          image="mapOverlay_Chinatown"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_Corktown_@@color@@"
+          image="mapOverlay_Corktown"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_Danforth_@@color@@"
+          image="mapOverlay_Danforth"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_DeerPark_@@color@@"
+          image="mapOverlay_DeerPark"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_Discovery_@@color@@"
+          image="mapOverlay_Discovery"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_DistilleryDist_@@color@@"
+          image="mapOverlay_DistilleryDist"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_DonRavine_@@color@@"
+          image="mapOverlay_DonRavine"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_DupontByTheCastle_@@color@@"
+          image="mapOverlay_DupontByTheCastle"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_GayVillage_@@color@@"
+          image="mapOverlay_GayVillage"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_HarbordVillage_@@color@@"
+          image="mapOverlay_HarbordVillage"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_Humewood_@@color@@"
+          image="mapOverlay_Humewood"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_LakeOntario_@@color@@"
+          image="mapOverlay_LakeOntario"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_LibertyVillage_@@color@@"
+          image="mapOverlay_LibertyVillage"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_LittleItaly_@@color@@"
+          image="mapOverlay_LittleItaly"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_LittlePortugal_@@color@@"
+          image="mapOverlay_LittlePortugal"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_RegentPark_@@color@@"
+          image="mapOverlay_RegentPark"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_Riverdale_@@color@@"
+          image="mapOverlay_Riverdale"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_Rosedale_@@color@@"
+          image="mapOverlay_Rosedale"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_StJamesTown_@@color@@"
+          image="mapOverlay_StJamesTown"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_Summerhill_@@color@@"
+          image="mapOverlay_Summerhill"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_Waterfront_@@color@@"
+          image="mapOverlay_Waterfront"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_WestQueenWest_@@color@@"
+          image="mapOverlay_WestQueenWest"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_Wychwood_@@color@@"
+          image="mapOverlay_Wychwood"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_YongeBloorMuseum_@@color@@"
+          image="mapOverlay_YongeBloorMuseum"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_YongeDundasHospital_@@color@@"
+          image="mapOverlay_YongeDundasHospital"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_YongeStreet_@@color@@"
+          image="mapOverlay_YongeStreet"
+        />
+        <Image
+          class="hud_map_image hud_map_image_overlay"
+          id="playerHud_mapOverlay_Yorkville_@@color@@"
+          image="mapOverlay_Yorkville"
+        />
+      </Panel>
+    </Panel>
+
+    <Panel class="hud_map_navigation_panel hover_button_panel_container">
+      <VerticalLayout class="hover_button_panel" spacing="10">
+        <Image id="playerHud_mapPanUp_@@color@@" class="hover_button hover_button_base hud_map_hover_button_pan" image="map_panUp_inactive"
+        raycastTarget="true"
+        onMouseEnter="HUD_playerMap_panUp_hoverOn"
+        onMouseExit="HUD_playerMap_panUp_hoverOff"
+        onMouseUp="HUD_playerMap_panUp_mouseUp"/>
+        <Image id="playerHud_mapRecenter_@@color@@" class="hover_button hover_button_base hud_map_hover_button_recenter" image="toggle_mapRecenter_inactive"
+        raycastTarget="true"
+        onMouseEnter="HUD_playerMap_recenter_hoverOn"
+        onMouseExit="HUD_playerMap_recenter_hoverOff"
+        onMouseUp="HUD_playerMap_recenter_mouseUp" />
+        <Image id="playerHud_mapPanDown_@@color@@" class="hover_button hover_button_base hud_map_hover_button_pan" image="map_panDown_inactive"
+        raycastTarget="true"
+        onMouseEnter="HUD_playerMap_panDown_hoverOn"
+        onMouseExit="HUD_playerMap_panDown_hoverOff"
+        onMouseUp="HUD_playerMap_panDown_mouseUp"/>
+      </VerticalLayout>
+      <VerticalLayout class="hover_button_panel" spacing="10">
+        <Image id="playerHud_mapPanUp_@@color@@_hover" class="hover_button hover_button_hover hud_map_hover_button_pan" image="map_panUp_hover" />
+        <Image id="playerHud_mapRecenter_@@color@@_hover" class="hover_button hover_button_hover hud_map_hover_button_recenter" image="toggle_mapRecenter_hover" />
+        <Image id="playerHud_mapPanDown_@@color@@_hover" class="hover_button hover_button_hover hud_map_hover_button_pan" image="map_panDown_hover" />
+      </VerticalLayout>
+    </Panel>
+
+  <Panel id="playerHud_mapPanel_districtCard_@@color@@" class="hud_map_district_card_container">
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Annex_@@color@@" image="districtCard_Annex" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_BayStFinancial_@@color@@" image="districtCard_BayStFinancial" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Bennington_@@color@@" image="districtCard_Bennington" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Cabbagetown_@@color@@" image="districtCard_Cabbagetown" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_CentreIsland_@@color@@" image="districtCard_CentreIsland" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Chinatown_@@color@@" image="districtCard_Chinatown" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Corktown_@@color@@" image="districtCard_Corktown" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Danforth_@@color@@" image="districtCard_Danforth" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_DeerPark_@@color@@" image="districtCard_DeerPark" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Discovery_@@color@@" image="districtCard_Discovery" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_DistilleryDist_@@color@@" image="districtCard_DistilleryDist" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_DonRavine_@@color@@" image="districtCard_DonRavine" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_DupontByTheCastle_@@color@@" image="districtCard_DupontByTheCastle" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_GayVillage_@@color@@" image="districtCard_GayVillage" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_HarbordVillage_@@color@@" image="districtCard_HarbordVillage" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Humewood_@@color@@" image="districtCard_Humewood" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_LakeOntario_@@color@@" image="districtCard_LakeOntario" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_LibertyVillage_@@color@@" image="districtCard_LibertyVillage" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_LittleItaly_@@color@@" image="districtCard_LittleItaly" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_LittlePortugal_@@color@@" image="districtCard_LittlePortugal" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_PATH_@@color@@" image="districtCard_PATH" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_RegentPark_@@color@@" image="districtCard_RegentPark" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Riverdale_@@color@@" image="districtCard_Riverdale" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Rosedale_@@color@@" image="districtCard_Rosedale" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Sewers_@@color@@" image="districtCard_Sewers" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_StJamesTown_@@color@@" image="districtCard_StJamesTown" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Streets_@@color@@" image="districtCard_Streets" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Subway_@@color@@" image="districtCard_Subway" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Summerhill_@@color@@" image="districtCard_Summerhill" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Waterfront_@@color@@" image="districtCard_Waterfront" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_WestQueenWest_@@color@@" image="districtCard_WestQueenWest" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Wychwood_@@color@@" image="districtCard_Wychwood" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_YongeBloorMuseum_@@color@@" image="districtCard_YongeBloorMuseum" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_YongeDundasHospital_@@color@@" image="districtCard_YongeDundasHospital" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_YongeStreet_@@color@@" image="districtCard_YongeStreet" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_Yorkville_@@color@@" image="districtCard_Yorkville" />
+  </Panel>
+
+    <Panel class="hud_map_hover_button_panel_wrapper">
+      <Panel class="hover_button_panel_container hover_button_panel_container_wide" height="900">
+        <!--
+        Border Dimensions: 150x50    Count: 2
+        Base Dimensions: 175x20      Count: 36
+        Hover Dimensions: 175x20     Count: 36
+        Active Dimensions: 175x20    Count: 36
+        Max Width: 175
+        Total Height: 2*50 + 36*20 = 900
+        -->
+        <VerticalLayout class="hover_button_panel" childAlignment="UpperLeft" spacing="0">
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Bennington_@@color@@"
+            image="toggleDistrict_Bennington_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_DeerPark_@@color@@"
+            image="toggleDistrict_DeerPark_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_DupontByTheCastle_@@color@@"
+            image="toggleDistrict_DupontByTheCastle_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Humewood_@@color@@"
+            image="toggleDistrict_Humewood_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Rosedale_@@color@@"
+            image="toggleDistrict_Rosedale_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Summerhill_@@color@@"
+            image="toggleDistrict_Summerhill_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_StJamesTown_@@color@@"
+            image="toggleDistrict_StJamesTown_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Wychwood_@@color@@"
+            image="toggleDistrict_Wychwood_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Yorkville_@@color@@"
+            image="toggleDistrict_Yorkville_inactive"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Annex_@@color@@"
+            image="toggleDistrict_Annex_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Chinatown_@@color@@"
+            image="toggleDistrict_Chinatown_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_HarbordVillage_@@color@@"
+            image="toggleDistrict_HarbordVillage_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_LittleItaly_@@color@@"
+            image="toggleDistrict_LittleItaly_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_LittlePortugal_@@color@@"
+            image="toggleDistrict_LittlePortugal_inactive"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Danforth_@@color@@"
+            image="toggleDistrict_Danforth_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_DonRavine_@@color@@"
+            image="toggleDistrict_DonRavine_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_RegentPark_@@color@@"
+            image="toggleDistrict_RegentPark_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Riverdale_@@color@@"
+            image="toggleDistrict_Riverdale_inactive"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_BayStFinancial_@@color@@"
+            image="toggleDistrict_BayStFinancial_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Cabbagetown_@@color@@"
+            image="toggleDistrict_Cabbagetown_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Corktown_@@color@@"
+            image="toggleDistrict_Corktown_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Discovery_@@color@@"
+            image="toggleDistrict_Discovery_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_GayVillage_@@color@@"
+            image="toggleDistrict_GayVillage_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_WestQueenWest_@@color@@"
+            image="toggleDistrict_WestQueenWest_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_YongeBloorMuseum_@@color@@"
+            image="toggleDistrict_YongeBloorMuseum_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_YongeDundasHospital_@@color@@"
+            image="toggleDistrict_YongeDundasHospital_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_YongeStreet_@@color@@"
+            image="toggleDistrict_YongeStreet_inactive"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_CentreIsland_@@color@@"
+            image="toggleDistrict_CentreIsland_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_DistilleryDist_@@color@@"
+            image="toggleDistrict_DistilleryDist_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_LakeOntario_@@color@@"
+            image="toggleDistrict_LakeOntario_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_LibertyVillage_@@color@@"
+            image="toggleDistrict_LibertyVillage_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Waterfront_@@color@@"
+            image="toggleDistrict_Waterfront_inactive"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_PATH_@@color@@"
+            image="toggleDistrict_PATH_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Sewers_@@color@@"
+            image="toggleDistrict_Sewers_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Streets_@@color@@"
+            image="toggleDistrict_Streets_inactive"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_base hover_button_base_district"
+            id="playerHud_mapDistrictToggle_Subway_@@color@@"
+            image="toggleDistrict_Subway_inactive"
+          />
+        </VerticalLayout>
+        <VerticalLayout class="hover_button_panel">
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Bennington_@@color@@_hover"
+            image="toggleDistrict_Bennington_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_DeerPark_@@color@@_hover"
+            image="toggleDistrict_DeerPark_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_DupontByTheCastle_@@color@@_hover"
+            image="toggleDistrict_DupontByTheCastle_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Humewood_@@color@@_hover"
+            image="toggleDistrict_Humewood_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Rosedale_@@color@@_hover"
+            image="toggleDistrict_Rosedale_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Summerhill_@@color@@_hover"
+            image="toggleDistrict_Summerhill_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_StJamesTown_@@color@@_hover"
+            image="toggleDistrict_StJamesTown_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Wychwood_@@color@@_hover"
+            image="toggleDistrict_Wychwood_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Yorkville_@@color@@_hover"
+            image="toggleDistrict_Yorkville_hover"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Annex_@@color@@_hover"
+            image="toggleDistrict_Annex_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Chinatown_@@color@@_hover"
+            image="toggleDistrict_Chinatown_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_HarbordVillage_@@color@@_hover"
+            image="toggleDistrict_HarbordVillage_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_LittleItaly_@@color@@_hover"
+            image="toggleDistrict_LittleItaly_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_LittlePortugal_@@color@@_hover"
+            image="toggleDistrict_LittlePortugal_hover"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Danforth_@@color@@_hover"
+            image="toggleDistrict_Danforth_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_DonRavine_@@color@@_hover"
+            image="toggleDistrict_DonRavine_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_RegentPark_@@color@@_hover"
+            image="toggleDistrict_RegentPark_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Riverdale_@@color@@_hover"
+            image="toggleDistrict_Riverdale_hover"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_BayStFinancial_@@color@@_hover"
+            image="toggleDistrict_BayStFinancial_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Cabbagetown_@@color@@_hover"
+            image="toggleDistrict_Cabbagetown_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Corktown_@@color@@_hover"
+            image="toggleDistrict_Corktown_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Discovery_@@color@@_hover"
+            image="toggleDistrict_Discovery_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_GayVillage_@@color@@_hover"
+            image="toggleDistrict_GayVillage_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_WestQueenWest_@@color@@_hover"
+            image="toggleDistrict_WestQueenWest_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_YongeBloorMuseum_@@color@@_hover"
+            image="toggleDistrict_YongeBloorMuseum_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_YongeDundasHospital_@@color@@_hover"
+            image="toggleDistrict_YongeDundasHospital_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_YongeStreet_@@color@@_hover"
+            image="toggleDistrict_YongeStreet_hover"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_CentreIsland_@@color@@_hover"
+            image="toggleDistrict_CentreIsland_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_DistilleryDist_@@color@@_hover"
+            image="toggleDistrict_DistilleryDist_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_LakeOntario_@@color@@_hover"
+            image="toggleDistrict_LakeOntario_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_LibertyVillage_@@color@@_hover"
+            image="toggleDistrict_LibertyVillage_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Waterfront_@@color@@_hover"
+            image="toggleDistrict_Waterfront_hover"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_PATH_@@color@@_hover"
+            image="toggleDistrict_PATH_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Sewers_@@color@@_hover"
+            image="toggleDistrict_Sewers_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Streets_@@color@@_hover"
+            image="toggleDistrict_Streets_hover"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_hover"
+            id="playerHud_mapDistrictToggle_Subway_@@color@@_hover"
+            image="toggleDistrict_Subway_hover"
+          />
+        </VerticalLayout>
+        <VerticalLayout class="hover_button_panel">
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Bennington_@@color@@_active"
+            image="toggleDistrict_Bennington_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_DeerPark_@@color@@_active"
+            image="toggleDistrict_DeerPark_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_DupontByTheCastle_@@color@@_active"
+            image="toggleDistrict_DupontByTheCastle_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Humewood_@@color@@_active"
+            image="toggleDistrict_Humewood_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Rosedale_@@color@@_active"
+            image="toggleDistrict_Rosedale_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Summerhill_@@color@@_active"
+            image="toggleDistrict_Summerhill_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_StJamesTown_@@color@@_active"
+            image="toggleDistrict_StJamesTown_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Wychwood_@@color@@_active"
+            image="toggleDistrict_Wychwood_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Yorkville_@@color@@_active"
+            image="toggleDistrict_Yorkville_active"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Annex_@@color@@_active"
+            image="toggleDistrict_Annex_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Chinatown_@@color@@_active"
+            image="toggleDistrict_Chinatown_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_HarbordVillage_@@color@@_active"
+            image="toggleDistrict_HarbordVillage_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_LittleItaly_@@color@@_active"
+            image="toggleDistrict_LittleItaly_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_LittlePortugal_@@color@@_active"
+            image="toggleDistrict_LittlePortugal_active"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Danforth_@@color@@_active"
+            image="toggleDistrict_Danforth_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_DonRavine_@@color@@_active"
+            image="toggleDistrict_DonRavine_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_RegentPark_@@color@@_active"
+            image="toggleDistrict_RegentPark_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Riverdale_@@color@@_active"
+            image="toggleDistrict_Riverdale_active"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_BayStFinancial_@@color@@_active"
+            image="toggleDistrict_BayStFinancial_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Cabbagetown_@@color@@_active"
+            image="toggleDistrict_Cabbagetown_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Corktown_@@color@@_active"
+            image="toggleDistrict_Corktown_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Discovery_@@color@@_active"
+            image="toggleDistrict_Discovery_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_GayVillage_@@color@@_active"
+            image="toggleDistrict_GayVillage_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_WestQueenWest_@@color@@_active"
+            image="toggleDistrict_WestQueenWest_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_YongeBloorMuseum_@@color@@_active"
+            image="toggleDistrict_YongeBloorMuseum_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_YongeDundasHospital_@@color@@_active"
+            image="toggleDistrict_YongeDundasHospital_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_YongeStreet_@@color@@_active"
+            image="toggleDistrict_YongeStreet_active"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_CentreIsland_@@color@@_active"
+            image="toggleDistrict_CentreIsland_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_DistilleryDist_@@color@@_active"
+            image="toggleDistrict_DistilleryDist_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_LakeOntario_@@color@@_active"
+            image="toggleDistrict_LakeOntario_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_LibertyVillage_@@color@@_active"
+            image="toggleDistrict_LibertyVillage_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Waterfront_@@color@@_active"
+            image="toggleDistrict_Waterfront_active"
+          />
+          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_PATH_@@color@@_active"
+            image="toggleDistrict_PATH_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Sewers_@@color@@_active"
+            image="toggleDistrict_Sewers_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Streets_@@color@@_active"
+            image="toggleDistrict_Streets_active"
+          />
+          <Image
+            class="hover_button hover_button_thin hover_button_active"
+            id="playerHud_mapDistrictToggle_Subway_@@color@@_active"
+            image="toggleDistrict_Subway_active"
+          />
+        </VerticalLayout>
+      </Panel>
+    </Panel>
+  </HorizontalLayout>
+
+
+  <Panel id="playerHud_mapPanel_siteCard_@@color@@" class="mapPanel_siteCardContainer" />
+</Panel>

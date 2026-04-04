@@ -1,6 +1,9 @@
 --[[
     Static NPC layout and character definitions for core/npcs.ttslua.
     Replace image URLs with your uploaded workshop / cloud assets before play.
+
+    Agent guidance: dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md; dev/Chronicle Data/NPCS_*.md;
+    dev/Game State Data.jsonc (instance examples).
 ]]
 
 local D = {}
@@ -20,9 +23,9 @@ D.lights = {
     enabled = true,
     color = Color(1, 1, 1),
     range = 100,
-    intensity = 3,
-    angle = 40,
-    lookAtYShift = 0.1,
+    intensity = 1.5,
+    angle = 120,
+    lookAtYShift = 0.3,
     positionYShift = 0.4,
     distance = -15,
   },
@@ -30,8 +33,8 @@ D.lights = {
     enabled = true,
     color = Color(1, 1, 1),
     range = 100,
-    intensity = 8,
-    angle = 50,
+    intensity = 3,
+    angle = 70,
     lookAtYShift = 0.1,
     positionYShift = 0.3,
     distance = -20,

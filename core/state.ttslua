@@ -11,6 +11,9 @@
     - Phase management helpers
 
     The global 'gameState' table is defined in global.ttslua and accessed here.
+
+    Agent guidance: dev/DEVELOPMENT_WORKFLOW.md; dev/Game State Data.jsonc (save snapshot example);
+    dev/HUDs & Overlays/Player HUD Overview.md (playerData / gameState shape).
 ]]
 
 local S = {}

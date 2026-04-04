@@ -1,3 +1,4 @@
+<!-- Agent guidance: dev/HUDs & Overlays/Player HUD Overview.md; dev/TTS_BUNDLING_SETUP.md. -->
 <!-- Shim for legacy includes. Prefer `panel_right_sidebar_entry`. -->
 <Include src="panel_right_sidebar_entry.xml" />
 

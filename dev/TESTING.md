@@ -489,7 +489,7 @@ lua debugHelp()                  -- Show all commands
 
 ### Issue: UI doesn't load
 
-**Solution:** Verify `HUD_XML_PLACEHOLDER` in `global.ttslua` contains the actual XML content from `ui/hud.xml`
+**Solution:** Verify `HUD_XML_PLACEHOLDER` in `global.ttslua` contains the actual XML content from `ui/Global.xml`
 
 ### Issue: Test functions not found
 

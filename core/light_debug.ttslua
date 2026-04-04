@@ -14,6 +14,8 @@
     - applyLightUpdate(guid, colorStr, range, angle, intensity): Applies edits to a light
     - buildLightTableXML(lights): Builds XML table rows for the HUD panel
     - refreshLightDebugPanel(): Scans lights, builds XML, merges into HUD, updates UI
+
+    Agent guidance: dev/HUD_FUNCTIONS.md (light debug handlers); dev/TESTING.md.
 ]]
 
 local LightDebug = {}

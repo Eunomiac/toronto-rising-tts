@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 "use strict";
 
+// Agent guidance: dev/TTS_BUNDLING_SETUP.md; dev/custom-ui-assets/.
+
 const path = require("path");
 const { spawnSync } = require("child_process");
 
