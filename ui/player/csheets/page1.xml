@@ -1,4 +1,4 @@
-<!-- Agent guidance: dev/HUDs & Overlays/Player HUD Overview.md; dev/PC Data & Tracking/PCS.json (PC fields). -->
+<!-- Agent guidance: dev/HUDs & Overlays/Player HUD Overview.md; data/PCS.json (PC fields). -->
 <!-- XML Exact height is 200; 8.5x11 aspect ratio means the width is 154.5
 
 Standard dot images are 6.3x6.3 pixels.
@@ -497,7 +497,8 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
     <Image id="box_on_health_10" image="box_white" class="box box_standard" offsetXY="48.8 -173.05" />
     <Image id="box_agg_health_10" image="box_red_x" class="box box_standard" offsetXY="48.8 -173.05" />
     <Image id="box_sup_health_10" image="box_grey_slash" class="box box_standard" offsetXY="48.8 -173.05" />
-    <!-- Willpower dots --> />
+    <!-- Willpower dots -->
+    <Image id="box_on_willpower_1" image="box_white" class="box box_standard" offsetXY="99.4 -173.05" />
     <Image id="box_agg_willpower_1" image="box_red_x" class="box box_standard" offsetXY="99.4 -173.05" />
     <Image id="box_sup_willpower_1" image="box_grey_slash" class="box box_standard" offsetXY="99.4 -173.05" />
     <Image id="box_on_willpower_2" image="box_white" class="box box_standard" offsetXY="103.6 -173.05" />
@@ -572,7 +573,7 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
     <Image id="dot_on_bloodPotency_5" image="dot_large_red" class="dot dot_large" offsetXY="130.5 -184.2" />
 
     <!-- XP -->
-    <Text class="xp_text" text="" />
+    <Text id="xp_text" class="xp_text" text="0" />
   </Panel>
 
 </Panel>

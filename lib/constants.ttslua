@@ -1,9 +1,9 @@
 -- lib/constants.ttslua
 -- Constants Library
 -- Game constants, configuration values, and lookup tables for VTM5E module.
--- Extracted and adapted from Heritage and Kings Dilemma reference modules.
+-- Shared constants and lookup tables for this VTM5E Tabletop Simulator module.
 --
--- Agent guidance: dev/HUDs & Overlays/Player HUD Overview.md (C.CHRONICLE_DATA, phases); dev/EXTRACTABLE_FUNCTIONS_INDEX.md.
+-- Agent guidance: dev/HUDs & Overlays/Player HUD Overview.md (C.CHRONICLE_DATA.coteries/disciplines, phases); data/PCS.json + lib/pcs_data.ttslua for PCs; dev/EXTRACTABLE_FUNCTIONS_INDEX.md.
 
 local C = {}
 
@@ -69,11 +69,17 @@ C.GetPlayerID = function(playerRef)
     if C.PlayerData[playerRef] then
       return playerRef
     end
-    -- Otherwise, we must search the C.PlayerData table for a matching color, playerName, or character key.
-    -- To avoid overly strict failures, we will make all comparisons case-insensitive.
+    -- Otherwise, search C.PlayerData for color, playerName, or charKey (case-insensitive).
+    -- Guard optional fields: e.g. Storyteller row has no charKey; string.lower(nil) errors and broke lookups like PURPLE→Purple (iter order hit Storyteller first).
+    local lr = string.lower(playerRef)
     for playerID, playerData in pairs(C.PlayerData) do
-      if string.lower(playerData.color) == string.lower(playerRef) or string.lower(playerData.playerName) == string.lower(playerRef) or string.lower(playerData.charKey) == string.lower(playerRef) then
-        return playerID
+      if type(playerData) == "table" then
+        local col, nm, ck = playerData.color, playerData.playerName, playerData.charKey
+        if (type(col) == "string" and string.lower(col) == lr)
+          or (type(nm) == "string" and string.lower(nm) == lr)
+          or (type(ck) == "string" and string.lower(ck) == lr) then
+          return playerID
+        end
       end
     end
   end
@@ -103,29 +109,8 @@ C.Phases = {
     END = "end"
 }
 
+-- PC name/color/keys: C.PlayerData + charKey; full stat blocks: lib/pcs_data.ttslua (from data/PCS.json).
 C.CHRONICLE_DATA = {
-	PCS = {
-		lucien = {
-			name = "Lord Lucien",
-      color = "Red"
-		},
-		fomorach = {
-			name = "Fomórach",
-      color = "Purple"
-		},
-		blackCaesar = {
-			name = "Black Caesar",
-      color = "Brown"
-		},
-		aishe = {
-			name = "Aishe Tache",
-      color = "Pink"
-		},
-		rashid = {
-			name = "Rashid Abdulrahman",
-      color = "Orange"
-		}
-	},
 	disciplines = {
 		animalism = {
 			name = "Animalism"
@@ -289,7 +274,7 @@ C.CHRONICLE_DATA = {
 		}
 	}
 }
-    -- VTM5E Clans (from Heritage module)
+    -- VTM5E clans list
 C.Clans = {
     "Banu Haqim", "Brujah", "Caitif", "Cappadocian", "Gangrel", "Giovanni", "Lasombra", "Malkavian", "Ministry", "Nosferatu", "Ravnos", "Salubri", "Thin-Blood", "Toreador", "Tremere", "Tzimisce", "Ventrue"
 }

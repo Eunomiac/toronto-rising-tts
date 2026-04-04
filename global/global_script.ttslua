@@ -28,6 +28,7 @@ O = require("core.objects")
 local UIH = require("lib.ui_helpers")
 local HUDP = require("core.hud_player")
 NPCS = require("core.npcs")
+PCST = require("core.pc_storyteller_panel")
 
 -- Load debug module (only in development). Must be global so TTS console `lua DEBUG.foo()` works.
 DEBUG = require("core.debug")
@@ -53,6 +54,57 @@ gameState = {}
     onLoad - Called when the game loads or is reset
     @param saved_data - JSON string containing saved game state
 ]]
+--- Resolve steam id for a character sheet seat color. Uses Global bundle `C` + `C.PlayerColors` so
+--- object UI scripts do not depend on their embedded copy of `lib.constants` matching the game.
+--- @param rawSeatColor string e.g. "PURPLE" or "Purple" from `CSHEET_PAGE_<n>_<COLOR>` object name
+--- @return string|nil
+function GlobalResolveSheetPlayerID(rawSeatColor)
+    if type(rawSeatColor) ~= "string" or rawSeatColor == "" then
+        return nil
+    end
+    local lr = string.lower(rawSeatColor)
+    local canon = nil
+    for _, col in ipairs(C.PlayerColors) do
+        if string.lower(col) == lr then
+            canon = col
+            break
+        end
+    end
+    if canon == nil then
+        return nil
+    end
+    local ok, pid = pcall(function()
+        return C.GetPlayerID(canon)
+    end)
+    if ok and type(pid) == "string" then
+        return pid
+    end
+    return nil
+end
+
+--- @param playerID string Steam id (or key in C.PlayerData)
+--- @return table|nil Merged row from `S.getPlayerData` — for object UI scripts; they have no `gameState`.
+function GlobalGetMergedPlayerData(playerID)
+    if type(playerID) ~= "string" then
+        return nil
+    end
+    return S.getPlayerData(playerID)
+end
+
+--- Shallow snapshot of character sheet tracker presentation (glyphs + optional sheet `image` ids).
+--- Set from each `ui_csheet` object on load; drives Storyteller strip text via `lib.pc_stats` and sheet box art.
+--- @param cfg table|nil with optional keys: `damageTrack`, `humanityTrack`, `sheetImages`
+function GlobalRegisterTrackerDisplay(cfg)
+    if type(cfg) ~= "table" then
+        return
+    end
+    TRACKER_DISPLAY = {
+        damageTrack = cfg.damageTrack,
+        humanityTrack = cfg.humanityTrack,
+        sheetImages = cfg.sheetImages,
+    }
+end
+
 function onLoad(saved_data)
     print("--- VTM5E Module Loaded ---")
 
@@ -255,6 +307,18 @@ function HUD_selectStorytellerPanel(player, button, id)
     -- TTS applies UI.setAttribute asynchronously; deferred refresh merges rows after the panel is active in XML.
     if panelKey == "npcs" and NPCS and NPCS.refreshStorytellerUIDeferred then
         NPCS.refreshStorytellerUIDeferred()
+    end
+    if panelKey == "pcs" and PCST and PCST.refreshAllRows then
+        Wait.frames(function()
+            PCST.refreshAllRows()
+        end, 1)
+    end
+end
+
+--- Storyteller PCs panel control buttons (id pattern pcs_<Color>_<action>).
+function HUD_pcPanel(player, button, id)
+    if PCST and PCST.onHudClick then
+        PCST.onHudClick(player, button, id)
     end
 end
 
@@ -557,7 +621,7 @@ function HUD_debugTestIntegration(player, button, id)
 end
 
 --[[
-    Sidebar reference popup handlers (Heritage-style)
+    Sidebar reference popup handlers
     Called by storyteller sidebar Image buttons: onMouseDown/Up/Enter/Exit.
     id is the button element id (e.g. hudRefBattlegroundsHost); popup id is "Ref..." (strip "hud").
 ]]
@@ -625,9 +689,21 @@ function UpdateUIDisplays()
 
     -- Update player stat displays
     M.forPlayers(function(player, color)
-        local hunger = S.getStateVal("players", color, "hunger") or 0
-        local willpower = S.getStateVal("players", color, "willpower") or 5
-        local health = S.getStateVal("players", color, "health") or 7
+        local pid = S.getPlayerID(player) or S.getPlayerID(color)
+        local hunger = pid and S.getPlayerVal(color, "hunger") or 0
+        local willpower = 5
+        local health = 7
+        if pid then
+            local st = S.getStateVal("playerData", pid, "stats")
+            if type(st) == "table" then
+                if type(st.willpower) == "table" then
+                    willpower = (tonumber(st.willpower.base) or 0) + (tonumber(st.willpower.temp) or 0)
+                end
+                if type(st.health) == "table" then
+                    health = (tonumber(st.health.base) or 0) + (tonumber(st.health.temp) or 0)
+                end
+            end
+        end
 
         UI.setValue("hungerVal_" .. color, tostring(hunger))
         UI.setValue("willpowerVal_" .. color, tostring(willpower))
@@ -644,6 +720,18 @@ function UpdateUIDisplays()
     if NPCS and NPCS.syncAdminNpcPanelXmlDumpButton then
         pcall(function()
             NPCS.syncAdminNpcPanelXmlDumpButton()
+        end)
+    end
+
+    if PCST and PCST.refreshAllRows then
+        pcall(function()
+            PCST.refreshAllRows()
+        end)
+    end
+
+    if PCST and PCST.refreshAllCharacterSheets then
+        pcall(function()
+            PCST.refreshAllCharacterSheets()
         end)
     end
 end

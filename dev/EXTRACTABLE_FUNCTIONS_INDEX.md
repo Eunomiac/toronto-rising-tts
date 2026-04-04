@@ -1,10 +1,10 @@
 # Extractable Functions & Patterns Index
 
-## VTM5E Module - Reference from Heritage & Kings Dilemma
+## VTM5E module — pattern index
 
-**Purpose:** Catalog all reusable functions, UI templates, and patterns from both reference modules that can be extracted into the new VTM5E module. This index is organized by category for easy reference during implementation.
+**Purpose:** Catalog reusable functions, UI templates, and implementation patterns. Organized by category for reference while building this codebase.
 
-**Status:** Both modules verified as self-contained with correct relative paths.
+**Status:** Examples below point at external reference repos where noted; paths are illustrative.
 
 ---
 
@@ -226,14 +226,14 @@
 
 ## 3. ZONE MODULE (core/zones.ttslua)
 
-**Source:** `heritage/core/zones.ttslua` (most complete implementation)
+**Source (example):** `heritage/core/zones.ttslua` (full-featured reference implementation)
 
 ### 3.1 Core Functions
 
 | Function | Description | Dependencies | Notes |
 |----------|-------------|--------------|-------|
 | `Z.onLoad()` | Initialize zones | U, S, G, C | Setup function |
-| `Z.updateBloodlineZones()` | Refresh zone hierarchy | U, G | Heritage-specific, adapt |
+| `Z.updateBloodlineZones()` | Refresh zone hierarchy | U, G | Game-specific; adapt |
 | `Z.getZoneColor(zone)` | Get player color associated with zone | U, G | Player zone lookup |
 | `Z.isInOtherBloodlineZone(zone, object)` | Check if object in different zone | U, G | Zone conflict check |
 | `Z.isInHigherBloodlineZone(zone, object)` | Check if object in parent zone | U, G | Hierarchy check |
@@ -252,7 +252,7 @@
 | `Z.getCards(zone, tags)` | Get card objects in zone | Get cards |
 | `Z.getCard(zone, tags)` | Get single card (first match) | Get top card |
 | `Z.hasCard(zone)` | Check if zone has cards | Validation |
-| `Z.getAnkhs(zone, dir)` | Get ankh tokens (Heritage-specific) | Game-specific |
+| `Z.getAnkhs(zone, dir)` | Get ankh tokens (example module) | Game-specific |
 | `Z.getPowerTokens(zone)` | Get power tokens | Game-specific |
 | `Z.getInfamyTokens(zone)` | Get infamy tokens | Game-specific |
 | `Z.getBoons(zone)` | Get boon tokens | Game-specific |
@@ -324,7 +324,7 @@
 - Global `gameState` table (defined in global.ttslua, used in state module)
 - JSON encode/decode in `onSave`/`onLoad`
 - Nested access via `getStateVal`/`setStateVal` handles missing keys gracefully
-- Default merging ensures new keys are added to old saves
+- Default merging fills in keys missing after load
 
 **Recommended Extraction:**
 
@@ -337,9 +337,9 @@
 
 **Source:** Multiple XML files in both modules
 
-### 5.1 Heritage Module UI
+### 5.1 Reference UI layouts (example tree)
 
-**Location:** `heritage/xml/`
+**Location (example):** `heritage/xml/`
 
 | File | Purpose | Extractable Elements |
 |------|---------|---------------------|
@@ -413,9 +413,9 @@
 
 ## 6. MAIN/CORE PATTERNS (core/main.ttslua)
 
-**Source:** Both modules - Heritage version is more manual control oriented
+**Source:** Compare reference modules; this project uses manual phase control.
 
-### 6.1 Core Functions (Heritage Pattern)
+### 6.1 Core functions (`core/main.ttslua`)
 
 | Function | Description | Notes |
 |----------|-------------|-------|
@@ -431,8 +431,8 @@
 
 **Recommended Pattern (VTM5E):**
 
-- **Manual phase control** (like Heritage) - Storyteller controls flow
-- **NOT automated phase management** (like Kings Dilemma director) - too rigid for VTM
+- **Manual phase control** — Storyteller drives flow
+- **Avoid a fully automated director** — often too rigid for live VTM play
 - Event delegation to modules (Z, L, etc.)
 - Player iteration pattern for batch operations
 
@@ -572,7 +572,7 @@ scenes = {
 
 6. **Lighting System:** The lighting module is complex but reusable. Start with `L.SetLightMode` and basic mode definitions, then expand.
 
-7. **Manual vs Automated Control:** Prefer Heritage's manual control pattern (Storyteller-driven) over Kings Dilemma's automated director for VTM flexibility.
+7. **Manual vs automated control:** Prefer Storyteller-driven phases over a fixed autodirector for VTM flexibility.
 
 ---
 
@@ -581,8 +581,8 @@ scenes = {
 1. `lib/util.ttslua` - Copy entire utilities file
 2. `lib/constants.ttslua` - Adapt from both modules
 3. `core/state.ttslua` - Extract state functions (already created, needs enhancement)
-4. `core/main.ttslua` - Adapt manual control pattern from Heritage (already created, needs enhancement)
-5. `core/lighting.ttslua` - Extract lighting control from Kings Dilemma
+4. `core/main.ttslua` - Manual control / orchestration (extend as needed)
+5. `core/lighting.ttslua` - Lighting (see reference KD module for prior art)
 6. `core/zones.ttslua` - Extract zone patterns (simplified)
 7. `core/scenes.ttslua` - NEW: Scene preset system
 8. `ui/Global.xml` - Adapt from templates
@@ -591,5 +591,5 @@ scenes = {
 
 ---
 
-**Last Updated:** Based on analysis of Heritage and Kings Dilemma modules
+**Last updated:** Cross-checked with reference Tabletop Simulator modules
 **Status:** Ready for extraction and adaptation

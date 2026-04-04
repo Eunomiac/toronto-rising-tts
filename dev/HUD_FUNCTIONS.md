@@ -1,6 +1,6 @@
 # HUD Function Reference
 
-All `HUD_*` onClick handlers wired to UI buttons, as of pre-Heritage migration.
+Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 
 > **Source files:**
 >

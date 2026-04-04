@@ -15,13 +15,13 @@ ui/
 
   storyteller/
     hud_storyteller_defaults.xml  → Classes for admin panel, sidebar, and camera controls
-    hud_storyteller.xml           → Heritage admin panel layout (game phases, debug controls)
+    hud_storyteller.xml           → Storyteller HUD layout (game phases, debug controls)
     panel_sidebar.xml             → Right sidebar (reference image toggles + popup images)
     panel_camera.xml              → Camera control bar + faction icons
-    panel_lighting.xml            → (empty - removed during Heritage migration)
-    panel_scenes.xml              → (empty - removed during Heritage migration)
-    panel_pcs.xml                 → (empty - removed during Heritage migration)
-    panel_phases.xml              → (empty - removed during Heritage migration)
+    panel_lighting.xml            → Reserved (empty stub)
+    panel_scenes.xml              → Reserved (empty stub)
+    panel_pcs.xml                 → Storyteller PCs panel (health / will / humanity / XP / hunger)
+    panel_phases.xml              → Reserved (empty stub)
 
   player/
     hud_player.xml        → Player HUD panels (character stats per color)
@@ -88,7 +88,7 @@ UI positioning uses a **conceptual 3 columns × 4 rows grid** (no physical `Grid
 - Visibility: `Black` for Storyteller, `Red`/`Brown`/etc. for players
 - Button onClick handlers must be global functions (e.g. `HUD_changeScene`)
 - UI element IDs must match handler expectations in `global/global_script.ttslua`
-- Admin panel ID: `adminControls` (Heritage admin button column + debug panels)
+- Admin panel ID: `adminControls` (left button column + debug panels)
 - Sidebar panel ID: `hudSidebarHost` (reference image toggles)
 - Camera panel ID: `cameraControlPanel` (camera zoom buttons + faction icons)
 - Debug panel IDs: `debugControls`, `debugStatePanel`, `debugTraitsPanel`

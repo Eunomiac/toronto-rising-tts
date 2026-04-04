@@ -1,0 +1,86 @@
+--[[
+    Build initial playerData.stats from PCS chronicle data (lib/pcs_data.ttslua).
+    conditions live on playerData root, not under stats.
+]]
+local U = require("lib.util")
+local PCS = require("lib.pcs_data")
+
+local BOOT = {}
+
+--- Deep clone so editing `stats` never mutates the PCS JSON cache.
+--- @param t table
+--- @return table
+local function deepCloneTable(t)
+  if JSON ~= nil and type(JSON.encode) == "function" and type(JSON.decode) == "function" then
+    local ok, enc = pcall(function()
+      return JSON.encode(t)
+    end)
+    if ok and type(enc) == "string" then
+      local ok2, dec = pcall(function()
+        return JSON.decode(enc)
+      end)
+      if ok2 and type(dec) == "table" then
+        return dec
+      end
+    end
+  end
+  return U.clone(t)
+end
+
+--- Shallow copy of discipline dots only (strip powers metadata from PCS).
+--- @param srcDisc table|nil
+--- @return table
+local function stripDisciplines(srcDisc)
+  local out = {}
+  if type(srcDisc) ~= "table" then
+    return out
+  end
+  for key, row in pairs(srcDisc) do
+    if type(row) == "table" and type(key) == "string" then
+      local b = tonumber(row.base) or 0
+      local t = tonumber(row.temp) or 0
+      out[key] = { base = b, temp = t }
+    end
+  end
+  return out
+end
+
+--- Build full stats table (Part A–E) from a PCS character record.
+--- @param pcsChar table|nil
+--- @return table|nil
+function BOOT.statsFromPcsChar(pcsChar)
+  if type(pcsChar) ~= "table" then
+    return nil
+  end
+
+  local stats = {
+    attributes = deepCloneTable(pcsChar.attributes or {}),
+    skills = deepCloneTable(pcsChar.skills or {}),
+    specialties = deepCloneTable(pcsChar.specialties or {}),
+    health = deepCloneTable(pcsChar.health or { base = 5, temp = 0, superficial = 0, aggravated = 0 }),
+    willpower = deepCloneTable(pcsChar.willpower or { base = 5, temp = 0, superficial = 0, aggravated = 0 }),
+    humanity = deepCloneTable(pcsChar.humanity or { base = 7, temp = 0, stains = 0 }),
+    bloodPotency = deepCloneTable(pcsChar.bloodPotency or { base = 0, temp = 0 }),
+    xp = tonumber(pcsChar.xp) or 0,
+    hunger = 0,
+    disciplines = stripDisciplines(pcsChar.disciplines),
+    backgrounds = {},
+    merits = {},
+    flaws = {},
+    bloodline = {},
+    loresheet = {},
+  }
+  return stats
+end
+
+--- @param charKey string
+--- @return table|nil stats table or nil if unknown key / no PCS entry
+function BOOT.buildStatsForCharKey(charKey)
+  if type(charKey) ~= "string" or charKey == "" then
+    return nil
+  end
+  local pcsChar = PCS.getPC(charKey)
+  return BOOT.statsFromPcsChar(pcsChar)
+end
+
+return BOOT

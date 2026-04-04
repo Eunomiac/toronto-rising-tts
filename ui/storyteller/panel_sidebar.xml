@@ -1,7 +1,7 @@
 <!-- Sidebar Panel -->
 <!-- Agent guidance: dev/HUD_FUNCTIONS.md; dev/TTS_BUNDLING_SETUP.md. -->
 <!-- Right-side reference image toggles for Black -->
-<!-- Reproduces Heritage hud.xml sidebar: dual-layer buttons (base + overlay) -->
+<!-- Dual-layer buttons (base + overlay) -->
 <!-- Mouse-down shows reference popup, right-click toggles it on -->
 
 <Panel id="hudSidebarHost" class="storyteller_sidebar" visibility="Black">

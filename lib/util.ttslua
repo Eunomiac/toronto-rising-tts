@@ -1,6 +1,6 @@
 -- lib/util.ttslua
 -- Utility Functions Library
--- Extracted from Heritage/Kings Dilemma reference modules
+-- General-purpose helpers for this Tabletop Simulator module
 -- This file contains general-purpose utility functions for the VTM5E Tabletop Simulator module.
 --
 -- Agent guidance: dev/AVAILABLE_FUNCTIONS.md; dev/EXTRACTABLE_FUNCTIONS_INDEX.md;
@@ -2022,7 +2022,7 @@ local function resolveCenterData(data)
 	return {pos = Vector(data.center), obj = nil}
 end
 
--- Helper: Resolve center position only (backward compatible)
+-- Helper: Resolve center position only (same contract as resolveCenterData)
 -- @param data table PositionOrientationData
 -- @return Vector Center point in XYZ
 local function resolveCenter(data)
@@ -2909,7 +2909,7 @@ end
 -- @param paramEnd number|Vector|Color|table Optional: Ending value or PositionOrientationData
 -- @param duration number Optional: Duration in seconds (default: 0.5)
 -- @param isRotationLerp boolean Optional: If true, handles rotation wrapping (shortest path around 360°)
--- @param easing string Optional: Easing type ("speedUp" for backward compat, or new ease types)
+-- @param easing string Optional: Easing type ("speedUp" or any ease name from easing helpers)
 -- @return number The duration (for chaining)
 --
 -- @usage U.Lerp(function(v) obj.setPosition(v, false) end, startPos, endPos, 1.0) -- Traditional
@@ -2945,7 +2945,7 @@ function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing)
 		end
 	end
 
-	-- Existing behavior (backward compatible)
+	-- Scalar / Vector / Color lerp (non-path form)
 	if duration == nil then duration = 0.5 end
 	if U.isInstance(paramStart, Vector) or U.isInstance(paramStart, Color) then
 		if paramStart:equals(paramEnd) then return 0 end

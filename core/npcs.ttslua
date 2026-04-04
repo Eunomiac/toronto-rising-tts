@@ -328,7 +328,7 @@ local function resolveSlotForMove(areaKey, preferred)
     return NPCS.findNextFreeSlotIndex(areaKey)
 end
 
---- Rotate (x, z) in the horizontal plane by `rad` around Y (same matrix as legacy slot offsets).
+--- Rotate (x, z) in the horizontal plane by `rad` around Y (matches NPC slot offset math).
 --- @param x number
 --- @param z number
 --- @param rad number
@@ -1007,7 +1007,7 @@ local function isUiDocumentLoading()
     return UI.loading == true
 end
 
---- Legacy: first-load / old saves; removed from `UI.getXml()` after the first successful splice.
+--- Placeholder row id in early bundles; not present after the first successful NPC table splice.
 local PLACEHOLDER_ROW_ID = "npcPanelRowsPlaceholder"
 --- Stable anchor for the NPC panel grid; inner `<Row>` markup is replaced on every refresh.
 local NPC_PANEL_TABLE_LAYOUT_ID = "npcPanelNpcsTable"
@@ -1061,7 +1061,7 @@ local function findNpcPanelTableInnerRange(xml, tableId)
     end
 end
 
---- Replace NPC panel table body: prefer `TableLayout id=npcPanelNpcsTable` (survives every refresh); else legacy placeholder row.
+--- Replace NPC panel table body: prefer `TableLayout id=npcPanelNpcsTable` (survives every refresh); else the single-row placeholder id.
 --- @param xml string
 --- @param tableXml string
 --- @return string|nil merged
@@ -1142,7 +1142,7 @@ local function formatNpcPanelSnapshotFileContent(tableXml, routeBuild)
     return table.concat({
         string.rep("=", 72),
         "Toronto Rising — NPC Storyteller panel (dynamic rows)",
-        "TableLayout id: " .. NPC_PANEL_TABLE_LAYOUT_ID .. " (legacy placeholder: " .. PLACEHOLDER_ROW_ID .. ")",
+        "TableLayout id: " .. NPC_PANEL_TABLE_LAYOUT_ID .. " (placeholder row id: " .. PLACEHOLDER_ROW_ID .. ")",
         string.format("Generated os.time: %s", ts),
         string.format("Ephemeral click routes in this snapshot: %d (npcRoute*)", nRoutes),
         string.rep("=", 72),
@@ -1391,7 +1391,7 @@ function NPCS.dumpStorytellerPanelXmlToWorkspace(opts)
     local parts = {
         string.rep("=", 72),
         "Toronto Rising — NPC Storyteller panel (dynamic rows)",
-        "This is the XML spliced into TableLayout id: " .. NPC_PANEL_TABLE_LAYOUT_ID .. " (or legacy placeholder row).",
+        "This is the XML spliced into TableLayout id: " .. NPC_PANEL_TABLE_LAYOUT_ID .. " (or placeholder row when the table id is absent).",
         string.format("Generated os.time: %s", ts),
         string.format("Ephemeral click routes in this snapshot: %d (npcRoute*)", nRoutes),
         string.rep("=", 72),
@@ -1483,7 +1483,7 @@ local function computeNpcPanelLayoutFingerprint()
         .. table.concat(groupLines, "\n")
 end
 
---- Rebuild NPC panel dynamic rows inside TableLayout id=npcPanelNpcsTable (legacy: placeholder row id).
+--- Rebuild NPC panel dynamic rows inside TableLayout id=npcPanelNpcsTable (fallback: placeholder row id).
 function NPCS.refreshStorytellerUI()
     if NPCS.DISABLE_STORYTELLER_NPC_PANEL_XML_REFRESH then
         return
@@ -1510,9 +1510,9 @@ function NPCS.refreshStorytellerUI()
     local idPat = 'id="' .. NPC_PANEL_TABLE_LAYOUT_ID .. '"'
     local idPat2 = "id='" .. NPC_PANEL_TABLE_LAYOUT_ID .. "'"
     local hasTable = string.find(xml, idPat, 1, true) or string.find(xml, idPat2, 1, true)
-    local hasLegacy = string.find(xml, PLACEHOLDER_ROW_ID, 1, true)
-    if not hasTable and not hasLegacy then
-        print("[NPCS] refreshStorytellerUI: no NPC table anchor in getXml (need id=" .. NPC_PANEL_TABLE_LAYOUT_ID .. " or legacy " .. PLACEHOLDER_ROW_ID .. "). Panel inactive or old bundle. Xml length: " .. tostring(#xml))
+    local hasPlaceholderRow = string.find(xml, PLACEHOLDER_ROW_ID, 1, true)
+    if not hasTable and not hasPlaceholderRow then
+        print("[NPCS] refreshStorytellerUI: no NPC table anchor in getXml (need id=" .. NPC_PANEL_TABLE_LAYOUT_ID .. " or placeholder " .. PLACEHOLDER_ROW_ID .. "). Panel inactive or bundle out of date. Xml length: " .. tostring(#xml))
         return
     end
 

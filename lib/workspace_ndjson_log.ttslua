@@ -9,26 +9,22 @@ local U = require("lib.util")
 
 local M = {}
 
+--- When true, each `append` also `print`s the JSON line to the TTS console (prefix `[workspace_ndjson]`).
+--- Survives workflows that wipe or churn `.tts/output/` during object sync. Toggle from Global `onLoad` if needed.
+M.mirrorAppendToPrint = false
+
 --- @type table<string, string[]>
 local buffers = {}
 
---- Clear buffer and optionally truncate the workspace file (call once per debug run).
+--- Clear in-memory buffer for this path (call once per debug run).
+--- Does **not** write to disk: sending `content = ""` was overwriting the workspace file and could
+--- race with the editor (file looked empty/deleted until the next `append`). Disk updates only happen in `append`.
 --- @param relativePath string
 function M.beginSession(relativePath)
     if U.Type(relativePath) ~= "string" or relativePath == "" then
         return
     end
     buffers[relativePath] = {}
-    ---@diagnostic disable-next-line: undefined-global
-    if sendExternalMessage then
-        ---@diagnostic disable-next-line: undefined-global
-        sendExternalMessage({
-            type = "write",
-            content = "",
-            name = relativePath,
-            format = "none",
-        })
-    end
 end
 
 --- Append one NDJSON object (rewrites file with full buffer).
@@ -61,6 +57,9 @@ function M.append(relativePath, payload)
     local line = head .. jsonPart
     buffers[relativePath] = buffers[relativePath] or {}
     table.insert(buffers[relativePath], line)
+    if M.mirrorAppendToPrint == true then
+        print("[workspace_ndjson] " .. jsonPart)
+    end
     ---@diagnostic disable-next-line: undefined-global
     if sendExternalMessage then
         ---@diagnostic disable-next-line: undefined-global

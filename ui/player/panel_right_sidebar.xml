@@ -1,17 +1,17 @@
 <!-- Agent guidance: dev/HUDs & Overlays/Player HUD Overview.md; dev/TTS_BUNDLING_SETUP.md. -->
-<!-- Shim for legacy includes. Prefer `panel_right_sidebar_entry`. -->
+<!-- Shim: alternate include paths. Prefer `panel_right_sidebar_entry`. -->
 <Include src="panel_right_sidebar_entry.xml" />
 
-<!-- Shim for legacy includes. Prefer `panel_right_sidebar_entry`. -->
+<!-- Shim: alternate include paths. Prefer `panel_right_sidebar_entry`. -->
 <Include src="ui/player/panel_right_sidebar_entry.xml" />
 
-<!-- Shim for legacy includes. Prefer `panel_right_sidebar_entry`. -->
+<!-- Shim: alternate include paths. Prefer `panel_right_sidebar_entry`. -->
 <Include src="ui/player/panel_right_sidebar_entry.xml" />
 
-<!-- Shim for legacy includes. Prefer `panel_right_sidebar_entry`. -->
+<!-- Shim: alternate include paths. Prefer `panel_right_sidebar_entry`. -->
 <Include src="ui/player/panel_right_sidebar_entry" />
 
-<!-- Deprecated: kept as a shim for any legacy includes. -->
+<!-- Deprecated: kept as a shim for alternate include paths. -->
 <Include src="ui/player/panel_right_sidebar_entry" />
 
 <!-- Player HUD Right Sidebar (bundled entry) -->

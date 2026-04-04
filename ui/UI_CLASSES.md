@@ -175,7 +175,7 @@ These classes are scoped to the storyteller/GM HUD (`visibility="Black"`). They 
 | `storyteller_buttonControls` | `VerticalLayout` | 160px wide, 0.5 scale, MiddleLeft, offset 0/-90 | Left-side game phase button column |
 | `storyteller_subButtonControls` | `HorizontalLayout` | 200x500, MiddleLeft, offset 75/50 | Debug sub-panel (horizontal row of button columns) |
 
-These position the Heritage-style admin controls at half-scale on the left side of the screen.
+These position the storyteller admin controls at half-scale on the left side of the screen.
 
 ### Debug Traits
 

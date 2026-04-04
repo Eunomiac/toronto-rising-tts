@@ -86,6 +86,11 @@ Commit changes when:
 - Update test functions when adding new features
 - Document test requirements in `dev/TESTING.md`
 
+### Runtime logging and agent instrumentation
+
+- Workspace file output goes through **TTS Tools** into **`.tts/output/`** — see **`dev/DEBUG_FILE_LOGGING.md`** for paths and `ttsEditor.enableMessages`.
+- Use **`core/debug.ttslua`** helpers (`DEBUG.logToFile`, `DEBUG.writeWorkspaceFile`, **`DEBUG.workspaceNdjsonBegin`**, **`DEBUG.workspaceNdjsonAppend`**) instead of calling **`lib/workspace_ndjson_log`** directly from new code unless there is a specific exception.
+
 ## Module Dependencies
 
 ### Required Modules

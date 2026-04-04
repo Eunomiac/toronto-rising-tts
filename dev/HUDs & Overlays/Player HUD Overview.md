@@ -8,7 +8,7 @@ This document defines the player-facing HUD layout, behaviour, and state for Tor
 
 **Game phase:** Global phase is stored in `state.gameState.gameData.currentPhase`. Phase values include `waking`, `main`, and `end`. **"main"** is the phase during which the majority of gameplay happens; Humanity stain/heal actions are allowed only when `currentPhase == "main"`. **"end"** is when end-of-session actions like Remorse run; the Remorse roll is available only when `currentPhase == "end"`. Subphases (e.g. "memoriam" vs "realtime" under "main") may be added later.
 
-**Canonical data (lib/constants.ttslua):** Discipline keys, coterie keys, and PC keys used by the HUD come from `C.CHRONICLE_DATA` in `lib/constants.ttslua`: `C.CHRONICLE_DATA.disciplines`, `C.CHRONICLE_DATA.coteries`, and `C.CHRONICLE_DATA.PCS`. Use these keys for state, asset names, and UI logic so the HUD stays in sync with the chronicle config.
+**Canonical data (lib/constants.ttslua + data/PCS.json):** Discipline names and coterie reference data come from `C.CHRONICLE_DATA.disciplines` and `C.CHRONICLE_DATA.coteries`. Player character keys, seats, and display names come from `C.PlayerData` (`charKey`, `color`, etc.). Full PC stat blocks are authored in **`data/PCS.json`** and embedded at runtime via **`lib/pcs_data.ttslua`** (regenerate with `node dev/scripts/generate_pcs_data_lua.js` after editing the JSON).
 
 ---
 
@@ -426,7 +426,7 @@ This first set of reference panel toggle buttons contains:
 | `toggle_ChronicleTenets_hover` | Hovering over Chronicle Tenets toggle. | ✅ |
 | `toggle_ChronicleTenets_active` | Active Chronicle Tenets toggle. | ✅ |
 
-- **Prince's Court Reference** — A row of images for the *other* PCs (exclude the current player). PC keys come from `C.CHRONICLE_DATA.PCS` (`lucien`, `fomorach`, `blackCaesar`, `aishe`, `rashid`; each has `name` and `color`). Clicking a PC image reveals a popup with that PC's character sheet; state uses `playerData.hud.reference.princesCourt.<pcKey>` or similar.
+- **Prince's Court Reference** — A row of images for the *other* PCs (exclude the current player). PC keys come from each player's `charKey` in `C.PlayerData` (matching keys under `PCs` in `data/PCS.json`, e.g. `lucien`, `fomorach`, `blackCaesar`, `aishe`, `rashid`). Clicking a PC image reveals a popup with that PC's character sheet; state uses `playerData.hud.reference.princesCourt.<pcKey>` or similar.
 - **Coteries Reference** — A central grid of images corresponding to NPC coteries in the city. Only coteries with `inCoterieRef = true` in `C.CHRONICLE_DATA.coteries` appear in this reference (e.g. `beesHive`, `fiveKeys`, `harpies`, `ironGuard`, `line`, `midnightMass`, `moonClub`, `petitioners`, `redeemers`, `redFlag`, `regencyUniversityChantry`, `scarlettAndBoys`, `wychwoodHecata`). Clicking a coterie image reveals a popup panel with more information; state uses `playerData.hud.reference.coteries.<coterieKey>`.
 - **Chronicle Tenets Reference** — A single `refPanel_ChronicleTenets` image.
 

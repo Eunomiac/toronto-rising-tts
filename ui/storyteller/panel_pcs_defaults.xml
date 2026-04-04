@@ -1,0 +1,48 @@
+<!-- Classes for Storyteller PCs panel (`panel_pcs.xml`). Seat tint `color` stays per-Panel; ids and row label text stay on elements. -->
+<!-- Agent guidance: dev/tts-api/UI API/Defaults.md -->
+<Defaults>
+  <Panel class="pcs_panel_root" padding="6 6 6 6" width="540" />
+  <VerticalLayout class="pcs_root_vl" spacing="8" childAlignment="UpperLeft" childForceExpandWidth="false" />
+
+  <Panel class="pcs_seat_block" padding="6 8 6 8" />
+  <VerticalLayout class="pcs_seat_column" spacing="4" flexibleWidth="1" childForceExpandWidth="false" />
+
+  <Text class="pcs_row_title" fontSize="13" fontStyle="Bold" color="#F5F5F5" />
+  <Text class="pcs_char_title" fontSize="17" fontStyle="Bold" color="#FFFFFF" />
+
+  <HorizontalLayout class="pcs_stat_row" spacing="3" height="26" childForceExpandWidth="false" />
+
+  <Text class="pcs_prefix_wide" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="42" minWidth="42" flexibleWidth="0" alignment="MiddleLeft" />
+  <Text class="pcs_prefix_hg" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="36" minWidth="36" flexibleWidth="0" alignment="MiddleLeft" />
+
+  <Text class="pcs_track_damage" fontSize="27" fontStyle="Bold" color="#EEEEEE" preferredWidth="110" minWidth="72" flexibleWidth="1" alignment="MiddleLeft" />
+  <Text class="pcs_track_hum" fontSize="27" fontStyle="Bold"  color="#E8DDFF" preferredWidth="110" minWidth="72" flexibleWidth="1" alignment="MiddleLeft" />
+
+  <Text class="pcs_buf_agg" fontSize="11" color="#FFCCCC" preferredWidth="34" minWidth="34" flexibleWidth="0" alignment="MiddleCenter" />
+  <Text class="pcs_buf_neutral" fontSize="11" color="#EEEEEE" preferredWidth="34" minWidth="34" flexibleWidth="0" alignment="MiddleCenter" />
+  <Text class="pcs_buf_hum" fontSize="11" color="#EDDFFF" preferredWidth="34" minWidth="34" flexibleWidth="0" alignment="MiddleCenter" />
+  <Text class="pcs_buf_xp" fontSize="11" color="#DDF0FF" preferredWidth="34" minWidth="34" flexibleWidth="0" alignment="MiddleCenter" />
+  <Text class="pcs_buf_hunger" fontSize="11" color="#FFDEB5" preferredWidth="34" minWidth="34" flexibleWidth="0" alignment="MiddleCenter" />
+
+  <Text class="pcs_xp_val" fontSize="13" color="#CCE8FF" preferredWidth="68" minWidth="64" flexibleWidth="0" alignment="MiddleLeft" />
+  <Text class="pcs_hunger_val" fontSize="12" color="#FFE0C2" preferredWidth="40" minWidth="36" flexibleWidth="0" alignment="MiddleLeft" />
+  <Text class="pcs_torpor_lbl" fontSize="11" color="#F0F0F0" preferredWidth="88" minWidth="88" flexibleWidth="0" alignment="MiddleLeft" />
+
+  <!-- Shared button base; pair with a palette class. `text` and `id` stay on the element. -->
+  <Button class="pcs_btn" onClick="HUD_pcPanel" textColor="#FFFFFFFF" height="26" fontSize="12" flexibleWidth="0" />
+  <Button class="pcs_btn_arrow" preferredWidth="30" minWidth="30" />
+  <Button class="pcs_btn_apply_64" preferredWidth="64" minWidth="64" text="Apply" />
+  <Button class="pcs_btn_apply_58" preferredWidth="58" minWidth="58" text="Apply" />
+  <Button class="pcs_btn_clear_52" preferredWidth="52" minWidth="52" text="Clear" />
+  <Button class="pcs_btn_torpor" preferredWidth="76" minWidth="76" text="Torpor" />
+
+  <Button class="pcs_btn_palette_agg" colors="#662222|#883333|#991111|rgba(0.5,0.1,0.1,0.4)" />
+  <Button class="pcs_btn_palette_sup" colors="#444444|#555555|#666666|rgba(0.2,0.2,0.2,0.4)" />
+  <Button class="pcs_btn_palette_track_apply" colors="#225522|#336633|#44AA44|rgba(0.1,0.3,0.1,0.4)" />
+  <Button class="pcs_btn_palette_hum" colors="#553377|#664488|#7755AA|rgba(0.2,0.1,0.3,0.4)" />
+  <Button class="pcs_btn_palette_hum_dark" colors="#333333|#444444|#555555|rgba(0.2,0.2,0.2,0.4)" />
+  <Button class="pcs_btn_palette_hum_base" colors="#111111|#222222|#333333|rgba(0.1,0.1,0.1,0.4)" />
+  <Button class="pcs_btn_palette_xp" colors="#224466|#335577|#4466AA|rgba(0.1,0.2,0.3,0.4)" />
+  <Button class="pcs_btn_palette_hunger" colors="#663311|#884422|#AA5522|rgba(0.3,0.15,0.05,0.4)" />
+  <Button class="pcs_btn_palette_torpor" colors="#441122|#552233|#663344|rgba(0.2,0.05,0.1,0.4)" />
+</Defaults>

@@ -419,7 +419,7 @@ local function getLightComponent(light, isSilent)
         end
     end
 
-    -- 3) Legacy nested path — LightTest.testSpawnLight uses components[2].name == "Light" (no spotlight property probe)
+    -- 3) Nested object path — test fixtures may expose Light as components[2] without a spotlight probe
     local lComp
     local success = pcall(function()
         lComp = light.getChildren()[1].getChildren()[2].getComponents()[2]
@@ -841,9 +841,8 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
         local afterVals = {}
 
         -- Handle enabled state (special case: animate on/off).
-        -- Do not use a single equality check vs getEnabled alone: both can be false while the
-        -- light is mid-transition or inconsistent (enabled vs intensity), which used to nil out
-        -- `enabled` and skip the real turn-off / turn-on setup for NPC toggles.
+        -- Mid-transition lights can report enabled/intensity inconsistently; avoid clearing
+        -- `modeDef.enabled` from a naive getEnabled() check alone or NPC toggles miss setup.
         local MIN_VISIBLE_INTENSITY = 0.05
         if modeDef.enabled ~= nil then
             local compOn = getEnabled(light)

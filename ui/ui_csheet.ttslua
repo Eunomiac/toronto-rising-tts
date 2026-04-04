@@ -1,8 +1,188 @@
 ---@diagnostic disable: undefined-global
--- Agent guidance: dev/TESTING.md; dev/TTS_BUNDLING_SETUP.md (UI workflow).
--- Layout for `paper_root` and all dynamic elements is defined in page XML (position, size, rotation, offsets).
+-- Character sheet object UI: derive owner from object name CSHEET_PAGE_<n>_<COLOR>.
+-- Any page index n is accepted; automated dot/box toggles are controlled per page in
+-- `lib/pc_stats.ttslua` (`P.SHEET_PAGE_UPDATE_PROFILE`). Pages without a profile get no bulk
+-- updates until you add one (room for pages 3–8+). Page-specific extras (e.g. another Text id)
+-- can branch on `pageNum` below.
+-- Object scripts do not share Global's `gameState`; merged player data comes via Global.call.
+-- Agent guidance: dev/PC Data & Tracking/PC Tracking & State Behavior.md; dev/TTS_BUNDLING_SETUP.md
 
---- Enables pointer interaction on the sheet object. UI geometry is not driven from Lua.
-function onLoad(script_state)
+-- =============================================================================
+-- Tracker presentation (edit here)
+-- Pushed to Global on load so `lib.pc_stats` can format Storyteller strip text and optionally
+-- set sheet box `image` ids. Health and Willpower share the same damage-track glyph set.
+-- `sheetImages` values must match custom UI asset names available in this game / page1.xml.
+-- =============================================================================
+
+local CSHEET_TRACKER_DISPLAY = {
+  damageTrack = {
+    undamaged = "◍",
+    superficial = "⊘",
+    aggravated = "⊗",
+  },
+  humanityTrack = {
+    unused = "◎",
+    filled = "◍",
+    stain = "⊛",
+    impaired = "⊘",
+  },
+  sheetImages = {
+    health = {
+      undamaged = "box_white",
+      superficial = "box_grey_slash",
+      aggravated = "box_red_x",
+    },
+    willpower = {
+      undamaged = "box_white",
+      superficial = "box_grey_slash",
+      aggravated = "box_red_x",
+    },
+    humanity = {
+      filled = "box_white",
+      stain = "box_black",
+      impaired = "box_red",
+    },
+  },
+}
+
+local C = require("lib.constants")
+local P = require("lib.pc_stats")
+
+--- Register tracker glyphs/images with Global (separate Lua VM). Safe no-op if Global unavailable.
+local function pushTrackerDisplayToGlobal()
+  if Global == nil or type(Global.call) ~= "function" then
+    return
+  end
+  pcall(function()
+    Global.call("GlobalRegisterTrackerDisplay", CSHEET_TRACKER_DISPLAY)
+  end)
+end
+
+local pageNum = nil
+local seatColor = nil
+local playerID = nil
+
+--- @param name string
+--- @return number|nil, string|nil
+local function parseSheetObjectName(name)
+  if type(name) ~= "string" then
+    return nil, nil
+  end
+  local p, c = name:match("^CSHEET_PAGE_(%d+)_(%a+)$")
+  if not p then
+    return nil, nil
+  end
+  return tonumber(p), c
+end
+
+--- @return boolean
+local function resolvePlayer()
+  if not seatColor then
+    return false
+  end
+  -- Prefer Global lookup: object bundles can lag `lib.constants`; names use UPPERCASE from TTS objects.
+  if Global ~= nil and type(Global.call) == "function" then
+    local ok, pid = pcall(function()
+      return Global.call("GlobalResolveSheetPlayerID", seatColor)
+    end)
+    if ok and type(pid) == "string" and pid ~= "" then
+      playerID = pid
+      return true
+    end
+  end
+  local ok2, pid2 = pcall(function()
+    return C.GetPlayerID(seatColor)
+  end)
+  if ok2 and type(pid2) == "string" then
+    playerID = pid2
+    return true
+  end
+  playerID = nil
+  return false
+end
+
+--- Merged player row (static + dynamic) from Global — same as `S.getPlayerData` there.
+--- @param pid string steam id
+--- @return table|nil
+local function getMergedPlayerDataFromGlobal(pid)
+  if type(pid) ~= "string" then
+    return nil
+  end
+  if Global == nil or type(Global.call) ~= "function" then
+    return nil
+  end
+  local ok, result = pcall(function()
+    return Global.call("GlobalGetMergedPlayerData", pid)
+  end)
+  if ok and type(result) == "table" then
+    return result
+  end
+  return nil
+end
+
+--- Apply collected attribute tweaks to this object's UI.
+local function applyUiUpdates(updates)
+  if self.UI == nil then
+    return
+  end
+  for _, u in ipairs(updates) do
+    local id = u.id
+    local attrs = u.attributes
+    if type(id) == "string" and type(attrs) == "table" then
+      for attrName, attrVal in pairs(attrs) do
+        pcall(function()
+          self.UI.setAttribute(id, attrName, tostring(attrVal))
+        end)
+      end
+    end
+  end
+end
+
+--- Refresh images and XP from merged game state (fetched in Global script).
+function refreshCharacterSheetUi()
+  if playerID == nil or playerID == C.StorytellerID or pageNum == nil then
+    return
+  end
+
+  local pd = getMergedPlayerDataFromGlobal(playerID)
+  if type(pd) ~= "table" or type(pd.stats) ~= "table" then
+    return
+  end
+
+  local stats = pd.stats
+  local conditions = pd.conditions
+  -- Page 1: attributes, skills, trackers, blood potency, humanity; not discipline dot-lines.
+  -- Page 2: discipline dot-lines only (`P.collectSheetImageUpdates` filters by pageNum).
+  local updates = P.collectSheetImageUpdates(stats, conditions, pageNum)
+  applyUiUpdates(updates)
+
+  if pageNum == 1 and self.UI then
+    pcall(function()
+      self.UI.setAttribute("xp_text", "text", tostring(tonumber(stats.xp) or 0))
+    end)
+  end
+end
+
+function onLoad()
   self.interactable = true
+  local name = ""
+  pcall(function()
+    name = self.getName()
+  end)
+  pageNum, seatColor = parseSheetObjectName(name)
+  resolvePlayer()
+  pushTrackerDisplayToGlobal()
+  -- Global `gameState` may not exist yet on the first frames after load.
+  Wait.frames(function()
+    pushTrackerDisplayToGlobal()
+    refreshCharacterSheetUi()
+  end, 3)
+  Wait.frames(function()
+    refreshCharacterSheetUi()
+  end, 30)
+end
+
+--- Called from global script after PC state changes (object.call).
+function refreshFromGameState()
+  refreshCharacterSheetUi()
 end

@@ -371,7 +371,7 @@ end
 --- - stage.refs = "__all_registered__"
 --- - stage.refs = "lightName"
 --- - stage.refs = { "lightA", "lightB" }
---- - legacy stage.name / stage.lightRef
+--- - Alternate keys: stage.name / stage.lightRef (treated like refs)
 --- @param stage table
 --- @return table
 local function getStageRefs(stage)
@@ -557,7 +557,7 @@ local function applySceneByName(sceneName, transitionTime, allowDelays)
     -- New staged system (preferred when present).
     if scene.lightStages ~= nil and type(scene.lightStages) == "table" and #scene.lightStages > 0 then
         applySceneLightStages(scene.lightStages, effectiveTransition, allowDelays == true)
-    -- Legacy per-light list remains supported.
+    -- Or apply a flat per-light list when no stages are defined.
     elseif scene.lights then
         applySceneLights(scene.lights, effectiveTransition)
     end

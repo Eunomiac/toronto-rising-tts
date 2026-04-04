@@ -3,7 +3,7 @@
 
     Handles zone-related operations including object queries, snap point alignment,
     zone activation/deactivation, and state persistence patterns.
-    Extracted and adapted from Heritage module patterns.
+    Zone queries, activation, and state helpers for this module.
 
     This module provides:
     - Zone activation/deactivation (event handler management)

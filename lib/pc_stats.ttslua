@@ -1,0 +1,817 @@
+--[[
+    PC tracker math, VTM5e damage overflow, humanity stains, condition sync.
+    Agent guidance: dev/PC Data & Tracking/PC Tracking & State Behavior.md
+]]
+
+---@diagnostic disable: undefined-global
+local P = {}
+local S = require("core.state")
+local C = require("lib.constants")
+local U = require("lib.util")
+local L = require("core.lighting")
+
+--- Tracker glyphs / sheet images from Global (`GlobalRegisterTrackerDisplay`); nil until a sheet object loads.
+--- @return table|nil
+local function getMergedTrackerDisplay()
+  local g = rawget(_G, "TRACKER_DISPLAY")
+  if type(g) == "table" then
+    return g
+  end
+  return nil
+end
+
+--- @return string, string, string
+local function damageTrackGlyphs()
+  local g = getMergedTrackerDisplay()
+  local d = g and g.damageTrack
+  if type(d) == "table" then
+    return tostring(d.undamaged or "O"), tostring(d.superficial or "/"), tostring(d.aggravated or "X")
+  end
+  return "O", "/", "X"
+end
+
+--- @return string, string, string, string
+local function humanityTrackGlyphs()
+  local g = getMergedTrackerDisplay()
+  local h = g and g.humanityTrack
+  if type(h) == "table" then
+    return tostring(h.unused or "_"), tostring(h.filled or "O"), tostring(h.stain or "*"), tostring(h.impaired or "I")
+  end
+  return "_", "O", "*", "I"
+end
+
+--- Which automated UI id updates apply per sheet page (`CSHEET_PAGE_<n>_<COLOR>`).
+--- Add rows when you add page 3..8 XML: `"main"` = attrs/skills/trackers/BP/humanity (no discipline dots);
+--- `"disciplines"` = discipline dot-lines only; `"none"` = skip this pipeline (custom ids / later profile).
+--- Pages not listed behave as `"none"` so new objects stay inert until you assign a profile.
+P.SHEET_PAGE_UPDATE_PROFILE = {
+  [1] = "main",
+  [2] = "disciplines",
+}
+
+-- Dot-line disciplines live on character sheet page 2; other dots and trackers on page 1.
+P.DISCIPLINE_DOT_KEYS = {
+  animalism = true,
+  auspex = true,
+  bloodSorcery = true,
+  celerity = true,
+  dominate = true,
+  fortitude = true,
+  obfuscate = true,
+  oblivion = true,
+  potence = true,
+  presence = true,
+  protean = true
+}
+
+--- @param elementId string
+--- @return string|nil discipline key from dot_on_<key>_<n> or dot_off_<key>_<n>
+function P.disciplineKeyFromDotElementId(elementId)
+  if type(elementId) ~= "string" then
+    return nil
+  end
+  -- Captures: (1) on|off (2) attribute/skill/discipline key (3) slot number
+  local _, _, _onOff, key = elementId:find("^dot_(on|off)_(.+)_(%d+)$")
+  return key
+end
+
+--- @param msg string
+local function warnGm(msg)
+  if broadcastToAll ~= nil then
+    pcall(function()
+      broadcastToAll("[PC] " .. tostring(msg), Color(1, 0.55, 0.2))
+    end)
+  end
+  print("[PC warnGm] " .. tostring(msg))
+end
+
+--- @param playerRef any
+--- @return string|nil
+local function resolvePlayerId(playerRef)
+  if type(playerRef) == "string" and C.PlayerData[playerRef] then
+    return playerRef
+  end
+  return S.getPlayerID(playerRef)
+end
+
+--- Sum condition stat deltas for aggregate trackers (health, willpower, humanity).
+--- @param stats table
+--- @param conditions table|nil
+--- @param statKey string
+--- @return number
+function P.effectiveTempForAggregate(stats, conditions, statKey)
+  local baseT = 0
+  if type(stats) == "table" and type(stats[statKey]) == "table" then
+    baseT = tonumber(stats[statKey].temp) or 0
+  end
+  local add = 0
+  if type(conditions) == "table" then
+    for _, cond in pairs(conditions) do
+      if type(cond) == "table" and type(cond.statChanges) == "table" then
+        local v = cond.statChanges[statKey]
+        if v ~= nil then
+          add = add + (tonumber(v) or 0)
+        end
+      end
+    end
+  end
+  return baseT + add
+end
+
+--- @param stats table
+--- @param conditions table|nil
+--- @param dotKey string attribute/skill/discipline key
+--- @return number
+function P.effectiveTempForDot(stats, conditions, dotKey)
+  local baseT = 0
+  if type(stats) == "table" then
+    if type(stats.attributes) == "table" and type(stats.attributes[dotKey]) == "table" then
+      baseT = tonumber(stats.attributes[dotKey].temp) or 0
+    elseif type(stats.skills) == "table" and type(stats.skills[dotKey]) == "table" then
+      baseT = tonumber(stats.skills[dotKey].temp) or 0
+    elseif type(stats.disciplines) == "table" and type(stats.disciplines[dotKey]) == "table" then
+      baseT = tonumber(stats.disciplines[dotKey].temp) or 0
+    elseif dotKey == "bloodPotency" and type(stats.bloodPotency) == "table" then
+      baseT = tonumber(stats.bloodPotency.temp) or 0
+    end
+  end
+  local add = 0
+  if type(conditions) == "table" then
+    for _, cond in pairs(conditions) do
+      if type(cond) == "table" and type(cond.statChanges) == "table" then
+        local v = cond.statChanges[dotKey]
+        if v ~= nil then
+          add = add + (tonumber(v) or 0)
+        end
+      end
+    end
+  end
+  return baseT + add
+end
+
+--- @param track table superficial/aggravated
+--- @param maxBoxes number
+--- @param ds number superficial delta
+--- @param da number aggravated delta
+--- @return number, number new superficial, aggravated
+local function applyTrackDeltasV5(track, maxBoxes, ds, da)
+  local s = math.max(0, (tonumber(track.superficial) or 0) + (tonumber(ds) or 0))
+  local a = math.max(0, (tonumber(track.aggravated) or 0) + (tonumber(da) or 0))
+  local t = s + a
+  if t <= maxBoxes then
+    return s, a
+  end
+  local overflow = t - maxBoxes
+  local s2 = s - math.min(s, overflow)
+  local rem = overflow - (s - s2)
+  local a2 = a - rem
+  if a2 < 0 then
+    a2 = 0
+  end
+  for _ = 1, overflow do
+    if s2 > 0 then
+      s2 = s2 - 1
+      a2 = a2 + 1
+    end
+  end
+  return s2, a2
+end
+
+--- @param playerRef any
+--- @param which string "health"|"willpower"
+--- @param superficialDelta number
+--- @param aggravatedDelta number
+function P.applyDamageOrHeal(playerRef, which, superficialDelta, aggravatedDelta)
+  local playerID = resolvePlayerId(playerRef)
+  if not playerID or playerID == C.StorytellerID then
+    return
+  end
+  local stats = S.getStateVal("playerData", playerID, "stats")
+  local conditions = S.getStateVal("playerData", playerID, "conditions")
+  if type(stats) ~= "table" or type(stats[which]) ~= "table" then
+    warnGm("applyDamageOrHeal: missing stats." .. which .. " for player")
+    return
+  end
+  local tr = stats[which]
+  local b = tonumber(tr.base) or 0
+  local maxBoxes = b + P.effectiveTempForAggregate(stats, conditions, which)
+  if maxBoxes < 1 then
+    maxBoxes = 1
+  end
+  local ns, na = applyTrackDeltasV5(tr, maxBoxes, superficialDelta, aggravatedDelta)
+  S.setStateVal(ns, "playerData", playerID, "stats", which, "superficial")
+  S.setStateVal(na, "playerData", playerID, "stats", which, "aggravated")
+  P.syncDamageDerivedConditions(playerID)
+  P.applyActiveConditionPresentation(playerID)
+end
+
+--- @param playerID string
+function P.syncDamageDerivedConditions(playerID)
+  if playerID == C.StorytellerID then
+    return
+  end
+  local stats = S.getStateVal("playerData", playerID, "stats")
+  local conditions = S.getStateVal("playerData", playerID, "conditions") or {}
+  if type(stats) ~= "table" then
+    return
+  end
+  if type(conditions) ~= "table" then
+    conditions = {}
+    S.setStateVal(conditions, "playerData", playerID, "conditions")
+  end
+
+  local h = stats.health
+  local w = stats.willpower
+  if type(h) ~= "table" or type(w) ~= "table" then
+    return
+  end
+
+  local hMax = (tonumber(h.base) or 0) + P.effectiveTempForAggregate(stats, conditions, "health")
+  local wMax = (tonumber(w.base) or 0) + P.effectiveTempForAggregate(stats, conditions, "willpower")
+  local hSup = tonumber(h.superficial) or 0
+  local hAgg = tonumber(h.aggravated) or 0
+  local wSup = tonumber(w.superficial) or 0
+  local wAgg = tonumber(w.aggravated) or 0
+
+  local hasTorpor = conditions.torpor ~= nil
+  if hMax > 0 and hAgg >= hMax then
+    if not hasTorpor then
+      P.setConditionEntry(playerID, "torpor", P.makeTorporCondition(playerID))
+    end
+  end
+
+  local impairedH = conditions.impairedHealth
+  if hasTorpor then
+    if impairedH ~= nil then
+      conditions.impairedHealth = nil
+      S.setStateVal(nil, "playerData", playerID, "conditions", "impairedHealth")
+    end
+  elseif hMax > 0 and (hSup + hAgg) >= hMax then
+    if impairedH == nil then
+      P.setConditionEntry(playerID, "impairedHealth", P.makeImpairedHealthCondition(playerID))
+    end
+  else
+    if impairedH ~= nil then
+      conditions.impairedHealth = nil
+      S.setStateVal(nil, "playerData", playerID, "conditions", "impairedHealth")
+    end
+  end
+
+  local impairedW = conditions.impairedWillpower
+  if hasTorpor then
+    if impairedW ~= nil then
+      conditions.impairedWillpower = nil
+      S.setStateVal(nil, "playerData", playerID, "conditions", "impairedWillpower")
+    end
+  elseif wMax > 0 and (wSup + wAgg) >= wMax then
+    if impairedW == nil then
+      P.setConditionEntry(playerID, "impairedWillpower", P.makeImpairedWillpowerCondition(playerID))
+    end
+  else
+    if impairedW ~= nil then
+      conditions.impairedWillpower = nil
+      S.setStateVal(nil, "playerData", playerID, "conditions", "impairedWillpower")
+    end
+  end
+end
+
+--- @param playerID string
+--- @param key string
+--- @param entry table|nil
+function P.setConditionEntry(playerID, key, entry)
+  if entry == nil then
+    S.setStateVal(nil, "playerData", playerID, "conditions", key)
+  else
+    S.setStateVal(entry, "playerData", playerID, "conditions", key)
+  end
+end
+
+--- @param playerID string
+--- @return table
+function P.makeTorporCondition(playerID)
+  local pd = S.getPlayerData(playerID) or {}
+  local col = pd.color or "Brown"
+  return {
+    statChanges = {},
+    hudChanges = { ["overlay_torpor_" .. col] = true },
+    lightingModeChanges = { ["playerLight2" .. col] = "OFF" },
+    removalCriteria = "indefinite"
+  }
+end
+
+--- @param playerID string
+--- @return table
+function P.makeImpairedHealthCondition(playerID)
+  local pd = S.getPlayerData(playerID) or {}
+  local col = pd.color or "Brown"
+  return {
+    statChanges = {
+      strength = -2,
+      dexterity = -2,
+      stamina = -2
+    },
+    hudChanges = { ["overlay_health_impaired_" .. col] = true },
+    lightingModeChanges = { ["playerLight2" .. col] = "DIM_RED" },
+    removalCriteria = "indefinite"
+  }
+end
+
+--- @param playerID string
+--- @return table
+function P.makeImpairedWillpowerCondition(playerID)
+  local pd = S.getPlayerData(playerID) or {}
+  local col = pd.color or "Brown"
+  return {
+    statChanges = {
+      charisma = -2,
+      manipulation = -2,
+      composure = -2,
+      intelligence = -2,
+      wits = -2,
+      resolve = -2
+    },
+    hudChanges = { ["overlay_willpower_impaired_" .. col] = true },
+    lightingModeChanges = { ["playerLight2" .. col] = "DIM_RED" },
+    removalCriteria = "indefinite"
+  }
+end
+
+--- @param playerID string
+--- @return table
+function P.makeImpairedHumanityCondition(playerID)
+  local pd = S.getPlayerData(playerID) or {}
+  local col = pd.color or "Brown"
+  return {
+    statChanges = {
+      strength = -2,
+      dexterity = -2,
+      stamina = -2,
+      charisma = -2,
+      manipulation = -2,
+      composure = -2,
+      intelligence = -2,
+      wits = -2,
+      resolve = -2
+    },
+    hudChanges = { ["overlay_humanity_impaired_" .. col] = true },
+    lightingModeChanges = { ["playerLight2" .. col] = "DIM_PURPLE" },
+    removalCriteria = "indefinite"
+  }
+end
+
+--- Resolve sheet/UI light keys (e.g. PLAYER_LIGHT_2_COLOR) to L.LIGHTMODES registry names.
+--- @param rawKey string
+--- @param seatColor string|nil
+--- @return string|nil
+function P.resolveLightRegistryKey(rawKey, seatColor)
+  if type(rawKey) ~= "string" then
+    return nil
+  end
+  if L.LIGHTMODES[rawKey] ~= nil then
+    return rawKey
+  end
+  local prefix = "PLAYER_LIGHT_2_"
+  if rawKey:sub(1, #prefix) == prefix then
+    local suffix = rawKey:sub(#prefix + 1)
+    if suffix == string.upper(suffix) and #suffix > 0 then
+      local title = suffix:sub(1, 1) .. suffix:sub(2):lower()
+      return "playerLight2" .. title
+    end
+  end
+  if seatColor and L.LIGHTMODES["playerLight2" .. seatColor] ~= nil then
+    return "playerLight2" .. seatColor
+  end
+  return rawKey
+end
+
+--- @param lightKey string registered L.LIGHTMODES key
+--- @param mode string|table
+--- @param playerColor string|nil
+local function trySetLight(lightKey, mode, playerColor)
+  local def = L.LIGHTMODES[lightKey]
+  if def == nil then
+    warnGm("Unknown light key: " .. tostring(lightKey))
+    return
+  end
+  if type(mode) == "string" then
+    local m = (def[mode] ~= nil) and mode or (string.upper(mode) == mode and mode or nil)
+    if m == nil then
+      m = mode
+    end
+    if def[m] == nil and mode ~= "OFF" and mode ~= "STANDARD" then
+      warnGm("Light mode " .. tostring(mode) .. " not defined for " .. tostring(lightKey) .. " — skipping")
+      return
+    end
+  end
+  pcall(function()
+    L.SetLightMode(lightKey, mode, playerColor, 0.5)
+  end)
+end
+
+--- Apply lighting from all active conditions (last key wins per light).
+--- @param playerID string
+function P.applyActiveConditionPresentation(playerID)
+  if playerID == C.StorytellerID then
+    return
+  end
+  local pd = S.getPlayerData(playerID) or {}
+  local col = pd.color
+  local conditions = S.getStateVal("playerData", playerID, "conditions")
+  if type(conditions) ~= "table" then
+    return
+  end
+  local lastMode = {}
+  for condKey, cond in pairs(conditions) do
+    if type(cond) == "table" and type(cond.lightingModeChanges) == "table" then
+      for lk, mode in pairs(cond.lightingModeChanges) do
+        local reg = P.resolveLightRegistryKey(lk, col)
+        if reg then
+          lastMode[reg] = mode
+        end
+      end
+    end
+  end
+  for reg, mode in pairs(lastMode) do
+    trySetLight(reg, mode, col)
+  end
+end
+
+--- Humanity stain delta; updates impairedHumanity from collision rules.
+--- @param playerRef any
+--- @param stainDelta number
+function P.applyHumanityStainDelta(playerRef, stainDelta)
+  local playerID = resolvePlayerId(playerRef)
+  if not playerID or playerID == C.StorytellerID then
+    return
+  end
+  local stats = S.getStateVal("playerData", playerID, "stats")
+  local conditions = S.getStateVal("playerData", playerID, "conditions") or {}
+  if type(stats) ~= "table" or type(stats.humanity) ~= "table" then
+    return
+  end
+  local hu = stats.humanity
+  local stains = math.max(0, (tonumber(hu.stains) or 0) + (tonumber(stainDelta) or 0))
+  S.setStateVal(stains, "playerData", playerID, "stats", "humanity", "stains")
+
+  local base = tonumber(hu.base) or 0
+  local effT = P.effectiveTempForAggregate(stats, conditions, "humanity")
+  local lineLen = base + effT
+  local hasImpaired = P.humanityHasImpairedSlot(lineLen, stains)
+
+  if hasImpaired then
+    if conditions.impairedHumanity == nil then
+      P.setConditionEntry(playerID, "impairedHumanity", P.makeImpairedHumanityCondition(playerID))
+    end
+  else
+    if conditions.impairedHumanity ~= nil then
+      P.setConditionEntry(playerID, "impairedHumanity", nil)
+    end
+  end
+  P.applyActiveConditionPresentation(playerID)
+end
+
+--- Whether collision creates impaired box (last humanity slot touched by stains from right).
+--- @param lineLen number
+--- @param stains number
+--- @return boolean
+function P.humanityHasImpairedSlot(lineLen, stains)
+  if lineLen < 1 or stains < 1 then
+    return false
+  end
+  local firstStainSlot = 11 - stains
+  return firstStainSlot <= lineLen
+end
+
+--- Clear all stains and re-sync impaired humanity.
+--- @param playerRef any
+function P.clearHumanityStains(playerRef)
+  P.applyHumanityStainDelta(playerRef, -(9999))
+  local playerID = resolvePlayerId(playerRef)
+  if not playerID then
+    return
+  end
+  S.setStateVal(0, "playerData", playerID, "stats", "humanity", "stains")
+  local conditions = S.getStateVal("playerData", playerID, "conditions") or {}
+  if conditions.impairedHumanity ~= nil then
+    P.setConditionEntry(playerID, "impairedHumanity", nil)
+  end
+  P.applyActiveConditionPresentation(playerID)
+end
+
+--- @param playerRef any
+--- @param delta number
+function P.applyHumanityBaseDelta(playerRef, delta)
+  local playerID = resolvePlayerId(playerRef)
+  if not playerID or playerID == C.StorytellerID then
+    return
+  end
+  local hu = S.getStateVal("playerData", playerID, "stats", "humanity")
+  if type(hu) ~= "table" then
+    return
+  end
+  local b = math.max(0, math.min(10, (tonumber(hu.base) or 0) + (tonumber(delta) or 0)))
+  S.setStateVal(b, "playerData", playerID, "stats", "humanity", "base")
+  local stats2 = S.getStateVal("playerData", playerID, "stats")
+  local cond2 = S.getStateVal("playerData", playerID, "conditions") or {}
+  local lineLen = b + P.effectiveTempForAggregate(stats2, cond2, "humanity")
+  local stains = tonumber(S.getStateVal("playerData", playerID, "stats", "humanity", "stains")) or 0
+  if P.humanityHasImpairedSlot(lineLen, stains) then
+    if cond2.impairedHumanity == nil then
+      P.setConditionEntry(playerID, "impairedHumanity", P.makeImpairedHumanityCondition(playerID))
+    end
+  else
+    if cond2.impairedHumanity ~= nil then
+      P.setConditionEntry(playerID, "impairedHumanity", nil)
+    end
+  end
+  P.applyActiveConditionPresentation(playerID)
+end
+
+--- Storyteller string: configurable undamaged / superficial / aggravated (defaults O / / X)
+--- @param playerRef any
+--- @param which string health|willpower
+--- @return string
+function P.formatDamageTrackText(playerRef, which)
+  local playerID = resolvePlayerId(playerRef)
+  if not playerID then
+    return ""
+  end
+  local stats = S.getStateVal("playerData", playerID, "stats")
+  local conditions = S.getStateVal("playerData", playerID, "conditions")
+  if type(stats) ~= "table" or type(stats[which]) ~= "table" then
+    return ""
+  end
+  local gUnd, gSup, gAgg = damageTrackGlyphs()
+  local tr = stats[which]
+  local maxB = (tonumber(tr.base) or 0) + P.effectiveTempForAggregate(stats, conditions, which)
+  if maxB < 1 then
+    maxB = 1
+  end
+  local sup = tonumber(tr.superficial) or 0
+  local agg = tonumber(tr.aggravated) or 0
+  local chars = {}
+  for i = 1, maxB do
+    if i <= agg then
+      chars[#chars + 1] = gAgg
+    elseif i <= agg + sup then
+      chars[#chars + 1] = gSup
+    else
+      chars[#chars + 1] = gUnd
+    end
+  end
+  return table.concat(chars, "")
+end
+
+--- 10-wide humanity strip: unused / filled / stain / impaired glyphs (defaults _ O * I)
+--- @param playerRef any
+--- @return string
+function P.formatHumanityTrackText(playerRef)
+  local playerID = resolvePlayerId(playerRef)
+  if not playerID then
+    return ""
+  end
+  local stats = S.getStateVal("playerData", playerID, "stats")
+  local conditions = S.getStateVal("playerData", playerID, "conditions")
+  if type(stats) ~= "table" or type(stats.humanity) ~= "table" then
+    return ""
+  end
+  local gUnused, gFill, gStain, gImp = humanityTrackGlyphs()
+  local hu = stats.humanity
+  local lineLen = (tonumber(hu.base) or 0) + P.effectiveTempForAggregate(stats, conditions, "humanity")
+  local stains = tonumber(hu.stains) or 0
+  local slotModes = {}
+  for i = 1, 10 do
+    slotModes[i] = gUnused
+  end
+  for i = 1, lineLen do
+    slotModes[i] = gFill
+  end
+  local sIdx = 10
+  for _ = 1, stains do
+    if slotModes[sIdx] == gFill then
+      slotModes[sIdx] = gImp
+      break
+    else
+      slotModes[sIdx] = gStain
+    end
+    sIdx = sIdx - 1
+    if sIdx < 1 then
+      break
+    end
+  end
+  return table.concat(slotModes, "")
+end
+
+--- Build XML attribute updates for character sheet objects.
+--- @param stats table
+--- @param conditions table|nil
+--- @param pageNum number|nil sheet index from object name; see `P.SHEET_PAGE_UPDATE_PROFILE`
+--- @return table[] list of { id = string, attributes = { active = "true"|"false" } }
+function P.collectSheetImageUpdates(stats, conditions, pageNum)
+  local updates = {}
+  --- @param imageName string|nil when set, applied as `image` (custom-ui asset name)
+  local function add(id, active, imageName)
+    local attrs = { active = active and "true" or "false" }
+    if type(imageName) == "string" and imageName ~= "" then
+      attrs.image = imageName
+    end
+    updates[#updates + 1] = { id = id, attributes = attrs }
+  end
+
+  if type(stats) ~= "table" then
+    return updates
+  end
+
+  local pageProfile = nil
+  if pageNum ~= nil then
+    pageProfile = P.SHEET_PAGE_UPDATE_PROFILE[pageNum] or "none"
+    if pageProfile == "none" then
+      return updates
+    end
+  end
+
+  local dotKeys = {}
+  if type(stats.attributes) == "table" then
+    for k, _ in pairs(stats.attributes) do
+      dotKeys[#dotKeys + 1] = { k, "attributes" }
+    end
+  end
+  if type(stats.skills) == "table" then
+    for k, _ in pairs(stats.skills) do
+      dotKeys[#dotKeys + 1] = { k, "skills" }
+    end
+  end
+  if type(stats.disciplines) == "table" then
+    for k, _ in pairs(stats.disciplines) do
+      dotKeys[#dotKeys + 1] = { k, "disciplines" }
+    end
+  end
+  if type(stats.bloodPotency) == "table" then
+    dotKeys[#dotKeys + 1] = { "bloodPotency", "bloodPotency" }
+  end
+
+  for _, pair in ipairs(dotKeys) do
+    local key = pair[1]
+    local eff = P.effectiveTempForDot(stats, conditions, key)
+    local base = 0
+    if pair[2] == "bloodPotency" then
+      base = tonumber(stats.bloodPotency.base) or 0
+    elseif pair[2] == "attributes" then
+      base = tonumber(stats.attributes[key].base) or 0
+    elseif pair[2] == "skills" then
+      base = tonumber(stats.skills[key].base) or 0
+    elseif pair[2] == "disciplines" then
+      base = tonumber(stats.disciplines[key].base) or 0
+    end
+    local rating = base + eff
+    for slot = 1, 5 do
+      if slot > base then
+        add("dot_on_" .. key .. "_" .. slot, false)
+      end
+      if slot <= base then
+        add("dot_off_" .. key .. "_" .. slot, false)
+      end
+    end
+    if eff > 0 then
+      for slot = base + 1, math.min(5, rating) do
+        add("dot_on_" .. key .. "_" .. slot, true)
+      end
+    elseif eff < 0 then
+      for slot = rating + 1, base do
+        add("dot_off_" .. key .. "_" .. slot, true)
+      end
+    end
+  end
+
+  local function boxFill(which, trackerKey)
+    local tr = stats[which]
+    if type(tr) ~= "table" then
+      return
+    end
+    local td = getMergedTrackerDisplay()
+    local layerImg = type(td) == "table" and type(td.sheetImages) == "table" and td.sheetImages[trackerKey] or nil
+    local function boxImg(layer)
+      if type(layerImg) == "table" then
+        local v = layerImg[layer]
+        if type(v) == "string" and v ~= "" then
+          return v
+        end
+      end
+      return nil
+    end
+    local maxB = (tonumber(tr.base) or 0) + P.effectiveTempForAggregate(stats, conditions, which)
+    local sup = tonumber(tr.superficial) or 0
+    local agg = tonumber(tr.aggravated) or 0
+    for i = 1, 10 do
+      add("box_agg_" .. trackerKey .. "_" .. i, false)
+      add("box_sup_" .. trackerKey .. "_" .. i, false)
+      add("box_on_" .. trackerKey .. "_" .. i, false)
+    end
+    local idx = 1
+    for _ = 1, agg do
+      if idx <= maxB then
+        add("box_agg_" .. trackerKey .. "_" .. idx, true, boxImg("aggravated"))
+        idx = idx + 1
+      end
+    end
+    for _ = 1, sup do
+      if idx <= maxB then
+        add("box_sup_" .. trackerKey .. "_" .. idx, true, boxImg("superficial"))
+        idx = idx + 1
+      end
+    end
+    while idx <= maxB do
+      add("box_on_" .. trackerKey .. "_" .. idx, true, boxImg("undamaged"))
+      idx = idx + 1
+    end
+  end
+
+  boxFill("health", "health")
+  boxFill("willpower", "willpower")
+
+  if type(stats.humanity) == "table" then
+    local hu = stats.humanity
+    local lineLen = (tonumber(hu.base) or 0) + P.effectiveTempForAggregate(stats, conditions, "humanity")
+    local stains = tonumber(hu.stains) or 0
+    for i = 1, 10 do
+      add("box_on_humanity_" .. i, false)
+      add("box_stain_humanity_" .. i, false)
+      add("box_impaired_humanity_" .. i, false)
+    end
+    local slots = {}
+    for i = 1, 10 do
+      slots[i] = "empty"
+    end
+    for i = 1, lineLen do
+      slots[i] = "on"
+    end
+    local sIdx = 10
+    for _ = 1, stains do
+      if sIdx < 1 then
+        break
+      end
+      if slots[sIdx] == "on" then
+        slots[sIdx] = "impaired"
+        break
+      end
+      slots[sIdx] = "stain"
+      sIdx = sIdx - 1
+    end
+    local tdH = getMergedTrackerDisplay()
+    local hImg = type(tdH) == "table" and type(tdH.sheetImages) == "table" and tdH.sheetImages.humanity or nil
+    local function humImg(layer)
+      if type(hImg) == "table" then
+        local v = hImg[layer]
+        if type(v) == "string" and v ~= "" then
+          return v
+        end
+      end
+      return nil
+    end
+    for i = 1, 10 do
+      if slots[i] == "on" then
+        add("box_on_humanity_" .. i, true, humImg("filled"))
+      elseif slots[i] == "stain" then
+        add("box_stain_humanity_" .. i, true, humImg("stain"))
+      elseif slots[i] == "impaired" then
+        add("box_impaired_humanity_" .. i, true, humImg("impaired"))
+      end
+    end
+  end
+
+  if pageNum ~= nil and pageProfile ~= nil then
+    local filtered = {}
+    for _, u in ipairs(updates) do
+      local id = u.id
+      local dk = P.disciplineKeyFromDotElementId(id)
+      local isDisc = dk ~= nil and P.DISCIPLINE_DOT_KEYS[dk] == true
+      if pageProfile == "main" then
+        if not isDisc then
+          filtered[#filtered + 1] = u
+        end
+      elseif pageProfile == "disciplines" then
+        if isDisc then
+          filtered[#filtered + 1] = u
+        end
+      end
+      -- New profiles (e.g. page 3+): add explicit `elseif pageProfile == "..."` branches here.
+    end
+    return filtered
+  end
+
+  return updates
+end
+
+--- Torpor cleared by ST; remove if healed below full agg track.
+--- @param playerRef any
+function P.storytellerClearTorpor(playerRef)
+  local playerID = resolvePlayerId(playerRef)
+  if not playerID then
+    return
+  end
+  P.setConditionEntry(playerID, "torpor", nil)
+  P.syncDamageDerivedConditions(playerID)
+  P.applyActiveConditionPresentation(playerID)
+end
+
+return P

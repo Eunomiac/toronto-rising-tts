@@ -9,8 +9,11 @@
 <!-- 2. General shared classes -->
 <Include src="defaults_classes" />
 
-<!-- 3. Storyteller HUD (Black): Heritage admin panel + sidebar + camera -->
+<!-- 3. Storyteller HUD (Black): admin panel + sidebar + camera defaults -->
 <Include src="storyteller/hud_storyteller_defaults" />
+
+<!-- 3b. Storyteller PCs panel typography + button palettes -->
+<Include src="storyteller/panel_pcs_defaults" />
 
 <!-- 4. King's Dilemma HUD (reference templates) -->
 <!-- <Include src="kingsdilemma/hud_kd_defaults" /> -->

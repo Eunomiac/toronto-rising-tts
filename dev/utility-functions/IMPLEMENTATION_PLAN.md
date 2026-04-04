@@ -210,7 +210,7 @@ U.Lerp(
 **Behavior:**
 - If `paramStart` is a table (array of `PositionOrientationData`): Execute pre-computed path
 - If `paramStart` is `PositionOrientationData` and `paramEnd` is `PositionOrientationData`: Generate path on-the-fly (with Object resolution)
-- Otherwise: Use existing behavior (backward compatible)
+- Otherwise: Use the original scalar/vector lerp branch
 
 **Implementation:**
 
@@ -242,7 +242,7 @@ function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing)
     end
   end
 
-  -- Existing behavior (backward compatible)
+  -- Original scalar/vector lerp branch
   -- ... existing U.Lerp implementation
 end
 ```
@@ -396,7 +396,7 @@ end
 
 **Changes:**
 - These can now optionally use pre-computed paths
-- Keep existing behavior as default (backward compatible)
+- Keep the original lerp branch as the default when no path form applies
 - Add optional parameter to accept pre-computed path
 
 **Example:**
@@ -441,7 +441,7 @@ end
    - Verify Objects are resolved at execution time
 
 4. **U.Lerp compatibility:**
-   - Traditional usage (backward compatible)
+   - Traditional scalar/vector usage
    - Pre-computed path usage
    - PositionOrientationData usage
    - Verify all return duration correctly
@@ -464,7 +464,7 @@ end
 
 ---
 
-## Backward Compatibility
+## Existing callers
 
 - Existing `U.Lerp` calls continue to work unchanged
 - `U.setPositionSlow`, `U.setRotationSlow`, `U.setScaleSlow` maintain existing behavior

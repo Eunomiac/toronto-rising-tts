@@ -216,7 +216,7 @@ U.Lerp(
   easing?: string
 ) -> number
 
--- Traditional usage (backward compatible)
+-- Traditional usage (scalar / vector arguments)
 U.Lerp(function(v) obj.setPositionSmooth(v) end, startPos, endPos, 1.0)
 
 -- Pre-computed path usage
@@ -238,7 +238,7 @@ end, {position = Vector(0,0,0)}, {position = Vector(10,10,10)}, 2.0, false, "bou
 **Behavior:**
 - If `paramStart` is a table of `PositionOrientationData`: Execute as pre-computed path
 - If `paramStart` is `PositionOrientationData`: Generate path (may defer if Objects present)
-- Otherwise: Use existing behavior (backward compatible)
+- Otherwise: Use the original scalar/vector lerp branch
 
 ## U.GetEasedValue
 

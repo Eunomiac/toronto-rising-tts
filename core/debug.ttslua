@@ -15,7 +15,7 @@
     NOTE: This module is for development/testing only.
     Consider disabling or restricting access in production builds.
 
-    Agent guidance: dev/DEBUG_FILE_LOGGING.md; dev/TESTING.md; dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md (admin helpers).
+    Agent guidance: dev/DEBUG_FILE_LOGGING.md (file + NDJSON: DEBUG.logToFile, writeWorkspaceFile, workspaceNdjsonBegin/Append); dev/TESTING.md; dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md (admin helpers).
 ]]
 
 DEBUG = {}
@@ -29,6 +29,9 @@ G = require("lib.guids")
 L = require("core.lighting")
 O = require("core.objects")
 LightTest = require("core.light_test")
+-- Bundler tracing: `lib.workspace_ndjson_log` is otherwise only required from inside DEBUG.* at runtime
+-- and can be omitted from Save & Play bundles → pcall(require) there fails in-game. Keep one top-level require.
+require("lib.workspace_ndjson_log")
 
 --[[
     File Logging Configuration
@@ -45,6 +48,9 @@ local TTS_TOOLS_OUTPUT_PREFIX = ".tts/output"
 -- Cache for log file contents (to support append mode)
 -- Key: filename (without extension), Value: accumulated content string
 local logCache = {}
+
+--- Printed at most once when `sendExternalMessage` is missing (NDJSON / workspace writes).
+local warnedNdjsonSendExternalMissing = false
 
 --[[
     Helper Functions
@@ -144,13 +150,102 @@ end
 --- Clear debug NDJSON buffer and truncate workspace log (same path as NPC lighting instrumentation).
 --- TTS console: lua DEBUG.beginWorkspaceDebugSession()
 function DEBUG.beginWorkspaceDebugSession()
-    local ok, W = pcall(require, "lib.workspace_ndjson_log")
-    if not ok or W == nil or U.Type(W.beginSession) ~= "function" then
-        print("DEBUG.beginWorkspaceDebugSession: lib.workspace_ndjson_log unavailable")
+    local ok, res = pcall(require, "lib.workspace_ndjson_log")
+    if not ok then
+        print("DEBUG.beginWorkspaceDebugSession: require failed: " .. tostring(res))
+        return
+    end
+    local W = res
+    if W == nil or U.Type(W.beginSession) ~= "function" then
+        print("DEBUG.beginWorkspaceDebugSession: lib.workspace_ndjson_log invalid")
         return
     end
     W.beginSession("debug_workspace_ndjson.log")
-    print("DEBUG: began workspace debug session -> debug_workspace_ndjson.log (buffer cleared)")
+    W.append("debug_workspace_ndjson.log", {
+        hypothesisId = "bootstrap",
+        location = "DEBUG.beginWorkspaceDebugSession",
+        message = "NDJSON session opened",
+        data = { relativePath = "debug_workspace_ndjson.log" },
+    })
+    print("DEBUG: began workspace debug session -> " .. TTS_TOOLS_OUTPUT_PREFIX .. "/debug_workspace_ndjson.log")
+end
+
+--- Truncate + clear in-memory buffer for a named NDJSON log under `.tts/output/<relativePath>`.
+--- Same transport as `beginWorkspaceDebugSession` (`lib.workspace_ndjson_log` + `sendExternalMessage`).
+--- @param relativePath string e.g. `debug_session.log`
+function DEBUG.workspaceNdjsonBegin(relativePath)
+    if U.Type(relativePath) ~= "string" or relativePath == "" then
+        print("DEBUG.workspaceNdjsonBegin: invalid relativePath")
+        return
+    end
+    ---@diagnostic disable-next-line: undefined-global
+    if sendExternalMessage == nil then
+        if not warnedNdjsonSendExternalMissing then
+            warnedNdjsonSendExternalMissing = true
+            print(
+                "DEBUG.workspaceNdjsonBegin: sendExternalMessage is nil — workspace NDJSON will NOT be written."
+            )
+            print(
+                "  Fix: use TTS Editor / extension connected to this workspace, enable custom messages (ttsEditor.enableMessages), then Save & Play."
+            )
+            print(
+                "  Expected file when working: <workspaceFolder>/" .. TTS_TOOLS_OUTPUT_PREFIX .. "/" .. relativePath
+            )
+        end
+        return
+    end
+    local ok, res = pcall(require, "lib.workspace_ndjson_log")
+    if not ok then
+        print("DEBUG.workspaceNdjsonBegin: require failed: " .. tostring(res))
+        return
+    end
+    local W = res
+    if W == nil or U.Type(W.beginSession) ~= "function" then
+        print("DEBUG.workspaceNdjsonBegin: lib.workspace_ndjson_log invalid")
+        return
+    end
+    W.beginSession(relativePath)
+    -- First disk write is always a non-empty append (beginSession does not touch the file).
+    W.append(relativePath, {
+        hypothesisId = "bootstrap",
+        location = "DEBUG.workspaceNdjsonBegin",
+        message = "NDJSON session opened",
+        data = { relativePath = relativePath },
+    })
+    print("DEBUG: NDJSON session + bootstrap line -> " .. TTS_TOOLS_OUTPUT_PREFIX .. "/" .. relativePath)
+end
+
+--- Append one NDJSON record (human header + JSON line). File appears under `.tts/output/<relativePath>`.
+--- @param relativePath string
+--- @param payload table fields e.g. sessionId, hypothesisId, location, message, data
+function DEBUG.workspaceNdjsonAppend(relativePath, payload)
+    if U.Type(relativePath) ~= "string" or relativePath == "" then
+        return
+    end
+    if U.Type(payload) ~= "table" then
+        payload = { message = tostring(payload) }
+    end
+    ---@diagnostic disable-next-line: undefined-global
+    if sendExternalMessage == nil then
+        if not warnedNdjsonSendExternalMissing then
+            warnedNdjsonSendExternalMissing = true
+            print(
+                "DEBUG.workspaceNdjsonAppend: sendExternalMessage is nil — NDJSON append skipped. See DEBUG.workspaceNdjsonBegin message for fixes."
+            )
+        end
+        return
+    end
+    local ok, res = pcall(require, "lib.workspace_ndjson_log")
+    if not ok then
+        print("DEBUG.workspaceNdjsonAppend: require failed: " .. tostring(res))
+        return
+    end
+    local W = res
+    if W == nil or U.Type(W.append) ~= "function" then
+        print("DEBUG.workspaceNdjsonAppend: lib.workspace_ndjson_log invalid")
+        return
+    end
+    W.append(relativePath, payload)
 end
 
 --- Prints a formatted test header
@@ -201,7 +296,7 @@ function DEBUG.testState()
     printTestHeader("State Management - Basic Operations")
 
     -- Reset state to clean defaults before testing
-    -- This ensures old saved data doesn't contaminate the tests
+    -- Start from clean defaults so persistence does not affect assertions
     print("Resetting game state to clean defaults...")
     S.resetGameState()
 
@@ -304,7 +399,8 @@ function DEBUG.testState()
                 local playerData = S.getPlayerData(testColor)
                 -- Player data should have both static (from C.PlayerData) and dynamic (from state) fields
                 local hasStatic = playerData and (playerData.color ~= nil or playerData.clan ~= nil)
-                local hasDynamic = playerData and playerData.hunger ~= nil
+                local st = playerData and playerData.stats
+                local hasDynamic = type(st) == "table" and st.hunger ~= nil
 
                 local pass = (hasStatic and hasDynamic)
                 printTestResult("Player data merging", pass, pass and "Static and dynamic data merged" or "Merge failed")
@@ -361,7 +457,7 @@ function DEBUG.testStatePersistence()
     local stateBefore = S.getGameState()
     print("State before save (using player: " .. testColor .. ", ID: " .. playerID .. "):")
     local playerData = stateBefore.playerData and stateBefore.playerData[playerID]
-    print("  " .. testColor .. " hunger: " .. tostring(playerData and playerData.hunger or "nil"))
+    print("  " .. testColor .. " hunger: " .. tostring(playerData and playerData.stats and playerData.stats.hunger or "nil"))
     print("  Phase: " .. tostring(stateBefore.currentPhase))
     print("  Scene: " .. tostring(stateBefore.currentScene))
 
@@ -374,11 +470,11 @@ function DEBUG.testStatePersistence()
     if loadedState then
         print("\nState after load:")
         local loadedPlayerData = loadedState.playerData and loadedState.playerData[playerID]
-        print("  " .. testColor .. " hunger: " .. tostring(loadedPlayerData and loadedPlayerData.hunger or "nil"))
+        print("  " .. testColor .. " hunger: " .. tostring(loadedPlayerData and loadedPlayerData.stats and loadedPlayerData.stats.hunger or "nil"))
         print("  Phase: " .. tostring(loadedState.currentPhase))
         print("  Scene: " .. tostring(loadedState.currentScene))
 
-        if loadedPlayerData and loadedPlayerData.hunger == 3 and loadedState.currentPhase == "PLAY" then
+        if loadedPlayerData and loadedPlayerData.stats and loadedPlayerData.stats.hunger == 3 and loadedState.currentPhase == "PLAY" then
             printTestResult("State persistence", true, "Values preserved correctly")
         else
             printTestResult("State persistence", false, "Values did not match")

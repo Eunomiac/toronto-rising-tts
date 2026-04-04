@@ -114,6 +114,16 @@ See [TTS_MCP.md](TTS_MCP.md) for setup and Cursor configuration.
 
 **Important**: The `.tts/objects/` directory is the extension’s sync target; **`global/global_script.ttslua`** is the source of truth for global Lua logic.
 
+### Issue 2a: Module only used inside functions → missing from bundle
+
+**Symptom**: Console shows `DEBUG.workspaceNdjsonBegin: lib.workspace_ndjson_log unavailable` (or `require failed: ...`) while other `sendExternalMessage` writes (e.g. `Print State` / `game_state.txt`) still work.
+
+**Cause**: Some bundlers only pull in modules reachable from **top-level** `require("...")` on the dependency graph. A module loaded **only** via `pcall(require, ...)` inside a function may never be embedded, so it is missing at runtime.
+
+**Solution**: Add a **module-level** `require("lib_that_must_ship")` once from an entry module (e.g. `core/debug.ttslua` already preloads `lib.workspace_ndjson_log`). Do the same for any other “lazy” dependency you need in TTS.
+
+**Object scripts** (e.g. character sheet `ui/ui_csheet.ttslua`): stubs are only `require("ui.ui_csheet")`. Anything you `require` **inside** a function may be **missing at runtime**. Keep **`require("lib.workspace_ndjson_log")`** (and similar) at **file top level**.
+
 ### Issue 2: Require Path Errors
 
 **Symptom**: `Tried to require "lib.util", but no such module has been registered`
@@ -156,6 +166,14 @@ See [TTS_MCP.md](TTS_MCP.md) for setup and Cursor configuration.
 - `TTSLua.includeOtherFiles` - Not used by TTS Tools
 - `TTSLua.bundleSearchPattern` - Not used by TTS Tools
 - `TTSLua.includeOtherFilesPaths` - Not used by TTS Tools
+
+## Player character data (`data/PCS.json`)
+
+- **Authoring**: Edit chronicle PC definitions in **`data/PCS.json`** (source of truth in git).
+- **TTS runtime**: Lua cannot read arbitrary files on disk. After changing the JSON, regenerate the embedded module:
+  - From repo root: `node dev/scripts/generate_pcs_data_lua.js`
+  - This rewrites **`lib/pcs_data.ttslua`** (large file, committed) so `require("lib.pcs_data")` decodes the JSON inside Tabletop Simulator.
+- Game code uses `PCS.getPC(charKey)`; player seats and `charKey` come from **`lib/constants.ttslua`** (`C.PlayerData`).
 
 ## File Structure
 

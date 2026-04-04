@@ -19,6 +19,7 @@
 local S = {}
 local U = require("lib.util")
 local C = require("lib.constants")
+local PC_BOOT = require("lib.pc_bootstrap")
 
 -- ============================================================================
 -- INTERNAL HELPER FUNCTIONS (Nested State Access)
@@ -196,7 +197,6 @@ function S.GetDefaultGameState()
     local playerData = {}
     -- Storyteller is the only hard-coded player; others are added dynamically on seat selection
     playerData[C.StorytellerID] = {
-        hunger = 0,
         color = "Black",
         hud = getDefaultPlayerHUD()
     }
@@ -219,7 +219,7 @@ function S.GetDefaultGameState()
 end
 
 --- Merges default values into a target table recursively
--- Ensures that new state keys are present in old saves (backward compatibility).
+-- Ensures every expected state key exists after load (fills in missing fields from defaults).
 -- @param target table The target table to merge into (modified in place)
 -- @param defaults table The default structure to merge from
 function S.mergeDefaults(target, defaults)
@@ -300,7 +300,7 @@ end
 -- ============================================================================
 
 --- Initializes game state from saved data or creates defaults
--- Merges loaded state with defaults to ensure all keys exist (backward compatibility).
+-- Merges loaded state with defaults so the in-memory shape is complete.
 -- Merges C.PlayerData (static) on top of gameState.playerData (dynamic).
 -- @param saved_data string|table|nil JSON string containing saved state, table of saved state, or nil/empty for new game
 -- @usage S.InitializeGameState(saved_data) -- Called in global.ttslua onLoad
@@ -379,10 +379,54 @@ function S.validateState()
         gameState.npcs.instances = {}
     end
 
+    --- Normalize player dynamic shape: hunger under stats, stats/conditions from PCS when needed, strip ST-only fields.
+    --- @param playerID string
+    --- @param playerData table
+    local function normalizePlayerDynamicShape(playerID, playerData)
+        if type(playerID) ~= "string" or type(playerData) ~= "table" then
+            return
+        end
+        if playerID == C.StorytellerID then
+            playerData.stats = nil
+            playerData.conditions = nil
+            playerData.hunger = nil
+            return
+        end
+
+        if playerData.hunger ~= nil then
+            playerData.stats = type(playerData.stats) == "table" and playerData.stats or {}
+            local n = tonumber(playerData.hunger)
+            if playerData.stats.hunger == nil and n ~= nil then
+                playerData.stats.hunger = n
+            end
+            playerData.hunger = nil
+        end
+
+        local staticRow = C.PlayerData[playerID]
+        local hasChar = type(staticRow) == "table" and type(staticRow.charKey) == "string" and staticRow.charKey ~= ""
+
+        if hasChar then
+            if type(playerData.stats) ~= "table" then
+                playerData.stats = PC_BOOT.buildStatsForCharKey(staticRow.charKey)
+            end
+            if type(playerData.stats) == "table" and playerData.stats.hunger == nil then
+                playerData.stats.hunger = 0
+            end
+            if type(playerData.conditions) ~= "table" then
+                playerData.conditions = {}
+            end
+        else
+            if type(playerData.stats) ~= "table" then
+                playerData.conditions = nil
+            end
+        end
+    end
+
     -- Ensure HUD subtree exists for every player
     if gameState.playerData and type(gameState.playerData) == "table" then
-        for _, playerData in pairs(gameState.playerData) do
+        for playerID, playerData in pairs(gameState.playerData) do
             if type(playerData) == "table" then
+                normalizePlayerDynamicShape(playerID, playerData)
                 if type(playerData.hud) ~= "table" then
                     playerData.hud = getDefaultPlayerHUD()
                 end
@@ -529,7 +573,7 @@ local function buildSaveState()
                 -- List of dynamic fields that should be saved (add more as needed)
                 -- Only dynamic fields should be persisted.
                 -- `hud` is player UI display state (including reference overlay selections).
-                local dynamicFields = {"hunger", "color", "hud"}
+                local dynamicFields = {"color", "hud", "stats", "conditions"}
                 local dynamicPlayerData = {}
 
                 for _, fieldName in ipairs(dynamicFields) do
@@ -776,7 +820,6 @@ function S.initNewPlayer(playerID, color, steamName)
 
     -- Create minimal dynamic state (same structure as GetDefaultGameState)
     gameState.playerData[playerID] = {
-        hunger = 0,
         color = color,
         hud = U.clone(getDefaultPlayerHUD())
     }
@@ -819,14 +862,14 @@ function S.getPlayerID(playerRef)
         -- Assume it's a color: find who has this color in playerData
         if gameState and gameState.playerData then
             for playerID, pData in pairs(gameState.playerData) do
-                if type(pData) == "table" and pData.color == playerRef then
+                if type(pData) == "table" and type(pData.color) == "string" and string.lower(pData.color) == string.lower(playerRef) then
                     return playerID
                 end
             end
         end
         -- Fallback: check C.PlayerData for color match (for Storyteller or pre-configured players)
         for pid, pData in pairs(C.PlayerData) do
-            if pData.color == playerRef then
+            if type(pData) == "table" and type(pData.color) == "string" and string.lower(pData.color) == string.lower(playerRef) then
                 return pid
             end
         end
@@ -874,6 +917,11 @@ function S.setPlayerVal(playerRef, key, value)
         error("S.setPlayerVal: Could not determine player ID for playerRef: " .. tostring(playerRef))
     end
 
+    if key == "hunger" then
+        S.setStateVal(value, "playerData", playerID, "stats", "hunger")
+        return
+    end
+
     S.setStateVal(value, "playerData", playerID, key)
 end
 
@@ -892,6 +940,14 @@ function S.getPlayerVal(playerRef, key)
 
     if not playerID then
         return nil
+    end
+
+    if key == "hunger" then
+        local h = S.getStateVal("playerData", playerID, "stats", "hunger")
+        if h == nil then
+            return 0
+        end
+        return h
     end
 
     return S.getStateVal("playerData", playerID, key)

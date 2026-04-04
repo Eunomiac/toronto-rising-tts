@@ -8,9 +8,9 @@ Nevertheless, for simplicity and clarity, a PC's full stat block will be stored 
 
 ## Source Data for Initial `playerData` Entries
 
-The source data for the initial `playerData` entries is stored in the `PCs.json` file. When first populating the `playerData` table, derive all values from that file. (Note: Not all values will be used; only those defined as this document progresses as `PCStatsPartA`, `PCStatsPartB`, `PCStatsPartC`, `PCStatsPartD`, and `PCStatsPartE` are defined.)
+The source data for the initial `playerData` entries is stored in **`data/PCS.json`** (embedded into `lib/pcs_data.ttslua` for TTS; regenerate with `node dev/scripts/generate_pcs_data_lua.js`). When first populating the `playerData` table, derive all values from that file. Only the slices described in **`PCStatsPartA`–`D`** (and the root **`conditions`** object documented below) need to be reflected in runtime `stats` / `playerData`.
 
-The steam ID numbers (used as keys in the `playerData` table) are stored in the `C.PlayerIDs` table in `lib/constants.ttslua`, along with the player's name and color, as well as the character key (used to lookup the character data from the `PCs.json` file) and full name.
+The steam ID numbers (used as keys in the `playerData` table) are stored in the `C.PlayerIDs` table in `lib/constants.ttslua`, along with the player's name and color, as well as the character key (used to look up the character data from **`data/PCS.json`**) and full name.
 
 ### Example: Initial `playerData` Entry for Thaumaterge
 
@@ -21,9 +21,12 @@ The steam ID numbers (used as keys in the `playerData` table) are stored in the 
         "color": "Brown",
         "hud": PlayerHUDData, // As changing this is beyond the scope of this document, it is not detailed here.
         "playerName": "Thaumaterge",
-        "stats": PCStatsPartA & PCStatsPartB & PCStatsPartC & PCStatsPartD & PCStatsPartE
+        "stats": PCStatsPartA & PCStatsPartB & PCStatsPartC & PCStatsPartD,
+        "conditions": {}
     }
 ```
+
+`conditions` is a **sibling** of `stats` on the same `playerData` entry (not nested under `stats`). The Storyteller entry in `playerData` does not use `stats` or `conditions`.
 
 ## `PCStatsPartA`: `stats.attributes`, `stats.skills`, and `stats.specialties`
 
@@ -239,32 +242,37 @@ To be implemented later. For now, lay the groundwork for these data structures b
   }
 ```
 
-## `PCStatsPartE`: `stats.conditions`
+## `playerData.conditions`
 
-To be implemented later. For now, lay the groundwork for this data structure by assigning it an empty table. Conditions will be assigned by key, and removed by setting the value to `null`. The key for each condition should be a string, and the value should be an object with the following properties:
+Conditions live at **`playerData[playerId].conditions`**, a sibling of **`stats`**. Start from an empty table `{}` until a condition applies. Conditions are assigned by key, and cleared by setting the value to `null`. Prefer the named keys below for built-in mechanics; other keys are reserved for future homebrew.
 
 ```typescript
-  type ConditionKey = "torpor" | "impairedHealth" | "impairedWillpower";
+  type ConditionKey = "torpor" | "impairedHealth" | "impairedWillpower" | "impairedHumanity";
   type HudKey = string; // The ID for the HUD element to be toggled via its "active" attribute
   type RemovalCriteria = "indefinite" | "afterNextRoll" | "onSceneEnd";
   interface Condition {
-    statChanges: Partial<Record<AttributeKey | SkillKey | DisciplineKey | "bloodPotency", number>>;
+    statChanges: Partial<Record<AttributeKey | SkillKey | DisciplineKey | "bloodPotency" | "health" | "willpower" | "humanity", number>>;
     hudChanges: Partial<Record<string, boolean>>;
-    lightingModeChanges: Partial<Record<string, boolean>>;
+    /** Keys: registered `playerLight2*` names in `core/lighting.ttslua`, or `PLAYER_LIGHT_2_<COLOR>` ids (resolved to those registry names in code). Values: mode name strings, e.g. `"OFF"`, `"STANDARD"`. */
+    lightingModeChanges: Partial<Record<string, string>>;
     gameObjectChanges: Partial<Record<string, boolean>>;
     removalCriteria: RemovalCriteria;
   }
 
-  interface PCStatsPartE {
-    conditions: Partial<Record<ConditionKey, Condition>>;
-  }
+  type PlayerConditions = Partial<Record<ConditionKey | string, Condition>>;
 ```
+
+**Lighting:** If a referenced light or mode is not defined, the implementation **warns the GM** (e.g. broadcast) and **continues** without throwing.
 
 ## Dynamic HUD Updates
 
-Importantly, the HUD being updated is an object-based HUD, not a global HUD. Each page of each player's character sheet will `require` the same script: `ui/ui_csheet.ttslua`. This script must be able to determine both the page number and the player from the object it has been required by, so that it can in turn derive the necessary player data from the correct `playerData` table.
+The character sheet uses an **object-attached** Custom UI, not the global HUD bundle. Each page object loads the same script, `ui/ui_csheet.ttslua`, which must:
 
-This can all be derived from the Nickname of the object the script is attached to, for all character sheet pages are named in the form: `CSHEET_PAGE_<page_number>_<PLAYER_COLOR>`, e.g. `CSHEET_PAGE_1_BROWN`, `CSHEET_PAGE_2_ORANGE`, etc. A (case-insensitive) helper function, `C.GetPlayerID`, has been defined in `lib/constants.ttslua` to derive the player ID from a player reference (player name, character key, or---as in this case---a player color).
+1. **Identify the page and seat** from the object’s **name** (`Object.getName()`). Use the pattern `CSHEET_PAGE_<page_number>_<PLAYER_COLOR>`, e.g. `CSHEET_PAGE_1_BROWN`, `CSHEET_PAGE_2_ORANGE` (matching `C.PlayerColors` spelling).
+2. **Resolve the Steam id** with `C.GetPlayerID(seatColor)` from `lib/constants.ttslua` (case-insensitive match on color, player name, or character key).
+3. **Pull merged `playerData`** via **`Global.call("GlobalGetMergedPlayerData", playerID)`**. Object scripts do not share the Global script’s `gameState` table, so calling `S.getPlayerData` from the sheet object alone is insufficient.
+
+**Per-page updates:** `lib/pc_stats.collectSheetImageUpdates` uses `P.SHEET_PAGE_UPDATE_PROFILE` to decide what to toggle for each page index. Today **page 1** is profile `main` (attributes, skills, blood potency, health, willpower, humanity); **page 2** is `disciplines` (discipline dot-lines only). **Additional pages** (e.g. 3–8): give each object the same `CSHEET_PAGE_<n>_<COLOR>` naming convention, add a bundle/XML for that page, then extend the profile table with `main`, `disciplines`, `none`, or a new profile implemented in `collectSheetImageUpdates`. Pages not listed default to `none` (no bulk id updates) until you wire them. **XP text** is still applied only from `ui/ui_csheet.ttslua` when `pageNum == 1`; add similar branches for other page-only widgets as needed.
 
 ### Image Assets
 
@@ -304,7 +312,7 @@ Given the following state data:
       }
     },
     "conditions": {
-      "poisoned": {
+      "illustrativeOnly": {
         "statChanges": {
           "health": -1
         }
@@ -312,9 +320,11 @@ Given the following state data:
     }
 ```
 
+> **Note:** `"illustrativeOnly"` is a **fictional** key for this walkthrough only—not a real chronicle condition. It shows how a condition would adjust **effective** tracker length via `statChanges.health` without mutating `stats.health.temp` in saved state.
+
 The above steps would proceed as follows:
 
-1. **Apply Conditions:** Apply any applicable conditions to the `"temp"` value of the corresponding stat, as described in the previous section. In this case, the condition `"poisoned"` has been applied, thus the relevant `"temp"` value of `3` has been decreased by 1,to `2`. (Importantly, do not modify the `"temp"` value in the state object, since this would result in the health penalty from the condition being applied twice.)
+1. **Apply Conditions:** Apply any applicable conditions to the `"temp"` value of the corresponding stat, as described in the previous section. In this case, the illustrative condition has `"statChanges"."health" = -1`, thus the relevant **effective** `"temp"` value of `3` is treated as `2` for this calculation only. (Importantly, do not modify the `"temp"` value in the state object, since that would double-apply the penalty.)
 1. **Determine Length of Boxline:** The length of the boxline is determined by the value of `"base"` + `"temp"` (after applying conditions). This is the number of boxes that will need to be toggled to the `active="true"` state. In this case, `5 + 2 = 7` boxes need to be toggled.
 2. **Process Aggravated Damage:** Starting at slot 1, assign aggravated damage first, by activating an equal number of `id="box_agg_health_<slot_number>"` elements. In this case, 3 boxes need to be toggled. The ids of these elements are `box_agg_health_1`, `box_agg_health_2`, and `box_agg_health_3`, all of which should be set to `active="true"`.
 3. **Process Superficial Damage:** Starting at the next slot, assign superficial damage, by activating an equal number of `id="box_sup_health_<slot_number>"` elements. In this case, 2 boxes need to be toggled. The ids of these elements are `box_sup_health_4` and `box_sup_health_5`, all of which should be set to `active="true"`.
@@ -354,8 +364,6 @@ The above steps would proceed as follows:
 3. **Process Stains from the Right:** Starting at slot **10** (i.e. the right side), assign stains, by activating an equal number of `id="box_stain_humanity_<slot_number>"` elements. In this case, 5 boxes need to be toggled. The ids of these elements are `box_stain_humanity_10`, `box_stain_humanity_9`, `box_stain_humanity_8`, `box_stain_humanity_7`, and `box_stain_humanity_6`, all of which should be set to `active="true"`.
 4. **Break On Collision:** If, during step 3, there is an active humanity box in a slot that would be activated as a Stain, stop, and convert that active humanity box into an "impaired" box by first deactivating the active humanity box, and then activating the `id="box_impaired_humanity_<slot number>"` element for that slot. In this case, upon reaching the fourth stain (`box_stain_humanity_7`), we collide with the last humanity box (`box_on_humanity_7`). Thus, we stop processing stains and instead toggle off `box_on_humanity_7` and toggle on `box_impaired_humanity_7`.
 
-(Note that the above process proceeds inefficiently by activating and deactivating image assets in sequence. A more efficient approach would be to identify which mode each slot should be and then activate the appropriate image for each in one action.)
-
 ### Text Assets
 
 #### `stats.specialties`
@@ -364,11 +372,17 @@ To be implemented later.
 
 #### `stats.xp`
 
-The `text` attribute of the `<Text id="xp_text">` element must always be set to the player's current XP level, as a number, including "0".
+The `text` attribute of the `<Text id="xp_text">` element must always be set to the player's current XP level, as a number, including `"0"`.
+
+#### `stats.hunger`
+
+Hunger is stored under **`stats.hunger`**. The Storyteller panel includes Hunger controls matching the XP pattern (buffer + Apply).
+
+`S.getPlayerVal` / `S.setPlayerVal` accept the key **`"hunger"`** as an alias for **`stats.hunger`**.
 
 ## Storyteller Controls
 
-The main Storyteller control panel includes a placeholder "PCs" panel. It is now time to implement at least part of the functionality of this panel.
+The Storyteller **PCs** pop-out panel (`ui/storyteller/panel_pcs.xml`) hosts per-player controls.
 
 There are five PCs, each of which should occupy a single vertically-spaced row in the PCs panel. This panel should display the player's name, and a vertical bar indicating their player color.  Each player cell should contain the following:
 
@@ -492,3 +506,12 @@ Stains should be applied as described in the section "##### Example: `stats.huma
 * **XP Tracker Display:** A `<Text>` object with the `text` attribute set to render the player's current XP level, as a number.
 * **XP Control:** A blue "▲" button and a blue "▼" button, with a `<Text>` element separating them, displaying "+0" by default. Pressing the "▲" button should increase the value in this display by 1, and the player's XP level by 1. Pressing the "▼" button should decrease the value in this display by 1, (allowing negative numbers). Alone, these buttons should not change the player's state: This is simply a way for the Storyteller to set the player's XP level.
 * **Apply Button:** Located horizontally on the same row as the XP Tracker Display and XP Control, a blue "Apply" button. Pressing this button should apply the current value in the XP Control to the player's state, and reset the display to "+0".
+
+### Hunger Controls
+
+* **Hunger Tracker Display:** A `<Text>` object showing the player's current Hunger (0–5).
+* **Hunger Control:** Same interaction model as **XP Controls** (orange-themed buttons): ▲/▼ adjust a "+0" buffer only; **Apply** commits `stats.hunger` (clamped to allowed range) and resets the buffer to "+0".
+
+### Torpor (Storyteller)
+
+* **Torpor clear:** A per-row control (e.g. **Torpor** button) lets the Storyteller **clear** the `torpor` condition when appropriate. Automatic gains still apply when aggravated damage fills the health track; removal per chronicle rules may require healing **and** this manual clear.

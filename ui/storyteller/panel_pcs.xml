@@ -1,2 +1,291 @@
-<!-- PCs Panel (removed during Heritage migration) -->
-<!-- Agent guidance: dev/HUD_FUNCTIONS.md; dev/EXTRACTABLE_FUNCTIONS_INDEX.md. -->
+<!-- Storyteller PCs panel: health / will / humanity / XP / hunger + torpor (Host only) -->
+<!-- Classes: panel_pcs_defaults.xml — seat `color`, `id`, and button `text` stay inline per element. -->
+<!-- Agent guidance: dev/HUD_FUNCTIONS.md; dev/PC Data & Tracking/PC Tracking & State Behavior.md -->
+<Panel id="panel_pcs" class="pcs_panel_root" active="false">
+  <VerticalLayout class="pcs_root_vl">
+    <!-- Brown -->
+    <Panel class="pcs_seat_block" color="#6B4423">
+      <VerticalLayout class="pcs_seat_column">
+        <Text class="pcs_row_title" id="pcs_rowName_Brown">Brown</Text>
+        <Text class="pcs_char_title" id="pcs_charFullName_Brown">—</Text>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">HP:</Text>
+          <Text class="pcs_track_damage" id="pcs_hpTrack_Brown"></Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Brown_hpAggUp" text="▲" />
+          <Text class="pcs_buf_agg" id="pcs_bufHPA_Brown">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Brown_hpAggDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Brown_hpSupUp" text="▲" />
+          <Text class="pcs_buf_neutral" id="pcs_bufHPS_Brown">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Brown_hpSupDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Brown_hpApply" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">WP:</Text>
+          <Text class="pcs_track_damage" id="pcs_wpTrack_Brown"> </Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Brown_wpAggUp" text="▲" />
+          <Text class="pcs_buf_agg" id="pcs_bufWPA_Brown">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Brown_wpAggDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Brown_wpSupUp" text="▲" />
+          <Text class="pcs_buf_neutral" id="pcs_bufWPS_Brown">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Brown_wpSupDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Brown_wpApply" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">Hum:</Text>
+          <Text class="pcs_track_hum" id="pcs_humTrack_Brown"> </Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Brown_humUp" text="▲" />
+          <Text class="pcs_buf_hum" id="pcs_bufHum_Brown">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Brown_humDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_58 pcs_btn_palette_hum" id="pcs_Brown_humApply" />
+          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Brown_humClear" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Brown_humBaseUp" text="▲" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Brown_humBaseDown" text="▼" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">XP:</Text>
+          <Text class="pcs_xp_val" id="pcs_xpVal_Brown">0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Brown_xpUp" text="▲" />
+          <Text class="pcs_buf_xp" id="pcs_bufXp_Brown">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Brown_xpDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Brown_xpApply" />
+          <Text class="pcs_prefix_hg">Hg:</Text>
+          <Text class="pcs_hunger_val" id="pcs_hungerVal_Brown">0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Brown_hungerUp" text="▲" />
+          <Text class="pcs_buf_hunger" id="pcs_bufHunger_Brown">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Brown_hungerDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_hunger" id="pcs_Brown_hungerApply" />
+          <Button class="pcs_btn pcs_btn_torpor pcs_btn_palette_torpor" id="pcs_Brown_torporClear" />
+          <Text class="pcs_torpor_lbl" id="pcs_torporLabel_Brown"> </Text>
+        </HorizontalLayout>
+      </VerticalLayout>
+    </Panel>
+
+    <!-- Orange -->
+    <Panel class="pcs_seat_block" color="#E67300">
+      <VerticalLayout class="pcs_seat_column">
+        <Text class="pcs_row_title" id="pcs_rowName_Orange">Orange</Text>
+        <Text class="pcs_char_title" id="pcs_charFullName_Orange">—</Text>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">HP:</Text>
+          <Text class="pcs_track_damage" id="pcs_hpTrack_Orange"> </Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Orange_hpAggUp" text="▲" />
+          <Text class="pcs_buf_agg" id="pcs_bufHPA_Orange">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Orange_hpAggDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Orange_hpSupUp" text="▲" />
+          <Text class="pcs_buf_neutral" id="pcs_bufHPS_Orange">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Orange_hpSupDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Orange_hpApply" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">WP:</Text>
+          <Text class="pcs_track_damage" id="pcs_wpTrack_Orange"> </Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Orange_wpAggUp" text="▲" />
+          <Text class="pcs_buf_agg" id="pcs_bufWPA_Orange">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Orange_wpAggDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Orange_wpSupUp" text="▲" />
+          <Text class="pcs_buf_neutral" id="pcs_bufWPS_Orange">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Orange_wpSupDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Orange_wpApply" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">Hum:</Text>
+          <Text class="pcs_track_hum" id="pcs_humTrack_Orange"> </Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Orange_humUp" text="▲" />
+          <Text class="pcs_buf_hum" id="pcs_bufHum_Orange">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Orange_humDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_58 pcs_btn_palette_hum" id="pcs_Orange_humApply" />
+          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Orange_humClear" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Orange_humBaseUp" text="▲" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Orange_humBaseDown" text="▼" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">XP:</Text>
+          <Text class="pcs_xp_val" id="pcs_xpVal_Orange">0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Orange_xpUp" text="▲" />
+          <Text class="pcs_buf_xp" id="pcs_bufXp_Orange">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Orange_xpDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Orange_xpApply" />
+          <Text class="pcs_prefix_hg">Hg:</Text>
+          <Text class="pcs_hunger_val" id="pcs_hungerVal_Orange">0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Orange_hungerUp" text="▲" />
+          <Text class="pcs_buf_hunger" id="pcs_bufHunger_Orange">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Orange_hungerDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_hunger" id="pcs_Orange_hungerApply" />
+          <Button class="pcs_btn pcs_btn_torpor pcs_btn_palette_torpor" id="pcs_Orange_torporClear" />
+          <Text class="pcs_torpor_lbl" id="pcs_torporLabel_Orange"> </Text>
+        </HorizontalLayout>
+      </VerticalLayout>
+    </Panel>
+
+    <!-- Red -->
+    <Panel class="pcs_seat_block" color="#B22222">
+      <VerticalLayout class="pcs_seat_column">
+        <Text class="pcs_row_title" id="pcs_rowName_Red">Red</Text>
+        <Text class="pcs_char_title" id="pcs_charFullName_Red">—</Text>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">HP:</Text>
+          <Text class="pcs_track_damage" id="pcs_hpTrack_Red"> </Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Red_hpAggUp" text="▲" />
+          <Text class="pcs_buf_agg" id="pcs_bufHPA_Red">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Red_hpAggDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Red_hpSupUp" text="▲" />
+          <Text class="pcs_buf_neutral" id="pcs_bufHPS_Red">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Red_hpSupDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Red_hpApply" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">WP:</Text>
+          <Text class="pcs_track_damage" id="pcs_wpTrack_Red"> </Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Red_wpAggUp" text="▲" />
+          <Text class="pcs_buf_agg" id="pcs_bufWPA_Red">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Red_wpAggDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Red_wpSupUp" text="▲" />
+          <Text class="pcs_buf_neutral" id="pcs_bufWPS_Red">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Red_wpSupDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Red_wpApply" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">Hum:</Text>
+          <Text class="pcs_track_hum" id="pcs_humTrack_Red"> </Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Red_humUp" text="▲" />
+          <Text class="pcs_buf_hum" id="pcs_bufHum_Red">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Red_humDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_58 pcs_btn_palette_hum" id="pcs_Red_humApply" />
+          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Red_humClear" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Red_humBaseUp" text="▲" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Red_humBaseDown" text="▼" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">XP:</Text>
+          <Text class="pcs_xp_val" id="pcs_xpVal_Red">0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Red_xpUp" text="▲" />
+          <Text class="pcs_buf_xp" id="pcs_bufXp_Red">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Red_xpDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Red_xpApply" />
+          <Text class="pcs_prefix_hg">Hg:</Text>
+          <Text class="pcs_hunger_val" id="pcs_hungerVal_Red">0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Red_hungerUp" text="▲" />
+          <Text class="pcs_buf_hunger" id="pcs_bufHunger_Red">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Red_hungerDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_hunger" id="pcs_Red_hungerApply" />
+          <Button class="pcs_btn pcs_btn_torpor pcs_btn_palette_torpor" id="pcs_Red_torporClear" />
+          <Text class="pcs_torpor_lbl" id="pcs_torporLabel_Red"> </Text>
+        </HorizontalLayout>
+      </VerticalLayout>
+    </Panel>
+
+    <!-- Pink -->
+    <Panel class="pcs_seat_block" color="#C71585">
+      <VerticalLayout class="pcs_seat_column">
+        <Text class="pcs_row_title" id="pcs_rowName_Pink">Pink</Text>
+        <Text class="pcs_char_title" id="pcs_charFullName_Pink">—</Text>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">HP:</Text>
+          <Text class="pcs_track_damage" id="pcs_hpTrack_Pink"> </Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Pink_hpAggUp" text="▲" />
+          <Text class="pcs_buf_agg" id="pcs_bufHPA_Pink">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Pink_hpAggDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Pink_hpSupUp" text="▲" />
+          <Text class="pcs_buf_neutral" id="pcs_bufHPS_Pink">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Pink_hpSupDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Pink_hpApply" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">WP:</Text>
+          <Text class="pcs_track_damage" id="pcs_wpTrack_Pink"> </Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Pink_wpAggUp" text="▲" />
+          <Text class="pcs_buf_agg" id="pcs_bufWPA_Pink">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Pink_wpAggDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Pink_wpSupUp" text="▲" />
+          <Text class="pcs_buf_neutral" id="pcs_bufWPS_Pink">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Pink_wpSupDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Pink_wpApply" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">Hum:</Text>
+          <Text class="pcs_track_hum" id="pcs_humTrack_Pink"> </Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Pink_humUp" text="▲" />
+          <Text class="pcs_buf_hum" id="pcs_bufHum_Pink">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Pink_humDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_58 pcs_btn_palette_hum" id="pcs_Pink_humApply" />
+          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Pink_humClear" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Pink_humBaseUp" text="▲" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Pink_humBaseDown" text="▼" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">XP:</Text>
+          <Text class="pcs_xp_val" id="pcs_xpVal_Pink">0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Pink_xpUp" text="▲" />
+          <Text class="pcs_buf_xp" id="pcs_bufXp_Pink">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Pink_xpDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Pink_xpApply" />
+          <Text class="pcs_prefix_hg">Hg:</Text>
+          <Text class="pcs_hunger_val" id="pcs_hungerVal_Pink">0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Pink_hungerUp" text="▲" />
+          <Text class="pcs_buf_hunger" id="pcs_bufHunger_Pink">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Pink_hungerDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_hunger" id="pcs_Pink_hungerApply" />
+          <Button class="pcs_btn pcs_btn_torpor pcs_btn_palette_torpor" id="pcs_Pink_torporClear" />
+          <Text class="pcs_torpor_lbl" id="pcs_torporLabel_Pink"> </Text>
+        </HorizontalLayout>
+      </VerticalLayout>
+    </Panel>
+
+    <!-- Purple -->
+    <Panel class="pcs_seat_block" color="#5E2A7E">
+      <VerticalLayout class="pcs_seat_column">
+        <Text class="pcs_row_title" id="pcs_rowName_Purple">Purple</Text>
+        <Text class="pcs_char_title" id="pcs_charFullName_Purple">—</Text>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">HP:</Text>
+          <Text class="pcs_track_damage" id="pcs_hpTrack_Purple"> </Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Purple_hpAggUp" text="▲" />
+          <Text class="pcs_buf_agg" id="pcs_bufHPA_Purple">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Purple_hpAggDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Purple_hpSupUp" text="▲" />
+          <Text class="pcs_buf_neutral" id="pcs_bufHPS_Purple">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Purple_hpSupDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Purple_hpApply" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">WP:</Text>
+          <Text class="pcs_track_damage" id="pcs_wpTrack_Purple"> </Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Purple_wpAggUp" text="▲" />
+          <Text class="pcs_buf_agg" id="pcs_bufWPA_Purple">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Purple_wpAggDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Purple_wpSupUp" text="▲" />
+          <Text class="pcs_buf_neutral" id="pcs_bufWPS_Purple">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Purple_wpSupDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Purple_wpApply" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">Hum:</Text>
+          <Text class="pcs_track_hum" id="pcs_humTrack_Purple"> </Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Purple_humUp" text="▲" />
+          <Text class="pcs_buf_hum" id="pcs_bufHum_Purple">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Purple_humDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_58 pcs_btn_palette_hum" id="pcs_Purple_humApply" />
+          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Purple_humClear" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Purple_humBaseUp" text="▲" />
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Purple_humBaseDown" text="▼" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">XP:</Text>
+          <Text class="pcs_xp_val" id="pcs_xpVal_Purple">0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Purple_xpUp" text="▲" />
+          <Text class="pcs_buf_xp" id="pcs_bufXp_Purple">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Purple_xpDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Purple_xpApply" />
+          <Text class="pcs_prefix_hg">Hg:</Text>
+          <Text class="pcs_hunger_val" id="pcs_hungerVal_Purple">0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Purple_hungerUp" text="▲" />
+          <Text class="pcs_buf_hunger" id="pcs_bufHunger_Purple">+0</Text>
+          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Purple_hungerDown" text="▼" />
+          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_hunger" id="pcs_Purple_hungerApply" />
+          <Button class="pcs_btn pcs_btn_torpor pcs_btn_palette_torpor" id="pcs_Purple_torporClear" />
+          <Text class="pcs_torpor_lbl" id="pcs_torporLabel_Purple"> </Text>
+        </HorizontalLayout>
+      </VerticalLayout>
+    </Panel>
+  </VerticalLayout>
+</Panel>

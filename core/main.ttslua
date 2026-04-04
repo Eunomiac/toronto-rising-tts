@@ -2,7 +2,7 @@
     Main Game Logic Module (core/main.ttslua)
 
     Orchestrates game flow, coordinates between modules, and handles high-level game logic.
-    Pattern based on Heritage module's manual control approach (NOT automated director).
+    Storyteller-driven manual control (not an automated scene director).
 
     This module provides:
     - Player iteration patterns (DRY principle)
@@ -40,7 +40,7 @@ end
 --[[
     Setup player data structures and roles
     Promotes all players and initializes player-specific game state.
-    Pattern from Heritage M.setupPlayers / initialization globals.
+    Promotes players and applies one-time table visibility setup.
 ]]
 function M.setupPlayers()
   print("Main: Setting up players.")
@@ -80,7 +80,7 @@ end
                print("Player " .. color .. " is ready")
            end)
 
-    Pattern from Heritage M.forPlayers
+    Iterates seated players only (skips empty colors).
 ]]
 function M.forPlayers(func)
   if type(func) ~= "function" then
@@ -100,7 +100,7 @@ end
     Updates visibility, enables/disables features, and refreshes displays.
     Called on load and when phase changes.
 
-    Pattern from Heritage M.syncPhase
+    Keeps UI and features aligned with `currentPhase`.
 ]]
 function M.syncPhase()
   local currentPhase = S.getStateVal("currentPhase")
@@ -135,7 +135,7 @@ end
 
     @usage M.advancePhase(C.Phases.PLAY)
 
-    Pattern from Heritage manual phase functions (gameSETUP, gameSTART, etc.)
+    Validates the phase, updates state, then re-runs phase sync.
 ]]
 function M.advancePhase(newPhase)
   if type(newPhase) ~= "string" then
@@ -188,7 +188,7 @@ end
     @usage M.setCamera("ALL", "GM_VIEW") -- Set camera for all players
     @usage M.setCamera("Red", nil, Vector(0, 5, 0)) -- Custom look-at position
 
-    Pattern from Heritage M.setCamera
+    Applies preset positions from `C.CameraAngles` (or a custom look-at).
 ]]
 function M.setCamera(player, cameraMode, lookAtPos)
   -- Handle "ALL" case
@@ -271,7 +271,7 @@ end
     @param droppedObject Object The object that was dropped
     @param zone Object Optional. The scripting zone the object entered (if any)
 
-    Pattern from Heritage event delegation (onObjectDrop, onObjectEnterContainer)
+    Hook point for drop handling; extend with tag/zone rules as needed.
 ]]
 function M.onObjectDrop(playerColor, droppedObject, zone)
   if droppedObject == nil then return end
@@ -302,7 +302,7 @@ end
     @param action string The action identifier (e.g., "rollDice", "useDiscipline")
     @param clickState table Optional. Additional context (object clicked, position, etc.)
 
-    Pattern from Heritage M.onPlayerAction
+    Hook point for custom player actions / hotkeys.
 ]]
 function M.onPlayerAction(playerColor, action, clickState)
   print("Main: Player action - " .. tostring(playerColor) .. ", " .. tostring(action))
@@ -361,7 +361,7 @@ function M.onPlayerChangeColor(color)
     S.initNewPlayer(playerID, color, player.steam_name)
 end
 
--- Legacy alias for backwards compatibility (if needed)
+-- Alternate entry name used by some load paths
 M.Initialize = M.onLoad
 
 return M

@@ -1,7 +1,7 @@
 <!-- Camera Control Panel -->
 <!-- Agent guidance: dev/HUD_FUNCTIONS.md; dev/TTS_BUNDLING_SETUP.md. -->
 <!-- Bottom-right: faction icons + camera zoom buttons -->
-<!-- Reproduces Heritage hud.xml camera controls -->
+<!-- Camera zoom + faction control strip -->
 
 <Panel id="cameraControlPanel">
 

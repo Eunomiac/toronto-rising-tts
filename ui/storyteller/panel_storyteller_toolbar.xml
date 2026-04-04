@@ -21,7 +21,7 @@
     </HorizontalLayout>
 
     <!-- padding: Panel acts as layout group (TTS Layout/Grouping). Inner VL uses flexibleHeight so children get real vertical space. -->
-    <Panel id="storytellerContentArea" active="false" width="410" minHeight="700" flexibleHeight="0" padding="0 0 0 0">
+    <Panel id="storytellerContentArea" active="false" width="560" minHeight="700" flexibleHeight="0" padding="0 0 0 0">
       <VerticalLayout padding="0" spacing="4" flexibleHeight="1" childForceExpandHeight="true" childForceExpandWidth="true">
         <Panel id="panel_lighting" active="false">
           <Text fontSize="11" color="#AAAAAA">Lighting: use Light Debug panel / scene tools.</Text>
@@ -29,9 +29,7 @@
         <Panel id="panel_scenes" active="false">
           <Text fontSize="11" color="#AAAAAA">Scenes: TBD.</Text>
         </Panel>
-        <Panel id="panel_pcs" active="false">
-          <Text fontSize="11" color="#AAAAAA">PCs: TBD.</Text>
-        </Panel>
+        <Include src="panel_pcs" />
         <Panel id="panel_phases" active="false">
           <Text fontSize="11" color="#AAAAAA">Phases: TBD.</Text>
         </Panel>

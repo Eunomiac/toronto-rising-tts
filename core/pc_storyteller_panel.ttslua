@@ -1,0 +1,255 @@
+--[[
+    Storyteller PCs panel: transient buffers + apply actions; refreshes global UI labels.
+]]
+---@diagnostic disable: undefined-global
+local PCST = {}
+local C = require("lib.constants")
+local S = require("core.state")
+local P = require("lib.pc_stats")
+local PCS = require("lib.pcs_data")
+local U = require("lib.util")
+
+--- @type table<string, table>
+local buffers = {}
+
+--- @param color string
+--- @return table
+local function buf(color)
+  if buffers[color] == nil then
+    buffers[color] = {
+      hAgg = 0,
+      hSup = 0,
+      wAgg = 0,
+      wSup = 0,
+      hum = 0,
+      xp = 0,
+      hunger = 0
+    }
+  end
+  return buffers[color]
+end
+
+--- @param color string
+--- @return string|nil
+local function playerIdForColor(color)
+  local ok, pid = pcall(function()
+    return C.GetPlayerID(color)
+  end)
+  if ok then
+    return pid
+  end
+  return nil
+end
+
+--- Scan objects named CSHEET_PAGE_*_<COLOR> and refresh embedded UI.
+--- TTS object names typically use uppercase seat (e.g. `_BROWN`); panel ids use canonical `C.PlayerColors` spelling (`Brown`).
+--- @param seatColor string e.g. "Brown"
+function PCST.refreshCharacterSheetsForColor(seatColor)
+  if type(seatColor) ~= "string" then
+    return
+  end
+  local seatLower = string.lower(seatColor)
+  local all = getAllObjects()
+  if type(all) ~= "table" then
+    return
+  end
+  for _, obj in ipairs(all) do
+    if obj ~= nil then
+      local ok, name = pcall(function()
+        return obj.getName()
+      end)
+      if ok and type(name) == "string" then
+        local colFromName = name:match("^CSHEET_PAGE_%d+_(%a+)$")
+        if type(colFromName) == "string" and string.lower(colFromName) == seatLower then
+          pcall(function()
+            obj.call("refreshFromGameState")
+          end)
+        end
+      end
+    end
+  end
+end
+
+--- @param color string
+local function safeSetValue(elementId, text)
+  pcall(function()
+    UI.setValue(elementId, tostring(text))
+  end)
+end
+
+--- Chronicle character display name for a seat (PlayerData.charName or PCS.name).
+--- @param pid string|nil
+--- @return string
+local function characterFullNameForPlayerId(pid)
+  if type(pid) ~= "string" or pid == "" or pid == C.StorytellerID then
+    return ""
+  end
+  local row = C.PlayerData[pid]
+  if type(row) ~= "table" then
+    return ""
+  end
+  local cn = row.charName
+  if type(cn) == "string" and cn ~= "" then
+    return cn
+  end
+  local ck = row.charKey
+  if type(ck) == "string" and ck ~= "" then
+    local pc = PCS.getPC(ck)
+    if type(pc) == "table" and type(pc.name) == "string" and pc.name ~= "" then
+      return pc.name
+    end
+  end
+  return ""
+end
+
+--- Refresh labels for one PC row from state + buffers.
+--- @param color string
+function PCST.refreshRow(color)
+  local pid = playerIdForColor(color)
+  local displayName = color
+  if pid and C.PlayerData[pid] then
+    local pname = C.PlayerData[pid].playerName
+    displayName = pname and string.format("%s · %s", color, pname) or color
+  else
+    displayName = string.format("%s (unassigned)", color)
+  end
+  safeSetValue("pcs_rowName_" .. color, displayName)
+  local charFull = characterFullNameForPlayerId(pid)
+  safeSetValue("pcs_charFullName_" .. color, charFull ~= "" and charFull or "—")
+
+  if pid == nil or pid == C.StorytellerID then
+    return
+  end
+
+  local b = buf(color)
+  safeSetValue("pcs_hpTrack_" .. color, P.formatDamageTrackText(color, "health"))
+  safeSetValue("pcs_wpTrack_" .. color, P.formatDamageTrackText(color, "willpower"))
+  safeSetValue("pcs_humTrack_" .. color, P.formatHumanityTrackText(color))
+
+  local xp = S.getStateVal("playerData", pid, "stats", "xp")
+  safeSetValue("pcs_xpVal_" .. color, tostring(xp or 0))
+
+  local hg = S.getPlayerVal(color, "hunger")
+  safeSetValue("pcs_hungerVal_" .. color, tostring(hg or 0))
+
+  local torporOn = S.getStateVal("playerData", pid, "conditions", "torpor") ~= nil
+  -- Short label avoids narrow Text wrapping one character per line next to the Torpor button.
+  safeSetValue("pcs_torporLabel_" .. color, torporOn and "● active" or "○ clear")
+
+  safeSetValue("pcs_bufHPA_" .. color, string.format("%+d", b.hAgg))
+  safeSetValue("pcs_bufHPS_" .. color, string.format("%+d", b.hSup))
+  safeSetValue("pcs_bufWPA_" .. color, string.format("%+d", b.wAgg))
+  safeSetValue("pcs_bufWPS_" .. color, string.format("%+d", b.wSup))
+  safeSetValue("pcs_bufHum_" .. color, string.format("%+d", b.hum))
+  safeSetValue("pcs_bufXp_" .. color, string.format("%+d", b.xp))
+  safeSetValue("pcs_bufHunger_" .. color, string.format("%+d", b.hunger))
+end
+
+function PCST.refreshAllRows()
+  for _, col in ipairs(C.PlayerColors) do
+    PCST.refreshRow(col)
+  end
+end
+
+--- Refresh every character sheet object (both pages) from current `gameState`.
+function PCST.refreshAllCharacterSheets()
+  for _, col in ipairs(C.PlayerColors) do
+    PCST.refreshCharacterSheetsForColor(col)
+  end
+end
+
+--- @param player Player|nil
+--- @param _button any
+--- @param id string|nil
+function PCST.onHudClick(player, _button, id)
+  if type(id) ~= "string" then
+    return
+  end
+  local color, action = id:match("^pcs_(%a+)_(.+)$")
+  if not color or not action then
+    return
+  end
+
+  local b = buf(color)
+  local pid = playerIdForColor(color)
+  if pid == nil and action ~= "noop" then
+    U.AlertGM("PC panel: no player for color " .. color)
+    return
+  end
+
+  if action == "hpAggUp" then
+    b.hAgg = b.hAgg + 1
+  elseif action == "hpAggDown" then
+    b.hAgg = b.hAgg - 1
+  elseif action == "hpSupUp" then
+    b.hSup = b.hSup + 1
+  elseif action == "hpSupDown" then
+    b.hSup = b.hSup - 1
+  elseif action == "hpApply" then
+    P.applyDamageOrHeal(color, "health", b.hSup, b.hAgg)
+    b.hSup = 0
+    b.hAgg = 0
+    PCST.refreshCharacterSheetsForColor(color)
+  elseif action == "wpAggUp" then
+    b.wAgg = b.wAgg + 1
+  elseif action == "wpAggDown" then
+    b.wAgg = b.wAgg - 1
+  elseif action == "wpSupUp" then
+    b.wSup = b.wSup + 1
+  elseif action == "wpSupDown" then
+    b.wSup = b.wSup - 1
+  elseif action == "wpApply" then
+    P.applyDamageOrHeal(color, "willpower", b.wSup, b.wAgg)
+    b.wSup = 0
+    b.wAgg = 0
+    PCST.refreshCharacterSheetsForColor(color)
+  elseif action == "humUp" then
+    b.hum = b.hum + 1
+  elseif action == "humDown" then
+    b.hum = b.hum - 1
+  elseif action == "humApply" then
+    P.applyHumanityStainDelta(color, b.hum)
+    b.hum = 0
+    PCST.refreshCharacterSheetsForColor(color)
+  elseif action == "humClear" then
+    P.clearHumanityStains(color)
+    b.hum = 0
+    PCST.refreshCharacterSheetsForColor(color)
+  elseif action == "humBaseUp" then
+    P.applyHumanityBaseDelta(color, 1)
+    PCST.refreshCharacterSheetsForColor(color)
+  elseif action == "humBaseDown" then
+    P.applyHumanityBaseDelta(color, -1)
+    PCST.refreshCharacterSheetsForColor(color)
+  elseif action == "xpUp" then
+    b.xp = b.xp + 1
+  elseif action == "xpDown" then
+    b.xp = b.xp - 1
+  elseif action == "xpApply" then
+    if pid then
+      local cur = tonumber(S.getStateVal("playerData", pid, "stats", "xp")) or 0
+      S.setStateVal(cur + b.xp, "playerData", pid, "stats", "xp")
+    end
+    b.xp = 0
+    PCST.refreshCharacterSheetsForColor(color)
+  elseif action == "hungerUp" then
+    b.hunger = b.hunger + 1
+  elseif action == "hungerDown" then
+    b.hunger = b.hunger - 1
+  elseif action == "hungerApply" then
+    if pid then
+      local cur = tonumber(S.getPlayerVal(color, "hunger")) or 0
+      local nx = math.max(0, math.min(C.MAX_HUNGER or 5, cur + b.hunger))
+      S.setPlayerVal(color, "hunger", nx)
+    end
+    b.hunger = 0
+    PCST.refreshCharacterSheetsForColor(color)
+  elseif action == "torporClear" then
+    P.storytellerClearTorpor(color)
+    PCST.refreshCharacterSheetsForColor(color)
+  end
+
+  PCST.refreshRow(color)
+end
+
+return PCST
