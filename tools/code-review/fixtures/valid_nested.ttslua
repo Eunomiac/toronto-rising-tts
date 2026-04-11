@@ -1,0 +1,5 @@
+-- #region ::== [100] Parent ==::
+-- #region ::== [200] Child ==::
+local y = 2
+-- #endregion ::== [200] ==::
+-- #endregion ::== [100] ==::

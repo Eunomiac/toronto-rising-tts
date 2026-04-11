@@ -9,7 +9,11 @@
     "tts-bridge:test": "vitest run --config tools/tts-bridge/vitest.config.ts",
     "tts-mcp:build": "npm run tts-bridge:build && tsc -p tools/tts-mcp/tsconfig.json",
     "tts-mcp:start": "node tools/tts-mcp/dist/index.js",
-    "tts:smoke": "node tools/tts-bridge/scripts/smoke-test.mjs"
+    "tts:smoke": "node tools/tts-bridge/scripts/smoke-test.mjs",
+    "code-review:build": "tsc -p tools/code-review/tsconfig.json",
+    "code-review:test": "vitest run --config tools/code-review/vitest.config.ts",
+    "code-review:validate": "npm run code-review:build && node tools/code-review/dist/cli.js validate",
+    "code-review:help": "npm run code-review:build && node tools/code-review/dist/cli.js help"
   },
   "keywords": [
     "tabletop-simulator",

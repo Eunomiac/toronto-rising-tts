@@ -70,7 +70,6 @@ function PCST.refreshCharacterSheetsForColor(seatColor)
   end
 end
 
---- @param color string
 local function safeSetValue(elementId, text)
   pcall(function()
     UI.setValue(elementId, tostring(text))
