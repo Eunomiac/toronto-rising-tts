@@ -465,11 +465,11 @@ local function setTintVisibility(elementID, isVisible)
     end)
 end
 
---- Full-bleed stacked map overlay Images (many layers in one viewport).
+--- Stacked map overlay Images and district card Images (many layers in one region).
 -- Off = `active="false"` so TTS skips the subtree (critical for perf; tint-only “off” kept every
 -- layer active and composited transparent art → massive overdraw / input lag).
--- On = `active="true"` + `color="#FFFFFF"` (overlays default to `color="clear"` in XML).
--- Toggle chrome / district cards stay on `setTintVisibility` (`color` only); do not mix patterns on the same id.
+-- On = `active="true"` + `color="#FFFFFF"` (XML defaults use `color="clear"` when applicable).
+-- Toggle chrome (hover/active columns) stays on `setTintVisibility` (`color` only); do not mix patterns on the same id.
 -- @param elementID string
 -- @param isVisible boolean
 local function setMapStackImageVisibility(elementID, isVisible)
@@ -746,7 +746,7 @@ local function applyMapPanelHud(playerID, seatColor, hud)
         local showDistrict = showMap and (effectiveDistrictKey == districtKey)
 
         local districtCardId = "playerHud_districtCard_" .. districtKey .. "_" .. seatColor
-        applyCachedMapPanelBool(playerID, districtCardId, showDistrict, setTintVisibility)
+        applyCachedMapPanelBool(playerID, districtCardId, showDistrict, setMapStackImageVisibility)
 
         if MAP_DISTRICT_KEYS_WITH_OVERLAY[districtKey] == true then
             local districtOverlayId = "playerHud_mapOverlay_" .. districtKey .. "_" .. seatColor

@@ -114,6 +114,7 @@
     ignoreLayout="true"
   />
 
+  <!-- Stacked cards: Lua uses setMapStackImageVisibility (off = inactive; on = active + #FFFFFF). -->
   <Image class="hud_map_district_card"
     width="800"
     preserveAspect="true"
