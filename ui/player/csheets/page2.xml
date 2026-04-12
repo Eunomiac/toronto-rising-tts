@@ -64,7 +64,7 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
   <Text class="box_text" resizeTextForBestFit="true" horizontalOverflow="Wrap" verticalOverflow="Truncate" alignment="UpperLeft" color="#FFFFFF" fontSize="14" />
 </Defaults>
 
-<Panel id="paper_root" active="true" rectAlignment="MiddleCenter" width="154.5" height="200" position="0 0 -21" rotation="0 0 180" pivot="0.5 0.5">
+<Panel id="paper_root" active="false" rectAlignment="MiddleCenter" width="154.5" height="200" position="0 0 -21" rotation="0 0 180" pivot="0.5 0.5">
   <VerticalLayout class="box_text_container" rectAlignment="UpperCenter">
     <Panel class="box_text_panel_body">
       <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />

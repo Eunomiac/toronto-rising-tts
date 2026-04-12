@@ -28,4 +28,14 @@
     hideAnimation="SlideOut_Top"
     animationDuration="0.35"
   />
+
+  <!-- Hunger heartbeat: Lua drives color only (no UI.show/hide); see core/hud_hunger_pulse.ttslua -->
+  <Image class="player_overlay_hunger_pulse"
+    active="true"
+    height="100%"
+    width="100%"
+    preserveAspect="false"
+    raycastTarget="false"
+    color="rgba(1,0,0,0)"
+  />
 </Defaults>

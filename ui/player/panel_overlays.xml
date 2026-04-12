@@ -16,6 +16,8 @@
   <Image id="overlay_hunger_2_Brown" image="overlay_hunger_2" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_1_Brown" image="overlay_hunger_1" class="player_overlay overlay_anim_fade" />
 
+  <Image id="overlay_hungerPulse_Brown" class="player_overlay_hunger_pulse" />
+
   <Image id="overlay_blindfold_Brown" image="overlay_blindfold" class="player_overlay overlay_anim_slide_top" />
 </Panel>
 
@@ -33,6 +35,8 @@
   <Image id="overlay_hunger_3_Orange" image="overlay_hunger_3" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_2_Orange" image="overlay_hunger_2" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_1_Orange" image="overlay_hunger_1" class="player_overlay overlay_anim_fade" />
+
+  <Image id="overlay_hungerPulse_Orange" class="player_overlay_hunger_pulse" />
 
   <Image id="overlay_blindfold_Orange" image="overlay_blindfold" class="player_overlay overlay_anim_slide_top" />
 </Panel>
@@ -52,6 +56,8 @@
   <Image id="overlay_hunger_2_Red" image="overlay_hunger_2" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_1_Red" image="overlay_hunger_1" class="player_overlay overlay_anim_fade" />
 
+  <Image id="overlay_hungerPulse_Red" class="player_overlay_hunger_pulse" />
+
   <Image id="overlay_blindfold_Red" image="overlay_blindfold" class="player_overlay overlay_anim_slide_top" />
 </Panel>
 
@@ -70,6 +76,8 @@
   <Image id="overlay_hunger_2_Pink" image="overlay_hunger_2" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_1_Pink" image="overlay_hunger_1" class="player_overlay overlay_anim_fade" />
 
+  <Image id="overlay_hungerPulse_Pink" class="player_overlay_hunger_pulse" />
+
   <Image id="overlay_blindfold_Pink" image="overlay_blindfold" class="player_overlay overlay_anim_slide_top" />
 </Panel>
 
@@ -87,6 +95,8 @@
   <Image id="overlay_hunger_3_Purple" image="overlay_hunger_3" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_2_Purple" image="overlay_hunger_2" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_1_Purple" image="overlay_hunger_1" class="player_overlay overlay_anim_fade" />
+
+  <Image id="overlay_hungerPulse_Purple" class="player_overlay_hunger_pulse" />
 
   <Image id="overlay_blindfold_Purple" image="overlay_blindfold" class="player_overlay overlay_anim_slide_top" />
 </Panel>

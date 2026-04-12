@@ -16,5 +16,7 @@
   <Image id="overlay_hunger_2_@@color@@" image="overlay_hunger_2" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_1_@@color@@" image="overlay_hunger_1" class="player_overlay overlay_anim_fade" />
 
+  <Image id="overlay_hungerPulse_@@color@@" class="player_overlay_hunger_pulse" />
+
   <Image id="overlay_blindfold_@@color@@" image="overlay_blindfold" class="player_overlay overlay_anim_slide_top" />
 </Panel>

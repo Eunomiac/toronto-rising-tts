@@ -21,6 +21,11 @@ local Main = require("core.main")
 
 local HUDP = {}
 
+-- TEMPORARY: When true, selecting "The Court" (Prince's Court) on the right sidebar
+-- does not show the reference overlay (portrait row / any ref art in that panel).
+-- Sidebar active/hover state is unchanged. Set to false to show the reference again.
+local TEMP_SUPPRESS_PRINCES_COURT_REFERENCE_DISPLAY = true
+
 -- PlayerID -> temporary nestedless reference panel key for click-and-hold
 -- While this is set, Update will override the visible reference panel.
 local tempHoldRefByPlayerID = {}
@@ -61,6 +66,9 @@ local mapPanNavIsActiveByPlayerID = {}
 
 --- PlayerID -> { [elementId] = boolean } last applied visibility for map-panel loops (incremental UI.setAttribute).
 local lastMapPanelUiByPlayerID = {}
+
+--- seatColor -> last applied offsetXY string for map draggable (skip redundant Global UI writes).
+local mapDraggableLastOffsetStrBySeat = {}
 
 local MAP_OVERLAY_KEYS = {
     "districtsAll",
@@ -218,9 +226,15 @@ local function applyMapOffset(seatColor, y)
     end
     local draggableId = "playerHud_mapDraggable_" .. seatColor
     local offsetStr = "0 " .. tostring(roundToInt(y))
-    pcall(function()
+    if mapDraggableLastOffsetStrBySeat[seatColor] == offsetStr then
+        return
+    end
+    local ok = pcall(function()
         UI.setAttribute(draggableId, "offsetXY", offsetStr)
     end)
+    if ok then
+        mapDraggableLastOffsetStrBySeat[seatColor] = offsetStr
+    end
 end
 
 --- Applies an initial pan position for the map draggable panel.
@@ -238,6 +252,7 @@ local function setMapPanForDistrict(seatColor, districtKey)
     if type(y) ~= "number" then
         return
     end
+    mapDraggableLastOffsetStrBySeat[seatColor] = nil
     applyMapOffset(seatColor, y)
 end
 
@@ -275,7 +290,7 @@ local function animateMapPanTo(playerID, seatColor, targetY, durationSeconds)
     local startY = s.y
     local dy = targetY - startY
 
-    local step = 0.03 -- ~33 FPS
+    local step = 0.07 -- ~14 Hz; coarser updates reduce Global UI replication load during pan
     local steps = math.max(1, math.floor((durationSeconds / step) + 0.5))
     local currentStep = 0
 
@@ -426,20 +441,17 @@ local function setActive(elementID, isActive)
     UI.setAttribute(elementID, "active", isActive and "true" or "false")
 end
 
---- Sets right-sidebar overlay visibility without causing layout reflow.
--- We keep the overlay element `active="true"` so it always occupies layout space,
--- and only toggle the image tint `color` between "#FFFFFF" (visible) and "clear" (hidden).
+--- Sets right-sidebar overlay Image visibility: `color` only (`active` stays true in XML).
 -- @param elementID string
 -- @param isVisible boolean
 local function setSidebarOverlay(elementID, isVisible)
     if type(elementID) ~= "string" then
         return
     end
-    UI.setAttribute(elementID, "active", "true")
     UI.setAttribute(elementID, "color", isVisible and "#FFFFFF" or "clear")
 end
 
---- Sets a UI element's `active` + `color` tint, without causing hard crashes.
+--- Map / sidebar stacked Image tint: visible vs hidden (`color` only; `active` is XML-owned).
 -- @param elementID string
 -- @param isVisible boolean
 local function setTintVisibility(elementID, isVisible)
@@ -449,12 +461,15 @@ local function setTintVisibility(elementID, isVisible)
     -- Some map elements may be omitted depending on district overlay availability.
     -- `pcall` prevents hard UI runtime errors if an element id doesn't exist.
     pcall(function()
-        UI.setAttribute(elementID, "active", "true")
         UI.setAttribute(elementID, "color", isVisible and "#FFFFFF" or "clear")
     end)
 end
 
---- Shows or hides a stacked full-bleed map Image (not toggle chrome). Reduces idle overdraw vs tint-only hide.
+--- Full-bleed stacked map overlay Images (many layers in one viewport).
+-- Off = `active="false"` so TTS skips the subtree (critical for perf; tint-only “off” kept every
+-- layer active and composited transparent art → massive overdraw / input lag).
+-- On = `active="true"` + `color="#FFFFFF"` (overlays default to `color="clear"` in XML).
+-- Toggle chrome / district cards stay on `setTintVisibility` (`color` only); do not mix patterns on the same id.
 -- @param elementID string
 -- @param isVisible boolean
 local function setMapStackImageVisibility(elementID, isVisible)
@@ -642,6 +657,113 @@ local function parseCoterieKeyFromGridId(id, color)
     return key
 end
 
+--- Map panel only: overlays, district cards, pan close cleanup (no ref/sidebar/coterie passes).
+-- @param playerID string
+-- @param seatColor string
+-- @param hud table playerData.hud
+local function applyMapPanelHud(playerID, seatColor, hud)
+    if type(playerID) ~= "string" or type(seatColor) ~= "string" or type(hud) ~= "table" then
+        return
+    end
+
+    local showMap = hud.activeCorePanel == "map"
+    local hudMap = hud.map
+    local overlaysState = (hudMap and hudMap.overlays) or {}
+    local locationState = (hudMap and hudMap.location) or {}
+
+    local locationDistrictKey = (locationState and locationState.district) or nil
+    local hoverOverlayKey = mapHoverOverlayKeyByPlayerID[playerID]
+    local hoverDistrictKey = mapHoverDistrictKeyByPlayerID[playerID]
+    local activeDistrictKey = mapActiveDistrictByPlayerID[playerID]
+
+    local wasMapActive = mapWasActiveByPlayerID[playerID] == true
+
+    if not showMap then
+        mapHoverOverlayKeyByPlayerID[playerID] = nil
+        mapHoverDistrictKeyByPlayerID[playerID] = nil
+        mapActiveDistrictByPlayerID[playerID] = nil
+        mapPanNavIsActiveByPlayerID[playerID] = false
+        mapPanNavYByPlayerID[playerID] = nil
+        hoverOverlayKey = nil
+        hoverDistrictKey = nil
+        activeDistrictKey = nil
+
+        setTintVisibility("playerHud_mapRecenter_" .. seatColor, true)
+        setTintVisibility("playerHud_mapRecenter_" .. seatColor .. "_hover", false)
+    end
+
+    if showMap and not wasMapActive then
+        mapDraggableLastOffsetStrBySeat[seatColor] = nil
+        local targetDistrictKey = locationDistrictKey
+        local y = nil
+        if type(targetDistrictKey) == "string" and MAP_DISTRICT_KEY_SET[targetDistrictKey] == true then
+            setMapPanForDistrict(seatColor, targetDistrictKey)
+            y = MAP_PAN_OFFSET_Y_BY_KEY[targetDistrictKey]
+        else
+            applyMapOffset(seatColor, MAP_PAN_MIDDLE_Y)
+            y = MAP_PAN_MIDDLE_Y
+        end
+
+        local s = getOrCreateMapPanState(playerID)
+        if s and type(y) == "number" then
+            s.y = y
+        end
+        mapPanNavIsActiveByPlayerID[playerID] = false
+        mapPanNavYByPlayerID[playerID] = nil
+    end
+
+    mapWasActiveByPlayerID[playerID] = showMap
+
+    if showMap and not wasMapActive then
+        clearMapPanelUiCache(playerID)
+    end
+
+    local effectiveDistrictKey = nil
+    if type(hoverDistrictKey) == "string" and MAP_DISTRICT_KEY_SET[hoverDistrictKey] == true then
+        effectiveDistrictKey = hoverDistrictKey
+    elseif type(activeDistrictKey) == "string" and MAP_DISTRICT_KEY_SET[activeDistrictKey] == true then
+        effectiveDistrictKey = activeDistrictKey
+    elseif type(locationDistrictKey) == "string" and MAP_DISTRICT_KEY_SET[locationDistrictKey] == true then
+        effectiveDistrictKey = locationDistrictKey
+    end
+
+    for _, overlayKey in ipairs(MAP_OVERLAY_KEYS) do
+        local overlayOn = (type(overlaysState) == "table" and overlaysState[overlayKey] == true) or false
+        local showOverlayImage = showMap and (overlayOn or hoverOverlayKey == overlayKey)
+
+        local overlayImageId = "playerHud_mapOverlay_" .. overlayKey .. "_" .. seatColor
+        applyCachedMapPanelBool(playerID, overlayImageId, showOverlayImage, setMapStackImageVisibility)
+
+        local showHoverLayer = showMap and (hoverOverlayKey == overlayKey) and (not overlayOn)
+        local overlayHoverId = "playerHud_mapOverlayToggle_" .. overlayKey .. "_" .. seatColor .. "_hover"
+        applyCachedMapPanelBool(playerID, overlayHoverId, showHoverLayer, setTintVisibility)
+
+        local overlayActiveId = "playerHud_mapOverlayToggle_" .. overlayKey .. "_" .. seatColor .. "_active"
+        applyCachedMapPanelBool(playerID, overlayActiveId, showMap and overlayOn, setTintVisibility)
+    end
+
+    for districtKey, _ in pairs(MAP_DISTRICT_KEYS) do
+        local showDistrict = showMap and (effectiveDistrictKey == districtKey)
+
+        local districtCardId = "playerHud_districtCard_" .. districtKey .. "_" .. seatColor
+        applyCachedMapPanelBool(playerID, districtCardId, showDistrict, setTintVisibility)
+
+        if MAP_DISTRICT_KEYS_WITH_OVERLAY[districtKey] == true then
+            local districtOverlayId = "playerHud_mapOverlay_" .. districtKey .. "_" .. seatColor
+            applyCachedMapPanelBool(playerID, districtOverlayId, showDistrict, setMapStackImageVisibility)
+        end
+
+        local showDistrictActiveLayer = showMap and (activeDistrictKey == districtKey)
+        local showDistrictHoverLayer = showMap and (hoverDistrictKey == districtKey) and (not showDistrictActiveLayer)
+
+        local districtActiveId = "playerHud_mapDistrictToggle_" .. districtKey .. "_" .. seatColor .. "_active"
+        applyCachedMapPanelBool(playerID, districtActiveId, showDistrictActiveLayer, setTintVisibility)
+
+        local districtHoverId = "playerHud_mapDistrictToggle_" .. districtKey .. "_" .. seatColor .. "_hover"
+        applyCachedMapPanelBool(playerID, districtHoverId, showDistrictHoverLayer, setTintVisibility)
+    end
+end
+
 --- Shows/hides the UI for one player.
 -- - Core panels: controlled by `playerData.hud.activeCorePanel`
 -- - Reference panels: only one visible at a time
@@ -702,122 +824,18 @@ function HUDP.updatePlayerUI(player, color)
     setActive("playerHud_corePanel_map_" .. seatColor, hud.activeCorePanel == "map")
     setActive("playerHud_corePanel_sheet_" .. seatColor, hud.activeCorePanel == "sheet")
 
-    -- Map overlays/district selection (overlays persisted; district selection is transient).
-    local showMap = hud.activeCorePanel == "map"
-    local hudMap = hud.map
-    local overlaysState = (hudMap and hudMap.overlays) or {}
-    local locationState = (hudMap and hudMap.location) or {}
-
-    local locationDistrictKey = (locationState and locationState.district) or nil
-    local hoverOverlayKey = mapHoverOverlayKeyByPlayerID[playerID]
-    local hoverDistrictKey = mapHoverDistrictKeyByPlayerID[playerID]
-    local activeDistrictKey = mapActiveDistrictByPlayerID[playerID]
-
-    local wasMapActive = mapWasActiveByPlayerID[playerID] == true
-
-    if not showMap then
-        -- District click/hover are transient: clear runtime selection whenever map closes.
-        mapHoverOverlayKeyByPlayerID[playerID] = nil
-        mapHoverDistrictKeyByPlayerID[playerID] = nil
-        mapActiveDistrictByPlayerID[playerID] = nil
-        mapPanNavIsActiveByPlayerID[playerID] = false
-        mapPanNavYByPlayerID[playerID] = nil
-        hoverOverlayKey = nil
-        hoverDistrictKey = nil
-        activeDistrictKey = nil
-
-        -- Reset recenter button visuals.
-        setTintVisibility("playerHud_mapRecenter_" .. seatColor, true)
-        setTintVisibility("playerHud_mapRecenter_" .. seatColor .. "_hover", false)
-    end
-
-    -- Apply initial pan exactly once when the map core panel becomes active.
-    if showMap and not wasMapActive then
-        local targetDistrictKey = locationDistrictKey
-        local y = nil
-        if type(targetDistrictKey) == "string" and MAP_DISTRICT_KEY_SET[targetDistrictKey] == true then
-            setMapPanForDistrict(seatColor, targetDistrictKey)
-            y = MAP_PAN_OFFSET_Y_BY_KEY[targetDistrictKey]
-        else
-            -- No storyteller-preset district yet: default to configured midpoint.
-            applyMapOffset(seatColor, MAP_PAN_MIDDLE_Y)
-            y = MAP_PAN_MIDDLE_Y
-        end
-
-        -- Initialize pan controller state to this same position (so animations start from the correct place).
-        local s = getOrCreateMapPanState(playerID)
-        if s and type(y) == "number" then
-            s.y = y
-        end
-        mapPanNavIsActiveByPlayerID[playerID] = false
-        mapPanNavYByPlayerID[playerID] = nil
-    end
-
-    mapWasActiveByPlayerID[playerID] = showMap
-
-    if showMap and not wasMapActive then
-        clearMapPanelUiCache(playerID)
-    end
-
-    -- Precedence for district effective selection:
-    -- 1) hover
-    -- 2) transient click override
-    -- 3) persisted player location district
-    local effectiveDistrictKey = nil
-    if type(hoverDistrictKey) == "string" and MAP_DISTRICT_KEY_SET[hoverDistrictKey] == true then
-        effectiveDistrictKey = hoverDistrictKey
-    elseif type(activeDistrictKey) == "string" and MAP_DISTRICT_KEY_SET[activeDistrictKey] == true then
-        effectiveDistrictKey = activeDistrictKey
-    elseif type(locationDistrictKey) == "string" and MAP_DISTRICT_KEY_SET[locationDistrictKey] == true then
-        effectiveDistrictKey = locationDistrictKey
-    end
+    applyMapPanelHud(playerID, seatColor, hud)
 
     -- Top-level reference panels
     setActive("playerHud_refPanel_coteries_" .. seatColor, showRefKey == "coteries")
-    setActive("playerHud_refPanel_princesCourt_" .. seatColor, showRefKey == "princesCourt")
+    local showPrincesCourtRef = showRefKey == "princesCourt"
+    if TEMP_SUPPRESS_PRINCES_COURT_REFERENCE_DISPLAY then
+        showPrincesCourtRef = false
+    end
+    setActive("playerHud_refPanel_princesCourt_" .. seatColor, showPrincesCourtRef)
 
     for refKey, _ in pairs(NESTEDLESS_REF_KEYS) do
         setActive("playerHud_refPanel_" .. refKey .. "_" .. seatColor, showRefKey == refKey)
-    end
-
-    -- Overlay buttons + overlay images (incremental apply via applyCachedMapPanelBool)
-    for _, overlayKey in ipairs(MAP_OVERLAY_KEYS) do
-        local overlayOn = (type(overlaysState) == "table" and overlaysState[overlayKey] == true) or false
-        local showOverlayImage = showMap and (overlayOn or hoverOverlayKey == overlayKey)
-
-        local overlayImageId = "playerHud_mapOverlay_" .. overlayKey .. "_" .. seatColor
-        applyCachedMapPanelBool(playerID, overlayImageId, showOverlayImage, setMapStackImageVisibility)
-
-        -- Overlay toggle hover/active: keep `active="true"`, hide via `color="clear"` (setTintVisibility).
-        local showHoverLayer = showMap and (hoverOverlayKey == overlayKey) and (not overlayOn)
-        local overlayHoverId = "playerHud_mapOverlayToggle_" .. overlayKey .. "_" .. seatColor .. "_hover"
-        applyCachedMapPanelBool(playerID, overlayHoverId, showHoverLayer, setTintVisibility)
-
-        local overlayActiveId = "playerHud_mapOverlayToggle_" .. overlayKey .. "_" .. seatColor .. "_active"
-        applyCachedMapPanelBool(playerID, overlayActiveId, showMap and overlayOn, setTintVisibility)
-    end
-
-    -- District selection: district overlays (when available) + district cards + button highlight layers
-    for districtKey, _ in pairs(MAP_DISTRICT_KEYS) do
-        local showDistrict = showMap and (effectiveDistrictKey == districtKey)
-
-        local districtCardId = "playerHud_districtCard_" .. districtKey .. "_" .. seatColor
-        applyCachedMapPanelBool(playerID, districtCardId, showDistrict, setTintVisibility)
-
-        -- District overlays are omitted for PATH / Sewers / Streets / Subway.
-        if MAP_DISTRICT_KEYS_WITH_OVERLAY[districtKey] == true then
-            local districtOverlayId = "playerHud_mapOverlay_" .. districtKey .. "_" .. seatColor
-            applyCachedMapPanelBool(playerID, districtOverlayId, showDistrict, setMapStackImageVisibility)
-        end
-
-        local showDistrictActiveLayer = showMap and (activeDistrictKey == districtKey)
-        local showDistrictHoverLayer = showMap and (hoverDistrictKey == districtKey) and (not showDistrictActiveLayer)
-
-        local districtActiveId = "playerHud_mapDistrictToggle_" .. districtKey .. "_" .. seatColor .. "_active"
-        applyCachedMapPanelBool(playerID, districtActiveId, showDistrictActiveLayer, setTintVisibility)
-
-        local districtHoverId = "playerHud_mapDistrictToggle_" .. districtKey .. "_" .. seatColor .. "_hover"
-        applyCachedMapPanelBool(playerID, districtHoverId, showDistrictHoverLayer, setTintVisibility)
     end
 
     -- Right Sidebar active overlays (mirror showRefKey)
@@ -854,6 +872,30 @@ function HUDP.updatePlayerUI(player, color)
             setActive(popupID, false)
         end
     end
+end
+
+--- Map panel refresh only (high-frequency hover/toggle/pan). Falls back to full HUD if map is not active.
+-- @param player Player
+-- @param color string|nil
+function HUDP.updatePlayerMapPanelUI(player, color)
+    local playerID, resolvedColor = getPlayerIDAndColor(player)
+    local seatColor = color or resolvedColor
+    if not playerID or type(seatColor) ~= "string" then
+        return
+    end
+
+    local pData = S.getPlayerData and S.getPlayerData(player) or nil
+    if type(pData) ~= "table" or type(pData.hud) ~= "table" or type(pData.hud.reference) ~= "table" then
+        return
+    end
+
+    local hud = pData.hud
+    if hud.activeCorePanel ~= "map" then
+        HUDP.updatePlayerUI(player, color)
+        return
+    end
+
+    applyMapPanelHud(playerID, seatColor, hud)
 end
 
 --- Shows/updates all players.
@@ -1077,7 +1119,7 @@ function HUD_playerMap_overlayToggle_hoverOn(player, value, id)
     end
 
     mapHoverOverlayKeyByPlayerID[playerID] = overlayKey
-    HUDP.updatePlayerUI(player, seatColor)
+    HUDP.updatePlayerMapPanelUI(player, seatColor)
 end
 
 --- Overlay toggle: mouse exit -> clear transient hover overlayKey (if still matching).
@@ -1094,7 +1136,7 @@ function HUD_playerMap_overlayToggle_hoverOff(player, value, id)
 
     if mapHoverOverlayKeyByPlayerID[playerID] == overlayKey then
         mapHoverOverlayKeyByPlayerID[playerID] = nil
-        HUDP.updatePlayerUI(player, seatColor)
+        HUDP.updatePlayerMapPanelUI(player, seatColor)
     end
 end
 
@@ -1124,7 +1166,7 @@ function HUD_playerMap_overlayToggle_mouseDown(player, value, id)
         overlayKey
     )
 
-    HUDP.updatePlayerUI(player, seatColor)
+    HUDP.updatePlayerMapPanelUI(player, seatColor)
 end
 
 --- District toggle: mouse enter -> set transient hover district selection.
@@ -1143,7 +1185,7 @@ function HUD_playerMap_districtToggle_hoverOn(player, value, id)
     end
 
     mapHoverDistrictKeyByPlayerID[playerID] = districtKey
-    HUDP.updatePlayerUI(player, seatColor)
+    HUDP.updatePlayerMapPanelUI(player, seatColor)
 
     -- Smooth hover-pan (debounced to avoid thrash when skimming buttons).
     local token = (mapPanHoverTokenByPlayerID[playerID] or 0) + 1
@@ -1176,7 +1218,7 @@ function HUD_playerMap_districtToggle_hoverOff(player, value, id)
 
     if mapHoverDistrictKeyByPlayerID[playerID] == districtKey then
         mapHoverDistrictKeyByPlayerID[playerID] = nil
-        HUDP.updatePlayerUI(player, seatColor)
+        HUDP.updatePlayerMapPanelUI(player, seatColor)
     end
 
     -- When hover ends, ease back toward the current "base" selection:
@@ -1238,7 +1280,7 @@ function HUD_playerMap_districtToggle_mouseDown(player, value, id)
         mapActiveDistrictByPlayerID[playerID] = districtKey
     end
 
-    HUDP.updatePlayerUI(player, seatColor)
+    HUDP.updatePlayerMapPanelUI(player, seatColor)
 
     -- User clicked a district: cancel any active nav up/down position.
     mapPanNavIsActiveByPlayerID[playerID] = false
@@ -1309,7 +1351,7 @@ function HUD_playerMap_panUp_mouseUp(player, value, id)
     mapHoverDistrictKeyByPlayerID[playerID] = nil
 
     animateMapPanTo(playerID, seatColor, MAP_PAN_TOP_Y, 0.18)
-    HUDP.updatePlayerUI(player, seatColor)
+    HUDP.updatePlayerMapPanelUI(player, seatColor)
 end
 
 --- Hover on pan down: show hover tint, hide base.
@@ -1361,7 +1403,7 @@ function HUD_playerMap_panDown_mouseUp(player, value, id)
     mapHoverDistrictKeyByPlayerID[playerID] = nil
 
     animateMapPanTo(playerID, seatColor, MAP_PAN_BOTTOM_Y, 0.18)
-    HUDP.updatePlayerUI(player, seatColor)
+    HUDP.updatePlayerMapPanelUI(player, seatColor)
 end
 
 -- ============================================================================
@@ -1411,12 +1453,12 @@ function HUD_playerMap_recenter_mouseUp(player, value, id)
     local districtKey = S.getStateVal and S.getStateVal("playerData", playerID, "hud", "map", "location", "district") or nil
     if type(districtKey) ~= "string" or MAP_DISTRICT_KEY_SET[districtKey] ~= true then
         animateMapPanTo(playerID, seatColor, MAP_PAN_MIDDLE_Y, 0.22)
-        HUDP.updatePlayerUI(player, seatColor)
+        HUDP.updatePlayerMapPanelUI(player, seatColor)
         return
     end
 
     requestMapPanToDistrict(playerID, seatColor, districtKey, { duration = 0.22 })
-    HUDP.updatePlayerUI(player, seatColor)
+    HUDP.updatePlayerMapPanelUI(player, seatColor)
 end
 
 return HUDP

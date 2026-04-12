@@ -982,7 +982,7 @@ function DEBUG.testUI()
                         return string.lower(tostring(c)) == "#ffffff"
                     end
 
-                    --- Stacked map Images use setMapStackImageVisibility (active + tint); toggles/cards stay tint-only.
+                    --- Stacked map Images: on = active + #FFFFFF tint; off = inactive (see setMapStackImageVisibility).
                     local function isMapStackImageVisible(elementID)
                         return isActive(elementID) and isTintVisible(elementID)
                     end

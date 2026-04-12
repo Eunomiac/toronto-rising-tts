@@ -58,7 +58,7 @@
     raycastTarget="false"
   />
 
-  <!-- Stacked map overlays: Lua uses setMapStackImageVisibility (active + #FFFFFF vs inactive). Toggle buttons still use tint/clear. -->
+  <!-- Stacked map overlays: Lua uses setMapStackImageVisibility (inactive when off; on = active + #FFFFFF). Toggle/row chrome uses tint-only. -->
   <Image class="hud_map_image_overlay"
     raycastTarget="false"
     active="true"
@@ -108,14 +108,14 @@
 
   <Panel class="hud_map_district_card_container"
     rectAlignment="LowerLeft"
-    offsetXY="50 50"
-    width="600"
+    offsetXY="-10 10"
+    width="800"
     height="400"
     ignoreLayout="true"
   />
 
   <Image class="hud_map_district_card"
-    width="600"
+    width="800"
     preserveAspect="true"
     raycastTarget="false"
     active="true"

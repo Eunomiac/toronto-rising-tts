@@ -128,6 +128,11 @@ function HO.syncAll()
       end
     end
   end
+
+  pcall(function()
+    local HUP = require("core.hud_hunger_pulse")
+    HUP.syncHungerPulseAll()
+  end)
 end
 
 return HO
