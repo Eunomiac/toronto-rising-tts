@@ -11,6 +11,14 @@
   <!-- ================================================================ -->
   <VerticalLayout class="storyteller_buttonControls" visibility="Host" rectAlignment="UpperLeft" offsetXY="50 0">
     <Button onClick="HUD_printState">Print State</Button>
+    <HorizontalLayout preferredHeight="30" minHeight="30" spacing="4" childForceExpandWidth="false"
+      childForceExpandHeight="false" childAlignment="MiddleLeft">
+      <Button preferredWidth="78" minWidth="78" preferredHeight="30" minHeight="30" flexibleWidth="0" flexibleHeight="0"
+        fontSize="14" onClick="HUD_debugLightActivate">Debug Light</Button>
+      <InputField id="dl_guid" preferredWidth="65" minWidth="65" preferredHeight="30" minHeight="30" height="30"
+        flexibleWidth="0" flexibleHeight="0" lineType="SingleLine" fontSize="12" textColor="#111111" placeholder="GUID"
+        onValueChanged="HUD_debugLightGuidInput" onEndEdit="HUD_debugLightGuidInput"></InputField>
+    </HorizontalLayout>
     <Text class="spacer_10"></Text>
     <Button id="adminScene_dark" class="smallButton" onClick="HUD_selectAdminLightingScene"
       colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)">DARK</Button>
@@ -35,6 +43,8 @@
   <Panel id="debugStatePanel" active="false" class="debugPanel">
     <Text id="debugState" class="debugText"></Text>
   </Panel>
+
+  <Include src="panel_debug_light" />
 
   <!-- ================================================================ -->
   <!-- Sidebar (reference image toggles) and Camera bar                 -->

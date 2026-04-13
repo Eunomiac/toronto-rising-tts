@@ -44,40 +44,11 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
   E.g. dot_large_red_bloodPotency_1, dot_large_white_bloodPotency_2, etc.
 
  -->
-<Defaults>
-  <Image class="dot" rectAlignment="UpperLeft" preserveAspect="true" raycastTarget="false" active="false" />
 
-  <Image class="dot_standard" height="6.3" width="6.3" />
 
-  <Image class="dot_large" height="11.3" width="11.3" />
+<Include src="csheet_defaults.xml" />
 
-  <Image class="box" rectAlignment="UpperLeft" preserveAspect="true" raycastTarget="false" active="false" />
-
-  <Image class="box_standard" height="8.0" width="8.0" />
-
-  <VerticalLayout class="box_text_container" childForceExpandWidth="true" childForceExpandHeight="false" width="500" scale="0.1 0.1 0.1" outline="#FFFFFF" outlineSize="-5 -5" />
-
-  <Panel class="box_text_panel_title" preferredHeight="40" minHeight="40" flexibleHeight="0" padding="10 10 0 0"  outline="#FFFFFF" outlineSize="-5 -5"  color="#000000" />
-  <Text class="box_text_panel_title_text" resizeTextForBestFit="false" horizontalOverflow="Truncate" verticalOverflow="Truncate" alignment="MiddleLeft" color="#FFFFFF" fontSize="24" fontStyle="Bold"  />
-
-  <Panel class="box_text_panel_body" padding="10 10 10 10" outline="#FFFFFF" outlineSize="5 5" color="#000000" />
-  <Text class="box_text" resizeTextForBestFit="true" horizontalOverflow="Wrap" verticalOverflow="Truncate" alignment="UpperLeft" color="#FFFFFF" fontSize="14" />
-</Defaults>
-
-<Panel id="paper_root" active="false" rectAlignment="MiddleCenter" width="154.5" height="200" position="0 0 -21" rotation="0 0 180" pivot="0.5 0.5">
-  <VerticalLayout class="box_text_container" rectAlignment="UpperCenter">
-    <Panel class="box_text_panel_body">
-      <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-    </Panel>
-  </VerticalLayout>
-
-  <VerticalLayout class="box_text_container">
-    <Panel class="box_text_panel_title">
-      <Text class="box_text_panel_title_text" text="Fixation: Storytelling" />
-    </Panel>
-    <Panel class="box_text_panel_body">
-      <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-    </Panel>
-  </VerticalLayout>
+<Panel id="paper_root"  class="page_root padded_border">
+  <Button id="pageForward" class="page_navigation page_forward" />
 
 </Panel>

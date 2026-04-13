@@ -1,0 +1,76 @@
+<Defaults>
+
+  <HorizontalLayout flexibleHeight="0" />
+  <Text flexibleWidth="0" />
+  <Button flexibleWidth="0" flexibleHeight="0" />
+  <Slider minWidth="300" />
+</Defaults>
+
+<!-- Focused spotlight debug: sliders + snapshot (Host). Handlers: HUD_debugLight* in global_script. -->
+<Panel id="panel_debug_light_root" active="false" color="rgba(0,0,0,0.82)" padding="10 10 10 10" width="500" scale="0.8" rectAlignment="MiddleRight" offsetXY="-20 0" raycastTarget="true">
+  <VerticalLayout spacing="5" childForceExpandWidth="true" childForceExpandHeight="false">
+    <Text id="dl_debug_light_label" fontSize="14" color="#FFDD00" preferredHeight="32">Debug Light</Text>
+
+    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Light on</Text>
+      <Toggle id="dl_enabled" isOn="true" onValueChanged="HUD_debugLightEnabled" flexibleWidth="1" minWidth="80">On</Toggle>
+      <Button id="dl_reset_enabled" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
+    </HorizontalLayout>
+
+    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Range</Text>
+      <Slider id="dl_range" minValue="0" maxValue="200" value="80" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
+      <Button id="dl_reset_range" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Spot angle</Text>
+      <Slider id="dl_angle" minValue="0" maxValue="180" value="90" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
+      <Button id="dl_reset_angle" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Intensity</Text>
+      <Slider id="dl_intensity" minValue="0" maxValue="12" value="1" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
+      <Button id="dl_reset_intensity" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Hue</Text>
+      <Slider id="dl_hue" minValue="0" maxValue="360" wholeNumbers="true" value="0" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
+      <Button id="dl_reset_hue" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Saturation</Text>
+      <Slider id="dl_saturation" minValue="0" maxValue="1" value="0" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
+      <Button id="dl_reset_saturation" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Brightness</Text>
+      <Slider id="dl_brightness" minValue="0" maxValue="1" value="1" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
+      <Button id="dl_reset_brightness" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Rot X</Text>
+      <Slider id="dl_rotX" minValue="-180" maxValue="180" value="0" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
+      <Button id="dl_reset_rotX" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Rot Y</Text>
+      <Slider id="dl_rotY" minValue="-180" maxValue="180" value="0" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
+      <Button id="dl_reset_rotY" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Rot Z</Text>
+      <Slider id="dl_rotZ" minValue="-180" maxValue="180" value="0" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
+      <Button id="dl_reset_rotZ" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Distance</Text>
+      <Slider id="dl_distance" minValue="-80" maxValue="80" value="0" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
+      <Button id="dl_reset_distance" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
+    </HorizontalLayout>
+
+    <HorizontalLayout preferredHeight="32" spacing="8" childAlignment="MiddleCenter">
+      <Button class="smallButton" preferredWidth="120" fontSize="11" onClick="HUD_debugLightSnapshot">Snapshot</Button>
+      <Button class="smallButton" preferredWidth="120" fontSize="11" onClick="HUD_debugLightDone">Done</Button>
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>

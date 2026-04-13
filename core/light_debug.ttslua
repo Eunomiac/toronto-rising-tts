@@ -14,6 +14,7 @@
     - applyLightUpdate(guid, colorStr, range, angle, intensity): Applies edits to a light
     - buildLightTableXML(lights): Builds XML table rows for the HUD panel
     - refreshLightDebugPanel(): Scans lights, builds XML, merges into HUD, updates UI
+    - getLightComponent(obj), isSpotlight(obj): shared spotlight detection for focus panel
 
     Agent guidance: dev/HUD_FUNCTIONS.md (light debug handlers); dev/TESTING.md.
 ]]
@@ -452,6 +453,20 @@ end
 --- Returns the placeholder element id used in XML (for injection)
 function LightDebug.getPlaceholder()
     return "lightTableRowsPlaceholder"
+end
+
+--- Exposes spotlight component lookup for other debug tools (e.g. focus panel by GUID).
+-- @param obj Object
+-- @return Component|nil
+function LightDebug.getLightComponent(obj)
+    return getLightComponent(obj)
+end
+
+--- True if `obj` has a Unity Light with spotlight fields (range, spotAngle, intensity).
+-- @param obj Object
+-- @return boolean
+function LightDebug.isSpotlight(obj)
+    return isSpotlight(obj)
 end
 
 return LightDebug

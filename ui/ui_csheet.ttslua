@@ -1,5 +1,7 @@
 ---@diagnostic disable: undefined-global
 -- Character sheet object UI: derive owner from object name CSHEET_PAGE_<n>_<COLOR>.
+-- Host object Lua must be only `require("ui.ui_csheet")`. A second global `function onLoad()`
+-- after that require replaces this file's onLoad and breaks navigation / state (pageNum stays nil).
 -- Any page index n is accepted; automated dot/box toggles are controlled per page in
 -- `lib/pc_stats.ttslua` (`P.SHEET_PAGE_UPDATE_PROFILE`). Pages without a profile get no bulk
 -- updates until you add one (room for pages 3–8+). Page-specific extras (e.g. another Text id)
@@ -50,7 +52,9 @@ local CSHEET_TRACKER_DISPLAY = {
 }
 
 local C = require("lib.constants")
+local G = require("lib.guids")
 local P = require("lib.pc_stats")
+local U = require("lib.util")
 
 --- Register tracker glyphs/images with Global (separate Lua VM). Safe no-op if Global unavailable.
 local function pushTrackerDisplayToGlobal()
@@ -66,6 +70,17 @@ local pageNum = nil
 local seatColor = nil
 local playerID = nil
 
+--- After first successful layout, objects keep this tag so `applyCsheetLayoutFromFirstSpread` does not run on reload.
+local CSHEET_ALIGNMENT_DONE_TAG = "AlignmentDone"
+
+--- @return boolean
+local function sheetHasAlignmentDoneTag()
+  local ok, has = pcall(function()
+    return self.hasTag(CSHEET_ALIGNMENT_DONE_TAG)
+  end)
+  return ok and has == true
+end
+
 --- @param name string
 --- @return number|nil, string|nil
 local function parseSheetObjectName(name)
@@ -77,6 +92,233 @@ local function parseSheetObjectName(name)
     return nil, nil
   end
   return tonumber(p), c
+end
+
+--- Re-parse this object's nickname into `pageNum` / `seatColor`.
+--- Call from UI callbacks so navigation still works if a host script replaced `onLoad` after `require`.
+local function syncSheetContextFromObjectName()
+  local name = ""
+  pcall(function()
+    name = self.getName()
+  end)
+  pageNum, seatColor = parseSheetObjectName(name)
+end
+
+--- Player-color tag used to find objects when no GUID is registered (e.g. `"BrownObject"`).
+--- @param colorUpper string e.g. `"BROWN"`
+--- @return string|nil
+local function seatColorObjectTag(colorUpper)
+  if type(colorUpper) ~= "string" or colorUpper == "" then
+    return nil
+  end
+  local c = string.lower(colorUpper)
+  if c == "" then
+    return nil
+  end
+  return c:sub(1, 1):upper() .. c:sub(2) .. "Object"
+end
+
+--- Merge partial `C.ObjectPositions` axes with the object's current position (same idea as `core/objects.ttslua`).
+--- @param obj Object
+--- @param partialPos table|nil
+--- @return Vector
+local function mergeObjectPosition(obj, partialPos)
+  partialPos = partialPos or {}
+  local currentPos = obj.getPosition()
+  return Vector(
+    partialPos.x or currentPos.x,
+    partialPos.y or currentPos.y,
+    partialPos.z or currentPos.z
+  )
+end
+
+--- Custom UI ids for spread navigation (`page1`/`page8` omit both; setAttribute is pcall-wrapped per id).
+local CSHEET_NAV_BUTTON_IDS = { "pageBack", "pageForward" }
+
+--- Toggle nav control `active` so clicks do not fire through the table when the sheet is hidden.
+--- @param obj Object
+--- @param show boolean
+local function applyCsheetNavButtonsActiveOnObject(obj, show)
+  if obj == nil or obj.UI == nil then
+    return
+  end
+  local a = show and "true" or "false"
+  for _, id in ipairs(CSHEET_NAV_BUTTON_IDS) do
+    pcall(function()
+      obj.UI.setAttribute(id, "active", a)
+    end)
+  end
+end
+
+--- Instant Y (and any other axis) move for a character sheet page — no smoothing.
+--- `interactable` and nav `active` follow final y (>= 0 visible convention).
+--- @param obj Object
+--- @param state string `"on"` or `"off"`
+--- @return boolean
+local function applyCsheetPageState(obj, state)
+  if obj == nil or type(state) ~= "string" then
+    return false
+  end
+  local posData = C.ObjectPositions.CSHEET_PAGE[state]
+  if type(posData) ~= "table" or type(posData.position) ~= "table" then
+    return false
+  end
+  local targetPos = mergeObjectPosition(obj, posData.position)
+  local visible = (targetPos.y >= 0)
+  pcall(function()
+    obj.setPosition(targetPos)
+    obj.interactable = visible
+  end)
+  applyCsheetNavButtonsActiveOnObject(obj, visible)
+  return true
+end
+
+--- Expected object name for a page (`CSHEET_PAGE_<n>_<COLOR>` with color in ALL CAPS).
+--- @param pageNum number
+--- @param colorUpper string
+--- @return string
+local function expectedCsheetNickname(pageNum, colorUpper)
+  return string.format("CSHEET_PAGE_%d_%s", pageNum, string.upper(colorUpper))
+end
+
+--- Resolve a page via `G.GUIDS.CSHEETS.<COLOR>.page<n>` when the GUID exists and the object is in-game.
+--- @param colorUpper string e.g. `"BROWN"`
+--- @param pageNum number
+--- @return Object|nil
+local function findCsheetPageByRegisteredGuid(colorUpper, pageNum)
+  if G.GUIDS == nil or type(G.GUIDS.CSHEETS) ~= "table" then
+    return nil
+  end
+  local row = G.GUIDS.CSHEETS[colorUpper]
+  if type(row) ~= "table" then
+    return nil
+  end
+  local key = "page" .. tostring(pageNum)
+  local guid = row[key]
+  if type(guid) ~= "string" or guid == "" then
+    return nil
+  end
+  local obj = getObjectFromGUID(guid)
+  if obj == nil then
+    return nil
+  end
+  return obj
+end
+
+--- Fallback: scan objects tagged `<Color>Object` for the exact nickname pattern.
+--- @param colorUpper string
+--- @param pageNum number
+--- @return Object|nil
+local function findCsheetPageByColorTagScan(colorUpper, pageNum)
+  local tag = seatColorObjectTag(colorUpper)
+  if tag == nil then
+    return nil
+  end
+  local wantName = expectedCsheetNickname(pageNum, colorUpper)
+  local objs = getObjectsWithTag(tag)
+  if type(objs) ~= "table" then
+    return nil
+  end
+  for _, o in ipairs(objs) do
+    if o ~= nil then
+      local ok, n = pcall(function()
+        return o.getName()
+      end)
+      if ok and n == wantName then
+        return o
+      end
+    end
+  end
+  return nil
+end
+
+--- Locate one character sheet page: GUID table first, then tag scan.
+--- @param colorUpper string
+--- @param pageNum number
+--- @return Object|nil
+local function resolveCsheetPageObject(colorUpper, pageNum)
+  local byGuid = findCsheetPageByRegisteredGuid(colorUpper, pageNum)
+  if byGuid ~= nil then
+    return byGuid
+  end
+  return findCsheetPageByColorTagScan(colorUpper, pageNum)
+end
+
+--- Swap visible pair: deactivate `outFirst`/`outSecond`, activate `inFirst`/`inSecond`.
+--- Runs only when both target (in) pages resolve; optionally deactivates outgoing if found.
+--- @param colorUpper string
+--- @param outFirst number
+--- @param outSecond number
+--- @param inFirst number
+--- @param inSecond number
+local function navigateCsheetPagePair(colorUpper, outFirst, outSecond, inFirst, inSecond)
+  local inA = resolveCsheetPageObject(colorUpper, inFirst)
+  local inB = resolveCsheetPageObject(colorUpper, inSecond)
+  if inA == nil or inB == nil then
+    U.AlertGM(
+      string.format(
+        "Character sheet (%s): cannot show pages %d and %d (one or both missing).",
+        colorUpper,
+        inFirst,
+        inSecond
+      )
+    )
+    return
+  end
+  local outA = resolveCsheetPageObject(colorUpper, outFirst)
+  local outB = resolveCsheetPageObject(colorUpper, outSecond)
+  if outA ~= nil then
+    applyCsheetPageState(outA, "off")
+  end
+  if outB ~= nil then
+    applyCsheetPageState(outB, "off")
+  end
+  applyCsheetPageState(inA, "on")
+  applyCsheetPageState(inB, "on")
+end
+
+--- Snap this sheet to the same x/z and rotation as page 1 (odd index) or page 2 (even index) for this seat color.
+--- Pages 1–2 use the "on" y from `C.ObjectPositions.CSHEET_PAGE`; all others use the "off" y (hidden below table).
+--- Runs once per object; after success adds `CSHEET_ALIGNMENT_DONE_TAG` so reloads keep saved transforms.
+local function applyCsheetLayoutFromFirstSpread()
+  if sheetHasAlignmentDoneTag() then
+    return
+  end
+  if pageNum == nil or seatColor == nil then
+    return
+  end
+  local colorUpper = string.upper(seatColor)
+  local refPage = (pageNum % 2 == 1) and 1 or 2
+  local refObj = resolveCsheetPageObject(colorUpper, refPage)
+  if refObj == nil then
+    print(string.format("[ui_csheet] Layout reference missing: %s page %d", colorUpper, refPage))
+    return
+  end
+  local onPos = C.ObjectPositions.CSHEET_PAGE.on
+  local offPos = C.ObjectPositions.CSHEET_PAGE.off
+  if type(onPos) ~= "table" or type(onPos.position) ~= "table" or type(offPos) ~= "table" or type(offPos.position) ~= "table" then
+    return
+  end
+  local onY = onPos.position.y
+  local offY = offPos.position.y
+  local targetY = (pageNum == 1 or pageNum == 2) and onY or offY
+  local okP, p = pcall(function()
+    return refObj.getPosition()
+  end)
+  local okR, r = pcall(function()
+    return refObj.getRotation()
+  end)
+  if not okP or not okR or p == nil or r == nil then
+    return
+  end
+  local vis = (targetY >= 0)
+  pcall(function()
+    self.setPosition(Vector(p.x, targetY, p.z))
+    self.setRotation(Vector(r.x, r.y, r.z))
+    self.interactable = vis
+    applyCsheetNavButtonsActiveOnObject(self, vis)
+    self.addTag(CSHEET_ALIGNMENT_DONE_TAG)
+  end)
 end
 
 --- @return boolean
@@ -144,6 +386,8 @@ end
 
 --- Refresh images and XP from merged game state (fetched in Global script).
 function refreshCharacterSheetUi()
+  syncSheetContextFromObjectName()
+  resolvePlayer()
   if playerID == nil or playerID == C.StorytellerID or pageNum == nil then
     return
   end
@@ -168,12 +412,29 @@ function refreshCharacterSheetUi()
 end
 
 function onLoad()
-  self.interactable = true
-  local name = ""
+  syncSheetContextFromObjectName()
+  local py = 0
   pcall(function()
-    name = self.getName()
+    py = self.getPosition().y
   end)
-  pageNum, seatColor = parseSheetObjectName(name)
+  local visible = (py >= 0)
+  self.interactable = visible
+  applyCsheetNavButtonsActiveOnObject(self, visible)
+  -- XML may not be ready on frame 0; re-apply nav `active` once UI exists.
+  Wait.frames(function()
+    local y = 0
+    pcall(function()
+      y = self.getPosition().y
+    end)
+    applyCsheetNavButtonsActiveOnObject(self, y >= 0)
+  end, 1)
+
+  if not sheetHasAlignmentDoneTag() then
+    -- Defer one frame so sibling pages (1/2) exist for layout reference when the save loads.
+    Wait.frames(function()
+      applyCsheetLayoutFromFirstSpread()
+    end, 1)
+  end
   resolvePlayer()
   pushTrackerDisplayToGlobal()
   -- Global `gameState` may not exist yet on the first frames after load.
@@ -189,4 +450,30 @@ end
 --- Called from global script after PC state changes (object.call).
 function refreshFromGameState()
   refreshCharacterSheetUi()
+end
+
+--- UI: forward from an even page (2, 4, 6) to the next spread.
+function onPageForward()
+  syncSheetContextFromObjectName()
+  if pageNum == nil or seatColor == nil then
+    return
+  end
+  if pageNum ~= 2 and pageNum ~= 4 and pageNum ~= 6 then
+    return
+  end
+  local colorUpper = string.upper(seatColor)
+  navigateCsheetPagePair(colorUpper, pageNum - 1, pageNum, pageNum + 1, pageNum + 2)
+end
+
+--- UI: back from an odd page (3, 5, 7) to the previous spread.
+function onPageBack()
+  syncSheetContextFromObjectName()
+  if pageNum == nil or seatColor == nil then
+    return
+  end
+  if pageNum ~= 3 and pageNum ~= 5 and pageNum ~= 7 then
+    return
+  end
+  local colorUpper = string.upper(seatColor)
+  navigateCsheetPagePair(colorUpper, pageNum, pageNum + 1, pageNum - 2, pageNum - 1)
 end

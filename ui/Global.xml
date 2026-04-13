@@ -10,7 +10,7 @@
 <Include src="defaults_classes" />
 
 <!-- 3. Storyteller HUD (Black): admin panel + sidebar + camera defaults -->
-<Panel id="HUD_PANEL_BLACK" class="hud_root_panel" visibility="Host">
+<Panel id="HUD_PANEL_BLACK" class="hud_root_panel" visibility="Black">
   <!-- 3a. Storyteller HUD defaults -->
   <Include src="storyteller/hud_storyteller_defaults" />
   <Include src="storyteller/panel_pcs_defaults" />

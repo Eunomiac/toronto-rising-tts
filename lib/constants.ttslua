@@ -313,6 +313,10 @@ C.ObjectPositions = {
   RING_FLARE = {
     on = {position = {y=-0.08}},
     off = {position = {y=-7}}
+  },
+  CSHEET_PAGE = {
+    on = {position = {y = 4}},
+    off = {position = {y = -5}}
   }
 }
 

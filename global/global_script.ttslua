@@ -551,6 +551,80 @@ function HUD_printState(player, button, id)
     )
 end
 
+--- Focused spotlight debug: read GUID from `dl_guid`, validate, show slider panel.
+-- @param player Player
+-- @param button string|nil
+-- @param id string|nil
+function HUD_debugLightActivate(player, button, id)
+    if LightDebugFocus and LightDebugFocus.activate then
+        LightDebugFocus.activate(player)
+    else
+        broadcastToColor("Debug Light: module not loaded.", player.color, {1, 0.35, 0})
+    end
+end
+
+--- Keeps latest GUID text from `dl_guid` (InputField); TTS does not expose this via `UI.getValue` reliably.
+-- @param player Player
+-- @param value string|nil
+-- @param id string|nil
+function HUD_debugLightGuidInput(player, value, id)
+    if LightDebugFocus and LightDebugFocus.onGuidInput then
+        LightDebugFocus.onGuidInput(player, value, id)
+    end
+end
+
+--- Enable / disable spotlight (`dl_enabled` Toggle).
+-- @param player Player
+-- @param value unknown
+-- @param id string|nil
+function HUD_debugLightEnabled(player, value, id)
+    if LightDebugFocus and LightDebugFocus.onEnabledToggle then
+        LightDebugFocus.onEnabledToggle(player, value, id)
+    end
+end
+
+--- Per-row reset (`dl_reset_*`); restores value from session start.
+-- @param player Player
+-- @param button string|nil
+-- @param id string
+function HUD_debugLightResetRow(player, button, id)
+    if LightDebugFocus and LightDebugFocus.resetRowFromId then
+        LightDebugFocus.resetRowFromId(id)
+    end
+end
+
+--- Slider change for focused light debug panel.
+-- @param player Player
+-- @param value number|string
+-- @param id string
+function HUD_debugLightSlider(player, value, id)
+    if LightDebugFocus and LightDebugFocus.onSlider then
+        LightDebugFocus.onSlider(player, value, id)
+    end
+end
+
+--- Write focused light state to **.tts/output/debug_logs/focused_light.lua**.
+-- @param player Player
+-- @param button string|nil
+-- @param id string|nil
+function HUD_debugLightSnapshot(player, button, id)
+    if LightDebugFocus and LightDebugFocus.snapshot then
+        LightDebugFocus.snapshot(player)
+    else
+        broadcastToColor("Debug Light: module not loaded.", player.color, {1, 0.35, 0})
+    end
+end
+
+--- Close focused light panel (does not revert the object).
+-- @param player Player
+-- @param button string|nil
+-- @param id string|nil
+function HUD_debugLightDone(player, button, id)
+    if LightDebugFocus and LightDebugFocus.done then
+        LightDebugFocus.done()
+    end
+end
+
 --[[
     Debug test button handlers (admin panel)
     Each calls the corresponding test from core/debug.ttslua (exposed as globals by that module).
@@ -790,3 +864,4 @@ G = require("lib.guids")
 L = require("core.lighting")
 R = require("lib.rotational-seat-layout")
 LightDebug = require("core.light_debug")
+LightDebugFocus = require("core.light_debug_focus")

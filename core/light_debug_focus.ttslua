@@ -1,0 +1,578 @@
+--[[
+    Focused spotlight debug panel: GUID field + live sliders + workspace Lua snapshot.
+    See dev/HUD_FUNCTIONS.md (HUD_debugLight* handlers).
+
+    Requires Host global UI; uses L.SetLightMode(guid, patch, nil, 0) for enabled/range/angle/intensity/color.
+    Distance slides along the **look-at emission axis** (inverse of `U.lookAtRotation`), minus
+    `DEBUG.getLookAtOffset(obj)` so it matches `DEBUG.setRotationLookAt` / NPC spotlight pipeline.
+]]
+
+local LightDebugFocus = {}
+
+local L = require("core.lighting")
+local LightDebug = require("core.light_debug")
+
+--- @type string|nil
+local activeGuid = nil
+--- @type table|nil position { x, y, z } world position captured at session start
+local originPos = nil
+--- When true, ignore Slider / Toggle callbacks (programmatic UI sync).
+local syncingSliders = false
+
+--- Snapshot of all tunables at session start (per-row reset targets).
+--- @type table|nil
+local startSnapshot = nil
+
+--- TTS InputField text is not reliably readable via `UI.getValue`; keep latest from onValueChanged/onEndEdit.
+--- @type string
+local lastDlGuidInput = ""
+
+--- Cached panel state (sliders + enable).
+local cache = {
+    enabled = true,
+    range = 80,
+    angle = 90,
+    intensity = 1,
+    hue = 0,
+    sat = 0,
+    brightness = 1,
+    rotX = 0,
+    rotY = 0,
+    rotZ = 0,
+    distance = 0,
+}
+
+--- @param s string|nil
+--- @return string
+local function trim(s)
+    if type(s) ~= "string" then
+        return ""
+    end
+    return (s:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+--- Latest GUID field text: prefer callback cache (TTS InputField is unreliable for `UI.getValue`), then `text` attribute, then getValue body.
+--- @return string
+local function readGuidFromUi()
+    if trim(lastDlGuidInput) ~= "" then
+        return lastDlGuidInput
+    end
+    local okAttr, attrVal = pcall(function()
+        return UI.getAttribute("dl_guid", "text")
+    end)
+    if okAttr and type(attrVal) == "string" and trim(attrVal) ~= "" then
+        return attrVal
+    end
+    local gv = UI.getValue("dl_guid")
+    if type(gv) == "string" and trim(gv) ~= "" then
+        return gv
+    end
+    return ""
+end
+
+--- Called from InputField onValueChanged / onEndEdit (Global UI).
+-- @param player Player
+-- @param value string|nil
+-- @param id string|nil
+function LightDebugFocus.onGuidInput(player, value, id)
+    if type(value) == "string" then
+        lastDlGuidInput = value
+    end
+end
+
+--- @param r number
+--- @param g number
+--- @param b number
+--- @return number hDeg, number s01, number v01
+local function rgbToHsv(r, g, b)
+    r = math.max(0, math.min(1, tonumber(r) or 0))
+    g = math.max(0, math.min(1, tonumber(g) or 0))
+    b = math.max(0, math.min(1, tonumber(b) or 0))
+    local maxc = math.max(r, g, b)
+    local minc = math.min(r, g, b)
+    local delta = maxc - minc
+    local h = 0
+    if delta > 1e-8 then
+        if maxc == r then
+            h = 60 * ((g - b) / delta)
+        elseif maxc == g then
+            h = 60 * ((b - r) / delta + 2)
+        else
+            h = 60 * ((r - g) / delta + 4)
+        end
+    end
+    if h < 0 then
+        h = h + 360
+    end
+    local s01 = (maxc > 1e-8) and (delta / maxc) or 0
+    local v01 = maxc
+    return h, s01, v01
+end
+
+--- @param h number degrees
+--- @param s number 0..1
+--- @param v number 0..1
+--- @return Color
+local function hsvToRgb(h, s, v)
+    h = (tonumber(h) or 0) % 360
+    s = math.max(0, math.min(1, tonumber(s) or 0))
+    v = math.max(0, math.min(1, tonumber(v) or 0))
+    local c = v * s
+    local x = c * (1 - math.abs(((h / 60) % 2) - 1))
+    local m = v - c
+    local rp, gp, bp = 0, 0, 0
+    if h < 60 then
+        rp, gp, bp = c, x, 0
+    elseif h < 120 then
+        rp, gp, bp = x, c, 0
+    elseif h < 180 then
+        rp, gp, bp = 0, c, x
+    elseif h < 240 then
+        rp, gp, bp = 0, x, c
+    elseif h < 300 then
+        rp, gp, bp = x, 0, c
+    else
+        rp, gp, bp = c, 0, x
+    end
+    return Color(rp + m, gp + m, bp + m)
+end
+
+--- @param v table|nil Vector-like
+--- @return number, number, number
+local function vec3Nums(v)
+    if v == nil then
+        return 0, 0, 0
+    end
+    local x = v.x
+    if x == nil then
+        x = v[1]
+    end
+    local y = v.y
+    if y == nil then
+        y = v[2]
+    end
+    local z = v.z
+    if z == nil then
+        z = v[3]
+    end
+    return tonumber(x) or 0, tonumber(y) or 0, tonumber(z) or 0
+end
+
+--- Unit direction the spotlight **beam** points (world space), matching `U.lookAtRotation` in lib/util.ttslua:
+--- subtract per-object `DEBUG.getLookAtOffset` so distance moves along the same axis as `DEBUG.setRotationLookAt`.
+-- @param obj Object
+-- @param pitchDeg number rotation X (degrees)
+-- @param yawDeg number rotation Y
+-- @param rollDeg number rotation Z (beam axis unchanged by roll; offset pitch/yaw still applied)
+-- @return number fx, number fy, number fz
+local function emissionDirectionFromLookConvention(obj, pitchDeg, yawDeg, _rollDeg)
+    local ox, oy, _oz = 0, 0, 0
+    local DBG = rawget(_G, "DEBUG")
+    if DBG ~= nil and type(DBG.getLookAtOffset) == "function" then
+        local off = DBG.getLookAtOffset(obj)
+        if off ~= nil then
+            ox, oy, _oz = vec3Nums(off)
+        end
+    end
+    local basePitch = pitchDeg - ox
+    local baseYaw = yawDeg - oy
+    local pr = math.rad(basePitch + 90)
+    local yr = math.rad(baseYaw)
+    local ny = -math.sin(pr)
+    local xz = math.cos(pr)
+    local nx = math.sin(yr) * xz
+    local nz = math.cos(yr) * xz
+    local len = math.sqrt(nx * nx + ny * ny + nz * nz)
+    if len < 1e-10 then
+        return 0, -1, 0
+    end
+    return nx / len, ny / len, nz / len
+end
+
+--- @param val unknown
+--- @return boolean|nil
+local function coerceBool(val)
+    if val == true then
+        return true
+    end
+    if val == false then
+        return false
+    end
+    if type(val) == "string" then
+        local s = string.lower(trim(val))
+        if s == "true" or s == "1" or s == "on" then
+            return true
+        end
+        if s == "false" or s == "0" or s == "off" then
+            return false
+        end
+    end
+    if type(val) == "number" then
+        return val ~= 0
+    end
+    return nil
+end
+
+--- Push live transform + light params from `cache` to the world object.
+local function applyLive()
+    if activeGuid == nil or originPos == nil then
+        return
+    end
+    local obj = getObjectFromGUID(activeGuid)
+    if obj == nil then
+        return
+    end
+    local rx, ry, rz = cache.rotX, cache.rotY, cache.rotZ
+    pcall(function()
+        obj.setRotation(Vector(rx, ry, rz), false)
+    end)
+    local fx, fy, fz = emissionDirectionFromLookConvention(obj, rx, ry, rz)
+    local d = tonumber(cache.distance) or 0
+    local ox, oy, oz = originPos.x, originPos.y, originPos.z
+    local nx = ox + d * fx
+    local ny = oy + d * fy
+    local nz = oz + d * fz
+    pcall(function()
+        obj.setPosition(Vector(nx, ny, nz), false)
+    end)
+    local col = hsvToRgb(cache.hue, cache.sat, cache.brightness)
+    pcall(function()
+        obj.setColorTint(col)
+    end)
+    pcall(function()
+        L.SetLightMode(activeGuid, {
+            enabled = cache.enabled == true,
+            range = cache.range,
+            angle = cache.angle,
+            intensity = cache.intensity,
+            color = col,
+        }, nil, 0)
+    end)
+end
+
+--- @param id string
+--- @param val number
+local function pushSliderAttr(id, val)
+    pcall(function()
+        UI.setAttributes(id, { value = val })
+    end)
+end
+
+--- Push one control from `cache` by internal field name.
+-- @param field string
+local function pushUiForField(field)
+    if field == "enabled" then
+        pcall(function()
+            UI.setAttributes("dl_enabled", { isOn = cache.enabled == true })
+        end)
+    elseif field == "sat" then
+        pushSliderAttr("dl_saturation", cache.sat)
+    elseif field == "range" then
+        pushSliderAttr("dl_range", cache.range)
+    elseif field == "angle" then
+        pushSliderAttr("dl_angle", cache.angle)
+    elseif field == "intensity" then
+        pushSliderAttr("dl_intensity", cache.intensity)
+    elseif field == "hue" then
+        pushSliderAttr("dl_hue", cache.hue)
+    elseif field == "brightness" then
+        pushSliderAttr("dl_brightness", cache.brightness)
+    elseif field == "rotX" then
+        pushSliderAttr("dl_rotX", cache.rotX)
+    elseif field == "rotY" then
+        pushSliderAttr("dl_rotY", cache.rotY)
+    elseif field == "rotZ" then
+        pushSliderAttr("dl_rotZ", cache.rotZ)
+    elseif field == "distance" then
+        pushSliderAttr("dl_distance", cache.distance)
+    end
+end
+
+--- Sync all Slider + Toggle widgets from `cache`.
+local function pushAllSlidersToUi()
+    syncingSliders = true
+    pushUiForField("enabled")
+    pushUiForField("range")
+    pushUiForField("angle")
+    pushUiForField("intensity")
+    pushUiForField("hue")
+    pushUiForField("sat")
+    pushUiForField("brightness")
+    pushUiForField("rotX")
+    pushUiForField("rotY")
+    pushUiForField("rotZ")
+    pushUiForField("distance")
+    syncingSliders = false
+end
+
+--- @param guidRaw string
+--- @return Object|nil obj, string|nil err
+local function parseAndValidateGuid(guidRaw)
+    local g = trim(guidRaw)
+    if g == "" then
+        return nil, "Enter a GUID in the field next to Debug Light."
+    end
+    local obj = getObjectFromGUID(g)
+    if obj == nil then
+        return nil, "No object for GUID: " .. g
+    end
+    local comp = LightDebug.getLightComponent(obj)
+    if comp == nil then
+        return nil, "Object is not a spotlight (no Light with range/angle/intensity)."
+    end
+    return obj, nil
+end
+
+--- Read GUID from UI field, validate, open panel, sync sliders, first apply.
+-- @param player Player
+--- @return boolean ok
+function LightDebugFocus.activate(player)
+    local raw = readGuidFromUi()
+    local obj, err = parseAndValidateGuid(raw)
+    if obj == nil then
+        if player ~= nil and player.color ~= nil then
+            broadcastToColor("Debug Light: " .. tostring(err), player.color, { 1, 0.35, 0 })
+        end
+        return false
+    end
+    lastDlGuidInput = trim(raw)
+    local guid = obj.getGUID and obj.getGUID() or trim(raw)
+    activeGuid = guid
+    local p = obj.getPosition and obj.getPosition() or { x = 0, y = 0, z = 0 }
+    local px, py, pz = vec3Nums(p)
+    originPos = { x = px, y = py, z = pz }
+
+    local comp = LightDebug.getLightComponent(obj)
+    cache.range = tonumber(comp.get("range")) or 80
+    cache.angle = tonumber(comp.get("spotAngle")) or 90
+    cache.intensity = tonumber(comp.get("intensity")) or 1
+
+    local rot = obj.getRotation and obj.getRotation() or { x = 0, y = 0, z = 0 }
+    cache.rotX, cache.rotY, cache.rotZ = vec3Nums(rot)
+    cache.distance = 0
+
+    local tint = obj.getColorTint and obj.getColorTint() or Color.White
+    local tr, tg, tb = 1, 1, 1
+    if tint ~= nil and type(tint.r) == "number" then
+        tr, tg, tb = tint.r, tint.g, tint.b
+    elseif tint ~= nil then
+        tr, tg, tb = vec3Nums(tint)
+    end
+    cache.hue, cache.sat, cache.brightness = rgbToHsv(tr, tg, tb)
+
+    local en = comp.get("enabled")
+    cache.enabled = (en ~= false)
+
+    startSnapshot = {
+        enabled = cache.enabled == true,
+        range = cache.range,
+        angle = cache.angle,
+        intensity = cache.intensity,
+        hue = cache.hue,
+        sat = cache.sat,
+        brightness = cache.brightness,
+        rotX = cache.rotX,
+        rotY = cache.rotY,
+        rotZ = cache.rotZ,
+        distance = cache.distance,
+    }
+
+    pushAllSlidersToUi()
+    local name = "?"
+    local data = obj.getData and obj.getData()
+    if data and data.Nickname and data.Nickname ~= "" then
+        name = data.Nickname
+    elseif obj.getName and obj.getName() then
+        name = obj.getName() or "?"
+    end
+    pcall(function()
+        UI.setValue("dl_debug_light_label", name .. " [" .. guid .. "]")
+    end)
+    pcall(function()
+        UI.setAttribute("panel_debug_light_root", "active", true)
+    end)
+    applyLive()
+    if player ~= nil and player.color ~= nil then
+        broadcastToColor("Debug Light: editing " .. guid .. ".", player.color, { 0, 1, 0.6 })
+    end
+    return true
+end
+
+--- Slider change handler: update `cache` and apply.
+-- @param player Player
+-- @param value number|string
+-- @param id string
+function LightDebugFocus.onSlider(player, value, id)
+    if syncingSliders then
+        return
+    end
+    if activeGuid == nil then
+        return
+    end
+    local v = tonumber(value)
+    if v == nil then
+        return
+    end
+    if id == "dl_range" then
+        cache.range = v
+    elseif id == "dl_angle" then
+        cache.angle = v
+    elseif id == "dl_intensity" then
+        cache.intensity = v
+    elseif id == "dl_hue" then
+        cache.hue = v
+    elseif id == "dl_saturation" then
+        cache.sat = v
+    elseif id == "dl_brightness" then
+        cache.brightness = v
+    elseif id == "dl_rotX" then
+        cache.rotX = v
+    elseif id == "dl_rotY" then
+        cache.rotY = v
+    elseif id == "dl_rotZ" then
+        cache.rotZ = v
+    elseif id == "dl_distance" then
+        cache.distance = v
+    else
+        return
+    end
+    applyLive()
+end
+
+--- Maps `dl_reset_*` button id suffix to `cache` / `startSnapshot` keys.
+local RESET_SUFFIX_TO_FIELD = {
+    enabled = "enabled",
+    range = "range",
+    angle = "angle",
+    intensity = "intensity",
+    hue = "hue",
+    saturation = "sat",
+    brightness = "brightness",
+    rotX = "rotX",
+    rotY = "rotY",
+    rotZ = "rotZ",
+    distance = "distance",
+}
+
+--- Reset one row to session-start values and refresh the light.
+-- @param buttonId string e.g. `dl_reset_range`
+function LightDebugFocus.resetRowFromId(buttonId)
+    if type(buttonId) ~= "string" or startSnapshot == nil or activeGuid == nil then
+        return
+    end
+    local suffix = string.match(buttonId, "^dl_reset_(.+)$")
+    if suffix == nil then
+        return
+    end
+    local field = RESET_SUFFIX_TO_FIELD[suffix]
+    if field == nil then
+        return
+    end
+    cache[field] = startSnapshot[field]
+    syncingSliders = true
+    pushUiForField(field)
+    syncingSliders = false
+    applyLive()
+end
+
+--- `dl_enabled` Toggle.
+-- @param player Player
+-- @param value unknown
+-- @param id string|nil
+function LightDebugFocus.onEnabledToggle(player, value, id)
+    if syncingSliders then
+        return
+    end
+    if activeGuid == nil then
+        return
+    end
+    local b = coerceBool(value)
+    if b == nil then
+        return
+    end
+    cache.enabled = b
+    applyLive()
+end
+
+--- Write Lua table snapshot to workspace via DEBUG.writeWorkspaceFile.
+-- @param player Player
+function LightDebugFocus.snapshot(player)
+    if activeGuid == nil then
+        if player ~= nil and player.color ~= nil then
+            broadcastToColor("Debug Light: open a session first.", player.color, { 1, 0.5, 0 })
+        end
+        return
+    end
+    local DBG = rawget(_G, "DEBUG")
+    if DBG == nil or type(DBG.writeWorkspaceFile) ~= "function" then
+        if player ~= nil and player.color ~= nil then
+            broadcastToColor("Debug Light: DEBUG.writeWorkspaceFile missing.", player.color, { 1, 0.35, 0 })
+        end
+        return
+    end
+    local obj = getObjectFromGUID(activeGuid)
+    if obj == nil then
+        if player ~= nil and player.color ~= nil then
+            broadcastToColor("Debug Light: object gone.", player.color, { 1, 0.35, 0 })
+        end
+        return
+    end
+    local comp = LightDebug.getLightComponent(obj)
+    if comp == nil then
+        if player ~= nil and player.color ~= nil then
+            broadcastToColor("Debug Light: not a spotlight anymore.", player.color, { 1, 0.35, 0 })
+        end
+        return
+    end
+    applyLive()
+    local pos = obj.getPosition and obj.getPosition() or { x = 0, y = 0, z = 0 }
+    local rot = obj.getRotation and obj.getRotation() or { x = 0, y = 0, z = 0 }
+    local px, py, pz = vec3Nums(pos)
+    local rx, ry, rz = vec3Nums(rot)
+    local rng = tonumber(comp.get("range")) or 0
+    local ang = tonumber(comp.get("spotAngle")) or 0
+    local intens = tonumber(comp.get("intensity")) or 0
+    local en = comp.get("enabled")
+    local enabledLua = (en ~= false) and "true" or "false"
+    local tint = obj.getColorTint and obj.getColorTint() or Color.White
+    local tr, tg, tb = 1, 1, 1
+    if tint ~= nil and type(tint.r) == "number" then
+        tr, tg, tb = tonumber(tint.r) or 0, tonumber(tint.g) or 0, tonumber(tint.b) or 0
+    elseif tint ~= nil then
+        tr, tg, tb = vec3Nums(tint)
+    end
+    tr = math.max(0, math.min(1, tr))
+    tg = math.max(0, math.min(1, tg))
+    tb = math.max(0, math.min(1, tb))
+    local body = table.concat({
+        "{",
+        "  enabled = " .. enabledLua .. ",",
+        string.format("  position = Vector(%.6f, %.6f, %.6f),", px, py, pz),
+        string.format("  rotation = Vector(%.6f, %.6f, %.6f),", rx, ry, rz),
+        string.format("  range = %.6f,", rng),
+        string.format("  angle = %.6f,", ang),
+        string.format("  intensity = %.6f,", intens),
+        string.format("  color = Color(%.6f, %.6f, %.6f)", tr, tg, tb),
+        "}",
+    }, "\n")
+    DBG.writeWorkspaceFile("debug_logs/focused_light.lua", body, "none", false)
+    if player ~= nil and player.color ~= nil then
+        broadcastToColor(
+            "Debug Light: wrote .tts/output/debug_logs/focused_light.lua",
+            player.color,
+            { 0, 1, 1 }
+        )
+    end
+end
+
+--- Close panel and clear session (does not revert the object).
+function LightDebugFocus.done()
+    pcall(function()
+        UI.setAttribute("panel_debug_light_root", "active", false)
+    end)
+    activeGuid = nil
+    originPos = nil
+    startSnapshot = nil
+end
+
+return LightDebugFocus

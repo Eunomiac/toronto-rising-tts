@@ -137,12 +137,12 @@ L.LIGHTMODES = {
       },
       STANDARD = {
         enabled = true,
-        position = Vector(-45.00, 50.00, 0),
-        rotation = Vector(0, -50.00, 0.00),
-        range = 90,
-        angle = 140,
-        intensity = 4,
-        color = Color(100 / 255, 200 / 255, 255 / 255)
+        position = Vector(-59.383789, 47.456715, -31.044981),
+        rotation = Vector(282.940002, 36.000004, -0.000008),
+        range = 93.901543,
+        angle = 140.717697,
+        intensity = 4.186250,
+        color = Color(0.667467, 0.799703, 0.931939)
       }
     },
     mainLightRight = {
@@ -160,12 +160,12 @@ L.LIGHTMODES = {
       },
       STANDARD = {
         enabled = true,
-        position = Vector(45.00, 50.00, 0),
-        rotation = Vector(0.00, 50.00, 0.00),
-        range = 90,
-        angle = 140,
-        intensity = 4,
-        color = Color(100 / 255, 200 / 255, 255 / 255)
+        position = Vector(59.383789, 47.456715, -31.044981),
+        rotation = Vector(282.940002, -36.000004, -0.000008),
+        range = 93.901543,
+        angle = 140.717697,
+        intensity = 4.186250,
+        color = Color(0.667467, 0.799703, 0.931939)
       }
     },
     -- Player lights (per-player spotlights)
@@ -187,9 +187,10 @@ L.LIGHTMODES = {
             enabled = true,
             position = Vector(67.595, 23.000, -43.037),
             rotation = Vector(330, -36.000, 0.000),
-            range = 50,
+            range = 100,
             angle = 75,
-            intensity = 1
+            intensity = 1.8,
+            color = Color(0.514012, 0.509216, 0.496029)
         }
     },
     playerLight1Orange = {
@@ -208,9 +209,10 @@ L.LIGHTMODES = {
             enabled = true,
             position = Vector(35.537, 23.000, -59.371),
             rotation = Vector(330, -18.000, 0.000),
-            range = 50,
+            range = 100,
             angle = 75,
-            intensity = 1
+            intensity = 1.8,
+            color = Color(0.514012, 0.509216, 0.496029)
         }
     },
     playerLight1Red = {
@@ -229,9 +231,10 @@ L.LIGHTMODES = {
             enabled = true,
             position = Vector(0.000, 23.000, -65.000),
             rotation = Vector(330, 0.00, 0.00),
-            range = 50,
+            range = 100,
             angle = 75,
-            intensity = 1
+            intensity = 1.8,
+            color = Color(0.514012, 0.509216, 0.496029)
         }
     },
     playerLight1Pink = {
@@ -250,9 +253,10 @@ L.LIGHTMODES = {
             enabled = true,
             position = Vector(-35.537, 23.000, -59.371),
             rotation = Vector(330, 18.000, 0.000),
-            range = 50,
+            range = 100,
             angle = 75,
-            intensity = 1
+            intensity = 1.8,
+            color = Color(0.514012, 0.509216, 0.496029)
         }
     },
     playerLight1Purple = {
@@ -271,9 +275,10 @@ L.LIGHTMODES = {
             enabled = true,
             position = Vector(-67.595, 23.000, -43.037),
             rotation = Vector(330, 36.000, 0.000),
-            range = 50,
+            range = 100,
             angle = 75,
-            intensity = 1
+            intensity = 1.8,
+            color = Color(0.514012, 0.509216, 0.496029)
         }
     },
     playerLight2Brown = {

@@ -82,6 +82,17 @@ G.GUIDS = {
     THRONE_PINK = "18bd33",
     THRONE_PURPLE = "823f86",
 
+    CSHEETS = {
+      BROWN = {
+        page1 = "21d213",
+        page2 = "c80132"
+      },
+      ORANGE = {},
+      RED = {},
+      PINK = {},
+      PURPLE = {}
+    }
+
     -- Add other object GUIDs as needed (zones, boards, etc.)
     -- Format: OBJECT_NAME = "@@@@@@OBJECT_NAME@@@@@@"
 }

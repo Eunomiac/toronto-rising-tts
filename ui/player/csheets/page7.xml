@@ -1,0 +1,124 @@
+<!-- Agent guidance: dev/HUDs & Overlays/Player HUD Overview.md; data/PCS.json (PC fields). -->
+<!-- XML Exact height is 200; 8.5x11 aspect ratio means the width is 154.5
+
+Standard dot images are 6.3x6.3 pixels.
+Standard dot-lines are five standard dots wide with 3.4 pixel spacing between them.
+Large dot images are 11.3x11.3 pixels.
+Large dot-lines are five large dots wide with 6.8 pixel spacing between them.
+Standard box images are 8.0x8.0 pixels.
+Standard box-lines are ten standard boxes wide with 4.2 pixel spacing between them.
+
+*** PAGE 1 STANDARD DOT LINES *** == ATTRIBUTES ==
+9 standard dot-lines in a 3x3 grid.
+Grid top-left is at 28.5 -66.8
+Row spacing is -7.7 pixels.
+Column spacing is 49.7 pixels
+Dot images: dot_yellow, dot_white
+Dot ids: <dot_image_name>_<attribute_key>_<slot_number>
+  E.g. dot_yellow_strength_1, dot_white_dexterity_2, etc.
+
+  == SKILLS ==
+27 standard dot-lines in a 3x9 grid.
+Grid top-left is at 28.5 -94.0
+Row spacing is -7.9 pixels.
+Column spacing is 49.7 pixels
+Dot images: dot_yellow, dot_white
+Dot ids: <dot_image_name>_<skill_key>_<slot_number>
+  E.g. dot_yellow_athletics_1, dot_white_animalKen_2, etc.
+
+  == BOX TRACKERS ==
+3 standard box-lines in a 2x2 grid, with the bottom-right grid being empty.
+Grid top-left is at 108.5 -173.05
+Row spacing is -12.1 pixels.
+Column spacing is 88.4 pixels.
+Box images (first and third grid cells): box_yellow, box_grey, box_red
+Box images (second grid cell): box_white, box_black, box_red
+Box ids: <box_image_name>_<tracker_key>_<slot_number>
+  E.g. box_yellow_health_1, box_grey_willpower_2, etc.
+
+  == BLOOD POTENCY ==
+1 large dot-line.
+Dot-line top-left is at 103.3 -184.2
+Dot images: dot_large_red, dot_large_white
+Dot ids: <dot_image_name>_bloodPotency_<slot_number>
+  E.g. dot_large_red_bloodPotency_1, dot_large_white_bloodPotency_2, etc.
+
+ -->
+
+<Include src="csheet_defaults.xml" />
+
+<Panel id="paper_root" class="page_root">
+  <Button id="pageBack" class="page_navigation page_back" />
+
+  <HorizontalLayout class="box_column_container">
+    <VerticalLayout class="box_column">
+
+      <VerticalLayout class="box_text_container" rectAlignment="UpperCenter">
+        <Panel class="box_text_panel_body">
+          <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
+        </Panel>
+      </VerticalLayout>
+      <VerticalLayout class="box_text_container" rectAlignment="UpperCenter">
+        <Panel class="box_text_panel_body">
+          <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
+        </Panel>
+      </VerticalLayout>
+      <VerticalLayout class="box_text_container" rectAlignment="UpperCenter">
+        <Panel class="box_text_panel_body">
+          <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
+        </Panel>
+      </VerticalLayout>
+    </VerticalLayout>
+
+    <VerticalLayout class="box_column">
+      <VerticalLayout class="box_text_container">
+        <Panel class="box_text_panel_title">
+          <Text class="box_text_panel_title_text" text="Devil's Own Luck" />
+        </Panel>
+        <Panel class="box_text_panel_dotline">
+          <Text class="box_text_panel_dotline_text" text="●●○○○" />
+        </Panel>
+        <Panel class="box_text_panel_body">
+          <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
+        </Panel>
+      </VerticalLayout>
+      <VerticalLayout class="box_text_container">
+        <Panel class="box_text_panel_title">
+          <Text class="box_text_panel_title_text" text="Fixation: Storytelling" />
+        </Panel>
+        <Panel class="box_text_panel_body">
+          <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
+        </Panel>
+      </VerticalLayout>
+      <VerticalLayout class="box_text_container">
+        <Panel class="box_text_panel_title">
+          <Text class="box_text_panel_title_text" text="Fixation: Storytelling" />
+        </Panel>
+        <Panel class="box_text_panel_body">
+          <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
+        </Panel>
+      </VerticalLayout>
+    </VerticalLayout>
+
+        <VerticalLayout class="box_column">
+
+      <VerticalLayout class="box_text_container" rectAlignment="UpperCenter">
+        <Panel class="box_text_panel_body">
+          <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
+        </Panel>
+      </VerticalLayout>
+      <VerticalLayout class="box_text_container" rectAlignment="UpperCenter">
+        <Panel class="box_text_panel_body">
+          <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
+        </Panel>
+      </VerticalLayout>
+      <VerticalLayout class="box_text_container" rectAlignment="UpperCenter">
+        <Panel class="box_text_panel_body">
+          <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
+        </Panel>
+      </VerticalLayout>
+    </VerticalLayout>
+
+  </HorizontalLayout>
+
+</Panel>

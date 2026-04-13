@@ -1,0 +1,41 @@
+<Defaults>
+
+  <Image preserveAspect="true" />
+  <Image class="dot" rectAlignment="UpperLeft" preserveAspect="true" raycastTarget="false" active="false" />
+
+  <Image class="dot_standard" height="63" width="63" />
+
+  <Image class="dot_large" height="113" width="113" />
+
+  <Image class="box" rectAlignment="UpperLeft" preserveAspect="true" raycastTarget="false" active="false" />
+
+  <Image class="box_standard" height="80" width="80" />
+
+  <Text class="xp_text" fontSize="82" fontStyle="Bold" color="#FFDD00" rectAlignment="LowerCenter" alignment="LowerCenter" offsetXY="-67 125" outline="#000000" outlineSize="2 2" shadow="#000000" shadowDistance="5 -5" />
+
+  <Panel class="page_root" active="true" rectAlignment="MiddleCenter" width="1545" height="2000" scale="0.1 0.1 0.1" position="0 0 -21" rotation="0 0 180" pivot="0.5 0.5" />
+  <Panel class="padded_border" padding="50 50 140 100" />
+  <VerticalLayout class="vertical_section_container" spacing="10" height="100%" width="100%" childForceExpandWidth="true" childForceExpandHeight="false" childAlignment="UpperCenter" />
+  <HorizontalLayout class="box_column_container" spacing="10" childForceExpandWidth="true" childForceExpandHeight="true" width="1500" />
+  <VerticalLayout class="box_column" childForceExpandWidth="true" childForceExpandHeight="false" childAlignment="UpperLeft" spacing="5" />
+  <HorizontalLayout class="four_column_text" spacing="20" childForceExpandWidth="true" childForceExpandHeight="false" childAlignment="UpperCenter" />
+
+  <VerticalLayout class="quarter_column" flexibleHeight="0" />
+  <VerticalLayout class="box_text_container" childForceExpandWidth="true" childForceExpandHeight="false" color="#000000" flexibleHeight="0" outline="#FFFFFF" outlineSize="5 5" />
+
+  <Panel class="box_text_panel_title" padding="10 10 0 0" color="#000000" />
+  <Text class="box_text_panel_title_text" resizeTextForBestFit="false" horizontalOverflow="Truncate" verticalOverflow="Truncate" alignment="UpperCenter" color="#FFFFFF" fontSize="32" fontStyle="Bold" />
+
+
+  <Panel class="box_text_panel_dotline" preferredHeight="30" minHeight="30" flexibleHeight="0" />
+  <Text class="box_text_panel_dotline_text" resizeTextForBestFit="false" horizontalOverflow="Truncate" verticalOverflow="Overflow" alignment="UpperCenter" color="#FFFFFF" fontSize="32" fontStyle="Bold" scale="1.5 1.5 1.5" offsetXY="0 10" />
+
+  <Panel class="box_text_panel_body"  padding="10 10 10 10" color="#000000" />
+  <Text class="box_text" resizeTextForBestFit="true" resizeTextMaxSize="18" horizontalOverflow="Wrap" verticalOverflow="Truncate" alignment="UpperLeft" color="#FFFFFF" fontSize="18" />
+
+  <Button class="page_navigation" width="100" height="2000" ignoreLayout="true" />
+
+  <Button class="page_back" rectAlignment="UpperLeft" onClick="onPageBack" color="clear"/>
+
+  <Button class="page_forward" rectAlignment="UpperRight" onClick="onPageForward" color="clear"/>
+</Defaults>
