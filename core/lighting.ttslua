@@ -15,8 +15,8 @@
     Mode fields are optional patches: missing fields are left unchanged on apply.
     Common fields are: enabled, color, range, angle, intensity, rotation, position.
 
-    Agent guidance: dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md (paired spotlights);
-    dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md.
+    Agent guidance: .dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md (paired spotlights);
+    .dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md.
 ]]
 
 local L = {}

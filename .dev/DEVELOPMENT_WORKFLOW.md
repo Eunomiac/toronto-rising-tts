@@ -56,7 +56,7 @@ Commit changes when:
 
 - `lib/` - Shared libraries and utilities
 - `core/` - Core game logic modules
-- `dev/` - Development tools and documentation
+- `.dev/` - Development tools and documentation
 - `ui/` - UI XML files and related resources
 
 ### File Naming
@@ -84,11 +84,11 @@ Commit changes when:
 
 - Test changes in TTS before committing
 - Update test functions when adding new features
-- Document test requirements in `dev/TESTING.md`
+- Document test requirements in `.dev/TESTING.md`
 
 ### Runtime logging and agent instrumentation
 
-- Workspace file output goes through **TTS Tools** into **`.tts/output/`** — see **`dev/DEBUG_FILE_LOGGING.md`** for paths and `ttsEditor.enableMessages`.
+- Workspace file output goes through **TTS Tools** into **`.tts/output/`** — see **`.dev/DEBUG_FILE_LOGGING.md`** for paths and `ttsEditor.enableMessages`.
 - Use **`core/debug.ttslua`** helpers (`DEBUG.logToFile`, `DEBUG.writeWorkspaceFile`, **`DEBUG.workspaceNdjsonBegin`**, **`DEBUG.workspaceNdjsonAppend`**) instead of calling **`lib/workspace_ndjson_log`** directly from new code unless there is a specific exception.
 
 ## Module Dependencies
@@ -121,10 +121,10 @@ Modules should be loaded in dependency order:
 
 ### Documentation Files
 
-- `dev/TESTING.md` - Testing guide and test functions
-- `dev/GUID_REQUIREMENTS.md` - GUID requirements and setup
-- `dev/AVAILABLE_FUNCTIONS.md` - Function reference
-- `dev/DEVELOPMENT_WORKFLOW.md` - This file
+- `.dev/TESTING.md` - Testing guide and test functions
+- `.dev/GUID_REQUIREMENTS.md` - GUID requirements and setup
+- `.dev/AVAILABLE_FUNCTIONS.md` - Function reference
+- `.dev/DEVELOPMENT_WORKFLOW.md` - This file
 
 ## AI Assistant Instructions
 
@@ -149,8 +149,8 @@ When working on this project:
 
 ### Getting Help
 
-- Check `dev/TESTING.md` for test functions
-- Review `dev/AVAILABLE_FUNCTIONS.md` for function reference
+- Check `.dev/TESTING.md` for test functions
+- Review `.dev/AVAILABLE_FUNCTIONS.md` for function reference
 - Check console output for error messages
 - Review git history for recent changes
 

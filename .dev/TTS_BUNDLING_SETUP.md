@@ -11,13 +11,13 @@ Based on the [TTS Tools documentation](https://sebaestschjin.github.io/tts-tools
 ### Global script source of truth (read this)
 
 - **TTS may overwrite** `.tts/objects/Global.lua` when you reload the game or sync from TTS. Treat that file as **volatile**.
-- It should stay a **stub** only: `require("global.global_script")`.
-- **All global game logic** lives in **`global/global_script.ttslua`** (same `require()` roots as `lib/` and `core/`). Edit that file, not the stub, when adding `onLoad`, HUD handlers, etc.
+- It should stay a **stub** only: `require("core.global_script")`.
+- **All global game logic** lives in **`core/global_script.ttslua`** (same `require()` roots as `lib/` and `core/`). Edit that file, not the stub, when adding `onLoad`, HUD handlers, etc.
 
-See also [`global/README.md`](../global/README.md).
+See also [`README.md`](../README.md) at the repo root (Global script overview).
 
-1. **Entry Point (stub)**: `.tts/objects/Global.lua` is what the extension bundles first; it should only `require("global.global_script")`.
-2. **Module Files**: Your module files (e.g., `lib/util.ttslua`, `core/state.ttslua`, `global/global_script.ttslua`) are in the workspace directory
+1. **Entry Point (stub)**: `.tts/objects/Global.lua` is what the extension bundles first; it should only `require("core.global_script")`.
+2. **Module Files**: Your module files (e.g., `lib/util.ttslua`, `core/state.ttslua`, `core/global_script.ttslua`) are in the workspace directory
 3. **Require Syntax**: Use dot notation: `require("lib.util")` for `lib/util.lua` or `lib/util.ttslua`
 4. **Bundling Process**: When you use "Save and Play":
    - Extension reads `.tts/objects/Global.lua`
@@ -30,12 +30,12 @@ See also [`global/README.md`](../global/README.md).
 
 ### Recommended Workflow
 
-1. **Edit global logic**: Use **`global/global_script.ttslua`** (not the `.tts/objects/Global.lua` stub).
-2. **Edit other modules**: Edit files in `lib/` and `core/` (and `global/` if you split further) directly.
-3. **Keep the stub**: If TTS overwrote `.tts/objects/Global.lua`, restore it to only `require("global.global_script")` (see comments in that file).
+1. **Edit global logic**: Use **`core/global_script.ttslua`** (not the `.tts/objects/Global.lua` stub).
+2. **Edit other modules**: Edit files in `lib/` and `core/` directly.
+3. **Keep the stub**: If TTS overwrote `.tts/objects/Global.lua`, restore it to only `require("core.global_script")` (see comments in that file).
 4. **Bundle and send**: Use "Save and Play" - extension will:
    - Read `.tts/objects/Global.lua`
-   - Resolve all `require()` calls from workspace directory (including `global.global_script`)
+   - Resolve all `require()` calls from workspace directory (including `core.global_script`)
    - Bundle everything together
    - Send to TTS
 
@@ -104,15 +104,15 @@ See [TTS_MCP.md](TTS_MCP.md) for setup and Cursor configuration.
 
 **Symptom**: Changes don't appear in TTS
 
-**Root Cause**: The extension reads from `.tts/objects/Global.lua` for the bundle **entry**, but TTS may have replaced that file. Logic belongs in `global/global_script.ttslua`.
+**Root Cause**: The extension reads from `.tts/objects/Global.lua` for the bundle **entry**, but TTS may have replaced that file. Logic belongs in `core/global_script.ttslua`.
 
 **Solution**:
 
-- Restore `.tts/objects/Global.lua` to the repo stub (`require("global.global_script")`) if it was overwritten.
-- Edit **`global/global_script.ttslua`** for global script changes.
-- Module files in `lib/`, `core/`, and `global/` are resolved automatically during bundling.
+- Restore `.tts/objects/Global.lua` to the repo stub (`require("core.global_script")`) if it was overwritten.
+- Edit **`core/global_script.ttslua`** for global script changes.
+- Module files in `lib/` and `core/` are resolved automatically during bundling.
 
-**Important**: The `.tts/objects/` directory is the extension’s sync target; **`global/global_script.ttslua`** is the source of truth for global Lua logic.
+**Important**: The `.tts/objects/` directory is the extension’s sync target; **`core/global_script.ttslua`** is the source of truth for global Lua logic.
 
 ### Issue 2a: Module only used inside functions → missing from bundle
 
@@ -167,11 +167,11 @@ See [TTS_MCP.md](TTS_MCP.md) for setup and Cursor configuration.
 - `TTSLua.bundleSearchPattern` - Not used by TTS Tools
 - `TTSLua.includeOtherFilesPaths` - Not used by TTS Tools
 
-## Player character data (`data/PCS.json`)
+## Player character data (`lib/json/PCS.json`)
 
-- **Authoring**: Edit chronicle PC definitions in **`data/PCS.json`** (source of truth in git).
+- **Authoring**: Edit chronicle PC definitions in **`lib/json/PCS.json`** (source of truth in git).
 - **TTS runtime**: Lua cannot read arbitrary files on disk. After changing the JSON, regenerate the embedded module:
-  - From repo root: `node dev/scripts/generate_pcs_data_lua.js`
+  - From repo root: `node .dev/scripts/generate_pcs_data_lua.js`
   - This rewrites **`lib/pcs_data.ttslua`** (large file, committed) so `require("lib.pcs_data")` decodes the JSON inside Tabletop Simulator.
 - Game code uses `PCS.getPC(charKey)`; player seats and `charKey` come from **`lib/constants.ttslua`** (`C.PlayerData`).
 
@@ -195,7 +195,7 @@ workspace/
 │   └── ...
 └── .tts/
     ├── objects/
-    │   └── Global.lua     # Stub only: require("global.global_script") — may be overwritten by TTS
+    │   └── Global.lua     # Stub only: require("core.global_script") — may be overwritten by TTS
     └── bundled/
         └── Global.lua     # Bundled output (generated, not edited)
 ```
@@ -220,14 +220,14 @@ Test.message = "Hello from test module"
 return Test
 ```
 
-**`global/global_script.ttslua`** (add temporarily at end of file, then remove after test):
+**`core/global_script.ttslua`** (add temporarily at end of file, then remove after test):
 
 ```lua
 local Test = require("test")
 print(Test.message)
 ```
 
-Or keep the stub and add the same two lines to a scratch module required from `global_script`. If bundling works, TTS receives the full tree. If not, check extension configuration (and that `global/` is on the include path like `lib/`).
+Or keep the stub and add the same two lines to a scratch module required from `global_script`. If bundling works, TTS receives the full tree. If not, check extension configuration (and that `core/` is on the include path like `lib/`).
 
 ---
 
@@ -237,7 +237,7 @@ Helper script for player (and other) UI XML that is generated from templates.
 
 ### What it does
 
-- Templates live in `ui/templates/*.xml`.
+- Templates live in `ui/.templates/*.xml`.
 - The first non-empty line of each template must be `<!-- TARGET: path/from/repo/root.xml -->`.
 - If the template root contains `@@color@@`, it is duplicated once per `C.PlayerColors` value (from `lib/constants.ttslua`); otherwise a single root is written (pass-through).
 - Each output file begins with a banner pointing back to the template source.
@@ -251,10 +251,10 @@ Helper script for player (and other) UI XML that is generated from templates.
 From repo root:
 
 ```bash
-node dev/scripts/xml_color_template_generator.js
+node .dev/scripts/xml_color_template_generator.js
 ```
 
-Optional: `--templateDir` (defaults to `ui/templates`), `--token` (defaults to `@@color@@`).
+Optional: `--templateDir` (defaults to `ui/.templates`), `--token` (defaults to `@@color@@`).
 
 ### How generated XML is included
 

@@ -5,7 +5,7 @@ Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 > **Source files:**
 >
 > - XML triggers: `ui/storyteller/panel_*.xml`, `ui/storyteller/hud_storyteller.xml`
-> - Handler implementations: `global/global_script.ttslua` (loaded via stub `.tts/objects/Global.lua`)
+> - Handler implementations: `core/global_script.ttslua` (loaded via stub `.tts/objects/Global.lua`)
 > - Helper functions: `lib/ui_helpers.ttslua`, `core/light_debug.ttslua`, `core/light_debug_focus.ttslua`
 
 ---

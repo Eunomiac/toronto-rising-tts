@@ -55,9 +55,9 @@ function printHelp(): void {
   process.stdout.write(`code-review CLI
 
 Usage:
-  node tools/code-review/dist/cli.js validate [--repo <dir>]
-  node tools/code-review/dist/cli.js upsert-region --file <repoRel> --region-num <n> [--classification s] [--description s] [--notes s] [--repo <dir>]
-  node tools/code-review/dist/cli.js add-finding --file <repoRel> --region-num <n> --agent <s> --category <s> --message <s> [--id <uuid>] [--created-at <iso>] [--repo <dir>]
+  node .tools/code-review/dist/cli.js validate [--repo <dir>]
+  node .tools/code-review/dist/cli.js upsert-region --file <repoRel> --region-num <n> [--classification s] [--description s] [--notes s] [--repo <dir>]
+  node .tools/code-review/dist/cli.js add-finding --file <repoRel> --region-num <n> --agent <s> --category <s> --message <s> [--id <uuid>] [--created-at <iso>] [--repo <dir>]
 
 Defaults:
   --repo defaults to the nearest parent directory containing package.json

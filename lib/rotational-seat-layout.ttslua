@@ -18,7 +18,7 @@
         R.spawnSeatObjectsFromTemplate(computed, { ... })
         R.clearGeneratedSeatObjects({ ... }, computed.playerToPositionMap, { NPC_SEAT = true })
 
-    Agent guidance: dev/Rotational Coordinate Generator.md; dev/DEBUG_FILE_LOGGING.md; dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md.
+    Agent guidance: .dev/Rotational Coordinate Generator.md; .dev/DEBUG_FILE_LOGGING.md; .dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md.
 ]]
 
 local U = require("lib.util")

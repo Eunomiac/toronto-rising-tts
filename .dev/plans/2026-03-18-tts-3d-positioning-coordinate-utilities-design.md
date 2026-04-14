@@ -13,7 +13,6 @@ The guide will be reference + recipe oriented:
 
 ## Tech Stack
 - Lua utility library: `lib/util.ttslua`
-- Related positioning/layout helper: `lib/table-positions.ttslua`
 - Coordinate system conventions and demo context: `core/debug.ttslua`
 
 ## Scope
@@ -24,7 +23,6 @@ Included:
 - `U.GetEasedPath(...)` with `coordinateSystem = "cylindrical" | "spherical"`
 - `U.LerpPath(...)` / `U.LerpDeferred(...)` (apply the generated path)
 - `U.lookAtRotation(...)` (orientation “look-at” helper)
-- `lib/table-positions.ttslua` half-decagon layout coordinate approach (as a practical cylindrical/polar usage pattern)
 
 Excluded:
 - Broader physics helpers and snap-point helpers unless needed to support 3D motion application (kept minimal).
@@ -32,9 +30,8 @@ Excluded:
 ## Output
 1. Commit this design document.
 2. Create the user-facing guide in:
-   - `dev/User Guides/<new-file>.md`
+   - `.dev/User Guides/<new-file>.md`
 
 ## Notes
 - Angle conventions used by `U.*` cylindrical/spherical utilities will be explicitly documented to avoid mismatched expectations.
 - The guide will also note coordinate-system defaults/hardcoded behavior in `U.Lerp(...)` where relevant, recommending `U.GetEasedPath(...)` for cylindrical/spherical motion.
-

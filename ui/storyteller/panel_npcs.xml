@@ -1,5 +1,5 @@
 <!-- Storyteller NPC spawn / lighting panel (dynamic rows injected by core/npcs.ttslua) -->
-<!-- Agent guidance: dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md; dev/HUD_FUNCTIONS.md; dev/tts-api/UI API/. -->
+<!-- Agent guidance: .dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md; .dev/HUD_FUNCTIONS.md; .dev/tts-api/UI API/. -->
 <!-- TTS: layout children use preferred*/flexible* (UI Attributes). Panel padding => layout group. -->
 <Panel id="panel_npcs" active="false" padding="0 0 0 0">
   <VerticalLayout childForceExpandWidth="true" childForceExpandHeight="false">

@@ -1,5 +1,5 @@
 <!-- Classes for Storyteller PCs panel (`panel_pcs.xml`). Seat tint `color` stays per-Panel; ids and row label text stay on elements. -->
-<!-- Agent guidance: dev/tts-api/UI API/Defaults.md -->
+<!-- Agent guidance: .dev/tts-api/UI API/Defaults.md -->
 <Defaults>
   <Panel class="pcs_panel_root" padding="6 6 6 6" width="620" />
   <VerticalLayout class="pcs_root_vl" spacing="8" childAlignment="UpperLeft" childForceExpandWidth="false" />

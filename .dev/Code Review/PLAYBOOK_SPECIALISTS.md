@@ -13,7 +13,7 @@ Run **narrow** passes that each look for **one** class of issue. Specialists **a
 ## Append a finding
 
 ```bash
-node tools/code-review/dist/cli.js add-finding --file core/foo.ttslua --region-num 300 --agent Duplication --category duplication --message "Suspects overlap with lib/util.ttslua helpers; verify X and Y."
+node .tools/code-review/dist/cli.js add-finding --file core/foo.ttslua --region-num 300 --agent Duplication --category duplication --message "Suspects overlap with lib/util.ttslua helpers; verify X and Y."
 ```
 
 Use stable **`category`** tokens: `organization`, `duplication`, `redundancy`, `consolidation`, `code-smell`, `obsolete`, `scaling`, `breaking-errors` (match your taxonomy; keep them lowercase kebab-case).

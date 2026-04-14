@@ -7,7 +7,7 @@ This repo includes a small **Model Context Protocol** server that runs **Tableto
 1. **Tabletop Simulator** is running with a game loaded.
 2. **External Editor** is enabled in TTS (**Options → General → External Editor**), same as for TTS Tools. See [TTS_BUNDLING_SETUP.md](TTS_BUNDLING_SETUP.md) (Issue 0).
 3. **Node.js 18+** and project dependencies: `npm install` at the repo root.
-4. **Build** the server: `npm run tts-mcp:build`. Outputs go to `tools/tts-bridge/dist/` and `tools/tts-mcp/dist/` (ignored by git — rebuild after pull).
+4. **Build** the server: `npm run tts-mcp:build`. Outputs go to `.tools/tts-bridge/dist/` and `.tools/tts-mcp/dist/` (ignored by git — rebuild after pull).
 
 ## Port conflict (39998)
 
@@ -31,7 +31,7 @@ In Cursor, add an MCP server whose command runs the compiled entry (adjust the p
 }
 ```
 
-Use forward slashes if your environment prefers: `D:/Projects/.CODING/toronto-rising-tts/tools/tts-mcp/dist/index.js`.
+Use forward slashes if your environment prefers: `D:/Projects/.CODING/toronto-rising-tts/.tools/tts-mcp/dist/index.js`.
 
 After saving, reload MCP / restart Cursor if needed. The server speaks **stdio** only (no HTTP port).
 

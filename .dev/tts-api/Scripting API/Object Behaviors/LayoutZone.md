@@ -8,7 +8,7 @@
 
 # LayoutZone
 
-The LayoutZone behavior is present on [Layout Zones](https://kb.tabletopsimulator.com/game-tools/zone-tools/#layout-zone).
+The LayoutZone behavior is present on [Layout Zones](https://kb.tabletopsimulator.com/game-.tools/zone-.tools/#layout-zone).
 
 ## Functions {#functions}
 

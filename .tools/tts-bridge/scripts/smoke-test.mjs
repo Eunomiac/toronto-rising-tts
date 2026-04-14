@@ -1,6 +1,6 @@
 /**
  * Quick live test: requires TTS running, External Editor enabled, and nothing else bound to 39998.
- * Usage: node tools/tts-bridge/scripts/smoke-test.mjs
+ * Usage: node .tools/tts-bridge/scripts/smoke-test.mjs
  */
 import { TtsExternalEditorBridge } from "../dist/index.js";
 

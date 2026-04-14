@@ -7,13 +7,12 @@ This document is the **normative** specification for the retro-collaborative, ag
 The following globs define **production** Lua sources for this pipeline (POSIX-style paths, forward slashes):
 
 - `core/**/*.ttslua`
-- `global/**/*.ttslua`
 - `lib/**/*.ttslua`
 - `ui/**/*.ttslua`
 
 **Out of scope** unless explicitly added later:
 
-- `dev/**/*.ttslua` and any other paths not listed above.
+- `.dev/**/*.ttslua` and any other paths not listed above.
 
 ## Transitional gating: `excluded_files.json`
 
@@ -66,9 +65,9 @@ Paths are relative to the repository root unless stated otherwise.
 
 | Artifact | Path | Role |
 |----------|------|------|
-| Exclusion list | `dev/Code Review/excluded_files.json` | Lists files not yet subject to full partitioning rules. |
-| Region registry | `dev/Code Review/region_registry.json` | Authoritative metadata for each `(file, regionNum)` row used by agents. |
-| Findings log | `dev/Code Review/findings.jsonl` | Append-only findings keyed by stable `id`. |
+| Exclusion list | `.dev/Code Review/excluded_files.json` | Lists files not yet subject to full partitioning rules. |
+| Region registry | `.dev/Code Review/region_registry.json` | Authoritative metadata for each `(file, regionNum)` row used by agents. |
+| Findings log | `.dev/Code Review/findings.jsonl` | Append-only findings keyed by stable `id`. |
 
 ### `excluded_files.json` schema
 
@@ -107,7 +106,7 @@ Findings are **not** substituted for registry `notes`/`tags`; they are the prima
 
 ## Tooling (CLI)
 
-Implemented under `tools/code-review/` (see root `package.json` scripts). Commands include:
+Implemented under `.tools/code-review/` (see root `package.json` scripts). Commands include:
 
 - **`validate`**: checks markers, nesting, leaf and glue rules, exclusion overlap, and registry consistency for all non-excluded production files.
 - **`add-finding`**: appends one validated JSON line to `findings.jsonl`.

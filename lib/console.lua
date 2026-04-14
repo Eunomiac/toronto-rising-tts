@@ -1,5 +1,5 @@
 ---@diagnostic disable
--- Agent guidance: dev/TTS_MCP.md (onExternalMessage / tooling); dev/TTS_BUNDLING_SETUP.md; dev/tts-api/Getting Started/External Editor API.md.
+-- Agent guidance: .dev/TTS_MCP.md (onExternalMessage / tooling); .dev/TTS_BUNDLING_SETUP.md; .dev/tts-api/Getting Started/External Editor API.md.
 require("lib.Console.console++")
 
 -- function prototype

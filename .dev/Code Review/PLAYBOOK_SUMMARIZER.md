@@ -18,7 +18,7 @@ Ground later passes by filling `classification`, `description`, and (when needed
 5. Prefer updating via CLI (keeps JSON valid):
 
    ```bash
-   node tools/code-review/dist/cli.js upsert-region --file core/foo.ttslua --region-num 200 --classification "Initialization" --description "..." --notes "..."
+   node .tools/code-review/dist/cli.js upsert-region --file core/foo.ttslua --region-num 200 --classification "Initialization" --description "..." --notes "..."
    ```
 
    Or edit `region_registry.json` carefully, then run `npm run code-review:validate`.

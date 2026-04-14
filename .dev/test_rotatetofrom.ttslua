@@ -1,7 +1,7 @@
--- dev/test_rotatetofrom.ttslua
+-- .dev/test_rotatetofrom.ttslua
 -- Test implementation and validation for U.RotateToFrom function
 -- This file contains the implementation and tests for the function before integration
--- Agent guidance: dev/Utility Function - RotateToFrom.md; dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md; dev/TESTING.md.
+-- Agent guidance: .dev/Utility Function - RotateToFrom.md; .dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md; .dev/TESTING.md.
 
 local U = require("lib.util")
 

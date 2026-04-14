@@ -3,7 +3,7 @@
 -- Game constants, configuration values, and lookup tables for VTM5E module.
 -- Shared constants and lookup tables for this VTM5E Tabletop Simulator module.
 --
--- Agent guidance: dev/HUDs & Overlays/Player HUD Overview.md (C.CHRONICLE_DATA.coteries/disciplines, phases); data/PCS.json + lib/pcs_data.ttslua for PCs; dev/EXTRACTABLE_FUNCTIONS_INDEX.md.
+-- Agent guidance: .dev/HUDs & Overlays/Player HUD Overview.md (C.CHRONICLE_DATA.coteries/disciplines, phases); lib/json/PCS.json + lib/pcs_data.ttslua for PCs; .dev/EXTRACTABLE_FUNCTIONS_INDEX.md.
 
 local C = {}
 
@@ -109,7 +109,7 @@ C.Phases = {
     END = "end"
 }
 
--- PC name/color/keys: C.PlayerData + charKey; full stat blocks: lib/pcs_data.ttslua (from data/PCS.json).
+-- PC name/color/keys: C.PlayerData + charKey; full stat blocks: lib/pcs_data.ttslua (from lib/json/PCS.json).
 C.CHRONICLE_DATA = {
 	disciplines = {
 		animalism = {

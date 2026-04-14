@@ -1,5 +1,5 @@
 <!-- Player HUD CorePanel_Map defaults (map layout + toggle stacks + draggable viewport) -->
-<!-- Agent guidance: dev/HUDs & Overlays/Player HUD Overview.md (map panels); dev/TTS_BUNDLING_SETUP.md. -->
+<!-- Agent guidance: .dev/HUDs & Overlays/Player HUD Overview.md (map panels); .dev/TTS_BUNDLING_SETUP.md. -->
 
 <Defaults>
   <!-- Core map root layer (visibility per seat color on the generated panel id). -->

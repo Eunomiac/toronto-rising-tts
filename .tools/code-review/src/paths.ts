@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const PRODUCTION_DIRS = ["core", "global", "lib", "ui"] as const;
+const PRODUCTION_DIRS = ["core", "lib", "ui"] as const;
 
 /**
  * Normalizes Windows paths to forward slashes for registry and exclusion lists.

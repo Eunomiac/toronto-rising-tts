@@ -1,5 +1,5 @@
 <!-- TARGET: ui/player/panel_right_sidebar_buttons.xml -->
-<!-- Agent guidance: dev/TTS_BUNDLING_SETUP.md (generator); dev/HUDs & Overlays/Player HUD Overview.md (right sidebar). -->
+<!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (right sidebar). -->
 <Panel
   id="playerHud_rightSidebar_@@color@@"
   visibility="@@color@@"

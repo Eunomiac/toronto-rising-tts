@@ -3,17 +3,18 @@
   "version": "1.0.0",
   "description": "Tabletop Simulator LUA modding project",
   "scripts": {
-    "custom-ui-assets:manifest": "node tools/custom-ui-assets/build-upload-manifest.js",
-    "custom-ui-assets:merge": "node tools/custom-ui-assets/merge-custom-ui-assets.js",
-    "tts-bridge:build": "tsc -p tools/tts-bridge/tsconfig.json",
-    "tts-bridge:test": "vitest run --config tools/tts-bridge/vitest.config.ts",
-    "tts-mcp:build": "npm run tts-bridge:build && tsc -p tools/tts-mcp/tsconfig.json",
-    "tts-mcp:start": "node tools/tts-mcp/dist/index.js",
-    "tts:smoke": "node tools/tts-bridge/scripts/smoke-test.mjs",
-    "code-review:build": "tsc -p tools/code-review/tsconfig.json",
-    "code-review:test": "vitest run --config tools/code-review/vitest.config.ts",
-    "code-review:validate": "npm run code-review:build && node tools/code-review/dist/cli.js validate",
-    "code-review:help": "npm run code-review:build && node tools/code-review/dist/cli.js help"
+    "custom-ui-assets:manifest": "node .tools/custom-ui-assets/build-upload-manifest.js",
+    "custom-ui-assets:merge": "node .tools/custom-ui-assets/merge-custom-ui-assets.js",
+    "tts-bridge:build": "tsc -p .tools/tts-bridge/tsconfig.build.json",
+    "tts-bridge:test": "vitest run --config .tools/tts-bridge/vitest.config.ts",
+    "tts-mcp:build": "npm run tts-bridge:build && tsc -p .tools/tts-mcp/tsconfig.json",
+    "tts-mcp:start": "node .tools/tts-mcp/dist/index.js",
+    "tts:smoke": "node .tools/tts-bridge/scripts/smoke-test.mjs",
+    "code-review:build": "tsc -p .tools/code-review/tsconfig.build.json",
+    "code-review:test": "vitest run --config .tools/code-review/vitest.config.ts",
+    "code-review:validate": "npm run code-review:build && node .tools/code-review/dist/cli.js validate",
+    "code-review:help": "npm run code-review:build && node .tools/code-review/dist/cli.js help",
+    "debug:mirror": "node .dev/scripts/mirror-tts-output.js"
   },
   "keywords": [
     "tabletop-simulator",
@@ -24,7 +25,6 @@
   "license": "MIT",
   "main": "index.js",
   "directories": {
-    "doc": "docs",
     "lib": "lib"
   },
   "dependencies": {
@@ -34,6 +34,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
+    "chokidar": "^4.0.3",
     "typescript": "^6.0.2",
     "vitest": "^4.1.2"
   },

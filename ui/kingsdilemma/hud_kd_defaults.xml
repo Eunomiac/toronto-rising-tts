@@ -1,5 +1,5 @@
 <!-- King's Dilemma Area-Specific Defaults -->
-<!-- Agent guidance: dev/EXTRACTABLE_FUNCTIONS_INDEX.md; dev/tts-api/UI API/Defaults.md. -->
+<!-- Agent guidance: .dev/EXTRACTABLE_FUNCTIONS_INDEX.md; .dev/tts-api/UI API/Defaults.md. -->
 <!-- All classes use kd_ prefix to avoid collisions with shared storyteller UI classes. -->
 
 <!-- ========================== -->

@@ -483,7 +483,7 @@ end
 
 ## Documentation Updates
 
-1. Update `dev/AVAILABLE_FUNCTIONS.md` with new functions
-2. Update `dev/utility-functions/More Robust Lerping with Eases.md` with final API
+1. Update `.dev/AVAILABLE_FUNCTIONS.md` with new functions
+2. Update `.dev/utility-functions/More Robust Lerping with Eases.md` with final API
 3. Add usage examples to function JSDoc comments
 4. Document easing intensity behavior clearly

@@ -1,5 +1,5 @@
 /**
- * Agent guidance: dev/TTS_MCP.md; dev/TTS_BUNDLING_SETUP.md (port 39998 listener); dev/tts-api/Getting Started/External Editor API.md.
+ * Agent guidance: .dev/TTS_MCP.md; .dev/TTS_BUNDLING_SETUP.md (port 39998 listener); .dev/tts-api/Getting Started/External Editor API.md.
  */
 import net from "node:net";
 import type { ExecuteOptions, ExecuteResult, TtsExecuteError } from "./types.js";

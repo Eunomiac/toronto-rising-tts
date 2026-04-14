@@ -1,5 +1,5 @@
 <!-- TARGET: ui/player/panel_map_core.xml -->
-<!-- Agent guidance: dev/TTS_BUNDLING_SETUP.md (generator); dev/HUDs & Overlays/Player HUD Overview.md (map panels). -->
+<!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (map panels). -->
 <Panel
   id="playerHud_corePanel_map_@@color@@"
   class="playerHud_coreLayer"

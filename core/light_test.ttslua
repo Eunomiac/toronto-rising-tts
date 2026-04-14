@@ -10,7 +10,7 @@
     - Call test functions from TTS console
     - Functions expect light objects to be AssetBundles (not built-in types)
 
-    Agent guidance: dev/TESTING.md.
+    Agent guidance: .dev/TESTING.md.
 ]]
 
 local LightTest = {}

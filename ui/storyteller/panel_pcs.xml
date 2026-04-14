@@ -1,6 +1,6 @@
 <!-- Storyteller PCs panel: health / will / humanity / XP / hunger + torpor (Host only) -->
 <!-- Classes: panel_pcs_defaults.xml — seat `color`, `id`, and button `text` stay inline per element. -->
-<!-- Agent guidance: dev/HUD_FUNCTIONS.md; dev/PC Data & Tracking/PC Tracking & State Behavior.md -->
+<!-- Agent guidance: .dev/HUD_FUNCTIONS.md; .dev/PC Data & Tracking/PC Tracking & State Behavior.md -->
 <Panel id="panel_pcs" class="pcs_panel_root" active="false">
   <VerticalLayout class="pcs_root_vl">
     <!-- Brown -->

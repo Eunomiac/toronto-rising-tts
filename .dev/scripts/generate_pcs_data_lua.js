@@ -1,12 +1,12 @@
 /**
- * Embeds data/PCS.json into lib/pcs_data.ttslua for TTS (no filesystem reads at runtime).
- * Run from repo root: node dev/scripts/generate_pcs_data_lua.js
+ * Embeds lib/json/PCS.json into lib/pcs_data.ttslua for TTS (no filesystem reads at runtime).
+ * Run from repo root: node .dev/scripts/generate_pcs_data_lua.js
  */
 const fs = require("fs");
 const path = require("path");
 
 const root = path.resolve(__dirname, "..", "..");
-const jsonPath = path.join(root, "data", "PCS.json");
+const jsonPath = path.join(root, "lib", "json", "PCS.json");
 const outPath = path.join(root, "lib", "pcs_data.ttslua");
 
 const raw = fs.readFileSync(jsonPath, "utf8");
@@ -18,9 +18,9 @@ const open = `[${bracket}[`;
 const close = `]${bracket}]`;
 
 const header = `--[[
-    Player character definitions embedded from data/PCS.json
-    DO NOT EDIT BY HAND — regenerate: node dev/scripts/generate_pcs_data_lua.js
-    Agent guidance: dev/TTS_BUNDLING_SETUP.md; dev/PC Data & Tracking/PC Tracking & State Behavior.md
+    Player character definitions embedded from lib/json/PCS.json
+    DO NOT EDIT BY HAND — regenerate: node .dev/scripts/generate_pcs_data_lua.js
+    Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/PC Data & Tracking/PC Tracking & State Behavior.md
 ]]
 
 ---@diagnostic disable: undefined-global

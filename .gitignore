@@ -2,8 +2,9 @@
 node_modules/
 yarn.lock
 
-# IDE
-.vscode/
+# IDE — track shared VS Code / Cursor tasks; keep other workspace settings local
+.vscode/*
+!.vscode/tasks.json
 .idea/
 *.swp
 *.swo
@@ -29,6 +30,9 @@ logs/
 .tts/output/**/*.txt
 .tts/output/**/*.log
 
+# Mirrored TTS debug output (watcher: .tts/output → .dev/.debug; keep plans / docs in .dev/ trackable)
+.dev/.debug/
+
 # Compiled CSS (source SCSS is tracked)
 UI/styles.css
 UI/styles.css.map
@@ -42,7 +46,7 @@ UI/src/**/*.js.map
 # Build outputs
 dist/
 build/
-dev/TTS-Scripting-Guide-Modules/*_Save_*.json
+.dev/TTS-Scripting-Guide-Modules/*_Save_*.json
 # Ignore contents of these dirs (not the dirs themselves, so negation can work)
 .tts/bundled/*
 .tts/objects/*

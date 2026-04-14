@@ -1,5 +1,5 @@
 <!-- Storyteller HUD Layout -->
-<!-- Agent guidance: dev/HUD_FUNCTIONS.md; dev/TTS_BUNDLING_SETUP.md; dev/TESTING.md. -->
+<!-- Agent guidance: .dev/HUD_FUNCTIONS.md; .dev/TTS_BUNDLING_SETUP.md; .dev/TESTING.md. -->
 <!-- Visibility: Black (Storyteller/GM) -->
 <!-- Left-side game phase controls + debug panels -->
 <!-- Also includes sidebar (reference toggles) and camera bar via sub-includes -->

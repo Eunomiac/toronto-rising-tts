@@ -225,7 +225,7 @@ property, but are unable to assign a new value to it.
 |held_rotation_offset|Rotation offset from pointer.|` vector `|
 |held_spin_index|0-23 value. Changes when a Player rotates the Object.|` int `|
 |hide_when_face_down|Hide the Object when face-down as if it were in a hand zone. The face is the "top" of the Object, the direction of its positive Y coordinate. Cards/decks default to ` true `.|` boolean `|
-|ignore_fog_of_war|Makes the object not be hidden by [Fog of War](https://kb.tabletopsimulator.com/game-tools/zone-tools/#fog-of-war-zone).|` boolean `|
+|ignore_fog_of_war|Makes the object not be hidden by [Fog of War](https://kb.tabletopsimulator.com/game-.tools/zone-.tools/#fog-of-war-zone).|` boolean `|
 |interactable|If the object can be interacted with by Players. Other object will still be able to interact with it.|` boolean `|
 |is_face_down|If the Object is roughly face-down (like with cards). The face is the "top" of the Object, the direction of its positive Y coordinate. Read only.|` boolean `|
 |loading_custom|If the Object's custom elements (images/models/etc) are loading. Read only.|` boolean `|
@@ -321,7 +321,7 @@ These functions handle the physical attributes of an Object: Position, Rotation,
 
 ### Tag Functions {#tag-functions}
 
-These functions deal with the [tags](https://kb.tabletopsimulator.com/game-tools/object-tags/)associated with the object. An individual tag is a [../types/](../types/)and is case-insensitive.
+These functions deal with the [tags](https://kb.tabletopsimulator.com/game-.tools/object-tags/)associated with the object. An individual tag is a [../types/](../types/)and is case-insensitive.
 
 |Function Name|Description|Return| |
 |---|---|---|---|
@@ -375,7 +375,7 @@ These functions obtain information from an object.
 |getCustomObject()|Returns a Table with the Custom Object information of a Custom Object.|return ` table `|[#getcustomobject](#getcustomobject)|
 |getData()|Returns a table data structure representation of the object. Works with [spawnObjectData(...)](../base/#spawnobjectdata).|return ` table `| |
 |getDescription()|Description, also shows as part of Object's tooltip.|return ` string `| |
-|getFogOfWarReveal()|Settings impacting [Fog of War](https://kb.tabletopsimulator.com/game-tools/zone-tools/#fog-of-war-zone) being revealed.|return ` table `|[#getfogofwarreveal](#getfogofwarreveal)|
+|getFogOfWarReveal()|Settings impacting [Fog of War](https://kb.tabletopsimulator.com/game-.tools/zone-.tools/#fog-of-war-zone) being revealed.|return ` table `|[#getfogofwarreveal](#getfogofwarreveal)|
 |getGMNotes()|Game Master Notes only visible for [Player Color](../player/colors/) Black.|return ` string `| |
 |getGUID()|String of the Object's unique identifier.|return ` string `| |
 |getJoints()|Returns information on any joints attached to this object.|return ` table `|[#getjoints](#getjoints)|
@@ -402,7 +402,7 @@ These functions apply action to an object. They take some property in order to w
 |setColorTint( ` color ` Color)|Sets the Color tint.|return ` boolean `| |
 |setCustomObject( ` table ` parameters)|Sets a custom Object's properties.|return ` boolean `|[#setcustomobject](#setcustomobject)|
 |setDescription( ` string ` description)|Sets a description for an Object. Shows in tooltip after delay.|return ` boolean `| |
-|setFogOfWarReveal( ` table ` fog_settings)|Establish the settings and enable/disable an Object's revealing of [Fog of War](https://kb.tabletopsimulator.com/game-tools/zone-tools/#fog-of-war-zone).|return ` boolean `|[#setfogofwarreveal](#setfogofwarreveal)|
+|setFogOfWarReveal( ` table ` fog_settings)|Establish the settings and enable/disable an Object's revealing of [Fog of War](https://kb.tabletopsimulator.com/game-.tools/zone-.tools/#fog-of-war-zone).|return ` boolean `|[#setfogofwarreveal](#setfogofwarreveal)|
 |setGMNotes( ` string ` notes)|Sets Game Master Notes only visible for [Player Color](../player/colors/) Black.|return ` boolean `| |
 |setLock( ` boolean ` lock)|Sets if an object is locked in place.|return ` boolean `| |
 |setName( ` string ` name)|Sets a name for an Object. Shows in tooltip.|return ` boolean `| |
@@ -1300,7 +1300,7 @@ Removing an index instantly causes all other higher indexes to shift down 1.
 
 #### getFogOfWarReveal() {#getfogofwarreveal}
 
-[../types/](../types/)Settings impacting [Fog of War](https://kb.tabletopsimulator.com/game-tools/zone-tools/#fog-of-war-zone)being revealed. In the example returned table, these are the default values of any object.
+[../types/](../types/)Settings impacting [Fog of War](https://kb.tabletopsimulator.com/game-.tools/zone-.tools/#fog-of-war-zone)being revealed. In the example returned table, these are the default values of any object.
 > **Note: Color Selection**
 > "Black" and "All" are synonymous for Fog of War. Either means that all players can see the revealed area when ` reveal = true `.
 
@@ -1391,7 +1391,7 @@ Containers return a (numerically indexed) table consisting of sub-tables that ea
 |memo|` string `|[Memo](#memo) on the contained object.|
 |name|` string `|Name of the contained object. Will correspond with [getName()](#getname), unless it's blank, in which case it'll be the [internal resource name](#name).|
 |nickname|` string `|` deprecated ` Use ` name `. [Name](#getname) of the item.|
-|tags|` table `|A table of ` string ` representing the [tags](https://kb.tabletopsimulator.com/game-tools/object-tags/) on the contained object.|
+|tags|` table `|A table of ` string ` representing the [tags](https://kb.tabletopsimulator.com/game-.tools/object-tags/) on the contained object.|
 
 > **Example: Example**
 > Find a contained object with the name "Super Card" (within the Bag/Deck ` object `), and use its index to [take the object out](#takeobject)of the container.
@@ -1594,7 +1594,7 @@ obj.setCustomObject(params)
 
 #### setFogOfWarReveal(...) {#setfogofwarreveal}
 
-[../types/](../types/)Establish the settings and enable/disable an Object's revealing of [Fog of War](https://kb.tabletopsimulator.com/game-tools/zone-tools/#fog-of-war-zone).
+[../types/](../types/)Establish the settings and enable/disable an Object's revealing of [Fog of War](https://kb.tabletopsimulator.com/game-.tools/zone-.tools/#fog-of-war-zone).
 > **Info: setFogOfWarReveal(fog_settings)**
 >
 > * [../types/](../types/) **fog_settings**: A Table containing information on if/how this Object should reveal Fog of War.
@@ -2411,8 +2411,8 @@ has the following properties:
 |---|---|---|
 |position|[Vector](../vector/)|[Local Position](../types/#position) of the snap point. When attached to an object, position is relative to the object's center.|
 |rotation|[Vector](../vector/)|[Local Rotation](../types/#rotation) of the snap point. When attached to an object, rotation is relative to the object's rotation.|
-|rotation_snap|` boolean `|Whether the snap point is a [rotation snap point](https://kb.tabletopsimulator.com/game-tools/snap-point-tool/#rotation-snap).|
-|tags|` table `|Table of ` string ` representing the [tags](https://kb.tabletopsimulator.com/game-tools/object-tags/) associated with the snap point.|
+|rotation_snap|` boolean `|Whether the snap point is a [rotation snap point](https://kb.tabletopsimulator.com/game-.tools/snap-point-tool/#rotation-snap).|
+|tags|` table `|Table of ` string ` representing the [tags](https://kb.tabletopsimulator.com/game-.tools/object-tags/) associated with the snap point.|
 
 > **Example: Example**
 > Log the list of global snap points:
@@ -2506,8 +2506,8 @@ snap point and may have the following properties:
 |---|---|---|---|
 |position|` vector `|`{0, 0, 0}`|[Local Position](../types/#position) of the snap point. When attached to an object, position is relative to the object's center.|
 |rotation|` vector `|`{0, 0, 0}`|[Local Rotation](../types/#position) of the snap point. When attached to an object, rotation is relative to the object's rotation.|
-|rotation_snap|` boolean `|` false `|Whether the snap point is a [rotation snap point](https://kb.tabletopsimulator.com/game-tools/snap-point-tool/#rotation-snap).|
-|tags|` table `|`{}`|Table of ` string ` representing the [tags](https://kb.tabletopsimulator.com/game-tools/object-tags/) associated with the snap point.|
+|rotation_snap|` boolean `|` false `|Whether the snap point is a [rotation snap point](https://kb.tabletopsimulator.com/game-.tools/snap-point-tool/#rotation-snap).|
+|tags|` table `|`{}`|Table of ` string ` representing the [tags](https://kb.tabletopsimulator.com/game-.tools/object-tags/) associated with the snap point.|
 
 All properties are optional. When a property is omitted, it will be given the corresponding default value (above).
 > **Example: Example**

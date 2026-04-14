@@ -10,7 +10,7 @@
 
 # TextTool
 
-The TextTool behavior is present on 3DText objects i.e those created with the [text tool](https://kb.tabletopsimulator.com/game-tools/text-tool/).
+The TextTool behavior is present on 3DText objects i.e those created with the [text tool](https://kb.tabletopsimulator.com/game-.tools/text-tool/).
 
 ## Functions {#functions}
 

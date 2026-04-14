@@ -25,7 +25,7 @@
     NOTE: The TTS Lua extension will automatically bundle this file when you use require().
     Enable "TTSLua: Include Other Files" in settings for this to work.
 
-    Agent guidance: dev/AVAILABLE_FUNCTIONS.md; dev/DEVELOPMENT_WORKFLOW.md; dev/TTS_BUNDLING_SETUP.md (current bundler).
+    Agent guidance: .dev/AVAILABLE_FUNCTIONS.md; .dev/DEVELOPMENT_WORKFLOW.md; .dev/TTS_BUNDLING_SETUP.md (current bundler).
 ]]
 
 local DiceUtil = {}

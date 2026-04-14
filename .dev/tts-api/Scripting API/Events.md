@@ -174,7 +174,7 @@ As described above, you may declare these functions in the [Global script](../in
 |onPlayerConnect( ` player ` player)|Called when a [Player](../player/instance/) connects to a game.|[#onplayerconnect](#onplayerconnect)|
 |onPlayerDisconnect( ` player ` player)|Called when a [Player](../player/instance/) disconnects from a game.|[#onplayerdisconnect](#onplayerdisconnect)|
 |onPlayerHandChoice( ` string ` player_color, ` string ` label, ` table ` objects, ` boolean ` was_confirmed)|Called when a [Player](../player/instance/) makes a choice during a hand select mode.|[#onplayerhandchoice](#onplayerhandchoice)|
-|onPlayerPing( ` player ` player, ` vector ` position, ` object ` object)|Called when a player [pings](https://kb.tabletopsimulator.com/game-tools/line-tool/#ping) a location.|[#onplayerping](#onplayerping)|
+|onPlayerPing( ` player ` player, ` vector ` position, ` object ` object)|Called when a player [pings](https://kb.tabletopsimulator.com/game-.tools/line-tool/#ping) a location.|[#onplayerping](#onplayerping)|
 |onPlayerTurn( ` player ` player, ` player ` previous_player)|Called at the start of a player's turn.|[#onplayerturn](#onplayerturn)|
 |onSave()|Called whenever a script needs to save its state.|[#onsave](#onsave)|
 |onScriptingButtonDown( ` int ` index, ` string ` player_color)|Called when a scripting button (numpad by default) is pressed. The index range that is returned is 1-10.|[#onscriptingbuttondown](#onscriptingbuttondown)|
@@ -608,7 +608,7 @@ Called when an object enters a zone.
 
 ### onObjectFlick(...) {#onobjectflick}
 
-Called whenever a player [flicks](https://kb.tabletopsimulator.com/game-tools/flick-tool/)an object.
+Called whenever a player [flicks](https://kb.tabletopsimulator.com/game-.tools/flick-tool/)an object.
 > **Info: onObjectFlick(object, player_color, impulse)**
 >
 * [../types/](../types/) **object**: The object that was flicked.
@@ -1163,7 +1163,7 @@ See [Wait.collect](../wait/#collect)for an example.
 
 ### onPlayerPing(...) {#onplayerping}
 
-Called when a player [pings](https://kb.tabletopsimulator.com/game-tools/line-tool/#ping)a location.
+Called when a player [pings](https://kb.tabletopsimulator.com/game-.tools/line-tool/#ping)a location.
 > **Info: onPlayerPing(player, position)**
 >
 > * [../types/](../types/) **player**: [Player](../player/instance/)who performed the ping.
@@ -1643,7 +1643,7 @@ end
 
 ### onFlick(...) {#onflick}
 
-Called when a player [flicks](https://kb.tabletopsimulator.com/game-tools/flick-tool/)the script-owner Object.
+Called when a player [flicks](https://kb.tabletopsimulator.com/game-.tools/flick-tool/)the script-owner Object.
 > **Info: onFlick(player_color, impulse)**
 >
 * [../types/](../types/) **player_color**: [Player Color](../player/colors/)of the player who flicked the script-owner Object.

@@ -7,7 +7,7 @@
 -- updates until you add one (room for pages 3–8+). Page-specific extras (e.g. another Text id)
 -- can branch on `pageNum` below.
 -- Object scripts do not share Global's `gameState`; merged player data comes via Global.call.
--- Agent guidance: dev/PC Data & Tracking/PC Tracking & State Behavior.md; dev/TTS_BUNDLING_SETUP.md
+-- Agent guidance: .dev/PC Data & Tracking/PC Tracking & State Behavior.md; .dev/TTS_BUNDLING_SETUP.md
 
 -- =============================================================================
 -- Tracker presentation (edit here)

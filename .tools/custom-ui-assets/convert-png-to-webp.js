@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 "use strict";
 
-// Agent guidance: dev/TTS_BUNDLING_SETUP.md; dev/custom-ui-assets/ (asset workflows).
+// Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/custom-ui-assets/ (asset workflows).
 
 const fs = require("fs");
 const path = require("path");

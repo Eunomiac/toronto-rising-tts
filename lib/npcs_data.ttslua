@@ -2,8 +2,8 @@
     Static NPC layout and character definitions for core/npcs.ttslua.
     Replace image URLs with your uploaded workshop / cloud assets before play.
 
-    Agent guidance: dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md; dev/Chronicle Data/NPCS_*.md;
-    dev/Game State Data.jsonc (instance examples).
+    Agent guidance: .dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md; .dev/Chronicle Data/NPCS_*.md;
+    .dev/Game State Data.jsonc (instance examples).
 ]]
 
 local D = {}

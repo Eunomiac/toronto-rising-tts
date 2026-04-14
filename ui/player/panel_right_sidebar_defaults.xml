@@ -1,4 +1,4 @@
-<!-- Agent guidance: dev/HUDs & Overlays/Player HUD Overview.md; dev/TTS_BUNDLING_SETUP.md. -->
+<!-- Agent guidance: .dev/HUDs & Overlays/Player HUD Overview.md; .dev/TTS_BUNDLING_SETUP.md. -->
 <Defaults>
   <Panel flexibleWidth="0" flexibleHeight="0" rectAlignment="MiddleCenter" width="100%" height="100%" />
   <VerticalLayout flexibleWidth="0" flexibleHeight="0" spacing="0" childForceExpandWidth="false" childForceExpandHeight="false" />

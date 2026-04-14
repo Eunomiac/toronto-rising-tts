@@ -15,7 +15,7 @@
     NOTE: This module is for development/testing only.
     Consider disabling or restricting access in production builds.
 
-    Agent guidance: dev/DEBUG_FILE_LOGGING.md (file + NDJSON: DEBUG.logToFile, writeWorkspaceFile, workspaceNdjsonBegin/Append); dev/TESTING.md; dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md (admin helpers).
+    Agent guidance: .dev/DEBUG_FILE_LOGGING.md (file + NDJSON: DEBUG.logToFile, writeWorkspaceFile, workspaceNdjsonBegin/Append); .dev/TESTING.md; .dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md (admin helpers).
 ]]
 
 DEBUG = {}
@@ -2109,7 +2109,7 @@ end
     These functions test the feasibility of creating custom point-source lights
     programmatically instead of using third-party configurable lights.
 
-    See dev/LIGHT_CREATION_FEASIBILITY.md for detailed investigation.
+    See .dev/LIGHT_CREATION_FEASIBILITY.md for detailed investigation.
 ]]
 
 --- Test if "Light" is a spawnable built-in type

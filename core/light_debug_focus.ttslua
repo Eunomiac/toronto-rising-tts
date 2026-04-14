@@ -1,6 +1,6 @@
 --[[
     Focused spotlight debug panel: GUID field + live sliders + workspace Lua snapshot.
-    See dev/HUD_FUNCTIONS.md (HUD_debugLight* handlers).
+    See .dev/HUD_FUNCTIONS.md (HUD_debugLight* handlers).
 
     Requires Host global UI; uses L.SetLightMode(guid, patch, nil, 0) for enabled/range/angle/intensity/color.
     Distance slides along the **look-at emission axis** (inverse of `U.lookAtRotation`), minus

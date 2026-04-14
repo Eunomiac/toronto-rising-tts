@@ -10,7 +10,7 @@
     - Smooth position transitions using U.setPositionSlow
     - Partial position handling (only update specified axes)
 
-    Agent guidance: dev/DEVELOPMENT_WORKFLOW.md; dev/AVAILABLE_FUNCTIONS.md.
+    Agent guidance: .dev/DEVELOPMENT_WORKFLOW.md; .dev/AVAILABLE_FUNCTIONS.md.
 ]]
 
 local O = {}

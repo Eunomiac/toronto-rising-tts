@@ -1,5 +1,5 @@
 <!-- Main HUD - VTM5E Module -->
-<!-- Agent guidance: dev/TTS_BUNDLING_SETUP.md (bundling + XML templates); dev/HUD_FUNCTIONS.md; dev/HUDs & Overlays/Player HUD Overview.md; dev/tts-api/UI API/ (XML elements). -->
+<!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (bundling + XML templates); .dev/HUD_FUNCTIONS.md; .dev/HUDs & Overlays/Player HUD Overview.md; .dev/tts-api/UI API/ (XML elements). -->
 <!-- Root bundle file; no layout applied here. Include order matters for TTS defaults. -->
 <!-- The TTS Tools extension bundles when using "Save and Play"; loaded via UI.setXml() -->
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 "use strict";
 
-// Agent guidance: dev/TTS_BUNDLING_SETUP.md; dev/custom-ui-assets/ (manifest sources).
+// Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/custom-ui-assets/ (manifest sources).
 
 const path = require("path");
 const { spawnSync } = require("child_process");
@@ -77,9 +77,9 @@ async function main() {
     throw new Error("Required argument missing: --saveName <save number/name>");
   }
 
-  const buildScript = path.resolve("tools/custom-ui-assets/build-upload-manifest.js");
-  const convertScript = path.resolve("tools/custom-ui-assets/convert-png-to-webp.js");
-  const mergeByNameScript = path.resolve("tools/custom-ui-assets/merge-custom-ui-assets-from-save-name.js");
+  const buildScript = path.resolve(".tools/custom-ui-assets/build-upload-manifest.js");
+  const convertScript = path.resolve(".tools/custom-ui-assets/convert-png-to-webp.js");
+  const mergeByNameScript = path.resolve(".tools/custom-ui-assets/merge-custom-ui-assets-from-save-name.js");
 
   console.log("=== Step 1/3: Convert PNG files to WEBP ===");
   const convertExit = runNodeScript(convertScript, [
@@ -98,9 +98,9 @@ async function main() {
     "--extensions",
     "webp",
     "--out",
-    "dev/custom-ui-assets/manifest.json",
+    ".dev/custom-ui-assets/manifest.json",
     "--luaOut",
-    "dev/custom-ui-assets/manifest.lua",
+    ".dev/custom-ui-assets/manifest.lua",
     "--moduleOut",
     "lib/custom_ui_upload_manifest.ttslua",
   ]);
@@ -123,9 +123,9 @@ async function main() {
     "--saveName",
     saveName,
     "--manifest",
-    "dev/custom-ui-assets/manifest.json",
+    ".dev/custom-ui-assets/manifest.json",
     "--assetsOut",
-    "dev/custom-ui-assets/generated-assets.json",
+    ".dev/custom-ui-assets/generated-assets.json",
   ]);
   if (mergeExit !== 0) {
     process.exit(mergeExit);

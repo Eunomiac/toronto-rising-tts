@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 "use strict";
 
-// Agent guidance: dev/TTS_BUNDLING_SETUP.md; dev/custom-ui-assets/prune-custom-ui-assets.txt.
+// Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/custom-ui-assets/prune-custom-ui-assets.txt.
 
 const fs = require("fs");
 const path = require("path");
 
-const PRUNE_LIST_PATH = path.resolve("dev/custom-ui-assets/prune-custom-ui-assets.txt");
+const PRUNE_LIST_PATH = path.resolve(".dev/custom-ui-assets/prune-custom-ui-assets.txt");
 
 /**
  * Parse CLI args of shape: --key value

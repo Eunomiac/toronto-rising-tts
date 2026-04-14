@@ -16,7 +16,7 @@
     - refreshLightDebugPanel(): Scans lights, builds XML, merges into HUD, updates UI
     - getLightComponent(obj), isSpotlight(obj): shared spotlight detection for focus panel
 
-    Agent guidance: dev/HUD_FUNCTIONS.md (light debug handlers); dev/TESTING.md.
+    Agent guidance: .dev/HUD_FUNCTIONS.md (light debug handlers); .dev/TESTING.md.
 ]]
 
 local LightDebug = {}

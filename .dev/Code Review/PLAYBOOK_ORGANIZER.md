@@ -14,7 +14,7 @@ Turn structural signals (nested “suspected misplacement” regions, Summarizer
 1. Scan registry rows for the batch (directory, feature area, or whole repo milestone).
 2. List **concrete** organizational actions: merge regions, split regions, move helpers to another file, rename region titles after moves, etc.
 3. For each action, cite `(file, regionNum)` and the **post-change** region map you expect (new ids/titles if applicable).
-4. Output a numbered plan in markdown (PR description, ticket, or `dev/Code Review/` note). Get **human approval** before any “Fixer” edits.
+4. Output a numbered plan in markdown (PR description, ticket, or `.dev/Code Review/` note). Get **human approval** before any “Fixer” edits.
 5. After implementation (separate pass), update markers + registry + exclusions to match; run `npm run code-review:validate`.
 
 ## Non-goals

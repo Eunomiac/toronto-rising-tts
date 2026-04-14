@@ -12,7 +12,7 @@
     Pattern: Combines lighting module patterns with ambient lighting control.
     Integration: Uses L.SetLightMode for individual lights, Lighting API for ambient.
 
-    Agent guidance: dev/TESTING.md (scene tests); dev/AVAILABLE_FUNCTIONS.md.
+    Agent guidance: .dev/TESTING.md (scene tests); .dev/AVAILABLE_FUNCTIONS.md.
 ]]
 
 local Scenes = {}

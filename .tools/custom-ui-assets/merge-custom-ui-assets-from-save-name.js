@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 "use strict";
 
-// Agent guidance: dev/TTS_BUNDLING_SETUP.md; dev/custom-ui-assets/.
+// Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/custom-ui-assets/.
 
 const path = require("path");
 const { spawnSync } = require("child_process");
@@ -62,10 +62,10 @@ function main() {
   const saveFileName = toSaveFileName(saveInput);
   const savePath = path.join(savesDir, saveFileName);
 
-  const manifestPath = path.resolve(args.manifest || "dev/custom-ui-assets/manifest.json");
-  const assetsOutPath = path.resolve(args.assetsOut || "dev/custom-ui-assets/generated-assets.json");
+  const manifestPath = path.resolve(args.manifest || ".dev/custom-ui-assets/manifest.json");
+  const assetsOutPath = path.resolve(args.assetsOut || ".dev/custom-ui-assets/generated-assets.json");
 
-  const mergeScriptPath = path.resolve("tools/custom-ui-assets/merge-custom-ui-assets.js");
+  const mergeScriptPath = path.resolve(".tools/custom-ui-assets/merge-custom-ui-assets.js");
   const childArgs = [
     mergeScriptPath,
     "--save",

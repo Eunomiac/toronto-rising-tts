@@ -1,7 +1,7 @@
 --[[
-    Player character definitions embedded from data/PCS.json
-    DO NOT EDIT BY HAND — regenerate: node dev/scripts/generate_pcs_data_lua.js
-    Agent guidance: dev/TTS_BUNDLING_SETUP.md; dev/PC Data & Tracking/PC Tracking & State Behavior.md
+    Player character definitions embedded from lib/json/PCS.json
+    DO NOT EDIT BY HAND — regenerate: node .dev/scripts/generate_pcs_data_lua.js
+    Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/PC Data & Tracking/PC Tracking & State Behavior.md
 ]]
 
 ---@diagnostic disable: undefined-global

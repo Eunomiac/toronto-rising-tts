@@ -2,7 +2,7 @@
     Global script (canonical source). Tabletop Simulator loads .tts/objects/Global.lua, which
     only require()s this file. Edit here — not .tts/objects/Global.lua (that file may be overwritten on reload).
 
-    Agent guidance (dev/ documentation for this project):
+    Agent guidance (.dev/ documentation for this project):
     DEVELOPMENT_WORKFLOW.md, TESTING.md, TTS_BUNDLING_SETUP.md, DEBUG_FILE_LOGGING.md, TTS_MCP.md,
     HUD_FUNCTIONS.md, HUDs & Overlays/Player HUD Overview.md,
     NPC Object Spawning & Spotlighting/NPC Object Overview.md,
@@ -532,7 +532,7 @@ function HUD_logState(player, button, id)
 end
 
 --- Pretty-print full game state to workspace file via TTS Tools (same path as DEBUG.logStateToFile).
--- Writes **.tts/output/debug_logs/game_state.txt** (overwrites each click). See dev/DEBUG_FILE_LOGGING.md.
+-- Writes **.tts/output/debug_logs/game_state.txt** (overwrites each click). See .dev/DEBUG_FILE_LOGGING.md.
 -- Called when the Storyteller left-panel "Print State" button is clicked.
 -- @param player Player The player who clicked (Host/Black)
 -- @param button string Button value

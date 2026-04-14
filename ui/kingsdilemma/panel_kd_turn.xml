@@ -1,5 +1,5 @@
 <!-- KD Turn Voting HUD (Brown) -->
-<!-- Agent guidance: dev/EXTRACTABLE_FUNCTIONS_INDEX.md. -->
+<!-- Agent guidance: .dev/EXTRACTABLE_FUNCTIONS_INDEX.md. -->
 <!-- Bottom-of-screen voting bar with 5 options: Vote Aye, Pass, Pass (Moderator), Vote Nay, Stay -->
 
 <Panel id="kd_turnHUD_Brown" class="kd_turnContainer" visibility="Brown" active="false">

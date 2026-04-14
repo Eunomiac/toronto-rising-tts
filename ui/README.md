@@ -25,7 +25,7 @@ ui/
 
   player/
     hud_player.xml        → Player HUD panels (character stats per color)
-    *_generated.xml       → Generated from ui/templates/ (do not edit by hand)
+    *_generated.xml       → Generated from ui/.templates/ (do not edit by hand)
     (hud_player_defaults.xml    → Optional; add when needed)
 
   shared/
@@ -37,7 +37,7 @@ ui/
 1. **Source Files**: Edit the modular XML files in `ui/`
 2. **Root File**: `ui/Global.xml` includes defaults and submodules in the correct order
 3. **Bundling**: When you use "Save and Play", the TTS Tools extension reads `.tts/objects/Global.xml`, resolves all `<Include>` tags (including nested ones), bundles into a single XML string, and saves to `.tts/bundled/Global.xml`
-4. **Loading**: The bundled XML is loaded from the global script (`global/global_script.ttslua`, via the `.tts/objects/Global.lua` stub) via `UI.setXml()` where applicable
+4. **Loading**: The bundled XML is loaded from the global script (`core/global_script.ttslua`, via the `.tts/objects/Global.lua` stub) via `UI.setXml()` where applicable
 
 ### Workflow
 
@@ -87,7 +87,7 @@ UI positioning uses a **conceptual 3 columns × 4 rows grid** (no physical `Grid
 - Paths in `<Include>` are resolved from the workspace directory
 - Visibility: `Black` for Storyteller, `Red`/`Brown`/etc. for players
 - Button onClick handlers must be global functions (e.g. `HUD_changeScene`)
-- UI element IDs must match handler expectations in `global/global_script.ttslua`
+- UI element IDs must match handler expectations in `core/global_script.ttslua`
 - Admin panel ID: `adminControls` (left button column + debug panels)
 - Sidebar panel ID: `hudSidebarHost` (reference image toggles)
 - Camera panel ID: `cameraControlPanel` (camera zoom buttons + faction icons)
@@ -97,13 +97,13 @@ UI positioning uses a **conceptual 3 columns × 4 rows grid** (no physical `Grid
 
 ## UI XML template generator
 
-Some UI components need the same XML duplicated once per player color (from `lib/constants.ttslua` `C.PlayerColors`). Others are a single root written from a template file. Both are driven from **`ui/templates/*.xml`**.
+Some UI components need the same XML duplicated once per player color (from `lib/constants.ttslua` `C.PlayerColors`). Others are a single root written from a template file. Both are driven from **`ui/.templates/*.xml`**.
 
 ### Files and locations
 
-- **Template sources:** `ui/templates/*.xml`
+- **Template sources:** `ui/.templates/*.xml`
 - **Outputs:** Paths declared in each template’s `TARGET` comment (typically `ui/player/*.xml`)
-- **Script:** `dev/scripts/xml_color_template_generator.js`
+- **Script:** `.dev/scripts/xml_color_template_generator.js`
 
 ### TARGET comment (required)
 
@@ -120,7 +120,7 @@ If this line is missing or malformed, the generator throws an error.
 Each output file starts with a banner pointing back to the template, for example:
 
 ```xml
-<!-- Generated file. Edit ui/templates/panel_map_core.xml only. -->
+<!-- Generated file. Edit ui/.templates/panel_map_core.xml only. -->
 ```
 
 Do not edit generated files by hand; change the template and re-run the generator.
@@ -142,10 +142,10 @@ Do not edit generated files by hand; change the template and re-run the generato
 From repo root:
 
 ```bash
-node dev/scripts/xml_color_template_generator.js
+node .dev/scripts/xml_color_template_generator.js
 ```
 
-Optional: `--templateDir` (defaults to `ui/templates`), `--token` (defaults to `@@color@@`).
+Optional: `--templateDir` (defaults to `ui/.templates`), `--token` (defaults to `@@color@@`).
 
 The generator ensures no `@@color@@` remains in outputs when expansion was required.
 
@@ -155,6 +155,6 @@ Add `<Include src="player/your_file_generated.xml" />` (or the path relative to 
 
 ### Adding a new template
 
-1. Add `ui/templates/<name>.xml` with the `TARGET` line first, then a single root element.
+1. Add `ui/.templates/<name>.xml` with the `TARGET` line first, then a single root element.
 2. Run the generator.
 3. Reference the output file from the relevant `ui/**/*.xml` include.

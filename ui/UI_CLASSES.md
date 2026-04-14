@@ -228,7 +228,7 @@ Combine with the generic `debugPanel` and `debugText` classes:
 
 ## King's Dilemma Area Classes (`hud_kd_defaults.xml`)
 
-These classes are scoped to the King's Dilemma reference HUD panels. They use the `kd_` prefix. See `dev/KD_HUD_REFERENCE.md` for full panel documentation.
+These classes are scoped to the King's Dilemma reference HUD panels. They use the `kd_` prefix. See `.dev/KD_HUD_REFERENCE.md` for full panel documentation.
 
 ### Text Styles
 

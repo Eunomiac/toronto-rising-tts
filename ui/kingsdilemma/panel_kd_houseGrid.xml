@@ -1,5 +1,5 @@
 <!-- KD House Selection Grid (Pink) -->
-<!-- Agent guidance: dev/EXTRACTABLE_FUNCTIONS_INDEX.md. -->
+<!-- Agent guidance: .dev/EXTRACTABLE_FUNCTIONS_INDEX.md. -->
 <!-- Setup phase: 12-house flag grid with hover info images -->
 
 <Panel id="kd_houseSelection_Pink" class="kd_houseSelectionContainer" visibility="Pink" active="False">

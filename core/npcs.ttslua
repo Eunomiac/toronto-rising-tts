@@ -1,9 +1,9 @@
 --[[
     NPC spawning, areas, paired spotlights, and Storyteller HUD integration.
     Data: lib/npcs_data.ttslua (NPCS.characters, NPCS.lights, NPCS.areas).
-    Spec: dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md
-    Related: dev/NPC Object Spawning & Spotlighting/NPC Light Object Data.jsonc; dev/Game State Data.jsonc;
-    dev/Chronicle Data/NPCS_*.md (content keys); dev/HUD_FUNCTIONS.md (Storyteller NPC panel); dev/DEBUG_FILE_LOGGING.md.
+    Spec: .dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md
+    Related: .dev/NPC Object Spawning & Spotlighting/NPC Light Object Data.jsonc; .dev/Game State Data.jsonc;
+    .dev/Chronicle Data/NPCS_*.md (content keys); .dev/HUD_FUNCTIONS.md (Storyteller NPC panel); .dev/DEBUG_FILE_LOGGING.md.
 ]]
 
 local NPCS = {}

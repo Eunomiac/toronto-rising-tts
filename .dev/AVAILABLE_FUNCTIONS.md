@@ -455,7 +455,7 @@
 
 **Related Documentation:**
 
-- `dev/EXTRACTABLE_FUNCTIONS_INDEX.md` - Historical reference of extractable functions
+- `.dev/EXTRACTABLE_FUNCTIONS_INDEX.md` - Historical reference of extractable functions
 - `lib/util.ttslua` - Source code for utilities module
 - `core/state.ttslua` - Source code for state module
 - `core/zones.ttslua` - Source code for zones module

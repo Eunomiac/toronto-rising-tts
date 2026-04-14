@@ -1,5 +1,5 @@
 <!-- TARGET: ui/player/panel_overlays.xml -->
-<!-- Agent guidance: dev/TTS_BUNDLING_SETUP.md (generator); dev/HUDs & Overlays/Player HUD Overview.md (map panels). -->
+<!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (map panels). -->
 <!-- Visibility: TTS `UI.show` / `UI.hide` play showAnimation/hideAnimation (tts-api UI API/Attributes.md). -->
 <Panel id="playerHud_overlays_@@color@@" class="playerHud_overlaysLayer" visibility="@@color@@">
 

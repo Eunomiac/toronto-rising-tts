@@ -1,0 +1,227 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build: All non-Lua tooling (TTS MCP + UI XML templates)",
+      "dependsOn": [
+        "Build: TTS MCP (Node)",
+        "Generate UI XML from templates"
+      ],
+      "dependsOrder": "sequence",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Build: TTS MCP (Node)",
+      "type": "shell",
+      "command": "npm run tts-mcp:build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Generate UI XML from templates",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        ".dev/scripts/xml_color_template_generator.js",
+        "--templateDir",
+        "ui/.templates"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Custom UI Assets: Full Pipeline (Build -> Pause -> Merge)",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        ".tools/custom-ui-assets/run-custom-ui-assets-pipeline.js",
+        "--input",
+        "${input:customUiAssetsImageFolder}",
+        "--saveName",
+        "${input:customUiAssetsSaveName}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      }
+    },
+    {
+      "label": "Custom UI Assets: Build Manifest from Image Files",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        ".tools/custom-ui-assets/build-upload-manifest.js",
+        "--input",
+        "${input:customUiAssetsImageFolder}",
+        "--out",
+        ".dev/custom-ui-assets/manifest.json",
+        "--luaOut",
+        ".dev/custom-ui-assets/manifest.lua",
+        "--moduleOut",
+        "lib/custom_ui_upload_manifest.ttslua"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      }
+    },
+    {
+      "label": "Custom UI Assets: Merge Hosted URLs into Save CustomUIAssets",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        ".tools/custom-ui-assets/merge-custom-ui-assets-from-save-name.js",
+        "--saveName",
+        "${input:customUiAssetsSaveName}",
+        "--manifest",
+        ".dev/custom-ui-assets/manifest.json",
+        "--assetsOut",
+        ".dev/custom-ui-assets/generated-assets.json"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      }
+    },
+    {
+      "label": "Custom UI Assets: List Custom UI Assets in Save",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        ".tools/custom-ui-assets/list-custom-ui-assets-from-save-name.js",
+        "--saveName",
+        "${input:customUiAssetsSaveName}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      }
+    },
+    {
+      "label": "Custom UI Assets: Prune Custom UI Assets in Save",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        ".tools/custom-ui-assets/prune-custom-ui-assets-from-save-name.js",
+        "--saveName",
+        "${input:customUiAssetsSaveName}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      }
+    },
+    {
+      "label": "Custom UI Assets: TTS Image Cache Clear",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        ".tools/custom-ui-assets/clear-tts-image-cache.js"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      }
+    },
+    {
+      "label": "TTS debug: mirror .tts/output → .dev/.debug",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "debug:mirror"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "tts-output-mirror",
+        "pattern": [{ "regexp": "^$" }],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^\\[tts-output-mirror\\] watching",
+          "endsPattern": "^\\[tts-output-mirror\\] watching"
+        }
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated",
+        "showReuseMessage": false
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "customUiAssetsImageFolder",
+      "type": "promptString",
+      "description": "Relative path to image folder (example: assets\\images\\new_images)",
+      "default": "assets\\images\\new_images"
+    },
+    {
+      "id": "customUiAssetsSaveName",
+      "type": "promptString",
+      "description": "TTS save name or number (examples: 123, TS_Save_123, TS_Save_123.json)",
+      "default": "TS_Save_"
+    }
+  ]
+}
+

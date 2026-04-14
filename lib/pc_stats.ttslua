@@ -1,6 +1,6 @@
 --[[
     PC tracker math, VTM5e damage overflow, humanity stains, condition sync.
-    Agent guidance: dev/PC Data & Tracking/PC Tracking & State Behavior.md
+    Agent guidance: .dev/PC Data & Tracking/PC Tracking & State Behavior.md
 ]]
 
 ---@diagnostic disable: undefined-global

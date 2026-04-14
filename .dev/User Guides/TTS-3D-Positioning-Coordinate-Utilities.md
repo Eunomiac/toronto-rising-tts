@@ -374,7 +374,3 @@ These aren't coordinate-system-specific, but they're commonly useful during plac
 - `U.setPositionSlow(obj, position, duration, easing, isColliding)` for smooth position changes.
 - `U.setRotationSlow(obj, rotation, duration, easing, isColliding)` for smooth rotation changes.
 - `U.setScaleSlow(obj, scale, duration, easing)` for smooth scale changes.
-
-## Related reference modules
-
-- `lib/table-positions.ttslua` provides table/player layout calculations using a polar-like relationship (`x = sin(angle)*radius`, `z = cos(angle)*radius`), which matches the same horizontal angle conventions described above.

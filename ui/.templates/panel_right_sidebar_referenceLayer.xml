@@ -1,5 +1,5 @@
 <!-- TARGET: ui/player/panel_right_sidebar_referenceLayer.xml -->
-<!-- Agent guidance: dev/TTS_BUNDLING_SETUP.md (generator); dev/HUDs & Overlays/Player HUD Overview.md (reference layers). -->
+<!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (reference layers). -->
 <Panel id="playerHud_referenceLayer_@@color@@" class="popupImageContainer" visibility="@@color@@">
 
   <Defaults>

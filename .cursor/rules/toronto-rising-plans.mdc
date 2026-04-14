@@ -1,0 +1,9 @@
+---
+description: Where to store agent planning and design documents for Toronto Rising TTS.
+---
+
+# Planning documents
+
+When producing **implementation plans**, **design notes**, or **structured planning markdown** meant to live in this repository, write them under **`.dev/plans/`** (unless the user specifies another path).
+
+Do not recreate a top-level `docs/` tree for this purpose unless the user asks.

@@ -1,10 +1,10 @@
 /**
  * XML UI template generator
  *
- * Agent guidance: dev/TTS_BUNDLING_SETUP.md (section “XML UI template generator”).
- * Player HUD spec: dev/HUDs & Overlays/Player HUD Overview.md.
+ * Agent guidance: .dev/TTS_BUNDLING_SETUP.md (section “XML UI template generator”).
+ * Player HUD spec: .dev/HUDs & Overlays/Player HUD Overview.md.
  *
- * - Reads each `*.xml` under `ui/templates/`.
+ * - Reads each `*.xml` under `ui/.templates/`.
  * - The file MUST begin with a single-line comment: <!-- TARGET: relative/path.xml -->
  *   (path relative to project root, forward slashes, no ..).
  * - Extracts exactly one root element from the template body (lightweight tag stack).
@@ -188,7 +188,7 @@ function containsToken(xml, token) {
 
 /**
  * Builds one output file from a template: expand `@@color@@` when present, else pass-through.
- * @param {string} templatePath Absolute path to `ui/templates/*.xml`.
+ * @param {string} templatePath Absolute path to `ui/.templates/*.xml`.
  * @param {string} projectRoot Absolute project root.
  * @param {string} token Placeholder substring (default `@@color@@`).
  * @param {string[]} colors From `C.PlayerColors` in constants.
@@ -221,7 +221,7 @@ function generateFromTemplateFile(templatePath, projectRoot, token, colors) {
   const relTemplate = path.relative(projectRoot, templatePath).split(path.sep).join("/");
   const banner =
     `<!-- Generated file. Edit ${relTemplate} only. -->\n` +
-    "<!-- Agent guidance: dev/TTS_BUNDLING_SETUP.md; dev/HUDs & Overlays/Player HUD Overview.md. -->\n\n";
+    "<!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/HUDs & Overlays/Player HUD Overview.md. -->\n\n";
   const finalXml = banner + body;
 
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
@@ -239,7 +239,7 @@ function main() {
   const projectRoot = path.resolve(__dirname, "../..");
   const constantsPath = path.join(projectRoot, "lib/constants.ttslua");
 
-  const templateDir = getArgValue("--templateDir") || path.join(projectRoot, "ui/templates");
+  const templateDir = getArgValue("--templateDir") || path.join(projectRoot, "ui", ".templates");
   const token = getArgValue("--token") || DEFAULT_TOKEN;
 
   const colors = readPlayerColorsFromConstants(constantsPath);

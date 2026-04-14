@@ -139,7 +139,7 @@ All boards spawn locked by default.
 
 |Name|Description|Notes|
 |---|---|---|
-|3DText|The text that the [Text Tool](https://kb.tabletopsimulator.com/game-tools/text-tool/) spawns.| |
+|3DText|The text that the [Text Tool](https://kb.tabletopsimulator.com/game-.tools/text-tool/) spawns.| |
 
 ### Piecepack {#piecepack}
 
@@ -228,12 +228,12 @@ All boards spawn locked by default.
 
 |Name|Type|Description|
 |---|---|---|
-|FogOfWar|` Fog `|A [Fog of War Zone](https://kb.tabletopsimulator.com/game-tools/zone-tools/#fog-of-war-zone).|
-|FogOfWarTrigger|` FogOfWar `|A [Hidden Zone](https://kb.tabletopsimulator.com/game-tools/zone-tools/#hidden-zone).|
-|HandTrigger|` Hand `|A [Hand Zone](https://kb.tabletopsimulator.com/game-tools/zone-tools/#hand-zone).|
-|LayoutZone|` Layout `|A [Layout Zone](https://kb.tabletopsimulator.com/game-tools/zone-tools/#layout-zone).|
-|RandomizeTrigger|` Randomize `|A [Randomize Zone](https://kb.tabletopsimulator.com/game-tools/zone-tools/#randomize-zone).|
-|ScriptingTrigger|` Scripting `|A [Scripting Zone](https://kb.tabletopsimulator.com/game-tools/zone-tools/#scripting-zone).|
+|FogOfWar|` Fog `|A [Fog of War Zone](https://kb.tabletopsimulator.com/game-.tools/zone-.tools/#fog-of-war-zone).|
+|FogOfWarTrigger|` FogOfWar `|A [Hidden Zone](https://kb.tabletopsimulator.com/game-.tools/zone-.tools/#hidden-zone).|
+|HandTrigger|` Hand `|A [Hand Zone](https://kb.tabletopsimulator.com/game-.tools/zone-.tools/#hand-zone).|
+|LayoutZone|` Layout `|A [Layout Zone](https://kb.tabletopsimulator.com/game-.tools/zone-.tools/#layout-zone).|
+|RandomizeTrigger|` Randomize `|A [Randomize Zone](https://kb.tabletopsimulator.com/game-.tools/zone-.tools/#randomize-zone).|
+|ScriptingTrigger|` Scripting `|A [Scripting Zone](https://kb.tabletopsimulator.com/game-.tools/zone-.tools/#scripting-zone).|
 
 ## Spawnable Names {#spawnable-names}
 

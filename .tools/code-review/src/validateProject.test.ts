@@ -12,7 +12,7 @@ function writeJson(absPath: string, value: unknown): void {
 describe("validateProject", () => {
   it("passes for a minimal partitioned production file with matching registry", () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "code-review-"));
-    const reviewDir = path.join(tmp, "dev", "Code Review");
+    const reviewDir = path.join(tmp, ".dev", "Code Review");
     fs.mkdirSync(reviewDir, { recursive: true });
     const coreDir = path.join(tmp, "core");
     fs.mkdirSync(coreDir, { recursive: true });
@@ -56,7 +56,7 @@ describe("validateProject", () => {
 
   it("fails when registry is missing a region row", () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "code-review-"));
-    const reviewDir = path.join(tmp, "dev", "Code Review");
+    const reviewDir = path.join(tmp, ".dev", "Code Review");
     fs.mkdirSync(reviewDir, { recursive: true });
     const coreDir = path.join(tmp, "core");
     fs.mkdirSync(coreDir, { recursive: true });

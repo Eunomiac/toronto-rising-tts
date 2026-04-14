@@ -2,7 +2,7 @@
 
 The debug module uses the TTS Tools extension’s `sendExternalMessage` API (`type: "write"`) so TTS can ask the editor to create or overwrite a file **under your opened workspace**.
 
-**Why not write to the repo root or `dev/`?** The Sebaestschjin **TTS Editor** routes `type: "write"` messages with a `name` field to **`workspaceFolder/.tts/output/<name>`** (see below). Game Lua cannot choose another root unless the extension adds that feature. If **object sync** churns `.tts/` and your log **disappears**, enable **`lib.workspace_ndjson_log.mirrorAppendToPrint = true`** (Global `onLoad` does this for the agent debug hook) so each record is also **`print`**’d to the TTS console as `[workspace_ndjson] {...}` — copy from there or from the External Editor log.
+**Why not write to the repo root or `.dev/`?** The Sebaestschjin **TTS Editor** routes `type: "write"` messages with a `name` field to **`workspaceFolder/.tts/output/<name>`** (see below). Game Lua cannot choose another root unless the extension adds that feature. If **object sync** churns `.tts/` and your log **disappears**, enable **`lib.workspace_ndjson_log.mirrorAppendToPrint = true`** (Global `onLoad` does this for the agent debug hook) so each record is also **`print`**’d to the TTS console as `[workspace_ndjson] {...}` — copy from there or from the External Editor log.
 
 ## How It Works (actual paths)
 
@@ -126,7 +126,7 @@ JSON pretty-printed when `format` is `"auto"`.
 1. **Look under `.tts/output/`** — not a top-level `debug_logs/` folder at the repo root. Example: `toronto-rising-tts/.tts/output/debug_session.log`, not `toronto-rising-tts/debug_session.log`.
 2. **`sendExternalMessage` is nil** — Lua has **no path to the editor**; nothing is written and TTS prints a **`sendExternalMessage is nil`** line from `DEBUG.workspaceNdjsonBegin`.  
    **Fix:** Use the TTS Editor with this workspace and **`ttsEditor.enableMessages`** enabled.
-3. **`require lib.workspace_ndjson_log` failed** or **invalid** — often the Save & Play **bundle omitted** that module because it was only required inside functions. `core/debug.ttslua` now includes a **top-level** `require("lib.workspace_ndjson_log")` so the bundler pulls it in. If you still see **`require failed:`**, read the error text and see **`dev/TTS_BUNDLING_SETUP.md` (Issue 2a)**.
+3. **`require lib.workspace_ndjson_log` failed** or **invalid** — often the Save & Play **bundle omitted** that module because it was only required inside functions. `core/debug.ttslua` now includes a **top-level** `require("lib.workspace_ndjson_log")` so the bundler pulls it in. If you still see **`require failed:`**, read the error text and see **`.dev/TTS_BUNDLING_SETUP.md` (Issue 2a)**.
 4. **Multi-root workspace** — the extension uses **`workspace.workspaceFolders[0]`**; put this repo first or open it as a single-folder workspace.
 5. **Messages disabled** — turn on custom messages in TTS Editor settings.
 6. **Auto-open** — the extension opens the written document in the editor when handling `write` (when `name` is set).

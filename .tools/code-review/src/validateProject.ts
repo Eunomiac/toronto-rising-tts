@@ -5,9 +5,9 @@ import { parseMarkerFile, type ParsedRegion } from "./markerParser.js";
 import { listProductionTtsluaFiles, normalizeRepoRelPath } from "./paths.js";
 import { excludedFilesSchema, regionRegistrySchema, findingSchema, type RegionRegistry } from "./schemas.js";
 
-const DEFAULT_EXCLUDED_REL = path.join("dev", "Code Review", "excluded_files.json");
-const DEFAULT_REGISTRY_REL = path.join("dev", "Code Review", "region_registry.json");
-const DEFAULT_FINDINGS_REL = path.join("dev", "Code Review", "findings.jsonl");
+const DEFAULT_EXCLUDED_REL = path.join(".dev", "Code Review", "excluded_files.json");
+const DEFAULT_REGISTRY_REL = path.join(".dev", "Code Review", "region_registry.json");
+const DEFAULT_FINDINGS_REL = path.join(".dev", "Code Review", "findings.jsonl");
 
 export type ValidateOptions = {
   repoRoot: string;

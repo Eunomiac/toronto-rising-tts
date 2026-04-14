@@ -1,7 +1,7 @@
 /**
  * Options for executing a Lua snippet in Tabletop Simulator via the External Editor API.
  *
- * Agent guidance: dev/TTS_MCP.md; dev/tts-api/Getting Started/External Editor API.md.
+ * Agent guidance: .dev/TTS_MCP.md; .dev/tts-api/Getting Started/External Editor API.md.
  */
 export interface ExecuteOptions {
   /** Lua source to run in the context of `guid` (default Global `-1`). */
