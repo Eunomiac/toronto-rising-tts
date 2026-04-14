@@ -4,6 +4,7 @@
 import net from "node:net";
 import type { ExecuteOptions, ExecuteResult, TtsExecuteError } from "./types.js";
 import { readJsonFromSocket } from "./socket-json.js";
+import { handleInboundWriteMessage } from "./write-sink.js";
 
 const DEFAULT_CLIENT_PORT = 39_999;
 const DEFAULT_SERVER_PORT = 39_998;
@@ -38,6 +39,7 @@ export class TtsExternalEditorBridge {
   private server: net.Server | null = null;
   private readonly inboundHandlers = new Set<(msg: Record<string, unknown>) => void>();
   private chain: Promise<void> = Promise.resolve();
+  private writeSinkRegistered = false;
 
   constructor(options?: { clientPort?: number; serverPort?: number }) {
     this.clientPort = options?.clientPort ?? DEFAULT_CLIENT_PORT;
@@ -73,7 +75,7 @@ export class TtsExternalEditorBridge {
         if (err.code === "EADDRINUSE") {
           reject(
             new Error(
-              `Port ${this.serverPort} is already in use (TTS editor inbound). Only one listener is allowed on 39998 — stop other External Editor clients (e.g. TTS Tools / VS Code extensions) or change serverPort. Original: ${err.message}`
+              `Port ${this.serverPort} is already in use (TTS editor inbound). Only one listener is allowed on 39998 — stop other External Editor bridges or VS Code TTS extensions or change serverPort. Original: ${err.message}`
             )
           );
           return;
@@ -83,6 +85,12 @@ export class TtsExternalEditorBridge {
 
       server.listen(this.serverPort, "127.0.0.1", () => {
         this.server = server;
+        if (!this.writeSinkRegistered) {
+          this.inboundHandlers.add((m) => {
+            handleInboundWriteMessage(m, process.cwd());
+          });
+          this.writeSinkRegistered = true;
+        }
         resolve();
       });
     });

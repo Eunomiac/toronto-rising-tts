@@ -10,7 +10,7 @@
     - clearGeneratedSeatObjects: destruct `{seatKey}Object`-tagged objects for listed seat keys,
       except template sourceObjects and except seat keys named in blacklist (set and/or array).
 
-    Requires TTS Tools sendExternalMessage for file export on generate + spawn; paths are under .tts/output/ (see core.debug).
+    Requires sendExternalMessage and a listener on 39998 (repo tts-bridge) for file export on generate + spawn; paths are under .dev/.debug/ (see core.debug).
 
     Usage:
         local R = require("lib.rotational-seat-layout")

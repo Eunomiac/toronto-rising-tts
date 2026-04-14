@@ -95,7 +95,7 @@ server.registerTool(
   "tts_send_custom_message",
   {
     description:
-      "Use when the **game** exposes `onExternalMessage` handlers that respond to IDE-driven payloads (e.g. sebaestschjin TTS Tools file writes or custom protocols). Sends External Editor **messageID 2**; TTS forwards `customMessage` as a Lua table. **Does not** collect prints or return values — for debugging or probes with feedback, use `tts_execute_lua` instead. Same prerequisites as execute: TTS + External Editor; watch for port 39998 conflicts with other bridge software.",
+      "Use when the **game** exposes `onExternalMessage` handlers that respond to IDE-driven payloads. Sends External Editor **messageID 2**; TTS forwards `customMessage` as a Lua table. **Does not** collect prints or return values — for debugging or probes with feedback, use `tts_execute_lua` instead. **Note:** Lua `sendExternalMessage` with `type: \"write\"` is delivered as **messageID 4** from TTS to the editor; the repo **tts-bridge** persists those to **`.dev/.debug/`** when it listens on **39998** (Cursor MCP calls `ensureListening` on startup, or run `npm run tts-bridge:listen`). Same prerequisites as execute: TTS + External Editor; only **one** listener may bind **39998** (e.g. pause conflicting VS Code extensions).",
     inputSchema: customMessageInputSchema,
   },
   async ({ customMessage }) => {
@@ -112,6 +112,7 @@ server.registerTool(
 );
 
 async function main(): Promise<void> {
+  await bridge.ensureListening();
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }

@@ -5,13 +5,13 @@ This repo includes a small **Model Context Protocol** server that runs **Tableto
 ## Prerequisites
 
 1. **Tabletop Simulator** is running with a game loaded.
-2. **External Editor** is enabled in TTS (**Options → General → External Editor**), same as for TTS Tools. See [TTS_BUNDLING_SETUP.md](TTS_BUNDLING_SETUP.md) (Issue 0).
+2. **External Editor** is enabled in TTS (**Options → General → External Editor**). See [TTS_BUNDLING_SETUP.md](TTS_BUNDLING_SETUP.md) (Issue 0).
 3. **Node.js 18+** and project dependencies: `npm install` at the repo root.
 4. **Build** the server: `npm run tts-mcp:build`. Outputs go to `.tools/tts-bridge/dist/` and `.tools/tts-mcp/dist/` (ignored by git — rebuild after pull).
 
 ## Port conflict (39998)
 
-Only **one** process may listen on **39998**. If **TTS Tools** (or another editor bridge) is already bound there, stop it or do not run the MCP server at the same time. Details: [TTS_BUNDLING_SETUP.md — Issue 0b](TTS_BUNDLING_SETUP.md#issue-0b-port-39998-already-in-use-eaddrinuse).
+Only **one** process may listen on **39998**. If another tool (e.g. a VS Code TTS extension’s inbound server) is already bound there, stop it or do not run the MCP server at the same time. Details: [TTS_BUNDLING_SETUP.md — Issue 0b](TTS_BUNDLING_SETUP.md#issue-0b-port-39998-already-in-use-eaddrinuse).
 
 ## Cursor MCP configuration
 
@@ -24,7 +24,7 @@ In Cursor, add an MCP server whose command runs the compiled entry (adjust the p
   "mcpServers": {
     "toronto-rising-tts": {
       "command": "node",
-      "args": ["D:\\Projects\\.CODING\\toronto-rising-tts\\tools\\tts-mcp\\dist\\index.js"],
+      "args": ["D:\\Projects\\.CODING\\toronto-rising-tts\\.tools\\tts-mcp\\dist\\index.js"],
       "cwd": "D:\\Projects\\.CODING\\toronto-rising-tts"
     }
   }
@@ -52,8 +52,11 @@ After saving, reload MCP / restart Cursor if needed. The server speaks **stdio**
 | `npm run tts-bridge:test` | Vitest suite for the bridge (mock TTS, no game). |
 | `npm run tts-mcp:build` | Build bridge + MCP. |
 | `npm run tts-mcp:start` | Run the MCP server on stdio (normally Cursor spawns this; useful for debugging). |
+| `npm run tts-bridge:listen` | Bridge only: listen on **39998** and persist Lua **`sendExternalMessage`** `type: "write"` to **`.dev/.debug/`** (no MCP). |
+
+**File writes from Lua:** When the bridge holds **39998**, inbound **`messageID` 4** with `customMessage.type === "write"` is written under **`.dev/.debug/`** (see [DEBUG_FILE_LOGGING.md](DEBUG_FILE_LOGGING.md)). MCP startup calls **`ensureListening()`** so this works before the first `tts_execute_lua`.
 
 ## References
 
 - In-repo API notes: [External Editor API.md](tts-api/Getting%20Started/External%20Editor%20API.md)
-- TTS Tools / bundling: [TTS_BUNDLING_SETUP.md](TTS_BUNDLING_SETUP.md)
+- Bundling / ports: [TTS_BUNDLING_SETUP.md](TTS_BUNDLING_SETUP.md)

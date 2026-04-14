@@ -1,8 +1,8 @@
 # UI XML Files
 
-## XML Bundling with TTS Tools Extension
+## XML bundling (Save & Play)
 
-The UI is split into modular components using XML bundling via the TTS Tools extension's `<Include>` feature.
+The UI is split into modular components using TTS `<Include>`. Sebaestschjin **TTS Tools** and **rolandostar (`tabletopsimulator-lua`)** both support this; include paths must be explicit for the latter (see step 3 below). For rolandostar, this repo commits **[`.vscode/settings.json`](../.vscode/settings.json)** (`ttslua.fileManagement.includePaths` + `luaSearchPattern`) per [module resolution](https://github.com/rolandostar/tabletopsimulator-lua-vscode/blob/main/docs/content/extension/moduleResolution/index.md).
 
 ### File Structure
 
@@ -36,13 +36,15 @@ ui/
 
 1. **Source Files**: Edit the modular XML files in `ui/`
 2. **Root File**: `ui/Global.xml` includes defaults and submodules in the correct order
-3. **Bundling**: When you use "Save and Play", the TTS Tools extension reads `.tts/objects/Global.xml`, resolves all `<Include>` tags (including nested ones), bundles into a single XML string, and saves to `.tts/bundled/Global.xml`
-4. **Loading**: The bundled XML is loaded from the global script (`core/global_script.ttslua`, via the `.tts/objects/Global.lua` stub) via `UI.setXml()` where applicable
+3. **`<Include>` paths (rolandostar):** `src` is resolved from the **workspace folder root**, not from the XML file’s directory under `ui/`. Use **`ui/...`** prefixes and the **`.xml`** suffix, e.g. `ui/defaults_classes.xml`, `ui/storyteller/hud_storyteller.xml`, `ui/player/csheets/csheet_defaults.xml`. (Paths like `defaults_classes.xml` alone fail because they look for a file at the repo root.) Sebaestschjin may still accept older relative forms; this repo standardizes on **workspace-root `ui/` paths** for portability.
+4. **Lua `require`:** Unchanged — still **`require("core.foo")`**, **`require("lib.bar")`** (module id maps to `core/`, `lib/` at workspace root via the extension). No `ui.` prefix on Lua modules unless you add such a file under `ui/` as Lua (this project does not).
+5. **Bundling**: When you use "Save and Play", the extension reads the workspace Global / UI entry, resolves all `<Include>` tags (including nested ones), bundles into a single XML string, and may save a copy under `.tts/bundled/` (layout depends on extension).
+6. **Loading**: The bundled XML is loaded from the global script (`core/global_script.ttslua`, via the extension’s synced Global entry / stub) via `UI.setXml()` where applicable
 
 ### Workflow
 
 1. Edit modular XML files in `ui/` directory
-2. **`.tts/objects/Global.xml`** should remain a one-line include of `ui/Global.xml`. If Tabletop Simulator or the extension replaces it with inlined XML, restore the stub from the repo.
+2. The extension’s synced **Global** entry should keep a thin stub that loads your workspace global script and UI bundle path per that extension’s docs. If TTS replaces it with inlined code, restore the one-line `require`/include pattern.
 3. Use "Save and Play" – extension bundles and sends to TTS
 4. **No hardcoded XML in Lua** – `LightDebug.refreshLightDebugPanel()` injects dynamic spotlight rows at `lightTableRowsPlaceholder`
 

@@ -1,6 +1,7 @@
 --[[
-    Append NDJSON lines via TTS Tools sendExternalMessage type "write" (same as DEBUG.writeWorkspaceFile).
-    Files land under workspaceFolder/.tts/output/<relativePath>. In-memory buffer per path; each send rewrites the file.
+    Append NDJSON lines via sendExternalMessage type "write" (same as DEBUG.writeWorkspaceFile).
+    When the repo tts-bridge listens on 39998, files land under workspaceFolder/.dev/.debug/<relativePath>.
+    In-memory buffer per path; each send rewrites the file.
 
     Agent guidance: .dev/DEBUG_FILE_LOGGING.md.
 ]]
@@ -10,7 +11,7 @@ local U = require("lib.util")
 local M = {}
 
 --- When true, each `append` also `print`s the JSON line to the TTS console (prefix `[workspace_ndjson]`).
---- Survives workflows that wipe or churn `.tts/output/` during object sync. Toggle from Global `onLoad` if needed.
+--- Also logs to the TTS console when enabled; useful if External Editor / file writes are unavailable. Toggle from Global `onLoad` if needed.
 M.mirrorAppendToPrint = false
 
 --- @type table<string, string[]>

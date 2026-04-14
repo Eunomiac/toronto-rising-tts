@@ -180,33 +180,6 @@
         "panel": "shared",
         "focus": true
       }
-    },
-    {
-      "label": "TTS debug: mirror .tts/output → .dev/.debug",
-      "type": "shell",
-      "command": "npm",
-      "args": ["run", "debug:mirror"],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "tts-output-mirror",
-        "pattern": [{ "regexp": "^$" }],
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": "^\\[tts-output-mirror\\] watching",
-          "endsPattern": "^\\[tts-output-mirror\\] watching"
-        }
-      },
-      "presentation": {
-        "reveal": "silent",
-        "panel": "dedicated",
-        "showReuseMessage": false
-      },
-      "runOptions": {
-        "runOn": "folderOpen"
-      }
     }
   ],
   "inputs": [

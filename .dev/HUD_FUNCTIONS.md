@@ -14,13 +14,13 @@ Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
-| `HUD_printState` | `Print State` button | `(player, button, id)` | Calls `DEBUG.logStateToFile("game_state")`. Writes **`.tts/output/debug_logs/game_state.txt`**. |
+| `HUD_printState` | `Print State` button | `(player, button, id)` | Calls `DEBUG.logStateToFile("game_state")`. Writes **`.dev/.debug/debug_logs/game_state.txt`** when the tts-bridge listens on **39998**. |
 | `HUD_debugLightGuidInput` | `dl_guid` `InputField` | `(player, value, id)` | Caches typed GUID (`LightDebugFocus.onGuidInput`). Required because TTS InputField text is not reliably readable with `UI.getValue` alone. |
 | `HUD_debugLightActivate` | `Debug Light` button | `(player, button, id)` | Reads GUID in order: `HUD_debugLightGuidInput` cache, then `UI.getAttribute("dl_guid","text")`, then `UI.getValue("dl_guid")`. Trims, `getObjectFromGUID`, validates spotlight via `LightDebug.getLightComponent`. Opens `panel_debug_light_root`, syncs sliders, applies live. Broadcasts errors to the clicking player if invalid. |
 | `HUD_debugLightEnabled` | `dl_enabled` `Toggle` | `(player, value, id)` | `LightDebugFocus.onEnabledToggle`: sets `cache.enabled`, `L.SetLightMode(..., enabled, ...)` instant apply. |
 | `HUD_debugLightResetRow` | `dl_reset_*` buttons | `(player, button, id)` | `LightDebugFocus.resetRowFromId(id)`: restores that row from session-start snapshot and reapplies. |
 | `HUD_debugLightSlider` | `dl_range`, `dl_angle`, `dl_intensity`, `dl_hue`, `dl_saturation`, `dl_brightness`, `dl_rotX`, `dl_rotY`, `dl_rotZ`, `dl_distance` | `(player, value, id)` | `LightDebugFocus.onSlider`: updates cached values, applies rotation/position. **Distance** moves along the inverse of `U.lookAtRotation` (same convention as `DEBUG.setRotationLookAt`), using object rotation minus `DEBUG.getLookAtOffset(obj)` for the beam axis. `L.SetLightMode` supplies enabled/range/angle/intensity/color (`transitionTime` 0). |
-| `HUD_debugLightSnapshot` | `Snapshot` button (focused panel) | `(player, button, id)` | `LightDebugFocus.snapshot`: writes **`.tts/output/debug_logs/focused_light.lua`** (Lua table with `Vector` / `Color`) via `DEBUG.writeWorkspaceFile`. |
+| `HUD_debugLightSnapshot` | `Snapshot` button (focused panel) | `(player, button, id)` | `LightDebugFocus.snapshot`: writes **`.dev/.debug/debug_logs/focused_light.lua`** (Lua table with `Vector` / `Color`) via `DEBUG.writeWorkspaceFile`. |
 | `HUD_debugLightDone` | `Done` button (focused panel) | `(player, button, id)` | Hides panel and clears session; does not revert the object. |
 
 ## Storyteller Toggle Bar

@@ -1,4 +1,7 @@
+import fs from "node:fs/promises";
 import net from "node:net";
+import os from "node:os";
+import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { TtsExternalEditorBridge } from "./bridge.js";
 import { readJsonFromSocket } from "./socket-json.js";
@@ -221,5 +224,27 @@ describe("TtsExternalEditorBridge", () => {
     await Promise.all([p1, p2]);
 
     expect(order).toEqual(["a", "b"]);
+  });
+
+  it("persists messageID 4 type write under .dev/.debug", async () => {
+    const editorPort = await freeTcpPort();
+    const commandPort = await freeTcpPort();
+    const prevCwd = process.cwd();
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "tts-bridge-write-"));
+    process.chdir(tmp);
+    try {
+      bridge = new TtsExternalEditorBridge({ clientPort: commandPort, serverPort: editorPort });
+      await bridge.ensureListening();
+      await sendOneShotJson(editorPort, {
+        messageID: 4,
+        customMessage: { type: "write", name: "debug_logs/x.txt", content: "hello" },
+      });
+      await new Promise((r) => setTimeout(r, 300));
+      const text = await fs.readFile(path.join(tmp, ".dev", ".debug", "debug_logs", "x.txt"), "utf8");
+      expect(text).toBe("hello");
+    } finally {
+      process.chdir(prevCwd);
+      await fs.rm(tmp, { recursive: true, force: true });
+    }
   });
 });

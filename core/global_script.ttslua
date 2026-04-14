@@ -531,8 +531,8 @@ function HUD_logState(player, button, id)
     broadcastToColor("Game state logged to console.", player.color, {0, 1, 1})
 end
 
---- Pretty-print full game state to workspace file via TTS Tools (same path as DEBUG.logStateToFile).
--- Writes **.tts/output/debug_logs/game_state.txt** (overwrites each click). See .dev/DEBUG_FILE_LOGGING.md.
+--- Pretty-print full game state to workspace file (same path as DEBUG.logStateToFile).
+-- Writes **.dev/.debug/debug_logs/game_state.txt** when the tts-bridge listens on 39998 (overwrites each click). See .dev/DEBUG_FILE_LOGGING.md.
 -- Called when the Storyteller left-panel "Print State" button is clicked.
 -- @param player Player The player who clicked (Host/Black)
 -- @param button string Button value
@@ -545,7 +545,7 @@ function HUD_printState(player, button, id)
     -- Delegates to core/debug.ttslua: JSON.encode_pretty + writeToFile (sendExternalMessage, format "auto")
     DEBUG.logStateToFile("game_state")
     broadcastToColor(
-        "Game state written to .tts/output/debug_logs/game_state.txt (enable TTS Editor custom messages if missing).",
+        "Game state written to .dev/.debug/debug_logs/game_state.txt (enable External Editor + bridge on 39998 if missing).",
         player.color,
         {0, 1, 1}
     )
@@ -603,7 +603,7 @@ function HUD_debugLightSlider(player, value, id)
     end
 end
 
---- Write focused light state to **.tts/output/debug_logs/focused_light.lua**.
+--- Write focused light state to **.dev/.debug/debug_logs/focused_light.lua**.
 -- @param player Player
 -- @param button string|nil
 -- @param id string|nil

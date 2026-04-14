@@ -16,6 +16,8 @@ Based on the [TTS Tools documentation](https://sebaestschjin.github.io/tts-tools
 
 See also [`README.md`](../README.md) at the repo root (Global script overview).
 
+**Rolandostar / `Global.-1.lua` in Temp:** The synced file under e.g. `%LocalAppData%\Temp\TabletopSimulator\Tabletop Simulator Lua\` is **not** where `require()` looks. Module names like `core.global_script` resolve against your **project workspace** (`core/global_script.ttslua`, `lib/…`). Prefer **`require("core.global_script")`** in the stub. If a save or old stub still says **`require("global.global_script")`**, the repo provides a one-line shim at [`global/global_script.ttslua`](../global/global_script.ttslua) so that id keeps working; **edit game logic only in `core/global_script.ttslua`.** In a **multi-root** VS Code/Cursor window, put **this repo first** (or use a single-folder window) so the extension’s include path finds `core/` and `global/`.
+
 1. **Entry Point (stub)**: `.tts/objects/Global.lua` is what the extension bundles first; it should only `require("core.global_script")`.
 2. **Module Files**: Your module files (e.g., `lib/util.ttslua`, `core/state.ttslua`, `core/global_script.ttslua`) are in the workspace directory
 3. **Require Syntax**: Use dot notation: `require("lib.util")` for `lib/util.lua` or `lib/util.ttslua`
@@ -26,13 +28,34 @@ See also [`README.md`](../README.md) at the repo root (Global script overview).
    - Sends the bundled version to TTS
    - Saves a copy to `.tts/bundled/Global.lua`
 
+## Rolandostar (`tabletopsimulator-lua`): Temp folder vs this repo
+
+Official reference: [Module resolution](https://github.com/rolandostar/tabletopsimulator-lua-vscode/blob/main/docs/content/extension/moduleResolution/index.md) (same content as [tts-vscode.rolandostar.com — Module resolution](https://tts-vscode.rolandostar.com/extension/moduleResolution)).
+
+**Symptom:** Save & Play / catalog errors like **Could not catalog `<Include />` — file not found: `defaults_classes`** (or similar), and the error or tooltip mentions **`...\AppData\Local\Temp\TabletopSimulator\Tabletop Simulator Lua`**.
+
+**Why:** Pulling scripts from TTS writes copies under that **Temp** tree. **`require`** and **`<Include src="...">`** are **not** resolved from “the folder where `Global.-1.lua` lives” as a project root. The extension uses an **ordered search** per the doc above: **Documents/Tabletop Simulator** first, then **`ttslua.fileManagement.includePaths`**, then **folders opened in the workspace**. In practice (rolandostar with this repo), **`<Include src>`** is resolved from the **workspace folder root**: use paths like **`ui/defaults_tags.xml`**, **`ui/storyteller/panel_camera.xml`**, not bare **`defaults_tags.xml`** (which would look next to the repo root). If catalog runs only against **Temp** while your real **`ui/*.xml`** lives in the **repo**, also ensure the repo is the Save & Play working directory and on the search path.
+
+**Repo defaults (committed):** [`.vscode/settings.json`](../.vscode/settings.json) sets:
+
+- **`ttslua.fileManagement.includePaths`:** `["${workspaceFolder}"]` — adds this clone as an **additional** search root (priority2 in the doc), so `require` / `<Include>` can find **`core/`**, **`lib/`**, **`ui/`** regardless of Temp.
+- **`ttslua.fileManagement.luaSearchPattern`:** `["?", "?.lua", "?.ttslua"]` — the extension default is **`?.lua`** only; this project uses **`.ttslua`** modules, so **`?.ttslua`** must be listed per [Lua search-path patterns](https://www.lua.org/pil/8.1.html) as described in the module-resolution doc.
+
+**What to do if errors persist:**
+
+1. **Open this folder as the workspace** — **File → Open Folder…** → `toronto-rising-tts` (single-folder is simplest). For **multi-root**, open the **repo** folder, not only Temp.
+2. **Change working directory for Save & Play** — Command **“TTS Lua: Change working directory where scripts will be saved to and loaded from.”** (`ttslua.changeWorkDir`). Point it at **`toronto-rising-tts`** so the extension loads/bundles from **`ui/Global.xml`** and the rest of the tree (see [issue #20](https://github.com/rolandostar/tabletopsimulator-lua-vscode/issues/20)).
+3. **Debug resolution** — `"ttslua.misc.debugSearchPaths": true` and **Developer Tools** (**Ctrl+Shift+I**); see [Debugging module resolution](https://tts-vscode.rolandostar.com/support/debugModuleResolution).
+
+**Settings note:** Sebaestschjin uses **`ttsEditor.*`**. Rolandostar uses **`ttslua.*`**. This repo’s layout expects **`core/`**, **`lib/`**, **`ui/`** at the **repository root**.
+
 ## Workflow
 
 ### Recommended Workflow
 
 1. **Edit global logic**: Use **`core/global_script.ttslua`** (not the `.tts/objects/Global.lua` stub).
 2. **Edit other modules**: Edit files in `lib/` and `core/` directly.
-3. **Keep the stub**: If TTS overwrote `.tts/objects/Global.lua`, restore it to only `require("core.global_script")` (see comments in that file).
+3. **Keep the stub**: If TTS overwrote the synced Global entry script, set it back to only `require("core.global_script")` (one line). The stub is **not** tracked in git (see [`.gitignore`](../.gitignore)).
 4. **Bundle and send**: Use "Save and Play" - extension will:
    - Read `.tts/objects/Global.lua`
    - Resolve all `require()` calls from workspace directory (including `core.global_script`)
@@ -108,7 +131,7 @@ See [TTS_MCP.md](TTS_MCP.md) for setup and Cursor configuration.
 
 **Solution**:
 
-- Restore `.tts/objects/Global.lua` to the repo stub (`require("core.global_script")`) if it was overwritten.
+- Restore the Global entry script the extension uses (often under `.tts/objects/`) to only `require("core.global_script")` if TTS replaced it with bundled code.
 - Edit **`core/global_script.ttslua`** for global script changes.
 - Module files in `lib/` and `core/` are resolved automatically during bundling.
 

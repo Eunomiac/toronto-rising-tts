@@ -9,7 +9,7 @@
 
     `LuaScript` / `LuaScriptState` are empty: paired lights are driven by `core/lighting` + `L.registerNpcSpotlightModes` + `gameState.lights`.
 
-    Agent guidance: .dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md; .dev/DEBUG_FILE_LOGGING.md (.tts/output paths when exporting).
+    Agent guidance: .dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md; .dev/DEBUG_FILE_LOGGING.md (.dev/.debug paths when the bridge handles writes).
 ]]
 
 local M = {}

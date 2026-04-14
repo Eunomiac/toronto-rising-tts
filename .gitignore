@@ -2,9 +2,10 @@
 node_modules/
 yarn.lock
 
-# IDE — track shared VS Code / Cursor tasks; keep other workspace settings local
+# IDE — track shared VS Code / Cursor tasks + TTS Lua workspace defaults; keep other settings local
 .vscode/*
 !.vscode/tasks.json
+!.vscode/settings.json
 .idea/
 *.swp
 *.swo
@@ -26,11 +27,11 @@ logs/
 # TTS extension generated files (bundled output)
 .tts/bundled/
 
-# TTS Editor write-output (sendExternalMessage): logs live under .tts/output/debug_logs/, not repo-root debug_logs/
+# Optional: if an extension still materializes .tts/output/, keep noise out of git
 .tts/output/**/*.txt
 .tts/output/**/*.log
 
-# Mirrored TTS debug output (watcher: .tts/output → .dev/.debug; keep plans / docs in .dev/ trackable)
+# Bridge / extension debug writes (see .dev/DEBUG_FILE_LOGGING.md; default root .dev/.debug)
 .dev/.debug/
 
 # Compiled CSS (source SCSS is tracked)
@@ -47,8 +48,6 @@ UI/src/**/*.js.map
 dist/
 build/
 .dev/TTS-Scripting-Guide-Modules/*_Save_*.json
-# Ignore contents of these dirs (not the dirs themselves, so negation can work)
+# Extension sync targets (volatile; canonical Lua is under core/, lib/)
 .tts/bundled/*
 .tts/objects/*
-# Exception: keep Global.lua in objects tracked (source of truth)
-!.tts/objects/Global.lua

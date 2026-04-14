@@ -14,7 +14,7 @@
     "code-review:test": "vitest run --config .tools/code-review/vitest.config.ts",
     "code-review:validate": "npm run code-review:build && node .tools/code-review/dist/cli.js validate",
     "code-review:help": "npm run code-review:build && node .tools/code-review/dist/cli.js help",
-    "debug:mirror": "node .dev/scripts/mirror-tts-output.js"
+    "tts-bridge:listen": "npm run tts-bridge:build && node .tools/tts-bridge/dist/listen.js"
   },
   "keywords": [
     "tabletop-simulator",
@@ -34,7 +34,6 @@
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
-    "chokidar": "^4.0.3",
     "typescript": "^6.0.2",
     "vitest": "^4.1.2"
   },

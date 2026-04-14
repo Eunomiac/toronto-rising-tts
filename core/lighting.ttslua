@@ -291,7 +291,7 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            color = Color(100 / 255, 200 / 255, 255 / 255),
+            color = Color(255 / 255, 255 / 255, 200 / 255),
             intensity = 2,
             range = 80,
             angle = 90
@@ -307,7 +307,7 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            color = Color(100 / 255, 200 / 255, 255 / 255),
+            color = Color(255 / 255, 255 / 255, 200 / 255),
             intensity = 2,
             range = 80,
             angle = 90
@@ -319,11 +319,15 @@ L.LIGHTMODES = {
         default = "OFF",
         OFF = {
             enabled = false,
-            angle = 0
+            angle = 0,
+            position = Vector({0.00, 50.00, -50.00}),
+            rotation = Vector({73.80, 0.00, 0.00})
         },
         STANDARD = {
             enabled = true,
-            color = Color(100 / 255, 200 / 255, 255 / 255),
+            position = Vector({0.00, 17.04, -40.43}),
+            rotation = Vector({64.78, 180.00, 180.00}),
+            color = Color(255 / 255, 255 / 255, 200 / 255),
             intensity = 2,
             range = 80,
             angle = 90
@@ -339,7 +343,7 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            color = Color(100 / 255, 200 / 255, 255 / 255),
+            color = Color(255 / 255, 255 / 255, 200 / 255),
             intensity = 2,
             range = 80,
             angle = 90
@@ -355,7 +359,7 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            color = Color(100 / 255, 200 / 255, 255 / 255),
+            color = Color(255 / 255, 255 / 255, 200 / 255),
             intensity = 2,
             range = 80,
             angle = 90

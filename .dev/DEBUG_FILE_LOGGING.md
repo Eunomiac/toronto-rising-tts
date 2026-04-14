@@ -1,24 +1,20 @@
 # Debug File Logging
 
-The debug module uses the TTS Tools extension’s `sendExternalMessage` API (`type: "write"`) so TTS can ask the editor to create or overwrite a file **under your opened workspace**.
+The debug module uses TTS **`sendExternalMessage`** with **`type: "write"`** so the game asks the **External Editor** bridge to create or overwrite a file under your opened workspace.
 
-**Why not write to the repo root or `.dev/`?** The Sebaestschjin **TTS Editor** routes `type: "write"` messages with a `name` field to **`workspaceFolder/.tts/output/<name>`** (see below). Game Lua cannot choose another root unless the extension adds that feature. If **object sync** churns `.tts/` and your log **disappears**, enable **`lib.workspace_ndjson_log.mirrorAppendToPrint = true`** (Global `onLoad` does this for the agent debug hook) so each record is also **`print`**’d to the TTS console as `[workspace_ndjson] {...}` — copy from there or from the External Editor log.
+**Where files land:** The repo **[`.tools/tts-bridge`](../.tools/tts-bridge)** listens on **localhost `39998`** (same inbound port as the [External Editor API](tts-api/Getting%20Started/External%20Editor%20API.md)) and writes payloads to:
 
-## How It Works (actual paths)
+**`<workspaceFolder>/.dev/.debug/<name>`**
 
-In **Sebaestschjin’s TTS Editor**, a `write` message with a `name` field is **not** written to the workspace root. The extension saves it under:
+where **`name`** is the string Lua puts on the message (e.g. `debug_logs/debug_log.txt` → **`.dev/.debug/debug_logs/debug_log.txt`**).
 
-**`<workspaceFolder>/.tts/output/<name>`**
+- **Cursor MCP:** the server calls **`ensureListening()`** on startup so this works as soon as the **toronto-rising-tts** MCP is connected.
+- **Without Cursor:** run **`npm run tts-bridge:listen`** from the repo root (after **`npm run tts-bridge:build`** or **`npm run tts-mcp:build`**).
+- **Override root:** set env **`TTS_WORKSPACE_WRITE_ROOT`** to an absolute path or a path relative to the workspace folder.
 
-So `logToFile` (which uses `name = debug_logs/debug_log.txt`) creates:
+**Legacy:** The Sebaestschjin extension wrote **`type: "write"`** under **`.tts/output/<name>`**. That path is **not** used when the repo bridge owns **39998**.
 
-**`<workspaceFolder>/.tts/output/debug_logs/debug_log.txt`**
-
-The `name` you pass to `DEBUG.writeWorkspaceFile` is the same suffix (e.g. `debug_logs/seat_layout_frame_refs.lua` → **`.tts/output/debug_logs/seat_layout_frame_refs.lua`**).
-
-If you set `object` on the message (this project does not), the extension would use a different root (object output naming); our code only sets `name`.
-
-`customMessage` handling is gated by **`ttsEditor.enableMessages`** (on by default). If it is off, requests are ignored and nothing is written.
+**If logs disappear or you need a console copy:** enable **`lib.workspace_ndjson_log.mirrorAppendToPrint = true`** (Global `onLoad` does this for the agent debug hook) so each record is also **`print`**’d to the TTS console as `[workspace_ndjson] {...}`.
 
 ## Agent / contributor guidance (instrumentation)
 
@@ -26,8 +22,8 @@ When adding **runtime logging** from Lua (especially **object scripts** or one-o
 
 | Use case | API | Notes |
 | -------- | --- | ----- |
-| Line-oriented console-style log (TTS `lua logToFile(...)`) | `DEBUG.logToFile` | Writes under `.tts/output/debug_logs/`. |
-| One-off file body (overwrite) | `DEBUG.writeWorkspaceFile(relativePath, content, format?, silent?)` | `relativePath` is under `.tts/output/`. |
+| Line-oriented console-style log (TTS `lua logToFile(...)`) | `DEBUG.logToFile` | Files under **`.dev/.debug/debug_logs/`** when the bridge is listening. |
+| One-off file body (overwrite) | `DEBUG.writeWorkspaceFile(relativePath, content, format?, silent?)` | `relativePath` is the **`name`** suffix (e.g. `debug_logs/npcs_panel.txt`). |
 | **Structured NDJSON** (hypothesis tags, session id, etc.) | **`DEBUG.workspaceNdjsonBegin`** + **`DEBUG.workspaceNdjsonAppend`** | Prefer this over `require("lib.workspace_ndjson_log")` in new code. |
 | Quick NDJSON session with fixed name | `DEBUG.beginWorkspaceDebugSession()` | Clears `debug_workspace_ndjson.log` only. |
 
@@ -53,7 +49,7 @@ DEBUG.workspaceNdjsonAppend("debug_myrun.log", {
 })
 ```
 
-Payload shape is passed through to `lib/workspace_ndjson_log.append` (adds `timestamp`, optional default `sessionId`). Output is human-readable header lines plus `JSON.encode` per entry, under **`.tts/output/<relativePath>`**.
+Payload shape is passed through to `lib/workspace_ndjson_log.append` (adds `timestamp`, optional default `sessionId`). Output is human-readable header lines plus `JSON.encode` per entry, under **`.dev/.debug/<relativePath>`** when the bridge handles the write.
 
 ## Available Functions
 
@@ -93,8 +89,8 @@ Typical layout (paths relative to the **folder** you opened in Cursor / VS Code,
 
 ```
 <workspaceFolder>/
-└── .tts/
-    └── output/
+└── .dev/
+    └── .debug/
         └── debug_logs/
             ├── debug_log.txt
             ├── game_state.txt
@@ -103,6 +99,8 @@ Typical layout (paths relative to the **folder** you opened in Cursor / VS Code,
             ├── test_results.txt
             └── seat_layout_frame_refs.lua   -- from rotational layout export, if you use that path
 ```
+
+(The **`.dev/.debug/`** tree is gitignored.)
 
 ## File Format
 
@@ -118,36 +116,30 @@ JSON pretty-printed when `format` is `"auto"`.
 
 ## Requirements
 
-- **TTS Tools / TTS Editor** connected to the same workspace instance  
-- **`ttsEditor.enableMessages`** enabled  
+1. **Tabletop Simulator** with **External Editor** enabled (**Options → General → External Editor**).
+2. **Exactly one** process listening on **127.0.0.1:39998** — the repo **tts-bridge** (MCP or `npm run tts-bridge:listen`) **or** another tool, not both. See [TTS_MCP.md](TTS_MCP.md) and [TTS_BUNDLING_SETUP.md](TTS_BUNDLING_SETUP.md).
 
 ## Troubleshooting
 
-1. **Look under `.tts/output/`** — not a top-level `debug_logs/` folder at the repo root. Example: `toronto-rising-tts/.tts/output/debug_session.log`, not `toronto-rising-tts/debug_session.log`.
-2. **`sendExternalMessage` is nil** — Lua has **no path to the editor**; nothing is written and TTS prints a **`sendExternalMessage is nil`** line from `DEBUG.workspaceNdjsonBegin`.  
-   **Fix:** Use the TTS Editor with this workspace and **`ttsEditor.enableMessages`** enabled.
-3. **`require lib.workspace_ndjson_log` failed** or **invalid** — often the Save & Play **bundle omitted** that module because it was only required inside functions. `core/debug.ttslua` now includes a **top-level** `require("lib.workspace_ndjson_log")` so the bundler pulls it in. If you still see **`require failed:`**, read the error text and see **`.dev/TTS_BUNDLING_SETUP.md` (Issue 2a)**.
-4. **Multi-root workspace** — the extension uses **`workspace.workspaceFolders[0]`**; put this repo first or open it as a single-folder workspace.
-5. **Messages disabled** — turn on custom messages in TTS Editor settings.
-6. **Auto-open** — the extension opens the written document in the editor when handling `write` (when `name` is set).
+1. **Look under `.dev/.debug/`** — not `.tts/output/` or a top-level `debug_logs/` folder. Example: `toronto-rising-tts/.dev/.debug/debug_session.log`.
+2. **`sendExternalMessage` is nil** — Lua has **no path to the editor**; nothing is written and TTS prints a **`sendExternalMessage is nil`** line from `DEBUG.workspaceNdjsonBegin`. **Fix:** enable External Editor and ensure a bridge is listening on **39998** when you need file writes.
+3. **`require lib.workspace_ndjson_log` failed** or **invalid** — often the Save & Play **bundle omitted** that module because it was only required inside functions. `core/debug.ttslua` includes a **top-level** `require("lib.workspace_ndjson_log")` so the bundler pulls it in. If you still see **`require failed:`**, read the error text and see **`.dev/TTS_BUNDLING_SETUP.md` (Issue 2a)**.
+4. **Multi-root workspace** — run MCP / npm scripts with **`cwd`** set to this repo.
+5. **`EADDRINUSE` on 39998** — stop **`npm run tts-bridge:listen`**, disconnect MCP, or disable another VS Code extension that binds the same inbound port.
 
 ### After Save & Play: still no file?
 
 1. Open **TTS in-game console** (default `~`) and scroll for **`DEBUG.workspaceNdjsonBegin`** / **`sendExternalMessage`** lines.
-2. If you see **`sendExternalMessage is nil`**, the game is not connected to the extension workflow above — fix connectivity first.
-3. If you see **`NDJSON session + bootstrap line -> .tts/output/...`**, the bridge worked — open the repo in the editor and check **`.tts/output/<filename>`**.
+2. If you see **`sendExternalMessage is nil`**, fix External Editor connectivity first.
+3. If you see **`NDJSON session + bootstrap line -> .dev/.debug/...`**, the write path is correct — open **`.dev/.debug/<filename>`** on disk (folder may be hidden in some UIs because it starts with `.`).
 
 ## Cursor “Debug Logs” panel vs these files
 
-**Cursor debug mode** can show a **Debug Logs** panel wired to an **HTTP ingest** (localhost). Logs from **Tabletop Simulator** use **`sendExternalMessage`** and appear as files under **`.tts/output/`** only. They are **not** posted to that ingest, so the panel may stay on **“Waiting for log entries…”** even when `.tts/output/<your_log>.log` is updating correctly. Use the **on-disk path** (or TTS console `print` lines) to verify TTS instrumentation.
+**Cursor debug mode** can show a **Debug Logs** panel wired to an **HTTP ingest** (localhost). Logs from **Tabletop Simulator** use **`sendExternalMessage`** and land under **`.dev/.debug/`** when this repo’s bridge handles them. They are **not** posted to that HTTP ingest, so the panel may stay on **“Waiting for log entries…”** even when files are updating. Use the **on-disk path** (or TTS console `print` lines) to verify TTS instrumentation.
 
 ### “File disappeared” right after open
 
 Previously, `workspace_ndjson_log.beginSession` issued a **`write` with empty `content`**, which cleared the file on disk **before** the first `append`. That could make the file look **deleted or empty** when the editor opened it briefly. **`beginSession` now only clears the in-memory buffer**; the first **`append`** performs the initial write.
-
-### Sync / `.tts` churn wiping `.tts/output/`
-
-Some workflows **refresh files under `.tts/`** when pulling object scripts from the game. Output logs live under **`.tts/output/`**, so a heavy sync can **remove or replace** a log file right after it appears. **Mitigation:** turn on **`mirrorAppendToPrint`** on `lib.workspace_ndjson_log` (see Global `onLoad` agent hook) and capture lines from the **TTS console** or External Editor output.
 
 ### Only bootstrap lines in the log (no object / sheet lines)
 
@@ -157,5 +149,4 @@ Some workflows **refresh files under `.tts/`** when pulling object scripts from 
 
 - **Append mode** (`logToFile`, `logTestToFile`): in-memory cache in Lua; each send rewrites the full file for that path.
 - **Overwrite dumps** (`logStateToFile`, etc.): full snapshot per call.
-- Repository `.gitignore` may list patterns under root `debug_logs/`; generated logs actually live under **`.tts/output/debug_logs/`** unless you change ignore rules for `.tts/output`.
-
+- **`.gitignore`** excludes **`.dev/.debug/`** so generated logs stay out of git.

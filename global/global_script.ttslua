@@ -1,0 +1,9 @@
+--[[
+    Compatibility shim for Global stubs that still call require("global.global_script")
+    (e.g. legacy saves, or tooling that names the synced file Global.-1.lua under Temp).
+
+    Canonical global script — edit this only: core/global_script.ttslua
+    Preferred stub line: require("core.global_script")
+]]
+
+return require("core.global_script")

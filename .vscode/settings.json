@@ -1,0 +1,6 @@
+{
+  "ttslua.fileManagement.includePaths": ["${workspaceFolder}"],
+  "TTSLua.includeOtherFilesPaths": ["${workspaceFolder}"],
+  "ttslua.misc.debugSearchPaths": true,
+  "ttslua.fileManagement.luaSearchPattern": ["?", "?.lua", "?.ttslua"]
+}

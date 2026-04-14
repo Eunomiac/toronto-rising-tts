@@ -8,16 +8,50 @@
 
 local D = {}
 
+-- D.lights = {
+--   off = {
+--     enabled = false,
+--     color = Color(1, 1, 1),
+--     range = 10,
+--     intensity = 0,
+--     angle = 0,
+--     lookAtYShift = 0.6,
+--     positionYShift = 0.2,
+--     distance = -20,
+--   },
+--   standard = {
+--     enabled = true,
+--     color = Color(1, 1, 1),
+--     range = 100,
+--     intensity = 1.5,
+--     angle = 120,
+--     lookAtYShift = 0.3,
+--     positionYShift = 0.4,
+--     distance = -15,
+--   },
+--   spotlight = {
+--     enabled = true,
+--     color = Color(1, 1, 1),
+--     range = 100,
+--     intensity = 3,
+--     angle = 70,
+--     lookAtYShift = 0.1,
+--     positionYShift = 0.3,
+--     distance = -20,
+--   },
+-- }
+
+
 D.lights = {
   off = {
-    enabled = false,
+    enabled = true,
     color = Color(1, 1, 1),
-    range = 10,
-    intensity = 0,
-    angle = 0,
-    lookAtYShift = 0.6,
-    positionYShift = 0.2,
-    distance = -20,
+    range = 100,
+    intensity = 1.5,
+    angle = 120,
+    lookAtYShift = 0.3,
+    positionYShift = 0.4,
+    distance = -15,
   },
   standard = {
     enabled = true,

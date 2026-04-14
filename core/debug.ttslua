@@ -35,15 +35,15 @@ require("lib.workspace_ndjson_log")
 
 --[[
     File Logging Configuration
-    TTS Tools (sendExternalMessage type "write"): the `name` field is written under
-    **workspaceFolder/.tts/output/<name>** (not the repo root). Same for logToFile and writeWorkspaceFile.
-    See tts-editor handleWriteMessage → writeOutputFile(..., "output").
+    External Editor bridge (repo tts-bridge on port 39998): `sendExternalMessage` with type "write"
+    and `name` is written under **workspaceFolder/.dev/.debug/<name>** when MCP or `npm run tts-bridge:listen`
+    is active. Same for logToFile and writeWorkspaceFile. See .dev/DEBUG_FILE_LOGGING.md.
 ]]
 local LOG_DIR = "debug_logs"
 local LOG_EXTENSION = "txt"
 
---- Prefix where the VS Code extension materializes custom writes (relative to workspace folder).
-local TTS_TOOLS_OUTPUT_PREFIX = ".tts/output"
+--- Prefix printed in DEBUG messages (relative to workspace folder); files appear here when the bridge handles writes.
+local WORKSPACE_DEBUG_WRITE_ROOT = ".dev/.debug"
 
 -- Cache for log file contents (to support append mode)
 -- Key: filename (without extension), Value: accumulated content string
@@ -76,7 +76,7 @@ local function writeToFile(filename, content, format, append)
     append = append ~= false  -- Default to true (append mode) unless explicitly set to false
 
     -- Use sendExternalMessage to write to file.
-    -- Don't set `object`; with only `name`, TTS Tools writes to .tts/output/<name>.
+    -- Don't set `object`; with only `name`, the bridge writes to .dev/.debug/<name>.
     local fullName = LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION
 
     -- For append mode, maintain cache and accumulate content
@@ -101,7 +101,7 @@ local function writeToFile(filename, content, format, append)
             name = fullName,
             format = format
         })
-        print("DEBUG: Log written to " .. TTS_TOOLS_OUTPUT_PREFIX .. "/" .. fullName)
+        print("DEBUG: Log written to " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. fullName)
     else
         -- Fallback: just print if extension not available
         print("DEBUG (file logging not available): " .. filename)
@@ -109,9 +109,9 @@ local function writeToFile(filename, content, format, append)
     end
 end
 
---- Writes content via TTS Tools (sendExternalMessage type "write"). File appears as **workspace/.tts/output/<relativePath>**.
+--- Writes content via sendExternalMessage type "write". File appears as **workspace/.dev/.debug/<relativePath>** when the bridge listens on 39998.
 --- Does not use log append cache; each call overwrites that file path.
---- @param relativePath string Path suffix under .tts/output, e.g. "debug_logs/npcs_panel.txt"
+--- @param relativePath string Path suffix under .dev/.debug, e.g. "debug_logs/npcs_panel.txt"
 --- @param content string
 --- @param format string|nil "none" or "auto" (default "none")
 --- @param silent boolean|nil If true, do not print confirmation (for high-frequency writes)
@@ -135,9 +135,9 @@ function DEBUG.writeWorkspaceFile(relativePath, content, format, silent)
             format = format
         })
         if not silent then
-            print("DEBUG: Wrote " .. TTS_TOOLS_OUTPUT_PREFIX .. "/" .. relativePath)
+            print("DEBUG: Wrote " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. relativePath)
             print(
-                "DEBUG: TTS Tools stores custom writes under .tts/output/ (first workspace folder if multi-root). "
+                "DEBUG: tts-bridge stores custom writes under .dev/.debug/ (first workspace folder if multi-root). "
                     .. "Enable custom messages (ttsEditor.enableMessages) if writes are ignored."
             )
         end
@@ -167,10 +167,10 @@ function DEBUG.beginWorkspaceDebugSession()
         message = "NDJSON session opened",
         data = { relativePath = "debug_workspace_ndjson.log" },
     })
-    print("DEBUG: began workspace debug session -> " .. TTS_TOOLS_OUTPUT_PREFIX .. "/debug_workspace_ndjson.log")
+    print("DEBUG: began workspace debug session -> " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/debug_workspace_ndjson.log")
 end
 
---- Truncate + clear in-memory buffer for a named NDJSON log under `.tts/output/<relativePath>`.
+--- Truncate + clear in-memory buffer for a named NDJSON log under `.dev/.debug/<relativePath>`.
 --- Same transport as `beginWorkspaceDebugSession` (`lib.workspace_ndjson_log` + `sendExternalMessage`).
 --- @param relativePath string e.g. `debug_session.log`
 function DEBUG.workspaceNdjsonBegin(relativePath)
@@ -189,7 +189,7 @@ function DEBUG.workspaceNdjsonBegin(relativePath)
                 "  Fix: use TTS Editor / extension connected to this workspace, enable custom messages (ttsEditor.enableMessages), then Save & Play."
             )
             print(
-                "  Expected file when working: <workspaceFolder>/" .. TTS_TOOLS_OUTPUT_PREFIX .. "/" .. relativePath
+                "  Expected file when working: <workspaceFolder>/" .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. relativePath
             )
         end
         return
@@ -212,10 +212,10 @@ function DEBUG.workspaceNdjsonBegin(relativePath)
         message = "NDJSON session opened",
         data = { relativePath = relativePath },
     })
-    print("DEBUG: NDJSON session + bootstrap line -> " .. TTS_TOOLS_OUTPUT_PREFIX .. "/" .. relativePath)
+    print("DEBUG: NDJSON session + bootstrap line -> " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. relativePath)
 end
 
---- Append one NDJSON record (human header + JSON line). File appears under `.tts/output/<relativePath>`.
+--- Append one NDJSON record (human header + JSON line). File appears under `.dev/.debug/<relativePath>`.
 --- @param relativePath string
 --- @param payload table fields e.g. sessionId, hypothesisId, location, message, data
 function DEBUG.workspaceNdjsonAppend(relativePath, payload)
@@ -3839,7 +3839,7 @@ function DEBUG.logStateToFile(filename)
 
     -- State dumps are overwritten (not appended) - each dump is a complete snapshot
     writeToFile(filename, content, "auto", false)
-    print("DEBUG: Game state logged to " .. TTS_TOOLS_OUTPUT_PREFIX .. "/" .. LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION)
+    print("DEBUG: Game state logged to " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION)
 end
 
 --- Logs current scene information to a file
@@ -3862,7 +3862,7 @@ function DEBUG.logSceneToFile(filename)
 
     -- Scene dumps are overwritten (not appended) - each dump is a complete snapshot
     writeToFile(filename, content, "auto", false)
-    print("DEBUG: Scene info logged to " .. TTS_TOOLS_OUTPUT_PREFIX .. "/" .. LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION)
+    print("DEBUG: Scene info logged to " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION)
 end
 
 --- Logs zone information to a file
@@ -3882,7 +3882,7 @@ function DEBUG.logZonesToFile(filename)
 
     -- Zone dumps are overwritten (not appended) - each dump is a complete snapshot
     writeToFile(filename, content, "auto", false)
-    print("DEBUG: Zone info logged to " .. TTS_TOOLS_OUTPUT_PREFIX .. "/" .. LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION)
+    print("DEBUG: Zone info logged to " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION)
 end
 
 --- Logs a test result to a file
@@ -3913,7 +3913,7 @@ function DEBUG.logAllToFiles()
     DEBUG.logSceneToFile("scene_info")
     DEBUG.logZonesToFile("zone_info")
     DEBUG.logToFile("INFO", "Full debug dump completed", "debug_log")
-    print("DEBUG: All logs written under " .. TTS_TOOLS_OUTPUT_PREFIX .. "/" .. LOG_DIR .. "/")
+    print("DEBUG: All logs written under " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. LOG_DIR .. "/")
 end
 
 --- Clears all log files (writes empty/header content to reset them)

@@ -1,45 +1,45 @@
 <!-- Main HUD - VTM5E Module -->
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (bundling + XML templates); .dev/HUD_FUNCTIONS.md; .dev/HUDs & Overlays/Player HUD Overview.md; .dev/tts-api/UI API/ (XML elements). -->
 <!-- Root bundle file; no layout applied here. Include order matters for TTS defaults. -->
-<!-- The TTS Tools extension bundles when using "Save and Play"; loaded via UI.setXml() -->
+<!-- Rolandostar: <Include src> paths are relative to the workspace folder root — prefix with ui/ (not the ui/ file’s directory). -->
 
-<!-- 1. Tag-based defaults (include first); includes are relative to ui/ -->
-<Include src="defaults_tags" />
+<!-- 1. Tag-based defaults (include first) -->
+<Include src="ui/defaults_tags.xml" />
 
 <!-- 2. General shared classes -->
-<Include src="defaults_classes" />
+<Include src="ui/defaults_classes.xml" />
 
 <!-- 3. Storyteller HUD (Black): admin panel + sidebar + camera defaults -->
-<Panel id="HUD_PANEL_BLACK" class="hud_root_panel" visibility="Black">
+<Panel id="HUD_PANEL_BLACK" class="hud_root_panel" visibility="Black|Host">
   <!-- 3a. Storyteller HUD defaults -->
-  <Include src="storyteller/hud_storyteller_defaults" />
-  <Include src="storyteller/panel_pcs_defaults" />
+  <Include src="ui/storyteller/hud_storyteller_defaults.xml" />
+  <Include src="ui/storyteller/panel_pcs_defaults.xml" />
 
   <!-- 3b. Storyteller HUD -->
-  <Include src="storyteller/hud_storyteller" />
+  <Include src="ui/storyteller/hud_storyteller.xml" />
 </Panel>
 
 <!-- 4. Player HUD (per-color panels) -->
 <Panel id="HUD_PANEL_PLAYER" class="hud_root_panel">
 
   <!-- Defaults -->
-  <Include src="player/panel_overlays_defaults.xml" />
-  <Include src="player/panel_right_sidebar_defaults.xml" />
-  <Include src="player/panel_map_core_defaults.xml" />
+  <Include src="ui/player/panel_overlays_defaults.xml" />
+  <Include src="ui/player/panel_right_sidebar_defaults.xml" />
+  <Include src="ui/player/panel_map_core_defaults.xml" />
 
   <!-- 4a. Player HUD Overlays -->
-  <Include src="player/panel_overlays.xml" />
+  <Include src="ui/player/panel_overlays.xml" />
 
   <!-- 4a. Player HUD Right Sidebar -->
 
   <!-- Map panels (generated per player color) -->
-  <Include src="player/panel_map_core.xml" />
+  <Include src="ui/player/panel_map_core.xml" />
 
   <!-- Right sidebar buttons (generated per player color) -->
-  <Include src="player/panel_right_sidebar_buttons.xml" />
+  <Include src="ui/player/panel_right_sidebar_buttons.xml" />
 
   <!-- Reference layer (generated per player color) -->
-  <Include src="player/panel_right_sidebar_referenceLayer.xml" />
+  <Include src="ui/player/panel_right_sidebar_referenceLayer.xml" />
 
 
 </Panel>

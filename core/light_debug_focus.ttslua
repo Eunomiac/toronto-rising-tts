@@ -558,7 +558,7 @@ function LightDebugFocus.snapshot(player)
     DBG.writeWorkspaceFile("debug_logs/focused_light.lua", body, "none", false)
     if player ~= nil and player.color ~= nil then
         broadcastToColor(
-            "Debug Light: wrote .tts/output/debug_logs/focused_light.lua",
+            "Debug Light: wrote .dev/.debug/debug_logs/focused_light.lua",
             player.color,
             { 0, 1, 1 }
         )

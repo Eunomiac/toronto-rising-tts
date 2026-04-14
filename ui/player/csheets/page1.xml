@@ -44,7 +44,7 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
   E.g. dot_large_red_bloodPotency_1, dot_large_white_bloodPotency_2, etc.
 
  -->
-<Include src="csheet_defaults.xml" />
+<Include src="ui/player/csheets/csheet_defaults.xml" />
 
 <Panel id="paper_root" class="page_root">
 

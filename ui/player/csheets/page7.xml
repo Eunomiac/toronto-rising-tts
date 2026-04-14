@@ -45,7 +45,7 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
 
  -->
 
-<Include src="csheet_defaults.xml" />
+<Include src="ui/player/csheets/csheet_defaults.xml" />
 
 <Panel id="paper_root" class="page_root">
   <Button id="pageBack" class="page_navigation page_back" />
