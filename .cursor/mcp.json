@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "toronto-rising-tts": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/.tools/tts-mcp/dist/index.js"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "TTS_OBJECT_SYNC_DIRS": "${env:LOCALAPPDATA}${/}Temp${/}Tabletop Simulator${/}Tabletop Simulator Lua"
+      }
+    }
+  }
+}

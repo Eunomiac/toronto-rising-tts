@@ -1,62 +1,47 @@
-# Tabletop Simulator MCP (Cursor)
+# Tabletop Simulator MCP (Cursor) — Toronto Rising
 
-This repo includes a small **Model Context Protocol** server that runs **Tabletop Simulator** Lua on your machine and returns `print` output, return values, and errors via the official [External Editor API](tts-api/Getting%20Started/External%20Editor%20API.md) (localhost **39999** → TTS, **39998** ← TTS).
+Bridge to the live game over the [External Editor API](tts-api/Getting%20Started/External%20Editor%20API.md): **39999** → TTS, **39998** ← TTS.
 
-## Prerequisites
+## Prepare live session (minimal)
 
-1. **Tabletop Simulator** is running with a game loaded.
-2. **External Editor** is enabled in TTS (**Options → General → External Editor**). See [TTS_BUNDLING_SETUP.md](TTS_BUNDLING_SETUP.md) (Issue 0).
-3. **Node.js 18+** and project dependencies: `npm install` at the repo root.
-4. **Build** the server: `npm run tts-mcp:build`. Outputs go to `.tools/tts-bridge/dist/` and `.tools/tts-mcp/dist/` (ignored by git — rebuild after pull).
+1. Open **Tabletop Simulator** (Toronto Rising save), **Cursor** (this repo as the workspace root), and keep your usual External Editor setting.
+2. **Tasks: Run Task** → **`Prepare Live Game Session`** — builds tooling, checks that **toronto-rising-tts MCP is not** listening on **39998** (extension / Save & Play workflow), verifies **39999** (TTS). **39998** may still be closed until you use the TTSLua extension; that is only a console warning. On blocking failures you get a **Windows message box** plus details in the Terminal.
+3. **Object refresh without Save & Play**
+   - **While Cursor MCP is on** (normal): in chat, ask the agent to run **`tts_quiet_refresh_object`** with **only the `guid`** (paste from TTS). Lua/XML are auto-found under the repo and under the TTS Temp sync path (see `.cursor/mcp.json` `TTS_OBJECT_SYNC_DIRS`).
+   - **Task (optional):** **`TTS: Quiet refresh object (paste GUID)`** only works if **nothing else** is listening on **39998**. If **toronto-rising-tts** MCP is running, that task will fail by design — keep using the **agent tool** instead.
 
-## Port conflict (39998)
+**Repo setup (not every session):** `npm install`, `npm run tts-mcp:build` when you pull changes. Project MCP: **[`.cursor/mcp.json`](../.cursor/mcp.json)** (`cwd` = repo root).
 
-Only **one** process may listen on **39998**. If another tool (e.g. a VS Code TTS extension’s inbound server) is already bound there, stop it or do not run the MCP server at the same time. Details: [TTS_BUNDLING_SETUP.md — Issue 0b](TTS_BUNDLING_SETUP.md#issue-0b-port-39998-already-in-use-eaddrinuse).
+## Port 39998 (one listener)
 
-## Cursor MCP configuration
+MCP, **rolandostar.tabletopsimulator-lua**, and **sebaestschjin.tts-editor** all want **39998**. Use **one** per session. Details: [TTS_BUNDLING_SETUP.md — Issue 0b](TTS_BUNDLING_SETUP.md#issue-0b-port-39998-already-in-use-eaddrinuse). Tool **`tts_bridge_status`** (when MCP is up) summarizes **39998** / **39999**.
 
-In Cursor, add an MCP server whose command runs the compiled entry (adjust the path if your clone lives elsewhere).
-
-**Example (`mcp.json` or Cursor MCP settings):**
-
-```json
-{
-  "mcpServers": {
-    "toronto-rising-tts": {
-      "command": "node",
-      "args": ["D:\\Projects\\.CODING\\toronto-rising-tts\\.tools\\tts-mcp\\dist\\index.js"],
-      "cwd": "D:\\Projects\\.CODING\\toronto-rising-tts"
-    }
-  }
-}
-```
-
-Use forward slashes if your environment prefers: `D:/Projects/.CODING/toronto-rising-tts/.tools/tts-mcp/dist/index.js`.
-
-After saving, reload MCP / restart Cursor if needed. The server speaks **stdio** only (no HTTP port).
-
-## Tools exposed
+## Agent tools (reference)
 
 | Tool | Purpose |
 |------|---------|
-| `tts_execute_lua` | Send `messageID: 3` execute with `script` and optional `guid` (default `"-1"` Global). **Timeouts:** `idleTimeoutMs` default 60000 — omit for long sequence gaps; pass ~2000–5000 for fast print-only probes. `maxWaitMs` default 30000 — raise toward 120000 for multi-minute runs. Returning a serializable value usually ends without waiting the full idle window. Returns `prints`, `returnValue`, `error`, `customMessages`, `timedOut`. |
-| `tts_send_custom_message` | Send `messageID: 2` with a JSON object; TTS delivers it to `onExternalMessage` in Lua. Fire-and-forget (no output capture). |
+| `tts_bridge_status` | **39998** / **39999** + short `hint`. |
+| `tts_execute_lua` | Run Lua in TTS; read `prints` / `returnValue` / errors. |
+| `tts_send_custom_message` | Fire-and-forget `onExternalMessage` payload. |
+| `tts_quiet_refresh_object` | **GUID-only OK:** omit `luaEntryPath` / `xmlPath` to find `*.guid.lua` and `*.guid.xml` (repo + `TTS_OBJECT_SYNC_DIRS`). Not for Global `-1`. |
 
-**Execute context:** The target object must already have a script slot in TTS, or execute fails (see External Editor API “Execute Lua Code”).
+### `tts_quiet_refresh_object` caveats
 
-## Scripts (local)
+- Object is **destroyed and respawned** (flicker; stale userdata elsewhere).
+- **Global** needs Save & Play.
+- Very large JSON may need a full save reload instead.
+
+## npm scripts
 
 | Command | Description |
 |---------|-------------|
-| `npm run tts-bridge:build` | Compile only `tts-bridge`. |
-| `npm run tts-bridge:test` | Vitest suite for the bridge (mock TTS, no game). |
+| `npm run tts-prepare-live-session` | Session prep script (used by **Prepare Live Game Session** task). `npm run tts-game-day-init` is an alias. |
+| `npm run tts-quiet-refresh -- <guid>` | Standalone refresh (needs free **39998**). |
 | `npm run tts-mcp:build` | Build bridge + MCP. |
-| `npm run tts-mcp:start` | Run the MCP server on stdio (normally Cursor spawns this; useful for debugging). |
-| `npm run tts-bridge:listen` | Bridge only: listen on **39998** and persist Lua **`sendExternalMessage`** `type: "write"` to **`.dev/.debug/`** (no MCP). |
+| `npm run tts-mcp:start` | Stdio MCP (debug). |
+| `npm run tts-bridge:listen` | Bridge only: **39998** + `.dev/.debug` writes ([DEBUG_FILE_LOGGING.md](DEBUG_FILE_LOGGING.md)). |
 
-**File writes from Lua:** When the bridge holds **39998**, inbound **`messageID` 4** with `customMessage.type === "write"` is written under **`.dev/.debug/`** (see [DEBUG_FILE_LOGGING.md](DEBUG_FILE_LOGGING.md)). MCP startup calls **`ensureListening()`** so this works before the first `tts_execute_lua`.
+## More reading
 
-## References
-
-- In-repo API notes: [External Editor API.md](tts-api/Getting%20Started/External%20Editor%20API.md)
-- Bundling / ports: [TTS_BUNDLING_SETUP.md](TTS_BUNDLING_SETUP.md)
+- [External Editor API.md](tts-api/Getting%20Started/External%20Editor%20API.md)
+- [TTS_BUNDLING_SETUP.md](TTS_BUNDLING_SETUP.md)

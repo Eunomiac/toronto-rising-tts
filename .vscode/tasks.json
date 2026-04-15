@@ -180,6 +180,41 @@
         "panel": "shared",
         "focus": true
       }
+    },
+    {
+      "label": "Prepare Live Game Session",
+      "dependsOn": ["Build: TTS MCP (Node)"],
+      "dependsOrder": "sequence",
+      "type": "shell",
+      "command": "npm run tts-prepare-live-session",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "clear": true
+      }
+    },
+    {
+      "label": "TTS: Quiet refresh object (paste GUID)",
+      "type": "shell",
+      "command": "npm run tts-quiet-refresh -- ${input:ttsObjectGuid}",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "TTS_OBJECT_SYNC_DIRS": "${env:LOCALAPPDATA}\\Temp\\Tabletop Simulator\\Tabletop Simulator Lua"
+        }
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "clear": false
+      }
     }
   ],
   "inputs": [
@@ -194,6 +229,12 @@
       "type": "promptString",
       "description": "TTS save name or number (examples: 123, TS_Save_123, TS_Save_123.json)",
       "default": "TS_Save_"
+    },
+    {
+      "id": "ttsObjectGuid",
+      "type": "promptString",
+      "description": "Object GUID from Tabletop Simulator (object context menu → Scripting)",
+      "default": ""
     }
   ]
 }

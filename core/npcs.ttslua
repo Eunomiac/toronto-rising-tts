@@ -587,6 +587,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
         back,
         imageScalar
     )
+
     local spawnedFig
     ---@diagnostic disable-next-line: undefined-global
     local okObj, errObj = pcall(function()

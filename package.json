@@ -9,6 +9,9 @@
     "tts-bridge:test": "vitest run --config .tools/tts-bridge/vitest.config.ts",
     "tts-mcp:build": "npm run tts-bridge:build && tsc -p .tools/tts-mcp/tsconfig.json",
     "tts-mcp:start": "node .tools/tts-mcp/dist/index.js",
+    "tts-prepare-live-session": "node scripts/prepare-live-session.mjs",
+    "tts-game-day-init": "npm run tts-prepare-live-session",
+    "tts-quiet-refresh": "node scripts/tts-quiet-refresh.mjs",
     "tts:smoke": "node .tools/tts-bridge/scripts/smoke-test.mjs",
     "code-review:build": "tsc -p .tools/code-review/tsconfig.build.json",
     "code-review:test": "vitest run --config .tools/code-review/vitest.config.ts",
@@ -29,6 +32,8 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.28.0",
+    "@tts-tools/savefile": "^2.4.0",
+    "luabundle": "^1.7.0",
     "luaparse": "^0.3.1",
     "zod": "^4.3.6"
   },

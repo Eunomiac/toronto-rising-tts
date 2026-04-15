@@ -3,6 +3,7 @@
  */
 import net from "node:net";
 import type { ExecuteOptions, ExecuteResult, TtsExecuteError } from "./types.js";
+import { formatInboundPortConflictMessage } from "./port-39998-help.js";
 import { readJsonFromSocket } from "./socket-json.js";
 import { handleInboundWriteMessage } from "./write-sink.js";
 
@@ -73,11 +74,7 @@ export class TtsExternalEditorBridge {
 
       server.once("error", (err: NodeJS.ErrnoException) => {
         if (err.code === "EADDRINUSE") {
-          reject(
-            new Error(
-              `Port ${this.serverPort} is already in use (TTS editor inbound). Only one listener is allowed on 39998 — stop other External Editor bridges or VS Code TTS extensions or change serverPort. Original: ${err.message}`
-            )
-          );
+          reject(new Error(formatInboundPortConflictMessage(this.serverPort, err.message)));
           return;
         }
         reject(err);
@@ -94,6 +91,13 @@ export class TtsExternalEditorBridge {
         resolve();
       });
     });
+  }
+
+  /**
+   * True when this bridge instance is listening on the TTS → editor inbound port (default 39998).
+   */
+  isInboundListening(): boolean {
+    return this.server !== null;
   }
 
   /**
