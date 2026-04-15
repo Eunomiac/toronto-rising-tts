@@ -45,7 +45,7 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
 
  -->
 
-<Include src="ui/player/csheets/csheet_defaults.xml" />
+<Include src="csheet_defaults.xml" />
 
 <Panel id="paper_root" class="page_root padded_border">
 
@@ -55,16 +55,29 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
     <Panel class="spacer" color="rgba(0, 0, 0, 0)" preferredHeight="10" flexibleHeight="0" minHeight="10" />
     <Image id="section_lineage_Purple" image="section_lineage_Purple" />
     <Image id="divider_bloodBonds" image="divider_bloodBonds" />
+
     <HorizontalLayout class="box_column_container">
       <VerticalLayout class="box_column">
+
+
         <VerticalLayout class="box_text_container">
-          <Panel class="box_text_panel_title">
-            <Text class="box_text_panel_title_text" text="Thrall" />
-          </Panel>
+          <HorizontalLayout class="box_text_title_bar" >
+            <Text class="box_text_title_text" text="THRALL" />
+            <Panel class="box_text_panel_title_dotline" >
+              <Image id="dot_on_1" image="dot_yellow" class="dot box_text_title_dot dot_1" />
+              <Image id="dot_on_2" image="dot_yellow" class="dot box_text_title_dot dot_2" />
+              <Image id="dot_on_3" image="dot_yellow" class="dot box_text_title_dot dot_3" />
+              <Image id="dot_on_1" image="dot_blank" class="dot box_text_title_dot dot_4" />
+              <Image id="dot_on_2" image="dot_blank" class="dot box_text_title_dot dot_5" />
+              <Image id="dot_on_3" image="dot_blank" class="dot box_text_title_dot dot_6" />
+            </Panel>
+          </HorizontalLayout>
           <Panel class="box_text_panel_body">
             <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
           </Panel>
         </VerticalLayout>
+
+
       </VerticalLayout>
 
       <VerticalLayout class="box_column">

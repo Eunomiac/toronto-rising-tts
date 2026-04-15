@@ -41,13 +41,13 @@
     <Text id="debugState" class="debugText"></Text>
   </Panel>
 
-  <Include src="ui/storyteller/panel_debug_light.xml" />
+  <Include src="panel_debug_light.xml" />
 
   <!-- ================================================================ -->
   <!-- Sidebar (reference image toggles) and Camera bar                 -->
   <!-- ================================================================ -->
-  <Include src="ui/storyteller/panel_camera.xml" />
+  <Include src="panel_camera.xml" />
 
-  <Include src="ui/storyteller/panel_storyteller_toolbar.xml" />
+  <Include src="panel_storyteller_toolbar.xml" />
 
 </Panel>

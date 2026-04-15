@@ -2,36 +2,66 @@
 
   <Image preserveAspect="true" />
   <Image class="dot" rectAlignment="UpperLeft" preserveAspect="true" raycastTarget="false" active="false" />
-
-  <Image class="dot_standard" height="63" width="63" />
-
+  <Image class="dot_standard" height="63" width="63"  />
+  <Image class="dot_small" />
   <Image class="dot_large" height="113" width="113" />
-
   <Image class="box" rectAlignment="UpperLeft" preserveAspect="true" raycastTarget="false" active="false" />
-
   <Image class="box_standard" height="80" width="80" />
 
   <Text class="xp_text" fontSize="82" fontStyle="Bold" color="#FFDD00" rectAlignment="LowerCenter" alignment="LowerCenter" offsetXY="-67 125" outline="#000000" outlineSize="2 2" shadow="#000000" shadowDistance="5 -5" />
 
   <Panel class="page_root" active="true" rectAlignment="MiddleCenter" width="1545" height="2000" scale="0.1 0.1 0.1" position="0 0 -21" rotation="0 0 180" pivot="0.5 0.5" />
-  <Panel class="padded_border" padding="50 50 140 100" />
-  <VerticalLayout class="vertical_section_container" spacing="10" height="100%" width="100%" childForceExpandWidth="true" childForceExpandHeight="false" childAlignment="UpperCenter" />
-  <HorizontalLayout class="box_column_container" spacing="10" childForceExpandWidth="true" childForceExpandHeight="true" width="1500" />
-  <VerticalLayout class="box_column" childForceExpandWidth="true" childForceExpandHeight="false" childAlignment="UpperLeft" spacing="5" />
+    <Panel class="padded_border" padding="50 50 140 100" />
+
+  <VerticalLayout class="vertical_section_container" spacing="10" height="100%" width="100%" childForceExpandWidth="true" childForceExpandHeight="false" childAlignment="UpperCenter" padding="40 40 0 0" />
+  <HorizontalLayout class="box_column_container" spacing="10" childForceExpandWidth="true" childForceExpandHeight="false" width="1500" />
+  <VerticalLayout class="box_column" minWidth="200" childForceExpandWidth="true" childForceExpandHeight="false" childAlignment="UpperLeft" spacing="15" />
+
+
+  <!-- Box Container Styles -->
+  <VerticalLayout class="box_text_container" childForceExpandWidth="true" childForceExpandHeight="false" color="#000000" flexibleHeight="0" outline="#FFFFFF" outlineSize="3 3" spacing="5" padding="10 10 5 5" />
+
+  <!-- <VerticalLayout class="box_text_container" childForceExpandWidth="true" childForceExpandHeight="false" color="rgba(0, 0, 0, 0.2)" flexibleHeight="0" spacing="5" padding="10 10 5 5" /> -->
+
+  <!-- Box Container: Title Bar & Dotline -->
+  <HorizontalLayout class="box_text_title_bar" preferredHeight="20" minHeight="20" flexibleHeight="0" childForceExpandWidth="true" padding="0 0 0 0" childAlignment="MiddleLeft" />
+  <HorizontalLayout class="1_dot" padding="0 20 0 0" />
+  <HorizontalLayout class="2_dots" padding="0 40 0 0" />
+  <HorizontalLayout class="3_dots" padding="0 60 0 0" />
+  <HorizontalLayout class="4_dots" padding="0 80 0 0" />
+  <HorizontalLayout class="5_dots" padding="0 100 0 0" />
+  <HorizontalLayout class="6_dots" padding="0 120 0 0" />
+
+  <Text class="box_text_title_text" resizeTextForBestFit="true" horizontalOverflow="Truncate" verticalOverflow="Truncate" alignment="MiddleLeft" color="#FFFFFF" fontSize="14" fontStyle="Bold" />
+  <Text class="flaw_title" color="#FF0000" />
+  <Panel class="box_text_panel_title_dotline" ignoreLayout="true" rectAlignment="MiddleRight" width="120" height="20" />
+  <Image class="box_text_title_dot" height="40" width="40" offsetXY="-5 10" rectAlignment="MiddleRight" active="true" />
+  <Image class="dot_1" offsetXY="10 0" />
+  <Image class="dot_2" offsetXY="-10 0" />
+  <Image class="dot_3" offsetXY="-30 0" />
+  <Image class="dot_4" offsetXY="-50 0" />
+  <Image class="dot_5" offsetXY="-70 0" />
+  <Image class="dot_6" offsetXY="-90 0" />
+
+  <!-- Box Container: Body -->
+  <Panel class="box_text_panel_body" padding="0 0 0 0" color="#000000" />
+  <VerticalLayout class="box_text_panel_body" padding="0 0 0 0" color="#000000" />
+  <Text class="box_text" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="18" horizontalOverflow="Wrap" verticalOverflow="Truncate" alignment="UpperLeft" color="#DDDDDD" fontSize="18" />
+  <Text class="flavor_text" fontStyle="BoldAndItalic" color="#FFFFFF" />
+
+
+
+
+
+
+
+
+
   <HorizontalLayout class="four_column_text" spacing="20" childForceExpandWidth="true" childForceExpandHeight="false" childAlignment="UpperCenter" />
 
   <VerticalLayout class="quarter_column" flexibleHeight="0" />
-  <VerticalLayout class="box_text_container" childForceExpandWidth="true" childForceExpandHeight="false" color="#000000" flexibleHeight="0" outline="#FFFFFF" outlineSize="5 5" />
-
-  <Panel class="box_text_panel_title" padding="10 10 0 0" color="#000000" />
-  <Text class="box_text_panel_title_text" resizeTextForBestFit="false" horizontalOverflow="Truncate" verticalOverflow="Truncate" alignment="UpperCenter" color="#FFFFFF" fontSize="32" fontStyle="Bold" />
 
 
-  <Panel class="box_text_panel_dotline" preferredHeight="30" minHeight="30" flexibleHeight="0" />
-  <Text class="box_text_panel_dotline_text" resizeTextForBestFit="false" horizontalOverflow="Truncate" verticalOverflow="Overflow" alignment="UpperCenter" color="#FFFFFF" fontSize="32" fontStyle="Bold" scale="1.5 1.5 1.5" offsetXY="0 10" />
-
-  <Panel class="box_text_panel_body"  padding="10 10 10 10" color="#000000" />
-  <Text class="box_text" resizeTextForBestFit="true" resizeTextMaxSize="18" horizontalOverflow="Wrap" verticalOverflow="Truncate" alignment="UpperLeft" color="#FFFFFF" fontSize="18" />
 
   <Button class="page_navigation" width="100" height="2000" ignoreLayout="true" />
 

@@ -29,11 +29,11 @@
         <Panel id="panel_scenes" active="false">
           <Text fontSize="11" color="#AAAAAA">Scenes: TBD.</Text>
         </Panel>
-        <Include src="ui/storyteller/panel_pcs.xml" />
+        <Include src="panel_pcs.xml" />
         <Panel id="panel_phases" active="false">
           <Text fontSize="11" color="#AAAAAA">Phases: TBD.</Text>
         </Panel>
-        <Include src="ui/storyteller/panel_npcs.xml" />
+        <Include src="panel_npcs.xml" />
       </VerticalLayout>
     </Panel>
   </VerticalLayout>
