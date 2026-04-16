@@ -1,5 +1,6 @@
 /**
  * Agent guidance: .dev/TTS_MCP.md; .dev/TTS_BUNDLING_SETUP.md (port 39998 listener); .dev/tts-api/Getting Started/External Editor API.md.
+ * Toronto Rising Lua may emit `TR_AGENT_V1`-prefixed JSON lines via `U.emitForAgent` / `U.mcpEmitResult` (lib/util.ttslua).
  */
 import net from "node:net";
 import type { ExecuteOptions, ExecuteResult, TtsExecuteError } from "./types.js";
@@ -11,11 +12,11 @@ const DEFAULT_SERVER_PORT = 39_998;
 
 /**
  * After the last inbound print/custom/return-related message, wait this long before treating
- * a print-only execute as complete. Large default so coroutine sequences (e.g. lighting tests)
+ * a print-only execute as complete. Default 90000 ms so coroutine sequences (e.g. lighting or easing tests)
  * with multi-second gaps do not false-complete; callers may pass a smaller `idleTimeoutMs` for
  * fast probe scripts. The overall call is still capped by `maxWaitMs`.
  */
-const DEFAULT_IDLE_TIMEOUT_MS = 60_000;
+const DEFAULT_IDLE_TIMEOUT_MS = 90_000;
 
 function asMessageId(msg: Record<string, unknown>): number | undefined {
   const id = msg["messageID"];

@@ -195,6 +195,38 @@ describe("TtsExternalEditorBridge", () => {
     expect(result.returnValue).toBeUndefined();
   });
 
+  /**
+   * U.RunSequenceWithOptions finishes in coroutines after the chunk may have ended without a return value.
+   * Mock: delayed prints, no messageID 5 — bridge must idle-collect final line (agent harness for Phase 1).
+   */
+  it("collects delayed prints without returnValue (RunSequence / MCP pattern)", async () => {
+    const { editorPort, commandPort } = await twoDistinctFreePorts();
+    mock = new MockTts(commandPort, editorPort, async (msg) => {
+      if (msg["messageID"] !== 3) {
+        return;
+      }
+      await sendOneShotJson(editorPort, { messageID: 2, message: "RS_INIT" });
+      await new Promise((r) => setTimeout(r, 40));
+      await sendOneShotJson(editorPort, { messageID: 2, message: "RS_SCHEDULED" });
+      await new Promise((r) => setTimeout(r, 80));
+      await sendOneShotJson(editorPort, { messageID: 2, message: "RS_ONCOMPLETE ok=true detail=nil" });
+    });
+    await mock.start();
+    bridge = new TtsExternalEditorBridge({ clientPort: commandPort, serverPort: editorPort });
+    const result = await bridge.executeWithOutput({
+      script: "print('noop')",
+      maxWaitMs: 8000,
+      idleTimeoutMs: 400,
+    });
+    expect(result.timedOut).toBe(false);
+    expect(result.error).toBeUndefined();
+    expect(result.returnValue).toBeUndefined();
+    const joined = result.prints.join("\n");
+    expect(joined.includes("RS_INIT")).toBe(true);
+    expect(joined.includes("RS_ONCOMPLETE ok=true")).toBe(true);
+    expect(joined.includes("detail=nil")).toBe(true);
+  });
+
   it("serializes concurrent executeWithOutput calls", async () => {
     const { editorPort, commandPort } = await twoDistinctFreePorts();
     let inboundExecuteCount = 0;

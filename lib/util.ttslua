@@ -2638,6 +2638,7 @@ end
 -- @param isForcing boolean Optional: If true, executes afterFunc even if timeout (default: false)
 -- @param maxWait number Optional: Max seconds to wait before timeout (default: 60)
 -- @param testFrequency number Optional: Seconds between condition checks (default: 0.1)
+-- @param abortCheck function|nil Optional: If set, called each loop iteration; if it returns true, the wait ends successfully and afterFunc runs (used by U.RunSequenceWithOptions for cancel / sequence timeout)
 -- @return function Returns a function that returns true when afterFunc has completed
 --
 -- @usage U.waitUntil(function() print("Done!") end, 5) -- Wait 5 seconds
@@ -2646,7 +2647,7 @@ end
 -- @usage U.waitUntil(func, {cardObj, 2, customTest}) -- Wait for all conditions
 --
 -- NOTE: Requires startLuaCoroutine(Global, "CheckCoroutine") - self refers to Global in Global context
-function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
+function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency, abortCheck)
 	if afterFunc == nil then return end
 	if isForcing == nil then isForcing = false end
 	if maxWait == nil then maxWait = 60 end  -- Default to 60 seconds (changed from frames)
@@ -2738,6 +2739,15 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
 				break  -- Condition met, exit loop
 			end
 
+			if abortCheck ~= nil and U.Type(abortCheck) == "function" then
+				local okAbort, abortResult = pcall(function()
+					return abortCheck()
+				end)
+				if okAbort and abortResult then
+					break
+				end
+			end
+
 			-- Calculate elapsed time
 			local elapsedTime = 0
 			if waitStartTime ~= nil then
@@ -2793,6 +2803,145 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)
 	return function() return afterReturnVal ~= nil end
 end
 
+--- Options table for U.RunSequenceWithOptions (keys are optional unless noted):
+-- maxWait — per-step max wait seconds for U.waitUntil (default 60 when nil)
+-- frequency — per-step poll interval seconds for U.waitUntil
+-- onComplete(ok, detail) — runs exactly once when the sequence ends; detail may be "step_error", "sequence_timeout", "cancelled", or cancelRegistry.reason
+-- onStepStart(stepIndex, stepName) — before each step function runs
+-- onStepEnd(stepIndex, stepName, success, err) — after each step (err if pcall failed)
+-- stepNames — array of labels, e.g. stepNames[1] for the first step
+-- sequenceTimeoutSeconds — wall-clock cap; sets cancel.cancelled and reason "sequence_timeout"
+-- cancelRegistry — table { cancelled = boolean, reason = string|nil }; set cancelled to abort (best-effort). Pass your own table if you need external cancel together with sequenceTimeoutSeconds.
+
+--- Executes a sequence with optional completion hooks, step labels, sequence timeout, and external cancel.
+-- Mutates funcs via U.shift (callers must pass a disposable table). Uses U.waitUntil with abortCheck so
+-- cancelRegistry / sequence timeout ends waits without waiting for the step condition.
+--
+-- MCP / External Editor: the chunk that calls this returns immediately; work continues in coroutines.
+-- Use the returned isDone predicate, onComplete, or U.emitForAgent / U.mcpEmitResult — not a bare return — for agent-visible completion.
+--
+-- @param funcs table Array of step functions (each returns a U.waitUntil testRef for the *next* inter-step wait)
+-- @param opts table|nil Options (see fields above)
+-- @return function isDone() returns true when the sequence has fully finished (including error / cancel paths)
+function U.RunSequenceWithOptions(funcs, opts)
+	U.Assert("U.RunSequenceWithOptions", funcs, "table", "function")
+	opts = opts or {}
+	local maxWait = opts.maxWait
+	local frequency = opts.frequency
+	local onComplete = opts.onComplete
+	local onStepStart = opts.onStepStart
+	local onStepEnd = opts.onStepEnd
+	local stepNames = opts.stepNames
+	local sequenceTimeoutSeconds = opts.sequenceTimeoutSeconds
+	local cancelRegistry = opts.cancelRegistry
+
+	local completionFired = false
+	local function invokeOnComplete(ok, detail)
+		if completionFired then
+			return
+		end
+		completionFired = true
+		if onComplete ~= nil and U.Type(onComplete) == "function" then
+			local cok, cerr = pcall(function()
+				onComplete(ok, detail)
+			end)
+			if not cok then
+				log({ RunSequenceWithOptions_onComplete_error = cerr, traceback = debug.traceback() })
+			end
+		end
+	end
+
+	local cancel = cancelRegistry
+	if cancel == nil then
+		cancel = { cancelled = false, reason = nil }
+	end
+	if sequenceTimeoutSeconds ~= nil and U.Type(sequenceTimeoutSeconds) == "number" and sequenceTimeoutSeconds > 0 then
+		Wait.time(function()
+			cancel.cancelled = true
+			cancel.reason = "sequence_timeout"
+		end, sequenceTimeoutSeconds)
+	end
+
+	local isDone = false
+	local stepIndex = 0
+
+	local function invokeStep(fn, index)
+		local name = nil
+		if stepNames ~= nil and U.Type(stepNames) == "table" then
+			name = stepNames[index]
+		end
+		if onStepStart ~= nil and U.Type(onStepStart) == "function" then
+			pcall(function()
+				onStepStart(index, name)
+			end)
+		end
+		local ok, result = pcall(fn)
+		if onStepEnd ~= nil and U.Type(onStepEnd) == "function" then
+			pcall(function()
+				onStepEnd(index, name, ok, ok and nil or result)
+			end)
+		end
+		if not ok then
+			log({ RunSequenceWithOptions_step_error = result, stepIndex = index, traceback = debug.traceback() })
+			return nil, false
+		end
+		return result, true
+	end
+
+	local function runNextFunc(lastFuncReturnTest)
+		local thisFunc = U.shift(funcs)
+		local function abortCheck()
+			return cancel.cancelled == true
+		end
+
+		U.waitUntil(function()
+			if cancel.cancelled then
+				isDone = true
+				invokeOnComplete(false, cancel.reason or "cancelled")
+				return
+			end
+			if thisFunc == nil then
+				isDone = true
+				invokeOnComplete(true, nil)
+				return
+			end
+			stepIndex = stepIndex + 1
+			local ret, stepOk = invokeStep(thisFunc, stepIndex)
+			if not stepOk then
+				isDone = true
+				invokeOnComplete(false, "step_error")
+				return
+			end
+			if cancel.cancelled then
+				isDone = true
+				invokeOnComplete(false, cancel.reason or "cancelled")
+				return
+			end
+			runNextFunc(ret)
+		end, lastFuncReturnTest, false, maxWait, frequency, abortCheck)
+	end
+
+	local firstFunc = U.shift(funcs)
+	if firstFunc == nil then
+		isDone = true
+		invokeOnComplete(true, nil)
+	else
+		stepIndex = 1
+		local ret, stepOk = invokeStep(firstFunc, stepIndex)
+		if not stepOk then
+			isDone = true
+			invokeOnComplete(false, "step_error")
+		elseif cancel.cancelled then
+			isDone = true
+			invokeOnComplete(false, cancel.reason or "cancelled")
+		else
+			runNextFunc(ret)
+		end
+	end
+
+	return function() return isDone == true end
+end
+
 --- Executes a sequence of functions sequentially with conditional delays (coroutine-based)
 --
 -- Runs functions one after another, where each function's return value determines when the next executes.
@@ -2804,6 +2953,8 @@ end
 --   - nil (default 0.5s delay)
 --
 -- This enables complex multi-step sequences like scene transitions: fade lights -> wait -> display text -> wait -> play sound.
+--
+-- For completion callbacks, step names, sequence timeout, or cancel, use U.RunSequenceWithOptions.
 --
 -- @param funcs table Array of functions to execute sequentially
 -- @param maxWait number Optional: Maximum wait time per step (default: uses U.waitUntil default)
@@ -2818,28 +2969,52 @@ end
 --
 -- NOTE: Uses U.waitUntil internally, requires coroutine support in Global context
 function U.RunSequence(funcs, maxWait, frequency)
-	U.Assert("U.RunSequence", funcs, "table", "function")
+	return U.RunSequenceWithOptions(funcs, {
+		maxWait = maxWait,
+		frequency = frequency,
+	})
+end
 
-	local isDone = false
+--- Line prefix for U.emitForAgent / U.mcpEmitResult (parse: strip prefix and first space, then JSON.decode).
+U.AGENT_EMIT_LINE_PREFIX = "TR_AGENT_V1"
 
-	local function runNextFunc(lastFuncReturnTest)
-		local thisFunc = U.shift(funcs)
-		U.waitUntil(function()
-			if thisFunc == nil then
-				isDone = true
-				return
-			end
-			runNextFunc(thisFunc())
-		end, lastFuncReturnTest, false, maxWait, frequency)
+local agentEmitSeq = 0
+
+--- Emits one machine-readable line for External Editor / MCP: `TR_AGENT_V1` + space + JSON.
+-- Envelope: { v = 1, seq, kind, t = os.time(), data = payload }. Monotonic seq helps hosts sort when print delivery order wobbles.
+-- @param kind string|nil Logical channel (default `"trace"`). Use `"result"` for final outcomes (or call U.mcpEmitResult).
+-- @param data table|any Payload; non-tables become { value = data }
+function U.emitForAgent(kind, data)
+	local k = kind
+	if k == nil or k == "" or U.Type(k) ~= "string" then
+		k = "trace"
 	end
-
-	local func = U.shift(funcs)
-	if func == nil then
-		isDone = true
-	else
-		runNextFunc(func())
+	local payload = data
+	if U.Type(payload) ~= "table" then
+		payload = { value = payload }
 	end
-	return function() return isDone == true end
+	agentEmitSeq = agentEmitSeq + 1
+	local envelope = {
+		v = 1,
+		seq = agentEmitSeq,
+		kind = k,
+		t = os.time(),
+		data = payload,
+	}
+	local okEnc, encoded = pcall(function()
+		return JSON.encode(envelope)
+	end)
+	if not okEnc then
+		print(U.AGENT_EMIT_LINE_PREFIX .. " {\"v\":1,\"kind\":\"error\",\"seq\":" .. tostring(agentEmitSeq) .. ",\"data\":{\"err\":\"JSON.encode\"}}")
+		return
+	end
+	print(U.AGENT_EMIT_LINE_PREFIX .. " " .. encoded)
+end
+
+--- Summary / final payload for MCP agents (`kind` = `"result"`). Same wire format as U.emitForAgent.
+-- @param data table|any Same as U.emitForAgent `data`
+function U.mcpEmitResult(data)
+	U.emitForAgent("result", data)
 end
 
 --- Executes a sequence of functions with fixed time delays (using Wait.time)
@@ -3047,6 +3222,187 @@ function U.clone(t, isDeepCloning)
     t2[k] = v
   end
   return t2
+end
+
+-- ============================================================================
+-- DEBUG OBJECT RESOLUTION (tag + GM Notes header)
+-- ============================================================================
+
+--- TTS object tag used with `TR_DEBUG:v1` GM Notes lines for stable test rig lookup.
+U.DEBUG_OBJECT_TAG = "debugObject"
+
+--- Builds the first line of GM Notes that identifies a debug rig object.
+--- @param testId string Short test id (e.g. `"easing"`).
+--- @param role string Role within that test (e.g. `"light"`).
+--- @return string Header line, no trailing newline.
+function U.debugFormatGmNotesHeader(testId, role)
+	if U.Type(testId) ~= "string" or U.Type(role) ~= "string" then
+		return ""
+	end
+	return "TR_DEBUG:v1 test=" .. testId .. " role=" .. role
+end
+
+local function parseDebugGmFirstLine(firstLine)
+	if U.Type(firstLine) ~= "string" then
+		return nil
+	end
+	if firstLine:sub(1, 11) ~= "TR_DEBUG:v1" then
+		return nil
+	end
+	local testKey = string.match(firstLine, "test=([^%s]+)")
+	local roleKey = string.match(firstLine, "role=([^%s]+)")
+	if testKey == nil or roleKey == nil then
+		return nil
+	end
+	return { test = testKey, role = roleKey }
+end
+
+--- Parses `TR_DEBUG:v1` metadata from the first line of GM Notes.
+--- @param gmNotes string|nil Raw GM Notes text.
+--- @return table|nil `{ test, role }` or nil if missing or invalid.
+function U.debugParseGmNotesHeader(gmNotes)
+	if U.Type(gmNotes) ~= "string" or gmNotes == "" then
+		return nil
+	end
+	local firstLine = string.match(gmNotes, "^[^\r\n]*")
+	return parseDebugGmFirstLine(firstLine)
+end
+
+--- All spawned objects whose tag matches `U.DEBUG_OBJECT_TAG` and whose GM Notes match testId+role.
+--- @param testId string
+--- @param role string
+--- @return table Array of Object (may be empty).
+function U.getDebugObjectsByTestAndRole(testId, role)
+	local out = {}
+	if U.Type(testId) ~= "string" or U.Type(role) ~= "string" then
+		return out
+	end
+	---@diagnostic disable-next-line: undefined-global
+	local tagged = getObjectsWithTag(U.DEBUG_OBJECT_TAG)
+	if U.Type(tagged) ~= "table" then
+		return out
+	end
+	for _, obj in ipairs(tagged) do
+		if obj ~= nil and obj.getGMNotes ~= nil then
+			local okN, notes = pcall(function()
+				return obj.getGMNotes()
+			end)
+			if okN and U.Type(notes) == "string" then
+				local parsed = U.debugParseGmNotesHeader(notes)
+				if parsed ~= nil and parsed.test == testId and parsed.role == role then
+					table.insert(out, obj)
+				end
+			end
+		end
+	end
+	return out
+end
+
+--- Returns a single rig object; duplicatePolicy controls multiples.
+--- @param testId string
+--- @param role string
+--- @param opts table|nil `{ duplicatePolicy = "first"|"first_warn"|"error" }` (default `"first_warn"`).
+--- @return userdata|nil Game object or nil.
+function U.getDebugObjectSingle(testId, role, opts)
+	opts = opts or {}
+	local policy = opts.duplicatePolicy or "first_warn"
+	local matches = U.getDebugObjectsByTestAndRole(testId, role)
+	if #matches == 0 then
+		return nil
+	end
+	if #matches > 1 then
+		if policy == "error" then
+			error(
+				"U.getDebugObjectSingle: multiple debug objects ("
+					.. tostring(#matches)
+					.. ") for test="
+					.. tostring(testId)
+					.. " role="
+					.. tostring(role)
+			)
+		end
+		if policy == "first_warn" then
+			print(
+				"[U.getDebugObjectSingle] duplicate debug objects ("
+					.. tostring(#matches)
+					.. ") for test="
+					.. tostring(testId)
+					.. " role="
+					.. tostring(role)
+					.. "; using first"
+			)
+		end
+	end
+	return matches[1]
+end
+
+--- Sets GM Notes (header + optional body) and ensures `U.DEBUG_OBJECT_TAG` is present among tags.
+--- @param obj userdata|nil TTS Object
+--- @param testId string
+--- @param role string
+--- @param extraNotes string|nil Appended after header (e.g. preserved NPC light tuning lines).
+--- @return boolean True if GM Notes and tags were applied without pcall failure.
+function U.setDebugObjectGmNotesAndTag(obj, testId, role, extraNotes)
+	if obj == nil then
+		return false
+	end
+	if U.Type(testId) ~= "string" or U.Type(role) ~= "string" then
+		return false
+	end
+	local header = U.debugFormatGmNotesHeader(testId, role)
+	if header == "" then
+		return false
+	end
+	local body = ""
+	if U.Type(extraNotes) == "string" and extraNotes ~= "" then
+		body = "\n" .. extraNotes
+	end
+	local okN = pcall(function()
+		obj.setGMNotes(header .. body)
+	end)
+	local okT = pcall(function()
+		local merged = {}
+		local seen = {}
+		if obj.getTags ~= nil then
+			local existing = obj.getTags()
+			if U.Type(existing) == "table" then
+				for _, t in ipairs(existing) do
+					if U.Type(t) == "string" and seen[t] ~= true then
+						seen[t] = true
+						table.insert(merged, t)
+					end
+				end
+			end
+		end
+		if seen[U.DEBUG_OBJECT_TAG] ~= true then
+			table.insert(merged, U.DEBUG_OBJECT_TAG)
+		end
+		obj.setTags(merged)
+	end)
+	return okN and okT
+end
+
+--- Returns an existing rig object or creates one via `factory`, then tags it.
+--- @param testId string
+--- @param role string
+--- @param factory function Zero-arg; returns new Object or nil.
+--- @param opts table|nil `{ duplicatePolicy, extraNotes }` passed to lookup / `setDebugObjectGmNotesAndTag`.
+--- @return userdata|nil
+function U.ensureDebugObject(testId, role, factory, opts)
+	opts = opts or {}
+	local existing = U.getDebugObjectSingle(testId, role, opts)
+	if existing ~= nil then
+		return existing
+	end
+	if U.Type(factory) ~= "function" then
+		return nil
+	end
+	local ok, created = pcall(factory)
+	if not ok or created == nil then
+		return nil
+	end
+	U.setDebugObjectGmNotesAndTag(created, testId, role, opts.extraNotes)
+	return created
 end
 
 return U

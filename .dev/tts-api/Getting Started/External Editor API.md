@@ -180,6 +180,8 @@ When the editor sends Lua code to TTS using the ` Execute Lua Code ` message (de
 
 ```
 
+> **Toronto Rising (bridge / MCP):** The official text only guarantees that a return triggers **`messageID` 5**. When integrating tools such as this repo’s **tts-bridge** or **`tts_execute_lua`**, assume **nested Lua tables** may **not** serialize into `returnValue` on the wire. For structured results, use **`return JSON.encode(payload)`** in Lua (and **`print`** the same string as a fallback), then **`JSON.parse`** on the host. For multi-line agent protocols, prefer **`U.emitForAgent`** / **`U.mcpEmitResult`** in [`lib/util.ttslua`](../../../lib/util.ttslua) (**`TR_AGENT_V1`**-prefixed JSON lines; see [`.dev/TTS_MCP.md`](../../TTS_MCP.md) — *Machine-readable agent lines* and *Return values*).
+
 ### Game Saved {#game-saved}
 
 Whenever the player saves the game in TTS, a save game notification is sent to any attached editor using message ID *6*.

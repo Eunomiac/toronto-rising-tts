@@ -29,6 +29,11 @@ export interface TtsExecuteError {
 /**
  * Result of one execute round-trip: collected `print` lines, optional `return` value,
  * optional error, optional `sendExternalMessage` payloads, and timeout flag.
+ *
+ * **`returnValue`:** Set from inbound `messageID` 5 when TTS sends it. Complex nested Lua tables often
+ * do not arrive (field stays unset). Prefer Lua `return JSON.encode(payload)` plus `print(encoded)` and
+ * parse JSON on the host; see `.dev/TTS_MCP.md` (*Return values*). For Toronto Rising, prefer
+ * `U.emitForAgent` / `U.mcpEmitResult` (`TR_AGENT_V1`-prefixed lines in `prints`); see *Machine-readable agent lines*.
  */
 export interface ExecuteResult {
   prints: string[];

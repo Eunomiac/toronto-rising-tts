@@ -1,0 +1,17 @@
+---
+description: Toronto Rising TTS — rapid iteration; no legacy cruft; delete unused code.
+alwaysApply: true
+---
+
+# Toronto Rising — development style
+
+This project is iterated **quickly**; requirements and layout change often.
+
+## Prefer a minimal, current codebase
+
+- **Do not** keep unused functions, dead branches, “just in case” placeholders, or obsolete compatibility shims unless the user explicitly asks to preserve them.
+- **Do not** assume backward compatibility is required. When something is replaced or no longer referenced, **remove** it and update docs/comments that still describe the old behavior.
+- When touching an area, **delete** clearly orphaned code paths rather than leaving commented-out or parallel “legacy” copies.
+- After removals, **grep** for stale names (roles, tags, helpers) and fix **call sites, prints, and `.dev` docs** that still mention them.
+
+Agents should default to: **only what is current and actually exercised** stays in the tree.

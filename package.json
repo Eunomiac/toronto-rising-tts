@@ -7,6 +7,8 @@
     "custom-ui-assets:merge": "node .tools/custom-ui-assets/merge-custom-ui-assets.js",
     "tts-bridge:build": "tsc -p .tools/tts-bridge/tsconfig.build.json",
     "tts-bridge:test": "vitest run --config .tools/tts-bridge/vitest.config.ts",
+    "tts-bridge:run-sequence-test": "npm run tts-bridge:build && node .tools/tts-bridge/scripts/run-sequence-live-test.mjs",
+    "tts-bridge:run-easing-mcp-test": "npm run tts-bridge:build && node .tools/tts-bridge/scripts/run-easing-mcp-test.mjs --only-easing",
     "tts-mcp:build": "npm run tts-bridge:build && tsc -p .tools/tts-mcp/tsconfig.json",
     "tts-mcp:start": "node .tools/tts-mcp/dist/index.js",
     "tts:smoke": "node .tools/tts-bridge/scripts/smoke-test.mjs",

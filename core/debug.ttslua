@@ -2156,20 +2156,25 @@ function DEBUG.findPotentialLights()
 end
 
 --- Test easing and path generation functions
--- Tests U.GetEasedValue, U.GetEasedPath, and enhanced U.Lerp with various scenarios
+-- Tests U.GetEasedValue, U.GetEasedPath, and enhanced U.Lerp with various scenarios.
 --
--- Required objects in scene (by GUID):
---   - TEST_OBJ_1: Object to lerp (position/rotation tests)
---   - TEST_OBJ_2: Object to lerp (parallel tests)
---   - TEST_CENTER_OBJ: Object to use as center for orbital paths
---   - TEST_TARGET_OBJ: Object to face/look at
+-- Visual demos use DEBUG.ensureEasingTestRig() — `debugObject` tag plus `TR_DEBUG:v1` in GM Notes.
+-- Interactive: DEBUG.testEasing() or testEasing(). MCP / hands-off: DEBUG.testEasingForMcp() or testEasingForMcp().
+
+--- Stable ids for easing visual rig objects (see U.DEBUG_OBJECT_TAG).
+DEBUG.EASING_DEBUG_TEST_ID = "easing"
+--- Role keys for GM Notes `TR_DEBUG:v1 test=easing role=…` (light + two reference blocks + spotlight).
+DEBUG.EASING_DEBUG_ROLES = {
+	LIGHT = "light",
+	CENTER = "center",
+	TARGET = "target",
+}
+
 -- Global state for interactive test continuation
 local testWaitingForContinue = false
 
--- Global function to continue to next test step (callable from console)
 --- Minimal test function to test just the look-at rotation
--- Orients TEST_LIGHT to face TEST_TARGET_OBJ immediately
--- Uses the same GUIDs as testEasing() for consistency
+-- Orients easing rig light to face easing rig target (same objects as testEasing visual tests).
 -- @usage testLookAt()
 function testLookAt()
 	-- Local broadcast function for this test
@@ -2177,21 +2182,20 @@ function testLookAt()
 		if color == nil then color = {1, 1, 1} end
 		broadcastToAll(message, color)
 	end
-	-- Use the same GUIDs as testEasing
-	local TEST_LIGHT_GUID = "6e3ee4"  -- Same as TEST_LIGHT in testEasing
-	local TEST_TARGET_GUID = "199e6f"  -- Same as TEST_TARGET_OBJ in testEasing
-
-	local lightObj = getObjectFromGUID(TEST_LIGHT_GUID)
-	local targetObj = getObjectFromGUID(TEST_TARGET_GUID)
+	DEBUG.ensureEasingTestRig()
+	local tid = DEBUG.EASING_DEBUG_TEST_ID
+	local R = DEBUG.EASING_DEBUG_ROLES
+	local lightObj = U.getDebugObjectSingle(tid, R.LIGHT, { duplicatePolicy = "first_warn" })
+	local targetObj = U.getDebugObjectSingle(tid, R.TARGET, { duplicatePolicy = "first_warn" })
 
 	if not lightObj then
-		print("ERROR: testLookAt - TEST_LIGHT not found (GUID: " .. TEST_LIGHT_GUID .. ")")
+		print("ERROR: testLookAt - easing rig light not found (run DEBUG.ensureEasingTestRig())")
 		broadcast("❌ testLookAt: Light object not found", {1, 0, 0})
 		return
 	end
 
 	if not targetObj then
-		print("ERROR: testLookAt - TEST_TARGET_OBJ not found (GUID: " .. TEST_TARGET_GUID .. ")")
+		print("ERROR: testLookAt - easing rig target not found (run DEBUG.ensureEasingTestRig())")
 		broadcast("❌ testLookAt: Target object not found", {1, 0, 0})
 		return
 	end
@@ -2259,7 +2263,7 @@ function testLookAt()
 	broadcast("✅ testLookAt: Rotation applied successfully", {0, 1, 0})
 end
 
--- Usage: continueTest()
+--- Callable from console between interactive easing visual steps (`continueTest()`).
 function continueTest()
 	if testWaitingForContinue then
 		testWaitingForContinue = false  -- Signal to continue
@@ -2272,8 +2276,176 @@ function continueTest()
 	end
 end
 
-function DEBUG.testEasing()
+--- Spawns or reuses easing visual-test rig (spotlight + blocks) tagged for MCP and console tests.
+--- @return boolean True when light + center + target objects exist after the call.
+function DEBUG.ensureEasingTestRig()
+	local tid = DEBUG.EASING_DEBUG_TEST_ID
+	local R = DEBUG.EASING_DEBUG_ROLES
+	-- Elevated rig (~y=20) so orbiting spotlight does not clip through the table; blocks locked.
+	local base = Vector(0, 20, 0)
+	local centerPos = base
+	-- Spiral uses cylindrical radius from the center block (xz); orbit uses 3D radius from the target block.
+	-- Keep both starting radii at least this large so each demo reads clearly from the table.
+	local easingMinStartRadius = 15
+	local lightHeightAboveCenter = 3
+	-- Collinear on +X: light at (r, Δy, 0), target at (2r, 0, 0) ⇒ |light−target| = √(r²+Δy²) ≥ r.
+	local lightPos = centerPos + Vector(easingMinStartRadius, lightHeightAboveCenter, 0)
+	local targetPos = centerPos + Vector(easingMinStartRadius * 2, 0, 0)
+	local NLIGHT = require("lib.npcs_light_spawn_defaults")
+	local lightExtra = NLIGHT.NPC_LIGHT_OBJECT_DATA_DEFAULTS.GMNotes
+
+	-- `spawnObject` from Global External Editor execute can throw a host null-ref in some TTS builds;
+	-- `spawnObjectData` with a built-in block asset works for MCP-driven rig setup.
+	local function spawnEasingRigBlock(posVec, nickname)
+		local px, py, pz = posVec.x, posVec.y, posVec.z
+		local data = {
+			Name = "BlockSquare",
+			GUID = "",
+			Locked = true,
+			Transform = {
+				posX = px,
+				posY = py,
+				posZ = pz,
+				rotX = 0,
+				rotY = 0,
+				rotZ = 0,
+				scaleX = 1,
+				scaleY = 1,
+				scaleZ = 1,
+			},
+		}
+		---@diagnostic disable-next-line: undefined-global
+		local o = spawnObjectData({ data = data, position = posVec })
+		if o ~= nil then
+			pcall(function()
+				o.setName(nickname)
+				o.setLock(true)
+			end)
+		end
+		return o
+	end
+
+	local center = U.ensureDebugObject(tid, R.CENTER, function()
+		return spawnEasingRigBlock(centerPos, "Easing Rig Center")
+	end, { duplicatePolicy = "first_warn" })
+
+	local target = U.ensureDebugObject(tid, R.TARGET, function()
+		return spawnEasingRigBlock(targetPos, "Easing Rig Target")
+	end, { duplicatePolicy = "first_warn" })
+
+	local light = U.ensureDebugObject(tid, R.LIGHT, function()
+		local enc = JSON.encode(NLIGHT.NPC_LIGHT_OBJECT_DATA_DEFAULTS)
+		local lightData = JSON.decode(enc)
+		lightData.GUID = ""
+		lightData.Nickname = "Easing Test Light"
+		local tags = { U.DEBUG_OBJECT_TAG }
+		for _, t in ipairs(NLIGHT.NPC_LIGHT_OBJECT_DATA_DEFAULTS.Tags or {}) do
+			table.insert(tags, t)
+		end
+		lightData.Tags = tags
+		---@diagnostic disable-next-line: undefined-global
+		local lit = spawnObjectData({ data = lightData, position = lightPos })
+		return lit
+	end, { duplicatePolicy = "first_warn", extraNotes = lightExtra })
+
+	local ok = center ~= nil and target ~= nil and light ~= nil
+	if center ~= nil then
+		U.setDebugObjectGmNotesAndTag(center, tid, R.CENTER, nil)
+		pcall(function()
+			center.setPosition(centerPos)
+			center.setLock(true)
+		end)
+	end
+	if target ~= nil then
+		U.setDebugObjectGmNotesAndTag(target, tid, R.TARGET, nil)
+		pcall(function()
+			target.setPosition(targetPos)
+			target.setLock(true)
+		end)
+	end
+	if light ~= nil then
+		U.setDebugObjectGmNotesAndTag(light, tid, R.LIGHT, lightExtra)
+		pcall(function()
+			light.setPosition(lightPos)
+		end)
+	end
+
+	-- Rig spotlight is not wired through NPCS.spawn; enable the component after the asset loads
+	-- (same idea as `NPC_LIGHT_POST_READY_DELAY_SEC` in core/npcs.ttslua).
+	if light ~= nil then
+		local litRef = light
+		Wait.time(function()
+			pcall(function()
+				local g = litRef.getGUID()
+				if U.Type(g) ~= "string" then
+					return
+				end
+				L.SetLightMode(g, {
+					enabled = true,
+					intensity = 1.1,
+					range = 128,
+					angle = 124.7178944,
+					color = Color(0.76, 0.76, 0.76),
+				}, nil, 0)
+			end)
+		end, 1.5)
+	end
+
+	return ok
+end
+
+--- Destroys all easing rig objects (every `debugObject` matching `DEBUG.EASING_DEBUG_TEST_ID`).
+--- Unlocks first so locked blocks / lights can be removed.
+function DEBUG.destroyEasingTestRig()
+	local tid = DEBUG.EASING_DEBUG_TEST_ID
+	local R = DEBUG.EASING_DEBUG_ROLES
+	local roles = { R.LIGHT, R.CENTER, R.TARGET }
+	for _, role in ipairs(roles) do
+		local objs = U.getDebugObjectsByTestAndRole(tid, role)
+		for _, obj in ipairs(objs) do
+			if obj ~= nil then
+				pcall(function()
+					obj.setLock(false)
+				end)
+				pcall(function()
+					obj.destruct()
+				end)
+			end
+		end
+	end
+end
+
+--- Hands-off easing run for External Editor / MCP: ensures rig, non-interactive visual steps, summary via U.mcpEmitResult.
+--- @return string JSON hint for returnValue consumers.
+function DEBUG.testEasingForMcp()
+	DEBUG.ensureEasingTestRig()
+	DEBUG.testEasing({ interactive = false, forMcp = true, ensureRig = false })
+	return JSON.encode({
+		accepted = true,
+		hint = "Use TR_AGENT_V1 result lines in prints; raise maxWaitMs for long animations",
+		test = "easing",
+	})
+end
+
+--- @param opts table|nil `{ interactive, forMcp, ensureRig, cleanupRig = true|false (default true) }`
+function DEBUG.testEasing(opts)
+	opts = opts or {}
+	local interactive = opts.interactive ~= false
+	local forMcp = opts.forMcp == true
+	local ensureRig = opts.ensureRig ~= false
+	local cleanupRig = opts.cleanupRig ~= false
+	local easingMcpReport = {
+		validationTests = {},
+		interactive = interactive,
+		forMcp = forMcp,
+	}
+
 	printTestHeader("Easing and Path Generation")
+
+	-- Dark global ambient so the easing rig spotlight is easy to see.
+	pcall(function()
+		U.changeLighting(C.LightModes.DARK)
+	end)
 
 	-- Helper: Broadcast message to all players
 	local function broadcast(message, color)
@@ -2282,8 +2454,13 @@ function DEBUG.testEasing()
 		print("📢 " .. message)
 	end
 
-	-- Helper: Pause until continueTest() is called
+	-- Helper: Pause until continueTest() is called (skipped when not interactive)
 	local function pauseStep(message)
+		if not interactive then
+			return function()
+				return 0.05
+			end
+		end
 		return function()
 			broadcast(message, {0.8, 0.8, 1})
 			print("💡 To continue, type in console: continueTest()")
@@ -2294,14 +2471,12 @@ function DEBUG.testEasing()
 
 	broadcast("🎬 Starting Easing and Path Generation Tests", {0.8, 0.8, 1})
 
-  -- Test configuration constants
-	local TEST_GUIDS = {
-		TEST_LIGHT = "6e3ee4",  -- Replace with actual GUID for test object 1
-		TEST_BLOCK = "432c34",  -- Replace with actual GUID for test object 2
-		TEST_CENTER_OBJ = "9c3b86",  -- Replace with actual GUID for center object
-		TEST_TARGET_OBJ = "199e6f"   -- Replace with actual GUID for target object
-	}
-
+	if ensureRig then
+		local rigOk = DEBUG.ensureEasingTestRig()
+		if not rigOk then
+			print("WARNING: DEBUG.ensureEasingTestRig() did not yield all rig objects; visual tests may skip.")
+		end
+	end
 
 	local TEST_PARAMETERS = {
 		ORBITING_LIGHT = {
@@ -2370,16 +2545,6 @@ function DEBUG.testEasing()
 
 
 	local TEST_DURATION = 10.0  -- 2 seconds per test
-
-	-- Helper: Get object by GUID or fail
-	local function getTestObject(guid, name)
-		local obj = getObjectFromGUID(guid)
-		if obj == nil then
-			printTestResult(name, false, "Missing object with GUID: " .. guid)
-			return nil
-		end
-		return obj
-	end
 
 	-- Helper: Resolve TEST_PARAMETERS into actual PositionOrientationData
 	-- Handles special values like "CURRENT", "SAME", "+360", object name strings, etc.
@@ -2817,6 +2982,15 @@ function DEBUG.testEasing()
 		broadcast("❌ Test 4 Failed: " .. errorMessage4, {1, 0, 0})
 	end
 
+	if forMcp then
+		easingMcpReport.validationTests = {
+			{ id = 1, name = "GetEasedValue_Number", passed = numberPath ~= nil and #numberPath > 0 },
+			{ id = 2, name = "GetEasedValue_Color", passed = colorPath ~= nil and #colorPath > 0 },
+			{ id = 3, name = "Spherical", passed = testPassed },
+			{ id = 4, name = "Cylindrical", passed = test4Passed },
+		}
+	end
+
 	-- Summary of validation tests
 	broadcast("✅ Validation Tests (1-4) Complete", {0, 1, 0})
 	print("\n" .. string.rep("=", 70))
@@ -2831,11 +3005,36 @@ function DEBUG.testEasing()
 	print("These tests will run sequentially so you can observe each animation.")
 	print("Waiting 2 seconds before starting animations...\n")
 
-	-- Get objects for animation tests
-	local testLight = getTestObject(TEST_GUIDS.TEST_LIGHT, "Test Light")
-	local testBlock = getTestObject(TEST_GUIDS.TEST_BLOCK, "Test Block")
-	local centerObj = getTestObject(TEST_GUIDS.TEST_CENTER_OBJ, "Center Object")
-	local targetObj = getTestObject(TEST_GUIDS.TEST_TARGET_OBJ, "Target Object")
+	-- Human-readable spot-check text for test_results.txt (no coordinates; matches TEST_PARAMETERS).
+	local easingVisualSpotcheckGuide = table.concat({
+		"Rig: center block, target block, and the easing test light (spotlight). Layout is collinear: light starts between center and target along one horizontal axis.",
+		"",
+		"1) ORBITING LIGHT (spherical path around the TARGET block, ~10s):",
+		"   • The light begins offset from the target marker, aimed at that target.",
+		"   • It orbits the target twice (two full rotations) while the orbit radius eases outward to about double the starting radius (path widens; it does not spiral in).",
+		"   • The spotlight keeps re-aiming at the target so it continues to face that block.",
+		"   • In parallel, the beam shifts: color toward red, cone angle tightens, and intensity increases.",
+		"",
+		"2) CYLINDRICAL SPIRAL (around the CENTER block, ~10s):",
+		"   • The light begins at horizontal distance from the center marker (same height band as the rig), beam pointing straight down.",
+		"   • It makes two full revolutions around the center while the horizontal radius eases to zero, so it spirals inward and ends above the center block.",
+		"   • Orientation stays downward throughout (beam does not track the block).",
+	}, "\n")
+	DEBUG.logTestToFile("Easing — visual spot-check guide (what the light should do)", true, easingVisualSpotcheckGuide, "test_results")
+
+	-- Get objects for animation tests (easing rig: DEBUG.ensureEasingTestRig)
+	local tid = DEBUG.EASING_DEBUG_TEST_ID
+	local R = DEBUG.EASING_DEBUG_ROLES
+	local function getRigObject(role, displayName)
+		local obj = U.getDebugObjectSingle(tid, role, { duplicatePolicy = "first_warn" })
+		if obj == nil then
+			printTestResult(displayName, false, "Missing easing rig object role=" .. tostring(role))
+		end
+		return obj
+	end
+	local testLight = getRigObject(R.LIGHT, "Test Light")
+	local centerObj = getRigObject(R.CENTER, "Center Object")
+	local targetObj = getRigObject(R.TARGET, "Target Object")
 
 	-- Build sequence of animation tests
 	local animationSequence = {}
@@ -2979,13 +3178,16 @@ function DEBUG.testEasing()
 			if not success then
 				print("Warning: Failed to broadcast initialization message")
 			end
-			print("💡 To continue, type in console: continueTest()")
+			if interactive then
+				print("💡 To continue, type in console: continueTest()")
 
-			-- Set up interactive pause
-			testWaitingForContinue = true  -- Signal that we're waiting
+				-- Set up interactive pause
+				testWaitingForContinue = true  -- Signal that we're waiting
 
-			-- Return immediately - the lerp function will handle waiting
-			return 0.1
+				-- Return immediately - the lerp function will handle waiting
+				return 0.1
+			end
+			return 0.05
 		end
 
 		local lerpFunction = function()
@@ -3070,7 +3272,6 @@ function DEBUG.testEasing()
 	-- Build object map for test resolution
 	local testObjects = {
 		TEST_LIGHT = testLight,
-		TEST_BLOCK = testBlock,
 		TEST_CENTER_OBJ = centerObj,
 		TEST_TARGET_OBJ = targetObj
 	}
@@ -3098,13 +3299,9 @@ function DEBUG.testEasing()
 		print("\n" .. string.rep("=", 70))
 		print("EASING TEST SUMMARY")
 		print(string.rep("=", 70))
-		print("\nRequired Objects (set GUIDs in TEST_GUIDS constant):")
-		print("  - TEST_LIGHT: Light object to animate")
-		print("  - TEST_BLOCK: Block object (for future tests)")
-		print("  - TEST_CENTER_OBJ: Object to use as center for orbital/spiral paths")
-		print("  - TEST_TARGET_OBJ: Object to orbit around and face")
-		print("\nNote: Tests that require objects will be skipped if objects are missing.")
-		print("Replace placeholder GUIDs in TEST_GUIDS with actual object GUIDs from your scene.")
+		print("\nVisual rig: DEBUG.ensureEasingTestRig() spawns tagged objects (debugObject + TR_DEBUG:v1).")
+		print("  See DEBUG.EASING_DEBUG_ROLES (light, center, target).")
+		print("\nIf visual tests were skipped, confirm the rig exists or re-run ensureEasingTestRig().")
 		print(string.rep("=", 70))
 		return 0.5
 	end)
@@ -3116,21 +3313,46 @@ function DEBUG.testEasing()
 			print("Tests will demonstrate:")
 			print("  - Orbiting Light: Spherical coordinates with object-facing orientation")
 			print("  - Cylindrical Spiral: Spiraling in with fixed downward orientation")
-			U.RunSequence(animationSequence)
+			U.RunSequenceWithOptions(animationSequence, {
+				maxWait = 120,
+				onComplete = function(seqOk, detail)
+					easingMcpReport.sequenceComplete = seqOk
+					easingMcpReport.sequenceDetail = detail
+					if forMcp then
+						U.mcpEmitResult({
+							test = "easing",
+							ok = seqOk,
+							detail = detail,
+							report = easingMcpReport,
+						})
+					end
+					if cleanupRig then
+						DEBUG.destroyEasingTestRig()
+					end
+				end,
+			})
 	else
 		print("\nNo animation tests to run (missing required objects)")
 		-- Print summary immediately if no animations
 		print("\n" .. string.rep("=", 70))
 		print("EASING TEST SUMMARY")
 		print(string.rep("=", 70))
-		print("\nRequired Objects (set GUIDs in TEST_GUIDS constant):")
-		print("  - TEST_LIGHT: Light object to animate")
-		print("  - TEST_BLOCK: Block object (for future tests)")
-		print("  - TEST_CENTER_OBJ: Object to use as center for orbital/spiral paths")
-		print("  - TEST_TARGET_OBJ: Object to orbit around and face")
-		print("\nNote: Tests that require objects will be skipped if objects are missing.")
-		print("Replace placeholder GUIDs in TEST_GUIDS with actual object GUIDs from your scene.")
+		print("\nVisual rig: DEBUG.ensureEasingTestRig() spawns tagged objects (debugObject + TR_DEBUG:v1).")
+		print("  See DEBUG.EASING_DEBUG_ROLES (light, center, target).")
+		print("\nIf visual tests were skipped, confirm the rig exists or re-run ensureEasingTestRig().")
 		print(string.rep("=", 70))
+		if forMcp then
+			easingMcpReport.visualSkipped = true
+			U.mcpEmitResult({
+				test = "easing",
+				ok = true,
+				detail = "validation_only_no_visual",
+				report = easingMcpReport,
+			})
+		end
+		if cleanupRig then
+			DEBUG.destroyEasingTestRig()
+		end
 	end
 end
 
@@ -4263,6 +4485,7 @@ function DEBUG.help()
     print("  testUtilities()          - Test utility functions")
     print("  testLightingAndSignals() - Test lighting & signal fires with sequencing")
     print("  testEasing()             - Test easing and path generation functions")
+    print("  testEasingForMcp()       - Non-interactive easing + TR_AGENT_V1 summary (MCP)")
     print("  testLookAt()             - Test look-at rotation (minimal test)")
     print("  testIntegration()        - Full integration test")
     print("  runTests()               - Run all tests in sequence")
@@ -4327,6 +4550,7 @@ testUI = DEBUG.testUI
 testUtilities = DEBUG.testUtilities
 testLightingAndSignals = DEBUG.testLightingAndSignals
 testEasing = DEBUG.testEasing
+testEasingForMcp = DEBUG.testEasingForMcp
 testIntegration = DEBUG.testIntegration
 runTests = DEBUG.runTests
 

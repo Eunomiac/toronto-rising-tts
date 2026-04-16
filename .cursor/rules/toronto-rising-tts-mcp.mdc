@@ -1,0 +1,30 @@
+---
+description: Tabletop Simulator MCP / External Editor bridge (tts_execute_lua, ports 39999/39998), timeouts, and collecting structured return data from TTS.
+---
+
+# Toronto Rising — TTS MCP and External Editor
+
+When calling **`tts_execute_lua`**, using **`.tools/tts-bridge`**, or automating **Tabletop Simulator** over localhost **39999** / **39998**, read **`.dev/TTS_MCP.md`** for setup, tools, and orchestration notes.
+
+## Pitfalls (read before debugging “MCP failures”)
+
+Full detail: **`.dev/TTS_MCP.md` → *Pitfalls and obstacles (agents)***.
+
+- **Bundle drift:** External Editor runs the **saved/bundled** Lua, not the repo on disk. After editing mod files, **Save & Play** (or reload) so TTS matches the repo; otherwise fixes “in git” never run in-game.
+- **`spawnObject` vs execute:** From **Global** (`guid` `"-1"`) **External Editor execute**, **`spawnObject`** can trigger a TTS **null-reference** (`.NET` **Object reference not set…**), sometimes with **empty `prints`**. Prefer **`spawnObjectData`** for MCP-driven spawns (see **`DEBUG.ensureEasingTestRig()`** in `core/debug.ttslua`).
+- **Diagnosis:** Use **`print` / `pcall` / tiny steps**; avoid **`node -e`** with embedded Lua on Windows (**PowerShell quoting**). Prefer scripts under **`.tools/tts-bridge/scripts/`** (e.g. **`npm run tts-bridge:run-easing-mcp-test`**).
+- **Long sequences:** **`RunSequenceWithOptions`** is non-blocking from the execute chunk; use **`onComplete`**, **`U.mcpEmitResult`**, and generous **`maxWaitMs` / `idleTimeoutMs`** (see `.dev/TTS_MCP.md`).
+- **Apparent hang after last print:** completion is **`messageID` 5** or **`idleTimeoutMs`** after the **last** inbound2–5. A huge **`idleTimeoutMs`** (e.g. 120s) after the final **`TR_AGENT_V1`** line looks like “still waiting for nothing”. Use a **high `maxWaitMs`** for wall-clock cap but a **moderate `idleTimeoutMs`** when the final print pattern is known (see `.dev/TTS_MCP.md` *Pitfalls* §5).
+
+## Structured data and `returnValue` (common pitfall)
+
+- Completion may include inbound **`messageID` 5** with **`returnValue`**, but **nested Lua tables** often **do not** round-trip; the client may see **`returnValue` omitted** even when the script succeeded.
+- For queries and non-trivial payloads: in Lua use **`JSON.encode`**, **`print(encoded)`**, and **`return encoded`**; on Node/TS use **`JSON.parse`**, with a fallback that parses JSON from **`prints`** if needed.
+- Working example: `.tools/tts-bridge/scripts/export-color-object-tags-to-markdown.mjs`.
+
+Full guidance: `.dev/TTS_MCP.md` (section *Return values (`messageID` 5) and structured data*).
+
+## Agent-oriented prints (`TR_AGENT_V1`)
+
+- In Lua, use **`U.emitForAgent(kind, data)`** or **`U.mcpEmitResult(data)`** (`lib/util.ttslua`) so each event is one line: prefix **`TR_AGENT_V1`** + JSON envelope (`seq`, `kind`, `t`, nested **`data`**). Easier to parse than raw `print` spam; **`seq`** helps if **`prints` order** is imperfect under coroutines.
+- See `.dev/TTS_MCP.md` section *Machine-readable agent lines*.
