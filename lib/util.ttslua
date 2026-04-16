@@ -3084,7 +3084,8 @@ end
 -- @param paramEnd number|Vector|Color|table Optional: Ending value or PositionOrientationData
 -- @param duration number Optional: Duration in seconds (default: 0.5)
 -- @param isRotationLerp boolean Optional: If true, handles rotation wrapping (shortest path around 360°)
--- @param easing string Optional: Easing type ("speedUp" or any ease name from easing helpers)
+-- @param easing string Optional: Easing type — `"speedUp"` (legacy t²), `"linear"`, or any name handled by `applyEase` (`sineInOut`, `powerInOut`, `back`, `bounce`, …)
+-- @param easeIntensity number Optional: Passed to `applyEase` (default 1.0); shapes power/back/bounce strength
 -- @return number The duration (for chaining)
 --
 -- @usage U.Lerp(function(v) obj.setPosition(v, false) end, startPos, endPos, 1.0) -- Traditional
@@ -3092,7 +3093,12 @@ end
 -- @usage U.Lerp(function(step) obj.setPosition(step.position, false) end, {position=Vector(0,0,0)}, {position=Vector(10,10,10)}, 2.0, false, "bounce") -- PositionOrientationData
 --
 -- NOTE: Starts a uniquely named Global coroutine (see LerpCoroutine_* in implementation).
-function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing)
+function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing, easeIntensity)
+	local pathEaseIntensity = easeIntensity
+	if pathEaseIntensity == nil then
+		pathEaseIntensity = 1.0
+	end
+
 	-- Check if paramStart is a pre-computed path (table of PositionOrientationData)
 	if U.Type(paramStart) == "table" and #paramStart > 0 then
 		-- Check if it's a path (has PositionOrientationData structure)
@@ -3109,11 +3115,11 @@ function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing)
 
 		-- Generate path (may return "DEFER" if Objects present)
 		local coordinateSystem = "xy"  -- Default, could be made configurable
-		local path = U.GetEasedPath(paramStart, paramEnd, duration or 0.5, easing or "sineInOut", 1.0, coordinateSystem)
+		local path = U.GetEasedPath(paramStart, paramEnd, duration or 0.5, easing or "sineInOut", pathEaseIntensity, coordinateSystem)
 
 		if path == "DEFER" then
 			-- Defer path generation - resolve Objects at execution time
-			return U.LerpDeferred(paramStart, paramEnd, duration or 0.5, easing or "sineInOut", 1.0, coordinateSystem, setFunc)
+			return U.LerpDeferred(paramStart, paramEnd, duration or 0.5, easing or "sineInOut", pathEaseIntensity, coordinateSystem, setFunc)
 		else
 			-- Use pre-computed path
 			return U.LerpPath(path, setFunc)
@@ -3146,18 +3152,25 @@ function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing)
 		)
 	end
 
-	local function getParam(t)
-		if t == 1 then return paramEnd end
-		if easing ~= nil then
-			if easing == "speedUp" then
-				t = t * t
-			end
+	local function getParam(rawT)
+		if rawT >= 1 then
+			return paramEnd
+		end
+		local t = rawT
+		if t < 0 then
+			t = 0
+		end
+		local tWarped
+		if easing == "speedUp" then
+			tWarped = t * t
+		else
+			tWarped = applyEase(t, easing or "linear", pathEaseIntensity)
 		end
 		if U.isInstance(paramStart, Vector) or U.isInstance(paramStart, Color) then
-			return paramStart:lerp(paramEnd, t)
+			return paramStart:lerp(paramEnd, tWarped)
 		elseif U.Type(paramStart) == "number" then
 			local deltaVal = paramEnd - paramStart
-			return paramStart + (deltaVal * t)
+			return paramStart + (deltaVal * tWarped)
 		end
 	end
 

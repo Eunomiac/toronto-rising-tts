@@ -340,6 +340,14 @@ C.LightModes = {
         lut_index = 1,
         reflection_intensity = 0
     },
+    DEBUG = {
+      ambient_intensity = 0.8,
+      light_intensity = 0.0,
+      ambient_type = 1,
+      lut_contribution = 0,
+      lut_index = 1,
+      reflection_intensity = 0
+    },
     DARK = {
         ambient_intensity = 0.0,
         light_intensity = 0.0,

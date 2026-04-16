@@ -55,6 +55,17 @@ Scenes.SCENES = {
         lights = {},
         description = "Default dark lighting"
     },
+    debug = {
+        ambient = C.LightModes.DEBUG,
+        lightStages = {
+            {
+                refs = "__all_registered__",
+                mode = "OFF",
+                duration = 5.0
+            }
+        },
+        description = "Admin debug mode - all registered lights OFF, minimal ambient lighting"
+    },
     dark = {
         ambient = C.LightModes.DARK,
         lightStages = {

@@ -2287,20 +2287,23 @@ function DEBUG.ensureEasingTestRig()
 	-- Spiral uses cylindrical radius from the center block (xz); orbit uses 3D radius from the target block.
 	-- Keep both starting radii at least this large so each demo reads clearly from the table.
 	local easingMinStartRadius = 15
-	local lightHeightAboveCenter = 3
+	-- Target block sits on base.y (same as center). Orbit center is the target; a small Δy makes motion look like a horizontal circle. Larger Δy tilts the spherical path off the table plane.
+	local orbitLightYAboveTargetPlane = 10
 	-- Collinear on +X: light at (r, Δy, 0), target at (2r, 0, 0) ⇒ |light−target| = √(r²+Δy²) ≥ r.
-	local lightPos = centerPos + Vector(easingMinStartRadius, lightHeightAboveCenter, 0)
+	local lightPos = centerPos + Vector(easingMinStartRadius, orbitLightYAboveTargetPlane, 0)
 	local targetPos = centerPos + Vector(easingMinStartRadius * 2, 0, 0)
 	local NLIGHT = require("lib.npcs_light_spawn_defaults")
 	local lightExtra = NLIGHT.NPC_LIGHT_OBJECT_DATA_DEFAULTS.GMNotes
 
 	-- `spawnObject` from Global External Editor execute can throw a host null-ref in some TTS builds;
 	-- `spawnObjectData` with a built-in block asset works for MCP-driven rig setup.
-	local rigBlockScale = 10
+	local rigCenterBlockScale = 1
+	local rigTargetBlockScale = 10
 	-- Target tint: neutral grey so the orbiting spotlight’s red shift reads against the block (not player red).
 	local rigTargetGreyTint = Color(0.7, 0.7, 0.7)
-	local function spawnEasingRigBlock(posVec, nickname, colorTint)
+	local function spawnEasingRigBlock(posVec, nickname, colorTint, blockScale)
 		local px, py, pz = posVec.x, posVec.y, posVec.z
+		local sc = blockScale or 1
 		local data = {
 			Name = "BlockSquare",
 			GUID = "",
@@ -2312,9 +2315,9 @@ function DEBUG.ensureEasingTestRig()
 				rotX = 0,
 				rotY = 0,
 				rotZ = 0,
-				scaleX = rigBlockScale,
-				scaleY = rigBlockScale,
-				scaleZ = rigBlockScale,
+				scaleX = sc,
+				scaleY = sc,
+				scaleZ = sc,
 			},
 		}
 		---@diagnostic disable-next-line: undefined-global
@@ -2332,11 +2335,11 @@ function DEBUG.ensureEasingTestRig()
 	end
 
 	local center = U.ensureDebugObject(tid, R.CENTER, function()
-		return spawnEasingRigBlock(centerPos, "Easing Rig Center", nil)
+		return spawnEasingRigBlock(centerPos, "Easing Rig Center", nil, rigCenterBlockScale)
 	end, { duplicatePolicy = "first_warn" })
 
 	local target = U.ensureDebugObject(tid, R.TARGET, function()
-		return spawnEasingRigBlock(targetPos, "Easing Rig Target", rigTargetGreyTint)
+		return spawnEasingRigBlock(targetPos, "Easing Rig Target", rigTargetGreyTint, rigTargetBlockScale)
 	end, { duplicatePolicy = "first_warn" })
 
 	local light = U.ensureDebugObject(tid, R.LIGHT, function()
@@ -2359,7 +2362,7 @@ function DEBUG.ensureEasingTestRig()
 		U.setDebugObjectGmNotesAndTag(center, tid, R.CENTER, nil)
 		pcall(function()
 			center.setPosition(centerPos)
-			center.setScale(Vector(rigBlockScale, rigBlockScale, rigBlockScale))
+			center.setScale(Vector(rigCenterBlockScale, rigCenterBlockScale, rigCenterBlockScale))
 			center.setLock(true)
 		end)
 	end
@@ -2367,7 +2370,7 @@ function DEBUG.ensureEasingTestRig()
 		U.setDebugObjectGmNotesAndTag(target, tid, R.TARGET, nil)
 		pcall(function()
 			target.setPosition(targetPos)
-			target.setScale(Vector(rigBlockScale, rigBlockScale, rigBlockScale))
+			target.setScale(Vector(rigTargetBlockScale, rigTargetBlockScale, rigTargetBlockScale))
 			target.setColorTint(rigTargetGreyTint)
 			target.setLock(true)
 		end)
@@ -2427,8 +2430,9 @@ end
 --- Hands-off easing run for External Editor / MCP: ensures rig, non-interactive visual steps, summary via U.mcpEmitResult.
 --- @return string JSON hint for returnValue consumers.
 function DEBUG.testEasingForMcp()
-	DEBUG.ensureEasingTestRig()
-	DEBUG.testEasing({ interactive = false, forMcp = true, ensureRig = false })
+	-- Same order as interactive `testEasing`: load debug scene first, then `ensureEasingTestRig` inside `testEasing`
+	-- so registered lights are not turned OFF after the rig schedules its spotlight enable.
+	DEBUG.testEasing({ interactive = false, forMcp = true })
 	return JSON.encode({
 		accepted = true,
 		hint = "Use TR_AGENT_V1 result lines in prints; raise maxWaitMs for long animations",
@@ -2451,14 +2455,9 @@ function DEBUG.testEasing(opts)
 
 	printTestHeader("Easing and Path Generation")
 
-	-- Near-dark scene so the rig spotlight reads, with a trace of ambient so the light object is visible.
+	-- `Scenes.SCENES.debug`: DEBUG ambient + staged registered lights OFF (see core/scenes.ttslua).
 	pcall(function()
-		local dark = {}
-		for k, v in pairs(C.LightModes.DARK) do
-			dark[k] = v
-		end
-		dark.ambient_intensity = 0.05
-		U.changeLighting(dark)
+		Scenes.loadScene("debug")
 	end)
 
 	-- Helper: Broadcast message to all players
@@ -2549,14 +2548,73 @@ function DEBUG.testEasing(opts)
 				orientation = Vector(0, 90, 0)  -- Continue downward
 			},
 			duration = 10.0,
-			ease = "sineInOut",
-			easeIntensity = 1.0,
+			-- back on the spiral path itself (radius/angle/height sampling) so motion reads clearly on the table.
+			ease = "back",
+			easeIntensity = 1.65,
 			coordinateSystem = "cylindrical",
-			objectToMove = "TEST_LIGHT"  -- Which object to animate
+			objectToMove = "TEST_LIGHT",  -- Which object to animate
 		}
 	}
 
-
+	--- Narrative + easing detail for test_results.txt (reads TEST_PARAMETERS so curves stay in sync).
+	local function buildEasingVisualSpotcheckGuide()
+		local o = TEST_PARAMETERS.ORBITING_LIGHT
+		local c = TEST_PARAMETERS.CYLINDRICAL_SPIRAL
+		local lines = {
+			"Rig: center block, target block, and the easing test light (spotlight). Layout is collinear: light starts between center and target along one horizontal axis.",
+			"",
+			"1) ORBITING LIGHT (spherical path around the TARGET block, ~10s):",
+			"   • The light begins offset from the target marker, aimed at that target.",
+			"   • It orbits the target twice (two full rotations) while the orbit radius eases outward to about double the starting radius (path widens; it does not spiral in).",
+			"   • The spotlight keeps re-aiming at the target so it continues to face that block.",
+			"   • In parallel, the beam shifts: color from bright green to red, cone angle tightens, and intensity increases.",
+			"",
+			"2) CYLINDRICAL SPIRAL (around the CENTER block, ~10s):",
+			"   • The light begins at horizontal distance from the center marker (same height band as the rig), beam pointing straight down.",
+			"   • It makes two full revolutions around the center while the horizontal radius eases to zero, so it spirals inward and ends above the center block.",
+			"   • Orientation stays downward throughout (beam does not track the block).",
+			"   • The spiral path uses a bounce ease so the in-spiral motion overshoots and settles in visible steps (not a separate intensity lerp).",
+			"",
+			"Easing curves and interpolated values (from TEST_PARAMETERS):",
+			string.format(
+				"  ORBITING_LIGHT — main path (position + orientation via GetEasedPath / LerpDeferred): ease=%q, easeIntensity=%s, duration=%ss, coordinateSystem=%q.",
+				o.ease,
+				tostring(o.easeIntensity),
+				tostring(o.duration),
+				o.coordinateSystem
+			),
+			string.format(
+				"    Parallel property lerps (U.Lerp; default ease/easeIntensity match main path): ease=%q, easeIntensity=%s.",
+				o.ease,
+				tostring(o.easeIntensity)
+			),
+			"      • Color: (0,1,0) bright green → (1,0,0) red.",
+			"      • Spot cone angle: L.GetAngle(obj) → same × 0.1.",
+			"      • Intensity: L.GetIntensity(obj) → same × 2.",
+			string.format(
+				"  CYLINDRICAL_SPIRAL — main path only (GetEasedPath / LerpDeferred): ease=%q, easeIntensity=%s, duration=%ss, coordinateSystem=%q.",
+				c.ease,
+				tostring(c.easeIntensity),
+				tostring(c.duration),
+				c.coordinateSystem
+			),
+		}
+		for i, pl in ipairs(c.parallelLerps or {}) do
+			local ez = pl.easing
+			if ez == nil then
+				ez = c.ease
+			end
+			local ei = pl.easeIntensity
+			if ei == nil then
+				ei = c.easeIntensity
+			end
+			table.insert(
+				lines,
+				string.format("    Parallel #%d: ease=%q, easeIntensity=%s (see TEST_PARAMETERS.parallelLerps).", i, ez, tostring(ei))
+			)
+		end
+		return table.concat(lines, "\n")
+	end
 
 	local TEST_DURATION = 10.0  -- 2 seconds per test
 
@@ -2751,8 +2809,8 @@ function DEBUG.testEasing(opts)
 	--   - getStart: function(targetObj) -> value (optional)
 	--   - getEnd: function(targetObj) -> value (optional)
 	--   - start / endVal: explicit values (numbers, Vectors, Colors)
-	--   - duration / easing / isRotationLerp: override defaults (optional)
-	local function runParallelLerps(lerps, objects, objToMove, defaultDuration, defaultEase)
+	--   - duration / easing / easeIntensity / isRotationLerp: override defaults (optional)
+	local function runParallelLerps(lerps, objects, objToMove, defaultDuration, defaultEase, defaultEaseIntensity)
 		if not lerps or #lerps == 0 then return 0 end
 		local maxDuration = 0
 		for _, lerpDef in ipairs(lerps) do
@@ -2783,6 +2841,13 @@ function DEBUG.testEasing(opts)
 
 			local lerpDuration = lerpDef.duration or defaultDuration
 			local lerpEasing = lerpDef.easing or defaultEase
+			local lerpEaseIntensity = lerpDef.easeIntensity
+			if lerpEaseIntensity == nil then
+				lerpEaseIntensity = defaultEaseIntensity
+			end
+			if lerpEaseIntensity == nil then
+				lerpEaseIntensity = 1.0
+			end
 			local isRotationLerp = lerpDef.isRotationLerp or false
 
 			local duration = U.Lerp(function(val)
@@ -2793,7 +2858,7 @@ function DEBUG.testEasing(opts)
 					return nil
 				end
 				return setFunc(val, targetObj)
-			end, startVal, endVal, lerpDuration, isRotationLerp, lerpEasing)
+			end, startVal, endVal, lerpDuration, isRotationLerp, lerpEasing, lerpEaseIntensity)
 			if duration and duration > maxDuration then
 				maxDuration = duration
 			end
@@ -3019,21 +3084,8 @@ function DEBUG.testEasing(opts)
 	print("These tests will run sequentially so you can observe each animation.")
 	print("Waiting 2 seconds before starting animations...\n")
 
-	-- Human-readable spot-check text for test_results.txt (no coordinates; matches TEST_PARAMETERS).
-	local easingVisualSpotcheckGuide = table.concat({
-		"Rig: center block, target block, and the easing test light (spotlight). Layout is collinear: light starts between center and target along one horizontal axis.",
-		"",
-		"1) ORBITING LIGHT (spherical path around the TARGET block, ~10s):",
-		"   • The light begins offset from the target marker, aimed at that target.",
-		"   • It orbits the target twice (two full rotations) while the orbit radius eases outward to about double the starting radius (path widens; it does not spiral in).",
-		"   • The spotlight keeps re-aiming at the target so it continues to face that block.",
-		"   • In parallel, the beam shifts: color from bright green to red, cone angle tightens, and intensity increases.",
-		"",
-		"2) CYLINDRICAL SPIRAL (around the CENTER block, ~10s):",
-		"   • The light begins at horizontal distance from the center marker (same height band as the rig), beam pointing straight down.",
-		"   • It makes two full revolutions around the center while the horizontal radius eases to zero, so it spirals inward and ends above the center block.",
-		"   • Orientation stays downward throughout (beam does not track the block).",
-	}, "\n")
+	-- Human-readable spot-check + easing breakdown for test_results.txt (built from TEST_PARAMETERS).
+	local easingVisualSpotcheckGuide = buildEasingVisualSpotcheckGuide()
 	DEBUG.logTestToFile("Easing — visual spot-check guide (what the light should do)", true, easingVisualSpotcheckGuide, "test_results")
 
 	-- Get objects for animation tests (easing rig: DEBUG.ensureEasingTestRig)
@@ -3272,7 +3324,7 @@ function DEBUG.testEasing(opts)
 				end)
 			end
 
-			local parallelDuration = runParallelLerps(params.parallelLerps, objects, objToMove, params.duration, params.ease)
+			local parallelDuration = runParallelLerps(params.parallelLerps, objects, objToMove, params.duration, params.ease, params.easeIntensity)
 			local totalDuration = math.max(lerpDuration or 0, parallelDuration or 0)
 
 			if totalDuration > 0 then
@@ -3333,7 +3385,7 @@ function DEBUG.testEasing(opts)
 			print("Starting animation sequence with " .. (#animationSequence - 1) .. " visual demonstration(s)...")
 			print("Tests will demonstrate:")
 			print("  - Orbiting Light: Spherical coordinates with object-facing orientation")
-			print("  - Cylindrical Spiral: Spiraling in with fixed downward orientation")
+			print("  - Cylindrical Spiral: Bounce-eased spiral path, fixed downward orientation")
 			U.RunSequenceWithOptions(animationSequence, {
 				maxWait = 120,
 				onComplete = function(seqOk, detail)
