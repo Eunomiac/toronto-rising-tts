@@ -2296,7 +2296,10 @@ function DEBUG.ensureEasingTestRig()
 
 	-- `spawnObject` from Global External Editor execute can throw a host null-ref in some TTS builds;
 	-- `spawnObjectData` with a built-in block asset works for MCP-driven rig setup.
-	local function spawnEasingRigBlock(posVec, nickname)
+	local rigBlockScale = 10
+	-- Target tint: neutral grey so the orbiting spotlight’s red shift reads against the block (not player red).
+	local rigTargetGreyTint = Color(0.7, 0.7, 0.7)
+	local function spawnEasingRigBlock(posVec, nickname, colorTint)
 		local px, py, pz = posVec.x, posVec.y, posVec.z
 		local data = {
 			Name = "BlockSquare",
@@ -2309,9 +2312,9 @@ function DEBUG.ensureEasingTestRig()
 				rotX = 0,
 				rotY = 0,
 				rotZ = 0,
-				scaleX = 1,
-				scaleY = 1,
-				scaleZ = 1,
+				scaleX = rigBlockScale,
+				scaleY = rigBlockScale,
+				scaleZ = rigBlockScale,
 			},
 		}
 		---@diagnostic disable-next-line: undefined-global
@@ -2320,17 +2323,20 @@ function DEBUG.ensureEasingTestRig()
 			pcall(function()
 				o.setName(nickname)
 				o.setLock(true)
+				if colorTint ~= nil then
+					o.setColorTint(colorTint)
+				end
 			end)
 		end
 		return o
 	end
 
 	local center = U.ensureDebugObject(tid, R.CENTER, function()
-		return spawnEasingRigBlock(centerPos, "Easing Rig Center")
+		return spawnEasingRigBlock(centerPos, "Easing Rig Center", nil)
 	end, { duplicatePolicy = "first_warn" })
 
 	local target = U.ensureDebugObject(tid, R.TARGET, function()
-		return spawnEasingRigBlock(targetPos, "Easing Rig Target")
+		return spawnEasingRigBlock(targetPos, "Easing Rig Target", rigTargetGreyTint)
 	end, { duplicatePolicy = "first_warn" })
 
 	local light = U.ensureDebugObject(tid, R.LIGHT, function()
@@ -2353,6 +2359,7 @@ function DEBUG.ensureEasingTestRig()
 		U.setDebugObjectGmNotesAndTag(center, tid, R.CENTER, nil)
 		pcall(function()
 			center.setPosition(centerPos)
+			center.setScale(Vector(rigBlockScale, rigBlockScale, rigBlockScale))
 			center.setLock(true)
 		end)
 	end
@@ -2360,6 +2367,8 @@ function DEBUG.ensureEasingTestRig()
 		U.setDebugObjectGmNotesAndTag(target, tid, R.TARGET, nil)
 		pcall(function()
 			target.setPosition(targetPos)
+			target.setScale(Vector(rigBlockScale, rigBlockScale, rigBlockScale))
+			target.setColorTint(rigTargetGreyTint)
 			target.setLock(true)
 		end)
 	end
@@ -2442,9 +2451,14 @@ function DEBUG.testEasing(opts)
 
 	printTestHeader("Easing and Path Generation")
 
-	-- Dark global ambient so the easing rig spotlight is easy to see.
+	-- Near-dark scene so the rig spotlight reads, with a trace of ambient so the light object is visible.
 	pcall(function()
-		U.changeLighting(C.LightModes.DARK)
+		local dark = {}
+		for k, v in pairs(C.LightModes.DARK) do
+			dark[k] = v
+		end
+		dark.ambient_intensity = 0.05
+		U.changeLighting(dark)
 	end)
 
 	-- Helper: Broadcast message to all players
@@ -2503,7 +2517,7 @@ function DEBUG.testEasing(opts)
 				{
 					target = "TEST_LIGHT",
 					setFunc = function(val, obj) L.SetColor(obj, val) end,
-					start = Color(1, 1, 1),
+					start = Color(0, 1, 0),
 					endVal = Color(1, 0, 0)
 				},
 				{
@@ -3013,7 +3027,7 @@ function DEBUG.testEasing(opts)
 		"   • The light begins offset from the target marker, aimed at that target.",
 		"   • It orbits the target twice (two full rotations) while the orbit radius eases outward to about double the starting radius (path widens; it does not spiral in).",
 		"   • The spotlight keeps re-aiming at the target so it continues to face that block.",
-		"   • In parallel, the beam shifts: color toward red, cone angle tightens, and intensity increases.",
+		"   • In parallel, the beam shifts: color from bright green to red, cone angle tightens, and intensity increases.",
 		"",
 		"2) CYLINDRICAL SPIRAL (around the CENTER block, ~10s):",
 		"   • The light begins at horizontal distance from the center marker (same height band as the rig), beam pointing straight down.",
@@ -3248,6 +3262,13 @@ function DEBUG.testEasing(opts)
 							objToMove.setRotationSmooth(step.orientation, false, false)
 						end
 					end
+				end)
+			end
+
+			-- Orbiting parallel lerps use a green→red color ramp; snap now so the rig matches `start` after SetLightMode / prior state.
+			if testName == "ORBITING_LIGHT" and objToMove then
+				pcall(function()
+					L.SetColor(objToMove, Color(0, 1, 0))
 				end)
 			end
 

@@ -3074,7 +3074,7 @@ end
 -- For rotations, automatically handles shortest path (wraps 360°).
 --
 -- Uses coroutines internally, so must be called from a context that supports startLuaCoroutine.
--- In Global context, use: startLuaCoroutine(Global, "LerpCoroutine")
+-- In Global context, coroutine name is assigned per call (safe for concurrent U.Lerp usage).
 --
 -- Can be used in U.RunSequence by returning it from a function, or by returning a table of lerp
 -- functions for parallel animation of multiple properties.
@@ -3091,7 +3091,7 @@ end
 -- @usage U.Lerp(function(step) obj.setPosition(step.position, false) end, path) -- Pre-computed path
 -- @usage U.Lerp(function(step) obj.setPosition(step.position, false) end, {position=Vector(0,0,0)}, {position=Vector(10,10,10)}, 2.0, false, "bounce") -- PositionOrientationData
 --
--- NOTE: Requires startLuaCoroutine(Global, "LerpCoroutine") - self refers to Global in Global context
+-- NOTE: Starts a uniquely named Global coroutine (see LerpCoroutine_* in implementation).
 function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing)
 	-- Check if paramStart is a pre-computed path (table of PositionOrientationData)
 	if U.Type(paramStart) == "table" and #paramStart > 0 then
@@ -3168,20 +3168,30 @@ function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing)
 	end
 
 	local startTime = os.time()
+	-- Unique global name so multiple U.Lerp runs (e.g. parallel color + angle + intensity) do not
+	-- overwrite the same "LerpCoroutine" entry and cancel each other.
+	local coroutineId = math.random(1000000, 9999999)
+	local coroutineName = "LerpCoroutine_" .. coroutineId
 
-	function LerpCoroutine()
-		local timeFrac = (os.time() - startTime)/duration
+	_G[coroutineName] = function()
+		local timeFrac = (os.time() - startTime) / duration
 		while timeFrac < 1 do
 			setFunc(getParam(timeFrac))
 			coroutine.yield(0)
 			timeFrac = (os.time() - startTime) / duration
 		end
 		setFunc(getParam(1))
+		_G[coroutineName] = nil
 		return 1
 	end
 
-	-- Use Global explicitly since this may be called from within coroutines
-	startLuaCoroutine(Global, "LerpCoroutine")
+	local ok, err = pcall(function()
+		startLuaCoroutine(Global, coroutineName)
+	end)
+	if not ok then
+		_G[coroutineName] = nil
+		U.error("U.Lerp", "Failed to start coroutine: " .. tostring(err))
+	end
 
 	return duration
 end
