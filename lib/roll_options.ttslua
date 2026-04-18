@@ -1,0 +1,149 @@
+--[[
+    Storyteller roll options — permanent (chronicle) and per-roll toggles.
+
+    Permanent flags live in gameState.stRollSettings.
+    Per-roll flags live on active.rollOptions (seeded at initiateRoll).
+
+    Agent guidance: ST Roll Options Modal plan (scaling via explicit ids + defaults).
+]]
+
+local RO = {}
+local U = require("lib.util")
+local C = require("lib.constants")
+local S = require("core.state")
+
+-- Permanent setting keys (persisted in gameState.stRollSettings)
+RO.PERM_AUTO_ROUSE    = "autoRouse"
+RO.PERM_AUTO_WP       = "autoWp"
+RO.PERM_AUTO_REMORSE  = "autoRemorse"
+RO.PERM_AUTO_HUNGER   = "autoHunger"
+
+-- Per-roll option keys (active.rollOptions)
+RO.ROLL_TAKE_HALF     = "takeHalf"
+RO.ROLL_WP_REROLL     = "wpReroll"
+RO.ROLL_HUNGER_DICE   = "hungerDice"
+RO.ROLL_BESTIAL_NULL  = "bestialNull"
+RO.ROLL_CRITS         = "crits"
+
+--- Default permanent automation toggles (all on per product spec).
+-- @return table
+function RO.defaultPermanentSettings()
+    return {
+        [RO.PERM_AUTO_ROUSE]   = true,
+        [RO.PERM_AUTO_WP]      = true,
+        [RO.PERM_AUTO_REMORSE] = true,
+        [RO.PERM_AUTO_HUNGER]  = true,
+    }
+end
+
+--- Returns default per-roll options for a roll type (before ST overrides).
+-- @param rollType string  C.RollType value
+-- @return table
+function RO.defaultsForRollType(rollType)
+    U.Val("RO.defaultsForRollType()", {rollType = rollType},
+        U.Type(rollType) == "string", "rollType must be a string")
+
+    return {
+        [RO.ROLL_TAKE_HALF]    = C.RollTypesNoTakeHalf[rollType] ~= true,
+        [RO.ROLL_WP_REROLL]    = C.RollTypesNoWillpower[rollType] ~= true,
+        [RO.ROLL_HUNGER_DICE]  = C.RollTypesWithoutHunger[rollType] ~= true,
+        [RO.ROLL_BESTIAL_NULL] = false,
+        [RO.ROLL_CRITS]        = true,
+    }
+end
+
+--- True when Take Half toggle should be locked (structural for Rouse-family rolls).
+-- @param rollType string
+-- @return boolean
+function RO.isTakeHalfLocked(rollType)
+    return rollType == C.RollType.ROUSE or rollType == C.RollType.ROUSE_OBLIVION
+end
+
+--- True when Hunger Dice toggle should be locked (Rouse always uses a Hunger die).
+-- @param rollType string
+-- @return boolean
+function RO.isHungerDiceLocked(rollType)
+    return rollType == C.RollType.ROUSE or rollType == C.RollType.ROUSE_OBLIVION
+end
+
+--- True when Bestial Null row is shown (Standard rolls only).
+-- @param rollType string
+-- @return boolean
+function RO.isBestialNullVisible(rollType)
+    return rollType == C.RollType.STANDARD
+end
+
+--- Enforces structural locks for roll types where some options are not meaningful.
+-- @param active table  Active roll record (mutated)
+function RO.sanitizeRollOptions(active)
+    if active == nil or type(active.rollOptions) ~= "table" then return end
+    local rt = active.rollType
+    if RO.isTakeHalfLocked(rt) then
+        active.rollOptions[RO.ROLL_TAKE_HALF] = false
+    end
+    if RO.isHungerDiceLocked(rt) then
+        active.rollOptions[RO.ROLL_HUNGER_DICE] = true
+    end
+    if not RO.isBestialNullVisible(rt) then
+        active.rollOptions[RO.ROLL_BESTIAL_NULL] = false
+    end
+end
+
+--- Seeds active.rollOptions from defaults for active.rollType.
+-- @param active table  Active roll record (mutated)
+function RO.seedActiveRoll(active)
+    U.Val("RO.seedActiveRoll()", {active = active},
+        type(active) == "table", "active must be a table")
+    active.rollOptions = RO.defaultsForRollType(active.rollType)
+    RO.sanitizeRollOptions(active)
+end
+
+--- Reads a permanent setting with default fallback.
+-- @param id string
+-- @return boolean
+function RO.getPermanent(id)
+    U.Val("RO.getPermanent()", {id = id}, U.Type(id) == "string", "id must be a string")
+    local defaults = RO.defaultPermanentSettings()
+    local t        = S.getStateVal("stRollSettings")
+    if type(t) ~= "table" then
+        return defaults[id] == true
+    end
+    local v = t[id]
+    if v == nil then
+        return defaults[id] == true
+    end
+    return v == true
+end
+
+--- Writes the full permanent settings table (used by modal Apply).
+-- @param settings table  { [id] = boolean, ... }
+function RO.setPermanentAll(settings)
+    U.Val("RO.setPermanentAll()", {settings = settings},
+        type(settings) == "table", "settings must be a table")
+    local merged   = U.clone(RO.defaultPermanentSettings())
+    local defaults = RO.defaultPermanentSettings()
+    for k, _ in pairs(defaults) do
+        if type(settings[k]) == "boolean" then
+            merged[k] = settings[k]
+        end
+    end
+    S.setStateVal(merged, "stRollSettings")
+end
+
+--- Resolves a per-roll flag from active.rollOptions with default fallback.
+-- @param active table|nil
+-- @param id string
+-- @return boolean
+function RO.getForActive(active, id)
+    if active == nil or type(active.rollOptions) ~= "table" then
+        return false
+    end
+    local v = active.rollOptions[id]
+    if v == nil then
+        local d = RO.defaultsForRollType(active.rollType or "")
+        return d[id] == true
+    end
+    return v == true
+end
+
+return RO

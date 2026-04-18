@@ -1,0 +1,1026 @@
+--[[
+    Roll Controller (core/roll_controller.ttslua)
+
+    Baton-passing state machine for the VTM5E Dice System.
+    Owns all phase transitions, live dice reading, result classification,
+    and coordination between the Storyteller and players.
+
+    Key design decisions:
+    - Dice are NEVER stored in state. The physical objects on the table are the
+      single source of truth. RC._getDiceForRoll() reads live values on demand.
+    - Difficulty is optional at roll initiation; classification is deferred until
+      both dice and difficulty are present (enables post-hoc difficulty for opposed
+      rolls without special-casing).
+    - Recalculate is the unified correction path: Willpower rerolls and mid-roll
+      corrections both work by the player physically adjusting dice and hitting
+      "Recalculate" (or waiting for the debounce to auto-trigger it).
+    - Queue support: multiple sequential rolls (e.g. three Rouse Checks for
+      healing) chain automatically; each resolves before the next begins.
+
+    Physical dice identity:
+    - Dice spawning from a bag are pre-tagged (by the bag setup) with "NormalDie"
+      or "HungerDie", and "<Color>Object" (e.g. "BrownObject").
+    - When a die spawns, global_script.onObjectLeaveContainer writes the active
+      roll ID to the die's GM Notes — the only dynamic step.
+    - RC._getDiceForRoll queries getObjectsWithAllTags({dieTypeTag, colorTag}),
+      filters by GM Notes == rollId, and reads current face values.
+
+    Depends on:
+    - core.dice     (pure VTM5E math)
+    - core.state    (S — read/write playerData.rollData)
+    - lib.constants (C — enumerations)
+    - lib.util      (U — validation helpers)
+
+    NOT required here (avoid circular dependency):
+    - core.roll_ui — UI is refreshed via RC.onRollStateChanged callback.
+      Callers (global_script) set RC.onRollStateChanged = function(color) end
+
+    Agent guidance: .dev/Dice System/Dice System Outline.md §7, §11
+]]
+
+local RC = {}
+local Dice = require("core.dice")
+local S    = require("core.state")
+local C    = require("lib.constants")
+local U    = require("lib.util")
+local RO   = require("lib.roll_options")
+local P    = require("lib.pc_stats")
+local PCST = require("core.pc_storyteller_panel")
+
+-- ============================================================================
+-- CALLBACK HOOKS (set by global_script after all modules are loaded)
+-- ============================================================================
+
+--- Called whenever a player's roll state changes.
+-- Set in global_script to trigger RUI updates.
+-- @type function(color: string)|nil
+RC.onRollStateChanged = nil
+
+--- Called when a roll reaches RESOLVED phase with a final result.
+-- Set in global_script to trigger broadcast display and chat output.
+-- @type function(color: string, result: table|nil, label: string|nil)|nil
+RC.onRollResolved = nil
+
+
+-- ============================================================================
+-- INTERNAL STATE (transient; NOT persisted to gameState)
+-- ============================================================================
+
+-- Debounce handles keyed by player color.
+-- Each entry is a string token; the pending Wait.time closure checks its own
+-- captured token against this table — if mismatched, it was superseded and no-ops.
+local _debounceHandles = {}
+
+-- ============================================================================
+-- INTERNAL HELPERS
+-- ============================================================================
+
+--- Fires the roll-state-changed callback.
+-- Not wrapped in pcall: errors in the UI layer should surface as TTS chat
+-- errors rather than being swallowed, making bugs easier to identify.
+local function notifyStateChanged(color)
+    if RC.onRollStateChanged and U.Type(RC.onRollStateChanged) == "function" then
+        RC.onRollStateChanged(color)
+    end
+end
+
+--- Fires the roll-resolved callback.
+-- Same rationale as notifyStateChanged — no pcall.
+local function notifyRollResolved(color, result, label)
+    if RC.onRollResolved and U.Type(RC.onRollResolved) == "function" then
+        RC.onRollResolved(color, result, label)
+    end
+end
+
+--- Gets the active roll record from state for a player color.
+-- @param color string
+-- @return table|nil
+local function getActive(color)
+    local pid = S.getPlayerID(color)
+    if pid == nil then return nil end
+    return S.getStateVal("playerData", pid, "hud", "rollData", "active")
+end
+
+--- Overwrites the active roll record in state.
+-- Pass nil to clear the active roll.
+-- @param color string
+-- @param active table|nil
+local function setActive(color, active)
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        print(string.format("[RC] setActive: no player ID for color %s", tostring(color)))
+        return
+    end
+    S.setStateVal(active, "playerData", pid, "hud", "rollData", "active")
+end
+
+--- Generates a unique roll ID string (timestamp + random component).
+-- Used as the GM Notes value written to each die spawned for this roll.
+-- @return string
+local function newRollId()
+    return string.format("roll_%d_%d", math.floor(os.time()), math.random(99999))
+end
+
+--- Returns true if Willpower rerolls are permitted for a roll type.
+local function willpowerAllowed(rollType)
+    return C.RollTypesNoWillpower[rollType] ~= true
+end
+
+--- Returns true if Take Half is permitted for a roll type.
+local function takeHalfAllowed(rollType)
+    return C.RollTypesNoTakeHalf[rollType] ~= true
+end
+
+--- Cancels any pending debounce for a player by invalidating the current handle.
+local function cancelDebounce(color)
+    _debounceHandles[color] = nil
+end
+
+--- Appends a resolved result to the player's roll history (capped at 10).
+-- Stores the dice display string and roll type alongside the result so the
+-- broadcast panel can retrieve them after the active record is cleared.
+-- @param color string
+-- @param result table|nil
+-- @param label string|nil
+-- @param diceDisplay string|nil  Formatted dice string (e.g. "7  3  [10]  [1]")
+-- @param rollType string|nil     C.RollType value (e.g. C.RollType.ROUSE)
+-- @param diceFaces table|nil     Sorted face records from Dice.buildDiceFaces(), for image display
+local function appendHistory(color, result, label, diceDisplay, rollType, diceFaces)
+    local pid = S.getPlayerID(color)
+    if pid == nil then return end
+    local history = S.getStateVal("playerData", pid, "hud", "rollData", "history") or {}
+    history[#history + 1] = {
+        result      = result,
+        label       = label,
+        diceDisplay = diceDisplay or "",
+        rollType    = rollType or "",
+        diceFaces   = diceFaces or {},
+        timestamp   = os.time(),
+    }
+    while #history > 10 do table.remove(history, 1) end
+    S.setStateVal(history, "playerData", pid, "hud", "rollData", "history")
+end
+
+--- Processes the next queued roll after a confirmation, if any.
+local function processQueue(color)
+    local pid = S.getPlayerID(color)
+    if pid == nil then return end
+    local queue = S.getStateVal("playerData", pid, "hud", "rollData", "queue") or {}
+    if #queue == 0 then return end
+    local nextConfig = table.remove(queue, 1)
+    S.setStateVal(queue, "playerData", pid, "hud", "rollData", "queue")
+    Wait.frames(function() RC.initiateRoll(color, nextConfig) end, 5)
+end
+
+-- ============================================================================
+-- LIVE DICE READING
+-- ============================================================================
+
+--- Reads the current face values of all physical dice on the table belonging to
+-- a specific roll, identified by roll ID in the dice GM Notes.
+--
+-- Dice must be pre-tagged with "NormalDie" or "HungerDie" AND "<Color>Object"
+-- (set in the bag at authoring time). The roll ID is written to GM Notes by
+-- global_script.onObjectLeaveContainer when each die spawns.
+--
+-- Returns two arrays; both empty if no matching dice are found.
+-- @param color string  Player seat color (e.g. "Red")
+-- @param rollId string  Roll ID to match against GM Notes
+-- @return table normalDice, table hungerDice
+-- @usage local n, h = RC._getDiceForRoll("Red", active.id)
+function RC._getDiceForRoll(color, rollId)
+    if U.Type(color) ~= "string" or U.Type(rollId) ~= "string" then
+        return {}, {}
+    end
+
+    local colorTag = color .. "Object"
+    local normalDice = {}
+    local hungerDice = {}
+
+    -- Normal dice: tagged NormalDie + d10 + <color>Object, GM Notes == rollId
+    -- The "d10" tag is on dice only, not on the bags (which share NormalDie/<color>Object tags).
+    local normalObjs = getObjectsWithAllTags({"NormalDie", "d10", colorTag})
+    for _, obj in ipairs(normalObjs) do
+        if obj.getGMNotes() == rollId then
+            local val = obj.getValue()
+            if type(val) == "number" then
+                normalDice[#normalDice + 1] = val
+            end
+        end
+    end
+
+    -- Hunger dice: tagged HungerDie + d10 + <color>Object, GM Notes == rollId
+    local hungerObjs = getObjectsWithAllTags({"HungerDie", "d10", colorTag})
+    for _, obj in ipairs(hungerObjs) do
+        if obj.getGMNotes() == rollId then
+            local val = obj.getValue()
+            if type(val) == "number" then
+                hungerDice[#hungerDice + 1] = val
+            end
+        end
+    end
+
+    return normalDice, hungerDice
+end
+
+-- ============================================================================
+-- INTERNAL CLASSIFICATION (reads live dice)
+-- ============================================================================
+
+--- Reads live dice and attempts to classify the result for a player's active roll.
+-- No-ops if difficulty is not yet set, if no dice are found, if tookHalf, or if the roll
+-- has not left PRE_ROLL yet (dice on the table are pool staging only until ROLLING).
+-- Updates active.result and active.diceDisplay in state.
+-- @param color string
+local function tryClassifyResultInternal(color)
+    local active = getActive(color)
+    if active == nil then return end
+    if active.tookHalf then return end  -- Take Half sets result directly; no physical dice
+    if active.difficulty == nil then
+        -- Clear any stale result and display if difficulty was removed
+        active.result = nil
+        active.diceDisplay = nil
+        active.diceFaces = nil
+        setActive(color, active)
+        return
+    end
+
+    -- Do not classify staged dice while the player is still building the pool in PRE_ROLL
+    -- (or awaiting ST open in SETUP). Classification belongs to ROLLING / POST_ROLL only.
+    if active.phase == C.RollPhase.SETUP or active.phase == C.RollPhase.PRE_ROLL then
+        active.result = nil
+        active.diceDisplay = nil
+        active.diceFaces = nil
+        setActive(color, active)
+        return
+    end
+
+    local normalDice, hungerDice = RC._getDiceForRoll(color, active.id)
+
+    if #normalDice == 0 and #hungerDice == 0 then
+        -- No dice found yet (e.g. ST set difficulty before player rolled)
+        active.result      = nil
+        active.diceDisplay = nil
+        active.diceFaces   = nil
+        setActive(color, active)
+        return
+    end
+
+    local cOpts = RC.classifyOptsFromActive(active)
+    active.result      = Dice.classifyRoll(normalDice, hungerDice, active.difficulty, cOpts)
+    active.diceDisplay = Dice.formatDiceDisplay(normalDice, hungerDice)
+    active.diceFaces   = RC.buildDiceFacesForActive(active, normalDice, hungerDice)
+    setActive(color, active)
+end
+
+-- ============================================================================
+-- PUBLIC API — ROLL LIFECYCLE
+-- ============================================================================
+
+--- Initiates a new roll for a player.
+-- Sets phase = SETUP, batonHolder = STORYTELLER.
+-- Pool is auto-computed for SIMPLE_CHECK, ROUSE, ROUSE_OBLIVION, and REMORSE roll types.
+-- Fails (returns false) if the player already has an active roll.
+--
+-- @param color string  Player seat color (e.g. "Red", "Brown")
+-- @param config table
+--   Required: rollType (C.RollType value)
+--   Optional: label (string), difficulty (number), pool ({normal, hunger})
+-- @return boolean
+-- @usage RC.initiateRoll("Red", { rollType = C.RollType.STANDARD, label = "Stealth" })
+function RC.initiateRoll(color, config)
+    U.Val("RC.initiateRoll()", {color = color, config = config},
+        U.Type(color) == "string" and U.Type(config) == "table",
+        "color must be a string and config must be a table")
+    U.Val("RC.initiateRoll()", {rollType = config.rollType},
+        U.Type(config.rollType) == "string",
+        "config.rollType must be a string (C.RollType value)")
+
+    if getActive(color) ~= nil then
+        print(string.format("[RC] initiateRoll blocked: %s already has an active roll", color))
+        return false
+    end
+
+    -- Auto-compute pool for special roll types
+    local pool = config.pool or { normal = 0, hunger = 0 }
+
+    if config.rollType == C.RollType.SIMPLE_CHECK then
+        -- Simple Check: always 1 Normal die, difficulty 1, no Hunger substitution.
+        -- Pool and difficulty are fully auto-set; the ST does not need to configure anything.
+        pool = { normal = 1, hunger = 0 }
+    elseif config.rollType == C.RollType.ROUSE or config.rollType == C.RollType.ROUSE_OBLIVION then
+        -- Rouse Checks use exactly 1 Hunger die. Difficulty is effectively 1 — passing
+        -- requires at least one success (6+). Auto-setting it lets the standard
+        -- classification path handle Rouse without any special-casing.
+        pool = { normal = 0, hunger = 1 }
+    elseif config.rollType == C.RollType.REMORSE then
+        local pid            = S.getPlayerID(color)
+        local humanityBoxes  = 7
+        local stains         = 0
+        if pid ~= nil then
+            local stats      = S.getStateVal("playerData", pid, "stats")
+            local conditions = S.getStateVal("playerData", pid, "conditions") or {}
+            if U.Type(stats) == "table" and type(stats.humanity) == "table" then
+                local hu = stats.humanity
+                humanityBoxes = (tonumber(hu.base) or 0) + P.effectiveTempForAggregate(stats, conditions, "humanity")
+                stains        = tonumber(hu.stains) or 0
+            elseif U.Type(stats) == "table" then
+                humanityBoxes = tonumber(stats.humanity) or 7
+                stains        = tonumber(stats.stains) or 0
+            end
+        end
+        pool = { normal = Dice.remorsePool(humanityBoxes, stains), hunger = 0 }
+    elseif C.RollTypesWithoutHunger[config.rollType] then
+        pool = { normal = pool.normal or 0, hunger = 0 }
+    end
+
+    local active = {
+        id          = newRollId(),
+        rollType    = config.rollType,
+        phase       = C.RollPhase.SETUP,
+        batonHolder = C.BatonHolder.STORYTELLER,
+        -- "player": player initiated (show panel in SETUP so they see "Awaiting ST").
+        -- "storyteller": ST initiated (hide panel until OPEN/PRE_ROLL).
+        initiator   = config.initiator or "player",
+        label       = config.label or nil,
+        pool        = pool,
+        -- Simple Check, Rouse, and Remorse auto-set difficulty=1 so the standard
+        -- classification path works without requiring the ST to enter a value.
+        -- The difficulty is hidden from the player panel for these roll types.
+        difficulty  = config.difficulty
+            or ((config.rollType == C.RollType.SIMPLE_CHECK
+                 or config.rollType == C.RollType.ROUSE
+                 or config.rollType == C.RollType.ROUSE_OBLIVION
+                 or config.rollType == C.RollType.REMORSE) and 1 or nil),
+        tookHalf    = false,
+        -- No 'dice' field: physical objects are the source of truth.
+        -- diceDisplay is a cached format string populated by recalculate().
+        diceDisplay = nil,
+        result      = nil,
+        willpower   = {
+            available = false,
+            spent     = false,
+        },
+        extended = nil,
+        teamwork = nil,
+        opposed  = nil,
+    }
+
+    RO.seedActiveRoll(active)
+
+    setActive(color, active)
+    notifyStateChanged(color)
+
+    -- Dev/debug: when Auto-ST mode is on, automatically open the roll after a
+    -- brief defer so the host can exercise the full player-side flow solo.
+    -- Only the OPEN baton-pass is automated; difficulty must still be set via
+    -- the ST dashboard in the normal way.
+    if RC.devAutoST then
+        Wait.frames(function()
+            local current = getActive(color)
+            if current ~= nil and current.phase == C.RollPhase.SETUP then
+                RC.openRoll(color)
+            end
+        end, 3)
+    end
+
+    return true
+end
+
+--- Storyteller sets (or revises) the difficulty for a player's active roll.
+-- Callable at any phase except RESOLVED. Triggers live re-classification if
+-- dice are already on the table.
+--
+-- @param color string
+-- @param difficulty number  Required successes (>= 0)
+-- @return boolean
+-- @usage RC.setDifficulty("Red", 3)
+function RC.setDifficulty(color, difficulty)
+    U.Val("RC.setDifficulty()", {color = color, difficulty = difficulty},
+        U.Type(color) == "string" and U.Type(difficulty) == "number" and difficulty >= 0,
+        "color must be a string and difficulty must be a non-negative number")
+
+    local active = getActive(color)
+    if active == nil then
+        print(string.format("[RC] setDifficulty: no active roll for %s", color))
+        return false
+    end
+    if active.phase == C.RollPhase.RESOLVED then
+        print(string.format("[RC] setDifficulty: roll for %s is already RESOLVED", color))
+        return false
+    end
+
+    active.difficulty = difficulty
+    setActive(color, active)
+
+    -- Re-classify from live dice if they exist
+    tryClassifyResultInternal(color)
+    notifyStateChanged(color)
+    return true
+end
+
+--- Sets the pool size for a player's active roll (ST or player, during SETUP/PRE_ROLL).
+-- Hunger is automatically zeroed for roll types that do not use Hunger dice.
+--
+-- @param color string
+-- @param normal number
+-- @param hunger number
+-- @return boolean
+-- @usage RC.setPool("Red", 5, 2)
+function RC.setPool(color, normal, hunger)
+    U.Val("RC.setPool()", {color = color, normal = normal, hunger = hunger},
+        U.Type(color) == "string"
+        and U.Type(normal) == "number" and normal >= 0
+        and U.Type(hunger) == "number" and hunger >= 0,
+        "color must be a string; normal and hunger must be non-negative numbers")
+
+    local active = getActive(color)
+    if active == nil then
+        print(string.format("[RC] setPool: no active roll for %s", color))
+        return false
+    end
+    if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
+        print(string.format("[RC] setPool: %s roll is past PRE_ROLL (phase: %s)", color, active.phase))
+        return false
+    end
+
+    local effectiveHunger = hunger
+    if C.RollTypesWithoutHunger[active.rollType] then
+        effectiveHunger = 0
+    elseif not RO.getForActive(active, RO.ROLL_HUNGER_DICE) then
+        -- Per-roll option: Hunger dice not used — pool hunger stays zero; spawns go to normal.
+        effectiveHunger = 0
+    end
+    active.pool = { normal = normal, hunger = effectiveHunger }
+    setActive(color, active)
+    notifyStateChanged(color)
+    return true
+end
+
+--- Advances the roll from SETUP to PRE_ROLL. Baton passes to PLAYER.
+-- @param color string
+-- @return boolean
+-- @usage RC.openRoll("Red")
+function RC.openRoll(color)
+    U.Val("RC.openRoll()", {color = color}, U.Type(color) == "string", "color must be a string")
+
+    local active = getActive(color)
+    if active == nil then
+        print(string.format("[RC] openRoll: no active roll for %s", color))
+        return false
+    end
+    if active.phase ~= C.RollPhase.SETUP then
+        print(string.format("[RC] openRoll: %s roll is not in SETUP (phase: %s)", color, active.phase))
+        return false
+    end
+
+    active.phase       = C.RollPhase.PRE_ROLL
+    active.batonHolder = C.BatonHolder.PLAYER
+    setActive(color, active)
+    notifyStateChanged(color)
+    return true
+end
+
+--- Player takes automatic successes (half pool, rounded down) instead of rolling.
+-- Only available in PRE_ROLL when difficulty is set and the roll type permits it.
+-- Result class is always WIN (no dice rolled, no critical pairs possible).
+-- Advances phase to POST_ROLL.
+--
+-- @param color string
+-- @return boolean
+-- @usage RC.takeHalf("Red")
+function RC.takeHalf(color)
+    U.Val("RC.takeHalf()", {color = color}, U.Type(color) == "string", "color must be a string")
+
+    local active = getActive(color)
+    if active == nil then
+        print(string.format("[RC] takeHalf: no active roll for %s", color))
+        return false
+    end
+    if active.phase ~= C.RollPhase.PRE_ROLL then
+        print(string.format("[RC] takeHalf: %s roll is not in PRE_ROLL", color))
+        return false
+    end
+    if not takeHalfAllowed(active.rollType) then
+        print(string.format("[RC] takeHalf: roll type %s does not allow Take Half", active.rollType))
+        return false
+    end
+    if not RO.getForActive(active, RO.ROLL_TAKE_HALF) then
+        print(string.format("[RC] takeHalf: Take Half disabled for this roll (%s)", color))
+        return false
+    end
+    if active.difficulty == nil then
+        print(string.format("[RC] takeHalf: %s roll has no difficulty set", color))
+        return false
+    end
+
+    local poolSize  = (active.pool.normal or 0) + (active.pool.hunger or 0)
+    local successes = Dice.takeHalf(poolSize)
+    local passes    = successes >= active.difficulty
+
+    active.tookHalf    = true
+    active.diceDisplay = string.format("(took half: %d of %d)", successes, poolSize)
+    active.diceFaces   = nil  -- no physical dice rolled; image row shows empty
+    active.result      = {
+        successes      = successes,
+        pairs          = 0,
+        bonusSuccesses = 0,
+        resultClass    = passes and C.ResultClass.WIN or C.ResultClass.FAILURE,
+        margin         = successes - active.difficulty,
+        hasTens        = false,
+        hungerTens     = false,
+        hungerOnes     = false,
+    }
+    active.phase              = C.RollPhase.POST_ROLL
+    -- No physical dice — no Willpower reroll; ST confirms from dashboard.
+    active.batonHolder        = C.BatonHolder.STORYTELLER
+    active.willpower.available = false
+    setActive(color, active)
+    notifyStateChanged(color)
+    return true
+end
+
+--- Advances the active roll from PRE_ROLL to ROLLING.
+-- Called by the player clicking the "ROLL" button.
+-- Baton passes to AUTO while the system waits for dice to settle.
+--
+-- @param color string
+-- @return boolean
+-- @usage RC.startRolling("Red")
+function RC.startRolling(color)
+    U.Val("RC.startRolling()", {color = color}, U.Type(color) == "string", "color must be a string")
+
+    local active = getActive(color)
+    if active == nil then
+        print(string.format("[RC] startRolling: no active roll for %s", color))
+        return false
+    end
+    if active.phase ~= C.RollPhase.PRE_ROLL then
+        print(string.format("[RC] startRolling: %s roll is not in PRE_ROLL (phase: %s)", color, active.phase))
+        return false
+    end
+
+    active.phase       = C.RollPhase.ROLLING
+    active.batonHolder = C.BatonHolder.AUTO
+    active.result      = nil
+    active.diceDisplay = nil
+    active.diceFaces   = nil
+    setActive(color, active)
+    cancelDebounce(color)
+    notifyStateChanged(color)
+    return true
+end
+
+--- Triggered by onObjectRandomize (via global_script) when any of a player's dice
+-- settle. Resets the debounce timer in both ROLLING and POST_ROLL phases.
+--
+-- ROLLING:   die settling means the initial roll is in progress.
+-- POST_ROLL: die settling means a Willpower reroll or correction is in progress.
+-- In both cases the debounce fires RC.onDiceSettled → RC.recalculate.
+--
+-- No die values are captured here; reading happens in RC._getDiceForRoll.
+--
+-- @param color string  Player seat color
+-- @usage RC.onDieSettledSignal("Red")   -- called from global_script.onObjectRandomize
+function RC.onDieSettledSignal(color)
+    if U.Type(color) ~= "string" then return end
+
+    local active = getActive(color)
+    if active == nil then return end
+    if active.tookHalf then return end
+    if active.phase ~= C.RollPhase.ROLLING and active.phase ~= C.RollPhase.POST_ROLL then return end
+
+    local myHandle = string.format("%d_%d", math.floor(os.time() * 1000), math.random(99999))
+    _debounceHandles[color] = myHandle
+
+    Wait.time(function()
+        if _debounceHandles[color] == myHandle then
+            RC.onDiceSettled(color)
+        end
+    end, C.DICE_SETTLE_DEBOUNCE_SECONDS)
+end
+
+--- Called by the debounce timer when no new die events have arrived for the quiet window.
+-- Delegates entirely to RC.recalculate, which performs the live table read.
+--
+-- @param color string
+-- @usage RC.onDiceSettled("Red")  -- called internally by debounce timer
+function RC.onDiceSettled(color)
+    if U.Type(color) ~= "string" then return end
+    cancelDebounce(color)
+    RC.recalculate(color)
+end
+
+--- Reads all physical dice for the active roll from the TTS table, re-classifies the
+-- result, and updates the UI. Works identically whether called automatically by the
+-- debounce or manually by the player clicking "Recalculate".
+--
+-- Valid in ROLLING and POST_ROLL phases. Transitions ROLLING → POST_ROLL.
+-- No-ops if no active roll exists or if the player took half.
+--
+-- This is the unified path for:
+--   - Initial roll landing (auto-triggered by debounce from ROLLING)
+--   - Willpower rerolls (player re-throws dice, debounce fires or player clicks button)
+--   - Manual corrections (player adjusts dice on the table, clicks Recalculate)
+--
+-- @param color string
+-- @return boolean  true if recalculation ran; false if preconditions not met
+-- @usage RC.recalculate("Red")
+function RC.recalculate(color)
+    U.Val("RC.recalculate()", {color = color}, U.Type(color) == "string", "color must be a string")
+
+    local active = getActive(color)
+    if active == nil then
+        print(string.format("[RC] recalculate: no active roll for %s", color))
+        return false
+    end
+    if active.tookHalf then
+        print(string.format("[RC] recalculate: %s took half, no dice to read", color))
+        return false
+    end
+    if active.phase ~= C.RollPhase.ROLLING and active.phase ~= C.RollPhase.POST_ROLL then
+        print(string.format("[RC] recalculate: %s roll is not in ROLLING or POST_ROLL", color))
+        return false
+    end
+
+    -- Live read from table
+    local normalDice, hungerDice = RC._getDiceForRoll(color, active.id)
+
+    -- Update cached display string (even if classification is deferred)
+    if #normalDice > 0 or #hungerDice > 0 then
+        active.diceDisplay = Dice.formatDiceDisplay(normalDice, hungerDice)
+    else
+        active.diceDisplay = nil
+        active.diceFaces   = nil
+    end
+
+    -- Classify if difficulty is set; otherwise just record the display and defer.
+    if active.difficulty ~= nil and (#normalDice > 0 or #hungerDice > 0) then
+        active.result = Dice.classifyRoll(normalDice, hungerDice, active.difficulty,
+            RC.classifyOptsFromActive(active))
+    else
+        active.result = nil
+    end
+
+    if active.result ~= nil then
+        active.diceFaces = RC.buildDiceFacesForActive(active, normalDice, hungerDice)
+    elseif #normalDice > 0 or #hungerDice > 0 then
+        active.diceFaces = Dice.buildDiceFaces(normalDice, hungerDice)
+    end
+
+    -- Transition ROLLING → POST_ROLL on first settle; stay in POST_ROLL for recalculates
+    if active.phase == C.RollPhase.ROLLING then
+        active.phase       = C.RollPhase.POST_ROLL
+        local wpOffered  = willpowerAllowed(active.rollType)
+            and RO.getForActive(active, RO.ROLL_WP_REROLL)
+            and not active.willpower.spent
+        active.willpower.available = wpOffered
+        active.batonHolder = wpOffered and C.BatonHolder.PLAYER or C.BatonHolder.STORYTELLER
+    end
+
+    setActive(color, active)
+    notifyStateChanged(color)
+    return true
+end
+
+--- Player spends 1 Superficial Willpower damage to reroll dice.
+-- Applies the WP damage immediately, marks willpower.spent = true, then transitions
+-- the roll back to ROLLING so the panel stays visible with a reroll instruction.
+-- The normal die-settled debounce (or Recalculate) will fire once the player re-throws,
+-- call recalculate(), and transition back to POST_ROLL — at which point willpower.available
+-- will be false (spent) and the panel hides, passing control to the ST.
+--
+-- @param color string
+-- @return boolean
+-- @usage RC.spendWillpower("Red")
+function RC.spendWillpower(color)
+    U.Val("RC.spendWillpower()", {color = color}, U.Type(color) == "string", "color must be a string")
+
+    local active = getActive(color)
+    if active == nil then
+        print(string.format("[RC] spendWillpower: no active roll for %s", color))
+        return false
+    end
+    if active.phase ~= C.RollPhase.POST_ROLL then
+        print(string.format("[RC] spendWillpower: %s roll is not in POST_ROLL", color))
+        return false
+    end
+    if not active.willpower.available then
+        print(string.format("[RC] spendWillpower: Willpower reroll not available for %s", color))
+        return false
+    end
+
+    -- Apply 1 Superficial Willpower damage when Auto-WP is enabled (full tracker pipeline + HUD refresh).
+    if RO.getPermanent(RO.PERM_AUTO_WP) then
+        P.applyDamageOrHeal(color, "willpower", 1, 0)
+        PCST.refreshCharacterSheetsForColor(color)
+    end
+
+    -- Mark WP as spent and disable further spends for this roll.
+    active.willpower.available = false
+    active.willpower.spent     = true
+
+    -- Transition back to ROLLING so the player panel stays visible with the reroll
+    -- instruction. The panel visibility rule hides it in POST_ROLL when WP is unavailable,
+    -- but ROLLING is always shown. When the rerolled dice settle, onObjectRandomize fires
+    -- the debounce → recalculate() → transitions to POST_ROLL → panel hides → ST confirms.
+    active.phase       = C.RollPhase.ROLLING
+    active.batonHolder = C.BatonHolder.AUTO
+    active.result      = nil
+    active.diceDisplay = nil
+    active.diceFaces   = nil
+    cancelDebounce(color)
+
+    setActive(color, active)
+    notifyStateChanged(color)
+    return true
+end
+
+--- Confirms the POST_ROLL result, finalising the roll.
+-- Applies automatic state consequences for special roll types.
+-- Broadcasts the result, appends to history, clears active roll, and processes queue.
+--
+-- @param color string
+-- @return boolean
+-- @usage RC.confirmRoll("Red")
+function RC.confirmRoll(color)
+    U.Val("RC.confirmRoll()", {color = color}, U.Type(color) == "string", "color must be a string")
+
+    local active = getActive(color)
+    if active == nil then
+        print(string.format("[RC] confirmRoll: no active roll for %s", color))
+        return false
+    end
+    if active.phase ~= C.RollPhase.POST_ROLL then
+        print(string.format("[RC] confirmRoll: %s roll is not in POST_ROLL (phase: %s)", color, active.phase))
+        return false
+    end
+
+    -- Do a final live read to ensure result reflects current table state
+    if not active.tookHalf then
+        local preResult      = active.result
+        local preDiceFaces   = active.diceFaces
+        local preDiceDisplay = active.diceDisplay
+        RC.recalculate(color)
+        local refreshed = getActive(color)
+        if refreshed == nil then
+            print(string.format("[RC] confirmRoll: active roll disappeared after recalculate for %s", color))
+            return false
+        end
+        active = refreshed
+        -- If the live read finds no dice (timing, moved objects), keep the last classified result
+        -- so the broadcast and automation still match what the table already showed.
+        if active.result == nil and preResult ~= nil then
+            active.result      = preResult
+            active.diceFaces   = preDiceFaces
+            active.diceDisplay = preDiceDisplay
+            setActive(color, active)
+        end
+    end
+
+    -- Apply consequences for Rouse / Remorse
+    if active.result ~= nil then
+        RC._applyRollConsequences(color, active)
+    end
+
+    -- Advance to RESOLVED
+    active.phase       = C.RollPhase.RESOLVED
+    active.batonHolder = C.BatonHolder.AUTO
+    setActive(color, active)
+    notifyStateChanged(color)
+
+    local finalResult      = active.result
+    local finalLabel       = active.label
+    local finalDiceDisplay = active.diceDisplay
+    local finalDiceFaces   = active.diceFaces
+
+    appendHistory(color, finalResult, finalLabel, finalDiceDisplay, active.rollType, finalDiceFaces)
+    notifyRollResolved(color, finalResult, finalLabel)
+
+    setActive(color, nil)
+    notifyStateChanged(color)
+    processQueue(color)
+    return true
+end
+
+--- Overrides the result class of the active roll (ST error-correction / narrative).
+-- Does not affect dice values; only changes the stored resultClass.
+-- Callable in POST_ROLL before the player confirms.
+--
+-- @param color string
+-- @param resultClass string  A C.ResultClass value
+-- @return boolean
+-- @usage RC.overrideResult("Red", C.ResultClass.WIN)
+function RC.overrideResult(color, resultClass)
+    U.Val("RC.overrideResult()", {color = color, resultClass = resultClass},
+        U.Type(color) == "string" and U.Type(resultClass) == "string",
+        "color and resultClass must be strings")
+
+    local active = getActive(color)
+    if active == nil then
+        print(string.format("[RC] overrideResult: no active roll for %s", color))
+        return false
+    end
+    if active.phase ~= C.RollPhase.POST_ROLL then
+        print(string.format("[RC] overrideResult: %s roll is not in POST_ROLL", color))
+        return false
+    end
+
+    local valid = false
+    for _, v in pairs(C.ResultClass) do
+        if v == resultClass then valid = true; break end
+    end
+    if not valid then
+        print(string.format("[RC] overrideResult: unknown resultClass '%s'", tostring(resultClass)))
+        return false
+    end
+
+    if active.result == nil then
+        active.result = { successes = 0, pairs = 0, bonusSuccesses = 0,
+            margin = nil, hasTens = false, hungerTens = false, hungerOnes = false }
+    end
+    active.result.resultClass = resultClass
+    setActive(color, active)
+    notifyStateChanged(color)
+    return true
+end
+
+--- Cancels the active roll and clears the queue. Safe to call at any phase.
+-- @param color string
+-- @return boolean  true if a roll was cancelled; false if nothing was active
+-- @usage RC.cancelRoll("Red")
+function RC.cancelRoll(color)
+    U.Val("RC.cancelRoll()", {color = color}, U.Type(color) == "string", "color must be a string")
+
+    cancelDebounce(color)
+
+    if getActive(color) == nil then return false end
+
+    setActive(color, nil)
+
+    local pid = S.getPlayerID(color)
+    if pid ~= nil then
+        S.setStateVal({}, "playerData", pid, "hud", "rollData", "queue")
+    end
+
+    notifyStateChanged(color)
+    return true
+end
+
+--- Adds a RollConfig to the player's queue for automatic sequential execution.
+-- @param color string
+-- @param config table  Same shape as the config argument to RC.initiateRoll()
+-- @usage RC.queueRoll("Red", { rollType = C.RollType.ROUSE })
+function RC.queueRoll(color, config)
+    U.Val("RC.queueRoll()", {color = color, config = config},
+        U.Type(color) == "string" and U.Type(config) == "table",
+        "color must be a string and config must be a table")
+
+    local pid = S.getPlayerID(color)
+    if pid == nil then return end
+    local queue = S.getStateVal("playerData", pid, "hud", "rollData", "queue") or {}
+    queue[#queue + 1] = config
+    S.setStateVal(queue, "playerData", pid, "hud", "rollData", "queue")
+end
+
+--- Re-classifies the active roll from live dice. Exposed publicly for use when
+-- the ST sets difficulty post-roll (the main setDifficulty path calls this internally).
+-- @param color string
+-- @usage RC.tryClassifyResult("Red")
+function RC.tryClassifyResult(color)
+    tryClassifyResultInternal(color)
+    notifyStateChanged(color)
+end
+
+-- ============================================================================
+-- AUTOMATIC STATE CONSEQUENCES
+-- ============================================================================
+
+--- Applies automatic state consequences for Rouse and Remorse results.
+-- Standard rolls have no automatic consequences — the ST narrates them.
+-- @param color string
+-- @param active table
+function RC._applyRollConsequences(color, active)
+    if active.result == nil then return end
+    local rc = active.result.resultClass
+
+    if active.rollType == C.RollType.ROUSE or active.rollType == C.RollType.ROUSE_OBLIVION then
+        local rouseMutated = false
+        -- Rouse fails → Hunger increases unless the roll passed (any WIN-class result).
+        local rousePassed = rc == C.ResultClass.WIN
+            or rc == C.ResultClass.CRITICAL_WIN
+            or rc == C.ResultClass.MESSY_CRITICAL
+        if RO.getPermanent(RO.PERM_AUTO_ROUSE) and not rousePassed then
+            local hunger    = S.getPlayerVal(color, "hunger") or 0
+            local newHunger = math.min(hunger + 1, C.MAX_HUNGER)
+            S.setPlayerVal(color, "hunger", newHunger)
+            rouseMutated = true
+
+            if hunger >= C.MAX_HUNGER then
+                RC.queueRoll(color, {
+                    rollType = C.RollType.FRENZY,
+                    label    = "Frenzy Check (Hunger exceeded 5)",
+                })
+            end
+        end
+
+        -- ROUSE_OBLIVION: a Hunger die showing 1 always adds a Stain, win or lose.
+        if RO.getPermanent(RO.PERM_AUTO_ROUSE)
+            and active.rollType == C.RollType.ROUSE_OBLIVION
+            and active.result ~= nil
+            and active.result.hungerOnes then
+            P.applyHumanityStainDelta(color, 1)
+            rouseMutated = true
+        end
+
+        if rouseMutated then
+            PCST.refreshCharacterSheetsForColor(color)
+            -- Match ST PC panel hunger Apply: ST strip dots, then invalidate overlay cache + sync.
+            PCST.refreshRow(color)
+            P.refreshHudOverlaysForSeat(color)
+            -- confirmRoll then advances phase and calls notifyStateChanged → RUI.refreshPlayerRollPanel,
+            -- which issues many UI.setAttribute/setValue calls on roll UI in the same frame. TTS can
+            -- drop or visually override Global overlay show/hide done here; a next-frame re-sync matches
+            -- what happens when the user later clicks Apply (after roll UI has settled).
+            local seatForOverlay = color
+            Wait.frames(function()
+                P.refreshHudOverlaysForSeat(seatForOverlay)
+            end, 1)
+        end
+
+    elseif active.rollType == C.RollType.REMORSE then
+        if not RO.getPermanent(RO.PERM_AUTO_REMORSE) then
+            return
+        end
+        if S.getPlayerID(color) == nil then return end
+
+        -- Remorse always clears Stains; on failure, Humanity (permanent rating) drops by 1.
+        P.clearHumanityStains(color)
+
+        local passes = rc == C.ResultClass.WIN
+            or rc == C.ResultClass.CRITICAL_WIN
+            or rc == C.ResultClass.MESSY_CRITICAL
+
+        if not passes then
+            P.applyHumanityBaseDelta(color, -1)
+        end
+        PCST.refreshCharacterSheetsForColor(color)
+    end
+end
+
+--- Options for Dice.classifyRoll from active.rollOptions.
+-- @param active table|nil
+-- @return table
+function RC.classifyOptsFromActive(active)
+    if active == nil or type(active.rollOptions) ~= "table" then
+        return { countCriticalPairs = true, bestialNull = false }
+    end
+    return {
+        countCriticalPairs = RO.getForActive(active, RO.ROLL_CRITS),
+        bestialNull          = RO.getForActive(active, RO.ROLL_BESTIAL_NULL)
+            and active.rollType == C.RollType.STANDARD,
+    }
+end
+
+--- Builds die-face list for UI (Bestial Null uses paired display when present).
+-- @param active table
+-- @param normalDice table
+-- @param hungerDice table
+-- @return table
+function RC.buildDiceFacesForActive(active, normalDice, hungerDice)
+    local r = active.result
+    if r ~= nil and type(r.bestialNullCanceled) == "table" and #r.bestialNullCanceled > 0 then
+        return Dice.buildDiceFacesWithBestialNull(normalDice, hungerDice, r.bestialNullCanceled)
+    end
+    return Dice.buildDiceFaces(normalDice, hungerDice)
+end
+
+--- Merges Storyteller per-roll option overrides into the active roll.
+-- @param color string
+-- @param opts table  Partial rollOptions boolean map
+-- @return boolean
+function RC.setRollOptions(color, opts)
+    U.Val("RC.setRollOptions()", {color = color, opts = opts},
+        U.Type(color) == "string" and type(opts) == "table",
+        "invalid arguments")
+
+    local active = getActive(color)
+    if active == nil then
+        print(string.format("[RC] setRollOptions: no active roll for %s", color))
+        return false
+    end
+
+    active.rollOptions = active.rollOptions or RO.defaultsForRollType(active.rollType)
+    for k, v in pairs(opts) do
+        if type(v) == "boolean" then
+            active.rollOptions[k] = v
+        end
+    end
+    RO.sanitizeRollOptions(active)
+    setActive(color, active)
+    tryClassifyResultInternal(color)
+    notifyStateChanged(color)
+    return true
+end
+
+return RC

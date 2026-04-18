@@ -48,6 +48,22 @@ function P.refreshHudOverlays()
   end)
 end
 
+--- Like refreshHudOverlays, but clears overlay visibility cache for one seat first so hunger/condition
+--- layers cannot get stuck when lastVisible matches desired state but TTS UI is out of sync.
+--- @param seatColor string e.g. "Red"
+function P.refreshHudOverlaysForSeat(seatColor)
+  if type(seatColor) ~= "string" then
+    return
+  end
+  pcall(function()
+    local HO = require("core.hud_overlays")
+    if type(HO.invalidateSeatCache) == "function" then
+      HO.invalidateSeatCache(seatColor)
+    end
+    HO.syncAll()
+  end)
+end
+
 --- Which automated UI id updates apply per sheet page (`CSHEET_PAGE_<n>_<COLOR>`).
 --- Add rows when you add page 3..8 XML: `"main"` = attrs/skills/trackers/BP/humanity (no discipline dots);
 --- `"disciplines"` = discipline dot-lines only; `"none"` = skip this pipeline (custom ids / later profile).

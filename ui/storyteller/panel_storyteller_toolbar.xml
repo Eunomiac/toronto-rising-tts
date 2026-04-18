@@ -1,21 +1,22 @@
 <!-- Storyteller bottom-right tool bar + pop-out panels (Black) -->
 <!-- Agent guidance: .dev/HUD_FUNCTIONS.md; .dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md (NPCs toggle). -->
-<Panel id="storytellerToolbarRoot" visibility="Host" rectAlignment="UpperLeft" offsetXY="50 200" width="800" height="800">
-  <VerticalLayout spacing="4" childAlignment="LowerLeft" height="36">
-    <HorizontalLayout rectAlignment="UpperLeft" ignoreLayout="true" spacing="3" childAlignment="MiddleLeft" width="200" height="20" offsetXY="0 20">
-      <Button id="toggle_lighting" text="Light" minWidth="16" fontSize="8"
+
+<Panel id="storytellerToolbarRoot" visibility="Host" rectAlignment="UpperLeft" offsetXY="50 00" width="800" height="800">
+  <VerticalLayout spacing="4" childAlignment="UpperLeft" height="20" rectAlignment="UpperLeft" offsetXY="0 -20">
+    <HorizontalLayout rectAlignment="UpperLeft" ignoreLayout="true" spacing="3" childAlignment="UpperLeft" width="200" height="10" offsetXY="0 20">
+      <Button id="toggle_lighting" text="Light" minWidth="16" fontSize="8" preferredHeight="20" minHeight="20" flexibleHeight="0"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
         onClick="HUD_selectStorytellerPanel" />
-      <Button id="toggle_scenes" text="Scenes" minWidth="16" fontSize="8"
+      <Button id="toggle_scenes" text="Scenes" minWidth="16" fontSize="8" preferredHeight="20" minHeight="20" flexibleHeight="0"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
         onClick="HUD_selectStorytellerPanel" />
-      <Button id="toggle_pcs" text="PCs" minWidth="16" fontSize="8"
+      <Button id="toggle_pcs" text="PCs" minWidth="16" fontSize="8" preferredHeight="20" minHeight="20" flexibleHeight="0"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
         onClick="HUD_selectStorytellerPanel" />
-      <Button id="toggle_phases" text="Phases" minWidth="16" fontSize="8"
+      <Button id="toggle_phases" text="Phases" minWidth="16" fontSize="8" preferredHeight="20" minHeight="20" flexibleHeight="0"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
         onClick="HUD_selectStorytellerPanel" />
-      <Button id="toggle_npcs" text="NPCs" minWidth="16" fontSize="8"
+      <Button id="toggle_npcs" text="NPCs" minWidth="16" fontSize="8" preferredHeight="20" minHeight="20" flexibleHeight="0"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
         onClick="HUD_selectStorytellerPanel" />
     </HorizontalLayout>

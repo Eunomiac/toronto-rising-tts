@@ -183,6 +183,21 @@ local function getDefaultPlayerHUD()
             advantages = false,
             projects = false,
             experience = false
+        },
+
+        -- Roll state for the Dice System.
+        -- See .dev/Dice System/Dice System Outline.md §4 for full shape documentation.
+        rollData = {
+            -- Active roll record (nil when no roll is in progress for this player).
+            -- Shape: { id, rollType, phase, batonHolder, label, pool, difficulty,
+            --          tookHalf, diceDisplay, result, willpower, extended, teamwork, opposed }
+            -- NOTE: dice values are NOT stored — RC._getDiceForRoll() reads live from the table.
+            active = nil,
+            -- Queue of pending RollConfig tables (e.g. three sequential Rouse Checks).
+            -- Each entry has the same config shape used by RC.initiateRoll().
+            queue = {},
+            -- Short history of resolved roll results (last N entries kept for display).
+            history = {},
         }
     }
 end
@@ -214,7 +229,13 @@ function S.GetDefaultGameState()
         npcs = {
             instances = {},
         },
-        -- Add other top-level game state defaults
+        -- Storyteller roll automation (chronicle-wide); merged with defaults in validateState
+        stRollSettings = {
+            autoRouse   = true,
+            autoWp      = true,
+            autoRemorse = true,
+            autoHunger  = true,
+        },
     }
 end
 
@@ -377,6 +398,15 @@ function S.validateState()
     end
     if not gameState.npcs.instances or type(gameState.npcs.instances) ~= "table" then
         gameState.npcs.instances = {}
+    end
+
+    -- Chronicle-wide ST roll automation toggles (merge new keys on old saves)
+    if not gameState.stRollSettings or type(gameState.stRollSettings) ~= "table" then
+        gameState.stRollSettings = {}
+    end
+    do
+        local RO = require("lib.roll_options")
+        S.mergeDefaults(gameState.stRollSettings, RO.defaultPermanentSettings())
     end
 
     --- Normalize player dynamic shape: hunger under stats, stats/conditions from PCS when needed, strip ST-only fields.

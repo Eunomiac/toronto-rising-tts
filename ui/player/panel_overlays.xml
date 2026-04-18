@@ -10,6 +10,7 @@
 
   <Image id="overlay_frenzy_Brown" image="overlay_frenzy" class="player_overlay overlay_anim_grow" />
 
+  <Image id="overlay_hunger_0_Brown" image="overlay_hunger_0" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_5_Brown" image="overlay_hunger_5" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_4_Brown" image="overlay_hunger_4" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_3_Brown" image="overlay_hunger_3" class="player_overlay overlay_anim_fade" />
@@ -30,6 +31,7 @@
 
   <Image id="overlay_frenzy_Orange" image="overlay_frenzy" class="player_overlay overlay_anim_grow" />
 
+  <Image id="overlay_hunger_0_Orange" image="overlay_hunger_0" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_5_Orange" image="overlay_hunger_5" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_4_Orange" image="overlay_hunger_4" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_3_Orange" image="overlay_hunger_3" class="player_overlay overlay_anim_fade" />
@@ -50,6 +52,7 @@
 
   <Image id="overlay_frenzy_Red" image="overlay_frenzy" class="player_overlay overlay_anim_grow" />
 
+  <Image id="overlay_hunger_0_Red" image="overlay_hunger_0" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_5_Red" image="overlay_hunger_5" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_4_Red" image="overlay_hunger_4" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_3_Red" image="overlay_hunger_3" class="player_overlay overlay_anim_fade" />
@@ -70,6 +73,7 @@
 
   <Image id="overlay_frenzy_Pink" image="overlay_frenzy" class="player_overlay overlay_anim_grow" />
 
+  <Image id="overlay_hunger_0_Pink" image="overlay_hunger_0" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_5_Pink" image="overlay_hunger_5" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_4_Pink" image="overlay_hunger_4" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_3_Pink" image="overlay_hunger_3" class="player_overlay overlay_anim_fade" />
@@ -90,6 +94,7 @@
 
   <Image id="overlay_frenzy_Purple" image="overlay_frenzy" class="player_overlay overlay_anim_grow" />
 
+  <Image id="overlay_hunger_0_Purple" image="overlay_hunger_0" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_5_Purple" image="overlay_hunger_5" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_4_Purple" image="overlay_hunger_4" class="player_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_3_Purple" image="overlay_hunger_3" class="player_overlay overlay_anim_fade" />

@@ -49,4 +49,12 @@
   <Button class="pcs_btn_palette_torpor" colors="#441122|#552233|#663344|rgba(0.2,0.05,0.1,0.4)" />
   <Button class="pcs_btn_palette_frenzy" colors="#662200|#883300|#AA4400|rgba(0.35,0.1,0,0.45)" />
   <Button class="pcs_btn_palette_blindfold" colors="#222233|#333344|#444466|rgba(0.12,0.12,0.2,0.45)" />
+
+  <!-- Roll initiation buttons: compact, shared base size -->
+  <Button class="pcs_btn_roll" preferredWidth="52" minWidth="46" fontSize="10" height="26" onClick="HUD_rollInitiate" />
+  <Button class="pcs_btn_palette_roll_std"     colors="#1A3A1A|#285028|#3A7A3A|rgba(0.1,0.25,0.1,0.5)"  />
+  <Button class="pcs_btn_palette_roll_simple"  colors="#1A1A3A|#282850|#3A3A7A|rgba(0.1,0.1,0.25,0.5)"  />
+  <Button class="pcs_btn_palette_roll_rouse"   colors="#3A1A0A|#502810|#7A3A10|rgba(0.25,0.1,0.04,0.5)" />
+  <Button class="pcs_btn_palette_roll_frenzy"  colors="#3A0A0A|#501010|#7A1010|rgba(0.25,0.04,0.04,0.5)" />
+  <Button class="pcs_btn_palette_roll_remorse" colors="#2A1A3A|#3A2050|#553070|rgba(0.15,0.1,0.25,0.5)" />
 </Defaults>

@@ -1,0 +1,497 @@
+--[[
+    VTM5E Dice Math Engine (core/dice.ttslua)
+
+    Pure computation layer for Vampire: the Masquerade 5th Edition dice mechanics.
+    No TTS API dependencies. No UI. No state reads or writes.
+    All functions are deterministic given their inputs and safe to unit-test in isolation.
+
+    VTM5E Dice Rules Summary:
+    - Pool of d10s split into Normal dice and Hunger dice (equal to Hunger level).
+    - Success: any die >= 6.
+    - Critical pair: every 2 tens in the pool grants +2 bonus successes.
+    - Result classes (7 total): Messy Critical, Critical Win, Win, Failure,
+      Bestial Failure, Total Failure, Total Bestial Failure.
+    - Special roll types: Rouse Check (1 Normal die), Remorse Roll (no Hunger dice).
+
+    Agent guidance: .dev/Dice System/Dice System Outline.md §1, §5, §6
+]]
+
+local Dice = {}
+local C = require("lib.constants")
+local U = require("lib.util")
+
+-- ============================================================================
+-- INTERNAL HELPERS
+-- ============================================================================
+
+--- Counts how many values in an array satisfy a predicate.
+-- @param values table  Array of numbers
+-- @param predicate function  Function(value) -> boolean
+-- @return number
+local function countWhere(values, predicate)
+    U.Val("Dice.countWhere()", {values = values}, U.Type(values) == "table",
+        "values must be a table")
+    local count = 0
+    for _, v in ipairs(values) do
+        if predicate(v) then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+--- Returns true if any value in the array satisfies the predicate.
+-- @param values table  Array of numbers
+-- @param predicate function  Function(value) -> boolean
+-- @return boolean
+local function anyWhere(values, predicate)
+    U.Val("Dice.anyWhere()", {values = values}, U.Type(values) == "table",
+        "values must be a table")
+    for _, v in ipairs(values) do
+        if predicate(v) then
+            return true
+        end
+    end
+    return false
+end
+
+-- ============================================================================
+-- PUBLIC API
+-- ============================================================================
+
+--- Counts the number of critical-success pairs (pairs of 10s) in a set of die values.
+-- A "pair" is formed from every two dice showing 10. Three tens = 1 pair, four = 2, etc.
+-- Critical pairs grant +2 bonus successes each (on top of the 1 success each die already scores).
+-- @param values table  Array of die face values (integers 1–10)
+-- @return number  Number of pairs (0 if fewer than two tens)
+-- @usage local pairs = Dice.countPairs({10, 7, 10, 4, 10})  -- returns 1
+function Dice.countPairs(values)
+    U.Val("Dice.countPairs()", {values = values}, U.Type(values) == "table",
+        "values must be a table array of die values")
+    local tens = countWhere(values, function(v) return v == C.DICE_CRITICAL_SUCCESS_VALUE end)
+    return math.floor(tens / 2)
+end
+
+--- Counts base successes in a set of die values (dice >= DICE_SUCCESS_THRESHOLD).
+-- Does NOT include the +2 bonus from critical pairs; call computeSuccesses for the full total.
+-- @param values table  Array of die face values
+-- @return number  Count of dice showing 6 or higher
+-- @usage local base = Dice.countBasicSuccesses({10, 7, 3, 6, 1})  -- returns 3
+function Dice.countBasicSuccesses(values)
+    U.Val("Dice.countBasicSuccesses()", {values = values}, U.Type(values) == "table",
+        "values must be a table array of die values")
+    return countWhere(values, function(v) return v >= C.DICE_SUCCESS_THRESHOLD end)
+end
+
+--- Returns true if any die in the array shows the target value.
+-- @param values table  Array of die face values
+-- @param target number  Value to search for
+-- @return boolean
+-- @usage local hasOne = Dice.anyEquals({3, 1, 8}, 1)  -- returns true
+function Dice.anyEquals(values, target)
+    U.Val("Dice.anyEquals()", {values = values, target = target},
+        U.Type(values) == "table" and U.Type(target) == "number",
+        "values must be a table and target must be a number")
+    return anyWhere(values, function(v) return v == target end)
+end
+
+--- Computes total successes for a full dice pool (Normal + Hunger combined).
+-- Accounts for critical pair bonuses across both sub-pools.
+-- @param normalDice table  Array of Normal die values (may be empty)
+-- @param hungerDice table  Array of Hunger die values (may be empty for no-hunger rolls)
+-- @return number totalSuccesses, number pairs, number bonusSuccesses
+-- @usage local total, pairs, bonus = Dice.computeSuccesses({7, 3, 10}, {1, 10})
+--        -- tens = 2 (one pair), base = 3, total = 3 + 2 = 5
+function Dice.computeSuccesses(normalDice, hungerDice)
+    U.Val("Dice.computeSuccesses()", {normalDice = normalDice, hungerDice = hungerDice},
+        U.Type(normalDice) == "table" and U.Type(hungerDice) == "table",
+        "normalDice and hungerDice must be tables")
+
+    -- Combine pools to count pairs across both sets
+    local allDice = {}
+    for _, v in ipairs(normalDice) do allDice[#allDice + 1] = v end
+    for _, v in ipairs(hungerDice) do allDice[#allDice + 1] = v end
+
+    local pairs = Dice.countPairs(allDice)
+    local baseSuccesses = Dice.countBasicSuccesses(allDice)
+    local bonusSuccesses = pairs * 2
+    local totalSuccesses = baseSuccesses + bonusSuccesses
+
+    return totalSuccesses, pairs, bonusSuccesses
+end
+
+--- Successes from dice >= 6 only — no critical pair bonus (for "Criticals" off option).
+-- @param normalDice table
+-- @param hungerDice table
+-- @return number totalSuccesses, number pairsAlwaysZero, number bonusAlwaysZero
+function Dice.computeSuccessesNoPairs(normalDice, hungerDice)
+    U.Val("Dice.computeSuccessesNoPairs()", {normalDice = normalDice, hungerDice = hungerDice},
+        U.Type(normalDice) == "table" and U.Type(hungerDice) == "table",
+        "normalDice and hungerDice must be tables")
+
+    local allDice = {}
+    for _, v in ipairs(normalDice) do allDice[#allDice + 1] = v end
+    for _, v in ipairs(hungerDice) do allDice[#allDice + 1] = v end
+
+    local baseSuccesses = Dice.countBasicSuccesses(allDice)
+    return baseSuccesses, 0, 0
+end
+
+--- Bestial Null: each Hunger 1 cancels one Normal success, prioritizing highest normals first.
+-- @param normalDice table
+-- @param hungerDice table
+-- @return table adjustedNormal  Copy with canceled successes reduced to 5
+-- @return table canceledOrdered  Values canceled, in cancellation order (for display)
+local function applyBestialNullNormals(normalDice, hungerDice)
+    local h1 = 0
+    for _, v in ipairs(hungerDice) do
+        if v == 1 then h1 = h1 + 1 end
+    end
+    if h1 == 0 then
+        local c = {}
+        for _, v in ipairs(normalDice) do c[#c + 1] = v end
+        return c, {}
+    end
+
+    local work = {}
+    for i, v in ipairs(normalDice) do work[i] = v end
+
+    local succ = {}
+    for i, v in ipairs(work) do
+        if v >= C.DICE_SUCCESS_THRESHOLD then
+            succ[#succ + 1] = { index = i, value = v }
+        end
+    end
+    table.sort(succ, function(a, b)
+        if a.value ~= b.value then return a.value > b.value end
+        return a.index < b.index
+    end)
+
+    local canceledOrdered = {}
+    local removals = math.min(h1, #succ)
+    for r = 1, removals do
+        local idx = succ[r].index
+        local oldVal = work[idx]
+        canceledOrdered[#canceledOrdered + 1] = oldVal
+        work[idx] = 5
+    end
+
+    return work, canceledOrdered
+end
+
+--- Sorts flat die-face records for UI: highest value first; on ties, Hunger before Normal.
+-- @param faces table  Array of { value = number, isHunger = boolean } (mutated in place)
+function Dice.sortDiceFaceRecords(faces)
+    U.Val("Dice.sortDiceFaceRecords()", {faces = faces},
+        U.Type(faces) == "table", "faces must be a table")
+    table.sort(faces, function(a, b)
+        if a.value ~= b.value then return a.value > b.value end
+        if a.isHunger ~= b.isHunger then return a.isHunger end
+        return false
+    end)
+end
+
+--- Builds die-face list for UI when Bestial Null pairs Hunger 1s with canceled normals (canceled immediately to the right).
+-- Display order matches Dice.sortDiceFaceRecords rules while keeping each [1h][canceled n] pair adjacent.
+-- @param normalDice table  Original physical normals
+-- @param hungerDice table  Original physical hunger dice
+-- @param canceledOrdered table  Ordered canceled normal values (same length as Hunger 1s used)
+-- @return table  Array of { value, isHunger }
+function Dice.buildDiceFacesWithBestialNull(normalDice, hungerDice, canceledOrdered)
+    U.Val("Dice.buildDiceFacesWithBestialNull()",
+        {normalDice = normalDice, hungerDice = hungerDice, canceledOrdered = canceledOrdered},
+        U.Type(normalDice) == "table" and U.Type(hungerDice) == "table" and U.Type(canceledOrdered) == "table",
+        "arguments must be tables")
+
+    local cancelIdx = 1
+
+    local function multisetSubtract(list, val)
+        for i, v in ipairs(list) do
+            if v == val then
+                table.remove(list, i)
+                return
+            end
+        end
+    end
+
+    local normalsLeft = {}
+    for _, v in ipairs(normalDice) do normalsLeft[#normalsLeft + 1] = v end
+
+    --- @param faces table
+    --- @return number maxValue
+    --- @return boolean maxFaceIsHunger  true if any face tied for max is a Hunger die (tie-break for group order)
+    local function groupMaxMeta(faces)
+        local maxV = -1
+        local maxIsHunger = false
+        for _, f in ipairs(faces) do
+            if f.value > maxV then
+                maxV = f.value
+                maxIsHunger = f.isHunger
+            elseif f.value == maxV and f.isHunger then
+                maxIsHunger = true
+            end
+        end
+        return maxV, maxIsHunger
+    end
+
+    -- Each group is one logical unit for sorting (a pair stays one adjacent block).
+    local groups = {}
+
+    for _, hv in ipairs(hungerDice) do
+        if hv == 1 and cancelIdx <= #canceledOrdered then
+            local cval = canceledOrdered[cancelIdx]
+            cancelIdx = cancelIdx + 1
+            multisetSubtract(normalsLeft, cval)
+            groups[#groups + 1] = {
+                faces = {
+                    { value = 1, isHunger = true },
+                    { value = cval, isHunger = false },
+                },
+            }
+        else
+            groups[#groups + 1] = {
+                faces = { { value = hv, isHunger = true } },
+            }
+        end
+    end
+
+    table.sort(normalsLeft, function(a, b) return a > b end)
+    for _, v in ipairs(normalsLeft) do
+        groups[#groups + 1] = {
+            faces = { { value = v, isHunger = false } },
+        }
+    end
+
+    table.sort(groups, function(ga, gb)
+        local va, ha = groupMaxMeta(ga.faces)
+        local vb, hb = groupMaxMeta(gb.faces)
+        if va ~= vb then return va > vb end
+        if ha ~= hb then return ha end
+        return false
+    end)
+
+    local faces = {}
+    for _, g in ipairs(groups) do
+        for _, f in ipairs(g.faces) do
+            faces[#faces + 1] = f
+        end
+    end
+    return faces
+end
+
+--- Classifies a completed roll into one of the seven VTM5E result classes.
+-- Returns nil if difficulty is nil — classification is deferred until difficulty is known.
+-- This supports the "post-hoc difficulty" pattern for opposed rolls and hidden difficulties.
+--
+-- Classification priority (first matching condition wins):
+--   1. Messy Critical:        passes, pair(s) of 10s exist, at least one Hunger die shows 10
+--   2. Critical Win:          passes, pair(s) of 10s exist, no Hunger die shows 10
+--   3. Win:                   passes, no pair of 10s
+--   4. Total Bestial Failure: 0 successes, at least one Hunger die shows 1
+--   5. Bestial Failure:       fails (> 0 successes), at least one Hunger die shows 1
+--   6. Total Failure:         0 successes, no Hunger die shows 1
+--   7. Failure:               fails (> 0 successes), no Hunger die shows 1
+--
+-- @param normalDice table  Array of Normal die values (integers 1–10)
+-- @param hungerDice table  Array of Hunger die values (empty table for no-hunger rolls)
+-- @param difficulty number|nil  Required successes; nil = classification deferred
+-- @return table|nil
+--   Returns nil when difficulty is nil; otherwise returns:
+--   { successes, pairs, bonusSuccesses, resultClass, margin, hasTens, hungerTens, hungerOnes }
+-- @usage local r = Dice.classifyRoll({10, 7, 3}, {10, 1}, 2)
+--        -- successes=5 (3 base + 2 bonus from 1 pair), resultClass="messyCritical"
+-- opts (optional table): countCriticalPairs (default true), bestialNull (default false)
+function Dice.classifyRoll(normalDice, hungerDice, difficulty, opts)
+    U.Val("Dice.classifyRoll()", {normalDice = normalDice, hungerDice = hungerDice},
+        U.Type(normalDice) == "table" and U.Type(hungerDice) == "table",
+        "normalDice and hungerDice must be table arrays")
+
+    -- Difficulty not yet set: deferred classification
+    if difficulty == nil then return nil end
+
+    U.Val("Dice.classifyRoll()", {difficulty = difficulty},
+        U.Type(difficulty) == "number" and difficulty >= 0,
+        "difficulty must be a non-negative number")
+
+    opts = (type(opts) == "table") and opts or {}
+    local countCrit = opts.countCriticalPairs ~= false
+    local useBestialNull = opts.bestialNull == true
+
+    local nd = normalDice
+    local canceledOrdered = {}
+    if useBestialNull then
+        nd, canceledOrdered = applyBestialNullNormals(normalDice, hungerDice)
+    end
+
+    local totalSuccesses, pairs, bonusSuccesses
+    if countCrit then
+        totalSuccesses, pairs, bonusSuccesses = Dice.computeSuccesses(nd, hungerDice)
+    else
+        totalSuccesses, pairs, bonusSuccesses = Dice.computeSuccessesNoPairs(nd, hungerDice)
+    end
+
+    local margin = totalSuccesses - difficulty
+
+    -- Flags used for result classification (physical hunger dice for bestial / messy)
+    local allDice = {}
+    for _, v in ipairs(nd) do allDice[#allDice + 1] = v end
+    for _, v in ipairs(hungerDice) do allDice[#allDice + 1] = v end
+
+    local hasTens    = Dice.anyEquals(allDice, C.DICE_CRITICAL_SUCCESS_VALUE)
+    local hungerTens = Dice.anyEquals(hungerDice, C.DICE_CRITICAL_SUCCESS_VALUE)
+    local hungerOnes = Dice.anyEquals(hungerDice, 1)
+
+    -- Determine result class
+    local resultClass
+    if totalSuccesses >= difficulty then
+        if countCrit and pairs > 0 and hungerTens then
+            resultClass = C.ResultClass.MESSY_CRITICAL
+        elseif countCrit and pairs > 0 then
+            resultClass = C.ResultClass.CRITICAL_WIN
+        else
+            resultClass = C.ResultClass.WIN
+        end
+    else
+        if totalSuccesses == 0 and hungerOnes then
+            resultClass = C.ResultClass.TOTAL_BESTIAL_FAILURE
+        elseif hungerOnes then
+            resultClass = C.ResultClass.BESTIAL_FAILURE
+        elseif totalSuccesses == 0 then
+            resultClass = C.ResultClass.TOTAL_FAILURE
+        else
+            resultClass = C.ResultClass.FAILURE
+        end
+    end
+
+    local out = {
+        successes      = totalSuccesses,
+        pairs          = pairs,
+        bonusSuccesses = bonusSuccesses,
+        resultClass    = resultClass,
+        margin         = margin,
+        hasTens        = hasTens,
+        hungerTens     = hungerTens,
+        hungerOnes     = hungerOnes,
+    }
+
+    if useBestialNull and #canceledOrdered > 0 then
+        out.bestialNullCanceled = canceledOrdered
+    end
+
+    return out
+end
+
+--- Calculates the Remorse roll pool size for a character at end-of-session.
+-- Pool = the number of empty (unstained, unscarred) Humanity boxes.
+-- Minimum 1 die even if all boxes are stained or the character has zero humanity.
+-- @param currentHumanity number  Current Humanity score (0–10)
+-- @param stains number           Number of accumulated Stains
+-- @return number  Pool size (always >= 1)
+-- @usage local pool = Dice.remorsePool(7, 3)  -- returns 0 boxes free but clamped to 1
+--                                               -- (10 - 7 = 3 empty; 3 - 3 = 0; clamped = 1)
+function Dice.remorsePool(currentHumanity, stains)
+    U.Val("Dice.remorsePool()",
+        {currentHumanity = currentHumanity, stains = stains},
+        U.Type(currentHumanity) == "number" and U.Type(stains) == "number",
+        "currentHumanity and stains must be numbers")
+    local emptyBoxes = 10 - currentHumanity - stains
+    return math.max(1, emptyBoxes)
+end
+
+--- Calculates the "Take Half" automatic success count for a given pool size.
+-- A player may choose this instead of rolling when a difficulty has been set.
+-- Result class is always WIN when taking half (no critical pairs possible).
+-- @param poolSize number  Total dice in the pool (normal + hunger count)
+-- @return number  Floor of poolSize / 2 (always >= 0)
+-- @usage local successes = Dice.takeHalf(7)  -- returns 3
+function Dice.takeHalf(poolSize)
+    U.Val("Dice.takeHalf()", {poolSize = poolSize},
+        U.Type(poolSize) == "number" and poolSize >= 0,
+        "poolSize must be a non-negative number")
+    return math.floor(poolSize / 2)
+end
+
+--- Formats a set of die values as a display string for UI panels and chat.
+-- Normal dice values are shown plainly; Hunger dice values are wrapped in square brackets.
+-- Successes (>= 6) are shown as-is; failures are also shown so the full roll is visible.
+-- Example: normalDice={7, 3, 10}, hungerDice={10, 1} → "7  3  10  [10]  [1]"
+-- @param normalDice table  Array of Normal die values
+-- @param hungerDice table  Array of Hunger die values (may be empty)
+-- @return string  Formatted dice display string
+-- @usage local display = Dice.formatDiceDisplay({7, 3}, {10, 1})
+function Dice.formatDiceDisplay(normalDice, hungerDice)
+    U.Val("Dice.formatDiceDisplay()",
+        {normalDice = normalDice, hungerDice = hungerDice},
+        U.Type(normalDice) == "table" and U.Type(hungerDice) == "table",
+        "normalDice and hungerDice must be tables")
+
+    local parts = {}
+    for _, v in ipairs(normalDice) do
+        parts[#parts + 1] = tostring(v)
+    end
+    for _, v in ipairs(hungerDice) do
+        parts[#parts + 1] = string.format("[%d]", v)
+    end
+
+    if #parts == 0 then
+        return "(no dice)"
+    end
+    return table.concat(parts, "  ")
+end
+
+--- Builds a sorted list of die face records for UI image display.
+-- Each entry describes one physical die with its rolled value and whether it is a Hunger die.
+-- Sorted descending by value; on ties, Hunger dice sort before Normal dice so the most
+-- dramatic results (Bestial Failures, Messy Criticals) appear first visually.
+--
+-- @param normalDice table  Array of integer values from normal dice
+-- @param hungerDice table  Array of integer values from hunger dice
+-- @return table  Array of { value = number, isHunger = boolean } records, sorted descending
+-- @usage local faces = Dice.buildDiceFaces({7, 3, 10}, {1})
+function Dice.buildDiceFaces(normalDice, hungerDice)
+    U.Val("Dice.buildDiceFaces()",
+        {normalDice = normalDice, hungerDice = hungerDice},
+        U.Type(normalDice) == "table" and U.Type(hungerDice) == "table",
+        "normalDice and hungerDice must be tables")
+
+    local faces = {}
+    for _, v in ipairs(normalDice) do
+        faces[#faces + 1] = { value = v, isHunger = false }
+    end
+    for _, v in ipairs(hungerDice) do
+        faces[#faces + 1] = { value = v, isHunger = true }
+    end
+
+    Dice.sortDiceFaceRecords(faces)
+    return faces
+end
+
+--- Returns a compact summary string for a result record.
+-- Suitable for chat broadcast messages.
+-- @param result table  Result record from classifyRoll()
+-- @param rollerName string  Display name of the rolling player
+-- @param label string|nil  Optional roll label (e.g. "Stealth vs. Guard")
+-- @return string
+-- @usage local msg = Dice.formatResultSummary(result, "Lucien", "Obfuscate")
+function Dice.formatResultSummary(result, rollerName, label)
+    U.Val("Dice.formatResultSummary()",
+        {result = result, rollerName = rollerName},
+        U.Type(result) == "table" and U.Type(rollerName) == "string",
+        "result must be a table and rollerName must be a string")
+
+    local classLabel = C.ResultClassLabel[result.resultClass] or result.resultClass
+    local rollLabel  = label and label ~= "" and string.format(" (%s)", label) or ""
+    local marginStr  = result.margin ~= nil
+        and string.format(" | Margin: %+d", result.margin)
+        or ""
+
+    return string.format("[%s]%s  %s  — %d success%s%s",
+        rollerName,
+        rollLabel,
+        classLabel,
+        result.successes,
+        result.successes == 1 and "" or "es",
+        marginStr)
+end
+
+return Dice

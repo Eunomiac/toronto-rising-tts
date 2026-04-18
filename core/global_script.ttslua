@@ -92,6 +92,149 @@ function GlobalGetMergedPlayerData(playerID)
     return S.getPlayerData(playerID)
 end
 
+--- Returns the phase string of a player's active roll, or nil if no roll is active.
+-- Called by dice bag objects (via Global.call) so they know whether to spawn a die
+-- or initiate a new roll when clicked.
+-- @param params table  { color: string }
+-- @return string|nil  e.g. "PRE_ROLL", "ROLLING", or nil
+function GlobalGetRollPhase(params)
+    if type(params) ~= "table" then return nil end
+    local color = params.color
+    if type(color) ~= "string" then return nil end
+    local pid = S.getPlayerID(color)
+    if pid == nil then return nil end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil then return nil end
+    return active.phase
+end
+
+--- Called by a dice bag each time it spawns one die (via Global.call).
+-- Updates RC.setPool with the latest count for that die type while preserving
+-- the count reported by the other bag type.
+-- @param params table  { color: string, dieType: "normal"|"hunger", count: number }
+function GlobalReportBagDiceCount(params)
+    if type(params) ~= "table" then return end
+    local color   = params.color
+    local dieType = params.dieType
+    local count   = params.count
+    if type(color) ~= "string" or type(dieType) ~= "string" or type(count) ~= "number" then
+        return
+    end
+    if RC == nil then return end
+
+    -- Read current pool so we only change the reported die type.
+    local pid = S.getPlayerID(color)
+    if pid == nil then return end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil then return end
+    local pool   = active.pool or { normal = 0, hunger = 0 }
+    local normal = tonumber(pool.normal) or 0
+    local hunger = tonumber(pool.hunger) or 0
+
+    if dieType == "normal" then
+        normal = count
+    elseif dieType == "hunger" then
+        hunger = count
+    end
+
+    RC.setPool(color, normal, hunger)
+end
+
+--- Resolves which logical die type a bag click should spawn (Auto-Hunger redirect, Hunger Dice off).
+-- @param params table  { color: string, requested: "normal"|"hunger" }
+-- @return string  "normal" or "hunger"
+function GlobalRollSpawnDieRequest(params)
+    if type(params) ~= "table" then return "normal" end
+    local color     = params.color
+    local requested = params.requested
+    if type(color) ~= "string" or type(requested) ~= "string" then return requested end
+
+    local pid = S.getPlayerID(color)
+    if pid == nil then return requested end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil or active.phase ~= C.RollPhase.PRE_ROLL then return requested end
+
+    local RO = require("lib.roll_options")
+
+    if not RO.getForActive(active, RO.ROLL_HUNGER_DICE) then
+        return "normal"
+    end
+
+    if RO.getPermanent(RO.PERM_AUTO_HUNGER) and requested == "normal" then
+        local ch    = S.getPlayerVal(color, "hunger") or 0
+        local poolH = (active.pool and active.pool.hunger) or 0
+        if poolH < ch then
+            return "hunger"
+        end
+    end
+
+    return requested
+end
+
+--- Called by character sheet objects (via Global.call) to initiate a roll for their player.
+-- Accepts either a direct rollType string, or a semantic trigger key that is resolved
+-- to a roll type based on current game state (e.g. phase-dependent Remorse vs Humanity).
+--
+-- Trigger keys (params.trigger):
+--   "humanity"  → C.RollType.HUMANITY_ROLL normally; C.RollType.REMORSE at end-of-session phase
+--   "willpower" → C.RollType.WILLPOWER_ROLL
+--   "rouse"     → C.RollType.ROUSE
+--   "frenzy"    → C.RollType.FRENZY
+-- (Extend this table as more sheet-interactive rolls are defined.)
+--
+-- @param params table  { color: string, rollType?: string, trigger?: string, label?: string }
+-- @return boolean  true if the roll was initiated; false if blocked or invalid
+function GlobalInitiateRoll(params)
+    if type(params) ~= "table" then return false end
+    if RC == nil then return false end
+
+    local color = params.color
+    if type(color) ~= "string" then return false end
+
+    -- Resolve roll type: direct value takes precedence, then trigger mapping
+    local rollType = params.rollType
+
+    if rollType == nil and type(params.trigger) == "string" then
+        local currentPhase = S.getStateVal("currentPhase")
+
+        local triggerMap = {
+            standard    = function() return C.RollType.STANDARD     end,
+            simplecheck = function() return C.RollType.SIMPLE_CHECK end,
+            humanity    = function()
+                -- Remorse at end-of-session; Humanity Roll otherwise
+                return (currentPhase == C.Phases.END)
+                    and C.RollType.REMORSE
+                    or  C.RollType.HUMANITY_ROLL
+            end,
+            willpower = function() return C.RollType.WILLPOWER_ROLL end,
+            rouse     = function() return C.RollType.ROUSE           end,
+            frenzy    = function() return C.RollType.FRENZY          end,
+        }
+
+        local resolver = triggerMap[params.trigger]
+        if resolver ~= nil then
+            rollType = resolver()
+        else
+            print(string.format(
+                "[GlobalInitiateRoll] Unknown trigger key: '%s'", tostring(params.trigger)))
+            return false
+        end
+    end
+
+    if type(rollType) ~= "string" then
+        print("[GlobalInitiateRoll] No rollType or trigger provided.")
+        return false
+    end
+
+    -- Dice bags and character sheets call GlobalInitiateRoll — treat as player-initiated
+    -- so the player panel is shown immediately with "Awaiting Storyteller..." feedback.
+    return RC.initiateRoll(color, {
+        rollType  = rollType,
+        label     = params.label or "",
+        initiator = params.initiator or "player",
+    })
+end
+
 --- Shallow snapshot of character sheet tracker presentation (glyphs + optional sheet `image` ids).
 --- Set from each `ui_csheet` object on load; drives Storyteller strip text via `lib.pc_stats` and sheet box art.
 --- @param cfg table|nil with optional keys: `damageTrack`, `humanityTrack`, `sheetImages`
@@ -144,6 +287,11 @@ function onLoad(saved_data)
 
     -- Update UI displays with current state
     UpdateUIDisplays()
+
+    -- Refresh all roll panels to match any persisted roll state (e.g. after save/reload mid-roll)
+    if RUI then
+        pcall(function() RUI.refreshAll() end)
+    end
 
     -- NPC panel rows are not refreshed from `UpdateUIDisplays` (perf). After state restore, merge once if that panel is visible.
     Wait.time(function()
@@ -865,3 +1013,417 @@ L = require("core.lighting")
 R = require("lib.rotational-seat-layout")
 LightDebug = require("core.light_debug")
 LightDebugFocus = require("core.light_debug_focus")
+
+-- ============================================================================
+-- DICE SYSTEM MODULES
+-- Loaded last so they can reference G (guids) and S (state) safely.
+-- RC and RUI are global so TTS UI onClick handlers can call them directly.
+-- ============================================================================
+RC  = require("core.roll_controller")
+RUI = require("core.roll_ui")
+
+-- Wire RC callback hooks so roll state changes automatically refresh UI.
+-- No pcall here: errors in the UI layer should surface as TTS chat errors
+-- rather than being silently swallowed, making bugs easier to diagnose.
+RC.onRollStateChanged = function(color)
+    RUI.refreshPlayerRollPanel(color)
+    RUI.refreshSTDashboard()
+end
+
+RC.onRollResolved = function(color, result, label)
+    RUI.showResultBroadcast(color, result, label)
+    -- Destroy staged/rolled dice after the broadcast panel auto-hides (12 s).
+    -- This keeps dice visible on the table while the result is displayed.
+    Wait.time(function()
+        destroyBagDice(color)
+    end, 12)
+end
+
+-- ============================================================================
+-- PHYSICAL DICE INTEGRATION
+-- Dice are pre-tagged in TTS at authoring time:
+--   "NormalDie" or "HungerDie"   — die type
+--   "<Color>Object"               — owner color (e.g. "BrownObject")
+-- When a die spawns from a bag, onObjectLeaveContainer writes the active roll
+-- ID to obj.setGMNotes() so RC._getDiceForRoll can identify which dice belong
+-- to which roll (relevant for Extended rolls / queued Rouse checks).
+-- onObjectRandomize resets the debounce timer in ROLLING and POST_ROLL phases;
+-- the eventual Wait.time fires RC.onDiceSettled → RC.recalculate (live read).
+-- ============================================================================
+
+--- Extracts the owner color from an object's tag list.
+-- Returns nil if no "<Color>Object" tag is found.
+-- @param tags table  Array of tag strings from obj.getTags()
+-- @return string|nil  Player seat color (e.g. "Red")
+local function colorFromTags(tags)
+    for _, tag in ipairs(tags) do
+        for _, color in ipairs(C.PlayerColors) do
+            if tag == color .. "Object" then
+                return color
+            end
+        end
+    end
+    return nil
+end
+
+--- True if this object is one of our VTM dice (normal or hunger).
+--- Physical dice should include "d10"; some workshop hunger dice omit it, so we also
+--- accept NormalDie/HungerDie. Dice bags share those type tags but are not rollable:
+--- onObjectRandomize filters those out via getValue() (see below).
+local function isDieTag(tags)
+    if type(tags) ~= "table" then
+        return false
+    end
+    for _, tag in ipairs(tags) do
+        if tag == "d10" or tag == "NormalDie" or tag == "HungerDie" then
+            return true
+        end
+    end
+    return false
+end
+
+--- Called by TTS when any object is randomized (die rolled, deck shuffled, etc.).
+-- Only responds to dice in ROLLING or POST_ROLL phases (identified by tags).
+-- Resets the debounce timer; does NOT accumulate die values.
+-- @param obj        Object  The randomized TTS object
+-- @param playerColor string  TTS seat color of the player who rolled (may be "")
+function onObjectRandomize(obj, playerColor)
+    if obj == nil then return end
+    if RC == nil then return end
+
+    local ok, tags = pcall(function() return obj.getTags() end)
+    if not ok or type(tags) ~= "table" then return end
+
+    -- Only handle dice objects (see isDieTag); exclude bags/decks (no numeric die face).
+    if not isDieTag(tags) then return end
+    local okVal, val = pcall(function() return obj.getValue() end)
+    if not okVal or type(val) ~= "number" then
+        return
+    end
+
+    -- Resolve owner color from die's own tags (<Color>Object)
+    local color = colorFromTags(tags)
+    if color == nil then return end
+
+    -- Delegate debounce reset to roll controller
+    pcall(function() RC.onDieSettledSignal(color) end)
+end
+
+--- Called by TTS when any object leaves a container (bag, deck, etc.).
+-- When a die is spawned from a dice bag during an active roll, writes the
+-- current roll ID to the die's GM Notes. This is the only dynamic tagging step;
+-- type and color tags are already baked into the die by the bag setup.
+-- @param container Object  The container the object left
+-- @param obj       Object  The object that was taken out
+function onObjectLeaveContainer(container, obj)
+    if obj == nil then return end
+    if RC == nil then return end
+
+    local ok, tags = pcall(function() return obj.getTags() end)
+    if not ok or type(tags) ~= "table" then return end
+
+    -- Only process dice objects
+    if not isDieTag(tags) then return end
+
+    -- Identify the owner color from the die's tags
+    local color = colorFromTags(tags)
+    if color == nil then return end
+
+    -- Get the active roll for this player
+    local pid    = S.getPlayerID(color)
+    if pid == nil then return end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil then return end
+
+    -- Write the roll ID to GM Notes so RC._getDiceForRoll can identify this die.
+    -- Dice are spawned during PRE_ROLL (pool assembly) and released in ROLLING,
+    -- so the tag must be written at leave-container time regardless of phase.
+    -- The roll ID is fixed from initiation, so writing it early is always correct.
+    -- Skip only if the roll is already RESOLVED (die is unrelated to any active roll).
+    if active.phase == C.RollPhase.RESOLVED then return end
+    pcall(function() obj.setGMNotes(active.id) end)
+end
+
+-- ============================================================================
+-- DICE BAG HELPERS
+-- Call releaseDice() / destroyDice() on a player's two dice bags by GUID.
+-- pcall is appropriate here: the bag objects are TTS GameObjects that may not
+-- exist in all save configurations, and object calls can fail if the object
+-- has been destroyed.
+-- ============================================================================
+
+--- Calls a named function on both of a player's dice bags (normal + hunger).
+-- @param color    string  Player seat color
+-- @param funcName string  "releaseDice" or "destroyDice"
+function callBagFunction(color, funcName)
+    local guids = { G.GetDiceNormalGUID(color), G.GetDiceHungerGUID(color) }
+    for _, guid in ipairs(guids) do
+        if type(guid) == "string" then
+            local bag = getObjectFromGUID(guid)
+            if bag ~= nil then
+                local ok, err = pcall(function() bag.call(funcName) end)
+                if not ok then
+                    print(string.format("[Dice] %s on %s bag failed: %s", funcName, color, tostring(err)))
+                end
+            end
+        end
+    end
+end
+
+--- Returns the number of dice currently hovering in one of a player's bags.
+-- @param color string  Player seat color
+-- @param dieTypeName string  "normal" or "hunger"
+-- @return number
+local function getBagSpawnedCount(color, dieTypeName)
+    local guid = (dieTypeName == "hunger")
+        and G.GetDiceHungerGUID(color)
+        or  G.GetDiceNormalGUID(color)
+    if type(guid) ~= "string" then return 0 end
+    local bag = getObjectFromGUID(guid)
+    if bag == nil then return 0 end
+    local ok, result = pcall(function() return bag.call("getSpawnedCount") end)
+    return (ok and type(result) == "number") and result or 0
+end
+
+--- Unlocks all hovering dice for a player so they fall and roll.
+-- Called after the player clicks "ROLL" (PRE_ROLL → ROLLING).
+function releaseBagDice(color)
+    callBagFunction(color, "releaseDice")
+end
+
+--- Destroys all hovering dice for a player.
+-- Called on: cancel, Take Half, and post-resolution cleanup (after broadcast hides).
+function destroyBagDice(color)
+    callBagFunction(color, "destroyDice")
+end
+
+-- ============================================================================
+-- DICE SYSTEM HUD HANDLERS
+-- TTS XML onClick targets for roll panels and ST dashboard.
+-- All functions extract the player color from the element id suffix.
+-- ============================================================================
+
+--- Extracts a player color from a UI element id of the form "<prefix>_<Color>".
+-- Returns nil if no match is found.
+-- @param id string  Element id (e.g. "rollPanel_btnRoll_Red")
+-- @return string|nil
+local function colorFromRollElementId(id)
+    if type(id) ~= "string" then return nil end
+    for _, color in ipairs(C.PlayerColors) do
+        if string.sub(id, -#color) == color then
+            return color
+        end
+    end
+    return nil
+end
+
+--- Player clicks "ROLL" button — advances PRE_ROLL → ROLLING and releases locked dice.
+-- id format: "rollPanel_btnRoll_<Color>"
+function HUD_rollRollButton(player, value, id)
+    local color = colorFromRollElementId(id)
+    if color == nil then return end
+
+    -- Auto-spawn any missing dice before transitioning to ROLLING.
+    -- This handles roll types with a pre-computed pool (Rouse: 1 hunger die,
+    -- Remorse: N normal dice) where the player hasn't manually spawned dice yet.
+    local pid = S.getPlayerID(color)
+    local didAutoSpawn = false
+    if pid ~= nil then
+        local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+        if active ~= nil and active.pool ~= nil then
+            local normalNeeded = (active.pool.normal or 0) - getBagSpawnedCount(color, "normal")
+            local hungerNeeded = (active.pool.hunger or 0) - getBagSpawnedCount(color, "hunger")
+
+            if normalNeeded > 0 then
+                local guid = G.GetDiceNormalGUID(color)
+                if type(guid) == "string" then
+                    local bag = getObjectFromGUID(guid)
+                    if bag ~= nil then
+                        bag.call("autoSpawn", { count = normalNeeded })
+                        didAutoSpawn = true
+                    end
+                end
+            end
+
+            if hungerNeeded > 0 then
+                local guid = G.GetDiceHungerGUID(color)
+                if type(guid) == "string" then
+                    local bag = getObjectFromGUID(guid)
+                    if bag ~= nil then
+                        bag.call("autoSpawn", { count = hungerNeeded })
+                        didAutoSpawn = true
+                    end
+                end
+            end
+        end
+    end
+
+    if RC.startRolling(color) then
+        if didAutoSpawn then
+            -- Brief delay so spawned dice are fully initialised before being released.
+            Wait.frames(function() releaseBagDice(color) end, 10)
+        else
+            releaseBagDice(color)
+        end
+    end
+end
+
+--- Player clicks "TAKE HALF" — records take-half successes, skips rolling.
+-- Any staged dice are destroyed immediately (they are never rolled).
+-- id format: "rollPanel_btnHalf_<Color>"
+function HUD_rollTakeHalf(player, value, id)
+    local color = colorFromRollElementId(id)
+    if color == nil then return end
+    if RC.takeHalf(color) then
+        destroyBagDice(color)
+    end
+end
+
+--- Player clicks "SPEND WILLPOWER" — spends 1 Superficial WP, re-enters ROLLING.
+-- id format: "rollPanel_btnWP_<Color>"
+function HUD_rollSpendWP(player, value, id)
+    local color = colorFromRollElementId(id)
+    if color == nil then return end
+    RC.spendWillpower(color)
+end
+
+--- Player (or ST) clicks "CONFIRM" — finalises the roll result.
+-- id format: "rollPanel_btnConfirm_<Color>"
+function HUD_rollConfirm(player, value, id)
+    local color = colorFromRollElementId(id)
+    if color == nil then return end
+    RC.confirmRoll(color)
+end
+
+--- Player (or ST) clicks "CANCEL" — cancels the active roll and queue.
+-- Any staged or released dice are destroyed immediately.
+-- id format: "rollPanel_btnCancel_<Color>"
+function HUD_rollCancel(player, value, id)
+    local color = colorFromRollElementId(id)
+    if color == nil then return end
+    RC.cancelRoll(color)
+    destroyBagDice(color)
+end
+
+--- Player (or ST) clicks "RECALCULATE" — re-reads all physical dice on the table
+-- and re-classifies the result. The primary path for Willpower rerolls and
+-- manual corrections (player adjusts dice, then clicks this button).
+-- Available in ROLLING and POST_ROLL phases.
+-- id format: "rollPanel_btnRecalc_<Color>"
+function HUD_rollRecalculate(player, value, id)
+    local color = colorFromRollElementId(id)
+    if color == nil then return end
+    RC.recalculate(color)
+end
+
+--- Left Sidebar roll initiation buttons — one per roll type.
+-- id format: "rollBtn_<rollType>_<Color>"  (e.g. "rollBtn_standard_Red")
+function HUD_rollInitiate(player, value, id)
+    if type(id) ~= "string" then return end
+    -- Extract color from suffix and roll type from middle segment
+    local color = colorFromRollElementId(id)
+    if color == nil then return end
+
+    -- id = "rollBtn_<rollType>_<Color>" → strip prefix and suffix
+    local prefix    = "rollBtn_"
+    local colorSuffix = "_" .. color
+    if string.sub(id, 1, #prefix) ~= prefix then return end
+    local middle = string.sub(id, #prefix + 1, #id - #colorSuffix)
+    if middle == "" then return end
+
+    -- Map id-safe rollType to C.RollType value (keys are lowercase in ids)
+    local rollTypeMap = {
+        standard      = C.RollType.STANDARD,
+        simplecheck   = C.RollType.SIMPLE_CHECK,
+        rouse         = C.RollType.ROUSE,
+        rouseoblivion = C.RollType.ROUSE_OBLIVION,
+        remorse       = C.RollType.REMORSE,
+        willpowerroll = C.RollType.WILLPOWER_ROLL,
+        humanityroll  = C.RollType.HUMANITY_ROLL,
+        frenzy        = C.RollType.FRENZY,
+    }
+    local rollType = rollTypeMap[string.lower(middle)]
+    if rollType == nil then
+        print(string.format("[HUD_rollInitiate] Unknown roll type key: '%s'", middle))
+        return
+    end
+
+    -- ST panel buttons always mark the roll as storyteller-initiated so the player
+    -- panel stays hidden until the ST clicks OPEN (PRE_ROLL).
+    RC.initiateRoll(color, { rollType = rollType, initiator = "storyteller" })
+end
+
+--- ST sets difficulty from the dashboard input field.
+-- id format: "rollDash_difficulty_<Color>"
+-- value = the InputField text
+function HUD_rollSetDifficulty(player, value, id)
+    local color = colorFromRollElementId(id)
+    if color == nil then return end
+
+    local difficulty = tonumber(value)
+    if difficulty == nil then
+        print(string.format("[HUD_rollSetDifficulty] Invalid difficulty value: '%s'", tostring(value)))
+        return
+    end
+    RC.setDifficulty(color, math.floor(difficulty))
+end
+
+-- ============================================================================
+-- DICE SYSTEM DEBUG HUD HANDLERS (Host only; wired to admin panel buttons)
+-- ============================================================================
+
+--- Admin panel: arm a quick test roll for a player color (difficulty 2, Standard).
+-- Calls DEBUG.rollTest so it can be re-pressed between runs without cleanup.
+-- id format: "debugRoll_<Color>"  (e.g. "debugRoll_Brown")
+function HUD_debugRollTest(player, value, id)
+    local color = colorFromRollElementId(id)
+    if color == nil then
+        print(string.format("[HUD_debugRollTest] Could not parse color from id: %s", tostring(id)))
+        return
+    end
+    if DEBUG == nil then return end
+    DEBUG.rollTest(color)
+end
+
+--- Admin panel: cancel all active rolls across every player color.
+function HUD_debugRollCancelAll(player, value, id)
+    if DEBUG == nil then return end
+    DEBUG.rollCancelAll()
+end
+
+--- Opens ST roll options modal for the row's player.
+-- id format: "rollDash_opts_<Color>"
+function HUD_rollOptsOpen(player, value, id)
+    local color = colorFromRollElementId(id)
+    if color == nil then return end
+    local pid    = S.getPlayerID(color)
+    local active = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil then return end
+    RUI.openRollOptionsModal(color)
+end
+
+function HUD_rollOptsApply(player, value, id)
+    RUI.applyRollOptionsModal(RC)
+end
+
+function HUD_rollOptsCancel(player, value, id)
+    RUI.closeRollOptionsModal()
+end
+
+--- ST action button on the dashboard (context-sensitive: Open / Override / Confirm).
+-- id format: "rollDash_btn_<Color>"
+function HUD_rollSTAction(player, value, id)
+    local color = colorFromRollElementId(id)
+    if color == nil then return end
+
+    local pid    = S.getPlayerID(color)
+    local active = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil then return end
+
+    if active.phase == C.RollPhase.SETUP then
+        RC.openRoll(color)
+    elseif active.phase == C.RollPhase.POST_ROLL then
+        RC.confirmRoll(color)
+    end
+    -- For PRE_ROLL / ROLLING: ST can only set difficulty or cancel; no action button action
+end

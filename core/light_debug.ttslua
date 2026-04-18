@@ -200,14 +200,14 @@ end
 function LightDebug.findAllSpotlights()
     local allObjects = getObjects()
     if allObjects == nil then
-        print("[LightDebug] getObjects() returned nil")
+        -- print("[LightDebug] getObjects() returned nil")
         return {}
     end
     -- Use pairs() since getObjects() may return non-sequential keys
     local count = 0
     for _ in pairs(allObjects) do count = count + 1 end
     if count == 0 then
-        print("[LightDebug] getObjects() returned empty table")
+        -- print("[LightDebug] getObjects() returned empty table")
         return {}
     end
     local lights = {}
@@ -223,7 +223,7 @@ function LightDebug.findAllSpotlights()
         local n = (data and data.Nickname and data.Nickname ~= "" and data.Nickname) or (obj.getName and obj.getName()) or (obj.getGUID and obj.getGUID()) or "?"
         table.insert(names, tostring(n))
     end
-    print("[LightDebug] Found " .. #lights .. " spotlight(s): " .. table.concat(names, ", "))
+    -- print("[LightDebug] Found " .. #lights .. " spotlight(s): " .. table.concat(names, ", "))
     return lights
 end
 
@@ -398,15 +398,15 @@ end
 function LightDebug.refreshLightDebugPanel()
     local xml = UI.getXml()
     if xml == nil or xml == "" then
-        print("[LightDebug] Cannot refresh: UI XML is empty or nil")
+        -- print("[LightDebug] Cannot refresh: UI XML is empty or nil")
         return
     end
     local lights = LightDebug.findAllSpotlights()
-    print("[LightDebug] Found " .. tostring(#lights) .. " spotlight(s)")
+    -- print("[LightDebug] Found " .. tostring(#lights) .. " spotlight(s)")
     for i, obj in ipairs(lights) do
         local guid = obj.getGUID and obj.getGUID() or "?"
         local name = (obj.getData and obj.getData() or {}).Nickname or obj.getName and obj.getName() or "?"
-        print(string.format("[LightDebug]   [%d] guid=%s name=%s", i, guid, name))
+        -- print(string.format("[LightDebug]   [%d] guid=%s name=%s", i, guid, name))
     end
     local dataList = {}
     for _, obj in ipairs(lights) do
@@ -434,7 +434,7 @@ function LightDebug.refreshLightDebugPanel()
         local endTag = "</Row>"
         local endIdx = xml:find(endTag, idIdx, true)
         if not endIdx then
-            print("[LightDebug] Placeholder Row malformed - no closing </Row>")
+            -- print("[LightDebug] Placeholder Row malformed - no closing </Row>")
             return
         end
         endIdx = endIdx + #endTag - 1  -- Include the ">"
@@ -442,11 +442,11 @@ function LightDebug.refreshLightDebugPanel()
         local after = xml:sub(endIdx + 1)
         local newXml = before .. tableXml .. after
         local setOk, setErr = pcall(function() UI.setXml(newXml) end)
-        if not setOk then
-            print("[LightDebug] UI.setXml failed: " .. tostring(setErr))
-        end
-    else
-        print("[LightDebug] Placeholder not found in UI XML - table rows not injected")
+        -- if not setOk then
+            -- print("[LightDebug] UI.setXml failed: " .. tostring(setErr))
+        -- end
+    -- else
+        -- print("[LightDebug] Placeholder not found in UI XML - table rows not injected")
     end
 end
 

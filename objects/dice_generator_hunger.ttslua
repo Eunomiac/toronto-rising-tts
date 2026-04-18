@@ -11,22 +11,22 @@ setting = {print={}} --Don't edit this line
 setting.setup = false
 
 --How far from the center of the device the dice are spawned
-setting.radius = 8
+setting.radius = 6
 --How wide of an arch the dice are placed on, in degrees (1-360)
-setting.arc = 45
+setting.arc = 90
 --Where center of the arc is around the tool is placed (0=bottom, 180=top)
 setting.rotation = 180
 --Height above tool die is spawned
-setting.height = 5
+setting.height = 4.5
 --Scaling factor for die being spawned (1 is normal, 0.5 is 1/2 size, 2 is 2x)
 setting.scale = 1.7
 
 --Maximum dice that can be spawned by this tool (-1 is infinite)
 setting.maxCount = -1
 --Delay (seconds) after a click that the roll is done (0.5 or more)
-setting.rollDelay = 4
+setting.rollDelay = 10
 --Time before dice are cleaned up (0 is instant, -1 won't clean them)
-setting.cleanupDelay = 15
+setting.cleanupDelay = -1
 
 --If it dyes the die the color of the player clicking (true or false)
 setting.colorDie = false
@@ -34,11 +34,11 @@ setting.colorDie = false
 --Turn on/off printing of the player who rolled (true or false)
 setting.print.player = false
 --Turn on/off printing of individual results
-setting.print.individual = true
+setting.print.individual = false
 --Turn on/off printing of "total" results (adding them together)
 setting.print.total = false
 --Use player color when printing roll results:
-setting.print.playerColor = true
+setting.print.playerColor = false
 
 --If this tool will work with other copies of itself (true or false)
 --Any roller clicked by the same color player will be treated as the same

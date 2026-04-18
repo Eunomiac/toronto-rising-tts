@@ -288,6 +288,121 @@ C.DICE_CRITICAL_SUCCESS_VALUE = 10
 -- They are character-specific and stored in C.PlayerData
 C.MAX_HUNGER = 5  -- Maximum hunger value (0-5 scale)
 
+-- ============================================================================
+-- DICE SYSTEM ENUMERATIONS
+-- See .dev/Dice System/Dice System Outline.md for full design documentation.
+-- ============================================================================
+
+--- Roll types. Governs pool construction rules and option availability.
+-- STANDARD:      Normal pool with Hunger dice substituted per hunger level.
+-- SIMPLE_CHECK:  Single Normal die, difficulty 1, auto-set — no player input required.
+-- ROUSE / ROUSE_OBLIVION: Single Hunger die, difficulty 1, auto-set.
+-- REMORSE:       No Hunger dice; pool = max(1, empty Humanity boxes), difficulty 1, auto-set.
+-- WILLPOWER_ROLL / HUMANITY_ROLL / FRENZY: Normal pool, no Hunger dice.
+C.RollType = {
+    STANDARD        = "standard",
+    SIMPLE_CHECK    = "simpleCheck",
+    ROUSE           = "rouse",
+    ROUSE_OBLIVION  = "rouseOblivion",
+    REMORSE         = "remorse",
+    WILLPOWER_ROLL  = "willpowerRoll",
+    HUMANITY_ROLL   = "humanityRoll",
+    FRENZY          = "frenzy",
+}
+
+--- Roll phases. Each roll progresses through these states in order.
+-- SETUP:     Roll initiated; awaiting ST confirmation of parameters.
+-- PRE_ROLL:  Parameters confirmed; player may Take Half or proceed to rolling.
+-- ROLLING:   Dice are out; accumulating physical die events via onObjectRandomize.
+-- POST_ROLL: All dice settled; Willpower reroll available; awaiting player confirmation.
+-- RESOLVED:  Final result calculated and broadcast; roll will be cleared from state.
+C.RollPhase = {
+    SETUP       = "setup",
+    PRE_ROLL    = "preRoll",
+    ROLLING     = "rolling",
+    POST_ROLL   = "postRoll",
+    RESOLVED    = "resolved",
+}
+
+--- Baton holder: who must act to advance the current roll.
+C.BatonHolder = {
+    PLAYER      = "player",
+    STORYTELLER = "storyteller",
+    AUTO        = "auto",  -- System advances automatically; no human input required
+}
+
+--- Result classification for a completed roll (seven classes per VTM5E).
+-- See Dice System Outline §1.3 for the full classification algorithm.
+C.ResultClass = {
+    MESSY_CRITICAL          = "messyCritical",
+    CRITICAL_WIN            = "criticalWin",
+    WIN                     = "win",
+    FAILURE                 = "failure",
+    BESTIAL_FAILURE         = "bestialFailure",
+    TOTAL_FAILURE           = "totalFailure",
+    TOTAL_BESTIAL_FAILURE   = "totalBestialFailure",
+}
+
+--- Human-readable display labels for result classes (chat broadcast and UI panels).
+-- Note: Rouse and Remorse rolls override these with narrative labels at broadcast time.
+-- See RUI.narrativeLabel() in core/roll_ui.ttslua.
+C.ResultClassLabel = {
+    messyCritical           = "MESSY CRITICAL",
+    criticalWin             = "CRITICAL WIN",
+    win                     = "SUCCESS",
+    failure                 = "FAILURE",
+    bestialFailure          = "BESTIAL FAILURE",
+    totalFailure            = "TOTAL FAILURE",
+    totalBestialFailure     = "TOTAL BESTIAL FAILURE",
+}
+
+--- Human-readable display labels for roll types (UI panels and chat).
+C.RollTypeLabel = {
+    standard        = "Standard Roll",
+    simpleCheck     = "Simple Check",
+    rouse           = "Rouse Check",
+    rouseOblivion   = "Rouse Check (Oblivion)",
+    remorse         = "Remorse Roll",
+    willpowerRoll   = "Willpower Roll",
+    humanityRoll    = "Humanity Roll",
+    frenzy          = "Frenzy Roll",
+}
+
+--- Roll types that do not substitute Hunger dice into the pool.
+-- Note: ROUSE and ROUSE_OBLIVION are intentionally NOT listed here —
+-- they use Hunger dice (pool = {normal=0, hunger=1}) by design.
+C.RollTypesWithoutHunger = {
+    [C.RollType.SIMPLE_CHECK]   = true,
+    [C.RollType.REMORSE]        = true,
+    [C.RollType.WILLPOWER_ROLL] = true,
+    [C.RollType.HUMANITY_ROLL]  = true,
+    [C.RollType.FRENZY]         = true,
+}
+
+--- Roll types for which "Take Half" is not offered as an option.
+-- Auto-set rolls (SIMPLE_CHECK, ROUSE, REMORSE) always resolve through the dice —
+-- there is no meaningful "take half" for a single-die or difficulty-1 roll.
+C.RollTypesNoTakeHalf = {
+    [C.RollType.SIMPLE_CHECK]   = true,
+    [C.RollType.ROUSE]          = true,
+    [C.RollType.ROUSE_OBLIVION] = true,
+    [C.RollType.REMORSE]        = true,
+    [C.RollType.FRENZY]         = true,
+    [C.RollType.HUMANITY_ROLL]  = true,
+}
+
+--- Roll types for which Willpower rerolls are not permitted.
+C.RollTypesNoWillpower = {
+    [C.RollType.SIMPLE_CHECK]   = true,
+    [C.RollType.ROUSE]          = true,
+    [C.RollType.ROUSE_OBLIVION] = true,
+    [C.RollType.REMORSE]        = true,
+}
+
+--- Seconds to wait after the last die randomize event before reading all settled die values.
+-- Allows physical dice time to come to rest without premature result calculation.
+C.DICE_SETTLE_DEBOUNCE_SECONDS = 3
+
 -- Storyteller Color (GM role)
 -- Storyteller is always Black in VTM5E
 C.STORYTELLER_COLOR = "Black"

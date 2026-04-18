@@ -10,9 +10,9 @@
 
   <!-- Button Base Styles -->
   <Button
-    minWidth="150"
+    minWidth="30"
     minHeight="30"
-    preferredWidth="150"
+    preferredWidth="30"
     preferredHeight="30"
     flexibleWidth="0"
     flexibleHeight="0"

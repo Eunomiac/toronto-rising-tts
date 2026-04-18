@@ -41,6 +41,26 @@ local function playerIdForColor(color)
   return nil
 end
 
+--- Clicks that only adjust ST panel buffers (not committed state). Skip HUD overlay refresh so
+--- players do not see hunger/condition overlays flicker while the ST adjusts values.
+--- @type table<string, boolean>
+local ACTIONS_SKIP_OVERLAY_REFRESH = {
+  hpAggUp = true,
+  hpAggDown = true,
+  hpSupUp = true,
+  hpSupDown = true,
+  wpAggUp = true,
+  wpAggDown = true,
+  wpSupUp = true,
+  wpSupDown = true,
+  humUp = true,
+  humDown = true,
+  xpUp = true,
+  xpDown = true,
+  hungerUp = true,
+  hungerDown = true,
+}
+
 --- Scan objects named CSHEET_PAGE_*_<COLOR> and refresh embedded UI.
 --- TTS object names typically use uppercase seat (e.g. `_BROWN`); panel ids use canonical `C.PlayerColors` spelling (`Brown`).
 --- @param seatColor string e.g. "Brown"
@@ -279,7 +299,9 @@ function PCST.onHudClick(player, _button, id)
   end
 
   PCST.refreshRow(color)
-  P.refreshHudOverlays()
+  if not ACTIONS_SKIP_OVERLAY_REFRESH[action] then
+    P.refreshHudOverlays()
+  end
 end
 
 return PCST

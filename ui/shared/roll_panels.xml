@@ -1,0 +1,679 @@
+<!-- Roll System Panels (ui/shared/roll_panels.xml) -->
+<!-- Included from ui/Global.xml at root level (outside HUD_PANEL_BLACK/PLAYER). -->
+<!-- Contains three surfaces:                                                       -->
+<!--   1. ST Roll Dashboard (rollDash_ST)          — Black|Host only               -->
+<!--   2. Player Roll Panels (rollPanel_<Color>)   — per-player, per-color          -->
+<!--   3. Result Broadcast (rollResult_panel)      — no visibility filter (all)    -->
+<!-- Agent guidance: .dev/Dice System/Dice System Outline.md §8, §10               -->
+
+<Defaults>
+
+<Panel class="rollPanel_ST"
+  visibility="Black|Host"
+  active="False"
+  rectAlignment="LowerRight"
+  offsetXY="0 0"
+  padding="10 10 10 10"
+  width="520" />
+
+<Panel class="rollPanel_player"
+  active="False"
+  rectAlignment="LowerCenter"
+  offsetXY="0 80"
+  width="480"
+  padding="12 10 12 10"
+  childAlignment="LowerCenter"
+  childForceExpandHeight="false" />
+
+<VerticalLayout class="rollPanel_player_content"
+  spacing="6"
+  childAlignment="LowerCenter"
+  childForceExpandWidth="true"
+  childForceExpandHeight="false"
+  color="#000000" />
+
+<Panel class="rollPanel_result"
+  active="False"
+  rectAlignment="UpperCenter"
+  childAlignment="UpperCenter"
+  childForceExpandWidth="true"
+  childForceExpandHeight="false"
+  offsetXY="0 -60"
+  width="560"
+  padding="16 12 16 12" />
+
+<VerticalLayout class="rollPanel_result_content"
+  spacing="8"
+  childAlignment="UpperCenter"
+  childForceExpandWidth="true"
+  childForceExpandHeight="false"
+  color="#000000" />
+
+</Defaults>
+
+
+<!-- ============================================================================ -->
+<!-- 1. ST ROLL DASHBOARD                                                          -->
+<!-- Shows all active player rolls. ST can set difficulty and open/confirm each.   -->
+<!-- Positioned lower-right to avoid overlapping core HUD areas.                  -->
+<!-- ============================================================================ -->
+<Panel id="rollDash_ST" class="rollPanel_ST">
+
+  <VerticalLayout spacing="4" childAlignment="UpperLeft" childForceExpandHeight="false" childForceExpandWidth="true">
+
+    <!-- Header -->
+    <Panel color="#000000" padding="5 5 5 5" flexibleWidth="1">
+    <Text
+      fontSize="14"
+      fontStyle="Bold"
+      color="#C9A84C"
+      text="ACTIVE ROLLS"
+      alignment="MiddleRight"
+      preferredHeight="20"
+      minHeight="20"
+      flexibleHeight="0"
+      flexibleWidth="1" />
+    </Panel>
+
+    <!-- One row per player color; shown/hidden by RUI.refreshSTDashboard() -->
+
+    <!-- Brown row -->
+    <Panel id="rollDash_row_Brown"
+      active="False"
+      flexibleWidth="1"
+      padding="0 0 0 0"
+      childForceExpandWidth="true" >
+      <HorizontalLayout color="#654321" spacing="6" childAlignment="MiddleLeft" flexibleWidth="1" padding="5 5 5 5">
+        <Text id="rollDash_name_Brown"  fontSize="12" color="#FFFFFF" flexibleWidth="1"  text="Brown" />
+        <Text id="rollDash_type_Brown"  fontSize="11" color="#AAAAAA" flexibleWidth="1" text="" />
+        <Text id="rollDash_phase_Brown" fontSize="11" color="#CCCCCC" flexibleWidth="1"  text="" />
+        <Text id="rollDash_pool_Brown"  fontSize="11" color="#CCCCCC" flexibleWidth="1"  text="" />
+        <InputField id="rollDash_difficulty_Brown"
+          fontSize="12"
+          flexibleWidth="1"
+          preferredWidth="50"
+          minWidth="50"
+          text=""
+          placeholder="Diff"
+          onValueChanged="HUD_rollSetDifficulty" />
+        <Button id="rollDash_opts_Brown"
+          fontSize="10"
+          preferredWidth="44"
+          flexibleWidth="0"
+          onClick="HUD_rollOptsOpen"
+          text="Opts" />
+        <Button id="rollDash_btn_Brown"
+          fontSize="11"
+          preferredWidth="60"
+          flexibleWidth="0"
+          onClick="HUD_rollSTAction"
+          text="OPEN" />
+        <Button id="rollDash_cancel_Brown"
+          fontSize="11"
+          preferredWidth="24"
+          flexibleWidth="0"
+          color="rgba(0.6,0.1,0.1,1)"
+          onClick="HUD_rollCancel"
+          text="X" />
+      </HorizontalLayout>
+    </Panel>
+
+    <!-- Orange row -->
+    <Panel id="rollDash_row_Orange"
+      active="False"
+      color="rgba(180,90,20,0.5)"
+      padding="5 5 5 5">
+      <HorizontalLayout spacing="6" childAlignment="MiddleLeft">
+        <Text id="rollDash_name_Orange"  fontSize="12" color="#FFFFFF" preferredWidth="70"  text="Orange" />
+        <Text id="rollDash_type_Orange"  fontSize="11" color="#AAAAAA" preferredWidth="110" text="" />
+        <Text id="rollDash_phase_Orange" fontSize="11" color="#CCCCCC" preferredWidth="70"  text="" />
+        <Text id="rollDash_pool_Orange"  fontSize="11" color="#CCCCCC" preferredWidth="50"  text="" />
+        <InputField id="rollDash_difficulty_Orange"
+          fontSize="12"
+          preferredWidth="40"
+          preferredHeight="24"
+          text=""
+          placeholder="Diff"
+          onValueChanged="HUD_rollSetDifficulty" />
+        <Button id="rollDash_opts_Orange"
+          fontSize="10"
+          preferredWidth="44"
+          preferredHeight="24"
+          onClick="HUD_rollOptsOpen"
+          text="Opts" />
+        <Button id="rollDash_btn_Orange"
+          fontSize="11"
+          preferredWidth="70"
+          preferredHeight="24"
+          onClick="HUD_rollSTAction"
+          text="OPEN" />
+        <Button id="rollDash_cancel_Orange"
+          fontSize="11"
+          preferredWidth="24"
+          preferredHeight="24"
+          color="rgba(0.6,0.1,0.1,1)"
+          onClick="HUD_rollCancel"
+          text="X" />
+      </HorizontalLayout>
+    </Panel>
+
+    <!-- Red row -->
+    <Panel id="rollDash_row_Red"
+      active="False"
+      color="rgba(120,20,20,0.5)"
+      padding="5 5 5 5">
+      <HorizontalLayout spacing="6" childAlignment="MiddleLeft">
+        <Text id="rollDash_name_Red"  fontSize="12" color="#FFFFFF" preferredWidth="70"  text="Red" />
+        <Text id="rollDash_type_Red"  fontSize="11" color="#AAAAAA" preferredWidth="110" text="" />
+        <Text id="rollDash_phase_Red" fontSize="11" color="#CCCCCC" preferredWidth="70"  text="" />
+        <Text id="rollDash_pool_Red"  fontSize="11" color="#CCCCCC" preferredWidth="50"  text="" />
+        <InputField id="rollDash_difficulty_Red"
+          fontSize="12"
+          preferredWidth="40"
+          preferredHeight="24"
+          text=""
+          placeholder="Diff"
+          onValueChanged="HUD_rollSetDifficulty" />
+        <Button id="rollDash_opts_Red"
+          fontSize="10"
+          preferredWidth="44"
+          preferredHeight="24"
+          onClick="HUD_rollOptsOpen"
+          text="Opts" />
+        <Button id="rollDash_btn_Red"
+          fontSize="11"
+          preferredWidth="70"
+          preferredHeight="24"
+          onClick="HUD_rollSTAction"
+          text="OPEN" />
+        <Button id="rollDash_cancel_Red"
+          fontSize="11"
+          preferredWidth="24"
+          preferredHeight="24"
+          color="rgba(0.6,0.1,0.1,1)"
+          onClick="HUD_rollCancel"
+          text="X" />
+      </HorizontalLayout>
+    </Panel>
+
+    <!-- Pink row -->
+    <Panel id="rollDash_row_Pink"
+      active="False"
+      color="rgba(140,50,100,0.5)"
+      padding="5 5 5 5">
+      <HorizontalLayout spacing="6" childAlignment="MiddleLeft">
+        <Text id="rollDash_name_Pink"  fontSize="12" color="#FFFFFF" preferredWidth="70"  text="Pink" />
+        <Text id="rollDash_type_Pink"  fontSize="11" color="#AAAAAA" preferredWidth="110" text="" />
+        <Text id="rollDash_phase_Pink" fontSize="11" color="#CCCCCC" preferredWidth="70"  text="" />
+        <Text id="rollDash_pool_Pink"  fontSize="11" color="#CCCCCC" preferredWidth="50"  text="" />
+        <InputField id="rollDash_difficulty_Pink"
+          fontSize="12"
+          preferredWidth="40"
+          preferredHeight="24"
+          text=""
+          placeholder="Diff"
+          onValueChanged="HUD_rollSetDifficulty" />
+        <Button id="rollDash_opts_Pink"
+          fontSize="10"
+          preferredWidth="44"
+          preferredHeight="24"
+          onClick="HUD_rollOptsOpen"
+          text="Opts" />
+        <Button id="rollDash_btn_Pink"
+          fontSize="11"
+          preferredWidth="70"
+          preferredHeight="24"
+          onClick="HUD_rollSTAction"
+          text="OPEN" />
+        <Button id="rollDash_cancel_Pink"
+          fontSize="11"
+          preferredWidth="24"
+          preferredHeight="24"
+          color="rgba(0.6,0.1,0.1,1)"
+          onClick="HUD_rollCancel"
+          text="X" />
+      </HorizontalLayout>
+    </Panel>
+
+    <!-- Purple row -->
+    <Panel id="rollDash_row_Purple"
+      active="False"
+      color="rgba(80,20,120,0.5)"
+      padding="5 5 5 5">
+      <HorizontalLayout spacing="6" childAlignment="MiddleLeft">
+        <Text id="rollDash_name_Purple"  fontSize="12" color="#FFFFFF" preferredWidth="70"  text="Purple" />
+        <Text id="rollDash_type_Purple"  fontSize="11" color="#AAAAAA" preferredWidth="110" text="" />
+        <Text id="rollDash_phase_Purple" fontSize="11" color="#CCCCCC" preferredWidth="70"  text="" />
+        <Text id="rollDash_pool_Purple"  fontSize="11" color="#CCCCCC" preferredWidth="50"  text="" />
+        <InputField id="rollDash_difficulty_Purple"
+          fontSize="12"
+          preferredWidth="40"
+          preferredHeight="24"
+          text=""
+          placeholder="Diff"
+          onValueChanged="HUD_rollSetDifficulty" />
+        <Button id="rollDash_opts_Purple"
+          fontSize="10"
+          preferredWidth="44"
+          preferredHeight="24"
+          onClick="HUD_rollOptsOpen"
+          text="Opts" />
+        <Button id="rollDash_btn_Purple"
+          fontSize="11"
+          preferredWidth="70"
+          preferredHeight="24"
+          onClick="HUD_rollSTAction"
+          text="OPEN" />
+        <Button id="rollDash_cancel_Purple"
+          fontSize="11"
+          preferredWidth="24"
+          preferredHeight="24"
+          color="rgba(0.6,0.1,0.1,1)"
+          onClick="HUD_rollCancel"
+          text="X" />
+      </HorizontalLayout>
+    </Panel>
+
+  </VerticalLayout>
+</Panel>
+
+<!-- ============================================================================ -->
+<!-- 2. PLAYER ROLL PANELS                                                         -->
+<!-- One per seat color. Shown when that player has an active roll.               -->
+<!-- Positioned lower-center, above the bottom camera bar.                        -->
+<!-- ============================================================================ -->
+
+<!-- Brown -->
+<Panel id="rollPanel_Brown"
+  visibility="Brown|Host"
+  class="rollPanel_player" >
+
+  <VerticalLayout class="rollPanel_player_content">
+
+    <Text id="rollPanel_type_Brown"
+      fontSize="14"
+      fontStyle="Bold"
+      color="#C9A84C"
+      alignment="MiddleCenter"
+      text="" />
+
+    <Text id="rollPanel_phase_Brown"
+      fontSize="12"
+      color="#CCCCCC"
+      alignment="MiddleCenter"
+      text="Awaiting Storyteller..." />
+
+    <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
+      <!-- Pool: white diamonds for normal dice, red for hunger dice -->
+      <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
+        <Text id="rollPanel_pool_normal_Brown" fontSize="14" color="#FFFFFF" text="" />
+        <Text id="rollPanel_pool_hunger_Brown" fontSize="14" color="#CC3333" text="" />
+      </HorizontalLayout>
+      <Text id="rollPanel_diff_Brown"
+        fontSize="12"
+        color="#AAAAAA"
+        text="Difficulty: —" />
+    </HorizontalLayout>
+
+    <!-- Die face image row: 15 slots activated+image-set per-roll by refreshDiceImages() -->
+    <HorizontalLayout spacing="2" childAlignment="MiddleCenter"
+      childForceExpandWidth="false" childForceExpandHeight="false"
+      minHeight="48" preferredHeight="48">
+      <Image id="rollPanel_die_1_Brown"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_2_Brown"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_3_Brown"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_4_Brown"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_5_Brown"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_6_Brown"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_7_Brown"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_8_Brown"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_9_Brown"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_10_Brown" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_11_Brown" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_12_Brown" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_13_Brown" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_14_Brown" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_15_Brown" active="False" preferredWidth="30" preserveAspect="True" />
+    </HorizontalLayout>
+
+    <Text id="rollPanel_result_Brown"
+      fontSize="18"
+      fontStyle="Bold"
+      color="#FFD700"
+      alignment="MiddleCenter"
+      text="" />
+
+    <HorizontalLayout spacing="10" childAlignment="MiddleCenter">
+      <Text id="rollPanel_successes_Brown"
+        fontSize="12"
+        color="#CCCCCC"
+        text="" />
+      <Text id="rollPanel_margin_Brown"
+        fontSize="12"
+        color="#AAAAAA"
+        text="" />
+    </HorizontalLayout>
+
+    <HorizontalLayout spacing="8" childAlignment="MiddleCenter">
+      <Button id="rollPanel_btnRoll_Brown"
+        active="False"
+        fontSize="13"
+        preferredWidth="90"
+        preferredHeight="30"
+        color="rgba(0.1,0.4,0.1,1)"
+        onClick="HUD_rollRollButton"
+        text="ROLL" />
+      <Button id="rollPanel_btnHalf_Brown"
+        active="False"
+        fontSize="11"
+        preferredWidth="100"
+        preferredHeight="30"
+        color="rgba(0.2,0.2,0.5,1)"
+        onClick="HUD_rollTakeHalf"
+        text="TAKE HALF" />
+      <Button id="rollPanel_btnWP_Brown"
+        active="False"
+        fontSize="11"
+        preferredWidth="140"
+        preferredHeight="30"
+        color="rgba(0.4,0.1,0.1,1)"
+        onClick="HUD_rollSpendWP"
+        text="SPEND WILLPOWER" />
+      <Button id="rollPanel_btnRecalc_Brown"
+        active="False"
+        fontSize="11"
+        preferredWidth="110"
+        preferredHeight="30"
+        color="rgba(0.25,0.25,0.35,1)"
+        onClick="HUD_rollRecalculate"
+        text="RECALCULATE" />
+      <Button id="rollPanel_btnConfirm_Brown"
+        active="False"
+        fontSize="13"
+        preferredWidth="90"
+        preferredHeight="30"
+        color="rgba(0.1,0.4,0.1,1)"
+        onClick="HUD_rollConfirm"
+        text="CONFIRM" />
+      <Button id="rollPanel_btnCancel_Brown"
+        active="True"
+        fontSize="11"
+        preferredWidth="70"
+        preferredHeight="30"
+        color="rgba(0.5,0.1,0.1,1)"
+        onClick="HUD_rollCancel"
+        text="CANCEL" />
+    </HorizontalLayout>
+
+  </VerticalLayout>
+</Panel>
+
+<!-- Orange -->
+<Panel id="rollPanel_Orange"
+  visibility="Orange|Host"
+  class="rollPanel_player">
+  <VerticalLayout class="rollPanel_player_content">
+    <Text id="rollPanel_type_Orange"   fontSize="14" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="" />
+    <Text id="rollPanel_phase_Orange"  fontSize="12" color="#CCCCCC" alignment="MiddleCenter" text="Awaiting Storyteller..." />
+    <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
+      <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
+        <Text id="rollPanel_pool_normal_Orange" fontSize="14" color="#FFFFFF" text="" />
+        <Text id="rollPanel_pool_hunger_Orange" fontSize="14" color="#CC3333" text="" />
+      </HorizontalLayout>
+      <Text id="rollPanel_diff_Orange" fontSize="12" color="#AAAAAA" text="Difficulty: —" />
+    </HorizontalLayout>
+    <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false" childForceExpandHeight="false" minHeight="48" preferredHeight="48">
+      <Image id="rollPanel_die_1_Orange"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_2_Orange"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_3_Orange"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_4_Orange"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_5_Orange"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_6_Orange"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_7_Orange"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_8_Orange"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_9_Orange"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_10_Orange" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_11_Orange" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_12_Orange" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_13_Orange" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_14_Orange" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_15_Orange" active="False" preferredWidth="30" preserveAspect="True" />
+    </HorizontalLayout>
+    <Text id="rollPanel_result_Orange"    fontSize="18" fontStyle="Bold" color="#FFD700" alignment="MiddleCenter" text="" />
+    <HorizontalLayout spacing="10" childAlignment="MiddleCenter">
+      <Text id="rollPanel_successes_Orange" fontSize="12" color="#CCCCCC" text="" />
+      <Text id="rollPanel_margin_Orange"    fontSize="12" color="#AAAAAA" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout spacing="8" childAlignment="MiddleCenter">
+      <Button id="rollPanel_btnRoll_Orange"    active="False" fontSize="13" preferredWidth="90"  preferredHeight="30" color="rgba(0.1,0.4,0.1,1)" onClick="HUD_rollRollButton" text="ROLL" />
+      <Button id="rollPanel_btnHalf_Orange"    active="False" fontSize="11" preferredWidth="100" preferredHeight="30" color="rgba(0.2,0.2,0.5,1)" onClick="HUD_rollTakeHalf"   text="TAKE HALF" />
+      <Button id="rollPanel_btnWP_Orange"      active="False" fontSize="11" preferredWidth="140" preferredHeight="30" color="rgba(0.4,0.1,0.1,1)" onClick="HUD_rollSpendWP"      text="SPEND WILLPOWER" />
+      <Button id="rollPanel_btnRecalc_Orange"  active="False" fontSize="11" preferredWidth="110" preferredHeight="30" color="rgba(0.25,0.25,0.35,1)" onClick="HUD_rollRecalculate" text="RECALCULATE" />
+      <Button id="rollPanel_btnConfirm_Orange" active="False" fontSize="13" preferredWidth="90"  preferredHeight="30" color="rgba(0.1,0.4,0.1,1)" onClick="HUD_rollConfirm"    text="CONFIRM" />
+      <Button id="rollPanel_btnCancel_Orange"  active="True"  fontSize="11" preferredWidth="70"  preferredHeight="30" color="rgba(0.5,0.1,0.1,1)" onClick="HUD_rollCancel"     text="CANCEL" />
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- Red -->
+<Panel id="rollPanel_Red"
+  visibility="Red|Host"
+  class="rollPanel_player">
+  <VerticalLayout class="rollPanel_player_content">
+    <Text id="rollPanel_type_Red"   fontSize="14" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="" />
+    <Text id="rollPanel_phase_Red"  fontSize="12" color="#CCCCCC" alignment="MiddleCenter" text="Awaiting Storyteller..." />
+    <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
+      <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
+        <Text id="rollPanel_pool_normal_Red" fontSize="14" color="#FFFFFF" text="" />
+        <Text id="rollPanel_pool_hunger_Red" fontSize="14" color="#CC3333" text="" />
+      </HorizontalLayout>
+      <Text id="rollPanel_diff_Red" fontSize="12" color="#AAAAAA" text="Difficulty: —" />
+    </HorizontalLayout>
+    <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false" childForceExpandHeight="false" minHeight="48" preferredHeight="48">
+      <Image id="rollPanel_die_1_Red"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_2_Red"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_3_Red"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_4_Red"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_5_Red"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_6_Red"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_7_Red"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_8_Red"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_9_Red"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_10_Red" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_11_Red" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_12_Red" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_13_Red" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_14_Red" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_15_Red" active="False" preferredWidth="30" preserveAspect="True" />
+    </HorizontalLayout>
+    <Text id="rollPanel_result_Red"    fontSize="18" fontStyle="Bold" color="#FFD700" alignment="MiddleCenter" text="" />
+    <HorizontalLayout spacing="10" childAlignment="MiddleCenter">
+      <Text id="rollPanel_successes_Red" fontSize="12" color="#CCCCCC" text="" />
+      <Text id="rollPanel_margin_Red"    fontSize="12" color="#AAAAAA" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout spacing="8" childAlignment="MiddleCenter">
+      <Button id="rollPanel_btnRoll_Red"    active="False" fontSize="13" preferredWidth="90"  preferredHeight="30" color="rgba(0.1,0.4,0.1,1)" onClick="HUD_rollRollButton" text="ROLL" />
+      <Button id="rollPanel_btnHalf_Red"    active="False" fontSize="11" preferredWidth="100" preferredHeight="30" color="rgba(0.2,0.2,0.5,1)" onClick="HUD_rollTakeHalf"   text="TAKE HALF" />
+      <Button id="rollPanel_btnWP_Red"      active="False" fontSize="11" preferredWidth="140" preferredHeight="30" color="rgba(0.4,0.1,0.1,1)" onClick="HUD_rollSpendWP"      text="SPEND WILLPOWER" />
+      <Button id="rollPanel_btnRecalc_Red"  active="False" fontSize="11" preferredWidth="110" preferredHeight="30" color="rgba(0.25,0.25,0.35,1)" onClick="HUD_rollRecalculate" text="RECALCULATE" />
+      <Button id="rollPanel_btnConfirm_Red" active="False" fontSize="13" preferredWidth="90"  preferredHeight="30" color="rgba(0.1,0.4,0.1,1)" onClick="HUD_rollConfirm"    text="CONFIRM" />
+      <Button id="rollPanel_btnCancel_Red"  active="True"  fontSize="11" preferredWidth="70"  preferredHeight="30" color="rgba(0.5,0.1,0.1,1)" onClick="HUD_rollCancel"     text="CANCEL" />
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- Pink -->
+<Panel id="rollPanel_Pink"
+  visibility="Pink|Host"
+  class="rollPanel_player">
+  <VerticalLayout class="rollPanel_player_content">
+    <Text id="rollPanel_type_Pink"   fontSize="14" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="" />
+    <Text id="rollPanel_phase_Pink"  fontSize="12" color="#CCCCCC" alignment="MiddleCenter" text="Awaiting Storyteller..." />
+    <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
+      <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
+        <Text id="rollPanel_pool_normal_Pink" fontSize="14" color="#FFFFFF" text="" />
+        <Text id="rollPanel_pool_hunger_Pink" fontSize="14" color="#CC3333" text="" />
+      </HorizontalLayout>
+      <Text id="rollPanel_diff_Pink" fontSize="12" color="#AAAAAA" text="Difficulty: —" />
+    </HorizontalLayout>
+    <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false" childForceExpandHeight="false" minHeight="48" preferredHeight="48">
+      <Image id="rollPanel_die_1_Pink"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_2_Pink"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_3_Pink"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_4_Pink"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_5_Pink"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_6_Pink"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_7_Pink"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_8_Pink"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_9_Pink"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_10_Pink" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_11_Pink" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_12_Pink" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_13_Pink" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_14_Pink" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_15_Pink" active="False" preferredWidth="30" preserveAspect="True" />
+    </HorizontalLayout>
+    <Text id="rollPanel_result_Pink"    fontSize="18" fontStyle="Bold" color="#FFD700" alignment="MiddleCenter" text="" />
+    <HorizontalLayout spacing="10" childAlignment="MiddleCenter">
+      <Text id="rollPanel_successes_Pink" fontSize="12" color="#CCCCCC" text="" />
+      <Text id="rollPanel_margin_Pink"    fontSize="12" color="#AAAAAA" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout spacing="8" childAlignment="MiddleCenter">
+      <Button id="rollPanel_btnRoll_Pink"    active="False" fontSize="13" preferredWidth="90"  preferredHeight="30" color="rgba(0.1,0.4,0.1,1)" onClick="HUD_rollRollButton" text="ROLL" />
+      <Button id="rollPanel_btnHalf_Pink"    active="False" fontSize="11" preferredWidth="100" preferredHeight="30" color="rgba(0.2,0.2,0.5,1)" onClick="HUD_rollTakeHalf"   text="TAKE HALF" />
+      <Button id="rollPanel_btnWP_Pink"      active="False" fontSize="11" preferredWidth="140" preferredHeight="30" color="rgba(0.4,0.1,0.1,1)" onClick="HUD_rollSpendWP"      text="SPEND WILLPOWER" />
+      <Button id="rollPanel_btnRecalc_Pink"  active="False" fontSize="11" preferredWidth="110" preferredHeight="30" color="rgba(0.25,0.25,0.35,1)" onClick="HUD_rollRecalculate" text="RECALCULATE" />
+      <Button id="rollPanel_btnConfirm_Pink" active="False" fontSize="13" preferredWidth="90"  preferredHeight="30" color="rgba(0.1,0.4,0.1,1)" onClick="HUD_rollConfirm"    text="CONFIRM" />
+      <Button id="rollPanel_btnCancel_Pink"  active="True"  fontSize="11" preferredWidth="70"  preferredHeight="30" color="rgba(0.5,0.1,0.1,1)" onClick="HUD_rollCancel"     text="CANCEL" />
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- Purple -->
+<Panel id="rollPanel_Purple"
+  visibility="Purple|Host"
+  class="rollPanel_player">
+  <VerticalLayout class="rollPanel_player_content">
+    <Text id="rollPanel_type_Purple"   fontSize="14" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="" />
+    <Text id="rollPanel_phase_Purple"  fontSize="12" color="#CCCCCC" alignment="MiddleCenter" text="Awaiting Storyteller..." />
+    <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
+      <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
+        <Text id="rollPanel_pool_normal_Purple" fontSize="14" color="#FFFFFF" text="" />
+        <Text id="rollPanel_pool_hunger_Purple" fontSize="14" color="#CC3333" text="" />
+      </HorizontalLayout>
+      <Text id="rollPanel_diff_Purple" fontSize="12" color="#AAAAAA" text="Difficulty: —" />
+    </HorizontalLayout>
+    <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false" childForceExpandHeight="false" minHeight="48" preferredHeight="48">
+      <Image id="rollPanel_die_1_Purple"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_2_Purple"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_3_Purple"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_4_Purple"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_5_Purple"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_6_Purple"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_7_Purple"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_8_Purple"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_9_Purple"  active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_10_Purple" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_11_Purple" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_12_Purple" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_13_Purple" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_14_Purple" active="False" preferredWidth="30" preserveAspect="True" />
+      <Image id="rollPanel_die_15_Purple" active="False" preferredWidth="30" preserveAspect="True" />
+    </HorizontalLayout>
+    <Text id="rollPanel_result_Purple"    fontSize="18" fontStyle="Bold" color="#FFD700" alignment="MiddleCenter" text="" />
+    <HorizontalLayout spacing="10" childAlignment="MiddleCenter">
+      <Text id="rollPanel_successes_Purple" fontSize="12" color="#CCCCCC" text="" />
+      <Text id="rollPanel_margin_Purple"    fontSize="12" color="#AAAAAA" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout spacing="8" childAlignment="MiddleCenter">
+      <Button id="rollPanel_btnRoll_Purple"    active="False" fontSize="13" preferredWidth="90"  preferredHeight="30" color="rgba(0.1,0.4,0.1,1)" onClick="HUD_rollRollButton" text="ROLL" />
+      <Button id="rollPanel_btnHalf_Purple"    active="False" fontSize="11" preferredWidth="100" preferredHeight="30" color="rgba(0.2,0.2,0.5,1)" onClick="HUD_rollTakeHalf"   text="TAKE HALF" />
+      <Button id="rollPanel_btnWP_Purple"      active="False" fontSize="11" preferredWidth="140" preferredHeight="30" color="rgba(0.4,0.1,0.1,1)" onClick="HUD_rollSpendWP"      text="SPEND WILLPOWER" />
+      <Button id="rollPanel_btnRecalc_Purple"  active="False" fontSize="11" preferredWidth="110" preferredHeight="30" color="rgba(0.25,0.25,0.35,1)" onClick="HUD_rollRecalculate" text="RECALCULATE" />
+      <Button id="rollPanel_btnConfirm_Purple" active="False" fontSize="13" preferredWidth="90"  preferredHeight="30" color="rgba(0.1,0.4,0.1,1)" onClick="HUD_rollConfirm"    text="CONFIRM" />
+      <Button id="rollPanel_btnCancel_Purple"  active="True"  fontSize="11" preferredWidth="70"  preferredHeight="30" color="rgba(0.5,0.1,0.1,1)" onClick="HUD_rollCancel"     text="CANCEL" />
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- ============================================================================ -->
+<!-- 3. RESULT BROADCAST PANEL                                                     -->
+<!-- Visible to ALL players (no visibility filter). Shown briefly when a roll     -->
+<!-- resolves; auto-hides after 12 seconds. Can be manually hidden by RUI.        -->
+<!-- Positioned upper-center over the play area.                                  -->
+<!-- ============================================================================ -->
+<Panel id="rollResult_panel" class="rollPanel_result">
+
+  <VerticalLayout class="rollPanel_result_content">
+
+    <!-- Roller name + roll type label -->
+    <Text id="rollResult_name"
+      fontSize="16"
+      fontStyle="Bold"
+      color="#C9A84C"
+      alignment="MiddleCenter"
+      text="" />
+
+    <!-- Die face image row: 15 slots activated+image-set by refreshDiceImages() -->
+    <HorizontalLayout spacing="2" childAlignment="MiddleCenter"
+      childForceExpandWidth="false" childForceExpandHeight="false"
+      minHeight="54" preferredHeight="54">
+      <Image id="rollResult_die_1"  active="False" preferredWidth="34" preserveAspect="True" />
+      <Image id="rollResult_die_2"  active="False" preferredWidth="34" preserveAspect="True" />
+      <Image id="rollResult_die_3"  active="False" preferredWidth="34" preserveAspect="True" />
+      <Image id="rollResult_die_4"  active="False" preferredWidth="34" preserveAspect="True" />
+      <Image id="rollResult_die_5"  active="False" preferredWidth="34" preserveAspect="True" />
+      <Image id="rollResult_die_6"  active="False" preferredWidth="34" preserveAspect="True" />
+      <Image id="rollResult_die_7"  active="False" preferredWidth="34" preserveAspect="True" />
+      <Image id="rollResult_die_8"  active="False" preferredWidth="34" preserveAspect="True" />
+      <Image id="rollResult_die_9"  active="False" preferredWidth="34" preserveAspect="True" />
+      <Image id="rollResult_die_10" active="False" preferredWidth="34" preserveAspect="True" />
+      <Image id="rollResult_die_11" active="False" preferredWidth="34" preserveAspect="True" />
+      <Image id="rollResult_die_12" active="False" preferredWidth="34" preserveAspect="True" />
+      <Image id="rollResult_die_13" active="False" preferredWidth="34" preserveAspect="True" />
+      <Image id="rollResult_die_14" active="False" preferredWidth="34" preserveAspect="True" />
+      <Image id="rollResult_die_15" active="False" preferredWidth="34" preserveAspect="True" />
+    </HorizontalLayout>
+
+    <!-- Result class (large, gold) -->
+    <Text id="rollResult_class"
+      fontSize="26"
+      fontStyle="Bold"
+      color="#FFD700"
+      alignment="MiddleCenter"
+      text="" />
+
+    <!-- Successes and margin (side by side); hidden for Rouse / Rouse Oblivion broadcast -->
+    <HorizontalLayout id="rollResult_statsRow" spacing="30" childAlignment="MiddleCenter">
+      <Text id="rollResult_successes"
+        fontSize="14"
+        color="#FFFFFF"
+        alignment="MiddleCenter"
+        text="" />
+      <Text id="rollResult_margin"
+        fontSize="14"
+        color="#AAAAAA"
+        alignment="MiddleCenter"
+        text="" />
+    </HorizontalLayout>
+
+  </VerticalLayout>
+</Panel>
+
+<!-- ============================================================================ -->
+<!-- ASSET PRELOAD PANEL                                                           -->
+<!-- References all 7 die face image asset names so TTS loads them into memory    -->
+<!-- at game start. The panel is permanently hidden; its content is never shown.  -->
+<!-- This ensures image attribute swaps in refreshDiceImages() are instant.        -->
+<!-- ============================================================================ -->
+<Panel active="False" color="#00000000" preferredWidth="1" preferredHeight="1">
+  <HorizontalLayout>
+    <Image image="dieFace_normal_blank" preferredWidth="1" preserveAspect="True" />
+    <Image image="dieFace_normal_ankh"  preferredWidth="1" preserveAspect="True" />
+    <Image image="dieFace_normal_crit"  preferredWidth="1" preserveAspect="True" />
+    <Image image="dieFace_hunger_skull" preferredWidth="1" preserveAspect="True" />
+    <Image image="dieFace_hunger_blank" preferredWidth="1" preserveAspect="True" />
+    <Image image="dieFace_hunger_ankh"  preferredWidth="1" preserveAspect="True" />
+    <Image image="dieFace_hunger_crit"  preferredWidth="1" preserveAspect="True" />
+  </HorizontalLayout>
+</Panel>

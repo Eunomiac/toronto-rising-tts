@@ -75,6 +75,22 @@ G.GUIDS = {
     HUNGER_SMOKE_PINK = "fb25b1",
     HUNGER_SMOKE_PURPLE = "f20164",
 
+    -- Dice bags (one per seat color).
+    -- Each bag is a TTS object that spawns d10s when rolled by the player.
+    -- Used by the Dice System to attribute settled dice to their owner.
+    -- Source: .dev/tts-color-object-tags-by-seat.md
+    DICE_HUNGER_BROWN   = "e3d48a",
+    DICE_HUNGER_ORANGE  = "846db1",
+    DICE_HUNGER_RED     = "6d1c15",
+    DICE_HUNGER_PINK    = "90f17d",
+    DICE_HUNGER_PURPLE  = "496dd5",
+
+    DICE_NORMAL_BROWN   = "b5b3bd",
+    DICE_NORMAL_ORANGE  = "a0766e",
+    DICE_NORMAL_RED     = "a3ae6c",
+    DICE_NORMAL_PINK    = "4637da",
+    DICE_NORMAL_PURPLE  = "03cb81",
+
     -- Thrones (for players to sit on)
     THRONE_RED = "474c0d",
     THRONE_ORANGE = "c3a355",
@@ -219,6 +235,49 @@ function G.GetPlayerLightGUID(color)
   -- If GUID still contains placeholder markers, it hasn't been replaced yet
   -- Return it as-is (caller should handle placeholder case if needed)
   return guid
+end
+
+--- Gets the GUID for a player's Normal dice bag.
+-- Each player's seat has one Normal d10 bag from which dice are spawned when rolled.
+-- @param color string Player seat color (Brown/Orange/Red/Pink/Purple)
+-- @return string|nil GUID if found, nil otherwise
+-- @usage local guid = G.GetDiceNormalGUID("Red")
+function G.GetDiceNormalGUID(color)
+    if color == nil then return nil end
+    local guidKey = "DICE_NORMAL_" .. string.upper(color)
+    return G.GUIDS[guidKey]
+end
+
+--- Gets the GUID for a player's Hunger dice bag.
+-- Each player's seat has one Hunger d10 bag (typically red dice) for their Hunger pool.
+-- @param color string Player seat color (Brown/Orange/Red/Pink/Purple)
+-- @return string|nil GUID if found, nil otherwise
+-- @usage local guid = G.GetDiceHungerGUID("Red")
+function G.GetDiceHungerGUID(color)
+    if color == nil then return nil end
+    local guidKey = "DICE_HUNGER_" .. string.upper(color)
+    return G.GUIDS[guidKey]
+end
+
+--- Identifies the player color and die type ("normal"|"hunger") for a given object GUID.
+-- Used by the onObjectRandomize hook to attribute a randomized die to its owner.
+-- Returns nil, nil if the GUID does not correspond to any known dice bag.
+-- @param guid string Object GUID to look up
+-- @return string|nil color, string|nil dieType  ("normal" or "hunger")
+-- @usage local color, dieType = G.GetDiceOwner(obj.guid)
+function G.GetDiceOwner(guid)
+    if guid == nil then return nil, nil end
+    local playerColors = {"Brown", "Orange", "Red", "Pink", "Purple"}
+    for _, color in ipairs(playerColors) do
+        local upperColor = string.upper(color)
+        if G.GUIDS["DICE_NORMAL_" .. upperColor] == guid then
+            return color, "normal"
+        end
+        if G.GUIDS["DICE_HUNGER_" .. upperColor] == guid then
+            return color, "hunger"
+        end
+    end
+    return nil, nil
 end
 
 return G

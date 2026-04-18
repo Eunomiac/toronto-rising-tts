@@ -1,0 +1,62 @@
+<!-- ST Roll Options modal — Black|Host only; centered over play area -->
+<Panel id="rollOpts_modal"
+  visibility="Black|Host"
+  active="False"
+  rectAlignment="MiddleCenter"
+  offsetXY="0 0"
+  width="460"
+  padding="16 16 16 16"
+  childForceExpandHeight="false" >
+
+  <VerticalLayout spacing="10" childAlignment="UpperCenter" childForceExpandWidth="true" color="#1A1A1AE6">
+
+    <Text fontSize="16" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter"
+      text="Roll Options" />
+
+    <Text fontSize="11" color="#888888" alignment="MiddleCenter"
+      text="Permanent settings apply to all rolls until you change them." />
+
+    <!-- Permanent -->
+    <Text fontSize="13" fontStyle="Bold" color="#CCCCCC" alignment="MiddleLeft"
+      text="Permanent (chronicle)" />
+
+    <VerticalLayout spacing="4" padding="4 0 8 0">
+      <Toggle id="rollOpts_perm_autoRouse" isOn="true" fontSize="11" color="#DDDDDD">Auto-Rouse</Toggle>
+      <Toggle id="rollOpts_perm_autoWp" isOn="true" fontSize="11" color="#DDDDDD">Auto-WP</Toggle>
+      <Toggle id="rollOpts_perm_autoRemorse" isOn="true" fontSize="11" color="#DDDDDD">Auto-Remorse</Toggle>
+      <Toggle id="rollOpts_perm_autoHunger" isOn="true" fontSize="11" color="#DDDDDD">Auto-Hunger</Toggle>
+    </VerticalLayout>
+
+    <!-- This roll -->
+    <Text fontSize="13" fontStyle="Bold" color="#CCCCCC" alignment="MiddleLeft"
+      text="This roll" />
+
+    <VerticalLayout spacing="4" padding="4 0 8 0">
+      <Toggle id="rollOpts_roll_takeHalf" isOn="true" fontSize="11" color="#DDDDDD">Take Half</Toggle>
+      <Toggle id="rollOpts_roll_wpReroll" isOn="true" fontSize="11" color="#DDDDDD">WP Reroll</Toggle>
+      <Toggle id="rollOpts_roll_hungerDice" isOn="true" fontSize="11" color="#DDDDDD">Hunger Dice</Toggle>
+      <Panel id="rollOpts_row_bestialNull" active="True">
+        <Toggle id="rollOpts_roll_bestialNull" isOn="false" fontSize="11" color="#DDDDDD">Bestial Null</Toggle>
+      </Panel>
+      <Toggle id="rollOpts_roll_crits" isOn="true" fontSize="11" color="#DDDDDD">Criticals</Toggle>
+    </VerticalLayout>
+
+    <HorizontalLayout spacing="12" childAlignment="MiddleCenter" padding="8 0 0 0">
+      <Button id="rollOpts_btnApply"
+        fontSize="12"
+        preferredWidth="120"
+        preferredHeight="32"
+        color="rgba(0.15,0.35,0.15,1)"
+        onClick="HUD_rollOptsApply"
+        text="Apply" />
+      <Button id="rollOpts_btnCancel"
+        fontSize="12"
+        preferredWidth="120"
+        preferredHeight="32"
+        color="rgba(0.35,0.15,0.15,1)"
+        onClick="HUD_rollOptsCancel"
+        text="Cancel" />
+    </HorizontalLayout>
+
+  </VerticalLayout>
+</Panel>

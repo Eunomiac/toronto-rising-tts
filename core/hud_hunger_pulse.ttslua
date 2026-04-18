@@ -1,7 +1,11 @@
 --[[
-  Per-seat hunger heartbeat: full-screen red tint on `overlay_hungerPulse_<Color>`.
+  Per-seat hunger flicker on `overlay_hungerPulse_<Color>` (image `overlay_hunger_pulse`).
+  Hunger 3: long transparent stretches, brief lightning-like flashes to ~75% opacity.
+  Hunger 4: shorter gaps between strikes, flashes to 100% opacity.
+  Hunger 5: near-constant randomized flicker (“storm”).
+  TTS Image `color` tints the texture; we animate alpha via 8-char hex `#FFFFFFAA` (Attributes.md).
   Uses UI.setAttribute("color") only — never UI.show/hide (see core/hud_overlays.ttslua).
-  Stale Wait.time callbacks are dropped via a per-seat generation counter bumped on each sync.
+  Stale Wait.time callbacks no-op when pulseGenByColor[seat] changes.
 ]]
 ---@diagnostic disable: undefined-global
 
@@ -10,25 +14,29 @@ local HUP = {}
 local C = require("lib.constants")
 local S = require("core.state")
 
---- Seconds for one full min→max→min cycle. Index 1 = Hunger 3, 2 = 4, 3 = 5.
-local PULSE_DURATION = { 7, 5, 1.5 }
-
---- Alpha at the trough of the triangle wave (phase 0 / 1).
-local MIN_OPACITY = { 0, 0, 0.25 }
-
---- Alpha at the peak (phase 0.5). Must be greater than MIN_OPACITY for that index.
-local MAX_OPACITY = { 0.25, 0.5, 1 }
-
---- Update interval for the pulse animation (seconds).
-local STEP_SECONDS = 0.05
-
 --- Last applied generation per seat; incremented whenever HO.syncAll refreshes pulse state.
 --- @type table<string, number>
 local pulseGenByColor = {}
 
---- Log once per config index if MAX_OPACITY[i] <= MIN_OPACITY[i].
---- @type table<number, boolean>
-local invalidRangeLogged = {}
+--- Hunger 3: idle between strikes (seconds).
+local H3_IDLE_MIN = 2.4
+local H3_IDLE_MAX = 6.2
+--- Hunger 3: peak opacity during a flash.
+local H3_FLASH_ALPHA = 0.75
+
+--- Hunger 4: idle between strikes (shorter than H3).
+local H4_IDLE_MIN = 0.85
+local H4_IDLE_MAX = 2.5
+--- Hunger 4: peak opacity (full).
+local H4_FLASH_ALPHA = 1.0
+
+--- Hunger 5: flash duration and gap ranges (seconds) — “lightning storm”.
+local H5_ON_MIN = 0.028
+local H5_ON_MAX = 0.12
+local H5_GAP_MIN = 0.012
+local H5_GAP_MAX = 0.22
+local H5_ALPHA_MIN = 0.62
+local H5_ALPHA_MAX = 1.0
 
 --- @param seatColor string
 --- @return string
@@ -36,10 +44,10 @@ local function pulseElementId(seatColor)
   return "overlay_hungerPulse_" .. seatColor
 end
 
---- Clamp alpha to [0,1] and format TTS rgba color (red vignette).
+--- Clamp alpha to [0,1] and format TTS 8-char hex white + alpha.
 --- @param a number
 --- @return string
-local function rgbaRedAlpha(a)
+local function pulseTintColor(a)
   local x = tonumber(a) or 0
   if x < 0 then
     x = 0
@@ -47,47 +55,36 @@ local function rgbaRedAlpha(a)
   if x > 1 then
     x = 1
   end
-  return string.format("rgba(1,0,0,%.5f)", x)
+  local ai = math.floor(x * 255 + 0.5)
+  if ai < 0 then
+    ai = 0
+  end
+  if ai > 255 then
+    ai = 255
+  end
+  return string.format("#FFFFFF%02X", ai)
 end
 
---- Triangle wave: 0 at phase 0, 1 at phase 0.5, 0 at phase 1 (phase in [0,1)).
---- @param phase01 number
+--- @param lo number
+--- @param hi number
 --- @return number
-local function triWave(phase01)
-  local p = tonumber(phase01) or 0
-  if p < 0 then
-    p = 0
-  end
-  if p > 1 then
-    p = 1
-  end
-  if p < 0.5 then
-    return p * 2
-  end
-  return 2 - (p * 2)
+local function randFloat(lo, hi)
+  return lo + math.random() * (hi - lo)
 end
 
---- @param tableIdx number Hunger band index 1..3 (hunger 3..5).
---- @return number|nil
---- @return number|nil
-local function opacityRangeForIndex(tableIdx)
-  local idx = tonumber(tableIdx)
-  if idx == nil or idx < 1 or idx > 3 then
-    return nil, nil
-  end
-  local mn = tonumber(MIN_OPACITY[idx])
-  local mx = tonumber(MAX_OPACITY[idx])
-  if mn == nil or mx == nil then
-    return nil, nil
-  end
-  if mx <= mn then
-    if invalidRangeLogged[idx] ~= true then
-      invalidRangeLogged[idx] = true
-      print("[hud_hunger_pulse] MAX_OPACITY must exceed MIN_OPACITY for index " .. tostring(idx))
-    end
-    return nil, nil
-  end
-  return mn, mx
+--- @param seatColor string
+--- @param gen number
+--- @return boolean
+local function genAlive(seatColor, gen)
+  return pulseGenByColor[seatColor] == gen
+end
+
+--- @param seatColor string
+--- @param a number
+local function applyPulseAlpha(seatColor, a)
+  pcall(function()
+    UI.setAttribute(pulseElementId(seatColor), "color", pulseTintColor(a))
+  end)
 end
 
 --- @param seatColor string
@@ -95,10 +92,7 @@ local function setPulseTransparent(seatColor)
   if type(seatColor) ~= "string" then
     return
   end
-  local id = pulseElementId(seatColor)
-  pcall(function()
-    UI.setAttribute(id, "color", "rgba(1,0,0,0)")
-  end)
+  applyPulseAlpha(seatColor, 0)
 end
 
 --- Hunger value for overlay logic (matches core/hud_overlays.ttslua).
@@ -112,45 +106,115 @@ local function resolveHunger(playerID, seatColor)
   return tonumber(S.getPlayerVal(seatColor, "hunger")) or 0
 end
 
---- Runs a looping triangle-wave pulse until pulseGenByColor[seatColor] changes.
+--- Forward declaration: strike calls back into idle for the next cycle.
+local hungerIdleThenLightning
+
+--- One or two quick flashes, then long idle before the next cycle.
 --- @param seatColor string
 --- @param gen number
---- @param tableIdx number 1..3
---- @param durationSeconds number
-local function runPulseLoop(seatColor, gen, tableIdx, durationSeconds)
-  local mn, mx = opacityRangeForIndex(tableIdx)
-  if mn == nil or mx == nil then
+--- @param peakAlpha number
+--- @param idleMin number
+--- @param idleMax number
+local function runLightningStrikeThenIdle(seatColor, gen, peakAlpha, idleMin, idleMax)
+  if not genAlive(seatColor, gen) then
     return
   end
-  local dur = tonumber(durationSeconds)
-  if dur == nil or dur <= 0 then
-    return
-  end
-  local steps = math.max(4, math.floor((dur / STEP_SECONDS) + 0.5))
-  local i = 0
+  local twoFlashes = math.random() < 0.48
+  local firstOn = randFloat(0.032, 0.078)
+  local betweenOff = randFloat(0.038, 0.11)
+  local secondOn = randFloat(0.028, 0.065)
 
-  local function tick()
-    if pulseGenByColor[seatColor] ~= gen then
+  applyPulseAlpha(seatColor, peakAlpha)
+  Wait.time(function()
+    if not genAlive(seatColor, gen) then
       return
     end
-    local phase = i / steps
-    local tri = triWave(phase)
-    local a = mn + (mx - mn) * tri
-    local id = pulseElementId(seatColor)
-    pcall(function()
-      UI.setAttribute(id, "color", rgbaRedAlpha(a))
-    end)
-    i = i + 1
-    if i >= steps then
-      i = 0
+    applyPulseAlpha(seatColor, 0)
+    if not twoFlashes then
+      Wait.time(function()
+        if not genAlive(seatColor, gen) then
+          return
+        end
+        hungerIdleThenLightning(seatColor, gen, peakAlpha, idleMin, idleMax)
+      end, randFloat(idleMin, idleMax))
+      return
     end
-    Wait.time(tick, STEP_SECONDS)
-  end
-
-  tick()
+    Wait.time(function()
+      if not genAlive(seatColor, gen) then
+        return
+      end
+      applyPulseAlpha(seatColor, peakAlpha * 0.52)
+      Wait.time(function()
+        if not genAlive(seatColor, gen) then
+          return
+        end
+        applyPulseAlpha(seatColor, 0)
+        Wait.time(function()
+          if not genAlive(seatColor, gen) then
+            return
+          end
+          hungerIdleThenLightning(seatColor, gen, peakAlpha, idleMin, idleMax)
+        end, randFloat(idleMin, idleMax))
+      end, secondOn)
+    end, betweenOff)
+  end, firstOn)
 end
 
---- Reconcile heartbeat overlays for every player color after hunger / conditions sync.
+--- Long transparent wait, then a lightning strike (H3 / H4).
+--- @param seatColor string
+--- @param gen number
+--- @param peakAlpha number
+--- @param idleMin number
+--- @param idleMax number
+hungerIdleThenLightning = function(seatColor, gen, peakAlpha, idleMin, idleMax)
+  if not genAlive(seatColor, gen) then
+    return
+  end
+  applyPulseAlpha(seatColor, 0)
+  Wait.time(function()
+    if not genAlive(seatColor, gen) then
+      return
+    end
+    runLightningStrikeThenIdle(seatColor, gen, peakAlpha, idleMin, idleMax)
+  end, randFloat(idleMin, idleMax))
+end
+
+--- Near-constant randomized flicker (Hunger 5).
+--- @param seatColor string
+--- @param gen number
+local function runHunger5Storm(seatColor, gen)
+  if not genAlive(seatColor, gen) then
+    return
+  end
+  local a = randFloat(H5_ALPHA_MIN, H5_ALPHA_MAX)
+  applyPulseAlpha(seatColor, a)
+  local onDur = randFloat(H5_ON_MIN, H5_ON_MAX)
+  Wait.time(function()
+    if not genAlive(seatColor, gen) then
+      return
+    end
+    applyPulseAlpha(seatColor, 0)
+    local gap = randFloat(H5_GAP_MIN, H5_GAP_MAX)
+    Wait.time(function()
+      runHunger5Storm(seatColor, gen)
+    end, gap)
+  end, onDur)
+end
+
+--- @param seatColor string
+--- @param gen number
+--- @param tableIdx number 1 = Hunger 3, 2 = Hunger 4, 3 = Hunger 5
+local function startFlickerLoop(seatColor, gen, tableIdx)
+  if tableIdx == 1 then
+    hungerIdleThenLightning(seatColor, gen, H3_FLASH_ALPHA, H3_IDLE_MIN, H3_IDLE_MAX)
+  elseif tableIdx == 2 then
+    hungerIdleThenLightning(seatColor, gen, H4_FLASH_ALPHA, H4_IDLE_MIN, H4_IDLE_MAX)
+  elseif tableIdx == 3 then
+    runHunger5Storm(seatColor, gen)
+  end
+end
+
+--- Reconcile flicker overlays for every player color after hunger / conditions sync.
 function HUP.syncHungerPulseAll()
   for _, seatColor in ipairs(C.PlayerColors) do
     local playerID = nil
@@ -169,15 +233,11 @@ function HUP.syncHungerPulseAll()
       setPulseTransparent(seatColor)
     else
       local tableIdx = hunger - 2
-      local dur = tonumber(PULSE_DURATION[tableIdx])
-      local mn, mx = opacityRangeForIndex(tableIdx)
-      if mn == nil or mx == nil or dur == nil or dur <= 0 then
+      if tableIdx < 1 or tableIdx > 3 then
         setPulseTransparent(seatColor)
       else
-        pcall(function()
-          UI.setAttribute(pulseElementId(seatColor), "color", rgbaRedAlpha(mn))
-        end)
-        runPulseLoop(seatColor, gen, tableIdx, dur)
+        applyPulseAlpha(seatColor, 0)
+        startFlickerLoop(seatColor, gen, tableIdx)
       end
     end
   end

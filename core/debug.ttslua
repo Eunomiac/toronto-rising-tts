@@ -3722,6 +3722,117 @@ end
 
 --- Debug helper: Move an object to a world-angle position around table center
 -- Positions an object at a given distance and world angle around the table center.
+-- ============================================================================
+-- DICE SYSTEM DEBUG HELPERS
+-- Solo/dev-mode shortcuts for testing roll flow without a second player.
+-- Call from the TTS console with:  lua rollTest("Brown", 3)
+-- Or via the "DICE DEBUG" buttons in the admin panel (Host only).
+-- ============================================================================
+
+--- Initiates, opens, and arms a roll for a player in one shot.
+-- Cancels any existing active roll first, so it can safely be re-called between tests.
+-- Puts the player panel into PRE_ROLL state (ROLL and TAKE HALF buttons live).
+-- Sit in the target color seat (or enable Host visibility) to see the panel.
+--
+-- @param color      string       Player seat color (e.g. "Brown")
+-- @param difficulty number|nil   Required successes; default 2
+-- @param rollType   string|nil   C.RollType value; default C.RollType.STANDARD
+-- @param label      string|nil   Roll label shown in the panel; default "Debug Test"
+-- @usage lua rollTest("Brown")
+-- @usage lua rollTest("Red", 4, C.RollType.STANDARD, "Dominate")
+function DEBUG.rollTest(color, difficulty, rollType, label)
+    if type(color) ~= "string" then
+        print("Usage: rollTest(color, difficulty?, rollType?, label?)")
+        print("  e.g. rollTest('Brown', 3)")
+        print("  e.g. rollTest('Red', 2, C.RollType.ROUSE)")
+        return
+    end
+    if RC == nil then
+        print("[DEBUG.rollTest] RC (roll_controller) is not loaded yet.")
+        return
+    end
+
+    local diff  = (type(difficulty) == "number") and difficulty or 2
+    local rType = (type(rollType) == "string" and rollType ~= "") and rollType or C.RollType.STANDARD
+    local lbl   = (type(label) == "string" and label ~= "") and label or "Debug Test"
+
+    -- Silently cancel any existing roll so re-running the command always works cleanly
+    RC.cancelRoll(color)
+
+    local ok = RC.initiateRoll(color, { rollType = rType, label = lbl })
+    if not ok then
+        print(string.format("[DEBUG.rollTest] initiateRoll failed for %s (already active?)", color))
+        return
+    end
+    RC.openRoll(color)
+    RC.setDifficulty(color, diff)
+
+    print(string.format(
+        "[DEBUG.rollTest] Roll armed for %s — type=%s  difficulty=%d  label='%s'",
+        color, rType, diff, lbl))
+    print(string.format(
+        "  → Panel is now in PRE_ROLL. Sit in the %s seat (or enable Host visibility) to see it.", color))
+    print(string.format(
+        "  → Roll dice, or call: lua rollConfirm('%s')  to auto-confirm.", color))
+end
+
+--- Prints the full active roll record and queue for a player.
+-- @param color string  Player seat color
+-- @usage lua rollState("Brown")
+function DEBUG.rollState(color)
+    if type(color) ~= "string" then
+        print("Usage: rollState(color)")
+        return
+    end
+    local pid    = S.getPlayerID(color)
+    local active = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    local queue  = (pid and S.getStateVal("playerData", pid, "hud", "rollData", "queue")) or {}
+    print(string.format("[DEBUG.rollState] %s — active roll:", color))
+    if active ~= nil then
+        print(JSON.encode_pretty(active))
+    else
+        print("  (no active roll)")
+    end
+    if #queue > 0 then
+        print(string.format("  queue (%d): %s", #queue, JSON.encode(queue)))
+    end
+end
+
+--- Cancels the active roll for a single player. Useful for mid-test cleanup.
+-- @param color string  Player seat color
+-- @usage lua rollCancel("Brown")
+function DEBUG.rollCancel(color)
+    if RC == nil then print("[DEBUG.rollCancel] RC not loaded"); return end
+    if type(color) ~= "string" then print("Usage: rollCancel(color)"); return end
+    local cancelled = RC.cancelRoll(color)
+    print(string.format("[DEBUG.rollCancel] %s: %s",
+        color, cancelled and "roll cancelled" or "no active roll to cancel"))
+end
+
+--- Cancels all active rolls across every player color. Quick full reset between tests.
+-- @usage lua rollCancelAll()
+function DEBUG.rollCancelAll()
+    if RC == nil then print("[DEBUG.rollCancelAll] RC not loaded"); return end
+    local count = 0
+    for _, color in ipairs(C.PlayerColors) do
+        if RC.cancelRoll(color) then count = count + 1 end
+    end
+    print(string.format("[DEBUG.rollCancelAll] Cancelled %d active roll(s).", count))
+end
+
+--- Force-confirms the active roll for a player, simulating the player clicking CONFIRM.
+-- Runs the full resolution path: consequences, broadcast panel, history append.
+-- The roll must be in POST_ROLL phase (dice must have settled or Recalculate pressed first).
+-- @param color string  Player seat color
+-- @usage lua rollConfirm("Brown")
+function DEBUG.rollConfirm(color)
+    if RC == nil then print("[DEBUG.rollConfirm] RC not loaded"); return end
+    if type(color) ~= "string" then print("Usage: rollConfirm(color)"); return end
+    local ok = RC.confirmRoll(color)
+    print(string.format("[DEBUG.rollConfirm] %s: %s",
+        color, ok and "roll confirmed and resolved" or "confirm failed — is the roll in POST_ROLL?"))
+end
+
 -- Uses U.rotateAroundPoint to keep angle conventions consistent.
 -- @param obj Object|table|userdata TTS object to move (GameObject)
 -- @param distance number Distance from center in world units
@@ -4574,6 +4685,13 @@ function DEBUG.help()
     print("  logTestToFile(name, passed, details?, filename?) - Log test result")
     print("  logAllToFiles()                   - Log all debug info to files")
     print("  clearAllLogs()                    - Clear all log files (starts new session)")
+    print("\nDICE SYSTEM DEBUG (solo testing — no second player needed):")
+    print("  rollTest(color, diff?, type?, label?)")
+    print("                           - Arm a test roll in PRE_ROLL (e.g. rollTest('Brown', 3))")
+    print("  rollState(color)         - Print active roll record for a player")
+    print("  rollCancel(color)        - Cancel one player's active roll")
+    print("  rollCancelAll()          - Cancel all active rolls (full reset)")
+    print("  rollConfirm(color)       - Force-confirm a POST_ROLL result")
     print("\nQUICK SETTERS:")
     print("  setHunger(color, value)  - Set player hunger (e.g., setHunger('Red', 3))")
     print("  changeScene(sceneName)   - Change scene (e.g., changeScene('elysium'))")
@@ -4636,6 +4754,13 @@ showZones = DEBUG.showZones
 setHunger = DEBUG.setHunger
 changeScene = DEBUG.changeScene
 setPhase = DEBUG.setPhase
+
+-- Expose dice system debug helpers
+rollTest      = DEBUG.rollTest
+rollState     = DEBUG.rollState
+rollCancel    = DEBUG.rollCancel
+rollCancelAll = DEBUG.rollCancelAll
+rollConfirm   = DEBUG.rollConfirm
 tableRotateTo = DEBUG.tableRotateTo
 spawnCustomUiUploadBatchFromManifest = DEBUG.spawnCustomUiUploadBatchFromManifest
 spawnCustomUiUploadBatchFromJson = DEBUG.spawnCustomUiUploadBatchFromJson

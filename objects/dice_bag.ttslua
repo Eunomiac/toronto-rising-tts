@@ -1,0 +1,319 @@
+--[[
+    Dice Bag Script (objects/dice_bag.ttslua)
+
+    Unified replacement for the third-party dice_generator_standard and
+    dice_generator_hunger scripts. Attach this script to every dice bag object
+    (all 10: one normal + one hunger bag per player seat).
+
+    Die type and owner color are read from the bag's TTS tags at runtime:
+        "NormalDie"        → normal (white) dice bag
+        "HungerDie"        → hunger (red)   dice bag
+        "<Color>Object"    → owner seat color (e.g. "BrownObject")
+
+    Behaviour:
+        Click bag, no active roll      → initiate player-initiated roll (SETUP)
+        Click bag, roll in PRE_ROLL    → spawn one locked die and update pool display
+        Click bag, any other phase     → silently ignored
+        global_script calls releaseDice()  → unlock all hovering dice so they roll
+        global_script calls destroyDice()  → destroy all hovering dice (cancel / Take Half / cleanup)
+
+    Note: all functions are globals (no `local`) because TTS resolves button
+    click_function names and obj.call() targets via the global namespace.
+]]
+
+-- ============================================================================
+-- CONFIGURATION  (edit as needed)
+-- ============================================================================
+
+-- How far from the center of the bag dice are spawned, in world units
+RADIUS   = 8
+-- Width of the arc the dice spread across, in degrees
+ARC      = 90
+-- Where the arc is centered around the bag (0 = toward near edge, 180 = away)
+ROTATION = 180
+-- Height above the bag that locked dice hover
+HEIGHT   = 5
+-- Uniform scale applied to each spawned die (1 = normal size)
+SCALE    = 1.7
+
+-- ============================================================================
+-- MODULE STATE
+-- ============================================================================
+
+--- Dice currently hovering above this bag (locked, waiting to be rolled).
+spawnedDice = {}
+
+-- ============================================================================
+-- TTS LIFECYCLE
+-- ============================================================================
+
+--- Persist hovering dice GUIDs so they can be cleaned up after a save/reload.
+function onSave()
+    local guids = {}
+    for _, die in ipairs(spawnedDice) do
+        if die ~= nil then
+            table.insert(guids, die.getGUID())
+        end
+    end
+    return JSON.encode(guids)
+end
+
+--- Destroy any dice that were mid-hover when the save happened, then
+--- re-create the click button on the bag surface.
+function onLoad(saved_data)
+    if saved_data ~= nil and saved_data ~= "" then
+        local loaded = JSON.decode(saved_data)
+        if type(loaded) == "table" then
+            for _, guid in ipairs(loaded) do
+                local die = getObjectFromGUID(guid)
+                if die ~= nil then destroyObject(die) end
+            end
+        end
+    end
+    spawnedDice = {}
+    math.randomseed(os.time())
+    createButtons()
+end
+
+-- ============================================================================
+-- TAG HELPERS  (called by click_roll and spawnDie)
+-- ============================================================================
+
+--- Returns this bag's die type from its TTS tags.
+-- @return string|nil  "normal", "hunger", or nil if no die-type tag is found
+function getDieType()
+    local tags = self.getTags()
+    for _, tag in ipairs(tags) do
+        if tag == "NormalDie" then return "normal" end
+        if tag == "HungerDie" then return "hunger" end
+    end
+    return nil
+end
+
+--- Returns this bag's owner seat color from its "<Color>Object" TTS tag.
+-- @return string|nil  e.g. "Brown", or nil if no color tag is found
+function getBagColor()
+    local tags = self.getTags()
+    local colors = { "Brown", "Orange", "Red", "Pink", "Purple" }
+    for _, tag in ipairs(tags) do
+        for _, c in ipairs(colors) do
+            if tag == (c .. "Object") then return c end
+        end
+    end
+    return nil
+end
+
+-- ============================================================================
+-- CLICK HANDLER  (registered as button click_function by createButtons)
+-- ============================================================================
+
+--- Called when the player clicks the invisible button overlaid on the bag.
+-- @param _      any     Button ID (unused)
+-- @param color  string  TTS seat color of whoever clicked (may differ from bagColor)
+function click_roll(_, color)
+    local bagColor = getBagColor()
+    if bagColor == nil then
+        print("[DiceBag] Bag is missing a <Color>Object tag — cannot determine owner.")
+        return
+    end
+
+    local dieType = getDieType()
+    if dieType == nil then
+        print("[DiceBag] Bag is missing a NormalDie/HungerDie tag — cannot determine die type.")
+        return
+    end
+
+    -- Ask the global script for the current phase of this player's active roll.
+    local phase = Global.call("GlobalGetRollPhase", { color = bagColor })
+
+    -- Phase values are the C.RollPhase constants: "setup", "preRoll", "rolling", etc.
+    if phase == nil then
+        -- No active roll: the click initiates a player-requested roll.
+        -- Hunger bags → Rouse check; Normal bags → standard attribute roll.
+        -- The Storyteller will see it appear in SETUP and can set difficulty before opening it.
+        local trigger = (dieType == "hunger") and "rouse" or "standard"
+        Global.call("GlobalInitiateRoll", {
+            color   = bagColor,
+            trigger = trigger,
+            label   = "",
+        })
+        -- Dice are not spawned yet; the player adds them once the ST opens the roll (PRE_ROLL).
+
+    elseif phase == "preRoll" then
+        -- Roll is open and the player is assembling their dice pool.
+        -- Global script may redirect Normal→Hunger (Auto-Hunger) or Hunger→Normal (Hunger Dice off).
+        local logical = Global.call("GlobalRollSpawnDieRequest", { color = bagColor, requested = dieType })
+        if type(logical) ~= "string" then logical = dieType end
+
+        if logical == dieType then
+            spawnDie(bagColor, logical)
+        else
+            local G = require("lib.guids")
+            local guid = (logical == "hunger") and G.GetDiceHungerGUID(bagColor) or G.GetDiceNormalGUID(bagColor)
+            local other = getObjectFromGUID(guid)
+            if other ~= nil then
+                other.call("spawnDieRedirect", { bagColor = bagColor, dieType = logical })
+            end
+        end
+
+    else
+        -- "setup" (waiting for ST), "rolling", "postRoll", or "resolved": ignore silently.
+    end
+end
+
+-- ============================================================================
+-- DIE SPAWNING
+-- ============================================================================
+
+--- Called from the sibling dice bag when a spawn must be handled by the other container.
+-- @param params table  { bagColor = string, dieType = "normal"|"hunger" }
+function spawnDieRedirect(params)
+    if type(params) ~= "table" or type(params.bagColor) ~= "string" or type(params.dieType) ~= "string" then
+        return
+    end
+    spawnDie(params.bagColor, params.dieType)
+end
+
+--- Spawns one die locked in the arc above the bag, re-spaces existing dice,
+--- then reports the updated count to global_script for the pool display.
+-- @param bagColor  string  Owner seat color
+-- @param dieType   string  "normal" or "hunger"
+function spawnDie(bagColor, dieType)
+    local newCount = #spawnedDice + 1
+
+    -- Smoothly reposition existing dice into even arc spacing for the new count.
+    for i, die in ipairs(spawnedDice) do
+        die.setPositionSmooth(self.positionToWorld(getLocalPointOnArc(i, newCount)))
+    end
+
+    -- Spawn the new die at the last arc slot.
+    local die = self.takeObject({
+        position = self.positionToWorld(getLocalPointOnArc(newCount, newCount)),
+        rotation = randomRotation(),
+    })
+
+    die.setScale({ SCALE, SCALE, SCALE })
+    die.setLock(true)
+    -- Prevent the die from being automatically returned to the bag.
+    die.script_state = " "
+
+    table.insert(spawnedDice, die)
+
+    -- Notify the global script so it can call RC.setPool and refresh the UI.
+    Global.call("GlobalReportBagDiceCount", {
+        color   = bagColor,
+        dieType = dieType,
+        count   = #spawnedDice,
+    })
+end
+
+-- ============================================================================
+-- PUBLIC API  (called by global_script via obj.call())
+-- ============================================================================
+
+--- Returns the count of dice currently hovering above this bag.
+-- Called by global_script via obj.call() to determine whether auto-spawn is needed.
+-- @return number
+function getSpawnedCount()
+    return #spawnedDice
+end
+
+--- Spawns N dice in sequence, distributing them evenly along the arc.
+-- Called by global_script via obj.call() when the Roll button is clicked but no
+-- physical dice have been spawned yet (e.g. Rouse Check or pre-computed Remorse pool).
+-- @param params table  { count = number }  Number of dice to spawn
+function autoSpawn(params)
+    local count = (type(params) == "table" and type(params.count) == "number")
+        and math.max(0, math.floor(params.count))
+        or 0
+    if count == 0 then return end
+
+    local bagColor = getBagColor()
+    local dieType  = getDieType()
+    if bagColor == nil or dieType == nil then
+        print("[DiceBag] autoSpawn: missing color or die-type tag")
+        return
+    end
+
+    for _ = 1, count do
+        spawnDie(bagColor, dieType)
+    end
+end
+
+--- Unlocks all hovering dice so they fall and roll freely.
+-- Called by global_script when the player clicks the "ROLL" button.
+-- Does NOT clear spawnedDice: the dice are still tracked by roll ID in GM Notes
+-- and will be read by RC._getDiceForRoll once they settle.
+function releaseDice()
+    for _, die in ipairs(spawnedDice) do
+        if die ~= nil then
+            die.setLock(false)
+        end
+    end
+end
+
+--- Destroys all hovering dice and clears the local tracking table.
+-- Called by global_script on: cancel, Take Half, or post-resolution cleanup.
+function destroyDice()
+    for _, die in ipairs(spawnedDice) do
+        if die ~= nil then destroyObject(die) end
+    end
+    spawnedDice = {}
+end
+
+-- ============================================================================
+-- ARC GEOMETRY  (unchanged from original MrStump script)
+-- ============================================================================
+
+--- Returns the local-space position for the i-th die on an arc of `points` total.
+-- @param i      number  1-based die index
+-- @param points number  Total dice on the arc
+-- @return table  {x, y, z} local position relative to the bag
+function getLocalPointOnArc(i, points)
+    i = i - 0.5
+    local angle  = ARC / points
+    local offset = -ARC / 2 + ROTATION
+    return {
+        x = math.sin(math.rad(angle * i + offset)) * RADIUS,
+        y = HEIGHT,
+        z = math.cos(math.rad(angle * i + offset)) * RADIUS,
+    }
+end
+
+--- Returns a random rotation vector using quaternion-based uniform distribution
+--- to avoid gimbal lock artifacts.  Credit: Revinor (TTS Modding forums).
+-- @return table  {rx, ry, rz} Euler angles in degrees
+function randomRotation()
+    local u1, u2, u3 = math.random(), math.random(), math.random()
+    local s1 = math.sqrt(u1)
+    local s2 = math.sqrt(1 - u1)
+    local qx = s2 * math.sin(2 * math.pi * u2)
+    local qy = s2 * math.cos(2 * math.pi * u2)
+    local qz = s1 * math.sin(2 * math.pi * u3)
+    local qw = s1 * math.cos(2 * math.pi * u3)
+    local ysqr = qy * qy
+    local t2 = -2.0 * (qx * qz + qw * qy)
+    if t2 >  1.0 then t2 =  1.0 end
+    if t2 < -1.0 then t2 = -1.0 end
+    return {
+        math.deg(math.asin(t2)),
+        math.deg(math.atan2(2.0 * (qy * qz - qw * qx), -2.0 * (qx * qx + ysqr) + 1.0)),
+        math.deg(math.atan2(2.0 * (qx * qy - qw * qz), -2.0 * (ysqr + qz * qz) + 1.0)),
+    }
+end
+
+-- ============================================================================
+-- BUTTON CREATION
+-- ============================================================================
+
+--- Creates the invisible click button that covers the top face of the bag.
+function createButtons()
+    self.createButton({
+        click_function = "click_roll",
+        function_owner = self,
+        position       = { 0, 0.05, 0 },
+        height         = 650,
+        width          = 650,
+        color          = { 1, 1, 1, 0 },
+    })
+end

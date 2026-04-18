@@ -8,6 +8,15 @@
       <VerticalLayout class="pcs_seat_column">
         <Text class="pcs_row_title" id="pcs_rowName_Brown">Brown</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Brown">—</Text>
+        <!-- Roll initiation row: each button starts a roll of that type in SETUP -->
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">Roll:</Text>
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Brown"    text="Std"   />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Brown" text="Simple" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Brown"      text="Rouse"  />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Brown"     text="Frenzy" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Brown"    text="Rem"    />
+        </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">HP:</Text>
           <Text class="pcs_track_damage" id="pcs_hpTrack_Brown"></Text>
@@ -68,6 +77,14 @@
         <Text class="pcs_row_title" id="pcs_rowName_Orange">Orange</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Orange">—</Text>
         <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">Roll:</Text>
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Orange"    text="Std"   />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Orange" text="Simple" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Orange"      text="Rouse"  />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Orange"     text="Frenzy" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Orange"    text="Rem"    />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">HP:</Text>
           <Text class="pcs_track_damage" id="pcs_hpTrack_Orange"> </Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Orange_hpAggUp" text="▲" />
@@ -126,6 +143,14 @@
       <VerticalLayout class="pcs_seat_column">
         <Text class="pcs_row_title" id="pcs_rowName_Red">Red</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Red">—</Text>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">Roll:</Text>
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Red"    text="Std"   />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Red" text="Simple" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Red"      text="Rouse"  />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Red"     text="Frenzy" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Red"    text="Rem"    />
+        </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">HP:</Text>
           <Text class="pcs_track_damage" id="pcs_hpTrack_Red"> </Text>
@@ -186,6 +211,14 @@
         <Text class="pcs_row_title" id="pcs_rowName_Pink">Pink</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Pink">—</Text>
         <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">Roll:</Text>
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Pink"    text="Std"   />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Pink" text="Simple" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Pink"      text="Rouse"  />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Pink"     text="Frenzy" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Pink"    text="Rem"    />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">HP:</Text>
           <Text class="pcs_track_damage" id="pcs_hpTrack_Pink"> </Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Pink_hpAggUp" text="▲" />
@@ -244,6 +277,14 @@
       <VerticalLayout class="pcs_seat_column">
         <Text class="pcs_row_title" id="pcs_rowName_Purple">Purple</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Purple">—</Text>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">Roll:</Text>
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Purple"    text="Std"   />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Purple" text="Simple" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Purple"      text="Rouse"  />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Purple"     text="Frenzy" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Purple"    text="Rem"    />
+        </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">HP:</Text>
           <Text class="pcs_track_damage" id="pcs_hpTrack_Purple"> </Text>

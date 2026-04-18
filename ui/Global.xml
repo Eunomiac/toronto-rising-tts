@@ -43,3 +43,8 @@
 
 
 </Panel>
+
+<!-- 5. Dice System Panels (roll panels + ST dashboard + result broadcast) -->
+<!-- Included outside the player/ST panels so the broadcast panel is visible to all. -->
+<Include src="shared/roll_panels.xml" />
+<Include src="shared/roll_options_modal.xml" />

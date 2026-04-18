@@ -366,6 +366,61 @@ local function getMergedPlayerDataFromGlobal(pid)
   return nil
 end
 
+-- ============================================================================
+-- ROLL INITIATION (player-side)
+-- Character sheet elements call these handlers via onClick XML attributes.
+-- Roll type resolution (including phase-dependent mapping) lives in Global so
+-- that character sheets do not need access to game state.
+-- Pattern: add onClick="onHumanityClick" (etc.) to the relevant XML element,
+-- then extend the trigger map in GlobalInitiateRoll (global_script.ttslua) for
+-- any new trigger keys.
+-- ============================================================================
+
+--- Calls GlobalInitiateRoll via the Global VM.
+-- @param trigger string  Semantic trigger key (see GlobalInitiateRoll trigger map)
+-- @param label   string  Human-readable roll label shown in the player panel
+local function initiateRollByTrigger(trigger, label)
+    if Global == nil or type(Global.call) ~= "function" then return end
+    if seatColor == nil then return end
+    pcall(function()
+        Global.call("GlobalInitiateRoll", {
+            color   = seatColor,
+            trigger = trigger,
+            label   = label or "",
+        })
+    end)
+end
+
+--- Called when a player clicks the Humanity tracker on their character sheet.
+-- Initiates a Humanity Roll during normal play; a Remorse Roll at end-of-session.
+-- Phase-dependent resolution is handled by GlobalInitiateRoll in Global.
+-- Add onClick="onHumanityClick" to the Humanity tracker element in the csheet XML.
+-- @param player table  TTS player object (unused; identity comes from seatColor)
+-- @param value  any    Button value (unused)
+-- @param id     string UI element id (unused)
+function onHumanityClick(player, value, id)
+    initiateRollByTrigger("humanity", "Humanity")
+end
+
+--- Called when a player clicks the Willpower tracker on their character sheet.
+-- Add onClick="onWillpowerRollClick" to the relevant tracker element.
+function onWillpowerRollClick(player, value, id)
+    initiateRollByTrigger("willpower", "Willpower")
+end
+
+--- Called when a player initiates a Rouse Check from their character sheet
+-- (e.g. clicking a discipline power button that costs Rouse).
+-- Add onClick="onRouseClick" to the relevant sheet element.
+function onRouseClick(player, value, id)
+    initiateRollByTrigger("rouse", "Rouse Check")
+end
+
+--- Called when a player initiates a Frenzy check from their character sheet.
+-- Add onClick="onFrenzyClick" to the relevant sheet element.
+function onFrenzyClick(player, value, id)
+    initiateRollByTrigger("frenzy", "Frenzy Check")
+end
+
 --- Apply collected attribute tweaks to this object's UI.
 local function applyUiUpdates(updates)
   if self.UI == nil then

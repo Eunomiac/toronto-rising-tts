@@ -1,0 +1,680 @@
+--[[
+    Roll UI Module (core/roll_ui.ttslua)
+
+    Translates roll state (playerData.rollData.active) into TTS XML UI updates.
+    Manages the three roll-related UI surfaces:
+      1. ST Roll Dashboard  (rollDash_ST)          — Storyteller only; shows all active rolls
+      2. Player Roll Panels (rollPanel_<Color>)     — Per-player; shows current roll details
+      3. Result Broadcast   (rollResult_panel)      — Shared; shows last resolved result
+
+    This module is the ONLY place that calls UI.show/hide/setValue for roll elements.
+    It is called by the RC.onRollStateChanged callback registered in global_script.
+
+    UI element ID conventions: see .dev/Dice System/Dice System Outline.md §8.2
+
+    Depends on:
+    - core.state   (S — read rollData from playerData)
+    - lib.constants (C — enumerations and labels)
+    - lib.util      (U — validation helpers)
+
+    Agent guidance: .dev/Dice System/Dice System Outline.md §8, §10
+]]
+
+local RUI = {}
+local S = require("core.state")
+local C = require("lib.constants")
+local U = require("lib.util")
+local RO = require("lib.roll_options")
+-- Note: core.dice is NOT required here; formatted dice strings are cached on
+-- the active record as active.diceDisplay by RC.recalculate().
+
+-- ============================================================================
+-- INTERNAL HELPERS
+-- ============================================================================
+
+--- Sets a UI element's text value.
+-- Not wrapped in pcall: errors (e.g. unknown element id) should surface as TTS
+-- chat errors so they are visible during development, not swallowed silently.
+-- @param elementId string  TTS UI element id
+-- @param value string      Text to display
+local function uiSetValue(elementId, value)
+    UI.setValue(elementId, tostring(value or ""))
+end
+
+--- Shows or hides a UI element by setting its "active" attribute.
+-- Uses UI.setAttribute — the correct TTS API.
+-- Not wrapped in pcall for the same reason as uiSetValue.
+-- @param elementId string
+-- @param visible boolean
+local function uiSetActive(elementId, visible)
+    UI.setAttribute(elementId, "active", visible and "true" or "false")
+end
+
+--- Enables or disables (greys out) an interactive element.
+-- @param elementId string
+-- @param enabled boolean
+local function uiSetInteractable(elementId, enabled)
+    UI.setAttribute(elementId, "interactable", enabled and "true" or "false")
+end
+
+--- Sets the displayed text of a TTS InputField via setAttribute.
+-- UI.setValue() on InputField elements is silently dropped by TTS when the element
+-- is inactive, leaving the stale value visible on the next show. Using setAttribute
+-- directly on the "text" attribute persists the change regardless of active state.
+-- @param elementId string
+-- @param value string
+local function uiSetInputField(elementId, value)
+    UI.setAttribute(elementId, "text", tostring(value or ""))
+end
+
+--- Returns the character name for a player, falling back to player name then seat color.
+-- The roll UI is a narrative surface — it should show who the character is, not the
+-- player's Steam handle. charName is preferred; playerName and color are fallbacks.
+-- @param pid string|nil  Player ID (nil if the seat is unoccupied)
+-- @param color string    Seat color used as last-resort display value
+-- @return string
+local function characterName(pid, color)
+    if pid ~= nil then
+        local pdata = S.getStateVal("playerData", pid)
+        if pdata ~= nil then
+            if U.Type(pdata.charName) == "string" and pdata.charName ~= "" then
+                return pdata.charName
+            end
+            if U.Type(pdata.playerName) == "string" and pdata.playerName ~= "" then
+                return pdata.playerName
+            end
+        end
+    end
+    return color
+end
+
+--- Returns a string of N filled-diamond characters (◆).
+-- Used for the visual pool display: white = normal dice, red = hunger dice.
+-- @param count number  Number of diamonds to produce
+-- @return string
+local function diamonds(count)
+    if count <= 0 then return "" end
+    local parts = {}
+    for i = 1, count do
+        parts[i] = "◆"
+    end
+    return table.concat(parts, "")
+end
+
+--- Formats a compact pool string for the ST dashboard (e.g. "5N + 2H" or "1H" or "—").
+-- @param pool table|nil  { normal = number, hunger = number }
+-- @return string
+local function formatPoolCompact(pool)
+    if pool == nil then return "—" end
+    local normal = tonumber(pool.normal) or 0
+    local hunger = tonumber(pool.hunger) or 0
+    if normal == 0 and hunger == 0 then return "—" end
+    if hunger == 0 then return string.format("%dN", normal) end
+    if normal == 0 then return string.format("%dH", hunger) end
+    return string.format("%dN+%dH", normal, hunger)
+end
+
+-- Color whose roll options modal is open (nil when closed).
+local rollOptsTargetColor = nil
+
+--- Sets a Toggle's on state (TTS uses string "true"/"false" on isOn).
+-- @param elementId string
+-- @param on boolean
+local function uiToggleSet(elementId, on)
+    UI.setAttribute(elementId, "isOn", on and "true" or "false")
+end
+
+--- Reads a Toggle's on state.
+-- @param elementId string
+-- @return boolean
+local function uiToggleGet(elementId)
+    local t = UI.getAttribute(elementId, "isOn")
+    return t == "true" or t == "True"
+end
+
+-- Maximum number of die image slots pre-defined in the XML for each panel.
+-- Must match the count of rollPanel_die_N_<Color> / rollResult_die_N elements in roll_panels.xml.
+local MAX_DIE_SLOTS = 15
+
+--- Returns the image source name for a single die face.
+-- Source names correspond to TTS custom asset entries registered in the mod.
+-- @param value    number   The rolled value (1–10)
+-- @param isHunger boolean  true for a Hunger die, false for a Normal die
+-- @return string  Custom UI image asset name (e.g. "dieFace_normal_ankh")
+local function dieFaceImage(value, isHunger)
+    if isHunger then
+        if value == 1     then return "dieFace_hunger_skull"
+        elseif value <= 5 then return "dieFace_hunger_blank"
+        elseif value <= 9 then return "dieFace_hunger_ankh"
+        else                   return "dieFace_hunger_crit"
+        end
+    else
+        if value <= 5     then return "dieFace_normal_blank"
+        elseif value <= 9 then return "dieFace_normal_ankh"
+        else                   return "dieFace_normal_crit"
+        end
+    end
+end
+
+--- Updates the pre-defined die image slots in a HUD panel.
+-- Activates the first N slots with the correct face images, hides the rest.
+-- @param idPrefix string  Shared prefix for image element IDs (e.g. "rollPanel_die_%d_Brown"
+--                         or "rollResult_die_%d"). Must include a %d placeholder for the slot index.
+-- @param diceFaces table|nil  Sorted face records from Dice.buildDiceFaces(); nil clears all slots.
+local function refreshDiceImages(idPrefix, diceFaces)
+    local faces = (U.Type(diceFaces) == "table") and diceFaces or {}
+    for i = 1, MAX_DIE_SLOTS do
+        local id = string.format(idPrefix, i)
+        if i <= #faces then
+            UI.setAttribute(id, "image", dieFaceImage(faces[i].value, faces[i].isHunger))
+            UI.setAttribute(id, "active", "true")
+        else
+            UI.setAttribute(id, "active", "false")
+        end
+    end
+end
+
+--- Returns the human-readable phase label shown in the player roll panel.
+-- Difficulty is intentionally omitted from all pre-resolution labels so the
+-- player cannot see it before POST_ROLL (the ST may tell them verbally if needed).
+-- @param active table|nil  Active roll record
+-- @param color string      Player seat color (for personalizing the waiting message)
+-- @return string
+local function phaseLabel(active, color)
+    if active == nil then return "" end
+    local phase = active.phase
+
+    if phase == C.RollPhase.SETUP then
+        return "Awaiting Storyteller..."
+    elseif phase == C.RollPhase.PRE_ROLL then
+        -- Pool assembly guidance only. Do not reveal whether the ST has set difficulty yet;
+        -- difficulty stays hidden from this panel until POST_ROLL (see rollPanel_diff_*).
+        local pool       = active.pool or {}
+        local totalPool  = (pool.normal or 0) + (pool.hunger or 0)
+        local noTakeHalf = C.RollTypesNoTakeHalf[active.rollType]
+
+        if totalPool == 0 then
+            return "Ready — Assemble Your Dice Pool"
+        elseif noTakeHalf then
+            return "Continue assembling, then Roll"
+        else
+            return "Continue assembling, then Roll or Take Half"
+        end
+    elseif phase == C.RollPhase.ROLLING then
+        -- After a Willpower spend the phase reverts to ROLLING so the player panel stays
+        -- visible with a contextual instruction. Once the rerolled dice settle the debounce
+        -- fires recalculate(), which transitions back to POST_ROLL and hides the panel.
+        if active.willpower ~= nil and active.willpower.spent then
+            return "Reroll up to 3 normal dice — pick them up and throw"
+        end
+        return "ROLLING — pick up your dice!"
+    elseif phase == C.RollPhase.POST_ROLL then
+        if active.result ~= nil then
+            return "Result ready — confirm when done"
+        end
+        return "Dice read — awaiting difficulty..."
+    elseif phase == C.RollPhase.RESOLVED then
+        return "Roll complete."
+    end
+    return phase or ""
+end
+
+--- Returns the display string for difficulty, or "—" if not set.
+-- @param difficulty number|nil
+-- @return string
+local function difficultyStr(difficulty)
+    if difficulty == nil then return "—" end
+    return tostring(difficulty)
+end
+
+--- Returns the appropriate result label for a roll, accounting for special roll types.
+-- Rouse and Remorse rolls use narrative labels instead of the generic class names.
+-- @param rollType string|nil  C.RollType value (may be nil or empty)
+-- @param result table|nil     Classified result record
+-- @return string  Display label (empty string if result is nil)
+local function narrativeLabel(rollType, result)
+    if result == nil then return "" end
+    local rc = result.resultClass
+
+    -- "Passing" classes (any result where successes >= difficulty)
+    local passed = rc == C.ResultClass.WIN
+        or rc == C.ResultClass.CRITICAL_WIN
+        or rc == C.ResultClass.MESSY_CRITICAL
+
+    if rollType == C.RollType.ROUSE or rollType == C.RollType.ROUSE_OBLIVION then
+        return passed and "Success" or "Hunger Roused"
+    elseif rollType == C.RollType.REMORSE then
+        return passed and "Success: Stains Cleared" or "Humanity Degenerates"
+    end
+
+    return C.ResultClassLabel[rc] or rc or "?"
+end
+
+--- Returns the result label and successes display string, or empty strings if no result.
+-- @param rollType string|nil  C.RollType value (used for narrative label overrides)
+-- @param result table|nil     Classified result record
+-- @return string resultLabel, string successesStr, string marginStr
+local function resultDisplayStrings(rollType, result)
+    if result == nil then
+        return "", "", ""
+    end
+    local label   = narrativeLabel(rollType, result)
+    local succStr = string.format("%d success%s",
+        result.successes,
+        result.successes == 1 and "" or "es")
+    local margStr = result.margin ~= nil
+        and string.format("Margin: %+d", result.margin)
+        or ""
+    return label, succStr, margStr
+end
+
+-- ============================================================================
+-- PUBLIC API — PLAYER ROLL PANEL
+-- ============================================================================
+
+--- Refreshes a player's roll panel to match their current rollData.active.
+-- Shows the panel when a roll is active; hides it otherwise.
+-- Updates phase label, pool display, difficulty, dice display, result, and button visibility.
+--
+-- @param color string Player seat color (e.g. "Red", "Brown")
+-- @usage RUI.refreshPlayerRollPanel("Red")
+function RUI.refreshPlayerRollPanel(color)
+    U.Val("RUI.refreshPlayerRollPanel()", {color = color},
+        U.Type(color) == "string", "color must be a string")
+
+    local pid = S.getPlayerID(color)
+    local active = nil
+    if pid ~= nil then
+        active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    end
+
+    local panelId = string.format("rollPanel_%s", color)
+
+    if active == nil then
+        -- No active roll: hide the panel entirely
+        uiSetActive(panelId, false)
+        return
+    end
+
+    -- For ST-initiated rolls the player panel is suppressed during SETUP — the player
+    -- has not been informed of the roll yet. Once the ST opens it (PRE_ROLL), the panel
+    -- appears normally. Player-initiated rolls show the panel immediately in SETUP so
+    -- the player can see "Awaiting Storyteller..." feedback.
+    local showInSetup = active.initiator == "player"
+    if active.phase == C.RollPhase.SETUP and not showInSetup then
+        uiSetActive(panelId, false)
+        return
+    end
+
+    -- In POST_ROLL, only show the player panel when there is a decision to make.
+    -- The only player decision at this stage is whether to spend Willpower.
+    -- When Willpower is not available (roll type forbids it, or it was already spent),
+    -- the panel hides and the ST confirms via the dashboard CONFIRM button instead.
+    -- This avoids asking the player to click Confirm when they have no meaningful choice.
+    if active.phase == C.RollPhase.POST_ROLL then
+        local wpAvailable = active.willpower ~= nil and active.willpower.available == true
+        if not wpAvailable then
+            uiSetActive(panelId, false)
+            return
+        end
+    end
+
+    -- Panel is active: show it and update all fields
+    uiSetActive(panelId, true)
+
+    -- Phase label
+    uiSetValue(string.format("rollPanel_phase_%s", color), phaseLabel(active, color))
+
+    -- Roll type label
+    local rollLabel = C.RollTypeLabel[active.rollType] or active.rollType or ""
+    if active.label and active.label ~= "" then
+        rollLabel = string.format("%s: %s", rollLabel, active.label)
+    end
+    uiSetValue(string.format("rollPanel_type_%s", color), rollLabel)
+
+    -- Pool display: two separate elements — white diamonds for normal dice, red for hunger.
+    local normalCount = (active.pool and active.pool.normal) or 0
+    local hungerCount = (active.pool and active.pool.hunger) or 0
+    uiSetValue(string.format("rollPanel_pool_normal_%s", color), diamonds(normalCount))
+    uiSetValue(string.format("rollPanel_pool_hunger_%s", color), diamonds(hungerCount))
+
+    -- Difficulty display: hidden until POST_ROLL so the player cannot see it before
+    -- deciding whether to roll or Take Half. The ST communicates it verbally if needed.
+    -- Rouse and Remorse have an implicit difficulty of 1 that is irrelevant to display.
+    local hidesDifficulty = active.rollType == C.RollType.SIMPLE_CHECK
+        or active.rollType == C.RollType.ROUSE
+        or active.rollType == C.RollType.ROUSE_OBLIVION
+        or active.rollType == C.RollType.REMORSE
+    local showDifficulty = (not hidesDifficulty) and (active.phase == C.RollPhase.POST_ROLL)
+    uiSetValue(string.format("rollPanel_diff_%s", color),
+        showDifficulty
+            and string.format("Difficulty: %s", difficultyStr(active.difficulty))
+            or (hidesDifficulty and "" or "Difficulty: —"))
+
+    -- Dice display: update the pre-defined image slots from the sorted face list cached by
+    -- RC.recalculate(). Slots beyond the rolled count are hidden. Take Half has no diceFaces
+    -- (nil), so all slots clear, matching the expectation that no dice were physically rolled.
+    refreshDiceImages(
+        string.format("rollPanel_die_%%d_%s", color),
+        active.diceFaces)
+
+    -- Result display (narrative labels for Rouse and Remorse override generic class names)
+    local resultLabel, succStr, margStr = resultDisplayStrings(active.rollType, active.result)
+    uiSetValue(string.format("rollPanel_result_%s", color), resultLabel)
+    uiSetValue(string.format("rollPanel_successes_%s", color), succStr)
+    uiSetValue(string.format("rollPanel_margin_%s", color), margStr)
+
+    -- Button visibility and interactable state
+    local isPreRoll  = active.phase == C.RollPhase.PRE_ROLL
+    local isRolling  = active.phase == C.RollPhase.ROLLING
+    local isPostRoll = active.phase == C.RollPhase.POST_ROLL
+    local totalPool  = normalCount + hungerCount
+    local hasPool    = totalPool > 0
+    local canHalf    = isPreRoll
+        and hasPool
+        and active.difficulty ~= nil
+        and C.RollTypesNoTakeHalf[active.rollType] ~= true
+        and RO.getForActive(active, RO.ROLL_TAKE_HALF)
+    -- Recalculate is shown in ROLLING (manual override) and POST_ROLL (corrections/WP reroll).
+    -- Hidden for Take Half (no physical dice to read).
+    local canRecalc  = (isRolling or isPostRoll) and not active.tookHalf
+
+    -- ROLL button: shown in PRE_ROLL, but greyed (non-interactable) if pool is zero.
+    -- Pool of zero means no dice were spawned and no default pool is set — block the roll.
+    uiSetActive(string.format("rollPanel_btnRoll_%s", color), isPreRoll)
+    uiSetInteractable(string.format("rollPanel_btnRoll_%s", color), hasPool)
+
+    -- TAKE HALF button: greyed out when pool is zero (no dice to halve).
+    uiSetActive(string.format("rollPanel_btnHalf_%s", color), canHalf)
+
+    local wpAvailable = isPostRoll
+        and active.willpower ~= nil
+        and active.willpower.available == true
+    uiSetActive(string.format("rollPanel_btnWP_%s",      color), wpAvailable)
+    uiSetActive(string.format("rollPanel_btnRecalc_%s",  color), canRecalc)
+    -- CONFIRM is only shown alongside the WP decision (panel is hidden in POST_ROLL
+    -- without WP, so the ST confirms via the dashboard CONFIRM button instead).
+    uiSetActive(string.format("rollPanel_btnConfirm_%s", color), wpAvailable)
+    -- Cancel is always visible when a roll is active
+    uiSetActive(string.format("rollPanel_btnCancel_%s",  color), true)
+end
+
+-- ============================================================================
+-- PUBLIC API — ST ROLL DASHBOARD
+-- ============================================================================
+
+--- Refreshes the ST Roll Dashboard to reflect the current state of all active player rolls.
+-- Shows/hides per-player rows based on whether each player has an active roll.
+-- Updates roll type, phase, pool, and difficulty for each row.
+--
+-- @usage RUI.refreshSTDashboard()
+function RUI.refreshSTDashboard()
+    local hasAnyActive = false
+
+    for _, color in ipairs(C.PlayerColors) do
+        local pid    = S.getPlayerID(color)
+        local active = nil
+        if pid ~= nil then
+            active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+        end
+
+        local rowId = string.format("rollDash_row_%s", color)
+        if active == nil then
+            uiSetActive(rowId, false)
+            -- Clear the difficulty input so it shows blank on the next roll.
+            -- Must use setAttribute (not setValue) — TTS drops setValue calls on
+            -- inactive elements, leaving the stale value visible on the next show.
+            uiSetInputField(string.format("rollDash_difficulty_%s", color), "")
+        else
+            hasAnyActive = true
+            uiSetActive(rowId, true)
+
+            -- Character name label (charName preferred; falls back to playerName, then color)
+            uiSetValue(string.format("rollDash_name_%s", color), characterName(pid, color))
+
+            -- Roll type
+            uiSetValue(string.format("rollDash_type_%s",  color),
+                C.RollTypeLabel[active.rollType] or active.rollType or "")
+
+            -- Phase
+            uiSetValue(string.format("rollDash_phase_%s", color), active.phase or "")
+
+            -- Pool
+            uiSetValue(string.format("rollDash_pool_%s",  color), formatPoolCompact(active.pool))
+
+            -- Difficulty: shown in input field for ST to set; blank when not yet set.
+            -- Use uiSetInputField (setAttribute) to ensure the value updates reliably.
+            uiSetInputField(string.format("rollDash_difficulty_%s", color),
+                active.difficulty ~= nil and tostring(active.difficulty) or "")
+
+            -- Action button label changes by phase.
+            -- UI.setValue does not update Button text in TTS; setAttribute must be used.
+            local btnLabel = "OPEN"
+            if active.phase == C.RollPhase.PRE_ROLL
+                or active.phase == C.RollPhase.ROLLING then
+                btnLabel = "OVERRIDE"
+            elseif active.phase == C.RollPhase.POST_ROLL then
+                btnLabel = "CONFIRM"
+            end
+            UI.setAttribute(string.format("rollDash_btn_%s", color), "text", btnLabel)
+        end
+    end
+
+    -- Show the dashboard only when at least one roll is active; hide it otherwise
+    -- so it doesn't render as a permanent blank panel when idle.
+    uiSetActive("rollDash_ST", hasAnyActive)
+end
+
+-- ============================================================================
+-- PUBLIC API — RESULT BROADCAST PANEL
+-- ============================================================================
+
+--- Shows the Roll Result Broadcast Panel with a resolved result.
+-- The panel is visible to all players (no visibility filter).
+-- Auto-hides after a timeout unless explicitly dismissed.
+--
+-- @param color string      Roller's seat color
+-- @param result table|nil  Resolved result record (may be nil for Take Half with no difficulty)
+-- @param label string|nil  Optional roll label
+-- @usage RUI.showResultBroadcast("Red", result, "Stealth vs Guard")
+function RUI.showResultBroadcast(color, result, label)
+    U.Val("RUI.showResultBroadcast()", {color = color},
+        U.Type(color) == "string", "color must be a string")
+
+    -- Character name from state (charName preferred; falls back to playerName, then color)
+    local pid = S.getPlayerID(color)
+    local rollerName = characterName(pid, color)
+
+    -- Read roll metadata from the most recent history entry.
+    -- active is already nil by the time this fires (confirmRoll clears it first),
+    -- so history is the only reliable source for rollType, diceDisplay, and diceFaces.
+    local rollTypeKey = ""
+    local diceFaces   = nil
+    if pid ~= nil then
+        local history   = S.getStateVal("playerData", pid, "hud", "rollData", "history") or {}
+        local lastEntry = history[#history]
+        if lastEntry ~= nil then
+            rollTypeKey = U.Type(lastEntry.rollType) == "string" and lastEntry.rollType or ""
+            diceFaces   = U.Type(lastEntry.diceFaces) == "table"  and lastEntry.diceFaces or nil
+        end
+    end
+
+    -- Header line: "<Name> — <Roll Type Label>" (or with sub-label if provided)
+    local rollTypeLabel = C.RollTypeLabel[rollTypeKey] or ""
+    local headerStr = label and label ~= ""
+        and string.format("%s — %s: %s", rollerName, rollTypeLabel, label)
+        or string.format("%s — %s", rollerName, rollTypeLabel)
+
+    uiSetValue("rollResult_name", headerStr)
+
+    if result ~= nil then
+        -- Die image slots: show sorted face images from the history entry.
+        refreshDiceImages("rollResult_die_%d", diceFaces)
+
+        -- Narrative label: Rouse/Remorse override the generic class name
+        uiSetValue("rollResult_class", narrativeLabel(rollTypeKey, result))
+
+        local isRouseBroadcast = rollTypeKey == C.RollType.ROUSE
+            or rollTypeKey == C.RollType.ROUSE_OBLIVION
+        if isRouseBroadcast then
+            -- Dice + "Success" / "Hunger Roused" only; no success count or margin for Rouse checks
+            uiSetActive("rollResult_statsRow", false)
+            uiSetValue("rollResult_successes", "")
+            uiSetValue("rollResult_margin", "")
+        else
+            uiSetActive("rollResult_statsRow", true)
+            uiSetValue("rollResult_successes",
+                string.format("%d success%s", result.successes,
+                    result.successes == 1 and "" or "es"))
+            if result.margin ~= nil then
+                uiSetValue("rollResult_margin", string.format("Margin: %+d", result.margin))
+            else
+                uiSetValue("rollResult_margin", "")
+            end
+        end
+    else
+        -- No classified result (difficulty was never set); clear all image slots.
+        refreshDiceImages("rollResult_die_%d", nil)
+        uiSetValue("rollResult_class",     "ROLL COMPLETE")
+        uiSetActive("rollResult_statsRow", false)
+        uiSetValue("rollResult_successes", "")
+        uiSetValue("rollResult_margin",    "")
+    end
+
+    uiSetActive("rollResult_panel", true)
+
+    -- Auto-hide after 12 seconds
+    Wait.time(function()
+        uiSetActive("rollResult_panel", false)
+    end, 12)
+end
+
+--- Immediately hides the Roll Result Broadcast Panel.
+-- @usage RUI.hideResultBroadcast()
+function RUI.hideResultBroadcast()
+    uiSetActive("rollResult_panel", false)
+end
+
+--- Restores the last result from a player's history to the broadcast panel.
+-- Intended for use after a game load to restore the most recently seen result.
+-- @param color string Player seat color
+-- @usage RUI.restoreLastResult("Red")
+function RUI.restoreLastResult(color)
+    U.Val("RUI.restoreLastResult()", {color = color},
+        U.Type(color) == "string", "color must be a string")
+
+    local pid = S.getPlayerID(color)
+    if pid == nil then return end
+
+    local history = S.getStateVal("playerData", pid, "hud", "rollData", "history") or {}
+    if #history == 0 then return end
+
+    local lastEntry = history[#history]
+    if lastEntry ~= nil then
+        RUI.showResultBroadcast(color, lastEntry.result, lastEntry.label)
+    end
+end
+
+-- ============================================================================
+-- PUBLIC API — ST ROLL OPTIONS MODAL
+-- ============================================================================
+
+--- Opens the roll options modal for the given seat color (active roll required).
+-- @param color string
+-- @usage RUI.openRollOptionsModal("Red")
+function RUI.openRollOptionsModal(color)
+    U.Val("RUI.openRollOptionsModal()", {color = color},
+        U.Type(color) == "string", "color must be a string")
+
+    local pid = S.getPlayerID(color)
+    if pid == nil then return end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil then return end
+
+    rollOptsTargetColor = color
+
+    uiToggleSet("rollOpts_perm_autoRouse",   RO.getPermanent(RO.PERM_AUTO_ROUSE))
+    uiToggleSet("rollOpts_perm_autoWp",      RO.getPermanent(RO.PERM_AUTO_WP))
+    uiToggleSet("rollOpts_perm_autoRemorse", RO.getPermanent(RO.PERM_AUTO_REMORSE))
+    uiToggleSet("rollOpts_perm_autoHunger",  RO.getPermanent(RO.PERM_AUTO_HUNGER))
+
+    local ro = active.rollOptions or RO.defaultsForRollType(active.rollType)
+    uiToggleSet("rollOpts_roll_takeHalf",    ro[RO.ROLL_TAKE_HALF] == true)
+    uiToggleSet("rollOpts_roll_wpReroll",    ro[RO.ROLL_WP_REROLL] == true)
+    uiToggleSet("rollOpts_roll_hungerDice",  ro[RO.ROLL_HUNGER_DICE] == true)
+    uiToggleSet("rollOpts_roll_bestialNull", ro[RO.ROLL_BESTIAL_NULL] == true)
+    uiToggleSet("rollOpts_roll_crits",       ro[RO.ROLL_CRITS] ~= false)
+
+    local rt = active.rollType
+    uiSetInteractable("rollOpts_roll_takeHalf",    not RO.isTakeHalfLocked(rt))
+    uiSetInteractable("rollOpts_roll_hungerDice",  not RO.isHungerDiceLocked(rt))
+    uiSetActive("rollOpts_row_bestialNull", RO.isBestialNullVisible(rt))
+
+    uiSetActive("rollOpts_modal", true)
+end
+
+--- Closes the modal without saving (Cancel).
+-- @usage RUI.closeRollOptionsModal()
+function RUI.closeRollOptionsModal()
+    rollOptsTargetColor = nil
+    uiSetActive("rollOpts_modal", false)
+end
+
+--- Reads Toggle states and applies permanent + per-roll options; closes the modal.
+-- @param rcModule table  core.roll_controller module (passed from global_script to avoid require cycles)
+-- @usage RUI.applyRollOptionsModal(RC)
+function RUI.applyRollOptionsModal(rcModule)
+    if rollOptsTargetColor == nil then
+        RUI.closeRollOptionsModal()
+        return
+    end
+    if type(rcModule) ~= "table" or type(rcModule.setRollOptions) ~= "function" then
+        RUI.closeRollOptionsModal()
+        return
+    end
+    local color = rollOptsTargetColor
+
+    RO.setPermanentAll({
+        [RO.PERM_AUTO_ROUSE]   = uiToggleGet("rollOpts_perm_autoRouse"),
+        [RO.PERM_AUTO_WP]      = uiToggleGet("rollOpts_perm_autoWp"),
+        [RO.PERM_AUTO_REMORSE] = uiToggleGet("rollOpts_perm_autoRemorse"),
+        [RO.PERM_AUTO_HUNGER]  = uiToggleGet("rollOpts_perm_autoHunger"),
+    })
+
+    local pidAct    = S.getPlayerID(color)
+    local activeRow = pidAct and S.getStateVal("playerData", pidAct, "hud", "rollData", "active")
+    local rt        = activeRow and activeRow.rollType or nil
+
+    local rollOptsApply = {
+        [RO.ROLL_TAKE_HALF]   = uiToggleGet("rollOpts_roll_takeHalf"),
+        [RO.ROLL_WP_REROLL]   = uiToggleGet("rollOpts_roll_wpReroll"),
+        [RO.ROLL_HUNGER_DICE] = uiToggleGet("rollOpts_roll_hungerDice"),
+        [RO.ROLL_CRITS]       = uiToggleGet("rollOpts_roll_crits"),
+    }
+    if rt ~= nil and RO.isBestialNullVisible(rt) then
+        rollOptsApply[RO.ROLL_BESTIAL_NULL] = uiToggleGet("rollOpts_roll_bestialNull")
+    else
+        rollOptsApply[RO.ROLL_BESTIAL_NULL] = false
+    end
+
+    rcModule.setRollOptions(color, rollOptsApply)
+
+    RUI.closeRollOptionsModal()
+    RUI.refreshAll()
+end
+
+-- ============================================================================
+-- PUBLIC API — BULK REFRESH
+-- ============================================================================
+
+--- Refreshes all roll UI surfaces (all player panels + ST dashboard).
+-- Called on game load and after any reset.
+-- @usage RUI.refreshAll()
+function RUI.refreshAll()
+    for _, color in ipairs(C.PlayerColors) do
+        RUI.refreshPlayerRollPanel(color)
+    end
+    RUI.refreshSTDashboard()
+end
+
+return RUI

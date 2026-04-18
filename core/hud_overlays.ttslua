@@ -15,7 +15,8 @@ local S = require("core.state")
 --- elementId -> last visibility we applied (incremental UI.show / UI.hide)
 local lastVisible = {}
 
-local HUNGER_LEVELS = { 1, 2, 3, 4, 5 }
+--- Tier images overlay_hunger_0 .. overlay_hunger_5 (mutually exclusive).
+local HUNGER_LEVELS = { 0, 1, 2, 3, 4, 5 }
 
 --- @param seatColor string
 --- @return string[]
@@ -57,7 +58,7 @@ local function computeDesiredVisibility(playerID, seatColor)
     end
   end
 
-  -- Hunger overlays: exactly one level 1..5, or none at 0 (stat-driven; not conditions)
+  -- Hunger overlays: exactly one tier 0..5 (stat-driven; not conditions)
   for _, n in ipairs(HUNGER_LEVELS) do
     want["overlay_hunger_" .. n .. "_" .. seatColor] = nil
   end
@@ -68,12 +69,67 @@ local function computeDesiredVisibility(playerID, seatColor)
     else
       hg = tonumber(S.getPlayerVal(seatColor, "hunger")) or 0
     end
-    if hg >= 1 and hg <= 5 then
-      want["overlay_hunger_" .. hg .. "_" .. seatColor] = true
+    if hg < 0 then
+      hg = 0
     end
+    if hg > 5 then
+      hg = 5
+    end
+    want["overlay_hunger_" .. hg .. "_" .. seatColor] = true
   end
 
   return want
+end
+
+--- Hunger uses six mutually exclusive Image elements (overlay_hunger_0 .. overlay_hunger_5).
+--- The incremental path can skip UI.hide when lastVisible matches desired state but TTS is still
+--- showing a layer (animation/cache desync), so two levels can overlap. This path always issues
+--- UI.hide/show for all six ids — no cache short-circuit.
+--- @param seatColor string
+--- @param level number 0..5 = show only that tier
+local function applyHungerOverlaysExclusive(seatColor, level)
+  if type(seatColor) ~= "string" then
+    return
+  end
+  local lv = tonumber(level)
+  if lv == nil then
+    lv = 0
+  end
+  if lv < 0 then
+    lv = 0
+  end
+  if lv > 5 then
+    lv = 5
+  end
+  for _, n in ipairs(HUNGER_LEVELS) do
+    local eid = "overlay_hunger_" .. n .. "_" .. seatColor
+    local shouldShow = n == lv
+    local applyOk, _applyErr = pcall(function()
+      if shouldShow then
+        UI.show(eid)
+      else
+        UI.hide(eid)
+      end
+    end)
+    if applyOk then
+      lastVisible[eid] = shouldShow
+    end
+  end
+end
+
+--- @param want table<string, boolean>
+--- @param seatColor string
+--- @return number 0..5 — which hunger tier overlay should be visible
+local function desiredHungerLevelFromWant(want, seatColor)
+  if type(want) ~= "table" or type(seatColor) ~= "string" then
+    return 0
+  end
+  for _, n in ipairs(HUNGER_LEVELS) do
+    if want["overlay_hunger_" .. n .. "_" .. seatColor] == true then
+      return n
+    end
+  end
+  return 0
 end
 
 --- @param elementId string
@@ -103,6 +159,18 @@ local function applyOverlayVisibility(elementId, shouldShow)
   end
 end
 
+--- Clears incremental visibility memory for one seat so the next syncAll() reapplies UI.show/hide.
+--- Use after automated stat changes (e.g. Rouse) when overlays can desync from lastVisible.
+--- @param seatColor string e.g. "Brown"
+function HO.invalidateSeatCache(seatColor)
+  if type(seatColor) ~= "string" then
+    return
+  end
+  for _, eid in ipairs(allManagedOverlayIdsForSeat(seatColor)) do
+    lastVisible[eid] = nil
+  end
+end
+
 --- Refresh overlay visibility for every player color row.
 function HO.syncAll()
   for _, seatColor in ipairs(C.PlayerColors) do
@@ -115,18 +183,23 @@ function HO.syncAll()
     end
     local want = computeDesiredVisibility(playerID, seatColor)
     local ids = allManagedOverlayIdsForSeat(seatColor)
-    -- Hides first, then shows: avoids overlapping hunger images if an old level is still
-    -- animating when the next level is shown.
+    -- Non-hunger overlays: incremental show/hide (conditions, frenzy, blindfold, etc.).
     for _, eid in ipairs(ids) do
-      if want[eid] ~= true then
-        applyOverlayVisibility(eid, false)
+      if not string.match(eid, "^overlay_hunger_%d+_") then
+        if want[eid] ~= true then
+          applyOverlayVisibility(eid, false)
+        end
       end
     end
     for _, eid in ipairs(ids) do
-      if want[eid] == true then
-        applyOverlayVisibility(eid, true)
+      if not string.match(eid, "^overlay_hunger_%d+_") then
+        if want[eid] == true then
+          applyOverlayVisibility(eid, true)
+        end
       end
     end
+    -- Hunger: always drive all six tier layers explicitly so only one can be visible.
+    applyHungerOverlaysExclusive(seatColor, desiredHungerLevelFromWant(want, seatColor))
   end
 
   pcall(function()
