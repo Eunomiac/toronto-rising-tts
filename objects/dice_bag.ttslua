@@ -27,14 +27,16 @@
 
 -- How far from the center of the bag dice are spawned, in world units
 RADIUS   = 8
+-- Hunger bags use a shorter radius so their arc does not overlap the normal bag's arc on the same seat.
+HUNGER_RADIUS_SCALE = 0.75
 -- Width of the arc the dice spread across, in degrees
 ARC      = 90
 -- Where the arc is centered around the bag (0 = toward near edge, 180 = away)
 ROTATION = 180
 -- Height above the bag that locked dice hover
-HEIGHT   = 5
+HEIGHT   = 1.5
 -- Uniform scale applied to each spawned die (1 = normal size)
-SCALE    = 1.7
+SCALE    = 2.75
 
 -- ============================================================================
 -- MODULE STATE
@@ -273,10 +275,14 @@ function getLocalPointOnArc(i, points)
     i = i - 0.5
     local angle  = ARC / points
     local offset = -ARC / 2 + ROTATION
+    local radius = RADIUS
+    if getDieType() == "hunger" then
+        radius = radius * HUNGER_RADIUS_SCALE
+    end
     return {
-        x = math.sin(math.rad(angle * i + offset)) * RADIUS,
+        x = math.sin(math.rad(angle * i + offset)) * radius,
         y = HEIGHT,
-        z = math.cos(math.rad(angle * i + offset)) * RADIUS,
+        z = math.cos(math.rad(angle * i + offset)) * radius,
     }
 end
 

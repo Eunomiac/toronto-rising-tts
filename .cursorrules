@@ -445,6 +445,12 @@ startLuaCoroutine(Global, "CoroutineName")
 5. Have I updated documentation? (Update relevant docs)
 6. Have I updated Linear issues to reflect any changes?
 7. Should I commit this? (Yes - commit after logical units of work)
+8. For long-running systems (dice, layout, roll pipeline, lighting) or work that continues past sessions, should I use **session continuity** (Compound Engineering) before reinventing decisions?
+9. For multi-file or high-risk changes, should I use a **short plan** and **structured pre-merge review** when proportionate?
+
+## Compound Engineering (Cursor plugin)
+
+Agents must follow **`.cursor/rules/toronto-rising-compound-engineering.mdc`**. Proactively use Compound Engineering **skills** (session history, planning, review, git/PR helpers, learnings docs) when they reduce rework or improve quality. **Do not require the user to memorize slash-command syntax** (`/ce:…`); match user intent in natural language and apply the same workflows.
 
 ---
 

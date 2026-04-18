@@ -1,0 +1,118 @@
+--[[
+  Animates per-seat dice drawer props between `on` / `off` poses in C.ObjectPositions.
+  Objects: tag `DiceDrawer` + `<Color>Object` (e.g. BrownObject). Keys: CSHEET_DICE_DRAWER_<COLOR>.
+]]
+---@diagnostic disable: undefined-global
+
+local C = require("lib.constants")
+
+local DD = {}
+
+--- @param color string Seat color e.g. "Brown"
+--- @return string|nil
+local function objectPositionsKey(color)
+  if type(color) ~= "string" then
+    return nil
+  end
+  return "CSHEET_DICE_DRAWER_" .. string.upper(color)
+end
+
+--- @param color string
+--- @param wantOn boolean
+--- @return table|nil
+local function getPose(color, wantOn)
+  local key = objectPositionsKey(color)
+  if key == nil then
+    return nil
+  end
+  local entry = C.ObjectPositions[key]
+  if type(entry) ~= "table" then
+    return nil
+  end
+  return wantOn and entry.on or entry.off
+end
+
+--- @param color string
+--- @return userdata|nil
+local function findDiceDrawerObject(color)
+  if type(color) ~= "string" then
+    return nil
+  end
+  local colorTag = color .. "Object"
+  local objs = getObjectsWithTag("DiceDrawer")
+  if type(objs) ~= "table" then
+    return nil
+  end
+  for _, obj in ipairs(objs) do
+    if obj ~= nil then
+      local ok, tags = pcall(function()
+        return obj.getTags()
+      end)
+      if ok and type(tags) == "table" then
+        for _, t in ipairs(tags) do
+          if t == colorTag then
+            return obj
+          end
+        end
+      end
+    end
+  end
+  return nil
+end
+
+--- @param obj userdata
+--- @param pose table
+local function applyPose(obj, pose)
+  if type(pose) ~= "table" then
+    return
+  end
+  local pos = pose.position
+  local scl = pose.scale
+  if pos ~= nil then
+    pcall(function()
+      obj.setPositionSmooth(pos, false, false)
+    end)
+  end
+  if scl ~= nil then
+    local smoothOk = pcall(function()
+      obj.setScaleSmooth(scl, false, false)
+    end)
+    if not smoothOk then
+      pcall(function()
+        obj.setScale(scl)
+      end)
+    end
+  end
+end
+
+--- Move drawer to the "on" pose (first bag spawn, Roll release, or WP reroll path).
+--- Not tied to RC.openRoll — opens when dice actually spawn or when Roll is pressed.
+--- @param color string Seat color
+function DD.openForRoll(color)
+  local pose = getPose(color, true)
+  if pose == nil then
+    return
+  end
+  local obj = findDiceDrawerObject(color)
+  if obj == nil then
+    return
+  end
+  applyPose(obj, pose)
+end
+
+--- Move drawer to the "off" pose when staged dice are destroyed (cancel / take half /
+--- or after result broadcast + cleanup). Not on resolve alone — keep open until then.
+--- @param color string Seat color
+function DD.closeAfterRoll(color)
+  local pose = getPose(color, false)
+  if pose == nil then
+    return
+  end
+  local obj = findDiceDrawerObject(color)
+  if obj == nil then
+    return
+  end
+  applyPose(obj, pose)
+end
+
+return DD

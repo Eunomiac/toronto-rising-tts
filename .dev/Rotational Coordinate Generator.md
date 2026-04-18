@@ -131,25 +131,6 @@ R.spawnSeatObjectsFromTemplate(computed, sourceObjects)
 
 ```lua
 
-local sourceObjects = {
-    getObjectFromGUID("b13642"), -- player hand zone is first object
-    getObjectFromGUID("cc2959"),
-    getObjectFromGUID("c81772"),
-    getObjectFromGUID("0cd76a"),
-    getObjectFromGUID("474c0d"),
-    getObjectFromGUID("41bbba"),
-    getObjectFromGUID("5d1338"),
-    getObjectFromGUID("f10182"),
-    getObjectFromGUID("357ba5"),
-    getObjectFromGUID("a3ae6c"),
-    getObjectFromGUID("6d1c15")
-}
-
-local sourceObjects = {
-    getObjectFromGUID("b13642"), -- player hand zone is first object
-    getObjectFromGUID("a3ae6c"),
-    getObjectFromGUID("6d1c15")
-}
 
 local centerPoint = { x = 0, y = 0, z = 50 }
 
@@ -168,7 +149,7 @@ local playerToPositionMap = {
 local referencePlayerColor = "Red"
 
 local computed = R.generateRotationalCoordinates(
-    sourceObjects,
+    referencePlayerColor,
     centerPoint,
     numSegments,
     angleSegmentOne,
@@ -182,7 +163,7 @@ local computed = R.generateRotationalCoordinates(
 
 R.spawnSeatObjectsFromTemplate(
     computed,
-    sourceObjects,
+    referencePlayerColor,
     {
         guidMapRelativePath = "debug_logs/seat_layout_guids.lua",
         guidMapVarName = "SEAT_LAYOUT_OBJECT_GUIDS",

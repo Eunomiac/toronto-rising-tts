@@ -403,6 +403,10 @@ C.RollTypesNoWillpower = {
 -- Allows physical dice time to come to rest without premature result calculation.
 C.DICE_SETTLE_DEBOUNCE_SECONDS = 3
 
+-- Seconds the shared roll-result broadcast panel stays visible after a resolve.
+-- Must match the delayed cleanup in global_script (dice destroy + drawer close).
+C.ROLL_RESULT_BROADCAST_SECONDS = 12
+
 -- Storyteller Color (GM role)
 -- Storyteller is always Black in VTM5E
 C.STORYTELLER_COLOR = "Black"
@@ -418,20 +422,70 @@ C.CameraAngles = {
 -- Only listed values should be changed
 C.ObjectPositions = {
   SIGNAL_FIRE = {
-    on = {position = {y=1.5}},
-    off = {position = {y=-7}}
+    on = {position = {y=7.85}},
+    off = {position = {y=-10}}
   },
   HUNGER_SMOKE = {
-    on = {position = {y = 0.2}},
-    off = {position = {y = -7}}
+    on = {position = {y = 1.87}},
+    off = {position = {y = -10}}
   },
   RING_FLARE = {
     on = {position = {y=-0.08}},
-    off = {position = {y=-7}}
+    off = {position = {y=-10}}
   },
   CSHEET_PAGE = {
     on = {position = {y = 4}},
-    off = {position = {y = -5}}
+    off = {position = {y = -10}}
+  },
+  CSHEET_DICE_DRAWER_BROWN = {
+    on = {
+      position = Vector({49.32, 2.97, -17.89}),
+      scale = Vector({23.57, 3.92, 7.68})
+    },
+    off = {
+      position = Vector({60.68, -0.72, -33.51}),
+      scale = Vector({23.57, 0.42, 7.68})
+    }
+  },
+  CSHEET_DICE_DRAWER_ORANGE = {
+    on = {
+      position = Vector({25.93, 2.97, -29.81}),
+      scale = Vector({23.57, 3.92, 7.68})
+    },
+    off = {
+      position = Vector({31.90, -0.72, -48.18}),
+      scale = Vector({23.57, 0.42, 7.68})
+    }
+  },
+  CSHEET_DICE_DRAWER_RED = {
+    on = {
+      position = Vector({0.00, 2.97, -33.91}),
+      scale = Vector({23.57, 3.92, 7.68})
+    },
+    off = {
+      position = Vector({0.00, -0.72, -53.23}),
+      scale = Vector({23.57, 0.42, 7.68})
+    }
+  },
+  CSHEET_DICE_DRAWER_PINK = {
+    on = {
+      position = Vector({-25.93, 2.97, -29.81}),
+      scale = Vector({23.57, 3.92, 7.68})
+    },
+    off = {
+      position = Vector({-31.90, -0.72, -48.18}),
+      scale = Vector({23.57, 0.42, 7.68})
+    }
+  },
+  CSHEET_DICE_DRAWER_PURPLE = {
+    on = {
+      position = Vector({-49.32, 2.97, -17.89}),
+      scale = Vector({23.57, 3.92, 7.68})
+    },
+    off = {
+      position = Vector({-60.68, -0.72, -33.51}),
+      scale = Vector({23.57, 0.42, 7.68})
+    }
   }
 }
 

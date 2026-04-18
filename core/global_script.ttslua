@@ -30,6 +30,7 @@ local HUDP = require("core.hud_player")
 local HO = require("core.hud_overlays")
 NPCS = require("core.npcs")
 PCST = require("core.pc_storyteller_panel")
+local DiceDrawer = require("lib.dice_drawer")
 
 -- Load debug module (only in development). Must be global so TTS console `lua DEBUG.foo()` works.
 DEBUG = require("core.debug")
@@ -1032,11 +1033,10 @@ end
 
 RC.onRollResolved = function(color, result, label)
     RUI.showResultBroadcast(color, result, label)
-    -- Destroy staged/rolled dice after the broadcast panel auto-hides (12 s).
-    -- This keeps dice visible on the table while the result is displayed.
+    -- Drawer stays open until the broadcast hides and dice are destroyed (see below).
     Wait.time(function()
         destroyBagDice(color)
-    end, 12)
+    end, C.ROLL_RESULT_BROADCAST_SECONDS)
 end
 
 -- ============================================================================
@@ -1105,6 +1105,24 @@ function onObjectRandomize(obj, playerColor)
     local color = colorFromTags(tags)
     if color == nil then return end
 
+    -- Clear this player's area selection when a roll-phase die is randomized (e.g. R key).
+    -- Otherwise box-selected dice stay selected and the next "R" rolls the entire pool.
+    local pid = S.getPlayerID(color)
+    if pid ~= nil then
+        local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+        if active ~= nil
+            and (active.phase == C.RollPhase.ROLLING or active.phase == C.RollPhase.POST_ROLL)
+        then
+            local clearSeat = (type(playerColor) == "string" and playerColor ~= "") and playerColor or color
+            pcall(function()
+                local p = Player[clearSeat]
+                if p ~= nil then
+                    p.clearSelectedObjects()
+                end
+            end)
+        end
+    end
+
     -- Delegate debounce reset to roll controller
     pcall(function() RC.onDieSettledSignal(color) end)
 end
@@ -1142,6 +1160,11 @@ function onObjectLeaveContainer(container, obj)
     -- Skip only if the roll is already RESOLVED (die is unrelated to any active roll).
     if active.phase == C.RollPhase.RESOLVED then return end
     pcall(function() obj.setGMNotes(active.id) end)
+
+    -- Open drawer on first bag spawn (PRE_ROLL) or auto-spawn after Roll (ROLLING), not when ST opens PRE_ROLL.
+    if active.phase == C.RollPhase.PRE_ROLL or active.phase == C.RollPhase.ROLLING then
+        pcall(function() DiceDrawer.openForRoll(color) end)
+    end
 end
 
 -- ============================================================================
@@ -1187,13 +1210,16 @@ end
 
 --- Unlocks all hovering dice for a player so they fall and roll.
 -- Called after the player clicks "ROLL" (PRE_ROLL → ROLLING).
+-- Opens the drawer if dice were already spawned earlier (no new leave-container event on this click).
 function releaseBagDice(color)
+    pcall(function() DiceDrawer.openForRoll(color) end)
     callBagFunction(color, "releaseDice")
 end
 
 --- Destroys all hovering dice for a player.
 -- Called on: cancel, Take Half, and post-resolution cleanup (after broadcast hides).
 function destroyBagDice(color)
+    pcall(function() DiceDrawer.closeAfterRoll(color) end)
     callBagFunction(color, "destroyDice")
 end
 
