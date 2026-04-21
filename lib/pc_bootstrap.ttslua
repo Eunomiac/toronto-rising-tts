@@ -64,13 +64,29 @@ function BOOT.statsFromPcsChar(pcsChar)
     xp = tonumber(pcsChar.xp) or 0,
     hunger = 0,
     disciplines = stripDisciplines(pcsChar.disciplines),
-    backgrounds = {},
-    merits = {},
-    flaws = {},
+    backgrounds = deepCloneTable(pcsChar.backgrounds or {}),
+    merits = deepCloneTable(pcsChar.merits or {}),
+    flaws = deepCloneTable(pcsChar.flaws or {}),
     bloodline = {},
     loresheet = {},
   }
   return stats
+end
+
+--- Overwrite page-3 narrative arrays from embedded PCS so saves and stale stats pick up JSON updates.
+--- @param stats table
+--- @param charKey string
+function BOOT.hydrateNarrativeTraits(stats, charKey)
+  if type(stats) ~= "table" or type(charKey) ~= "string" or charKey == "" then
+    return
+  end
+  local pcsChar = PCS.getPC(charKey)
+  if type(pcsChar) ~= "table" then
+    return
+  end
+  stats.backgrounds = deepCloneTable(pcsChar.backgrounds or {})
+  stats.merits = deepCloneTable(pcsChar.merits or {})
+  stats.flaws = deepCloneTable(pcsChar.flaws or {})
 end
 
 --- @param charKey string

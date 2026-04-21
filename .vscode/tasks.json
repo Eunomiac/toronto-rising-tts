@@ -2,9 +2,10 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build: All non-Lua tooling (TTS MCP + UI XML templates)",
+      "label": "Build: All non-Lua tooling (TTS MCP + PCS data + UI XML templates)",
       "dependsOn": [
         "Build: TTS MCP (Node)",
+        "Generate PCS data (pcs_data.ttslua from JSON)",
         "Generate UI XML from templates"
       ],
       "dependsOrder": "sequence",
@@ -22,6 +23,26 @@
       "label": "Build: TTS MCP (Node)",
       "type": "shell",
       "command": "npm run tts-mcp:build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Generate PCS data (pcs_data.ttslua from JSON)",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        ".dev/scripts/generate_pcs_data_lua.js"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -197,4 +218,3 @@
     }
   ]
 }
-

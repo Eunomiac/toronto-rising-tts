@@ -1,4 +1,8 @@
-<!-- Agent guidance: .dev/HUDs & Overlays/Player HUD Overview.md; lib/json/PCS.json (PC fields). -->
+<!-- Agent guidance: .dev/HUDs & Overlays/Player HUD Overview.md; lib/json/PCS.json (PC fields).
+     Backgrounds, merits, and flaws body content is built at runtime in lib/csheet_page3_xml.ttslua (ui/ui_csheet.ttslua → UI.setXml).
+     Seat color for `divider_flaws_<Color>` comes from the sheet nickname `CSHEET_PAGE_<n>_<COLOR>` (or equivalently the `<Color>Object` tag), not from this static file.
+     This file is a minimal shell for bundling / first paint before Lua runs; `divider_flaws_Purple` below is only a placeholder until setXml runs.
+     Runtime `UI.setXml` cannot use `<Include>` (TTS only expands those at Save & Play); dynamic page 3 inlines Defaults from lib/csheet_page3_xml.ttslua. -->
 <!-- XML Exact height is 200; 8.5x11 aspect ratio means the width is 154.5
 
 Standard dot images are 6.3x6.3 pixels.
@@ -55,248 +59,26 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
     <Panel class="spacer" color="rgba(0, 0, 0, 0)" preferredHeight="193.33" flexibleHeight="0" minHeight="193.33" />
 
     <HorizontalLayout class="box_column_container">
-      <VerticalLayout class="box_column">
-
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_text_title_bar 5_dots">
-            <Text class="box_text_title_text" text="FAME: MUSLIM COMMUNITY" />
-            <Panel class="box_text_panel_title_dotline">
-              <Image id="dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-              <Image id="dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-              <Image id="dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-              <Image id="dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-              <Image id="dot_5" image="dot_yellow" class="dot box_text_title_dot dot_5" />
-            </Panel>
-          </HorizontalLayout>
-          <VerticalLayout class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </VerticalLayout>
-        </VerticalLayout>
-
-      </VerticalLayout>
-      <VerticalLayout class="box_column">
-
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_text_title_bar 3_dots">
-            <Text class="box_text_title_text" text="CONTACT: MARIGOLD EASTMANSHIP" />
-            <Panel class="box_text_panel_title_dotline">
-              <Image id="dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-              <Image id="dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-              <Image id="dot_3" image="dot_yellow" class="dot box_text_title_dot dot_3" />
-            </Panel>
-          </HorizontalLayout>
-          <VerticalLayout class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </VerticalLayout>
-        </VerticalLayout>
-
-      </VerticalLayout>
-      <VerticalLayout class="box_column">
-
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_text_title_bar 5_dots">
-            <Text class="box_text_title_text" text="INFLUENCE: FINANCE" />
-            <Panel class="box_text_panel_title_dotline">
-              <Image id="dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-              <Image id="dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-              <Image id="dot_3" image="dot_yellow" class="dot box_text_title_dot dot_3" />
-              <Image id="dot_4" image="dot_yellow" class="dot box_text_title_dot dot_4" />
-              <Image id="dot_5" image="dot_yellow" class="dot box_text_title_dot dot_5" />
-            </Panel>
-          </HorizontalLayout>
-          <VerticalLayout class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </VerticalLayout>
-        </VerticalLayout>
-
-      </VerticalLayout>
+      <VerticalLayout class="box_column"></VerticalLayout>
+      <VerticalLayout class="box_column"></VerticalLayout>
+      <VerticalLayout class="box_column"></VerticalLayout>
     </HorizontalLayout>
 
     <Image id="divider_merits" image="divider_merits" />
 
     <HorizontalLayout class="box_column_container">
-      <VerticalLayout class="box_column">
-      </VerticalLayout>
-      <VerticalLayout class="box_column">
-
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_text_title_bar 3_dots">
-            <Text class="box_text_title_text" text="OBJECT OF POWER: UR-SHULGI'S PROMISE" />
-            <Panel class="box_text_panel_title_dotline">
-              <Image id="dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-              <Image id="dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-              <Image id="dot_3" image="dot_yellow" class="dot box_text_title_dot dot_3" />
-            </Panel>
-          </HorizontalLayout>
-          <VerticalLayout class="box_text_panel_body">
-            <Text class="box_text flavor_text" text="A black band of wrought-iron permanently affixed to Rashid's finger, causing blackened skin where it touches his flesh." />
-            <Text class="box_text" text="Once per story, after rolling for a Blood Sorcery power or Ritual, you may set one Hunger die to a 10." />
-          </VerticalLayout>
-        </VerticalLayout>
-
-      </VerticalLayout>
-      <VerticalLayout class="box_column">
-      </VerticalLayout>
+      <VerticalLayout class="box_column"></VerticalLayout>
+      <VerticalLayout class="box_column"></VerticalLayout>
+      <VerticalLayout class="box_column"></VerticalLayout>
     </HorizontalLayout>
 
     <Image id="divider_flaws" image="divider_flaws_Purple" />
 
-
     <HorizontalLayout class="box_column_container">
-      <VerticalLayout class="box_column">
-
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_text_title_bar 5_dots">
-            <Text class="box_text_title_text flaw_title" text="ARCANE CURSE: MAGIC SPARKS FIRES" />
-            <Panel class="box_text_panel_title_dotline">
-              <Image id="dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-              <Image id="dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-              <Image id="dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-              <Image id="dot_4" image="dot_red" class="dot box_text_title_dot dot_4" />
-              <Image id="dot_5" image="dot_red" class="dot box_text_title_dot dot_5" />
-            </Panel>
-          </HorizontalLayout>
-          <Panel class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </Panel>
-        </VerticalLayout>
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_text_title_bar 3_dots">
-            <Text class="box_text_title_text flaw_title" text="BURN SCARS: RING FOREARM" />
-            <Panel class="box_text_panel_title_dotline">
-              <Image id="dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-              <Image id="dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-              <Image id="dot_3" image="dot_red" class="dot box_text_title_dot dot_3" />
-            </Panel>
-          </HorizontalLayout>
-          <Panel class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </Panel>
-        </VerticalLayout>
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_text_title_bar 2_dots">
-            <Text class="box_text_title_text flaw_title" text="PREY EXCLUSION: NON-MUSLIMS" />
-            <Panel class="box_text_panel_title_dotline">
-              <Image id="dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-              <Image id="dot_2" image="dot_red" class="dot box_text_title_dot dot_2" />
-            </Panel>
-          </HorizontalLayout>
-          <Panel class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </Panel>
-        </VerticalLayout>
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_text_title_bar 1_dot">
-            <Text class="box_text_title_text flaw_title" text="KNOWLEDGE HUNGRY: THE IRON PRAXIS" />
-            <Panel class="box_text_panel_title_dotline">
-              <Image id="dot_1" image="dot_red" class="dot box_text_title_dot dot_1" />
-            </Panel>
-          </HorizontalLayout>
-          <Panel class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </Panel>
-        </VerticalLayout>
-
-      </VerticalLayout>
-
-      <VerticalLayout class="box_column">
-
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_text_title_bar 2_dots">
-            <Text class="box_text_title_text flaw_title" text="RAT IN A CAGE" />
-            <Panel class="box_text_panel_title_dotline">
-              <Image id="dot_1" image="dot_red" class="dot box_text_title_dot dot_1" />
-              <Image id="dot_2" image="dot_red" class="dot box_text_title_dot dot_2" />
-            </Panel>
-          </HorizontalLayout>
-          <Panel class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </Panel>
-        </VerticalLayout>
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_text_title_bar 1_dot">
-            <Text class="box_text_title_text flaw_title" text="CRISIS OF IDENTITY" />
-            <Panel class="box_text_panel_title_dotline">
-              <Image id="dot_1" image="dot_red" class="dot box_text_title_dot dot_1" />
-            </Panel>
-          </HorizontalLayout>
-          <Panel class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </Panel>
-        </VerticalLayout>
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_text_title_bar 1_dot">
-            <Text class="box_text_title_text flaw_title" text="CURSED OBJECT: UR-SHULGI'S PROMISE" />
-            <Panel class="box_text_panel_title_dotline">
-              <Image id="dot_1" image="dot_red" class="dot box_text_title_dot dot_1" />
-            </Panel>
-          </HorizontalLayout>
-          <Panel class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </Panel>
-        </VerticalLayout>
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_text_title_bar 1_dot">
-            <Text class="box_text_title_text flaw_title" text="RESONANCE SENSITIVITY: PHLEGMATIC" />
-            <Panel class="box_text_panel_title_dotline">
-              <Image id="dot_1" image="dot_red" class="dot box_text_title_dot dot_1" />
-            </Panel>
-          </HorizontalLayout>
-          <Panel class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </Panel>
-        </VerticalLayout>
-      </VerticalLayout>
-
-      <VerticalLayout class="box_column">
-
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_text_title_bar 2_dots">
-            <Text class="box_text_title_text flaw_title" text="DARK SECRET: THE DOOM OF DIRIYAH" />
-            <Panel class="box_text_panel_title_dotline">
-              <Image id="dot_1" image="dot_red" class="dot box_text_title_dot dot_1" />
-              <Image id="dot_2" image="dot_red" class="dot box_text_title_dot dot_2" />
-            </Panel>
-          </HorizontalLayout>
-          <Panel class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </Panel>
-        </VerticalLayout>
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_text_title_bar 1_dot">
-            <Text class="box_text_title_text flaw_title" text="VEIN-TAPPER" />
-            <Panel class="box_text_panel_title_dotline">
-              <Image id="dot_1" image="dot_red" class="dot box_text_title_dot dot_1" />
-            </Panel>
-          </HorizontalLayout>
-          <Panel class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </Panel>
-        </VerticalLayout>
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_text_title_bar 1_dot">
-            <Text class="box_text_title_text flaw_title" text="CURSE OF OBSESSION" />
-            <Panel class="box_text_panel_title_dotline">
-              <Image id="dot_1" image="dot_red" class="dot box_text_title_dot dot_1" />
-            </Panel>
-          </HorizontalLayout>
-          <Panel class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </Panel>
-        </VerticalLayout>
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_text_title_bar">
-            <Text class="box_text_title_text flaw_title" text="CURSE OF GROWING DARKNESS" />
-          </HorizontalLayout>
-          <Panel class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </Panel>
-        </VerticalLayout>
-
-      </VerticalLayout>
-
+      <VerticalLayout class="box_column"></VerticalLayout>
+      <VerticalLayout class="box_column"></VerticalLayout>
+      <VerticalLayout class="box_column"></VerticalLayout>
     </HorizontalLayout>
-
 
   </VerticalLayout>
 

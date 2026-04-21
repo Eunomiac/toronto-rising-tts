@@ -439,6 +439,7 @@ function S.validateState()
             if type(playerData.stats) ~= "table" then
                 playerData.stats = PC_BOOT.buildStatsForCharKey(staticRow.charKey)
             end
+            PC_BOOT.hydrateNarrativeTraits(playerData.stats, staticRow.charKey)
             if type(playerData.stats) == "table" and playerData.stats.hunger == nil then
                 playerData.stats.hunger = 0
             end

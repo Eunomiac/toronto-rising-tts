@@ -54,6 +54,7 @@ local CSHEET_TRACKER_DISPLAY = {
 local C = require("lib.constants")
 local G = require("lib.guids")
 local P = require("lib.pc_stats")
+local PAGE3 = require("lib.csheet_page3_xml")
 local U = require("lib.util")
 
 --- Register tracker glyphs/images with Global (separate Lua VM). Safe no-op if Global unavailable.
@@ -70,6 +71,9 @@ local pageNum = nil
 local seatColor = nil
 local playerID = nil
 
+--- Skip redundant `UI.setXml` when backgrounds/merits/flaws unchanged (per object instance).
+local lastPage3XmlFingerprint = nil
+
 --- After first successful layout, objects keep this tag so `applyCsheetLayoutFromFirstSpread` does not run on reload.
 local CSHEET_ALIGNMENT_DONE_TAG = "AlignmentDone"
 
@@ -81,6 +85,8 @@ local function sheetHasAlignmentDoneTag()
   return ok and has == true
 end
 
+--- Parse sheet object Name (nickname), e.g. `CSHEET_PAGE_3_PINK` → page 3, color `PINK`.
+--- Color is the segment after the second underscore (same info as the `<Color>Object` tag: RedObject, …).
 --- @param name string
 --- @return number|nil, string|nil
 local function parseSheetObjectName(name)
@@ -421,6 +427,46 @@ function onFrenzyClick(player, value, id)
     initiateRollByTrigger("frenzy", "Frenzy Check")
 end
 
+--- Replace page 3 markup from PCS-backed stats (`self.UI.setXml`). Cheap no-op when not page 3 or fingerprint unchanged.
+local function applyPage3DynamicXml()
+  syncSheetContextFromObjectName()
+  if pageNum ~= 3 then
+    return
+  end
+  if self.UI == nil then
+    return
+  end
+  resolvePlayer()
+  if playerID == nil or playerID == C.StorytellerID then
+    return
+  end
+  local pd = getMergedPlayerDataFromGlobal(playerID)
+  if type(pd) ~= "table" or type(pd.stats) ~= "table" then
+    return
+  end
+  local fp = PAGE3.fingerprintPage3Stats(pd.stats)
+  if fp == lastPage3XmlFingerprint then
+    return
+  end
+  -- `divider_flaws_<Color>` and layout use seat color from nickname `CSHEET_PAGE_<n>_<COLOR>` (see `parseSheetObjectName`).
+  local xml = PAGE3.buildPage3DocumentXml(pd.stats, seatColor)
+  local ok, err = pcall(function()
+    self.UI.setXml(xml)
+  end)
+  if not ok then
+    print("[ui_csheet] Page 3 UI.setXml failed: " .. tostring(err))
+    return
+  end
+  lastPage3XmlFingerprint = fp
+  Wait.frames(function()
+    local y = 0
+    pcall(function()
+      y = self.getPosition().y
+    end)
+    applyCsheetNavButtonsActiveOnObject(self, y >= 0)
+  end, 1)
+end
+
 --- Apply collected attribute tweaks to this object's UI.
 local function applyUiUpdates(updates)
   if self.UI == nil then
@@ -463,6 +509,10 @@ function refreshCharacterSheetUi()
     pcall(function()
       self.UI.setAttribute("xp_text", "text", tostring(tonumber(stats.xp) or 0))
     end)
+  end
+
+  if pageNum == 3 then
+    applyPage3DynamicXml()
   end
 end
 
