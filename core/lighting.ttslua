@@ -128,7 +128,7 @@ L.LIGHTMODES = {
       default = "STANDARD",
       OFF = {
         enabled = false,
-        position = Vector(0.00, 80.00, -35.00),
+        position = Vector(-100.00, 80.00, -35.00),
         rotation = Vector(0, 0, 0),
         range = 128,
         angle = 0,
@@ -151,7 +151,7 @@ L.LIGHTMODES = {
       default = "OFF",
       OFF = {
         enabled = false,
-        position = Vector(0.00, 80.00, -35.00),
+        position = Vector(100.00, 80.00, -35.00),
         rotation = Vector(0, 0, 0),
         range = 128,
         angle = 0,
@@ -166,6 +166,52 @@ L.LIGHTMODES = {
         angle = 140.717697,
         intensity = 4.186250,
         color = Color(0.667467, 0.799703, 0.931939)
+      }
+    },
+    districtCardLight = {
+      guid = G.GUIDS.DISTRICT_CARD_LIGHT,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+        enabled = false,
+        position = Vector(-151.28, 8.12, 27.34),
+        rotation = Vector(319.5, 158.58, 152.35),
+        range = 14,
+        angle = 180,
+        intensity = 0,
+        color = Color(0.282168, 0.335031, 0.285692)
+      },
+      STANDARD = {
+        enabled = true,
+        position = Vector(-151.28, 8.12, 27.34),
+        rotation = Vector(319.5, 158.58, 152.35),
+        range = 200,
+        angle = 180,
+        intensity = 4.5,
+        color = Color(0.282168, 0.335031, 0.285692)
+      }
+    },
+    siteCardLight = {
+      guid = G.GUIDS.SITE_CARD_LIGHT,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+        enabled = false,
+        position = Vector(151.28, 8.12, 27.34),
+        rotation = Vector(66.22, 60.03, 172.98),
+        range = 14,
+        angle = 180,
+        intensity = 0,
+        color = Color(0.282168, 0.335031, 0.285692)
+      },
+      STANDARD = {
+        enabled = true,
+        position = Vector(151.28, 8.12, 27.34),
+        rotation = Vector(66.22, 60.03, 172.98),
+        range = 200,
+        angle = 180,
+        intensity = 4.5,
+        color = Color(0.282168, 0.335031, 0.285692)
       }
     },
     -- Player lights (per-player spotlights)

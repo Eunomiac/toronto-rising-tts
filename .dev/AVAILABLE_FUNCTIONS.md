@@ -285,7 +285,29 @@
 
 ---
 
-## 5. MAIN MODULE (`core/main.ttslua`)
+## 5. SOUNDSCAPE MODULE (`core/soundscape.ttslua`)
+
+**Require:** `local Soundscape = require("core.soundscape")`
+
+### Core Functions for Soundscape
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `Soundscape.onLoad()` | Initialize soundscape state after save data loads | Called in `onLoad` |
+| `Soundscape.getState()` | Return current soundscape state | UI/debug state reads |
+| `Soundscape.getSummaryText()` | Return compact soundscape summary text | Storyteller panel summary |
+| `Soundscape.applyContext(context)` | Apply future weather/site/calendar audio context | `Soundscape.applyContext({ isIndoors = true, weather = "lightRain" })` |
+| `Soundscape.setMusicMood(moodKey)` | Set Storyteller-controlled music mood | `Soundscape.setMusicMood("intrigue")` |
+| `Soundscape.setWeatherCondition(weatherKey)` | Set weather layer | `Soundscape.setWeatherCondition("heavyRain")` |
+| `Soundscape.setLocationAudio(locationKey)` | Set site/location ambience layer | `Soundscape.setLocationAudio("sewers")` |
+| `Soundscape.setIndoors(isIndoors)` | Apply indoor/outdoor weather ducking context | `Soundscape.setIndoors(true)` |
+| `Soundscape.stopAll()` | Stop all channels with the silent loop | Emergency silence |
+| `Soundscape.inspectEmitters()` | List hidden emitters, effects, and AudioSources | Debug verification |
+| `Soundscape.testLayeredPlayback()` | Start music, weather, and location together | Live soundscape smoke test |
+
+---
+
+## 6. MAIN MODULE (`core/main.ttslua`)
 
 **Require:** `local M = require("core.main")`
 
@@ -304,7 +326,7 @@
 
 ---
 
-## 6. UI HELPERS MODULE (`lib/ui_helpers.ttslua`)
+## 7. UI HELPERS MODULE (`lib/ui_helpers.ttslua`)
 
 **Require:** `local UIHelpers = require("lib.ui_helpers")` or use `UI.*` functions directly
 
@@ -333,7 +355,7 @@
 
 ---
 
-## 7. SCENES MODULE (`core/scenes.ttslua`)
+## 8. SCENES MODULE (`core/scenes.ttslua`)
 
 **Require:** `local Scenes = require("core.scenes")`
 
@@ -348,7 +370,7 @@
 
 ---
 
-## 8. CONSTANTS MODULE (`lib/constants.ttslua`)
+## 9. CONSTANTS MODULE (`lib/constants.ttslua`)
 
 **Require:** `local C = require("lib.constants")`
 

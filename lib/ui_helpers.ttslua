@@ -157,6 +157,7 @@ end
 local STORYTELLER_PANELS = {
     lighting = { panel = "panel_lighting", toggle = "toggle_lighting" },
     scenes = { panel = "panel_scenes", toggle = "toggle_scenes" },
+    soundscape = { panel = "panel_soundscape", toggle = "toggle_soundscape" },
     pcs = { panel = "panel_pcs", toggle = "toggle_pcs" },
     phases = { panel = "panel_phases", toggle = "toggle_phases" },
     npcs = { panel = "panel_npcs", toggle = "toggle_npcs" },

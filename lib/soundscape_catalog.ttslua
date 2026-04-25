@@ -1,0 +1,167 @@
+--[[
+    Soundscape Catalog (lib/soundscape_catalog.ttslua)
+
+    Static definitions for layered, non-positional audio.
+    Runtime control lives in core/soundscape.ttslua; future weather/site/calendar systems
+    should update context there rather than playing AssetBundle effects directly.
+
+    Unity authoring expectation: every named loop in this catalog exists as a Looping
+    Effect on the soundscape AssetBundle, including the `silent` effect used to stop a channel.
+]]
+
+local Catalog = {}
+
+Catalog.SILENT_EFFECT = "silent"
+
+Catalog.CHANNELS = {
+    musicA = {
+        label = "Music A",
+        kind = "music",
+        tag = "soundscape_music_a",
+        defaultVolume = 0.0,
+    },
+    musicB = {
+        label = "Music B",
+        kind = "music",
+        tag = "soundscape_music_b",
+        defaultVolume = 0.0,
+    },
+    weather = {
+        label = "Weather",
+        kind = "weather",
+        tag = "soundscape_weather",
+        defaultVolume = 0.55,
+    },
+    location = {
+        label = "Location",
+        kind = "location",
+        tag = "soundscape_location",
+        defaultVolume = 0.65,
+    },
+}
+
+Catalog.DEFAULTS = {
+    musicMood = "general",
+    weather = "none",
+    location = "none",
+    isIndoors = false,
+    weatherDucking = {
+        outdoorMultiplier = 1.0,
+        indoorMultiplier = 0.25,
+    },
+    fadeSeconds = {
+        music = 8.0,
+        weather = 3.0,
+        location = 4.0,
+    },
+}
+
+Catalog.MUSIC_MOODS = {
+    general = {
+        label = "General",
+        volume = 0.45,
+        tracks = {
+            { key = "general_01", effect = "music_general_01", durationSeconds = 180 },
+            { key = "general_02", effect = "music_general_02", durationSeconds = 180 },
+        },
+    },
+    intrigue = {
+        label = "Intrigue",
+        volume = 0.45,
+        tracks = {
+            { key = "intrigue_01", effect = "music_intrigue_01", durationSeconds = 180 },
+            { key = "intrigue_02", effect = "music_intrigue_02", durationSeconds = 180 },
+        },
+    },
+    combat = {
+        label = "Combat",
+        volume = 0.55,
+        tracks = {
+            { key = "combat_01", effect = "music_combat_01", durationSeconds = 150 },
+            { key = "combat_02", effect = "music_combat_02", durationSeconds = 150 },
+        },
+    },
+}
+
+Catalog.WEATHER = {
+    none = {
+        label = "No Weather",
+        effect = Catalog.SILENT_EFFECT,
+        volume = 0.0,
+    },
+    lightRain = {
+        label = "Light Rain",
+        effect = "weather_light_rain",
+        volume = 0.5,
+    },
+    heavyRain = {
+        label = "Heavy Rain",
+        effect = "weather_heavy_rain",
+        volume = 0.7,
+    },
+    wind = {
+        label = "Wind",
+        effect = "weather_wind",
+        volume = 0.45,
+    },
+}
+
+Catalog.LOCATIONS = {
+    none = {
+        label = "No Location Ambience",
+        effect = Catalog.SILENT_EFFECT,
+        volume = 0.0,
+    },
+    indoorOffice = {
+        label = "Indoor Office",
+        effect = "location_indoor_office",
+        volume = 0.45,
+    },
+    sewers = {
+        label = "Sewers",
+        effect = "location_sewers",
+        volume = 0.55,
+    },
+    alleyway = {
+        label = "Alleyway",
+        effect = "location_alleyway",
+        volume = 0.5,
+    },
+    industrialExterior = {
+        label = "Industrial Exterior",
+        effect = "location_industrial_exterior",
+        volume = 0.55,
+    },
+}
+
+--- Returns a music mood definition by key.
+-- @param moodKey string
+-- @return table|nil
+function Catalog.getMusicMood(moodKey)
+    if type(moodKey) ~= "string" then
+        return nil
+    end
+    return Catalog.MUSIC_MOODS[moodKey]
+end
+
+--- Returns a weather definition by key.
+-- @param weatherKey string
+-- @return table|nil
+function Catalog.getWeather(weatherKey)
+    if type(weatherKey) ~= "string" then
+        return nil
+    end
+    return Catalog.WEATHER[weatherKey]
+end
+
+--- Returns a location ambience definition by key.
+-- @param locationKey string
+-- @return table|nil
+function Catalog.getLocation(locationKey)
+    if type(locationKey) ~= "string" then
+        return nil
+    end
+    return Catalog.LOCATIONS[locationKey]
+end
+
+return Catalog

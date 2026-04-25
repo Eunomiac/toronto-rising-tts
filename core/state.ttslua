@@ -226,6 +226,16 @@ function S.GetDefaultGameState()
             description = "",
             mood = "",
         },
+        soundscape = {
+            musicMood = "general",
+            weather = "none",
+            location = "none",
+            isIndoors = false,
+            musicEnabled = false,
+            activeMusicChannel = "musicA",
+            channels = {},
+            capabilities = {},
+        },
         npcs = {
             instances = {},
         },
@@ -392,6 +402,10 @@ function S.validateState()
     if not gameState.lights then gameState.lights = {} end
     if not gameState.zones then gameState.zones = {} end
     if not gameState.scene then gameState.scene = {} end
+    if not gameState.soundscape or type(gameState.soundscape) ~= "table" then
+        gameState.soundscape = {}
+    end
+    S.mergeDefaults(gameState.soundscape, S.GetDefaultGameState().soundscape)
 
     if not gameState.npcs or type(gameState.npcs) ~= "table" then
         gameState.npcs = { instances = {} }
@@ -728,6 +742,11 @@ local function buildSaveState()
         if gameState.scene.name then saveState.scene.name = gameState.scene.name end
         if gameState.scene.description then saveState.scene.description = gameState.scene.description end
         if gameState.scene.mood then saveState.scene.mood = gameState.scene.mood end
+    end
+
+    -- Copy soundscape data (only serializable fields)
+    if gameState.soundscape and type(gameState.soundscape) == "table" then
+        saveState.soundscape = U.clone(gameState.soundscape, true)
     end
 
     if gameState.npcs and type(gameState.npcs) == "table" and gameState.npcs.instances and type(gameState.npcs.instances) == "table" then

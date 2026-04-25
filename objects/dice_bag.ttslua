@@ -36,7 +36,7 @@ ROTATION = 180
 -- Height above the bag that locked dice hover
 HEIGHT   = 1.5
 -- Uniform scale applied to each spawned die (1 = normal size)
-SCALE    = 2.75
+SCALE    = 1.75
 
 -- ============================================================================
 -- MODULE STATE

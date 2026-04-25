@@ -2,10 +2,11 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build: All non-Lua tooling (TTS MCP + PCS data + UI XML templates)",
+      "label": "Build: All non-Lua tooling (TTS MCP + generated Lua + UI XML templates)",
       "dependsOn": [
         "Build: TTS MCP (Node)",
         "Generate PCS data (pcs_data.ttslua from JSON)",
+        "Generate CSheet defaults Lua (csheet_defaults_xml.ttslua)",
         "Generate UI XML from templates"
       ],
       "dependsOrder": "sequence",
@@ -42,6 +43,26 @@
       "command": "node",
       "args": [
         ".dev/scripts/generate_pcs_data_lua.js"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Generate CSheet defaults Lua (csheet_defaults_xml.ttslua)",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        ".dev/scripts/generate_csheet_defaults_lua.js"
       ],
       "options": {
         "cwd": "${workspaceFolder}"

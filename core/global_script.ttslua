@@ -24,6 +24,7 @@ S = require("core.state")
 M = require("core.main")
 Z = require("core.zones")
 Scenes = require("core.scenes")
+SS = require("core.soundscape")
 O = require("core.objects")
 local UIH = require("lib.ui_helpers")
 local HUDP = require("core.hud_player")
@@ -275,6 +276,10 @@ function onLoad(saved_data)
     -- Initialize scenes module (loads default or saved scene)
     Scenes.onLoad()
 
+    -- Initialize soundscape state after saved data is available. Missing audio emitters are tolerated
+    -- so the module can be bundled before the Unity AssetBundle is placed in the save.
+    SS.onLoad()
+
     -- NPC instances + `L.LIGHTMODES` registration for spawned spotlights, then single lighting pipeline
     NPCS.restoreAfterStateLoad()
     L.InitLights()
@@ -517,6 +522,11 @@ local ADMIN_LIGHT_SCENE_BUTTONS = {
 
 local ADMIN_LIGHT_SCENE_BUTTON_COLORS_INACTIVE = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
 local ADMIN_LIGHT_SCENE_BUTTON_COLORS_ACTIVE = "#B8860B|#FFD700|#FFA500|#B8860B"
+local SOUNDSCAPE_MOOD_BUTTONS = {
+    general = "soundscapeMood_general",
+    intrigue = "soundscapeMood_intrigue",
+    combat = "soundscapeMood_combat",
+}
 
 --- Sync radio-button visuals for storyteller admin lighting scene controls.
 local function syncAdminLightSceneButtons()
@@ -544,6 +554,58 @@ function HUD_selectAdminLightingScene(player, button, id)
     if success then
         UpdateUIDisplays()
     end
+end
+
+--- Sync Storyteller soundscape controls with current soundscape state.
+local function syncSoundscapeControls()
+    if SS == nil or SS.getState == nil then
+        return
+    end
+    local state = SS.getState()
+    local summary = SS.getSummaryText()
+    pcall(function()
+        UI.setValue("soundscapeSummary", summary)
+    end)
+    for moodKey, buttonId in pairs(SOUNDSCAPE_MOOD_BUTTONS) do
+        local isActive = state.musicMood == moodKey
+        pcall(function()
+            UI.setAttribute(buttonId, "colors", isActive and ADMIN_LIGHT_SCENE_BUTTON_COLORS_ACTIVE or ADMIN_LIGHT_SCENE_BUTTON_COLORS_INACTIVE)
+        end)
+    end
+end
+
+--- Storyteller soundscape panel: switch background music mood.
+-- @param player Player
+-- @param button string
+-- @param id string Button id in the form `soundscapeMood_<moodKey>`
+function HUD_soundscapeSetMusicMood(player, button, id)
+    local moodKey = string.gsub(id or "", "^soundscapeMood_", "")
+    local ok, message = SS.setMusicMood(moodKey)
+    if ok then
+        U.AlertGM("Soundscape music mood: " .. tostring(moodKey))
+    else
+        U.AlertGM("Soundscape warning: " .. tostring(message))
+    end
+    syncSoundscapeControls()
+end
+
+--- Storyteller soundscape panel: stop all layers through the silent loop.
+function HUD_soundscapeStopAll(player, button, id)
+    local ok, message = SS.stopAll()
+    if ok then
+        U.AlertGM("Soundscape stopped.")
+    else
+        U.AlertGM("Soundscape warning: " .. tostring(message))
+    end
+    syncSoundscapeControls()
+end
+
+--- Storyteller soundscape panel: inspect hidden emitters and print a JSON summary.
+function HUD_soundscapeInspect(player, button, id)
+    local rows = SS.inspectEmitters()
+    print(JSON.encode_pretty(rows))
+    U.AlertGM("Soundscape emitter inspection printed to console.")
+    syncSoundscapeControls()
 end
 
 --- Advance game phase
@@ -911,6 +973,7 @@ function UpdateUIDisplays()
     end
 
     syncAdminLightSceneButtons()
+    syncSoundscapeControls()
 
     -- Update player stat displays
     M.forPlayers(function(player, color)

@@ -32,6 +32,8 @@ G.GUIDS = {
     -- Light objects (for scene lighting)
     MAIN_LIGHT_LEFT = "573771",
     MAIN_LIGHT_RIGHT = "13466d",
+    DISTRICT_CARD_LIGHT = "a9601d",
+    SITE_CARD_LIGHT = "400a37",
 
     PLAYER_LIGHT_1_BROWN = "f251e0",
     PLAYER_LIGHT_1_ORANGE = "d3356d",

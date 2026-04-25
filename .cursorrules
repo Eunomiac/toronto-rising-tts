@@ -141,6 +141,7 @@ Related issues: TOR-9 (completed), TOR-10 (completed)
 - `core/` - Core game logic modules (state, lighting, main, scenes, zones, debug); **`core/global_script.ttslua`** is the real Global script
 - `global/` - Optional **`global/global_script.ttslua`** shim only (`require("global.global_script")` → `core`); do not put game logic here
 - `.dev/` - Development tools, documentation, and reference materials
+- `docs/solutions/` - Documented solutions and architecture patterns with YAML frontmatter; relevant when extending areas with existing learnings
 - `ui/` - UI XML files and related resources
 - `.tts/` - TTS Tools extension output directory (auto-generated)
 

@@ -24,6 +24,7 @@ S = require("core.state")
 M = require("core.main")
 Z = require("core.zones")
 Scenes = require("core.scenes")
+Soundscape = require("core.soundscape")
 C = require("lib.constants")
 G = require("lib.guids")
 L = require("core.lighting")
@@ -3655,6 +3656,64 @@ function DEBUG.showZones()
     print("Zone Events Active: " .. tostring(not zonesLocked))
 end
 
+--- Inspect soundscape AssetBundle emitters, looping effect names, and AudioSource counts.
+-- @return table
+function DEBUG.inspectSoundscapeAudio()
+    printTestHeader("Soundscape Audio Emitters")
+    local rows = Soundscape.inspectEmitters()
+    print(JSON.encode_pretty(rows))
+    if U.mcpEmitResult ~= nil then
+        U.mcpEmitResult({ test = "inspectSoundscapeAudio", emitters = rows })
+    end
+    return rows
+end
+
+--- Live soundscape smoke test: starts music, weather, and location layers together.
+-- Requires hidden Custom_Assetbundle objects tagged per lib/soundscape_catalog.ttslua.
+-- @return table
+function DEBUG.testSoundscape()
+    printTestHeader("Soundscape Layered Playback")
+    local result = Soundscape.testLayeredPlayback()
+    print(JSON.encode_pretty(result))
+    printTestResult("Soundscape layered playback", result.ok == true, "Requires Unity soundscape emitters in the save")
+    return result
+end
+
+--- Quick test: set a Storyteller-controlled music mood.
+-- @param moodKey string One of: general, intrigue, combat
+function DEBUG.soundscapeMusic(moodKey)
+    local ok, message = Soundscape.setMusicMood(moodKey or "general")
+    printTestResult("Soundscape music mood", ok, message)
+    UpdateUIDisplays()
+end
+
+--- Quick test: set weather audio and optional indoor ducking.
+-- @param weatherKey string e.g. "lightRain", "heavyRain", "wind", "none"
+-- @param isIndoors boolean|nil
+function DEBUG.soundscapeWeather(weatherKey, isIndoors)
+    if type(isIndoors) == "boolean" then
+        Soundscape.setIndoors(isIndoors)
+    end
+    local ok, message = Soundscape.setWeatherCondition(weatherKey or "none")
+    printTestResult("Soundscape weather", ok, message)
+    UpdateUIDisplays()
+end
+
+--- Quick test: set site/location ambience.
+-- @param locationKey string e.g. "indoorOffice", "sewers", "alleyway", "industrialExterior", "none"
+function DEBUG.soundscapeLocation(locationKey)
+    local ok, message = Soundscape.setLocationAudio(locationKey or "none")
+    printTestResult("Soundscape location", ok, message)
+    UpdateUIDisplays()
+end
+
+--- Quick test: stop every soundscape layer.
+function DEBUG.soundscapeStopAll()
+    local ok, message = Soundscape.stopAll()
+    printTestResult("Soundscape stop all", ok, message)
+    UpdateUIDisplays()
+end
+
 --[[
     Quick Test Functions (Single Commands)
 ]]
@@ -4670,6 +4729,7 @@ function DEBUG.help()
     print("  testLightingAndSignals() - Test lighting & signal fires with sequencing")
     print("  testEasing()             - Test easing and path generation functions")
     print("  testEasingForMcp()       - Non-interactive easing + TR_AGENT_V1 summary (MCP)")
+    print("  testSoundscape()         - Test layered AssetBundle music/weather/location playback")
     print("  testLookAt()             - Test look-at rotation (minimal test)")
     print("  testIntegration()        - Full integration test")
     print("  runTests()               - Run all tests in sequence")
@@ -4677,6 +4737,7 @@ function DEBUG.help()
     print("  showState()              - Display current game state (JSON)")
     print("  showScene()              - Display current scene info")
     print("  showZones()              - Display zone status")
+    print("  inspectSoundscapeAudio() - List soundscape emitters, loop effects, and AudioSources")
     print("\nFILE LOGGING FUNCTIONS:")
     print("  logToFile(level, msg, filename?) - Log a message to file")
     print("  logStateToFile(filename?)       - Log game state to file (JSON)")
@@ -4696,6 +4757,10 @@ function DEBUG.help()
     print("  setHunger(color, value)  - Set player hunger (e.g., setHunger('Red', 3))")
     print("  changeScene(sceneName)   - Change scene (e.g., changeScene('elysium'))")
     print("  setPhase(phaseName)      - Change phase (e.g., setPhase('PLAY'))")
+    print("  soundscapeMusic(mood)    - Set music mood: general, intrigue, combat")
+    print("  soundscapeWeather(key, isIndoors?) - Set weather layer and optional indoor ducking")
+    print("  soundscapeLocation(key)  - Set location ambience: indoorOffice, sewers, alleyway, industrialExterior")
+    print("  soundscapeStopAll()      - Stop all soundscape layers through the silent loop")
     print("  DEBUG.getLookAtOffset(obj)    - Read stored look-at calibration offset (Vector)")
     print("  DEBUG.calibrateLookAtOffset(obj, target, roundIntervalDeg?)")
     print("                          - Calibrate per-object look-at correction using current rotation")
@@ -4742,6 +4807,7 @@ testUtilities = DEBUG.testUtilities
 testLightingAndSignals = DEBUG.testLightingAndSignals
 testEasing = DEBUG.testEasing
 testEasingForMcp = DEBUG.testEasingForMcp
+testSoundscape = DEBUG.testSoundscape
 testIntegration = DEBUG.testIntegration
 runTests = DEBUG.runTests
 
@@ -4749,11 +4815,16 @@ runTests = DEBUG.runTests
 showState = DEBUG.showState
 showScene = DEBUG.showScene
 showZones = DEBUG.showZones
+inspectSoundscapeAudio = DEBUG.inspectSoundscapeAudio
 
 -- Expose quick setters
 setHunger = DEBUG.setHunger
 changeScene = DEBUG.changeScene
 setPhase = DEBUG.setPhase
+soundscapeMusic = DEBUG.soundscapeMusic
+soundscapeWeather = DEBUG.soundscapeWeather
+soundscapeLocation = DEBUG.soundscapeLocation
+soundscapeStopAll = DEBUG.soundscapeStopAll
 
 -- Expose dice system debug helpers
 rollTest      = DEBUG.rollTest

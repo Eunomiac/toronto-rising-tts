@@ -10,6 +10,9 @@
       <Button id="toggle_scenes" text="Scenes" minWidth="16" fontSize="8" preferredHeight="20" minHeight="20" flexibleHeight="0"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
         onClick="HUD_selectStorytellerPanel" />
+      <Button id="toggle_soundscape" text="Sound" minWidth="16" fontSize="8" preferredHeight="20" minHeight="20" flexibleHeight="0"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+        onClick="HUD_selectStorytellerPanel" />
       <Button id="toggle_pcs" text="PCs" minWidth="16" fontSize="8" preferredHeight="20" minHeight="20" flexibleHeight="0"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
         onClick="HUD_selectStorytellerPanel" />
@@ -30,6 +33,7 @@
         <Panel id="panel_scenes" active="false">
           <Text fontSize="11" color="#AAAAAA">Scenes: TBD.</Text>
         </Panel>
+        <Include src="panel_soundscape.xml" />
         <Include src="panel_pcs.xml" />
         <Panel id="panel_phases" active="false">
           <Text fontSize="11" color="#AAAAAA">Phases: TBD.</Text>

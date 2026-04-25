@@ -198,6 +198,14 @@ See [TTS_MCP.md](TTS_MCP.md) for setup and Cursor configuration.
   - This rewrites **`lib/pcs_data.ttslua`** (large file, committed) so `require("lib.pcs_data")` decodes the JSON inside Tabletop Simulator.
 - Game code uses `PCS.getPC(charKey)`; player seats and `charKey` come from **`lib/constants.ttslua`** (`C.PlayerData`).
 
+## Character sheet defaults (`ui/player/csheets/csheet_defaults.xml`)
+
+- **Authoring**: Edit shared character sheet UI defaults in **`ui/player/csheets/csheet_defaults.xml`**.
+- **TTS runtime**: `UI.setXml(...)` cannot resolve `<Include>` from runtime strings, so dynamic character sheet pages use generated Lua defaults:
+  - From repo root: `node .dev/scripts/generate_csheet_defaults_lua.js`
+  - This rewrites **`lib/csheet_defaults_xml.ttslua`** (committed) so dynamic XML builders can embed the same defaults while XML remains the source of truth.
+- The default VS Code build task runs this generator before UI XML template generation.
+
 ## File Structure
 
 ```text

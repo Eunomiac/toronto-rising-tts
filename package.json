@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Tabletop Simulator LUA modding project",
   "scripts": {
+    "csheet-defaults:generate": "node .dev/scripts/generate_csheet_defaults_lua.js",
     "custom-ui-assets:manifest": "node .tools/custom-ui-assets/build-upload-manifest.js",
     "custom-ui-assets:merge": "node .tools/custom-ui-assets/merge-custom-ui-assets.js",
     "tts-bridge:build": "tsc -p .tools/tts-bridge/tsconfig.build.json",

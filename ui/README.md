@@ -20,6 +20,7 @@ ui/
     panel_camera.xml              → Camera control bar + faction icons
     panel_lighting.xml            → Reserved (empty stub)
     panel_scenes.xml              → Reserved (empty stub)
+    panel_soundscape.xml          → Storyteller soundscape controls (music mood, inspect, stop)
     panel_pcs.xml                 → Storyteller PCs panel (health / will / humanity / XP / hunger)
     panel_phases.xml              → Reserved (empty stub)
 
@@ -73,7 +74,7 @@ TTS Defaults apply only to elements **after** them in the bundled XML. Order in 
 1. `defaults_tags` (tag-based)
 2. `defaults_classes` (global classes)
 3. `storyteller/hud_storyteller_defaults`
-4. `storyteller/hud_storyteller` (includes the 4 panels)
+4. `storyteller/hud_storyteller` (includes Storyteller toolbar panels)
 5. `player/hud_player` (optional `hud_player_defaults` before if needed)
 6. `shared/hud_shared`
 
@@ -90,6 +91,7 @@ UI positioning uses a **conceptual 3 columns × 4 rows grid** (no physical `Grid
 - Visibility: `Black` for Storyteller, `Red`/`Brown`/etc. for players
 - Button onClick handlers must be global functions (e.g. `HUD_changeScene`)
 - UI element IDs must match handler expectations in `core/global_script.ttslua`
+- Soundscape UI should call `HUD_soundscape*` handlers and route runtime work through `core.soundscape`
 - Admin panel ID: `adminControls` (left button column + debug panels)
 - Sidebar panel ID: `hudSidebarHost` (reference image toggles)
 - Camera panel ID: `cameraControlPanel` (camera zoom buttons + faction icons)

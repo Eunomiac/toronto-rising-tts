@@ -27,7 +27,7 @@ Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
-| `HUD_selectStorytellerPanel` | `toggle_lighting`, `toggle_scenes`, `toggle_pcs`, `toggle_phases` | `(player, button, id)` | Strips `toggle_` prefix from `id`, calls `UIH.selectStorytellerPanel(panelKey)` to show one storyteller panel and hide all others. Updates toggle button colors to indicate active panel. |
+| `HUD_selectStorytellerPanel` | `toggle_lighting`, `toggle_scenes`, `toggle_soundscape`, `toggle_pcs`, `toggle_phases`, `toggle_npcs` | `(player, button, id)` | Strips `toggle_` prefix from `id`, calls `UIH.selectStorytellerPanel(panelKey)` to show one storyteller panel and hide all others. Updates toggle button colors to indicate active panel. |
 | `HUD_togglePanel` | `toggleElem_*` buttons | `(player, button, id)` | Strips `toggleElem_` prefix from `id`, calls `UIH.toggleXmlElement(elemID, button)` to collapse/expand the target panel. Swaps toggle button text between `►` and `▼`. |
 
 ## Scene Controls (panel_scenes.xml)
@@ -35,6 +35,14 @@ Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
 | `HUD_changeScene` | `scene_default`, `scene_elysium`, `scene_alley`, `scene_haven`, `scene_tension`, `scene_combat`, `scene_suspicion`, `scene_social` | `(player, button, id)` | Strips `scene_` prefix from `id`. Validates via `Scenes.getScene()`. Calls `Scenes.fadeToScene(sceneName, 2.0)` for a smooth 2-second transition. Updates UI displays. |
+
+## Soundscape Controls (panel_soundscape.xml)
+
+| Handler | XML Element(s) | Params | Behavior |
+| ------- | ---------------- | ------ | -------- |
+| `HUD_soundscapeSetMusicMood` | `soundscapeMood_general`, `soundscapeMood_intrigue`, `soundscapeMood_combat` | `(player, button, id)` | Strips `soundscapeMood_` prefix from `id`, calls `SS.setMusicMood(moodKey)`, alerts the GM, and refreshes soundscape summary/button highlights. |
+| `HUD_soundscapeStopAll` | `Stop All` button | `(player, button, id)` | Calls `SS.stopAll()` to switch every soundscape channel to the `silent` loop. |
+| `HUD_soundscapeInspect` | `Inspect` button | `(player, button, id)` | Calls `SS.inspectEmitters()`, prints JSON emitter/effect information to console, and alerts the GM. |
 
 ## Phase Controls (panel_phases.xml)
 

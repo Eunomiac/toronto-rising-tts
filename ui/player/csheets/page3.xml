@@ -2,7 +2,7 @@
      Backgrounds, merits, and flaws body content is built at runtime in lib/csheet_page3_xml.ttslua (ui/ui_csheet.ttslua → UI.setXml).
      Seat color for `divider_flaws_<Color>` comes from the sheet nickname `CSHEET_PAGE_<n>_<COLOR>` (or equivalently the `<Color>Object` tag), not from this static file.
      This file is a minimal shell for bundling / first paint before Lua runs; `divider_flaws_Purple` below is only a placeholder until setXml runs.
-     Runtime `UI.setXml` cannot use `<Include>` (TTS only expands those at Save & Play); dynamic page 3 inlines Defaults from lib/csheet_page3_xml.ttslua. -->
+     Runtime `UI.setXml` cannot use `<Include>` (TTS only expands those at Save & Play); dynamic page 3 embeds generated defaults from lib/csheet_defaults_xml.ttslua. -->
 <!-- XML Exact height is 200; 8.5x11 aspect ratio means the width is 154.5
 
 Standard dot images are 6.3x6.3 pixels.

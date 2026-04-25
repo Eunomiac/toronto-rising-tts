@@ -16,6 +16,7 @@ All test functions are exposed globally and can be called from the TTS console:
 ```lua
 lua testState()              -- Test state management
 lua testScenes()             -- Test scene system
+lua testSoundscape()         -- Test layered soundscape playback
 lua debugHelp()              -- Show all commands
 ```
 
@@ -137,7 +138,47 @@ lua changeScene("alley")
 
 ---
 
-### 3. Zone Management Tests
+### 3. Soundscape Tests
+
+#### Inspect Soundscape Emitters
+
+```lua
+lua inspectSoundscapeAudio()
+```
+
+**What it tests:**
+
+- Hidden `Custom_Assetbundle` emitters are present and tagged correctly
+- Looping effect names match `lib/soundscape_catalog.ttslua`
+- Unity `AudioSource` components are visible to Lua for volume and 2D-audio checks
+
+**Expected Results:**
+
+- Four emitters should be found: `musicA`, `musicB`, `weather`, and `location`
+- Each emitter should list the expected looping effects, including `silent`
+- Each emitter should report at least one `AudioSource`
+
+#### Layered Playback
+
+```lua
+lua testSoundscape()
+```
+
+**What it tests:**
+
+- Music, weather, and location loops can play simultaneously
+- Weather and location layers can switch independently of music
+- Debug output includes MCP-friendly `TR_AGENT_V1` summaries when available
+
+**Visual/Audio Check:**
+
+- Host and at least one connected client should hear all three layers
+- Moving the camera away from the hidden emitters should not change perceived volume
+- `lua soundscapeStopAll()` should silence every layer by switching to the `silent` loop
+
+---
+
+### 4. Zone Management Tests
 
 #### Zone Activation/Deactivation
 
@@ -180,7 +221,7 @@ lua showZones()
 
 ---
 
-### 4. Main Module Tests
+### 5. Main Module Tests
 
 #### Main Module Functions
 
@@ -223,7 +264,7 @@ lua setPhase("COMBAT")
 
 ---
 
-### 5. UI Tests
+### 6. UI Tests
 
 #### UI Display Updates
 
@@ -263,7 +304,7 @@ Then verify the Red player's HUD shows hunger: 3
 
 ---
 
-### 6. Utility Functions Tests
+### 7. Utility Functions Tests
 
 #### Core Utilities
 
@@ -287,7 +328,7 @@ lua testUtilities()
 
 ---
 
-### 7. Integration Tests
+### 8. Integration Tests
 
 #### Full System Integration
 
@@ -315,7 +356,7 @@ lua testIntegration()
 
 ---
 
-### 8. State Inspection
+### 9. State Inspection
 
 #### View Current State
 
@@ -366,6 +407,17 @@ lua setHunger("Brown", 0)        -- Set Brown player hunger to 0
 lua changeScene("elysium")       -- Load Elysium scene
 lua changeScene("tension")       -- Load Tension scene
 lua changeScene("alley")         -- Load Alley scene
+```
+
+### Soundscape Control
+
+```lua
+lua inspectSoundscapeAudio()             -- Inspect hidden AssetBundle emitters
+lua testSoundscape()                     -- Start music, weather, and location layers
+lua soundscapeMusic("intrigue")          -- Set Storyteller music mood
+lua soundscapeWeather("lightRain", true) -- Set weather and indoor ducking
+lua soundscapeLocation("sewers")         -- Set location ambience
+lua soundscapeStopAll()                  -- Stop all soundscape layers
 ```
 
 ### Phase Control
@@ -423,6 +475,8 @@ lua debugHelp()                  -- Show all commands
 - [ ] Admin panel visible only to Host/Black player
 - [ ] Player HUDs visible only to respective players
 - [ ] Toggle panels work (collapse/expand)
+- [ ] Soundscape panel opens from the Storyteller toolbar
+- [ ] Soundscape music mood buttons update the current mood summary
 - [ ] Scene buttons change scenes correctly
 - [ ] Phase buttons advance phase correctly
 - [ ] Player stats update correctly in UI
@@ -435,6 +489,16 @@ lua debugHelp()                  -- Show all commands
 - [ ] Health values display correctly (0-7)
 - [ ] Values update when changed via `setHunger()`
 - [ ] Values persist through save/load
+
+### Soundscape
+
+- [ ] Unity soundscape AssetBundle follows `.dev/SOUNDSCAPE_UNITY_SETUP.md`
+- [ ] Hidden emitters have the required `soundscape_*` tags
+- [ ] Music, weather, and location loops play simultaneously
+- [ ] Audio is non-positional (`spatialBlend = 0`)
+- [ ] Indoor weather ducking lowers weather volume
+- [ ] `soundscapeStopAll()` silences every channel
+- [ ] Soundscape state persists through save/load where useful
 
 ### Error Handling
 

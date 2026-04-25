@@ -20,6 +20,7 @@ local U = require("lib.util")
 local S = require("core.state")
 local C = require("lib.constants")
 local L = require("core.lighting")
+local Soundscape = require("core.soundscape")
 
 -- ============================================================================
 -- CONFIGURATION
@@ -46,6 +47,8 @@ local DefaultTransitionTime = 2.0
 --     - name (string): Light name/tag matching L.LIGHTMODES key
 --     - mode (string): Light mode name (e.g., "ambient", "bright", "dim")
 --   musicTrack (number, optional): Music track index (1-10, if tracks are configured)
+--   musicMood (string, optional): Soundscape music mood key (e.g., "general", "intrigue", "combat")
+--   soundscapeContext (table, optional): Partial context passed to Soundscape.applyContext
 --   description (string, optional): Human-readable scene description
 
 Scenes.SCENES = {
@@ -118,6 +121,15 @@ Scenes.SCENES = {
                 refs = {
                     "mainLightLeft",
                     "mainLightRight",
+                }
+            },
+            {
+                delay = 4.0,
+                duration = 1.0,
+                mode = "STANDARD",
+                refs = {
+                    "districtCardLight",
+                    "siteCardLight",
                 }
             }
         },
@@ -576,6 +588,18 @@ local function applySceneByName(sceneName, transitionTime, allowDelays)
     -- Music remains immediate.
     if scene.musicTrack ~= nil then
         playSceneMusic(scene.musicTrack)
+    end
+
+    -- Soundscape is independent from scenes, but scenes may provide defaults when useful.
+    if scene.musicMood ~= nil or scene.soundscapeContext ~= nil then
+        local context = {}
+        if type(scene.soundscapeContext) == "table" then
+            context = U.clone(scene.soundscapeContext, true)
+        end
+        if scene.musicMood ~= nil then
+            context.musicMood = scene.musicMood
+        end
+        Soundscape.applyContext(context)
     end
 
     S.setStateVal(sceneName, "currentScene")
