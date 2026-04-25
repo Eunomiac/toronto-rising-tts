@@ -643,7 +643,7 @@ function Soundscape.testLayeredPlayback()
     table.insert(results, { channel = "music", ok = musicOk, message = musicMsg })
     local weatherOk, weatherMsg = Soundscape.setWeatherCondition("lightRain")
     table.insert(results, { channel = "weather", ok = weatherOk, message = weatherMsg })
-    local locationOk, locationMsg = Soundscape.setLocationAudio("industrialExterior")
+    local locationOk, locationMsg = Soundscape.setLocationAudio("outdoorIndustrial")
     table.insert(results, { channel = "location", ok = locationOk, message = locationMsg })
 
     local ok = musicOk and weatherOk and locationOk

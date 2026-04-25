@@ -52,10 +52,10 @@ local CSHEET_TRACKER_DISPLAY = {
 }
 
 local C = require("lib.constants")
-local G = require("lib.guids")
 local P = require("lib.pc_stats")
 local PAGE3 = require("lib.csheet_page3_xml")
 local U = require("lib.util")
+local OP = require("lib.object_positions")
 
 --- Register tracker glyphs/images with Global (separate Lua VM). Safe no-op if Global unavailable.
 local function pushTrackerDisplayToGlobal()
@@ -110,7 +110,7 @@ local function syncSheetContextFromObjectName()
   pageNum, seatColor = parseSheetObjectName(name)
 end
 
---- Player-color tag used to find objects when no GUID is registered (e.g. `"BrownObject"`).
+--- Player-color tag used to find owned sheet objects (e.g. `"BrownObject"`).
 --- @param colorUpper string e.g. `"BROWN"`
 --- @return string|nil
 local function seatColorObjectTag(colorUpper)
@@ -122,20 +122,6 @@ local function seatColorObjectTag(colorUpper)
     return nil
   end
   return c:sub(1, 1):upper() .. c:sub(2) .. "Object"
-end
-
---- Merge partial `C.ObjectPositions` axes with the object's current position (same idea as `core/objects.ttslua`).
---- @param obj Object
---- @param partialPos table|nil
---- @return Vector
-local function mergeObjectPosition(obj, partialPos)
-  partialPos = partialPos or {}
-  local currentPos = obj.getPosition()
-  return Vector(
-    partialPos.x or currentPos.x,
-    partialPos.y or currentPos.y,
-    partialPos.z or currentPos.z
-  )
 end
 
 --- Custom UI ids for spread navigation (`page1`/`page8` omit both; setAttribute is pcall-wrapped per id).
@@ -169,7 +155,7 @@ local function applyCsheetPageState(obj, state)
   if type(posData) ~= "table" or type(posData.position) ~= "table" then
     return false
   end
-  local targetPos = mergeObjectPosition(obj, posData.position)
+  local targetPos = OP.mergePosition(obj, posData.position)
   local visible = (targetPos.y >= 0)
   pcall(function()
     obj.setPosition(targetPos)
@@ -187,31 +173,7 @@ local function expectedCsheetNickname(pageNum, colorUpper)
   return string.format("CSHEET_PAGE_%d_%s", pageNum, string.upper(colorUpper))
 end
 
---- Resolve a page via `G.GUIDS.CSHEETS.<COLOR>.page<n>` when the GUID exists and the object is in-game.
---- @param colorUpper string e.g. `"BROWN"`
---- @param pageNum number
---- @return Object|nil
-local function findCsheetPageByRegisteredGuid(colorUpper, pageNum)
-  if G.GUIDS == nil or type(G.GUIDS.CSHEETS) ~= "table" then
-    return nil
-  end
-  local row = G.GUIDS.CSHEETS[colorUpper]
-  if type(row) ~= "table" then
-    return nil
-  end
-  local key = "page" .. tostring(pageNum)
-  local guid = row[key]
-  if type(guid) ~= "string" or guid == "" then
-    return nil
-  end
-  local obj = getObjectFromGUID(guid)
-  if obj == nil then
-    return nil
-  end
-  return obj
-end
-
---- Fallback: scan objects tagged `<Color>Object` for the exact nickname pattern.
+--- Scan objects tagged `<Color>Object` for the exact nickname pattern.
 --- @param colorUpper string
 --- @param pageNum number
 --- @return Object|nil
@@ -238,15 +200,11 @@ local function findCsheetPageByColorTagScan(colorUpper, pageNum)
   return nil
 end
 
---- Locate one character sheet page: GUID table first, then tag scan.
+--- Locate one character sheet page by seat ownership tag and exact object nickname.
 --- @param colorUpper string
 --- @param pageNum number
 --- @return Object|nil
 local function resolveCsheetPageObject(colorUpper, pageNum)
-  local byGuid = findCsheetPageByRegisteredGuid(colorUpper, pageNum)
-  if byGuid ~= nil then
-    return byGuid
-  end
   return findCsheetPageByColorTagScan(colorUpper, pageNum)
 end
 

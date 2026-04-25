@@ -47,9 +47,6 @@ G.GUIDS = {
     PLAYER_LIGHT_2_PINK = "1736cb",
     PLAYER_LIGHT_2_PURPLE = "cf2fe0",
 
-    -- Ambient Objects (for effects)
-    RING_FLARE = "210fad", -- circular ring of rising light, used to highlight table drops
-
     -- Hand zones (player hand zones)
     -- Storyteller (Black) and player colors: Brown, Orange, Red, Pink
     HAND_BLACK = "8981a0",  -- Storyteller
@@ -100,16 +97,10 @@ G.GUIDS = {
     THRONE_PINK = "18bd33",
     THRONE_PURPLE = "823f86",
 
-    CSHEETS = {
-      BROWN = {
-        page1 = "21d213",
-        page2 = "c80132"
-      },
-      ORANGE = {},
-      RED = {},
-      PINK = {},
-      PURPLE = {}
-    }
+    -- Player-Specific Objects
+    TAROT_DECK_PINK = "7a2d42",
+    TAROT_DRAWER_PINK = "7f0246",
+    TAROT_BUTTON_PINK = "4dc8ad",
 
     -- Add other object GUIDs as needed (zones, boards, etc.)
     -- Format: OBJECT_NAME = "@@@@@@OBJECT_NAME@@@@@@"

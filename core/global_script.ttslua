@@ -94,6 +94,17 @@ function GlobalGetMergedPlayerData(playerID)
     return S.getPlayerData(playerID)
 end
 
+--- Returns seat layout center point from global state for object scripts.
+--- @return table|nil { x, y, z }
+function GlobalGetSeatLayoutCenterPoint()
+    local tableKey = S.getStateVal("seatLayout", "currentTableKey")
+    if type(tableKey) == "string" and C.Tables and C.Tables[tableKey] and C.Tables[tableKey].centerPoint ~= nil then
+        local cp = Vector(C.Tables[tableKey].centerPoint)
+        return { x = cp.x, y = cp.y, z = cp.z }
+    end
+    return nil
+end
+
 --- Returns the phase string of a player's active roll, or nil if no roll is active.
 -- Called by dice bag objects (via Global.call) so they know whether to spawn a die
 -- or initiate a new roll when clicked.
@@ -1085,6 +1096,8 @@ LightDebugFocus = require("core.light_debug_focus")
 -- ============================================================================
 RC  = require("core.roll_controller")
 RUI = require("core.roll_ui")
+pendingRollCleanup = {}
+pendingRollCleanupTimerIds = {}
 
 -- Wire RC callback hooks so roll state changes automatically refresh UI.
 -- No pcall here: errors in the UI layer should surface as TTS chat errors
@@ -1097,9 +1110,44 @@ end
 RC.onRollResolved = function(color, result, label)
     RUI.showResultBroadcast(color, result, label)
     -- Drawer stays open until the broadcast hides and dice are destroyed (see below).
-    Wait.time(function()
+    local existingTimerId = pendingRollCleanupTimerIds[color]
+    if existingTimerId ~= nil then
+        pcall(function()
+            Wait.stop(existingTimerId)
+        end)
+    end
+
+    pendingRollCleanup[color] = true
+    pendingRollCleanupTimerIds[color] = Wait.time(function()
+        pendingRollCleanup[color] = nil
+        pendingRollCleanupTimerIds[color] = nil
         destroyBagDice(color)
     end, C.ROLL_RESULT_BROADCAST_SECONDS)
+end
+
+--- Handles dice-bag clicks during post-resolution broadcast cleanup delay.
+-- If a cleanup is pending, consume it and close the drawer immediately.
+-- @param params table  { color: string }
+-- @return boolean  true if pending cleanup was consumed
+function GlobalConsumePendingRollCleanup(params)
+    if type(params) ~= "table" then return false end
+    local color = params.color
+    if type(color) ~= "string" then return false end
+
+    if pendingRollCleanup[color] ~= true then
+        return false
+    end
+
+    local timerId = pendingRollCleanupTimerIds[color]
+    if timerId ~= nil then
+        pcall(function()
+            Wait.stop(timerId)
+        end)
+    end
+    pendingRollCleanup[color] = nil
+    pendingRollCleanupTimerIds[color] = nil
+    destroyBagDice(color)
+    return true
 end
 
 -- ============================================================================

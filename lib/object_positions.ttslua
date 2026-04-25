@@ -1,0 +1,164 @@
+--[[
+  Shared ObjectPositions resolver.
+  Centralizes absolute/relative pose resolution for C.ObjectPositions entries.
+]]
+
+local OP = {}
+local S = require("core.state")
+local C = require("lib.constants")
+OP.DEFAULT_TRANSITION_DURATION = 0.5
+
+--- @param obj Object
+--- @param partialPos table|nil
+--- @return Vector
+function OP.mergePosition(obj, partialPos)
+  partialPos = partialPos or {}
+  local currentPos = obj.getPosition()
+  return Vector(
+    partialPos.x or currentPos.x,
+    partialPos.y or currentPos.y,
+    partialPos.z or currentPos.z
+  )
+end
+
+--- @param center table|nil
+--- @return boolean
+local function isCenterPoint(center)
+  return type(center) == "table"
+    and type(center.x) == "number"
+    and type(center.y) == "number"
+    and type(center.z) == "number"
+end
+
+--- Object scripts run in a different Lua context, so prefer Global state bridge first.
+--- @return table|nil
+local function resolveSeatLayoutCenterPoint()
+  -- In object scripts, local core.state may not be initialized yet (separate Lua VM).
+  -- Prefer Global state bridge to avoid emitting "gameState is nil" warnings.
+  if Global ~= nil and type(Global.call) == "function" then
+    local ok, cp = pcall(function()
+      return Global.call("GlobalGetSeatLayoutCenterPoint")
+    end)
+    if ok and isCenterPoint(cp) then
+      return cp
+    end
+  end
+  -- Fallback for global-context callers that do not need Global.call bridge.
+  if self == Global then
+    local tableKey = S.getStateVal("seatLayout", "currentTableKey")
+    if type(tableKey) == "string" and C.Tables and C.Tables[tableKey] and C.Tables[tableKey].centerPoint ~= nil then
+      local cp = Vector(C.Tables[tableKey].centerPoint)
+      return { x = cp.x, y = cp.y, z = cp.z }
+    end
+  end
+  return nil
+end
+
+--- Resolve an on/off pose entry. Supports absolute and relative forms.
+--- Relative mode is enabled when entry.anchorGUID exists and pose.distanceDelta is numeric.
+--- @param obj Object
+--- @param entry table
+--- @param state string
+--- @return table|nil
+function OP.resolveStatePose(obj, entry, state)
+  if type(obj) ~= "userdata" or type(entry) ~= "table" or type(state) ~= "string" then
+    return nil
+  end
+  local pose = entry[state]
+  if type(pose) ~= "table" then
+    return nil
+  end
+
+  local resolved = {
+    position = pose.position,
+    scale = pose.scale,
+    rotation = pose.rotation,
+    setLock = pose.setLock,
+    transitionDuration = pose.transitionDuration,
+    transitionDelay = pose.transitionDelay,
+  }
+
+  local anchorGUID = entry.anchorGUID
+  local hasAnchor = type(anchorGUID) == "string" and anchorGUID ~= ""
+  local anchor = nil
+  if hasAnchor then
+    anchor = getObjectFromGUID(anchorGUID)
+    if anchor == nil then
+      print("[ObjectPositions] Relative pose anchor not found for GUID: " .. tostring(anchorGUID))
+      return resolved
+    end
+  end
+
+  -- Apply rotation delta whenever anchor exists, even if no distanceDelta is defined.
+  if anchor ~= nil and pose.rotationDelta ~= nil then
+    local anchorRot = anchor.getRotation()
+    local rotDelta = Vector(pose.rotationDelta)
+    resolved.rotation = {
+      x = anchorRot.x + rotDelta.x,
+      y = anchorRot.y + rotDelta.y,
+      z = anchorRot.z + rotDelta.z,
+    }
+  end
+
+  -- Apply radial position resolution only when distanceDelta is provided.
+  local distanceDelta = pose.distanceDelta
+  if anchor ~= nil and type(distanceDelta) == "number" then
+    local center = resolveSeatLayoutCenterPoint()
+    if center == nil then
+      print("[ObjectPositions] Relative pose requires seatLayout.currentTableKey -> C.Tables[...].centerPoint; using unresolved pose.")
+      return resolved
+    end
+
+    local anchorPos = anchor.getPosition()
+    local objPos = obj.getPosition()
+    local dx = anchorPos.x - center.x
+    local dz = anchorPos.z - center.z
+    local radius = math.sqrt(dx * dx + dz * dz)
+    if radius < 1e-6 then
+      print("[ObjectPositions] Relative pose anchor is too close to center; using unresolved pose.")
+      return resolved
+    end
+
+    local targetRadius = radius + distanceDelta
+    local nx = dx / radius
+    local nz = dz / radius
+    local partialPos = type(pose.position) == "table" and pose.position or {}
+    resolved.position = {
+      x = center.x + nx * targetRadius,
+      y = partialPos.y ~= nil and partialPos.y or objPos.y,
+      z = center.z + nz * targetRadius,
+    }
+  end
+
+  return resolved
+end
+
+--- Resolve effective transition timing.
+--- transitionDuration overrides baseDuration when present.
+--- transitionDelay is additive with baseDelay.
+--- @param pose table|nil
+--- @param baseDuration number|nil
+--- @param baseDelay number|nil
+--- @return number duration
+--- @return number delay
+function OP.resolveTransitionTiming(pose, baseDuration, baseDelay)
+  local duration = type(baseDuration) == "number" and baseDuration or OP.DEFAULT_TRANSITION_DURATION
+  local delay = type(baseDelay) == "number" and baseDelay or 0
+  if type(pose) == "table" then
+    if type(pose.transitionDuration) == "number" then
+      duration = pose.transitionDuration
+    end
+    if type(pose.transitionDelay) == "number" then
+      delay = delay + pose.transitionDelay
+    end
+  end
+  if duration < 0 then
+    duration = 0
+  end
+  if delay < 0 then
+    delay = 0
+  end
+  return duration, delay
+end
+
+return OP

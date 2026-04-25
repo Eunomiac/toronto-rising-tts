@@ -1,0 +1,326 @@
+---@diagnostic disable: lowercase-global
+--[[
+    Tarot Toggle Button (ui/ui_tarot_button.ttslua)
+
+    Attached to TAROT_BUTTON_PINK. Clicking toggles Tarot drawer/deck/button
+    between C.ObjectPositions on/off states.
+]]
+
+local C = require("lib.constants")
+local G = require("lib.guids")
+local U = require("lib.util")
+local OP = require("lib.object_positions")
+
+local STATE_OFF = "off"
+local STATE_ON = "on"
+
+local BUTTON_WIDTH = 5000
+local BUTTON_HEIGHT = 700
+local TOP_BUTTON_POS = { 0, 0.18, 0 }
+local BOTTOM_BUTTON_POS = { 0, -0.18, 0 }
+local BOTTOM_BUTTON_ROT = { 180, 0, 0 }
+
+local TAROT_KEYS = {
+    "TAROT_DRAWER_PINK",
+    "TAROT_DECK_PINK",
+    "TAROT_BUTTON_PINK",
+}
+
+local isOn = false
+local desiredOn = false
+local currentOpToken = 0
+
+--- @return table|nil
+local function getSeatLayoutCenterPoint()
+    if Global ~= nil and type(Global.call) == "function" then
+        local ok, cp = pcall(function()
+            return Global.call("GlobalGetSeatLayoutCenterPoint")
+        end)
+        if ok and type(cp) == "table" and type(cp.x) == "number" and type(cp.y) == "number" and type(cp.z) == "number" then
+            return cp
+        end
+    end
+    return nil
+end
+
+--- @return boolean
+local function isSeatLayoutReady()
+    return getSeatLayoutCenterPoint() ~= nil
+end
+
+--- @param callback function
+--- @param attempt number|nil
+local function runWhenSeatLayoutReady(callback, attempt)
+    if type(callback) ~= "function" then
+        return
+    end
+    attempt = attempt or 1
+    if isSeatLayoutReady() then
+        callback()
+        return
+    end
+    if attempt >= 40 then
+        print("[TarotButton] seatLayout.currentTableKey is not ready; skipping tarot pose application.")
+        return
+    end
+    Wait.time(function()
+        runWhenSeatLayoutReady(callback, attempt + 1)
+    end, 0.25)
+end
+
+--- @return Object|nil
+local function getTarotDrawer()
+    return getObjectFromGUID(G.GUIDS.TAROT_DRAWER_PINK)
+end
+
+--- @return Object|nil
+local function getTarotDeck()
+    return getObjectFromGUID(G.GUIDS.TAROT_DECK_PINK)
+end
+
+--- @param token number
+--- @return boolean
+local function isTokenCurrent(token)
+    return token == currentOpToken
+end
+
+--- @param obj Object
+--- @param pose table
+--- @param token number
+local function applyPoseWithTiming(obj, pose, token)
+    if obj == nil or type(pose) ~= "table" then
+        return
+    end
+    local duration, delay = OP.resolveTransitionTiming(pose, OP.DEFAULT_TRANSITION_DURATION, 0)
+    local setLock = pose.setLock
+
+    local function run()
+        if not isTokenCurrent(token) then
+            return
+        end
+        if type(setLock) == "boolean" and setLock == true then
+            pcall(function()
+                obj.setLock(true)
+            end)
+        end
+
+        if pose.position ~= nil then
+            if duration > 0 then
+                local toPos = Vector(pose.position)
+                pcall(function()
+                    obj.setPositionSmooth(toPos, false, false)
+                end)
+            else
+                pcall(function()
+                    obj.setPosition(pose.position)
+                end)
+            end
+        end
+
+        if pose.scale ~= nil then
+            if duration > 0 then
+                -- Scale lerp via U.Lerp is unreliable in this object-script context.
+                -- Apply target scale directly; tarot drawer scale is static in current configs.
+                pcall(function()
+                    obj.setScale(pose.scale)
+                end)
+            else
+                pcall(function()
+                    obj.setScale(pose.scale)
+                end)
+            end
+        end
+
+        if pose.rotation ~= nil then
+            if duration > 0 then
+                local toRot = Vector(pose.rotation)
+                pcall(function()
+                    obj.setRotationSmooth(toRot, false, false)
+                end)
+            else
+                pcall(function()
+                    obj.setRotation(pose.rotation)
+                end)
+            end
+        end
+
+        if type(setLock) == "boolean" and setLock == false then
+            local unlockDelay = duration > 0 and duration or 0
+            Wait.time(function()
+                if isTokenCurrent(token) then
+                    pcall(function()
+                        obj.setLock(false)
+                    end)
+                end
+            end, unlockDelay)
+        end
+    end
+
+    if delay > 0 then
+        Wait.time(function()
+            if isTokenCurrent(token) then
+                run()
+            end
+        end, delay)
+    else
+        run()
+    end
+end
+
+--- @param key string
+--- @param state string
+--- @param token number
+local function applyObjectState(key, state, token)
+    local guid = G.GUIDS[key]
+    if type(guid) ~= "string" or guid == "" then
+        print("[TarotButton] Missing GUID for key: " .. tostring(key))
+        return
+    end
+    local obj = getObjectFromGUID(guid)
+    if obj == nil then
+        print("[TarotButton] Missing object for key: " .. tostring(key))
+        return
+    end
+    local entry = C.ObjectPositions[key]
+    if type(entry) ~= "table" then
+        print("[TarotButton] Missing C.ObjectPositions entry for key: " .. tostring(key))
+        return
+    end
+    local pose = OP.resolveStatePose(obj, entry, state)
+    if type(pose) ~= "table" then
+        pose = entry[state]
+    end
+    if type(pose) ~= "table" then
+        print("[TarotButton] Missing '" .. tostring(state) .. "' pose for key: " .. tostring(key))
+        return
+    end
+
+    -- Build an effective pose so partial position tables never collapse X/Z to 0.
+    local effectivePose = {}
+    for k, v in pairs(pose) do
+        effectivePose[k] = v
+    end
+    if type(effectivePose.position) == "table" then
+        local hasX = effectivePose.position.x ~= nil
+        local hasY = effectivePose.position.y ~= nil
+        local hasZ = effectivePose.position.z ~= nil
+        if not (hasX and hasY and hasZ) then
+            effectivePose.position = OP.mergePosition(obj, effectivePose.position)
+        end
+    end
+    applyPoseWithTiming(obj, effectivePose, token)
+end
+
+--- @param targetOn boolean
+--- @param token number
+local function applyTarotState(targetOn, token)
+    if not isSeatLayoutReady() then
+        runWhenSeatLayoutReady(function()
+            if isTokenCurrent(token) then
+                applyTarotState(targetOn, token)
+            end
+        end)
+        return
+    end
+    if not isTokenCurrent(token) then
+        return
+    end
+    local state = targetOn and STATE_ON or STATE_OFF
+    for i = 1, #TAROT_KEYS do
+        applyObjectState(TAROT_KEYS[i], state, token)
+    end
+    isOn = targetOn
+end
+
+--- Infer current state from deck Y (falls back to saved boolean).
+--- @return boolean
+local function inferCurrentState()
+    if not isSeatLayoutReady() then
+        return isOn
+    end
+    local deck = getTarotDeck()
+    if deck == nil then
+        return isOn
+    end
+    local entry = C.ObjectPositions.TAROT_DECK_PINK
+    if type(entry) ~= "table" then
+        return isOn
+    end
+    local onPose = OP.resolveStatePose(deck, entry, STATE_ON) or entry.on
+    local offPose = OP.resolveStatePose(deck, entry, STATE_OFF) or entry.off
+    if type(onPose) ~= "table" or type(offPose) ~= "table" then
+        return isOn
+    end
+    local onY = onPose.position and onPose.position.y
+    local offY = offPose.position and offPose.position.y
+    local currentY = deck.getPosition().y
+    if type(onY) == "number" and type(offY) == "number" then
+        local midpoint = (onY + offY) / 2
+        return currentY >= midpoint
+    end
+    return isOn
+end
+
+local function createClickButtons()
+    self.clearButtons()
+    self.createButton({
+        click_function = "click_tarotToggle",
+        function_owner = self,
+        position = TOP_BUTTON_POS,
+        height = BUTTON_HEIGHT,
+        width = BUTTON_WIDTH,
+        color = { 1, 1, 1, 0 },
+        hover_color = { 0.7, 0.5, 1, 0.18 },
+        press_color = { 0.5, 0.3, 1, 0.28 },
+    })
+    -- Mirror button on underside so click works after the tile flips.
+    self.createButton({
+        click_function = "click_tarotToggle",
+        function_owner = self,
+        position = BOTTOM_BUTTON_POS,
+        rotation = BOTTOM_BUTTON_ROT,
+        height = BUTTON_HEIGHT,
+        width = BUTTON_WIDTH,
+        color = { 1, 1, 1, 0 },
+        hover_color = { 0.7, 0.5, 1, 0.18 },
+        press_color = { 0.5, 0.3, 1, 0.28 },
+    })
+end
+
+function onSave()
+    return JSON.encode({ isOn = isOn })
+end
+
+function onLoad(savedData)
+    if type(savedData) == "string" and savedData ~= "" then
+        local ok, parsed = pcall(function()
+            return JSON.decode(savedData)
+        end)
+        if ok and type(parsed) == "table" and type(parsed.isOn) == "boolean" then
+            isOn = parsed.isOn
+        end
+    end
+    createClickButtons()
+    runWhenSeatLayoutReady(function()
+        isOn = inferCurrentState()
+        desiredOn = isOn
+    end)
+end
+
+--- @param _obj Object
+--- @param clickColor string
+function click_tarotToggle(_obj, clickColor)
+    if clickColor ~= "Pink" and clickColor ~= "Black" then
+        print("[TarotButton] Only Pink (or GM) can toggle tarot objects.")
+        return
+    end
+    currentOpToken = currentOpToken + 1
+    local token = currentOpToken
+    runWhenSeatLayoutReady(function()
+        if not isTokenCurrent(token) then
+            return
+        end
+        desiredOn = not desiredOn
+        applyTarotState(desiredOn, token)
+    end)
+end

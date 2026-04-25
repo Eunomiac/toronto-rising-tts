@@ -1501,12 +1501,12 @@ end
 ]]
 
 --- Initializes all lighting and signal objects to OFF state
--- Sets all signal fires, RING_FLARE, and player lights to OFF instantly
+-- Sets all signal fires and player lights to OFF instantly
 -- Also sets ambient lighting to DARK mode
 -- Exposed globally as initLightingAndSignals()
 -- @usage initLightingAndSignals() -- Call from TTS console
 function DEBUG.initLightingAndSignals()
-    print("⚙️  Initializing: Setting all signal fires, hunger smoke, RING_FLARE, player lights, and main lights to OFF, and ambient to DARK")
+    print("⚙️  Initializing: Setting all signal fires, hunger smoke, player lights, and main lights to OFF, and ambient to DARK")
 
     -- NOTE: All object manipulation is done via Objects module
     -- Debug functions should only call other functions, not perform game actions directly
@@ -1600,12 +1600,6 @@ function DEBUG.initLightingAndSignals()
         end
     end
 
-    -- Set RING_FLARE to OFF (instant) - using Objects module
-    local flareSuccess = O.SetRingFlareState("off", 0.0)  -- 0 = instant
-    if not flareSuccess then
-        allSuccess = false
-    end
-
     -- Set all player lights to OFF (instant)
     for _, color in ipairs(C.PlayerColors) do
         local success = setPlayerLightMode(color, "OFF", 0.0)  -- 0 = instant
@@ -1634,6 +1628,54 @@ function DEBUG.initLightingAndSignals()
     else
         print("⚠️  Initialization completed with some errors")
     end
+end
+
+--- Tests the signal candle toggle path used by each player's candle button.
+-- @return boolean True when the signal fire toggles off -> on -> off successfully
+-- @usage testSignalCandleToggle()
+function DEBUG.testSignalCandleToggle()
+    printTestHeader("Signal Candle Toggle")
+
+    local color = "Brown"
+    local guid = G.GetSignalFireGUID(color)
+    if guid == nil then
+        printTestResult("Signal fire GUID exists", false, string.format("Missing signal fire GUID for %s", color))
+        return false
+    end
+
+    local signalFire = getObjectFromGUID(guid)
+    if signalFire == nil then
+        printTestResult("Signal fire object exists", false, string.format("Missing signal fire object for %s", color))
+        return false
+    end
+
+    local resetSuccess = O.SetSignalFireState(color, "off", 0)
+    if not resetSuccess then
+        printTestResult("Signal fire reset", false, "Could not reset Brown signal fire to off")
+        return false
+    end
+
+    local initialState = O.GetSignalFireState(color)
+    local initialPassed = initialState == "off"
+    printTestResult("Initial signal state", initialPassed, string.format("Expected off, got %s", tostring(initialState)))
+    if not initialPassed then
+        return false
+    end
+
+    local firstToggle = O.ToggleSignalFireState(color, 0)
+    local afterFirstState = O.GetSignalFireState(color)
+    local firstPassed = firstToggle == "on" and afterFirstState == "on"
+    printTestResult("Toggle signal on", firstPassed, string.format("Toggle returned %s; state is %s", tostring(firstToggle), tostring(afterFirstState)))
+    if not firstPassed then
+        return false
+    end
+
+    local secondToggle = O.ToggleSignalFireState(color, 0)
+    local afterSecondState = O.GetSignalFireState(color)
+    local secondPassed = secondToggle == "off" and afterSecondState == "off"
+    printTestResult("Toggle signal off", secondPassed, string.format("Toggle returned %s; state is %s", tostring(secondToggle), tostring(afterSecondState)))
+
+    return secondPassed
 end
 
 --- Helper: Merge partial position with current position
@@ -1771,7 +1813,7 @@ function DEBUG.testLightingAndSignals()
 
     -- Step 2: INITIALIZATION - Use the extracted initialization function
     table.insert(sequenceFunctions, function()
-        broadcast("⚙️  Initializing: Setting all signal fires, RING_FLARE, player lights, and main lights to OFF, and ambient to DARK", {0.8, 0.8, 1})
+        broadcast("⚙️  Initializing: Setting all signal fires, player lights, and main lights to OFF, and ambient to DARK", {0.8, 0.8, 1})
 
         -- Call the extracted initialization function
         DEBUG.initLightingAndSignals()
@@ -1899,41 +1941,7 @@ function DEBUG.testLightingAndSignals()
     -- Step 13: Wait after player lights transition
     table.insert(sequenceFunctions, waitStep("All Player Lights finished transitioning, waiting 3 seconds...", 3.0))
 
-    -- Step 14: Instantly switch RING_FLARE to ON
-    table.insert(sequenceFunctions, function()
-        broadcast("✨ Testing RING_FLARE: Switching to ON (instant)", {1, 1, 0})
-        local success = O.SetRingFlareState("on", 0.0)  -- 0 = instant
-        if success then
-            printTestResult("RING_FLARE ON", true, "RING_FLARE moved to y=-0.08")
-            passed = passed + 1
-        else
-            printTestResult("RING_FLARE ON", false, "Failed to move RING_FLARE")
-            failed = failed + 1
-        end
-        return 2.0  -- Brief pause to observe
-    end)
-
-    -- Step 15: Wait after RING_FLARE ON
-    table.insert(sequenceFunctions, waitStep("RING_FLARE switched ON, waiting 3 seconds...", 3.0))
-
-    -- Step 16: Instantly switch RING_FLARE to OFF
-    table.insert(sequenceFunctions, function()
-        broadcast("💤 Testing RING_FLARE: Switching to OFF (instant)", {0.5, 0.5, 0.5})
-        local success = O.SetRingFlareState("off", 0.0)  -- 0 = instant
-        if success then
-            printTestResult("RING_FLARE OFF", true, "RING_FLARE moved to y=-60")
-            passed = passed + 1
-        else
-            printTestResult("RING_FLARE OFF", false, "Failed to move RING_FLARE")
-            failed = failed + 1
-        end
-        return 2.0  -- Brief pause to observe
-    end)
-
-    -- Step 17: Wait after RING_FLARE OFF
-    table.insert(sequenceFunctions, waitStep("RING_FLARE switched OFF, waiting 3 seconds...", 3.0))
-
-    -- Step 19: Test hunger smoke ON (Brown player)
+    -- Step 14: Test hunger smoke ON (Brown player)
     local randomHungerSmokeColor = getRandomPlayerColor()
     table.insert(sequenceFunctions, function()
         broadcast("💨 Testing Hunger Smoke ON (" .. randomHungerSmokeColor .. " player)", {0.8, 0.4, 0.8})
@@ -1948,10 +1956,10 @@ function DEBUG.testLightingAndSignals()
         return 1.5  -- Wait for animation
     end)
 
-    -- Step 20: Wait after hunger smoke ON
+    -- Step 15: Wait after hunger smoke ON
     table.insert(sequenceFunctions, waitStep("Hunger Smoke finished raising, waiting 3 seconds...", 3.0))
 
-    -- Step 21: Test hunger smoke OFF (random player)
+    -- Step 16: Test hunger smoke OFF (random player)
     table.insert(sequenceFunctions, function()
         broadcast("💤 Testing Hunger Smoke OFF (" .. randomHungerSmokeColor .. " player)", {0.5, 0.5, 0.5})
         local success = O.SetHungerSmokeState(randomHungerSmokeColor, "off", 0)  -- 0 seconds (instant)
@@ -1965,10 +1973,10 @@ function DEBUG.testLightingAndSignals()
         return 1.5  -- Wait for animation
     end)
 
-    -- Step 22: Wait after hunger smoke OFF
+    -- Step 17: Wait after hunger smoke OFF
     table.insert(sequenceFunctions, waitStep("Hunger Smoke finished lowering, waiting 3 seconds...", 3.0))
 
-    -- Step 23: Test all hunger smoke ON (all player colors)
+    -- Step 18: Test all hunger smoke ON (all player colors)
     table.insert(sequenceFunctions, function()
         broadcast("💨 Testing All Hunger Smoke ON", {0.8, 0.4, 0.8})
         local allSuccess = true
@@ -1988,10 +1996,10 @@ function DEBUG.testLightingAndSignals()
         return 2.0  -- Wait for animations
     end)
 
-    -- Step 24: Wait after all hunger smoke ON
+    -- Step 19: Wait after all hunger smoke ON
     table.insert(sequenceFunctions, waitStep("All Hunger Smoke finished raising, waiting 3 seconds...", 3.0))
 
-    -- Step 25: Turn off all hunger smoke
+    -- Step 20: Turn off all hunger smoke
     table.insert(sequenceFunctions, function()
         broadcast("💤 Turning Off All Hunger Smoke", {0.5, 0.5, 0.5})
         local allSuccess = true
@@ -2012,10 +2020,10 @@ function DEBUG.testLightingAndSignals()
     end)
 
 
-    -- Step 24: Wait after all hunger smoke OFF
+    -- Step 21: Wait after all hunger smoke OFF
     table.insert(sequenceFunctions, waitStep("All Hunger Smoke finished lowering, waiting 3 seconds...", 3.0))
 
-    -- Step 18: Simultaneously lerp all player lights from STANDARD to OFF
+    -- Step 22: Simultaneously lerp all player lights from STANDARD to OFF
     table.insert(sequenceFunctions, function()
       broadcast("💤 Testing Player Lights: STANDARD → OFF (simultaneous)", {0.5, 0.5, 0.5})
       local allSuccess = true
@@ -2041,10 +2049,10 @@ function DEBUG.testLightingAndSignals()
       return lerpDuration + 1.0  -- Wait for animation to complete
   end)
 
-  -- Step 19: Wait after simultaneous player lights OFF
+  -- Step 23: Wait after simultaneous player lights OFF
   table.insert(sequenceFunctions, waitStep("All Player Lights finished transitioning to OFF, waiting 3 seconds...", 3.0))
 
-  -- Step 20: Turn main table lights OFF with duration
+  -- Step 24: Turn main table lights OFF with duration
   table.insert(sequenceFunctions, function()
       broadcast("💤 Turning Main Table Lights OFF", {0.5, 0.5, 0.5})
       local lerpDuration = 2.0
@@ -2059,10 +2067,10 @@ function DEBUG.testLightingAndSignals()
       return lerpDuration + 0.5
   end)
 
-  -- Step 21: Wait after main lights OFF
+  -- Step 25: Wait after main lights OFF
   table.insert(sequenceFunctions, waitStep("Main table lights are OFF, waiting 3 seconds...", 3.0))
 
-  -- Step 22: Turn off all signal fires
+  -- Step 26: Turn off all signal fires
   table.insert(sequenceFunctions, function()
       broadcast("💤 Turning Off All Signal Fires", {0.5, 0.5, 0.5})
       local allSuccess = true
@@ -2082,7 +2090,7 @@ function DEBUG.testLightingAndSignals()
       return 2.0  -- Wait for animations
   end)
 
-    -- Step 23: Final summary
+    -- Step 27: Final summary
     table.insert(sequenceFunctions, function()
         broadcast("✅ Lighting & Signal Fire Test Complete!", {0, 1, 0})
         print("\n" .. string.rep("-", 60))
@@ -3700,7 +3708,7 @@ function DEBUG.soundscapeWeather(weatherKey, isIndoors)
 end
 
 --- Quick test: set site/location ambience.
--- @param locationKey string e.g. "indoorOffice", "sewers", "alleyway", "industrialExterior", "none"
+-- @param locationKey string e.g. "indoorOffice", "indoorCourt", "sewers", "alleyway", "outdoorIndustrial", "none"
 function DEBUG.soundscapeLocation(locationKey)
     local ok, message = Soundscape.setLocationAudio(locationKey or "none")
     printTestResult("Soundscape location", ok, message)
@@ -4727,6 +4735,7 @@ function DEBUG.help()
     print("  testUI()                 - Test UI display updates")
     print("  testUtilities()          - Test utility functions")
     print("  testLightingAndSignals() - Test lighting & signal fires with sequencing")
+    print("  testSignalCandleToggle() - Test player signal candle toggle")
     print("  testEasing()             - Test easing and path generation functions")
     print("  testEasingForMcp()       - Non-interactive easing + TR_AGENT_V1 summary (MCP)")
     print("  testSoundscape()         - Test layered AssetBundle music/weather/location playback")
@@ -4759,7 +4768,7 @@ function DEBUG.help()
     print("  setPhase(phaseName)      - Change phase (e.g., setPhase('PLAY'))")
     print("  soundscapeMusic(mood)    - Set music mood: general, intrigue, combat")
     print("  soundscapeWeather(key, isIndoors?) - Set weather layer and optional indoor ducking")
-    print("  soundscapeLocation(key)  - Set location ambience: indoorOffice, sewers, alleyway, industrialExterior")
+    print("  soundscapeLocation(key)  - Set location ambience: indoorOffice, indoorCourt, sewers, alleyway, outdoorIndustrial")
     print("  soundscapeStopAll()      - Stop all soundscape layers through the silent loop")
     print("  DEBUG.getLookAtOffset(obj)    - Read stored look-at calibration offset (Vector)")
     print("  DEBUG.calibrateLookAtOffset(obj, target, roundIntervalDeg?)")
@@ -4805,6 +4814,7 @@ testMain = DEBUG.testMain
 testUI = DEBUG.testUI
 testUtilities = DEBUG.testUtilities
 testLightingAndSignals = DEBUG.testLightingAndSignals
+testSignalCandleToggle = DEBUG.testSignalCandleToggle
 testEasing = DEBUG.testEasing
 testEasingForMcp = DEBUG.testEasingForMcp
 testSoundscape = DEBUG.testSoundscape

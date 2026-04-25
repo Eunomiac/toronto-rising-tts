@@ -5,6 +5,8 @@
 ---@diagnostic disable: undefined-global
 
 local C = require("lib.constants")
+local OP = require("lib.object_positions")
+local U = require("lib.util")
 
 local DD = {}
 
@@ -20,7 +22,7 @@ end
 --- @param color string
 --- @param wantOn boolean
 --- @return table|nil
-local function getPose(color, wantOn)
+local function getPoseEntry(color, wantOn)
   local key = objectPositionsKey(color)
   if key == nil then
     return nil
@@ -66,22 +68,70 @@ local function applyPose(obj, pose)
   if type(pose) ~= "table" then
     return
   end
-  local pos = pose.position
-  local scl = pose.scale
-  if pos ~= nil then
-    pcall(function()
-      obj.setPositionSmooth(pos, false, false)
-    end)
-  end
-  if scl ~= nil then
-    local smoothOk = pcall(function()
-      obj.setScaleSmooth(scl, false, false)
-    end)
-    if not smoothOk then
+  local duration, delay = OP.resolveTransitionTiming(pose, OP.DEFAULT_TRANSITION_DURATION, 0)
+  local setLock = pose.setLock
+  local function run()
+    if type(setLock) == "boolean" and setLock == true then
       pcall(function()
-        obj.setScale(scl)
+        obj.setLock(true)
       end)
     end
+
+    local pos = pose.position
+    local scl = pose.scale
+    local rot = pose.rotation
+    if pos ~= nil then
+      if duration > 0 then
+        U.setPositionSlow(obj, Vector(pos), duration, nil, false)
+      else
+        pcall(function()
+          obj.setPositionSmooth(pos, false, false)
+        end)
+      end
+    end
+    if scl ~= nil then
+      if duration > 0 then
+        U.setScaleSlow(obj, Vector(scl), duration, nil)
+      else
+        local smoothOk = pcall(function()
+          obj.setScaleSmooth(scl, false, false)
+        end)
+        if not smoothOk then
+          pcall(function()
+            obj.setScale(scl)
+          end)
+        end
+      end
+    end
+    if rot ~= nil then
+      if duration > 0 then
+        U.setRotationSlow(obj, Vector(rot), duration, nil, false)
+      else
+        local smoothOk = pcall(function()
+          obj.setRotationSmooth(rot, false, false)
+        end)
+        if not smoothOk then
+          pcall(function()
+            obj.setRotation(rot)
+          end)
+        end
+      end
+    end
+
+    if type(setLock) == "boolean" and setLock == false then
+      local unlockDelay = duration > 0 and duration or 0
+      Wait.time(function()
+        pcall(function()
+          obj.setLock(false)
+        end)
+      end, unlockDelay)
+    end
+  end
+
+  if delay > 0 then
+    Wait.time(run, delay)
+  else
+    run()
   end
 end
 
@@ -89,7 +139,7 @@ end
 --- Not tied to RC.openRoll — opens when dice actually spawn or when Roll is pressed.
 --- @param color string Seat color
 function DD.openForRoll(color)
-  local pose = getPose(color, true)
+  local pose = getPoseEntry(color, true)
   if pose == nil then
     return
   end
@@ -97,14 +147,17 @@ function DD.openForRoll(color)
   if obj == nil then
     return
   end
-  applyPose(obj, pose)
+  local key = objectPositionsKey(color)
+  local entry = key ~= nil and C.ObjectPositions[key] or nil
+  local resolvedPose = OP.resolveStatePose(obj, entry or {}, "on") or pose
+  applyPose(obj, resolvedPose)
 end
 
 --- Move drawer to the "off" pose when staged dice are destroyed (cancel / take half /
 --- or after result broadcast + cleanup). Not on resolve alone — keep open until then.
 --- @param color string Seat color
 function DD.closeAfterRoll(color)
-  local pose = getPose(color, false)
+  local pose = getPoseEntry(color, false)
   if pose == nil then
     return
   end
@@ -112,7 +165,10 @@ function DD.closeAfterRoll(color)
   if obj == nil then
     return
   end
-  applyPose(obj, pose)
+  local key = objectPositionsKey(color)
+  local entry = key ~= nil and C.ObjectPositions[key] or nil
+  local resolvedPose = OP.resolveStatePose(obj, entry or {}, "off") or pose
+  applyPose(obj, resolvedPose)
 end
 
 return DD

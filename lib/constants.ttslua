@@ -429,10 +429,6 @@ C.ObjectPositions = {
     on = {position = {y = 1.87}},
     off = {position = {y = -10}}
   },
-  RING_FLARE = {
-    on = {position = {y=-0.08}},
-    off = {position = {y=-10}}
-  },
   CSHEET_PAGE = {
     on = {position = {y = 4}},
     off = {position = {y = -10}}
@@ -486,6 +482,185 @@ C.ObjectPositions = {
       position = Vector({-60.68, -0.72, -33.51}),
       scale = Vector({23.57, 0.42, 7.68})
     }
+  },
+  TAROT_DRAWER_PINK = {
+    anchorGUID = "9d4029",
+    on = {
+      position = {y = 7.12},
+      distanceDelta = -13, -- starting from the anchor's position, the difference in radial distance to the center of the centerPoint as defined by the current seat layout (which should be stored in state after running spawnSeatObjectsFromTemplate)
+      rotationDelta = Vector({345.35, 0, 0}),
+      scale = Vector({7.49, 0.31, 5.72})
+    },
+    off = {
+      transitionDelay = 0, -- this should be in ADDITION to any sequencing or other transition delays that are set by the function moving the object
+      position = {y = 2.41},
+      distanceDelta = 0,
+      rotationDelta = Vector({0, 0, 0}),
+      scale = Vector({7.49, 0.31, 5.72})
+    }
+  },
+  TAROT_DECK_PINK = {
+    anchorGUID = "9d4029",
+    on = {
+      transitionDuration = 0, -- this should override the transition duration set by whichever function moves the object
+      transitionDelay = 1.5, -- this should be in ADDITION to any sequencing or other transition delays that are set by the function moving the object
+      position = {y = 12},
+      distanceDelta = -13,
+      rotationDelta = Vector({345.35, 0, 180}),
+      setLock = false -- if "setLock" is present, then the object's lock state should be toggled accordingly. When unlocking, this should happen at the very end of the transition. When locking, this should happen at the very beginning of the transition.
+    },
+    off = {
+      transitionDuration = 0, -- this should override the transition duration set by whichever function moves the object
+      position = {y = -10},
+      distanceDelta = -13,
+      rotationDelta = Vector({0, 0, 180}),
+      setLock = true -- if "setLock" is present, then the object's lock state should be toggled accordingly. When unlocking, this should happen at the very end of the transition. When locking, this should happen at the very beginning of the transition.
+    }
+  },
+  TAROT_BUTTON_PINK = {
+    anchorGUID = "9d4029",
+    on = {
+      transitionDuration = 0,
+      rotationDelta = Vector({0, 180, 180})
+    },
+    off = {
+      transitionDuration = 0,
+      rotationDelta = Vector({0, 0, 0})
+    }
+  }
+}
+
+-- Table Presets
+C.Tables = {
+  ["Table A"] = {
+    guid = "92ac34",
+    centerPoint = Vector({0, 0, 50}),
+    activePosition = Vector({0.00, 0.00, 53.66}),
+    numSegments = 20,
+    angleSegmentOne = 0,
+    playerToPositionMap = {
+      NPC1 = 8,
+      NPC2 = 14,
+      NPC3 = 9,
+      NPC4 = 15,
+      Brown = 9,
+      Orange = 10,
+      Red = 11,
+      Pink = 12,
+      Purple = 13
+    },
+    referencePlayerColor = "Red",
+    components = {
+      ["Table Leaf Near Left"] = {
+        guid = "6db794",
+        activePosition = Vector({0.00, 0.00, 53.66}),
+        usedBy = "NPC2"
+      },
+      ["Table Leaf Near Right"] = {
+        guid = "443d5a",
+        activePosition = Vector({0.00, 0.00, 53.66}),
+        usedBy = "NPC1"
+      },
+      ["Table Leaf Far Left"] = {
+        guid = "f09667",
+        activePosition = Vector({0.00, 0.00, 53.66}),
+        usedBy = "NPC4"
+      },
+      ["Table Leaf Far Right"] = {
+        guid = "66f42d",
+        activePosition = Vector({0.00, 0.00, 53.66}),
+        usedBy = "NPC3"
+      }
+    }
+  },
+  ["Table B"] = {
+    guid = "b086ae",
+    centerPoint = Vector({0, 0, -10.26}),
+    activePosition = Vector({0.00, 0, -10.26}),
+    numSegments = 10,
+    angleSegmentOne = 0,
+    playerToPositionMap = {
+      NPC1 = 3,
+      NPC2 = 9,
+      NPC3 = 2,
+      NPC4 = 10,
+      Brown = 4,
+      Orange = 5,
+      Red = 6,
+      Pink = 7,
+      Purple = 8
+    },
+    referencePlayerColor = "Red"
+  },
+  ["Table B1"] = {
+    guid = "c52bcd",
+    centerPoint = Vector({0, 0, -16.07}),
+    activePosition = Vector({0.00, 0, -16.07}),
+    numSegments = 6,
+    angleSegmentOne = 0,
+    playerToPositionMap = {
+      NPC1 = 1,
+      Brown = 2,
+      Orange = 3,
+      Red = 4,
+      Pink = 5,
+      Purple = 6,
+    },
+    referencePlayerColor = "Red"
+  },
+  ["Table B2"] = {
+    guid = "f14ede",
+    centerPoint = Vector({0, 0, -13.83}),
+    activePosition = Vector({0.00, 0, -13.83}),
+    numSegments = 7,
+    angleSegmentOne = 25.7,
+    playerToPositionMap = {
+      NPC1 = 1,
+      NPC2 = 7,
+      Brown = 2,
+      Orange = 3,
+      Red = 4,
+      Pink = 5,
+      Purple = 6,
+    },
+    referencePlayerColor = "Red"
+  },
+  ["Table B3"] = {
+    guid = "323c52",
+    centerPoint = Vector({0, 0, -12.25}),
+    activePosition = Vector({0.00, 0, -12.25}),
+    numSegments = 8,
+    angleSegmentOne = 0,
+    playerToPositionMap = {
+      NPC1 = 2,
+      NPC2 = 8,
+      NPC3 = 1,
+      Brown = 3,
+      Orange = 4,
+      Red = 5,
+      Pink = 6,
+      Purple = 7,
+    },
+    referencePlayerColor = "Red"
+  },
+  ["Table B4"] = {
+    guid = "ad8530",
+    centerPoint = Vector({0, 0, -11.04}),
+    activePosition = Vector({0, 0, -11.04}),
+    numSegments = 9,
+    angleSegmentOne = 20,
+    playerToPositionMap = {
+      NPC1 = 2,
+      NPC2 = 8,
+      NPC3 = 1,
+      NPC4 = 9,
+      Brown = 3,
+      Orange = 4,
+      Red = 5,
+      Pink = 6,
+      Purple = 7,
+    },
+    referencePlayerColor = "Red"
   }
 }
 
@@ -543,7 +718,162 @@ C.LightModes = {
     }
 }
 
--- GUIDs have been moved to lib/guids.ttslua (G library)
--- Use require("lib.guids") to access GUID functions and G.GUIDS table
+-- Districts
+C.Districts = {
+  Annex = {
+    name = "The Annex",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Annex.webp"
+  },
+  BayStFinancial = {
+    name = "The Bay St. Financial District",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/BayStFinancial.webp"
+  },
+  Bennington = {
+    name = "Bennington Heights",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Bennington.webp"
+  },
+  Cabbagetown = {
+    name = "Cabbagetown",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Cabbagetown.webp"
+  },
+  CentreIsland = {
+    name = "Centre Island",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/CentreIsland.webp"
+  },
+  Chinatown = {
+    name = "Chinatown",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Chinatown.webp"
+  },
+  Corktown = {
+    name = "Corktown",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Corktown.webp"
+  },
+  Danforth = {
+    name = "The Danforth",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Danforth.webp"
+  },
+  DeerPark = {
+    name = "Deer Park",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/DeerPark.webp"
+  },
+  Discovery = {
+    name = "The Discovery District",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Discovery.webp"
+  },
+  DistilleryDist = {
+    name = "The Distillery District",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/DistilleryDist.webp"
+  },
+  DonRavine = {
+    name = "The Don River Ravine",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/DonRavine.webp"
+  },
+  DupontByTheCastle = {
+    name = "Dupont By The Castle",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/DupontByTheCastle.webp"
+  },
+  GayVillage = {
+    name = "The Gay Village",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/GayVillage.webp"
+  },
+  HarbordVillage = {
+    name = "Harbord Village",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/HarbordVillage.webp"
+  },
+  Humewood = {
+    name = "Humewood",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Humewood.webp"
+  },
+  LakeOntario = {
+    name = "Lake Ontario",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/LakeOntario.webp"
+  },
+  LibertyVillage = {
+    name = "Liberty Village",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/LibertyVillage.webp"
+  },
+  LittleItaly = {
+    name = "Little Italy",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/LittleItaly.webp"
+  },
+  LittlePortugal = {
+    name = "Little Portugal",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/LittlePortugal.webp"
+  },
+  PATH = {
+    name = "P.A.T.H.",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/PATH.webp"
+  },
+  RegentPark = {
+    name = "Regent Park",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/RegentPark.webp"
+  },
+  Riverdale = {
+    name = "Riverdale",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Riverdale.webp"
+  },
+  Rosedale = {
+    name = "Rosedale",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Rosedale.webp"
+  },
+  Sewers = {
+    name = "The Sewers",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Sewers.webp"
+  },
+  StJamesTown = {
+    name = "St. James Town",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/StJamesTown.webp"
+  },
+  Streets = {
+    name = "The Streets",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Streets.webp"
+  },
+  Subway = {
+    name = "The Subway",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Subway.webp"
+  },
+  Summerhill = {
+    name = "Summerhill",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Summerhill.webp"
+  },
+  Waterfront = {
+    name = "The Waterfront",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Waterfront.webp"
+  },
+  WestQueenWest = {
+    name = "West Queen West",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/WestQueenWest.webp"
+  },
+  Wychwood = {
+    name = "Wychwood",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Wychwood.webp"
+  },
+  YongeBloorMuseum = {
+    name = "The Young & Bloor Museum District",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/YongeBloorMuseum.webp"
+  },
+  YongeDundasHospital = {
+    name = "The Yonge & Dundas Hospital District",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/YongeDundasHospital.webp"
+  },
+  YongeStreet = {
+    name = "Yonge Street",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/YongeStreet.webp"
+  },
+  Yorkville = {
+    name = "Yorkville",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Yorkville.webp"
+  }
+}
+
+-- Sites
+C.Sites = {
+  StRegis = {
+    name = "The St. Regis Toronto",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/StRegis.webp",
+    district = C.Districts.BayStFinancial,
+    soundscapeLocation
+  }
+}
 
 return C

@@ -17,29 +17,91 @@ local O = {}
 local U = require("lib.util")
 local C = require("lib.constants")
 local G = require("lib.guids")
+local OP = require("lib.object_positions")
 
--- ============================================================================
--- HELPER FUNCTIONS
--- ============================================================================
-
---- Merges partial position data with current object position
--- Only updates specified axes, preserves others
--- @param obj Object The TTS object
--- @param partialPos table Partial position {x=?, y=?, z=?} (any can be nil)
--- @return Vector Complete position vector
-local function mergePosition(obj, partialPos)
-    local currentPos = obj.getPosition()
-    local newPos = {
-        x = partialPos.x or currentPos.x,
-        y = partialPos.y or currentPos.y,
-        z = partialPos.z or currentPos.z
-    }
-    return Vector(newPos.x, newPos.y, newPos.z)
+--- @param obj Object
+--- @param targetPos Vector
+--- @param resolvedPose table
+--- @param baseDuration number
+local function applyPositionTransition(obj, targetPos, resolvedPose, baseDuration)
+    local duration, delay = OP.resolveTransitionTiming(resolvedPose, baseDuration, 0)
+    local setLock = resolvedPose and resolvedPose.setLock
+    local function run()
+        if type(setLock) == "boolean" and setLock == true then
+            pcall(function()
+                obj.setLock(true)
+            end)
+        end
+        if duration > 0 then
+            U.setPositionSlow(obj, targetPos, duration, nil, false)
+        else
+            obj.setPosition(targetPos)
+        end
+        if type(setLock) == "boolean" and setLock == false then
+            local unlockDelay = duration > 0 and duration or 0
+            Wait.time(function()
+                pcall(function()
+                    obj.setLock(false)
+                end)
+            end, unlockDelay)
+        end
+    end
+    if delay > 0 then
+        Wait.time(run, delay)
+    else
+        run()
+    end
 end
 
 -- ============================================================================
 -- SIGNAL FIRE FUNCTIONS
 -- ============================================================================
+
+--- Resolves a player's signal fire object.
+-- @param color string Player color (e.g., "Brown", "Orange", "Red", "Pink", "Purple")
+-- @return Object|nil Signal fire object, or nil if unavailable
+local function getSignalFireObject(color)
+    if U.Type(color) ~= "string" or not U.isIn(color, C.PlayerColors) then
+        U.AlertGM(string.format("O.getSignalFireObject: Invalid player color: %s", tostring(color)))
+        return nil
+    end
+
+    local guid = G.GetSignalFireGUID(color)
+    if guid == nil then
+        U.AlertGM(string.format("O.getSignalFireObject: No GUID found for color: %s", color))
+        return nil
+    end
+
+    local fire = getObjectFromGUID(guid)
+    if fire == nil then
+        U.AlertGM(string.format("O.getSignalFireObject: Signal fire not found for color: %s", color))
+        return nil
+    end
+
+    return fire
+end
+
+--- Gets the inferred state of a player's signal fire from its current height.
+-- @param color string Player color (e.g., "Brown", "Orange", "Red", "Pink", "Purple")
+-- @return string|nil "on", "off", or nil if the signal fire cannot be resolved
+-- @usage local state = O.GetSignalFireState("Brown")
+function O.GetSignalFireState(color)
+    local fire = getSignalFireObject(color)
+    if fire == nil then
+        return nil
+    end
+
+    local currentY = fire.getPosition().y
+    local onY = C.ObjectPositions.SIGNAL_FIRE.on.position.y
+    local offY = C.ObjectPositions.SIGNAL_FIRE.off.position.y
+    local midpointY = (onY + offY) / 2
+
+    if currentY >= midpointY then
+        return "on"
+    end
+
+    return "off"
+end
 
 --- Sets signal fire state (on/off) with optional animation
 -- @param color string Player color (e.g., "Brown", "Orange", "Red", "Pink")
@@ -48,38 +110,44 @@ end
 -- @return boolean True if successful, false otherwise
 -- @usage O.SetSignalFireState("Brown", "on", 0.2)
 function O.SetSignalFireState(color, state, duration)
-    duration = duration or 0.2  -- Default to 0.2 seconds (3x faster than before)
+    duration = duration or OP.DEFAULT_TRANSITION_DURATION
 
-    local guid = G.GetSignalFireGUID(color)
-    if not guid then
-        U.AlertGM("O.SetSignalFireState: No GUID found for color: " .. tostring(color))
+    local fire = getSignalFireObject(color)
+    if fire == nil then
         return false
     end
 
-    local fire = getObjectFromGUID(guid)
-    if not fire then
-        U.AlertGM("O.SetSignalFireState: Signal fire not found for color: " .. tostring(color))
+    local resolvedPose = OP.resolveStatePose(fire, C.ObjectPositions.SIGNAL_FIRE, state)
+    if not resolvedPose or type(resolvedPose.position) ~= "table" then
+        U.AlertGM(string.format("O.SetSignalFireState: Invalid state: %s", tostring(state)))
         return false
     end
 
-    local posData = C.ObjectPositions.SIGNAL_FIRE[state]
-    if not posData then
-        U.AlertGM("O.SetSignalFireState: Invalid state: " .. tostring(state))
-        return false
-    end
+    local targetPos = OP.mergePosition(fire, resolvedPose.position)
 
-    -- Merge partial position with current position
-    local targetPos = mergePosition(fire, posData.position)
-
-    if duration > 0 then
-        -- Use lerp for smooth animation
-        U.setPositionSlow(fire, targetPos, duration, nil, false)
-    else
-        -- Instant (no lerping)
-        fire.setPosition(targetPos)
-    end
+    applyPositionTransition(fire, targetPos, resolvedPose, duration)
 
     return true
+end
+
+--- Toggles a player's signal fire between on and off.
+-- @param color string Player color (e.g., "Brown", "Orange", "Red", "Pink", "Purple")
+-- @param duration number Optional animation duration in seconds (default: 0.2)
+-- @return string|nil New state ("on" or "off"), or nil if toggling failed
+-- @usage local newState = O.ToggleSignalFireState("Brown", 0.2)
+function O.ToggleSignalFireState(color, duration)
+    local currentState = O.GetSignalFireState(color)
+    if currentState == nil then
+        return nil
+    end
+
+    local nextState = currentState == "on" and "off" or "on"
+    local success = O.SetSignalFireState(color, nextState, duration)
+    if not success then
+        return nil
+    end
+
+    return nextState
 end
 
 -- ============================================================================
@@ -93,7 +161,7 @@ end
 -- @return boolean True if successful, false otherwise
 -- @usage O.SetHungerSmokeState("Brown", "on", 0.2)
 function O.SetHungerSmokeState(color, state, duration)
-    duration = duration or 0.2  -- Default to 0.2 seconds (3x faster than before)
+    duration = duration or OP.DEFAULT_TRANSITION_DURATION
 
     local guid = G.GetHungerSmokeGUID(color)
     if not guid then
@@ -107,66 +175,15 @@ function O.SetHungerSmokeState(color, state, duration)
         return false
     end
 
-    local posData = C.ObjectPositions.HUNGER_SMOKE[state]
-    if not posData then
+    local resolvedPose = OP.resolveStatePose(smoke, C.ObjectPositions.HUNGER_SMOKE, state)
+    if not resolvedPose or type(resolvedPose.position) ~= "table" then
         U.AlertGM("O.SetHungerSmokeState: Invalid state: " .. tostring(state))
         return false
     end
 
-    -- Merge partial position with current position
-    local targetPos = mergePosition(smoke, posData.position)
+    local targetPos = OP.mergePosition(smoke, resolvedPose.position)
 
-    if duration > 0 then
-        -- Use lerp for smooth animation
-        U.setPositionSlow(smoke, targetPos, duration, nil, false)
-    else
-        -- Instant (no lerping)
-        smoke.setPosition(targetPos)
-    end
-
-    return true
-end
-
--- ============================================================================
--- RING_FLARE FUNCTIONS
--- ============================================================================
-
---- Sets RING_FLARE state (on/off) with optional animation
--- @param state string State: "on" or "off"
--- @param duration number Optional: Animation duration in seconds (default: 0.2)
--- @return boolean True if successful, false otherwise
--- @usage O.SetRingFlareState("on", 0.2)
-function O.SetRingFlareState(state, duration)
-    duration = duration or 0.2  -- Default to 0.2 seconds
-
-    local guid = G.GUIDS.RING_FLARE
-    if not guid then
-        U.AlertGM("O.SetRingFlareState: No GUID found for RING_FLARE")
-        return false
-    end
-
-    local flare = getObjectFromGUID(guid)
-    if not flare then
-        U.AlertGM("O.SetRingFlareState: RING_FLARE not found")
-        return false
-    end
-
-    local posData = C.ObjectPositions.RING_FLARE[state]
-    if not posData then
-        U.AlertGM("O.SetRingFlareState: Invalid state: " .. tostring(state))
-        return false
-    end
-
-    -- Merge partial position with current position
-    local targetPos = mergePosition(flare, posData.position)
-
-    if duration > 0 then
-        -- Use lerp for smooth animation
-        U.setPositionSlow(flare, targetPos, duration, nil, false)
-    else
-        -- Instant (no lerping)
-        flare.setPosition(targetPos)
-    end
+    applyPositionTransition(smoke, targetPos, resolvedPose, duration)
 
     return true
 end

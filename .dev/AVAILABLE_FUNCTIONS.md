@@ -4,7 +4,7 @@
 
 **Status:** This document should be updated whenever new functions are added to any module.
 
-**Last Updated:** 2026-01-01
+**Last Updated:** 2026-04-25
 
 ---
 
@@ -285,6 +285,20 @@
 
 ---
 
+## 4.1 OBJECTS MODULE (`core/objects.ttslua`)
+
+**Require:** `local O = require("core.objects")`
+
+### Signal Fire Functions
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `O.SetSignalFireState(color, state, duration)` | Set a player's signal fire `"on"` or `"off"` | `O.SetSignalFireState("Brown", "on", 0.2)` |
+| `O.GetSignalFireState(color)` | Infer a player's signal fire state from its current height | `local state = O.GetSignalFireState("Brown")` |
+| `O.ToggleSignalFireState(color, duration)` | Toggle a player's signal fire and return the new state | `local state = O.ToggleSignalFireState("Brown", 0.2)` |
+
+---
+
 ## 5. SOUNDSCAPE MODULE (`core/soundscape.ttslua`)
 
 **Require:** `local Soundscape = require("core.soundscape")`
@@ -418,6 +432,10 @@
 ### Need to animate objects?
 
 → Use `U.setPositionSlow()`, `U.setRotationSlow()`, `U.setScaleSlow()`, `U.Lerp()`
+
+### Need to control signal fires?
+
+→ Use `O.SetSignalFireState()`, `O.GetSignalFireState()`, `O.ToggleSignalFireState()`
 
 ### Need to wait for conditions?
 

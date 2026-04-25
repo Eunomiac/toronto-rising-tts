@@ -1,0 +1,71 @@
+---@diagnostic disable: lowercase-global
+--[[
+    Signal Candle Script (ui/ui_signal_candle.ttslua)
+
+    Attach this script to each player's unlit signal candle. The candle reads its
+    owner from the "<Color>Object" tag and creates an invisible click target on
+    its top face. Clicking the candle toggles that player's signal fire.
+]]
+
+local C = require("lib.constants")
+local O = require("core.objects")
+
+local BUTTON_POSITION = { 0, 0.42, 0 }
+local BUTTON_WIDTH = 850
+local BUTTON_HEIGHT = 850
+-- Use instant movement (matching core/debug.ttslua test flow) so object scripts
+-- do not depend on coroutine-driven animation helpers.
+local TOGGLE_DURATION = 0
+
+--- Returns this candle's owner seat color from its "<Color>Object" TTS tag.
+-- @return string|nil Player color, or nil if no color ownership tag is found
+local function getSignalCandleColor()
+    local tags = self.getTags()
+    for _, tag in ipairs(tags) do
+        for _, color in ipairs(C.PlayerColors) do
+            if tag == string.format("%sObject", color) then
+                return color
+            end
+        end
+    end
+
+    return nil
+end
+
+--- Creates the invisible click button covering the candle's top face.
+function createButtons()
+    self.clearButtons()
+    self.createButton({
+        click_function = "click_signalCandle",
+        function_owner = self,
+        position = BUTTON_POSITION,
+        height = BUTTON_HEIGHT,
+        width = BUTTON_WIDTH,
+        color = { 1, 1, 1, 0 },
+    })
+end
+
+--- Re-creates the signal candle button whenever the object script loads.
+-- @param _savedData string Saved object state, unused
+function onLoad(_savedData)
+    createButtons()
+end
+
+--- Toggles the owning player's signal fire when the candle is clicked.
+-- @param _buttonId number Button ID supplied by TTS, unused
+-- @param clickColor string TTS seat color of the player who clicked
+function click_signalCandle(_buttonId, clickColor)
+    local playerColor = getSignalCandleColor()
+    if playerColor == nil then
+        print(string.format("[SignalCandle] %s is missing a <Color>Object tag.", self.getName()))
+        return
+    end
+
+    local nextState = O.ToggleSignalFireState(playerColor, TOGGLE_DURATION)
+    if nextState == nil then
+        print(string.format("[SignalCandle] Failed to toggle signal light for %s.", playerColor))
+        return
+    end
+
+    print(string.format("[SignalCandle] %s toggled %s signal light %s.", clickColor, playerColor, nextState))
+end

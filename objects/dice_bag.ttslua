@@ -119,6 +119,13 @@ function click_roll(_, color)
         return
     end
 
+    -- During the post-result broadcast delay, a bag click should close the drawer now
+    -- instead of initiating a fresh roll while delayed cleanup is still pending.
+    local consumedCleanup = Global.call("GlobalConsumePendingRollCleanup", { color = bagColor })
+    if consumedCleanup == true then
+        return
+    end
+
     local dieType = getDieType()
     if dieType == nil then
         print("[DiceBag] Bag is missing a NormalDie/HungerDie tag — cannot determine die type.")

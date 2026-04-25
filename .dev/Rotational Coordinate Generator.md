@@ -9,23 +9,42 @@ This document describes layout math for player object groups around a table cent
 ```lua
 local R = require("lib.rotational-seat-layout")
 
+local sourceObjects = {
+    -- entries used only for seats in C.PlayerColors
+    player = {
+        getObjectFromGUID("b13642"), -- HAND_ZONE_RED
+        getObjectFromGUID("f10182"), -- CSHEET_PAGE_1_RED
+    },
+    -- entries used only for non-player seats (e.g. NPC1, NPC2)
+    other = {
+        getObjectFromGUID("cc2959"), -- SIGNAL_FIRE_RED
+    },
+    -- entries used for every seat type
+    all = {
+        getObjectFromGUID("c81772"), -- SIGNAL_CANDLE_RED
+        getObjectFromGUID("a3ae6c"), -- DICE_NORMAL_RED
+    },
+}
+
 local computed = R.generateRotationalCoordinates(
-    sourceObjects,       -- [1] = anchor; each entry: GameObject, GUID string, or { guid = "..." }
+    sourceObjects,       -- nested table: { player = {...}, other = {...}, all = {...} }
     centerPoint,         -- table or Vector: axis of rotation + cylindrical origin for layout math
     numSegments,         -- integer ≥ 1: seats (polygon vertices) around the table
     angleSegmentOne,     -- number (degrees): azimuth of segment 1; 0° = +Z (see util conventions)
-    playerToPositionMap, -- keys = arbitrary non-empty strings (PC colors, NPC seat ids, …); values = segment 1..numSegments
-    referencePlayerColor,-- string: templates’ name suffix must be _ .. string.upper(this) (A–Z only in suffix; see pattern below)
+    playerToPositionMap, -- keys = arbitrary non-empty strings (PC colors or non-player seat ids); values = segment 1..numSegments
+    referencePlayerColor,-- string: templates’ suffix must be _ .. string.upper(this) (uppercase alphanumeric suffix)
     options              -- optional table; omit entirely to use defaults (see below)
 )
 
 -- options (all optional keys):
+--   anchorIndex          — index of anchor slot within active reference-seat slots (default 1)
+--   radius               — explicit center radius override (default: inferred from reference anchor placement)
 --   frameRefsRelativePath — workspace path for FrameReference Lua (default "debug_logs/seat_layout_frame_refs.lua")
 --   frameRefsVarName      — global name in generated file (default "SEAT_LAYOUT_FRAME_REFS")
 
 R.spawnSeatObjectsFromTemplate(
     computed,            -- return value from generateRotationalCoordinates
-    sourceObjects,       -- same ordered list as passed to generateRotationalCoordinates
+    sourceObjects,       -- same nested table passed to generateRotationalCoordinates
     options              -- optional table; omit to use default path + var name (see below)
 )
 
@@ -33,6 +52,10 @@ R.spawnSeatObjectsFromTemplate(
 --   guidMapRelativePath — default "debug_logs/seat_layout_guids.lua"
 --   guidMapVarName      — default "SEAT_LAYOUT_OBJECT_GUIDS"
 --   guidTransformsVarName — default "SEAT_LAYOUT_OBJECT_TRANSFORMS" (appended to same output file)
+--   guidFollowerTransformsVarName — default "SEAT_LAYOUT_FOLLOWER_OBJECT_TRANSFORMS" (same output file)
+--   playerSeatRelativeObjectsBySeat — optional map: seatKey -> array of object refs that should follow that
+--                                     seat's hand zone rigidly (player seats only; ignored unless a HAND_ZONE slot
+--                                     is active for that seat)
 
 -- Wipe generated clones (and any other `{seatKey}Object` pieces except templates):
 --   seatKeys — same shape as playerToPositionMap (map) or an array of seat id strings
@@ -52,11 +75,17 @@ Assume an octagonal table centered on the table origin, segment 1 toward **+Z**,
 local R = require("lib.rotational-seat-layout")
 
 local sourceObjects = {
-    getObjectFromGUID("a1b2c3"),  -- anchor (first object); same ROLE_COLOR rule as siblings (any prefix, _RED suffix here)
-    getObjectFromGUID("d4e5f6"),
-    getObjectFromGUID("789abc"),
+    player = {
+        getObjectFromGUID("b13642"), -- HAND_ZONE_RED (player seats only)
+        getObjectFromGUID("f10182"), -- CSHEET_PAGE_1_RED (player seats only)
+    },
+    other = {
+        getObjectFromGUID("cc2959"), -- SIGNAL_FIRE_RED (other seats only)
+    },
+    all = {
+        getObjectFromGUID("c81772"), -- SIGNAL_CANDLE_RED (all seats)
+    },
 }
--- Alternatively: { "a1b2c3", "d4e5f6", "789abc" } — mixed forms are allowed.
 
 local centerPoint = { x = 0, y = 1.5, z = 0 }
 -- Or: Vector(0, 1.5, 0)
@@ -71,6 +100,7 @@ local playerToPositionMap = {
     Red = 3,
     Blue = 5,
     Yellow = 1,
+    NPC1 = 6,
 }
 
 local referencePlayerColor = "Red"
@@ -84,6 +114,7 @@ local computed = R.generateRotationalCoordinates(
     playerToPositionMap,
     referencePlayerColor,
     {
+        radius = 24,
         frameRefsRelativePath = "debug_logs/seat_layout_frame_refs.lua",
         frameRefsVarName = "SEAT_LAYOUT_FRAME_REFS",
     }
@@ -95,6 +126,9 @@ R.spawnSeatObjectsFromTemplate(
     {
         guidMapRelativePath = "debug_logs/seat_layout_guids.lua",
         guidMapVarName = "SEAT_LAYOUT_OBJECT_GUIDS",
+        playerSeatRelativeObjectsBySeat = {
+            Pink = { getObjectFromGUID("abcdef") }, -- e.g. tarot deck follows Pink hand zone
+        },
     }
 )
 ```
@@ -148,57 +182,19 @@ local playerToPositionMap = {
 
 local referencePlayerColor = "Red"
 
-local computed = R.generateRotationalCoordinates(
-    referencePlayerColor,
-    centerPoint,
-    numSegments,
-    angleSegmentOne,
-    playerToPositionMap,
-    referencePlayerColor,
-    {
-        frameRefsRelativePath = "debug_logs/seat_layout_frame_refs.lua",
-        frameRefsVarName = "SEAT_LAYOUT_FRAME_REFS",
-    }
-)
-
-R.spawnSeatObjectsFromTemplate(
-    computed,
-    referencePlayerColor,
-    {
-        guidMapRelativePath = "debug_logs/seat_layout_guids.lua",
-        guidMapVarName = "SEAT_LAYOUT_OBJECT_GUIDS",
-    }
-)
-
-```
-
-```lua
-local R = require("lib.rotational-seat-layout")
-
 local sourceObjects = {
-    getObjectFromGUID("a1b2c3"),  -- anchor (first object); same ROLE_COLOR rule as siblings (any prefix, _RED suffix here)
-    getObjectFromGUID("d4e5f6"),
-    getObjectFromGUID("789abc"),
+  player = {
+    getObjectFromGUID("b13642"), -- HAND_ZONE_RED
+    getObjectFromGUID("f10182"), -- CSHEET_PAGE_1_RED
+  },
+  other = {
+    getObjectFromGUID("cc2959"), -- SIGNAL_FIRE_RED
+  },
+  all = {
+    getObjectFromGUID("c81772"), -- SIGNAL_CANDLE_RED
+    getObjectFromGUID("a3ae6c"), -- DICE_NORMAL_RED
+  }
 }
--- Alternatively: { "a1b2c3", "d4e5f6", "789abc" } — mixed forms are allowed.
-
-local centerPoint = { x = 0, y = 1.5, z = 0 }
--- Or: Vector(0, 1.5, 0)
-
-local numSegments = 8
-
-local angleSegmentOne = 0
--- Azimuth of segment 1 in degrees (0° = +Z). Each higher segment index adds a positive step — clockwise
--- around the table when viewed from above (+Y), same as a clock: 12 o'clock = 0°, 3 o'clock = 90°, etc.
-
-local playerToPositionMap = {
-    Red = 3,
-    Blue = 5,
-    Yellow = 1,
-}
-
-local referencePlayerColor = "Red"
--- Every name in sourceObjects must end with _RED; map must have Red = segment matching anchor.
 
 local computed = R.generateRotationalCoordinates(
     sourceObjects,
@@ -221,7 +217,10 @@ R.spawnSeatObjectsFromTemplate(
         guidMapVarName = "SEAT_LAYOUT_OBJECT_GUIDS",
     }
 )
+
 ```
+
+Legacy flat `sourceObjects` examples were removed. Use the nested `{ player, other, all }` schema shown above.
 
 **Minimal calls** (defaults for workspace paths and table names):
 
@@ -268,7 +267,7 @@ All **horizontal angle** utilities that share the **`x = sin(θ)·r`, `z = cos(�
 
 ### Template naming
 
-* Each template object’s **Name** or **Nickname** (Name first; if it does not match the pattern, Nickname is used) must match **`^(.+)_(%u+)$`**: non-empty **role** prefix, `_`, then an **all-caps A–Z** suffix only (no digits). The suffix must equal **`string.upper(referencePlayerColor)`**. The role is everything before that final `_SUFFIX` (e.g. `HAND_ZONE_RED` → role `HAND_ZONE`, suffix `RED`; `A_B_C_WOLF` → role `A_B_C`, suffix `WOLF`).
+* Each template object’s **Name** or **Nickname** (Name first; if it does not match the pattern, Nickname is used) must match **`^(.+)_([%u%d]+)$`**: non-empty **role** prefix, `_`, then an **uppercase alphanumeric** suffix (A–Z, 0–9). The suffix must equal **`string.upper(referencePlayerColor)`**. The role is everything before that final `_SUFFIX` (e.g. `HAND_ZONE_RED` → role `HAND_ZONE`, suffix `RED`; `CSHEET_PAGE_1_NPC1` → role `CSHEET_PAGE_1`, suffix `NPC1`).
 * **`playerToPositionMap` keys** are **not** validated against `Player.getAvailableColors()` or `C.PlayerColors`. Use any string labels you want (e.g. `Brown`, `NPC_RING_1`). They appear in exported Lua tables and in tags as `{key}Object`.
 * **`referencePlayerColor`** is which seat owns the placed templates: every template shares its suffix, and `playerToPositionMap[referencePlayerColor]` must match the segment inferred from the **anchor** within **3°**.
 * **`spawnSeatObjectsFromTemplate`** only needs `computed` and `sourceObjects`; it uses `computed.referencePlayerColor`.
@@ -286,9 +285,10 @@ All **horizontal angle** utilities that share the **`x = sin(θ)·r`, `z = cos(�
 * **Nothing is written from inside the TTS game executable.** The **External Editor** path delivers `sendExternalMessage` to whatever listens on **39998**; this repo’s **tts-bridge** writes each `name` under **`.dev/.debug/`** (e.g. `debug_logs/seat_layout_frame_refs.lua` → `toronto-rising-tts/.dev/.debug/debug_logs/seat_layout_frame_refs.lua`). See [`.dev/DEBUG_FILE_LOGGING.md`](DEBUG_FILE_LOGGING.md). If nothing listens on **39998** or External Editor is off, you may see **no file** even when Lua prints success.
 * If **`sendExternalMessage`** is **nil**, `generateRotationalCoordinates` / spawn **error** at write time. If it is a **non-nil stub** but nothing is listening, `DEBUG.writeWorkspaceFile` can still return **true** — check the TTS log for `DEBUG: Wrote .dev/.debug/...`.
 * **Frame references** (after `generateRotationalCoordinates`): default `debug_logs/seat_layout_frame_refs.lua`, Lua table `SEAT_LAYOUT_FRAME_REFS` — **single level**: each key is `ROLEKEY_` .. `string.upper(seatKey)` (e.g. `HUNGER_SMOKE_BROWN` → `{ position = Vector(...), rotation = Vector(...) }`). If two role/seat pairs normalize to the same string, export **errors** (rare naming collision).
-* **GUID map output** (after `spawnSeatObjectsFromTemplate`): default `debug_logs/seat_layout_guids.lua` now contains two tables:
+* **GUID map output** (after `spawnSeatObjectsFromTemplate`): default `debug_logs/seat_layout_guids.lua` now contains three tables:
   * `SEAT_LAYOUT_OBJECT_GUIDS` — **single level** `ROLEKEY_` .. `string.upper(seatKey)` = `"guid"` (e.g. `HUNGER_SMOKE_BROWN = "abc123"`). Same flattening rule/collision behavior as frame refs.
   * `SEAT_LAYOUT_OBJECT_TRANSFORMS` (or `guidTransformsVarName`) — nested `[seatKey][roleKey] = { position = Vector(...), rotation = Vector(...) }`, read from live objects at export time (moved/cloned objects plus reference seat templates).
+  * `SEAT_LAYOUT_FOLLOWER_OBJECT_TRANSFORMS` (or `guidFollowerTransformsVarName`) — nested `[seatKey][objectGuid] = { position = Vector(...), rotation = Vector(...) }` for objects moved via `playerSeatRelativeObjectsBySeat`.
 
 ---
 

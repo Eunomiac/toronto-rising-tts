@@ -236,6 +236,10 @@ function S.GetDefaultGameState()
             channels = {},
             capabilities = {},
         },
+        seatLayout = {
+            currentTableKey = nil, -- e.g. "Table A"; preferred over raw center persistence
+            radius = nil,
+        },
         npcs = {
             instances = {},
         },
@@ -406,6 +410,15 @@ function S.validateState()
         gameState.soundscape = {}
     end
     S.mergeDefaults(gameState.soundscape, S.GetDefaultGameState().soundscape)
+    if not gameState.seatLayout or type(gameState.seatLayout) ~= "table" then
+        gameState.seatLayout = {}
+    end
+    if gameState.seatLayout.currentTableKey ~= nil and type(gameState.seatLayout.currentTableKey) ~= "string" then
+        gameState.seatLayout.currentTableKey = nil
+    end
+    if gameState.seatLayout.radius ~= nil and type(gameState.seatLayout.radius) ~= "number" then
+        gameState.seatLayout.radius = nil
+    end
 
     if not gameState.npcs or type(gameState.npcs) ~= "table" then
         gameState.npcs = { instances = {} }
@@ -747,6 +760,20 @@ local function buildSaveState()
     -- Copy soundscape data (only serializable fields)
     if gameState.soundscape and type(gameState.soundscape) == "table" then
         saveState.soundscape = U.clone(gameState.soundscape, true)
+    end
+
+    -- Copy seat-layout state used by relative ObjectPositions resolution.
+    if gameState.seatLayout and type(gameState.seatLayout) == "table" then
+        saveState.seatLayout = {}
+        if type(gameState.seatLayout.currentTableKey) == "string" and gameState.seatLayout.currentTableKey ~= "" then
+            saveState.seatLayout.currentTableKey = gameState.seatLayout.currentTableKey
+        end
+        if type(gameState.seatLayout.radius) == "number" then
+            saveState.seatLayout.radius = gameState.seatLayout.radius
+        end
+        if next(saveState.seatLayout) == nil then
+            saveState.seatLayout = nil
+        end
     end
 
     if gameState.npcs and type(gameState.npcs) == "table" and gameState.npcs.instances and type(gameState.npcs.instances) == "table" then

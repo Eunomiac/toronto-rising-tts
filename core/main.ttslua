@@ -62,6 +62,111 @@ function M.setupPlayers()
     end
   )
 
+  local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
+  if type(currentTableKey) ~= "string" or currentTableKey == "" then
+    local guidToTableKey = {}
+    for tableKey, tableCfg in pairs(C.Tables or {}) do
+      if type(tableKey) == "string" and type(tableCfg) == "table" and type(tableCfg.guid) == "string" then
+        guidToTableKey[tableCfg.guid] = tableKey
+      end
+    end
+
+    local function getActiveTaggedTables()
+      local tagged = nil
+      local okAllTags, allTagRes = pcall(function()
+        ---@diagnostic disable-next-line: undefined-global
+        return getObjectsWithAllTags({ "table", "activeTable" })
+      end)
+      if okAllTags and type(allTagRes) == "table" then
+        tagged = allTagRes
+      else
+        -- Fallback: environments without getObjectsWithAllTags.
+        local okTableTag, tableTagRes = pcall(function()
+          return getObjectsWithTag("table")
+        end)
+        if okTableTag and type(tableTagRes) == "table" then
+          tagged = {}
+          for _, obj in ipairs(tableTagRes) do
+            if obj ~= nil then
+              local okTags, tags = pcall(function()
+                return obj.getTags()
+              end)
+              if okTags and type(tags) == "table" then
+                local hasActive = false
+                for _, t in ipairs(tags) do
+                  if t == "activeTable" then
+                    hasActive = true
+                    break
+                  end
+                end
+                if hasActive then
+                  table.insert(tagged, obj)
+                end
+              end
+            end
+          end
+        end
+      end
+      return tagged
+    end
+
+    local maxAttempts = 30
+    local attempt = 0
+    local function inferOnce()
+      attempt = attempt + 1
+      local activeObjs = getActiveTaggedTables()
+      if type(activeObjs) ~= "table" then
+        return false
+      end
+      if #activeObjs ~= 1 then
+        return false
+      end
+      local activeObj = activeObjs[1]
+      local guid = nil
+      local okGuid, guidOrErr = pcall(function()
+        return activeObj.getGUID()
+      end)
+      if okGuid and type(guidOrErr) == "string" then
+        guid = guidOrErr
+      end
+      if guid == nil or guid == "" then
+        return false
+      end
+      local inferred = guidToTableKey[guid]
+      if type(inferred) == "string" and inferred ~= "" then
+        S.setStateVal(inferred, "seatLayout", "currentTableKey")
+        print("Main: Inferred active table from tags: " .. inferred)
+        return true
+      end
+      -- Handle tagged object not present in C.Tables mapping.
+      print("Main: Warning - activeTable tag found on unknown table GUID: " .. tostring(guid))
+      return false
+    end
+
+    local function pollInfer()
+      local already = S.getStateVal("seatLayout", "currentTableKey")
+      if type(already) == "string" and already ~= "" then
+        return
+      end
+      local done = inferOnce()
+      if done then
+        return
+      end
+      if attempt < maxAttempts then
+        Wait.time(pollInfer, 0.5)
+      else
+        local activeObjs = getActiveTaggedTables()
+        local count = type(activeObjs) == "table" and #activeObjs or 0
+        print("Main: Warning - unable to infer active table from tags (active-tagged count = " .. tostring(count) .. ").")
+        if count > 1 then
+          print("Main: Warning - multiple objects have both 'table' and 'activeTable' tags.")
+        end
+      end
+    end
+
+    Wait.time(pollInfer, 0.5)
+  end
+
   -- TODO: Assign Storyteller role (e.g., Black or Brown player)
   -- TODO: Initialize player-specific data in game state (hunger, willpower, health, etc.)
   -- TODO: Set up player-specific UI elements
