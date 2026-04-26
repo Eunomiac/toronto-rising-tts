@@ -2,6 +2,51 @@
 
 This document describes layout math for player object groups around a table center, and the **implemented** API in [`lib/rotational-seat-layout.ttslua`](../lib/rotational-seat-layout.ttslua).
 
+## Type Definitions
+
+(TypeScript notation is used for this section for convenience and clarity.)
+
+```typescript
+// A Frame describes an object's position and rotation in the game world, in absolute coordinates.
+type Frame = {
+  position: Vector,
+  rotation: Vector
+}
+
+// A RelFrame describes an object's position and rotation in the game world, relative to an anchor object and a center point.
+type RelFrame = {
+  anchorGUID: string, // the GUID of the anchor object
+  centerPoint?: Vector, // the center point of the cylindrical coordinate system (default: the centerPoint of the current table as defined in C.Tables[currentTableKey].centerPoint)
+  position?: Vector, // the absolute position of the object in the game world (same as Frame.position); mutually exclusive with distanceDelta
+  distanceDelta?: number, // the difference in radial distance to centerPoint from the anchor object's position; mutually exclusive with position
+  rotation?: Vector, // the absolute rotation of the object in the game world (same as Frame.rotation); mutually exclusive with rotationDelta
+  rotationDelta?: Vector, // the difference in rotation to the anchor object's rotation; mutually exclusive with rotation
+}
+
+// A Transition describes the position and rotation of an object that is meant to be moved to over a period of time, and includes additional options for how the object should be moved.
+type Transition = (Frame | RelFrame) & {
+  transitionDuration?: number, // the duration of the transition in seconds, overriding any duration set by the function moving the object (when 0, don't use `setPositionSlow` or `setPositionSmooth`; just use `setPosition` or `setRotation` to avoid collisions or animation glitches)
+  transitionDelay?: number, // the delay before the transition starts in seconds, in addition to any sequencing or other transition delays that are set by the function moving the object (default: 0)
+  isLocked?: boolean, // if "isLocked" is present, then the object's lock state should be toggled accordingly. When unlocking, this should happen at the very end of the transition. When locking, this should happen at the very beginning of the transition.
+}
+```
+
+**Note:** `Frame`, `RelFrame`, and `Vector` can all be supplied as `Partial<Frame|RelFrame|Vector>` objects, i.e. tables with only some of the fields present. Lacking fields should simply be derived from the current state of the object. (E.g. `{position = {y = 10}}` would describe the endpoint of a translation along the y-axis by 10 units, while a `Frame` with only a `position` field would leave the `rotation` of the object unchanged.)
+
+## Definitions
+
+| Definition | Description |
+| ------------ | ------------- |
+| "role" | The name of an object without its uppercase "role suffix" (e.g. "SIGNAL_FIRE" for "SIGNAL_FIRE_RED") |
+| "role suffix" | The suffix of an object's name that indicates its player color or NPC slot, with colors converted to proper case alphanumeric (e.g. "Red" for "SIGNAL_FIRE_RED", "NPC1" for "SIGNAL_FIRE_NPC1") |
+| "table" | A full table definition as defined in `C.Tables`, including the GUID for the table object itself, its inactive and active positions, any associated component objects and their associated NPC slots, and the parameters necessary to run `R.generateRotationalCoordinates` with that table. |
+| "table slot" | A string that identifies a slot on a table, e.g. "Red", "NPC1", "Brown". This will match the "role suffix" of objects associated with that slot. |
+| "table slot object" | An object associated with a table slot, e.g. a player light, a player chair, a signal fire, a signal candle, a dice bag, etc. These can be identified by their "table slot tag". **EXCEPTION:** Player hand zones cannot be tagged (as that interferes with the TTS Hand Zone system); they will need to be collected and handled separately. |
+| "table slot tag" | A tag on table slot objects (other than hand zones) that identifies them as such, and indicates the table slot to which they are associated. It comprises the "role suffix" of the object followed by "Object" (e.g. "RedObject", "NPC1Object", "BrownObject"). |
+| "player color" / "player seat" | One of the five seated player colors defined in `C.PlayerColors`: "Brown", "Orange", "Red", "Pink", "Purple". These are also role suffixes and table slot values. |
+| "npc seat" | One of the four NPC seats defined in `C.NPCSeats`: "NPC1", "NPC2", "NPC3", "NPC4". These are also role suffixes and table slot values, but unlike with player colors, they do not exist for every table. |
+| "hand zone anchor" | Because only players have physical hand zones, a more flexible reference point is needed to account for NPC slots. For players, the hand zone anchor is the hand zone itself. For NPCs, the hand zone anchor is a `Frame` representing where that seat's hand zone would be if it existed. By reducing player hand zones to hand zone anchors first, we can apply the same positioning logic to both players and NPCs. **Important:** The hand zone anchor is the primary anchor used when rotating objects around a table; it must be derived from actual hand zones (for players) or defined as a virtual `Frame` (for NPCs). As a result, hand zones are omitted from `sourceObjects` and must be derived/defined before the function proceeds. |
+
 ## Implementation (TTS)
 
 ### Parameter reference (skeleton)
@@ -10,24 +55,46 @@ This document describes layout math for player object groups around a table cent
 local R = require("lib.rotational-seat-layout")
 
 local sourceObjects = {
-    -- entries used only for seats in C.PlayerColors
+    -- "sourceObjects" is a nested table with the following fields:
+    --   - "player": source objects for player seats
+    --   - "other": source objects for non-player seats (e.g. NPC1..NPC4)
+    --   - "all": source objects for both player + non-player seats
+    --   - "relative": objects that rigidly follow their derived seat hand-zone anchor
+    --   - "cameraModes.bySeat": mode keys in C.RedCameraAngles.forSeat to rotate into per-player playerData.cameraAngles
+    --   - "cameraModes.universal": base mode keys that map to <base><referencePlayerColor> in C.RedCameraAngles.forUniversal,
+    --                              then rotate into gameState.seatLayout.universalCameraAngles as <base><seatKey>
+
+    -- entries used to move/spawn objects into player seats only
     player = {
-        getObjectFromGUID("b13642"), -- HAND_ZONE_RED
-        getObjectFromGUID("f10182"), -- CSHEET_PAGE_1_RED
+        "DICEBAG_HUNGER",
+        "f10182",
+        getObjectFromGUID("f10182"),
     },
-    -- entries used only for non-player seats (e.g. NPC1, NPC2)
+
+    -- entries used only for non-player seats
     other = {
-        getObjectFromGUID("cc2959"), -- SIGNAL_FIRE_RED
+        "SEAT_LIGHT_3",
     },
-    -- entries used for every seat type
+
+    -- entries used to move/spawn objects into player seats and NPC seats
     all = {
-        getObjectFromGUID("c81772"), -- SIGNAL_CANDLE_RED
-        getObjectFromGUID("a3ae6c"), -- DICE_NORMAL_RED
+        "SEAT_LIGHT_1",
+    },
+
+    -- entries used for relative objects; each element always refers to one object
+    relative = {
+        G.GUIDS.TAROT_DECK_PINK,
+    },
+
+    -- camera presets to rotate when applying this table layout
+    cameraModes = {
+        bySeat = { "default", "sheet", "diceTray" },
+        universal = { "facing", "sheet", "diceTray" },
     },
 }
 
 local computed = R.generateRotationalCoordinates(
-    sourceObjects,       -- nested table: { player = {...}, other = {...}, all = {...} }
+    sourceObjects,       -- nested table: { player = {...}, other = {...}, all = {...}, relative = {...}, cameraModes = {...} }
     centerPoint,         -- table or Vector: axis of rotation + cylindrical origin for layout math
     numSegments,         -- integer ≥ 1: seats (polygon vertices) around the table
     angleSegmentOne,     -- number (degrees): azimuth of segment 1; 0° = +Z (see util conventions)
@@ -41,21 +108,31 @@ local computed = R.generateRotationalCoordinates(
 --   radius               — explicit center radius override (default: inferred from reference anchor placement)
 --   frameRefsRelativePath — workspace path for FrameReference Lua (default "debug_logs/seat_layout_frame_refs.lua")
 --   frameRefsVarName      — global name in generated file (default "SEAT_LAYOUT_FRAME_REFS")
+--   currentTableKey       — optional key written to gameState.seatLayout.currentTableKey
 
-R.spawnSeatObjectsFromTemplate(
+R.resolveSeatObjects(
     computed,            -- return value from generateRotationalCoordinates
     sourceObjects,       -- same nested table passed to generateRotationalCoordinates
     options              -- optional table; omit to use default path + var name (see below)
 )
 
--- spawn options (all optional):
+-- resolve options (all optional):
+--   isSpawningPlayerObjects — boolean: whether to spawn objects with player color role suffixes if they do not already exist (default: false)
+--   isSpawningNPCObjects    — boolean: whether to spawn objects with npc seat role suffixes if they do not already exist (default: true)
 --   guidMapRelativePath — default "debug_logs/seat_layout_guids.lua"
 --   guidMapVarName      — default "SEAT_LAYOUT_OBJECT_GUIDS"
 --   guidTransformsVarName — default "SEAT_LAYOUT_OBJECT_TRANSFORMS" (appended to same output file)
 --   guidFollowerTransformsVarName — default "SEAT_LAYOUT_FOLLOWER_OBJECT_TRANSFORMS" (same output file)
---   playerSeatRelativeObjectsBySeat — optional map: seatKey -> array of object refs that should follow that
---                                     seat's hand zone rigidly (player seats only; ignored unless a HAND_ZONE slot
---                                     is active for that seat)
+--   playerSeatRelativeObjectsBySeat — optional map: seatKey -> array of refs to rigidly follow that seat's hand-zone anchor
+
+
+-- Main convenience API: wraps generateRotationalCoordinates + resolveSeatObjects, and then applies cameraModes.
+--   It rotates bySeat presets into per-player data, and universal presets into gameState.seatLayout.universalCameraAngles.
+R.resolveSeatObjectsFromTable(
+  tableRef,              -- table reference to a table object in C.Tables (which contains values for the other parameters required by `generateRotationalCoordinates`)
+  sourceObjects,         -- OPTIONAL sourceObjects table; defaults to C.TableSourceObjects if omitted
+  options                -- optional table (as above); omit entirely to use defaults (see above)
+)
 
 -- Wipe generated clones (and any other `{seatKey}Object` pieces except templates):
 --   seatKeys — same shape as playerToPositionMap (map) or an array of seat id strings
@@ -69,21 +146,26 @@ local removed = R.clearGeneratedSeatObjects(
 
 ### Worked example (concrete values)
 
-Assume an octagonal table centered on the table origin, segment 1 toward **+Z**, Red’s templates are already placed at the seat you consider segment **3**, and you want Blue at segment **5** and Yellow at segment **1**. Template objects use the `ROLE_COLOR` pattern (e.g. `PLAYER_LIGHT_1_RED`, `HAND_ZONE_RED` — the **`PLAYER_` prefix is not required**; only the trailing `_UPPERCASECOLOR` must match `referencePlayerColor`).
+Assume an octagonal table centered on the table origin, segment 1 toward **+Z**, Red’s templates are already placed at the seat you consider segment **3**, and you want Blue at segment **5** and Yellow at segment **1**. Template objects use the `ROLE_COLOR` pattern (e.g. `SEAT_LIGHT_1_RED`, `HAND_ZONE_RED` — the **`PLAYER_` prefix is not required**; only the trailing `_UPPERCASECOLOR` must match `referencePlayerColor`).
 
 ```lua
 local R = require("lib.rotational-seat-layout")
 
 local sourceObjects = {
     player = {
-        getObjectFromGUID("b13642"), -- HAND_ZONE_RED (player seats only)
-        getObjectFromGUID("f10182"), -- CSHEET_PAGE_1_RED (player seats only)
+        "CSHEET_PAGE_1", -- CSHEET_PAGE_1_BROWN, CSHEET_PAGE_1_ORANGE, CSHEET_PAGE_1_RED, CSHEET_PAGE_1_PINK, CSHEET_PAGE_1_PURPLE (player seats only)
     },
-    other = {
-        getObjectFromGUID("cc2959"), -- SIGNAL_FIRE_RED (other seats only)
-    },
+    other = {}, -- Empty; there are no NPC-specific objects in this example
     all = {
+        "SEAT_CHAIR", -- SEAT_CHAIR_BROWN, SEAT_CHAIR_ORANGE, SEAT_CHAIR_RED, SEAT_CHAIR_PINK, SEAT_CHAIR_PURPLE, SEAT_CHAIR_NPC1, SEAT_CHAIR_NPC2, SEAT_CHAIR_NPC3, SEAT_CHAIR_NPC4 (all seats, both player and NPC)
         getObjectFromGUID("c81772"), -- SIGNAL_CANDLE_RED (all seats)
+    },
+    relative = {
+      G.GUIDS.TAROT_DECK_PINK, -- The single object named TAROT_DECK_PINK with the table slot tag "PinkObject", which should rigidly follow Pink's hand-zone anchor.
+    },
+    cameraModes = {
+      bySeat = { "sheet", "diceTray" },
+      universal = { "facing" }, -- maps to C.RedCameraAngles.forUniversal.facingRed, then emits facingRed/facingBlue/... by seat key
     },
 }
 
@@ -120,7 +202,7 @@ local computed = R.generateRotationalCoordinates(
     }
 )
 
-R.spawnSeatObjectsFromTemplate(
+R.resolveSeatObjects(
     computed,
     sourceObjects,
     {
@@ -133,7 +215,7 @@ R.spawnSeatObjectsFromTemplate(
 )
 ```
 
-**Minimal calls** (defaults for workspace paths and table names):
+**Low-level minimal call** (manual geometry path):
 
 ```lua
 local computed = R.generateRotationalCoordinates(
@@ -144,96 +226,15 @@ local computed = R.generateRotationalCoordinates(
     { Red = 3, Blue = 5, Yellow = 1 },
     "Red"
 )
-R.spawnSeatObjectsFromTemplate(computed, sourceObjects)
+R.resolveSeatObjects(computed, sourceObjects)
 ```
 
-### WORKSPACE
-
-#### Template Objects
-
-* SIGNAL_FIRE_RED = "cc2959"
-* SIGNAL_CANDLE_RED = "c81772"
-* HAND_ZONE_RED = "b13642"
-* PLAYER_LIGHT_1_RED = "0cd76a"
-* PLAYER_CHAIR_RED = "474c0d"
-* PLAYER_LIGHT_2_RED = "41bbba"
-* HUNGER_SMOKE_RED = "5d1338"
-* CSHEET_PAGE_1_RED = "f10182"
-* CSHEET_PAGE_2_RED = "357ba5"
-* DICE_NORMAL_RED = "a3ae6c"
-* DICE_HUNGER_RED = "6d1c15"
+**Recommended minimal call** (table-driven wrapper; applies object transforms + cameraModes):
 
 ```lua
-
-
-local centerPoint = { x = 0, y = 0, z = 50 }
-
-local numSegments = 20
-
-local angleSegmentOne = 0
-
-local playerToPositionMap = {
-  Brown = 9,
-  Orange = 10,
-  Red = 11,
-  Pink = 12,
-  Purple = 13
-}
-
-local referencePlayerColor = "Red"
-
-local sourceObjects = {
-  player = {
-    getObjectFromGUID("b13642"), -- HAND_ZONE_RED
-    getObjectFromGUID("f10182"), -- CSHEET_PAGE_1_RED
-  },
-  other = {
-    getObjectFromGUID("cc2959"), -- SIGNAL_FIRE_RED
-  },
-  all = {
-    getObjectFromGUID("c81772"), -- SIGNAL_CANDLE_RED
-    getObjectFromGUID("a3ae6c"), -- DICE_NORMAL_RED
-  }
-}
-
-local computed = R.generateRotationalCoordinates(
-    sourceObjects,
-    centerPoint,
-    numSegments,
-    angleSegmentOne,
-    playerToPositionMap,
-    referencePlayerColor,
-    {
-        frameRefsRelativePath = "debug_logs/seat_layout_frame_refs.lua",
-        frameRefsVarName = "SEAT_LAYOUT_FRAME_REFS",
-    }
-)
-
-R.spawnSeatObjectsFromTemplate(
-    computed,
-    sourceObjects,
-    {
-        guidMapRelativePath = "debug_logs/seat_layout_guids.lua",
-        guidMapVarName = "SEAT_LAYOUT_OBJECT_GUIDS",
-    }
-)
-
-```
-
-Legacy flat `sourceObjects` examples were removed. Use the nested `{ player, other, all }` schema shown above.
-
-**Minimal calls** (defaults for workspace paths and table names):
-
-```lua
-local computed = R.generateRotationalCoordinates(
-    sourceObjects,
-    { x = 0, y = 1.5, z = 0 },
-    8,
-    0,
-    { Red = 3, Blue = 5, Yellow = 1 },
-    "Red"
-)
-R.spawnSeatObjectsFromTemplate(computed, sourceObjects)
+R.resolveSeatObjectsFromTable("Table A")
+-- Equivalent to:
+--   R.resolveSeatObjectsFromTable("Table A", C.TableSourceObjects, nil)
 ```
 
 ### Geometry conventions
@@ -270,7 +271,7 @@ All **horizontal angle** utilities that share the **`x = sin(θ)·r`, `z = cos(�
 * Each template object’s **Name** or **Nickname** (Name first; if it does not match the pattern, Nickname is used) must match **`^(.+)_([%u%d]+)$`**: non-empty **role** prefix, `_`, then an **uppercase alphanumeric** suffix (A–Z, 0–9). The suffix must equal **`string.upper(referencePlayerColor)`**. The role is everything before that final `_SUFFIX` (e.g. `HAND_ZONE_RED` → role `HAND_ZONE`, suffix `RED`; `CSHEET_PAGE_1_NPC1` → role `CSHEET_PAGE_1`, suffix `NPC1`).
 * **`playerToPositionMap` keys** are **not** validated against `Player.getAvailableColors()` or `C.PlayerColors`. Use any string labels you want (e.g. `Brown`, `NPC_RING_1`). They appear in exported Lua tables and in tags as `{key}Object`.
 * **`referencePlayerColor`** is which seat owns the placed templates: every template shares its suffix, and `playerToPositionMap[referencePlayerColor]` must match the segment inferred from the **anchor** within **3°**.
-* **`spawnSeatObjectsFromTemplate`** only needs `computed` and `sourceObjects`; it uses `computed.referencePlayerColor`.
+* **`resolveSeatObjects`** only needs `computed` and `sourceObjects`; it uses `computed.referencePlayerColor`.
 
 ### Tags and cleanup
 
@@ -283,9 +284,9 @@ All **horizontal angle** utilities that share the **`x = sin(θ)·r`, `z = cos(�
 ### Workspace output (TTS Tools)
 
 * **Nothing is written from inside the TTS game executable.** The **External Editor** path delivers `sendExternalMessage` to whatever listens on **39998**; this repo’s **tts-bridge** writes each `name` under **`.dev/.debug/`** (e.g. `debug_logs/seat_layout_frame_refs.lua` → `toronto-rising-tts/.dev/.debug/debug_logs/seat_layout_frame_refs.lua`). See [`.dev/DEBUG_FILE_LOGGING.md`](DEBUG_FILE_LOGGING.md). If nothing listens on **39998** or External Editor is off, you may see **no file** even when Lua prints success.
-* If **`sendExternalMessage`** is **nil**, `generateRotationalCoordinates` / spawn **error** at write time. If it is a **non-nil stub** but nothing is listening, `DEBUG.writeWorkspaceFile` can still return **true** — check the TTS log for `DEBUG: Wrote .dev/.debug/...`.
+* If **`sendExternalMessage`** is **nil**, `generateRotationalCoordinates` / `resolveSeatObjects` **error** at write time. If it is a **non-nil stub** but nothing is listening, `DEBUG.writeWorkspaceFile` can still return **true** — check the TTS log for `DEBUG: Wrote .dev/.debug/...`.
 * **Frame references** (after `generateRotationalCoordinates`): default `debug_logs/seat_layout_frame_refs.lua`, Lua table `SEAT_LAYOUT_FRAME_REFS` — **single level**: each key is `ROLEKEY_` .. `string.upper(seatKey)` (e.g. `HUNGER_SMOKE_BROWN` → `{ position = Vector(...), rotation = Vector(...) }`). If two role/seat pairs normalize to the same string, export **errors** (rare naming collision).
-* **GUID map output** (after `spawnSeatObjectsFromTemplate`): default `debug_logs/seat_layout_guids.lua` now contains three tables:
+* **GUID map output** (after `resolveSeatObjects`): default `debug_logs/seat_layout_guids.lua` now contains three tables:
   * `SEAT_LAYOUT_OBJECT_GUIDS` — **single level** `ROLEKEY_` .. `string.upper(seatKey)` = `"guid"` (e.g. `HUNGER_SMOKE_BROWN = "abc123"`). Same flattening rule/collision behavior as frame refs.
   * `SEAT_LAYOUT_OBJECT_TRANSFORMS` (or `guidTransformsVarName`) — nested `[seatKey][roleKey] = { position = Vector(...), rotation = Vector(...) }`, read from live objects at export time (moved/cloned objects plus reference seat templates).
   * `SEAT_LAYOUT_FOLLOWER_OBJECT_TRANSFORMS` (or `guidFollowerTransformsVarName`) — nested `[seatKey][objectGuid] = { position = Vector(...), rotation = Vector(...) }` for objects moved via `playerSeatRelativeObjectsBySeat`.
