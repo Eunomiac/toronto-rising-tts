@@ -78,7 +78,7 @@ function OP.resolveStatePose(obj, entry, state)
     transitionDelay = pose.transitionDelay,
   }
 
-  local anchorGUID = entry.anchorGUID
+  local anchorGUID = pose.anchorGUID
   local hasAnchor = type(anchorGUID) == "string" and anchorGUID ~= ""
   local anchor = nil
   if hasAnchor then

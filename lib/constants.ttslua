@@ -87,8 +87,8 @@ C.GetPlayerID = function(playerRef)
 end
 
 
--- Player Colors (VTM5E-specific)
--- Storyteller is always Black. Player colors are: Brown, Orange, Red, Pink (in that order)
+-- Player Colors
+-- Storyteller is always Black. Player colors are: Brown, Orange, Red, Pink, Purple (in that order)
 C.PlayerColors = {
     "Brown", "Orange", "Red", "Pink", "Purple"
 }
@@ -98,15 +98,9 @@ C.PlayerColors = {
 -- Player HUD: "main" = majority of gameplay (Humanity stain/heal); "end" = end-of-session (e.g. Remorse).
 C.Phases = {
     SESSION_START = "SessionStart",
-    SCENE = "Scene",
-    DOWNTIME = "Downtime",
-    COMBAT = "Combat",
-    MEMORIAM = "Memoriam",
-    SESSION_END = "SessionEnd",
     PLAY = "Play",
-    WAKING = "waking",
-    MAIN = "main",
-    END = "end"
+    DOWNTIME = "Downtime",
+    SESSION_END = "SessionEnd"
 }
 
 -- PC name/color/keys: C.PlayerData + charKey; full stat blocks: lib/pcs_data.ttslua (from lib/json/PCS.json).
@@ -299,6 +293,7 @@ C.MAX_HUNGER = 5  -- Maximum hunger value (0-5 scale)
 -- ROUSE / ROUSE_OBLIVION: Single Hunger die, difficulty 1, auto-set.
 -- REMORSE:       No Hunger dice; pool = max(1, empty Humanity boxes), difficulty 1, auto-set.
 -- WILLPOWER_ROLL / HUMANITY_ROLL / FRENZY: Normal pool, no Hunger dice.
+-- LAUNCH / GOAL: Related to launching and rushing Projects. No Willpower, and no criticals on Goal rolls.
 C.RollType = {
     STANDARD        = "standard",
     SIMPLE_CHECK    = "simpleCheck",
@@ -308,6 +303,8 @@ C.RollType = {
     WILLPOWER_ROLL  = "willpowerRoll",
     HUMANITY_ROLL   = "humanityRoll",
     FRENZY          = "frenzy",
+    LAUNCH          = "launch",
+    GOAL            = "goal"
 }
 
 --- Roll phases. Each roll progresses through these states in order.
@@ -366,6 +363,8 @@ C.RollTypeLabel = {
     willpowerRoll   = "Willpower Roll",
     humanityRoll    = "Humanity Roll",
     frenzy          = "Frenzy Roll",
+    launch          = "Launch Roll",
+    goal            = "Goal Roll"
 }
 
 --- Roll types that do not substitute Hunger dice into the pool.
@@ -389,6 +388,8 @@ C.RollTypesNoTakeHalf = {
     [C.RollType.REMORSE]        = true,
     [C.RollType.FRENZY]         = true,
     [C.RollType.HUMANITY_ROLL]  = true,
+    [C.RollType.LAUNCH]         = true,
+    [C.RollType.GOAL]           = true
 }
 
 --- Roll types for which Willpower rerolls are not permitted.
@@ -397,6 +398,13 @@ C.RollTypesNoWillpower = {
     [C.RollType.ROUSE]          = true,
     [C.RollType.ROUSE_OBLIVION] = true,
     [C.RollType.REMORSE]        = true,
+    [C.RollType.LAUNCH]         = true,
+    [C.RollType.GOAL]           = true
+}
+
+--- Roll types for which criticals are disabled (i.e. each '10' simply counts as one success)
+C.RollTypesNoCriticals = {
+    [C.RollType.GOAL]           = true
 }
 
 --- Seconds to wait after the last die randomize event before reading all settled die values.
@@ -405,7 +413,7 @@ C.DICE_SETTLE_DEBOUNCE_SECONDS = 3
 
 -- Seconds the shared roll-result broadcast panel stays visible after a resolve.
 -- Must match the delayed cleanup in global_script (dice destroy + drawer close).
-C.ROLL_RESULT_BROADCAST_SECONDS = 12
+C.ROLL_RESULT_BROADCAST_SECONDS = 6
 
 -- Storyteller Color (GM role)
 -- Storyteller is always Black in VTM5E
@@ -484,14 +492,15 @@ C.ObjectPositions = {
     }
   },
   TAROT_DRAWER_PINK = {
-    anchorGUID = "9d4029",
     on = {
+      anchorGUID = "9d4029",
       position = {y = 7.12},
-      distanceDelta = -13, -- starting from the anchor's position, the difference in radial distance to the center of the centerPoint as defined by the current seat layout (which should be stored in state after running spawnSeatObjectsFromTemplate)
+      distanceDelta = -13, -- starting from the anchor's position, the difference in radial distance to the center of the centerPoint as defined by the current seat layout (which should be stored in state after running resolveSeatObjects)
       rotationDelta = Vector({345.35, 0, 0}),
       scale = Vector({7.49, 0.31, 5.72})
     },
     off = {
+      anchorGUID = "9d4029",
       transitionDelay = 0, -- this should be in ADDITION to any sequencing or other transition delays that are set by the function moving the object
       position = {y = 2.41},
       distanceDelta = 0,
@@ -500,8 +509,8 @@ C.ObjectPositions = {
     }
   },
   TAROT_DECK_PINK = {
-    anchorGUID = "9d4029",
     on = {
+      anchorGUID = "9d4029",
       transitionDuration = 0, -- this should override the transition duration set by whichever function moves the object
       transitionDelay = 1.5, -- this should be in ADDITION to any sequencing or other transition delays that are set by the function moving the object
       position = {y = 12},
@@ -510,6 +519,7 @@ C.ObjectPositions = {
       setLock = false -- if "setLock" is present, then the object's lock state should be toggled accordingly. When unlocking, this should happen at the very end of the transition. When locking, this should happen at the very beginning of the transition.
     },
     off = {
+      anchorGUID = "9d4029",
       transitionDuration = 0, -- this should override the transition duration set by whichever function moves the object
       position = {y = -10},
       distanceDelta = -13,
@@ -518,12 +528,13 @@ C.ObjectPositions = {
     }
   },
   TAROT_BUTTON_PINK = {
-    anchorGUID = "9d4029",
     on = {
+      anchorGUID = "9d4029",
       transitionDuration = 0,
       rotationDelta = Vector({0, 180, 180})
     },
     off = {
+      anchorGUID = "9d4029",
       transitionDuration = 0,
       rotationDelta = Vector({0, 0, 0})
     }

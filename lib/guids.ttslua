@@ -98,9 +98,11 @@ G.GUIDS = {
     THRONE_PURPLE = "823f86",
 
     -- Player-Specific Objects
+    PRINCE_SIGNET_RED = "9a2f2d",
     TAROT_DECK_PINK = "7a2d42",
     TAROT_DRAWER_PINK = "7f0246",
     TAROT_BUTTON_PINK = "4dc8ad",
+    TAROT_ANCHOR_PINK = "9d4029"
 
     -- Add other object GUIDs as needed (zones, boards, etc.)
     -- Format: OBJECT_NAME = "@@@@@@OBJECT_NAME@@@@@@"

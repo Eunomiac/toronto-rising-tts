@@ -48,7 +48,9 @@ function RO.defaultsForRollType(rollType)
         [RO.ROLL_WP_REROLL]    = C.RollTypesNoWillpower[rollType] ~= true,
         [RO.ROLL_HUNGER_DICE]  = C.RollTypesWithoutHunger[rollType] ~= true,
         [RO.ROLL_BESTIAL_NULL] = false,
-        [RO.ROLL_CRITS]        = true,
+        -- Goal rolls disable critical pair bonuses by default, but the ST can
+        -- still toggle this per roll in the options modal for edge-case rulings.
+        [RO.ROLL_CRITS]        = C.RollTypesNoCriticals[rollType] ~= true,
     }
 end
 

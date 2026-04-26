@@ -9,7 +9,7 @@
       `{ position = Vector|table, rotation = Vector|table, Name = "ROLE_REF" | ... }` (no `guid` key)
       for virtual slots (cameras, lights). Anchor azimuth uses `options.anchorIndex` (default 1), not
       necessarily the hand zone or first slot.
-    - spawnSeatObjectsFromTemplate: tag templates (not hand zones — tags affect zone behavior);
+    - resolveSeatObjects: tag templates (not hand zones — tags affect zone behavior);
       for each non-template seat, move/clone pieces then set Name + Nickname to `ROLE_<SEAT>` and swap
       tags: remove reference `{Color}Object`, add target `{Color}Object`.
 
@@ -18,7 +18,7 @@
     Usage:
         local R = require("lib.rotational-seat-layout")
         local computed = R.generateRotationalCoordinates(sourceObjects, center, n, a1, map, "Red", { anchorIndex = 2, radius = 24 })
-        R.spawnSeatObjectsFromTemplate(computed, sourceObjects)
+        R.resolveSeatObjects(computed, sourceObjects)
         R.clearGeneratedSeatObjects(sourceObjects, computed.playerToPositionMap, { NPC1 = true })
 
     Agent guidance: .dev/Rotational Coordinate Generator.md; .dev/DEBUG_FILE_LOGGING.md; .dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md.
@@ -850,7 +850,7 @@ local function applySeatObjectIdentity(obj, roleKey, seatColor, referenceTag, se
     setRoleColorDisplayName(obj, roleKey, seatColor)
 end
 
---- Validate inputs, compute frames, write frame-ref workspace file. On success returns a table consumed by spawnSeatObjectsFromTemplate.
+--- Validate inputs, compute frames, write frame-ref workspace file. On success returns a table consumed by resolveSeatObjects.
 ---
 --- @param sourceObjects table `{ player = {...}, other = {...}, all = {...} }` where each array entry is an object reference/GUID or a Frame table
 --- @param centerPoint Vector|table
@@ -1053,7 +1053,7 @@ end
 --- @param computed table return value of generateRotationalCoordinates (includes referencePlayerColor)
 --- @param sourceObjects table same nested shape passed to generateRotationalCoordinates: `{ player = {...}, other = {...}, all = {...} }`
 --- @param options table|nil { guidMapRelativePath?, guidMapVarName?, guidTransformsVarName?, guidFollowerTransformsVarName?, playerSeatRelativeObjectsBySeat? }
-function M.spawnSeatObjectsFromTemplate(computed, sourceObjects, options)
+function M.resolveSeatObjects(computed, sourceObjects, options)
     options = options or {}
     if U.Type(computed) ~= "table" or computed.byColor == nil or computed.playerToPositionMap == nil then
         error("rotational-seat-layout: computed must be the return value of generateRotationalCoordinates")

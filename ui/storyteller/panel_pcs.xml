@@ -16,6 +16,8 @@
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Brown"      text="Rouse"  />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Brown"     text="Frenzy" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Brown"    text="Rem"    />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Brown"     text="Launch" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_goal_Brown"       text="Goal"   />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">HP:</Text>
@@ -83,6 +85,8 @@
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Orange"      text="Rouse"  />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Orange"     text="Frenzy" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Orange"    text="Rem"    />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Orange"     text="Launch" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_goal_Orange"       text="Goal"   />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">HP:</Text>
@@ -150,6 +154,8 @@
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Red"      text="Rouse"  />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Red"     text="Frenzy" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Red"    text="Rem"    />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Red"     text="Launch" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_goal_Red"       text="Goal"   />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">HP:</Text>
@@ -217,6 +223,8 @@
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Pink"      text="Rouse"  />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Pink"     text="Frenzy" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Pink"    text="Rem"    />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Pink"     text="Launch" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_goal_Pink"       text="Goal"   />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">HP:</Text>
@@ -284,6 +292,8 @@
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Purple"      text="Rouse"  />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Purple"     text="Frenzy" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Purple"    text="Rem"    />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Purple"     text="Launch" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_goal_Purple"       text="Goal"   />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">HP:</Text>

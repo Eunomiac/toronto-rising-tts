@@ -806,48 +806,6 @@ function DEBUG.testZones()
 end
 
 --[[
-    Main Module Tests
-]]
-
---- Test main module functions
--- Tests: M.forPlayers, M.setupPlayers, M.advancePhase
-function DEBUG.testMain()
-    printTestHeader("Main Module")
-    DEBUG.logToFile("INFO", "Starting testMain()", "debug_log")
-
-    -- Test 1: forPlayers iteration
-    do
-        local playerCount = 0
-        M.forPlayers(function(player, color)
-            playerCount = playerCount + 1
-            print("  Found player: " .. color)
-        end)
-        printTestResult("M.forPlayers iteration", playerCount > 0, playerCount .. " players iterated")
-    end
-
-    -- Test 2: Get current phase
-    do
-        local currentPhase = S.getStateVal("currentPhase")
-        print("Current phase: " .. tostring(currentPhase))
-        printTestResult("Get current phase", currentPhase ~= nil, "Phase: " .. tostring(currentPhase))
-    end
-
-    -- Test 3: Advance phase (if valid)
-    do
-        local initialPhase = S.getStateVal("currentPhase")
-        print("\nCurrent phase: " .. tostring(initialPhase))
-        print("Attempting to advance to SCENE phase...")
-        M.advancePhase(C.Phases.SCENE)
-
-        Wait.time(function()
-            local newPhase = S.getStateVal("currentPhase")
-            print("New phase: " .. tostring(newPhase))
-            printTestResult("Advance phase", newPhase == C.Phases.SCENE, "Changed to: " .. tostring(newPhase))
-        end, 0.1)
-    end
-end
-
---[[
     UI Tests
 ]]
 
@@ -1325,7 +1283,7 @@ function DEBUG.testConstants()
     -- Test 3: Game Phases
     do
         local expectedPhases = {
-            "SessionStart", "Scene", "Downtime", "Combat", "Memoriam", "SessionEnd"
+            "SessionStart", "Play", "Downtime", "SessionEnd"
         }
         local allPhasesPresent = true
         local missingPhases = {}
@@ -3514,28 +3472,21 @@ function DEBUG.runTests()
         return 10.0
     end)
 
-    -- Step 6: Main module test
-    table.insert(testSequence, function()
-        local success = runSingleTest("Main Module", DEBUG.testMain)
-        table.insert(testResults, {name = "Main Module", success = success})
-        return 5.0
-    end)
-
-    -- Step 7: UI test
+    -- Step 6: UI test
     table.insert(testSequence, function()
         local success = runSingleTest("UI Display Updates", DEBUG.testUI)
         table.insert(testResults, {name = "UI Display Updates", success = success})
         return 5.0
     end)
 
-    -- Step 8: Lighting and signals test (long-running with animations)
+    -- Step 7: Lighting and signals test (long-running with animations)
     table.insert(testSequence, function()
         local success = runSingleTest("Lighting & Signal Fires", DEBUG.testLightingAndSignals)
         table.insert(testResults, {name = "Lighting & Signal Fires", success = success})
         return 180.0  -- Lighting test takes 2-3 minutes
     end)
 
-    -- Step 9: Final summary
+    -- Step 8: Final summary
     table.insert(testSequence, function()
         broadcast("✅ All Tests Complete!", {0, 1, 0})
         print("\n" .. string.rep("=", 60))
@@ -3598,7 +3549,7 @@ function DEBUG.testIntegration()
         return
     end
     S.setPlayerVal(testColor, "hunger", 3)
-    S.setStateVal(C.Phases.SCENE, "currentPhase")
+    S.setStateVal(C.Phases.PLAY, "currentPhase")
     print("   ✓ State set (using player: " .. testColor .. ", ID: " .. playerID .. ")")
 
     -- Step 2: Load scene
@@ -3606,27 +3557,20 @@ function DEBUG.testIntegration()
     local sceneSuccess = Scenes.loadScene("elysium")
     print("   " .. (sceneSuccess and "✓" or "✗") .. " Scene loaded")
 
-    -- Step 3: Advance phase
-    print("\n3. Advancing phase...")
-    M.advancePhase(C.Phases.COMBAT)
-    print("   ✓ Phase advanced")
-
-    -- Step 4: Update UI
+    -- Step 3: Update UI
     print("\n4. Updating UI...")
     UpdateUIDisplays()
     print("   ✓ UI updated")
 
-    -- Step 5: Verify state
+    -- Step 4: Verify state
     print("\n5. Verifying final state...")
     local finalHunger = S.getPlayerVal(testColor, "hunger")
-    local finalPhase = S.getStateVal("currentPhase")
     local finalScene = Scenes.getCurrentScene()
 
     print("   Final hunger (" .. testColor .. "): " .. tostring(finalHunger))
-    print("   Final phase: " .. tostring(finalPhase))
     print("   Final scene: " .. tostring(finalScene))
 
-    local allGood = (finalHunger == 3 and finalPhase == C.Phases.COMBAT and finalScene == "elysium")
+    local allGood = (finalHunger == 3 and finalScene == "elysium")
     printTestResult("Integration test", allGood, allGood and "All checks passed" or "Some checks failed")
 end
 
@@ -3759,32 +3703,6 @@ function DEBUG.changeScene(sceneName)
 
     Scenes.loadScene(sceneName)
     print("Changed scene to: " .. sceneName)
-end
-
---- Quick test: Set phase
--- @param phaseName string Phase name (e.g., "PLAY", "COMBAT")
-function DEBUG.setPhase(phaseName)
-    if not phaseName then
-        print("Usage: setPhase(phaseName)")
-        print("Available phases: " .. table.concat(U.getValues(C.Phases), ", "))
-        return
-    end
-
-    -- Find matching phase constant
-    local targetPhase = nil
-    for _, phase in pairs(C.Phases) do
-        if string.upper(phaseName) == string.upper(phase) or string.upper(phaseName) == string.upper(string.match(phase, "(%w+)$")) then
-            targetPhase = phase
-            break
-        end
-    end
-
-    if targetPhase then
-        M.advancePhase(targetPhase)
-        print("Changed phase to: " .. targetPhase)
-    else
-        print("Invalid phase name. Available: " .. table.concat(U.getValues(C.Phases), ", "))
-    end
 end
 
 --- Debug helper: Move an object to a world-angle position around table center
@@ -4765,7 +4683,6 @@ function DEBUG.help()
     print("\nQUICK SETTERS:")
     print("  setHunger(color, value)  - Set player hunger (e.g., setHunger('Red', 3))")
     print("  changeScene(sceneName)   - Change scene (e.g., changeScene('elysium'))")
-    print("  setPhase(phaseName)      - Change phase (e.g., setPhase('PLAY'))")
     print("  soundscapeMusic(mood)    - Set music mood: general, intrigue, combat")
     print("  soundscapeWeather(key, isIndoors?) - Set weather layer and optional indoor ducking")
     print("  soundscapeLocation(key)  - Set location ambience: indoorOffice, indoorCourt, sewers, alleyway, outdoorIndustrial")
@@ -4830,7 +4747,6 @@ inspectSoundscapeAudio = DEBUG.inspectSoundscapeAudio
 -- Expose quick setters
 setHunger = DEBUG.setHunger
 changeScene = DEBUG.changeScene
-setPhase = DEBUG.setPhase
 soundscapeMusic = DEBUG.soundscapeMusic
 soundscapeWeather = DEBUG.soundscapeWeather
 soundscapeLocation = DEBUG.soundscapeLocation
