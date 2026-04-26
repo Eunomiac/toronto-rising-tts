@@ -35,17 +35,17 @@ G.GUIDS = {
     DISTRICT_CARD_LIGHT = "a9601d",
     SITE_CARD_LIGHT = "400a37",
 
-    PLAYER_LIGHT_1_BROWN = "f251e0",
-    PLAYER_LIGHT_1_ORANGE = "d3356d",
-    PLAYER_LIGHT_1_RED = "0cd76a",
-    PLAYER_LIGHT_1_PINK = "937fac",
-    PLAYER_LIGHT_1_PURPLE = "86117d",
+    SEAT_LIGHT_1_BROWN = "f251e0",
+    SEAT_LIGHT_1_ORANGE = "d3356d",
+    SEAT_LIGHT_1_RED = "0cd76a",
+    SEAT_LIGHT_1_PINK = "937fac",
+    SEAT_LIGHT_1_PURPLE = "86117d",
 
-    PLAYER_LIGHT_2_BROWN = "9b5685",
-    PLAYER_LIGHT_2_ORANGE = "6eebdf",
-    PLAYER_LIGHT_2_RED = "41bbba",
-    PLAYER_LIGHT_2_PINK = "1736cb",
-    PLAYER_LIGHT_2_PURPLE = "cf2fe0",
+    SEAT_LIGHT_2_BROWN = "9b5685",
+    SEAT_LIGHT_2_ORANGE = "6eebdf",
+    SEAT_LIGHT_2_RED = "41bbba",
+    SEAT_LIGHT_2_PINK = "1736cb",
+    SEAT_LIGHT_2_PURPLE = "cf2fe0",
 
     -- Hand zones (player hand zones)
     -- Storyteller (Black) and player colors: Brown, Orange, Red, Pink
@@ -78,17 +78,17 @@ G.GUIDS = {
     -- Each bag is a TTS object that spawns d10s when rolled by the player.
     -- Used by the Dice System to attribute settled dice to their owner.
     -- Source: .dev/tts-color-object-tags-by-seat.md
-    DICE_HUNGER_BROWN   = "e3d48a",
-    DICE_HUNGER_ORANGE  = "846db1",
-    DICE_HUNGER_RED     = "6d1c15",
-    DICE_HUNGER_PINK    = "90f17d",
-    DICE_HUNGER_PURPLE  = "496dd5",
+    DICEBAG_HUNGER_BROWN   = "e3d48a",
+    DICEBAG_HUNGER_ORANGE  = "846db1",
+    DICEBAG_HUNGER_RED     = "6d1c15",
+    DICEBAG_HUNGER_PINK    = "90f17d",
+    DICEBAG_HUNGER_PURPLE  = "496dd5",
 
-    DICE_NORMAL_BROWN   = "b5b3bd",
-    DICE_NORMAL_ORANGE  = "a0766e",
-    DICE_NORMAL_RED     = "a3ae6c",
-    DICE_NORMAL_PINK    = "4637da",
-    DICE_NORMAL_PURPLE  = "03cb81",
+    DICEBAG_NORMAL_BROWN   = "b5b3bd",
+    DICEBAG_NORMAL_ORANGE  = "a0766e",
+    DICEBAG_NORMAL_RED     = "a3ae6c",
+    DICEBAG_NORMAL_PINK    = "4637da",
+    DICEBAG_NORMAL_PURPLE  = "03cb81",
 
     -- Thrones (for players to sit on)
     THRONE_RED = "474c0d",
@@ -220,7 +220,7 @@ function G.GetPlayerLightGUID(color)
   if color == nil then
       return nil
   end
-  local guidKey = "PLAYER_LIGHT_" .. string.upper(color)
+  local guidKey = "SEAT_LIGHT_" .. string.upper(color)
   local guid = G.GUIDS[guidKey]
 
   if guid == nil then
@@ -239,7 +239,7 @@ end
 -- @usage local guid = G.GetDiceNormalGUID("Red")
 function G.GetDiceNormalGUID(color)
     if color == nil then return nil end
-    local guidKey = "DICE_NORMAL_" .. string.upper(color)
+    local guidKey = "DICEBAG_NORMAL_" .. string.upper(color)
     return G.GUIDS[guidKey]
 end
 
@@ -250,7 +250,7 @@ end
 -- @usage local guid = G.GetDiceHungerGUID("Red")
 function G.GetDiceHungerGUID(color)
     if color == nil then return nil end
-    local guidKey = "DICE_HUNGER_" .. string.upper(color)
+    local guidKey = "DICEBAG_HUNGER_" .. string.upper(color)
     return G.GUIDS[guidKey]
 end
 
@@ -265,10 +265,10 @@ function G.GetDiceOwner(guid)
     local playerColors = {"Brown", "Orange", "Red", "Pink", "Purple"}
     for _, color in ipairs(playerColors) do
         local upperColor = string.upper(color)
-        if G.GUIDS["DICE_NORMAL_" .. upperColor] == guid then
+        if G.GUIDS["DICEBAG_NORMAL_" .. upperColor] == guid then
             return color, "normal"
         end
-        if G.GUIDS["DICE_HUNGER_" .. upperColor] == guid then
+        if G.GUIDS["DICEBAG_HUNGER_" .. upperColor] == guid then
             return color, "hunger"
         end
     end

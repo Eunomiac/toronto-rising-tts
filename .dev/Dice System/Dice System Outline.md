@@ -135,7 +135,7 @@ core/global_script
 
 The following are retired by this system. Their physical dice bag objects in TTS are preserved as props but their Lua scripts are no longer called:
 - `lib/dice-roller.ttslua` — replaced by `core/dice.ttslua` + `core/roll_controller.ttslua`
-- MrStump click-roller logic in bundled `DICE_NORMAL_*` and `DICE_HUNGER_*` object scripts
+- MrStump click-roller logic in bundled `DICEBAG_NORMAL_*` and `DICEBAG_HUNGER_*` object scripts
 - `ui/shared/hud_shared.xml` `diceResultsPanel` — replaced by the richer panels in `ui/shared/roll_panels.xml`
 
 ---
@@ -380,17 +380,17 @@ Add the following to `G.GUIDS` (sourced from `.dev/tts-color-object-tags-by-seat
 
 ```lua
 -- Dice bags (one per seat color; each bag spawns d10 objects when rolled)
-DICE_HUNGER_BROWN   = "e3d48a",
-DICE_HUNGER_ORANGE  = "846db1",
-DICE_HUNGER_RED     = "6d1c15",
-DICE_HUNGER_PINK    = "90f17d",
-DICE_HUNGER_PURPLE  = "496dd5",
+DICEBAG_HUNGER_BROWN   = "e3d48a",
+DICEBAG_HUNGER_ORANGE  = "846db1",
+DICEBAG_HUNGER_RED     = "6d1c15",
+DICEBAG_HUNGER_PINK    = "90f17d",
+DICEBAG_HUNGER_PURPLE  = "496dd5",
 
-DICE_NORMAL_BROWN   = "b5b3bd",
-DICE_NORMAL_ORANGE  = "a0766e",
-DICE_NORMAL_RED     = "a3ae6c",
-DICE_NORMAL_PINK    = "4637da",
-DICE_NORMAL_PURPLE  = "03cb81",
+DICEBAG_NORMAL_BROWN   = "b5b3bd",
+DICEBAG_NORMAL_ORANGE  = "a0766e",
+DICEBAG_NORMAL_RED     = "a3ae6c",
+DICEBAG_NORMAL_PINK    = "4637da",
+DICEBAG_NORMAL_PURPLE  = "03cb81",
 ```
 
 Add the following helper functions:
@@ -401,7 +401,7 @@ Add the following helper functions:
 -- @return string|nil
 function G.GetDiceNormalGUID(color)
     if color == nil then return nil end
-    return G.GUIDS["DICE_NORMAL_" .. string.upper(color)]
+    return G.GUIDS["DICEBAG_NORMAL_" .. string.upper(color)]
 end
 
 --- Gets the GUID for a player's Hunger dice bag.
@@ -409,7 +409,7 @@ end
 -- @return string|nil
 function G.GetDiceHungerGUID(color)
     if color == nil then return nil end
-    return G.GUIDS["DICE_HUNGER_" .. string.upper(color)]
+    return G.GUIDS["DICEBAG_HUNGER_" .. string.upper(color)]
 end
 
 --- Returns the player color and die type ("normal"|"hunger") for a given object GUID,
@@ -419,10 +419,10 @@ end
 function G.GetDiceOwner(guid)
     if guid == nil then return nil, nil end
     for _, color in ipairs({"Brown", "Orange", "Red", "Pink", "Purple"}) do
-        if G.GUIDS["DICE_NORMAL_" .. string.upper(color)] == guid then
+        if G.GUIDS["DICEBAG_NORMAL_" .. string.upper(color)] == guid then
             return color, "normal"
         end
-        if G.GUIDS["DICE_HUNGER_" .. string.upper(color)] == guid then
+        if G.GUIDS["DICEBAG_HUNGER_" .. string.upper(color)] == guid then
             return color, "hunger"
         end
     end
@@ -741,7 +741,7 @@ end
 `obj.getGMNotes()` or container parent can be checked. The recommended approach:
 - Use `obj.getVar("diceOwnerColor")` if set by the bag's onLoad script.
 - Fall back to zone-based attribution: use `getObjectsInZone()` on the player's seating area.
-- Simplest reliable approach: check if the object's name matches `"DICE_NORMAL_<COLOR>"` or `"DICE_HUNGER_<COLOR>"` pattern (set by the bag spawn script).
+- Simplest reliable approach: check if the object's name matches `"DICEBAG_NORMAL_<COLOR>"` or `"DICEBAG_HUNGER_<COLOR>"` pattern (set by the bag spawn script).
 
 ### 9.2 Module Requires
 
@@ -913,7 +913,7 @@ New file. Included from `ui/Global.xml` after all existing includes.
     → active.tookHalf=true, result.successes=floor(pool/2), resultClass=WIN
     → phase=POST_ROLL → proceed to step 6
 
-5. Player physically rolls their dice (DICE_NORMAL_<COLOR> and/or DICE_HUNGER_<COLOR>)
+5. Player physically rolls their dice (DICEBAG_NORMAL_<COLOR> and/or DICEBAG_HUNGER_<COLOR>)
    → onObjectRandomize fires for each die → RC.onDieRandomized(color, dieType, value) accumulates
    → After C.DICE_SETTLE_DEBOUNCE_SECONDS of silence → RC.onDiceSettled(color)
    → active.dice recorded; RC.tryClassifyResult(color)

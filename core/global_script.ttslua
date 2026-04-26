@@ -215,7 +215,7 @@ function GlobalInitiateRoll(params)
             simplecheck = function() return C.RollType.SIMPLE_CHECK end,
             humanity    = function()
                 -- Remorse at end-of-session; Humanity Roll otherwise
-                return (currentPhase == C.Phases.END)
+                return (currentPhase == C.Phases.SESSION_END)
                     and C.RollType.REMORSE
                     or  C.RollType.HUMANITY_ROLL
             end,
@@ -631,7 +631,8 @@ function HUD_advancePhase(player, button, id)
     -- Map UI button IDs to actual phase constants
     local phaseMap = {
         play = C.Phases.PLAY,
-        combat = C.Phases.COMBAT,
+        -- Legacy phase button ids may still send "phase_combat"; no Combat phase exists anymore.
+        -- Keep it unmapped so validation rejects it instead of silently advancing to an invalid value.
         -- Add more phase mappings as needed
     }
 
@@ -847,6 +848,27 @@ function HUD_debugLightDone(player, button, id)
     end
 end
 
+--- Capture current player camera view and export paste-ready constants entry.
+-- @param player Player
+-- @param button string|nil
+-- @param id string|nil
+function HUD_debugCaptureCameraPreset(player, button, id)
+    if DEBUG == nil or type(DEBUG.captureCameraViewPreset) ~= "function" then
+        broadcastToColor("Debug camera capture is unavailable.", player.color, {1, 0.35, 0})
+        return
+    end
+    local ok, result = DEBUG.captureCameraViewPreset(player)
+    if not ok then
+        broadcastToColor("Camera capture failed: " .. tostring(result), player.color, {1, 0.35, 0})
+        return
+    end
+    broadcastToColor(
+        "Camera capture written to .dev/.debug/" .. tostring(result),
+        player.color,
+        {0, 1, 1}
+    )
+end
+
 --[[
     Debug test button handlers (admin panel)
     Each calls the corresponding test from core/debug.ttslua (exposed as globals by that module).
@@ -881,7 +903,11 @@ function HUD_debugTestZones(player, button, id)
 end
 
 function HUD_debugTestMain(player, button, id)
-    if testMain then testMain() else broadcastToAll("testMain not loaded", {1, 0.5, 0}) end
+    if DEBUG and DEBUG.testMain then
+        DEBUG.testMain()
+    else
+        broadcastToAll("testMain is retired", {1, 0.5, 0})
+    end
 end
 
 function HUD_debugTestUI(player, button, id)
@@ -1478,6 +1504,8 @@ function HUD_rollInitiate(player, value, id)
         willpowerroll = C.RollType.WILLPOWER_ROLL,
         humanityroll  = C.RollType.HUMANITY_ROLL,
         frenzy        = C.RollType.FRENZY,
+        launch        = C.RollType.LAUNCH,
+        goal          = C.RollType.GOAL,
     }
     local rollType = rollTypeMap[string.lower(middle)]
     if rollType == nil then

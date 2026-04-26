@@ -73,10 +73,14 @@ function OP.resolveStatePose(obj, entry, state)
     position = pose.position,
     scale = pose.scale,
     rotation = pose.rotation,
-    setLock = pose.setLock,
+    -- Canonical lock key: isLocked. Keep setLock as compatibility input.
+    isLocked = pose.isLocked,
     transitionDuration = pose.transitionDuration,
     transitionDelay = pose.transitionDelay,
   }
+  if resolved.isLocked == nil and type(pose.setLock) == "boolean" then
+    resolved.isLocked = pose.setLock
+  end
 
   local anchorGUID = pose.anchorGUID
   local hasAnchor = type(anchorGUID) == "string" and anchorGUID ~= ""

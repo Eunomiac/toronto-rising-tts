@@ -69,7 +69,10 @@ local function applyPose(obj, pose)
     return
   end
   local duration, delay = OP.resolveTransitionTiming(pose, OP.DEFAULT_TRANSITION_DURATION, 0)
-  local setLock = pose.setLock
+  local setLock = pose.isLocked
+  if type(setLock) ~= "boolean" then
+    setLock = pose.setLock
+  end
   local function run()
     if type(setLock) == "boolean" and setLock == true then
       pcall(function()

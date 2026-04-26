@@ -583,20 +583,159 @@ end
 --- @return table
 local function resolveSourceTemplateGroups(sourceObjects)
     if U.Type(sourceObjects) ~= "table" then
-        error("rotational-seat-layout: sourceObjects must be a table with keys 'player', 'other', and 'all'")
+        error("rotational-seat-layout: sourceObjects must be a table with keys 'player', 'all', optional 'relative', and optional 'cameraModes'")
     end
     local groups = {
         player = sourceObjects.player or {},
         other = sourceObjects.other or {},
         all = sourceObjects.all or {},
+        relative = sourceObjects.relative or {},
+        cameraModes = sourceObjects.cameraModes or {},
     }
     if U.Type(groups.player) ~= "table" or U.Type(groups.other) ~= "table" or U.Type(groups.all) ~= "table" then
         error("rotational-seat-layout: sourceObjects.player/sourceObjects.other/sourceObjects.all must be arrays")
+    end
+    if U.Type(groups.relative) ~= "table" then
+        error("rotational-seat-layout: sourceObjects.relative must be an array when provided")
+    end
+    if U.Type(groups.cameraModes) ~= "table" then
+        error("rotational-seat-layout: sourceObjects.cameraModes must be a table when provided")
+    end
+    if groups.cameraModes.bySeat ~= nil and U.Type(groups.cameraModes.bySeat) ~= "table" then
+        error("rotational-seat-layout: sourceObjects.cameraModes.bySeat must be an array when provided")
+    end
+    if groups.cameraModes.universal ~= nil and U.Type(groups.cameraModes.universal) ~= "table" then
+        error("rotational-seat-layout: sourceObjects.cameraModes.universal must be an array when provided")
     end
     if sourceObjects.player == nil and sourceObjects.other == nil and sourceObjects.all == nil then
         error("rotational-seat-layout: sourceObjects must define at least one of: player, other, all")
     end
     return groups
+end
+
+--- @param sourceGroups table
+--- @return table[]
+local function collectTemplateGroups(sourceGroups)
+    return {
+        sourceGroups.player or {},
+        sourceGroups.other or {},
+        sourceGroups.all or {},
+    }
+end
+
+--- @param displayName string
+--- @return Object|nil
+local function findObjectByDisplayName(displayName)
+    if U.Type(displayName) ~= "string" or displayName == "" then
+        return nil
+    end
+    local displayUpper = string.upper(trim(displayName))
+    local all = getAllObjects() or {}
+    for _, obj in ipairs(all) do
+        if obj ~= nil then
+            local nameUpper = string.upper(trim(obj.getName and obj.getName() or ""))
+            if nameUpper == displayUpper then
+                return obj
+            end
+            local data = obj.getData and obj.getData() or {}
+            local nickUpper = string.upper(trim(data.Nickname or ""))
+            if nickUpper == displayUpper then
+                return obj
+            end
+        end
+    end
+    return nil
+end
+
+--- @param ref any
+--- @param referencePlayerColor string
+--- @param label string
+--- @return Object|nil
+local function resolveObjectRefWithRoleSupport(ref, referencePlayerColor, label)
+    local obj = U.getObject(ref, true)
+    if obj ~= nil then
+        return obj
+    end
+    if U.Type(ref) ~= "string" then
+        return nil
+    end
+    local refTrim = trim(ref)
+    local refUpperColor = string.upper(referencePlayerColor or "")
+    if refTrim == "" then
+        return nil
+    end
+    if matchesRoleColorPattern(refTrim) then
+        obj = findObjectByDisplayName(refTrim)
+    elseif string.match(refTrim, "^[%u%d_]+$") ~= nil then
+        local roleName = refTrim .. "_" .. refUpperColor
+        obj = findObjectByDisplayName(roleName)
+    end
+    if obj == nil and label ~= nil then
+        error("rotational-seat-layout: could not resolve " .. tostring(label) .. " to an Object")
+    end
+    return obj
+end
+
+--- @param obj Object
+--- @return string|nil
+local function deriveSeatKeyFromObjectTag(obj)
+    if obj == nil then
+        return nil
+    end
+    local tags = obj.getTags and obj.getTags() or {}
+    if U.Type(tags) ~= "table" then
+        return nil
+    end
+    for _, tag in ipairs(tags) do
+        if U.Type(tag) == "string" then
+            local seatKey = string.match(tag, "^(.-)Object$")
+            if seatKey ~= nil and seatKey ~= "" then
+                return seatKey
+            end
+        end
+    end
+    return nil
+end
+
+--- @param sourceGroups table
+--- @return string[] bySeatModeKeys
+--- @return string[] universalModeBases
+local function collectCameraModeKeys(sourceGroups)
+    local bySeat = {}
+    local universal = {}
+    local seenBySeat = {}
+    local seenUniversal = {}
+    local cameraModes = sourceGroups.cameraModes or {}
+    local bySeatSource = cameraModes.bySeat or {}
+    local universalSource = cameraModes.universal or {}
+    if #cameraModes > 0 and #bySeatSource == 0 then
+        -- Backward compatibility: legacy flat cameraModes array maps to bySeat.
+        bySeatSource = cameraModes
+    end
+
+    for i = 1, #bySeatSource do
+        local key = bySeatSource[i]
+        if U.Type(key) ~= "string" or trim(key) == "" then
+            error("rotational-seat-layout: sourceObjects.cameraModes.bySeat entries must be non-empty strings")
+        end
+        if not seenBySeat[key] then
+            seenBySeat[key] = true
+            table.insert(bySeat, key)
+        end
+    end
+
+    for i = 1, #universalSource do
+        local key = universalSource[i]
+        if U.Type(key) ~= "string" or trim(key) == "" then
+            error("rotational-seat-layout: sourceObjects.cameraModes.universal entries must be non-empty strings")
+        end
+        if not seenUniversal[key] then
+            seenUniversal[key] = true
+            table.insert(universal, key)
+        end
+    end
+
+    return bySeat, universal
 end
 
 --- @param sourceGroups table
@@ -656,7 +795,11 @@ local function resolveSeatTemplateSlots(entries, referencePlayerColor)
                 rotation = Vector(ref.rotation),
             }
         else
-            local obj = U.getObject(ref, true)
+            local obj = resolveObjectRefWithRoleSupport(
+                ref,
+                referencePlayerColor,
+                "source template entry [" .. tostring(i) .. "]"
+            )
             if obj == nil then
                 error("rotational-seat-layout: could not resolve source template entry [" .. tostring(i) .. "] to an Object")
             end
@@ -688,6 +831,114 @@ local function resolveSeatTemplateSlots(entries, referencePlayerColor)
         table.insert(slots, slot)
     end
     return slots
+end
+
+--- @param computed table
+--- @param sourceGroups table
+local function applyCameraModesForSeats(computed, sourceGroups)
+    local bySeatModeKeys, universalModeBases = collectCameraModeKeys(sourceGroups)
+    if #bySeatModeKeys < 1 and #universalModeBases < 1 then
+        return
+    end
+    local referenceColor = computed.referencePlayerColor
+    local map = computed.playerToPositionMap or {}
+    local referenceSegment = map[referenceColor]
+    if U.Type(referenceSegment) ~= "number" then
+        error("rotational-seat-layout: cannot apply cameraModes; missing reference segment")
+    end
+    local centerPoint = Vector(computed.centerPoint)
+    local stepDeg = 360 / computed.numSegments
+    for i = 1, #bySeatModeKeys do
+        local modeKey = bySeatModeKeys[i]
+        local redMode = C.RedCameraAngles and C.RedCameraAngles.forSeat and C.RedCameraAngles.forSeat[modeKey] or nil
+        if U.Type(redMode) ~= "table" then
+            error(
+                "rotational-seat-layout: sourceObjects.cameraModes.bySeat includes '"
+                    .. modeKey
+                    .. "' but C.RedCameraAngles.forSeat has no entry for it"
+            )
+        end
+        if redMode.position == nil then
+            error("rotational-seat-layout: C.RedCameraAngles.forSeat['" .. modeKey .. "'] is missing position")
+        end
+        for j = 1, #C.PlayerColors do
+            local color = C.PlayerColors[j]
+            local segment = map[color]
+            if U.Type(segment) == "number" then
+                local deltaYaw = (segment - referenceSegment) * stepDeg
+                local transformed = rigidTransformBetweenCenters(
+                    centerPoint,
+                    centerPoint,
+                    {
+                        position = Vector(redMode.position),
+                        rotation = Vector({ redMode.pitch or 0, redMode.yaw or 0, 0 }),
+                    },
+                    deltaYaw
+                )
+                local playerID = S.getPlayerID(color)
+                if playerID ~= nil then
+                    S.setStateVal(
+                        {
+                            cameraMode = redMode.cameraMode or "FirstPerson",
+                            position = Vector(transformed.position),
+                            pitch = transformed.rotation.x,
+                            yaw = transformed.rotation.y,
+                            distance = redMode.distance or 0,
+                        },
+                        "playerData",
+                        playerID,
+                        "cameraAngles",
+                        modeKey
+                    )
+                end
+            end
+        end
+    end
+
+    if #universalModeBases > 0 then
+        local universalAngles = {}
+        for i = 1, #universalModeBases do
+            local modeBase = universalModeBases[i]
+            local sourceKey = modeBase .. referenceColor
+            local redMode = C.RedCameraAngles and C.RedCameraAngles.forUniversal and C.RedCameraAngles.forUniversal[sourceKey] or nil
+            if U.Type(redMode) ~= "table" then
+                error(
+                    "rotational-seat-layout: sourceObjects.cameraModes.universal includes '"
+                        .. modeBase
+                        .. "' but C.RedCameraAngles.forUniversal['"
+                        .. sourceKey
+                        .. "'] was not found"
+                )
+            end
+            if redMode.position == nil then
+                error("rotational-seat-layout: C.RedCameraAngles.forUniversal['" .. sourceKey .. "'] is missing position")
+            end
+
+            for seatKey, segment in pairs(map) do
+                if U.Type(seatKey) == "string" and U.Type(segment) == "number" then
+                    local deltaYaw = (segment - referenceSegment) * stepDeg
+                    local transformed = rigidTransformBetweenCenters(
+                        centerPoint,
+                        centerPoint,
+                        {
+                            position = Vector(redMode.position),
+                            rotation = Vector({ redMode.pitch or 0, redMode.yaw or 0, 0 }),
+                        },
+                        deltaYaw
+                    )
+                    local generatedKey = modeBase .. seatKey
+                    universalAngles[generatedKey] = {
+                        cameraMode = redMode.cameraMode or "FirstPerson",
+                        position = Vector(transformed.position),
+                        pitch = transformed.rotation.x,
+                        yaw = transformed.rotation.y,
+                        distance = redMode.distance or 0,
+                    }
+                end
+            end
+        end
+        S.setStateVal(universalAngles, "seatLayout", "universalCameraAngles")
+    end
 end
 
 --- @param keys string[]
@@ -1022,7 +1273,6 @@ function M.generateRotationalCoordinates(
     if U.Type(tableKey) == "string" and tableKey ~= "" then
         S.setStateVal(tableKey, "seatLayout", "currentTableKey")
     end
-    S.setStateVal(useRadius, "seatLayout", "radius")
     assertSendExternalMessage()
     local frameLua = serializeFrameRefsLua(frameVar, nestedFrameExport)
     local okWrite = DEBUG.writeWorkspaceFile(framePath, frameLua, "none", false)
@@ -1072,11 +1322,15 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
     assertSendExternalMessage()
 
     local templateGuidSet = {}
-    for _, group in pairs(sourceGroups) do
+    for _, group in ipairs(collectTemplateGroups(sourceGroups)) do
         for i = 1, #group do
             local ref = group[i]
             if not isFrameEntry(ref) then
-                local obj = U.getObject(ref, true)
+                local obj = resolveObjectRefWithRoleSupport(
+                    ref,
+                    referencePlayerColor,
+                    "source template object at index " .. tostring(i)
+                )
                 if obj == nil then
                     error("rotational-seat-layout: could not resolve source template object at index " .. tostring(i))
                 end
@@ -1368,6 +1622,30 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
 
     -- Optional: extra player-seat objects that follow that seat's hand zone rigidly.
     local playerSeatRelativeObjectsBySeat = options.playerSeatRelativeObjectsBySeat
+    if playerSeatRelativeObjectsBySeat == nil then
+        playerSeatRelativeObjectsBySeat = {}
+    end
+    if #sourceGroups.relative > 0 then
+        for i = 1, #sourceGroups.relative do
+            local relRef = sourceGroups.relative[i]
+            local relObj = resolveObjectRefWithRoleSupport(
+                relRef,
+                referencePlayerColor,
+                "sourceObjects.relative[" .. tostring(i) .. "]"
+            )
+            if relObj == nil then
+                error("rotational-seat-layout: could not resolve sourceObjects.relative[" .. tostring(i) .. "]")
+            end
+            local seatKey = deriveSeatKeyFromObjectTag(relObj)
+            if seatKey == nil then
+                error(
+                    "rotational-seat-layout: sourceObjects.relative[" .. tostring(i) .. "] has no <SeatKey>Object tag to infer target seat"
+                )
+            end
+            playerSeatRelativeObjectsBySeat[seatKey] = playerSeatRelativeObjectsBySeat[seatKey] or {}
+            table.insert(playerSeatRelativeObjectsBySeat[seatKey], relObj)
+        end
+    end
     if playerSeatRelativeObjectsBySeat ~= nil then
         if U.Type(playerSeatRelativeObjectsBySeat) ~= "table" then
             error("rotational-seat-layout: options.playerSeatRelativeObjectsBySeat must be a table when provided")
@@ -1519,6 +1797,65 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
     end
 end
 
+--- @param tableRef string|table
+--- @return string
+--- @return table
+local function resolveTableRef(tableRef)
+    if U.Type(tableRef) == "string" then
+        local cfg = C.Tables and C.Tables[tableRef] or nil
+        if U.Type(cfg) ~= "table" then
+            error("rotational-seat-layout: unknown tableRef key '" .. tostring(tableRef) .. "'")
+        end
+        return tableRef, cfg
+    end
+    if U.Type(tableRef) ~= "table" then
+        error("rotational-seat-layout: tableRef must be a table key string or C.Tables table")
+    end
+    for tableKey, cfg in pairs(C.Tables or {}) do
+        if cfg == tableRef then
+            return tableKey, cfg
+        end
+    end
+    if U.Type(tableRef.guid) == "string" then
+        for tableKey, cfg in pairs(C.Tables or {}) do
+            if U.Type(cfg) == "table" and cfg.guid == tableRef.guid then
+                return tableKey, cfg
+            end
+        end
+    end
+    error("rotational-seat-layout: tableRef table does not match any C.Tables entry")
+end
+
+--- Convenience wrapper around generateRotationalCoordinates + resolveSeatObjects.
+--- @param tableRef string|table key in C.Tables or table entry itself
+--- @param sourceObjects table|nil defaults to C.TableSourceObjects
+--- @param options table|nil forwarded options; currentTableKey defaults from tableRef
+--- @return table computed
+function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
+    local tableKey, tableCfg = resolveTableRef(tableRef)
+    local src = sourceObjects or C.TableSourceObjects
+    if U.Type(src) ~= "table" then
+        error("rotational-seat-layout: sourceObjects must be a table or nil (to use C.TableSourceObjects)")
+    end
+    local opts = U.clone(options or {}, true)
+    if opts.currentTableKey == nil then
+        opts.currentTableKey = tableKey
+    end
+    local computed = M.generateRotationalCoordinates(
+        src,
+        tableCfg.centerPoint,
+        tableCfg.numSegments,
+        tableCfg.angleSegmentOne,
+        tableCfg.playerToPositionMap,
+        tableCfg.referencePlayerColor,
+        opts
+    )
+    M.resolveSeatObjects(computed, src, opts)
+    local sourceGroups = resolveSourceTemplateGroups(src)
+    applyCameraModesForSeats(computed, sourceGroups)
+    return computed
+end
+
 --- Destruct every object with tag `{seatKey}Object` for each listed seat key, except objects in
 --- `sourceObjects` (templates are never removed). Seat keys listed in `blacklist` are skipped
 --- entirely (no objects with that tag are destroyed by this call).
@@ -1534,12 +1871,21 @@ end
 --- @return number count of successfully destructed objects
 function M.clearGeneratedSeatObjects(sourceObjects, seatKeys, blacklist)
     local sourceGroups = resolveSourceTemplateGroups(sourceObjects)
+    local refColor = C.PlayerColors and C.PlayerColors[1] or "Red"
+    local tableKey = S.getStateVal("seatLayout", "currentTableKey")
+    if U.Type(tableKey) == "string" and U.Type(C.Tables and C.Tables[tableKey]) == "table" then
+        refColor = C.Tables[tableKey].referencePlayerColor or refColor
+    end
 
     local templateGuidSet = {}
-    for _, group in pairs(sourceGroups) do
+    for _, group in ipairs(collectTemplateGroups(sourceGroups)) do
         for i = 1, #group do
             if not isFrameEntry(group[i]) then
-                local obj = U.getObject(group[i], true)
+                local obj = resolveObjectRefWithRoleSupport(
+                    group[i],
+                    refColor,
+                    "source template entry [" .. tostring(i) .. "] for clear"
+                )
                 if obj == nil then
                     error("rotational-seat-layout: could not resolve source template entry [" .. tostring(i) .. "] for clear")
                 end

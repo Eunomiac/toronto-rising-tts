@@ -25,7 +25,10 @@ local OP = require("lib.object_positions")
 --- @param baseDuration number
 local function applyPositionTransition(obj, targetPos, resolvedPose, baseDuration)
     local duration, delay = OP.resolveTransitionTiming(resolvedPose, baseDuration, 0)
-    local setLock = resolvedPose and resolvedPose.setLock
+    local setLock = resolvedPose and resolvedPose.isLocked
+    if type(setLock) ~= "boolean" and resolvedPose ~= nil then
+        setLock = resolvedPose.setLock
+    end
     local function run()
         if type(setLock) == "boolean" and setLock == true then
             pcall(function()

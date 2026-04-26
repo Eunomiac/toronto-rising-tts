@@ -202,6 +202,33 @@ local function getDefaultPlayerHUD()
     }
 end
 
+-- Returns the default player camera angles structure.
+-- @return table Default player camera angles structure
+local function getDefaultPlayerCameraAngles()
+    return {
+      default = {
+        cameraMode = "FirstPerson",
+        position = Vector({0, 0, 0}),
+        pitch = 0,
+        yaw = 0,
+        distance = 0
+      },
+      sheet = {
+        cameraMode = "FirstPerson",
+        position = Vector({0, 0, 0}),
+        pitch = 0,
+        yaw = 0,
+        distance = 0
+      },
+      diceTray = {
+        cameraMode = "FirstPerson",
+        position = Vector({0, 0, 0}),
+        pitch = 0,
+        yaw = 0,
+        distance = 0
+      }
+    }
+end
 
 --- Returns the default game state structure
 -- This defines the initial state for a new game. Only dynamic values are stored here.
@@ -213,7 +240,8 @@ function S.GetDefaultGameState()
     -- Storyteller is the only hard-coded player; others are added dynamically on seat selection
     playerData[C.StorytellerID] = {
         color = "Black",
-        hud = getDefaultPlayerHUD()
+        hud = getDefaultPlayerHUD(),
+        cameraAngles = getDefaultPlayerCameraAngles()
     }
 
     return {
@@ -238,7 +266,13 @@ function S.GetDefaultGameState()
         },
         seatLayout = {
             currentTableKey = nil, -- e.g. "Table A"; preferred over raw center persistence
-            radius = nil,
+            occupiedNPCSlots = {
+              NPC1 = false, -- false if the slot is empty, or a key in D.characters of `npcs_data.ttslua` if the slot is occupied by an NPC.
+              NPC2 = false, -- false if the slot is empty, or a key in D.characters of `npcs_data.ttslua` if the slot is occupied by an NPC
+              NPC3 = false, -- false if the slot is empty, or a key in D.characters of `npcs_data.ttslua` if the slot is occupied by an NPC
+              NPC4 = false -- false if the slot is empty, or a key in D.characters of `npcs_data.ttslua` if the slot is occupied by an NPC
+            },
+            universalCameraAngles = {}
         },
         npcs = {
             instances = {},
@@ -416,8 +450,17 @@ function S.validateState()
     if gameState.seatLayout.currentTableKey ~= nil and type(gameState.seatLayout.currentTableKey) ~= "string" then
         gameState.seatLayout.currentTableKey = nil
     end
-    if gameState.seatLayout.radius ~= nil and type(gameState.seatLayout.radius) ~= "number" then
-        gameState.seatLayout.radius = nil
+    if type(gameState.seatLayout.occupiedNPCSlots) ~= "table" then
+        gameState.seatLayout.occupiedNPCSlots = {}
+    end
+    for _, seatKey in ipairs(C.NPCSeats) do
+        local slotValue = gameState.seatLayout.occupiedNPCSlots[seatKey]
+        if slotValue ~= false and type(slotValue) ~= "string" then
+            gameState.seatLayout.occupiedNPCSlots[seatKey] = false
+        end
+    end
+    if type(gameState.seatLayout.universalCameraAngles) ~= "table" then
+        gameState.seatLayout.universalCameraAngles = {}
     end
 
     if not gameState.npcs or type(gameState.npcs) ~= "table" then
@@ -768,8 +811,20 @@ local function buildSaveState()
         if type(gameState.seatLayout.currentTableKey) == "string" and gameState.seatLayout.currentTableKey ~= "" then
             saveState.seatLayout.currentTableKey = gameState.seatLayout.currentTableKey
         end
-        if type(gameState.seatLayout.radius) == "number" then
-            saveState.seatLayout.radius = gameState.seatLayout.radius
+        if type(gameState.seatLayout.occupiedNPCSlots) == "table" then
+            local occupiedNPCSlots = {}
+            for _, seatKey in ipairs(C.NPCSeats) do
+                local slotValue = gameState.seatLayout.occupiedNPCSlots[seatKey]
+                if slotValue == false or type(slotValue) == "string" then
+                    occupiedNPCSlots[seatKey] = slotValue
+                else
+                    occupiedNPCSlots[seatKey] = false
+                end
+            end
+            saveState.seatLayout.occupiedNPCSlots = occupiedNPCSlots
+        end
+        if type(gameState.seatLayout.universalCameraAngles) == "table" then
+            saveState.seatLayout.universalCameraAngles = U.clone(gameState.seatLayout.universalCameraAngles, true)
         end
         if next(saveState.seatLayout) == nil then
             saveState.seatLayout = nil
@@ -898,7 +953,8 @@ function S.initNewPlayer(playerID, color, steamName)
     -- Create minimal dynamic state (same structure as GetDefaultGameState)
     gameState.playerData[playerID] = {
         color = color,
-        hud = U.clone(getDefaultPlayerHUD())
+        hud = U.clone(getDefaultPlayerHUD()),
+        cameraAngles = U.clone(getDefaultPlayerCameraAngles())
     }
 
     local displayName = steamName or playerID

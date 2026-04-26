@@ -77,15 +77,15 @@ local DefaultTransitionTime = 0.5
 function manualPlayerLight2Setup()
 
   -- These are the "STANDARD" modes for the 2nd player lights
-  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_BROWN, { enabled = true,
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_BROWN, { enabled = true,
   color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
-  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_ORANGE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
-  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_RED, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
-  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_PINK, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
-  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_PURPLE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_ORANGE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_RED, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_PINK, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_PURPLE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
 
 
-  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_1_RED, {
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_1_RED, {
     enabled = true,
     position = Vector(0.00, 23.00, -65.00),
     rotation = Vector(330, 0.00, 0.00),
@@ -218,7 +218,7 @@ L.LIGHTMODES = {
     -- These lights are found by GUID, not by tag
     -- Each light has OFF and STANDARD modes
     playerLight1Brown = {
-        guid = G.GUIDS.PLAYER_LIGHT_1_BROWN,
+        guid = G.GUIDS.SEAT_LIGHT_1_BROWN,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -240,7 +240,7 @@ L.LIGHTMODES = {
         }
     },
     playerLight1Orange = {
-        guid = G.GUIDS.PLAYER_LIGHT_1_ORANGE,
+        guid = G.GUIDS.SEAT_LIGHT_1_ORANGE,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -262,7 +262,7 @@ L.LIGHTMODES = {
         }
     },
     playerLight1Red = {
-        guid = G.GUIDS.PLAYER_LIGHT_1_RED,
+        guid = G.GUIDS.SEAT_LIGHT_1_RED,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -284,7 +284,7 @@ L.LIGHTMODES = {
         }
     },
     playerLight1Pink = {
-        guid = G.GUIDS.PLAYER_LIGHT_1_PINK,
+        guid = G.GUIDS.SEAT_LIGHT_1_PINK,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -306,7 +306,7 @@ L.LIGHTMODES = {
         }
     },
     playerLight1Purple = {
-        guid = G.GUIDS.PLAYER_LIGHT_1_PURPLE,
+        guid = G.GUIDS.SEAT_LIGHT_1_PURPLE,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -328,7 +328,7 @@ L.LIGHTMODES = {
         }
     },
     playerLight2Brown = {
-        guid = G.GUIDS.PLAYER_LIGHT_2_BROWN,
+        guid = G.GUIDS.SEAT_LIGHT_2_BROWN,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -344,7 +344,7 @@ L.LIGHTMODES = {
         }
     },
     playerLight2Orange = {
-        guid = G.GUIDS.PLAYER_LIGHT_2_ORANGE,
+        guid = G.GUIDS.SEAT_LIGHT_2_ORANGE,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -360,7 +360,7 @@ L.LIGHTMODES = {
         }
     },
     playerLight2Red = {
-        guid = G.GUIDS.PLAYER_LIGHT_2_RED,
+        guid = G.GUIDS.SEAT_LIGHT_2_RED,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -380,7 +380,7 @@ L.LIGHTMODES = {
         }
     },
     playerLight2Pink = {
-        guid = G.GUIDS.PLAYER_LIGHT_2_PINK,
+        guid = G.GUIDS.SEAT_LIGHT_2_PINK,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -396,7 +396,7 @@ L.LIGHTMODES = {
         }
     },
     playerLight2Purple = {
-        guid = G.GUIDS.PLAYER_LIGHT_2_PURPLE,
+        guid = G.GUIDS.SEAT_LIGHT_2_PURPLE,
         isPlayerLight = true,
         default = "OFF",
         OFF = {
@@ -800,12 +800,12 @@ function workspaceSandbox()
   L.SetLightMode("playerLight1Pink", "OFF", "Pink", 0.5)
   L.SetLightMode("playerLight1Brown", "OFF", "Brown", 0.5)
 
-  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_BROWN, { enabled = true,
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_BROWN, { enabled = true,
   color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
-  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_ORANGE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
-  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_RED, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
-  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_PINK, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
-  L.SetLightMode(G.GUIDS.PLAYER_LIGHT_2_PURPLE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_ORANGE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_RED, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_PINK, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_PURPLE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
 end
 
 

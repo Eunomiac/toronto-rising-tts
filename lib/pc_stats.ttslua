@@ -410,7 +410,7 @@ function P.makeImpairedHumanityCondition(playerID)
   }
 end
 
---- Resolve sheet/UI light keys (e.g. PLAYER_LIGHT_2_COLOR) to L.LIGHTMODES registry names.
+--- Resolve sheet/UI light keys (e.g. SEAT_LIGHT_2_COLOR) to L.LIGHTMODES registry names.
 --- @param rawKey string
 --- @param seatColor string|nil
 --- @return string|nil
@@ -421,7 +421,7 @@ function P.resolveLightRegistryKey(rawKey, seatColor)
   if L.LIGHTMODES[rawKey] ~= nil then
     return rawKey
   end
-  local prefix = "PLAYER_LIGHT_2_"
+  local prefix = "SEAT_LIGHT_2_"
   if rawKey:sub(1, #prefix) == prefix then
     local suffix = rawKey:sub(#prefix + 1)
     if suffix == string.upper(suffix) and #suffix > 0 then

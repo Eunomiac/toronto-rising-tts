@@ -11,6 +11,7 @@
   <!-- ================================================================ -->
   <VerticalLayout class="storyteller_buttonControls" visibility="Host" rectAlignment="LowerRight" childAlignment="LowerRight" offsetXY="0 0">
     <Button preferredWidth="125" minWidth="125" onClick="HUD_printState">Print State</Button>
+    <Button preferredWidth="125" minWidth="125" onClick="HUD_debugCaptureCameraPreset">Capture Camera</Button>
     <HorizontalLayout preferredHeight="30" minHeight="30" spacing="4" childForceExpandWidth="false" childForceExpandHeight="false" childAlignment="MiddleLeft">
       <Button preferredWidth="78" minWidth="78" preferredHeight="30" minHeight="30" flexibleWidth="0" flexibleHeight="0" fontSize="14" onClick="HUD_debugLightActivate">Debug Light</Button>
       <InputField id="dl_guid" preferredWidth="65" minWidth="65" preferredHeight="30" minHeight="30" height="30" flexibleWidth="0" flexibleHeight="0" lineType="SingleLine" fontSize="12" textColor="#111111" placeholder="GUID" onValueChanged="HUD_debugLightGuidInput" onEndEdit="HUD_debugLightGuidInput"></InputField>

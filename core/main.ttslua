@@ -296,6 +296,7 @@ end
     Applies preset positions from `C.CameraAngles` (or a custom look-at).
 ]]
 function M.setCamera(player, cameraMode, lookAtPos)
+
   -- Handle "ALL" case
   if player == nil or player == "ALL" then
     M.forPlayers(function(p, color)
@@ -324,10 +325,41 @@ function M.setCamera(player, cameraMode, lookAtPos)
     return
   end
 
-  -- Get camera preset from constants
+  if (cameraMode == nil or cameraMode == "") and lookAtPos == nil then
+    U.AlertGM("M.setCamera: No camera mode or lookAtPos provided")
+    return
+  end
+
+  -- If the camera mode is universal, use the UniversalCameraAngles data
   local cameraPreset = nil
-  if cameraMode and C.CameraAngles[cameraMode] then
-    cameraPreset = C.CameraAngles[cameraMode]
+  if cameraMode ~= nil and cameraMode ~= "" then
+    local mergedUniversal = U.clone(C.UniversalCameraAngles or {}, true)
+    local dynamicUniversal = S.getStateVal("seatLayout", "universalCameraAngles")
+    if type(dynamicUniversal) == "table" then
+      for key, val in pairs(dynamicUniversal) do
+        mergedUniversal[key] = val
+      end
+    end
+    if mergedUniversal[cameraMode] ~= nil or C.CameraModes[cameraMode] == "universal" then
+      cameraPreset = U.clone(mergedUniversal[cameraMode])
+    else
+      -- Otherwise, use per-player camera data from state.
+      local playerData = S.getPlayerData(player)
+      if type(playerData) ~= "table" then
+        U.AlertGM("M.setCamera: No player data found for player '" .. tostring(player.color) .. "'")
+        return
+      end
+      local playerCameraAngles = type(playerData.cameraAngles) == "table" and playerData.cameraAngles or nil
+      if playerCameraAngles == nil then
+        U.AlertGM("M.setCamera: No cameraAngles found for player '" .. tostring(player.color) .. "'")
+        return
+      end
+      cameraPreset = U.clone(playerCameraAngles[cameraMode])
+      if type(cameraPreset) ~= "table" then
+        U.AlertGM("M.setCamera: No camera angle data found for player '" .. tostring(player.color) .. "' and camera mode '" .. tostring(cameraMode) .. "'")
+        return
+      end
+    end
   end
 
   if cameraPreset == nil and lookAtPos == nil then
@@ -335,8 +367,10 @@ function M.setCamera(player, cameraMode, lookAtPos)
     return
   end
 
-  -- Set camera mode to ThirdPerson for cinematic control
-  player.setCameraMode("ThirdPerson")
+  -- Set camera mode to cameraPreset.cameraMode if present, or ThirdPerson by default
+  local playerCameraMode = (cameraPreset and cameraPreset.cameraMode) or "ThirdPerson"
+  -- Set the camera mode to the player's camera mode
+  player.setCameraMode(playerCameraMode)
 
   -- Build camera data table for lookAt() - must include position, pitch, yaw, and distance
   local cameraData = nil
@@ -350,8 +384,8 @@ function M.setCamera(player, cameraMode, lookAtPos)
     }
   elseif cameraPreset ~= nil then
     -- Use full camera preset data (position, pitch, yaw, distance)
-    -- Clone to avoid modifying the original preset
     cameraData = U.clone(cameraPreset)
+    cameraData.cameraMode = nil
     if cameraData.position == nil then
       U.AlertGM("M.setCamera: Camera preset '" .. tostring(cameraMode) .. "' has no position defined")
       return
@@ -363,7 +397,7 @@ function M.setCamera(player, cameraMode, lookAtPos)
     player.lookAt(cameraData)
     -- Reset to ThirdPerson after brief delay (prevents camera snapping back)
     Wait.time(function()
-      player.setCameraMode("ThirdPerson")
+      player.setCameraMode(playerCameraMode)
     end, 0.5)
   end
 end

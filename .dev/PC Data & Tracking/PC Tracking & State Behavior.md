@@ -253,7 +253,7 @@ Conditions live at **`playerData[playerId].conditions`**, a sibling of **`stats`
   interface Condition {
     statChanges: Partial<Record<AttributeKey | SkillKey | DisciplineKey | "bloodPotency" | "health" | "willpower" | "humanity", number>>;
     hudChanges: Partial<Record<string, boolean>>;
-    /** Keys: registered `playerLight2*` names in `core/lighting.ttslua`, or `PLAYER_LIGHT_2_<COLOR>` ids (resolved to those registry names in code). Values: mode name strings, e.g. `"OFF"`, `"STANDARD"`. */
+    /** Keys: registered `playerLight2*` names in `core/lighting.ttslua`, or `SEAT_LIGHT_2_<COLOR>` ids (resolved to those registry names in code). Values: mode name strings, e.g. `"OFF"`, `"STANDARD"`. */
     lightingModeChanges: Partial<Record<string, string>>;
     gameObjectChanges: Partial<Record<string, boolean>>;
     removalCriteria: RemovalCriteria;
@@ -422,7 +422,7 @@ These conditions are applied to the player's `"conditions"` table as follows:
       statChanges = {},
       hudChanges = {},
       lightingModeChanges = {
-        ["PLAYER_LIGHT_2_" .. U.upper(playerData.color)] = "OFF"
+        ["SEAT_LIGHT_2_" .. U.upper(playerData.color)] = "OFF"
       },
       removalCriteria = "indefinite"
     },
@@ -436,7 +436,7 @@ These conditions are applied to the player's `"conditions"` table as follows:
         ["overlay_health_impaired_" .. playerData.color] = true
       },
       lightingModeChanges = {
-        ["PLAYER_LIGHT_2_" .. U.upper(playerData.color)] = "DIM_RED"
+        ["SEAT_LIGHT_2_" .. U.upper(playerData.color)] = "DIM_RED"
       },
       removalCriteria = "indefinite" -- Still controlled automatically, by the damage/healing functions described above.
     },
@@ -453,7 +453,7 @@ These conditions are applied to the player's `"conditions"` table as follows:
         ["overlay_willpower_impaired_" .. playerData.color] = true
       },
       lightingModeChanges = {
-        ["PLAYER_LIGHT_2_" .. U.upper(playerData.color)] = "DIM_RED"
+        ["SEAT_LIGHT_2_" .. U.upper(playerData.color)] = "DIM_RED"
       },
       removalCriteria = "indefinite" -- Still controlled automatically, by the damage/healing functions described above.
     }
@@ -492,7 +492,7 @@ Stains should be applied as described in the section "##### Example: `stats.huma
         ["overlay_humanity_impaired_" .. playerData.color] = true
       },
       lightingModeChanges = {
-        ["PLAYER_LIGHT_2_" .. U.upper(playerData.color)] = "DIM_PURPLE"
+        ["SEAT_LIGHT_2_" .. U.upper(playerData.color)] = "DIM_PURPLE"
       },
       removalCriteria = "indefinite" -- Still controlled automatically, by the conditions described above.
     }

@@ -7,6 +7,8 @@
 
 local C = {}
 
+local G = require("lib.guids")
+
 -- Storyteller ID (Steam ID). Same as Kings Dilemma C.AdminID for reuse across TTS projects.
 -- All other player IDs are extracted dynamically when players choose a seat color.
 C.StorytellerID = "76561198002132577"
@@ -91,6 +93,12 @@ end
 -- Storyteller is always Black. Player colors are: Brown, Orange, Red, Pink, Purple (in that order)
 C.PlayerColors = {
     "Brown", "Orange", "Red", "Pink", "Purple"
+}
+
+-- NPC Seats
+-- The up-to-four table slots for NPCs, identified by the tags NPC1, NPC2, NPC3, NPC4
+C.NPCSeats = {
+    "NPC1", "NPC2", "NPC3", "NPC4"
 }
 
 -- Game Phases (VTM5E / Toronto Rising)
@@ -541,12 +549,189 @@ C.ObjectPositions = {
   }
 }
 
+-- Camera Modes
+-- These are the camera modes that can be used to control the camera. This object contains the mode as the key, and either "bySeat" if the camera angle should be determined by the table seating functionality, or "universal" if the camera angle is the same for all players.
+C.CameraModes = {
+  default = "bySeat",
+  sheet = "bySeat",
+  diceTray = "bySeat",
+  districtCard = "universal",
+  siteCard = "universal",
+  npcCenter = "universal",
+  npcNearLeft = "universal",
+  npcNearRight = "universal",
+  npcFarLeft = "universal",
+  npcFarRight = "universal",
+  wide = "universal",
+  wideFacing = "universal"
+}
+
+-- Reference Color Red Camera Angles
+-- These are the camera angle definitions that are defined for the Red seat, but that will need to be rotated and defined for each of the other player seats.
+-- The two fields determine how the camera angles are meant to be used:
+--    - "forSeat": these camera angles should be written to the gameState.playerData[playerID].cameraAngles[cameraMode] after being rotated for the corresponding seat.
+--    - "forUniversal": these camera angles are all named with the form "<cameraMode>Red", and are meant to be universal camera angles -- e.g. "facingRed" is a camera angle anyone can use to direct their view towards the Red player. For each of these, corresponding camera angles should be rotated and defined for each seat at the time R.resolveSeatObjectsFromTable() is called, including all NPC slots in the playerToPositionMap. However, they shouldn't be stored in playerData because they are meant to be universal: They should instead be stored at a higher-level state variable, and merged with the fixed C.UniversalCameraAngles object to create the final universal camera angles set that all players will use (and that M.setCamera() and related functions will draw from).
+
+--[[ To be clear, after R.resolveSeatObjectsFromTable() is called, the "universal" camera modes will include one of every entry in C.UniversalCameraAngles, plus the following: "facingRed", "facingBrown", "facingOrange", "facingPink" and "facingPurple", as well as some number of "facingNPC1", "facingNPC2", "facingNPC3" and "facingNPC4" depending on which slots are open in the playerToPositionMap of the new table configuration -- and then the same for "sheetRed", "sheetBrown", ... and "diceTrayRed", "diceTrayBrown", ... etc. ]]
+
+C.RedCameraAngles = {
+  forSeat = {
+    default = {
+      cameraMode = "FirstPerson",
+      position = Vector({0, 0, 0}),
+      pitch = 0,
+      yaw = 0,
+      distance = 0
+    },
+    sheet = {
+      cameraMode = "FirstPerson",
+      position = Vector({0, 0, 0}),
+      pitch = 0,
+      yaw = 0,
+      distance = 0
+    },
+    diceTray = {
+      cameraMode = "FirstPerson",
+      position = Vector({0, 0, 0}),
+      pitch = 0,
+      yaw = 0,
+      distance = 0
+    }
+  },
+  forUniversal = {
+    facingRed = {
+      cameraMode = "FirstPerson",
+      position = Vector({0, 0, 0}),
+      pitch = 0,
+      yaw = 0,
+      distance = 0
+    },
+    sheetRed = {
+      cameraMode = "FirstPerson",
+      position = Vector({0, 0, 0}),
+      pitch = 0,
+      yaw = 0,
+      distance = 0
+    },
+    diceTrayRed = {
+      cameraMode = "FirstPerson",
+      position = Vector({0, 0, 0}),
+      pitch = 0,
+      yaw = 0,
+      distance = 0
+    }
+  }
+}
+
+-- Universal Camera Modes
+-- These are the definitions for camera modes that are the same for all players.
+C.UniversalCameraAngles = {
+  districtCard = {
+    cameraMode = "FirstPerson",
+    position = Vector({0, 0, 0}),
+    pitch = 0,
+    yaw = 0,
+    distance = 0
+  },
+  siteCard = {
+    cameraMode = "FirstPerson",
+    position = Vector({0, 0, 0}),
+    pitch = 0,
+    yaw = 0,
+    distance = 0
+  },
+  npcCenter = {
+    cameraMode = "FirstPerson",
+    position = Vector({0, 0, 0}),
+    pitch = 0,
+    yaw = 0,
+    distance = 0
+  },
+  npcNearLeft = {
+    cameraMode = "FirstPerson",
+    position = Vector({0, 0, 0}),
+    pitch = 0,
+    yaw = 0,
+    distance = 0
+  },
+  npcNearRight = {
+    cameraMode = "FirstPerson",
+    position = Vector({0, 0, 0}),
+    pitch = 0,
+    yaw = 0,
+    distance = 0
+  },
+  npcFarLeft = {
+    cameraMode = "FirstPerson",
+    position = Vector({0, 0, 0}),
+    pitch = 0,
+    yaw = 0,
+    distance = 0
+  },
+  npcFarRight = {
+    cameraMode = "FirstPerson",
+    position = Vector({0, 0, 0}),
+    pitch = 0,
+    yaw = 0,
+    distance = 0
+  },
+  wide = {
+    cameraMode = "FirstPerson",
+    position = Vector({0, 0, 0}),
+    pitch = 0,
+    yaw = 0,
+    distance = 0
+  },
+  wideFacing = {
+    cameraMode = "FirstPerson",
+    position = Vector({0, 0, 0}),
+    pitch = 0,
+    yaw = 0,
+    distance = 0
+  }
+}
 -- Table Presets
+
+--[[
+  ## gameState Additions
+
+  seatLayout = {
+    currentTableKey: string, -- The key of the currently-active table. On load, after waiting until loading is complete and objects have settled, if this value is nil, then the currently-active table should be derived by checking all table objects for the "activeTable" tag, and this value should be set accordingly.
+    occupiedNPCSlots = {
+      NPC1 = false|string, -- false if the slot is empty, or a key in D.characters of `npcs_data.ttslua` if the slot is occupied by an NPC.
+      NPC2 = false|string, -- false if the slot is empty, or a key in D.characters of `npcs_data.ttslua` if the slot is occupied by an NPC
+      NPC3 = false|string, -- false if the slot is empty, or a key in D.characters of `npcs_data.ttslua` if the slot is occupied by an NPC
+      NPC4 = false|string, -- false if the slot is empty, or a key in D.characters of `npcs_data.ttslua` if the slot is occupied by an NPC
+    }
+  }
+
+1. The current-active table should be stored in gameState.
+2. A top-level fuction controls switching between tables. As a first step, it should check whether the table being activated is already active and, if so, do nothing. Otherwise, the function should perform the following sequence of actions simultaneously and instantly unless otherwise specified:
+   a. Toggle the blindfold overlay on for all seated players.
+   b. Wait 0.5s until the blindfold overlay has fully animated in.
+   c. Assemble a (local) collection, `tableSeatObjects`, containing all of the following objects:
+      - all `<Color>Object`-tagged objects
+      - all `<NPC1|NPC2|NPC3|NPC4>Object`-tagged objects for which gameState.seatLayout.occupiedNPCSlots is truthy
+   d. Assemble a (local) collection, `unlockedTableSeatObjects`, containing the subset of `tableSeatObjects` that are (a) `<Color>Object`-tagged and (b) presently unlocked (NPC-tagged objects will always be locked).
+   e. Assemble a (local) collection, `invalidActiveNPCObjects`, containing the subset of `tableSeatObjects` with "NPC<#>Object" tags that (a) refer to truthy NPC slots in gameState.seatLayout.occupiedNPCSlots, (b) have an NPC slot in the current table's playerToPositionMap, and (c) do not have an NPC slot in the new table's playerToPositionMap (e.g. if switching from "Table A" to "Table B1", then this collection should include all objects tagged "NPC2Object", "NPC3Object", and "NPC4Object", assuming all three of those slots are occupied by NPCS (i.e. gameState.seatLayout.occupiedNPCSlots is truthy for all three of those NPCs)).
+   f. Assemble a (local) collection, `validInactiveNPCObjects`, containing the subset of `tableSeatObjects` with "NPC<#>Object" tags that (a) refer to truthy NPC slots in gameState.seatLayout.occupiedNPCSlots, (b) have an NPC slot in the new table's playerToPositionMap, and (c) do not have an NPC slot in the current table's playerToPositionMap (e.g. if switching from "Table B2" to "Table B1", then this collection should include all objects tagged "NPC2Object", assuming gameState.seatLayout.occupiedNPCSlots.NPC2 is truthy).
+   g. Assemble a (local) collection, `playerHandZones`, containing the five player hand zones (one for each player color).
+   h. Toggle lock on for all objects in `unlockedTableSeatObjects`.
+   i. Deactivate (as described below) all objects in `invalidActiveNPCObjects`.
+   j. Toggle visibility on for all objects in `validInactiveNPCObjects`.
+   k. Move the currently-active table object and all objects listed in its 'components' field to their inactivePosition, and set their visibility to invisible for all layer colors, including White, Black and Grey.
+   l. Move the new table object to its activePosition, and set its visibility active to all player colors.
+   m. If the data for the new table contains a components field, filter out those components whose 'usedBy' field is false in gameState.seatLayout.occupiedNPCSlots (i.e. they are used by NPCs who are not sitting at the table), then move the remaining components to their activePosition, and set their visibility active to all player colors.
+   n. Update gameState.seatLayout.currentTableKey to the key of the new table. (Do not change gameState.seatLayout.occupiedNPCSlots; when returning to a table with more slots, NPCs that couldn't sit at the table before can now sit at the new, larger table. NPC active/inactive status is controlled elsewhere.)
+   o. Call R.resolveSeatObjects(newTableRef) (using the defaults for sourceObjects and options) to spawn/move objects into the new table's seats, based on the new table's data.
+
+]]
 C.Tables = {
   ["Table A"] = {
     guid = "92ac34",
     centerPoint = Vector({0, 0, 50}),
     activePosition = Vector({0.00, 0.00, 53.66}),
+    inactivePosition = Vector({0.00, -50, 100}),
     numSegments = 20,
     angleSegmentOne = 0,
     playerToPositionMap = {
@@ -565,21 +750,25 @@ C.Tables = {
       ["Table Leaf Near Left"] = {
         guid = "6db794",
         activePosition = Vector({0.00, 0.00, 53.66}),
+        inactivePosition = Vector({0.00, -50, 100}),
         usedBy = "NPC2"
       },
       ["Table Leaf Near Right"] = {
         guid = "443d5a",
         activePosition = Vector({0.00, 0.00, 53.66}),
+        inactivePosition = Vector({0.00, -50, 100}),
         usedBy = "NPC1"
       },
       ["Table Leaf Far Left"] = {
         guid = "f09667",
         activePosition = Vector({0.00, 0.00, 53.66}),
+        inactivePosition = Vector({0.00, -50, 100}),
         usedBy = "NPC4"
       },
       ["Table Leaf Far Right"] = {
         guid = "66f42d",
         activePosition = Vector({0.00, 0.00, 53.66}),
+        inactivePosition = Vector({0.00, -50, 100}),
         usedBy = "NPC3"
       }
     }
@@ -588,6 +777,7 @@ C.Tables = {
     guid = "b086ae",
     centerPoint = Vector({0, 0, -10.26}),
     activePosition = Vector({0.00, 0, -10.26}),
+    inactivePosition = Vector({0.00, -60, 100}),
     numSegments = 10,
     angleSegmentOne = 0,
     playerToPositionMap = {
@@ -607,6 +797,7 @@ C.Tables = {
     guid = "c52bcd",
     centerPoint = Vector({0, 0, -16.07}),
     activePosition = Vector({0.00, 0, -16.07}),
+    inactivePosition = Vector({0.00, -70, 100}),
     numSegments = 6,
     angleSegmentOne = 0,
     playerToPositionMap = {
@@ -623,6 +814,7 @@ C.Tables = {
     guid = "f14ede",
     centerPoint = Vector({0, 0, -13.83}),
     activePosition = Vector({0.00, 0, -13.83}),
+    inactivePosition = Vector({0.00, -80, 100}),
     numSegments = 7,
     angleSegmentOne = 25.7,
     playerToPositionMap = {
@@ -640,6 +832,7 @@ C.Tables = {
     guid = "323c52",
     centerPoint = Vector({0, 0, -12.25}),
     activePosition = Vector({0.00, 0, -12.25}),
+    inactivePosition = Vector({0.00, -90, 100}),
     numSegments = 8,
     angleSegmentOne = 0,
     playerToPositionMap = {
@@ -658,6 +851,7 @@ C.Tables = {
     guid = "ad8530",
     centerPoint = Vector({0, 0, -11.04}),
     activePosition = Vector({0, 0, -11.04}),
+    inactivePosition = Vector({0.00, -100, 100}),
     numSegments = 9,
     angleSegmentOne = 20,
     playerToPositionMap = {
@@ -672,6 +866,62 @@ C.Tables = {
       Purple = 7,
     },
     referencePlayerColor = "Red"
+  }
+}
+
+-- Default Table Source Objects
+-- During a table transition, if a sourceObjects table is not provided, the default table source objects will be used.
+-- See .dev/Rotational Coordinate Generator.md for more information on the sourceObjects table, and how its values are expanded and parsed into objects.
+-- This is a nested table with the following fields:
+--   - "player": a table of objects associated with player seats
+--   - "all": a table of objects associated with all seats (player seats and NPC seats)
+--   - "relative": a table of objects that are relative to the hand zone anchor of the matching table slot, and should be moved to rigidly follow the corresponding hand zone anchor when the seat layout is applied
+--   - "cameraModes.bySeat": a table of keys in C.RedCameraAngles.forSeat to rotate and write into per-seat playerData.cameraAngles
+--   - "cameraModes.universal": a table of keys (once the reference player color "Red" is appended) in C.RedCameraAngles.forUniversal to rotate and write into state, in such a way that they can be merged into the other universal camera angles defined in C.UniversalCameraAngles
+C.TableSourceObjects = {
+  player = {
+    "CSHEET_BASE",
+    "CSHEET_BASE_BACK",
+    "CSHEET_ROLLER_DRAWER",
+    "CSHEET_ROLLER_DRAWER_ANCHOR",
+    "CSHEET_PAGE_1",
+    "CSHEET_PAGE_2",
+    "CSHEET_PAGE_3",
+    "CSHEET_PAGE_4",
+    "CSHEET_PAGE_5",
+    "CSHEET_PAGE_6",
+    "CSHEET_PAGE_7",
+    "CSHEET_PAGE_8",
+    "DICEBAG_HUNGER",
+    "DICEBAG_NORMAL",
+    "SIGNAL_CANDLE",
+    "SIGNAL_FIRE",
+    "HUNGER_SMOKE"
+  },
+  all = {
+    "SEAT_CHAIR",
+    "SEAT_FIGURE",
+    "SEAT_LIGHT_1",
+    "SEAT_LIGHT_2",
+    "SEAT_LIGHT_3",
+  },
+  relative = {
+    G.GUIDS.TAROT_DECK_PINK,
+    G.GUIDS.TAROT_DRAWER_PINK,
+    G.GUIDS.TAROT_BUTTON_PINK,
+    G.GUIDS.TAROT_ANCHOR_PINK
+  },
+  cameraModes = {
+    bySeat = {
+      "default",
+      "sheet",
+      "diceTray",
+    },
+    universal = { -- Append the reference player color to the end of each key to find the source angle in C.RedCameraAngles.forUniversal
+      "facing",
+      "sheet",
+      "diceTray",
+    }
   }
 }
 
