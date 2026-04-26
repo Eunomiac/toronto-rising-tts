@@ -28,7 +28,7 @@ This section is the canonical rules reference for the system. Every design decis
 The result class is determined by the combination of total successes, difficulty, and the specific faces shown on Hunger dice. Priority order for classification: Messy Critical > Critical Win > Win > Bestial Failure > Failure > Total Failure (> Total Bestial Failure as a sub-class of Bestial Failure).
 
 | Result Class | Successes vs. Difficulty | Critical Pair? | Hunger Die Shows 10? | Hunger Die Shows 1? |
-|---|---|---|---|---|
+| ------------- | ----------------------- | --------------- | -------------------- | ------------------- |
 | **Messy Critical** | `>= difficulty` | Yes | Yes (at least one) | — |
 | **Critical Win** | `>= difficulty` | Yes | No | — |
 | **Win** | `>= difficulty` | No | — | — |
@@ -42,6 +42,7 @@ The result class is determined by the combination of total successes, difficulty
 ### 1.4 Rouse Checks
 
 A Rouse Check is a single-die roll with no Hunger dice. Roll 1 Normal d10:
+
 - **Success (6–10):** No consequence.
 - **Failure (1–5):** Hunger increases by 1. If Hunger was already 5, the character must attempt a **Frenzy roll** (Composure + Resolve vs. difficulty set by ST, typically 2–4).
 
@@ -52,6 +53,7 @@ Multiple Rouse Checks (e.g., healing 3 Aggravated Health) are queued and resolve
 ### 1.5 Remorse Rolls
 
 Used at end-of-session to resolve accumulated Stains.
+
 - Pool = number of **empty** (unstained, unscarred) Humanity boxes = `10 - current_humanity - stains`. Minimum 1 die even if pool would be 0.
 - **No Hunger dice.** No critical pairs apply (pairs of 10s are still counted as successes, but have no narrative significance).
 - **Any success:** Humanity is preserved; all Stains clear.
@@ -61,6 +63,7 @@ Used at end-of-session to resolve accumulated Stains.
 ### 1.6 Willpower Rerolls
 
 Once per roll (during `POST_ROLL` phase, before result is confirmed):
+
 - Player suffers **1 Superficial Willpower damage**.
 - Player may choose up to **3 dice** from their pool to reroll (physically pick up and throw).
 - The system records that a reroll occurred; second die readings replace only the rerolled dice.
@@ -77,6 +80,7 @@ Once per roll (during `POST_ROLL` phase, before result is confirmed):
 ### 1.8 Extended Rolls *(Phase 3)*
 
 A series of rolls toward a cumulative success target:
+
 - Defined by `targetSuccesses` (total needed) and `maxRolls` (maximum attempts).
 - Each individual roll produces a sub-result; successes accumulate.
 - A Bestial Failure or Total Bestial Failure on any sub-roll may have catastrophic consequences (per ST ruling).
@@ -86,6 +90,7 @@ A series of rolls toward a cumulative success target:
 ### 1.9 Teamwork Rolls *(Phase 3)*
 
 Multiple characters contribute to a single roll:
+
 - One character is the **primary actor**; others are **contributors**.
 - Each contributor rolls their own relevant pool. For every contributor who achieves at least **1 success**, their total successes are added to the primary actor's pool (as bonus dice or successes, per ST ruling).
 - The primary actor then rolls their own pool with the accumulated bonus.
@@ -94,6 +99,7 @@ Multiple characters contribute to a single roll:
 ### 1.10 Opposed Rolls *(Phase 3 / Enabled by Difficulty Decoupling)*
 
 Two characters roll against each other:
+
 - Both parties roll their relevant pools independently.
 - The party with more total successes wins. Ties typically go to the attacker or active party (ST ruling).
 - **Implementation:** The Storyteller sets the difficulty for one roll equal to the result of the opposing roll (post-hoc difficulty assignment; see §4.3). This requires no dedicated code path.
@@ -106,13 +112,14 @@ Two characters roll against each other:
 
 Three new Lua modules are introduced, following the project's standard pattern:
 
-```
+```text
 core/dice.ttslua           -- Pure VTM5E math engine (no TTS dependencies)
 core/roll_controller.ttslua -- Baton-passing state machine and flow control
 core/roll_ui.ttslua        -- Translates roll state into TTS XML UI updates
 ```
 
 Supporting changes:
+
 - `lib/constants.ttslua` — new enumerations (RollType, RollPhase, BatonHolder, ResultClass)
 - `core/state.ttslua` — `rollData` default in `getDefaultPlayerHUD()`
 - `lib/guids.ttslua` — dice bag GUIDs + helper functions
@@ -122,7 +129,7 @@ Supporting changes:
 
 ### 2.2 Dependency Graph
 
-```
+```text
 core/global_script
     ├── core/roll_controller   (requires core/dice, core/state, lib/constants, lib/guids)
     ├── core/roll_ui           (requires core/roll_controller, lib/constants)
@@ -134,6 +141,7 @@ core/global_script
 ### 2.3 Obsolete Code
 
 The following are retired by this system. Their physical dice bag objects in TTS are preserved as props but their Lua scripts are no longer called:
+
 - `lib/dice-roller.ttslua` — replaced by `core/dice.ttslua` + `core/roll_controller.ttslua`
 - MrStump click-roller logic in bundled `DICEBAG_NORMAL_*` and `DICEBAG_HUNGER_*` object scripts
 - `ui/shared/hud_shared.xml` `diceResultsPanel` — replaced by the richer panels in `ui/shared/roll_panels.xml`
@@ -494,7 +502,7 @@ function Dice.formatDiceDisplay(normalDice, hungerDice) end
 
 ### 6.2 Classification Algorithm (Pseudocode)
 
-```
+```pseudocode
 function classifyRoll(normalDice, hungerDice, difficulty):
     if difficulty == nil: return nil
 
@@ -636,11 +644,13 @@ To handle physical dice rolling (multiple dice settling over time), the controll
 ```
 
 When `RC.onDieRandomized(color, dieType, value)` is called:
+
 1. Append `value` to `RC._pendingDice[color][dieType]`.
 2. Cancel existing `RC._debounceTimer[color]` if present.
 3. Start new `C.DICE_SETTLE_DEBOUNCE_SECONDS`-second timer that calls `RC.onDiceSettled(color)`.
 
 When `RC.onDiceSettled(color)` fires:
+
 1. Copy `RC._pendingDice[color]` into `active.dice`.
 2. Clear `RC._pendingDice[color]`.
 3. Call `RC.tryClassifyResult(color)`.
@@ -651,7 +661,7 @@ When `RC.onDiceSettled(color)` fires:
 ### 7.3 Phase Transition Table
 
 | From Phase | Trigger | To Phase | Baton Moves To |
-|---|---|---|---|
+| ------------- | ----------------------- | --------------- | -------------------- |
 | `SETUP` | `RC.openRoll(color)` | `PRE_ROLL` | PLAYER |
 | `PRE_ROLL` | `RC.takeHalf(color)` | `POST_ROLL` | PLAYER |
 | `PRE_ROLL` | Player clicks "Roll" in UI | `ROLLING` | AUTO |
@@ -699,7 +709,7 @@ function RUI.restoreLastResult(color) end
 All roll-related UI element IDs follow a consistent naming pattern:
 
 | Element | ID Pattern | Notes |
-|---|---|---|
+| ------------- | ----------------------- | --------------- |
 | ST Roll Dashboard panel | `rollDash_ST` | Visibility: `"Black\|Host"` |
 | ST row for player color | `rollDash_row_<Color>` | One per player color |
 | ST difficulty input field | `rollDash_difficulty_<Color>` | `InputField` |
@@ -739,6 +749,7 @@ end
 
 **Die Attribution:** When TTS spawns dice from a bag (player shakes bag), each die object's
 `obj.getGMNotes()` or container parent can be checked. The recommended approach:
+
 - Use `obj.getVar("diceOwnerColor")` if set by the bag's onLoad script.
 - Fall back to zone-based attribution: use `getObjectsInZone()` on the player's seating area.
 - Simplest reliable approach: check if the object's name matches `"DICEBAG_NORMAL_<COLOR>"` or `"DICEBAG_HUNGER_<COLOR>"` pattern (set by the bag spawn script).
@@ -890,7 +901,7 @@ New file. Included from `ui/Global.xml` after all existing includes.
 
 ### 11.1 Standard / Discipline Roll
 
-```
+```text
 1. Player clicks "Standard Roll" / "Discipline Roll" button (Left Sidebar → HUD_rollInitiate)
 2. RC.initiateRoll(color, {rollType=STANDARD, pool={normal=0, hunger=0}})
    → active = {phase=SETUP, batonHolder=STORYTELLER, pool={0,0}, difficulty=nil, ...}
@@ -946,7 +957,7 @@ New file. Included from `ui/Global.xml` after all existing includes.
 
 ### 11.2 Rouse Check
 
-```
+```text
 1. Triggered by: clicking Hunger dot (HUD) or Health dot (healing), or HUD_rollInitiate with ROUSE type
 2. RC.initiateRoll(color, {rollType=ROUSE, pool={normal=1, hunger=0}})
    → phase=SETUP, batonHolder=STORYTELLER (ST can skip to PRE_ROLL or auto-open)
@@ -970,7 +981,7 @@ Oblivion variant: same, but on TOTAL_FAILURE also S.setPlayerVal(color, "stains"
 
 ### 11.3 Remorse Roll
 
-```
+```text
 1. Triggered by: Humanity dot click in End Phase, or HUD_rollInitiate with REMORSE type
 2. RC.initiateRoll(color, {rollType=REMORSE}):
    → Pool auto-computed: max(1, 10 - currentHumanity - stains) Normal dice, 0 Hunger
@@ -990,7 +1001,7 @@ Oblivion variant: same, but on TOTAL_FAILURE also S.setPlayerVal(color, "stains"
 
 ### 11.4 Willpower Reroll (within any eligible roll)
 
-```
+```text
 (Occurs at step 8a of Standard Roll flow above)
 1. Player clicks "SPEND WILLPOWER" button (phase must be POST_ROLL)
 2. RC.spendWillpower(color):
@@ -1021,6 +1032,7 @@ Oblivion variant: same, but on TOTAL_FAILURE also S.setPlayerVal(color, "stains"
 **Goal:** The math works; state structure is in place; nothing breaks existing code.
 
 Tasks:
+
 1. Add constants to `lib/constants.ttslua` (RollType, RollPhase, BatonHolder, ResultClass enums + helper lookup tables)
 2. Add `rollData` default to `getDefaultPlayerHUD()` in `core/state.ttslua`
 3. Add dice GUIDs + helper functions to `lib/guids.ttslua`
@@ -1032,6 +1044,7 @@ Tasks:
 **Goal:** ST can initiate a Standard Roll; player rolls physical dice; result is displayed.
 
 Tasks:
+
 1. Create `core/roll_controller.ttslua` with full public API (§7.1); physical die accumulation (§7.2)
 2. Create `core/roll_ui.ttslua` with full panel update functions (§8)
 3. Create `ui/shared/roll_panels.xml` with all panels (§10)
@@ -1045,6 +1058,7 @@ Tasks:
 **Goal:** Extended, Teamwork, and Opposed rolls work.
 
 Tasks:
+
 1. Add extended sub-record handling to `RC.initiateRoll` and `RC.confirmRoll`
 2. Add teamwork coordination functions: `RC.initiateTeamworkRoll`, `RC.contributeToTeamwork`
 3. Add opposed flow: ST uses `RC.setDifficulty` post-hoc (the mechanism already exists from Phase 2)
@@ -1056,6 +1070,7 @@ Tasks:
 **Goal:** Production-ready; handles all edge cases gracefully.
 
 Tasks:
+
 1. Result panel animations (fade in/out, color-coded by result class)
 2. Chat broadcast formatting (colorized, structured message)
 3. Roll history display (last 5 results accessible from reference sidebar)
@@ -1069,7 +1084,7 @@ Tasks:
 ## 13. Error Handling & Edge Cases
 
 | Scenario | Handling |
-|---|---|
+| ------------- | ----------------------- |
 | Player clicks Roll while another roll is active | RC.initiateRoll returns false; no-op |
 | Player disconnects during ROLLING | onPlayerDisconnect hook calls RC.cancelRoll |
 | ST sets invalid difficulty (< 0 or NaN) | RC.setDifficulty validates; rejects with console warning |
@@ -1102,7 +1117,3 @@ DEBUG.testRollFlow_Rouse(color, dieValue)
 -- Verify state is clean after cancel
 DEBUG.testRollCancel(color)
 ```
-
----
-
-*Last Updated: 2026-04-16 (Initial full plan)*

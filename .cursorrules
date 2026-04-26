@@ -198,7 +198,12 @@ return ModuleName
 
 ### Error Handling
 
-- Use `pcall` for safe execution where appropriate
+- Do **not** use `pcall` by default; let unexpected failures surface so bugs are visible
+- `pcall` is allowed only when masking a **known, expected, non-actionable** runtime failure (for example, transient TTS object disappearance during optional cleanup)
+- Every `pcall` usage must have an adjacent comment that explains:
+  - what known failure is being masked
+  - why masking is safe
+  - what observable fallback/logging occurs
 - Use `U.Val()` for assertions and validation (from util library)
 - Provide clear, descriptive error messages
 - Validate inputs before processing

@@ -47,6 +47,7 @@ local function findDiceDrawerObject(color)
   end
   for _, obj in ipairs(objs) do
     if obj ~= nil then
+      -- Known non-fatal case: getTags can fail for stale object handles while scanning world objects.
       local ok, tags = pcall(function()
         return obj.getTags()
       end)
@@ -75,6 +76,7 @@ local function applyPose(obj, pose)
   end
   local function run()
     if type(setLock) == "boolean" and setLock == true then
+      -- Known non-fatal case: setLock can fail if object is deleted during animation setup.
       pcall(function()
         obj.setLock(true)
       end)
@@ -87,6 +89,7 @@ local function applyPose(obj, pose)
       if duration > 0 then
         U.setPositionSlow(obj, Vector(pos), duration, nil, false)
       else
+        -- Known non-fatal case: smooth move can fail on non-physical or stale objects.
         pcall(function()
           obj.setPositionSmooth(pos, false, false)
         end)
@@ -96,10 +99,12 @@ local function applyPose(obj, pose)
       if duration > 0 then
         U.setScaleSlow(obj, Vector(scl), duration, nil)
       else
+        -- Known non-fatal case: smooth scale is unsupported for some objects.
         local smoothOk = pcall(function()
           obj.setScaleSmooth(scl, false, false)
         end)
         if not smoothOk then
+          -- Known non-fatal case: fallback setScale can still fail on stale objects; safe to skip.
           pcall(function()
             obj.setScale(scl)
           end)
@@ -110,10 +115,12 @@ local function applyPose(obj, pose)
       if duration > 0 then
         U.setRotationSlow(obj, Vector(rot), duration, nil, false)
       else
+        -- Known non-fatal case: smooth rotation is unsupported for some objects.
         local smoothOk = pcall(function()
           obj.setRotationSmooth(rot, false, false)
         end)
         if not smoothOk then
+          -- Known non-fatal case: fallback setRotation can still fail on stale objects; safe to skip.
           pcall(function()
             obj.setRotation(rot)
           end)
@@ -124,6 +131,7 @@ local function applyPose(obj, pose)
     if type(setLock) == "boolean" and setLock == false then
       local unlockDelay = duration > 0 and duration or 0
       Wait.time(function()
+        -- Known non-fatal case: object may no longer exist when delayed unlock fires.
         pcall(function()
           obj.setLock(false)
         end)

@@ -15,8 +15,9 @@
 
   <!-- Button Sizes -->
   <Button class="smallButton"
-    minWidth="100"
-    preferredWidth="100" />
+    minWidth="130"
+    preferredWidth="130"
+    textColor="#FFFFFF" />
 
   <!-- Debug Panel Styles -->
   <Panel class="debugPanel"

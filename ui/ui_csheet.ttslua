@@ -62,6 +62,7 @@ local function pushTrackerDisplayToGlobal()
   if Global == nil or type(Global.call) ~= "function" then
     return
   end
+  -- Known non-fatal case: Global bridge may be unavailable during early load frames.
   pcall(function()
     Global.call("GlobalRegisterTrackerDisplay", CSHEET_TRACKER_DISPLAY)
   end)
@@ -79,6 +80,7 @@ local CSHEET_ALIGNMENT_DONE_TAG = "AlignmentDone"
 
 --- @return boolean
 local function sheetHasAlignmentDoneTag()
+  -- Known non-fatal case: object tag reads can fail on stale object handles.
   local ok, has = pcall(function()
     return self.hasTag(CSHEET_ALIGNMENT_DONE_TAG)
   end)
@@ -104,6 +106,7 @@ end
 --- Call from UI callbacks so navigation still works if a host script replaced `onLoad` after `require`.
 local function syncSheetContextFromObjectName()
   local name = ""
+  -- Known non-fatal case: name reads can fail transiently while object loads.
   pcall(function()
     name = self.getName()
   end)
@@ -126,6 +129,7 @@ end
 
 --- Custom UI ids for spread navigation (`page1`/`page8` omit both; setAttribute is pcall-wrapped per id).
 local CSHEET_NAV_BUTTON_IDS = { "pageBack", "pageForward" }
+local CSHEET_ROOT_PANEL_ID = "paper_root"
 
 --- Toggle nav control `active` so clicks do not fire through the table when the sheet is hidden.
 --- @param obj Object
@@ -136,10 +140,42 @@ local function applyCsheetNavButtonsActiveOnObject(obj, show)
   end
   local a = show and "true" or "false"
   for _, id in ipairs(CSHEET_NAV_BUTTON_IDS) do
+    -- Known non-fatal case: page-specific nav controls may be absent on some pages.
     pcall(function()
       obj.UI.setAttribute(id, "active", a)
     end)
   end
+end
+
+--- Toggle root sheet HUD panel visibility (`paper_root`) on a sheet object.
+--- @param obj Object
+--- @param show boolean
+local function applyCsheetRootActiveOnObject(obj, show)
+  if obj == nil or obj.UI == nil then
+    return
+  end
+  local a = show and "true" or "false"
+  -- Known non-fatal case: root panel id may be absent in alternate XML variants.
+  pcall(function()
+    obj.UI.setAttribute(CSHEET_ROOT_PANEL_ID, "active", a)
+  end)
+end
+
+--- Apply visibility side-effects for current placement (without moving object).
+--- @param obj any
+--- @param visible boolean
+local function applyCsheetVisibilityForCurrentPlacement(obj, visible)
+  if obj == nil then
+    return
+  end
+  obj.interactable = visible
+  if visible then
+    obj.setInvisibleTo({})
+  else
+    obj.setInvisibleTo({"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey"})
+  end
+  applyCsheetNavButtonsActiveOnObject(obj, visible)
+  applyCsheetRootActiveOnObject(obj, visible)
 end
 
 --- Instant Y (and any other axis) move for a character sheet page — no smoothing.
@@ -157,12 +193,33 @@ local function applyCsheetPageState(obj, state)
   end
   local targetPos = OP.mergePosition(obj, posData.position)
   local visible = (targetPos.y >= 0)
+  -- Known non-fatal case: object can be mid-destruction during state toggles.
   pcall(function()
     obj.setPosition(targetPos)
     obj.interactable = visible
+    if visible then
+      obj.setInvisibleTo({})
+    else
+      obj.setInvisibleTo({"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey"})
+    end
   end)
   applyCsheetNavButtonsActiveOnObject(obj, visible)
+  applyCsheetRootActiveOnObject(obj, visible)
   return true
+end
+
+--- Threshold Y used to decide whether a csheet should be considered visible on load.
+--- Uses midpoint between configured on/off Y values when available.
+--- @return number
+local function getCsheetDisableThresholdY()
+  local onPos = C.ObjectPositions and C.ObjectPositions.CSHEET_PAGE and C.ObjectPositions.CSHEET_PAGE.on
+  local offPos = C.ObjectPositions and C.ObjectPositions.CSHEET_PAGE and C.ObjectPositions.CSHEET_PAGE.off
+  local onY = type(onPos) == "table" and type(onPos.position) == "table" and tonumber(onPos.position.y) or nil
+  local offY = type(offPos) == "table" and type(offPos.position) == "table" and tonumber(offPos.position.y) or nil
+  if onY ~= nil and offY ~= nil then
+    return (onY + offY) / 2
+  end
+  return 0
 end
 
 --- Expected object name for a page (`CSHEET_PAGE_<n>_<COLOR>` with color in ALL CAPS).
@@ -189,6 +246,7 @@ local function findCsheetPageByColorTagScan(colorUpper, pageNum)
   end
   for _, o in ipairs(objs) do
     if o ~= nil then
+      -- Known non-fatal case: getName can fail on stale object handles during scans.
       local ok, n = pcall(function()
         return o.getName()
       end)
@@ -266,9 +324,11 @@ local function applyCsheetLayoutFromFirstSpread()
   local onY = onPos.position.y
   local offY = offPos.position.y
   local targetY = (pageNum == 1 or pageNum == 2) and onY or offY
+  -- Known non-fatal case: reference object transform reads can fail while loading.
   local okP, p = pcall(function()
     return refObj.getPosition()
   end)
+  -- Known non-fatal case: reference object transform reads can fail while loading.
   local okR, r = pcall(function()
     return refObj.getRotation()
   end)
@@ -276,11 +336,13 @@ local function applyCsheetLayoutFromFirstSpread()
     return
   end
   local vis = (targetY >= 0)
+  -- Known non-fatal case: this object may be unavailable during one-frame layout sync.
   pcall(function()
     self.setPosition(Vector(p.x, targetY, p.z))
     self.setRotation(Vector(r.x, r.y, r.z))
     self.interactable = vis
     applyCsheetNavButtonsActiveOnObject(self, vis)
+    applyCsheetRootActiveOnObject(self, vis)
     self.addTag(CSHEET_ALIGNMENT_DONE_TAG)
   end)
 end
@@ -292,6 +354,7 @@ local function resolvePlayer()
   end
   -- Prefer Global lookup: object bundles can lag `lib.constants`; names use UPPERCASE from TTS objects.
   if Global ~= nil and type(Global.call) == "function" then
+    -- Known non-fatal case: Global lookup can fail before Global script completes init.
     local ok, pid = pcall(function()
       return Global.call("GlobalResolveSheetPlayerID", seatColor)
     end)
@@ -300,6 +363,7 @@ local function resolvePlayer()
       return true
     end
   end
+  -- Known non-fatal case: constants lookup can fail when object bundle/state is out of sync.
   local ok2, pid2 = pcall(function()
     return C.GetPlayerID(seatColor)
   end)
@@ -321,6 +385,7 @@ local function getMergedPlayerDataFromGlobal(pid)
   if Global == nil or type(Global.call) ~= "function" then
     return nil
   end
+  -- Known non-fatal case: Global player-data bridge can fail during load races.
   local ok, result = pcall(function()
     return Global.call("GlobalGetMergedPlayerData", pid)
   end)
@@ -346,6 +411,7 @@ end
 local function initiateRollByTrigger(trigger, label)
     if Global == nil or type(Global.call) ~= "function" then return end
     if seatColor == nil then return end
+    -- Known non-fatal case: roll bridge can fail if Global roll system is not initialized yet.
     pcall(function()
         Global.call("GlobalInitiateRoll", {
             color   = seatColor,
@@ -408,6 +474,7 @@ local function applyPage3DynamicXml()
   end
   -- `divider_flaws_<Color>` and layout use seat color from nickname `CSHEET_PAGE_<n>_<COLOR>` (see `parseSheetObjectName`).
   local xml = PAGE3.buildPage3DocumentXml(pd.stats, seatColor)
+  -- Known non-fatal case: setXml can fail on malformed generated markup; keep old XML intact.
   local ok, err = pcall(function()
     self.UI.setXml(xml)
   end)
@@ -418,10 +485,12 @@ local function applyPage3DynamicXml()
   lastPage3XmlFingerprint = fp
   Wait.frames(function()
     local y = 0
+    -- Known non-fatal case: position reads can fail during immediate post-setXml frame.
     pcall(function()
       y = self.getPosition().y
     end)
     applyCsheetNavButtonsActiveOnObject(self, y >= 0)
+    applyCsheetRootActiveOnObject(self, y >= 0)
   end, 1)
 end
 
@@ -435,6 +504,7 @@ local function applyUiUpdates(updates)
     local attrs = u.attributes
     if type(id) == "string" and type(attrs) == "table" then
       for attrName, attrVal in pairs(attrs) do
+        -- Known non-fatal case: some ids/attributes are page-specific and absent on this object.
         pcall(function()
           self.UI.setAttribute(id, attrName, tostring(attrVal))
         end)
@@ -464,6 +534,7 @@ function refreshCharacterSheetUi()
   applyUiUpdates(updates)
 
   if pageNum == 1 and self.UI then
+    -- Known non-fatal case: xp_text is not present on non-page-1 layouts.
     pcall(function()
       self.UI.setAttribute("xp_text", "text", tostring(tonumber(stats.xp) or 0))
     end)
@@ -476,20 +547,23 @@ end
 
 function onLoad()
   syncSheetContextFromObjectName()
+  local disableThresholdY = getCsheetDisableThresholdY()
   local py = 0
+  -- Known non-fatal case: position read may fail during initial object load.
   pcall(function()
     py = self.getPosition().y
   end)
-  local visible = (py >= 0)
-  self.interactable = visible
-  applyCsheetNavButtonsActiveOnObject(self, visible)
+  local visible = (py >= disableThresholdY)
+  applyCsheetVisibilityForCurrentPlacement(self, visible)
   -- XML may not be ready on frame 0; re-apply nav `active` once UI exists.
   Wait.frames(function()
     local y = 0
+    -- Known non-fatal case: position read may fail while TTS finalizes object state.
     pcall(function()
       y = self.getPosition().y
     end)
-    applyCsheetNavButtonsActiveOnObject(self, y >= 0)
+    local isVisible = (y >= disableThresholdY)
+    applyCsheetVisibilityForCurrentPlacement(self, isVisible)
   end, 1)
 
   if not sheetHasAlignmentDoneTag() then
@@ -504,9 +578,21 @@ function onLoad()
   Wait.frames(function()
     pushTrackerDisplayToGlobal()
     refreshCharacterSheetUi()
+    local y = 0
+    -- Known non-fatal case: position read may fail while TTS finalizes object state.
+    pcall(function()
+      y = self.getPosition().y
+    end)
+    applyCsheetVisibilityForCurrentPlacement(self, y >= disableThresholdY)
   end, 3)
   Wait.frames(function()
     refreshCharacterSheetUi()
+    local y = 0
+    -- Known non-fatal case: position read may fail on late object settles/reloads.
+    pcall(function()
+      y = self.getPosition().y
+    end)
+    applyCsheetVisibilityForCurrentPlacement(self, y >= disableThresholdY)
   end, 30)
 end
 

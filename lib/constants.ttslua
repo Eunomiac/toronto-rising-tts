@@ -415,6 +415,13 @@ C.RollTypesNoCriticals = {
     [C.RollType.GOAL]           = true
 }
 
+--- Roll types that should automatically broadcast without waiting for the ST to confirm the roll after the dice have settled.
+C.RollTypesAutoBroadcast = {
+    [C.RollType.ROUSE]          = true,
+    [C.RollType.ROUSE_OBLIVION] = true,
+    [C.RollType.REMORSE]        = true
+}
+
 --- Seconds to wait after the last die randomize event before reading all settled die values.
 -- Allows physical dice time to come to rest without premature result calculation.
 C.DICE_SETTLE_DEBOUNCE_SECONDS = 3
@@ -574,28 +581,119 @@ C.CameraModes = {
 
 --[[ To be clear, after R.resolveSeatObjectsFromTable() is called, the "universal" camera modes will include one of every entry in C.UniversalCameraAngles, plus the following: "facingRed", "facingBrown", "facingOrange", "facingPink" and "facingPurple", as well as some number of "facingNPC1", "facingNPC2", "facingNPC3" and "facingNPC4" depending on which slots are open in the playerToPositionMap of the new table configuration -- and then the same for "sheetRed", "sheetBrown", ... and "diceTrayRed", "diceTrayBrown", ... etc. ]]
 
+--[[
+
+EXECUTE TO REFRESH CAMERA ANGLES:
+
+local function cloneMode(mode)
+    return {
+        cameraMode = mode.cameraMode or "FirstPerson",
+        position = Vector(mode.position or {0, 0, 0}),
+        pitch = tonumber(mode.pitch) or 0,
+        yaw = tonumber(mode.yaw) or 0,
+        distance = tonumber(mode.distance) or 0,
+    }
+end
+
+local storytellerID = C.StorytellerID
+
+-- Ensure storyteller row exists
+if S.getStateVal("playerData", storytellerID) == nil then
+    S.setStateVal({
+        color = "Black",
+        hud = {},
+        cameraAngles = {},
+    }, "playerData", storytellerID)
+end
+
+-- Seed per-seat modes from Red reference
+for modeKey, modeVal in pairs(C.RedCameraAngles.forSeat or {}) do
+    if type(modeVal) == "table" then
+        S.setStateVal(cloneMode(modeVal), "playerData", storytellerID, "cameraAngles", modeKey)
+    end
+end
+
+-- Optional: also seed universal-facing variants onto storyteller's row for quick testing
+-- (normally universal modes are read from C.UniversalCameraAngles + seatLayout.universalCameraAngles)
+for modeKey, modeVal in pairs(C.RedCameraAngles.forUniversal or {}) do
+    if type(modeVal) == "table" then
+        S.setStateVal(cloneMode(modeVal), "playerData", storytellerID, "cameraAngles", modeKey)
+    end
+end
+
+print("[CameraSeed] Storyteller camera angles seeded from C.RedCameraAngles.")
+print(JSON.encode_pretty(S.getStateVal("playerData", storytellerID, "cameraAngles")))
+
+local S = Global.getTable("S")
+if not S then
+  print("[cleanup] S module not available")
+  return
+end
+
+local pid = "76561198002132577" -- StorytellerID
+local pdata = S.getStateVal("playerData", pid)
+if type(pdata) ~= "table" or type(pdata.cameraAngles) ~= "table" then
+  print("[cleanup] No storyteller cameraAngles found")
+  return
+end
+
+local moved = 0
+local kept = 0
+local universal = S.getStateVal("seatLayout", "universalCameraAngles")
+if type(universal) ~= "table" then
+  universal = {}
+end
+
+for k, v in pairs(pdata.cameraAngles) do
+  if type(k) == "string" and string.match(k, "^[%a_]+Red$") then
+    universal[k] = v
+    pdata.cameraAngles[k] = nil
+    moved = moved + 1
+  else
+    kept = kept + 1
+  end
+end
+
+S.setStateVal(universal, "seatLayout", "universalCameraAngles")
+S.setStateVal(pdata.cameraAngles, "playerData", pid, "cameraAngles")
+
+print(string.format("[cleanup] moved=%d kept=%d", moved, kept))
+
+
+
+
+]]
+
+
 C.RedCameraAngles = {
   forSeat = {
     default = {
       cameraMode = "FirstPerson",
-      position = Vector({0, 0, 0}),
-      pitch = 0,
-      yaw = 0,
-      distance = 0
+      position = Vector({0.0000, 28.5760, -54.5664}),
+      pitch = 0.0000,
+      yaw = 0.0000,
+      distance = 27.6598,
     },
     sheet = {
       cameraMode = "FirstPerson",
-      position = Vector({0, 0, 0}),
-      pitch = 0,
-      yaw = 0,
-      distance = 0
+      position = Vector({0.0000, 5.8436, -53.0298}),
+      pitch = 70.5275,
+      yaw = 0.0000,
+      distance = 10.8949,
+    },
+    roll = {
+      cameraMode = "FirstPerson",
+      position = Vector({0.0000, 5.8436, -50.8718}),
+      pitch = 70.5275,
+      yaw = 0.0000,
+      distance = 16.5598,
     },
     diceTray = {
       cameraMode = "FirstPerson",
-      position = Vector({0, 0, 0}),
-      pitch = 0,
-      yaw = 0,
-      distance = 0
+      position = Vector({0.0000, 17.8731, -43.3904}),
+      pitch = 58.6195,
+      yaw = 0.0000,
+      distance = 10.8949,
     }
   },
   forUniversal = {
@@ -608,17 +706,17 @@ C.RedCameraAngles = {
     },
     sheetRed = {
       cameraMode = "FirstPerson",
-      position = Vector({0, 0, 0}),
-      pitch = 0,
-      yaw = 0,
-      distance = 0
+      position = Vector({0.0000, 5.8436, -53.0298}),
+      pitch = 70.5275,
+      yaw = 0.0000,
+      distance = 10.8949
     },
     diceTrayRed = {
       cameraMode = "FirstPerson",
-      position = Vector({0, 0, 0}),
-      pitch = 0,
-      yaw = 0,
-      distance = 0
+      position = Vector({0.0000, 17.8731, -43.3904}),
+      pitch = 58.6195,
+      yaw = 0.0000,
+      distance = 10.8949
     }
   }
 }
@@ -628,17 +726,17 @@ C.RedCameraAngles = {
 C.UniversalCameraAngles = {
   districtCard = {
     cameraMode = "FirstPerson",
-    position = Vector({0, 0, 0}),
-    pitch = 0,
-    yaw = 0,
-    distance = 0
+    position = Vector({-123.0687, 39.5024, -0.1581}),
+    pitch = 0.0000,
+    yaw = 310,
+    distance = 0.1
   },
   siteCard = {
     cameraMode = "FirstPerson",
-    position = Vector({0, 0, 0}),
-    pitch = 0,
-    yaw = 0,
-    distance = 0
+    position = Vector({123.0687, 39.5024, -0.1581}),
+    pitch = 0.0000,
+    yaw = 50,
+    distance = 0.1,
   },
   npcCenter = {
     cameraMode = "FirstPerson",
@@ -677,17 +775,17 @@ C.UniversalCameraAngles = {
   },
   wide = {
     cameraMode = "FirstPerson",
-    position = Vector({0, 0, 0}),
-    pitch = 0,
-    yaw = 0,
-    distance = 0
+    position = Vector({0, 37.7789, -25.0052}),
+    pitch = 15.8187,
+    yaw = 0.0000,
+    distance = 27.3856,
   },
   wideFacing = {
     cameraMode = "FirstPerson",
-    position = Vector({0, 0, 0}),
-    pitch = 0,
-    yaw = 0,
-    distance = 0
+    position = Vector({0.0000, 79.4413, 66.9976}),
+    pitch = 34.4825,
+    yaw = 177.8662,
+    distance = 27.3856,
   }
 }
 -- Table Presets

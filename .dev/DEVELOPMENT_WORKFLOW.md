@@ -24,7 +24,8 @@ Commit messages should be clear and descriptive:
 - Reference related issues when applicable
 
 **Good Examples:**
-```
+
+```text
 Implement GUID-based player lighting system
 
 - Refactored lighting module to use GUID-based lookup for player lights
@@ -32,7 +33,7 @@ Implement GUID-based player lighting system
 - Updated test functions to use new GUID library
 ```
 
-```
+```text
 Update documentation for lighting system changes
 
 - Updated DEBUG_FILE_LOGGING.md with logging improvements
@@ -42,6 +43,7 @@ Update documentation for lighting system changes
 ### When to Commit
 
 Commit changes when:
+
 - A logical unit of work is complete
 - A feature is implemented and tested
 - Documentation is updated
@@ -76,7 +78,12 @@ Commit changes when:
 
 ### Error Handling
 
-- Use `pcall` for safe execution where appropriate
+- Do **not** wrap code in `pcall` by default. Unexpected failures should be visible.
+- Use `pcall` only for a known, expected failure that is intentionally non-fatal and safe to ignore.
+- Every `pcall` must include a clear nearby comment explaining:
+  - the specific known failure being masked
+  - why masking is acceptable in that location
+  - what fallback/logging behavior is used
 - Provide clear error messages
 - Validate inputs before processing
 
@@ -105,6 +112,7 @@ Commit changes when:
 ### Module Loading Order
 
 Modules should be loaded in dependency order:
+
 1. Constants and utilities
 2. Core modules
 3. Main game logic

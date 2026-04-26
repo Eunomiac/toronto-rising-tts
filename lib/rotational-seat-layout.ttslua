@@ -261,6 +261,7 @@ local function isHandZoneObject(obj)
     if obj == nil or not U.isGameObject(obj) then
         return false
     end
+    -- Known non-fatal case: reading engine `type` can fail on stale object handles.
     local ok, t = pcall(function()
         return obj.type
     end)
@@ -269,6 +270,7 @@ local function isHandZoneObject(obj)
     end
     local disp = tryMatchingDisplayName(obj)
     if disp ~= nil then
+        -- Known non-fatal case: malformed display names should not abort hand-zone detection.
         local okR, roleKey = pcall(function()
             local rk, _ = parseRoleAndSuffix(disp)
             return rk
@@ -475,6 +477,7 @@ local function maybeSetHandZoneSeatColor(obj, roleKey, seatKey)
     if string.find(roleKey, "HAND_ZONE", 1, true) == nil then
         return
     end
+    -- Known non-fatal case: hand zones can reject owner assignment depending on object lifecycle.
     local okOwner, ownerErr = pcall(function()
         -- For HandTrigger objects, setValue(stringColor) sets hand owner color per TTS docs.
         obj.setValue(seatKey)
@@ -489,6 +492,7 @@ local function maybeSetHandZoneSeatColor(obj, roleKey, seatKey)
                 .. tostring(ownerErr)
         )
     end
+    -- Known non-fatal case: color conversion helper may be unavailable in some runtimes.
     local okRgb, colorOrErr = pcall(function()
         ---@diagnostic disable-next-line: undefined-global
         return stringColorToRGB(seatKey)
@@ -497,6 +501,7 @@ local function maybeSetHandZoneSeatColor(obj, roleKey, seatKey)
         -- Not a valid TTS player color seat; leave unchanged.
         return
     end
+    -- Known non-fatal case: some objects do not support tint updates.
     local okTint, tintErr = pcall(function()
         obj.setColorTint(colorOrErr)
     end)
@@ -524,24 +529,28 @@ local function placeObjectExact(obj, pos, rot)
     local okPos = false
     local okRot = false
 
+    -- Known non-fatal case: smooth move APIs are unsupported for some object types.
     local okPosSmooth = pcall(function()
         obj.setPositionSmooth(posTbl, false, true)
     end)
     if okPosSmooth then
         okPos = true
     else
+        -- Known non-fatal case: immediate move can still fail for stale objects.
         local okPosImmediate = pcall(function()
             obj.setPosition(posTbl)
         end)
         okPos = okPosImmediate
     end
 
+    -- Known non-fatal case: smooth rotation APIs are unsupported for some object types.
     local okRotSmooth = pcall(function()
         obj.setRotationSmooth(rotTbl, false, true)
     end)
     if okRotSmooth then
         okRot = true
     else
+        -- Known non-fatal case: immediate rotate can still fail for stale objects.
         local okRotImmediate = pcall(function()
             obj.setRotation(rotTbl)
         end)
@@ -1050,6 +1059,7 @@ local function replaceSeatOwnershipTags(obj, removeTag, addTag)
     if not hasAdd then
         table.insert(out, addTag)
     end
+    -- Known non-fatal case: setTags may fail during concurrent object reload/destruction.
     local ok, err = pcall(function()
         obj.setTags(out)
     end)
@@ -1074,11 +1084,13 @@ local function setRoleColorDisplayName(obj, roleKey, seatColor)
         return
     end
     local newDisplay = roleKey .. "_" .. string.upper(trim(seatColor))
+    -- Known non-fatal case: renaming can fail for object types without writable names.
     pcall(function()
         if obj.setName then
             obj.setName(newDisplay)
         end
     end)
+    -- Known non-fatal case: setData may fail on objects that reject full data rewrites.
     pcall(function()
         if obj.getData and obj.setData then
             local data = obj.getData()
@@ -1474,6 +1486,7 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
                         position = hz.getPosition(),
                         rotation = hz.getRotation(),
                     }
+                    -- Known non-fatal case: exact placement can fail while target object is settling.
                     local okMv, errMv = pcall(function()
                         placeObjectExact(hz, pos, rot)
                     end)
@@ -1508,6 +1521,7 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
                     local existing = byRole[expectedRole]
                     if existing ~= nil then
                         byRole[expectedRole] = nil
+                        -- Known non-fatal case: exact placement can fail while target object is settling.
                         local okMv, errMv = pcall(function()
                             placeObjectExact(existing, pos, rot)
                         end)
@@ -1546,6 +1560,7 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
                                     .. " (frame-only template with no object to clone)"
                             )
                         end
+                        -- Known non-fatal case: cloning may fail for locked/unsupported source objects.
                         local okCl, newObjOrErr = pcall(function()
                             return src.clone({
                                 position = { x = pos.x, y = pos.y, z = pos.z },
@@ -1571,6 +1586,7 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
                                     .. tostring(expectedRole)
                             )
                         end
+                        -- Known non-fatal case: post-clone exact placement can fail while physics settles.
                         local okPlaceCl, errPlaceCl = pcall(function()
                             placeObjectExact(newObj, pos, rot)
                         end)
@@ -1910,6 +1926,7 @@ function M.clearGeneratedSeatObjects(sourceObjects, seatKeys, blacklist)
                     if o ~= nil and o.getGUID then
                         local og = o.getGUID()
                         if not templateGuidSet[og] then
+                            -- Known non-fatal case: object may already be destroyed when clear runs.
                             local okD, errD = pcall(function()
                                 o.destruct()
                             end)

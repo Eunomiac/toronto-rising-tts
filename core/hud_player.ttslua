@@ -229,6 +229,7 @@ local function applyMapOffset(seatColor, y)
     if mapDraggableLastOffsetStrBySeat[seatColor] == offsetStr then
         return
     end
+    -- Known non-fatal case: some player-color map draggable ids may be absent in partial XML variants.
     local ok = pcall(function()
         UI.setAttribute(draggableId, "offsetXY", offsetStr)
     end)
@@ -459,6 +460,7 @@ local function setTintVisibility(elementID, isVisible)
         return
     end
     -- Some map elements may be omitted depending on district overlay availability.
+    -- Known non-fatal case: missing optional map overlay ids should not hard-fail HUD refresh.
     -- `pcall` prevents hard UI runtime errors if an element id doesn't exist.
     pcall(function()
         UI.setAttribute(elementID, "color", isVisible and "#FFFFFF" or "clear")
@@ -476,6 +478,7 @@ local function setMapStackImageVisibility(elementID, isVisible)
     if type(elementID) ~= "string" or type(isVisible) ~= "boolean" then
         return
     end
+    -- Known non-fatal case: certain map stack layers may be omitted in lightweight XML variants.
     pcall(function()
         if isVisible then
             UI.setAttribute(elementID, "active", "true")

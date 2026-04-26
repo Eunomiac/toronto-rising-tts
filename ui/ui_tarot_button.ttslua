@@ -33,6 +33,7 @@ local currentOpToken = 0
 --- @return table|nil
 local function getSeatLayoutCenterPoint()
     if Global ~= nil and type(Global.call) == "function" then
+        -- Known non-fatal case: Global bridge may be unavailable during early load.
         local ok, cp = pcall(function()
             return Global.call("GlobalGetSeatLayoutCenterPoint")
         end)
@@ -102,6 +103,7 @@ local function applyPoseWithTiming(obj, pose, token)
             return
         end
         if type(setLock) == "boolean" and setLock == true then
+            -- Known non-fatal case: setLock can fail if object is stale during transition.
             pcall(function()
                 obj.setLock(true)
             end)
@@ -110,10 +112,12 @@ local function applyPoseWithTiming(obj, pose, token)
         if pose.position ~= nil then
             if duration > 0 then
                 local toPos = Vector(pose.position)
+                -- Known non-fatal case: smooth move can fail on unsupported/stale objects.
                 pcall(function()
                     obj.setPositionSmooth(toPos, false, false)
                 end)
             else
+                -- Known non-fatal case: immediate move can fail on stale objects.
                 pcall(function()
                     obj.setPosition(pose.position)
                 end)
@@ -124,10 +128,12 @@ local function applyPoseWithTiming(obj, pose, token)
             if duration > 0 then
                 -- Scale lerp via U.Lerp is unreliable in this object-script context.
                 -- Apply target scale directly; tarot drawer scale is static in current configs.
+                -- Known non-fatal case: scale writes can fail for unsupported object types.
                 pcall(function()
                     obj.setScale(pose.scale)
                 end)
             else
+                -- Known non-fatal case: scale writes can fail for unsupported object types.
                 pcall(function()
                     obj.setScale(pose.scale)
                 end)
@@ -137,10 +143,12 @@ local function applyPoseWithTiming(obj, pose, token)
         if pose.rotation ~= nil then
             if duration > 0 then
                 local toRot = Vector(pose.rotation)
+                -- Known non-fatal case: smooth rotate can fail on unsupported/stale objects.
                 pcall(function()
                     obj.setRotationSmooth(toRot, false, false)
                 end)
             else
+                -- Known non-fatal case: immediate rotate can fail on stale objects.
                 pcall(function()
                     obj.setRotation(pose.rotation)
                 end)
@@ -151,6 +159,7 @@ local function applyPoseWithTiming(obj, pose, token)
             local unlockDelay = duration > 0 and duration or 0
             Wait.time(function()
                 if isTokenCurrent(token) then
+                    -- Known non-fatal case: delayed unlock can run after object is destroyed.
                     pcall(function()
                         obj.setLock(false)
                     end)
@@ -296,6 +305,7 @@ end
 
 function onLoad(savedData)
     if type(savedData) == "string" and savedData ~= "" then
+        -- Known non-fatal case: legacy/corrupt savedData should not block button initialization.
         local ok, parsed = pcall(function()
             return JSON.decode(savedData)
         end)

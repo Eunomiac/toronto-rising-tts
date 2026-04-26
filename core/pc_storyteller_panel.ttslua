@@ -32,13 +32,7 @@ end
 --- @param color string
 --- @return string|nil
 local function playerIdForColor(color)
-  local ok, pid = pcall(function()
-    return C.GetPlayerID(color)
-  end)
-  if ok then
-    return pid
-  end
-  return nil
+  return C.GetPlayerID(color)
 end
 
 --- Clicks that only adjust ST panel buffers (not committed state). Skip HUD overlay refresh so
@@ -75,15 +69,11 @@ function PCST.refreshCharacterSheetsForColor(seatColor)
   end
   for _, obj in ipairs(all) do
     if obj ~= nil then
-      local ok, name = pcall(function()
-        return obj.getName()
-      end)
-      if ok and type(name) == "string" then
+      local name = obj.getName()
+      if type(name) == "string" then
         local colFromName = name:match("^CSHEET_PAGE_%d+_(%a+)$")
         if type(colFromName) == "string" and string.lower(colFromName) == seatLower then
-          pcall(function()
-            obj.call("refreshFromGameState")
-          end)
+          obj.call("refreshFromGameState")
         end
       end
     end
@@ -91,18 +81,14 @@ function PCST.refreshCharacterSheetsForColor(seatColor)
 end
 
 local function safeSetValue(elementId, text)
-  pcall(function()
-    UI.setValue(elementId, tostring(text))
-  end)
+  UI.setValue(elementId, tostring(text))
 end
 
 --- @param elementId string
 --- @param attr string
 --- @param val string|number|boolean
 local function safeSetAttr(elementId, attr, val)
-  pcall(function()
-    UI.setAttribute(elementId, attr, tostring(val))
-  end)
+  UI.setAttribute(elementId, attr, tostring(val))
 end
 
 --- Chronicle character display name for a seat (PlayerData.charName or PCS.name).

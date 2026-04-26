@@ -82,9 +82,7 @@ end
 --- @param seatColor string
 --- @param a number
 local function applyPulseAlpha(seatColor, a)
-  pcall(function()
-    UI.setAttribute(pulseElementId(seatColor), "color", pulseTintColor(a))
-  end)
+  UI.setAttribute(pulseElementId(seatColor), "color", pulseTintColor(a))
 end
 
 --- @param seatColor string
@@ -217,13 +215,7 @@ end
 --- Reconcile flicker overlays for every player color after hunger / conditions sync.
 function HUP.syncHungerPulseAll()
   for _, seatColor in ipairs(C.PlayerColors) do
-    local playerID = nil
-    local ok, pidOrErr = pcall(function()
-      return C.GetPlayerID(seatColor)
-    end)
-    if ok and type(pidOrErr) == "string" then
-      playerID = pidOrErr
-    end
+    local playerID = C.GetPlayerID(seatColor)
 
     local hunger = resolveHunger(playerID, seatColor)
     pulseGenByColor[seatColor] = (pulseGenByColor[seatColor] or 0) + 1

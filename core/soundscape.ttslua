@@ -89,6 +89,7 @@ local function objectHasTag(obj, tag)
         return false
     end
     if obj.hasTag ~= nil then
+        -- Known non-fatal case: hasTag can throw on partially-destroyed objects.
         local ok, has = pcall(function()
             return obj.hasTag(tag)
         end)
@@ -97,6 +98,7 @@ local function objectHasTag(obj, tag)
         end
     end
     if obj.getTags ~= nil then
+        -- Known non-fatal case: getTags can fail on stale object handles.
         local ok, tags = pcall(function()
             return obj.getTags()
         end)
@@ -121,6 +123,7 @@ local function resolveEmitter(channelKey)
     end
     local cached = cachedEmitters[channelKey]
     if cached ~= nil then
+        -- Known non-fatal case: cached emitter can become invalid after object destruction/reload.
         local ok = pcall(function()
             return cached.getGUID()
         end)
@@ -133,6 +136,7 @@ local function resolveEmitter(channelKey)
     local tag = channelDef.tag
     local getObjectsWithAllTagsFn = _G and rawget(_G, "getObjectsWithAllTags") or nil
     if getObjectsWithAllTagsFn ~= nil then
+        -- Known non-fatal case: getObjectsWithAllTags may throw in older TTS environments.
         local ok, tagged = pcall(function()
             return getObjectsWithAllTagsFn({ tag })
         end)
@@ -143,6 +147,7 @@ local function resolveEmitter(channelKey)
     end
 
     if getObjects ~= nil then
+        -- Known non-fatal case: getObjects can fail during scene transitions.
         local ok, objects = pcall(function()
             return getObjects()
         end)
@@ -166,6 +171,7 @@ local function getLoopingEffectIndexByName(obj)
     if obj == nil or obj.AssetBundle == nil or obj.AssetBundle.getLoopingEffects == nil then
         return indexByName
     end
+    -- Known non-fatal case: looping effects query may fail while bundle is still initializing.
     local ok, effects = pcall(function()
         return obj.AssetBundle.getLoopingEffects()
     end)
@@ -201,6 +207,7 @@ local function getAudioSources(obj)
         return {}
     end
     if obj.getComponentsInChildren ~= nil then
+        -- Known non-fatal case: component traversal can throw on stale/destroyed emitters.
         local ok, comps = pcall(function()
             return obj.getComponentsInChildren("AudioSource")
         end)
@@ -209,6 +216,7 @@ local function getAudioSources(obj)
         end
     end
     if obj.getComponentInChildren ~= nil then
+        -- Known non-fatal case: single-component lookup can throw on stale/destroyed emitters.
         local ok, comp = pcall(function()
             return obj.getComponentInChildren("AudioSource")
         end)
@@ -217,6 +225,7 @@ local function getAudioSources(obj)
         end
     end
     if obj.getComponent ~= nil then
+        -- Known non-fatal case: component lookup can throw on stale/destroyed emitters.
         local ok, comp = pcall(function()
             return obj.getComponent("AudioSource")
         end)
@@ -241,16 +250,19 @@ local function setEmitterVolume(obj, volume)
 
     for _, source in ipairs(sources) do
         if source ~= nil and source.set ~= nil then
+            -- Known non-fatal case: Unity AudioSource fields are not consistently writable across builds.
             local okVolume, didSetVolume = pcall(function()
                 return source.set("volume", targetVolume)
             end)
             if okVolume and didSetVolume ~= false then
                 updated = updated + 1
             end
+            -- Known non-fatal case: mute may be missing on some AudioSource wrappers.
             pcall(function()
                 source.set("mute", false)
             end)
             -- This is the non-positional guarantee when TTS exposes the Unity var.
+            -- Known non-fatal case: spatialBlend may be unavailable on some wrappers.
             pcall(function()
                 source.set("spatialBlend", 0)
             end)
@@ -345,6 +357,7 @@ local function playChannelEffect(channelKey, effectName, volume, fadeSeconds, fr
         currentVolume = tonumber(channelState.volume) or 0
     end
     local didSetVolume = fadeEmitterVolume(obj, currentVolume, volume, fadeSeconds or 0)
+    -- Known non-fatal case: playLoopingEffect can throw if effect index becomes invalid after bundle refresh.
     local okPlay, playErr = pcall(function()
         obj.AssetBundle.playLoopingEffect(index)
     end)
@@ -617,6 +630,7 @@ function Soundscape.inspectEmitters()
             audioSourceCount = 0,
         }
         if obj ~= nil then
+            -- Known non-fatal case: GUID read can fail on stale handles while inspecting emitters.
             local okGuid, guid = pcall(function()
                 return obj.getGUID()
             end)

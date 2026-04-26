@@ -42,6 +42,7 @@ end
 
 --- Push Global UI overlay visibility (UI.show/hide) after PC state changes.
 function P.refreshHudOverlays()
+  -- Known non-fatal case: overlay module may be unavailable in object-script contexts.
   pcall(function()
     local HO = require("core.hud_overlays")
     HO.syncAll()
@@ -55,6 +56,7 @@ function P.refreshHudOverlaysForSeat(seatColor)
   if type(seatColor) ~= "string" then
     return
   end
+  -- Known non-fatal case: overlay module may be unavailable in object-script contexts.
   pcall(function()
     local HO = require("core.hud_overlays")
     if type(HO.invalidateSeatCache) == "function" then
@@ -102,6 +104,7 @@ end
 --- @param msg string
 local function warnGm(msg)
   if broadcastToAll ~= nil then
+    -- Known non-fatal case: broadcast can fail during host/session teardown.
     pcall(function()
       broadcastToAll("[PC] " .. tostring(msg), Color(1, 0.55, 0.2))
     end)
@@ -454,6 +457,7 @@ local function trySetLight(lightKey, mode, playerColor)
       return
     end
   end
+  -- Known non-fatal case: target light can disappear between condition evaluation and apply.
   pcall(function()
     L.SetLightMode(lightKey, mode, playerColor, 0.5)
   end)

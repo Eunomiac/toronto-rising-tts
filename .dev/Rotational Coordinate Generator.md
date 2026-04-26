@@ -256,7 +256,7 @@ R.resolveSeatObjectsFromTable("Table A")
 All **horizontal angle** utilities that share the **`x = sin(θ)·r`, `z = cos(θ)·r`** / **`atan2(dx, dz)`** pairing use the **same** sense: **larger θ** ⇒ move from **+Z toward +X** ⇒ **clockwise** when viewed from **+Y** (12 → 3 → 6 → 9 on a clock with 12 at +Z, 3 at +X).
 
 | Location | Role |
-|----------|------|
+| ---------- | ------ |
 | [`U.rotateAroundPoint`](../lib/util.ttslua) | Defines θ → XZ on the table. |
 | [`U.XYZToCylindrical`](../lib/util.ttslua) / [`U.XYZToSpherical`](../lib/util.ttslua) horizontal | `atan2(dx, dz)` — inverse of the same convention. |
 | [`U.RotateToFrom`](../lib/util.ttslua), [`U.frameAfterRigidYawAboutCenter`](../lib/util.ttslua) | Add yaw delta to `cylindrical.angle` and `rotation.y` in that same space. |

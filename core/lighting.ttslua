@@ -94,6 +94,7 @@ function manualPlayerLight2Setup()
     intensity = 2
 }, "Red", 2)
 
+
   -- "OFF" modes should change only by having the angle go to zero.
 end
 L.LIGHTMODES = {
@@ -174,21 +175,21 @@ L.LIGHTMODES = {
       default = "OFF",
       OFF = {
         enabled = false,
-        position = Vector(-151.28, 8.12, 27.34),
-        rotation = Vector(319.5, 158.58, 152.35),
+        position = Vector({-147.84, 39.45, 22.61}),
+        rotation = Vector({80.00, 130.00, 0.00}),
         range = 14,
         angle = 180,
         intensity = 0,
-        color = Color(0.282168, 0.335031, 0.285692)
+        color = Color(0.270241, 0.270241, 0.270241)
       },
       STANDARD = {
         enabled = true,
-        position = Vector(-151.28, 8.12, 27.34),
-        rotation = Vector(319.5, 158.58, 152.35),
-        range = 200,
+        position = Vector({-147.84, 39.45, 22.61}),
+        rotation = Vector({80.00, 130.00, 0.00}),
+        range = 140,
         angle = 180,
-        intensity = 4.5,
-        color = Color(0.282168, 0.335031, 0.285692)
+        intensity = 6.678596,
+        color = Color(0.270241, 0.270241, 0.270241)
       }
     },
     siteCardLight = {
@@ -197,21 +198,21 @@ L.LIGHTMODES = {
       default = "OFF",
       OFF = {
         enabled = false,
-        position = Vector(151.28, 8.12, 27.34),
-        rotation = Vector(66.22, 60.03, 172.98),
+        position = Vector({147.84, 39.45, 22.61}),
+        rotation = Vector({80.00, 230.00, 0.00}),
         range = 14,
         angle = 180,
         intensity = 0,
-        color = Color(0.282168, 0.335031, 0.285692)
+        color = Color(0.270241, 0.270241, 0.270241)
       },
       STANDARD = {
         enabled = true,
-        position = Vector(151.28, 8.12, 27.34),
-        rotation = Vector(66.22, 60.03, 172.98),
-        range = 200,
+        position = Vector({147.84, 39.45, 22.61}),
+        rotation = Vector({80.00, 230.00, 0.00}),
+        range = 140,
         angle = 180,
-        intensity = 4.5,
-        color = Color(0.282168, 0.335031, 0.285692)
+        intensity = 6.678596,
+        color = Color(0.270241, 0.270241, 0.270241)
       }
     },
     -- Player lights (per-player spotlights)
@@ -410,6 +411,29 @@ L.LIGHTMODES = {
             range = 80,
             angle = 90
         }
+    },
+    playerLight3Red = {
+        guid = G.GUIDS.SEAT_LIGHT_3_RED,
+        isPlayerLight = true,
+        default = "OFF",
+        OFF = {
+          enabled = false,
+          position = Vector(0.000000, -5.656201, -77.154549),
+          rotation = Vector(9.869205, 180.000000, 180.000000),
+          range = 48.018639,
+          angle = 0,
+          intensity = 0,
+          color = Color(0.525551, 0.525551, 0.525551)
+        },
+        STANDARD = {
+          enabled = true,
+          position = Vector(0.000000, -5.656201, -77.154549),
+          rotation = Vector(9.869205, 180.000000, 180.000000),
+          range = 48.018639,
+          angle = 119.425003,
+          intensity = 1.488999,
+          color = Color(0.525551, 0.525551, 0.525551)
+        }
     }
 }
 
@@ -446,13 +470,12 @@ local function getLightComponent(light, isSilent)
     end
 
     -- 1) Same primary API as LightTest.testInspectLight / testSpawnLight
-    local okSingle, singleComp = pcall(function()
-        if light.getComponentInChildren == nil then
-            return nil
-        end
-        return light.getComponentInChildren("Light")
-    end)
-    if okSingle and singleComp ~= nil then
+    local singleComp = nil
+    local getSingle = light.getComponentInChildren
+    if type(getSingle) == "function" then
+        singleComp = getSingle("Light")
+    end
+    if singleComp ~= nil then
         local nm = singleComp.name
         if nm == "Light" or isRealLightComponent(singleComp) then
             return singleComp
@@ -460,13 +483,12 @@ local function getLightComponent(light, isSilent)
     end
 
     -- 2) Every "Light" component (depth-first list); prefer one that looks like a spotlight
-    local okChildren, lights = pcall(function()
-        if light.getComponentsInChildren == nil then
-            return nil
-        end
-        return light.getComponentsInChildren("Light")
-    end)
-    if okChildren and lights and #lights > 0 then
+    local lights = nil
+    local getChildrenComponents = light.getComponentsInChildren
+    if type(getChildrenComponents) == "function" then
+        lights = getChildrenComponents("Light")
+    end
+    if lights and #lights > 0 then
         for _, comp in ipairs(lights) do
             if isRealLightComponent(comp) then
                 return comp
@@ -475,11 +497,16 @@ local function getLightComponent(light, isSilent)
     end
 
     -- 3) Nested object path — test fixtures may expose Light as components[2] without a spotlight probe
-    local lComp
-    local success = pcall(function()
-        lComp = light.getChildren()[1].getChildren()[2].getComponents()[2]
-    end)
-    if success and lComp ~= nil and lComp.name == "Light" then
+    local getChildrenFn = light.getChildren
+    local children = type(getChildrenFn) == "function" and getChildrenFn() or nil
+    local child1 = children and children[1] or nil
+    local child1GetChildren = child1 and child1.getChildren or nil
+    local grandchildren = type(child1GetChildren) == "function" and child1GetChildren() or nil
+    local grandchild2 = grandchildren and grandchildren[2] or nil
+    local getComponentsFn = grandchild2 and grandchild2.getComponents or nil
+    local components = type(getComponentsFn) == "function" and getComponentsFn() or nil
+    local lComp = components and components[2] or nil
+    if lComp ~= nil and lComp.name == "Light" then
         return lComp
     end
 
@@ -933,14 +960,10 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
             end
             local function applyRotationPos()
                 if modeDef.rotation ~= nil then
-                    pcall(function()
-                        light.setRotation(Vector(modeDef.rotation), false)
-                    end)
+                    light.setRotation(Vector(modeDef.rotation), false)
                 end
                 if modeDef.position ~= nil then
-                    pcall(function()
-                        light.setPosition(Vector(modeDef.position), false)
-                    end)
+                    light.setPosition(Vector(modeDef.position), false)
                 end
             end
             if modeDef.enabled == false and afterVals.intensity ~= nil then
@@ -1088,9 +1111,7 @@ local function tryApplySavedLight(lightName, mData, transitionT)
             return false
         end
         if U.Type(mData) == "string" then
-            pcall(function()
-                L.SetLightMode(lightName, mData, nil, transitionT)
-            end)
+            L.SetLightMode(lightName, mData, nil, transitionT)
         else
             local firstMode = nil
             U.forEach(mData, function(mode, _)
@@ -1099,9 +1120,7 @@ local function tryApplySavedLight(lightName, mData, transitionT)
                 end
             end)
             if firstMode then
-                pcall(function()
-                    L.SetLightMode(lightName, firstMode, nil, transitionT)
-                end)
+                L.SetLightMode(lightName, firstMode, nil, transitionT)
             end
         end
         return true
@@ -1111,9 +1130,7 @@ local function tryApplySavedLight(lightName, mData, transitionT)
         if L.GetLight(lightName, true) == nil then
             return false
         end
-        pcall(function()
-            L.SetLightMode(lightName, mData, nil, transitionT)
-        end)
+        L.SetLightMode(lightName, mData, nil, transitionT)
         return true
     end
 

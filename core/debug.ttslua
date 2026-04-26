@@ -52,6 +52,7 @@ local logCache = {}
 
 --- Printed at most once when `sendExternalMessage` is missing (NDJSON / workspace writes).
 local warnedNdjsonSendExternalMissing = false
+local lastCapturedCameraEntry = nil
 
 --[[
     Helper Functions
@@ -167,22 +168,18 @@ function DEBUG.captureCameraViewPreset(player)
         return false, "DEBUG.captureCameraViewPreset: invalid player"
     end
 
-    local function callPlayerMethod(name)
+    local function callPlayerMethod(name, ...)
         local fn = player[name]
         if type(fn) ~= "function" then
             return nil
         end
-        local ok, result = pcall(fn, player)
-        if not ok then
-            return nil
-        end
-        return result
+        return fn(player, ...)
     end
 
     local cameraMode = callPlayerMethod("getCameraMode") or "FirstPerson"
     local pointerPos = callPlayerMethod("getPointerPosition")
     local pointerRot = callPlayerMethod("getPointerRotation")
-    local handTf = callPlayerMethod("getHandTransform")
+    local handTf = callPlayerMethod("getHandTransform", 1) or callPlayerMethod("getHandTransform")
 
     local pos = nil
     if pointerPos ~= nil then
@@ -195,6 +192,7 @@ function DEBUG.captureCameraViewPreset(player)
 
     local pitch = 0
     local yaw = 0
+    local distance = 0
     if pointerRot ~= nil then
         local rot = Vector(pointerRot)
         pitch = rot.x
@@ -204,6 +202,32 @@ function DEBUG.captureCameraViewPreset(player)
         pitch = rot.x
         yaw = rot.y
     end
+
+    if type(handTf) == "table" and handTf.position ~= nil and pointerPos ~= nil then
+        local origin = Vector(handTf.position)
+        local target = Vector(pointerPos)
+        local dx = target.x - origin.x
+        local dy = target.y - origin.y
+        local dz = target.z - origin.z
+        local horizontal = math.sqrt(dx * dx + dz * dz)
+
+        -- If API does not expose pointer rotation, derive orientation from origin -> pointer target.
+        if pointerRot == nil then
+            yaw = math.deg(math.atan2(dx, dz))
+            if horizontal > 0.001 then
+                pitch = -math.deg(math.atan2(dy, horizontal))
+            end
+        end
+        distance = math.sqrt(dx * dx + dy * dy + dz * dz)
+    end
+
+    lastCapturedCameraEntry = {
+        cameraMode = tostring(cameraMode),
+        position = Vector(pos),
+        pitch = pitch,
+        yaw = yaw,
+        distance = distance,
+    }
 
     local ts = os.time()
     local colorKey = string.upper(player.color or "UNKNOWN")
@@ -218,7 +242,7 @@ function DEBUG.captureCameraViewPreset(player)
         "  position = Vector({" .. formatCameraNumber(pos.x) .. ", " .. formatCameraNumber(pos.y) .. ", " .. formatCameraNumber(pos.z) .. "}),",
         "  pitch = " .. formatCameraNumber(pitch) .. ",",
         "  yaw = " .. formatCameraNumber(yaw) .. ",",
-        "  distance = 0,",
+        "  distance = " .. formatCameraNumber(distance) .. ",",
         "}",
         "",
         "-- Example paste targets:",
@@ -232,6 +256,40 @@ function DEBUG.captureCameraViewPreset(player)
         return false, "camera capture failed to write file"
     end
     return true, relativePath
+end
+
+--- Apply the most recently captured camera entry to a player.
+--- @param player Player
+--- @return boolean ok
+--- @return string resultMessage
+function DEBUG.applyLastCapturedCameraPreset(player)
+    if player == nil or not U.isPlayer(player) then
+        return false, "DEBUG.applyLastCapturedCameraPreset: invalid player"
+    end
+    if type(lastCapturedCameraEntry) ~= "table" then
+        return false, "No captured camera snapshot is available yet."
+    end
+
+    local entry = {
+        cameraMode = lastCapturedCameraEntry.cameraMode or "FirstPerson",
+        position = Vector(lastCapturedCameraEntry.position or {0, 0, 0}),
+        pitch = tonumber(lastCapturedCameraEntry.pitch) or 0,
+        yaw = tonumber(lastCapturedCameraEntry.yaw) or 0,
+        distance = tonumber(lastCapturedCameraEntry.distance) or 0,
+    }
+
+    player.setCameraMode(entry.cameraMode)
+    player.lookAt({
+        position = entry.position,
+        pitch = entry.pitch,
+        yaw = entry.yaw,
+        distance = entry.distance,
+    })
+    Wait.time(function()
+        player.setCameraMode(entry.cameraMode)
+    end, 0.5)
+
+    return true, "Applied most recent captured camera preset."
 end
 
 --- Clear debug NDJSON buffer and truncate workspace log (same path as NPC lighting instrumentation).

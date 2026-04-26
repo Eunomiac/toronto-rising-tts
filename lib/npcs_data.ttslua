@@ -82,9 +82,10 @@ D.lights = {
 D.areas = {
   centerForward = {
     label = "CF",
+    autoLight = true,
     rotation = 0,
-    distance = 100,
-    groundLevel = -60,
+    distance = 30,
+    groundLevel = -40,
     spreadBlend = 0,
     positions = {
       { x = 0,   z = 0 },
@@ -98,9 +99,10 @@ D.areas = {
   },
   nearLeft = {
     label = "◀",
-    rotation = -20,
-    distance = 130,
-    groundLevel = -50,
+    autoLight = false,
+    rotation = -35,
+    distance = 175,
+    groundLevel = -15,
     spreadBlend = 0,
     positions = {
       { x = 0,   z = 0 },
@@ -114,9 +116,10 @@ D.areas = {
   },
   nearRight = {
     label = "▶",
-    rotation = 20,
-    distance = 130,
-    groundLevel = -50,
+    autoLight = false,
+    rotation = 35,
+    distance = 175,
+    groundLevel = -15,
     spreadBlend = 0,
     positions = {
       { x = 0,   z = 0 },
@@ -130,9 +133,10 @@ D.areas = {
   },
   farRight = {
     label = "▶▶",
-    rotation = 40,
-    distance = 160,
-    groundLevel = -40,
+    autoLight = false,
+    rotation = 35,
+    distance = 250,
+    groundLevel = 20,
     spreadBlend = 0,
     positions = {
       { x = 0,   z = 0 },
@@ -146,9 +150,10 @@ D.areas = {
   },
   farLeft = {
     label = "◀◀",
-    rotation = -40,
-    distance = 160,
-    groundLevel = -40,
+    autoLight = false,
+    rotation = -35,
+    distance = 250,
+    groundLevel = 20,
     spreadBlend = 0,
     positions = {
       { x = 0,   z = 0 },
@@ -196,10 +201,10 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/11648768264219466487/3682360C8DE4DF5B9E644C070C9BE83B11CEBD14/",
       },
-      scale = 53,
+      scale = 55,
     },
     groups = {
-      redeemers = 2
+      redeemers = 4
     },
     stats = {
       note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
@@ -234,7 +239,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/9454498514072933553/9DC5344168E11D8ACE5F836D2847DFE0CE495351/",
       },
-      scale = 53,
+      scale = 50,
     },
     groups = {
       petitioners = 3
@@ -253,7 +258,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/11038379578645526037/B2F6F2CF8C41B8D3C2DC4B8D43F48515789466EA/",
       },
-      scale = 53,
+      scale = 50,
     },
     groups = {
       petitioners = 1
@@ -272,7 +277,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/17238076161191780731/388786F7DEBA992464F202946491B12460C0E9E4/",
       },
-      scale = 53,
+      scale = 60,
     },
     groups = {
       redFlag = 3
@@ -294,7 +299,7 @@ D.characters = {
       scale = 57,
     },
     groups = {
-      harpies = 2
+      harpies = 5
     },
     stats = {
       note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
@@ -310,7 +315,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/9703291637540598019/0EB21913E4DB904485E307859FD1DF7309AC2CC5/",
       },
-      scale = 53,
+      scale = 58,
     },
     groups = {
       redFlag = 2
@@ -329,7 +334,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/17089197402012388637/4D6D0D41E91D44FB5CA9EF782C406C890BB24812/",
       },
-      scale = 53,
+      scale = 55,
     },
     groups = {
       regencyUniversityChantry = 4
@@ -348,7 +353,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/17386210984610209135/75E27F293907ACB4CC531301573A8094161889CC/",
       },
-      scale = 53,
+      scale = 60,
     },
     groups = {
       midnightMass = 3
@@ -367,7 +372,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/14921128357468775052/393423DD10B041AEE2BE9157A989B1E9FCFBD4FA/",
       },
-      scale = 53,
+      scale = 47,
     },
     groups = {
       regencyUniversityChantry = 2
@@ -386,7 +391,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/14134054229634278835/869F3C56857BA1DEE98DEA38957CC71FB8C79521/",
       },
-      scale = 53,
+      scale = 42,
     },
     groups = {
       petitioners = 4
@@ -405,7 +410,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/12895566308249268204/0F90C3EF43E32644E7025E079FECE31AE7BAFBCF/",
       },
-      scale = 53,
+      scale = 49,
     },
     groups = {
       regencyUniversityChantry = 1
@@ -424,7 +429,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/15029532166850288811/7DA124D0D28CAB04F8F6BFDDB07E45FFE72D6369/",
       },
-      scale = 53,
+      scale = 57,
     },
     groups = {
       midnightMass = 1
@@ -482,10 +487,10 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/13993992240724786112/43F45FEC3387B1BCB6306973E4E7822A079EDEDD/",
       },
-      scale = 53,
+      scale = 50,
     },
     groups = {
-      redeemers = 4
+      redeemers = 2
     },
     stats = {
       note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",
@@ -501,7 +506,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/14524672878071384464/660BAEE7AF9A982FCBCF613DE4AC524EAB3D8D0E/",
       },
-      scale = 53,
+      scale = 48,
     },
     groups = {
       petitioners = 5
@@ -520,7 +525,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/9379532325372726501/C585E5B703D03CC5AF6A199A26C02733500451A6/",
       },
-      scale = 53,
+      scale = 58,
     },
     groups = {
       regencyUniversityChantry = 3
@@ -559,7 +564,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/15685427461294094007/985E5C01BCC8FD9849239BCA7790A745907B7A83/",
       },
-      scale = 53,
+      scale = 57,
     },
     groups = {
       redFlag = 4
@@ -635,7 +640,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/15558678646465292274/929A62E50D9BFB554C0BFF6620E7BC534D67AE3F/",
       },
-      scale = 53,
+      scale = 58,
     },
     groups = {
       moonClub = 4
@@ -654,7 +659,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/17506154914654136264/07FF2D752F41839671C069424D0CCD359A247B0E/",
       },
-      scale = 53,
+      scale = 48,
     },
     groups = {
       midnightMass = 2
@@ -711,7 +716,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/15547073567928913187/B16CA24B34A4F2580F19853751F8A7E3D686C5AF/",
       },
-      scale = 53,
+      scale = 60,
     },
     groups = {
       redeemers = 3
@@ -730,7 +735,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/12016783423065307501/0E9460ABC9D1482712966EA13EAA5FCCAB70BB63/",
       },
-      scale = 53,
+      scale = 57,
     },
     groups = {
       moonClub = 3
@@ -749,7 +754,7 @@ D.characters = {
         back =
         "https://steamusercontent-a.akamaihd.net/ugc/18228912782013072682/1F02D0787B51B0B0871808A8E2AD26438E926D52/",
       },
-      scale = 53,
+      scale = 51,
     },
     groups = {
       moonClub = 1
@@ -771,7 +776,7 @@ D.characters = {
       scale = 53,
     },
     groups = {
-      harpies = 3
+      harpies = 4
     },
     stats = {
       note = "Set figurine.images.front/back to valid TTS asset URLs before spawning.",

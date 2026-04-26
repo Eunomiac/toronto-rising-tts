@@ -73,25 +73,21 @@ function M.setupPlayers()
 
     local function getActiveTaggedTables()
       local tagged = nil
-      local okAllTags, allTagRes = pcall(function()
-        ---@diagnostic disable-next-line: undefined-global
-        return getObjectsWithAllTags({ "table", "activeTable" })
-      end)
-      if okAllTags and type(allTagRes) == "table" then
-        tagged = allTagRes
+      local getAllTagsFn = rawget(_G, "getObjectsWithAllTags")
+      if type(getAllTagsFn) == "function" then
+        local allTagRes = getAllTagsFn({ "table", "activeTable" })
+        if type(allTagRes) == "table" then
+          tagged = allTagRes
+        end
       else
         -- Fallback: environments without getObjectsWithAllTags.
-        local okTableTag, tableTagRes = pcall(function()
-          return getObjectsWithTag("table")
-        end)
-        if okTableTag and type(tableTagRes) == "table" then
+        local tableTagRes = getObjectsWithTag("table")
+        if type(tableTagRes) == "table" then
           tagged = {}
           for _, obj in ipairs(tableTagRes) do
             if obj ~= nil then
-              local okTags, tags = pcall(function()
-                return obj.getTags()
-              end)
-              if okTags and type(tags) == "table" then
+              local tags = obj.getTags()
+              if type(tags) == "table" then
                 local hasActive = false
                 for _, t in ipairs(tags) do
                   if t == "activeTable" then
@@ -122,13 +118,7 @@ function M.setupPlayers()
         return false
       end
       local activeObj = activeObjs[1]
-      local guid = nil
-      local okGuid, guidOrErr = pcall(function()
-        return activeObj.getGUID()
-      end)
-      if okGuid and type(guidOrErr) == "string" then
-        guid = guidOrErr
-      end
+      local guid = activeObj.getGUID()
       if guid == nil or guid == "" then
         return false
       end

@@ -104,16 +104,12 @@ local function applyHungerOverlaysExclusive(seatColor, level)
   for _, n in ipairs(HUNGER_LEVELS) do
     local eid = "overlay_hunger_" .. n .. "_" .. seatColor
     local shouldShow = n == lv
-    local applyOk, _applyErr = pcall(function()
-      if shouldShow then
-        UI.show(eid)
-      else
-        UI.hide(eid)
-      end
-    end)
-    if applyOk then
-      lastVisible[eid] = shouldShow
+    if shouldShow then
+      UI.show(eid)
+    else
+      UI.hide(eid)
     end
+    lastVisible[eid] = shouldShow
   end
 end
 
@@ -147,16 +143,12 @@ local function applyOverlayVisibility(elementId, shouldShow)
     lastVisible[elementId] = false
     return
   end
-  local applyOk, _applyErr = pcall(function()
-    if shouldShow then
-      UI.show(elementId)
-    else
-      UI.hide(elementId)
-    end
-  end)
-  if applyOk then
-    lastVisible[elementId] = shouldShow
+  if shouldShow then
+    UI.show(elementId)
+  else
+    UI.hide(elementId)
   end
+  lastVisible[elementId] = shouldShow
 end
 
 --- Clears incremental visibility memory for one seat so the next syncAll() reapplies UI.show/hide.
@@ -174,13 +166,7 @@ end
 --- Refresh overlay visibility for every player color row.
 function HO.syncAll()
   for _, seatColor in ipairs(C.PlayerColors) do
-    local playerID = nil
-    local ok, pidOrErr = pcall(function()
-      return C.GetPlayerID(seatColor)
-    end)
-    if ok and type(pidOrErr) == "string" then
-      playerID = pidOrErr
-    end
+    local playerID = C.GetPlayerID(seatColor)
     local want = computeDesiredVisibility(playerID, seatColor)
     local ids = allManagedOverlayIdsForSeat(seatColor)
     -- Non-hunger overlays: incremental show/hide (conditions, frenzy, blindfold, etc.).
@@ -202,10 +188,8 @@ function HO.syncAll()
     applyHungerOverlaysExclusive(seatColor, desiredHungerLevelFromWant(want, seatColor))
   end
 
-  pcall(function()
-    local HUP = require("core.hud_hunger_pulse")
-    HUP.syncHungerPulseAll()
-  end)
+  local HUP = require("core.hud_hunger_pulse")
+  HUP.syncHungerPulseAll()
 end
 
 return HO

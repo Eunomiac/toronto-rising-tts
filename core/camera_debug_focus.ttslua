@@ -1,0 +1,259 @@
+--[[
+    Focused camera debug panel: live sliders + workspace Lua snapshot.
+    Mirrors the focused light debug workflow, but drives Player.lookAt().
+]]
+
+local CameraDebugFocus = {}
+
+local activePlayerColor = nil
+local syncingSliders = false
+local lastModeInput = ""
+
+local cache = {
+    positionX = 0,
+    positionY = 0,
+    positionZ = 0,
+    pitch = 0,
+    yaw = 0,
+    distance = 40,
+    cameraMode = "FirstPerson",
+}
+
+local function resolveActivePlayer(player)
+    if player ~= nil and player.color ~= nil then
+        activePlayerColor = player.color
+        return player
+    end
+    if activePlayerColor ~= nil and Player ~= nil then
+        return Player[activePlayerColor]
+    end
+    return nil
+end
+
+local function trim(s)
+    if type(s) ~= "string" then
+        return ""
+    end
+    return (s:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+local function pushSliderAttr(id, val)
+    UI.setAttributes(id, { value = val })
+end
+
+local function pushAllSlidersToUi()
+    syncingSliders = true
+    pushSliderAttr("dc_positionX", cache.positionX)
+    pushSliderAttr("dc_positionY", cache.positionY)
+    pushSliderAttr("dc_positionZ", cache.positionZ)
+    pushSliderAttr("dc_pitch", cache.pitch)
+    pushSliderAttr("dc_yaw", cache.yaw)
+    pushSliderAttr("dc_distance", cache.distance)
+    syncingSliders = false
+end
+
+local function formatCameraNumber(n)
+    if type(n) ~= "number" then
+        return "0"
+    end
+    return string.format("%.4f", n)
+end
+
+local function applyLiveToPlayer(player)
+    local targetPlayer = resolveActivePlayer(player)
+    if targetPlayer == nil then
+        return
+    end
+    -- NOTE: We intentionally do not call setCameraMode here.
+    -- TTS lookAt() already forces ThirdPerson; repeatedly setting mode causes visible flicker.
+    targetPlayer.lookAt({
+        position = Vector({ cache.positionX, cache.positionY, cache.positionZ }),
+        pitch = cache.pitch,
+        yaw = cache.yaw,
+        distance = cache.distance,
+    })
+end
+
+local function resolveModePresetForPlayer(player, modeName)
+    if type(modeName) ~= "string" or modeName == "" then
+        return nil
+    end
+
+    local mergedUniversal = {}
+    if C ~= nil and type(C.UniversalCameraAngles) == "table" then
+        for k, v in pairs(C.UniversalCameraAngles) do
+            mergedUniversal[k] = v
+        end
+    end
+    if S ~= nil and type(S.getStateVal) == "function" then
+        local dynUniversal = S.getStateVal("seatLayout", "universalCameraAngles")
+        if type(dynUniversal) == "table" then
+            for k, v in pairs(dynUniversal) do
+                mergedUniversal[k] = v
+            end
+        end
+    end
+    if mergedUniversal[modeName] ~= nil then
+        return mergedUniversal[modeName]
+    end
+
+    if S ~= nil and type(S.getPlayerData) == "function" then
+        local pdata = S.getPlayerData(player)
+        if type(pdata) == "table" and type(pdata.cameraAngles) == "table" then
+            return pdata.cameraAngles[modeName]
+        end
+    end
+    return nil
+end
+
+local function loadCacheFromPreset(preset)
+    if type(preset) ~= "table" then
+        return false
+    end
+    local pos = preset.position
+    if pos ~= nil then
+        cache.positionX = tonumber(pos.x or pos[1]) or cache.positionX
+        cache.positionY = tonumber(pos.y or pos[2]) or cache.positionY
+        cache.positionZ = tonumber(pos.z or pos[3]) or cache.positionZ
+    end
+    cache.pitch = tonumber(preset.pitch) or cache.pitch
+    cache.yaw = tonumber(preset.yaw) or cache.yaw
+    cache.distance = tonumber(preset.distance) or cache.distance
+    local cm = tostring(preset.cameraMode or "")
+    if cm ~= "" then
+        cache.cameraMode = cm
+    end
+    return true
+end
+
+--- Open the panel for the clicking player.
+-- @param player Player
+-- @return boolean
+function CameraDebugFocus.activate(player)
+    if player == nil then
+        return false
+    end
+    activePlayerColor = player.color
+    pushAllSlidersToUi()
+    UI.setValue("dc_debug_label", "Debug Camera [" .. tostring(player.color or "?") .. "]")
+    UI.setValue("dc_mode_input", lastModeInput)
+    UI.setAttribute("panel_debug_camera_root", "active", true)
+    return true
+end
+
+--- Slider change handler: update cache and apply immediately to the clicking player.
+-- @param player Player
+-- @param value number|string
+-- @param id string
+function CameraDebugFocus.onSlider(player, value, id)
+    if syncingSliders then
+        return
+    end
+    local v = tonumber(value)
+    if v == nil then
+        return
+    end
+    if id == "dc_positionX" then
+        cache.positionX = v
+    elseif id == "dc_positionY" then
+        cache.positionY = v
+    elseif id == "dc_positionZ" then
+        cache.positionZ = v
+    elseif id == "dc_pitch" then
+        cache.pitch = v
+    elseif id == "dc_yaw" then
+        cache.yaw = v
+    elseif id == "dc_distance" then
+        cache.distance = v
+    else
+        return
+    end
+    applyLiveToPlayer(player)
+end
+
+--- Write Lua table snapshot to workspace, same shape as capture output.
+-- @param player Player
+function CameraDebugFocus.snapshot(player)
+    local DBG = rawget(_G, "DEBUG")
+    if DBG == nil or type(DBG.writeWorkspaceFile) ~= "function" then
+        if player and player.color then
+            broadcastToColor("Debug Camera: DEBUG.writeWorkspaceFile missing.", player.color, { 1, 0.35, 0 })
+        end
+        return
+    end
+    local colorKey = string.upper((player and player.color) or activePlayerColor or "UNKNOWN")
+    local ts = os.time()
+    local relativePath = "debug_logs/camera_capture_" .. colorKey .. "_" .. tostring(ts) .. ".lua"
+    local body = table.concat({
+        "-- Camera capture snapshot (generated by HUD_debugCameraSnapshot)",
+        "-- Paste one of the entries below into C.UniversalCameraAngles or C.RedCameraAngles.",
+        "-- Suggested mode key: <replace_me>",
+        "",
+        "local CAPTURED_CAMERA_ENTRY = {",
+        "  cameraMode = " .. string.format("%q", tostring(cache.cameraMode or "FirstPerson")) .. ",",
+        "  position = Vector({"
+            .. formatCameraNumber(cache.positionX)
+            .. ", "
+            .. formatCameraNumber(cache.positionY)
+            .. ", "
+            .. formatCameraNumber(cache.positionZ)
+            .. "}),",
+        "  pitch = " .. formatCameraNumber(cache.pitch) .. ",",
+        "  yaw = " .. formatCameraNumber(cache.yaw) .. ",",
+        "  distance = " .. formatCameraNumber(cache.distance) .. ",",
+        "}",
+        "",
+        "-- Example paste targets:",
+        "C.UniversalCameraAngles[\"<replace_me>\"] = CAPTURED_CAMERA_ENTRY",
+        "C.RedCameraAngles[\"<replace_me>\"] = CAPTURED_CAMERA_ENTRY",
+        "",
+    }, "\n")
+    local okWrite = DBG.writeWorkspaceFile(relativePath, body, "none", false)
+    if player and player.color then
+        if okWrite then
+            broadcastToColor("Debug Camera: wrote .dev/.debug/" .. relativePath, player.color, { 0, 1, 1 })
+        else
+            broadcastToColor("Debug Camera: failed to write snapshot file.", player.color, { 1, 0.35, 0 })
+        end
+    end
+end
+
+--- Cache mode input from InputField callbacks.
+-- @param player Player
+-- @param value string|nil
+-- @param id string|nil
+function CameraDebugFocus.onModeInput(player, value, id)
+    if type(value) == "string" then
+        lastModeInput = value
+    end
+end
+
+--- Apply named camera mode via the main camera pipeline.
+-- @param player Player
+-- @return boolean ok
+-- @return string message
+function CameraDebugFocus.applyNamedMode(player)
+    local targetPlayer = resolveActivePlayer(player)
+    if targetPlayer == nil then
+        return false, "No active player available for camera apply."
+    end
+    local modeName = trim(lastModeInput)
+    if modeName == "" then
+        return false, "Enter a camera mode key first."
+    end
+    local preset = resolveModePresetForPlayer(targetPlayer, modeName)
+    if not loadCacheFromPreset(preset) then
+        return false, "Unknown camera mode key: '" .. modeName .. "'."
+    end
+    pushAllSlidersToUi()
+    -- Keep named-mode apply aligned with slider behavior.
+    applyLiveToPlayer(targetPlayer)
+    return true, "Loaded camera mode '" .. modeName .. "' into sliders and applied via lookAt."
+end
+
+function CameraDebugFocus.done()
+    UI.setAttribute("panel_debug_camera_root", "active", false)
+    activePlayerColor = nil
+end
+
+return CameraDebugFocus

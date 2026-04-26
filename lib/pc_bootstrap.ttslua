@@ -12,10 +12,12 @@ local BOOT = {}
 --- @return table
 local function deepCloneTable(t)
   if JSON ~= nil and type(JSON.encode) == "function" and type(JSON.decode) == "function" then
+    -- Known non-fatal case: JSON clone can fail on transient userdata references.
     local ok, enc = pcall(function()
       return JSON.encode(t)
     end)
     if ok and type(enc) == "string" then
+      -- Known non-fatal case: decode can fail on malformed encoded payloads.
       local ok2, dec = pcall(function()
         return JSON.decode(enc)
       end)

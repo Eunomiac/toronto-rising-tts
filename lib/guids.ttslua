@@ -47,6 +47,8 @@ G.GUIDS = {
     SEAT_LIGHT_2_PINK = "1736cb",
     SEAT_LIGHT_2_PURPLE = "cf2fe0",
 
+    SEAT_LIGHT_3_RED = "ba0598",
+
     -- Hand zones (player hand zones)
     -- Storyteller (Black) and player colors: Brown, Orange, Red, Pink
     HAND_BLACK = "8981a0",  -- Storyteller

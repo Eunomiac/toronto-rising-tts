@@ -391,9 +391,10 @@ function S.InitializeGameState(saved_data)
             if k ~= "playerData" then
                 gameState[k] = v
             else
-                -- Special handling for playerData: merge with defaults first
-                gameState.playerData = gameState.playerData or {}
-                S.mergeDefaults(gameState.playerData, v or {})
+                -- Saved playerData must win over defaults; defaults only backfill missing keys.
+                local savedPlayerData = (type(v) == "table") and v or {}
+                gameState.playerData = U.clone(savedPlayerData, true)
+                S.mergeDefaults(gameState.playerData, S.GetDefaultGameState().playerData)
             end
         end
     else
@@ -638,9 +639,11 @@ end
 -- STATE ACCESS (Basic Get/Set)
 -- ============================================================================
 
---- Builds a save-safe state by explicitly copying only serializable fields
--- This is a whitelist approach - only includes fields we explicitly want to save
--- Much safer than trying to filter out non-serializable data
+local isValueSafeForState
+
+--- Builds a save-safe state by copying serializable fields.
+-- For `playerData`, persist all dynamic keys and exclude static keys from `C.PlayerData`.
+-- This preserves any runtime-authored state while keeping save payloads JSON-safe.
 -- @return table A new table containing only serializable state data
 local function buildSaveState()
     local saveState = {}
@@ -654,9 +657,8 @@ local function buildSaveState()
         saveState.currentScene = gameState.currentScene
     end
 
-    -- Copy playerData (only dynamic values - static data comes from C.PlayerData)
-    -- Extract only the dynamic gameplay-state values for each player ID
-    -- Static character data should NOT be saved to state (it's in C.PlayerData constants)
+    -- Copy playerData (all dynamic values - static data still comes from C.PlayerData).
+    -- Persist every safe dynamic key so writes to state survive save/load cycles.
     if gameState.playerData then
         saveState.playerData = {}
         for playerID, playerData in pairs(gameState.playerData) do
@@ -669,38 +671,21 @@ local function buildSaveState()
                 print("[WARNING] buildSaveState: Skipping player entry with non-serializable key type: " .. type(playerID))
                 -- Skip this iteration
             else
-                -- Extract only dynamic values from the complete merged playerData
-                -- Static character data comes from C.PlayerData and should NOT be saved
-                -- List of dynamic fields that should be saved (add more as needed)
-                -- Only dynamic fields should be persisted.
-                -- `hud` is player UI display state (including reference overlay selections).
-                local dynamicFields = {"color", "hud", "stats", "conditions"}
                 local dynamicPlayerData = {}
+                local staticData = C.PlayerData[playerID]
 
-                for _, fieldName in ipairs(dynamicFields) do
-                    local fieldSuccess, fieldVal = pcall(function() return playerData[fieldName] end)
-                    if fieldSuccess and fieldVal ~= nil then
-                        local fieldType = type(fieldVal)
-                        if fieldType == "number" then
-                            dynamicPlayerData[fieldName] = fieldVal
-                        elseif fieldType == "string" then
-                            -- color is player seat (e.g. "Black") - save as string; hunger may be numeric string
-                            local num = tonumber(fieldVal)
-                            if num then
-                                dynamicPlayerData[fieldName] = num
-                            elseif fieldName == "color" then
-                                dynamicPlayerData[fieldName] = fieldVal
-                            else
-                                print("[WARNING] buildSaveState: Player ID '" .. tostring(playerID) .. "' " .. fieldName .. " is non-numeric string: " .. tostring(fieldVal))
-                            end
-                        elseif fieldType == "boolean" then
-                            dynamicPlayerData[fieldName] = fieldVal
-                        elseif fieldType == "table" then
-                            -- Allow JSON-serializable tables (Lua state values are validated by S.setStateVal).
-                            dynamicPlayerData[fieldName] = fieldVal
+                for fieldName, fieldVal in pairs(playerData) do
+                    -- Do not persist static character/config keys owned by constants.
+                    if type(staticData) == "table" and staticData[fieldName] ~= nil then
+                        -- Skip static field from merged runtime data.
+                    elseif isValueSafeForState(fieldVal, "playerData." .. tostring(playerID) .. "." .. tostring(fieldName)) then
+                        if type(fieldVal) == "table" then
+                            dynamicPlayerData[fieldName] = U.clone(fieldVal, true)
                         else
-                            print("[WARNING] buildSaveState: Player ID '" .. tostring(playerID) .. "' has non-serializable " .. fieldName .. " type: " .. fieldType)
+                            dynamicPlayerData[fieldName] = fieldVal
                         end
+                    else
+                        print("[WARNING] buildSaveState: Player ID '" .. tostring(playerID) .. "' skipping unsafe field '" .. tostring(fieldName) .. "'")
                     end
                 end
 
@@ -850,13 +835,13 @@ local function buildSaveState()
 end
 
 --- Gets the entire game state table (raw or save-safe)
--- @param shouldSanitize boolean Optional. If true, returns explicitly built save state (whitelist approach, default: false)
+-- @param shouldSanitize boolean Optional. If true, returns save-safe state (default: false)
 -- @return table The gameState table (or save-safe version)
 -- @usage local state = S.getGameState() -- Get raw state
--- @usage local state = S.getGameState(true) -- Get save-safe state (whitelist approach)
+-- @usage local state = S.getGameState(true) -- Get save-safe state
 function S.getGameState(shouldSanitize)
     if shouldSanitize then
-        return buildSaveState()  -- Use whitelist approach instead of sanitization
+        return buildSaveState()
     end
     return gameState
 end
@@ -878,7 +863,7 @@ end
 -- @param value any The value to validate
 -- @param keyPath string Optional. Path for error messages
 -- @return boolean True if value is safe to store
-local function isValueSafeForState(value, keyPath)
+isValueSafeForState = function(value, keyPath)
     local valueType = type(value)
 
     -- Allow primitive types

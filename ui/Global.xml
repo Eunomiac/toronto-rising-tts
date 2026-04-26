@@ -9,16 +9,6 @@
 <!-- 2. General shared classes -->
 <Include src="defaults_classes.xml" />
 
-<!-- 3. Storyteller HUD (Black): admin panel + sidebar + camera defaults -->
-<Panel id="HUD_PANEL_BLACK" class="hud_root_panel" visibility="Black|Host">
-  <!-- 3a. Storyteller HUD defaults -->
-  <Include src="storyteller/hud_storyteller_defaults.xml" />
-  <Include src="storyteller/panel_pcs_defaults.xml" />
-
-  <!-- 3b. Storyteller HUD -->
-  <Include src="storyteller/hud_storyteller.xml" />
-</Panel>
-
 <!-- 4. Player HUD (per-color panels) -->
 <Panel id="HUD_PANEL_PLAYER" class="hud_root_panel">
 
@@ -43,6 +33,18 @@
 
 
 </Panel>
+
+
+<!-- 3. Storyteller HUD (Black): admin panel + sidebar + camera defaults -->
+<Panel id="HUD_PANEL_BLACK" class="hud_root_panel" visibility="Black|Host">
+  <!-- 3a. Storyteller HUD defaults -->
+  <Include src="storyteller/hud_storyteller_defaults.xml" />
+  <Include src="storyteller/panel_pcs_defaults.xml" />
+
+  <!-- 3b. Storyteller HUD -->
+  <Include src="storyteller/hud_storyteller.xml" />
+</Panel>
+
 
 <!-- 5. Dice System Panels (roll panels + ST dashboard + result broadcast) -->
 <!-- Included outside the player/ST panels so the broadcast panel is visible to all. -->

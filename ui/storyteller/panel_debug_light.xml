@@ -7,7 +7,7 @@
 </Defaults>
 
 <!-- Focused spotlight debug: sliders + snapshot (Host). Handlers: HUD_debugLight* in global_script. -->
-<Panel id="panel_debug_light_root" active="false" color="rgba(0,0,0,0.82)" padding="10 10 10 10" width="500" scale="0.8" rectAlignment="MiddleRight" offsetXY="-20 0" raycastTarget="true">
+<Panel id="panel_debug_light_root" active="false" color="rgba(0,0,0,0.82)" padding="10 10 10 10" width="500" scale="0.8" rectAlignment="MiddleLeft" offsetXY="100 0" raycastTarget="true">
   <VerticalLayout spacing="5" childForceExpandWidth="true" childForceExpandHeight="false">
     <Text id="dl_debug_light_label" fontSize="14" color="#FFDD00" preferredHeight="32">Debug Light</Text>
 

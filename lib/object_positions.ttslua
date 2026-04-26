@@ -36,6 +36,7 @@ local function resolveSeatLayoutCenterPoint()
   -- In object scripts, local core.state may not be initialized yet (separate Lua VM).
   -- Prefer Global state bridge to avoid emitting "gameState is nil" warnings.
   if Global ~= nil and type(Global.call) == "function" then
+    -- Known non-fatal case: Global bridge call can fail in object-script contexts before Global is ready.
     local ok, cp = pcall(function()
       return Global.call("GlobalGetSeatLayoutCenterPoint")
     end)

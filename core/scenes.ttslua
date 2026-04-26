@@ -90,6 +90,7 @@ Scenes.SCENES = {
                 refs = {
                     "playerLight1Red",
                     "playerLight2Red",
+                    "playerLight3Red",
                 }
             },
             {
@@ -99,8 +100,10 @@ Scenes.SCENES = {
                 refs = {
                     "playerLight1Orange",
                     "playerLight2Orange",
+                    -- "playerLight3Orange",
                     "playerLight1Pink",
                     "playerLight2Pink",
+                    -- "playerLight3Pink",
                 }
             },
             {
@@ -110,8 +113,10 @@ Scenes.SCENES = {
                 refs = {
                     "playerLight1Brown",
                     "playerLight2Brown",
+                    -- "playerLight3Brown",
                     "playerLight1Purple",
                     "playerLight2Purple",
+                    -- "playerLight3Purple",
                 }
             },
             {
@@ -152,6 +157,7 @@ Scenes.SCENES = {
                 refs = {
                     "playerLight1Red",
                     "playerLight2Red",
+                    "playerLight3Red",
                 }
             },
             {
@@ -161,8 +167,10 @@ Scenes.SCENES = {
                 refs = {
                     "playerLight1Orange",
                     "playerLight2Orange",
+                    -- "playerLight3Orange",
                     "playerLight1Pink",
                     "playerLight2Pink",
+                    -- "playerLight3Pink",
                 }
             },
             {
@@ -172,8 +180,10 @@ Scenes.SCENES = {
                 refs = {
                     "playerLight1Brown",
                     "playerLight2Brown",
+                    -- "playerLight3Brown",
                     "playerLight1Purple",
                     "playerLight2Purple",
+                    -- "playerLight3Purple",
                 }
             },
             {
@@ -183,6 +193,15 @@ Scenes.SCENES = {
                 refs = {
                     "mainLightLeft",
                     "mainLightRight",
+                }
+            },
+            {
+                delay = 4.0,
+                duration = 1.0,
+                mode = "STANDARD",
+                refs = {
+                    "districtCardLight",
+                    "siteCardLight",
                 }
             }
         },
@@ -521,9 +540,7 @@ local function applySceneLightStages(stages, transitionTime, allowDelays)
             if #refsToApply > 0 then
                 Wait.time(function()
                     for _, applyRef in ipairs(refsToApply) do
-                        pcall(function()
-                            L.SetLightMode(applyRef.ref, applyRef.mode, stagePlayer, stageDuration)
-                        end)
+                        L.SetLightMode(applyRef.ref, applyRef.mode, stagePlayer, stageDuration)
                     end
                 end, stageDelay)
             end

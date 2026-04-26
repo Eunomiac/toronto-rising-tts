@@ -31,9 +31,7 @@ local function applyPositionTransition(obj, targetPos, resolvedPose, baseDuratio
     end
     local function run()
         if type(setLock) == "boolean" and setLock == true then
-            pcall(function()
-                obj.setLock(true)
-            end)
+            obj.setLock(true)
         end
         if duration > 0 then
             U.setPositionSlow(obj, targetPos, duration, nil, false)
@@ -43,9 +41,7 @@ local function applyPositionTransition(obj, targetPos, resolvedPose, baseDuratio
         if type(setLock) == "boolean" and setLock == false then
             local unlockDelay = duration > 0 and duration or 0
             Wait.time(function()
-                pcall(function()
-                    obj.setLock(false)
-                end)
+                obj.setLock(false)
             end, unlockDelay)
         end
     end

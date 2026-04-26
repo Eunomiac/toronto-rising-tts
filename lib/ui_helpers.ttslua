@@ -172,6 +172,7 @@ local function storytellerUiElementIsActive(elementId)
     if UI.getAttribute == nil or type(elementId) ~= "string" then
         return false
     end
+    -- Known non-fatal case: element may not exist in some storyteller HUD variants.
     local ok, v = pcall(function()
         return UI.getAttribute(elementId, "active")
     end)
@@ -186,6 +187,18 @@ local TOGGLE_COLORS_INACTIVE = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
 
 --- Active toggle button colors (bright gold highlight)
 local TOGGLE_COLORS_ACTIVE = "#B8860B|#FFD700|#FFA500|#B8860B"
+local TOGGLE_TEXT_COLOR = "#FFFFFF"
+
+--- Keep storyteller toggle button visuals in sync.
+--- Explicitly writes textColor because some TTS button style updates can reset text tint.
+--- @param toggleId string
+--- @param isActive boolean
+local function setStorytellerToggleVisual(toggleId, isActive)
+    UIHelpers.setAttributes(toggleId, {
+        colors = isActive and TOGGLE_COLORS_ACTIVE or TOGGLE_COLORS_INACTIVE,
+        textColor = TOGGLE_TEXT_COLOR,
+    })
+end
 
 --- Selects a storyteller panel (mutually exclusive: only one open at a time).
 -- Shows the content area, hides all panels, shows the selected one, and updates toggle button highlight.
@@ -213,7 +226,7 @@ function UIHelpers.selectStorytellerPanel(panelKey, forceOpen)
         UI.setAttribute(STORYTELLER_CONTENT_AREA_ID, "active", "false")
         for _, ids in pairs(STORYTELLER_PANELS) do
             UI.setAttribute(ids.panel, "active", "false")
-            UI.setAttribute(ids.toggle, "colors", TOGGLE_COLORS_INACTIVE)
+            setStorytellerToggleVisual(ids.toggle, false)
         end
         return
     end
@@ -224,7 +237,7 @@ function UIHelpers.selectStorytellerPanel(panelKey, forceOpen)
     -- Hide all panels and set the selected one visible; update toggle colors
     for key, ids in pairs(STORYTELLER_PANELS) do
         UI.setAttribute(ids.panel, "active", key == panelKey and "true" or "false")
-        UI.setAttribute(ids.toggle, "colors", key == panelKey and TOGGLE_COLORS_ACTIVE or TOGGLE_COLORS_INACTIVE)
+        setStorytellerToggleVisual(ids.toggle, key == panelKey)
     end
 end
 

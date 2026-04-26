@@ -86,10 +86,12 @@ local function cloneObjectDataForSpawn(data)
         return nil
     end
     if JSON ~= nil and U.Type(JSON.encode) == "function" and U.Type(JSON.decode) == "function" then
+        -- Known non-fatal case: JSON clone can fail on object-data fields not serializable in this frame.
         local encOk, encoded = pcall(function()
             return JSON.encode(data)
         end)
         if encOk and U.Type(encoded) == "string" then
+            -- Known non-fatal case: decode can fail on malformed/intermediate encoded payloads.
             local decOk, decoded = pcall(function()
                 return JSON.decode(encoded)
             end)
@@ -172,11 +174,13 @@ end
 --- @param message string
 local function safeAlertGM(message)
     local msg = U.Type(message) == "string" and message or tostring(message)
+    -- Known non-fatal case: U.AlertGM can fail when host resolution is transiently unavailable.
     local ok = pcall(function()
         U.AlertGM(msg)
     end)
     if not ok then
         print("[NPCS] safeAlertGM fallback (broadcastToAll): " .. msg)
+        -- Known non-fatal case: broadcast fallback itself may fail during teardown; safe to ignore.
         pcall(function()
             broadcastToAll("[NPCS] " .. msg, Color(1, 0.55, 0.2))
         end)
@@ -426,6 +430,7 @@ function NPCS.buildResolvedLightModeTable(npcName, modeKey)
         return nil
     end
     local mode = NPCS.getMergedModeDefinition(npcName, modeKey)
+    -- Known non-fatal case: getBounds can fail while figurine is still initializing.
     local ok, b = pcall(function()
         return fig.getBounds()
     end)
@@ -481,6 +486,7 @@ function NPCS.applyCurrentLightMode(npcName, transitionTime)
     if transitionTime == nil then
         transitionTime = 0.35
     end
+    -- Known non-fatal case: light object can disappear between lookup and apply.
     local ok, err = pcall(function()
         L.SetLightMode(reg, modeKey, nil, transitionTime)
     end)
@@ -548,6 +554,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
         return false, "Set figurine.images.front in lib/npcs_data for " .. npcName
     end
     local spawnPos
+    -- Known non-fatal case: slot/world-position compute may fail on malformed area data.
     local posOk, posErr = pcall(function()
         spawnPos = NPCS.computeSlotWorldPosition(areaKey, slotIndex)
     end)
@@ -589,6 +596,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
     )
     local spawnedFig
     ---@diagnostic disable-next-line: undefined-global
+    -- Known non-fatal case: spawnObjectData can fail due transient TTS engine/runtime errors.
     local okObj, errObj = pcall(function()
         ---@diagnostic disable-next-line: undefined-global
         spawnedFig = spawnObjectData({
@@ -599,6 +607,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                     safeAlertGM("NPCS spawn: nil figurine for " .. tostring(npcName))
                     return
                 end
+                -- Known non-fatal case: post-spawn setup can fail while dependencies are still loading.
                 local postOk, postErr = pcall(function()
                     fig.setLock(true)
 
@@ -649,6 +658,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                         Wait.condition(function()
                             Wait.time(function()
                                 lightAlignFigOverride[npcName] = deferFig
+                                -- Known non-fatal case: deferred light apply can fail if spawned light is gone.
                                 local applyOk, applyErr = pcall(function()
                                     NPCS.applyCurrentLightMode(npcName, 0)
                                 end)
@@ -793,11 +803,13 @@ function NPCS.removeNpc(npcName, opts)
     local fig = rec.figurineGuid and getObjectFromGUID(rec.figurineGuid)
     local lit = rec.lightGuid and getObjectFromGUID(rec.lightGuid)
     if fig ~= nil and fig.destruct then
+        -- Known non-fatal case: figure may already be destroyed externally.
         pcall(function()
             fig.destruct()
         end)
     end
     if lit ~= nil and lit.destruct then
+        -- Known non-fatal case: light may already be destroyed externally.
         pcall(function()
             lit.destruct()
         end)
@@ -975,6 +987,7 @@ local function isUiElementActive(elementId)
     if UI.getAttribute == nil or type(elementId) ~= "string" then
         return false
     end
+    -- Known non-fatal case: panel id may be absent in some XML variants.
     local ok, v = pcall(function()
         return UI.getAttribute(elementId, "active")
     end)
@@ -1120,6 +1133,7 @@ local function resolveWriteWorkspaceFile()
     if cachedWriteWorkspaceFile ~= nil then
         return cachedWriteWorkspaceFile
     end
+    -- Known non-fatal case: core.debug may be unavailable in restricted bundles.
     local ok, DBG = pcall(require, "core.debug")
     if ok and DBG ~= nil and U.Type(DBG.writeWorkspaceFile) == "function" then
         cachedWriteWorkspaceFile = DBG.writeWorkspaceFile
@@ -1190,6 +1204,7 @@ function NPCS.syncAdminNpcPanelXmlDumpButton()
     --- TTS Button colors: Normal|Highlighted|Pressed|Disabled
     local colorsOff = "#666666|#555555|#777777|rgba(0.22,0.22,0.22,0.45)"
     local colorsOn = "#2E8B57|#3CB371|#228B22|rgba(0.12,0.45,0.22,0.85)"
+    -- Known non-fatal case: admin toggle button may not exist in older UI bundles.
     pcall(function()
         UI.setAttribute(id, "colors", on and colorsOn or colorsOff)
         UI.setAttribute(id, "text", on and "NPC XML → IDE (on)" or "NPC XML → IDE (off)")
@@ -1378,6 +1393,7 @@ function NPCS.dumpStorytellerPanelXmlToWorkspace(opts)
     local includeMerged = opts.includeMergedFullUi == true
     local relPath = U.Type(opts.path) == "string" and opts.path ~= "" and opts.path or NPCS.NPC_PANEL_XML_WORKSPACE_PATH
 
+    -- Known non-fatal case: debug module may not be embedded for current runtime.
     local okD, DBG = pcall(require, "core.debug")
     if not okD or DBG == nil or U.Type(DBG.writeWorkspaceFile) ~= "function" then
         print("[NPCS] dumpStorytellerPanelXmlToWorkspace: core.debug writeWorkspaceFile unavailable")
@@ -1524,6 +1540,7 @@ function NPCS.refreshStorytellerUI()
         print("[NPCS] refreshStorytellerUI: " .. tostring(spliceErr))
         return
     end
+    -- Known non-fatal case: setXml can fail if TTS rejects XML in a transient loading state.
     local setOk, setErr = pcall(function()
         UI.setXml(newXml)
     end)
@@ -1538,6 +1555,7 @@ function NPCS.refreshStorytellerUI()
     lastNpcPanelLayoutFingerprint = layoutFp
 
     if autoDumpStorytellerNpcPanelXml then
+        -- Known non-fatal case: workspace debug dump failures should not block panel refresh.
         pcall(function()
             writeNpcPanelSnapshotToWorkspace(tableXml, routeBuild, true)
         end)
@@ -1545,9 +1563,11 @@ function NPCS.refreshStorytellerUI()
 
     -- TTS applies setXml asynchronously (UI.loading). Re-apply NPC tab visibility after load (forceOpen: avoid toggle-close on same tab).
     Wait.condition(function()
+        -- Known non-fatal case: tab selection call can race UI reload and fail harmlessly.
         pcall(function()
             UIH.selectStorytellerPanel("npcs", true)
         end)
+        -- Known non-fatal case: button sync may fail when toggle button is absent.
         pcall(function()
             NPCS.syncAdminNpcPanelXmlDumpButton()
         end)

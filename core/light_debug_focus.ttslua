@@ -57,10 +57,8 @@ local function readGuidFromUi()
     if trim(lastDlGuidInput) ~= "" then
         return lastDlGuidInput
     end
-    local okAttr, attrVal = pcall(function()
-        return UI.getAttribute("dl_guid", "text")
-    end)
-    if okAttr and type(attrVal) == "string" and trim(attrVal) ~= "" then
+    local attrVal = UI.getAttribute("dl_guid", "text")
+    if type(attrVal) == "string" and trim(attrVal) ~= "" then
         return attrVal
     end
     local gv = UI.getValue("dl_guid")
@@ -223,48 +221,36 @@ local function applyLive()
         return
     end
     local rx, ry, rz = cache.rotX, cache.rotY, cache.rotZ
-    pcall(function()
-        obj.setRotation(Vector(rx, ry, rz), false)
-    end)
+    obj.setRotation(Vector(rx, ry, rz), false)
     local fx, fy, fz = emissionDirectionFromLookConvention(obj, rx, ry, rz)
     local d = tonumber(cache.distance) or 0
     local ox, oy, oz = originPos.x, originPos.y, originPos.z
     local nx = ox + d * fx
     local ny = oy + d * fy
     local nz = oz + d * fz
-    pcall(function()
-        obj.setPosition(Vector(nx, ny, nz), false)
-    end)
+    obj.setPosition(Vector(nx, ny, nz), false)
     local col = hsvToRgb(cache.hue, cache.sat, cache.brightness)
-    pcall(function()
-        obj.setColorTint(col)
-    end)
-    pcall(function()
-        L.SetLightMode(activeGuid, {
-            enabled = cache.enabled == true,
-            range = cache.range,
-            angle = cache.angle,
-            intensity = cache.intensity,
-            color = col,
-        }, nil, 0)
-    end)
+    obj.setColorTint(col)
+    L.SetLightMode(activeGuid, {
+        enabled = cache.enabled == true,
+        range = cache.range,
+        angle = cache.angle,
+        intensity = cache.intensity,
+        color = col,
+    }, nil, 0)
 end
 
 --- @param id string
 --- @param val number
 local function pushSliderAttr(id, val)
-    pcall(function()
-        UI.setAttributes(id, { value = val })
-    end)
+    UI.setAttributes(id, { value = val })
 end
 
 --- Push one control from `cache` by internal field name.
 -- @param field string
 local function pushUiForField(field)
     if field == "enabled" then
-        pcall(function()
-            UI.setAttributes("dl_enabled", { isOn = cache.enabled == true })
-        end)
+        UI.setAttributes("dl_enabled", { isOn = cache.enabled == true })
     elseif field == "sat" then
         pushSliderAttr("dl_saturation", cache.sat)
     elseif field == "range" then
@@ -385,12 +371,8 @@ function LightDebugFocus.activate(player)
     elseif obj.getName and obj.getName() then
         name = obj.getName() or "?"
     end
-    pcall(function()
-        UI.setValue("dl_debug_light_label", name .. " [" .. guid .. "]")
-    end)
-    pcall(function()
-        UI.setAttribute("panel_debug_light_root", "active", true)
-    end)
+    UI.setValue("dl_debug_light_label", name .. " [" .. guid .. "]")
+    UI.setAttribute("panel_debug_light_root", "active", true)
     applyLive()
     if player ~= nil and player.color ~= nil then
         broadcastToColor("Debug Light: editing " .. guid .. ".", player.color, { 0, 1, 0.6 })
@@ -567,9 +549,7 @@ end
 
 --- Close panel and clear session (does not revert the object).
 function LightDebugFocus.done()
-    pcall(function()
-        UI.setAttribute("panel_debug_light_root", "active", false)
-    end)
+    UI.setAttribute("panel_debug_light_root", "active", false)
     activeGuid = nil
     originPos = nil
     startSnapshot = nil
