@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 function extractBlock(source, marker) {
-  const markerIndex = source.indexOf(marker);
+  const markerIndex = source.lastIndexOf(marker);
   if (markerIndex < 0) {
     throw new Error(`Missing marker: ${marker}`);
   }
@@ -88,10 +88,19 @@ function parseCharacters(luaSource) {
     .map((entry) => {
       const fullNameMatch = entry.body.match(/fullName\s*=\s*"([^"]+)"/);
       const labelColorMatch = entry.body.match(/labelColor\s*=\s*"([^"]+)"/);
+      const groups = {};
+      const groupsMatch = entry.body.match(/groups\s*=\s*\{([\s\S]*?)\}/);
+      if (groupsMatch) {
+        const groupPairs = groupsMatch[1].matchAll(/([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(\d+)/g);
+        for (const pair of groupPairs) {
+          groups[pair[1]] = Number(pair[2]);
+        }
+      }
       return {
         key: entry.key,
         fullName: fullNameMatch ? fullNameMatch[1] : entry.key,
         labelColor: labelColorMatch ? labelColorMatch[1] : null,
+        groups,
       };
     })
     .sort((a, b) => a.key.localeCompare(b.key));
@@ -175,26 +184,21 @@ function buildPanelXml({ areas, characters, groupIds, groupDisplayNames }) {
     }
   }
 
-  rows.push('<Text class="hud_storyteller_header">Individuals</Text>');
-  for (const npc of characters) {
-    const npcName = npc.key;
-    const nameColorAttr = npc.labelColor ? ` color="${xmlEscape(npc.labelColor)}"` : "";
-    const spawnButtons = areas
-      .map(
-        (area) =>
-          `<Button id="npc_spawn_${npcName}_${area.key}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">${xmlEscape(area.label)}</Button>`
-      )
-      .join("");
-    rows.push(`<HorizontalLayout id="npc_spawnRow_${npcName}" class="hud_storyteller_button_row" active="true">
-  <Text id="npc_spawnName_${npcName}" class="hud_storyteller_label hud_storyteller_row_name"${nameColorAttr}>${xmlEscape(npc.fullName)}</Text>
-  ${spawnButtons}
-  <Panel class="hud_storyteller_horiz_spacer" />
-</HorizontalLayout>`);
-  }
-
   rows.push('<Text class="hud_storyteller_header">Groups</Text>');
   for (const groupId of groupIds) {
     const groupLabel = groupDisplayNames[groupId] || groupId;
+    const groupMembers = characters
+      .filter((ch) => typeof ch.groups[groupId] === "number")
+      .sort((a, b) => {
+        const rankDiff = chRank(a, groupId) - chRank(b, groupId);
+        if (rankDiff !== 0) return rankDiff;
+        return a.key.localeCompare(b.key);
+      });
+    if (groupMembers.length === 0) {
+      continue;
+    }
+    const leader = groupMembers.find((ch) => ch.groups[groupId] === 1);
+    const groupColorAttr = leader?.labelColor ? ` color="${xmlEscape(leader.labelColor)}"` : "";
     const groupButtons = areas
       .map(
         (area) =>
@@ -202,10 +206,28 @@ function buildPanelXml({ areas, characters, groupIds, groupDisplayNames }) {
       )
       .join("");
     rows.push(`<HorizontalLayout id="npc_groupRow_${groupId}" class="hud_storyteller_button_row" active="true">
+  <Button id="npc_groupTwirl_${groupId}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">▸</Button>
+  <Text id="npc_groupRowColor_${groupId}" class="npc_group_row_color"${groupColorAttr}> </Text>
   <Text id="npc_groupName_${groupId}" class="hud_storyteller_label hud_storyteller_row_name">${xmlEscape(groupLabel)}</Text>
   ${groupButtons}
   <Panel class="hud_storyteller_horiz_spacer" />
 </HorizontalLayout>`);
+
+    for (const member of groupMembers) {
+      const memberColorAttr = member.labelColor ? ` color="${xmlEscape(member.labelColor)}"` : "";
+      const memberLocButtons = areas
+        .map(
+          (area) =>
+            `<Button id="npc_memberLoc_${groupId}_${member.key}_${area.key}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">${xmlEscape(area.label)}</Button>`
+        )
+        .join("");
+      rows.push(`<HorizontalLayout id="npc_groupMemberRow_${groupId}_${member.key}" class="hud_storyteller_button_row npc_group_member_row" active="false">
+  <Text id="npc_groupMemberName_${groupId}_${member.key}" class="hud_storyteller_label hud_storyteller_row_name"${memberColorAttr}>${xmlEscape(member.fullName)}</Text>
+  <Button id="npc_memberLock_${groupId}_${member.key}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">🔒</Button>
+  ${memberLocButtons}
+  <Panel class="hud_storyteller_horiz_spacer" />
+</HorizontalLayout>`);
+    }
   }
 
   return `<!-- Generated file. Edit .dev/scripts/generate_npc_panel_xml.js and lib/npcs_data.ttslua only. -->
@@ -220,6 +242,10 @@ ${rows.map((row) => `          ${row}`).join("\n")}
   </VerticalLayout>
 </Panel>
 `;
+}
+
+function chRank(ch, groupId) {
+  return Number(ch.groups[groupId] ?? 9999);
 }
 
 function main() {

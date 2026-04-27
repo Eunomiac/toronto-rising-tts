@@ -530,7 +530,7 @@ C.ObjectPositions = {
       transitionDelay = 1.5, -- this should be in ADDITION to any sequencing or other transition delays that are set by the function moving the object
       position = {y = 12},
       distanceDelta = -13,
-      rotationDelta = Vector({14.62, 198, 180}),
+      rotationDelta = Vector({14.62, 180, 180}),
       setLock = false -- if "setLock" is present, then the object's lock state should be toggled accordingly. When unlocking, this should happen at the very end of the transition. When locking, this should happen at the very beginning of the transition.
     },
     off = {
@@ -538,7 +538,7 @@ C.ObjectPositions = {
       transitionDuration = 0, -- this should override the transition duration set by whichever function moves the object
       position = {y = -10},
       distanceDelta = -13,
-      rotationDelta = Vector({14.62, 198, 180}),
+      rotationDelta = Vector({14.62, 180, 180}),
       setLock = true -- if "setLock" is present, then the object's lock state should be toggled accordingly. When unlocking, this should happen at the very end of the transition. When locking, this should happen at the very beginning of the transition.
     }
   },
@@ -561,6 +561,7 @@ C.ObjectPositions = {
 C.CameraModes = {
   default = "bySeat",
   sheet = "bySeat",
+  roll = "bySeat",
   diceTray = "bySeat",
   districtCard = "universal",
   siteCard = "universal",
@@ -704,6 +705,13 @@ C.RedCameraAngles = {
       yaw = 0,
       distance = 0
     },
+    rollRed = {
+      cameraMode = "FirstPerson",
+      position = Vector({0.0000, 5.8436, -50.8718}),
+      pitch = 70.5275,
+      yaw = 0.0000,
+      distance = 16.5598,
+    },
     sheetRed = {
       cameraMode = "FirstPerson",
       position = Vector({0.0000, 5.8436, -53.0298}),
@@ -788,6 +796,44 @@ C.UniversalCameraAngles = {
     distance = 27.3856,
   }
 }
+
+--- Derive rotational-seat camera mode lists from canonical camera definitions.
+--- - bySeat: every key in C.RedCameraAngles.forSeat
+--- - universal: base keys from C.RedCameraAngles.forUniversal (strip trailing reference color, e.g. facingRed -> facing)
+--- `C.UniversalCameraAngles` remains the fixed universal map consumed at runtime by M.setCamera;
+--- this derivation keeps rotational source mode lists aligned with the camera definitions.
+--- @return table
+local function deriveTableSourceCameraModes()
+  local bySeat = {}
+  local universal = {}
+  local seenBySeat = {}
+  local seenUniversal = {}
+
+  for modeKey, modeVal in pairs((C.RedCameraAngles or {}).forSeat or {}) do
+    if type(modeKey) == "string" and type(modeVal) == "table" and not seenBySeat[modeKey] then
+      seenBySeat[modeKey] = true
+      table.insert(bySeat, modeKey)
+    end
+  end
+
+  local referenceColor = "Red"
+  for universalKey, modeVal in pairs((C.RedCameraAngles or {}).forUniversal or {}) do
+    if type(universalKey) == "string" and type(modeVal) == "table" then
+      local base = string.match(universalKey, "^(.*)" .. referenceColor .. "$")
+      if base ~= nil and base ~= "" and not seenUniversal[base] then
+        seenUniversal[base] = true
+        table.insert(universal, base)
+      end
+    end
+  end
+
+  table.sort(bySeat)
+  table.sort(universal)
+  return {
+    bySeat = bySeat,
+    universal = universal,
+  }
+end
 -- Table Presets
 
 --[[
@@ -822,6 +868,8 @@ C.UniversalCameraAngles = {
    m. If the data for the new table contains a components field, filter out those components whose 'usedBy' field is false in gameState.seatLayout.occupiedNPCSlots (i.e. they are used by NPCs who are not sitting at the table), then move the remaining components to their activePosition, and set their visibility active to all player colors.
    n. Update gameState.seatLayout.currentTableKey to the key of the new table. (Do not change gameState.seatLayout.occupiedNPCSlots; when returning to a table with more slots, NPCs that couldn't sit at the table before can now sit at the new, larger table. NPC active/inactive status is controlled elsewhere.)
    o. Call R.resolveSeatObjects(newTableRef) (using the defaults for sourceObjects and options) to spawn/move objects into the new table's seats, based on the new table's data.
+   p. Set all players' camera modes to (the newly calculated) "default" mode.
+   q. Toggle the blindfold overlay off for all seated players.
 
 ]]
 C.Tables = {
@@ -829,13 +877,13 @@ C.Tables = {
     guid = "92ac34",
     centerPoint = Vector({0, 0, 50}),
     activePosition = Vector({0.00, 0.00, 53.66}),
-    inactivePosition = Vector({0.00, -50, 100}),
+    inactivePosition = Vector({0.00, -200, 100}),
     numSegments = 20,
     angleSegmentOne = 0,
     playerToPositionMap = {
       NPC1 = 8,
       NPC2 = 14,
-      NPC3 = 9,
+      NPC3 = 7,
       NPC4 = 15,
       Brown = 9,
       Orange = 10,
@@ -848,25 +896,25 @@ C.Tables = {
       ["Table Leaf Near Left"] = {
         guid = "6db794",
         activePosition = Vector({0.00, 0.00, 53.66}),
-        inactivePosition = Vector({0.00, -50, 100}),
+        inactivePosition = Vector({0.00, -200, 100}),
         usedBy = "NPC2"
       },
       ["Table Leaf Near Right"] = {
         guid = "443d5a",
         activePosition = Vector({0.00, 0.00, 53.66}),
-        inactivePosition = Vector({0.00, -50, 100}),
+        inactivePosition = Vector({0.00, -200, 100}),
         usedBy = "NPC1"
       },
       ["Table Leaf Far Left"] = {
         guid = "f09667",
         activePosition = Vector({0.00, 0.00, 53.66}),
-        inactivePosition = Vector({0.00, -50, 100}),
+        inactivePosition = Vector({0.00, -200, 100}),
         usedBy = "NPC4"
       },
       ["Table Leaf Far Right"] = {
         guid = "66f42d",
         activePosition = Vector({0.00, 0.00, 53.66}),
-        inactivePosition = Vector({0.00, -50, 100}),
+        inactivePosition = Vector({0.00, -200, 100}),
         usedBy = "NPC3"
       }
     }
@@ -875,7 +923,7 @@ C.Tables = {
     guid = "b086ae",
     centerPoint = Vector({0, 0, -10.26}),
     activePosition = Vector({0.00, 0, -10.26}),
-    inactivePosition = Vector({0.00, -60, 100}),
+    inactivePosition = Vector({0.00, -200, 100}),
     numSegments = 10,
     angleSegmentOne = 0,
     playerToPositionMap = {
@@ -895,7 +943,7 @@ C.Tables = {
     guid = "c52bcd",
     centerPoint = Vector({0, 0, -16.07}),
     activePosition = Vector({0.00, 0, -16.07}),
-    inactivePosition = Vector({0.00, -70, 100}),
+    inactivePosition = Vector({0.00, -200, 100}),
     numSegments = 6,
     angleSegmentOne = 0,
     playerToPositionMap = {
@@ -912,7 +960,7 @@ C.Tables = {
     guid = "f14ede",
     centerPoint = Vector({0, 0, -13.83}),
     activePosition = Vector({0.00, 0, -13.83}),
-    inactivePosition = Vector({0.00, -80, 100}),
+    inactivePosition = Vector({0.00, -200, 100}),
     numSegments = 7,
     angleSegmentOne = 25.7,
     playerToPositionMap = {
@@ -930,7 +978,7 @@ C.Tables = {
     guid = "323c52",
     centerPoint = Vector({0, 0, -12.25}),
     activePosition = Vector({0.00, 0, -12.25}),
-    inactivePosition = Vector({0.00, -90, 100}),
+    inactivePosition = Vector({0.00, -200, 100}),
     numSegments = 8,
     angleSegmentOne = 0,
     playerToPositionMap = {
@@ -949,7 +997,7 @@ C.Tables = {
     guid = "ad8530",
     centerPoint = Vector({0, 0, -11.04}),
     activePosition = Vector({0, 0, -11.04}),
-    inactivePosition = Vector({0.00, -100, 100}),
+    inactivePosition = Vector({0.00, -200, 100}),
     numSegments = 9,
     angleSegmentOne = 20,
     playerToPositionMap = {
@@ -1009,18 +1057,35 @@ C.TableSourceObjects = {
     G.GUIDS.TAROT_BUTTON_PINK,
     G.GUIDS.TAROT_ANCHOR_PINK
   },
-  cameraModes = {
-    bySeat = {
-      "default",
-      "sheet",
-      "diceTray",
+  postCorrections = {
+    [G.GUIDS.THRONE_BROWN] = {
+      anchor = G.GUIDS.HAND_BROWN,
+      rotationDelta = Vector({0, 180, 0}),
+      position = {y = -16.08}
     },
-    universal = { -- Append the reference player color to the end of each key to find the source angle in C.RedCameraAngles.forUniversal
-      "facing",
-      "sheet",
-      "diceTray",
+    [G.GUIDS.THRONE_ORANGE] = {
+      anchor = G.GUIDS.HAND_ORANGE,
+      rotationDelta = Vector({0, 180, 0}),
+      position = {y = -22.32}
+    },
+    [G.GUIDS.THRONE_PINK] = {
+      anchor = G.GUIDS.HAND_PINK,
+      rotationDelta = Vector({0, 180, 0}),
+      position = {y = -20.66}
+    },
+    [G.GUIDS.THRONE_PURPLE] = {
+      position = {y = -27.02}
+    },
+    [G.GUIDS.SEAT_FIGURE_BROWN] = {
+      position = {y = -50}
+    },
+    [G.GUIDS.SEAT_FIGURE_PURPLE] = {
+      position = {y = -48.97}
     }
-  }
+  },
+  -- Derived from C.RedCameraAngles (and aligned with C.UniversalCameraAngles runtime merge behavior).
+  -- This avoids duplicating mode-key lists in multiple places.
+  cameraModes = deriveTableSourceCameraModes()
 }
 
 -- Light Presets (scene lighting configurations)

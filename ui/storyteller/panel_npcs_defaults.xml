@@ -10,7 +10,7 @@
       scrollbarBackgroundColor="#440000"
       scrollbarColors="#990000|#AA0000|#CC0000|#333333"
       inertia="false"
-      color="rgba(0, 0, 0, 0.5)"
+      color="rgba(0, 0, 0, 1)"
       horizontal="false"
       vertical="true"
       preferredHeight="250"
@@ -28,8 +28,21 @@
     minHeight="20"
     flexibleHeight="0"
     childForceExpandWidth="true"
-    childForceExpandHeight="true"
-    color="rgba(0, 255, 0, 0.15)" />
+    childForceExpandHeight="true" />
+
+  <HorizontalLayout class="npc_group_member_row"
+    padding="24 10 0 0"
+    color="rgba(0, 0, 0, 1)" />
+
+  <Text class="npc_group_row_color"
+    minWidth="8"
+    preferredWidth="8"
+    flexibleWidth="0"
+    minHeight="20"
+    preferredHeight="20"
+    flexibleHeight="0"
+    color="#444444"
+    text="" />
 
   <!-- <VerticalLayout class="npc_panel_rows_root"
     ignoreLayout="true"
@@ -44,8 +57,9 @@
     height="1200"
     width="100%"
     spacing="0"
+    childAlignment="UpperLeft"
     childForceExpandWidth="true"
-    childForceExpandHeight="true" />
+    childForceExpandHeight="false" />
 
   <Text class="hud_storyteller_row_label"
     minHeight="20"
@@ -59,6 +73,9 @@
     minWidth="180"
     preferredWidth="180"
     flexibleWidth="0"
+    minHeight="20"
+    preferredHeight="20"
+    flexibleHeight="0"
     fontSize="13"
     color="#FFD700"
     alignment="MiddleLeft" />

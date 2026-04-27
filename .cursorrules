@@ -13,6 +13,22 @@ This is a **Vampire: The Masquerade 5th Edition (VTM5E) Tabletop Simulator modul
 
 ## Critical Workflow Rules
 
+### Error Visibility - ABSOLUTE REQUIREMENT
+
+**NEVER mask errors. ALWAYS surface runtime failures immediately.**
+**If uncertain whether to fail or fallback, fail.**
+
+- **Do NOT use fallbacks** that hide or bypass missing/invalid data
+- **Do NOT use `pcall`** in production paths
+- **Do NOT catch/suppress errors** when an invariant is violated
+- **Do NOT return defaults** when required objects/fields are missing
+- **Do throw explicit errors** with actionable messages as soon as failures are detected
+- **Assume debugging speed is more important than graceful degradation**
+- **Error messages are always good and must never be hidden**
+- **Hiding an error message is equivalent to disabling a fire alarm**
+
+If something is wrong, fail fast and loudly so the exact failure appears in logs/chat immediately.
+
 ### Git Commits - MANDATORY
 
 **You MUST commit changes regularly without waiting for user prompts.** This is a core requirement.

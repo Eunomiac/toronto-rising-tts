@@ -52,11 +52,11 @@ G.GUIDS = {
     -- Hand zones (player hand zones)
     -- Storyteller (Black) and player colors: Brown, Orange, Red, Pink
     HAND_BLACK = "8981a0",  -- Storyteller
-    HAND_BROWN = "14b6cf",
-    HAND_ORANGE = "b9d1d9",
+    HAND_BROWN = "a30107",
+    HAND_ORANGE = "4eb3d1",
     HAND_RED = "b13642",
-    HAND_PINK = "926600",
-    HAND_PURPLE = "33141c",
+    HAND_PINK = "8fe0fe",
+    HAND_PURPLE = "d087d1",
 
     -- Scripting Zones
     TABLE_DROP_ZONE = "af99b8", -- zone for table drops
@@ -99,9 +99,16 @@ G.GUIDS = {
     THRONE_PINK = "18bd33",
     THRONE_PURPLE = "823f86",
 
+    -- Player Figures (placed at player seats)
+    SEAT_FIGURE_BROWN = "1c5b18",
+    SEAT_FIGURE_ORANGE = "e1a378",
+    SEAT_FIGURE_PINK = "390349",
+    SEAT_FIGURE_PURPLE = "923872",
+    SEAT_FIGURE_RED = "1e70cf",
+
     -- Player-Specific Objects
     PRINCE_SIGNET_RED = "9a2f2d",
-    TAROT_DECK_PINK = "7a2d42",
+    TAROT_DECK_PINK = "cd3a86",
     TAROT_DRAWER_PINK = "7f0246",
     TAROT_BUTTON_PINK = "4dc8ad",
     TAROT_ANCHOR_PINK = "9d4029"

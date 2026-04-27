@@ -254,11 +254,6 @@ Now, let's assume I take the following actions:
 5. Next, I move the Five Keys as a group to the `centerForward` area. By the current behavior, this would be disallowed because we have a hard rule where a group cannot be moved into an area unless the group is completely empty. I'd like to change that to allow an exception for when a all members in the destination location are in the same group as the group being moved (i.e. the groups are being 'merged'). That should be permitted.
   5.a **Because `stirlingSiskin` is locked in slot 1**, the other four Five Keys members will be pushed into the next available slot: Normally, `myleneHamelin` would move into slot 1 -- but that is occupied by a locked-in-place `stirlingSiskin`. So, she will move into slot 2. `adrianVarga`, normally in slot 2, will then have to move into slot 3. `jesseSharp`, normally in slot 3, will likewise be moved into slot 4, which is `stirlingSiskin`'s normal slot. `zuriOlowusi` is normally in slot 5, and she can be safely moved into slot 5 since it is unoccupied. At the end of this process, all five members of Five Keys will have their "centerForward" buttons greenlit, and `stirlingSiskin` alone will still have his lock button red.
   5.b **If I unlocked `stirlingSiskin` before I moved the Five Keys:** Because `stirlingSiskin` is not locked in place, he is free to move. Accordingly, all members of Five Keys will move into their proper slots (as there are no locked NPCs there blocking any of them). At the end of this process, all five members of Five Keys will have their "centerForward" buttons greenlit, and all five lock buttons would be grey.
-
-. Her centerForward button should be greenlit, and her lock button should be enabled but in the off state (grey).
-
-2. A button to the left of "the Five Keys" label acts to toggle/twirledown the group.
-2.
 ]]
 D.characters = {
   adrianVarga = {

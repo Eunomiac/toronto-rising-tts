@@ -281,6 +281,14 @@ function onLoad(saved_data)
     -- Initialize main module
     M.onLoad()
 
+    -- Ensure table objects/components and seat layout objects are synchronized to current saved table
+    -- state during load. Defer slightly so object GUID lookups (including relative objects) are ready.
+    if R and type(R.SyncTable) == "function" then
+        Wait.time(function()
+            R.SyncTable()
+        end, 0.5)
+    end
+
     -- Initialize scenes module (loads default or saved scene)
     Scenes.onLoad()
 
@@ -1381,11 +1389,6 @@ end
 -- ============================================================================
 -- DICE BAG HELPERS
 -- Call releaseDice() / destroyDice() on a player's two dice bags by GUID.
--- pcall is appropriate here: the bag objects are TTS GameObjects that may not
--- exist in all save configurations, and object calls can fail if the object
--- has been destroyed.
--- ============================================================================
-
 --- Calls a named function on both of a player's dice bags (normal + hunger).
 -- @param color    string  Player seat color
 -- @param funcName string  "releaseDice" or "destroyDice"
@@ -1395,11 +1398,7 @@ function callBagFunction(color, funcName)
         if type(guid) == "string" then
             local bag = getObjectFromGUID(guid)
             if bag ~= nil then
-                -- Known non-fatal case: bag may disappear between lookup and call during cleanup.
-                local ok, err = pcall(function() bag.call(funcName) end)
-                if not ok then
-                    print(string.format("[Dice] %s on %s bag failed: %s", funcName, color, tostring(err)))
-                end
+                bag.call(funcName)
             end
         end
     end
@@ -1413,12 +1412,18 @@ local function getBagSpawnedCount(color, dieTypeName)
     local guid = (dieTypeName == "hunger")
         and G.GetDiceHungerGUID(color)
         or  G.GetDiceNormalGUID(color)
-    if type(guid) ~= "string" then return 0 end
+    if type(guid) ~= "string" then
+        error("getBagSpawnedCount: expected string GUID for color '" .. tostring(color) .. "'")
+    end
     local bag = getObjectFromGUID(guid)
-    if bag == nil then return 0 end
-    -- Known non-fatal case: spawned count query can fail if the bag script/object was destroyed.
-    local ok, result = pcall(function() return bag.call("getSpawnedCount") end)
-    return (ok and type(result) == "number") and result or 0
+    if bag == nil then
+        error("getBagSpawnedCount: missing bag object for GUID '" .. tostring(guid) .. "'")
+    end
+    local result = bag.call("getSpawnedCount")
+    if type(result) ~= "number" then
+        error("getBagSpawnedCount: getSpawnedCount returned non-number for GUID '" .. tostring(guid) .. "'")
+    end
+    return result
 end
 
 --- Unlocks all hovering dice for a player so they fall and roll.

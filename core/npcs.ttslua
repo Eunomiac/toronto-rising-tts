@@ -587,7 +587,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
     local figData = buildNpcFigurineSpawnData(
         spawnPos,
         yawDeg,
-        def.name or npcName,
+        def.fullName or def.name or npcName,
         GM_PREFIX .. npcName,
         { TAG_FIG },
         front,
@@ -610,6 +610,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                 -- Known non-fatal case: post-spawn setup can fail while dependencies are still loading.
                 local postOk, postErr = pcall(function()
                     fig.setLock(true)
+                    fig.tooltip = true
 
                     --- Light: `spawnObjectData` from embedded save-shape defaults (lib/npcs_light_spawn_defaults.ttslua).
                     --- No in-world template object required — unlike `Object.clone()`, `spawnObject` / `spawnObjectData` do not.
@@ -646,6 +647,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                         areaKey = areaKey,
                         slotIndex = slotIndex,
                         npcLightMode = "standard",
+                        locked = false,
                     }
                     setInstanceRecord(npcName, rec)
                     --- Defer: applying modes inside this callback can deadlock TTS until the callback returns. The
@@ -659,9 +661,12 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                             Wait.time(function()
                                 lightAlignFigOverride[npcName] = deferFig
                                 -- Known non-fatal case: deferred light apply can fail if spawned light is gone.
-                                local applyOk, applyErr = pcall(function()
-                                    NPCS.applyCurrentLightMode(npcName, 0)
-                                end)
+                                local applyOk, applyErr = true, nil
+                                if areaForSpawn and areaForSpawn.autoLight == true then
+                                    applyOk, applyErr = pcall(function()
+                                        NPCS.applyCurrentLightMode(npcName, 0)
+                                    end)
+                                end
                                 lightAlignFigOverride[npcName] = nil
                                 if not applyOk then
                                     print("[NPCS] deferred applyCurrentLightMode failed: " .. tostring(applyErr))
@@ -694,7 +699,11 @@ end
 --- @param areaKey string
 --- @return boolean, string|nil
 function NPCS.spawnOrMoveIndividual(npcName, areaKey)
-    if getInstances()[npcName] ~= nil then
+    local rec = getInstances()[npcName]
+    if rec ~= nil and rec.locked == true then
+        return false, "NPC is locked in place. Unlock before moving."
+    end
+    if rec ~= nil then
         return NPCS.moveNpcToArea(npcName, areaKey)
     end
     if not NPCS.areaHasFreeSlot(areaKey) then
@@ -717,7 +726,11 @@ function NPCS.moveNpcToArea(npcName, areaKey, opts)
     if rec == nil then
         return false, "NPC not spawned."
     end
-    local slot = resolveSlotForMove(areaKey, rec.slotIndex)
+    if rec.locked == true then
+        return false, "NPC is locked in place. Unlock before moving."
+    end
+    local preferredSlot = U.Type(opts.preferredSlot) == "number" and opts.preferredSlot or rec.slotIndex
+    local slot = resolveSlotForMove(areaKey, preferredSlot)
     if slot == nil then
         return false, "No free slot in area."
     end
@@ -731,7 +744,10 @@ function NPCS.moveNpcToArea(npcName, areaKey, opts)
     rec.areaKey = areaKey
     rec.slotIndex = slot
     setInstanceRecord(npcName, rec)
-    NPCS.applyCurrentLightMode(npcName, 0)
+    local area = NPCS.areas[areaKey]
+    if area and area.autoLight == true then
+        NPCS.applyCurrentLightMode(npcName, 0)
+    end
     if not opts.skipUiRefresh then
         NPCS.refreshStorytellerUIIfVisible()
     end
@@ -742,39 +758,110 @@ end
 --- @param areaKey string
 --- @return boolean, string|nil
 function NPCS.spawnGroup(groupId, areaKey)
-    if not NPCS.isAreaCompletelyEmpty(areaKey) then
-        return false, "Area not empty (group spawn requires empty area)."
+    local area = NPCS.areas[areaKey]
+    if area == nil then
+        return false, "Unknown area: " .. tostring(areaKey)
     end
-    local rows = {}
-    for name, def in pairs(NPCS.characters) do
-        local idx = def.groups and def.groups[groupId]
-        if U.Type(idx) == "number" then
-            table.insert(rows, { name = name, idx = idx })
-        end
-    end
-    table.sort(rows, function(a, b)
-        return a.idx < b.idx
-    end)
+    local rows = NPCS.collectGroupMembers(groupId)
     if #rows == 0 then
         return false, "No members in group: " .. tostring(groupId)
     end
+
+    local membersByName = {}
+    for _, row in ipairs(rows) do
+        membersByName[row.name] = true
+    end
+    local instances = getInstances()
+    for name, rec in pairs(instances) do
+        if rec and rec.areaKey == areaKey then
+            if not membersByName[name] then
+                return false, "Area has non-group occupants; merge only supports same-group members."
+            end
+        end
+    end
+
+    local capacity = #area.positions
+    if #rows > capacity then
+        return false, "Group overflow: members exceed destination slot capacity."
+    end
+
+    local reserved = {}
+    for name, rec in pairs(instances) do
+        if membersByName[name] and rec and rec.locked == true and rec.areaKey == areaKey then
+            reserved[rec.slotIndex] = true
+        end
+    end
+
+    local function firstFreeSlot(used, total)
+        for i = 1, total do
+            if used[i] ~= true then
+                return i
+            end
+        end
+        return nil
+    end
+
+    local assignments = {}
+    local used = U.clone(reserved)
+    local movableCount = 0
+    for _, row in ipairs(rows) do
+        local rec = instances[row.name]
+        local locked = rec and rec.locked == true
+        if not locked then
+            movableCount = movableCount + 1
+            local preferred = row.idx
+            local slot = nil
+            if U.Type(preferred) == "number" and preferred >= 1 and preferred <= capacity and used[preferred] ~= true then
+                slot = preferred
+            else
+                slot = firstFreeSlot(used, capacity)
+            end
+            if slot == nil then
+                return false, "Group overflow: could not assign slots in destination area."
+            end
+            used[slot] = true
+            assignments[row.name] = slot
+        end
+    end
+    local reservedCount = 0
+    for _, isUsed in pairs(reserved) do
+        if isUsed == true then
+            reservedCount = reservedCount + 1
+        end
+    end
+    if movableCount + reservedCount > capacity then
+        return false, "Group overflow: destination capacity exceeded."
+    end
+
     local delay = 0
     for _, row in ipairs(rows) do
-        if getInstances()[row.name] == nil then
-            local captureName = row.name
-            local captureIdx = row.idx
-            Wait.time(function()
-                local ok, err = NPCS.spawnNpcAtSlot(captureName, areaKey, captureIdx, { deferUiRefresh = true })
+        local rec = instances[row.name]
+        local targetSlot = assignments[row.name]
+        if targetSlot ~= nil then
+            if rec == nil then
+                local captureName = row.name
+                local captureSlot = targetSlot
+                Wait.time(function()
+                    local ok, err = NPCS.spawnNpcAtSlot(captureName, areaKey, captureSlot, { deferUiRefresh = true })
+                    if not ok then
+                        safeAlertGM("NPCS group spawn: " .. tostring(err))
+                    end
+                end, delay)
+                delay = delay + 0.28
+            else
+                local ok, err = NPCS.moveNpcToArea(row.name, areaKey, {
+                    skipUiRefresh = true,
+                    preferredSlot = targetSlot,
+                })
                 if not ok then
-                    safeAlertGM("NPCS group spawn: " .. tostring(err))
+                    return false, tostring(err)
                 end
-            end, delay)
-            delay = delay + 0.28
+            end
         end
     end
     Wait.time(function()
         NPCS.refreshStorytellerUIIfVisible()
-    end, delay + 0.1)
+    end, delay + 0.12)
     return true, nil
 end
 
@@ -885,6 +972,53 @@ function NPCS.collectGroupIds()
     return list
 end
 
+--- @return table<string, boolean>
+local function getGroupExpandedState()
+    local ui = S.getStateVal("npcs", "ui")
+    if U.Type(ui) ~= "table" then
+        return {}
+    end
+    local expanded = ui.groupExpanded
+    if U.Type(expanded) ~= "table" then
+        return {}
+    end
+    return expanded
+end
+
+--- @param groupId string
+--- @return boolean
+local function isGroupExpanded(groupId)
+    return getGroupExpandedState()[groupId] == true
+end
+
+--- @param groupId string
+--- @param expanded boolean
+local function setGroupExpanded(groupId, expanded)
+    local ui = U.clone(S.getStateVal("npcs", "ui") or {})
+    ui.groupExpanded = U.Type(ui.groupExpanded) == "table" and ui.groupExpanded or {}
+    ui.groupExpanded[groupId] = expanded == true
+    S.setStateVal(ui, "npcs", "ui")
+end
+
+--- @param groupId string
+--- @return table[]
+function NPCS.collectGroupMembers(groupId)
+    local rows = {}
+    for name, def in pairs(NPCS.characters or {}) do
+        local idx = def and def.groups and def.groups[groupId]
+        if U.Type(idx) == "number" then
+            table.insert(rows, { name = name, idx = idx })
+        end
+    end
+    table.sort(rows, function(a, b)
+        if a.idx == b.idx then
+            return tostring(a.name) < tostring(b.name)
+        end
+        return a.idx < b.idx
+    end)
+    return rows
+end
+
 --- Sanitize `npcs.instances` and register NPC spotlight rows on `L.LIGHTMODES` when both objects exist.
 --- Call after `S.InitializeGameState`, before `L.InitLights`. Orphan `gameState.lights` keys are pruned by `L.cleanupLightsState`.
 --- IMPORTANT: Never drop instance rows when `getObjectFromGUID` is nil on the first onLoad frame — objects can
@@ -896,6 +1030,9 @@ function NPCS.restoreAfterStateLoad()
         if U.Type(rec) == "table" and rec.figurineGuid and rec.lightGuid then
             if rec.npcLightMode ~= "off" and rec.npcLightMode ~= "standard" then
                 rec.npcLightMode = "standard"
+            end
+            if rec.locked ~= true then
+                rec.locked = false
             end
             cleaned[name] = rec
             local fig = getObjectFromGUID(rec.figurineGuid)
@@ -971,6 +1108,33 @@ function NPCS.dispatchNpcUiClick(id)
         if not gOk then
             print("[NPCS] spawnGroup failed: " .. tostring(gErr))
             safeAlertGM("NPC group spawn: " .. tostring(gErr))
+        end
+        return
+    end
+
+    local twirlGroup = string.match(id, "^npc_groupTwirl_([%w]+)$")
+    if twirlGroup ~= nil then
+        setGroupExpanded(twirlGroup, not isGroupExpanded(twirlGroup))
+        NPCS.refreshStorytellerUIIfVisible()
+        return
+    end
+
+    local lockGroup, lockNpc = string.match(id, "^npc_memberLock_([%w]+)_([%w]+)$")
+    if lockGroup ~= nil and lockNpc ~= nil then
+        local rec = getInstances()[lockNpc]
+        if rec ~= nil then
+            rec.locked = rec.locked == true and false or true
+            setInstanceRecord(lockNpc, rec)
+            NPCS.refreshStorytellerUIIfVisible()
+        end
+        return
+    end
+
+    local memberGroup, memberNpc, memberArea = string.match(id, "^npc_memberLoc_([%w]+)_([%w]+)_([%w]+)$")
+    if memberGroup ~= nil and memberNpc ~= nil and memberArea ~= nil then
+        local mOk, mErr = NPCS.spawnOrMoveIndividual(memberNpc, memberArea)
+        if not mOk then
+            safeAlertGM("NPC move/spawn: " .. tostring(mErr))
         end
         return
     end
@@ -1255,46 +1419,29 @@ local function computeNpcPanelLayoutFingerprint()
     for name, rec in pairs(inst) do
         if U.Type(rec) == "table" then
             table.insert(occLines, string.format(
-                "O:%s|%s|%s|%s",
+                "O:%s|%s|%s|%s|%s",
                 tostring(name),
                 tostring(rec.areaKey),
                 tostring(rec.slotIndex),
-                tostring(rec.npcLightMode or "standard")
+                tostring(rec.npcLightMode or "standard"),
+                tostring(rec.locked == true)
             ))
         end
     end
     table.sort(occLines)
 
-    local areas = sortedAreaKeys()
-    local charNames = U.getKeys(NPCS.characters or {})
-    table.sort(charNames)
-    local spawnLines = {}
-    for _, npcName in ipairs(charNames) do
-        if inst[npcName] == nil then
-            for _, ak in ipairs(areas) do
-                if NPCS.areaHasFreeSlot(ak) then
-                    table.insert(spawnLines, "S:" .. tostring(npcName) .. "@" .. tostring(ak))
-                end
-            end
+    local expanded = getGroupExpandedState()
+    local expLines = {}
+    for gid, v in pairs(expanded) do
+        if v == true then
+            table.insert(expLines, "E:" .. tostring(gid))
         end
     end
-    table.sort(spawnLines)
-
-    local groupLines = {}
-    for _, gid in ipairs(NPCS.collectGroupIds()) do
-        for _, ak in ipairs(areas) do
-            if NPCS.isAreaCompletelyEmpty(ak) then
-                table.insert(groupLines, "G:" .. tostring(gid) .. "@" .. tostring(ak))
-            end
-        end
-    end
-    table.sort(groupLines)
+    table.sort(expLines)
 
     return table.concat(occLines, "\n")
         .. "\n--\n"
-        .. table.concat(spawnLines, "\n")
-        .. "\n--\n"
-        .. table.concat(groupLines, "\n")
+        .. table.concat(expLines, "\n")
 end
 
 --- Apply one UI attribute safely on optional ids.
@@ -1334,14 +1481,20 @@ local function setPositionButtonAttrsSafe(id, show)
     end)
 end
 
---- @return boolean
-local function anyAreaCompletelyEmpty()
-    for _, areaKey in ipairs(sortedAreaKeys()) do
-        if NPCS.isAreaCompletelyEmpty(areaKey) then
-            return true
-        end
+--- Convert #RRGGBB to #AARRGGBB using a fixed alpha byte.
+--- Returns fallback when source is invalid.
+--- @param hex string|nil
+--- @param fallback string
+--- @return string
+local function withAlphaHex(hex, fallback)
+    if U.Type(hex) ~= "string" then
+        return fallback
     end
-    return false
+    local rgbValue = string.match(hex, "^#([0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])$") or ""
+    if rgbValue == "" then
+        return fallback
+    end
+    return "#CC" .. rgbValue
 end
 
 --- Targeted NPC panel refresh against generated static XML rows (no `UI.setXml`).
@@ -1363,9 +1516,7 @@ function NPCS.refreshStorytellerUI()
     end
     for npcName, rec in pairs(instances) do
         if U.Type(rec) == "table" and U.Type(rec.areaKey) == "string" then
-            if occupiedByArea[rec.areaKey] == nil then
-                occupiedByArea[rec.areaKey] = {}
-            end
+            occupiedByArea[rec.areaKey] = occupiedByArea[rec.areaKey] or {}
             occupiedByArea[rec.areaKey][npcName] = true
         end
     end
@@ -1381,24 +1532,17 @@ function NPCS.refreshStorytellerUI()
                 setPositionButtonAttrsSafe("npc_moveGroup_" .. areaKey .. "_" .. toArea, hasAreaOccupants)
             end
         end
-
         for _, npcName in ipairs(allNpcNames) do
             local rec = instances[npcName]
             local inThisArea = U.Type(rec) == "table" and rec.areaKey == areaKey
-            local rowId = "npc_occRow_" .. areaKey .. "_" .. npcName
-            setUiActiveSafe(rowId, inThisArea)
+            setUiActiveSafe("npc_occRow_" .. areaKey .. "_" .. npcName, inThisArea)
             if inThisArea then
                 local mode = rec.npcLightMode or "standard"
-                local toggleId = "npc_toggle_" .. areaKey .. "_" .. npcName
-                local spotId = "npc_spot_" .. areaKey .. "_" .. npcName
-                local statsId = "npc_stats_" .. areaKey .. "_" .. npcName
-                local removeId = "npc_remove_" .. areaKey .. "_" .. npcName
-                local displayName = (NPCS.characters[npcName] and NPCS.characters[npcName].fullName) or npcName
-                setUiAttrSafe("npc_occName_" .. areaKey .. "_" .. npcName, "text", tostring(displayName))
-                setUiAttrSafe(toggleId, "text", mode == "off" and "○" or "⊚")
-                setUiActiveSafe(spotId, true)
-                setUiActiveSafe(statsId, true)
-                setUiActiveSafe(removeId, true)
+                setUiAttrSafe("npc_occName_" .. areaKey .. "_" .. npcName, "text", tostring((NPCS.characters[npcName] and NPCS.characters[npcName].fullName) or npcName))
+                setUiAttrSafe("npc_toggle_" .. areaKey .. "_" .. npcName, "text", mode == "off" and "○" or "⊚")
+                setUiActiveSafe("npc_spot_" .. areaKey .. "_" .. npcName, true)
+                setUiActiveSafe("npc_stats_" .. areaKey .. "_" .. npcName, true)
+                setUiActiveSafe("npc_remove_" .. areaKey .. "_" .. npcName, true)
                 for _, toArea in ipairs(areas) do
                     if toArea ~= areaKey then
                         setPositionButtonAttrsSafe("npc_move_" .. areaKey .. "_" .. npcName .. "_" .. toArea, true)
@@ -1408,28 +1552,46 @@ function NPCS.refreshStorytellerUI()
         end
     end
 
-    for _, npcName in ipairs(allNpcNames) do
-        local isSpawned = instances[npcName] ~= nil
-        local rowId = "npc_spawnRow_" .. npcName
-        local spawnName = (NPCS.characters[npcName] and NPCS.characters[npcName].fullName) or npcName
-        setUiAttrSafe("npc_spawnName_" .. npcName, "text", tostring(spawnName))
-        local canSpawnAnywhere = false
-        for _, areaKey in ipairs(areas) do
-            local canSpawnHere = (not isSpawned) and NPCS.areaHasFreeSlot(areaKey)
-            if canSpawnHere then
-                canSpawnAnywhere = true
-            end
-            setPositionButtonAttrsSafe("npc_spawn_" .. npcName .. "_" .. areaKey, canSpawnHere)
-        end
-        setUiActiveSafe(rowId, (not isSpawned) and canSpawnAnywhere)
-    end
-
     local groupIds = NPCS.collectGroupIds()
-    local hasEmptyArea = anyAreaCompletelyEmpty()
     for _, groupId in ipairs(groupIds) do
-        setUiActiveSafe("npc_groupRow_" .. groupId, hasEmptyArea)
+        local members = NPCS.collectGroupMembers(groupId)
+        local expanded = isGroupExpanded(groupId)
+        local leaderName = members[1] and members[1].name or nil
+        local leaderColor = leaderName and NPCS.characters[leaderName] and NPCS.characters[leaderName].labelColor or "#444444"
+        local leaderColorTranslucent = withAlphaHex(leaderColor, "#CC444444")
+        setUiActiveSafe("npc_groupRow_" .. groupId, true)
+        setUiAttrSafe("npc_groupRow_" .. groupId, "color", tostring(leaderColorTranslucent))
+        setUiAttrSafe("npc_groupRowColor_" .. groupId, "color", tostring(leaderColorTranslucent))
+        setUiAttrSafe("npc_groupTwirl_" .. groupId, "text", expanded and "▾" or "▸")
+        setUiAttrSafe("npc_groupName_" .. groupId, "color", "#000000")
+        setUiAttrSafe("npc_groupName_" .. groupId, "fontStyle", "Bold")
         for _, areaKey in ipairs(areas) do
-            setPositionButtonAttrsSafe("npc_group_" .. groupId .. "_" .. areaKey, NPCS.isAreaCompletelyEmpty(areaKey))
+            setPositionButtonAttrsSafe("npc_group_" .. groupId .. "_" .. areaKey, true)
+            setUiAttrSafe("npc_group_" .. groupId .. "_" .. areaKey, "textColor", "#000000")
+            setUiAttrSafe("npc_group_" .. groupId .. "_" .. areaKey, "fontStyle", "Bold")
+        end
+        setUiAttrSafe("npc_groupTwirl_" .. groupId, "textColor", "#000000")
+        setUiAttrSafe("npc_groupTwirl_" .. groupId, "fontStyle", "Bold")
+
+        for _, row in ipairs(members) do
+            local npcName = row.name
+            local rec = instances[npcName]
+            local isSpawned = rec ~= nil
+            local isLocked = isSpawned and rec.locked == true
+            setUiActiveSafe("npc_groupMemberRow_" .. groupId .. "_" .. npcName, expanded)
+            setUiAttrSafe("npc_groupMemberName_" .. groupId .. "_" .. npcName, "text", tostring((NPCS.characters[npcName] and NPCS.characters[npcName].fullName) or npcName))
+
+            local lockId = "npc_memberLock_" .. groupId .. "_" .. npcName
+            setPositionButtonAttrsSafe(lockId, isSpawned)
+            setUiAttrSafe(lockId, "text", isLocked and "🔒" or "🔓")
+            setUiAttrSafe(lockId, "colors", isLocked and "#8B0000|#AA0000|#660000|#330000" or "#444444|#555555|#333333|#222222")
+
+            for _, areaKey in ipairs(areas) do
+                local locId = "npc_memberLoc_" .. groupId .. "_" .. npcName .. "_" .. areaKey
+                setPositionButtonAttrsSafe(locId, true)
+                local isHere = isSpawned and rec.areaKey == areaKey
+                setUiAttrSafe(locId, "colors", isHere and "#00C853|#00E676|#00A844|#225533" or "#2A2A2A|#333333|#1D1D1D|#111111")
+            end
         end
     end
 
