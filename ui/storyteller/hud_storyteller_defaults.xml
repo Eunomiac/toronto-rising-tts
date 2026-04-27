@@ -12,13 +12,82 @@
   <Text class="hud_storyteller_label"	fontSize="11" color="#FFD700"  />
 
   <Row class="hud_storyteller_button_row" preferredHeight="20" minHeight="20" spacing="0" childForceExpandWidth="false" childForceExpandHeight="false" />
-  <HorizontalLayout class="hud_storyteller_button_row" preferredHeight="20" minHeight="20" spacing="0" childForceExpandWidth="false" childForceExpandHeight="false" />
+  <HorizontalLayout class="hud_storyteller_button_row" preferredHeight="20" minHeight="20" spacing="0" childForceExpandWidth="true" childForceExpandHeight="true" />
 
-  <Button class="hud_storyteller_button" fontSize="9" height="20" preferredHeight="20" minHeight="20" minWidth="40" flexibleHeight="0" flexibleWidth="0" />
+
+  <!-- <Button class="hud_storyteller_button"
+    fontSize="12"
+    height="20"
+    preferredHeight="20"
+    minHeight="20"
+    preferredWidth="125"
+    minWidth="125"
+    flexibleHeight="0"
+    flexibleWidth="0"
+  /> -->
+
+  <Button class="hud_storyteller_button"
+    fontSize="14"
+    colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+    textColor="#FFFFFF" />
   <Button class="hud_storyteller_button_label" width="40" preferredWidth="40" />
-  <Button class="hud_storyteller_button_icon" fontSize="20" width="20" minWidth="20" preferredWidth="20" />
-  <Button class="hud_storyteller_button_icon_off" color="#666666" />
-  <Button class="hud_storyteller_button_icon_on" color="#FFDD00" />
+  <Button class="hud_storyteller_button_icon" fontSize="14" textColor="#FFFFFF" fontStyle="Bold" width="20" minWidth="20" preferredWidth="20" flexibleWidth="0" alignment="MiddleCenter" />
+
+  <!-- <HorizontalLayout class="hud_storyteller_control_row" preferredHeight="30" minHeight="30" spacing="4" childForceExpandWidth="true" childForceExpandHeight="true" childAlignment="MiddleLeft" /> -->
+
+  <HorizontalLayout class="hud_storyteller_control_row" />
+
+  <InputField class="hud_storyteller_input"
+    fontSize="14"
+    lineType="SingleLine"
+    textColor = "#000000"
+  />
+
+  <InputField class="guid_input"
+    characterLimit="6"
+    flexibleWidth="0"
+    characterValidation="Alphanumeric"
+    placeholder="GUID" />
+
+
+  <Text class="hud_storyteller_header"
+    minHeight="20"
+    flexibleWidth="1"
+    fontSize="18"
+    fontStyle="Bold"
+    color="#FFFFFF"
+    alignment="LowerCenter" />
+
+  <Text class="hud_storyteller_label"
+    minHeight="20"
+    flexibleWidth="1"
+    fontSize="16"
+    fontStyle="Bold"
+    color="#FFD700"
+    alignment="LowerCenter" />
+
+  <Text class="hud_storyteller_row_label"
+    fontSize="14"
+    alignment="MiddleLeft"
+  />
+
+  <Button class="hud_storyteller_row_button"
+    minHeight="20"
+    fontSize="14"
+    fontStyle="Bold"
+    color="#FFFFFF"
+    alignment="MiddleLeft" />
+
+  <Button class="hud_storyteller_row_button_icon"
+    alignment="MiddleCenter"
+    width="20"
+    preferredWidth="20"
+    flexibleWidth="0"
+    minWidth="20"
+    height="20"
+    preferredHeight="20"
+    flexibleHeight="0"
+    minHeight="20" />
 
   <Row class="hud_storyteller_header" height="30" preferredHeight="30" flexibleHeight="0" childForceExpandHeight="false" childForceExpandWidth="true" />
   <Cell class="hud_storyteller_wide" columnSpan="6" childForceExpandWidth="true" />
@@ -30,68 +99,19 @@
 
   <!-- Main button column: left-aligned, half-scale, vertically stacked -->
   <VerticalLayout class="storyteller_buttonControls"
-    padding="10 10 5 5"
-    spacing="5"
-    rectAlignment="MiddleLeft"
-    childAlignment="UpperLeft"
-    width="160"
-    offsetXY="0 -90"
-    scale="0.5"
-    flexibleWidth="0"
-    flexibleHeight="0"
-    childForceExpandWidth="false"
-    childForceExpandHeight="false" />
+    padding="0 0 0 0"
+    spacing="1"
+    rectAlignment="LowerRight"
+    childAlignment="LowerRight"
+    width="200"
+    height="400"
+    offsetXY="-5 10"
+    childForceExpandWidth="true"
+    childForceExpandHeight="true" />
 
   <!-- ================================================================ -->
   <!-- Sidebar Classes (right-side reference image toggles)             -->
   <!-- ================================================================ -->
-
-  <!-- Faction icon container (bottom-right, above camera bar) -->
-  <HorizontalLayout class="storyteller_factionIconContainer"
-    rectAlignment="LowerRight"
-    padding="0 400 0 20"
-    spacing="0"
-    height="150"
-    width="800"
-    scale="0.7"
-    childAlignment="LowerLeft"
-    childForceExpandHeight="true"
-    childForceExpandWidth="false" />
-
-  <!-- Camera control bar (bottom-right row) -->
-  <HorizontalLayout class="storyteller_cameraControls"
-    rectAlignment="LowerRight"
-    padding="0 0 0 0"
-    spacing="0"
-    height="28"
-    width="800"
-    scale="0.7"
-    childAlignment="LowerRight"
-    childForceExpandHeight="true"
-    childForceExpandWidth="false" />
-
-  <!-- Camera button: clickable image with hover handlers -->
-  <Image class="storyteller_cameraButton"
-    raycastTarget="true"
-    onMouseDown="HUD_cameraSet"
-    onMouseEnter="HUD_highlight"
-    onMouseExit="HUD_dim" />
-
-  <!-- Right sidebar panel container -->
-  <Panel class="storyteller_sidebar"
-    rectAlignment="LowerRight"
-    height="740"
-    width="125"
-    offsetXY="0 100" />
-
-  <!-- Right sidebar inner vertical layout -->
-  <VerticalLayout class="storyteller_sidebarLayout"
-    height="100%"
-    width="100%"
-    spacing="0"
-    childAlignment="LowerLeft"
-    childForceExpandHeight="false"
-    childForceExpandWidth="true" />
 
   <!-- Reference toggle button: show/hide on mouse events -->
   <Image class="storyteller_refButton"
@@ -99,20 +119,5 @@
     onMouseUp="HUD_hide"
     onMouseEnter="HUD_highlight"
     onMouseExit="HUD_dim" />
-
-
-  <!-- Existing-NPC Controls -->
-
-  <Row class="hud_storyteller_areas" />
-  <Cell class="hud_storyteller_areas" childForceExpandHeight="false" />
-  <Cell class="hud_storyteller_areas hud_storyteller_header" childForceExpandHeight="false" childForceExpandWidth="false" />
-  <HorizontalLayout class="hud_storyteller_areas" childForceExpandHeight="false" childForceExpandWidth="false" />
-
-  <!-- Spawn NPC Controls -->
-
-  <!-- Spawn Individuals -->
-
-  <HorizontalLayout class="hud_storyteller_spawn" />
-
 
 </Defaults>

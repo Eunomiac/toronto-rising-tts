@@ -453,7 +453,7 @@ C.ObjectPositions = {
     off = {position = {y = -10}}
   },
   CSHEET_PAGE = {
-    on = {position = {y = 4}},
+    on = {position = {y = 3.7}},
     off = {position = {y = -10}}
   },
   CSHEET_DICE_DRAWER_BROWN = {
@@ -530,7 +530,7 @@ C.ObjectPositions = {
       transitionDelay = 1.5, -- this should be in ADDITION to any sequencing or other transition delays that are set by the function moving the object
       position = {y = 12},
       distanceDelta = -13,
-      rotationDelta = Vector({345.35, 0, 180}),
+      rotationDelta = Vector({14.62, 198, 180}),
       setLock = false -- if "setLock" is present, then the object's lock state should be toggled accordingly. When unlocking, this should happen at the very end of the transition. When locking, this should happen at the very beginning of the transition.
     },
     off = {
@@ -538,7 +538,7 @@ C.ObjectPositions = {
       transitionDuration = 0, -- this should override the transition duration set by whichever function moves the object
       position = {y = -10},
       distanceDelta = -13,
-      rotationDelta = Vector({0, 0, 180}),
+      rotationDelta = Vector({14.62, 198, 180}),
       setLock = true -- if "setLock" is present, then the object's lock state should be toggled accordingly. When unlocking, this should happen at the very end of the transition. When locking, this should happen at the very beginning of the transition.
     }
   },

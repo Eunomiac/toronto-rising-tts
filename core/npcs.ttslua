@@ -918,19 +918,24 @@ local function xmlEscape(s)
     return s:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;"):gsub("\"", "&quot;")
 end
 
---- Dispatch routed NPC panel clicks (see newClickRoute).
---- @param id string UI element id (npcRouteN)
+--- Dispatch NPC panel clicks (stable semantic ids from generated panel_npcs.xml).
+--- @param id string
 function NPCS.dispatchNpcUiClick(id)
-    local p = clickRoutes[id]
-    if p == nil or U.Type(p) ~= "table" then
+    if U.Type(id) ~= "string" or id == "" then
         return
     end
-    if p.kind == "clearArea" then
-        NPCS.clearArea(p.areaKey)
-    elseif p.kind == "moveGroup" then
+
+    local clearArea = string.match(id, "^npc_clearArea_([%w]+)$")
+    if clearArea ~= nil then
+        NPCS.clearArea(clearArea)
+        return
+    end
+
+    local fromArea, toArea = string.match(id, "^npc_moveGroup_([%w]+)_([%w]+)$")
+    if fromArea ~= nil and toArea ~= nil then
         local movers = {}
         for name, rec in pairs(getInstances()) do
-            if rec and rec.areaKey == p.fromArea then
+            if rec and rec.areaKey == fromArea then
                 table.insert(movers, { name = name, slot = U.Type(rec.slotIndex) == "number" and rec.slotIndex or 0 })
             end
         end
@@ -938,29 +943,53 @@ function NPCS.dispatchNpcUiClick(id)
             return a.slot < b.slot
         end)
         for _, m in ipairs(movers) do
-            NPCS.moveNpcToArea(m.name, p.toArea, { skipUiRefresh = true })
+            NPCS.moveNpcToArea(m.name, toArea, { skipUiRefresh = true })
         end
         NPCS.refreshStorytellerUIIfVisible()
-    elseif p.kind == "moveOne" then
-        NPCS.moveNpcToArea(p.npcName, p.toArea)
-    elseif p.kind == "spawnOne" then
-        local sOk, sErr = NPCS.spawnOrMoveIndividual(p.npcName, p.areaKey)
+        return
+    end
+
+    local areaKey, npcName, moveToArea = string.match(id, "^npc_move_([%w]+)_([%w]+)_([%w]+)$")
+    if areaKey ~= nil and npcName ~= nil and moveToArea ~= nil then
+        NPCS.moveNpcToArea(npcName, moveToArea)
+        return
+    end
+
+    local spawnNpc, spawnArea = string.match(id, "^npc_spawn_([%w]+)_([%w]+)$")
+    if spawnNpc ~= nil and spawnArea ~= nil then
+        local sOk, sErr = NPCS.spawnOrMoveIndividual(spawnNpc, spawnArea)
         if not sOk then
             print("[NPCS] spawnOne failed: " .. tostring(sErr))
             safeAlertGM("NPC spawn: " .. tostring(sErr))
         end
-    elseif p.kind == "spawnGroup" then
-        local gOk, gErr = NPCS.spawnGroup(p.groupId, p.areaKey)
+        return
+    end
+
+    local groupId, groupArea = string.match(id, "^npc_group_([%w]+)_([%w]+)$")
+    if groupId ~= nil and groupArea ~= nil then
+        local gOk, gErr = NPCS.spawnGroup(groupId, groupArea)
         if not gOk then
             print("[NPCS] spawnGroup failed: " .. tostring(gErr))
             safeAlertGM("NPC group spawn: " .. tostring(gErr))
         end
-    elseif p.kind == "toggleLight" then
-        NPCS.toggleOffStandard(p.npcName)
-    elseif p.kind == "remove" then
-        NPCS.removeNpc(p.npcName)
-    elseif p.kind == "stats" then
-        local text = NPCS.displayStats(p.npcName)
+        return
+    end
+
+    local toggleArea, toggleNpc = string.match(id, "^npc_toggle_([%w]+)_([%w]+)$")
+    if toggleArea ~= nil and toggleNpc ~= nil then
+        NPCS.toggleOffStandard(toggleNpc)
+        return
+    end
+
+    local removeArea, removeNpc = string.match(id, "^npc_remove_([%w]+)_([%w]+)$")
+    if removeArea ~= nil and removeNpc ~= nil then
+        NPCS.removeNpc(removeNpc)
+        return
+    end
+
+    local statsArea, statsNpc = string.match(id, "^npc_stats_([%w]+)_([%w]+)$")
+    if statsArea ~= nil and statsNpc ~= nil then
+        local text = NPCS.displayStats(statsNpc)
         print(text)
         broadcastToAll(text, { 0.85, 0.85, 1 })
     end
@@ -968,17 +997,23 @@ end
 
 --- @param id string
 function NPCS.dispatchNpcSpotDown(id)
-    local p = clickRoutes[id]
-    if p and p.kind == "spot" then
-        NPCS.spotlightPress(p.npcName)
+    if U.Type(id) ~= "string" or id == "" then
+        return
+    end
+    local areaKey, npcName = string.match(id, "^npc_spot_([%w]+)_([%w]+)$")
+    if areaKey ~= nil and npcName ~= nil then
+        NPCS.spotlightPress(npcName)
     end
 end
 
 --- @param id string
 function NPCS.dispatchNpcSpotUp(id)
-    local p = clickRoutes[id]
-    if p and p.kind == "spot" then
-        NPCS.spotlightRelease(p.npcName)
+    if U.Type(id) ~= "string" or id == "" then
+        return
+    end
+    local areaKey, npcName = string.match(id, "^npc_spot_([%w]+)_([%w]+)$")
+    if areaKey ~= nil and npcName ~= nil then
+        NPCS.spotlightRelease(npcName)
     end
 end
 
@@ -1211,245 +1246,8 @@ function NPCS.syncAdminNpcPanelXmlDumpButton()
     end)
 end
 
---- Build XML for rows inside `TableLayout id=npcPanelNpcsTable` (same markup as refreshStorytellerUI).
---- @param routeBuild table { routes: table, seq: number }
---- @return string
-local function buildStorytellerNpcPanelRowsXml(routeBuild)
-    if U.Type(routeBuild) ~= "table" or U.Type(routeBuild.routes) ~= "table" or U.Type(routeBuild.seq) ~= "number" then
-        return ""
-    end
-    local prevBuild = clickRouteBuild
-    clickRouteBuild = routeBuild
-
-    local areas = sortedAreaKeys()
-    local rowsXml = {}
-
-    local byArea = {}
-    for name, rec in pairs(getInstances()) do
-        local ak = rec.areaKey or "?"
-        byArea[ak] = byArea[ak] or {}
-        table.insert(byArea[ak], { name = name, slot = rec.slotIndex or 0 })
-    end
-    local areaOrder = U.getKeys(byArea)
-    table.sort(areaOrder)
-
-    for _, ak in ipairs(areaOrder) do
-        local list = byArea[ak]
-        table.sort(list, function(a, b)
-            return a.slot < b.slot
-        end)
-        local aLabel = NPCS.areas[ak].label
-        local headerBits = {
-            string.format(
-                [[<Row class="hud_storyteller_areas hud_storyteller_button_row"><Cell class="hud_storyteller_areas hud_storyteller_wide"><HorizontalLayout class="hud_storyteller_button_row hud_storyteller_areas"><Text class="hud_storyteller_label">%s</Text>]],
-                aLabel
-            ),
-        }
-        for _, a in ipairs(areas) do
-            if a ~= ak then
-                local aLabel = NPCS.areas[a].label
-                local rid = newClickRoute({ kind = "moveGroup", fromArea = ak, toArea = a })
-                table.insert(headerBits, string.format(
-                    [[<Button id="%s" class="hud_storyteller_button hud_storyteller_button_label" onClick="HUD_npcDispatch">%s</Button>]],
-                    rid,
-                    xmlEscape(aLabel)
-                ))
-            end
-        end
-        local clearId = newClickRoute({ kind = "clearArea", areaKey = ak })
-        table.insert(headerBits, string.format(
-            [[<Button id="%s" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">×</Button></HorizontalLayout></Cell></Row>]],
-            clearId
-        ))
-        table.insert(rowsXml, table.concat(headerBits, ""))
-
-        for _, entry in ipairs(list) do
-            local n = entry.name
-            local rec = getInstances()[n]
-            local mode = rec and rec.npcLightMode or "standard"
-            local litClass = (mode == "off") and "hud_storyteller_button_icon_off" or "hud_storyteller_button_icon_on"
-            local toggleId = newClickRoute({ kind = "toggleLight", npcName = n })
-            local spotId = newClickRoute({ kind = "spot", npcName = n })
-            local statsId = newClickRoute({ kind = "stats", npcName = n })
-            local removeId = newClickRoute({ kind = "remove", npcName = n })
-            local moveBits = {}
-            for _, ta in ipairs(areas) do
-                if ta ~= ak then
-                    local aLabel = NPCS.areas[ta].label
-                    local mid = newClickRoute({ kind = "moveOne", npcName = n, toArea = ta })
-                    table.insert(moveBits, string.format(
-                        [[<Button id="%s" class="hud_storyteller_button hud_storyteller_button_label" onClick="HUD_npcDispatch">%s</Button>]],
-                        mid,
-                        xmlEscape(aLabel)
-                    ))
-                end
-            end
-            table.insert(rowsXml, string.format([[
-<Row class="hud_storyteller_areas hud_storyteller_button_row">
-  <Cell class="hud_storyteller_areas"><Button id="%s" class="hud_storyteller_button hud_storyteller_button_label %s" onClick="HUD_npcDispatch">⊚</Button></Cell>
-  <Cell class="hud_storyteller_areas"><Button id="%s" class="hud_storyteller_button hud_storyteller_button_icon" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button></Cell>
-  <Cell class="hud_storyteller_areas"><Text class="hud_storyteller_label">%s</Text></Cell>
-  <Cell class="hud_storyteller_areas"><Button id="%s" class="hud_storyteller_button hud_storyteller_button_label" onClick="HUD_npcDispatch">Stats</Button></Cell>
-  <Cell class="hud_storyteller_areas"><HorizontalLayout class="hud_storyteller_areas">%s</HorizontalLayout></Cell>
-  <Cell class="hud_storyteller_areas"><Button id="%s" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">X</Button></Cell>
-</Row>]],
-                toggleId,
-                litClass,
-                spotId,
-                xmlEscape((NPCS.characters[n] and NPCS.characters[n].fullName) or n),
-                statsId,
-                table.concat(moveBits, ""),
-                removeId
-            ))
-        end
-    end
-
-    table.insert(rowsXml, [[<Row class="hud_storyteller_header"><Cell class="hud_storyteller_wide"><Text class="hud_storyteller_header">Individuals</Text></Cell></Row>]])
-    for npcName, def in pairs(NPCS.characters) do
-        if getInstances()[npcName] == nil then
-            local bits = {}
-            for _, ak in ipairs(areas) do
-                if NPCS.areaHasFreeSlot(ak) then
-                    local aLabel = NPCS.areas[ak].label
-                    local sid = newClickRoute({ kind = "spawnOne", npcName = npcName, areaKey = ak })
-                    table.insert(bits, string.format(
-                        [[<Button id="%s" class="hud_storyteller_button hud_storyteller_button_label" onClick="HUD_npcDispatch">%s</Button>]],
-                        sid,
-                        xmlEscape(aLabel)
-                    ))
-                    table.insert(bits, string.format(
-                        [[<Button id="%s" class="hud_storyteller_button hud_storyteller_button_label" onClick="HUD_npcDispatch">%s</Button>]],
-                        sid,
-                        xmlEscape(aLabel)
-                    ))
-                    table.insert(bits, string.format(
-                        [[<Button id="%s" class="hud_storyteller_button hud_storyteller_button_label" onClick="HUD_npcDispatch">%s</Button>]],
-                        sid,
-                        xmlEscape(aLabel)
-                    ))
-                end
-            end
-            if #bits > 0 then
-                local displayName = xmlEscape(def.fullName or npcName)
-                local rowXml = string.format(
-                    [[<Row class="hud_storyteller_button_row">
-  <Cell><Text class="hud_storyteller_label">%s</Text></Cell>
-  <Cell columnSpan="5"><HorizontalLayout class="hud_storyteller_button_row">%s</HorizontalLayout></Cell>
-</Row>]],
-                    displayName,
-                    table.concat(bits, "")
-                )
-                table.insert(rowsXml, rowXml)
-            end
-        end
-    end
-
-    table.insert(rowsXml, [[<Row class="hud_storyteller_header"><Cell class="hud_storyteller_wide"><Text class="hud_storyteller_header">Groups</Text></Cell></Row>]])
-    for _, gid in ipairs(NPCS.collectGroupIds()) do
-        local bits = {}
-        for _, ak in ipairs(areas) do
-            if NPCS.isAreaCompletelyEmpty(ak) then
-                local gid2 = newClickRoute({ kind = "spawnGroup", groupId = gid, areaKey = ak })
-                table.insert(bits, string.format(
-                    [[<Button id="%s" class="hud_storyteller_button hud_storyteller_button_label" onClick="HUD_npcDispatch">%s</Button>]],
-                    gid2,
-                    xmlEscape(ak)
-                ))
-            end
-        end
-        if #bits > 0 then
-            table.insert(rowsXml, string.format(
-                [[<Row class="hud_storyteller_button_row">
-  <Cell><Text class="hud_storyteller_label">%s</Text></Cell>
-  <Cell columnSpan="5"><HorizontalLayout class="hud_storyteller_button_row">%s</HorizontalLayout></Cell>
-</Row>]],
-                xmlEscape(gid),
-                table.concat(bits, "")
-            ))
-        end
-    end
-
-    if #rowsXml == 0 then
-        local nChars = #U.getKeys(NPCS.characters or {})
-        local nAreas = #sortedAreaKeys()
-        table.insert(rowsXml, string.format(
-            [[<Row preferredHeight="40"><Cell columnSpan="6"><Text fontSize="10" color="#CC8866">No rows to show. Add NPCS.areas and NPCS.characters in lib/npcs_data.ttslua (loaded %d characters, %d areas).</Text></Cell></Row>]],
-            nChars,
-            nAreas
-        ))
-    end
-
-    local tableXml = table.concat(rowsXml, "\n")
-    clickRouteBuild = prevBuild
-    return tableXml
-end
-
---- Write generated NPC storyteller panel XML to the IDE workspace (TTS Tools sendExternalMessage).
---- Default file: debug_logs/npcs_storyteller_panel.txt
---- @param opts table|nil includeRoutes: include JSON map of npcRoute* payloads; includeMergedFullUi: append full UI XML after splice (large); path: relative workspace path
-function NPCS.dumpStorytellerPanelXmlToWorkspace(opts)
-    opts = U.Type(opts) == "table" and opts or {}
-    local includeRoutes = opts.includeRoutes == true
-    local includeMerged = opts.includeMergedFullUi == true
-    local relPath = U.Type(opts.path) == "string" and opts.path ~= "" and opts.path or NPCS.NPC_PANEL_XML_WORKSPACE_PATH
-
-    -- Known non-fatal case: debug module may not be embedded for current runtime.
-    local okD, DBG = pcall(require, "core.debug")
-    if not okD or DBG == nil or U.Type(DBG.writeWorkspaceFile) ~= "function" then
-        print("[NPCS] dumpStorytellerPanelXmlToWorkspace: core.debug writeWorkspaceFile unavailable")
-        return
-    end
-
-    local rb = { routes = {}, seq = 0 }
-    local tableXml = buildStorytellerNpcPanelRowsXml(rb)
-    local ts = tostring(os and os.time and os.time() or 0)
-    local nRoutes = #U.getKeys(rb.routes)
-    local parts = {
-        string.rep("=", 72),
-        "Toronto Rising — NPC Storyteller panel (dynamic rows)",
-        "This is the XML spliced into TableLayout id: " .. NPC_PANEL_TABLE_LAYOUT_ID .. " (or placeholder row when the table id is absent).",
-        string.format("Generated os.time: %s", ts),
-        string.format("Ephemeral click routes in this snapshot: %d (npcRoute*)", nRoutes),
-        string.rep("=", 72),
-        "",
-        "--- Section A: Dynamic row XML only ---",
-        "",
-        tableXml,
-        "",
-    }
-    if includeRoutes then
-        table.insert(parts, "--- Section B: npcRoute id → payload (JSON, debug) ---")
-        table.insert(parts, "")
-        if JSON and U.Type(JSON.encode_pretty) == "function" then
-            table.insert(parts, JSON.encode_pretty(rb.routes))
-        else
-            table.insert(parts, tostring(rb.routes))
-        end
-        table.insert(parts, "")
-    end
-    if includeMerged then
-        table.insert(parts, "--- Section C: Full UI XML after splice (current UI.getXml + Section A) ---")
-        table.insert(parts, "")
-        local xml = UI.getXml and UI.getXml() or nil
-        if U.Type(xml) ~= "string" or xml == "" then
-            table.insert(parts, "(skipped: UI.getXml() empty — load game / open UI)")
-        else
-            local merged, err = spliceNpcPanelRowsIntoUiXml(xml, tableXml)
-            if merged then
-                table.insert(parts, merged)
-            else
-                table.insert(parts, "(splice failed: " .. tostring(err) .. ")")
-            end
-        end
-        table.insert(parts, "")
-    end
-
-    DBG.writeWorkspaceFile(relPath, table.concat(parts, "\n"), "none")
-    print("[NPCS] dumpStorytellerPanelXmlToWorkspace: wrote " .. relPath)
-end
-
---- Fingerprint of instance layout + spawn/group affordances that drive `buildStorytellerNpcPanelRowsXml`.
---- Cheap vs `UI.getXml()` + `UI.setXml()`; must stay in sync with row builder logic.
+--- Fingerprint of instance layout + spawn/group affordances used by targeted NPC panel updates.
+--- Must stay in sync with panel state toggles so redundant refreshes are skipped safely.
 --- @return string
 local function computeNpcPanelLayoutFingerprint()
     local inst = getInstances()
@@ -1499,17 +1297,56 @@ local function computeNpcPanelLayoutFingerprint()
         .. table.concat(groupLines, "\n")
 end
 
---- Rebuild NPC panel dynamic rows inside TableLayout id=npcPanelNpcsTable (fallback: placeholder row id).
-function NPCS.refreshStorytellerUI()
-    if NPCS.DISABLE_STORYTELLER_NPC_PANEL_XML_REFRESH then
+--- Apply one UI attribute safely on optional ids.
+--- @param id string
+--- @param attr string
+--- @param value string
+local function setUiAttrSafe(id, attr, value)
+    if U.Type(id) ~= "string" or id == "" then
         return
     end
-    if isUiDocumentLoading() then
-        Wait.condition(function()
-            NPCS.refreshStorytellerUI()
-        end, function()
-            return not isUiDocumentLoading()
-        end)
+    -- Known non-fatal case: some generated ids may be absent if UI bundle is out-of-date.
+    pcall(function()
+        UI.setAttribute(id, attr, value)
+    end)
+end
+
+--- @param id string
+--- @param show boolean
+local function setUiActiveSafe(id, show)
+    setUiAttrSafe(id, "active", show and "true" or "false")
+end
+
+--- Positioning buttons can lose text style if only one attribute is patched; set key attrs together.
+--- @param id string
+--- @param show boolean
+local function setPositionButtonAttrsSafe(id, show)
+    if U.Type(id) ~= "string" or id == "" then
+        return
+    end
+    -- Known non-fatal case: some generated ids may be absent if UI bundle is out-of-date.
+    pcall(function()
+        UI.setAttributes(id, {
+            active = show and "true" or "false",
+            textColor = "#FFFFFF",
+            fontStyle = "Bold",
+        })
+    end)
+end
+
+--- @return boolean
+local function anyAreaCompletelyEmpty()
+    for _, areaKey in ipairs(sortedAreaKeys()) do
+        if NPCS.isAreaCompletelyEmpty(areaKey) then
+            return true
+        end
+    end
+    return false
+end
+
+--- Targeted NPC panel refresh against generated static XML rows (no `UI.setXml`).
+function NPCS.refreshStorytellerUI()
+    if NPCS.DISABLE_STORYTELLER_NPC_PANEL_XML_REFRESH then
         return
     end
 
@@ -1518,62 +1355,85 @@ function NPCS.refreshStorytellerUI()
         return
     end
 
-    local xml = UI.getXml and UI.getXml() or nil
-    if xml == nil or xml == "" then
-        print("[NPCS] refreshStorytellerUI: UI.getXml() returned empty — cannot inject rows.")
-        return
+    local areas = sortedAreaKeys()
+    local instances = getInstances()
+    local occupiedByArea = {}
+    for _, areaKey in ipairs(areas) do
+        occupiedByArea[areaKey] = {}
     end
-    local idPat = 'id="' .. NPC_PANEL_TABLE_LAYOUT_ID .. '"'
-    local idPat2 = "id='" .. NPC_PANEL_TABLE_LAYOUT_ID .. "'"
-    local hasTable = string.find(xml, idPat, 1, true) or string.find(xml, idPat2, 1, true)
-    local hasPlaceholderRow = string.find(xml, PLACEHOLDER_ROW_ID, 1, true)
-    if not hasTable and not hasPlaceholderRow then
-        print("[NPCS] refreshStorytellerUI: no NPC table anchor in getXml (need id=" .. NPC_PANEL_TABLE_LAYOUT_ID .. " or placeholder " .. PLACEHOLDER_ROW_ID .. "). Panel inactive or bundle out of date. Xml length: " .. tostring(#xml))
-        return
+    for npcName, rec in pairs(instances) do
+        if U.Type(rec) == "table" and U.Type(rec.areaKey) == "string" then
+            if occupiedByArea[rec.areaKey] == nil then
+                occupiedByArea[rec.areaKey] = {}
+            end
+            occupiedByArea[rec.areaKey][npcName] = true
+        end
     end
 
-    --- Routes are accumulated in routeBuild during XML build; committed only after setXml succeeds.
-    local routeBuild = { routes = {}, seq = 0 }
-    local tableXml = buildStorytellerNpcPanelRowsXml(routeBuild)
-    local newXml, spliceErr = spliceNpcPanelRowsIntoUiXml(xml, tableXml)
-    if newXml == nil then
-        print("[NPCS] refreshStorytellerUI: " .. tostring(spliceErr))
-        return
+    local allNpcNames = U.getKeys(NPCS.characters or {})
+    table.sort(allNpcNames)
+    for _, areaKey in ipairs(areas) do
+        local hasAreaOccupants = next(occupiedByArea[areaKey] or {}) ~= nil
+        setUiActiveSafe("npc_areaHeader_" .. areaKey, hasAreaOccupants)
+        setUiActiveSafe("npc_clearArea_" .. areaKey, hasAreaOccupants)
+        for _, toArea in ipairs(areas) do
+            if toArea ~= areaKey then
+                setPositionButtonAttrsSafe("npc_moveGroup_" .. areaKey .. "_" .. toArea, hasAreaOccupants)
+            end
+        end
+
+        for _, npcName in ipairs(allNpcNames) do
+            local rec = instances[npcName]
+            local inThisArea = U.Type(rec) == "table" and rec.areaKey == areaKey
+            local rowId = "npc_occRow_" .. areaKey .. "_" .. npcName
+            setUiActiveSafe(rowId, inThisArea)
+            if inThisArea then
+                local mode = rec.npcLightMode or "standard"
+                local toggleId = "npc_toggle_" .. areaKey .. "_" .. npcName
+                local spotId = "npc_spot_" .. areaKey .. "_" .. npcName
+                local statsId = "npc_stats_" .. areaKey .. "_" .. npcName
+                local removeId = "npc_remove_" .. areaKey .. "_" .. npcName
+                local displayName = (NPCS.characters[npcName] and NPCS.characters[npcName].fullName) or npcName
+                setUiAttrSafe("npc_occName_" .. areaKey .. "_" .. npcName, "text", tostring(displayName))
+                setUiAttrSafe(toggleId, "text", mode == "off" and "○" or "⊚")
+                setUiActiveSafe(spotId, true)
+                setUiActiveSafe(statsId, true)
+                setUiActiveSafe(removeId, true)
+                for _, toArea in ipairs(areas) do
+                    if toArea ~= areaKey then
+                        setPositionButtonAttrsSafe("npc_move_" .. areaKey .. "_" .. npcName .. "_" .. toArea, true)
+                    end
+                end
+            end
+        end
     end
-    -- Known non-fatal case: setXml can fail if TTS rejects XML in a transient loading state.
-    local setOk, setErr = pcall(function()
-        UI.setXml(newXml)
-    end)
-    if not setOk then
-        print("[NPCS] refreshStorytellerUI: UI.setXml failed: " .. tostring(setErr))
-        clickRouteBuild = nil
-        return
+
+    for _, npcName in ipairs(allNpcNames) do
+        local isSpawned = instances[npcName] ~= nil
+        local rowId = "npc_spawnRow_" .. npcName
+        local spawnName = (NPCS.characters[npcName] and NPCS.characters[npcName].fullName) or npcName
+        setUiAttrSafe("npc_spawnName_" .. npcName, "text", tostring(spawnName))
+        local canSpawnAnywhere = false
+        for _, areaKey in ipairs(areas) do
+            local canSpawnHere = (not isSpawned) and NPCS.areaHasFreeSlot(areaKey)
+            if canSpawnHere then
+                canSpawnAnywhere = true
+            end
+            setPositionButtonAttrsSafe("npc_spawn_" .. npcName .. "_" .. areaKey, canSpawnHere)
+        end
+        setUiActiveSafe(rowId, (not isSpawned) and canSpawnAnywhere)
     end
-    clickRoutes = routeBuild.routes
-    clickRouteSeq = routeBuild.seq
-    clickRouteBuild = nil
+
+    local groupIds = NPCS.collectGroupIds()
+    local hasEmptyArea = anyAreaCompletelyEmpty()
+    for _, groupId in ipairs(groupIds) do
+        setUiActiveSafe("npc_groupRow_" .. groupId, hasEmptyArea)
+        for _, areaKey in ipairs(areas) do
+            setPositionButtonAttrsSafe("npc_group_" .. groupId .. "_" .. areaKey, NPCS.isAreaCompletelyEmpty(areaKey))
+        end
+    end
+
     lastNpcPanelLayoutFingerprint = layoutFp
-
-    if autoDumpStorytellerNpcPanelXml then
-        -- Known non-fatal case: workspace debug dump failures should not block panel refresh.
-        pcall(function()
-            writeNpcPanelSnapshotToWorkspace(tableXml, routeBuild, true)
-        end)
-    end
-
-    -- TTS applies setXml asynchronously (UI.loading). Re-apply NPC tab visibility after load (forceOpen: avoid toggle-close on same tab).
-    Wait.condition(function()
-        -- Known non-fatal case: tab selection call can race UI reload and fail harmlessly.
-        pcall(function()
-            UIH.selectStorytellerPanel("npcs", true)
-        end)
-        -- Known non-fatal case: button sync may fail when toggle button is absent.
-        pcall(function()
-            NPCS.syncAdminNpcPanelXmlDumpButton()
-        end)
-    end, function()
-        return not isUiDocumentLoading()
-    end)
 end
 
 --- Recursive stats text for Storyteller (console or UI).

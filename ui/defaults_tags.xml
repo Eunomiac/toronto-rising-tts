@@ -7,16 +7,6 @@
   <Image preserveAspect="true" raycastTarget="false" />
   <VerticalLayout raycastTarget="false" />
   <HorizontalLayout raycastTarget="false" />
+  <Button preferredHeight="30" minHeight="30" height="30" />
 
-  <!-- Button Base Styles -->
-  <Button
-    minWidth="30"
-    minHeight="30"
-    preferredWidth="30"
-    preferredHeight="30"
-    flexibleWidth="0"
-    flexibleHeight="0"
-    color="rgba(0.7,0.7,0.7,1)"
-    fontSize="16"
-    fontStyle="Bold" />
 </Defaults>

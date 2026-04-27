@@ -7,7 +7,8 @@
         "Build: TTS MCP (Node)",
         "Generate PCS data (pcs_data.ttslua from JSON)",
         "Generate CSheet defaults Lua (csheet_defaults_xml.ttslua)",
-        "Generate UI XML from templates"
+        "Generate UI XML from templates",
+        "Generate NPC panel XML from npcs_data"
       ],
       "dependsOrder": "sequence",
       "group": {
@@ -85,6 +86,26 @@
         ".dev/scripts/xml_color_template_generator.js",
         "--templateDir",
         "ui/.templates"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Generate NPC panel XML from npcs_data",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        ".dev/scripts/generate_npc_panel_xml.js"
       ],
       "options": {
         "cwd": "${workspaceFolder}"

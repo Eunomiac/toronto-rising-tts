@@ -1,0 +1,76 @@
+<!-- Storyteller NPC panel defaults (non-generated). -->
+<!-- Keep this file hand-authored; generator only writes panel_npcs.xml rows/structure. -->
+<Defaults>
+  <Panel class="npc_panel_root" active="false" padding="0 0 0 0" />
+
+  <VerticalLayout class="npc_panel_layout_root" />
+
+  <VerticalScrollView class="npc_panel_scroll"
+      horizontalScrollbarVisibility="AutoHideAndExpandViewport"
+      scrollbarBackgroundColor="#440000"
+      scrollbarColors="#990000|#AA0000|#CC0000|#333333"
+      inertia="false"
+      color="rgba(0, 0, 0, 0.5)"
+      horizontal="false"
+      vertical="true"
+      preferredHeight="250"
+      minHeight="200"
+      flexibleWidth="1"
+      flexibleHeight="1"
+      childForceExpandWidth="true"
+      padding="5 5 5 5"
+      spacing="0"
+      childForceExpandHeight="true" />
+
+  <HorizontalLayout class="hud_storyteller_button_row"
+    padding="10 10 0 0"
+    preferredHeight="20"
+    minHeight="20"
+    flexibleHeight="0"
+    childForceExpandWidth="true"
+    childForceExpandHeight="true"
+    color="rgba(0, 255, 0, 0.15)" />
+
+  <!-- <VerticalLayout class="npc_panel_rows_root"
+    ignoreLayout="true"
+    height="1200"
+    width="100%"
+    spacing="0"
+    childForceExpandWidth="true"
+    childForceExpandHeight="true"
+    minHeight="1200" /> -->
+  <VerticalLayout class="npc_panel_rows_root"
+    ignoreLayout="true"
+    height="1200"
+    width="100%"
+    spacing="0"
+    childForceExpandWidth="true"
+    childForceExpandHeight="true" />
+
+  <Text class="hud_storyteller_row_label"
+    minHeight="20"
+    flexibleWidth="1"
+    fontSize="16"
+    fontStyle="Bold"
+    color="#FFFFFF"
+    alignment="MiddleLeft" />
+
+  <Text class="hud_storyteller_row_name"
+    minWidth="180"
+    preferredWidth="180"
+    flexibleWidth="0"
+    fontSize="13"
+    color="#FFD700"
+    alignment="MiddleLeft" />
+
+  <Panel class="hud_storyteller_horiz_spacer"
+    color="clear"
+    flexibleWidth="1"
+    minWidth="8"
+    preferredWidth="8"
+    raycastTarget="false" />
+
+  <Button class="hud_storyteller_button_icon" fontSize="14" textColor="#FFFFFF" fontStyle="Bold" width="20" minWidth="20" preferredWidth="20" flexibleWidth="0" height="20" minHeight="20" preferredHeight="20" flexibleHeight="0" alignment="MiddleCenter" />
+
+
+</Defaults>
