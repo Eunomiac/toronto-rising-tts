@@ -31,6 +31,8 @@
   <!-- Reference layer (generated per player color) -->
   <Include src="player/panel_right_sidebar_referenceLayer.xml" />
 
+  <!-- Player HUD Blindfold Overlay -->
+  <Include src="player/panel_overlay_blindfold.xml" />
 
 </Panel>
 

@@ -100,10 +100,10 @@ Scenes.SCENES = {
                 refs = {
                     "playerLight1Orange",
                     "playerLight2Orange",
-                    -- "playerLight3Orange",
+                    "playerLight3Orange",
                     "playerLight1Pink",
                     "playerLight2Pink",
-                    -- "playerLight3Pink",
+                    "playerLight3Pink",
                 }
             },
             {
@@ -113,10 +113,10 @@ Scenes.SCENES = {
                 refs = {
                     "playerLight1Brown",
                     "playerLight2Brown",
-                    -- "playerLight3Brown",
+                    "playerLight3Brown",
                     "playerLight1Purple",
                     "playerLight2Purple",
-                    -- "playerLight3Purple",
+                    "playerLight3Purple",
                 }
             },
             {
@@ -167,10 +167,10 @@ Scenes.SCENES = {
                 refs = {
                     "playerLight1Orange",
                     "playerLight2Orange",
-                    -- "playerLight3Orange",
+                    "playerLight3Orange",
                     "playerLight1Pink",
                     "playerLight2Pink",
-                    -- "playerLight3Pink",
+                    "playerLight3Pink",
                 }
             },
             {
@@ -180,10 +180,10 @@ Scenes.SCENES = {
                 refs = {
                     "playerLight1Brown",
                     "playerLight2Brown",
-                    -- "playerLight3Brown",
+                    "playerLight3Brown",
                     "playerLight1Purple",
                     "playerLight2Purple",
-                    -- "playerLight3Purple",
+                    "playerLight3Purple",
                 }
             },
             {

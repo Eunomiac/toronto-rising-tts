@@ -3671,7 +3671,6 @@ function PCS.getDecoded()
     if JSON == nil or type(JSON.decode) ~= "function" then
       error("PCS.getDecoded: JSON.decode unavailable")
     end
-    -- Known non-fatal case: decode may fail on corrupted embedded JSON; explicit error is raised below.
     local ok, data = pcall(function()
       return JSON.decode(PCS.RAW_JSON)
     end)

@@ -235,6 +235,8 @@ local function setAllInstances(instances)
     S.setStateVal(instances, "npcs", "instances")
 end
 
+local isNpcLocked
+
 --- @param npcName string
 --- @param rec table|nil
 local function setInstanceRecord(npcName, rec)
@@ -646,7 +648,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                         lightGuid = lg,
                         areaKey = areaKey,
                         slotIndex = slotIndex,
-                        npcLightMode = "standard",
+                        npcLightMode = (areaForSpawn and areaForSpawn.autoLight == true) and "standard" or "off",
                         locked = false,
                     }
                     setInstanceRecord(npcName, rec)
@@ -662,11 +664,9 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                                 lightAlignFigOverride[npcName] = deferFig
                                 -- Known non-fatal case: deferred light apply can fail if spawned light is gone.
                                 local applyOk, applyErr = true, nil
-                                if areaForSpawn and areaForSpawn.autoLight == true then
-                                    applyOk, applyErr = pcall(function()
-                                        NPCS.applyCurrentLightMode(npcName, 0)
-                                    end)
-                                end
+                                applyOk, applyErr = pcall(function()
+                                    NPCS.applyCurrentLightMode(npcName, 0)
+                                end)
                                 lightAlignFigOverride[npcName] = nil
                                 if not applyOk then
                                     print("[NPCS] deferred applyCurrentLightMode failed: " .. tostring(applyErr))
@@ -700,7 +700,7 @@ end
 --- @return boolean, string|nil
 function NPCS.spawnOrMoveIndividual(npcName, areaKey)
     local rec = getInstances()[npcName]
-    if rec ~= nil and rec.locked == true then
+    if rec ~= nil and isNpcLocked(rec) then
         return false, "NPC is locked in place. Unlock before moving."
     end
     if rec ~= nil then
@@ -726,7 +726,7 @@ function NPCS.moveNpcToArea(npcName, areaKey, opts)
     if rec == nil then
         return false, "NPC not spawned."
     end
-    if rec.locked == true then
+    if isNpcLocked(rec) then
         return false, "NPC is locked in place. Unlock before moving."
     end
     local preferredSlot = U.Type(opts.preferredSlot) == "number" and opts.preferredSlot or rec.slotIndex
@@ -741,13 +741,12 @@ function NPCS.moveNpcToArea(npcName, areaKey, opts)
         return false, "Figurine missing; cleared record."
     end
     NPCS.applyFigurinePlacement(fig, areaKey, slot)
+    local area = NPCS.areas[areaKey]
     rec.areaKey = areaKey
     rec.slotIndex = slot
+    rec.npcLightMode = (area and area.autoLight == true) and "standard" or "off"
     setInstanceRecord(npcName, rec)
-    local area = NPCS.areas[areaKey]
-    if area and area.autoLight == true then
-        NPCS.applyCurrentLightMode(npcName, 0)
-    end
+    NPCS.applyCurrentLightMode(npcName, 0)
     if not opts.skipUiRefresh then
         NPCS.refreshStorytellerUIIfVisible()
     end
@@ -787,7 +786,7 @@ function NPCS.spawnGroup(groupId, areaKey)
 
     local reserved = {}
     for name, rec in pairs(instances) do
-        if membersByName[name] and rec and rec.locked == true and rec.areaKey == areaKey then
+        if membersByName[name] and rec and isNpcLocked(rec) and rec.areaKey == areaKey then
             reserved[rec.slotIndex] = true
         end
     end
@@ -806,7 +805,7 @@ function NPCS.spawnGroup(groupId, areaKey)
     local movableCount = 0
     for _, row in ipairs(rows) do
         local rec = instances[row.name]
-        local locked = rec and rec.locked == true
+        local locked = rec and isNpcLocked(rec)
         if not locked then
             movableCount = movableCount + 1
             local preferred = row.idx
@@ -1000,6 +999,15 @@ local function setGroupExpanded(groupId, expanded)
     S.setStateVal(ui, "npcs", "ui")
 end
 
+--- @param rec table|nil
+--- @return boolean
+isNpcLocked = function(rec)
+    if U.Type(rec) ~= "table" then
+        return false
+    end
+    return rec.locked == true or tostring(rec.locked) == "true"
+end
+
 --- @param groupId string
 --- @return table[]
 function NPCS.collectGroupMembers(groupId)
@@ -1123,7 +1131,7 @@ function NPCS.dispatchNpcUiClick(id)
     if lockGroup ~= nil and lockNpc ~= nil then
         local rec = getInstances()[lockNpc]
         if rec ~= nil then
-            rec.locked = rec.locked == true and false or true
+            rec.locked = not isNpcLocked(rec)
             setInstanceRecord(lockNpc, rec)
             NPCS.refreshStorytellerUIIfVisible()
         end
@@ -1424,7 +1432,7 @@ local function computeNpcPanelLayoutFingerprint()
                 tostring(rec.areaKey),
                 tostring(rec.slotIndex),
                 tostring(rec.npcLightMode or "standard"),
-                tostring(rec.locked == true)
+                tostring(isNpcLocked(rec))
             ))
         end
     end
@@ -1458,43 +1466,34 @@ local function setUiAttrSafe(id, attr, value)
     end)
 end
 
+--- Apply multiple attributes safely on optional ids.
+--- @param id string
+--- @param attrs table
+local function setUiAttrsSafe(id, attrs)
+    if U.Type(id) ~= "string" or id == "" or U.Type(attrs) ~= "table" then
+        return
+    end
+    pcall(function()
+        UI.setAttributes(id, attrs)
+    end)
+end
+
 --- @param id string
 --- @param show boolean
 local function setUiActiveSafe(id, show)
     setUiAttrSafe(id, "active", show and "true" or "false")
 end
 
---- Positioning buttons can lose text style if only one attribute is patched; set key attrs together.
+--- Update button attrs without losing intended text color.
 --- @param id string
---- @param show boolean
-local function setPositionButtonAttrsSafe(id, show)
-    if U.Type(id) ~= "string" or id == "" then
-        return
+--- @param attrs table
+--- @param textColor string|nil
+local function setUiButtonAttrsSafe(id, attrs, textColor)
+    local out = U.clone(attrs or {})
+    if out.textColor == nil then
+        out.textColor = textColor or "#FFFFFF"
     end
-    -- Known non-fatal case: some generated ids may be absent if UI bundle is out-of-date.
-    pcall(function()
-        UI.setAttributes(id, {
-            active = show and "true" or "false",
-            textColor = "#FFFFFF",
-            fontStyle = "Bold",
-        })
-    end)
-end
-
---- Convert #RRGGBB to #AARRGGBB using a fixed alpha byte.
---- Returns fallback when source is invalid.
---- @param hex string|nil
---- @param fallback string
---- @return string
-local function withAlphaHex(hex, fallback)
-    if U.Type(hex) ~= "string" then
-        return fallback
-    end
-    local rgbValue = string.match(hex, "^#([0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])$") or ""
-    if rgbValue == "" then
-        return fallback
-    end
-    return "#CC" .. rgbValue
+    setUiAttrsSafe(id, out)
 end
 
 --- Targeted NPC panel refresh against generated static XML rows (no `UI.setXml`).
@@ -1526,10 +1525,10 @@ function NPCS.refreshStorytellerUI()
     for _, areaKey in ipairs(areas) do
         local hasAreaOccupants = next(occupiedByArea[areaKey] or {}) ~= nil
         setUiActiveSafe("npc_areaHeader_" .. areaKey, hasAreaOccupants)
-        setUiActiveSafe("npc_clearArea_" .. areaKey, hasAreaOccupants)
+        setUiButtonAttrsSafe("npc_clearArea_" .. areaKey, { active = hasAreaOccupants and "true" or "false" }, "#FFFFFF")
         for _, toArea in ipairs(areas) do
             if toArea ~= areaKey then
-                setPositionButtonAttrsSafe("npc_moveGroup_" .. areaKey .. "_" .. toArea, hasAreaOccupants)
+                setUiButtonAttrsSafe("npc_moveGroup_" .. areaKey .. "_" .. toArea, { active = hasAreaOccupants and "true" or "false" }, "#FFFFFF")
             end
         end
         for _, npcName in ipairs(allNpcNames) do
@@ -1538,14 +1537,13 @@ function NPCS.refreshStorytellerUI()
             setUiActiveSafe("npc_occRow_" .. areaKey .. "_" .. npcName, inThisArea)
             if inThisArea then
                 local mode = rec.npcLightMode or "standard"
-                setUiAttrSafe("npc_occName_" .. areaKey .. "_" .. npcName, "text", tostring((NPCS.characters[npcName] and NPCS.characters[npcName].fullName) or npcName))
-                setUiAttrSafe("npc_toggle_" .. areaKey .. "_" .. npcName, "text", mode == "off" and "○" or "⊚")
-                setUiActiveSafe("npc_spot_" .. areaKey .. "_" .. npcName, true)
-                setUiActiveSafe("npc_stats_" .. areaKey .. "_" .. npcName, true)
-                setUiActiveSafe("npc_remove_" .. areaKey .. "_" .. npcName, true)
+                setUiButtonAttrsSafe("npc_toggle_" .. areaKey .. "_" .. npcName, {
+                    text = mode == "off" and "○" or "⊚",
+                    active = "true",
+                }, "#FFFFFF")
                 for _, toArea in ipairs(areas) do
                     if toArea ~= areaKey then
-                        setPositionButtonAttrsSafe("npc_move_" .. areaKey .. "_" .. npcName .. "_" .. toArea, true)
+                        setUiButtonAttrsSafe("npc_move_" .. areaKey .. "_" .. npcName .. "_" .. toArea, { active = "true" }, "#FFFFFF")
                     end
                 end
             end
@@ -1556,41 +1554,32 @@ function NPCS.refreshStorytellerUI()
     for _, groupId in ipairs(groupIds) do
         local members = NPCS.collectGroupMembers(groupId)
         local expanded = isGroupExpanded(groupId)
-        local leaderName = members[1] and members[1].name or nil
-        local leaderColor = leaderName and NPCS.characters[leaderName] and NPCS.characters[leaderName].labelColor or "#444444"
-        local leaderColorTranslucent = withAlphaHex(leaderColor, "#CC444444")
-        setUiActiveSafe("npc_groupRow_" .. groupId, true)
-        setUiAttrSafe("npc_groupRow_" .. groupId, "color", tostring(leaderColorTranslucent))
-        setUiAttrSafe("npc_groupRowColor_" .. groupId, "color", tostring(leaderColorTranslucent))
-        setUiAttrSafe("npc_groupTwirl_" .. groupId, "text", expanded and "▾" or "▸")
-        setUiAttrSafe("npc_groupName_" .. groupId, "color", "#000000")
-        setUiAttrSafe("npc_groupName_" .. groupId, "fontStyle", "Bold")
+        setUiButtonAttrsSafe("npc_groupTwirl_" .. groupId, { text = expanded and "▾" or "▸", active = "true" }, "#000000")
         for _, areaKey in ipairs(areas) do
-            setPositionButtonAttrsSafe("npc_group_" .. groupId .. "_" .. areaKey, true)
-            setUiAttrSafe("npc_group_" .. groupId .. "_" .. areaKey, "textColor", "#000000")
-            setUiAttrSafe("npc_group_" .. groupId .. "_" .. areaKey, "fontStyle", "Bold")
+            setUiButtonAttrsSafe("npc_group_" .. groupId .. "_" .. areaKey, { active = "true" }, "#000000")
         end
-        setUiAttrSafe("npc_groupTwirl_" .. groupId, "textColor", "#000000")
-        setUiAttrSafe("npc_groupTwirl_" .. groupId, "fontStyle", "Bold")
 
         for _, row in ipairs(members) do
             local npcName = row.name
             local rec = instances[npcName]
             local isSpawned = rec ~= nil
-            local isLocked = isSpawned and rec.locked == true
+            local isLocked = isSpawned and isNpcLocked(rec)
             setUiActiveSafe("npc_groupMemberRow_" .. groupId .. "_" .. npcName, expanded)
-            setUiAttrSafe("npc_groupMemberName_" .. groupId .. "_" .. npcName, "text", tostring((NPCS.characters[npcName] and NPCS.characters[npcName].fullName) or npcName))
 
             local lockId = "npc_memberLock_" .. groupId .. "_" .. npcName
-            setPositionButtonAttrsSafe(lockId, isSpawned)
-            setUiAttrSafe(lockId, "text", isLocked and "🔒" or "🔓")
-            setUiAttrSafe(lockId, "colors", isLocked and "#8B0000|#AA0000|#660000|#330000" or "#444444|#555555|#333333|#222222")
+            setUiButtonAttrsSafe(lockId, {
+                active = isSpawned and "true" or "false",
+                text = isLocked and "⨂" or "⨀",
+                colors = isLocked and "#8B0000|#AA0000|#660000|#330000" or "#444444|#555555|#333333|#222222",
+            }, "#FFFFFF")
 
             for _, areaKey in ipairs(areas) do
                 local locId = "npc_memberLoc_" .. groupId .. "_" .. npcName .. "_" .. areaKey
-                setPositionButtonAttrsSafe(locId, true)
                 local isHere = isSpawned and rec.areaKey == areaKey
-                setUiAttrSafe(locId, "colors", isHere and "#00C853|#00E676|#00A844|#225533" or "#2A2A2A|#333333|#1D1D1D|#111111")
+                setUiButtonAttrsSafe(locId, {
+                    active = "true",
+                    colors = isHere and "#00C853|#00E676|#00A844|#225533" or "#2A2A2A|#333333|#1D1D1D|#111111",
+                }, "#FFFFFF")
             end
         end
     end

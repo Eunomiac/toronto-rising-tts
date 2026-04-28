@@ -84,6 +84,13 @@ function manualPlayerLight2Setup()
   L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_PINK, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
   L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_PURPLE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
 
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_1_RED, {position=Vector({0.00, 23.00, -65.00}), rotation=Vector(350, 0, 0)})
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_3_RED, { enabled = true, range = 48.018639, angle = 119.425003, intensity = 1.488999, color = Color(0.525551, 0.525551, 0.525551), position=Vector({0.00, -5, -76.61}), rotation=Vector(180, 0, 0)}, nil, 5)
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_3_BROWN, { enabled = true, range = 48.018639, angle = 119.425003, intensity = 1.488999, color = Color(0.525551, 0.525551, 0.525551)}, nil, 5)
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_3_ORANGE, { enabled = true, range = 48.018639, angle = 119.425003, intensity = 1.488999, color = Color(0.525551, 0.525551, 0.525551)}, nil, 5)
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_3_PINK, { enabled = true, range = 48.018639, angle = 119.425003, intensity = 1.488999, color = Color(0.525551, 0.525551, 0.525551)}, nil, 5)
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_3_PURPLE, { enabled = true, range = 48.018639, angle = 119.425003, intensity = 1.488999, color = Color(0.525551, 0.525551, 0.525551)}, nil, 5)
+
 
   L.SetLightMode(G.GUIDS.SEAT_LIGHT_1_RED, {
     enabled = true,
@@ -105,8 +112,6 @@ L.LIGHTMODES = {
       default = "STANDARD",
       OFF = {
         enabled = false,
-        position = Vector({0, 60, -850}),
-        rotation = Vector({-33, 180, 0}),
         range = 80,
         angle = 0,
         intensity = 0,
@@ -114,8 +119,6 @@ L.LIGHTMODES = {
       },
       STANDARD = {
         enabled = true,
-        position = Vector({0, 60, -95}),
-        rotation = Vector({-33, 180, 0}),
         range = 80,
         angle = 90,
         intensity = 5,
@@ -224,16 +227,12 @@ L.LIGHTMODES = {
         default = "OFF",
         OFF = {
             enabled = false,
-            position = Vector(88.168, 50.000, -71.353),
-            rotation = Vector(270.000, -36.000, 0.000),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            position = Vector(67.595, 23.000, -43.037),
-            rotation = Vector(350, -36.000, 0.000),
             range = 100,
             angle = 100,
             intensity = 1.8,
@@ -246,16 +245,12 @@ L.LIGHTMODES = {
         default = "OFF",
         OFF = {
             enabled = false,
-            position = Vector(46.353, 50.000, -92.658),
-            rotation = Vector(270.000, -18.000, 0.000),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            position = Vector(35.537, 23.000, -59.371),
-            rotation = Vector(350, -18.000, 0.000),
             range = 100,
             angle = 100,
             intensity = 1.8,
@@ -268,16 +263,12 @@ L.LIGHTMODES = {
         default = "OFF",
         OFF = {
             enabled = false,
-            position = Vector(0.00, 50.00, -100.00),
-            rotation = Vector(270, 0, 0),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            position = Vector(0.000, 23.000, -65.000),
-            rotation = Vector(350, 0.00, 0.00),
             range = 100,
             angle = 100,
             intensity = 1.8,
@@ -290,16 +281,12 @@ L.LIGHTMODES = {
         default = "OFF",
         OFF = {
             enabled = false,
-            position = Vector(-46.353, 50.000, -92.658),
-            rotation = Vector(270.000, 18.000, 0.000),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            position = Vector(-35.537, 23.000, -59.371),
-            rotation = Vector(350, 18.000, 0.000),
             range = 100,
             angle = 100,
             intensity = 1.8,
@@ -312,16 +299,12 @@ L.LIGHTMODES = {
         default = "OFF",
         OFF = {
             enabled = false,
-            position = Vector(-88.168, 50.000, -71.353),
-            rotation = Vector(270.000, 36.000, 0.000),
             range = 40,
             angle = 0,
             intensity = 0
         },
         STANDARD = {
             enabled = true,
-            position = Vector(-67.595, 23.000, -43.037),
-            rotation = Vector(350, 36.000, 0.000),
             range = 100,
             angle = 100,
             intensity = 1.8,
@@ -367,13 +350,9 @@ L.LIGHTMODES = {
         OFF = {
             enabled = false,
             angle = 0,
-            position = Vector({0.00, 50.00, -50.00}),
-            rotation = Vector({73.80, 0.00, 0.00})
         },
         STANDARD = {
             enabled = true,
-            position = Vector({0.00, 17.04, -40.43}),
-            rotation = Vector({64.78, 180.00, 180.00}),
             color = Color(255 / 255, 255 / 255, 200 / 255),
             intensity = 2,
             range = 80,
@@ -418,8 +397,6 @@ L.LIGHTMODES = {
         default = "OFF",
         OFF = {
           enabled = false,
-          position = Vector(0.000000, -5.656201, -77.154549),
-          rotation = Vector(9.869205, 180.000000, 180.000000),
           range = 48.018639,
           angle = 0,
           intensity = 0,
@@ -427,8 +404,82 @@ L.LIGHTMODES = {
         },
         STANDARD = {
           enabled = true,
-          position = Vector(0.000000, -5.656201, -77.154549),
-          rotation = Vector(9.869205, 180.000000, 180.000000),
+          range = 48.018639,
+          angle = 119.425003,
+          intensity = 1.488999,
+          color = Color(0.525551, 0.525551, 0.525551)
+        }
+    },
+    playerLight3Orange = {
+        guid = G.GUIDS.SEAT_LIGHT_3_ORANGE,
+        isPlayerLight = true,
+        default = "OFF",
+        OFF = {
+          enabled = false,
+          range = 48.018639,
+          angle = 0,
+          intensity = 0,
+          color = Color(0.525551, 0.525551, 0.525551)
+        },
+        STANDARD = {
+          enabled = true,
+          range = 48.018639,
+          angle = 119.425003,
+          intensity = 1.488999,
+          color = Color(0.525551, 0.525551, 0.525551)
+        }
+    },
+    playerLight3Pink = {
+        guid = G.GUIDS.SEAT_LIGHT_3_PINK,
+        isPlayerLight = true,
+        default = "OFF",
+        OFF = {
+          enabled = false,
+          range = 48.018639,
+          angle = 0,
+          intensity = 0,
+          color = Color(0.525551, 0.525551, 0.525551)
+        },
+        STANDARD = {
+          enabled = true,
+          range = 48.018639,
+          angle = 119.425003,
+          intensity = 1.488999,
+          color = Color(0.525551, 0.525551, 0.525551)
+        }
+    },
+    playerLight3Brown = {
+        guid = G.GUIDS.SEAT_LIGHT_3_BROWN,
+        isPlayerLight = true,
+        default = "OFF",
+        OFF = {
+          enabled = false,
+          range = 48.018639,
+          angle = 0,
+          intensity = 0,
+          color = Color(0.525551, 0.525551, 0.525551)
+        },
+        STANDARD = {
+          enabled = true,
+          range = 48.018639,
+          angle = 119.425003,
+          intensity = 1.488999,
+          color = Color(0.525551, 0.525551, 0.525551)
+        }
+    },
+    playerLight3Purple = {
+        guid = G.GUIDS.SEAT_LIGHT_3_PURPLE,
+        isPlayerLight = true,
+        default = "OFF",
+        OFF = {
+          enabled = false,
+          range = 48.018639,
+          angle = 0,
+          intensity = 0,
+          color = Color(0.525551, 0.525551, 0.525551)
+        },
+        STANDARD = {
+          enabled = true,
           range = 48.018639,
           angle = 119.425003,
           intensity = 1.488999,

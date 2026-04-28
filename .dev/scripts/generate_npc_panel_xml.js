@@ -141,6 +141,14 @@ function xmlEscape(value) {
     .replaceAll("\"", "&quot;");
 }
 
+function withAlphaHex(hexColor, alphaHex = "CC", fallback = "#444444CC") {
+  const match = typeof hexColor === "string" ? hexColor.match(/^#([0-9a-fA-F]{6})$/) : null;
+  if (!match) {
+    return fallback;
+  }
+  return `#${match[1].toUpperCase()}${alphaHex}`;
+}
+
 function buildPanelXml({ areas, characters, groupIds, groupDisplayNames }) {
   const rows = [];
 
@@ -173,12 +181,12 @@ function buildPanelXml({ areas, characters, groupIds, groupDisplayNames }) {
         )
         .join("");
       rows.push(`<HorizontalLayout id="npc_occRow_${area.key}_${npcName}" class="hud_storyteller_button_row" active="false">
-  <Button id="npc_toggle_${area.key}_${npcName}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">⊚</Button>
-  <Button id="npc_spot_${area.key}_${npcName}" class="hud_storyteller_button hud_storyteller_button_icon" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
+  <Button id="npc_toggle_${area.key}_${npcName}" class="hud_storyteller_button hud_storyteller_button_icon hud_storyteller_button_icon_narrow" onClick="HUD_npcDispatch">⊚</Button>
+  <Button id="npc_spot_${area.key}_${npcName}" class="hud_storyteller_button hud_storyteller_button_icon hud_storyteller_button_icon_narrow" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
   <Text id="npc_occName_${area.key}_${npcName}" class="hud_storyteller_label hud_storyteller_row_name"${nameColorAttr}>${xmlEscape(npc.fullName)}</Text>
-  <Button id="npc_stats_${area.key}_${npcName}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">i</Button>
+  <Button id="npc_stats_${area.key}_${npcName}" class="hud_storyteller_button hud_storyteller_button_icon hud_storyteller_button_icon_narrow" onClick="HUD_npcDispatch">i</Button>
   ${moveOneButtons}
-  <Button id="npc_remove_${area.key}_${npcName}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">✕</Button>
+  <Button id="npc_remove_${area.key}_${npcName}" class="hud_storyteller_button hud_storyteller_button_icon hud_storyteller_button_icon_narrow" onClick="HUD_npcDispatch">✕</Button>
   <Panel class="hud_storyteller_horiz_spacer" />
 </HorizontalLayout>`);
     }
@@ -198,17 +206,17 @@ function buildPanelXml({ areas, characters, groupIds, groupDisplayNames }) {
       continue;
     }
     const leader = groupMembers.find((ch) => ch.groups[groupId] === 1);
-    const groupColorAttr = leader?.labelColor ? ` color="${xmlEscape(leader.labelColor)}"` : "";
+    const groupColor = withAlphaHex(leader?.labelColor || "", "CC", "#444444CC");
+    const groupColorAttr = ` color="${xmlEscape(groupColor)}"`;
     const groupButtons = areas
       .map(
         (area) =>
-          `<Button id="npc_group_${groupId}_${area.key}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">${xmlEscape(area.label)}</Button>`
+          `<Button id="npc_group_${groupId}_${area.key}" class="hud_storyteller_button hud_storyteller_button_icon npc_group_button_icon" onClick="HUD_npcDispatch">${xmlEscape(area.label)}</Button>`
       )
       .join("");
-    rows.push(`<HorizontalLayout id="npc_groupRow_${groupId}" class="hud_storyteller_button_row" active="true">
-  <Button id="npc_groupTwirl_${groupId}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">▸</Button>
-  <Text id="npc_groupRowColor_${groupId}" class="npc_group_row_color"${groupColorAttr}> </Text>
-  <Text id="npc_groupName_${groupId}" class="hud_storyteller_label hud_storyteller_row_name">${xmlEscape(groupLabel)}</Text>
+    rows.push(`<HorizontalLayout id="npc_groupRow_${groupId}" class="hud_storyteller_button_row" active="true"${groupColorAttr}>
+  <Button id="npc_groupTwirl_${groupId}" class="hud_storyteller_button hud_storyteller_button_icon hud_storyteller_button_icon_narrow npc_group_button_icon" onClick="HUD_npcDispatch">▸</Button>
+  <Text id="npc_groupName_${groupId}" class="hud_storyteller_label hud_storyteller_row_name npc_group_row_name">${xmlEscape(groupLabel)}</Text>
   ${groupButtons}
   <Panel class="hud_storyteller_horiz_spacer" />
 </HorizontalLayout>`);
@@ -223,7 +231,7 @@ function buildPanelXml({ areas, characters, groupIds, groupDisplayNames }) {
         .join("");
       rows.push(`<HorizontalLayout id="npc_groupMemberRow_${groupId}_${member.key}" class="hud_storyteller_button_row npc_group_member_row" active="false">
   <Text id="npc_groupMemberName_${groupId}_${member.key}" class="hud_storyteller_label hud_storyteller_row_name"${memberColorAttr}>${xmlEscape(member.fullName)}</Text>
-  <Button id="npc_memberLock_${groupId}_${member.key}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">🔒</Button>
+  <Button id="npc_memberLock_${groupId}_${member.key}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">⨀</Button>
   ${memberLocButtons}
   <Panel class="hud_storyteller_horiz_spacer" />
 </HorizontalLayout>`);

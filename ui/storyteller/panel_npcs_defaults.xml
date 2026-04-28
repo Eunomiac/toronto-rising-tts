@@ -10,7 +10,7 @@
       scrollbarBackgroundColor="#440000"
       scrollbarColors="#990000|#AA0000|#CC0000|#333333"
       inertia="false"
-      color="rgba(0, 0, 0, 1)"
+      color="rgba(0, 0, 0, 0.15)"
       horizontal="false"
       vertical="true"
       preferredHeight="250"
@@ -80,6 +80,10 @@
     color="#FFD700"
     alignment="MiddleLeft" />
 
+  <Text class="npc_group_row_name"
+    color="#000000"
+    fontStyle="Bold" />
+
   <Panel class="hud_storyteller_horiz_spacer"
     color="clear"
     flexibleWidth="1"
@@ -88,6 +92,10 @@
     raycastTarget="false" />
 
   <Button class="hud_storyteller_button_icon" fontSize="14" textColor="#FFFFFF" fontStyle="Bold" width="20" minWidth="20" preferredWidth="20" flexibleWidth="0" height="20" minHeight="20" preferredHeight="20" flexibleHeight="0" alignment="MiddleCenter" />
+
+  <Button class="hud_storyteller_button_icon_narrow" width="11" minWidth="11" preferredWidth="11" />
+
+  <Button class="npc_group_button_icon" textColor="#000000" fontStyle="Bold" />
 
 
 </Defaults>

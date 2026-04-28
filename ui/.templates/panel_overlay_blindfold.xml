@@ -1,0 +1,6 @@
+<!-- TARGET: ui/player/panel_overlay_blindfold.xml -->
+<!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (map panels). -->
+<!-- Visibility: TTS `UI.show` / `UI.hide` play showAnimation/hideAnimation (tts-api UI API/Attributes.md). -->
+<Panel id="playerHud_overlay_blindfold_@@color@@" class="playerHud_overlaysLayer" visibility="@@color@@">
+  <Image id="overlay_blindfold_@@color@@" image="overlay_blindfold" class="player_overlay overlay_anim_slide_top" />
+</Panel>

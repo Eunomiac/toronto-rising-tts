@@ -1,10 +1,16 @@
 --[[
-  Per-seat hunger flicker on `overlay_hungerPulse_<Color>` (image `overlay_hunger_pulse`).
-  Hunger 3: long transparent stretches, brief lightning-like flashes to ~75% opacity.
-  Hunger 4: shorter gaps between strikes, flashes to 100% opacity.
-  Hunger 5: near-constant randomized flicker (“storm”).
-  TTS Image `color` tints the texture; we animate alpha via 8-char hex `#FFFFFFAA` (Attributes.md).
-  Uses UI.setAttribute("color") only — never UI.show/hide (see core/hud_overlays.ttslua).
+  Per-seat hunger pulse on:
+    - overlay_hungerPulse_4_<Color>
+    - overlay_hungerPulse_5_<Color>
+  Only hunger 4 and hunger 5 animate.
+
+  Animation style: heartbeat ("bum-BUM"):
+    1) quick, dim pulse
+    2) slightly slower, brighter pulse
+    3) rest gap before next beat
+
+  TTS Image `color` tints the texture; we animate alpha via 8-char hex `#FFFFFFAA`.
+  Uses UI.setAttribute("color") only — never UI.show/hide.
   Stale Wait.time callbacks no-op when pulseGenByColor[seat] changes.
 ]]
 ---@diagnostic disable: undefined-global
@@ -12,36 +18,47 @@
 local HUP = {}
 
 local C = require("lib.constants")
+local U = require("lib.util")
 local S = require("core.state")
 
 --- Last applied generation per seat; incremented whenever HO.syncAll refreshes pulse state.
 --- @type table<string, number>
 local pulseGenByColor = {}
 
---- Hunger 3: idle between strikes (seconds).
-local H3_IDLE_MIN = 2.4
-local H3_IDLE_MAX = 6.2
---- Hunger 3: peak opacity during a flash.
-local H3_FLASH_ALPHA = 0.75
+--- Heartbeat tunables by hunger level.
+--- @class HungerPulseConfig
+--- @field pulse1Alpha number
+--- @field pulse1Duration number
+--- @field pulse2Alpha number
+--- @field pulse2Duration number
+--- @field interPulseGap number
+--- @field beatGap number
 
---- Hunger 4: idle between strikes (shorter than H3).
-local H4_IDLE_MIN = 0.85
-local H4_IDLE_MAX = 2.5
---- Hunger 4: peak opacity (full).
-local H4_FLASH_ALPHA = 1.0
+--- @type table<number, HungerPulseConfig>
+local HEARTBEAT_BY_HUNGER = {
+  [4] = {
+    pulse1Alpha = 0.25,
+    pulse1Duration = 0.5,
+    pulse2Alpha = 1,
+    pulse2Duration = 0.75,
+    interPulseGap = 0,
+    beatGap = 15,
+  },
+  [5] = {
+    pulse1Alpha = 0.25,
+    pulse1Duration = 0.25,
+    pulse2Alpha = 1,
+    pulse2Duration = 0.4,
+    interPulseGap = 0,
+    beatGap = 5,
+  },
+}
 
---- Hunger 5: flash duration and gap ranges (seconds) — “lightning storm”.
-local H5_ON_MIN = 0.028
-local H5_ON_MAX = 0.12
-local H5_GAP_MIN = 0.012
-local H5_GAP_MAX = 0.22
-local H5_ALPHA_MIN = 0.62
-local H5_ALPHA_MAX = 1.0
-
+--- @param hunger number
 --- @param seatColor string
 --- @return string
-local function pulseElementId(seatColor)
-  return "overlay_hungerPulse_" .. seatColor
+local function pulseElementId(hunger, seatColor)
+  return "overlay_hungerPulse_" .. tostring(hunger) .. "_" .. seatColor
 end
 
 --- Clamp alpha to [0,1] and format TTS 8-char hex white + alpha.
@@ -65,13 +82,6 @@ local function pulseTintColor(a)
   return string.format("#FFFFFF%02X", ai)
 end
 
---- @param lo number
---- @param hi number
---- @return number
-local function randFloat(lo, hi)
-  return lo + math.random() * (hi - lo)
-end
-
 --- @param seatColor string
 --- @param gen number
 --- @return boolean
@@ -79,18 +89,20 @@ local function genAlive(seatColor, gen)
   return pulseGenByColor[seatColor] == gen
 end
 
+--- @param hunger number
 --- @param seatColor string
 --- @param a number
-local function applyPulseAlpha(seatColor, a)
-  UI.setAttribute(pulseElementId(seatColor), "color", pulseTintColor(a))
+local function applyPulseAlpha(hunger, seatColor, a)
+  UI.setAttribute(pulseElementId(hunger, seatColor), "color", pulseTintColor(a))
 end
 
 --- @param seatColor string
-local function setPulseTransparent(seatColor)
+local function setAllPulseTransparent(seatColor)
   if type(seatColor) ~= "string" then
     return
   end
-  applyPulseAlpha(seatColor, 0)
+  applyPulseAlpha(4, seatColor, 0)
+  applyPulseAlpha(5, seatColor, 0)
 end
 
 --- Hunger value for overlay logic (matches core/hud_overlays.ttslua).
@@ -104,115 +116,97 @@ local function resolveHunger(playerID, seatColor)
   return tonumber(S.getPlayerVal(seatColor, "hunger")) or 0
 end
 
---- Forward declaration: strike calls back into idle for the next cycle.
-local hungerIdleThenLightning
-
---- One or two quick flashes, then long idle before the next cycle.
+--- Smoothly lerp a single overlay alpha and continue after duration.
+--- @param hunger number
 --- @param seatColor string
 --- @param gen number
---- @param peakAlpha number
---- @param idleMin number
---- @param idleMax number
-local function runLightningStrikeThenIdle(seatColor, gen, peakAlpha, idleMin, idleMax)
+--- @param fromAlpha number
+--- @param toAlpha number
+--- @param duration number
+--- @param onDone function|nil
+local function lerpPulseAlpha(hunger, seatColor, gen, fromAlpha, toAlpha, duration, onDone)
   if not genAlive(seatColor, gen) then
     return
   end
-  local twoFlashes = math.random() < 0.48
-  local firstOn = randFloat(0.032, 0.078)
-  local betweenOff = randFloat(0.038, 0.11)
-  local secondOn = randFloat(0.028, 0.065)
-
-  applyPulseAlpha(seatColor, peakAlpha)
+  local dur = tonumber(duration) or 0
+  if dur < 0 then
+    dur = 0
+  end
+  U.Lerp(function(a)
+    if genAlive(seatColor, gen) then
+      applyPulseAlpha(hunger, seatColor, a)
+    end
+  end, fromAlpha, toAlpha, dur, false, "sineInOut")
   Wait.time(function()
     if not genAlive(seatColor, gen) then
       return
     end
-    applyPulseAlpha(seatColor, 0)
-    if not twoFlashes then
-      Wait.time(function()
-        if not genAlive(seatColor, gen) then
-          return
-        end
-        hungerIdleThenLightning(seatColor, gen, peakAlpha, idleMin, idleMax)
-      end, randFloat(idleMin, idleMax))
-      return
+    applyPulseAlpha(hunger, seatColor, toAlpha)
+    if type(onDone) == "function" then
+      onDone()
     end
+  end, dur)
+end
+
+--- Run one smooth in/out pulse and then continue.
+--- @param seatColor string
+--- @param hunger number
+--- @param gen number
+--- @param peakAlpha number
+--- @param duration number
+--- @param onDone function|nil
+local function runSinglePulse(seatColor, hunger, gen, peakAlpha, duration, onDone)
+  if not genAlive(seatColor, gen) then
+    return
+  end
+  local d = tonumber(duration) or 0
+  if d < 0 then
+    d = 0
+  end
+  local half = d * 0.5
+  lerpPulseAlpha(hunger, seatColor, gen, 0, peakAlpha, half, function()
+    lerpPulseAlpha(hunger, seatColor, gen, peakAlpha, 0, half, onDone)
+  end)
+end
+
+--- Run one heartbeat cycle and schedule the next.
+--- @param seatColor string
+--- @param hunger number
+--- @param gen number
+--- @param cfg HungerPulseConfig
+local function runHeartbeatLoop(seatColor, hunger, gen, cfg)
+  if not genAlive(seatColor, gen) then
+    return
+  end
+
+  runSinglePulse(seatColor, hunger, gen, cfg.pulse1Alpha, cfg.pulse1Duration, function()
     Wait.time(function()
       if not genAlive(seatColor, gen) then
         return
       end
-      applyPulseAlpha(seatColor, peakAlpha * 0.52)
-      Wait.time(function()
-        if not genAlive(seatColor, gen) then
-          return
-        end
-        applyPulseAlpha(seatColor, 0)
+      runSinglePulse(seatColor, hunger, gen, cfg.pulse2Alpha, cfg.pulse2Duration, function()
         Wait.time(function()
-          if not genAlive(seatColor, gen) then
-            return
-          end
-          hungerIdleThenLightning(seatColor, gen, peakAlpha, idleMin, idleMax)
-        end, randFloat(idleMin, idleMax))
-      end, secondOn)
-    end, betweenOff)
-  end, firstOn)
+          runHeartbeatLoop(seatColor, hunger, gen, cfg)
+        end, cfg.beatGap)
+      end)
+    end, cfg.interPulseGap)
+  end)
 end
 
---- Long transparent wait, then a lightning strike (H3 / H4).
+--- @param hunger number
 --- @param seatColor string
 --- @param gen number
---- @param peakAlpha number
---- @param idleMin number
---- @param idleMax number
-hungerIdleThenLightning = function(seatColor, gen, peakAlpha, idleMin, idleMax)
-  if not genAlive(seatColor, gen) then
+local function startHeartbeatLoop(hunger, seatColor, gen)
+  local cfg = HEARTBEAT_BY_HUNGER[hunger]
+  if not cfg then
+    setAllPulseTransparent(seatColor)
     return
   end
-  applyPulseAlpha(seatColor, 0)
-  Wait.time(function()
-    if not genAlive(seatColor, gen) then
-      return
-    end
-    runLightningStrikeThenIdle(seatColor, gen, peakAlpha, idleMin, idleMax)
-  end, randFloat(idleMin, idleMax))
+  applyPulseAlpha(hunger, seatColor, 0)
+  runHeartbeatLoop(seatColor, hunger, gen, cfg)
 end
 
---- Near-constant randomized flicker (Hunger 5).
---- @param seatColor string
---- @param gen number
-local function runHunger5Storm(seatColor, gen)
-  if not genAlive(seatColor, gen) then
-    return
-  end
-  local a = randFloat(H5_ALPHA_MIN, H5_ALPHA_MAX)
-  applyPulseAlpha(seatColor, a)
-  local onDur = randFloat(H5_ON_MIN, H5_ON_MAX)
-  Wait.time(function()
-    if not genAlive(seatColor, gen) then
-      return
-    end
-    applyPulseAlpha(seatColor, 0)
-    local gap = randFloat(H5_GAP_MIN, H5_GAP_MAX)
-    Wait.time(function()
-      runHunger5Storm(seatColor, gen)
-    end, gap)
-  end, onDur)
-end
-
---- @param seatColor string
---- @param gen number
---- @param tableIdx number 1 = Hunger 3, 2 = Hunger 4, 3 = Hunger 5
-local function startFlickerLoop(seatColor, gen, tableIdx)
-  if tableIdx == 1 then
-    hungerIdleThenLightning(seatColor, gen, H3_FLASH_ALPHA, H3_IDLE_MIN, H3_IDLE_MAX)
-  elseif tableIdx == 2 then
-    hungerIdleThenLightning(seatColor, gen, H4_FLASH_ALPHA, H4_IDLE_MIN, H4_IDLE_MAX)
-  elseif tableIdx == 3 then
-    runHunger5Storm(seatColor, gen)
-  end
-end
-
---- Reconcile flicker overlays for every player color after hunger / conditions sync.
+--- Reconcile pulse overlays for every player color after hunger / conditions sync.
 function HUP.syncHungerPulseAll()
   for _, seatColor in ipairs(C.PlayerColors) do
     local playerID = C.GetPlayerID(seatColor)
@@ -221,16 +215,11 @@ function HUP.syncHungerPulseAll()
     pulseGenByColor[seatColor] = (pulseGenByColor[seatColor] or 0) + 1
     local gen = pulseGenByColor[seatColor]
 
-    if hunger < 3 or hunger > 5 then
-      setPulseTransparent(seatColor)
-    else
-      local tableIdx = hunger - 2
-      if tableIdx < 1 or tableIdx > 3 then
-        setPulseTransparent(seatColor)
-      else
-        applyPulseAlpha(seatColor, 0)
-        startFlickerLoop(seatColor, gen, tableIdx)
-      end
+    -- Always clear both pulse images first so only one can remain visible.
+    setAllPulseTransparent(seatColor)
+
+    if hunger == 4 or hunger == 5 then
+      startHeartbeatLoop(hunger, seatColor, gen)
     end
   end
 end

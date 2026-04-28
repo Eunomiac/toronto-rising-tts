@@ -5,6 +5,10 @@
 <!-- Also includes sidebar (reference toggles) and camera bar via sub-includes -->
 
 <Panel id="adminControls" visibility="Host">
+  <Button id="toggleElem_adminControlsBody" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_togglePanel" rectAlignment="LowerRight" width="30" height="30">►</Button>
+  <VerticalLayout class="storyteller_buttonControls" visibility="Host" height="30" childForceExpandHeight="false">
+  </VerticalLayout>
+  <Panel id="adminControlsBody" active="false">
 
   <!-- ================================================================ -->
   <!-- Main Button Column (left side): Print State + debug test buttons  -->
@@ -36,6 +40,7 @@
   <!-- Sidebar (reference image toggles) and Camera bar                 -->
   <!-- ================================================================ -->
   <Include src="panel_camera.xml" />
+  </Panel>
 
 </Panel>
 
