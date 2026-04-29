@@ -434,124 +434,138 @@ C.ROLL_RESULT_BROADCAST_SECONDS = 6
 -- Storyteller is always Black in VTM5E
 C.STORYTELLER_COLOR = "Black"
 
--- Camera Angles (preset views for cinematic control)
-C.CameraAngles = {
-    OVERVIEW = {position = {x=0, y=10, z=-15}, pitch = 35, yaw = 0, distance = 50},
-    GM_VIEW = {position = {x=-30, y=30, z=0}, pitch = 45, yaw = 90, distance = 40},
-    -- Add more as needed for specific scenes
-}
-
 -- Object positions based on object state
 -- Only listed values should be changed
 C.ObjectPositions = {
   SIGNAL_FIRE = {
-    on = {position = {y=7.85}},
-    off = {position = {y=-10}}
+    target = {G.GUIDS.SIGNAL_FIRE_RED, G.GUIDS.SIGNAL_FIRE_BROWN, G.GUIDS.SIGNAL_FIRE_ORANGE, G.GUIDS.SIGNAL_FIRE_PINK, G.GUIDS.SIGNAL_FIRE_PURPLE},
+    on = {position = {y=7.85}, duration = 0},
+    off = {position = {y=-200}, duration = 0, isHidden = true}
   },
   HUNGER_SMOKE = {
-    on = {position = {y = 1.87}},
-    off = {position = {y = -10}}
+    target = {G.GUIDS.HUNGER_SMOKE_RED, G.GUIDS.HUNGER_SMOKE_BROWN, G.GUIDS.HUNGER_SMOKE_ORANGE, G.GUIDS.HUNGER_SMOKE_PINK, G.GUIDS.HUNGER_SMOKE_PURPLE},
+    on = {position = {y = 1.87}, duration = 0},
+    off = {position = {y = -200}, duration = 0,isHidden = true}
   },
   CSHEET_PAGE = {
-    on = {position = {y = 3.7}},
-    off = {position = {y = -10}}
+    target = {
+      G.GUIDS.CSHEET_PAGE_1_RED, G.GUIDS.CSHEET_PAGE_1_BROWN, G.GUIDS.CSHEET_PAGE_1_ORANGE, G.GUIDS.CSHEET_PAGE_1_PINK, G.GUIDS.CSHEET_PAGE_1_PURPLE,
+      G.GUIDS.CSHEET_PAGE_2_RED, G.GUIDS.CSHEET_PAGE_2_BROWN, G.GUIDS.CSHEET_PAGE_2_ORANGE, G.GUIDS.CSHEET_PAGE_2_PINK, G.GUIDS.CSHEET_PAGE_2_PURPLE,
+      G.GUIDS.CSHEET_PAGE_3_RED, G.GUIDS.CSHEET_PAGE_3_BROWN, G.GUIDS.CSHEET_PAGE_3_ORANGE, G.GUIDS.CSHEET_PAGE_3_PINK, G.GUIDS.CSHEET_PAGE_3_PURPLE,
+      G.GUIDS.CSHEET_PAGE_4_RED, G.GUIDS.CSHEET_PAGE_4_BROWN, G.GUIDS.CSHEET_PAGE_4_ORANGE, G.GUIDS.CSHEET_PAGE_4_PINK, G.GUIDS.CSHEET_PAGE_4_PURPLE,
+      G.GUIDS.CSHEET_PAGE_5_RED, G.GUIDS.CSHEET_PAGE_5_BROWN, G.GUIDS.CSHEET_PAGE_5_ORANGE, G.GUIDS.CSHEET_PAGE_5_PINK, G.GUIDS.CSHEET_PAGE_5_PURPLE,
+      G.GUIDS.CSHEET_PAGE_6_RED, G.GUIDS.CSHEET_PAGE_6_BROWN, G.GUIDS.CSHEET_PAGE_6_ORANGE, G.GUIDS.CSHEET_PAGE_6_PINK, G.GUIDS.CSHEET_PAGE_6_PURPLE,
+      G.GUIDS.CSHEET_PAGE_7_RED, G.GUIDS.CSHEET_PAGE_7_BROWN, G.GUIDS.CSHEET_PAGE_7_ORANGE, G.GUIDS.CSHEET_PAGE_7_PINK, G.GUIDS.CSHEET_PAGE_7_PURPLE,
+      G.GUIDS.CSHEET_PAGE_8_RED, G.GUIDS.CSHEET_PAGE_8_BROWN, G.GUIDS.CSHEET_PAGE_8_ORANGE, G.GUIDS.CSHEET_PAGE_8_PINK, G.GUIDS.CSHEET_PAGE_8_PURPLE
+    },
+    on = {position = {y = 3.19}, duration = 0},
+    off = {position = {y = -200}, duration = 0, isHidden = true}
   },
   CSHEET_DICE_DRAWER_BROWN = {
+    target = G.GUIDS.CSHEET_DICE_DRAWER_BROWN,
     on = {
-      position = Vector({49.32, 2.97, -17.89}),
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_BROWN,
+      height = {y = 2.97},
       scale = Vector({23.57, 3.92, 7.68})
     },
     off = {
-      position = Vector({60.68, -0.72, -33.51}),
-      scale = Vector({23.57, 0.42, 7.68})
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_BROWN,
+      height = {y = -1},
+      scale = Vector({23.57, 0.1, 7.68})
     }
   },
   CSHEET_DICE_DRAWER_ORANGE = {
+    target = G.GUIDS.CSHEET_DICE_DRAWER_ORANGE,
     on = {
-      position = Vector({25.93, 2.97, -29.81}),
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_ORANGE,
+      height = {y = 2.97},
       scale = Vector({23.57, 3.92, 7.68})
     },
     off = {
-      position = Vector({31.90, -0.72, -48.18}),
-      scale = Vector({23.57, 0.42, 7.68})
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_ORANGE,
+      height = {y = -1},
+      scale = Vector({23.57, 0.1, 7.68})
     }
   },
   CSHEET_DICE_DRAWER_RED = {
+    target = G.GUIDS.CSHEET_DICE_DRAWER_RED,
     on = {
-      position = Vector({0.00, 2.97, -33.91}),
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_RED,
+      height = {y = 2.97},
       scale = Vector({23.57, 3.92, 7.68})
     },
     off = {
-      position = Vector({0.00, -0.72, -53.23}),
-      scale = Vector({23.57, 0.42, 7.68})
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_RED,
+      height = {y = -1},
+      scale = Vector({23.57, 0.1, 7.68})
     }
   },
   CSHEET_DICE_DRAWER_PINK = {
+    target = G.GUIDS.CSHEET_DICE_DRAWER_PINK,
     on = {
-      position = Vector({-25.93, 2.97, -29.81}),
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_PINK,
+      height = {y = 2.97},
       scale = Vector({23.57, 3.92, 7.68})
     },
     off = {
-      position = Vector({-31.90, -0.72, -48.18}),
-      scale = Vector({23.57, 0.42, 7.68})
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_PINK,
+      height = {y = -1},
+      scale = Vector({23.57, 0.1, 7.68})
     }
   },
   CSHEET_DICE_DRAWER_PURPLE = {
+    target = G.GUIDS.CSHEET_DICE_DRAWER_PURPLE,
     on = {
-      position = Vector({-49.32, 2.97, -17.89}),
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_PURPLE,
+      height = {y = 2.97},
       scale = Vector({23.57, 3.92, 7.68})
     },
     off = {
-      position = Vector({-60.68, -0.72, -33.51}),
-      scale = Vector({23.57, 0.42, 7.68})
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_PURPLE,
+      height = {y = -1},
+      scale = Vector({23.57, 0.1, 7.68})
     }
   },
   TAROT_DRAWER_PINK = {
+    target = G.GUIDS.TAROT_DRAWER_PINK,
     on = {
-      anchorGUID = "9d4029",
-      position = {y = 7.12},
-      distanceDelta = -13, -- starting from the anchor's position, the difference in radial distance to the center of the centerPoint as defined by the current seat layout (which should be stored in state after running resolveSeatObjects)
-      rotationDelta = Vector({345.35, 0, 0}),
+      anchor = G.GUIDS.TAROT_DRAWER_ANCHOR_ON_PINK,
+      height = {y = 7.12},
       scale = Vector({7.49, 0.31, 5.72})
     },
     off = {
-      anchorGUID = "9d4029",
-      transitionDelay = 0, -- this should be in ADDITION to any sequencing or other transition delays that are set by the function moving the object
-      position = {y = 2.41},
-      distanceDelta = 0,
-      rotationDelta = Vector({0, 0, 0}),
-      scale = Vector({7.49, 0.31, 5.72})
+      anchor = G.GUIDS.TAROT_DRAWER_ANCHOR_OFF_PINK,
+      height = {y = 2.41},
+      scale = Vector({7.49, 0.01, 5.72})
     }
   },
   TAROT_DECK_PINK = {
+    target = G.GUIDS.TAROT_DECK_PINK,
     on = {
-      anchorGUID = "9d4029",
-      transitionDuration = 0, -- this should override the transition duration set by whichever function moves the object
-      transitionDelay = 1.5, -- this should be in ADDITION to any sequencing or other transition delays that are set by the function moving the object
       position = {y = 12},
-      distanceDelta = -13,
-      rotationDelta = Vector({14.62, 180, 180}),
-      setLock = false -- if "setLock" is present, then the object's lock state should be toggled accordingly. When unlocking, this should happen at the very end of the transition. When locking, this should happen at the very beginning of the transition.
+      duration = 0,
+      delay = 1.5,
+      isLocked = false
     },
     off = {
-      anchorGUID = "9d4029",
-      transitionDuration = 0, -- this should override the transition duration set by whichever function moves the object
       position = {y = -10},
-      distanceDelta = -13,
-      rotationDelta = Vector({14.62, 180, 180}),
-      setLock = true -- if "setLock" is present, then the object's lock state should be toggled accordingly. When unlocking, this should happen at the very end of the transition. When locking, this should happen at the very beginning of the transition.
+      duration = 0,
+      delay = 0,
+      isLocked = true,
+      isHidden = true
     }
   },
   TAROT_BUTTON_PINK = {
+    target = G.GUIDS.TAROT_BUTTON_PINK,
     on = {
-      anchorGUID = "9d4029",
-      transitionDuration = 0,
-      rotationDelta = Vector({0, 180, 180})
+      anchor = G.GUIDS.TAROT_BUTTON_ANCHOR_ON_PINK,
+      height = 6,
+      duration = 0
     },
     off = {
-      anchorGUID = "9d4029",
-      transitionDuration = 0,
-      rotationDelta = Vector({0, 0, 0})
+      anchor = G.GUIDS.TAROT_BUTTON_ANCHOR_OFF_PINK,
+      height = 6,
+      duration = 0
     }
   }
 }
@@ -665,35 +679,40 @@ print(string.format("[cleanup] moved=%d kept=%d", moved, kept))
 
 ]]
 
+--- World-space position of the reference player's hand zone when `C.RedCameraAngles` was authored.
+--- `lib.rotational-seat-layout` adds `(activeTable.referenceHandPosition - this)` to every seat/universal
+--- camera position derived from `C.RedCameraAngles` so hand-zone alignment matches camera presets.
+--- Keep in sync with the canonical layout table (currently `Table A` `referenceHandPosition`).
+C.CameraAuthoringReferenceHandPosition = Vector({0.00, 3.22, -76.61})
 
 C.RedCameraAngles = {
   forSeat = {
     default = {
       cameraMode = "FirstPerson",
-      position = Vector({0.0000, 28.5760, -54.5664}),
-      pitch = 0.0000,
-      yaw = 0.0000,
+      position = Vector({0.02, 28.5760, -54.5664}),
+      pitch = 0.01,
+      yaw = 0.01,
       distance = 27.6598,
     },
     sheet = {
       cameraMode = "FirstPerson",
-      position = Vector({0.0000, 5.8436, -53.0298}),
+      position = Vector({-0.01, 5.8436, -53.0298}),
       pitch = 70.5275,
-      yaw = 0.0000,
-      distance = 10.8949,
+      yaw = -0.01,
+      distance = 11,
     },
     roll = {
       cameraMode = "FirstPerson",
-      position = Vector({0.0000, 5.8436, -50.8718}),
-      pitch = 70.5275,
-      yaw = 0.0000,
+      position = Vector({0.01, 5.9, -50.8718}),
+      pitch = 72,
+      yaw = 0.1,
       distance = 16.5598,
     },
     diceTray = {
       cameraMode = "FirstPerson",
-      position = Vector({0.0000, 17.8731, -43.3904}),
+      position = Vector({-0.02, 17.8731, -43.3904}),
       pitch = 58.6195,
-      yaw = 0.0000,
+      yaw = -0.1,
       distance = 10.8949,
     }
   },
@@ -701,29 +720,29 @@ C.RedCameraAngles = {
     facingRed = {
       cameraMode = "FirstPerson",
       position = Vector({0, 0, 0}),
-      pitch = 0,
-      yaw = 0,
-      distance = 0
+      pitch = 0.1,
+      yaw = 0.1,
+      distance = 0.1
     },
     rollRed = {
       cameraMode = "FirstPerson",
       position = Vector({0.0000, 5.8436, -50.8718}),
       pitch = 70.5275,
-      yaw = 0.0000,
+      yaw = 0.1,
       distance = 16.5598,
     },
     sheetRed = {
       cameraMode = "FirstPerson",
       position = Vector({0.0000, 5.8436, -53.0298}),
       pitch = 70.5275,
-      yaw = 0.0000,
+      yaw = 0.1,
       distance = 10.8949
     },
     diceTrayRed = {
       cameraMode = "FirstPerson",
       position = Vector({0.0000, 17.8731, -43.3904}),
       pitch = 58.6195,
-      yaw = 0.0000,
+      yaw = 0.1,
       distance = 10.8949
     }
   }
@@ -892,6 +911,7 @@ C.Tables = {
       Purple = 13
     },
     referencePlayerColor = "Red",
+    referenceHandPosition = Vector({0.00, 3.22, -76.61}),
     components = {
       ["Table Leaf Near Left"] = {
         guid = "6db794",
@@ -917,12 +937,22 @@ C.Tables = {
         inactivePosition = Vector({0.00, -200, 100}),
         usedBy = "NPC3"
       }
+    },
+    objectPositions = {
+      {
+        guid = G.GUIDS.MAIN_LIGHT_LEFT,
+        position = {z = -31.04}
+      },
+      {
+        guid = G.GUIDS.MAIN_LIGHT_RIGHT,
+        position = {z = -31.04}
+      }
     }
   },
   ["Table B"] = {
     guid = "b086ae",
-    centerPoint = Vector({0, 0, -10.26}),
-    activePosition = Vector({0.00, 0, -10.26}),
+    centerPoint = Vector({0, 0, -40.26}),
+    activePosition = Vector({0.00, 0, -40.26}),
     inactivePosition = Vector({0.00, -200, 100}),
     numSegments = 10,
     angleSegmentOne = 0,
@@ -937,12 +967,23 @@ C.Tables = {
       Pink = 7,
       Purple = 8
     },
-    referencePlayerColor = "Red"
+    referencePlayerColor = "Red",
+    referenceHandPosition = Vector({0.00, 3.22, -112}),
+    objectPositions = {
+      {
+        guid = G.GUIDS.MAIN_LIGHT_LEFT,
+        position = {z = -50}
+      },
+      {
+        guid = G.GUIDS.MAIN_LIGHT_RIGHT,
+        position = {z = -50}
+      }
+    }
   },
   ["Table B1"] = {
     guid = "c52bcd",
-    centerPoint = Vector({0, 0, -16.07}),
-    activePosition = Vector({0.00, 0, -16.07}),
+    centerPoint = Vector({0, 0, -41.07}),
+    activePosition = Vector({0.00, 0, -41.07}),
     inactivePosition = Vector({0.00, -200, 100}),
     numSegments = 6,
     angleSegmentOne = 0,
@@ -954,12 +995,23 @@ C.Tables = {
       Pink = 5,
       Purple = 6,
     },
-    referencePlayerColor = "Red"
+    referencePlayerColor = "Red",
+    referenceHandPosition = Vector({0.00, 3.22, -106.61}),
+    objectPositions = {
+      {
+        guid = G.GUIDS.MAIN_LIGHT_LEFT,
+        position = {z = -50}
+      },
+      {
+        guid = G.GUIDS.MAIN_LIGHT_RIGHT,
+        position = {z = -50}
+      }
+    }
   },
   ["Table B2"] = {
     guid = "f14ede",
-    centerPoint = Vector({0, 0, -13.83}),
-    activePosition = Vector({0.00, 0, -13.83}),
+    centerPoint = Vector({0, 0, -38.83}),
+    activePosition = Vector({0.00, 0, -38.83}),
     inactivePosition = Vector({0.00, -200, 100}),
     numSegments = 7,
     angleSegmentOne = 25.7,
@@ -972,12 +1024,23 @@ C.Tables = {
       Pink = 5,
       Purple = 6,
     },
-    referencePlayerColor = "Red"
+    referencePlayerColor = "Red",
+    referenceHandPosition = Vector({0.00, 3.22, -106.61}),
+    objectPositions = {
+      {
+        guid = G.GUIDS.MAIN_LIGHT_LEFT,
+        position = {z = -50}
+      },
+      {
+        guid = G.GUIDS.MAIN_LIGHT_RIGHT,
+        position = {z = -50}
+      }
+    }
   },
   ["Table B3"] = {
     guid = "323c52",
-    centerPoint = Vector({0, 0, -12.25}),
-    activePosition = Vector({0.00, 0, -12.25}),
+    centerPoint = Vector({0, 0, -37.25}),
+    activePosition = Vector({0.00, 0, -37.25}),
     inactivePosition = Vector({0.00, -200, 100}),
     numSegments = 8,
     angleSegmentOne = 0,
@@ -991,12 +1054,23 @@ C.Tables = {
       Pink = 6,
       Purple = 7,
     },
-    referencePlayerColor = "Red"
+    referencePlayerColor = "Red",
+    referenceHandPosition = Vector({0.00, 3.22, -106.61}),
+    objectPositions = {
+      {
+        guid = G.GUIDS.MAIN_LIGHT_LEFT,
+        position = {z = -50}
+      },
+      {
+        guid = G.GUIDS.MAIN_LIGHT_RIGHT,
+        position = {z = -50}
+      }
+    }
   },
   ["Table B4"] = {
     guid = "ad8530",
-    centerPoint = Vector({0, 0, -11.04}),
-    activePosition = Vector({0, 0, -11.04}),
+    centerPoint = Vector({0, 0, -36.04}),
+    activePosition = Vector({0, 0, -36.04}),
     inactivePosition = Vector({0.00, -200, 100}),
     numSegments = 9,
     angleSegmentOne = 20,
@@ -1011,7 +1085,18 @@ C.Tables = {
       Pink = 6,
       Purple = 7,
     },
-    referencePlayerColor = "Red"
+    referencePlayerColor = "Red",
+    referenceHandPosition = Vector({0.00, 3.22, -106.61}),
+    objectPositions = {
+      {
+        guid = G.GUIDS.MAIN_LIGHT_LEFT,
+        position = {z = -50}
+      },
+      {
+        guid = G.GUIDS.MAIN_LIGHT_RIGHT,
+        position = {z = -50}
+      }
+    }
   }
 }
 
@@ -1028,8 +1113,9 @@ C.TableSourceObjects = {
   player = {
     "CSHEET_BASE",
     "CSHEET_BASE_BACK",
-    "CSHEET_ROLLER_DRAWER",
-    "CSHEET_ROLLER_DRAWER_ANCHOR",
+    "CSHEET_DICE_DRAWER",
+    "CSHEET_DICE_DRAWER_ANCHOR_ON",
+    "CSHEET_DICE_DRAWER_ANCHOR_OFF",
     "CSHEET_PAGE_1",
     "CSHEET_PAGE_2",
     "CSHEET_PAGE_3",
@@ -1055,7 +1141,11 @@ C.TableSourceObjects = {
     G.GUIDS.TAROT_DECK_PINK,
     G.GUIDS.TAROT_DRAWER_PINK,
     G.GUIDS.TAROT_BUTTON_PINK,
-    G.GUIDS.TAROT_ANCHOR_PINK
+    G.GUIDS.TAROT_BUTTON_ANCHOR_ON_PINK,
+    G.GUIDS.TAROT_BUTTON_ANCHOR_OFF_PINK,
+    G.GUIDS.TAROT_DRAWER_ANCHOR_ON_PINK,
+    G.GUIDS.TAROT_DRAWER_ANCHOR_OFF_PINK,
+    G.GUIDS.TAROT_DECK_ANCHOR_PINK,
   },
   postCorrections = {
     [G.GUIDS.THRONE_BROWN] = {

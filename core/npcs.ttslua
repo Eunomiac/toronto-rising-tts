@@ -30,6 +30,7 @@ NPCS.DISABLE_STORYTELLER_NPC_PANEL_XML_REFRESH = false
 
 local TAG_FIG = "npc_figurine"
 local TAG_LIT = "npc_light"
+local TAG_SPOTLIGHT = "Spotlight"
 local GM_PREFIX = "npcInstance:"
 
 --- Area key whose `distance` / `rotation = 0` define canonical slot layout in table XZ (similarity about origin).
@@ -473,6 +474,28 @@ local function unregisterDynamicLightModes(lightGuid)
     L.unregisterLightModeEntry(NPCS.lightRegistryName(lightGuid))
 end
 
+--- Ensure a spawned/loaded NPC light also carries the global Spotlight tag used by admin tooling.
+--- @param obj Object|nil
+local function ensureSpotlightTag(obj)
+    if obj == nil then
+        return
+    end
+    local has = false
+    if obj.hasTag ~= nil then
+        -- Known non-fatal case: hasTag can fail on stale handles during load races.
+        local okHas, val = pcall(function()
+            return obj.hasTag(TAG_SPOTLIGHT)
+        end)
+        has = okHas and val == true
+    end
+    if not has and obj.addTag ~= nil then
+        -- Known non-fatal case: addTag can fail on stale handles; safe to ignore.
+        pcall(function()
+            obj.addTag(TAG_SPOTLIGHT)
+        end)
+    end
+end
+
 --- @param npcName string
 --- @param transitionTime number|nil
 function NPCS.applyCurrentLightMode(npcName, transitionTime)
@@ -638,6 +661,14 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                     if lit == nil then
                         error("spawnObjectData returned nil for NPC light " .. npcName)
                     end
+                    -- Hide light arrow marker by default: UI "Looping Effect = 2" maps to API index 1 (0-based).
+                    if lit.AssetBundle ~= nil and lit.AssetBundle.playLoopingEffect ~= nil then
+                        -- Known non-fatal case: some light bundles may not expose looping effects immediately.
+                        pcall(function()
+                            lit.AssetBundle.playLoopingEffect(1)
+                        end)
+                    end
+                    ensureSpotlightTag(lit)
                     local lg = lit.getGUID and lit.getGUID() or ""
                     if lg == "" then
                         error("spawned NPC light has no GUID for " .. npcName)
@@ -919,7 +950,7 @@ function NPCS.destroyAllWorldAndState()
     setAllInstances({})
     local lights = U.clone(S.getStateVal("lights") or {})
     for k, _ in pairs(lights) do
-        if U.Type(k) == "string" and string.sub(k, 1, 8) == "npcLight_" then
+        if U.Type(k) == "string" and string.sub(k, 1, 9) == "npcLight_" then
             lights[k] = nil
         end
     end
@@ -1046,6 +1077,7 @@ function NPCS.restoreAfterStateLoad()
             local fig = getObjectFromGUID(rec.figurineGuid)
             local lit = getObjectFromGUID(rec.lightGuid)
             if fig ~= nil and lit ~= nil then
+                ensureSpotlightTag(lit)
                 L.registerNpcSpotlightModes(name, rec.lightGuid)
             end
         end

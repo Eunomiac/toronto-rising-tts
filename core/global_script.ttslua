@@ -329,8 +329,12 @@ end
     @return JSON string containing game state to save
 ]]
 function onSave()
-    if L ~= nil and L.cleanupLightsState ~= nil then
-        L.cleanupLightsState()
+    if L ~= nil then
+        if L.sanitizeLightsStateForSave ~= nil then
+            L.sanitizeLightsStateForSave()
+        elseif L.cleanupLightsState ~= nil then
+            L.cleanupLightsState()
+        end
     end
     -- Get save-safe state (whitelist approach - only includes explicitly listed fields)
     local state = S.getGameState(true)
@@ -738,6 +742,40 @@ function HUD_printState(player, button, id)
     DEBUG.logStateToFile("game_state")
     broadcastToColor(
         "Game state written to .dev/.debug/debug_logs/game_state.txt (enable External Editor + bridge on 39998 if missing).",
+        player.color,
+        {0, 1, 1}
+    )
+end
+
+--- Toggle all Anchor-tagged objects (admin debug utility).
+-- @param player Player
+-- @param button string
+-- @param id string
+function HUD_toggleAllAnchors(player, button, id)
+    if not DEBUG or type(DEBUG.toggleAllAnchorObjects) ~= "function" then
+        broadcastToColor("Toggle Anchors: DEBUG.toggleAllAnchorObjects missing.", player.color, {1, 0.5, 0})
+        return
+    end
+    local summary = DEBUG.toggleAllAnchorObjects()
+    broadcastToColor(
+        string.format("Anchors toggled: total=%d up=%d down=%d.", summary.total or 0, summary.movedUpHidden or 0, summary.movedDownShown or 0),
+        player.color,
+        {0, 1, 1}
+    )
+end
+
+--- Toggle Spotlight-tagged light arrows (admin debug utility).
+-- @param player Player
+-- @param button string
+-- @param id string
+function HUD_toggleAllSpotlights(player, button, id)
+    if not DEBUG or type(DEBUG.toggleAllSpotlightArrows) ~= "function" then
+        broadcastToColor("Toggle Spotlights: DEBUG.toggleAllSpotlightArrows missing.", player.color, {1, 0.5, 0})
+        return
+    end
+    local summary = DEBUG.toggleAllSpotlightArrows()
+    broadcastToColor(
+        string.format("Spotlights toggled: tagged=%d toggled=%d skipped=%d.", summary.tagged or 0, summary.toggled or 0, summary.skipped or 0),
         player.color,
         {0, 1, 1}
     )

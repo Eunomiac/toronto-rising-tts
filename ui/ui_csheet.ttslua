@@ -187,24 +187,28 @@ local function applyCsheetPageState(obj, state)
   if obj == nil or type(state) ~= "string" then
     return false
   end
-  local posData = C.ObjectPositions.CSHEET_PAGE[state]
+  local entry = C.ObjectPositions.CSHEET_PAGE
+  local posData = OP.resolveStatePose(obj, entry, state)
   if type(posData) ~= "table" or type(posData.position) ~= "table" then
     return false
   end
   local targetPos = OP.mergePosition(obj, posData.position)
   local visible = (targetPos.y >= 0)
-  -- Known non-fatal case: object can be mid-destruction during state toggles.
-  pcall(function()
-    obj.setPosition(targetPos)
-    obj.interactable = visible
-    if visible then
-      obj.setInvisibleTo({})
-    else
-      obj.setInvisibleTo({"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey"})
-    end
-  end)
-  applyCsheetNavButtonsActiveOnObject(obj, visible)
-  applyCsheetRootActiveOnObject(obj, visible)
+  local duration, delay = OP.resolveTransitionTiming(posData, 0, 0)
+  OP.applyResolvedPose(obj, posData, 0, 0)
+  Wait.time(function()
+    -- Known non-fatal case: object can be mid-destruction during state toggles.
+    pcall(function()
+      obj.interactable = visible
+      if visible then
+        obj.setInvisibleTo({})
+      else
+        obj.setInvisibleTo({"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey"})
+      end
+    end)
+    applyCsheetNavButtonsActiveOnObject(obj, visible)
+    applyCsheetRootActiveOnObject(obj, visible)
+  end, delay + duration)
   return true
 end
 

@@ -3752,6 +3752,88 @@ function DEBUG.showZones()
     print("Zone Events Active: " .. tostring(not zonesLocked))
 end
 
+--- Toggle all Anchor-tagged objects:
+--- hidden(alpha=0) -> reveal(alpha=1) and y-190
+--- visible(alpha=1) -> hide(alpha=0) and y+190
+--- @return table
+function DEBUG.toggleAllAnchorObjects()
+    local anchors = getObjectsWithTag("Anchor") or {}
+    local movedUp = 0
+    local movedDown = 0
+    local skipped = 0
+    for _, obj in ipairs(anchors) do
+        if obj ~= nil then
+            local pos = obj.getPosition()
+            local tint = obj.getColorTint() or { 1, 1, 1, 1 }
+            local r = tint.r or tint[1] or 1
+            local g = tint.g or tint[2] or 1
+            local b = tint.b or tint[3] or 1
+            local a = tint.a or tint[4] or 1
+            local isHidden = a <= 0.001
+            if isHidden then
+                obj.setPosition({ x = pos.x, y = pos.y - 190, z = pos.z })
+                obj.setColorTint({ r, g, b, 1 })
+                movedDown = movedDown + 1
+            else
+                obj.setPosition({ x = pos.x, y = pos.y + 190, z = pos.z })
+                obj.setColorTint({ r, g, b, 0 })
+                movedUp = movedUp + 1
+            end
+        else
+            skipped = skipped + 1
+        end
+    end
+    local summary = {
+        total = #anchors,
+        movedUpHidden = movedUp,
+        movedDownShown = movedDown,
+        skipped = skipped,
+    }
+    print("[DEBUG.toggleAllAnchorObjects] " .. JSON.encode(summary))
+    return summary
+end
+
+--- Toggle Spotlight-tagged object arrows using AssetBundle looping effects.
+--- UI 1 <-> UI 2 maps to API index 0 <-> 1 (0-based).
+--- @return table
+function DEBUG.toggleAllSpotlightArrows()
+    local spotlights = getObjectsWithTag("Spotlight") or {}
+    local toggled = 0
+    local skipped = 0
+    for _, obj in ipairs(spotlights) do
+        local ab = obj and obj.AssetBundle or nil
+        if ab ~= nil and ab.getLoopingEffectIndex ~= nil and ab.playLoopingEffect ~= nil then
+            local okRead, currentIdx0 = pcall(function()
+                return ab.getLoopingEffectIndex()
+            end)
+            if okRead and type(currentIdx0) == "number" then
+                local currentUi = currentIdx0 + 1
+                local targetUi = (currentUi == 2) and 1 or 2
+                local targetIdx0 = targetUi - 1
+                local okPlay = pcall(function()
+                    ab.playLoopingEffect(targetIdx0)
+                end)
+                if okPlay then
+                    toggled = toggled + 1
+                else
+                    skipped = skipped + 1
+                end
+            else
+                skipped = skipped + 1
+            end
+        else
+            skipped = skipped + 1
+        end
+    end
+    local summary = {
+        tagged = #spotlights,
+        toggled = toggled,
+        skipped = skipped,
+    }
+    print("[DEBUG.toggleAllSpotlightArrows] " .. JSON.encode(summary))
+    return summary
+end
+
 --- Inspect soundscape AssetBundle emitters, looping effect names, and AudioSource counts.
 -- @return table
 function DEBUG.inspectSoundscapeAudio()

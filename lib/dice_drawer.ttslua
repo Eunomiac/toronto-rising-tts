@@ -6,7 +6,6 @@
 
 local C = require("lib.constants")
 local OP = require("lib.object_positions")
-local U = require("lib.util")
 
 local DD = {}
 
@@ -63,89 +62,6 @@ local function findDiceDrawerObject(color)
   return nil
 end
 
---- @param obj userdata
---- @param pose table
-local function applyPose(obj, pose)
-  if type(pose) ~= "table" then
-    return
-  end
-  local duration, delay = OP.resolveTransitionTiming(pose, OP.DEFAULT_TRANSITION_DURATION, 0)
-  local setLock = pose.isLocked
-  if type(setLock) ~= "boolean" then
-    setLock = pose.setLock
-  end
-  local function run()
-    if type(setLock) == "boolean" and setLock == true then
-      -- Known non-fatal case: setLock can fail if object is deleted during animation setup.
-      pcall(function()
-        obj.setLock(true)
-      end)
-    end
-
-    local pos = pose.position
-    local scl = pose.scale
-    local rot = pose.rotation
-    if pos ~= nil then
-      if duration > 0 then
-        U.setPositionSlow(obj, Vector(pos), duration, nil, false)
-      else
-        -- Known non-fatal case: smooth move can fail on non-physical or stale objects.
-        pcall(function()
-          obj.setPositionSmooth(pos, false, false)
-        end)
-      end
-    end
-    if scl ~= nil then
-      if duration > 0 then
-        U.setScaleSlow(obj, Vector(scl), duration, nil)
-      else
-        -- Known non-fatal case: smooth scale is unsupported for some objects.
-        local smoothOk = pcall(function()
-          obj.setScaleSmooth(scl, false, false)
-        end)
-        if not smoothOk then
-          -- Known non-fatal case: fallback setScale can still fail on stale objects; safe to skip.
-          pcall(function()
-            obj.setScale(scl)
-          end)
-        end
-      end
-    end
-    if rot ~= nil then
-      if duration > 0 then
-        U.setRotationSlow(obj, Vector(rot), duration, nil, false)
-      else
-        -- Known non-fatal case: smooth rotation is unsupported for some objects.
-        local smoothOk = pcall(function()
-          obj.setRotationSmooth(rot, false, false)
-        end)
-        if not smoothOk then
-          -- Known non-fatal case: fallback setRotation can still fail on stale objects; safe to skip.
-          pcall(function()
-            obj.setRotation(rot)
-          end)
-        end
-      end
-    end
-
-    if type(setLock) == "boolean" and setLock == false then
-      local unlockDelay = duration > 0 and duration or 0
-      Wait.time(function()
-        -- Known non-fatal case: object may no longer exist when delayed unlock fires.
-        pcall(function()
-          obj.setLock(false)
-        end)
-      end, unlockDelay)
-    end
-  end
-
-  if delay > 0 then
-    Wait.time(run, delay)
-  else
-    run()
-  end
-end
-
 --- Move drawer to the "on" pose (first bag spawn, Roll release, or WP reroll path).
 --- Not tied to RC.openRoll — opens when dice actually spawn or when Roll is pressed.
 --- @param color string Seat color
@@ -161,7 +77,7 @@ function DD.openForRoll(color)
   local key = objectPositionsKey(color)
   local entry = key ~= nil and C.ObjectPositions[key] or nil
   local resolvedPose = OP.resolveStatePose(obj, entry or {}, "on") or pose
-  applyPose(obj, resolvedPose)
+  OP.applyResolvedPose(obj, resolvedPose, OP.DEFAULT_TRANSITION_DURATION, 0, { useSmoothSetters = true })
 end
 
 --- Move drawer to the "off" pose when staged dice are destroyed (cancel / take half /
@@ -179,7 +95,7 @@ function DD.closeAfterRoll(color)
   local key = objectPositionsKey(color)
   local entry = key ~= nil and C.ObjectPositions[key] or nil
   local resolvedPose = OP.resolveStatePose(obj, entry or {}, "off") or pose
-  applyPose(obj, resolvedPose)
+  OP.applyResolvedPose(obj, resolvedPose, OP.DEFAULT_TRANSITION_DURATION, 0, { useSmoothSetters = true })
 end
 
 return DD

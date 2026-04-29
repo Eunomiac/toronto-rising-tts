@@ -29,6 +29,7 @@ local C = require("lib.constants")
 local S = require("core.state")
 local DEBUG = require("core.debug")
 local P = require("lib.pc_stats")
+local OP = require("lib.object_positions")
 
 local M = {}
 
@@ -186,6 +187,7 @@ local function moveHandZoneAndContainedCards(hz, targetPos, targetRot)
   hz.setPosition({ x = targetPos.x, y = targetPos.y, z = targetPos.z })
   hz.setRotation({ x = targetRot.x, y = targetRot.y, z = targetRot.z })
   local deltaYaw = shortestSignedDelta(hzBefore.rotation.y, targetRot.y)
+  local alignedCardRotation = Vector(targetRot):add(Vector({ 0, 180, 0 }))
   for i = 1, #captured do
     local entry = captured[i]
     local newFrame = rigidTransformBetweenCenters(hzBefore.position, targetPos, entry.before, deltaYaw)
@@ -194,6 +196,8 @@ local function moveHandZoneAndContainedCards(hz, targetPos, targetRot)
   end
   for i = 1, #captured do
     local entry = captured[i]
+    -- Final snap avoids residual skew drift: cards should face opposite the hand-zone forward.
+    entry.obj.setRotation({ x = alignedCardRotation.x, y = alignedCardRotation.y, z = alignedCardRotation.z })
     entry.obj.setLock(entry.wasLocked)
   end
   return hzBefore
@@ -930,12 +934,32 @@ local function ensureReferenceHandZoneAnchorSlot(referenceSlots, referencePlayer
   return referenceSlots, #referenceSlots
 end
 
+--- World offset applied to every `C.RedCameraAngles`-derived camera position so presets track
+--- `referenceHandPosition` shifts (angles were authored at `C.CameraAuthoringReferenceHandPosition`).
+--- @param tableCfg table|nil
+--- @return Vector
+local function cameraPositionWorldOffsetForActiveTable(tableCfg)
+  if U.Type(tableCfg) ~= "table" or tableCfg.referenceHandPosition == nil then
+    return Vector(0, 0, 0)
+  end
+  local base = C.CameraAuthoringReferenceHandPosition
+  if base == nil then
+    return Vector(0, 0, 0)
+  end
+  return Vector(tableCfg.referenceHandPosition) - Vector(base)
+end
+
 --- @param computed table
 --- @param sourceGroups table
-local function applyCameraModesForSeats(computed, sourceGroups)
+--- @param positionWorldOffset Vector|nil additive world-space correction for all derived camera positions
+local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOffset)
   local bySeatModeKeys, universalModeBases = collectCameraModeKeys(sourceGroups)
   if #bySeatModeKeys < 1 and #universalModeBases < 1 then
     return
+  end
+  local worldOff = Vector(0, 0, 0)
+  if positionWorldOffset ~= nil then
+    worldOff = Vector(positionWorldOffset)
   end
   local referenceColor = computed.referencePlayerColor
   local map = computed.playerToPositionMap or {}
@@ -1009,6 +1033,7 @@ local function applyCameraModesForSeats(computed, sourceGroups)
           },
           deltaYaw
         )
+        local shiftedPos = Vector(transformed.position) + worldOff
         local playerID = S.getPlayerID(color)
         if playerID ~= nil then
           local pitch, yaw, distance = normalizeCameraAngles(
@@ -1019,7 +1044,7 @@ local function applyCameraModesForSeats(computed, sourceGroups)
           S.setStateVal(
             {
               cameraMode = redMode.cameraMode or "FirstPerson",
-              position = Vector(transformed.position),
+              position = shiftedPos,
               pitch = pitch,
               yaw = yaw,
               distance = distance,
@@ -1066,6 +1091,7 @@ local function applyCameraModesForSeats(computed, sourceGroups)
             },
             deltaYaw
           )
+          local shiftedPos = Vector(transformed.position) + worldOff
           local generatedKey = modeBase .. seatKey
           local pitch, yaw, distance = normalizeCameraAngles(
             transformed.rotation.x,
@@ -1074,7 +1100,7 @@ local function applyCameraModesForSeats(computed, sourceGroups)
           )
           universalAngles[generatedKey] = {
             cameraMode = redMode.cameraMode or "FirstPerson",
-            position = Vector(transformed.position),
+            position = shiftedPos,
             pitch = pitch,
             yaw = yaw,
             distance = distance,
@@ -1757,18 +1783,37 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
       end
 
       local orphanCount = 0
+      local orphanDetails = {}
       for _role, o in pairs(byRole) do
         if o ~= nil then
           orphanCount = orphanCount + 1
+          local guid = "unknown-guid"
+          local name = "unknown-name"
+          if o.getGUID ~= nil then
+            -- Known non-fatal case: stale handles can throw while reading metadata.
+            pcall(function()
+              guid = tostring(o.getGUID() or guid)
+            end)
+          end
+          if o.getName ~= nil then
+            -- Known non-fatal case: stale handles can throw while reading metadata.
+            pcall(function()
+              name = tostring(o.getName() or name)
+            end)
+          end
+          orphanDetails[#orphanDetails + 1] = string.format("%s (%s)", name, guid)
         end
       end
       if orphanCount > 0 then
+        table.sort(orphanDetails)
         print(
           "[rotational-seat-layout] seat '"
           .. color
           .. "': "
           .. tostring(orphanCount)
           .. " tagged object(s) did not match any template slot (left in place)."
+          .. " Unmatched: "
+          .. table.concat(orphanDetails, ", ")
         )
       end
     end
@@ -2373,6 +2418,118 @@ local function setDefaultCameraModeForSeatedPlayers()
   end
 end
 
+--- Before seat-layout generation, shift all reference-seat source objects (`RedObject`) by
+--- the delta between the live reference hand-zone position and destination table reference hand position.
+--- @param fromTableKey string|nil
+--- @param toTableKey string
+local function applyReferenceHandPositionDelta(fromTableKey, toTableKey)
+  local toCfg = C.Tables and C.Tables[toTableKey]
+  if U.Type(toCfg) ~= "table" then
+    return
+  end
+  if toCfg.referenceHandPosition == nil then
+    return
+  end
+
+  local refColor = toCfg.referencePlayerColor or "Red"
+  local handZone = U.getHandZone(refColor)
+  if handZone == nil or handZone.getPosition == nil then
+    return
+  end
+
+  local liveRef = Vector(handZone.getPosition())
+  local toRef = Vector(toCfg.referenceHandPosition)
+  local delta = toRef - liveRef
+  local tolerance = 0.01
+  if delta:sqrMagnitude() <= (tolerance * tolerance) then
+    return
+  end
+
+  -- Move reference hand zone using the same path as other seat hand-zone moves:
+  -- lock contained cards/decks, move rigidly with zone, restore lock states.
+  local handZoneRotation = handZone.getRotation and Vector(handZone.getRotation()) or Vector({ 0, 0, 0 })
+  moveHandZoneAndContainedCards(handZone, toRef, handZoneRotation)
+
+  -- Prevent double-shifting cards/decks already moved with the hand zone.
+  local movedWithHandZone = {}
+  if handZone.getObjects ~= nil then
+    local inZone = handZone.getObjects() or {}
+    for _, obj in ipairs(inZone) do
+      if obj ~= nil and isCardLikeObject(obj) and obj.getGUID ~= nil then
+        local g = obj.getGUID()
+        if U.Type(g) == "string" and g ~= "" then
+          movedWithHandZone[g] = true
+        end
+      end
+    end
+  end
+
+  local refs = getObjectsWithTag("RedObject")
+  if U.Type(refs) ~= "table" or #refs == 0 then
+    return
+  end
+
+  local moved = 0
+  for _, obj in ipairs(refs) do
+    if obj ~= nil and obj.getPosition ~= nil and obj.setPosition ~= nil then
+      local guid = obj.getGUID and obj.getGUID() or ""
+      if not movedWithHandZone[guid] then
+        local ok = pcall(function()
+          local pos = obj.getPosition()
+          obj.setPosition(pos + delta)
+        end)
+        if ok then
+          moved = moved + 1
+        end
+      end
+    end
+  end
+
+  print(
+    "[rotational-seat-layout] referenceHandPosition delta applied from '"
+    .. tostring(toTableKey)
+    .. "' refColor="
+    .. tostring(refColor)
+    .. " liveRef="
+    .. tostring(liveRef)
+    .. " targetRef="
+    .. tostring(toRef)
+    .. " delta="
+    .. tostring(delta)
+    .. " movedRedObjects="
+    .. tostring(moved)
+  )
+end
+
+--- Apply `C.Tables[*].objectPositions`: per-table partial position/rotation overrides by object GUID.
+--- Only axes present in each partial table are written; others keep the object's current values.
+--- @param tableCfg table|nil
+local function applyTableConfigObjectPositions(tableCfg)
+  if type(tableCfg) ~= "table" then
+    return
+  end
+  local entries = tableCfg.objectPositions
+  if type(entries) ~= "table" then
+    return
+  end
+  for i = 1, #entries do
+    local e = entries[i]
+    if type(e) == "table" and type(e.guid) == "string" and e.guid ~= "" then
+      local obj = getObjectFromGUID(e.guid)
+      if obj ~= nil then
+        if type(e.position) == "table" then
+          local merged = OP.mergePosition(obj, e.position)
+          obj.setPosition({ x = merged.x, y = merged.y, z = merged.z }, false, false)
+        end
+        if type(e.rotation) == "table" then
+          local mergedR = OP.mergeRotation(obj, e.rotation)
+          obj.setRotation({ x = mergedR.x, y = mergedR.y, z = mergedR.z })
+        end
+      end
+    end
+  end
+end
+
 --- Convenience wrapper around generateRotationalCoordinates + resolveSeatObjects.
 --- @param tableRef string|table key in C.Tables or table entry itself
 --- @param sourceObjects table|nil defaults to C.TableSourceObjects
@@ -2408,9 +2565,11 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   )
   M.resolveSeatObjects(computed, src, opts)
   applyPostCorrections(src, computed)
+  applyTableConfigObjectPositions(tableCfg)
   enforceNPCSeatObjectVisibility(src, occupiedNPCSlots, tableCfg, previousTableCfg)
   local sourceGroups = resolveSourceTemplateGroups(src)
-  applyCameraModesForSeats(computed, sourceGroups)
+  local camWorldOffset = cameraPositionWorldOffsetForActiveTable(tableCfg)
+  applyCameraModesForSeats(computed, sourceGroups, camWorldOffset)
   S.setStateVal(tableKey, "seatLayout", "currentTableKey")
   return computed
 end
@@ -2447,6 +2606,7 @@ function M.SetTableTo(tableKey)
 
   setBlindfoldForSeatedPlayers(true)
   Wait.time(function()
+    applyReferenceHandPositionDelta(currentTableKey, resolvedKey)
     M.resolveSeatObjectsFromTable(resolvedKey)
     setDefaultCameraModeForSeatedPlayers()
     Wait.time(function()

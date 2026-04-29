@@ -6,6 +6,7 @@
 local OP = {}
 local S = require("core.state")
 local C = require("lib.constants")
+local U = require("lib.util")
 OP.DEFAULT_TRANSITION_DURATION = 0.5
 
 --- @param obj Object
@@ -14,11 +15,41 @@ OP.DEFAULT_TRANSITION_DURATION = 0.5
 function OP.mergePosition(obj, partialPos)
   partialPos = partialPos or {}
   local currentPos = obj.getPosition()
-  return Vector(
-    partialPos.x or currentPos.x,
-    partialPos.y or currentPos.y,
-    partialPos.z or currentPos.z
-  )
+  -- Vector:set(x, y, z) keeps components unchanged when passed nil.
+  return currentPos:copy():set(partialPos.x, partialPos.y, partialPos.z)
+end
+
+--- @param obj Object
+--- @param partialRot table|nil
+--- @return Vector
+function OP.mergeRotation(obj, partialRot)
+  partialRot = partialRot or {}
+  local currentRot = obj.getRotation()
+  -- Vector:set(x, y, z) keeps components unchanged when passed nil.
+  return currentRot:copy():set(partialRot.x, partialRot.y, partialRot.z)
+end
+
+--- @param obj Object|nil
+--- @param anchorRef any
+--- @return Object|nil
+local function resolveAnchorObject(obj, anchorRef)
+  if anchorRef == nil then
+    return nil
+  end
+  if type(anchorRef) == "userdata" then
+    return anchorRef
+  end
+  if type(anchorRef) == "string" and anchorRef ~= "" then
+    local anchor = getObjectFromGUID(anchorRef)
+    if anchor ~= nil then
+      return anchor
+    end
+    -- Compatibility: allow anchorRef to be an ObjectPositions key.
+    if G ~= nil and type(G.GUIDS) == "table" and type(G.GUIDS[anchorRef]) == "string" then
+      return getObjectFromGUID(G.GUIDS[anchorRef])
+    end
+  end
+  return nil
 end
 
 --- @param center table|nil
@@ -76,11 +107,41 @@ function OP.resolveStatePose(obj, entry, state)
     rotation = pose.rotation,
     -- Canonical lock key: isLocked. Keep setLock as compatibility input.
     isLocked = pose.isLocked,
-    transitionDuration = pose.transitionDuration,
-    transitionDelay = pose.transitionDelay,
+    isHidden = pose.isHidden,
+    duration = pose.duration,
+    delay = pose.delay,
+    transitionDuration = pose.transitionDuration, -- compatibility alias
+    transitionDelay = pose.transitionDelay, -- compatibility alias
   }
   if resolved.isLocked == nil and type(pose.setLock) == "boolean" then
     resolved.isLocked = pose.setLock
+  end
+
+  -- Canonical anchored frame support: anchor + height.
+  local anchorRef = pose.anchor
+  local anchorObj = resolveAnchorObject(obj, anchorRef)
+  if anchorObj ~= nil then
+    local anchorPos = anchorObj.getPosition()
+    local anchorRot = anchorObj.getRotation()
+    local height = pose.height
+    local yHeight = nil
+    if type(height) == "table" then
+      yHeight = height.y
+    elseif type(height) == "number" then
+      yHeight = height
+    end
+    resolved.position = {
+      x = anchorPos.x,
+      y = yHeight ~= nil and yHeight or anchorPos.y,
+      z = anchorPos.z,
+    }
+    resolved.rotation = {
+      x = anchorRot.x,
+      y = anchorRot.y,
+      z = anchorRot.z,
+    }
+  elseif pose.anchor ~= nil then
+    print("[ObjectPositions] Anchored pose anchor not found: " .. tostring(pose.anchor))
   end
 
   local anchorGUID = pose.anchorGUID
@@ -150,10 +211,14 @@ function OP.resolveTransitionTiming(pose, baseDuration, baseDelay)
   local duration = type(baseDuration) == "number" and baseDuration or OP.DEFAULT_TRANSITION_DURATION
   local delay = type(baseDelay) == "number" and baseDelay or 0
   if type(pose) == "table" then
-    if type(pose.transitionDuration) == "number" then
+    if type(pose.duration) == "number" then
+      duration = pose.duration
+    elseif type(pose.transitionDuration) == "number" then
       duration = pose.transitionDuration
     end
-    if type(pose.transitionDelay) == "number" then
+    if type(pose.delay) == "number" then
+      delay = delay + pose.delay
+    elseif type(pose.transitionDelay) == "number" then
       delay = delay + pose.transitionDelay
     end
   end
@@ -162,6 +227,134 @@ function OP.resolveTransitionTiming(pose, baseDuration, baseDelay)
   end
   if delay < 0 then
     delay = 0
+  end
+  return duration, delay
+end
+
+--- Applies a resolved pose using utility animation helpers.
+--- Duration > 0 uses U.set*Slow; duration == 0 uses immediate setters.
+--- @param obj Object
+--- @param pose table
+--- @param baseDuration number|nil
+--- @param baseDelay number|nil
+--- @param opts table|nil
+--- @return number duration
+--- @return number delay
+function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
+  if type(obj) ~= "userdata" or type(pose) ~= "table" then
+    return 0, 0
+  end
+  opts = opts or {}
+  local shouldAbort = nil
+  local useSmoothSetters = opts.useSmoothSetters == true
+  if type(opts.shouldAbort) == "function" then
+    shouldAbort = opts.shouldAbort
+  end
+
+  local duration, delay = OP.resolveTransitionTiming(pose, baseDuration, baseDelay)
+  local initialLock = nil
+  -- Known non-fatal case: lock reads can fail on stale objects.
+  pcall(function()
+    initialLock = obj.getLock()
+  end)
+  local desiredLock = pose.isLocked
+  if desiredLock == nil and type(pose.setLock) == "boolean" then
+    desiredLock = pose.setLock
+  end
+
+  local function run()
+    if shouldAbort ~= nil and shouldAbort() then
+      return
+    end
+    if type(desiredLock) == "boolean" and desiredLock == true then
+      pcall(function()
+        obj.setLock(true)
+      end)
+    end
+    if pose.position ~= nil then
+      local targetPos = OP.mergePosition(obj, pose.position)
+      if duration > 0 then
+        if useSmoothSetters then
+          pcall(function()
+            obj.setPositionSmooth(targetPos, false, false)
+          end)
+        else
+          U.setPositionSlow(obj, targetPos, duration, nil, false)
+        end
+      else
+        pcall(function()
+          obj.setPosition(targetPos)
+        end)
+      end
+    end
+    if pose.rotation ~= nil then
+      local targetRot = OP.mergeRotation(obj, pose.rotation)
+      if duration > 0 then
+        if useSmoothSetters then
+          pcall(function()
+            obj.setRotationSmooth(targetRot, false, false)
+          end)
+        else
+          U.setRotationSlow(obj, targetRot, duration, nil, false)
+        end
+      else
+        pcall(function()
+          obj.setRotation(targetRot)
+        end)
+      end
+    end
+    if pose.scale ~= nil then
+      local targetScale = Vector(pose.scale)
+      if duration > 0 then
+        if useSmoothSetters then
+          local smoothOk = pcall(function()
+            obj.setScaleSmooth(targetScale, false, false)
+          end)
+          if not smoothOk then
+            pcall(function()
+              obj.setScale(targetScale)
+            end)
+          end
+        else
+          U.setScaleSlow(obj, targetScale, duration, nil)
+        end
+      else
+        pcall(function()
+          obj.setScale(targetScale)
+        end)
+      end
+    end
+
+    local finalizeDelay = duration > 0 and duration or 0
+    Wait.time(function()
+      if shouldAbort ~= nil and shouldAbort() then
+        return
+      end
+      if type(desiredLock) == "boolean" then
+        pcall(function()
+          obj.setLock(desiredLock)
+        end)
+      elseif type(initialLock) == "boolean" then
+        pcall(function()
+          obj.setLock(initialLock)
+        end)
+      end
+      if pose.isHidden == true then
+        pcall(function()
+          obj.setInvisibleTo({"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey", "Black"})
+        end)
+      else
+        pcall(function()
+          obj.setInvisibleTo({})
+        end)
+      end
+    end, finalizeDelay)
+  end
+
+  if delay > 0 then
+    Wait.time(run, delay)
+  else
+    run()
   end
   return duration, delay
 end

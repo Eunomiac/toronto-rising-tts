@@ -56,17 +56,18 @@ local function runWhenSeatLayoutReady(callback, attempt)
         return
     end
     attempt = attempt or 1
-    if isSeatLayoutReady() then
-        callback()
-        return
-    end
-    if attempt >= 40 then
+    local maxAttempts = 40
+    local attempts = attempt
+    U.waitUntil(function()
+        if isSeatLayoutReady() then
+            callback()
+            return
+        end
         print("[TarotButton] seatLayout.currentTableKey is not ready; skipping tarot pose application.")
-        return
-    end
-    Wait.time(function()
-        runWhenSeatLayoutReady(callback, attempt + 1)
-    end, 0.25)
+    end, function()
+        attempts = attempts + 1
+        return isSeatLayoutReady() or attempts >= maxAttempts
+    end, false, 10, 0.25)
 end
 
 --- @return Object|nil
@@ -83,100 +84,6 @@ end
 --- @return boolean
 local function isTokenCurrent(token)
     return token == currentOpToken
-end
-
---- @param obj Object
---- @param pose table
---- @param token number
-local function applyPoseWithTiming(obj, pose, token)
-    if obj == nil or type(pose) ~= "table" then
-        return
-    end
-    local duration, delay = OP.resolveTransitionTiming(pose, OP.DEFAULT_TRANSITION_DURATION, 0)
-    local setLock = pose.isLocked
-    if type(setLock) ~= "boolean" then
-        setLock = pose.setLock
-    end
-
-    local function run()
-        if not isTokenCurrent(token) then
-            return
-        end
-        if type(setLock) == "boolean" and setLock == true then
-            -- Known non-fatal case: setLock can fail if object is stale during transition.
-            pcall(function()
-                obj.setLock(true)
-            end)
-        end
-
-        if pose.position ~= nil then
-            if duration > 0 then
-                local toPos = Vector(pose.position)
-                -- Known non-fatal case: smooth move can fail on unsupported/stale objects.
-                pcall(function()
-                    obj.setPositionSmooth(toPos, false, false)
-                end)
-            else
-                -- Known non-fatal case: immediate move can fail on stale objects.
-                pcall(function()
-                    obj.setPosition(pose.position)
-                end)
-            end
-        end
-
-        if pose.scale ~= nil then
-            if duration > 0 then
-                -- Scale lerp via U.Lerp is unreliable in this object-script context.
-                -- Apply target scale directly; tarot drawer scale is static in current configs.
-                -- Known non-fatal case: scale writes can fail for unsupported object types.
-                pcall(function()
-                    obj.setScale(pose.scale)
-                end)
-            else
-                -- Known non-fatal case: scale writes can fail for unsupported object types.
-                pcall(function()
-                    obj.setScale(pose.scale)
-                end)
-            end
-        end
-
-        if pose.rotation ~= nil then
-            if duration > 0 then
-                local toRot = Vector(pose.rotation)
-                -- Known non-fatal case: smooth rotate can fail on unsupported/stale objects.
-                pcall(function()
-                    obj.setRotationSmooth(toRot, false, false)
-                end)
-            else
-                -- Known non-fatal case: immediate rotate can fail on stale objects.
-                pcall(function()
-                    obj.setRotation(pose.rotation)
-                end)
-            end
-        end
-
-        if type(setLock) == "boolean" and setLock == false then
-            local unlockDelay = duration > 0 and duration or 0
-            Wait.time(function()
-                if isTokenCurrent(token) then
-                    -- Known non-fatal case: delayed unlock can run after object is destroyed.
-                    pcall(function()
-                        obj.setLock(false)
-                    end)
-                end
-            end, unlockDelay)
-        end
-    end
-
-    if delay > 0 then
-        Wait.time(function()
-            if isTokenCurrent(token) then
-                run()
-            end
-        end, delay)
-    else
-        run()
-    end
 end
 
 --- @param key string
@@ -220,7 +127,12 @@ local function applyObjectState(key, state, token)
             effectivePose.position = OP.mergePosition(obj, effectivePose.position)
         end
     end
-    applyPoseWithTiming(obj, effectivePose, token)
+    OP.applyResolvedPose(obj, effectivePose, OP.DEFAULT_TRANSITION_DURATION, 0, {
+        useSmoothSetters = true,
+        shouldAbort = function()
+            return not isTokenCurrent(token)
+        end
+    })
 end
 
 --- @param targetOn boolean

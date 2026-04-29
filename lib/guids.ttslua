@@ -26,7 +26,7 @@ G.GUIDS = {
 
     -- STORYTELLER OBJECTS
     -- Storyteller Table (raised and behind players so they can't see it)
-    GM_TABLE = "6e517a",
+    GM_TABLE = "e157b5",
     GM_LIGHT = "4148ba",
 
     -- Light objects (for scene lighting)
@@ -65,6 +65,52 @@ G.GUIDS = {
     -- Scripting Zones
     TABLE_DROP_ZONE = "af99b8", -- zone for table drops
 
+    -- Character Sheet Objects: Pages & Dice Drawers
+    CSHEET_PAGE_1_BROWN = "21d213",
+    CSHEET_PAGE_1_ORANGE = "553538",
+    CSHEET_PAGE_1_RED = "f10182",
+    CSHEET_PAGE_1_PINK = "c4abec",
+    CSHEET_PAGE_1_PURPLE = "0bdb4a",
+    CSHEET_PAGE_2_BROWN = "c80132",
+    CSHEET_PAGE_2_ORANGE = "e2c921",
+    CSHEET_PAGE_2_RED = "8a59a9",
+    CSHEET_PAGE_2_PINK = "c0f4b5",
+    CSHEET_PAGE_2_PURPLE = "7ac353",
+    CSHEET_PAGE_3_BROWN = "f8e50c",
+    CSHEET_PAGE_3_ORANGE = "a03257",
+    CSHEET_PAGE_3_RED = "d405a8",
+    CSHEET_PAGE_3_PINK = "5166e7",
+    CSHEET_PAGE_3_PURPLE = "631323",
+    CSHEET_PAGE_4_BROWN = "a88138",
+    CSHEET_PAGE_4_ORANGE = "9b845d",
+    CSHEET_PAGE_4_RED = "5badcc",
+    CSHEET_PAGE_4_PINK = "802d14",
+    CSHEET_PAGE_4_PURPLE = "edf063",
+    CSHEET_PAGE_5_BROWN = "f7ab1b",
+    CSHEET_PAGE_5_ORANGE = "8a6362",
+    CSHEET_PAGE_5_RED = "421bfb",
+    CSHEET_PAGE_5_PINK = "00fc87",
+    CSHEET_PAGE_5_PURPLE = "199d9f",
+    CSHEET_PAGE_6_BROWN = "f36758",
+    CSHEET_PAGE_6_ORANGE = "f4d6b6",
+    CSHEET_PAGE_6_RED = "515b16",
+    CSHEET_PAGE_6_PINK = "555372",
+    CSHEET_PAGE_6_PURPLE = "1c72c5",
+    CSHEET_PAGE_7_BROWN = "35df08",
+    CSHEET_PAGE_7_ORANGE = "8e7623",
+    CSHEET_PAGE_7_RED = "edb0b1",
+    CSHEET_PAGE_7_PINK = "f38d69",
+    CSHEET_PAGE_7_PURPLE = "f85e4f",
+    CSHEET_PAGE_8_BROWN = "07ead9",
+    CSHEET_PAGE_8_ORANGE = "511c50",
+    CSHEET_PAGE_8_RED = "f93aea",
+    CSHEET_PAGE_8_PINK = "645189",
+    CSHEET_PAGE_8_PURPLE = "ceb48e",
+    CSHEET_DICE_DRAWER_BROWN = "4cd6ed",
+    CSHEET_DICE_DRAWER_ORANGE = "0ff5a4",
+    CSHEET_DICE_DRAWER_RED = "e9c449",
+    CSHEET_DICE_DRAWER_PINK = "248013",
+    CSHEET_DICE_DRAWER_PURPLE = "fea8f6",
 
     -- Signal fires (for players to signal need for Storyteller attention)
     SIGNAL_FIRE_BROWN = "b0ffa8",
@@ -115,10 +161,23 @@ G.GUIDS = {
     TAROT_DECK_PINK = "cd3a86",
     TAROT_DRAWER_PINK = "7f0246",
     TAROT_BUTTON_PINK = "4dc8ad",
-    TAROT_ANCHOR_PINK = "9d4029"
+    TAROT_BUTTON_ANCHOR_ON_PINK = "a1c043",
+    TAROT_BUTTON_ANCHOR_OFF_PINK = "542096",
+    TAROT_DRAWER_ANCHOR_ON_PINK = "936758",
+    TAROT_DRAWER_ANCHOR_OFF_PINK = "c1f530",
+    TAROT_DECK_ANCHOR_PINK = "764db1",
 
-    -- Add other object GUIDs as needed (zones, boards, etc.)
-    -- Format: OBJECT_NAME = "@@@@@@OBJECT_NAME@@@@@@"
+    -- Anchors (for animations)
+    CSHEET_DICE_DRAWER_ANCHOR_ON_BROWN = "2f15c3",
+    CSHEET_DICE_DRAWER_ANCHOR_OFF_BROWN = "96ab73",
+    CSHEET_DICE_DRAWER_ANCHOR_ON_ORANGE = "c28db1",
+    CSHEET_DICE_DRAWER_ANCHOR_OFF_ORANGE = "309aa9",
+    CSHEET_DICE_DRAWER_ANCHOR_ON_RED = "e9c449",
+    CSHEET_DICE_DRAWER_ANCHOR_OFF_RED = "960d6e",
+    CSHEET_DICE_DRAWER_ANCHOR_ON_PINK = "47b608",
+    CSHEET_DICE_DRAWER_ANCHOR_OFF_PINK = "880abb",
+    CSHEET_DICE_DRAWER_ANCHOR_ON_PURPLE = "7bc6f6",
+    CSHEET_DICE_DRAWER_ANCHOR_OFF_PURPLE = "cf33ad"
 }
 
 --- Gets the GUID string for a player's hand zone by color

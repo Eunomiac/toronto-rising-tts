@@ -76,13 +76,29 @@ Scenes.SCENES = {
                 refs = "__all_registered__",
                 mode = "OFF",
                 duration = 5.0
-            }
+            },
+            {
+                delay = 6,
+                duration = 0.0,
+                mode = "STANDARD",
+                refs = {
+                  "gmLight"
+                }
+            },
         },
         description = "Admin dark mode - all registered lights OFF"
     },
     standard = {
         ambient = C.LightModes.DARK,
         lightStages = {
+            {
+                delay = 0.0,
+                duration = 0.0,
+                mode = "STANDARD",
+                refs = {
+                  "gmLight"
+                }
+            },
             {
                 delay = 0.0,
                 duration = 5.0,
@@ -150,6 +166,14 @@ Scenes.SCENES = {
             reflection_intensity = 0
         },
         lightStages = {
+            {
+                delay = 0.0,
+                duration = 0.0,
+                mode = "STANDARD",
+                refs = {
+                  "gmLight"
+                }
+            },
             {
                 delay = 0.0,
                 duration = 5.0,

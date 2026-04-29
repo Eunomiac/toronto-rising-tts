@@ -98,15 +98,18 @@ function Z.hideZones()
     if #zones == 0 then return end
 
     S.setStateVal(true, "zones", "allLocked")
-    Wait.time(function()
-        U.forEach(zones, function(zone)
-            local zonePos = zone.getPosition()
-            if zonePos.y > -30 then
-                zonePos.y = zonePos.y - 50
-                zone.setPosition(zonePos)
-            end
-        end)
-    end, 0.25)
+    U.sequence({
+        0.25,
+        function()
+            U.forEach(zones, function(zone)
+                local zonePos = zone.getPosition()
+                if zonePos.y > -30 then
+                    zonePos.y = zonePos.y - 50
+                    zone.setPosition(zonePos)
+                end
+            end)
+        end
+    }, 0)
 end
 
 --- Shows all zones by moving them above the table
@@ -126,7 +129,7 @@ function Z.showZones()
         end)
     end
 
-    Wait.time(Z.activateZones, 0.25)
+    U.sequence({0.25, Z.activateZones}, 0)
 end
 
 -- ============================================================================

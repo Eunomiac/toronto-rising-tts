@@ -14,6 +14,8 @@
     Light modes are stored in L.LIGHTMODES table and can be defined per-light.
     Mode fields are optional patches: missing fields are left unchanged on apply.
     Common fields are: enabled, color, range, angle, intensity, rotation, position.
+    For `position` and `rotation`, tables (or Vectors) may omit any axis; omitted
+    components keep the light object's current world values (see OP.mergePosition / mergeRotation).
 
     Agent guidance: .dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md (paired spotlights);
     .dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md.
@@ -24,6 +26,7 @@ local U = require("lib.util")
 local S = require("core.state")
 local C = require("lib.constants")
 local G = require("lib.guids")
+local OP = require("lib.object_positions")
 
 -- Last-wins: each SetLightMode bumps this; in-flight lerp steps no-op when stale.
 local transitionEpoch = {}
@@ -132,7 +135,7 @@ L.LIGHTMODES = {
       default = "STANDARD",
       OFF = {
         enabled = false,
-        position = Vector(-100.00, 80.00, -35.00),
+        position = {x = -100, y = 80},
         rotation = Vector(0, 0, 0),
         range = 128,
         angle = 0,
@@ -141,8 +144,8 @@ L.LIGHTMODES = {
       },
       STANDARD = {
         enabled = true,
-        position = Vector(-59.383789, 47.456715, -31.044981),
-        rotation = Vector(282.940002, 36.000004, -0.000008),
+        position = {x = -60, y = 50},
+        rotation = Vector(300, 36, 0),
         range = 93.901543,
         angle = 140.717697,
         intensity = 4.186250,
@@ -155,7 +158,7 @@ L.LIGHTMODES = {
       default = "OFF",
       OFF = {
         enabled = false,
-        position = Vector(100.00, 80.00, -35.00),
+        position = {x = 100, y = 80},
         rotation = Vector(0, 0, 0),
         range = 128,
         angle = 0,
@@ -164,8 +167,8 @@ L.LIGHTMODES = {
       },
       STANDARD = {
         enabled = true,
-        position = Vector(59.383789, 47.456715, -31.044981),
-        rotation = Vector(282.940002, -36.000004, -0.000008),
+        position = {x = 60, y = 50},
+        rotation = Vector(300, -36, 0),
         range = 93.901543,
         angle = 140.717697,
         intensity = 4.186250,
@@ -631,6 +634,24 @@ local function isProbablyObjectGuid(s)
     return string.match(s, "^%x%x%x%x%x%x$") ~= nil
 end
 
+--- Resolve a raw object GUID to its registered LIGHTMODES key when possible.
+--- Returns nil when no registered light owns the GUID.
+--- @param guid string
+--- @return string|nil
+local function findRegisteredLightRefByGuid(guid)
+    if not isProbablyObjectGuid(guid) then
+        return nil
+    end
+    for refName, modeDef in pairs(L.LIGHTMODES or {}) do
+        if U.Type(refName) == "string" and U.Type(modeDef) == "table" and U.Type(modeDef.guid) == "string" then
+            if modeDef.guid == guid then
+                return refName
+            end
+        end
+    end
+    return nil
+end
+
 --- JSON-safe shallow copy of a mode table for persistence (raw-GUID / inline modes).
 --- @param mt table|nil
 --- @return table|nil
@@ -709,18 +730,37 @@ function L.GetLight(lightRef, silent)
     return obj
 end
 
---- Drop orphan / malformed `gameState.lights` rows. Mutates state via `S.setStateVal`.
-function L.cleanupLightsState()
+--- Save-time sanitizer for `gameState.lights`:
+--- - drops non-string keys
+--- - for keys that are six-character object GUIDs: if some `L.LIGHTMODES` entry has the same `guid`,
+---   removes that row (canonical persistence is the mode registry key, not the raw GUID); otherwise
+---   removes the row if no resolvable light object exists in the world, or if the value is invalid
+--- - for all other keys: removes invalid values, then removes rows whose key does not resolve to a
+---   live light object (`L.GetLight`)
+--- Mutates state via `S.setStateVal`.
+function L.sanitizeLightsStateForSave()
     local lights = S.getStateVal("lights")
     if U.Type(lights) ~= "table" then
         return
     end
     local cleaned = U.clone(lights)
     local changed = false
+
     for k, v in pairs(cleaned) do
         if U.Type(k) ~= "string" then
             cleaned[k] = nil
             changed = true
+        elseif isProbablyObjectGuid(k) then
+            if findRegisteredLightRefByGuid(k) ~= nil then
+                cleaned[k] = nil
+                changed = true
+            elseif L.GetLight(k, true) == nil then
+                cleaned[k] = nil
+                changed = true
+            elseif not isValidLightsStateValue(v) then
+                cleaned[k] = nil
+                changed = true
+            end
         elseif not isValidLightsStateValue(v) then
             cleaned[k] = nil
             changed = true
@@ -732,6 +772,11 @@ function L.cleanupLightsState()
     if changed then
         S.setStateVal(cleaned, "lights")
     end
+end
+
+--- Backward-compatible alias used by existing call sites.
+function L.cleanupLightsState()
+    L.sanitizeLightsStateForSave()
 end
 
 --- Register NPC spotlight modes on `L.LIGHTMODES` (runtime wiring; does not touch save state).
@@ -901,7 +946,16 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
 
     U.Val("SetLightMode", lightRef, U.Type(lightRef) == "string", "lightRef must be a string or table of strings")
 
-    local lData = L.LIGHTMODES[lightRef]
+    local aliasedRef = lightRef
+    local lData = L.LIGHTMODES[aliasedRef]
+    if lData == nil and isProbablyObjectGuid(aliasedRef) then
+        local mappedRef = findRegisteredLightRefByGuid(aliasedRef)
+        if U.Type(mappedRef) == "string" and mappedRef ~= "" then
+            aliasedRef = mappedRef
+            lData = L.LIGHTMODES[aliasedRef]
+        end
+    end
+    lightRef = aliasedRef
     local light
     local isSpawned = false
     local modeDef
@@ -932,19 +986,27 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
             modeData = lData.default or "off"
         end
 
-        U.Val("SetLightMode", modeData,
-            U.Type(modeData) == "string" and lData[modeData] ~= nil,
-            "No such mode '" .. U.ToString(modeData) .. "' for light '" .. U.ToString(lightRef) .. "'")
+        if U.Type(modeData) == "table" then
+            modeDef = U.clone(modeData)
+            local safePersist = sanitizeModeForPersistence(modeDef)
+            if safePersist and next(safePersist) ~= nil then
+                S.setStateVal(safePersist, "lights", lightRef)
+            end
+        else
+            U.Val("SetLightMode", modeData,
+                U.Type(modeData) == "string" and lData[modeData] ~= nil,
+                "No such mode '" .. U.ToString(modeData) .. "' for light '" .. U.ToString(lightRef) .. "'")
 
-        modeDef = lData[modeData]
-        if U.Type(modeDef) == "function" then
-            modeDef = modeDef(player)
-        end
-        if U.Type(modeDef) == "table" then
-            modeDef = U.clone(modeDef)
-        end
+            modeDef = lData[modeData]
+            if U.Type(modeDef) == "function" then
+                modeDef = modeDef(player)
+            end
+            if U.Type(modeDef) == "table" then
+                modeDef = U.clone(modeDef)
+            end
 
-        S.setStateVal(modeData, "lights", lightRef)
+            S.setStateVal(modeData, "lights", lightRef)
+        end
     else
         light = getObjectFromGUID(lightRef)
         U.Val("SetLightMode", lightRef, U.isGameObject(light),
@@ -1011,10 +1073,10 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
             end
             local function applyRotationPos()
                 if modeDef.rotation ~= nil then
-                    light.setRotation(Vector(modeDef.rotation), false)
+                    light.setRotation(OP.mergeRotation(light, modeDef.rotation), false)
                 end
                 if modeDef.position ~= nil then
-                    light.setPosition(Vector(modeDef.position), false)
+                    light.setPosition(OP.mergePosition(light, modeDef.position), false)
                 end
             end
             if modeDef.enabled == false and afterVals.intensity ~= nil then
@@ -1096,21 +1158,23 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
 
                 -- Transform lerps use inline U.Lerp (not U.setPositionSlow) so epoch guards apply every tick.
                 if modeDef.rotation ~= nil then
+                    local rotEnd = OP.mergeRotation(light, modeDef.rotation)
                     table.insert(lerpFuncs, U.Lerp(function(rot)
                         if transitionEpoch[lightRef] ~= myEpoch then
                             return
                         end
                         light.setRotation(rot, false)
-                    end, light.getRotation(), Vector(modeDef.rotation), transitionTime, true))
+                    end, light.getRotation(), rotEnd, transitionTime, true))
                 end
 
                 if modeDef.position ~= nil then
+                    local posEnd = OP.mergePosition(light, modeDef.position)
                     table.insert(lerpFuncs, U.Lerp(function(pos)
                         if transitionEpoch[lightRef] ~= myEpoch then
                             return
                         end
                         light.setPosition(pos, false)
-                    end, light.getPosition(), Vector(modeDef.position), transitionTime, false))
+                    end, light.getPosition(), posEnd, transitionTime, false))
                 end
 
                 return lerpFuncs
@@ -1172,6 +1236,8 @@ local function tryApplySavedLight(lightName, mData, transitionT)
             end)
             if firstMode then
                 L.SetLightMode(lightName, firstMode, nil, transitionT)
+            else
+                L.SetLightMode(lightName, mData, nil, transitionT)
             end
         end
         return true
