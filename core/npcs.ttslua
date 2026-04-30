@@ -231,6 +231,205 @@ local function getInstances()
     return t
 end
 
+--- @return table<string, string|boolean>
+local function getOccupiedNpcSeatMap()
+    local seatLayout = S.getStateVal("seatLayout")
+    if U.Type(seatLayout) ~= "table" then
+        return {}
+    end
+    local slots = seatLayout.occupiedNPCSlots
+    if U.Type(slots) ~= "table" then
+        return {}
+    end
+    return slots
+end
+
+--- @param occupied table<string, string|boolean>
+local function setOccupiedNpcSeatMap(occupied)
+    S.setStateVal(occupied, "seatLayout", "occupiedNPCSlots")
+end
+
+--- @param npcName string
+--- @return string|nil
+local function findSeatByNpcKey(npcName)
+    if U.Type(npcName) ~= "string" or npcName == "" then
+        return nil
+    end
+    local occupied = getOccupiedNpcSeatMap()
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        if occupied[seatKey] == npcName then
+            return seatKey
+        end
+    end
+    return nil
+end
+
+--- @param seatKey string
+--- @return string|boolean|nil
+local function getSeatOccupant(seatKey)
+    if U.Type(seatKey) ~= "string" or seatKey == "" then
+        return nil
+    end
+    return getOccupiedNpcSeatMap()[seatKey]
+end
+
+--- @return table<string, boolean>
+local function getAreaNpcSet()
+    local set = {}
+    for npcName, rec in pairs(getInstances()) do
+        if U.Type(npcName) == "string" and U.Type(rec) == "table" and U.Type(rec.areaKey) == "string" then
+            set[npcName] = true
+        end
+    end
+    return set
+end
+
+--- @param seatKey string
+--- @return boolean
+local function isValidNpcSeatKey(seatKey)
+    return U.Type(seatKey) == "string" and U.isIn(seatKey, C.NPCSeats or {})
+end
+
+local seatSyncQueued = false
+
+local function requestSeatLayoutSync()
+    if seatSyncQueued then
+        return
+    end
+    seatSyncQueued = true
+    Wait.time(function()
+        seatSyncQueued = false
+        if R and type(R.SyncTable) == "function" then
+            R.SyncTable()
+        end
+    end, 0.08)
+end
+
+--- @param seatKey string
+--- @return Object|nil
+local function resolveSeatFigurineObject(seatKey)
+    if not isValidNpcSeatKey(seatKey) then
+        return nil
+    end
+    local objs = getObjectsWithTag(seatKey .. "Object")
+    if U.Type(objs) ~= "table" then
+        return nil
+    end
+    local needle = "SEAT_FIGURE_" .. string.upper(seatKey)
+    for _, obj in ipairs(objs) do
+        if U.isGameObject(obj) then
+            local objName = obj.getName and string.upper(tostring(obj.getName() or "")) or ""
+            if string.find(objName, needle, 1, true) then
+                return obj
+            end
+        end
+    end
+    for _, obj in ipairs(objs) do
+        if U.isGameObject(obj) then
+            local objName = obj.getName and string.upper(tostring(obj.getName() or "")) or ""
+            if string.find(objName, "SEAT_FIGURE", 1, true) then
+                return obj
+            end
+        end
+    end
+    for _, obj in ipairs(objs) do
+        if U.isGameObject(obj) and obj.getCustomObject ~= nil then
+            local ok, custom = pcall(function()
+                return obj.getCustomObject()
+            end)
+            if ok and U.Type(custom) == "table" then
+                return obj
+            end
+        end
+    end
+    for _, obj in ipairs(objs) do
+        if U.isGameObject(obj) then
+            return obj
+        end
+    end
+    return nil
+end
+
+--- @param npcName string
+--- @param seatKey string
+local function applySeatFigurineVisuals(npcName, seatKey)
+    local def = NPCS.characters[npcName]
+    if def == nil then
+        return
+    end
+    local figurine = resolveSeatFigurineObject(seatKey)
+    if figurine == nil then
+        return
+    end
+    local front = def.figurine and def.figurine.images and def.figurine.images.front or nil
+    local back = def.figurine and def.figurine.images and def.figurine.images.back or nil
+    local imageScalar = tonumber(def.figurine and def.figurine.scale) or 8
+    if U.Type(front) == "string" and front ~= "" and figurine.setCustomObject ~= nil then
+        pcall(function()
+            figurine.setCustomObject({
+                image = front,
+                image_secondary = U.Type(back) == "string" and back or "",
+                image_scalar = imageScalar,
+            })
+        end)
+        if figurine.reload ~= nil then
+            pcall(function()
+                figurine.reload()
+            end)
+        end
+    end
+    if figurine.setName ~= nil then
+        pcall(function()
+            figurine.setName(def.fullName or def.name or npcName)
+        end)
+    end
+end
+
+--- @param seatKey string
+--- @return boolean, string|nil
+local function clearNpcSeat(seatKey)
+    if not isValidNpcSeatKey(seatKey) then
+        return false, "Invalid NPC seat key."
+    end
+    local occupied = U.clone(getOccupiedNpcSeatMap())
+    occupied[seatKey] = false
+    setOccupiedNpcSeatMap(occupied)
+    requestSeatLayoutSync()
+    return true, nil
+end
+
+--- @param npcName string
+--- @param seatKey string
+--- @return boolean, string|nil
+local function assignNpcToSeat(npcName, seatKey)
+    if U.Type(npcName) ~= "string" or string.match(npcName, "^[%a_][%w_]*$") == nil then
+        return false, "Invalid NPC name."
+    end
+    if NPCS.characters[npcName] == nil then
+        return false, "Unknown NPC: " .. tostring(npcName)
+    end
+    if not isValidNpcSeatKey(seatKey) then
+        return false, "Invalid NPC seat key."
+    end
+    if getInstances()[npcName] ~= nil then
+        NPCS.removeNpc(npcName, {
+            skipUiRefresh = true,
+            skipSeatSync = true,
+        })
+    end
+    local occupied = U.clone(getOccupiedNpcSeatMap())
+    for _, key in ipairs(C.NPCSeats or {}) do
+        if occupied[key] == npcName then
+            occupied[key] = false
+        end
+    end
+    occupied[seatKey] = npcName
+    setOccupiedNpcSeatMap(occupied)
+    applySeatFigurineVisuals(npcName, seatKey)
+    requestSeatLayoutSync()
+    return true, nil
+end
+
 --- @param instances table
 local function setAllInstances(instances)
     S.setStateVal(instances, "npcs", "instances")
@@ -562,6 +761,7 @@ end
 function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
     opts = U.Type(opts) == "table" and opts or {}
     local deferUiRefresh = opts.deferUiRefresh == true
+    local skipSeatSync = opts.skipSeatSync == true
     if not validateNpcNameKey(npcName) then
         return false, "Invalid npc name (use letters, numbers, underscore only)."
     end
@@ -683,6 +883,9 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                         locked = false,
                     }
                     setInstanceRecord(npcName, rec)
+                    if not skipSeatSync then
+                        requestSeatLayoutSync()
+                    end
                     --- Defer: applying modes inside this callback can deadlock TTS until the callback returns. The
                     --- spotlight Custom_Assetbundle also needs `npcSpotlightReadyForApply` plus a short post-ready delay
                     --- before `SetLightMode` takes effect (see `NPC_LIGHT_POST_READY_DELAY_SEC`).
@@ -753,6 +956,7 @@ end
 --- @return boolean, string|nil
 function NPCS.moveNpcToArea(npcName, areaKey, opts)
     opts = U.Type(opts) == "table" and opts or {}
+    local skipSeatSync = opts.skipSeatSync == true
     local rec = getInstances()[npcName]
     if rec == nil then
         return false, "NPC not spawned."
@@ -778,6 +982,9 @@ function NPCS.moveNpcToArea(npcName, areaKey, opts)
     rec.npcLightMode = (area and area.autoLight == true) and "standard" or "off"
     setInstanceRecord(npcName, rec)
     NPCS.applyCurrentLightMode(npcName, 0)
+    if not skipSeatSync then
+        requestSeatLayoutSync()
+    end
     if not opts.skipUiRefresh then
         NPCS.refreshStorytellerUIIfVisible()
     end
@@ -913,6 +1120,7 @@ end
 --- @param opts table|nil optional: skipUiRefresh — when true, do not rebuild NPC panel (caller refreshes once).
 function NPCS.removeNpc(npcName, opts)
     opts = U.Type(opts) == "table" and opts or {}
+    local skipSeatSync = opts.skipSeatSync == true
     local rec = getInstances()[npcName]
     if rec == nil then
         return
@@ -937,6 +1145,13 @@ function NPCS.removeNpc(npcName, opts)
     S.setStateVal(lights, "lights")
     spotlightHeld[npcName] = nil
     setInstanceRecord(npcName, nil)
+    local seatKey = findSeatByNpcKey(npcName)
+    if seatKey ~= nil then
+        applySeatFigurineVisuals(npcName, seatKey)
+    end
+    if not skipSeatSync then
+        requestSeatLayoutSync()
+    end
     if not opts.skipUiRefresh then
         NPCS.refreshStorytellerUIIfVisible()
     end
@@ -1058,6 +1273,33 @@ function NPCS.collectGroupMembers(groupId)
     return rows
 end
 
+--- @param npcName string
+--- @param seatKey string
+--- @return boolean, string|nil
+function NPCS.assignNpcToSeat(npcName, seatKey)
+    local ok, err = assignNpcToSeat(npcName, seatKey)
+    if not ok then
+        return false, err
+    end
+    NPCS.refreshStorytellerUIIfVisible()
+    return true, nil
+end
+
+--- @param npcName string
+--- @return boolean, string|nil
+function NPCS.unseatNpc(npcName)
+    local seatKey = findSeatByNpcKey(npcName)
+    if seatKey == nil then
+        return false, "NPC is not seated."
+    end
+    local ok, err = clearNpcSeat(seatKey)
+    if not ok then
+        return false, err
+    end
+    NPCS.refreshStorytellerUIIfVisible()
+    return true, nil
+end
+
 --- Sanitize `npcs.instances` and register NPC spotlight rows on `L.LIGHTMODES` when both objects exist.
 --- Call after `S.InitializeGameState`, before `L.InitLights`. Orphan `gameState.lights` keys are pruned by `L.cleanupLightsState`.
 --- IMPORTANT: Never drop instance rows when `getObjectFromGUID` is nil on the first onLoad frame — objects can
@@ -1083,6 +1325,14 @@ function NPCS.restoreAfterStateLoad()
         end
     end
     setAllInstances(cleaned)
+    local occupied = getOccupiedNpcSeatMap()
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local occupant = occupied[seatKey]
+        if U.Type(occupant) == "string" and occupant ~= "" then
+            applySeatFigurineVisuals(occupant, seatKey)
+        end
+    end
+    requestSeatLayoutSync()
 end
 
 --- Escape text for XML body.
@@ -1172,9 +1422,67 @@ function NPCS.dispatchNpcUiClick(id)
 
     local memberGroup, memberNpc, memberArea = string.match(id, "^npc_memberLoc_([%w]+)_([%w]+)_([%w]+)$")
     if memberGroup ~= nil and memberNpc ~= nil and memberArea ~= nil then
+        if isValidNpcSeatKey(memberArea) then
+            local seatOk, seatErr = NPCS.assignNpcToSeat(memberNpc, memberArea)
+            if not seatOk then
+                safeAlertGM("NPC seat: " .. tostring(seatErr))
+            end
+            return
+        end
         local mOk, mErr = NPCS.spawnOrMoveIndividual(memberNpc, memberArea)
         if not mOk then
             safeAlertGM("NPC move/spawn: " .. tostring(mErr))
+        end
+        return
+    end
+
+    local seatNpc, seatKey = string.match(id, "^npc_seat_([%w]+)_([%w]+)$")
+    if seatNpc ~= nil and seatKey ~= nil then
+        local ok, err = NPCS.assignNpcToSeat(seatNpc, seatKey)
+        if not ok then
+            safeAlertGM("NPC seat: " .. tostring(err))
+        end
+        return
+    end
+
+    local unseatNpc = string.match(id, "^npc_unseat_([%w]+)$")
+    if unseatNpc ~= nil then
+        local ok, err = NPCS.unseatNpc(unseatNpc)
+        if not ok then
+            safeAlertGM("NPC unseat: " .. tostring(err))
+        end
+        return
+    end
+
+    local seatedSlot, seatedArea = string.match(id, "^npc_seated_toArea_([%w]+)_([%w]+)$")
+    if seatedSlot ~= nil and seatedArea ~= nil then
+        local occupant = getSeatOccupant(seatedSlot)
+        if U.Type(occupant) ~= "string" or occupant == "" then
+            safeAlertGM("No seated NPC assigned to " .. tostring(seatedSlot) .. ".")
+            return
+        end
+        local ok, err
+        if getInstances()[occupant] ~= nil then
+            ok, err = NPCS.moveNpcToArea(occupant, seatedArea)
+        else
+            ok, err = NPCS.spawnOrMoveIndividual(occupant, seatedArea)
+        end
+        if not ok then
+            safeAlertGM("NPC seat transfer: " .. tostring(err))
+        end
+        return
+    end
+
+    local seatedUnseatSlot = string.match(id, "^npc_seated_unseat_([%w]+)$")
+    if seatedUnseatSlot ~= nil then
+        local occupant = getSeatOccupant(seatedUnseatSlot)
+        if U.Type(occupant) ~= "string" or occupant == "" then
+            safeAlertGM("No seated NPC assigned to " .. tostring(seatedUnseatSlot) .. ".")
+            return
+        end
+        local ok, err = NPCS.unseatNpc(occupant)
+        if not ok then
+            safeAlertGM("NPC unseat: " .. tostring(err))
         end
         return
     end
@@ -1479,9 +1787,25 @@ local function computeNpcPanelLayoutFingerprint()
     end
     table.sort(expLines)
 
+    local seatLines = {}
+    local occupied = getOccupiedNpcSeatMap()
+    local areaSet = getAreaNpcSet()
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local occupant = occupied[seatKey]
+        if occupant ~= nil and occupant ~= false then
+            local inArea = areaSet[occupant] == true
+            table.insert(seatLines, string.format("S:%s|%s|%s", tostring(seatKey), tostring(occupant), tostring(inArea)))
+        else
+            table.insert(seatLines, "S:" .. tostring(seatKey) .. "|false|false")
+        end
+    end
+    table.sort(seatLines)
+
     return table.concat(occLines, "\n")
         .. "\n--\n"
         .. table.concat(expLines, "\n")
+        .. "\n--\n"
+        .. table.concat(seatLines, "\n")
 end
 
 --- Apply one UI attribute safely on optional ids.
@@ -1541,6 +1865,8 @@ function NPCS.refreshStorytellerUI()
 
     local areas = sortedAreaKeys()
     local instances = getInstances()
+    local occupiedSeats = getOccupiedNpcSeatMap()
+    local areaNpcSet = getAreaNpcSet()
     local occupiedByArea = {}
     for _, areaKey in ipairs(areas) do
         occupiedByArea[areaKey] = {}
@@ -1554,6 +1880,25 @@ function NPCS.refreshStorytellerUI()
 
     local allNpcNames = U.getKeys(NPCS.characters or {})
     table.sort(allNpcNames)
+
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local occupant = occupiedSeats[seatKey]
+        local activeRow = U.Type(occupant) == "string" and occupant ~= ""
+        local isInArea = activeRow and areaNpcSet[occupant] == true
+        local showRow = activeRow and (not isInArea)
+        setUiActiveSafe("npc_seatedRow_" .. seatKey, showRow)
+        if showRow then
+            local def = NPCS.characters[occupant] or {}
+            setUiAttrSafe("npc_seatedName_" .. seatKey, "text", tostring(def.fullName or occupant))
+            if U.Type(def.labelColor) == "string" and def.labelColor ~= "" then
+                setUiAttrSafe("npc_seatedName_" .. seatKey, "color", def.labelColor)
+            end
+        end
+        for _, areaKey in ipairs(areas) do
+            setUiButtonAttrsSafe("npc_seated_toArea_" .. seatKey .. "_" .. areaKey, { active = showRow and "true" or "false" }, "#FFFFFF")
+        end
+        setUiButtonAttrsSafe("npc_seated_unseat_" .. seatKey, { active = showRow and "true" or "false" }, "#FFFFFF")
+    end
     for _, areaKey in ipairs(areas) do
         local hasAreaOccupants = next(occupiedByArea[areaKey] or {}) ~= nil
         setUiActiveSafe("npc_areaHeader_" .. areaKey, hasAreaOccupants)
@@ -1596,6 +1941,8 @@ function NPCS.refreshStorytellerUI()
             local rec = instances[npcName]
             local isSpawned = rec ~= nil
             local isLocked = isSpawned and isNpcLocked(rec)
+            local seatedSeat = findSeatByNpcKey(npcName)
+            local isSeated = seatedSeat ~= nil
             setUiActiveSafe("npc_groupMemberRow_" .. groupId .. "_" .. npcName, expanded)
 
             local lockId = "npc_memberLock_" .. groupId .. "_" .. npcName
@@ -1613,6 +1960,16 @@ function NPCS.refreshStorytellerUI()
                     colors = isHere and "#00C853|#00E676|#00A844|#225533" or "#2A2A2A|#333333|#1D1D1D|#111111",
                 }, "#FFFFFF")
             end
+            for idx = 1, #(C.NPCSeats or {}) do
+                local seatKey = C.NPCSeats[idx]
+                local seatId = "npc_memberLoc_" .. groupId .. "_" .. npcName .. "_" .. seatKey
+                local isHere = seatedSeat == seatKey
+                setUiButtonAttrsSafe(seatId, {
+                    active = "true",
+                    colors = isHere and "#00C853|#00E676|#00A844|#225533" or "#2A2A2A|#333333|#1D1D1D|#111111",
+                }, "#FFFFFF")
+            end
+            setUiButtonAttrsSafe("npc_unseat_" .. npcName, { active = isSeated and "true" or "false" }, "#FFFFFF")
         end
     end
 

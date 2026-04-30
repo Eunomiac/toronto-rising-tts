@@ -215,10 +215,10 @@ function U.RotateToFrom(frameRefs, toAngleRef, fromAngleRef, originRef)
     -- Validate required parameters
     U.Val("U.RotateToFrom", {frameRefs = frameRefs}, frameRefs ~= nil, "frameRefs parameter is required")
     U.Val("U.RotateToFrom", {toAngleRef = toAngleRef}, toAngleRef ~= nil, "toAngleRef parameter is required")
-    
+
     -- Set default origin if not provided
     local origin = originRef and Vector(originRef) or Vector(0, 0, 0)
-    
+
     -- Helper function to get a Frame from a FrameRef
     local function getFrame(frameRef)
         -- If it's already a Frame (table with position field)
@@ -229,7 +229,7 @@ function U.RotateToFrom(frameRefs, toAngleRef, fromAngleRef, originRef)
             }
             return frame
         end
-        
+
         -- If it's an ObjectRef, get the object and extract its Frame
         local obj = U.getObject(frameRef, true)  -- Silent mode
         if obj then
@@ -238,42 +238,42 @@ function U.RotateToFrom(frameRefs, toAngleRef, fromAngleRef, originRef)
                 rotation = obj.getRotation()
             }
         end
-        
+
         -- Invalid FrameRef
         U.error("U.RotateToFrom.getFrame", "Invalid FrameRef - must be a Frame table or valid ObjectRef", frameRef)
         return nil
     end
-    
+
     -- Helper function to derive an AngleXZ from an AngleRef
     local function getAngleXZ(angleRef)
         -- If it's already a number, return it
         if U.Type(angleRef) == "number" then
             return angleRef
         end
-        
+
         -- If it's a FrameRef, calculate the angle from origin to position
         local frame = getFrame(angleRef)
         if frame then
             local cylindrical = U.XYZToCylindrical(frame.position, origin)
             return cylindrical.angle
         end
-        
+
         U.error("U.RotateToFrom.getAngleXZ", "Invalid AngleRef - must be a number or valid FrameRef", angleRef)
         return 0
     end
-    
+
     -- Helper function to calculate the angle delta with proper handling
     local function calculateAngleDelta(fromAngle, toAngle)
         -- Calculate the shortest path delta
         local delta = toAngle - fromAngle
-        
+
         -- Adjust for shortest path (-180 to 180)
         while delta > 180 do delta = delta - 360 end
         while delta < -180 do delta = delta + 360 end
-        
+
         return delta
     end
-    
+
     -- Helper function for cylindrical to XYZ conversion
     local function cylindricalToXYZ(cylindrical, center)
         center = Vector(center)
@@ -284,18 +284,18 @@ function U.RotateToFrom(frameRefs, toAngleRef, fromAngleRef, originRef)
             center.z + cylindrical.radius * math.cos(angleRad)
         )
     end
-    
+
     -- Determine if we're working with a single FrameRef or an array
     local isSingleFrame = U.Type(frameRefs) ~= "table" or frameRefs.position ~= nil or U.Type(frameRefs) == "string" or U.isGameObject(frameRefs)
-    
+
     -- Convert single FrameRef to array for uniform processing
     local frameRefArray = isSingleFrame and {frameRefs} or frameRefs
-    
+
     -- Process each FrameRef to get current frames and calculate center of mass for groups
     local frames = {}
     local centerOfMass = Vector(0, 0, 0)
     local totalFrames = 0
-    
+
     for i, frameRef in ipairs(frameRefArray) do
         local frame = getFrame(frameRef)
         if frame then
@@ -308,18 +308,18 @@ function U.RotateToFrom(frameRefs, toAngleRef, fromAngleRef, originRef)
             totalFrames = totalFrames + 1
         end
     end
-    
+
     -- Calculate center of mass for group rotation
     if totalFrames > 0 then
         centerOfMass = centerOfMass / totalFrames
     end
-    
+
     -- For groups, use center of mass to determine angles; for single objects, use their position
     local angleCalculationPoint = isSingleFrame and frames[1].frame.position or centerOfMass
-    
+
     -- Calculate the target angle
     local toAngle = getAngleXZ(toAngleRef)
-    
+
     -- Calculate the source angle
     local fromAngle
     if fromAngleRef then
@@ -329,31 +329,31 @@ function U.RotateToFrom(frameRefs, toAngleRef, fromAngleRef, originRef)
         local cylindrical = U.XYZToCylindrical(angleCalculationPoint, origin)
         fromAngle = cylindrical.angle
     end
-    
+
     -- If fromAngleRef was provided and toAngleRef is a FrameRef, treat toAngle as relative
     if fromAngleRef and (U.Type(toAngleRef) ~= "number") then
         -- toAngle is relative to fromAngle
         toAngle = fromAngle + toAngle
     end
-    
+
     -- Calculate the rotation delta
     local angleDelta = calculateAngleDelta(fromAngle, toAngle)
-    
+
     -- Process each frame
     local resultFrames = {}
-    
+
     for i, frameData in ipairs(frames) do
         local currentFrame = frameData.frame
-        
+
         -- Convert current position to cylindrical coordinates
         local cylindrical = U.XYZToCylindrical(currentFrame.position, origin)
-        
+
         -- Apply the rotation
         cylindrical.angle = cylindrical.angle + angleDelta
-        
+
         -- Convert back to XYZ
         local newPosition = cylindricalToXYZ(cylindrical, origin)
-        
+
         -- Calculate new rotation - maintain orientation relative to origin
         -- The object should rotate by the same angle delta on the Y axis
         local newRotation = Vector(
@@ -361,22 +361,22 @@ function U.RotateToFrom(frameRefs, toAngleRef, fromAngleRef, originRef)
             currentFrame.rotation.y + angleDelta,
             currentFrame.rotation.z
         )
-        
+
         -- Create the new frame
         local newFrame = {
             position = newPosition,
             rotation = newRotation
         }
-        
+
         -- Apply to object if it exists
         if frameData.object then
             frameData.object.setPositionSmooth(newPosition, false, false)
             frameData.object.setRotationSmooth(newRotation, false, false)
         end
-        
+
         resultFrames[i] = newFrame
     end
-    
+
     -- Return single Frame or array based on input
     return isSingleFrame and resultFrames[1] or resultFrames
 end

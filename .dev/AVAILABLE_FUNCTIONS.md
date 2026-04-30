@@ -400,7 +400,7 @@
 - `C.MAX_HUNGER` - Maximum hunger value (5, VTM5E scale is 0-5)
 - `C.DICE_SUCCESS_THRESHOLD` - Dice success threshold (6)
 - `C.DICE_CRITICAL_SUCCESS_VALUE` - Critical success value (10)
-- `C.STORYTELLER_COLOR` - Storyteller/GM player color
+- `C.StorytellerColor` - Storyteller/GM player color
 - `C.CameraAngles` - Camera preset positions (placeholder structure)
 - `C.LightModes` - Light mode definitions (scene lighting presets)
 - `G.GUIDS` - Placeholder GUIDs for TTS objects (in `lib/guids.ttslua`)

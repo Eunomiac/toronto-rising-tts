@@ -127,6 +127,31 @@ Scenes.SCENES = {
                 duration = 3.0,
                 mode = "STANDARD",
                 refs = {
+                    "npcSeat1Light"
+                }
+            },
+            {
+                delay = 2.5,
+                duration = 2.5,
+                mode = "STANDARD",
+                refs = {
+                    "npcSeat2Light"
+                }
+            },
+            {
+                delay = 3.0,
+                duration = 2.0,
+                mode = "STANDARD",
+                refs = {
+                    "npcSeat3Light",
+                    "npcSeat4Light"
+                }
+            },
+            {
+                delay = 4.0,
+                duration = 1.0,
+                mode = "STANDARD",
+                refs = {
                     "playerLight1Brown",
                     "playerLight2Brown",
                     "playerLight3Brown",
@@ -208,6 +233,31 @@ Scenes.SCENES = {
                     "playerLight1Purple",
                     "playerLight2Purple",
                     "playerLight3Purple",
+                }
+            },
+            {
+                delay = 2.0,
+                duration = 3.0,
+                mode = "STANDARD",
+                refs = {
+                    "npcSeat1Light"
+                }
+            },
+            {
+                delay = 2.5,
+                duration = 2.5,
+                mode = "STANDARD",
+                refs = {
+                    "npcSeat2Light"
+                }
+            },
+            {
+                delay = 3.0,
+                duration = 2.0,
+                mode = "STANDARD",
+                refs = {
+                    "npcSeat3Light",
+                    "npcSeat4Light"
                 }
             },
             {

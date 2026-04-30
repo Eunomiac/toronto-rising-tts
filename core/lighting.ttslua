@@ -340,10 +340,10 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            color = Color(255 / 255, 255 / 255, 200 / 255),
-            intensity = 2,
-            range = 80,
-            angle = 90
+            range = 139.633698,
+            angle = 90.000000,
+            intensity = 2.621968,
+            color = Color(0.718689, 0.657402, 0.810620)
         }
     },
     playerLight2Red = {
@@ -356,10 +356,10 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            color = Color(255 / 255, 255 / 255, 200 / 255),
-            intensity = 2,
-            range = 80,
-            angle = 90
+            intensity = 4.5,
+            range = 124,
+            angle = 90,
+            color = Color(0.542781, 0.467013, 0.405022)
         }
     },
     playerLight2Pink = {
@@ -372,10 +372,10 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            color = Color(255 / 255, 255 / 255, 200 / 255),
-            intensity = 2,
-            range = 80,
-            angle = 90
+            range = 139.633698,
+            angle = 90.000000,
+            intensity = 2.621968,
+            color = Color(0.718689, 0.657402, 0.810620)
         }
     },
     playerLight2Purple = {
@@ -488,6 +488,142 @@ L.LIGHTMODES = {
           intensity = 1.488999,
           color = Color(0.525551, 0.525551, 0.525551)
         }
+    },
+    npcSeat1Light = {
+      guid = G.GUIDS.SEAT_LIGHT_2_NPC1,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          angle = 0,
+      },
+      STANDARD = {
+          enabled = true,
+          color = Color(255 / 255, 255 / 255, 200 / 255),
+          intensity = 2,
+          range = 80,
+          angle = 90
+      }
+    },
+    npcSeat2Light = {
+      guid = G.GUIDS.SEAT_LIGHT_2_NPC2,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          angle = 0,
+      },
+      STANDARD = {
+          enabled = true,
+          color = Color(255 / 255, 255 / 255, 200 / 255),
+          intensity = 2,
+          range = 80,
+          angle = 90
+      }
+    },
+    npcSeat3Light = {
+      guid = G.GUIDS.SEAT_LIGHT_2_NPC3,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          angle = 0,
+      },
+      STANDARD = {
+          enabled = true,
+          color = Color(255 / 255, 255 / 255, 200 / 255),
+          intensity = 2,
+          range = 80,
+          angle = 90
+      }
+    },
+    npcSeat4Light = {
+      guid = G.GUIDS.SEAT_LIGHT_2_NPC4,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          angle = 0,
+      },
+      STANDARD = {
+          enabled = true,
+          color = Color(255 / 255, 255 / 255, 200 / 255),
+          intensity = 2,
+          range = 80,
+          angle = 90
+      }
+    },
+    npcSeat1Light1 = {
+      guid = "",
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          range = 40,
+          angle = 0,
+          intensity = 0
+      },
+      STANDARD = {
+          enabled = true,
+          range = 95.549049,
+          angle = 87.566208,
+          intensity = 4.005609,
+          color = Color(0.525551, 0.350648, 0.350648)
+      }
+    },
+    npcSeat2Light1 = {
+      guid = "",
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          range = 40,
+          angle = 0,
+          intensity = 0
+      },
+      STANDARD = {
+        enabled = true,
+        range = 95.549049,
+        angle = 87.566208,
+        intensity = 4.005609,
+        color = Color(0.525551, 0.350648, 0.350648)
+      }
+    },
+    npcSeat3Light1 = {
+      guid = "",
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          range = 40,
+          angle = 0,
+          intensity = 0
+      },
+      STANDARD = {
+        enabled = true,
+        range = 95.549049,
+        angle = 87.566208,
+        intensity = 4.005609,
+        color = Color(0.525551, 0.350648, 0.350648)
+      }
+    },
+    npcSeat4Light1 = {
+      guid = "",
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          range = 40,
+          angle = 0,
+          intensity = 0
+      },
+      STANDARD = {
+        enabled = true,
+        range = 95.549049,
+        angle = 87.566208,
+        intensity = 4.005609,
+        color = Color(0.525551, 0.350648, 0.350648)
+      }
     }
 }
 
@@ -931,6 +1067,95 @@ function workspaceSandbox()
   L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_PURPLE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
 end
 
+local NPC_LIGHT_TO_SEAT = {
+    npcSeat1Light = "NPC1",
+    npcSeat2Light = "NPC2",
+    npcSeat3Light = "NPC3",
+    npcSeat4Light = "NPC4",
+    npcSeat1Light1 = "NPC1",
+    npcSeat2Light1 = "NPC2",
+    npcSeat3Light1 = "NPC3",
+    npcSeat4Light1 = "NPC4",
+}
+
+local NPC_LIGHT_ROLE_BY_REF = {
+    npcSeat1Light = "SEAT_LIGHT_2",
+    npcSeat2Light = "SEAT_LIGHT_2",
+    npcSeat3Light = "SEAT_LIGHT_2",
+    npcSeat4Light = "SEAT_LIGHT_2",
+    npcSeat1Light1 = "SEAT_LIGHT_1",
+    npcSeat2Light1 = "SEAT_LIGHT_1",
+    npcSeat3Light1 = "SEAT_LIGHT_1",
+    npcSeat4Light1 = "SEAT_LIGHT_1",
+}
+
+--- @param lightRef string
+--- @return string|nil
+local function resolveNpcSeatLightGuid(lightRef)
+    local seatKey = NPC_LIGHT_TO_SEAT[lightRef]
+    local roleName = NPC_LIGHT_ROLE_BY_REF[lightRef]
+    if U.Type(seatKey) ~= "string" or U.Type(roleName) ~= "string" then
+        return nil
+    end
+    ---@diagnostic disable-next-line: undefined-global
+    local tagged = getObjectsWithTag(seatKey .. "Object")
+    if U.Type(tagged) ~= "table" then
+        return nil
+    end
+    local roleNeedle = roleName .. "_" .. seatKey
+    for _, obj in ipairs(tagged) do
+        if U.isGameObject(obj) and obj.getGUID ~= nil then
+            local objName = ""
+            local objNick = ""
+            pcall(function()
+                objName = string.upper(tostring(obj.getName() or ""))
+            end)
+            pcall(function()
+                objNick = string.upper(tostring(obj.getNickname() or ""))
+            end)
+            local matchByRole = string.find(objName, roleNeedle, 1, true)
+                or string.find(objName, roleName, 1, true)
+                or string.find(objNick, roleNeedle, 1, true)
+                or string.find(objNick, roleName, 1, true)
+            if matchByRole then
+                local guid = obj.getGUID()
+                if U.Type(guid) == "string" and guid ~= "" then
+                    return guid
+                end
+            end
+        end
+    end
+    return nil
+end
+
+--- @param lightRef string
+--- @return boolean
+local function isNpcSeatLightActive(lightRef)
+    local seatKey = NPC_LIGHT_TO_SEAT[lightRef]
+    if U.Type(seatKey) ~= "string" then
+        return true
+    end
+    local occupied = S.getStateVal("seatLayout", "occupiedNPCSlots")
+    if U.Type(occupied) ~= "table" then
+        return false
+    end
+    local occupant = occupied[seatKey]
+    if occupant == nil or occupant == false then
+        return false
+    end
+    local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
+    local tableCfg = U.Type(currentTableKey) == "string" and C.Tables[currentTableKey] or nil
+    local tableMap = U.Type(tableCfg) == "table" and tableCfg.playerToPositionMap or nil
+    if U.Type(tableMap) ~= "table" or tableMap[seatKey] == nil then
+        return false
+    end
+    local npcInstances = S.getStateVal("npcs", "instances")
+    if U.Type(occupant) == "string" and U.Type(npcInstances) == "table" and U.Type(npcInstances[occupant]) == "table" then
+        return false
+    end
+    return true
+end
+
 
 function L.SetLightMode(lightRef, mode, player, transitionTime)
     if transitionTime == nil then
@@ -961,11 +1186,26 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
     local modeDef
 
     if lData ~= nil then
+        if U.Type(lData.guid) ~= "string" or lData.guid == "" then
+            local resolvedGuid = resolveNpcSeatLightGuid(lightRef)
+            if U.Type(resolvedGuid) == "string" and resolvedGuid ~= "" then
+                lData.guid = resolvedGuid
+            end
+        end
+        if U.Type(lData.guid) ~= "string" or lData.guid == "" then
+            if NPC_LIGHT_TO_SEAT[lightRef] ~= nil then
+                return nil
+            end
+        end
+        if not isNpcSeatLightActive(lightRef) then
+            mode = "OFF"
+        end
         isSpawned = lData.isSpawned or false
 
-        if not lData.isPlayerLight then
-            U.Val("SetLightMode", { lightRef, player }, player == nil,
-                "Player submitted to non-player light", { isThrowing = false })
+        if not lData.isPlayerLight and player ~= nil then
+            -- Some scene/light call paths pass a player context for mixed light ref sets.
+            -- Non-player lights should ignore that context instead of emitting validation alerts.
+            player = nil
         end
 
         light = getLight(lightRef, true)

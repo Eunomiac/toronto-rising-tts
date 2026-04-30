@@ -1414,12 +1414,12 @@ function DEBUG.testConstants()
 
     -- Test 2: Storyteller Color
     do
-        if C.STORYTELLER_COLOR == "Black" then
-            print("C.STORYTELLER_COLOR: " .. C.STORYTELLER_COLOR)
+        if C.StorytellerColor == "Black" then
+            print("C.StorytellerColor: " .. C.StorytellerColor)
             printTestResult("Storyteller Color", true, "Correctly set to Black")
             passed = passed + 1
         else
-            printTestResult("Storyteller Color", false, "Expected 'Black', got '" .. tostring(C.STORYTELLER_COLOR) .. "'")
+            printTestResult("Storyteller Color", false, "Expected 'Black', got '" .. tostring(C.StorytellerColor) .. "'")
             failed = failed + 1
         end
     end

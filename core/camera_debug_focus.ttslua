@@ -246,9 +246,14 @@ function CameraDebugFocus.applyNamedMode(player)
         return false, "Unknown camera mode key: '" .. modeName .. "'."
     end
     pushAllSlidersToUi()
-    -- Keep named-mode apply aligned with slider behavior.
+    -- Route mode applies through main camera pipeline so behavior matches non-debug camera calls.
+    if M ~= nil and type(M.setCamera) == "function" then
+        M.setCamera(targetPlayer, modeName)
+        return true, "Loaded camera mode '" .. modeName .. "' into sliders and applied via M.setCamera."
+    end
+    -- Fallback: preserve prior behavior if main module is unavailable.
     applyLiveToPlayer(targetPlayer)
-    return true, "Loaded camera mode '" .. modeName .. "' into sliders and applied via lookAt."
+    return true, "Loaded camera mode '" .. modeName .. "' into sliders and applied via lookAt fallback."
 end
 
 function CameraDebugFocus.done()

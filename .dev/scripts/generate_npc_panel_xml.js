@@ -152,6 +152,24 @@ function withAlphaHex(hexColor, alphaHex = "CC", fallback = "#444444CC") {
 function buildPanelXml({ areas, characters, groupIds, groupDisplayNames }) {
   const rows = [];
 
+  rows.push('<Text class="hud_storyteller_header">Seated NPCs</Text>');
+  const seatKeys = ["NPC1", "NPC2", "NPC3", "NPC4"];
+  for (const seatKey of seatKeys) {
+    const toAreaButtons = areas
+      .map(
+        (area) =>
+          `<Button id="npc_seated_toArea_${seatKey}_${area.key}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">${xmlEscape(area.label)}</Button>`
+      )
+      .join("");
+    rows.push(`<HorizontalLayout id="npc_seatedRow_${seatKey}" class="hud_storyteller_button_row" active="false">
+  <Text id="npc_seatedLabel_${seatKey}" class="hud_storyteller_label hud_storyteller_button_icon_narrow">${xmlEscape(seatKey)}</Text>
+  <Text id="npc_seatedName_${seatKey}" class="hud_storyteller_label hud_storyteller_row_name">-</Text>
+  ${toAreaButtons}
+  <Button id="npc_seated_unseat_${seatKey}" class="hud_storyteller_button hud_storyteller_button_icon hud_storyteller_button_icon_narrow" onClick="HUD_npcDispatch">✕</Button>
+  <Panel class="hud_storyteller_horiz_spacer" />
+</HorizontalLayout>`);
+  }
+
   rows.push('<Text class="hud_storyteller_header">Areas</Text>');
   for (const area of areas) {
     const moveGroupButtons = areas
@@ -229,10 +247,18 @@ function buildPanelXml({ areas, characters, groupIds, groupDisplayNames }) {
             `<Button id="npc_memberLoc_${groupId}_${member.key}_${area.key}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">${xmlEscape(area.label)}</Button>`
         )
         .join("");
+      const memberSeatButtons = seatKeys
+        .map(
+          (seatKey, index) =>
+            `<Button id="npc_memberLoc_${groupId}_${member.key}_${seatKey}" class="hud_storyteller_button hud_storyteller_button_icon hud_storyteller_button_icon_narrow" onClick="HUD_npcDispatch">${index + 1}</Button>`
+        )
+        .join("");
       rows.push(`<HorizontalLayout id="npc_groupMemberRow_${groupId}_${member.key}" class="hud_storyteller_button_row npc_group_member_row" active="false">
   <Text id="npc_groupMemberName_${groupId}_${member.key}" class="hud_storyteller_label hud_storyteller_row_name"${memberColorAttr}>${xmlEscape(member.fullName)}</Text>
   <Button id="npc_memberLock_${groupId}_${member.key}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">⨀</Button>
   ${memberLocButtons}
+  ${memberSeatButtons}
+  <Button id="npc_unseat_${member.key}" class="hud_storyteller_button hud_storyteller_button_icon hud_storyteller_button_icon_narrow" onClick="HUD_npcDispatch">✕</Button>
   <Panel class="hud_storyteller_horiz_spacer" />
 </HorizontalLayout>`);
     }

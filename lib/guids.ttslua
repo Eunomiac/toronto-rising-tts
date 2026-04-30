@@ -46,6 +46,10 @@ G.GUIDS = {
     SEAT_LIGHT_2_RED = "41bbba",
     SEAT_LIGHT_2_PINK = "1736cb",
     SEAT_LIGHT_2_PURPLE = "cf2fe0",
+    SEAT_LIGHT_2_NPC1 = "dad7c0",
+    SEAT_LIGHT_2_NPC2 = "a7b80b",
+    SEAT_LIGHT_2_NPC3 = "f0d6b5",
+    SEAT_LIGHT_2_NPC4 = "bc9f58",
 
     SEAT_LIGHT_3_BROWN = "daa1ad",
     SEAT_LIGHT_3_ORANGE = "942ec5",
@@ -108,7 +112,7 @@ G.GUIDS = {
     CSHEET_PAGE_8_PURPLE = "ceb48e",
     CSHEET_DICE_DRAWER_BROWN = "4cd6ed",
     CSHEET_DICE_DRAWER_ORANGE = "0ff5a4",
-    CSHEET_DICE_DRAWER_RED = "e9c449",
+    CSHEET_DICE_DRAWER_RED = "8ae9ac",
     CSHEET_DICE_DRAWER_PINK = "248013",
     CSHEET_DICE_DRAWER_PURPLE = "fea8f6",
 
@@ -145,9 +149,9 @@ G.GUIDS = {
     -- Thrones (for players to sit on)
     THRONE_RED = "474c0d",
     THRONE_ORANGE = "c3a355",
-    THRONE_BROWN = "8f512e",
-    THRONE_PINK = "18bd33",
-    THRONE_PURPLE = "823f86",
+    THRONE_BROWN = "3da314",
+    THRONE_PINK = "570f9b",
+    THRONE_PURPLE = "ede3ce",
 
     -- Player Figures (placed at player seats)
     SEAT_FIGURE_BROWN = "1c5b18",
@@ -157,7 +161,9 @@ G.GUIDS = {
     SEAT_FIGURE_RED = "1e70cf",
 
     -- Player-Specific Objects
+    PRINCE_SIGNET_BORDER_RED = "4506f3",
     PRINCE_SIGNET_RED = "9a2f2d",
+    PRINCE_CURTAIN_RED = "d175e4",
     TAROT_DECK_PINK = "cd3a86",
     TAROT_DRAWER_PINK = "7f0246",
     TAROT_BUTTON_PINK = "4dc8ad",

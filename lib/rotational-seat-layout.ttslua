@@ -949,6 +949,19 @@ local function cameraPositionWorldOffsetForActiveTable(tableCfg)
   return Vector(tableCfg.referenceHandPosition) - Vector(base)
 end
 
+--- World-space center point where `C.RedCameraAngles` authoring presets were captured.
+--- Defaults to `Table A` center when an explicit constant is not provided.
+--- @return Vector
+local function cameraAuthoringCenterPoint()
+  if C.CameraAuthoringReferenceTableCenter ~= nil then
+    return Vector(C.CameraAuthoringReferenceTableCenter)
+  end
+  if U.Type(C.Tables) == "table" and U.Type(C.Tables["Table A"]) == "table" and C.Tables["Table A"].centerPoint ~= nil then
+    return Vector(C.Tables["Table A"].centerPoint)
+  end
+  return Vector(0, 0, 0)
+end
+
 --- @param computed table
 --- @param sourceGroups table
 --- @param positionWorldOffset Vector|nil additive world-space correction for all derived camera positions
@@ -967,6 +980,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
   if U.Type(referenceSegment) ~= "number" then
     error("rotational-seat-layout: cannot apply cameraModes; missing reference segment")
   end
+  local authoringCenterPoint = cameraAuthoringCenterPoint()
   local centerPoint = Vector(computed.centerPoint)
   local stepDeg = 360 / computed.numSegments
 
@@ -1025,7 +1039,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
       if U.Type(segment) == "number" then
         local deltaYaw = (segment - referenceSegment) * stepDeg
         local transformed = rigidTransformBetweenCenters(
-          centerPoint,
+          authoringCenterPoint,
           centerPoint,
           {
             position = Vector(redMode.position),
@@ -1036,6 +1050,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
         local shiftedPos = Vector(transformed.position) + worldOff
         local playerID = S.getPlayerID(color)
         if playerID ~= nil then
+          local shiftedPosTable = { x = shiftedPos.x, y = shiftedPos.y, z = shiftedPos.z }
           local pitch, yaw, distance = normalizeCameraAngles(
             transformed.rotation.x,
             transformed.rotation.y,
@@ -1044,7 +1059,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
           S.setStateVal(
             {
               cameraMode = redMode.cameraMode or "FirstPerson",
-              position = shiftedPos,
+              position = shiftedPosTable,
               pitch = pitch,
               yaw = yaw,
               distance = distance,
@@ -1083,7 +1098,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
         if U.Type(seatKey) == "string" and U.Type(segment) == "number" then
           local deltaYaw = (segment - referenceSegment) * stepDeg
           local transformed = rigidTransformBetweenCenters(
-            centerPoint,
+            authoringCenterPoint,
             centerPoint,
             {
               position = Vector(redMode.position),
@@ -1092,6 +1107,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
             deltaYaw
           )
           local shiftedPos = Vector(transformed.position) + worldOff
+          local shiftedPosTable = { x = shiftedPos.x, y = shiftedPos.y, z = shiftedPos.z }
           local generatedKey = modeBase .. seatKey
           local pitch, yaw, distance = normalizeCameraAngles(
             transformed.rotation.x,
@@ -1100,7 +1116,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
           )
           universalAngles[generatedKey] = {
             cameraMode = redMode.cameraMode or "FirstPerson",
-            position = shiftedPos,
+            position = shiftedPosTable,
             pitch = pitch,
             yaw = yaw,
             distance = distance,
@@ -1601,6 +1617,23 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
   local handZoneMoveBySeat = {}
   handZoneMoveBySeat[referencePlayerColor] = referenceHandZoneMove
   local followerTransformsBySeat = {}
+  local relativeGuidSet = {}
+  if #sourceGroups.relative > 0 then
+    for i = 1, #sourceGroups.relative do
+      local relRef = sourceGroups.relative[i]
+      local relObj = resolveObjectRefWithRoleSupport(
+        relRef,
+        referencePlayerColor,
+        "sourceObjects.relative[" .. tostring(i) .. "]"
+      )
+      if relObj ~= nil and relObj.getGUID ~= nil then
+        local rg = relObj.getGUID()
+        if U.Type(rg) == "string" and rg ~= "" then
+          relativeGuidSet[rg] = true
+        end
+      end
+    end
+  end
 
   for color, pack in pairs(computed.byColor) do
     if color ~= referencePlayerColor then
@@ -1612,11 +1645,12 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
       local tagged = getObjectsWithTag(seatTag)
       local byRole = {}
       local skippedNoPattern = 0
+      local skippedNoPatternDetails = {}
       if U.Type(tagged) == "table" then
         for _, o in ipairs(tagged) do
           if o ~= nil and o.getGUID then
             local og = o.getGUID()
-            if not templateGuidSet[og] then
+            if not templateGuidSet[og] and not relativeGuidSet[og] then
               local disp = tryMatchingDisplayName(o)
               if disp ~= nil then
                 local role, _ = parseRoleAndSuffix(disp)
@@ -1632,18 +1666,39 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
                 byRole[role] = o
               else
                 skippedNoPattern = skippedNoPattern + 1
+                local objGuid = "unknown-guid"
+                local objName = "unknown-name"
+                local objNick = "unknown-nickname"
+                pcall(function()
+                  objGuid = tostring(o.getGUID() or objGuid)
+                end)
+                pcall(function()
+                  objName = tostring(o.getName() or objName)
+                end)
+                pcall(function()
+                  objNick = tostring(o.getNickname() or objNick)
+                end)
+                table.insert(
+                  skippedNoPatternDetails,
+                  string.format("%s [name='%s', nick='%s']", objGuid, objName, objNick)
+                )
               end
             end
           end
         end
       end
       if skippedNoPattern > 0 then
+        local detailSuffix = ""
+        if #skippedNoPatternDetails > 0 then
+          detailSuffix = " Offenders: " .. table.concat(skippedNoPatternDetails, ", ")
+        end
         print(
           "[rotational-seat-layout] seat '"
           .. color
           .. "': "
           .. tostring(skippedNoPattern)
           .. " tagged object(s) have no ROLE_COLOR Name/Nickname (not moved); new clones may duplicate them."
+          .. detailSuffix
         )
       end
 
@@ -2069,7 +2124,23 @@ local function getOccupiedNPCSlots()
   if U.Type(raw) ~= "table" then
     return {}
   end
-  return raw
+  local active = U.clone(raw)
+  local npcInstances = S.getStateVal("npcs", "instances")
+  if U.Type(npcInstances) == "table" then
+    local inArea = {}
+    for npcName, rec in pairs(npcInstances) do
+      if U.Type(npcName) == "string" and U.Type(rec) == "table" and U.Type(rec.areaKey) == "string" then
+        inArea[npcName] = true
+      end
+    end
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+      local occupant = active[seatKey]
+      if U.Type(occupant) == "string" and inArea[occupant] == true then
+        active[seatKey] = false
+      end
+    end
+  end
+  return active
 end
 
 --- @param tableCfg table
@@ -2169,6 +2240,7 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
   local tableSeatPresence = collectSeatPresenceMap(targetTableCfg)
   local currentSeatPresence = collectSeatPresenceMap(currentTableCfg)
   local allLayerColors = getAllLayerColors()
+  local hiddenSeatY = -200
   local referenceColor = (targetTableCfg and targetTableCfg.referencePlayerColor) or "Red"
   local templateGuidSet = {}
   for _, group in ipairs(allSourceRefs) do
@@ -2203,8 +2275,33 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
               obj.setInvisibleTo({})
             else
               obj.setInvisibleTo(allLayerColors)
+              local p = obj.getPosition and obj.getPosition() or nil
+              if p ~= nil and obj.setPosition ~= nil then
+                obj.setPosition({ x = p.x, y = hiddenSeatY, z = p.z }, false, false)
+              end
             end
           end
+        end
+      end
+    end
+  end
+
+  local function syncSeatLightMode(seatKey, active)
+    local seatToLightRefs = {
+      NPC1 = { "npcSeat1Light", "npcSeat1Light1" },
+      NPC2 = { "npcSeat2Light", "npcSeat2Light1" },
+      NPC3 = { "npcSeat3Light", "npcSeat3Light1" },
+      NPC4 = { "npcSeat4Light", "npcSeat4Light1" },
+    }
+    local lightRefs = seatToLightRefs[seatKey]
+    if U.Type(lightRefs) ~= "table" then
+      return
+    end
+    local okL, L = pcall(require, "core.lighting")
+    if okL and U.Type(L) == "table" and U.Type(L.SetLightMode) == "function" then
+      for _, lightRef in ipairs(lightRefs) do
+        if U.Type(lightRef) == "string" and lightRef ~= "" then
+          L.SetLightMode(lightRef, active and "STANDARD" or "OFF", nil, 0)
         end
       end
     end
@@ -2217,10 +2314,13 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
     local currentHasSeat = currentSeatPresence[seatKey] == true
     if occupied and targetHasSeat then
       setSeatVisible(seatKey, true)
+      syncSeatLightMode(seatKey, true)
     elseif occupied and currentHasSeat and (not targetHasSeat) then
       setSeatVisible(seatKey, false)
+      syncSeatLightMode(seatKey, false)
     elseif not occupied then
       setSeatVisible(seatKey, false)
+      syncSeatLightMode(seatKey, false)
     end
   end
 end
@@ -2320,20 +2420,20 @@ local function applyPostCorrections(sourceObjects, computed)
         baseRot.y + delta.y,
         baseRot.z + delta.z,
       })
-      print(
-        "[rotational-seat-layout] postCorrection ROTATION guid='"
-        .. tostring(guid)
-        .. "' targetBeforeRot="
-        .. formatVec(targetBeforeRot)
-        .. " anchorGuid='"
-        .. tostring(correction.anchor)
-        .. "' anchorRot="
-        .. formatVec(baseRot)
-        .. " delta="
-        .. formatVec(delta)
-        .. " nextRot="
-        .. formatVec(nextRot)
-      )
+      -- print(
+      --   "[rotational-seat-layout] postCorrection ROTATION guid='"
+      --   .. tostring(guid)
+      --   .. "' targetBeforeRot="
+      --   .. formatVec(targetBeforeRot)
+      --   .. " anchorGuid='"
+      --   .. tostring(correction.anchor)
+      --   .. "' anchorRot="
+      --   .. formatVec(baseRot)
+      --   .. " delta="
+      --   .. formatVec(delta)
+      --   .. " nextRot="
+      --   .. formatVec(nextRot)
+      -- )
     end
 
     if hasPositionCorrection then
@@ -2346,27 +2446,27 @@ local function applyPostCorrections(sourceObjects, computed)
         )
       end
       nextPos = Vector({ x = nextPos.x, y = yVal, z = nextPos.z })
-      print(
-        "[rotational-seat-layout] postCorrection POSITION guid='"
-        .. tostring(guid)
-        .. "' targetBeforePos="
-        .. formatVec(targetBeforePos)
-        .. " nextPos="
-        .. formatVec(nextPos)
-      )
+      -- print(
+      --   "[rotational-seat-layout] postCorrection POSITION guid='"
+      --   .. tostring(guid)
+      --   .. "' targetBeforePos="
+      --   .. formatVec(targetBeforePos)
+      --   .. " nextPos="
+      --   .. formatVec(nextPos)
+      -- )
     end
 
     placeObjectExact(obj, nextPos, nextRot)
     local targetAfterPos = obj.getPosition()
     local targetAfterRot = obj.getRotation()
-    print(
-      "[rotational-seat-layout] postCorrection AFTER guid='"
-      .. tostring(guid)
-      .. "' targetPos="
-      .. formatVec(targetAfterPos)
-      .. " targetRot="
-      .. formatVec(targetAfterRot)
-    )
+    -- print(
+    --   "[rotational-seat-layout] postCorrection AFTER guid='"
+    --   .. tostring(guid)
+    --   .. "' targetPos="
+    --   .. formatVec(targetAfterPos)
+    --   .. " targetRot="
+    --   .. formatVec(targetAfterRot)
+    -- )
   end
 end
 
@@ -2567,6 +2667,16 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   applyPostCorrections(src, computed)
   applyTableConfigObjectPositions(tableCfg)
   enforceNPCSeatObjectVisibility(src, occupiedNPCSlots, tableCfg, previousTableCfg)
+  local npcInstances = S.getStateVal("npcs", "instances")
+  if U.Type(npcInstances) == "table" and U.Type(NPCS) == "table" and U.Type(NPCS.applyCurrentLightMode) == "function" then
+    for npcName, rec in pairs(npcInstances) do
+      if U.Type(npcName) == "string" and U.Type(rec) == "table" then
+        pcall(function()
+          NPCS.applyCurrentLightMode(npcName, 0)
+        end)
+      end
+    end
+  end
   local sourceGroups = resolveSourceTemplateGroups(src)
   local camWorldOffset = cameraPositionWorldOffsetForActiveTable(tableCfg)
   applyCameraModesForSeats(computed, sourceGroups, camWorldOffset)

@@ -9,9 +9,12 @@ local C = {}
 
 local G = require("lib.guids")
 
+-- #region Player Data
+
 -- Storyteller ID (Steam ID). Same as Kings Dilemma C.AdminID for reuse across TTS projects.
 -- All other player IDs are extracted dynamically when players choose a seat color.
 C.StorytellerID = "76561198002132577"
+C.StorytellerColor = "Black"
 C.PlayerIDs = {
   Storyteller = "76561198002132577",
   PixelPuzzler = "76561198071469619",
@@ -95,6 +98,9 @@ C.PlayerColors = {
     "Brown", "Orange", "Red", "Pink", "Purple"
 }
 
+-- #endregion
+
+-- #region Base Constants
 -- NPC Seats
 -- The up-to-four table slots for NPCs, identified by the tags NPC1, NPC2, NPC3, NPC4
 C.NPCSeats = {
@@ -280,6 +286,9 @@ C.CHRONICLE_DATA = {
 C.Clans = {
     "Banu Haqim", "Brujah", "Caitif", "Cappadocian", "Gangrel", "Giovanni", "Lasombra", "Malkavian", "Ministry", "Nosferatu", "Ravnos", "Salubri", "Thin-Blood", "Toreador", "Tremere", "Tzimisce", "Ventrue"
 }
+-- #endregion
+
+-- #region Rolls
 
 -- Default Game Settings (VTM5E rules)
 C.DICE_SUCCESS_THRESHOLD = 6
@@ -430,9 +439,9 @@ C.DICE_SETTLE_DEBOUNCE_SECONDS = 3
 -- Must match the delayed cleanup in global_script (dice destroy + drawer close).
 C.ROLL_RESULT_BROADCAST_SECONDS = 6
 
--- Storyteller Color (GM role)
--- Storyteller is always Black in VTM5E
-C.STORYTELLER_COLOR = "Black"
+-- #endregion
+
+-- #region Object Positions
 
 -- Object positions based on object state
 -- Only listed values should be changed
@@ -569,6 +578,10 @@ C.ObjectPositions = {
     }
   }
 }
+
+-- #endregion
+
+-- #region Camera Modes
 
 -- Camera Modes
 -- These are the camera modes that can be used to control the camera. This object contains the mode as the key, and either "bySeat" if the camera angle should be determined by the table seating functionality, or "universal" if the camera angle is the same for all players.
@@ -853,6 +866,10 @@ local function deriveTableSourceCameraModes()
     universal = universal,
   }
 end
+
+-- #endregion
+
+-- #region Table Seats
 -- Table Presets
 
 --[[
@@ -951,9 +968,9 @@ C.Tables = {
   },
   ["Table B"] = {
     guid = "b086ae",
-    centerPoint = Vector({0, 0, -40.26}),
-    activePosition = Vector({0.00, 0, -40.26}),
-    inactivePosition = Vector({0.00, -200, 100}),
+    centerPoint = Vector({0, 0, -90.26}),
+    activePosition = Vector({0.00, 0, -90.26}),
+    inactivePosition = Vector({0.00, -200, 50}),
     numSegments = 10,
     angleSegmentOne = 0,
     playerToPositionMap = {
@@ -968,15 +985,15 @@ C.Tables = {
       Purple = 8
     },
     referencePlayerColor = "Red",
-    referenceHandPosition = Vector({0.00, 3.22, -112}),
+    referenceHandPosition = Vector({0.00, 3.22, -162}),
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
-        position = {z = -50}
+        position = {z = -100}
       },
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
-        position = {z = -50}
+        position = {z = -100}
       }
     }
   },
@@ -1128,16 +1145,19 @@ C.TableSourceObjects = {
     "DICEBAG_NORMAL",
     "SIGNAL_CANDLE",
     "SIGNAL_FIRE",
-    "HUNGER_SMOKE"
+    "HUNGER_SMOKE",
+    "SEAT_LIGHT_3"
   },
   all = {
     "SEAT_CHAIR",
     "SEAT_FIGURE",
     "SEAT_LIGHT_1",
-    "SEAT_LIGHT_2",
-    "SEAT_LIGHT_3",
+    "SEAT_LIGHT_2"
   },
   relative = {
+    G.GUIDS.PRINCE_SIGNET_BORDER_RED,
+    G.GUIDS.PRINCE_SIGNET_RED,
+    G.GUIDS.PRINCE_CURTAIN_RED,
     G.GUIDS.TAROT_DECK_PINK,
     G.GUIDS.TAROT_DRAWER_PINK,
     G.GUIDS.TAROT_BUTTON_PINK,
@@ -1151,32 +1171,36 @@ C.TableSourceObjects = {
     [G.GUIDS.THRONE_BROWN] = {
       anchor = G.GUIDS.HAND_BROWN,
       rotationDelta = Vector({0, 180, 0}),
-      position = {y = -16.08}
+      position = {y = -44.86}
     },
     [G.GUIDS.THRONE_ORANGE] = {
       anchor = G.GUIDS.HAND_ORANGE,
       rotationDelta = Vector({0, 180, 0}),
-      position = {y = -22.32}
+      position = {y = -17.75}
     },
     [G.GUIDS.THRONE_PINK] = {
       anchor = G.GUIDS.HAND_PINK,
       rotationDelta = Vector({0, 180, 0}),
-      position = {y = -20.66}
+      position = {y = -20.29}
     },
     [G.GUIDS.THRONE_PURPLE] = {
-      position = {y = -27.02}
+      position = {y = -37.08}
     },
     [G.GUIDS.SEAT_FIGURE_BROWN] = {
       position = {y = -50}
     },
     [G.GUIDS.SEAT_FIGURE_PURPLE] = {
-      position = {y = -48.97}
+      position = {y = -50.67}
     }
   },
   -- Derived from C.RedCameraAngles (and aligned with C.UniversalCameraAngles runtime merge behavior).
   -- This avoids duplicating mode-key lists in multiple places.
   cameraModes = deriveTableSourceCameraModes()
 }
+
+-- #endregion
+
+-- #region Light Presets
 
 -- Light Presets (scene lighting configurations)
 -- Note: Color is controlled via LUT (Look-Up Table) indices, not a direct color property
@@ -1231,8 +1255,10 @@ C.LightModes = {
         reflection_intensity = 0
     }
 }
+-- #endregion
 
--- Districts
+-- #region Districts
+
 C.Districts = {
   Annex = {
     name = "The Annex",
@@ -1380,6 +1406,10 @@ C.Districts = {
   }
 }
 
+-- #endregion
+
+-- #region Sites
+
 -- Sites
 C.Sites = {
   StRegis = {
@@ -1389,5 +1419,7 @@ C.Sites = {
     soundscapeLocation
   }
 }
+
+-- #endregion
 
 return C

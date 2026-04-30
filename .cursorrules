@@ -388,7 +388,7 @@ startLuaCoroutine(Global, "CoroutineName")
 ### Color Usage
 
 - Use `C.PlayerColors` array for iteration
-- Use `C.STORYTELLER_COLOR` constant for Storyteller color
+- Use `C.StorytellerColor` constant for Storyteller color
 - Validate colors before use
 
 ## Common Issues and Solutions

@@ -55,19 +55,39 @@ local function runWhenSeatLayoutReady(callback, attempt)
     if type(callback) ~= "function" then
         return
     end
-    attempt = attempt or 1
-    local maxAttempts = 40
-    local attempts = attempt
-    U.waitUntil(function()
+    local startAttempt = tonumber(attempt) or 1
+    if startAttempt < 1 then
+        startAttempt = 1
+    end
+    local maxAttempts = 10
+    local baseDelaySeconds = 0.1
+    local maxDelaySeconds = 2.0
+
+    local function getBackoffDelaySeconds(currentAttempt)
+        local exponent = currentAttempt - 1
+        local delay = baseDelaySeconds * (2 ^ exponent)
+        if delay > maxDelaySeconds then
+            return maxDelaySeconds
+        end
+        return delay
+    end
+
+    local function retry(currentAttempt)
         if isSeatLayoutReady() then
             callback()
             return
         end
-        print("[TarotButton] seatLayout.currentTableKey is not ready; skipping tarot pose application.")
-    end, function()
-        attempts = attempts + 1
-        return isSeatLayoutReady() or attempts >= maxAttempts
-    end, false, 10, 0.25)
+        if currentAttempt >= maxAttempts then
+            print("[TarotButton] seatLayout.currentTableKey is not ready after retries; skipping tarot pose application.")
+            return
+        end
+        local delaySeconds = getBackoffDelaySeconds(currentAttempt)
+        U.waitUntil(function()
+            retry(currentAttempt + 1)
+        end, delaySeconds, false, delaySeconds + 1, 0.1)
+    end
+
+    retry(startAttempt)
 end
 
 --- @return Object|nil

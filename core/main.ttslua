@@ -331,8 +331,6 @@ function M.setCamera(player, cameraMode, lookAtPos)
 
   -- Set camera mode to cameraPreset.cameraMode if present, or ThirdPerson by default
   local playerCameraMode = (cameraPreset and cameraPreset.cameraMode) or "ThirdPerson"
-  -- Set the camera mode to the player's camera mode
-  player.setCameraMode(playerCameraMode)
 
   -- Build camera data table for lookAt() - must include position, pitch, yaw, and distance
   local cameraData = nil
@@ -355,12 +353,48 @@ function M.setCamera(player, cameraMode, lookAtPos)
   end
 
   if cameraData and cameraData.position then
-    -- lookAt() accepts a table with position, pitch, yaw, and distance
-    player.lookAt(cameraData)
-    -- Reset to ThirdPerson after brief delay (prevents camera snapping back)
-    Wait.time(function()
-      player.setCameraMode(playerCameraMode)
-    end, 0.5)
+    -- lookAt() can no-op when incoming values are too close to current camera state.
+    -- Nudge to an intermediate transform first, then apply the requested transform.
+    local function getCameraNumber(v, fallback)
+      local n = tonumber(v)
+      if n == nil then
+        return fallback
+      end
+      return n
+    end
+
+    local function getIntermediateCameraData(finalCameraData)
+      local intermediate = U.clone(finalCameraData)
+      intermediate.pitch = getCameraNumber(intermediate.pitch, 45)
+      intermediate.distance = getCameraNumber(intermediate.distance, 15)
+
+      if intermediate.pitch > 45 then
+        intermediate.pitch = intermediate.pitch - 2
+      else
+        intermediate.pitch = intermediate.pitch + 2
+      end
+      if intermediate.distance > 15 then
+        intermediate.distance = intermediate.distance - 2
+      else
+        intermediate.distance = intermediate.distance + 2
+      end
+      return intermediate
+    end
+
+    local intermediateCameraData = getIntermediateCameraData(cameraData)
+    U.RunSequence({
+      function()
+        player.lookAt(intermediateCameraData)
+        return 0.15
+      end,
+      function()
+        player.lookAt(cameraData)
+        return 0.5
+      end,
+      function()
+        player.setCameraMode(playerCameraMode)
+      end
+    })
   end
 end
 
