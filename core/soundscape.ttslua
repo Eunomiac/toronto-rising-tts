@@ -1,48 +1,171 @@
 --[[
     Layered Soundscape Runtime (core/soundscape.ttslua)
 
-    Controls non-positional layered audio through hidden Custom_Assetbundle emitters.
-    The Unity asset must expose named Looping Effects from lib/soundscape_catalog.ttslua
-    and each emitter AudioSource should be authored as 2D (`spatialBlend = 0`).
-
-    This module is intentionally usable before weather/calendar/SITES exist: callers can
-    set manual context now, and future systems can call applyContext without owning playback.
+    Controls non-positional layered audio through seven hidden AssetBundle emitters.
+    The static asset contract lives in lib/soundscape_catalog.ttslua; this module
+    owns all direct AssetBundle calls so scene, weather, and UI code can stay
+    intent-based.
 ]]
 
 local Soundscape = {}
 local U = require("lib.util")
 local S = require("core.state")
+local G = require("lib.guids")
 local Catalog = require("lib.soundscape_catalog")
 
 local musicGeneration = 0
+local featuredGeneration = 0
+local weatherGeneration = 0
+local singleEmitterTransitionGeneration = {}
 local cachedEmitters = {}
+
+local BACKGROUND_KIND_MOOD = "mood"
+local BACKGROUND_KIND_LOCATION = "locationMusic"
+
+local DEBUG_CATEGORY_CHANNELS = {
+    backgroundMusic = "music",
+    featuredMusic = "featured",
+    location = "location",
+    rain = "weatherRain",
+    wind = "weatherWind",
+    thunder = "weatherThunder",
+}
+
+-- ============================================================================
+-- BASIC HELPERS
+-- ============================================================================
+
+local function waitTime(callback, seconds)
+    local waitApi = _G and rawget(_G, "Wait") or nil
+    if waitApi ~= nil and waitApi.time ~= nil then
+        waitApi.time(callback, seconds)
+        return true
+    end
+    return false
+end
+
+local function clamp01(value)
+    local numberValue = tonumber(value) or 0
+    if numberValue < 0 then return 0 end
+    if numberValue > 1 then return 1 end
+    return numberValue
+end
+
+local function chooseRandom(list)
+    if type(list) ~= "table" or #list == 0 then
+        return nil
+    end
+    return list[math.random(#list)]
+end
+
+local function indexOfTrack(tracks, trackKey)
+    if type(tracks) ~= "table" or type(trackKey) ~= "string" then
+        return nil
+    end
+    for index, track in ipairs(tracks) do
+        if type(track) == "table" and track.key == trackKey then
+            return index
+        end
+    end
+    return nil
+end
+
+local function selectBackgroundTrack(playlist, state, playlistKey)
+    if type(playlist) ~= "table" or type(playlist.tracks) ~= "table" or #playlist.tracks == 0 then
+        return nil
+    end
+    if playlist.playMode == Catalog.PLAYMODES.SEQUENCE then
+        local currentIndex = nil
+        if state.backgroundMusicEnabled == true and (state.locationMusic == playlistKey or state.musicMood == playlistKey) then
+            currentIndex = indexOfTrack(playlist.tracks, state.backgroundTrackKey)
+        end
+        if currentIndex == nil then
+            return playlist.tracks[1]
+        end
+        return playlist.tracks[(currentIndex % #playlist.tracks) + 1]
+    end
+    return chooseRandom(playlist.tracks)
+end
+
+local function otherPairedChannel(channelKey, channelA, channelB)
+    return channelKey == channelB and channelA or channelB
+end
+
+local function resolveActiveFeaturedChannel(state)
+    return state.activeFeaturedChannel == "featuredB" and "featuredB" or "featuredA"
+end
+
+local function resolveActiveLocationChannel(state)
+    return state.activeLocationChannel == "locationB" and "locationB" or "locationA"
+end
+
+local function resolveActiveMusicChannel(state)
+    return state.activeMusicChannel == "musicB" and "musicB" or "musicA"
+end
+
+local function sortedEffectRows(indexByName)
+    local rows = {}
+    for name, index in pairs(indexByName) do
+        table.insert(rows, { name = name, index = index })
+    end
+    table.sort(rows, function(a, b)
+        return tostring(a.name) < tostring(b.name)
+    end)
+    return rows
+end
 
 -- ============================================================================
 -- STATE HELPERS
 -- ============================================================================
 
+local function defaultChannelState(channelKey)
+    local channelDef = Catalog.CHANNELS[channelKey] or {}
+    local effect = Catalog.SILENT_EFFECT
+    local effectList = Catalog.EFFECT_LIST.LOOPING
+    if channelKey == "weatherThunder" then
+        effect = nil
+        effectList = Catalog.EFFECT_LIST.TRIGGER
+    end
+    return {
+        effect = effect,
+        effectList = effectList,
+        volume = tonumber(channelDef.defaultVolume) or 0,
+        available = false,
+        volumeControl = nil,
+    }
+end
+
 --- Returns a fresh serializable default soundscape state.
 -- @return table
 local function defaultState()
     local channels = {}
-    for channelKey, channelDef in pairs(Catalog.CHANNELS) do
-        channels[channelKey] = {
-            effect = Catalog.SILENT_EFFECT,
-            volume = tonumber(channelDef.defaultVolume) or 0,
-            available = false,
-        }
+    for channelKey, _ in pairs(Catalog.CHANNELS) do
+        channels[channelKey] = defaultChannelState(channelKey)
     end
     return {
+        backgroundMusicMode = BACKGROUND_KIND_MOOD,
         musicMood = Catalog.DEFAULTS.musicMood,
+        backgroundMusicEnabled = false,
+        activeMusicChannel = "musicA",
+        activeFeaturedChannel = "featuredA",
+        activeLocationChannel = "locationA",
+        backgroundTrackKey = nil,
+        locationMusic = Catalog.DEFAULTS.locationMusic,
+        featuredMusic = Catalog.DEFAULTS.featuredMusic,
+        featuredActive = false,
+        featuredCompletionExpected = false,
+        backgroundPausedForFeatured = false,
         weather = Catalog.DEFAULTS.weather,
+        rain = Catalog.DEFAULTS.rain,
+        wind = Catalog.DEFAULTS.wind,
+        thunderEnabled = Catalog.DEFAULTS.thunderEnabled,
         location = Catalog.DEFAULTS.location,
         isIndoors = Catalog.DEFAULTS.isIndoors,
-        musicEnabled = false,
-        activeMusicChannel = "musicA",
         channels = channels,
         capabilities = {
             volumeControl = nil,
         },
+        debugPlayingTracks = {},
     }
 end
 
@@ -69,10 +192,10 @@ local function updateChannelState(channelKey, patch)
         state.channels = {}
     end
     if type(state.channels[channelKey]) ~= "table" then
-        state.channels[channelKey] = {}
+        state.channels[channelKey] = defaultChannelState(channelKey)
     end
-    for k, v in pairs(patch) do
-        state.channels[channelKey][k] = v
+    for key, value in pairs(patch) do
+        state.channels[channelKey][key] = value
     end
 end
 
@@ -80,29 +203,23 @@ end
 -- EMITTER AND EFFECT RESOLUTION
 -- ============================================================================
 
---- Returns true if the object has the requested tag.
--- @param obj Object
--- @param tag string
--- @return boolean
 local function objectHasTag(obj, tag)
     if obj == nil or type(tag) ~= "string" then
         return false
     end
     if obj.hasTag ~= nil then
-        -- Known non-fatal case: hasTag can throw on partially-destroyed objects.
-        local ok, has = pcall(function()
+        local okHasTag, hasTag = pcall(function()
             return obj.hasTag(tag)
         end)
-        if ok and has == true then
+        if okHasTag and hasTag == true then
             return true
         end
     end
     if obj.getTags ~= nil then
-        -- Known non-fatal case: getTags can fail on stale object handles.
-        local ok, tags = pcall(function()
+        local okTags, tags = pcall(function()
             return obj.getTags()
         end)
-        if ok and type(tags) == "table" then
+        if okTags and type(tags) == "table" then
             for _, existingTag in ipairs(tags) do
                 if existingTag == tag then
                     return true
@@ -113,71 +230,73 @@ local function objectHasTag(obj, tag)
     return false
 end
 
---- Finds the hidden AssetBundle object for a soundscape channel.
+local function getGuidForChannel(channelDef)
+    if type(channelDef) ~= "table" or type(channelDef.guidKey) ~= "string" then
+        return nil
+    end
+    return G.GUIDS[channelDef.guidKey]
+end
+
+--- Finds the hidden AssetBundle object for a soundscape channel by GUID.
 -- @param channelKey string
 -- @return Object|nil
+-- @return string|nil
 local function resolveEmitter(channelKey)
     local channelDef = Catalog.CHANNELS[channelKey]
     if channelDef == nil then
-        return nil
+        return nil, "Unknown soundscape channel: " .. tostring(channelKey)
     end
+
     local cached = cachedEmitters[channelKey]
     if cached ~= nil then
-        -- Known non-fatal case: cached emitter can become invalid after object destruction/reload.
-        local ok = pcall(function()
+        local okCached = pcall(function()
             return cached.getGUID()
         end)
-        if ok then
-            return cached
+        if okCached then
+            return cached, nil
         end
         cachedEmitters[channelKey] = nil
     end
 
-    local tag = channelDef.tag
-    local getObjectsWithAllTagsFn = _G and rawget(_G, "getObjectsWithAllTags") or nil
-    if getObjectsWithAllTagsFn ~= nil then
-        -- Known non-fatal case: getObjectsWithAllTags may throw in older TTS environments.
-        local ok, tagged = pcall(function()
-            return getObjectsWithAllTagsFn({ tag })
-        end)
-        if ok and type(tagged) == "table" and tagged[1] ~= nil then
-            cachedEmitters[channelKey] = tagged[1]
-            return tagged[1]
-        end
+    local guid = getGuidForChannel(channelDef)
+    if type(guid) ~= "string" or guid == "" then
+        return nil, "Missing GUID constant G." .. tostring(channelDef.guidKey) .. " for channel " .. tostring(channelKey)
     end
 
-    if getObjects ~= nil then
-        -- Known non-fatal case: getObjects can fail during scene transitions.
-        local ok, objects = pcall(function()
-            return getObjects()
-        end)
-        if ok and type(objects) == "table" then
-            for _, obj in ipairs(objects) do
-                if objectHasTag(obj, tag) then
-                    cachedEmitters[channelKey] = obj
-                    return obj
-                end
-            end
-        end
+    local getObjectFromGUIDFn = _G and rawget(_G, "getObjectFromGUID") or nil
+    if getObjectFromGUIDFn == nil then
+        return nil, "TTS getObjectFromGUID is unavailable for channel " .. tostring(channelKey)
     end
-    return nil
+
+    local okResolve, obj = pcall(function()
+        return getObjectFromGUIDFn(guid)
+    end)
+    if okResolve and obj ~= nil then
+        cachedEmitters[channelKey] = obj
+        return obj, nil
+    end
+    return nil, "No object found for G." .. tostring(channelDef.guidKey) .. " GUID " .. tostring(guid)
 end
 
---- Builds a name-to-index lookup for the emitter's looping effects.
--- @param obj Object
--- @return table
-local function getLoopingEffectIndexByName(obj)
+local function queryEffects(obj, effectList)
     local indexByName = {}
-    if obj == nil or obj.AssetBundle == nil or obj.AssetBundle.getLoopingEffects == nil then
+    if obj == nil or obj.AssetBundle == nil then
         return indexByName
     end
-    -- Known non-fatal case: looping effects query may fail while bundle is still initializing.
-    local ok, effects = pcall(function()
-        return obj.AssetBundle.getLoopingEffects()
+
+    local getterName = effectList == Catalog.EFFECT_LIST.TRIGGER and "getTriggerEffects" or "getLoopingEffects"
+    local getter = obj.AssetBundle[getterName]
+    if getter == nil then
+        return indexByName
+    end
+
+    local okEffects, effects = pcall(function()
+        return getter()
     end)
-    if not ok or type(effects) ~= "table" then
+    if not okEffects or type(effects) ~= "table" then
         return indexByName
     end
+
     for _, effect in ipairs(effects) do
         if type(effect) == "table" and type(effect.name) == "string" and type(effect.index) == "number" then
             indexByName[effect.name] = effect.index
@@ -186,83 +305,90 @@ local function getLoopingEffectIndexByName(obj)
     return indexByName
 end
 
---- Resolves an effect name to a TTS looping effect index.
--- @param obj Object
--- @param effectName string
--- @return number|nil
-local function resolveLoopingEffectIndex(obj, effectName)
-    local indexByName = getLoopingEffectIndexByName(obj)
+local function resolveEffectIndex(obj, effectName, effectList)
+    local indexByName = queryEffects(obj, effectList)
     return indexByName[effectName]
+end
+
+local function findTaggedObject(tag)
+    local getObjectsWithAllTagsFn = _G and rawget(_G, "getObjectsWithAllTags") or nil
+    if getObjectsWithAllTagsFn ~= nil and type(tag) == "string" then
+        local okTagged, taggedObjects = pcall(function()
+            return getObjectsWithAllTagsFn({ tag })
+        end)
+        if okTagged and type(taggedObjects) == "table" then
+            return taggedObjects[1]
+        end
+    end
+
+    local getObjectsFn = _G and rawget(_G, "getObjects") or nil
+    if getObjectsFn ~= nil and type(tag) == "string" then
+        local okObjects, objects = pcall(function()
+            return getObjectsFn()
+        end)
+        if okObjects and type(objects) == "table" then
+            for _, obj in ipairs(objects) do
+                if objectHasTag(obj, tag) then
+                    return obj
+                end
+            end
+        end
+    end
+    return nil
 end
 
 -- ============================================================================
 -- AUDIO COMPONENT HELPERS
 -- ============================================================================
 
---- Returns all AudioSource components on an emitter.
--- @param obj Object
--- @return table
 local function getAudioSources(obj)
     if obj == nil then
         return {}
     end
     if obj.getComponentsInChildren ~= nil then
-        -- Known non-fatal case: component traversal can throw on stale/destroyed emitters.
-        local ok, comps = pcall(function()
+        local okComponents, components = pcall(function()
             return obj.getComponentsInChildren("AudioSource")
         end)
-        if ok and type(comps) == "table" then
-            return comps
+        if okComponents and type(components) == "table" then
+            return components
         end
     end
     if obj.getComponentInChildren ~= nil then
-        -- Known non-fatal case: single-component lookup can throw on stale/destroyed emitters.
-        local ok, comp = pcall(function()
+        local okChild, component = pcall(function()
             return obj.getComponentInChildren("AudioSource")
         end)
-        if ok and comp ~= nil then
-            return { comp }
+        if okChild and component ~= nil then
+            return { component }
         end
     end
     if obj.getComponent ~= nil then
-        -- Known non-fatal case: component lookup can throw on stale/destroyed emitters.
-        local ok, comp = pcall(function()
+        local okComponent, component = pcall(function()
             return obj.getComponent("AudioSource")
         end)
-        if ok and comp ~= nil then
-            return { comp }
+        if okComponent and component ~= nil then
+            return { component }
         end
     end
     return {}
 end
 
---- Applies volume and 2D-audio safeguards to every AudioSource on the emitter.
--- @param obj Object
--- @param volume number
--- @return boolean
--- @return number
 local function setEmitterVolume(obj, volume)
     local sources = getAudioSources(obj)
     local updated = 0
-    local targetVolume = tonumber(volume) or 0
-    if targetVolume < 0 then targetVolume = 0 end
-    if targetVolume > 1 then targetVolume = 1 end
+    local targetVolume = clamp01(volume)
 
     for _, source in ipairs(sources) do
         if source ~= nil and source.set ~= nil then
-            -- Known non-fatal case: Unity AudioSource fields are not consistently writable across builds.
             local okVolume, didSetVolume = pcall(function()
                 return source.set("volume", targetVolume)
             end)
             if okVolume and didSetVolume ~= false then
                 updated = updated + 1
             end
-            -- Known non-fatal case: mute may be missing on some AudioSource wrappers.
             pcall(function()
                 source.set("mute", false)
             end)
-            -- This is the non-positional guarantee when TTS exposes the Unity var.
-            -- Known non-fatal case: spatialBlend may be unavailable on some wrappers.
+            -- This is the runtime safeguard for non-positional audio when TTS exposes it.
             pcall(function()
                 source.set("spatialBlend", 0)
             end)
@@ -271,33 +397,30 @@ local function setEmitterVolume(obj, volume)
     return updated > 0, updated
 end
 
---- Fades an emitter's volume when Wait is available; otherwise applies immediately.
--- @param obj Object
--- @param fromVolume number
--- @param toVolume number
--- @param seconds number
--- @return boolean
 local function fadeEmitterVolume(obj, fromVolume, toVolume, seconds)
     local duration = tonumber(seconds) or 0
-    if duration <= 0 or Wait == nil or Wait.time == nil then
-        local ok = setEmitterVolume(obj, toVolume)
-        return ok == true
+    if duration <= 0 then
+        local okImmediate = setEmitterVolume(obj, toVolume)
+        return okImmediate == true
     end
 
     local hasAudioSource = #getAudioSources(obj) > 0
     local steps = math.max(1, math.floor(duration * 10))
+    local scheduled = false
     for i = 0, steps do
         local ratio = i / steps
         local volume = fromVolume + ((toVolume - fromVolume) * ratio)
-        Wait.time(function()
+        scheduled = waitTime(function()
             setEmitterVolume(obj, volume)
-        end, duration * ratio)
+        end, duration * ratio) or scheduled
+    end
+    if not scheduled then
+        local okImmediate = setEmitterVolume(obj, toVolume)
+        return okImmediate == true
     end
     return hasAudioSource
 end
 
---- Returns whether any configured emitter currently exposes writable AudioSource volume.
--- @return boolean
 local function probeVolumeControl()
     local state = ensureState()
     for channelKey, _ in pairs(Catalog.CHANNELS) do
@@ -305,8 +428,8 @@ local function probeVolumeControl()
         if obj ~= nil then
             local channelState = state.channels and state.channels[channelKey] or nil
             local existingVolume = type(channelState) == "table" and tonumber(channelState.volume) or 0
-            local ok = setEmitterVolume(obj, existingVolume or 0)
-            if ok then
+            local okVolume = setEmitterVolume(obj, existingVolume or 0)
+            if okVolume then
                 state.capabilities.volumeControl = true
                 return true
             end
@@ -317,37 +440,57 @@ local function probeVolumeControl()
 end
 
 -- ============================================================================
--- PLAYBACK
+-- PLAYBACK HELPERS
 -- ============================================================================
 
---- Plays a named looping effect on a channel and applies the requested volume.
--- @param channelKey string
--- @param effectName string
--- @param volume number
--- @param fadeSeconds number|nil
--- @param fromVolume number|nil Explicit fade start; used when physical volume was just reset.
--- @return boolean
--- @return string
-local function playChannelEffect(channelKey, effectName, volume, fadeSeconds, fromVolume)
+local function normalizeEntry(entry)
+    if type(entry) ~= "table" then
+        return nil
+    end
+    if type(entry.effect) == "string" then
+        return entry
+    end
+    return {
+        key = entry.key,
+        effect = entry.key or entry[1],
+        effectList = entry.effectList or Catalog.EFFECT_LIST.LOOPING,
+        durationSeconds = entry.durationSeconds or entry.duration,
+        volume = entry.volume,
+    }
+end
+
+local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolume)
     local channelDef = Catalog.CHANNELS[channelKey]
     if channelDef == nil then
         return false, "Unknown soundscape channel: " .. tostring(channelKey)
     end
 
-    local obj = resolveEmitter(channelKey)
-    if obj == nil then
-        updateChannelState(channelKey, { available = false })
-        return false, "Missing soundscape emitter tagged: " .. tostring(channelDef.tag)
-    end
-    if obj.AssetBundle == nil or obj.AssetBundle.playLoopingEffect == nil then
-        updateChannelState(channelKey, { available = false })
-        return false, "Emitter does not expose AssetBundle looping effects: " .. tostring(channelKey)
+    local track = normalizeEntry(entry)
+    if track == nil or type(track.effect) ~= "string" then
+        return false, "Invalid soundscape entry for channel " .. tostring(channelKey)
     end
 
-    local index = resolveLoopingEffectIndex(obj, effectName)
+    local effectList = track.effectList or Catalog.EFFECT_LIST.LOOPING
+    local obj, resolveError = resolveEmitter(channelKey)
+    if obj == nil then
+        updateChannelState(channelKey, { available = false, lastError = resolveError })
+        return false, resolveError or ("Missing soundscape emitter for " .. tostring(channelKey))
+    end
+    if obj.AssetBundle == nil then
+        updateChannelState(channelKey, { available = false, lastError = "Missing AssetBundle behavior" })
+        return false, "Emitter does not expose AssetBundle behavior: " .. tostring(channelKey)
+    end
+
+    local apiName = effectList == Catalog.EFFECT_LIST.TRIGGER and "playTriggerEffect" or "playLoopingEffect"
+    if obj.AssetBundle[apiName] == nil then
+        updateChannelState(channelKey, { available = true, lastError = "Missing " .. apiName })
+        return false, "Emitter does not expose " .. apiName .. " for " .. tostring(channelKey)
+    end
+
+    local index = resolveEffectIndex(obj, track.effect, effectList)
     if index == nil then
-        updateChannelState(channelKey, { available = true })
-        return false, "Missing looping effect '" .. tostring(effectName) .. "' on channel " .. tostring(channelKey)
+        updateChannelState(channelKey, { available = true, lastError = "Missing effect " .. tostring(track.effect) })
+        return false, "Missing " .. effectList .. " effect '" .. tostring(track.effect) .. "' on channel " .. tostring(channelKey)
     end
 
     local state = ensureState()
@@ -356,51 +499,491 @@ local function playChannelEffect(channelKey, effectName, volume, fadeSeconds, fr
     if currentVolume == nil then
         currentVolume = tonumber(channelState.volume) or 0
     end
-    local didSetVolume = fadeEmitterVolume(obj, currentVolume, volume, fadeSeconds or 0)
-    -- Known non-fatal case: playLoopingEffect can throw if effect index becomes invalid after bundle refresh.
-    local okPlay, playErr = pcall(function()
-        obj.AssetBundle.playLoopingEffect(index)
+
+    local targetVolume = clamp01(volume or track.volume or channelDef.defaultVolume or 0)
+    local didSetVolume = fadeEmitterVolume(obj, currentVolume, targetVolume, fadeSeconds or 0)
+    local okPlay, playError = pcall(function()
+        obj.AssetBundle[apiName](index)
     end)
     if not okPlay then
-        return false, "Failed to play looping effect: " .. tostring(playErr)
+        updateChannelState(channelKey, { available = true, lastError = tostring(playError) })
+        return false, "Failed to play " .. effectList .. " effect: " .. tostring(playError)
     end
 
     updateChannelState(channelKey, {
-        effect = effectName,
-        volume = volume,
+        effect = track.effect,
+        effectList = effectList,
+        durationSeconds = track.durationSeconds,
+        volume = targetVolume,
         available = true,
         volumeControl = didSetVolume,
+        lastError = nil,
     })
-    return true, "Playing " .. tostring(effectName) .. " on " .. tostring(channelKey)
+    return true, table.concat({ "Playing", tostring(track.effect), "on", tostring(channelKey) }, " ")
 end
 
---- Selects a random track from a music mood.
--- @param mood table
--- @return table|nil
-local function chooseMusicTrack(mood)
-    if type(mood) ~= "table" or type(mood.tracks) ~= "table" or #mood.tracks == 0 then
-        return nil
-    end
-    return mood.tracks[math.random(#mood.tracks)]
+local function silenceLoopChannel(channelKey)
+    return playCatalogEntry(channelKey, {
+        key = "silent",
+        effect = Catalog.SILENT_EFFECT,
+        effectList = Catalog.EFFECT_LIST.LOOPING,
+        volume = 0,
+    }, 0, 0, 0)
 end
 
---- Schedules the next random music track for continuous mood playback.
--- @param moodKey string
--- @param track table
--- @param generation number
-local function scheduleNextMusicTrack(moodKey, track, generation)
-    if Wait == nil or Wait.time == nil or type(track) ~= "table" then
-        return
-    end
-    local duration = tonumber(track.durationSeconds) or 0
-    if duration <= 0 then
+local function scheduleNextBackgroundTrack(kind, key, track, generation)
+    local duration = type(track) == "table" and tonumber(track.durationSeconds) or nil
+    if duration == nil or duration <= 0 or track.effectList == Catalog.EFFECT_LIST.LOOPING then
         return
     end
     local fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.music) or 0
     local delay = math.max(5, duration - fadeSeconds)
-    Wait.time(function()
+    waitTime(function()
+        local state = ensureState()
+        if generation == musicGeneration and state.backgroundMusicEnabled == true then
+            if kind == BACKGROUND_KIND_LOCATION and state.backgroundMusicMode == BACKGROUND_KIND_LOCATION and state.locationMusic == key then
+                Soundscape.setLocationMusic(key)
+            elseif kind == BACKGROUND_KIND_MOOD and state.backgroundMusicMode == BACKGROUND_KIND_MOOD and state.musicMood == key then
+                Soundscape.setMusicMood(key)
+            end
+        end
+    end, delay)
+end
+
+local function playPairedEmitterEntry(entry, options)
+    local opts = type(options) == "table" and options or {}
+    local oldChannel = opts.oldChannel
+    local newChannel = otherPairedChannel(oldChannel, opts.channelA, opts.channelB)
+    local targetVolume = clamp01(opts.volume or entry.volume or 0)
+    local fadeSeconds = tonumber(opts.fadeSeconds) or 0
+    local incomingFadeSeconds = tonumber(opts.incomingFadeSeconds)
+    if incomingFadeSeconds == nil then
+        incomingFadeSeconds = fadeSeconds
+    end
+
+    if probeVolumeControl() then
+        local incomingStartVolume = incomingFadeSeconds <= 0 and targetVolume or 0
+        setEmitterVolume(resolveEmitter(newChannel), incomingStartVolume)
+        updateChannelState(newChannel, { volume = incomingStartVolume })
+        local okPlay, message = playCatalogEntry(newChannel, entry, targetVolume, incomingFadeSeconds, incomingStartVolume)
+        if okPlay then
+            local oldObj = resolveEmitter(oldChannel)
+            if oldObj ~= nil then
+                local state = ensureState()
+                local oldState = state.channels and state.channels[oldChannel] or {}
+                fadeEmitterVolume(oldObj, tonumber(oldState.volume) or targetVolume, 0, fadeSeconds)
+                waitTime(function()
+                    if opts.canSilenceOld == nil or opts.canSilenceOld(oldChannel) == true then
+                        silenceLoopChannel(oldChannel)
+                    end
+                end, fadeSeconds)
+            end
+        end
+        return okPlay, message, newChannel
+    end
+
+    local okPlay, message = playCatalogEntry(oldChannel, entry, targetVolume, 0)
+    return okPlay, message, oldChannel
+end
+
+local function playSingleEmitterFadeOutIn(channelKey, entry, volume, fadeSeconds)
+    singleEmitterTransitionGeneration[channelKey] = (singleEmitterTransitionGeneration[channelKey] or 0) + 1
+    local thisTransitionGeneration = singleEmitterTransitionGeneration[channelKey]
+    local targetVolume = clamp01(volume or entry.volume or 0)
+    fadeSeconds = tonumber(fadeSeconds) or 0
+    if fadeSeconds <= 0 or not probeVolumeControl() then
+        return playCatalogEntry(channelKey, entry, targetVolume, 0)
+    end
+
+    local obj = resolveEmitter(channelKey)
+    if obj == nil then
+        return playCatalogEntry(channelKey, entry, targetVolume, 0)
+    end
+
+    local state = ensureState()
+    local channelState = state.channels and state.channels[channelKey] or {}
+    local halfFadeSeconds = fadeSeconds / 2
+    fadeEmitterVolume(obj, tonumber(channelState.volume) or targetVolume, 0, halfFadeSeconds)
+    updateChannelState(channelKey, { volume = 0 })
+
+    local okPlay, message = true, table.concat({ "Scheduled", tostring(entry.effect or entry.key), "on", tostring(channelKey) }, " ")
+    waitTime(function()
+        if thisTransitionGeneration == singleEmitterTransitionGeneration[channelKey] then
+            playCatalogEntry(channelKey, entry, targetVolume, halfFadeSeconds, 0)
+        end
+    end, halfFadeSeconds)
+    return okPlay, message
+end
+
+local function cancelSingleEmitterTransition(channelKey)
+    singleEmitterTransitionGeneration[channelKey] = (singleEmitterTransitionGeneration[channelKey] or 0) + 1
+end
+
+local function findFeaturedSequence(trackKey)
+    if type(trackKey) ~= "string" then
+        return nil, nil, nil
+    end
+    for playlistKey, playlist in pairs(Catalog.PLAYLISTS.featureMusic or {}) do
+        if type(playlist) == "table" and type(playlist.tracks) == "table" then
+            for index, track in ipairs(playlist.tracks) do
+                if type(track) == "table" and track.key == trackKey then
+                    return playlist, index, playlistKey
+                end
+            end
+        end
+    end
+    return nil, nil, nil
+end
+
+local function silenceMusicChannelsAfterFade(generation, fadeSeconds)
+    waitTime(function()
         if generation == musicGeneration then
-            Soundscape.setMusicMood(moodKey)
+            silenceLoopChannel("musicA")
+            silenceLoopChannel("musicB")
+        end
+    end, fadeSeconds)
+end
+
+local function pauseBackgroundForFeatured()
+    local state = ensureState()
+    if state.backgroundMusicEnabled ~= true then
+        return false
+    end
+
+    musicGeneration = musicGeneration + 1
+    local thisGeneration = musicGeneration
+    local fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.music) or 0
+    for _, channelKey in ipairs({ "musicA", "musicB" }) do
+        local obj = resolveEmitter(channelKey)
+        if obj ~= nil then
+            local channelState = state.channels and state.channels[channelKey] or {}
+            fadeEmitterVolume(obj, tonumber(channelState.volume) or 0, 0, fadeSeconds)
+            updateChannelState(channelKey, { volume = 0 })
+        end
+    end
+    state.backgroundMusicEnabled = false
+    state.backgroundPausedForFeatured = true
+    silenceMusicChannelsAfterFade(thisGeneration, fadeSeconds)
+    return true
+end
+
+local function resumeBackgroundAfterFeatured()
+    local state = ensureState()
+    if state.backgroundPausedForFeatured ~= true then
+        return false, "No paused background music context"
+    end
+    state.backgroundPausedForFeatured = false
+    return Soundscape.resumeBackgroundMusic()
+end
+
+local stopFeaturedMusicInternal
+
+local function playBackgroundPlaylist(kind, key, playlist, forcedTrack)
+    local state = ensureState()
+    local track = forcedTrack or selectBackgroundTrack(playlist, state, key)
+    if track == nil then
+        return false, "Background playlist has no tracks: " .. tostring(key)
+    end
+
+    if state.featuredActive == true then
+        stopFeaturedMusicInternal(false)
+        state = ensureState()
+        state.backgroundPausedForFeatured = false
+    end
+
+    musicGeneration = musicGeneration + 1
+    local thisGeneration = musicGeneration
+    local oldChannel = resolveActiveMusicChannel(state)
+    local targetVolume = tonumber(playlist.volume) or tonumber(track.volume) or 0.45
+    local fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.music) or 0
+
+    local okPlay, message, newChannel = playPairedEmitterEntry(track, {
+        channelA = "musicA",
+        channelB = "musicB",
+        oldChannel = oldChannel,
+        volume = targetVolume,
+        fadeSeconds = fadeSeconds,
+        canSilenceOld = function(channelKey)
+            local latest = ensureState()
+            return thisGeneration == musicGeneration and latest.activeMusicChannel ~= channelKey
+        end
+    })
+
+    if okPlay then
+        state.backgroundMusicMode = kind
+        state.backgroundMusicEnabled = true
+        state.activeMusicChannel = newChannel
+        state.backgroundTrackKey = track.key
+        if kind == BACKGROUND_KIND_MOOD then
+            state.musicMood = key
+            state.locationMusic = Catalog.DEFAULTS.locationMusic
+        else
+            state.locationMusic = key
+        end
+        scheduleNextBackgroundTrack(kind, key, track, thisGeneration)
+    end
+    return okPlay, message
+end
+
+local function playLocationEntry(location)
+    local state = ensureState()
+    local oldChannel = resolveActiveLocationChannel(state)
+    local targetVolume = tonumber(location.volume) or 0.55
+    local fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.location) or 0
+
+    local okPlay, message, newChannel = playPairedEmitterEntry(location, {
+        channelA = "locationA",
+        channelB = "locationB",
+        oldChannel = oldChannel,
+        volume = targetVolume,
+        fadeSeconds = fadeSeconds,
+        canSilenceOld = function(channelKey)
+            local latest = ensureState()
+            return latest.activeLocationChannel ~= channelKey
+        end
+    })
+
+    if okPlay then
+        state.activeLocationChannel = newChannel
+    end
+    return okPlay, message
+end
+
+local function playFeaturedEntry(feature, targetChannel, crossFadeSeconds, fromVolume)
+    local targetVolume = tonumber(feature.volume) or 0.65
+    return playCatalogEntry(
+        targetChannel,
+        feature,
+        targetVolume,
+        0,
+        fromVolume or targetVolume
+    )
+end
+
+local function fadeOutFeaturedChannels(generation, fadeSeconds)
+    for _, channelKey in ipairs({ "featuredA", "featuredB" }) do
+        local obj = resolveEmitter(channelKey)
+        if obj ~= nil then
+            local state = ensureState()
+            local channelState = state.channels and state.channels[channelKey] or {}
+            fadeEmitterVolume(obj, tonumber(channelState.volume) or 0, 0, fadeSeconds)
+            updateChannelState(channelKey, { volume = 0 })
+        end
+    end
+    waitTime(function()
+        if generation == featuredGeneration then
+            silenceLoopChannel("featuredA")
+            silenceLoopChannel("featuredB")
+        end
+    end, fadeSeconds)
+end
+
+stopFeaturedMusicInternal = function(shouldResumeBackground)
+    featuredGeneration = featuredGeneration + 1
+    local thisFeaturedGeneration = featuredGeneration
+    local fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.featured) or 0
+    fadeOutFeaturedChannels(thisFeaturedGeneration, fadeSeconds)
+
+    local state = ensureState()
+    state.featuredMusic = Catalog.DEFAULTS.featuredMusic
+    state.featuredActive = false
+    state.featuredCompletionExpected = false
+    state.activeFeaturedChannel = "featuredA"
+
+    if shouldResumeBackground == true then
+        resumeBackgroundAfterFeatured()
+    end
+    return true, "Featured music stopped"
+end
+
+local function completeFeaturedMusic(generation, trackKey)
+    local state = ensureState()
+    if generation ~= featuredGeneration or state.featuredActive ~= true or state.featuredMusic ~= trackKey then
+        return
+    end
+    state.featuredMusic = Catalog.DEFAULTS.featuredMusic
+    state.featuredActive = false
+    state.featuredCompletionExpected = false
+    state.activeFeaturedChannel = "featuredA"
+    resumeBackgroundAfterFeatured()
+end
+
+local playFeaturedTrack
+
+local function scheduleNextFeaturedTrack(feature, playlist, trackIndex, generation)
+    local duration = type(feature) == "table" and tonumber(feature.durationSeconds) or nil
+    if duration == nil or duration <= 0 or feature.effectList == Catalog.EFFECT_LIST.LOOPING then
+        return
+    end
+
+    local crossFadeSeconds = tonumber(playlist and playlist.crossFadeSeconds) or tonumber(Catalog.DEFAULTS.fadeSeconds.featured) or 0
+    local nextTrack = type(playlist) == "table" and type(playlist.tracks) == "table" and playlist.tracks[(trackIndex or 0) + 1] or nil
+    local delay = duration
+    if nextTrack ~= nil and playlist.playMode == Catalog.PLAYMODES.SEQUENCE then
+        delay = math.max(0, duration - crossFadeSeconds)
+    end
+
+    waitTime(function()
+        local state = ensureState()
+        if generation ~= featuredGeneration or state.featuredActive ~= true or state.featuredMusic ~= feature.key then
+            return
+        end
+        if nextTrack ~= nil and playlist.playMode == Catalog.PLAYMODES.SEQUENCE then
+            playFeaturedTrack(nextTrack, playlist, (trackIndex or 0) + 1, { keepBackgroundPaused = true })
+        else
+            completeFeaturedMusic(generation, feature.key)
+        end
+    end, delay)
+end
+
+function playFeaturedTrack(feature, playlist, trackIndex, options)
+    local opts = type(options) == "table" and options or {}
+    if opts.keepBackgroundPaused ~= true then
+        pauseBackgroundForFeatured()
+    end
+
+    featuredGeneration = featuredGeneration + 1
+    local thisFeaturedGeneration = featuredGeneration
+    local state = ensureState()
+    local oldChannel = resolveActiveFeaturedChannel(state)
+    local crossFadeSeconds = tonumber(playlist and playlist.crossFadeSeconds) or tonumber(Catalog.DEFAULTS.fadeSeconds.featured) or 0
+    local okPlay, message, newChannel = playPairedEmitterEntry(feature, {
+        channelA = "featuredA",
+        channelB = "featuredB",
+        oldChannel = oldChannel,
+        volume = tonumber(feature.volume) or 0.65,
+        fadeSeconds = crossFadeSeconds,
+        incomingFadeSeconds = 0,
+        canSilenceOld = function(channelKey)
+            local latest = ensureState()
+            return thisFeaturedGeneration == featuredGeneration and latest.activeFeaturedChannel ~= channelKey
+        end
+    })
+
+    if okPlay then
+        state.featuredMusic = feature.key
+        state.featuredActive = true
+        state.featuredCompletionExpected = feature.effectList ~= Catalog.EFFECT_LIST.LOOPING
+        state.activeFeaturedChannel = newChannel
+        scheduleNextFeaturedTrack(feature, playlist, trackIndex, thisFeaturedGeneration)
+    end
+
+    return okPlay, message
+end
+
+local function rememberDebugTrack(categoryKey, trackKey, channelKey, volume)
+    local state = ensureState()
+    if type(state.debugPlayingTracks) ~= "table" then
+        state.debugPlayingTracks = {}
+    end
+    state.debugPlayingTracks[categoryKey] = {
+        categoryKey = categoryKey,
+        trackKey = trackKey,
+        channelKey = channelKey,
+        volume = clamp01(volume),
+    }
+end
+
+local function forgetDebugTrack(categoryKey)
+    local state = ensureState()
+    if type(state.debugPlayingTracks) == "table" then
+        state.debugPlayingTracks[categoryKey] = nil
+    end
+end
+
+local function activeDebugRowFor(categoryKey, trackKey)
+    if trackKey == nil then
+        return nil
+    end
+    local state = ensureState()
+    if categoryKey == "backgroundMusic" then
+        if state.backgroundMusicEnabled == true and (state.backgroundTrackKey == trackKey or state.musicMood == trackKey or state.locationMusic == trackKey) then
+            return {
+                categoryKey = categoryKey,
+                trackKey = state.backgroundTrackKey or trackKey,
+                channelKey = state.activeMusicChannel or "musicA",
+                volume = (state.channels and state.channels[state.activeMusicChannel or "musicA"] and state.channels[state.activeMusicChannel or "musicA"].volume) or 0.5,
+            }
+        end
+    elseif categoryKey == "featuredMusic" then
+        if state.featuredActive == true and state.featuredMusic == trackKey then
+            local channelKey = resolveActiveFeaturedChannel(state)
+            return {
+                categoryKey = categoryKey,
+                trackKey = trackKey,
+                channelKey = channelKey,
+                volume = (state.channels and state.channels[channelKey] and state.channels[channelKey].volume) or 0.5,
+            }
+        end
+    elseif categoryKey == "location" then
+        if state.location == trackKey then
+            local channelKey = resolveActiveLocationChannel(state)
+            return {
+                categoryKey = categoryKey,
+                trackKey = trackKey,
+                channelKey = channelKey,
+                volume = (state.channels and state.channels[channelKey] and state.channels[channelKey].volume) or 0.5,
+            }
+        end
+    elseif categoryKey == "weather" then
+        if state.weather == trackKey then
+            return {
+                categoryKey = categoryKey,
+                trackKey = trackKey,
+                channelKey = "weather",
+                volume = math.max(
+                    (state.channels and state.channels.weatherRain and tonumber(state.channels.weatherRain.volume)) or 0,
+                    (state.channels and state.channels.weatherWind and tonumber(state.channels.weatherWind.volume)) or 0
+                ),
+            }
+        end
+    elseif categoryKey == "rain" then
+        if state.rain == trackKey then
+            return {
+                categoryKey = categoryKey,
+                trackKey = trackKey,
+                channelKey = "weatherRain",
+                volume = (state.channels and state.channels.weatherRain and state.channels.weatherRain.volume) or 0.5,
+            }
+        end
+    elseif categoryKey == "wind" then
+        if state.wind == trackKey then
+            return {
+                categoryKey = categoryKey,
+                trackKey = trackKey,
+                channelKey = "weatherWind",
+                volume = (state.channels and state.channels.weatherWind and state.channels.weatherWind.volume) or 0.5,
+            }
+        end
+    end
+    return nil
+end
+
+local function weatherVolume(baseVolume)
+    local state = ensureState()
+    local ducking = Catalog.DEFAULTS.weatherDucking
+    local multiplier = state.isIndoors and ducking.indoorMultiplier or ducking.outdoorMultiplier
+    return clamp01((tonumber(baseVolume) or 0) * multiplier)
+end
+
+local function scheduleThunder()
+    local state = ensureState()
+    if state.thunderEnabled ~= true then
+        return
+    end
+    local thisWeatherGeneration = weatherGeneration
+    local schedule = Catalog.DEFAULTS.thunderScheduling
+    local minDelay = tonumber(schedule.minDelaySeconds) or 18
+    local maxDelay = tonumber(schedule.maxDelaySeconds) or minDelay
+    if maxDelay < minDelay then
+        maxDelay = minDelay
+    end
+    local delay = math.random(minDelay, maxDelay)
+    waitTime(function()
+        local latest = ensureState()
+        if thisWeatherGeneration == weatherGeneration and latest.thunderEnabled == true then
+            Soundscape.triggerThunder(nil)
+            scheduleThunder()
         end
     end, delay)
 end
@@ -414,19 +997,25 @@ function Soundscape.onLoad()
     ensureState()
     cachedEmitters = {}
     local state = ensureState()
-    if Wait ~= nil and Wait.time ~= nil then
-        Wait.time(function()
-            if state.musicEnabled == true and type(state.musicMood) == "string" then
+    waitTime(function()
+        if state.backgroundMusicEnabled == true then
+            if state.backgroundMusicMode == BACKGROUND_KIND_LOCATION and type(state.locationMusic) == "string" then
+                Soundscape.setLocationMusic(state.locationMusic)
+            elseif type(state.musicMood) == "string" then
                 Soundscape.setMusicMood(state.musicMood)
             end
-            if type(state.weather) == "string" and state.weather ~= Catalog.DEFAULTS.weather then
-                Soundscape.setWeatherCondition(state.weather)
-            end
-            if type(state.location) == "string" and state.location ~= Catalog.DEFAULTS.location then
-                Soundscape.setLocationAudio(state.location)
-            end
-        end, 1.0)
-    end
+        end
+        if type(state.location) == "string" and state.location ~= Catalog.DEFAULTS.location then
+            Soundscape.setLocationAudio(state.location)
+        end
+        if type(state.weather) == "string" and state.weather ~= Catalog.DEFAULTS.weather then
+            Soundscape.setWeatherCondition(state.weather)
+        else
+            Soundscape.setRainLayer(state.rain or Catalog.DEFAULTS.rain)
+            Soundscape.setWindLayer(state.wind or Catalog.DEFAULTS.wind)
+            Soundscape.setThunderEnabled(state.thunderEnabled == true)
+        end
+    end, 1.0)
 end
 
 --- Returns the current soundscape state.
@@ -435,14 +1024,190 @@ function Soundscape.getState()
     return ensureState()
 end
 
+--- Returns debug-panel category and track metadata from the catalog.
+-- @return table
+function Soundscape.getDebugCategories()
+    return Catalog.getDebugCategories()
+end
+
+local function findDebugTrack(categoryKey, trackKey)
+    for _, category in ipairs(Catalog.getDebugCategories()) do
+        if category.key == categoryKey then
+            for _, track in ipairs(category.tracks or {}) do
+                if track.key == trackKey then
+                    return category, track
+                end
+            end
+        end
+    end
+    return nil, nil
+end
+
+local function setChannelImmediateVolume(channelKey, volume)
+    local resolvedChannel = channelKey
+    if resolvedChannel == "music" then
+        resolvedChannel = ensureState().activeMusicChannel or "musicA"
+    elseif resolvedChannel == "featured" then
+        resolvedChannel = resolveActiveFeaturedChannel(ensureState())
+    elseif resolvedChannel == "location" then
+        resolvedChannel = resolveActiveLocationChannel(ensureState())
+    end
+    local obj, resolveError = resolveEmitter(resolvedChannel)
+    if obj == nil then
+        return false, resolveError or ("Missing soundscape emitter for " .. tostring(resolvedChannel))
+    end
+    local targetVolume = clamp01(volume)
+    local okVolume = setEmitterVolume(obj, targetVolume)
+    updateChannelState(resolvedChannel, {
+        volume = targetVolume,
+        available = true,
+        volumeControl = okVolume,
+    })
+    return okVolume == true, "Volume set for " .. tostring(resolvedChannel)
+end
+
+--- Plays one exact catalog track/condition for debug volume balancing.
+-- @param categoryKey string
+-- @param trackKey string
+-- @return boolean
+-- @return string
+function Soundscape.playDebugTrack(categoryKey, trackKey)
+    local category, track = findDebugTrack(categoryKey, trackKey)
+    if category == nil or track == nil then
+        return false, "Unknown debug soundscape track: " .. tostring(categoryKey) .. "/" .. tostring(trackKey)
+    end
+
+    local volume = tonumber(track.volume) or 0.5
+    local okPlay, message = false, ""
+    if categoryKey == "backgroundMusic" then
+        local playlist = Catalog.getBackgroundPlaylist(track.playlistKey)
+        okPlay, message = playBackgroundPlaylist(BACKGROUND_KIND_MOOD, track.playlistKey, playlist, track)
+    elseif categoryKey == "featuredMusic" then
+        okPlay, message = Soundscape.playFeaturedMusic(trackKey)
+    elseif categoryKey == "location" then
+        okPlay, message = Soundscape.setLocationAudio(trackKey)
+    elseif categoryKey == "weather" then
+        okPlay = Soundscape.setWeatherCondition(trackKey)
+        message = okPlay and "Weather condition set: " .. tostring(trackKey) or "Failed weather condition: " .. tostring(trackKey)
+    elseif categoryKey == "rain" then
+        okPlay, message = Soundscape.setRainLayer(trackKey)
+    elseif categoryKey == "wind" then
+        okPlay, message = Soundscape.setWindLayer(trackKey)
+    elseif categoryKey == "thunder" then
+        okPlay, message = Soundscape.triggerThunder(trackKey)
+    else
+        return false, "Unsupported debug soundscape category: " .. tostring(categoryKey)
+    end
+
+    if okPlay then
+        rememberDebugTrack(categoryKey, trackKey, DEBUG_CATEGORY_CHANNELS[categoryKey], volume)
+    end
+    return okPlay, message
+end
+
+--- Sets live volume for a debug-played track category.
+-- @param categoryKey string
+-- @param trackKey string
+-- @param volume number|string
+-- @return boolean
+-- @return string
+function Soundscape.setDebugTrackVolume(categoryKey, trackKey, volume)
+    local targetVolume = clamp01(volume)
+    local state = ensureState()
+    local active = type(state.debugPlayingTracks) == "table" and state.debugPlayingTracks[categoryKey] or nil
+    if type(active) ~= "table" or active.trackKey ~= trackKey then
+        active = activeDebugRowFor(categoryKey, trackKey)
+    end
+    if type(active) ~= "table" or active.trackKey ~= trackKey then
+        return false, "Soundscape track is not active: " .. tostring(categoryKey) .. "/" .. tostring(trackKey)
+    end
+
+    local okVolume, message = false, ""
+    if categoryKey == "weather" then
+        local okRain = setChannelImmediateVolume("weatherRain", targetVolume)
+        local okWind = setChannelImmediateVolume("weatherWind", targetVolume)
+        okVolume = okRain and okWind
+        message = "Weather volume set"
+    else
+        okVolume, message = setChannelImmediateVolume(active.channelKey, targetVolume)
+    end
+    rememberDebugTrack(categoryKey, trackKey, active.channelKey, targetVolume)
+    return okVolume, message
+end
+
+--- Returns debug-panel active track rows.
+-- @return table
+function Soundscape.getDebugPlayingTracks()
+    local rows = {}
+    local state = ensureState()
+    local byCategory = {}
+    if state.backgroundMusicEnabled == true then
+        local row = activeDebugRowFor("backgroundMusic", state.backgroundTrackKey or state.musicMood or state.locationMusic)
+        if row ~= nil then
+            byCategory.backgroundMusic = row
+        end
+    end
+    if state.featuredActive == true then
+        local row = activeDebugRowFor("featuredMusic", state.featuredMusic)
+        if row ~= nil then
+            byCategory.featuredMusic = row
+        end
+    end
+    if state.location ~= Catalog.DEFAULTS.location then
+        local row = activeDebugRowFor("location", state.location)
+        if row ~= nil then
+            byCategory.location = row
+        end
+    end
+    if state.weather ~= Catalog.DEFAULTS.weather then
+        local row = activeDebugRowFor("weather", state.weather)
+        if row ~= nil then
+            byCategory.weather = row
+        end
+    end
+    if state.rain ~= Catalog.DEFAULTS.rain then
+        local row = activeDebugRowFor("rain", state.rain)
+        if row ~= nil then
+            byCategory.rain = row
+        end
+    end
+    if state.wind ~= Catalog.DEFAULTS.wind then
+        local row = activeDebugRowFor("wind", state.wind)
+        if row ~= nil then
+            byCategory.wind = row
+        end
+    end
+    if type(state.debugPlayingTracks) == "table" then
+        for categoryKey, row in pairs(state.debugPlayingTracks) do
+            byCategory[categoryKey] = row
+        end
+    end
+    for _, row in pairs(byCategory) do
+        table.insert(rows, {
+            categoryKey = row.categoryKey,
+            trackKey = row.trackKey,
+            channelKey = row.channelKey,
+            volume = row.volume,
+        })
+    end
+    table.sort(rows, function(left, right)
+        return tostring(left.categoryKey) < tostring(right.categoryKey)
+    end)
+    return rows
+end
+
 --- Returns a compact state summary for UI/debug output.
 -- @return string
 function Soundscape.getSummaryText()
     local state = ensureState()
     local parts = {
-        "Mood: " .. tostring(state.musicMood),
-        "Weather: " .. tostring(state.weather),
+        "Music: " .. tostring(state.backgroundMusicMode) .. "/" .. tostring(state.musicMood),
+        "Featured: " .. tostring(state.featuredActive and state.featuredMusic or "none"),
         "Location: " .. tostring(state.location),
+        "Weather: " .. tostring(state.weather),
+        "Rain: " .. tostring(state.rain),
+        "Wind: " .. tostring(state.wind),
+        "Thunder: " .. tostring(state.thunderEnabled),
         "Indoors: " .. tostring(state.isIndoors),
     }
     return table.concat(parts, " | ")
@@ -455,127 +1220,237 @@ function Soundscape.applyContext(context)
     if type(context) ~= "table" then
         return { ok = false, message = "Soundscape.applyContext requires a table" }
     end
+
     local results = {}
     local ok = true
+    local function collect(callOk, message)
+        ok = ok and callOk
+        table.insert(results, message)
+    end
 
     if context.isIndoors ~= nil then
-        local indoorOk, indoorMsg = Soundscape.setIndoors(context.isIndoors)
-        ok = ok and indoorOk
-        table.insert(results, indoorMsg)
+        collect(Soundscape.setIndoors(context.isIndoors))
     end
     if context.musicMood ~= nil then
-        local musicOk, musicMsg = Soundscape.setMusicMood(context.musicMood)
-        ok = ok and musicOk
-        table.insert(results, musicMsg)
+        collect(Soundscape.setMusicMood(context.musicMood))
+    end
+    if context.locationMusic ~= nil then
+        collect(Soundscape.setLocationMusic(context.locationMusic))
+    end
+    if context.featuredMusic ~= nil then
+        collect(Soundscape.playFeaturedMusic(context.featuredMusic))
     end
     if context.weather ~= nil or context.weatherCondition ~= nil then
-        local weatherOk, weatherMsg = Soundscape.setWeatherCondition(context.weather or context.weatherCondition)
-        ok = ok and weatherOk
-        table.insert(results, weatherMsg)
+        collect(Soundscape.setWeatherCondition(context.weather or context.weatherCondition))
+    end
+    if context.rain ~= nil then
+        collect(Soundscape.setRainLayer(context.rain))
+    end
+    if context.wind ~= nil then
+        collect(Soundscape.setWindLayer(context.wind))
+    end
+    if context.thunderEnabled ~= nil then
+        collect(Soundscape.setThunderEnabled(context.thunderEnabled))
     end
     if context.locationAudio ~= nil or context.location ~= nil then
-        local locationOk, locationMsg = Soundscape.setLocationAudio(context.locationAudio or context.location)
-        ok = ok and locationOk
-        table.insert(results, locationMsg)
+        collect(Soundscape.setLocationAudio(context.locationAudio or context.location))
     end
 
     return { ok = ok, message = table.concat(results, " | "), state = ensureState() }
 end
 
---- Sets the Storyteller-controlled music mood and starts continuous random playback.
+--- Sets the Storyteller-controlled background music mood.
 -- @param moodKey string
 -- @return boolean
 -- @return string
 function Soundscape.setMusicMood(moodKey)
-    local mood = Catalog.getMusicMood(moodKey)
-    if mood == nil then
+    local playlist = Catalog.getBackgroundPlaylist(moodKey)
+    if playlist == nil then
         return false, "Unknown music mood: " .. tostring(moodKey)
     end
-    local track = chooseMusicTrack(mood)
-    if track == nil then
-        return false, "Music mood has no tracks: " .. tostring(moodKey)
-    end
-
-    musicGeneration = musicGeneration + 1
-    local state = ensureState()
-    local oldChannel = state.activeMusicChannel == "musicB" and "musicB" or "musicA"
-    local newChannel = oldChannel == "musicA" and "musicB" or "musicA"
-    local targetVolume = tonumber(mood.volume) or 0.45
-    local fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.music) or 0
-    local hasVolumeControl = probeVolumeControl()
-    local thisGeneration = musicGeneration
-
-    local ok, message
-    if hasVolumeControl then
-        setEmitterVolume(resolveEmitter(newChannel), 0)
-        updateChannelState(newChannel, { volume = 0 })
-        ok, message = playChannelEffect(newChannel, track.effect, targetVolume, fadeSeconds, 0)
-        if ok and oldChannel ~= newChannel then
-            local oldObj = resolveEmitter(oldChannel)
-            if oldObj ~= nil then
-                fadeEmitterVolume(oldObj, tonumber(state.channels[oldChannel].volume) or targetVolume, 0, fadeSeconds)
-                if Wait ~= nil and Wait.time ~= nil then
-                    Wait.time(function()
-                        local latest = ensureState()
-                        if thisGeneration == musicGeneration and latest.activeMusicChannel ~= oldChannel then
-                            playChannelEffect(oldChannel, Catalog.SILENT_EFFECT, 0, 0)
-                        end
-                    end, fadeSeconds)
-                else
-                    playChannelEffect(oldChannel, Catalog.SILENT_EFFECT, 0, 0)
-                end
-            end
-        end
-    else
-        ok, message = playChannelEffect(oldChannel, track.effect, targetVolume, 0)
-        playChannelEffect(newChannel, Catalog.SILENT_EFFECT, 0, 0)
-        newChannel = oldChannel
-    end
-
-    if ok then
-        state.musicMood = moodKey
-        state.musicEnabled = true
-        state.activeMusicChannel = newChannel
-        scheduleNextMusicTrack(moodKey, track, musicGeneration)
-    end
-    return ok, message
+    return playBackgroundPlaylist(BACKGROUND_KIND_MOOD, moodKey, playlist)
 end
 
---- Sets the weather layer. Future calendar/weather systems should call this.
+--- Sets a site-specific background music playlist.
+-- @param playlistKey string
+-- @return boolean
+-- @return string
+function Soundscape.setLocationMusic(playlistKey)
+    if playlistKey == "none" then
+        musicGeneration = musicGeneration + 1
+        local state = ensureState()
+        state.locationMusic = Catalog.DEFAULTS.locationMusic
+        state.backgroundMusicEnabled = false
+        state.backgroundTrackKey = nil
+        silenceLoopChannel("musicA")
+        silenceLoopChannel("musicB")
+        return true, "Location music stopped"
+    end
+    local playlist = Catalog.getBackgroundPlaylist(playlistKey)
+    if playlist == nil then
+        return false, "Unknown background music playlist: " .. tostring(playlistKey)
+    end
+    return playBackgroundPlaylist(BACKGROUND_KIND_LOCATION, playlistKey, playlist)
+end
+
+--- Plays a featured music effect on the dedicated featured lane.
+-- @param featureKey string
+-- @return boolean
+-- @return string
+function Soundscape.playFeaturedMusic(featureKey)
+    local feature = Catalog.getFeaturedTrack(featureKey)
+    if feature == nil then
+        return false, "Unknown featured music: " .. tostring(featureKey)
+    end
+
+    local playlist, trackIndex = findFeaturedSequence(featureKey)
+    return playFeaturedTrack(feature, playlist, trackIndex, nil)
+end
+
+--- Stops the featured lane without erasing background music context.
+-- @return boolean
+-- @return string
+function Soundscape.stopFeaturedMusic()
+    return stopFeaturedMusicInternal(true)
+end
+
+--- Restarts the saved background music context.
+-- @return boolean
+-- @return string
+function Soundscape.resumeBackgroundMusic()
+    local state = ensureState()
+    if state.backgroundMusicMode == BACKGROUND_KIND_LOCATION and state.locationMusic ~= Catalog.DEFAULTS.locationMusic then
+        return Soundscape.setLocationMusic(state.locationMusic)
+    end
+    return Soundscape.setMusicMood(state.musicMood or Catalog.DEFAULTS.musicMood)
+end
+
+--- Applies a weather condition across rain, wind, and thunder lanes.
 -- @param weatherKey string
 -- @return boolean
 -- @return string
 function Soundscape.setWeatherCondition(weatherKey)
-    local weather = Catalog.getWeather(weatherKey)
-    if weather == nil then
-        return false, "Unknown weather audio: " .. tostring(weatherKey)
+    local preset = Catalog.WEATHER_CONDITIONS[weatherKey]
+    if preset == nil then
+        return false, "Unknown weather condition: " .. tostring(weatherKey)
     end
+
+    local okRain, rainMessage = Soundscape.setRainLayer(preset.rain or Catalog.DEFAULTS.rain)
+    local okWind, windMessage = Soundscape.setWindLayer(preset.wind or Catalog.DEFAULTS.wind)
+    local okThunder, thunderMessage = Soundscape.setThunderEnabled(preset.thunderEnabled == true)
     local state = ensureState()
-    local ducking = Catalog.DEFAULTS.weatherDucking
-    local multiplier = state.isIndoors and ducking.indoorMultiplier or ducking.outdoorMultiplier
-    local volume = (tonumber(weather.volume) or 0) * multiplier
-    local ok, message = playChannelEffect("weather", weather.effect, volume, Catalog.DEFAULTS.fadeSeconds.weather)
-    if ok then
+    if okRain and okWind and okThunder then
         state.weather = weatherKey
     end
-    return ok, message
+    return okRain and okWind and okThunder, table.concat({ rainMessage, windMessage, thunderMessage }, " | ")
 end
 
---- Sets the location ambience layer. Future SITES data should call this.
+--- Sets the looping rain layer.
+-- @param rainKey string
+-- @return boolean
+-- @return string
+function Soundscape.setRainLayer(rainKey)
+    if rainKey == "none" then
+        cancelSingleEmitterTransition("weatherRain")
+        local okStop, stopMessage = silenceLoopChannel("weatherRain")
+        if okStop then
+            ensureState().rain = Catalog.DEFAULTS.rain
+        end
+        return okStop, stopMessage
+    end
+    local rain = Catalog.getWeatherTrack("rain", rainKey)
+    if rain == nil then
+        return false, "Unknown rain layer: " .. tostring(rainKey)
+    end
+    local okRain, message = playSingleEmitterFadeOutIn("weatherRain", rain, weatherVolume(rain.volume), Catalog.DEFAULTS.fadeSeconds.weather)
+    if okRain then
+        ensureState().rain = rainKey
+    end
+    return okRain, message
+end
+
+--- Sets the looping wind layer.
+-- @param windKey string
+-- @return boolean
+-- @return string
+function Soundscape.setWindLayer(windKey)
+    if windKey == "none" then
+        cancelSingleEmitterTransition("weatherWind")
+        local okStop, stopMessage = silenceLoopChannel("weatherWind")
+        if okStop then
+            ensureState().wind = Catalog.DEFAULTS.wind
+        end
+        return okStop, stopMessage
+    end
+    local wind = Catalog.getWeatherTrack("wind", windKey)
+    if wind == nil then
+        return false, "Unknown wind layer: " .. tostring(windKey)
+    end
+    local okWind, message = playSingleEmitterFadeOutIn("weatherWind", wind, weatherVolume(wind.volume), Catalog.DEFAULTS.fadeSeconds.weather)
+    if okWind then
+        ensureState().wind = windKey
+    end
+    return okWind, message
+end
+
+--- Enables or disables scheduled thunder one-shots.
+-- @param isEnabled boolean
+-- @return boolean
+-- @return string
+function Soundscape.setThunderEnabled(isEnabled)
+    if type(isEnabled) ~= "boolean" then
+        return false, "Soundscape.setThunderEnabled requires a boolean"
+    end
+    weatherGeneration = weatherGeneration + 1
+    local state = ensureState()
+    state.thunderEnabled = isEnabled
+    if isEnabled then
+        scheduleThunder()
+    end
+    return true, "Thunder enabled: " .. tostring(isEnabled)
+end
+
+--- Plays one thunder trigger immediately, choosing randomly when no key is given.
+-- @param hitKey string|nil
+-- @return boolean
+-- @return string
+function Soundscape.triggerThunder(hitKey)
+    local thunder = nil
+    if type(hitKey) == "string" then
+        thunder = Catalog.getWeatherTrack("thunder", hitKey)
+    else
+        thunder = chooseRandom(Catalog.PLAYLISTS.weather.thunder.tracks)
+    end
+    if thunder == nil then
+        return false, "Unknown thunder hit: " .. tostring(hitKey)
+    end
+    return playCatalogEntry("weatherThunder", thunder, thunder.volume or 0.7, 0)
+end
+
+--- Sets the location ambience layer.
 -- @param locationKey string
 -- @return boolean
 -- @return string
 function Soundscape.setLocationAudio(locationKey)
-    local location = Catalog.getLocation(locationKey)
+    if locationKey == "none" then
+        local okStopA, messageA = silenceLoopChannel("locationA")
+        local okStopB, messageB = silenceLoopChannel("locationB")
+        local state = ensureState()
+        if okStopA and okStopB then
+            state.location = Catalog.DEFAULTS.location
+            state.activeLocationChannel = "locationA"
+        end
+        return okStopA and okStopB, table.concat({ messageA, messageB }, " | ")
+    end
+    local location = Catalog.getLocationTrack(locationKey)
     if location == nil then
         return false, "Unknown location audio: " .. tostring(locationKey)
     end
-    local ok, message = playChannelEffect("location", location.effect, tonumber(location.volume) or 0, Catalog.DEFAULTS.fadeSeconds.location)
-    if ok then
-        local state = ensureState()
-        state.location = locationKey
+    local okLocation, message = playLocationEntry(location)
+    if okLocation then
+        ensureState().location = locationKey
     end
-    return ok, message
+    return okLocation, message
 end
 
 --- Sets whether the current site is indoors and reapplies weather ducking.
@@ -588,29 +1463,53 @@ function Soundscape.setIndoors(isIndoors)
     end
     local state = ensureState()
     state.isIndoors = isIndoors
-    local weatherKey = state.weather or Catalog.DEFAULTS.weather
-    Soundscape.setWeatherCondition(weatherKey)
-    return true, "Indoors set to " .. tostring(isIndoors)
+    local okRain, rainMessage = Soundscape.setRainLayer(state.rain or Catalog.DEFAULTS.rain)
+    local okWind, windMessage = Soundscape.setWindLayer(state.wind or Catalog.DEFAULTS.wind)
+    return okRain and okWind, table.concat({ "Indoors set to " .. tostring(isIndoors), rainMessage, windMessage }, " | ")
 end
 
---- Stops every soundscape channel by switching to the silent loop.
+--- Stops every scheduled soundscape layer.
 -- @return boolean
 -- @return string
 function Soundscape.stopAll()
     musicGeneration = musicGeneration + 1
-    local ok = true
+    featuredGeneration = featuredGeneration + 1
+    weatherGeneration = weatherGeneration + 1
+    cancelSingleEmitterTransition("weatherRain")
+    cancelSingleEmitterTransition("weatherWind")
+
     local messages = {}
-    for channelKey, _ in pairs(Catalog.CHANNELS) do
-        local channelOk, message = playChannelEffect(channelKey, Catalog.SILENT_EFFECT, 0, 0)
+    local ok = true
+    for _, channelKey in ipairs({ "musicA", "musicB", "featuredA", "featuredB", "locationA", "locationB", "weatherRain", "weatherWind" }) do
+        local channelOk, message = silenceLoopChannel(channelKey)
         ok = ok and channelOk
         table.insert(messages, message)
     end
+    updateChannelState("weatherThunder", {
+        effect = nil,
+        effectList = Catalog.EFFECT_LIST.TRIGGER,
+        volume = 0,
+        available = resolveEmitter("weatherThunder") ~= nil,
+    })
+
     local state = ensureState()
+    state.backgroundMusicMode = BACKGROUND_KIND_MOOD
     state.musicMood = Catalog.DEFAULTS.musicMood
-    state.musicEnabled = false
-    state.weather = Catalog.DEFAULTS.weather
-    state.location = Catalog.DEFAULTS.location
+    state.backgroundMusicEnabled = false
     state.activeMusicChannel = "musicA"
+    state.activeFeaturedChannel = "featuredA"
+    state.activeLocationChannel = "locationA"
+    state.backgroundTrackKey = nil
+    state.locationMusic = Catalog.DEFAULTS.locationMusic
+    state.featuredMusic = Catalog.DEFAULTS.featuredMusic
+    state.featuredActive = false
+    state.featuredCompletionExpected = false
+    state.backgroundPausedForFeatured = false
+    state.weather = Catalog.DEFAULTS.weather
+    state.rain = Catalog.DEFAULTS.rain
+    state.wind = Catalog.DEFAULTS.wind
+    state.thunderEnabled = Catalog.DEFAULTS.thunderEnabled
+    state.location = Catalog.DEFAULTS.location
     return ok, table.concat(messages, " | ")
 end
 
@@ -619,31 +1518,53 @@ end
 function Soundscape.inspectEmitters()
     local rows = {}
     for channelKey, channelDef in pairs(Catalog.CHANNELS) do
-        local obj = resolveEmitter(channelKey)
+        local obj, resolveError = resolveEmitter(channelKey)
+        local expectedGuid = getGuidForChannel(channelDef)
+        local taggedObj = findTaggedObject(channelDef.tag)
         local row = {
             channel = channelKey,
             label = channelDef.label,
-            tag = channelDef.tag,
-            found = obj ~= nil,
+            guidKey = channelDef.guidKey,
+            expectedGuid = expectedGuid,
             guid = nil,
+            tag = channelDef.tag,
+            tagFound = taggedObj ~= nil,
+            tagMatchesGuid = false,
+            found = obj ~= nil,
+            error = resolveError,
             loopingEffects = {},
+            triggerEffects = {},
             audioSourceCount = 0,
+            capabilities = {
+                volumeControl = false,
+            },
         }
+
         if obj ~= nil then
-            -- Known non-fatal case: GUID read can fail on stale handles while inspecting emitters.
-            local okGuid, guid = pcall(function()
+            local okGuid, actualGuid = pcall(function()
                 return obj.getGUID()
             end)
             if okGuid then
-                row.guid = guid
+                row.guid = actualGuid
             end
-            local indexByName = getLoopingEffectIndexByName(obj)
-            for name, index in pairs(indexByName) do
-                table.insert(row.loopingEffects, { name = name, index = index })
+            if taggedObj ~= nil and taggedObj.getGUID ~= nil and row.guid ~= nil then
+                local okTaggedGuid, taggedGuid = pcall(function()
+                    return taggedObj.getGUID()
+                end)
+                row.tagMatchesGuid = okTaggedGuid and taggedGuid == row.guid
             end
+            row.loopingEffects = sortedEffectRows(queryEffects(obj, Catalog.EFFECT_LIST.LOOPING))
+            row.triggerEffects = sortedEffectRows(queryEffects(obj, Catalog.EFFECT_LIST.TRIGGER))
             row.audioSourceCount = #getAudioSources(obj)
+            local volumeOk = setEmitterVolume(obj, ensureState().channels[channelKey].volume or 0)
+            row.capabilities.volumeControl = volumeOk
         end
-        updateChannelState(channelKey, { available = row.found })
+
+        updateChannelState(channelKey, {
+            available = row.found,
+            volumeControl = row.capabilities.volumeControl,
+            lastError = row.error,
+        })
         table.insert(rows, row)
     end
     return rows
@@ -653,14 +1574,16 @@ end
 -- @return table
 function Soundscape.testLayeredPlayback()
     local results = {}
-    local musicOk, musicMsg = Soundscape.setMusicMood("general")
+    local musicOk, musicMsg = Soundscape.setMusicMood("main")
     table.insert(results, { channel = "music", ok = musicOk, message = musicMsg })
-    local weatherOk, weatherMsg = Soundscape.setWeatherCondition("lightRain")
+    local weatherOk, weatherMsg = Soundscape.setWeatherCondition("thunderstorm")
     table.insert(results, { channel = "weather", ok = weatherOk, message = weatherMsg })
-    local locationOk, locationMsg = Soundscape.setLocationAudio("outdoorIndustrial")
+    local locationOk, locationMsg = Soundscape.setLocationAudio("industry")
     table.insert(results, { channel = "location", ok = locationOk, message = locationMsg })
+    local featuredOk, featuredMsg = Soundscape.playFeaturedMusic("TR_Intro")
+    table.insert(results, { channel = "featured", ok = featuredOk, message = featuredMsg })
 
-    local ok = musicOk and weatherOk and locationOk
+    local ok = musicOk and weatherOk and locationOk and featuredOk
     local payload = {
         ok = ok,
         results = results,

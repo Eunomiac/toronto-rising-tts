@@ -60,9 +60,7 @@ local sourceObjects = {
     --   - "other": source objects for non-player seats (e.g. NPC1..NPC4)
     --   - "all": source objects for both player + non-player seats
     --   - "relative": objects that rigidly follow their derived seat hand-zone anchor
-    --   - "cameraModes.bySeat": mode keys in C.RedCameraAngles.forSeat to rotate into per-player playerData.cameraAngles
-    --   - "cameraModes.universal": base mode keys that map to <base><referencePlayerColor> in C.RedCameraAngles.forUniversal,
-    --                              then rotate into gameState.seatLayout.universalCameraAngles as <base><seatKey>
+    --   - "cameraModes.bySeat": keys in C.RedCameraAngles; layout writes playerData.cameraAngles and universalCameraAngles[<mode><seatKey>] (all seats in the map, including NPC slots) from the same derived angles
 
     -- entries used to move/spawn objects into player seats only
     player = {
@@ -88,8 +86,7 @@ local sourceObjects = {
 
     -- camera presets to rotate when applying this table layout
     cameraModes = {
-        bySeat = { "default", "sheet", "diceTray" },
-        universal = { "facing", "sheet", "diceTray" },
+        bySeat = { "default", "sheet", "diceTray", "facing" },
     },
 }
 
@@ -127,7 +124,7 @@ R.resolveSeatObjects(
 
 
 -- Main convenience API: wraps generateRotationalCoordinates + resolveSeatObjects, and then applies cameraModes.
---   It rotates bySeat presets into per-player data, and universal presets into gameState.seatLayout.universalCameraAngles.
+--   It rotates bySeat presets into per-player data and into gameState.seatLayout.universalCameraAngles (<mode><seatKey>).
 R.resolveSeatObjectsFromTable(
   tableRef,              -- table reference to a table object in C.Tables (which contains values for the other parameters required by `generateRotationalCoordinates`)
   sourceObjects,         -- OPTIONAL sourceObjects table; defaults to C.TableSourceObjects if omitted
@@ -164,8 +161,7 @@ local sourceObjects = {
       G.GUIDS.TAROT_DECK_PINK, -- The single object named TAROT_DECK_PINK with the table slot tag "PinkObject", which should rigidly follow Pink's hand-zone anchor.
     },
     cameraModes = {
-      bySeat = { "sheet", "diceTray" },
-      universal = { "facing" }, -- maps to C.RedCameraAngles.forUniversal.facingRed, then emits facingRed/facingBlue/... by seat key
+      bySeat = { "sheet", "diceTray", "facing" },
     },
 }
 

@@ -29,7 +29,11 @@ The architecture is intentionally split across a small runtime service, a static
 Use `core.soundscape` as the only runtime playback API:
 
 - `Soundscape.setMusicMood(moodKey)` changes Storyteller-controlled music mood.
-- `Soundscape.setWeatherCondition(weatherKey)` changes the weather layer.
+- `Soundscape.setLocationMusic(playlistKey)` changes site-specific background music playlists.
+- `Soundscape.playFeaturedMusic(featureKey)` plays one-off or intro-to-loop featured music.
+- `Soundscape.setWeatherCondition(weatherKey)` changes layered weather presets.
+- `Soundscape.setRainLayer(rainKey)`, `Soundscape.setWindLayer(windKey)`, and `Soundscape.setThunderEnabled(isEnabled)` control focused weather lanes.
+- `Soundscape.triggerThunder(hitKey)` plays one thunder Trigger Effect immediately.
 - `Soundscape.setLocationAudio(locationKey)` changes the site/location ambience layer.
 - `Soundscape.setIndoors(isIndoors)` applies indoor/outdoor weather ducking.
 - `Soundscape.applyContext(context)` lets scenes, future weather/calendar code, and future SITES data express audio intent without owning playback.
@@ -37,18 +41,23 @@ Use `core.soundscape` as the only runtime playback API:
 - `Soundscape.inspectEmitters()` verifies hidden AssetBundle emitters and effects.
 - `Soundscape.testLayeredPlayback()` starts a live music/weather/location smoke test.
 
-Keep sound definitions in `lib/soundscape_catalog.ttslua`. Add new moods, weather keys, location keys, effect names, volumes, and durations there first, then make the Unity AssetBundle expose matching Looping Effect names. Do not bury static audio keys in scene presets, HUD handlers, or future SITES/weather modules.
+Keep sound definitions in `lib/soundscape_catalog.ttslua`. Add new moods, weather keys, location keys, effect names, effect-list types, volumes, and durations there first, then make the Unity AssetBundle expose matching Looping or Trigger Effect names. Do not bury static audio keys in scene presets, HUD handlers, or future SITES/weather modules.
 
-The runtime expects four hidden, locked `Custom_Assetbundle` emitters tagged:
+The runtime expects nine hidden, locked `Custom_Assetbundle` emitters registered in `lib/guids.ttslua` and tagged for inspection:
 
 - `soundscape_music_a`
 - `soundscape_music_b`
-- `soundscape_weather`
-- `soundscape_location`
+- `soundscape_featured_a`
+- `soundscape_featured_b`
+- `soundscape_location_a`
+- `soundscape_location_b`
+- `soundscape_weather_rain`
+- `soundscape_weather_wind`
+- `soundscape_weather_thunder`
 
-The two music emitters allow crossfades when TTS exposes writable `AudioSource.volume`. Weather and location each have their own emitter so they can play simultaneously with music. Every channel stops by switching to `Catalog.SILENT_EFFECT`, currently `silent`; do not assume TTS can reliably stop a looping effect without selecting another loop.
+Paired music, featured, and location emitters use one standard lane-swap path when TTS exposes writable `AudioSource.volume`. Featured sequencing is catalog-driven: any `SEQUENCE` featured playlist can schedule its next track on the opposite featured emitter. Featured music is mutually exclusive with background music, so starting featured music pauses background cycling and fades background out; featured completion resumes background with a fresh track. Single weather loop emitters cannot crossfade, so rain and wind transition by fading the current loop out, then fading the new loop in on the same emitter. Thunder is different: thunder hits are short trigger effects, start immediately at full volume, and are never interrupted by fade transitions. Loop channels stop by switching to `Catalog.SILENT_EFFECT`, currently `silent`; scheduled callbacks are generation-guarded so stale timers cannot start new audio after the context changes.
 
-Unity authoring is part of the contract. Follow `.dev/SOUNDSCAPE_UNITY_SETUP.md` and ensure every `AudioSource` is non-positional:
+Unity authoring is part of the contract. Follow `.dev/Soundscape & Audio/SOUNDSCAPE_UNITY_SETUP.md` and ensure every `AudioSource` is non-positional:
 
 - `spatialBlend = 0`
 - `loop = true`
@@ -114,10 +123,11 @@ Soundscape.applyContext({
 
 Adding a new weather loop requires coordinated changes:
 
-1. Add a `Catalog.WEATHER` entry in `lib/soundscape_catalog.ttslua`.
-2. Add the same named Looping Effect to the Unity AssetBundle.
-3. Trigger it through `Soundscape.setWeatherCondition("newWeatherKey")` or `Soundscape.applyContext({ weather = "newWeatherKey" })`.
-4. Run `lua inspectSoundscapeAudio()` and confirm the effect exists on the weather emitter.
+1. Add a `Catalog.WEATHER_RAIN`, `Catalog.WEATHER_WIND`, or `Catalog.WEATHER_THUNDER` entry in `lib/soundscape_catalog.ttslua`.
+2. Add the same named Looping or Trigger Effect to the Unity AssetBundle.
+3. Include it in a `Catalog.WEATHER_PRESETS` entry if it should be selected by a named weather condition.
+4. Trigger it through `Soundscape.setWeatherCondition("newWeatherKey")`, a focused setter, or `Soundscape.applyContext({ weather = "newWeatherKey" })`.
+5. Run `lua inspectSoundscapeAudio()` and confirm the effect exists on the expected emitter.
 
 ## Verification
 
@@ -127,18 +137,19 @@ Use these TTS console commands after Save & Play and after placing the hidden As
 lua inspectSoundscapeAudio()
 lua testSoundscape()
 lua soundscapeMusic("intrigue")
-lua soundscapeWeather("lightRain", true)
-lua soundscapeWeather("lightRain", false)
+lua soundscapeWeather("thunderstorm", true)
+lua soundscapeThunder("hit", "thunder1")
+lua soundscapeFeatured("TR_Intro")
 lua soundscapeLocation("sewers")
 lua soundscapeStopAll()
 ```
 
 Expected live results:
 
-- Four emitters are found.
-- Each emitter lists expected Looping Effect names, including `silent`.
-- Each emitter reports at least one `AudioSource`.
-- Music, weather, and location can play simultaneously.
+- Seven emitters are found by GUID.
+- Loop-capable emitters list expected Looping Effect names, including `silent`.
+- Trigger-capable emitters list expected Trigger Effect names.
+- Exactly one music lane should be active: background music or featured music, plus rain, wind, thunder, and location as independent layers.
 - Moving the camera away from hidden emitters does not change perceived volume.
 - Indoor weather is quieter than outdoor weather.
 - `soundscapeStopAll()` silences every layer.
@@ -159,7 +170,7 @@ That test checks the public API surface, catalog/docs presence, Lua parseability
 - Scene defaults: `core/scenes.ttslua`
 - Storyteller UI: `ui/storyteller/panel_soundscape.xml`, `ui/storyteller/panel_storyteller_toolbar.xml`, `lib/ui_helpers.ttslua`
 - Debug helpers: `core/debug.ttslua`
-- Unity setup: `.dev/SOUNDSCAPE_UNITY_SETUP.md`
+- Unity setup: `.dev/Soundscape & Audio/SOUNDSCAPE_UNITY_SETUP.md`
 - Test guide: `.dev/TESTING.md`
 - API references: `.dev/AVAILABLE_FUNCTIONS.md`, `.dev/HUD_FUNCTIONS.md`
 - Static contract test: `.dev/scripts/soundscape_contract.test.js`

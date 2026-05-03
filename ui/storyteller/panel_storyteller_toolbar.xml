@@ -3,7 +3,7 @@
 
 <Panel id="storytellerToolbarRoot" visibility="Host" rectAlignment="UpperLeft" offsetXY="50 00" width="800" height="800">
   <Button id="toggleElem_storytellerToolbarBody" class="hud_storyteller_button hud_storyteller_button_icon" rectAlignment="UpperLeft" width="30" height="30" onClick="HUD_togglePanel">►</Button>
-  <VerticalLayout spacing="4" childAlignment="UpperLeft" rectAlignment="UpperLeft" offsetXY="0 -20">
+  <VerticalLayout spacing="4" childAlignment="UpperLeft" rectAlignment="UpperLeft" offsetXY="35 -30">
     <Panel id="storytellerToolbarBody" active="false">
       <VerticalLayout spacing="4" childAlignment="UpperLeft" height="20">
     <HorizontalLayout rectAlignment="UpperLeft" ignoreLayout="true" spacing="3" childAlignment="UpperLeft" width="500" height="30" offsetXY="0 20">

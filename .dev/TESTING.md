@@ -148,15 +148,16 @@ lua inspectSoundscapeAudio()
 
 **What it tests:**
 
-- Hidden `Custom_Assetbundle` emitters are present and tagged correctly
-- Looping effect names match `lib/soundscape_catalog.ttslua`
+- Hidden `Custom_Assetbundle` emitters are present, GUID-registered, and tagged correctly
+- Looping and Trigger effect names match `lib/soundscape_catalog.ttslua`
 - Unity `AudioSource` components are visible to Lua for volume and 2D-audio checks
 
 **Expected Results:**
 
-- Four emitters should be found: `musicA`, `musicB`, `weather`, and `location`
-- Each emitter should list the expected looping effects, including `silent`
-- Each emitter should report at least one `AudioSource`
+- Nine emitters should be found: `musicA`, `musicB`, `featuredA`, `featuredB`, `locationA`, `locationB`, `weatherRain`, `weatherWind`, and `weatherThunder`
+- Loop-capable emitters should list expected Looping Effects, including `silent`
+- Trigger-capable emitters should list expected Trigger Effects, including music and thunder entries
+- `tagMatchesGuid` should be true for each tagged emitter
 
 #### Layered Playback
 
@@ -166,15 +167,17 @@ lua testSoundscape()
 
 **What it tests:**
 
-- Music, weather, and location loops can play simultaneously
-- Weather and location layers can switch independently of music
+- Featured music is exclusive with background music: starting one should fade or pause the other
+- Rain, wind, thunder, and location should continue independently while music lanes switch
 - Debug output includes MCP-friendly `TR_AGENT_V1` summaries when available
 
 **Visual/Audio Check:**
 
-- Host and at least one connected client should hear all three layers
+- Host and at least one connected client should hear the active layers
 - Moving the camera away from the hidden emitters should not change perceived volume
 - `lua soundscapeStopAll()` should silence every layer by switching to the `silent` loop
+- Use `lua soundscapeThunder("hit", "thunder1")` to verify a specific thunder Trigger Effect
+- Use `lua soundscapeFeatured("TR_Intro")` to verify the intro-to-loop featured lane
 
 ---
 

@@ -22,8 +22,8 @@
       or "HungerDie", and "<Color>Object" (e.g. "BrownObject").
     - When a die spawns, global_script.onObjectLeaveContainer writes the active
       roll ID to the die's GM Notes — the only dynamic step.
-    - RC._getDiceForRoll queries getObjectsWithAllTags({dieTypeTag, colorTag}),
-      filters by GM Notes == rollId, and reads current face values.
+    - RC._getDiceForRoll / RC._getDiceObjectsForRoll query getObjectsWithAllTags({dieTypeTag, colorTag}),
+      filter by GM Notes == rollId; values for math, Objects for locking during WP rerolls.
 
     Depends on:
     - core.dice     (pure VTM5E math)
@@ -61,6 +61,10 @@ RC.onRollStateChanged = nil
 -- @type function(color: string, result: table|nil, label: string|nil)|nil
 RC.onRollResolved = nil
 
+--- Optional seat camera preset (e.g. "roll", "diceTray", "default"). Set in global_script.
+-- @type function(color: string, modeName: string)|nil
+RC.onRollCamera = nil
+
 
 -- ============================================================================
 -- INTERNAL STATE (transient; NOT persisted to gameState)
@@ -70,6 +74,12 @@ RC.onRollResolved = nil
 -- Each entry is a string token; the pending Wait.time closure checks its own
 -- captured token against this table — if mismatched, it was superseded and no-ops.
 local _debounceHandles = {}
+
+-- Willpower reroll: per-die lock timers keyed by "color:guid:waveId"
+local _wpDieLockTimerIds = {}
+
+-- Re-entrancy guard when auto-broadcast chains into confirmRoll from recalculate.
+local _autoConfirmDepth = 0
 
 -- ============================================================================
 -- INTERNAL HELPERS
@@ -134,6 +144,108 @@ end
 --- Cancels any pending debounce for a player by invalidating the current handle.
 local function cancelDebounce(color)
     _debounceHandles[color] = nil
+end
+
+local function rollCamera(color, modeName)
+    if RC.onRollCamera and U.Type(RC.onRollCamera) == "function" then
+        RC.onRollCamera(color, modeName)
+    end
+end
+
+local function cancelWpDieLockTimersForColor(color)
+    local prefix = color .. ":"
+    for k, timerId in pairs(_wpDieLockTimerIds) do
+        if type(k) == "string" and string.sub(k, 1, #prefix) == prefix then
+            if timerId ~= nil then
+                Wait.stop(timerId)
+            end
+            _wpDieLockTimerIds[k] = nil
+        end
+    end
+end
+
+--- Initializes willpower counters from roll options (call after RO.seedActiveRoll).
+-- @param active table
+local function seedWillpowerBlock(active)
+    local nR = math.max(0, RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS))
+    active.willpower = {
+        available             = false,
+        rerollsRemaining      = nR,
+        wpWaveId              = 0,
+        wpRerollWave          = false,
+        rerollRandomizedGuids = {},
+    }
+end
+
+--- Migrates older active.willpower shapes (e.g. boolean spent only).
+-- @param active table
+local function ensureWillpowerShape(active)
+    if type(active.willpower) ~= "table" then
+        seedWillpowerBlock(active)
+        return
+    end
+    if type(active.willpower.rerollsRemaining) ~= "number" then
+        if active.willpower.spent == true then
+            active.willpower.rerollsRemaining = 0
+        else
+            active.willpower.rerollsRemaining = math.max(0, RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS))
+        end
+    end
+    if type(active.willpower.rerollRandomizedGuids) ~= "table" then
+        active.willpower.rerollRandomizedGuids = {}
+    end
+    active.willpower.wpWaveId     = tonumber(active.willpower.wpWaveId) or 0
+    active.willpower.wpRerollWave = active.willpower.wpRerollWave == true
+end
+
+--- Locks every physical die for this roll (both types).
+-- @param color string
+-- @param rollId string
+local function lockAllRollDiceObjects(color, rollId)
+    local normals, hungers = RC._getDiceObjectsForRoll(color, rollId)
+    for _, o in ipairs(normals) do
+        if o ~= nil then o.setLock(true) end
+    end
+    for _, o in ipairs(hungers) do
+        if o ~= nil then o.setLock(true) end
+    end
+end
+
+--- Hunger locked unless Can Reroll Hunger; normals unlocked for rerolling.
+-- @param color string
+-- @param active table
+local function applyWpRerollWaveStart(color, active)
+    cancelWpDieLockTimersForColor(color)
+    active.willpower.rerollRandomizedGuids = {}
+    local canHunger = RO.getForActive(active, RO.ROLL_CAN_REROLL_HUNGER)
+    local normals, hungers = RC._getDiceObjectsForRoll(color, active.id)
+    for _, o in ipairs(normals) do
+        if o ~= nil then o.setLock(false) end
+    end
+    for _, o in ipairs(hungers) do
+        if o ~= nil then o.setLock(not canHunger) end
+    end
+end
+
+--- When reroll cap N>0 is reached, lock all dice not yet marked as having randomized this wave.
+-- @param color string
+-- @param active table
+local function lockDiceOutsideRerollSelection(color, active)
+    local cap = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED)
+    if cap <= 0 then return end
+    local chosen = active.willpower.rerollRandomizedGuids
+    if type(chosen) ~= "table" then return end
+    local normals, hungers = RC._getDiceObjectsForRoll(color, active.id)
+    for _, o in ipairs(normals) do
+        if o ~= nil and not chosen[o.getGUID()] then
+            o.setLock(true)
+        end
+    end
+    for _, o in ipairs(hungers) do
+        if o ~= nil and not chosen[o.getGUID()] then
+            o.setLock(true)
+        end
+    end
 end
 
 --- Appends a resolved result to the player's roll history (capped at 10).
@@ -222,6 +334,52 @@ function RC._getDiceForRoll(color, rollId)
 
     return normalDice, hungerDice
 end
+
+--- Physical Object refs for dice belonging to a roll (same filter as _getDiceForRoll).
+-- @param color string
+-- @param rollId string
+-- @return table normals  Array of Object
+-- @return table hungers  Array of Object
+function RC._getDiceObjectsForRoll(color, rollId)
+    if U.Type(color) ~= "string" or U.Type(rollId) ~= "string" then
+        return {}, {}
+    end
+
+    local colorTag = color .. "Object"
+    local normalObjs = {}
+    local hungerObjs = {}
+
+    local normalCandidates = getObjectsWithAllTags({"NormalDie", "d10", colorTag})
+    for _, obj in ipairs(normalCandidates) do
+        if obj.getGMNotes() == rollId then
+            if type(obj.getValue()) == "number" then
+                normalObjs[#normalObjs + 1] = obj
+            end
+        end
+    end
+
+    local hungerCandidates = getObjectsWithAllTags({"HungerDie", "d10", colorTag})
+    for _, obj in ipairs(hungerCandidates) do
+        if obj.getGMNotes() == rollId then
+            if type(obj.getValue()) == "number" then
+                hungerObjs[#hungerObjs + 1] = obj
+            end
+        end
+    end
+
+    return normalObjs, hungerObjs
+end
+
+-- Classification: add functions (active, opts) -> nil; mutate opts for Dice.classifyRoll.
+local CLASSIFICATION_OPT_BUILDERS = {
+    function(active, opts)
+        opts.countCriticalPairs = RO.getForActive(active, RO.ROLL_CRITS)
+    end,
+    function(active, opts)
+        opts.bestialNull = RO.getForActive(active, RO.ROLL_BESTIAL_NULL)
+            and active.rollType == C.RollType.STANDARD
+    end,
+}
 
 -- ============================================================================
 -- INTERNAL CLASSIFICATION (reads live dice)
@@ -357,16 +515,13 @@ function RC.initiateRoll(color, config)
         -- diceDisplay is a cached format string populated by recalculate().
         diceDisplay = nil,
         result      = nil,
-        willpower   = {
-            available = false,
-            spent     = false,
-        },
         extended = nil,
         teamwork = nil,
         opposed  = nil,
     }
 
     RO.seedActiveRoll(active)
+    seedWillpowerBlock(active)
 
     setActive(color, active)
     notifyStateChanged(color)
@@ -478,6 +633,7 @@ function RC.openRoll(color)
     active.batonHolder = C.BatonHolder.PLAYER
     setActive(color, active)
     notifyStateChanged(color)
+    rollCamera(color, "roll")
     return true
 end
 
@@ -534,6 +690,7 @@ function RC.takeHalf(color)
     active.phase              = C.RollPhase.POST_ROLL
     -- No physical dice — no Willpower reroll; ST confirms from dashboard.
     active.batonHolder        = C.BatonHolder.STORYTELLER
+    ensureWillpowerShape(active)
     active.willpower.available = false
     setActive(color, active)
     notifyStateChanged(color)
@@ -565,6 +722,9 @@ function RC.startRolling(color)
     active.result      = nil
     active.diceDisplay = nil
     active.diceFaces   = nil
+    if active.willpower ~= nil then
+        active.willpower.wpRerollWave = false
+    end
     setActive(color, active)
     cancelDebounce(color)
     notifyStateChanged(color)
@@ -643,6 +803,11 @@ function RC.recalculate(color)
         return false
     end
 
+    ensureWillpowerShape(active)
+
+    local wasRolling = active.phase == C.RollPhase.ROLLING
+    local wasWpWave  = active.willpower ~= nil and active.willpower.wpRerollWave == true
+
     -- Live read from table
     local normalDice, hungerDice = RC._getDiceForRoll(color, active.id)
 
@@ -672,23 +837,89 @@ function RC.recalculate(color)
     if active.phase == C.RollPhase.ROLLING then
         active.phase       = C.RollPhase.POST_ROLL
         local wpOffered  = willpowerAllowed(active.rollType)
-            and RO.getForActive(active, RO.ROLL_WP_REROLL)
-            and not active.willpower.spent
+            and RO.isWillpowerSpendAllowedByOptions(active)
+            and active.willpower.rerollsRemaining > 0
         active.willpower.available = wpOffered
         active.batonHolder = wpOffered and C.BatonHolder.PLAYER or C.BatonHolder.STORYTELLER
+        if wasWpWave then
+            active.willpower.wpRerollWave = false
+            lockAllRollDiceObjects(color, active.id)
+        end
     end
 
     setActive(color, active)
     notifyStateChanged(color)
+
+    if active.phase == C.RollPhase.POST_ROLL then
+        rollCamera(color, "roll")
+    end
+
+    if wasRolling and active.phase == C.RollPhase.POST_ROLL
+        and C.RollTypesAutoBroadcast[active.rollType]
+        and active.willpower.available ~= true
+        and _autoConfirmDepth == 0 then
+        _autoConfirmDepth = _autoConfirmDepth + 1
+        local ok = RC.confirmRoll(color)
+        _autoConfirmDepth = _autoConfirmDepth - 1
+        return ok
+    end
+
     return true
 end
 
+--- Called from global_script.onObjectRandomize during a Willpower reroll wave.
+-- @param color string
+-- @param obj Object
+function RC.onWpRerollDieRandomized(color, obj)
+    if U.Type(color) ~= "string" or obj == nil then return end
+    local active = getActive(color)
+    if active == nil then return end
+    if active.phase ~= C.RollPhase.ROLLING then return end
+    if active.willpower == nil or active.willpower.wpRerollWave ~= true then return end
+    if obj.getGMNotes() ~= active.id then return end
+
+    local guid   = obj.getGUID()
+    local cap    = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED)
+    local waveId = active.willpower.wpWaveId or 0
+
+    if cap <= 0 then
+        if active.willpower.rerollRandomizedGuids[guid] then
+            return
+        end
+    end
+
+    active.willpower.rerollRandomizedGuids[guid] = true
+    setActive(color, active)
+
+    if cap > 0 then
+        local nChosen = 0
+        for _ in pairs(active.willpower.rerollRandomizedGuids) do
+            nChosen = nChosen + 1
+        end
+        if nChosen >= cap then
+            lockDiceOutsideRerollSelection(color, active)
+        end
+    end
+
+    local timerKey = color .. ":" .. guid .. ":" .. tostring(waveId)
+    if _wpDieLockTimerIds[timerKey] ~= nil then
+        Wait.stop(_wpDieLockTimerIds[timerKey])
+    end
+    _wpDieLockTimerIds[timerKey] = Wait.time(function()
+        _wpDieLockTimerIds[timerKey] = nil
+        local a2 = getActive(color)
+        if a2 == nil or a2.id ~= active.id then return end
+        if a2.willpower == nil or (a2.willpower.wpWaveId or 0) ~= waveId then return end
+        if a2.phase ~= C.RollPhase.ROLLING then return end
+        pcall(function()
+            obj.setLock(true)
+        end)
+    end, C.WP_REROLL_DIE_LOCK_DELAY_SECONDS)
+end
+
 --- Player spends 1 Superficial Willpower damage to reroll dice.
--- Applies the WP damage immediately, marks willpower.spent = true, then transitions
--- the roll back to ROLLING so the panel stays visible with a reroll instruction.
--- The normal die-settled debounce (or Recalculate) will fire once the player re-throws,
--- call recalculate(), and transition back to POST_ROLL — at which point willpower.available
--- will be false (spent) and the panel hides, passing control to the ST.
+-- Decrements rerollsRemaining, bumps WP wave id, transitions to ROLLING, and applies
+-- tray locks (hunger locked unless Can Reroll Hunger). Per-die locks follow randomize events.
 --
 -- @param color string
 -- @return boolean
@@ -701,12 +932,17 @@ function RC.spendWillpower(color)
         print(string.format("[RC] spendWillpower: no active roll for %s", color))
         return false
     end
+    ensureWillpowerShape(active)
     if active.phase ~= C.RollPhase.POST_ROLL then
         print(string.format("[RC] spendWillpower: %s roll is not in POST_ROLL", color))
         return false
     end
     if not active.willpower.available then
         print(string.format("[RC] spendWillpower: Willpower reroll not available for %s", color))
+        return false
+    end
+    if active.willpower.rerollsRemaining <= 0 then
+        print(string.format("[RC] spendWillpower: no rerolls remaining for %s", color))
         return false
     end
 
@@ -716,14 +952,12 @@ function RC.spendWillpower(color)
         PCST.refreshCharacterSheetsForColor(color)
     end
 
-    -- Mark WP as spent and disable further spends for this roll.
-    active.willpower.available = false
-    active.willpower.spent     = true
+    active.willpower.rerollsRemaining = active.willpower.rerollsRemaining - 1
+    active.willpower.wpWaveId       = (active.willpower.wpWaveId or 0) + 1
+    active.willpower.wpRerollWave   = true
 
     -- Transition back to ROLLING so the player panel stays visible with the reroll
-    -- instruction. The panel visibility rule hides it in POST_ROLL when WP is unavailable,
-    -- but ROLLING is always shown. When the rerolled dice settle, onObjectRandomize fires
-    -- the debounce → recalculate() → transitions to POST_ROLL → panel hides → ST confirms.
+    -- instruction. When dice settle, debounce → recalculate() → POST_ROLL.
     active.phase       = C.RollPhase.ROLLING
     active.batonHolder = C.BatonHolder.AUTO
     active.result      = nil
@@ -732,6 +966,7 @@ function RC.spendWillpower(color)
     cancelDebounce(color)
 
     setActive(color, active)
+    applyWpRerollWaveStart(color, active)
     notifyStateChanged(color)
     return true
 end
@@ -746,11 +981,14 @@ end
 function RC.confirmRoll(color)
     U.Val("RC.confirmRoll()", {color = color}, U.Type(color) == "string", "color must be a string")
 
+    cancelWpDieLockTimersForColor(color)
+
     local active = getActive(color)
     if active == nil then
         print(string.format("[RC] confirmRoll: no active roll for %s", color))
         return false
     end
+    ensureWillpowerShape(active)
     if active.phase ~= C.RollPhase.POST_ROLL then
         print(string.format("[RC] confirmRoll: %s roll is not in POST_ROLL (phase: %s)", color, active.phase))
         return false
@@ -853,6 +1091,7 @@ function RC.cancelRoll(color)
     U.Val("RC.cancelRoll()", {color = color}, U.Type(color) == "string", "color must be a string")
 
     cancelDebounce(color)
+    cancelWpDieLockTimersForColor(color)
 
     if getActive(color) == nil then return false end
 
@@ -864,6 +1103,7 @@ function RC.cancelRoll(color)
     end
 
     notifyStateChanged(color)
+    rollCamera(color, "default")
     return true
 end
 
@@ -972,14 +1212,14 @@ end
 -- @param active table|nil
 -- @return table
 function RC.classifyOptsFromActive(active)
+    local opts = { countCriticalPairs = true, bestialNull = false }
     if active == nil or type(active.rollOptions) ~= "table" then
-        return { countCriticalPairs = true, bestialNull = false }
+        return opts
     end
-    return {
-        countCriticalPairs = RO.getForActive(active, RO.ROLL_CRITS),
-        bestialNull          = RO.getForActive(active, RO.ROLL_BESTIAL_NULL)
-            and active.rollType == C.RollType.STANDARD,
-    }
+    for _, fn in ipairs(CLASSIFICATION_OPT_BUILDERS) do
+        fn(active, opts)
+    end
+    return opts
 end
 
 --- Builds die-face list for UI (Bestial Null uses paired display when present).
@@ -1014,9 +1254,22 @@ function RC.setRollOptions(color, opts)
     for k, v in pairs(opts) do
         if type(v) == "boolean" then
             active.rollOptions[k] = v
+        elseif type(v) == "number" then
+            active.rollOptions[k] = math.floor(v)
+        elseif type(v) == "string" then
+            local n = tonumber(v)
+            if n ~= nil then
+                active.rollOptions[k] = math.floor(n)
+            end
         end
     end
     RO.sanitizeRollOptions(active)
+    if type(active.willpower) == "table" and type(active.willpower.rerollsRemaining) == "number" then
+        local cap = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS)
+        if active.willpower.rerollsRemaining > cap then
+            active.willpower.rerollsRemaining = cap
+        end
+    end
     setActive(color, active)
     tryClassifyResultInternal(color)
     notifyStateChanged(color)

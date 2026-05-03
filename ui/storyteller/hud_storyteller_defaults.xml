@@ -12,7 +12,7 @@
   <Text class="hud_storyteller_label"	fontSize="11" color="#FFD700"  />
 
   <Row class="hud_storyteller_button_row" preferredHeight="20" minHeight="20" spacing="0" childForceExpandWidth="false" childForceExpandHeight="false" />
-  <HorizontalLayout class="hud_storyteller_button_row" preferredHeight="20" minHeight="20" spacing="0" childForceExpandWidth="true" childForceExpandHeight="true" />
+  <HorizontalLayout class="hud_storyteller_button_row" preferredHeight="30" minHeight="30" spacing="0" childForceExpandWidth="true" childForceExpandHeight="true" />
 
 
   <!-- <Button class="hud_storyteller_button"
@@ -31,7 +31,20 @@
     colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
     textColor="#FFFFFF" />
   <Button class="hud_storyteller_button_label" width="40" preferredWidth="40" />
-  <Button class="hud_storyteller_button_icon" fontSize="14" textColor="#FFFFFF" fontStyle="Bold" width="20" minWidth="20" preferredWidth="20" flexibleWidth="0" alignment="MiddleCenter" />
+  <Button class="hud_storyteller_button_icon"
+    fontSize="14"
+    textColor="#FFFFFF"
+    fontStyle="Bold"
+    height="20"
+    minHeight="20"
+    preferredHeight="20"
+    flexibleHeight="0"
+    width="20"
+    minWidth="20"
+    preferredWidth="20"
+    flexibleWidth="0"
+    alignment="MiddleCenter"
+  />
 
   <!-- <HorizontalLayout class="hud_storyteller_control_row" preferredHeight="30" minHeight="30" spacing="4" childForceExpandWidth="true" childForceExpandHeight="true" childAlignment="MiddleLeft" /> -->
 
@@ -105,7 +118,7 @@
     childAlignment="LowerRight"
     width="200"
     height="400"
-    offsetXY="-5 10"
+    offsetXY="-50 30"
     childForceExpandWidth="true"
     childForceExpandHeight="true" />
 

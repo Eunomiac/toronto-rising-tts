@@ -127,7 +127,7 @@ Scenes.SCENES = {
                 duration = 3.0,
                 mode = "STANDARD",
                 refs = {
-                    "npcSeat1Light"
+                    "npcLight2NPC1"
                 }
             },
             {
@@ -135,7 +135,7 @@ Scenes.SCENES = {
                 duration = 2.5,
                 mode = "STANDARD",
                 refs = {
-                    "npcSeat2Light"
+                    "npcLight2NPC2"
                 }
             },
             {
@@ -143,8 +143,8 @@ Scenes.SCENES = {
                 duration = 2.0,
                 mode = "STANDARD",
                 refs = {
-                    "npcSeat3Light",
-                    "npcSeat4Light"
+                    "npcLight2NPC3",
+                    "npcLight2NPC4"
                 }
             },
             {
@@ -240,7 +240,7 @@ Scenes.SCENES = {
                 duration = 3.0,
                 mode = "STANDARD",
                 refs = {
-                    "npcSeat1Light"
+                    "npcLight2NPC1"
                 }
             },
             {
@@ -248,7 +248,7 @@ Scenes.SCENES = {
                 duration = 2.5,
                 mode = "STANDARD",
                 refs = {
-                    "npcSeat2Light"
+                    "npcLight2NPC2"
                 }
             },
             {
@@ -256,8 +256,8 @@ Scenes.SCENES = {
                 duration = 2.0,
                 mode = "STANDARD",
                 refs = {
-                    "npcSeat3Light",
-                    "npcSeat4Light"
+                    "npcLight2NPC3",
+                    "npcLight2NPC4"
                 }
             },
             {

@@ -24,6 +24,10 @@ RO.ROLL_WP_REROLL     = "wpReroll"
 RO.ROLL_HUNGER_DICE   = "hungerDice"
 RO.ROLL_BESTIAL_NULL  = "bestialNull"
 RO.ROLL_CRITS         = "crits"
+-- Willpower reroll tuning (per-roll; ST Roll Options modal)
+RO.ROLL_CAN_REROLL_HUNGER      = "canRerollHunger"
+RO.ROLL_NUMBER_OF_REROLLS      = "numberOfRerolls"
+RO.ROLL_NUMBER_OF_DICE_REROLLED = "numberOfDiceRerolled"
 
 --- Default permanent automation toggles (all on per product spec).
 -- @return table
@@ -51,6 +55,9 @@ function RO.defaultsForRollType(rollType)
         -- Goal rolls disable critical pair bonuses by default, but the ST can
         -- still toggle this per roll in the options modal for edge-case rulings.
         [RO.ROLL_CRITS]        = C.RollTypesNoCriticals[rollType] ~= true,
+        [RO.ROLL_CAN_REROLL_HUNGER]       = false,
+        [RO.ROLL_NUMBER_OF_REROLLS]       = 1,
+        [RO.ROLL_NUMBER_OF_DICE_REROLLED] = 3,
     }
 end
 
@@ -89,6 +96,21 @@ function RO.sanitizeRollOptions(active)
     if not RO.isBestialNullVisible(rt) then
         active.rollOptions[RO.ROLL_BESTIAL_NULL] = false
     end
+
+    local nR = active.rollOptions[RO.ROLL_NUMBER_OF_REROLLS]
+    if type(nR) == "string" then nR = tonumber(nR) end
+    if type(nR) ~= "number" or nR ~= nR then nR = RO.defaultsForRollType(rt)[RO.ROLL_NUMBER_OF_REROLLS] end
+    nR = math.floor(nR)
+    if nR < 0 then nR = 0 end
+    if nR > 20 then nR = 20 end
+    active.rollOptions[RO.ROLL_NUMBER_OF_REROLLS] = nR
+
+    local nD = active.rollOptions[RO.ROLL_NUMBER_OF_DICE_REROLLED]
+    if type(nD) == "string" then nD = tonumber(nD) end
+    if type(nD) ~= "number" or nD ~= nD then nD = RO.defaultsForRollType(rt)[RO.ROLL_NUMBER_OF_DICE_REROLLED] end
+    nD = math.floor(nD)
+    if nD > 30 then nD = 30 end
+    active.rollOptions[RO.ROLL_NUMBER_OF_DICE_REROLLED] = nD
 end
 
 --- Seeds active.rollOptions from defaults for active.rollType.
@@ -146,6 +168,40 @@ function RO.getForActive(active, id)
         return d[id] == true
     end
     return v == true
+end
+
+--- Numeric per-roll option with default from roll type defaults.
+-- @param active table|nil
+-- @param id string
+-- @return number
+function RO.getNumberForActive(active, id)
+    local rt = (active and active.rollType) or ""
+    local defaults = RO.defaultsForRollType(rt)
+    local def = defaults[id]
+    if type(def) ~= "number" then
+        def = 0
+    end
+    if active == nil or type(active.rollOptions) ~= "table" then
+        return def
+    end
+    local v = active.rollOptions[id]
+    if type(v) == "string" then
+        v = tonumber(v)
+    end
+    if type(v) ~= "number" or v ~= v then
+        return def
+    end
+    return math.floor(v)
+end
+
+--- True when the Spend Willpower reroll mechanic is allowed for this roll (type + reroll count).
+-- @param active table|nil
+-- @return boolean
+function RO.isWillpowerSpendAllowedByOptions(active)
+    if active == nil then return false end
+    if not RO.getForActive(active, RO.ROLL_WP_REROLL) then return false end
+    if RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS) <= 0 then return false end
+    return true
 end
 
 return RO

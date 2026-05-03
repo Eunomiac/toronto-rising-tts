@@ -204,8 +204,12 @@ local function phaseLabel(active, color)
         -- After a Willpower spend the phase reverts to ROLLING so the player panel stays
         -- visible with a contextual instruction. Once the rerolled dice settle the debounce
         -- fires recalculate(), which transitions back to POST_ROLL and hides the panel.
-        if active.willpower ~= nil and active.willpower.spent then
-            return "Reroll up to 3 normal dice — pick them up and throw"
+        if active.willpower ~= nil and active.willpower.wpRerollWave == true then
+            local cap = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED)
+            if cap <= 0 then
+                return "Reroll dice (each physical die once) — pick up and throw"
+            end
+            return string.format("Reroll up to %d dice — pick up and throw", cap)
         end
         return "ROLLING — pick up your dice!"
     elseif phase == C.RollPhase.POST_ROLL then
@@ -603,7 +607,11 @@ function RUI.openRollOptionsModal(color)
     uiToggleSet("rollOpts_roll_wpReroll",    ro[RO.ROLL_WP_REROLL] == true)
     uiToggleSet("rollOpts_roll_hungerDice",  ro[RO.ROLL_HUNGER_DICE] == true)
     uiToggleSet("rollOpts_roll_bestialNull", ro[RO.ROLL_BESTIAL_NULL] == true)
+    uiToggleSet("rollOpts_roll_canRerollHunger", ro[RO.ROLL_CAN_REROLL_HUNGER] == true)
     uiToggleSet("rollOpts_roll_crits",       ro[RO.ROLL_CRITS] ~= false)
+
+    uiSetInputField("rollOpts_roll_numberOfRerolls", tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS)))
+    uiSetInputField("rollOpts_roll_numberOfDiceRerolled", tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED)))
 
     local rt = active.rollType
     uiSetInteractable("rollOpts_roll_takeHalf",    not RO.isTakeHalfLocked(rt))
@@ -656,6 +664,10 @@ function RUI.applyRollOptionsModal(rcModule)
     else
         rollOptsApply[RO.ROLL_BESTIAL_NULL] = false
     end
+
+    rollOptsApply[RO.ROLL_CAN_REROLL_HUNGER] = uiToggleGet("rollOpts_roll_canRerollHunger")
+    rollOptsApply[RO.ROLL_NUMBER_OF_REROLLS] = math.max(0, math.floor(tonumber(UI.getValue("rollOpts_roll_numberOfRerolls")) or 1))
+    rollOptsApply[RO.ROLL_NUMBER_OF_DICE_REROLLED] = math.floor(tonumber(UI.getValue("rollOpts_roll_numberOfDiceRerolled")) or 3)
 
     rcModule.setRollOptions(color, rollOptsApply)
 

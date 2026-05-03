@@ -20,6 +20,58 @@ local G = require("lib.guids")
 local OP = require("lib.object_positions")
 
 -- ============================================================================
+-- LOCKED / HIDDEN OBJECTS (from C.LockedObjects, C.HiddenObjects)
+-- ============================================================================
+
+--- Sets `interactable = false` for every GUID in `C.LockedObjects`, and `setInvisibleTo(colors)` for each entry in `C.HiddenObjects`. Missing objects are skipped after a console warning. Called from Global `onLoad` after state init.
+function O.ApplyLockedAndHiddenFromConstants()
+    local locked = C.LockedObjects
+    if U.Type(locked) == "table" then
+        for i = 1, #locked do
+            local guid = locked[i]
+            if U.Type(guid) == "string" and guid ~= "" then
+                local obj = getObjectFromGUID(guid)
+                if obj ~= nil then
+                    pcall(function()
+                        obj.interactable = false
+                    end)
+                else
+                    print(
+                        string.format(
+                            "[O.ApplyLockedAndHiddenFromConstants] Warning: C.LockedObjects — no object for GUID %s",
+                            guid
+                        )
+                    )
+                end
+            end
+        end
+    end
+
+    local hidden = C.HiddenObjects
+    if U.Type(hidden) == "table" then
+        for guid, colors in pairs(hidden) do
+            if U.Type(guid) == "string" and guid ~= "" and U.Type(colors) == "table" then
+                local obj = getObjectFromGUID(guid)
+                if obj ~= nil and type(obj.setInvisibleTo) == "function" then
+                    pcall(function()
+                        obj.setInvisibleTo(colors)
+                    end)
+                else
+                    if obj == nil then
+                        print(
+                            string.format(
+                                "[O.ApplyLockedAndHiddenFromConstants] Warning: C.HiddenObjects — no object for GUID %s",
+                                guid
+                            )
+                        )
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- ============================================================================
 -- SIGNAL FIRE FUNCTIONS
 -- ============================================================================
 

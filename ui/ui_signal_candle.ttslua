@@ -48,6 +48,7 @@ end
 --- Re-creates the signal candle button whenever the object script loads.
 -- @param _savedData string Saved object state, unused
 function onLoad(_savedData)
+    self.interactable = false
     createButtons()
 end
 

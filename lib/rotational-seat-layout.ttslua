@@ -648,9 +648,6 @@ local function resolveSourceTemplateGroups(sourceObjects)
   if groups.cameraModes.bySeat ~= nil and U.Type(groups.cameraModes.bySeat) ~= "table" then
     error("rotational-seat-layout: sourceObjects.cameraModes.bySeat must be an array when provided")
   end
-  if groups.cameraModes.universal ~= nil and U.Type(groups.cameraModes.universal) ~= "table" then
-    error("rotational-seat-layout: sourceObjects.cameraModes.universal must be an array when provided")
-  end
   if sourceObjects.player == nil and sourceObjects.other == nil and sourceObjects.all == nil then
     error("rotational-seat-layout: sourceObjects must define at least one of: player, other, all")
   end
@@ -756,19 +753,11 @@ end
 
 --- @param sourceGroups table
 --- @return string[] bySeatModeKeys
---- @return string[] universalModeBases
 local function collectCameraModeKeys(sourceGroups)
   local bySeat = {}
-  local universal = {}
   local seenBySeat = {}
-  local seenUniversal = {}
   local cameraModes = sourceGroups.cameraModes or {}
   local bySeatSource = cameraModes.bySeat or {}
-  local universalSource = cameraModes.universal or {}
-  if #cameraModes > 0 and #bySeatSource == 0 then
-    -- Backward compatibility: legacy flat cameraModes array maps to bySeat.
-    bySeatSource = cameraModes
-  end
 
   for i = 1, #bySeatSource do
     local key = bySeatSource[i]
@@ -781,18 +770,7 @@ local function collectCameraModeKeys(sourceGroups)
     end
   end
 
-  for i = 1, #universalSource do
-    local key = universalSource[i]
-    if U.Type(key) ~= "string" or trim(key) == "" then
-      error("rotational-seat-layout: sourceObjects.cameraModes.universal entries must be non-empty strings")
-    end
-    if not seenUniversal[key] then
-      seenUniversal[key] = true
-      table.insert(universal, key)
-    end
-  end
-
-  return bySeat, universal
+  return bySeat
 end
 
 --- @param sourceGroups table
@@ -934,8 +912,8 @@ local function ensureReferenceHandZoneAnchorSlot(referenceSlots, referencePlayer
   return referenceSlots, #referenceSlots
 end
 
---- World offset applied to every `C.RedCameraAngles`-derived camera position so presets track
---- `referenceHandPosition` shifts (angles were authored at `C.CameraAuthoringReferenceHandPosition`).
+--- `activeTable.referenceHandPosition - C.CameraAuthoringReferenceHandPosition`. Applied to camera **position**
+--- only for presets with `isRelativeToReferenceHandPosition == true`.
 --- @param tableCfg table|nil
 --- @return Vector
 local function cameraPositionWorldOffsetForActiveTable(tableCfg)
@@ -949,27 +927,55 @@ local function cameraPositionWorldOffsetForActiveTable(tableCfg)
   return Vector(tableCfg.referenceHandPosition) - Vector(base)
 end
 
---- World-space center point where `C.RedCameraAngles` authoring presets were captured.
---- Defaults to `Table A` center when an explicit constant is not provided.
---- @return Vector
-local function cameraAuthoringCenterPoint()
-  if C.CameraAuthoringReferenceTableCenter ~= nil then
-    return Vector(C.CameraAuthoringReferenceTableCenter)
-  end
-  if U.Type(C.Tables) == "table" and U.Type(C.Tables["Table A"]) == "table" and C.Tables["Table A"].centerPoint ~= nil then
-    return Vector(C.Tables["Table A"].centerPoint)
-  end
-  return Vector(0, 0, 0)
+--- Same rigid placement as seat objects: yaw about active `centerPoint`, then shift so the hand anchor
+--- lands on the nominal ring (see `generateRotationalCoordinates`).
+--- @param centerPoint Vector
+--- @param refAnchorFrame table position Vector|table, rotation Vector|table
+--- @param thetaRef number
+--- @param angleSegmentOne number
+--- @param numSegments number
+--- @param useRadius number
+--- @param targetSegment1Based number
+--- @param worldPos Vector|table
+--- @param pitch number|nil
+--- @param yaw number|nil
+--- @return Vector finalPos
+--- @return Vector finalRot pitch,yaw from rotated frame
+local function cameraPositionAfterSeatLayout(
+  centerPoint,
+  refAnchorFrame,
+  thetaRef,
+  angleSegmentOne,
+  numSegments,
+  useRadius,
+  targetSegment1Based,
+  worldPos,
+  pitch,
+  yaw
+)
+  local cp = Vector(centerPoint)
+  local thetaK = segmentNominalAzimuthDeg(angleSegmentOne, numSegments, targetSegment1Based)
+  local deltaDeg = shortestSignedDelta(thetaRef, thetaK)
+  local rotatedAnchor = U.frameAfterRigidYawAboutCenter(cp, refAnchorFrame, deltaDeg)
+  local desiredAnchorPos = Vector({
+    x = cp.x + math.sin(math.rad(thetaK)) * useRadius,
+    y = rotatedAnchor.position.y,
+    z = cp.z + math.cos(math.rad(thetaK)) * useRadius,
+  })
+  local shift = desiredAnchorPos - rotatedAnchor.position
+  local camFrame = {
+    position = Vector(worldPos),
+    rotation = Vector({ pitch or 0, yaw or 0, 0 }),
+  }
+  local fr = U.frameAfterRigidYawAboutCenter(cp, camFrame, deltaDeg)
+  return Vector(fr.position) + shift, Vector(fr.rotation)
 end
 
 --- @param computed table
 --- @param sourceGroups table
---- @param positionWorldOffset Vector|nil additive world-space correction for all derived camera positions
+--- @param positionWorldOffset Vector|nil hand authoring delta (see `cameraPositionWorldOffsetForActiveTable`)
 local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOffset)
-  local bySeatModeKeys, universalModeBases = collectCameraModeKeys(sourceGroups)
-  if #bySeatModeKeys < 1 and #universalModeBases < 1 then
-    return
-  end
+  local bySeatModeKeys = collectCameraModeKeys(sourceGroups)
   local worldOff = Vector(0, 0, 0)
   if positionWorldOffset ~= nil then
     worldOff = Vector(positionWorldOffset)
@@ -980,9 +986,21 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
   if U.Type(referenceSegment) ~= "number" then
     error("rotational-seat-layout: cannot apply cameraModes; missing reference segment")
   end
-  local authoringCenterPoint = cameraAuthoringCenterPoint()
   local centerPoint = Vector(computed.centerPoint)
-  local stepDeg = 360 / computed.numSegments
+  local numSegments = computed.numSegments
+  local angleSegmentOne = computed.angleSegmentOne
+  local thetaRef = computed.thetaRef
+  local useRadius = computed.radius
+  local refAnchorFrame = computed.referenceAnchorFrame
+  if U.Type(numSegments) ~= "number" or U.Type(angleSegmentOne) ~= "number" or U.Type(thetaRef) ~= "number" then
+    error("rotational-seat-layout: applyCameraModesForSeats requires computed from generateRotationalCoordinates (numSegments, angleSegmentOne, thetaRef)")
+  end
+  if U.Type(useRadius) ~= "number" or useRadius <= 0 then
+    error("rotational-seat-layout: applyCameraModesForSeats requires computed.radius from generateRotationalCoordinates")
+  end
+  if U.Type(refAnchorFrame) ~= "table" or refAnchorFrame.position == nil then
+    error("rotational-seat-layout: applyCameraModesForSeats requires computed.referenceAnchorFrame from generateRotationalCoordinates")
+  end
 
   --- Wrap yaw into [0, 360), clamp pitch into [0, 90], and avoid exact zero for yaw/pitch/distance.
   --- TTS treats exact zeros for these camera fields as "no change", so bump to 0.1.
@@ -995,13 +1013,11 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
     local y = tonumber(yaw) or 0
     local d = tonumber(distance) or 0
 
-    -- yaw: wrap to [0, 360)
     y = y % 360
     if y < 0 then
       y = y + 360
     end
 
-    -- pitch: clamp to [0, 90]
     if p < 0 then
       p = 0
     elseif p > 90 then
@@ -1020,112 +1036,115 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
 
     return p, y, d
   end
+
+  local universalAngles = {}
+
+  if U.Type(C.UniversalCameraAngles) == "table" then
+    for modeKey, modeVal in pairs(C.UniversalCameraAngles) do
+      if U.Type(modeKey) == "string" and U.Type(modeVal) == "table" and modeVal.isRelativeToReferenceHandPosition == true then
+        if modeVal.position == nil then
+          error("rotational-seat-layout: C.UniversalCameraAngles['" .. modeKey .. "'] is missing position")
+        end
+        local pos = Vector(modeVal.position) + worldOff
+        local shiftedPos, shiftedRot = cameraPositionAfterSeatLayout(
+          centerPoint,
+          refAnchorFrame,
+          thetaRef,
+          angleSegmentOne,
+          numSegments,
+          useRadius,
+          referenceSegment,
+          pos,
+          modeVal.pitch or 0,
+          modeVal.yaw or 0
+        )
+        local pitch, yaw, distance = normalizeCameraAngles(
+          shiftedRot.x,
+          shiftedRot.y,
+          modeVal.distance or 0
+        )
+        universalAngles[modeKey] = {
+          cameraMode = modeVal.cameraMode or "FirstPerson",
+          position = { x = shiftedPos.x, y = shiftedPos.y, z = shiftedPos.z },
+          pitch = pitch,
+          yaw = yaw,
+          distance = distance,
+        }
+      end
+    end
+  end
+
   for i = 1, #bySeatModeKeys do
     local modeKey = bySeatModeKeys[i]
-    local redMode = C.RedCameraAngles and C.RedCameraAngles.forSeat and C.RedCameraAngles.forSeat[modeKey] or nil
+    local redMode = C.RedCameraAngles and C.RedCameraAngles[modeKey] or nil
     if U.Type(redMode) ~= "table" then
       error(
         "rotational-seat-layout: sourceObjects.cameraModes.bySeat includes '"
         .. modeKey
-        .. "' but C.RedCameraAngles.forSeat has no entry for it"
+        .. "' but C.RedCameraAngles has no entry for it"
       )
     end
     if redMode.position == nil then
-      error("rotational-seat-layout: C.RedCameraAngles.forSeat['" .. modeKey .. "'] is missing position")
+      error("rotational-seat-layout: C.RedCameraAngles['" .. modeKey .. "'] is missing position")
     end
-    for j = 1, #C.PlayerColors do
-      local color = C.PlayerColors[j]
-      local segment = map[color]
-      if U.Type(segment) == "number" then
-        local deltaYaw = (segment - referenceSegment) * stepDeg
-        local transformed = rigidTransformBetweenCenters(
-          authoringCenterPoint,
+
+    local basePos = Vector(redMode.position)
+    if redMode.isRelativeToReferenceHandPosition == true then
+      basePos = basePos + worldOff
+    end
+
+    for seatKey, segment in pairs(map) do
+      if U.Type(seatKey) == "string" and U.Type(segment) == "number" then
+        local shiftedPos, shiftedRot = cameraPositionAfterSeatLayout(
           centerPoint,
-          {
-            position = Vector(redMode.position),
-            rotation = Vector({ redMode.pitch or 0, redMode.yaw or 0, 0 }),
-          },
-          deltaYaw
+          refAnchorFrame,
+          thetaRef,
+          angleSegmentOne,
+          numSegments,
+          useRadius,
+          segment,
+          basePos,
+          redMode.pitch or 0,
+          redMode.yaw or 0
         )
-        local shiftedPos = Vector(transformed.position) + worldOff
-        local playerID = S.getPlayerID(color)
-        if playerID ~= nil then
-          local shiftedPosTable = { x = shiftedPos.x, y = shiftedPos.y, z = shiftedPos.z }
-          local pitch, yaw, distance = normalizeCameraAngles(
-            transformed.rotation.x,
-            transformed.rotation.y,
-            redMode.distance or 0
-          )
-          S.setStateVal(
-            {
-              cameraMode = redMode.cameraMode or "FirstPerson",
-              position = shiftedPosTable,
-              pitch = pitch,
-              yaw = yaw,
-              distance = distance,
-            },
-            "playerData",
-            playerID,
-            "cameraAngles",
-            modeKey
-          )
+        local shiftedPosTable = { x = shiftedPos.x, y = shiftedPos.y, z = shiftedPos.z }
+        local pitch, yaw, distance = normalizeCameraAngles(
+          shiftedRot.x,
+          shiftedRot.y,
+          redMode.distance or 0
+        )
+        local camMode = redMode.cameraMode or "FirstPerson"
+        universalAngles[modeKey .. seatKey] = {
+          cameraMode = camMode,
+          position = shiftedPosTable,
+          pitch = pitch,
+          yaw = yaw,
+          distance = distance,
+        }
+
+        if isPlayerSeatKey(seatKey) then
+          local playerID = S.getPlayerID(seatKey)
+          if playerID ~= nil then
+            S.setStateVal(
+              {
+                cameraMode = camMode,
+                position = { x = shiftedPos.x, y = shiftedPos.y, z = shiftedPos.z },
+                pitch = pitch,
+                yaw = yaw,
+                distance = distance,
+              },
+              "playerData",
+              playerID,
+              "cameraAngles",
+              modeKey
+            )
+          end
         end
       end
     end
   end
 
-  if #universalModeBases > 0 then
-    local universalAngles = {}
-    for i = 1, #universalModeBases do
-      local modeBase = universalModeBases[i]
-      local sourceKey = modeBase .. referenceColor
-      local redMode = C.RedCameraAngles and C.RedCameraAngles.forUniversal and C.RedCameraAngles.forUniversal[sourceKey] or
-      nil
-      if U.Type(redMode) ~= "table" then
-        error(
-          "rotational-seat-layout: sourceObjects.cameraModes.universal includes '"
-          .. modeBase
-          .. "' but C.RedCameraAngles.forUniversal['"
-          .. sourceKey
-          .. "'] was not found"
-        )
-      end
-      if redMode.position == nil then
-        error("rotational-seat-layout: C.RedCameraAngles.forUniversal['" .. sourceKey .. "'] is missing position")
-      end
-
-      for seatKey, segment in pairs(map) do
-        if U.Type(seatKey) == "string" and U.Type(segment) == "number" then
-          local deltaYaw = (segment - referenceSegment) * stepDeg
-          local transformed = rigidTransformBetweenCenters(
-            authoringCenterPoint,
-            centerPoint,
-            {
-              position = Vector(redMode.position),
-              rotation = Vector({ redMode.pitch or 0, redMode.yaw or 0, 0 }),
-            },
-            deltaYaw
-          )
-          local shiftedPos = Vector(transformed.position) + worldOff
-          local shiftedPosTable = { x = shiftedPos.x, y = shiftedPos.y, z = shiftedPos.z }
-          local generatedKey = modeBase .. seatKey
-          local pitch, yaw, distance = normalizeCameraAngles(
-            transformed.rotation.x,
-            transformed.rotation.y,
-            redMode.distance or 0
-          )
-          universalAngles[generatedKey] = {
-            cameraMode = redMode.cameraMode or "FirstPerson",
-            position = shiftedPosTable,
-            pitch = pitch,
-            yaw = yaw,
-            distance = distance,
-          }
-        end
-      end
-    end
-    S.setStateVal(universalAngles, "seatLayout", "universalCameraAngles")
-  end
+  S.setStateVal(universalAngles, "seatLayout", "universalCameraAngles")
 end
 
 --- @param keys string[]
@@ -1389,6 +1408,12 @@ function M.generateRotationalCoordinates(
     useRadius = options.radius
   end
 
+  local refAnchorSrc = referenceSlots[anchorIndex].sourceFrame
+  local referenceAnchorFrame = {
+    position = Vector(refAnchorSrc.position),
+    rotation = Vector(refAnchorSrc.rotation),
+  }
+
   local byColor = {}
   local nestedFrameExport = {}
   local seatTypeByKey = {}
@@ -1482,8 +1507,10 @@ function M.generateRotationalCoordinates(
     centerPoint = centerPoint,
     numSegments = numSegments,
     angleSegmentOne = angleSegmentOne,
+    thetaRef = thetaRef,
     radius = useRadius,
     inferredRadius = inferredRadius,
+    referenceAnchorFrame = referenceAnchorFrame,
     playerToPositionMap = mapCopy,
     sourceGroups = sourceGroups,
     seatTypeByKey = seatTypeByKey,
@@ -2288,10 +2315,10 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
 
   local function syncSeatLightMode(seatKey, active)
     local seatToLightRefs = {
-      NPC1 = { "npcSeat1Light", "npcSeat1Light1" },
-      NPC2 = { "npcSeat2Light", "npcSeat2Light1" },
-      NPC3 = { "npcSeat3Light", "npcSeat3Light1" },
-      NPC4 = { "npcSeat4Light", "npcSeat4Light1" },
+      NPC1 = { "npcLight2NPC1", "npcLight1NPC1" },
+      NPC2 = { "npcLight2NPC2", "npcLight1NPC2" },
+      NPC3 = { "npcLight2NPC3", "npcLight1NPC3" },
+      NPC4 = { "npcLight2NPC4", "npcLight1NPC4" },
     }
     local lightRefs = seatToLightRefs[seatKey]
     if U.Type(lightRefs) ~= "table" then

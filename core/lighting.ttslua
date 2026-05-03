@@ -236,10 +236,10 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            range = 100,
-            angle = 100,
-            intensity = 1.8,
-            color = Color(0.514012, 0.509216, 0.496029)
+            range = 126.798203,
+            angle = 116.352303,
+            intensity = 1.800000,
+            color = Color(0.339730, 0.339730, 0.339730)
         }
     },
     playerLight1Orange = {
@@ -254,10 +254,10 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            range = 100,
-            angle = 100,
-            intensity = 1.8,
-            color = Color(0.514012, 0.509216, 0.496029)
+            range = 126.798203,
+            angle = 116.352303,
+            intensity = 1.800000,
+            color = Color(0.339730, 0.339730, 0.339730)
         }
     },
     playerLight1Red = {
@@ -272,10 +272,10 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            range = 100,
-            angle = 100,
-            intensity = 1.8,
-            color = Color(0.514012, 0.509216, 0.496029)
+            range = 126.798203,
+            angle = 116.352303,
+            intensity = 1.800000,
+            color = Color(0.339730, 0.339730, 0.339730)
         }
     },
     playerLight1Pink = {
@@ -290,10 +290,10 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            range = 100,
-            angle = 100,
-            intensity = 1.8,
-            color = Color(0.514012, 0.509216, 0.496029)
+            range = 126.798203,
+            angle = 116.352303,
+            intensity = 1.800000,
+            color = Color(0.339730, 0.339730, 0.339730)
         }
     },
     playerLight1Purple = {
@@ -308,11 +308,83 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            range = 100,
-            angle = 100,
-            intensity = 1.8,
-            color = Color(0.514012, 0.509216, 0.496029)
+            range = 126.798203,
+            angle = 116.352303,
+            intensity = 1.800000,
+            color = Color(0.339730, 0.339730, 0.339730)
         }
+    },
+    npcLight1NPC1 = {
+      guid = G.GUIDS.SEAT_LIGHT_1_NPC1,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          range = 40,
+          angle = 0,
+          intensity = 0
+      },
+      STANDARD = {
+          enabled = true,
+          range = 95.549049,
+          angle = 87.566208,
+          intensity = 4.005609,
+          color = Color(0.525551, 0.350648, 0.350648)
+      }
+    },
+    npcLight1NPC2 = {
+      guid = G.GUIDS.SEAT_LIGHT_1_NPC2,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          range = 40,
+          angle = 0,
+          intensity = 0
+      },
+      STANDARD = {
+        enabled = true,
+        range = 95.549049,
+        angle = 87.566208,
+        intensity = 4.005609,
+        color = Color(0.525551, 0.350648, 0.350648)
+      }
+    },
+    npcLight1NPC3 = {
+      guid = G.GUIDS.SEAT_LIGHT_1_NPC3,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          range = 40,
+          angle = 0,
+          intensity = 0
+      },
+      STANDARD = {
+        enabled = true,
+        range = 95.549049,
+        angle = 87.566208,
+        intensity = 4.005609,
+        color = Color(0.525551, 0.350648, 0.350648)
+      }
+    },
+    npcLight1NPC4 = {
+      guid = G.GUIDS.SEAT_LIGHT_1_NPC4,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          range = 40,
+          angle = 0,
+          intensity = 0
+      },
+      STANDARD = {
+        enabled = true,
+        range = 95.549049,
+        angle = 87.566208,
+        intensity = 4.005609,
+        color = Color(0.525551, 0.350648, 0.350648)
+      }
     },
     playerLight2Brown = {
         guid = G.GUIDS.SEAT_LIGHT_2_BROWN,
@@ -393,6 +465,70 @@ L.LIGHTMODES = {
             range = 80,
             angle = 90
         }
+    },
+    npcLight2NPC1 = {
+      guid = G.GUIDS.SEAT_LIGHT_2_NPC1,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          angle = 0,
+      },
+      STANDARD = {
+          enabled = true,
+          color = Color(255 / 255, 255 / 255, 200 / 255),
+          intensity = 2,
+          range = 80,
+          angle = 90
+      }
+    },
+    npcLight2NPC2 = {
+      guid = G.GUIDS.SEAT_LIGHT_2_NPC2,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          angle = 0,
+      },
+      STANDARD = {
+          enabled = true,
+          color = Color(255 / 255, 255 / 255, 200 / 255),
+          intensity = 2,
+          range = 80,
+          angle = 90
+      }
+    },
+    npcLight2NPC3 = {
+      guid = G.GUIDS.SEAT_LIGHT_2_NPC3,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          angle = 0,
+      },
+      STANDARD = {
+          enabled = true,
+          color = Color(255 / 255, 255 / 255, 200 / 255),
+          intensity = 2,
+          range = 80,
+          angle = 90
+      }
+    },
+    npcLight2NPC4 = {
+      guid = G.GUIDS.SEAT_LIGHT_2_NPC4,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          angle = 0,
+      },
+      STANDARD = {
+          enabled = true,
+          color = Color(255 / 255, 255 / 255, 200 / 255),
+          intensity = 2,
+          range = 80,
+          angle = 90
+      }
     },
     playerLight3Red = {
         guid = G.GUIDS.SEAT_LIGHT_3_RED,
@@ -488,142 +624,6 @@ L.LIGHTMODES = {
           intensity = 1.488999,
           color = Color(0.525551, 0.525551, 0.525551)
         }
-    },
-    npcSeat1Light = {
-      guid = G.GUIDS.SEAT_LIGHT_2_NPC1,
-      isPlayerLight = false,
-      default = "OFF",
-      OFF = {
-          enabled = false,
-          angle = 0,
-      },
-      STANDARD = {
-          enabled = true,
-          color = Color(255 / 255, 255 / 255, 200 / 255),
-          intensity = 2,
-          range = 80,
-          angle = 90
-      }
-    },
-    npcSeat2Light = {
-      guid = G.GUIDS.SEAT_LIGHT_2_NPC2,
-      isPlayerLight = false,
-      default = "OFF",
-      OFF = {
-          enabled = false,
-          angle = 0,
-      },
-      STANDARD = {
-          enabled = true,
-          color = Color(255 / 255, 255 / 255, 200 / 255),
-          intensity = 2,
-          range = 80,
-          angle = 90
-      }
-    },
-    npcSeat3Light = {
-      guid = G.GUIDS.SEAT_LIGHT_2_NPC3,
-      isPlayerLight = false,
-      default = "OFF",
-      OFF = {
-          enabled = false,
-          angle = 0,
-      },
-      STANDARD = {
-          enabled = true,
-          color = Color(255 / 255, 255 / 255, 200 / 255),
-          intensity = 2,
-          range = 80,
-          angle = 90
-      }
-    },
-    npcSeat4Light = {
-      guid = G.GUIDS.SEAT_LIGHT_2_NPC4,
-      isPlayerLight = false,
-      default = "OFF",
-      OFF = {
-          enabled = false,
-          angle = 0,
-      },
-      STANDARD = {
-          enabled = true,
-          color = Color(255 / 255, 255 / 255, 200 / 255),
-          intensity = 2,
-          range = 80,
-          angle = 90
-      }
-    },
-    npcSeat1Light1 = {
-      guid = "",
-      isPlayerLight = false,
-      default = "OFF",
-      OFF = {
-          enabled = false,
-          range = 40,
-          angle = 0,
-          intensity = 0
-      },
-      STANDARD = {
-          enabled = true,
-          range = 95.549049,
-          angle = 87.566208,
-          intensity = 4.005609,
-          color = Color(0.525551, 0.350648, 0.350648)
-      }
-    },
-    npcSeat2Light1 = {
-      guid = "",
-      isPlayerLight = false,
-      default = "OFF",
-      OFF = {
-          enabled = false,
-          range = 40,
-          angle = 0,
-          intensity = 0
-      },
-      STANDARD = {
-        enabled = true,
-        range = 95.549049,
-        angle = 87.566208,
-        intensity = 4.005609,
-        color = Color(0.525551, 0.350648, 0.350648)
-      }
-    },
-    npcSeat3Light1 = {
-      guid = "",
-      isPlayerLight = false,
-      default = "OFF",
-      OFF = {
-          enabled = false,
-          range = 40,
-          angle = 0,
-          intensity = 0
-      },
-      STANDARD = {
-        enabled = true,
-        range = 95.549049,
-        angle = 87.566208,
-        intensity = 4.005609,
-        color = Color(0.525551, 0.350648, 0.350648)
-      }
-    },
-    npcSeat4Light1 = {
-      guid = "",
-      isPlayerLight = false,
-      default = "OFF",
-      OFF = {
-          enabled = false,
-          range = 40,
-          angle = 0,
-          intensity = 0
-      },
-      STANDARD = {
-        enabled = true,
-        range = 95.549049,
-        angle = 87.566208,
-        intensity = 4.005609,
-        color = Color(0.525551, 0.350648, 0.350648)
-      }
     }
 }
 
@@ -1068,25 +1068,25 @@ function workspaceSandbox()
 end
 
 local NPC_LIGHT_TO_SEAT = {
-    npcSeat1Light = "NPC1",
-    npcSeat2Light = "NPC2",
-    npcSeat3Light = "NPC3",
-    npcSeat4Light = "NPC4",
-    npcSeat1Light1 = "NPC1",
-    npcSeat2Light1 = "NPC2",
-    npcSeat3Light1 = "NPC3",
-    npcSeat4Light1 = "NPC4",
+    npcLight2NPC1 = "NPC1",
+    npcLight2NPC2 = "NPC2",
+    npcLight2NPC3 = "NPC3",
+    npcLight2NPC4 = "NPC4",
+    npcLight1NPC1 = "NPC1",
+    npcLight1NPC2 = "NPC2",
+    npcLight1NPC3 = "NPC3",
+    npcLight1NPC4 = "NPC4",
 }
 
 local NPC_LIGHT_ROLE_BY_REF = {
-    npcSeat1Light = "SEAT_LIGHT_2",
-    npcSeat2Light = "SEAT_LIGHT_2",
-    npcSeat3Light = "SEAT_LIGHT_2",
-    npcSeat4Light = "SEAT_LIGHT_2",
-    npcSeat1Light1 = "SEAT_LIGHT_1",
-    npcSeat2Light1 = "SEAT_LIGHT_1",
-    npcSeat3Light1 = "SEAT_LIGHT_1",
-    npcSeat4Light1 = "SEAT_LIGHT_1",
+    npcLight2NPC1 = "SEAT_LIGHT_2",
+    npcLight2NPC2 = "SEAT_LIGHT_2",
+    npcLight2NPC3 = "SEAT_LIGHT_2",
+    npcLight2NPC4 = "SEAT_LIGHT_2",
+    npcLight1NPC1 = "SEAT_LIGHT_1",
+    npcLight1NPC2 = "SEAT_LIGHT_1",
+    npcLight1NPC3 = "SEAT_LIGHT_1",
+    npcLight1NPC4 = "SEAT_LIGHT_1",
 }
 
 --- @param lightRef string

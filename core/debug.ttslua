@@ -3834,7 +3834,7 @@ function DEBUG.toggleAllSpotlightArrows()
     return summary
 end
 
---- Inspect soundscape AssetBundle emitters, looping effect names, and AudioSource counts.
+--- Inspect soundscape AssetBundle emitters, looping/trigger effect names, and AudioSource counts.
 -- @return table
 function DEBUG.inspectSoundscapeAudio()
     printTestHeader("Soundscape Audio Emitters")
@@ -3857,16 +3857,16 @@ function DEBUG.testSoundscape()
     return result
 end
 
---- Quick test: set a Storyteller-controlled music mood.
--- @param moodKey string One of: general, intrigue, combat
+--- Quick test: set a Storyteller-controlled background playlist.
+-- @param moodKey string One of: main, intrigue, combat
 function DEBUG.soundscapeMusic(moodKey)
-    local ok, message = Soundscape.setMusicMood(moodKey or "general")
+    local ok, message = Soundscape.setMusicMood(moodKey or "main")
     printTestResult("Soundscape music mood", ok, message)
     UpdateUIDisplays()
 end
 
---- Quick test: set weather audio and optional indoor ducking.
--- @param weatherKey string e.g. "lightRain", "heavyRain", "wind", "none"
+--- Quick test: set weather audio condition and optional indoor ducking.
+-- @param weatherKey string e.g. "rainLight", "rainHeavy", "wind", "thunderstorm", "none"
 -- @param isIndoors boolean|nil
 function DEBUG.soundscapeWeather(weatherKey, isIndoors)
     if type(isIndoors) == "boolean" then
@@ -3877,8 +3877,61 @@ function DEBUG.soundscapeWeather(weatherKey, isIndoors)
     UpdateUIDisplays()
 end
 
+--- Quick test: set the looping rain layer directly.
+-- @param rainKey string e.g. "rainLight", "rainHeavy", "none"
+function DEBUG.soundscapeRain(rainKey)
+    local ok, message = Soundscape.setRainLayer(rainKey or "none")
+    printTestResult("Soundscape rain", ok, message)
+    UpdateUIDisplays()
+end
+
+--- Quick test: set the looping wind layer directly.
+-- @param windKey string e.g. "windLow", "windMed", "windMax", "none"
+function DEBUG.soundscapeWind(windKey)
+    local ok, message = Soundscape.setWindLayer(windKey or "none")
+    printTestResult("Soundscape wind", ok, message)
+    UpdateUIDisplays()
+end
+
+--- Quick test: enable/disable scheduled thunder, or trigger one hit immediately.
+-- @param mode string|boolean|nil Use true/"on" to schedule, false/"off" to cancel, "hit" to play once.
+-- @param hitKey string|nil Optional thunder hit key when mode is "hit".
+function DEBUG.soundscapeThunder(mode, hitKey)
+    local ok, message
+    if mode == "hit" then
+        ok, message = Soundscape.triggerThunder(hitKey)
+    else
+        local enabled = mode == true or mode == "true" or mode == "on" or mode == "enable"
+        ok, message = Soundscape.setThunderEnabled(enabled)
+    end
+    printTestResult("Soundscape thunder", ok, message)
+    UpdateUIDisplays()
+end
+
+--- Quick test: play featured music on the dedicated featured lane.
+-- @param featureKey string e.g. "TR_Full", "TR_Intro", "STB_HouseOfTheRisingSun"
+function DEBUG.soundscapeFeatured(featureKey)
+    local ok, message = Soundscape.playFeaturedMusic(featureKey or "TR_Intro")
+    printTestResult("Soundscape featured music", ok, message)
+    UpdateUIDisplays()
+end
+
+--- Quick test: stop featured music without clearing background context.
+function DEBUG.soundscapeStopFeatured()
+    local ok, message = Soundscape.stopFeaturedMusic()
+    printTestResult("Soundscape stop featured", ok, message)
+    UpdateUIDisplays()
+end
+
+--- Quick test: resume the saved background music context.
+function DEBUG.soundscapeResumeBackground()
+    local ok, message = Soundscape.resumeBackgroundMusic()
+    printTestResult("Soundscape resume background", ok, message)
+    UpdateUIDisplays()
+end
+
 --- Quick test: set site/location ambience.
--- @param locationKey string e.g. "indoorOffice", "indoorCourt", "sewers", "alleyway", "outdoorIndustrial", "none"
+-- @param locationKey string e.g. "airport", "industry", "sewers", "warehouse", "none"
 function DEBUG.soundscapeLocation(locationKey)
     local ok, message = Soundscape.setLocationAudio(locationKey or "none")
     printTestResult("Soundscape location", ok, message)
@@ -4909,8 +4962,14 @@ function DEBUG.help()
     print("  setHunger(color, value)  - Set player hunger (e.g., setHunger('Red', 3))")
     print("  changeScene(sceneName)   - Change scene (e.g., changeScene('elysium'))")
     print("  soundscapeMusic(mood)    - Set music mood: general, intrigue, combat")
-    print("  soundscapeWeather(key, isIndoors?) - Set weather layer and optional indoor ducking")
-    print("  soundscapeLocation(key)  - Set location ambience: indoorOffice, indoorCourt, sewers, alleyway, outdoorIndustrial")
+    print("  soundscapeWeather(key, isIndoors?) - Set weather preset: none, lightRain, heavyRain, wind, thunderstorm")
+    print("  soundscapeRain(key)      - Set rain layer: none, lightRain, heavyRain")
+    print("  soundscapeWind(key)      - Set wind layer: none, lowWindAmbient, whistlingWind1/2/3, windyLeaves1/2")
+    print("  soundscapeThunder(mode, hit?) - Enable/disable scheduled thunder, or mode='hit' to trigger one")
+    print("  soundscapeFeatured(key)  - Play featured music: TR_Full, TR_Intro, STB_HouseOfTheRisingSun")
+    print("  soundscapeStopFeatured() - Stop featured lane only")
+    print("  soundscapeResumeBackground() - Resume saved background music context")
+    print("  soundscapeLocation(key)  - Set location ambience: airport, industrial, sewers, warehouse, none")
     print("  soundscapeStopAll()      - Stop all soundscape layers through the silent loop")
     print("  DEBUG.getLookAtOffset(obj)    - Read stored look-at calibration offset (Vector)")
     print("  DEBUG.calibrateLookAtOffset(obj, target, roundIntervalDeg?)")
@@ -4973,6 +5032,12 @@ setHunger = DEBUG.setHunger
 changeScene = DEBUG.changeScene
 soundscapeMusic = DEBUG.soundscapeMusic
 soundscapeWeather = DEBUG.soundscapeWeather
+soundscapeRain = DEBUG.soundscapeRain
+soundscapeWind = DEBUG.soundscapeWind
+soundscapeThunder = DEBUG.soundscapeThunder
+soundscapeFeatured = DEBUG.soundscapeFeatured
+soundscapeStopFeatured = DEBUG.soundscapeStopFeatured
+soundscapeResumeBackground = DEBUG.soundscapeResumeBackground
 soundscapeLocation = DEBUG.soundscapeLocation
 soundscapeStopAll = DEBUG.soundscapeStopAll
 

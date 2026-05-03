@@ -4,7 +4,7 @@
 <Panel id="panel_soundscape" active="false">
   <VerticalLayout spacing="4" padding="6 6 6 6" childForceExpandWidth="false" childForceExpandHeight="false">
     <Text class="hud_storyteller_header">Soundscape</Text>
-    <Text id="soundscapeSummary" fontSize="10" color="#DDDDDD">Mood: general | Weather: none | Location: none | Indoors: false</Text>
+    <Text id="soundscapeSummary" fontSize="10" color="#DDDDDD">Music: mood/general | Featured: none | Location: none | Weather: none | Rain: none | Wind: none | Thunder: false | Indoors: false</Text>
 
     <Text class="hud_storyteller_label">Music Mood</Text>
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4">

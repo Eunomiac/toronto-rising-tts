@@ -6,6 +6,8 @@ code first and add the Unity asset later.
 
 For the overall architecture and extension rules, see
 `docs/solutions/architecture-patterns/tabletop-simulator-soundscape-architecture-2026-04-25.md`.
+For the Lua-side expansion work needed to support the full audio inventory, see
+`SOUNDSCAPE_LUA_IMPLEMENTATION.md`.
 
 ## Required Unity Version
 
@@ -15,9 +17,14 @@ the same `.unity3d` bundle.
 
 ## Create The AssetBundle
 
-The goal in Unity is to create one prefab that contains all named soundscape loops
-as TTS Looping Effects. You will then import that same bundle into TTS four times
-and tag each imported object for a different runtime channel.
+The goal in Unity is to create one prefab that contains all named soundscape clips
+as TTS effects. Looping ambience, music, rain, and wind clips should be **Looping
+Effects**. One-shot clips such as thunder hits should be **Trigger Effects**.
+
+The current Lua runtime uses four emitters: two music emitters, one weather emitter,
+and one location emitter. The expanded audio catalog in `Audio Tracks.md` will need
+additional Lua work before every planned layer is controllable, but you can still
+author the Unity AssetBundle now with the full future catalog.
 
 ### 1. Open the TTS Modding Project
 
@@ -61,16 +68,19 @@ If a window is missing, use Unity's top menu:
 1. In the **Project** window, open `Assets/Soundscape/Audio`.
 2. Drag your audio files from Windows File Explorer into this folder.
 3. Click one imported audio file.
-4. In the **Inspector**, review the import settings. Conservative starting values:
-   - **Load Type**: `Streaming` for long music files, `Compressed In Memory` for shorter loops
-   - **Compression Format**: leave Unity default unless you have a reason to change it
-   - **Preload Audio Data**: enabled for short loops, optional for long music
+4. In the **Inspector**, review the import settings. Use the per-file recommendations
+   in `Audio Tracks.md` as the source of truth.
 5. Click **Apply** if Unity shows an **Apply** button.
 6. Repeat for the rest of the imported audio files if you change settings.
 
-You need one audio clip for every required Looping Effect name below. For early
-testing, you can reuse the same short loop for several effect names, but each
-effect name must exist in the prefab.
+You need one audio clip for every effect name below. For early testing, you can
+reuse the same short loop for several effect names, but each effect name that Lua
+will call must exist in the prefab.
+
+For seamless looping clips, export a loop-clean `WAV 44.1kHz/16-bit PCM` source
+from your audio editor before importing into Unity. Remove baked-in fade-ins and
+fade-outs from loop assets unless they are musically part of the repeating loop;
+the Lua runtime handles scene-level fades and crossfades through volume control.
 
 ### 4. Create A Silent Audio Clip
 
@@ -110,11 +120,11 @@ If you cannot find the component, the TTS Modding project was not opened correct
 or the project version is wrong. Re-open the Berserk Games modding project in the
 required Unity version.
 
-### 7. Add Looping Effect Entries
+### 7. Add Effect Entries
 
 1. In the **Inspector**, find the **TTS Asset Bundle Effects** component.
 2. Expand **Looping Effects**.
-3. Set **Size** to the number of required effect names. The initial list has 14.
+3. Set **Size** to the number of looping effect names you are authoring.
 4. Expand **Element 0**.
 5. Set **Name** to the first effect name, for example `silent`.
 6. Find the **Sound** section inside that element.
@@ -127,7 +137,16 @@ required Unity version.
    be non-positional.
 10. Repeat for every required effect name.
 
+For thunder and other one-shot sounds:
+
+1. Expand **Trigger Effects**.
+2. Set **Size** to the number of one-shot effect names.
+3. Add each thunder hit as its own trigger effect, for example `weather_thunder_01`.
+4. Leave **Positional 3D** unchecked if that option appears.
+
 Important: effect names are case-sensitive. They must match `lib/soundscape_catalog.ttslua`.
+For planned future clips that are not yet in the Lua catalog, choose stable names now
+and add those same names to the catalog when the runtime is expanded.
 
 ### 8. Add AudioSource Components If Needed
 
@@ -136,7 +155,7 @@ module, Lua also tries to inspect/set Unity `AudioSource.volume` and
 `AudioSource.spatialBlend`. To maximize compatibility, add AudioSource components
 for your clips as child objects.
 
-For each loop:
+For each clip:
 
 1. Right-click `TR_Soundscape_Bundle` in the **Hierarchy**.
 2. Choose **Create Empty**.
@@ -147,11 +166,12 @@ For each loop:
 7. Select **Audio Source**.
 8. In the **Audio Source** component:
    - Drag the matching clip into **AudioClip**.
-   - Check **Loop**.
+   - Check **Loop** for looping effects.
+   - Leave **Loop** unchecked for trigger effects such as thunder hits.
    - Uncheck **Play On Awake**.
    - Set **Spatial Blend** all the way to `2D` or `0`.
    - Set **Volume** to a safe starting value such as `0.5`.
-9. Repeat for each required loop, including `silent`.
+9. Repeat for each required clip, including `silent`.
 
 If your Unity Inspector has a **3D Sound Settings** foldout, you can ignore distance
 rolloff when **Spatial Blend** is fully 2D. The key requirement is `spatialBlend = 0`.
@@ -208,9 +228,9 @@ project, not a blank Unity project.
 If the right-click menu does not show looping effects, return to Unity and confirm
 the prefab has `TTS Asset Bundle Effects` with Looping Effects configured.
 
-### 13. Create The Four Runtime Emitters
+### 13. Create Runtime Emitters
 
-The Lua system expects four separate TTS objects using the same AssetBundle.
+The current Lua system expects four separate TTS objects using the same AssetBundle.
 
 1. In TTS, select the imported soundscape object.
 2. Copy/paste or clone it three times so there are four total.
@@ -226,9 +246,21 @@ The Lua system expects four separate TTS objects using the same AssetBundle.
 
 The object names are for human debugging. The Lua code finds objects by tag.
 
-## Required Looping Effect Names
+For the expanded weather design in `Audio Tracks.md`, plan on adding separate
+runtime emitters later for:
 
-The initial catalog expects these looping effects:
+- rain loops
+- wind loops
+- thunder trigger hits
+
+That future layout will let rain and wind loop simultaneously while thunder plays
+random one-shots over them, with indoor/outdoor ducking applied to all weather
+layers. Do not delete the current four emitters; treat the expanded weather emitters
+as additional runtime objects once the Lua runtime has corresponding channels.
+
+## Effect Names
+
+The current Lua catalog expects these looping effects:
 
 - `silent`
 - `music_general_01`
@@ -245,21 +277,51 @@ The initial catalog expects these looping effects:
 - `location_alleyway`
 - `location_industrial_exterior`
 
-You can add more names later by updating `lib/soundscape_catalog.ttslua`.
+The expanded audio inventory in `Audio Tracks.md` should be authored into the bundle
+using these categories:
+
+- **Ambient/location loops**: Looping Effects, one per site ambience clip.
+- **Background music tracks**: Looping Effects, one per playlist track.
+- **Featured music intros/full songs**: Trigger Effects if they play once.
+- **Featured music loops**: Looping Effects if they repeat after an intro.
+- **Rain loops**: Looping Effects.
+- **Wind loops**: Looping Effects.
+- **Thunder hits**: Trigger Effects.
+
+Use lower-snake-case names that describe the channel and source, such as
+`weather_rain_heavy`, `weather_wind_winter_low`, `weather_thunder_01`,
+`location_airport`, or `featured_toronto_rising_loop`. You can add more names later
+by updating `lib/soundscape_catalog.ttslua`.
 
 ## Place Hidden Emitters In TTS
 
-Create four hidden/locked `Custom_Assetbundle` objects using the same soundscape
-bundle. Each object should be tagged as follows:
+Create nine hidden/locked `Custom_Assetbundle` objects using the same soundscape
+bundle for the current runtime. Each object should be tagged as follows:
 
 - `soundscape_music_a`
 - `soundscape_music_b`
-- `soundscape_weather`
-- `soundscape_location`
+- `soundscape_featured_a`
+- `soundscape_featured_b`
+- `soundscape_location_a`
+- `soundscape_location_b`
+- `soundscape_weather_rain`
+- `soundscape_weather_wind`
+- `soundscape_weather_thunder`
 
-The two music emitters allow crossfades if TTS exposes writable `AudioSource.volume`
-through Lua. Weather and location each need one independent emitter so they can play
-simultaneously with music.
+The paired music, featured, and location emitters allow crossfades or intro-to-loop
+handoffs if TTS exposes writable `AudioSource.volume` through Lua. Rain, wind, and
+thunder each need one independent emitter so they can play simultaneously with music.
+
+When the Lua runtime is expanded for three-layer weather, add additional hidden
+emitters with tags similar to:
+
+- `soundscape_weather_rain`
+- `soundscape_weather_wind`
+- `soundscape_weather_thunder`
+
+Those names are a forward-looking convention, not active tags in the current Lua
+runtime until `lib/soundscape_catalog.ttslua` and `core/soundscape.ttslua` are
+updated.
 
 Recommended object settings:
 

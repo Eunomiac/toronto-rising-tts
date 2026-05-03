@@ -288,6 +288,128 @@ C.Clans = {
 }
 -- #endregion
 
+-- #region Hiding & Locking Objects
+
+-- C.LockedObjects is a table of all objects that should be set `interactable = false` on every load, presented as GUIDs.
+C.LockedObjects = {
+  G.GUIDS.TABLES.TABLE_A,
+  G.GUIDS.TABLES.TABLE_B,
+  G.GUIDS.TABLES.TABLE_B1,
+  G.GUIDS.TABLES.TABLE_B2,
+  G.GUIDS.TABLES.TABLE_B3,
+  G.GUIDS.TABLES.TABLE_B4,
+  G.GUIDS.TABLES.TABLE_A_LEAF_NEAR_LEFT,
+  G.GUIDS.TABLES.TABLE_A_LEAF_NEAR_RIGHT,
+  G.GUIDS.TABLES.TABLE_A_LEAF_FAR_LEFT,
+  G.GUIDS.TABLES.TABLE_A_LEAF_FAR_RIGHT,
+  G.GUIDS.GM_TABLE,
+  G.GUIDS.GM_LIGHT,
+  G.GUIDS.MAIN_LIGHT_LEFT,
+  G.GUIDS.MAIN_LIGHT_RIGHT,
+  G.GUIDS.DISTRICT_CARD_LIGHT,
+  G.GUIDS.SITE_CARD_LIGHT,
+  G.GUIDS.SEAT_LIGHT_1_BROWN,
+  G.GUIDS.SEAT_LIGHT_1_ORANGE,
+  G.GUIDS.SEAT_LIGHT_1_RED,
+  G.GUIDS.SEAT_LIGHT_1_PINK,
+  G.GUIDS.SEAT_LIGHT_1_PURPLE,
+  G.GUIDS.SEAT_LIGHT_1_NPC1,
+  G.GUIDS.SEAT_LIGHT_1_NPC2,
+  G.GUIDS.SEAT_LIGHT_1_NPC3,
+  G.GUIDS.SEAT_LIGHT_1_NPC4,
+  G.GUIDS.SEAT_LIGHT_2_BROWN,
+  G.GUIDS.SEAT_LIGHT_2_ORANGE,
+  G.GUIDS.SEAT_LIGHT_2_RED,
+  G.GUIDS.SEAT_LIGHT_2_PINK,
+  G.GUIDS.SEAT_LIGHT_2_PURPLE,
+  G.GUIDS.SEAT_LIGHT_2_NPC1,
+  G.GUIDS.SEAT_LIGHT_2_NPC2,
+  G.GUIDS.SEAT_LIGHT_2_NPC3,
+  G.GUIDS.SEAT_LIGHT_2_NPC4,
+  G.GUIDS.SEAT_LIGHT_3_BROWN,
+  G.GUIDS.SEAT_LIGHT_3_ORANGE,
+  G.GUIDS.SEAT_LIGHT_3_RED,
+  G.GUIDS.SEAT_LIGHT_3_PINK,
+  G.GUIDS.SEAT_LIGHT_3_PURPLE,
+  "398b83", -- CSHEET_BASE_BACK_BROWN
+  "404716", -- CSHEET_BASE_BACK_ORANGE
+  "6d0572", -- CSHEET_BASE_BACK_PINK
+  "adce6b", -- CSHEET_BASE_BACK_PURPLE
+  "a97528", -- CSHEET_BASE_BACK_RED
+  "61b047", -- CSHEET_BASE_BROWN
+  "156582", -- CSHEET_BASE_ORANGE
+  "d0b68a", -- CSHEET_BASE_PINK
+  "bbb40e", -- CSHEET_BASE_PURPLE
+  "bcc1e6", -- CSHEET_BASE_RED
+  G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_BROWN,
+  G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_ORANGE,
+  G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_PINK,
+  G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_PURPLE,
+  G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_RED,
+  G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_BROWN,
+  G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_ORANGE,
+  G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_PINK,
+  G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_PURPLE,
+  G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_RED,
+  "4cd6ed", -- CSHEET_DICE_DRAWER_BROWN
+  "0ff5a4", -- CSHEET_DICE_DRAWER_ORANGE
+  "248013", -- CSHEET_DICE_DRAWER_PINK
+  "fea8f6", -- CSHEET_DICE_DRAWER_PURPLE
+  "8ae9ac", -- CSHEET_DICE_DRAWER_RED
+  G.GUIDS.PRINCE_SIGNET_BORDER_RED,
+  G.GUIDS.PRINCE_SIGNET_RED,
+  G.GUIDS.PRINCE_CURTAIN_RED,
+  G.GUIDS.THRONE_BROWN,
+  G.GUIDS.THRONE_ORANGE,
+  G.GUIDS.THRONE_PINK,
+  G.GUIDS.THRONE_PURPLE,
+  G.GUIDS.THRONE_RED,
+  "75aa53", -- SEAT_CHAIR_NPC1
+  "3d6084", -- SEAT_CHAIR_NPC2
+  "bae868", -- SEAT_CHAIR_NPC3
+  "6bcded", -- SEAT_CHAIR_NPC4
+  G.GUIDS.SEAT_FIGURE_BROWN,
+  G.GUIDS.SEAT_FIGURE_ORANGE,
+  G.GUIDS.SEAT_FIGURE_PINK,
+  G.GUIDS.SEAT_FIGURE_PURPLE,
+  G.GUIDS.SEAT_FIGURE_RED,
+  "df88fd", -- SEAT_FIGURE_NPC1
+  "43e314", -- SEAT_FIGURE_NPC2
+  "16316e", -- SEAT_FIGURE_NPC3
+  "977ba7", -- SEAT_FIGURE_NPC4
+  G.GUIDS.HUNGER_SMOKE_BROWN,
+  G.GUIDS.HUNGER_SMOKE_ORANGE,
+  G.GUIDS.HUNGER_SMOKE_RED,
+  G.GUIDS.HUNGER_SMOKE_PINK,
+  G.GUIDS.HUNGER_SMOKE_PURPLE,
+  G.GUIDS.TAROT_DRAWER_PINK,
+  G.GUIDS.TAROT_BUTTON_ANCHOR_ON_PINK,
+  G.GUIDS.TAROT_BUTTON_ANCHOR_OFF_PINK,
+  G.GUIDS.TAROT_DRAWER_ANCHOR_ON_PINK,
+  G.GUIDS.TAROT_DRAWER_ANCHOR_OFF_PINK,
+  "fe1fb7" -- THE_FLOOR
+}
+
+-- C.HiddenObjects is a table of all objects that should be `setInvisibleTo`, and the values contain the colors to hide the object from. Objects are presented as GUIDs.
+C.HiddenObjects = {
+  [G.GUIDS.GM_TABLE] = {"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey"},
+  [G.GUIDS.GM_LIGHT] = {"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey"},
+  [G.GUIDS.THRONE_RED] = {"Red"},
+  [G.GUIDS.THRONE_ORANGE] = {"Orange"},
+  [G.GUIDS.THRONE_PINK] = {"Pink"},
+  [G.GUIDS.THRONE_PURPLE] = {"Purple"},
+  [G.GUIDS.THRONE_BROWN] = {"Brown"},
+  [G.GUIDS.SEAT_FIGURE_BROWN] = {"Brown"},
+  [G.GUIDS.SEAT_FIGURE_ORANGE] = {"Orange"},
+  [G.GUIDS.SEAT_FIGURE_PINK] = {"Pink"},
+  [G.GUIDS.SEAT_FIGURE_PURPLE] = {"Purple"},
+  [G.GUIDS.SEAT_FIGURE_RED] = {"Red"},
+  [G.GUIDS.PRINCE_SIGNET_BORDER_RED] = {"Red"},
+  [G.GUIDS.PRINCE_SIGNET_RED] = {"Red"},
+  [G.GUIDS.PRINCE_CURTAIN_RED] = {"Red"}
+}
+-- #endregion
+
 -- #region Rolls
 
 -- Default Game Settings (VTM5E rules)
@@ -434,6 +556,10 @@ C.RollTypesAutoBroadcast = {
 --- Seconds to wait after the last die randomize event before reading all settled die values.
 -- Allows physical dice time to come to rest without premature result calculation.
 C.DICE_SETTLE_DEBOUNCE_SECONDS = 3
+
+--- After a die randomizes during a Willpower reroll wave, wait this long then lock that die
+--- (so it cannot be bumped on the tray). Shorter than full table debounce.
+C.WP_REROLL_DIE_LOCK_DELAY_SECONDS = 0.55
 
 -- Seconds the shared roll-result broadcast panel stays visible after a resolve.
 -- Must match the delayed cleanup in global_script (dice destroy + drawer close).
@@ -603,161 +729,58 @@ C.CameraModes = {
 
 -- Reference Color Red Camera Angles
 -- These are the camera angle definitions that are defined for the Red seat, but that will need to be rotated and defined for each of the other player seats.
--- The two fields determine how the camera angles are meant to be used:
---    - "forSeat": these camera angles should be written to the gameState.playerData[playerID].cameraAngles[cameraMode] after being rotated for the corresponding seat.
---    - "forUniversal": these camera angles are all named with the form "<cameraMode>Red", and are meant to be universal camera angles -- e.g. "facingRed" is a camera angle anyone can use to direct their view towards the Red player. For each of these, corresponding camera angles should be rotated and defined for each seat at the time R.resolveSeatObjectsFromTable() is called, including all NPC slots in the playerToPositionMap. However, they shouldn't be stored in playerData because they are meant to be universal: They should instead be stored at a higher-level state variable, and merged with the fixed C.UniversalCameraAngles object to create the final universal camera angles set that all players will use (and that M.setCamera() and related functions will draw from).
+-- Each of these derived camera angles should be written into two locations in game state:
+--    - "gameState.playerData[playerID].cameraAngles[cameraMode]": each camera angle should be written to each player's playerData leaving the mode name unchanged (e.g. "default", "facing", "sheet", etc.)
+--    - "gameState.seatLayout.universalCameraAngles[cameraMode + seatKey]": each camera angle should also be made available to all players, by writing it to the seatLayout.universalCameraAngles object, with the seat key appended to the mode name (e.g. "facing" -> "facingBrown", "facingRed", "facingNPC1", etc.)  Note that, even though the NPC slots do not have player data (and thus won't have their own "facing", etc. entries), they will still need universal "facingNPC1", "sheetNPC2", etc. angles calculated for this step.
 
 --[[ To be clear, after R.resolveSeatObjectsFromTable() is called, the "universal" camera modes will include one of every entry in C.UniversalCameraAngles, plus the following: "facingRed", "facingBrown", "facingOrange", "facingPink" and "facingPurple", as well as some number of "facingNPC1", "facingNPC2", "facingNPC3" and "facingNPC4" depending on which slots are open in the playerToPositionMap of the new table configuration -- and then the same for "sheetRed", "sheetBrown", ... and "diceTrayRed", "diceTrayBrown", ... etc. ]]
 
---[[
-
-EXECUTE TO REFRESH CAMERA ANGLES:
-
-local function cloneMode(mode)
-    return {
-        cameraMode = mode.cameraMode or "FirstPerson",
-        position = Vector(mode.position or {0, 0, 0}),
-        pitch = tonumber(mode.pitch) or 0,
-        yaw = tonumber(mode.yaw) or 0,
-        distance = tonumber(mode.distance) or 0,
-    }
-end
-
-local storytellerID = C.StorytellerID
-
--- Ensure storyteller row exists
-if S.getStateVal("playerData", storytellerID) == nil then
-    S.setStateVal({
-        color = "Black",
-        hud = {},
-        cameraAngles = {},
-    }, "playerData", storytellerID)
-end
-
--- Seed per-seat modes from Red reference
-for modeKey, modeVal in pairs(C.RedCameraAngles.forSeat or {}) do
-    if type(modeVal) == "table" then
-        S.setStateVal(cloneMode(modeVal), "playerData", storytellerID, "cameraAngles", modeKey)
-    end
-end
-
--- Optional: also seed universal-facing variants onto storyteller's row for quick testing
--- (normally universal modes are read from C.UniversalCameraAngles + seatLayout.universalCameraAngles)
-for modeKey, modeVal in pairs(C.RedCameraAngles.forUniversal or {}) do
-    if type(modeVal) == "table" then
-        S.setStateVal(cloneMode(modeVal), "playerData", storytellerID, "cameraAngles", modeKey)
-    end
-end
-
-print("[CameraSeed] Storyteller camera angles seeded from C.RedCameraAngles.")
-print(JSON.encode_pretty(S.getStateVal("playerData", storytellerID, "cameraAngles")))
-
-local S = Global.getTable("S")
-if not S then
-  print("[cleanup] S module not available")
-  return
-end
-
-local pid = "76561198002132577" -- StorytellerID
-local pdata = S.getStateVal("playerData", pid)
-if type(pdata) ~= "table" or type(pdata.cameraAngles) ~= "table" then
-  print("[cleanup] No storyteller cameraAngles found")
-  return
-end
-
-local moved = 0
-local kept = 0
-local universal = S.getStateVal("seatLayout", "universalCameraAngles")
-if type(universal) ~= "table" then
-  universal = {}
-end
-
-for k, v in pairs(pdata.cameraAngles) do
-  if type(k) == "string" and string.match(k, "^[%a_]+Red$") then
-    universal[k] = v
-    pdata.cameraAngles[k] = nil
-    moved = moved + 1
-  else
-    kept = kept + 1
-  end
-end
-
-S.setStateVal(universal, "seatLayout", "universalCameraAngles")
-S.setStateVal(pdata.cameraAngles, "playerData", pid, "cameraAngles")
-
-print(string.format("[cleanup] moved=%d kept=%d", moved, kept))
-
-
-
-
-]]
-
 --- World-space position of the reference player's hand zone when `C.RedCameraAngles` was authored.
---- `lib.rotational-seat-layout` adds `(activeTable.referenceHandPosition - this)` to every seat/universal
---- camera position derived from `C.RedCameraAngles` so hand-zone alignment matches camera presets.
+--- `lib.rotational-seat-layout` adds `(activeTable.referenceHandPosition - this)` to **position** only for
+--- presets with `isRelativeToReferenceHandPosition == true` (Red-derived and selected `C.UniversalCameraAngles`).
 --- Keep in sync with the canonical layout table (currently `Table A` `referenceHandPosition`).
 C.CameraAuthoringReferenceHandPosition = Vector({0.00, 3.22, -76.61})
 
 C.RedCameraAngles = {
-  forSeat = {
-    default = {
-      cameraMode = "FirstPerson",
-      position = Vector({0.02, 28.5760, -54.5664}),
-      pitch = 0.01,
-      yaw = 0.01,
-      distance = 27.6598,
-    },
-    sheet = {
-      cameraMode = "FirstPerson",
-      position = Vector({-0.01, 5.8436, -53.0298}),
-      pitch = 70.5275,
-      yaw = -0.01,
-      distance = 11,
-    },
-    roll = {
-      cameraMode = "FirstPerson",
-      position = Vector({0.01, 5.9, -50.8718}),
-      pitch = 72,
-      yaw = 0.1,
-      distance = 16.5598,
-    },
-    diceTray = {
-      cameraMode = "FirstPerson",
-      position = Vector({-0.02, 17.8731, -43.3904}),
-      pitch = 58.6195,
-      yaw = -0.1,
-      distance = 10.8949,
-    }
+  default = {
+    cameraMode = "FirstPerson",
+    position = Vector({0.02, 28.5760, -54.5664}),
+    pitch = 0.01,
+    yaw = 0.01,
+    distance = 27.6598,
+    isRelativeToReferenceHandPosition = true
   },
-  forUniversal = {
-    facingRed = {
-      cameraMode = "FirstPerson",
-      position = Vector({0, 0, 0}),
-      pitch = 0.1,
-      yaw = 0.1,
-      distance = 0.1
-    },
-    rollRed = {
-      cameraMode = "FirstPerson",
-      position = Vector({0.0000, 5.8436, -50.8718}),
-      pitch = 70.5275,
-      yaw = 0.1,
-      distance = 16.5598,
-    },
-    sheetRed = {
-      cameraMode = "FirstPerson",
-      position = Vector({0.0000, 5.8436, -53.0298}),
-      pitch = 70.5275,
-      yaw = 0.1,
-      distance = 10.8949
-    },
-    diceTrayRed = {
-      cameraMode = "FirstPerson",
-      position = Vector({0.0000, 17.8731, -43.3904}),
-      pitch = 58.6195,
-      yaw = 0.1,
-      distance = 10.8949
-    }
+  sheet = {
+    cameraMode = "FirstPerson",
+    position = Vector({-0.01, 5.8436, -53.0298}),
+    pitch = 70.5275,
+    yaw = -0.01,
+    distance = 11,
+    isRelativeToReferenceHandPosition = true
+  },
+  roll = {
+    cameraMode = "FirstPerson",
+    position = Vector({0.01, 5.9, -50.8718}),
+    pitch = 72,
+    yaw = 0.1,
+    distance = 16.5598,
+    isRelativeToReferenceHandPosition = true
+  },
+  diceTray = {
+    cameraMode = "FirstPerson",
+    position = Vector({-0.02, 17.8731, -43.3904}),
+    pitch = 58.6195,
+    yaw = -0.1,
+    distance = 10.8949,
+    isRelativeToReferenceHandPosition = true
+  },
+  facing = {
+    cameraMode = "FirstPerson",
+    position = Vector({0, 0, 0}),
+    pitch = 0.1,
+    yaw = 0.1,
+    distance = 0.1,
+    isRelativeToReferenceHandPosition = true
   }
 }
 
@@ -769,7 +792,8 @@ C.UniversalCameraAngles = {
     position = Vector({-123.0687, 39.5024, -0.1581}),
     pitch = 0.0000,
     yaw = 310,
-    distance = 0.1
+    distance = 0.1,
+    isRelativeToReferenceHandPosition = false
   },
   siteCard = {
     cameraMode = "FirstPerson",
@@ -777,41 +801,47 @@ C.UniversalCameraAngles = {
     pitch = 0.0000,
     yaw = 50,
     distance = 0.1,
+    isRelativeToReferenceHandPosition = false
   },
   npcCenter = {
     cameraMode = "FirstPerson",
     position = Vector({0, 0, 0}),
     pitch = 0,
     yaw = 0,
-    distance = 0
+    distance = 0,
+    isRelativeToReferenceHandPosition = false
   },
   npcNearLeft = {
     cameraMode = "FirstPerson",
     position = Vector({0, 0, 0}),
     pitch = 0,
     yaw = 0,
-    distance = 0
+    distance = 0,
+    isRelativeToReferenceHandPosition = false
   },
   npcNearRight = {
     cameraMode = "FirstPerson",
     position = Vector({0, 0, 0}),
     pitch = 0,
     yaw = 0,
-    distance = 0
+    distance = 0,
+    isRelativeToReferenceHandPosition = false
   },
   npcFarLeft = {
     cameraMode = "FirstPerson",
     position = Vector({0, 0, 0}),
     pitch = 0,
     yaw = 0,
-    distance = 0
+    distance = 0,
+    isRelativeToReferenceHandPosition = false
   },
   npcFarRight = {
     cameraMode = "FirstPerson",
     position = Vector({0, 0, 0}),
     pitch = 0,
     yaw = 0,
-    distance = 0
+    distance = 0,
+    isRelativeToReferenceHandPosition = false
   },
   wide = {
     cameraMode = "FirstPerson",
@@ -819,6 +849,7 @@ C.UniversalCameraAngles = {
     pitch = 15.8187,
     yaw = 0.0000,
     distance = 27.3856,
+    isRelativeToReferenceHandPosition = true
   },
   wideFacing = {
     cameraMode = "FirstPerson",
@@ -826,44 +857,29 @@ C.UniversalCameraAngles = {
     pitch = 34.4825,
     yaw = 177.8662,
     distance = 27.3856,
+    isRelativeToReferenceHandPosition = true
   }
 }
 
---- Derive rotational-seat camera mode lists from canonical camera definitions.
---- - bySeat: every key in C.RedCameraAngles.forSeat
---- - universal: base keys from C.RedCameraAngles.forUniversal (strip trailing reference color, e.g. facingRed -> facing)
---- `C.UniversalCameraAngles` remains the fixed universal map consumed at runtime by M.setCamera;
---- this derivation keeps rotational source mode lists aligned with the camera definitions.
+--- Derive `sourceObjects.cameraModes.bySeat` from `C.RedCameraAngles`.
+--- Per-seat `playerData.cameraAngles` and `seatLayout.universalCameraAngles[<mode><seatKey>]` are both computed
+--- from these keys in `lib.rotational-seat-layout` (no separate `forUniversal` list).
+--- Relative entries in `C.UniversalCameraAngles` are merged in layout when `isRelativeToReferenceHandPosition` is true.
 --- @return table
 local function deriveTableSourceCameraModes()
   local bySeat = {}
-  local universal = {}
   local seenBySeat = {}
-  local seenUniversal = {}
 
-  for modeKey, modeVal in pairs((C.RedCameraAngles or {}).forSeat or {}) do
+  for modeKey, modeVal in pairs(C.RedCameraAngles or {}) do
     if type(modeKey) == "string" and type(modeVal) == "table" and not seenBySeat[modeKey] then
       seenBySeat[modeKey] = true
       table.insert(bySeat, modeKey)
     end
   end
 
-  local referenceColor = "Red"
-  for universalKey, modeVal in pairs((C.RedCameraAngles or {}).forUniversal or {}) do
-    if type(universalKey) == "string" and type(modeVal) == "table" then
-      local base = string.match(universalKey, "^(.*)" .. referenceColor .. "$")
-      if base ~= nil and base ~= "" and not seenUniversal[base] then
-        seenUniversal[base] = true
-        table.insert(universal, base)
-      end
-    end
-  end
-
   table.sort(bySeat)
-  table.sort(universal)
   return {
     bySeat = bySeat,
-    universal = universal,
   }
 end
 
@@ -1124,8 +1140,7 @@ C.Tables = {
 --   - "player": a table of objects associated with player seats
 --   - "all": a table of objects associated with all seats (player seats and NPC seats)
 --   - "relative": a table of objects that are relative to the hand zone anchor of the matching table slot, and should be moved to rigidly follow the corresponding hand zone anchor when the seat layout is applied
---   - "cameraModes.bySeat": a table of keys in C.RedCameraAngles.forSeat to rotate and write into per-seat playerData.cameraAngles
---   - "cameraModes.universal": a table of keys (once the reference player color "Red" is appended) in C.RedCameraAngles.forUniversal to rotate and write into state, in such a way that they can be merged into the other universal camera angles defined in C.UniversalCameraAngles
+--   - "cameraModes.bySeat": keys in C.RedCameraAngles; layout writes each player’s playerData.cameraAngles and universalCameraAngles[<mode><seatKey>] from the same derived angles (including NPC seats in the map).
 C.TableSourceObjects = {
   player = {
     "CSHEET_BASE",
@@ -1416,7 +1431,20 @@ C.Sites = {
     name = "The St. Regis Toronto",
     image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/StRegis.webp",
     district = C.Districts.BayStFinancial,
-    soundscapeLocation
+    soundscape = {
+      location = {playlist = "location", track = "softIndoor"}
+    },
+    isIndoors = true
+  },
+  CasaLoma = {
+    name = "Casa Loma",
+    image = "https://steamusercontent-a.akamaihd.net/ugc/14221092560108405792/004E1BAD3420DDE9A4735B96791AD714AE2ECFC0",
+    district = C.Districts.DupontByTheCastle,
+    soundscape = {
+      backgroundMusic = {playlist = "casaLoma"},
+      location = {playlist = "location", track = "church"}
+    },
+    isIndoors = true
   }
 }
 

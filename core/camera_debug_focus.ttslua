@@ -3,11 +3,15 @@
     Mirrors the focused light debug workflow, but drives Player.lookAt().
 ]]
 
+local U = require("lib.util")
+
 local CameraDebugFocus = {}
 
 local activePlayerColor = nil
 local syncingSliders = false
 local lastModeInput = ""
+--- Which seat color's cameraAngles were last selected for Storyteller spoof (UI highlight only).
+local activeSpoofColor = nil
 
 local cache = {
     positionX = 0,
@@ -37,8 +41,28 @@ local function trim(s)
     return (s:gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
+--- Rounded display for slider readouts (integers).
+-- @param n number
+-- @return number
+local function roundForDisplay(n)
+    if type(n) ~= "number" then
+        return 0
+    end
+    return math.floor(n + 0.5)
+end
+
 local function pushSliderAttr(id, val)
     UI.setAttributes(id, { value = val })
+end
+
+--- Updates the numeric labels to the right of each slider from `cache`.
+local function updateSliderValueLabels()
+    UI.setValue("dc_positionX_val", tostring(roundForDisplay(cache.positionX)))
+    UI.setValue("dc_positionY_val", tostring(roundForDisplay(cache.positionY)))
+    UI.setValue("dc_positionZ_val", tostring(roundForDisplay(cache.positionZ)))
+    UI.setValue("dc_pitch_val", tostring(roundForDisplay(cache.pitch)))
+    UI.setValue("dc_yaw_val", tostring(roundForDisplay(cache.yaw)))
+    UI.setValue("dc_distance_val", tostring(roundForDisplay(cache.distance)))
 end
 
 local function pushAllSlidersToUi()
@@ -50,6 +74,26 @@ local function pushAllSlidersToUi()
     pushSliderAttr("dc_yaw", cache.yaw)
     pushSliderAttr("dc_distance", cache.distance)
     syncingSliders = false
+    updateSliderValueLabels()
+end
+
+--- Highlights the active Admin Spoofing seat (mutually exclusive).
+local function refreshSpoofButtons()
+    if C == nil or type(C.PlayerColors) ~= "table" then
+        return
+    end
+    local inactiveColors = "#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)"
+    local activeColors = "#4488CC|#5599DD|#3377BB|rgba(0.2,0.35,0.5,0.55)"
+    for _, col in ipairs(C.PlayerColors) do
+        local btnId = "dc_spoof_" .. col
+        local isOn = activeSpoofColor == col
+        pcall(function()
+            UI.setAttributes(btnId, {
+                colors = isOn and activeColors or inactiveColors,
+                textColor = "#000000",
+            })
+        end)
+    end
 end
 
 local function formatCameraNumber(n)
@@ -138,6 +182,7 @@ function CameraDebugFocus.activate(player)
     UI.setValue("dc_debug_label", "Debug Camera [" .. tostring(player.color or "?") .. "]")
     UI.setValue("dc_mode_input", lastModeInput)
     UI.setAttribute("panel_debug_camera_root", "active", true)
+    refreshSpoofButtons()
     return true
 end
 
@@ -168,6 +213,7 @@ function CameraDebugFocus.onSlider(player, value, id)
     else
         return
     end
+    updateSliderValueLabels()
     applyLiveToPlayer(player)
 end
 
@@ -254,6 +300,96 @@ function CameraDebugFocus.applyNamedMode(player)
     -- Fallback: preserve prior behavior if main module is unavailable.
     applyLiveToPlayer(targetPlayer)
     return true, "Loaded camera mode '" .. modeName .. "' into sliders and applied via lookAt fallback."
+end
+
+--- Apply a preset mode key from shortcut buttons: sync sliders then M.setCamera.
+-- @param player Player
+-- @param modeName string
+-- @return boolean ok
+-- @return string message
+function CameraDebugFocus.applyPresetMode(player, modeName)
+    local targetPlayer = resolveActivePlayer(player)
+    if targetPlayer == nil then
+        return false, "No active player available for camera apply."
+    end
+    if type(modeName) ~= "string" or modeName == "" then
+        return false, "Invalid camera mode."
+    end
+    local preset = resolveModePresetForPlayer(targetPlayer, modeName)
+    if not loadCacheFromPreset(preset) then
+        return false, "Unknown or missing camera mode: '" .. modeName .. "'."
+    end
+    pushAllSlidersToUi()
+    if M ~= nil and type(M.setCamera) == "function" then
+        M.setCamera(targetPlayer, modeName)
+        return true, "Applied preset '" .. modeName .. "' via M.setCamera."
+    end
+    applyLiveToPlayer(targetPlayer)
+    return true, "Applied '" .. modeName .. "' via lookAt fallback."
+end
+
+--- Parse `dc_preset_<modeName>` from a Camera Angles button id.
+-- @param id string|nil
+-- @return string|nil modeName
+function CameraDebugFocus.modeNameFromPresetButtonId(id)
+    if type(id) ~= "string" then
+        return nil
+    end
+    local prefix = "dc_preset_"
+    if string.sub(id, 1, #prefix) ~= prefix then
+        return nil
+    end
+    return string.sub(id, #prefix + 1)
+end
+
+--- Admin Spoofing: copy seat `cameraAngles` into Storyteller state, or clear selection when toggling active color off.
+-- @param player Player
+-- @param color string Seat color (e.g. Brown)
+-- @return boolean ok
+-- @return string message
+function CameraDebugFocus.onSpoofColor(player, color)
+    if type(color) ~= "string" or color == "" then
+        return false, "Invalid color."
+    end
+    if activeSpoofColor == color then
+        activeSpoofColor = nil
+        refreshSpoofButtons()
+        return true, "Spoof selection cleared (Storyteller cameraAngles unchanged)."
+    end
+    if S == nil or type(S.getPlayerData) ~= "function" or type(S.setStateVal) ~= "function" then
+        return false, "State module unavailable."
+    end
+    if C == nil or C.StorytellerID == nil then
+        return false, "Constants unavailable."
+    end
+    local pdata = S.getPlayerData(color)
+    if type(pdata) ~= "table" or type(pdata.cameraAngles) ~= "table" then
+        local msg = "No cameraAngles for seat '" .. color .. "'."
+        U.AlertGM("CameraDebugFocus.onSpoofColor: " .. msg)
+        if player and player.color then
+            broadcastToColor("Debug Camera: " .. msg, player.color, { 1, 0.35, 0 })
+        end
+        return false, msg
+    end
+    activeSpoofColor = color
+    refreshSpoofButtons()
+    -- Deep-enough copy for nested angle tables (U.clone is shallow only; see lib/util.ttslua).
+    S.setStateVal(U.merge({}, pdata.cameraAngles), "playerData", C.StorytellerID, "cameraAngles")
+    return true, "Storyteller cameraAngles copied from " .. color .. "."
+end
+
+--- Parse seat color from `dc_spoof_<Color>` button id.
+-- @param id string|nil
+-- @return string|nil color
+function CameraDebugFocus.spoofColorFromButtonId(id)
+    if type(id) ~= "string" then
+        return nil
+    end
+    local prefix = "dc_spoof_"
+    if string.sub(id, 1, #prefix) ~= prefix then
+        return nil
+    end
+    return string.sub(id, #prefix + 1)
 end
 
 function CameraDebugFocus.done()

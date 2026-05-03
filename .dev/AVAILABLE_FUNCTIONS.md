@@ -311,9 +311,17 @@
 | `Soundscape.getState()` | Return current soundscape state | UI/debug state reads |
 | `Soundscape.getSummaryText()` | Return compact soundscape summary text | Storyteller panel summary |
 | `Soundscape.applyContext(context)` | Apply future weather/site/calendar audio context | `Soundscape.applyContext({ isIndoors = true, weather = "lightRain" })` |
-| `Soundscape.setMusicMood(moodKey)` | Set Storyteller-controlled music mood | `Soundscape.setMusicMood("intrigue")` |
-| `Soundscape.setWeatherCondition(weatherKey)` | Set weather layer | `Soundscape.setWeatherCondition("heavyRain")` |
-| `Soundscape.setLocationAudio(locationKey)` | Set site/location ambience layer | `Soundscape.setLocationAudio("sewers")` |
+| `Soundscape.setMusicMood(moodKey)` | Set trigger-based Storyteller music mood | `Soundscape.setMusicMood("intrigue")` |
+| `Soundscape.setLocationMusic(playlistKey)` | Set site-specific background music playlist | `Soundscape.setLocationMusic("CasaLoma")` |
+| `Soundscape.playFeaturedMusic(featureKey)` | Play featured music on the dedicated lane | `Soundscape.playFeaturedMusic("TR_Intro")` |
+| `Soundscape.stopFeaturedMusic()` | Stop the featured lane only | Intro/song cleanup |
+| `Soundscape.resumeBackgroundMusic()` | Restart saved mood/location music context | After featured music |
+| `Soundscape.setWeatherCondition(weatherKey)` | Set layered weather preset | `Soundscape.setWeatherCondition("thunderstorm")` |
+| `Soundscape.setRainLayer(rainKey)` | Set rain loop directly | `Soundscape.setRainLayer("heavyRain")` |
+| `Soundscape.setWindLayer(windKey)` | Set wind loop directly | `Soundscape.setWindLayer("whistlingWind1")` |
+| `Soundscape.setThunderEnabled(isEnabled)` | Start/cancel scheduled thunder triggers | `Soundscape.setThunderEnabled(true)` |
+| `Soundscape.triggerThunder(hitKey)` | Play one thunder trigger immediately | `Soundscape.triggerThunder("thunder1")` |
+| `Soundscape.setLocationAudio(locationKey)` | Set site/location ambience loop | `Soundscape.setLocationAudio("sewers")` |
 | `Soundscape.setIndoors(isIndoors)` | Apply indoor/outdoor weather ducking context | `Soundscape.setIndoors(true)` |
 | `Soundscape.stopAll()` | Stop all channels with the silent loop | Emergency silence |
 | `Soundscape.inspectEmitters()` | List hidden emitters, effects, and AudioSources | Debug verification |
@@ -334,7 +342,7 @@
 | `M.forPlayers(func)` | Iterate over all players | DRY pattern |
 | `M.advancePhase(newPhase)` | Change game phase | Manual phase control |
 | `M.syncPhase()` | Sync phase with state | Phase synchronization |
-| `M.setCamera(player, cameraMode, lookAtPos)` | Set camera angle | Cinematic control |
+| `M.setCamera(player, cameraMode, lookAtPos)` | Set camera angle (nudge → lookAt → setCameraMode → 1s wait → repeat lookAt to snap) | Cinematic control |
 | `M.onObjectDrop(playerColor, droppedObject, zone)` | Handle object drops | Event delegation |
 | `M.onPlayerAction(playerColor, action, clickState)` | Handle player actions | Custom hotkeys |
 

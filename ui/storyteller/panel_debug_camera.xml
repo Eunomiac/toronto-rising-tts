@@ -2,47 +2,114 @@
   <HorizontalLayout flexibleHeight="0" />
   <Text flexibleWidth="0" />
   <Button flexibleWidth="0" flexibleHeight="0" />
-  <Slider minWidth="300" />
+  <Slider minWidth="120" />
 </Defaults>
 
 <!-- Focused camera debug: live lookAt sliders + snapshot (Host). -->
-<Panel id="panel_debug_camera_root" active="false" color="rgba(0,0,0,0.82)" padding="10 10 10 10" width="800" scale="0.8" rectAlignment="MiddleRight" offsetXY="-300 0" raycastTarget="true">
-  <VerticalLayout spacing="5" childForceExpandWidth="true" childForceExpandHeight="false">
+<!-- Universal preset row (c): keep keys in sync with C.UniversalCameraAngles (alphabetical). -->
+<Panel id="panel_debug_camera_root" active="false" color="rgba(0,0,0,0.82)" padding="10 10 10 10" width="1080" scale="0.8" rectAlignment="MiddleRight" offsetXY="-360 0" raycastTarget="true">
+  <VerticalLayout spacing="6" childForceExpandWidth="true" childForceExpandHeight="false">
     <Text id="dc_debug_label" fontSize="14" color="#7FE7FF" preferredHeight="32">Debug Camera</Text>
 
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">position.x</Text>
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="15" color="#CCCCCC">position.x</Text>
       <Slider id="dc_positionX" minValue="-200" maxValue="200" value="0" flexibleWidth="1" onValueChanged="HUD_debugCameraSlider" />
+      <Text id="dc_positionX_val" preferredWidth="64" minWidth="64" flexibleWidth="0" fontSize="14" color="#EEEEEE" alignment="MiddleRight">0</Text>
     </HorizontalLayout>
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">position.y</Text>
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="15" color="#CCCCCC">position.y</Text>
       <Slider id="dc_positionY" minValue="0" maxValue="100" value="0" flexibleWidth="1" onValueChanged="HUD_debugCameraSlider" />
+      <Text id="dc_positionY_val" preferredWidth="64" minWidth="64" flexibleWidth="0" fontSize="14" color="#EEEEEE" alignment="MiddleRight">0</Text>
     </HorizontalLayout>
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">position.z</Text>
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="15" color="#CCCCCC">position.z</Text>
       <Slider id="dc_positionZ" minValue="-100" maxValue="100" value="0" flexibleWidth="1" onValueChanged="HUD_debugCameraSlider" />
+      <Text id="dc_positionZ_val" preferredWidth="64" minWidth="64" flexibleWidth="0" fontSize="14" color="#EEEEEE" alignment="MiddleRight">0</Text>
     </HorizontalLayout>
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">pitch</Text>
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="15" color="#CCCCCC">pitch</Text>
       <Slider id="dc_pitch" minValue="0" maxValue="90" value="0" flexibleWidth="1" onValueChanged="HUD_debugCameraSlider" />
+      <Text id="dc_pitch_val" preferredWidth="64" minWidth="64" flexibleWidth="0" fontSize="14" color="#EEEEEE" alignment="MiddleRight">0</Text>
     </HorizontalLayout>
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">yaw</Text>
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="15" color="#CCCCCC">yaw</Text>
       <Slider id="dc_yaw" minValue="0" maxValue="360" value="0" flexibleWidth="1" onValueChanged="HUD_debugCameraSlider" />
+      <Text id="dc_yaw_val" preferredWidth="64" minWidth="64" flexibleWidth="0" fontSize="14" color="#EEEEEE" alignment="MiddleRight">0</Text>
     </HorizontalLayout>
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">distance</Text>
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text preferredWidth="110" fontSize="15" color="#CCCCCC">distance</Text>
       <Slider id="dc_distance" minValue="0" maxValue="200" value="40" flexibleWidth="1" onValueChanged="HUD_debugCameraSlider" />
+      <Text id="dc_distance_val" preferredWidth="64" minWidth="64" flexibleWidth="0" fontSize="14" color="#EEEEEE" alignment="MiddleRight">40</Text>
     </HorizontalLayout>
 
-    <HorizontalLayout preferredHeight="32" spacing="8" childAlignment="MiddleCenter">
-      <Button class="smallButton" preferredWidth="120" fontSize="11" onClick="HUD_debugCameraSnapshot">Snapshot</Button>
-      <Button class="smallButton" preferredWidth="120" fontSize="11" onClick="HUD_debugCameraDone">Done</Button>
+    <HorizontalLayout preferredHeight="34" spacing="8" childAlignment="MiddleCenter">
+      <Button class="smallButton" preferredWidth="120" fontSize="11" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraSnapshot">Snapshot</Button>
+      <Button class="smallButton" preferredWidth="120" fontSize="11" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraDone">Done</Button>
     </HorizontalLayout>
 
-    <HorizontalLayout preferredHeight="32" spacing="8" childForceExpandWidth="false" childAlignment="MiddleCenter">
-      <InputField id="dc_mode_input" preferredWidth="240" minWidth="240" preferredHeight="30" minHeight="30" lineType="SingleLine" fontSize="12" textColor="#111111" placeholder="camera mode key (e.g. sheet)" onValueChanged="HUD_debugCameraModeInput" onEndEdit="HUD_debugCameraModeInput"></InputField>
-      <Button class="smallButton" preferredWidth="70" fontSize="11" onClick="HUD_debugCameraApplyMode">OK</Button>
+    <HorizontalLayout preferredHeight="36" spacing="8" childForceExpandWidth="false" childAlignment="MiddleCenter">
+      <InputField id="dc_mode_input" preferredWidth="280" minWidth="280" preferredHeight="34" minHeight="34" lineType="SingleLine" fontSize="15" textColor="#111111" placeholder="camera mode key (e.g. sheet)" onValueChanged="HUD_debugCameraModeInput" onEndEdit="HUD_debugCameraModeInput"></InputField>
+      <Button class="smallButton" preferredWidth="70" fontSize="11" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraApplyMode">OK</Button>
+    </HorizontalLayout>
+
+    <Text fontSize="13" color="#7FE7FF" preferredHeight="24">Admin Spoofing</Text>
+    <HorizontalLayout preferredHeight="36" spacing="6" childAlignment="MiddleCenter" childForceExpandWidth="false">
+      <Button id="dc_spoof_Brown" preferredWidth="100" fontSize="11" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraSpoof">Brown</Button>
+      <Button id="dc_spoof_Orange" preferredWidth="100" fontSize="11" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraSpoof">Orange</Button>
+      <Button id="dc_spoof_Red" preferredWidth="100" fontSize="11" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraSpoof">Red</Button>
+      <Button id="dc_spoof_Pink" preferredWidth="100" fontSize="11" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraSpoof">Pink</Button>
+      <Button id="dc_spoof_Purple" preferredWidth="100" fontSize="11" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraSpoof">Purple</Button>
+    </HorizontalLayout>
+
+    <Text fontSize="13" color="#7FE7FF" preferredHeight="24">Camera Angles</Text>
+    <HorizontalLayout preferredHeight="34" spacing="4" childAlignment="MiddleCenter" childForceExpandWidth="false">
+      <Button id="dc_preset_default" preferredWidth="100" fontSize="10" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">default</Button>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="34" spacing="4" childAlignment="MiddleCenter" childForceExpandWidth="false">
+      <Button id="dc_preset_sheet" preferredWidth="88" fontSize="10" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">sheet</Button>
+      <Button id="dc_preset_roll" preferredWidth="88" fontSize="10" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">roll</Button>
+      <Button id="dc_preset_diceTray" preferredWidth="88" fontSize="10" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">diceTray</Button>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="34" spacing="3" childAlignment="MiddleCenter" childForceExpandWidth="false">
+      <Button id="dc_preset_districtCard" preferredWidth="92" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">districtCard</Button>
+      <Button id="dc_preset_npcCenter" preferredWidth="84" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">npcCenter</Button>
+      <Button id="dc_preset_npcFarLeft" preferredWidth="84" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">npcFarLeft</Button>
+      <Button id="dc_preset_npcFarRight" preferredWidth="88" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">npcFarRight</Button>
+      <Button id="dc_preset_npcNearLeft" preferredWidth="92" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">npcNearLeft</Button>
+      <Button id="dc_preset_npcNearRight" preferredWidth="96" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">npcNearRight</Button>
+      <Button id="dc_preset_siteCard" preferredWidth="80" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">siteCard</Button>
+      <Button id="dc_preset_wide" preferredWidth="64" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">wide</Button>
+      <Button id="dc_preset_wideFacing" preferredWidth="88" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">wideFacing</Button>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="34" spacing="4" childAlignment="MiddleCenter" childForceExpandWidth="false">
+      <Button id="dc_preset_sheetBrown" preferredWidth="100" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">sheetBrown</Button>
+      <Button id="dc_preset_rollBrown" preferredWidth="100" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">rollBrown</Button>
+      <Button id="dc_preset_diceTrayBrown" preferredWidth="108" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">diceTrayBrown</Button>
+      <Button id="dc_preset_facingBrown" preferredWidth="104" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">facingBrown</Button>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="34" spacing="4" childAlignment="MiddleCenter" childForceExpandWidth="false">
+      <Button id="dc_preset_sheetOrange" preferredWidth="104" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">sheetOrange</Button>
+      <Button id="dc_preset_rollOrange" preferredWidth="104" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">rollOrange</Button>
+      <Button id="dc_preset_diceTrayOrange" preferredWidth="112" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">diceTrayOrange</Button>
+      <Button id="dc_preset_facingOrange" preferredWidth="108" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">facingOrange</Button>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="34" spacing="4" childAlignment="MiddleCenter" childForceExpandWidth="false">
+      <Button id="dc_preset_sheetRed" preferredWidth="92" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">sheetRed</Button>
+      <Button id="dc_preset_rollRed" preferredWidth="92" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">rollRed</Button>
+      <Button id="dc_preset_diceTrayRed" preferredWidth="100" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">diceTrayRed</Button>
+      <Button id="dc_preset_facingRed" preferredWidth="96" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">facingRed</Button>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="34" spacing="4" childAlignment="MiddleCenter" childForceExpandWidth="false">
+      <Button id="dc_preset_sheetPink" preferredWidth="96" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">sheetPink</Button>
+      <Button id="dc_preset_rollPink" preferredWidth="96" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">rollPink</Button>
+      <Button id="dc_preset_diceTrayPink" preferredWidth="104" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">diceTrayPink</Button>
+      <Button id="dc_preset_facingPink" preferredWidth="100" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">facingPink</Button>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="34" spacing="4" childAlignment="MiddleCenter" childForceExpandWidth="false">
+      <Button id="dc_preset_sheetPurple" preferredWidth="104" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">sheetPurple</Button>
+      <Button id="dc_preset_rollPurple" preferredWidth="104" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">rollPurple</Button>
+      <Button id="dc_preset_diceTrayPurple" preferredWidth="112" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">diceTrayPurple</Button>
+      <Button id="dc_preset_facingPurple" preferredWidth="108" fontSize="9" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraAngle">facingPurple</Button>
     </HorizontalLayout>
   </VerticalLayout>
 </Panel>

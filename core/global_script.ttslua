@@ -22,6 +22,18 @@ C = require("lib.constants")
 
 S = require("core.state")
 M = require("core.main")
+
+--- Seat camera preset during dice rolls (`roll`, `diceTray`, `default`). Safe no-op if unseated.
+-- @param params table  { color: string, mode?: string }
+function GlobalRollSeatCamera(params)
+    if type(params) ~= "table" or type(params.color) ~= "string" then return end
+    local mode = type(params.mode) == "string" and params.mode or "roll"
+    if M == nil or type(M.setCamera) ~= "function" then return end
+    pcall(function()
+        M.setCamera(params.color, mode)
+    end)
+end
+
 Z = require("core.zones")
 Scenes = require("core.scenes")
 SS = require("core.soundscape")
@@ -31,6 +43,7 @@ local HUDP = require("core.hud_player")
 local HO = require("core.hud_overlays")
 NPCS = require("core.npcs")
 PCST = require("core.pc_storyteller_panel")
+SoundscapeDebugPanel = require("core.soundscape_debug_panel")
 local DiceDrawer = require("lib.dice_drawer")
 
 -- Load debug module (only in development). Must be global so TTS console `lua DEBUG.foo()` works.
@@ -147,7 +160,9 @@ function GlobalReportBagDiceCount(params)
         hunger = count
     end
 
-    RC.setPool(color, normal, hunger)
+    if RC.setPool(color, normal, hunger) then
+        GlobalRollSeatCamera({ color = color, mode = "roll" })
+    end
 end
 
 --- Resolves which logical die type a bag click should spawn (Auto-Hunger redirect, Hunger Dice off).
@@ -238,11 +253,15 @@ function GlobalInitiateRoll(params)
 
     -- Dice bags and character sheets call GlobalInitiateRoll — treat as player-initiated
     -- so the player panel is shown immediately with "Awaiting Storyteller..." feedback.
-    return RC.initiateRoll(color, {
+    local ok = RC.initiateRoll(color, {
         rollType  = rollType,
         label     = params.label or "",
         initiator = params.initiator or "player",
     })
+    if ok then
+        GlobalRollSeatCamera({ color = color, mode = "roll" })
+    end
+    return ok
 end
 
 --- Shallow snapshot of character sheet tracker presentation (glyphs + optional sheet `image` ids).
@@ -280,6 +299,11 @@ function onLoad(saved_data)
 
     -- Initialize main module
     M.onLoad()
+
+    -- Non-interactable + per-player invisibility from `C.LockedObjects` / `C.HiddenObjects` (replaces per-object onLoad scripts)
+    if O ~= nil and type(O.ApplyLockedAndHiddenFromConstants) == "function" then
+        O.ApplyLockedAndHiddenFromConstants()
+    end
 
     -- Ensure table objects/components and seat layout objects are synchronized to current saved table
     -- state during load. Defer slightly so object GUID lookups (including relative objects) are ready.
@@ -964,6 +988,92 @@ function HUD_debugCameraApplyMode(player, button, id)
     broadcastToColor(tostring(message), player.color, {0, 1, 1})
 end
 
+--- Admin Spoofing: copy a seat's cameraAngles into Storyteller state (Debug Camera panel).
+-- @param player Player
+-- @param button string|nil
+-- @param id string|nil Button id e.g. dc_spoof_Brown
+function HUD_debugCameraSpoof(player, button, id)
+    if CameraDebugFocus == nil or type(CameraDebugFocus.onSpoofColor) ~= "function" then
+        broadcastToColor("Debug Camera: module not loaded.", player.color, {1, 0.35, 0})
+        return
+    end
+    local color = CameraDebugFocus.spoofColorFromButtonId(id)
+    if color == nil or color == "" then
+        broadcastToColor("Debug Camera: invalid spoof button.", player.color, {1, 0.35, 0})
+        return
+    end
+    local ok, message = CameraDebugFocus.onSpoofColor(player, color)
+    if not ok then
+        broadcastToColor("Debug Camera: " .. tostring(message), player.color, {1, 0.35, 0})
+        return
+    end
+    broadcastToColor(tostring(message), player.color, {0, 1, 1})
+end
+
+--- Camera Angles shortcut: apply preset mode for the active debug target player.
+-- @param player Player
+-- @param button string|nil
+-- @param id string|nil Button id e.g. dc_preset_sheetRed
+function HUD_debugCameraAngle(player, button, id)
+    if CameraDebugFocus == nil or type(CameraDebugFocus.applyPresetMode) ~= "function" then
+        broadcastToColor("Debug Camera: module not loaded.", player.color, {1, 0.35, 0})
+        return
+    end
+    local modeName = CameraDebugFocus.modeNameFromPresetButtonId(id)
+    if modeName == nil or modeName == "" then
+        broadcastToColor("Debug Camera: invalid angle button.", player.color, {1, 0.35, 0})
+        return
+    end
+    local ok, message = CameraDebugFocus.applyPresetMode(player, modeName)
+    if not ok then
+        broadcastToColor("Debug Camera: " .. tostring(message), player.color, {1, 0.35, 0})
+        return
+    end
+    broadcastToColor(tostring(message), player.color, {0, 1, 1})
+end
+
+--- Open the catalog-driven soundscape debug panel.
+-- @param player Player
+-- @param button string|nil
+-- @param id string|nil
+function HUD_debugSoundscapeActivate(player, button, id)
+    if SoundscapeDebugPanel and SoundscapeDebugPanel.activate then
+        SoundscapeDebugPanel.activate(player)
+    else
+        broadcastToColor("Debug Soundscape: module not loaded.", player.color, {1, 0.35, 0})
+    end
+end
+
+--- Play a debug soundscape track routed by the debug panel.
+-- @param player Player
+-- @param button string|nil
+-- @param id string
+function HUD_debugSoundscapePlay(player, button, id)
+    if SoundscapeDebugPanel and SoundscapeDebugPanel.onPlay then
+        SoundscapeDebugPanel.onPlay(player, button, id)
+    end
+end
+
+--- Adjust a debug soundscape track volume immediately.
+-- @param player Player
+-- @param value number|string
+-- @param id string
+function HUD_debugSoundscapeVolume(player, value, id)
+    if SoundscapeDebugPanel and SoundscapeDebugPanel.onVolume then
+        SoundscapeDebugPanel.onVolume(player, value, id)
+    end
+end
+
+--- Close the soundscape debug panel.
+-- @param player Player
+-- @param button string|nil
+-- @param id string|nil
+function HUD_debugSoundscapeDone(player, button, id)
+    if SoundscapeDebugPanel and SoundscapeDebugPanel.done then
+        SoundscapeDebugPanel.done()
+    end
+end
+
 --[[
     Debug test button handlers (admin panel)
     Each calls the corresponding test from core/debug.ttslua (exposed as globals by that module).
@@ -1259,7 +1369,14 @@ RC.onRollStateChanged = function(color)
     RUI.refreshSTDashboard()
 end
 
+RC.onRollCamera = function(color, modeName)
+    if type(color) == "string" and type(modeName) == "string" then
+        GlobalRollSeatCamera({ color = color, mode = modeName })
+    end
+end
+
 RC.onRollResolved = function(color, result, label)
+    GlobalRollSeatCamera({ color = color, mode = "default" })
     RUI.showResultBroadcast(color, result, label)
     -- Drawer stays open until the broadcast hides and dice are destroyed (see below).
     local existingTimerId = pendingRollCleanupTimerIds[color]
@@ -1378,6 +1495,11 @@ function onObjectRandomize(obj, playerColor)
                 p.clearSelectedObjects()
             end
         end
+    end
+
+    -- Willpower reroll wave: per-die tray locks (before table-wide debounce).
+    if RC.onWpRerollDieRandomized ~= nil then
+        RC.onWpRerollDieRandomized(color, obj)
     end
 
     -- Delegate debounce reset to roll controller
@@ -1505,6 +1627,8 @@ function HUD_rollRollButton(player, value, id)
     local color = colorFromRollElementId(id)
     if color == nil then return end
 
+    GlobalRollSeatCamera({ color = color, mode = "diceTray" })
+
     -- Auto-spawn any missing dice before transitioning to ROLLING.
     -- This handles roll types with a pre-computed pool (Rouse: 1 hunger die,
     -- Remorse: N normal dice) where the player hasn't manually spawned dice yet.
@@ -1566,6 +1690,8 @@ end
 function HUD_rollSpendWP(player, value, id)
     local color = colorFromRollElementId(id)
     if color == nil then return end
+
+    GlobalRollSeatCamera({ color = color, mode = "diceTray" })
     RC.spendWillpower(color)
 end
 

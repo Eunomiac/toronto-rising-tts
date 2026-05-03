@@ -51,8 +51,7 @@ function M.setupPlayers()
     print("Main: Promoted player " .. player.color)
   end
 
-  -- Make objects on Storyteller table invisible to all players
-  getObjectFromGUID(G.GUIDS.GM_TABLE).setInvisibleTo(C.PlayerColors)
+  -- Objects on / above the Storyteller table: GM table + GM light use `C.HiddenObjects` via O.ApplyLockedAndHiddenFromConstants() in Global.onLoad.
   U.forEach(
     U.findAboveObject(
       getObjectFromGUID(G.GUIDS.GM_TABLE), nil, { box = true, far = true }
@@ -393,7 +392,12 @@ function M.setCamera(player, cameraMode, lookAtPos)
       end,
       function()
         player.setCameraMode(playerCameraMode)
-      end
+        -- One second after final adjustment (including mode), repeat lookAt so TTS snaps to the exact transform.
+        return 1
+      end,
+      function()
+        player.lookAt(cameraData)
+      end,
     })
   end
 end

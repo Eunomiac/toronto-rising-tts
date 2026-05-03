@@ -300,7 +300,8 @@ end
 --   { successes, pairs, bonusSuccesses, resultClass, margin, hasTens, hungerTens, hungerOnes }
 -- @usage local r = Dice.classifyRoll({10, 7, 3}, {10, 1}, 2)
 --        -- successes=5 (3 base + 2 bonus from 1 pair), resultClass="messyCritical"
--- opts (optional table): countCriticalPairs (default true), bestialNull (default false)
+-- opts (optional table): countCriticalPairs (default true), bestialNull (default false).
+-- Extend classification toggles in core.roll_controller CLASSIFICATION_OPT_BUILDERS (not here).
 function Dice.classifyRoll(normalDice, hungerDice, difficulty, opts)
     U.Val("Dice.classifyRoll()", {normalDice = normalDice, hungerDice = hungerDice},
         U.Type(normalDice) == "table" and U.Type(hungerDice) == "table",
