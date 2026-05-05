@@ -779,8 +779,12 @@ end
 -- @param source string The name/context of where the error occurred (e.g., function name)
 -- @param message string The error message
 -- @param val any Optional: Value to include in error (use "NOVAL" to skip value logging)
--- @return nil Always calls error(), never returns
+-- @return never Always calls error(); does not return to the caller
 -- @usage U.error("setupPlayer", "Invalid player color", playerColor)
+---@param source string
+---@param message string
+---@param val? any
+---@return never
 function U.error(source, message, val)
 	local errString = "[" .. source .. "] " .. message
 	local valString
@@ -1432,8 +1436,6 @@ function U.getObject(ref, isSilent)
 	end
 	if not isSilent then
 		U.error("U.getObject", "Invalid object reference", ref)
-		---@cast ref Object
-		return ref
 	end
 	return nil
 end
