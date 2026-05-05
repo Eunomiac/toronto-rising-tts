@@ -1,3 +1,4 @@
+---@diagnostic disable: need-check-nil, lowercase-global
 --[[
     Lighting Control Module (core/lighting.ttslua)
 
@@ -1371,6 +1372,7 @@ local function isNpcSeatLightActive(lightRef)
     end
     local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
     local tableCfg = U.Type(currentTableKey) == "string" and C.Tables[currentTableKey] or nil
+    ---@diagnostic disable-next-line: undefined-field
     local tableMap = U.Type(tableCfg) == "table" and tableCfg.playerToPositionMap or nil
     if U.Type(tableMap) ~= "table" or tableMap[seatKey] == nil then
         return false
@@ -1751,7 +1753,7 @@ function L.ResetLights()
         if modes.loadRotation then
             local light = getLight(name)
             if light then
-                local comp = getLightComponent(light)
+                local comp = getLightComponent(light, true)
                 if comp then
                     comp.set("enabled", false)
                     light.setRotation(Vector(180, 0, 0))

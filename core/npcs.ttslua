@@ -211,7 +211,7 @@ local function deepMerge(base, override)
     if U.Type(override) ~= "table" then
         return out
     end
-    for k, v in pairs(override) do
+    for k, v in pairs(override or {}) do
         if U.Type(v) == "table" and U.Type(out[k]) == "table" then
             out[k] = deepMerge(out[k], v)
         else
@@ -479,7 +479,7 @@ end
 --- @param areaKey string
 --- @return boolean
 function NPCS.isAreaCompletelyEmpty(areaKey)
-    return next(NPCS.getOccupiedSlots(areaKey)) == nil
+    return next(NPCS.getOccupiedSlots(areaKey) or {}) == nil
 end
 
 --- @param areaKey string
@@ -491,7 +491,7 @@ function NPCS.areaHasFreeSlot(areaKey)
     end
     local occ = NPCS.getOccupiedSlots(areaKey)
     for i = 1, #area.positions do
-        if occ[i] == nil then
+        if occ and occ[i] == nil then
             return true
         end
     end
@@ -507,7 +507,7 @@ function NPCS.findNextFreeSlotIndex(areaKey)
     end
     local occ = NPCS.getOccupiedSlots(areaKey)
     for i = 1, #area.positions do
-        if occ[i] == nil then
+        if occ and occ[i] == nil then
             return i
         end
     end
@@ -526,7 +526,7 @@ local function resolveSlotForMove(areaKey, preferred)
     local n = #area.positions
     if U.Type(preferred) == "number" and preferred >= 1 and preferred <= n then
         local occ = NPCS.getOccupiedSlots(areaKey)
-        if occ[preferred] == nil then
+        if occ and occ[preferred] == nil then
             return preferred
         end
     end
@@ -1261,7 +1261,7 @@ isNpcLocked = function(rec)
     if U.Type(rec) ~= "table" then
         return false
     end
-    return rec.locked == true or tostring(rec.locked) == "true"
+    return rec and rec.locked == true or tostring(rec and rec.locked) == "true"
 end
 
 --- @param groupId string
@@ -1339,6 +1339,7 @@ function NPCS.restoreAfterStateLoad()
     for _, seatKey in ipairs(C.NPCSeats or {}) do
         local occupant = occupied[seatKey]
         if U.Type(occupant) == "string" and occupant ~= "" then
+            ---@cast occupant string
             applySeatFigurineVisuals(occupant, seatKey)
         end
     end
@@ -1352,7 +1353,7 @@ local function xmlEscape(s)
     if U.Type(s) ~= "string" then
         return ""
     end
-    return s:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;"):gsub("\"", "&quot;")
+    return (s:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;"):gsub("\"", "&quot;"))
 end
 
 --- Dispatch NPC panel clicks (stable semantic ids from generated panel_npcs.xml).
@@ -1471,6 +1472,7 @@ function NPCS.dispatchNpcUiClick(id)
             safeAlertGM("No seated NPC assigned to " .. tostring(seatedSlot) .. ".")
             return
         end
+        ---@cast occupant string
         local ok, err
         if getInstances()[occupant] ~= nil then
             ok, err = NPCS.moveNpcToArea(occupant, seatedArea)
@@ -1490,6 +1492,7 @@ function NPCS.dispatchNpcUiClick(id)
             safeAlertGM("No seated NPC assigned to " .. tostring(seatedUnseatSlot) .. ".")
             return
         end
+        ---@cast occupant string
         local ok, err = NPCS.unseatNpc(occupant)
         if not ok then
             safeAlertGM("NPC unseat: " .. tostring(err))
@@ -1682,7 +1685,7 @@ local function spliceNpcPanelRowsIntoUiXml(xml, tableXml)
     return before .. tableXml .. after, nil
 end
 
---- @return function|false|nil
+--- @return function|nil `DEBUG.writeWorkspaceFile` or nil if unavailable
 local function resolveWriteWorkspaceFile()
     if cachedWriteWorkspaceFile == false then
         return nil
@@ -1732,7 +1735,7 @@ end
 --- @return boolean
 local function writeNpcPanelSnapshotToWorkspace(tableXml, routeBuild, silent)
     local fn = resolveWriteWorkspaceFile()
-    if fn == nil then
+    if fn == nil or type(fn) ~= "function" then
         return false
     end
     if U.Type(tableXml) ~= "string" then
@@ -1853,7 +1856,6 @@ end
 --- Update button attrs without losing intended text color.
 --- @param id string
 --- @param attrs table
---- @param textColor string|nil
 local function setUiButtonAttrsSafe(id, attrs)
     local out = U.clone(attrs or {})
     setUiAttrsSafe(id, out)

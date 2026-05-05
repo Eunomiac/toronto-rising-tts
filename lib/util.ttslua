@@ -784,7 +784,6 @@ end
 ---@param source string
 ---@param message string
 ---@param val? any
----@return never
 function U.error(source, message, val)
 	local errString = "[" .. source .. "] " .. message
 	local valString
@@ -3480,7 +3479,8 @@ function U.debugParseGmNotesHeader(gmNotes)
 	if U.Type(gmNotes) ~= "string" or gmNotes == "" then
 		return nil
 	end
-	local firstLine = string.match(gmNotes, "^[^\r\n]*")
+	---@cast gmNotes string
+	local firstLine = string.match(gmNotes, "^[^\r\n]*") or ""
 	return parseDebugGmFirstLine(firstLine)
 end
 
@@ -3553,7 +3553,7 @@ function U.getDebugObjectSingle(testId, role, opts)
 end
 
 --- Sets GM Notes (header + optional body) and ensures `U.DEBUG_OBJECT_TAG` is present among tags.
---- @param obj userdata|nil TTS Object
+--- @param obj Object|nil TTS Object
 --- @param testId string
 --- @param role string
 --- @param extraNotes string|nil Appended after header (e.g. preserved NPC light tuning lines).

@@ -5,13 +5,32 @@
 -- about common TTS component/class names used in annotations.
 
 ---@class Component
+---@field name string|nil
 local Component = {}
----@param key string
+---@param ... any
 ---@return any
-function Component:get(key) end
----@param key string
+function Component.get(...) end
+---@param property string
 ---@param value any
-function Component:set(key, value) end
+function Component.set(property, value) end
+
+---@class ObjectUI
+local ObjectUI = {}
+---@param id string
+---@param attribute string
+---@param value string|boolean|number
+function ObjectUI.setAttribute(id, attribute, value) end
+
+---@class Vector
+---@field x number
+---@field y number
+---@field z number
+local Vector = {}
+
+---@class Bounds
+---@field center Vector
+---@field size Vector
+local Bounds = {}
 
 ---@class Transform: Component
 local Transform = {}
@@ -41,33 +60,58 @@ local Camera = {}
 local AudioListener = {}
 
 ---@class Object
+---@field name string|nil
+---@field interactable boolean
+---@field UI ObjectUI|nil
 local Object = {}
 ---@return Vector
-function Object:getPosition() end
+function Object.getPosition(...) end
 ---@return Vector
-function Object:getRotation() end
----@param componentType string
----@return Component|nil
-function Object:getComponentInChildren(componentType) end
----@param componentType string
----@return Component[]
-function Object:getComponentsInChildren(componentType) end
----@return Object[]
-function Object:getChildren() end
----@param notes string
-function Object:setGMNotes(notes) end
+function Object.getRotation(...) end
 ---@return string
-function Object:getGMNotes() end
+function Object.getGUID(...) end
+---@return string
+function Object.getName(...) end
+---@param ... any
+---@return Component|nil
+function Object.getComponentInChildren(...) end
+---@param ... any
+---@return Component[]
+function Object.getComponentsInChildren(...) end
+---@param ... any
+---@return Component[]
+function Object.getComponents(...) end
+---@return Object[]
+function Object.getChildren(...) end
+---@param ... any
+function Object.setGMNotes(...) end
+---@return string
+function Object.getGMNotes(...) end
 ---@return string[]
-function Object:getTags() end
----@param tags string[]
-function Object:setTags(tags) end
+function Object.getTags(...) end
+---@param ... any
+function Object.setTags(...) end
+---@param data table
+function Object.setCustomObject(data) end
+function Object.reload(...) end
+---@param name string
+function Object.setName(name) end
+---@param position Vector|table
+function Object.setPosition(position) end
+---@param rotation Vector|table
+function Object.setRotation(rotation) end
+---@param tag string
+---@return boolean
+function Object.hasTag(tag) end
+---@param tag string
+function Object.addTag(tag) end
+---@param playerColors string[]
+function Object.setInvisibleTo(playerColors) end
+---@return Bounds
+function Object.getBounds(...) end
 
 ---@class GameObject: Object
 local GameObject = {}
-
----@class Vector
-local Vector = {}
 
 ---@class Color
 local Color = {}
@@ -77,34 +121,32 @@ local Color = {}
 ---@field steam_name string
 ---@field steam_id string|number
 local Player = {}
----@param mode string
-function Player:setCameraMode(mode) end
----@param position Vector|table
-function Player:lookAt(position) end
+---@param ... any
+function Player.setCameraMode(...) end
+---@param ... any
+function Player.lookAt(...) end
 
 ---@class HandsAPI
 ---@field playerToPositionMap table<string, any>
 local HandsAPI = {}
+---@return table
+function HandsAPI.getHands(...) end
 
 ---@type HandsAPI
-Hands = Hands
+Hands = Hands or {}
 
----@param tags string[]
 ---@return Object[]
-function getObjectsWithAllTags(tags) end
+function getObjectsWithAllTags(...) end
 
----@param color string
 ---@return table
-function stringColorToRGB(color) end
+function stringColorToRGB(...) end
 
----@param style string
----@param color table
----@param prefix string
----@param suffix string
-function logStyle(style, color, prefix, suffix) end
+function logStyle(...) end
 
 return {
   Component = Component,
+  ObjectUI = ObjectUI,
+  Bounds = Bounds,
   Transform = Transform,
   Light = Light,
   Material = Material,

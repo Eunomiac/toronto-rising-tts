@@ -1,4 +1,4 @@
----@diagnostic disable: undefined-global
+---@diagnostic disable: undefined-global, lowercase-global
 -- Character sheet object UI: derive owner from object name CSHEET_PAGE_<n>_<COLOR>.
 -- Host object Lua must be only `require("ui.ui_csheet")`. A second global `function onLoad()`
 -- after that require replaces this file's onLoad and breaks navigation / state (pageNum stays nil).
@@ -142,7 +142,7 @@ local function applyCsheetNavButtonsActiveOnObject(obj, show)
   for _, id in ipairs(CSHEET_NAV_BUTTON_IDS) do
     -- Known non-fatal case: page-specific nav controls may be absent on some pages.
     pcall(function()
-      obj.U.setAttribute(id, "active", a)
+      obj.UI.setAttribute(id, "active", a)
     end)
   end
 end
@@ -157,7 +157,7 @@ local function applyCsheetRootActiveOnObject(obj, show)
   local a = show and "true" or "false"
   -- Known non-fatal case: root panel id may be absent in alternate XML variants.
   pcall(function()
-    obj.U.setAttribute(CSHEET_ROOT_PANEL_ID, "active", a)
+    obj.UI.setAttribute(CSHEET_ROOT_PANEL_ID, "active", a)
   end)
 end
 
