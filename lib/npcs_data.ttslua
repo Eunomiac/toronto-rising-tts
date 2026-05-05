@@ -1691,14 +1691,14 @@ D.characters = {
       note = "Stats not set."
     }
   },
-  alexisHoitt = {
-    name = "alexisHoitt",
-    fullName = "Alexis Hoitt",
+  alexisHoltt = {
+    name = "alexisHoltt",
+    fullName = "Alexis Holtt",
     labelColor = "#AAAAAAAA",
     figurine = {
       images = {
-        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/alexisHoitt.webp",
-        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/alexisHoittBack.webp"
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/alexisHoltt.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/alexisHolttBack.webp"
       },
       scale = 53,
       seatedScale = 66
