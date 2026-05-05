@@ -260,29 +260,1516 @@ Now, let's assume I take the following actions:
   5.a **Because `stirlingSiskin` is locked in slot 1**, the other four Five Keys members will be pushed into the next available slot: Normally, `myleneHamelin` would move into slot 1 -- but that is occupied by a locked-in-place `stirlingSiskin`. So, she will move into slot 2. `adrianVarga`, normally in slot 2, will then have to move into slot 3. `jesseSharp`, normally in slot 3, will likewise be moved into slot 4, which is `stirlingSiskin`'s normal slot. `zuriOlowusi` is normally in slot 5, and she can be safely moved into slot 5 since it is unoccupied. At the end of this process, all five members of Five Keys will have their "centerForward" buttons greenlit, and `stirlingSiskin` alone will still have his lock button red.
   5.b **If I unlocked `stirlingSiskin` before I moved the Five Keys:** Because `stirlingSiskin` is not locked in place, he is free to move. Accordingly, all members of Five Keys will move into their proper slots (as there are no locked NPCs there blocking any of them). At the end of this process, all five members of Five Keys will have their "centerForward" buttons greenlit, and all five lock buttons would be grey.
 ]]
-local colors = {
-  goodDoctors = "#D1B200",
-  redFlag = "#AA0000",
-  redeemers = "#91FF00",
-  theLine = "#0033C0",
-  colorBlitz = "#D100C7",
-  jarvisJacks = "#640000",
-  princesCourt = "#FFD900",
-  fiveKeys = "#D1B200",
-  freeChantry = "#5500C5",
-  regencyUniversityChantry = "#D80077",
-  beesHive = "#6B4000",
-  harpies = "#FFFD79",
-  midnightMass = "#9900FF",
-  moonClub = "#00C7CE",
-  scarlettAndTheBoys = "#FF0000",
-  ironGuard = "#AAAAAA",
-  wychwoodHecata = "#FFFFFF",
-  petitioners = "#AAAAAA",
-  theFriendlyNeighborhoodSpiders = "#435500"
-}
 
 D.characters = {
+  lordLucien = {
+    name = "lordLucien",
+    fullName = "Lord Lucien",
+    labelColor = "#FFD900FF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/lordLucien.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/lordLucienBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      princesCourt = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  rashid = {
+    name = "rashid",
+    fullName = "Rashid Abdulrahman",
+    labelColor = "#FFD900AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/rashid.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/rashidBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      princesCourt = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  aishe = {
+    name = "aishe",
+    fullName = "Aishe Tache",
+    labelColor = "#FFD900AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/aishe.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/aisheBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      princesCourt = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  fomorach = {
+    name = "fomorach",
+    fullName = "Fomórach",
+    labelColor = "#FFD900AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/fomorach.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/fomorachBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      princesCourt = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  blackCaesar = {
+    name = "blackCaesar",
+    fullName = "Black Caesar",
+    labelColor = "#FFD900AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/blackCaesar.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/blackCaesarBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      princesCourt = 5
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  bee = {
+    name = "bee",
+    fullName = "Bee",
+    labelColor = "#6B4000FF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/bee.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/beeBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      beesHive = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  carol = {
+    name = "carol",
+    fullName = "Carol",
+    labelColor = "#6B4000AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/carol.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/carolBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      beesHive = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  palas = {
+    name = "palas",
+    fullName = "'Palas' Yusuf bin Yafa",
+    labelColor = "#6B4000AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/palas.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/palasBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  ianRammond = {
+    name = "ianRammond",
+    fullName = "Ian Rammond",
+    labelColor = "#6B4000AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/ianRammond.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/ianRammondBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      beesHive = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  terry = {
+    name = "terry",
+    fullName = "Terry",
+    labelColor = "#6B4000AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/terry.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/terryBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      beesHive = 5
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  tommy = {
+    name = "tommy",
+    fullName = "Tommy",
+    labelColor = "#6B4000AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/tommy.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/tommyBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      beesHive = 6
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  iQ = {
+    name = "iQ",
+    fullName = "I.Q.",
+    labelColor = "#6B4000AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/iQ.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/iQBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      beesHive = 7
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  rubyRouge = {
+    name = "rubyRouge",
+    fullName = "Ruby Rouge",
+    labelColor = "#D100C7FF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/rubyRouge.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/rubyRougeBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      colorBlitz = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  evanescentBlue = {
+    name = "evanescentBlue",
+    fullName = "Evanescent Blue",
+    labelColor = "#D100C7AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/evanescentBlue.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/evanescentBlueBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      colorBlitz = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  mara = {
+    name = "mara",
+    fullName = "'Mara' Oksana Ziva",
+    labelColor = "#999999AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/mara.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/maraBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  rosie = {
+    name = "rosie",
+    fullName = "Rosie",
+    labelColor = "#AA0000FF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/rosie.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/rosieBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      redFlag = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  damienAbanda = {
+    name = "damienAbanda",
+    fullName = "Damien Abanda",
+    labelColor = "#AA0000AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/damienAbanda.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/damienAbandaBack.webp"
+      },
+      scale = 58,
+      seatedScale = 73
+    },
+    groups = {
+      redFlag = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  profEthanKeen = {
+    name = "profEthanKeen",
+    fullName = "Professor Ethan Keen",
+    labelColor = "#AA0000AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/profEthanKeen.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/profEthanKeenBack.webp"
+      },
+      scale = 57,
+      seatedScale = 71
+    },
+    groups = {
+      redFlag = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  calvinWallace = {
+    name = "calvinWallace",
+    fullName = "Calvin Wallace",
+    labelColor = "#AA0000AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/calvinWallace.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/calvinWallaceBack.webp"
+      },
+      scale = 60,
+      seatedScale = 75
+    },
+    groups = {
+      redFlag = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  oliverGagnon = {
+    name = "oliverGagnon",
+    fullName = "Oliver Gagnon",
+    labelColor = "#FF0000FF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/oliverGagnon.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/oliverGagnonBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      scarlettAndTheBoys = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  scarlett = {
+    name = "scarlett",
+    fullName = "Scarlett",
+    labelColor = "#FF0000AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/scarlett.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/scarlettBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      scarlettAndTheBoys = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  razorWhit = {
+    name = "razorWhit",
+    fullName = "Razor Whit",
+    labelColor = "#FF0000AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/razorWhit.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/razorWhitBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      scarlettAndTheBoys = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  merrickSingh = {
+    name = "merrickSingh",
+    fullName = "Merrick Singh",
+    labelColor = "#FF0000AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/merrickSingh.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/merrickSinghBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      scarlettAndTheBoys = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  myleneHamelin = {
+    name = "myleneHamelin",
+    fullName = "Mylene 'the Puck' Hamelin",
+    labelColor = "#D1B200FF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/myleneHamelin.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/myleneHamelinBack.webp"
+      },
+      scale = 47,
+      seatedScale = 59
+    },
+    groups = {
+      fiveKeys = 1,
+      princesCourt = 6
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  zuriOluwusi = {
+    name = "zuriOluwusi",
+    fullName = "Zuri Oluwusi",
+    labelColor = "#D1B200AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/zuriOluwusi.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/zuriOluwusiBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      fiveKeys = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  adrianVarga = {
+    name = "adrianVarga",
+    fullName = "Adrian Varga",
+    labelColor = "#D1B200AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/adrianVarga.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/adrianVargaBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      fiveKeys = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  stirlingSiskin = {
+    name = "stirlingSiskin",
+    fullName = "Stirling Siskin",
+    labelColor = "#D1B200AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/stirlingSiskin.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/stirlingSiskinBack.webp"
+      },
+      scale = 57,
+      seatedScale = 71
+    },
+    groups = {
+      fiveKeys = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  jesseSharp = {
+    name = "jesseSharp",
+    fullName = "Jesse Sharp",
+    labelColor = "#D1B200AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/jesseSharp.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/jesseSharpBack.webp"
+      },
+      scale = 50,
+      seatedScale = 63
+    },
+    groups = {
+      fiveKeys = 5,
+      princesCourt = 9
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  nasirKhan = {
+    name = "nasirKhan",
+    fullName = "Nasir Khan",
+    labelColor = "#5500C5FF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/nasirKhan.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/nasirKhanBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      freeChantry = 1,
+      princesCourt = 8
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  gabrielCollard = {
+    name = "gabrielCollard",
+    fullName = "Gabriel Collard",
+    labelColor = "#5500C5AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/gabrielCollard.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/gabrielCollardBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      freeChantry = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  anitaMorris = {
+    name = "anitaMorris",
+    fullName = "Anita Morris",
+    labelColor = "#5500C5AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/anitaMorris.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/anitaMorrisBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      freeChantry = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  ulyssesCelaj = {
+    name = "ulyssesCelaj",
+    fullName = "Ulysses Celaj",
+    labelColor = "#5500C5AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/ulyssesCelaj.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/ulyssesCelajBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      freeChantry = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  zane = {
+    name = "zane",
+    fullName = "Zane",
+    labelColor = "#435500FF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/zane.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/zaneBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  axel = {
+    name = "axel",
+    fullName = "Axel",
+    labelColor = "#435500AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/axel.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/axelBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  chance = {
+    name = "chance",
+    fullName = "Chance",
+    labelColor = "#435500AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/chance.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/chanceBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  damon = {
+    name = "damon",
+    fullName = "Damon",
+    labelColor = "#435500AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/damon.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/damonBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  tyson = {
+    name = "tyson",
+    fullName = "Tyson",
+    labelColor = "#435500AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/tyson.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/tysonBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  theAristocrat = {
+    name = "theAristocrat",
+    fullName = "The Aristocrat",
+    labelColor = "#FFFD79FF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/theAristocrat.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/theAristocratBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      harpies = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  xavierWhitchurch = {
+    name = "xavierWhitchurch",
+    fullName = "Xavier Whitchurch",
+    labelColor = "#FFFD79AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/xavierWhitchurch.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/xavierWhitchurchBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      harpies = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  christianne = {
+    name = "christianne",
+    fullName = "Christianne",
+    labelColor = "#FFFD79AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/christianne.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/christianneBack.webp"
+      },
+      scale = 57,
+      seatedScale = 71
+    },
+    groups = {
+      harpies = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  laz = {
+    name = "laz",
+    fullName = "Laz",
+    labelColor = "#AAAAAAFF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/laz.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/lazBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      ironGuard = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  osborneLowell = {
+    name = "osborneLowell",
+    fullName = "Osborne Lowell",
+    labelColor = "#AAAAAAAA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/osborneLowell.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/osborneLowellBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      ironGuard = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  emilyTheDuskRose = {
+    name = "emilyTheDuskRose",
+    fullName = "Emily, the Dusk Rose",
+    labelColor = "#AAAAAAAA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/emilyTheDuskRose.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/emilyTheDuskRoseBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      ironGuard = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  maxFloyd = {
+    name = "maxFloyd",
+    fullName = "Maxwell 'Max' Floyd",
+    labelColor = "#640000FF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/maxFloyd.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/maxFloydBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  kingstonBlack = {
+    name = "kingstonBlack",
+    fullName = "Kingston Black",
+    labelColor = "#640000AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/kingstonBlack.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/kingstonBlackBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  mrEasy = {
+    name = "mrEasy",
+    fullName = "Mr. Easy",
+    labelColor = "#640000AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/mrEasy.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/mrEasyBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  twist = {
+    name = "twist",
+    fullName = "Twist",
+    labelColor = "#640000AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/twist.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/twistBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  sageSam = {
+    name = "sageSam",
+    fullName = "Sage Sam",
+    labelColor = "#0033C0FF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/sageSam.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/sageSamBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      theLine = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  masonSchmidt = {
+    name = "masonSchmidt",
+    fullName = "Mason Schmidt",
+    labelColor = "#0033C0AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/masonSchmidt.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/masonSchmidtBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      theLine = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  jackbeNimble = {
+    name = "jackbeNimble",
+    fullName = "Jack-be-Nimble",
+    labelColor = "#0033C0AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/jackbeNimble.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/jackbeNimbleBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      theLine = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  yusefShamsin = {
+    name = "yusefShamsin",
+    fullName = "Yusef Shamsin",
+    labelColor = "#0033C0AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/yusefShamsin.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/yusefShamsinBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      theLine = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  suyin = {
+    name = "suyin",
+    fullName = "Suyin",
+    labelColor = "#0033C0AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/suyin.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/suyinBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      theLine = 5
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  fatherDiaz = {
+    name = "fatherDiaz",
+    fullName = "Father Emiliano Diaz",
+    labelColor = "#9900FFFF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/fatherDiaz.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/fatherDiazBack.webp"
+      },
+      scale = 57,
+      seatedScale = 71
+    },
+    groups = {
+      midnightMass = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  deaconReal = {
+    name = "deaconReal",
+    fullName = "Deacon Lucenzo Reál",
+    labelColor = "#9900FFAA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/deaconReal.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/deaconRealBack.webp"
+      },
+      scale = 60,
+      seatedScale = 75
+    },
+    groups = {
+      midnightMass = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  sisterCicione = {
+    name = "sisterCicione",
+    fullName = "Sister Genoveva Cicione",
+    labelColor = "#9900FFAA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/sisterCicione.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/sisterCicioneBack.webp"
+      },
+      scale = 48,
+      seatedScale = 60
+    },
+    groups = {
+      midnightMass = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  victorVex = {
+    name = "victorVex",
+    fullName = "Victor Vex",
+    labelColor = "#00C7CEFF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/victorVex.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/victorVexBack.webp"
+      },
+      scale = 51,
+      seatedScale = 64
+    },
+    groups = {
+      moonClub = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  georgieStJames = {
+    name = "georgieStJames",
+    fullName = "Georgie St. James",
+    labelColor = "#00C7CEAA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/georgieStJames.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/georgieStJamesBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      moonClub = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  vanceVogel = {
+    name = "vanceVogel",
+    fullName = "Vance Vogel",
+    labelColor = "#00C7CEAA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/vanceVogel.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/vanceVogelBack.webp"
+      },
+      scale = 57,
+      seatedScale = 71
+    },
+    groups = {
+      moonClub = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  scottTempo = {
+    name = "scottTempo",
+    fullName = "Scott Tempo",
+    labelColor = "#00C7CEAA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/scottTempo.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/scottTempoBack.webp"
+      },
+      scale = 58,
+      seatedScale = 73
+    },
+    groups = {
+      moonClub = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  ren = {
+    name = "ren",
+    fullName = "Ren",
+    labelColor = "#91FF00FF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/ren.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/renBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      redeemers = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  alexandra = {
+    name = "alexandra",
+    fullName = "Alexandra",
+    labelColor = "#91FF00AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/alexandra.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/alexandraBack.webp"
+      },
+      scale = 55,
+      seatedScale = 69
+    },
+    groups = {
+      redeemers = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  kai = {
+    name = "kai",
+    fullName = "Kai",
+    labelColor = "#91FF00AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/kai.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/kaiBack.webp"
+      },
+      scale = 50,
+      seatedScale = 63
+    },
+    groups = {
+      redeemers = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  tyler = {
+    name = "tyler",
+    fullName = "Tyler",
+    labelColor = "#91FF00AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/tyler.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/tylerBack.webp"
+      },
+      scale = 60,
+      seatedScale = 75
+    },
+    groups = {
+      redeemers = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  evangelineDupont = {
+    name = "evangelineDupont",
+    fullName = "Evangeline Dupont",
+    labelColor = "#D80077FF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/evangelineDupont.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/evangelineDupontBack.webp"
+      },
+      scale = 49,
+      seatedScale = 61
+    },
+    groups = {
+      regencyUniversityChantry = 1,
+      princesCourt = 7
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  drIrenaVoss = {
+    name = "drIrenaVoss",
+    fullName = "Dr. Irena Voss",
+    labelColor = "#D80077AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/drIrenaVoss.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/drIrenaVossBack.webp"
+      },
+      scale = 47,
+      seatedScale = 59
+    },
+    groups = {
+      regencyUniversityChantry = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  raduIancu = {
+    name = "raduIancu",
+    fullName = "Radu Iancu",
+    labelColor = "#D80077AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/raduIancu.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/raduIancuBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      regencyUniversityChantry = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  damienKline = {
+    name = "damienKline",
+    fullName = "Damien Kline",
+    labelColor = "#D80077AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/damienKline.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/damienKlineBack.webp"
+      },
+      scale = 55,
+      seatedScale = 69
+    },
+    groups = {
+      regencyUniversityChantry = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  lucasMerrow = {
+    name = "lucasMerrow",
+    fullName = "Lucas Merrow",
+    labelColor = "#D80077AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/lucasMerrow.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/lucasMerrowBack.webp"
+      },
+      scale = 58,
+      seatedScale = 73
+    },
+    groups = {
+      regencyUniversityChantry = 5
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  bacchusGiovanni = {
+    name = "bacchusGiovanni",
+    fullName = "Bacchus Giovanni",
+    labelColor = "#FFFFFFFF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/bacchusGiovanni.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/bacchusGiovanniBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      wychwoodHecata = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  severinKoslov = {
+    name = "severinKoslov",
+    fullName = "Severin Koslov",
+    labelColor = "#FFFFFFAA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/severinKoslov.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/severinKoslovBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  lorenzaGiovanni = {
+    name = "lorenzaGiovanni",
+    fullName = "Lorenza Giovanni",
+    labelColor = "#FFFFFFAA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/lorenzaGiovanni.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/lorenzaGiovanniBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      wychwoodHecata = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  niccoloGiovanni = {
+    name = "niccoloGiovanni",
+    fullName = "Niccolo Giovanni",
+    labelColor = "#FFFFFFAA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/niccoloGiovanni.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/niccoloGiovanniBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      wychwoodHecata = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  bleakBokor = {
+    name = "bleakBokor",
+    fullName = "The Baron's Bleak Bokor",
+    labelColor = "#FFFFFFAA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/bleakBokor.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/bleakBokorBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      wychwoodHecata = 5
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  theIslandDevil = {
+    name = "theIslandDevil",
+    fullName = "The Island Devil",
+    labelColor = "#999999AA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/theIslandDevil.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/theIslandDevilBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  eddie = {
+    name = "eddie",
+    fullName = "Eddie",
+    labelColor = "#AAAAAAFF",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/eddie.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/eddieBack.webp"
+      },
+      scale = 42,
+      seatedScale = 53
+    },
+    groups = {
+      petitioners = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  alexisHoitt = {
+    name = "alexisHoitt",
+    fullName = "Alexis Hoitt",
+    labelColor = "#AAAAAAAA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/alexisHoitt.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/alexisHoittBack.webp"
+      },
+      scale = 53,
+      seatedScale = 66
+    },
+    groups = {
+      petitioners = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  lexieMadi = {
+    name = "lexieMadi",
+    fullName = "Lexie Madi",
+    labelColor = "#AAAAAAAA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/lexieMadi.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/lexieMadiBack.webp"
+      },
+      scale = 48,
+      seatedScale = 60
+    },
+    groups = {
+      petitioners = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  averyInnis = {
+    name = "averyInnis",
+    fullName = "Avery Innis",
+    labelColor = "#AAAAAAAA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/averyInnis.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/averyInnisBack.webp"
+      },
+      scale = 50,
+      seatedScale = 63
+    },
+    groups = {
+      petitioners = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  benedictKincaid = {
+    name = "benedictKincaid",
+    fullName = "Benedict Kincaid",
+    labelColor = "#AAAAAAAA",
+    figurine = {
+      images = {
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/benedictKincaid.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/benedictKincaidBack.webp"
+      },
+      scale = 50,
+      seatedScale = 63
+    },
+    groups = {
+      petitioners = 5
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  }
+}
+
+D.charactersOLD = {
   adrianVarga = {
     name = "adrianVarga",
     fullName = "Adrian Varga",
