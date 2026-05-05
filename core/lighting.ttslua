@@ -1657,6 +1657,10 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
         })
     end
 
+    if light == nil then
+        return nil
+    end
+
     -- Wait for light component if needed (Custom_Assetbundle spotlights: object exists before Unity Light is ready).
     -- `U.waitUntil` + `CheckCoroutine` is unreliable from spawn callbacks; `Wait.condition` is the TTS-native queue.
     if isSpawned and getLightComponent(light, true) == nil then

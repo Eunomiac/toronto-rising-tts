@@ -75,7 +75,12 @@ local AudioListener = {}
 ---@field locked boolean|nil
 ---@field interactable boolean
 ---@field UI ObjectUI|nil
+---@field loading_custom boolean|nil  true while custom asset is still loading
 local Object = {}
+---@param func_name string
+---@param params table|nil
+---@return any
+function Object.call(func_name, params) end
 ---@return Vector
 function Object.getPosition(...) end
 ---@return Vector
@@ -113,7 +118,9 @@ function Object.setName(name) end
 ---@param fast boolean|nil
 function Object.setPosition(position, collapse_into_bags, fast) end
 ---@param rotation Vector|table
-function Object.setRotation(rotation) end
+---@param collapse_into_bags boolean|nil
+---@param fast boolean|nil
+function Object.setRotation(rotation, collapse_into_bags, fast) end
 ---@param tag string
 ---@return boolean
 function Object.hasTag(tag) end
@@ -140,6 +147,7 @@ function Object.setColorTint(tint) end
 ---@param options table|nil
 ---@return Object|nil
 function Object.clone(options) end
+function Object.destruct(...) end
 
 ---@class GameObject: Object
 local GameObject = {}

@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 --[[
     Global script (canonical source). Tabletop Simulator loads .tts/objects/Global.lua, which
     only require()s this file. Edit here — not .tts/objects/Global.lua (that file may be overwritten on reload).
