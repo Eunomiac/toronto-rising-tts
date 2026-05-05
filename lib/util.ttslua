@@ -866,9 +866,15 @@ end
 -- @param val any Candidate object reference
 -- @param errorMsg string Optional custom error message
 -- @param params table Optional: {isSilent=false, isThrowing=true}
--- @return Object
+-- @overload fun(source:string, val:any, errorMsg:string|nil, params:{isSilent:true, isThrowing:boolean|nil}): Object|nil
+-- @overload fun(source:string, val:any, errorMsg:string|nil): Object
+-- @overload fun(source:string, val:any, errorMsg:string|nil, params:{isSilent:false, isThrowing:boolean|nil}): Object
+-- @return Object|nil
 function U.ExpectGameObject(source, val, errorMsg, params)
-	U.Val(source, val, U.isGameObject(val), errorMsg, params)
+	local isValid = U.Val(source, val, U.isGameObject(val), errorMsg, params)
+	if isValid ~= true then
+		return nil
+	end
 	---@cast val Object
 	return val
 end
