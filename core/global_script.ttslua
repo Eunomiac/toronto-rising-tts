@@ -1372,8 +1372,8 @@ CameraDebugFocus = require("core.camera_debug_focus")
 -- ============================================================================
 RC  = require("core.roll_controller")
 RUI = require("core.roll_ui")
-pendingRollCleanup = {}
-pendingRollCleanupTimerIds = {}
+local pendingRollCleanup = {}
+local pendingRollCleanupTimerIds = {}
 
 -- Wire RC callback hooks so roll state changes automatically refresh UI.
 -- No pcall here: errors in the UI layer should surface as TTS chat errors

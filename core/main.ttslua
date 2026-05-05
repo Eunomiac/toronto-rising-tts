@@ -498,9 +498,10 @@ function M.onPlayerChangeColor(color)
     end
 
     -- Check if they already have state data
-    if gameState and gameState.playerData and gameState.playerData[playerID] then
+    local state = S.getGameState(false)
+    if state and state.playerData and state.playerData[playerID] then
         -- Update their color in case they switched seats
-        gameState.playerData[playerID].color = color
+        state.playerData[playerID].color = color
         return
     end
 

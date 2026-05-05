@@ -885,7 +885,7 @@ end
 -- @param value any The value to validate
 -- @param keyPath string Optional. Path for error messages
 -- @return boolean True if value is safe to store
-isValueSafeForState = function(value, keyPath)
+local function isValueSafeForState(value, keyPath)
     local valueType = type(value)
 
     -- Allow primitive types

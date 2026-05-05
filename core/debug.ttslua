@@ -1725,7 +1725,7 @@ function DEBUG.initLightingAndSignals()
         allSuccess = false
     end
 
-    if allSuccess and flareSuccess then
+    if allSuccess then
         print("✅ Initialization complete: All objects set to OFF state, ambient lighting set to DARK")
     else
         print("⚠️  Initialization completed with some errors")
