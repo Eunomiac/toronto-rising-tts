@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global
 -- .dev/test_rotatetofrom.ttslua
 -- Test implementation and validation for U.RotateToFrom function
 -- This file contains the implementation and tests for the function before integration
@@ -17,7 +18,7 @@ local function getFrame(frameRef)
         }
         return frame
     end
-    
+
     -- If it's an ObjectRef, get the object and extract its Frame
     local obj = U.getObject(frameRef, true)  -- Silent mode
     if obj then
@@ -26,7 +27,7 @@ local function getFrame(frameRef)
             rotation = obj.getRotation()
         }
     end
-    
+
     -- Invalid FrameRef
     U.error("getFrame", "Invalid FrameRef - must be a Frame table or valid ObjectRef", frameRef)
     return nil
@@ -41,14 +42,14 @@ local function getAngleXZ(angleRef, origin)
     if U.Type(angleRef) == "number" then
         return angleRef
     end
-    
+
     -- If it's a FrameRef, calculate the angle from origin to position
     local frame = getFrame(angleRef)
     if frame then
         local cylindrical = U.XYZToCylindrical(frame.position, origin)
         return cylindrical.angle
     end
-    
+
     U.error("getAngleXZ", "Invalid AngleRef - must be a number or valid FrameRef", angleRef)
     return 0
 end
@@ -65,17 +66,17 @@ local function calculateAngleDelta(fromAngle, toAngle)
     -- Normalize both angles to 0-360 range
     local normalizedFrom = normalizeAngle(fromAngle)
     local normalizedTo = normalizeAngle(toAngle)
-    
+
     -- Calculate the shortest path delta
     local delta = normalizedTo - normalizedFrom
-    
+
     -- Adjust for shortest path (-180 to 180)
     if delta > 180 then
         delta = delta - 360
     elseif delta < -180 then
         delta = delta + 360
     end
-    
+
     return delta
 end
 
@@ -89,21 +90,21 @@ function U.RotateToFrom(frameRefs, toAngleRef, fromAngleRef, originRef)
     -- Validate required parameters
     U.Val("U.RotateToFrom", {frameRefs = frameRefs}, frameRefs ~= nil, "frameRefs parameter is required")
     U.Val("U.RotateToFrom", {toAngleRef = toAngleRef}, toAngleRef ~= nil, "toAngleRef parameter is required")
-    
+
     -- Set default origin if not provided
     local origin = originRef and Vector(originRef) or Vector(0, 0, 0)
-    
+
     -- Determine if we're working with a single FrameRef or an array
     local isSingleFrame = U.Type(frameRefs) ~= "table" or frameRefs.position ~= nil or U.Type(frameRefs) == "string" or U.isGameObject(frameRefs)
-    
+
     -- Convert single FrameRef to array for uniform processing
     local frameRefArray = isSingleFrame and {frameRefs} or frameRefs
-    
+
     -- Process each FrameRef to get current frames and calculate center of mass for groups
     local frames = {}
     local centerOfMass = Vector(0, 0, 0)
     local totalFrames = 0
-    
+
     for i, frameRef in ipairs(frameRefArray) do
         local frame = getFrame(frameRef)
         if frame then
@@ -116,18 +117,18 @@ function U.RotateToFrom(frameRefs, toAngleRef, fromAngleRef, originRef)
             totalFrames = totalFrames + 1
         end
     end
-    
+
     -- Calculate center of mass for group rotation
     if totalFrames > 0 then
         centerOfMass = centerOfMass / totalFrames
     end
-    
+
     -- For groups, use center of mass to determine angles; for single objects, use their position
     local angleCalculationPoint = isSingleFrame and frames[1].frame.position or centerOfMass
-    
+
     -- Calculate the target angle
     local toAngle = getAngleXZ(toAngleRef, origin)
-    
+
     -- Calculate the source angle
     local fromAngle
     if fromAngleRef then
@@ -137,31 +138,31 @@ function U.RotateToFrom(frameRefs, toAngleRef, fromAngleRef, originRef)
         local cylindrical = U.XYZToCylindrical(angleCalculationPoint, origin)
         fromAngle = cylindrical.angle
     end
-    
+
     -- If fromAngleRef was provided and toAngleRef is a FrameRef, treat toAngle as relative
     if fromAngleRef and (U.Type(toAngleRef) ~= "number") then
         -- toAngle is relative to fromAngle
         toAngle = fromAngle + toAngle
     end
-    
+
     -- Calculate the rotation delta
     local angleDelta = calculateAngleDelta(fromAngle, toAngle)
-    
+
     -- Process each frame
     local resultFrames = {}
-    
+
     for i, frameData in ipairs(frames) do
         local currentFrame = frameData.frame
-        
+
         -- Convert current position to cylindrical coordinates
         local cylindrical = U.XYZToCylindrical(currentFrame.position, origin)
-        
+
         -- Apply the rotation
         cylindrical.angle = cylindrical.angle + angleDelta
-        
+
         -- Convert back to XYZ
         local newPosition = cylindricalToXYZ(cylindrical, origin)
-        
+
         -- Calculate new rotation - maintain orientation relative to origin
         -- The object should rotate by the same angle delta on the Y axis
         local newRotation = Vector(
@@ -169,22 +170,22 @@ function U.RotateToFrom(frameRefs, toAngleRef, fromAngleRef, originRef)
             currentFrame.rotation.y + angleDelta,
             currentFrame.rotation.z
         )
-        
+
         -- Create the new frame
         local newFrame = {
             position = newPosition,
             rotation = newRotation
         }
-        
+
         -- Apply to object if it exists
         if frameData.object then
             frameData.object.setPositionSmooth(newPosition, false, false)
             frameData.object.setRotationSmooth(newRotation, false, false)
         end
-        
+
         resultFrames[i] = newFrame
     end
-    
+
     -- Return single Frame or array based on input
     return isSingleFrame and resultFrames[1] or resultFrames
 end
@@ -233,166 +234,166 @@ end
 -- Test 1: Basic rotation with explicit angle
 function TestRotateToFrom.testBasicAngleRotation()
     print("Test 1: Basic rotation with explicit angle")
-    
+
     -- Start with object at 0 degrees (positive Z)
     local startFrame = {position = Vector(0, 0, 10), rotation = Vector(0, 0, 0)}
-    
+
     -- Rotate to 90 degrees (positive X)
     local result = U.RotateToFrom(startFrame, 90)
-    
+
     -- Expected position after 90-degree rotation
     local expectedPos = Vector(10, 0, 0)
-    assert(vectorsEqual(result.position, expectedPos), 
+    assert(vectorsEqual(result.position, expectedPos),
            "Position mismatch: expected " .. tostring(expectedPos) .. ", got " .. tostring(result.position))
-    
+
     -- Expected rotation (Y rotation increased by 90)
-    assert(anglesEqual(result.rotation.y, 90), 
+    assert(anglesEqual(result.rotation.y, 90),
            "Rotation mismatch: expected Y=90, got Y=" .. result.rotation.y)
-    
+
     print("✓ Test 1 passed")
 end
 
 -- Test 2: Rotation with from and to angles
 function TestRotateToFrom.testFromToRotation()
     print("Test 2: Rotation with from and to angles")
-    
+
     -- Object at arbitrary position
     local frame = {position = Vector(5, 0, 5), rotation = Vector(0, 45, 0)}
-    
+
     -- Rotate from 45 degrees to 180 degrees
     local result = U.RotateToFrom(frame, 180, 45)
-    
+
     -- Calculate expected position
     -- Current angle is 45 degrees, rotating to 180 degrees = 135 degree delta
     local cylindrical = U.XYZToCylindrical(frame.position, Vector(0, 0, 0))
     cylindrical.angle = 180
     local expectedPos = cylindricalToXYZ(cylindrical, Vector(0, 0, 0))
-    
-    assert(vectorsEqual(result.position, expectedPos), 
+
+    assert(vectorsEqual(result.position, expectedPos),
            "Position mismatch: expected " .. tostring(expectedPos) .. ", got " .. tostring(result.position))
-    
+
     -- Rotation should be original + 135 degrees
-    assert(anglesEqual(result.rotation.y, 180), 
+    assert(anglesEqual(result.rotation.y, 180),
            "Rotation mismatch: expected Y=180, got Y=" .. result.rotation.y)
-    
+
     print("✓ Test 2 passed")
 end
 
 -- Test 3: Relative angle with FrameRef as toAngle
 function TestRotateToFrom.testRelativeAngle()
     print("Test 3: Relative angle with FrameRef as toAngle")
-    
+
     -- Start position
     local startFrame = {position = Vector(10, 0, 0), rotation = Vector(0, 90, 0)}  -- At 90 degrees
-    
+
     -- Target position represents +90 degree offset
     local targetFrame = {position = Vector(0, 0, -10)}  -- At 180 degrees
-    
+
     -- When fromAngle is provided (0 degrees) and toAngle is a FrameRef,
     -- the angle derived from toAngle (180) should be treated as relative
     local result = U.RotateToFrom(startFrame, targetFrame, 0)
-    
+
     -- Should rotate from 0 to 180 degrees absolute
     local expectedPos = Vector(0, 0, -10)
-    assert(vectorsEqual(result.position, expectedPos, 0.01), 
+    assert(vectorsEqual(result.position, expectedPos, 0.01),
            "Position mismatch: expected " .. tostring(expectedPos) .. ", got " .. tostring(result.position))
-    
+
     print("✓ Test 3 passed")
 end
 
 -- Test 4: Group rotation as rigid body
 function TestRotateToFrom.testGroupRotation()
     print("Test 4: Group rotation as rigid body")
-    
+
     -- Three objects in a triangle formation
     local frames = {
         {position = Vector(10, 0, 0), rotation = Vector(0, 0, 0)},    -- Right
         {position = Vector(-5, 0, 8.66), rotation = Vector(0, 120, 0)}, -- Upper left
         {position = Vector(-5, 0, -8.66), rotation = Vector(0, 240, 0)} -- Lower left
     }
-    
+
     -- Rotate entire group by 90 degrees
     local results = U.RotateToFrom(frames, 90)
-    
+
     -- Check that relative positions are maintained
     assert(#results == 3, "Should return 3 frames")
-    
+
     -- First object should move from (10,0,0) to (0,0,10)
     assert(vectorsEqual(results[1].position, Vector(0, 0, 10), 0.01),
            "Frame 1 position incorrect")
-    
+
     -- Second object should move appropriately
     assert(vectorsEqual(results[2].position, Vector(-8.66, 0, -5), 0.01),
            "Frame 2 position incorrect")
-    
+
     -- Third object should move appropriately
     assert(vectorsEqual(results[3].position, Vector(8.66, 0, -5), 0.01),
            "Frame 3 position incorrect")
-    
+
     -- All rotations should increase by 90 degrees
     assert(anglesEqual(results[1].rotation.y, 90), "Frame 1 rotation incorrect")
     assert(anglesEqual(results[2].rotation.y, 210), "Frame 2 rotation incorrect")  -- 120 + 90
     assert(anglesEqual(results[3].rotation.y, 330), "Frame 3 rotation incorrect")  -- 240 + 90
-    
+
     print("✓ Test 4 passed")
 end
 
 -- Test 5: Custom origin point
 function TestRotateToFrom.testCustomOrigin()
     print("Test 5: Custom origin point")
-    
+
     local origin = Vector(5, 0, 5)
     local frame = {position = Vector(15, 0, 5), rotation = Vector(0, 0, 0)}  -- 10 units east of origin
-    
+
     -- Rotate 90 degrees around custom origin
     local result = U.RotateToFrom(frame, 90, nil, origin)
-    
+
     -- Should be 10 units south of origin
     local expectedPos = Vector(5, 0, 15)
     assert(vectorsEqual(result.position, expectedPos),
            "Position mismatch with custom origin")
-    
+
     print("✓ Test 5 passed")
 end
 
 -- Test 6: Height preservation
 function TestRotateToFrom.testHeightPreservation()
     print("Test 6: Height preservation")
-    
+
     local frame = {position = Vector(10, 5, 0), rotation = Vector(0, 0, 0)}
-    
+
     -- Rotate 180 degrees
     local result = U.RotateToFrom(frame, 180)
-    
+
     -- Height should be preserved
     assert(math.abs(result.position.y - 5) < 0.001,
            "Height not preserved: expected 5, got " .. result.position.y)
-    
+
     -- Should be at opposite position
     assert(vectorsEqual(result.position, Vector(-10, 5, 0)),
            "Position incorrect after 180 rotation")
-    
+
     print("✓ Test 6 passed")
 end
 
 -- Test 7: Angle normalization and shortest path
 function TestRotateToFrom.testShortestPath()
     print("Test 7: Angle normalization and shortest path")
-    
+
     local frame = {position = Vector(10, 0, 0), rotation = Vector(0, 90, 0)}  -- At 90 degrees
-    
+
     -- Rotate from 90 to 270 should go -180 (shortest path), not +180
     local result = U.RotateToFrom(frame, 270, 90)
-    
+
     -- Position should be at 270 degrees
     assert(vectorsEqual(result.position, Vector(-10, 0, 0)),
            "Position incorrect for 270 degree rotation")
-    
+
     -- The Y rotation should decrease by 180 to reach 270 (-90)
     local expectedRotY = normalizeAngle(90 - 180)  -- Should be 270
     assert(anglesEqual(result.rotation.y, expectedRotY),
            "Rotation not using shortest path: expected " .. expectedRotY .. ", got " .. result.rotation.y)
-    
+
     print("✓ Test 7 passed")
 end
 
@@ -400,7 +401,7 @@ end
 function TestRotateToFrom.runAll()
     print("Running RotateToFrom tests...")
     print("=" .. string.rep("=", 50))
-    
+
     local tests = {
         TestRotateToFrom.testBasicAngleRotation,
         TestRotateToFrom.testFromToRotation,
@@ -410,10 +411,10 @@ function TestRotateToFrom.runAll()
         TestRotateToFrom.testHeightPreservation,
         TestRotateToFrom.testShortestPath
     }
-    
+
     local passed = 0
     local failed = 0
-    
+
     for i, test in ipairs(tests) do
         local success, err = pcall(test)
         if success then
@@ -423,10 +424,10 @@ function TestRotateToFrom.runAll()
             print("✗ Test " .. i .. " failed: " .. err)
         end
     end
-    
+
     print("=" .. string.rep("=", 50))
     print("Tests completed: " .. passed .. " passed, " .. failed .. " failed")
-    
+
     return failed == 0
 end
 
