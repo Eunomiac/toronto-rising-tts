@@ -778,7 +778,7 @@ end
 -- Logs a full traceback and formats the error message with source context and value information.
 -- @param source string The name/context of where the error occurred (e.g., function name)
 -- @param message string The error message
--- @param val any Optional: Value to include in error (use "NOVAL" to skip value logging)
+-- @param val any Optional: Value to append to the error; omit or pass nil/"NOVAL" to skip value logging
 -- @return never Always calls error(); does not return to the caller
 -- @usage U.error("setupPlayer", "Invalid player color", playerColor)
 ---@param source string
@@ -789,7 +789,8 @@ function U.error(source, message, val)
 	local errString = "[" .. source .. "] " .. message
 	local valString
 
-	if val ~= "NOVAL" then
+	-- Omit value suffix when caller skips logging ("NOVAL") or omits the third argument (nil).
+	if val == nil or val == "NOVAL" then
 		valString = nil
 	elseif U.Type(val) == "userdata" then
 		if U.isIn("getName", val) then
