@@ -10,7 +10,7 @@ local G = {}
 -- Placeholder GUIDs (replace with actual GUIDs from your TTS objects)
 -- Search for "@@@@@@" to find and replace these placeholders
 G.GUIDS = {
-    -- Table objects
+    -- Table & Floor objects
     TABLES = {
       TABLE_A = "92ac34",
       TABLE_A_LEAF_NEAR_LEFT = "6db794",
@@ -23,6 +23,7 @@ G.GUIDS = {
       TABLE_B3 = "323c52",
       TABLE_B4 = "ad8530"
     },
+    THE_FLOOR = "fe1fb7",
 
     -- STORYTELLER OBJECTS
     -- Storyteller Table (raised and behind players so they can't see it)
@@ -82,9 +83,6 @@ G.GUIDS = {
     HAND_PINK = "8fe0fe",
     HAND_PURPLE = "d087d1",
 
-    -- Scripting Zones
-    TABLE_DROP_ZONE = "af99b8", -- zone for table drops
-
     -- Character Sheet Objects: Pages & Dice Drawers
     CSHEET_PAGE_1_BROWN = "21d213",
     CSHEET_PAGE_1_ORANGE = "553538",
@@ -132,6 +130,18 @@ G.GUIDS = {
     CSHEET_DICE_DRAWER_PINK = "248013",
     CSHEET_DICE_DRAWER_PURPLE = "fea8f6",
 
+    -- CSheet Objects - Bases and Base Backs
+    CSHEET_BASE_BACK_BROWN = "398b83",
+    CSHEET_BASE_BACK_ORANGE = "404716",
+    CSHEET_BASE_BACK_PINK = "6d0572",
+    CSHEET_BASE_BACK_PURPLE = "adce6b",
+    CSHEET_BASE_BACK_RED = "a97528",
+    CSHEET_BASE_BROWN = "61b047",
+    CSHEET_BASE_ORANGE = "156582",
+    CSHEET_BASE_PINK = "d0b68a",
+    CSHEET_BASE_PURPLE = "bbb40e",
+    CSHEET_BASE_RED = "bcc1e6",
+
     -- Signal fires (for players to signal need for Storyteller attention)
     SIGNAL_FIRE_BROWN = "b0ffa8",
     SIGNAL_FIRE_ORANGE = "7aa4ed",
@@ -163,11 +173,15 @@ G.GUIDS = {
     DICEBAG_NORMAL_PURPLE  = "03cb81",
 
     -- Thrones (for players to sit on)
-    THRONE_RED = "474c0d",
-    THRONE_ORANGE = "c3a355",
-    THRONE_BROWN = "3da314",
-    THRONE_PINK = "570f9b",
-    THRONE_PURPLE = "ede3ce",
+    SEAT_CHAIR_RED = "474c0d",
+    SEAT_CHAIR_ORANGE = "c3a355",
+    SEAT_CHAIR_BROWN = "3da314",
+    SEAT_CHAIR_PINK = "570f9b",
+    SEAT_CHAIR_PURPLE = "ede3ce",
+    SEAT_CHAIR_NPC1 = "75aa53",
+    SEAT_CHAIR_NPC2 = "3d6084",
+    SEAT_CHAIR_NPC3 = "bae868",
+    SEAT_CHAIR_NPC4 = "6bcded",
 
     -- Player Figures (placed at player seats)
     SEAT_FIGURE_BROWN = "1c5b18",
@@ -175,6 +189,10 @@ G.GUIDS = {
     SEAT_FIGURE_PINK = "390349",
     SEAT_FIGURE_PURPLE = "923872",
     SEAT_FIGURE_RED = "1e70cf",
+    SEAT_FIGURE_NPC1 = "df88fd",
+    SEAT_FIGURE_NPC2 = "43e314",
+    SEAT_FIGURE_NPC3 = "16316e",
+    SEAT_FIGURE_NPC4 = "977ba7",
 
     -- Player-Specific Objects
     PRINCE_SIGNET_BORDER_RED = "4506f3",
@@ -289,7 +307,7 @@ function G.GetThroneGUID(color)
   if color == nil then
       return nil
   end
-  local guidKey = "THRONE_" .. string.upper(color)
+  local guidKey = "SEAT_CHAIR_" .. string.upper(color)
   local guid = G.GUIDS[guidKey]
 
   -- If GUID is not found, return nil (don't create a placeholder - placeholders should only exist before GUIDs are set)

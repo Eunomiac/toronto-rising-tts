@@ -6,6 +6,7 @@
 
 local C = require("lib.constants")
 local OP = require("lib.object_positions")
+local L = require("core.lighting")
 
 local DD = {}
 
@@ -66,6 +67,9 @@ end
 --- Not tied to RC.openRoll — opens when dice actually spawn or when Roll is pressed.
 --- @param color string Seat color
 function DD.openForRoll(color)
+  if type(color) == "string" then
+    L.onDiceDrawerStateChanged(color, true)
+  end
   local pose = getPoseEntry(color, true)
   if pose == nil then
     return
@@ -84,6 +88,9 @@ end
 --- or after result broadcast + cleanup). Not on resolve alone — keep open until then.
 --- @param color string Seat color
 function DD.closeAfterRoll(color)
+  if type(color) == "string" then
+    L.onDiceDrawerStateChanged(color, false)
+  end
   local pose = getPoseEntry(color, false)
   if pose == nil then
     return

@@ -12,8 +12,8 @@
 local Catalog = {}
 
 Catalog.EFFECT_LIST = {
-    LOOPING = "looping",
-    TRIGGER = "trigger",
+  LOOPING = "looping",
+  TRIGGER = "trigger",
 }
 
 Catalog.TRACKS = {
@@ -30,210 +30,210 @@ Catalog.TRACKS = {
     type = "location",
     isLooping = true,
     duration = 247,
-    volume = 0.5,
+    volume = 0.15,
   },
   church = {
     key = "church",
     type = "location",
     isLooping = true,
     duration = 233,
-    volume = 0.5,
+    volume = 0.15,
   },
   cityChatter = {
     key = "cityChatter",
     type = "location",
     isLooping = true,
     duration = 256,
-    volume = 0.5,
+    volume = 0.15,
   },
   cityPark = {
     key = "cityPark",
     type = "location",
     isLooping = true,
     duration = 220,
-    volume = 0.5,
+    volume = 0.15,
   },
   cityRevelers = {
     key = "cityRevelers",
     type = "location",
     isLooping = true,
     duration = 158,
-    volume = 0.5,
+    volume = 0.15,
   },
   citySuburb = {
     key = "citySuburb",
     type = "location",
     isLooping = true,
     duration = 193,
-    volume = 0.5,
+    volume = 0.15,
   },
   cityTraffic = {
     key = "cityTraffic",
     type = "location",
     isLooping = true,
     duration = 239,
-    volume = 0.5,
+    volume = 0.15,
   },
   cityWalking = {
     key = "cityWalking",
     type = "location",
     isLooping = true,
     duration = 224,
-    volume = 0.5,
+    volume = 0.15,
   },
   crickets = {
     key = "crickets",
     type = "location",
     isLooping = true,
     duration = 44,
-    volume = 0.5,
+    volume = 0.15,
   },
   diveBar = {
     key = "diveBar",
     type = "location",
     isLooping = true,
     duration = 155,
-    volume = 0.5,
+    volume = 0.15,
   },
   eerieForest = {
     key = "eerieForest",
     type = "location",
     isLooping = true,
     duration = 121,
-    volume = 0.5,
+    volume = 0.15,
   },
   fastClock = {
     key = "fastClock",
     type = "location",
     isLooping = true,
     duration = 119,
-    volume = 0.5,
+    volume = 0.15,
   },
   fireplace = {
     key = "fireplace",
     type = "location",
     isLooping = true,
     duration = 63,
-    volume = 0.5,
+    volume = 0.15,
   },
   hospital = {
     key = "hospital",
     type = "location",
     isLooping = true,
     duration = 147,
-    volume = 0.5,
+    volume = 0.15,
   },
   indoorMarket = {
     key = "indoorMarket",
     type = "location",
     isLooping = true,
     duration = 200,
-    volume = 0.5,
+    volume = 0.15,
   },
   industry = {
     key = "industry",
     type = "location",
     isLooping = true,
     duration = 276,
-    volume = 0.5,
+    volume = 0.15,
   },
   lowWindAmbient = {
     key = "lowWindAmbient",
     type = "location",
     isLooping = true,
     duration = 112,
-    volume = 0.5,
+    volume = 0.15,
   },
   medicalClinic = {
     key = "medicalClinic",
     type = "location",
     isLooping = true,
     duration = 110,
-    volume = 0.5,
+    volume = 0.15,
   },
   nightclub = {
     key = "nightclub",
     type = "location",
     isLooping = true,
     duration = 277,
-    volume = 0.5,
+    volume = 0.15,
   },
   office = {
     key = "office",
     type = "location",
     isLooping = true,
     duration = 121,
-    volume = 0.5,
+    volume = 0.15,
   },
   quietCity = {
     key = "quietCity",
     type = "location",
     isLooping = true,
     duration = 53,
-    volume = 0.5,
+    volume = 0.15,
   },
   roofTop = {
     key = "roofTop",
     type = "location",
     isLooping = true,
     duration = 182,
-    volume = 0.5,
+    volume = 0.15,
   },
   sewers = {
     key = "sewers",
     type = "location",
     isLooping = true,
     duration = 130,
-    volume = 0.5,
+    volume = 0.15,
   },
   softHum = {
     key = "softHum",
     type = "location",
     isLooping = true,
     duration = 241,
-    volume = 0.5,
+    volume = 0.15,
   },
   softIndoor = {
     key = "softIndoor",
     type = "location",
     isLooping = true,
     duration = 240,
-    volume = 0.5,
+    volume = 0.15,
   },
   subway = {
     key = "subway",
     type = "location",
     isLooping = true,
     duration = 203,
-    volume = 0.5,
+    volume = 0.15,
   },
   tinkle = {
     key = "tinkle",
     type = "location",
     isLooping = true,
     duration = 42,
-    volume = 0.5,
+    volume = 0.15,
   },
   urbanDark = {
     key = "urbanDark",
     type = "location",
     isLooping = true,
     duration = 120,
-    volume = 0.5,
+    volume = 0.15,
   },
   waterside = {
     key = "waterside",
     type = "location",
     isLooping = true,
     duration = 240,
-    volume = 0.5,
+    volume = 0.15,
   },
   whisperGhosts = {
     key = "whisperGhosts",
     type = "location",
     isLooping = true,
     duration = 73,
-    volume = 0.5,
+    volume = 0.15,
   },
   pt1 = {
     key = "pt1",
@@ -241,7 +241,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 136,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt2 = {
     key = "pt2",
@@ -249,7 +249,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 156,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt3 = {
     key = "pt3",
@@ -257,7 +257,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 193,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt4 = {
     key = "pt4",
@@ -265,7 +265,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 99,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt5A = {
     key = "pt5A",
@@ -273,7 +273,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 175,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt7 = {
     key = "pt7",
@@ -281,7 +281,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 141,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt9 = {
     key = "pt9",
@@ -289,7 +289,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 98,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt12 = {
     key = "pt12",
@@ -297,7 +297,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 136,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt14 = {
     key = "pt14",
@@ -305,7 +305,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 99,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt15 = {
     key = "pt15",
@@ -313,7 +313,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 120,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt16 = {
     key = "pt16",
@@ -321,7 +321,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 192,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt17A = {
     key = "pt17A",
@@ -329,7 +329,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 87,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt19 = {
     key = "pt19",
@@ -337,7 +337,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 181,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt20 = {
     key = "pt20",
@@ -345,7 +345,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 115,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt21 = {
     key = "pt21",
@@ -353,7 +353,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 100,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt22 = {
     key = "pt22",
@@ -361,7 +361,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 105,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt24A = {
     key = "pt24A",
@@ -369,7 +369,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 103,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt25 = {
     key = "pt25",
@@ -377,7 +377,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 94,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt27 = {
     key = "pt27",
@@ -385,7 +385,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 153,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt28 = {
     key = "pt28",
@@ -393,7 +393,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 85,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt29 = {
     key = "pt29",
@@ -401,7 +401,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 137,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt30 = {
     key = "pt30",
@@ -409,7 +409,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 94,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt31 = {
     key = "pt31",
@@ -417,7 +417,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 72,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt32 = {
     key = "pt32",
@@ -425,7 +425,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 171,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt34 = {
     key = "pt34",
@@ -433,7 +433,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 77,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt35 = {
     key = "pt35",
@@ -441,7 +441,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 267,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt36 = {
     key = "pt36",
@@ -449,7 +449,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 83,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt37 = {
     key = "pt37",
@@ -457,7 +457,7 @@ Catalog.TRACKS = {
     subType = "main",
     isLooping = false,
     duration = 183,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt8 = {
     key = "pt8",
@@ -465,7 +465,7 @@ Catalog.TRACKS = {
     subType = "combat",
     isLooping = false,
     duration = 88,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt13 = {
     key = "pt13",
@@ -473,7 +473,7 @@ Catalog.TRACKS = {
     subType = "combat",
     isLooping = false,
     duration = 66,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt24B = {
     key = "pt24B",
@@ -481,7 +481,7 @@ Catalog.TRACKS = {
     subType = "combat",
     isLooping = false,
     duration = 145,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt5B = {
     key = "pt5B",
@@ -489,7 +489,7 @@ Catalog.TRACKS = {
     subType = "intrigue",
     isLooping = false,
     duration = 90,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt6 = {
     key = "pt6",
@@ -497,7 +497,7 @@ Catalog.TRACKS = {
     subType = "intrigue",
     isLooping = false,
     duration = 121,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt10 = {
     key = "pt10",
@@ -505,7 +505,7 @@ Catalog.TRACKS = {
     subType = "intrigue",
     isLooping = false,
     duration = 85,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt11 = {
     key = "pt11",
@@ -513,7 +513,7 @@ Catalog.TRACKS = {
     subType = "intrigue",
     isLooping = false,
     duration = 105,
-    volume = 0.5,
+    volume = 0.2,
   },
   pt17B = {
     key = "pt17B",
@@ -521,7 +521,7 @@ Catalog.TRACKS = {
     subType = "intrigue",
     isLooping = false,
     duration = 106,
-    volume = 0.5,
+    volume = 0.2,
   },
   casaLomaA = {
     key = "casaLomaA",
@@ -529,7 +529,7 @@ Catalog.TRACKS = {
     subType = "casaLoma",
     isLooping = false,
     duration = 272,
-    volume = 0.5,
+    volume = 0.3,
   },
   casaLomaB = {
     key = "casaLomaB",
@@ -537,7 +537,7 @@ Catalog.TRACKS = {
     subType = "casaLoma",
     isLooping = false,
     duration = 393,
-    volume = 0.5,
+    volume = 0.3,
   },
   casaLomaC = {
     key = "casaLomaC",
@@ -545,7 +545,7 @@ Catalog.TRACKS = {
     subType = "casaLoma",
     isLooping = false,
     duration = 373,
-    volume = 0.5,
+    volume = 0.3,
   },
   casaLomaD = {
     key = "casaLomaD",
@@ -553,7 +553,7 @@ Catalog.TRACKS = {
     subType = "casaLoma",
     isLooping = false,
     duration = 219,
-    volume = 0.5,
+    volume = 0.3,
   },
   casaLomaE = {
     key = "casaLomaE",
@@ -561,7 +561,7 @@ Catalog.TRACKS = {
     subType = "casaLoma",
     isLooping = false,
     duration = 330,
-    volume = 0.5,
+    volume = 0.3,
   },
   gioCatacombs = {
     key = "gioCatacombs",
@@ -569,7 +569,7 @@ Catalog.TRACKS = {
     subType = "gioCatacombs",
     isLooping = true,
     duration = 217,
-    volume = 0.5,
+    volume = 0.3,
   },
   gioEstateA = {
     key = "gioEstateA",
@@ -577,7 +577,7 @@ Catalog.TRACKS = {
     subType = "gioEstate",
     isLooping = false,
     duration = 84,
-    volume = 0.5,
+    volume = 0.3,
   },
   gioEstateB = {
     key = "gioEstateB",
@@ -585,7 +585,7 @@ Catalog.TRACKS = {
     subType = "gioEstate",
     isLooping = false,
     duration = 109,
-    volume = 0.5,
+    volume = 0.3,
   },
   gioEstateC = {
     key = "gioEstateC",
@@ -593,7 +593,7 @@ Catalog.TRACKS = {
     subType = "gioEstate",
     isLooping = false,
     duration = 380,
-    volume = 0.5,
+    volume = 0.3,
   },
   TR_Full = {
     key = "TR_Full",
@@ -636,7 +636,7 @@ Catalog.TRACKS = {
     subType = "rain",
     isLooping = true,
     duration = 151,
-    volume = 0.5,
+    volume = 0.15,
   },
   rainLight = {
     key = "rainLight",
@@ -644,7 +644,7 @@ Catalog.TRACKS = {
     subType = "rain",
     isLooping = true,
     duration = 121,
-    volume = 0.5,
+    volume = 0.15,
   },
   windLow = {
     key = "windLow",
@@ -652,7 +652,7 @@ Catalog.TRACKS = {
     subType = "wind",
     isLooping = true,
     duration = 250,
-    volume = 0.5,
+    volume = 0.15,
   },
   windMax = {
     key = "windMax",
@@ -660,7 +660,7 @@ Catalog.TRACKS = {
     subType = "wind",
     isLooping = true,
     duration = 120,
-    volume = 0.5,
+    volume = 0.15,
   },
   windMed = {
     key = "windMed",
@@ -668,7 +668,7 @@ Catalog.TRACKS = {
     subType = "wind",
     isLooping = true,
     duration = 161,
-    volume = 0.5,
+    volume = 0.15,
   },
   windWinterLow = {
     key = "windWinterLow",
@@ -676,7 +676,7 @@ Catalog.TRACKS = {
     subType = "wind",
     isLooping = true,
     duration = 143,
-    volume = 0.5,
+    volume = 0.15,
   },
   windWinterMax = {
     key = "windWinterMax",
@@ -684,7 +684,7 @@ Catalog.TRACKS = {
     subType = "wind",
     isLooping = true,
     duration = 120,
-    volume = 0.5,
+    volume = 0.15,
   },
   windWinterMed = {
     key = "windWinterMed",
@@ -692,7 +692,7 @@ Catalog.TRACKS = {
     subType = "wind",
     isLooping = true,
     duration = 124,
-    volume = 0.5,
+    volume = 0.15,
   },
   thunder1 = {
     key = "thunder1",
@@ -700,7 +700,7 @@ Catalog.TRACKS = {
     subType = "thunder",
     isLooping = false,
     duration = 4,
-    volume = 0.75,
+    volume = 1,
   },
   thunder2 = {
     key = "thunder2",
@@ -708,7 +708,7 @@ Catalog.TRACKS = {
     subType = "thunder",
     isLooping = false,
     duration = 4,
-    volume = 0.75,
+    volume = 1,
   },
   thunder3 = {
     key = "thunder3",
@@ -716,7 +716,7 @@ Catalog.TRACKS = {
     subType = "thunder",
     isLooping = false,
     duration = 4,
-    volume = 0.75,
+    volume = 1,
   },
   thunder4 = {
     key = "thunder4",
@@ -724,8 +724,9 @@ Catalog.TRACKS = {
     subType = "thunder",
     isLooping = false,
     duration = 4,
-    volume = 0.75,
-  }
+    volume = 1,
+  },
+
 }
 
 local function getTracks(type, subType, playMode)
@@ -738,15 +739,15 @@ local function getTracks(type, subType, playMode)
         if usedSequenceOrders[order] ~= nil then
           error(
             "Duplicate soundscape sequence order "
-              .. tostring(order)
-              .. " for playlist "
-              .. tostring(type)
-              .. "."
-              .. tostring(subType or "")
-              .. ": "
-              .. tostring(usedSequenceOrders[order].key)
-              .. " and "
-              .. tostring(track.key)
+            .. tostring(order)
+            .. " for playlist "
+            .. tostring(type)
+            .. "."
+            .. tostring(subType or "")
+            .. ": "
+            .. tostring(usedSequenceOrders[order].key)
+            .. " and "
+            .. tostring(track.key)
           )
         end
         usedSequenceOrders[order] = track
@@ -776,9 +777,9 @@ end
 
 Catalog.PLAYMODES = {
   RANDOMLOOP = "RANDOMLOOP", -- Play random tracks from the playlist in sequence indefinitely
-  SELECT = "SELECT", -- One track should be selected by key. The track's `isLooping` property determines if it should loop.
-  RANDOM = "RANDOM", -- Randomly select one track from the playlist and play it. The track's `isLooping` property determines if it should loop.
-  SEQUENCE = "SEQUENCE", -- Play tracks from the playlist in sequence. The track's `isLooping` property determines if it should loop.
+  SELECT = "SELECT",         -- One track should be selected by key. The track's `isLooping` property determines if it should loop.
+  RANDOM = "RANDOM",         -- Randomly select one track from the playlist and play it. The track's `isLooping` property determines if it should loop.
+  SEQUENCE = "SEQUENCE",     -- Play tracks from the playlist in sequence. The track's `isLooping` property determines if it should loop.
 }
 
 Catalog.PLAYLISTS = { -- Note: Some of these values are nested by subcategory, others (without subcategories) are top-level keys
@@ -863,156 +864,156 @@ Catalog.PLAYLISTS = { -- Note: Some of these values are nested by subcategory, o
 Catalog.SILENT_EFFECT = "silent"
 
 Catalog.CHANNELS = {
-    musicA = {
-        label = "Music A",
-        kind = "backgroundMusic",
-        guidKey = "SOUNDSCAPE_MUSIC_A",
-        tag = "soundscape_music_a",
-        defaultVolume = 0.0,
-    },
-    musicB = {
-        label = "Music B",
-        kind = "backgroundMusic",
-        guidKey = "SOUNDSCAPE_MUSIC_B",
-        tag = "soundscape_music_b",
-        defaultVolume = 0.0,
-    },
-    featuredA = {
-        label = "Featured Music A",
-        kind = "featuredMusic",
-        guidKey = "SOUNDSCAPE_FEATURED_A",
-        tag = "soundscape_featured_a",
-        defaultVolume = 0.0,
-    },
-    featuredB = {
-        label = "Featured Music B",
-        kind = "featuredMusic",
-        guidKey = "SOUNDSCAPE_FEATURED_B",
-        tag = "soundscape_featured_b",
-        defaultVolume = 0.0,
-    },
-    locationA = {
-        label = "Location Ambience A",
-        kind = "locationAmbience",
-        guidKey = "SOUNDSCAPE_LOCATION_A",
-        tag = "soundscape_location_a",
-        defaultVolume = 0.55,
-    },
-    locationB = {
-        label = "Location Ambience B",
-        kind = "locationAmbience",
-        guidKey = "SOUNDSCAPE_LOCATION_B",
-        tag = "soundscape_location_b",
-        defaultVolume = 0.55,
-    },
-    weatherRain = {
-        label = "Weather Rain",
-        kind = "weather",
-        guidKey = "SOUNDSCAPE_WEATHER_RAIN",
-        tag = "soundscape_weather_rain",
-        defaultVolume = 0.0,
-    },
-    weatherWind = {
-        label = "Weather Wind",
-        kind = "weather",
-        guidKey = "SOUNDSCAPE_WEATHER_WIND",
-        tag = "soundscape_weather_wind",
-        defaultVolume = 0.0,
-    },
-    weatherThunder = {
-        label = "Weather Thunder",
-        kind = "weather",
-        guidKey = "SOUNDSCAPE_WEATHER_THUNDER",
-        tag = "soundscape_weather_thunder",
-        defaultVolume = 0.0,
-    },
+  musicA = {
+    label = "Music A",
+    kind = "backgroundMusic",
+    guidKey = "SOUNDSCAPE_MUSIC_A",
+    tag = "soundscape_music_a",
+    defaultVolume = 0.0,
+  },
+  musicB = {
+    label = "Music B",
+    kind = "backgroundMusic",
+    guidKey = "SOUNDSCAPE_MUSIC_B",
+    tag = "soundscape_music_b",
+    defaultVolume = 0.0,
+  },
+  featuredA = {
+    label = "Featured Music A",
+    kind = "featuredMusic",
+    guidKey = "SOUNDSCAPE_FEATURED_A",
+    tag = "soundscape_featured_a",
+    defaultVolume = 0.0,
+  },
+  featuredB = {
+    label = "Featured Music B",
+    kind = "featuredMusic",
+    guidKey = "SOUNDSCAPE_FEATURED_B",
+    tag = "soundscape_featured_b",
+    defaultVolume = 0.0,
+  },
+  locationA = {
+    label = "Location Ambience A",
+    kind = "locationAmbience",
+    guidKey = "SOUNDSCAPE_LOCATION_A",
+    tag = "soundscape_location_a",
+    defaultVolume = 0.55,
+  },
+  locationB = {
+    label = "Location Ambience B",
+    kind = "locationAmbience",
+    guidKey = "SOUNDSCAPE_LOCATION_B",
+    tag = "soundscape_location_b",
+    defaultVolume = 0.55,
+  },
+  weatherRain = {
+    label = "Weather Rain",
+    kind = "weather",
+    guidKey = "SOUNDSCAPE_WEATHER_RAIN",
+    tag = "soundscape_weather_rain",
+    defaultVolume = 0.0,
+  },
+  weatherWind = {
+    label = "Weather Wind",
+    kind = "weather",
+    guidKey = "SOUNDSCAPE_WEATHER_WIND",
+    tag = "soundscape_weather_wind",
+    defaultVolume = 0.0,
+  },
+  weatherThunder = {
+    label = "Weather Thunder",
+    kind = "weather",
+    guidKey = "SOUNDSCAPE_WEATHER_THUNDER",
+    tag = "soundscape_weather_thunder",
+    defaultVolume = 0.0,
+  },
 }
 
 Catalog.DEFAULTS = {
-    musicMood = "main",
-    locationMusic = "none",
-    featuredMusic = "none",
-    location = "none",
-    weather = "none",
-    rain = "none",
-    wind = "none",
-    thunderEnabled = false,
-    isIndoors = false,
-    weatherDucking = {
-        outdoorMultiplier = 1.0,
-        indoorMultiplier = 0.25,
-    },
-    thunderScheduling = {
-        minDelaySeconds = 18,
-        maxDelaySeconds = 55,
-    },
-    fadeSeconds = {
-        music = 8.0,
-        featured = 2.0,
-        weather = 3.0,
-        location = 4.0,
-    },
+  musicMood = "main",
+  locationMusic = "none",
+  featuredMusic = "none",
+  location = "none",
+  weather = "none",
+  rain = "none",
+  wind = "none",
+  thunderEnabled = false,
+  isIndoors = false,
+  weatherDucking = {
+    outdoorMultiplier = 1.0,
+    indoorMultiplier = 0.25,
+  },
+  thunderScheduling = {
+    minDelaySeconds = 18,
+    maxDelaySeconds = 55,
+  },
+  fadeSeconds = {
+    music = 8.0,
+    featured = 2.0,
+    weather = 3.0,
+    location = 4.0,
+  },
 }
 
 Catalog.WEATHER_CONDITIONS = {
-    none = { label = "None", rain = "none", wind = "none", thunderEnabled = false, volume = 0 },
-    rainLight = { label = "Light Rain", rain = "rainLight", wind = "none", thunderEnabled = false, volume = 0.5 },
-    rainHeavy = { label = "Heavy Rain", rain = "rainHeavy", wind = "none", thunderEnabled = false, volume = 0.5 },
-    wind = { label = "Wind", rain = "none", wind = "windMed", thunderEnabled = false, volume = 0.5 },
-    thunderstorm = { label = "Thunderstorm", rain = "rainHeavy", wind = "windWinterMax", thunderEnabled = true, volume = 0.5 },
+  none = { label = "None", rain = "none", wind = "none", thunderEnabled = false, volume = 0 },
+  rainLight = { label = "Light Rain", rain = "rainLight", wind = "none", thunderEnabled = false, volume = 0.5 },
+  rainHeavy = { label = "Heavy Rain", rain = "rainHeavy", wind = "none", thunderEnabled = false, volume = 0.5 },
+  wind = { label = "Wind", rain = "none", wind = "windMed", thunderEnabled = false, volume = 0.5 },
+  thunderstorm = { label = "Thunderstorm", rain = "rainHeavy", wind = "windWinterMax", thunderEnabled = true, volume = 0.5 },
 }
 
 local function getByStringKey(group, key)
-    if type(group) ~= "table" or type(key) ~= "string" then
-        return nil
-    end
-    return group[key]
+  if type(group) ~= "table" or type(key) ~= "string" then
+    return nil
+  end
+  return group[key]
 end
 
 local function getTrackByKey(playlist, trackKey)
-    if type(trackKey) ~= "string" or type(playlist) ~= "table" or type(playlist.tracks) ~= "table" then
-        return nil
-    end
-    for _, track in ipairs(playlist.tracks) do
-        if track.key == trackKey then
-            return track
-        end
-    end
+  if type(trackKey) ~= "string" or type(playlist) ~= "table" or type(playlist.tracks) ~= "table" then
     return nil
+  end
+  for _, track in ipairs(playlist.tracks) do
+    if track.key == trackKey then
+      return track
+    end
+  end
+  return nil
 end
 
 local function getTrackFromNestedPlaylists(group, trackKey)
-    if type(trackKey) ~= "string" or type(group) ~= "table" then
-        return nil
-    end
-    for _, playlist in pairs(group) do
-        local track = getTrackByKey(playlist, trackKey)
-        if track ~= nil then
-            return track
-        end
-    end
+  if type(trackKey) ~= "string" or type(group) ~= "table" then
     return nil
+  end
+  for _, playlist in pairs(group) do
+    local track = getTrackByKey(playlist, trackKey)
+    if track ~= nil then
+      return track
+    end
+  end
+  return nil
 end
 
 --- Returns a background music playlist by exact generated playlist key.
 -- @param playlistKey string
 -- @return table|nil
 function Catalog.getBackgroundPlaylist(playlistKey)
-    return getByStringKey(Catalog.PLAYLISTS.backgroundMusic, playlistKey)
+  return getByStringKey(Catalog.PLAYLISTS.backgroundMusic, playlistKey)
 end
 
 --- Returns a location ambience track by exact generated track key.
 -- @param trackKey string
 -- @return table|nil
 function Catalog.getLocationTrack(trackKey)
-    return getTrackByKey(Catalog.PLAYLISTS.location, trackKey)
+  return getTrackByKey(Catalog.PLAYLISTS.location, trackKey)
 end
 
 --- Returns a featured music track by exact generated track key.
 -- @param trackKey string
 -- @return table|nil
 function Catalog.getFeaturedTrack(trackKey)
-    return getTrackFromNestedPlaylists(Catalog.PLAYLISTS.featureMusic, trackKey)
+  return getTrackFromNestedPlaylists(Catalog.PLAYLISTS.featureMusic, trackKey)
 end
 
 --- Returns a weather track by layer and exact generated track key.
@@ -1020,124 +1021,124 @@ end
 -- @param trackKey string
 -- @return table|nil
 function Catalog.getWeatherTrack(layerKey, trackKey)
-    local weather = Catalog.PLAYLISTS.weather
-    local playlist = type(weather) == "table" and weather[layerKey] or nil
-    return getTrackByKey(playlist, trackKey)
+  local weather = Catalog.PLAYLISTS.weather
+  local playlist = type(weather) == "table" and weather[layerKey] or nil
+  return getTrackByKey(playlist, trackKey)
 end
 
 local function collectNestedPlaylistTracks(group)
-    local tracks = {}
-    if type(group) ~= "table" then
-        return tracks
-    end
-    for playlistKey, playlist in pairs(group) do
-        if type(playlist) == "table" and type(playlist.tracks) == "table" then
-            for _, track in ipairs(playlist.tracks) do
-                local copy = {
-                    key = track.key,
-                    label = track.key,
-                    playlistKey = playlistKey,
-                    effect = track.effect,
-                    effectList = track.effectList,
-                    durationSeconds = track.durationSeconds,
-                    volume = track.volume,
-                    crossFadeSeconds = playlist.crossFadeSeconds,
-                }
-                table.insert(tracks, copy)
-            end
-        end
-    end
-    table.sort(tracks, function(left, right)
-        return tostring(left.key) < tostring(right.key)
-    end)
+  local tracks = {}
+  if type(group) ~= "table" then
     return tracks
+  end
+  for playlistKey, playlist in pairs(group) do
+    if type(playlist) == "table" and type(playlist.tracks) == "table" then
+      for _, track in ipairs(playlist.tracks) do
+        local copy = {
+          key = track.key,
+          label = track.key,
+          playlistKey = playlistKey,
+          effect = track.effect,
+          effectList = track.effectList,
+          durationSeconds = track.durationSeconds,
+          volume = track.volume,
+          crossFadeSeconds = playlist.crossFadeSeconds,
+        }
+        table.insert(tracks, copy)
+      end
+    end
+  end
+  table.sort(tracks, function(left, right)
+    return tostring(left.key) < tostring(right.key)
+  end)
+  return tracks
 end
 
 local function collectPlaylistTracks(playlist)
-    local tracks = {}
-    if type(playlist) ~= "table" or type(playlist.tracks) ~= "table" then
-        return tracks
-    end
-    for _, track in ipairs(playlist.tracks) do
-        table.insert(tracks, {
-            key = track.key,
-            label = track.key,
-            effect = track.effect,
-            effectList = track.effectList,
-            durationSeconds = track.durationSeconds,
-            volume = track.volume,
-            crossFadeSeconds = playlist.crossFadeSeconds,
-        })
-    end
-    table.sort(tracks, function(left, right)
-        return tostring(left.key) < tostring(right.key)
-    end)
+  local tracks = {}
+  if type(playlist) ~= "table" or type(playlist.tracks) ~= "table" then
     return tracks
+  end
+  for _, track in ipairs(playlist.tracks) do
+    table.insert(tracks, {
+      key = track.key,
+      label = track.key,
+      effect = track.effect,
+      effectList = track.effectList,
+      durationSeconds = track.durationSeconds,
+      volume = track.volume,
+      crossFadeSeconds = playlist.crossFadeSeconds,
+    })
+  end
+  table.sort(tracks, function(left, right)
+    return tostring(left.key) < tostring(right.key)
+  end)
+  return tracks
 end
 
 local function collectWeatherConditions()
-    local rows = {}
-    for key, condition in pairs(Catalog.WEATHER_CONDITIONS) do
-        table.insert(rows, {
-            key = key,
-            label = condition.label or key,
-            volume = condition.volume,
-            crossFadeSeconds = Catalog.DEFAULTS.fadeSeconds.weather,
-        })
-    end
-    table.sort(rows, function(left, right)
-        return tostring(left.key) < tostring(right.key)
-    end)
-    return rows
+  local rows = {}
+  for key, condition in pairs(Catalog.WEATHER_CONDITIONS) do
+    table.insert(rows, {
+      key = key,
+      label = condition.label or key,
+      volume = condition.volume,
+      crossFadeSeconds = Catalog.DEFAULTS.fadeSeconds.weather,
+    })
+  end
+  table.sort(rows, function(left, right)
+    return tostring(left.key) < tostring(right.key)
+  end)
+  return rows
 end
 
 --- Returns all debug-panel categories derived from TRACKS, PLAYLISTS, and defaults.
 -- @return table
 function Catalog.getDebugCategories()
-    return {
-        {
-            key = "backgroundMusic",
-            label = "Background Music",
-            crossFadeSeconds = Catalog.DEFAULTS.fadeSeconds.music,
-            tracks = collectNestedPlaylistTracks(Catalog.PLAYLISTS.backgroundMusic),
-        },
-        {
-            key = "featuredMusic",
-            label = "Featured Music",
-            crossFadeSeconds = Catalog.DEFAULTS.fadeSeconds.featured,
-            tracks = collectNestedPlaylistTracks(Catalog.PLAYLISTS.featureMusic),
-        },
-        {
-            key = "location",
-            label = "Location",
-            crossFadeSeconds = Catalog.DEFAULTS.fadeSeconds.location,
-            tracks = collectPlaylistTracks(Catalog.PLAYLISTS.location),
-        },
-        {
-            key = "weather",
-            label = "Weather",
-            crossFadeSeconds = Catalog.DEFAULTS.fadeSeconds.weather,
-            tracks = collectWeatherConditions(),
-        },
-        {
-            key = "rain",
-            label = "Rain",
-            crossFadeSeconds = Catalog.DEFAULTS.fadeSeconds.weather,
-            tracks = collectPlaylistTracks(Catalog.PLAYLISTS.weather.rain),
-        },
-        {
-            key = "wind",
-            label = "Wind",
-            crossFadeSeconds = Catalog.DEFAULTS.fadeSeconds.weather,
-            tracks = collectPlaylistTracks(Catalog.PLAYLISTS.weather.wind),
-        },
-        {
-            key = "thunder",
-            label = "Thunder",
-            crossFadeSeconds = 0,
-            tracks = collectPlaylistTracks(Catalog.PLAYLISTS.weather.thunder),
-        },
-    }
+  return {
+    {
+      key = "backgroundMusic",
+      label = "Background Music",
+      crossFadeSeconds = Catalog.DEFAULTS.fadeSeconds.music,
+      tracks = collectNestedPlaylistTracks(Catalog.PLAYLISTS.backgroundMusic),
+    },
+    {
+      key = "featuredMusic",
+      label = "Featured Music",
+      crossFadeSeconds = Catalog.DEFAULTS.fadeSeconds.featured,
+      tracks = collectNestedPlaylistTracks(Catalog.PLAYLISTS.featureMusic),
+    },
+    {
+      key = "location",
+      label = "Location",
+      crossFadeSeconds = Catalog.DEFAULTS.fadeSeconds.location,
+      tracks = collectPlaylistTracks(Catalog.PLAYLISTS.location),
+    },
+    {
+      key = "weather",
+      label = "Weather",
+      crossFadeSeconds = Catalog.DEFAULTS.fadeSeconds.weather,
+      tracks = collectWeatherConditions(),
+    },
+    {
+      key = "rain",
+      label = "Rain",
+      crossFadeSeconds = Catalog.DEFAULTS.fadeSeconds.weather,
+      tracks = collectPlaylistTracks(Catalog.PLAYLISTS.weather.rain),
+    },
+    {
+      key = "wind",
+      label = "Wind",
+      crossFadeSeconds = Catalog.DEFAULTS.fadeSeconds.weather,
+      tracks = collectPlaylistTracks(Catalog.PLAYLISTS.weather.wind),
+    },
+    {
+      key = "thunder",
+      label = "Thunder",
+      crossFadeSeconds = 0,
+      tracks = collectPlaylistTracks(Catalog.PLAYLISTS.weather.thunder),
+    },
+  }
 end
 
 return Catalog

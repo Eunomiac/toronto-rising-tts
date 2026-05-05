@@ -1,0 +1,87 @@
+--[[
+    Storyteller HUD toolbar: mutually exclusive bottom-bar panels (lighting, scenes, etc.).
+    Tied to XML ids in ui/storyteller/ — not for generic reuse; keep out of lib/util.
+]]
+local U = require("lib.util")
+
+local StorytellerPanelUI = {}
+
+--- Panel keys and their corresponding panel/toggle IDs for the storyteller HUD.
+local STORYTELLER_PANELS = {
+    lighting = { panel = "panel_lighting", toggle = "toggle_lighting" },
+    scenes = { panel = "panel_scenes", toggle = "toggle_scenes" },
+    soundscape = { panel = "panel_soundscape", toggle = "toggle_soundscape" },
+    pcs = { panel = "panel_pcs", toggle = "toggle_pcs" },
+    phases = { panel = "panel_phases", toggle = "toggle_phases" },
+    npcs = { panel = "panel_npcs", toggle = "toggle_npcs" },
+}
+
+--- Wrapper for the pop-out content (all panels). Hidden when none selected.
+local STORYTELLER_CONTENT_AREA_ID = "storytellerContentArea"
+
+--- @param elementId string
+--- @return boolean True if TTS reports the element as active.
+local function storytellerUiElementIsActive(elementId)
+    if UI.getAttribute == nil or type(elementId) ~= "string" then
+        return false
+    end
+    local ok, v = pcall(function()
+        return UI.getAttribute(elementId, "active")
+    end)
+    if not ok or v == nil then
+        return false
+    end
+    return string.lower(tostring(v)) == "true"
+end
+
+--- Inactive toggle button colors (dark grey/gold border)
+local TOGGLE_COLORS_INACTIVE = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+
+--- Active toggle button colors (bright gold highlight)
+local TOGGLE_COLORS_ACTIVE = "#B8860B|#FFD700|#FFA500|#B8860B"
+local TOGGLE_TEXT_COLOR = "#FFFFFF"
+
+--- Keep storyteller toggle button visuals in sync.
+--- @param toggleId string
+--- @param isActive boolean
+local function setStorytellerToggleVisual(toggleId, isActive)
+    U.setAttributes(toggleId, {
+        colors = isActive and TOGGLE_COLORS_ACTIVE or TOGGLE_COLORS_INACTIVE
+    })
+end
+
+--- Selects a storyteller panel (mutually exclusive: only one open at a time).
+--- Shows the content area, hides all panels, shows the selected one, and updates toggle button highlight.
+--- Clicking the same top button again hides the content area (all toggles inactive).
+--- When `forceOpen` is true, the same-tab collapse is skipped (e.g. after `UI.setXml` when the NPC panel was already open).
+---
+--- @param panelKey string One of: "lighting", "scenes", "soundscape", "pcs", "phases", "npcs"
+--- @param forceOpen boolean|nil If true, always apply the open-panel branch (no toggle-close).
+function StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen)
+    if type(panelKey) ~= "string" then
+        error("StorytellerPanelUI.selectStorytellerPanel: panelKey must be a string", 2)
+    end
+
+    local selected = STORYTELLER_PANELS[panelKey]
+    if selected == nil then
+        return
+    end
+
+    if forceOpen ~= true and storytellerUiElementIsActive(STORYTELLER_CONTENT_AREA_ID) and storytellerUiElementIsActive(selected.panel) then
+        U.setAttribute(STORYTELLER_CONTENT_AREA_ID, "active", "false")
+        for _, ids in pairs(STORYTELLER_PANELS) do
+            U.setAttribute(ids.panel, "active", "false")
+            setStorytellerToggleVisual(ids.toggle, false)
+        end
+        return
+    end
+
+    U.setAttribute(STORYTELLER_CONTENT_AREA_ID, "active", "true")
+
+    for key, ids in pairs(STORYTELLER_PANELS) do
+        U.setAttribute(ids.panel, "active", key == panelKey and "true" or "false")
+        setStorytellerToggleVisual(ids.toggle, key == panelKey)
+    end
+end
+
+return StorytellerPanelUI

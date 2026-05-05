@@ -6,7 +6,7 @@ Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 >
 > - XML triggers: `ui/storyteller/panel_*.xml`, `ui/storyteller/hud_storyteller.xml`
 > - Handler implementations: `core/global_script.ttslua` (loaded via stub `.tts/objects/Global.lua`)
-> - Helper functions: `lib/ui_helpers.ttslua`, `core/light_debug.ttslua`, `core/light_debug_focus.ttslua`
+> - Helper functions: `lib/util.ttslua` (`U.*` UI helpers), `core/storyteller_panel_ui.ttslua`, `core/light_debug.ttslua`, `core/light_debug_focus.ttslua`
 
 ---
 
@@ -27,8 +27,8 @@ Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
-| `HUD_selectStorytellerPanel` | `toggle_lighting`, `toggle_scenes`, `toggle_soundscape`, `toggle_pcs`, `toggle_phases`, `toggle_npcs` | `(player, button, id)` | Strips `toggle_` prefix from `id`, calls `UIH.selectStorytellerPanel(panelKey)` to show one storyteller panel and hide all others. Updates toggle button colors to indicate active panel. |
-| `HUD_togglePanel` | `toggleElem_*` buttons | `(player, button, id)` | Strips `toggleElem_` prefix from `id`, calls `UIH.toggleXmlElement(elemID, button)` to collapse/expand the target panel. Swaps toggle button text between `►` and `▼`. |
+| `HUD_selectStorytellerPanel` | `toggle_lighting`, `toggle_scenes`, `toggle_soundscape`, `toggle_pcs`, `toggle_phases`, `toggle_npcs` | `(player, button, id)` | Strips `toggle_` prefix from `id`, calls `StorytellerPanelUI.selectStorytellerPanel(panelKey)` to show one storyteller panel and hide all others. Updates toggle button colors to indicate active panel. |
+| `HUD_togglePanel` | `toggleElem_*` buttons | `(player, button, id)` | Strips `toggleElem_` prefix from `id`, calls `U.toggleXmlElement(elemID, button)` to collapse/expand the target panel. Swaps toggle button text between `►` and `▼`. |
 
 ## Scene Controls (panel_scenes.xml)
 

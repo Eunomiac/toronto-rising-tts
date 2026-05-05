@@ -18,7 +18,7 @@ D.XML = [=[
 
   <Text class="xp_text" fontSize="82" fontStyle="Bold" color="#FFDD00" rectAlignment="LowerCenter" alignment="LowerCenter" offsetXY="-67 125" outline="#000000" outlineSize="2 2" shadow="#000000" shadowDistance="5 -5" />
 
-  <Panel class="page_root" active="true" rectAlignment="MiddleCenter" width="1545" height="2000" scale="0.1 0.1 0.1" position="0 0 -16" rotation="0 0 180" pivot="0.5 0.5" />
+  <Panel class="page_root" active="true" rectAlignment="MiddleCenter" width="1545" height="2000" scale="0.1 0.1 0.1" position="0 0 -13" rotation="0 0 180" pivot="0.5 0.5" />
     <Panel class="padded_border" padding="50 50 140 100" />
 
   <VerticalLayout class="vertical_section_container" spacing="10" height="100%" width="100%" childForceExpandWidth="true" childForceExpandHeight="false" childAlignment="UpperCenter" padding="40 40 0 0" />

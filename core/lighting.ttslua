@@ -145,11 +145,11 @@ L.LIGHTMODES = {
       STANDARD = {
         enabled = true,
         position = {x = -60, y = 50},
-        rotation = Vector(300, 36, 0),
-        range = 93.901543,
-        angle = 140.717697,
-        intensity = 4.186250,
-        color = Color(0.667467, 0.799703, 0.931939)
+        rotation = Vector(325, 47, 0),
+        range = 107.941399,
+        angle = 68.618919,
+        intensity = 4.003419,
+        color = Color(0.524346, 0.756940, 0.741433)
       }
     },
     mainLightRight = {
@@ -168,11 +168,11 @@ L.LIGHTMODES = {
       STANDARD = {
         enabled = true,
         position = {x = 60, y = 50},
-        rotation = Vector(300, -36, 0),
-        range = 93.901543,
-        angle = 140.717697,
-        intensity = 4.186250,
-        color = Color(0.667467, 0.799703, 0.931939)
+        rotation = Vector(325, -47, 0),
+        range = 107.941399,
+        angle = 68.618919,
+        intensity = 4.003419,
+        color = Color(0.524346, 0.756940, 0.741433)
       }
     },
     districtCardLight = {
@@ -192,10 +192,10 @@ L.LIGHTMODES = {
         enabled = true,
         position = Vector({-147.84, 39.45, 22.61}),
         rotation = Vector({80.00, 130.00, 0.00}),
-        range = 140,
-        angle = 180,
-        intensity = 6.678596,
-        color = Color(0.270241, 0.270241, 0.270241)
+        range = 94.918716,
+        angle = 175.488602,
+        intensity = 3.599513,
+        color = Color(0.688225, 0.817164, 0.696821)
       }
     },
     siteCardLight = {
@@ -215,10 +215,10 @@ L.LIGHTMODES = {
         enabled = true,
         position = Vector({147.84, 39.45, 22.61}),
         rotation = Vector({80.00, 230.00, 0.00}),
-        range = 140,
-        angle = 180,
-        intensity = 6.678596,
-        color = Color(0.270241, 0.270241, 0.270241)
+        range = 94.918716,
+        angle = 175.488602,
+        intensity = 3.599513,
+        color = Color(0.688225, 0.817164, 0.696821)
       }
     },
     -- Player lights (per-player spotlights)
@@ -240,6 +240,16 @@ L.LIGHTMODES = {
             angle = 116.352303,
             intensity = 1.800000,
             color = Color(0.339730, 0.339730, 0.339730)
+        },
+        ROLLING = {
+          enabled = true,
+          range = 101.139198,
+          angle = 134.550003,
+          intensity = 4.738969,
+          color = Color(0.525551, 0.522316, 0.522316)
+        },
+        HUNGRY = {
+          color = Color(1, 0, 0)
         }
     },
     playerLight1Orange = {
@@ -258,6 +268,16 @@ L.LIGHTMODES = {
             angle = 116.352303,
             intensity = 1.800000,
             color = Color(0.339730, 0.339730, 0.339730)
+        },
+        ROLLING = {
+          enabled = true,
+          range = 101.139198,
+          angle = 134.550003,
+          intensity = 4.738969,
+          color = Color(0.525551, 0.522316, 0.522316)
+        },
+        HUNGRY = {
+          color = Color(1, 0, 0)
         }
     },
     playerLight1Red = {
@@ -276,6 +296,16 @@ L.LIGHTMODES = {
             angle = 116.352303,
             intensity = 1.800000,
             color = Color(0.339730, 0.339730, 0.339730)
+        },
+        ROLLING = {
+          enabled = true,
+          range = 101.139198,
+          angle = 134.550003,
+          intensity = 4.738969,
+          color = Color(0.525551, 0.522316, 0.522316)
+        },
+        HUNGRY = {
+          color = Color(1, 0, 0)
         }
     },
     playerLight1Pink = {
@@ -294,6 +324,16 @@ L.LIGHTMODES = {
             angle = 116.352303,
             intensity = 1.800000,
             color = Color(0.339730, 0.339730, 0.339730)
+        },
+        ROLLING = {
+          enabled = true,
+          range = 101.139198,
+          angle = 134.550003,
+          intensity = 4.738969,
+          color = Color(0.525551, 0.522316, 0.522316)
+        },
+        HUNGRY = {
+          color = Color(1, 0, 0)
         }
     },
     playerLight1Purple = {
@@ -312,6 +352,16 @@ L.LIGHTMODES = {
             angle = 116.352303,
             intensity = 1.800000,
             color = Color(0.339730, 0.339730, 0.339730)
+        },
+        ROLLING = {
+          enabled = true,
+          range = 101.139198,
+          angle = 134.550003,
+          intensity = 4.738969,
+          color = Color(0.525551, 0.522316, 0.522316)
+        },
+        HUNGRY = {
+          color = Color(1, 0, 0)
         }
     },
     npcLight1NPC1 = {
@@ -329,7 +379,17 @@ L.LIGHTMODES = {
           range = 95.549049,
           angle = 87.566208,
           intensity = 4.005609,
-          color = Color(0.525551, 0.350648, 0.350648)
+          color = Color(0.524346, 0.756940, 0.741433)
+      },
+      ROLLING = {
+        enabled = true,
+        range = 101.139198,
+        angle = 134.550003,
+        intensity = 4.738969,
+        color = Color(0.525551, 0.522316, 0.522316)
+      },
+      HUNGRY = {
+        color = Color(1, 0, 0)
       }
     },
     npcLight1NPC2 = {
@@ -347,7 +407,17 @@ L.LIGHTMODES = {
         range = 95.549049,
         angle = 87.566208,
         intensity = 4.005609,
-        color = Color(0.525551, 0.350648, 0.350648)
+        color = Color(0.524346, 0.756940, 0.741433)
+      },
+      ROLLING = {
+        enabled = true,
+        range = 101.139198,
+        angle = 134.550003,
+        intensity = 4.738969,
+        color = Color(0.525551, 0.522316, 0.522316)
+      },
+      HUNGRY = {
+        color = Color(1, 0, 0)
       }
     },
     npcLight1NPC3 = {
@@ -365,7 +435,17 @@ L.LIGHTMODES = {
         range = 95.549049,
         angle = 87.566208,
         intensity = 4.005609,
-        color = Color(0.525551, 0.350648, 0.350648)
+        color = Color(0.524346, 0.756940, 0.741433)
+      },
+      ROLLING = {
+        enabled = true,
+        range = 101.139198,
+        angle = 134.550003,
+        intensity = 4.738969,
+        color = Color(0.525551, 0.522316, 0.522316)
+      },
+      HUNGRY = {
+        color = Color(1, 0, 0)
       }
     },
     npcLight1NPC4 = {
@@ -383,7 +463,17 @@ L.LIGHTMODES = {
         range = 95.549049,
         angle = 87.566208,
         intensity = 4.005609,
-        color = Color(0.525551, 0.350648, 0.350648)
+        color = Color(0.524346, 0.756940, 0.741433)
+      },
+      ROLLING = {
+        enabled = true,
+        range = 101.139198,
+        angle = 134.550003,
+        intensity = 4.738969,
+        color = Color(0.525551, 0.522316, 0.522316)
+      },
+      HUNGRY = {
+        color = Color(1, 0, 0)
       }
     },
     playerLight2Brown = {
@@ -397,9 +487,12 @@ L.LIGHTMODES = {
         STANDARD = {
             enabled = true,
             color = Color(255 / 255, 255 / 255, 200 / 255),
-            intensity = 2,
-            range = 80,
-            angle = 90
+            range = 48.645271,
+            angle = 68.982948,
+            intensity = 5.514803
+        },
+        HUNGRY = {
+          color = Color(1, 0, 0)
         }
     },
     playerLight2Orange = {
@@ -412,10 +505,13 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            range = 139.633698,
-            angle = 90.000000,
-            intensity = 2.621968,
+            range = 48.645271,
+            angle = 68.982948,
+            intensity = 5.514803,
             color = Color(0.718689, 0.657402, 0.810620)
+        },
+        HUNGRY = {
+          color = Color(1, 0, 0)
         }
     },
     playerLight2Red = {
@@ -428,10 +524,13 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            intensity = 4.5,
-            range = 124,
-            angle = 90,
-            color = Color(0.542781, 0.467013, 0.405022)
+            range = 54.882030,
+            range = 48.645271,
+            angle = 68.982948,
+            intensity = 5.514803
+        },
+        HUNGRY = {
+          color = Color(1, 0, 0)
         }
     },
     playerLight2Pink = {
@@ -444,10 +543,13 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            range = 139.633698,
-            angle = 90.000000,
-            intensity = 2.621968,
-            color = Color(0.718689, 0.657402, 0.810620)
+            range = 54.882030,
+            range = 48.645271,
+            angle = 68.982948,
+            intensity = 5.514803
+        },
+        HUNGRY = {
+          color = Color(1, 0, 0)
         }
     },
     playerLight2Purple = {
@@ -461,9 +563,12 @@ L.LIGHTMODES = {
         STANDARD = {
             enabled = true,
             color = Color(255 / 255, 255 / 255, 200 / 255),
-            intensity = 2,
-            range = 80,
-            angle = 90
+            range = 48.645271,
+            angle = 68.982948,
+            intensity = 5.514803
+        },
+        HUNGRY = {
+          color = Color(1, 0, 0)
         }
     },
     npcLight2NPC1 = {
@@ -477,9 +582,12 @@ L.LIGHTMODES = {
       STANDARD = {
           enabled = true,
           color = Color(255 / 255, 255 / 255, 200 / 255),
-          intensity = 2,
-          range = 80,
-          angle = 90
+          range = 48.645271,
+          angle = 68.982948,
+          intensity = 5.514803
+      },
+      HUNGRY = {
+        color = Color(1, 0, 0)
       }
     },
     npcLight2NPC2 = {
@@ -493,9 +601,12 @@ L.LIGHTMODES = {
       STANDARD = {
           enabled = true,
           color = Color(255 / 255, 255 / 255, 200 / 255),
-          intensity = 2,
-          range = 80,
-          angle = 90
+          range = 48.645271,
+          angle = 68.982948,
+          intensity = 5.514803
+      },
+      HUNGRY = {
+        color = Color(1, 0, 0)
       }
     },
     npcLight2NPC3 = {
@@ -509,9 +620,12 @@ L.LIGHTMODES = {
       STANDARD = {
           enabled = true,
           color = Color(255 / 255, 255 / 255, 200 / 255),
-          intensity = 2,
-          range = 80,
-          angle = 90
+          range = 54.882030,
+          angle = 96.997147,
+          intensity = 5.514803
+      },
+      HUNGRY = {
+        color = Color(1, 0, 0)
       }
     },
     npcLight2NPC4 = {
@@ -525,9 +639,12 @@ L.LIGHTMODES = {
       STANDARD = {
           enabled = true,
           color = Color(255 / 255, 255 / 255, 200 / 255),
-          intensity = 2,
-          range = 80,
-          angle = 90
+          range = 48.645271,
+          angle = 68.982948,
+          intensity = 5.514803
+      },
+      HUNGRY = {
+        color = Color(1, 0, 0)
       }
     },
     playerLight3Red = {
@@ -543,9 +660,9 @@ L.LIGHTMODES = {
         },
         STANDARD = {
           enabled = true,
-          range = 48.018639,
-          angle = 119.425003,
-          intensity = 1.488999,
+          range = 48.645271,
+          angle = 68.982948,
+          intensity = 5.514803,
           color = Color(0.525551, 0.525551, 0.525551)
         }
     },
@@ -562,9 +679,9 @@ L.LIGHTMODES = {
         },
         STANDARD = {
           enabled = true,
-          range = 48.018639,
-          angle = 119.425003,
-          intensity = 1.488999,
+          range = 17.689159,
+          angle = 135.495407,
+          intensity = 3.124228,
           color = Color(0.525551, 0.525551, 0.525551)
         }
     },
@@ -600,9 +717,9 @@ L.LIGHTMODES = {
         },
         STANDARD = {
           enabled = true,
-          range = 48.018639,
-          angle = 119.425003,
-          intensity = 1.488999,
+          range = 17.689159,
+          angle = 135.495407,
+          intensity = 3.124228,
           color = Color(0.525551, 0.525551, 0.525551)
         }
     },
@@ -619,9 +736,9 @@ L.LIGHTMODES = {
         },
         STANDARD = {
           enabled = true,
-          range = 48.018639,
-          angle = 119.425003,
-          intensity = 1.488999,
+          range = 17.689159,
+          angle = 135.495407,
+          intensity = 3.124228,
           color = Color(0.525551, 0.525551, 0.525551)
         }
     }
@@ -1090,6 +1207,116 @@ local NPC_LIGHT_ROLE_BY_REF = {
 }
 
 --- @param lightRef string
+--- @param seatColor string
+--- @return boolean
+local function lightRefMatchesSeatColor(lightRef, seatColor)
+    if U.Type(lightRef) ~= "string" or U.Type(seatColor) ~= "string" then
+        return false
+    end
+    return string.sub(lightRef, -#seatColor) == seatColor
+end
+
+--- @param playerID string
+--- @param contextKey string
+--- @param lightRef string
+--- @return string|nil
+local function getStoredModeRestore(playerID, contextKey, lightRef)
+    local saved = S.getStateVal("playerData", playerID, "lighting", "modeRestore", contextKey, lightRef)
+    if U.Type(saved) == "string" and saved ~= "" then
+        return saved
+    end
+    return nil
+end
+
+--- @param playerID string
+--- @param contextKey string
+--- @param lightRef string
+--- @param mode string|nil
+local function setStoredModeRestore(playerID, contextKey, lightRef, mode)
+    S.setStateVal(mode, "playerData", playerID, "lighting", "modeRestore", contextKey, lightRef)
+end
+
+--- @param lightRef string
+--- @return string
+local function resolveCurrentModeOrFallback(lightRef)
+    local lData = L.LIGHTMODES[lightRef]
+    local current = S.getStateVal("lights", lightRef)
+    if U.Type(current) == "string" and lData ~= nil and lData[current] ~= nil then
+        return current
+    end
+    if lData ~= nil and U.Type(lData.default) == "string" and lData[lData.default] ~= nil then
+        return lData.default
+    end
+    if lData ~= nil and lData.OFF ~= nil then
+        return "OFF"
+    end
+    return "default"
+end
+
+--- @param playerColor string
+--- @param modeName string
+--- @param contextKey string
+--- @param activate boolean
+local function setContextualPlayerLightMode(playerColor, modeName, contextKey, activate)
+    if U.Type(playerColor) ~= "string" or U.Type(modeName) ~= "string" or U.Type(contextKey) ~= "string" then
+        return
+    end
+    local playerID = S.getPlayerID(playerColor)
+    if U.Type(playerID) ~= "string" then
+        return
+    end
+
+    for lightRef, lData in pairs(L.LIGHTMODES or {}) do
+        if U.Type(lightRef) == "string"
+            and U.Type(lData) == "table"
+            and lData.isPlayerLight == true
+            and lData[modeName] ~= nil
+            and lightRefMatchesSeatColor(lightRef, playerColor)
+        then
+            if activate then
+                local currentMode = S.getStateVal("lights", lightRef)
+                if currentMode ~= modeName then
+                    if getStoredModeRestore(playerID, contextKey, lightRef) == nil then
+                        setStoredModeRestore(playerID, contextKey, lightRef, resolveCurrentModeOrFallback(lightRef))
+                    end
+                    L.SetLightMode(lightRef, modeName, playerColor, 0.25)
+                end
+            else
+                local restoreMode = getStoredModeRestore(playerID, contextKey, lightRef)
+                if restoreMode ~= nil then
+                    L.SetLightMode(lightRef, restoreMode, playerColor, 0.25)
+                    setStoredModeRestore(playerID, contextKey, lightRef, nil)
+                end
+            end
+        end
+    end
+end
+
+--- Toggle the ROLLING light context for a player.
+--- @param playerColor string
+--- @param drawerOpen boolean
+function L.onDiceDrawerStateChanged(playerColor, drawerOpen)
+    setContextualPlayerLightMode(playerColor, "ROLLING", "rolling", drawerOpen == true)
+end
+
+--- Reconcile one player's HUNGRY light context from current hunger state.
+--- @param playerColor string
+function L.syncHungryModeForPlayer(playerColor)
+    if U.Type(playerColor) ~= "string" then
+        return
+    end
+    local hunger = tonumber(S.getPlayerVal(playerColor, "hunger")) or 0
+    setContextualPlayerLightMode(playerColor, "HUNGRY", "hungry", hunger >= 4)
+end
+
+--- Reconcile HUNGRY light context for all player seats.
+function L.syncHungryModesForAllPlayers()
+    for _, color in ipairs(C.PlayerColors or {}) do
+        L.syncHungryModeForPlayer(color)
+    end
+end
+
+--- @param lightRef string
 --- @return string|nil
 local function resolveNpcSeatLightGuid(lightRef)
     local seatKey = NPC_LIGHT_TO_SEAT[lightRef]
@@ -1147,10 +1374,6 @@ local function isNpcSeatLightActive(lightRef)
     local tableCfg = U.Type(currentTableKey) == "string" and C.Tables[currentTableKey] or nil
     local tableMap = U.Type(tableCfg) == "table" and tableCfg.playerToPositionMap or nil
     if U.Type(tableMap) ~= "table" or tableMap[seatKey] == nil then
-        return false
-    end
-    local npcInstances = S.getStateVal("npcs", "instances")
-    if U.Type(occupant) == "string" and U.Type(npcInstances) == "table" and U.Type(npcInstances[occupant]) == "table" then
         return false
     end
     return true
@@ -1504,6 +1727,7 @@ function L.InitLights()
             initLightsRetryKeys[lightName] = true
         end
     end)
+    L.syncHungryModesForAllPlayers()
 end
 
 --- Second pass after load (late-spawned objects). Call from `Wait.time` in global onLoad.
@@ -1517,6 +1741,7 @@ function L.InitLightsDeferred()
         end
     end
     initLightsRetryKeys = {}
+    L.syncHungryModesForAllPlayers()
 end
 
 --- Resets all lights to their default/off states

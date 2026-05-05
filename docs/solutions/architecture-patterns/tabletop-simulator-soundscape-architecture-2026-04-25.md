@@ -168,7 +168,7 @@ That test checks the public API surface, catalog/docs presence, Lua parseability
 - Catalog: `lib/soundscape_catalog.ttslua`
 - State/lifecycle: `core/state.ttslua`, `core/global_script.ttslua`
 - Scene defaults: `core/scenes.ttslua`
-- Storyteller UI: `ui/storyteller/panel_soundscape.xml`, `ui/storyteller/panel_storyteller_toolbar.xml`, `lib/ui_helpers.ttslua`
+- Storyteller UI: `ui/storyteller/panel_soundscape.xml`, `ui/storyteller/panel_storyteller_toolbar.xml`, `core/storyteller_panel_ui.ttslua` (toolbar tabs), `lib/util.ttslua` (general `U.*` UI helpers)
 - Debug helpers: `core/debug.ttslua`
 - Unity setup: `.dev/Soundscape & Audio/SOUNDSCAPE_UNITY_SETUP.md`
 - Test guide: `.dev/TESTING.md`

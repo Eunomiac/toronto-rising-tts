@@ -212,7 +212,7 @@ test("soundscape Lua files parse as Lua 5.1", () => {
     "core/global_script.ttslua",
     "core/debug.ttslua",
     "core/soundscape_debug_panel.ttslua",
-    "lib/ui_helpers.ttslua",
+    "core/storyteller_panel_ui.ttslua",
     ".dev/.debug/TEST BED.ttslua",
   ].forEach((relativePath) => {
     assert.doesNotThrow(() => {

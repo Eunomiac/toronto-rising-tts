@@ -735,6 +735,14 @@ All roll-related UI element IDs follow a consistent naming pattern:
 
 ## 9. Physical Dice Integration (`core/global_script.ttslua`)
 
+### 9.0 Dice Drawer Lighting Hooks
+
+- Opening a player's dice drawer now applies `ROLLING` to any `isPlayerLight` entries in `L.LIGHTMODES` that define a `ROLLING` mode for that seat color.
+- Closing the drawer restores each affected light to the mode it had before drawer-open, using per-player restore state at `gameState.playerData[playerID].lighting.modeRestore.rolling`.
+- Hunger writes (`S.setPlayerVal(color, "hunger", value)`) now reconcile `HUNGRY` mode in the same way for lights that define `HUNGRY`, with restore state stored at `...modeRestore.hungry`.
+- On load (`L.InitLights` and deferred pass), hunger-based lighting is re-synced so players at Hunger 4/5 are immediately shown in `HUNGRY` mode without forcing lights on when the base mode is `OFF`.
+- `Global.onLoad` performs a delayed overlays-only refresh (`UpdateUIDisplays({ overlays = true })`) so hunger smoke objects that spawn a little late still reconcile correctly to Hunger 4/5.
+
 ### 9.1 `onObjectRandomize` Hook
 
 TTS fires `onObjectRandomize(obj, playerColor)` when any object is randomized by a player (including dice). The hook determines whether the object is a player's die, which player it belongs to, and whether that player has an active roll in `ROLLING` phase.
@@ -1117,3 +1125,9 @@ DEBUG.testRollFlow_Rouse(color, dieValue)
 -- Verify state is clean after cancel
 DEBUG.testRollCancel(color)
 ```
+
+---
+
+## 15. Extending custom roll mechanics
+
+For **where** to add new toggles, classification modes, table/session behavior, and post-confirm automation—without duplicating the roll pipeline—see **[Custom Roll Mechanics](Custom%20Roll%20Mechanics.md)**.

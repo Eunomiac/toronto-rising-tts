@@ -1,0 +1,24 @@
+<!-- Group NPC row, used to generate panel_npcs.xml
+
+  Placeholders:
+    @@group_key@@ — group id from character `groups` (e.g. fiveKeys).
+    @@npc_key@@ — character key in D.characters.
+    @@npc_name@@ — display name (XML-escaped by the generator).
+    @@member_color_attr@@ — empty, or ` color="#RRGGBB"` from labelColor.
+-->
+
+<HorizontalLayout id="npc_groupMemberRow_@@group_key@@_@@npc_key@@" class="hud_storyteller_button_row npc_group_member_row" active="false">
+  <Text id="npc_groupMemberName_@@group_key@@_@@npc_key@@" class="hud_storyteller_label hud_storyteller_row_name"@@member_color_attr@@>@@npc_name@@</Text>
+  <Button id="npc_memberLoc_@@group_key@@_@@npc_key@@_centerForward" class="button_icon npc_button_icon button_icon_small" offsetXY="-295 0">▼</Button>
+  <Button id="npc_memberLoc_@@group_key@@_@@npc_key@@_nearLeft" class="button_icon npc_button_icon button_icon_small" offsetXY="-270 0">◀</Button>
+  <Button id="npc_memberLoc_@@group_key@@_@@npc_key@@_nearRight" class="button_icon npc_button_icon button_icon_small" offsetXY="-245 0">▶</Button>
+  <Button id="npc_memberLoc_@@group_key@@_@@npc_key@@_farLeft" class="button_icon npc_button_icon button_icon_small" offsetXY="-220 0">◁</Button>
+  <Button id="npc_memberLoc_@@group_key@@_@@npc_key@@_farRight" class="button_icon npc_button_icon button_icon_small" offsetXY="-195 0">▷</Button>
+  <Button id="npc_memberLoc_@@group_key@@_@@npc_key@@_NPC1" class="button_icon npc_button_icon button_icon_small" offsetXY="-160 0">1</Button>
+  <Button id="npc_memberLoc_@@group_key@@_@@npc_key@@_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
+  <Button id="npc_memberLoc_@@group_key@@_@@npc_key@@_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
+  <Button id="npc_memberLoc_@@group_key@@_@@npc_key@@_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
+
+  <Button id="npc_memberLock_@@group_key@@_@@npc_key@@" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
+  <Button id="npc_unseat_@@npc_key@@" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
+</HorizontalLayout>

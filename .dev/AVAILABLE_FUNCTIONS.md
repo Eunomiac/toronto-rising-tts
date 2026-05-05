@@ -4,7 +4,7 @@
 
 **Status:** This document should be updated whenever new functions are added to any module.
 
-**Last Updated:** 2026-04-25
+**Last Updated:** 2026-05-04
 
 ---
 
@@ -14,7 +14,7 @@
 
 1. **Check this document first** - Search for existing functions that might already do what you need
 2. **Check the utilities library** (`lib/util.ttslua`) - It contains 75+ functions for common operations
-3. **Check other modules** - State, zones, lighting, main, and UI helpers may have relevant functions
+3. **Check other modules** - State, zones, lighting, main, `U.*` UI utilities, and Storyteller HUD modules may have relevant functions
 4. **Only create new functions if no existing function meets your needs**
 
 **Common mistakes to avoid:**
@@ -348,32 +348,46 @@
 
 ---
 
-## 7. UI HELPERS MODULE (`lib/ui_helpers.ttslua`)
+## 7. UI UTILITIES (`lib/util.ttslua`)
 
-**Require:** `local UIHelpers = require("lib.ui_helpers")` or use `UI.*` functions directly
+**Require:** `local U = require("lib.util")`
 
-### UI Attribute Functions
+General-purpose UI helpers (system-agnostic). Prefer **`U.setAttribute` / `U.setAttributes`** for buttons — TTS can reset button styling when attributes are set one at a time; these wrappers restore key fields by setting them together.
 
-| Function | Description | Usage Example |
-| :--------- | :------------- | :--------------- |
-| `UI.setAttributes(elementID, attrs)` | Set multiple attributes at once | Batch updates |
-| `UIHelpers.setAttributes(elementID, attrs)` | Same as above (wrapper) | Batch updates |
-
-### UI Toggle Functions
+### Button-safe attributes and flashes
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
-| `UIHelpers.toggleXmlElement(elemID, button)` | Toggle panel visibility | Collapse/expand sections |
-| `UIHelpers.showXmlElement(elemID)` | Expand panel | Show section |
-| `UIHelpers.hideXmlElement(elemID)` | Collapse panel | Hide section |
-| `UIHelpers.isXmlElementExpanded(elemID)` | Check if panel is expanded | Check state |
+| `U.setAttribute(elemID, attr, val)` | Set one attribute; preserves button color/textSize/textColor when needed | `U.setAttribute("myButton", "text", "OK")` |
+| `U.setAttributes(elemID, attrs)` | Set many attributes; same button preservation | `U.setAttributes("btn", { text = "Go", fontSize = 18 })` |
+| `U.isButton(elemID)` | True if element has click handlers | Guards / branching |
+| `U.splashUIElement(elemID, duration, delay)` | Show element briefly then hide | Notifications |
 
-### UI Value Functions
+### Collapse / expand (`active` + `toggleElem_<id>`)
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
-| `UIHelpers.setValue(elementID, value)` | Safely set UI value | Set with type conversion |
-| `UIHelpers.getValue(elementID)` | Safely get UI value | Get with type conversion |
+| `U.toggleXmlElement(elemID, button)` | Toggle `active`; syncs `toggleElem_<elemID>` text ► / ▼ | Panel sections |
+| `U.showXmlElement(elemID)` | Force expanded | Open section |
+| `U.hideXmlElement(elemID)` | Force collapsed | Close section |
+| `U.isXmlElementExpanded(elemID)` | Whether `active` reads as true | State checks |
+
+### Input values
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `U.setUIValue(elementID, value)` | `UI.setValue` with `tostring` | Inputs, toggles |
+| `U.getUIValue(elementID)` | `UI.getValue`; returns **number** if `tonumber` succeeds, else string | Parse numeric fields |
+
+TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when the target may be a **Button**.
+
+### Storyteller HUD toolbar (not in `lib/`)
+
+**Require:** `local StorytellerPanelUI = require("core.storyteller_panel_ui")`
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen?)` | Mutually exclusive bottom-bar panels; optional `forceOpen` skips “click same tab to close” | `StorytellerPanelUI.selectStorytellerPanel("npcs")` |
 
 ---
 
@@ -451,7 +465,7 @@
 
 ### Need to manipulate UI?
 
-→ Use `UIHelpers.toggleXmlElement()`, `UI.setAttributes()`, `U.splashUIElement()`
+→ Use `U.toggleXmlElement()` / `U.setAttributes()`, `U.splashUIElement()`; Storyteller tab bar → `StorytellerPanelUI.selectStorytellerPanel()`
 
 ### Need to work with players?
 
@@ -485,6 +499,8 @@
 
 ## Maintenance
 
+**MANDATORY (see `.cursorrules` → Documentation Updates):** Keep this file aligned with the codebase **in the same change** — do not wait for a separate doc request.
+
 **This document must be updated when:**
 
 - New functions are added to any module
@@ -509,4 +525,4 @@
 - `core/zones.ttslua` - Source code for zones module
 - `core/lighting.ttslua` - Source code for lighting module
 - `core/main.ttslua` - Source code for main module
-- `lib/ui_helpers.ttslua` - Source code for UI helpers module
+- `core/storyteller_panel_ui.ttslua` - Storyteller toolbar mutually exclusive panels

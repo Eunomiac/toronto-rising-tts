@@ -13,6 +13,15 @@ This is a **Vampire: The Masquerade 5th Edition (VTM5E) Tabletop Simulator modul
 
 ## Critical Workflow Rules
 
+### Documentation Updates — ABSOLUTE REQUIREMENT
+
+**Update documentation as part of the same change, without waiting for the user to ask.**
+
+- When code changes **paths, public APIs, handler names, module boundaries, or behavior** described anywhere in-repo (including `.dev/`, `docs/`, root `README`, XML comments, and this file), **edit those docs in the same session**.
+- **Do not** defer documentation with “follow-up unless prompted” — if a human would need the doc to stay accurate, agents treat that as blocking work before the task is done.
+- **If this rule already appears elsewhere** in project instructions, that is not permission to bury it: keep this section **visible in Critical Workflow Rules** and strengthen local mentions (e.g. upgrade “should” → “must”, add pointers here).
+- After refactors or renames, **grep** for stale symbols and file paths in `.dev/` and `docs/solutions/` and fix hits.
+
 ### Error Visibility - ABSOLUTE REQUIREMENT
 
 **NEVER mask errors. ALWAYS surface runtime failures immediately.**
@@ -271,7 +280,7 @@ Modules must be loaded in dependency order:
 
 **ALWAYS check these first:**
 
-1. `dev/AVAILABLE_FUNCTIONS.md` - Comprehensive function reference
+1. `.dev/AVAILABLE_FUNCTIONS.md` - Comprehensive function reference
 2. `lib/util.ttslua` - 75+ utility functions (map, filter, find, etc.)
 3. Existing modules for similar patterns
 4. **Only create new functions if no existing function meets your needs**
@@ -363,10 +372,13 @@ startLuaCoroutine(Global, "CoroutineName")
 
 ### When to Update Documentation
 
-- **Always** update documentation when making changes
+This restates the **Critical Workflow Rules → Documentation Updates — ABSOLUTE REQUIREMENT** section above. In short:
+
+- **Always** update documentation when making changes — **proactively**, not only when the user requests it
 - Add examples for new functions
 - Keep README files current
-- Update `dev/AVAILABLE_FUNCTIONS.md` when adding new functions
+- Update `.dev/AVAILABLE_FUNCTIONS.md` when adding, renaming, or moving functions; update `.dev/HUD_FUNCTIONS.md` when `HUD_*` handlers or their callees change
+- When you touch `docs/solutions/`, keep frontmatter and cross-links consistent with the code
 
 ### Key Documentation Files
 

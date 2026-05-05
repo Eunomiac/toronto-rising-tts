@@ -3,6 +3,18 @@
 const fs = require("fs");
 const path = require("path");
 
+/** Area keys wired by the button columns in ui/storyteller/partials/panel_npcs_*.xml */
+const WIRED_AREA_KEYS = ["centerForward", "farLeft", "farRight", "nearLeft", "nearRight"];
+
+const PARTIAL_SHELL = "panel_npcs_shell.xml";
+const PARTIAL_SEATED_ROW = "panel_npcs_seated_npc_row.xml";
+const PARTIAL_AREA_HEADER = "panel_npcs_area_header_row.xml";
+const PARTIAL_AREA_NPC_ROW = "panel_npcs_area_npc_row.xml";
+const PARTIAL_GROUP_HEADER = "panel_npcs_group_header_row.xml";
+const PARTIAL_GROUP_MEMBER_ROW = "panel_npcs_group_npc_row.xml";
+
+const partialCache = new Map();
+
 function extractBlock(source, marker) {
   const markerIndex = source.lastIndexOf(marker);
   if (markerIndex < 0) {
@@ -69,14 +81,21 @@ function parseTopLevelEntries(tableBlock) {
   return entries;
 }
 
+function areaHeaderNameFromKey(key) {
+  const words = key.replace(/([A-Z])/g, " $1").trim().split(/\s+/);
+  return words.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+}
+
 function parseAreas(luaSource) {
   const block = extractBlock(luaSource, "D.areas =");
   const entries = parseTopLevelEntries(block);
   return entries.map((entry) => {
+    const nameMatch = entry.body.match(/name\s*=\s*"([^"]+)"/);
     const labelMatch = entry.body.match(/label\s*=\s*"([^"]+)"/);
     return {
       key: entry.key,
       label: labelMatch ? labelMatch[1] : entry.key,
+      headerName: nameMatch ? nameMatch[1] : areaHeaderNameFromKey(entry.key),
     };
   });
 }
@@ -141,6 +160,13 @@ function xmlEscape(value) {
     .replaceAll("\"", "&quot;");
 }
 
+function optionalColorAttr(hexColor) {
+  if (typeof hexColor !== "string" || !hexColor.match(/^#[0-9a-fA-F]{6}$/)) {
+    return "";
+  }
+  return ` color="${xmlEscape(hexColor)}"`;
+}
+
 function withAlphaHex(hexColor, alphaHex = "CC", fallback = "#444444CC") {
   const match = typeof hexColor === "string" ? hexColor.match(/^#([0-9a-fA-F]{6})$/) : null;
   if (!match) {
@@ -149,75 +175,127 @@ function withAlphaHex(hexColor, alphaHex = "CC", fallback = "#444444CC") {
   return `#${match[1].toUpperCase()}${alphaHex}`;
 }
 
-function buildPanelXml({ areas, characters, groupIds, groupDisplayNames }) {
-  const rows = [];
+function stripLeadingXmlComment(source) {
+  const trimmed = source.trimStart();
+  if (!trimmed.startsWith("<!--")) {
+    return source.trim();
+  }
+  const end = trimmed.indexOf("-->");
+  if (end < 0) {
+    return source.trim();
+  }
+  return trimmed.slice(end + 3).trim();
+}
 
-  rows.push('<Text class="hud_storyteller_header">Seated NPCs</Text>');
-  const seatKeys = ["NPC1", "NPC2", "NPC3", "NPC4"];
-  for (const seatKey of seatKeys) {
-    const toAreaButtons = areas
-      .map(
-        (area) =>
-          `<Button id="npc_seated_toArea_${seatKey}_${area.key}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">${xmlEscape(area.label)}</Button>`
-      )
-      .join("");
-    rows.push(`<HorizontalLayout id="npc_seatedRow_${seatKey}" class="hud_storyteller_button_row" active="false">
-  <Text id="npc_seatedLabel_${seatKey}" class="hud_storyteller_label hud_storyteller_button_icon_narrow">${xmlEscape(seatKey)}</Text>
-  <Text id="npc_seatedName_${seatKey}" class="hud_storyteller_label hud_storyteller_row_name">-</Text>
-  ${toAreaButtons}
-  <Button id="npc_seated_unseat_${seatKey}" class="hud_storyteller_button hud_storyteller_button_icon hud_storyteller_button_icon_narrow" onClick="HUD_npcDispatch">✕</Button>
-  <Panel class="hud_storyteller_horiz_spacer" />
-</HorizontalLayout>`);
+function loadPartial(projectRoot, filename) {
+  if (partialCache.has(filename)) {
+    return partialCache.get(filename);
+  }
+  const fullPath = path.join(projectRoot, "ui", "storyteller", "partials", filename);
+  if (!fs.existsSync(fullPath)) {
+    throw new Error(`Missing partial: ${path.relative(projectRoot, fullPath)}`);
+  }
+  const raw = fs.readFileSync(fullPath, "utf8");
+  const body = stripLeadingXmlComment(raw);
+  partialCache.set(filename, body);
+  return body;
+}
+
+function applyTemplate(template, replacements) {
+  let out = template;
+  const keys = Object.keys(replacements).sort((a, b) => b.length - a.length);
+  for (const key of keys) {
+    const token = `@@${key}@@`;
+    const val = replacements[key];
+    if (val === undefined) {
+      throw new Error(`Missing template value for ${token}`);
+    }
+    out = out.split(token).join(val);
+  }
+  const unfilled = out.match(/@@([a-zA-Z0-9_]+)@@/g);
+  if (unfilled && unfilled.length > 0) {
+    throw new Error(`Unfilled placeholders: ${unfilled.join(", ")}`);
+  }
+  return out;
+}
+
+function indentBlock(text, spaces) {
+  const pad = " ".repeat(spaces);
+  return text
+    .split("\n")
+    .map((line) => (line.length > 0 ? pad + line : line))
+    .join("\n");
+}
+
+function assertAreasMatchPartials(areas) {
+  const parsed = new Set(areas.map((a) => a.key));
+  const wired = new Set(WIRED_AREA_KEYS);
+  for (const k of wired) {
+    if (!parsed.has(k)) {
+      throw new Error(
+        `npcs_data.ttslua D.areas is missing "${k}", which is wired in ui/storyteller/partials/. Add the area or update the partials.`
+      );
+    }
+  }
+  for (const a of areas) {
+    if (!wired.has(a.key)) {
+      throw new Error(
+        `npcs_data.ttslua defines area "${a.key}" but ui/storyteller/partials/ only wire [${WIRED_AREA_KEYS.join(", ")}]. ` +
+          `Extend the partial XML or remove the area.`
+      );
+    }
+  }
+}
+
+function buildPanelXml(projectRoot, { areas, characters, groupIds, groupDisplayNames }) {
+  const shell = loadPartial(projectRoot, PARTIAL_SHELL);
+  const tplSeated = loadPartial(projectRoot, PARTIAL_SEATED_ROW);
+  const tplAreaHeader = loadPartial(projectRoot, PARTIAL_AREA_HEADER);
+  const tplAreaNpc = loadPartial(projectRoot, PARTIAL_AREA_NPC_ROW);
+  const tplGroupHeader = loadPartial(projectRoot, PARTIAL_GROUP_HEADER);
+  const tplGroupMember = loadPartial(projectRoot, PARTIAL_GROUP_MEMBER_ROW);
+
+  const rows = [];
+  const pushRow = (xmlFragment) => {
+    rows.push(indentBlock(xmlFragment.trim(), 8));
+  };
+
+  pushRow('<Text class="hud_storyteller_header">Seated NPCs</Text>');
+  for (let seatIndex = 1; seatIndex <= 4; seatIndex += 1) {
+    pushRow(applyTemplate(tplSeated, { index: String(seatIndex) }));
   }
 
-  rows.push('<Text class="hud_storyteller_header">Areas</Text>');
-  for (const area of areas) {
-    const moveGroupButtons = areas
-      .filter((target) => target.key !== area.key)
-      .map(
-        (target) =>
-          `<Button id="npc_moveGroup_${area.key}_${target.key}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">${xmlEscape(target.label)}</Button>`
-      )
-      .join("");
-    rows.push(
-      `<HorizontalLayout id="npc_areaHeader_${area.key}" class="hud_storyteller_button_row" active="false">` +
-        `<Text id="npc_areaLabel_${area.key}" class="hud_storyteller_label hud_storyteller_row_name">${xmlEscape(area.label)}</Text>` +
-        moveGroupButtons +
-        `<Button id="npc_clearArea_${area.key}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">✕</Button>` +
-        `<Panel class="hud_storyteller_horiz_spacer" />` +
-        `</HorizontalLayout>`
+  pushRow('<Text class="hud_storyteller_header">Areas</Text>');
+  const areasOrdered = [...areas].sort((a, b) => a.key.localeCompare(b.key));
+  for (const area of areasOrdered) {
+    pushRow(
+      applyTemplate(tplAreaHeader, {
+        area_key: area.key,
+        area_name: xmlEscape(area.headerName),
+      })
     );
-
     for (const npc of characters) {
-      const npcName = npc.key;
-      const nameColorAttr = npc.labelColor ? ` color="${xmlEscape(npc.labelColor)}"` : "";
-      const moveOneButtons = areas
-        .filter((target) => target.key !== area.key)
-        .map(
-          (target) =>
-            `<Button id="npc_move_${area.key}_${npcName}_${target.key}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">${xmlEscape(target.label)}</Button>`
-        )
-        .join("");
-      rows.push(`<HorizontalLayout id="npc_occRow_${area.key}_${npcName}" class="hud_storyteller_button_row" active="false">
-  <Button id="npc_toggle_${area.key}_${npcName}" class="hud_storyteller_button hud_storyteller_button_icon hud_storyteller_button_icon_narrow" onClick="HUD_npcDispatch">⊚</Button>
-  <Button id="npc_spot_${area.key}_${npcName}" class="hud_storyteller_button hud_storyteller_button_icon hud_storyteller_button_icon_narrow" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
-  <Text id="npc_occName_${area.key}_${npcName}" class="hud_storyteller_label hud_storyteller_row_name"${nameColorAttr}>${xmlEscape(npc.fullName)}</Text>
-  <Button id="npc_stats_${area.key}_${npcName}" class="hud_storyteller_button hud_storyteller_button_icon hud_storyteller_button_icon_narrow" onClick="HUD_npcDispatch">i</Button>
-  ${moveOneButtons}
-  <Button id="npc_remove_${area.key}_${npcName}" class="hud_storyteller_button hud_storyteller_button_icon hud_storyteller_button_icon_narrow" onClick="HUD_npcDispatch">✕</Button>
-  <Panel class="hud_storyteller_horiz_spacer" />
-</HorizontalLayout>`);
+      pushRow(
+        applyTemplate(tplAreaNpc, {
+          area_key: area.key,
+          npc_key: npc.key,
+          npc_name: xmlEscape(npc.fullName),
+          npc_color_attr: optionalColorAttr(npc.labelColor),
+        })
+      );
     }
   }
 
-  rows.push('<Text class="hud_storyteller_header">Groups</Text>');
+  pushRow('<Text class="hud_storyteller_header">Groups</Text>');
   for (const groupId of groupIds) {
     const groupLabel = groupDisplayNames[groupId] || groupId;
     const groupMembers = characters
       .filter((ch) => typeof ch.groups[groupId] === "number")
       .sort((a, b) => {
         const rankDiff = chRank(a, groupId) - chRank(b, groupId);
-        if (rankDiff !== 0) return rankDiff;
+        if (rankDiff !== 0) {
+          return rankDiff;
+        }
         return a.key.localeCompare(b.key);
       });
     if (groupMembers.length === 0) {
@@ -225,57 +303,32 @@ function buildPanelXml({ areas, characters, groupIds, groupDisplayNames }) {
     }
     const leader = groupMembers.find((ch) => ch.groups[groupId] === 1);
     const groupColor = withAlphaHex(leader?.labelColor || "", "CC", "#444444CC");
-    const groupColorAttr = ` color="${xmlEscape(groupColor)}"`;
-    const groupButtons = areas
-      .map(
-        (area) =>
-          `<Button id="npc_group_${groupId}_${area.key}" class="hud_storyteller_button hud_storyteller_button_icon npc_group_button_icon" onClick="HUD_npcDispatch">${xmlEscape(area.label)}</Button>`
-      )
-      .join("");
-    rows.push(`<HorizontalLayout id="npc_groupRow_${groupId}" class="hud_storyteller_button_row" active="true"${groupColorAttr}>
-  <Button id="npc_groupTwirl_${groupId}" class="hud_storyteller_button hud_storyteller_button_icon hud_storyteller_button_icon_narrow npc_group_button_icon" onClick="HUD_npcDispatch">▸</Button>
-  <Text id="npc_groupName_${groupId}" class="hud_storyteller_label hud_storyteller_row_name npc_group_row_name">${xmlEscape(groupLabel)}</Text>
-  ${groupButtons}
-  <Panel class="hud_storyteller_horiz_spacer" />
-</HorizontalLayout>`);
-
+    pushRow(
+      applyTemplate(tplGroupHeader, {
+        group_key: groupId,
+        group_name: xmlEscape(groupLabel),
+        group_color: xmlEscape(groupColor),
+      })
+    );
     for (const member of groupMembers) {
-      const memberColorAttr = member.labelColor ? ` color="${xmlEscape(member.labelColor)}"` : "";
-      const memberLocButtons = areas
-        .map(
-          (area) =>
-            `<Button id="npc_memberLoc_${groupId}_${member.key}_${area.key}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">${xmlEscape(area.label)}</Button>`
-        )
-        .join("");
-      const memberSeatButtons = seatKeys
-        .map(
-          (seatKey, index) =>
-            `<Button id="npc_memberLoc_${groupId}_${member.key}_${seatKey}" class="hud_storyteller_button hud_storyteller_button_icon hud_storyteller_button_icon_narrow" onClick="HUD_npcDispatch">${index + 1}</Button>`
-        )
-        .join("");
-      rows.push(`<HorizontalLayout id="npc_groupMemberRow_${groupId}_${member.key}" class="hud_storyteller_button_row npc_group_member_row" active="false">
-  <Text id="npc_groupMemberName_${groupId}_${member.key}" class="hud_storyteller_label hud_storyteller_row_name"${memberColorAttr}>${xmlEscape(member.fullName)}</Text>
-  <Button id="npc_memberLock_${groupId}_${member.key}" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_npcDispatch">⨀</Button>
-  ${memberLocButtons}
-  ${memberSeatButtons}
-  <Button id="npc_unseat_${member.key}" class="hud_storyteller_button hud_storyteller_button_icon hud_storyteller_button_icon_narrow" onClick="HUD_npcDispatch">✕</Button>
-  <Panel class="hud_storyteller_horiz_spacer" />
-</HorizontalLayout>`);
+      pushRow(
+        applyTemplate(tplGroupMember, {
+          group_key: groupId,
+          npc_key: member.key,
+          npc_name: xmlEscape(member.fullName),
+          member_color_attr: optionalColorAttr(member.labelColor),
+        })
+      );
     }
   }
 
-  return `<!-- Generated file. Edit .dev/scripts/generate_npc_panel_xml.js and lib/npcs_data.ttslua only. -->
-<!-- Storyteller NPC spawn / lighting panel (static rows; runtime toggles active/text via core/npcs.ttslua). -->
-<Panel id="panel_npcs" class="npc_panel_root">
-  <VerticalLayout class="npc_panel_layout_root">
-    <VerticalScrollView class="npc_panel_scroll">
-      <VerticalLayout id="npcPanelRowsRoot" class="npc_panel_rows_root">
-${rows.map((row) => `          ${row}`).join("\n")}
-      </VerticalLayout>
-    </VerticalScrollView>
-  </VerticalLayout>
-</Panel>
-`;
+  const contentRows = rows.join("\n");
+  const panelInner = applyTemplate(shell, { content_rows: contentRows });
+  return (
+    `<!-- Generated file. Edit ui/storyteller/partials/panel_npcs_*.xml, this script, and lib/npcs_data.ttslua. -->\n` +
+    `<!-- Storyteller NPC spawn / lighting panel (static rows; runtime toggles active/text via core/npcs.ttslua). -->\n` +
+    `${panelInner.trim()}\n`
+  );
 }
 
 function chRank(ch, groupId) {
@@ -290,10 +343,11 @@ function main() {
   const source = fs.readFileSync(npcDataPath, "utf8");
   const constantsSource = fs.readFileSync(constantsPath, "utf8");
   const areas = parseAreas(source).sort((a, b) => a.key.localeCompare(b.key));
+  assertAreasMatchPartials(areas);
   const characters = parseCharacters(source);
   const groupIds = parseGroupIds(source);
   const groupDisplayNames = parseCoterieDisplayNames(constantsSource);
-  const xml = buildPanelXml({ areas, characters, groupIds, groupDisplayNames });
+  const xml = buildPanelXml(projectRoot, { areas, characters, groupIds, groupDisplayNames });
   fs.writeFileSync(outputPath, xml, "utf8");
   console.log(`[npc_panel_xml_generator] Wrote ${path.relative(projectRoot, outputPath)}`);
 }

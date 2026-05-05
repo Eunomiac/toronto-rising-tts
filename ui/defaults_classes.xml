@@ -19,6 +19,25 @@
     preferredWidth="130"
     textColor="#FFFFFF" />
 
+  <Button class="button_icon"
+    colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+    textColor="#FFFFFF"
+    textAlignment="MiddleCenter"
+    fontStyle="Bold"
+    ignoreLayout="true"
+    padding="0 0 0 0"
+    rectAlignment="MiddleLeft"
+    fontSize="27"
+    height="30"
+    width="30" />
+
+  <Button class="button_icon_small"
+    scale="0.8" />
+
+  <Button class="red_button_icon"
+    colors="#8B0000|#AA0000|#660000|#330000"
+  />
+
   <!-- Debug Panel Styles -->
   <Panel class="debugPanel"
     color="rgba(0,0,0,0.75)"

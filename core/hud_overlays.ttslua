@@ -1,7 +1,7 @@
 --[[
   Full-screen player HUD overlay Images (conditions + hunger).
   Visibility: UI.show / UI.hide (triggers XML showAnimation / hideAnimation per TTS API).
-  Do not mix UI.setAttribute("active"/"color") with show/hide on the same elements — that can
+  Do not mix U.setAttribute("active"/"color") with show/hide on the same elements — that can
   desync TTS’s animation state. Broken XML (two classes each setting showAnimation; FadeOut as
   showAnimation) prevented hides; see panel_overlays_defaults.xml overlay_anim_* classes.
 ]]
@@ -12,6 +12,7 @@ local HO = {}
 local C = require("lib.constants")
 local S = require("core.state")
 local O = require("core.objects")
+local U = require("lib.util")
 
 --- elementId -> last visibility we applied (incremental UI.show / UI.hide)
 local lastVisible = {}

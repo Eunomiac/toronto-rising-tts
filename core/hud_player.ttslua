@@ -64,7 +64,7 @@ local mapPanNavYByPlayerID = {}
 -- PlayerID -> true when nav position is active (hover-off returns to nav y)
 local mapPanNavIsActiveByPlayerID = {}
 
---- PlayerID -> { [elementId] = boolean } last applied visibility for map-panel loops (incremental UI.setAttribute).
+--- PlayerID -> { [elementId] = boolean } last applied visibility for map-panel loops (incremental U.setAttribute).
 local lastMapPanelUiByPlayerID = {}
 
 --- seatColor -> last applied offsetXY string for map draggable (skip redundant Global UI writes).
@@ -231,7 +231,7 @@ local function applyMapOffset(seatColor, y)
     end
     -- Known non-fatal case: some player-color map draggable ids may be absent in partial XML variants.
     local ok = pcall(function()
-        UI.setAttribute(draggableId, "offsetXY", offsetStr)
+        U.setAttribute(draggableId, "offsetXY", offsetStr)
     end)
     if ok then
         mapDraggableLastOffsetStrBySeat[seatColor] = offsetStr
@@ -439,7 +439,7 @@ local function setActive(elementID, isActive)
     if type(elementID) ~= "string" then
         return
     end
-    UI.setAttribute(elementID, "active", isActive and "true" or "false")
+    U.setAttribute(elementID, "active", isActive and "true" or "false")
 end
 
 --- Sets right-sidebar overlay Image visibility: `color` only (`active` stays true in XML).
@@ -449,7 +449,7 @@ local function setSidebarOverlay(elementID, isVisible)
     if type(elementID) ~= "string" then
         return
     end
-    UI.setAttribute(elementID, "color", isVisible and "#FFFFFF" or "clear")
+    U.setAttribute(elementID, "color", isVisible and "#FFFFFF" or "clear")
 end
 
 --- Map / sidebar stacked Image tint: visible vs hidden (`color` only; `active` is XML-owned).
@@ -463,7 +463,7 @@ local function setTintVisibility(elementID, isVisible)
     -- Known non-fatal case: missing optional map overlay ids should not hard-fail HUD refresh.
     -- `pcall` prevents hard UI runtime errors if an element id doesn't exist.
     pcall(function()
-        UI.setAttribute(elementID, "color", isVisible and "#FFFFFF" or "clear")
+        U.setAttribute(elementID, "color", isVisible and "#FFFFFF" or "clear")
     end)
 end
 
@@ -481,10 +481,10 @@ local function setMapStackImageVisibility(elementID, isVisible)
     -- Known non-fatal case: certain map stack layers may be omitted in lightweight XML variants.
     pcall(function()
         if isVisible then
-            UI.setAttribute(elementID, "active", "true")
+            U.setAttribute(elementID, "active", "true")
             UI.setAttribute(elementID, "color", "#FFFFFF")
         else
-            UI.setAttribute(elementID, "active", "false")
+            U.setAttribute(elementID, "active", "false")
         end
     end)
 end
@@ -497,7 +497,7 @@ local function clearMapPanelUiCache(playerID)
     end
 end
 
---- Applies visibility only when it changed vs last successful apply for this player (fewer UI.setAttribute calls).
+--- Applies visibility only when it changed vs last successful apply for this player (fewer U.setAttribute calls).
 -- @param playerID string
 -- @param elementID string
 -- @param desired boolean

@@ -1,0 +1,5 @@
+# TTS full save exports — kept locally for your reference; exclude from agent context / indexing
+# (files are not deleted from disk)
+.dev/TS_Save_230.json
+.dev/TS_Save_230_backup.json
+

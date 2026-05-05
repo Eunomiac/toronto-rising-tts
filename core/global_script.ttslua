@@ -38,7 +38,8 @@ Z = require("core.zones")
 Scenes = require("core.scenes")
 SS = require("core.soundscape")
 O = require("core.objects")
-local UIH = require("lib.ui_helpers")
+U = require("lib.util")
+local StorytellerPanelUI = require("core.storyteller_panel_ui")
 local HUDP = require("core.hud_player")
 local HO = require("core.hud_overlays")
 NPCS = require("core.npcs")
@@ -150,9 +151,13 @@ function GlobalReportBagDiceCount(params)
     if pid == nil then return end
     local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
     if active == nil then return end
-    local pool   = active.pool or { normal = 0, hunger = 0 }
-    local normal = tonumber(pool.normal) or 0
-    local hunger = tonumber(pool.hunger) or 0
+    local pool       = active.pool or { normal = 0, hunger = 0 }
+    local prevNormal = tonumber(pool.normal) or 0
+    local prevHunger = tonumber(pool.hunger) or 0
+    local prevTotal  = prevNormal + prevHunger
+
+    local normal = prevNormal
+    local hunger = prevHunger
 
     if dieType == "normal" then
         normal = count
@@ -160,8 +165,13 @@ function GlobalReportBagDiceCount(params)
         hunger = count
     end
 
+    local newTotal = normal + hunger
+
     if RC.setPool(color, normal, hunger) then
-        GlobalRollSeatCamera({ color = color, mode = "roll" })
+        -- Pool assembly: only snap camera on the first die added (not every spawn click).
+        if prevTotal == 0 and newTotal > 0 then
+            GlobalRollSeatCamera({ color = color, mode = "roll" })
+        end
     end
 end
 
@@ -330,6 +340,13 @@ function onLoad(saved_data)
     -- Update UI displays with current state
     UpdateUIDisplays()
 
+    -- Some world objects (notably HUNGER_SMOKE props) can be unavailable on the first
+    -- onLoad-frame sync. Re-run overlays after startup settles so hunger smoke reflects
+    -- saved hunger thresholds (4/5) reliably.
+    Wait.time(function()
+        UpdateUIDisplays({ overlays = true })
+    end, 1.0)
+
     -- Refresh all roll panels to match any persisted roll state (e.g. after save/reload mid-roll)
     if RUI then
         RUI.refreshAll()
@@ -478,8 +495,8 @@ end
 -- @param id string The UI element ID (e.g., "toggle_lighting")
 function HUD_selectStorytellerPanel(player, button, id)
     local panelKey = string.gsub(id, "^toggle_", "")
-    UIH.selectStorytellerPanel(panelKey)
-    -- TTS applies UI.setAttribute asynchronously; deferred refresh merges rows after the panel is active in XML.
+    StorytellerPanelUI.selectStorytellerPanel(panelKey)
+    -- TTS applies U.setAttribute asynchronously; deferred refresh merges rows after the panel is active in XML.
     if panelKey == "npcs" and NPCS and NPCS.refreshStorytellerUIDeferred then
         NPCS.refreshStorytellerUIDeferred()
     end
@@ -505,7 +522,7 @@ end
 function HUD_togglePanel(player, button, id)
     -- Extract the element ID by removing "toggleElem_" prefix
     local elemID = string.gsub(id, "^toggleElem_", "")
-    UIH.toggleXmlElement(elemID, button)
+    U.toggleXmlElement(elemID, button)
 end
 
 --- Change scene preset
@@ -552,7 +569,7 @@ local function syncAdminLightSceneButtons()
     local currentScene = Scenes and Scenes.getCurrentScene and Scenes.getCurrentScene() or nil
     for sceneKey, buttonId in pairs(ADMIN_LIGHT_SCENE_BUTTONS) do
         local isActive = currentScene == sceneKey
-        UI.setAttributes(buttonId, {
+        U.setAttributes(buttonId, {
             colors = isActive and ADMIN_LIGHT_SCENE_BUTTON_COLORS_ACTIVE or ADMIN_LIGHT_SCENE_BUTTON_COLORS_INACTIVE,
             textColor = isActive and "#000000" or"#FFFFFF",
             fontStyle = "Bold"
@@ -588,7 +605,7 @@ local function syncSoundscapeControls()
     UI.setValue("soundscapeSummary", summary)
     for moodKey, buttonId in pairs(SOUNDSCAPE_MOOD_BUTTONS) do
         local isActive = state.musicMood == moodKey
-        UI.setAttribute(buttonId, "colors", isActive and ADMIN_LIGHT_SCENE_BUTTON_COLORS_ACTIVE or ADMIN_LIGHT_SCENE_BUTTON_COLORS_INACTIVE)
+        U.setAttribute(buttonId, "colors", isActive and ADMIN_LIGHT_SCENE_BUTTON_COLORS_ACTIVE or ADMIN_LIGHT_SCENE_BUTTON_COLORS_INACTIVE)
     end
 end
 
@@ -1162,7 +1179,7 @@ function HUD_show(player, value, id)
     if UI.getValue(id) == "ON" then
         UI.setValue(id, "")
         UI.hide(imageID)
-        UI.setAttribute(id .. "Overlay", "color", "clear")
+        U.setAttribute(id .. "Overlay", "color", "clear")
         return
     end
     -- Right-click: mark as ON so HUD_hide does not close the popup
@@ -1182,14 +1199,14 @@ end
 --- Hover highlight: set overlay to white.
 function HUD_highlight(player, value, id)
     local overlayID = id .. "Overlay"
-    UI.setAttribute(overlayID, "color", "#FFFFFF")
+    U.setAttribute(overlayID, "color", "#FFFFFF")
 end
 
 --- Hover end: dim overlay back to clear unless popup is pinned ON.
 function HUD_dim(player, value, id)
     if UI.getValue(id) ~= "ON" then
         local overlayID = id .. "Overlay"
-        UI.setAttribute(overlayID, "color", "clear")
+        U.setAttribute(overlayID, "color", "clear")
     end
 end
 

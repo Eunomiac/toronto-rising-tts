@@ -81,6 +81,7 @@ D.lights = {
 ]]
 D.areas = {
   centerForward = {
+    name = "Center Forward",
     label = "▼",
     autoLight = true,
     rotation = 0,
@@ -98,6 +99,7 @@ D.areas = {
     },
   },
   nearLeft = {
+    name = "Near Left",
     label = "◀",
     autoLight = false,
     rotation = -35,
@@ -115,6 +117,7 @@ D.areas = {
     },
   },
   nearRight = {
+    name = "Near Right",
     label = "▶",
     autoLight = false,
     rotation = 35,
@@ -132,6 +135,7 @@ D.areas = {
     },
   },
   farRight = {
+    name = "Far Right",
     label = "▶▶",
     autoLight = false,
     rotation = 35,
@@ -149,6 +153,7 @@ D.areas = {
     },
   },
   farLeft = {
+    name = "Far Left",
     label = "◀◀",
     autoLight = false,
     rotation = -35,
@@ -255,6 +260,28 @@ Now, let's assume I take the following actions:
   5.a **Because `stirlingSiskin` is locked in slot 1**, the other four Five Keys members will be pushed into the next available slot: Normally, `myleneHamelin` would move into slot 1 -- but that is occupied by a locked-in-place `stirlingSiskin`. So, she will move into slot 2. `adrianVarga`, normally in slot 2, will then have to move into slot 3. `jesseSharp`, normally in slot 3, will likewise be moved into slot 4, which is `stirlingSiskin`'s normal slot. `zuriOlowusi` is normally in slot 5, and she can be safely moved into slot 5 since it is unoccupied. At the end of this process, all five members of Five Keys will have their "centerForward" buttons greenlit, and `stirlingSiskin` alone will still have his lock button red.
   5.b **If I unlocked `stirlingSiskin` before I moved the Five Keys:** Because `stirlingSiskin` is not locked in place, he is free to move. Accordingly, all members of Five Keys will move into their proper slots (as there are no locked NPCs there blocking any of them). At the end of this process, all five members of Five Keys will have their "centerForward" buttons greenlit, and all five lock buttons would be grey.
 ]]
+local colors = {
+  goodDoctors = "#D1B200",
+  redFlag = "#AA0000",
+  redeemers = "#91FF00",
+  theLine = "#0033C0",
+  colorBlitz = "#D100C7",
+  jarvisJacks = "#640000",
+  princesCourt = "#FFD900",
+  fiveKeys = "#D1B200",
+  freeChantry = "#5500C5",
+  regencyUniversityChantry = "#D80077",
+  beesHive = "#6B4000",
+  harpies = "#FFFD79",
+  midnightMass = "#9900FF",
+  moonClub = "#00C7CE",
+  scarlettAndTheBoys = "#FF0000",
+  ironGuard = "#AAAAAA",
+  wychwoodHecata = "#FFFFFF",
+  petitioners = "#AAAAAA",
+  theFriendlyNeighborhoodSpiders = "#435500"
+}
+
 D.characters = {
   adrianVarga = {
     name = "adrianVarga",
@@ -268,6 +295,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/12474241378119829812/1F8C9C4374E4BB587D551FC5B1A3AED1BB3ABB2B/",
       },
       scale = 53,
+      seatedScale = 53*1.25
     },
     groups = {
       fiveKeys = 2
@@ -288,6 +316,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/11648768264219466487/3682360C8DE4DF5B9E644C070C9BE83B11CEBD14/",
       },
       scale = 55,
+      seatedScale = 55*1.25,
     },
     groups = {
       redeemers = 4
@@ -308,6 +337,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/17807937982927959683/359EA34CF089DCDE2A2348CB0967A29F86A52FEC/",
       },
       scale = 53,
+      seatedScale = 53*1.25
     },
     groups = {
       petitioners = 2
@@ -328,6 +358,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/9454498514072933553/9DC5344168E11D8ACE5F836D2847DFE0CE495351/",
       },
       scale = 50,
+      seatedScale = 50*1.25,
     },
     groups = {
       petitioners = 3
@@ -348,6 +379,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/11038379578645526037/B2F6F2CF8C41B8D3C2DC4B8D43F48515789466EA/",
       },
       scale = 50,
+      seatedScale = 50*1.25,
     },
     groups = {
       petitioners = 1
@@ -368,6 +400,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/17238076161191780731/388786F7DEBA992464F202946491B12460C0E9E4/",
       },
       scale = 60,
+      seatedScale = 60*1.25,
     },
     groups = {
       redFlag = 3
@@ -388,6 +421,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/13435591319862486034/2C188DD11A9A9E147D0383B96DCF64F8F9820D0A/",
       },
       scale = 57,
+      seatedScale = 57*1.25,
     },
     groups = {
       harpies = 5
@@ -408,6 +442,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/9703291637540598019/0EB21913E4DB904485E307859FD1DF7309AC2CC5/",
       },
       scale = 58,
+      seatedScale = 58*1.25,
     },
     groups = {
       redFlag = 2
@@ -428,6 +463,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/17089197402012388637/4D6D0D41E91D44FB5CA9EF782C406C890BB24812/",
       },
       scale = 55,
+      seatedScale = 55*1.25,
     },
     groups = {
       regencyUniversityChantry = 4
@@ -448,6 +484,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/17386210984610209135/75E27F293907ACB4CC531301573A8094161889CC/",
       },
       scale = 60,
+      seatedScale = 60*1.25,
     },
     groups = {
       midnightMass = 3
@@ -468,6 +505,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/14921128357468775052/393423DD10B041AEE2BE9157A989B1E9FCFBD4FA/",
       },
       scale = 47,
+      seatedScale = 47*1.25,
     },
     groups = {
       regencyUniversityChantry = 2
@@ -488,6 +526,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/14134054229634278835/869F3C56857BA1DEE98DEA38957CC71FB8C79521/",
       },
       scale = 42,
+      seatedScale = 42*1.25,
     },
     groups = {
       petitioners = 4
@@ -508,6 +547,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/12895566308249268204/0F90C3EF43E32644E7025E079FECE31AE7BAFBCF/",
       },
       scale = 49,
+      seatedScale = 49*1.25,
     },
     groups = {
       regencyUniversityChantry = 1
@@ -528,6 +568,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/15029532166850288811/7DA124D0D28CAB04F8F6BFDDB07E45FFE72D6369/",
       },
       scale = 57,
+      seatedScale = 57*1.25,
     },
     groups = {
       midnightMass = 1
@@ -548,6 +589,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/14714288399066740585/6FB27F104E896A36C1B8CE23FABDD3F4F085F978/",
       },
       scale = 53,
+      seatedScale = 53*1.25,
     },
     groups = {
       moonClub = 2
@@ -568,6 +610,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/11174638799452596369/45496F542FCC5109B320DAC5BB34E49BFCB15D0B/",
       },
       scale = 50,
+      seatedScale = 50*1.25,
     },
     groups = {
       fiveKeys = 3,
@@ -589,6 +632,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/13993992240724786112/43F45FEC3387B1BCB6306973E4E7822A079EDEDD/",
       },
       scale = 50,
+      seatedScale = 50*1.25,
     },
     groups = {
       redeemers = 2
@@ -609,6 +653,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/14524672878071384464/660BAEE7AF9A982FCBCF613DE4AC524EAB3D8D0E/",
       },
       scale = 48,
+      seatedScale = 48*1.25,
     },
     groups = {
       petitioners = 5
@@ -629,6 +674,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/9379532325372726501/C585E5B703D03CC5AF6A199A26C02733500451A6/",
       },
       scale = 58,
+      seatedScale = 58*1.25,
     },
     groups = {
       regencyUniversityChantry = 3
@@ -649,6 +695,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/13087248077049093238/839D8B1B502EA10D1B3321268D7F6407A04CF3FC/",
       },
       scale = 47,
+      seatedScale = 47*1.25,
     },
     groups = {
       fiveKeys = 1,
@@ -670,6 +717,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/15685427461294094007/985E5C01BCC8FD9849239BCA7790A745907B7A83/",
       },
       scale = 57,
+      seatedScale = 57*1.25,
     },
     groups = {
       redFlag = 4
@@ -690,6 +738,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/16297133406364301080/4DB1EA36E26823F6E89265E46E37590CA2866FDD/",
       },
       scale = 53,
+      seatedScale = 53*1.25,
     },
     groups = {
       regencyUniversityChantry = 5
@@ -710,6 +759,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/12411227296917210465/B29C7DF01EF7EB8D9D448C141549634E27F08E9D/",
       },
       scale = 53,
+      seatedScale = 53*1.25,
     },
     groups = {
       redeemers = 1
@@ -730,6 +780,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/12985372654504541941/9BBB8150C05AF5DF0ABEDF3A41725BD6461BCDD1/",
       },
       scale = 53,
+      seatedScale = 53*1.25,
     },
     groups = {
       redFlag = 1
@@ -750,6 +801,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/15558678646465292274/929A62E50D9BFB554C0BFF6620E7BC534D67AE3F/",
       },
       scale = 58,
+      seatedScale = 58*1.25,
     },
     groups = {
       moonClub = 4
@@ -770,6 +822,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/17506154914654136264/07FF2D752F41839671C069424D0CCD359A247B0E/",
       },
       scale = 48,
+      seatedScale = 48*1.25,
     },
     groups = {
       midnightMass = 2
@@ -790,6 +843,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/15739432863616294239/C3E2E8F1DD31D20E3E34AB9A60F7010ED6B379E0/",
       },
       scale = 57,
+      seatedScale = 57*1.25,
     },
     groups = {
       fiveKeys = 4,
@@ -810,6 +864,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/11060472654098078914/4FEF0859D093A3DEBF499D18DC339CA2DF641DE4/",
       },
       scale = 53,
+      seatedScale = 53*1.25,
     },
     groups = {
       harpies = 1
@@ -830,6 +885,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/15547073567928913187/B16CA24B34A4F2580F19853751F8A7E3D686C5AF/",
       },
       scale = 60,
+      seatedScale = 60*1.25,
     },
     groups = {
       redeemers = 3
@@ -850,6 +906,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/12016783423065307501/0E9460ABC9D1482712966EA13EAA5FCCAB70BB63/",
       },
       scale = 57,
+      seatedScale = 57*1.25,
     },
     groups = {
       moonClub = 3
@@ -870,6 +927,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/18228912782013072682/1F02D0787B51B0B0871808A8E2AD26438E926D52/",
       },
       scale = 51,
+      seatedScale = 51*1.25,
     },
     groups = {
       moonClub = 1
@@ -890,6 +948,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/14435702104097865194/EB10E4F09F567EF4A795D84A9E006F059A52D81B/",
       },
       scale = 53,
+      seatedScale = 53*1.25,
     },
     groups = {
       harpies = 4
@@ -910,6 +969,7 @@ D.characters = {
         "https://steamusercontent-a.akamaihd.net/ugc/17832430563748350076/BD83C9B2F98A474B2E77E903CAA09D9644EC23F4/",
       },
       scale = 53,
+      seatedScale = 53*1.25,
     },
     groups = {
       fiveKeys = 5

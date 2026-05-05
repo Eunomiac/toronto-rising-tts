@@ -88,7 +88,7 @@ end
 --- @param attr string
 --- @param val string|number|boolean
 local function safeSetAttr(elementId, attr, val)
-  UI.setAttribute(elementId, attr, tostring(val))
+  U.setAttribute(elementId, attr, tostring(val))
 end
 
 --- Chronicle character display name for a seat (PlayerData.charName or PCS.name).

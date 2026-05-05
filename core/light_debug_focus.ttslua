@@ -9,6 +9,7 @@
 
 local LightDebugFocus = {}
 
+local U = require("lib.util")
 local L = require("core.lighting")
 local LightDebug = require("core.light_debug")
 
@@ -243,14 +244,14 @@ end
 --- @param id string
 --- @param val number
 local function pushSliderAttr(id, val)
-    UI.setAttributes(id, { value = val })
+    U.setAttributes(id, { value = val })
 end
 
 --- Push one control from `cache` by internal field name.
 -- @param field string
 local function pushUiForField(field)
     if field == "enabled" then
-        UI.setAttributes("dl_enabled", { isOn = cache.enabled == true })
+        U.setAttributes("dl_enabled", { isOn = cache.enabled == true })
     elseif field == "sat" then
         pushSliderAttr("dl_saturation", cache.sat)
     elseif field == "range" then
@@ -372,7 +373,7 @@ function LightDebugFocus.activate(player)
         name = obj.getName() or "?"
     end
     UI.setValue("dl_debug_light_label", name .. " [" .. guid .. "]")
-    UI.setAttribute("panel_debug_light_root", "active", true)
+    U.setAttribute("panel_debug_light_root", "active", true)
     applyLive()
     if player ~= nil and player.color ~= nil then
         broadcastToColor("Debug Light: editing " .. guid .. ".", player.color, { 0, 1, 0.6 })
@@ -549,7 +550,7 @@ end
 
 --- Close panel and clear session (does not revert the object).
 function LightDebugFocus.done()
-    UI.setAttribute("panel_debug_light_root", "active", false)
+    U.setAttribute("panel_debug_light_root", "active", false)
     activeGuid = nil
     originPos = nil
     startSnapshot = nil

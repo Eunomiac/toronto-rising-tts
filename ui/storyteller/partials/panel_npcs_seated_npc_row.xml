@@ -1,0 +1,20 @@
+<!-- Seated NPC Row, used to generate panel_npcs.xml
+
+  Paramters:
+    @@index@@ - A number from 1 to 4, representing the NPC slot number at the table.
+-->
+
+<HorizontalLayout id="npc_seatedRow_NPC@@index@@" class="hud_storyteller_button_row" active="false">
+  <Text id="npc_seatedLabel_NPC@@index@@" class="hud_storyteller_label hud_storyteller_row_name npc_row_name seated_npc_slot_name">NPC@@index@@</Text>
+  <Text id="npc_seatedName_NPC@@index@@" class="hud_storyteller_label hud_storyteller_row_name npc_row_name seated_npc_name">-</Text>
+
+  <Button id="npc_roll_NPC@@index@@" class="button_icon npc_button_icon" offsetXY="-250 0">R</Button>
+  <Button id="npc_stats_NPC@@index@@" class="button_icon npc_button_icon" offsetXY="-220 0">i</Button>
+
+  <Button id="npc_seated_toArea_NPC@@index@@_centerForward" class="button_icon npc_button_icon" offsetXY="-180 0">▼</Button>
+  <Button id="npc_seated_toArea_NPC@@index@@_nearLeft" class="button_icon npc_button_icon" offsetXY="-150 0">◀</Button>
+  <Button id="npc_seated_toArea_NPC@@index@@_nearRight" class="button_icon npc_button_icon" offsetXY="-120 0">▶</Button>
+  <Button id="npc_seated_toArea_NPC@@index@@_farLeft" class="button_icon npc_button_icon" offsetXY="-90 0">◁</Button>
+  <Button id="npc_seated_toArea_NPC@@index@@_farRight" class="button_icon npc_button_icon" offsetXY="-60 0">▷</Button>
+  <Button id="npc_seated_unseat_NPC@@index@@" class="button_icon red_button_icon npc_button_icon" offsetXY="-20 0">✕</Button>
+</HorizontalLayout>

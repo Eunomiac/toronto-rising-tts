@@ -23,9 +23,21 @@ local cache = {
     cameraMode = "FirstPerson",
 }
 
+--- Tracks the TTS seat color for the debug target (Host may not be Black).
+local function syncActiveSeatColorFromPlayer(player)
+    if player == nil then
+        return
+    end
+    if C ~= nil and type(C.GetPlayerColor) == "function" then
+        activePlayerColor = C.GetPlayerColor(player) or player.color
+    else
+        activePlayerColor = player.color
+    end
+end
+
 local function resolveActivePlayer(player)
     if player ~= nil and player.color ~= nil then
-        activePlayerColor = player.color
+        syncActiveSeatColorFromPlayer(player)
         return player
     end
     if activePlayerColor ~= nil and Player ~= nil then
@@ -52,7 +64,7 @@ local function roundForDisplay(n)
 end
 
 local function pushSliderAttr(id, val)
-    UI.setAttributes(id, { value = val })
+    U.setAttributes(id, { value = val })
 end
 
 --- Updates the numeric labels to the right of each slider from `cache`.
@@ -88,9 +100,8 @@ local function refreshSpoofButtons()
         local btnId = "dc_spoof_" .. col
         local isOn = activeSpoofColor == col
         pcall(function()
-            UI.setAttributes(btnId, {
-                colors = isOn and activeColors or inactiveColors,
-                textColor = "#000000",
+            U.setAttributes(btnId, {
+                colors = isOn and activeColors or inactiveColors
             })
         end)
     end
@@ -137,17 +148,38 @@ local function resolveModePresetForPlayer(player, modeName)
             end
         end
     end
-    if mergedUniversal[modeName] ~= nil then
-        return mergedUniversal[modeName]
+
+    local pdata = nil
+    if S ~= nil and type(S.getPlayerData) == "function" then
+        pdata = S.getPlayerData(player)
     end
 
-    if S ~= nil and type(S.getPlayerData) == "function" then
-        local pdata = S.getPlayerData(player)
-        if type(pdata) == "table" and type(pdata.cameraAngles) == "table" then
-            return pdata.cameraAngles[modeName]
+    local function fromUniversal(key)
+        if key == nil or key == "" then
+            return nil
+        end
+        return mergedUniversal[key]
+    end
+
+    local function fromSeatData(key)
+        if key == nil or key == "" or type(pdata) ~= "table" or type(pdata.cameraAngles) ~= "table" then
+            return nil
+        end
+        return pdata.cameraAngles[key]
+    end
+
+    local suffixedKey = nil
+    if C ~= nil and type(C.GetPlayerColor) == "function" and type(player) == "userdata" then
+        local seat = C.GetPlayerColor(player)
+        if type(seat) == "string" and seat ~= "" then
+            suffixedKey = modeName .. seat
         end
     end
-    return nil
+
+    return fromUniversal(modeName)
+        or fromSeatData(modeName)
+        or (suffixedKey and (fromUniversal(suffixedKey) or fromSeatData(suffixedKey)))
+        or nil
 end
 
 local function loadCacheFromPreset(preset)
@@ -177,11 +209,11 @@ function CameraDebugFocus.activate(player)
     if player == nil then
         return false
     end
-    activePlayerColor = player.color
+    syncActiveSeatColorFromPlayer(player)
     pushAllSlidersToUi()
-    UI.setValue("dc_debug_label", "Debug Camera [" .. tostring(player.color or "?") .. "]")
+    UI.setValue("dc_debug_label", "Debug Camera [" .. tostring(activePlayerColor or player.color or "?") .. "]")
     UI.setValue("dc_mode_input", lastModeInput)
-    UI.setAttribute("panel_debug_camera_root", "active", true)
+    U.setAttribute("panel_debug_camera_root", "active", true)
     refreshSpoofButtons()
     return true
 end
@@ -227,7 +259,8 @@ function CameraDebugFocus.snapshot(player)
         end
         return
     end
-    local colorKey = string.upper((player and player.color) or activePlayerColor or "UNKNOWN")
+    local seat = (player and C and type(C.GetPlayerColor) == "function" and C.GetPlayerColor(player)) or (player and player.color) or activePlayerColor
+    local colorKey = string.upper(seat or "UNKNOWN")
     local ts = os.time()
     local relativePath = "debug_logs/camera_capture_" .. colorKey .. "_" .. tostring(ts) .. ".lua"
     local body = table.concat({
@@ -393,7 +426,7 @@ function CameraDebugFocus.spoofColorFromButtonId(id)
 end
 
 function CameraDebugFocus.done()
-    UI.setAttribute("panel_debug_camera_root", "active", false)
+    U.setAttribute("panel_debug_camera_root", "active", false)
     activePlayerColor = nil
 end
 

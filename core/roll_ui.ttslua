@@ -42,19 +42,19 @@ local function uiSetValue(elementId, value)
 end
 
 --- Shows or hides a UI element by setting its "active" attribute.
--- Uses UI.setAttribute — the correct TTS API.
+-- Uses U.setAttribute — the correct TTS API.
 -- Not wrapped in pcall for the same reason as uiSetValue.
 -- @param elementId string
 -- @param visible boolean
 local function uiSetActive(elementId, visible)
-    UI.setAttribute(elementId, "active", visible and "true" or "false")
+    U.setAttribute(elementId, "active", visible and "true" or "false")
 end
 
 --- Enables or disables (greys out) an interactive element.
 -- @param elementId string
 -- @param enabled boolean
 local function uiSetInteractable(elementId, enabled)
-    UI.setAttribute(elementId, "interactable", enabled and "true" or "false")
+    U.setAttribute(elementId, "interactable", enabled and "true" or "false")
 end
 
 --- Sets the displayed text of a TTS InputField via setAttribute.
@@ -64,7 +64,7 @@ end
 -- @param elementId string
 -- @param value string
 local function uiSetInputField(elementId, value)
-    UI.setAttribute(elementId, "text", tostring(value or ""))
+    U.setAttribute(elementId, "text", tostring(value or ""))
 end
 
 --- Returns the character name for a player, falling back to player name then seat color.
@@ -121,7 +121,7 @@ local rollOptsTargetColor = nil
 -- @param elementId string
 -- @param on boolean
 local function uiToggleSet(elementId, on)
-    UI.setAttribute(elementId, "isOn", on and "true" or "false")
+    U.setAttribute(elementId, "isOn", on and "true" or "false")
 end
 
 --- Reads a Toggle's on state.
@@ -166,10 +166,10 @@ local function refreshDiceImages(idPrefix, diceFaces)
     for i = 1, MAX_DIE_SLOTS do
         local id = string.format(idPrefix, i)
         if i <= #faces then
-            UI.setAttribute(id, "image", dieFaceImage(faces[i].value, faces[i].isHunger))
-            UI.setAttribute(id, "active", "true")
+            U.setAttribute(id, "image", dieFaceImage(faces[i].value, faces[i].isHunger))
+            U.setAttribute(id, "active", "true")
         else
-            UI.setAttribute(id, "active", "false")
+            U.setAttribute(id, "active", "false")
         end
     end
 end
@@ -460,7 +460,7 @@ function RUI.refreshSTDashboard()
             elseif active.phase == C.RollPhase.POST_ROLL then
                 btnLabel = "CONFIRM"
             end
-            UI.setAttribute(string.format("rollDash_btn_%s", color), "text", btnLabel)
+            U.setAttribute(string.format("rollDash_btn_%s", color), "text", btnLabel)
         end
     end
 

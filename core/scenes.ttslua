@@ -21,6 +21,7 @@ local S = require("core.state")
 local C = require("lib.constants")
 local L = require("core.lighting")
 local Soundscape = require("core.soundscape")
+local NPCS = require("core.npcs")
 
 -- ============================================================================
 -- CONFIGURATION
@@ -645,6 +646,38 @@ local function playSceneMusic(trackIndex)
     end
 end
 
+--- @param sceneName string
+--- @return boolean
+local function sceneNeedsNpcLightRestore(sceneName)
+    return sceneName == "standard" or sceneName == "bright"
+end
+
+--- @param scene table
+--- @param transitionTime number
+--- @param allowDelays boolean
+--- @return number
+local function getNpcRestoreDelay(scene, transitionTime, allowDelays)
+    local maxDelay = 0
+    local fallbackDuration = transitionTime or DefaultTransitionTime
+    if type(scene) ~= "table" or type(scene.lightStages) ~= "table" then
+        return maxDelay
+    end
+    for _, stage in ipairs(scene.lightStages) do
+        if type(stage) == "table" then
+            local stageDelay = allowDelays and (tonumber(stage.delay) or 0) or 0
+            local stageDuration = tonumber(stage.duration)
+            if stageDuration == nil then
+                stageDuration = fallbackDuration
+            end
+            local stageEnd = stageDelay + stageDuration
+            if stageEnd > maxDelay then
+                maxDelay = stageEnd
+            end
+        end
+    end
+    return maxDelay
+end
+
 --- Shared scene application used by loadScene and fadeToScene.
 --- @param sceneName string
 --- @param transitionTime number
@@ -691,6 +724,13 @@ local function applySceneByName(sceneName, transitionTime, allowDelays)
             context.musicMood = scene.musicMood
         end
         Soundscape.applyContext(context)
+    end
+
+    if sceneNeedsNpcLightRestore(sceneName) then
+        local restoreDelay = getNpcRestoreDelay(scene, effectiveTransition, allowDelays == true)
+        Wait.time(function()
+            NPCS.reapplyAllCurrentLightModes(0)
+        end, restoreDelay + 0.05)
     end
 
     S.setStateVal(sceneName, "currentScene")

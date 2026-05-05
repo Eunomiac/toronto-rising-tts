@@ -142,7 +142,7 @@ local function applyCsheetNavButtonsActiveOnObject(obj, show)
   for _, id in ipairs(CSHEET_NAV_BUTTON_IDS) do
     -- Known non-fatal case: page-specific nav controls may be absent on some pages.
     pcall(function()
-      obj.UI.setAttribute(id, "active", a)
+      obj.U.setAttribute(id, "active", a)
     end)
   end
 end
@@ -157,7 +157,7 @@ local function applyCsheetRootActiveOnObject(obj, show)
   local a = show and "true" or "false"
   -- Known non-fatal case: root panel id may be absent in alternate XML variants.
   pcall(function()
-    obj.UI.setAttribute(CSHEET_ROOT_PANEL_ID, "active", a)
+    obj.U.setAttribute(CSHEET_ROOT_PANEL_ID, "active", a)
   end)
 end
 
@@ -510,7 +510,7 @@ local function applyUiUpdates(updates)
       for attrName, attrVal in pairs(attrs) do
         -- Known non-fatal case: some ids/attributes are page-specific and absent on this object.
         pcall(function()
-          self.UI.setAttribute(id, attrName, tostring(attrVal))
+          self.U.setAttribute(id, attrName, tostring(attrVal))
         end)
       end
     end
@@ -540,7 +540,7 @@ function refreshCharacterSheetUi()
   if pageNum == 1 and self.UI then
     -- Known non-fatal case: xp_text is not present on non-page-1 layouts.
     pcall(function()
-      self.UI.setAttribute("xp_text", "text", tostring(tonumber(stats.xp) or 0))
+      self.U.setAttribute("xp_text", "text", tostring(tonumber(stats.xp) or 0))
     end)
   end
 

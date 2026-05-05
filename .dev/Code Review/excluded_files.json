@@ -14,6 +14,7 @@
     { "path": "core/objects.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/pc_storyteller_panel.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/scenes.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
+    { "path": "core/storyteller_panel_ui.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/state.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/zones.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/global_script.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
@@ -27,7 +28,6 @@
     { "path": "lib/pc_stats.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "lib/pcs_data.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "lib/rotational-seat-layout.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
-    { "path": "lib/ui_helpers.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "lib/util.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "lib/workspace_ndjson_log.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "ui/ui_csheet.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." }

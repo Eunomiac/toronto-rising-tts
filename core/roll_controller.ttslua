@@ -211,7 +211,8 @@ local function lockAllRollDiceObjects(color, rollId)
     end
 end
 
---- Hunger locked unless Can Reroll Hunger; normals unlocked for rerolling.
+--- After initial POST_ROLL settle, all dice are locked (see recalculate). Here we unlock
+--- normals for rerolling and lock hunger unless RO.ROLL_CAN_REROLL_HUNGER (applied now, not carried from prior phase).
 -- @param color string
 -- @param active table
 local function applyWpRerollWaveStart(color, active)
@@ -843,8 +844,10 @@ function RC.recalculate(color)
         active.batonHolder = wpOffered and C.BatonHolder.PLAYER or C.BatonHolder.STORYTELLER
         if wasWpWave then
             active.willpower.wpRerollWave = false
-            lockAllRollDiceObjects(color, active.id)
         end
+        -- Lock entire pool whenever dice finish settling (initial roll or WP wave). Unlock only
+        -- when the player spends Willpower (applyWpRerollWaveStart).
+        lockAllRollDiceObjects(color, active.id)
     end
 
     setActive(color, active)
@@ -1179,7 +1182,7 @@ function RC._applyRollConsequences(color, active)
             PCST.refreshRow(color)
             P.refreshHudOverlaysForSeat(color)
             -- confirmRoll then advances phase and calls notifyStateChanged → RUI.refreshPlayerRollPanel,
-            -- which issues many UI.setAttribute/setValue calls on roll UI in the same frame. TTS can
+            -- which issues many U.setAttribute/setValue calls on roll UI in the same frame. TTS can
             -- drop or visually override Global overlay show/hide done here; a next-frame re-sync matches
             -- what happens when the user later clicks Apply (after roll UI has settled).
             local seatForOverlay = color

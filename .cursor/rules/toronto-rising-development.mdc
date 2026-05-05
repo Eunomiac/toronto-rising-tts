@@ -13,5 +13,6 @@ This project is iterated **quickly**; requirements and layout change often.
 - **Do not** assume backward compatibility is required. When something is replaced or no longer referenced, **remove** it and update docs/comments that still describe the old behavior.
 - When touching an area, **delete** clearly orphaned code paths rather than leaving commented-out or parallel “legacy” copies.
 - After removals, **grep** for stale names (roles, tags, helpers) and fix **call sites, prints, and `.dev` docs** that still mention them.
+- **Documentation:** When behavior, paths, or APIs change, **update `.dev/` and `docs/solutions/` in the same change** — do not wait for the user to ask. See **Documentation Updates — ABSOLUTE REQUIREMENT** in `.cursorrules`.
 
 Agents should default to: **only what is current and actually exercised** stays in the tree.

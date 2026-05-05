@@ -1,7 +1,7 @@
 <!-- Storyteller NPC panel defaults (non-generated). -->
-<!-- Keep this file hand-authored; generator only writes panel_npcs.xml rows/structure. -->
+<!-- Keep this file hand-authored; generator composes panel_npcs.xml from ui/storyteller/partials/. -->
 <Defaults>
-  <Panel class="npc_panel_root" active="false" padding="0 0 0 0" />
+  <Panel class="npc_panel_root" active="false" padding="0 0 0 0" offsetXY="0 -50" />
 
   <VerticalLayout class="npc_panel_layout_root" />
 
@@ -10,7 +10,7 @@
       scrollbarBackgroundColor="#440000"
       scrollbarColors="#990000|#AA0000|#CC0000|#333333"
       inertia="false"
-      color="rgba(0, 0, 0, 0.3)"
+      color="rgba(0, 0, 0, 0.7)"
       horizontal="false"
       vertical="true"
       preferredHeight="250"
@@ -82,7 +82,32 @@
 
   <Text class="npc_group_row_name"
     color="#000000"
-    fontStyle="Bold" />
+    fontStyle="Bold"
+    ignoreLayout = "true"
+    rectAlignment = "MiddleLeft"
+    offsetXY = "35 0"
+    width = "250" />
+
+  <Text class="npc_row_name"
+    fontStyle="Bold"
+    ignoreLayout="true"
+    rectAlignment="MiddleLeft"
+    offsetXY = "70 0"
+    width="250" />
+
+  <Text class="seated_npc_slot_name"
+    ignoreLayout="true"
+    rectAlignment="MiddleLeft"
+    textAlignment="MiddleLeft"
+    offsetXY = "10 0"
+    height="30" />
+
+  <Text class="seated_npc_name"
+    ignoreLayout = "true"
+    rectAlignment = "MiddleLeft"
+    textAlignment = "MiddleLeft"
+    height="30"
+    offsetXY = "70 0" />
 
   <Panel class="hud_storyteller_horiz_spacer"
     color="clear"
@@ -93,7 +118,14 @@
 
   <Button class="hud_storyteller_button_icon_narrow" width="11" minWidth="11" preferredWidth="11" />
 
-  <Button class="npc_group_button_icon" textColor="#000000" fontStyle="Bold" />
+  <Button class="npc_button_icon"
+    rectAlignment="MiddleRight"
+    onClick="HUD_npcDispatch" />
+
+  <Button class="npc_button_icon_small"
+    rectAlignment="MiddleLeft"
+    onClick="HUD_npcDispatch" />
+
 
 
 </Defaults>

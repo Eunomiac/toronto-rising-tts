@@ -19,7 +19,7 @@
 --   5. Error Handling & Validation (type checking, assertions)
 --   6. Table Operations (functional programming helpers: map, filter, find, etc.)
 --   7. Tag Utilities (object tag checking)
---   8. UI Utilities (UI element flashing)
+--   8. UI Utilities (flashing, button-safe attributes, collapse/expand, input values)
 --   9. Debug & Logging (alerts, GM messaging)
 --  10. Player & Network Utilities (host detection, UID generation)
 --  11. Zone Utilities (zone bounds, containment checks)
@@ -1554,6 +1554,171 @@ function U.splashUIElement(elemID, duration, delay)
   else
     Wait.time(function() U.splashUIElement(elemID, duration, 0) end, delay)
   end
+end
+
+--- Determines whether a UI element is a button
+-- @param elemID string The ID of the UI element to check
+-- @return boolean True if the element is a button
+-- @usage if U.isButton("myButton") then print("It's a button!") end
+function U.isButton(elemID)
+  local attrs = UI.getAttributes(elemID)
+  if attrs == nil then
+    return false
+  end
+  return attrs.onClick ~= nil or attrs.onMouseDown ~= nil or attrs.onMouseUp ~= nil
+end
+
+--- A wrapper around UI.setAttribute, which checks if the element is a button and, if so, restores various attributes to their original states after the attribute is set (since TTS resets them regardless of the attributes being set).
+-- @param elemID string The ID of the UI element to set the attribute for
+-- @param attr string The attribute to set
+-- @param val any The value to set the attribute to
+-- @usage U.setAttribute("myButton", "text", "Click Me")
+function U.setAttribute(elemID, attr, val)
+  if not U.isButton(elemID) then
+    return UI.setAttribute(elemID, attr, val)
+  end
+  local elemAttrs = UI.getAttributes(elemID) or {}
+  local attrsToRestore = {
+    color = elemAttrs.color,
+    textColor = elemAttrs.textColor,
+    fontSize = elemAttrs.fontSize,
+    fontStyle = elemAttrs.fontStyle
+  }
+  -- add the attribute being changed to the table
+
+  local attrsToSet = U.clone(attrsToRestore)
+  attrsToSet[attr] = val
+
+  if (elemAttrs.class=="twirl_down_button") then
+    -- pretty-print a log of attrs, elemAttrs, attrsToRestore, and attrsToSet to the console, formatted as a single table so they are grouped together if many calls occur simultaneously.
+    local reportTable = {
+      id = elemID,
+      attr = attr,
+      val = val,
+      elemAttrs = elemAttrs,
+      attrsToRestore = attrsToRestore,
+      attrsToSet = attrsToSet
+    }
+    print("\n\n----------------------------------------------\n" .. JSON.encode_pretty(reportTable) .. "\n----------------------------------------------\n")
+  end
+
+  -- set all attributes at once
+  return UI.setAttributes(elemID, attrsToSet)
+end
+
+--- A wrapper around UI.setAttributes, which checks if the element is a button and, if so, restores various attributes to their original states after the attribute is set (since TTS resets them regardless of the attributes being set).
+-- @param elemID string The ID of the UI element to set the attributes for
+-- @param attrs table Table of attribute name-value pairs to set
+-- @usage U.setAttributes("myButton", {text = "Click Me", color = "Red", fontSize = 20})
+function U.setAttributes(elemID, attrs)
+  if not U.isButton(elemID) then
+    return UI.setAttributes(elemID, attrs)
+  end
+  local elemAttrs = UI.getAttributes(elemID) or {}
+  local attrsToRestore = {
+    color = elemAttrs.color,
+    textColor = elemAttrs.textColor,
+    fontSize = elemAttrs.fontSize,
+    fontStyle = elemAttrs.fontStyle
+  }
+
+  local attrsToSet = U.clone(attrsToRestore)
+  for attr, val in pairs(attrs) do
+    attrsToSet[attr] = val
+  end
+
+  if (elemAttrs.class=="twirl_down_button") then
+    -- pretty-print a log of attrs, elemAttrs, attrsToRestore, and attrsToSet to the console, formatted as a single table so they are grouped together if many calls occur simultaneously.
+    local reportTable = {
+      id = elemID,
+      attrs = attrs,
+      elemAttrs = elemAttrs,
+      attrsToRestore = attrsToRestore,
+      attrsToSet = attrsToSet
+    }
+    print("\n\n==============================================\n" .. JSON.encode_pretty(reportTable) .. "\n==============================================\n")
+  end
+
+  -- set all attributes at once
+  return UI.setAttributes(elemID, attrsToSet)
+end
+
+--- Toggles visibility of a UI element via the `active` attribute (collapse/expand pattern).
+--- Updates the companion toggle button `toggleElem_<elemID>` text to ▼ (expanded) or ► (collapsed).
+--- @param elemID string ID of the element to toggle (not the toggle button id)
+--- @param button string|nil Optional click payload from TTS (reserved for future use)
+--- @usage U.toggleXmlElement("debugControls", "-1")
+function U.toggleXmlElement(elemID, button)
+  if type(elemID) ~= "string" then
+    error("U.toggleXmlElement: elemID must be a string", 2)
+  end
+
+  local currentActive = UI.getAttribute(elemID, "active")
+  local isCurrentlyActive = string.lower(tostring(currentActive)) == "true"
+
+  local toggleButtonID = "toggleElem_" .. elemID
+  if not isCurrentlyActive then
+    U.setAttribute(elemID, "active", "true")
+    U.setAttribute(toggleButtonID, "text", "▼")
+  else
+    U.setAttribute(elemID, "active", "false")
+    U.setAttribute(toggleButtonID, "text", "►")
+  end
+end
+
+--- Expands a collapsible UI element (`active` true) and syncs `toggleElem_<elemID>` to ▼.
+--- @param elemID string
+function U.showXmlElement(elemID)
+  if type(elemID) ~= "string" then
+    error("U.showXmlElement: elemID must be a string", 2)
+  end
+  U.setAttribute(elemID, "active", "true")
+  U.setAttribute("toggleElem_" .. elemID, "text", "▼")
+end
+
+--- Collapses a collapsible UI element (`active` false) and syncs `toggleElem_<elemID>` to ►.
+--- @param elemID string
+function U.hideXmlElement(elemID)
+  if type(elemID) ~= "string" then
+    error("U.hideXmlElement: elemID must be a string", 2)
+  end
+  U.setAttribute(elemID, "active", "false")
+  U.setAttribute("toggleElem_" .. elemID, "text", "►")
+end
+
+--- @param elemID string
+--- @return boolean True if `active` is true for the element
+function U.isXmlElementExpanded(elemID)
+  if type(elemID) ~= "string" then
+    error("U.isXmlElementExpanded: elemID must be a string", 2)
+  end
+  local currentActive = UI.getAttribute(elemID, "active")
+  return string.lower(tostring(currentActive)) == "true"
+end
+
+--- Sets a UI input value, coercing to string for TTS.
+--- @param elementID string
+--- @param value any
+function U.setUIValue(elementID, value)
+  if type(elementID) ~= "string" then
+    error("U.setUIValue: elementID must be a string", 2)
+  end
+  UI.setValue(elementID, tostring(value))
+end
+
+--- Reads a UI input value; returns a number when the string parses as one, otherwise the string.
+--- @param elementID string
+--- @return string|number
+function U.getUIValue(elementID)
+  if type(elementID) ~= "string" then
+    error("U.getUIValue: elementID must be a string", 2)
+  end
+  local value = UI.getValue(elementID)
+  local numValue = tonumber(value)
+  if numValue ~= nil then
+    return numValue
+  end
+  return value
 end
 
 -- ============================================================================

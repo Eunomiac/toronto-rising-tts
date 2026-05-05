@@ -10,7 +10,7 @@
     3) rest gap before next beat
 
   TTS Image `color` tints the texture; we animate alpha via 8-char hex `#FFFFFFAA`.
-  Uses UI.setAttribute("color") only — never UI.show/hide.
+  Uses U.setAttribute("color") only — never UI.show/hide.
   Stale Wait.time callbacks no-op when pulseGenByColor[seat] changes.
 ]]
 ---@diagnostic disable: undefined-global
@@ -93,7 +93,7 @@ end
 --- @param seatColor string
 --- @param a number
 local function applyPulseAlpha(hunger, seatColor, a)
-  UI.setAttribute(pulseElementId(hunger, seatColor), "color", pulseTintColor(a))
+  U.setAttribute(pulseElementId(hunger, seatColor), "color", pulseTintColor(a))
 end
 
 --- @param seatColor string

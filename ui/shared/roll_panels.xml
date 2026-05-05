@@ -8,46 +8,46 @@
 
 <Defaults>
 
-<Panel class="rollPanel_ST"
-  visibility="Black|Host"
-  active="False"
-  rectAlignment="LowerRight"
-  offsetXY="0 0"
-  padding="10 10 10 10"
-  width="520" />
+  <Panel class="rollPanel_ST"
+    visibility="Black|Host"
+    active="False"
+    rectAlignment="LowerRight"
+    offsetXY="0 0"
+    padding="10 10 10 10"
+    width="520" />
 
-<Panel class="rollPanel_player"
-  active="False"
-  rectAlignment="LowerCenter"
-  offsetXY="0 80"
-  width="480"
-  padding="12 10 12 10"
-  childAlignment="LowerCenter"
-  childForceExpandHeight="false" />
+  <Panel class="rollPanel_player"
+    active="False"
+    rectAlignment="MiddleRight"
+    offsetXY="40 0"
+    width="480"
+    padding="12 10 12 10"
+    childAlignment="MiddleRight"
+    childForceExpandHeight="false" />
 
-<VerticalLayout class="rollPanel_player_content"
-  spacing="6"
-  childAlignment="LowerCenter"
-  childForceExpandWidth="true"
-  childForceExpandHeight="false"
-  color="#000000" />
+  <VerticalLayout class="rollPanel_player_content"
+    spacing="6"
+    childAlignment="MiddleRight"
+    childForceExpandWidth="true"
+    childForceExpandHeight="false"
+    color="#000000" />
 
-<Panel class="rollPanel_result"
-  active="False"
-  rectAlignment="UpperCenter"
-  childAlignment="UpperCenter"
-  childForceExpandWidth="true"
-  childForceExpandHeight="false"
-  offsetXY="0 -60"
-  width="560"
-  padding="16 12 16 12" />
+  <Panel class="rollPanel_result"
+    active="False"
+    rectAlignment="UpperCenter"
+    childAlignment="UpperCenter"
+    childForceExpandWidth="true"
+    childForceExpandHeight="false"
+    offsetXY="0 -60"
+    width="560"
+    padding="16 12 16 12" />
 
-<VerticalLayout class="rollPanel_result_content"
-  spacing="8"
-  childAlignment="UpperCenter"
-  childForceExpandWidth="true"
-  childForceExpandHeight="false"
-  color="#000000" />
+  <VerticalLayout class="rollPanel_result_content"
+    spacing="8"
+    childAlignment="UpperCenter"
+    childForceExpandWidth="true"
+    childForceExpandHeight="false"
+    color="#000000" />
 
 </Defaults>
 
@@ -121,9 +121,10 @@
     <!-- Orange row -->
     <Panel id="rollDash_row_Orange"
       active="False"
-      color="rgba(180,90,20,0.5)"
-      padding="5 5 5 5">
-      <HorizontalLayout spacing="6" childAlignment="MiddleLeft">
+      flexibleWidth="1"
+      padding="0 0 0 0"
+      childForceExpandWidth="true">
+      <HorizontalLayout color="#b45914" spacing="6" childAlignment="MiddleLeft" flexibleWidth="1" padding="5 5 5 5">
         <Text id="rollDash_name_Orange"  fontSize="12" color="#FFFFFF" preferredWidth="70"  text="Orange" />
         <Text id="rollDash_type_Orange"  fontSize="11" color="#AAAAAA" preferredWidth="110" text="" />
         <Text id="rollDash_phase_Orange" fontSize="11" color="#CCCCCC" preferredWidth="70"  text="" />
@@ -160,9 +161,10 @@
     <!-- Red row -->
     <Panel id="rollDash_row_Red"
       active="False"
-      color="rgba(120,20,20,0.5)"
-      padding="5 5 5 5">
-      <HorizontalLayout spacing="6" childAlignment="MiddleLeft">
+      flexibleWidth="1"
+      padding="0 0 0 0"
+      childForceExpandWidth="true">
+      <HorizontalLayout color="#ff0000" spacing="6" childAlignment="MiddleLeft" flexibleWidth="1" padding="5 5 5 5">
         <Text id="rollDash_name_Red"  fontSize="12" color="#FFFFFF" preferredWidth="70"  text="Red" />
         <Text id="rollDash_type_Red"  fontSize="11" color="#AAAAAA" preferredWidth="110" text="" />
         <Text id="rollDash_phase_Red" fontSize="11" color="#CCCCCC" preferredWidth="70"  text="" />
@@ -199,9 +201,11 @@
     <!-- Pink row -->
     <Panel id="rollDash_row_Pink"
       active="False"
-      color="rgba(140,50,100,0.5)"
-      padding="5 5 5 5">
-      <HorizontalLayout spacing="6" childAlignment="MiddleLeft">
+      flexibleWidth="1"
+      padding="0 0 0 0"
+      childForceExpandWidth="true"
+      color="#ff008c">
+      <HorizontalLayout color="#ff008c" spacing="6" childAlignment="MiddleLeft" flexibleWidth="1" padding="5 5 5 5">
         <Text id="rollDash_name_Pink"  fontSize="12" color="#FFFFFF" preferredWidth="70"  text="Pink" />
         <Text id="rollDash_type_Pink"  fontSize="11" color="#AAAAAA" preferredWidth="110" text="" />
         <Text id="rollDash_phase_Pink" fontSize="11" color="#CCCCCC" preferredWidth="70"  text="" />
@@ -238,9 +242,11 @@
     <!-- Purple row -->
     <Panel id="rollDash_row_Purple"
       active="False"
-      color="rgba(80,20,120,0.5)"
-      padding="5 5 5 5">
-      <HorizontalLayout spacing="6" childAlignment="MiddleLeft">
+      flexibleWidth="1"
+      padding="0 0 0 0"
+      childForceExpandWidth="true"
+      >
+      <HorizontalLayout color="#9900ff" spacing="6" childAlignment="MiddleLeft" flexibleWidth="1" padding="5 5 5 5">
         <Text id="rollDash_name_Purple"  fontSize="12" color="#FFFFFF" preferredWidth="70"  text="Purple" />
         <Text id="rollDash_type_Purple"  fontSize="11" color="#AAAAAA" preferredWidth="110" text="" />
         <Text id="rollDash_phase_Purple" fontSize="11" color="#CCCCCC" preferredWidth="70"  text="" />

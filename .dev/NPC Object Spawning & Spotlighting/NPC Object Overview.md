@@ -94,6 +94,7 @@ World slot center:
 * **NPCs** toggle on the storyteller tool bar opens `panel_npcs` (see [`ui/storyteller/panel_storyteller_toolbar.xml`](../../ui/storyteller/panel_storyteller_toolbar.xml)).
 * Spawn groups / individuals, move, clear area, remove, light toggle (`off` / `standard`), **hold name** for `spotlight` (mouse up restores previous mode).
 * **Manual drags:** dropping a tagged NPC figurine refreshes its paired light from the same math as above.
+* **Admin scene transitions:** switching from admin `DARK` to `STANDARD`/`BRIGHT` now re-applies each spawned NPC's current light mode after staged scene lighting completes, so NPC panel toggle state and actual light output stay in sync.
 
 ---
 

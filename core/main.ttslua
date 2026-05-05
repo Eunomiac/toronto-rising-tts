@@ -304,7 +304,7 @@ function M.setCamera(player, cameraMode, lookAtPos)
     if mergedUniversal[cameraMode] ~= nil or C.CameraModes[cameraMode] == "universal" then
       cameraPreset = U.clone(mergedUniversal[cameraMode])
     else
-      -- Otherwise, use per-player camera data from state.
+      -- Otherwise, use per-player camera data from state (and seat-suffixed universal keys for the live seat).
       local playerData = S.getPlayerData(player)
       if type(playerData) ~= "table" then
         U.AlertGM("M.setCamera: No player data found for player '" .. tostring(player.color) .. "'")
@@ -315,7 +315,22 @@ function M.setCamera(player, cameraMode, lookAtPos)
         U.AlertGM("M.setCamera: No cameraAngles found for player '" .. tostring(player.color) .. "'")
         return
       end
+      local seatColor = nil
+      if C ~= nil and type(C.GetPlayerColor) == "function" then
+        seatColor = C.GetPlayerColor(player)
+      end
+      if type(seatColor) ~= "string" or seatColor == "" then
+        seatColor = player.color
+      end
+      local suffixedMode = (cameraMode ~= nil and seatColor ~= nil) and (cameraMode .. seatColor) or nil
+
       cameraPreset = U.clone(playerCameraAngles[cameraMode])
+      if type(cameraPreset) ~= "table" and suffixedMode ~= nil then
+        cameraPreset = U.clone(playerCameraAngles[suffixedMode])
+      end
+      if type(cameraPreset) ~= "table" and suffixedMode ~= nil then
+        cameraPreset = U.clone(mergedUniversal[suffixedMode])
+      end
       if type(cameraPreset) ~= "table" then
         U.AlertGM("M.setCamera: No camera angle data found for player '" .. tostring(player.color) .. "' and camera mode '" .. tostring(cameraMode) .. "'")
         return
@@ -383,21 +398,14 @@ function M.setCamera(player, cameraMode, lookAtPos)
     local intermediateCameraData = getIntermediateCameraData(cameraData)
     U.RunSequence({
       function()
-        player.lookAt(intermediateCameraData)
-        return 0.15
-      end,
-      function()
         player.lookAt(cameraData)
-        return 0.5
+        -- Wait one second to set camera mode, to avoid interrupting camera motion.
+        return 3
       end,
       function()
         player.setCameraMode(playerCameraMode)
-        -- One second after final adjustment (including mode), repeat lookAt so TTS snaps to the exact transform.
         return 1
-      end,
-      function()
-        player.lookAt(cameraData)
-      end,
+      end
     })
   end
 end

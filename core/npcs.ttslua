@@ -13,7 +13,6 @@ local S = require("core.state")
 local L = require("core.lighting")
 local DATA = require("lib.npcs_data")
 local NLIGHT = require("lib.npcs_light_spawn_defaults")
-local UIH = require("lib.ui_helpers")
 
 NPCS.characters = DATA.characters or {}
 NPCS.lights = DATA.lights or {}
@@ -716,6 +715,17 @@ function NPCS.applyCurrentLightMode(npcName, transitionTime)
     end)
     if not ok then
         print("[NPCS] applyCurrentLightMode SetLightMode failed: " .. tostring(err))
+    end
+end
+
+--- Re-apply each spawned NPC's current light mode (used after scene transitions that force OFF).
+--- @param transitionTime number|nil
+function NPCS.reapplyAllCurrentLightModes(transitionTime)
+    local instances = getInstances()
+    for npcName, rec in pairs(instances) do
+        if U.Type(npcName) == "string" and U.Type(rec) == "table" and U.Type(rec.lightGuid) == "string" and rec.lightGuid ~= "" then
+            NPCS.applyCurrentLightMode(npcName, transitionTime)
+        end
     end
 end
 
@@ -1753,8 +1763,8 @@ function NPCS.syncAdminNpcPanelXmlDumpButton()
     local colorsOn = "#2E8B57|#3CB371|#228B22|rgba(0.12,0.45,0.22,0.85)"
     -- Known non-fatal case: admin toggle button may not exist in older UI bundles.
     pcall(function()
-        UI.setAttribute(id, "colors", on and colorsOn or colorsOff)
-        UI.setAttribute(id, "text", on and "NPC XML → IDE (on)" or "NPC XML → IDE (off)")
+        U.setAttribute(id, "colors", on and colorsOn or colorsOff)
+        U.setAttribute(id, "text", on and "NPC XML → IDE (on)" or "NPC XML → IDE (off)")
     end)
 end
 
@@ -1818,7 +1828,7 @@ local function setUiAttrSafe(id, attr, value)
     end
     -- Known non-fatal case: some generated ids may be absent if UI bundle is out-of-date.
     pcall(function()
-        UI.setAttribute(id, attr, value)
+        U.setAttribute(id, attr, value)
     end)
 end
 
@@ -1830,7 +1840,7 @@ local function setUiAttrsSafe(id, attrs)
         return
     end
     pcall(function()
-        UI.setAttributes(id, attrs)
+        U.setAttributes(id, attrs)
     end)
 end
 
@@ -1844,11 +1854,8 @@ end
 --- @param id string
 --- @param attrs table
 --- @param textColor string|nil
-local function setUiButtonAttrsSafe(id, attrs, textColor)
+local function setUiButtonAttrsSafe(id, attrs)
     local out = U.clone(attrs or {})
-    if out.textColor == nil then
-        out.textColor = textColor or "#FFFFFF"
-    end
     setUiAttrsSafe(id, out)
 end
 
@@ -1895,18 +1902,17 @@ function NPCS.refreshStorytellerUI()
             end
         end
         for _, areaKey in ipairs(areas) do
-            setUiButtonAttrsSafe("npc_seated_toArea_" .. seatKey .. "_" .. areaKey, { active = showRow and "true" or "false" }, "#FFFFFF")
+            setUiButtonAttrsSafe("npc_seated_toArea_" .. seatKey .. "_" .. areaKey, { active = showRow and "true" or "false" })
         end
-        setUiButtonAttrsSafe("npc_seated_unseat_" .. seatKey, { active = showRow and "true" or "false" }, "#FFFFFF")
+        setUiButtonAttrsSafe("npc_seated_unseat_" .. seatKey, { active = showRow and "true" or "false" })
     end
     for _, areaKey in ipairs(areas) do
         local hasAreaOccupants = next(occupiedByArea[areaKey] or {}) ~= nil
         setUiActiveSafe("npc_areaHeader_" .. areaKey, hasAreaOccupants)
-        setUiButtonAttrsSafe("npc_clearArea_" .. areaKey, { active = hasAreaOccupants and "true" or "false" }, "#FFFFFF")
+        setUiButtonAttrsSafe("npc_clearArea_" .. areaKey, { active = hasAreaOccupants and "true" or "false" })
         for _, toArea in ipairs(areas) do
-            if toArea ~= areaKey then
-                setUiButtonAttrsSafe("npc_moveGroup_" .. areaKey .. "_" .. toArea, { active = hasAreaOccupants and "true" or "false" }, "#FFFFFF")
-            end
+            local canMove = hasAreaOccupants and toArea ~= areaKey
+            setUiButtonAttrsSafe("npc_moveGroup_" .. areaKey .. "_" .. toArea, { active = canMove and "true" or "false" })
         end
         for _, npcName in ipairs(allNpcNames) do
             local rec = instances[npcName]
@@ -1916,12 +1922,13 @@ function NPCS.refreshStorytellerUI()
                 local mode = rec.npcLightMode or "standard"
                 setUiButtonAttrsSafe("npc_toggle_" .. areaKey .. "_" .. npcName, {
                     text = mode == "off" and "○" or "⊚",
+                    colors = mode == "off" and "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" or "#CCCCCC|#BBBBBB|#AAAAAA|#999999",
+                    textColor = mode == "off" and "#FFFFFF" or "#000000",
                     active = "true",
-                }, "#FFFFFF")
+                })
                 for _, toArea in ipairs(areas) do
-                    if toArea ~= areaKey then
-                        setUiButtonAttrsSafe("npc_move_" .. areaKey .. "_" .. npcName .. "_" .. toArea, { active = "true" }, "#FFFFFF")
-                    end
+                    local canMove = toArea ~= areaKey
+                    setUiButtonAttrsSafe("npc_move_" .. areaKey .. "_" .. npcName .. "_" .. toArea, { active = canMove and "true" or "false" })
                 end
             end
         end
@@ -1931,9 +1938,9 @@ function NPCS.refreshStorytellerUI()
     for _, groupId in ipairs(groupIds) do
         local members = NPCS.collectGroupMembers(groupId)
         local expanded = isGroupExpanded(groupId)
-        setUiButtonAttrsSafe("npc_groupTwirl_" .. groupId, { text = expanded and "▾" or "▸", active = "true" }, "#000000")
+        setUiButtonAttrsSafe("npc_groupTwirl_" .. groupId, { text = expanded and "▾" or "▸", active = "true" })
         for _, areaKey in ipairs(areas) do
-            setUiButtonAttrsSafe("npc_group_" .. groupId .. "_" .. areaKey, { active = "true" }, "#000000")
+            setUiButtonAttrsSafe("npc_group_" .. groupId .. "_" .. areaKey, { active = "true" })
         end
 
         for _, row in ipairs(members) do
@@ -1948,9 +1955,9 @@ function NPCS.refreshStorytellerUI()
             local lockId = "npc_memberLock_" .. groupId .. "_" .. npcName
             setUiButtonAttrsSafe(lockId, {
                 active = isSpawned and "true" or "false",
-                text = isLocked and "⨂" or "⨀",
+                text = isLocked and "※" or "⁛",
                 colors = isLocked and "#8B0000|#AA0000|#660000|#330000" or "#444444|#555555|#333333|#222222",
-            }, "#FFFFFF")
+            })
 
             for _, areaKey in ipairs(areas) do
                 local locId = "npc_memberLoc_" .. groupId .. "_" .. npcName .. "_" .. areaKey
@@ -1958,7 +1965,7 @@ function NPCS.refreshStorytellerUI()
                 setUiButtonAttrsSafe(locId, {
                     active = "true",
                     colors = isHere and "#00C853|#00E676|#00A844|#225533" or "#2A2A2A|#333333|#1D1D1D|#111111",
-                }, "#FFFFFF")
+                })
             end
             for idx = 1, #(C.NPCSeats or {}) do
                 local seatKey = C.NPCSeats[idx]
@@ -1967,9 +1974,9 @@ function NPCS.refreshStorytellerUI()
                 setUiButtonAttrsSafe(seatId, {
                     active = "true",
                     colors = isHere and "#00C853|#00E676|#00A844|#225533" or "#2A2A2A|#333333|#1D1D1D|#111111",
-                }, "#FFFFFF")
+                })
             end
-            setUiButtonAttrsSafe("npc_unseat_" .. npcName, { active = isSeated and "true" or "false" }, "#FFFFFF")
+            setUiButtonAttrsSafe("npc_unseat_" .. npcName, { active = isSeated and "true" or "false" })
         end
     end
 
