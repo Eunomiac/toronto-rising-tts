@@ -59,8 +59,20 @@ local Camera = {}
 ---@class AudioListener: Component
 local AudioListener = {}
 
+--- Preset tables under `C.UniversalCameraAngles` / `C.RedCameraAngles` (camera authoring).
+---@class TtsCameraAnglePreset
+---@field position Vector|table|nil
+---@field isRelativeToReferenceHandPosition boolean|nil
+---@field pitch number|nil
+---@field yaw number|nil
+---@field distance number|nil
+---@field cameraMode string|nil
+
 ---@class Object
 ---@field name string|nil
+---@field tag string|nil
+---@field type string|nil
+---@field locked boolean|nil
 ---@field interactable boolean
 ---@field UI ObjectUI|nil
 local Object = {}
@@ -97,7 +109,9 @@ function Object.reload(...) end
 ---@param name string
 function Object.setName(name) end
 ---@param position Vector|table
-function Object.setPosition(position) end
+---@param collapse_into_bags boolean|nil
+---@param fast boolean|nil
+function Object.setPosition(position, collapse_into_bags, fast) end
 ---@param rotation Vector|table
 function Object.setRotation(rotation) end
 ---@param tag string
@@ -105,15 +119,36 @@ function Object.setRotation(rotation) end
 function Object.hasTag(tag) end
 ---@param tag string
 function Object.addTag(tag) end
+---@param tag string
+function Object.removeTag(tag) end
 ---@param playerColors string[]
 function Object.setInvisibleTo(playerColors) end
 ---@return Bounds
 function Object.getBounds(...) end
+---@return boolean
+function Object.getLock(...) end
+---@param locked boolean
+function Object.setLock(locked) end
+---@return Object[]
+function Object.getObjects(...) end
+---@return table
+function Object.getData(...) end
+---@param value string|number|boolean
+function Object.setValue(value) end
+---@param tint Color|table
+function Object.setColorTint(tint) end
+---@param options table|nil
+---@return Object|nil
+function Object.clone(options) end
 
 ---@class GameObject: Object
 local GameObject = {}
 
 ---@class Color
+---@field r number|nil
+---@field g number|nil
+---@field b number|nil
+---@field a number|nil
 local Color = {}
 
 ---@class Player
@@ -137,6 +172,10 @@ Hands = Hands or {}
 
 ---@return Object[]
 function getObjectsWithAllTags(...) end
+
+---@param guid string
+---@return Object|nil
+function getObjectFromGUID(guid) end
 
 ---@return table
 function stringColorToRGB(...) end

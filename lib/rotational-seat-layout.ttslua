@@ -917,14 +917,19 @@ end
 --- @param tableCfg table|nil
 --- @return Vector
 local function cameraPositionWorldOffsetForActiveTable(tableCfg)
-  if U.Type(tableCfg) ~= "table" or tableCfg.referenceHandPosition == nil then
+  if U.Type(tableCfg) ~= "table" then
+    return Vector(0, 0, 0)
+  end
+  ---@cast tableCfg table
+  local refHand = tableCfg.referenceHandPosition
+  if refHand == nil then
     return Vector(0, 0, 0)
   end
   local base = C.CameraAuthoringReferenceHandPosition
   if base == nil then
     return Vector(0, 0, 0)
   end
-  return Vector(tableCfg.referenceHandPosition) - Vector(base)
+  return Vector(refHand) - Vector(base)
 end
 
 --- Same rigid placement as seat objects: yaw about active `centerPoint`, then shift so the hand anchor
@@ -1042,6 +1047,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
   if U.Type(C.UniversalCameraAngles) == "table" then
     for modeKey, modeVal in pairs(C.UniversalCameraAngles) do
       if U.Type(modeKey) == "string" and U.Type(modeVal) == "table" and modeVal.isRelativeToReferenceHandPosition == true then
+        ---@cast modeVal TtsCameraAnglePreset
         if modeVal.position == nil then
           error("rotational-seat-layout: C.UniversalCameraAngles['" .. modeKey .. "'] is missing position")
         end
@@ -1084,6 +1090,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
         .. "' but C.RedCameraAngles has no entry for it"
       )
     end
+    ---@cast redMode TtsCameraAnglePreset
     if redMode.position == nil then
       error("rotational-seat-layout: C.RedCameraAngles['" .. modeKey .. "'] is missing position")
     end
@@ -2082,14 +2089,16 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
 end
 
 --- @param tableRef string|table
---- @return string
---- @return table
+--- @return string key
+--- @return table cfg
 local function resolveTableRef(tableRef)
   if U.Type(tableRef) == "string" then
     local cfg = C.Tables and C.Tables[tableRef] or nil
     if U.Type(cfg) ~= "table" then
       error("rotational-seat-layout: unknown tableRef key '" .. tostring(tableRef) .. "'")
     end
+    ---@cast tableRef string
+    ---@cast cfg table
     return tableRef, cfg
   end
   if U.Type(tableRef) ~= "table" then
@@ -2135,8 +2144,14 @@ end
 --- @return table<string, boolean>
 local function collectSeatPresenceMap(tableCfg)
   local present = {}
-  if U.Type(tableCfg) == "table" and U.Type(tableCfg.playerToPositionMap) == "table" then
-    for seatKey, _ in pairs(tableCfg.playerToPositionMap) do
+  local map = nil
+  if U.Type(tableCfg) == "table" then
+    ---@cast tableCfg table
+    map = tableCfg.playerToPositionMap
+  end
+  if U.Type(map) == "table" then
+    ---@cast map table
+    for seatKey, _ in pairs(map) do
       if U.Type(seatKey) == "string" then
         present[seatKey] = true
       end
@@ -2175,6 +2190,10 @@ end
 --- @return table
 local function buildFilteredSeatMap(tableCfg, occupiedNPCSlots)
   local out = {}
+  if tableCfg == nil then
+    return out
+  end
+  ---@cast tableCfg table
   local map = tableCfg.playerToPositionMap or {}
   for seatKey, segment in pairs(map) do
     if U.Type(seatKey) == "string" then
@@ -2195,6 +2214,8 @@ local function applyTableObjectState(obj, tableCfg, isActive)
   if obj == nil or U.Type(tableCfg) ~= "table" then
     return
   end
+  ---@cast obj Object
+  ---@cast tableCfg table
   local targetPos = isActive and tableCfg.activePosition or tableCfg.inactivePosition
   if targetPos ~= nil then
     local p = Vector(targetPos)
@@ -2222,10 +2243,16 @@ end
 --- @param occupiedNPCSlots table<string, string|boolean>
 --- @param isActive boolean
 local function applyTableComponentsState(tableCfg, occupiedNPCSlots, isActive)
-  if U.Type(tableCfg) ~= "table" or U.Type(tableCfg.components) ~= "table" then
+  if U.Type(tableCfg) ~= "table" then
     return
   end
-  for _componentName, componentCfg in pairs(tableCfg.components) do
+  ---@cast tableCfg table
+  local components = tableCfg.components
+  if U.Type(components) ~= "table" then
+    return
+  end
+  ---@cast components table
+  for _componentName, componentCfg in pairs(components) do
     if U.Type(componentCfg) == "table" and U.Type(componentCfg.guid) == "string" then
       local obj = getObjectFromGUID(componentCfg.guid)
       if obj ~= nil then
@@ -2403,12 +2430,15 @@ local function applyPostCorrections(sourceObjects, computed)
 
     -- Prefer computed seat-frame x/z as the base so y-only corrections preserve
     -- the rotated seat placement even when the object failed to move earlier.
-    if U.Type(computed) == "table" and U.Type(computed.byColor) == "table" then
+    if U.Type(computed) == "table" and computed ~= nil and U.Type(computed.byColor) == "table" then
+      ---@cast computed table
+      local byColor = computed.byColor
       local seatKey = deriveSeatKeyFromObjectTag(obj)
       local disp = tryMatchingDisplayName(obj)
       if U.Type(seatKey) == "string" and U.Type(disp) == "string" then
+        ---@cast disp string
         local roleKey, _ = parseRoleAndSuffix(disp)
-        local pack = computed.byColor[seatKey]
+        local pack = byColor[seatKey]
         if U.Type(pack) == "table" and U.Type(pack.slots) == "table" then
           for i = 1, #pack.slots do
             local slot = pack.slots[i]
