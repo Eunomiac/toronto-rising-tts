@@ -1537,10 +1537,10 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
             end
             local function applyRotationPos()
                 if modeDef.rotation ~= nil then
-                    light.setRotation(OP.mergeRotation(light, modeDef.rotation), false)
+                    light.setRotation(OP.mergeRotation(light, modeDef.rotation))
                 end
                 if modeDef.position ~= nil then
-                    light.setPosition(OP.mergePosition(light, modeDef.position), false)
+                    light.setPosition(OP.mergePosition(light, modeDef.position))
                 end
             end
             if modeDef.enabled == false and afterVals.intensity ~= nil then
@@ -1627,7 +1627,7 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
                         if transitionEpoch[lightRef] ~= myEpoch then
                             return
                         end
-                        light.setRotation(rot, false)
+                        light.setRotation(rot)
                     end, light.getRotation(), rotEnd, transitionTime, true))
                 end
 
@@ -1637,7 +1637,7 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
                         if transitionEpoch[lightRef] ~= myEpoch then
                             return
                         end
-                        light.setPosition(pos, false)
+                        light.setPosition(pos)
                     end, light.getPosition(), posEnd, transitionTime, false))
                 end
 

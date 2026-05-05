@@ -2219,7 +2219,7 @@ local function applyTableObjectState(obj, tableCfg, isActive)
   local targetPos = isActive and tableCfg.activePosition or tableCfg.inactivePosition
   if targetPos ~= nil then
     local p = Vector(targetPos)
-    obj.setPosition({ x = p.x, y = p.y, z = p.z }, false, false)
+    obj.setPosition({ x = p.x, y = p.y, z = p.z })
   end
   if obj.setColorTint ~= nil then
     if isActive then
@@ -2331,7 +2331,7 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
               obj.setInvisibleTo(allLayerColors)
               local p = obj.getPosition and obj.getPosition() or nil
               if p ~= nil and obj.setPosition ~= nil then
-                obj.setPosition({ x = p.x, y = hiddenSeatY, z = p.z }, false, false)
+                obj.setPosition({ x = p.x, y = hiddenSeatY, z = p.z })
               end
             end
           end
@@ -2676,7 +2676,7 @@ local function applyTableConfigObjectPositions(tableCfg)
       if obj ~= nil then
         if type(e.position) == "table" then
           local merged = OP.mergePosition(obj, e.position)
-          obj.setPosition({ x = merged.x, y = merged.y, z = merged.z }, false, false)
+          obj.setPosition({ x = merged.x, y = merged.y, z = merged.z })
         end
         if type(e.rotation) == "table" then
           local mergedR = OP.mergeRotation(obj, e.rotation)

@@ -2563,7 +2563,7 @@ end
 -- @param path table Array of PositionOrientationData from U.GetEasedPath
 -- @param setFunc function Function that receives each step and applies it
 -- @return number Duration of the path
--- @usage U.LerpPath(path, function(step) obj.setPosition(step.position, false) end)
+-- @usage U.LerpPath(path, function(step) obj.setPosition(step.position) end)
 function U.LerpPath(path, setFunc)
 	if path == nil or #path == 0 then return 0 end
 	if setFunc == nil then return 0 end
@@ -2771,13 +2771,13 @@ end
 -- @param rotation Vector Target rotation {x, y, z}
 -- @param duration number Animation duration in seconds (default: 0.5)
 -- @param easing string Optional easing mode: "speedUp" for acceleration, nil for linear
--- @param isColliding boolean Whether object should collide during movement (default: false)
+-- @param isColliding boolean Ignored: TTS Object.setRotation only accepts a vector (see setRotationSmooth for collide/fast).
 -- @return number The duration (for chaining)
 -- @usage U.setRotationSlow(card, Vector(0,0,180), 1.0) -- Rotate card over 1 second
 function U.setRotationSlow(obj, rotation, duration, easing, isColliding)
 	if duration == nil then duration = 0.5 end
 	if isColliding == nil then isColliding = false end
-	return U.Lerp(function(rot) obj.setRotation(rot, isColliding) end, obj.getRotation(), rotation, duration, true, easing)
+	return U.Lerp(function(rot) obj.setRotation(rot) end, obj.getRotation(), rotation, duration, true, easing)
 end
 
 --- Smoothly animates an object's position over time
@@ -2786,13 +2786,13 @@ end
 -- @param position Vector Target position {x, y, z}
 -- @param duration number Animation duration in seconds (default: 0.5)
 -- @param easing string Optional easing mode: "speedUp" for acceleration, nil for linear
--- @param isColliding boolean Whether object should collide during movement (default: false)
+-- @param isColliding boolean Ignored: TTS Object.setPosition only accepts a vector (see setPositionSmooth for collide/fast).
 -- @return number The duration (for chaining)
 -- @usage U.setPositionSlow(token, Vector(10, 2, 5), 2.0) -- Move token over 2 seconds
 function U.setPositionSlow(obj, position, duration, easing, isColliding)
 	if duration == nil then duration = 0.5 end
 	if isColliding == nil then isColliding = false end
-	return U.Lerp(function(pos) obj.setPosition(pos, isColliding) end, obj.getPosition(), position, duration, false, easing)
+	return U.Lerp(function(pos) obj.setPosition(pos) end, obj.getPosition(), position, duration, false, easing)
 end
 
 --- Smoothly animates an object's scale over time
@@ -3280,9 +3280,9 @@ end
 -- @param easeIntensity number Optional: Passed to `applyEase` (default 1.0); shapes power/back/bounce strength
 -- @return number The duration (for chaining)
 --
--- @usage U.Lerp(function(v) obj.setPosition(v, false) end, startPos, endPos, 1.0) -- Traditional
--- @usage U.Lerp(function(step) obj.setPosition(step.position, false) end, path) -- Pre-computed path
--- @usage U.Lerp(function(step) obj.setPosition(step.position, false) end, {position=Vector(0,0,0)}, {position=Vector(10,10,10)}, 2.0, false, "bounce") -- PositionOrientationData
+-- @usage U.Lerp(function(v) obj.setPosition(v) end, startPos, endPos, 1.0) -- Traditional
+-- @usage U.Lerp(function(step) obj.setPosition(step.position) end, path) -- Pre-computed path
+-- @usage U.Lerp(function(step) obj.setPosition(step.position) end, {position=Vector(0,0,0)}, {position=Vector(10,10,10)}, 2.0, false, "bounce") -- PositionOrientationData
 --
 -- NOTE: Starts a uniquely named Global coroutine (see LerpCoroutine_* in implementation).
 function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing, easeIntensity)

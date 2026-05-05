@@ -114,13 +114,9 @@ function Object.reload(...) end
 ---@param name string
 function Object.setName(name) end
 ---@param position Vector|table
----@param collapse_into_bags boolean|nil
----@param fast boolean|nil
-function Object.setPosition(position, collapse_into_bags, fast) end
+function Object.setPosition(position) end
 ---@param rotation Vector|table
----@param collapse_into_bags boolean|nil
----@param fast boolean|nil
-function Object.setRotation(rotation, collapse_into_bags, fast) end
+function Object.setRotation(rotation) end
 ---@param tag string
 ---@return boolean
 function Object.hasTag(tag) end
@@ -142,6 +138,8 @@ function Object.getObjects(...) end
 function Object.getData(...) end
 ---@param value string|number|boolean
 function Object.setValue(value) end
+---@return Color|table
+function Object.getColorTint(...) end
 ---@param tint Color|table
 function Object.setColorTint(tint) end
 ---@param options table|nil

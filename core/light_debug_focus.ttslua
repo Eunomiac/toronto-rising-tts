@@ -79,9 +79,9 @@ function LightDebugFocus.onGuidInput(player, value, id)
     end
 end
 
---- @param r number
---- @param g number
---- @param b number
+--- @param r number|nil
+--- @param g number|nil
+--- @param b number|nil
 --- @return number hDeg, number s01, number v01
 local function rgbToHsv(r, g, b)
     r = math.max(0, math.min(1, tonumber(r) or 0))
@@ -222,14 +222,14 @@ local function applyLive()
         return
     end
     local rx, ry, rz = cache.rotX, cache.rotY, cache.rotZ
-    obj.setRotation(Vector(rx, ry, rz), false)
+    obj.setRotation(Vector(rx, ry, rz))
     local fx, fy, fz = emissionDirectionFromLookConvention(obj, rx, ry, rz)
     local d = tonumber(cache.distance) or 0
     local ox, oy, oz = originPos.x, originPos.y, originPos.z
     local nx = ox + d * fx
     local ny = oy + d * fy
     local nz = oz + d * fz
-    obj.setPosition(Vector(nx, ny, nz), false)
+    obj.setPosition(Vector(nx, ny, nz))
     local col = hsvToRgb(cache.hue, cache.sat, cache.brightness)
     obj.setColorTint(col)
     L.SetLightMode(activeGuid, {
