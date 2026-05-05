@@ -1,6 +1,9 @@
 {
   "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
   "Lua.runtime.version": "Lua 5.1",
+  "Lua.workspace.library": [
+    "types"
+  ],
   "Lua.diagnostics.globals": [
     "UI",
     "Wait",

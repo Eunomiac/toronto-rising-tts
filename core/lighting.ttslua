@@ -524,7 +524,6 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            range = 54.882030,
             range = 48.645271,
             angle = 68.982948,
             intensity = 5.514803
@@ -543,7 +542,6 @@ L.LIGHTMODES = {
         },
         STANDARD = {
             enabled = true,
-            range = 54.882030,
             range = 48.645271,
             angle = 68.982948,
             intensity = 5.514803
@@ -822,6 +820,7 @@ local function getLightComponent(light, isSilent)
     end
 
     U.Val("getLightComponent", light, U.isGameObject(light), "Invalid Light Object")
+---@diagnostic disable-next-line: need-check-nil, undefined-field
     local children = light.getChildren()
     U.Val("getLightComponent", { light = light, children = children }, #children > 0, "Light has no Children")
     local grandchildren = children[1].getChildren()
@@ -884,7 +883,7 @@ local function isProbablyObjectGuid(s)
     if U.Type(s) ~= "string" then
         return false
     end
-    return string.match(s, "^%x%x%x%x%x%x$") ~= nil
+    return string.match(s or "", "^%x%x%x%x%x%x$") ~= nil
 end
 
 --- Resolve a raw object GUID to its registered LIGHTMODES key when possible.
@@ -913,7 +912,7 @@ local function sanitizeModeForPersistence(mt)
         return nil
     end
     local out = {}
-    for k, val in pairs(mt) do
+    for k, val in pairs(mt or {}) do
         if U.Type(k) ~= "string" then
         elseif U.isInstance(val, Vector) then
             out[k] = { x = val.x, y = val.y, z = val.z }
@@ -1440,7 +1439,7 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
             end, false)
         end
 
-        U.Val("SetLightMode", lightRef, U.isGameObject(light), "No light found: " .. U.ToString(lightRef))
+        light = U.ExpectGameObject("SetLightMode", light, "No light found: " .. U.ToString(lightRef))
 
         local modeData = mode
         if U.Type(modeData) == "function" then

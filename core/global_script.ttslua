@@ -54,9 +54,6 @@ DEBUG = require("core.debug")
 -- This allows external tools to send commands to the game via onExternalMessage
 require("lib.console")
 
--- Initialize game state table
-gameState = {}
-
 --[[
     Load UI XML
     The UI XML uses TTS Tools bundling:

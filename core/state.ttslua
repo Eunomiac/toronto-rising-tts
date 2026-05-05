@@ -10,7 +10,7 @@
     - State validation and sanitization
     - Phase management helpers
 
-    The global 'gameState' table is defined in global.ttslua and accessed here.
+    Module-private `gameState` is owned by this file and accessed through `S.*` APIs.
 
     Agent guidance: .dev/DEVELOPMENT_WORKFLOW.md; .dev/Game State Data.jsonc (save snapshot example);
     .dev/HUDs & Overlays/Player HUD Overview.md (playerData / gameState shape).
@@ -20,6 +20,7 @@ local S = {}
 local U = require("lib.util")
 local C = require("lib.constants")
 local PC_BOOT = require("lib.pc_bootstrap")
+local gameState = {}
 
 -- ============================================================================
 -- INTERNAL HELPER FUNCTIONS (Nested State Access)

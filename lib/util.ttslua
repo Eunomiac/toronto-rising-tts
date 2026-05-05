@@ -859,6 +859,20 @@ function U.Val(source, checkVal, testResult, errorMsg, params)
 	return false
 end
 
+--- Validates and returns a guaranteed TTS Object for LuaLS type narrowing.
+-- This wrapper is equivalent to U.Val(..., U.isGameObject(val), ...) but also
+-- gives the language server a concrete non-nil return type.
+-- @param source string Context/function name for error reporting
+-- @param val any Candidate object reference
+-- @param errorMsg string Optional custom error message
+-- @param params table Optional: {isSilent=false, isThrowing=true}
+-- @return Object
+function U.ExpectGameObject(source, val, errorMsg, params)
+	U.Val(source, val, U.isGameObject(val), errorMsg, params)
+	---@cast val Object
+	return val
+end
+
 --- Safe string conversion - returns "NIL" for nil values
 -- @param val any Value to convert
 -- @return string String representation, or "NIL" if nil
@@ -1391,6 +1405,9 @@ end
 -- @param ref Object|string Reference object or GUID string
 -- @param isSilent boolean If true, returns nil on failure instead of throwing
 -- @return Object|nil Resolved GameObject or nil
+-- @overload fun(ref:Object|string|table, isSilent:true): Object|nil
+-- @overload fun(ref:Object|string|table): Object
+-- @overload fun(ref:Object|string|table, isSilent:false): Object
 -- @usage local obj = U.getObject("abc123")
 -- @usage local obj = U.getObject(someObj)
 function U.getObject(ref, isSilent)
@@ -1409,6 +1426,8 @@ function U.getObject(ref, isSilent)
 	end
 	if not isSilent then
 		U.error("U.getObject", "Invalid object reference", ref)
+		---@cast ref Object
+		return ref
 	end
 	return nil
 end
