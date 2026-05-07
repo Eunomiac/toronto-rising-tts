@@ -659,9 +659,8 @@ C.RollTypesAutoBroadcast = {
 -- Allows physical dice time to come to rest without premature result calculation.
 C.DICE_SETTLE_DEBOUNCE_SECONDS = 3
 
---- After a die randomizes during a Willpower reroll wave, wait this long then lock that die
---- (so it cannot be bumped on the tray). Shorter than full table debounce.
-C.WP_REROLL_DIE_LOCK_DELAY_SECONDS = 0.55
+--- After a WP reroll randomize, maximum seconds to wait for the die to become resting before giving up on locking that die (avoids airborne freeze-on-timeout).
+C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS = 45
 
 -- Seconds the shared roll-result broadcast panel stays visible after a resolve.
 -- Must match the delayed cleanup in global_script (dice destroy + drawer close).

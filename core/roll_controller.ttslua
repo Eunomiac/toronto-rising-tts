@@ -75,8 +75,9 @@ RC.onRollCamera = nil
 -- captured token against this table — if mismatched, it was superseded and no-ops.
 local _debounceHandles = {}
 
--- Willpower reroll: per-die lock timers keyed by "color:guid:waveId"
-local _wpDieLockTimerIds = {}
+-- Willpower reroll: per-die lock wait tokens keyed by "color:guid:waveId".
+-- Value is an opaque nonce; newer randomizes supersede older Wait.condition completions.
+local _wpDieLockWaitTokens = {}
 
 -- Re-entrancy guard when auto-broadcast chains into confirmRoll from recalculate.
 local _autoConfirmDepth = 0
@@ -152,14 +153,12 @@ local function rollCamera(color, modeName)
     end
 end
 
-local function cancelWpDieLockTimersForColor(color)
+--- Invalidates in-flight WP per-die lock waits by clearing wait tokens for this color (no timers).
+local function cancelWpDieLockWaitsForColor(color)
     local prefix = color .. ":"
-    for k, timerId in pairs(_wpDieLockTimerIds) do
+    for k in pairs(_wpDieLockWaitTokens) do
         if type(k) == "string" and string.sub(k, 1, #prefix) == prefix then
-            if timerId ~= nil then
-                Wait.stop(timerId)
-            end
-            _wpDieLockTimerIds[k] = nil
+            _wpDieLockWaitTokens[k] = nil
         end
     end
 end
@@ -216,7 +215,7 @@ end
 -- @param color string
 -- @param active table
 local function applyWpRerollWaveStart(color, active)
-    cancelWpDieLockTimersForColor(color)
+    cancelWpDieLockWaitsForColor(color)
     active.willpower.rerollRandomizedGuids = {}
     local canHunger = RO.getForActive(active, RO.ROLL_CAN_REROLL_HUNGER)
     local normals, hungers = RC._getDiceObjectsForRoll(color, active.id)
@@ -871,6 +870,7 @@ function RC.recalculate(color)
 end
 
 --- Called from global_script.onObjectRandomize during a Willpower reroll wave.
+-- Schedules locking this die once physics settle (`U.runAfterObjectPhysicsSettled`; max `C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS`).
 -- @param color string
 -- @param obj Object
 function RC.onWpRerollDieRandomized(color, obj)
@@ -905,17 +905,51 @@ function RC.onWpRerollDieRandomized(color, obj)
     end
 
     local timerKey = color .. ":" .. guid .. ":" .. tostring(waveId)
-    if _wpDieLockTimerIds[timerKey] ~= nil then
-        Wait.stop(_wpDieLockTimerIds[timerKey])
-    end
-    _wpDieLockTimerIds[timerKey] = Wait.time(function()
-        _wpDieLockTimerIds[timerKey] = nil
-        local a2 = getActive(color)
-        if a2 == nil or a2.id ~= active.id then return end
-        if a2.willpower == nil or (a2.willpower.wpWaveId or 0) ~= waveId then return end
-        if a2.phase ~= C.RollPhase.ROLLING then return end
-        obj.setLock(true)
-    end, C.WP_REROLL_DIE_LOCK_DELAY_SECONDS)
+    local nonce    = string.format("%d_%d", math.floor(os.time()), math.random(999999))
+    _wpDieLockWaitTokens[timerKey] = nonce
+
+    local rollIdCaptured = active.id
+    local guidCaptured   = guid
+
+    U.runAfterObjectPhysicsSettled(
+        function()
+            return getObjectFromGUID(guidCaptured)
+        end,
+        C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS,
+        function(o)
+            if _wpDieLockWaitTokens[timerKey] ~= nonce then return end
+
+            if o == nil then
+                _wpDieLockWaitTokens[timerKey] = nil
+                return
+            end
+
+            local a2 = getActive(color)
+            if a2 == nil or a2.id ~= rollIdCaptured then
+                _wpDieLockWaitTokens[timerKey] = nil
+                return
+            end
+            if a2.willpower == nil or (a2.willpower.wpWaveId or 0) ~= waveId then
+                _wpDieLockWaitTokens[timerKey] = nil
+                return
+            end
+            if a2.phase ~= C.RollPhase.ROLLING then
+                _wpDieLockWaitTokens[timerKey] = nil
+                return
+            end
+
+            if o.loading_custom == true or o.resting ~= true then
+                _wpDieLockWaitTokens[timerKey] = nil
+                return
+            end
+
+            _wpDieLockWaitTokens[timerKey] = nil
+            o.setLock(true)
+        end,
+        function()
+            return _wpDieLockWaitTokens[timerKey] ~= nonce
+        end
+    )
 end
 
 --- Player spends 1 Superficial Willpower damage to reroll dice.
@@ -982,7 +1016,7 @@ end
 function RC.confirmRoll(color)
     U.Val("RC.confirmRoll()", {color = color}, U.Type(color) == "string", "color must be a string")
 
-    cancelWpDieLockTimersForColor(color)
+    cancelWpDieLockWaitsForColor(color)
 
     local active = getActive(color)
     if active == nil then
@@ -1092,7 +1126,7 @@ function RC.cancelRoll(color)
     U.Val("RC.cancelRoll()", {color = color}, U.Type(color) == "string", "color must be a string")
 
     cancelDebounce(color)
-    cancelWpDieLockTimersForColor(color)
+    cancelWpDieLockWaitsForColor(color)
 
     if getActive(color) == nil then return false end
 

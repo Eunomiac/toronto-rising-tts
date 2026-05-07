@@ -1062,6 +1062,33 @@ function U.waitRestingSequence(funcs, maxTime, isLoose)
 	callNext()
 end
 
+--- Runs `callback` once via `Wait.condition` after physics settles, when `getObject()` is nil (destroyed), or when `completeEarlyIf` returns true if provided.
+--
+-- Uses the same **`resting`** / **`loading_custom`** rules as **`U.waitRestingSequence`**. Prefer over coroutine-based **`U.waitUntil(..., obj)`** when running from **`onObjectRandomize`** or similar callbacks where **`CheckCoroutine`** can be unreliable (see **`core/lighting.ttslua`** spotlight handling).
+--
+-- **`callback(o)`** receives **`getObject()`** at completion (**`nil`** if missing). The completion handler may still run **on timeout** (third **`Wait.condition`** argument): call sites mutating physics-sensitive state **must verify** **`o ~= nil`**, not **`loading_custom`**, and **`resting == true`** before acting unless intentionally no-oping.
+--
+-- @param getObject fun():Object|nil Called each evaluation; typical pattern **`function() return getObjectFromGUID(guid) end`**.
+-- @param timeoutSeconds number|nil Passed to **`Wait.condition`** (**`nil`** uses engine defaults).
+-- @param callback fun(o: Object|nil)
+-- @param completeEarlyIf fun():boolean|nil If set and returns **`true`**, the wait succeeds immediately (caller still receives current **`getObject()`** — use **`completeEarlyIf`** for cancel tokens, not as a substitute for resting checks inside **`callback`**).
+function U.runAfterObjectPhysicsSettled(getObject, timeoutSeconds, callback, completeEarlyIf)
+	U.Assert("U.runAfterObjectPhysicsSettled", getObject, "function")
+	U.Assert("U.runAfterObjectPhysicsSettled", callback, "function")
+	if completeEarlyIf ~= nil then
+		U.Assert("U.runAfterObjectPhysicsSettled(completeEarlyIf)", completeEarlyIf, "function")
+	end
+	Wait.condition(function()
+		callback(getObject())
+	end, function()
+		if completeEarlyIf ~= nil and completeEarlyIf() then return true end
+		local o = getObject()
+		if o == nil then return true end
+		if o.loading_custom == true then return false end
+		return o.resting == true
+	end, timeoutSeconds)
+end
+
 --- Transforms a table by applying a function to each element
 -- Creates a new table where each value is the result of func(value, key).
 -- Preserves table structure (array vs dictionary).
