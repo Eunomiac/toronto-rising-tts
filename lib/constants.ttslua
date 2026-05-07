@@ -80,6 +80,7 @@ C.GetPlayerID = function(playerRef)
   end
 
   if type(playerRef) == "userdata" then
+    ---@cast playerRef Player
     if playerRef.steam_id == nil then
       error("Invalid player reference: not a Player (missing steam_id)")
     end
@@ -127,6 +128,63 @@ C.GetPlayerID = function(playerRef)
   error("Invalid player reference: " .. tostring(playerRef))
 end
 
+--- Same resolution rules as `C.GetPlayerID`, but returns nil instead of erroring (for soft lookups).
+--- @param playerRef Player|string|nil
+--- @return string|nil
+C.GetPlayerIDOrNil = function(playerRef)
+  if playerRef == nil then
+    return nil
+  end
+
+  if type(playerRef) == "userdata" then
+    ---@cast playerRef Player
+    if playerRef.steam_id == nil then
+      return nil
+    end
+    local sid = tostring(playerRef.steam_id)
+    if sid == C.StorytellerID then
+      return C.StorytellerID
+    end
+    return sid
+  end
+
+  if type(playerRef) ~= "string" then
+    return nil
+  end
+
+  if C.PlayerIDs[playerRef] then
+    return C.PlayerIDs[playerRef]
+  end
+  if C.PlayerData[playerRef] then
+    return playerRef
+  end
+
+  local lr = string.lower(playerRef)
+  if lr == "host" or lr == "storyteller" then
+    if Player ~= nil and type(Player.getAvailableColors) == "function" then
+      for _, color in ipairs(Player.getAvailableColors()) do
+        local p = Player[color]
+        if p ~= nil and p.steam_id ~= nil and tostring(p.steam_id) == C.StorytellerID then
+          return C.StorytellerID
+        end
+      end
+    end
+    return C.StorytellerID
+  end
+
+  for playerID, playerData in pairs(C.PlayerData) do
+    if type(playerData) == "table" then
+      local col, nm, ck = playerData.color, playerData.playerName, playerData.charKey
+      if (type(col) == "string" and string.lower(col) == lr)
+        or (type(nm) == "string" and string.lower(nm) == lr)
+        or (type(ck) == "string" and string.lower(ck) == lr) then
+        return playerID
+      end
+    end
+  end
+  return nil
+end
+
 --- Current TTS seat color for this player (Host may not be seated at Black).
 -- @param playerRef Player|string
 -- @return string|nil
@@ -137,6 +195,7 @@ C.GetPlayerColor = function(playerRef)
 
   local playerID = nil
   if type(playerRef) == "userdata" then
+    ---@cast playerRef Player
     if playerRef.steam_id ~= nil and tostring(playerRef.steam_id) == C.StorytellerID then
       playerID = C.StorytellerID
     elseif playerRef.steam_id ~= nil then
@@ -145,11 +204,10 @@ C.GetPlayerColor = function(playerRef)
       return playerRef.color
     end
   else
-    local ok, id = pcall(C.GetPlayerID, playerRef)
-    if not ok or type(id) ~= "string" then
+    playerID = C.GetPlayerIDOrNil(playerRef)
+    if type(playerID) ~= "string" then
       return nil
     end
-    playerID = id
   end
 
   if Player ~= nil and type(Player.getAvailableColors) == "function" then
@@ -161,8 +219,11 @@ C.GetPlayerColor = function(playerRef)
     end
   end
 
-  if type(playerRef) == "userdata" and playerRef.color ~= nil then
-    return playerRef.color
+  if type(playerRef) == "userdata" then
+    ---@cast playerRef Player
+    if playerRef.color ~= nil then
+      return playerRef.color
+    end
   end
   return nil
 end

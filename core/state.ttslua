@@ -661,7 +661,42 @@ end
 -- STATE ACCESS (Basic Get/Set)
 -- ============================================================================
 
-local isValueSafeForState
+--- Validates that a value is safe to store in game state (JSON-serializable)
+-- @param value any The value to validate
+-- @param keyPath string Optional. Path for error messages
+-- @return boolean True if value is safe to store
+local function isValueSafeForState(value, keyPath)
+    local valueType = type(value)
+
+    -- Allow primitive types
+    if valueType == "number" or valueType == "string" or valueType == "boolean" or valueType == "nil" then
+        return true
+    end
+
+    -- Check tables recursively
+    if valueType == "table" then
+        for k, v in pairs(value) do
+            local kType = type(k)
+            local vType = type(v)
+
+            -- Keys must be string or number
+            if kType ~= "string" and kType ~= "number" then
+                print("[WARNING] State: Unsafe key type '" .. kType .. "' at " .. (keyPath or "root"))
+                return false
+            end
+
+            -- Recursively check values
+            if not isValueSafeForState(v, (keyPath or "root") .. "." .. tostring(k)) then
+                return false
+            end
+        end
+        return true
+    end
+
+    -- Reject userdata, functions, threads
+    print("[WARNING] State: Attempted to store unsafe type '" .. valueType .. "' at " .. (keyPath or "root") .. " - value will be skipped")
+    return false
+end
 
 --- Builds a save-safe state by copying serializable fields.
 -- For `playerData`, persist all dynamic keys and exclude static keys from `C.PlayerData`.
@@ -875,47 +910,6 @@ end
 function S.setGameState(data)
     gameState = data
     S.validateState()
-end
-
--- ============================================================================
--- STATE VALIDATION
--- ============================================================================
-
---- Validates that a value is safe to store in game state (JSON-serializable)
--- @param value any The value to validate
--- @param keyPath string Optional. Path for error messages
--- @return boolean True if value is safe to store
-local function isValueSafeForState(value, keyPath)
-    local valueType = type(value)
-
-    -- Allow primitive types
-    if valueType == "number" or valueType == "string" or valueType == "boolean" or valueType == "nil" then
-        return true
-    end
-
-    -- Check tables recursively
-    if valueType == "table" then
-        for k, v in pairs(value) do
-            local kType = type(k)
-            local vType = type(v)
-
-            -- Keys must be string or number
-            if kType ~= "string" and kType ~= "number" then
-                print("[WARNING] State: Unsafe key type '" .. kType .. "' at " .. (keyPath or "root"))
-                return false
-            end
-
-            -- Recursively check values
-            if not isValueSafeForState(v, (keyPath or "root") .. "." .. tostring(k)) then
-                return false
-            end
-        end
-        return true
-    end
-
-    -- Reject userdata, functions, threads
-    print("[WARNING] State: Attempted to store unsafe type '" .. valueType .. "' at " .. (keyPath or "root") .. " - value will be skipped")
-    return false
 end
 
 -- ============================================================================

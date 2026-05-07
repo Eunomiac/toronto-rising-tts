@@ -30,9 +30,7 @@ function GlobalRollSeatCamera(params)
     if type(params) ~= "table" or type(params.color) ~= "string" then return end
     local mode = type(params.mode) == "string" and params.mode or "roll"
     if M == nil or type(M.setCamera) ~= "function" then return end
-    pcall(function()
-        M.setCamera(params.color, mode)
-    end)
+    M.setCamera(params.color, mode)
 end
 
 Z = require("core.zones")

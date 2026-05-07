@@ -1,0 +1,8 @@
+# pcall gate log — baseline from first run. One line per successful check:
+# <ISO8601>\t<count>
+# To allow a higher count, set the LAST line's count (or add a new last line) before building.
+2026-05-07T12:00:00.000Z	95
+2026-05-07T18:00:00.000Z	146
+2026-05-07T22:21:26.192Z	146
+2026-05-07T22:31:17.553Z	146
+2026-05-07T22:32:11.001Z	146

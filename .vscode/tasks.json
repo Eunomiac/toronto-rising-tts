@@ -3,22 +3,31 @@
   "tasks": [
     {
       "label": "Build: All non-Lua tooling (TTS MCP + generated Lua + UI XML templates)",
-      "dependsOn": [
-        "Build: TTS MCP (Node)",
-        "Generate PCS data (pcs_data.ttslua from JSON)",
-        "Generate CSheet defaults Lua (csheet_defaults_xml.ttslua)",
-        "Generate UI XML from templates",
-        "Generate NPC panel XML from npcs_data"
-      ],
-      "dependsOrder": "sequence",
+      "type": "shell",
+      "command": "npm run build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      },
       "group": {
         "kind": "build",
         "isDefault": true
       },
       "problemMatcher": [],
       "presentation": {
-        "reveal": "silent",
-        "panel": "shared"
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
       }
     },
     {

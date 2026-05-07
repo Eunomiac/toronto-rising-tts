@@ -157,15 +157,30 @@ local GameObject = {}
 ---@field a number|nil
 local Color = {}
 
----@class Player
----@field color string
----@field steam_name string
----@field steam_id string|number
-local Player = {}
----@param ... any
-function Player.setCameraMode(...) end
----@param ... any
-function Player.lookAt(...) end
+--- TTS per-seat player reference from `Player[color]`; runtime value is userdata.
+---@class Player: userdata
+---@field color string|nil
+---@field steam_name string|nil
+---@field steam_id string|number|nil
+
+--- Global TTS `Player` table (static API + per-color keys). Separate from ---@class Player handles.
+---@class PlayerTable
+---@field getAvailableColors fun(): string[]
+---@field setCameraMode fun(...: any)
+---@field lookAt fun(...: any)
+---@field [string] Player|nil
+
+---@type PlayerTable
+Player = {
+  ---@param ... any
+  setCameraMode = function(...) end,
+  ---@param ... any
+  lookAt = function(...) end,
+  ---@return string[]
+  getAvailableColors = function()
+    return {}
+  end,
+}
 
 ---@class HandsAPI
 ---@field playerToPositionMap table<string, any>

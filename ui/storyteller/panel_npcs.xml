@@ -8,10 +8,10 @@
         <HorizontalLayout id="npc_seatedRow_NPC1" class="hud_storyteller_button_row" active="false">
           <Text id="npc_seatedLabel_NPC1" class="hud_storyteller_label hud_storyteller_row_name npc_row_name seated_npc_slot_name">NPC1</Text>
           <Text id="npc_seatedName_NPC1" class="hud_storyteller_label hud_storyteller_row_name npc_row_name seated_npc_name">-</Text>
-
+        
           <Button id="npc_roll_NPC1" class="button_icon npc_button_icon" offsetXY="-250 0">R</Button>
           <Button id="npc_stats_NPC1" class="button_icon npc_button_icon" offsetXY="-220 0">i</Button>
-
+        
           <Button id="npc_seated_toArea_NPC1_centerForward" class="button_icon npc_button_icon" offsetXY="-180 0">▼</Button>
           <Button id="npc_seated_toArea_NPC1_nearLeft" class="button_icon npc_button_icon" offsetXY="-150 0">◀</Button>
           <Button id="npc_seated_toArea_NPC1_nearRight" class="button_icon npc_button_icon" offsetXY="-120 0">▶</Button>
@@ -22,10 +22,10 @@
         <HorizontalLayout id="npc_seatedRow_NPC2" class="hud_storyteller_button_row" active="false">
           <Text id="npc_seatedLabel_NPC2" class="hud_storyteller_label hud_storyteller_row_name npc_row_name seated_npc_slot_name">NPC2</Text>
           <Text id="npc_seatedName_NPC2" class="hud_storyteller_label hud_storyteller_row_name npc_row_name seated_npc_name">-</Text>
-
+        
           <Button id="npc_roll_NPC2" class="button_icon npc_button_icon" offsetXY="-250 0">R</Button>
           <Button id="npc_stats_NPC2" class="button_icon npc_button_icon" offsetXY="-220 0">i</Button>
-
+        
           <Button id="npc_seated_toArea_NPC2_centerForward" class="button_icon npc_button_icon" offsetXY="-180 0">▼</Button>
           <Button id="npc_seated_toArea_NPC2_nearLeft" class="button_icon npc_button_icon" offsetXY="-150 0">◀</Button>
           <Button id="npc_seated_toArea_NPC2_nearRight" class="button_icon npc_button_icon" offsetXY="-120 0">▶</Button>
@@ -36,10 +36,10 @@
         <HorizontalLayout id="npc_seatedRow_NPC3" class="hud_storyteller_button_row" active="false">
           <Text id="npc_seatedLabel_NPC3" class="hud_storyteller_label hud_storyteller_row_name npc_row_name seated_npc_slot_name">NPC3</Text>
           <Text id="npc_seatedName_NPC3" class="hud_storyteller_label hud_storyteller_row_name npc_row_name seated_npc_name">-</Text>
-
+        
           <Button id="npc_roll_NPC3" class="button_icon npc_button_icon" offsetXY="-250 0">R</Button>
           <Button id="npc_stats_NPC3" class="button_icon npc_button_icon" offsetXY="-220 0">i</Button>
-
+        
           <Button id="npc_seated_toArea_NPC3_centerForward" class="button_icon npc_button_icon" offsetXY="-180 0">▼</Button>
           <Button id="npc_seated_toArea_NPC3_nearLeft" class="button_icon npc_button_icon" offsetXY="-150 0">◀</Button>
           <Button id="npc_seated_toArea_NPC3_nearRight" class="button_icon npc_button_icon" offsetXY="-120 0">▶</Button>
@@ -50,10 +50,10 @@
         <HorizontalLayout id="npc_seatedRow_NPC4" class="hud_storyteller_button_row" active="false">
           <Text id="npc_seatedLabel_NPC4" class="hud_storyteller_label hud_storyteller_row_name npc_row_name seated_npc_slot_name">NPC4</Text>
           <Text id="npc_seatedName_NPC4" class="hud_storyteller_label hud_storyteller_row_name npc_row_name seated_npc_name">-</Text>
-
+        
           <Button id="npc_roll_NPC4" class="button_icon npc_button_icon" offsetXY="-250 0">R</Button>
           <Button id="npc_stats_NPC4" class="button_icon npc_button_icon" offsetXY="-220 0">i</Button>
-
+        
           <Button id="npc_seated_toArea_NPC4_centerForward" class="button_icon npc_button_icon" offsetXY="-180 0">▼</Button>
           <Button id="npc_seated_toArea_NPC4_nearLeft" class="button_icon npc_button_icon" offsetXY="-150 0">◀</Button>
           <Button id="npc_seated_toArea_NPC4_nearRight" class="button_icon npc_button_icon" offsetXY="-120 0">▶</Button>
@@ -5263,7 +5263,7 @@
           <Button id="npc_memberLoc_beesHive_bee_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_beesHive_bee_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_beesHive_bee_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_beesHive_bee" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_bee" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5278,7 +5278,7 @@
           <Button id="npc_memberLoc_beesHive_carol_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_beesHive_carol_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_beesHive_carol_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_beesHive_carol" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_carol" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5293,7 +5293,7 @@
           <Button id="npc_memberLoc_beesHive_ianRammond_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_beesHive_ianRammond_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_beesHive_ianRammond_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_beesHive_ianRammond" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_ianRammond" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5308,7 +5308,7 @@
           <Button id="npc_memberLoc_beesHive_terry_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_beesHive_terry_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_beesHive_terry_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_beesHive_terry" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_terry" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5323,7 +5323,7 @@
           <Button id="npc_memberLoc_beesHive_tommy_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_beesHive_tommy_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_beesHive_tommy_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_beesHive_tommy" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_tommy" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5338,7 +5338,7 @@
           <Button id="npc_memberLoc_beesHive_iQ_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_beesHive_iQ_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_beesHive_iQ_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_beesHive_iQ" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_iQ" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5362,7 +5362,7 @@
           <Button id="npc_memberLoc_colorBlitz_rubyRouge_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_colorBlitz_rubyRouge_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_colorBlitz_rubyRouge_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_colorBlitz_rubyRouge" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_rubyRouge" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5377,7 +5377,7 @@
           <Button id="npc_memberLoc_colorBlitz_evanescentBlue_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_colorBlitz_evanescentBlue_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_colorBlitz_evanescentBlue_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_colorBlitz_evanescentBlue" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_evanescentBlue" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5401,7 +5401,7 @@
           <Button id="npc_memberLoc_fiveKeys_myleneHamelin_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_fiveKeys_myleneHamelin_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_fiveKeys_myleneHamelin_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_fiveKeys_myleneHamelin" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_myleneHamelin" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5416,7 +5416,7 @@
           <Button id="npc_memberLoc_fiveKeys_zuriOluwusi_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_fiveKeys_zuriOluwusi_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_fiveKeys_zuriOluwusi_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_fiveKeys_zuriOluwusi" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_zuriOluwusi" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5431,7 +5431,7 @@
           <Button id="npc_memberLoc_fiveKeys_adrianVarga_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_fiveKeys_adrianVarga_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_fiveKeys_adrianVarga_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_fiveKeys_adrianVarga" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_adrianVarga" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5446,7 +5446,7 @@
           <Button id="npc_memberLoc_fiveKeys_stirlingSiskin_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_fiveKeys_stirlingSiskin_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_fiveKeys_stirlingSiskin_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_fiveKeys_stirlingSiskin" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_stirlingSiskin" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5461,7 +5461,7 @@
           <Button id="npc_memberLoc_fiveKeys_jesseSharp_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_fiveKeys_jesseSharp_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_fiveKeys_jesseSharp_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_fiveKeys_jesseSharp" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_jesseSharp" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5485,7 +5485,7 @@
           <Button id="npc_memberLoc_freeChantry_nasirKhan_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_freeChantry_nasirKhan_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_freeChantry_nasirKhan_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_freeChantry_nasirKhan" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_nasirKhan" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5500,7 +5500,7 @@
           <Button id="npc_memberLoc_freeChantry_gabrielCollard_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_freeChantry_gabrielCollard_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_freeChantry_gabrielCollard_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_freeChantry_gabrielCollard" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_gabrielCollard" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5515,7 +5515,7 @@
           <Button id="npc_memberLoc_freeChantry_anitaMorris_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_freeChantry_anitaMorris_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_freeChantry_anitaMorris_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_freeChantry_anitaMorris" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_anitaMorris" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5530,7 +5530,7 @@
           <Button id="npc_memberLoc_freeChantry_ulyssesCelaj_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_freeChantry_ulyssesCelaj_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_freeChantry_ulyssesCelaj_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_freeChantry_ulyssesCelaj" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_ulyssesCelaj" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5554,7 +5554,7 @@
           <Button id="npc_memberLoc_harpies_theAristocrat_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_harpies_theAristocrat_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_harpies_theAristocrat_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_harpies_theAristocrat" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_theAristocrat" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5569,7 +5569,7 @@
           <Button id="npc_memberLoc_harpies_xavierWhitchurch_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_harpies_xavierWhitchurch_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_harpies_xavierWhitchurch_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_harpies_xavierWhitchurch" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_xavierWhitchurch" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5584,7 +5584,7 @@
           <Button id="npc_memberLoc_harpies_christianne_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_harpies_christianne_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_harpies_christianne_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_harpies_christianne" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_christianne" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5608,7 +5608,7 @@
           <Button id="npc_memberLoc_ironGuard_laz_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_ironGuard_laz_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_ironGuard_laz_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_ironGuard_laz" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_laz" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5623,7 +5623,7 @@
           <Button id="npc_memberLoc_ironGuard_osborneLowell_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_ironGuard_osborneLowell_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_ironGuard_osborneLowell_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_ironGuard_osborneLowell" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_osborneLowell" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5638,7 +5638,7 @@
           <Button id="npc_memberLoc_ironGuard_emilyTheDuskRose_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_ironGuard_emilyTheDuskRose_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_ironGuard_emilyTheDuskRose_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_ironGuard_emilyTheDuskRose" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_emilyTheDuskRose" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5662,7 +5662,7 @@
           <Button id="npc_memberLoc_midnightMass_fatherDiaz_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_midnightMass_fatherDiaz_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_midnightMass_fatherDiaz_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_midnightMass_fatherDiaz" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_fatherDiaz" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5677,7 +5677,7 @@
           <Button id="npc_memberLoc_midnightMass_deaconReal_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_midnightMass_deaconReal_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_midnightMass_deaconReal_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_midnightMass_deaconReal" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_deaconReal" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5692,7 +5692,7 @@
           <Button id="npc_memberLoc_midnightMass_sisterCicione_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_midnightMass_sisterCicione_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_midnightMass_sisterCicione_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_midnightMass_sisterCicione" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_sisterCicione" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5716,7 +5716,7 @@
           <Button id="npc_memberLoc_moonClub_victorVex_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_moonClub_victorVex_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_moonClub_victorVex_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_moonClub_victorVex" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_victorVex" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5731,7 +5731,7 @@
           <Button id="npc_memberLoc_moonClub_georgieStJames_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_moonClub_georgieStJames_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_moonClub_georgieStJames_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_moonClub_georgieStJames" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_georgieStJames" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5746,7 +5746,7 @@
           <Button id="npc_memberLoc_moonClub_vanceVogel_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_moonClub_vanceVogel_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_moonClub_vanceVogel_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_moonClub_vanceVogel" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_vanceVogel" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5761,7 +5761,7 @@
           <Button id="npc_memberLoc_moonClub_scottTempo_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_moonClub_scottTempo_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_moonClub_scottTempo_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_moonClub_scottTempo" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_scottTempo" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5785,7 +5785,7 @@
           <Button id="npc_memberLoc_petitioners_eddie_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_petitioners_eddie_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_petitioners_eddie_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_petitioners_eddie" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_eddie" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5800,7 +5800,7 @@
           <Button id="npc_memberLoc_petitioners_alexisHoltt_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_petitioners_alexisHoltt_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_petitioners_alexisHoltt_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_petitioners_alexisHoltt" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_alexisHoltt" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5815,7 +5815,7 @@
           <Button id="npc_memberLoc_petitioners_lexieMadi_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_petitioners_lexieMadi_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_petitioners_lexieMadi_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_petitioners_lexieMadi" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_lexieMadi" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5830,7 +5830,7 @@
           <Button id="npc_memberLoc_petitioners_averyInnis_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_petitioners_averyInnis_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_petitioners_averyInnis_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_petitioners_averyInnis" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_averyInnis" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5845,7 +5845,7 @@
           <Button id="npc_memberLoc_petitioners_benedictKincaid_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_petitioners_benedictKincaid_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_petitioners_benedictKincaid_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_petitioners_benedictKincaid" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_benedictKincaid" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5869,7 +5869,7 @@
           <Button id="npc_memberLoc_princesCourt_lordLucien_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_princesCourt_lordLucien_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_princesCourt_lordLucien_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_princesCourt_lordLucien" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_lordLucien" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5884,7 +5884,7 @@
           <Button id="npc_memberLoc_princesCourt_rashid_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_princesCourt_rashid_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_princesCourt_rashid_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_princesCourt_rashid" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_rashid" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5899,7 +5899,7 @@
           <Button id="npc_memberLoc_princesCourt_aishe_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_princesCourt_aishe_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_princesCourt_aishe_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_princesCourt_aishe" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_aishe" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5914,7 +5914,7 @@
           <Button id="npc_memberLoc_princesCourt_fomorach_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_princesCourt_fomorach_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_princesCourt_fomorach_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_princesCourt_fomorach" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_fomorach" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5929,7 +5929,7 @@
           <Button id="npc_memberLoc_princesCourt_blackCaesar_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_princesCourt_blackCaesar_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_princesCourt_blackCaesar_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_princesCourt_blackCaesar" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_blackCaesar" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5944,7 +5944,7 @@
           <Button id="npc_memberLoc_princesCourt_myleneHamelin_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_princesCourt_myleneHamelin_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_princesCourt_myleneHamelin_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_princesCourt_myleneHamelin" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_myleneHamelin" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5959,7 +5959,7 @@
           <Button id="npc_memberLoc_princesCourt_evangelineDupont_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_princesCourt_evangelineDupont_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_princesCourt_evangelineDupont_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_princesCourt_evangelineDupont" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_evangelineDupont" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5974,7 +5974,7 @@
           <Button id="npc_memberLoc_princesCourt_nasirKhan_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_princesCourt_nasirKhan_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_princesCourt_nasirKhan_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_princesCourt_nasirKhan" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_nasirKhan" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -5989,7 +5989,7 @@
           <Button id="npc_memberLoc_princesCourt_jesseSharp_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_princesCourt_jesseSharp_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_princesCourt_jesseSharp_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_princesCourt_jesseSharp" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_jesseSharp" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6013,7 +6013,7 @@
           <Button id="npc_memberLoc_redFlag_rosie_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_redFlag_rosie_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_redFlag_rosie_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_redFlag_rosie" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_rosie" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6028,7 +6028,7 @@
           <Button id="npc_memberLoc_redFlag_damienAbanda_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_redFlag_damienAbanda_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_redFlag_damienAbanda_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_redFlag_damienAbanda" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_damienAbanda" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6043,7 +6043,7 @@
           <Button id="npc_memberLoc_redFlag_profEthanKeen_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_redFlag_profEthanKeen_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_redFlag_profEthanKeen_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_redFlag_profEthanKeen" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_profEthanKeen" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6058,7 +6058,7 @@
           <Button id="npc_memberLoc_redFlag_calvinWallace_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_redFlag_calvinWallace_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_redFlag_calvinWallace_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_redFlag_calvinWallace" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_calvinWallace" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6082,7 +6082,7 @@
           <Button id="npc_memberLoc_redeemers_ren_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_redeemers_ren_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_redeemers_ren_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_redeemers_ren" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_ren" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6097,7 +6097,7 @@
           <Button id="npc_memberLoc_redeemers_alexandra_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_redeemers_alexandra_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_redeemers_alexandra_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_redeemers_alexandra" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_alexandra" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6112,7 +6112,7 @@
           <Button id="npc_memberLoc_redeemers_kai_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_redeemers_kai_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_redeemers_kai_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_redeemers_kai" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_kai" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6127,7 +6127,7 @@
           <Button id="npc_memberLoc_redeemers_tyler_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_redeemers_tyler_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_redeemers_tyler_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_redeemers_tyler" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_tyler" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6151,7 +6151,7 @@
           <Button id="npc_memberLoc_regencyUniversityChantry_evangelineDupont_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_regencyUniversityChantry_evangelineDupont_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_regencyUniversityChantry_evangelineDupont_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_regencyUniversityChantry_evangelineDupont" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_evangelineDupont" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6166,7 +6166,7 @@
           <Button id="npc_memberLoc_regencyUniversityChantry_drIrenaVoss_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_regencyUniversityChantry_drIrenaVoss_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_regencyUniversityChantry_drIrenaVoss_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_regencyUniversityChantry_drIrenaVoss" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_drIrenaVoss" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6181,7 +6181,7 @@
           <Button id="npc_memberLoc_regencyUniversityChantry_raduIancu_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_regencyUniversityChantry_raduIancu_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_regencyUniversityChantry_raduIancu_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_regencyUniversityChantry_raduIancu" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_raduIancu" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6196,7 +6196,7 @@
           <Button id="npc_memberLoc_regencyUniversityChantry_damienKline_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_regencyUniversityChantry_damienKline_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_regencyUniversityChantry_damienKline_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_regencyUniversityChantry_damienKline" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_damienKline" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6211,7 +6211,7 @@
           <Button id="npc_memberLoc_regencyUniversityChantry_lucasMerrow_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_regencyUniversityChantry_lucasMerrow_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_regencyUniversityChantry_lucasMerrow_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_regencyUniversityChantry_lucasMerrow" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_lucasMerrow" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6235,7 +6235,7 @@
           <Button id="npc_memberLoc_scarlettAndTheBoys_oliverGagnon_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_scarlettAndTheBoys_oliverGagnon_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_scarlettAndTheBoys_oliverGagnon_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_scarlettAndTheBoys_oliverGagnon" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_oliverGagnon" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6250,7 +6250,7 @@
           <Button id="npc_memberLoc_scarlettAndTheBoys_scarlett_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_scarlettAndTheBoys_scarlett_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_scarlettAndTheBoys_scarlett_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_scarlettAndTheBoys_scarlett" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_scarlett" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6265,7 +6265,7 @@
           <Button id="npc_memberLoc_scarlettAndTheBoys_razorWhit_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_scarlettAndTheBoys_razorWhit_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_scarlettAndTheBoys_razorWhit_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_scarlettAndTheBoys_razorWhit" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_razorWhit" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6280,7 +6280,7 @@
           <Button id="npc_memberLoc_scarlettAndTheBoys_merrickSingh_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_scarlettAndTheBoys_merrickSingh_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_scarlettAndTheBoys_merrickSingh_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_scarlettAndTheBoys_merrickSingh" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_merrickSingh" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6304,7 +6304,7 @@
           <Button id="npc_memberLoc_theLine_sageSam_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_theLine_sageSam_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_theLine_sageSam_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_theLine_sageSam" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_sageSam" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6319,7 +6319,7 @@
           <Button id="npc_memberLoc_theLine_masonSchmidt_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_theLine_masonSchmidt_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_theLine_masonSchmidt_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_theLine_masonSchmidt" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_masonSchmidt" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6334,7 +6334,7 @@
           <Button id="npc_memberLoc_theLine_jackbeNimble_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_theLine_jackbeNimble_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_theLine_jackbeNimble_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_theLine_jackbeNimble" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_jackbeNimble" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6349,7 +6349,7 @@
           <Button id="npc_memberLoc_theLine_yusefShamsin_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_theLine_yusefShamsin_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_theLine_yusefShamsin_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_theLine_yusefShamsin" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_yusefShamsin" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6364,7 +6364,7 @@
           <Button id="npc_memberLoc_theLine_suyin_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_theLine_suyin_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_theLine_suyin_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_theLine_suyin" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_suyin" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6388,7 +6388,7 @@
           <Button id="npc_memberLoc_wychwoodHecata_bacchusGiovanni_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_wychwoodHecata_bacchusGiovanni_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_wychwoodHecata_bacchusGiovanni_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_wychwoodHecata_bacchusGiovanni" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_bacchusGiovanni" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6403,7 +6403,7 @@
           <Button id="npc_memberLoc_wychwoodHecata_lorenzaGiovanni_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_wychwoodHecata_lorenzaGiovanni_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_wychwoodHecata_lorenzaGiovanni_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_wychwoodHecata_lorenzaGiovanni" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_lorenzaGiovanni" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6418,7 +6418,7 @@
           <Button id="npc_memberLoc_wychwoodHecata_niccoloGiovanni_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_wychwoodHecata_niccoloGiovanni_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_wychwoodHecata_niccoloGiovanni_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_wychwoodHecata_niccoloGiovanni" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_niccoloGiovanni" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
@@ -6433,7 +6433,7 @@
           <Button id="npc_memberLoc_wychwoodHecata_bleakBokor_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
           <Button id="npc_memberLoc_wychwoodHecata_bleakBokor_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
           <Button id="npc_memberLoc_wychwoodHecata_bleakBokor_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
-
+        
           <Button id="npc_memberLock_wychwoodHecata_bleakBokor" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_bleakBokor" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>

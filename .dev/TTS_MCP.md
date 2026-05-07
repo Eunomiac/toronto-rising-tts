@@ -7,7 +7,7 @@ This repo includes a small **Model Context Protocol** server that runs **Tableto
 1. **Tabletop Simulator** is running with a game loaded.
 2. **External Editor** is enabled in TTS (**Options → General → External Editor**). See [TTS_BUNDLING_SETUP.md](TTS_BUNDLING_SETUP.md) (Issue 0).
 3. **Node.js 18+** and project dependencies: `npm install` at the repo root.
-4. **Build** the server: `npm run tts-mcp:build`. Outputs go to `.tools/tts-bridge/dist/` and `.tools/tts-mcp/dist/` (ignored by git — rebuild after pull).
+4. **Build** the server: `npm run tts-mcp:build` (runs `tts-bridge:build` then `tts-mcp:compile`; the second step is a separate npm script so the log shows both). **Default Cursor/VS Code build (Ctrl+Shift+B):** `npm run build` — runs **`check:pcall-gate`** first, then MCP compile, then PCS/CSheet/UI/NPC generators (same as `npm run build:all-tooling`). Outputs go to `.tools/tts-bridge/dist/` and `.tools/tts-mcp/dist/` (ignored by git — rebuild after pull).
 
 ## Port conflict (39998)
 
@@ -143,7 +143,10 @@ return testEasingForMcp()
 |---------|-------------|
 | `npm run tts-bridge:build` | Compile only `tts-bridge`. |
 | `npm run tts-bridge:test` | Vitest suite for the bridge (mock TTS, no game). |
-| `npm run tts-mcp:build` | Build bridge + MCP. |
+| `npm run tts-mcp:compile` | Compile only `tts-mcp` (assumes `tts-bridge` already built). |
+| `npm run tts-mcp:build` | Build bridge + MCP (`tts-bridge:build` then `tts-mcp:compile`). |
+| `npm run build` | **Default full tooling build** (same as `build:all-tooling`): **`check:pcall-gate`**, then MCP compile, then generated Lua + UI XML. Bound to **Ctrl+Shift+B** via `.vscode/tasks.json`. |
+| `npm run build:all-tooling` | Same pipeline as `npm run build` (explicit name). |
 | `npm run tts-mcp:start` | Run the MCP server on stdio (normally Cursor spawns this; useful for debugging). |
 | `npm run tts-bridge:listen` | Bridge only: listen on **39998** and persist Lua **`sendExternalMessage`** `type: "write"` to **`.dev/.debug/`** (no MCP). |
 | `npm run tts-bridge:run-easing-mcp-test` | Build bridge, then run **`testEasingForMcp()`** against live TTS (long timeouts; same style as MCP execute). |
