@@ -42,7 +42,7 @@ Older targeted cleanups still worth citing:
 
 **Gate scope:** the numeric baseline in `.dev/build-logs/pcall-gate.txt` matches **only** `*.ttslua` under `core/`, `global/`, `lib/`, `objects/`, `ui/`. Files elsewhere (e.g. `.dev/test_rotatetofrom.ttslua`) are not counted by the gate but should still follow this policy if they ship with the game.
 
-**Current inventory** (25 matches under the gate trees; lines drift — re-run ripgrep `\bpcall\s*\(` after edits):
+**Current inventory** (26 matches under the gate trees; lines drift — re-run ripgrep `\bpcall\s*\(` after edits):
 
 | Count | File | Lines (approx.) | Role |
 |------:|------|-----------------|------|
@@ -50,8 +50,9 @@ Older targeted cleanups still worth citing:
 | 4 | `core/debug.ttslua` | 3474, 4498, 4704, 4711 | Isolated test runner; optional `require` of generated custom-UI manifest (primary + slash fallback) |
 | 4 | `core/npcs.ttslua` | 90, 95, 864, 1635 | JSON encode/decode clone for spawn snapshots; deferred `applyCurrentLightMode` with guaranteed override cleanup; optional `require("core.debug")` |
 | 2 | `lib/pc_bootstrap.ttslua` | 16, 21 | JSON round-trip deep clone with `U.clone` fallback |
-| 1 | `lib/object_positions.ttslua` | 72 | `Global.call("GlobalGetSeatLayoutCenterPoint")` from object-script VMs |
+| 1 | `lib/object_positions.ttslua` | 72 | `Global.call("GlobalGetSeatLayoutCenterPoint")` from object-script VMs (bridge not ready during startup → `pcall`; same rationale as Tarot UI) |
 | 1 | `lib/pcs_data.ttslua` | 3674 | Guarded JSON paths when encoding PCS-derived tables |
+| 1 | `ui/ui_tarot_button.ttslua` | ~37 | Same `Global.call("GlobalGetSeatLayoutCenterPoint")` + `pcall` pattern as `lib/object_positions.ttslua` so `runWhenSeatLayoutReady` retries are not aborted by transient bridge errors |
 
 Each site above has a `-- pcall: …` comment **immediately** above the `pcall(` (same rule as “Suggested annotation shape”).
 
