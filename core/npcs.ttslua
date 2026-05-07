@@ -78,6 +78,10 @@ local NPC_LIGHT_SPAWN_OFFSET = { x = 3, y = 8, z = 3 }
 --- After `npcSpotlightReadyForApply`, extra wall-clock delay before `SetLightMode` so the spotlight beam reliably applies on spawn.
 local NPC_LIGHT_POST_READY_DELAY_SEC = 1.5
 
+--- Extra yaw (degrees) for figurines in NPC **area** slots only. `Figurine_Custom` front/back UVs face opposite the legacy single-image cutouts for the same `atan2` pivot math toward table center.
+--- Table **seats** use `SEAT_FIGURE_*` objects (`applySeatFigurineVisuals`); do not add this offset there.
+local AREA_NPC_FIGURINE_YAW_OFFSET_DEG = 180
+
 --- Deep-clone TTS object state for `spawnObjectData` and clear `GUID` so the engine assigns a new id (avoids mutating live template data).
 --- @param data table|nil
 --- @return table|nil
@@ -586,7 +590,7 @@ function NPCS.applyFigurinePlacement(figurine, areaKey, slotIndex)
     local rad = math.rad(area.rotation)
     local pivotX = math.sin(rad) * area.distance
     local pivotZ = math.cos(rad) * area.distance
-    local yawDeg = math.atan2(-pivotX, -pivotZ) * (180 / math.pi)
+    local yawDeg = math.atan2(-pivotX, -pivotZ) * (180 / math.pi) + AREA_NPC_FIGURINE_YAW_OFFSET_DEG
     figurine.setRotation(Vector(0, yawDeg, 0))
 end
 
@@ -766,7 +770,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
         local rad = math.rad(areaForSpawn.rotation)
         local pivotX = math.sin(rad) * areaForSpawn.distance
         local pivotZ = math.cos(rad) * areaForSpawn.distance
-        yawDeg = math.atan2(-pivotX, -pivotZ) * (180 / math.pi)
+        yawDeg = math.atan2(-pivotX, -pivotZ) * (180 / math.pi) + AREA_NPC_FIGURINE_YAW_OFFSET_DEG
     end
 
     --- Save JSON: CustomImage.ImageScalar (float). Not Transform scale. Lua setCustomObject uses snake_case `image_scalar`.

@@ -80,7 +80,7 @@ World slot center:
 * `areaCenter = (sin(rot)*distance, 0, cos(rot)*distance)` using the same convention as your scripting (match `core/npcs.ttslua`).
 * Rotate each `{x,z}` by `area.rotation`, add to `areaCenter`.
 * Figurine `posY` = `groundLevel` (bottom-anchored custom figurine; no bounds half-height offset).
-* Figurine `rotY` = yaw so the figure faces `(0, posY, 0)`.
+* Figurine `rotY` = yaw toward table center **plus** `AREA_NPC_FIGURINE_YAW_OFFSET_DEG` (180°) in `core/npcs.ttslua` so `Figurine_Custom` front/back images match the intended facing; this applies only to **area** spawns / `applyFigurinePlacement`, not to table `SEAT_FIGURE_*` seats.
 
 ### Area eligibility (spawn menus)
 
