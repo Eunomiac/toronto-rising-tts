@@ -208,18 +208,13 @@ local function objectHasTag(obj, tag)
         return false
     end
     if obj.hasTag ~= nil then
-        local okHasTag, hasTag = pcall(function()
-            return obj.hasTag(tag)
-        end)
-        if okHasTag and hasTag == true then
+        if obj.hasTag(tag) == true then
             return true
         end
     end
     if obj.getTags ~= nil then
-        local okTags, tags = pcall(function()
-            return obj.getTags()
-        end)
-        if okTags and type(tags) == "table" then
+        local tags = obj.getTags()
+        if type(tags) == "table" then
             for _, existingTag in ipairs(tags) do
                 if existingTag == tag then
                     return true
@@ -249,10 +244,8 @@ local function resolveEmitter(channelKey)
 
     local cached = cachedEmitters[channelKey]
     if cached ~= nil then
-        local okCached = pcall(function()
-            return cached.getGUID()
-        end)
-        if okCached then
+        local g = cached.getGUID and cached.getGUID() or nil
+        if type(g) == "string" and g ~= "" then
             return cached, nil
         end
         cachedEmitters[channelKey] = nil
@@ -268,10 +261,8 @@ local function resolveEmitter(channelKey)
         return nil, "TTS getObjectFromGUID is unavailable for channel " .. tostring(channelKey)
     end
 
-    local okResolve, obj = pcall(function()
-        return getObjectFromGUIDFn(guid)
-    end)
-    if okResolve and obj ~= nil then
+    local obj = getObjectFromGUIDFn(guid)
+    if obj ~= nil then
         cachedEmitters[channelKey] = obj
         return obj, nil
     end
@@ -290,10 +281,8 @@ local function queryEffects(obj, effectList)
         return indexByName
     end
 
-    local okEffects, effects = pcall(function()
-        return getter()
-    end)
-    if not okEffects or type(effects) ~= "table" then
+    local effects = getter()
+    if type(effects) ~= "table" then
         return indexByName
     end
 
@@ -313,20 +302,16 @@ end
 local function findTaggedObject(tag)
     local getObjectsWithAllTagsFn = _G and rawget(_G, "getObjectsWithAllTags") or nil
     if getObjectsWithAllTagsFn ~= nil and type(tag) == "string" then
-        local okTagged, taggedObjects = pcall(function()
-            return getObjectsWithAllTagsFn({ tag })
-        end)
-        if okTagged and type(taggedObjects) == "table" then
+        local taggedObjects = getObjectsWithAllTagsFn({ tag })
+        if type(taggedObjects) == "table" then
             return taggedObjects[1]
         end
     end
 
     local getObjectsFn = _G and rawget(_G, "getObjects") or nil
     if getObjectsFn ~= nil and type(tag) == "string" then
-        local okObjects, objects = pcall(function()
-            return getObjectsFn()
-        end)
-        if okObjects and type(objects) == "table" then
+        local objects = getObjectsFn()
+        if type(objects) == "table" then
             for _, obj in ipairs(objects) do
                 if objectHasTag(obj, tag) then
                     return obj
@@ -346,26 +331,20 @@ local function getAudioSources(obj)
         return {}
     end
     if obj.getComponentsInChildren ~= nil then
-        local okComponents, components = pcall(function()
-            return obj.getComponentsInChildren("AudioSource")
-        end)
-        if okComponents and type(components) == "table" then
+        local components = obj.getComponentsInChildren("AudioSource")
+        if type(components) == "table" then
             return components
         end
     end
     if obj.getComponentInChildren ~= nil then
-        local okChild, component = pcall(function()
-            return obj.getComponentInChildren("AudioSource")
-        end)
-        if okChild and component ~= nil then
+        local component = obj.getComponentInChildren("AudioSource")
+        if component ~= nil then
             return { component }
         end
     end
     if obj.getComponent ~= nil then
-        local okComponent, component = pcall(function()
-            return obj.getComponent("AudioSource")
-        end)
-        if okComponent and component ~= nil then
+        local component = obj.getComponent("AudioSource")
+        if component ~= nil then
             return { component }
         end
     end
@@ -379,19 +358,13 @@ local function setEmitterVolume(obj, volume)
 
     for _, source in ipairs(sources) do
         if source ~= nil and source.set ~= nil then
-            local okVolume, didSetVolume = pcall(function()
-                return source.set("volume", targetVolume)
-            end)
-            if okVolume and didSetVolume ~= false then
+            local didSetVolume = source.set("volume", targetVolume)
+            if didSetVolume ~= false then
                 updated = updated + 1
             end
-            pcall(function()
-                source.set("mute", false)
-            end)
+            source.set("mute", false)
             -- This is the runtime safeguard for non-positional audio when TTS exposes it.
-            pcall(function()
-                source.set("spatialBlend", 0)
-            end)
+            source.set("spatialBlend", 0)
         end
     end
     return updated > 0, updated
@@ -502,13 +475,7 @@ local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolu
 
     local targetVolume = clamp01(volume or track.volume or channelDef.defaultVolume or 0)
     local didSetVolume = fadeEmitterVolume(obj, currentVolume, targetVolume, fadeSeconds or 0)
-    local okPlay, playError = pcall(function()
-        obj.AssetBundle[apiName](index)
-    end)
-    if not okPlay then
-        updateChannelState(channelKey, { available = true, lastError = tostring(playError) })
-        return false, "Failed to play " .. effectList .. " effect: " .. tostring(playError)
-    end
+    obj.AssetBundle[apiName](index)
 
     updateChannelState(channelKey, {
         effect = track.effect,
@@ -1541,17 +1508,10 @@ function Soundscape.inspectEmitters()
         }
 
         if obj ~= nil then
-            local okGuid, actualGuid = pcall(function()
-                return obj.getGUID()
-            end)
-            if okGuid then
-                row.guid = actualGuid
-            end
+            row.guid = obj.getGUID and obj.getGUID() or nil
             if taggedObj ~= nil and taggedObj.getGUID ~= nil and row.guid ~= nil then
-                local okTaggedGuid, taggedGuid = pcall(function()
-                    return taggedObj.getGUID()
-                end)
-                row.tagMatchesGuid = okTaggedGuid and taggedGuid == row.guid
+                local taggedGuid = taggedObj.getGUID()
+                row.tagMatchesGuid = taggedGuid == row.guid
             end
             row.loopingEffects = sortedEffectRows(queryEffects(obj, Catalog.EFFECT_LIST.LOOPING))
             row.triggerEffects = sortedEffectRows(queryEffects(obj, Catalog.EFFECT_LIST.TRIGGER))

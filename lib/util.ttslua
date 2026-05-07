@@ -1491,12 +1491,15 @@ function U.isIn(elem, tb)
 		end
 	end
 
-	-- check key
-	local function hasProperty(object, prop)
-			local t = object[prop]
-			if t == nil then error("Bad Property") end
+	if U.Type(tb) == "table" and tb[elem] ~= nil then
+		return true
 	end
-	if pcall(function() hasProperty(tb, elem) end) then
+
+	-- pcall: TTS userdata __index can throw for invalid property names; isIn must return false instead of aborting callers iterating mixed handles.
+	local ok, v = pcall(function()
+		return tb[elem]
+	end)
+	if ok and v ~= nil then
 		return true
 	end
 
@@ -2248,9 +2251,8 @@ function U.lookAtRotation(from, to)
 		fromY = from.y or from[2] or 0
 		fromZ = from.z or from[3] or 0
 	elseif U.isGameObject(from) then
-		-- Try to get position if it's an object
-		local success, pos = pcall(function() return from.getPosition() end)
-		if success and pos then
+		local pos = from.getPosition()
+		if pos then
 			fromX = pos.x or 0
 			fromY = pos.y or 0
 			fromZ = pos.z or 0
@@ -2268,9 +2270,8 @@ function U.lookAtRotation(from, to)
 		toY = to.y or to[2] or 0
 		toZ = to.z or to[3] or 0
 	elseif U.isGameObject(to) then
-		-- Try to get position if it's an object
-		local success, pos = pcall(function() return to.getPosition() end)
-		if success and pos then
+		local pos = to.getPosition()
+		if pos then
 			toX = pos.x or 0
 			toY = pos.y or 0
 			toZ = pos.z or 0
@@ -2589,6 +2590,7 @@ function U.LerpPath(path, setFunc)
 	end
 
 	-- Try to start coroutine - use self (Global) if available, otherwise try _G
+	-- pcall: startLuaCoroutine throws when the host object cannot run coroutines; we remap via U.error and clear the temp global coroutine entry. Propagating would leak _G[coroutineName] and bypass the single consolidated error path.
 	local success, err = pcall(function()
 		if self then
 			startLuaCoroutine(self, coroutineName)
@@ -2720,8 +2722,8 @@ function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinate
 				end
 
 				if targetObj ~= nil then
-					local success, targetPos = pcall(function() return targetObj.getPosition() end)
-					if success and targetPos then
+					local targetPos = targetObj.getPosition()
+					if targetPos then
 						step.orientation = calculateLookAtRotation(currentPos, targetPos)
 					else
 						step.orientation = Vector(0, 0, 0)
@@ -2750,6 +2752,7 @@ function U.LerpDeferred(start, endVal, duration, ease, easeIntensity, coordinate
 	end
 
 	-- Try to start coroutine - use self (Global) if available, otherwise try _G
+	-- pcall: startLuaCoroutine throws when the host object cannot run coroutines; we remap via U.error and clear the temp global coroutine entry. Propagating would leak _G[coroutineName] and bypass the single consolidated error path.
 	local success, err = pcall(function()
 		if self then
 			startLuaCoroutine(self, coroutineName)
@@ -2884,6 +2887,7 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency, abor
 				if checkFuncs and #checkFuncs > 0 then
 					checkFuncs = U.filter(checkFuncs, function(cf)
 						if cf and U.Type(cf) == "function" then
+							-- pcall: AND-wait tables treat one bad sub-check as non-fatal prune; callers rely on timeout/abort paths instead of a full coroutine abort. Propagating would stall unrelated waits that compose heterogeneous conditions.
 							local success, result = pcall(function() return cf() end)
 							if success then
 								return result == false
@@ -2919,7 +2923,7 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency, abor
 		end
 
 		while true do
-			-- Safely call pCheckFunc
+			-- pcall: Condition callbacks are author-supplied and may throw as objects spawn; the coroutine logs once and exits instead of tearing down Global. Propagating would hard-stop unrelated systems sharing the same script VM.
 			local success, checkResult = pcall(function() return pCheckFunc() end)
 			if not success then
 				-- Log error but don't crash - just break the loop
@@ -2932,6 +2936,7 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency, abor
 			end
 
 			if abortCheck ~= nil and U.Type(abortCheck) == "function" then
+				-- pcall: External cancel hooks should never take down the waiter if a listener raises; sequence timeout still applies. Propagating would convert a bad cancel predicate into a full waiter crash.
 				local okAbort, abortResult = pcall(function()
 					return abortCheck()
 				end)
@@ -2967,6 +2972,7 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency, abor
 		end
 
 		if afterFunc ~= nil and U.Type(afterFunc) == "function" then
+			-- pcall: afterFunc runs after long polling; a throw should be recorded without unwinding the entire coroutine host. Propagating would paste surprising errors above TTS’s own coroutine harness noise.
 			local success, result = pcall(function() return afterFunc() end)
 			if success then
 				afterReturnVal = result
@@ -2980,6 +2986,7 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency, abor
 	end
 
 	--- Spawn/callback contexts often have no `self`. TTS expects the Global script object for coroutines, not `_G`.
+	-- pcall: startLuaCoroutine rejects invalid hosts; we log and continue so callers still get the isDone predicate. Propagating would make waitUntil unusable from object contexts even when the rest of the flow is recoverable.
 	local _okCo, _coErr = pcall(function()
 		local coTarget = self
 		if coTarget == nil then
@@ -3034,6 +3041,7 @@ function U.RunSequenceWithOptions(funcs, opts)
 		end
 		completionFired = true
 		if onComplete ~= nil and U.Type(onComplete) == "function" then
+			-- pcall: onComplete is observer code; failures must not mask sequence outcome already committed. Propagating would turn a logging bug into a false “sequence never finished” perception for MCP callers.
 			local cok, cerr = pcall(function()
 				onComplete(ok, detail)
 			end)
@@ -3063,12 +3071,15 @@ function U.RunSequenceWithOptions(funcs, opts)
 			name = stepNames[index]
 		end
 		if onStepStart ~= nil and U.Type(onStepStart) == "function" then
+			-- pcall: Step telemetry hooks are best-effort; a bad hook should not abort the sequence scheduler. Propagating would strand in-flight coroutine waits mid-sequence.
 			pcall(function()
 				onStepStart(index, name)
 			end)
 		end
+		-- pcall: Sequence steps are arbitrary game code; failures must convert to structured logs + onComplete(false) instead of unwinding TTS. Propagating would bypass RunSequenceWithOptions’ completion accounting.
 		local ok, result = pcall(fn)
 		if onStepEnd ~= nil and U.Type(onStepEnd) == "function" then
+			-- pcall: Step end hooks run after potentially throwing steps; isolating prevents double faults while still recording ok/err. Propagating would lose the primary step error detail in the logs.
 			pcall(function()
 				onStepEnd(index, name, ok, ok and nil or result)
 			end)
@@ -3193,13 +3204,7 @@ function U.emitForAgent(kind, data)
 		t = os.time(),
 		data = payload,
 	}
-	local okEnc, encoded = pcall(function()
-		return JSON.encode(envelope)
-	end)
-	if not okEnc then
-		print(U.AGENT_EMIT_LINE_PREFIX .. " {\"v\":1,\"kind\":\"error\",\"seq\":" .. tostring(agentEmitSeq) .. ",\"data\":{\"err\":\"JSON.encode\"}}")
-		return
-	end
+	local encoded = JSON.encode(envelope)
 	print(U.AGENT_EMIT_LINE_PREFIX .. " " .. encoded)
 end
 
@@ -3390,6 +3395,7 @@ function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing,
 		return 1
 	end
 
+	-- pcall: Global coroutine startup mirrors LerpPath/LerpDeferred; we keep the cleanup + U.error pairing. Propagating would orphan the registered lerp function name on Global.
 	local ok, err = pcall(function()
 		startLuaCoroutine(Global, coroutineName)
 	end)
@@ -3500,10 +3506,8 @@ function U.getDebugObjectsByTestAndRole(testId, role)
 	end
 	for _, obj in ipairs(tagged) do
 		if obj ~= nil and obj.getGMNotes ~= nil then
-			local okN, notes = pcall(function()
-				return obj.getGMNotes()
-			end)
-			if okN and U.Type(notes) == "string" then
+			local notes = obj.getGMNotes()
+			if U.Type(notes) == "string" then
 				local parsed = U.debugParseGmNotesHeader(notes)
 				if parsed ~= nil and parsed.test == testId and parsed.role == role then
 					table.insert(out, obj)
@@ -3573,10 +3577,8 @@ function U.setDebugObjectGmNotesAndTag(obj, testId, role, extraNotes)
 	if U.Type(extraNotes) == "string" and extraNotes ~= "" then
 		body = "\n" .. extraNotes
 	end
-	local okN = pcall(function()
-		obj.setGMNotes(header .. body)
-	end)
-	local okT = pcall(function()
+	obj.setGMNotes(header .. body)
+	do
 		local merged = {}
 		local seen = {}
 		if obj.getTags ~= nil then
@@ -3594,8 +3596,8 @@ function U.setDebugObjectGmNotesAndTag(obj, testId, role, extraNotes)
 			table.insert(merged, U.DEBUG_OBJECT_TAG)
 		end
 		obj.setTags(merged)
-	end)
-	return okN and okT
+	end
+	return true
 end
 
 --- Returns an existing rig object or creates one via `factory`, then tags it.
@@ -3613,8 +3615,8 @@ function U.ensureDebugObject(testId, role, factory, opts)
 	if U.Type(factory) ~= "function" then
 		return nil
 	end
-	local ok, created = pcall(factory)
-	if not ok or created == nil then
+	local created = factory()
+	if created == nil then
 		return nil
 	end
 	U.setDebugObjectGmNotesAndTag(created, testId, role, opts.extraNotes)

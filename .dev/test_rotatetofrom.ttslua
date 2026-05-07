@@ -416,6 +416,7 @@ function TestRotateToFrom.runAll()
     local failed = 0
 
     for i, test in ipairs(tests) do
+        -- pcall: Dev harness runs many rotation tests in one loop; one failure must not abort the rest so pass/fail counts stay complete. Propagating would exit the suite early and hide failures in later cases.
         local success, err = pcall(test)
         if success then
             passed = passed + 1

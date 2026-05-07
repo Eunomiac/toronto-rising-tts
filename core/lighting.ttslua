@@ -1332,14 +1332,8 @@ local function resolveNpcSeatLightGuid(lightRef)
     local roleNeedle = roleName .. "_" .. seatKey
     for _, obj in ipairs(tagged) do
         if U.isGameObject(obj) and obj.getGUID ~= nil then
-            local objName = ""
-            local objNick = ""
-            pcall(function()
-                objName = string.upper(tostring(obj.getName() or ""))
-            end)
-            pcall(function()
-                objNick = string.upper(tostring(obj.getNickname() or ""))
-            end)
+            local objName = string.upper(tostring(obj.getName() or ""))
+            local objNick = string.upper(tostring(obj.getNickname() or ""))
             local matchByRole = string.find(objName, roleNeedle, 1, true)
                 or string.find(objName, roleName, 1, true)
                 or string.find(objNick, roleNeedle, 1, true)

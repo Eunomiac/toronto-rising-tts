@@ -99,11 +99,9 @@ local function refreshSpoofButtons()
     for _, col in ipairs(C.PlayerColors) do
         local btnId = "dc_spoof_" .. col
         local isOn = activeSpoofColor == col
-        pcall(function()
-            U.setAttributes(btnId, {
-                colors = isOn and activeColors or inactiveColors
-            })
-        end)
+        U.setAttributes(btnId, {
+            colors = isOn and activeColors or inactiveColors
+        })
     end
 end
 

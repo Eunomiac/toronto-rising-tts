@@ -31,7 +31,7 @@ L = require("core.lighting")
 O = require("core.objects")
 LightTest = require("core.light_test")
 -- Bundler tracing: `lib.workspace_ndjson_log` is otherwise only required from inside DEBUG.* at runtime
--- and can be omitted from Save & Play bundles → pcall(require) there fails in-game. Keep one top-level require.
+-- and can be omitted from Save & Play bundles → a late require there fails in-game. Keep one top-level require.
 require("lib.workspace_ndjson_log")
 
 --[[
@@ -295,12 +295,7 @@ end
 --- Clear debug NDJSON buffer and truncate workspace log (same path as NPC lighting instrumentation).
 --- TTS console: lua DEBUG.beginWorkspaceDebugSession()
 function DEBUG.beginWorkspaceDebugSession()
-    local ok, res = pcall(require, "lib.workspace_ndjson_log")
-    if not ok then
-        print("DEBUG.beginWorkspaceDebugSession: require failed: " .. tostring(res))
-        return
-    end
-    local W = res
+    local W = require("lib.workspace_ndjson_log")
     if W == nil or U.Type(W.beginSession) ~= "function" then
         print("DEBUG.beginWorkspaceDebugSession: lib.workspace_ndjson_log invalid")
         return
@@ -339,12 +334,7 @@ function DEBUG.workspaceNdjsonBegin(relativePath)
         end
         return
     end
-    local ok, res = pcall(require, "lib.workspace_ndjson_log")
-    if not ok then
-        print("DEBUG.workspaceNdjsonBegin: require failed: " .. tostring(res))
-        return
-    end
-    local W = res
+    local W = require("lib.workspace_ndjson_log")
     if W == nil or U.Type(W.beginSession) ~= "function" then
         print("DEBUG.workspaceNdjsonBegin: lib.workspace_ndjson_log invalid")
         return
@@ -380,12 +370,7 @@ function DEBUG.workspaceNdjsonAppend(relativePath, payload)
         end
         return
     end
-    local ok, res = pcall(require, "lib.workspace_ndjson_log")
-    if not ok then
-        print("DEBUG.workspaceNdjsonAppend: require failed: " .. tostring(res))
-        return
-    end
-    local W = res
+    local W = require("lib.workspace_ndjson_log")
     if W == nil or U.Type(W.append) ~= "function" then
         print("DEBUG.workspaceNdjsonAppend: lib.workspace_ndjson_log invalid")
         return
@@ -970,15 +955,9 @@ function DEBUG.testUI()
 
     -- Test 2: Update scene display
     do
-        local ok, err = pcall(function()
-            Scenes.loadScene("tension")
-        end)
-        if ok then
-            UpdateUIDisplays()
-            printTestResult("Update UI scene display", true, "Should update currentSceneDisplay")
-        else
-            printTestResult("Update UI scene display", false, "Scenes.loadScene('tension') failed: " .. tostring(err))
-        end
+        Scenes.loadScene("tension")
+        UpdateUIDisplays()
+        printTestResult("Update UI scene display", true, "Should update currentSceneDisplay")
     end
 
     -- Test 3: Update player stats
@@ -1640,13 +1619,7 @@ function DEBUG.initLightingAndSignals()
                 print("⚠️  Light mode not found for: " .. lightName)
                 allSuccess = false
             else
-                local success, result = pcall(function()
-                    return L.SetLightMode(lightName, mode, nil, duration)
-                end)
-                if not success then
-                    print("⚠️  Error setting main light mode: " .. tostring(result))
-                    allSuccess = false
-                end
+                L.SetLightMode(lightName, mode, nil, duration)
             end
         end
         return allSuccess
@@ -1670,14 +1643,7 @@ function DEBUG.initLightingAndSignals()
                 allSuccess = false
             else
                 -- Use lighting module to set the mode
-                local success, result = pcall(function()
-                    return L.SetLightMode(lightName, mode, color, duration)
-                end)
-
-                if not success then
-                    print("⚠️  Error setting player light mode: " .. tostring(result))
-                    allSuccess = false
-                end
+                L.SetLightMode(lightName, mode, color, duration)
             end
         end
 
@@ -1860,13 +1826,7 @@ function DEBUG.testLightingAndSignals()
                 print("⚠️  Light mode not found for: " .. lightName)
                 allSuccess = false
             else
-                local success, result = pcall(function()
-                    return L.SetLightMode(lightName, mode, nil, duration)
-                end)
-                if not success then
-                    print("⚠️  Error setting main light mode: " .. tostring(result))
-                    allSuccess = false
-                end
+                L.SetLightMode(lightName, mode, nil, duration)
             end
         end
         return allSuccess
@@ -1890,14 +1850,7 @@ function DEBUG.testLightingAndSignals()
                 allSuccess = false
             else
                 -- Use lighting module to set the mode
-                local success, result = pcall(function()
-                    return L.SetLightMode(lightName, mode, color, duration)
-                end)
-
-                if not success then
-                    print("⚠️  Error setting player light mode: " .. tostring(result))
-                    allSuccess = false
-                end
+                L.SetLightMode(lightName, mode, color, duration)
             end
         end
 
@@ -2312,20 +2265,8 @@ function testLookAt()
 	end
 
 	print("testLookAt: Getting positions...")
-	local success1, lightPos = pcall(function() return lightObj.getPosition() end)
-	local success2, targetPos = pcall(function() return targetObj.getPosition() end)
-
-	if not success1 then
-		print("ERROR: testLookAt - Failed to get light position: " .. tostring(lightPos))
-		broadcast("❌ testLookAt: Failed to get light position", {1, 0, 0})
-		return
-	end
-
-	if not success2 then
-		print("ERROR: testLookAt - Failed to get target position: " .. tostring(targetPos))
-		broadcast("❌ testLookAt: Failed to get target position", {1, 0, 0})
-		return
-	end
+	local lightPos = lightObj.getPosition()
+	local targetPos = targetObj.getPosition()
 
 	if not lightPos then
 		print("ERROR: testLookAt - Light position is nil")
@@ -2352,23 +2293,14 @@ function testLookAt()
 		return
 	end
 
-	-- Calculate rotation
-	local success3, rotation = pcall(function() return U.lookAtRotation(lightPos, targetPos) end)
+	local rotation = U.lookAtRotation(lightPos, targetPos)
 
-	if not success3 or not rotation then
+	if not rotation then
 		print("ERROR: testLookAt - U.lookAtRotation failed: " .. tostring(rotation))
 		broadcast("❌ testLookAt: Rotation calculation failed", {1, 0, 0})
 		return
 	end
-	local success, err = pcall(function()
-		lightObj.setRotationSmooth(rotation, false, false)
-	end)
-
-	if not success then
-		print("ERROR: testLookAt - Failed to set rotation: " .. tostring(err))
-		broadcast("❌ testLookAt: Failed to set rotation", {1, 0, 0})
-		return
-	end
+	lightObj.setRotationSmooth(rotation, false, false)
 
 	print("testLookAt: SUCCESS - Rotation set to: " .. tostring(rotation))
 	broadcast("✅ testLookAt: Rotation applied successfully", {0, 1, 0})
@@ -2434,13 +2366,11 @@ function DEBUG.ensureEasingTestRig()
 		---@diagnostic disable-next-line: undefined-global
 		local o = spawnObjectData({ data = data, position = posVec })
 		if o ~= nil then
-			pcall(function()
-				o.setName(nickname)
-				o.setLock(true)
-				if colorTint ~= nil then
-					o.setColorTint(colorTint)
-				end
-			end)
+			o.setName(nickname)
+			o.setLock(true)
+			if colorTint ~= nil then
+				o.setColorTint(colorTint)
+			end
 		end
 		return o
 	end
@@ -2471,26 +2401,20 @@ function DEBUG.ensureEasingTestRig()
 	local ok = center ~= nil and target ~= nil and light ~= nil
 	if center ~= nil then
 		U.setDebugObjectGmNotesAndTag(center, tid, R.CENTER, nil)
-		pcall(function()
-			center.setPosition(centerPos)
-			center.setScale(Vector(rigCenterBlockScale, rigCenterBlockScale, rigCenterBlockScale))
-			center.setLock(true)
-		end)
+		center.setPosition(centerPos)
+		center.setScale(Vector(rigCenterBlockScale, rigCenterBlockScale, rigCenterBlockScale))
+		center.setLock(true)
 	end
 	if target ~= nil then
 		U.setDebugObjectGmNotesAndTag(target, tid, R.TARGET, nil)
-		pcall(function()
-			target.setPosition(targetPos)
-			target.setScale(Vector(rigTargetBlockScale, rigTargetBlockScale, rigTargetBlockScale))
-			target.setColorTint(rigTargetGreyTint)
-			target.setLock(true)
-		end)
+		target.setPosition(targetPos)
+		target.setScale(Vector(rigTargetBlockScale, rigTargetBlockScale, rigTargetBlockScale))
+		target.setColorTint(rigTargetGreyTint)
+		target.setLock(true)
 	end
 	if light ~= nil then
 		U.setDebugObjectGmNotesAndTag(light, tid, R.LIGHT, lightExtra)
-		pcall(function()
-			light.setPosition(lightPos)
-		end)
+		light.setPosition(lightPos)
 	end
 
 	-- Rig spotlight is not wired through NPCS.spawn; enable the component after the asset loads
@@ -2498,7 +2422,6 @@ function DEBUG.ensureEasingTestRig()
 	if light ~= nil then
 		local litRef = light
 		Wait.time(function()
-			pcall(function()
 				local g = litRef.getGUID()
 				if U.Type(g) ~= "string" then
 					return
@@ -2510,7 +2433,6 @@ function DEBUG.ensureEasingTestRig()
 					angle = 124.7178944,
 					color = Color(0.76, 0.76, 0.76),
 				}, nil, 0)
-			end)
 		end, 1.5)
 	end
 
@@ -2527,12 +2449,8 @@ function DEBUG.destroyEasingTestRig()
 		local objs = U.getDebugObjectsByTestAndRole(tid, role)
 		for _, obj in ipairs(objs) do
 			if obj ~= nil then
-				pcall(function()
-					obj.setLock(false)
-				end)
-				pcall(function()
-					obj.destruct()
-				end)
+				obj.setLock(false)
+				obj.destruct()
 			end
 		end
 	end
@@ -2567,9 +2485,7 @@ function DEBUG.testEasing(opts)
 	printTestHeader("Easing and Path Generation")
 
 	-- `Scenes.SCENES.debug`: DEBUG ambient + staged registered lights OFF (see core/scenes.ttslua).
-	pcall(function()
-		Scenes.loadScene("debug")
-	end)
+	Scenes.loadScene("debug")
 
 	-- Helper: Broadcast message to all players
 	local function broadcast(message, color)
@@ -3295,11 +3211,7 @@ function DEBUG.testEasing(opts)
 			if startPosXYZ and objToMove then
 				-- Use setPosition (not setPositionSmooth) for immediate placement during initialization
 				-- This ensures the object is at the correct position before calculating orientation
-				local success = pcall(function() objToMove.setPosition(startPosXYZ) end)
-				if not success then
-					printTestResult(testName, false, "Failed to set starting position")
-					return nil
-				end
+				objToMove.setPosition(startPosXYZ)
 				print("Moved object to starting position: " .. tostring(startPosXYZ))
 
 				-- Return the object so U.RunSequence will wait for it to be at rest
@@ -3320,12 +3232,10 @@ function DEBUG.testEasing(opts)
 				if U.isGameObject(startData.orientation) then
 					-- Calculate look-at rotation using helper from util library
 					-- Use the starting position we just set
-					local success, targetPos = pcall(function() return startData.orientation.getPosition() end)
-					if success and targetPos then
-						local rotSuccess, rotResult = pcall(function()
-							return U.lookAtRotation(startPosXYZ, targetPos)
-						end)
-						if rotSuccess and rotResult then
+					local targetPos = startData.orientation.getPosition()
+					if targetPos then
+						local rotResult = U.lookAtRotation(startPosXYZ, targetPos)
+						if rotResult then
 							startRot = rotResult
 						else
 							print("Warning: U.lookAtRotation failed: " .. tostring(rotResult))
@@ -3340,21 +3250,13 @@ function DEBUG.testEasing(opts)
 					startRot = Vector(startData.orientation)
 				end
 				if startRot then
-					local success, err = pcall(function() objToMove.setRotationSmooth(startRot, false, false) end)
-					if not success then
-						print("Warning: Failed to set rotation for " .. testName .. ": " .. tostring(err))
-					end
+					objToMove.setRotationSmooth(startRot, false, false)
 				end
 			end
 
 			-- Broadcast initialization complete
 			print("Object moved to starting position.")
-			local success = pcall(function()
-				broadcast("📍 Initialized: " .. testDisplayName .. " - Waiting for continuation...", {0.7, 0.7, 1})
-			end)
-			if not success then
-				print("Warning: Failed to broadcast initialization message")
-			end
+			broadcast("📍 Initialized: " .. testDisplayName .. " - Waiting for continuation...", {0.7, 0.7, 1})
 			if interactive then
 				print("💡 To continue, type in console: continueTest()")
 
@@ -3430,9 +3332,7 @@ function DEBUG.testEasing(opts)
 
 			-- Orbiting parallel lerps use a green→red color ramp; snap now so the rig matches `start` after SetLightMode / prior state.
 			if testName == "ORBITING_LIGHT" and objToMove then
-				pcall(function()
-					L.SetColor(objToMove, Color(0, 1, 0))
-				end)
+				L.SetColor(objToMove, Color(0, 1, 0))
 			end
 
 			local parallelDuration = runParallelLerps(params.parallelLerps, objects, objToMove, params.duration, params.ease, params.easeIntensity)
@@ -3570,6 +3470,7 @@ function DEBUG.runTests()
         -- Note: Individual tests log their own results via logTestToFile
         -- We can't easily capture pass/fail counts from individual tests
         -- So we just run them and let them log
+        -- pcall: Test suites are isolated so one throwing suite does not abort the entire RunSequence driver. Propagating would strand later suites and leave broadcasted "all tests" state inconsistent.
         local success, result = pcall(testFunc)
         if not success then
             print("❌ ERROR running " .. testName .. ": " .. tostring(result))
@@ -3803,21 +3704,13 @@ function DEBUG.toggleAllSpotlightArrows()
     for _, obj in ipairs(spotlights) do
         local ab = obj and obj.AssetBundle or nil
         if ab ~= nil and ab.getLoopingEffectIndex ~= nil and ab.playLoopingEffect ~= nil then
-            local okRead, currentIdx0 = pcall(function()
-                return ab.getLoopingEffectIndex()
-            end)
-            if okRead and type(currentIdx0) == "number" then
+            local currentIdx0 = ab.getLoopingEffectIndex()
+            if type(currentIdx0) == "number" then
                 local currentUi = currentIdx0 + 1
                 local targetUi = (currentUi == 2) and 1 or 2
                 local targetIdx0 = targetUi - 1
-                local okPlay = pcall(function()
-                    ab.playLoopingEffect(targetIdx0)
-                end)
-                if okPlay then
-                    toggled = toggled + 1
-                else
-                    skipped = skipped + 1
-                end
+                ab.playLoopingEffect(targetIdx0)
+                toggled = toggled + 1
             else
                 skipped = skipped + 1
             end
@@ -4155,10 +4048,7 @@ end
 -- @return number|nil
 local function safeGetVarNumber(obj, varName)
     if obj == nil or obj.getVar == nil then return nil end
-    local ok, val = pcall(function()
-        return obj.getVar(varName)
-    end)
-    if not ok then return nil end
+    local val = obj.getVar(varName)
     if val == nil then return nil end
     if type(val) == "number" then return val end
     if type(val) == "string" then
@@ -4207,10 +4097,8 @@ local function resolveTargetPosition(targetOrPos, source)
     end
 
     -- Accept Vector userdata or a table-like {x,y,z} or {[1],[2],[3]}
-    local ok, vec = pcall(function()
-        return Vector(targetOrPos)
-    end)
-    if not ok or vec == nil then
+    local vec = Vector(targetOrPos)
+    if vec == nil then
         U.error(source, "lookAtTargetOrPos must be a GameObject or a {x,y,z} table/Vector", targetOrPos)
     end
     return vec
@@ -4282,28 +4170,13 @@ function DEBUG.setRotationLookAt(objOrGuid, lookAtTargetOrPos, useCalibration)
         baseRot.z + offset.z
     )
 
-    local ok = false
-    local err = nil
     if obj.setRotation ~= nil then
-        ok, err = pcall(function()
-            obj.setRotation(finalRot)
-        end)
-    end
-
-    if not ok then
-        -- Fallback for objects that may only support smooth rotation.
-        if obj.setRotationSmooth ~= nil then
-            local ok2 = pcall(function()
-                obj.setRotationSmooth(finalRot, false, false)
-            end)
-            if not ok2 then
-                U.error("DEBUG.setRotationLookAt", "Failed to set object rotation", err)
-                return
-            end
-        else
-            U.error("DEBUG.setRotationLookAt", "Object has neither setRotation nor setRotationSmooth()", obj)
-            return
-        end
+        obj.setRotation(finalRot)
+    elseif obj.setRotationSmooth ~= nil then
+        obj.setRotationSmooth(finalRot, false, false)
+    else
+        U.error("DEBUG.setRotationLookAt", "Object has neither setRotation nor setRotationSmooth()", obj)
+        return
     end
 
     local objName = (obj.getName and obj.getName()) or "Object"
@@ -4621,6 +4494,7 @@ DEBUG.customUiUploadManifest = nil
 -- Static preload so bundlers that only track literal require() calls include this module.
 -- If not present yet, keep going; users can regenerate and Save & Play.
 do
+    -- pcall: Generated manifest module may be missing until the Node build step runs; debug load must not fail the whole Global script. Propagating would brick Save & Play for unrelated systems that only need other DEBUG helpers.
     local ok, preloadManifest = pcall(function()
         return require("lib.custom_ui_upload_manifest")
     end)
@@ -4795,10 +4669,8 @@ function DEBUG.spawnCustomUiUploadBatchFromJson(manifestJson, options)
         return 0
     end
 
-    local ok, parsed = pcall(function()
-        return JSON.decode(manifestJson)
-    end)
-    if not ok or U.Type(parsed) ~= "table" then
+    local parsed = JSON.decode(manifestJson)
+    if U.Type(parsed) ~= "table" then
         print("DEBUG.spawnCustomUiUploadBatchFromJson: failed to parse JSON manifest")
         return 0
     end
@@ -4828,12 +4700,14 @@ function DEBUG.loadCustomUiUploadManifest(moduleName, forceReload)
         end
     end
 
+    -- pcall: Primary manifest path uses dot module id; generator output or bundler quirks may only resolve the slash alias. Propagating the first require error would block fallback loading entirely.
     local ok, manifest = pcall(function()
         return require(targetModule)
     end)
     local firstErr = manifest
 
     if not ok then
+        -- pcall: Alternate require path exists for file-backed layouts that only register under the slash key after forceReload. Propagating would discard the working module when both paths are valid across environments.
         local okAlt, manifestAlt = pcall(function()
             return require(DEBUG_UPLOAD_MANIFEST_MODULE_ALT)
         end)

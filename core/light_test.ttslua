@@ -43,8 +43,7 @@ function LightTest.testCloneLight(templateGUID)
 
     print("✅ Template found, attempting clone...")
 
-    local success, clone = pcall(function()
-        return template.clone({
+    local clone = template.clone({
             position = {0, 5, 0},
             callback_function = function(obj)
                 print("✅ Clone created!")
@@ -81,14 +80,12 @@ function LightTest.testCloneLight(templateGUID)
                 return obj
             end
         })
-    end)
 
-    if success and clone then
+    if clone then
         print("✅ Clone test successful!")
         return clone
     else
         print("❌ Clone test failed")
-        print("Error:", clone)
         return nil
     end
 end
@@ -217,8 +214,7 @@ function LightTest.testSpawnLight(templateGUID, position, rotation, config)
     print("With rotation:", rotation)
     print("Config:", U.ToString(config))
 
-    local success, newLight = pcall(function()
-        return template.clone({
+    local newLight = template.clone({
             position = position,
             rotation = rotation,
             callback_function = function(obj)
@@ -262,14 +258,8 @@ function LightTest.testSpawnLight(templateGUID, position, rotation, config)
                         if config.color ~= nil then
                             mode.color = Color(config.color)
                         end
-                        local okLm, errLm = pcall(function()
-                            L.SetLightMode(g, mode, nil, 0)
-                        end)
-                        if okLm then
-                            print("✅ Light configured successfully!")
-                        else
-                            print("❌ L.SetLightMode failed:", errLm)
-                        end
+                        L.SetLightMode(g, mode, nil, 0)
+                        print("✅ Light configured successfully!")
                     else
                         print("❌ No GUID on spawned object")
                     end
@@ -280,15 +270,13 @@ function LightTest.testSpawnLight(templateGUID, position, rotation, config)
                 return obj
             end
         })
-    end)
 
-    if success and newLight then
+    if newLight then
         print("✅ Light spawn test successful!")
         print("New light GUID:", newLight.getGUID())
         return newLight
     else
         print("❌ Light spawn test failed")
-        print("Error:", newLight)
         return nil
     end
 end
@@ -314,11 +302,9 @@ function LightTest.testCompareStructures(currentLightGUID)
 
     -- Current implementation pattern
     print("\n--- Current Implementation Pattern ---")
-    local success, comp = pcall(function()
-        return light.getChildren()[1].getChildren()[2].getComponents()[2]
-    end)
+    local comp = light.getChildren()[1].getChildren()[2].getComponents()[2]
 
-    if success and comp then
+    if comp then
         print("✅ Current nested structure works")
         print("Component name:", comp.name)
         local vars = comp.getVars()
@@ -350,7 +336,7 @@ function LightTest.testCompareStructures(currentLightGUID)
     end
 
     return {
-        nested = success and comp or nil,
+        nested = comp or nil,
         direct = directComp,
         inChildren = childComp
     }

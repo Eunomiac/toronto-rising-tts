@@ -47,11 +47,8 @@ local function findDiceDrawerObject(color)
   end
   for _, obj in ipairs(objs) do
     if obj ~= nil then
-      -- Known non-fatal case: getTags can fail for stale object handles while scanning world objects.
-      local ok, tags = pcall(function()
-        return obj.getTags()
-      end)
-      if ok and type(tags) == "table" then
+      local tags = obj.getTags()
+      if type(tags) == "table" then
         for _, t in ipairs(tags) do
           if t == colorTag then
             return obj

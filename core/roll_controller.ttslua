@@ -914,9 +914,7 @@ function RC.onWpRerollDieRandomized(color, obj)
         if a2 == nil or a2.id ~= active.id then return end
         if a2.willpower == nil or (a2.willpower.wpWaveId or 0) ~= waveId then return end
         if a2.phase ~= C.RollPhase.ROLLING then return end
-        pcall(function()
-            obj.setLock(true)
-        end)
+        obj.setLock(true)
     end, C.WP_REROLL_DIE_LOCK_DELAY_SECONDS)
 end
 

@@ -32,9 +32,7 @@ function O.ApplyLockedAndHiddenFromConstants()
             if U.Type(guid) == "string" and guid ~= "" then
                 local obj = getObjectFromGUID(guid)
                 if obj ~= nil then
-                    pcall(function()
-                        obj.interactable = false
-                    end)
+                    obj.interactable = false
                 else
                     print(
                         string.format(
@@ -53,9 +51,7 @@ function O.ApplyLockedAndHiddenFromConstants()
             if U.Type(guid) == "string" and guid ~= "" and U.Type(colors) == "table" then
                 local obj = getObjectFromGUID(guid)
                 if obj ~= nil and type(obj.setInvisibleTo) == "function" then
-                    pcall(function()
-                        obj.setInvisibleTo(colors)
-                    end)
+                    obj.setInvisibleTo(colors)
                 else
                     if obj == nil then
                         print(

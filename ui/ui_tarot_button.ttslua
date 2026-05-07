@@ -33,7 +33,7 @@ local currentOpToken = 0
 --- @return table|nil
 local function getSeatLayoutCenterPoint()
     if Global ~= nil and type(Global.call) == "function" then
-        -- Known non-fatal case: Global bridge may be unavailable during early load.
+        -- pcall: Global.call from this object’s Lua VM can error while the Global bridge is still starting. Propagating would abort tarot pose retries even though the layout becomes ready moments later.
         local ok, cp = pcall(function()
             return Global.call("GlobalGetSeatLayoutCenterPoint")
         end)
@@ -237,11 +237,8 @@ end
 
 function onLoad(savedData)
     if type(savedData) == "string" and savedData ~= "" then
-        -- Known non-fatal case: legacy/corrupt savedData should not block button initialization.
-        local ok, parsed = pcall(function()
-            return JSON.decode(savedData)
-        end)
-        if ok and type(parsed) == "table" and type(parsed.isOn) == "boolean" then
+        local parsed = JSON.decode(savedData)
+        if type(parsed) == "table" and type(parsed.isOn) == "boolean" then
             isOn = parsed.isOn
         end
     end

@@ -86,12 +86,12 @@ local function cloneObjectDataForSpawn(data)
         return nil
     end
     if JSON ~= nil and U.Type(JSON.encode) == "function" and U.Type(JSON.decode) == "function" then
-        -- Known non-fatal case: JSON clone can fail on object-data fields not serializable in this frame.
+        -- pcall: JSON.encode of spawn data can throw when TTS object snapshots include values the encoder rejects. Propagating would abort NPC spawn even though a shallow copy can still produce a spawnable payload.
         local encOk, encoded = pcall(function()
             return JSON.encode(data)
         end)
         if encOk and U.Type(encoded) == "string" then
-            -- Known non-fatal case: decode can fail on malformed/intermediate encoded payloads.
+            -- pcall: decode guards against rare malformed/intermediate strings during iterative encode fixes. Propagating would block spawn when falling back to shallow copy is still viable.
             local decOk, decoded = pcall(function()
                 return JSON.decode(encoded)
             end)
@@ -174,16 +174,9 @@ end
 --- @param message string
 local function safeAlertGM(message)
     local msg = U.Type(message) == "string" and message or tostring(message)
-    -- Known non-fatal case: U.AlertGM can fail when host resolution is transiently unavailable.
-    local ok = pcall(function()
-        U.AlertGM(msg)
-    end)
-    if not ok then
-        print("[NPCS] safeAlertGM fallback (broadcastToAll): " .. msg)
-        -- Known non-fatal case: broadcast fallback itself may fail during teardown; safe to ignore.
-        pcall(function()
-            broadcastToAll("[NPCS] " .. msg, Color(1, 0.55, 0.2))
-        end)
+    U.AlertGM(msg)
+    if broadcastToAll ~= nil then
+        broadcastToAll("[NPCS] " .. msg, Color(1, 0.55, 0.2))
     end
 end
 
@@ -333,10 +326,8 @@ local function resolveSeatFigurineObject(seatKey)
     end
     for _, obj in ipairs(objs) do
         if U.isGameObject(obj) and obj.getCustomObject ~= nil then
-            local ok, custom = pcall(function()
-                return obj.getCustomObject()
-            end)
-            if ok and U.Type(custom) == "table" then
+            local custom = obj.getCustomObject()
+            if U.Type(custom) == "table" then
                 return obj
             end
         end
@@ -364,23 +355,17 @@ local function applySeatFigurineVisuals(npcName, seatKey)
     local back = def.figurine and def.figurine.images and def.figurine.images.back or nil
     local imageScalar = tonumber(def.figurine and def.figurine.scale) or 8
     if U.Type(front) == "string" and front ~= "" and figurine.setCustomObject ~= nil then
-        pcall(function()
-            figurine.setCustomObject({
-                image = front,
-                image_secondary = U.Type(back) == "string" and back or "",
-                image_scalar = imageScalar,
-            })
-        end)
+        figurine.setCustomObject({
+            image = front,
+            image_secondary = U.Type(back) == "string" and back or "",
+            image_scalar = imageScalar,
+        })
         if figurine.reload ~= nil then
-            pcall(function()
-                figurine.reload()
-            end)
+            figurine.reload()
         end
     end
     if figurine.setName ~= nil then
-        pcall(function()
-            figurine.setName(def.fullName or def.name or npcName)
-        end)
+        figurine.setName(def.fullName or def.name or npcName)
     end
 end
 
@@ -631,11 +616,8 @@ function NPCS.buildResolvedLightModeTable(npcName, modeKey)
         return nil
     end
     local mode = NPCS.getMergedModeDefinition(npcName, modeKey)
-    -- Known non-fatal case: getBounds can fail while figurine is still initializing.
-    local ok, b = pcall(function()
-        return fig.getBounds()
-    end)
-    if not ok or b == nil or b.center == nil or b.size == nil then
+    local b = fig.getBounds()
+    if b == nil or b.center == nil or b.size == nil then
         return mode
     end
     local cx = b.center.x or b.center[1] or 0
@@ -680,17 +662,10 @@ local function ensureSpotlightTag(obj)
     end
     local has = false
     if obj.hasTag ~= nil then
-        -- Known non-fatal case: hasTag can fail on stale handles during load races.
-        local okHas, val = pcall(function()
-            return obj.hasTag(TAG_SPOTLIGHT)
-        end)
-        has = okHas and val == true
+        has = obj.hasTag(TAG_SPOTLIGHT) == true
     end
     if not has and obj.addTag ~= nil then
-        -- Known non-fatal case: addTag can fail on stale handles; safe to ignore.
-        pcall(function()
-            obj.addTag(TAG_SPOTLIGHT)
-        end)
+        obj.addTag(TAG_SPOTLIGHT)
     end
 end
 
@@ -709,13 +684,7 @@ function NPCS.applyCurrentLightMode(npcName, transitionTime)
     if transitionTime == nil then
         transitionTime = 0.35
     end
-    -- Known non-fatal case: light object can disappear between lookup and apply.
-    local ok, err = pcall(function()
-        L.SetLightMode(reg, modeKey, nil, transitionTime)
-    end)
-    if not ok then
-        print("[NPCS] applyCurrentLightMode SetLightMode failed: " .. tostring(err))
-    end
+    L.SetLightMode(reg, modeKey, nil, transitionTime)
 end
 
 --- Re-apply each spawned NPC's current light mode (used after scene transitions that force OFF).
@@ -788,14 +757,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
     if U.Type(front) ~= "string" or front == "" then
         return false, "Set figurine.images.front in lib/npcs_data for " .. npcName
     end
-    local spawnPos
-    -- Known non-fatal case: slot/world-position compute may fail on malformed area data.
-    local posOk, posErr = pcall(function()
-        spawnPos = NPCS.computeSlotWorldPosition(areaKey, slotIndex)
-    end)
-    if not posOk or spawnPos == nil then
-        return false, "NPC spawn (position): " .. tostring(posErr)
-    end
+    local spawnPos = NPCS.computeSlotWorldPosition(areaKey, slotIndex)
 
     --- Final facing matches `applyFigurinePlacement` so the cutout is not briefly wrong-rotated at spawn.
     local areaForSpawn = NPCS.areas[areaKey]
@@ -831,10 +793,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
     )
     local spawnedFig
     ---@diagnostic disable-next-line: undefined-global
-    -- Known non-fatal case: spawnObjectData can fail due transient TTS engine/runtime errors.
-    local okObj, errObj = pcall(function()
-        ---@diagnostic disable-next-line: undefined-global
-        spawnedFig = spawnObjectData({
+    spawnedFig = spawnObjectData({
             data = figData,
             callback_function = function(fig)
                 if fig == nil then
@@ -842,98 +801,86 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                     safeAlertGM("NPCS spawn: nil figurine for " .. tostring(npcName))
                     return
                 end
-                -- Known non-fatal case: post-spawn setup can fail while dependencies are still loading.
-                local postOk, postErr = pcall(function()
-                    fig.setLock(true)
-                    fig.tooltip = true
+                fig.setLock(true)
+                fig.tooltip = true
 
-                    --- Light: `spawnObjectData` from embedded save-shape defaults (lib/npcs_light_spawn_defaults.ttslua).
-                    --- No in-world template object required — unlike `Object.clone()`, `spawnObject` / `spawnObjectData` do not.
-                    local defaults = NLIGHT.NPC_LIGHT_OBJECT_DATA_DEFAULTS
-                    if U.Type(defaults) ~= "table" then
-                        error("NPC_LIGHT_OBJECT_DATA_DEFAULTS missing (lib/npcs_light_spawn_defaults)")
-                    end
-                    local lightData = cloneObjectDataForSpawn(defaults)
-                    if lightData == nil then
-                        error("NPC light spawn data copy failed for " .. npcName)
-                    end
-                    lightData.Nickname = "NPC Light " .. npcName
-                    lightData.Tags = { TAG_LIT }
+                --- Light: `spawnObjectData` from embedded save-shape defaults (lib/npcs_light_spawn_defaults.ttslua).
+                --- No in-world template object required — unlike `Object.clone()`, `spawnObject` / `spawnObjectData` do not.
+                local defaults = NLIGHT.NPC_LIGHT_OBJECT_DATA_DEFAULTS
+                if U.Type(defaults) ~= "table" then
+                    error("NPC_LIGHT_OBJECT_DATA_DEFAULTS missing (lib/npcs_light_spawn_defaults)")
+                end
+                local lightData = cloneObjectDataForSpawn(defaults)
+                if lightData == nil then
+                    error("NPC light spawn data copy failed for " .. npcName)
+                end
+                lightData.Nickname = "NPC Light " .. npcName
+                lightData.Tags = { TAG_LIT }
 
-                    local lx = spawnPos.x + NPC_LIGHT_SPAWN_OFFSET.x
-                    local ly = spawnPos.y + NPC_LIGHT_SPAWN_OFFSET.y
-                    local lz = spawnPos.z + NPC_LIGHT_SPAWN_OFFSET.z
-                    ---@diagnostic disable-next-line: undefined-global
-                    local lit = spawnObjectData({
-                        data = lightData,
-                        position = { lx, ly, lz },
-                    })
-                    if lit == nil then
-                        error("spawnObjectData returned nil for NPC light " .. npcName)
-                    end
-                    -- Hide light arrow marker by default: UI "Looping Effect = 2" maps to API index 1 (0-based).
-                    if lit.AssetBundle ~= nil and lit.AssetBundle.playLoopingEffect ~= nil then
-                        -- Known non-fatal case: some light bundles may not expose looping effects immediately.
-                        pcall(function()
-                            lit.AssetBundle.playLoopingEffect(1)
-                        end)
-                    end
-                    ensureSpotlightTag(lit)
-                    local lg = lit.getGUID and lit.getGUID() or ""
-                    if lg == "" then
-                        error("spawned NPC light has no GUID for " .. npcName)
-                    end
-                    L.registerNpcSpotlightModes(npcName, lg)
-                    local rec = {
-                        figurineGuid = fig.getGUID(),
-                        lightGuid = lg,
-                        areaKey = areaKey,
-                        slotIndex = slotIndex,
-                        npcLightMode = (areaForSpawn and areaForSpawn.autoLight == true) and "standard" or "off",
-                        locked = false,
-                    }
-                    setInstanceRecord(npcName, rec)
-                    if not skipSeatSync then
-                        requestSeatLayoutSync()
-                    end
-                    --- Defer: applying modes inside this callback can deadlock TTS until the callback returns. The
-                    --- spotlight Custom_Assetbundle also needs `npcSpotlightReadyForApply` plus a short post-ready delay
-                    --- before `SetLightMode` takes effect (see `NPC_LIGHT_POST_READY_DELAY_SEC`).
-                    local deferFig = fig
-                    local deferLg = lg
-                    Wait.time(function()
-                        local reg = NPCS.lightRegistryName(deferLg)
-                        Wait.condition(function()
-                            Wait.time(function()
-                                lightAlignFigOverride[npcName] = deferFig
-                                -- Known non-fatal case: deferred light apply can fail if spawned light is gone.
-                                local applyOk, applyErr = true, nil
-                                applyOk, applyErr = pcall(function()
-                                    NPCS.applyCurrentLightMode(npcName, 0)
-                                end)
-                                lightAlignFigOverride[npcName] = nil
-                                if not applyOk then
-                                    print("[NPCS] deferred applyCurrentLightMode failed: " .. tostring(applyErr))
-                                    safeAlertGM("NPCS spawn light apply: " .. tostring(applyErr))
-                                end
-                            end, NPC_LIGHT_POST_READY_DELAY_SEC)
-                        end, function()
-                            return npcSpotlightReadyForApply(deferLg, reg)
-                        end)
-                    end, 0)
-                    if not deferUiRefresh then
-                        NPCS.refreshStorytellerUIIfVisible()
-                    end
-                end)
-                if not postOk then
-                    print("[NPCS] spawn follow-up failed: " .. tostring(postErr))
-                    safeAlertGM("NPCS spawn follow-up: " .. tostring(postErr))
+                local lx = spawnPos.x + NPC_LIGHT_SPAWN_OFFSET.x
+                local ly = spawnPos.y + NPC_LIGHT_SPAWN_OFFSET.y
+                local lz = spawnPos.z + NPC_LIGHT_SPAWN_OFFSET.z
+                ---@diagnostic disable-next-line: undefined-global
+                local lit = spawnObjectData({
+                    data = lightData,
+                    position = { lx, ly, lz },
+                })
+                if lit == nil then
+                    error("spawnObjectData returned nil for NPC light " .. npcName)
+                end
+                -- Hide light arrow marker by default: UI "Looping Effect = 2" maps to API index 1 (0-based).
+                if lit.AssetBundle ~= nil and lit.AssetBundle.playLoopingEffect ~= nil then
+                    lit.AssetBundle.playLoopingEffect(1)
+                end
+                ensureSpotlightTag(lit)
+                local lg = lit.getGUID and lit.getGUID() or ""
+                if lg == "" then
+                    error("spawned NPC light has no GUID for " .. npcName)
+                end
+                L.registerNpcSpotlightModes(npcName, lg)
+                local rec = {
+                    figurineGuid = fig.getGUID(),
+                    lightGuid = lg,
+                    areaKey = areaKey,
+                    slotIndex = slotIndex,
+                    npcLightMode = (areaForSpawn and areaForSpawn.autoLight == true) and "standard" or "off",
+                    locked = false,
+                }
+                setInstanceRecord(npcName, rec)
+                if not skipSeatSync then
+                    requestSeatLayoutSync()
+                end
+                --- Defer: applying modes inside this callback can deadlock TTS until the callback returns. The
+                --- spotlight Custom_Assetbundle also needs `npcSpotlightReadyForApply` plus a short post-ready delay
+                --- before `SetLightMode` takes effect (see `NPC_LIGHT_POST_READY_DELAY_SEC`).
+                local deferFig = fig
+                local deferLg = lg
+                Wait.time(function()
+                    local reg = NPCS.lightRegistryName(deferLg)
+                    Wait.condition(function()
+                        Wait.time(function()
+                            lightAlignFigOverride[npcName] = deferFig
+                            -- pcall: Deferred apply races teardown of the freshly spawned light; we must clear lightAlignFigOverride even when SetLightMode throws so later layout passes do not read a stale figurine override. Propagating would leave override pinned and obscure the real lighting error behind secondary faults.
+                            local applyOk, applyErr = pcall(function()
+                                NPCS.applyCurrentLightMode(npcName, 0)
+                            end)
+                            lightAlignFigOverride[npcName] = nil
+                            if not applyOk then
+                                print("[NPCS] deferred applyCurrentLightMode failed: " .. tostring(applyErr))
+                                safeAlertGM("NPCS spawn light apply: " .. tostring(applyErr))
+                            end
+                        end, NPC_LIGHT_POST_READY_DELAY_SEC)
+                    end, function()
+                        return npcSpotlightReadyForApply(deferLg, reg)
+                    end)
+                end, 0)
+                if not deferUiRefresh then
+                    NPCS.refreshStorytellerUIIfVisible()
                 end
             end,
         })
-    end)
-    if not okObj or spawnedFig == nil then
-        return false, "NPC spawn (spawnObjectData figurine): " .. tostring(errObj)
+    if spawnedFig == nil then
+        return false, "NPC spawn (spawnObjectData figurine): spawnObjectData returned nil"
     end
 
     return true, nil
@@ -1138,16 +1085,10 @@ function NPCS.removeNpc(npcName, opts)
     local fig = rec.figurineGuid and getObjectFromGUID(rec.figurineGuid)
     local lit = rec.lightGuid and getObjectFromGUID(rec.lightGuid)
     if fig ~= nil and fig.destruct then
-        -- Known non-fatal case: figure may already be destroyed externally.
-        pcall(function()
-            fig.destruct()
-        end)
+        fig.destruct()
     end
     if lit ~= nil and lit.destruct then
-        -- Known non-fatal case: light may already be destroyed externally.
-        pcall(function()
-            lit.destruct()
-        end)
+        lit.destruct()
     end
     unregisterDynamicLightModes(rec.lightGuid)
     local lights = U.clone(S.getStateVal("lights") or {})
@@ -1547,11 +1488,8 @@ local function isUiElementActive(elementId)
     if UI.getAttribute == nil or type(elementId) ~= "string" then
         return false
     end
-    -- Known non-fatal case: panel id may be absent in some XML variants.
-    local ok, v = pcall(function()
-        return UI.getAttribute(elementId, "active")
-    end)
-    if not ok or v == nil then
+    local v = UI.getAttribute(elementId, "active")
+    if v == nil then
         return false
     end
     return string.lower(tostring(v)) == "true"
@@ -1693,7 +1631,7 @@ local function resolveWriteWorkspaceFile()
     if cachedWriteWorkspaceFile ~= nil then
         return cachedWriteWorkspaceFile
     end
-    -- Known non-fatal case: core.debug may be unavailable in restricted bundles.
+    -- pcall: core.debug is absent in some stripped Save & Play bundles, so require must not abort NPC panel tooling. Propagating would prevent panel XML dumps in exactly the configurations where file logging is unavailable.
     local ok, DBG = pcall(require, "core.debug")
     if ok and DBG ~= nil and U.Type(DBG.writeWorkspaceFile) == "function" then
         cachedWriteWorkspaceFile = DBG.writeWorkspaceFile
@@ -1764,11 +1702,8 @@ function NPCS.syncAdminNpcPanelXmlDumpButton()
     --- TTS Button colors: Normal|Highlighted|Pressed|Disabled
     local colorsOff = "#666666|#555555|#777777|rgba(0.22,0.22,0.22,0.45)"
     local colorsOn = "#2E8B57|#3CB371|#228B22|rgba(0.12,0.45,0.22,0.85)"
-    -- Known non-fatal case: admin toggle button may not exist in older UI bundles.
-    pcall(function()
-        U.setAttribute(id, "colors", on and colorsOn or colorsOff)
-        U.setAttribute(id, "text", on and "NPC XML → IDE (on)" or "NPC XML → IDE (off)")
-    end)
+    U.setAttribute(id, "colors", on and colorsOn or colorsOff)
+    U.setAttribute(id, "text", on and "NPC XML → IDE (on)" or "NPC XML → IDE (off)")
 end
 
 --- Fingerprint of instance layout + spawn/group affordances used by targeted NPC panel updates.
@@ -1829,10 +1764,7 @@ local function setUiAttrSafe(id, attr, value)
     if U.Type(id) ~= "string" or id == "" then
         return
     end
-    -- Known non-fatal case: some generated ids may be absent if UI bundle is out-of-date.
-    pcall(function()
-        U.setAttribute(id, attr, value)
-    end)
+    U.setAttribute(id, attr, value)
 end
 
 --- Apply multiple attributes safely on optional ids.
@@ -1842,9 +1774,7 @@ local function setUiAttrsSafe(id, attrs)
     if U.Type(id) ~= "string" or id == "" or U.Type(attrs) ~= "table" then
         return
     end
-    pcall(function()
-        U.setAttributes(id, attrs)
-    end)
+    U.setAttributes(id, attrs)
 end
 
 --- @param id string

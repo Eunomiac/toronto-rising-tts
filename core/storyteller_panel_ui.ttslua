@@ -25,10 +25,8 @@ local function storytellerUiElementIsActive(elementId)
     if UI.getAttribute == nil or type(elementId) ~= "string" then
         return false
     end
-    local ok, v = pcall(function()
-        return UI.getAttribute(elementId, "active")
-    end)
-    if not ok or v == nil then
+    local v = UI.getAttribute(elementId, "active")
+    if v == nil then
         return false
     end
     return string.lower(tostring(v)) == "true"

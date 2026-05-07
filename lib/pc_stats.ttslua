@@ -9,6 +9,7 @@ local S = require("core.state")
 local C = require("lib.constants")
 local U = require("lib.util")
 local L = require("core.lighting")
+local HO = require("core.hud_overlays")
 
 --- Tracker glyphs / sheet images from Global (`GlobalRegisterTrackerDisplay`); nil until a sheet object loads.
 --- @return table|nil
@@ -42,11 +43,7 @@ end
 
 --- Push Global UI overlay visibility (UI.show/hide) after PC state changes.
 function P.refreshHudOverlays()
-  -- Known non-fatal case: overlay module may be unavailable in object-script contexts.
-  pcall(function()
-    local HO = require("core.hud_overlays")
-    HO.syncAll()
-  end)
+  HO.syncAll()
 end
 
 --- Like refreshHudOverlays, but clears overlay visibility cache for one seat first so hunger/condition
@@ -56,14 +53,10 @@ function P.refreshHudOverlaysForSeat(seatColor)
   if type(seatColor) ~= "string" then
     return
   end
-  -- Known non-fatal case: overlay module may be unavailable in object-script contexts.
-  pcall(function()
-    local HO = require("core.hud_overlays")
-    if type(HO.invalidateSeatCache) == "function" then
-      HO.invalidateSeatCache(seatColor)
-    end
-    HO.syncAll()
-  end)
+  if type(HO.invalidateSeatCache) == "function" then
+    HO.invalidateSeatCache(seatColor)
+  end
+  HO.syncAll()
 end
 
 --- Which automated UI id updates apply per sheet page (`CSHEET_PAGE_<n>_<COLOR>`).
@@ -104,10 +97,7 @@ end
 --- @param msg string
 local function warnGm(msg)
   if broadcastToAll ~= nil then
-    -- Known non-fatal case: broadcast can fail during host/session teardown.
-    pcall(function()
-      broadcastToAll("[PC] " .. tostring(msg), Color(1, 0.55, 0.2))
-    end)
+    broadcastToAll("[PC] " .. tostring(msg), Color(1, 0.55, 0.2))
   end
   print("[PC warnGm] " .. tostring(msg))
 end
@@ -457,10 +447,7 @@ local function trySetLight(lightKey, mode, playerColor)
       return
     end
   end
-  -- Known non-fatal case: target light can disappear between condition evaluation and apply.
-  pcall(function()
-    L.SetLightMode(lightKey, mode, playerColor, 0.5)
-  end)
+  L.SetLightMode(lightKey, mode, playerColor, 0.5)
 end
 
 --- Apply lighting from all active conditions (last key wins per light).

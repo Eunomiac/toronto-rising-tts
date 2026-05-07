@@ -68,7 +68,7 @@ local function resolveSeatLayoutCenterPoint()
   -- In object scripts, local core.state may not be initialized yet (separate Lua VM).
   -- Prefer Global state bridge to avoid emitting "gameState is nil" warnings.
   if Global ~= nil and type(Global.call) == "function" then
-    -- Known non-fatal case: Global bridge call can fail in object-script contexts before Global is ready.
+    -- pcall: Global.call from object-script VMs can error before the Global bridge is ready; we fall back to local state when unavailable. Propagating would break pose resolution for workshop objects that cannot reach Global.
     local ok, cp = pcall(function()
       return Global.call("GlobalGetSeatLayoutCenterPoint")
     end)
@@ -253,11 +253,7 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
   end
 
   local duration, delay = OP.resolveTransitionTiming(pose, baseDuration, baseDelay)
-  local initialLock = nil
-  -- Known non-fatal case: lock reads can fail on stale objects.
-  pcall(function()
-    initialLock = obj.getLock()
-  end)
+  local initialLock = obj.getLock()
   local desiredLock = pose.isLocked
   if desiredLock == nil and type(pose.setLock) == "boolean" then
     desiredLock = pose.setLock
@@ -268,61 +264,42 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
       return
     end
     if type(desiredLock) == "boolean" and desiredLock == true then
-      pcall(function()
-        obj.setLock(true)
-      end)
+      obj.setLock(true)
     end
     if pose.position ~= nil then
       local targetPos = OP.mergePosition(obj, pose.position)
       if duration > 0 then
         if useSmoothSetters then
-          pcall(function()
-            obj.setPositionSmooth(targetPos, false, false)
-          end)
+          obj.setPositionSmooth(targetPos, false, false)
         else
           U.setPositionSlow(obj, targetPos, duration, nil, false)
         end
       else
-        pcall(function()
-          obj.setPosition(targetPos)
-        end)
+        obj.setPosition(targetPos)
       end
     end
     if pose.rotation ~= nil then
       local targetRot = OP.mergeRotation(obj, pose.rotation)
       if duration > 0 then
         if useSmoothSetters then
-          pcall(function()
-            obj.setRotationSmooth(targetRot, false, false)
-          end)
+          obj.setRotationSmooth(targetRot, false, false)
         else
           U.setRotationSlow(obj, targetRot, duration, nil, false)
         end
       else
-        pcall(function()
-          obj.setRotation(targetRot)
-        end)
+        obj.setRotation(targetRot)
       end
     end
     if pose.scale ~= nil then
       local targetScale = Vector(pose.scale)
       if duration > 0 then
         if useSmoothSetters then
-          local smoothOk = pcall(function()
-            obj.setScaleSmooth(targetScale, false, false)
-          end)
-          if not smoothOk then
-            pcall(function()
-              obj.setScale(targetScale)
-            end)
-          end
+          obj.setScaleSmooth(targetScale, false, false)
         else
           U.setScaleSlow(obj, targetScale, duration, nil)
         end
       else
-        pcall(function()
-          obj.setScale(targetScale)
-        end)
+        obj.setScale(targetScale)
       end
     end
 
@@ -332,22 +309,14 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
         return
       end
       if type(desiredLock) == "boolean" then
-        pcall(function()
-          obj.setLock(desiredLock)
-        end)
+        obj.setLock(desiredLock)
       elseif type(initialLock) == "boolean" then
-        pcall(function()
-          obj.setLock(initialLock)
-        end)
+        obj.setLock(initialLock)
       end
       if pose.isHidden == true then
-        pcall(function()
-          obj.setInvisibleTo({"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey", "Black"})
-        end)
+        obj.setInvisibleTo({"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey", "Black"})
       else
-        pcall(function()
-          obj.setInvisibleTo({})
-        end)
+        obj.setInvisibleTo({})
       end
     end, finalizeDelay)
   end

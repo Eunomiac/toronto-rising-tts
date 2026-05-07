@@ -229,13 +229,8 @@ local function applyMapOffset(seatColor, y)
     if mapDraggableLastOffsetStrBySeat[seatColor] == offsetStr then
         return
     end
-    -- Known non-fatal case: some player-color map draggable ids may be absent in partial XML variants.
-    local ok = pcall(function()
-        U.setAttribute(draggableId, "offsetXY", offsetStr)
-    end)
-    if ok then
-        mapDraggableLastOffsetStrBySeat[seatColor] = offsetStr
-    end
+    U.setAttribute(draggableId, "offsetXY", offsetStr)
+    mapDraggableLastOffsetStrBySeat[seatColor] = offsetStr
 end
 
 --- Applies an initial pan position for the map draggable panel.
@@ -459,12 +454,7 @@ local function setTintVisibility(elementID, isVisible)
     if type(elementID) ~= "string" then
         return
     end
-    -- Some map elements may be omitted depending on district overlay availability.
-    -- Known non-fatal case: missing optional map overlay ids should not hard-fail HUD refresh.
-    -- `pcall` prevents hard UI runtime errors if an element id doesn't exist.
-    pcall(function()
-        U.setAttribute(elementID, "color", isVisible and "#FFFFFF" or "clear")
-    end)
+    U.setAttribute(elementID, "color", isVisible and "#FFFFFF" or "clear")
 end
 
 --- Stacked map overlay Images and district card Images (many layers in one region).
@@ -478,15 +468,12 @@ local function setMapStackImageVisibility(elementID, isVisible)
     if type(elementID) ~= "string" or type(isVisible) ~= "boolean" then
         return
     end
-    -- Known non-fatal case: certain map stack layers may be omitted in lightweight XML variants.
-    pcall(function()
-        if isVisible then
-            U.setAttribute(elementID, "active", "true")
-            UI.setAttribute(elementID, "color", "#FFFFFF")
-        else
-            U.setAttribute(elementID, "active", "false")
-        end
-    end)
+    if isVisible then
+        U.setAttribute(elementID, "active", "true")
+        UI.setAttribute(elementID, "color", "#FFFFFF")
+    else
+        U.setAttribute(elementID, "active", "false")
+    end
 end
 
 --- Clears incremental map-panel UI cache so the next refresh reapplies all attributes (e.g. map just opened).

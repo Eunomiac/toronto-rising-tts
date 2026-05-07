@@ -6,7 +6,7 @@ Prefer **no** `pcall` / `xpcall`. Errors should surface in the TTS log so failur
 
 ## Build gate
 
-Run `npm run check:pcall-gate` (see `.tools/pcall-gate/check-pcall-gate.mjs`). It counts `pcall(` invocations under `core/`, `global/`, `lib/`, `objects/`, and `ui/` (recursive `*.ttslua` only), compares to the last numeric baseline in `.dev/build-logs/pcall-gate.txt`, and **exits with an error** if the current count is **greater** than that baseline. To approve a higher count after intentional changes, edit the **last** data line in that log (or append a new line) with a count ≥ the new total, then re-run.
+Run `npm run check:pcall-gate` (see `.tools/pcall-gate/check-pcall-gate.mjs`). It counts non-overlapping matches of the regex `\bpcall\s*\(` in `*.ttslua` under `core/`, `global/`, `lib/`, `objects/`, and `ui/` (recursive only). That includes **comments and strings** that contain the substring `pcall(` — avoid writing prose like `` `pcall(require)` `` in comments or the gate count will be inflated. The script compares the total to the last numeric baseline in `.dev/build-logs/pcall-gate.txt` and **exits with an error** if the current count is **greater** than that baseline. To approve a higher count after intentional changes, edit the **last** data line in that log (or append a new line) with a count ≥ the new total, then re-run.
 
 `npm run build` / `npm run build:all-tooling` (default **Ctrl+Shift+B** pipeline) runs **`check:pcall-gate` first** so a failed gate stops before TypeScript or Lua generators. For other workflows, chain `npm run check:pcall-gate` manually before build steps, or run it in CI.
 
@@ -30,39 +30,34 @@ end)
 
 ## Recent removals (reference)
 
+Large-scale removals (2026 pass): production paths in `core/`, `lib/`, and `ui/` that used `pcall` only to swallow TTS API errors were converted to direct calls so failures show in the log. Representative areas: lighting, soundscape, seat sync, roll controller, object pose application, HUD/storyteller UI, and many NPC spawn branches.
+
+Older targeted cleanups still worth citing:
+
 - `ui/ui_csheet.ttslua`: all `pcall` removed; use direct TTS / `Global.call` / `C.GetPlayerIDOrNil`.
 - `lib/constants.ttslua`: `C.GetPlayerColor` no longer uses `pcall(C.GetPlayerID, …)`; added `C.GetPlayerIDOrNil`.
 - `core/global_script.ttslua`: `GlobalRollSeatCamera` calls `M.setCamera` directly.
 
 ## Inventory (remaining `pcall` sites)
 
-The list below is from a repo-wide search of `*.ttslua` / `*.lua`. Update this section when adding or removing calls.
+**Gate scope:** the numeric baseline in `.dev/build-logs/pcall-gate.txt` matches **only** `*.ttslua` under `core/`, `global/`, `lib/`, `objects/`, `ui/`. Files elsewhere (e.g. `.dev/test_rotatetofrom.ttslua`) are not counted by the gate but should still follow this policy if they ship with the game.
 
-| File | Lines (approx.) |
-|------|-----------------|
-| `core/camera_debug_focus.ttslua` | 102 |
-| `core/debug.ttslua` | 298, 342, 383, 973, 1643, 1673, 1863, 1893, 2315–2316, 2356, 2363, 2437, 2474, 2482, 2491, 2501, 2530, 2533, 2570, 3298, 3323, 3325, 3343, 3352, 3433, 3573, 3806, 3813, 4158, 4210, 4288, 4296, 4624, 4798, 4831, 4837 |
-| `core/hud_player.ttslua` | 233, 465, 482 |
-| `core/light_test.ttslua` | 46, 220, 265, 317 |
-| `core/lighting.ttslua` | 1337, 1340 |
-| `core/npcs.ttslua` | 90, 95, 178, 184, 336, 367, 375, 381, 635, 684, 691, 713, 793, 835, 846, 877, 911, 1142, 1148, 1551, 1697, 1768, 1833, 1845 |
-| `core/objects.ttslua` | 35, 56 |
-| `core/roll_controller.ttslua` | 917 |
-| `core/soundscape.ttslua` | 211, 219, 252, 271, 293, 316, 326, 349, 357, 365, 382, 388, 392, 505, 1544, 1551 |
-| `core/state.ttslua` | 1060 |
-| `core/storyteller_panel_ui.ttslua` | 28 |
-| `lib/dice_drawer.ttslua` | 51 |
-| `lib/object_positions.ttslua` | 72, 258, 271, 279, 286, 295, 302, 311, 315, 323, 335, 339, 344, 348 |
-| `lib/pc_bootstrap.ttslua` | 16, 21 |
-| `lib/pc_stats.ttslua` | 46, 60, 108, 461 |
-| `lib/pcs_data.ttslua` | 3674 |
-| `lib/rotational-seat-layout.ttslua` | 1706, 1709, 1712, 1883, 1889, 2354, 2634, 2731 |
-| `lib/util.ttslua` | 1499, 2252, 2272, 2592, 2723, 2753, 2887, 2923, 2935, 2970, 2983, 3037, 3066, 3070, 3072, 3196, 3393, 3503, 3576, 3579, 3616 |
-| `ui/ui_tarot_button.ttslua` | 37, 241 |
-| `.dev/test_rotatetofrom.ttslua` | 419 |
+**Current inventory** (25 call-sites under the gate trees as of the 2026 policy sync; lines drift — re-run ripgrep `\bpcall\s*\(` after edits):
 
-**Note:** `core/debug.ttslua` and `.dev/*` are dev/test-heavy; treat production modules under `core/`, `lib/`, `ui/` as the highest priority for elimination or documentation.
+| Count | File | Lines (approx.) | Role |
+|------:|------|-----------------|------|
+| 13 | `lib/util.ttslua` | 1499, 2594, 2756, 2891, 2927, 2940, 2976, 2990, 3045, 3075, 3080, 3083, 3399 | `U.isIn` userdata probe; `startLuaCoroutine` startup guards; `U.waitUntil` / `U.RunSequenceWithOptions` isolation around author-supplied callbacks and hooks |
+| 4 | `core/debug.ttslua` | 3474, 4498, 4704, 4711 | Isolated test runner; optional `require` of generated custom-UI manifest (primary + slash fallback) |
+| 4 | `core/npcs.ttslua` | 90, 95, 864, 1635 | JSON encode/decode clone for spawn snapshots; deferred `applyCurrentLightMode` with guaranteed override cleanup; optional `require("core.debug")` |
+| 2 | `lib/pc_bootstrap.ttslua` | 16, 21 | JSON round-trip deep clone with `U.clone` fallback |
+| 1 | `lib/object_positions.ttslua` | 72 | `Global.call("GlobalGetSeatLayoutCenterPoint")` from object-script VMs |
+| 1 | `ui/ui_tarot_button.ttslua` | 37 | Same Global bridge pattern as `object_positions` |
 
+Each site above has a `-- pcall: …` comment **immediately** above the `pcall(` (same rule as “Suggested annotation shape”).
+
+**Outside gate:** `.dev/test_rotatetofrom.ttslua` also uses one `pcall` in a dev-only rotation test runner (same annotation rule); it is not counted by `check:pcall-gate`.
+
+**Note:** `core/debug.ttslua` is dev/test-heavy; the `lib/util.ttslua` harness sites are the highest remaining **production** surface area if you want to shrink the protected-error pattern further (large refactor).
 ## Migration patterns
 
 - **Optional resolution**: add `*OrNil` / boolean-return helpers instead of `pcall(f)` around callers that throw.

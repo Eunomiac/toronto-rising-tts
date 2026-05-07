@@ -12,12 +12,12 @@ local BOOT = {}
 --- @return table
 local function deepCloneTable(t)
   if JSON ~= nil and type(JSON.encode) == "function" and type(JSON.decode) == "function" then
-    -- Known non-fatal case: JSON clone can fail on transient userdata references.
+    -- pcall: JSON.encode can throw when PCS-derived tables still reference non-serializable userdata. Propagating would abort bootstrap even though shallow U.clone can still yield a usable stats snapshot.
     local ok, enc = pcall(function()
       return JSON.encode(t)
     end)
     if ok and type(enc) == "string" then
-      -- Known non-fatal case: decode can fail on malformed encoded payloads.
+      -- pcall: JSON.decode can throw if encode produced an edge-case payload. Propagating would abort bootstrap when U.clone remains a valid fallback path.
       local ok2, dec = pcall(function()
         return JSON.decode(enc)
       end)

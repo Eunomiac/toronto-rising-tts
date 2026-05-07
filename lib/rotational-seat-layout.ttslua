@@ -30,6 +30,8 @@ local S = require("core.state")
 local DEBUG = require("core.debug")
 local P = require("lib.pc_stats")
 local OP = require("lib.object_positions")
+local L_LIGHT = require("core.lighting")
+local NPCS = require("core.npcs")
 
 local M = {}
 
@@ -1703,15 +1705,9 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
                 local objGuid = "unknown-guid"
                 local objName = "unknown-name"
                 local objNick = "unknown-nickname"
-                pcall(function()
-                  objGuid = tostring(o.getGUID() or objGuid)
-                end)
-                pcall(function()
-                  objName = tostring(o.getName() or objName)
-                end)
-                pcall(function()
-                  objNick = tostring(o.getNickname() or objNick)
-                end)
+                objGuid = tostring(o.getGUID() or objGuid)
+                objName = tostring(o.getName() or objName)
+                objNick = tostring(o.getNickname() or objNick)
                 table.insert(
                   skippedNoPatternDetails,
                   string.format("%s [name='%s', nick='%s']", objGuid, objName, objNick)
@@ -1879,16 +1875,10 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
           local guid = "unknown-guid"
           local name = "unknown-name"
           if o.getGUID ~= nil then
-            -- Known non-fatal case: stale handles can throw while reading metadata.
-            pcall(function()
               guid = tostring(o.getGUID() or guid)
-            end)
           end
           if o.getName ~= nil then
-            -- Known non-fatal case: stale handles can throw while reading metadata.
-            pcall(function()
               name = tostring(o.getName() or name)
-            end)
           end
           orphanDetails[#orphanDetails + 1] = string.format("%s (%s)", name, guid)
         end
@@ -2351,12 +2341,9 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
     if U.Type(lightRefs) ~= "table" then
       return
     end
-    local okL, L = pcall(require, "core.lighting")
-    if okL and U.Type(L) == "table" and U.Type(L.SetLightMode) == "function" then
-      for _, lightRef in ipairs(lightRefs) do
-        if U.Type(lightRef) == "string" and lightRef ~= "" then
-          L.SetLightMode(lightRef, active and "STANDARD" or "OFF", nil, 0)
-        end
+    for _, lightRef in ipairs(lightRefs) do
+      if U.Type(lightRef) == "string" and lightRef ~= "" then
+        L_LIGHT.SetLightMode(lightRef, active and "STANDARD" or "OFF", nil, 0)
       end
     end
   end
@@ -2631,13 +2618,9 @@ local function applyReferenceHandPositionDelta(fromTableKey, toTableKey)
     if obj ~= nil and obj.getPosition ~= nil and obj.setPosition ~= nil then
       local guid = obj.getGUID and obj.getGUID() or ""
       if not movedWithHandZone[guid] then
-        local ok = pcall(function()
-          local pos = obj.getPosition()
-          obj.setPosition(pos + delta)
-        end)
-        if ok then
-          moved = moved + 1
-        end
+        local pos = obj.getPosition()
+        obj.setPosition(pos + delta)
+        moved = moved + 1
       end
     end
   end
@@ -2725,12 +2708,10 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   applyTableConfigObjectPositions(tableCfg)
   enforceNPCSeatObjectVisibility(src, occupiedNPCSlots, tableCfg, previousTableCfg)
   local npcInstances = S.getStateVal("npcs", "instances")
-  if U.Type(npcInstances) == "table" and U.Type(NPCS) == "table" and U.Type(NPCS.applyCurrentLightMode) == "function" then
+  if U.Type(npcInstances) == "table" then
     for npcName, rec in pairs(npcInstances) do
       if U.Type(npcName) == "string" and U.Type(rec) == "table" then
-        pcall(function()
-          NPCS.applyCurrentLightMode(npcName, 0)
-        end)
+        NPCS.applyCurrentLightMode(npcName, 0)
       end
     end
   end
