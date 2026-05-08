@@ -1,0 +1,147 @@
+--[[
+    Synchronization Orchestrator (core/sync.ttslua)
+
+    Thin coordination layer for state-driven reconciliation.
+    This module intentionally contains no low-level business logic; it only
+    delegates to existing domain modules.
+
+    Step 1 scope:
+    - Introduce the Sync module API surface.
+    - Delegate to existing functions where available.
+    - Do not change existing call sites yet.
+]]
+
+local Sync = {}
+
+local C = require("lib.constants")
+local L = require("core.lighting")
+local Scenes = require("core.scenes")
+local Soundscape = require("core.soundscape")
+local NPCS = require("core.npcs")
+local HUDP = require("core.hud_player")
+local HO = require("core.hud_overlays")
+local HUP = require("core.hud_hunger_pulse")
+
+--- Safe delegate helper for optional function calls.
+--- @param fn any
+--- @param ... any
+local function callIfFunction(fn, ...)
+    if type(fn) == "function" then
+        return fn(...)
+    end
+    return nil
+end
+
+--- Reconcile one player scope (thin wrapper over existing behavior).
+--- @param color string Seat color (e.g., "Red")
+function Sync.player(color)
+    if type(color) ~= "string" or color == "" then
+        return
+    end
+
+    -- Current lighting entrypoint for hunger context reconciliation.
+    callIfFunction(L.syncHungryModeForPlayer, color)
+
+    -- Player HUD refresh (currently delegated to global UpdateUIDisplays path).
+    -- If/when HUDP grows a dedicated reconcile API, this delegate can switch.
+    local player = Player and Player[color] or nil
+    if player ~= nil then
+        callIfFunction(HUDP.updatePlayerUI, player, color)
+    end
+
+    -- Overlays + hunger pulse are currently all-player APIs.
+    callIfFunction(HO.syncAll)
+    callIfFunction(HUP.syncHungerPulseAll)
+
+    -- Existing global UI refresh with deltas (if available in current context).
+    if type(UpdateUIDisplays) == "function" then
+        UpdateUIDisplays({
+            playerStats = true,
+            playerHud = true,
+            overlays = true
+        })
+    end
+end
+
+--- Shared lighting pass (scene-level and non-player-scoped light systems).
+function Sync.lighting()
+    -- Existing behavior remains scene-driven at this stage.
+    local sceneName = callIfFunction(Scenes.getCurrentScene)
+    if type(sceneName) == "string" and sceneName ~= "" then
+        callIfFunction(Scenes.loadScene, sceneName)
+    end
+
+    -- Preserve current light initialization path as a compatible delegate.
+    callIfFunction(L.InitLights)
+end
+
+--- Soundscape reconciliation from current saved/runtime state.
+function Sync.soundscape()
+    callIfFunction(Soundscape.onLoad)
+end
+
+--- NPC state/world reconciliation from current state.
+function Sync.npcCutouts()
+    callIfFunction(NPCS.restoreAfterStateLoad)
+end
+
+--- UI-only refresh passthrough.
+--- @param delta table|nil Optional UpdateUIDisplays delta flags
+function Sync.ui(delta)
+    if type(UpdateUIDisplays) == "function" then
+        UpdateUIDisplays(delta)
+    end
+end
+
+--- Full orchestration pass.
+function Sync.full()
+    -- Mirror the existing Global.onLoad() fan-out behavior (step 2 wiring).
+    -- This avoids behavior changes while centralizing orchestration.
+
+    -- Initialize scenes module (loads default or saved scene)
+    callIfFunction(Scenes.onLoad)
+
+    -- Initialize soundscape state after saved data is available.
+    -- Note: In Global, `SS` is the alias, but the module is `core.soundscape`.
+    callIfFunction(Soundscape.onLoad)
+
+    -- NPC instances + L.LIGHTMODES registration for spawned spotlights, then lighting init pipeline.
+    callIfFunction(NPCS.restoreAfterStateLoad)
+    callIfFunction(L.InitLights)
+
+    -- Some lights are unavailable on the first pass; retry shortly after load settles.
+    if type(Wait) == "table" and type(Wait.time) == "function" then
+        Wait.time(function()
+            callIfFunction(L.InitLightsDeferred)
+        end, 0.35)
+    end
+
+    -- Update UI displays with current state (player stats, HUD, overlays, etc.)
+    Sync.ui()
+
+    -- Some world objects (notably hunger smoke props) can be unavailable on the first
+    -- onLoad-frame sync. Re-run overlays after startup settles.
+    if type(Wait) == "table" and type(Wait.time) == "function" then
+        Wait.time(function()
+            Sync.ui({ overlays = true })
+        end, 1.0)
+    end
+
+    -- Refresh all roll panels to match any persisted roll state (e.g. after save/reload mid-roll).
+    -- RUI is a global (loaded in core/global_script.ttslua), so we only call if it exists.
+    if type(RUI) == "table" and type(RUI.refreshAll) == "function" then
+        RUI.refreshAll()
+    end
+
+    -- NPC storyteller panel rows are not refreshed from UpdateUIDisplays for performance.
+    -- After state restore, merge once if that panel is visible.
+    if type(Wait) == "table" and type(Wait.time) == "function" then
+        Wait.time(function()
+            if type(NPCS) == "table" and type(NPCS.refreshStorytellerUIIfVisible) == "function" then
+                NPCS.refreshStorytellerUIIfVisible()
+            end
+        end, 0.15)
+    end
+end
+
+return Sync

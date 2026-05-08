@@ -29,10 +29,19 @@ C = require("lib.constants")
 G = require("lib.guids")
 L = require("core.lighting")
 O = require("core.objects")
+local Sync = require("core.sync")
 LightTest = require("core.light_test")
 -- Bundler tracing: `lib.workspace_ndjson_log` is otherwise only required from inside DEBUG.* at runtime
 -- and can be omitted from Save & Play bundles → a late require there fails in-game. Keep one top-level require.
 require("lib.workspace_ndjson_log")
+
+--- Keep debug-side hunger writes aligned with runtime sync behavior.
+--- @param color string
+--- @param value number
+local function setHungerAndSync(color, value)
+    S.setPlayerVal(color, "hunger", value)
+    Sync.player(color)
+end
 
 --[[
     File Logging Configuration
@@ -452,7 +461,7 @@ function DEBUG.testState()
         if testColor then
             local playerID = S.getPlayerID(testColor)
             if playerID then
-                S.setPlayerVal(testColor, "hunger", 5)
+                setHungerAndSync(testColor, 5)
                 local result = S.getPlayerVal(testColor, "hunger")
                 if result == 5 then
                     printTestResult("Nested state access", true, "Using player: " .. testColor .. " (ID: " .. playerID .. ")")
@@ -579,7 +588,7 @@ function DEBUG.testStatePersistence()
         return
     end
 
-    S.setPlayerVal(testColor, "hunger", 3)
+    setHungerAndSync(testColor, 3)
     S.setStateVal("PLAY", "currentPhase")
     S.setStateVal("tension", "currentScene")
 
@@ -964,7 +973,7 @@ function DEBUG.testUI()
     do
         local testColor = getFirstSeatedPlayerColor()
         if testColor then
-            S.setPlayerVal(testColor, "hunger", 2)
+            setHungerAndSync(testColor, 2)
             -- Note: willpower and health are static data in C.PlayerData, not dynamic state
             -- Only hunger is currently saved as dynamic state
             UpdateUIDisplays()
@@ -3593,7 +3602,7 @@ function DEBUG.testIntegration()
         print("   ✗ ERROR: Could not find player ID for color: " .. testColor)
         return
     end
-    S.setPlayerVal(testColor, "hunger", 3)
+    setHungerAndSync(testColor, 3)
     S.setStateVal(C.Phases.PLAY, "currentPhase")
     print("   ✓ State set (using player: " .. testColor .. ", ID: " .. playerID .. ")")
 
@@ -3858,7 +3867,7 @@ function DEBUG.setHunger(color, value)
         return
     end
 
-    S.setPlayerVal(color, "hunger", value)
+    setHungerAndSync(color, value)
     print("Set " .. color .. " player (ID: " .. playerID .. ") hunger to " .. tostring(value))
 
     UpdateUIDisplays()

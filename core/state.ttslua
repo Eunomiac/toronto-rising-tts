@@ -1053,14 +1053,6 @@ function S.setPlayerVal(playerRef, key, value)
 
     if key == "hunger" then
         S.setStateVal(value, "playerData", playerID, "stats", "hunger")
-        local pData = S.getPlayerData(playerID)
-        local playerColor = type(pData) == "table" and pData.color or nil
-        if type(playerColor) == "string" then
-            local L = require("core.lighting")
-            if type(L.syncHungryModeForPlayer) == "function" then
-                L.syncHungryModeForPlayer(playerColor)
-            end
-        end
         return
     end
 

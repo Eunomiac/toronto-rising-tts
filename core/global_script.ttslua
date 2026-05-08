@@ -36,6 +36,7 @@ end
 Z = require("core.zones")
 Scenes = require("core.scenes")
 SS = require("core.soundscape")
+local Sync = require("core.sync")
 O = require("core.objects")
 U = require("lib.util")
 local StorytellerPanelUI = require("core.storyteller_panel_ui")
@@ -319,41 +320,8 @@ function onLoad(saved_data)
         end, 0.5)
     end
 
-    -- Initialize scenes module (loads default or saved scene)
-    Scenes.onLoad()
-
-    -- Initialize soundscape state after saved data is available. Missing audio emitters are tolerated
-    -- so the module can be bundled before the Unity AssetBundle is placed in the save.
-    SS.onLoad()
-
-    -- NPC instances + `L.LIGHTMODES` registration for spawned spotlights, then single lighting pipeline
-    NPCS.restoreAfterStateLoad()
-    L.InitLights()
-    Wait.time(function()
-        L.InitLightsDeferred()
-    end, 0.35)
-
-    -- Update UI displays with current state
-    UpdateUIDisplays()
-
-    -- Some world objects (notably HUNGER_SMOKE props) can be unavailable on the first
-    -- onLoad-frame sync. Re-run overlays after startup settles so hunger smoke reflects
-    -- saved hunger thresholds (4/5) reliably.
-    Wait.time(function()
-        UpdateUIDisplays({ overlays = true })
-    end, 1.0)
-
-    -- Refresh all roll panels to match any persisted roll state (e.g. after save/reload mid-roll)
-    if RUI then
-        RUI.refreshAll()
-    end
-
-    -- NPC panel rows are not refreshed from `UpdateUIDisplays` (perf). After state restore, merge once if that panel is visible.
-    Wait.time(function()
-        if NPCS and NPCS.refreshStorytellerUIIfVisible then
-            NPCS.refreshStorytellerUIIfVisible()
-        end
-    end, 0.15)
+    -- Synchronization orchestration (step 2): consolidate the onLoad fan-out into Sync.full().
+    Sync.full()
 
     -- Debug module help (optional - shows available test commands)
     -- DEBUG.help()

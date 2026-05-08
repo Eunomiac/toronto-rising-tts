@@ -8,6 +8,7 @@ local S = require("core.state")
 local P = require("lib.pc_stats")
 local PCS = require("lib.pcs_data")
 local U = require("lib.util")
+local Sync = require("core.sync")
 
 --- @type table<string, table>
 local buffers = {}
@@ -262,6 +263,7 @@ function PCST.onHudClick(player, _button, id)
       local cur = tonumber(S.getPlayerVal(color, "hunger")) or 0
       local nx = math.max(0, math.min(C.MAX_HUNGER or 5, cur + b.hunger))
       S.setPlayerVal(color, "hunger", nx)
+      Sync.player(color)
     end
     b.hunger = 0
     PCST.refreshCharacterSheetsForColor(color)

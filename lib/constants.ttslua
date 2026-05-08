@@ -244,6 +244,7 @@ C.Phases = {
     SESSION_START = "SessionStart",
     PLAY = "Play",
     DOWNTIME = "Downtime",
+    MEMORIAM = "Memoriam",
     SESSION_END = "SessionEnd"
 }
 
@@ -345,7 +346,7 @@ C.CHRONICLE_DATA = {
       affiliation = "Anarch",
 			inCoterieRef = false
 		},
-		line = {
+		theLine = {
 			name = "the Line",
       affiliation = "Anarch",
 			inCoterieRef = true
@@ -400,7 +401,7 @@ C.CHRONICLE_DATA = {
       affiliation = "Camarilla",
 			inCoterieRef = true
 		},
-		scarlettAndBoys = {
+		scarlettAndTheBoys = {
 			name = "Scarlett & the Boys",
       affiliation = "Camarilla",
 			  inCoterieRef = true

@@ -46,6 +46,7 @@ local U    = require("lib.util")
 local RO   = require("lib.roll_options")
 local P    = require("lib.pc_stats")
 local PCST = require("core.pc_storyteller_panel")
+local Sync = require("core.sync")
 
 -- ============================================================================
 -- CALLBACK HOOKS (set by global_script after all modules are loaded)
@@ -1189,6 +1190,7 @@ function RC._applyRollConsequences(color, active)
             local hunger    = S.getPlayerVal(color, "hunger") or 0
             local newHunger = math.min(hunger + 1, C.MAX_HUNGER)
             S.setPlayerVal(color, "hunger", newHunger)
+            Sync.player(color)
             rouseMutated = true
 
             if hunger >= C.MAX_HUNGER then
