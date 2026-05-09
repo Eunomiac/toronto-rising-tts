@@ -342,6 +342,12 @@ function onLoad(saved_data)
     setStartupAction("initialize-game-state")
     S.InitializeGameState(saved_data)
 
+    -- AssetBundles often resume Unity looping AudioSources from the save before reconcile runs; mute stray loops immediately.
+    setStartupAction("soundscape-bootstrap-silence")
+    if SS ~= nil and type(SS.bootstrapSilenceStrayEmitterLoops) == "function" then
+        SS.bootstrapSilenceStrayEmitterLoops()
+    end
+
     -- Initialize zones module
     setStartupAction("zones-onload")
     Z.onLoad()

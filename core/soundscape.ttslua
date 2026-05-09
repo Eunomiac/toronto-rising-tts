@@ -5,6 +5,10 @@
     The static asset contract lives in lib/soundscape_catalog.ttslua; this module
     owns all direct AssetBundle calls so scene, weather, and UI code can stay
     intent-based.
+
+    Load note: TTS/Unity often resumes looping clips from the saved table state before
+    Global onLoad finishes. Call `bootstrapSilenceStrayEmitterLoops` right after state init,
+    then `reconcileFromState` applies persisted `gameState.soundscape` (short defer).
 ]]
 
 local Soundscape = {}
@@ -529,6 +533,50 @@ local function silenceLoopChannel(channelKey)
         effectList = Catalog.EFFECT_LIST.LOOPING,
         volume = 0,
     }, 0, 0, 0)
+end
+
+--- Looping emitter channels that can resume wrong audio from a saved AssetBundle before reconcile runs.
+local BOOTSTRAP_LOOP_CHANNELS = {
+    "musicA",
+    "musicB",
+    "featuredA",
+    "featuredB",
+    "locationA",
+    "locationB",
+    "weatherRain",
+    "weatherWind",
+}
+
+--- Forces the silent looping effect at volume 0 without touching `gameState.soundscape`
+--- (avoids fighting `S.InitializeGameState` / reconcile snapshots).
+--- @param channelKey string
+--- @return boolean
+local function forceSilentLoopPhysicalOnly(channelKey)
+    local obj = resolveEmitter(channelKey)
+    if obj == nil or obj.AssetBundle == nil or obj.AssetBundle.playLoopingEffect == nil then
+        return false
+    end
+    setEmitterVolume(obj, 0)
+    local index = resolveEffectIndex(obj, Catalog.SILENT_EFFECT, Catalog.EFFECT_LIST.LOOPING)
+    if index == nil then
+        return false
+    end
+    obj.AssetBundle.playLoopingEffect(index)
+    return true
+end
+
+--- Run once after load: cancel stale deferred playback and kill Unity-resumed stray loops
+--- until `reconcileFromState` applies saved soundscape.
+function Soundscape.bootstrapSilenceStrayEmitterLoops()
+    cachedEmitters = {}
+    musicGeneration = musicGeneration + 1
+    featuredGeneration = featuredGeneration + 1
+    weatherGeneration = weatherGeneration + 1
+    cancelSingleEmitterTransition("weatherRain")
+    cancelSingleEmitterTransition("weatherWind")
+    for _, channelKey in ipairs(BOOTSTRAP_LOOP_CHANNELS) do
+        forceSilentLoopPhysicalOnly(channelKey)
+    end
 end
 
 local function scheduleNextBackgroundTrack(kind, key, track, generation)
@@ -1082,11 +1130,19 @@ function Soundscape.invalidateReconcileCache()
     lastSoundscapeReconcileFingerprint = nil
 end
 
+--- Default delay before applying reconcile (emitters must exist; was 1.0s and caused long stray-audio windows).
+local RECONCILE_APPLY_DEFER_SECONDS = 0.15
+
 --- Reconciles live soundscape playback from persisted state.
---- @param opts table|nil `{ force = boolean }` — when `force`, fingerprint short-circuit is skipped.
+--- @param opts table|nil `{ force = boolean?, deferApplySeconds = number? }` — when `force`, fingerprint short-circuit is skipped; optional defer override (seconds).
 function Soundscape.reconcileFromState(opts)
     opts = type(opts) == "table" and opts or {}
     local force = opts.force == true
+    local deferSeconds = RECONCILE_APPLY_DEFER_SECONDS
+    local deferOverride = tonumber(opts.deferApplySeconds)
+    if deferOverride ~= nil and deferOverride >= 0 then
+        deferSeconds = deferOverride
+    end
 
     ensureState()
     local state = ensureState()
@@ -1101,7 +1157,7 @@ function Soundscape.reconcileFromState(opts)
         applySoundscapeReconcileFromStateSnapshot(state)
         lastSoundscapeReconcileFingerprint = fp
     end
-    if not waitTime(runApply, 1.0) then
+    if not waitTime(runApply, deferSeconds) then
         runApply()
     end
 end

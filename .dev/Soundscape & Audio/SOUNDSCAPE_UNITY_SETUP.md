@@ -351,6 +351,13 @@ After saving the objects into the mod:
 
 ## Troubleshooting
 
+- **Rain/music briefly wrong on load:** Unity/TTS restores looping `AudioSource`
+  state from the saved table before Global Lua finishes. `onLoad` calls
+  `Soundscape.bootstrapSilenceStrayEmitterLoops()` (physical silent loop + volume 0)
+  right after `S.InitializeGameState`, then `reconcileFromState` reapplies
+  `gameState.soundscape` after a short defer (~0.15s). This is not fixed by “stop on
+  save” alone — the stray audio is deserialized with the workshop objects.
+
 - If `inspectSoundscapeAudio` says an emitter is missing, check the object tags.
 - If effects are missing, check exact Looping Effect names in Unity.
 - If layers do not crossfade, TTS may not expose writable `AudioSource.volume` for
