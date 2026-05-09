@@ -8,7 +8,9 @@
 
     Load note: TTS/Unity often resumes looping clips from the saved table state before
     Global onLoad finishes. Call `bootstrapSilenceStrayEmitterLoops` right after state init,
-    then `reconcileFromState` applies persisted `gameState.soundscape` (short defer).
+    and `require("core.soundscape_emitter_object")` on each emitter (global `onLoad` in that module).
+    `reconcileFromState` then reapplies
+    persisted `gameState.soundscape` (short defer).
 ]]
 
 local Soundscape = {}
@@ -376,6 +378,18 @@ local function getAudioSources(obj)
     return {}
 end
 
+--- `mute` + volume 0 before Unity clip swaps; Global playback paths use `setEmitterVolume` to unmute.
+local function hardSilenceAudioSources(obj)
+    local sources = getAudioSources(obj)
+    for _, source in ipairs(sources) do
+        if source ~= nil and source.set ~= nil then
+            source.set("volume", 0)
+            source.set("mute", true)
+            source.set("spatialBlend", 0)
+        end
+    end
+end
+
 local function setEmitterVolume(obj, volume)
     local sources = getAudioSources(obj)
     local updated = 0
@@ -402,10 +416,14 @@ local function fadeEmitterVolume(obj, fromVolume, toVolume, seconds)
         return okImmediate == true
     end
 
+    -- Apply starting gain immediately. Deferred `waitTime(..., 0)` steps can run after the caller
+    -- continues (e.g. after `playLoopingEffect`), which produced a one-frame full-volume burst.
+    setEmitterVolume(obj, fromVolume)
+
     local hasAudioSource = #getAudioSources(obj) > 0
     local steps = math.max(1, math.floor(duration * 10))
     local scheduled = false
-    for i = 0, steps do
+    for i = 1, steps do
         local ratio = i / steps
         local volume = fromVolume + ((toVolume - fromVolume) * ratio)
         scheduled = waitTime(function()
@@ -457,6 +475,7 @@ local function normalizeEntry(entry)
     }
 end
 
+--- `fromVolume` is ignored at playback time: clips always start at zero gain, then fade to target.
 local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolume)
     local channelDef = Catalog.CHANNELS[channelKey]
     if channelDef == nil then
@@ -491,12 +510,7 @@ local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolu
         return false, "Missing " .. effectList .. " effect '" .. tostring(track.effect) .. "' on channel " .. tostring(channelKey)
     end
 
-    local state = ensureState()
-    local channelState = state.channels[channelKey] or {}
-    local currentVolume = tonumber(fromVolume)
-    if currentVolume == nil then
-        currentVolume = tonumber(channelState.volume) or 0
-    end
+    ensureState()
 
     local naturalWeather = nil
     local targetVolume = clamp01(volume or track.volume or channelDef.defaultVolume or 0)
@@ -507,8 +521,14 @@ local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolu
         targetVolume = emitterTarget
     end
 
-    local didSetVolume = fadeEmitterVolume(obj, currentVolume, emitterTarget, fadeSeconds or 0)
+    local fadeSec = tonumber(fadeSeconds) or 0
+    -- Always arm zero gain before swapping clips; Unity often plays one loud frame otherwise.
+    hardSilenceAudioSources(obj)
+    setEmitterVolume(obj, 0)
     obj.AssetBundle[apiName](index)
+    hardSilenceAudioSources(obj)
+    setEmitterVolume(obj, 0)
+    local didSetVolume = fadeEmitterVolume(obj, 0, emitterTarget, fadeSec)
 
     local patch = {
         effect = track.effect,
@@ -533,50 +553,6 @@ local function silenceLoopChannel(channelKey)
         effectList = Catalog.EFFECT_LIST.LOOPING,
         volume = 0,
     }, 0, 0, 0)
-end
-
---- Looping emitter channels that can resume wrong audio from a saved AssetBundle before reconcile runs.
-local BOOTSTRAP_LOOP_CHANNELS = {
-    "musicA",
-    "musicB",
-    "featuredA",
-    "featuredB",
-    "locationA",
-    "locationB",
-    "weatherRain",
-    "weatherWind",
-}
-
---- Forces the silent looping effect at volume 0 without touching `gameState.soundscape`
---- (avoids fighting `S.InitializeGameState` / reconcile snapshots).
---- @param channelKey string
---- @return boolean
-local function forceSilentLoopPhysicalOnly(channelKey)
-    local obj = resolveEmitter(channelKey)
-    if obj == nil or obj.AssetBundle == nil or obj.AssetBundle.playLoopingEffect == nil then
-        return false
-    end
-    setEmitterVolume(obj, 0)
-    local index = resolveEffectIndex(obj, Catalog.SILENT_EFFECT, Catalog.EFFECT_LIST.LOOPING)
-    if index == nil then
-        return false
-    end
-    obj.AssetBundle.playLoopingEffect(index)
-    return true
-end
-
---- Run once after load: cancel stale deferred playback and kill Unity-resumed stray loops
---- until `reconcileFromState` applies saved soundscape.
-function Soundscape.bootstrapSilenceStrayEmitterLoops()
-    cachedEmitters = {}
-    musicGeneration = musicGeneration + 1
-    featuredGeneration = featuredGeneration + 1
-    weatherGeneration = weatherGeneration + 1
-    cancelSingleEmitterTransition("weatherRain")
-    cancelSingleEmitterTransition("weatherWind")
-    for _, channelKey in ipairs(BOOTSTRAP_LOOP_CHANNELS) do
-        forceSilentLoopPhysicalOnly(channelKey)
-    end
 end
 
 local function scheduleNextBackgroundTrack(kind, key, track, generation)
@@ -665,6 +641,53 @@ end
 
 local function cancelSingleEmitterTransition(channelKey)
     singleEmitterTransitionGeneration[channelKey] = (singleEmitterTransitionGeneration[channelKey] or 0) + 1
+end
+
+--- Looping emitter channels that can resume wrong audio from a saved AssetBundle before reconcile runs.
+local BOOTSTRAP_LOOP_CHANNELS = {
+    "musicA",
+    "musicB",
+    "featuredA",
+    "featuredB",
+    "locationA",
+    "locationB",
+    "weatherRain",
+    "weatherWind",
+}
+
+--- Forces the silent looping effect at volume 0 without touching `gameState.soundscape`
+--- (avoids fighting `S.InitializeGameState` / reconcile snapshots).
+--- @param channelKey string
+--- @return boolean
+local function forceSilentLoopPhysicalOnly(channelKey)
+    local obj = resolveEmitter(channelKey)
+    if obj == nil or obj.AssetBundle == nil or obj.AssetBundle.playLoopingEffect == nil then
+        return false
+    end
+    hardSilenceAudioSources(obj)
+    setEmitterVolume(obj, 0)
+    local index = resolveEffectIndex(obj, Catalog.SILENT_EFFECT, Catalog.EFFECT_LIST.LOOPING)
+    if index == nil then
+        return false
+    end
+    obj.AssetBundle.playLoopingEffect(index)
+    hardSilenceAudioSources(obj)
+    return true
+end
+
+--- Run once after load: cancel stale deferred playback and kill Unity-resumed stray loops
+--- until `reconcileFromState` applies saved soundscape.
+--- Must appear after `cancelSingleEmitterTransition` (Lua 5.1 lexical scope).
+function Soundscape.bootstrapSilenceStrayEmitterLoops()
+    cachedEmitters = {}
+    musicGeneration = musicGeneration + 1
+    featuredGeneration = featuredGeneration + 1
+    weatherGeneration = weatherGeneration + 1
+    cancelSingleEmitterTransition("weatherRain")
+    cancelSingleEmitterTransition("weatherWind")
+    for _, channelKey in ipairs(BOOTSTRAP_LOOP_CHANNELS) do
+        forceSilentLoopPhysicalOnly(channelKey)
+    end
 end
 
 local function findFeaturedSequence(trackKey)

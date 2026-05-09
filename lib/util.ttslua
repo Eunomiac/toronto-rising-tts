@@ -1979,6 +1979,29 @@ end
 -- LIGHTING UTILITIES
 -- ============================================================================
 
+--- `L.LIGHTMODES` keys for PC seats start with `playerLight` (**11** characters: player + Light).
+--- Using `string.sub(ref, 1, 10)` accidentally compared against `"playerLight"` with the final `t`
+--- chopped off, so the check never matched and scene presets could stomp hunger-driven modes.
+--- @param lightRef string
+--- @return boolean
+function U.lightRefIsPlayerSeat(lightRef)
+    return type(lightRef) == "string" and string.sub(lightRef, 1, 11) == "playerLight"
+end
+
+--- Seat NPC spotlight keys (`npcLight2NPC1`, spawned `npcLight_<guid>`, etc.).
+--- @param lightRef string
+--- @return boolean
+function U.lightRefIsNpcSeat(lightRef)
+    return type(lightRef) == "string" and string.sub(lightRef, 1, 8) == "npcLight"
+end
+
+--- Player or NPC seat spotlight registry entry (excluded from scene ambient/staged lists).
+--- @param lightRef string
+--- @return boolean
+function U.lightRefIsSeatSpotlight(lightRef)
+    return U.lightRefIsPlayerSeat(lightRef) or U.lightRefIsNpcSeat(lightRef)
+end
+
 --- Changes global lighting with a delay
 -- Applies lighting changes and calls Lighting.apply after a delay.
 -- Parameters starting with "set" are treated as function calls (e.g., setLightColor).

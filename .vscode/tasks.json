@@ -68,6 +68,27 @@
       }
     },
     {
+      "label": "Fix TTS object stubs (.tts/objects XML + Lua)",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        ".dev/scripts/fix_tts_object_stubs.js"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "none",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      }
+    },
+    {
       "label": "Generate CSheet defaults Lua (csheet_defaults_xml.ttslua)",
       "type": "shell",
       "command": "node",

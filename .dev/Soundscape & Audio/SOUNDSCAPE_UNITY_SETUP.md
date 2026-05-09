@@ -9,6 +9,10 @@ For the overall architecture and extension rules, see
 For the Lua-side expansion work needed to support the full audio inventory, see
 `SOUNDSCAPE_LUA_IMPLEMENTATION.md`.
 
+To stop **loud default playback** when the bundle loads in TTS (Play On Awake, volume,
+mixer snapshots), author quiet prefab defaults in Unity — see
+**`SOUNDSCAPE_ASSETBUNDLE_AUDIO_INIT.md`**.
+
 ## Required Unity Version
 
 Use Unity 6000.0.62f1, matching the current Tabletop Simulator AssetBundle
@@ -352,11 +356,30 @@ After saving the objects into the mod:
 ## Troubleshooting
 
 - **Rain/music briefly wrong on load:** Unity/TTS restores looping `AudioSource`
-  state from the saved table before Global Lua finishes. `onLoad` calls
-  `Soundscape.bootstrapSilenceStrayEmitterLoops()` (physical silent loop + volume 0)
-  right after `S.InitializeGameState`, then `reconcileFromState` reapplies
-  `gameState.soundscape` after a short defer (~0.15s). This is not fixed by “stop on
-  save” alone — the stray audio is deserialized with the workshop objects.
+  state from the saved table before Global Lua finishes. **`core/global_script.ttslua`
+  runs a zero-`require` pass first** (`TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS`): hard-mute
+  exposed `AudioSource`s and swap to the `"silent"` looping effect by name on each
+  hard-coded emitter GUID, then schedules `Wait.time` retries when available.
+  During the **Global chunk**, `getObjectFromGUID` usually returns **nil** for all emitters
+  (`emitters resolved 0/9`), and **`Wait` is often unset**, so the real work runs from
+  **`onLoad`**: an immediate pass plus deferred passes at **0 / 0.05 / 0.25 / 0.5** seconds.
+  **Keep those GUIDs in sync with** `lib/guids.ttslua`
+  (`SYNC` comment on `SOUNDSCAPE_MUSIC_A`). The file **also** calls
+  `Soundscape.bootstrapSilenceStrayEmitterLoops()` immediately after
+  `require("core.soundscape")` so emitters mute **before** `require("core.debug")`
+  (whose tail prints the custom UI manifest — often the first visible Lua line while audio was leaking).
+  Global `onLoad` calls the same bootstrap again right after `S.InitializeGameState`
+  (clears emitter cache, bumps generations, cancels stale weather transitions, forces
+  silent loop per GUID when the object already exists). **Also** add each emitter's object
+  script as the single line `require("core.soundscape_emitter_object")` (same pattern as dice
+  bags using `require("objects.dice_bag")`: the module registers global `onLoad`, which TTS
+  invokes per object). Emitters hard-mute AudioSources there until Global applies fades (avoids
+  a one-frame full-volume burst). Then `reconcileFromState` reapplies `gameState.soundscape`
+  after a short defer (~0.15s). This is not fixed by “stop on save” alone — the stray
+  audio is deserialized with the workshop objects. For **prefab-side** prevention
+  (Play On Awake off, volume 0, optional boot script), see **`SOUNDSCAPE_ASSETBUNDLE_AUDIO_INIT.md`**.
+
+- **Global vs object `onLoad`:** TTS docs say multiple handlers for the same event usually **all** run, but they **do not specify** whether Global `onLoad` runs before object `onLoad` or the reverse. What *is* certain is that **every `onLoad` runs after** the Global script file has finished its **top-level** execution (all `require`s). The loudest leak you traced lined up with **`require("core.debug")`** — still **before** `function onLoad` runs anywhere. Per-emitter `require("core.soundscape_emitter_object")` remains useful **defense in depth**: when each emitter’s `onLoad` runs, it re-clamps **that** object (including deferred `Wait.time` passes for AudioSources that bind late).
 
 - If `inspectSoundscapeAudio` says an emitter is missing, check the object tags.
 - If effects are missing, check exact Looping Effect names in Unity.

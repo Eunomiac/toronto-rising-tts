@@ -344,7 +344,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 
 ### Chronicle weather (`lib/chronicle_weather.ttslua`)
 
-**Require:** `local ChronicleWeather = require("lib.chronicle_weather")`  
+**Require:** `local ChronicleWeather = require("lib.chronicle_weather")`
 **Data:** `node .dev/scripts/generate_tr_weather_lua.js` embeds `.dev/Chronicle Data/TR_Weather.csv` into `lib/tr_weather_schedule.ttslua`.
 
 | Function | Description | Usage Example |

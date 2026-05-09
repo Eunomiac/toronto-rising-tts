@@ -5,9 +5,10 @@
 
 local StorytellerScenesPanel = {}
 
+local C = require("lib.constants")
+local G = require("lib.guids")
 local U = require("lib.util")
 local S = require("core.state")
-local C = require("lib.constants")
 
 local RSL = require("lib.rotational-seat-layout")
 local Sync = require("core.sync")
@@ -221,6 +222,54 @@ function StorytellerScenesPanel.applySiteModalDistrictVisibility()
     U.setAttribute("scenes_site_group_generic", "visibility", SITE_MODAL_BUCKET_VISIBILITY_ON)
 end
 
+--- Updates a Custom Tile (or other custom object) primary texture.
+--- Save JSON uses `CustomImage.ImageURL`; Lua passes the same URL as `image`.
+--- @param guid string|nil
+--- @param imageUrl string|nil
+--- @param label string short name for GM alert
+local function setStorytellerCardCustomImage(guid, imageUrl, label)
+    if type(imageUrl) ~= "string" or imageUrl == "" then
+        return
+    end
+    if type(guid) ~= "string" or guid == "" then
+        return
+    end
+    local obj = getObjectFromGUID(guid)
+    if obj == nil or obj.setCustomObject == nil then
+        U.AlertGM(
+            "Scenes: "
+                .. label
+                .. " display object missing or lacks setCustomObject (GUID "
+                .. tostring(guid)
+                .. ")."
+        )
+        return
+    end
+    obj.setCustomObject({ image = imageUrl })
+    if obj.reload ~= nil then
+        obj.reload()
+    end
+end
+
+--- Sets `G.GUIDS.SITE_CARD` / `DISTRICT_CARD` textures from `C.Sites` / `C.Districts` image URLs.
+--- @param site table
+--- @param districtKey string trimmed; empty skips district card
+local function applySessionSceneDisplayCards(site, districtKey)
+    local guids = G.GUIDS
+    if type(guids) ~= "table" then
+        return
+    end
+    if type(site) == "table" and type(site.image) == "string" then
+        setStorytellerCardCustomImage(guids.SITE_CARD, site.image, "Site card")
+    end
+    if type(districtKey) == "string" and districtKey ~= "" then
+        local dist = C.Districts[districtKey]
+        if type(dist) == "table" and type(dist.image) == "string" then
+            setStorytellerCardCustomImage(guids.DISTRICT_CARD, dist.image, "District card")
+        end
+    end
+end
+
 --- @param player Player
 function StorytellerScenesPanel.applyLocationFromInputs(player)
     if SS.applyContext == nil or SS.contextFromSite == nil then
@@ -259,6 +308,8 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
 
     S.setStateVal(dKey ~= "" and dKey or nil, "sessionScene", "districtKey")
     S.setStateVal(sKey, "sessionScene", "siteKey")
+
+    applySessionSceneDisplayCards(site, dKey)
 
     local ctx = SS.contextFromSite(site, sKey)
     local result = SS.applyContext(ctx)

@@ -25,6 +25,10 @@ G.GUIDS = {
     },
     THE_FLOOR = "fe1fb7",
 
+    -- SITE CARD & DISTRICT CARD DISPLAY
+    SITE_CARD = "eea14d",
+    DISTRICT_CARD = "380062",
+
     -- STORYTELLER OBJECTS
     -- Storyteller Table (raised and behind players so they can't see it)
     GM_TABLE = "e157b5",
@@ -64,6 +68,7 @@ G.GUIDS = {
 
     -- Soundscape AssetBundle Objects
 
+    -- SYNC: `core/global_script.ttslua` `TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS` (zero-require silence on load)
     SOUNDSCAPE_MUSIC_A = "e1b509",
     SOUNDSCAPE_MUSIC_B = "26c731",
     SOUNDSCAPE_FEATURED_A = "fd7373",

@@ -15,6 +15,137 @@
     tts-api/ (in-repo TTS Scripting + UI API reference; start at tts-api/Getting Started/).
 ]]
 
+-- ---------------------------------------------------------------------------
+-- Soundscape: hard-mute emitters by GUID (NO require). Unity audio can resume
+-- before `require("core.soundscape")`; chunk-time GUID lookups are usually 0/9
+-- until `onLoad`, so `function onLoad` repeats this + schedules Wait retries.
+-- GUIDs MUST match `lib/guids.ttslua` `SOUNDSCAPE_*` (see SYNC comment there).
+-- ---------------------------------------------------------------------------
+local TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS = {
+    "e1b509",
+    "26c731",
+    "fd7373",
+    "ff0596",
+    "09dff0",
+    "05e6fd",
+    "24b1d3",
+    "ee12cc",
+    "67382a",
+}
+
+local function trEarlyCollectAudioSources(obj)
+    if obj == nil then
+        return {}
+    end
+    if obj.getComponentsInChildren ~= nil then
+        local components = obj.getComponentsInChildren("AudioSource")
+        if type(components) == "table" then
+            return components
+        end
+    end
+    if obj.getComponentInChildren ~= nil then
+        local component = obj.getComponentInChildren("AudioSource")
+        if component ~= nil then
+            return { component }
+        end
+    end
+    if obj.getComponent ~= nil then
+        local component = obj.getComponent("AudioSource")
+        if component ~= nil then
+            return { component }
+        end
+    end
+    return {}
+end
+
+local function trEarlyHardSilenceSources(obj)
+    for _, source in ipairs(trEarlyCollectAudioSources(obj)) do
+        if source ~= nil and source.set ~= nil then
+            source.set("volume", 0)
+            source.set("mute", true)
+            source.set("spatialBlend", 0)
+        end
+    end
+end
+
+--- @param phaseLabel string identifies this pass in the TTS console load timeline
+local function trEarlySilenceSoundscapeEmitters(phaseLabel)
+    local label = type(phaseLabel) == "string" and phaseLabel or "sync-immediate"
+    print("[SoundscapeEarly] begin: " .. label)
+    local getObj = rawget(_G, "getObjectFromGUID")
+    if type(getObj) ~= "function" then
+        print("[SoundscapeEarly] skip: getObjectFromGUID unavailable (" .. label .. ")")
+        return
+    end
+    local total = #TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS
+    local resolved = 0
+    local silentSwapped = 0
+    for _, guid in ipairs(TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS) do
+        local obj = getObj(guid)
+        if obj ~= nil then
+            resolved = resolved + 1
+            trEarlyHardSilenceSources(obj)
+            local ab = obj.AssetBundle
+            if ab ~= nil and ab.getLoopingEffects ~= nil and ab.playLoopingEffect ~= nil then
+                local effects = ab.getLoopingEffects()
+                if type(effects) == "table" then
+                    for _, eff in ipairs(effects) do
+                        if type(eff) == "table" and eff.name == "silent" and type(eff.index) == "number" then
+                            ab.playLoopingEffect(eff.index)
+                            silentSwapped = silentSwapped + 1
+                            break
+                        end
+                    end
+                end
+            end
+            trEarlyHardSilenceSources(obj)
+        end
+    end
+    print(
+        "[SoundscapeEarly] complete: "
+            .. label
+            .. " (emitters resolved "
+            .. tostring(resolved)
+            .. "/"
+            .. tostring(total)
+            .. ", silent loop applied "
+            .. tostring(silentSwapped)
+            .. ")"
+    )
+end
+
+--- Wall-clock delays after which we re-run silence (emitters often do not exist during the Global chunk).
+local TR_EARLY_SILENCE_DEFERRAL_SECONDS = { 0, 0.05, 0.25, 0.5 }
+
+--- @param schedulerLabel string origin for console logs (`chunk-load` vs `onLoad`)
+--- @return boolean true if `Wait.time` was available
+local function trScheduleEarlySoundscapeSilenceDeferred(schedulerLabel)
+    local tag = type(schedulerLabel) == "string" and schedulerLabel or "unknown"
+    local W = rawget(_G, "Wait")
+    if type(W) ~= "table" or type(W.time) ~= "function" then
+        print("[SoundscapeEarly] note: Wait.time unavailable (" .. tag .. ") — deferred passes skipped")
+        return false
+    end
+    for _, sec in ipairs(TR_EARLY_SILENCE_DEFERRAL_SECONDS) do
+        local delay = sec
+        W.time(function()
+            trEarlySilenceSoundscapeEmitters(tag .. "-wait-" .. tostring(delay))
+        end, delay)
+    end
+    print(
+        "[SoundscapeEarly] scheduled "
+            .. tostring(#TR_EARLY_SILENCE_DEFERRAL_SECONDS)
+            .. " deferred passes ("
+            .. tag
+            .. ")"
+    )
+    return true
+end
+
+-- Chunk phase: objects usually are not registered yet (`emitters resolved 0/9`); `Wait` is often nil here too.
+trEarlySilenceSoundscapeEmitters("chunk-sync-immediate")
+trScheduleEarlySoundscapeSilenceDeferred("chunk-load")
+
 -- Load shared utilities and constants
 U = require("lib.util")
 C = require("lib.constants")
@@ -36,6 +167,11 @@ end
 Z = require("core.zones")
 Scenes = require("core.scenes")
 SS = require("core.soundscape")
+-- Unity resumes AssetBundle audio as soon as objects exist; DEBUG require prints before onLoad.
+-- Silence emitters here so stray loops do not play through `DEBUG.loadCustomUiUploadManifest` etc.
+if SS ~= nil and type(SS.bootstrapSilenceStrayEmitterLoops) == "function" then
+    SS.bootstrapSilenceStrayEmitterLoops()
+end
 local Sync = require("core.sync")
 O = require("core.objects")
 U = require("lib.util")
@@ -314,6 +450,10 @@ function GlobalRegisterTrackerDisplay(cfg)
 end
 
 function onLoad(saved_data)
+    -- Emitters and `Wait.time` are typically available here; chunk-level pass often sees 0/9 GUIDs.
+    trEarlySilenceSoundscapeEmitters("onLoad-sync-immediate")
+    trScheduleEarlySoundscapeSilenceDeferred("onLoad")
+
     print("--- VTM5E Module Loaded ---")
     local startupLastAction = "onLoad:start"
 

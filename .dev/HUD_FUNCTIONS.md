@@ -48,7 +48,7 @@ Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 | `HUD_scenesCloseLocationModals` | modal Close buttons | `(player, button, id)` | Hides both picker roots. |
 | `HUD_scenesPickDistrict` | `scenes_pick_district_*` | `(player, button, id)` | Parses key from `id`, writes `scenes_districtKey` via `UI.setValue` (InputField value must match `UI.getValue` used by Apply), closes modals. |
 | `HUD_scenesPickSite` | `scenes_pick_site_*` | `(player, button, id)` | Same for `scenes_siteKey`. |
-| `HUD_scenesApplyLocation` | `Apply location + soundscape` | `(player, button, id)` | Validates `C.Districts` / `C.Sites` keys from inputs, writes `sessionScene.districtKey` / `siteKey`, runs `Soundscape.applyContext(Soundscape.contextFromSite(site, siteKey))`, then `Sync.full()`. |
+| `HUD_scenesApplyLocation` | `Apply location + soundscape` | `(player, button, id)` | Validates keys, writes `sessionScene.districtKey` / `siteKey`, updates Custom Image objects `G.GUIDS.SITE_CARD` / `DISTRICT_CARD` from `site.image` / district `image` when set, then `Soundscape.applyContext` + `Sync.full()`. |
 | `HUD_scenesApplyClock` | `Apply clock` | `(player, button, id)` | Writes `sessionScene.clock` from `scenes_clock_*` inputs, then `ChronicleWeather.applyScheduledWeather({ force = false })` when follow-on-clock is on and manual hold is off → layered rain/wind + `Soundscape.setThunderEnabled` from `lib/tr_weather_schedule.ttslua`; then `Sync.full()` and soundscape UI refresh. |
 | `HUD_scenesSaveNpcNote` | `Save NPC scene note` | `(player, button, id)` | Stub: stores text in `sessionScene.npcWorld.lastNote` for future NPC spawn tracking hooks. |
 
