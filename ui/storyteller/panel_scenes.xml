@@ -1,6 +1,6 @@
 <!-- Storyteller Scenes: lighting presets, table, seat narrative presence, location keys, clock (see core/storyteller_scenes_panel.ttslua). -->
 <Panel id="panel_scenes" active="false">
-  <VerticalLayout spacing="6" padding="6 6 6 6" childForceExpandWidth="true" minWidth="560">
+  <VerticalLayout spacing="6" padding="6 6 6 6" childForceExpandWidth="true" minWidth="600" preferredWidth="600">
     <Text class="hud_storyteller_header">Scenes</Text>
     <Text fontSize="9" color="#AAAAAA">Lighting presets drive `currentScene` / `Scenes.reconcileFromState`. Narrative fields live in `gameState.sessionScene`.</Text>
 
@@ -40,27 +40,34 @@
       <Button id="scenes_seat_NPC4" text="NPC4" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
     </HorizontalLayout>
 
-    <Text class="hud_storyteller_label">Scene location (constants keys)</Text>
-    <Text fontSize="9" color="#AAAAAA">District keys match `C.Districts` (e.g. DupontByTheCastle). Site keys match `C.Sites` (e.g. CLGrounds).</Text>
-    <HorizontalLayout spacing="4" childForceExpandWidth="true">
-      <VerticalLayout spacing="2" flexibleWidth="1">
+    <Text class="hud_storyteller_label">Scene location (type keys — no modal picker)</Text>
+    <Text fontSize="9" color="#AAAAAA">These are text fields (not buttons): type `C.Districts` / `C.Sites` keys, then click Apply. Examples: DupontByTheCastle, CLGrounds.</Text>
+    <HorizontalLayout spacing="6" childForceExpandWidth="false" childAlignment="UpperLeft">
+      <VerticalLayout spacing="2" minWidth="288" preferredWidth="288" flexibleWidth="0">
         <Text fontSize="9" color="#CCCCCC">District key</Text>
-        <InputField id="scenes_districtKey" preferredHeight="28" minHeight="28" lineType="SingleLine" fontSize="11" textColor="#111111" placeholder="DupontByTheCastle" onEndEdit="HUD_scenesPanelInput"></InputField>
+        <InputField id="scenes_districtKey" class="hud_storyteller_input" preferredHeight="30" minHeight="30" minWidth="280" preferredWidth="280" flexibleWidth="0"
+          lineType="SingleLine" fontSize="12" textColor="#222222"
+          colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)"
+          placeholder="DupontByTheCastle" onEndEdit="HUD_scenesPanelInput"></InputField>
       </VerticalLayout>
-      <VerticalLayout spacing="2" flexibleWidth="1">
+      <VerticalLayout spacing="2" minWidth="288" preferredWidth="288" flexibleWidth="0">
         <Text fontSize="9" color="#CCCCCC">Site key</Text>
-        <InputField id="scenes_siteKey" preferredHeight="28" minHeight="28" lineType="SingleLine" fontSize="11" textColor="#111111" placeholder="CLGrounds" onEndEdit="HUD_scenesPanelInput"></InputField>
+        <InputField id="scenes_siteKey" class="hud_storyteller_input" preferredHeight="30" minHeight="30" minWidth="280" preferredWidth="280" flexibleWidth="0"
+          lineType="SingleLine" fontSize="12" textColor="#222222"
+          colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)"
+          placeholder="CLGrounds" onEndEdit="HUD_scenesPanelInput"></InputField>
       </VerticalLayout>
     </HorizontalLayout>
     <Button class="hud_storyteller_button" text="Apply location + soundscape" onClick="HUD_scenesApplyLocation" />
 
     <Text class="hud_storyteller_label">Scene time</Text>
-    <HorizontalLayout spacing="4" childForceExpandWidth="false">
-      <VerticalLayout spacing="2"><Text fontSize="9" color="#CCCCCC">Hr</Text><InputField id="scenes_clock_hour" preferredWidth="44" preferredHeight="26" fontSize="11" text="0" onEndEdit="HUD_scenesPanelInput" /></VerticalLayout>
-      <VerticalLayout spacing="2"><Text fontSize="9" color="#CCCCCC">Min</Text><InputField id="scenes_clock_minute" preferredWidth="44" preferredHeight="26" fontSize="11" text="0" onEndEdit="HUD_scenesPanelInput" /></VerticalLayout>
-      <VerticalLayout spacing="2"><Text fontSize="9" color="#CCCCCC">Day</Text><InputField id="scenes_clock_day" preferredWidth="44" preferredHeight="26" fontSize="11" text="1" onEndEdit="HUD_scenesPanelInput" /></VerticalLayout>
-      <VerticalLayout spacing="2"><Text fontSize="9" color="#CCCCCC">Mo</Text><InputField id="scenes_clock_month" preferredWidth="44" preferredHeight="26" fontSize="11" text="1" onEndEdit="HUD_scenesPanelInput" /></VerticalLayout>
-      <VerticalLayout spacing="2"><Text fontSize="9" color="#CCCCCC">Yr</Text><InputField id="scenes_clock_year" preferredWidth="56" preferredHeight="26" fontSize="11" text="2026" onEndEdit="HUD_scenesPanelInput" /></VerticalLayout>
+    <Text fontSize="9" color="#AAAAAA">Narrative clock: type numbers in each box (they are fields, not buttons), then click Apply clock.</Text>
+    <HorizontalLayout spacing="5" childForceExpandWidth="false" childAlignment="UpperLeft">
+      <VerticalLayout spacing="2" flexibleWidth="0"><Text fontSize="9" color="#CCCCCC">Hr</Text><InputField id="scenes_clock_hour" class="hud_storyteller_input" minWidth="46" preferredWidth="46" preferredHeight="30" minHeight="30" flexibleWidth="0" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" characterValidation="Integer" text="0" onEndEdit="HUD_scenesPanelInput" /></VerticalLayout>
+      <VerticalLayout spacing="2" flexibleWidth="0"><Text fontSize="9" color="#CCCCCC">Min</Text><InputField id="scenes_clock_minute" class="hud_storyteller_input" minWidth="46" preferredWidth="46" preferredHeight="30" minHeight="30" flexibleWidth="0" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" characterValidation="Integer" text="0" onEndEdit="HUD_scenesPanelInput" /></VerticalLayout>
+      <VerticalLayout spacing="2" flexibleWidth="0"><Text fontSize="9" color="#CCCCCC">Day</Text><InputField id="scenes_clock_day" class="hud_storyteller_input" minWidth="46" preferredWidth="46" preferredHeight="30" minHeight="30" flexibleWidth="0" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" characterValidation="Integer" text="1" onEndEdit="HUD_scenesPanelInput" /></VerticalLayout>
+      <VerticalLayout spacing="2" flexibleWidth="0"><Text fontSize="9" color="#CCCCCC">Mo</Text><InputField id="scenes_clock_month" class="hud_storyteller_input" minWidth="46" preferredWidth="46" preferredHeight="30" minHeight="30" flexibleWidth="0" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" characterValidation="Integer" text="1" onEndEdit="HUD_scenesPanelInput" /></VerticalLayout>
+      <VerticalLayout spacing="2" flexibleWidth="0"><Text fontSize="9" color="#CCCCCC">Yr</Text><InputField id="scenes_clock_year" class="hud_storyteller_input" minWidth="58" preferredWidth="58" preferredHeight="30" minHeight="30" flexibleWidth="0" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" characterValidation="Integer" text="2026" onEndEdit="HUD_scenesPanelInput" /></VerticalLayout>
     </HorizontalLayout>
     <Button class="hud_storyteller_button" text="Apply clock" onClick="HUD_scenesApplyClock" />
 
@@ -74,7 +81,7 @@
 
     <Text class="hud_storyteller_label">NPC role snapshot (stub)</Text>
     <Text fontSize="9" color="#AAAAAA">Stores `sessionScene.npcWorld.lastNote` for future NPC/table tracking hooks.</Text>
-    <InputField id="scenes_npcWorldNote" preferredHeight="28" fontSize="11" textColor="#111111" placeholder="Note (optional)" onEndEdit="HUD_scenesPanelInput" />
+    <InputField id="scenes_npcWorldNote" class="hud_storyteller_input" preferredHeight="30" minHeight="30" minWidth="520" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" placeholder="Note (optional)" onEndEdit="HUD_scenesPanelInput" />
     <Button class="hud_storyteller_button" text="Save NPC scene note" onClick="HUD_scenesSaveNpcNote" />
   </VerticalLayout>
 </Panel>
