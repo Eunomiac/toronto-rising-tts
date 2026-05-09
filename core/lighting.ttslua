@@ -1436,17 +1436,14 @@ function L.reconcileForPlayer(seatKey)
         then
             local desiredMode = computeDesiredPlayerLightMode(lightRef, seatKey)
             if U.Type(desiredMode) == "string" then
-                local currentMode = S.getStateVal("lights", lightRef)
-                if currentMode ~= desiredMode then
-                    -- Persist desired intent first so seat-light state stays authoritative
-                    -- even when live objects/components are still spawning.
-                    S.setStateVal(desiredMode, "lights", lightRef)
-
-                    -- Some lights can appear late after load; if unavailable now, keep
-                    -- state authoritative and let deferred passes / later sync apply live.
-                    if getLight(lightRef, true) ~= nil then
-                        L.SetLightMode(lightRef, desiredMode, seatKey, 0.25)
-                    end
+                -- Always persist + push world: persisted mode can match desired while components
+                -- are still dark (load order, missed apply, or external stomp). Debug logs compare
+                -- desired vs `gameState.lights` only — they do not read Light intensity.
+                S.setStateVal(desiredMode, "lights", lightRef)
+                local lit = getLight(lightRef, true)
+                if lit ~= nil then
+                    -- Instant apply from reconcile avoids overlapping lerps when Sync runs often.
+                    L.SetLightMode(lightRef, desiredMode, seatKey, 0)
                 end
             end
         end

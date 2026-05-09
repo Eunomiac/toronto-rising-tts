@@ -4493,7 +4493,8 @@ local function debugGetOccupiedNPCSlotSet()
 end
 
 --- Logs a per-seat light diagnostic snapshot to a workspace file.
--- Output includes: color | resolvedPlayerID | hunger | desired/current per-seat refs | smokeWanted.
+-- Output includes: color | resolvedPlayerID | hunger | desired vs persisted `lights` per ref | smokeWanted.
+-- (`current` column is `S.getStateVal("lights", ...)`, not live Light component intensity.)
 -- @param filename string Optional filename (default: "seat_lights")
 function DEBUG.logSeatLightsToFile(filename)
     filename = filename or "seat_lights"
