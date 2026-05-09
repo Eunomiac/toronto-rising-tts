@@ -17,9 +17,17 @@ Catalog.EFFECT_LIST = {
 }
 
 Catalog.TRACKS = {
-    silent = {
+  silent = {
     key = "silent",
     type = "silence",
+    isLooping = true,
+    duration = 1,
+    volume = 0,
+    order = 1,
+  },
+  silentLocation = {
+    key = "silent",
+    type = "location",
     isLooping = true,
     duration = 1,
     volume = 0,
@@ -30,6 +38,20 @@ Catalog.TRACKS = {
     type = "location",
     isLooping = true,
     duration = 247,
+    volume = 0.05,
+  },
+  apothecary = {
+    key = "apothecary",
+    type = "location",
+    isLooping = true,
+    duration = 300,
+    volume = 0.05,
+  },
+  autoshop = {
+    key = "autoshop",
+    type = "location",
+    isLooping = true,
+    duration = 300,
     volume = 0.05,
   },
   church = {
@@ -81,6 +103,13 @@ Catalog.TRACKS = {
     duration = 224,
     volume = 0.05,
   },
+  computerLab = {
+    key = "computerLab",
+    type = "location",
+    isLooping = true,
+    duration = 300,
+    volume = 0.05,
+  },
   crickets = {
     key = "crickets",
     type = "location",
@@ -93,6 +122,13 @@ Catalog.TRACKS = {
     type = "location",
     isLooping = true,
     duration = 155,
+    volume = 0.05,
+  },
+  dungeon = {
+    key = "dungeon",
+    type = "location",
+    isLooping = true,
+    duration = 300,
     volume = 0.05,
   },
   eerieForest = {
@@ -137,6 +173,20 @@ Catalog.TRACKS = {
     duration = 276,
     volume = 0.05,
   },
+  laboratory = {
+    key = "laboratory",
+    type = "location",
+    isLooping = true,
+    duration = 300,
+    volume = 0.05,
+  },
+  library = {
+    key = "library",
+    type = "location",
+    isLooping = true,
+    duration = 300,
+    volume = 0.05,
+  },
   lowWindAmbient = {
     key = "lowWindAmbient",
     type = "location",
@@ -172,8 +222,15 @@ Catalog.TRACKS = {
     duration = 53,
     volume = 0.05,
   },
-  roofTop = {
-    key = "roofTop",
+  ritualRoom = {
+    key = "ritualRoom",
+    type = "location",
+    isLooping = true,
+    duration = 300,
+    volume = 0.05,
+  },
+  rooftop = {
+    key = "rooftop",
     type = "location",
     isLooping = true,
     duration = 182,
@@ -219,6 +276,13 @@ Catalog.TRACKS = {
     type = "location",
     isLooping = true,
     duration = 120,
+    volume = 0.05,
+  },
+  warrens = {
+    key = "warrens",
+    type = "location",
+    isLooping = true,
+    duration = 300,
     volume = 0.05,
   },
   waterside = {

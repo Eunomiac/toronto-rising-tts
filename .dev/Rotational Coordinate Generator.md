@@ -125,6 +125,9 @@ R.resolveSeatObjects(
 
 -- Main convenience API: wraps generateRotationalCoordinates + resolveSeatObjects, and then applies cameraModes.
 --   It rotates bySeat presets into per-player data and into gameState.seatLayout.universalCameraAngles (<mode><seatKey>).
+--   Writes gameState.seatLayout.currentTableKey to the target table key **before** layout/visual steps so mid-resolve
+--   readers (e.g. lighting seat-presence) see the destination table. `SyncTable(nil)` infers from `activeTable` tags
+--   when state is empty and persists that key before resolving.
 R.resolveSeatObjectsFromTable(
   tableRef,              -- table reference to a table object in C.Tables (which contains values for the other parameters required by `generateRotationalCoordinates`)
   sourceObjects,         -- OPTIONAL sourceObjects table; defaults to C.TableSourceObjects if omitted

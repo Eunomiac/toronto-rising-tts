@@ -278,8 +278,9 @@
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
-| `L.InitLights()` | Initialize lighting system | Setup function |
+| `L.InitLights()` | Reconcile lights from state on load; missing recorded mode defaults to `OFF` (or disables light + warns GM if `OFF` mode is undefined) | Setup function |
 | `L.ResetLights()` | Reset all lights to defaults | Cleanup function |
+| `L.reconcileLightRef(lightRef, transitionTime)` | Reconcile one registered light from state record (`gameState.lights[lightRef]`) | Targeted light resync |
 | `L.SetLightMode(lightName, mode, player, transitionTime)` | Set light to predefined mode | Primary API |
 | `L.LoadLights(lightNames, lightMode, transitionTime, playerRef)` | Apply light mode to named lights | Batch control |
 
@@ -307,10 +308,11 @@
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
-| `Soundscape.onLoad()` | Initialize soundscape state after save data loads | Called in `onLoad` |
+| `Soundscape.reconcileFromState(opts?)` | Reconcile live soundscape from persisted state; skips deferred apply when fingerprint unchanged unless `opts.force` | `Sync.full()` / `Sync.soundscape()`; `Soundscape.invalidateReconcileCache()` clears incremental memory |
 | `Soundscape.getState()` | Return current soundscape state | UI/debug state reads |
 | `Soundscape.getSummaryText()` | Return compact soundscape summary text | Storyteller panel summary |
-| `Soundscape.applyContext(context)` | Apply future weather/site/calendar audio context | `Soundscape.applyContext({ isIndoors = true, weather = "lightRain" })` |
+| `Soundscape.applyContext(context)` | Apply weather/site/calendar audio context; `isSilent = true` mutes ambient lanes only (featured unchanged); `isSilent = false` clears that latch | `Soundscape.applyContext({ isIndoors = true, weather = "lightRain" })`, `Soundscape.applyContext({ isSilent = true })` |
+| `Soundscape.contextFromSite(site)` | Build an applyContext table from a `C.Sites` row (`isSilent`, `isIndoors`, `soundscape`) | `Soundscape.applyContext(Soundscape.contextFromSite(C.Sites.StRegis))` |
 | `Soundscape.setMusicMood(moodKey)` | Set trigger-based Storyteller music mood | `Soundscape.setMusicMood("intrigue")` |
 | `Soundscape.setLocationMusic(playlistKey)` | Set site-specific background music playlist | `Soundscape.setLocationMusic("CasaLoma")` |
 | `Soundscape.playFeaturedMusic(featureKey)` | Play featured music on the dedicated lane | `Soundscape.playFeaturedMusic("TR_Intro")` |
@@ -326,6 +328,20 @@
 | `Soundscape.stopAll()` | Stop all channels with the silent loop | Emergency silence |
 | `Soundscape.inspectEmitters()` | List hidden emitters, effects, and AudioSources | Debug verification |
 | `Soundscape.testLayeredPlayback()` | Start music, weather, and location together | Live soundscape smoke test |
+
+---
+
+## 5b. SYNC ORCHESTRATOR (`core/sync.ttslua`)
+
+**Require:** `local Sync = require("core.sync")`
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `Sync.full(opts?)` | Orchestrate scene + soundscape + seat presentation + UI; `opts.force == true` bypasses fingerprints and runs full `UpdateUIDisplays` | Debug **Sync All (force)**; routine paths omit `force` |
+| `Sync.player(color)` | Per-seat lighting + HUD + overlays | Seat-scoped refresh |
+| `Sync.ui(delta?)` | Passthrough to `UpdateUIDisplays` | Targeted UI deltas |
+| `Sync.lighting(opts?)` | `Scenes.reconcileFromState(opts)` + `L.InitLights` | Lighting-focused repair |
+| `Sync.soundscape(opts?)` | `Soundscape.reconcileFromState(opts)` | Audio-focused repair |
 
 ---
 
@@ -399,8 +415,9 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
-| `Scenes.loadScene(name)` | Load scene preset instantly | `Scenes.loadScene("elysium")` |
-| `Scenes.fadeToScene(name, duration)` | Smooth transition to scene | `Scenes.fadeToScene("alley", 2.0)` |
+| `Scenes.loadScene(name)` | Mutate selected scene in state (no live writes) | `Scenes.loadScene("elysium")` |
+| `Scenes.fadeToScene(name, duration)` | Mutate selected scene + transition metadata in state | `Scenes.fadeToScene("alley", 2.0)` |
+| `Scenes.reconcileFromState(opts?)` | Apply live scene effects from persisted state; skips when scene+transition fingerprint unchanged unless `opts.force` | `Scenes.invalidateReconcileCache()` clears incremental memory |
 | `Scenes.getCurrentScene()` | Get current scene name | Scene tracking |
 | `Scenes.getScenePreset(name)` | Get scene preset data | Scene info |
 

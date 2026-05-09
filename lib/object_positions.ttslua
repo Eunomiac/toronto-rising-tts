@@ -294,7 +294,7 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
       local targetScale = Vector(pose.scale)
       if duration > 0 then
         if useSmoothSetters then
-          obj.setScaleSmooth(targetScale, false, false)
+          obj.setScale(targetScale, false, false)
         else
           U.setScaleSlow(obj, targetScale, duration, nil)
         end

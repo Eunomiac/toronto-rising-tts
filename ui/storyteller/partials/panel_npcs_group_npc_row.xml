@@ -4,7 +4,8 @@
     @@group_key@@ — group id from character `groups` (e.g. fiveKeys).
     @@npc_key@@ — character key in D.characters.
     @@npc_name@@ — display name (XML-escaped by the generator).
-    @@member_color_attr@@ — empty, or ` color="#RRGGBB"` from labelColor.
+    @@member_color_attr@@ — empty, or ` color="rgba(r, g, b, 1)"` with r,g,b floats in 0..1
+        (two significant figures each; alpha forced to 1; see generate_npc_panel_xml.js).
 -->
 
 <HorizontalLayout id="npc_groupMemberRow_@@group_key@@_@@npc_key@@" class="hud_storyteller_button_row npc_group_member_row" active="false">

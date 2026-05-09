@@ -257,7 +257,7 @@ function S.GetDefaultGameState()
         },
         soundscape = {
             backgroundMusicMode = "mood",
-            musicMood = "general",
+            musicMood = "main",
             backgroundMusicEnabled = false,
             activeMusicChannel = "musicA",
             activeFeaturedChannel = "featuredA",
@@ -267,12 +267,14 @@ function S.GetDefaultGameState()
             featuredActive = false,
             featuredCompletionExpected = false,
             backgroundPausedForFeatured = false,
+            lastAppliedSiteKey = nil,
             weather = "none",
             rain = "none",
             wind = "none",
             thunderEnabled = false,
             location = "none",
             isIndoors = false,
+            siteSilent = false,
             channels = {
                 musicA = { effect = "silent", effectList = "looping", volume = 0, available = false },
                 musicB = { effect = "silent", effectList = "looping", volume = 0, available = false },
@@ -280,8 +282,8 @@ function S.GetDefaultGameState()
                 featuredB = { effect = "silent", effectList = "looping", volume = 0, available = false },
                 locationA = { effect = "silent", effectList = "looping", volume = 0, available = false },
                 locationB = { effect = "silent", effectList = "looping", volume = 0, available = false },
-                weatherRain = { effect = "silent", effectList = "looping", volume = 0, available = false },
-                weatherWind = { effect = "silent", effectList = "looping", volume = 0, available = false },
+                weatherRain = { effect = "silent", effectList = "looping", volume = 0, naturalVolume = 0, available = false },
+                weatherWind = { effect = "silent", effectList = "looping", volume = 0, naturalVolume = 0, available = false },
                 weatherThunder = { effect = nil, effectList = "trigger", volume = 0, available = false },
             },
             capabilities = {},
@@ -298,6 +300,27 @@ function S.GetDefaultGameState()
         },
         npcs = {
             instances = {},
+        },
+        --- Narrative/session scene bundle (table presence, location, clock, roll defaults). Lighting preset remains `currentScene` until fully bridged.
+        sessionScene = {
+            lightingPresetKey = nil,
+            tableKey = nil,
+            seatPresent = {},
+            npcRoleOverride = {},
+            districtKey = nil,
+            siteKey = nil,
+            clock = {
+                hour = 0,
+                minute = 0,
+                day = 1,
+                month = 1,
+                year = 2026,
+                useRealTime = false,
+            },
+            --- Per-roll-type overrides merged in `RO.seedActiveRoll` (same keys as `active.rollOptions`).
+            rollDefaults = {},
+            --- Future: authoritative NPC placement for this scene (stub hooks into `gameState.npcs`).
+            npcWorld = {},
         },
         -- Storyteller roll automation (chronicle-wide); merged with defaults in validateState
         stRollSettings = {
@@ -467,6 +490,13 @@ function S.validateState()
         gameState.soundscape = {}
     end
     S.mergeDefaults(gameState.soundscape, S.GetDefaultGameState().soundscape)
+    if gameState.soundscape.musicMood == "general" then
+        gameState.soundscape.musicMood = "main"
+    end
+    if not gameState.sessionScene or type(gameState.sessionScene) ~= "table" then
+        gameState.sessionScene = {}
+    end
+    S.mergeDefaults(gameState.sessionScene, S.GetDefaultGameState().sessionScene)
     if not gameState.seatLayout or type(gameState.seatLayout) ~= "table" then
         gameState.seatLayout = {}
     end
@@ -542,6 +572,14 @@ function S.validateState()
         else
             if type(playerData.stats) ~= "table" then
                 playerData.conditions = nil
+            end
+        end
+
+        -- Keep lighting state minimal and type-safe for reconciliation.
+        if type(playerData.lighting) == "table" then
+            playerData.lighting.modeRestore = nil
+            if playerData.lighting.isRolling ~= nil and type(playerData.lighting.isRolling) ~= "boolean" then
+                playerData.lighting.isRolling = nil
             end
         end
     end
@@ -993,14 +1031,53 @@ function S.getPlayerID(playerRef)
         if playerRef == C.StorytellerID then
             return C.StorytellerID
         end
-        -- Assume it's a color: find who has this color in playerData
+        -- Assume it's a color: resolve deterministically against runtime state.
+        -- Priority:
+        --  1) static configured id for that color (when that row exists in runtime state)
+        --  2) runtime row with explicit stats.hunger (fully initialized character row)
+        --  3) matching runtime ids not present in static C.PlayerData
+        --  4) first matching runtime id (stable sorted order)
+        local lowerRef = string.lower(playerRef)
+        local runtimeMatches = {}
         if gameState and gameState.playerData then
             for playerID, pData in pairs(gameState.playerData) do
-                if type(pData) == "table" and type(pData.color) == "string" and string.lower(pData.color) == string.lower(playerRef) then
-                    return playerID
+                if type(playerID) == "string"
+                    and type(pData) == "table"
+                    and type(pData.color) == "string"
+                    and string.lower(pData.color) == lowerRef
+                then
+                    runtimeMatches[#runtimeMatches + 1] = playerID
                 end
             end
         end
+
+        if #runtimeMatches > 0 then
+            local staticCandidate = C.GetPlayerIDOrNil(playerRef)
+            if type(staticCandidate) == "string" then
+                for _, candidate in ipairs(runtimeMatches) do
+                    if candidate == staticCandidate then
+                        return candidate
+                    end
+                end
+            end
+
+            for _, candidate in ipairs(runtimeMatches) do
+                local row = gameState.playerData and gameState.playerData[candidate] or nil
+                if type(row) == "table" and type(row.stats) == "table" and row.stats.hunger ~= nil then
+                    return candidate
+                end
+            end
+
+            for _, candidate in ipairs(runtimeMatches) do
+                if C.PlayerData[candidate] == nil then
+                    return candidate
+                end
+            end
+
+            table.sort(runtimeMatches)
+            return runtimeMatches[1]
+        end
+
         -- Fallback: check C.PlayerData for color match (for Storyteller or pre-configured players)
         for pid, pData in pairs(C.PlayerData) do
             if type(pData) == "table" and type(pData.color) == "string" and string.lower(pData.color) == string.lower(playerRef) then

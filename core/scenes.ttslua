@@ -23,6 +23,9 @@ local L = require("core.lighting")
 local Soundscape = require("core.soundscape")
 local NPCS = require("core.npcs")
 
+--- Last scene+transition fingerprint successfully applied to the live world (incremental sync skips when unchanged).
+local lastSceneReconcileFingerprint = nil
+
 -- ============================================================================
 -- CONFIGURATION
 -- ============================================================================
@@ -467,8 +470,9 @@ function coroutine_ambientTransition(ambientSettings, transitionTime)
 end
 --]]
 
---- Applies individual light modes for a scene
--- Uses L.SetLightMode for each light specified in the scene preset
+--- Applies individual light modes for a scene.
+--- Reconciler-only helper: do not call from mutation/event handlers.
+--- Uses L.SetLightMode for each light specified in the scene preset.
 -- @param lights table Array of {name, mode} tables
 -- @param transitionTime number Optional. Transition time for light changes
 local function applySceneLights(lights, transitionTime)
@@ -558,7 +562,34 @@ local function lightAlreadyAtTargetMode(lightRef, mode)
     return type(current) == "string" and current == mode
 end
 
+--- @param lightRef string
+--- @return boolean
+local function isSeatLightRef(lightRef)
+    if type(lightRef) ~= "string" then
+        return false
+    end
+
+    if string.sub(lightRef, 1, 10) == "playerLight" then
+        for _, seatColor in ipairs(C.PlayerColors or {}) do
+            if string.sub(lightRef, -#seatColor) == seatColor then
+                return true
+            end
+        end
+    end
+
+    if string.sub(lightRef, 1, 8) == "npcLight" then
+        for _, seatKey in ipairs(C.NPCSeats or {}) do
+            if string.sub(lightRef, -#seatKey) == seatKey then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
 --- Applies staged light transitions with defaults and idempotent skip behavior.
+--- Reconciler-only helper: do not call from mutation/event handlers.
 --- Stage schema (all optional, with defaults):
 --- - refs/lightRef/name: light ref(s)
 --- - mode: target mode key (default "default")
@@ -598,16 +629,20 @@ local function applySceneLightStages(stages, transitionTime, allowDelays)
             local refsToApply = {}
             for _, lightRef in ipairs(getStageRefs(stage)) do
                 if type(lightRef) == "string" and lightRef ~= "" then
-                    local resolvedMode = requestedMode
-                    if type(requestedMode) == "string" then
-                        resolvedMode = resolveModeForRegisteredLight(lightRef, requestedMode)
-                    end
+                    -- Seat lights (PC + seated NPC) are state-driven by the lighting reconciler.
+                    -- Scene stages should only author static/environment lights.
+                    if not isSeatLightRef(lightRef) then
+                        local resolvedMode = requestedMode
+                        if type(requestedMode) == "string" then
+                            resolvedMode = resolveModeForRegisteredLight(lightRef, requestedMode)
+                        end
 
-                    if resolvedMode ~= nil and not lightAlreadyAtTargetMode(lightRef, resolvedMode) then
-                        table.insert(refsToApply, {
-                            ref = lightRef,
-                            mode = resolvedMode,
-                        })
+                        if resolvedMode ~= nil and not lightAlreadyAtTargetMode(lightRef, resolvedMode) then
+                            table.insert(refsToApply, {
+                                ref = lightRef,
+                                mode = resolvedMode,
+                            })
+                        end
                     end
                 end
             end
@@ -678,7 +713,8 @@ local function getNpcRestoreDelay(scene, transitionTime, allowDelays)
     return maxDelay
 end
 
---- Shared scene application used by loadScene and fadeToScene.
+--- Shared scene reconciliation used by Sync/restore paths.
+--- This is the reconciler-owned scene world writer.
 --- @param sceneName string
 --- @param transitionTime number
 --- @param allowDelays boolean
@@ -733,7 +769,6 @@ local function applySceneByName(sceneName, transitionTime, allowDelays)
         end, restoreDelay + 0.05)
     end
 
-    S.setStateVal(sceneName, "currentScene")
     return true
 end
 
@@ -741,8 +776,7 @@ end
 -- PUBLIC API
 -- ============================================================================
 
---- Loads a scene preset instantly (no transition)
--- Applies all scene settings immediately.
+--- Mutates scene selection state only (no direct live-world writes).
 -- @param sceneName string Name of the scene preset (key in Scenes.SCENES)
 -- @return boolean True if scene loaded successfully, false if scene not found
 --
@@ -760,16 +794,13 @@ function Scenes.loadScene(sceneName)
         return false
     end
 
-    print("Scenes: Loading scene '" .. sceneName .. "' - " .. (scene.description or ""))
-    local ok = applySceneByName(sceneName, 0, false)
-    if ok then
-        print("Scenes: Scene loaded successfully.")
-    end
-    return ok
+    S.setStateVal(sceneName, "currentScene")
+    S.setStateVal(nil, "sceneTransition")
+    print("Scenes: Selected scene state '" .. sceneName .. "' (reconcile via Sync).")
+    return true
 end
 
---- Smoothly transitions to a scene preset over a duration
--- Uses coroutines and lerp functions for smooth transitions.
+--- Mutates scene selection state plus desired transition metadata only.
 -- @param sceneName string Name of the scene preset (key in Scenes.SCENES)
 -- @param transitionTime number Optional. Duration of transition in seconds (default: DefaultTransitionTime)
 -- @return boolean True if transition started successfully, false if scene not found
@@ -789,11 +820,54 @@ function Scenes.fadeToScene(sceneName, transitionTime)
     end
 
     transitionTime = transitionTime or DefaultTransitionTime
+    S.setStateVal(sceneName, "currentScene")
+    S.setStateVal({
+        duration = transitionTime,
+        allowDelays = true,
+    }, "sceneTransition")
+    print("Scenes: Selected scene state '" .. sceneName .. "' with transition " .. tostring(transitionTime) .. "s (reconcile via Sync).")
+    return true
+end
 
-    print("Scenes: Fading to scene '" .. sceneName .. "' over " .. transitionTime .. " seconds")
-    local ok = applySceneByName(sceneName, transitionTime, true)
+--- Clears incremental scene reconcile memory so the next `reconcileFromState` always applies (e.g. world drift).
+function Scenes.invalidateReconcileCache()
+    lastSceneReconcileFingerprint = nil
+end
+
+--- Reconciles live scene effects from persisted scene state.
+--- This is the only scene module path that writes to the live world.
+--- @param opts table|nil `{ force = boolean }` — when `force`, fingerprint short-circuit is skipped.
+--- @return boolean
+function Scenes.reconcileFromState(opts)
+    opts = type(opts) == "table" and opts or {}
+    local force = opts.force == true
+
+    local sceneName = Scenes.getCurrentScene()
+    if type(sceneName) ~= "string" or Scenes.SCENES[sceneName] == nil then
+        sceneName = "default"
+        S.setStateVal(sceneName, "currentScene")
+    end
+    local transition = S.getStateVal("sceneTransition")
+    local transitionTime = 0
+    local allowDelays = false
+    if type(transition) == "table" then
+        transitionTime = tonumber(transition.duration) or 0
+        allowDelays = transition.allowDelays == true
+    end
+
+    local desiredFingerprint = tostring(sceneName)
+        .. "\t"
+        .. tostring(transitionTime)
+        .. "\t"
+        .. (allowDelays and "1" or "0")
+
+    if not force and lastSceneReconcileFingerprint == desiredFingerprint then
+        return true
+    end
+
+    local ok = applySceneByName(sceneName, transitionTime, allowDelays)
     if ok then
-        print("Scenes: Scene transition initiated.")
+        lastSceneReconcileFingerprint = desiredFingerprint
     end
     return ok
 end
@@ -828,13 +902,14 @@ function Scenes.onLoad()
 
     -- Try to restore last scene from state
     local savedScene = Scenes.getCurrentScene()
-    if savedScene and Scenes.SCENES[savedScene] then
-        print("Scenes: Restoring saved scene: " .. savedScene)
-        Scenes.loadScene(savedScene)
+    if not (savedScene and Scenes.SCENES[savedScene]) then
+        print("Scenes: No saved scene found, selecting default.")
+        S.setStateVal("default", "currentScene")
     else
-        print("Scenes: No saved scene found, using default.")
-        Scenes.loadScene("default")
+        print("Scenes: Restoring saved scene state: " .. savedScene)
     end
+    S.setStateVal(nil, "sceneTransition")
+    Scenes.reconcileFromState()
 end
 
 --- Resets scene to default

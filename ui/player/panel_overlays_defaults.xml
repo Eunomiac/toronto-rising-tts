@@ -13,6 +13,9 @@
     raycastTarget="false"
   />
 
+  <Image class="player_blindfold_overlay"
+    raycastTarget="true" />
+
   <Image class="overlay_anim_fade"
     showAnimation="FadeIn"
     hideAnimation="FadeOut"

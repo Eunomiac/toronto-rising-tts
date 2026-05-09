@@ -4,7 +4,8 @@
     @@area_key@@ — D.areas key (must match wired partials).
     @@npc_key@@ — D.characters key.
     @@npc_name@@ — display name (XML-escaped by the generator).
-    @@npc_color_attr@@ — empty, or ` color="#RRGGBB"` from labelColor.
+    @@npc_color_attr@@ — empty, or ` color="rgba(r, g, b, 1)"` with r,g,b floats in 0..1
+        (two significant figures each; alpha forced to 1 in panel rows; see generate_npc_panel_xml.js).
 -->
 
 <HorizontalLayout id="npc_occRow_@@area_key@@_@@npc_key@@" class="hud_storyteller_button_row" active="false">

@@ -3,7 +3,8 @@
   Paramters:
     @@group_name@@ - The name of the group (e.g. 'the Regency of the University Chantry')
     @@group_key@@ - The key from the NPCS.groups object that represents the group ('regencyUniversityChantry', 'fiveKeys', 'harpies', 'redFlag').
-    @@group_color@@ - The color of the group, in eight-character hexidecimal with alpha (e.g. '#FF0080CC')
+    @@group_color@@ - Group header bar color as `rgba(r, g, b, a)` with all channels floats in 0..1
+        (two significant figures each). Derived from the leader's labelColor with alpha forced to 0.8.
 -->
 
 <HorizontalLayout id="npc_groupRow_@@group_key@@" class="hud_storyteller_button_row" active="true" color="@@group_color@@">

@@ -16,6 +16,10 @@
   <VerticalLayout class="storyteller_buttonControls" visibility="Host" height="400">
     <Text class="hud_storyteller_header">== DEBUG ==</Text>
     <Button class="hud_storyteller_button" onClick="HUD_printState">Print State</Button>
+    <Button class="hud_storyteller_button" onClick="HUD_debugSeatLights">Debug Seat Lights</Button>
+    <Button class="hud_storyteller_button" onClick="HUD_syncIncremental">Sync (incremental)</Button>
+    <Button class="hud_storyteller_button" onClick="HUD_syncAll">Sync All (force)</Button>
+    <Button class="hud_storyteller_button" onClick="HUD_clearLoadingOverlay">Clear Loading Overlay</Button>
     <Button class="hud_storyteller_button" onClick="HUD_toggleAllAnchors">Toggle Anchors</Button>
     <Button class="hud_storyteller_button" onClick="HUD_toggleAllSpotlights">Toggle Spotlights</Button>
     <Button class="hud_storyteller_button" onClick="HUD_debugSoundscapeActivate">Debug Soundscape</Button>
@@ -24,11 +28,6 @@
       <Button class="hud_storyteller_button" onClick="HUD_debugLightActivate">Debug Light</Button>
       <InputField id="dl_guid" class="hud_storyteller_input guid_input" onValueChanged="HUD_debugLightGuidInput" onEndEdit="HUD_debugLightGuidInput"></InputField>
     </HorizontalLayout>
-    <Text class="spacer_15"></Text>
-    <Text class="hud_storyteller_label">Lighting Modes:</Text>
-    <Button id="adminScene_dark" class="hud_storyteller_button" onClick="HUD_selectAdminLightingScene">DARK</Button>
-    <Button id="adminScene_standard" class="hud_storyteller_button" onClick="HUD_selectAdminLightingScene">STANDARD</Button>
-    <Button id="adminScene_bright" class="hud_storyteller_button" onClick="HUD_selectAdminLightingScene">BRIGHT</Button>
     <Text class="spacer_15"></Text>
     <Text class="hud_storyteller_label">Testing Suites:</Text>
     <Button class="hud_storyteller_button" onClick="HUD_debugRunTests">Run All Tests</Button>

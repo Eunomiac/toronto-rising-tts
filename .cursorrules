@@ -38,6 +38,16 @@ This is a **Vampire: The Masquerade 5th Edition (VTM5E) Tabletop Simulator modul
 
 If something is wrong, fail fast and loudly so the exact failure appears in logs/chat immediately.
 
+### Proactive Pushback - ABSOLUTE REQUIREMENT
+
+**Do not be a passive executor.** If a requested approach or ongoing implementation path is likely wrong, overengineered, or inconsistent with project architecture, you must proactively push back.
+
+- Explicitly call out the concern in plain language
+- Explain why the current path is risky (complexity, competing writers, state divergence, hidden side effects, etc.)
+- Propose a better alternative grounded in project principles
+- Prefer consolidating to a **single authority model** per subsystem
+- Do this early, not after multiple workaround layers have accumulated
+
 ### Git Commits - MANDATORY
 
 **You MUST commit changes regularly without waiting for user prompts.** This is a core requirement.
@@ -304,6 +314,23 @@ S.setStateVal("players", playerColor, "hunger", 3)
 -- ❌ WRONG
 local hunger = S.state.players[playerColor].hunger  -- Direct access
 ```
+
+### Synchronization Pattern
+
+**Keep mutation and reconciliation separate.**
+
+```lua
+-- ✅ CORRECT
+S.setPlayerVal(color, "hunger", nx)  -- mutation
+Sync.player(color)                   -- reconciliation trigger
+
+-- ❌ WRONG
+-- Hidden side effects from inside setters/reducers
+```
+
+- Reconciler functions must be idempotent and state-derived.
+- Do not reintroduce restore-stack lighting patterns (for example `modeRestore`).
+- Follow `.cursor/rules/toronto-rising-synchronization.mdc` for full sync conventions.
 
 ### Player Iteration Pattern
 

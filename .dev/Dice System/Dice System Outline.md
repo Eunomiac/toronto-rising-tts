@@ -738,10 +738,11 @@ All roll-related UI element IDs follow a consistent naming pattern:
 ### 9.0 Dice Drawer Lighting Hooks
 
 - Opening a player's dice drawer now applies `ROLLING` to any `isPlayerLight` entries in `L.LIGHTMODES` that define a `ROLLING` mode for that seat color.
-- Closing the drawer restores each affected light to the mode it had before drawer-open, using per-player restore state at `gameState.playerData[playerID].lighting.modeRestore.rolling`.
-- Hunger writes (`S.setPlayerVal(color, "hunger", value)`) now reconcile `HUNGRY` mode in the same way for lights that define `HUNGRY`, with restore state stored at `...modeRestore.hungry`.
+- Closing the drawer now clears `playerData[playerID].lighting.isRolling` and re-runs player light reconciliation against state-derived priorities (`ROLLING` > `DARK/OFF` > `HUNGRY` > `STANDARD`).
+- Hunger writes (`S.setPlayerVal(color, "hunger", value)`) trigger explicit `Sync.player(color)` reconciliation; there is no `modeRestore` stack.
 - On load (`L.InitLights` and deferred pass), hunger-based lighting is re-synced so players at Hunger 4/5 are immediately shown in `HUNGRY` mode without forcing lights on when the base mode is `OFF`.
 - `Global.onLoad` performs a delayed overlays-only refresh (`UpdateUIDisplays({ overlays = true })`) so hunger smoke objects that spawn a little late still reconcile correctly to Hunger 4/5.
+- Load orchestration now runs additional deferred retries for both lighting and overlays so late-spawned lights/smoke still converge without requiring a manual hunger change.
 
 ### 9.1 `onObjectRandomize` Hook
 

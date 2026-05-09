@@ -33,6 +33,8 @@ local OP = require("lib.object_positions")
 local transitionEpoch = {}
 -- InitLights first-pass misses (object not ready); deferred pass retries these keys only.
 local initLightsRetryKeys = {}
+-- Warn each missing-OFF light at most once per session.
+local warnedMissingOffMode = {}
 
 -- ============================================================================
 -- CONFIGURATION
@@ -64,14 +66,12 @@ local DefaultTransitionTime = 0.5
 --
 -- Special properties (at light definition level, not mode level):
 --   - default (string): Default mode to use when mode is "default"
---   - isPlayerLight (boolean): If true, supports per-player modes
 --   - isSpawned (boolean): If true, waits for light to spawn before applying
 --   - loadRotation (Vector): Initial rotation when light loads
 --   - guid (string): Required - GUID of the light object (all lights must have GUID)
 --
 -- @usage L.LIGHTMODES.playerLight1Brown = {
 --     guid = "f251e0",  -- Use GUID lookup instead of tags
---     isPlayerLight = true,
 --     default = "OFF",
 --     OFF = {enabled=false, rotation=Vector(0,-72,0), position=Vector(-36.12,0,-110), ...},
 --     STANDARD = {enabled=true, rotation=Vector(0,-72,60), position=Vector(-29.75,22.6,-90), ...}
@@ -743,6 +743,26 @@ L.LIGHTMODES = {
     }
 }
 
+-- Ensure HUNGRY seat-light modes are fully actionable even when defined as partial
+-- overrides (for example color-only). Without this, switching OFF -> HUNGRY can stay
+-- visually dark because angle/intensity remain zero from OFF.
+for lightRef, lData in pairs(L.LIGHTMODES) do
+    if type(lightRef) == "string"
+        and type(lData) == "table"
+        and (string.sub(lightRef, 1, 10) == "playerLight" or string.sub(lightRef, 1, 8) == "npcLight")
+        and type(lData.HUNGRY) == "table"
+        and type(lData.STANDARD) == "table"
+    then
+        local enrichedHungry = U.clone(lData.HUNGRY, true)
+        for k, v in pairs(lData.STANDARD) do
+            if enrichedHungry[k] == nil then
+                enrichedHungry[k] = type(v) == "table" and U.clone(v, true) or v
+            end
+        end
+        lData.HUNGRY = enrichedHungry
+    end
+end
+
 -- ============================================================================
 -- INTERNAL HELPER FUNCTIONS
 -- ============================================================================
@@ -1062,10 +1082,10 @@ function L.registerNpcSpotlightModes(npcName, lightGuid)
     L.LIGHTMODES[reg] = {
         guid = lightGuid,
         isSpawned = true,
-        default = "standard",
-        off = makeFn("off"),
-        standard = makeFn("standard"),
-        spotlight = makeFn("spotlight"),
+        default = "STANDARD",
+        OFF = makeFn("OFF"),
+        STANDARD = makeFn("STANDARD"),
+        SPOTLIGHT = makeFn("SPOTLIGHT"),
     }
 end
 
@@ -1149,7 +1169,7 @@ end
 --   3. Persists to `gameState.lights` after mode resolves (registered: mode key string; raw GUID: sanitized inline table)
 --   4. Smoothly transitions using U.Lerp; overlapping calls for the same `lightRef` invalidate prior epochs (last wins)
 --
--- Supports per-player lights (if isPlayerLight=true in mode definition).
+-- Supports per-player lights via seat-scoped mode handlers.
 -- Modes can be static tables or dynamic functions that calculate values.
 --
 -- @param lightRef string|table Registered key in L.LIGHTMODES, or an object GUID string, or an array of either (nested arrays recurse)
@@ -1207,113 +1227,291 @@ local NPC_LIGHT_ROLE_BY_REF = {
 }
 
 --- @param lightRef string
---- @param seatColor string
+--- @param seatKey string
 --- @return boolean
-local function lightRefMatchesSeatColor(lightRef, seatColor)
-    if U.Type(lightRef) ~= "string" or U.Type(seatColor) ~= "string" then
+local function lightRefMatchesSeatColor(lightRef, seatKey)
+    if U.Type(lightRef) ~= "string" or U.Type(seatKey) ~= "string" then
         return false
     end
-    return string.sub(lightRef, -#seatColor) == seatColor
+    return string.sub(lightRef, -#seatKey) == seatKey
 end
 
---- @param playerID string
---- @param contextKey string
---- @param lightRef string
---- @return string|nil
-local function getStoredModeRestore(playerID, contextKey, lightRef)
-    local saved = S.getStateVal("playerData", playerID, "lighting", "modeRestore", contextKey, lightRef)
-    if U.Type(saved) == "string" and saved ~= "" then
-        return saved
-    end
-    return nil
-end
-
---- @param playerID string
---- @param contextKey string
---- @param lightRef string
---- @param mode string|nil
-local function setStoredModeRestore(playerID, contextKey, lightRef, mode)
-    S.setStateVal(mode, "playerData", playerID, "lighting", "modeRestore", contextKey, lightRef)
-end
-
---- @param lightRef string
---- @return string
-local function resolveCurrentModeOrFallback(lightRef)
-    local lData = L.LIGHTMODES[lightRef]
-    local current = S.getStateVal("lights", lightRef)
-    if U.Type(current) == "string" and lData ~= nil and lData[current] ~= nil then
-        return current
-    end
-    if lData ~= nil and U.Type(lData.default) == "string" and lData[lData.default] ~= nil then
-        return lData.default
-    end
-    if lData ~= nil and lData.OFF ~= nil then
-        return "OFF"
-    end
-    return "default"
+--- @param seatKey string
+--- @return boolean
+local function isPlayerSeatKey(seatKey)
+    return U.isIn(seatKey, C.PlayerColors or {})
 end
 
 --- @param playerColor string
---- @param modeName string
---- @param contextKey string
---- @param activate boolean
-local function setContextualPlayerLightMode(playerColor, modeName, contextKey, activate)
-    if U.Type(playerColor) ~= "string" or U.Type(modeName) ~= "string" or U.Type(contextKey) ~= "string" then
+--- @param drawerOpen boolean
+local function setPlayerRollingState(playerColor, drawerOpen)
+    if U.Type(playerColor) ~= "string" then
         return
     end
     local playerID = S.getPlayerID(playerColor)
     if U.Type(playerID) ~= "string" then
         return
     end
+    S.setStateVal(drawerOpen == true, "playerData", playerID, "lighting", "isRolling")
+end
 
+--- @param playerColor string
+--- @return boolean
+local function getPlayerRollingState(playerColor)
+    if U.Type(playerColor) ~= "string" then
+        return false
+    end
+    local playerID = S.getPlayerID(playerColor)
+    if U.Type(playerID) ~= "string" then
+        return false
+    end
+    return S.getStateVal("playerData", playerID, "lighting", "isRolling") == true
+end
+
+--- @return boolean
+local function isDarkSceneActive()
+    local currentScene = nil
+    if Scenes and type(Scenes.getCurrentScene) == "function" then
+        currentScene = Scenes.getCurrentScene()
+    else
+        currentScene = S.getStateVal("currentScene")
+    end
+    return U.Type(currentScene) == "string" and string.lower(currentScene) == "dark"
+end
+
+--- @param seatKey string
+--- @return boolean
+local function isPlayerPresentInActiveSeatLayout(seatKey)
+    if U.Type(seatKey) ~= "string" then
+        return false
+    end
+    local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
+    if U.Type(currentTableKey) ~= "string" or currentTableKey == "" then
+        -- No table filter active: do not force seats OFF.
+        return true
+    end
+    local tableCfg = C.Tables[currentTableKey]
+    if U.Type(tableCfg) ~= "table" then
+        return true
+    end
+    ---@diagnostic disable-next-line: undefined-field
+    local map = tableCfg.playerToPositionMap
+    if U.Type(map) ~= "table" then
+        return true
+    end
+    local atTable = map[seatKey] ~= nil
+    local sp = S.getStateVal("sessionScene", "seatPresent")
+    if U.Type(sp) == "table" then
+        local narrative = sp[seatKey]
+        if narrative == false then
+            return false
+        end
+        if narrative == true then
+            return atTable
+        end
+    end
+    return atTable
+end
+
+--- @return boolean
+local function shouldEnforceSeatPresenceLights()
+    return S.getStateVal("seatLayout", "enforceActiveSeatLighting") == true
+end
+
+--- @param rawKey string
+--- @param playerColor string
+--- @return string|nil
+local function resolveConditionLightRegistryKey(rawKey, playerColor)
+    if U.Type(rawKey) ~= "string" then
+        return nil
+    end
+    if L.LIGHTMODES[rawKey] ~= nil then
+        return rawKey
+    end
+    if U.Type(playerColor) == "string" then
+        local prefix = "SEAT_LIGHT_2_"
+        if string.sub(rawKey, 1, #prefix) == prefix then
+            local suffix = string.sub(rawKey, #prefix + 1)
+            if suffix == string.upper(suffix) and #suffix > 0 then
+                local title = string.sub(suffix, 1, 1) .. string.lower(string.sub(suffix, 2))
+                local candidate = "playerLight2" .. title
+                if L.LIGHTMODES[candidate] ~= nil then
+                    return candidate
+                end
+            end
+        end
+        local bySeat = "playerLight2" .. playerColor
+        if rawKey == bySeat and L.LIGHTMODES[bySeat] ~= nil then
+            return bySeat
+        end
+    end
+    return rawKey
+end
+
+--- @param lightRef string
+--- @param playerColor string
+--- @return string|nil
+local function getConditionLightOverrideMode(lightRef, playerColor)
+    local playerID = S.getPlayerID(playerColor)
+    if U.Type(playerID) ~= "string" then
+        return nil
+    end
+    local conditions = S.getStateVal("playerData", playerID, "conditions")
+    if U.Type(conditions) ~= "table" then
+        return nil
+    end
+    local lastMode = nil
+    for _, cond in pairs(conditions) do
+        if U.Type(cond) == "table" and U.Type(cond.lightingModeChanges) == "table" then
+            for rawKey, mode in pairs(cond.lightingModeChanges) do
+                local reg = resolveConditionLightRegistryKey(rawKey, playerColor)
+                if reg == lightRef and U.Type(mode) == "string" then
+                    lastMode = mode
+                end
+            end
+        end
+    end
+    return lastMode
+end
+
+--- @param lightRef string
+--- @param seatKey string
+--- @return string|nil
+local function computeDesiredPlayerLightMode(lightRef, seatKey)
+    local lData = L.LIGHTMODES[lightRef]
+    if U.Type(lData) ~= "table" then
+        return nil
+    end
+
+    local isPlayerSeat = isPlayerSeatKey(seatKey)
+
+    -- Priority: ROLLING > NPC-role-leave-alone > DARK/absent > HUNGRY > STANDARD
+    if isPlayerSeat and getPlayerRollingState(seatKey) and lData.ROLLING ~= nil then
+        return "ROLLING"
+    end
+
+    -- Future NPC-role exception hook: currently no role-assumption system exists yet.
+
+    local seatPresenceOff = shouldEnforceSeatPresenceLights() and not isPlayerPresentInActiveSeatLayout(seatKey)
+    if (isDarkSceneActive() or seatPresenceOff) and lData.OFF ~= nil then
+        return "OFF"
+    end
+
+    if isPlayerSeat then
+        local conditionMode = getConditionLightOverrideMode(lightRef, seatKey)
+        if U.Type(conditionMode) == "string" and lData[conditionMode] ~= nil then
+            return conditionMode
+        end
+
+        local hunger = tonumber(S.getPlayerVal(seatKey, "hunger")) or 0
+        if hunger >= 4 and lData.HUNGRY ~= nil then
+            return "HUNGRY"
+        end
+    end
+
+    if lData.STANDARD ~= nil then
+        return "STANDARD"
+    end
+    if U.Type(lData.default) == "string" and lData[lData.default] ~= nil then
+        return lData.default
+    end
+    if lData.OFF ~= nil then
+        return "OFF"
+    end
+    return nil
+end
+
+--- Reconcile one seat's lights against current state-derived priorities.
+--- For player seats, this includes rolling/conditions/hunger rules.
+--- For NPC seats, this applies scene/presence/default-derived modes.
+--- @param seatKey string
+function L.reconcileForPlayer(seatKey)
+    if U.Type(seatKey) ~= "string" then
+        return
+    end
     for lightRef, lData in pairs(L.LIGHTMODES or {}) do
         if U.Type(lightRef) == "string"
             and U.Type(lData) == "table"
-            and lData.isPlayerLight == true
-            and lData[modeName] ~= nil
-            and lightRefMatchesSeatColor(lightRef, playerColor)
+            and lightRefMatchesSeatColor(lightRef, seatKey)
         then
-            if activate then
+            local desiredMode = computeDesiredPlayerLightMode(lightRef, seatKey)
+            if U.Type(desiredMode) == "string" then
                 local currentMode = S.getStateVal("lights", lightRef)
-                if currentMode ~= modeName then
-                    if getStoredModeRestore(playerID, contextKey, lightRef) == nil then
-                        setStoredModeRestore(playerID, contextKey, lightRef, resolveCurrentModeOrFallback(lightRef))
+                if currentMode ~= desiredMode then
+                    -- Persist desired intent first so seat-light state stays authoritative
+                    -- even when live objects/components are still spawning.
+                    S.setStateVal(desiredMode, "lights", lightRef)
+
+                    -- Some lights can appear late after load; if unavailable now, keep
+                    -- state authoritative and let deferred passes / later sync apply live.
+                    if getLight(lightRef, true) ~= nil then
+                        L.SetLightMode(lightRef, desiredMode, seatKey, 0.25)
                     end
-                    L.SetLightMode(lightRef, modeName, playerColor, 0.25)
-                end
-            else
-                local restoreMode = getStoredModeRestore(playerID, contextKey, lightRef)
-                if restoreMode ~= nil then
-                    L.SetLightMode(lightRef, restoreMode, playerColor, 0.25)
-                    setStoredModeRestore(playerID, contextKey, lightRef, nil)
                 end
             end
         end
     end
 end
 
---- Toggle the ROLLING light context for a player.
+--- Reconcile all player lights from state.
+function L.reconcileAllPlayers()
+    for _, color in ipairs(C.PlayerColors or {}) do
+        L.reconcileForPlayer(color)
+    end
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        L.reconcileForPlayer(seatKey)
+    end
+end
+
+--- Reconcile one light reference from persisted state (non-player or targeted repairs).
+--- @param lightRef string
+--- @param transitionTime number|nil
+function L.reconcileLightRef(lightRef, transitionTime)
+    if U.Type(lightRef) ~= "string" or lightRef == "" then
+        return true
+    end
+
+    local lData = L.LIGHTMODES[lightRef]
+    if U.Type(lData) ~= "table" then
+        return true
+    end
+
+    if L.GetLight(lightRef, true) == nil then
+        return false
+    end
+
+    local desiredMode = S.getStateVal("lights", lightRef)
+    if desiredMode == nil then
+        if lData.OFF ~= nil then
+            desiredMode = "OFF"
+            S.setStateVal(desiredMode, "lights", lightRef)
+        else
+            if warnedMissingOffMode[lightRef] ~= true then
+                warnedMissingOffMode[lightRef] = true
+                U.AlertGM("Light '" .. tostring(lightRef) .. "' has no saved mode and no OFF mode; forcing enabled=false.")
+            end
+            local lightObj = L.GetLight(lightRef, true)
+            if lightObj ~= nil then
+                setEnabled(lightObj, false)
+            end
+            return true
+        end
+    end
+
+    if U.Type(desiredMode) ~= "string" and U.Type(desiredMode) ~= "table" then
+        return true
+    end
+
+    L.SetLightMode(lightRef, desiredMode, nil, transitionTime or 0.25)
+    return true
+end
+
+--- Toggle rolling context and immediately reconcile this player's lights.
 --- @param playerColor string
 --- @param drawerOpen boolean
 function L.onDiceDrawerStateChanged(playerColor, drawerOpen)
-    setContextualPlayerLightMode(playerColor, "ROLLING", "rolling", drawerOpen == true)
-end
-
---- Reconcile one player's HUNGRY light context from current hunger state.
---- @param playerColor string
-function L.syncHungryModeForPlayer(playerColor)
-    if U.Type(playerColor) ~= "string" then
-        return
-    end
-    local hunger = tonumber(S.getPlayerVal(playerColor, "hunger")) or 0
-    setContextualPlayerLightMode(playerColor, "HUNGRY", "hungry", hunger >= 4)
-end
-
---- Reconcile HUNGRY light context for all player seats.
-function L.syncHungryModesForAllPlayers()
-    for _, color in ipairs(C.PlayerColors or {}) do
-        L.syncHungryModeForPlayer(color)
-    end
+    setPlayerRollingState(playerColor, drawerOpen == true)
+    L.reconcileForPlayer(playerColor)
 end
 
 --- @param lightRef string
@@ -1420,12 +1618,6 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
         end
         isSpawned = lData.isSpawned or false
 
-        if not lData.isPlayerLight and player ~= nil then
-            -- Some scene/light call paths pass a player context for mixed light ref sets.
-            -- Non-player lights should ignore that context instead of emitting validation alerts.
-            player = nil
-        end
-
         light = getLight(lightRef, true)
         if light == nil and isSpawned then
             return U.waitUntil(function()
@@ -1441,7 +1633,7 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
         if U.Type(modeData) == "function" then
             modeData = modeData(player)
         elseif U.Type(modeData) == "string" and modeData == "default" then
-            modeData = lData.default or "off"
+            modeData = lData.default or "OFF"
         end
 
         if U.Type(modeData) == "table" then
@@ -1679,30 +1871,20 @@ local function tryApplySavedLight(lightName, mData, transitionT)
         return true
     end
 
+    -- Seat lights are always derived from authoritative gameplay state
+    -- (ROLLING/DARK-HUNGRY/STANDARD priorities), not restored from saved
+    -- `gameState.lights` snapshots. Applying saved seat-light modes here can
+    -- re-stamp stale STANDARD/OFF values during load and fight reconciler output.
+    if string.sub(lightName, 1, 10) == "playerLight" or string.sub(lightName, 1, 8) == "npcLight" then
+        return true
+    end
+
     if string.sub(lightName, 1, 9) == "npcLight_" and L.LIGHTMODES[lightName] == nil then
         return false
     end
 
     if L.LIGHTMODES[lightName] ~= nil then
-        if L.GetLight(lightName, true) == nil then
-            return false
-        end
-        if U.Type(mData) == "string" then
-            L.SetLightMode(lightName, mData, nil, transitionT)
-        else
-            local firstMode = nil
-            U.forEach(mData, function(mode, _)
-                if firstMode == nil and U.Type(mode) == "string" then
-                    firstMode = mode
-                end
-            end)
-            if firstMode then
-                L.SetLightMode(lightName, firstMode, nil, transitionT)
-            else
-                L.SetLightMode(lightName, mData, nil, transitionT)
-            end
-        end
-        return true
+        return L.reconcileLightRef(lightName, transitionT)
     end
 
     if isProbablyObjectGuid(lightName) and U.Type(mData) == "table" then
@@ -1721,26 +1903,48 @@ function L.InitLights()
     L.cleanupLightsState()
     initLightsRetryKeys = {}
     local savedLights = S.getStateVal("lights") or {}
+
+    -- Reconcile all registered non-seat lights through state records.
+    -- Missing saved modes default to OFF (or are force-disabled with a GM warning).
+    for lightRef, lData in pairs(L.LIGHTMODES or {}) do
+        if U.Type(lightRef) == "string"
+            and U.Type(lData) == "table"
+            and not (string.sub(lightRef, 1, 10) == "playerLight" or string.sub(lightRef, 1, 8) == "npcLight")
+        then
+            if not L.reconcileLightRef(lightRef, 0) then
+                initLightsRetryKeys[lightRef] = true
+            end
+        end
+    end
+
+    -- Also apply persisted raw-GUID table records, if any exist.
     U.forEach(savedLights, function(mData, lightName)
         if not tryApplySavedLight(lightName, mData, 0) then
             initLightsRetryKeys[lightName] = true
         end
     end)
-    L.syncHungryModesForAllPlayers()
+    L.reconcileAllPlayers()
 end
 
 --- Second pass after load (late-spawned objects). Call from `Wait.time` in global onLoad.
 function L.InitLightsDeferred()
     L.cleanupLightsState()
     local savedLights = S.getStateVal("lights") or {}
+    local remaining = {}
     for lightName, _ in pairs(initLightsRetryKeys) do
-        local mData = savedLights[lightName]
-        if mData ~= nil then
-            tryApplySavedLight(lightName, mData, 0)
+        if L.LIGHTMODES[lightName] ~= nil then
+            if not L.reconcileLightRef(lightName, 0) then
+                remaining[lightName] = true
+            end
+        else
+            local mData = savedLights[lightName]
+            if mData ~= nil and not tryApplySavedLight(lightName, mData, 0) then
+                remaining[lightName] = true
+            end
         end
     end
-    initLightsRetryKeys = {}
-    L.syncHungryModesForAllPlayers()
+    initLightsRetryKeys = remaining
+    L.reconcileAllPlayers()
 end
 
 --- Resets all lights to their default/off states

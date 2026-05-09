@@ -8,8 +8,8 @@ local P = {}
 local S = require("core.state")
 local C = require("lib.constants")
 local U = require("lib.util")
-local L = require("core.lighting")
 local HO = require("core.hud_overlays")
+local Sync = require("core.sync")
 
 --- Tracker glyphs / sheet images from Global (`GlobalRegisterTrackerDisplay`); nil until a sheet object loads.
 --- @return table|nil
@@ -403,53 +403,6 @@ function P.makeImpairedHumanityCondition(playerID)
   }
 end
 
---- Resolve sheet/UI light keys (e.g. SEAT_LIGHT_2_COLOR) to L.LIGHTMODES registry names.
---- @param rawKey string
---- @param seatColor string|nil
---- @return string|nil
-function P.resolveLightRegistryKey(rawKey, seatColor)
-  if type(rawKey) ~= "string" then
-    return nil
-  end
-  if L.LIGHTMODES[rawKey] ~= nil then
-    return rawKey
-  end
-  local prefix = "SEAT_LIGHT_2_"
-  if rawKey:sub(1, #prefix) == prefix then
-    local suffix = rawKey:sub(#prefix + 1)
-    if suffix == string.upper(suffix) and #suffix > 0 then
-      local title = suffix:sub(1, 1) .. suffix:sub(2):lower()
-      return "playerLight2" .. title
-    end
-  end
-  if seatColor and L.LIGHTMODES["playerLight2" .. seatColor] ~= nil then
-    return "playerLight2" .. seatColor
-  end
-  return rawKey
-end
-
---- @param lightKey string registered L.LIGHTMODES key
---- @param mode string|table
---- @param playerColor string|nil
-local function trySetLight(lightKey, mode, playerColor)
-  local def = L.LIGHTMODES[lightKey]
-  if def == nil then
-    warnGm("Unknown light key: " .. tostring(lightKey))
-    return
-  end
-  if type(mode) == "string" then
-    local m = (def[mode] ~= nil) and mode or (string.upper(mode) == mode and mode or nil)
-    if m == nil then
-      m = mode
-    end
-    if def[m] == nil and mode ~= "OFF" and mode ~= "STANDARD" then
-      warnGm("Light mode " .. tostring(mode) .. " not defined for " .. tostring(lightKey) .. " — skipping")
-      return
-    end
-  end
-  L.SetLightMode(lightKey, mode, playerColor, 0.5)
-end
-
 --- Apply lighting from all active conditions (last key wins per light).
 --- @param playerID string
 function P.applyActiveConditionPresentation(playerID)
@@ -462,19 +415,10 @@ function P.applyActiveConditionPresentation(playerID)
   if type(conditions) ~= "table" then
     return
   end
-  local lastMode = {}
-  for condKey, cond in pairs(conditions) do
-    if type(cond) == "table" and type(cond.lightingModeChanges) == "table" then
-      for lk, mode in pairs(cond.lightingModeChanges) do
-        local reg = P.resolveLightRegistryKey(lk, col)
-        if reg then
-          lastMode[reg] = mode
-        end
-      end
-    end
-  end
-  for reg, mode in pairs(lastMode) do
-    trySetLight(reg, mode, col)
+  -- Lighting overrides now flow through lighting reconciler derivation
+  -- from persisted condition state (no direct live-world writes here).
+  if type(col) == "string" and col ~= "" then
+    Sync.player(col)
   end
 end
 

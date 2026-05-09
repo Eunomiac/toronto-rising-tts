@@ -102,6 +102,32 @@ function GlobalGetMergedPlayerData(playerID)
     return S.getPlayerData(playerID)
 end
 
+--- @return boolean
+local function startupSeatLightsReadyForReveal()
+    if L == nil or type(L.GetLight) ~= "function" then
+        return false
+    end
+    local savedLights = S.getStateVal("lights")
+    if type(savedLights) ~= "table" then
+        return true
+    end
+    for lightRef, _ in pairs(savedLights) do
+        if type(lightRef) == "string" then
+            local isSeatLight = string.sub(lightRef, 1, 10) == "playerLight" or string.sub(lightRef, 1, 8) == "npcLight"
+            if isSeatLight and L.GetLight(lightRef, true) == nil then
+                return false
+            end
+        end
+    end
+    return true
+end
+
+local function hideStartupLoadingOverlays()
+    for _, color in ipairs(C.PlayerColors or {}) do
+        UI.hide("overlay_loadingScreen_" .. tostring(color))
+    end
+end
+
 --- Returns seat layout center point from global state for object scripts.
 --- @return table|nil { x, y, z }
 function GlobalGetSeatLayoutCenterPoint()
@@ -288,40 +314,110 @@ end
 
 function onLoad(saved_data)
     print("--- VTM5E Module Loaded ---")
+    local startupLastAction = "onLoad:start"
+
+    --- @param action string
+    local function setStartupAction(action)
+        if type(action) == "string" and action ~= "" then
+            if startupLastAction ~= action then
+                startupLastAction = action
+                print("Startup step: " .. tostring(startupLastAction))
+            end
+        end
+    end
 
     -- Print host Steam ID for hardcoding into C.StorytellerID (lib/constants.ttslua)
+    setStartupAction("resolve-host-steam-id")
     local host = U.getHost and U.getHost()
     if host and host.steam_id then
         print("Host Steam ID (use for C.StorytellerID in lib/constants.ttslua): " .. tostring(host.steam_id))
     end
 
     -- Clear all debug logs to start fresh for this session
+    setStartupAction("clear-debug-logs")
     DEBUG.clearAllLogs()
 
     -- Initialize game state from saved data or defaults
+    setStartupAction("initialize-game-state")
     S.InitializeGameState(saved_data)
 
     -- Initialize zones module
+    setStartupAction("zones-onload")
     Z.onLoad()
 
     -- Initialize main module
+    setStartupAction("main-onload")
     M.onLoad()
 
     -- Non-interactable + per-player invisibility from `C.LockedObjects` / `C.HiddenObjects` (replaces per-object onLoad scripts)
+    setStartupAction("apply-locked-and-hidden-objects")
     if O ~= nil and type(O.ApplyLockedAndHiddenFromConstants) == "function" then
         O.ApplyLockedAndHiddenFromConstants()
     end
 
     -- Ensure table objects/components and seat layout objects are synchronized to current saved table
     -- state during load. Defer slightly so object GUID lookups (including relative objects) are ready.
+    local startupTableSyncDone = false
+    setStartupAction("schedule-table-sync")
     if R and type(R.SyncTable) == "function" then
         Wait.time(function()
+            setStartupAction("run-table-sync")
             R.SyncTable()
+            startupTableSyncDone = true
+            setStartupAction("table-sync-complete")
         end, 0.5)
+    else
+        startupTableSyncDone = true
+        setStartupAction("table-sync-not-required")
     end
 
     -- Synchronization orchestration (step 2): consolidate the onLoad fan-out into Sync.full().
-    Sync.full()
+    setStartupAction("initial-sync-full")
+    Sync.full({ reason = "onLoad_initial" })
+    local startupInitialSyncDone = true
+    setStartupAction("initial-sync-full-complete")
+
+    -- Keep loading overlay visible until startup settles:
+    -- - table sync callback has run
+    -- - first sync pass has been issued
+    -- - seat lights are resolvable
+    -- Then run one final sync pass and hide loading overlay.
+    local startupOverlayHideDelaySeconds = 20
+    Wait.condition(function()
+        setStartupAction("startup-ready-final-sync-full")
+        Sync.full({ reason = "onLoad_startup_gate" })
+        setStartupAction("startup-ready-delay-before-overlay-hide")
+        print("Startup readiness gate complete: waiting " .. tostring(startupOverlayHideDelaySeconds) .. "s before hiding loading overlay.")
+
+        if type(Wait) == "table" and type(Wait.time) == "function" then
+            Wait.time(function()
+                setStartupAction("startup-ready-hide-loading-overlays")
+                hideStartupLoadingOverlays()
+                setStartupAction("startup-ready-complete")
+                print("Startup readiness gate complete: loading overlay hidden.")
+            end, startupOverlayHideDelaySeconds)
+        else
+            setStartupAction("startup-ready-hide-loading-overlays")
+            hideStartupLoadingOverlays()
+            setStartupAction("startup-ready-complete")
+            print("Startup readiness gate complete: loading overlay hidden.")
+        end
+    end, function()
+        if not startupTableSyncDone then
+            setStartupAction("waiting-for-table-sync")
+            return false
+        end
+        if not startupInitialSyncDone then
+            setStartupAction("waiting-for-initial-sync")
+            return false
+        end
+        if not startupSeatLightsReadyForReveal() then
+            setStartupAction("waiting-for-seat-lights")
+            return false
+        end
+        setStartupAction("startup-ready-conditions-met")
+        return true
+    end)
 
     -- Debug module help (optional - shows available test commands)
     -- DEBUG.help()
@@ -505,11 +601,14 @@ function HUD_changeScene(player, button, id)
         return
     end
 
-    -- Load scene with smooth transition (2 seconds)
-    Scenes.fadeToScene(sceneName, 2.0)
-
-    -- Update UI display
-    UpdateUIDisplays()
+    -- State-first scene selection, then reconcile through the sync pipeline.
+    S.setStateVal(sceneName, "currentScene")
+    S.setStateVal(nil, "sceneTransition")
+    if Sync and type(Sync.full) == "function" then
+        Sync.full({ reason = "HUD_changeScene" })
+    else
+        UpdateUIDisplays()
+    end
 
     print("HUD: Scene changed to " .. sceneName .. " by " .. player.color)
 end
@@ -549,9 +648,12 @@ function HUD_selectAdminLightingScene(player, button, id)
         return
     end
 
-    local success = Scenes.fadeToScene(sceneName, 0.5)
-    if success then
-        -- Scene buttons only need scene-facing UI updates; avoid full global refresh churn.
+    -- State-first scene selection, then reconcile through the sync pipeline.
+    S.setStateVal(sceneName, "currentScene")
+    S.setStateVal(nil, "sceneTransition")
+    if Sync and type(Sync.full) == "function" then
+        Sync.full({ reason = "HUD_selectAdminLightingScene" })
+    else
         UpdateUIDisplays({
             scene = true,
             adminLighting = true,
@@ -750,6 +852,60 @@ function HUD_printState(player, button, id)
         player.color,
         {0, 1, 1}
     )
+end
+
+--- Print per-seat light reconciliation diagnostics to workspace file.
+-- Writes **.dev/.debug/debug_logs/seat_lights.txt** when the tts-bridge listens on 39998.
+-- @param player Player The player who clicked (Host/Black)
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_debugSeatLights(player, button, id)
+    if not DEBUG or type(DEBUG.logSeatLightsToFile) ~= "function" then
+        broadcastToColor("Debug Seat Lights: DEBUG.logSeatLightsToFile missing.", player.color, {1, 0.5, 0})
+        return
+    end
+    DEBUG.logSeatLightsToFile("seat_lights")
+    broadcastToColor(
+        "Seat light diagnostics written to .dev/.debug/debug_logs/seat_lights.txt",
+        player.color,
+        {0, 1, 1}
+    )
+end
+
+--- Force a full synchronization pass from current state.
+-- @param player Player The player who clicked (Host/Black)
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_syncAll(player, button, id)
+    if not Sync or type(Sync.full) ~= "function" then
+        broadcastToColor("Sync All: Sync.full missing.", player.color, {1, 0.5, 0})
+        return
+    end
+    Sync.full({ force = true, reason = "HUD_syncAll" })
+    broadcastToColor("Full sync (force): scenes, soundscape, overlays, and UI refreshed.", player.color, {0, 1, 1})
+end
+
+--- Incremental sync from current state (fingerprints + narrow UI); use when desync is unlikely or for routine refresh.
+--- @param player Player
+--- @param button string
+--- @param id string
+function HUD_syncIncremental(player, button, id)
+    if not Sync or type(Sync.full) ~= "function" then
+        broadcastToColor("Sync incremental: Sync.full missing.", player.color, {1, 0.5, 0})
+        return
+    end
+    Sync.full({ force = false, reason = "HUD_syncIncremental" })
+    broadcastToColor("Incremental sync triggered (use Sync All if overlay/scene/audio drift persists).", player.color, {0, 1, 1})
+end
+
+--- Force-hide startup loading overlays for all player colors.
+-- Debug escape hatch when startup readiness gating appears stalled.
+-- @param player Player The player who clicked (Host/Black)
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_clearLoadingOverlay(player, button, id)
+    hideStartupLoadingOverlays()
+    broadcastToColor("Loading overlays manually hidden for all player seats.", player.color, {1, 0.85, 0.2})
 end
 
 --- Toggle all Anchor-tagged objects (admin debug utility).

@@ -681,14 +681,16 @@ function NPCS.applyCurrentLightMode(npcName, transitionTime)
         return
     end
     local reg = NPCS.lightRegistryName(rec.lightGuid)
-    local modeKey = spotlightHeld[npcName] and "spotlight" or (rec.npcLightMode or "standard")
+    local modeKey = spotlightHeld[npcName] and "SPOTLIGHT" or (rec.npcLightMode or "STANDARD")
     if L.LIGHTMODES[reg] == nil then
         L.registerNpcSpotlightModes(npcName, rec.lightGuid)
     end
     if transitionTime == nil then
         transitionTime = 0.35
     end
-    L.SetLightMode(reg, modeKey, nil, transitionTime)
+    -- State-first mutation; lighting module reconcile owns live-world writes.
+    S.setStateVal(modeKey, "lights", reg)
+    L.reconcileLightRef(reg, transitionTime)
 end
 
 --- Re-apply each spawned NPC's current light mode (used after scene transitions that force OFF).
@@ -847,7 +849,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                     lightGuid = lg,
                     areaKey = areaKey,
                     slotIndex = slotIndex,
-                    npcLightMode = (areaForSpawn and areaForSpawn.autoLight == true) and "standard" or "off",
+                    npcLightMode = (areaForSpawn and areaForSpawn.autoLight == true) and "STANDARD" or "OFF",
                     locked = false,
                 }
                 setInstanceRecord(npcName, rec)
@@ -940,7 +942,7 @@ function NPCS.moveNpcToArea(npcName, areaKey, opts)
     local area = NPCS.areas[areaKey]
     rec.areaKey = areaKey
     rec.slotIndex = slot
-    rec.npcLightMode = (area and area.autoLight == true) and "standard" or "off"
+    rec.npcLightMode = (area and area.autoLight == true) and "STANDARD" or "OFF"
     setInstanceRecord(npcName, rec)
     NPCS.applyCurrentLightMode(npcName, 0)
     if not skipSeatSync then
@@ -1134,10 +1136,10 @@ function NPCS.toggleOffStandard(npcName)
     if rec == nil then
         return
     end
-    if rec.npcLightMode == "off" then
-        rec.npcLightMode = "standard"
+    if rec.npcLightMode == "OFF" then
+        rec.npcLightMode = "STANDARD"
     else
-        rec.npcLightMode = "off"
+        rec.npcLightMode = "OFF"
     end
     setInstanceRecord(npcName, rec)
     -- Instant transition avoids overlapping coroutine sequences stomping enable/intensity.
@@ -1264,8 +1266,8 @@ function NPCS.restoreAfterStateLoad()
     local cleaned = {}
     for name, rec in pairs(inst) do
         if U.Type(rec) == "table" and rec.figurineGuid and rec.lightGuid then
-            if rec.npcLightMode ~= "off" and rec.npcLightMode ~= "standard" then
-                rec.npcLightMode = "standard"
+            if rec.npcLightMode ~= "OFF" and rec.npcLightMode ~= "STANDARD" then
+                rec.npcLightMode = "STANDARD"
             end
             if rec.locked ~= true then
                 rec.locked = false
@@ -1723,7 +1725,7 @@ local function computeNpcPanelLayoutFingerprint()
                 tostring(name),
                 tostring(rec.areaKey),
                 tostring(rec.slotIndex),
-                tostring(rec.npcLightMode or "standard"),
+                tostring(rec.npcLightMode or "STANDARD"),
                 tostring(isNpcLocked(rec))
             ))
         end
@@ -1855,11 +1857,11 @@ function NPCS.refreshStorytellerUI()
             local inThisArea = U.Type(rec) == "table" and rec.areaKey == areaKey
             setUiActiveSafe("npc_occRow_" .. areaKey .. "_" .. npcName, inThisArea)
             if inThisArea then
-                local mode = rec.npcLightMode or "standard"
+                local mode = rec.npcLightMode or "STANDARD"
                 setUiButtonAttrsSafe("npc_toggle_" .. areaKey .. "_" .. npcName, {
-                    text = mode == "off" and "○" or "⊚",
-                    colors = mode == "off" and "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" or "#CCCCCC|#BBBBBB|#AAAAAA|#999999",
-                    textColor = mode == "off" and "#FFFFFF" or "#000000",
+                    text = mode == "OFF" and "○" or "⊚",
+                    colors = mode == "OFF" and "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" or "#CCCCCC|#BBBBBB|#AAAAAA|#999999",
+                    textColor = mode == "OFF" and "#FFFFFF" or "#000000",
                     active = "true",
                 })
                 for _, toArea in ipairs(areas) do

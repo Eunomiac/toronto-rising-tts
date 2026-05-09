@@ -8,13 +8,20 @@
 
 Your core instinct is right and is supported by the existing codebase: **state should be the single source of truth, and a small, well-defined orchestration layer should drive the world toward state**. But three pieces of your specific framing are worth pushing back on before any code is written:
 
-1. **One umbrella method is the wrong granularity.** It will turn into a god-function. The right shape is a thin **orchestrator** plus per-domain **reconcilers** — most of which already exist in your code (`HO.syncAll`, `L.syncHungryModesForAllPlayers`, `Soundscape.applyContext`, `Scenes.loadScene`, `UpdateUIDisplays(delta)`). To be fully clear about terminology: when you said "umbrella method" in the speculation, the orchestrator described below **is** what you meant — a conductor, not a god-function. The pushback is purely about avoiding a name (`SyncPlayerWithGameState`) and a body shape that would invite business logic to creep in over time.
+> **Hard boundary (non-negotiable):**
+> Reconcilers are the only pipeline that may write to the live world.
+> All other code paths (UI handlers, reducers, scene picks, panel actions, callbacks) must mutate `gameState` first, then call the appropriate `Sync.*` / `reconcile*` entry point.
+> No hidden live-world writes in setters. No competing side pipelines.
+
+1. **One umbrella method is the wrong granularity.** It will turn into a god-function. The right shape is a thin **orchestrator** plus per-domain **reconcilers** — most of which already exist in your code (`HO.syncAll`, `L.reconcileAllPlayers`, `Soundscape.applyContext`, `Scenes.loadScene`, `UpdateUIDisplays(delta)`). To be fully clear about terminology: when you said "umbrella method" in the speculation, the orchestrator described below **is** what you meant — a conductor, not a god-function. The pushback is purely about avoiding a name (`SyncPlayerWithGameState`) and a body shape that would invite business logic to creep in over time.
 2. **"Performant enough to call constantly" is a smell, not a goal.** What you actually want is **idempotent reconcilers** with **diff-based writes**, triggered by **explicit events** (and a "full sync" entry point for load / reset / "I'm not sure"). The performance follows for free.
 3. **Naming the entry point `SyncPlayerWithGameState` mixes scopes.** Several of your pseudocode branches (phase, soundscape, NPC cutouts) are not player-scoped. A clean split — `Sync.full()`, `Sync.player(color)`, `Sync.lighting()` — keeps the umbrella honest.
 
-You also have **a hidden problem this proposal exposes**: state setters in `core/state.ttslua` already call lighting reconcilers as side effects (e.g. `S.setPlayerVal("Red","hunger",4) → L.syncHungryModeForPlayer("Red")`). That is exactly the leaky pattern you're intuitively reacting against. The architecture below moves those side effects into a single, opt-in place.
+You also had **a hidden problem this proposal exposed**: state setters in `core/state.ttslua` used to call lighting reconcilers as side effects (e.g. `S.setPlayerVal("Red","hunger",4)` triggering lighting reconciliation directly). That was exactly the leaky pattern you were reacting against. The current architecture keeps those side effects in explicit `Sync.*` entry points.
 
 ---
+
+> Status note: Steps 1-4 below are now implemented in the workspace. Sections explicitly labeled "historical" describe pre-refactor behavior for context.
 
 ## 1. Validating your intuition
 
@@ -25,7 +32,7 @@ Let me make the abstract concrete. Right now, *getting hunger to update* require
 | Effect | Driven by | Lives in |
 |---|---|---|
 | `gameState.playerData[id].stats.hunger` | `S.setPlayerVal(color, "hunger", n)` | [`core/state.ttslua`](../../core/state.ttslua) |
-| HUNGRY player light overrides STANDARD | `L.syncHungryModeForPlayer(color)` (auto-fired by the setter) | [`core/lighting.ttslua`](../../core/lighting.ttslua) |
+| Player light mode reconciliation (`ROLLING`/`OFF`/`HUNGRY`/`STANDARD`) | `Sync.player(color)` → `L.reconcileForPlayer(color)` | [`core/lighting.ttslua`](../../core/lighting.ttslua) |
 | `overlay_hunger_<n>_<Color>` UI image | `HO.syncAll()` (called by `UpdateUIDisplays({overlays=true})`) | [`core/hud_overlays.ttslua`](../../core/hud_overlays.ttslua) |
 | `HUNGER_SMOKE_*` prop on/off (≥4) | `syncHungerSmokeForSeat()` inside `HO.syncAll()` | same |
 | `hungerVal_<Color>` text in admin HUD | `UpdateUIDisplays({playerStats=true})` | [`core/global_script.ttslua`](../../core/global_script.ttslua) |
@@ -42,7 +49,7 @@ Your speculation says "I imagine the method will be little more than a series of
 - [`Soundscape.applyContext({...})`](../../core/soundscape.ttslua) — already a great example of a **declarative** reconciler: pass a partial context (`{musicMood="combat", weather="rain", isIndoors=true}`) and it does the right thing with no orchestration plumbing.
 - [`HO.syncAll()`](../../core/hud_overlays.ttslua) — already idempotent, already diffs against `lastVisible`/`lastHungerSmokeOn` caches, only fires `UI.show`/`UI.hide` when the desired state actually changes.
 - [`L.SetLightMode()`](../../core/lighting.ttslua) — already enforces "epoch wins" semantics so overlapping calls don't fight each other; persists the resolved mode to `gameState.lights`.
-- [`Scenes.loadScene(name)`](../../core/scenes.ttslua) — already coordinates lighting **plus** soundscape **plus** NPCs in one call.
+- [`Scenes.loadScene(name)`](../../core/scenes.ttslua) — mutates selected scene state; `Scenes.reconcileFromState()` applies live scene effects through the reconciler pipeline.
 
 The architecture below **does not** propose to replace any of this. It proposes a **thin coordinating layer on top** so they're all reachable from one place, in a known order, with consistent semantics.
 
@@ -56,7 +63,7 @@ Your requirement #1 ("All relevant data about what systems _should_ be doing mus
 - `gameState.soundscape.{musicMood, weather, location, isIndoors, ...}`
 - `gameState.scene.{name, mood}`
 - `gameState.seatLayout.{currentTableKey, occupiedNPCSlots}`
-- `gameState.playerData[id].lighting.modeRestore.<contextKey>` (stack of "what to restore to after override ends")
+- `gameState.playerData[id].lighting.isRolling` (runtime rolling context used by lighting reconciliation)
 
 This is already coherent. **Do not** introduce a parallel "live state" object alongside `gameState`. The world (TTS objects, lights, sounds, UI) is the live state; `gameState` says what it _should_ be.
 
@@ -114,6 +121,8 @@ What's worth doing:
 Do **not** spend effort fighting Lua's lack of private members.
 
 ### 2.5 Push back: state setters should not call reconcilers
+
+This is exactly where the boundary above matters: setters are for state mutation only; reconcilers are for world application only.
 
 Right now, [`core/state.ttslua`](../../core/state.ttslua) lines 1054–1064 do this:
 
@@ -283,12 +292,14 @@ Every `<Module>.reconcile<Scope>(...)` function obeys these rules:
 
 Existing functions that already fit (sometimes need renaming for consistency):
 
-| Today | Rename to |
+| Previous name | Current direction |
 |---|---|
 | `HO.syncAll()` | `HO.reconcileAll()` (or new `HO.reconcileForPlayer(color)`) |
-| `L.syncHungryModesForAllPlayers()` | absorbed into `L.reconcileForPlayer(color)` (priority-based, not stacked) |
+| `L.syncHungryModesForAllPlayers()` | replaced by `L.reconcileAllPlayers()` / `L.reconcileForPlayer(color)` |
 | `Scenes.loadScene(name, transitionTime)` | stays as the **mutation** API; new `Scenes.reconcileFromState()` reapplies the saved scene without mutating it |
-| `Soundscape.onLoad()` | rename body to `Soundscape.reconcile()` and keep `onLoad` as a one-liner that calls it |
+| Scene stage application (`lightStages`) | applies ambient/non-player lights; player-seat lights are reconciler-owned |
+| `Soundscape.reconcileFromState()` | reconciles audio playback from persisted state during sync/load |
+| `Sync.full({ force = true })` vs incremental | **Storyteller debug “Sync All (force)”** bypasses scene/soundscape fingerprints and runs full UI; **Sync (incremental)** uses fingerprints + narrow `UpdateUIDisplays` delta |
 | `UpdateUIDisplays(delta)` | stays; the orchestrator just calls it |
 
 ### 3.4 Pure-derivation example: lighting priority
@@ -370,7 +381,7 @@ Treat these as the **only** rules:
 | Trigger | Run |
 |---|---|
 | `Global.onLoad()` (after state restored) | `Sync.full()` (replaces today's hand-rolled fan-out at the bottom of `onLoad`) |
-| Scene change (`Scenes.loadScene(name)`) | `Sync.full()` at the end of the scene apply (or `Sync.lighting()+Sync.soundscape()+Sync.npcCutouts()+Sync.ui()` for slightly cheaper) |
+| Scene change (`Scenes.loadScene(name)`) | mutate scene state, then call `Sync.full()` (or scoped `Sync.*` reconcilers) |
 | Phase change (`M.advancePhase`) | `Sync.full()` (phase touches almost everything) |
 | Hunger change (`S.setPlayerVal(c,"hunger",n)`) | caller follows with `Sync.player(c)` |
 | Frenzy / condition change | caller follows with `Sync.player(c)` |
@@ -398,7 +409,7 @@ Walk this once with the proposed architecture and the existing one side by side.
 
 **Trigger:** Storyteller drags Red's hunger from 3 to 4 via the PC storyteller panel.
 
-### Today
+### Before Refactor (historical)
 
 1. `pc_storyteller_panel.ttslua` calls `S.setPlayerVal("Red", "hunger", 4)`.
 2. `S.setPlayerVal` writes `gameState.playerData[id].stats.hunger = 4` and **also** imports `core.lighting` and calls `L.syncHungryModeForPlayer("Red")`.
@@ -450,14 +461,14 @@ Pure refactor. The body of every method **delegates to existing functions**:
 ```lua
 function Sync.full()
     Scenes.onLoad()                  -- existing: replays current scene
-    Soundscape.onLoad()              -- existing: replays current soundscape
+    Soundscape.reconcileFromState()  -- existing: replays current soundscape
     NPCS.restoreAfterStateLoad()     -- existing
     L.InitLights()                   -- existing
     HO.syncAll()                     -- existing
     UpdateUIDisplays()               -- existing
 end
 function Sync.player(color)
-    L.syncHungryModeForPlayer(color) -- existing
+    L.reconcileForPlayer(color)      -- existing consolidated reconciler
     HUP.syncHungerPulseAll()         -- existing (refine to per-player later)
     HO.syncAll()                     -- existing
     UpdateUIDisplays({playerStats=true, playerHud=true, overlays=true})
@@ -476,7 +487,7 @@ Delete the `if key == "hunger"` branch from `S.setPlayerVal` (lines 1054–1064 
 
 ### Step 3 — Replace `modeRestore` with pure derivation
 
-Implement `computeDesiredPlayerLightMode` and `L.reconcileForPlayer` as in §3.4. Delete `setContextualPlayerLightMode`, `getStoredModeRestore`, `setStoredModeRestore`, `resolveCurrentModeOrFallback`, `L.syncHungryModeForPlayer`, `L.syncHungryModesForAllPlayers`, `L.onDiceDrawerStateChanged` (replaced by the ROLLING branch in the priority list). Clear `gameState.playerData[*].lighting.modeRestore` from saves on next state validation.
+Implement `computeDesiredPlayerLightMode` and `L.reconcileForPlayer` as in §3.4. Delete `setContextualPlayerLightMode`, `getStoredModeRestore`, `setStoredModeRestore`, and `resolveCurrentModeOrFallback`. Keep `L.onDiceDrawerStateChanged` as a thin trigger that sets rolling context and calls `L.reconcileForPlayer(color)`. Clear `gameState.playerData[*].lighting.modeRestore` from saves on next state validation.
 
 **Deliverable:** a meaningful chunk of `core/lighting.ttslua` deleted (low hundreds of lines). Lighting priority lives in one function. Saves no longer carry restore stacks.
 

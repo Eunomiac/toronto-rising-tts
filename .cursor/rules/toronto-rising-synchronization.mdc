@@ -1,0 +1,39 @@
+---
+description: Toronto Rising TTS — synchronization contract and naming conventions
+alwaysApply: true
+---
+
+# Toronto Rising — synchronization conventions
+
+## Core contract
+
+- Treat `gameState` as the single source of truth.
+- Keep **mutation** and **reconciliation** separate:
+  - Mutation writes state (`S.setStateVal`, `S.setPlayerVal`, module mutation APIs).
+  - Reconciliation applies world changes (`UI`, lights, sound, spawned objects).
+- After a relevant mutation, call an explicit sync entry point (`Sync.player(color)`, `Sync.full()`, or domain reconcile function where appropriate).
+- Do not hide side effects in state setters.
+
+## Reconciler rules
+
+- Reconciler functions must be idempotent.
+- Reconciler functions must read state and apply only required diffs.
+- Reconciler functions must not write back into state except for narrowly-scoped runtime context flags that are part of the sync model (for example per-player rolling context).
+- Prefer naming in the form:
+  - `reconcileForPlayer(color)`
+  - `reconcileAllPlayers()`
+  - `reconcileFromState()`
+
+## Lighting-specific rules
+
+- Derive desired player light mode from current state priority, not restore stacks.
+- Current player-light priority is:
+  - `ROLLING` > `NPC-role exception (when implemented)` > `DARK/absent` > `HUNGRY` > `STANDARD`
+- Collapse `dark` scene and "absent from active seat layout" to the same `OFF` outcome.
+- Do not reintroduce `modeRestore`-style push/pop state.
+
+## Cleanup expectations
+
+- Remove compatibility aliases once call sites are migrated.
+- Remove comments that describe past migration steps; comments should describe current behavior.
+- When sync APIs change, update `.dev/` docs in the same change.

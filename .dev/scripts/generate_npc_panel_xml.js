@@ -160,19 +160,207 @@ function xmlEscape(value) {
     .replaceAll("\"", "&quot;");
 }
 
-function optionalColorAttr(hexColor) {
-  if (typeof hexColor !== "string" || !hexColor.match(/^#[0-9a-fA-F]{6}$/)) {
-    return "";
+/**
+ * Clamp a numeric byte channel to the 0..255 integer range.
+ * Returns 0 for non-finite input so downstream formatting never produces NaN.
+ *
+ * @param {number} n - Channel value (may be a float; rounded to nearest int).
+ * @returns {number} Integer in [0, 255].
+ */
+function clampByte(n) {
+  if (!Number.isFinite(n)) {
+    return 0;
   }
-  return ` color="${xmlEscape(hexColor)}"`;
+  return Math.max(0, Math.min(255, Math.round(n)));
 }
 
-function withAlphaHex(hexColor, alphaHex = "CC", fallback = "#444444CC") {
-  const match = typeof hexColor === "string" ? hexColor.match(/^#([0-9a-fA-F]{6})$/) : null;
-  if (!match) {
+/**
+ * Clamp a unit-interval value (e.g. alpha or float RGB) to 0..1.
+ * Returns 1 for non-finite input when used for alpha elsewhere; callers may
+ * substitute 0 for RGB if they need a different default.
+ *
+ * @param {number} n - Value in [0, 1].
+ * @returns {number} Number in [0, 1].
+ */
+function clampUnit(n) {
+  if (!Number.isFinite(n)) {
+    return 1;
+  }
+  return Math.max(0, Math.min(1, n));
+}
+
+/**
+ * Format one TTS UI color channel (or alpha) in 0..1 using **two significant figures**.
+ * Exact 0 and 1 render as "0" and "1" without decimals.
+ *
+ * @param {number} n - Channel in [0, 1] (non-finite values become "0").
+ * @returns {string}
+ */
+function formatTwoSigFigUnit(n) {
+  if (!Number.isFinite(n)) {
+    return "0";
+  }
+  const u = Math.max(0, Math.min(1, n));
+  if (u === 0) {
+    return "0";
+  }
+  if (u === 1) {
+    return "1";
+  }
+  const rounded = parseFloat(u.toPrecision(2));
+  return String(rounded);
+}
+
+/**
+ * Parse three RGB components from `rgb(...)` / `rgba(...)`.
+ * If max(R,G,B) > 1, components are treated as 8-bit (0..255) and divided by 255.
+ * Otherwise they are treated as TTS-style floats in 0..1.
+ *
+ * @param {string} rRaw
+ * @param {string} gRaw
+ * @param {string} bRaw
+ * @returns {{ r: number, g: number, b: number } | null}
+ */
+function parseRgbTriplet(rRaw, gRaw, bRaw) {
+  const r = Number(rRaw);
+  const g = Number(gRaw);
+  const b = Number(bRaw);
+  if (!Number.isFinite(r) || !Number.isFinite(g) || !Number.isFinite(b)) {
+    return null;
+  }
+  const maxCh = Math.max(r, g, b);
+  if (maxCh > 1) {
+    return {
+      r: clampByte(r) / 255,
+      g: clampByte(g) / 255,
+      b: clampByte(b) / 255,
+    };
+  }
+  return {
+    r: clampUnit(r),
+    g: clampUnit(g),
+    b: clampUnit(b),
+  };
+}
+
+/**
+ * Format a normalized color record as a TTS-friendly `rgba(r, g, b, a)` string.
+ * All channels are **floats in 0..1**, each printed with **two significant figures**
+ * (see `formatTwoSigFigUnit`). This matches Tabletop Simulator UI expectations.
+ *
+ * @param {{ r: number, g: number, b: number, a: number }} parsed - RGBA in unit space.
+ * @returns {string}
+ */
+function formatRgba(parsed) {
+  const rStr = formatTwoSigFigUnit(parsed.r);
+  const gStr = formatTwoSigFigUnit(parsed.g);
+  const bStr = formatTwoSigFigUnit(parsed.b);
+  const aStr = formatTwoSigFigUnit(parsed.a);
+  return `rgba(${rStr}, ${gStr}, ${bStr}, ${aStr})`;
+}
+
+/** Fallback group-header bar when the leader has no parseable `labelColor`. */
+const FALLBACK_GROUP_RGBA = formatRgba({
+  r: 68 / 255,
+  g: 68 / 255,
+  b: 68 / 255,
+  a: 0.8,
+});
+
+/**
+ * Parse a labelColor string from `lib/npcs_data.ttslua` into a normalized
+ * `{ r, g, b, a }` record in **0..1 unit space**, accepting any of:
+ *   - `rgba(R, G, B, A)` — R/G/B either 0..255 (any channel > 1 selects byte scale)
+ *     or TTS-style 0..1 floats; A is always 0..1
+ *   - `rgb(R, G, B)` (alpha defaults to 1)
+ *   - `#RRGGBB` / `#RRGGBBAA` (converted to unit RGBA)
+ *
+ * Hex forms remain a fallback for legacy entries until fully migrated.
+ *
+ * @param {string} value
+ * @returns {{ r: number, g: number, b: number, a: number } | null}
+ *          Null when the input is absent or cannot be parsed.
+ */
+function parseLabelColor(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    return null;
+  }
+
+  const rgbaMatch = trimmed.match(
+    /^rgba?\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*(?:,\s*(\d+(?:\.\d+)?)\s*)?\)$/i
+  );
+  if (rgbaMatch) {
+    const rgb = parseRgbTriplet(rgbaMatch[1], rgbaMatch[2], rgbaMatch[3]);
+    if (!rgb) {
+      return null;
+    }
+    return {
+      r: rgb.r,
+      g: rgb.g,
+      b: rgb.b,
+      a: rgbaMatch[4] === undefined ? 1 : clampUnit(Number(rgbaMatch[4])),
+    };
+  }
+
+  const hexMatch = trimmed.match(/^#([0-9a-fA-F]{6})([0-9a-fA-F]{2})?$/);
+  if (hexMatch) {
+    const rgbHex = hexMatch[1];
+    return {
+      r: parseInt(rgbHex.slice(0, 2), 16) / 255,
+      g: parseInt(rgbHex.slice(2, 4), 16) / 255,
+      b: parseInt(rgbHex.slice(4, 6), 16) / 255,
+      a: hexMatch[2] ? clampUnit(parseInt(hexMatch[2], 16) / 255) : 1,
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Build the optional ` color="rgba(...)"` attribute fragment for a per-NPC row.
+ * Returns an empty string when the labelColor is missing or unparseable so the
+ * row inherits the default text color rather than emitting a broken attribute.
+ *
+ * Alpha is intentionally forced to 1 here: per-NPC label rows are always rendered
+ * fully opaque, regardless of the alpha encoded in the data (the alpha channel is
+ * preserved in `npcs_data.ttslua` for non-panel consumers like spotlight tints).
+ *
+ * @param {string} labelColor - Raw labelColor string from `D.characters[*].labelColor`.
+ * @returns {string} Empty string, or a leading-space color attribute fragment.
+ */
+function optionalColorAttr(labelColor) {
+  const parsed = parseLabelColor(labelColor);
+  if (!parsed) {
+    return "";
+  }
+  return ` color="${xmlEscape(formatRgba({ r: parsed.r, g: parsed.g, b: parsed.b, a: 1 }))}"`;
+}
+
+/**
+ * Resolve the group-header background color: take the leader's RGB and override
+ * the alpha to a fixed value (0.8 by convention), so all group-header bars share
+ * a consistent translucency regardless of how the leader's labelColor encodes alpha.
+ *
+ * @param {string} labelColor - The group leader's labelColor string.
+ * @param {number} alpha - Forced alpha (0..1) applied to the group header.
+ * @param {string} fallback - Color string returned when labelColor is missing/unparseable.
+ * @returns {string} An `rgba(...)` string suitable for an XML `color="..."` attribute.
+ */
+function withAlphaOverride(labelColor, alpha, fallback) {
+  const parsed = parseLabelColor(labelColor);
+  if (!parsed) {
     return fallback;
   }
-  return `#${match[1].toUpperCase()}${alphaHex}`;
+  return formatRgba({
+    r: parsed.r,
+    g: parsed.g,
+    b: parsed.b,
+    a: clampUnit(alpha),
+  });
 }
 
 function stripLeadingXmlComment(source) {
@@ -302,7 +490,7 @@ function buildPanelXml(projectRoot, { areas, characters, groupIds, groupDisplayN
       continue;
     }
     const leader = groupMembers.find((ch) => ch.groups[groupId] === 1);
-    const groupColor = withAlphaHex(leader?.labelColor || "", "CC", "#444444CC");
+    const groupColor = withAlphaOverride(leader?.labelColor || "", 0.8, FALLBACK_GROUP_RGBA);
     pushRow(
       applyTemplate(tplGroupHeader, {
         group_key: groupId,

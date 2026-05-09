@@ -32,6 +32,7 @@ local P = require("lib.pc_stats")
 local OP = require("lib.object_positions")
 local L_LIGHT = require("core.lighting")
 local NPCS = require("core.npcs")
+local PCST_PANEL = require("core.pc_storyteller_panel")
 
 local M = {}
 
@@ -2341,9 +2342,12 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
     if U.Type(lightRefs) ~= "table" then
       return
     end
+    local mode = active and "STANDARD" or "OFF"
     for _, lightRef in ipairs(lightRefs) do
       if U.Type(lightRef) == "string" and lightRef ~= "" then
-        L_LIGHT.SetLightMode(lightRef, active and "STANDARD" or "OFF", nil, 0)
+        -- Persist intent first, then apply through lighting reconciliation (not a raw SetLightMode bypass).
+        S.setStateVal(mode, "lights", lightRef)
+        L_LIGHT.reconcileLightRef(lightRef, 0)
       end
     end
   end
@@ -2548,7 +2552,9 @@ local function setBlindfoldForSeatedPlayers(enabled)
     end
   end
   P.refreshHudOverlays()
-  PCST.refreshAllRows()
+  if PCST_PANEL ~= nil and type(PCST_PANEL.refreshAllRows) == "function" then
+    PCST_PANEL.refreshAllRows()
+  end
 end
 
 local function setDefaultCameraModeForSeatedPlayers()
@@ -2690,6 +2696,9 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   if U.Type(previousTableKey) == "string" and U.Type(C.Tables and C.Tables[previousTableKey]) == "table" then
     previousTableCfg = C.Tables[previousTableKey]
   end
+  -- Persist target table before any step that reads `gameState.seatLayout.currentTableKey`
+  -- (lighting seat-presence, HUD consumers, etc.) so mid-resolve code sees the destination layout.
+  S.setStateVal(tableKey, "seatLayout", "currentTableKey")
   local occupiedNPCSlots = getOccupiedNPCSlots()
   local filteredMap = buildFilteredSeatMap(tableCfg, occupiedNPCSlots)
   applyAllTablesVisualState(tableKey, occupiedNPCSlots)
@@ -2718,7 +2727,20 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   local sourceGroups = resolveSourceTemplateGroups(src)
   local camWorldOffset = cameraPositionWorldOffsetForActiveTable(tableCfg)
   applyCameraModesForSeats(computed, sourceGroups, camWorldOffset)
-  S.setStateVal(tableKey, "seatLayout", "currentTableKey")
+  -- Seat-layout reconciliation boundary:
+  -- this function owns geometric re-positioning of seat-bound objects (including
+  -- hunger smoke / seat lights), then immediately hands final mode/visibility
+  -- back to state-driven reconcilers so layout changes cannot override game state.
+  do
+    local L = require("core.lighting")
+    if L ~= nil and type(L.reconcileAllPlayers) == "function" then
+      L.reconcileAllPlayers()
+    end
+    local HO = require("core.hud_overlays")
+    if HO ~= nil and type(HO.syncAll) == "function" then
+      HO.syncAll()
+    end
+  end
   return computed
 end
 
@@ -2731,11 +2753,16 @@ function M.SyncTable(tableKey)
   if U.Type(key) ~= "string" or key == "" then
     key = S.getStateVal("seatLayout", "currentTableKey")
   end
+  local inferredFromTags = false
   if U.Type(key) ~= "string" or key == "" then
     key = inferActiveTableKeyFromTags()
+    inferredFromTags = U.Type(key) == "string" and key ~= ""
   end
   if U.Type(key) ~= "string" or key == "" then
     return nil
+  end
+  if inferredFromTags then
+    S.setStateVal(key, "seatLayout", "currentTableKey")
   end
   return M.resolveSeatObjectsFromTable(tostring(key))
 end

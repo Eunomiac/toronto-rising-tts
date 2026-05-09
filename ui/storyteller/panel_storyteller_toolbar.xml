@@ -7,8 +7,6 @@
     <Panel id="storytellerToolbarBody" active="false">
       <VerticalLayout spacing="4" childAlignment="UpperLeft" height="20">
     <HorizontalLayout rectAlignment="UpperLeft" ignoreLayout="true" spacing="3" childAlignment="UpperLeft" width="500" height="30" offsetXY="0 20">
-      <Button id="toggle_lighting" text="Light" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
-        onClick="HUD_selectStorytellerPanel" textColor="#FFFFFF" />
       <Button id="toggle_scenes" text="Scenes" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
         onClick="HUD_selectStorytellerPanel" textColor="#FFFFFF" />
       <Button id="toggle_soundscape" text="Sound" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
@@ -24,12 +22,7 @@
     <!-- padding: Panel acts as layout group (TTS Layout/Grouping). Inner VL uses flexibleHeight so children get real vertical space. -->
     <Panel id="storytellerContentArea" active="false" width="560" minHeight="700" flexibleHeight="0" padding="0 0 0 0">
       <VerticalLayout padding="0" spacing="4" flexibleHeight="1" childForceExpandHeight="true" minWidth="600" childForceExpandWidth="true">
-        <Panel id="panel_lighting" active="false">
-          <Text fontSize="11" color="#AAAAAA">Lighting: use Light Debug panel / scene tools.</Text>
-        </Panel>
-        <Panel id="panel_scenes" active="false">
-          <Text fontSize="11" color="#AAAAAA">Scenes: TBD.</Text>
-        </Panel>
+        <Include src="panel_scenes.xml" />
         <Include src="panel_soundscape.xml" />
         <Include src="panel_pcs.xml" />
         <Panel id="panel_phases" active="false">

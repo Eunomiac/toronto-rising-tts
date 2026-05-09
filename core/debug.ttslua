@@ -4394,6 +4394,182 @@ function DEBUG.logStateToFile(filename)
     print("DEBUG: Game state logged to " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION)
 end
 
+--- @param lightRef string
+--- @param seatColor string
+--- @return boolean
+local function debugLightRefMatchesSeatColor(lightRef, seatColor)
+    if type(lightRef) ~= "string" or type(seatColor) ~= "string" then
+        return false
+    end
+    return string.sub(lightRef, -#seatColor) == seatColor
+end
+
+--- @param seatKey string
+--- @return boolean
+local function debugIsSeatPresentInActiveLayout(seatKey)
+    if type(seatKey) ~= "string" then
+        return false
+    end
+    local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
+    if type(currentTableKey) ~= "string" or currentTableKey == "" then
+        return true
+    end
+    local tableCfg = C.Tables[currentTableKey]
+    if type(tableCfg) ~= "table" then
+        return true
+    end
+    ---@diagnostic disable-next-line: undefined-field
+    local map = tableCfg.playerToPositionMap
+    if type(map) ~= "table" then
+        return true
+    end
+    return map[seatKey] ~= nil
+end
+
+--- @param seatKey string
+--- @return boolean
+local function debugIsPlayerSeatKey(seatKey)
+    return type(seatKey) == "string" and U.isIn(seatKey, C.PlayerColors or {})
+end
+
+--- @param seatKey string
+--- @param lData table
+--- @return string|nil
+local function debugComputeDesiredSeatLightMode(seatKey, lData)
+    if type(seatKey) ~= "string" or type(lData) ~= "table" then
+        return nil
+    end
+
+    local isPlayerSeat = debugIsPlayerSeatKey(seatKey)
+    if isPlayerSeat then
+        local playerID = S.getPlayerID(seatKey)
+        local isRolling = playerID ~= nil and S.getStateVal("playerData", playerID, "lighting", "isRolling") == true
+        if isRolling and lData.ROLLING ~= nil then
+            return "ROLLING"
+        end
+    end
+
+    local currentScene = Scenes.getCurrentScene and Scenes.getCurrentScene() or S.getStateVal("currentScene")
+    local isDark = type(currentScene) == "string" and string.lower(currentScene) == "dark"
+    local enforceSeatPresence = S.getStateVal("seatLayout", "enforceActiveSeatLighting") == true
+    local seatPresent = debugIsSeatPresentInActiveLayout(seatKey)
+    if (isDark or (enforceSeatPresence and not seatPresent)) and lData.OFF ~= nil then
+        return "OFF"
+    end
+
+    if isPlayerSeat then
+        local hunger = tonumber(S.getPlayerVal(seatKey, "hunger")) or 0
+        if hunger >= 4 and lData.HUNGRY ~= nil then
+            return "HUNGRY"
+        end
+    end
+
+    if lData.STANDARD ~= nil then
+        return "STANDARD"
+    end
+    if type(lData.default) == "string" and lData[lData.default] ~= nil then
+        return lData.default
+    end
+    if lData.OFF ~= nil then
+        return "OFF"
+    end
+    return nil
+end
+
+--- @return table<string, boolean>
+local function debugGetOccupiedNPCSlotSet()
+    local occupied = S.getStateVal("seatLayout", "occupiedNPCSlots")
+    local out = {}
+    if type(occupied) ~= "table" then
+        return out
+    end
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local val = occupied[seatKey]
+        if val ~= nil and val ~= false then
+            out[seatKey] = true
+        end
+    end
+    return out
+end
+
+--- Logs a per-seat light diagnostic snapshot to a workspace file.
+-- Output includes: color | resolvedPlayerID | hunger | desired/current per-seat refs | smokeWanted.
+-- @param filename string Optional filename (default: "seat_lights")
+function DEBUG.logSeatLightsToFile(filename)
+    filename = filename or "seat_lights"
+    local timestamp = getTimestamp()
+    local rows = {
+        "Seat Light Diagnostics - " .. tostring(timestamp),
+        "seat | seatType | occupant | playerID | hunger | rolling | scene | enforceSeatLighting | seatPresent | desired | current | smokeWanted",
+    }
+
+    local occupiedNpcSlots = debugGetOccupiedNPCSlotSet()
+    local orderedSeats = {}
+    for _, seatColor in ipairs(C.PlayerColors or {}) do
+        orderedSeats[#orderedSeats + 1] = seatColor
+    end
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        if occupiedNpcSlots[seatKey] == true then
+            orderedSeats[#orderedSeats + 1] = seatKey
+        end
+    end
+
+    for _, seatKey in ipairs(orderedSeats) do
+        local isPlayerSeat = debugIsPlayerSeatKey(seatKey)
+        local seatType = isPlayerSeat and "PLAYER" or "NPC"
+        local occupiedRaw = S.getStateVal("seatLayout", "occupiedNPCSlots", seatKey)
+        local occupant = isPlayerSeat and seatKey or tostring(occupiedRaw)
+        local playerID = isPlayerSeat and S.getPlayerID(seatKey) or nil
+        local hunger = isPlayerSeat and (tonumber(S.getPlayerVal(seatKey, "hunger")) or 0) or 0
+        local rolling = playerID ~= nil and S.getStateVal("playerData", playerID, "lighting", "isRolling") == true
+        local currentScene = Scenes.getCurrentScene and Scenes.getCurrentScene() or S.getStateVal("currentScene")
+        local enforceSeatPresence = S.getStateVal("seatLayout", "enforceActiveSeatLighting") == true
+        local seatPresent = debugIsSeatPresentInActiveLayout(seatKey)
+        local smokeWanted = isPlayerSeat and hunger >= 4
+
+        local refs = {}
+        for lightRef, lData in pairs(L.LIGHTMODES or {}) do
+            if type(lightRef) == "string"
+                and type(lData) == "table"
+                and debugLightRefMatchesSeatColor(lightRef, seatKey)
+            then
+                refs[#refs + 1] = lightRef
+            end
+        end
+        table.sort(refs)
+
+        local desiredParts = {}
+        local currentParts = {}
+        for _, lightRef in ipairs(refs) do
+            local lData = L.LIGHTMODES[lightRef]
+            local desiredMode = debugComputeDesiredSeatLightMode(seatKey, lData) or "nil"
+            local currentMode = tostring(S.getStateVal("lights", lightRef) or "nil")
+            desiredParts[#desiredParts + 1] = lightRef .. "=" .. desiredMode
+            currentParts[#currentParts + 1] = lightRef .. "=" .. currentMode
+        end
+
+        rows[#rows + 1] = string.format(
+            "%s | %s | %s | %s | %d | %s | %s | %s | %s | %s | %s | %s",
+            tostring(seatKey),
+            tostring(seatType),
+            tostring(occupant),
+            tostring(playerID),
+            hunger,
+            tostring(rolling),
+            tostring(currentScene),
+            tostring(enforceSeatPresence),
+            tostring(seatPresent),
+            table.concat(desiredParts, ", "),
+            table.concat(currentParts, ", "),
+            tostring(smokeWanted)
+        )
+    end
+
+    local content = table.concat(rows, "\n") .. "\n"
+    writeToFile(filename, content, "none", false)
+    print("DEBUG: Seat light diagnostics logged to " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION)
+end
+
 --- Logs current scene information to a file
 -- @param filename string Optional filename (default: "scene_info")
 function DEBUG.logSceneToFile(filename)

@@ -134,7 +134,7 @@ local function buildPanelBodyXml()
         '<Text fontSize="18" color="#FFDD00" flexibleWidth="1">Debug Soundscape</Text>',
         '<Button preferredWidth="90" preferredHeight="30" onClick="HUD_debugSoundscapeDone">Close</Button>',
         '</HorizontalLayout>',
-        '<VerticalScrollView preferredHeight="610" minHeight="560" flexibleHeight="1" flexibleWidth="1" horizontal="false" vertical="true" inertia="false" childForceExpandWidth="true" childForceExpandHeight="false" horizontalScrollbarVisibility="AlwaysOff" verticalScrollbarVisibility="AutoHideAndExpandViewport" color="rgba(0,0,0,0.25)">',
+        '<VerticalScrollView preferredHeight="1610" minHeight="560" flexibleHeight="1" flexibleWidth="1" inertia="false" childForceExpandWidth="true" childForceExpandHeight="false" horizontalScrollbarVisibility="AlwaysOff" color="rgba(0,0,0,0.25)">',
         '<VerticalLayout spacing="6" padding="4 4 4 4" childForceExpandWidth="true" childForceExpandHeight="false">',
     }
     for _, category in ipairs(Soundscape.getDebugCategories()) do

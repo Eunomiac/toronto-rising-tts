@@ -131,11 +131,11 @@
           <Image id="playerHud_coterieGridBtn_regencyUniversityChantry_Brown_hover" image="toggle_regencyUniversityChantry_hover" active="false" />
         </Panel>
 
-        <Panel id="playerHud_coterieGridBtnWrap_scarlettAndBoys_Brown">
-          <Image id="playerHud_coterieGridBtn_scarlettAndBoys_Brown" image="toggle_scarlettAndBoys_inactive" raycastTarget="true"
+        <Panel id="playerHud_coterieGridBtnWrap_scarlettAndTheBoys_Brown">
+          <Image id="playerHud_coterieGridBtn_scarlettAndTheBoys_Brown" image="toggle_scarlettAndTheBoys_inactive" raycastTarget="true"
             onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
             onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
-          <Image id="playerHud_coterieGridBtn_scarlettAndBoys_Brown_hover" image="toggle_scarlettAndBoys_hover" active="false" />
+          <Image id="playerHud_coterieGridBtn_scarlettAndTheBoys_Brown_hover" image="toggle_scarlettAndTheBoys_hover" active="false" />
         </Panel>
       </HorizontalLayout>
 
@@ -148,11 +148,11 @@
           <Image id="playerHud_coterieGridBtn_goodDoctors_Brown_hover" image="toggle_goodDoctors_hover" active="false" />
         </Panel>
 
-        <Panel id="playerHud_coterieGridBtnWrap_line_Brown">
-          <Image id="playerHud_coterieGridBtn_line_Brown" image="toggle_line_inactive" raycastTarget="true"
+        <Panel id="playerHud_coterieGridBtnWrap_theLine_Brown">
+          <Image id="playerHud_coterieGridBtn_theLine_Brown" image="toggle_theLine_inactive" raycastTarget="true"
             onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
             onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
-          <Image id="playerHud_coterieGridBtn_line_Brown_hover" image="toggle_line_hover" active="false" />
+          <Image id="playerHud_coterieGridBtn_theLine_Brown_hover" image="toggle_theLine_hover" active="false" />
         </Panel>
 
         <Panel id="playerHud_coterieGridBtnWrap_redeemers_Brown">
@@ -190,9 +190,9 @@
     <Image id="playerHud_coteriePopup_midnightMass_Brown" active="false" class="popupImage" image="refPanel_Coteries_midnightMass" />
     <Image id="playerHud_coteriePopup_moonClub_Brown" active="false" class="popupImage" image="refPanel_Coteries_moonClub" />
     <Image id="playerHud_coteriePopup_regencyUniversityChantry_Brown" active="false" class="popupImage" image="refPanel_Coteries_regencyUniversityChantry" />
-    <Image id="playerHud_coteriePopup_scarlettAndBoys_Brown" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndBoys" />
+    <Image id="playerHud_coteriePopup_scarlettAndTheBoys_Brown" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndTheBoys" />
     <Image id="playerHud_coteriePopup_goodDoctors_Brown" active="false" class="popupImage" image="refPanel_Coteries_goodDoctors" />
-    <Image id="playerHud_coteriePopup_line_Brown" active="false" class="popupImage" image="refPanel_Coteries_line" />
+    <Image id="playerHud_coteriePopup_theLine_Brown" active="false" class="popupImage" image="refPanel_Coteries_theLine" />
     <Image id="playerHud_coteriePopup_redeemers_Brown" active="false" class="popupImage" image="refPanel_Coteries_redeemers" />
     <Image id="playerHud_coteriePopup_redFlag_Brown" active="false" class="popupImage" image="refPanel_Coteries_redFlag" />
     <Image id="playerHud_coteriePopup_wychwoodHecata_Brown" active="false" class="popupImage" image="refPanel_Coteries_wychwoodHecata" />
@@ -329,11 +329,11 @@
           <Image id="playerHud_coterieGridBtn_regencyUniversityChantry_Orange_hover" image="toggle_regencyUniversityChantry_hover" active="false" />
         </Panel>
 
-        <Panel id="playerHud_coterieGridBtnWrap_scarlettAndBoys_Orange">
-          <Image id="playerHud_coterieGridBtn_scarlettAndBoys_Orange" image="toggle_scarlettAndBoys_inactive" raycastTarget="true"
+        <Panel id="playerHud_coterieGridBtnWrap_scarlettAndTheBoys_Orange">
+          <Image id="playerHud_coterieGridBtn_scarlettAndTheBoys_Orange" image="toggle_scarlettAndTheBoys_inactive" raycastTarget="true"
             onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
             onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
-          <Image id="playerHud_coterieGridBtn_scarlettAndBoys_Orange_hover" image="toggle_scarlettAndBoys_hover" active="false" />
+          <Image id="playerHud_coterieGridBtn_scarlettAndTheBoys_Orange_hover" image="toggle_scarlettAndTheBoys_hover" active="false" />
         </Panel>
       </HorizontalLayout>
 
@@ -346,11 +346,11 @@
           <Image id="playerHud_coterieGridBtn_goodDoctors_Orange_hover" image="toggle_goodDoctors_hover" active="false" />
         </Panel>
 
-        <Panel id="playerHud_coterieGridBtnWrap_line_Orange">
-          <Image id="playerHud_coterieGridBtn_line_Orange" image="toggle_line_inactive" raycastTarget="true"
+        <Panel id="playerHud_coterieGridBtnWrap_theLine_Orange">
+          <Image id="playerHud_coterieGridBtn_theLine_Orange" image="toggle_theLine_inactive" raycastTarget="true"
             onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
             onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
-          <Image id="playerHud_coterieGridBtn_line_Orange_hover" image="toggle_line_hover" active="false" />
+          <Image id="playerHud_coterieGridBtn_theLine_Orange_hover" image="toggle_theLine_hover" active="false" />
         </Panel>
 
         <Panel id="playerHud_coterieGridBtnWrap_redeemers_Orange">
@@ -388,9 +388,9 @@
     <Image id="playerHud_coteriePopup_midnightMass_Orange" active="false" class="popupImage" image="refPanel_Coteries_midnightMass" />
     <Image id="playerHud_coteriePopup_moonClub_Orange" active="false" class="popupImage" image="refPanel_Coteries_moonClub" />
     <Image id="playerHud_coteriePopup_regencyUniversityChantry_Orange" active="false" class="popupImage" image="refPanel_Coteries_regencyUniversityChantry" />
-    <Image id="playerHud_coteriePopup_scarlettAndBoys_Orange" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndBoys" />
+    <Image id="playerHud_coteriePopup_scarlettAndTheBoys_Orange" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndTheBoys" />
     <Image id="playerHud_coteriePopup_goodDoctors_Orange" active="false" class="popupImage" image="refPanel_Coteries_goodDoctors" />
-    <Image id="playerHud_coteriePopup_line_Orange" active="false" class="popupImage" image="refPanel_Coteries_line" />
+    <Image id="playerHud_coteriePopup_theLine_Orange" active="false" class="popupImage" image="refPanel_Coteries_theLine" />
     <Image id="playerHud_coteriePopup_redeemers_Orange" active="false" class="popupImage" image="refPanel_Coteries_redeemers" />
     <Image id="playerHud_coteriePopup_redFlag_Orange" active="false" class="popupImage" image="refPanel_Coteries_redFlag" />
     <Image id="playerHud_coteriePopup_wychwoodHecata_Orange" active="false" class="popupImage" image="refPanel_Coteries_wychwoodHecata" />
@@ -527,11 +527,11 @@
           <Image id="playerHud_coterieGridBtn_regencyUniversityChantry_Red_hover" image="toggle_regencyUniversityChantry_hover" active="false" />
         </Panel>
 
-        <Panel id="playerHud_coterieGridBtnWrap_scarlettAndBoys_Red">
-          <Image id="playerHud_coterieGridBtn_scarlettAndBoys_Red" image="toggle_scarlettAndBoys_inactive" raycastTarget="true"
+        <Panel id="playerHud_coterieGridBtnWrap_scarlettAndTheBoys_Red">
+          <Image id="playerHud_coterieGridBtn_scarlettAndTheBoys_Red" image="toggle_scarlettAndTheBoys_inactive" raycastTarget="true"
             onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
             onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
-          <Image id="playerHud_coterieGridBtn_scarlettAndBoys_Red_hover" image="toggle_scarlettAndBoys_hover" active="false" />
+          <Image id="playerHud_coterieGridBtn_scarlettAndTheBoys_Red_hover" image="toggle_scarlettAndTheBoys_hover" active="false" />
         </Panel>
       </HorizontalLayout>
 
@@ -544,11 +544,11 @@
           <Image id="playerHud_coterieGridBtn_goodDoctors_Red_hover" image="toggle_goodDoctors_hover" active="false" />
         </Panel>
 
-        <Panel id="playerHud_coterieGridBtnWrap_line_Red">
-          <Image id="playerHud_coterieGridBtn_line_Red" image="toggle_line_inactive" raycastTarget="true"
+        <Panel id="playerHud_coterieGridBtnWrap_theLine_Red">
+          <Image id="playerHud_coterieGridBtn_theLine_Red" image="toggle_theLine_inactive" raycastTarget="true"
             onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
             onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
-          <Image id="playerHud_coterieGridBtn_line_Red_hover" image="toggle_line_hover" active="false" />
+          <Image id="playerHud_coterieGridBtn_theLine_Red_hover" image="toggle_theLine_hover" active="false" />
         </Panel>
 
         <Panel id="playerHud_coterieGridBtnWrap_redeemers_Red">
@@ -586,9 +586,9 @@
     <Image id="playerHud_coteriePopup_midnightMass_Red" active="false" class="popupImage" image="refPanel_Coteries_midnightMass" />
     <Image id="playerHud_coteriePopup_moonClub_Red" active="false" class="popupImage" image="refPanel_Coteries_moonClub" />
     <Image id="playerHud_coteriePopup_regencyUniversityChantry_Red" active="false" class="popupImage" image="refPanel_Coteries_regencyUniversityChantry" />
-    <Image id="playerHud_coteriePopup_scarlettAndBoys_Red" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndBoys" />
+    <Image id="playerHud_coteriePopup_scarlettAndTheBoys_Red" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndTheBoys" />
     <Image id="playerHud_coteriePopup_goodDoctors_Red" active="false" class="popupImage" image="refPanel_Coteries_goodDoctors" />
-    <Image id="playerHud_coteriePopup_line_Red" active="false" class="popupImage" image="refPanel_Coteries_line" />
+    <Image id="playerHud_coteriePopup_theLine_Red" active="false" class="popupImage" image="refPanel_Coteries_theLine" />
     <Image id="playerHud_coteriePopup_redeemers_Red" active="false" class="popupImage" image="refPanel_Coteries_redeemers" />
     <Image id="playerHud_coteriePopup_redFlag_Red" active="false" class="popupImage" image="refPanel_Coteries_redFlag" />
     <Image id="playerHud_coteriePopup_wychwoodHecata_Red" active="false" class="popupImage" image="refPanel_Coteries_wychwoodHecata" />
@@ -725,11 +725,11 @@
           <Image id="playerHud_coterieGridBtn_regencyUniversityChantry_Pink_hover" image="toggle_regencyUniversityChantry_hover" active="false" />
         </Panel>
 
-        <Panel id="playerHud_coterieGridBtnWrap_scarlettAndBoys_Pink">
-          <Image id="playerHud_coterieGridBtn_scarlettAndBoys_Pink" image="toggle_scarlettAndBoys_inactive" raycastTarget="true"
+        <Panel id="playerHud_coterieGridBtnWrap_scarlettAndTheBoys_Pink">
+          <Image id="playerHud_coterieGridBtn_scarlettAndTheBoys_Pink" image="toggle_scarlettAndTheBoys_inactive" raycastTarget="true"
             onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
             onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
-          <Image id="playerHud_coterieGridBtn_scarlettAndBoys_Pink_hover" image="toggle_scarlettAndBoys_hover" active="false" />
+          <Image id="playerHud_coterieGridBtn_scarlettAndTheBoys_Pink_hover" image="toggle_scarlettAndTheBoys_hover" active="false" />
         </Panel>
       </HorizontalLayout>
 
@@ -742,11 +742,11 @@
           <Image id="playerHud_coterieGridBtn_goodDoctors_Pink_hover" image="toggle_goodDoctors_hover" active="false" />
         </Panel>
 
-        <Panel id="playerHud_coterieGridBtnWrap_line_Pink">
-          <Image id="playerHud_coterieGridBtn_line_Pink" image="toggle_line_inactive" raycastTarget="true"
+        <Panel id="playerHud_coterieGridBtnWrap_theLine_Pink">
+          <Image id="playerHud_coterieGridBtn_theLine_Pink" image="toggle_theLine_inactive" raycastTarget="true"
             onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
             onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
-          <Image id="playerHud_coterieGridBtn_line_Pink_hover" image="toggle_line_hover" active="false" />
+          <Image id="playerHud_coterieGridBtn_theLine_Pink_hover" image="toggle_theLine_hover" active="false" />
         </Panel>
 
         <Panel id="playerHud_coterieGridBtnWrap_redeemers_Pink">
@@ -784,9 +784,9 @@
     <Image id="playerHud_coteriePopup_midnightMass_Pink" active="false" class="popupImage" image="refPanel_Coteries_midnightMass" />
     <Image id="playerHud_coteriePopup_moonClub_Pink" active="false" class="popupImage" image="refPanel_Coteries_moonClub" />
     <Image id="playerHud_coteriePopup_regencyUniversityChantry_Pink" active="false" class="popupImage" image="refPanel_Coteries_regencyUniversityChantry" />
-    <Image id="playerHud_coteriePopup_scarlettAndBoys_Pink" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndBoys" />
+    <Image id="playerHud_coteriePopup_scarlettAndTheBoys_Pink" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndTheBoys" />
     <Image id="playerHud_coteriePopup_goodDoctors_Pink" active="false" class="popupImage" image="refPanel_Coteries_goodDoctors" />
-    <Image id="playerHud_coteriePopup_line_Pink" active="false" class="popupImage" image="refPanel_Coteries_line" />
+    <Image id="playerHud_coteriePopup_theLine_Pink" active="false" class="popupImage" image="refPanel_Coteries_theLine" />
     <Image id="playerHud_coteriePopup_redeemers_Pink" active="false" class="popupImage" image="refPanel_Coteries_redeemers" />
     <Image id="playerHud_coteriePopup_redFlag_Pink" active="false" class="popupImage" image="refPanel_Coteries_redFlag" />
     <Image id="playerHud_coteriePopup_wychwoodHecata_Pink" active="false" class="popupImage" image="refPanel_Coteries_wychwoodHecata" />
@@ -923,11 +923,11 @@
           <Image id="playerHud_coterieGridBtn_regencyUniversityChantry_Purple_hover" image="toggle_regencyUniversityChantry_hover" active="false" />
         </Panel>
 
-        <Panel id="playerHud_coterieGridBtnWrap_scarlettAndBoys_Purple">
-          <Image id="playerHud_coterieGridBtn_scarlettAndBoys_Purple" image="toggle_scarlettAndBoys_inactive" raycastTarget="true"
+        <Panel id="playerHud_coterieGridBtnWrap_scarlettAndTheBoys_Purple">
+          <Image id="playerHud_coterieGridBtn_scarlettAndTheBoys_Purple" image="toggle_scarlettAndTheBoys_inactive" raycastTarget="true"
             onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
             onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
-          <Image id="playerHud_coterieGridBtn_scarlettAndBoys_Purple_hover" image="toggle_scarlettAndBoys_hover" active="false" />
+          <Image id="playerHud_coterieGridBtn_scarlettAndTheBoys_Purple_hover" image="toggle_scarlettAndTheBoys_hover" active="false" />
         </Panel>
       </HorizontalLayout>
 
@@ -940,11 +940,11 @@
           <Image id="playerHud_coterieGridBtn_goodDoctors_Purple_hover" image="toggle_goodDoctors_hover" active="false" />
         </Panel>
 
-        <Panel id="playerHud_coterieGridBtnWrap_line_Purple">
-          <Image id="playerHud_coterieGridBtn_line_Purple" image="toggle_line_inactive" raycastTarget="true"
+        <Panel id="playerHud_coterieGridBtnWrap_theLine_Purple">
+          <Image id="playerHud_coterieGridBtn_theLine_Purple" image="toggle_theLine_inactive" raycastTarget="true"
             onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp"
             onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
-          <Image id="playerHud_coterieGridBtn_line_Purple_hover" image="toggle_line_hover" active="false" />
+          <Image id="playerHud_coterieGridBtn_theLine_Purple_hover" image="toggle_theLine_hover" active="false" />
         </Panel>
 
         <Panel id="playerHud_coterieGridBtnWrap_redeemers_Purple">
@@ -982,9 +982,9 @@
     <Image id="playerHud_coteriePopup_midnightMass_Purple" active="false" class="popupImage" image="refPanel_Coteries_midnightMass" />
     <Image id="playerHud_coteriePopup_moonClub_Purple" active="false" class="popupImage" image="refPanel_Coteries_moonClub" />
     <Image id="playerHud_coteriePopup_regencyUniversityChantry_Purple" active="false" class="popupImage" image="refPanel_Coteries_regencyUniversityChantry" />
-    <Image id="playerHud_coteriePopup_scarlettAndBoys_Purple" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndBoys" />
+    <Image id="playerHud_coteriePopup_scarlettAndTheBoys_Purple" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndTheBoys" />
     <Image id="playerHud_coteriePopup_goodDoctors_Purple" active="false" class="popupImage" image="refPanel_Coteries_goodDoctors" />
-    <Image id="playerHud_coteriePopup_line_Purple" active="false" class="popupImage" image="refPanel_Coteries_line" />
+    <Image id="playerHud_coteriePopup_theLine_Purple" active="false" class="popupImage" image="refPanel_Coteries_theLine" />
     <Image id="playerHud_coteriePopup_redeemers_Purple" active="false" class="popupImage" image="refPanel_Coteries_redeemers" />
     <Image id="playerHud_coteriePopup_redFlag_Purple" active="false" class="popupImage" image="refPanel_Coteries_redFlag" />
     <Image id="playerHud_coteriePopup_wychwoodHecata_Purple" active="false" class="popupImage" image="refPanel_Coteries_wychwoodHecata" />

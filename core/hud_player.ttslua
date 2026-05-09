@@ -368,8 +368,8 @@ end
 -- We validate that these keys exist in constants and have inCoterieRef=true.
 local EXPECTED_COTERIE_GRID_GROUPS = {
     -- Camarilla split into two rows in the spec.
-    { name = "Camarilla", keys = { "beesHive", "fiveKeys", "freeChantry", "harpies", "ironGuard", "midnightMass", "moonClub", "regencyUniversityChantry", "scarlettAndBoys" } },
-    { name = "Anarch", keys = { "goodDoctors", "line", "redeemers", "redFlag" } },
+    { name = "Camarilla", keys = { "beesHive", "fiveKeys", "freeChantry", "harpies", "ironGuard", "midnightMass", "moonClub", "regencyUniversityChantry", "scarlettAndTheBoys" } },
+    { name = "Anarch", keys = { "goodDoctors", "theLine", "redeemers", "redFlag" } },
     { name = "Independent", keys = { "wychwoodHecata" } }
 }
 

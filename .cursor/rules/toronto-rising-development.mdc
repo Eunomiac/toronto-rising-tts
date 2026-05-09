@@ -14,5 +14,8 @@ This project is iterated **quickly**; requirements and layout change often.
 - When touching an area, **delete** clearly orphaned code paths rather than leaving commented-out or parallel “legacy” copies.
 - After removals, **grep** for stale names (roles, tags, helpers) and fix **call sites, prints, and `.dev` docs** that still mention them.
 - **Documentation:** When behavior, paths, or APIs change, **update `.dev/` and `docs/solutions/` in the same change** — do not wait for the user to ask. See **Documentation Updates — ABSOLUTE REQUIREMENT** in `.cursorrules`.
+- For synchronization flow and naming conventions, follow `.cursor/rules/toronto-rising-synchronization.mdc`.
+- Give proactive pushback when a requested path is unsound or overly complex; explain the risk and propose a simpler architecture-aligned alternative immediately.
+- Favor single-authority ownership per subsystem and call out dual-writer/dual-source-of-truth designs before implementing them.
 
 Agents should default to: **only what is current and actually exercised** stays in the tree.

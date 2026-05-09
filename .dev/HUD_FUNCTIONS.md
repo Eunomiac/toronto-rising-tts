@@ -15,6 +15,10 @@ Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
 | `HUD_printState` | `Print State` button | `(player, button, id)` | Calls `DEBUG.logStateToFile("game_state")`. Writes **`.dev/.debug/debug_logs/game_state.txt`** when the tts-bridge listens on **39998**. |
+| `HUD_debugSeatLights` | `Debug Seat Lights` button | `(player, button, id)` | Calls `DEBUG.logSeatLightsToFile("seat_lights")`. Writes **`.dev/.debug/debug_logs/seat_lights.txt`** for per-seat desired/current mode diagnostics. |
+| `HUD_syncIncremental` | `Sync (incremental)` button | `(player, button, id)` | Calls `Sync.full({ force = false })` — fingerprints + narrow UI delta; faster routine refresh. |
+| `HUD_syncAll` | `Sync All (force)` button | `(player, button, id)` | Calls `Sync.full({ force = true })` — bypass scene/soundscape fingerprints; full `UpdateUIDisplays` (overlay repair). |
+| `HUD_clearLoadingOverlay` | `Clear Loading Overlay` button | `(player, button, id)` | Calls `hideStartupLoadingOverlays()` to force-hide `overlay_loadingScreen_<Color>` for all player seats (debug/manual escape hatch). |
 | `HUD_debugLightGuidInput` | `dl_guid` `InputField` | `(player, value, id)` | Caches typed GUID (`LightDebugFocus.onGuidInput`). Required because TTS InputField text is not reliably readable with `UI.getValue` alone. |
 | `HUD_debugLightActivate` | `Debug Light` button | `(player, button, id)` | Reads GUID in order: `HUD_debugLightGuidInput` cache, then `UI.getAttribute("dl_guid","text")`, then `UI.getValue("dl_guid")`. Trims, `getObjectFromGUID`, validates spotlight via `LightDebug.getLightComponent`. Opens `panel_debug_light_root`, syncs sliders, applies live. Broadcasts errors to the clicking player if invalid. |
 | `HUD_debugLightEnabled` | `dl_enabled` `Toggle` | `(player, value, id)` | `LightDebugFocus.onEnabledToggle`: sets `cache.enabled`, `L.SetLightMode(..., enabled, ...)` instant apply. |
@@ -34,7 +38,7 @@ Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
-| `HUD_changeScene` | `scene_default`, `scene_elysium`, `scene_alley`, `scene_haven`, `scene_tension`, `scene_combat`, `scene_suspicion`, `scene_social` | `(player, button, id)` | Strips `scene_` prefix from `id`. Validates via `Scenes.getScene()`. Calls `Scenes.fadeToScene(sceneName, 2.0)` for a smooth 2-second transition. Updates UI displays. |
+| `HUD_changeScene` | `scene_default`, `scene_elysium`, `scene_alley`, `scene_haven`, `scene_tension`, `scene_combat`, `scene_suspicion`, `scene_social` | `(player, button, id)` | Strips `scene_` prefix from `id`, mutates `currentScene` state, then calls `Sync.full()` (state-first reconcile pipeline). |
 
 ## Soundscape Controls (panel_soundscape.xml)
 

@@ -19,6 +19,9 @@ local weatherGeneration = 0
 local singleEmitterTransitionGeneration = {}
 local cachedEmitters = {}
 
+--- Last fingerprint successfully applied by `reconcileFromState` deferred apply (incremental sync skips when unchanged).
+local lastSoundscapeReconcileFingerprint = nil
+
 local BACKGROUND_KIND_MOOD = "mood"
 local BACKGROUND_KIND_LOCATION = "locationMusic"
 
@@ -126,13 +129,17 @@ local function defaultChannelState(channelKey)
         effect = nil
         effectList = Catalog.EFFECT_LIST.TRIGGER
     end
-    return {
+    local row = {
         effect = effect,
         effectList = effectList,
         volume = tonumber(channelDef.defaultVolume) or 0,
         available = false,
         volumeControl = nil,
     }
+    if channelKey == "weatherRain" or channelKey == "weatherWind" then
+        row.naturalVolume = tonumber(channelDef.defaultVolume) or 0
+    end
+    return row
 end
 
 --- Returns a fresh serializable default soundscape state.
@@ -166,6 +173,10 @@ local function defaultState()
             volumeControl = nil,
         },
         debugPlayingTracks = {},
+        --- When true, ambient playlists (background/location/weather) stay off until cleared by explicit Storyteller soundscape changes or `isSilent = false` in applyContext. Featured lane is unaffected.
+        siteSilent = false,
+        --- Last site key passed through `applyContext` / UI (for Storyteller Sound panel Location enable fallback).
+        lastAppliedSiteKey = nil,
     }
 end
 
@@ -197,6 +208,16 @@ local function updateChannelState(channelKey, patch)
     for key, value in pairs(patch) do
         state.channels[channelKey][key] = value
     end
+end
+
+--- Applies indoor/outdoor ducking to a **natural** weather volume (0..1).
+-- @param baseVolume number|string|nil
+-- @return number
+local function weatherVolume(baseVolume)
+    local state = ensureState()
+    local ducking = Catalog.DEFAULTS.weatherDucking
+    local multiplier = state.isIndoors and ducking.indoorMultiplier or ducking.outdoorMultiplier
+    return clamp01((tonumber(baseVolume) or 0) * multiplier)
 end
 
 -- ============================================================================
@@ -473,11 +494,19 @@ local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolu
         currentVolume = tonumber(channelState.volume) or 0
     end
 
+    local naturalWeather = nil
     local targetVolume = clamp01(volume or track.volume or channelDef.defaultVolume or 0)
-    local didSetVolume = fadeEmitterVolume(obj, currentVolume, targetVolume, fadeSeconds or 0)
+    local emitterTarget = targetVolume
+    if channelKey == "weatherRain" or channelKey == "weatherWind" then
+        naturalWeather = targetVolume
+        emitterTarget = weatherVolume(targetVolume)
+        targetVolume = emitterTarget
+    end
+
+    local didSetVolume = fadeEmitterVolume(obj, currentVolume, emitterTarget, fadeSeconds or 0)
     obj.AssetBundle[apiName](index)
 
-    updateChannelState(channelKey, {
+    local patch = {
         effect = track.effect,
         effectList = effectList,
         durationSeconds = track.durationSeconds,
@@ -485,7 +514,11 @@ local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolu
         available = true,
         volumeControl = didSetVolume,
         lastError = nil,
-    })
+    }
+    if naturalWeather ~= nil then
+        patch.naturalVolume = naturalWeather
+    end
+    updateChannelState(channelKey, patch)
     return true, table.concat({ "Playing", tostring(track.effect), "on", tostring(channelKey) }, " ")
 end
 
@@ -926,13 +959,6 @@ local function activeDebugRowFor(categoryKey, trackKey)
     return nil
 end
 
-local function weatherVolume(baseVolume)
-    local state = ensureState()
-    local ducking = Catalog.DEFAULTS.weatherDucking
-    local multiplier = state.isIndoors and ducking.indoorMultiplier or ducking.outdoorMultiplier
-    return clamp01((tonumber(baseVolume) or 0) * multiplier)
-end
-
 local function scheduleThunder()
     local state = ensureState()
     if state.thunderEnabled ~= true then
@@ -955,34 +981,129 @@ local function scheduleThunder()
     end, delay)
 end
 
+--- Clears the silent-site latch so normal ambient playlists may run again.
+local function clearSiteSilentLatch()
+    ensureState().siteSilent = false
+end
+
+--- Stops background music, location ambience, and weather (including thunder scheduling) without touching the featured lane or featured state.
+local function applySilentSiteAmbient()
+    musicGeneration = musicGeneration + 1
+    weatherGeneration = weatherGeneration + 1
+    cancelSingleEmitterTransition("weatherRain")
+    cancelSingleEmitterTransition("weatherWind")
+
+    for _, channelKey in ipairs({ "musicA", "musicB", "locationA", "locationB", "weatherRain", "weatherWind" }) do
+        silenceLoopChannel(channelKey)
+    end
+    updateChannelState("weatherThunder", {
+        effect = nil,
+        effectList = Catalog.EFFECT_LIST.TRIGGER,
+        volume = 0,
+        available = resolveEmitter("weatherThunder") ~= nil,
+    })
+
+    local state = ensureState()
+    state.backgroundMusicMode = BACKGROUND_KIND_MOOD
+    state.musicMood = Catalog.DEFAULTS.musicMood
+    state.backgroundMusicEnabled = false
+    state.activeMusicChannel = "musicA"
+    state.backgroundTrackKey = nil
+    state.locationMusic = Catalog.DEFAULTS.locationMusic
+    state.weather = Catalog.DEFAULTS.weather
+    state.rain = Catalog.DEFAULTS.rain
+    state.wind = Catalog.DEFAULTS.wind
+    state.thunderEnabled = Catalog.DEFAULTS.thunderEnabled
+    state.location = Catalog.DEFAULTS.location
+    state.activeLocationChannel = "locationA"
+    state.siteSilent = true
+    if state.featuredActive ~= true then
+        state.backgroundPausedForFeatured = false
+    end
+end
+
 -- ============================================================================
 -- PUBLIC API
 -- ============================================================================
 
---- Initializes soundscape state after saved data is loaded.
-function Soundscape.onLoad()
+--- Stable fingerprint for fields driven by `applySoundscapeReconcileFromStateSnapshot`.
+--- @param state table
+--- @return string
+local function soundscapeReconcileFingerprint(state)
+    if type(state) ~= "table" then
+        return ""
+    end
+    local parts = {
+        state.siteSilent == true and "1" or "0",
+        state.backgroundMusicEnabled == true and "1" or "0",
+        tostring(state.backgroundMusicMode or ""),
+        tostring(state.locationMusic or ""),
+        tostring(state.musicMood or ""),
+        tostring(state.location or ""),
+        tostring(state.weather or ""),
+        tostring(state.rain or ""),
+        tostring(state.wind or ""),
+        state.thunderEnabled == true and "1" or "0",
+    }
+    return table.concat(parts, "\t")
+end
+
+--- Applies persisted soundscape intent to emitters (runs inside deferred reconcile).
+--- @param state table
+local function applySoundscapeReconcileFromStateSnapshot(state)
+    if type(state) ~= "table" then
+        return
+    end
+    if state.siteSilent == true then
+        applySilentSiteAmbient()
+        return
+    end
+    if state.backgroundMusicEnabled == true then
+        if state.backgroundMusicMode == BACKGROUND_KIND_LOCATION and type(state.locationMusic) == "string" then
+            Soundscape.setLocationMusic(state.locationMusic)
+        elseif type(state.musicMood) == "string" then
+            Soundscape.setMusicMood(state.musicMood)
+        end
+    end
+    if type(state.location) == "string" and state.location ~= Catalog.DEFAULTS.location then
+        Soundscape.setLocationAudio(state.location)
+    end
+    if type(state.weather) == "string" and state.weather ~= Catalog.DEFAULTS.weather then
+        Soundscape.setWeatherCondition(state.weather)
+    else
+        Soundscape.setRainLayer(state.rain or Catalog.DEFAULTS.rain)
+        Soundscape.setWindLayer(state.wind or Catalog.DEFAULTS.wind)
+        Soundscape.setThunderEnabled(state.thunderEnabled == true)
+    end
+end
+
+--- Clears incremental soundscape reconcile memory so the next `reconcileFromState` always schedules apply.
+function Soundscape.invalidateReconcileCache()
+    lastSoundscapeReconcileFingerprint = nil
+end
+
+--- Reconciles live soundscape playback from persisted state.
+--- @param opts table|nil `{ force = boolean }` — when `force`, fingerprint short-circuit is skipped.
+function Soundscape.reconcileFromState(opts)
+    opts = type(opts) == "table" and opts or {}
+    local force = opts.force == true
+
     ensureState()
-    cachedEmitters = {}
     local state = ensureState()
-    waitTime(function()
-        if state.backgroundMusicEnabled == true then
-            if state.backgroundMusicMode == BACKGROUND_KIND_LOCATION and type(state.locationMusic) == "string" then
-                Soundscape.setLocationMusic(state.locationMusic)
-            elseif type(state.musicMood) == "string" then
-                Soundscape.setMusicMood(state.musicMood)
-            end
-        end
-        if type(state.location) == "string" and state.location ~= Catalog.DEFAULTS.location then
-            Soundscape.setLocationAudio(state.location)
-        end
-        if type(state.weather) == "string" and state.weather ~= Catalog.DEFAULTS.weather then
-            Soundscape.setWeatherCondition(state.weather)
-        else
-            Soundscape.setRainLayer(state.rain or Catalog.DEFAULTS.rain)
-            Soundscape.setWindLayer(state.wind or Catalog.DEFAULTS.wind)
-            Soundscape.setThunderEnabled(state.thunderEnabled == true)
-        end
-    end, 1.0)
+    local desiredFingerprint = soundscapeReconcileFingerprint(state)
+    if not force and lastSoundscapeReconcileFingerprint == desiredFingerprint then
+        return
+    end
+
+    cachedEmitters = {}
+    local fp = desiredFingerprint
+    local function runApply()
+        applySoundscapeReconcileFromStateSnapshot(state)
+        lastSoundscapeReconcileFingerprint = fp
+    end
+    if not waitTime(runApply, 1.0) then
+        runApply()
+    end
 end
 
 --- Returns the current soundscape state.
@@ -1024,6 +1145,18 @@ local function setChannelImmediateVolume(channelKey, volume)
         return false, resolveError or ("Missing soundscape emitter for " .. tostring(resolvedChannel))
     end
     local targetVolume = clamp01(volume)
+    if resolvedChannel == "weatherRain" or resolvedChannel == "weatherWind" then
+        local natural = targetVolume
+        local applied = weatherVolume(natural)
+        local okVolume = setEmitterVolume(obj, applied)
+        updateChannelState(resolvedChannel, {
+            volume = applied,
+            naturalVolume = natural,
+            available = true,
+            volumeControl = okVolume,
+        })
+        return okVolume == true, "Weather volume set for " .. tostring(resolvedChannel)
+    end
     local okVolume = setEmitterVolume(obj, targetVolume)
     updateChannelState(resolvedChannel, {
         volume = targetVolume,
@@ -1176,8 +1309,95 @@ function Soundscape.getSummaryText()
         "Wind: " .. tostring(state.wind),
         "Thunder: " .. tostring(state.thunderEnabled),
         "Indoors: " .. tostring(state.isIndoors),
+        "SiteSilent: " .. tostring(state.siteSilent == true),
     }
     return table.concat(parts, " | ")
+end
+
+--- Rows for Storyteller Sound panel volume sliders (natural vs applied for weather).
+-- @return table[]
+function Soundscape.getPlayingLanesForUi()
+    local state = ensureState()
+    local duck = Catalog.DEFAULTS.weatherDucking
+    local mult = state.isIndoors == true and (tonumber(duck.indoorMultiplier) or 1)
+        or (tonumber(duck.outdoorMultiplier) or 1)
+    local weatherDucked = state.isIndoors == true and mult < 0.999
+
+    local rows = {}
+    --- @param id string
+    --- @param label string
+    --- @param naturalV number
+    --- @param appliedV number
+    --- @param ducked boolean
+    --- @param active boolean
+    local function add(id, label, naturalV, appliedV, ducked, active)
+        table.insert(rows, {
+            id = id,
+            label = label,
+            naturalVolume = naturalV,
+            appliedVolume = appliedV,
+            isDucked = ducked,
+            active = active,
+        })
+    end
+
+    local musCh = resolveActiveMusicChannel(state)
+    local musSt = state.channels and state.channels[musCh] or nil
+    local mvol = tonumber(musSt and musSt.volume) or 0
+    add("music", "Background music", mvol, mvol, false, state.backgroundMusicEnabled == true)
+
+    local locCh = resolveActiveLocationChannel(state)
+    local locSt = state.channels and state.channels[locCh] or nil
+    local lvol = tonumber(locSt and locSt.volume) or 0
+    add("location", "Location ambience", lvol, lvol, false, state.location ~= Catalog.DEFAULTS.location)
+
+    local feCh = resolveActiveFeaturedChannel(state)
+    local feSt = state.channels and state.channels[feCh] or nil
+    local fvol = tonumber(feSt and feSt.volume) or 0
+    add("featured", "Featured", fvol, fvol, false, state.featuredActive == true)
+
+    local rSt = state.channels and state.channels.weatherRain or nil
+    if rSt and rSt.effect ~= Catalog.SILENT_EFFECT then
+        local nat = tonumber(rSt.naturalVolume)
+        if nat == nil then
+            nat = tonumber(rSt.volume) or 0
+        end
+        local app = tonumber(rSt.volume) or 0
+        add("rain", "Rain", nat, app, weatherDucked, true)
+    end
+
+    local wSt = state.channels and state.channels.weatherWind or nil
+    if wSt and wSt.effect ~= Catalog.SILENT_EFFECT then
+        local nat = tonumber(wSt.naturalVolume)
+        if nat == nil then
+            nat = tonumber(wSt.volume) or 0
+        end
+        local app = tonumber(wSt.volume) or 0
+        add("wind", "Wind", nat, app, weatherDucked, true)
+    end
+
+    return rows
+end
+
+--- Sets volume for a Storyteller panel lane id (`music`, `location`, `featured`, `rain`, `wind`).
+-- @param laneId string
+-- @param volume01 number|string
+-- @return boolean
+-- @return string
+function Soundscape.setStorytellerLaneVolume(laneId, volume01)
+    local v = clamp01(volume01)
+    if laneId == "music" then
+        return setChannelImmediateVolume("music", v)
+    elseif laneId == "location" then
+        return setChannelImmediateVolume("location", v)
+    elseif laneId == "featured" then
+        return setChannelImmediateVolume("featured", v)
+    elseif laneId == "rain" then
+        return setChannelImmediateVolume("weatherRain", v)
+    elseif laneId == "wind" then
+        return setChannelImmediateVolume("weatherWind", v)
+    end
+    return false, "Unknown sound lane: " .. tostring(laneId)
 end
 
 --- Applies any combination of future weather/site/calendar context fields.
@@ -1188,6 +1408,10 @@ function Soundscape.applyContext(context)
         return { ok = false, message = "Soundscape.applyContext requires a table" }
     end
 
+    if type(context.appliedSiteKey) == "string" and context.appliedSiteKey ~= "" then
+        ensureState().lastAppliedSiteKey = context.appliedSiteKey
+    end
+
     local results = {}
     local ok = true
     local function collect(callOk, message)
@@ -1195,35 +1419,83 @@ function Soundscape.applyContext(context)
         table.insert(results, message)
     end
 
-    if context.isIndoors ~= nil then
-        collect(Soundscape.setIndoors(context.isIndoors))
+    local silentSite = context.isSilent == true
+    if context.isSilent == false then
+        clearSiteSilentLatch()
     end
-    if context.musicMood ~= nil then
-        collect(Soundscape.setMusicMood(context.musicMood))
+    if silentSite then
+        applySilentSiteAmbient()
+        collect(true, "Silent site: ambient layers cleared (featured lane unchanged)")
+    else
+        if context.isIndoors ~= nil then
+            collect(Soundscape.setIndoors(context.isIndoors))
+        end
+        if context.musicMood ~= nil then
+            collect(Soundscape.setMusicMood(context.musicMood))
+        end
+        if context.locationMusic ~= nil then
+            collect(Soundscape.setLocationMusic(context.locationMusic))
+        end
+        if context.weather ~= nil or context.weatherCondition ~= nil then
+            collect(Soundscape.setWeatherCondition(context.weather or context.weatherCondition))
+        end
+        if context.rain ~= nil then
+            collect(Soundscape.setRainLayer(context.rain))
+        end
+        if context.wind ~= nil then
+            collect(Soundscape.setWindLayer(context.wind))
+        end
+        if context.thunderEnabled ~= nil then
+            collect(Soundscape.setThunderEnabled(context.thunderEnabled))
+        end
+        if context.locationAudio ~= nil or context.location ~= nil then
+            collect(Soundscape.setLocationAudio(context.locationAudio or context.location))
+        end
     end
-    if context.locationMusic ~= nil then
-        collect(Soundscape.setLocationMusic(context.locationMusic))
-    end
+
     if context.featuredMusic ~= nil then
         collect(Soundscape.playFeaturedMusic(context.featuredMusic))
     end
-    if context.weather ~= nil or context.weatherCondition ~= nil then
-        collect(Soundscape.setWeatherCondition(context.weather or context.weatherCondition))
-    end
-    if context.rain ~= nil then
-        collect(Soundscape.setRainLayer(context.rain))
-    end
-    if context.wind ~= nil then
-        collect(Soundscape.setWindLayer(context.wind))
-    end
-    if context.thunderEnabled ~= nil then
-        collect(Soundscape.setThunderEnabled(context.thunderEnabled))
-    end
-    if context.locationAudio ~= nil or context.location ~= nil then
-        collect(Soundscape.setLocationAudio(context.locationAudio or context.location))
-    end
 
     return { ok = ok, message = table.concat(results, " | "), state = ensureState() }
+end
+
+--- Builds an applyContext table from a `C.Sites` entry (`isSilent`, `isIndoors`, `soundscape.backgroundMusic.playlist`, `soundscape.location.track`).
+-- Non-silent entries always set `isSilent = false` so the silent-site latch clears when changing locations.
+-- @param site table|nil
+-- @return table
+function Soundscape.contextFromSite(site, siteKey)
+    if type(site) ~= "table" then
+        return {}
+    end
+    if site.isSilent == true then
+        local sctx = { isSilent = true }
+        if type(siteKey) == "string" and siteKey ~= "" then
+            sctx.appliedSiteKey = siteKey
+        end
+        return sctx
+    end
+    local ctx = {
+        isSilent = false,
+    }
+    if type(siteKey) == "string" and siteKey ~= "" then
+        ctx.appliedSiteKey = siteKey
+    end
+    if site.isIndoors ~= nil then
+        ctx.isIndoors = site.isIndoors
+    end
+    local sc = site.soundscape
+    if type(sc) == "table" then
+        local bg = sc.backgroundMusic
+        if type(bg) == "table" and type(bg.playlist) == "string" and bg.playlist ~= "" then
+            ctx.locationMusic = bg.playlist
+        end
+        local loc = sc.location
+        if type(loc) == "table" and type(loc.track) == "string" and loc.track ~= "" then
+            ctx.location = loc.track
+        end
+    end
+    return ctx
 end
 
 --- Sets the Storyteller-controlled background music mood.
@@ -1231,6 +1503,7 @@ end
 -- @return boolean
 -- @return string
 function Soundscape.setMusicMood(moodKey)
+    clearSiteSilentLatch()
     local playlist = Catalog.getBackgroundPlaylist(moodKey)
     if playlist == nil then
         return false, "Unknown music mood: " .. tostring(moodKey)
@@ -1243,6 +1516,7 @@ end
 -- @return boolean
 -- @return string
 function Soundscape.setLocationMusic(playlistKey)
+    clearSiteSilentLatch()
     if playlistKey == "none" then
         musicGeneration = musicGeneration + 1
         local state = ensureState()
@@ -1286,6 +1560,10 @@ end
 -- @return string
 function Soundscape.resumeBackgroundMusic()
     local state = ensureState()
+    if state.siteSilent == true then
+        state.backgroundPausedForFeatured = false
+        return true, "Silent site: background remains off"
+    end
     if state.backgroundMusicMode == BACKGROUND_KIND_LOCATION and state.locationMusic ~= Catalog.DEFAULTS.locationMusic then
         return Soundscape.setLocationMusic(state.locationMusic)
     end
@@ -1297,6 +1575,7 @@ end
 -- @return boolean
 -- @return string
 function Soundscape.setWeatherCondition(weatherKey)
+    clearSiteSilentLatch()
     local preset = Catalog.WEATHER_CONDITIONS[weatherKey]
     if preset == nil then
         return false, "Unknown weather condition: " .. tostring(weatherKey)
@@ -1317,6 +1596,9 @@ end
 -- @return boolean
 -- @return string
 function Soundscape.setRainLayer(rainKey)
+    if rainKey ~= "none" then
+        clearSiteSilentLatch()
+    end
     if rainKey == "none" then
         cancelSingleEmitterTransition("weatherRain")
         local okStop, stopMessage = silenceLoopChannel("weatherRain")
@@ -1329,7 +1611,12 @@ function Soundscape.setRainLayer(rainKey)
     if rain == nil then
         return false, "Unknown rain layer: " .. tostring(rainKey)
     end
-    local okRain, message = playSingleEmitterFadeOutIn("weatherRain", rain, weatherVolume(rain.volume), Catalog.DEFAULTS.fadeSeconds.weather)
+    local okRain, message = playSingleEmitterFadeOutIn(
+        "weatherRain",
+        rain,
+        tonumber(rain.volume) or 0.5,
+        Catalog.DEFAULTS.fadeSeconds.weather
+    )
     if okRain then
         ensureState().rain = rainKey
     end
@@ -1341,6 +1628,9 @@ end
 -- @return boolean
 -- @return string
 function Soundscape.setWindLayer(windKey)
+    if windKey ~= "none" then
+        clearSiteSilentLatch()
+    end
     if windKey == "none" then
         cancelSingleEmitterTransition("weatherWind")
         local okStop, stopMessage = silenceLoopChannel("weatherWind")
@@ -1353,7 +1643,12 @@ function Soundscape.setWindLayer(windKey)
     if wind == nil then
         return false, "Unknown wind layer: " .. tostring(windKey)
     end
-    local okWind, message = playSingleEmitterFadeOutIn("weatherWind", wind, weatherVolume(wind.volume), Catalog.DEFAULTS.fadeSeconds.weather)
+    local okWind, message = playSingleEmitterFadeOutIn(
+        "weatherWind",
+        wind,
+        tonumber(wind.volume) or 0.5,
+        Catalog.DEFAULTS.fadeSeconds.weather
+    )
     if okWind then
         ensureState().wind = windKey
     end
@@ -1367,6 +1662,9 @@ end
 function Soundscape.setThunderEnabled(isEnabled)
     if type(isEnabled) ~= "boolean" then
         return false, "Soundscape.setThunderEnabled requires a boolean"
+    end
+    if isEnabled == true then
+        clearSiteSilentLatch()
     end
     weatherGeneration = weatherGeneration + 1
     local state = ensureState()
@@ -1399,6 +1697,9 @@ end
 -- @return boolean
 -- @return string
 function Soundscape.setLocationAudio(locationKey)
+    if type(locationKey) == "string" and locationKey ~= "none" then
+        clearSiteSilentLatch()
+    end
     if locationKey == "none" then
         local okStopA, messageA = silenceLoopChannel("locationA")
         local okStopB, messageB = silenceLoopChannel("locationB")
@@ -1424,15 +1725,58 @@ end
 -- @param isIndoors boolean
 -- @return boolean
 -- @return string
+--- Re-applies indoor/outdoor multipliers to rain/wind emitters using stored natural volumes (no track swap).
+-- @return boolean
+-- @return string
+function Soundscape.reapplyWeatherNaturalVolumes()
+    local state = ensureState()
+    local messages = {}
+    local okAll = true
+    for _, channelKey in ipairs({ "weatherRain", "weatherWind" }) do
+        local ch = state.channels[channelKey]
+        if type(ch) == "table" and type(ch.effect) == "string" and ch.effect ~= Catalog.SILENT_EFFECT then
+            local natural = tonumber(ch.naturalVolume)
+            if natural == nil then
+                natural = tonumber(ch.volume) or 0
+                if state.isIndoors == true then
+                    local duck = Catalog.DEFAULTS.weatherDucking
+                    local mult = tonumber(duck.indoorMultiplier) or 1
+                    if mult > 0 and mult < 1 then
+                        natural = math.min(1, natural / mult)
+                    end
+                end
+            end
+            natural = clamp01(natural)
+            local applied = weatherVolume(natural)
+            local obj = resolveEmitter(channelKey)
+            local volOk = false
+            if obj ~= nil then
+                volOk = setEmitterVolume(obj, applied) == true
+            end
+            okAll = okAll and volOk
+            updateChannelState(channelKey, {
+                naturalVolume = natural,
+                volume = applied,
+                volumeControl = volOk,
+            })
+            table.insert(messages, tostring(channelKey) .. "=" .. tostring(applied))
+        end
+    end
+    if #messages == 0 then
+        return true, "No active weather layers"
+    end
+    return okAll, table.concat(messages, " | ")
+end
+
 function Soundscape.setIndoors(isIndoors)
     if type(isIndoors) ~= "boolean" then
         return false, "Soundscape.setIndoors requires a boolean"
     end
+    clearSiteSilentLatch()
     local state = ensureState()
     state.isIndoors = isIndoors
-    local okRain, rainMessage = Soundscape.setRainLayer(state.rain or Catalog.DEFAULTS.rain)
-    local okWind, windMessage = Soundscape.setWindLayer(state.wind or Catalog.DEFAULTS.wind)
-    return okRain and okWind, table.concat({ "Indoors set to " .. tostring(isIndoors), rainMessage, windMessage }, " | ")
+    local ok, message = Soundscape.reapplyWeatherNaturalVolumes()
+    return ok, "Indoors set to " .. tostring(isIndoors) .. " | " .. tostring(message)
 end
 
 --- Stops every scheduled soundscape layer.
@@ -1477,6 +1821,7 @@ function Soundscape.stopAll()
     state.wind = Catalog.DEFAULTS.wind
     state.thunderEnabled = Catalog.DEFAULTS.thunderEnabled
     state.location = Catalog.DEFAULTS.location
+    state.siteSilent = false
     return ok, table.concat(messages, " | ")
 end
 

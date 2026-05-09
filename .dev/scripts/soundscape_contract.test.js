@@ -16,8 +16,10 @@ test("soundscape runtime module exposes the planned API", () => {
   const source = readRepoFile("core/soundscape.ttslua");
 
   [
-    "function Soundscape.onLoad()",
+    "function Soundscape.reconcileFromState(opts)",
+    "function Soundscape.invalidateReconcileCache()",
     "function Soundscape.applyContext(context)",
+    "function Soundscape.contextFromSite(site)",
     "function Soundscape.setMusicMood(moodKey)",
     "function Soundscape.setLocationMusic(playlistKey)",
     "function Soundscape.playFeaturedMusic(featureKey)",

@@ -18,6 +18,8 @@ bullets without evidence, confidence, or sourcing metadata.
 - Keep Linear synchronized with code reality (status, comments, links) as part of completing work, not as a separate task.
 - Use Compound Engineering skills proactively (session lookup, planning, structured review, git/PR helpers, learnings) when scope or risk warrants it; do not require the user to type `/ce:…` slash commands.
 - Environment is 64-bit Windows 11 with PowerShell as the integrated terminal and Chrome as the browser; avoid suggestions that assume macOS, Linux, bash, or other shells.
+- Proactive pushback is required: if the user request or current approach appears unsound, overengineered, or contrary to the architecture, explicitly say so, explain why, and propose a simpler/safer alternative immediately instead of silently implementing a weak path.
+- Prefer "single authority" designs and call out dual-writer/dual-source-of-truth risks early (for example, restore paths competing with reconciler-derived state).
 
 ## Learned Workspace Facts
 
@@ -36,6 +38,9 @@ bullets without evidence, confidence, or sourcing metadata.
 - For long `RunSequenceWithOptions` flows, set a high `maxWaitMs` as the wall-clock cap and a moderate `idleTimeoutMs` matched to the final known print pattern to avoid apparent hangs after the last `TR_AGENT_V1` line.
 - Player roles: Storyteller is always `Black`; players are `Brown`, `Orange`, `Red`, `Pink`, `Purple` (in `C.PlayerColors` order). Storyteller ID is hard-coded in `C.StorytellerID`; all per-player state must be keyed by steam_id, never by color or display name.
 - State must always be read and written through `S.getStateVal()` / `S.setStateVal()`; direct table access into `S.state.*` is disallowed.
+- Synchronization follows an explicit mutation-then-reconcile contract: write state first, then call `Sync.player(color)` / `Sync.full()` (or domain `reconcile*` entry points); do not hide reconciliation side effects inside state setters.
+- Player lighting is state-derived (no restore stack): `ROLLING` > `NPC-role exception (future)` > `DARK/absent` > `HUNGRY` > `STANDARD`; `dark` and seat-layout absence both resolve to `OFF`.
+- Scene APIs (`Scenes.loadScene` / `Scenes.fadeToScene`) are state-mutation helpers; live scene effects must be applied via `Scenes.reconcileFromState()` through `Sync.*`.
 - Coroutine helpers (`U.waitUntil`, `U.RunSequence`, `U.Lerp`) require `startLuaCoroutine(Global, "FunctionName")` and run in Global context where `self` refers to Global.
 - Before writing new helpers, check `.dev/AVAILABLE_FUNCTIONS.md` and `lib/util.ttslua` (75+ utilities) so existing `U.map`, `U.filter`, `U.Type`, `U.Val`, etc. are reused instead of reimplemented.
 - Implementation plans and design notes belong under `.dev/plans/` unless the user specifies another path; do not invent a top-level `docs/` tree for that purpose.

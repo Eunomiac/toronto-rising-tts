@@ -64,6 +64,10 @@ Do not call `AssetBundle.playLoopingEffect` or trigger effect APIs outside
 `core/soundscape.ttslua`. Other systems should express intent through
 `Soundscape.applyContext()` or focused soundscape setters.
 
+### Silent sites (`siteSilent`)
+
+`C.Sites` entries may set `isSilent = true`. Apply with `Soundscape.applyContext(Soundscape.contextFromSite(site))` (or pass `isSilent` directly in a context table). That sets persisted `soundscape.siteSilent`, stops background music, location ambience, and weather (including thunder scheduling), and **does not** stop the featured lane. Storyteller actions that start ambient audio (`setMusicMood`, weather/location setters, etc.) clear `siteSilent`. While `siteSilent` is true, `resumeBackgroundMusic` does not restart background tracks after featured music ends. Indoor ducking is irrelevant while silent (weather is off); `applyContext` skips `isIndoors` when `isSilent = true`.
+
 ## Implementation Sequence
 
 ### 1. Expand The Catalog

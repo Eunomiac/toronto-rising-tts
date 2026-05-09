@@ -16,7 +16,6 @@ local U = require("lib.util")
 
 --- elementId -> last visibility we applied (incremental UI.show / UI.hide)
 local lastVisible = {}
-local lastHungerSmokeOn = {}
 
 --- Tier images overlay_hunger_0 .. overlay_hunger_5 (mutually exclusive).
 local HUNGER_LEVELS = { 0, 1, 2, 3, 4, 5 }
@@ -147,14 +146,8 @@ local function syncHungerSmokeForSeat(seatColor, hungerLevel)
     hg = 5
   end
   local shouldBeOn = hg >= 4
-  if lastHungerSmokeOn[seatColor] == shouldBeOn then
-    return
-  end
   local state = shouldBeOn and "on" or "off"
-  local ok = O.SetHungerSmokeState(seatColor, state, 0)
-  if ok then
-    lastHungerSmokeOn[seatColor] = shouldBeOn
-  end
+  O.SetHungerSmokeState(seatColor, state, 0)
 end
 
 --- @param elementId string
@@ -195,7 +188,7 @@ end
 --- Refresh overlay visibility for every player color row.
 function HO.syncAll()
   for _, seatColor in ipairs(C.PlayerColors) do
-    local playerID = C.GetPlayerID(seatColor)
+    local playerID = S.getPlayerID(seatColor)
     local want = computeDesiredVisibility(playerID, seatColor)
     local ids = allManagedOverlayIdsForSeat(seatColor)
     -- Non-hunger overlays: incremental show/hide (conditions, frenzy, blindfold, etc.).
