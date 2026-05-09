@@ -25,9 +25,7 @@
         <Include src="panel_scenes.xml" />
         <Include src="panel_soundscape.xml" />
         <Include src="panel_pcs.xml" />
-        <Panel id="panel_phases" active="false">
-          <Text fontSize="11" color="#AAAAAA">Phases: TBD.</Text>
-        </Panel>
+        <Include src="panel_phases.xml" />
         <Include src="panel_npcs_defaults.xml" />
         <Include src="panel_npcs.xml" />
       </VerticalLayout>

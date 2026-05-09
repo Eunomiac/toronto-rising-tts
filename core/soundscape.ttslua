@@ -1357,24 +1357,30 @@ function Soundscape.getPlayingLanesForUi()
     add("featured", "Featured", fvol, fvol, false, state.featuredActive == true)
 
     local rSt = state.channels and state.channels.weatherRain or nil
-    if rSt and rSt.effect ~= Catalog.SILENT_EFFECT then
-        local nat = tonumber(rSt.naturalVolume)
-        if nat == nil then
-            nat = tonumber(rSt.volume) or 0
+    local rainActive = type(rSt) == "table" and rSt.effect ~= Catalog.SILENT_EFFECT
+    local rNat = 0
+    local rApp = 0
+    if rainActive then
+        rNat = tonumber(rSt.naturalVolume)
+        if rNat == nil then
+            rNat = tonumber(rSt.volume) or 0
         end
-        local app = tonumber(rSt.volume) or 0
-        add("rain", "Rain", nat, app, weatherDucked, true)
+        rApp = tonumber(rSt.volume) or 0
     end
+    add("rain", "Rain", rNat, rApp, weatherDucked, rainActive == true)
 
     local wSt = state.channels and state.channels.weatherWind or nil
-    if wSt and wSt.effect ~= Catalog.SILENT_EFFECT then
-        local nat = tonumber(wSt.naturalVolume)
-        if nat == nil then
-            nat = tonumber(wSt.volume) or 0
+    local windActive = type(wSt) == "table" and wSt.effect ~= Catalog.SILENT_EFFECT
+    local wNat = 0
+    local wApp = 0
+    if windActive then
+        wNat = tonumber(wSt.naturalVolume)
+        if wNat == nil then
+            wNat = tonumber(wSt.volume) or 0
         end
-        local app = tonumber(wSt.volume) or 0
-        add("wind", "Wind", nat, app, weatherDucked, true)
+        wApp = tonumber(wSt.volume) or 0
     end
+    add("wind", "Wind", wNat, wApp, weatherDucked, windActive == true)
 
     return rows
 end

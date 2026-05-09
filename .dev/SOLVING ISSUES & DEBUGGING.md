@@ -30,6 +30,11 @@ Quick chat commands: `/dbcheck` (compact) and `/dbfullcheck` (full).
 - [ ] Are load-time restore paths re-stamping stale values?
 - [ ] For missing state records, is default behavior explicit and safe (never implicit)?
 
+### Storyteller Scenes vs lighting preset
+
+- **`gameState.currentScene`** — lighting preset key for `Scenes.reconcileFromState` (admin dark/standard/bright and any legacy named scene ids).
+- **`gameState.sessionScene`** — narrative/session bundle: table selection mirror, optional seat-presence map for lighting when paired with `seatLayout.enforceActiveSeatLighting`, district/site keys for soundscape context, clock fields, roll-default overlays (`RO.seedActiveRoll`), and stub NPC scene notes. The Storyteller toolbar **Light** tab was removed; use **Scenes → Lighting presets**.
+
 ## D) Pipeline integrity checks
 
 ### Sync: incremental vs force (Toronto Rising)

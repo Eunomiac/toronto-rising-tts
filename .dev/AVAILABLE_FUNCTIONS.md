@@ -311,8 +311,11 @@
 | `Soundscape.reconcileFromState(opts?)` | Reconcile live soundscape from persisted state; skips deferred apply when fingerprint unchanged unless `opts.force` | `Sync.full()` / `Sync.soundscape()`; `Soundscape.invalidateReconcileCache()` clears incremental memory |
 | `Soundscape.getState()` | Return current soundscape state | UI/debug state reads |
 | `Soundscape.getSummaryText()` | Return compact soundscape summary text | Storyteller panel summary |
-| `Soundscape.applyContext(context)` | Apply weather/site/calendar audio context; `isSilent = true` mutes ambient lanes only (featured unchanged); `isSilent = false` clears that latch | `Soundscape.applyContext({ isIndoors = true, weather = "lightRain" })`, `Soundscape.applyContext({ isSilent = true })` |
-| `Soundscape.contextFromSite(site)` | Build an applyContext table from a `C.Sites` row (`isSilent`, `isIndoors`, `soundscape`) | `Soundscape.applyContext(Soundscape.contextFromSite(C.Sites.StRegis))` |
+| `Soundscape.applyContext(context)` | Apply weather/site/calendar audio context; optional `appliedSiteKey` updates `soundscape.lastAppliedSiteKey`. `isSilent = true` mutes ambient lanes only (featured unchanged); `isSilent = false` clears that latch | `Soundscape.applyContext({ isIndoors = true, weather = "lightRain" })`, `Soundscape.applyContext({ isSilent = true })` |
+| `Soundscape.contextFromSite(site, siteKey?)` | Build an applyContext table from a `C.Sites` row; optional `siteKey` stamps `appliedSiteKey` for Storyteller Location UI | `Soundscape.applyContext(Soundscape.contextFromSite(C.Sites.CLGrounds, "CLGrounds"))` |
+| `Soundscape.reapplyWeatherNaturalVolumes()` | Reapply indoor/outdoor multipliers to rain/wind emitters from stored natural volumes | After manual indoor toggle without swapping tracks |
+| `Soundscape.getPlayingLanesForUi()` | Rows for Storyteller sliders (`music`, `location`, `featured`, `rain`, `wind`) with natural/applied volumes | `core/global_script.ttslua` sound panel refresh |
+| `Soundscape.setStorytellerLaneVolume(laneId, volume01)` | Adjust `music` / `location` / `featured` / `rain` / `wind` lane gain | Weather lanes interpret slider as **natural** volume |
 | `Soundscape.setMusicMood(moodKey)` | Set trigger-based Storyteller music mood | `Soundscape.setMusicMood("intrigue")` |
 | `Soundscape.setLocationMusic(playlistKey)` | Set site-specific background music playlist | `Soundscape.setLocationMusic("CasaLoma")` |
 | `Soundscape.playFeaturedMusic(featureKey)` | Play featured music on the dedicated lane | `Soundscape.playFeaturedMusic("TR_Intro")` |

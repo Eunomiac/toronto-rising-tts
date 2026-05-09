@@ -40,6 +40,7 @@ local Sync = require("core.sync")
 O = require("core.objects")
 U = require("lib.util")
 local StorytellerPanelUI = require("core.storyteller_panel_ui")
+local StorytellerScenesPanel = require("core.storyteller_scenes_panel")
 local HUDP = require("core.hud_player")
 local HO = require("core.hud_overlays")
 NPCS = require("core.npcs")
@@ -549,10 +550,10 @@ end
 ]]
 
 --- Select storyteller panel (mutually exclusive: one panel open at a time)
--- Used by toggle buttons (toggle_lighting, toggle_scenes, etc.) in bottom-right bar
+-- Used by toggle buttons (`toggle_scenes`, `toggle_soundscape`, etc.) in bottom-right bar
 -- @param player Player The player who clicked the button
 -- @param button string Button value
--- @param id string The UI element ID (e.g., "toggle_lighting")
+-- @param id string The UI element ID (e.g., "toggle_scenes")
 function HUD_selectStorytellerPanel(player, button, id)
     local panelKey = string.gsub(id, "^toggle_", "")
     StorytellerPanelUI.selectStorytellerPanel(panelKey)
@@ -563,6 +564,16 @@ function HUD_selectStorytellerPanel(player, button, id)
     if panelKey == "pcs" and PCST and PCST.refreshAllRows then
         Wait.frames(function()
             PCST.refreshAllRows()
+        end, 1)
+    end
+    if panelKey == "soundscape" then
+        Wait.frames(function()
+            UpdateUIDisplays({ soundscape = true })
+        end, 1)
+    end
+    if panelKey == "scenes" then
+        Wait.frames(function()
+            UpdateUIDisplays({ scenesPanel = true, adminLighting = true })
         end, 1)
     end
 end
@@ -620,12 +631,62 @@ local ADMIN_LIGHT_SCENE_BUTTONS = {
 }
 
 local ADMIN_LIGHT_SCENE_BUTTON_COLORS_INACTIVE = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
-local ADMIN_LIGHT_SCENE_BUTTON_COLORS_ACTIVE = "#B8860B|#FFD700|#FFA500|#B8860B"
+local ADMIN_LIGHT_SCENE_BUTTON_COLORS_ACTIVE = "#228B22|#32CD32|#006400|#228B22"
+local STORYTELLER_SOUND_GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+local STORYTELLER_SOUND_GREEN = "#228B22|#32CD32|#006400|#228B22"
+local STORYTELLER_SOUND_DISABLED = "#333333|#444444|#555555|rgba(0.2,0.2,0.2,0.5)"
+
 local SOUNDSCAPE_MOOD_BUTTONS = {
-    general = "soundscapeMood_general",
+    main = "soundscapeMood_main",
     intrigue = "soundscapeMood_intrigue",
     combat = "soundscapeMood_combat",
 }
+
+local PHASE_BUTTON_EXPECTATIONS = {
+    phase_SessionStart = C.Phases.SESSION_START,
+    phase_Play = C.Phases.PLAY,
+    phase_Downtime = C.Phases.DOWNTIME,
+    phase_Memoriam = C.Phases.MEMORIAM,
+    phase_SessionEnd = C.Phases.SESSION_END,
+}
+
+local SOUNDSCAPE_FEATURED_BUTTONS = {
+    TR_Full = "soundscapeFeatured_TR_Full",
+    TR_Intro = "soundscapeFeatured_TR_Intro",
+    TR_Loop = "soundscapeFeatured_TR_Loop",
+    STB_HouseOfTheRisingSun = "soundscapeFeatured_STB_HouseOfTheRisingSun",
+}
+
+--- @param siteKey string
+--- @return boolean
+local function siteHasBackgroundMusicPlaylist(siteKey)
+    if type(siteKey) ~= "string" or siteKey == "" then
+        return false
+    end
+    local site = C.Sites[siteKey]
+    if type(site) ~= "table" then
+        return false
+    end
+    local sc = site.soundscape
+    if type(sc) ~= "table" then
+        return false
+    end
+    local bg = sc.backgroundMusic
+    return type(bg) == "table" and type(bg.playlist) == "string" and bg.playlist ~= ""
+end
+
+--- @param soundscapeState table
+--- @return string
+local function resolveSiteKeyForSoundPanel(soundscapeState)
+    local sk = S.getStateVal("sessionScene", "siteKey")
+    if type(sk) == "string" and sk ~= "" then
+        return sk
+    end
+    if type(soundscapeState) == "table" and type(soundscapeState.lastAppliedSiteKey) == "string" then
+        return soundscapeState.lastAppliedSiteKey
+    end
+    return ""
+end
 
 --- Sync radio-button visuals for storyteller admin lighting scene controls.
 local function syncAdminLightSceneButtons()
@@ -634,9 +695,54 @@ local function syncAdminLightSceneButtons()
         local isActive = currentScene == sceneKey
         U.setAttributes(buttonId, {
             colors = isActive and ADMIN_LIGHT_SCENE_BUTTON_COLORS_ACTIVE or ADMIN_LIGHT_SCENE_BUTTON_COLORS_INACTIVE,
-            textColor = isActive and "#000000" or"#FFFFFF",
-            fontStyle = "Bold"
+            textColor = "#FFFFFF",
+            fontStyle = "Bold",
         })
+    end
+end
+
+--- Highlights active storyteller phase button (`gameState.currentPhase` matches `C.Phases` values).
+local function syncStorytellerPhaseButtons()
+    local phase = S.getStateVal("currentPhase")
+    for buttonId, expected in pairs(PHASE_BUTTON_EXPECTATIONS) do
+        local match = phase == expected
+        U.setAttributes(buttonId, {
+            colors = match and STORYTELLER_SOUND_GREEN or STORYTELLER_SOUND_GREY,
+            textColor = "#FFFFFF",
+            fontStyle = "Bold",
+        })
+    end
+end
+
+--- Storyteller Sound panel: bind lane labels + sliders from `Soundscape.getPlayingLanesForUi`.
+local function syncSoundscapeLaneUi()
+    if SS == nil or SS.getPlayingLanesForUi == nil or UI == nil or UI.setAttribute == nil then
+        return
+    end
+    local rows = SS.getPlayingLanesForUi()
+    local duckHint = ""
+    for _, row in ipairs(rows) do
+        if row.isDucked == true and (row.id == "rain" or row.id == "wind") and duckHint == "" then
+            duckHint = "Weather is ducked while Indoors is true (slider sets natural volume)."
+        end
+        local suffix = ""
+        if row.active ~= true then
+            suffix = " (inactive)"
+        end
+        local pct = math.floor(((tonumber(row.naturalVolume) or 0) * 100) + 0.5)
+        local line = string.format("%s%s — %d%%", row.label, suffix, pct)
+        if UI.setValue ~= nil then
+            UI.setValue("soundscapeLaneLbl_" .. row.id, line)
+        end
+        if row.isDucked == true and (row.id == "rain" or row.id == "wind") then
+            UI.setAttribute("soundscapeLaneLbl_" .. row.id, "color", "#CCCC66")
+        else
+            UI.setAttribute("soundscapeLaneLbl_" .. row.id, "color", "#DDDDDD")
+        end
+        UI.setAttribute("soundscapeSlider_" .. row.id, "value", tostring(tonumber(row.naturalVolume) or 0))
+    end
+    if UI.setValue ~= nil then
+        UI.setValue("soundscapeDuckHint", duckHint)
     end
 end
 
@@ -650,6 +756,7 @@ function HUD_selectAdminLightingScene(player, button, id)
 
     -- State-first scene selection, then reconcile through the sync pipeline.
     S.setStateVal(sceneName, "currentScene")
+    S.setStateVal(sceneName, "sessionScene", "lightingPresetKey")
     S.setStateVal(nil, "sceneTransition")
     if Sync and type(Sync.full) == "function" then
         Sync.full({ reason = "HUD_selectAdminLightingScene" })
@@ -668,11 +775,41 @@ local function syncSoundscapeControls()
     end
     local state = SS.getState()
     local summary = SS.getSummaryText()
-    UI.setValue("soundscapeSummary", summary)
-    for moodKey, buttonId in pairs(SOUNDSCAPE_MOOD_BUTTONS) do
-        local isActive = state.musicMood == moodKey
-        U.setAttribute(buttonId, "colors", isActive and ADMIN_LIGHT_SCENE_BUTTON_COLORS_ACTIVE or ADMIN_LIGHT_SCENE_BUTTON_COLORS_INACTIVE)
+    if UI ~= nil and UI.setValue ~= nil then
+        UI.setValue("soundscapeSummary", summary)
     end
+
+    local moodPlaying = state.backgroundMusicEnabled == true and state.backgroundMusicMode == "mood"
+    for moodKey, buttonId in pairs(SOUNDSCAPE_MOOD_BUTTONS) do
+        local isActive = moodPlaying and state.musicMood == moodKey
+        U.setAttributes(buttonId, {
+            colors = isActive and STORYTELLER_SOUND_GREEN or STORYTELLER_SOUND_GREY,
+            textColor = "#FFFFFF",
+            fontStyle = "Bold",
+        })
+    end
+
+    local siteKey = resolveSiteKeyForSoundPanel(state)
+    local locAllowed = siteHasBackgroundMusicPlaylist(siteKey)
+    local locPlaying = state.backgroundMusicEnabled == true and state.backgroundMusicMode == "locationMusic"
+    U.setAttributes("soundscapeMood_location", {
+        colors = not locAllowed and STORYTELLER_SOUND_DISABLED
+            or (locPlaying and STORYTELLER_SOUND_GREEN or STORYTELLER_SOUND_GREY),
+        textColor = "#FFFFFF",
+        fontStyle = "Bold",
+    })
+
+    local feat = state.featuredMusic
+    for trackKey, buttonId in pairs(SOUNDSCAPE_FEATURED_BUTTONS) do
+        local on = state.featuredActive == true and feat == trackKey
+        U.setAttributes(buttonId, {
+            colors = on and STORYTELLER_SOUND_GREEN or STORYTELLER_SOUND_GREY,
+            textColor = "#FFFFFF",
+            fontStyle = "Bold",
+        })
+    end
+
+    syncSoundscapeLaneUi()
 end
 
 --- Storyteller soundscape panel: switch background music mood.
@@ -709,36 +846,126 @@ function HUD_soundscapeInspect(player, button, id)
     syncSoundscapeControls()
 end
 
+--- Storyteller Sound: switch background music to the active site's catalog playlist (`C.Sites[*].soundscape.backgroundMusic`).
+function HUD_soundscapeSetBackgroundLocation(player, button, id)
+    local state = SS.getState()
+    local siteKey = resolveSiteKeyForSoundPanel(state)
+    if not siteHasBackgroundMusicPlaylist(siteKey) then
+        U.AlertGM("Location music is unavailable for this site. Pick a site with soundscape.backgroundMusic in Scenes.")
+        syncSoundscapeControls()
+        return
+    end
+    local site = C.Sites[siteKey]
+    local sc = site.soundscape
+    local bg = type(sc) == "table" and sc.backgroundMusic or nil
+    local playlist = type(bg) == "table" and bg.playlist or nil
+    if type(playlist) ~= "string" or playlist == "" then
+        U.AlertGM("Site has no background music playlist.")
+        syncSoundscapeControls()
+        return
+    end
+    local ok, message = SS.setLocationMusic(playlist)
+    if ok then
+        U.AlertGM("Location background music: " .. tostring(playlist))
+    else
+        U.AlertGM("Soundscape: " .. tostring(message))
+    end
+    syncSoundscapeControls()
+end
+
+--- Storyteller Sound: featured catalog track (`soundscapeFeatured_<key>` ids).
+function HUD_soundscapePlayFeatured(player, button, id)
+    local trackKey = string.gsub(id or "", "^soundscapeFeatured_", "")
+    local ok, message = SS.playFeaturedMusic(trackKey)
+    if ok then
+        U.AlertGM("Featured: " .. tostring(trackKey))
+    else
+        U.AlertGM("Soundscape: " .. tostring(message))
+    end
+    syncSoundscapeControls()
+end
+
+function HUD_soundscapeStopFeatured(player, button, id)
+    local ok, message = SS.stopFeaturedMusic()
+    if ok then
+        U.AlertGM("Featured stopped; background context preserved.")
+    else
+        U.AlertGM("Soundscape: " .. tostring(message))
+    end
+    syncSoundscapeControls()
+end
+
+--- Storyteller Sound: volume sliders (`soundscapeSlider_<lane>` lane = music|location|featured|rain|wind).
+function HUD_soundscapeLaneSlider(player, value, id)
+    local lane = string.gsub(id or "", "^soundscapeSlider_", "")
+    local volume01 = tonumber(value)
+    if volume01 == nil then
+        return
+    end
+    local ok, message = SS.setStorytellerLaneVolume(lane, volume01)
+    if not ok then
+        U.AlertGM(tostring(message))
+    end
+    syncSoundscapeControls()
+end
+
+--- Storyteller Scenes panel clicks (`scenes_tbl_*`, `scenes_seat_*`).
+function HUD_scenesPanel(player, button, id)
+    StorytellerScenesPanel.onHudClick(player, button, id)
+end
+
+function HUD_scenesPanelInput(player, value, id)
+    -- Inputs persist on Apply handlers; avoid writing partial state on every keystroke.
+end
+
+function HUD_scenesApplyLocation(player, button, id)
+    StorytellerScenesPanel.applyLocationFromInputs(player)
+    syncSoundscapeControls()
+end
+
+function HUD_scenesApplyClock(player, button, id)
+    StorytellerScenesPanel.applyClockFromInputs(player)
+end
+
+function HUD_scenesSaveNpcNote(player, button, id)
+    StorytellerScenesPanel.saveNpcWorldNote(player)
+end
+
 --- Advance game phase
 -- Called when a phase button is clicked (e.g., "phase_play")
 -- @param player Player The player who clicked the button
 -- @param button string Button value
 -- @param id string The UI element ID (e.g., "phase_play")
 function HUD_advancePhase(player, button, id)
-    -- Extract phase name from ID (remove "phase_" prefix)
-    local phaseName = string.gsub(id, "^phase_", "")
-
-    -- Map UI button IDs to actual phase constants
+    local tail = string.gsub(id or "", "^phase_", "")
     local phaseMap = {
+        SessionStart = C.Phases.SESSION_START,
+        Play = C.Phases.PLAY,
+        Downtime = C.Phases.DOWNTIME,
+        Memoriam = C.Phases.MEMORIAM,
+        SessionEnd = C.Phases.SESSION_END,
+        -- Legacy lowercase ids (if any XML still emits them)
+        sessionstart = C.Phases.SESSION_START,
         play = C.Phases.PLAY,
-        -- Legacy phase button ids may still send "phase_combat"; no Combat phase exists anymore.
-        -- Keep it unmapped so validation rejects it instead of silently advancing to an invalid value.
-        -- Add more phase mappings as needed
+        downtime = C.Phases.DOWNTIME,
+        memoriam = C.Phases.MEMORIAM,
+        sessionend = C.Phases.SESSION_END,
     }
 
-    local targetPhase = phaseMap[phaseName]
+    local targetPhase = phaseMap[tail]
     if targetPhase == nil then
-        U.AlertGM("HUD_advancePhase: Invalid phase: " .. tostring(phaseName))
+        targetPhase = phaseMap[string.lower(tail)]
+    end
+    if targetPhase == nil then
+        U.AlertGM("HUD_advancePhase: Invalid phase: " .. tostring(tail))
         return
     end
 
-    -- Advance phase
     M.advancePhase(targetPhase)
+    UpdateUIDisplays({ phase = true })
+    syncStorytellerPhaseButtons()
 
-    -- Update UI display
-    UpdateUIDisplays()
-
-    print("HUD: Phase advanced to " .. targetPhase .. " by " .. player.color)
+    print("HUD: Phase set to " .. tostring(targetPhase) .. " by " .. tostring(player and player.color))
 end
 
 --- Reset game state
@@ -1371,6 +1598,7 @@ function UpdateUIDisplays(delta)
             setValueCached("currentPhaseDisplay", currentPhase)
             UI_DISPLAY_CACHE.phase = currentPhase
         end
+        syncStorytellerPhaseButtons()
     end
 
     if wants("scene") then
@@ -1382,6 +1610,12 @@ function UpdateUIDisplays(delta)
     end
 
     if wants("adminLighting") then
+        syncAdminLightSceneButtons()
+    end
+    if wants("scenesPanel") then
+        if StorytellerScenesPanel and StorytellerScenesPanel.refresh then
+            StorytellerScenesPanel.refresh()
+        end
         syncAdminLightSceneButtons()
     end
     if wants("soundscape") then

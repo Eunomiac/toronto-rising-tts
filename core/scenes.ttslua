@@ -51,7 +51,7 @@ local DefaultTransitionTime = 2.0
 --     - name (string): Light name/tag matching L.LIGHTMODES key
 --     - mode (string): Light mode name (e.g., "ambient", "bright", "dim")
 --   musicTrack (number, optional): Music track index (1-10, if tracks are configured)
---   musicMood (string, optional): Soundscape music mood key (e.g., "general", "intrigue", "combat")
+--   musicMood (string, optional): Soundscape music mood key (e.g., "main", "intrigue", "combat")
 --   soundscapeContext (table, optional): Partial context passed to Soundscape.applyContext
 --   description (string, optional): Human-readable scene description
 

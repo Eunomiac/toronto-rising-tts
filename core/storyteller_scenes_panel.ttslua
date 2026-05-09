@@ -1,0 +1,244 @@
+--[[
+    Storyteller Scenes panel: table switching, narrative seat presence, location keys, clock stub fields.
+    Agent guidance: .dev/HUD_FUNCTIONS.md; `.cursor/rules/toronto-rising-synchronization.mdc`.
+]]
+
+local StorytellerScenesPanel = {}
+
+local U = require("lib.util")
+local S = require("core.state")
+local C = require("lib.constants")
+
+local RSL = require("lib.rotational-seat-layout")
+local Sync = require("core.sync")
+local SS = require("core.soundscape")
+
+local GREEN = "#228B22|#32CD32|#006400|#228B22"
+local GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+
+--- Maps XML button ids (no spaces) to `C.Tables` keys.
+local TABLE_TOGGLE_IDS = {
+    scenes_tbl_TableA = "Table A",
+    scenes_tbl_TableB = "Table B",
+    scenes_tbl_TableB1 = "Table B1",
+    scenes_tbl_TableB2 = "Table B2",
+    scenes_tbl_TableB3 = "Table B3",
+    scenes_tbl_TableB4 = "Table B4",
+}
+
+--- @return string|nil
+local function effectiveTableKey()
+    local tk = S.getStateVal("sessionScene", "tableKey")
+    if U.Type(tk) == "string" and tk ~= "" then
+        return tk
+    end
+    local cur = S.getStateVal("seatLayout", "currentTableKey")
+    if U.Type(cur) == "string" and cur ~= "" then
+        return cur
+    end
+    return nil
+end
+
+--- Push storyteller panel visuals from `gameState.sessionScene` + layout.
+function StorytellerScenesPanel.refresh()
+    if UI == nil or UI.setAttribute == nil then
+        return
+    end
+
+    local curTable = effectiveTableKey()
+    for bid, tableKey in pairs(TABLE_TOGGLE_IDS) do
+        local isActive = curTable == tableKey
+        U.setAttributes(bid, {
+            colors = isActive and GREEN or GREY,
+            fontStyle = "Bold",
+            textColor = isActive and "#FFFFFF" or "#FFFFFF",
+        })
+    end
+
+    local sp = S.getStateVal("sessionScene", "seatPresent")
+    if type(sp) ~= "table" then
+        sp = {}
+    end
+
+    local function syncSeatButton(seatKey, bid)
+        local narrative = sp[seatKey]
+        local absent = narrative == false
+        local label = seatKey
+        if absent then
+            label = seatKey .. " (absent)"
+        end
+        U.setAttributes(bid, {
+            colors = absent and GREY or GREEN,
+            text = label,
+            fontStyle = "Bold",
+            textColor = "#FFFFFF",
+        })
+    end
+
+    for _, col in ipairs(C.PlayerColors or {}) do
+        syncSeatButton(col, "scenes_seat_" .. col)
+    end
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        syncSeatButton(seatKey, "scenes_seat_" .. seatKey)
+    end
+
+    local dk = S.getStateVal("sessionScene", "districtKey")
+    local sk = S.getStateVal("sessionScene", "siteKey")
+    if UI.setValue ~= nil then
+        UI.setValue("scenes_districtKey", dk ~= nil and tostring(dk) or "")
+        UI.setValue("scenes_siteKey", sk ~= nil and tostring(sk) or "")
+        local ck = S.getStateVal("sessionScene", "clock")
+        if type(ck) == "table" then
+            UI.setValue("scenes_clock_hour", tostring(tonumber(ck.hour) or 0))
+            UI.setValue("scenes_clock_minute", tostring(tonumber(ck.minute) or 0))
+            UI.setValue("scenes_clock_day", tostring(tonumber(ck.day) or 1))
+            UI.setValue("scenes_clock_month", tostring(tonumber(ck.month) or 1))
+            UI.setValue("scenes_clock_year", tostring(tonumber(ck.year) or 2026))
+        end
+        local nw = S.getStateVal("sessionScene", "npcWorld")
+        if type(nw) == "table" and nw.lastNote ~= nil then
+            UI.setValue("scenes_npcWorldNote", tostring(nw.lastNote))
+        end
+    end
+end
+
+--- @param player Player
+--- @param id string|nil
+function StorytellerScenesPanel.onHudClick(player, button, id)
+    if type(id) ~= "string" then
+        return
+    end
+
+    if TABLE_TOGGLE_IDS[id] ~= nil then
+        local tableKey = TABLE_TOGGLE_IDS[id]
+        if C.Tables[tableKey] == nil then
+            U.AlertGM("Unknown table key: " .. tostring(tableKey))
+            return
+        end
+        S.setStateVal(tableKey, "sessionScene", "tableKey")
+        RSL.SetTableTo(tableKey)
+        if Sync and type(Sync.full) == "function" then
+            Sync.full({ reason = "StorytellerScenesPanel.table" })
+        end
+        StorytellerScenesPanel.refresh()
+        return
+    end
+
+    local seatKey = string.match(id, "^scenes_seat_(.+)$")
+    if seatKey ~= nil then
+        local sp = S.getStateVal("sessionScene", "seatPresent")
+        if type(sp) ~= "table" then
+            sp = {}
+        end
+        local cur = sp[seatKey]
+        local nextVal = nil
+        if cur == nil then
+            nextVal = false
+        elseif cur == false then
+            nextVal = true
+        else
+            nextVal = nil
+        end
+        if nextVal == nil then
+            sp[seatKey] = nil
+        else
+            sp[seatKey] = nextVal
+        end
+        S.setStateVal(sp, "sessionScene", "seatPresent")
+        local L = require("core.lighting")
+        if L and type(L.reconcileAllPlayers) == "function" then
+            L.reconcileAllPlayers()
+        end
+        StorytellerScenesPanel.refresh()
+        return
+    end
+end
+
+--- @param player Player
+function StorytellerScenesPanel.applyLocationFromInputs(player)
+    if SS.applyContext == nil or SS.contextFromSite == nil then
+        U.AlertGM("Soundscape module unavailable.")
+        return
+    end
+
+    local dKey = UI and UI.getValue and UI.getValue("scenes_districtKey") or ""
+    local sKey = UI and UI.getValue and UI.getValue("scenes_siteKey") or ""
+    if type(dKey) ~= "string" then
+        dKey = ""
+    end
+    if type(sKey) ~= "string" then
+        sKey = ""
+    end
+    dKey = string.gsub(dKey, "^%s+", "")
+    dKey = string.gsub(dKey, "%s+$", "")
+    sKey = string.gsub(sKey, "^%s+", "")
+    sKey = string.gsub(sKey, "%s+$", "")
+
+    if sKey == "" then
+        U.AlertGM("Enter a site key (e.g. CLGrounds).")
+        return
+    end
+
+    local site = C.Sites[sKey]
+    if type(site) ~= "table" then
+        U.AlertGM("Unknown site key: " .. tostring(sKey))
+        return
+    end
+
+    if dKey ~= "" and C.Districts[dKey] == nil then
+        U.AlertGM("Unknown district key: " .. tostring(dKey))
+        return
+    end
+
+    S.setStateVal(dKey ~= "" and dKey or nil, "sessionScene", "districtKey")
+    S.setStateVal(sKey, "sessionScene", "siteKey")
+
+    local ctx = SS.contextFromSite(site, sKey)
+    local result = SS.applyContext(ctx)
+    if Sync and type(Sync.full) == "function" then
+        Sync.full({ reason = "StorytellerScenesPanel.location" })
+    end
+    StorytellerScenesPanel.refresh()
+    U.AlertGM(result and result.message or "Location applied.")
+end
+
+--- @param player Player
+function StorytellerScenesPanel.applyClockFromInputs(player)
+    local function numField(elemId, fallback)
+        local raw = UI and UI.getValue and UI.getValue(elemId) or ""
+        local n = tonumber(raw)
+        if n == nil then
+            return fallback
+        end
+        return n
+    end
+
+    local clock = {
+        hour = numField("scenes_clock_hour", 0),
+        minute = numField("scenes_clock_minute", 0),
+        day = numField("scenes_clock_day", 1),
+        month = numField("scenes_clock_month", 1),
+        year = numField("scenes_clock_year", 2026),
+        useRealTime = S.getStateVal("sessionScene", "clock", "useRealTime") == true,
+    }
+    S.setStateVal(clock, "sessionScene", "clock")
+    StorytellerScenesPanel.refresh()
+    U.AlertGM("Scene clock updated (real-time ticker not yet wired).")
+end
+
+--- @param player Player
+function StorytellerScenesPanel.saveNpcWorldNote(player)
+    local raw = UI and UI.getValue and UI.getValue("scenes_npcWorldNote") or ""
+    if type(raw) ~= "string" then
+        raw = ""
+    end
+    local nw = S.getStateVal("sessionScene", "npcWorld")
+    if type(nw) ~= "table" then
+        nw = {}
+    end
+    nw.lastNote = raw
+    S.setStateVal(nw, "sessionScene", "npcWorld")
+    U.AlertGM("NPC scene note saved (stub hook for future spawn tracking).")
+end
+
+return StorytellerScenesPanel

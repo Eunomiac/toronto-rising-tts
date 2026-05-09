@@ -2,23 +2,59 @@
 <!-- Agent guidance: .dev/SOUNDSCAPE_UNITY_SETUP.md; .dev/HUD_FUNCTIONS.md. -->
 
 <Panel id="panel_soundscape" active="false">
-  <VerticalLayout spacing="4" padding="6 6 6 6" childForceExpandWidth="false" childForceExpandHeight="false">
-    <Text class="hud_storyteller_header">Soundscape</Text>
+  <VerticalLayout spacing="5" padding="6 6 6 6" childForceExpandWidth="true" minWidth="520" childForceExpandHeight="false">
+    <Text class="hud_storyteller_header">Sound</Text>
     <Text id="soundscapeSummary" fontSize="10" color="#DDDDDD">Music: mood/main | Featured: none | Location: none | Weather: none | Rain: none | Wind: none | Thunder: false | Indoors: false</Text>
 
     <Text class="hud_storyteller_label">Background music</Text>
-    <HorizontalLayout class="hud_storyteller_button_row" spacing="4">
-      <Button id="soundscapeMood_main" text="Main" minWidth="62" preferredWidth="62" onClick="HUD_soundscapeSetMusicMood"
+    <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
+      <Button id="soundscapeMood_main" text="Main" minWidth="56" preferredWidth="56" onClick="HUD_soundscapeSetMusicMood"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="soundscapeMood_intrigue" text="Intrigue" minWidth="56" preferredWidth="56" onClick="HUD_soundscapeSetMusicMood"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="soundscapeMood_combat" text="Combat" minWidth="56" preferredWidth="56" onClick="HUD_soundscapeSetMusicMood"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
       <Button id="soundscapeMood_location" text="Location" minWidth="62" preferredWidth="62" onClick="HUD_soundscapeSetBackgroundLocation"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="soundscapeMood_intrigue" text="Intrigue" minWidth="62" preferredWidth="62" onClick="HUD_soundscapeSetMusicMood"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="soundscapeMood_combat" text="Combat" minWidth="62" preferredWidth="62" onClick="HUD_soundscapeSetMusicMood"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
     </HorizontalLayout>
 
-    <Text fontSize="9" color="#AAAAAA">Weather and location layers are API/debug controlled until the clock, weather table, and SITES data exist.</Text>
+    <Text class="hud_storyteller_label">Featured music</Text>
+    <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
+      <Button id="soundscapeFeatured_TR_Full" text="TR Full" minWidth="72" onClick="HUD_soundscapePlayFeatured"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="soundscapeFeatured_TR_Intro" text="TR Intro" minWidth="72" onClick="HUD_soundscapePlayFeatured"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="soundscapeFeatured_TR_Loop" text="TR Loop" minWidth="72" onClick="HUD_soundscapePlayFeatured"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="soundscapeFeatured_STB_HouseOfTheRisingSun" text="STB" minWidth="56" onClick="HUD_soundscapePlayFeatured"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button text="Stop feat." minWidth="72" onClick="HUD_soundscapeStopFeatured" />
+    </HorizontalLayout>
+
+    <Text class="hud_storyteller_label">Lane volumes (natural → speakers; rain/wind duck indoors)</Text>
+    <Text id="soundscapeDuckHint" fontSize="9" color="#CCCC66"></Text>
+
+    <HorizontalLayout spacing="6" childForceExpandWidth="true">
+      <Text id="soundscapeLaneLbl_music" preferredWidth="130" minWidth="130" fontSize="10" color="#DDDDDD">Music</Text>
+      <Slider id="soundscapeSlider_music" minValue="0" maxValue="1" value="0" flexibleWidth="1" onValueChanged="HUD_soundscapeLaneSlider" />
+    </HorizontalLayout>
+    <HorizontalLayout spacing="6" childForceExpandWidth="true">
+      <Text id="soundscapeLaneLbl_location" preferredWidth="130" minWidth="130" fontSize="10" color="#DDDDDD">Location</Text>
+      <Slider id="soundscapeSlider_location" minValue="0" maxValue="1" value="0" flexibleWidth="1" onValueChanged="HUD_soundscapeLaneSlider" />
+    </HorizontalLayout>
+    <HorizontalLayout spacing="6" childForceExpandWidth="true">
+      <Text id="soundscapeLaneLbl_featured" preferredWidth="130" minWidth="130" fontSize="10" color="#DDDDDD">Featured</Text>
+      <Slider id="soundscapeSlider_featured" minValue="0" maxValue="1" value="0" flexibleWidth="1" onValueChanged="HUD_soundscapeLaneSlider" />
+    </HorizontalLayout>
+    <HorizontalLayout spacing="6" childForceExpandWidth="true">
+      <Text id="soundscapeLaneLbl_rain" preferredWidth="130" minWidth="130" fontSize="10" color="#DDDDDD">Rain</Text>
+      <Slider id="soundscapeSlider_rain" minValue="0" maxValue="1" value="0" flexibleWidth="1" onValueChanged="HUD_soundscapeLaneSlider" />
+    </HorizontalLayout>
+    <HorizontalLayout spacing="6" childForceExpandWidth="true">
+      <Text id="soundscapeLaneLbl_wind" preferredWidth="130" minWidth="130" fontSize="10" color="#DDDDDD">Wind</Text>
+      <Slider id="soundscapeSlider_wind" minValue="0" maxValue="1" value="0" flexibleWidth="1" onValueChanged="HUD_soundscapeLaneSlider" />
+    </HorizontalLayout>
+
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4">
       <Button text="Inspect" minWidth="62" preferredWidth="62" onClick="HUD_soundscapeInspect" />
       <Button text="Stop All" minWidth="62" preferredWidth="62" onClick="HUD_soundscapeStopAll" />

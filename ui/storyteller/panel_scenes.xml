@@ -1,2 +1,72 @@
-<!-- Scenes panel stub (reserved) -->
-<!-- Agent guidance: .dev/HUD_FUNCTIONS.md; .dev/TESTING.md (scene tests). -->
+<!-- Storyteller Scenes: lighting presets, table, seat narrative presence, location keys, clock (see core/storyteller_scenes_panel.ttslua). -->
+<Panel id="panel_scenes" active="false">
+  <VerticalLayout spacing="6" padding="6 6 6 6" childForceExpandWidth="true" minWidth="560">
+    <Text class="hud_storyteller_header">Scenes</Text>
+    <Text fontSize="9" color="#AAAAAA">Lighting presets drive `currentScene` / `Scenes.reconcileFromState`. Narrative fields live in `gameState.sessionScene`.</Text>
+
+    <Text class="hud_storyteller_label">Lighting presets</Text>
+    <HorizontalLayout class="hud_storyteller_button_row" spacing="4">
+      <Button id="adminScene_dark" class="hud_storyteller_button" text="DARK" onClick="HUD_selectAdminLightingScene"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="adminScene_standard" class="hud_storyteller_button" text="STANDARD" onClick="HUD_selectAdminLightingScene"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="adminScene_bright" class="hud_storyteller_button" text="BRIGHT" onClick="HUD_selectAdminLightingScene"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    </HorizontalLayout>
+
+    <Text class="hud_storyteller_label">Table</Text>
+    <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
+      <Button id="scenes_tbl_TableA" text="Table A" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_tbl_TableB" text="Table B" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_tbl_TableB1" text="B1" minWidth="48" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_tbl_TableB2" text="B2" minWidth="48" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_tbl_TableB3" text="B3" minWidth="48" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_tbl_TableB4" text="B4" minWidth="48" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    </HorizontalLayout>
+
+    <Text class="hud_storyteller_label">Seat presence (narrative)</Text>
+    <Text fontSize="9" color="#AAAAAA">When `enforceActiveSeatLighting` is on, explicit “off” dims that seat. Neutral leaves layout-only rules.</Text>
+    <HorizontalLayout class="hud_storyteller_button_row" spacing="3" childForceExpandWidth="false">
+      <Button id="scenes_seat_Brown" text="Brown" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_seat_Orange" text="Orange" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_seat_Red" text="Red" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_seat_Pink" text="Pink" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_seat_Purple" text="Purple" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    </HorizontalLayout>
+    <HorizontalLayout class="hud_storyteller_button_row" spacing="3" childForceExpandWidth="false">
+      <Button id="scenes_seat_NPC1" text="NPC1" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_seat_NPC2" text="NPC2" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_seat_NPC3" text="NPC3" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_seat_NPC4" text="NPC4" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    </HorizontalLayout>
+
+    <Text class="hud_storyteller_label">Scene location (constants keys)</Text>
+    <Text fontSize="9" color="#AAAAAA">District keys match `C.Districts` (e.g. DupontByTheCastle). Site keys match `C.Sites` (e.g. CLGrounds).</Text>
+    <HorizontalLayout spacing="4" childForceExpandWidth="true">
+      <VerticalLayout spacing="2" flexibleWidth="1">
+        <Text fontSize="9" color="#CCCCCC">District key</Text>
+        <InputField id="scenes_districtKey" preferredHeight="28" minHeight="28" lineType="SingleLine" fontSize="11" textColor="#111111" placeholder="DupontByTheCastle" onEndEdit="HUD_scenesPanelInput"></InputField>
+      </VerticalLayout>
+      <VerticalLayout spacing="2" flexibleWidth="1">
+        <Text fontSize="9" color="#CCCCCC">Site key</Text>
+        <InputField id="scenes_siteKey" preferredHeight="28" minHeight="28" lineType="SingleLine" fontSize="11" textColor="#111111" placeholder="CLGrounds" onEndEdit="HUD_scenesPanelInput"></InputField>
+      </VerticalLayout>
+    </HorizontalLayout>
+    <Button class="hud_storyteller_button" text="Apply location + soundscape" onClick="HUD_scenesApplyLocation" />
+
+    <Text class="hud_storyteller_label">Scene time</Text>
+    <HorizontalLayout spacing="4" childForceExpandWidth="false">
+      <VerticalLayout spacing="2"><Text fontSize="9" color="#CCCCCC">Hr</Text><InputField id="scenes_clock_hour" preferredWidth="44" preferredHeight="26" fontSize="11" text="0" onEndEdit="HUD_scenesPanelInput" /></VerticalLayout>
+      <VerticalLayout spacing="2"><Text fontSize="9" color="#CCCCCC">Min</Text><InputField id="scenes_clock_minute" preferredWidth="44" preferredHeight="26" fontSize="11" text="0" onEndEdit="HUD_scenesPanelInput" /></VerticalLayout>
+      <VerticalLayout spacing="2"><Text fontSize="9" color="#CCCCCC">Day</Text><InputField id="scenes_clock_day" preferredWidth="44" preferredHeight="26" fontSize="11" text="1" onEndEdit="HUD_scenesPanelInput" /></VerticalLayout>
+      <VerticalLayout spacing="2"><Text fontSize="9" color="#CCCCCC">Mo</Text><InputField id="scenes_clock_month" preferredWidth="44" preferredHeight="26" fontSize="11" text="1" onEndEdit="HUD_scenesPanelInput" /></VerticalLayout>
+      <VerticalLayout spacing="2"><Text fontSize="9" color="#CCCCCC">Yr</Text><InputField id="scenes_clock_year" preferredWidth="56" preferredHeight="26" fontSize="11" text="2026" onEndEdit="HUD_scenesPanelInput" /></VerticalLayout>
+    </HorizontalLayout>
+    <Button class="hud_storyteller_button" text="Apply clock" onClick="HUD_scenesApplyClock" />
+
+    <Text class="hud_storyteller_label">NPC role snapshot (stub)</Text>
+    <Text fontSize="9" color="#AAAAAA">Stores `sessionScene.npcWorld.lastNote` for future NPC/table tracking hooks.</Text>
+    <InputField id="scenes_npcWorldNote" preferredHeight="28" fontSize="11" textColor="#111111" placeholder="Note (optional)" onEndEdit="HUD_scenesPanelInput" />
+    <Button class="hud_storyteller_button" text="Save NPC scene note" onClick="HUD_scenesSaveNpcNote" />
+  </VerticalLayout>
+</Panel>

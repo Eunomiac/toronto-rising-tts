@@ -27,6 +27,7 @@ local SYNC_INCREMENTAL_UI_DELTA = {
     phase = true,
     scene = true,
     adminLighting = true,
+    scenesPanel = true,
     soundscape = true,
     playerStats = true,
     playerHud = true,

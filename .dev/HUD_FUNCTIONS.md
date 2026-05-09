@@ -31,28 +31,45 @@ Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
-| `HUD_selectStorytellerPanel` | `toggle_lighting`, `toggle_scenes`, `toggle_soundscape`, `toggle_pcs`, `toggle_phases`, `toggle_npcs` | `(player, button, id)` | Strips `toggle_` prefix from `id`, calls `StorytellerPanelUI.selectStorytellerPanel(panelKey)` to show one storyteller panel and hide all others. Updates toggle button colors to indicate active panel. |
+| `HUD_selectStorytellerPanel` | `toggle_scenes`, `toggle_soundscape`, `toggle_pcs`, `toggle_phases`, `toggle_npcs` | `(player, button, id)` | Strips `toggle_` prefix from `id`, calls `StorytellerPanelUI.selectStorytellerPanel(panelKey)` to show one storyteller panel and hide all others. Updates toggle button colors to indicate active panel. Deferred refresh for Sound (`syncSoundscapeControls`) and Scenes (`StorytellerScenesPanel.refresh` + lighting preset buttons). |
 | `HUD_togglePanel` | `toggleElem_*` buttons | `(player, button, id)` | Strips `toggleElem_` prefix from `id`, calls `U.toggleXmlElement(elemID, button)` to collapse/expand the target panel. Swaps toggle button text between `►` and `▼`. |
 
-## Scene Controls (panel_scenes.xml)
+## Scenes panel (`panel_scenes.xml`)
+
+**Authority:** `gameState.currentScene` remains the lighting preset key for `Scenes.reconcileFromState`. Narrative/table/location/seat-presence fields live under **`gameState.sessionScene`** (see `core/state.ttslua`). Applying a lighting preset also writes `sessionScene.lightingPresetKey` as a mirror.
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
-| `HUD_changeScene` | `scene_default`, `scene_elysium`, `scene_alley`, `scene_haven`, `scene_tension`, `scene_combat`, `scene_suspicion`, `scene_social` | `(player, button, id)` | Strips `scene_` prefix from `id`, mutates `currentScene` state, then calls `Sync.full()` (state-first reconcile pipeline). |
+| `HUD_selectAdminLightingScene` | `adminScene_dark`, `adminScene_standard`, `adminScene_bright` | `(player, button, id)` | Sets `currentScene`, `sessionScene.lightingPresetKey`, clears `sceneTransition`, calls `Sync.full()`. |
+| `HUD_scenesPanel` | `scenes_tbl_*`, `scenes_seat_*` | `(player, button, id)` | `core/storyteller_scenes_panel.ttslua`: table buttons call `rotational-seat-layout.SetTableTo` after `sessionScene.tableKey`; seat buttons cycle `sessionScene.seatPresent` (`nil` → absent → present → neutral) and run `L.reconcileAllPlayers()`. |
+| `HUD_scenesPanelInput` | district/site/clock/npc note fields | `(player, value, id)` | Intentional no-op on keystroke; use Apply buttons to persist. |
+| `HUD_scenesApplyLocation` | `Apply location + soundscape` | `(player, button, id)` | Validates `C.Districts` / `C.Sites` keys from inputs, writes `sessionScene.districtKey` / `siteKey`, runs `Soundscape.applyContext(Soundscape.contextFromSite(site, siteKey))`, then `Sync.full()`. |
+| `HUD_scenesApplyClock` | `Apply clock` | `(player, button, id)` | Writes `sessionScene.clock` numeric fields from `scenes_clock_*` inputs (real-time ticker deferred). |
+| `HUD_scenesSaveNpcNote` | `Save NPC scene note` | `(player, button, id)` | Stub: stores text in `sessionScene.npcWorld.lastNote` for future NPC spawn tracking hooks. |
 
-## Soundscape Controls (panel_soundscape.xml)
+## Legacy scene preset buttons (player HUD / other XML)
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
-| `HUD_soundscapeSetMusicMood` | `soundscapeMood_general`, `soundscapeMood_intrigue`, `soundscapeMood_combat` | `(player, button, id)` | Strips `soundscapeMood_` prefix from `id`, calls `SS.setMusicMood(moodKey)`, alerts the GM, and refreshes soundscape summary/button highlights. |
+| `HUD_changeScene` | `scene_*` ids where present | `(player, button, id)` | Strips `scene_` prefix from `id`, mutates `currentScene` state, then calls `Sync.full()` (state-first reconcile pipeline). |
+
+## Soundscape Controls (`panel_soundscape.xml`)
+
+| Handler | XML Element(s) | Params | Behavior |
+| ------- | ---------------- | ------ | -------- |
+| `HUD_soundscapeSetMusicMood` | `soundscapeMood_main`, `soundscapeMood_intrigue`, `soundscapeMood_combat` | `(player, button, id)` | Strips `soundscapeMood_` prefix from `id`, calls `SS.setMusicMood(moodKey)`. Active styling requires `backgroundMusicEnabled` and `backgroundMusicMode == "mood"`. |
+| `HUD_soundscapeSetBackgroundLocation` | `soundscapeMood_location` | `(player, button, id)` | Enabled visually only when `sessionScene.siteKey` or `soundscape.lastAppliedSiteKey` resolves to a `C.Sites` row with `soundscape.backgroundMusic.playlist`. Calls `SS.setLocationMusic(playlist)`. |
+| `HUD_soundscapePlayFeatured` | `soundscapeFeatured_*` | `(player, button, id)` | Strips `soundscapeFeatured_` prefix, calls `SS.playFeaturedMusic(trackKey)`. |
+| `HUD_soundscapeStopFeatured` | `Stop feat.` | `(player, button, id)` | `SS.stopFeaturedMusic()`. |
+| `HUD_soundscapeLaneSlider` | `soundscapeSlider_music`, `..._location`, `..._featured`, `..._rain`, `..._wind` | `(player, value, id)` | Calls `SS.setStorytellerLaneVolume(lane, value)`. Rain/wind sliders edit **natural** volume; indoor ducking is reapplied in soundscape. |
 | `HUD_soundscapeStopAll` | `Stop All` button | `(player, button, id)` | Calls `SS.stopAll()` to silence loop lanes with `silent` and invalidate scheduled background/featured/thunder callbacks. |
 | `HUD_soundscapeInspect` | `Inspect` button | `(player, button, id)` | Calls `SS.inspectEmitters()`, prints JSON emitter/effect information including GUID/tag validation plus Looping and Trigger Effects, and alerts the GM. |
 
-## Phase Controls (panel_phases.xml)
+## Phase Controls (`panel_phases.xml`)
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
-| `HUD_advancePhase` | `phase_play`, `phase_combat` | `(player, button, id)` | Strips `phase_` prefix from `id`. Maps to `C.Phases` constants (`play` -> `C.Phases.PLAY`, `combat` -> `C.Phases.COMBAT`). Calls `M.advancePhase(targetPhase)`. Updates UI displays. |
+| `HUD_advancePhase` | `phase_SessionStart`, `phase_Play`, `phase_Downtime`, `phase_Memoriam`, `phase_SessionEnd` | `(player, button, id)` | Strips `phase_` prefix, maps to `C.Phases.*`, calls `M.advancePhase`, `UpdateUIDisplays({ phase = true })`, `syncStorytellerPhaseButtons()`. Future phase reconcilers can hook from `Sync` / domain modules. |
 | `HUD_resetGame` | `utility_reset` | `(player, button, id)` | Calls `S.resetGameState()`, `Scenes.resetScene(0)` (instant), updates UI, broadcasts "Game has been reset." to all players. |
 | `HUD_saveState` | `utility_save` | `(player, button, id)` | Reads state via `S.getGameState()`, JSON-encodes it for verification. Broadcasts confirmation to the clicking player. Note: TTS also auto-saves via `onSave()`. |
 
