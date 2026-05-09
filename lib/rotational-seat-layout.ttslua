@@ -2376,6 +2376,7 @@ end
 ---     anchor = "<guid>",                -- required when rotationDelta is provided
 ---     rotationDelta = Vector|table,     -- optional additive offset from anchor rotation
 ---     position = { y = <number> }       -- optional absolute Y override
+---     scale = { x = <number>, y = ..., z = ... }  -- optional; omitted axes keep current scale
 ---   }
 --- }
 --- @param sourceObjects table
@@ -2401,11 +2402,18 @@ local function applyPostCorrections(sourceObjects, computed)
     end
     local hasRotationCorrection = correction.rotationDelta ~= nil
     local hasPositionCorrection = U.Type(correction.position) == "table" and correction.position.y ~= nil
-    if not hasRotationCorrection and not hasPositionCorrection then
+    local scaleTbl = U.Type(correction.scale) == "table" and correction.scale or nil
+    local hasScaleCorrection = scaleTbl ~= nil
+      and (
+        tonumber(scaleTbl.x) ~= nil
+        or tonumber(scaleTbl.y) ~= nil
+        or tonumber(scaleTbl.z) ~= nil
+      )
+    if not hasRotationCorrection and not hasPositionCorrection and not hasScaleCorrection then
       error(
         "rotational-seat-layout: postCorrection for guid '"
         .. tostring(guid)
-        .. "' must include rotationDelta and/or position.y"
+        .. "' must include rotationDelta, position.y, and/or scale (numeric x/y/z)"
       )
     end
 
@@ -2505,6 +2513,20 @@ local function applyPostCorrections(sourceObjects, computed)
     end
 
     placeObjectExact(obj, nextPos, nextRot)
+
+    if hasScaleCorrection then
+      local curScale = obj.getScale and obj.getScale() or nil
+      if curScale == nil then
+        error(
+          "rotational-seat-layout: postCorrection scale requires getScale() for guid '" .. tostring(guid) .. "'"
+        )
+      end
+      local sx = tonumber(scaleTbl.x) ~= nil and tonumber(scaleTbl.x) or curScale.x
+      local sy = tonumber(scaleTbl.y) ~= nil and tonumber(scaleTbl.y) or curScale.y
+      local sz = tonumber(scaleTbl.z) ~= nil and tonumber(scaleTbl.z) or curScale.z
+      obj.setScale({ x = sx, y = sy, z = sz })
+    end
+
     local targetAfterPos = obj.getPosition()
     local targetAfterRot = obj.getRotation()
     -- print(

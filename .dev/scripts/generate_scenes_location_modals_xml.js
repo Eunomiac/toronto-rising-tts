@@ -38,6 +38,32 @@ function chunkArray(items, size) {
 }
 
 /**
+ * Same display `name` on multiple sites → append " 2", " 3", … (first keeps catalog label).
+ * Bucket-local only (district list vs generic list are independent).
+ *
+ * @param {{ key: string, label: string }[]} rows mutable, already sorted for stable numbering
+ */
+function disambiguateDuplicatePickerLabels(rows) {
+  const normCounts = new Map();
+  for (const row of rows) {
+    const norm = row.label.toLowerCase();
+    normCounts.set(norm, (normCounts.get(norm) || 0) + 1);
+  }
+  const normIndex = new Map();
+  for (const row of rows) {
+    const norm = row.label.toLowerCase();
+    if ((normCounts.get(norm) || 0) <= 1) {
+      continue;
+    }
+    const i = (normIndex.get(norm) || 0) + 1;
+    normIndex.set(norm, i);
+    if (i >= 2) {
+      row.label = `${row.label} ${i}`;
+    }
+  }
+}
+
+/**
  * @param {string} source
  * @param {string} marker e.g. `C.Districts =`
  */
@@ -251,8 +277,10 @@ for (const site of siteEntries) {
 }
 for (const d of districtEntries) {
   sitesByDistrict[d.key].sort(sortByLabel);
+  disambiguateDuplicatePickerLabels(sitesByDistrict[d.key]);
 }
 genericSites.sort(sortByLabel);
+disambiguateDuplicatePickerLabels(genericSites);
 
 const header = `<!-- AUTO-GENERATED — do not edit by hand. Source: lib/constants.ttslua -->
 <!-- Regenerate: node .dev/scripts/generate_scenes_location_modals_xml.js -->

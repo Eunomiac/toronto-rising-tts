@@ -1285,6 +1285,7 @@ C.TableSourceObjects = {
     G.GUIDS.TAROT_DRAWER_ANCHOR_OFF_PINK,
     G.GUIDS.TAROT_DECK_ANCHOR_PINK,
   },
+  --- Per-GUID overrides after layout: position.y, anchor+rotationDelta, optional scale ({ x,y,z } partial ok).
   postCorrections = {
     [G.GUIDS.SEAT_CHAIR_BROWN] = {
       anchor = G.GUIDS.HAND_BROWN,
@@ -1329,6 +1330,22 @@ C.TableSourceObjects = {
     },
     [G.GUIDS.SEAT_FIGURE_PURPLE] = {
       position = {y = -50.67}
+    },
+    [G.GUIDS.SEAT_FIGURE_NPC1] = {
+      position = {y = -67},
+      scale = {x = 1.25, y = 1.25, z = 1.25}
+    },
+    [G.GUIDS.SEAT_FIGURE_NPC2] = {
+      position = {y = -67},
+      scale = {x = 1.25, y = 1.25, z = 1.25}
+    },
+    [G.GUIDS.SEAT_FIGURE_NPC3] = {
+      position = {y = -67},
+      scale = {x = 1.25, y = 1.25, z = 1.25}
+    },
+    [G.GUIDS.SEAT_FIGURE_NPC4] = {
+      position = {y = -67},
+      scale = {x = 1.25, y = 1.25, z = 1.25}
     }
   },
   -- Derived from C.RedCameraAngles (and aligned with C.UniversalCameraAngles runtime merge behavior).
