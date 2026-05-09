@@ -193,6 +193,10 @@ function clampUnit(n) {
  * Format one TTS UI color channel (or alpha) in 0..1 using **two significant figures**.
  * Exact 0 and 1 render as "0" and "1" without decimals.
  *
+ * Uses scaled rounding (not `Number#toPrecision`), because `toPrecision` emits scientific
+ * notation for small magnitudes (e.g. `"1e-7"`), and `String(number)` can keep that form.
+ * TTS UI `colors` / `rgba()` attributes require plain decimal literals.
+ *
  * @param {number} n - Channel in [0, 1] (non-finite values become "0").
  * @returns {string}
  */
@@ -207,8 +211,23 @@ function formatTwoSigFigUnit(n) {
   if (u === 1) {
     return "1";
   }
-  const rounded = parseFloat(u.toPrecision(2));
-  return String(rounded);
+
+  const exp = Math.floor(Math.log10(u));
+  const scale = Math.pow(10, 2 - 1 - exp);
+  let rounded = Math.round(u * scale) / scale;
+
+  if (rounded <= 0) {
+    return "0";
+  }
+  if (rounded >= 1) {
+    return "1";
+  }
+
+  const magnitudeExp = Math.floor(Math.log10(rounded));
+  const decimalPlaces = Math.min(20, Math.max(1, -magnitudeExp + 1));
+  let s = rounded.toFixed(decimalPlaces);
+  s = s.replace(/\.?0+$/, "");
+  return s;
 }
 
 /**
