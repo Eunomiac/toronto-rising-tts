@@ -46,7 +46,7 @@ Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 | `HUD_scenesOpenDistrictModal` | `Browse districts...` | `(player, button, id)` | Shows `scenes_modal_districts_root` (`ui/storyteller/panel_scenes_location_modals.xml`, generated from `C.Districts`). |
 | `HUD_scenesOpenSiteModal` | `Browse sites...` | `(player, button, id)` | Shows `scenes_modal_sites_root` (generated from `C.Sites`). |
 | `HUD_scenesCloseLocationModals` | modal Close buttons | `(player, button, id)` | Hides both picker roots. |
-| `HUD_scenesPickDistrict` | `scenes_pick_district_*` | `(player, button, id)` | Parses key from `id`, writes `scenes_districtKey` via `U.setAttribute(..., "text", ...)`, closes modals. |
+| `HUD_scenesPickDistrict` | `scenes_pick_district_*` | `(player, button, id)` | Parses key from `id`, writes `scenes_districtKey` via `UI.setValue` (InputField value must match `UI.getValue` used by Apply), closes modals. |
 | `HUD_scenesPickSite` | `scenes_pick_site_*` | `(player, button, id)` | Same for `scenes_siteKey`. |
 | `HUD_scenesApplyLocation` | `Apply location + soundscape` | `(player, button, id)` | Validates `C.Districts` / `C.Sites` keys from inputs, writes `sessionScene.districtKey` / `siteKey`, runs `Soundscape.applyContext(Soundscape.contextFromSite(site, siteKey))`, then `Sync.full()`. |
 | `HUD_scenesApplyClock` | `Apply clock` | `(player, button, id)` | Writes `sessionScene.clock` from `scenes_clock_*` inputs, then `ChronicleWeather.applyScheduledWeather({ force = false })` when follow-on-clock is on and manual hold is off → layered rain/wind + `Soundscape.setThunderEnabled` from `lib/tr_weather_schedule.ttslua`; then `Sync.full()` and soundscape UI refresh. |

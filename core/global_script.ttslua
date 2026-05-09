@@ -961,7 +961,12 @@ function HUD_scenesPickDistrict(player, button, id)
         return
     end
     HUD_scenesCloseLocationModals(player, button, id)
-    U.setAttribute("scenes_districtKey", "text", key)
+    -- InputField: must use UI.setValue so UI.getValue matches (setAttribute "text" alone can show text but leave getValue empty).
+    if UI ~= nil and UI.setValue ~= nil then
+        UI.setValue("scenes_districtKey", key)
+    else
+        U.setAttribute("scenes_districtKey", "text", key)
+    end
     U.AlertGM("District key set: " .. key .. " — click Apply location + soundscape when ready.")
 end
 
@@ -973,7 +978,11 @@ function HUD_scenesPickSite(player, button, id)
         return
     end
     HUD_scenesCloseLocationModals(player, button, id)
-    U.setAttribute("scenes_siteKey", "text", key)
+    if UI ~= nil and UI.setValue ~= nil then
+        UI.setValue("scenes_siteKey", key)
+    else
+        U.setAttribute("scenes_siteKey", "text", key)
+    end
     U.AlertGM("Site key set: " .. key .. " — click Apply location + soundscape when ready.")
 end
 
