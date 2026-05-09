@@ -190,6 +190,10 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
     end
 end
 
+--- TTS stacks sibling Panels poorly when only `active` is false — district buckets use `visibility="None"` so they do not occlude the generic list or each other.
+local SITE_MODAL_BUCKET_VISIBILITY_ON = "Black|Host"
+local SITE_MODAL_BUCKET_VISIBILITY_OFF = "None"
+
 --- Shows exactly one `scenes_site_group_dist_*` panel matching trimmed `scenes_districtKey` when it exists in `C.Districts`; otherwise hides all district buckets (general sites panel stays visible).
 function StorytellerScenesPanel.applySiteModalDistrictVisibility()
     if UI == nil or UI.setAttribute == nil then
@@ -210,8 +214,11 @@ function StorytellerScenesPanel.applySiteModalDistrictVisibility()
             local elemId = "scenes_site_group_dist_" .. distKey
             local show = valid and raw == distKey
             U.setAttribute(elemId, "active", show and "true" or "false")
+            U.setAttribute(elemId, "visibility", show and SITE_MODAL_BUCKET_VISIBILITY_ON or SITE_MODAL_BUCKET_VISIBILITY_OFF)
         end
     end
+    U.setAttribute("scenes_site_group_generic", "active", "true")
+    U.setAttribute("scenes_site_group_generic", "visibility", SITE_MODAL_BUCKET_VISIBILITY_ON)
 end
 
 --- @param player Player

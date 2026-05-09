@@ -16,8 +16,12 @@ const outPath = path.join(root, "ui", "storyteller", "panel_scenes_location_moda
 
 const BTN_COLORS = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)";
 
-/** How many picker buttons per row in district/site modals (keeps modals shorter). */
-const BUTTONS_PER_ROW = 5;
+/** Modal width/height (site modal is wide for many columns). */
+const MODAL_WIDTH = 1120;
+const MODAL_HEIGHT = 580;
+
+/** How many picker buttons per row in district/site modals. */
+const BUTTONS_PER_ROW = 8;
 
 /**
  * @template T
@@ -156,8 +160,10 @@ function parseSiteDistrictKey(entryBody) {
 }
 
 /**
- * Site modal: one inactive Panel per district (Lua activates matching `scenes_districtKey`),
- * then an always-visible generic bucket for sites with no `district =` line.
+ * Site modal: one Panel per district with `visibility="None"` when inactive (TTS otherwise
+ * stacks/overlays siblings). Lua sets `visibility` + `active` for the selected district.
+ * Generic bucket is always `Black|Host`. Then an always-visible generic bucket for sites
+ * with no `district =` line.
  *
  * @param {{ key: string, label: string }[]} districtEntries sorted
  * @param {Record<string, { key: string, label: string }[]>} sitesByDistrict
@@ -173,7 +179,7 @@ function renderSiteModalBody(districtEntries, sitesByDistrict, genericSites) {
         : renderPickerButtons(rows, "site", "        ");
     panels.push(
       [
-        `    <Panel id="scenes_site_group_dist_${d.key}" active="False">`,
+        `    <Panel id="scenes_site_group_dist_${d.key}" active="False" visibility="None">`,
         `      <VerticalLayout spacing="4" padding="0 0 10 0" childForceExpandWidth="true">`,
         `        <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="${xmlEscapeAttr(`${d.label} — district sites`)}" />`,
         grid,
@@ -188,7 +194,7 @@ function renderSiteModalBody(districtEntries, sitesByDistrict, genericSites) {
       : renderPickerButtons(genericSites, "site", "        ");
   panels.push(
     [
-      `    <Panel id="scenes_site_group_generic" active="True">`,
+      `    <Panel id="scenes_site_group_generic" active="True" visibility="Black|Host">`,
       `      <VerticalLayout spacing="4" padding="0 0 4 0" childForceExpandWidth="true">`,
       `        <Text fontSize="11" fontStyle="Bold" color="#AAAAAA" alignment="UpperCenter" text="General sites (no fixed district)" />`,
       genericGrid,
@@ -254,7 +260,7 @@ const header = `<!-- AUTO-GENERATED — do not edit by hand. Source: lib/constan
 
 const xml = `${header}
 <!-- Host/Black only; centered pickers for Scenes panel district/site keys. -->
-<Panel id="scenes_modal_districts_root" visibility="Black|Host" active="False" width="560" height="580" rectAlignment="MiddleCenter" offsetXY="0 0">
+<Panel id="scenes_modal_districts_root" visibility="Black|Host" active="False" width="${MODAL_WIDTH}" height="${MODAL_HEIGHT}" rectAlignment="MiddleCenter" offsetXY="0 0">
   <VerticalLayout padding="14" spacing="8" color="#1A1A1AE6" childForceExpandWidth="true">
     <Text fontSize="16" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="Pick district" />
     <Text fontSize="10" color="#888888" alignment="MiddleCenter" text="Sets district key field only — click Apply location + soundscape to push soundscape." />
@@ -269,7 +275,7 @@ ${renderPickerButtons(districtEntries, "district")}
   </VerticalLayout>
 </Panel>
 
-<Panel id="scenes_modal_sites_root" visibility="Black|Host" active="False" width="560" height="580" rectAlignment="MiddleCenter" offsetXY="0 0">
+<Panel id="scenes_modal_sites_root" visibility="Black|Host" active="False" width="${MODAL_WIDTH}" height="${MODAL_HEIGHT}" rectAlignment="MiddleCenter" offsetXY="0 0">
   <VerticalLayout padding="14" spacing="8" color="#1A1A1AE6" childForceExpandWidth="true">
     <Text fontSize="16" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="Pick site" />
     <Text fontSize="10" color="#888888" alignment="MiddleCenter" text="District bucket matches the District key field (trimmed). General sites always show below. Apply location still required." />
