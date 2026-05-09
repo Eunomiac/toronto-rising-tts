@@ -16,6 +16,23 @@ const outPath = path.join(root, "ui", "storyteller", "panel_scenes_location_moda
 
 const BTN_COLORS = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)";
 
+/** How many picker buttons per row in district/site modals (keeps modals shorter). */
+const BUTTONS_PER_ROW = 5;
+
+/**
+ * @template T
+ * @param {T[]} items
+ * @param {number} size
+ * @returns {T[][]}
+ */
+function chunkArray(items, size) {
+  const out = [];
+  for (let i = 0; i < items.length; i += size) {
+    out.push(items.slice(i, i + size));
+  }
+  return out;
+}
+
 /**
  * @param {string} source
  * @param {string} marker e.g. `C.Districts =`
@@ -101,21 +118,34 @@ function xmlEscapeAttr(s) {
 }
 
 /**
+ * Grid of picker buttons: `BUTTONS_PER_ROW` per row. Display text is human `name` only;
+ * lua handlers still read the canonical key from `id` (`scenes_pick_*_<key>`).
+ *
  * @param {{ key: string, label: string }[]} rows
  * @param {"district"|"site"} kind
  */
 function renderPickerButtons(rows, kind) {
   const prefix = kind === "district" ? "scenes_pick_district_" : "scenes_pick_site_";
   const handler = kind === "district" ? "HUD_scenesPickDistrict" : "HUD_scenesPickSite";
-  const lines = [];
-  for (const row of rows) {
-    const id = `${prefix}${row.key}`;
-    const label = `${row.label}  (${row.key})`;
-    lines.push(
-      `        <Button id="${xmlEscapeAttr(id)}" class="hud_storyteller_button" fontSize="11" preferredHeight="30" minHeight="28" flexibleWidth="1" colors="${BTN_COLORS}" textColor="#FFFFFF" text="${xmlEscapeAttr(label)}" onClick="${handler}" />`,
+  const chunks = chunkArray(rows, BUTTONS_PER_ROW);
+  const blocks = [];
+  for (const chunk of chunks) {
+    const buttonLines = chunk.map((row) => {
+      const id = `${prefix}${row.key}`;
+      const label = row.label;
+      return (
+        `          <Button id="${xmlEscapeAttr(id)}" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="${BTN_COLORS}" textColor="#FFFFFF" text="${xmlEscapeAttr(label)}" onClick="${handler}" />`
+      );
+    });
+    blocks.push(
+      [
+        `        <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">`,
+        ...buttonLines,
+        `        </HorizontalLayout>`,
+      ].join("\n"),
     );
   }
-  return lines.join("\n");
+  return blocks.join("\n");
 }
 
 const luaSource = fs.readFileSync(constantsPath, "utf8");
