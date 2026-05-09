@@ -64,7 +64,17 @@
 | `U.count(T)` | Count table elements | Get length (handles nil) |
 | `U.sumVals(tb)` | Sum numeric values in table | Calculate totals |
 
-### 1.2 Type Checking & Validation
+### 1.2 Seat spotlight refs (`L.LIGHTMODES` keys)
+
+Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight` is **11** characters (`sub(…, 1, 10)` was a latent bug that never matched).
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `U.lightRefIsPlayerSeat(lightRef)` | PC seat spotlight registry key | Gate scene `lightStages`, skip saved replay |
+| `U.lightRefIsNpcSeat(lightRef)` | NPC seat spotlight key (`npcLight…`) | Same |
+| `U.lightRefIsSeatSpotlight(lightRef)` | Player or NPC seat spotlight | `if U.lightRefIsSeatSpotlight(ref) then …` |
+
+### 1.3 Type Checking & Validation
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
@@ -79,7 +89,7 @@
 | `U.Assert(source, val, typeOrTest, tableType, isSilent)` | Type/condition assertion | Runtime checks |
 | `U.error(source, message, val)` | Error logging utility | Debugging |
 
-### 1.3 Math & Numeric Utilities
+### 1.4 Math & Numeric Utilities
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
@@ -98,7 +108,7 @@
 | `U.HorizontalDistance(pos1, pos2)` | Distance in XZ plane only | Table-top distance |
 | `U.RotateToFrom(frameRefs, toAngle, fromAngle, origin)` | Rotate objects/frames in cylindrical coords | Rotate objects around point |
 
-### 1.4 Object & Physics Utilities
+### 1.5 Object & Physics Utilities
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
@@ -110,7 +120,7 @@
 | `U.findSnapPoint(snapPoints, pos, fuzziness)` | Find nearest snap point | Auto-align |
 | `U.parsePosition(obj)` | Extract position from object/table | Position extraction |
 
-### 1.5 Zone Utilities
+### 1.6 Zone Utilities
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
@@ -118,14 +128,14 @@
 | `U.isInside(zone, pos, ignoreY)` | Check if position is inside zone | Containment test |
 | `U.getHandZone(color)` | Get player's hand zone | Access hand zone |
 
-### 1.6 String & Data Utilities
+### 1.7 String & Data Utilities
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `U.split(inputstr, sep)` | Split string by delimiter | Parse CSV |
 | `U.GetHex(color, newAlpha)` | Convert Color to hex string | UI color strings |
 
-### 1.7 Tag Utilities
+### 1.8 Tag Utilities
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
@@ -133,7 +143,7 @@
 | `U.findTag(obj, tagList)` | Find matching tag from list | Tag matching |
 | `U.findColorTag(obj)` | Extract player color from tags | Get owner color |
 
-### 1.8 Time & Sequence Utilities (COROUTINE-BASED)
+### 1.9 Time & Sequence Utilities (COROUTINE-BASED)
 
 **⚠️ IMPORTANT:** These require `startLuaCoroutine(Global, "CoroutineName")` to work.
 
@@ -144,7 +154,7 @@
 | `U.sequence(funcs, timeDelay)` | Execute functions with fixed delays | Staggered UI updates |
 | `U.waitRestingSequence(funcs, maxTime, isLoose)` | Wait for multiple objects to rest | Wait for all cards to settle |
 
-### 1.9 Animation & Interpolation Utilities
+### 1.10 Animation & Interpolation Utilities
 
 **⚠️ IMPORTANT:** These require coroutine context to work.
 
@@ -160,7 +170,7 @@
 | `U.setRotationSlow(obj, rotation, duration, easing, isColliding)` | Animate rotation smoothly | Rotate object |
 | `U.setScaleSlow(obj, scale, duration, easing)` | Animate scale smoothly | Grow/shrink object |
 
-### 1.10 Lighting Utilities
+### 1.11 Lighting Utilities
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
@@ -174,26 +184,26 @@
 | `L.GetAngle(light)` | Get light cone angle | `local a = L.GetAngle(lightObj)` |
 | `L.GetIntensity(light)` | Get light intensity | `local i = L.GetIntensity(lightObj)` |
 
-### 1.11 Clone & Copy Utilities
+### 1.12 Clone & Copy Utilities
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `U.clone(t, isDeepCloning)` | Deep copy table (handles Vectors) | Duplicate config tables |
 
-### 1.12 Player & Network Utilities
+### 1.13 Player & Network Utilities
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `U.getHost()` | Get host player color | Identify game host |
 | `U.getUID(length)` | Generate unique identifier | Temporary IDs |
 
-### 1.13 UI Utilities
+### 1.14 UI Utilities
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `U.splashUIElement(elemID, duration, delay)` | Flash/highlight UI element | Draw attention |
 
-### 1.14 Debug & Logging Utilities
+### 1.15 Debug & Logging Utilities
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |

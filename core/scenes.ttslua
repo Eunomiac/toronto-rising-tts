@@ -569,7 +569,7 @@ local function isSeatLightRef(lightRef)
         return false
     end
 
-    if string.sub(lightRef, 1, 10) == "playerLight" then
+    if U.lightRefIsPlayerSeat(lightRef) then
         for _, seatColor in ipairs(C.PlayerColors or {}) do
             if string.sub(lightRef, -#seatColor) == seatColor then
                 return true

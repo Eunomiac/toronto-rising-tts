@@ -749,7 +749,7 @@ L.LIGHTMODES = {
 for lightRef, lData in pairs(L.LIGHTMODES) do
     if type(lightRef) == "string"
         and type(lData) == "table"
-        and (string.sub(lightRef, 1, 10) == "playerLight" or string.sub(lightRef, 1, 8) == "npcLight")
+        and U.lightRefIsSeatSpotlight(lightRef)
         and type(lData.HUNGRY) == "table"
         and type(lData.STANDARD) == "table"
     then
@@ -1875,7 +1875,7 @@ local function tryApplySavedLight(lightName, mData, transitionT)
     -- (ROLLING/DARK-HUNGRY/STANDARD priorities), not restored from saved
     -- `gameState.lights` snapshots. Applying saved seat-light modes here can
     -- re-stamp stale STANDARD/OFF values during load and fight reconciler output.
-    if string.sub(lightName, 1, 10) == "playerLight" or string.sub(lightName, 1, 8) == "npcLight" then
+    if U.lightRefIsSeatSpotlight(lightName) then
         return true
     end
 
@@ -1909,7 +1909,7 @@ function L.InitLights()
     for lightRef, lData in pairs(L.LIGHTMODES or {}) do
         if U.Type(lightRef) == "string"
             and U.Type(lData) == "table"
-            and not (string.sub(lightRef, 1, 10) == "playerLight" or string.sub(lightRef, 1, 8) == "npcLight")
+            and not U.lightRefIsSeatSpotlight(lightRef)
         then
             if not L.reconcileLightRef(lightRef, 0) then
                 initLightsRetryKeys[lightRef] = true

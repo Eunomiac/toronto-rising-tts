@@ -114,7 +114,7 @@ local function startupSeatLightsReadyForReveal()
     end
     for lightRef, _ in pairs(savedLights) do
         if type(lightRef) == "string" then
-            local isSeatLight = string.sub(lightRef, 1, 10) == "playerLight" or string.sub(lightRef, 1, 8) == "npcLight"
+            local isSeatLight = U.lightRefIsSeatSpotlight(lightRef)
             if isSeatLight and L.GetLight(lightRef, true) == nil then
                 return false
             end
