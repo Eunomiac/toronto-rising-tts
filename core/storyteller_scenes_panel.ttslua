@@ -190,6 +190,30 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
     end
 end
 
+--- Shows exactly one `scenes_site_group_dist_*` panel matching trimmed `scenes_districtKey` when it exists in `C.Districts`; otherwise hides all district buckets (general sites panel stays visible).
+function StorytellerScenesPanel.applySiteModalDistrictVisibility()
+    if UI == nil or UI.setAttribute == nil then
+        return
+    end
+    local raw = UI.getValue("scenes_districtKey") or ""
+    if type(raw) ~= "string" then
+        raw = ""
+    end
+    raw = string.gsub(string.gsub(raw, "^%s+", ""), "%s+$", "")
+    local districts = C.Districts
+    if type(districts) ~= "table" then
+        return
+    end
+    local valid = raw ~= "" and districts[raw] ~= nil
+    for distKey, _ in pairs(districts) do
+        if type(distKey) == "string" then
+            local elemId = "scenes_site_group_dist_" .. distKey
+            local show = valid and raw == distKey
+            U.setAttribute(elemId, "active", show and "true" or "false")
+        end
+    end
+end
+
 --- @param player Player
 function StorytellerScenesPanel.applyLocationFromInputs(player)
     if SS.applyContext == nil or SS.contextFromSite == nil then

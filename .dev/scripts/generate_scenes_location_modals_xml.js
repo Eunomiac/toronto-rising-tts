@@ -123,29 +123,80 @@ function xmlEscapeAttr(s) {
  *
  * @param {{ key: string, label: string }[]} rows
  * @param {"district"|"site"} kind
+ * @param {string} [rowIndent] indent before each HorizontalLayout row (default 8 spaces)
  */
-function renderPickerButtons(rows, kind) {
+function renderPickerButtons(rows, kind, rowIndent = "        ") {
   const prefix = kind === "district" ? "scenes_pick_district_" : "scenes_pick_site_";
   const handler = kind === "district" ? "HUD_scenesPickDistrict" : "HUD_scenesPickSite";
+  const btnIndent = `${rowIndent}  `;
   const chunks = chunkArray(rows, BUTTONS_PER_ROW);
   const blocks = [];
   for (const chunk of chunks) {
     const buttonLines = chunk.map((row) => {
       const id = `${prefix}${row.key}`;
       const label = row.label;
-      return (
-        `          <Button id="${xmlEscapeAttr(id)}" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="${BTN_COLORS}" textColor="#FFFFFF" text="${xmlEscapeAttr(label)}" onClick="${handler}" />`
-      );
+      return `${btnIndent}<Button id="${xmlEscapeAttr(id)}" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="${BTN_COLORS}" textColor="#FFFFFF" text="${xmlEscapeAttr(label)}" onClick="${handler}" />`;
     });
     blocks.push(
-      [
-        `        <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">`,
-        ...buttonLines,
-        `        </HorizontalLayout>`,
-      ].join("\n"),
+      [`${rowIndent}<HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">`, ...buttonLines, `${rowIndent}</HorizontalLayout>`].join(
+        "\n",
+      ),
     );
   }
   return blocks.join("\n");
+}
+
+/**
+ * @param {string} entryBody site entry `{ ... }` body including braces
+ * @returns {string|null} `C.Districts.X` table key `X`, or null if no district line
+ */
+function parseSiteDistrictKey(entryBody) {
+  const m = entryBody.match(/district\s*=\s*C\.Districts\.([A-Za-z_][A-Za-z0-9_]*)/);
+  return m ? m[1] : null;
+}
+
+/**
+ * Site modal: one inactive Panel per district (Lua activates matching `scenes_districtKey`),
+ * then an always-visible generic bucket for sites with no `district =` line.
+ *
+ * @param {{ key: string, label: string }[]} districtEntries sorted
+ * @param {Record<string, { key: string, label: string }[]>} sitesByDistrict
+ * @param {{ key: string, label: string }[]} genericSites
+ */
+function renderSiteModalBody(districtEntries, sitesByDistrict, genericSites) {
+  const panels = [];
+  for (const d of districtEntries) {
+    const rows = sitesByDistrict[d.key] || [];
+    const grid =
+      rows.length === 0
+        ? `        <Text fontSize="10" color="#888888" alignment="UpperCenter" text="No catalog sites are tied to this district." />`
+        : renderPickerButtons(rows, "site", "        ");
+    panels.push(
+      [
+        `    <Panel id="scenes_site_group_dist_${d.key}" active="False">`,
+        `      <VerticalLayout spacing="4" padding="0 0 10 0" childForceExpandWidth="true">`,
+        `        <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="${xmlEscapeAttr(`${d.label} — district sites`)}" />`,
+        grid,
+        `      </VerticalLayout>`,
+        `    </Panel>`,
+      ].join("\n"),
+    );
+  }
+  const genericGrid =
+    genericSites.length === 0
+      ? `        <Text fontSize="10" color="#888888" alignment="UpperCenter" text="No generic sites in catalog." />`
+      : renderPickerButtons(genericSites, "site", "        ");
+  panels.push(
+    [
+      `    <Panel id="scenes_site_group_generic" active="True">`,
+      `      <VerticalLayout spacing="4" padding="0 0 4 0" childForceExpandWidth="true">`,
+      `        <Text fontSize="11" fontStyle="Bold" color="#AAAAAA" alignment="UpperCenter" text="General sites (no fixed district)" />`,
+      genericGrid,
+      `      </VerticalLayout>`,
+      `    </Panel>`,
+    ].join("\n"),
+  );
+  return panels.join("\n\n");
 }
 
 const luaSource = fs.readFileSync(constantsPath, "utf8");
@@ -159,10 +210,11 @@ const districtEntries = parseTopLevelEntries(districtBlock).map((entry) => {
   return { key: entry.key, label };
 });
 
+/** @type {{ key: string, label: string, districtKey: string|null }[]} */
 const siteEntries = parseTopLevelEntries(siteBlock).map((entry) => {
   const nameMatch = entry.body.match(/name\s*=\s*"([^"]*)"/);
   const label = nameMatch ? nameMatch[1] : entry.key;
-  return { key: entry.key, label };
+  return { key: entry.key, label, districtKey: parseSiteDistrictKey(entry.body) };
 });
 
 const sortByLabel = (a, b) => {
@@ -175,7 +227,26 @@ const sortByLabel = (a, b) => {
 };
 
 districtEntries.sort(sortByLabel);
-siteEntries.sort(sortByLabel);
+
+/** @type {Record<string, { key: string, label: string }[]>} */
+const sitesByDistrict = Object.fromEntries(districtEntries.map((d) => [d.key, []]));
+/** @type {{ key: string, label: string }[]} */
+const genericSites = [];
+for (const site of siteEntries) {
+  const { districtKey, ...row } = site;
+  if (districtKey != null && sitesByDistrict[districtKey] != null) {
+    sitesByDistrict[districtKey].push(row);
+  } else {
+    if (districtKey != null && sitesByDistrict[districtKey] == null) {
+      console.warn(`Site "${site.key}" references unknown district "${districtKey}"; listing under General.`);
+    }
+    genericSites.push(row);
+  }
+}
+for (const d of districtEntries) {
+  sitesByDistrict[d.key].sort(sortByLabel);
+}
+genericSites.sort(sortByLabel);
 
 const header = `<!-- AUTO-GENERATED — do not edit by hand. Source: lib/constants.ttslua -->
 <!-- Regenerate: node .dev/scripts/generate_scenes_location_modals_xml.js -->
@@ -201,13 +272,13 @@ ${renderPickerButtons(districtEntries, "district")}
 <Panel id="scenes_modal_sites_root" visibility="Black|Host" active="False" width="560" height="580" rectAlignment="MiddleCenter" offsetXY="0 0">
   <VerticalLayout padding="14" spacing="8" color="#1A1A1AE6" childForceExpandWidth="true">
     <Text fontSize="16" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="Pick site" />
-    <Text fontSize="10" color="#888888" alignment="MiddleCenter" text="Sets site key field only — click Apply location + soundscape to push soundscape." />
+    <Text fontSize="10" color="#888888" alignment="MiddleCenter" text="District bucket matches the District key field (trimmed). General sites always show below. Apply location still required." />
     <HorizontalLayout spacing="8" childAlignment="MiddleCenter">
       <Button id="scenes_modal_sites_close" class="hud_storyteller_button" fontSize="12" preferredWidth="120" preferredHeight="32" colors="${BTN_COLORS}" textColor="#FFFFFF" text="Close" onClick="HUD_scenesCloseLocationModals" />
     </HorizontalLayout>
     <VerticalScrollView preferredHeight="460" minHeight="200" flexibleHeight="1" movementType="Clamped" vertical="true" horizontal="false" childForceExpandWidth="true">
-      <VerticalLayout spacing="4" padding="4" childForceExpandWidth="true">
-${renderPickerButtons(siteEntries, "site")}
+      <VerticalLayout spacing="10" padding="4" childForceExpandWidth="true">
+${renderSiteModalBody(districtEntries, sitesByDistrict, genericSites)}
       </VerticalLayout>
     </VerticalScrollView>
   </VerticalLayout>
@@ -215,6 +286,7 @@ ${renderPickerButtons(siteEntries, "site")}
 `;
 
 fs.writeFileSync(outPath, xml, "utf8");
+const districtSiteCount = siteEntries.length - genericSites.length;
 console.log(
-  `Wrote ${outPath} (${districtEntries.length} districts, ${siteEntries.length} sites)`,
+  `Wrote ${outPath} (${districtEntries.length} districts, ${siteEntries.length} sites: ${districtSiteCount} district-scoped, ${genericSites.length} general)`,
 );

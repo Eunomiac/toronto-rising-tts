@@ -41,7 +41,7 @@
     </HorizontalLayout>
 
     <Text class="hud_storyteller_label">Scene location</Text>
-    <Text fontSize="9" color="#AAAAAA">Use Browse for modal lists (built from `C.Districts` / `C.Sites`), or type keys manually, then Apply.</Text>
+    <Text fontSize="9" color="#AAAAAA">Browse districts/sites from `C.Districts` / `C.Sites`. Site browse shows the district bucket matching the District key field plus general sites (no fixed district). Or type keys manually, then Apply.</Text>
     <HorizontalLayout spacing="6" childForceExpandWidth="false" childAlignment="UpperLeft">
       <VerticalLayout spacing="2" minWidth="288" preferredWidth="288" flexibleWidth="0">
         <Text fontSize="9" color="#CCCCCC">District key</Text>
