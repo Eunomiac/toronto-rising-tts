@@ -1,0 +1,135 @@
+--[[
+    Chronicle hourly weather: lookup generated `lib/tr_weather_schedule.ttslua` and apply
+    rain/wind/thunder intent through `core.soundscape` (layered mode: `soundscape.weather` = "none").
+    Agent guidance: `.dev/Chronicle Data/TR_Weather.csv`; node `.dev/scripts/generate_tr_weather_lua.js`.
+]]
+
+local ChronicleWeather = {}
+
+local S = require("core.state")
+local Soundscape = require("core.soundscape")
+local Schedule = require("lib.tr_weather_schedule")
+
+--- @param value number|nil
+--- @param lo number
+--- @param hi number
+--- @param fallback number
+--- @return number
+local function clampInt(value, lo, hi, fallback)
+    local n = tonumber(value)
+    if n == nil then
+        return fallback
+    end
+    local k = math.floor(n + 0.0)
+    if k < lo then
+        return lo
+    end
+    if k > hi then
+        return hi
+    end
+    return k
+end
+
+--- @param month number|nil
+--- @param day number|nil
+--- @param hour number|nil
+--- @return table|nil slot `{ wind, rain, thunder }`
+function ChronicleWeather.getRow(month, day, hour)
+    local m = clampInt(month, 1, 12, 1)
+    local d = clampInt(day, 1, 31, 1)
+    local h = clampInt(hour, 0, 23, 0)
+    local byMonth = Schedule.DATA[m]
+    if type(byMonth) ~= "table" then
+        return nil
+    end
+    local byDay = byMonth[d]
+    if type(byDay) ~= "table" then
+        return nil
+    end
+    local slot = byDay[h]
+    if type(slot) ~= "table" then
+        return nil
+    end
+    return slot
+end
+
+--- When true, applying the clock may push CSV weather into the soundscape.
+--- @return boolean
+function ChronicleWeather.shouldAutoApply()
+    if S.getStateVal("sessionScene", "chronicleWeatherManualHold") == true then
+        return false
+    end
+    return S.getStateVal("sessionScene", "chronicleWeatherFollowSchedule") ~= false
+end
+
+--- Applies the scheduled row for `sessionScene.clock` (minute ignored; hour 0–23).
+--- Uses layered weather only (`soundscape.weather` forced to `"none"`).
+--- `opts.force` bypasses follow/hold gates (Storyteller "Apply schedule now").
+--- @param opts table|nil `{ force = boolean }`
+--- @return boolean ok
+--- @return string message
+function ChronicleWeather.applyScheduledWeather(opts)
+    opts = type(opts) == "table" and opts or {}
+    local force = opts.force == true
+    if not force and not ChronicleWeather.shouldAutoApply() then
+        return false, "Chronicle weather skipped (turn on “Follow on clock”, or clear “Manual hold”)."
+    end
+
+    local clock = S.getStateVal("sessionScene", "clock")
+    if type(clock) ~= "table" then
+        return false, "Chronicle weather: missing sessionScene.clock."
+    end
+
+    local row = ChronicleWeather.getRow(clock.month, clock.day, clock.hour)
+    if row == nil then
+        return false,
+            string.format(
+                "No chronicle weather row for Mo %s / Day %s / %02d:00.",
+                tostring(clock.month),
+                tostring(clock.day),
+                tonumber(clock.hour) or 0
+            )
+    end
+
+    local rainKey = row.rain
+    local windKey = row.wind
+    local thunderOn = row.thunder == true
+    if type(rainKey) ~= "string" or rainKey == "" then
+        rainKey = "none"
+    end
+    if type(windKey) ~= "string" or windKey == "" then
+        windKey = "none"
+    end
+
+    S.setStateVal("none", "soundscape", "weather")
+
+    local okRain, msgRain = Soundscape.setRainLayer(rainKey)
+    local okWind, msgWind = Soundscape.setWindLayer(windKey)
+    local okTh, msgTh = Soundscape.setThunderEnabled(thunderOn)
+
+    Soundscape.invalidateReconcileCache()
+
+    if okRain and okWind and okTh then
+        return true,
+            string.format(
+                "Chronicle weather: rain=%s wind=%s thunder=%s.",
+                rainKey,
+                windKey,
+                thunderOn and "on" or "off"
+            )
+    end
+
+    local parts = {}
+    if not okRain then
+        table.insert(parts, msgRain or "rain failed")
+    end
+    if not okWind then
+        table.insert(parts, msgWind or "wind failed")
+    end
+    if not okTh then
+        table.insert(parts, msgTh or "thunder failed")
+    end
+    return false, "Chronicle weather partial failure: " .. table.concat(parts, " | ")
+end
+
+return ChronicleWeather

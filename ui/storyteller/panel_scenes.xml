@@ -64,6 +64,14 @@
     </HorizontalLayout>
     <Button class="hud_storyteller_button" text="Apply clock" onClick="HUD_scenesApplyClock" />
 
+    <Text class="hud_storyteller_label">Chronicle weather (hourly CSV)</Text>
+    <Text fontSize="9" color="#AAAAAA">Uses `TR_Weather.csv` → `lib/tr_weather_schedule.ttslua`. Thunder hour = scheduled one-shots (random strikes). Minute / real-time ticker not used yet.</Text>
+    <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
+      <Button id="scenes_chronicle_toggleFollow" text="Follow on clock" minWidth="120" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_chronicle_toggleHold" text="Manual hold" minWidth="100" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_chronicle_applyNow" text="Apply schedule now" minWidth="140" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    </HorizontalLayout>
+
     <Text class="hud_storyteller_label">NPC role snapshot (stub)</Text>
     <Text fontSize="9" color="#AAAAAA">Stores `sessionScene.npcWorld.lastNote` for future NPC/table tracking hooks.</Text>
     <InputField id="scenes_npcWorldNote" preferredHeight="28" fontSize="11" textColor="#111111" placeholder="Note (optional)" onEndEdit="HUD_scenesPanelInput" />

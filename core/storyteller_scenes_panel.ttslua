@@ -12,9 +12,11 @@ local C = require("lib.constants")
 local RSL = require("lib.rotational-seat-layout")
 local Sync = require("core.sync")
 local SS = require("core.soundscape")
+local ChronicleWeather = require("lib.chronicle_weather")
 
 local GREEN = "#228B22|#32CD32|#006400|#228B22"
 local GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+local AMBER = "#996600|#CC9900|#774400|#996600"
 
 --- Maps XML button ids (no spaces) to `C.Tables` keys.
 local TABLE_TOGGLE_IDS = {
@@ -99,6 +101,19 @@ function StorytellerScenesPanel.refresh()
         if type(nw) == "table" and nw.lastNote ~= nil then
             UI.setValue("scenes_npcWorldNote", tostring(nw.lastNote))
         end
+
+        local followOn = S.getStateVal("sessionScene", "chronicleWeatherFollowSchedule") ~= false
+        local holdOn = S.getStateVal("sessionScene", "chronicleWeatherManualHold") == true
+        U.setAttributes("scenes_chronicle_toggleFollow", {
+            colors = followOn and GREEN or GREY,
+            fontStyle = "Bold",
+            textColor = "#FFFFFF",
+        })
+        U.setAttributes("scenes_chronicle_toggleHold", {
+            colors = holdOn and AMBER or GREY,
+            fontStyle = "Bold",
+            textColor = "#FFFFFF",
+        })
     end
 end
 
@@ -106,6 +121,27 @@ end
 --- @param id string|nil
 function StorytellerScenesPanel.onHudClick(player, button, id)
     if type(id) ~= "string" then
+        return
+    end
+
+    if id == "scenes_chronicle_toggleFollow" then
+        local on = S.getStateVal("sessionScene", "chronicleWeatherFollowSchedule") ~= false
+        S.setStateVal(not on, "sessionScene", "chronicleWeatherFollowSchedule")
+        StorytellerScenesPanel.refresh()
+        U.AlertGM(on and "Chronicle weather: follow-on-clock OFF." or "Chronicle weather: follow-on-clock ON.")
+        return
+    end
+
+    if id == "scenes_chronicle_toggleHold" then
+        local held = S.getStateVal("sessionScene", "chronicleWeatherManualHold") == true
+        S.setStateVal(not held, "sessionScene", "chronicleWeatherManualHold")
+        StorytellerScenesPanel.refresh()
+        U.AlertGM(held and "Chronicle weather: manual hold OFF." or "Chronicle weather: manual hold ON (clock apply skips weather).")
+        return
+    end
+
+    if id == "scenes_chronicle_applyNow" then
+        StorytellerScenesPanel.applyChronicleWeatherNow(player)
         return
     end
 
@@ -223,7 +259,29 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
     }
     S.setStateVal(clock, "sessionScene", "clock")
     StorytellerScenesPanel.refresh()
-    U.AlertGM("Scene clock updated (real-time ticker not yet wired).")
+
+    local _, weatherMsg = ChronicleWeather.applyScheduledWeather({ force = false })
+    if Sync and type(Sync.full) == "function" then
+        Sync.full({ reason = "StorytellerScenesPanel.clock" })
+    end
+
+    local msg = "Scene clock updated."
+    if weatherMsg ~= nil and weatherMsg ~= "" then
+        msg = msg .. " " .. weatherMsg
+    end
+    U.AlertGM(msg)
+end
+
+--- Forces CSV weather for the current clock and clears manual hold.
+--- @param player Player
+function StorytellerScenesPanel.applyChronicleWeatherNow(player)
+    S.setStateVal(false, "sessionScene", "chronicleWeatherManualHold")
+    local ok, weatherMsg = ChronicleWeather.applyScheduledWeather({ force = true })
+    if Sync and type(Sync.full) == "function" then
+        Sync.full({ reason = "StorytellerScenesPanel.chronicleWeatherNow" })
+    end
+    StorytellerScenesPanel.refresh()
+    U.AlertGM(weatherMsg ~= nil and weatherMsg ~= "" and weatherMsg or "Chronicle weather applied.")
 end
 
 --- @param player Player

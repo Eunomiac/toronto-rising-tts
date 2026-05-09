@@ -909,9 +909,12 @@ function HUD_soundscapeLaneSlider(player, value, id)
     syncSoundscapeControls()
 end
 
---- Storyteller Scenes panel clicks (`scenes_tbl_*`, `scenes_seat_*`).
+--- Storyteller Scenes panel clicks (`scenes_tbl_*`, `scenes_seat_*`, chronicle weather toggles).
 function HUD_scenesPanel(player, button, id)
     StorytellerScenesPanel.onHudClick(player, button, id)
+    if id == "scenes_chronicle_applyNow" then
+        syncSoundscapeControls()
+    end
 end
 
 function HUD_scenesPanelInput(player, value, id)
@@ -925,6 +928,7 @@ end
 
 function HUD_scenesApplyClock(player, button, id)
     StorytellerScenesPanel.applyClockFromInputs(player)
+    syncSoundscapeControls()
 end
 
 function HUD_scenesSaveNpcNote(player, button, id)

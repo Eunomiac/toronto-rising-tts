@@ -332,6 +332,17 @@
 | `Soundscape.inspectEmitters()` | List hidden emitters, effects, and AudioSources | Debug verification |
 | `Soundscape.testLayeredPlayback()` | Start music, weather, and location together | Live soundscape smoke test |
 
+### Chronicle weather (`lib/chronicle_weather.ttslua`)
+
+**Require:** `local ChronicleWeather = require("lib.chronicle_weather")`  
+**Data:** `node .dev/scripts/generate_tr_weather_lua.js` embeds `.dev/Chronicle Data/TR_Weather.csv` into `lib/tr_weather_schedule.ttslua`.
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `ChronicleWeather.getRow(month, day, hour)` | Returns `{ wind, rain, thunder }` for that calendar hour or `nil` | Inspect scheduled intent |
+| `ChronicleWeather.shouldAutoApply()` | False when `sessionScene.chronicleWeatherManualHold` or follow schedule is off | Gate automation |
+| `ChronicleWeather.applyScheduledWeather(opts)` | Sets `soundscape.weather` to `"none"`, applies rain/wind/thunder from CSV; `opts.force` ignores follow/hold | `ChronicleWeather.applyScheduledWeather({ force = true })` |
+
 ---
 
 ## 5b. SYNC ORCHESTRATOR (`core/sync.ttslua`)

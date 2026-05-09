@@ -317,6 +317,10 @@ function S.GetDefaultGameState()
                 year = 2026,
                 useRealTime = false,
             },
+            --- When true (default), applying scene clock runs CSV chronicle weather → soundscape.
+            chronicleWeatherFollowSchedule = true,
+            --- When true, chronicle weather is not auto-applied on clock updates (manual soundscape override).
+            chronicleWeatherManualHold = false,
             --- Per-roll-type overrides merged in `RO.seedActiveRoll` (same keys as `active.rollOptions`).
             rollDefaults = {},
             --- Future: authoritative NPC placement for this scene (stub hooks into `gameState.npcs`).

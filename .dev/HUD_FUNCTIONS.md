@@ -41,10 +41,10 @@ Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
 | `HUD_selectAdminLightingScene` | `adminScene_dark`, `adminScene_standard`, `adminScene_bright` | `(player, button, id)` | Sets `currentScene`, `sessionScene.lightingPresetKey`, clears `sceneTransition`, calls `Sync.full()`. |
-| `HUD_scenesPanel` | `scenes_tbl_*`, `scenes_seat_*` | `(player, button, id)` | `core/storyteller_scenes_panel.ttslua`: table buttons call `rotational-seat-layout.SetTableTo` after `sessionScene.tableKey`; seat buttons cycle `sessionScene.seatPresent` (`nil` → absent → present → neutral) and run `L.reconcileAllPlayers()`. |
+| `HUD_scenesPanel` | `scenes_tbl_*`, `scenes_seat_*`, `scenes_chronicle_*` | `(player, button, id)` | `core/storyteller_scenes_panel.ttslua`: table buttons call `rotational-seat-layout.SetTableTo` after `sessionScene.tableKey`; seat buttons cycle `sessionScene.seatPresent` (`nil` → absent → present → neutral) and run `L.reconcileAllPlayers()`. Chronicle buttons toggle `sessionScene.chronicleWeatherFollowSchedule` / `chronicleWeatherManualHold`, or call `applyChronicleWeatherNow` → `lib/chronicle_weather.ttslua` with `force`. |
 | `HUD_scenesPanelInput` | district/site/clock/npc note fields | `(player, value, id)` | Intentional no-op on keystroke; use Apply buttons to persist. |
 | `HUD_scenesApplyLocation` | `Apply location + soundscape` | `(player, button, id)` | Validates `C.Districts` / `C.Sites` keys from inputs, writes `sessionScene.districtKey` / `siteKey`, runs `Soundscape.applyContext(Soundscape.contextFromSite(site, siteKey))`, then `Sync.full()`. |
-| `HUD_scenesApplyClock` | `Apply clock` | `(player, button, id)` | Writes `sessionScene.clock` numeric fields from `scenes_clock_*` inputs (real-time ticker deferred). |
+| `HUD_scenesApplyClock` | `Apply clock` | `(player, button, id)` | Writes `sessionScene.clock` from `scenes_clock_*` inputs, then `ChronicleWeather.applyScheduledWeather({ force = false })` when follow-on-clock is on and manual hold is off → layered rain/wind + `Soundscape.setThunderEnabled` from `lib/tr_weather_schedule.ttslua`; then `Sync.full()` and soundscape UI refresh. |
 | `HUD_scenesSaveNpcNote` | `Save NPC scene note` | `(player, button, id)` | Stub: stores text in `sessionScene.npcWorld.lastNote` for future NPC spawn tracking hooks. |
 
 ## Legacy scene preset buttons (player HUD / other XML)
