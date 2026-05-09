@@ -13,7 +13,7 @@
     "tts-bridge:run-easing-mcp-test": "npm run tts-bridge:build && node .tools/tts-bridge/scripts/run-easing-mcp-test.mjs --only-easing",
     "tts-mcp:compile": "tsc -p .tools/tts-mcp/tsconfig.json",
     "tts-mcp:build": "npm run tts-bridge:build && npm run tts-mcp:compile",
-    "build:all-tooling": "npm run check:pcall-gate && npm run tts-mcp:build && node .dev/scripts/generate_pcs_data_lua.js && node .dev/scripts/generate_tr_weather_lua.js && npm run csheet-defaults:generate && node .dev/scripts/xml_color_template_generator.js --templateDir ui/.templates && node .dev/scripts/generate_npc_panel_xml.js",
+    "build:all-tooling": "npm run check:pcall-gate && npm run tts-mcp:build && node .dev/scripts/generate_pcs_data_lua.js && node .dev/scripts/generate_tr_weather_lua.js && npm run csheet-defaults:generate && node .dev/scripts/xml_color_template_generator.js --templateDir ui/.templates && node .dev/scripts/generate_npc_panel_xml.js && node .dev/scripts/generate_scenes_location_modals_xml.js",
     "build": "npm run build:all-tooling",
     "tts-mcp:start": "node .tools/tts-mcp/dist/index.js",
     "tts:smoke": "node .tools/tts-bridge/scripts/smoke-test.mjs",

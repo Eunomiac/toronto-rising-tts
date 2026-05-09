@@ -40,8 +40,8 @@
       <Button id="scenes_seat_NPC4" text="NPC4" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
     </HorizontalLayout>
 
-    <Text class="hud_storyteller_label">Scene location (type keys — no modal picker)</Text>
-    <Text fontSize="9" color="#AAAAAA">These are text fields (not buttons): type `C.Districts` / `C.Sites` keys, then click Apply. Examples: DupontByTheCastle, CLGrounds.</Text>
+    <Text class="hud_storyteller_label">Scene location</Text>
+    <Text fontSize="9" color="#AAAAAA">Use Browse for modal lists (built from `C.Districts` / `C.Sites`), or type keys manually, then Apply.</Text>
     <HorizontalLayout spacing="6" childForceExpandWidth="false" childAlignment="UpperLeft">
       <VerticalLayout spacing="2" minWidth="288" preferredWidth="288" flexibleWidth="0">
         <Text fontSize="9" color="#CCCCCC">District key</Text>
@@ -57,6 +57,10 @@
           colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)"
           placeholder="CLGrounds" onEndEdit="HUD_scenesPanelInput"></InputField>
       </VerticalLayout>
+    </HorizontalLayout>
+    <HorizontalLayout spacing="6" childForceExpandWidth="false" childAlignment="UpperLeft">
+      <Button id="scenes_openDistrictModal" class="hud_storyteller_button" fontSize="11" minWidth="140" preferredHeight="30" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Browse districts..." onClick="HUD_scenesOpenDistrictModal" />
+      <Button id="scenes_openSiteModal" class="hud_storyteller_button" fontSize="11" minWidth="140" preferredHeight="30" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Browse sites..." onClick="HUD_scenesOpenSiteModal" />
     </HorizontalLayout>
     <Button class="hud_storyteller_button" text="Apply location + soundscape" onClick="HUD_scenesApplyLocation" />
 

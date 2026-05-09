@@ -1,0 +1,190 @@
+"use strict";
+
+/**
+ * Builds `ui/storyteller/panel_scenes_location_modals.xml` from `lib/constants.ttslua`
+ * (`C.Districts` + `C.Sites` keys and human `name` strings).
+ *
+ * Run from repo root: node .dev/scripts/generate_scenes_location_modals_xml.js
+ */
+
+const fs = require("fs");
+const path = require("path");
+
+const root = path.resolve(__dirname, "..", "..");
+const constantsPath = path.join(root, "lib", "constants.ttslua");
+const outPath = path.join(root, "ui", "storyteller", "panel_scenes_location_modals.xml");
+
+const BTN_COLORS = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)";
+
+/**
+ * @param {string} source
+ * @param {string} marker e.g. `C.Districts =`
+ */
+function extractBlock(source, marker) {
+  const markerIndex = source.lastIndexOf(marker);
+  if (markerIndex < 0) {
+    throw new Error(`Missing marker: ${marker}`);
+  }
+  const startBrace = source.indexOf("{", markerIndex);
+  if (startBrace < 0) {
+    throw new Error(`Missing opening brace after marker: ${marker}`);
+  }
+  let depth = 0;
+  for (let i = startBrace; i < source.length; i += 1) {
+    const ch = source[i];
+    if (ch === "{") {
+      depth += 1;
+    } else if (ch === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        return source.slice(startBrace, i + 1);
+      }
+    }
+  }
+  throw new Error(`Unterminated table block for marker: ${marker}`);
+}
+
+/**
+ * @param {string} tableBlock including outer `{` `}`
+ */
+function parseTopLevelEntries(tableBlock) {
+  const entries = [];
+  const body = tableBlock.slice(1, -1);
+  let i = 0;
+  while (i < body.length) {
+    while (i < body.length && /\s|,/.test(body[i])) {
+      i += 1;
+    }
+    if (i >= body.length) {
+      break;
+    }
+    const keyMatch = body.slice(i).match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*\{/);
+    if (!keyMatch) {
+      i += 1;
+      continue;
+    }
+    const key = keyMatch[1];
+    const openIndex = i + keyMatch[0].lastIndexOf("{");
+    let depth = 0;
+    let endIndex = -1;
+    for (let j = openIndex; j < body.length; j += 1) {
+      const ch = body[j];
+      if (ch === "{") {
+        depth += 1;
+      } else if (ch === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          endIndex = j;
+          break;
+        }
+      }
+    }
+    if (endIndex < 0) {
+      throw new Error(`Failed to parse entry block for key ${key}`);
+    }
+    const entryBody = body.slice(openIndex, endIndex + 1);
+    entries.push({ key, body: entryBody });
+    i = endIndex + 1;
+  }
+  return entries;
+}
+
+/**
+ * @param {string} s
+ */
+function xmlEscapeAttr(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/**
+ * @param {{ key: string, label: string }[]} rows
+ * @param {"district"|"site"} kind
+ */
+function renderPickerButtons(rows, kind) {
+  const prefix = kind === "district" ? "scenes_pick_district_" : "scenes_pick_site_";
+  const handler = kind === "district" ? "HUD_scenesPickDistrict" : "HUD_scenesPickSite";
+  const lines = [];
+  for (const row of rows) {
+    const id = `${prefix}${row.key}`;
+    const label = `${row.label}  (${row.key})`;
+    lines.push(
+      `        <Button id="${xmlEscapeAttr(id)}" class="hud_storyteller_button" fontSize="11" preferredHeight="30" minHeight="28" flexibleWidth="1" colors="${BTN_COLORS}" textColor="#FFFFFF" text="${xmlEscapeAttr(label)}" onClick="${handler}" />`,
+    );
+  }
+  return lines.join("\n");
+}
+
+const luaSource = fs.readFileSync(constantsPath, "utf8");
+
+const districtBlock = extractBlock(luaSource, "C.Districts =");
+const siteBlock = extractBlock(luaSource, "C.Sites =");
+
+const districtEntries = parseTopLevelEntries(districtBlock).map((entry) => {
+  const nameMatch = entry.body.match(/name\s*=\s*"([^"]*)"/);
+  const label = nameMatch ? nameMatch[1] : entry.key;
+  return { key: entry.key, label };
+});
+
+const siteEntries = parseTopLevelEntries(siteBlock).map((entry) => {
+  const nameMatch = entry.body.match(/name\s*=\s*"([^"]*)"/);
+  const label = nameMatch ? nameMatch[1] : entry.key;
+  return { key: entry.key, label };
+});
+
+const sortByLabel = (a, b) => {
+  const la = a.label.toLowerCase();
+  const lb = b.label.toLowerCase();
+  if (la !== lb) {
+    return la < lb ? -1 : 1;
+  }
+  return a.key < b.key ? -1 : a.key > b.key ? 1 : 0;
+};
+
+districtEntries.sort(sortByLabel);
+siteEntries.sort(sortByLabel);
+
+const header = `<!-- AUTO-GENERATED — do not edit by hand. Source: lib/constants.ttslua -->
+<!-- Regenerate: node .dev/scripts/generate_scenes_location_modals_xml.js -->
+`;
+
+const xml = `${header}
+<!-- Host/Black only; centered pickers for Scenes panel district/site keys. -->
+<Panel id="scenes_modal_districts_root" visibility="Black|Host" active="False" width="560" height="580" rectAlignment="MiddleCenter" offsetXY="0 0">
+  <VerticalLayout padding="14" spacing="8" color="#1A1A1AE6" childForceExpandWidth="true">
+    <Text fontSize="16" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="Pick district" />
+    <Text fontSize="10" color="#888888" alignment="MiddleCenter" text="Sets district key field only — click Apply location + soundscape to push soundscape." />
+    <HorizontalLayout spacing="8" childAlignment="MiddleCenter">
+      <Button id="scenes_modal_districts_close" class="hud_storyteller_button" fontSize="12" preferredWidth="120" preferredHeight="32" colors="${BTN_COLORS}" textColor="#FFFFFF" text="Close" onClick="HUD_scenesCloseLocationModals" />
+    </HorizontalLayout>
+    <VerticalScrollView preferredHeight="460" minHeight="200" flexibleHeight="1" movementType="Clamped" vertical="true" horizontal="false" childForceExpandWidth="true">
+      <VerticalLayout spacing="4" padding="4" childForceExpandWidth="true">
+${renderPickerButtons(districtEntries, "district")}
+      </VerticalLayout>
+    </VerticalScrollView>
+  </VerticalLayout>
+</Panel>
+
+<Panel id="scenes_modal_sites_root" visibility="Black|Host" active="False" width="560" height="580" rectAlignment="MiddleCenter" offsetXY="0 0">
+  <VerticalLayout padding="14" spacing="8" color="#1A1A1AE6" childForceExpandWidth="true">
+    <Text fontSize="16" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="Pick site" />
+    <Text fontSize="10" color="#888888" alignment="MiddleCenter" text="Sets site key field only — click Apply location + soundscape to push soundscape." />
+    <HorizontalLayout spacing="8" childAlignment="MiddleCenter">
+      <Button id="scenes_modal_sites_close" class="hud_storyteller_button" fontSize="12" preferredWidth="120" preferredHeight="32" colors="${BTN_COLORS}" textColor="#FFFFFF" text="Close" onClick="HUD_scenesCloseLocationModals" />
+    </HorizontalLayout>
+    <VerticalScrollView preferredHeight="460" minHeight="200" flexibleHeight="1" movementType="Clamped" vertical="true" horizontal="false" childForceExpandWidth="true">
+      <VerticalLayout spacing="4" padding="4" childForceExpandWidth="true">
+${renderPickerButtons(siteEntries, "site")}
+      </VerticalLayout>
+    </VerticalScrollView>
+  </VerticalLayout>
+</Panel>
+`;
+
+fs.writeFileSync(outPath, xml, "utf8");
+console.log(
+  `Wrote ${outPath} (${districtEntries.length} districts, ${siteEntries.length} sites)`,
+);
