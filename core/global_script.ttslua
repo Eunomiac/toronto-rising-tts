@@ -38,15 +38,15 @@ local function trLoadElapsedPrefix()
 end
 
 local TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS = {
-    "e1b509",
-    "26c731",
-    "fd7373",
-    "ff0596",
-    "09dff0",
-    "05e6fd",
-    "24b1d3",
-    "ee12cc",
-    "67382a",
+  "2870fb",
+  "ed206e",
+  "ef76cf",
+  "7a1f69",
+  "8ecefd",
+  "4f352f",
+  "c0b9d4",
+  "290128",
+  "c7a6c5",
 }
 
 local function trEarlyCollectAudioSources(obj)
