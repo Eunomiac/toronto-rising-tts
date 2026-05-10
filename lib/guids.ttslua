@@ -69,15 +69,15 @@ G.GUIDS = {
     -- Soundscape AssetBundle Objects
 
     -- SYNC: `core/global_script.ttslua` `TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS` (zero-require silence on load)
-    SOUNDSCAPE_MUSIC_A = "e1b509",
-    SOUNDSCAPE_MUSIC_B = "26c731",
-    SOUNDSCAPE_FEATURED_A = "fd7373",
-    SOUNDSCAPE_FEATURED_B = "ff0596",
-    SOUNDSCAPE_LOCATION_A = "09dff0",
-    SOUNDSCAPE_LOCATION_B = "05e6fd",
-    SOUNDSCAPE_WEATHER_RAIN = "24b1d3",
-    SOUNDSCAPE_WEATHER_WIND = "ee12cc",
-    SOUNDSCAPE_WEATHER_THUNDER = "67382a",
+    SOUNDSCAPE_MUSIC_A = "2870fb",
+    SOUNDSCAPE_MUSIC_B = "ed206e",
+    SOUNDSCAPE_FEATURED_A = "ef76cf",
+    SOUNDSCAPE_FEATURED_B = "7a1f69",
+    SOUNDSCAPE_LOCATION_A = "8ecefd",
+    SOUNDSCAPE_LOCATION_B = "4f352f",
+    SOUNDSCAPE_WEATHER_RAIN = "c0b9d4",
+    SOUNDSCAPE_WEATHER_WIND = "290128",
+    SOUNDSCAPE_WEATHER_THUNDER = "c7a6c5",
 
     -- Hand zones (player hand zones)
     -- Storyteller (Black) and player colors: Brown, Orange, Red, Pink

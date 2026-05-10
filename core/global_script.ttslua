@@ -21,6 +21,22 @@
 -- until `onLoad`, so `function onLoad` repeats this + schedules Wait retries.
 -- GUIDs MUST match `lib/guids.ttslua` `SOUNDSCAPE_*` (see SYNC comment there).
 -- ---------------------------------------------------------------------------
+-- Monotonic load timeline for console: t0 = first `trEarlySilenceSoundscapeEmitters` call
+-- (`os.clock()`, seconds since Lua VM start — good for relative ordering during load).
+local TR_LOAD_MONO_CLOCK_T0 = nil
+
+local function trLoadEnsureT0()
+    if TR_LOAD_MONO_CLOCK_T0 == nil then
+        TR_LOAD_MONO_CLOCK_T0 = os.clock()
+    end
+end
+
+--- @return string prefix like "[load+0.012s] "
+local function trLoadElapsedPrefix()
+    trLoadEnsureT0()
+    return string.format("[load+%.3fs] ", os.clock() - TR_LOAD_MONO_CLOCK_T0)
+end
+
 local TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS = {
     "e1b509",
     "26c731",
@@ -70,11 +86,12 @@ end
 
 --- @param phaseLabel string identifies this pass in the TTS console load timeline
 local function trEarlySilenceSoundscapeEmitters(phaseLabel)
+    trLoadEnsureT0()
     local label = type(phaseLabel) == "string" and phaseLabel or "sync-immediate"
-    print("[SoundscapeEarly] begin: " .. label)
+    print(trLoadElapsedPrefix() .. "[SoundscapeEarly] begin: " .. label)
     local getObj = rawget(_G, "getObjectFromGUID")
     if type(getObj) ~= "function" then
-        print("[SoundscapeEarly] skip: getObjectFromGUID unavailable (" .. label .. ")")
+        print(trLoadElapsedPrefix() .. "[SoundscapeEarly] skip: getObjectFromGUID unavailable (" .. label .. ")")
         return
     end
     local total = #TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS
@@ -102,7 +119,8 @@ local function trEarlySilenceSoundscapeEmitters(phaseLabel)
         end
     end
     print(
-        "[SoundscapeEarly] complete: "
+        trLoadElapsedPrefix()
+            .. "[SoundscapeEarly] complete: "
             .. label
             .. " (emitters resolved "
             .. tostring(resolved)
@@ -123,7 +141,7 @@ local function trScheduleEarlySoundscapeSilenceDeferred(schedulerLabel)
     local tag = type(schedulerLabel) == "string" and schedulerLabel or "unknown"
     local W = rawget(_G, "Wait")
     if type(W) ~= "table" or type(W.time) ~= "function" then
-        print("[SoundscapeEarly] note: Wait.time unavailable (" .. tag .. ") — deferred passes skipped")
+        print(trLoadElapsedPrefix() .. "[SoundscapeEarly] note: Wait.time unavailable (" .. tag .. ") — deferred passes skipped")
         return false
     end
     for _, sec in ipairs(TR_EARLY_SILENCE_DEFERRAL_SECONDS) do
@@ -133,7 +151,8 @@ local function trScheduleEarlySoundscapeSilenceDeferred(schedulerLabel)
         end, delay)
     end
     print(
-        "[SoundscapeEarly] scheduled "
+        trLoadElapsedPrefix()
+            .. "[SoundscapeEarly] scheduled "
             .. tostring(#TR_EARLY_SILENCE_DEFERRAL_SECONDS)
             .. " deferred passes ("
             .. tag
@@ -454,7 +473,7 @@ function onLoad(saved_data)
     trEarlySilenceSoundscapeEmitters("onLoad-sync-immediate")
     trScheduleEarlySoundscapeSilenceDeferred("onLoad")
 
-    print("--- VTM5E Module Loaded ---")
+    print(trLoadElapsedPrefix() .. "--- VTM5E Module Loaded ---")
     local startupLastAction = "onLoad:start"
 
     --- @param action string
@@ -462,7 +481,7 @@ function onLoad(saved_data)
         if type(action) == "string" and action ~= "" then
             if startupLastAction ~= action then
                 startupLastAction = action
-                print("Startup step: " .. tostring(startupLastAction))
+                print(trLoadElapsedPrefix() .. "Startup step: " .. tostring(startupLastAction))
             end
         end
     end
@@ -471,7 +490,7 @@ function onLoad(saved_data)
     setStartupAction("resolve-host-steam-id")
     local host = U.getHost and U.getHost()
     if host and host.steam_id then
-        print("Host Steam ID (use for C.StorytellerID in lib/constants.ttslua): " .. tostring(host.steam_id))
+        print(trLoadElapsedPrefix() .. "Host Steam ID (use for C.StorytellerID in lib/constants.ttslua): " .. tostring(host.steam_id))
     end
 
     -- Clear all debug logs to start fresh for this session
@@ -534,20 +553,25 @@ function onLoad(saved_data)
         setStartupAction("startup-ready-final-sync-full")
         Sync.full({ reason = "onLoad_startup_gate" })
         setStartupAction("startup-ready-delay-before-overlay-hide")
-        print("Startup readiness gate complete: waiting " .. tostring(startupOverlayHideDelaySeconds) .. "s before hiding loading overlay.")
+        print(
+            trLoadElapsedPrefix()
+                .. "Startup readiness gate complete: waiting "
+                .. tostring(startupOverlayHideDelaySeconds)
+                .. "s before hiding loading overlay."
+        )
 
         if type(Wait) == "table" and type(Wait.time) == "function" then
             Wait.time(function()
                 setStartupAction("startup-ready-hide-loading-overlays")
                 hideStartupLoadingOverlays()
                 setStartupAction("startup-ready-complete")
-                print("Startup readiness gate complete: loading overlay hidden.")
+                print(trLoadElapsedPrefix() .. "Startup readiness gate complete: loading overlay hidden.")
             end, startupOverlayHideDelaySeconds)
         else
             setStartupAction("startup-ready-hide-loading-overlays")
             hideStartupLoadingOverlays()
             setStartupAction("startup-ready-complete")
-            print("Startup readiness gate complete: loading overlay hidden.")
+            print(trLoadElapsedPrefix() .. "Startup readiness gate complete: loading overlay hidden.")
         end
     end, function()
         if not startupTableSyncDone then
@@ -569,7 +593,7 @@ function onLoad(saved_data)
     -- Debug module help (optional - shows available test commands)
     -- DEBUG.help()
 
-    print("Module initialization complete.")
+    print(trLoadElapsedPrefix() .. "Module initialization complete.")
 end
 
 --[[
