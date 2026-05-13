@@ -7,7 +7,7 @@ The Scene Constructor lets the Host paste JSON (typically generated from a Googl
 - **`gameState.sessionScene`** is always the **live** narrative bundle that reconcilers and HUD code read. Mutations go through `S.setStateVal` / existing helpers, then the usual sync entry points (`Sync.full`, domain `reconcile*`, etc.).
 - **`gameState.sceneLibrary`** holds **inactive** copies plus the active scene’s **mirror**:
   - `sceneLibrary.order` — array of scene keys for button order.
-  - `sceneLibrary.scenes[sceneKey]` — `{ title, receivesLiveWrites, sessionScene }` where nested `sessionScene` matches the live table’s shape (defaults merged in `S.validateState`).
+  - `sceneLibrary.scenes[sceneKey]` — `{ title, receivesLiveWrites, sessionScene }` where nested `sessionScene` matches the live table’s shape (defaults merged in `S.validateState`). **`receivesLiveWrites` defaults to `false`**; set **`true` only when that scene is activated** as the mirror sink.
   - `sceneLibrary.activeKey` — which library entry is **currently bound** for optional mirroring (see Unlink below).
 
 There is **no second reconciler input**: the library is persisted storage and (when linked) a **shadow copy** of the live bundle. The table always reflects `sessionScene` after sync.
@@ -23,7 +23,7 @@ The pasted JSON may include a small **import wrapper** (not stored inside nested
 | `title` | Yes | Shown on the scene button. |
 | `sessionScene` | Yes | Object whose keys align with **`gameState.sessionScene`** (see below). |
 
-On successful import: upsert `sceneLibrary.scenes[sceneKey]`, set `title`, default `receivesLiveWrites` to `true`, replace nested `sessionScene` from the payload (then `S.validateState` merges defaults).
+On successful import: upsert `sceneLibrary.scenes[sceneKey]`, set `title`, set **`receivesLiveWrites` to `false`** (import does **not** activate the scene or set `activeKey`), replace nested `sessionScene` from the payload (then `S.validateState` merges defaults).
 
 ### `sessionScene` fields (aligned with `core/state.ttslua`)
 

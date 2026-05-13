@@ -15,6 +15,7 @@ local Sync = require("core.sync")
 local SS = require("core.soundscape")
 local ChronicleWeather = require("lib.chronicle_weather")
 local GameStateOverlay = require("core.game_state_overlay")
+local SceneLibrary = require("core.scene_library")
 
 local GREEN = "#228B22|#32CD32|#006400|#228B22"
 local GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
@@ -464,6 +465,217 @@ function StorytellerScenesPanel.setPendingMonth(month)
     ck.month = m
     S.setStateVal(ck, "sessionScene", "clock")
     StorytellerScenesPanel.refresh()
+end
+
+--- Draft text for Scene Constructor modals (`InputField` content must be tracked from
+--- `onValueChanged` / `onEndEdit` — see `.dev/SOLVING ISSUES & DEBUGGING.md`).
+local ctorDraft = {
+    importJson = "",
+    forkTitleNew = "",
+    forkTitleOld = "",
+    --- `sceneLibrary.activeKey` when Fork modal was opened (may be nil).
+    forkSourceActiveKey = nil,
+}
+
+local function ctorSetModalAttr(elemId, attr, val)
+    if UI == nil or UI.setAttribute == nil then
+        return
+    end
+    UI.setAttribute(elemId, attr, val)
+end
+
+local function ctorSetImportError(msg)
+    local text = type(msg) == "string" and msg or ""
+    ctorSetModalAttr("scenes_ctor_import_err", "text", text)
+    if text ~= "" then
+        ctorSetModalAttr("scenes_ctor_import_err", "color", "#FF6666")
+    else
+        ctorSetModalAttr("scenes_ctor_import_err", "color", "#AAAAAA")
+    end
+end
+
+--- Opens the Import Scene JSON modal (Host pastes wrapper JSON).
+function StorytellerScenesPanel.openImportConstructorModal()
+    ctorDraft.importJson = ""
+    ctorSetImportError("")
+    ctorSetModalAttr("scenes_ctor_import_json", "text", "")
+    ctorSetModalAttr("scenes_ctor_import_modal", "active", "true")
+end
+
+function StorytellerScenesPanel.closeImportConstructorModal()
+    ctorSetModalAttr("scenes_ctor_import_modal", "active", "false")
+end
+
+--- @param player Player
+--- @param value string|nil
+--- @param id string|nil
+function StorytellerScenesPanel.onConstructorImportJsonChanged(player, value, id)
+    if id == "scenes_ctor_import_json" then
+        ctorDraft.importJson = type(value) == "string" and value or ""
+    end
+end
+
+--- @param player Player
+function StorytellerScenesPanel.confirmImportConstructorModal(player)
+    if player == nil or player.host ~= true then
+        U.AlertGM("Only the host can import scenes.")
+        return
+    end
+    local rawText = ctorDraft.importJson or ""
+    if string.match(rawText, "^%s*$") then
+        ctorSetImportError("Paste JSON first, then click Import.")
+        return
+    end
+    local decoded = JSON.decode(rawText)
+    if decoded == nil then
+        ctorSetImportError("Invalid JSON: could not parse (check commas and quotes).")
+        return
+    end
+    if type(decoded) ~= "table" then
+        ctorSetImportError("Invalid JSON: root must be an object.")
+        return
+    end
+    local ok, err, normalized = SceneLibrary.validateAndNormalizeImportPayload(decoded)
+    if not ok then
+        ctorSetImportError(err or "Import validation failed.")
+        return
+    end
+    local sceneKey = normalized.sceneKey
+    local entry = {
+        title = normalized.title,
+        receivesLiveWrites = false,
+        sessionScene = normalized.sessionScene,
+    }
+    S.setStateVal(entry, "sceneLibrary", "scenes", sceneKey)
+    local order = S.getStateVal("sceneLibrary", "order")
+    if type(order) ~= "table" then
+        order = {}
+    end
+    order = U.clone(order, true)
+    local found = false
+    for _, k in ipairs(order) do
+        if k == sceneKey then
+            found = true
+            break
+        end
+    end
+    if not found then
+        order[#order + 1] = sceneKey
+    end
+    S.setStateVal(order, "sceneLibrary", "order")
+    S.validateState()
+    StorytellerScenesPanel.closeImportConstructorModal()
+    StorytellerScenesPanel.refresh()
+    U.AlertGM("Scene imported: " .. sceneKey .. " (not activated — use scene controls when wired).")
+end
+
+--- Opens fork modal: prefill titles via `text` attribute and stash defaults.
+function StorytellerScenesPanel.openForkConstructorModal()
+    local lib = S.getStateVal("sceneLibrary")
+    local scenes = type(lib) == "table" and lib.scenes or nil
+    local K = type(lib) == "table" and lib.activeKey or nil
+    ctorDraft.forkSourceActiveKey = (type(K) == "string" and K ~= "") and K or nil
+    local oldTitleDefault = "—"
+    if ctorDraft.forkSourceActiveKey ~= nil and type(scenes) == "table" then
+        local ent = scenes[ctorDraft.forkSourceActiveKey]
+        if type(ent) == "table" and type(ent.title) == "string" and ent.title ~= "" then
+            oldTitleDefault = ent.title
+        end
+    end
+    local newTitleDefault = oldTitleDefault .. " (fork)"
+    if ctorDraft.forkSourceActiveKey == nil then
+        newTitleDefault = "Scene (fork)"
+        oldTitleDefault = "(no active scene)"
+    end
+    ctorDraft.forkTitleNew = newTitleDefault
+    ctorDraft.forkTitleOld = oldTitleDefault
+    ctorSetModalAttr("scenes_ctor_fork_title_new", "text", newTitleDefault)
+    ctorSetModalAttr("scenes_ctor_fork_title_old", "text", oldTitleDefault)
+    ctorSetModalAttr("scenes_ctor_fork_modal", "active", "true")
+end
+
+function StorytellerScenesPanel.closeForkConstructorModal()
+    ctorSetModalAttr("scenes_ctor_fork_modal", "active", "false")
+end
+
+--- @param player Player
+--- @param value string|nil
+--- @param id string|nil
+function StorytellerScenesPanel.onConstructorForkTitleChanged(player, value, id)
+    local v = type(value) == "string" and value or ""
+    if id == "scenes_ctor_fork_title_new" then
+        ctorDraft.forkTitleNew = v
+    elseif id == "scenes_ctor_fork_title_old" then
+        ctorDraft.forkTitleOld = v
+    end
+end
+
+--- @param player Player
+function StorytellerScenesPanel.confirmForkConstructorModal(player)
+    if player == nil or player.host ~= true then
+        U.AlertGM("Only the host can fork scenes.")
+        return
+    end
+    local newTitle = type(ctorDraft.forkTitleNew) == "string" and string.gsub(ctorDraft.forkTitleNew, "^%s+", "") or ""
+    newTitle = string.gsub(newTitle, "%s+$", "")
+    local oldTitle = type(ctorDraft.forkTitleOld) == "string" and string.gsub(ctorDraft.forkTitleOld, "^%s+", "") or ""
+    oldTitle = string.gsub(oldTitle, "%s+$", "")
+    if newTitle == "" then
+        U.AlertGM("Fork: new scene title cannot be empty.")
+        return
+    end
+    local F = S.getStateVal("sessionScene")
+    if type(F) ~= "table" then
+        U.AlertGM("Fork: sessionScene state is invalid.")
+        return
+    end
+    F = U.clone(F, true)
+    local K = ctorDraft.forkSourceActiveKey
+    local scenes = S.getStateVal("sceneLibrary", "scenes")
+    if type(scenes) ~= "table" then
+        scenes = {}
+    end
+    local baseForKey = (type(K) == "string" and K ~= "") and K or "scene"
+    local newKey = SceneLibrary.allocateForkSceneKey(baseForKey, scenes)
+    if type(K) == "string" and K ~= "" and scenes[K] ~= nil then
+        S.setStateVal(F, "sceneLibrary", "scenes", K, "sessionScene")
+        S.setStateVal(false, "sceneLibrary", "scenes", K, "receivesLiveWrites")
+        if oldTitle ~= "" and oldTitle ~= "(no active scene)" then
+            S.setStateVal(oldTitle, "sceneLibrary", "scenes", K, "title")
+        end
+    end
+    for sk, _ in pairs(scenes) do
+        if type(sk) == "string" then
+            S.setStateVal(false, "sceneLibrary", "scenes", sk, "receivesLiveWrites")
+        end
+    end
+    local newEntry = {
+        title = newTitle,
+        receivesLiveWrites = true,
+        sessionScene = U.clone(F, true),
+    }
+    S.setStateVal(newEntry, "sceneLibrary", "scenes", newKey)
+    local order = S.getStateVal("sceneLibrary", "order")
+    if type(order) ~= "table" then
+        order = {}
+    end
+    order = U.clone(order, true)
+    local found = false
+    for _, key in ipairs(order) do
+        if key == newKey then
+            found = true
+            break
+        end
+    end
+    if not found then
+        order[#order + 1] = newKey
+    end
+    S.setStateVal(order, "sceneLibrary", "order")
+    S.setStateVal(newKey, "sceneLibrary", "activeKey")
+    S.validateState()
+    StorytellerScenesPanel.closeForkConstructorModal()
+    StorytellerScenesPanel.refresh()
+    U.AlertGM("Scene forked: active mirror is now `" .. newKey .. "`.")
 end
 
 --- Toggles `sessionScene.clock.useRealTime` and starts/stops the overlay ticker.

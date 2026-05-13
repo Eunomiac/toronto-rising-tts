@@ -56,6 +56,14 @@ Per the TTS **InputField** note ([Input Elements](https://api.tabletopsimulator.
 | `HUD_scenesToggleRealTimeClock` | `scenes_clock_rtToggle` | `(player, button, id)` | `StorytellerScenesPanel.toggleRealTimeClock` — toggles `sessionScene.clock.useRealTime`, starts/stops `GameStateOverlay` ticker. |
 | `HUD_scenesApplyLocation` | `Apply location + soundscape` | `(player, button, id)` | Reads **state** `sessionScene.districtKey` / `siteKey` (district/site names are display-only). Validates keys, writes cards + `Soundscape.applyContext` + `Sync.full()`. |
 | `HUD_scenesApplyClock` | `Apply clock` | `(player, button, id)` | Writes `sessionScene.clock` from month (state) + day/year/time12/speed inputs, `ChronicleWeather.applyScheduledWeather({ force = false })`, `Sync.full()`, `GameStateOverlay.refresh` + `ensureTicker`. |
+| `HUD_scenesCtorImportOpen` | `scenes_ctor_btn_import` | `(player, button, id)` | `StorytellerScenesPanel.openImportConstructorModal` — shows import modal, clears error + JSON stash. |
+| `HUD_scenesCtorImportCancel` | `scenes_ctor_import_cancel` | `(player, button, id)` | Closes import modal. |
+| `HUD_scenesCtorImportConfirm` | `scenes_ctor_import_confirm` | `(player, button, id)` | Host-only: `JSON.decode` + `SceneLibrary.validateAndNormalizeImportPayload`, writes `sceneLibrary.scenes[sceneKey]` with `receivesLiveWrites = false`, appends `order` key, `S.validateState()`, closes modal. |
+| `HUD_scenesCtorImportJsonChanged` | `scenes_ctor_import_json` | `(player, value, id)` | Stashes pasted JSON (`onValueChanged` — do not read with `UI.getValue` on confirm). |
+| `HUD_scenesCtorForkOpen` | `scenes_ctor_btn_fork` | `(player, button, id)` | Opens fork modal; prefills title fields via `text` attribute + stash. |
+| `HUD_scenesCtorForkCancel` | `scenes_ctor_fork_cancel` | `(player, button, id)` | Closes fork modal. |
+| `HUD_scenesCtorForkConfirm` | `scenes_ctor_fork_confirm` | `(player, button, id)` | Host-only: pins `F` on prior `activeKey` (if any), allocates `sceneKey_N`, writes new row with `receivesLiveWrites = true`, sets `activeKey`, `S.validateState()`. |
+| `HUD_scenesCtorForkTitleChanged` | `scenes_ctor_fork_title_new`, `scenes_ctor_fork_title_old` | `(player, value, id)` | Stashes fork title edits. |
 
 ## Game state overlay (`ui/shared/game_state_overlay.xml`)
 

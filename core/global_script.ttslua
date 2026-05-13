@@ -1187,6 +1187,40 @@ function HUD_scenesToggleRealTimeClock(player, button, id)
     StorytellerScenesPanel.toggleRealTimeClock()
 end
 
+--- Scene Constructor: open import JSON modal.
+function HUD_scenesCtorImportOpen(player, button, id)
+    StorytellerScenesPanel.openImportConstructorModal()
+end
+
+function HUD_scenesCtorImportCancel(player, button, id)
+    StorytellerScenesPanel.closeImportConstructorModal()
+end
+
+function HUD_scenesCtorImportConfirm(player, button, id)
+    StorytellerScenesPanel.confirmImportConstructorModal(player)
+end
+
+--- `InputField` — stash JSON body (see `.dev/SOLVING ISSUES & DEBUGGING.md`).
+function HUD_scenesCtorImportJsonChanged(player, value, id)
+    StorytellerScenesPanel.onConstructorImportJsonChanged(player, value, id)
+end
+
+function HUD_scenesCtorForkOpen(player, button, id)
+    StorytellerScenesPanel.openForkConstructorModal()
+end
+
+function HUD_scenesCtorForkCancel(player, button, id)
+    StorytellerScenesPanel.closeForkConstructorModal()
+end
+
+function HUD_scenesCtorForkConfirm(player, button, id)
+    StorytellerScenesPanel.confirmForkConstructorModal(player)
+end
+
+function HUD_scenesCtorForkTitleChanged(player, value, id)
+    StorytellerScenesPanel.onConstructorForkTitleChanged(player, value, id)
+end
+
 --- Advance game phase
 -- Called when a phase button is clicked (e.g., "phase_play")
 -- @param player Player The player who clicked the button

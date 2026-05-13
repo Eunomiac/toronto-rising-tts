@@ -1,0 +1,135 @@
+--[[
+    Scene library: validate Storyteller-pasted Scene Constructor JSON and normalize
+    for `gameState.sceneLibrary` (see `.dev/Scene Constructor/Scene Constructor Overview.md`).
+
+    Agent guidance: `core/state.ttslua` (`sceneLibrary`, `sessionScene`); `lib.constants` (`C.PlayerColors`, `C.NPCSeats`).
+]]
+
+local SceneLibrary = {}
+
+local C = require("lib.constants")
+local U = require("lib.util")
+
+--- Highest `schemaVersion` this build accepts from import JSON.
+SceneLibrary.IMPORT_SCHEMA_VERSION = 1
+
+--- @param v any
+--- @return boolean
+local function isNonEmptyString(v)
+    return type(v) == "string" and string.match(v, "%S") ~= nil
+end
+
+--- Deep-clone import payload and pad missing NPC seat slots with `{ slotEmpty = true }`.
+--- @param sessionScene table
+--- @return table
+local function normalizeSeatSlotsForImport(sessionScene)
+    local out = U.clone(sessionScene, true)
+    if type(out.seatSlots) ~= "table" then
+        out.seatSlots = {}
+    else
+        out.seatSlots = U.clone(out.seatSlots, true)
+    end
+    local slots = out.seatSlots
+    for _, npcSeat in ipairs(C.NPCSeats or {}) do
+        if slots[npcSeat] == nil then
+            slots[npcSeat] = { slotEmpty = true }
+        end
+    end
+    return out
+end
+
+--- Validate import wrapper + `sessionScene` (including all five PC `seatSlots` rows).
+--- On success, returns a normalized table safe to merge into `sceneLibrary.scenes[sceneKey]`
+--- (`receivesLiveWrites` is left to the caller — typically `false`).
+---
+--- @param raw table|nil  Decoded JSON root object
+--- @return boolean ok
+--- @return string|nil err  Human-readable primary error (path + fix)
+--- @return table|nil normalized  `{ sceneKey, title, sessionScene }` only (no schemaVersion)
+function SceneLibrary.validateAndNormalizeImportPayload(raw)
+    if type(raw) ~= "table" then
+        return false, "Root value must be a JSON object.", nil
+    end
+
+    local sv = raw.schemaVersion
+    if sv ~= nil then
+        local n = tonumber(sv)
+        if n == nil or math.floor(n) ~= n then
+            return false, "schemaVersion: must be an integer if present.", nil
+        end
+        if n > SceneLibrary.IMPORT_SCHEMA_VERSION then
+            return false, string.format("schemaVersion: unsupported value %d (this build supports up to %d).", n, SceneLibrary.IMPORT_SCHEMA_VERSION), nil
+        end
+        if n < 1 then
+            return false, "schemaVersion: must be >= 1 if present.", nil
+        end
+    end
+
+    local sceneKey = raw.sceneKey
+    if not isNonEmptyString(sceneKey) then
+        return false, "sceneKey: required non-empty string.", nil
+    end
+    if string.match(sceneKey, "^[a-zA-Z][a-zA-Z0-9_]*$") == nil then
+        return false, "sceneKey: use letters, digits, underscore only; must start with a letter (e.g. openingAudience).", nil
+    end
+
+    local title = raw.title
+    if type(title) ~= "string" then
+        return false, "title: required string.", nil
+    end
+    local titleTrim = string.gsub(title, "^%s+", "")
+    titleTrim = string.gsub(titleTrim, "%s+$", "")
+    if titleTrim == "" then
+        return false, "title: cannot be empty or whitespace-only.", nil
+    end
+
+    local sessionScene = raw.sessionScene
+    if type(sessionScene) ~= "table" then
+        return false, "sessionScene: required object.", nil
+    end
+
+    local slots = sessionScene.seatSlots
+    if type(slots) ~= "table" then
+        return false, "sessionScene.seatSlots: required object with one row per PC seat (" .. table.concat(C.PlayerColors or {}, ", ") .. ").", nil
+    end
+
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local row = slots[color]
+        if row == nil then
+            return false, "sessionScene.seatSlots." .. color .. ": missing (all five PC seats are required).", nil
+        end
+        if type(row) ~= "table" then
+            return false, "sessionScene.seatSlots." .. color .. ": must be an object.", nil
+        end
+    end
+
+    local sessNorm = normalizeSeatSlotsForImport(sessionScene)
+    local normalized = {
+        sceneKey = sceneKey,
+        title = titleTrim,
+        sessionScene = sessNorm,
+    }
+    return true, nil, normalized
+end
+
+--- Allocate `baseKey_2`, `baseKey_3`, … not already present in `sceneLibrary.scenes`.
+--- @param baseKey string
+--- @param scenes table|nil
+--- @return string
+function SceneLibrary.allocateForkSceneKey(baseKey, scenes)
+    local base = type(baseKey) == "string" and baseKey ~= "" and baseKey or "scene"
+    local map = type(scenes) == "table" and scenes or {}
+    local n = 2
+    while true do
+        local candidate = base .. "_" .. tostring(n)
+        if map[candidate] == nil then
+            return candidate
+        end
+        n = n + 1
+        if n > 9999 then
+            return base .. "_" .. tostring(os.time())
+        end
+    end
+end
+
+return SceneLibrary

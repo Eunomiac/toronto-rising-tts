@@ -632,9 +632,9 @@ function S.validateState()
             end
             S.mergeDefaults(entry.sessionScene, S.GetDefaultGameState().sessionScene)
             if entry.receivesLiveWrites == nil then
-                entry.receivesLiveWrites = true
+                entry.receivesLiveWrites = false
             elseif type(entry.receivesLiveWrites) ~= "boolean" then
-                entry.receivesLiveWrites = true
+                entry.receivesLiveWrites = false
             end
             if type(entry.title) ~= "string" then
                 entry.title = ""
