@@ -1,7 +1,7 @@
 <!-- Storyteller bottom-right tool bar + pop-out panels (Black) -->
 <!-- Agent guidance: .dev/HUD_FUNCTIONS.md; .dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md (NPCs toggle). -->
 
-<Panel id="storytellerToolbarRoot" visibility="Host" rectAlignment="UpperLeft" offsetXY="50 00" width="800" height="800">
+<Panel id="storytellerToolbarRoot" visibility="Host" rectAlignment="UpperLeft" offsetXY="50 00" width="1280" height="800">
   <Button id="toggleElem_storytellerToolbarBody" class="hud_storyteller_button hud_storyteller_button_icon" rectAlignment="UpperLeft" width="30" height="30" onClick="HUD_togglePanel">►</Button>
   <VerticalLayout spacing="4" childAlignment="UpperLeft" rectAlignment="UpperLeft" offsetXY="35 -30">
     <Panel id="storytellerToolbarBody" active="false">
@@ -20,10 +20,10 @@
     </HorizontalLayout>
 
     <!-- padding: Panel acts as layout group (TTS Layout/Grouping). Inner VL uses flexibleHeight so children get real vertical space. -->
-    <!-- Inner VL minWidth must not exceed this Panel width or TTS squeezes nested InputFields into unusably thin strips. -->
-    <Panel id="storytellerContentArea" active="false" width="620" minHeight="700" flexibleHeight="0" padding="0 0 0 0">
-      <VerticalLayout padding="0" spacing="4" flexibleHeight="1" childForceExpandHeight="true" minWidth="600" preferredWidth="600" childForceExpandWidth="true">
-        <Include src="panel_scenes.xml" />
+    <!-- Inner VL width must match `storytellerContentArea` or TTS squeezes multi-column Scenes (`panel_scenes_host`) to a hairline. -->
+    <Panel id="storytellerContentArea" active="false" width="1200" minWidth="1200" minHeight="700" flexibleHeight="0" padding="0 0 0 0">
+      <VerticalLayout padding="0" spacing="4" flexibleHeight="1" childForceExpandHeight="true" minWidth="1200" preferredWidth="1200" childForceExpandWidth="true">
+        <Include src="panel_scenes_host.xml" />
         <Include src="panel_soundscape.xml" />
         <Include src="panel_pcs.xml" />
         <Include src="panel_phases.xml" />

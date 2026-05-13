@@ -1,6 +1,7 @@
 --[[
-    Center-top overlay: current phase, in-game date, and 12-hour clock (all players).
-    Refreshed on phase changes, scene clock Apply, and each second when real-time clock is on.
+    Center-top overlay: in-game date and 12-hour clock (all players) during **Play** and **Downtime** only.
+    Refreshed on phase changes, scene clock Apply, and each wall second when real-time clock is on
+    (`tickRealTimeClock`: narrative minutes advance by `realTimeSpeed / 60` per real second).
 ]]
 
 local GameStateOverlay = {}
@@ -11,20 +12,39 @@ local ChronicleWeather = require("lib.chronicle_weather")
 
 local tickerHandle = nil
 
---- @param phase string|nil
---- @return string
-local function phaseLabel(phase)
-    if type(phase) ~= "string" or phase == "" then
-        return "—"
-    end
-    local map = {
-        [C.Phases.SESSION_START] = "Session Start",
-        [C.Phases.PLAY] = "Play",
-        [C.Phases.DOWNTIME] = "Downtime",
-        [C.Phases.MEMORIAM] = "Memoriam",
-        [C.Phases.SESSION_END] = "Session End",
-    }
-    return map[phase] or phase
+--- Fractional narrative minutes accumulated between integer minute updates (see `tickRealTimeClock`).
+local rtMinuteCarry = 0
+
+local WEEKDAY_NAMES = {
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+}
+
+local MONTH_NAMES = {
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+}
+
+--- Narrative clock is shown only when chronicle phase is in-world play (not session bookends).
+--- @return boolean
+local function shouldShowNarrativeClockOnOverlay()
+    local phase = S.getStateVal("currentPhase")
+    return phase == C.Phases.PLAY or phase == C.Phases.DOWNTIME
 end
 
 --- @param hour24 number
@@ -57,13 +77,89 @@ local function format12h(hour24, minute)
     return string.format("%d:%02d %s", h12, m, suffix)
 end
 
---- Push overlay text from `gameState.currentPhase` and `sessionScene.clock`.
+--- Gregorian day-of-week, 0 = Sunday … 6 = Saturday (Tomohiko Sakamoto method).
+--- @param y number
+--- @param mo number month 1–12
+--- @param d number day of month
+--- @return number
+local function dayOfWeekSunday0(y, mo, d)
+    local tbl = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4}
+    local yAdj = y
+    if mo < 3 then
+        yAdj = y - 1
+    end
+    return math.floor(
+        (yAdj + math.floor(yAdj / 4) - math.floor(yAdj / 100) + math.floor(yAdj / 400) + tbl[mo] + d) % 7
+    )
+end
+
+--- @param day number
+--- @return string
+local function ordinalSuffix(day)
+    local n = math.floor(tonumber(day) or 0)
+    if n < 1 then
+        return "th"
+    end
+    local n100 = n % 100
+    if n100 >= 11 and n100 <= 13 then
+        return "th"
+    end
+    local n10 = n % 10
+    if n10 == 1 then
+        return "st"
+    elseif n10 == 2 then
+        return "nd"
+    elseif n10 == 3 then
+        return "rd"
+    end
+    return "th"
+end
+
+--- e.g. `Thursday, September 4th, 2026, 12:14 AM`
+--- @param y number
+--- @param mo number
+--- @param d number
+--- @param hour24 number
+--- @param minute number
+--- @return string
+local function formatOverlayDateTime(y, mo, d, hour24, minute)
+    local yi = math.floor(tonumber(y) or 2026)
+    local mi = math.floor(tonumber(mo) or 1)
+    local di = math.floor(tonumber(d) or 1)
+    if mi < 1 then
+        mi = 1
+    end
+    if mi > 12 then
+        mi = 12
+    end
+    if di < 1 then
+        di = 1
+    end
+    local w = dayOfWeekSunday0(yi, mi, di)
+    local weekday = WEEKDAY_NAMES[(w % 7) + 1] or "—"
+    local monthName = MONTH_NAMES[mi] or ("Month " .. tostring(mi))
+    local timeStr = format12h(hour24, minute)
+    return string.format(
+        "%s, %s %d%s, %d, %s",
+        weekday,
+        monthName,
+        di,
+        ordinalSuffix(di),
+        yi,
+        timeStr
+    )
+end
+
+--- Push overlay text from `sessionScene.clock` when phase is Play or Downtime; otherwise clears the line.
 function GameStateOverlay.refresh()
     if UI == nil or UI.setValue == nil then
         return
     end
-    local phase = S.getStateVal("currentPhase")
-    UI.setValue("gameStateOverlay_phase", phaseLabel(phase))
+
+    if not shouldShowNarrativeClockOnOverlay() then
+        UI.setValue("gameStateOverlay_datetime", "")
+        return
+    end
 
     local ck = S.getStateVal("sessionScene", "clock")
     if type(ck) ~= "table" then
@@ -73,9 +169,10 @@ function GameStateOverlay.refresh()
     local y = tonumber(ck.year) or 2026
     local mo = tonumber(ck.month) or 1
     local d = tonumber(ck.day) or 1
-    local dateStr = string.format("%04d-%02d-%02d", y, mo, d)
-    local timeStr = format12h(ck.hour, ck.minute)
-    UI.setValue("gameStateOverlay_datetime", dateStr .. "  " .. timeStr)
+    UI.setValue(
+        "gameStateOverlay_datetime",
+        formatOverlayDateTime(y, mo, d, ck.hour, ck.minute)
+    )
 end
 
 --- Advances `sessionScene.clock` when real-time simulation is enabled.
@@ -102,7 +199,12 @@ function GameStateOverlay.tickRealTimeClock()
     local h = math.floor(tonumber(ck.hour) or 0)
     local m = math.floor(tonumber(ck.minute) or 0)
 
-    m = m + math.floor(speed + 0.5)
+    -- `realTimeSpeed` is a multiplier on wall-clock pace: 1 => one narrative minute every 60 real seconds
+    -- (this ticker runs once per real second via `Wait.time(..., 1)`).
+    rtMinuteCarry = rtMinuteCarry + (speed / 60)
+    local addMin = math.floor(rtMinuteCarry)
+    rtMinuteCarry = rtMinuteCarry - addMin
+    m = m + addMin
     while m >= 60 do
         m = m - 60
         h = h + 1
@@ -196,6 +298,12 @@ function GameStateOverlay.stopTicker()
         Wait.stop(tickerHandle)
         tickerHandle = nil
     end
+    rtMinuteCarry = 0
+end
+
+--- Clears fractional carry when the narrative clock is set manually (Apply clock) so we do not double-apply drift.
+function GameStateOverlay.resetRealTimeCarry()
+    rtMinuteCarry = 0
 end
 
 return GameStateOverlay

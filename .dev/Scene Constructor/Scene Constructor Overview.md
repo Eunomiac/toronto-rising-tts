@@ -25,6 +25,105 @@ The pasted JSON may include a small **import wrapper** (not stored inside nested
 
 On successful import: upsert `sceneLibrary.scenes[sceneKey]`, set `title`, set **`receivesLiveWrites` to `false`** (import does **not** activate the scene or set `activeKey`), replace nested `sessionScene` from the payload (then `S.validateState` merges defaults).
 
+### Full import JSON example (copy-paste)
+
+Below is one **complete** wrapper object valid for the Import modal: all five **PC** `seatSlots` keys are present (required). All four **NPC** keys are listed here explicitly; any **omitted** NPC key is auto-filled as `{ "slotEmpty": true }` by the importer. Replace `characterKey` values with keys that exist in your chronicle’s character data (`D.characters` / PCS). **`npcRoleOverride` is not authored in JSON** — the importer rebuilds it from PC `seatSlots` (`isPlayingNPC` + `npcCharacterKey`). **`chronicleWeatherFollowSchedule`** and **`chronicleWeatherManualHold`** are **not authored** for imports that use `soundscapeNarrative` weather — set **`wind`**, **`rain`**, and **`thunderstorm`** together or omit all three; the importer derives the two booleans (see **Soundscape**). You may omit **`seatPresent`** when every PC row sets **`isPresent`** (see **Seat slots**). `soundscapeNarrative` is optional intent for **future** scene-apply wiring; `sessionScene` is still merged and defaults backfilled in `S.validateState`.
+
+```json
+{
+  "schemaVersion": 1,
+  "sceneKey": "openingAudience",
+  "title": "Opening — St. Regis cells",
+  "sessionScene": {
+    "lightingPresetKey": null,
+    "tableKey": "Table A",
+    "seatSlots": {
+      "Brown": {
+        "characterKey": "fomorach",
+        "isPlayingNPC": false,
+        "isPresent": true
+      },
+      "Orange": {
+        "characterKey": "rashid",
+        "isPlayingNPC": false,
+        "isPresent": true
+      },
+      "Red": {
+        "characterKey": "lucien",
+        "isPlayingNPC": true,
+        "npcCharacterKey": "myleneHamelin",
+        "isPresent": true
+      },
+      "Pink": {
+        "characterKey": "aishe",
+        "isPlayingNPC": false,
+        "isPresent": true
+      },
+      "Purple": {
+        "characterKey": "blackCaesar",
+        "isPlayingNPC": false,
+        "isPresent": true
+      },
+      "NPC1": {
+        "slotEmpty": true
+      },
+      "NPC2": {
+        "slotEmpty": true
+      },
+      "NPC3": {
+        "slotEmpty": true
+      },
+      "NPC4": {
+        "slotEmpty": true
+      }
+    },
+    "districtKey": "BayStFinancial",
+    "siteKey": "StRegisCells",
+    "clock": {
+      "hour": 3,
+      "minute": 15,
+      "day": 5,
+      "month": 1,
+      "year": 2026,
+      "useRealTime": false,
+      "realTimeSpeed": 1
+    },
+    "rollDefaults": {},
+    "soundscapeNarrative": {
+      "backgroundMusic": "casaLoma",
+      "location": "silent",
+      "wind": "silent",
+      "rain": "silent",
+      "thunderstorm": false,
+      "isIndoors": true
+    },
+    "npcWorld": {
+      "byArea": {
+        "nearLeft": {
+          "1": {
+            "characterKey": "adrianVarga",
+            "npcLightMode": "OFF"
+          },
+          "3": {
+            "characterKey": "theAristocrat",
+            "npcLightMode": "OFF"
+          }
+        },
+        "centerForward": {},
+        "nearRight": {},
+        "farLeft": {},
+        "farRight": {}
+      },
+      "preload": [
+        "evangelineDupont",
+        "oliverGagnon",
+        "eddie"
+      ]
+    }
+  }
+}
+```
+
 ### `sessionScene` fields (aligned with `core/state.ttslua`)
 
 Use **flat** keys that already exist on live `sessionScene` (do not nest a separate `location` object in state — the Sheet may still *group* columns for humans, but the JSON applied to state should use `districtKey` / `siteKey`).
@@ -35,39 +134,47 @@ Use **flat** keys that already exist on live `sessionScene` (do not nest a separ
 | `tableKey` | string \| null | e.g. table id used with `RSL.SetTableTo` / `C.Tables`. |
 | `seatPresent` | object | Sparse tri-state map (`nil` / `false` / `true`) — **derived** from `seatSlots` when `isPresent` is set (see `normalizeLiveSessionSceneSeatSlots` in `core/state.ttslua`). Imports may omit if every seat is described in `seatSlots`. |
 | `seatSlots` | object | Per-seat rows (keys: `Brown`, `Orange`, `Red`, `Pink`, `Purple`, `NPC1`…`NPC4`). See **Seat slots** below. |
-| `npcRoleOverride` | object | Existing structure. |
+| `npcRoleOverride` | object | **Sparse** map: keys are **`C.PlayerColors`** only; value is an **NPC** `characterKey` string when that PC is playing as that NPC. Absent keys = no override. **Not authored in import JSON** — rebuilt from PC `seatSlots` by `SceneLibrary.syncNpcRoleOverrideFromSeatSlots` (import + `S.validateState`). |
 | `districtKey` | string \| null | Chronicle district. |
 | `siteKey` | string \| null | Site within district. |
-| `clock` | object | `hour`, `minute`, `day`, `month`, `year`, `useRealTime`, `realTimeSpeed` (same names as live state). |
-| `chronicleWeatherFollowSchedule` | boolean | Existing flag. |
-| `chronicleWeatherManualHold` | boolean | **Set this** (via the same state paths as the UI) when the scene should block clock-driven weather — do **not** invent a parallel “weather override channel”. |
+| `clock` | object | `hour`, `minute`, `day`, `month`, `year`, `useRealTime`, `realTimeSpeed` (same names as live state). **`realTimeSpeed`**: multiplier on wall-clock when `useRealTime` is true — `1` ⇒ one narrative minute every 60 real seconds; `2` ⇒ twice that fast. |
+| `chronicleWeatherFollowSchedule` | boolean | When `true`, clock-driven chronicle weather may feed soundscape. **Scene Constructor import:** set only by the importer from `soundscapeNarrative` — if **`wind`**, **`rain`**, and **`thunderstorm`** are all non-`null`, becomes **`false`** (weather locked to narrative); if none of those three are set, becomes **`true`**. Pasted values for these two flags are **overwritten** on import. |
+| `chronicleWeatherManualHold` | boolean | When `true`, chronicle weather is not auto-applied on clock updates. **Import:** **`true`** when all three narrative weather fields are set; **`false`** when none are. |
 | `rollDefaults` | object | Same keys as `active.rollOptions` merges. |
-| `soundscapeNarrative` | object | Optional **intent** consumed **only on scene apply**: mapped into `gameState.soundscape` with the same setters / helpers the Storyteller UI uses. Empty `{}` if unused. See **Soundscape** below. |
+| `soundscapeNarrative` | object | Optional **intent** consumed **only on scene apply**: mapped into `gameState.soundscape` with the same setters / helpers the Storyteller UI uses. Empty `{}` if unused. **Import:** `wind`, `rain`, and `thunderstorm` must be **all** non-`null` together or **all** omitted / `null` — mixed is a validation error; when all three are set, the importer sets `chronicleWeatherManualHold` / `chronicleWeatherFollowSchedule` (see table above). See **Soundscape** below. |
 | `npcWorld` | object | `byArea` (sparse slot maps) + `preload` — see **NPC world** below. |
+
+### `npcRoleOverride` (`sessionScene.npcRoleOverride`)
+
+Reserved for **“PC seat is playing as an NPC”** (NPC occupying a PC table seat) once the table / sheet / HUD wiring exists. **Shape:** a flat object with **at most one key per player color** (`Brown`, `Orange`, `Red`, `Pink`, `Purple`). Each value is either omitted / JSON `null` (no override for that color) or a **non-empty string**: an NPC **`characterKey`** from `npcs_data` / `D.characters`.
+
+**Authoritative source in imports:** only **`seatSlots`**. For each PC row, keep **`characterKey`** as the **real** chronicle PC for that seat. When **`isPlayingNPC`** is **`true`**, set **`npcCharacterKey`** to the NPC being played; the Scene Constructor import path and `S.validateState` call **`SceneLibrary.syncNpcRoleOverrideFromSeatSlots`**, which sets e.g. `"npcRoleOverride": { "Red": "myleneHamelin" }` and drops any stale keys. Pasted JSON that still includes `npcRoleOverride` is **overwritten** by that sync so `seatSlots` cannot disagree with the override map.
 
 ### Seat slots (`sessionScene.seatSlots`)
 
-Each key is a **seat id** (`C.PlayerColors` + `C.NPCSeats`). Value is either **omitted** (leave that seat unchanged relative to other fields) or an object:
+Each key is a **seat id** (`C.PlayerColors` + `C.NPCSeats`). **Import** (`SceneLibrary.validateAndNormalizeImportPayload`): every **PC** key must be present or validation fails; any **missing** `NPC1`…`NPC4` key is auto-filled as `{ "slotEmpty": true }`. **Live** merges (`normalizeLiveSessionSceneSeatSlots` in `core/state.ttslua`): a key can be **omitted** to leave that seat unchanged relative to other fields. Value is an object when the key is present:
 
 **PC seats (`Brown` … `Purple`):**
 
 ```jsonc
 "Red": {
-  "characterKey": "lordLucien",
-  "isPlayingNPC": false,
+  "characterKey": "lucien",
+  "isPlayingNPC": true,
+  "npcCharacterKey": "myleneHamelin",
   "isPresent": true
 }
 ```
 
-- `characterKey` — optional; narrative / future NPC-as-PC sheet column (`D.characters` / PCS keys as you standardize).
-- `isPlayingNPC` — optional boolean; when true, future behavior: hide `forPCOnly` props, spawn NPC sheet flow (as in your design notes).
+- `characterKey` — optional string; the **real** chronicle PC (`pcs_data` / PCS) for this seat, regardless of whether the player is currently playing an NPC at the table.
+- `isPlayingNPC` — optional boolean; when **`true`**, **`npcCharacterKey`** is **required** on import (non-empty string): NPC `characterKey` played at this PC seat; drives **`npcRoleOverride`** for this color after sync.
+- `npcCharacterKey` — required when `isPlayingNPC` is true; ignored when `isPlayingNPC` is not true. Not used for NPC bench seats (`NPC1`…`NPC4`).
 - `isPresent` — optional boolean or null-equivalent: when **set**, drives `sessionScene.seatPresent[seat]` and thus lighting “present” checks.
 
 **NPC seats (`NPC1` … `NPC4`):**
 
 ```jsonc
 "NPC1": {
-  "characterKey": "myleneHamelin",
+  "characterKey": "adrianVarga",
   "isPresent": true
 },
 "NPC2": { "slotEmpty": true }
@@ -75,14 +182,23 @@ Each key is a **seat id** (`C.PlayerColors` + `C.NPCSeats`). Value is either **o
 
 - `characterKey` — non-empty string occupies the slot (`gameState.seatLayout.occupiedNPCSlots` updated on validate when this row is present).
 - `slotEmpty` — `true` forces the slot empty (`occupiedNPCSlots` → `false`) regardless of other fields.
-- Omit the NPC key entirely if the import should not change that slot’s occupancy.
+- On **import**, omit an `NPC1…NPC4` key when you want that slot stored as **empty** (the importer adds `{ "slotEmpty": true }`).
+- In **`normalizeLiveSessionSceneSeatSlots`** (`core/state.ttslua`), only an **existing** `seatSlots[NPCn]` object with `slotEmpty == true` or a non-empty `characterKey` updates `seatLayout.occupiedNPCSlots`; a **missing** NPC key does not change `occupiedNPCSlots` in that pass.
 
 ### Soundscape (`sessionScene.soundscapeNarrative`)
 
-Optional keys (all optional; `{}` means “no narrative-driven apply”):
+Optional keys (all optional; `{}` means “no narrative-driven apply” for apply-time mapping):
 
 - `backgroundMusic`, `location`, `wind`, `rain`, `thunderstorm`, `isIndoors` — **apply** maps these into `gameState.soundscape` using the **existing** mutation paths (same as panel actions), never a duplicate weather pipeline.
-- When the scene should **lock** manual weather / block chronicle schedule, set the real flags on `sessionScene` directly: `chronicleWeatherManualHold`, `chronicleWeatherFollowSchedule` — the scene-apply code sets them with `S.setStateVal` like any other mutation.
+
+**Scene Constructor import — narrative weather vs chronicle flags**
+
+- Treat **`wind`**, **`rain`**, and **`thunderstorm`** as a single triple: after `JSON.decode`, each is either **`nil`** (key absent or JSON `null`) or **non-`nil`** (including `thunderstorm: false`).
+- **Invalid:** exactly one or two of the three are non-`nil` (mixed overrides).
+- **All three non-`nil`:** scene weather is **locked** to those narrative values — importer sets **`chronicleWeatherManualHold`** = **`true`** and **`chronicleWeatherFollowSchedule`** = **`false`** (any pasted `chronicleWeather*` values are **replaced**).
+- **None** of the three non-`nil`:** importer sets **`chronicleWeatherManualHold`** = **`false`** and **`chronicleWeatherFollowSchedule`** = **`true`** (chronicle schedule may drive weather unless changed later in play).
+
+Live / non-import edits still set `chronicleWeather*` with `S.setStateVal` like any other mutation when the Storyteller UI (or scene apply) does so.
 
 ### NPC world (`sessionScene.npcWorld`) — sparse tables
 
@@ -102,7 +218,7 @@ Avoid long arrays with empty placeholders. Use **sparse maps** keyed by string s
 }
 ```
 
-- `preload` — array of `characterKey` strings to ensure in the preload zone on load **unless** an instance is already placed on stage (per your existing rule).
+- `preload` — array of `characterKey` strings to ensure in the preload zone on load **unless** an instance is already placed on stage (per your existing rule). **`Sync.full`** calls `NPCS.reconcileSessionScenePreloadNpcs`, which spawns missing entries into the **`preload`** area in [`lib/npcs_data.ttslua`](../../lib/npcs_data.ttslua) (`groundLevel = -100` world Y, paired NPC lights with `autoLight`).
 
 Runtime NPC instances remain under **`gameState.npcs.instances`**; `npcWorld` is the **saved scene’s staging intent**, copied into live NPC flows during apply.
 
@@ -114,14 +230,18 @@ Same choreography as table switches: blindfold all players → write **live** st
 
 Validation runs **when the Host confirms import**, **before** the modal closes.
 
+The Host’s pasted text is passed through **`U.sanitizeJsonTextRemoveTrailingCommas`** before **`JSON.decode`**, so **trailing commas** after the last property in an object or array (common spreadsheet / “JSON-like” exports) are tolerated. This is a **lightweight** fix, not full JSON5: avoid putting `,}` or `,]` inside **string values** if you ever need those literal sequences.
+
 - If validation **fails**: keep the modal open; set a dedicated UI **text element** under the confirm control to a **short, actionable** message (one primary error first; optional “also:” second line if cheap).
 - If validation **succeeds**: close the modal, write `sceneLibrary`, then `S.validateState` and refresh buttons.
 
-Messages should name the **JSON path** and the **fix** (e.g. `sessionScene.seatSlots.NPC2.characterKey: expected string or omit key; got number.`, `sceneKey: must match pattern …`, `schemaVersion: unsupported value 7; this build supports 1.`).
+Messages should name the **JSON path** and the **fix** (e.g. `sessionScene.seatSlots.NPC2.characterKey: expected string or omit key; got number.`, `sessionScene.soundscapeNarrative: set wind, rain, and thunderstorm together, or omit all three — mixed weather overrides are invalid.`, `sceneKey: must match pattern …`, `schemaVersion: unsupported value 7; this build supports 1.`).
 
 **`InputField` for paste / titles:** Do not read live `InputField` text with `UI.getValue` on confirm. Follow the TTS contract and in-repo reference (`rollDash_difficulty_*` + `HUD_rollSetDifficulty`): use **`onValueChanged` / `onEndEdit`** to stash the **`value`** argument, prefill with **`UI.setAttribute(id, "text", …)`**, and read from stash on confirm. See [`.dev/SOLVING ISSUES & DEBUGGING.md`](../SOLVING%20ISSUES%20%26%20DEBUGGING.md) (*Global UI `InputField` — typed text*).
 
 ## UI controls
+
+Storyteller **Scenes** tab shows two columns (`ui/storyteller/panel_scenes_host.xml`): narrative controls + import/fork modals on the left; **Scene library** (`panel_scenes_library.xml`) on the right with fixed slot buttons and constructor actions.
 
 For each key in `sceneLibrary.order`, activate a pre-declared dummy button and set label from `scenes[k].title` (do **not** use `setXML` / `setXMLTable` for dynamic lists). Active scene: green; inactive: default; unlink grey (see below).
 
@@ -164,8 +284,140 @@ Use this when the Storyteller wants to **keep going** on the current table setup
 **Recommended pattern (avoids dual-writer reconciler bugs):**
 
 1. **One live writer:** All runtime mutations continue to update **`gameState.sessionScene`** (and existing companions like `soundscape`, `npcs`, etc.) exactly as they do today.
-2. **At most one mirrored library row:** When `sceneLibrary.activeKey == K` and `scenes[K].receivesLiveWrites == true`, after each successful mutation batch that touches scene-relevant keys, **deep-clone** live `sessionScene` (and any other slices you define as part of the “scene bundle”) into `sceneLibrary.scenes[K].sessionScene`. No separate “scene truth” feeds lights or audio.
+2. **At most one mirrored library row:** When `sceneLibrary.activeKey == K` and `scenes[K].receivesLiveWrites == true`, after each `Sync.full` pass, **`SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked`** deep-clones live `gameState.sessionScene` into `sceneLibrary.scenes[K].sessionScene`. No separate “scene truth” feeds lights or audio.
 3. **Unlink:** Flip `receivesLiveWrites` to `false` for that entry; mirroring stops. The copy is **whatever it was last time mirroring ran** — not a special freeze pass.
 4. **Inactive scenes:** Other library entries are **not** updated while inactive (no N-way fan-out on every seat toggle).
 
 This gives you “always current” for the **active** saved scene with **one** authoritative live record and a **passive shadow** for persistence, not two competing sources of truth for the table.
+
+---
+
+## Test Output
+
+```json
+{
+  "schemaVersion": 1,
+  "sceneKey": "openingAudience_3",
+  "title": "Opening Audience_3",
+  "sessionScene": {
+    "lightingPresetKey": null,
+    "tableKey": "Table A",
+    "seatSlots": {
+      "Red": {
+        "characterKey": "lordLucien",
+        "isPlayingNPC": false,
+        "isPresent": true
+      },
+      "Orange": {
+        "characterKey": "rashid",
+        "isPlayingNPC": false,
+        "isPresent": true
+      },
+      "Pink": {
+        "characterKey": "aishe",
+        "isPlayingNPC": false,
+        "isPresent": true
+      },
+      "Brown": {
+        "characterKey": "fomorach",
+        "isPlayingNPC": false,
+        "isPresent": true
+      },
+      "Purple": {
+        "characterKey": "blackCaesar",
+        "isPlayingNPC": false,
+        "isPresent": true
+      },
+      "NPC1": {
+        "characterKey": "myleneHamelin",
+        "isPresent": true
+      },
+      "NPC2": {
+        "slotEmpty": true
+      },
+      "NPC3": {
+        "slotEmpty": true
+      },
+      "NPC4": {
+        "slotEmpty": true
+      }
+    },
+    "districtKey": "BayStFinancial",
+    "siteKey": "StRegisCouncilChamber",
+    "clock": {
+      "hour": 22,
+      "minute": 15,
+      "day": 14,
+      "month": 9,
+      "year": 2026,
+      "useRealTime": true,
+      "realTimeSpeed": 1
+    },
+    "rollDefaults": {},
+    "soundscapeNarrative": {
+      "backgroundMusic": "main",
+      "location": "apothecary",
+      "wind": "windMed",
+      "rain": "silent",
+      "thunderstorm": false
+    },
+    "npcWorld": {
+      "byArea": {
+        "farLeft": {
+          "1": {
+            "characterKey": "theAristocrat",
+            "npcLightMode": "OFF"
+          }
+        },
+        "nearLeft": {
+          "1": {
+            "characterKey": "evangelineDupont",
+            "npcLightMode": "OFF"
+          },
+          "2": {
+            "characterKey": "oliverGagnon",
+            "npcLightMode": "OFF"
+          }
+        },
+        "centerForward": {},
+        "nearRight": {
+          "1": {
+            "characterKey": "nasirKhan",
+            "npcLightMode": "OFF"
+          },
+          "2": {
+            "characterKey": "fatherDiaz",
+            "npcLightMode": "OFF"
+          }
+        },
+        "farRight": {
+          "1": {
+            "characterKey": "eddie",
+            "npcLightMode": "OFF"
+          },
+          "2": {
+            "characterKey": "alexisHoltt",
+            "npcLightMode": "OFF"
+          },
+          "3": {
+            "characterKey": "lexieMadi",
+            "npcLightMode": "OFF"
+          },
+          "4": {
+            "characterKey": "averyInnis",
+            "npcLightMode": "OFF"
+          },
+          "5": {
+            "characterKey": "benedictKincaid",
+            "npcLightMode": "OFF"
+          }
+        }
+      },
+      "preload": [
+        "abbasFaruk",
+        "adrianGerrard"
+      ]
+    }
+  }
+}
+```

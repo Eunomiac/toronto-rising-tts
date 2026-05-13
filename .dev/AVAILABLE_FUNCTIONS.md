@@ -133,6 +133,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `U.split(inputstr, sep)` | Split string by delimiter | Parse CSV |
+| `U.sanitizeJsonTextRemoveTrailingCommas(s)` | Strip trailing commas before `}` / `]` for `JSON.decode` (spreadsheet exports) | Scene Constructor import paste |
 | `U.GetHex(color, newAlpha)` | Convert Color to hex string | UI color strings |
 
 ### 1.8 Tag Utilities

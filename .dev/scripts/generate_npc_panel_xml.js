@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 /** Area keys wired by the button columns in ui/storyteller/partials/panel_npcs_*.xml */
+/** Areas in npcs_data with `excludeFromNpcPanel = true` are omitted from generated rows (e.g. preload). */
 const WIRED_AREA_KEYS = ["centerForward", "farLeft", "farRight", "nearLeft", "nearRight"];
 
 const PARTIAL_SHELL = "panel_npcs_shell.xml";
@@ -92,10 +93,12 @@ function parseAreas(luaSource) {
   return entries.map((entry) => {
     const nameMatch = entry.body.match(/name\s*=\s*"([^"]+)"/);
     const labelMatch = entry.body.match(/label\s*=\s*"([^"]+)"/);
+    const excludeFromNpcPanel = /excludeFromNpcPanel\s*=\s*true/.test(entry.body);
     return {
       key: entry.key,
       label: labelMatch ? labelMatch[1] : entry.key,
       headerName: nameMatch ? nameMatch[1] : areaHeaderNameFromKey(entry.key),
+      excludeFromNpcPanel,
     };
   });
 }
@@ -550,11 +553,16 @@ function main() {
   const source = fs.readFileSync(npcDataPath, "utf8");
   const constantsSource = fs.readFileSync(constantsPath, "utf8");
   const areas = parseAreas(source).sort((a, b) => a.key.localeCompare(b.key));
-  assertAreasMatchPartials(areas);
+  const panelAreas = areas.filter((a) => !a.excludeFromNpcPanel);
+  const skipped = areas.filter((a) => a.excludeFromNpcPanel).map((a) => a.key);
+  if (skipped.length > 0) {
+    console.log(`[npc_panel_xml_generator] Skipping areas (excludeFromNpcPanel): ${skipped.join(", ")}`);
+  }
+  assertAreasMatchPartials(panelAreas);
   const characters = parseCharacters(source);
   const groupIds = parseGroupIds(source);
   const groupDisplayNames = parseCoterieDisplayNames(constantsSource);
-  const xml = buildPanelXml(projectRoot, { areas, characters, groupIds, groupDisplayNames });
+  const xml = buildPanelXml(projectRoot, { areas: panelAreas, characters, groupIds, groupDisplayNames });
   fs.writeFileSync(outputPath, xml, "utf8");
   console.log(`[npc_panel_xml_generator] Wrote ${path.relative(projectRoot, outputPath)}`);
 }

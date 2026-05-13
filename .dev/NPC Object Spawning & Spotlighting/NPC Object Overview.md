@@ -59,6 +59,14 @@ Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `
 
 ---
 
+## Preload staging area (`preload`)
+
+The `preload` entry in [`lib/npcs_data.ttslua`](../../lib/npcs_data.ttslua) `D.areas` is an **off-table** grid at **world Y = -100** (`groundLevel`). It is omitted from the Storyteller NPC panel (`excludeFromNpcPanel = true`). `autoLight = true` so figurines spawn with **STANDARD** paired spotlights (same spawn pipeline as table areas).
+
+`gameState.sessionScene.npcWorld.preload` lists `characterKey` strings. `NPCS.reconcileSessionScenePreloadNpcs` (invoked from `Sync.full`) spawns each NPC that is **not** already in state with a **non-`preload`** `areaKey`. NPCs already on the table are left alone.
+
+---
+
 ## NPC Data Structure: `NPCS.areas`
 
 Each area key maps to:
@@ -68,6 +76,8 @@ Each area key maps to:
   rotation = 0,       -- degrees: azimuth of area center around table origin (XZ)
   distance = 100,     -- distance from (0,0,0) in XZ to area center
   groundLevel = -40,  -- world Y for figurine position (Figurine_Custom anchor is at the bottom)
+  autoLight = false,  -- optional: when true, new spawns default to STANDARD light; when false, OFF
+  excludeFromNpcPanel = false, -- optional: when true, area is hidden from Storyteller NPC panel row logic
   positions = {       -- 1-based slot offsets in area-local XZ (before rotation)
     { x = 0, z = 0 },
     { x = 10, z = 5 },

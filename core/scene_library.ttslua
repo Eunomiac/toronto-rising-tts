@@ -1,6 +1,9 @@
 --[[
     Scene library: validate Storyteller-pasted Scene Constructor JSON and normalize
     for `gameState.sceneLibrary` (see `.dev/Scene Constructor/Scene Constructor Overview.md`).
+    Rebuilds `sessionScene.npcRoleOverride` from PC `seatSlots` via `syncNpcRoleOverrideFromSeatSlots`.
+    Derives `chronicleWeatherFollowSchedule` / `chronicleWeatherManualHold` from `soundscapeNarrative`
+    wind + rain + thunderstorm (all three non-nil, or none).
 
     Agent guidance: `core/state.ttslua` (`sceneLibrary`, `sessionScene`); `lib.constants` (`C.PlayerColors`, `C.NPCSeats`).
 ]]
@@ -19,7 +22,87 @@ local function isNonEmptyString(v)
     return type(v) == "string" and string.match(v, "%S") ~= nil
 end
 
---- Deep-clone import payload and pad missing NPC seat slots with `{ slotEmpty = true }`.
+--- Counts how many of `wind`, `rain`, `thunderstorm` are non-nil on `soundscapeNarrative`.
+--- @param sn table|nil
+--- @return integer
+local function countSoundscapeWeatherTrioSpecified(sn)
+    if type(sn) ~= "table" then
+        return 0
+    end
+    local c = 0
+    if sn.wind ~= nil then
+        c = c + 1
+    end
+    if sn.rain ~= nil then
+        c = c + 1
+    end
+    if sn.thunderstorm ~= nil then
+        c = c + 1
+    end
+    return c
+end
+
+--- `wind` / `rain` / `thunderstorm` must all be non-nil together, or all omitted (nil). Mixed is invalid.
+--- @param sessionScene table|nil
+--- @return boolean ok
+--- @return string|nil err
+local function validateSoundscapeWeatherTrioForImport(sessionScene)
+    if type(sessionScene) ~= "table" then
+        return true, nil
+    end
+    local c = countSoundscapeWeatherTrioSpecified(sessionScene.soundscapeNarrative)
+    if c ~= 0 and c ~= 3 then
+        return false, "sessionScene.soundscapeNarrative: set wind, rain, and thunderstorm together, or omit all three (mixed weather overrides are invalid)."
+    end
+    return true, nil
+end
+
+--- Sets `chronicleWeatherManualHold` / `chronicleWeatherFollowSchedule` from narrative weather trio (import only).
+--- All three non-nil → lock scene weather to narrative overrides (`manualHold` true, `followSchedule` false).
+--- None non-nil → chronicle schedule + no manual hold (`manualHold` false, `followSchedule` true).
+--- @param sessionScene table|nil
+local function applyChronicleWeatherFromSoundscapeForImport(sessionScene)
+    if type(sessionScene) ~= "table" then
+        return
+    end
+    local c = countSoundscapeWeatherTrioSpecified(sessionScene.soundscapeNarrative)
+    if c == 3 then
+        sessionScene.chronicleWeatherManualHold = true
+        sessionScene.chronicleWeatherFollowSchedule = false
+    elseif c == 0 then
+        sessionScene.chronicleWeatherManualHold = false
+        sessionScene.chronicleWeatherFollowSchedule = true
+    end
+end
+
+--- Rebuilds `sessionScene.npcRoleOverride` from PC `seatSlots` only (authoritative).
+--- Shape: sparse map keyed by `C.PlayerColors`; value is a non-empty NPC `characterKey` string
+--- when that seat has `isPlayingNPC == true` and `npcCharacterKey` is set; absent keys mean no override.
+--- @param sessionScene table|nil
+function SceneLibrary.syncNpcRoleOverrideFromSeatSlots(sessionScene)
+    if type(sessionScene) ~= "table" then
+        return
+    end
+    local slots = sessionScene.seatSlots
+    if type(slots) ~= "table" then
+        sessionScene.npcRoleOverride = {}
+        return
+    end
+    local o = {}
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local row = slots[color]
+        if type(row) == "table" and row.isPlayingNPC == true and isNonEmptyString(row.npcCharacterKey) then
+            local nk = string.gsub(row.npcCharacterKey, "^%s+", "")
+            nk = string.gsub(nk, "%s+$", "")
+            if nk ~= "" then
+                o[color] = nk
+            end
+        end
+    end
+    sessionScene.npcRoleOverride = o
+end
+
+--- Deep-clone import payload, pad missing NPC seat slots with `{ slotEmpty = true }`, and sync `npcRoleOverride`.
 --- @param sessionScene table
 --- @return table
 local function normalizeSeatSlotsForImport(sessionScene)
@@ -35,6 +118,8 @@ local function normalizeSeatSlotsForImport(sessionScene)
             slots[npcSeat] = { slotEmpty = true }
         end
     end
+    SceneLibrary.syncNpcRoleOverrideFromSeatSlots(out)
+    applyChronicleWeatherFromSoundscapeForImport(out)
     return out
 end
 
@@ -101,6 +186,16 @@ function SceneLibrary.validateAndNormalizeImportPayload(raw)
         if type(row) ~= "table" then
             return false, "sessionScene.seatSlots." .. color .. ": must be an object.", nil
         end
+        if row.isPlayingNPC == true then
+            if not isNonEmptyString(row.npcCharacterKey) then
+                return false, "sessionScene.seatSlots." .. color .. ".npcCharacterKey: required non-empty string when isPlayingNPC is true.", nil
+            end
+        end
+    end
+
+    local okWeather, errWeather = validateSoundscapeWeatherTrioForImport(sessionScene)
+    if not okWeather then
+        return false, errWeather or "sessionScene.soundscapeNarrative: weather trio validation failed.", nil
     end
 
     local sessNorm = normalizeSeatSlotsForImport(sessionScene)
@@ -130,6 +225,58 @@ function SceneLibrary.allocateForkSceneKey(baseKey, scenes)
             return base .. "_" .. tostring(os.time())
         end
     end
+end
+
+--- Applies optional `sessionScene.soundscapeNarrative` fields through `Soundscape.applyContext`.
+--- Weather trio is applied only when `chronicleWeatherManualHold` is true (importer locks narrative weather).
+--- Music mood and location track apply whenever present as non-empty strings.
+--- Lazy-requires `core.soundscape` to avoid load-order cycles with `core.state`.
+--- @param sessionScene table|nil
+function SceneLibrary.applySoundscapeNarrativePartial(sessionScene)
+    if type(sessionScene) ~= "table" then
+        return
+    end
+    local sn = sessionScene.soundscapeNarrative
+    if type(sn) ~= "table" then
+        return
+    end
+    local SS = require("core.soundscape")
+    local ctx = {}
+    if type(sn.backgroundMusic) == "string" and string.match(sn.backgroundMusic, "%S") then
+        ctx.musicMood = sn.backgroundMusic
+    end
+    if type(sn.location) == "string" and string.match(sn.location, "%S") then
+        ctx.location = sn.location
+    end
+    local c = countSoundscapeWeatherTrioSpecified(sn)
+    if c == 3 and sessionScene.chronicleWeatherManualHold == true then
+        ctx.rain = sn.rain
+        ctx.wind = sn.wind
+        ctx.thunderEnabled = sn.thunderstorm == true
+    end
+    if next(ctx) == nil then
+        return
+    end
+    SS.applyContext(ctx)
+end
+
+--- When `sceneLibrary.activeKey` names a row with `receivesLiveWrites`, deep-clone live `sessionScene` into that row.
+--- Invoked from `Sync.full` after reconcilers so one mutation batch ends with an up-to-date library mirror.
+--- Lazy-requires `core.state` to avoid cycles during `state` module initialization.
+function SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()
+    local S = require("core.state")
+    local K = S.getStateVal("sceneLibrary", "activeKey")
+    if type(K) ~= "string" or K == "" then
+        return
+    end
+    if S.getStateVal("sceneLibrary", "scenes", K, "receivesLiveWrites") ~= true then
+        return
+    end
+    local live = S.getStateVal("sessionScene")
+    if type(live) ~= "table" then
+        return
+    end
+    S.setStateVal(U.clone(live, true), "sceneLibrary", "scenes", K, "sessionScene")
 end
 
 return SceneLibrary

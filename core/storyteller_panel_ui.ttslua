@@ -7,8 +7,9 @@ local U = require("lib.util")
 local StorytellerPanelUI = {}
 
 --- Panel keys and their corresponding panel/toggle IDs for the storyteller HUD.
+--- `scenes` uses `panel_scenes_host` so the Scenes tab can show `panel_scenes` + `panel_scenes_library` side-by-side.
 local STORYTELLER_PANELS = {
-    scenes = { panel = "panel_scenes", toggle = "toggle_scenes" },
+    scenes = { panel = "panel_scenes_host", toggle = "toggle_scenes" },
     soundscape = { panel = "panel_soundscape", toggle = "toggle_soundscape" },
     pcs = { panel = "panel_pcs", toggle = "toggle_pcs" },
     phases = { panel = "panel_phases", toggle = "toggle_phases" },

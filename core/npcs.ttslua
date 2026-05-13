@@ -1,6 +1,6 @@
 --[[
     NPC spawning, areas, paired spotlights, and Storyteller HUD integration.
-    Data: lib/npcs_data.ttslua (NPCS.characters, NPCS.lights, NPCS.areas).
+    Data: lib/npcs_data.ttslua (NPCS.characters, NPCS.lights, NPCS.areas — includes off-table `preload` at world y=-100).
     Spec: .dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md
     Related: .dev/NPC Object Spawning & Spotlighting/NPC Light Object Data.jsonc; .dev/Game State Data.jsonc;
     .dev/Chronicle Data/NPCS_*.md (content keys); .dev/HUD_FUNCTIONS.md (Storyteller NPC panel); .dev/DEBUG_FILE_LOGGING.md.
@@ -34,6 +34,10 @@ local GM_PREFIX = "npcInstance:"
 
 --- Area key whose `distance` / `rotation = 0` define canonical slot layout in table XZ (similarity about origin).
 local REF_AREA_KEY = "centerForward"
+
+--- `sessionScene.npcWorld.preload` spawns here (under playfield, `groundLevel` = -100). Hidden from Storyteller NPC panel rows.
+local PRELOAD_AREA_KEY = "preload"
+NPCS.PRELOAD_AREA_KEY = PRELOAD_AREA_KEY
 
 --- While true, instance uses spotlight mode until mouse up (not persisted).
 local spotlightHeld = {}
@@ -445,10 +449,15 @@ function NPCS.lightRegistryName(lightGuid)
     return "npcLight_" .. tostring(lightGuid)
 end
 
---- Sorted list of area keys.
+--- Sorted list of area keys shown on the Storyteller NPC panel (excludes staging-only areas).
 --- @return string[]
-local function sortedAreaKeys()
-    local keys = U.getKeys(NPCS.areas or {})
+local function sortedAreaKeysForPanel()
+    local keys = {}
+    for k, area in pairs(NPCS.areas or {}) do
+        if type(k) == "string" and type(area) == "table" and area.excludeFromNpcPanel ~= true then
+            keys[#keys + 1] = k
+        end
+    end
     table.sort(keys)
     return keys
 end
@@ -754,6 +763,9 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
     if def == nil then
         return false, "Unknown NPC: " .. npcName
     end
+    if getInstances()[npcName] ~= nil then
+        return false, "NPC already spawned."
+    end
     local area = NPCS.areas[areaKey]
     if area == nil or U.Type(slotIndex) ~= "number" or slotIndex < 1 or slotIndex > #area.positions then
         return false, "Invalid area or slot."
@@ -890,6 +902,85 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
     end
 
     return true, nil
+end
+
+--- Spawn `npcName` into the off-table preload zone if not already spawned, or already staged on the table.
+--- Lights use the area `autoLight` rule (STANDARD in `preload`). Skips invalid keys and unknown NPCs.
+--- @param npcName string
+--- @param opts table|nil `deferUiRefresh`, `skipSeatSync` — forwarded to `spawnNpcAtSlot` when spawning.
+--- @return boolean ok
+--- @return string|nil err
+function NPCS.ensureNpcInPreloadZone(npcName, opts)
+    if not validateNpcNameKey(npcName) then
+        return false, "Invalid NPC key."
+    end
+    if NPCS.characters[npcName] == nil then
+        return false, "Unknown NPC: " .. tostring(npcName)
+    end
+    local area = NPCS.areas[PRELOAD_AREA_KEY]
+    if area == nil then
+        return false, "preload area missing from npcs_data.areas."
+    end
+    local rec = getInstances()[npcName]
+    if rec ~= nil then
+        if U.Type(rec.areaKey) == "string" and rec.areaKey ~= PRELOAD_AREA_KEY then
+            return true, nil
+        end
+        return true, nil
+    end
+    if not NPCS.areaHasFreeSlot(PRELOAD_AREA_KEY) then
+        return false, "NPC preload zone has no free slots."
+    end
+    local slot = NPCS.findNextFreeSlotIndex(PRELOAD_AREA_KEY)
+    if slot == nil then
+        return false, "NPC preload zone has no free slots."
+    end
+    return NPCS.spawnNpcAtSlot(npcName, PRELOAD_AREA_KEY, slot, opts)
+end
+
+--- Spawns every `characterKey` in `gameState.sessionScene.npcWorld.preload` into the preload area unless that NPC
+--- already exists in a non-preload area ("on stage"). Idempotent; safe to call from `Sync.full`.
+--- @param opts table|nil `deferUiRefresh` — when true, one panel refresh after the last staggered spawn.
+function NPCS.reconcileSessionScenePreloadNpcs(opts)
+    opts = U.Type(opts) == "table" and opts or {}
+    local deferUiRefresh = opts.deferUiRefresh == true
+    local list = S.getStateVal("sessionScene", "npcWorld", "preload")
+    if type(list) ~= "table" or NPCS.areas[PRELOAD_AREA_KEY] == nil then
+        return
+    end
+    local delay = 0
+    local anySpawn = false
+    for i = 1, #list do
+        local npcName = list[i]
+        if type(npcName) == "string" and npcName ~= "" then
+            local rec = getInstances()[npcName]
+            local needSpawn = rec == nil
+            if rec ~= nil and U.Type(rec.areaKey) == "string" and rec.areaKey ~= PRELOAD_AREA_KEY then
+                needSpawn = false
+            end
+            if needSpawn and validateNpcNameKey(npcName) and NPCS.characters[npcName] ~= nil then
+                if not NPCS.areaHasFreeSlot(PRELOAD_AREA_KEY) then
+                    print("[NPCS] reconcileSessionScenePreloadNpcs: preload zone full; skipping " .. tostring(npcName))
+                    break
+                end
+                anySpawn = true
+                local captureName = npcName
+                Wait.time(function()
+                    local ok, err = NPCS.ensureNpcInPreloadZone(captureName, { deferUiRefresh = true, skipSeatSync = true })
+                    if not ok then
+                        print("[NPCS] preload spawn failed for " .. tostring(captureName) .. ": " .. tostring(err))
+                    end
+                end, delay)
+                delay = delay + 0.28
+            end
+        end
+    end
+    if deferUiRefresh and anySpawn then
+        Wait.time(function()
+            NPCS.refreshStorytellerUIIfVisible()
+            requestSeatLayoutSync()
+        end, delay + 0.12)
+    end
 end
 
 --- @param npcName string
@@ -1808,7 +1899,7 @@ function NPCS.refreshStorytellerUI()
         return
     end
 
-    local areas = sortedAreaKeys()
+    local areas = sortedAreaKeysForPanel()
     local instances = getInstances()
     local occupiedSeats = getOccupiedNpcSeatMap()
     local areaNpcSet = getAreaNpcSet()

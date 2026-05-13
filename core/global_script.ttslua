@@ -1106,8 +1106,13 @@ function HUD_scenesPanel(player, button, id)
     StorytellerScenesPanel.onHudClick(player, button, id)
 end
 
+function HUD_scenesClockFieldChanged(player, value, id)
+    StorytellerScenesPanel.onClockInputChanged(player, value, id)
+end
+
+--- Legacy no-op; clock fields use `HUD_scenesClockFieldChanged` (`onValueChanged` / `onEndEdit`).
 function HUD_scenesPanelInput(player, value, id)
-    -- Inputs persist on Apply handlers; avoid writing partial state on every keystroke.
+    StorytellerScenesPanel.onClockInputChanged(player, value, id)
 end
 
 function HUD_scenesApplyLocation(player, button, id)
@@ -1219,6 +1224,27 @@ end
 
 function HUD_scenesCtorForkTitleChanged(player, value, id)
     StorytellerScenesPanel.onConstructorForkTitleChanged(player, value, id)
+end
+
+--- Scene library column (`panel_scenes_library.xml`): row picks `sceneLibrary.activeKey`.
+function HUD_scenesLibSlot(player, button, id)
+    StorytellerScenesPanel.onLibrarySlotClick(player, button, id)
+end
+
+function HUD_scenesLibUnlink(player, button, id)
+    StorytellerScenesPanel.unlinkActiveMirror(player)
+end
+
+function HUD_scenesLibDelete(player, button, id)
+    StorytellerScenesPanel.deleteActiveSceneArmed(player)
+end
+
+function HUD_scenesLibApply(player, button, id)
+    StorytellerScenesPanel.applyActiveLibraryScene(player)
+end
+
+function HUD_scenesLibEnd(player, button, id)
+    StorytellerScenesPanel.endSceneNarrative(player)
 end
 
 --- Advance game phase

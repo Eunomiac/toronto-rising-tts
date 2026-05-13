@@ -38,15 +38,17 @@ Per the TTS **InputField** note ([Input Elements](https://api.tabletopsimulator.
 | `HUD_selectStorytellerPanel` | `toggle_scenes`, `toggle_soundscape`, `toggle_pcs`, `toggle_phases`, `toggle_npcs` | `(player, button, id)` | Strips `toggle_` prefix from `id`, calls `StorytellerPanelUI.selectStorytellerPanel(panelKey)` to show one storyteller panel and hide all others. Updates toggle button colors to indicate active panel. Deferred refresh for Sound (`syncSoundscapeControls`) and Scenes (`StorytellerScenesPanel.refresh` + lighting preset buttons). |
 | `HUD_togglePanel` | `toggleElem_*` buttons | `(player, button, id)` | Strips `toggleElem_` prefix from `id`, calls `U.toggleXmlElement(elemID, button)` to collapse/expand the target panel. Swaps toggle button text between `►` and `▼`. |
 
-## Scenes panel (`panel_scenes.xml`)
+## Scenes tab (`panel_scenes_host.xml` → `panel_scenes.xml` + `panel_scenes_library.xml`)
 
 **Authority:** `gameState.currentScene` remains the lighting preset key for `Scenes.reconcileFromState`. Narrative/table/location/seat-presence fields live under **`gameState.sessionScene`** (see `core/state.ttslua`). Applying a lighting preset also writes `sessionScene.lightingPresetKey` as a mirror.
+
+The **Scenes** toolbar tab opens `panel_scenes_host` (**1200px** total: two **596px** columns + **8px** gap; host and `HorizontalLayout` use fixed `width`/`minWidth` so TTS does not collapse the row to a hairline). Main Scenes + **Scene library** with fixed slot buttons for `sceneLibrary.order`.
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
 | `HUD_selectAdminLightingScene` | `adminScene_dark`, `adminScene_standard`, `adminScene_bright` | `(player, button, id)` | Sets `currentScene`, `sessionScene.lightingPresetKey`, clears `sceneTransition`, calls `Sync.full()`. |
 | `HUD_scenesPanel` | `scenes_tbl_*`, `scenes_seat_*` | `(player, button, id)` | `core/storyteller_scenes_panel.ttslua`: table buttons call `rotational-seat-layout.SetTableTo` after `sessionScene.tableKey`; seat buttons cycle `sessionScene.seatPresent` (`nil` → absent → present → neutral) and run `L.reconcileAllPlayers()`. |
-| `HUD_scenesPanelInput` | clock day/year/time12/speed fields | `(player, value, id)` | Intentional no-op on keystroke; use **Apply clock** / **Apply location** to persist. **Apply clock** currently reads via `UI.getValue` on those ids — for new `InputField` flows (e.g. Scene Constructor modals), prefer callback stash per [SOLVING ISSUES & DEBUGGING.md](SOLVING%20ISSUES%20%26%20DEBUGGING.md). |
+| `HUD_scenesClockFieldChanged` | `scenes_clock_day`, `scenes_clock_year`, `scenes_clock_time12`, `scenes_clock_speed` | `(player, value, id)` | `StorytellerScenesPanel.onClockInputChanged` — stashes typed text for **Apply clock** (TTS `UI.getValue` on `InputField` is unreliable; same pattern as roll UI / Scene Constructor modals). `HUD_scenesPanelInput` is an alias for the same handler. |
 | `HUD_scenesOpenDistrictModal` | `Browse districts...` | `(player, button, id)` | Shows `scenes_modal_districts_root` (`ui/storyteller/panel_scenes_location_modals.xml`, generated from `C.Districts`). |
 | `HUD_scenesOpenSiteModal` | `Browse sites...` | `(player, button, id)` | Calls `StorytellerScenesPanel.applySiteModalDistrictVisibility()` then shows `scenes_modal_sites_root`. Modal XML lays out `scenes_site_group_generic` first, then `scenes_site_group_dist_<districtKey>` panels so the active district bucket draws above the general list. Visibility toggled from `sessionScene.districtKey`. Wide modal (~1120px), 8 buttons per row (generator). |
 | `HUD_scenesCloseLocationModals` | modal Close buttons | `(player, button, id)` | Hides both picker roots. |
@@ -55,7 +57,7 @@ Per the TTS **InputField** note ([Input Elements](https://api.tabletopsimulator.
 | `HUD_scenesMonthPick` | `scenes_month_1` … `scenes_month_12` | `(player, button, id)` | `StorytellerScenesPanel.setPendingMonth` — updates `sessionScene.clock.month` and refreshes the panel. |
 | `HUD_scenesToggleRealTimeClock` | `scenes_clock_rtToggle` | `(player, button, id)` | `StorytellerScenesPanel.toggleRealTimeClock` — toggles `sessionScene.clock.useRealTime`, starts/stops `GameStateOverlay` ticker. |
 | `HUD_scenesApplyLocation` | `Apply location + soundscape` | `(player, button, id)` | Reads **state** `sessionScene.districtKey` / `siteKey` (district/site names are display-only). Validates keys, writes cards + `Soundscape.applyContext` + `Sync.full()`. |
-| `HUD_scenesApplyClock` | `Apply clock` | `(player, button, id)` | Writes `sessionScene.clock` from month (state) + day/year/time12/speed inputs, `ChronicleWeather.applyScheduledWeather({ force = false })`, `Sync.full()`, `GameStateOverlay.refresh` + `ensureTicker`. |
+| `HUD_scenesApplyClock` | `Apply clock` | `(player, button, id)` | Writes `sessionScene.clock` from month (state) + stashed or `UI.getValue` day/year/time12/speed, `ChronicleWeather.applyScheduledWeather({ force = false })`, `Sync.full()`, `GameStateOverlay.resetRealTimeCarry()` (clears fractional real-time carry), `GameStateOverlay.refresh` + `ensureTicker`. |
 | `HUD_scenesCtorImportOpen` | `scenes_ctor_btn_import` | `(player, button, id)` | `StorytellerScenesPanel.openImportConstructorModal` — shows import modal, clears error + JSON stash. |
 | `HUD_scenesCtorImportCancel` | `scenes_ctor_import_cancel` | `(player, button, id)` | Closes import modal. |
 | `HUD_scenesCtorImportConfirm` | `scenes_ctor_import_confirm` | `(player, button, id)` | Host-only: `JSON.decode` + `SceneLibrary.validateAndNormalizeImportPayload`, writes `sceneLibrary.scenes[sceneKey]` with `receivesLiveWrites = false`, appends `order` key, `S.validateState()`, closes modal. |
@@ -64,12 +66,17 @@ Per the TTS **InputField** note ([Input Elements](https://api.tabletopsimulator.
 | `HUD_scenesCtorForkCancel` | `scenes_ctor_fork_cancel` | `(player, button, id)` | Closes fork modal. |
 | `HUD_scenesCtorForkConfirm` | `scenes_ctor_fork_confirm` | `(player, button, id)` | Host-only: pins `F` on prior `activeKey` (if any), allocates `sceneKey_N`, writes new row with `receivesLiveWrites = true`, sets `activeKey`, `S.validateState()`. |
 | `HUD_scenesCtorForkTitleChanged` | `scenes_ctor_fork_title_new`, `scenes_ctor_fork_title_old` | `(player, value, id)` | Stashes fork title edits. |
+| `HUD_scenesLibSlot` | `scenes_lib_slot_01` … `scenes_lib_slot_20` | `(player, button, id)` | Host: sets `sceneLibrary.activeKey` from `order[slot]`; `StorytellerScenesPanel.refresh()`. |
+| `HUD_scenesLibUnlink` | `scenes_lib_btn_unlink` | `(player, button, id)` | Host: `receivesLiveWrites = false` on active row. |
+| `HUD_scenesLibDelete` | `scenes_lib_btn_delete` | `(player, button, id)` | Host: two-step delete (arm then confirm within 5s) removes **active** key from `scenes` + `order`, clears `activeKey`. |
+| `HUD_scenesLibApply` | `scenes_lib_btn_apply` | `(player, button, id)` | Host: clones `sceneLibrary.scenes[activeKey].sessionScene` into live `sessionScene`, sets `currentScene` from `lightingPresetKey`, `RSL.SetTableTo` when `tableKey` is valid, district/site cards + `Soundscape.contextFromSite` / `applyContext`, optional `soundscapeNarrative` via `SceneLibrary.applySoundscapeNarrativePartial`, chronicle weather when not manual-hold, then `Sync.full`. |
+| `HUD_scenesLibEnd` | `scenes_lib_btn_end` | `(player, button, id)` | Host: `U.Alert` to table, `Soundscape.setLocationAudio("none")`, `reapplyWeatherNaturalVolumes`, `invalidateReconcileCache`, `Sync.full` (does not clear `sessionScene`). |
 
 ## Game state overlay (`ui/shared/game_state_overlay.xml`)
 
 | Source | Behavior |
 | ------ | -------- |
-| `core/game_state_overlay.ttslua` | `GameStateOverlay.refresh()` pushes `currentPhase` label + `sessionScene.clock` date/time (12h) to `gameStateOverlay_phase` / `gameStateOverlay_datetime`. When `sessionScene.clock.useRealTime` is true, `ensureTicker` advances in-game minutes each wall second by `realTimeSpeed` and refreshes the overlay; hour/day rollovers also call `ChronicleWeather.applyScheduledWeather`. |
+| `core/game_state_overlay.ttslua` | `GameStateOverlay.refresh()` sets `gameStateOverlay_datetime` only when `currentPhase` is **`Play`** or **`Downtime`** (`C.Phases.PLAY` / `C.Phases.DOWNTIME`); otherwise the line is cleared. When shown, text is one line from `sessionScene.clock`: weekday, full month name, day with ordinal suffix, year, comma, then 12-hour time. When `sessionScene.clock.useRealTime` is true, `ensureTicker` runs once per wall second: narrative minutes advance by `realTimeSpeed / 60` per tick; hour/day rollovers call `ChronicleWeather.applyScheduledWeather`. |
 
 ## Legacy scene preset buttons (player HUD / other XML)
 

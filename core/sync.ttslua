@@ -18,6 +18,7 @@ local L = require("core.lighting")
 local Scenes = require("core.scenes")
 local Soundscape = require("core.soundscape")
 local NPCS = require("core.npcs")
+local SceneLibrary = require("core.scene_library")
 local HUDP = require("core.hud_player")
 local HO = require("core.hud_overlays")
 local didBootstrapFullSync = false
@@ -172,12 +173,17 @@ function Sync.full(opts)
         reconcileSeatPresentationFromState()
     end
 
+    --- `sessionScene.npcWorld.preload` → off-table staging (see `NPCS.reconcileSessionScenePreloadNpcs`).
+    callIfFunction(NPCS.reconcileSessionScenePreloadNpcs, { deferUiRefresh = true })
+
     -- Update UI displays: incremental omits overlays (already synced via `HO.syncAll` above).
     if force then
         Sync.ui()
     else
         Sync.ui(SYNC_INCREMENTAL_UI_DELTA)
     end
+
+    callIfFunction(SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked)
 
     if not didBootstrapFullSync then
         -- Some world objects (notably hunger smoke props) can be unavailable on the first

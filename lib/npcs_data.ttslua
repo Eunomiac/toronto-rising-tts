@@ -170,6 +170,37 @@ D.areas = {
       { x = -75, z = 15 },
     },
   },
+  --- Off-table staging for `sessionScene.npcWorld.preload` (y = -100 world). Not listed on the Storyteller NPC panel (`excludeFromNpcPanel`).
+  preload = {
+    name = "Preload",
+    label = "⌂",
+    autoLight = true,
+    excludeFromNpcPanel = true,
+    rotation = 0,
+    distance = 0,
+    groundLevel = -100,
+    spreadBlend = 0,
+    positions = {
+      { x = 0,   z = 0 },
+      { x = 14,  z = 0 },
+      { x = 28,  z = 0 },
+      { x = 42,  z = 0 },
+      { x = 56,  z = 0 },
+      { x = 70,  z = 0 },
+      { x = 0,   z = 14 },
+      { x = 14,  z = 14 },
+      { x = 28,  z = 14 },
+      { x = 42,  z = 14 },
+      { x = 56,  z = 14 },
+      { x = 70,  z = 14 },
+      { x = 0,   z = 28 },
+      { x = 14,  z = 28 },
+      { x = 28,  z = 28 },
+      { x = 42,  z = 28 },
+      { x = 56,  z = 28 },
+      { x = 70,  z = 28 },
+    },
+  },
 }
 
 --[[
@@ -1444,14 +1475,14 @@ D.characters = {
       note = "Stats not set."
     }
   },
-  alexisHoitt = {
-    name = "alexisHoitt",
-    fullName = "Alexis Hoitt",
+  alexisHoltt = {
+    name = "alexisHoltt",
+    fullName = "Alexis Holtt",
     labelColor = "rgba(0.67, 0.67, 0.67, 0.5)",
     figurine = {
       images = {
-        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/alexisHoitt.webp",
-        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/alexisHoittBack.webp"
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/alexisHoltt.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/alexisHolttBack.webp"
       },
       scale = 53,
       seatedScale = 66

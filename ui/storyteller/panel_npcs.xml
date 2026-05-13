@@ -110,18 +110,18 @@
           <Button id="npc_move_centerForward_alexandra_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
           <Button id="npc_remove_centerForward_alexandra" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
-        <HorizontalLayout id="npc_occRow_centerForward_alexisHoitt" class="hud_storyteller_button_row" active="false">
-          <Button id="npc_toggle_centerForward_alexisHoitt" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
-          <Button id="npc_spot_centerForward_alexisHoitt" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
-          <Text id="npc_occName_centerForward_alexisHoitt" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Alexis Hoitt</Text>
-          <Button id="npc_roll_centerForward_alexisHoitt" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
-          <Button id="npc_stats_centerForward_alexisHoitt" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
-          <Button id="npc_move_centerForward_alexisHoitt_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
-          <Button id="npc_move_centerForward_alexisHoitt_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
-          <Button id="npc_move_centerForward_alexisHoitt_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
-          <Button id="npc_move_centerForward_alexisHoitt_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
-          <Button id="npc_move_centerForward_alexisHoitt_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
-          <Button id="npc_remove_centerForward_alexisHoitt" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
+        <HorizontalLayout id="npc_occRow_centerForward_alexisHoltt" class="hud_storyteller_button_row" active="false">
+          <Button id="npc_toggle_centerForward_alexisHoltt" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
+          <Button id="npc_spot_centerForward_alexisHoltt" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
+          <Text id="npc_occName_centerForward_alexisHoltt" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Alexis Holtt</Text>
+          <Button id="npc_roll_centerForward_alexisHoltt" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
+          <Button id="npc_stats_centerForward_alexisHoltt" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
+          <Button id="npc_move_centerForward_alexisHoltt_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
+          <Button id="npc_move_centerForward_alexisHoltt_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
+          <Button id="npc_move_centerForward_alexisHoltt_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
+          <Button id="npc_move_centerForward_alexisHoltt_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
+          <Button id="npc_move_centerForward_alexisHoltt_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
+          <Button id="npc_remove_centerForward_alexisHoltt" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
         <HorizontalLayout id="npc_occRow_centerForward_anitaMorris" class="hud_storyteller_button_row" active="false">
           <Button id="npc_toggle_centerForward_anitaMorris" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
@@ -977,18 +977,18 @@
           <Button id="npc_move_farLeft_alexandra_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
           <Button id="npc_remove_farLeft_alexandra" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
-        <HorizontalLayout id="npc_occRow_farLeft_alexisHoitt" class="hud_storyteller_button_row" active="false">
-          <Button id="npc_toggle_farLeft_alexisHoitt" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
-          <Button id="npc_spot_farLeft_alexisHoitt" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
-          <Text id="npc_occName_farLeft_alexisHoitt" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Alexis Hoitt</Text>
-          <Button id="npc_roll_farLeft_alexisHoitt" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
-          <Button id="npc_stats_farLeft_alexisHoitt" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
-          <Button id="npc_move_farLeft_alexisHoitt_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
-          <Button id="npc_move_farLeft_alexisHoitt_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
-          <Button id="npc_move_farLeft_alexisHoitt_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
-          <Button id="npc_move_farLeft_alexisHoitt_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
-          <Button id="npc_move_farLeft_alexisHoitt_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
-          <Button id="npc_remove_farLeft_alexisHoitt" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
+        <HorizontalLayout id="npc_occRow_farLeft_alexisHoltt" class="hud_storyteller_button_row" active="false">
+          <Button id="npc_toggle_farLeft_alexisHoltt" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
+          <Button id="npc_spot_farLeft_alexisHoltt" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
+          <Text id="npc_occName_farLeft_alexisHoltt" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Alexis Holtt</Text>
+          <Button id="npc_roll_farLeft_alexisHoltt" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
+          <Button id="npc_stats_farLeft_alexisHoltt" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
+          <Button id="npc_move_farLeft_alexisHoltt_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
+          <Button id="npc_move_farLeft_alexisHoltt_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
+          <Button id="npc_move_farLeft_alexisHoltt_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
+          <Button id="npc_move_farLeft_alexisHoltt_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
+          <Button id="npc_move_farLeft_alexisHoltt_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
+          <Button id="npc_remove_farLeft_alexisHoltt" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
         <HorizontalLayout id="npc_occRow_farLeft_anitaMorris" class="hud_storyteller_button_row" active="false">
           <Button id="npc_toggle_farLeft_anitaMorris" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
@@ -1844,18 +1844,18 @@
           <Button id="npc_move_farRight_alexandra_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
           <Button id="npc_remove_farRight_alexandra" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
-        <HorizontalLayout id="npc_occRow_farRight_alexisHoitt" class="hud_storyteller_button_row" active="false">
-          <Button id="npc_toggle_farRight_alexisHoitt" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
-          <Button id="npc_spot_farRight_alexisHoitt" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
-          <Text id="npc_occName_farRight_alexisHoitt" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Alexis Hoitt</Text>
-          <Button id="npc_roll_farRight_alexisHoitt" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
-          <Button id="npc_stats_farRight_alexisHoitt" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
-          <Button id="npc_move_farRight_alexisHoitt_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
-          <Button id="npc_move_farRight_alexisHoitt_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
-          <Button id="npc_move_farRight_alexisHoitt_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
-          <Button id="npc_move_farRight_alexisHoitt_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
-          <Button id="npc_move_farRight_alexisHoitt_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
-          <Button id="npc_remove_farRight_alexisHoitt" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
+        <HorizontalLayout id="npc_occRow_farRight_alexisHoltt" class="hud_storyteller_button_row" active="false">
+          <Button id="npc_toggle_farRight_alexisHoltt" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
+          <Button id="npc_spot_farRight_alexisHoltt" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
+          <Text id="npc_occName_farRight_alexisHoltt" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Alexis Holtt</Text>
+          <Button id="npc_roll_farRight_alexisHoltt" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
+          <Button id="npc_stats_farRight_alexisHoltt" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
+          <Button id="npc_move_farRight_alexisHoltt_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
+          <Button id="npc_move_farRight_alexisHoltt_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
+          <Button id="npc_move_farRight_alexisHoltt_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
+          <Button id="npc_move_farRight_alexisHoltt_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
+          <Button id="npc_move_farRight_alexisHoltt_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
+          <Button id="npc_remove_farRight_alexisHoltt" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
         <HorizontalLayout id="npc_occRow_farRight_anitaMorris" class="hud_storyteller_button_row" active="false">
           <Button id="npc_toggle_farRight_anitaMorris" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
@@ -2711,18 +2711,18 @@
           <Button id="npc_move_nearLeft_alexandra_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
           <Button id="npc_remove_nearLeft_alexandra" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
-        <HorizontalLayout id="npc_occRow_nearLeft_alexisHoitt" class="hud_storyteller_button_row" active="false">
-          <Button id="npc_toggle_nearLeft_alexisHoitt" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
-          <Button id="npc_spot_nearLeft_alexisHoitt" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
-          <Text id="npc_occName_nearLeft_alexisHoitt" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Alexis Hoitt</Text>
-          <Button id="npc_roll_nearLeft_alexisHoitt" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
-          <Button id="npc_stats_nearLeft_alexisHoitt" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
-          <Button id="npc_move_nearLeft_alexisHoitt_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
-          <Button id="npc_move_nearLeft_alexisHoitt_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
-          <Button id="npc_move_nearLeft_alexisHoitt_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
-          <Button id="npc_move_nearLeft_alexisHoitt_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
-          <Button id="npc_move_nearLeft_alexisHoitt_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
-          <Button id="npc_remove_nearLeft_alexisHoitt" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
+        <HorizontalLayout id="npc_occRow_nearLeft_alexisHoltt" class="hud_storyteller_button_row" active="false">
+          <Button id="npc_toggle_nearLeft_alexisHoltt" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
+          <Button id="npc_spot_nearLeft_alexisHoltt" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
+          <Text id="npc_occName_nearLeft_alexisHoltt" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Alexis Holtt</Text>
+          <Button id="npc_roll_nearLeft_alexisHoltt" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
+          <Button id="npc_stats_nearLeft_alexisHoltt" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
+          <Button id="npc_move_nearLeft_alexisHoltt_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
+          <Button id="npc_move_nearLeft_alexisHoltt_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
+          <Button id="npc_move_nearLeft_alexisHoltt_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
+          <Button id="npc_move_nearLeft_alexisHoltt_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
+          <Button id="npc_move_nearLeft_alexisHoltt_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
+          <Button id="npc_remove_nearLeft_alexisHoltt" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
         <HorizontalLayout id="npc_occRow_nearLeft_anitaMorris" class="hud_storyteller_button_row" active="false">
           <Button id="npc_toggle_nearLeft_anitaMorris" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
@@ -3578,18 +3578,18 @@
           <Button id="npc_move_nearRight_alexandra_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
           <Button id="npc_remove_nearRight_alexandra" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
-        <HorizontalLayout id="npc_occRow_nearRight_alexisHoitt" class="hud_storyteller_button_row" active="false">
-          <Button id="npc_toggle_nearRight_alexisHoitt" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
-          <Button id="npc_spot_nearRight_alexisHoitt" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
-          <Text id="npc_occName_nearRight_alexisHoitt" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Alexis Hoitt</Text>
-          <Button id="npc_roll_nearRight_alexisHoitt" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
-          <Button id="npc_stats_nearRight_alexisHoitt" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
-          <Button id="npc_move_nearRight_alexisHoitt_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
-          <Button id="npc_move_nearRight_alexisHoitt_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
-          <Button id="npc_move_nearRight_alexisHoitt_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
-          <Button id="npc_move_nearRight_alexisHoitt_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
-          <Button id="npc_move_nearRight_alexisHoitt_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
-          <Button id="npc_remove_nearRight_alexisHoitt" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
+        <HorizontalLayout id="npc_occRow_nearRight_alexisHoltt" class="hud_storyteller_button_row" active="false">
+          <Button id="npc_toggle_nearRight_alexisHoltt" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
+          <Button id="npc_spot_nearRight_alexisHoltt" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
+          <Text id="npc_occName_nearRight_alexisHoltt" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Alexis Holtt</Text>
+          <Button id="npc_roll_nearRight_alexisHoltt" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
+          <Button id="npc_stats_nearRight_alexisHoltt" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
+          <Button id="npc_move_nearRight_alexisHoltt_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
+          <Button id="npc_move_nearRight_alexisHoltt_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
+          <Button id="npc_move_nearRight_alexisHoltt_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
+          <Button id="npc_move_nearRight_alexisHoltt_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
+          <Button id="npc_move_nearRight_alexisHoltt_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
+          <Button id="npc_remove_nearRight_alexisHoltt" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
         <HorizontalLayout id="npc_occRow_nearRight_anitaMorris" class="hud_storyteller_button_row" active="false">
           <Button id="npc_toggle_nearRight_anitaMorris" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
@@ -4944,20 +4944,20 @@
           <Button id="npc_memberLock_petitioners_eddie" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_eddie" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
-        <HorizontalLayout id="npc_groupMemberRow_petitioners_alexisHoitt" class="hud_storyteller_button_row npc_group_member_row" active="false">
-          <Text id="npc_groupMemberName_petitioners_alexisHoitt" class="hud_storyteller_label hud_storyteller_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Alexis Hoitt</Text>
-          <Button id="npc_memberLoc_petitioners_alexisHoitt_centerForward" class="button_icon npc_button_icon button_icon_small" offsetXY="-295 0">▼</Button>
-          <Button id="npc_memberLoc_petitioners_alexisHoitt_nearLeft" class="button_icon npc_button_icon button_icon_small" offsetXY="-270 0">◀</Button>
-          <Button id="npc_memberLoc_petitioners_alexisHoitt_nearRight" class="button_icon npc_button_icon button_icon_small" offsetXY="-245 0">▶</Button>
-          <Button id="npc_memberLoc_petitioners_alexisHoitt_farLeft" class="button_icon npc_button_icon button_icon_small" offsetXY="-220 0">◁</Button>
-          <Button id="npc_memberLoc_petitioners_alexisHoitt_farRight" class="button_icon npc_button_icon button_icon_small" offsetXY="-195 0">▷</Button>
-          <Button id="npc_memberLoc_petitioners_alexisHoitt_NPC1" class="button_icon npc_button_icon button_icon_small" offsetXY="-160 0">1</Button>
-          <Button id="npc_memberLoc_petitioners_alexisHoitt_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
-          <Button id="npc_memberLoc_petitioners_alexisHoitt_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
-          <Button id="npc_memberLoc_petitioners_alexisHoitt_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
+        <HorizontalLayout id="npc_groupMemberRow_petitioners_alexisHoltt" class="hud_storyteller_button_row npc_group_member_row" active="false">
+          <Text id="npc_groupMemberName_petitioners_alexisHoltt" class="hud_storyteller_label hud_storyteller_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Alexis Holtt</Text>
+          <Button id="npc_memberLoc_petitioners_alexisHoltt_centerForward" class="button_icon npc_button_icon button_icon_small" offsetXY="-295 0">▼</Button>
+          <Button id="npc_memberLoc_petitioners_alexisHoltt_nearLeft" class="button_icon npc_button_icon button_icon_small" offsetXY="-270 0">◀</Button>
+          <Button id="npc_memberLoc_petitioners_alexisHoltt_nearRight" class="button_icon npc_button_icon button_icon_small" offsetXY="-245 0">▶</Button>
+          <Button id="npc_memberLoc_petitioners_alexisHoltt_farLeft" class="button_icon npc_button_icon button_icon_small" offsetXY="-220 0">◁</Button>
+          <Button id="npc_memberLoc_petitioners_alexisHoltt_farRight" class="button_icon npc_button_icon button_icon_small" offsetXY="-195 0">▷</Button>
+          <Button id="npc_memberLoc_petitioners_alexisHoltt_NPC1" class="button_icon npc_button_icon button_icon_small" offsetXY="-160 0">1</Button>
+          <Button id="npc_memberLoc_petitioners_alexisHoltt_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
+          <Button id="npc_memberLoc_petitioners_alexisHoltt_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
+          <Button id="npc_memberLoc_petitioners_alexisHoltt_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
         
-          <Button id="npc_memberLock_petitioners_alexisHoitt" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
-          <Button id="npc_unseat_alexisHoitt" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
+          <Button id="npc_memberLock_petitioners_alexisHoltt" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
+          <Button id="npc_unseat_alexisHoltt" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
         <HorizontalLayout id="npc_groupMemberRow_petitioners_lexieMadi" class="hud_storyteller_button_row npc_group_member_row" active="false">
           <Text id="npc_groupMemberName_petitioners_lexieMadi" class="hud_storyteller_label hud_storyteller_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Lexie Madi</Text>

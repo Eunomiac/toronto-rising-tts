@@ -770,6 +770,26 @@ function U.split(inputstr, sep)
     return t
 end
 
+--- Removes trailing commas before `}` or `]` so spreadsheet-style pseudo-JSON parses with TTS `JSON.decode`.
+--- Repeats until stable (nested trailing commas). **Limitation:** string values containing `,}` or `,]` as literal
+--- adjacent text could be corrupted — normal scene import payloads do not use such strings.
+--- @param s string|nil
+--- @return string
+function U.sanitizeJsonTextRemoveTrailingCommas(s)
+    if type(s) ~= "string" or s == "" then
+        return type(s) == "string" and s or ""
+    end
+    local out = s
+    local guard = 0
+    repeat
+        local before = out
+        out = string.gsub(out, ",%s*}", "}")
+        out = string.gsub(out, ",%s*]", "]")
+        guard = guard + 1
+    until out == before or guard > 64
+    return out
+end
+
 -- ============================================================================
 -- ERROR HANDLING & VALIDATION
 -- ============================================================================

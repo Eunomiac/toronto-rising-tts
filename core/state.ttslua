@@ -20,6 +20,7 @@ local S = {}
 local U = require("lib.util")
 local C = require("lib.constants")
 local PC_BOOT = require("lib.pc_bootstrap")
+local SceneLibrary = require("core.scene_library")
 local gameState = {}
 
 -- ============================================================================
@@ -308,6 +309,7 @@ function S.GetDefaultGameState()
             seatPresent = {},
             --- Per-seat narrative/config (Scene Constructor + panel). When `isPresent` is set here, it wins over `seatPresent` after backfill (see `normalizeLiveSessionSceneSeatSlots`).
             seatSlots = {},
+            --- Sparse map: keys in `C.PlayerColors`, values NPC `characterKey` strings when a PC is playing as that NPC (`seatSlots[color].isPlayingNPC` + `npcCharacterKey`). Rebuilt from `seatSlots` in `SceneLibrary.syncNpcRoleOverrideFromSeatSlots` and on Scene Constructor import.
             npcRoleOverride = {},
             districtKey = nil,
             siteKey = nil,
@@ -318,12 +320,12 @@ function S.GetDefaultGameState()
                 month = 1,
                 year = 2026,
                 useRealTime = false,
-                --- In-game minutes advanced per real second when `useRealTime` is true (>= 0).
+                --- When `useRealTime` is true: multiplier on wall-clock pace. `1` => one narrative minute every 60 real seconds; `2` => twice that fast. `0` freezes narrative time in the ticker.
                 realTimeSpeed = 1,
             },
-            --- When true (default), applying scene clock runs CSV chronicle weather → soundscape.
+            --- When true (default), applying scene clock runs CSV chronicle weather → soundscape. Scene Constructor import may set this from `soundscapeNarrative` wind/rain/thunderstorm (see `.dev/Scene Constructor/Scene Constructor Overview.md`).
             chronicleWeatherFollowSchedule = true,
-            --- When true, chronicle weather is not auto-applied on clock updates (manual soundscape override).
+            --- When true, chronicle weather is not auto-applied on clock updates (manual soundscape override). Scene Constructor import may set this from the same narrative weather triple.
             chronicleWeatherManualHold = false,
             --- Per-roll-type overrides merged in `RO.seedActiveRoll` (same keys as `active.rollOptions`).
             rollDefaults = {},
@@ -592,6 +594,9 @@ function S.validateState()
     end
 
     normalizeLiveSessionSceneSeatSlots()
+    if SceneLibrary and type(SceneLibrary.syncNpcRoleOverrideFromSeatSlots) == "function" then
+        SceneLibrary.syncNpcRoleOverrideFromSeatSlots(gameState.sessionScene)
+    end
     for _, seatKey in ipairs(C.NPCSeats) do
         local slotValue = gameState.seatLayout.occupiedNPCSlots[seatKey]
         if slotValue ~= false and type(slotValue) ~= "string" then
@@ -631,6 +636,9 @@ function S.validateState()
                 entry.sessionScene = {}
             end
             S.mergeDefaults(entry.sessionScene, S.GetDefaultGameState().sessionScene)
+            if SceneLibrary and type(SceneLibrary.syncNpcRoleOverrideFromSeatSlots) == "function" then
+                SceneLibrary.syncNpcRoleOverrideFromSeatSlots(entry.sessionScene)
+            end
             if entry.receivesLiveWrites == nil then
                 entry.receivesLiveWrites = false
             elseif type(entry.receivesLiveWrites) ~= "boolean" then
