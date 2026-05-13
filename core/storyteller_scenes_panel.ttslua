@@ -430,6 +430,54 @@ function StorytellerScenesPanel.deleteActiveSceneArmed(player)
     U.AlertGM("Delete armed for `" .. K .. "`: click Delete again within 5 seconds to remove this row.")
 end
 
+--- Updates a Custom Tile (or other custom object) primary texture.
+--- @param guid string|nil
+--- @param imageUrl string|nil
+--- @param label string short name for GM alert
+local function setStorytellerCardCustomImage(guid, imageUrl, label)
+    if type(imageUrl) ~= "string" or imageUrl == "" then
+        return
+    end
+    if type(guid) ~= "string" or guid == "" then
+        return
+    end
+    local obj = getObjectFromGUID(guid)
+    if obj == nil or obj.setCustomObject == nil then
+        U.AlertGM(
+            "Scenes: "
+                .. label
+                .. " display object missing or lacks setCustomObject (GUID "
+                .. tostring(guid)
+                .. ")."
+        )
+        return
+    end
+    obj.setCustomObject({ image = imageUrl })
+    if obj.reload ~= nil then
+        obj.reload()
+    end
+end
+
+--- Sets `G.GUIDS.SITE_CARD` / `DISTRICT_CARD` textures from `C.Sites` / `C.Districts` image URLs.
+--- Must be declared before `StorytellerScenesPanel.applyActiveLibraryScene` (Lua 5.1 local scope).
+--- @param site table
+--- @param districtKey string trimmed; empty skips district card
+local function applySessionSceneDisplayCards(site, districtKey)
+    local guids = G.GUIDS
+    if type(guids) ~= "table" then
+        return
+    end
+    if type(site) == "table" and type(site.image) == "string" then
+        setStorytellerCardCustomImage(guids.SITE_CARD, site.image, "Site card")
+    end
+    if type(districtKey) == "string" and districtKey ~= "" then
+        local dist = C.Districts[districtKey]
+        if type(dist) == "table" and type(dist.image) == "string" then
+            setStorytellerCardCustomImage(guids.DISTRICT_CARD, dist.image, "District card")
+        end
+    end
+end
+
 --- Applies `sceneLibrary.scenes[activeKey].sessionScene` to live state, switches table when `tableKey` is valid,
 --- reapplies district/site cards + soundscape site context, optional `soundscapeNarrative`, then `Sync.full`.
 --- Table switching uses `RSL.SetTableTo` (blindfold path when the key changes). NPC seat → layout wiring
@@ -641,53 +689,6 @@ function StorytellerScenesPanel.applySiteModalDistrictVisibility()
     end
     U.setAttribute("scenes_site_group_generic", "active", "true")
     U.setAttribute("scenes_site_group_generic", "visibility", SITE_MODAL_BUCKET_VISIBILITY_ON)
-end
-
---- Updates a Custom Tile (or other custom object) primary texture.
---- @param guid string|nil
---- @param imageUrl string|nil
---- @param label string short name for GM alert
-local function setStorytellerCardCustomImage(guid, imageUrl, label)
-    if type(imageUrl) ~= "string" or imageUrl == "" then
-        return
-    end
-    if type(guid) ~= "string" or guid == "" then
-        return
-    end
-    local obj = getObjectFromGUID(guid)
-    if obj == nil or obj.setCustomObject == nil then
-        U.AlertGM(
-            "Scenes: "
-                .. label
-                .. " display object missing or lacks setCustomObject (GUID "
-                .. tostring(guid)
-                .. ")."
-        )
-        return
-    end
-    obj.setCustomObject({ image = imageUrl })
-    if obj.reload ~= nil then
-        obj.reload()
-    end
-end
-
---- Sets `G.GUIDS.SITE_CARD` / `DISTRICT_CARD` textures from `C.Sites` / `C.Districts` image URLs.
---- @param site table
---- @param districtKey string trimmed; empty skips district card
-local function applySessionSceneDisplayCards(site, districtKey)
-    local guids = G.GUIDS
-    if type(guids) ~= "table" then
-        return
-    end
-    if type(site) == "table" and type(site.image) == "string" then
-        setStorytellerCardCustomImage(guids.SITE_CARD, site.image, "Site card")
-    end
-    if type(districtKey) == "string" and districtKey ~= "" then
-        local dist = C.Districts[districtKey]
-        if type(dist) == "table" and type(dist.image) == "string" then
-            setStorytellerCardCustomImage(guids.DISTRICT_CARD, dist.image, "District card")
-        end
-    end
 end
 
 --- @param player Player
