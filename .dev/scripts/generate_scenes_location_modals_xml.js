@@ -188,8 +188,8 @@ function parseSiteDistrictKey(entryBody) {
 /**
  * Site modal: one Panel per district with `visibility="None"` when inactive (TTS otherwise
  * stacks/overlays siblings). Lua sets `visibility` + `active` for the selected district.
- * Generic bucket is always `Black|Host`. Then an always-visible generic bucket for sites
- * with no `district =` line.
+ * Generic bucket is always `Black|Host`. Emit the generic bucket **first** so district-specific
+ * panels render above it in z-order (otherwise generic buttons occlude district lists).
  *
  * @param {{ key: string, label: string }[]} districtEntries sorted
  * @param {Record<string, { key: string, label: string }[]>} sitesByDistrict
@@ -197,6 +197,20 @@ function parseSiteDistrictKey(entryBody) {
  */
 function renderSiteModalBody(districtEntries, sitesByDistrict, genericSites) {
   const panels = [];
+  const genericGrid =
+    genericSites.length === 0
+      ? `        <Text fontSize="10" color="#888888" alignment="UpperCenter" text="No generic sites in catalog." />`
+      : renderPickerButtons(genericSites, "site", "        ");
+  panels.push(
+    [
+      `    <Panel id="scenes_site_group_generic" active="True" visibility="Black|Host">`,
+      `      <VerticalLayout spacing="4" padding="0 0 4 0" childForceExpandWidth="true">`,
+      `        <Text fontSize="11" fontStyle="Bold" color="#AAAAAA" alignment="UpperCenter" text="General sites (no fixed district)" />`,
+      genericGrid,
+      `      </VerticalLayout>`,
+      `    </Panel>`,
+    ].join("\n"),
+  );
   for (const d of districtEntries) {
     const rows = sitesByDistrict[d.key] || [];
     const grid =
@@ -214,20 +228,6 @@ function renderSiteModalBody(districtEntries, sitesByDistrict, genericSites) {
       ].join("\n"),
     );
   }
-  const genericGrid =
-    genericSites.length === 0
-      ? `        <Text fontSize="10" color="#888888" alignment="UpperCenter" text="No generic sites in catalog." />`
-      : renderPickerButtons(genericSites, "site", "        ");
-  panels.push(
-    [
-      `    <Panel id="scenes_site_group_generic" active="True" visibility="Black|Host">`,
-      `      <VerticalLayout spacing="4" padding="0 0 4 0" childForceExpandWidth="true">`,
-      `        <Text fontSize="11" fontStyle="Bold" color="#AAAAAA" alignment="UpperCenter" text="General sites (no fixed district)" />`,
-      genericGrid,
-      `      </VerticalLayout>`,
-      `    </Panel>`,
-    ].join("\n"),
-  );
   return panels.join("\n\n");
 }
 
@@ -306,7 +306,7 @@ ${renderPickerButtons(districtEntries, "district")}
 <Panel id="scenes_modal_sites_root" visibility="Black|Host" active="False" width="${MODAL_WIDTH}" height="${MODAL_HEIGHT}" rectAlignment="MiddleCenter" offsetXY="0 0">
   <VerticalLayout padding="14" spacing="8" color="#1A1A1AE6" childForceExpandWidth="true">
     <Text fontSize="16" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="Pick site" />
-    <Text fontSize="10" color="#888888" alignment="MiddleCenter" text="District bucket matches the District key field (trimmed). General sites always show below. Apply location still required." />
+    <Text fontSize="10" color="#888888" alignment="MiddleCenter" text="District bucket matches sessionScene.districtKey. General sites list is behind district panels so the active district list stays on top. Apply location still required." />
     <HorizontalLayout spacing="8" childAlignment="MiddleCenter">
       <Button id="scenes_modal_sites_close" class="hud_storyteller_button" fontSize="12" preferredWidth="120" preferredHeight="32" colors="${BTN_COLORS}" textColor="#FFFFFF" text="Close" onClick="HUD_scenesCloseLocationModals" />
     </HorizontalLayout>

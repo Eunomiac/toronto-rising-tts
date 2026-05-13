@@ -30,7 +30,7 @@ The current Lua implementation includes:
 - `lib/soundscape_catalog.ttslua` is the source of truth for static audio keys,
   effect names, tags, default volumes, fade durations, and playlists.
 - `core/state.ttslua` persists the `soundscape` state across saves.
-- `core/global_script.ttslua` exposes basic Storyteller music controls.
+- `core/global_script.ttslua` exposes Storyteller music controls and **`Soundscape.prepareEmittersForSave()`** via the Sound panel **Silence for save** button (`HUD_soundscapePrepareSave`): calls `stopAll`, invalidates the reconcile cache, then `reconcileFromState({ force = true })` so the next table save is less likely to resume stray Unity looping sources on load.
 - `core/debug.ttslua` exposes console helpers such as `testSoundscape()`,
   `inspectSoundscapeAudio()`, `soundscapeRain()`, `soundscapeWind()`,
   `soundscapeThunder()`, and `soundscapeFeatured()`.

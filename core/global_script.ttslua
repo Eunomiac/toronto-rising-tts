@@ -196,6 +196,7 @@ O = require("core.objects")
 U = require("lib.util")
 local StorytellerPanelUI = require("core.storyteller_panel_ui")
 local StorytellerScenesPanel = require("core.storyteller_scenes_panel")
+local GameStateOverlay = require("core.game_state_overlay")
 local HUDP = require("core.hud_player")
 local HO = require("core.hud_overlays")
 NPCS = require("core.npcs")
@@ -540,6 +541,12 @@ function onLoad(saved_data)
     -- Synchronization orchestration (step 2): consolidate the onLoad fan-out into Sync.full().
     setStartupAction("initial-sync-full")
     Sync.full({ reason = "onLoad_initial" })
+    if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
+        GameStateOverlay.refresh()
+    end
+    if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
+        GameStateOverlay.ensureTicker()
+    end
     local startupInitialSyncDone = true
     setStartupAction("initial-sync-full-complete")
 
@@ -1008,6 +1015,21 @@ function HUD_soundscapeStopAll(player, button, id)
     syncSoundscapeControls()
 end
 
+--- End-of-session: silence all emitters and reconcile so the next save does not resume stray audio.
+function HUD_soundscapePrepareSave(player, button, id)
+    if SS == nil or type(SS.prepareEmittersForSave) ~= "function" then
+        U.AlertGM("Soundscape: prepare for save is unavailable.")
+        return
+    end
+    local ok, msg = SS.prepareEmittersForSave()
+    if ok then
+        U.AlertGM("Emitters prepared for save (silent). " .. tostring(msg or ""))
+    else
+        U.AlertGM("Soundscape prepare: " .. tostring(msg or "unknown issue"))
+    end
+    syncSoundscapeControls()
+end
+
 --- Storyteller soundscape panel: inspect hidden emitters and print a JSON summary.
 function HUD_soundscapeInspect(player, button, id)
     local rows = SS.inspectEmitters()
@@ -1079,12 +1101,9 @@ function HUD_soundscapeLaneSlider(player, value, id)
     syncSoundscapeControls()
 end
 
---- Storyteller Scenes panel clicks (`scenes_tbl_*`, `scenes_seat_*`, chronicle weather toggles).
+--- Storyteller Scenes panel clicks (`scenes_tbl_*`, `scenes_seat_*`).
 function HUD_scenesPanel(player, button, id)
     StorytellerScenesPanel.onHudClick(player, button, id)
-    if id == "scenes_chronicle_applyNow" then
-        syncSoundscapeControls()
-    end
 end
 
 function HUD_scenesPanelInput(player, value, id)
@@ -1101,17 +1120,13 @@ function HUD_scenesApplyClock(player, button, id)
     syncSoundscapeControls()
 end
 
-function HUD_scenesSaveNpcNote(player, button, id)
-    StorytellerScenesPanel.saveNpcWorldNote(player)
-end
-
 --- Scenes panel: open district modal (`panel_scenes_location_modals.xml`, generated from `C.Districts`).
 function HUD_scenesOpenDistrictModal(player, button, id)
     U.setAttribute("scenes_modal_sites_root", "active", "false")
     U.setAttribute("scenes_modal_districts_root", "active", "true")
 end
 
---- Scenes panel: open site modal (generated from `C.Sites`; district bucket toggled from `scenes_districtKey`).
+--- Scenes panel: open site modal (generated from `C.Sites`; district bucket toggled from `sessionScene.districtKey`).
 function HUD_scenesOpenSiteModal(player, button, id)
     U.setAttribute("scenes_modal_districts_root", "active", "false")
     StorytellerScenesPanel.applySiteModalDistrictVisibility()
@@ -1124,7 +1139,7 @@ function HUD_scenesCloseLocationModals(player, button, id)
     U.setAttribute("scenes_modal_sites_root", "active", "false")
 end
 
---- Writes picked district key into `scenes_districtKey` InputField; Apply location still required.
+--- Writes picked district key into `gameState.sessionScene.districtKey`; Apply location still required.
 function HUD_scenesPickDistrict(player, button, id)
     local key = string.match(id or "", "^scenes_pick_district_(.+)$")
     if type(key) ~= "string" or key == "" then
@@ -1132,16 +1147,16 @@ function HUD_scenesPickDistrict(player, button, id)
         return
     end
     HUD_scenesCloseLocationModals(player, button, id)
-    -- InputField: must use UI.setValue so UI.getValue matches (setAttribute "text" alone can show text but leave getValue empty).
-    if UI ~= nil and UI.setValue ~= nil then
-        UI.setValue("scenes_districtKey", key)
-    else
-        U.setAttribute("scenes_districtKey", "text", key)
+    S.setStateVal(key, "sessionScene", "districtKey")
+    StorytellerScenesPanel.applySiteModalDistrictVisibility()
+    StorytellerScenesPanel.refresh()
+    if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
+        GameStateOverlay.refresh()
     end
-    U.AlertGM("District key set: " .. key .. " — click Apply location + soundscape when ready.")
+    U.AlertGM("District set: " .. key .. " — click Apply location + soundscape when ready.")
 end
 
---- Writes picked site key into `scenes_siteKey` InputField; Apply location still required.
+--- Writes picked site key into `gameState.sessionScene.siteKey`; Apply location still required.
 function HUD_scenesPickSite(player, button, id)
     local key = string.match(id or "", "^scenes_pick_site_(.+)$")
     if type(key) ~= "string" or key == "" then
@@ -1149,12 +1164,27 @@ function HUD_scenesPickSite(player, button, id)
         return
     end
     HUD_scenesCloseLocationModals(player, button, id)
-    if UI ~= nil and UI.setValue ~= nil then
-        UI.setValue("scenes_siteKey", key)
-    else
-        U.setAttribute("scenes_siteKey", "text", key)
+    S.setStateVal(key, "sessionScene", "siteKey")
+    StorytellerScenesPanel.refresh()
+    if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
+        GameStateOverlay.refresh()
     end
-    U.AlertGM("Site key set: " .. key .. " — click Apply location + soundscape when ready.")
+    U.AlertGM("Site set: " .. key .. " — click Apply location + soundscape when ready.")
+end
+
+--- Month button on Scenes panel (`scenes_month_1` … `12`).
+function HUD_scenesMonthPick(player, button, id)
+    local m = tonumber(string.match(id or "", "^scenes_month_(%d+)$"))
+    if m == nil then
+        U.AlertGM("Scenes: could not parse month picker id.")
+        return
+    end
+    StorytellerScenesPanel.setPendingMonth(m)
+end
+
+--- Toggle real-time narrative clock progression.
+function HUD_scenesToggleRealTimeClock(player, button, id)
+    StorytellerScenesPanel.toggleRealTimeClock()
 end
 
 --- Advance game phase
@@ -1825,6 +1855,9 @@ function UpdateUIDisplays(delta)
             UI_DISPLAY_CACHE.phase = currentPhase
         end
         syncStorytellerPhaseButtons()
+        if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
+            GameStateOverlay.refresh()
+        end
     end
 
     if wants("scene") then
@@ -1843,6 +1876,9 @@ function UpdateUIDisplays(delta)
             StorytellerScenesPanel.refresh()
         end
         syncAdminLightSceneButtons()
+        if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
+            GameStateOverlay.refresh()
+        end
     end
     if wants("soundscape") then
         syncSoundscapeControls()
@@ -1897,6 +1933,10 @@ function UpdateUIDisplays(delta)
 
     if wants("pcstSheets") and PCST and PCST.refreshAllCharacterSheets then
         PCST.refreshAllCharacterSheets()
+    end
+
+    if refreshAll and GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
+        GameStateOverlay.refresh()
     end
 end
 

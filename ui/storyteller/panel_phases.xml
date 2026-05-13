@@ -1,6 +1,6 @@
 <!-- Storyteller Phases: one button per C.Phases value; active = green (sync in global_script). -->
 <Panel id="panel_phases" active="false">
-  <VerticalLayout spacing="6" padding="6 6 6 6" childForceExpandWidth="false">
+  <VerticalLayout class="storyteller_panel_surface" spacing="6" padding="6 6 6 6" childForceExpandWidth="false">
     <Text class="hud_storyteller_header">Session phase</Text>
     <Text fontSize="9" color="#AAAAAA">Sets `gameState.currentPhase`. Future reconcilers can subscribe to transitions.</Text>
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">

@@ -53,13 +53,11 @@ function ChronicleWeather.getRow(month, day, hour)
     return slot
 end
 
---- When true, applying the clock may push CSV weather into the soundscape.
+--- Chronicle weather always tracks `sessionScene.clock` (hourly CSV). Storyteller toggles for
+--- follow/hold were removed; `opts.force` remains for callers that want to bypass invariants.
 --- @return boolean
 function ChronicleWeather.shouldAutoApply()
-    if S.getStateVal("sessionScene", "chronicleWeatherManualHold") == true then
-        return false
-    end
-    return S.getStateVal("sessionScene", "chronicleWeatherFollowSchedule") ~= false
+    return true
 end
 
 --- Applies the scheduled row for `sessionScene.clock` (minute ignored; hour 0–23).
@@ -72,7 +70,7 @@ function ChronicleWeather.applyScheduledWeather(opts)
     opts = type(opts) == "table" and opts or {}
     local force = opts.force == true
     if not force and not ChronicleWeather.shouldAutoApply() then
-        return false, "Chronicle weather skipped (turn on “Follow on clock”, or clear “Manual hold”)."
+        return false, "Chronicle weather skipped."
     end
 
     local clock = S.getStateVal("sessionScene", "clock")

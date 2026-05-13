@@ -1,7 +1,7 @@
 <!-- Storyteller NPC panel defaults (non-generated). -->
 <!-- Keep this file hand-authored; generator composes panel_npcs.xml from ui/storyteller/partials/. -->
 <Defaults>
-  <Panel class="npc_panel_root" active="false" padding="0 0 0 0" offsetXY="0 -50" />
+  <Panel class="npc_panel_root" active="false" padding="0 0 0 0" offsetXY="0 -50" color="rgba(0, 0, 0, 0.8)" />
 
   <VerticalLayout class="npc_panel_layout_root" />
 

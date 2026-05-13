@@ -396,10 +396,15 @@ function M.setCamera(player, cameraMode, lookAtPos)
     end
 
     local intermediateCameraData = getIntermediateCameraData(cameraData)
+    -- Match debug-camera behavior: nudge away from the current pose first, then apply the
+    -- requested preset. Applying the final lookAt immediately can no-op when deltas are tiny.
     U.RunSequence({
       function()
+        player.lookAt(intermediateCameraData)
+        return 1
+      end,
+      function()
         player.lookAt(cameraData)
-        -- Wait one second to set camera mode, to avoid interrupting camera motion.
         return 3
       end,
       function()

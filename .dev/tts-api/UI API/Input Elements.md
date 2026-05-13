@@ -80,6 +80,9 @@ A text input for single or multiple lines. Is able to send the text (during edit
 
 > **Note: Note**
 > The text typed into an XML input field can't be obtained outside of the automatically passed arguments to ` onValueChanged `/ ` onEndEdit `.
+
+**Toronto Rising (project):** Treat `UI.getValue(id)` as **not authoritative** for reading live `InputField` text. Use callbacks to stash `value`, prefill with `UI.setAttribute(id, "text", ...)`, and read the stash on Confirm. See [`.dev/SOLVING ISSUES & DEBUGGING.md`](../../SOLVING%20ISSUES%20%26%20DEBUGGING.md) and `rollDash_difficulty_<Color>` + `HUD_rollSetDifficulty` in `ui/shared/roll_panels.xml` / `core/global_script.ttslua`.
+
 > **Example: Example**
 >
 > ```lua

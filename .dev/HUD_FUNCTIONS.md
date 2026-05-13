@@ -2,6 +2,10 @@
 
 Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 
+## Global UI `InputField` — reading typed text
+
+Per the TTS **InputField** note ([Input Elements](https://api.tabletopsimulator.com/ui/inputelements/)), live typed text is only delivered on **`onValueChanged`** / **`onEndEdit`** as the **`value`** argument. **Do not rely on `UI.getValue`** (or `U.getUIValue`) as the primary read path for `InputField` content. Stash `value` in Lua and read that on **Confirm**; prefill with **`UI.setAttribute(id, "text", ...)`** when the field may be inactive (see `core/roll_ui.ttslua` `uiSetInputField`, `rollDash_difficulty_*` + `HUD_rollSetDifficulty`). Full checklist: [`.dev/SOLVING ISSUES & DEBUGGING.md`](SOLVING%20ISSUES%20%26%20DEBUGGING.md) (*Global UI `InputField` — typed text*).
+
 > **Source files:**
 >
 > - XML triggers: `ui/storyteller/panel_*.xml`, `ui/storyteller/hud_storyteller.xml`
@@ -19,8 +23,8 @@ Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 | `HUD_syncIncremental` | `Sync (incremental)` button | `(player, button, id)` | Calls `Sync.full({ force = false })` — fingerprints + narrow UI delta; faster routine refresh. |
 | `HUD_syncAll` | `Sync All (force)` button | `(player, button, id)` | Calls `Sync.full({ force = true })` — bypass scene/soundscape fingerprints; full `UpdateUIDisplays` (overlay repair). |
 | `HUD_clearLoadingOverlay` | `Clear Loading Overlay` button | `(player, button, id)` | Calls `hideStartupLoadingOverlays()` to force-hide `overlay_loadingScreen_<Color>` for all player seats (debug/manual escape hatch). |
-| `HUD_debugLightGuidInput` | `dl_guid` `InputField` | `(player, value, id)` | Caches typed GUID (`LightDebugFocus.onGuidInput`). Required because TTS InputField text is not reliably readable with `UI.getValue` alone. |
-| `HUD_debugLightActivate` | `Debug Light` button | `(player, button, id)` | Reads GUID in order: `HUD_debugLightGuidInput` cache, then `UI.getAttribute("dl_guid","text")`, then `UI.getValue("dl_guid")`. Trims, `getObjectFromGUID`, validates spotlight via `LightDebug.getLightComponent`. Opens `panel_debug_light_root`, syncs sliders, applies live. Broadcasts errors to the clicking player if invalid. |
+| `HUD_debugLightGuidInput` | `dl_guid` `InputField` | `(player, value, id)` | Caches typed GUID (`LightDebugFocus.onGuidInput`). Per TTS docs, `InputField` text is not obtainable outside `onValueChanged`/`onEndEdit`; this handler is the primary source of truth. |
+| `HUD_debugLightActivate` | `Debug Light` button | `(player, button, id)` | Reads GUID in order: `HUD_debugLightGuidInput` cache (authoritative), then `UI.getAttribute("dl_guid","text")`, then `UI.getValue("dl_guid")` as last-resort fallbacks. Trims, `getObjectFromGUID`, validates spotlight via `LightDebug.getLightComponent`. Opens `panel_debug_light_root`, syncs sliders, applies live. Broadcasts errors to the clicking player if invalid. |
 | `HUD_debugLightEnabled` | `dl_enabled` `Toggle` | `(player, value, id)` | `LightDebugFocus.onEnabledToggle`: sets `cache.enabled`, `L.SetLightMode(..., enabled, ...)` instant apply. |
 | `HUD_debugLightResetRow` | `dl_reset_*` buttons | `(player, button, id)` | `LightDebugFocus.resetRowFromId(id)`: restores that row from session-start snapshot and reapplies. |
 | `HUD_debugLightSlider` | `dl_range`, `dl_angle`, `dl_intensity`, `dl_hue`, `dl_saturation`, `dl_brightness`, `dl_rotX`, `dl_rotY`, `dl_rotZ`, `dl_distance` | `(player, value, id)` | `LightDebugFocus.onSlider`: updates cached values, applies rotation/position. **Distance** moves along the inverse of `U.lookAtRotation` (same convention as `DEBUG.setRotationLookAt`), using object rotation minus `DEBUG.getLookAtOffset(obj)` for the beam axis. `L.SetLightMode` supplies enabled/range/angle/intensity/color (`transitionTime` 0). |
@@ -41,16 +45,23 @@ Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
 | `HUD_selectAdminLightingScene` | `adminScene_dark`, `adminScene_standard`, `adminScene_bright` | `(player, button, id)` | Sets `currentScene`, `sessionScene.lightingPresetKey`, clears `sceneTransition`, calls `Sync.full()`. |
-| `HUD_scenesPanel` | `scenes_tbl_*`, `scenes_seat_*`, `scenes_chronicle_*` | `(player, button, id)` | `core/storyteller_scenes_panel.ttslua`: table buttons call `rotational-seat-layout.SetTableTo` after `sessionScene.tableKey`; seat buttons cycle `sessionScene.seatPresent` (`nil` → absent → present → neutral) and run `L.reconcileAllPlayers()`. Chronicle buttons toggle `sessionScene.chronicleWeatherFollowSchedule` / `chronicleWeatherManualHold`, or call `applyChronicleWeatherNow` → `lib/chronicle_weather.ttslua` with `force`. |
-| `HUD_scenesPanelInput` | district/site/clock/npc note fields | `(player, value, id)` | Intentional no-op on keystroke; use Apply buttons to persist. Clock row remains typed `InputField`s only. |
+| `HUD_scenesPanel` | `scenes_tbl_*`, `scenes_seat_*` | `(player, button, id)` | `core/storyteller_scenes_panel.ttslua`: table buttons call `rotational-seat-layout.SetTableTo` after `sessionScene.tableKey`; seat buttons cycle `sessionScene.seatPresent` (`nil` → absent → present → neutral) and run `L.reconcileAllPlayers()`. |
+| `HUD_scenesPanelInput` | clock day/year/time12/speed fields | `(player, value, id)` | Intentional no-op on keystroke; use **Apply clock** / **Apply location** to persist. **Apply clock** currently reads via `UI.getValue` on those ids — for new `InputField` flows (e.g. Scene Constructor modals), prefer callback stash per [SOLVING ISSUES & DEBUGGING.md](SOLVING%20ISSUES%20%26%20DEBUGGING.md). |
 | `HUD_scenesOpenDistrictModal` | `Browse districts...` | `(player, button, id)` | Shows `scenes_modal_districts_root` (`ui/storyteller/panel_scenes_location_modals.xml`, generated from `C.Districts`). |
-| `HUD_scenesOpenSiteModal` | `Browse sites...` | `(player, button, id)` | Calls `StorytellerScenesPanel.applySiteModalDistrictVisibility()` then shows `scenes_modal_sites_root`. Modal XML uses `scenes_site_group_dist_<districtKey>` with `visibility="None"` when hidden (avoids overlap with generic); matching trimmed `scenes_districtKey` gets `Black|Host`. Wide modal (~1120px), 8 buttons per row (generator). |
+| `HUD_scenesOpenSiteModal` | `Browse sites...` | `(player, button, id)` | Calls `StorytellerScenesPanel.applySiteModalDistrictVisibility()` then shows `scenes_modal_sites_root`. Modal XML lays out `scenes_site_group_generic` first, then `scenes_site_group_dist_<districtKey>` panels so the active district bucket draws above the general list. Visibility toggled from `sessionScene.districtKey`. Wide modal (~1120px), 8 buttons per row (generator). |
 | `HUD_scenesCloseLocationModals` | modal Close buttons | `(player, button, id)` | Hides both picker roots. |
-| `HUD_scenesPickDistrict` | `scenes_pick_district_*` | `(player, button, id)` | Parses key from `id`, writes `scenes_districtKey` via `UI.setValue` (InputField value must match `UI.getValue` used by Apply), closes modals. |
-| `HUD_scenesPickSite` | `scenes_pick_site_*` | `(player, button, id)` | Same for `scenes_siteKey`. |
-| `HUD_scenesApplyLocation` | `Apply location + soundscape` | `(player, button, id)` | Validates keys, writes `sessionScene.districtKey` / `siteKey`, updates Custom Image objects `G.GUIDS.SITE_CARD` / `DISTRICT_CARD` from `site.image` / district `image` when set, then `Soundscape.applyContext` + `Sync.full()`. |
-| `HUD_scenesApplyClock` | `Apply clock` | `(player, button, id)` | Writes `sessionScene.clock` from `scenes_clock_*` inputs, then `ChronicleWeather.applyScheduledWeather({ force = false })` when follow-on-clock is on and manual hold is off → layered rain/wind + `Soundscape.setThunderEnabled` from `lib/tr_weather_schedule.ttslua`; then `Sync.full()` and soundscape UI refresh. |
-| `HUD_scenesSaveNpcNote` | `Save NPC scene note` | `(player, button, id)` | Stub: stores text in `sessionScene.npcWorld.lastNote` for future NPC spawn tracking hooks. |
+| `HUD_scenesPickDistrict` | `scenes_pick_district_*` | `(player, button, id)` | Parses key from `id`, writes `gameState.sessionScene.districtKey`, closes modals, `StorytellerScenesPanel.refresh()` + `applySiteModalDistrictVisibility`, `GameStateOverlay.refresh()`. |
+| `HUD_scenesPickSite` | `scenes_pick_site_*` | `(player, button, id)` | Same for `sessionScene.siteKey`. |
+| `HUD_scenesMonthPick` | `scenes_month_1` … `scenes_month_12` | `(player, button, id)` | `StorytellerScenesPanel.setPendingMonth` — updates `sessionScene.clock.month` and refreshes the panel. |
+| `HUD_scenesToggleRealTimeClock` | `scenes_clock_rtToggle` | `(player, button, id)` | `StorytellerScenesPanel.toggleRealTimeClock` — toggles `sessionScene.clock.useRealTime`, starts/stops `GameStateOverlay` ticker. |
+| `HUD_scenesApplyLocation` | `Apply location + soundscape` | `(player, button, id)` | Reads **state** `sessionScene.districtKey` / `siteKey` (district/site names are display-only). Validates keys, writes cards + `Soundscape.applyContext` + `Sync.full()`. |
+| `HUD_scenesApplyClock` | `Apply clock` | `(player, button, id)` | Writes `sessionScene.clock` from month (state) + day/year/time12/speed inputs, `ChronicleWeather.applyScheduledWeather({ force = false })`, `Sync.full()`, `GameStateOverlay.refresh` + `ensureTicker`. |
+
+## Game state overlay (`ui/shared/game_state_overlay.xml`)
+
+| Source | Behavior |
+| ------ | -------- |
+| `core/game_state_overlay.ttslua` | `GameStateOverlay.refresh()` pushes `currentPhase` label + `sessionScene.clock` date/time (12h) to `gameStateOverlay_phase` / `gameStateOverlay_datetime`. When `sessionScene.clock.useRealTime` is true, `ensureTicker` advances in-game minutes each wall second by `realTimeSpeed` and refreshes the overlay; hour/day rollovers also call `ChronicleWeather.applyScheduledWeather`. |
 
 ## Legacy scene preset buttons (player HUD / other XML)
 
@@ -68,6 +79,7 @@ Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 | `HUD_soundscapeStopFeatured` | `Stop feat.` | `(player, button, id)` | `SS.stopFeaturedMusic()`. |
 | `HUD_soundscapeLaneSlider` | `soundscapeSlider_music`, `..._location`, `..._featured`, `..._rain`, `..._wind` | `(player, value, id)` | Calls `SS.setStorytellerLaneVolume(lane, value)`. Rain/wind sliders edit **natural** volume; indoor ducking is reapplied in soundscape. |
 | `HUD_soundscapeStopAll` | `Stop All` button | `(player, button, id)` | Calls `SS.stopAll()` to silence loop lanes with `silent` and invalidate scheduled background/featured/thunder callbacks. |
+| `HUD_soundscapePrepareSave` | `Silence for save` | `(player, button, id)` | Calls `SS.prepareEmittersForSave()` — `stopAll`, invalidate reconcile cache, `reconcileFromState({ force = true })` so the next table save does not resume stray Unity emitter loops. |
 | `HUD_soundscapeInspect` | `Inspect` button | `(player, button, id)` | Calls `SS.inspectEmitters()`, prints JSON emitter/effect information including GUID/tag validation plus Looping and Trigger Effects, and alerts the GM. |
 
 ## Phase Controls (`panel_phases.xml`)

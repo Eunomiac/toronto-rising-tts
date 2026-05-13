@@ -731,6 +731,8 @@ All roll-related UI element IDs follow a consistent naming pattern:
 | Broadcast successes | `rollResult_successes` | |
 | Broadcast margin | `rollResult_margin` | "—" when no difficulty set |
 
+**InputField contract (ST difficulty):** The `rollDash_difficulty_<Color>` fields use **`onValueChanged="HUD_rollSetDifficulty"`**; difficulty is taken from the callback **`value`** argument, not from `UI.getValue`. That matches the TTS rule that `InputField` text is only available inside `onValueChanged` / `onEndEdit` ([Input Elements — InputField](https://api.tabletopsimulator.com/ui/inputelements/)). Project-wide guidance: [`.dev/SOLVING ISSUES & DEBUGGING.md`](../SOLVING%20ISSUES%20%26%20DEBUGGING.md) (*Global UI `InputField` — typed text*).
+
 ---
 
 ## 9. Physical Dice Integration (`core/global_script.ttslua`)

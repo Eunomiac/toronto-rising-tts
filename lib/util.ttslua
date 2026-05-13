@@ -1753,7 +1753,10 @@ function U.isXmlElementExpanded(elemID)
   return string.lower(tostring(currentActive)) == "true"
 end
 
---- Sets a UI input value, coercing to string for TTS.
+--- Sets a UI element value via `UI.setValue` (coerced to string).
+--- For Global UI **InputField** text when the element may be inactive, prefer
+--- `U.setAttribute(elementID, "text", ...)` — see `core/roll_ui.ttslua` (`uiSetInputField`) and
+--- `.dev/SOLVING ISSUES & DEBUGGING.md` (InputField contract).
 --- @param elementID string
 --- @param value any
 function U.setUIValue(elementID, value)
@@ -1763,7 +1766,9 @@ function U.setUIValue(elementID, value)
   UI.setValue(elementID, tostring(value))
 end
 
---- Reads a UI input value; returns a number when the string parses as one, otherwise the string.
+--- Reads via `UI.getValue`. Returns a number when the string parses as one, otherwise the string.
+--- Do not use this to read Global UI **InputField** typed content: TTS documents that text is only
+--- available in `onValueChanged` / `onEndEdit` callbacks — see `.dev/SOLVING ISSUES & DEBUGGING.md`.
 --- @param elementID string
 --- @return string|number
 function U.getUIValue(elementID)

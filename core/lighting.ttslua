@@ -23,6 +23,10 @@
 ]]
 
 local L = {}
+
+--- Default lerp (seconds) for `L.reconcileForPlayer` seat spotlight applies (`gameState.lights`).
+L.DEFAULT_RECONCILE_LERP_SECONDS = 2
+
 local U = require("lib.util")
 local S = require("core.state")
 local C = require("lib.constants")
@@ -1442,8 +1446,7 @@ function L.reconcileForPlayer(seatKey)
                 S.setStateVal(desiredMode, "lights", lightRef)
                 local lit = getLight(lightRef, true)
                 if lit ~= nil then
-                    -- Instant apply from reconcile avoids overlapping lerps when Sync runs often.
-                    L.SetLightMode(lightRef, desiredMode, seatKey, 0)
+                    L.SetLightMode(lightRef, desiredMode, seatKey, L.DEFAULT_RECONCILE_LERP_SECONDS)
                 end
             end
         end

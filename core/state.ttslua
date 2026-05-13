@@ -306,6 +306,8 @@ function S.GetDefaultGameState()
             lightingPresetKey = nil,
             tableKey = nil,
             seatPresent = {},
+            --- Per-seat narrative/config (Scene Constructor + panel). When `isPresent` is set here, it wins over `seatPresent` after backfill (see `normalizeLiveSessionSceneSeatSlots`).
+            seatSlots = {},
             npcRoleOverride = {},
             districtKey = nil,
             siteKey = nil,
@@ -316,6 +318,8 @@ function S.GetDefaultGameState()
                 month = 1,
                 year = 2026,
                 useRealTime = false,
+                --- In-game minutes advanced per real second when `useRealTime` is true (>= 0).
+                realTimeSpeed = 1,
             },
             --- When true (default), applying scene clock runs CSV chronicle weather → soundscape.
             chronicleWeatherFollowSchedule = true,
@@ -323,8 +327,22 @@ function S.GetDefaultGameState()
             chronicleWeatherManualHold = false,
             --- Per-roll-type overrides merged in `RO.seedActiveRoll` (same keys as `active.rollOptions`).
             rollDefaults = {},
-            --- Future: authoritative NPC placement for this scene (stub hooks into `gameState.npcs`).
-            npcWorld = {},
+            --- Optional narrative soundscape columns consumed on scene apply (maps into `gameState.soundscape` / chronicle flags; no parallel weather stream).
+            soundscapeNarrative = {},
+            --- Authoritative-for-import NPC staging: sparse `byArea` slot maps + `preload` list (see `.dev/Scene Constructor/Scene Constructor Overview.md`).
+            npcWorld = {
+                byArea = {},
+                preload = {},
+            },
+        },
+        --- Saved scene bundles (same `sessionScene` shape per entry) + UI ordering. Only `gameState.sessionScene` drives live reconciliation.
+        sceneLibrary = {
+            --- When set, names the library entry that receives mirrored runtime writes (`receivesLiveWrites`).
+            activeKey = nil,
+            --- Button order; values must be keys of `scenes`.
+            order = {},
+            --- [sceneKey] = { title, receivesLiveWrites, sessionScene = { ... } }
+            scenes = {},
         },
         -- Storyteller roll automation (chronicle-wide); merged with defaults in validateState
         stRollSettings = {
@@ -472,6 +490,59 @@ function S.resetGameState()
     S.validateState()
 end
 
+--- Merges `sessionScene.seatSlots` with `seatPresent` and applies NPC slot occupancy hints into `seatLayout`.
+--- Runs only on the live top-level `gameState.sessionScene` (library entries keep their own tables isolated).
+local function normalizeLiveSessionSceneSeatSlots()
+    local sess = gameState.sessionScene
+    if type(sess) ~= "table" then
+        return
+    end
+    local sp = sess.seatPresent
+    if type(sp) ~= "table" then
+        sp = {}
+        sess.seatPresent = sp
+    end
+    local ss = sess.seatSlots
+    if type(ss) ~= "table" then
+        ss = {}
+        sess.seatSlots = ss
+    end
+
+    -- Backfill missing `isPresent` from legacy `seatPresent` toggles.
+    for seatKey, presentVal in pairs(sp) do
+        if type(seatKey) == "string" then
+            local row = ss[seatKey]
+            if row == nil then
+                ss[seatKey] = { isPresent = presentVal }
+            elseif type(row) == "table" and row.isPresent == nil then
+                row.isPresent = presentVal
+            end
+        end
+    end
+
+    -- Authoritative: explicit `seatSlots[seatKey].isPresent` updates `seatPresent`.
+    for seatKey, row in pairs(ss) do
+        if type(seatKey) == "string" and type(row) == "table" and row.isPresent ~= nil then
+            sp[seatKey] = row.isPresent
+        end
+    end
+
+    local layout = gameState.seatLayout
+    if type(layout) ~= "table" or type(layout.occupiedNPCSlots) ~= "table" then
+        return
+    end
+    for _, npcSeat in ipairs(C.NPCSeats or {}) do
+        local row = ss[npcSeat]
+        if type(row) == "table" then
+            if row.slotEmpty == true then
+                layout.occupiedNPCSlots[npcSeat] = false
+            elseif type(row.characterKey) == "string" and row.characterKey ~= "" then
+                layout.occupiedNPCSlots[npcSeat] = row.characterKey
+            end
+        end
+    end
+end
+
 --- Validates and sanitizes game state
 -- Ensures all required fields exist and have valid values.
 -- Called automatically after initialization and reset.
@@ -518,6 +589,57 @@ function S.validateState()
     end
     if type(gameState.seatLayout.universalCameraAngles) ~= "table" then
         gameState.seatLayout.universalCameraAngles = {}
+    end
+
+    normalizeLiveSessionSceneSeatSlots()
+    for _, seatKey in ipairs(C.NPCSeats) do
+        local slotValue = gameState.seatLayout.occupiedNPCSlots[seatKey]
+        if slotValue ~= false and type(slotValue) ~= "string" then
+            gameState.seatLayout.occupiedNPCSlots[seatKey] = false
+        end
+    end
+
+    if not gameState.sceneLibrary or type(gameState.sceneLibrary) ~= "table" then
+        gameState.sceneLibrary = {}
+    end
+    S.mergeDefaults(gameState.sceneLibrary, S.GetDefaultGameState().sceneLibrary)
+    if type(gameState.sceneLibrary.scenes) ~= "table" then
+        gameState.sceneLibrary.scenes = {}
+    end
+    if type(gameState.sceneLibrary.order) ~= "table" then
+        gameState.sceneLibrary.order = {}
+    end
+    if gameState.sceneLibrary.activeKey ~= nil and type(gameState.sceneLibrary.activeKey) ~= "string" then
+        gameState.sceneLibrary.activeKey = nil
+    end
+    if gameState.sceneLibrary.activeKey ~= nil and gameState.sceneLibrary.scenes[gameState.sceneLibrary.activeKey] == nil then
+        gameState.sceneLibrary.activeKey = nil
+    end
+    do
+        local lib = gameState.sceneLibrary
+        local cleanedOrder = {}
+        for _, k in ipairs(lib.order) do
+            if type(k) == "string" and lib.scenes[k] ~= nil then
+                cleanedOrder[#cleanedOrder + 1] = k
+            end
+        end
+        lib.order = cleanedOrder
+    end
+    for _, entry in pairs(gameState.sceneLibrary.scenes) do
+        if type(entry) == "table" then
+            if type(entry.sessionScene) ~= "table" then
+                entry.sessionScene = {}
+            end
+            S.mergeDefaults(entry.sessionScene, S.GetDefaultGameState().sessionScene)
+            if entry.receivesLiveWrites == nil then
+                entry.receivesLiveWrites = true
+            elseif type(entry.receivesLiveWrites) ~= "boolean" then
+                entry.receivesLiveWrites = true
+            end
+            if type(entry.title) ~= "string" then
+                entry.title = ""
+            end
+        end
     end
 
     if not gameState.npcs or type(gameState.npcs) ~= "table" then
@@ -927,6 +1049,28 @@ local function buildSaveState()
                     npcLightMode = rec.npcLightMode,
                 }
             end
+        end
+    end
+
+    if gameState.sessionScene and type(gameState.sessionScene) == "table" then
+        if isValueSafeForState(gameState.sessionScene, "sessionScene") then
+            saveState.sessionScene = U.clone(gameState.sessionScene, true)
+        else
+            print("[WARNING] buildSaveState: sessionScene omitted — failed isValueSafeForState")
+        end
+    end
+
+    if gameState.sceneLibrary and type(gameState.sceneLibrary) == "table" then
+        if isValueSafeForState(gameState.sceneLibrary, "sceneLibrary") then
+            saveState.sceneLibrary = U.clone(gameState.sceneLibrary, true)
+        else
+            print("[WARNING] buildSaveState: sceneLibrary omitted — failed isValueSafeForState")
+        end
+    end
+
+    if gameState.stRollSettings and type(gameState.stRollSettings) == "table" then
+        if isValueSafeForState(gameState.stRollSettings, "stRollSettings") then
+            saveState.stRollSettings = U.clone(gameState.stRollSettings, true)
         end
     end
 

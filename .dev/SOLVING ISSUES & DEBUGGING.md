@@ -65,6 +65,22 @@ Quick chat commands: `/dbcheck` (compact) and `/dbfullcheck` (full).
 - [ ] Confirm final post-load pass order (state settled -> reconcile -> reveal UI).
 - [ ] Avoid blind delays unless they are intentional UX delays (not correctness delays).
 
+## Global UI `InputField` — typed text (official contract)
+
+Tabletop Simulator documents that **typed text in an `InputField` cannot be read from Lua outside** the callback arguments to **`onValueChanged`** or **`onEndEdit`**. See the **Note** under **InputField** in [Input Elements](https://api.tabletopsimulator.com/ui/inputelements/) (vendored: [`.dev/tts-api/UI API/Input Elements.md`](tts-api/UI%20API/Input%20Elements.md)).
+
+**Do not treat as authoritative for `InputField` content:**
+
+- `UI.getValue(elementId)` (and helpers that wrap it, e.g. `U.getUIValue`) — may appear to work in some builds or elements; it is **not** the documented way to read live `InputField` text and has failed in-repo (e.g. debug light GUID flow).
+
+**Recommended patterns:**
+
+1. **Callback + stash** — Wire `onValueChanged="HUD_..."` or `onEndEdit="HUD_..."` and copy the **`value`** argument into module-private state (same idea as the API doc’s `enteredValue = value`). **Confirm** buttons read the stash, not `UI.getValue`.
+2. **Reference implementation** — ST roll difficulty: [`ui/shared/roll_panels.xml`](../ui/shared/roll_panels.xml) (`rollDash_difficulty_<Color>`, `onValueChanged="HUD_rollSetDifficulty"`) and [`core/global_script.ttslua`](../core/global_script.ttslua) `HUD_rollSetDifficulty(player, value, id)`.
+3. **Script-driven prefill** when the field may be inactive — Use **`UI.setAttribute(id, "text", ...)`** (see `uiSetInputField` in [`core/roll_ui.ttslua`](../core/roll_ui.ttslua)); `UI.setValue` on `InputField` can be dropped in some states.
+
+When opening a modal, set the panel **`active`**, then set **`text`** and initialize the stash so **Confirm** works even if the Host never focuses the field.
+
 ## G) Error visibility and observability
 
 - [ ] No `pcall`/catch/fallback hides actionable failures in production path.

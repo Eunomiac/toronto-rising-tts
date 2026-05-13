@@ -147,6 +147,8 @@ string = UI.getValue("testElement")
 print(string)
 ```
 
+**Toronto Rising:** For **InputField** elements, prefer reading text from `onValueChanged` / `onEndEdit` callback `value` (see [Input Elements — InputField](../UI%20API/Input%20Elements.md#inputfield) Note). See [`.dev/SOLVING ISSUES & DEBUGGING.md`](../../SOLVING%20ISSUES%20%26%20DEBUGGING.md).
+
 ---
 
 ### getXmlTable() {#getxmltable}

@@ -416,8 +416,10 @@ General-purpose UI helpers (system-agnostic). Prefer **`U.setAttribute` / `U.set
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
-| `U.setUIValue(elementID, value)` | `UI.setValue` with `tostring` | Inputs, toggles |
-| `U.getUIValue(elementID)` | `UI.getValue`; returns **number** if `tonumber` succeeds, else string | Parse numeric fields |
+| `U.setUIValue(elementID, value)` | Wraps `UI.setValue` with `tostring` | Elements where `setValue` is correct (not the primary pattern for **Global UI `InputField`** text — prefer `U.setAttribute(id, "text", ...)` when mirroring `roll_ui` / TTS behavior) |
+| `U.getUIValue(elementID)` | Wraps `UI.getValue` | **Not** the supported way to read **Global UI `InputField`** typed text per TTS ([InputField note](https://api.tabletopsimulator.com/ui/inputelements/)); use `onValueChanged` / `onEndEdit` and stash the `value` argument. For non-InputField elements where `getValue` is defined, still returns **number** if `tonumber` succeeds, else string |
+
+**`InputField`:** See [`.dev/SOLVING ISSUES & DEBUGGING.md`](SOLVING%20ISSUES%20&%20DEBUGGING.md) section *Global UI `InputField` — typed text*.
 
 TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when the target may be a **Button**.
 

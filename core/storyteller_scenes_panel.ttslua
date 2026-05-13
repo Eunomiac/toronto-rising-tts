@@ -1,5 +1,5 @@
 --[[
-    Storyteller Scenes panel: table switching, narrative seat presence, location keys, clock stub fields.
+    Storyteller Scenes panel: table switching, narrative seat presence, location keys, narrative clock.
     Agent guidance: .dev/HUD_FUNCTIONS.md; `.cursor/rules/toronto-rising-synchronization.mdc`.
 ]]
 
@@ -14,10 +14,10 @@ local RSL = require("lib.rotational-seat-layout")
 local Sync = require("core.sync")
 local SS = require("core.soundscape")
 local ChronicleWeather = require("lib.chronicle_weather")
+local GameStateOverlay = require("core.game_state_overlay")
 
 local GREEN = "#228B22|#32CD32|#006400|#228B22"
 local GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
-local AMBER = "#996600|#CC9900|#774400|#996600"
 
 --- Maps XML button ids (no spaces) to `C.Tables` keys.
 local TABLE_TOGGLE_IDS = {
@@ -40,6 +40,76 @@ local function effectiveTableKey()
         return cur
     end
     return nil
+end
+
+--- @param raw string|nil
+--- @return number|nil, number|nil hour24, minute
+local function parseTime12h(raw)
+    if type(raw) ~= "string" then
+        return nil
+    end
+    local t = string.gsub(raw, "^%s+", "")
+    t = string.gsub(t, "%s+$", "")
+    local h12, m, ap = string.match(t, "^(%d+):(%d+)%s*([AaPp][Mm])$")
+    if h12 == nil then
+        return nil
+    end
+    local h = tonumber(h12)
+    local min = tonumber(m)
+    if h == nil or min == nil then
+        return nil
+    end
+    if min < 0 or min > 59 or h < 1 or h > 12 then
+        return nil
+    end
+    local apu = string.upper(ap)
+    local h24
+    if apu == "AM" then
+        if h == 12 then
+            h24 = 0
+        else
+            h24 = h
+        end
+    elseif apu == "PM" then
+        if h == 12 then
+            h24 = 12
+        else
+            h24 = h + 12
+        end
+    else
+        return nil
+    end
+    return h24, min
+end
+
+--- @param hour24 number
+--- @param minute number
+--- @return string
+local function formatTime12h(hour24, minute)
+    local h = math.floor(tonumber(hour24) or 0) % 24
+    local m = math.floor(tonumber(minute) or 0)
+    if m < 0 then
+        m = 0
+    end
+    if m > 59 then
+        m = 59
+    end
+    local suffix = "AM"
+    local h12 = h
+    if h == 0 then
+        h12 = 12
+        suffix = "AM"
+    elseif h == 12 then
+        h12 = 12
+        suffix = "PM"
+    elseif h > 12 then
+        h12 = h - 12
+        suffix = "PM"
+    else
+        h12 = h
+        suffix = "AM"
+    end
+    return string.format("%d:%02d %s", h12, m, suffix)
 end
 
 --- Push storyteller panel visuals from `gameState.sessionScene` + layout.
@@ -88,33 +158,48 @@ function StorytellerScenesPanel.refresh()
     local dk = S.getStateVal("sessionScene", "districtKey")
     local sk = S.getStateVal("sessionScene", "siteKey")
     if UI.setValue ~= nil then
-        UI.setValue("scenes_districtKey", dk ~= nil and tostring(dk) or "")
-        UI.setValue("scenes_siteKey", sk ~= nil and tostring(sk) or "")
+        local dLabel = "—"
+        if type(dk) == "string" and dk ~= "" and C.Districts[dk] ~= nil and type(C.Districts[dk].name) == "string" then
+            dLabel = C.Districts[dk].name
+        elseif type(dk) == "string" and dk ~= "" then
+            dLabel = dk
+        end
+        UI.setValue("scenes_districtNameDisplay", dLabel)
+
+        local sLabel = "—"
+        if type(sk) == "string" and sk ~= "" and C.Sites[sk] ~= nil and type(C.Sites[sk].name) == "string" then
+            sLabel = C.Sites[sk].name
+        elseif type(sk) == "string" and sk ~= "" then
+            sLabel = sk
+        end
+        UI.setValue("scenes_siteNameDisplay", sLabel)
+
         local ck = S.getStateVal("sessionScene", "clock")
         if type(ck) == "table" then
-            UI.setValue("scenes_clock_hour", tostring(tonumber(ck.hour) or 0))
-            UI.setValue("scenes_clock_minute", tostring(tonumber(ck.minute) or 0))
+            local mo = math.floor(tonumber(ck.month) or 1)
+            for m = 1, 12 do
+                U.setAttributes("scenes_month_" .. tostring(m), {
+                    colors = (m == mo) and GREEN or GREY,
+                    fontStyle = "Bold",
+                    textColor = "#FFFFFF",
+                })
+            end
             UI.setValue("scenes_clock_day", tostring(tonumber(ck.day) or 1))
-            UI.setValue("scenes_clock_month", tostring(tonumber(ck.month) or 1))
             UI.setValue("scenes_clock_year", tostring(tonumber(ck.year) or 2026))
+            UI.setValue("scenes_clock_time12", formatTime12h(ck.hour, ck.minute))
+            local spd = tonumber(ck.realTimeSpeed)
+            if spd == nil then
+                spd = 1
+            end
+            U.setAttribute("scenes_clock_speed", "text", tostring(spd))
+            local rt = ck.useRealTime == true
+            U.setAttributes("scenes_clock_rtToggle", {
+                text = rt and "ON" or "OFF",
+                colors = rt and GREEN or GREY,
+                fontStyle = "Bold",
+                textColor = "#FFFFFF",
+            })
         end
-        local nw = S.getStateVal("sessionScene", "npcWorld")
-        if type(nw) == "table" and nw.lastNote ~= nil then
-            UI.setValue("scenes_npcWorldNote", tostring(nw.lastNote))
-        end
-
-        local followOn = S.getStateVal("sessionScene", "chronicleWeatherFollowSchedule") ~= false
-        local holdOn = S.getStateVal("sessionScene", "chronicleWeatherManualHold") == true
-        U.setAttributes("scenes_chronicle_toggleFollow", {
-            colors = followOn and GREEN or GREY,
-            fontStyle = "Bold",
-            textColor = "#FFFFFF",
-        })
-        U.setAttributes("scenes_chronicle_toggleHold", {
-            colors = holdOn and AMBER or GREY,
-            fontStyle = "Bold",
-            textColor = "#FFFFFF",
-        })
     end
 end
 
@@ -122,27 +207,6 @@ end
 --- @param id string|nil
 function StorytellerScenesPanel.onHudClick(player, button, id)
     if type(id) ~= "string" then
-        return
-    end
-
-    if id == "scenes_chronicle_toggleFollow" then
-        local on = S.getStateVal("sessionScene", "chronicleWeatherFollowSchedule") ~= false
-        S.setStateVal(not on, "sessionScene", "chronicleWeatherFollowSchedule")
-        StorytellerScenesPanel.refresh()
-        U.AlertGM(on and "Chronicle weather: follow-on-clock OFF." or "Chronicle weather: follow-on-clock ON.")
-        return
-    end
-
-    if id == "scenes_chronicle_toggleHold" then
-        local held = S.getStateVal("sessionScene", "chronicleWeatherManualHold") == true
-        S.setStateVal(not held, "sessionScene", "chronicleWeatherManualHold")
-        StorytellerScenesPanel.refresh()
-        U.AlertGM(held and "Chronicle weather: manual hold OFF." or "Chronicle weather: manual hold ON (clock apply skips weather).")
-        return
-    end
-
-    if id == "scenes_chronicle_applyNow" then
-        StorytellerScenesPanel.applyChronicleWeatherNow(player)
         return
     end
 
@@ -195,15 +259,13 @@ end
 local SITE_MODAL_BUCKET_VISIBILITY_ON = "Black|Host"
 local SITE_MODAL_BUCKET_VISIBILITY_OFF = "None"
 
---- Shows exactly one `scenes_site_group_dist_*` panel matching trimmed `scenes_districtKey` when it exists in `C.Districts`; otherwise hides all district buckets (general sites panel stays visible).
+--- Shows exactly one `scenes_site_group_dist_*` panel matching `sessionScene.districtKey`.
 function StorytellerScenesPanel.applySiteModalDistrictVisibility()
     if UI == nil or UI.setAttribute == nil then
         return
     end
-    local raw = UI.getValue("scenes_districtKey") or ""
-    if type(raw) ~= "string" then
-        raw = ""
-    end
+    local dk = S.getStateVal("sessionScene", "districtKey")
+    local raw = type(dk) == "string" and dk or ""
     raw = string.gsub(string.gsub(raw, "^%s+", ""), "%s+$", "")
     local districts = C.Districts
     if type(districts) ~= "table" then
@@ -223,7 +285,6 @@ function StorytellerScenesPanel.applySiteModalDistrictVisibility()
 end
 
 --- Updates a Custom Tile (or other custom object) primary texture.
---- Save JSON uses `CustomImage.ImageURL`; Lua passes the same URL as `image`.
 --- @param guid string|nil
 --- @param imageUrl string|nil
 --- @param label string short name for GM alert
@@ -277,8 +338,8 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
         return
     end
 
-    local dKey = UI and UI.getValue and UI.getValue("scenes_districtKey") or ""
-    local sKey = UI and UI.getValue and UI.getValue("scenes_siteKey") or ""
+    local dKey = S.getStateVal("sessionScene", "districtKey")
+    local sKey = S.getStateVal("sessionScene", "siteKey")
     if type(dKey) ~= "string" then
         dKey = ""
     end
@@ -291,7 +352,7 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
     sKey = string.gsub(sKey, "%s+$", "")
 
     if sKey == "" then
-        U.AlertGM("Enter a site key (e.g. CLGrounds).")
+        U.AlertGM("Pick a site from Browse sites (or restore keys in state), then Apply.")
         return
     end
 
@@ -317,6 +378,7 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
         Sync.full({ reason = "StorytellerScenesPanel.location" })
     end
     StorytellerScenesPanel.refresh()
+    GameStateOverlay.refresh()
     U.AlertGM(result and result.message or "Location applied.")
 end
 
@@ -328,17 +390,42 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
         if n == nil then
             return fallback
         end
-        return n
+        return math.floor(n)
+    end
+
+    local prev = S.getStateVal("sessionScene", "clock")
+    local prevHour = type(prev) == "table" and tonumber(prev.hour) or nil
+
+    local day = numField("scenes_clock_day", 1)
+    local year = numField("scenes_clock_year", 2026)
+    local timeRaw = UI and UI.getValue and UI.getValue("scenes_clock_time12") or ""
+    local h24, min = parseTime12h(timeRaw)
+    if h24 == nil then
+        U.AlertGM("Invalid time. Use 12-hour format like 7:05 PM or 09:30 AM.")
+        return
+    end
+
+    local spd = tonumber(UI and UI.getValue and UI.getValue("scenes_clock_speed") or "")
+    if spd == nil or spd < 0 then
+        spd = 1
     end
 
     local clock = {
-        hour = numField("scenes_clock_hour", 0),
-        minute = numField("scenes_clock_minute", 0),
-        day = numField("scenes_clock_day", 1),
-        month = numField("scenes_clock_month", 1),
-        year = numField("scenes_clock_year", 2026),
+        hour = h24,
+        minute = min,
+        day = day,
+        month = math.floor(tonumber(S.getStateVal("sessionScene", "clock", "month")) or 1),
+        year = year,
         useRealTime = S.getStateVal("sessionScene", "clock", "useRealTime") == true,
+        realTimeSpeed = spd,
     }
+    if clock.month < 1 then
+        clock.month = 1
+    end
+    if clock.month > 12 then
+        clock.month = 12
+    end
+
     S.setStateVal(clock, "sessionScene", "clock")
     StorytellerScenesPanel.refresh()
 
@@ -347,38 +434,54 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
         Sync.full({ reason = "StorytellerScenesPanel.clock" })
     end
 
+    GameStateOverlay.refresh()
+    GameStateOverlay.ensureTicker()
+
     local msg = "Scene clock updated."
     if weatherMsg ~= nil and weatherMsg ~= "" then
         msg = msg .. " " .. weatherMsg
     end
+    if prevHour ~= nil and prevHour ~= h24 then
+        msg = msg .. " (hour changed — chronicle weather refreshed.)"
+    end
     U.AlertGM(msg)
 end
 
---- Forces CSV weather for the current clock and clears manual hold.
---- @param player Player
-function StorytellerScenesPanel.applyChronicleWeatherNow(player)
-    S.setStateVal(false, "sessionScene", "chronicleWeatherManualHold")
-    local ok, weatherMsg = ChronicleWeather.applyScheduledWeather({ force = true })
-    if Sync and type(Sync.full) == "function" then
-        Sync.full({ reason = "StorytellerScenesPanel.chronicleWeatherNow" })
+--- Sets pending month (1–12) into `sessionScene.clock` without running reconcilers.
+--- @param month number
+function StorytellerScenesPanel.setPendingMonth(month)
+    local m = math.floor(tonumber(month) or 1)
+    if m < 1 then
+        m = 1
     end
+    if m > 12 then
+        m = 12
+    end
+    local ck = S.getStateVal("sessionScene", "clock")
+    if type(ck) ~= "table" then
+        ck = {}
+    end
+    ck.month = m
+    S.setStateVal(ck, "sessionScene", "clock")
     StorytellerScenesPanel.refresh()
-    U.AlertGM(weatherMsg ~= nil and weatherMsg ~= "" and weatherMsg or "Chronicle weather applied.")
 end
 
---- @param player Player
-function StorytellerScenesPanel.saveNpcWorldNote(player)
-    local raw = UI and UI.getValue and UI.getValue("scenes_npcWorldNote") or ""
-    if type(raw) ~= "string" then
-        raw = ""
+--- Toggles `sessionScene.clock.useRealTime` and starts/stops the overlay ticker.
+function StorytellerScenesPanel.toggleRealTimeClock()
+    local ck = S.getStateVal("sessionScene", "clock")
+    if type(ck) ~= "table" then
+        ck = {}
     end
-    local nw = S.getStateVal("sessionScene", "npcWorld")
-    if type(nw) ~= "table" then
-        nw = {}
+    ck.useRealTime = not (ck.useRealTime == true)
+    S.setStateVal(ck, "sessionScene", "clock")
+    StorytellerScenesPanel.refresh()
+    if ck.useRealTime == true then
+        GameStateOverlay.ensureTicker()
+    else
+        GameStateOverlay.stopTicker()
     end
-    nw.lastNote = raw
-    S.setStateVal(nw, "sessionScene", "npcWorld")
-    U.AlertGM("NPC scene note saved (stub hook for future spawn tracking).")
+    GameStateOverlay.refresh()
+    U.AlertGM(ck.useRealTime and "Real-time narrative clock: ON." or "Real-time narrative clock: OFF.")
 end
 
 return StorytellerScenesPanel

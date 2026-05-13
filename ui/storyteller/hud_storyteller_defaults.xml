@@ -106,6 +106,12 @@
   <Cell class="hud_storyteller_wide" columnSpan="6" childForceExpandWidth="true" />
   <Cell class="hud_storyteller_label" childForceExpandWidth="true" />
 
+  <!-- Storyteller modal panels (Scenes, Sound, Phases, …): shared semi-opaque backdrop -->
+  <VerticalLayout class="storyteller_panel_surface"
+    color="rgba(0, 0, 0, 0.8)"
+    childForceExpandWidth="true"
+  />
+
   <!-- ================================================================ -->
   <!-- Admin Panel Classes (left-side button controls)                   -->
   <!-- ================================================================ -->

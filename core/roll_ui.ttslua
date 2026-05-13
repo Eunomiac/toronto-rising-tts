@@ -61,6 +61,9 @@ end
 -- UI.setValue() on InputField elements is silently dropped by TTS when the element
 -- is inactive, leaving the stale value visible on the next show. Using setAttribute
 -- directly on the "text" attribute persists the change regardless of active state.
+-- Reading live typed text: TTS documents that InputField content is only available in
+-- onValueChanged/onEndEdit callback `value` — do not rely on UI.getValue for InputField
+-- (see .dev/SOLVING ISSUES & DEBUGGING.md, rollDash_difficulty_* + HUD_rollSetDifficulty).
 -- @param elementId string
 -- @param value string
 local function uiSetInputField(elementId, value)
@@ -125,11 +128,22 @@ local function uiToggleSet(elementId, on)
 end
 
 --- Reads a Toggle's on state.
+-- TTS may return string "true"/"false", boolean, or number; normalize so Apply matches the UI.
 -- @param elementId string
 -- @return boolean
 local function uiToggleGet(elementId)
     local t = UI.getAttribute(elementId, "isOn")
-    return t == "true" or t == "True"
+    if t == true or t == 1 then
+        return true
+    end
+    if t == false or t == 0 then
+        return false
+    end
+    if type(t) == "string" then
+        local lower = string.lower(t)
+        return lower == "true" or lower == "1" or lower == "yes"
+    end
+    return false
 end
 
 -- Maximum number of die image slots pre-defined in the XML for each panel.

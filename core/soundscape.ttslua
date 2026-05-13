@@ -1986,4 +1986,15 @@ function Soundscape.testLayeredPlayback()
     return payload
 end
 
+--- Storyteller end-of-session: write silent looping state to `gameState.soundscape` and force
+--- emitters to the silent AssetBundle clip so saves do not resume stray audio on load.
+--- @return boolean ok
+--- @return string message
+function Soundscape.prepareEmittersForSave()
+    local ok, msg = Soundscape.stopAll()
+    Soundscape.invalidateReconcileCache()
+    Soundscape.reconcileFromState({ force = true, deferApplySeconds = 0 })
+    return ok, msg or ""
+end
+
 return Soundscape
