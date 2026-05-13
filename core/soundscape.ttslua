@@ -1545,6 +1545,60 @@ function Soundscape.applyContext(context)
     return { ok = ok, message = table.concat(results, " | "), state = ensureState() }
 end
 
+--- Counts how many of `wind`, `rain`, `thunderstorm` are non-nil on `soundscapeNarrative` (Scene Constructor trio rule).
+--- @param sn table|nil
+--- @return integer
+local function countSoundscapeNarrativeWeatherTrio(sn)
+    if type(sn) ~= "table" then
+        return 0
+    end
+    local c = 0
+    if sn.wind ~= nil then
+        c = c + 1
+    end
+    if sn.rain ~= nil then
+        c = c + 1
+    end
+    if sn.thunderstorm ~= nil then
+        c = c + 1
+    end
+    return c
+end
+
+--- Applies optional `sessionScene.soundscapeNarrative` through this module's `applyContext` (avoids `require("core.soundscape")`
+--- from other modules returning a different table than Global's `SS` during edge load orders).
+--- Weather applies only when `chronicleWeatherManualHold` is true and all three trio fields are set (import contract).
+--- @param sessionScene table|nil
+function Soundscape.applySessionSceneNarrativeOverrides(sessionScene)
+    if type(sessionScene) ~= "table" then
+        return
+    end
+    local sn = sessionScene.soundscapeNarrative
+    if type(sn) ~= "table" then
+        return
+    end
+    local ctx = {}
+    if type(sn.backgroundMusic) == "string" and string.match(sn.backgroundMusic, "%S") then
+        ctx.musicMood = sn.backgroundMusic
+    end
+    if type(sn.location) == "string" and string.match(sn.location, "%S") then
+        ctx.location = sn.location
+    end
+    local c = countSoundscapeNarrativeWeatherTrio(sn)
+    if c == 3 and sessionScene.chronicleWeatherManualHold == true then
+        ctx.rain = sn.rain
+        ctx.wind = sn.wind
+        ctx.thunderEnabled = sn.thunderstorm == true
+    end
+    if next(ctx) == nil then
+        return
+    end
+    if type(Soundscape.applyContext) ~= "function" then
+        return
+    end
+    Soundscape.applyContext(ctx)
+end
+
 --- Builds an applyContext table from a `C.Sites` entry (`isSilent`, `isIndoors`, `soundscape.backgroundMusic.playlist`, `soundscape.location.track`).
 -- Non-silent entries always set `isSilent = false` so the silent-site latch clears when changing locations.
 -- @param site table|nil

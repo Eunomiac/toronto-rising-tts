@@ -183,7 +183,7 @@ end
 
 --- Push storyteller panel visuals from `gameState.sessionScene` + layout.
 function StorytellerScenesPanel.refresh()
-    if UI == nil or UI.setAttribute == nil then
+    if UI == nil or UI.setAttribute == nil or UI.getAttributes == nil or UI.setAttributes == nil then
         return
     end
 
@@ -503,10 +503,10 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
         end
     end
 
-    if type(SceneLibrary.applySoundscapeNarrativePartial) == "function" then
+    if type(SS.applySessionSceneNarrativeOverrides) == "function" then
+        SS.applySessionSceneNarrativeOverrides(S.getStateVal("sessionScene"))
+    elseif type(SceneLibrary.applySoundscapeNarrativePartial) == "function" then
         SceneLibrary.applySoundscapeNarrativePartial(S.getStateVal("sessionScene"))
-    else
-        print("[StorytellerScenesPanel] SceneLibrary.applySoundscapeNarrativePartial missing — reload Save and Play with full `core/scene_library` bundle.")
     end
 
     if S.getStateVal("sessionScene", "chronicleWeatherManualHold") ~= true then

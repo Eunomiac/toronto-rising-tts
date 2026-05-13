@@ -227,37 +227,14 @@ function SceneLibrary.allocateForkSceneKey(baseKey, scenes)
     end
 end
 
---- Applies optional `sessionScene.soundscapeNarrative` fields through `Soundscape.applyContext`.
---- Weather trio is applied only when `chronicleWeatherManualHold` is true (importer locks narrative weather).
---- Music mood and location track apply whenever present as non-empty strings.
---- Lazy-requires `core.soundscape` to avoid load-order cycles with `core.state`.
+--- Applies optional `sessionScene.soundscapeNarrative` via `Soundscape.applySessionSceneNarrativeOverrides` (same entrypoint
+--- as Storyteller Apply — avoids a second `require("core.soundscape")` binding that can lack `applyContext` in some orders).
 --- @param sessionScene table|nil
 function SceneLibrary.applySoundscapeNarrativePartial(sessionScene)
-    if type(sessionScene) ~= "table" then
-        return
+    local Soundscape = require("core.soundscape")
+    if type(Soundscape.applySessionSceneNarrativeOverrides) == "function" then
+        Soundscape.applySessionSceneNarrativeOverrides(sessionScene)
     end
-    local sn = sessionScene.soundscapeNarrative
-    if type(sn) ~= "table" then
-        return
-    end
-    local SS = require("core.soundscape")
-    local ctx = {}
-    if type(sn.backgroundMusic) == "string" and string.match(sn.backgroundMusic, "%S") then
-        ctx.musicMood = sn.backgroundMusic
-    end
-    if type(sn.location) == "string" and string.match(sn.location, "%S") then
-        ctx.location = sn.location
-    end
-    local c = countSoundscapeWeatherTrioSpecified(sn)
-    if c == 3 and sessionScene.chronicleWeatherManualHold == true then
-        ctx.rain = sn.rain
-        ctx.wind = sn.wind
-        ctx.thunderEnabled = sn.thunderstorm == true
-    end
-    if next(ctx) == nil then
-        return
-    end
-    SS.applyContext(ctx)
 end
 
 --- When `sceneLibrary.activeKey` names a row with `receivesLiveWrites`, deep-clone live `sessionScene` into that row.
