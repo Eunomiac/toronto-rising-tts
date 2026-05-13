@@ -738,7 +738,9 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
         Sync.full({ reason = "StorytellerScenesPanel.location" })
     end
     StorytellerScenesPanel.refresh()
-    GameStateOverlay.refresh()
+    if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
+        GameStateOverlay.refresh()
+    end
     U.AlertGM(result and result.message or "Location applied.")
 end
 
@@ -805,8 +807,12 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
         Sync.full({ reason = "StorytellerScenesPanel.clock" })
     end
 
-    GameStateOverlay.refresh()
-    GameStateOverlay.ensureTicker()
+    if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
+        GameStateOverlay.refresh()
+    end
+    if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
+        GameStateOverlay.ensureTicker()
+    end
 
     local msg = "Scene clock updated."
     if weatherMsg ~= nil and weatherMsg ~= "" then
@@ -1061,11 +1067,17 @@ function StorytellerScenesPanel.toggleRealTimeClock()
         if GameStateOverlay and type(GameStateOverlay.resetRealTimeCarry) == "function" then
             GameStateOverlay.resetRealTimeCarry()
         end
-        GameStateOverlay.ensureTicker()
+        if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
+            GameStateOverlay.ensureTicker()
+        end
     else
-        GameStateOverlay.stopTicker()
+        if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
+            GameStateOverlay.stopTicker()
+        end
     end
-    GameStateOverlay.refresh()
+    if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
+        GameStateOverlay.refresh()
+    end
     U.AlertGM(ck.useRealTime and "Real-time narrative clock: ON." or "Real-time narrative clock: OFF.")
 end
 
