@@ -276,7 +276,7 @@ function SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()
     if type(live) ~= "table" then
         return
     end
-    S.setStateVal(U.clone(live, true), "sceneLibrary", "scenes", K, "sessionScene")
+    S.setStateVal(U.merge({}, live), "sceneLibrary", "scenes", K, "sessionScene")
 end
 
 return SceneLibrary

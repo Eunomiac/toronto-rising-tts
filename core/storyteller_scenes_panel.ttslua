@@ -451,7 +451,8 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
         return
     end
 
-    local bundle = U.clone(ent.sessionScene, true)
+    -- Deep copy: `U.clone(..., true)` is shallow only (see `lib/util.ttslua`); `U.merge` recurses nested tables.
+    local bundle = U.merge({}, ent.sessionScene)
     SceneLibrary.syncNpcRoleOverrideFromSeatSlots(bundle)
     local lightingKey = normalizeLightingPresetKey(bundle.lightingPresetKey)
     bundle.lightingPresetKey = lightingKey
@@ -502,10 +503,16 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
         end
     end
 
-    SceneLibrary.applySoundscapeNarrativePartial(S.getStateVal("sessionScene"))
+    if type(SceneLibrary.applySoundscapeNarrativePartial) == "function" then
+        SceneLibrary.applySoundscapeNarrativePartial(S.getStateVal("sessionScene"))
+    else
+        print("[StorytellerScenesPanel] SceneLibrary.applySoundscapeNarrativePartial missing — reload Save and Play with full `core/scene_library` bundle.")
+    end
 
     if S.getStateVal("sessionScene", "chronicleWeatherManualHold") ~= true then
-        ChronicleWeather.applyScheduledWeather({ force = false })
+        if type(ChronicleWeather.applyScheduledWeather) == "function" then
+            ChronicleWeather.applyScheduledWeather({ force = false })
+        end
     end
 
     if Sync and type(Sync.full) == "function" then
