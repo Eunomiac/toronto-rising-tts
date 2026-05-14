@@ -1961,6 +1961,9 @@ function UpdateUIDisplays(delta)
                 HUDP.updatePlayerUI(player, color)
             end
         end)
+        if wants("playerHud") and type(HUDP.afterPlayerHudBatch) == "function" then
+            HUDP.afterPlayerHudBatch()
+        end
     end
 
     if wants("overlays") then

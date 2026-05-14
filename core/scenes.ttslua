@@ -172,12 +172,6 @@ Scenes.SCENES = {
                     "mainLightLeft",
                     "mainLightRight",
                 }
-            },
-            {
-                delay = 4.0,
-                duration = 1.0,
-                mode = "STANDARD",
-                refs = {}
             }
         },
         description = "Admin standard mode - staggered player/main lighting"
@@ -268,15 +262,6 @@ Scenes.SCENES = {
                 refs = {
                     "mainLightLeft",
                     "mainLightRight",
-                }
-            },
-            {
-                delay = 4.0,
-                duration = 1.0,
-                mode = "STANDARD",
-                refs = {
-                    "districtCardLight",
-                    "siteCardLight",
                 }
             }
         },
@@ -757,6 +742,7 @@ local function applySceneByName(sceneName, transitionTime, allowDelays)
             context.musicMood = scene.musicMood
         end
         Soundscape.applyContext(context)
+        Soundscape.markReconciledToCurrentState()
     end
 
     if sceneNeedsNpcLightRestore(sceneName) then

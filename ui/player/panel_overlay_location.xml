@@ -1,13 +1,13 @@
 <!-- Generated file. Edit ui/.templates/panel_overlay_location.xml only. -->
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/HUDs & Overlays/Player HUD Overview.md. -->
 
-<Panel id="gameStateOverlay_location_Brown" class="playerHud_overlay_location" visibility="Brown"
-  onMouseEnter="HUD_locationOverlay_hoverOn"
-  onMouseExit="HUD_locationOverlay_hoverOff">
+<Panel id="gameStateOverlay_location_Brown" class="playerHud_overlay_location" visibility="Brown" raycastTarget="false">
 
-  <Image id="popout_locationPanel_Brown" class="popoutControl_location" image="popoutControl_location" />
+  <Image id="popout_locationPanel_Brown" class="popoutControl_location" image="popoutControl_location"
+    onMouseEnter="HUD_locationOverlay_hoverOn"
+    onMouseExit="HUD_locationOverlay_hoverOff" />
 
-  <Panel id="gameStateOverlay_locationPanel_Brown" class="gameStateOverlay_locationPanel" active="false" raycastTarget="true">
+  <Panel id="gameStateOverlay_locationPanel_Brown" class="gameStateOverlay_locationPanel" active="false" raycastTarget="false">
 
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Annex_Brown" image="districtCard_Annex" />
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_BayStFinancial_Brown" image="districtCard_BayStFinancial" />
@@ -46,17 +46,18 @@
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_YongeStreet_Brown" image="districtCard_YongeStreet" />
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Yorkville_Brown" image="districtCard_Yorkville" />
 
-    <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_StRegisGrandSalon_Brown" image="siteCard_StRegisGrandSalon" />
+    <!-- Site card: default inactive + empty `image`; Lua sets `image` then activates (see `core/hud_player.ttslua`). -->
+    <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_current_Brown" active="false" image="" />
   </Panel>
 </Panel>
 
-<Panel id="gameStateOverlay_location_Orange" class="playerHud_overlay_location" visibility="Orange"
-  onMouseEnter="HUD_locationOverlay_hoverOn"
-  onMouseExit="HUD_locationOverlay_hoverOff">
+<Panel id="gameStateOverlay_location_Orange" class="playerHud_overlay_location" visibility="Orange" raycastTarget="false">
 
-  <Image id="popout_locationPanel_Orange" class="popoutControl_location" image="popoutControl_location" />
+  <Image id="popout_locationPanel_Orange" class="popoutControl_location" image="popoutControl_location"
+    onMouseEnter="HUD_locationOverlay_hoverOn"
+    onMouseExit="HUD_locationOverlay_hoverOff" />
 
-  <Panel id="gameStateOverlay_locationPanel_Orange" class="gameStateOverlay_locationPanel" active="false" raycastTarget="true">
+  <Panel id="gameStateOverlay_locationPanel_Orange" class="gameStateOverlay_locationPanel" active="false" raycastTarget="false">
 
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Annex_Orange" image="districtCard_Annex" />
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_BayStFinancial_Orange" image="districtCard_BayStFinancial" />
@@ -95,17 +96,18 @@
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_YongeStreet_Orange" image="districtCard_YongeStreet" />
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Yorkville_Orange" image="districtCard_Yorkville" />
 
-    <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_StRegisGrandSalon_Orange" image="siteCard_StRegisGrandSalon" />
+    <!-- Site card: default inactive + empty `image`; Lua sets `image` then activates (see `core/hud_player.ttslua`). -->
+    <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_current_Orange" active="false" image="" />
   </Panel>
 </Panel>
 
-<Panel id="gameStateOverlay_location_Red" class="playerHud_overlay_location" visibility="Red"
-  onMouseEnter="HUD_locationOverlay_hoverOn"
-  onMouseExit="HUD_locationOverlay_hoverOff">
+<Panel id="gameStateOverlay_location_Red" class="playerHud_overlay_location" visibility="Red" raycastTarget="false">
 
-  <Image id="popout_locationPanel_Red" class="popoutControl_location" image="popoutControl_location" />
+  <Image id="popout_locationPanel_Red" class="popoutControl_location" image="popoutControl_location"
+    onMouseEnter="HUD_locationOverlay_hoverOn"
+    onMouseExit="HUD_locationOverlay_hoverOff" />
 
-  <Panel id="gameStateOverlay_locationPanel_Red" class="gameStateOverlay_locationPanel" active="false" raycastTarget="true">
+  <Panel id="gameStateOverlay_locationPanel_Red" class="gameStateOverlay_locationPanel" active="false" raycastTarget="false">
 
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Annex_Red" image="districtCard_Annex" />
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_BayStFinancial_Red" image="districtCard_BayStFinancial" />
@@ -144,17 +146,18 @@
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_YongeStreet_Red" image="districtCard_YongeStreet" />
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Yorkville_Red" image="districtCard_Yorkville" />
 
-    <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_StRegisGrandSalon_Red" image="siteCard_StRegisGrandSalon" />
+    <!-- Site card: default inactive + empty `image`; Lua sets `image` then activates (see `core/hud_player.ttslua`). -->
+    <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_current_Red" active="false" image="" />
   </Panel>
 </Panel>
 
-<Panel id="gameStateOverlay_location_Pink" class="playerHud_overlay_location" visibility="Pink"
-  onMouseEnter="HUD_locationOverlay_hoverOn"
-  onMouseExit="HUD_locationOverlay_hoverOff">
+<Panel id="gameStateOverlay_location_Pink" class="playerHud_overlay_location" visibility="Pink" raycastTarget="false">
 
-  <Image id="popout_locationPanel_Pink" class="popoutControl_location" image="popoutControl_location" />
+  <Image id="popout_locationPanel_Pink" class="popoutControl_location" image="popoutControl_location"
+    onMouseEnter="HUD_locationOverlay_hoverOn"
+    onMouseExit="HUD_locationOverlay_hoverOff" />
 
-  <Panel id="gameStateOverlay_locationPanel_Pink" class="gameStateOverlay_locationPanel" active="false" raycastTarget="true">
+  <Panel id="gameStateOverlay_locationPanel_Pink" class="gameStateOverlay_locationPanel" active="false" raycastTarget="false">
 
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Annex_Pink" image="districtCard_Annex" />
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_BayStFinancial_Pink" image="districtCard_BayStFinancial" />
@@ -193,17 +196,18 @@
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_YongeStreet_Pink" image="districtCard_YongeStreet" />
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Yorkville_Pink" image="districtCard_Yorkville" />
 
-    <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_StRegisGrandSalon_Pink" image="siteCard_StRegisGrandSalon" />
+    <!-- Site card: default inactive + empty `image`; Lua sets `image` then activates (see `core/hud_player.ttslua`). -->
+    <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_current_Pink" active="false" image="" />
   </Panel>
 </Panel>
 
-<Panel id="gameStateOverlay_location_Purple" class="playerHud_overlay_location" visibility="Purple"
-  onMouseEnter="HUD_locationOverlay_hoverOn"
-  onMouseExit="HUD_locationOverlay_hoverOff">
+<Panel id="gameStateOverlay_location_Purple" class="playerHud_overlay_location" visibility="Purple" raycastTarget="false">
 
-  <Image id="popout_locationPanel_Purple" class="popoutControl_location" image="popoutControl_location" />
+  <Image id="popout_locationPanel_Purple" class="popoutControl_location" image="popoutControl_location"
+    onMouseEnter="HUD_locationOverlay_hoverOn"
+    onMouseExit="HUD_locationOverlay_hoverOff" />
 
-  <Panel id="gameStateOverlay_locationPanel_Purple" class="gameStateOverlay_locationPanel" active="false" raycastTarget="true">
+  <Panel id="gameStateOverlay_locationPanel_Purple" class="gameStateOverlay_locationPanel" active="false" raycastTarget="false">
 
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Annex_Purple" image="districtCard_Annex" />
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_BayStFinancial_Purple" image="districtCard_BayStFinancial" />
@@ -242,6 +246,7 @@
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_YongeStreet_Purple" image="districtCard_YongeStreet" />
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Yorkville_Purple" image="districtCard_Yorkville" />
 
-    <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_StRegisGrandSalon_Purple" image="siteCard_StRegisGrandSalon" />
+    <!-- Site card: default inactive + empty `image`; Lua sets `image` then activates (see `core/hud_player.ttslua`). -->
+    <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_current_Purple" active="false" image="" />
   </Panel>
 </Panel>

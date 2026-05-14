@@ -69,7 +69,7 @@ The **Scenes** toolbar tab opens `panel_scenes_host` (**1200px** total: two **59
 | `HUD_scenesLibSlot` | `scenes_lib_slot_01` … `scenes_lib_slot_20` | `(player, button, id)` | Host: sets `sceneLibrary.activeKey` from `order[slot]`; `StorytellerScenesPanel.refresh()`. |
 | `HUD_scenesLibUnlink` | `scenes_lib_btn_unlink` | `(player, button, id)` | Host: `receivesLiveWrites = false` on active row. |
 | `HUD_scenesLibDelete` | `scenes_lib_btn_delete` | `(player, button, id)` | Host: two-step delete (arm then confirm within 5s) removes **active** key from `scenes` + `order`, clears `activeKey`. |
-| `HUD_scenesLibApply` | `scenes_lib_btn_apply` | `(player, button, id)` | Host: clones `sceneLibrary.scenes[activeKey].sessionScene` into live `sessionScene`, sets `currentScene` from `lightingPresetKey`, `RSL.SetTableTo` when `tableKey` is valid, district/site cards + `Soundscape.contextFromSite` / `applyContext`, optional `soundscapeNarrative` via `Soundscape.applySessionSceneNarrativeOverrides`, chronicle weather when not manual-hold, then `Sync.full`. |
+| `HUD_scenesLibApply` | `scenes_lib_btn_apply` | `(player, button, id)` | Host: clones `sceneLibrary.scenes[activeKey].sessionScene` into live `sessionScene`, sets `currentScene` from `lightingPresetKey`, `RSL.SetTableTo` when `tableKey` is valid, arms map pin relocation for scene-cast rules, `Soundscape.contextFromSite` / `applyContext`, optional `soundscapeNarrative` via `Soundscape.applySessionSceneNarrativeOverrides`, chronicle weather when not manual-hold, then `Sync.full`. |
 | `HUD_scenesLibEnd` | `scenes_lib_btn_end` | `(player, button, id)` | Host: `U.Alert` to table, `Soundscape.setLocationAudio("none")`, `reapplyWeatherNaturalVolumes`, `invalidateReconcileCache`, `Sync.full` (does not clear `sessionScene`). |
 
 ## Game state overlay (`ui/shared/game_state_overlay.xml`)
@@ -97,8 +97,8 @@ Root `Panel` id `gameStateOverlay_location_<Color>` uses class `playerHud_overla
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
-| `HUD_locationOverlay_hoverOn` | `gameStateOverlay_location_<Color>` root `Panel` | `(player, value, id)` | `setActive` on `gameStateOverlay_locationPanel_<Color>` to true; popout `popout_locationPanel_<Color>` tint `rgba(1, 1, 1, 1)`. |
-| `HUD_locationOverlay_hoverOff` | same root `Panel` | `(player, value, id)` | Hides the inner panel; popout tint back to `rgba(1, 1, 1, 0.15)`. |
+| `HUD_locationOverlay_hoverOn` | `popout_locationPanel_<Color>` `Image` | `(player, value, id)` | `setActive` on `gameStateOverlay_locationPanel_<Color>` to true; popout tint `rgba(1, 1, 1, 1)`. |
+| `HUD_locationOverlay_hoverOff` | same `Image` | `(player, value, id)` | Hides the inner panel; popout tint back to `rgba(1, 1, 1, 0.15)`. |
 
 ## Legacy scene preset buttons (player HUD / other XML)
 

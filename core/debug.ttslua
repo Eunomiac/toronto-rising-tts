@@ -1084,7 +1084,7 @@ function DEBUG.testUI()
                 S.setStateVal(nil, "playerData", playerID, "hud", "reference", "princesCourt")
 
                 -- Set persisted location district (used when click override is cleared).
-                S.setStateVal("Bennington", "playerData", playerID, "hud", "map", "location", "district")
+                S.setStateVal("Bennington", "sessionScene", "districtKey")
 
                 -- Ensure all persisted overlay toggles start disabled.
                 local overlayKeys = {
@@ -4737,6 +4737,7 @@ end
 -- Accepted shapes:
 --   { assets = { { name = "...", fileUrl = "file:///..." }, ... } }
 --   { { name = "...", fileUrl = "file:///..." }, ... }
+-- `name` may be supplied as `image` (Custom UI asset name) instead of `name`.
 -- @param manifest table Manifest object or direct asset array
 -- @return table|nil Array of normalized assets, or nil on validation failure
 local function normalizeUploadManifest(manifest)
@@ -4761,7 +4762,7 @@ local function normalizeUploadManifest(manifest)
         if U.Type(asset) ~= "table" then
             print("DEBUG: Skipping non-table asset at index " .. tostring(i))
         else
-            local name = asset.name or asset.Name or asset.assetName
+            local name = asset.name or asset.Name or asset.assetName or asset.image
             local fileUrl = asset.fileUrl or asset.url or asset.URL
             if U.Type(name) ~= "string" or name == "" then
                 print("DEBUG: Skipping asset with invalid name at index " .. tostring(i))
@@ -4790,6 +4791,7 @@ local function normalizeUploadManifest(manifest)
 end
 
 --- Spawn a batch of temporary Custom_Token objects from a manifest table.
+-- Each token is named with `asset.name`, configured with the local `fileUrl`, then locked to avoid physics scatter.
 -- @param manifest table Manifest object (with .assets) or direct assets array
 -- @param options table|nil Optional controls: startX/startY/startZ/gap/columns/offset/limit
 -- @return number Count of spawned tokens
@@ -4833,6 +4835,9 @@ function DEBUG.spawnCustomUiUploadBatchFromManifest(manifest, options)
                     merge_distance = 15,
                     stackable = false
                 })
+                if obj.setLock ~= nil then
+                    obj.setLock(true)
+                end
                 spawned = spawned + 1
                 processed = processed + 1
             else

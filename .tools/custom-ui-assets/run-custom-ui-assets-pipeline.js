@@ -8,7 +8,7 @@ const { spawnSync } = require("child_process");
 const readline = require("readline");
 
 /**
- * Parse CLI args of shape: --key value
+ * Parse CLI args: `--key value` or boolean `--flag` (value "1").
  * @param {string[]} argv
  * @returns {Record<string, string>}
  */
@@ -20,12 +20,13 @@ function parseArgs(argv) {
       continue;
     }
     const key = token.slice(2);
-    const value = argv[i + 1];
-    if (!value || value.startsWith("--")) {
-      throw new Error(`Missing value for argument "${token}"`);
+    const next = argv[i + 1];
+    if (next === undefined || next.startsWith("--")) {
+      args[key] = "1";
+    } else {
+      args[key] = next;
+      i += 1;
     }
-    args[key] = value;
-    i += 1;
   }
   return args;
 }
@@ -68,44 +69,88 @@ function waitForEnter(prompt) {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
-  const inputDir = args.input;
+  const mode = (args.mode || "directory").trim().toLowerCase();
   const saveName = args.saveName;
-  if (!inputDir) {
-    throw new Error("Required argument missing: --input <relative image folder>");
-  }
   if (!saveName) {
     throw new Error("Required argument missing: --saveName <save number/name>");
   }
 
-  const buildScript = path.resolve(".tools/custom-ui-assets/build-upload-manifest.js");
+  const buildDirScript = path.resolve(".tools/custom-ui-assets/build-upload-manifest.js");
+  const buildSitesScript = path.resolve(".tools/custom-ui-assets/build-upload-manifest-from-sites-constants.js");
   const convertScript = path.resolve(".tools/custom-ui-assets/convert-png-to-webp.js");
   const mergeByNameScript = path.resolve(".tools/custom-ui-assets/merge-custom-ui-assets-from-save-name.js");
 
-  console.log("=== Step 1/3: Convert PNG files to WEBP ===");
-  const convertExit = runNodeScript(convertScript, [
-    "--input",
-    inputDir,
-  ]);
-  if (convertExit !== 0) {
-    process.exit(convertExit);
-  }
+  if (mode === "directory") {
+    const inputDir = args.input;
+    if (!inputDir) {
+      throw new Error('Required argument missing: --input <relative image folder> (or use --mode sites-from-constants)');
+    }
 
-  console.log("");
-  console.log("=== Step 2/3: Build manifest files (WEBP only) ===");
-  const buildExit = runNodeScript(buildScript, [
-    "--input",
-    inputDir,
-    "--extensions",
-    "webp",
-    "--out",
-    ".dev/custom-ui-assets/manifest.json",
-    "--luaOut",
-    ".dev/custom-ui-assets/manifest.lua",
-    "--moduleOut",
-    "lib/custom_ui_upload_manifest.ttslua",
-  ]);
-  if (buildExit !== 0) {
-    process.exit(buildExit);
+    console.log("=== Mode: directory (PNG -> WEBP, scan folder) ===");
+    console.log("");
+    console.log("=== Step 1/3: Convert PNG files to WEBP ===");
+    const convertExit = runNodeScript(convertScript, [
+      "--input",
+      inputDir,
+    ]);
+    if (convertExit !== 0) {
+      process.exit(convertExit);
+    }
+
+    console.log("");
+    console.log("=== Step 2/3: Build manifest files (WEBP only) ===");
+    const buildExit = runNodeScript(buildDirScript, [
+      "--input",
+      inputDir,
+      "--extensions",
+      "webp",
+      "--out",
+      ".dev/custom-ui-assets/manifest.json",
+      "--luaOut",
+      ".dev/custom-ui-assets/manifest.lua",
+      "--moduleOut",
+      "lib/custom_ui_upload_manifest.ttslua",
+    ]);
+    if (buildExit !== 0) {
+      process.exit(buildExit);
+    }
+  } else if (mode === "sites-from-constants") {
+    const constantsPath = args.constants || "lib/constants.ttslua";
+    const skipMissing = args.skipMissing === "1" || args.skipMissing === "true";
+
+    console.log("=== Mode: sites-from-constants (C.Sites image + localImage) ===");
+    console.log("");
+    console.log("=== Step 1/3: Skipped (no folder PNG conversion) ===");
+    console.log("");
+    console.log("=== Step 2/3: Build manifest from lib/constants.ttslua C.Sites ===");
+    const siteArgs = [
+      "--constants",
+      constantsPath,
+      "--out",
+      ".dev/custom-ui-assets/manifest.json",
+      "--luaOut",
+      ".dev/custom-ui-assets/manifest.lua",
+      "--moduleOut",
+      "lib/custom_ui_upload_manifest.ttslua",
+    ];
+    if (skipMissing) {
+      siteArgs.push("--skipMissing");
+    }
+    if (args.batch === "1" || args.batch === "true") {
+      siteArgs.push("--batch");
+    }
+    if (args.batchMax !== undefined && String(args.batchMax).length > 0) {
+      siteArgs.push("--batchMax", String(args.batchMax));
+    }
+    if (args.batchStart !== undefined && String(args.batchStart).trim() !== "") {
+      siteArgs.push("--batchStart", String(args.batchStart).trim());
+    }
+    const buildExit = runNodeScript(buildSitesScript, siteArgs);
+    if (buildExit !== 0) {
+      process.exit(buildExit);
+    }
+  } else {
+    throw new Error(`Unknown --mode "${mode}" (use "directory" or "sites-from-constants")`);
   }
 
   console.log("");

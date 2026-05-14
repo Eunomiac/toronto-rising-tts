@@ -892,19 +892,19 @@ C.RedCameraAngles = {
 C.UniversalCameraAngles = {
   districtCard = {
     cameraMode = "FirstPerson",
-    position = Vector({-123.0687, 39.5024, -0.1581}),
-    pitch = 0.0000,
-    yaw = 310,
-    distance = 0.1,
-    isRelativeToReferenceHandPosition = false
+    position = Vector({0, 37.7789, -25.0052}),
+    pitch = 15.8187,
+    yaw = 0.0000,
+    distance = 27.3856,
+    isRelativeToReferenceHandPosition = true
   },
   siteCard = {
     cameraMode = "FirstPerson",
-    position = Vector({123.0687, 39.5024, -0.1581}),
-    pitch = 0.0000,
-    yaw = 50,
-    distance = 0.1,
-    isRelativeToReferenceHandPosition = false
+    position = Vector({0, 37.7789, -25.0052}),
+    pitch = 15.8187,
+    yaw = 0.0000,
+    distance = 27.3856,
+    isRelativeToReferenceHandPosition = true
   },
   npcCenter = {
     cameraMode = "FirstPerson",
@@ -1567,10 +1567,23 @@ C.Districts = {
 
 -- Sites
 -- Optional `isSilent = true`: full ambient mute (background, location ambience, weather); featured music may still be played via Storyteller action. Merge with `Soundscape.applyContext(Soundscape.contextFromSite(site))`.
+
+-- NOTE for Asset Import Functionality:
+-- Each `C.Sites` entry uses `localImage` (absolute `file:///...` or OS path to WEBP on disk) and `image` (Custom UI asset
+-- name, e.g. siteCard_MySite) for XML `image=` attributes after cloud upload.
+-- Generate manifest + Lua module from constants, then TTS upload + merge save URLs:
+--   npm run custom-ui-assets:manifest-sites
+--   npm run custom-ui-assets:pipeline -- --mode sites-from-constants --saveName <saveId>
+-- Optional: `--skipMissing` on the pipeline or manifest script skips sites whose files are absent (partial batches).
+-- Batched uploads (alphabetical C.Sites keys): `npm run custom-ui-assets:manifest-sites:batch` or `--batch` / `--batchMax` / `--batchStart` (see `.dev/custom-ui-assets/README.md`).
+-- Folder-based workflow (no constants): `npm run custom-ui-assets:pipeline -- --mode directory --input <folder> --saveName <id>`.
+
 C.Sites = {
   CLGrounds = {
+    key = "CLGrounds",
     name = "Casa Loma: Estate Grounds",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CLGrounds.webp",
+    image = "siteCard_CLGrounds",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLGrounds.webp",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
@@ -1580,8 +1593,10 @@ C.Sites = {
     offsetXY = "-254.33 441.43"
   },
   CLGallery = {
+    key = "CLGallery",
     name = "Casa Loma: Gallery of Mirrors",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CLGallery.webp",
+    image = "siteCard_CLGallery",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLGallery.webp",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
@@ -1591,8 +1606,10 @@ C.Sites = {
     offsetXY = "-254.33 441.43"
   },
   CLGreatHall = {
+    key = "CLGreatHall",
     name = "Casa Loma: Great Hall",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CLGreatHall.webp",
+    image = "siteCard_CLGreatHall",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLGreatHall.webp",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
@@ -1602,8 +1619,10 @@ C.Sites = {
     offsetXY = "-254.33 441.43"
   },
   CLDrawingRoom = {
+    key = "CLDrawingRoom",
     name = "Casa Loma: Maximillian Steele Drawing Room",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CLDrawingRoom.webp",
+    image = "siteCard_CLDrawingRoom",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLDrawingRoom.webp",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
@@ -1613,8 +1632,10 @@ C.Sites = {
     offsetXY = "-254.33 441.43"
   },
   CLTerrace = {
+    key = "CLTerrace",
     name = "Casa Loma: Moonlit Terrace",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CLTerrace.webp",
+    image = "siteCard_CLTerrace",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLTerrace.webp",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
@@ -1624,8 +1645,10 @@ C.Sites = {
     offsetXY = "-254.33 441.43"
   },
   CLOverlook = {
+    key = "CLOverlook",
     name = "Casa Loma: Overlook",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CLOverlook.webp",
+    image = "siteCard_CLOverlook",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLOverlook.webp",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
@@ -1635,8 +1658,10 @@ C.Sites = {
     offsetXY = "-254.33 441.43"
   },
   CLLibrary = {
+    key = "CLLibrary",
     name = "Casa Loma: Tacettin Ayhan Library",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CLLibrary.webp",
+    image = "siteCard_CLLibrary",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLLibrary.webp",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
@@ -1646,8 +1671,10 @@ C.Sites = {
     offsetXY = "-254.33 441.43"
   },
   CLVestibule = {
+    key = "CLVestibule",
     name = "Casa Loma: Vestibule",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CLVestibule.webp",
+    image = "siteCard_CLVestibule",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLVestibule.webp",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
@@ -1656,9 +1683,12 @@ C.Sites = {
     isIndoors = true,
     offsetXY = "-254.33 441.43"
   },
+
   GECatacombs = {
+    key = "GECatacombs",
     name = "The Giovanni Estate: Catacombs",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/GECatacombs.webp",
+    image = "siteCard_GECatacombs",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GECatacombs.webp",
     district = C.Districts.Wychwood,
     soundscape = {
       backgroundMusic = {playlist = "gioCatacombs"},
@@ -1668,8 +1698,10 @@ C.Sites = {
     offsetXY = "-435.62 426.13"
   },
   GEDiningHall = {
+    key = "GEDiningHall",
     name = "The Giovanni Estate: Dining Hall",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/GEDiningHall.webp",
+    image = "siteCard_GEDiningHall",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GEDiningHall.webp",
     district = C.Districts.Wychwood,
     soundscape = {
       backgroundMusic = {playlist = "gioEstate"},
@@ -1679,8 +1711,10 @@ C.Sites = {
     offsetXY = "-435.62 426.13"
   },
   GEEstateGrounds = {
+    key = "GEEstateGrounds",
     name = "The Giovanni Estate: Estate Grounds",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/GEEstateGrounds.webp",
+    image = "siteCard_GEEstateGrounds",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GEEstateGrounds.webp",
     district = C.Districts.Wychwood,
     soundscape = {
       backgroundMusic = {playlist = "gioEstate"},
@@ -1690,8 +1724,10 @@ C.Sites = {
     offsetXY = "-435.62 426.13"
   },
   GEMortuary = {
+    key = "GEMortuary",
     name = "The Giovanni Estate: Mortuary",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/GEMortuary.webp",
+    image = "siteCard_GEMortuary",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GEMortuary.webp",
     district = C.Districts.Wychwood,
     soundscape = {
       backgroundMusic = {playlist = "gioEstate"},
@@ -1701,8 +1737,10 @@ C.Sites = {
     offsetXY = "-435.62 426.13"
   },
   GETowerRoom = {
+    key = "GETowerRoom",
     name = "The Giovanni Estate: Tower Room",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/GETowerRoom.webp",
+    image = "siteCard_GETowerRoom",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GETowerRoom.webp",
     district = C.Districts.Wychwood,
     soundscape = {
       backgroundMusic = {playlist = "gioEstate"},
@@ -1711,9 +1749,12 @@ C.Sites = {
     isIndoors = true,
     offsetXY = "-435.62 426.13"
   },
+
   WarrensAntechamber = {
+    key = "WarrensAntechamber",
     name = "The Nosferatu Warrens: Antechamber",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/WarrensAntechamber.webp",
+    image = "siteCard_WarrensAntechamber",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WarrensAntechamber.webp",
     district = C.Districts.Sewers,
     soundscape = {
       backgroundMusic = {playlist = "nosWarrens"},
@@ -1722,8 +1763,10 @@ C.Sites = {
     isIndoors = true,
   },
   WarrensDrakes = {
+    key = "WarrensDrakes",
     name = "The Nosferatu Warrens: Drake's",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/WarrensDrakes.webp",
+    image = "siteCard_WarrensDrakes",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WarrensDrakes.webp",
     district = C.Districts.Sewers,
     soundscape = {
       backgroundMusic = {playlist = "nosWarrens"},
@@ -1732,8 +1775,10 @@ C.Sites = {
     isIndoors = true,
   },
   WarrensLabyrinth = {
+    key = "WarrensLabyrinth",
     name = "The Nosferatu Warrens: Labyrinth",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/WarrensLabyrinth.webp",
+    image = "siteCard_WarrensLabyrinth",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WarrensLabyrinth.webp",
     district = C.Districts.Sewers,
     soundscape = {
       backgroundMusic = {playlist = "nosWarrens"},
@@ -1742,8 +1787,10 @@ C.Sites = {
     isIndoors = true,
   },
   WarrensSpawningPool = {
+    key = "WarrensSpawningPool",
     name = "The Nosferatu Warrens: Spawning Pool",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/WarrensSpawningPool.webp",
+    image = "siteCard_WarrensSpawningPool",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WarrensSpawningPool.webp",
     district = C.Districts.Sewers,
     soundscape = {
       backgroundMusic = {playlist = "nosWarrens"},
@@ -1752,8 +1799,10 @@ C.Sites = {
     isIndoors = true,
   },
   WarrensTunnelJunction = {
+    key = "WarrensTunnelJunction",
     name = "The Nosferatu Warrens: Tunnel Junction",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/WarrensTunnelJunction.webp",
+    image = "siteCard_WarrensTunnelJunction",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WarrensTunnelJunction.webp",
     district = C.Districts.Sewers,
     soundscape = {
       backgroundMusic = {playlist = "nosWarrens"},
@@ -1761,9 +1810,12 @@ C.Sites = {
     },
     isIndoors = true,
   },
+
   ROMLoadingZone = {
+    key = "ROMLoadingZone",
     name = "Royal Ontario Museum: Bloor Street Loading Zone",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ROMLoadingZone.webp",
+    image = "siteCard_ROMLoadingZone",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ROMLoadingZone.webp",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
@@ -1772,8 +1824,10 @@ C.Sites = {
     offsetXY = "-88.09 254.58"
   },
   ROMC5Lounge = {
+    key = "ROMC5Lounge",
     name = "Royal Ontario Museum: C5 Lounge",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ROMC5Lounge.webp",
+    image = "siteCard_ROMC5Lounge",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ROMC5Lounge.webp",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -1782,8 +1836,10 @@ C.Sites = {
     offsetXY = "-88.09 254.58"
   },
   ROMRotunda = {
+    key = "ROMRotunda",
     name = "Royal Ontario Museum: Rotunda Mezzanine",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ROMRotunda.webp",
+    image = "siteCard_ROMRotunda",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ROMRotunda.webp",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -1792,8 +1848,10 @@ C.Sites = {
     offsetXY = "-88.09 254.58"
   },
   ROMSpiritHouse = {
+    key = "ROMSpiritHouse",
     name = "Royal Ontario Museum: Spirit House",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ROMSpiritHouse.webp",
+    image = "siteCard_ROMSpiritHouse",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ROMSpiritHouse.webp",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -1802,8 +1860,10 @@ C.Sites = {
     offsetXY = "-88.09 254.58"
   },
   ROMHallOfExtinction = {
+    key = "ROMHallOfExtinction",
     name = "Royal Ontario Museum: The Hall of Extinction",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ROMHallOfExtinction.webp",
+    image = "siteCard_ROMHallOfExtinction",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ROMHallOfExtinction.webp",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -1811,9 +1871,12 @@ C.Sites = {
     isIndoors = true,
     offsetXY = "-88.09 254.58"
   },
-  StRegisCells = {
-    name = "The St. Regis Toronto: Cells",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/StRegisCells.webp",
+
+  StRegisRoom101 = {
+    key = "StRegisRoom101",
+    name = "The St. Regis Toronto: Room 101",
+    image = "siteCard_StRegisRoom101",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StRegisRoom101.webp",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "computer"}
@@ -1822,8 +1885,10 @@ C.Sites = {
     offsetXY = "155.04 -84.57"
   },
   StRegisCouncilChamber = {
+    key = "StRegisCouncilChamber",
     name = "The St. Regis Toronto: Council Chamber",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/StRegisCouncilChamber.webp",
+    image = "siteCard_StRegisCouncilChamber",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StRegisCouncilChamber.webp",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -1832,8 +1897,10 @@ C.Sites = {
     offsetXY = "155.04 -84.57"
   },
   StRegisFoyer = {
+    key = "StRegisFoyer",
     name = "The St. Regis Toronto: Foyer",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/StRegisFoyer.webp",
+    image = "siteCard_StRegisFoyer",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StRegisFoyer.webp",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -1842,8 +1909,10 @@ C.Sites = {
     offsetXY = "155.04 -84.57"
   },
   StRegisGrandSalon = {
+    key = "StRegisGrandSalon",
     name = "The St. Regis Toronto: Grand Salon",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/StRegisGrandSalon.webp",
+    image = "siteCard_StRegisGrandSalon",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StRegisGrandSalon.webp",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -1851,9 +1920,12 @@ C.Sites = {
     isIndoors = true,
     offsetXY = "155.04 -84.57"
   },
+
   UnionConcourse = {
+    key = "UnionConcourse",
     name = "Union Station: Bay St. Concourse",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/UnionConcourse.webp",
+    image = "siteCard_UnionConcourse",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionConcourse.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "cityWalking"}
@@ -1862,8 +1934,10 @@ C.Sites = {
     offsetXY = "203.55 -211.79"
   },
   UnionGrandClock = {
+    key = "UnionGrandClock",
     name = "Union Station: Grand Clock",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/UnionGrandClock.webp",
+    image = "siteCard_UnionGrandClock",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionGrandClock.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "cityWalking"}
@@ -1872,8 +1946,10 @@ C.Sites = {
     offsetXY = "203.55 -211.79"
   },
   UnionLine1 = {
+    key = "UnionLine1",
     name = "Union Station: Line 1",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/UnionLine1.webp",
+    image = "siteCard_UnionLine1",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionLine1.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "subway"}
@@ -1882,8 +1958,10 @@ C.Sites = {
     offsetXY = "203.55 -211.79"
   },
   UnionSecOffice = {
+    key = "UnionSecOffice",
     name = "Union Station: Security Office",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/UnionSecOffice.webp",
+    image = "siteCard_UnionSecOffice",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionSecOffice.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "computer"}
@@ -1892,8 +1970,10 @@ C.Sites = {
     offsetXY = "203.55 -211.79"
   },
   UnionServiceCorridor = {
+    key = "UnionServiceCorridor",
     name = "Union Station: Service Corridor",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/UnionServiceCorridor.webp",
+    image = "siteCard_UnionServiceCorridor",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionServiceCorridor.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "softHum"}
@@ -1902,8 +1982,10 @@ C.Sites = {
     offsetXY = "203.55 -211.79"
   },
   UnionUPExpress = {
+    key = "UnionUPExpress",
     name = "Union Station: UP Express Platform",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/UnionUPExpress.webp",
+    image = "siteCard_UnionUPExpress",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionUPExpress.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -1911,9 +1993,12 @@ C.Sites = {
     isIndoors = true,
     offsetXY = "203.55 -211.79"
   },
+
   ChantryLibrary = {
+    key = "ChantryLibrary",
     name = "The University Chantry: Grand Library",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ChantryLibrary.webp",
+    image = "siteCard_ChantryLibrary",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ChantryLibrary.webp",
     district = C.Districts.Discovery,
     soundscape = {
       location = {playlist = "location", track = "library"}
@@ -1922,8 +2007,10 @@ C.Sites = {
     offsetXY = "-33.9 212.64"
   },
   ChantryGrounds = {
+    key = "ChantryGrounds",
     name = "The University Chantry: Grounds",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ChantryGrounds.webp",
+    image = "siteCard_ChantryGrounds",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ChantryGrounds.webp",
     district = C.Districts.Discovery,
     soundscape = {
       location = {playlist = "location", track = "church"}
@@ -1932,8 +2019,10 @@ C.Sites = {
     offsetXY = "-33.9 212.64"
   },
   ChantryQuarters = {
+    key = "ChantryQuarters",
     name = "The University Chantry: Quarters",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ChantryQuarters.webp",
+    image = "siteCard_ChantryQuarters",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ChantryQuarters.webp",
     district = C.Districts.Discovery,
     soundscape = {
       location = {playlist = "location", track = "church"}
@@ -1942,8 +2031,10 @@ C.Sites = {
     offsetXY = "-33.9 212.64"
   },
   ChantryThaumatorium = {
+    key = "ChantryThaumatorium",
     name = "The University Chantry: Thaumatorium",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ChantryThaumatorium.webp",
+    image = "siteCard_ChantryThaumatorium",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ChantryThaumatorium.webp",
     district = C.Districts.Discovery,
     soundscape = {
       location = {playlist = "location", track = "ritualRoom"}
@@ -1952,40 +2043,50 @@ C.Sites = {
     offsetXY = "-33.9 212.64"
   },
   AnarchBar = {
+    key = "AnarchBar",
     name = "Anarch Dive Bar",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/AnarchBar.webp",
+    image = "siteCard_AnarchBar",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/AnarchBar.webp",
     soundscape = {
       location = {playlist = "location", track = "diveBar"}
     },
     isIndoors = true,
   },
   AptCorridor = {
+    key = "AptCorridor",
     name = "Apartment Corridor",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/AptCorridor.webp",
+    image = "siteCard_AptCorridor",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/AptCorridor.webp",
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
   },
   AptLobby = {
+    key = "AptLobby",
     name = "Apartment Lobby",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/AptLobby.webp",
+    image = "siteCard_AptLobby",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/AptLobby.webp",
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
   },
   AptStreetside = {
+    key = "AptStreetside",
     name = "Apartment Streetside",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/AptStreetside.webp",
+    image = "siteCard_AptStreetside",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/AptStreetside.webp",
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
   },
   ArtGallery = {
+    key = "ArtGallery",
     name = "Art Gallery of Ontario",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ArtGallery.webp",
+    image = "siteCard_ArtGallery",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ArtGallery.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -1994,40 +2095,50 @@ C.Sites = {
     offsetXY = "-50.78 -9.35"
   },
   AutoMechanic = {
+    key = "AutoMechanic",
     name = "Auto Mechanic",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/AutoMechanic.webp",
+    image = "siteCard_AutoMechanic",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/AutoMechanic.webp",
     soundscape = {
       location = {playlist = "location", track = "autoShop"}
     },
     isIndoors = true,
   },
   BackAlley1 = {
+    key = "BackAlley1",
     name = "Back Alley",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/BackAlley1.webp",
+    image = "siteCard_BackAlley1",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BackAlley1.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
   },
   BackAlley2 = {
+    key = "BackAlley2",
     name = "Back Alley",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/BackAlley2.webp",
+    image = "siteCard_BackAlley2",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BackAlley2.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
   },
   BackAlley3 = {
+    key = "BackAlley3",
     name = "Back Alley",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/BackAlley3.webp",
+    image = "siteCard_BackAlley3",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BackAlley3.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
   },
   BayTower = {
+    key = "BayTower",
     name = "Bay Wellington Tower",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/BayTower.webp",
+    image = "siteCard_BayTower",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BayTower.webp",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -2036,8 +2147,10 @@ C.Sites = {
     offsetXY = "153.91 -119.43"
   },
   BierMarkt = {
+    key = "BierMarkt",
     name = "Bier Markt",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/BierMarkt.webp",
+    image = "siteCard_BierMarkt",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BierMarkt.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "bar"}
@@ -2046,8 +2159,10 @@ C.Sites = {
     offsetXY = "-134.47 -133.17"
   },
   BillyBishopAirport = {
+    key = "BillyBishopAirport",
     name = "Billy Bishop Airport",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/BillyBishopAirport.webp",
+    image = "siteCard_BillyBishopAirport",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BillyBishopAirport.webp",
     district = C.Districts.CentreIsland,
     soundscape = {
       location = {playlist = "location", track = "airport"}
@@ -2056,8 +2171,10 @@ C.Sites = {
     offsetXY = "-105.82 -442.28"
   },
   BillyBishopFerry = {
+    key = "BillyBishopFerry",
     name = "Billy Bishop Ferry",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/BillyBishopFerry.webp",
+    image = "siteCard_BillyBishopFerry",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BillyBishopFerry.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "waterside"}
@@ -2066,8 +2183,10 @@ C.Sites = {
     offsetXY = "-99.58 -362.38"
   },
   CabbagetownPenthouse = {
+    key = "CabbagetownPenthouse",
     name = "Cabbagetown Penthouse",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CabbagetownPenthouse.webp",
+    image = "siteCard_CabbagetownPenthouse",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CabbagetownPenthouse.webp",
     district = C.Districts.Cabbagetown,
     soundscape = {
       location = {playlist = "location", track = "silent"}
@@ -2076,8 +2195,10 @@ C.Sites = {
     offsetXY = "240.86 75.08"
   },
   CNE = {
+    key = "CNE",
     name = "Canadian National Exhibition Place",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CNE.webp",
+    image = "siteCard_CNE",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CNE.webp",
     district = C.Districts.LibertyVillage,
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
@@ -2086,16 +2207,20 @@ C.Sites = {
     offsetXY = "-307.53 -332.07"
   },
   Cemetery = {
+    key = "Cemetery",
     name = "Cemetery",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Cemetery.webp",
+    image = "siteCard_Cemetery",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Cemetery.webp",
     soundscape = {
       location = {playlist = "location", track = "eerieForest"}
     },
     isIndoors = false,
   },
   CAMH = {
+    key = "CAMH",
     name = "Centre for Addiction & Mental Health",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CAMH.webp",
+    image = "siteCard_CAMH",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CAMH.webp",
     district = C.Districts.HarbordVillage,
     soundscape = {
       location = {playlist = "location", track = "hospital"}
@@ -2104,8 +2229,10 @@ C.Sites = {
     offsetXY = "-168.8 109.93"
   },
   CentrevillePark = {
+    key = "CentrevillePark",
     name = "Centreville Theme Park",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CentrevillePark.webp",
+    image = "siteCard_CentrevillePark",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CentrevillePark.webp",
     district = C.Districts.CentreIsland,
     soundscape = {
       location = {playlist = "location", track = "cityPark"}
@@ -2114,8 +2241,10 @@ C.Sites = {
     offsetXY = "213.91 -598.68"
   },
   ChristiePitsPark = {
+    key = "ChristiePitsPark",
     name = "Christie Pits Park",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ChristiePitsPark.webp",
+    image = "siteCard_ChristiePitsPark",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ChristiePitsPark.webp",
     district = C.Districts.Wychwood,
     soundscape = {
       location = {playlist = "location", track = "cityPark"}
@@ -2124,32 +2253,40 @@ C.Sites = {
     offsetXY = "-405.69 204.57"
   },
   CityApt1 = {
+    key = "CityApt1",
     name = "City Apartment",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CityApt1.webp",
+    image = "siteCard_CityApt1",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CityApt1.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
   },
   CityApt2 = {
+    key = "CityApt2",
     name = "City Apartment",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CityApt2.webp",
+    image = "siteCard_CityApt2",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CityApt2.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
   },
   CityApt3 = {
+    key = "CityApt3",
     name = "City Apartment",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CityApt3.webp",
+    image = "siteCard_CityApt3",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CityApt3.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
   },
   CityHall = {
+    key = "CityHall",
     name = "City Hall",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CityHall.webp",
+    image = "siteCard_CityHall",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CityHall.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -2158,16 +2295,20 @@ C.Sites = {
     offsetXY = "82.13 -3.26"
   },
   CityPark = {
+    key = "CityPark",
     name = "City Park",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CityPark.webp",
+    image = "siteCard_CityPark",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CityPark.webp",
     soundscape = {
       location = {playlist = "location", track = "cityPark"}
     },
     isIndoors = false,
   },
   CNTower = {
+    key = "CNTower",
     name = "CN Tower",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CNTower.webp",
+    image = "siteCard_CNTower",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CNTower.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "rooftop"}
@@ -2176,8 +2317,10 @@ C.Sites = {
     offsetXY = "54.04 -226.24"
   },
   CorktownCommon = {
+    key = "CorktownCommon",
     name = "Corktown Common",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CorktownCommon.webp",
+    image = "siteCard_CorktownCommon",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CorktownCommon.webp",
     district = C.Districts.DonRavine,
     soundscape = {
       location = {playlist = "location", track = "eerieForest"}
@@ -2186,8 +2329,10 @@ C.Sites = {
     offsetXY = "503.56 1.13"
   },
   DanforthHall = {
+    key = "DanforthHall",
     name = "Danforth Music Hall",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/DanforthHall.webp",
+    image = "siteCard_DanforthHall",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/DanforthHall.webp",
     district = C.Districts.Danforth,
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
@@ -2196,16 +2341,20 @@ C.Sites = {
     offsetXY = "426.68 411.68"
   },
   DerelictWarehouse = {
+    key = "DerelictWarehouse",
     name = "Derelict Warehouse",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/DerelictWarehouse.webp",
+    image = "siteCard_DerelictWarehouse",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/DerelictWarehouse.webp",
     soundscape = {
       location = {playlist = "location", track = "urbanDark"}
     },
     isIndoors = true,
   },
   Docks = {
+    key = "Docks",
     name = "The Docks",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Docks.webp",
+    image = "siteCard_Docks",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Docks.webp",
     district = C.Districts.DistilleryDist,
     soundscape = {
       location = {playlist = "location", track = "waterside"}
@@ -2214,16 +2363,20 @@ C.Sites = {
     offsetXY = "497.46 -221.99"
   },
   DogPark = {
+    key = "DogPark",
     name = "Dog Park",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/DogPark.webp",
+    image = "siteCard_DogPark",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/DogPark.webp",
     soundscape = {
       location = {playlist = "location", track = "cityPark"}
     },
     isIndoors = false,
   },
   Drake = {
+    key = "Drake",
     name = "The Drake Hotel",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Drake.webp",
+    image = "siteCard_Drake",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Drake.webp",
     district = C.Districts.LittlePortugal,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -2232,8 +2385,10 @@ C.Sites = {
     offsetXY = "-454.91 -172.69"
   },
   EatonCentre = {
+    key = "EatonCentre",
     name = "Eaton Centre",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/EatonCentre.webp",
+    image = "siteCard_EatonCentre",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/EatonCentre.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "indoorMarket"}
@@ -2242,16 +2397,20 @@ C.Sites = {
     offsetXY = "117.02 19.41"
   },
   Elevator = {
+    key = "Elevator",
     name = "Elevator",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Elevator.webp",
+    image = "siteCard_Elevator",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Elevator.webp",
     soundscape = {
       location = {playlist = "location", track = "softHum"}
     },
     isIndoors = true,
   },
   BrickWorks = {
+    key = "BrickWorks",
     name = "Evergreen Brick Works",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/BrickWorks.webp",
+    image = "siteCard_BrickWorks",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BrickWorks.webp",
     district = C.Districts.DonRavine,
     soundscape = {
       location = {playlist = "location", track = "eerieForest"}
@@ -2260,8 +2419,10 @@ C.Sites = {
     offsetXY = "320.58 569.78"
   },
   EvergreenPalisades = {
+    key = "EvergreenPalisades",
     name = "Evergreen Palisades",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/EvergreenPalisades.webp",
+    image = "siteCard_EvergreenPalisades",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/EvergreenPalisades.webp",
     district = C.Districts.RegentPark,
     soundscape = {
       location = {playlist = "location", track = "silent"}
@@ -2270,8 +2431,10 @@ C.Sites = {
     offsetXY = "512.07 302.32"
   },
   Fairmont = {
+    key = "Fairmont",
     name = "Fairmont Royal York",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Fairmont.webp",
+    image = "siteCard_Fairmont",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Fairmont.webp",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -2280,16 +2443,20 @@ C.Sites = {
     offsetXY = "113.19 -122.68"
   },
   FightClub = {
+    key = "FightClub",
     name = "Fight Club",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/FightClub.webp",
+    image = "siteCard_FightClub",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/FightClub.webp",
     soundscape = {
       location = {playlist = "location", track = "diveBar"}
     },
     isIndoors = true,
   },
   FortYork = {
+    key = "FortYork",
     name = "Fort York",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/FortYork.webp",
+    image = "siteCard_FortYork",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/FortYork.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "cityWalking"}
@@ -2298,8 +2465,10 @@ C.Sites = {
     offsetXY = "-216.46 -279.93"
   },
   CeramicsMuseum = {
+    key = "CeramicsMuseum",
     name = "Gardiner Ceramics Museum",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CeramicsMuseum.webp",
+    image = "siteCard_CeramicsMuseum",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CeramicsMuseum.webp",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -2308,24 +2477,30 @@ C.Sites = {
     offsetXY = "-65.25 262.08"
   },
   GayBar = {
+    key = "GayBar",
     name = "Gay Bar",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/GayBar.webp",
+    image = "siteCard_GayBar",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GayBar.webp",
     soundscape = {
       location = {playlist = "location", track = "diveBar"}
     },
     isIndoors = true,
   },
   GayClub = {
+    key = "GayClub",
     name = "Gay Nightclub",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/GayClub.webp",
+    image = "siteCard_GayClub",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GayClub.webp",
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
   },
   GeorgeBrown = {
+    key = "GeorgeBrown",
     name = "George Brown College",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/GeorgeBrown.webp",
+    image = "siteCard_GeorgeBrown",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GeorgeBrown.webp",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
@@ -2334,8 +2509,10 @@ C.Sites = {
     offsetXY = "-247.38 409.7"
   },
   GraffitiAlley = {
+    key = "GraffitiAlley",
     name = "Graffiti Alley",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/GraffitiAlley.webp",
+    image = "siteCard_GraffitiAlley",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GraffitiAlley.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
@@ -2344,8 +2521,10 @@ C.Sites = {
     offsetXY = "-143.83 -96.33"
   },
   HarbourfrontCentre = {
+    key = "HarbourfrontCentre",
     name = "Harbourfront Centre",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/HarbourfrontCentre.webp",
+    image = "siteCard_HarbourfrontCentre",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/HarbourfrontCentre.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
@@ -2354,16 +2533,20 @@ C.Sites = {
     offsetXY = "102.41 -275.97"
   },
   Highway = {
+    key = "Highway",
     name = "Highway",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Highway.webp",
+    image = "siteCard_Highway",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Highway.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
   },
   Distillery = {
+    key = "Distillery",
     name = "The Historic Distillery",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Distillery.webp",
+    image = "siteCard_Distillery",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Distillery.webp",
     district = C.Districts.DistilleryDist,
     soundscape = {
       location = {playlist = "location", track = "industry"}
@@ -2372,8 +2555,10 @@ C.Sites = {
     offsetXY = "448.95 -52.84"
   },
   HockeyHallOfFame = {
+    key = "HockeyHallOfFame",
     name = "Hockey Hall of Fame",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/HockeyHallOfFame.webp",
+    image = "siteCard_HockeyHallOfFame",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/HockeyHallOfFame.webp",
     district = C.Districts.PATH,
     soundscape = {
       location = {playlist = "location", track = "indoorMarket"}
@@ -2381,8 +2566,10 @@ C.Sites = {
     isIndoors = true,
   },
   SickKids = {
+    key = "SickKids",
     name = "Hospital for Sick Children",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/SickKids.webp",
+    image = "siteCard_SickKids",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SickKids.webp",
     district = C.Districts.YongeDundasHospital,
     soundscape = {
       location = {playlist = "location", track = "hospital"}
@@ -2391,8 +2578,10 @@ C.Sites = {
     offsetXY = "34.61 48.45"
   },
   JRRLibrary = {
+    key = "JRRLibrary",
     name = "John Roberts Research Library",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/JRRLibrary.webp",
+    image = "siteCard_JRRLibrary",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/JRRLibrary.webp",
     district = C.Districts.Discovery,
     soundscape = {
       location = {playlist = "location", track = "library"}
@@ -2401,16 +2590,20 @@ C.Sites = {
     offsetXY = "-124.83 200.6"
   },
   Junkyard = {
+    key = "Junkyard",
     name = "Junkyard",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Junkyard.webp",
+    image = "siteCard_Junkyard",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Junkyard.webp",
     soundscape = {
       location = {playlist = "location", track = "autoShop"}
     },
     isIndoors = false,
   },
   Kensington = {
+    key = "Kensington",
     name = "Kensington Market",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Kensington.webp",
+    image = "siteCard_Kensington",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Kensington.webp",
     district = C.Districts.HarbordVillage,
     soundscape = {
       location = {playlist = "location", track = "cityWalking"}
@@ -2419,32 +2612,40 @@ C.Sites = {
     offsetXY = "-131.21 16.29"
   },
   Laboratory = {
+    key = "Laboratory",
     name = "Laboratory",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Laboratory.webp",
+    image = "siteCard_Laboratory",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Laboratory.webp",
     soundscape = {
       location = {playlist = "location", track = "laboratory"}
     },
     isIndoors = true,
   },
   LectureHall = {
+    key = "LectureHall",
     name = "Lecture Hall",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/LectureHall.webp",
+    image = "siteCard_LectureHall",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/LectureHall.webp",
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
   },
   Library = {
+    key = "Library",
     name = "Library",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Library.webp",
+    image = "siteCard_Library",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Library.webp",
     soundscape = {
       location = {playlist = "location", track = "library"}
     },
     isIndoors = true,
   },
   LowerParklands = {
+    key = "LowerParklands",
     name = "Lower Don Parklands",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/LowerParklands.webp",
+    image = "siteCard_LowerParklands",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/LowerParklands.webp",
     district = C.Districts.DonRavine,
     soundscape = {
       location = {playlist = "location", track = "eerieForest"}
@@ -2453,16 +2654,20 @@ C.Sites = {
     offsetXY = "398.31 740.07"
   },
   Yacht = {
+    key = "Yacht",
     name = "Luxury Yacht",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Yacht.webp",
+    image = "siteCard_Yacht",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Yacht.webp",
     soundscape = {
       location = {playlist = "location", track = "waterside"}
     },
     isIndoors = true,
   },
   MadinaMasjid = {
+    key = "MadinaMasjid",
     name = "Madina Masjid",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/MadinaMasjid.webp",
+    image = "siteCard_MadinaMasjid",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/MadinaMasjid.webp",
     district = C.Districts.Danforth,
     soundscape = {
       location = {playlist = "location", track = "church"}
@@ -2471,8 +2676,10 @@ C.Sites = {
     offsetXY = "533.35 523.6"
   },
   MasseyHall = {
+    key = "MasseyHall",
     name = "Massey Hall",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/MasseyHall.webp",
+    image = "siteCard_MasseyHall",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/MasseyHall.webp",
     district = C.Districts.YongeStreet,
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
@@ -2481,16 +2688,20 @@ C.Sites = {
     offsetXY = "170.22 -100.02"
   },
   MiddleOfRoad = {
+    key = "MiddleOfRoad",
     name = "Middle of the Road",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/MiddleOfRoad.webp",
+    image = "siteCard_MiddleOfRoad",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/MiddleOfRoad.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
   },
   ModClub = {
+    key = "ModClub",
     name = "Mod Club",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ModClub.webp",
+    image = "siteCard_ModClub",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ModClub.webp",
     district = C.Districts.LittleItaly,
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
@@ -2499,8 +2710,10 @@ C.Sites = {
     offsetXY = "-384.69 45.33"
   },
   MountSinai = {
+    key = "MountSinai",
     name = "Mount Sinai Hospital",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/MountSinai.webp",
+    image = "siteCard_MountSinai",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/MountSinai.webp",
     district = C.Districts.YongeDundasHospital,
     soundscape = {
       location = {playlist = "location", track = "hospital"}
@@ -2509,32 +2722,40 @@ C.Sites = {
     offsetXY = "0 36.83"
   },
   Nightclub1 = {
+    key = "Nightclub1",
     name = "Nightclub",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Nightclub1.webp",
+    image = "siteCard_Nightclub1",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Nightclub1.webp",
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
   },
   Nightclub2 = {
+    key = "Nightclub2",
     name = "Nightclub",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Nightclub2.webp",
+    image = "siteCard_Nightclub2",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Nightclub2.webp",
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
   },
   Nightclub3 = {
+    key = "Nightclub3",
     name = "Nightclub",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Nightclub3.webp",
+    image = "siteCard_Nightclub3",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Nightclub3.webp",
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
   },
   OCAD = {
+    key = "OCAD",
     name = "OCAD University",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/OCAD.webp",
+    image = "siteCard_OCAD",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/OCAD.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
@@ -2543,16 +2764,20 @@ C.Sites = {
     offsetXY = "-24.4 -28.05"
   },
   Office = {
+    key = "Office",
     name = "Office",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Office.webp",
+    image = "siteCard_Office",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Office.webp",
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
   },
   OldOsgoodeHall = {
+    key = "OldOsgoodeHall",
     name = "Old Osgoode Hall",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/OldOsgoodeHall.webp",
+    image = "siteCard_OldOsgoodeHall",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/OldOsgoodeHall.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -2561,8 +2786,10 @@ C.Sites = {
     offsetXY = "22.41 -11.33"
   },
   OntarioPlaceMarina = {
+    key = "OntarioPlaceMarina",
     name = "Ontario Place Marina",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/OntarioPlaceMarina.webp",
+    image = "siteCard_OntarioPlaceMarina",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/OntarioPlaceMarina.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "waterside"}
@@ -2571,8 +2798,10 @@ C.Sites = {
     offsetXY = "-379.3 -473.73"
   },
   ParkDriveReservation = {
+    key = "ParkDriveReservation",
     name = "Park Drive Reservation Lands",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ParkDriveReservation.webp",
+    image = "siteCard_ParkDriveReservation",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ParkDriveReservation.webp",
     district = C.Districts.DonRavine,
     soundscape = {
       location = {playlist = "location", track = "eerieForest"}
@@ -2581,40 +2810,50 @@ C.Sites = {
     offsetXY = "272.92 502.92"
   },
   ParkingLot = {
+    key = "ParkingLot",
     name = "Parking Lot",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ParkingLot.webp",
+    image = "siteCard_ParkingLot",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ParkingLot.webp",
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
   },
   PenthouseApt1 = {
+    key = "PenthouseApt1",
     name = "Penthouse Apartment",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/PenthouseApt1.webp",
+    image = "siteCard_PenthouseApt1",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/PenthouseApt1.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
   },
   PenthouseApt2 = {
+    key = "PenthouseApt2",
     name = "Penthouse Apartment",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/PenthouseApt2.webp",
+    image = "siteCard_PenthouseApt2",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/PenthouseApt2.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
   },
   PenthouseApt3 = {
+    key = "PenthouseApt3",
     name = "Penthouse Apartment",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/PenthouseApt3.webp",
+    image = "siteCard_PenthouseApt3",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/PenthouseApt3.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
   },
   PhoenixTheatre = {
+    key = "PhoenixTheatre",
     name = "Phoenix Concert Hall & Theatre",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/PhoenixTheatre.webp",
+    image = "siteCard_PhoenixTheatre",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/PhoenixTheatre.webp",
     district = C.Districts.Riverdale,
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
@@ -2623,8 +2862,10 @@ C.Sites = {
     offsetXY = "222.42 205.42"
   },
   PMHospital = {
+    key = "PMHospital",
     name = "Princess Margaret Hospital",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/PMHospital.webp",
+    image = "siteCard_PMHospital",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/PMHospital.webp",
     district = C.Districts.YongeDundasHospital,
     soundscape = {
       location = {playlist = "location", track = "hospital"}
@@ -2633,16 +2874,20 @@ C.Sites = {
     offsetXY = "-11.63 86.13"
   },
   ProfOffice = {
+    key = "ProfOffice",
     name = "Professor's Office",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ProfOffice.webp",
+    image = "siteCard_ProfOffice",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ProfOffice.webp",
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
   },
   ReconciliationHouse = {
+    key = "ReconciliationHouse",
     name = "Reconciliation House",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ReconciliationHouse.webp",
+    image = "siteCard_ReconciliationHouse",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ReconciliationHouse.webp",
     district = C.Districts.Chinatown,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -2651,8 +2896,10 @@ C.Sites = {
     offsetXY = "-341.43 -213.78"
   },
   RedemptionHouse = {
+    key = "RedemptionHouse",
     name = "Redemption House",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/RedemptionHouse.webp",
+    image = "siteCard_RedemptionHouse",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RedemptionHouse.webp",
     district = C.Districts.Danforth,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -2661,8 +2908,10 @@ C.Sites = {
     offsetXY = "465.97 437.89"
   },
   RemembranceHouse = {
+    key = "RemembranceHouse",
     name = "Remembrance House",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/RemembranceHouse.webp",
+    image = "siteCard_RemembranceHouse",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RemembranceHouse.webp",
     district = C.Districts.LittleItaly,
     soundscape = {
       location = {playlist = "location", track = "church"}
@@ -2671,8 +2920,10 @@ C.Sites = {
     offsetXY = "-257.74 97.33"
   },
   RevelationHouse = {
+    key = "RevelationHouse",
     name = "Revelation House",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/RevelationHouse.webp",
+    image = "siteCard_RevelationHouse",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RevelationHouse.webp",
     district = C.Districts.GayVillage,
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
@@ -2681,8 +2932,10 @@ C.Sites = {
     offsetXY = "124.12 279.23"
   },
   RogersCentre = {
+    key = "RogersCentre",
     name = "Rogers Centre",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/RogersCentre.webp",
+    image = "siteCard_RogersCentre",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RogersCentre.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "cityPark"}
@@ -2691,40 +2944,50 @@ C.Sites = {
     offsetXY = "8.37 -205.28"
   },
   Rooftop = {
+    key = "Rooftop",
     name = "Rooftop",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Rooftop.webp",
+    image = "siteCard_Rooftop",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Rooftop.webp",
     soundscape = {
       location = {playlist = "location", track = "rooftop"}
     },
     isIndoors = false,
   },
   RunDownApt1 = {
+    key = "RunDownApt1",
     name = "Run-Down Apartment",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/RunDownApt1.webp",
+    image = "siteCard_RunDownApt1",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RunDownApt1.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
   },
   RunDownApt2 = {
+    key = "RunDownApt2",
     name = "Run-Down Apartment",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/RunDownApt2.webp",
+    image = "siteCard_RunDownApt2",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RunDownApt2.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
   },
   RunDownApt3 = {
+    key = "RunDownApt3",
     name = "Run-Down Apartment",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/RunDownApt3.webp",
+    image = "siteCard_RunDownApt3",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RunDownApt3.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
   },
   Ryerson = {
+    key = "Ryerson",
     name = "Ryerson University",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Ryerson.webp",
+    image = "siteCard_Ryerson",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Ryerson.webp",
     district = C.Districts.Cabbagetown,
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
@@ -2733,8 +2996,10 @@ C.Sites = {
     offsetXY = "167.95 97.75"
   },
   ScotiabankTheatre = {
+    key = "ScotiabankTheatre",
     name = "Scotiabank Theatre",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ScotiabankTheatre.webp",
+    image = "siteCard_ScotiabankTheatre",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ScotiabankTheatre.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
@@ -2743,32 +3008,40 @@ C.Sites = {
     offsetXY = "145.82 -180.48"
   },
   SecludedDeadEnd = {
+    key = "SecludedDeadEnd",
     name = "Secluded Dead End",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/SecludedDeadEnd.webp",
+    image = "siteCard_SecludedDeadEnd",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SecludedDeadEnd.webp",
     soundscape = {
       location = {playlist = "location", track = "cityPark"}
     },
     isIndoors = false,
   },
   SewerTunnel1 = {
+    key = "SewerTunnel1",
     name = "Sewer Tunnel",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/SewerTunnel1.webp",
+    image = "siteCard_SewerTunnel1",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SewerTunnel1.webp",
     soundscape = {
       location = {playlist = "location", track = "sewers"}
     },
     isIndoors = true,
   },
   SewerTunnel2 = {
+    key = "SewerTunnel2",
     name = "Sewer Tunnel",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/SewerTunnel2.webp",
+    image = "siteCard_SewerTunnel2",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SewerTunnel2.webp",
     soundscape = {
       location = {playlist = "location", track = "sewers"}
     },
     isIndoors = true,
   },
   SheratonCentre = {
+    key = "SheratonCentre",
     name = "Sheraton Centre",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/SheratonCentre.webp",
+    image = "siteCard_SheratonCentre",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SheratonCentre.webp",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
@@ -2777,32 +3050,40 @@ C.Sites = {
     offsetXY = "71.49 -51"
   },
   Sidewalk1 = {
+    key = "Sidewalk1",
     name = "Sidewalk",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Sidewalk1.webp",
+    image = "siteCard_Sidewalk1",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Sidewalk1.webp",
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
   },
   Sidewalk2 = {
+    key = "Sidewalk2",
     name = "Sidewalk",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Sidewalk2.webp",
+    image = "siteCard_Sidewalk2",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Sidewalk2.webp",
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
   },
   Sidewalk3 = {
+    key = "Sidewalk3",
     name = "Sidewalk",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Sidewalk3.webp",
+    image = "siteCard_Sidewalk3",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Sidewalk3.webp",
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
   },
   SnakesLattes = {
+    key = "SnakesLattes",
     name = "Snakes & Lattes",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/SnakesLattes.webp",
+    image = "siteCard_SnakesLattes",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SnakesLattes.webp",
     district = C.Districts.Wychwood,
     soundscape = {
       location = {playlist = "location", track = "diveBar"}
@@ -2811,8 +3092,10 @@ C.Sites = {
     offsetXY = "-307.53 205.7"
   },
   SneakyDees = {
+    key = "SneakyDees",
     name = "Sneaky Dee's",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/SneakyDees.webp",
+    image = "siteCard_SneakyDees",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SneakyDees.webp",
     district = C.Districts.HarbordVillage,
     soundscape = {
       location = {playlist = "location", track = "diveBar"}
@@ -2821,8 +3104,10 @@ C.Sites = {
     offsetXY = "-232.06 54.12"
   },
   StLawrenceMarket = {
+    key = "StLawrenceMarket",
     name = "St. Lawrence Market",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/StLawrenceMarket.webp",
+    image = "siteCard_StLawrenceMarket",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StLawrenceMarket.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "indoorMarket"}
@@ -2831,8 +3116,10 @@ C.Sites = {
     offsetXY = "262.99 -156.12"
   },
   StMichaelsCathedral = {
+    key = "StMichaelsCathedral",
     name = "St. Michael's Cathedral Basilica",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/StMichaelsCathedral.webp",
+    image = "siteCard_StMichaelsCathedral",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StMichaelsCathedral.webp",
     district = C.Districts.Cabbagetown,
     soundscape = {
       location = {playlist = "location", track = "church"}
@@ -2841,8 +3128,10 @@ C.Sites = {
     offsetXY = "168.94 44.06"
   },
   StMichaelsHospital = {
+    key = "StMichaelsHospital",
     name = "St. Michael's Hospital",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/StMichaelsHospital.webp",
+    image = "siteCard_StMichaelsHospital",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StMichaelsHospital.webp",
     district = C.Districts.Cabbagetown,
     soundscape = {
       location = {playlist = "location", track = "hospital"}
@@ -2851,48 +3140,60 @@ C.Sites = {
     offsetXY = "202.28 8.5"
   },
   Stairwell = {
+    key = "Stairwell",
     name = "Stairwell",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Stairwell.webp",
+    image = "siteCard_Stairwell",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Stairwell.webp",
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
   },
   StreetCorner1 = {
+    key = "StreetCorner1",
     name = "Street Corner",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/StreetCorner1.webp",
+    image = "siteCard_StreetCorner1",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StreetCorner1.webp",
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
   },
   StreetCorner2 = {
+    key = "StreetCorner2",
     name = "Street Corner",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/StreetCorner2.webp",
+    image = "siteCard_StreetCorner2",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StreetCorner2.webp",
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
   },
   StreetCorner3 = {
+    key = "StreetCorner3",
     name = "Street Corner",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/StreetCorner3.webp",
+    image = "siteCard_StreetCorner3",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StreetCorner3.webp",
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
   },
   StripClub = {
+    key = "StripClub",
     name = "Strip Club",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/StripClub.webp",
+    image = "siteCard_StripClub",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StripClub.webp",
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
   },
   StudentVillage = {
+    key = "StudentVillage",
     name = "Student Village",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/StudentVillage.webp",
+    image = "siteCard_StudentVillage",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StudentVillage.webp",
     district = C.Districts.Discovery,
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
@@ -2901,48 +3202,60 @@ C.Sites = {
     offsetXY = "-128.51 170.28"
   },
   SuburbanHouse1 = {
+    key = "SuburbanHouse1",
     name = "Suburban House",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/SuburbanHouse1.webp",
+    image = "siteCard_SuburbanHouse1",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SuburbanHouse1.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
   },
   SuburbanHouse2 = {
+    key = "SuburbanHouse2",
     name = "Suburban House",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/SuburbanHouse2.webp",
+    image = "siteCard_SuburbanHouse2",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SuburbanHouse2.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
   },
   SuburbanHouse3 = {
+    key = "SuburbanHouse3",
     name = "Suburban House",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/SuburbanHouse3.webp",
+    image = "siteCard_SuburbanHouse3",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SuburbanHouse3.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
   },
   SubwayStation = {
+    key = "SubwayStation",
     name = "Subway Station",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/SubwayStation.webp",
+    image = "siteCard_SubwayStation",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SubwayStation.webp",
     soundscape = {
       location = {playlist = "location", track = "subway"}
     },
     isIndoors = true,
   },
   SubwayTunnels = {
+    key = "SubwayTunnels",
     name = "Subway Tunnels",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/SubwayTunnels.webp",
+    image = "siteCard_SubwayTunnels",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SubwayTunnels.webp",
     soundscape = {
       location = {playlist = "location", track = "sewers"}
     },
     isIndoors = true,
   },
   ThreefoldExchange = {
+    key = "ThreefoldExchange",
     name = "The Threefold Exchange",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ThreefoldExchange.webp",
+    image = "siteCard_ThreefoldExchange",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ThreefoldExchange.webp",
     district = C.Districts.Chinatown,
     soundscape = {
       location = {playlist = "location", track = "apothecary"}
@@ -2951,8 +3264,10 @@ C.Sites = {
     offsetXY = "-385.26 -208.82"
   },
   TIFFLightbox = {
+    key = "TIFFLightbox",
     name = "TIFF Bell Lightbox",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/TIFFLightbox.webp",
+    image = "siteCard_TIFFLightbox",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/TIFFLightbox.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -2961,8 +3276,10 @@ C.Sites = {
     offsetXY = "-7.66 -119.57"
   },
   TorontoGeneral = {
+    key = "TorontoGeneral",
     name = "Toronto General Hospital",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/TorontoGeneral.webp",
+    image = "siteCard_TorontoGeneral",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/TorontoGeneral.webp",
     district = C.Districts.YongeDundasHospital,
     soundscape = {
       location = {playlist = "location", track = "hospital"}
@@ -2971,32 +3288,40 @@ C.Sites = {
     offsetXY = "23.97 99.59"
   },
   UndergroundMedClinic = {
+    key = "UndergroundMedClinic",
     name = "Underground Medical Clinic",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/UndergroundMedClinic.webp",
+    image = "siteCard_UndergroundMedClinic",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UndergroundMedClinic.webp",
     soundscape = {
       location = {playlist = "location", track = "hospital"}
     },
     isIndoors = true,
   },
   UndergroundMedOffice = {
+    key = "UndergroundMedOffice",
     name = "Underground Medical Office",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/UndergroundMedOffice.webp",
+    image = "siteCard_UndergroundMedOffice",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UndergroundMedOffice.webp",
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
   },
   UndergroundParking = {
+    key = "UndergroundParking",
     name = "Underground Parking Garage",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/UndergroundParking.webp",
+    image = "siteCard_UndergroundParking",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UndergroundParking.webp",
     soundscape = {
       location = {playlist = "location", track = "urbanDark"}
     },
     isIndoors = true,
   },
   UpperCanadaCollege = {
+    key = "UpperCanadaCollege",
     name = "Upper Canada College",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/UpperCanadaCollege.webp",
+    image = "siteCard_UpperCanadaCollege",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UpperCanadaCollege.webp",
     district = C.Districts.DeerPark,
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
@@ -3005,96 +3330,120 @@ C.Sites = {
     offsetXY = "-185.54 742.33"
   },
   VacantLot = {
+    key = "VacantLot",
     name = "Vacant Lot",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/VacantLot.webp",
+    image = "siteCard_VacantLot",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/VacantLot.webp",
     soundscape = {
       location = {playlist = "location", track = "urbanDark"}
     },
     isIndoors = false,
   },
   LuxuryDriving = {
+    key = "LuxuryDriving",
     name = "Driving",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/LuxuryDriving.webp",
+    image = "siteCard_LuxuryDriving",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/LuxuryDriving.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
   },
   BackseatSedan = {
+    key = "BackseatSedan",
     name = "Vehicle",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/BackseatSedan.webp",
+    image = "siteCard_BackseatSedan",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BackseatSedan.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
   },
   Limousine = {
+    key = "Limousine",
     name = "Limousine",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Limousine.webp",
+    image = "siteCard_Limousine",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Limousine.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
   },
   SUV = {
+    key = "SUV",
     name = "SUV",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/SUV.webp",
+    image = "siteCard_SUV",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SUV.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
   },
   Taxi = {
+    key = "Taxi",
     name = "Taxi",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Taxi.webp",
+    image = "siteCard_Taxi",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Taxi.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
   },
   WalkingPath = {
+    key = "WalkingPath",
     name = "Walking Path",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/WalkingPath.webp",
+    image = "siteCard_WalkingPath",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WalkingPath.webp",
     soundscape = {
       location = {playlist = "location", track = "cityPark"}
     },
     isIndoors = false,
   },
   WealthyEstate1 = {
+    key = "WealthyEstate1",
     name = "Wealthy Estate",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/WealthyEstate1.webp",
+    image = "siteCard_WealthyEstate1",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WealthyEstate1.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
   },
   WealthyEstate2 = {
+    key = "WealthyEstate2",
     name = "Wealthy Estate",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/WealthyEstate2.webp",
+    image = "siteCard_WealthyEstate2",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WealthyEstate2.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
   },
   WealthyEstate3 = {
+    key = "WealthyEstate3",
     name = "Wealthy Estate",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/WealthyEstate3.webp",
+    image = "siteCard_WealthyEstate3",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WealthyEstate3.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
   },
   WychwoodPub = {
+    key = "WychwoodPub",
     name = "Wychwood Pub",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/WychwoodPub.webp",
+    image = "siteCard_WychwoodPub",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WychwoodPub.webp",
     soundscape = {
       location = {playlist = "location", track = "diveBar"}
     },
     isIndoors = true,
   },
   YongeDundasSquare = {
+    key = "YongeDundasSquare",
     name = "Yonge & Dundas Square",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/YongeDundasSquare.webp",
+    image = "siteCard_YongeDundasSquare",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/YongeDundasSquare.webp",
     district = C.Districts.YongeStreet,
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
@@ -3103,8 +3452,10 @@ C.Sites = {
     offsetXY = "129.93 53.55"
   },
   YorkvilleApt1 = {
+    key = "YorkvilleApt1",
     name = "Yorkville Apartment",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/YorkvilleApt1.webp",
+    image = "siteCard_YorkvilleApt1",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/YorkvilleApt1.webp",
     district = C.Districts.Yorkville,
     soundscape = {
       location = {playlist = "location", track = "silent"}
@@ -3113,8 +3464,10 @@ C.Sites = {
     offsetXY = "-58.44 328.67"
   },
   YouthShelter = {
+    key = "YouthShelter",
     name = "Youth Shelter",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/YouthShelter.webp",
+    image = "siteCard_YouthShelter",
+    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/YouthShelter.webp",
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
     },

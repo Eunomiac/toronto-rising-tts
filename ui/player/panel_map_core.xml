@@ -158,11 +158,11 @@
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_YongeStreet_Brown" image="mapOverlay_YongeStreet" />
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Yorkville_Brown" image="mapOverlay_Yorkville" />
 
-        <Image id="playerHud_playerPin_LordLucien_Brown" class="hud_map_player_pin" image="pin_LordLucien" />
-        <Image id="playerHud_playerPin_Rashid_Brown" class="hud_map_player_pin" image="pin_Rashid" />
-        <Image id="playerHud_playerPin_Aishe_Brown" class="hud_map_player_pin" image="pin_Aishe" />
-        <Image id="playerHud_playerPin_Fomorach_Brown" class="hud_map_player_pin" image="pin_Fomorach" />
-        <Image id="playerHud_playerPin_BlackCaesar_Brown" class="hud_map_player_pin" image="pin_BlackCaesar" />
+        <Image id="playerHud_playerPin_Red_Brown" class="hud_map_player_pin" image="pin_LordLucien" />
+        <Image id="playerHud_playerPin_Orange_Brown" class="hud_map_player_pin" image="pin_Rashid" />
+        <Image id="playerHud_playerPin_Pink_Brown" class="hud_map_player_pin" image="pin_Aishe" />
+        <Image id="playerHud_playerPin_Brown_Brown" class="hud_map_player_pin" image="pin_Fomorach" />
+        <Image id="playerHud_playerPin_Purple_Brown" class="hud_map_player_pin" image="pin_BlackCaesar" />
       </Panel>
     </Panel>
 
@@ -364,7 +364,6 @@
     <Image class="hud_map_district_card" id="playerHud_districtCard_YongeStreet_Brown" image="districtCard_YongeStreet" />
     <Image class="hud_map_district_card" id="playerHud_districtCard_Yorkville_Brown" image="districtCard_Yorkville" />
   </Panel>
-  <Panel id="playerHud_mapPanel_siteCard_Brown" class="mapPanel_siteCardContainer" />
 </Panel>
 
 <Panel id="playerHud_corePanel_map_Orange" class="playerHud_coreLayer" visibility="Orange" active="false">
@@ -524,11 +523,11 @@
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_YongeStreet_Orange" image="mapOverlay_YongeStreet" />
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Yorkville_Orange" image="mapOverlay_Yorkville" />
 
-        <Image id="playerHud_playerPin_LordLucien_Orange" class="hud_map_player_pin" image="pin_LordLucien" />
-        <Image id="playerHud_playerPin_Rashid_Orange" class="hud_map_player_pin" image="pin_Rashid" />
-        <Image id="playerHud_playerPin_Aishe_Orange" class="hud_map_player_pin" image="pin_Aishe" />
-        <Image id="playerHud_playerPin_Fomorach_Orange" class="hud_map_player_pin" image="pin_Fomorach" />
-        <Image id="playerHud_playerPin_BlackCaesar_Orange" class="hud_map_player_pin" image="pin_BlackCaesar" />
+        <Image id="playerHud_playerPin_Red_Orange" class="hud_map_player_pin" image="pin_LordLucien" />
+        <Image id="playerHud_playerPin_Orange_Orange" class="hud_map_player_pin" image="pin_Rashid" />
+        <Image id="playerHud_playerPin_Pink_Orange" class="hud_map_player_pin" image="pin_Aishe" />
+        <Image id="playerHud_playerPin_Brown_Orange" class="hud_map_player_pin" image="pin_Fomorach" />
+        <Image id="playerHud_playerPin_Purple_Orange" class="hud_map_player_pin" image="pin_BlackCaesar" />
       </Panel>
     </Panel>
 
@@ -730,7 +729,6 @@
     <Image class="hud_map_district_card" id="playerHud_districtCard_YongeStreet_Orange" image="districtCard_YongeStreet" />
     <Image class="hud_map_district_card" id="playerHud_districtCard_Yorkville_Orange" image="districtCard_Yorkville" />
   </Panel>
-  <Panel id="playerHud_mapPanel_siteCard_Orange" class="mapPanel_siteCardContainer" />
 </Panel>
 
 <Panel id="playerHud_corePanel_map_Red" class="playerHud_coreLayer" visibility="Red" active="false">
@@ -890,11 +888,11 @@
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_YongeStreet_Red" image="mapOverlay_YongeStreet" />
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Yorkville_Red" image="mapOverlay_Yorkville" />
 
-        <Image id="playerHud_playerPin_LordLucien_Red" class="hud_map_player_pin" image="pin_LordLucien" />
-        <Image id="playerHud_playerPin_Rashid_Red" class="hud_map_player_pin" image="pin_Rashid" />
-        <Image id="playerHud_playerPin_Aishe_Red" class="hud_map_player_pin" image="pin_Aishe" />
-        <Image id="playerHud_playerPin_Fomorach_Red" class="hud_map_player_pin" image="pin_Fomorach" />
-        <Image id="playerHud_playerPin_BlackCaesar_Red" class="hud_map_player_pin" image="pin_BlackCaesar" />
+        <Image id="playerHud_playerPin_Red_Red" class="hud_map_player_pin" image="pin_LordLucien" />
+        <Image id="playerHud_playerPin_Orange_Red" class="hud_map_player_pin" image="pin_Rashid" />
+        <Image id="playerHud_playerPin_Pink_Red" class="hud_map_player_pin" image="pin_Aishe" />
+        <Image id="playerHud_playerPin_Brown_Red" class="hud_map_player_pin" image="pin_Fomorach" />
+        <Image id="playerHud_playerPin_Purple_Red" class="hud_map_player_pin" image="pin_BlackCaesar" />
       </Panel>
     </Panel>
 
@@ -1096,7 +1094,6 @@
     <Image class="hud_map_district_card" id="playerHud_districtCard_YongeStreet_Red" image="districtCard_YongeStreet" />
     <Image class="hud_map_district_card" id="playerHud_districtCard_Yorkville_Red" image="districtCard_Yorkville" />
   </Panel>
-  <Panel id="playerHud_mapPanel_siteCard_Red" class="mapPanel_siteCardContainer" />
 </Panel>
 
 <Panel id="playerHud_corePanel_map_Pink" class="playerHud_coreLayer" visibility="Pink" active="false">
@@ -1256,11 +1253,11 @@
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_YongeStreet_Pink" image="mapOverlay_YongeStreet" />
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Yorkville_Pink" image="mapOverlay_Yorkville" />
 
-        <Image id="playerHud_playerPin_LordLucien_Pink" class="hud_map_player_pin" image="pin_LordLucien" />
-        <Image id="playerHud_playerPin_Rashid_Pink" class="hud_map_player_pin" image="pin_Rashid" />
-        <Image id="playerHud_playerPin_Aishe_Pink" class="hud_map_player_pin" image="pin_Aishe" />
-        <Image id="playerHud_playerPin_Fomorach_Pink" class="hud_map_player_pin" image="pin_Fomorach" />
-        <Image id="playerHud_playerPin_BlackCaesar_Pink" class="hud_map_player_pin" image="pin_BlackCaesar" />
+        <Image id="playerHud_playerPin_Red_Pink" class="hud_map_player_pin" image="pin_LordLucien" />
+        <Image id="playerHud_playerPin_Orange_Pink" class="hud_map_player_pin" image="pin_Rashid" />
+        <Image id="playerHud_playerPin_Pink_Pink" class="hud_map_player_pin" image="pin_Aishe" />
+        <Image id="playerHud_playerPin_Brown_Pink" class="hud_map_player_pin" image="pin_Fomorach" />
+        <Image id="playerHud_playerPin_Purple_Pink" class="hud_map_player_pin" image="pin_BlackCaesar" />
       </Panel>
     </Panel>
 
@@ -1462,7 +1459,6 @@
     <Image class="hud_map_district_card" id="playerHud_districtCard_YongeStreet_Pink" image="districtCard_YongeStreet" />
     <Image class="hud_map_district_card" id="playerHud_districtCard_Yorkville_Pink" image="districtCard_Yorkville" />
   </Panel>
-  <Panel id="playerHud_mapPanel_siteCard_Pink" class="mapPanel_siteCardContainer" />
 </Panel>
 
 <Panel id="playerHud_corePanel_map_Purple" class="playerHud_coreLayer" visibility="Purple" active="false">
@@ -1622,11 +1618,11 @@
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_YongeStreet_Purple" image="mapOverlay_YongeStreet" />
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Yorkville_Purple" image="mapOverlay_Yorkville" />
 
-        <Image id="playerHud_playerPin_LordLucien_Purple" class="hud_map_player_pin" image="pin_LordLucien" />
-        <Image id="playerHud_playerPin_Rashid_Purple" class="hud_map_player_pin" image="pin_Rashid" />
-        <Image id="playerHud_playerPin_Aishe_Purple" class="hud_map_player_pin" image="pin_Aishe" />
-        <Image id="playerHud_playerPin_Fomorach_Purple" class="hud_map_player_pin" image="pin_Fomorach" />
-        <Image id="playerHud_playerPin_BlackCaesar_Purple" class="hud_map_player_pin" image="pin_BlackCaesar" />
+        <Image id="playerHud_playerPin_Red_Purple" class="hud_map_player_pin" image="pin_LordLucien" />
+        <Image id="playerHud_playerPin_Orange_Purple" class="hud_map_player_pin" image="pin_Rashid" />
+        <Image id="playerHud_playerPin_Pink_Purple" class="hud_map_player_pin" image="pin_Aishe" />
+        <Image id="playerHud_playerPin_Brown_Purple" class="hud_map_player_pin" image="pin_Fomorach" />
+        <Image id="playerHud_playerPin_Purple_Purple" class="hud_map_player_pin" image="pin_BlackCaesar" />
       </Panel>
     </Panel>
 
@@ -1828,5 +1824,4 @@
     <Image class="hud_map_district_card" id="playerHud_districtCard_YongeStreet_Purple" image="districtCard_YongeStreet" />
     <Image class="hud_map_district_card" id="playerHud_districtCard_Yorkville_Purple" image="districtCard_Yorkville" />
   </Panel>
-  <Panel id="playerHud_mapPanel_siteCard_Purple" class="mapPanel_siteCardContainer" />
 </Panel>

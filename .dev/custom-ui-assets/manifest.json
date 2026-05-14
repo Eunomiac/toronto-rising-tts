@@ -1,67 +1,1017 @@
 {
-  "generatedAt": "2026-03-31T15:20:11.428Z",
-  "inputDirectory": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4",
-  "count": 12,
+  "generatedAt": "2026-05-14T13:14:28.613Z",
+  "source": "sites-from-constants",
+  "constantsPath": "D:\\Projects\\.CODING\\toronto-rising-tts\\lib\\constants.ttslua",
+  "count": 168,
+  "totalSitesValidated": 168,
   "assets": [
     {
-      "name": "toggle_Advantages_active",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Advantages_active.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Advantages_active.webp"
+      "name": "siteCard_AnarchBar",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/AnarchBar.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\AnarchBar.webp",
+      "siteKey": "AnarchBar"
     },
     {
-      "name": "toggle_Advantages_hover",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Advantages_hover.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Advantages_hover.webp"
+      "name": "siteCard_AptCorridor",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/AptCorridor.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\AptCorridor.webp",
+      "siteKey": "AptCorridor"
     },
     {
-      "name": "toggle_Advantages_inactive",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Advantages_inactive.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Advantages_inactive.webp"
+      "name": "siteCard_AptLobby",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/AptLobby.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\AptLobby.webp",
+      "siteKey": "AptLobby"
     },
     {
-      "name": "toggle_Experience_active",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Experience_active.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Experience_active.webp"
+      "name": "siteCard_AptStreetside",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/AptStreetside.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\AptStreetside.webp",
+      "siteKey": "AptStreetside"
     },
     {
-      "name": "toggle_Experience_hover",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Experience_hover.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Experience_hover.webp"
+      "name": "siteCard_ArtGallery",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ArtGallery.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ArtGallery.webp",
+      "siteKey": "ArtGallery"
     },
     {
-      "name": "toggle_Experience_inactive",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Experience_inactive.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Experience_inactive.webp"
+      "name": "siteCard_AutoMechanic",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/AutoMechanic.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\AutoMechanic.webp",
+      "siteKey": "AutoMechanic"
     },
     {
-      "name": "toggle_Memoriam_active",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Memoriam_active.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Memoriam_active.webp"
+      "name": "siteCard_BackAlley1",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BackAlley1.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\BackAlley1.webp",
+      "siteKey": "BackAlley1"
     },
     {
-      "name": "toggle_Memoriam_hover",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Memoriam_hover.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Memoriam_hover.webp"
+      "name": "siteCard_BackAlley2",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BackAlley2.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\BackAlley2.webp",
+      "siteKey": "BackAlley2"
     },
     {
-      "name": "toggle_Memoriam_inactive",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Memoriam_inactive.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Memoriam_inactive.webp"
+      "name": "siteCard_BackAlley3",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BackAlley3.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\BackAlley3.webp",
+      "siteKey": "BackAlley3"
     },
     {
-      "name": "toggle_Projects_active",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Projects_active.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Projects_active.webp"
+      "name": "siteCard_BackseatSedan",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BackseatSedan.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\BackseatSedan.webp",
+      "siteKey": "BackseatSedan"
     },
     {
-      "name": "toggle_Projects_hover",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Projects_hover.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Projects_hover.webp"
+      "name": "siteCard_BayTower",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BayTower.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\BayTower.webp",
+      "siteKey": "BayTower"
     },
     {
-      "name": "toggle_Projects_inactive",
-      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\Right Sidebar\\New 4\\toggle_Projects_inactive.webp",
-      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/Right Sidebar/New 4/toggle_Projects_inactive.webp"
+      "name": "siteCard_BierMarkt",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BierMarkt.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\BierMarkt.webp",
+      "siteKey": "BierMarkt"
+    },
+    {
+      "name": "siteCard_BillyBishopAirport",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BillyBishopAirport.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\BillyBishopAirport.webp",
+      "siteKey": "BillyBishopAirport"
+    },
+    {
+      "name": "siteCard_BillyBishopFerry",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BillyBishopFerry.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\BillyBishopFerry.webp",
+      "siteKey": "BillyBishopFerry"
+    },
+    {
+      "name": "siteCard_BrickWorks",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BrickWorks.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\BrickWorks.webp",
+      "siteKey": "BrickWorks"
+    },
+    {
+      "name": "siteCard_CabbagetownPenthouse",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CabbagetownPenthouse.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CabbagetownPenthouse.webp",
+      "siteKey": "CabbagetownPenthouse"
+    },
+    {
+      "name": "siteCard_CAMH",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CAMH.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CAMH.webp",
+      "siteKey": "CAMH"
+    },
+    {
+      "name": "siteCard_Cemetery",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Cemetery.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Cemetery.webp",
+      "siteKey": "Cemetery"
+    },
+    {
+      "name": "siteCard_CentrevillePark",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CentrevillePark.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CentrevillePark.webp",
+      "siteKey": "CentrevillePark"
+    },
+    {
+      "name": "siteCard_CeramicsMuseum",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CeramicsMuseum.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CeramicsMuseum.webp",
+      "siteKey": "CeramicsMuseum"
+    },
+    {
+      "name": "siteCard_ChantryGrounds",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ChantryGrounds.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ChantryGrounds.webp",
+      "siteKey": "ChantryGrounds"
+    },
+    {
+      "name": "siteCard_ChantryLibrary",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ChantryLibrary.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ChantryLibrary.webp",
+      "siteKey": "ChantryLibrary"
+    },
+    {
+      "name": "siteCard_ChantryQuarters",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ChantryQuarters.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ChantryQuarters.webp",
+      "siteKey": "ChantryQuarters"
+    },
+    {
+      "name": "siteCard_ChantryThaumatorium",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ChantryThaumatorium.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ChantryThaumatorium.webp",
+      "siteKey": "ChantryThaumatorium"
+    },
+    {
+      "name": "siteCard_ChristiePitsPark",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ChristiePitsPark.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ChristiePitsPark.webp",
+      "siteKey": "ChristiePitsPark"
+    },
+    {
+      "name": "siteCard_CityApt1",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CityApt1.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CityApt1.webp",
+      "siteKey": "CityApt1"
+    },
+    {
+      "name": "siteCard_CityApt2",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CityApt2.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CityApt2.webp",
+      "siteKey": "CityApt2"
+    },
+    {
+      "name": "siteCard_CityApt3",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CityApt3.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CityApt3.webp",
+      "siteKey": "CityApt3"
+    },
+    {
+      "name": "siteCard_CityHall",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CityHall.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CityHall.webp",
+      "siteKey": "CityHall"
+    },
+    {
+      "name": "siteCard_CityPark",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CityPark.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CityPark.webp",
+      "siteKey": "CityPark"
+    },
+    {
+      "name": "siteCard_CLDrawingRoom",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLDrawingRoom.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CLDrawingRoom.webp",
+      "siteKey": "CLDrawingRoom"
+    },
+    {
+      "name": "siteCard_CLGallery",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLGallery.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CLGallery.webp",
+      "siteKey": "CLGallery"
+    },
+    {
+      "name": "siteCard_CLGreatHall",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLGreatHall.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CLGreatHall.webp",
+      "siteKey": "CLGreatHall"
+    },
+    {
+      "name": "siteCard_CLGrounds",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLGrounds.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CLGrounds.webp",
+      "siteKey": "CLGrounds"
+    },
+    {
+      "name": "siteCard_CLLibrary",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLLibrary.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CLLibrary.webp",
+      "siteKey": "CLLibrary"
+    },
+    {
+      "name": "siteCard_CLOverlook",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLOverlook.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CLOverlook.webp",
+      "siteKey": "CLOverlook"
+    },
+    {
+      "name": "siteCard_CLTerrace",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLTerrace.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CLTerrace.webp",
+      "siteKey": "CLTerrace"
+    },
+    {
+      "name": "siteCard_CLVestibule",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLVestibule.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CLVestibule.webp",
+      "siteKey": "CLVestibule"
+    },
+    {
+      "name": "siteCard_CNE",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CNE.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CNE.webp",
+      "siteKey": "CNE"
+    },
+    {
+      "name": "siteCard_CNTower",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CNTower.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CNTower.webp",
+      "siteKey": "CNTower"
+    },
+    {
+      "name": "siteCard_CorktownCommon",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CorktownCommon.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\CorktownCommon.webp",
+      "siteKey": "CorktownCommon"
+    },
+    {
+      "name": "siteCard_DanforthHall",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/DanforthHall.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\DanforthHall.webp",
+      "siteKey": "DanforthHall"
+    },
+    {
+      "name": "siteCard_DerelictWarehouse",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/DerelictWarehouse.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\DerelictWarehouse.webp",
+      "siteKey": "DerelictWarehouse"
+    },
+    {
+      "name": "siteCard_Distillery",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Distillery.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Distillery.webp",
+      "siteKey": "Distillery"
+    },
+    {
+      "name": "siteCard_Docks",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Docks.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Docks.webp",
+      "siteKey": "Docks"
+    },
+    {
+      "name": "siteCard_DogPark",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/DogPark.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\DogPark.webp",
+      "siteKey": "DogPark"
+    },
+    {
+      "name": "siteCard_Drake",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Drake.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Drake.webp",
+      "siteKey": "Drake"
+    },
+    {
+      "name": "siteCard_EatonCentre",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/EatonCentre.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\EatonCentre.webp",
+      "siteKey": "EatonCentre"
+    },
+    {
+      "name": "siteCard_Elevator",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Elevator.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Elevator.webp",
+      "siteKey": "Elevator"
+    },
+    {
+      "name": "siteCard_EvergreenPalisades",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/EvergreenPalisades.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\EvergreenPalisades.webp",
+      "siteKey": "EvergreenPalisades"
+    },
+    {
+      "name": "siteCard_Fairmont",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Fairmont.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Fairmont.webp",
+      "siteKey": "Fairmont"
+    },
+    {
+      "name": "siteCard_FightClub",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/FightClub.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\FightClub.webp",
+      "siteKey": "FightClub"
+    },
+    {
+      "name": "siteCard_FortYork",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/FortYork.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\FortYork.webp",
+      "siteKey": "FortYork"
+    },
+    {
+      "name": "siteCard_GayBar",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GayBar.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\GayBar.webp",
+      "siteKey": "GayBar"
+    },
+    {
+      "name": "siteCard_GayClub",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GayClub.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\GayClub.webp",
+      "siteKey": "GayClub"
+    },
+    {
+      "name": "siteCard_GECatacombs",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GECatacombs.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\GECatacombs.webp",
+      "siteKey": "GECatacombs"
+    },
+    {
+      "name": "siteCard_GEDiningHall",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GEDiningHall.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\GEDiningHall.webp",
+      "siteKey": "GEDiningHall"
+    },
+    {
+      "name": "siteCard_GEEstateGrounds",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GEEstateGrounds.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\GEEstateGrounds.webp",
+      "siteKey": "GEEstateGrounds"
+    },
+    {
+      "name": "siteCard_GEMortuary",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GEMortuary.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\GEMortuary.webp",
+      "siteKey": "GEMortuary"
+    },
+    {
+      "name": "siteCard_GeorgeBrown",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GeorgeBrown.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\GeorgeBrown.webp",
+      "siteKey": "GeorgeBrown"
+    },
+    {
+      "name": "siteCard_GETowerRoom",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GETowerRoom.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\GETowerRoom.webp",
+      "siteKey": "GETowerRoom"
+    },
+    {
+      "name": "siteCard_GraffitiAlley",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GraffitiAlley.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\GraffitiAlley.webp",
+      "siteKey": "GraffitiAlley"
+    },
+    {
+      "name": "siteCard_HarbourfrontCentre",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/HarbourfrontCentre.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\HarbourfrontCentre.webp",
+      "siteKey": "HarbourfrontCentre"
+    },
+    {
+      "name": "siteCard_Highway",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Highway.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Highway.webp",
+      "siteKey": "Highway"
+    },
+    {
+      "name": "siteCard_HockeyHallOfFame",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/HockeyHallOfFame.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\HockeyHallOfFame.webp",
+      "siteKey": "HockeyHallOfFame"
+    },
+    {
+      "name": "siteCard_JRRLibrary",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/JRRLibrary.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\JRRLibrary.webp",
+      "siteKey": "JRRLibrary"
+    },
+    {
+      "name": "siteCard_Junkyard",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Junkyard.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Junkyard.webp",
+      "siteKey": "Junkyard"
+    },
+    {
+      "name": "siteCard_Kensington",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Kensington.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Kensington.webp",
+      "siteKey": "Kensington"
+    },
+    {
+      "name": "siteCard_Laboratory",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Laboratory.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Laboratory.webp",
+      "siteKey": "Laboratory"
+    },
+    {
+      "name": "siteCard_LectureHall",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/LectureHall.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\LectureHall.webp",
+      "siteKey": "LectureHall"
+    },
+    {
+      "name": "siteCard_Library",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Library.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Library.webp",
+      "siteKey": "Library"
+    },
+    {
+      "name": "siteCard_Limousine",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Limousine.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Limousine.webp",
+      "siteKey": "Limousine"
+    },
+    {
+      "name": "siteCard_LowerParklands",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/LowerParklands.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\LowerParklands.webp",
+      "siteKey": "LowerParklands"
+    },
+    {
+      "name": "siteCard_LuxuryDriving",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/LuxuryDriving.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\LuxuryDriving.webp",
+      "siteKey": "LuxuryDriving"
+    },
+    {
+      "name": "siteCard_MadinaMasjid",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/MadinaMasjid.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\MadinaMasjid.webp",
+      "siteKey": "MadinaMasjid"
+    },
+    {
+      "name": "siteCard_MasseyHall",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/MasseyHall.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\MasseyHall.webp",
+      "siteKey": "MasseyHall"
+    },
+    {
+      "name": "siteCard_MiddleOfRoad",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/MiddleOfRoad.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\MiddleOfRoad.webp",
+      "siteKey": "MiddleOfRoad"
+    },
+    {
+      "name": "siteCard_ModClub",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ModClub.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ModClub.webp",
+      "siteKey": "ModClub"
+    },
+    {
+      "name": "siteCard_MountSinai",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/MountSinai.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\MountSinai.webp",
+      "siteKey": "MountSinai"
+    },
+    {
+      "name": "siteCard_Nightclub1",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Nightclub1.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Nightclub1.webp",
+      "siteKey": "Nightclub1"
+    },
+    {
+      "name": "siteCard_Nightclub2",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Nightclub2.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Nightclub2.webp",
+      "siteKey": "Nightclub2"
+    },
+    {
+      "name": "siteCard_Nightclub3",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Nightclub3.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Nightclub3.webp",
+      "siteKey": "Nightclub3"
+    },
+    {
+      "name": "siteCard_OCAD",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/OCAD.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\OCAD.webp",
+      "siteKey": "OCAD"
+    },
+    {
+      "name": "siteCard_Office",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Office.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Office.webp",
+      "siteKey": "Office"
+    },
+    {
+      "name": "siteCard_OldOsgoodeHall",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/OldOsgoodeHall.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\OldOsgoodeHall.webp",
+      "siteKey": "OldOsgoodeHall"
+    },
+    {
+      "name": "siteCard_OntarioPlaceMarina",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/OntarioPlaceMarina.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\OntarioPlaceMarina.webp",
+      "siteKey": "OntarioPlaceMarina"
+    },
+    {
+      "name": "siteCard_ParkDriveReservation",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ParkDriveReservation.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ParkDriveReservation.webp",
+      "siteKey": "ParkDriveReservation"
+    },
+    {
+      "name": "siteCard_ParkingLot",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ParkingLot.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ParkingLot.webp",
+      "siteKey": "ParkingLot"
+    },
+    {
+      "name": "siteCard_PenthouseApt1",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/PenthouseApt1.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\PenthouseApt1.webp",
+      "siteKey": "PenthouseApt1"
+    },
+    {
+      "name": "siteCard_PenthouseApt2",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/PenthouseApt2.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\PenthouseApt2.webp",
+      "siteKey": "PenthouseApt2"
+    },
+    {
+      "name": "siteCard_PenthouseApt3",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/PenthouseApt3.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\PenthouseApt3.webp",
+      "siteKey": "PenthouseApt3"
+    },
+    {
+      "name": "siteCard_PhoenixTheatre",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/PhoenixTheatre.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\PhoenixTheatre.webp",
+      "siteKey": "PhoenixTheatre"
+    },
+    {
+      "name": "siteCard_PMHospital",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/PMHospital.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\PMHospital.webp",
+      "siteKey": "PMHospital"
+    },
+    {
+      "name": "siteCard_ProfOffice",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ProfOffice.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ProfOffice.webp",
+      "siteKey": "ProfOffice"
+    },
+    {
+      "name": "siteCard_ReconciliationHouse",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ReconciliationHouse.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ReconciliationHouse.webp",
+      "siteKey": "ReconciliationHouse"
+    },
+    {
+      "name": "siteCard_RedemptionHouse",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RedemptionHouse.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\RedemptionHouse.webp",
+      "siteKey": "RedemptionHouse"
+    },
+    {
+      "name": "siteCard_RemembranceHouse",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RemembranceHouse.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\RemembranceHouse.webp",
+      "siteKey": "RemembranceHouse"
+    },
+    {
+      "name": "siteCard_RevelationHouse",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RevelationHouse.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\RevelationHouse.webp",
+      "siteKey": "RevelationHouse"
+    },
+    {
+      "name": "siteCard_RogersCentre",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RogersCentre.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\RogersCentre.webp",
+      "siteKey": "RogersCentre"
+    },
+    {
+      "name": "siteCard_ROMC5Lounge",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ROMC5Lounge.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ROMC5Lounge.webp",
+      "siteKey": "ROMC5Lounge"
+    },
+    {
+      "name": "siteCard_ROMHallOfExtinction",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ROMHallOfExtinction.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ROMHallOfExtinction.webp",
+      "siteKey": "ROMHallOfExtinction"
+    },
+    {
+      "name": "siteCard_ROMLoadingZone",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ROMLoadingZone.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ROMLoadingZone.webp",
+      "siteKey": "ROMLoadingZone"
+    },
+    {
+      "name": "siteCard_ROMRotunda",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ROMRotunda.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ROMRotunda.webp",
+      "siteKey": "ROMRotunda"
+    },
+    {
+      "name": "siteCard_ROMSpiritHouse",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ROMSpiritHouse.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ROMSpiritHouse.webp",
+      "siteKey": "ROMSpiritHouse"
+    },
+    {
+      "name": "siteCard_Rooftop",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Rooftop.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Rooftop.webp",
+      "siteKey": "Rooftop"
+    },
+    {
+      "name": "siteCard_RunDownApt1",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RunDownApt1.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\RunDownApt1.webp",
+      "siteKey": "RunDownApt1"
+    },
+    {
+      "name": "siteCard_RunDownApt2",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RunDownApt2.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\RunDownApt2.webp",
+      "siteKey": "RunDownApt2"
+    },
+    {
+      "name": "siteCard_RunDownApt3",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RunDownApt3.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\RunDownApt3.webp",
+      "siteKey": "RunDownApt3"
+    },
+    {
+      "name": "siteCard_Ryerson",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Ryerson.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Ryerson.webp",
+      "siteKey": "Ryerson"
+    },
+    {
+      "name": "siteCard_ScotiabankTheatre",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ScotiabankTheatre.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ScotiabankTheatre.webp",
+      "siteKey": "ScotiabankTheatre"
+    },
+    {
+      "name": "siteCard_SecludedDeadEnd",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SecludedDeadEnd.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\SecludedDeadEnd.webp",
+      "siteKey": "SecludedDeadEnd"
+    },
+    {
+      "name": "siteCard_SewerTunnel1",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SewerTunnel1.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\SewerTunnel1.webp",
+      "siteKey": "SewerTunnel1"
+    },
+    {
+      "name": "siteCard_SewerTunnel2",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SewerTunnel2.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\SewerTunnel2.webp",
+      "siteKey": "SewerTunnel2"
+    },
+    {
+      "name": "siteCard_SheratonCentre",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SheratonCentre.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\SheratonCentre.webp",
+      "siteKey": "SheratonCentre"
+    },
+    {
+      "name": "siteCard_SickKids",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SickKids.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\SickKids.webp",
+      "siteKey": "SickKids"
+    },
+    {
+      "name": "siteCard_Sidewalk1",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Sidewalk1.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Sidewalk1.webp",
+      "siteKey": "Sidewalk1"
+    },
+    {
+      "name": "siteCard_Sidewalk2",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Sidewalk2.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Sidewalk2.webp",
+      "siteKey": "Sidewalk2"
+    },
+    {
+      "name": "siteCard_Sidewalk3",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Sidewalk3.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Sidewalk3.webp",
+      "siteKey": "Sidewalk3"
+    },
+    {
+      "name": "siteCard_SnakesLattes",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SnakesLattes.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\SnakesLattes.webp",
+      "siteKey": "SnakesLattes"
+    },
+    {
+      "name": "siteCard_SneakyDees",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SneakyDees.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\SneakyDees.webp",
+      "siteKey": "SneakyDees"
+    },
+    {
+      "name": "siteCard_Stairwell",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Stairwell.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Stairwell.webp",
+      "siteKey": "Stairwell"
+    },
+    {
+      "name": "siteCard_StLawrenceMarket",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StLawrenceMarket.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\StLawrenceMarket.webp",
+      "siteKey": "StLawrenceMarket"
+    },
+    {
+      "name": "siteCard_StMichaelsCathedral",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StMichaelsCathedral.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\StMichaelsCathedral.webp",
+      "siteKey": "StMichaelsCathedral"
+    },
+    {
+      "name": "siteCard_StMichaelsHospital",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StMichaelsHospital.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\StMichaelsHospital.webp",
+      "siteKey": "StMichaelsHospital"
+    },
+    {
+      "name": "siteCard_StreetCorner1",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StreetCorner1.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\StreetCorner1.webp",
+      "siteKey": "StreetCorner1"
+    },
+    {
+      "name": "siteCard_StreetCorner2",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StreetCorner2.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\StreetCorner2.webp",
+      "siteKey": "StreetCorner2"
+    },
+    {
+      "name": "siteCard_StreetCorner3",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StreetCorner3.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\StreetCorner3.webp",
+      "siteKey": "StreetCorner3"
+    },
+    {
+      "name": "siteCard_StRegisCouncilChamber",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StRegisCouncilChamber.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\StRegisCouncilChamber.webp",
+      "siteKey": "StRegisCouncilChamber"
+    },
+    {
+      "name": "siteCard_StRegisFoyer",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StRegisFoyer.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\StRegisFoyer.webp",
+      "siteKey": "StRegisFoyer"
+    },
+    {
+      "name": "siteCard_StRegisGrandSalon",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StRegisGrandSalon.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\StRegisGrandSalon.webp",
+      "siteKey": "StRegisGrandSalon"
+    },
+    {
+      "name": "siteCard_StRegisRoom101",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StRegisRoom101.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\StRegisRoom101.webp",
+      "siteKey": "StRegisRoom101"
+    },
+    {
+      "name": "siteCard_StripClub",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StripClub.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\StripClub.webp",
+      "siteKey": "StripClub"
+    },
+    {
+      "name": "siteCard_StudentVillage",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StudentVillage.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\StudentVillage.webp",
+      "siteKey": "StudentVillage"
+    },
+    {
+      "name": "siteCard_SuburbanHouse1",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SuburbanHouse1.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\SuburbanHouse1.webp",
+      "siteKey": "SuburbanHouse1"
+    },
+    {
+      "name": "siteCard_SuburbanHouse2",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SuburbanHouse2.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\SuburbanHouse2.webp",
+      "siteKey": "SuburbanHouse2"
+    },
+    {
+      "name": "siteCard_SuburbanHouse3",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SuburbanHouse3.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\SuburbanHouse3.webp",
+      "siteKey": "SuburbanHouse3"
+    },
+    {
+      "name": "siteCard_SubwayStation",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SubwayStation.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\SubwayStation.webp",
+      "siteKey": "SubwayStation"
+    },
+    {
+      "name": "siteCard_SubwayTunnels",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SubwayTunnels.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\SubwayTunnels.webp",
+      "siteKey": "SubwayTunnels"
+    },
+    {
+      "name": "siteCard_SUV",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SUV.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\SUV.webp",
+      "siteKey": "SUV"
+    },
+    {
+      "name": "siteCard_Taxi",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Taxi.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Taxi.webp",
+      "siteKey": "Taxi"
+    },
+    {
+      "name": "siteCard_ThreefoldExchange",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ThreefoldExchange.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\ThreefoldExchange.webp",
+      "siteKey": "ThreefoldExchange"
+    },
+    {
+      "name": "siteCard_TIFFLightbox",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/TIFFLightbox.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\TIFFLightbox.webp",
+      "siteKey": "TIFFLightbox"
+    },
+    {
+      "name": "siteCard_TorontoGeneral",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/TorontoGeneral.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\TorontoGeneral.webp",
+      "siteKey": "TorontoGeneral"
+    },
+    {
+      "name": "siteCard_UndergroundMedClinic",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UndergroundMedClinic.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\UndergroundMedClinic.webp",
+      "siteKey": "UndergroundMedClinic"
+    },
+    {
+      "name": "siteCard_UndergroundMedOffice",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UndergroundMedOffice.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\UndergroundMedOffice.webp",
+      "siteKey": "UndergroundMedOffice"
+    },
+    {
+      "name": "siteCard_UndergroundParking",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UndergroundParking.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\UndergroundParking.webp",
+      "siteKey": "UndergroundParking"
+    },
+    {
+      "name": "siteCard_UnionConcourse",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionConcourse.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\UnionConcourse.webp",
+      "siteKey": "UnionConcourse"
+    },
+    {
+      "name": "siteCard_UnionGrandClock",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionGrandClock.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\UnionGrandClock.webp",
+      "siteKey": "UnionGrandClock"
+    },
+    {
+      "name": "siteCard_UnionLine1",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionLine1.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\UnionLine1.webp",
+      "siteKey": "UnionLine1"
+    },
+    {
+      "name": "siteCard_UnionSecOffice",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionSecOffice.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\UnionSecOffice.webp",
+      "siteKey": "UnionSecOffice"
+    },
+    {
+      "name": "siteCard_UnionServiceCorridor",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionServiceCorridor.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\UnionServiceCorridor.webp",
+      "siteKey": "UnionServiceCorridor"
+    },
+    {
+      "name": "siteCard_UnionUPExpress",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionUPExpress.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\UnionUPExpress.webp",
+      "siteKey": "UnionUPExpress"
+    },
+    {
+      "name": "siteCard_UpperCanadaCollege",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UpperCanadaCollege.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\UpperCanadaCollege.webp",
+      "siteKey": "UpperCanadaCollege"
+    },
+    {
+      "name": "siteCard_VacantLot",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/VacantLot.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\VacantLot.webp",
+      "siteKey": "VacantLot"
+    },
+    {
+      "name": "siteCard_WalkingPath",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WalkingPath.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\WalkingPath.webp",
+      "siteKey": "WalkingPath"
+    },
+    {
+      "name": "siteCard_WarrensAntechamber",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WarrensAntechamber.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\WarrensAntechamber.webp",
+      "siteKey": "WarrensAntechamber"
+    },
+    {
+      "name": "siteCard_WarrensDrakes",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WarrensDrakes.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\WarrensDrakes.webp",
+      "siteKey": "WarrensDrakes"
+    },
+    {
+      "name": "siteCard_WarrensLabyrinth",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WarrensLabyrinth.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\WarrensLabyrinth.webp",
+      "siteKey": "WarrensLabyrinth"
+    },
+    {
+      "name": "siteCard_WarrensSpawningPool",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WarrensSpawningPool.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\WarrensSpawningPool.webp",
+      "siteKey": "WarrensSpawningPool"
+    },
+    {
+      "name": "siteCard_WarrensTunnelJunction",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WarrensTunnelJunction.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\WarrensTunnelJunction.webp",
+      "siteKey": "WarrensTunnelJunction"
+    },
+    {
+      "name": "siteCard_WealthyEstate1",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WealthyEstate1.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\WealthyEstate1.webp",
+      "siteKey": "WealthyEstate1"
+    },
+    {
+      "name": "siteCard_WealthyEstate2",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WealthyEstate2.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\WealthyEstate2.webp",
+      "siteKey": "WealthyEstate2"
+    },
+    {
+      "name": "siteCard_WealthyEstate3",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WealthyEstate3.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\WealthyEstate3.webp",
+      "siteKey": "WealthyEstate3"
+    },
+    {
+      "name": "siteCard_WychwoodPub",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WychwoodPub.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\WychwoodPub.webp",
+      "siteKey": "WychwoodPub"
+    },
+    {
+      "name": "siteCard_Yacht",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Yacht.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\Yacht.webp",
+      "siteKey": "Yacht"
+    },
+    {
+      "name": "siteCard_YongeDundasSquare",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/YongeDundasSquare.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\YongeDundasSquare.webp",
+      "siteKey": "YongeDundasSquare"
+    },
+    {
+      "name": "siteCard_YorkvilleApt1",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/YorkvilleApt1.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\YorkvilleApt1.webp",
+      "siteKey": "YorkvilleApt1"
+    },
+    {
+      "name": "siteCard_YouthShelter",
+      "fileUrl": "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/YouthShelter.webp",
+      "sourcePath": "D:\\Projects\\!Roleplaying\\VAMPIRE THE MASQUERADE\\!!!New Chronicle\\Districts & Sites\\VSC Photoshop Script\\Exports\\Sites\\WEBP\\YouthShelter.webp",
+      "siteKey": "YouthShelter"
     }
   ]
 }

@@ -242,7 +242,7 @@ end
 
 --- Shared (non-player-scoped) lighting: ambient, GM, scene-defined non-player lights.
 function Sync.lighting()
-    L.reconcileShared()                      -- ambient, gmLight, mainLight*, district/site cards, NPC cutout lights
+    L.reconcileShared()                      -- ambient, gmLight, mainLight*, NPC cutout lights
 end
 
 --- Soundscape: music mood/featured/location, weather, indoor ducking.

@@ -18,8 +18,11 @@ test("soundscape runtime module exposes the planned API", () => {
   [
     "function Soundscape.reconcileFromState(opts)",
     "function Soundscape.invalidateReconcileCache()",
+    "function Soundscape.markReconciledToCurrentState()",
     "function Soundscape.applyContext(context)",
-    "function Soundscape.contextFromSite(site)",
+    "function Soundscape.contextFromSite(site, siteKey)",
+    "function Soundscape.mergeSessionSceneNarrativeIntoContext(sessionScene, base)",
+    "function Soundscape.applySessionSceneNarrativeOverrides(sessionScene)",
     "function Soundscape.setMusicMood(moodKey)",
     "function Soundscape.setLocationMusic(playlistKey)",
     "function Soundscape.playFeaturedMusic(featureKey)",
@@ -306,8 +309,14 @@ test("soundscape uses standard lane behavior by emitter count", () => {
   });
 
   assert.ok(runtime.includes("incomingFadeSeconds = 0"), "featured music should explicitly skip incoming fade-in");
-  assert.ok(runtime.includes("playSingleEmitterFadeOutIn(\"weatherRain\""), "rain should use same-emitter fade-out/fade-in");
-  assert.ok(runtime.includes("playSingleEmitterFadeOutIn(\"weatherWind\""), "wind should use same-emitter fade-out/fade-in");
+  assert.ok(
+    /playSingleEmitterFadeOutIn\([\s\S]*?"weatherRain"/.test(runtime),
+    "rain should use same-emitter fade-out/fade-in"
+  );
+  assert.ok(
+    /playSingleEmitterFadeOutIn\([\s\S]*?"weatherWind"/.test(runtime),
+    "wind should use same-emitter fade-out/fade-in"
+  );
   assert.ok(runtime.includes("playCatalogEntry(\"weatherThunder\", thunder, thunder.volume or 0.7, 0)"), "thunder should play immediately at full volume without fade-out/fade-in");
   assert.equal(runtime.includes("playSingleEmitterFadeOutIn(\"weatherThunder\""), false, "thunder should never use same-emitter fade-out/fade-in");
 });

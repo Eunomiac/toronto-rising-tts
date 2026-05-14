@@ -1352,7 +1352,7 @@ local function computeDesiredPlayerLightMode(lightRef, seatKey)
 
     -- Future NPC-role exception hook: currently no role-assumption system exists yet.
 
-    local seatPresenceOff = shouldEnforceSeatPresenceLights() and not isPlayerPresentInActiveSeatLayout(seatKey)
+    local seatPresenceOff = shouldEnforceSeatPresenceLights() and not L.isPlayerPresentInActiveSeatLayout(seatKey)
     if (isDarkSceneActive() or seatPresenceOff) and lData.OFF ~= nil then
         return "OFF"
     end

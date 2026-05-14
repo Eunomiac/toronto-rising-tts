@@ -2,13 +2,13 @@
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (map panels). -->
 <!-- Visibility: TTS `UI.show` / `UI.hide` play showAnimation/hideAnimation (tts-api UI API/Attributes.md). -->
 
-<Panel id="gameStateOverlay_location_@@color@@" class="playerHud_overlay_location" visibility="@@color@@"
-  onMouseEnter="HUD_locationOverlay_hoverOn"
-  onMouseExit="HUD_locationOverlay_hoverOff">
+<Panel id="gameStateOverlay_location_@@color@@" class="playerHud_overlay_location" visibility="@@color@@" raycastTarget="false">
 
-  <Image id="popout_locationPanel_@@color@@" class="popoutControl_location" image="popoutControl_location" />
+  <Image id="popout_locationPanel_@@color@@" class="popoutControl_location" image="popoutControl_location"
+    onMouseEnter="HUD_locationOverlay_hoverOn"
+    onMouseExit="HUD_locationOverlay_hoverOff" />
 
-  <Panel id="gameStateOverlay_locationPanel_@@color@@" class="gameStateOverlay_locationPanel" active="false" raycastTarget="true">
+  <Panel id="gameStateOverlay_locationPanel_@@color@@" class="gameStateOverlay_locationPanel" active="false" raycastTarget="false">
 
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Annex_@@color@@" image="districtCard_Annex" />
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_BayStFinancial_@@color@@" image="districtCard_BayStFinancial" />
@@ -47,6 +47,7 @@
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_YongeStreet_@@color@@" image="districtCard_YongeStreet" />
     <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Yorkville_@@color@@" image="districtCard_Yorkville" />
 
-    <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_StRegisGrandSalon_@@color@@" image="siteCard_StRegisGrandSalon" />
+    <!-- Site card: default inactive + empty `image`; Lua sets `image` then activates (see `core/hud_player.ttslua`). -->
+    <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_current_@@color@@" active="false" image="" />
   </Panel>
 </Panel>

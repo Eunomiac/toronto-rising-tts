@@ -363,8 +363,4 @@
     <Image class="hud_map_district_card" id="playerHud_districtCard_YongeStreet_@@color@@" image="districtCard_YongeStreet" />
     <Image class="hud_map_district_card" id="playerHud_districtCard_Yorkville_@@color@@" image="districtCard_Yorkville" />
   </Panel>
-  <Panel id="playerHud_mapPanel_siteCard_@@color@@" class="hud_map_site_card_container" >
-    <Image class="hud_map_site_card" id="playerHud_siteCard_StRegisGrandSalon_@@color@@" image="siteCard_StRegisGrandSalon" />
-
-  </Panel>
 </Panel>

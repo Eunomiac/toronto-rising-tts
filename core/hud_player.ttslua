@@ -18,6 +18,7 @@ local U = require("lib.util")
 local C = require("lib.constants")
 local S = require("core.state")
 local Main = require("core.main")
+local L = require("core.lighting")
 
 local HUDP = {}
 
@@ -66,6 +67,12 @@ local mapPanNavIsActiveByPlayerID = {}
 
 --- PlayerID -> { [elementId] = boolean } last applied visibility for map-panel loops (incremental U.setAttribute).
 local lastMapPanelUiByPlayerID = {}
+
+--- PlayerID -> { [pinElementId] = string } last applied offsetXY for map pins at the active site.
+local lastMapPinOffsetByPlayerID = {}
+
+--- `gameStateOverlay_*` location dock stacked images: elementId -> last visibility bool.
+local lastLocationDockUiCache = {}
 
 --- seatColor -> last applied offsetXY string for map draggable (skip redundant Global UI writes).
 local mapDraggableLastOffsetStrBySeat = {}
@@ -167,6 +174,104 @@ do
             MAP_DISTRICT_KEYS_WITH_OVERLAY[districtKey] = true
         end
     end
+end
+
+--- Player colors used for map pin Image ids (`playerHud_playerPin_<Color>_<HudSeat>` in `panel_map_core.xml`).
+local MAP_PIN_PLAYER_COLORS = { "Red", "Orange", "Pink", "Brown", "Purple" }
+
+--- Element id -> last applied custom UI `image` ref for dynamic site cards (map + location dock).
+local lastSiteCardImageByElementId = {}
+
+--- When true for one `UpdateUIDisplays` playerHud batch, map pins use "library scene cast" relocation rules.
+local mapPinRelocationSceneCastArmed = false
+
+--- @param s string|nil
+--- @return string
+local function trimHudKey(s)
+    if type(s) ~= "string" then
+        return ""
+    end
+    return string.gsub(string.gsub(s, "^%s+", ""), "%s+$", "")
+end
+
+--- Resolves the Custom UI `image` ref for `sessionScene.siteKey`.
+--- Prefers `C.Sites[siteKey].image` (must match uploaded Custom UI asset name); falls back to `siteCard_` .. key.
+--- Unknown or invalid `siteKey` returns nil (caller hides the site card without error).
+--- @param siteKey string|nil
+--- @return string|nil
+local function resolveSiteCardImageRefForSiteKey(siteKey)
+    if type(siteKey) ~= "string" then
+        return nil
+    end
+    local sk = trimHudKey(siteKey)
+    if sk == "" then
+        return nil
+    end
+    local site = C.Sites[sk]
+    if type(site) ~= "table" then
+        return nil
+    end
+    local img = site.image
+    if type(img) == "string" then
+        img = trimHudKey(img)
+        if img ~= "" then
+            return img
+        end
+    end
+    local k = site.key
+    if type(k) ~= "string" or trimHudKey(k) == "" then
+        k = sk
+    end
+    k = trimHudKey(k)
+    return "siteCard_" .. k
+end
+
+--- Sets or clears the Custom UI `image` on a site card Image; skips redundant `UI.setAttribute` writes when setting a ref.
+--- When clearing, writes `image=""` if a non-nil ref was previously applied for this element.
+--- @param elementId string
+--- @param imageRef string|nil
+local function applySiteCardImageIfChanged(elementId, imageRef)
+    if type(elementId) ~= "string" then
+        return
+    end
+    local trimmed = nil
+    if type(imageRef) == "string" then
+        trimmed = trimHudKey(imageRef)
+    end
+    if trimmed == nil or trimmed == "" then
+        if lastSiteCardImageByElementId[elementId] ~= nil then
+            if UI ~= nil and UI.setAttribute ~= nil then
+                UI.setAttribute(elementId, "image", "")
+            end
+        end
+        lastSiteCardImageByElementId[elementId] = nil
+        return
+    end
+    if lastSiteCardImageByElementId[elementId] == trimmed then
+        return
+    end
+    if UI ~= nil and UI.setAttribute ~= nil then
+        UI.setAttribute(elementId, "image", trimmed)
+    end
+    lastSiteCardImageByElementId[elementId] = trimmed
+end
+
+--- District used as the map "home" selection: `sessionScene.districtKey` when valid, else legacy `hud.map.location.district`.
+--- @param playerID string
+--- @return string|nil
+local function getPersistedMapDistrictKeyForPlayer(playerID)
+    if type(playerID) ~= "string" then
+        return nil
+    end
+    local dk = trimHudKey(S.getStateVal("sessionScene", "districtKey"))
+    if dk ~= "" and MAP_DISTRICT_KEY_SET[dk] == true then
+        return dk
+    end
+    local hudD = S.getStateVal("playerData", playerID, "hud", "map", "location", "district")
+    if type(hudD) == "string" and MAP_DISTRICT_KEY_SET[hudD] == true then
+        return hudD
+    end
+    return nil
 end
 
 local function roundToInt(n)
@@ -470,7 +575,7 @@ local function setMapStackImageVisibility(elementID, isVisible)
     end
     if isVisible then
         U.setAttribute(elementID, "active", "true")
-        UI.setAttribute(elementID, "color", "#FFFFFF")
+        U.setAttribute(elementID, "color", "#FFFFFF")
     else
         U.setAttribute(elementID, "active", "false")
     end
@@ -481,6 +586,7 @@ end
 local function clearMapPanelUiCache(playerID)
     if type(playerID) == "string" then
         lastMapPanelUiByPlayerID[playerID] = {}
+        lastMapPinOffsetByPlayerID[playerID] = {}
     end
 end
 
@@ -503,6 +609,45 @@ local function applyCachedMapPanelBool(playerID, elementID, desired, applyFn)
     end
     applyFn(elementID, desired)
     cache[elementID] = desired
+end
+
+--- Location dock (`panel_overlay_location.xml`): incremental stacked Image visibility.
+-- @param elementID string
+-- @param desired boolean
+-- @param applyFn function(elementID, isVisible)
+local function applyLocationDockCachedBool(elementID, desired, applyFn)
+    if type(elementID) ~= "string" or type(desired) ~= "boolean" or type(applyFn) ~= "function" then
+        return
+    end
+    if lastLocationDockUiCache[elementID] == desired then
+        return
+    end
+    applyFn(elementID, desired)
+    lastLocationDockUiCache[elementID] = desired
+end
+
+--- Per-seat location popout: district + site card stacks mirror `sessionScene.districtKey` / `siteKey`.
+-- @param seatColor string HUD owner seat
+local function reconcileLocationDockCardsFromState(seatColor)
+    if type(seatColor) ~= "string" then
+        return
+    end
+    local sessionD = trimHudKey(S.getStateVal("sessionScene", "districtKey"))
+    for districtKey, _ in pairs(MAP_DISTRICT_KEYS) do
+        local id = "gameStateOverlay_districtCard_" .. districtKey .. "_" .. seatColor
+        local show = sessionD ~= "" and districtKey == sessionD
+        applyLocationDockCachedBool(id, show, setMapStackImageVisibility)
+    end
+    local sessionS = trimHudKey(S.getStateVal("sessionScene", "siteKey"))
+    local dockSiteId = "gameStateOverlay_siteCard_current_" .. seatColor
+    local dockRef = (sessionS ~= "") and resolveSiteCardImageRefForSiteKey(sessionS) or nil
+    if type(dockRef) ~= "string" then
+        applySiteCardImageIfChanged(dockSiteId, nil)
+        applyLocationDockCachedBool(dockSiteId, false, setMapStackImageVisibility)
+    else
+        applySiteCardImageIfChanged(dockSiteId, dockRef)
+        applyLocationDockCachedBool(dockSiteId, true, setMapStackImageVisibility)
+    end
 end
 
 --- Returns the storage player id and seat color for a given `player`.
@@ -659,9 +804,8 @@ local function applyMapPanelHud(playerID, seatColor, hud)
     local showMap = hud.activeCorePanel == "map"
     local hudMap = hud.map
     local overlaysState = (hudMap and hudMap.overlays) or {}
-    local locationState = (hudMap and hudMap.location) or {}
 
-    local locationDistrictKey = (locationState and locationState.district) or nil
+    local locationDistrictKey = getPersistedMapDistrictKeyForPlayer(playerID)
     local hoverOverlayKey = mapHoverOverlayKeyByPlayerID[playerID]
     local hoverDistrictKey = mapHoverDistrictKeyByPlayerID[playerID]
     local activeDistrictKey = mapActiveDistrictByPlayerID[playerID]
@@ -752,6 +896,71 @@ local function applyMapPanelHud(playerID, seatColor, hud)
         local districtHoverId = "playerHud_mapDistrictToggle_" .. districtKey .. "_" .. seatColor .. "_hover"
         applyCachedMapPanelBool(playerID, districtHoverId, showDistrictHoverLayer, setTintVisibility)
     end
+
+    local sessionSiteKey = trimHudKey(S.getStateVal("sessionScene", "siteKey"))
+
+    local pinOffsetCache = lastMapPinOffsetByPlayerID[playerID]
+    if type(pinOffsetCache) ~= "table" then
+        pinOffsetCache = {}
+        lastMapPinOffsetByPlayerID[playerID] = pinOffsetCache
+    end
+
+    if not showMap then
+        for _, pinColor in ipairs(MAP_PIN_PLAYER_COLORS) do
+            local pinId = "playerHud_playerPin_" .. pinColor .. "_" .. seatColor
+            applyCachedMapPanelBool(playerID, pinId, false, setMapStackImageVisibility)
+            pinOffsetCache[pinId] = nil
+        end
+    else
+        local useScenePinRules = mapPinRelocationSceneCastArmed == true
+
+        --- Who receives the active site `offsetXY` (see `.dev/HUDs & Overlays/District & Site Card Display Changes.md`).
+        --- - Library scene apply arms `useScenePinRules` for one `UpdateUIDisplays` pass (`HUDP.armPinRelocationSceneCast` → `afterPlayerHudBatch`).
+        --- - Scene pulse: explicit `sessionScene.seatPresent[color] == false` never moves; `true` moves; `nil` falls back to `L.isPlayerPresentInActiveSeatLayout` (table + sparse narrative).
+        --- - Otherwise (mid-session location / no scene pulse): `L.isPlayerPresentInActiveSeatLayout` only (active / at-table rules).
+        --- @param pinColor string
+        --- @return boolean
+        local function pinShouldMoveToSite(pinColor)
+            local sp = S.getStateVal("sessionScene", "seatPresent")
+            if type(sp) ~= "table" then
+                sp = {}
+            end
+            if sp[pinColor] == false then
+                return false
+            end
+            if useScenePinRules then
+                if sp[pinColor] == true then
+                    return true
+                end
+                return L.isPlayerPresentInActiveSeatLayout(pinColor)
+            end
+            return L.isPlayerPresentInActiveSeatLayout(pinColor)
+        end
+
+        local siteEntry = (sessionSiteKey ~= "") and C.Sites[sessionSiteKey] or nil
+        local offsetRaw = (type(siteEntry) == "table" and type(siteEntry.offsetXY) == "string") and trimHudKey(siteEntry.offsetXY) or ""
+        local ox, oy = offsetRaw:match("^(%S+)%s+(%S+)$")
+        local offsetStr = nil
+        if ox and oy then
+            offsetStr = tostring(ox) .. " " .. tostring(oy)
+        end
+
+        for _, pinColor in ipairs(MAP_PIN_PLAYER_COLORS) do
+            local pinId = "playerHud_playerPin_" .. pinColor .. "_" .. seatColor
+            if sessionSiteKey == "" or not offsetStr then
+                applyCachedMapPanelBool(playerID, pinId, false, setMapStackImageVisibility)
+                pinOffsetCache[pinId] = nil
+            else
+                applyCachedMapPanelBool(playerID, pinId, true, setMapStackImageVisibility)
+                if pinShouldMoveToSite(pinColor) then
+                    if pinOffsetCache[pinId] ~= offsetStr then
+                        U.setAttribute(pinId, "offsetXY", offsetStr)
+                        pinOffsetCache[pinId] = offsetStr
+                    end
+                end
+            end
+        end
+    end
 end
 
 --- Shows/hides the UI for one player.
@@ -815,6 +1024,7 @@ function HUDP.updatePlayerUI(player, color)
     setActive("playerHud_corePanel_sheet_" .. seatColor, hud.activeCorePanel == "sheet")
 
     applyMapPanelHud(playerID, seatColor, hud)
+    reconcileLocationDockCardsFromState(seatColor)
 
     -- Top-level reference panels
     setActive("playerHud_refPanel_coteries_" .. seatColor, showRefKey == "coteries")
@@ -905,6 +1115,9 @@ function HUDP.updateAllUI()
     Main.forPlayers(function(player, color)
         HUDP.updatePlayerUI(player, color)
     end)
+    if type(HUDP.afterPlayerHudBatch) == "function" then
+        HUDP.afterPlayerHudBatch()
+    end
 end
 
 --- One-shot during first `Sync.full` bootstrap: `panel_overlay_camera.xml` defaults every
@@ -1073,13 +1286,13 @@ function HUD_cameraControl_click(player, value, id)
     setCameraControlsPanelExpanded(seatColor, false)
 end
 
---- @param id string e.g. `gameStateOverlay_location_Red`
+--- @param id string e.g. `popout_locationPanel_Red`
 --- @return string|nil
-local function parseSeatColorFromLocationOverlayRootId(id)
+local function parseSeatColorFromPopoutLocationPanelId(id)
     if type(id) ~= "string" then
         return nil
     end
-    local prefix = "gameStateOverlay_location_"
+    local prefix = "popout_locationPanel_"
     if id:sub(1, #prefix) ~= prefix then
         return nil
     end
@@ -1090,9 +1303,9 @@ local function parseSeatColorFromLocationOverlayRootId(id)
     return col
 end
 
---- Per-seat lower-left location dock: hover shows `gameStateOverlay_locationPanel_<Color>` and brightens the popout icon.
+--- Per-seat lower-left location popout: hover shows `gameStateOverlay_locationPanel_<Color>` and brightens the icon.
 function HUD_locationOverlay_hoverOn(player, value, id)
-    local seat = parseSeatColorFromLocationOverlayRootId(id)
+    local seat = parseSeatColorFromPopoutLocationPanelId(id)
     if seat == nil then
         return
     end
@@ -1100,9 +1313,9 @@ function HUD_locationOverlay_hoverOn(player, value, id)
     U.setAttributes("popout_locationPanel_" .. seat, { color = CAMERA_ALPHA_CONTROL_RGBA_FULL })
 end
 
---- Mouse left the dock: collapse the panel and restore the popout idle tint.
+--- Mouse left the popout: collapse the panel and restore idle tint.
 function HUD_locationOverlay_hoverOff(player, value, id)
-    local seat = parseSeatColorFromLocationOverlayRootId(id)
+    local seat = parseSeatColorFromPopoutLocationPanelId(id)
     if seat == nil then
         return
     end
@@ -1448,7 +1661,7 @@ function HUD_playerMap_districtToggle_hoverOff(player, value, id)
 
         local baseDistrict = mapActiveDistrictByPlayerID[playerID]
         if type(baseDistrict) ~= "string" then
-            baseDistrict = S.getStateVal and S.getStateVal("playerData", playerID, "hud", "map", "location", "district") or nil
+            baseDistrict = getPersistedMapDistrictKeyForPlayer(playerID)
         end
         if type(baseDistrict) ~= "string" or MAP_DISTRICT_KEY_SET[baseDistrict] ~= true then
             animateMapPanTo(playerID, seatColor, MAP_PAN_MIDDLE_Y, 0.20)
@@ -1490,7 +1703,7 @@ function HUD_playerMap_districtToggle_mouseDown(player, value, id)
     -- Click should pan immediately (no debounce), unless user has dragged manually.
     local next = mapActiveDistrictByPlayerID[playerID]
     if type(next) ~= "string" then
-        next = S.getStateVal and S.getStateVal("playerData", playerID, "hud", "map", "location", "district") or nil
+        next = getPersistedMapDistrictKeyForPlayer(playerID)
     end
     if type(next) ~= "string" or MAP_DISTRICT_KEY_SET[next] ~= true then
         animateMapPanTo(playerID, seatColor, MAP_PAN_MIDDLE_Y, 0.18)
@@ -1651,7 +1864,7 @@ function HUD_playerMap_recenter_mouseUp(player, value, id)
     mapHoverDistrictKeyByPlayerID[playerID] = nil
     mapActiveDistrictByPlayerID[playerID] = nil
 
-    local districtKey = S.getStateVal and S.getStateVal("playerData", playerID, "hud", "map", "location", "district") or nil
+    local districtKey = getPersistedMapDistrictKeyForPlayer(playerID)
     if type(districtKey) ~= "string" or MAP_DISTRICT_KEY_SET[districtKey] ~= true then
         animateMapPanTo(playerID, seatColor, MAP_PAN_MIDDLE_Y, 0.22)
         HUDP.updatePlayerMapPanelUI(player, seatColor)
@@ -1660,6 +1873,15 @@ function HUD_playerMap_recenter_mouseUp(player, value, id)
 
     requestMapPanToDistrict(playerID, seatColor, districtKey, { duration = 0.22 })
     HUDP.updatePlayerMapPanelUI(player, seatColor)
+end
+
+function HUDP.armPinRelocationSceneCast()
+    mapPinRelocationSceneCastArmed = true
+end
+
+--- Clears one-shot pin relocation mode after a full `UpdateUIDisplays` playerHud pass (see `global_script.ttslua`).
+function HUDP.afterPlayerHudBatch()
+    mapPinRelocationSceneCastArmed = false
 end
 
 return HUDP

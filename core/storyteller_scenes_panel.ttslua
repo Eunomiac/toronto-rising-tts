@@ -6,9 +6,9 @@
 local StorytellerScenesPanel = {}
 
 local C = require("lib.constants")
-local G = require("lib.guids")
 local U = require("lib.util")
 local S = require("core.state")
+local HUDP = require("core.hud_player")
 
 local RSL = require("lib.rotational-seat-layout")
 local Sync = require("core.sync")
@@ -430,56 +430,8 @@ function StorytellerScenesPanel.deleteActiveSceneArmed(player)
     U.AlertGM("Delete armed for `" .. K .. "`: click Delete again within 5 seconds to remove this row.")
 end
 
---- Updates a Custom Tile (or other custom object) primary texture.
---- @param guid string|nil
---- @param imageUrl string|nil
---- @param label string short name for GM alert
-local function setStorytellerCardCustomImage(guid, imageUrl, label)
-    if type(imageUrl) ~= "string" or imageUrl == "" then
-        return
-    end
-    if type(guid) ~= "string" or guid == "" then
-        return
-    end
-    local obj = getObjectFromGUID(guid)
-    if obj == nil or obj.setCustomObject == nil then
-        U.AlertGM(
-            "Scenes: "
-                .. label
-                .. " display object missing or lacks setCustomObject (GUID "
-                .. tostring(guid)
-                .. ")."
-        )
-        return
-    end
-    obj.setCustomObject({ image = imageUrl })
-    if obj.reload ~= nil then
-        obj.reload()
-    end
-end
-
---- Sets `G.GUIDS.SITE_CARD` / `DISTRICT_CARD` textures from `C.Sites` / `C.Districts` image URLs.
---- Must be declared before `StorytellerScenesPanel.applyActiveLibraryScene` (Lua 5.1 local scope).
---- @param site table
---- @param districtKey string trimmed; empty skips district card
-local function applySessionSceneDisplayCards(site, districtKey)
-    local guids = G.GUIDS
-    if type(guids) ~= "table" then
-        return
-    end
-    if type(site) == "table" and type(site.image) == "string" then
-        setStorytellerCardCustomImage(guids.SITE_CARD, site.image, "Site card")
-    end
-    if type(districtKey) == "string" and districtKey ~= "" then
-        local dist = C.Districts[districtKey]
-        if type(dist) == "table" and type(dist.image) == "string" then
-            setStorytellerCardCustomImage(guids.DISTRICT_CARD, dist.image, "District card")
-        end
-    end
-end
-
 --- Applies `sceneLibrary.scenes[activeKey].sessionScene` to live state, switches table when `tableKey` is valid,
---- reapplies district/site cards + soundscape site context, optional `soundscapeNarrative`, then `Sync.full`.
+--- reapplies soundscape site context, optional `soundscapeNarrative`, then `Sync.full`.
 --- Table switching uses `RSL.SetTableTo` (blindfold path when the key changes). NPC seat → layout wiring
 --- follows `S.validateState` (live `sessionScene` only).
 --- @param player Player
@@ -537,30 +489,35 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
     dKey = string.gsub(string.gsub(dKey, "^%s+", ""), "%s+$", "")
     sKey = string.gsub(string.gsub(sKey, "^%s+", ""), "%s+$", "")
 
+    local merged = {}
     if sKey ~= "" then
         local site = C.Sites[sKey]
         if type(site) ~= "table" then
             U.AlertGM("Unknown siteKey in scene bundle: " .. sKey)
         elseif dKey ~= "" and C.Districts[dKey] == nil then
             U.AlertGM("Unknown districtKey in scene bundle: " .. dKey)
-        else
-            applySessionSceneDisplayCards(site, dKey)
-            if SS.applyContext ~= nil and SS.contextFromSite ~= nil then
-                SS.applyContext(SS.contextFromSite(site, sKey))
-            end
+        elseif SS.contextFromSite ~= nil then
+            merged = SS.contextFromSite(site, sKey) or {}
         end
     end
-
-    if type(SS.applySessionSceneNarrativeOverrides) == "function" then
-        SS.applySessionSceneNarrativeOverrides(S.getStateVal("sessionScene"))
-    elseif type(SceneLibrary.applySoundscapeNarrativePartial) == "function" then
-        SceneLibrary.applySoundscapeNarrativePartial(S.getStateVal("sessionScene"))
+    if SS.mergeSessionSceneNarrativeIntoContext ~= nil then
+        merged = SS.mergeSessionSceneNarrativeIntoContext(S.getStateVal("sessionScene"), merged)
+    end
+    if SS.applyContext ~= nil and next(merged) ~= nil then
+        SS.applyContext(merged)
+        if SS.markReconciledToCurrentState ~= nil then
+            SS.markReconciledToCurrentState()
+        end
     end
 
     if S.getStateVal("sessionScene", "chronicleWeatherManualHold") ~= true then
         if type(ChronicleWeather.applyScheduledWeather) == "function" then
             ChronicleWeather.applyScheduledWeather({ force = false })
         end
+    end
+
+    if type(HUDP.armPinRelocationSceneCast) == "function" then
+        HUDP.armPinRelocationSceneCast()
     end
 
     if Sync and type(Sync.full) == "function" then
@@ -652,6 +609,9 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
             L.reconcileAllPlayers()
         end
         StorytellerScenesPanel.refresh()
+        if type(UpdateUIDisplays) == "function" then
+            UpdateUIDisplays({ playerHud = true })
+        end
         return
     end
 end
@@ -724,10 +684,11 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
     S.setStateVal(dKey ~= "" and dKey or nil, "sessionScene", "districtKey")
     S.setStateVal(sKey, "sessionScene", "siteKey")
 
-    applySessionSceneDisplayCards(site, dKey)
-
     local ctx = SS.contextFromSite(site, sKey)
     local result = SS.applyContext(ctx)
+    if SS.markReconciledToCurrentState ~= nil then
+        SS.markReconciledToCurrentState()
+    end
     if Sync and type(Sync.full) == "function" then
         Sync.full({ reason = "StorytellerScenesPanel.location" })
     end

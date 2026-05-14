@@ -1494,14 +1494,14 @@ D.characters = {
       note = "Stats not set."
     }
   },
-  lexieMadi = {
-    name = "lexieMadi",
+  lexiMadi = {
+    name = "lexiMadi",
     fullName = "Lexie Madi",
     labelColor = "rgba(0.67, 0.67, 0.67, 0.5)",
     figurine = {
       images = {
-        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/lexieMadi.webp",
-        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/lexieMadiBack.webp"
+        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/lexiMadi.webp",
+        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/lexiMadiBack.webp"
       },
       scale = 48,
       seatedScale = 60

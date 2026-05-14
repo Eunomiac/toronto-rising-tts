@@ -31,6 +31,7 @@ The current Lua implementation includes:
   effect names, tags, default volumes, fade durations, and playlists.
 - `core/state.ttslua` persists the `soundscape` state across saves.
 - `core/global_script.ttslua` exposes Storyteller music controls and **`Soundscape.prepareEmittersForSave()`** via the Sound panel **Silence for save** button (`HUD_soundscapePrepareSave`): calls `stopAll`, invalidates the reconcile cache, then `reconcileFromState({ force = true })` so the next table save is less likely to resume stray Unity looping sources on load.
+- After **`Soundscape.applyContext`** drives emitters to match persisted `gameState.soundscape`, callers that immediately run **`Sync.full`** should invoke **`Soundscape.markReconciledToCurrentState()`** so incremental `Soundscape.reconcileFromState` does not queue a duplicate fade (scene / library apply used to stack three fades: site context, narrative context, reconcile snapshot).
 - `core/debug.ttslua` exposes console helpers such as `testSoundscape()`,
   `inspectSoundscapeAudio()`, `soundscapeRain()`, `soundscapeWind()`,
   `soundscapeThunder()`, and `soundscapeFeatured()`.

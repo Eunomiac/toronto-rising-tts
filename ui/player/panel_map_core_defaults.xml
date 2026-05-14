@@ -106,24 +106,7 @@
 
 
 
-  <Panel class="hud_map_district_card_container"
-    rectAlignment="LowerLeft"
-    offsetXY="-10 10"
-    width="800"
-    height="400"
-    ignoreLayout="true"
-  />
-
-  <!-- Stacked cards: Lua uses setMapStackImageVisibility (off = inactive; on = active + #FFFFFF). -->
-  <Image class="hud_map_district_card"
-    width="800"
-    preserveAspect="true"
-    raycastTarget="false"
-    active="true"
-    color="clear"
-    rectAlignment="UpperLeft"
-  />
-
+  <!-- District card stack: `hud_map_district_card_container` / `hud_map_district_card` (see Player HUD Overview). -->
   <!-- Recenter: fixed in viewport; sibling of draggable map stack. -->
   <Panel class="mapPanel_recenterButton"
     rectAlignment="UpperLeft"
@@ -137,11 +120,25 @@
     ignoreLayout="true"
   />
 
-  <Panel class="hud_map_site_card_container"
-    rectAlignment="UpperLeft"
-    flexibleHeight="0"
-    flexibleWidth="0"
-    preferredWidth="300"
-    preferredHeight="200"
+
+
+  <Panel class="hud_map_district_card_container"
+    width="600"
+    height="500"
+    rectAlignment="MiddleLeft"
+    offsetXY="30 -350"
   />
+
+  <Image class="hud_map_district_card"
+    width="700"
+    preserveAspect="true"
+    raycastTarget="false"
+    active="true"
+    color="clear"
+    rectAlignment="UpperLeft"
+  />
+
+
+  <Image class="hud_map_player_pin"
+    width="300" />
 </Defaults>

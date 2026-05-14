@@ -18,9 +18,9 @@ Each player's map overlay should be updated to show the new district card object
 
 #### Map Overlay Site Card
 
-As above, however if a site card element is not found in the map's XML, the script should silently proceed and simply hide all site cards from being displayed.
+**Removed:** the map no longer shows a site card panel; pins and district art remain on `panel_map_core.xml`. Site card imagery stays on the **location overlay** only (`panel_overlay_location.xml`).
 
-Likewise, whenever a district card is being displayed that is NOT the current district (e.g. because they're hovering over a different district sidebar button to temporarily view it), the site card should be hidden (it might be easier to hide the site card panel in this case).
+Likewise, whenever a district card is being displayed that is NOT the current district (e.g. because they're hovering over a different district sidebar button to temporarily view it), the **location overlay** site card is unchanged by that hover (map and location dock are separate).
 
 ### 2. Location Overlay: `./ui/.templates/panel_overlay_location.xml`
 
@@ -30,7 +30,9 @@ As with the map, though simpler in that this overlay will always display the cur
 
 #### Location Overlay Site Card
 
-As above and, as with the map, for sites any missing elements should not throw an error but simply hide the site card display.
+For the location overlay only: any missing elements should not throw an error but simply hide the site card display.
+
+Implementation note: the location dock uses **one** `Image` per seat (`gameStateOverlay_siteCard_current_<Color>`), default **`active="false"`** and **`image=""`**. Lua sets `image` from `C.Sites[sessionScene.siteKey].image` (fallback `siteCard_` .. `.key`) then activates; district cards remain a stacked set for instant switching without attribute churn.
 
 ### 3. Map Overlay Player Pins: `./ui/.templates/panel_map_core.xml`
 
@@ -47,3 +49,5 @@ When the location is changed by activating a new scene, **only those players who
 When the location is changed during a scene, or outside of a scene (i.e. no scenes are linked and receiving live updates), **only those players who are active/present at the table** should have their pins moved.
 
 When an inactive/not-present player is activated, their pin should be moved immediately to the current site's location. (We haven't implemented the ability to activate players in the Storyteller UI yet, but there may still be a record in state that indicates which players are "present" at the current scene -- if that value changes, their player pins will need to be updated on every player's map overlay.)
+
+**Implementation (`core/hud_player.ttslua`, `applyMapPanelHud`):** applying a **library scene** calls `HUDP.armPinRelocationSceneCast()` before `Sync.full`; the next `UpdateUIDisplays` pass treats that as a one-shot “scene cast” for pins (`HUDP.afterPlayerHudBatch` clears the flag). While armed: `sessionScene.seatPresent[color] == false` never moves; `true` moves to the site; `nil` falls back to `L.isPlayerPresentInActiveSeatLayout` (table + narrative, same helper as seat lighting). **Apply location** mid-session (no arm) uses only `L.isPlayerPresentInActiveSeatLayout`. Pins that do not get a new `offsetXY` keep their prior coordinates until a later refresh moves them.

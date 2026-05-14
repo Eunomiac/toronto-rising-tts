@@ -37,11 +37,11 @@ This will be developed iteratively, as the core panels, reference panels and oth
 
 ### Central Panel: `CorePanel_Map`
 
-This panel comprises five top-level panels: `mapPanel_main`, `mapPanel_districtToggles`, `mapPanel_overlayToggles`, `mapPanel_districtCard` and `mapPanel_siteCard`.
+This panel comprises four top-level panels: `mapPanel_main`, `mapPanel_districtToggles`, `mapPanel_overlayToggles`, and `mapPanel_districtCard`. (Site card art is **not** on the map; it appears only on the location overlay — `gameStateOverlay_siteCard_current_<Color>` in `panel_overlay_location.xml`.)
 
 #### `mapPanel_main`
 
-These images are all the same size, and should be stacked in the order they appear in the table below, with the first image on the bottom and the last image on the top. The map image is quite large and should occupy the full vertical space of the screen, but should be offset to the right to allow room for the `mapPanel_districtCard` and `mapPanel_siteCard` panels.
+These images are all the same size, and should be stacked in the order they appear in the table below, with the first image on the bottom and the last image on the top. The map image is quite large and should occupy the full vertical space of the screen, but should be offset to the right to allow room for the `mapPanel_districtCard` panel.
 
 | Asset | Purpose | Done? |
 | ------- | -------- | -------- |
@@ -118,7 +118,7 @@ Multiple overlays can be displayed simultaneously, and they should be stacked in
 
 This `VerticalLayout` element contains a number of buttons corresponding to the different districts that can be displayed on the map. This panel should be displayed to the right of the `mapPanel_main` panel, flush with the top of the map image.
 
-UNLIKE overlays, only one district can be displayed at a time. When a district overlay is displayed, its corresponding district card should be displayed in the `mapPanel_districtCard` panel as well. The display status of each district should NOT be saved in the player's state. Instead, whenever the map is opened (and whenever a toggled district overlay is toggled off), the district overlay and card corresponding to the player's current location should be displayed.
+UNLIKE overlays, only one district can be displayed at a time. When a district overlay is displayed, its corresponding district card should be displayed in the `mapPanel_districtCard` panel as well. The display status of each district should NOT be saved in the player's state. Instead, whenever the map is opened (and whenever a toggled district overlay is toggled off), the district overlay and card corresponding to the **live narrative location** (`gameState.sessionScene.districtKey`, with legacy fallback to `playerData.hud.map.location.district` when unset) should be displayed. Site card imagery for the current site is shown only on the **location overlay** (`panel_overlay_location.xml`), not on the map.
 
 | Asset | Purpose | Done? |
 | ------- | -------- | -------- |
@@ -235,6 +235,8 @@ UNLIKE overlays, only one district can be displayed at a time. When a district o
 
 This panel should be displayed to the left of the `mapPanel_main` panel, about one third down from the top of the screen. It should occupy all remaining horizontal space between the left edge of the screen and the `mapPanel_overlayToggles` panel, with the height determined by the image aspect ratio.
 
+**Layout (implemented):** `player/panel_map_core_defaults.xml` class `hud_map_district_card_container` (`ignoreLayout` / `rectAlignment` / `offsetXY` as authored there). Visibility of each `districtCard_` image is driven only by Lua (`setMapStackImageVisibility`: `active` + `color="#FFFFFF"` on the **Image** id `playerHud_districtCard_<District>_<Seat>`, not the wrapping `Panel`).
+
 | Asset | Purpose | Done? |
 | ------- | -------- | -------- |
 | `districtCard_Annex` | District card image for the Annex. | ✅ |
@@ -274,15 +276,9 @@ This panel should be displayed to the left of the `mapPanel_main` panel, about o
 | `districtCard_YongeStreet` | District card image for YongeStreet. | ✅ |
 | `districtCard_Yorkville` | District card image for Yorkville. | ✅ |
 
-#### `mapPanel_siteCard`
+#### Site card (location overlay only)
 
-This panel should be displayed directly below the `mapPanel_districtCard` panel, flush with the bottom of district card. It should be scaled by the same amount as the district card, maintaining the relative sizes of the two images.
-
-(Site cards are yet to be implemented, but the panel should be ready for them when they are.)
-
-| Asset | Purpose | Done? |
-| ------- | -------- | -------- |
-| `siteCard_<siteKey>` | Site card image. | ❌ |
+The map no longer includes a site card panel. Current site imagery is **`gameStateOverlay_siteCard_current_<Color>`** on `panel_overlay_location.xml` (see `reconcileLocationDockCardsFromState` in `core/hud_player.ttslua`). Custom UI `siteCard_<key>` assets remain used there and elsewhere, not on `CorePanel_Map`.
 
 ---
 
@@ -592,12 +588,12 @@ When Activated:
 - Checks `playerData.hud.map.overlays` and shows all `mapOverlay_<overlayKey>` images where `playerData.hud.map.overlays.[overlayKey] = true`, and sets their `toggleOverlay_<overlayKey>` buttons to their active states
 - All `mapOverlay_` images (overlay toggles and district selections) share one layer: stacked on the main map, below `mapPin_` images. Multiple overlays can be visible at once.
 - If `playerData.hud.map.location.district` is a valid district key, reveal `mapOverlay_<districtKey>` and `districtCard_<districtKey>`, and set `toggleDistrict_<districtKey>` to active.
-- If `playerData.hud.map.location.site` is a valid `siteKey`, reveal `mapPin_<siteKey>` and `siteCard_<siteKey>`.
+- When `sessionScene.siteKey` resolves to a row in `C.Sites`, show the player pin stack on the map (`playerHud_playerPin_<Color>_<Seat>` with site `offsetXY` from `C.Sites`). Site **card** imagery is on the location overlay only (`gameStateOverlay_siteCard_current_<Seat>`).
 - For every connected player, if that player's `playerData.hud.map.location.position` is set, reveal `mapPin_<playerColor>` for that player and position it at those coordinates. Position format is `{x, y}` in UI space relative to the map image corner (set by the Storyteller, e.g. when a site is selected).
 
 When Deactivated:
 
-- Hides ALL `mapOverlay_`, `districtCard_`, `siteCard_`, and `mapPin_` images
+- Hides ALL `mapOverlay_`, `districtCard_`, and `mapPin_` images
 - Sets all `toggleOverlay_` and `toggleDistrict_` buttons to their inactive states
 - Hides `CorePanel_Map`
 
@@ -607,7 +603,6 @@ When Deactivated:
 2. **Button Panel LEFT: `mapPanel_overlayToggles`** --- A `VerticalLayout` column of image-buttons that toggle various overlays on/off, to the immediate left of the map
 3. **Button Panel RIGHT: `mapPanel_districtToggles`** --- A `VerticalLayout` column of 36 image-buttons corresponding to the 36 Districts of Toronto, for toggling display of them
 4. **Panel: `mapPanel_districtCard`** --- Displays the active `districtCard_` image, if any.
-5. **Panel: `mapPanel_siteCard`** --- Displays the active `siteCard_` image, if any.
 
 ##### **Button Panel LEFT: Overlay Toggles**
 
@@ -620,8 +615,8 @@ When Deactivated:
 
 District keys are the 36 Toronto districts (e.g. `Annex`, `BayStFinancial`, `Cabbagetown`, …; see Image Assets checklist for the full list). Initial map overlay keys: `streets`, `districts`, `sites`, `domains`.
 
-- **Hover on an INACTIVE district button:** Hide any visible district/site cards; reveal `mapOverlay_<districtKey>` and `districtCard_<districtKey>` (other visible map overlays stay visible).
-- **Hover off:** Hide that district's overlay and card; restore the district card and site card from `playerData.hud.map.location.district` and `.site` if set.
+- **Hover on an INACTIVE district button:** Hide any visible district cards; reveal `mapOverlay_<districtKey>` and `districtCard_<districtKey>` (other visible map overlays stay visible).
+- **Hover off:** Hide that district's overlay and card; restore the district card from `playerData.hud.map.location.district` / `sessionScene.districtKey` when appropriate. (Site card on the location overlay is independent; see `panel_overlay_location.xml`.)
 
 ### `CorePanel_Sheet`
 

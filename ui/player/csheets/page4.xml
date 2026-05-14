@@ -52,8 +52,8 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
   <Button id="pageForward" class="page_navigation page_forward" />
   <VerticalLayout class="vertical_section_container">
 
-    <Panel class="spacer" color="rgba(0, 0, 0, 0)" preferredHeight="10" flexibleHeight="0" minHeight="10" />
-    <Image id="section_lineage_Purple" image="section_lineage_Purple" />
+    <Panel class="spacer" color="rgba(0, 0, 0, 0)" preferredHeight="425" flexibleHeight="0" minHeight="425" />
+
     <Image id="divider_bloodBonds" image="divider_bloodBonds" />
 
     <HorizontalLayout class="box_column_container">

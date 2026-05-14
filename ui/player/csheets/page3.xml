@@ -55,8 +55,8 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
 
   <Button id="pageBack" class="page_navigation page_back" />
 
-  <VerticalLayout class="vertical_section_container">
-    <Panel class="spacer" color="rgba(0, 0, 0, 0)" preferredHeight="193.33" flexibleHeight="0" minHeight="193.33" />
+  <VerticalLayout class="vertical_section_container" color="rgba(155, 0, 0, 0.15)">
+    <Panel class="spacer" color="#FF0000" preferredHeight="20" flexibleHeight="0" minHeight="20" />
 
     <HorizontalLayout class="box_column_container">
       <VerticalLayout class="box_column"></VerticalLayout>

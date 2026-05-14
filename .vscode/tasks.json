@@ -176,15 +176,11 @@
       "type": "shell",
       "command": "node",
       "args": [
-        ".tools/custom-ui-assets/build-upload-manifest.js",
+        ".tools/custom-ui-assets/build-manifest-from-task.js",
+        "--mode",
+        "${input:customUiManifestMode}",
         "--input",
-        "${input:customUiAssetsImageFolder}",
-        "--out",
-        ".dev/custom-ui-assets/manifest.json",
-        "--luaOut",
-        ".dev/custom-ui-assets/manifest.lua",
-        "--moduleOut",
-        "lib/custom_ui_upload_manifest.ttslua"
+        "${input:customUiAssetsImageFolder}"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -277,9 +273,19 @@
   ],
   "inputs": [
     {
+      "id": "customUiManifestMode",
+      "type": "pickString",
+      "description": "Manifest source: folder (WEBP/PNG) or C.Sites in lib/constants.ttslua (see Terminal for steps)",
+      "options": [
+        "folder",
+        "sites"
+      ],
+      "default": "folder"
+    },
+    {
       "id": "customUiAssetsImageFolder",
       "type": "promptString",
-      "description": "Relative path to image folder (example: assets\\images\\new_images)",
+      "description": "Relative image folder (folder mode only; ignored for sites — you can keep the default)",
       "default": "assets\\images\\new_images"
     },
     {

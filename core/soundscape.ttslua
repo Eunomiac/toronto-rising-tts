@@ -1153,6 +1153,14 @@ function Soundscape.invalidateReconcileCache()
     lastSoundscapeReconcileFingerprint = nil
 end
 
+--- After `applyContext` (or equivalent) has already driven emitters to match `gameState.soundscape`, call this
+--- so the next incremental `Soundscape.reconcileFromState` (e.g. from `Sync.full`) does not schedule a second
+--- identical fade pass — that stacking caused choppy volume during scene transitions.
+function Soundscape.markReconciledToCurrentState()
+    ensureState()
+    lastSoundscapeReconcileFingerprint = soundscapeReconcileFingerprint(ensureState())
+end
+
 --- Default delay before applying reconcile (emitters must exist; was 1.0s and caused long stray-audio windows).
 local RECONCILE_APPLY_DEFER_SECONDS = 0.15
 
@@ -1515,11 +1523,15 @@ function Soundscape.applyContext(context)
         if context.isIndoors ~= nil then
             collect(Soundscape.setIndoors(context.isIndoors))
         end
-        if context.musicMood ~= nil then
-            collect(Soundscape.setMusicMood(context.musicMood))
-        end
-        if context.locationMusic ~= nil then
-            collect(Soundscape.setLocationMusic(context.locationMusic))
+        local moodKey = context.musicMood
+        local locMusKey = context.locationMusic
+        if moodKey ~= nil and locMusKey ~= nil then
+            -- One background crossfade: narrative mood wins when both are present (avoids site playlist then mood).
+            collect(Soundscape.setMusicMood(moodKey))
+        elseif moodKey ~= nil then
+            collect(Soundscape.setMusicMood(moodKey))
+        elseif locMusKey ~= nil then
+            collect(Soundscape.setLocationMusic(locMusKey))
         end
         if context.weather ~= nil or context.weatherCondition ~= nil then
             collect(Soundscape.setWeatherCondition(context.weather or context.weatherCondition))
@@ -1565,31 +1577,40 @@ local function countSoundscapeNarrativeWeatherTrio(sn)
     return c
 end
 
+--- Merges `sessionScene.soundscapeNarrative` into `base` (mutates and returns `base`).
+--- @param sessionScene table|nil
+--- @param base table|nil
+--- @return table
+function Soundscape.mergeSessionSceneNarrativeIntoContext(sessionScene, base)
+    local out = type(base) == "table" and base or {}
+    if type(sessionScene) ~= "table" then
+        return out
+    end
+    local sn = sessionScene.soundscapeNarrative
+    if type(sn) ~= "table" then
+        return out
+    end
+    if type(sn.backgroundMusic) == "string" and string.match(sn.backgroundMusic, "%S") then
+        out.musicMood = sn.backgroundMusic
+    end
+    if type(sn.location) == "string" and string.match(sn.location, "%S") then
+        out.location = sn.location
+    end
+    local c = countSoundscapeNarrativeWeatherTrio(sn)
+    if c == 3 and sessionScene.chronicleWeatherManualHold == true then
+        out.rain = sn.rain
+        out.wind = sn.wind
+        out.thunderEnabled = sn.thunderstorm == true
+    end
+    return out
+end
+
 --- Applies optional `sessionScene.soundscapeNarrative` through this module's `applyContext` (avoids `require("core.soundscape")`
 --- from other modules returning a different table than Global's `SS` during edge load orders).
 --- Weather applies only when `chronicleWeatherManualHold` is true and all three trio fields are set (import contract).
 --- @param sessionScene table|nil
 function Soundscape.applySessionSceneNarrativeOverrides(sessionScene)
-    if type(sessionScene) ~= "table" then
-        return
-    end
-    local sn = sessionScene.soundscapeNarrative
-    if type(sn) ~= "table" then
-        return
-    end
-    local ctx = {}
-    if type(sn.backgroundMusic) == "string" and string.match(sn.backgroundMusic, "%S") then
-        ctx.musicMood = sn.backgroundMusic
-    end
-    if type(sn.location) == "string" and string.match(sn.location, "%S") then
-        ctx.location = sn.location
-    end
-    local c = countSoundscapeNarrativeWeatherTrio(sn)
-    if c == 3 and sessionScene.chronicleWeatherManualHold == true then
-        ctx.rain = sn.rain
-        ctx.wind = sn.wind
-        ctx.thunderEnabled = sn.thunderstorm == true
-    end
+    local ctx = Soundscape.mergeSessionSceneNarrativeIntoContext(sessionScene, {})
     if next(ctx) == nil then
         return
     end

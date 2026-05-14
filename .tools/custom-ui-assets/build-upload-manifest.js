@@ -2,6 +2,8 @@
 "use strict";
 
 // Agent guidance: .dev/TTS_BUNDLING_SETUP.md; outputs consumed by lib/custom_ui_upload_manifest.ttslua (see .dev/custom-ui-assets/).
+// Folder mode: scans `--input` for image files. For site cards from `C.Sites` (`image` + `localImage`), use
+// build-upload-manifest-from-sites-constants.js or `npm run custom-ui-assets:manifest-sites`.
 
 const fs = require("fs");
 const path = require("path");

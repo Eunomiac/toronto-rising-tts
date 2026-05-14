@@ -385,7 +385,7 @@ function M.buildPage3DocumentXml(stats, seatColorRaw)
     '  <Button id="pageBack" class="page_navigation page_back" />',
     "",
     '  <VerticalLayout class="vertical_section_container">',
-    '    <Panel class="spacer" color="rgba(0, 0, 0, 0)" preferredHeight="193.33" flexibleHeight="0" minHeight="193.33" />',
+    '    <Panel class="spacer" color="rgba(0, 0, 0, 0)" preferredHeight="90" flexibleHeight="0" minHeight="90" />',
     "",
     "    ",
     buildBalancedColumnsXml(bg, "bg", false),

@@ -96,8 +96,8 @@
   />
 
 
-  <!-- Per-seat lower-left location card popout (see `ui/.templates/panel_overlay_location.xml`). Name distinct from center HUD `HorizontalLayout` class `gameStateOverlay_location` in `shared/game_state_overlay.xml`. -->
-  <Panel class="playerHud_overlay_location" height="800" width="1000" rectAlignment="LowerLeft" offsetXY="0 0" raycastTarget="true" />
+  <!-- Per-seat lower-left location card popout (see `ui/.templates/panel_overlay_location.xml`). Hover lives on `popout_locationPanel_<Color>` only; root does not raycast. -->
+  <Panel class="playerHud_overlay_location" height="800" width="1000" rectAlignment="LowerLeft" offsetXY="0 0" raycastTarget="false" />
 
   <Image class="popoutControl_location" raycastTarget="true" rectAlignment="LowerLeft" height="100" width="100" color="rgba(1, 1, 1, 0.15)" />
 

@@ -474,18 +474,18 @@
           <Button id="npc_move_centerForward_laz_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
           <Button id="npc_remove_centerForward_laz" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
-        <HorizontalLayout id="npc_occRow_centerForward_lexieMadi" class="hud_storyteller_button_row" active="false">
-          <Button id="npc_toggle_centerForward_lexieMadi" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
-          <Button id="npc_spot_centerForward_lexieMadi" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
-          <Text id="npc_occName_centerForward_lexieMadi" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Lexie Madi</Text>
-          <Button id="npc_roll_centerForward_lexieMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
-          <Button id="npc_stats_centerForward_lexieMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
-          <Button id="npc_move_centerForward_lexieMadi_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
-          <Button id="npc_move_centerForward_lexieMadi_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
-          <Button id="npc_move_centerForward_lexieMadi_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
-          <Button id="npc_move_centerForward_lexieMadi_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
-          <Button id="npc_move_centerForward_lexieMadi_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
-          <Button id="npc_remove_centerForward_lexieMadi" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
+        <HorizontalLayout id="npc_occRow_centerForward_lexiMadi" class="hud_storyteller_button_row" active="false">
+          <Button id="npc_toggle_centerForward_lexiMadi" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
+          <Button id="npc_spot_centerForward_lexiMadi" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
+          <Text id="npc_occName_centerForward_lexiMadi" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Lexie Madi</Text>
+          <Button id="npc_roll_centerForward_lexiMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
+          <Button id="npc_stats_centerForward_lexiMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
+          <Button id="npc_move_centerForward_lexiMadi_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
+          <Button id="npc_move_centerForward_lexiMadi_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
+          <Button id="npc_move_centerForward_lexiMadi_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
+          <Button id="npc_move_centerForward_lexiMadi_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
+          <Button id="npc_move_centerForward_lexiMadi_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
+          <Button id="npc_remove_centerForward_lexiMadi" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
         <HorizontalLayout id="npc_occRow_centerForward_lordLucien" class="hud_storyteller_button_row" active="false">
           <Button id="npc_toggle_centerForward_lordLucien" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
@@ -1341,18 +1341,18 @@
           <Button id="npc_move_farLeft_laz_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
           <Button id="npc_remove_farLeft_laz" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
-        <HorizontalLayout id="npc_occRow_farLeft_lexieMadi" class="hud_storyteller_button_row" active="false">
-          <Button id="npc_toggle_farLeft_lexieMadi" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
-          <Button id="npc_spot_farLeft_lexieMadi" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
-          <Text id="npc_occName_farLeft_lexieMadi" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Lexie Madi</Text>
-          <Button id="npc_roll_farLeft_lexieMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
-          <Button id="npc_stats_farLeft_lexieMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
-          <Button id="npc_move_farLeft_lexieMadi_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
-          <Button id="npc_move_farLeft_lexieMadi_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
-          <Button id="npc_move_farLeft_lexieMadi_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
-          <Button id="npc_move_farLeft_lexieMadi_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
-          <Button id="npc_move_farLeft_lexieMadi_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
-          <Button id="npc_remove_farLeft_lexieMadi" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
+        <HorizontalLayout id="npc_occRow_farLeft_lexiMadi" class="hud_storyteller_button_row" active="false">
+          <Button id="npc_toggle_farLeft_lexiMadi" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
+          <Button id="npc_spot_farLeft_lexiMadi" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
+          <Text id="npc_occName_farLeft_lexiMadi" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Lexie Madi</Text>
+          <Button id="npc_roll_farLeft_lexiMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
+          <Button id="npc_stats_farLeft_lexiMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
+          <Button id="npc_move_farLeft_lexiMadi_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
+          <Button id="npc_move_farLeft_lexiMadi_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
+          <Button id="npc_move_farLeft_lexiMadi_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
+          <Button id="npc_move_farLeft_lexiMadi_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
+          <Button id="npc_move_farLeft_lexiMadi_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
+          <Button id="npc_remove_farLeft_lexiMadi" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
         <HorizontalLayout id="npc_occRow_farLeft_lordLucien" class="hud_storyteller_button_row" active="false">
           <Button id="npc_toggle_farLeft_lordLucien" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
@@ -2208,18 +2208,18 @@
           <Button id="npc_move_farRight_laz_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
           <Button id="npc_remove_farRight_laz" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
-        <HorizontalLayout id="npc_occRow_farRight_lexieMadi" class="hud_storyteller_button_row" active="false">
-          <Button id="npc_toggle_farRight_lexieMadi" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
-          <Button id="npc_spot_farRight_lexieMadi" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
-          <Text id="npc_occName_farRight_lexieMadi" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Lexie Madi</Text>
-          <Button id="npc_roll_farRight_lexieMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
-          <Button id="npc_stats_farRight_lexieMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
-          <Button id="npc_move_farRight_lexieMadi_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
-          <Button id="npc_move_farRight_lexieMadi_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
-          <Button id="npc_move_farRight_lexieMadi_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
-          <Button id="npc_move_farRight_lexieMadi_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
-          <Button id="npc_move_farRight_lexieMadi_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
-          <Button id="npc_remove_farRight_lexieMadi" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
+        <HorizontalLayout id="npc_occRow_farRight_lexiMadi" class="hud_storyteller_button_row" active="false">
+          <Button id="npc_toggle_farRight_lexiMadi" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
+          <Button id="npc_spot_farRight_lexiMadi" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
+          <Text id="npc_occName_farRight_lexiMadi" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Lexie Madi</Text>
+          <Button id="npc_roll_farRight_lexiMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
+          <Button id="npc_stats_farRight_lexiMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
+          <Button id="npc_move_farRight_lexiMadi_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
+          <Button id="npc_move_farRight_lexiMadi_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
+          <Button id="npc_move_farRight_lexiMadi_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
+          <Button id="npc_move_farRight_lexiMadi_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
+          <Button id="npc_move_farRight_lexiMadi_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
+          <Button id="npc_remove_farRight_lexiMadi" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
         <HorizontalLayout id="npc_occRow_farRight_lordLucien" class="hud_storyteller_button_row" active="false">
           <Button id="npc_toggle_farRight_lordLucien" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
@@ -3075,18 +3075,18 @@
           <Button id="npc_move_nearLeft_laz_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
           <Button id="npc_remove_nearLeft_laz" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
-        <HorizontalLayout id="npc_occRow_nearLeft_lexieMadi" class="hud_storyteller_button_row" active="false">
-          <Button id="npc_toggle_nearLeft_lexieMadi" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
-          <Button id="npc_spot_nearLeft_lexieMadi" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
-          <Text id="npc_occName_nearLeft_lexieMadi" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Lexie Madi</Text>
-          <Button id="npc_roll_nearLeft_lexieMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
-          <Button id="npc_stats_nearLeft_lexieMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
-          <Button id="npc_move_nearLeft_lexieMadi_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
-          <Button id="npc_move_nearLeft_lexieMadi_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
-          <Button id="npc_move_nearLeft_lexieMadi_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
-          <Button id="npc_move_nearLeft_lexieMadi_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
-          <Button id="npc_move_nearLeft_lexieMadi_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
-          <Button id="npc_remove_nearLeft_lexieMadi" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
+        <HorizontalLayout id="npc_occRow_nearLeft_lexiMadi" class="hud_storyteller_button_row" active="false">
+          <Button id="npc_toggle_nearLeft_lexiMadi" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
+          <Button id="npc_spot_nearLeft_lexiMadi" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
+          <Text id="npc_occName_nearLeft_lexiMadi" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Lexie Madi</Text>
+          <Button id="npc_roll_nearLeft_lexiMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
+          <Button id="npc_stats_nearLeft_lexiMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
+          <Button id="npc_move_nearLeft_lexiMadi_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
+          <Button id="npc_move_nearLeft_lexiMadi_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
+          <Button id="npc_move_nearLeft_lexiMadi_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
+          <Button id="npc_move_nearLeft_lexiMadi_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
+          <Button id="npc_move_nearLeft_lexiMadi_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
+          <Button id="npc_remove_nearLeft_lexiMadi" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
         <HorizontalLayout id="npc_occRow_nearLeft_lordLucien" class="hud_storyteller_button_row" active="false">
           <Button id="npc_toggle_nearLeft_lordLucien" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
@@ -3942,18 +3942,18 @@
           <Button id="npc_move_nearRight_laz_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
           <Button id="npc_remove_nearRight_laz" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
-        <HorizontalLayout id="npc_occRow_nearRight_lexieMadi" class="hud_storyteller_button_row" active="false">
-          <Button id="npc_toggle_nearRight_lexieMadi" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
-          <Button id="npc_spot_nearRight_lexieMadi" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
-          <Text id="npc_occName_nearRight_lexieMadi" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Lexie Madi</Text>
-          <Button id="npc_roll_nearRight_lexieMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
-          <Button id="npc_stats_nearRight_lexieMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
-          <Button id="npc_move_nearRight_lexieMadi_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
-          <Button id="npc_move_nearRight_lexieMadi_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
-          <Button id="npc_move_nearRight_lexieMadi_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
-          <Button id="npc_move_nearRight_lexieMadi_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
-          <Button id="npc_move_nearRight_lexieMadi_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
-          <Button id="npc_remove_nearRight_lexieMadi" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
+        <HorizontalLayout id="npc_occRow_nearRight_lexiMadi" class="hud_storyteller_button_row" active="false">
+          <Button id="npc_toggle_nearRight_lexiMadi" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
+          <Button id="npc_spot_nearRight_lexiMadi" class="button_icon button_icon_small" offsetXY="30 0" onMouseDown="HUD_npcSpotDown" onMouseUp="HUD_npcSpotUp">◎</Button>
+          <Text id="npc_occName_nearRight_lexiMadi" class="hud_storyteller_label hud_storyteller_row_name npc_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Lexie Madi</Text>
+          <Button id="npc_roll_nearRight_lexiMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-220 0">R</Button>
+          <Button id="npc_stats_nearRight_lexiMadi" class="button_icon button_icon_small npc_button_icon" offsetXY="-195 0">i</Button>
+          <Button id="npc_move_nearRight_lexiMadi_centerForward" class="button_icon button_icon_small npc_button_icon" offsetXY="-160 0">▼</Button>
+          <Button id="npc_move_nearRight_lexiMadi_nearLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-135 0">◀</Button>
+          <Button id="npc_move_nearRight_lexiMadi_nearRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-110 0">▶</Button>
+          <Button id="npc_move_nearRight_lexiMadi_farLeft" class="button_icon button_icon_small npc_button_icon" offsetXY="-85 0">◁</Button>
+          <Button id="npc_move_nearRight_lexiMadi_farRight" class="button_icon button_icon_small npc_button_icon" offsetXY="-60 0">▷</Button>
+          <Button id="npc_remove_nearRight_lexiMadi" class="button_icon button_icon_small red_button_icon npc_button_icon" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
         <HorizontalLayout id="npc_occRow_nearRight_lordLucien" class="hud_storyteller_button_row" active="false">
           <Button id="npc_toggle_nearRight_lordLucien" class="button_icon button_icon_small npc_button_icon_small" offsetXY="5 0">⊚</Button>
@@ -4959,20 +4959,20 @@
           <Button id="npc_memberLock_petitioners_alexisHoltt" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
           <Button id="npc_unseat_alexisHoltt" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
-        <HorizontalLayout id="npc_groupMemberRow_petitioners_lexieMadi" class="hud_storyteller_button_row npc_group_member_row" active="false">
-          <Text id="npc_groupMemberName_petitioners_lexieMadi" class="hud_storyteller_label hud_storyteller_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Lexie Madi</Text>
-          <Button id="npc_memberLoc_petitioners_lexieMadi_centerForward" class="button_icon npc_button_icon button_icon_small" offsetXY="-295 0">▼</Button>
-          <Button id="npc_memberLoc_petitioners_lexieMadi_nearLeft" class="button_icon npc_button_icon button_icon_small" offsetXY="-270 0">◀</Button>
-          <Button id="npc_memberLoc_petitioners_lexieMadi_nearRight" class="button_icon npc_button_icon button_icon_small" offsetXY="-245 0">▶</Button>
-          <Button id="npc_memberLoc_petitioners_lexieMadi_farLeft" class="button_icon npc_button_icon button_icon_small" offsetXY="-220 0">◁</Button>
-          <Button id="npc_memberLoc_petitioners_lexieMadi_farRight" class="button_icon npc_button_icon button_icon_small" offsetXY="-195 0">▷</Button>
-          <Button id="npc_memberLoc_petitioners_lexieMadi_NPC1" class="button_icon npc_button_icon button_icon_small" offsetXY="-160 0">1</Button>
-          <Button id="npc_memberLoc_petitioners_lexieMadi_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
-          <Button id="npc_memberLoc_petitioners_lexieMadi_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
-          <Button id="npc_memberLoc_petitioners_lexieMadi_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
+        <HorizontalLayout id="npc_groupMemberRow_petitioners_lexiMadi" class="hud_storyteller_button_row npc_group_member_row" active="false">
+          <Text id="npc_groupMemberName_petitioners_lexiMadi" class="hud_storyteller_label hud_storyteller_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Lexie Madi</Text>
+          <Button id="npc_memberLoc_petitioners_lexiMadi_centerForward" class="button_icon npc_button_icon button_icon_small" offsetXY="-295 0">▼</Button>
+          <Button id="npc_memberLoc_petitioners_lexiMadi_nearLeft" class="button_icon npc_button_icon button_icon_small" offsetXY="-270 0">◀</Button>
+          <Button id="npc_memberLoc_petitioners_lexiMadi_nearRight" class="button_icon npc_button_icon button_icon_small" offsetXY="-245 0">▶</Button>
+          <Button id="npc_memberLoc_petitioners_lexiMadi_farLeft" class="button_icon npc_button_icon button_icon_small" offsetXY="-220 0">◁</Button>
+          <Button id="npc_memberLoc_petitioners_lexiMadi_farRight" class="button_icon npc_button_icon button_icon_small" offsetXY="-195 0">▷</Button>
+          <Button id="npc_memberLoc_petitioners_lexiMadi_NPC1" class="button_icon npc_button_icon button_icon_small" offsetXY="-160 0">1</Button>
+          <Button id="npc_memberLoc_petitioners_lexiMadi_NPC2" class="button_icon npc_button_icon button_icon_small" offsetXY="-135 0">2</Button>
+          <Button id="npc_memberLoc_petitioners_lexiMadi_NPC3" class="button_icon npc_button_icon button_icon_small" offsetXY="-110 0">3</Button>
+          <Button id="npc_memberLoc_petitioners_lexiMadi_NPC4" class="button_icon npc_button_icon button_icon_small" offsetXY="-85 0">4</Button>
         
-          <Button id="npc_memberLock_petitioners_lexieMadi" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
-          <Button id="npc_unseat_lexieMadi" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
+          <Button id="npc_memberLock_petitioners_lexiMadi" class="button_icon npc_button_icon button_icon_small" offsetXY="-50 0">⁛</Button>
+          <Button id="npc_unseat_lexiMadi" class="button_icon red_button_icon npc_button_icon button_icon_small" offsetXY="-25 0">✕</Button>
         </HorizontalLayout>
         <HorizontalLayout id="npc_groupMemberRow_petitioners_averyInnis" class="hud_storyteller_button_row npc_group_member_row" active="false">
           <Text id="npc_groupMemberName_petitioners_averyInnis" class="hud_storyteller_label hud_storyteller_row_name" color="rgba(0.67, 0.67, 0.67, 1)">Avery Innis</Text>
