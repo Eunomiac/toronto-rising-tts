@@ -1819,7 +1819,7 @@ C.Sites = {
       location = {playlist = "location", track = "computer"}
     },
     isIndoors = true,
-    offsetXY = "155.04 −84.57"
+    offsetXY = "155.04 -84.57"
   },
   StRegisCouncilChamber = {
     name = "The St. Regis Toronto: Council Chamber",
@@ -1829,7 +1829,7 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "155.04 −84.57"
+    offsetXY = "155.04 -84.57"
   },
   StRegisFoyer = {
     name = "The St. Regis Toronto: Foyer",
@@ -1839,7 +1839,7 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "155.04 −84.57"
+    offsetXY = "155.04 -84.57"
   },
   StRegisGrandSalon = {
     name = "The St. Regis Toronto: Grand Salon",
@@ -1849,7 +1849,7 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "155.04 −84.57"
+    offsetXY = "155.04 -84.57"
   },
   UnionConcourse = {
     name = "Union Station: Bay St. Concourse",
@@ -1859,7 +1859,7 @@ C.Sites = {
       location = {playlist = "location", track = "cityWalking"}
     },
     isIndoors = true,
-    offsetXY = "203.55 −211.79"
+    offsetXY = "203.55 -211.79"
   },
   UnionGrandClock = {
     name = "Union Station: Grand Clock",
@@ -1869,7 +1869,7 @@ C.Sites = {
       location = {playlist = "location", track = "cityWalking"}
     },
     isIndoors = true,
-    offsetXY = "203.55 −211.79"
+    offsetXY = "203.55 -211.79"
   },
   UnionLine1 = {
     name = "Union Station: Line 1",
@@ -1879,7 +1879,7 @@ C.Sites = {
       location = {playlist = "location", track = "subway"}
     },
     isIndoors = true,
-    offsetXY = "203.55 −211.79"
+    offsetXY = "203.55 -211.79"
   },
   UnionSecOffice = {
     name = "Union Station: Security Office",
@@ -1889,7 +1889,7 @@ C.Sites = {
       location = {playlist = "location", track = "computer"}
     },
     isIndoors = true,
-    offsetXY = "203.55 −211.79"
+    offsetXY = "203.55 -211.79"
   },
   UnionServiceCorridor = {
     name = "Union Station: Service Corridor",
@@ -1899,7 +1899,7 @@ C.Sites = {
       location = {playlist = "location", track = "softHum"}
     },
     isIndoors = true,
-    offsetXY = "203.55 −211.79"
+    offsetXY = "203.55 -211.79"
   },
   UnionUPExpress = {
     name = "Union Station: UP Express Platform",
@@ -1909,7 +1909,7 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "203.55 −211.79"
+    offsetXY = "203.55 -211.79"
   },
   ChantryLibrary = {
     name = "The University Chantry: Grand Library",
@@ -1991,7 +1991,7 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "-50.78 −9.35"
+    offsetXY = "-50.78 -9.35"
   },
   AutoMechanic = {
     name = "Auto Mechanic",
@@ -2033,7 +2033,7 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "153.91 −119.43"
+    offsetXY = "153.91 -119.43"
   },
   BierMarkt = {
     name = "Bier Markt",
@@ -2043,7 +2043,7 @@ C.Sites = {
       location = {playlist = "location", track = "bar"}
     },
     isIndoors = true,
-    offsetXY = "-134.47 −133.17"
+    offsetXY = "-134.47 -133.17"
   },
   BillyBishopAirport = {
     name = "Billy Bishop Airport",
@@ -2053,7 +2053,7 @@ C.Sites = {
       location = {playlist = "location", track = "airport"}
     },
     isIndoors = true,
-    offsetXY = "-105.82 −442.28"
+    offsetXY = "-105.82 -442.28"
   },
   BillyBishopFerry = {
     name = "Billy Bishop Ferry",
@@ -2063,7 +2063,7 @@ C.Sites = {
       location = {playlist = "location", track = "waterside"}
     },
     isIndoors = true,
-    offsetXY = "-99.58 −362.38"
+    offsetXY = "-99.58 -362.38"
   },
   CabbagetownPenthouse = {
     name = "Cabbagetown Penthouse",
@@ -2083,7 +2083,7 @@ C.Sites = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = false,
-    offsetXY = "-307.53 −332.07"
+    offsetXY = "-307.53 -332.07"
   },
   Cemetery = {
     name = "Cemetery",
@@ -2111,7 +2111,7 @@ C.Sites = {
       location = {playlist = "location", track = "cityPark"}
     },
     isIndoors = false,
-    offsetXY = "213.91 −598.68"
+    offsetXY = "213.91 -598.68"
   },
   ChristiePitsPark = {
     name = "Christie Pits Park",
@@ -2155,7 +2155,7 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "82.13 −3.26"
+    offsetXY = "82.13 -3.26"
   },
   CityPark = {
     name = "City Park",
@@ -2173,7 +2173,7 @@ C.Sites = {
       location = {playlist = "location", track = "rooftop"}
     },
     isIndoors = true,
-    offsetXY = "54.04 −226.24"
+    offsetXY = "54.04 -226.24"
   },
   CorktownCommon = {
     name = "Corktown Common",
@@ -2211,7 +2211,7 @@ C.Sites = {
       location = {playlist = "location", track = "waterside"}
     },
     isIndoors = false,
-    offsetXY = "497.46 −221.99"
+    offsetXY = "497.46 -221.99"
   },
   DogPark = {
     name = "Dog Park",
@@ -2229,7 +2229,7 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "-454.91 −172.69"
+    offsetXY = "-454.91 -172.69"
   },
   EatonCentre = {
     name = "Eaton Centre",
@@ -2277,7 +2277,7 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "113.19 −122.68"
+    offsetXY = "113.19 -122.68"
   },
   FightClub = {
     name = "Fight Club",
@@ -2295,7 +2295,7 @@ C.Sites = {
       location = {playlist = "location", track = "cityWalking"}
     },
     isIndoors = true,
-    offsetXY = "-216.46 −279.93"
+    offsetXY = "-216.46 -279.93"
   },
   CeramicsMuseum = {
     name = "Gardiner Ceramics Museum",
@@ -2341,7 +2341,7 @@ C.Sites = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
-    offsetXY = "-143.83 −96.33"
+    offsetXY = "-143.83 -96.33"
   },
   HarbourfrontCentre = {
     name = "Harbourfront Centre",
@@ -2351,7 +2351,7 @@ C.Sites = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = true,
-    offsetXY = "102.41 −275.97"
+    offsetXY = "102.41 -275.97"
   },
   Highway = {
     name = "Highway",
@@ -2369,7 +2369,7 @@ C.Sites = {
       location = {playlist = "location", track = "industry"}
     },
     isIndoors = true,
-    offsetXY = "448.95 −52.84"
+    offsetXY = "448.95 -52.84"
   },
   HockeyHallOfFame = {
     name = "Hockey Hall of Fame",
@@ -2478,7 +2478,7 @@ C.Sites = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
-    offsetXY = "170.22 −100.02"
+    offsetXY = "170.22 -100.02"
   },
   MiddleOfRoad = {
     name = "Middle of the Road",
@@ -2540,7 +2540,7 @@ C.Sites = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = true,
-    offsetXY = "-24.4 −28.05"
+    offsetXY = "-24.4 -28.05"
   },
   Office = {
     name = "Office",
@@ -2558,7 +2558,7 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "22.41 −11.33"
+    offsetXY = "22.41 -11.33"
   },
   OntarioPlaceMarina = {
     name = "Ontario Place Marina",
@@ -2568,7 +2568,7 @@ C.Sites = {
       location = {playlist = "location", track = "waterside"}
     },
     isIndoors = false,
-    offsetXY = "-379.3 −473.73"
+    offsetXY = "-379.3 -473.73"
   },
   ParkDriveReservation = {
     name = "Park Drive Reservation Lands",
@@ -2648,7 +2648,7 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "-341.43 −213.78"
+    offsetXY = "-341.43 -213.78"
   },
   RedemptionHouse = {
     name = "Redemption House",
@@ -2688,7 +2688,7 @@ C.Sites = {
       location = {playlist = "location", track = "cityPark"}
     },
     isIndoors = false,
-    offsetXY = "8.37 −205.28"
+    offsetXY = "8.37 -205.28"
   },
   Rooftop = {
     name = "Rooftop",
@@ -2740,7 +2740,7 @@ C.Sites = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
-    offsetXY = "145.82 −180.48"
+    offsetXY = "145.82 -180.48"
   },
   SecludedDeadEnd = {
     name = "Secluded Dead End",
@@ -2774,7 +2774,7 @@ C.Sites = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
-    offsetXY = "71.49 −51"
+    offsetXY = "71.49 -51"
   },
   Sidewalk1 = {
     name = "Sidewalk",
@@ -2828,7 +2828,7 @@ C.Sites = {
       location = {playlist = "location", track = "indoorMarket"}
     },
     isIndoors = true,
-    offsetXY = "262.99 −156.12"
+    offsetXY = "262.99 -156.12"
   },
   StMichaelsCathedral = {
     name = "St. Michael's Cathedral Basilica",
@@ -2948,7 +2948,7 @@ C.Sites = {
       location = {playlist = "location", track = "apothecary"}
     },
     isIndoors = true,
-    offsetXY = "-385.26 −208.82"
+    offsetXY = "-385.26 -208.82"
   },
   TIFFLightbox = {
     name = "TIFF Bell Lightbox",
@@ -2958,7 +2958,7 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "-7.66 −119.57"
+    offsetXY = "-7.66 -119.57"
   },
   TorontoGeneral = {
     name = "Toronto General Hospital",
@@ -3119,7 +3119,7 @@ C.Sites = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = true,
-  }
+  },
 }
 
 -- #endregion

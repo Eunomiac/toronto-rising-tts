@@ -180,52 +180,6 @@ L.LIGHTMODES = {
         color = Color(0.524346, 0.756940, 0.741433)
       }
     },
-    districtCardLight = {
-      guid = G.GUIDS.DISTRICT_CARD_LIGHT,
-      isPlayerLight = false,
-      default = "OFF",
-      OFF = {
-        enabled = false,
-        position = Vector({-147.84, 39.45, 22.61}),
-        rotation = Vector({80.00, 130.00, 0.00}),
-        range = 14,
-        angle = 180,
-        intensity = 0,
-        color = Color(0.270241, 0.270241, 0.270241)
-      },
-      STANDARD = {
-        enabled = true,
-        position = Vector({-147.84, 39.45, 22.61}),
-        rotation = Vector({80.00, 130.00, 0.00}),
-        range = 94.918716,
-        angle = 175.488602,
-        intensity = 3.599513,
-        color = Color(0.688225, 0.817164, 0.696821)
-      }
-    },
-    siteCardLight = {
-      guid = G.GUIDS.SITE_CARD_LIGHT,
-      isPlayerLight = false,
-      default = "OFF",
-      OFF = {
-        enabled = false,
-        position = Vector({147.84, 39.45, 22.61}),
-        rotation = Vector({80.00, 230.00, 0.00}),
-        range = 14,
-        angle = 180,
-        intensity = 0,
-        color = Color(0.270241, 0.270241, 0.270241)
-      },
-      STANDARD = {
-        enabled = true,
-        position = Vector({147.84, 39.45, 22.61}),
-        rotation = Vector({80.00, 230.00, 0.00}),
-        range = 94.918716,
-        angle = 175.488602,
-        intensity = 3.599513,
-        color = Color(0.688225, 0.817164, 0.696821)
-      }
-    },
     -- Player lights (per-player spotlights)
     -- These lights are found by GUID, not by tag
     -- Each light has OFF and STANDARD modes
@@ -1283,9 +1237,11 @@ local function isDarkSceneActive()
     return U.Type(currentScene) == "string" and string.lower(currentScene) == "dark"
 end
 
---- @param seatKey string
+--- Seat narrative presence + table membership (see `sessionScene.seatPresent` + `C.Tables` maps).
+--- Exported for HUD map pin relocation; keep semantics aligned with seat-light enforcement.
+--- @param seatKey string Brown | Orange | …
 --- @return boolean
-local function isPlayerPresentInActiveSeatLayout(seatKey)
+function L.isPlayerPresentInActiveSeatLayout(seatKey)
     if U.Type(seatKey) ~= "string" then
         return false
     end

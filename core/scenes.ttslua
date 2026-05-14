@@ -177,10 +177,7 @@ Scenes.SCENES = {
                 delay = 4.0,
                 duration = 1.0,
                 mode = "STANDARD",
-                refs = {
-                    "districtCardLight",
-                    "siteCardLight",
-                }
+                refs = {}
             }
         },
         description = "Admin standard mode - staggered player/main lighting"
