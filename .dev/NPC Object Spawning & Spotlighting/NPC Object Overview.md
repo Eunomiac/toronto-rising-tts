@@ -61,9 +61,9 @@ Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `
 
 ## Preload staging area (`preload`)
 
-The `preload` entry in [`lib/npcs_data.ttslua`](../../lib/npcs_data.ttslua) `D.areas` is an **off-table** grid at **world Y = -100** (`groundLevel`). It is omitted from the Storyteller NPC panel (`excludeFromNpcPanel = true`). `autoLight = true` so figurines spawn with **STANDARD** paired spotlights (same spawn pipeline as table areas).
+The `preload` entry in [`lib/npcs_data.ttslua`](../../lib/npcs_data.ttslua) `D.areas` is an **off-table** grid at **world Y = -200** (`groundLevel`). It is omitted from the Storyteller NPC panel (`excludeFromNpcPanel = true`). `autoLight = true` so figurines spawn with **STANDARD** paired spotlights (same spawn pipeline as table areas).
 
-`gameState.sessionScene.npcWorld.preload` lists `characterKey` strings. `NPCS.reconcileSessionScenePreloadNpcs` (invoked from `Sync.full`) spawns each NPC that is **not** already in state with a **non-`preload`** `areaKey`. NPCs already on the table are left alone.
+`gameState.sessionScene.npcWorld` drives **`NPCS.reconcileSessionSceneNpcWorldFromState`** (invoked from `Sync.full`; `reconcileSessionScenePreloadNpcs` is an alias). When the authored `preload` + `byArea` **fingerprint** changes and there is placement intent, every spawned NPC figurine is **parked** at **Y = -200** with a sentinel `areaKey` so slots free up, then `preload` entries are ensured and `byArea` slot placements run (staggered `Wait.time`). Any figurine that was in a **table location area** or preload before the stash is moved off-stage first; the queued steps then move or spawn them into the new layout.
 
 ---
 

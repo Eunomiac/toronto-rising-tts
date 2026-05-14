@@ -157,11 +157,11 @@
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_YongeStreet_@@color@@" image="mapOverlay_YongeStreet" />
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Yorkville_@@color@@" image="mapOverlay_Yorkville" />
 
-        <Image id="playerHud_playerPin_LordLucien_@@color@@" class="hud_map_player_pin" image="pin_LordLucien" />
-        <Image id="playerHud_playerPin_Rashid_@@color@@" class="hud_map_player_pin" image="pin_Rashid" />
-        <Image id="playerHud_playerPin_Aishe_@@color@@" class="hud_map_player_pin" image="pin_Aishe" />
-        <Image id="playerHud_playerPin_Fomorach_@@color@@" class="hud_map_player_pin" image="pin_Fomorach" />
-        <Image id="playerHud_playerPin_BlackCaesar_@@color@@" class="hud_map_player_pin" image="pin_BlackCaesar" />
+        <Image id="playerHud_playerPin_Red_@@color@@" class="hud_map_player_pin" image="pin_LordLucien" />
+        <Image id="playerHud_playerPin_Orange_@@color@@" class="hud_map_player_pin" image="pin_Rashid" />
+        <Image id="playerHud_playerPin_Pink_@@color@@" class="hud_map_player_pin" image="pin_Aishe" />
+        <Image id="playerHud_playerPin_Brown_@@color@@" class="hud_map_player_pin" image="pin_Fomorach" />
+        <Image id="playerHud_playerPin_Purple_@@color@@" class="hud_map_player_pin" image="pin_BlackCaesar" />
       </Panel>
     </Panel>
 
@@ -363,5 +363,8 @@
     <Image class="hud_map_district_card" id="playerHud_districtCard_YongeStreet_@@color@@" image="districtCard_YongeStreet" />
     <Image class="hud_map_district_card" id="playerHud_districtCard_Yorkville_@@color@@" image="districtCard_Yorkville" />
   </Panel>
-  <Panel id="playerHud_mapPanel_siteCard_@@color@@" class="mapPanel_siteCardContainer" />
+  <Panel id="playerHud_mapPanel_siteCard_@@color@@" class="hud_map_site_card_container" >
+    <Image class="hud_map_site_card" id="playerHud_siteCard_StRegisGrandSalon_@@color@@" image="siteCard_StRegisGrandSalon" />
+
+  </Panel>
 </Panel>

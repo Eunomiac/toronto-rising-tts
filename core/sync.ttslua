@@ -24,11 +24,13 @@ local HO = require("core.hud_overlays")
 local didBootstrapFullSync = false
 
 --- UI sections refreshed after `Sync.full` when `force` is false — omits `overlays` because `HO.syncAll` already ran.
+--- Includes `gameStateOverlay` so district/site + narrative clock stay aligned after every `Sync.full` incremental pass.
 local SYNC_INCREMENTAL_UI_DELTA = {
     phase = true,
     scene = true,
     adminLighting = true,
     scenesPanel = true,
+    gameStateOverlay = true,
     soundscape = true,
     playerStats = true,
     playerHud = true,
@@ -173,8 +175,14 @@ function Sync.full(opts)
         reconcileSeatPresentationFromState()
     end
 
-    --- `sessionScene.npcWorld.preload` → off-table staging (see `NPCS.reconcileSessionScenePreloadNpcs`).
-    callIfFunction(NPCS.reconcileSessionScenePreloadNpcs, { deferUiRefresh = true })
+    --- `sessionScene.npcWorld` (`preload` + `byArea`) — see `NPCS.reconcileSessionSceneNpcWorldFromState`.
+    --- Incremental `Sync.ui` also refreshes `gameStateOverlay` via `UpdateUIDisplays` (`GameStateOverlay.reconcileFromState`).
+    callIfFunction(NPCS.reconcileSessionSceneNpcWorldFromState, { deferUiRefresh = true })
+
+    -- Global UI: camera overlay “other” rows default active=true in XML; hide self-match rows once before HUD refresh.
+    if not didBootstrapFullSync then
+        callIfFunction(HUDP.reconcileCameraOverlaySelfMatchRowsFromXmlDefaults)
+    end
 
     -- Update UI displays: incremental omits overlays (already synced via `HO.syncAll` above).
     if force then

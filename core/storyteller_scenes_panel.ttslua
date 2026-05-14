@@ -568,9 +568,6 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
     end
 
     StorytellerScenesPanel.refresh()
-    if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
-        GameStateOverlay.refresh()
-    end
     if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
         GameStateOverlay.ensureTicker()
     end
@@ -604,9 +601,6 @@ function StorytellerScenesPanel.endSceneNarrative(player)
         Sync.full({ reason = "StorytellerScenesPanel.endScene" })
     end
     StorytellerScenesPanel.refresh()
-    if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
-        GameStateOverlay.refresh()
-    end
     U.AlertGM("End scene: location ambience cleared; weather layers refreshed.")
 end
 
@@ -738,9 +732,6 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
         Sync.full({ reason = "StorytellerScenesPanel.location" })
     end
     StorytellerScenesPanel.refresh()
-    if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
-        GameStateOverlay.refresh()
-    end
     U.AlertGM(result and result.message or "Location applied.")
 end
 
@@ -807,9 +798,6 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
         Sync.full({ reason = "StorytellerScenesPanel.clock" })
     end
 
-    if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
-        GameStateOverlay.refresh()
-    end
     if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
         GameStateOverlay.ensureTicker()
     end
@@ -1075,8 +1063,8 @@ function StorytellerScenesPanel.toggleRealTimeClock()
             GameStateOverlay.stopTicker()
         end
     end
-    if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
-        GameStateOverlay.refresh()
+    if Sync and type(Sync.ui) == "function" then
+        Sync.ui({ gameStateOverlay = true })
     end
     U.AlertGM(ck.useRealTime and "Real-time narrative clock: ON." or "Real-time narrative clock: OFF.")
 end

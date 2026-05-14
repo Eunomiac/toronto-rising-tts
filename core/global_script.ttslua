@@ -541,9 +541,6 @@ function onLoad(saved_data)
     -- Synchronization orchestration (step 2): consolidate the onLoad fan-out into Sync.full().
     setStartupAction("initial-sync-full")
     Sync.full({ reason = "onLoad_initial" })
-    if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
-        GameStateOverlay.refresh()
-    end
     if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
         GameStateOverlay.ensureTicker()
     end
@@ -554,48 +551,49 @@ function onLoad(saved_data)
     -- - table sync callback has run
     -- - first sync pass has been issued
     -- - seat lights are resolvable
-    -- Then run one final sync pass and hide loading overlay.
+    -- Then run one final sync pass, wait wall-clock, and hide loading overlay.
+    -- Use U.RunSequence (U.waitUntil) instead of Wait.condition + nested Wait.time:
+    -- TTS does not reliably honor Wait.time scheduled from inside a Wait.condition callback.
     local startupOverlayHideDelaySeconds = 20
-    Wait.condition(function()
-        setStartupAction("startup-ready-final-sync-full")
-        Sync.full({ reason = "onLoad_startup_gate" })
-        setStartupAction("startup-ready-delay-before-overlay-hide")
-        print(
-            trLoadElapsedPrefix()
-                .. "Startup readiness gate complete: waiting "
-                .. tostring(startupOverlayHideDelaySeconds)
-                .. "s before hiding loading overlay."
-        )
-
-        if type(Wait) == "table" and type(Wait.time) == "function" then
-            Wait.time(function()
-                setStartupAction("startup-ready-hide-loading-overlays")
-                hideStartupLoadingOverlays()
-                setStartupAction("startup-ready-complete")
-                print(trLoadElapsedPrefix() .. "Startup readiness gate complete: loading overlay hidden.")
-            end, startupOverlayHideDelaySeconds)
-        else
+    U.RunSequence({
+        function()
+            return function()
+                if not startupTableSyncDone then
+                    setStartupAction("waiting-for-table-sync")
+                    return false
+                end
+                if not startupInitialSyncDone then
+                    setStartupAction("waiting-for-initial-sync")
+                    return false
+                end
+                if not startupSeatLightsReadyForReveal() then
+                    setStartupAction("waiting-for-seat-lights")
+                    return false
+                end
+                setStartupAction("startup-ready-conditions-met")
+                return true
+            end
+        end,
+        function()
+            setStartupAction("startup-ready-final-sync-full")
+            Sync.full({ reason = "onLoad_startup_gate" })
+            setStartupAction("startup-ready-delay-before-overlay-hide")
+            print(
+                trLoadElapsedPrefix()
+                    .. "Startup readiness gate complete: waiting "
+                    .. tostring(startupOverlayHideDelaySeconds)
+                    .. "s before hiding loading overlay."
+            )
+            return startupOverlayHideDelaySeconds
+        end,
+        function()
             setStartupAction("startup-ready-hide-loading-overlays")
             hideStartupLoadingOverlays()
             setStartupAction("startup-ready-complete")
             print(trLoadElapsedPrefix() .. "Startup readiness gate complete: loading overlay hidden.")
-        end
-    end, function()
-        if not startupTableSyncDone then
-            setStartupAction("waiting-for-table-sync")
-            return false
-        end
-        if not startupInitialSyncDone then
-            setStartupAction("waiting-for-initial-sync")
-            return false
-        end
-        if not startupSeatLightsReadyForReveal() then
-            setStartupAction("waiting-for-seat-lights")
-            return false
-        end
-        setStartupAction("startup-ready-conditions-met")
-        return true
-    end)
+            return 0
+        end,
+    }, 180)
 
     -- Debug module help (optional - shows available test commands)
     -- DEBUG.help()
@@ -1155,9 +1153,7 @@ function HUD_scenesPickDistrict(player, button, id)
     S.setStateVal(key, "sessionScene", "districtKey")
     StorytellerScenesPanel.applySiteModalDistrictVisibility()
     StorytellerScenesPanel.refresh()
-    if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
-        GameStateOverlay.refresh()
-    end
+    Sync.ui({ gameStateOverlay = true })
     U.AlertGM("District set: " .. key .. " — click Apply location + soundscape when ready.")
 end
 
@@ -1171,9 +1167,7 @@ function HUD_scenesPickSite(player, button, id)
     HUD_scenesCloseLocationModals(player, button, id)
     S.setStateVal(key, "sessionScene", "siteKey")
     StorytellerScenesPanel.refresh()
-    if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
-        GameStateOverlay.refresh()
-    end
+    Sync.ui({ gameStateOverlay = true })
     U.AlertGM("Site set: " .. key .. " — click Apply location + soundscape when ready.")
 end
 
@@ -1899,7 +1893,7 @@ end
 -- Called after state changes (phase, scene, etc.)
 -- Exposed globally for testing/debugging.
 -- Optional `delta` flags allow targeted refreshes:
---   phase, scene, adminLighting, soundscape, playerStats, playerHud, overlays, npcAdminButton, pcstRows, pcstSheets
+--   phase, scene, adminLighting, soundscape, playerStats, playerHud, overlays, npcAdminButton, pcstRows, pcstSheets, gameStateOverlay
 -- When omitted, all sections refresh (legacy behavior).
 -- @param delta table|nil
 function UpdateUIDisplays(delta)
@@ -1915,9 +1909,6 @@ function UpdateUIDisplays(delta)
             UI_DISPLAY_CACHE.phase = currentPhase
         end
         syncStorytellerPhaseButtons()
-        if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
-            GameStateOverlay.refresh()
-        end
     end
 
     if wants("scene") then
@@ -1936,9 +1927,6 @@ function UpdateUIDisplays(delta)
             StorytellerScenesPanel.refresh()
         end
         syncAdminLightSceneButtons()
-        if GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
-            GameStateOverlay.refresh()
-        end
     end
     if wants("soundscape") then
         syncSoundscapeControls()
@@ -1995,8 +1983,10 @@ function UpdateUIDisplays(delta)
         PCST.refreshAllCharacterSheets()
     end
 
-    if refreshAll and GameStateOverlay and type(GameStateOverlay.refresh) == "function" then
-        GameStateOverlay.refresh()
+    if refreshAll or wants("gameStateOverlay") or wants("phase") or wants("scenesPanel") then
+        if GameStateOverlay and type(GameStateOverlay.reconcileFromState) == "function" then
+            GameStateOverlay.reconcileFromState()
+        end
     end
 end
 

@@ -19,6 +19,8 @@
 
   <!-- 4a. Player HUD Overlays -->
   <Include src="player/panel_overlays.xml" />
+  <!-- Game State Overlay -->
+  <Include src="shared/game_state_overlay.xml" />
 
   <!-- 4a. Player HUD Right Sidebar -->
 
@@ -28,8 +30,15 @@
   <!-- Right sidebar buttons (generated per player color) -->
   <Include src="player/panel_right_sidebar_buttons.xml" />
 
+
   <!-- Reference layer (generated per player color) -->
   <Include src="player/panel_right_sidebar_referenceLayer.xml" />
+
+  <!-- Camera Controls Overlay (generated per player color) -->
+  <Include src="player/panel_overlay_camera.xml" />
+
+  <!-- Location Overlay (generated per player color) -->
+  <Include src="player/panel_overlay_location.xml" />
 
   <!-- Player HUD Blindfold Overlay -->
   <Include src="player/panel_overlay_blindfold.xml" />
@@ -52,6 +61,5 @@
 <!-- Included outside the player/ST panels so the broadcast panel is visible to all. -->
 <Include src="shared/roll_panels.xml" />
 <Include src="shared/roll_options_modal.xml" />
-<Include src="shared/game_state_overlay.xml" />
 <!-- Storyteller Scenes: district/site pickers from `node .dev/scripts/generate_scenes_location_modals_xml.js` -->
 <Include src="storyteller/panel_scenes_location_modals.xml" />

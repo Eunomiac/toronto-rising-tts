@@ -137,7 +137,7 @@
     ignoreLayout="true"
   />
 
-  <Panel class="mapPanel_siteCardContainer"
+  <Panel class="hud_map_site_card_container"
     rectAlignment="UpperLeft"
     flexibleHeight="0"
     flexibleWidth="0"

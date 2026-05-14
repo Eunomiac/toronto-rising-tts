@@ -1816,7 +1816,7 @@ C.Sites = {
     image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/StRegisCells.webp",
     district = C.Districts.BayStFinancial,
     soundscape = {
-      location = {playlist = "location", track = "dungeon"}
+      location = {playlist = "location", track = "computer"}
     },
     isIndoors = true,
     offsetXY = "155.04 −84.57"
@@ -1856,7 +1856,7 @@ C.Sites = {
     image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/UnionConcourse.webp",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "cityChatter"}
+      location = {playlist = "location", track = "cityWalking"}
     },
     isIndoors = true,
     offsetXY = "203.55 −211.79"
@@ -1886,14 +1886,14 @@ C.Sites = {
     image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/UnionSecOffice.webp",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "computerLab"}
+      location = {playlist = "location", track = "computer"}
     },
     isIndoors = true,
     offsetXY = "203.55 −211.79"
   },
-  UnionServiceCorridors = {
-    name = "Union Station: Service Corridors",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/UnionServiceCorridors.webp",
+  UnionServiceCorridor = {
+    name = "Union Station: Service Corridor",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/UnionServiceCorridor.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "softHum"}
@@ -1991,12 +1991,13 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    offsetXY = "-50.78 −9.35"
   },
   AutoMechanic = {
     name = "Auto Mechanic",
     image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/AutoMechanic.webp",
     soundscape = {
-      location = {playlist = "location", track = "autoshop"}
+      location = {playlist = "location", track = "autoShop"}
     },
     isIndoors = true,
   },
@@ -2039,9 +2040,10 @@ C.Sites = {
     image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/BierMarkt.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
-      location = {playlist = "location", track = "cityRevelers"}
+      location = {playlist = "location", track = "bar"}
     },
-    isIndoors = false,
+    isIndoors = true,
+    offsetXY = "-134.47 −133.17"
   },
   BillyBishopAirport = {
     name = "Billy Bishop Airport",
@@ -2051,6 +2053,7 @@ C.Sites = {
       location = {playlist = "location", track = "airport"}
     },
     isIndoors = true,
+    offsetXY = "-105.82 −442.28"
   },
   BillyBishopFerry = {
     name = "Billy Bishop Ferry",
@@ -2060,15 +2063,17 @@ C.Sites = {
       location = {playlist = "location", track = "waterside"}
     },
     isIndoors = true,
-    offsetXY = "-81.56 −439.59"
+    offsetXY = "-99.58 −362.38"
   },
   CabbagetownPenthouse = {
     name = "Cabbagetown Penthouse",
     image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CabbagetownPenthouse.webp",
+    district = C.Districts.Cabbagetown,
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    offsetXY = "240.86 75.08"
   },
   CNE = {
     name = "Canadian National Exhibition Place",
@@ -2078,12 +2083,13 @@ C.Sites = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = false,
+    offsetXY = "-307.53 −332.07"
   },
-  Cemetary = {
-    name = "Cemetary",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Cemetary.webp",
+  Cemetery = {
+    name = "Cemetery",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Cemetery.webp",
     soundscape = {
-      location = {playlist = "location", track = "cityPark"}
+      location = {playlist = "location", track = "eerieForest"}
     },
     isIndoors = false,
   },
@@ -2095,6 +2101,7 @@ C.Sites = {
       location = {playlist = "location", track = "hospital"}
     },
     isIndoors = true,
+    offsetXY = "-168.8 109.93"
   },
   CentrevillePark = {
     name = "Centreville Theme Park",
@@ -2104,6 +2111,7 @@ C.Sites = {
       location = {playlist = "location", track = "cityPark"}
     },
     isIndoors = false,
+    offsetXY = "213.91 −598.68"
   },
   ChristiePitsPark = {
     name = "Christie Pits Park",
@@ -2113,6 +2121,7 @@ C.Sites = {
       location = {playlist = "location", track = "cityPark"}
     },
     isIndoors = false,
+    offsetXY = "-405.69 204.57"
   },
   CityApt1 = {
     name = "City Apartment",
@@ -2169,11 +2178,12 @@ C.Sites = {
   CorktownCommon = {
     name = "Corktown Common",
     image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/CorktownCommon.webp",
-    district = C.Districts.Corktown,
+    district = C.Districts.DonRavine,
     soundscape = {
-      location = {playlist = "location", track = "cityPark"}
+      location = {playlist = "location", track = "eerieForest"}
     },
     isIndoors = false,
+    offsetXY = "503.56 1.13"
   },
   DanforthHall = {
     name = "Danforth Music Hall",
@@ -2183,6 +2193,7 @@ C.Sites = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
+    offsetXY = "426.68 411.68"
   },
   DerelictWarehouse = {
     name = "Derelict Warehouse",
@@ -2243,9 +2254,10 @@ C.Sites = {
     image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/BrickWorks.webp",
     district = C.Districts.DonRavine,
     soundscape = {
-      location = {playlist = "location", track = "industry"}
+      location = {playlist = "location", track = "eerieForest"}
     },
     isIndoors = true,
+    offsetXY = "320.58 569.78"
   },
   EvergreenPalisades = {
     name = "Evergreen Palisades",
@@ -2255,6 +2267,7 @@ C.Sites = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    offsetXY = "512.07 302.32"
   },
   Fairmont = {
     name = "Fairmont Royal York",
@@ -2264,6 +2277,7 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    offsetXY = "113.19 −122.68"
   },
   FightClub = {
     name = "Fight Club",
@@ -2281,6 +2295,7 @@ C.Sites = {
       location = {playlist = "location", track = "cityWalking"}
     },
     isIndoors = true,
+    offsetXY = "-216.46 −279.93"
   },
   CeramicsMuseum = {
     name = "Gardiner Ceramics Museum",
@@ -2290,6 +2305,7 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    offsetXY = "-65.25 262.08"
   },
   GayBar = {
     name = "Gay Bar",
@@ -2315,6 +2331,7 @@ C.Sites = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = true,
+    offsetXY = "-247.38 409.7"
   },
   GraffitiAlley = {
     name = "Graffiti Alley",
@@ -2324,15 +2341,17 @@ C.Sites = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
+    offsetXY = "-143.83 −96.33"
   },
-  HarbourfontCentre = {
+  HarbourfrontCentre = {
     name = "Harbourfront Centre",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/HarbourfontCentre.webp",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/HarbourfrontCentre.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = true,
+    offsetXY = "102.41 −275.97"
   },
   Highway = {
     name = "Highway",
@@ -2369,6 +2388,7 @@ C.Sites = {
       location = {playlist = "location", track = "hospital"}
     },
     isIndoors = true,
+    offsetXY = "34.61 48.45"
   },
   JRRLibrary = {
     name = "John Roberts Research Library",
@@ -2378,12 +2398,13 @@ C.Sites = {
       location = {playlist = "location", track = "library"}
     },
     isIndoors = true,
+    offsetXY = "-124.83 200.6"
   },
   Junkyard = {
     name = "Junkyard",
     image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Junkyard.webp",
     soundscape = {
-      location = {playlist = "location", track = "autoshop"}
+      location = {playlist = "location", track = "autoShop"}
     },
     isIndoors = false,
   },
@@ -2429,6 +2450,7 @@ C.Sites = {
       location = {playlist = "location", track = "eerieForest"}
     },
     isIndoors = false,
+    offsetXY = "398.31 740.07"
   },
   Yacht = {
     name = "Luxury Yacht",
@@ -2446,6 +2468,7 @@ C.Sites = {
       location = {playlist = "location", track = "church"}
     },
     isIndoors = true,
+    offsetXY = "533.35 523.6"
   },
   MasseyHall = {
     name = "Massey Hall",
@@ -2455,6 +2478,7 @@ C.Sites = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
+    offsetXY = "170.22 −100.02"
   },
   MiddleOfRoad = {
     name = "Middle of the Road",
@@ -2472,6 +2496,7 @@ C.Sites = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
+    offsetXY = "-384.69 45.33"
   },
   MountSinai = {
     name = "Mount Sinai Hospital",
@@ -2481,6 +2506,7 @@ C.Sites = {
       location = {playlist = "location", track = "hospital"}
     },
     isIndoors = true,
+    offsetXY = "0 36.83"
   },
   Nightclub1 = {
     name = "Nightclub",
@@ -2514,12 +2540,13 @@ C.Sites = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = true,
+    offsetXY = "-24.4 −28.05"
   },
   Office = {
     name = "Office",
     image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Office.webp",
     soundscape = {
-      location = {playlist = "location", track = "office"}
+      location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
   },
@@ -2531,6 +2558,7 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    offsetXY = "22.41 −11.33"
   },
   OntarioPlaceMarina = {
     name = "Ontario Place Marina",
@@ -2540,15 +2568,17 @@ C.Sites = {
       location = {playlist = "location", track = "waterside"}
     },
     isIndoors = false,
+    offsetXY = "-379.3 −473.73"
   },
   ParkDriveReservation = {
     name = "Park Drive Reservation Lands",
     image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ParkDriveReservation.webp",
     district = C.Districts.DonRavine,
     soundscape = {
-      location = {playlist = "location", track = "cityPark"}
+      location = {playlist = "location", track = "eerieForest"}
     },
     isIndoors = false,
+    offsetXY = "272.92 502.92"
   },
   ParkingLot = {
     name = "Parking Lot",
@@ -2590,6 +2620,7 @@ C.Sites = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
+    offsetXY = "222.42 205.42"
   },
   PMHospital = {
     name = "Princess Margaret Hospital",
@@ -2599,6 +2630,7 @@ C.Sites = {
       location = {playlist = "location", track = "hospital"}
     },
     isIndoors = true,
+    offsetXY = "-11.63 86.13"
   },
   ProfOffice = {
     name = "Professor's Office",
@@ -2658,9 +2690,9 @@ C.Sites = {
     isIndoors = false,
     offsetXY = "8.37 −205.28"
   },
-  Rooftops = {
-    name = "Rooftops",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Rooftops.webp",
+  Rooftop = {
+    name = "Rooftop",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Rooftop.webp",
     soundscape = {
       location = {playlist = "location", track = "rooftop"}
     },
@@ -2698,6 +2730,7 @@ C.Sites = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = true,
+    offsetXY = "167.95 97.75"
   },
   ScotiabankTheatre = {
     name = "Scotiabank Theatre",
@@ -2707,6 +2740,7 @@ C.Sites = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
+    offsetXY = "145.82 −180.48"
   },
   SecludedDeadEnd = {
     name = "Secluded Dead End",
@@ -2732,14 +2766,15 @@ C.Sites = {
     },
     isIndoors = true,
   },
-  SheridanCentre = {
+  SheratonCentre = {
     name = "Sheraton Centre",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/SheridanCentre.webp",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/SheratonCentre.webp",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
+    offsetXY = "71.49 −51"
   },
   Sidewalk1 = {
     name = "Sidewalk",
@@ -2773,6 +2808,7 @@ C.Sites = {
       location = {playlist = "location", track = "diveBar"}
     },
     isIndoors = true,
+    offsetXY = "-307.53 205.7"
   },
   SneakyDees = {
     name = "Sneaky Dee's",
@@ -2782,6 +2818,7 @@ C.Sites = {
       location = {playlist = "location", track = "diveBar"}
     },
     isIndoors = true,
+    offsetXY = "-232.06 54.12"
   },
   StLawrenceMarket = {
     name = "St. Lawrence Market",
@@ -2791,6 +2828,7 @@ C.Sites = {
       location = {playlist = "location", track = "indoorMarket"}
     },
     isIndoors = true,
+    offsetXY = "262.99 −156.12"
   },
   StMichaelsCathedral = {
     name = "St. Michael's Cathedral Basilica",
@@ -2810,6 +2848,7 @@ C.Sites = {
       location = {playlist = "location", track = "hospital"}
     },
     isIndoors = true,
+    offsetXY = "202.28 8.5"
   },
   Stairwell = {
     name = "Stairwell",
@@ -2854,10 +2893,12 @@ C.Sites = {
   StudentVillage = {
     name = "Student Village",
     image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/StudentVillage.webp",
+    district = C.Districts.Discovery,
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = false,
+    offsetXY = "-128.51 170.28"
   },
   SuburbanHouse1 = {
     name = "Suburban House",
@@ -2902,11 +2943,12 @@ C.Sites = {
   ThreefoldExchange = {
     name = "The Threefold Exchange",
     image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/ThreefoldExchange.webp",
-    district = C.Districts.Wychwood,
+    district = C.Districts.Chinatown,
     soundscape = {
       location = {playlist = "location", track = "apothecary"}
     },
     isIndoors = true,
+    offsetXY = "-385.26 −208.82"
   },
   TIFFLightbox = {
     name = "TIFF Bell Lightbox",
@@ -2916,6 +2958,7 @@ C.Sites = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    offsetXY = "-7.66 −119.57"
   },
   TorontoGeneral = {
     name = "Toronto General Hospital",
@@ -2931,7 +2974,7 @@ C.Sites = {
     name = "Underground Medical Clinic",
     image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/UndergroundMedClinic.webp",
     soundscape = {
-      location = {playlist = "location", track = "medicalClinic"}
+      location = {playlist = "location", track = "hospital"}
     },
     isIndoors = true,
   },
@@ -2959,6 +3002,7 @@ C.Sites = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = true,
+    offsetXY = "-185.54 742.33"
   },
   VacantLot = {
     name = "Vacant Lot",
@@ -2968,41 +3012,41 @@ C.Sites = {
     },
     isIndoors = false,
   },
-  Vehicle = {
-    name = "Vehicle",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Vehicle.webp",
+  LuxuryDriving = {
+    name = "Driving",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/LuxuryDriving.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
   },
-  Vehicle2 = {
+  BackseatSedan = {
     name = "Vehicle",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Vehicle2.webp",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/BackseatSedan.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
   },
-  Vehicle4 = {
-    name = "Vehicle",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Vehicle4.webp",
+  Limousine = {
+    name = "Limousine",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Limousine.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
   },
-  Vehicle5 = {
-    name = "Vehicle",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Vehicle5.webp",
+  SUV = {
+    name = "SUV",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/SUV.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
   },
-  Vehicle7 = {
-    name = "Vehicle",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Vehicle7.webp",
+  Taxi = {
+    name = "Taxi",
+    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/Taxi.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
@@ -3056,14 +3100,17 @@ C.Sites = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
+    offsetXY = "129.93 53.55"
   },
   YorkvilleApt1 = {
     name = "Yorkville Apartment",
     image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Sites/YorkvilleApt1.webp",
+    district = C.Districts.Yorkville,
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    offsetXY = "-58.44 328.67"
   },
   YouthShelter = {
     name = "Youth Shelter",

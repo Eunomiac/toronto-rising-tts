@@ -51,4 +51,56 @@
     raycastTarget="false"
     color="#FFFFFF00"
   />
+
+
+
+  <Panel class="playerHud_overlay_camera"
+    width="622"
+    height="204"
+    rectAlignment="LowerRight"
+    offsetXY="0 0"
+  />
+
+  <Panel class="cameraControls_left"
+    width="417"
+    height="100%"
+    rectAlignment="MiddleLeft"
+    offsetXY="0 0"
+    padding="10 40 10 10"
+  />
+
+  <Panel class="cameraControls_right"
+    width="205"
+    height="100%"
+    rectAlignment="MiddleRight"
+    offsetXY="0 0"
+    padding="20 30 10 10"
+  />
+
+  <Image class="popoutControl_camera"
+    raycastTarget="true"
+    rectAlignment="LowerRight"
+    height="100"
+    width="100" />
+
+  <Image class="alpha_control"
+    color="rgba(1, 1, 1, 0.15)"
+    raycastTarget="true"
+    onMouseEnter="HUD_alphaControl_hoverOn"
+    onMouseExit="HUD_alphaControl_hoverOff"
+  />
+
+  <Image class="camera_control"
+    raycastTarget="true"
+    onClick="HUD_cameraControl_click"
+  />
+
+
+  <!-- Per-seat lower-left location card popout (see `ui/.templates/panel_overlay_location.xml`). Name distinct from center HUD `HorizontalLayout` class `gameStateOverlay_location` in `shared/game_state_overlay.xml`. -->
+  <Panel class="playerHud_overlay_location" height="800" width="1000" rectAlignment="LowerLeft" offsetXY="0 0" raycastTarget="true" />
+
+  <Image class="popoutControl_location" raycastTarget="true" rectAlignment="LowerLeft" height="100" width="100" color="rgba(1, 1, 1, 0.15)" />
+
+  <Image class="gameStateOverlay_district" rectAlignment="UpperLeft" width="800" offsetXY="0 0" active="false" />
+  <Image class="gameStateOverlay_site" rectAlignment="LowerLeft" width="800" offsetXY="300 0" active="false" />
 </Defaults>

@@ -1,6 +1,6 @@
---- Player HUD (Right Sidebar + Coterie Reference Grid) handlers
+--- Player HUD (Right Sidebar + Coterie Reference Grid + per-seat camera / location dock overlays) handlers
 -- This module provides:
--- - Global UI event handlers referenced by `ui/player/panel_right_sidebar.xml`
+-- - Global UI event handlers referenced by `ui/player/panel_right_sidebar.xml` and `ui/player/panel_overlay_camera.xml` (generated from `ui/.templates/panel_overlay_camera.xml`)
 -- - State-driven show/hide for core panels, reference panels, and right sidebar button active layers
 -- - Click-and-hold behavior for non-nested reference panels (temporary overlays)
 -- - Click-and-hold behavior for nested coterie popups inside the coteries grid
@@ -862,6 +862,18 @@ function HUDP.updatePlayerUI(player, color)
             setActive(popupID, false)
         end
     end
+
+    -- Camera overlay: one row per other PC seat when that seat is occupied (see `ui/.templates/panel_overlay_camera.xml`).
+    for _, rowSeat in ipairs(C.PlayerColors or {}) do
+        local rowId = "cameraControls_otherControls" .. rowSeat .. "_" .. seatColor
+        if rowSeat == seatColor then
+            setActive(rowId, false)
+        else
+            local otherPid = S.getPlayerID(rowSeat)
+            local occupied = type(otherPid) == "string" and otherPid ~= ""
+            setActive(rowId, occupied)
+        end
+    end
 end
 
 --- Map panel refresh only (high-frequency hover/toggle/pan). Falls back to full HUD if map is not active.
@@ -895,9 +907,208 @@ function HUDP.updateAllUI()
     end)
 end
 
+--- One-shot during first `Sync.full` bootstrap: `panel_overlay_camera.xml` defaults every
+--- `cameraControls_otherControls<Row>_<Hud>` row to active so the generator stays simple.
+--- Turn off diagonal ids (`cameraControls_otherControlsPink_Pink`, etc.) so a seat never sees
+--- their own row in the "other players" column before `HUDP.updatePlayerUI` runs.
+function HUDP.reconcileCameraOverlaySelfMatchRowsFromXmlDefaults()
+    if UI == nil or UI.setAttribute == nil then
+        return
+    end
+    for _, seat in ipairs(C.PlayerColors or {}) do
+        local rowId = "cameraControls_otherControls" .. seat .. "_" .. seat
+        U.setAttribute(rowId, "active", "false")
+    end
+end
+
+--- Parses `cameraControl_*_<seatColor>` id into a `Main.setCamera` mode key (per-seat or suffixed universal).
+-- @param id string
+-- @param seatColor string HUD owner seat (Brown, Orange, …)
+-- @return string|nil
+local function parseCameraControlIdToMode(id, seatColor)
+    if type(id) ~= "string" or type(seatColor) ~= "string" then
+        return nil
+    end
+    local suffix = "_" .. seatColor
+    if id:sub(-#suffix) ~= suffix then
+        return nil
+    end
+    local head = "cameraControl_"
+    if id:sub(1, #head) ~= head then
+        return nil
+    end
+    local body = id:sub(#head + 1, #id - #suffix)
+    if body == "default" then
+        return "default"
+    end
+    if body == "diceTray" then
+        return "diceTray"
+    end
+    if body == "sheet" then
+        return "sheet"
+    end
+    if body:sub(1, #"dice") == "dice" then
+        local otherSeat = body:sub(#"dice" + 1)
+        if otherSeat ~= "" and U.isIn(otherSeat, C.PlayerColors) then
+            return "diceTray" .. otherSeat
+        end
+    end
+    if body:sub(1, #"sheet") == "sheet" then
+        local otherSeat = body:sub(#"sheet" + 1)
+        if otherSeat ~= "" and U.isIn(otherSeat, C.PlayerColors) then
+            return "sheet" .. otherSeat
+        end
+    end
+    return nil
+end
+
+--- @param id string e.g. `popout_cameraPanel_Red`
+--- @return string|nil
+local function parseSeatColorFromPopoutCameraId(id)
+    if type(id) ~= "string" then
+        return nil
+    end
+    local prefix = "popout_cameraPanel_"
+    if id:sub(1, #prefix) ~= prefix then
+        return nil
+    end
+    local col = id:sub(#prefix + 1)
+    if col == "" or not U.isIn(col, C.PlayerColors) then
+        return nil
+    end
+    return col
+end
+
+--- TTS Image tint: `color` rgba (see `ui/player/panel_overlays_defaults.xml` `alpha_control`).
+local CAMERA_ALPHA_CONTROL_RGBA_FULL = "rgba(1, 1, 1, 1)"
+local CAMERA_ALPHA_CONTROL_RGBA_IDLE = "rgba(1, 1, 1, 0.15)"
+
+--- After closing the camera picker, force idle tint on every `alpha_control` (hover can leave a control at full opacity without a matching mouse exit).
+--- @param seatColor string HUD owner seat (Brown, Orange, …)
+local function resetCameraOverlayAlphaTintsForSeat(seatColor)
+    if type(seatColor) ~= "string" or UI == nil or UI.setAttributes == nil then
+        return
+    end
+    local idle = { color = CAMERA_ALPHA_CONTROL_RGBA_IDLE }
+    local ids = {
+        "popout_cameraPanel_" .. seatColor,
+        "cameraControl_default_" .. seatColor,
+        "cameraControl_diceTray_" .. seatColor,
+        "cameraControl_sheet_" .. seatColor,
+    }
+    for _, rowSeat in ipairs(C.PlayerColors or {}) do
+        ids[#ids + 1] = "cameraControl_dice" .. rowSeat .. "_" .. seatColor
+        ids[#ids + 1] = "cameraControl_sheet" .. rowSeat .. "_" .. seatColor
+    end
+    for _, elemId in ipairs(ids) do
+        U.setAttributes(elemId, idle)
+    end
+end
+
+--- @param seatColor string
+local function setCameraControlsPanelExpanded(seatColor, expanded)
+    if type(seatColor) ~= "string" then
+        return
+    end
+    setActive("playerHud_overlay_cameraControls_" .. seatColor, expanded)
+    if expanded == false then
+        resetCameraOverlayAlphaTintsForSeat(seatColor)
+    end
+end
+
 -- ============================================================================
 -- Global UI EVENT HANDLERS (referenced by XML)
 -- ============================================================================
+
+--- Per-seat camera popout / control buttons: hover brightens `alpha_control` Images (`ui/.templates/panel_overlay_camera.xml`).
+function HUD_alphaControl_hoverOn(player, value, id)
+    if type(id) ~= "string" then
+        return
+    end
+    U.setAttributes(id, { color = CAMERA_ALPHA_CONTROL_RGBA_FULL })
+end
+
+--- Restore idle tint for `alpha_control` Images (matches XML default on `alpha_control`).
+function HUD_alphaControl_hoverOff(player, value, id)
+    if type(id) ~= "string" then
+        return
+    end
+    U.setAttributes(id, { color = CAMERA_ALPHA_CONTROL_RGBA_IDLE })
+end
+
+--- Toggle the camera preset picker panel for this seat's HUD.
+function HUD_popoutCameraControl_click(player, value, id)
+    if type(id) ~= "string" then
+        return
+    end
+    local seatColor = parseSeatColorFromPopoutCameraId(id)
+    if seatColor == nil then
+        return
+    end
+    local panelId = "playerHud_overlay_cameraControls_" .. seatColor
+    if UI == nil or UI.getAttribute == nil then
+        return
+    end
+    local raw = UI.getAttribute(panelId, "active")
+    local isOpen = string.lower(tostring(raw)) == "true"
+    setCameraControlsPanelExpanded(seatColor, not isOpen)
+end
+
+--- Apply a camera preset for the clicking player and collapse the picker.
+function HUD_cameraControl_click(player, value, id)
+    if type(id) ~= "string" then
+        return
+    end
+    local _, seatColor = getPlayerIDAndColor(player)
+    if type(seatColor) ~= "string" then
+        return
+    end
+    local mode = parseCameraControlIdToMode(id, seatColor)
+    if mode == nil then
+        print(("[HUD Player] HUD_cameraControl_click: unrecognized control id %q for seat %s"):format(id, seatColor))
+        setCameraControlsPanelExpanded(seatColor, false)
+        return
+    end
+    Main.setCamera(player, mode)
+    setCameraControlsPanelExpanded(seatColor, false)
+end
+
+--- @param id string e.g. `gameStateOverlay_location_Red`
+--- @return string|nil
+local function parseSeatColorFromLocationOverlayRootId(id)
+    if type(id) ~= "string" then
+        return nil
+    end
+    local prefix = "gameStateOverlay_location_"
+    if id:sub(1, #prefix) ~= prefix then
+        return nil
+    end
+    local col = id:sub(#prefix + 1)
+    if col == "" or not U.isIn(col, C.PlayerColors) then
+        return nil
+    end
+    return col
+end
+
+--- Per-seat lower-left location dock: hover shows `gameStateOverlay_locationPanel_<Color>` and brightens the popout icon.
+function HUD_locationOverlay_hoverOn(player, value, id)
+    local seat = parseSeatColorFromLocationOverlayRootId(id)
+    if seat == nil then
+        return
+    end
+    setActive("gameStateOverlay_locationPanel_" .. seat, true)
+    U.setAttributes("popout_locationPanel_" .. seat, { color = CAMERA_ALPHA_CONTROL_RGBA_FULL })
+end
+
+--- Mouse left the dock: collapse the panel and restore the popout idle tint.
+function HUD_locationOverlay_hoverOff(player, value, id)
+    local seat = parseSeatColorFromLocationOverlayRootId(id)
+    if seat == nil then
+        return
+    end
+    setActive("gameStateOverlay_locationPanel_" .. seat, false)
+    U.setAttributes("popout_locationPanel_" .. seat, { color = CAMERA_ALPHA_CONTROL_RGBA_IDLE })
+end
 
 --- Hover on: show the sidebar button hover layer.
 function HUD_playerRightSidebar_hoverOn(player, value, id)

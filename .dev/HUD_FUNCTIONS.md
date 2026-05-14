@@ -8,8 +8,8 @@ Per the TTS **InputField** note ([Input Elements](https://api.tabletopsimulator.
 
 > **Source files:**
 >
-> - XML triggers: `ui/storyteller/panel_*.xml`, `ui/storyteller/hud_storyteller.xml`
-> - Handler implementations: `core/global_script.ttslua` (loaded via stub `.tts/objects/Global.lua`)
+> - XML triggers: `ui/storyteller/panel_*.xml`, `ui/storyteller/hud_storyteller.xml`, `ui/player/panel_overlay_camera.xml` (from `ui/.templates/panel_overlay_camera.xml`), `ui/player/panel_overlay_location.xml` (from `ui/.templates/panel_overlay_location.xml`)
+> - Handler implementations: `core/global_script.ttslua`, `core/hud_player.ttslua` (loaded via stub `.tts/objects/Global.lua`)
 > - Helper functions: `lib/util.ttslua` (`U.*` UI helpers), `core/storyteller_panel_ui.ttslua`, `core/light_debug.ttslua`, `core/light_debug_focus.ttslua`
 
 ---
@@ -22,7 +22,7 @@ Per the TTS **InputField** note ([Input Elements](https://api.tabletopsimulator.
 | `HUD_debugSeatLights` | `Debug Seat Lights` button | `(player, button, id)` | Calls `DEBUG.logSeatLightsToFile("seat_lights")`. Writes **`.dev/.debug/debug_logs/seat_lights.txt`** for per-seat desired/current mode diagnostics. |
 | `HUD_syncIncremental` | `Sync (incremental)` button | `(player, button, id)` | Calls `Sync.full({ force = false })` — fingerprints + narrow UI delta; faster routine refresh. |
 | `HUD_syncAll` | `Sync All (force)` button | `(player, button, id)` | Calls `Sync.full({ force = true })` — bypass scene/soundscape fingerprints; full `UpdateUIDisplays` (overlay repair). |
-| `HUD_clearLoadingOverlay` | `Clear Loading Overlay` button | `(player, button, id)` | Calls `hideStartupLoadingOverlays()` to force-hide `overlay_loadingScreen_<Color>` for all player seats (debug/manual escape hatch). |
+| `HUD_clearLoadingOverlay` | `Clear Loading Overlay` button | `(player, button, id)` | Calls `hideStartupLoadingOverlays()` to force-hide `overlay_loadingScreen_<Color>` for all player seats (debug/manual escape hatch). Automatic hide on load uses **`U.RunSequence`** in **`core/global_script.ttslua`** `onLoad` (gates + wall-clock delay). Do not use **`Wait.condition`** with nested **`Wait.time`** for that path — TTS can fire the timer immediately. |
 | `HUD_debugLightGuidInput` | `dl_guid` `InputField` | `(player, value, id)` | Caches typed GUID (`LightDebugFocus.onGuidInput`). Per TTS docs, `InputField` text is not obtainable outside `onValueChanged`/`onEndEdit`; this handler is the primary source of truth. |
 | `HUD_debugLightActivate` | `Debug Light` button | `(player, button, id)` | Reads GUID in order: `HUD_debugLightGuidInput` cache (authoritative), then `UI.getAttribute("dl_guid","text")`, then `UI.getValue("dl_guid")` as last-resort fallbacks. Trims, `getObjectFromGUID`, validates spotlight via `LightDebug.getLightComponent`. Opens `panel_debug_light_root`, syncs sliders, applies live. Broadcasts errors to the clicking player if invalid. |
 | `HUD_debugLightEnabled` | `dl_enabled` `Toggle` | `(player, value, id)` | `LightDebugFocus.onEnabledToggle`: sets `cache.enabled`, `L.SetLightMode(..., enabled, ...)` instant apply. |
@@ -52,12 +52,12 @@ The **Scenes** toolbar tab opens `panel_scenes_host` (**1200px** total: two **59
 | `HUD_scenesOpenDistrictModal` | `Browse districts...` | `(player, button, id)` | Shows `scenes_modal_districts_root` (`ui/storyteller/panel_scenes_location_modals.xml`, generated from `C.Districts`). |
 | `HUD_scenesOpenSiteModal` | `Browse sites...` | `(player, button, id)` | Calls `StorytellerScenesPanel.applySiteModalDistrictVisibility()` then shows `scenes_modal_sites_root`. Modal XML lays out `scenes_site_group_generic` first, then `scenes_site_group_dist_<districtKey>` panels so the active district bucket draws above the general list. Visibility toggled from `sessionScene.districtKey`. Wide modal (~1120px), 8 buttons per row (generator). |
 | `HUD_scenesCloseLocationModals` | modal Close buttons | `(player, button, id)` | Hides both picker roots. |
-| `HUD_scenesPickDistrict` | `scenes_pick_district_*` | `(player, button, id)` | Parses key from `id`, writes `gameState.sessionScene.districtKey`, closes modals, `StorytellerScenesPanel.refresh()` + `applySiteModalDistrictVisibility`, `GameStateOverlay.refresh()`. |
-| `HUD_scenesPickSite` | `scenes_pick_site_*` | `(player, button, id)` | Same for `sessionScene.siteKey`. |
+| `HUD_scenesPickDistrict` | `scenes_pick_district_*` | `(player, button, id)` | Parses key from `id`, writes `gameState.sessionScene.districtKey`, closes modals, `StorytellerScenesPanel.refresh()` + `applySiteModalDistrictVisibility`, `Sync.ui({ gameStateOverlay = true })` → `GameStateOverlay.reconcileFromState()`. |
+| `HUD_scenesPickSite` | `scenes_pick_site_*` | `(player, button, id)` | Same for `sessionScene.siteKey`, then `Sync.ui({ gameStateOverlay = true })`. |
 | `HUD_scenesMonthPick` | `scenes_month_1` … `scenes_month_12` | `(player, button, id)` | `StorytellerScenesPanel.setPendingMonth` — updates `sessionScene.clock.month` and refreshes the panel. |
-| `HUD_scenesToggleRealTimeClock` | `scenes_clock_rtToggle` | `(player, button, id)` | `StorytellerScenesPanel.toggleRealTimeClock` — toggles `sessionScene.clock.useRealTime`, starts/stops `GameStateOverlay` ticker. |
+| `HUD_scenesToggleRealTimeClock` | `scenes_clock_rtToggle` | `(player, button, id)` | `StorytellerScenesPanel.toggleRealTimeClock` — toggles `sessionScene.clock.useRealTime`, starts/stops `GameStateOverlay` ticker, then `Sync.ui({ gameStateOverlay = true })`. |
 | `HUD_scenesApplyLocation` | `Apply location + soundscape` | `(player, button, id)` | Reads **state** `sessionScene.districtKey` / `siteKey` (district/site names are display-only). Validates keys, writes cards + `Soundscape.applyContext` + `Sync.full()`. |
-| `HUD_scenesApplyClock` | `Apply clock` | `(player, button, id)` | Writes `sessionScene.clock` from month (state) + stashed or `UI.getValue` day/year/time12/speed, `ChronicleWeather.applyScheduledWeather({ force = false })`, `Sync.full()`, `GameStateOverlay.resetRealTimeCarry()` (clears fractional real-time carry), `GameStateOverlay.refresh` + `ensureTicker`. |
+| `HUD_scenesApplyClock` | `Apply clock` | `(player, button, id)` | Writes `sessionScene.clock` from month (state) + stashed or `UI.getValue` day/year/time12/speed, `ChronicleWeather.applyScheduledWeather({ force = false })`, `Sync.full()` (incremental UI includes `gameStateOverlay`), `GameStateOverlay.resetRealTimeCarry()`, `ensureTicker`. |
 | `HUD_scenesCtorImportOpen` | `scenes_ctor_btn_import` | `(player, button, id)` | `StorytellerScenesPanel.openImportConstructorModal` — shows import modal, clears error + JSON stash. |
 | `HUD_scenesCtorImportCancel` | `scenes_ctor_import_cancel` | `(player, button, id)` | Closes import modal. |
 | `HUD_scenesCtorImportConfirm` | `scenes_ctor_import_confirm` | `(player, button, id)` | Host-only: `JSON.decode` + `SceneLibrary.validateAndNormalizeImportPayload`, writes `sceneLibrary.scenes[sceneKey]` with `receivesLiveWrites = false`, appends `order` key, `S.validateState()`, closes modal. |
@@ -76,7 +76,29 @@ The **Scenes** toolbar tab opens `panel_scenes_host` (**1200px** total: two **59
 
 | Source | Behavior |
 | ------ | -------- |
-| `core/game_state_overlay.ttslua` | `GameStateOverlay.refresh()` sets `gameStateOverlay_datetime` only when `currentPhase` is **`Play`** or **`Downtime`** (`C.Phases.PLAY` / `C.Phases.DOWNTIME`); otherwise the line is cleared. When shown, text is one line from `sessionScene.clock`: weekday, full month name, day with ordinal suffix, year, comma, then 12-hour time. When `sessionScene.clock.useRealTime` is true, `ensureTicker` runs once per wall second: narrative minutes advance by `realTimeSpeed / 60` per tick; hour/day rollovers call `ChronicleWeather.applyScheduledWeather`. |
+| `core/game_state_overlay.ttslua` | **`GameStateOverlay.reconcileFromState()`** is the only writer for the overlay (driven from `UpdateUIDisplays` when `gameStateOverlay`, `phase`, or `scenesPanel` is requested, on every incremental `Sync.full`, or via `Sync.ui({ gameStateOverlay = true })` after district/site picker mutations). **`GameStateOverlay.refresh`** is an alias for the same function. When `currentPhase` is **`Play`** or **`Downtime`**, shows `gameStateOverlay_district` from `C.Districts[districtKey].name`, `gameStateOverlay_site` from `C.Sites[siteKey].name` with optional split: if the site `name` contains `:`, the substring before the first colon is `gameStateOverlay_parentSite` and `gameStateOverlay_parentSiteSeparator` is active; otherwise both are `active = false`. `gameStateOverlay_datetime` is the calendar line (weekday, month, ordinal day, year); `gameStateOverlay_time` is 12-hour clock. When not Play/Downtime, `gameStateOverlay_root` is hidden and date/time lines cleared. Real-time: `ensureTicker` runs each wall second; `tickRealTimeClock` skips state/UI when no narrative minute elapses, and when only the time-of-day changes it updates **`gameStateOverlay_time`** alone (date line updates when the calendar date changes). `realTimeSpeed / 60` narrative minutes per real second; hour/day rollovers call `ChronicleWeather.applyScheduledWeather`. |
+
+## Per-seat camera overlay (`ui/.templates/panel_overlay_camera.xml` → `ui/player/panel_overlay_camera.xml`)
+
+| Handler | XML Element(s) | Params | Behavior |
+| ------- | ---------------- | ------ | -------- |
+| `HUD_alphaControl_hoverOn` | `Image` with class `alpha_control` (popout + preset buttons) | `(player, value, id)` | `U.setAttributes(id, { color = "rgba(1, 1, 1, 1)" })` — TTS Image has no `alpha` attribute; tint uses `color` rgba. |
+| `HUD_alphaControl_hoverOff` | same | `(player, value, id)` | `U.setAttributes(id, { color = "rgba(1, 1, 1, 0.15)" })` — matches XML default on `alpha_control`. |
+| `HUD_popoutCameraControl_click` | `popout_cameraPanel_<Color>` | `(player, value, id)` | Toggles `active` on `playerHud_overlay_cameraControls_<Color>` (reads current `active` via `UI.getAttribute`). When the panel closes, `resetCameraOverlayAlphaTintsForSeat` sets every camera `alpha_control` on that seat back to `rgba(1, 1, 1, 0.15)` so hover state does not stick. |
+| `HUD_cameraControl_click` | `cameraControl_*_<Color>` preset Images | `(player, value, id)` | Parses `id` into a `Main.setCamera` mode (`default`, `diceTray`, `sheet`, `diceTray<OtherSeat>`, `sheet<OtherSeat>`), calls `Main.setCamera(player, mode)`, then collapses the controls panel (same idle tint reset as popout close). Unknown ids: log + close panel. |
+
+On the first `Sync.full` bootstrap only, `HUDP.reconcileCameraOverlaySelfMatchRowsFromXmlDefaults` (from `core/sync.ttslua` before `Sync.ui`) sets `active="false"` on diagonal ids `cameraControls_otherControls<Color>_<Color>` (XML defaults all other rows active for a simpler template).
+
+`HUDP.updatePlayerUI` then sets each `cameraControls_otherControls<RowSeat>_<HudSeat>` from state: self row stays inactive; other rows active only when `S.getPlayerID(RowSeat)` resolves (occupied seat).
+
+## Per-seat location card dock (`ui/.templates/panel_overlay_location.xml` → `ui/player/panel_overlay_location.xml`)
+
+Root `Panel` id `gameStateOverlay_location_<Color>` uses class `playerHud_overlay_location` (defaults in `ui/player/panel_overlays_defaults.xml`) so it does not share the center HUD class name `gameStateOverlay_location` on `shared/game_state_overlay.xml`.
+
+| Handler | XML Element(s) | Params | Behavior |
+| ------- | ---------------- | ------ | -------- |
+| `HUD_locationOverlay_hoverOn` | `gameStateOverlay_location_<Color>` root `Panel` | `(player, value, id)` | `setActive` on `gameStateOverlay_locationPanel_<Color>` to true; popout `popout_locationPanel_<Color>` tint `rgba(1, 1, 1, 1)`. |
+| `HUD_locationOverlay_hoverOff` | same root `Panel` | `(player, value, id)` | Hides the inner panel; popout tint back to `rgba(1, 1, 1, 0.15)`. |
 
 ## Legacy scene preset buttons (player HUD / other XML)
 

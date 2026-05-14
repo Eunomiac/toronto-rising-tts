@@ -1,0 +1,52 @@
+<!-- TARGET: ui/player/panel_overlay_location.xml -->
+<!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (map panels). -->
+<!-- Visibility: TTS `UI.show` / `UI.hide` play showAnimation/hideAnimation (tts-api UI API/Attributes.md). -->
+
+<Panel id="gameStateOverlay_location_@@color@@" class="playerHud_overlay_location" visibility="@@color@@"
+  onMouseEnter="HUD_locationOverlay_hoverOn"
+  onMouseExit="HUD_locationOverlay_hoverOff">
+
+  <Image id="popout_locationPanel_@@color@@" class="popoutControl_location" image="popoutControl_location" />
+
+  <Panel id="gameStateOverlay_locationPanel_@@color@@" class="gameStateOverlay_locationPanel" active="false" raycastTarget="true">
+
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Annex_@@color@@" image="districtCard_Annex" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_BayStFinancial_@@color@@" image="districtCard_BayStFinancial" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Bennington_@@color@@" image="districtCard_Bennington" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Cabbagetown_@@color@@" image="districtCard_Cabbagetown" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_CentreIsland_@@color@@" image="districtCard_CentreIsland" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Chinatown_@@color@@" image="districtCard_Chinatown" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Corktown_@@color@@" image="districtCard_Corktown" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Danforth_@@color@@" image="districtCard_Danforth" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_DeerPark_@@color@@" image="districtCard_DeerPark" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Discovery_@@color@@" image="districtCard_Discovery" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_DistilleryDist_@@color@@" image="districtCard_DistilleryDist" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_DonRavine_@@color@@" image="districtCard_DonRavine" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_DupontByTheCastle_@@color@@" image="districtCard_DupontByTheCastle" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_GayVillage_@@color@@" image="districtCard_GayVillage" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_HarbordVillage_@@color@@" image="districtCard_HarbordVillage" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Humewood_@@color@@" image="districtCard_Humewood" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_LakeOntario_@@color@@" image="districtCard_LakeOntario" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_LibertyVillage_@@color@@" image="districtCard_LibertyVillage" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_LittleItaly_@@color@@" image="districtCard_LittleItaly" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_LittlePortugal_@@color@@" image="districtCard_LittlePortugal" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_PATH_@@color@@" image="districtCard_PATH" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_RegentPark_@@color@@" image="districtCard_RegentPark" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Riverdale_@@color@@" image="districtCard_Riverdale" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Rosedale_@@color@@" image="districtCard_Rosedale" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Sewers_@@color@@" image="districtCard_Sewers" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_StJamesTown_@@color@@" image="districtCard_StJamesTown" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Streets_@@color@@" image="districtCard_Streets" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Subway_@@color@@" image="districtCard_Subway" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Summerhill_@@color@@" image="districtCard_Summerhill" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Waterfront_@@color@@" image="districtCard_Waterfront" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_WestQueenWest_@@color@@" image="districtCard_WestQueenWest" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Wychwood_@@color@@" image="districtCard_Wychwood" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_YongeBloorMuseum_@@color@@" image="districtCard_YongeBloorMuseum" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_YongeDundasHospital_@@color@@" image="districtCard_YongeDundasHospital" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_YongeStreet_@@color@@" image="districtCard_YongeStreet" />
+    <Image class="gameStateOverlay_district" id="gameStateOverlay_districtCard_Yorkville_@@color@@" image="districtCard_Yorkville" />
+
+    <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_StRegisGrandSalon_@@color@@" image="siteCard_StRegisGrandSalon" />
+  </Panel>
+</Panel>

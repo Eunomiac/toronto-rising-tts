@@ -218,7 +218,8 @@ Avoid long arrays with empty placeholders. Use **sparse maps** keyed by string s
 }
 ```
 
-- `preload` — array of `characterKey` strings to ensure in the preload zone on load **unless** an instance is already placed on stage (per your existing rule). **`Sync.full`** calls `NPCS.reconcileSessionScenePreloadNpcs`, which spawns missing entries into the **`preload`** area in [`lib/npcs_data.ttslua`](../../lib/npcs_data.ttslua) (`groundLevel = -100` world Y, paired NPC lights with `autoLight`).
+- `preload` — array of `characterKey` strings to ensure in the preload zone when the scene bundle is applied. **`Sync.full`** calls `NPCS.reconcileSessionSceneNpcWorldFromState` (alias: `reconcileSessionScenePreloadNpcs`), which fingerprints `npcWorld`; when it changes and there is placement intent, existing figurines are parked at **Y = -200**, then missing `preload` entries spawn into the **`preload`** area in [`lib/npcs_data.ttslua`](../../lib/npcs_data.ttslua) (`groundLevel = -200` world Y, paired NPC lights with `autoLight`).
+- `byArea` — per area key (`nearLeft`, `centerForward`, …), numeric slot index → `{ characterKey, npcLightMode? }`. The same reconciler applies these placements after preload (same staggered `Wait.time` queue). `npcLightMode` from JSON overrides the area’s `autoLight` default when valid (`OFF` / `STANDARD` / `SPOTLIGHT`).
 
 Runtime NPC instances remain under **`gameState.npcs.instances`**; `npcWorld` is the **saved scene’s staging intent**, copied into live NPC flows during apply.
 

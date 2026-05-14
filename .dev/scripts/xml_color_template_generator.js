@@ -7,7 +7,8 @@
  * - Reads each `*.xml` under `ui/.templates/`.
  * - The file MUST begin with a single-line comment: <!-- TARGET: relative/path.xml -->
  *   (path relative to project root, forward slashes, no ..).
- * - Extracts exactly one root element from the template body (lightweight tag stack).
+ * - Extracts exactly one root element from the template body (lightweight tag stack;
+ *   tag tokens inside `<!-- ... -->` are ignored so `<Foo>` in comments does not break nesting).
  * - If root contains `@@color@@`, duplicates the root once per `C.PlayerColors` from lib/constants.ttslua.
  * - Otherwise writes a single root (pass-through).
  * - Prepends a banner pointing editors back to the template source.
@@ -92,15 +93,56 @@ function parseTargetFromFirstLine(fileText, templatePath) {
 }
 
 /**
+ * Half-open ranges `[start, end)` covering `<!-- ... -->` in `xml` (best-effort; unclosed tail is one range).
+ * @param {string} xml
+ * @returns {Array<[number, number]>}
+ */
+function listXmlCommentRanges(xml) {
+  const ranges = [];
+  let pos = 0;
+  while (pos < xml.length) {
+    const start = xml.indexOf("<!--", pos);
+    if (start === -1) {
+      break;
+    }
+    const close = xml.indexOf("-->", start + 4);
+    if (close === -1) {
+      ranges.push([start, xml.length]);
+      break;
+    }
+    ranges.push([start, close + 3]);
+    pos = close + 3;
+  }
+  return ranges;
+}
+
+/**
+ * @param {number} index
+ * @param {Array<[number, number]>} ranges
+ * @returns {boolean}
+ */
+function isIndexInsideXmlComment(index, ranges) {
+  for (const [a, b] of ranges) {
+    if (index >= a && index < b) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * @param {string} xml
  * @returns {RegExpMatchArray[]}
  */
 function tokenizeTags(xml) {
   const tagRegex = /<\s*\/?\s*[A-Za-z_][\w:.-]*\b[^>]*?\/?\s*>/g;
+  const commentRanges = listXmlCommentRanges(xml);
   const tokens = [];
   let m = tagRegex.exec(xml);
   while (m) {
-    tokens.push({ text: m[0], index: m.index });
+    if (!isIndexInsideXmlComment(m.index, commentRanges)) {
+      tokens.push({ text: m[0], index: m.index });
+    }
     m = tagRegex.exec(xml);
   }
   return tokens;

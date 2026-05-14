@@ -1,7 +1,56 @@
-<!-- Center-top overlay: in-game date/time during Play + Downtime only (see `GameStateOverlay.refresh`). -->
-<!-- Lua: `core/game_state_overlay.ttslua` — `GameStateOverlay.refresh()` / `ensureTicker()`. -->
-<Panel id="gameStateOverlay_root" width="1520" height="120" rectAlignment="UpperCenter" offsetXY="0 -100" active="true">
-  <VerticalLayout spacing="2" padding="4 2 4 2" childAlignment="UpperCenter" childForceExpandWidth="true">
-    <Text id="gameStateOverlay_datetime" fontSize="36" color="#CC0000" alignment="UpperCenter" text="—" />
+<!-- Center-top overlay: in-game location + date/time during Play + Downtime (see `GameStateOverlay.reconcileFromState`). -->
+<!-- Lua: `core/game_state_overlay.ttslua` — `GameStateOverlay.reconcileFromState()` / `ensureTicker()`. -->
+
+<Defaults>
+
+  <Panel class="gameStateOverlay" height="100%" width="100%" raycastTarget="false" />
+
+  <VerticalLayout class="gameStateOverlay_topCenter" width="800" height="145" rectAlignment="UpperCenter" childAlignment="UpperCenter" spacing="5" padding="5 5 5 5" />
+
+  <VerticalLayout class="gameStateOverlay_topRight" width="372" height="110" rectAlignment="UpperRight" childAlignment="UpperRight" spacing="5" padding="5 5 5 5" offsetXY="2 0" />
+
+  <Image class="gameStateOverlay_background" raycastTarget="false" preserveAspect="true" ignoreLayout="true" width="100%" />
+
+  <Text class="large_red_text" fontSize="42" fontStyle="Bold" color="#CC0000" outline="#000000" outlineSize="2 -2" alignment="MiddleCenter" />
+  <Text class="med_red_text" fontSize="30" fontStyle="Bold" color="#CC0000" outline="#000000" outlineSize="2 -2" alignment="MiddleCenter" />
+
+  <Text class="small_red_text" fontSize="18" fontStyle="Bold" color="#CC0000" outline="#000000" outlineSize="1 -1" alignment="MiddleCenter" />
+
+  <Text class="small_white_text" fontSize="18" fontStyle="Bold" color="#FFFFFF" outline="#000000" outlineSize="1 -1" alignment="MiddleCenter" />
+
+</Defaults>
+
+<Panel id="gameStateOverlay_root" class="gameStateOverlay">
+  <!--
+U.setAttributes("gameStateOverlay_timeAndLocation", {height = "145"})
+-->
+
+  <VerticalLayout id="gameStateOverlay_timeAndLocation" class="gameStateOverlay_topCenter">
+    <Image class="gameStateOverlay_background" image="bg_playerOverlay_timeLocation" />
+    <!--
+U.setAttributes("gameStateOverlay_sesionNumber", {text = "− Ⅼ Ⅹ Ⅴ Ⅰ Ⅰ −"})
+-->
+    <Text id="gameStateOverlay_sesionNumber" class="small_red_text" text="− Ⅼ Ⅹ Ⅴ Ⅰ Ⅰ −" />
+    <HorizontalLayout class="gameStateOverlay_location" spacing="5" childAlignment="UpperCenter">
+      <Text id="gameStateOverlay_district" class="small_white_text" text="Yonge &amp; Bloor Museum District" />
+      <Text class="small_red_text" text="◆" />
+      <Text id="gameStateOverlay_parentSite" class="small_white_text" text="" active="false" />
+      <Text id="gameStateOverlay_parentSiteSeparator" class="small_red_text" text="◆" active="false" />
+      <Text id="gameStateOverlay_site" class="small_white_text" text="Bloor Street Loading Zone" />
+    </HorizontalLayout>
+    <Text id="gameStateOverlay_datetime" class="med_red_text" text="Monday, September 14th, 2026" />
+    <Text id="gameStateOverlay_time" class="large_red_text" text="10:36 PM" />
   </VerticalLayout>
+
+  <!--
+U.setAttributes("gameStateOverlay_weather", {offsetXY = "2 0"})
+-->
+  <VerticalLayout id="gameStateOverlay_weather" class="gameStateOverlay_topRight">
+    <Image class="gameStateOverlay_background" image="bg_playerOverlay_weather" />
+    <Text id="gameStateOverlay_weatherSummary" class="small_red_text" text="Thunderstorm ◆ Driving Winds" />
+    <Text id="gameStateOverlay_temperatureC" class="large_red_text" text="10°C" />
+    <Text id="gameStateOverlay_temperatureF" class="small_red_text" fontStyle="Italic" text="(10°F)" />
+  </VerticalLayout>
+
+
 </Panel>

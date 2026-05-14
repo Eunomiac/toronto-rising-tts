@@ -1,19 +1,30 @@
 --[[
-    Center-top overlay: in-game date and 12-hour clock (all players) during **Play** and **Downtime** only.
-    Refreshed on phase changes, scene clock Apply, and each wall second when real-time clock is on
-    (`tickRealTimeClock`: narrative minutes advance by `realTimeSpeed / 60` per real second).
+    Center-top overlay: district / site (split on first ":" when present) and in-game date + 12-hour clock
+    during **Play** and **Downtime** only.
+
+    Single writer: `GameStateOverlay.reconcileFromState()` — driven from `UpdateUIDisplays` / `Sync.ui`
+    (see `core/sync.ttslua` incremental delta `gameStateOverlay`) so nothing else fights the overlay.
+
+    Real-time clock: `tickRealTimeClock` mutates `sessionScene.clock` once per wall second when enabled.
+    When no narrative minute elapses, the tick returns without UI work. When only the time-of-day changes,
+    only `gameStateOverlay_time` is updated; the date line updates when the calendar date changes.
 ]]
 
 local GameStateOverlay = {}
 
 local C = require("lib.constants")
 local S = require("core.state")
+local U = require("lib.util")
 local ChronicleWeather = require("lib.chronicle_weather")
 
 local tickerHandle = nil
 
 --- Fractional narrative minutes accumulated between integer minute updates (see `tickRealTimeClock`).
 local rtMinuteCarry = 0
+
+--- Last pushed UI values to avoid redundant `UI.setValue` / attribute writes (hot path: RT tick).
+local overlayTextCache = {}
+local overlayActiveCache = {}
 
 local WEEKDAY_NAMES = {
     "Sunday",
@@ -40,7 +51,52 @@ local MONTH_NAMES = {
     "December",
 }
 
---- Narrative clock is shown only when chronicle phase is in-world play (not session bookends).
+--- @param s string|nil
+--- @return string
+local function trimString(s)
+    if type(s) ~= "string" then
+        return ""
+    end
+    local t = string.gsub(s, "^%s+", "")
+    t = string.gsub(t, "%s+$", "")
+    return t
+end
+
+--- @param id string
+--- @param text string
+local function pushOverlayText(id, text)
+    if UI == nil or UI.setValue == nil then
+        return
+    end
+    local nextVal = tostring(text)
+    if overlayTextCache[id] == nextVal then
+        return
+    end
+    UI.setValue(id, nextVal)
+    overlayTextCache[id] = nextVal
+end
+
+--- @param id string
+--- @param active boolean
+local function pushOverlayActive(id, active)
+    if UI == nil or UI.setAttribute == nil then
+        return
+    end
+    local nextAttr = active and "true" or "false"
+    if overlayActiveCache[id] == nextAttr then
+        return
+    end
+    U.setAttribute(id, "active", nextAttr)
+    overlayActiveCache[id] = nextAttr
+end
+
+--- Clear push caches so the next reconcile always applies (e.g. after hiding the overlay root).
+local function clearOverlayUiCaches()
+    overlayTextCache = {}
+    overlayActiveCache = {}
+end
+
+--- Narrative clock + location row are shown only when chronicle phase is in-world play (not session bookends).
 --- @return boolean
 local function shouldShowNarrativeClockOnOverlay()
     local phase = S.getStateVal("currentPhase")
@@ -115,14 +171,12 @@ local function ordinalSuffix(day)
     return "th"
 end
 
---- e.g. `Thursday, September 4th, 2026, 12:14 AM`
+--- Date line only (no time) — matches former first segment of the single-line overlay.
 --- @param y number
 --- @param mo number
 --- @param d number
---- @param hour24 number
---- @param minute number
 --- @return string
-local function formatOverlayDateTime(y, mo, d, hour24, minute)
+local function formatOverlayDateLine(y, mo, d)
     local yi = math.floor(tonumber(y) or 2026)
     local mi = math.floor(tonumber(mo) or 1)
     local di = math.floor(tonumber(d) or 1)
@@ -138,41 +192,153 @@ local function formatOverlayDateTime(y, mo, d, hour24, minute)
     local w = dayOfWeekSunday0(yi, mi, di)
     local weekday = WEEKDAY_NAMES[(w % 7) + 1] or "—"
     local monthName = MONTH_NAMES[mi] or ("Month " .. tostring(mi))
-    local timeStr = format12h(hour24, minute)
     return string.format(
-        "%s, %s %d%s, %d, %s",
+        "%s, %s %d%s, %d",
         weekday,
         monthName,
         di,
         ordinalSuffix(di),
-        yi,
-        timeStr
+        yi
     )
 end
 
---- Push overlay text from `sessionScene.clock` when phase is Play or Downtime; otherwise clears the line.
-function GameStateOverlay.refresh()
-    if UI == nil or UI.setValue == nil then
+--- Split `fullSiteName` on the first ":" for parent + sub-site display.
+--- @param fullSiteName string
+--- @return boolean hasParent
+--- @return string parentOrEmpty
+--- @return string siteProper
+local function splitSiteNameForOverlay(fullSiteName)
+    local raw = trimString(fullSiteName)
+    if raw == "" then
+        return false, "", ""
+    end
+    local colonAt = string.find(raw, ":", 1, true)
+    if colonAt == nil then
+        return false, "", raw
+    end
+    local parent = trimString(string.sub(raw, 1, colonAt - 1))
+    local child = trimString(string.sub(raw, colonAt + 1))
+    if parent == "" or child == "" then
+        return false, "", raw
+    end
+    return true, parent, child
+end
+
+--- @return string districtLabel
+--- @return string siteFullName
+local function resolveLocationLabelsFromState()
+    local dKey = S.getStateVal("sessionScene", "districtKey")
+    local sKey = S.getStateVal("sessionScene", "siteKey")
+    if type(dKey) ~= "string" then
+        dKey = ""
+    end
+    if type(sKey) ~= "string" then
+        sKey = ""
+    end
+    dKey = trimString(dKey)
+    sKey = trimString(sKey)
+
+    local districtLabel = "—"
+    if dKey ~= "" then
+        local dist = C.Districts[dKey]
+        if type(dist) == "table" and type(dist.name) == "string" and trimString(dist.name) ~= "" then
+            districtLabel = dist.name
+        else
+            districtLabel = dKey
+        end
+    end
+
+    local siteFull = ""
+    if sKey ~= "" then
+        local site = C.Sites[sKey]
+        if type(site) == "table" and type(site.name) == "string" then
+            siteFull = trimString(site.name)
+        else
+            siteFull = sKey
+        end
+    end
+
+    return districtLabel, siteFull
+end
+
+--- Push district / site row (parent site + separator only when the site name contains a ":" split).
+local function reconcileLocationRowFromState()
+    local districtLabel, siteFull = resolveLocationLabelsFromState()
+    pushOverlayText("gameStateOverlay_district", districtLabel)
+
+    local hasParent, parentText, siteProper = splitSiteNameForOverlay(siteFull)
+    if hasParent then
+        pushOverlayText("gameStateOverlay_parentSite", parentText)
+        pushOverlayText("gameStateOverlay_site", siteProper)
+        pushOverlayActive("gameStateOverlay_parentSite", true)
+        pushOverlayActive("gameStateOverlay_parentSiteSeparator", true)
+    else
+        pushOverlayText("gameStateOverlay_parentSite", "")
+        pushOverlayText("gameStateOverlay_site", siteFull ~= "" and siteFull or "—")
+        pushOverlayActive("gameStateOverlay_parentSite", false)
+        pushOverlayActive("gameStateOverlay_parentSiteSeparator", false)
+    end
+end
+
+--- Idempotent: reads `gameState` and applies only required Global UI diffs for the center-top overlay.
+function GameStateOverlay.reconcileFromState()
+    if UI == nil or UI.setValue == nil or UI.setAttribute == nil then
         return
     end
 
     if not shouldShowNarrativeClockOnOverlay() then
-        UI.setValue("gameStateOverlay_datetime", "")
+        pushOverlayActive("gameStateOverlay_root", false)
+        pushOverlayText("gameStateOverlay_datetime", "")
+        pushOverlayText("gameStateOverlay_time", "")
+        clearOverlayUiCaches()
         return
     end
 
+    pushOverlayActive("gameStateOverlay_root", true)
+
+    reconcileLocationRowFromState()
+
     local ck = S.getStateVal("sessionScene", "clock")
     if type(ck) ~= "table" then
-        UI.setValue("gameStateOverlay_datetime", "—")
+        pushOverlayText("gameStateOverlay_datetime", "—")
+        pushOverlayText("gameStateOverlay_time", "")
         return
     end
+
     local y = tonumber(ck.year) or 2026
     local mo = tonumber(ck.month) or 1
     local d = tonumber(ck.day) or 1
-    UI.setValue(
-        "gameStateOverlay_datetime",
-        formatOverlayDateTime(y, mo, d, ck.hour, ck.minute)
-    )
+    pushOverlayText("gameStateOverlay_datetime", formatOverlayDateLine(y, mo, d))
+    pushOverlayText("gameStateOverlay_time", format12h(ck.hour, ck.minute))
+end
+
+--- After a real-time tick that advanced the narrative clock, update only the UI elements that changed.
+--- @param prevY number
+--- @param prevMo number
+--- @param prevD number
+--- @param y number
+--- @param mo number
+--- @param d number
+--- @param hour24 number
+--- @param minute number
+local function reconcileOverlayAfterClockTick(prevY, prevMo, prevD, y, mo, d, hour24, minute)
+    if UI == nil or UI.setValue == nil or UI.setAttribute == nil then
+        return
+    end
+
+    if not shouldShowNarrativeClockOnOverlay() then
+        pushOverlayActive("gameStateOverlay_root", false)
+        clearOverlayUiCaches()
+        return
+    end
+
+    pushOverlayActive("gameStateOverlay_root", true)
+
+    local dateChanged = prevY ~= y or prevMo ~= mo or prevD ~= d
+    if dateChanged then
+        pushOverlayText("gameStateOverlay_datetime", formatOverlayDateLine(y, mo, d))
+    end
+    pushOverlayText("gameStateOverlay_time", format12h(hour24, minute))
 end
 
 --- Advances `sessionScene.clock` when real-time simulation is enabled.
@@ -182,28 +348,35 @@ function GameStateOverlay.tickRealTimeClock()
     if type(ck) ~= "table" or ck.useRealTime ~= true then
         return false
     end
-    local oldHour = math.floor(tonumber(ck.hour) or 0)
-    local oldDay = math.floor(tonumber(ck.day) or 1)
     local speed = tonumber(ck.realTimeSpeed)
     if speed == nil or speed < 0 then
         speed = 1
     end
     if speed == 0 then
-        GameStateOverlay.refresh()
+        GameStateOverlay.reconcileFromState()
         return false
     end
 
-    local y = math.floor(tonumber(ck.year) or 2026)
-    local mo = math.floor(tonumber(ck.month) or 1)
-    local d = math.floor(tonumber(ck.day) or 1)
+    local prevY = math.floor(tonumber(ck.year) or 2026)
+    local prevMo = math.floor(tonumber(ck.month) or 1)
+    local prevD = math.floor(tonumber(ck.day) or 1)
+    local oldHour = math.floor(tonumber(ck.hour) or 0)
+    local oldDay = math.floor(tonumber(ck.day) or 1)
+
+    local y = prevY
+    local mo = prevMo
+    local d = prevD
     local h = math.floor(tonumber(ck.hour) or 0)
     local m = math.floor(tonumber(ck.minute) or 0)
 
-    -- `realTimeSpeed` is a multiplier on wall-clock pace: 1 => one narrative minute every 60 real seconds
-    -- (this ticker runs once per real second via `Wait.time(..., 1)`).
     rtMinuteCarry = rtMinuteCarry + (speed / 60)
     local addMin = math.floor(rtMinuteCarry)
     rtMinuteCarry = rtMinuteCarry - addMin
+
+    if addMin <= 0 then
+        return false
+    end
+
     m = m + addMin
     while m >= 60 do
         m = m - 60
@@ -215,7 +388,7 @@ function GameStateOverlay.tickRealTimeClock()
     end
 
     local function daysInMonth(year, month)
-        local dim = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+        local dim = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
         local maxd = dim[month]
         if month == 2 then
             local leap = year % 4 == 0 and (year % 100 ~= 0 or year % 400 == 0)
@@ -264,7 +437,8 @@ function GameStateOverlay.tickRealTimeClock()
     if h ~= oldHour or d ~= oldDay then
         ChronicleWeather.applyScheduledWeather({ force = false })
     end
-    GameStateOverlay.refresh()
+
+    reconcileOverlayAfterClockTick(prevY, prevMo, prevD, y, mo, d, h, m)
     return true
 end
 
@@ -305,5 +479,8 @@ end
 function GameStateOverlay.resetRealTimeCarry()
     rtMinuteCarry = 0
 end
+
+--- Back-compat alias: all call sites should use `reconcileFromState` via `Sync.ui` / `UpdateUIDisplays`.
+GameStateOverlay.refresh = GameStateOverlay.reconcileFromState
 
 return GameStateOverlay

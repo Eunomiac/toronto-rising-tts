@@ -1,0 +1,257 @@
+<!-- Generated file. Edit ui/.templates/panel_overlay_camera.xml only. -->
+<!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/HUDs & Overlays/Player HUD Overview.md. -->
+
+<Panel id="playerHud_overlay_camera_Brown" class="playerHud_overlay_camera" visibility="Brown">
+
+  <Image id="popout_cameraPanel_Brown" class="popoutControl_camera alpha_control" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
+
+
+  <Panel id="playerHud_overlay_cameraControls_Brown" class="playerHud_overlay_cameraControls" padding="30 30 10 10" active="false">
+
+    <Image class="bg_cameraControls" image="bg_playerOverlay_cameraControls" ignoreLayout="true" raycastTarget="true" />
+
+    <Panel id="cameraControls_left_Brown" class="cameraControls_left">
+      <VerticalLayout class="cameraControls_otherControls">
+        <HorizontalLayout id="cameraControls_otherControlsRed_Brown" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Red" />
+          <Image id="cameraControl_diceRed_Brown" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetRed_Brown" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsOrange_Brown" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Orange" />
+          <Image id="cameraControl_diceOrange_Brown" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetOrange_Brown" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsPink_Brown" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Pink" />
+          <Image id="cameraControl_dicePink_Brown" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetPink_Brown" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsBrown_Brown" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Brown" />
+          <Image id="cameraControl_diceBrown_Brown" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetBrown_Brown" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsPurple_Brown" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Purple" />
+          <Image id="cameraControl_dicePurple_Brown" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetPurple_Brown" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+      </VerticalLayout>
+    </Panel>
+
+    <Panel id="cameraControls_right_Brown" class="cameraControls_right">
+      <VerticalLayout class="cameraControls_selfControls">
+        <Image id="cameraControl_default_Brown" class="camera_control alpha_control" image="buttonCamera_main" />
+        <Image id="cameraControl_diceTray_Brown" class="camera_control alpha_control" image="buttonCamera_dice" />
+        <Image id="cameraControl_sheet_Brown" class="camera_control alpha_control" image="buttonCamera_sheet" />
+      </VerticalLayout>
+    </Panel>
+
+  </Panel>
+
+</Panel>
+
+<Panel id="playerHud_overlay_camera_Orange" class="playerHud_overlay_camera" visibility="Orange">
+
+  <Image id="popout_cameraPanel_Orange" class="popoutControl_camera alpha_control" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
+
+
+  <Panel id="playerHud_overlay_cameraControls_Orange" class="playerHud_overlay_cameraControls" padding="30 30 10 10" active="false">
+
+    <Image class="bg_cameraControls" image="bg_playerOverlay_cameraControls" ignoreLayout="true" raycastTarget="true" />
+
+    <Panel id="cameraControls_left_Orange" class="cameraControls_left">
+      <VerticalLayout class="cameraControls_otherControls">
+        <HorizontalLayout id="cameraControls_otherControlsRed_Orange" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Red" />
+          <Image id="cameraControl_diceRed_Orange" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetRed_Orange" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsOrange_Orange" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Orange" />
+          <Image id="cameraControl_diceOrange_Orange" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetOrange_Orange" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsPink_Orange" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Pink" />
+          <Image id="cameraControl_dicePink_Orange" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetPink_Orange" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsBrown_Orange" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Brown" />
+          <Image id="cameraControl_diceBrown_Orange" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetBrown_Orange" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsPurple_Orange" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Purple" />
+          <Image id="cameraControl_dicePurple_Orange" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetPurple_Orange" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+      </VerticalLayout>
+    </Panel>
+
+    <Panel id="cameraControls_right_Orange" class="cameraControls_right">
+      <VerticalLayout class="cameraControls_selfControls">
+        <Image id="cameraControl_default_Orange" class="camera_control alpha_control" image="buttonCamera_main" />
+        <Image id="cameraControl_diceTray_Orange" class="camera_control alpha_control" image="buttonCamera_dice" />
+        <Image id="cameraControl_sheet_Orange" class="camera_control alpha_control" image="buttonCamera_sheet" />
+      </VerticalLayout>
+    </Panel>
+
+  </Panel>
+
+</Panel>
+
+<Panel id="playerHud_overlay_camera_Red" class="playerHud_overlay_camera" visibility="Red">
+
+  <Image id="popout_cameraPanel_Red" class="popoutControl_camera alpha_control" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
+
+
+  <Panel id="playerHud_overlay_cameraControls_Red" class="playerHud_overlay_cameraControls" padding="30 30 10 10" active="false">
+
+    <Image class="bg_cameraControls" image="bg_playerOverlay_cameraControls" ignoreLayout="true" raycastTarget="true" />
+
+    <Panel id="cameraControls_left_Red" class="cameraControls_left">
+      <VerticalLayout class="cameraControls_otherControls">
+        <HorizontalLayout id="cameraControls_otherControlsRed_Red" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Red" />
+          <Image id="cameraControl_diceRed_Red" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetRed_Red" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsOrange_Red" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Orange" />
+          <Image id="cameraControl_diceOrange_Red" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetOrange_Red" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsPink_Red" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Pink" />
+          <Image id="cameraControl_dicePink_Red" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetPink_Red" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsBrown_Red" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Brown" />
+          <Image id="cameraControl_diceBrown_Red" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetBrown_Red" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsPurple_Red" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Purple" />
+          <Image id="cameraControl_dicePurple_Red" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetPurple_Red" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+      </VerticalLayout>
+    </Panel>
+
+    <Panel id="cameraControls_right_Red" class="cameraControls_right">
+      <VerticalLayout class="cameraControls_selfControls">
+        <Image id="cameraControl_default_Red" class="camera_control alpha_control" image="buttonCamera_main" />
+        <Image id="cameraControl_diceTray_Red" class="camera_control alpha_control" image="buttonCamera_dice" />
+        <Image id="cameraControl_sheet_Red" class="camera_control alpha_control" image="buttonCamera_sheet" />
+      </VerticalLayout>
+    </Panel>
+
+  </Panel>
+
+</Panel>
+
+<Panel id="playerHud_overlay_camera_Pink" class="playerHud_overlay_camera" visibility="Pink">
+
+  <Image id="popout_cameraPanel_Pink" class="popoutControl_camera alpha_control" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
+
+
+  <Panel id="playerHud_overlay_cameraControls_Pink" class="playerHud_overlay_cameraControls" padding="30 30 10 10" active="false">
+
+    <Image class="bg_cameraControls" image="bg_playerOverlay_cameraControls" ignoreLayout="true" raycastTarget="true" />
+
+    <Panel id="cameraControls_left_Pink" class="cameraControls_left">
+      <VerticalLayout class="cameraControls_otherControls">
+        <HorizontalLayout id="cameraControls_otherControlsRed_Pink" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Red" />
+          <Image id="cameraControl_diceRed_Pink" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetRed_Pink" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsOrange_Pink" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Orange" />
+          <Image id="cameraControl_diceOrange_Pink" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetOrange_Pink" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsPink_Pink" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Pink" />
+          <Image id="cameraControl_dicePink_Pink" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetPink_Pink" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsBrown_Pink" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Brown" />
+          <Image id="cameraControl_diceBrown_Pink" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetBrown_Pink" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsPurple_Pink" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Purple" />
+          <Image id="cameraControl_dicePurple_Pink" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetPurple_Pink" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+      </VerticalLayout>
+    </Panel>
+
+    <Panel id="cameraControls_right_Pink" class="cameraControls_right">
+      <VerticalLayout class="cameraControls_selfControls">
+        <Image id="cameraControl_default_Pink" class="camera_control alpha_control" image="buttonCamera_main" />
+        <Image id="cameraControl_diceTray_Pink" class="camera_control alpha_control" image="buttonCamera_dice" />
+        <Image id="cameraControl_sheet_Pink" class="camera_control alpha_control" image="buttonCamera_sheet" />
+      </VerticalLayout>
+    </Panel>
+
+  </Panel>
+
+</Panel>
+
+<Panel id="playerHud_overlay_camera_Purple" class="playerHud_overlay_camera" visibility="Purple">
+
+  <Image id="popout_cameraPanel_Purple" class="popoutControl_camera alpha_control" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
+
+
+  <Panel id="playerHud_overlay_cameraControls_Purple" class="playerHud_overlay_cameraControls" padding="30 30 10 10" active="false">
+
+    <Image class="bg_cameraControls" image="bg_playerOverlay_cameraControls" ignoreLayout="true" raycastTarget="true" />
+
+    <Panel id="cameraControls_left_Purple" class="cameraControls_left">
+      <VerticalLayout class="cameraControls_otherControls">
+        <HorizontalLayout id="cameraControls_otherControlsRed_Purple" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Red" />
+          <Image id="cameraControl_diceRed_Purple" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetRed_Purple" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsOrange_Purple" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Orange" />
+          <Image id="cameraControl_diceOrange_Purple" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetOrange_Purple" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsPink_Purple" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Pink" />
+          <Image id="cameraControl_dicePink_Purple" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetPink_Purple" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsBrown_Purple" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Brown" />
+          <Image id="cameraControl_diceBrown_Purple" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetBrown_Purple" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+        <HorizontalLayout id="cameraControls_otherControlsPurple_Purple" class="cameraControls_otherControlRow">
+          <Image class="cameraControls_label" image="nameLabel_Purple" />
+          <Image id="cameraControl_dicePurple_Purple" class="camera_control alpha_control" image="buttonCamera_dice" />
+          <Image id="cameraControl_sheetPurple_Purple" class="camera_control alpha_control" image="buttonCamera_sheet" />
+        </HorizontalLayout>
+      </VerticalLayout>
+    </Panel>
+
+    <Panel id="cameraControls_right_Purple" class="cameraControls_right">
+      <VerticalLayout class="cameraControls_selfControls">
+        <Image id="cameraControl_default_Purple" class="camera_control alpha_control" image="buttonCamera_main" />
+        <Image id="cameraControl_diceTray_Purple" class="camera_control alpha_control" image="buttonCamera_dice" />
+        <Image id="cameraControl_sheet_Purple" class="camera_control alpha_control" image="buttonCamera_sheet" />
+      </VerticalLayout>
+    </Panel>
+
+  </Panel>
+
+</Panel>

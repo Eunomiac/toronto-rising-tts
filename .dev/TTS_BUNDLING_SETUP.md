@@ -272,6 +272,7 @@ Helper script for player (and other) UI XML that is generated from templates.
 - The first non-empty line of each template must be `<!-- TARGET: path/from/repo/root.xml -->`.
 - If the template root contains `@@color@@`, it is duplicated once per `C.PlayerColors` value (from `lib/constants.ttslua`); otherwise a single root is written (pass-through).
 - Each output file begins with a banner pointing back to the template source.
+- Tag parsing for finding the single root element ignores matches inside `<!-- ... -->` comments, so placeholders like `<Color>` in prose comments do not corrupt the tag stack (see `listXmlCommentRanges` in `.dev/scripts/xml_color_template_generator.js`).
 
 ### Where it writes outputs
 
