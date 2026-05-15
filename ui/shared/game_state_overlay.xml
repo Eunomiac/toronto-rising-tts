@@ -5,11 +5,11 @@
 
   <Panel class="gameStateOverlay" height="100%" width="100%" raycastTarget="false" />
 
-  <VerticalLayout class="gameStateOverlay_topCenter" width="800" height="145" rectAlignment="UpperCenter" childAlignment="UpperCenter" spacing="5" padding="5 5 5 5" />
+  <VerticalLayout class="gameStateOverlay_topCenter" width="900" height="170" rectAlignment="UpperCenter" childAlignment="UpperCenter" spacing="5" padding="5 5 5 5" />
 
   <VerticalLayout class="gameStateOverlay_topRight" width="372" height="110" rectAlignment="UpperRight" childAlignment="UpperRight" spacing="5" padding="5 5 5 5" offsetXY="2 0" />
 
-  <Image class="gameStateOverlay_background" raycastTarget="false" preserveAspect="true" ignoreLayout="true" width="100%" />
+  <Image class="gameStateOverlay_background" raycastTarget="false" preserveAspect="true" ignoreLayout="true" width="100%" rectAlignment="UpperCenter" />
 
   <Text class="large_red_text" fontSize="42" fontStyle="Bold" color="#CC0000" outline="#000000" outlineSize="2 -2" alignment="MiddleCenter" />
   <Text class="med_red_text" fontSize="30" fontStyle="Bold" color="#CC0000" outline="#000000" outlineSize="2 -2" alignment="MiddleCenter" />
@@ -22,13 +22,13 @@
 
 <Panel id="gameStateOverlay_root" class="gameStateOverlay">
   <!--
-U.setAttributes("gameStateOverlay_timeAndLocation", {height = "145"})
+U.setAttributes("gameStateOverlay_timeAndLocation", {height = "170", width="900", color="#FF0000", childAlignment="MiddleCenter"})
 -->
 
   <VerticalLayout id="gameStateOverlay_timeAndLocation" class="gameStateOverlay_topCenter">
-    <Image class="gameStateOverlay_background" image="bg_playerOverlay_timeLocation" />
+    <Image id="gameStateOverlay_timeAndLocation_background" class="gameStateOverlay_background" image="bg_playerOverlay_timeLocation" />
     <!--
-U.setAttributes("gameStateOverlay_sesionNumber", {text = "− Ⅼ Ⅹ Ⅴ Ⅰ Ⅰ −"})
+U.setAttributes("gameStateOverlay_sesionNumber", {text = "− Ⅰ −"})
 -->
     <Text id="gameStateOverlay_sesionNumber" class="small_red_text" text="− Ⅼ Ⅹ Ⅴ Ⅰ Ⅰ −" />
     <HorizontalLayout class="gameStateOverlay_location" spacing="5" childAlignment="UpperCenter">

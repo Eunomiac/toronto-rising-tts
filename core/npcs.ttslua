@@ -700,11 +700,12 @@ function NPCS.findNextFreeSlotIndex(areaKey)
     return nil
 end
 
---- Prefer `preferred` when it is valid and free; otherwise first free slot.
+--- Prefer `preferred` when valid and free (or held by `excludeNpcName`); otherwise first free slot.
 --- @param areaKey string
 --- @param preferred number|nil
+--- @param excludeNpcName string|nil moving NPC — its current slot counts as available
 --- @return number|nil
-local function resolveSlotForMove(areaKey, preferred)
+local function resolveSlotForMove(areaKey, preferred, excludeNpcName)
     local area = NPCS.areas[areaKey]
     if not area or U.Type(area.positions) ~= "table" then
         return nil
@@ -712,11 +713,22 @@ local function resolveSlotForMove(areaKey, preferred)
     local n = #area.positions
     if U.Type(preferred) == "number" and preferred >= 1 and preferred <= n then
         local occ = NPCS.getOccupiedSlots(areaKey)
-        if occ and occ[preferred] == nil then
+        local holder = occ and occ[preferred]
+        if holder == nil or (U.Type(excludeNpcName) == "string" and holder == excludeNpcName) then
             return preferred
         end
     end
     return NPCS.findNextFreeSlotIndex(areaKey)
+end
+
+--- Stable preload slot when free; otherwise first free slot in the preload grid (same occupancy rules as play areas).
+--- @param npcName string
+--- @param preferredSlot number|nil optional override (e.g. scene stash)
+--- @return number|nil
+local function resolvePreloadSlotForMove(npcName, preferredSlot)
+    ensurePreloadLayoutCapacity()
+    local preferred = U.Type(preferredSlot) == "number" and preferredSlot or stablePreloadSlotIndex(npcName)
+    return resolveSlotForMove(PRELOAD_AREA_KEY, preferred, npcName)
 end
 
 --- Rotate (x, z) in the horizontal plane by `rad` around Y (matches NPC slot offset math).
@@ -1079,6 +1091,14 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
     if area == nil or U.Type(slotIndex) ~= "number" or slotIndex < 1 or slotIndex > #area.positions then
         return false, "Invalid area or slot."
     end
+    if areaKey == PRELOAD_AREA_KEY then
+        ensurePreloadLayoutCapacity()
+        local resolved = resolveSlotForMove(PRELOAD_AREA_KEY, slotIndex, nil)
+        if resolved == nil then
+            return false, "No free slot in preload pool."
+        end
+        slotIndex = resolved
+    end
     local front = def.figurine and def.figurine.images and def.figurine.images.front or ""
     local back = def.figurine and def.figurine.images and def.figurine.images.back or ""
     if U.Type(front) ~= "string" or front == "" then
@@ -1262,23 +1282,35 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
         local fig = getObjectFromGUID(rec.figurineGuid or "")
         if fig == nil then
             setInstanceRecord(npcName, nil)
-            return NPCS.spawnNpcAtSlot(npcName, PRELOAD_AREA_KEY, slot, opts)
+            local respawnSlot = resolvePreloadSlotForMove(npcName, slot)
+            if respawnSlot == nil then
+                return false, "No free slot in preload pool."
+            end
+            return NPCS.spawnNpcAtSlot(npcName, PRELOAD_AREA_KEY, respawnSlot, opts)
         end
-        if ak == PRELOAD_AREA_KEY and U.Type(rec.slotIndex) == "number" and rec.slotIndex == slot
+        local resolvedSlot = resolvePreloadSlotForMove(npcName, slot)
+        if resolvedSlot == nil then
+            return false, "No free slot in preload pool."
+        end
+        if ak == PRELOAD_AREA_KEY and U.Type(rec.slotIndex) == "number" and rec.slotIndex == resolvedSlot
             and not (U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey)) then
             local lit = getObjectFromGUID(rec.lightGuid or "")
             applyNpcPairPhysicalPresentation(fig, lit, PRELOAD_AREA_KEY)
             return true, nil
         end
         return NPCS.moveNpcToArea(npcName, PRELOAD_AREA_KEY, {
-            preferredSlot = slot,
+            preferredSlot = resolvedSlot,
             forceNpcLightMode = U.Type(opts.forceNpcLightMode) == "string" and opts.forceNpcLightMode or "OFF",
             skipUiRefresh = opts.deferUiRefresh == true,
             skipSeatSync = opts.skipSeatSync == true,
             forceSessionLayoutStash = true,
         })
     end
-    return NPCS.spawnNpcAtSlot(npcName, PRELOAD_AREA_KEY, slot, opts)
+    local spawnSlot = resolvePreloadSlotForMove(npcName, slot)
+    if spawnSlot == nil then
+        return false, "No free slot in preload pool."
+    end
+    return NPCS.spawnNpcAtSlot(npcName, PRELOAD_AREA_KEY, spawnSlot, opts)
 end
 
 --- Applies `gameState.sessionScene.npcWorld.byArea`: when authored data changed, optionally stash all figurines into
@@ -1372,12 +1404,12 @@ function NPCS.spawnOrMoveIndividual(npcName, areaKey, opts)
                 .. "' is not in the preload pool; wait for ensureAllNpcsPreloaded before activating."
         )
     end
-    local slot = opts.preferredSlot
-    if U.Type(slot) ~= "number" then
-        slot = stablePreloadSlotIndex(npcName)
-    end
-    if slot == nil then
+    if stablePreloadSlotIndex(npcName) == nil and U.Type(opts.preferredSlot) ~= "number" then
         return false, "No preload slot for NPC."
+    end
+    local slot = resolvePreloadSlotForMove(npcName, opts.preferredSlot)
+    if slot == nil then
+        return false, "No free slot in preload pool."
     end
     return NPCS.spawnNpcAtSlot(npcName, PRELOAD_AREA_KEY, slot, opts)
 end
@@ -1430,13 +1462,16 @@ function NPCS.moveNpcToArea(npcName, areaKey, opts)
     end
     local slot
     if areaKey == PRELOAD_AREA_KEY then
-        slot = stablePreloadSlotIndex(npcName)
-        if slot == nil then
+        if stablePreloadSlotIndex(npcName) == nil and U.Type(opts.preferredSlot) ~= "number" then
             return false, "No stable preload slot for NPC."
+        end
+        slot = resolvePreloadSlotForMove(npcName, opts.preferredSlot)
+        if slot == nil then
+            return false, "No free slot in preload pool."
         end
     else
         local preferredSlot = U.Type(opts.preferredSlot) == "number" and opts.preferredSlot or rec.slotIndex
-        slot = resolveSlotForMove(areaKey, preferredSlot)
+        slot = resolveSlotForMove(areaKey, preferredSlot, npcName)
         if slot == nil then
             return false, "No free slot in area."
         end
