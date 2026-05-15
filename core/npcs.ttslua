@@ -426,7 +426,15 @@ local function applySeatFigurineVisuals(npcName, seatKey)
     end
 end
 
---- Figurine scale + tooltip and paired spotlight scale (under-table pool uses small objects, no figurine tooltips).
+--- NPC figurines stay TTS-locked at all times (players cannot drag); `rec.locked` is Storyteller "pin" for script moves only.
+--- @param fig Object|nil
+local function ensureNpcFigurinePhysicsLocked(fig)
+    if U.isGameObject(fig) and fig.setLock ~= nil then
+        fig.setLock(true)
+    end
+end
+
+--- Figurine scale + tooltip and paired spotlight scale (preload = small, tooltips off; active areas/seats = full, tooltips on).
 --- @param fig Object|nil
 --- @param lit Object|nil
 --- @param areaKey string
@@ -443,6 +451,7 @@ local function applyNpcPairPhysicalPresentation(fig, lit, areaKey)
     if U.isGameObject(lit) and lit.setScale ~= nil then
         lit.setScale(Vector(ls, ls, ls))
     end
+    ensureNpcFigurinePhysicsLocked(fig)
 end
 
 --- @param rec table|nil
@@ -778,6 +787,7 @@ function NPCS.applyFigurinePlacement(figurine, areaKey, slotIndex)
     local pivotZ = math.cos(rad) * area.distance
     local yawDeg = math.atan2(-pivotX, -pivotZ) * (180 / math.pi) + AREA_NPC_FIGURINE_YAW_OFFSET_DEG
     figurine.setRotation(Vector(0, yawDeg, 0))
+    ensureNpcFigurinePhysicsLocked(figurine)
 end
 
 --- @param npcName string
@@ -914,6 +924,7 @@ end
 function NPCS.onObjectDropped(obj)
     local npcName = NPCS.resolveNpcNameFromFigurine(obj)
     if npcName then
+        ensureNpcFigurinePhysicsLocked(obj)
         NPCS.applyCurrentLightMode(npcName, 0)
     end
 end
@@ -1120,7 +1131,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                     safeAlertGM("NPCS spawn: nil figurine for " .. tostring(npcName))
                     return
                 end
-                fig.setLock(true)
+                ensureNpcFigurinePhysicsLocked(fig)
 
                 --- Light: `spawnObjectData` from embedded save-shape defaults (lib/npcs_light_spawn_defaults.ttslua).
                 --- No in-world template object required — unlike `Object.clone()`, `spawnObject` / `spawnObjectData` do not.
@@ -1168,6 +1179,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                     areaKey = areaKey,
                     slotIndex = slotIndex,
                     npcLightMode = effectiveNpcLightModeForAreaPlacement(areaForSpawn, opts),
+                    --- Storyteller panel "lock in place" (blocks script moves); not TTS object lock (always locked).
                     locked = false,
                 }
                 setInstanceRecord(npcName, rec)
@@ -1738,11 +1750,12 @@ end
 
 --- @param rec table|nil
 --- @return boolean
+--- Storyteller "pin in place" for script-driven moves (`moveNpcToArea`, etc.). Independent of TTS `setLock` (always on).
 isNpcLocked = function(rec)
     if U.Type(rec) ~= "table" then
         return false
     end
-    return rec and rec.locked == true or tostring(rec and rec.locked) == "true"
+    return rec.locked == true or tostring(rec.locked) == "true"
 end
 
 --- @param groupId string
@@ -1810,6 +1823,7 @@ function NPCS.restoreAfterStateLoad()
             local fig = getObjectFromGUID(rec.figurineGuid)
             local lit = getObjectFromGUID(rec.lightGuid)
             if fig ~= nil and lit ~= nil then
+                ensureNpcFigurinePhysicsLocked(fig)
                 ensureSpotlightTag(lit)
                 L.registerNpcSpotlightModes(name, rec.lightGuid)
             end

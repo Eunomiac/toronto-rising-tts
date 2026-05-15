@@ -54,7 +54,7 @@ Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `
 
 ### Spawn source
 
-* **Figurine:** `spawnObject` with type `Figurine_Custom` (TTS internal name; not `Custom_Figurine`), then `setCustomObject` with `image`, `image_secondary`, **`image_scalar`** (save: `CustomImage.ImageScalar`), and **`use_minimal_collider = true`** (save: `CustomFigurine.UseMinimalCollider`). Figurine is **`setLock(true)`** immediately after configuration so physics does not drop it before placement.
+* **Figurine:** `spawnObjectData` with embedded `Figurine_Custom` / `CustomImage` (see `core/npcs.ttslua`). Figurines are **always** TTS-locked via `ensureNpcFigurinePhysicsLocked` (spawn + every script placement). **`rec.locked`** is the Storyteller panel “pin in place” (blocks script moves only). **Tooltips** off in the preload pool; on when active in a stage area or at a seat.
 * **Light:** `clone()` from a **template object** in the save whose hierarchy matches `getLightComponent` in `core/lighting.ttslua` (child name matching `^spotlight`). Set GUID constant in [`lib/guids.ttslua`](../../lib/guids.ttslua) (`NPC_LIGHT_CLONE_TEMPLATE`).
 
 ---
