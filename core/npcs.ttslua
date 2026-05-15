@@ -1398,11 +1398,9 @@ function NPCS.spawnOrMoveIndividual(npcName, areaKey, opts)
         return NPCS.moveNpcToArea(npcName, areaKey, opts)
     end
     if areaKey ~= PRELOAD_AREA_KEY then
-        npcPoolPolicyError(
-            "spawnOrMoveIndividual: NPC '"
-                .. tostring(npcName)
-                .. "' is not in the preload pool; wait for ensureAllNpcsPreloaded before activating."
-        )
+        return false, "NPC '"
+            .. tostring(npcName)
+            .. "' is not in the preload pool; wait for ensureAllNpcsPreloaded before activating."
     end
     if stablePreloadSlotIndex(npcName) == nil and U.Type(opts.preferredSlot) ~= "number" then
         return false, "No preload slot for NPC."
