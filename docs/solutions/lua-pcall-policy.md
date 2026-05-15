@@ -6,7 +6,15 @@ Prefer **no** `pcall` / `xpcall`. Errors should surface in the TTS log so failur
 
 ## Build gate
 
-Run `npm run check:pcall-gate` (see `.tools/pcall-gate/check-pcall-gate.mjs`). It counts non-overlapping matches of the regex `\bpcall\s*\(` in `*.ttslua` under `core/`, `global/`, `lib/`, `objects/`, and `ui/` (recursive only). That includes **comments and strings** that contain the substring `pcall(` — avoid writing prose like `` `pcall(require)` `` in comments or the gate count will be inflated. The script compares the total to the last numeric baseline in `.dev/build-logs/pcall-gate.txt` and **exits with an error** if the current count is **greater** than that baseline. To approve a higher count after intentional changes, edit the **last** data line in that log (or append a new line) with a count ≥ the new total, then re-run.
+Run `npm run check:pcall-gate` (see `.tools/pcall-gate/check-pcall-gate.mjs`). It counts:
+
+- **`pcall`** — `\bpcall\s*\(` in all scanned `*.ttslua` trees
+- **`waitTime`** — `\bWait\.time\s*\(` and `\bW\.time\s*\(` outside `lib/util.ttslua` only
+- **`waitCondition`** — `\bWait\.condition\s*\(` outside `lib/util.ttslua` only
+
+That includes **comments and strings** that contain those substrings — avoid prose like `` `pcall(require)` `` or `` `Wait.time(...)` `` in comments outside util or counts will be inflated. Log format: `ISO8601\tpcall=N\twaitTime=N\twaitCondition=N` in `.dev/build-logs/pcall-gate.txt`. The script **exits with an error** if any metric is **greater** than the last logged baseline. To approve increases, edit the **last** data line (or append) with counts ≥ the new totals, then re-run.
+
+Wait API policy detail: [`lua-wait-api-policy.md`](lua-wait-api-policy.md).
 
 `npm run build` / `npm run build:all-tooling` (default **Ctrl+Shift+B** pipeline) runs **`check:pcall-gate` first** so a failed gate stops before TypeScript or Lua generators. For other workflows, chain `npm run check:pcall-gate` manually before build steps, or run it in CI.
 

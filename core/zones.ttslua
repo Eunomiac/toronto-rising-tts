@@ -37,7 +37,7 @@ local zoneThrottle = {}
 local function throttleZone(zone, func, delay)
     if delay == nil then delay = 0.4 end
     zoneThrottle[zone.guid] = true
-    Wait.time(function()
+    U.delay(function()
         func()
         zoneThrottle[zone.guid] = nil
     end, delay)
@@ -365,7 +365,7 @@ function Z.onObjectEnterZone(zone, object)
     --     throttleZone(zone, function()
     --         -- Align card, refresh UI, etc.
     --         Z.alignCard(zone)
-    --         Wait.time(function()
+    --         U.delay(function()
     --             -- Update UI or perform follow-up actions
     --         end, 0.5)
     --     end)
@@ -402,7 +402,7 @@ function Z.onObjectLeaveZone(zone, object)
     --     object.sticky = true -- Restore sticky property
     -- end
     --
-    -- Wait.time(function()
+    -- U.delay(function()
     --     -- Re-align remaining objects, refresh UI
     --     if Z.hasCard(zone) then
     --         Z.alignCard(zone)

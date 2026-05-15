@@ -111,9 +111,13 @@
 
 | Function | Description | Dependencies | Usage Example |
 |----------|-------------|--------------|---------------|
+| `U.delay(callback, seconds)` | One-shot delayed callback | — | Debounce, timers |
+| `U.stopDelay(handle)` | Cancel `U.delay` timer | — | Cancellable timers |
+| `U.waitForCondition(onDone, testFn, timeout?)` | Poll until true | — | Light ready |
+| `U.scheduleAtOffsets(callback, offsets)` | Same callback at multiple delays | Uses `U.delay` | Bootstrap retries |
 | `U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)` | Wait until condition met, then execute | Requires `startLuaCoroutine` | Wait for object to rest |
 | `U.RunSequence(funcs, maxWait, frequency)` | Execute functions sequentially with conditions | Uses `U.waitUntil` | Scene transitions |
-| `U.sequence(funcs, timeDelay)` | Execute functions with fixed delays | Uses `Wait.time` | Staggered UI updates |
+| `U.sequence(funcs, timeDelay)` | Execute functions with fixed delays | Uses `U.delay` | Staggered UI updates |
 | `U.waitRestingSequence(funcs, maxTime, isLoose)` | Wait for multiple objects to rest | Uses coroutines | Wait for all cards to settle |
 
 **Critical Notes:**

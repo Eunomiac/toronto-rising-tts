@@ -150,9 +150,14 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
+| `U.delay(callback, seconds)` | One-shot delayed callback (wraps TTS `Wait.time`) | Debounce, timers, stagger |
+| `U.stopDelay(handle)` | Cancel a timer from `U.delay` | Real-time ticker, roll cleanup |
+| `U.waitForCondition(onDone, testFn, timeoutSeconds?)` | Poll until true, then run callback | Light component ready |
+| `U.scheduleAtOffsets(callback, offsetsSeconds)` | Same callback at multiple delays | Bootstrap retries in `Sync.full` |
 | `U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)` | Wait until condition met, then execute | Wait for object to rest |
 | `U.RunSequence(funcs, maxWait, frequency)` | Execute functions sequentially with conditions | Scene transitions |
 | `U.sequence(funcs, timeDelay)` | Execute functions with fixed delays | Staggered UI updates |
+| `U.runAfterObjectPhysicsSettled(getObject, timeout, callback, completeEarlyIf?)` | `Wait.condition` after object rests | `onObjectRandomize` die settle |
 | `U.waitRestingSequence(funcs, maxTime, isLoose)` | Wait for multiple objects to rest | Wait for all cards to settle |
 
 ### 1.10 Animation & Interpolation Utilities
@@ -354,8 +359,8 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `ChronicleWeather.getRow(month, day, hour)` | Returns `{ wind, rain, thunder }` for that calendar hour or `nil` | Inspect scheduled intent |
-| `ChronicleWeather.shouldAutoApply()` | False when `sessionScene.chronicleWeatherManualHold` or follow schedule is off | Gate automation |
-| `ChronicleWeather.applyScheduledWeather(opts)` | Sets `soundscape.weather` to `"none"`, applies rain/wind/thunder from CSV; `opts.force` ignores follow/hold | `ChronicleWeather.applyScheduledWeather({ force = true })` |
+| `ChronicleWeather.shouldAutoApply()` | Currently always `true` (gates removed); reserved for future hold/follow wiring | Rarely called directly |
+| `ChronicleWeather.applyScheduledWeather(opts)` | Sets `soundscape.weather` to `"none"`, applies rain/wind/thunder via `Soundscape.set*`; on **full success** primes `Soundscape.markReconciledToCurrentState` so the next `Sync.full` does not double-fade; on **partial failure** calls `invalidateReconcileCache` for recovery; `opts.force` | `ChronicleWeather.applyScheduledWeather({ force = true })` |
 
 ---
 
@@ -508,7 +513,7 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 
 ### Need to wait for conditions?
 
-→ Use `U.waitUntil()`, `U.RunSequence()`, `U.sequence()`
+→ Use `U.delay()`, `U.waitForCondition()`, `U.scheduleAtOffsets()`, `U.waitUntil()`, `U.RunSequence()`, `U.sequence()`, `U.runAfterObjectPhysicsSettled()` — not raw `Wait.time` / `Wait.condition` (see `docs/solutions/lua-wait-api-policy.md`)
 
 ### Need to manipulate UI?
 

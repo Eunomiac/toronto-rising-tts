@@ -294,7 +294,7 @@ function DEBUG.applyLastCapturedCameraPreset(player)
         yaw = entry.yaw,
         distance = entry.distance,
     })
-    Wait.time(function()
+    U.delay(function()
         player.setCameraMode(entry.cameraMode)
     end, 0.5)
 
@@ -668,7 +668,7 @@ function DEBUG.testScenes()
     end
 
     -- Wait a moment and check
-    Wait.time(function()
+    U.delay(function()
         local currentScene = Scenes.getCurrentScene()
         print("Current scene after fade: " .. tostring(currentScene))
     end, 2.5)
@@ -691,7 +691,7 @@ function DEBUG.testAllScenes()
         if success then
             successCount = successCount + 1
             print("  ✓ Loaded successfully")
-            Wait.time(function() end, 0.5)  -- Brief delay between scenes
+            U.delay(function() end, 0.5)  -- Brief delay between scenes
         else
             print("  ✗ Failed to load")
         end
@@ -787,7 +787,7 @@ function DEBUG.testZones()
     table.insert(sequenceFunctions, function()
         broadcast("✅ Testing Zone Activation", {0, 1, 0})
         Z.activateZones()
-        Wait.time(function()
+        U.delay(function()
             local zonesLocked = S.getStateVal("zones", "allLocked")
             local success = zonesLocked == false
             printTestResult("Zone Activation", success, "Zones activated (locked: " .. tostring(zonesLocked) .. ")")
@@ -800,7 +800,7 @@ function DEBUG.testZones()
     table.insert(sequenceFunctions, function()
         broadcast("❌ Testing Zone Deactivation", {1, 0, 0})
         Z.deactivateZones()
-        Wait.time(function()
+        U.delay(function()
             local zonesLocked = S.getStateVal("zones", "allLocked")
             local success = zonesLocked == true
             printTestResult("Zone Deactivation", success, "Zones deactivated (locked: " .. tostring(zonesLocked) .. ")")
@@ -1245,7 +1245,7 @@ function DEBUG.testUI()
                 UpdateUIDisplays()
 
                 -- Verify after animation completes to avoid flaky exact comparisons.
-                Wait.time(function()
+                U.delay(function()
                     local afterRecenterOffsetXY = UI.getAttribute(draggableID, "offsetXY")
                     local afterRecenterX, afterRecenterY = parseOffsetXY(afterRecenterOffsetXY)
                     local panMatchesBennington = afterRecenterX == expectedBenningtonPanX and afterRecenterY == expectedBenningtonPanY
@@ -2430,7 +2430,7 @@ function DEBUG.ensureEasingTestRig()
 	-- (same idea as `NPC_LIGHT_POST_READY_DELAY_SEC` in core/npcs.ttslua).
 	if light ~= nil then
 		local litRef = light
-		Wait.time(function()
+		U.delay(function()
 				local g = litRef.getGUID()
 				if U.Type(g) ~= "string" then
 					return

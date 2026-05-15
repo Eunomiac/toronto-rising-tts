@@ -299,6 +299,7 @@ Existing functions that already fit (sometimes need renaming for consistency):
 | `Scenes.loadScene(name, transitionTime)` | stays as the **mutation** API; new `Scenes.reconcileFromState()` reapplies the saved scene without mutating it |
 | Scene stage application (`lightStages`) | applies ambient/non-player lights; player-seat lights are reconciler-owned |
 | `Soundscape.reconcileFromState()` | reconciles audio playback from persisted state during sync/load |
+| Dual eager + reconcile | See [Dual_apply_survey.md](Dual_apply_survey.md): avoid stacking fades when setters already matched emitters to state (`markReconciledToCurrentState` vs `invalidateReconcileCache`) |
 | `Sync.full({ force = true })` vs incremental | **Storyteller debug “Sync All (force)”** bypasses scene/soundscape fingerprints and runs full UI; **Sync (incremental)** uses fingerprints + narrow `UpdateUIDisplays` delta |
 | `UpdateUIDisplays(delta)` | stays; the orchestrator just calls it |
 

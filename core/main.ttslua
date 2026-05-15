@@ -111,7 +111,7 @@ function M.setupPlayers()
         return
       end
       if attempt < maxAttempts then
-        Wait.time(pollInfer, 0.5)
+        U.delay(pollInfer, 0.5)
       else
         local activeObjs = getActiveTaggedTables()
         local count = type(activeObjs) == "table" and #activeObjs or 0
@@ -122,7 +122,7 @@ function M.setupPlayers()
       end
     end
 
-    Wait.time(pollInfer, 0.5)
+    U.delay(pollInfer, 0.5)
   else
     -- Sync is performed from Global.onLoad() after a short startup delay,
     -- so seat/source objects are available before layout resolution runs.

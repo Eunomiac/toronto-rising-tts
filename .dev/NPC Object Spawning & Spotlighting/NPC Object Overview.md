@@ -61,9 +61,11 @@ Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `
 
 ## Preload staging area (`preload`)
 
-The `preload` entry in [`lib/npcs_data.ttslua`](../../lib/npcs_data.ttslua) `D.areas` is an **off-table** grid at **world Y = -200** (`groundLevel`). It is omitted from the Storyteller NPC panel (`excludeFromNpcPanel = true`). `autoLight = true` so figurines spawn with **STANDARD** paired spotlights (same spawn pipeline as table areas).
+The `preload` entry in [`lib/npcs_data.ttslua`](../../lib/npcs_data.ttslua) `D.areas` is an **off-table** grid at **world Y = -200** (`groundLevel`). It is omitted from the Storyteller NPC panel (`excludeFromNpcPanel = true`). **`autoLight = false`** so parked pool lights default **OFF** (under-table pool).
 
-`gameState.sessionScene.npcWorld` drives **`NPCS.reconcileSessionSceneNpcWorldFromState`** (invoked from `Sync.full`; `reconcileSessionScenePreloadNpcs` is an alias). When the authored `preload` + `byArea` **fingerprint** changes and there is placement intent, every spawned NPC figurine is **parked** at **Y = -200** with a sentinel `areaKey` so slots free up, then `preload` entries are ensured and `byArea` slot placements run (staggered `Wait.time`). Any figurine that was in a **table location area** or preload before the stash is moved off-stage first; the queued steps then move or spawn them into the new layout.
+**Global pool:** `NPCS.ensureAllNpcsPreloaded` (called from `NPCS.restoreAfterStateLoad`) spawns **every** `NPCS.characters` entry into deterministic preload slots (runtime-expanded grid), **small scale**, **figurine tooltips off**. **`NPCS.spawnNpcAtSlot` only accepts the `preload` area** — activating on stage (`moveNpcToArea`) or at table seats (`assignNpcToSeat`) **moves** the pooled figurine + light; missing instances or activation without a parked preload record **errors** (`npcPoolPolicyError`). Table seats use the same pooled `npc_figurine` at `SEAT_FIGURE_*` anchors (built-in seat placeholder hidden while occupied).
+
+`gameState.sessionScene.npcWorld` carries **`byArea` only** for Scene Constructor intent. **`Sync.full`** → `NPCS.reconcileSessionSceneNpcWorldFromState` fingerprints `byArea`; when it changes and there is placement intent, figurines are **parked into the preload grid**, then `byArea` placements run (staggered `Wait.time`).
 
 ---
 
@@ -90,7 +92,7 @@ World slot center:
 * `areaCenter = (sin(rot)*distance, 0, cos(rot)*distance)` using the same convention as your scripting (match `core/npcs.ttslua`).
 * Rotate each `{x,z}` by `area.rotation`, add to `areaCenter`.
 * Figurine `posY` = `groundLevel` (bottom-anchored custom figurine; no bounds half-height offset).
-* Figurine `rotY` = yaw toward table center **plus** `AREA_NPC_FIGURINE_YAW_OFFSET_DEG` (180°) in `core/npcs.ttslua` so `Figurine_Custom` front/back images match the intended facing; this applies only to **area** spawns / `applyFigurinePlacement`, not to table `SEAT_FIGURE_*` seats.
+* Figurine `rotY` = yaw toward table center **plus** `AREA_NPC_FIGURINE_YAW_OFFSET_DEG` (180°) in `core/npcs.ttslua` so `Figurine_Custom` front/back images match the intended facing; this applies only to **area** placement (`applyFigurinePlacement`). Table seats place the **same pooled figurine** at the `SEAT_FIGURE_*` anchor rotation (no area yaw offset).
 
 ### Area eligibility (spawn menus)
 

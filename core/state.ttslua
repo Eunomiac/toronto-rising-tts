@@ -331,10 +331,9 @@ function S.GetDefaultGameState()
             rollDefaults = {},
             --- Optional narrative soundscape columns consumed on scene apply (maps into `gameState.soundscape` / chronicle flags; no parallel weather stream).
             soundscapeNarrative = {},
-            --- Authoritative-for-import NPC staging: sparse `byArea` slot maps + `preload` list (see `.dev/Scene Constructor/Scene Constructor Overview.md`).
+            --- Authoritative-for-import NPC staging: sparse `byArea` slot maps (see `.dev/Scene Constructor/Scene Constructor Overview.md`).
             npcWorld = {
                 byArea = {},
-                preload = {},
             },
         },
         --- Saved scene bundles (same `sessionScene` shape per entry) + UI ordering. Only `gameState.sessionScene` drives live reconciliation.
@@ -1055,6 +1054,7 @@ local function buildSaveState()
                     areaKey = rec.areaKey,
                     slotIndex = rec.slotIndex,
                     npcLightMode = rec.npcLightMode,
+                    seatedSeatKey = rec.seatedSeatKey,
                 }
             end
         end

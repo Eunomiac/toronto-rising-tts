@@ -105,9 +105,12 @@ function ChronicleWeather.applyScheduledWeather(opts)
     local okWind, msgWind = Soundscape.setWindLayer(windKey)
     local okTh, msgTh = Soundscape.setThunderEnabled(thunderOn)
 
-    Soundscape.invalidateReconcileCache()
-
     if okRain and okWind and okTh then
+        --- Emitters already match `gameState.soundscape`; priming the reconcile fingerprint avoids
+        --- `Sync.full` → `Soundscape.reconcileFromState` scheduling a second identical rain/wind fade.
+        if type(Soundscape.markReconciledToCurrentState) == "function" then
+            Soundscape.markReconciledToCurrentState()
+        end
         return true,
             string.format(
                 "Chronicle weather: rain=%s wind=%s thunder=%s.",
@@ -115,6 +118,10 @@ function ChronicleWeather.applyScheduledWeather(opts)
                 windKey,
                 thunderOn and "on" or "off"
             )
+    end
+
+    if type(Soundscape.invalidateReconcileCache) == "function" then
+        Soundscape.invalidateReconcileCache()
     end
 
     local parts = {}

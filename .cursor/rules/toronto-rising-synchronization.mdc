@@ -14,6 +14,18 @@ alwaysApply: true
 - After a relevant mutation, call an explicit sync entry point (`Sync.player(color)`, `Sync.full()`, or domain reconcile function where appropriate).
 - Do not hide side effects in state setters.
 
+## World application authority (emitters, lights, spawns)
+
+`gameState` is the single authority for **intent**. **Physical** updates (AssetBundle audio, `L.SetLightMode`, spawns, staggered `Wait.time` fades) must not be driven twice for the same steady-state intent in one flow—typically **eager domain setters** plus **`Sync.full` → `reconcileFromState`** on the same slice.
+
+When a mutation path **already** applied emitters/lights to match persisted state, either:
+
+- route that slice **only** through the domain reconciler (preferred for new code), or
+- call the domain’s **fingerprint prime** after eager apply (e.g. `Soundscape.markReconciledToCurrentState`) so incremental `reconcileFromState` does not stack a second fade, or
+- call **`invalidateReconcileCache`** only when the world may be **out of sync** with state and the next `Sync.full` must re-apply.
+
+Survey notes: [`.dev/Sychronizing Game Functionality/Dual_apply_survey.md`](.dev/Sychronizing%20Game%20Functionality/Dual_apply_survey.md).
+
 ## Reconciler rules
 
 - Reconciler functions must be idempotent.

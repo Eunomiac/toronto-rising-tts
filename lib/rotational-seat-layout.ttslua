@@ -2802,11 +2802,11 @@ function M.SetTableTo(tableKey)
   end
 
   setBlindfoldForSeatedPlayers(true)
-  Wait.time(function()
+  U.delay(function()
     applyReferenceHandPositionDelta(currentTableKey, resolvedKey)
     M.resolveSeatObjectsFromTable(resolvedKey)
     setDefaultCameraModeForSeatedPlayers()
-    Wait.time(function()
+    U.delay(function()
       setBlindfoldForSeatedPlayers(false)
     end, TABLE_SWITCH_BLINDFOLD_AFTER_DELAY_SEC)
   end, TABLE_SWITCH_BLINDFOLD_DELAY_SEC)

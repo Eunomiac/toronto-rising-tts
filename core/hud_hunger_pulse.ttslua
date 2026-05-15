@@ -11,7 +11,7 @@
 
   TTS Image `color` tints the texture; we animate alpha via 8-char hex `#FFFFFFAA`.
   Uses U.setAttribute("color") only — never UI.show/hide.
-  Stale Wait.time callbacks no-op when pulseGenByColor[seat] changes.
+  Stale U.delay callbacks no-op when pulseGenByColor[seat] changes.
 ]]
 ---@diagnostic disable: undefined-global
 
@@ -137,7 +137,7 @@ local function lerpPulseAlpha(hunger, seatColor, gen, fromAlpha, toAlpha, durati
       applyPulseAlpha(hunger, seatColor, a)
     end
   end, fromAlpha, toAlpha, dur, false, "sineInOut")
-  Wait.time(function()
+  U.delay(function()
     if not genAlive(seatColor, gen) then
       return
     end
@@ -180,12 +180,12 @@ local function runHeartbeatLoop(seatColor, hunger, gen, cfg)
   end
 
   runSinglePulse(seatColor, hunger, gen, cfg.pulse1Alpha, cfg.pulse1Duration, function()
-    Wait.time(function()
+    U.delay(function()
       if not genAlive(seatColor, gen) then
         return
       end
       runSinglePulse(seatColor, hunger, gen, cfg.pulse2Alpha, cfg.pulse2Duration, function()
-        Wait.time(function()
+        U.delay(function()
           runHeartbeatLoop(seatColor, hunger, gen, cfg)
         end, cfg.beatGap)
       end)

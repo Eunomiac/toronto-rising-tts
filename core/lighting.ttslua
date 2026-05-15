@@ -1806,7 +1806,7 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
     -- Wait for light component if needed (Custom_Assetbundle spotlights: object exists before Unity Light is ready).
     -- `U.waitUntil` + `CheckCoroutine` is unreliable from spawn callbacks; `Wait.condition` is the TTS-native queue.
     if isSpawned and getLightComponent(light, true) == nil then
-        Wait.condition(function()
+        U.waitForCondition(function()
             activateLight()
         end, function()
             return getLightComponent(light, true) ~= nil
@@ -1882,7 +1882,7 @@ function L.InitLights()
     L.reconcileAllPlayers()
 end
 
---- Second pass after load (late-spawned objects). Call from `Wait.time` in global onLoad.
+--- Second pass after load (late-spawned objects). Call from `U.delay` in global onLoad.
 function L.InitLightsDeferred()
     L.cleanupLightsState()
     local savedLights = S.getStateVal("lights") or {}

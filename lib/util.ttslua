@@ -1024,10 +1024,55 @@ function U.iForEach(tbl, func)
 	end
 end
 
+--- Schedules a one-shot callback after `seconds` (thin wrapper over TTS `Wait.time`).
+-- Game code must use this instead of calling `Wait.time` directly.
+-- @param callback function|string Callable when the delay elapses (function reference form supported).
+-- @param seconds number Delay in seconds.
+-- @return any handle Opaque timer id from TTS (pass to `U.stopDelay` to cancel).
+function U.delay(callback, seconds)
+	U.Assert("U.delay", callback, "function")
+	if seconds == nil then
+		seconds = 0
+	end
+	return Wait.time(callback, seconds)
+end
+
+--- Cancels a timer returned by `U.delay` when `handle` is non-nil.
+-- @param handle any|nil Timer id from `U.delay`.
+function U.stopDelay(handle)
+	if handle ~= nil and type(Wait) == "table" and type(Wait.stop) == "function" then
+		Wait.stop(handle)
+	end
+end
+
+--- Runs `onDone` when `testFn` returns true (thin wrapper over TTS `Wait.condition`).
+-- Do not nest `U.delay` inside the `onDone` callback of a condition wait; use `U.RunSequence` instead.
+-- @param onDone function Called when the condition is satisfied.
+-- @param testFn function Poll function; return true when ready.
+-- @param timeoutSeconds number|nil Optional timeout passed to TTS.
+function U.waitForCondition(onDone, testFn, timeoutSeconds)
+	U.Assert("U.waitForCondition", onDone, "function")
+	U.Assert("U.waitForCondition", testFn, "function")
+	Wait.condition(onDone, testFn, timeoutSeconds)
+end
+
+--- Schedules the same `callback` at multiple wall-clock offsets (seconds from now).
+-- @param callback function
+-- @param offsetsSeconds table Array of delay values in seconds.
+function U.scheduleAtOffsets(callback, offsetsSeconds)
+	U.Assert("U.scheduleAtOffsets", callback, "function")
+	U.Assert("U.scheduleAtOffsets", offsetsSeconds, "table")
+	for _, sec in ipairs(offsetsSeconds) do
+		if U.Type(sec) == "number" then
+			U.delay(callback, sec)
+		end
+	end
+end
+
 --- Executes a sequence of functions, waiting for objects to rest between each
 -- Each function should return an object or table of objects. The sequence waits until all returned objects
 -- have finished spawning and come to rest before executing the next function.
--- Uses Wait.condition internally (not coroutines).
+-- Uses U.waitForCondition internally (not coroutines).
 -- @param funcs table Array of functions. Each function can optionally return an object/objects to wait for.
 --   Functions can also return numbers to add delay.
 -- @param maxTime number Optional: Maximum time to wait for objects to rest (default: nil, no timeout)
@@ -1051,8 +1096,8 @@ function U.waitRestingSequence(funcs, maxTime, isLoose)
 		local func = table.remove(funcs, 1)
 		if U.Type(func) == "function" then
 			if objTargets ~= nil then
-				Wait.time(function()
-					Wait.condition(function()
+				U.delay(function()
+					U.waitForCondition(function()
 						objTargets = func(objTargets)
 						if objTargets ~= nil and U.Type(objTargets) ~= "table" then
 							objTargets = {objTargets}
@@ -1098,7 +1143,7 @@ function U.runAfterObjectPhysicsSettled(getObject, timeoutSeconds, callback, com
 	if completeEarlyIf ~= nil then
 		U.Assert("U.runAfterObjectPhysicsSettled(completeEarlyIf)", completeEarlyIf, "function")
 	end
-	Wait.condition(function()
+	U.waitForCondition(function()
 		callback(getObject())
 	end, function()
 		if completeEarlyIf ~= nil and completeEarlyIf() then return true end
@@ -1627,9 +1672,9 @@ function U.splashUIElement(elemID, duration, delay)
   if (duration == nil) then duration = 5 end
   if (delay == nil or delay == 0) then
     UI.show(elemID)
-    Wait.time(function() UI.hide(elemID) end, duration)
+    U.delay(function() UI.hide(elemID) end, duration)
   else
-    Wait.time(function() U.splashUIElement(elemID, duration, 0) end, delay)
+    U.delay(function() U.splashUIElement(elemID, duration, 0) end, delay)
   end
 end
 
@@ -3131,7 +3176,7 @@ function U.RunSequenceWithOptions(funcs, opts)
 		cancel = { cancelled = false, reason = nil }
 	end
 	if sequenceTimeoutSeconds ~= nil and U.Type(sequenceTimeoutSeconds) == "number" and sequenceTimeoutSeconds > 0 then
-		Wait.time(function()
+		U.delay(function()
 			cancel.cancelled = true
 			cancel.reason = "sequence_timeout"
 		end, sequenceTimeoutSeconds)
@@ -3289,10 +3334,10 @@ function U.mcpEmitResult(data)
 	U.emitForAgent("result", data)
 end
 
---- Executes a sequence of functions with fixed time delays (using Wait.time)
+--- Executes a sequence of functions with fixed time delays (using U.delay)
 --
 -- Simpler alternative to U.RunSequence that uses fixed delays between function calls.
--- Each function is scheduled with Wait.time. Functions can be numbers to add extra delay.
+-- Each function is scheduled with U.delay. Functions can be numbers to add extra delay.
 --
 -- @param funcs table Array of functions (and optional numbers for extra delay)
 -- @param timeDelay number Fixed delay in seconds between functions (default: 0.5)
@@ -3311,7 +3356,7 @@ function U.sequence(funcs, timeDelay)
 				if delay == 0 then
 					func()
 				else
-					Wait.time(function()
+					U.delay(function()
 							func()
 					end, delay)
 				end

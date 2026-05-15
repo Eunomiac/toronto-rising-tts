@@ -562,7 +562,7 @@ function RUI.showResultBroadcast(color, result, label)
     uiSetActive("rollResult_panel", true)
 
     -- Auto-hide when staged dice cleanup runs (same delay as global_script.destroyBagDice).
-    Wait.time(function()
+    U.delay(function()
         uiSetActive("rollResult_panel", false)
     end, C.ROLL_RESULT_BROADCAST_SECONDS)
 end

@@ -72,7 +72,7 @@ RC.onRollCamera = nil
 -- ============================================================================
 
 -- Debounce handles keyed by player color.
--- Each entry is a string token; the pending Wait.time closure checks its own
+-- Each entry is a string token; the pending U.delay closure checks its own
 -- captured token against this table — if mismatched, it was superseded and no-ops.
 local _debounceHandles = {}
 
@@ -754,7 +754,7 @@ function RC.onDieSettledSignal(color)
     local myHandle = string.format("%d_%d", math.floor(os.time() * 1000), math.random(99999))
     _debounceHandles[color] = myHandle
 
-    Wait.time(function()
+    U.delay(function()
         if _debounceHandles[color] == myHandle then
             RC.onDiceSettled(color)
         end

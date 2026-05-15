@@ -146,7 +146,7 @@ local function trScheduleEarlySoundscapeSilenceDeferred(schedulerLabel)
     end
     for _, sec in ipairs(TR_EARLY_SILENCE_DEFERRAL_SECONDS) do
         local delay = sec
-        W.time(function()
+        U.delay(function()
             trEarlySilenceSoundscapeEmitters(tag .. "-wait-" .. tostring(delay))
         end, delay)
     end
@@ -163,11 +163,12 @@ end
 
 -- Chunk phase: objects usually are not registered yet (`emitters resolved 0/9`); `Wait` is often nil here too.
 trEarlySilenceSoundscapeEmitters("chunk-sync-immediate")
-trScheduleEarlySoundscapeSilenceDeferred("chunk-load")
 
 -- Load shared utilities and constants
 U = require("lib.util")
 C = require("lib.constants")
+
+trScheduleEarlySoundscapeSilenceDeferred("chunk-load")
 
 -- Load core modules
 
@@ -527,7 +528,7 @@ function onLoad(saved_data)
     local startupTableSyncDone = false
     setStartupAction("schedule-table-sync")
     if R and type(R.SyncTable) == "function" then
-        Wait.time(function()
+        U.delay(function()
             setStartupAction("run-table-sync")
             R.SyncTable()
             startupTableSyncDone = true
@@ -552,8 +553,8 @@ function onLoad(saved_data)
     -- - first sync pass has been issued
     -- - seat lights are resolvable
     -- Then run one final sync pass, wait wall-clock, and hide loading overlay.
-    -- Use U.RunSequence (U.waitUntil) instead of Wait.condition + nested Wait.time:
-    -- TTS does not reliably honor Wait.time scheduled from inside a Wait.condition callback.
+    -- Use U.RunSequence (U.waitUntil) instead of U.waitForCondition with nested U.delay:
+    -- TTS does not reliably honor U.delay scheduled from inside a condition callback.
     local startupOverlayHideDelaySeconds = 20
     U.RunSequence({
         function()
@@ -2071,11 +2072,11 @@ RC.onRollResolved = function(color, result, label)
     -- Drawer stays open until the broadcast hides and dice are destroyed (see below).
     local existingTimerId = pendingRollCleanupTimerIds[color]
     if existingTimerId ~= nil then
-        Wait.stop(existingTimerId)
+        U.stopDelay(existingTimerId)
     end
 
     pendingRollCleanup[color] = true
-    pendingRollCleanupTimerIds[color] = Wait.time(function()
+    pendingRollCleanupTimerIds[color] = U.delay(function()
         pendingRollCleanup[color] = nil
         pendingRollCleanupTimerIds[color] = nil
         destroyBagDice(color)
@@ -2097,7 +2098,7 @@ function GlobalConsumePendingRollCleanup(params)
 
     local timerId = pendingRollCleanupTimerIds[color]
     if timerId ~= nil then
-        Wait.stop(timerId)
+        U.stopDelay(timerId)
     end
     pendingRollCleanup[color] = nil
     pendingRollCleanupTimerIds[color] = nil
@@ -2114,7 +2115,7 @@ end
 -- ID to obj.setGMNotes() so RC._getDiceForRoll can identify which dice belong
 -- to which roll (relevant for Extended rolls / queued Rouse checks).
 -- onObjectRandomize resets the debounce timer in ROLLING and POST_ROLL phases;
--- the eventual Wait.time fires RC.onDiceSettled → RC.recalculate (live read).
+-- the eventual U.delay fires RC.onDiceSettled → RC.recalculate (live read).
 -- ============================================================================
 
 --- Extracts the owner color from an object's tag list.

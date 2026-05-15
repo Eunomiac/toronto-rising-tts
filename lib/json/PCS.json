@@ -39,44 +39,152 @@
       "embracePlace": "Louisiana, USA",
       "embraceYear": 1834,
       "attributes": {
-        "strength": {"base": 1, "temp": 0},
-        "dexterity": {"base": 2, "temp": 0},
-        "stamina": {"base": 2, "temp": 0},
-        "charisma": {"base": 3, "temp": 0},
-        "manipulation": {"base": 4, "temp": 0},
-        "composure": {"base": 3, "temp": 0},
-        "intelligence": {"base": 2, "temp": 0},
-        "wits": {"base": 2, "temp": 0},
-        "resolve": {"base": 3, "temp": 0}
+        "strength": {
+          "base": 1,
+          "temp": 0
+        },
+        "dexterity": {
+          "base": 2,
+          "temp": 0
+        },
+        "stamina": {
+          "base": 2,
+          "temp": 0
+        },
+        "charisma": {
+          "base": 3,
+          "temp": 0
+        },
+        "manipulation": {
+          "base": 4,
+          "temp": 0
+        },
+        "composure": {
+          "base": 3,
+          "temp": 0
+        },
+        "intelligence": {
+          "base": 2,
+          "temp": 0
+        },
+        "wits": {
+          "base": 2,
+          "temp": 0
+        },
+        "resolve": {
+          "base": 3,
+          "temp": 0
+        }
       },
       "skills": {
-        "athletics": {"base": 1, "temp": 0},
-        "brawl": {"base": 1, "temp": 0},
-        "craft": {"base": 0, "temp": 0},
-        "drive": {"base": 0, "temp": 0},
-        "firearms": {"base": 0, "temp": 0},
-        "larceny": {"base": 0, "temp": 0},
-        "melee": {"base": 0, "temp": 0},
-        "stealth": {"base": 0, "temp": 0},
-        "survival": {"base": 0, "temp": 0},
-        "animalKen": {"base": 0, "temp": 0},
-        "etiquette": {"base": 3, "temp": 0},
-        "insight": {"base": 3, "temp": 0},
-        "intimidation": {"base": 2, "temp": 0},
-        "leadership": {"base": 2, "temp": 0},
-        "performance": {"base": 1, "temp": 0},
-        "persuasion": {"base": 3, "temp": 0},
-        "streetwise": {"base": 0, "temp": 0},
-        "subterfuge": {"base": 4, "temp": 0},
-        "academics": {"base": 0, "temp": 0},
-        "awareness": {"base": 1, "temp": 0},
-        "finance": {"base": 0, "temp": 0},
-        "investigation": {"base": 0, "temp": 0},
-        "medicine": {"base": 0, "temp": 0},
-        "occult": {"base": 2, "temp": 0},
-        "politics": {"base": 2, "temp": 0},
-        "science": {"base": 0, "temp": 0},
-        "technology": {"base": 0, "temp": 0}
+        "athletics": {
+          "base": 1,
+          "temp": 0
+        },
+        "brawl": {
+          "base": 1,
+          "temp": 0
+        },
+        "craft": {
+          "base": 0,
+          "temp": 0
+        },
+        "drive": {
+          "base": 0,
+          "temp": 0
+        },
+        "firearms": {
+          "base": 0,
+          "temp": 0
+        },
+        "larceny": {
+          "base": 0,
+          "temp": 0
+        },
+        "melee": {
+          "base": 0,
+          "temp": 0
+        },
+        "stealth": {
+          "base": 0,
+          "temp": 0
+        },
+        "survival": {
+          "base": 0,
+          "temp": 0
+        },
+        "animalKen": {
+          "base": 0,
+          "temp": 0
+        },
+        "etiquette": {
+          "base": 3,
+          "temp": 0
+        },
+        "insight": {
+          "base": 3,
+          "temp": 0
+        },
+        "intimidation": {
+          "base": 2,
+          "temp": 0
+        },
+        "leadership": {
+          "base": 2,
+          "temp": 0
+        },
+        "performance": {
+          "base": 1,
+          "temp": 0
+        },
+        "persuasion": {
+          "base": 3,
+          "temp": 0
+        },
+        "streetwise": {
+          "base": 0,
+          "temp": 0
+        },
+        "subterfuge": {
+          "base": 4,
+          "temp": 0
+        },
+        "academics": {
+          "base": 0,
+          "temp": 0
+        },
+        "awareness": {
+          "base": 1,
+          "temp": 0
+        },
+        "finance": {
+          "base": 0,
+          "temp": 0
+        },
+        "investigation": {
+          "base": 0,
+          "temp": 0
+        },
+        "medicine": {
+          "base": 0,
+          "temp": 0
+        },
+        "occult": {
+          "base": 2,
+          "temp": 0
+        },
+        "politics": {
+          "base": 2,
+          "temp": 0
+        },
+        "science": {
+          "base": 0,
+          "temp": 0
+        },
+        "technology": {
+          "base": 0,
+          "temp": 0
+        }
       },
       "specialties": [
         {
@@ -310,137 +418,133 @@
       ],
       "backgrounds": [
         {
-          "name": "Status",
-          "focus": "Camarilla",
           "base": 4,
-          "max": 5,
-          "temp": 0,
-          "sheetDisplay": false,
           "description": [
-            "As Malkavian Primogen and one of the Prince's inner circle, you are an established power in Camarilla society, with all the visibility, obligations, and deference that office demands.",
-            "Your standing is not merely ceremonial: you are recognized as part of the city's ruling structure, and others are expected to treat you accordingly."
+            "As Malkavian Primogen and inner-circle courtier, you are an established Camarilla power with real deference and obligations."
           ],
+          "focus": "Camarilla",
+          "max": 5,
+          "name": "Status",
           "rules": [
-            "You sit at the table of power in the sect.",
-            "The Storyteller may add this Status to Social dice pools in courtly or status-conscious situations."
+            "You sit at the sect's table of power.",
+            "Add this Status to suitable courtly or status-conscious Social pools."
           ],
+          "sheetDisplay": false,
           "source": {
             "book": "VTM",
             "page": 194
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Status",
-          "focus": "Clan Malkavian",
           "base": 4,
-          "max": 5,
-          "temp": 0,
-          "sheetDisplay": false,
           "description": [
-            "Within Clan Malkavian, your standing is equally formidable. You are not just respected, but understood to be one of the clan's true local powers, with the authority and responsibility that brings.",
-            "Other Malkavians are likely to look to you as one of the figures who defines what the clan is, and where it stands, in Toronto."
+            "Within Clan Malkavian, you are one of Toronto's defining local powers, carrying authority and responsibility."
           ],
+          "focus": "Clan Malkavian",
+          "max": 5,
+          "name": "Status",
           "rules": [
-            "You are a renowned representative of your clan's interests and one of its leading local figures.",
-            "The Storyteller may add this Status to Social dice pools, or sometimes allow it to stand in for a Social Trait in especially status-driven clan scenes."
+            "You are a leading local clan representative.",
+            "Add or substitute this Status in status-driven Malkavian scenes."
           ],
+          "sheetDisplay": false,
           "source": {
             "book": "VTM",
             "page": 194
-          }
+          },
+          "temp": 0
         }
       ],
       "merits": [
         {
-          "name": "Stunning",
-          "focus": "",
           "base": 4,
-          "temp": 0,
           "description": [
-            "Your beauty is not merely striking, but disarming: the kind that makes people lean in before they realize how dangerous the conversation has become. Combined with your poise, seductiveness, and air of occult mystery, it turns every social exchange into terrain you naturally control."
+            "Your beauty is disarming, turning poise, seduction, and occult mystery into social control."
           ],
+          "focus": "",
+          "name": "Stunning",
           "rules": [
-            "You gain two extra dice to appropriate Social dice pools when your appearance can affect the interaction."
+            "Gain two dice to appropriate Social pools when appearance matters."
           ],
           "source": {
             "book": "VTM",
             "page": 179
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Bloodhound",
-          "focus": "",
           "base": 1,
-          "temp": 0,
           "description": [
-            "You read people through omens, instinct, and the subtle truths they leak without meaning to, so sensing resonance in blood feels like an extension of your predatory intuition rather than a separate trick."
+            "You read blood resonance as an extension of omen-sense and predatory intuition."
           ],
+          "focus": "",
+          "name": "Bloodhound",
           "rules": [
-            "You can smell the Resonance of a human's blood without tasting it.",
-            "You must be within olfactory range and succeed on a Resolve + Awareness test at Difficulty 3, with the Difficulty adjusted for distance, perfume, or intimate contact."
+            "You can smell human blood Resonance without tasting it.",
+            "Within olfactory range, roll Resolve + Awareness at Difficulty 3, adjusted by circumstances."
           ],
           "source": {
             "book": "VTM",
             "page": 182
-          }
+          },
+          "temp": 0
         }
       ],
       "flaws": [
         {
-          "name": "The Curse of the Moon",
-          "focus": "",
           "base": 3,
-          "temp": 0,
           "description": [
-            "Your curse does not merely sharpen your eccentricities. It binds you to a permanent fracture in perception, one that has become central to how you navigate the world: you know, with absolute certainty, that the Tarot always tells you the truth. The cards are not guidance, metaphor, or comfort. They are revelation. Even when you force yourself to act against what they show, you do not stop believing them. You only find a way to live, briefly, beside the certainty."
+            "Your curse is a permanent certainty: the Tarot always tells the truth, even when you force yourself to act against it."
           ],
+          "focus": "",
+          "name": "The Curse of the Moon",
           "rules": [
-            "This Flaw replaces your default Malkavian clan bane with the following mechanics.",
-            "You chose a permanent Derangement when you purchased this Merit: 'Persistent Delusion'. This Derangement is always active, and instills in you the unshakable certainty that every card drawn from your Tarot deck reveals truths more absolute than anything your perceptions or experiences could provide.",
-            "You may force yourself to act against that delusion for one scene by making a number of Rouse Checks and spending Willpower equal to your Bane Severity, but you do not cease believing the delusion: In an act of mental gymnastics, you bifurcate your beliefs, compartmentalizing your certainty for a time without actually ever denying it."
+            "Replaces the default Malkavian bane.",
+            "Your Persistent Delusion is always active: every Tarot card reveals absolute truth.",
+            "For one scene, spend Rouse Checks and Willpower equal to Bane Severity to act against it without ceasing to believe."
           ],
           "source": {
             "book": "House Rules",
             "page": 0
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Prey Exclusion",
-          "focus": "The Addled",
           "base": 1,
-          "max": 2,
-          "temp": 0,
           "description": [
-            "You will not feed on the addled, the unstable, or the mentally unsound. Whatever games you play with truth and uncertainty, this is one place where your cruelty stops."
+            "You will not feed on the addled, unstable, or mentally unsound; here, your cruelty stops."
           ],
+          "focus": "The Addled",
+          "max": 2,
+          "name": "Prey Exclusion",
           "rules": [
-            "You refuse to hunt the addled. If you feed on them, you gain Stains as though you had violated a chronicle Tenet.",
-            "Seeing others feed on the addled without interfering may also cause Stains at the Storyteller's discretion."
+            "You refuse to hunt the addled.",
+            "Doing so, or allowing it without interference, may cause Stains."
           ],
           "source": {
             "book": "VTM",
             "page": 181
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Enemy",
-          "focus": "Marie Bouschard",
           "base": 1,
-          "max": 2,
-          "temp": 0,
           "description": [
-            "A college student and daughter of Camille Bouschard, Marie blames you for her parents' divorce (She's Right)",
-            "She's currently leading an investigation into Mara, Fomórach's eldest childe.",
-            "Her skill at getting to the truth, and convincing others to come along with her, is a looming threat."
+            "Marie Bouschard blames you for her parents' divorce and is investigating Mara, making her truth-seeking a growing threat."
           ],
+          "focus": "Marie Bouschard",
+          "max": 2,
+          "name": "Enemy",
           "rules": [
-            "You have a Gifted Mortal enemy who will act against you when she can.",
-            "The Storyteller should bring her into play at least once per story."
+            "You have a Gifted Mortal enemy who acts against you when able.",
+            "The Storyteller should use her at least once per story."
           ],
           "source": {
             "book": "VTM",
             "page": 185
-          }
+          },
+          "temp": 0
         }
       ],
       "bloodline": {
@@ -650,44 +754,152 @@
       "embracePlace": "Spanish Florida, USA",
       "embraceYear": 1735,
       "attributes": {
-        "strength": {"base": 2, "temp": 0},
-        "dexterity": {"base": 2, "temp": 0},
-        "stamina": {"base": 1, "temp": 0},
-        "charisma": {"base": 2, "temp": 0},
-        "manipulation": {"base": 3, "temp": 0},
-        "composure": {"base": 3, "temp": 0},
-        "intelligence": {"base": 4, "temp": 0},
-        "wits": {"base": 2, "temp": 0},
-        "resolve": {"base": 3, "temp": 0}
+        "strength": {
+          "base": 2,
+          "temp": 0
+        },
+        "dexterity": {
+          "base": 2,
+          "temp": 0
+        },
+        "stamina": {
+          "base": 1,
+          "temp": 0
+        },
+        "charisma": {
+          "base": 2,
+          "temp": 0
+        },
+        "manipulation": {
+          "base": 3,
+          "temp": 0
+        },
+        "composure": {
+          "base": 3,
+          "temp": 0
+        },
+        "intelligence": {
+          "base": 4,
+          "temp": 0
+        },
+        "wits": {
+          "base": 2,
+          "temp": 0
+        },
+        "resolve": {
+          "base": 3,
+          "temp": 0
+        }
       },
       "skills": {
-        "athletics": {"base": 1, "temp": 0},
-        "brawl": {"base": 0, "temp": 0},
-        "craft": {"base": 1, "temp": 0},
-        "drive": {"base": 0, "temp": 0},
-        "firearms": {"base": 0, "temp": 0},
-        "larceny": {"base": 2, "temp": 0},
-        "melee": {"base": 1, "temp": 0},
-        "stealth": {"base": 3, "temp": 0},
-        "survival": {"base": 2, "temp": 0},
-        "animalKen": {"base": 0, "temp": 0},
-        "etiquette": {"base": 0, "temp": 0},
-        "insight": {"base": 2, "temp": 0},
-        "intimidation": {"base": 3, "temp": 0},
-        "leadership": {"base": 1, "temp": 0},
-        "performance": {"base": 0, "temp": 0},
-        "persuasion": {"base": 0, "temp": 0},
-        "streetwise": {"base": 2, "temp": 0},
-        "subterfuge": {"base": 1, "temp": 0},
-        "academics": {"base": 2, "temp": 0},
-        "awareness": {"base": 2, "temp": 0},
-        "finance": {"base": 0, "temp": 0},
-        "investigation": {"base": 1, "temp": 0},
-        "medicine": {"base": 1, "temp": 0},
-        "occult": {"base": 3, "temp": 0},
-        "politics": {"base": 1, "temp": 0},
-        "science": {"base": 1, "temp": 0},
-        "technology": {"base": 0, "temp": 0}
+        "athletics": {
+          "base": 1,
+          "temp": 0
+        },
+        "brawl": {
+          "base": 0,
+          "temp": 0
+        },
+        "craft": {
+          "base": 1,
+          "temp": 0
+        },
+        "drive": {
+          "base": 0,
+          "temp": 0
+        },
+        "firearms": {
+          "base": 0,
+          "temp": 0
+        },
+        "larceny": {
+          "base": 2,
+          "temp": 0
+        },
+        "melee": {
+          "base": 1,
+          "temp": 0
+        },
+        "stealth": {
+          "base": 3,
+          "temp": 0
+        },
+        "survival": {
+          "base": 2,
+          "temp": 0
+        },
+        "animalKen": {
+          "base": 0,
+          "temp": 0
+        },
+        "etiquette": {
+          "base": 0,
+          "temp": 0
+        },
+        "insight": {
+          "base": 2,
+          "temp": 0
+        },
+        "intimidation": {
+          "base": 3,
+          "temp": 0
+        },
+        "leadership": {
+          "base": 1,
+          "temp": 0
+        },
+        "performance": {
+          "base": 0,
+          "temp": 0
+        },
+        "persuasion": {
+          "base": 0,
+          "temp": 0
+        },
+        "streetwise": {
+          "base": 2,
+          "temp": 0
+        },
+        "subterfuge": {
+          "base": 1,
+          "temp": 0
+        },
+        "academics": {
+          "base": 2,
+          "temp": 0
+        },
+        "awareness": {
+          "base": 2,
+          "temp": 0
+        },
+        "finance": {
+          "base": 0,
+          "temp": 0
+        },
+        "investigation": {
+          "base": 1,
+          "temp": 0
+        },
+        "medicine": {
+          "base": 1,
+          "temp": 0
+        },
+        "occult": {
+          "base": 3,
+          "temp": 0
+        },
+        "politics": {
+          "base": 1,
+          "temp": 0
+        },
+        "science": {
+          "base": 1,
+          "temp": 0
+        },
+        "technology": {
+          "base": 0,
+          "temp": 0
+        }
       },
       "specialties": [
         {
@@ -993,298 +1205,288 @@
       ],
       "backgrounds": [
         {
-          "name": "Status",
-          "focus": "Camarilla",
           "base": 3,
-          "max": 5,
-          "temp": 0,
-          "sheetDisplay": false,
           "description": [
-            "As Sheriff, your place in Camarilla society is obvious and weighty: you are an officer of Praxis, feared, visible, and entrusted to enforce the Prince's will.",
-            "Even those who dislike or distrust you must acknowledge that your office gives you real standing in the city's hierarchy."
+            "As Sheriff, you are a feared, visible officer of Praxis, entrusted to enforce the Prince's will."
           ],
-          "rules": [
-            "You hold recognized office in the sect.",
-            "The Storyteller may add this Status to Social dice pools in court, introductions, and other status-conscious interactions."
-          ],
-          "source": {
-            "book": "VTM",
-            "page": 194
-          }
-        },
-        {
+          "focus": "Camarilla",
+          "max": 5,
           "name": "Status",
-          "focus": "Clan Tremere",
-          "base": 1,
-          "max": 5,
-          "temp": 0,
-          "sheetDisplay": false,
-          "description": [
-            "Among the Tremere, your standing sits far below what your age and office would normally imply. Your long history still commands a baseline of regard, but your tainted reputation and uneasy place in clan politics leave many warlocks wary of your loyalty.",
-            "In practice, you are known and grudgingly tolerated within the clan, but not embraced as one of its trusted figures."
-          ],
           "rules": [
-            "You are in good standing, but you are not especially respected and may carry a poor reputation.",
-            "The Storyteller may add this Status to Social dice pools in Tremere-specific dealings, though its low rating reflects clear limits on that influence."
+            "You hold recognized sect office.",
+            "Add this Status to court, introductions, and status-conscious Social pools."
           ],
+          "sheetDisplay": false,
           "source": {
             "book": "VTM",
             "page": 194
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Herd",
-          "focus": "Court Prisoners",
-          "base": 2,
-          "max": 5,
-          "temp": 0,
+          "base": 1,
           "description": [
-              "As Sheriff, you have turned the machinery of Camarilla punishment into a feeding arrangement of your own: thin-bloods and other court prisoners disappear into hidden confinement, where no one important is expected to ask questions."
-            ],
-            "rules": [
-              "You have a small group of vessels from whom you can feed without concern. They can perform basic services, but they are neither as loyal nor as tightly controlled as Retainers.",
-              "You can slake up to two Hunger from the Herd each week without a roll, or more at the risk of endangering your Herd through overfeeding. Half of this Hunger is flavored with the Resonance you chose when you purchased this Background."
-            ],
+            "Among Tremere, your age earns regard, but your tainted reputation leaves many wary and your influence limited."
+          ],
+          "focus": "Clan Tremere",
+          "max": 5,
+          "name": "Status",
+          "rules": [
+            "You are in good standing but not especially respected.",
+            "Add this Status in Tremere dealings, within its low-rating limits."
+          ],
+          "sheetDisplay": false,
+          "source": {
+            "book": "VTM",
+            "page": 194
+          },
+          "temp": 0
+        },
+        {
+          "base": 2,
+          "description": [
+            "You turn Camarilla punishment into feeding stock: thin-bloods and prisoners hidden where few ask questions."
+          ],
+          "focus": "Court Prisoners",
+          "max": 5,
+          "name": "Herd",
+          "rules": [
+            "You can feed from a small Herd without a roll.",
+            "Slake up to two Hunger weekly, or more at risk to the Herd."
+          ],
           "source": {
             "book": "VTM",
             "page": 190
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Mawla",
-          "focus": "Baron's Bleak Bokor",
           "base": 2,
-          "max": 5,
-          "temp": 0,
           "description": [
-            "Caesar and the Bokor both had a hand in shaping what Kindred society would look like in the Caribbean when they both meddled in the Haitian Revolution. Neither man asked too many questions about the other's \"boss\".",
-            "They were also both founding members of House High Saturday, with the Samedi's involvement being crucial for their understanding of Necromancy. He may not be a member today, but is still on good terms with Caesar."
+            "You and the Bleak Bokor shaped Caribbean Kindred society and House High Saturday; he remains a friendly necromantic ally."
           ],
+          "focus": "Baron's Bleak Bokor",
+          "max": 5,
+          "name": "Mawla",
           "rules": [
-            "The Bleak Bokor is a reliable advisor, intermediary, or source of information with meaningful influence.",
-            "He can offer guidance, warnings, introductions, or speak on your behalf when appropriate.",
-            "He expects reciprocity, and the Storyteller decides the exact help he can provide in a given situation."
+            "The Bleak Bokor can advise, warn, introduce, or speak for you when appropriate.",
+            "He expects reciprocity; the Storyteller decides his exact help."
           ],
           "source": {
             "book": "VTM",
             "page": 192
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Contact",
-          "focus": "Christopher Giovanni Jr.",
           "base": 2,
-          "max": 3,
-          "temp": 0,
           "description": [
-            "You keep Christopher Giovanni Jr. close as a frightened but useful go-between linking you to Bacchus and the Giovanni interests around you. He is young, ambitious, already half-pulled into the family's dark machinery, and terrified of disappointing monsters he hopes one day to join."
+            "Christopher Giovanni Jr. is a frightened, ambitious go-between to Bacchus and Giovanni interests."
           ],
+          "focus": "Christopher Giovanni Jr.",
+          "max": 3,
+          "name": "Contact",
           "rules": [
-            "You know a well-placed mortal who can provide useful information and arrange useful things for you.",
-            "This Contact is appropriate for resources or favors of moderate value within his area of access.",
-            "He mainly provides information, and may expect favors or payment in return."
+            "You know a well-placed mortal who can provide useful information or moderate favors.",
+            "He may expect payment or favors."
           ],
           "source": {
             "book": "VTM",
             "page": 186
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Retainer",
-          "focus": "Jean Ducheski-Francois III",
           "base": 2,
-          "max": 3,
-          "temp": 0,
           "description": [
-            "Jean Ducheski-Francois III is the polished public face of a century of work: a cultivated Ducheski revenant descended from Caesar's long-running effort to breed his own occult servitors. Mild-mannered, charming, and older than he looks, Jean serves less like a mere ghoul and more like a carefully refined family asset."
+            "Jean Ducheski-Francois III is a polished Ducheski revenant: charming, older than he looks, and bred as an occult family asset."
           ],
+          "focus": "Jean Ducheski-Francois III",
+          "max": 3,
+          "name": "Retainer",
           "rules": [
-            "This retainer is a loyal and capable servant who can handle competent, meaningful assistance.",
-            "This Ducheski revenant is a ghoul that should be built as an Average Mortal with Auspex 1 and Blood Sorcery 1.",
-            "Retainers are reliable, but they are still characters rather than puppets and can create complications of their own."
+            "A loyal, capable retainer built as an Average Mortal with Auspex 1 and Blood Sorcery 1.",
+            "Reliable, but still a character with complications."
           ],
           "source": {
             "book": "VTM",
             "page": 194
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Retainer",
-          "focus": "Jezdimir Ducheski",
           "base": 1,
-          "max": 3,
-          "temp": 0,
           "description": [
-            "Jezdimir Ducheski comes out of the family's Polish stronghold with more instinct than understanding, a rough-edged revenant whose hooligan manner and petty-criminal background make him unexpectedly useful in dirtier work. He is tied to the same Ducheski legacy, but he feels less like a perfected instrument and more like a dangerous tool you keep close at hand."
+            "Jezdimir Ducheski is a rough Polish revenant, more dangerous tool than refined servant, useful for dirty work."
           ],
+          "focus": "Jezdimir Ducheski",
+          "max": 3,
+          "name": "Retainer",
           "rules": [
-            "This retainer is loyal but comparatively limited in skill and independence.",
-            "This Ducheski revenant is a ghoul that should be built as a Weak Mortal with Auspex 1 and Blood Sorcery 1.",
-            "Retainers follow your lead, but they can still betray you, fail you, or complicate scenes if treated badly or tempted."
+            "A loyal but limited retainer built as a Weak Mortal with Auspex 1 and Blood Sorcery 1.",
+            "Can still fail, betray, or complicate scenes."
           ],
           "source": {
             "book": "VTM",
             "page": 194
-          }
+          },
+          "temp": 0
         }
       ],
       "merits": [
         {
-          "name": "Bloodhound",
-          "focus": "",
           "base": 1,
-          "temp": 0,
           "description": [
-            "You have spent centuries treating blood as material to be judged, sorted, and used, so the ability to scent its resonance suits both your discipline and your hunger for control."
+            "Centuries of judging and using blood make scenting resonance suit both your discipline and hunger for control."
           ],
+          "focus": "",
+          "name": "Bloodhound",
           "rules": [
-            "You can smell the Resonance of a human's blood without tasting it.",
-            "You must be within olfactory range and succeed on a Resolve + Awareness test at Difficulty 3, with the Difficulty adjusted for distance, perfume, or intimate contact."
+            "You can smell human blood Resonance without tasting it.",
+            "Within olfactory range, roll Resolve + Awareness at Difficulty 3, adjusted by circumstances."
           ],
           "source": {
             "book": "VTM",
             "page": 182
-          }
+          },
+          "temp": 0
         }
       ],
       "flaws": [
         {
-          "name": "Dark Secret",
-          "focus": "Former Sabbat",
           "base": 2,
-          "temp": 0,
           "description": [
-            "Your public story paints you as a loyal infiltrator who played the Sabbat false, but the truth is uglier: despair, manipulation, and a century of horror drew you genuinely into the Sword of Caine before you clawed your way back out.",
-            "If that truth became widely known, it would do more than embarrass you. It would recast your entire reputation as a lie and make your place in Camarilla power far harder to defend."
+            "Your loyal-infiltrator story hides the truth: despair and horror genuinely drew you into the Sabbat before you escaped."
           ],
+          "focus": "Former Sabbat",
+          "name": "Dark Secret",
           "rules": [
-            "You are hiding a grave black deed or history that would be deeply damaging if exposed.",
-            "As long as it remains secret, it grants fewer Flaw points than open Infamy would.",
-            "If it comes out, the Storyteller may treat it as Infamy or otherwise bring serious social and political consequences down on you."
+            "You hide a grave deed or history.",
+            "If exposed, the Storyteller may treat it as Infamy or impose major consequences."
           ],
           "source": {
             "book": "VTM",
             "page": 187
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Groveling Worm",
-          "focus": "",
           "base": 2,
-          "temp": 0,
           "description": [
-            "You do not scourge yourself out of pure shame, but out of a twisted fusion of devotion, appetite, and self-abasement. In your appeasements to the Lwa, penance and pleasure blur together until drawing more blood than necessary becomes part of the ritual."
+            "Your appeasements to the Lwa blur penance, appetite, and self-abasement into ritual self-harm."
           ],
+          "focus": "",
+          "name": "Groveling Worm",
           "rules": [
-            "Once per session, you must make time to scourge or otherwise abuse yourself.",
-            "When you do, you suffer two points of Superficial Health damage.",
-            "If you fail to do so, you suffer one point of Aggravated Willpower damage at the beginning of the next session."
+            "Once per session, scourge or abuse yourself for 2 Superficial Health damage.",
+            "If you fail, suffer 1 Aggravated Willpower damage next session."
           ],
           "source": {
             "book": "Forbidden Religions",
             "page": 86
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Prey Exclusion",
-          "focus": "Mortals",
           "base": 2,
-          "temp": 0,
           "description": [
-            "However monstrous your history has been, feeding on mortals themselves has become a line you will not cross. You may take vitae from the already-damned, but drinking from the living is something you now reject."
+            "Feeding on mortals is a line you refuse to cross; you take vitae only from the already-damned."
           ],
+          "focus": "Mortals",
+          "name": "Prey Exclusion",
           "rules": [
-            "You refuse to hunt mortals. If you feed on them, you gain Stains as though you had violated a chronicle Tenet.",
-            "Seeing others feed on mortals without interfering may also cause Stains at the Storyteller's discretion."
+            "You refuse to hunt mortals.",
+            "Doing so, or allowing it without interference, may cause Stains."
           ],
           "source": {
             "book": "VTM",
             "page": 181
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Shunned",
-          "focus": "Anarchs",
           "base": 2,
-          "temp": 0,
           "description": [
-            "You are not merely disliked by the Anarchs. To them, you embody some of the worst things the Camarilla can be: a Blood Leech, a hunter of the weak, and a Sheriff who turns his attention on thin-bloods and Caitiff who already live closest to the boot. Wherever your reputation reaches Anarch ears, it curdles quickly into active hostility."
+            "To Anarchs, you embody Camarilla cruelty: Blood Leech, Sheriff, and hunter of the weak."
           ],
+          "focus": "Anarchs",
+          "name": "Shunned",
           "rules": [
-            "Anarchs completely loathe you and will work against you when they can.",
-            "This hostility is active rather than merely social, especially among those with reason or opportunity to oppose you."
+            "Anarchs loathe you and act against you when able.",
+            "This hostility is active, not merely social."
           ],
           "source": {
             "book": "VTM",
             "page": 194
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Folkloric Block",
-          "focus": "Salt",
           "base": 1,
-          "temp": 0,
           "description": [
-            "Whether it comes from your years on the open ocean or from the spirit-haunted currents of House High Saturday, a line of salt strikes something old and irrational in you. It does not destroy you, but it does make your Beast recoil."
+            "A salt line strikes something old and irrational in you, making your Beast recoil."
           ],
+          "focus": "Salt",
+          "name": "Folkloric Block",
           "rules": [
-            "When faced with a barrier of salt, you must shrink away from it or spend a point of Willpower to push through."
+            "Faced with a salt barrier, shrink away or spend 1 Willpower to cross."
           ],
           "source": {
             "book": "VTM",
             "page": 182
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Knowledge Hungry",
-          "focus": "Wraiths",
           "base": 1,
-          "temp": 0,
           "description": [
-            "You are never content to merely command the dead. You need to understand them, catalogue them, and chase every scrap of insight they might yield, whether as allies, tools, or warnings from the other side. For you, the Lwa are not just part of your sorcery. They are an obsession that can pull your attention away from safer or more urgent concerns."
+            "You obsessively study wraiths, the Lwa, and every scrap the dead can teach."
           ],
+          "focus": "Wraiths",
+          "name": "Knowledge Hungry",
           "rules": [
-            "You are compulsively driven to study your chosen subject.",
-            "When you encounter books, tutorials, seminars, or similar opportunities to learn about wraiths, you must pass a Difficulty 3 Willpower test to resist chasing that obsession."
+            "You compulsively study wraiths.",
+            "When tempted by such knowledge, pass a Difficulty 3 Willpower test or pursue it."
           ],
           "source": {
             "book": "Player's Guide",
             "page": 120
-          }
+          },
+          "temp": 0
         },
         {
+          "base": 1,
+          "description": [
+            "Blood Sorcery can read Sabbat ruin on your soul, marking you as once belonging to the Sword of Caine."
+          ],
+          "focus": "",
           "name": "Mark of the Betrayer",
-          "focus": "",
-          "base": 1,
-          "temp": 0,
-          "description": [
-            "Whatever story the Camarilla tells about your past, your soul still carries Sabbat ruin in a form that Blood Sorcery can read. To those with the right sight, you are marked as someone who belonged to the Sword of Caine and cannot fully wash it off."
-          ],
           "rules": [
-            "Kindred with at least one dot of Blood Sorcery can perceive your mark as a sign of Sabbat affiliation.",
-            "You suffer a two-dice penalty on Social rolls against such Kindred."
+            "Kindred with Blood Sorcery 1+ can perceive your Sabbat mark.",
+            "You suffer -2 dice on Social rolls against them."
           ],
           "source": {
             "book": "House Rules",
             "page": 0
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Blood of the Betrayer",
-          "focus": "",
           "base": 1,
-          "temp": 0,
           "description": [
-            "When your Hunger rises too high, the stain of your past stops being subtle. Your mark begins to weep blood, turning private spiritual corruption into something anyone can see."
+            "At high Hunger, your mark weeps blood and makes private corruption visible."
           ],
+          "focus": "",
+          "name": "Blood of the Betrayer",
           "rules": [
-            "When your Hunger is 4 or higher, your Mark of the Betrayer becomes visible to everyone.",
-            "While it is visible, you suffer a two-dice penalty on all Social rolls."
+            "At Hunger 4+, Mark of the Betrayer is visible to everyone.",
+            "While visible, suffer -2 dice to all Social rolls."
           ],
           "source": {
             "book": "House Rules",
             "page": 0
-          }
+          },
+          "temp": 0
         }
       ],
       "bloodline": {
@@ -1531,44 +1733,152 @@
       "embracePlace": "Pennsylvania, USA",
       "embraceYear": 1786,
       "attributes": {
-        "strength": {"base": 3, "temp": 0},
-        "dexterity": {"base": 1, "temp": 0},
-        "stamina": {"base": 3, "temp": 0},
-        "charisma": {"base": 2, "temp": 0},
-        "manipulation": {"base": 2, "temp": 0},
-        "composure": {"base": 3, "temp": 0},
-        "intelligence": {"base": 2, "temp": 0},
-        "wits": {"base": 4, "temp": 0},
-        "resolve": {"base": 2, "temp": 0}
+        "strength": {
+          "base": 3,
+          "temp": 0
+        },
+        "dexterity": {
+          "base": 1,
+          "temp": 0
+        },
+        "stamina": {
+          "base": 3,
+          "temp": 0
+        },
+        "charisma": {
+          "base": 2,
+          "temp": 0
+        },
+        "manipulation": {
+          "base": 2,
+          "temp": 0
+        },
+        "composure": {
+          "base": 3,
+          "temp": 0
+        },
+        "intelligence": {
+          "base": 2,
+          "temp": 0
+        },
+        "wits": {
+          "base": 4,
+          "temp": 0
+        },
+        "resolve": {
+          "base": 2,
+          "temp": 0
+        }
       },
       "skills": {
-        "athletics": {"base": 2, "temp": 0},
-        "brawl": {"base": 2, "temp": 0},
-        "craft": {"base": 0, "temp": 0},
-        "drive": {"base": 0, "temp": 0},
-        "firearms": {"base": 0, "temp": 0},
-        "larceny": {"base": 0, "temp": 0},
-        "melee": {"base": 0, "temp": 0},
-        "stealth": {"base": 1, "temp": 0},
-        "survival": {"base": 1, "temp": 0},
-        "animalKen": {"base": 1, "temp": 0},
-        "etiquette": {"base": 1, "temp": 0},
-        "insight": {"base": 2, "temp": 0},
-        "intimidation": {"base": 3, "temp": 0},
-        "leadership": {"base": 1, "temp": 0},
-        "performance": {"base": 0, "temp": 0},
-        "persuasion": {"base": 0, "temp": 0},
-        "streetwise": {"base": 2, "temp": 0},
-        "subterfuge": {"base": 2, "temp": 0},
-        "academics": {"base": 1, "temp": 0},
-        "awareness": {"base": 3, "temp": 0},
-        "finance": {"base": 0, "temp": 0},
-        "investigation": {"base": 2, "temp": 0},
-        "medicine": {"base": 0, "temp": 0},
-        "occult": {"base": 0, "temp": 0},
-        "politics": {"base": 3, "temp": 0},
-        "science": {"base": 0, "temp": 0},
-        "technology": {"base": 1, "temp": 0}
+        "athletics": {
+          "base": 2,
+          "temp": 0
+        },
+        "brawl": {
+          "base": 2,
+          "temp": 0
+        },
+        "craft": {
+          "base": 0,
+          "temp": 0
+        },
+        "drive": {
+          "base": 0,
+          "temp": 0
+        },
+        "firearms": {
+          "base": 0,
+          "temp": 0
+        },
+        "larceny": {
+          "base": 0,
+          "temp": 0
+        },
+        "melee": {
+          "base": 0,
+          "temp": 0
+        },
+        "stealth": {
+          "base": 1,
+          "temp": 0
+        },
+        "survival": {
+          "base": 1,
+          "temp": 0
+        },
+        "animalKen": {
+          "base": 1,
+          "temp": 0
+        },
+        "etiquette": {
+          "base": 1,
+          "temp": 0
+        },
+        "insight": {
+          "base": 2,
+          "temp": 0
+        },
+        "intimidation": {
+          "base": 3,
+          "temp": 0
+        },
+        "leadership": {
+          "base": 1,
+          "temp": 0
+        },
+        "performance": {
+          "base": 0,
+          "temp": 0
+        },
+        "persuasion": {
+          "base": 0,
+          "temp": 0
+        },
+        "streetwise": {
+          "base": 2,
+          "temp": 0
+        },
+        "subterfuge": {
+          "base": 2,
+          "temp": 0
+        },
+        "academics": {
+          "base": 1,
+          "temp": 0
+        },
+        "awareness": {
+          "base": 3,
+          "temp": 0
+        },
+        "finance": {
+          "base": 0,
+          "temp": 0
+        },
+        "investigation": {
+          "base": 2,
+          "temp": 0
+        },
+        "medicine": {
+          "base": 0,
+          "temp": 0
+        },
+        "occult": {
+          "base": 0,
+          "temp": 0
+        },
+        "politics": {
+          "base": 3,
+          "temp": 0
+        },
+        "science": {
+          "base": 0,
+          "temp": 0
+        },
+        "technology": {
+          "base": 1,
+          "temp": 0
+        }
       },
       "specialties": [
         {
@@ -1790,244 +2100,235 @@
       ],
       "backgrounds": [
         {
-          "name": "Status",
-          "focus": "Camarilla",
           "base": 4,
-          "max": 5,
-          "temp": 0,
-          "sheetDisplay": false,
           "description": [
-            "As Nosferatu Primogen and one of the architects of the new regime, you are a major Camarilla power whose voice helps shape the direction of the city.",
-            "Your standing marks you as one of the undead who actually governs, not merely one who attends court."
+            "As Nosferatu Primogen and architect of the new regime, you help govern Toronto rather than merely attend court."
           ],
-          "rules": [
-            "You sit at the table of power in the sect.",
-            "The Storyteller may add this Status to Social dice pools in courtly or status-conscious situations."
-          ],
-          "source": {
-            "book": "VTM",
-            "page": 194
-          }
-        },
-        {
+          "focus": "Camarilla",
+          "max": 5,
           "name": "Status",
-          "focus": "Clan Nosferatu",
-          "base": 5,
-          "max": 5,
-          "temp": 0,
-          "sheetDisplay": false,
-          "description": [
-            "Within Clan Nosferatu, your standing rises even higher: as Drake's childe and chosen successor, you are understood to be the clan's true local center of authority.",
-            "Whatever others outside the warrens think, your clan sees you as the figure who best embodies Nosferatu power in Toronto."
-          ],
           "rules": [
-            "You are the most respected member of your clan in the city and are broadly seen as its true leader.",
-            "The Storyteller may add this Status to Social dice pools, or sometimes allow it to stand in for a Social Trait in especially status-driven clan scenes."
+            "You sit at the sect's table of power.",
+            "Add this Status to suitable courtly or status-conscious Social pools."
           ],
+          "sheetDisplay": false,
           "source": {
             "book": "VTM",
             "page": 194
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Contact",
-          "focus": "UwU_byte_me",
-          "base": 3,
-          "max": 3,
-          "temp": 0,
+          "base": 5,
           "description": [
-            "You have cultivated Siobhan Kelleher, better known as UwU_byte_me, into a genuinely valuable mortal asset: a professional hacker with real access, real skill, and enough admiration for I.Q.'s online persona to stay personally invested. Through her, your reach extends into cameras, tripwires, spytech, and the nervous system of the modern city."
+            "As Drake's childe and successor, you are the Nosferatu's local center of authority and power."
           ],
+          "focus": "Clan Nosferatu",
+          "max": 5,
+          "name": "Status",
           "rules": [
-            "You know a well-placed mortal who can provide valuable information and obtain expensive or difficult things for you.",
-            "This Contact is appropriate for high-value favors within her technical field of expertise.",
-            "She mainly provides information, and may expect favors, payment, or protection in return."
+            "You are widely seen as Toronto's Nosferatu leader.",
+            "Add or substitute this Status in status-driven clan scenes."
+          ],
+          "sheetDisplay": false,
+          "source": {
+            "book": "VTM",
+            "page": 194
+          },
+          "temp": 0
+        },
+        {
+          "base": 3,
+          "description": [
+            "Siobhan 'UwU_byte_me' Kelleher is a skilled hacker loyal to I.Q.'s persona, extending your reach into the city's digital nerves."
+          ],
+          "focus": "UwU_byte_me",
+          "max": 3,
+          "name": "Contact",
+          "rules": [
+            "You know a well-placed hacker who can provide valuable information or hard-to-get technical favors.",
+            "She may expect payment, favors, or protection."
           ],
           "source": {
             "book": "VTM",
             "page": 186
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Herd",
-          "focus": "Indebted Homeless",
           "base": 2,
-          "max": 5,
-          "temp": 0,
           "description": [
-            "Beneath the city, you have terrorized a small circle of homeless mortals into becoming a feeding population, keeping them compliant with threats, bribery, and the miserable half-mercy of money, drugs, or vitae."
+            "Beneath Toronto, you keep coerced homeless mortals as a frightened feeding population, controlled by threats, bribery, and half-mercy."
           ],
+          "focus": "Indebted Homeless",
+          "max": 5,
+          "name": "Herd",
           "rules": [
-            "You have a small group of vessels from whom you can feed without concern. They can perform basic services, but they are neither as loyal nor as tightly controlled as Retainers.",
-            "You can slake up to two Hunger from the Herd each week without a roll, or more at the risk of endangering your Herd through overfeeding. Half of this Hunger is flavored with the Resonance you chose when you purchased this Background."
+            "You can feed from a small Herd without a roll.",
+            "Slake up to two Hunger weekly, or more at risk to the Herd."
           ],
           "source": {
             "book": "VTM",
             "page": 190
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Chasse",
-          "focus": "P.A.T.H.",
           "base": 2,
-          "max": 5,
-          "temp": 0,
           "description": [
-            "You hold a small hunting claim within P.A.T.H., carved out beneath the Full Claim over the District held by Bee's Hive. At present, however, your rights there are politically snarled. The dispute with the Line has suspended the practical benefits of the claim, leaving you with contested standing instead of secure advantage."
+            "Your small P.A.T.H. hunting claim is politically contested by the Line, suspending its practical benefits for now."
           ],
+          "focus": "P.A.T.H.",
+          "max": 5,
+          "name": "Chasse",
           "rules": [
-            "You hold a subinfeudated domain within a larger claim, and it would normally function as a Minor Claim.",
-            "Because the domain is under dispute, the usual bonuses from that claim are currently suspended.",
-            "Those benefits return only once the dispute is resolved to the Storyteller's satisfaction."
+            "This disputed subinfeudated domain would normally be a Minor Claim.",
+            "Its bonuses return only when the dispute is resolved."
           ],
           "source": {
             "book": "VTM",
             "page": 195
-          }
+          },
+          "temp": 0
         }
       ],
       "merits": [
         {
-          "name": "Side Hustler",
-          "focus": "",
           "base": 2,
-          "temp": 0,
           "description": [
-            "You survive by knowing how to squeeze value from the margins: tunnels, drifters, debts, favors, and whatever else the city forgets to count. Your power does not rest on comfort or legitimacy, but on a lifetime of making do, calling in markers, and finding what you need through informal channels."
+            "You squeeze value from the city's margins: tunnels, drifters, debts, favors, and forgotten opportunities."
           ],
+          "focus": "",
+          "name": "Side Hustler",
           "rules": [
-            "Once per session, you can get access to an item, information, or a temporary edge as though you had two dots in an appropriate Resources, Contacts, or Influence Background.",
-            "What you obtain usually comes with strings attached and often needs to be returned intact."
+            "Once per session, access an item, information, or edge as if you had two dots in a fitting Resources, Contacts, or Influence Background.",
+            "It usually has strings attached."
           ],
           "source": {
             "book": "Player's Guide",
             "page": 119
-          }
+          },
+          "temp": 0
         }
       ],
       "flaws": [
         {
-          "name": "Starving Decay",
-          "focus": "",
           "base": 2,
-          "temp": 0,
           "description": [
-            "Your body always seems only one bad night away from becoming the corpse it truly is. Hunger does not merely weaken you; it strips away the last illusion of vitality and reveals something ancient, famished, and half-feral beneath. For you, starvation is physically debilitating, and makes your monstrosity even harder to conceal as your reserves run low."
+            "At high Hunger, your body shrivels into something ancient, famished, and hard to hide."
           ],
+          "focus": "",
+          "name": "Starving Decay",
           "rules": [
-            "Whenever your Hunger is 3 or higher, your body shrivels and decays.",
-            "While in that state, you take a two-dice penalty to physical tests and to all Social interactions with mortals, and you may risk the Masquerade."
+            "At Hunger 3+, you decay visibly.",
+            "Suffer -2 dice to Physical tests and mortal Social interactions, and may risk the Masquerade."
           ],
           "source": {
             "book": "Player's Guide",
             "page": 119
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Living in the Past",
-          "focus": "",
           "base": 1,
-          "temp": 0,
           "description": [
-            "You have survived for centuries, but some parts of you never left the old wound behind. Your conviction that the British must be destroyed is not quaint nostalgia, but a living hatred carried forward into nights that have long since moved on from the world that made it."
+            "Your ancient hatred of the British remains a living wound, not quaint nostalgia."
           ],
+          "focus": "",
+          "name": "Living in the Past",
           "rules": [
-            "You lose one die from Social test pools involving archaic beliefs or outdated morality.",
-            "This penalty does not apply with vampires of your age or older who might admire your steadfastness."
+            "Lose one die from Social pools involving archaic beliefs or outdated morality.",
+            "Does not apply with vampires your age or older."
           ],
           "source": {
             "book": "VTM",
             "page": 180
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Enemy",
-          "focus": "Kiera Vaughan",
           "base": 2,
-          "temp": 0,
           "description": [
-            "Chief of the Toronto Police Department's Special Investigations Unit, Kiera Vaughan is currently leading an investigation into the high-profile serial killer who is in fact Mara, your eldest childe.",
-            "Her investigation is bringing her closer to the homeless community you have coerced into silence, as well as to the Kindred community as a whole.",
-            "Her skill at getting to the truth, and convincing others to come along with her, is a looming threat to your control."
+            "SIU chief Kiera Vaughan is closing in on Mara, your coerced homeless Herd, and the Kindred world around them."
           ],
+          "focus": "Kiera Vaughan",
+          "name": "Enemy",
           "rules": [
-            "You have a Deadly Mortal enemy who can take useful action against you and may not be easy to evade.",
-            "The Storyteller should bring her into play at least once per story."
+            "You have a Deadly Mortal enemy who can act against you.",
+            "The Storyteller should use her at least once per story."
           ],
           "source": {
             "book": "VTM",
             "page": 185
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Curse of the Broken Mirror",
-          "focus": "",
           "base": 3,
-          "temp": 0,
           "description": [
-            "Your curse is not merely that you are unsettling to mortals. You are a walking breach of the Masquerade, an atavistic nightmare whose face cannot safely belong in the human world at all. Concealment itself becomes cursed. Your monstrous features resist disguise, resist softening, and resist every attempt to pass as anything but a predator dragged half-intact out of some older, harsher age."
+            "You are a walking Masquerade breach: an atavistic nightmare whose monstrous features resist every disguise."
           ],
+          "focus": "",
+          "name": "Curse of the Broken Mirror",
           "rules": [
-            "This Flaw replaces your default Nosferatu clan bane with the following mechanics.",
-            "You must take the Grotesque Flaw, you cannot purchase Looks Merits, and your undisguised appearance risks breaching the Masquerade if seen by mortal eyes.",
-            "Any attempt to conceal or hide your appearance suffers a penalty equal to your Bane Severity. This includes supernatural disguises such as Mask of a Thousand Faces."
+            "Replaces the default Nosferatu bane.",
+            "You must take Grotesque, cannot buy Looks Merits, and undisguised exposure risks the Masquerade.",
+            "Concealment attempts suffer a penalty equal to Bane Severity."
           ],
           "source": {
             "book": "House Rules",
             "page": 0
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Grotesque",
-          "focus": "",
           "base": 3,
-          "temp": 0,
           "description": [
-            "You look less like a deformed man than like an ancestral memory of a man twisted into something predatory: bald scalp stretched taut over a heavy skull, pointed ears, lamp-like eyes, skin drawn into ridges and creases, and tusk-like fangs jutting from a mouth built wrong for speech. The effect is impossibly prehistoric, as though some half-buried terror in human memory has suddenly put on a suit."
+            "You look like a predatory ancestral memory: taut skull, pointed ears, lamp-like eyes, ridged skin, and tusk-like fangs."
           ],
+          "focus": "",
+          "name": "Grotesque",
           "rules": [
-            "You suffer a three-dice penalty to all Social dice pools when you can be seen."
+            "You suffer a three-dice penalty to Social pools when you can be seen."
           ],
           "source": {
             "book": "VTM",
             "page": 179
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Dark Secret",
-          "focus": "Wendigo Descendant",
           "base": 2,
-          "temp": 0,
           "description": [
-            "The local Nosferatu know you as Drake's capable childe and successor, but buried beneath that identity is a far more dangerous truth: you descend from the Wendigo, a Red List horror everyone assumes left no living bloodline behind.",
-            "If that lineage were exposed, your standing would become entangled with an ancient monster's legacy, and suspicion would fall on you not for what you have done, but for what your Blood implies."
+            "Beneath your identity as Drake's successor lies the dangerous truth: you descend from the supposedly extinct Wendigo bloodline."
           ],
+          "focus": "Wendigo Descendant",
+          "name": "Dark Secret",
           "rules": [
-            "You are hiding a grave black deed or history that would be deeply damaging if exposed.",
-            "As long as it remains secret, it grants fewer Flaw points than open Infamy would.",
-            "If it comes out, the Storyteller may treat it as Infamy or otherwise bring serious social and political consequences down on you."
+            "You hide a deeply damaging lineage or history.",
+            "If exposed, the Storyteller may treat it as Infamy or impose major consequences."
           ],
           "source": {
             "book": "VTM",
             "page": 187
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Disease Vector",
-          "focus": "",
           "base": 1,
-          "temp": 0,
           "description": [
-            "Your feeding does not merely exploit the weak. It carries corruption forward through them, making your hunger part of the city's physical decay as surely as its spiritual rot. For a sewer-haunting Nosferatu who preys on the desperate, sickness becomes one more thing your victims pass along after you are gone."
+            "Your feeding carries sickness through the desperate, making hunger part of the city's physical rot."
           ],
+          "focus": "",
+          "name": "Disease Vector",
           "rules": [
-            "Whenever you feed from a sick mortal, you automatically contract that sickness.",
-            "You then pass it on to the next vessel from whom you feed."
+            "When you feed from a sick mortal, you contract it and pass it to your next vessel."
           ],
           "source": {
             "book": "Forbidden Religions",
             "page": 87
-          }
+          },
+          "temp": 0
         }
       ],
       "bloodline": {
@@ -2235,44 +2536,152 @@
       "embracePlace": "Paris, France",
       "embraceYear": 1889,
       "attributes": {
-        "strength": {"base": 1, "temp": 0},
-        "dexterity": {"base": 3, "temp": 0},
-        "stamina": {"base": 2, "temp": 0},
-        "charisma": {"base": 4, "temp": 0},
-        "manipulation": {"base": 3, "temp": 0},
-        "composure": {"base": 3, "temp": 0},
-        "intelligence": {"base": 2, "temp": 0},
-        "wits": {"base": 2, "temp": 0},
-        "resolve": {"base": 2, "temp": 0}
+        "strength": {
+          "base": 1,
+          "temp": 0
+        },
+        "dexterity": {
+          "base": 3,
+          "temp": 0
+        },
+        "stamina": {
+          "base": 2,
+          "temp": 0
+        },
+        "charisma": {
+          "base": 4,
+          "temp": 0
+        },
+        "manipulation": {
+          "base": 3,
+          "temp": 0
+        },
+        "composure": {
+          "base": 3,
+          "temp": 0
+        },
+        "intelligence": {
+          "base": 2,
+          "temp": 0
+        },
+        "wits": {
+          "base": 2,
+          "temp": 0
+        },
+        "resolve": {
+          "base": 2,
+          "temp": 0
+        }
       },
       "skills": {
-        "athletics": {"base": 2, "temp": 0},
-        "brawl": {"base": 0, "temp": 0},
-        "craft": {"base": 1, "temp": 0},
-        "drive": {"base": 0, "temp": 0},
-        "firearms": {"base": 2, "temp": 0},
-        "larceny": {"base": 1, "temp": 0},
-        "melee": {"base": 0, "temp": 0},
-        "stealth": {"base": 1, "temp": 0},
-        "survival": {"base": 0, "temp": 0},
-        "animalKen": {"base": 0, "temp": 0},
-        "etiquette": {"base": 3, "temp": 0},
-        "insight": {"base": 2, "temp": 0},
-        "intimidation": {"base": 1, "temp": 0},
-        "leadership": {"base": 3, "temp": 0},
-        "performance": {"base": 1, "temp": 0},
-        "persuasion": {"base": 3, "temp": 0},
-        "streetwise": {"base": 1, "temp": 0},
-        "subterfuge": {"base": 2, "temp": 0},
-        "academics": {"base": 1, "temp": 0},
-        "awareness": {"base": 2, "temp": 0},
-        "finance": {"base": 0, "temp": 0},
-        "investigation": {"base": 1, "temp": 0},
-        "medicine": {"base": 0, "temp": 0},
-        "occult": {"base": 1, "temp": 0},
-        "politics": {"base": 1, "temp": 0},
-        "science": {"base": 0, "temp": 0},
-        "technology": {"base": 1, "temp": 0}
+        "athletics": {
+          "base": 2,
+          "temp": 0
+        },
+        "brawl": {
+          "base": 0,
+          "temp": 0
+        },
+        "craft": {
+          "base": 1,
+          "temp": 0
+        },
+        "drive": {
+          "base": 0,
+          "temp": 0
+        },
+        "firearms": {
+          "base": 2,
+          "temp": 0
+        },
+        "larceny": {
+          "base": 1,
+          "temp": 0
+        },
+        "melee": {
+          "base": 0,
+          "temp": 0
+        },
+        "stealth": {
+          "base": 1,
+          "temp": 0
+        },
+        "survival": {
+          "base": 0,
+          "temp": 0
+        },
+        "animalKen": {
+          "base": 0,
+          "temp": 0
+        },
+        "etiquette": {
+          "base": 3,
+          "temp": 0
+        },
+        "insight": {
+          "base": 2,
+          "temp": 0
+        },
+        "intimidation": {
+          "base": 1,
+          "temp": 0
+        },
+        "leadership": {
+          "base": 3,
+          "temp": 0
+        },
+        "performance": {
+          "base": 1,
+          "temp": 0
+        },
+        "persuasion": {
+          "base": 3,
+          "temp": 0
+        },
+        "streetwise": {
+          "base": 1,
+          "temp": 0
+        },
+        "subterfuge": {
+          "base": 2,
+          "temp": 0
+        },
+        "academics": {
+          "base": 1,
+          "temp": 0
+        },
+        "awareness": {
+          "base": 2,
+          "temp": 0
+        },
+        "finance": {
+          "base": 0,
+          "temp": 0
+        },
+        "investigation": {
+          "base": 1,
+          "temp": 0
+        },
+        "medicine": {
+          "base": 0,
+          "temp": 0
+        },
+        "occult": {
+          "base": 1,
+          "temp": 0
+        },
+        "politics": {
+          "base": 1,
+          "temp": 0
+        },
+        "science": {
+          "base": 0,
+          "temp": 0
+        },
+        "technology": {
+          "base": 1,
+          "temp": 0
+        }
       },
       "specialties": [
         {
@@ -2441,191 +2850,183 @@
       ],
       "backgrounds": [
         {
-          "name": "Status",
-          "focus": "Camarilla",
           "base": 5,
-          "max": 5,
-          "temp": 0,
-          "sheetDisplay": false,
           "description": [
-            "As Prince, your standing in Camarilla society is absolute: you are the formal source of legitimacy, office, judgment, and domain in Toronto.",
-            "Whatever private doubts others may harbor, the structure of the sect itself places you unmistakably at its apex."
+            "As Prince, you are Toronto's formal source of Camarilla legitimacy, office, judgment, and domain."
           ],
+          "focus": "Camarilla",
+          "max": 5,
+          "name": "Status",
           "rules": [
             "You rule the domain as Prince.",
-            "The Storyteller may add this Status to Social dice pools in courtly or status-conscious situations."
+            "Add this Status to suitable courtly or status-conscious Social pools."
           ],
-          "source": {
-            "book": "VTM",
-            "page": 194
-          }
-        },
-        {
-          "name": "Status",
-          "focus": "Clan Toreador",
-          "base": 2,
-          "max": 5,
-          "temp": 0,
           "sheetDisplay": false,
-          "description": [
-            "Within Clan Toreador, your standing is respectable but modest compared to your throne. You are an important rose because you hold Praxis, but that does not automatically make you the unquestioned heart of clan society.",
-            "The gap suggests a prince whose sect authority has outpaced his deeper roots and prestige within his own clan."
-          ],
-          "rules": [
-            "Your clan considers you an average ancilla — not highly-respected, and a far cry from being among the clan's foremost figures.",
-            "The Storyteller may add this Status to Social dice pools in Toreador-specific or status-conscious interactions."
-          ],
           "source": {
             "book": "VTM",
             "page": 194
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Mawla",
+          "base": 2,
+          "description": [
+            "Among Toreador, your Praxis makes you important, but your clan prestige remains modest beside your throne."
+          ],
+          "focus": "Clan Toreador",
+          "max": 5,
+          "name": "Status",
+          "rules": [
+            "Your clan sees you as an average ancilla, not a foremost figure.",
+            "Add this Status in Toreador or status-conscious scenes."
+          ],
+          "sheetDisplay": false,
+          "source": {
+            "book": "VTM",
+            "page": 194
+          },
+          "temp": 0
+        },
+        {
+          "base": 2,
+          "description": [
+            "Damien Abanda is your childe and century-old survivor-bond, now a polished bridge to Red Flag and Anarch politics."
+          ],
           "focus": "Damien Abanda",
-          "base": 2,
           "max": 5,
-          "temp": 0,
-          "description": [
-            "Damien Abanda is more than your childe: he is a century-old bond forged in flight, adversity, failure, and survival, from Revolutionary Mexico to the long shadow of your torpor.",
-            "Though he now stands with Red Flag, Damien remains a polished bridge to Anarch politics and courtly maneuvering alike, able to offer guidance, quiet warnings, and a sympathetic voice in rooms where your authority alone cannot reach."
-          ],
+          "name": "Mawla",
           "rules": [
-            "Damien is a reliable advisor, intermediary, or source of information with meaningful influence.",
-            "He can offer guidance, warnings, introductions, or speak on your behalf when appropriate.",
-            "He expects reciprocity, and the Storyteller decides the exact help he can provide in a given situation."
+            "Damien can advise, warn, introduce, or speak for you when appropriate.",
+            "He expects reciprocity; the Storyteller decides his exact help."
           ],
           "source": {
             "book": "VTM",
             "page": 192
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Mawla",
+          "base": 2,
+          "description": [
+            "Evanescent Blue is a Ravnos survivor you saved near Kingston, now an Anarch source of diaspora news, warnings, and perspective."
+          ],
           "focus": "Evanescent Blue",
-          "base": 2,
           "max": 5,
-          "temp": 0,
-          "description": [
-            "Evanescent Blue is one of the Ravnos survivors you pulled out of the chaos near Kingston during the Week of Nightmares, tying your legend not just to witnessing clan-apocalypse, but to preserving what little of the Ravnos remained.",
-            "Now established among the Anarchs in Color Blitz, Blue can still carry news, warnings, and hard-earned perspective from the shattered Ravnos diaspora, even if open association with such remnants is politically awkward."
-          ],
+          "name": "Mawla",
           "rules": [
-            "Evanescent is a reliable advisor, intermediary, or source of information with meaningful influence.",
-            "She can offer guidance, warnings, introductions, or speak on your behalf when appropriate.",
-            "She expects reciprocity, and the Storyteller decides the exact help she can provide in a given situation."
+            "Blue can advise, warn, introduce, or speak for you when appropriate.",
+            "She expects reciprocity; the Storyteller decides her exact help."
           ],
           "source": {
             "book": "VTM",
             "page": 192
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Mawla",
-          "focus": "Merrick Singh",
           "base": 1,
-          "max": 5,
-          "temp": 0,
           "description": [
-            "Merrick Singh is another Ravnos survivor you brought away from the Week of Nightmares, but unlike Blue, you placed him under Oliver Gagnon's care in Toronto, judging Oliver's freer temperament better suited to shelter him after that catastrophe.",
-            "Merrick is now with Oliver's band, Scarlett & the Boys, where he survives by passing as Toreador: a glittering, ambient presence in Camarilla nightlife whose oddity and charm make him useful in rooms where open Ravnos identity would be far less welcome."
+            "Merrick Singh is a saved Ravnos survivor now passing as Toreador with Scarlett & the Boys, useful in Camarilla nightlife."
           ],
+          "focus": "Merrick Singh",
+          "max": 5,
+          "name": "Mawla",
           "rules": [
-            "Merrick is a useful personal contact who can provide occasional help, introductions, or information.",
-            "His support is narrower and less politically weighty than a higher-rated Mawla's.",
-            "He expects reciprocity, and the Storyteller decides the exact help he can provide in a given situation."
+            "Merrick can provide occasional help, introductions, or information.",
+            "His support is narrow, and he expects reciprocity."
           ],
           "source": {
             "book": "VTM",
             "page": 192
-          }
+          },
+          "temp": 0
         }
       ],
       "merits": [
         {
-          "name": "Luck of the Devil",
-          "focus": "",
           "base": 4,
-          "temp": 0,
-          "description": "From your rise out of poverty into wealth, to your rescue from torpor in the Mojave Desert, your life in undoubtedly charmed... though you have begun to notice karma always demands balance.",
+          "description": "Your life seems charmed, from poverty to wealth to rescue from torpor, though karma always balances the scales.",
+          "focus": "",
+          "name": "Luck of the Devil",
           "rules": [
-            "Once per session, you can redirect a misfortune directed at you to someone else close to you.",
-            "The Storyteller is the final arbiter on what counts as a proper 'misfortune'."
+            "Once per session, redirect a misfortune aimed at you to someone close to you.",
+            "The Storyteller decides what qualifies."
           ],
           "source": {
             "book": "Player's Guide",
             "page": 119
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Beautiful",
-          "focus": "",
           "base": 2,
+          "description": [
+            "Oliver shaped you into a Toreador ideal; even after torpor and Praxis, your beauty remains unmistakable."
+          ],
+          "focus": "",
           "max": 4,
-          "temp": 0,
-          "description": [
-            "Oliver Gagnon raised you as a Toreador ideal, polishing a poor boy from Lucerne into a creature of elegance, poise, and cultivated allure. Even after torpor, reinvention, and the burdens of Praxis, that beauty remains one of the first truths anyone notices about you."
-          ],
+          "name": "Beautiful",
           "rules": [
-            "You gain one extra die to appropriate Social dice pools when your appearance can affect the interaction."
+            "Gain one die to appropriate Social pools when appearance matters."
           ],
           "source": {
             "book": "VTM",
             "page": 179
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Linguistics",
-          "focus": "",
           "base": 1,
+          "description": [
+            "Salons, courts, unstable domains, and bloodline legacy make you sound at home almost anywhere."
+          ],
+          "focus": "",
           "max": 5,
-          "temp": 0,
-          "description": [
-            "You were shaped in salons, courts, and unstable domains across Europe and North America, and your bloodline's legacy only deepens that gift: you are the sort of Toreador who is expected to sound as though he belongs wherever he stands."
-          ],
+          "name": "Linguistics",
           "rules": [
-            "You can fluently speak, read, and write one additional language beyond your default languages."
+            "Fluently speak, read, and write one additional language."
           ],
           "source": {
             "book": "VTM",
             "page": 179
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Ingénue",
-          "focus": "",
           "base": 1,
-          "temp": 0,
           "description": [
-            "You carry yourself with such polish, grace, and apparent sincerity that people often want to believe in your innocence before they have any reason to. For a prince shaped in salons and old courts, that blameless surface is not naïveté, but one of the most refined weapons in your arsenal."
+            "Your polish and apparent sincerity make others want to believe in your innocence before reason intrudes."
           ],
+          "focus": "",
+          "name": "Ingénue",
           "rules": [
-            "You add two dice to any rolls related to avoiding suspicion or deflecting blame, at the Storyteller's discretion."
+            "Add two dice to rolls avoiding suspicion or deflecting blame, at Storyteller discretion."
           ],
           "source": {
             "book": "Player's Guide",
             "page": 118
-          }
+          },
+          "temp": 0
         }
       ],
       "flaws": [
         {
-          "name": "The Curse of Rapture",
-          "focus": "",
           "base": 1,
-          "temp": 0,
           "description": [
-            "You do not merely appreciate beauty: you can be arrested by it. As a Toreador prince shaped by salons, performance, and the cultivated power of appearances, your fixation on storytelling means a novel and impressive narrative can seize your full attention with dangerous ease."
+            "A novel, impressive story can arrest your attention, turning cultivated appreciation into dangerous fixation."
           ],
+          "focus": "",
+          "name": "The Curse of Rapture",
           "rules": [
-            "This Flaw replaces your default Toreador clan bane with the following mechanics.",
-            "When you encounter a novel, impressive example of your fixation, you must succeed on a Resolve + Composure test at Difficulty 2 + Bane Severity or become fixated on it for the scene.",
-            "While fixated, you must spend Willpower to pull yourself away from appreciating the target of your fixation, and all rolls not related to discussing, exploring, or sharing it suffer a penalty equal to your Bane Severity."
+            "Replaces the default Toreador bane.",
+            "When you encounter a novel example of your fixation, roll Resolve + Composure vs. Difficulty 2 + Bane Severity or fixate for the scene.",
+            "While fixated, spend Willpower to pull away; unrelated rolls suffer Bane Severity penalty."
           ],
           "source": {
             "book": "House Rules",
             "page": 0
-          }
+          },
+          "temp": 0
         }
       ],
       "bloodline": {
@@ -2849,44 +3250,152 @@
       "embracePlace": "Diriyah, Ottoman Empire",
       "embraceYear": 1811,
       "attributes": {
-        "strength": {"base": 1, "temp": 0},
-        "dexterity": {"base": 2, "temp": 0},
-        "stamina": {"base": 2, "temp": 0},
-        "charisma": {"base": 3, "temp": 0},
-        "manipulation": {"base": 2, "temp": 0},
-        "composure": {"base": 3, "temp": 0},
-        "intelligence": {"base": 4, "temp": 0},
-        "wits": {"base": 2, "temp": 0},
-        "resolve": {"base": 3, "temp": 0}
+        "strength": {
+          "base": 1,
+          "temp": 0
+        },
+        "dexterity": {
+          "base": 2,
+          "temp": 0
+        },
+        "stamina": {
+          "base": 2,
+          "temp": 0
+        },
+        "charisma": {
+          "base": 3,
+          "temp": 0
+        },
+        "manipulation": {
+          "base": 2,
+          "temp": 0
+        },
+        "composure": {
+          "base": 3,
+          "temp": 0
+        },
+        "intelligence": {
+          "base": 4,
+          "temp": 0
+        },
+        "wits": {
+          "base": 2,
+          "temp": 0
+        },
+        "resolve": {
+          "base": 3,
+          "temp": 0
+        }
       },
       "skills": {
-        "athletics": {"base": 0, "temp": 0},
-        "brawl": {"base": 0, "temp": 0},
-        "craft": {"base": 0, "temp": 0},
-        "drive": {"base": 0, "temp": 0},
-        "firearms": {"base": 0, "temp": 0},
-        "larceny": {"base": 1, "temp": 0},
-        "melee": {"base": 1, "temp": 0},
-        "stealth": {"base": 2, "temp": 0},
-        "survival": {"base": 0, "temp": 0},
-        "animalKen": {"base": 0, "temp": 0},
-        "etiquette": {"base": 2, "temp": 0},
-        "insight": {"base": 2, "temp": 0},
-        "intimidation": {"base": 1, "temp": 0},
-        "leadership": {"base": 3, "temp": 0},
-        "performance": {"base": 0, "temp": 0},
-        "persuasion": {"base": 3, "temp": 0},
-        "streetwise": {"base": 0, "temp": 0},
-        "subterfuge": {"base": 1, "temp": 0},
-        "academics": {"base": 0, "temp": 0},
-        "awareness": {"base": 2, "temp": 0},
-        "finance": {"base": 1, "temp": 0},
-        "investigation": {"base": 1, "temp": 0},
-        "medicine": {"base": 0, "temp": 0},
-        "occult": {"base": 3, "temp": 0},
-        "politics": {"base": 2, "temp": 0},
-        "science": {"base": 0, "temp": 0},
-        "technology": {"base": 0, "temp": 0}
+        "athletics": {
+          "base": 0,
+          "temp": 0
+        },
+        "brawl": {
+          "base": 0,
+          "temp": 0
+        },
+        "craft": {
+          "base": 0,
+          "temp": 0
+        },
+        "drive": {
+          "base": 0,
+          "temp": 0
+        },
+        "firearms": {
+          "base": 0,
+          "temp": 0
+        },
+        "larceny": {
+          "base": 1,
+          "temp": 0
+        },
+        "melee": {
+          "base": 1,
+          "temp": 0
+        },
+        "stealth": {
+          "base": 2,
+          "temp": 0
+        },
+        "survival": {
+          "base": 0,
+          "temp": 0
+        },
+        "animalKen": {
+          "base": 0,
+          "temp": 0
+        },
+        "etiquette": {
+          "base": 2,
+          "temp": 0
+        },
+        "insight": {
+          "base": 2,
+          "temp": 0
+        },
+        "intimidation": {
+          "base": 1,
+          "temp": 0
+        },
+        "leadership": {
+          "base": 3,
+          "temp": 0
+        },
+        "performance": {
+          "base": 0,
+          "temp": 0
+        },
+        "persuasion": {
+          "base": 3,
+          "temp": 0
+        },
+        "streetwise": {
+          "base": 0,
+          "temp": 0
+        },
+        "subterfuge": {
+          "base": 1,
+          "temp": 0
+        },
+        "academics": {
+          "base": 0,
+          "temp": 0
+        },
+        "awareness": {
+          "base": 2,
+          "temp": 0
+        },
+        "finance": {
+          "base": 1,
+          "temp": 0
+        },
+        "investigation": {
+          "base": 1,
+          "temp": 0
+        },
+        "medicine": {
+          "base": 0,
+          "temp": 0
+        },
+        "occult": {
+          "base": 3,
+          "temp": 0
+        },
+        "politics": {
+          "base": 2,
+          "temp": 0
+        },
+        "science": {
+          "base": 0,
+          "temp": 0
+        },
+        "technology": {
+          "base": 0,
+          "temp": 0
+        }
       },
       "specialties": [
         {
@@ -3157,329 +3666,320 @@
       ],
       "backgrounds": [
         {
-          "name": "Status",
-          "focus": "Camarilla",
           "base": 4,
-          "max": 5,
-          "temp": 0,
-          "sheetDisplay": false,
           "description": [
-            "As Seneschal, you stand among the Camarilla's ruling elite, trusted to keep the machinery of Praxis functioning and to act with the Prince's authority when needed.",
-            "Your standing places you firmly inside the city's governing structure rather than merely adjacent to it."
+            "As Seneschal, you stand inside Toronto's ruling machinery, trusted to keep Praxis functioning and speak with the Prince's authority."
           ],
-          "rules": [
-            "You sit at the table of power in the sect.",
-            "The Storyteller may add this Status to Social dice pools in courtly or status-conscious situations."
-          ],
-          "source": {
-            "book": "VTM",
-            "page": 194
-          }
-        },
-        {
+          "focus": "Camarilla",
+          "max": 5,
           "name": "Status",
-          "focus": "Banu Haqim",
-          "base": 3,
-          "max": 5,
-          "temp": 0,
-          "sheetDisplay": false,
-          "description": [
-            "Among the Banu Haqim, you are highly respected and an important representative of clan interests, but not its uncontested pinnacle. Older and more storied figures still cast long shadows over what supremacy in the clan looks like in Toronto.",
-            "Your standing is strong enough to matter decisively, but it still reads as influential rather than supreme."
-          ],
           "rules": [
-            "You are a highly respected ancilla and a significant representative of your clan's interests.",
-            "The Storyteller may add this Status to Social dice pools in Banu Haqim-specific or status-conscious interactions."
+            "You sit at the sect's table of power.",
+            "Add this Status to suitable courtly or status-conscious Social pools."
           ],
+          "sheetDisplay": false,
           "source": {
             "book": "VTM",
             "page": 194
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Fame",
-          "focus": "Muslim Community",
-          "base": 1,
-          "max": 5,
-          "temp": 0,
+          "base": 3,
           "description": [
-            "You are known and quietly admired within parts of Toronto's Muslim community, not as a mass celebrity, but as a familiar and respected figure whose name carries warmth, dignity, and curiosity. That visibility fits the life you have built for yourself: one rooted in faith, belonging, and the careful cultivation of trust rather than spectacle."
+            "Among the Banu Haqim, you are highly respected and influential, though older figures still overshadow true supremacy in Toronto."
           ],
+          "focus": "Banu Haqim",
+          "max": 5,
+          "name": "Status",
           "rules": [
-            "A select subculture knows who you are and admires you.",
-            "The Storyteller may allow you to use this Fame in Social dice pools instead of another Trait in appropriate mortal-facing situations.",
-            "It also reduces the Difficulty of some Social tests against your fans and can help with hunting, depending on your predation style."
+            "You are a respected ancilla and important clan representative.",
+            "Add this Status in Banu Haqim or status-conscious Social scenes."
+          ],
+          "sheetDisplay": false,
+          "source": {
+            "book": "VTM",
+            "page": 194
+          },
+          "temp": 0
+        },
+        {
+          "base": 1,
+          "description": [
+            "Parts of Toronto's Muslim community know and admire you as a familiar, dignified figure built on faith, belonging, and trust."
+          ],
+          "focus": "Muslim Community",
+          "max": 5,
+          "name": "Fame",
+          "rules": [
+            "A select subculture knows and admires you.",
+            "May aid Social pools, reduce Difficulty with fans, or support hunting when appropriate."
           ],
           "source": {
             "book": "VTM",
             "page": 187
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Contact",
-          "focus": "???",
           "base": 1,
-          "max": 3,
-          "temp": 0,
           "description": [
             "???"
           ],
+          "focus": "???",
+          "max": 3,
+          "name": "Contact",
           "rules": [
-            "You know a mortal who can do or get something cheap or common for you.",
-            "This Contact is appropriate for resources or favors of minimal value within his area of access.",
-            "He mainly provides information, and may expect favors or payment in return."
+            "You know a mortal who can provide cheap or common help.",
+            "Mainly provides minor information or favors, often for payment or reciprocity."
           ],
           "source": {
             "book": "VTM",
             "page": 186
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Influence",
-          "focus": "Finance",
           "base": 3,
-          "max": 5,
-          "temp": 0,
           "description": [
-            "You have real pull in Toronto's financial world, enough that bankers, brokers, and other money-people hesitate before crossing you and are often willing to do favors. For a Vizier and Seneschal committed to building cities rather than breaking them, that influence is one of the clearest expressions of your power."
+            "You have real pull in Toronto finance; bankers, brokers, and money-people hesitate before crossing you."
           ],
+          "focus": "Finance",
+          "max": 5,
+          "name": "Influence",
           "rules": [
-            "You are entrenched in the financial sector, and mortal power-brokers there hesitate to oppose you.",
-            "The Storyteller may require or allow you to use this Influence in place of a Trait for some Social tests involving minor bureaucrats, functionaries, or others inside that sphere.",
-            "Your Influence mainly applies within that group and within your city, unless the Storyteller rules otherwise."
+            "You are entrenched in finance.",
+            "May replace or support Traits in that sphere, mainly within Toronto."
           ],
           "source": {
             "book": "VTM",
             "page": 187
-          }
+          },
+          "temp": 0
         }
       ],
       "merits": [
         {
-          "name": "Object of Power",
-          "focus": "Ur-Shulgi's Promise",
           "base": 1,
-          "max": 3,
-          "temp": 0,
           "description": [
-            "Ur-Shulgi's Promise is the ring that came alive in the wake of revelation, prophecy, and blood-memory, the iron band that seared itself into your flesh when Michael named your burden. For you, its power is inseparable from lineage: a mark of doom, purpose, and sorcerous destiny bound directly to your body."
+            "Ur-Shulgi's Promise is fused to your flesh: a ring of prophecy, doom, lineage, and sorcerous destiny."
           ],
+          "focus": "Ur-Shulgi's Promise",
+          "max": 3,
+          "name": "Object of Power",
           "rules": [
-            "Once per story, after rolling for a Blood Sorcery power or Ritual, you may set one Hunger die to a 10."
+            "Once per story, after a Blood Sorcery power or Ritual roll, set one Hunger die to 10."
           ],
           "source": {
             "book": "In Memoriam",
             "page": 21
-          }
+          },
+          "temp": 0
         }
       ],
       "flaws": [
         {
-          "name": "Arcane Curse",
+          "base": 2,
+          "description": [
+            "When your sorcery slips, Ur-Shulgi's Promise erupts in sparks, embers, and dangerous heat."
+          ],
           "focus": "Magic Sparks Fires",
-          "base": 2,
           "max": 5,
-          "temp": 0,
-          "description": [
-            "Your sorcery does not fail quietly. When your control slips, the curse bound up with Ur-Shulgi's Promise expresses itself through sudden sparks, embers, and heat, turning even minor mistakes into dangerous signs of supernatural instability. Every sorcerous mishap threatens to become immediate, visible destruction."
-          ],
+          "name": "Arcane Curse",
           "rules": [
-            "Whenever you fail a Ritual or Blood Sorcery roll, sparks and hot embers shower the vicinity, risking exposure and fire."
+            "On any failed Ritual or Blood Sorcery roll, sparks and embers risk exposure and fire."
           ],
           "source": {
             "book": "House Rules",
             "page": 0
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Rat in a Cage",
+          "base": 2,
+          "description": [
+            "Confinement strips away your poise; being pinned, bound, or trapped provokes humiliating panic."
+          ],
           "focus": "",
-          "base": 2,
-          "temp": 0,
-          "description": [
-            "You are controlled, poised, and disciplined right up until confinement strips that control away. Being pinned down, bound, or physically restrained provokes a sharp, humiliating panic that makes clear how much your composure depends on freedom of movement."
-          ],
+          "name": "Rat in a Cage",
           "rules": [
-            "Whenever you are penned in or physically restrained, the Difficulty of any rolls you make under those circumstances increases by 2."
+            "While penned in or physically restrained, increase the Difficulty of your rolls by 2."
           ],
           "source": {
             "book": "House Rules",
             "page": 0
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Dark Secret",
-          "focus": "The Doom of Diriyah",
           "base": 2,
-          "temp": 0,
           "description": [
-            "You have built your identity around restraint, peacemaking, and the duty to create rather than destroy, yet that creed was born from a catastrophe you caused: in Diriyah, one impulsive assassination helped bring down an entire city.",
-            "If the full truth emerged, it would not merely stain your name. It would undermine the moral foundation on which you have rebuilt yourself ever since."
+            "Your creed of restraint was born from Diriyah, where one impulsive assassination helped doom a city.",
+            "If exposed, it would undermine the moral life you rebuilt afterward."
           ],
+          "focus": "The Doom of Diriyah",
+          "name": "Dark Secret",
           "rules": [
-            "You are hiding a grave black deed or history that would be deeply damaging if exposed.",
-            "As long as it remains secret, it grants fewer Flaw points than open Infamy would.",
-            "If it comes out, the Storyteller may treat it as Infamy or otherwise bring serious social and political consequences down on you."
+            "You hide a grave deed or history.",
+            "If exposed, the Storyteller may treat it as Infamy or impose major consequences."
           ],
           "source": {
             "book": "VTM",
             "page": 187
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Knowledge Hungry",
-          "focus": "Iron Praxis",
           "base": 1,
-          "temp": 0,
           "description": [
-            "You are drawn to the Iron Prince's reign not out of nostalgia alone, but because you hunger to understand how a city was made durable, orderly, and worth preserving across centuries. For a builder, seneschal, and would-be steward of Toronto's future, the Iron Praxis feels less like history than a manual you have not yet finished reading. That fascination can become consuming whenever some new source promises insight into how Steele ruled, endured, or made the city hold together."
+            "You hunger to understand the Iron Praxis as a manual for making Toronto durable, orderly, and worth preserving."
           ],
+          "focus": "Iron Praxis",
+          "name": "Knowledge Hungry",
           "rules": [
-            "You are compulsively driven to study your chosen subject.",
-            "When you encounter books, tutorials, seminars, or similar opportunities to learn about the Iron Praxis, you must pass a Difficulty 3 Willpower test to resist chasing that obsession."
+            "You compulsively study the Iron Praxis.",
+            "When tempted by such knowledge, pass a Difficulty 3 Willpower test or pursue it."
           ],
           "source": {
             "book": "Player's Guide",
             "page": 120
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Burn Scars",
-          "focus": "Ring Forearm",
           "base": 1,
-          "max": 3,
-          "temp": 0,
           "description": [
-            "The flesh around Ur-Shulgi's Promise never truly healed, leaving blackened scars running from the cursed ring up your forearm. The scars are not only disfiguring. They make other vampires recoil on instinct, as though they can smell the fire that made them."
+            "Ur-Shulgi's Promise left blackened scars up your forearm, disfiguring and unsettling to Kindred."
           ],
+          "focus": "Ring Forearm",
+          "max": 3,
+          "name": "Burn Scars",
           "rules": [
-            "Your visible burn scars impose a penalty on Social rolls with Kindred who can perceive them, equal to the dots in this Flaw.",
-            "At one dot, the scars can usually be concealed with unobtrusive clothing choices."
+            "Visible burn scars penalize Social rolls with Kindred who perceive them, equal to this Flaw's dots.",
+            "At one dot, clothing can usually hide them."
           ],
           "source": {
             "book": "House Rules",
             "page": 0
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Crisis of Identity",
-          "focus": "",
           "base": 1,
-          "temp": 0,
           "description": [
-            "Your faith, duty, and self-conception are all bound tightly together, so losing control feels like more than failure. It feels like becoming someone unworthy of the principles you have built your unlife around."
+            "Losing control feels like becoming unworthy of the faith and duty that define you."
           ],
+          "focus": "",
+          "name": "Crisis of Identity",
           "rules": [
-            "Whenever your actions result in a bestial failure, you suffer 1 point of Superficial Willpower damage in addition to the roll's other effects."
+            "Whenever your actions cause a bestial failure, also suffer 1 Superficial Willpower damage."
           ],
           "source": {
             "book": "Forbidden Religions",
             "page": 86
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Vein-Tapper",
-          "focus": "",
           "base": 1,
-          "temp": 0,
           "description": [
-            "You find feeding most natural when it is intimate, hidden, and controlled, not when it is made into a public spectacle. That preference suits your reserve, your discipline, and the quiet possessiveness with which you approach blood."
+            "Feeding feels right only when intimate, hidden, and controlled, never as public spectacle."
           ],
+          "focus": "",
+          "name": "Vein-Tapper",
           "rules": [
-            "You find feeding extremely personal and cannot take blood from mortals while being observed.",
-            "This usually means you feed from the unaware or go out of your way to find or create drugged or unconscious victims."
+            "You cannot feed from mortals while observed.",
+            "You usually feed from the unaware, drugged, or unconscious."
           ],
           "source": {
             "book": "Player's Guide",
             "page": 119
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Resonance Sensitivity",
-          "focus": "Phlegmatic",
           "base": 1,
-          "temp": 0,
           "description": [
-            "You are unusually vulnerable to blood that is too calm, too settled, too emotionally still. Phlegmatic resonance catches at the part of you that craves restraint and order, then twists it into something compulsive."
+            "Phlegmatic blood catches your need for restraint and order, twisting it into compulsion."
           ],
+          "focus": "Phlegmatic",
+          "name": "Resonance Sensitivity",
           "rules": [
-            "You are sensitive to Phlegmatic resonance.",
-            "When you feed on a vessel with that resonance at Intense or higher, the Storyteller gives you a Compulsion tied to it persists until it is shed.",
-            "If the Compulsion remains at the end of the story, it erupts in a messy, potentially violent way chosen by the Storyteller."
+            "Feeding from Intense+ Phlegmatic blood gives a related Compulsion.",
+            "If still active at story's end, it erupts messily at Storyteller discretion."
           ],
           "source": {
             "book": "Succubus Club",
             "page": 25
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Prey Exclusion",
-          "focus": "Non-Muslims",
           "base": 1,
-          "max": 2,
-          "temp": 0,
           "description": [
-            "Your feeding is constrained by faith as much as hunger: even after centuries, and despite all the compromises of unlife, you still refuse to prey on non-Muslims. The act of drinking blood remains entangled with the question of who may rightfully be brought inside your moral world."
+            "Faith constrains your hunger: despite undeath's compromises, you refuse to prey on non-Muslims."
           ],
+          "focus": "Non-Muslims",
+          "max": 2,
+          "name": "Prey Exclusion",
           "rules": [
-            "You refuse to hunt non-Muslims. If you feed on them, you gain Stains as though you had violated a chronicle Tenet.",
-            "Seeing others feed on non-Muslims without interfering may also cause Stains at the Storyteller's discretion."
+            "You refuse to hunt non-Muslims.",
+            "Doing so, or allowing it without interference, may cause Stains."
           ],
           "source": {
             "book": "VTM",
             "page": 181
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Cursed Object",
-          "focus": "Ur-Shulgi's Promise",
           "base": 1,
-          "temp": 0,
           "description": [
-            "The same ring that carries prophecy also carries your ancestor's shadow. Ur-Shulgi's Promise is permanently fused to your hand, blackening the flesh beneath it and planting stray thoughts and impressions in your mind that do not feel wholly your own. The ring is both gift and intrusion: a source of power that quietly pressures you toward darker instincts."
+            "Ur-Shulgi's Promise is both gift and intrusion: fused to your hand, blackening flesh and whispering alien thoughts."
           ],
+          "focus": "Ur-Shulgi's Promise",
+          "name": "Cursed Object",
           "rules": [
-            "Once per session, at a time determined by the Storyteller, you must reroll one successful test and risk failure instead."
+            "Once per session, at Storyteller timing, reroll one successful test and risk failure."
           ],
           "source": {
             "book": "In Memoriam",
             "page": 21
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Curse of Obsession",
-          "focus": "",
           "base": 1,
-          "temp": 0,
           "description": [
-            "You are obsessed with a utopian vision where everyone is on the same side.",
-            "You resist taking action against someone unless they have already rejected your best attempts at a diplomatic solution."
+            "You are obsessed with a utopian vision where everyone can be brought onto the same side."
           ],
+          "focus": "",
+          "name": "Curse of Obsession",
           "rules": [
-            "Acting in defiance of your obsession incurs one Stain."
+            "Defying this obsession, such as attacking before diplomacy is exhausted, causes one Stain."
           ],
           "source": {
             "book": "House Rules",
             "page": 0
-          }
+          },
+          "temp": 0
         },
         {
-          "name": "Curse of Growing Darkness",
-          "focus": "",
           "base": 0,
-          "temp": 0,
           "description": [
-            "Like all Banu Haqim, your skin darkens with age rather than growing pale, as though undeath deepens the mark of your blood instead of draining it away. In your case the change is still subtle enough to read as unusual rather than openly supernatural, but it hints at the deeper antiquity waiting in your Blood."
+            "Your Banu Haqim skin darkens with age; for now it is subtle, but hints at future Blood-deep antiquity."
           ],
+          "focus": "",
+          "name": "Curse of Growing Darkness",
           "rules": [
-            "You gain an additional Clan Bane: Your skin grows darker with age instead of paler.",
-            "At your current age, this has no significant mechanical effect and is worth no Flaw dots.",
-            "It only becomes dot-worthy when the darkening grows visibly supernatural after centuries of unlife."
+            "Your skin darkens with age instead of paling.",
+            "At present this has no significant mechanical effect or Flaw dots."
           ],
           "source": {
             "book": "House Rules",
             "page": 0
-          }
+          },
+          "temp": 0
         }
       ],
       "bloodline": {

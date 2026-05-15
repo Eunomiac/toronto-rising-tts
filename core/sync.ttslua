@@ -13,6 +13,7 @@
 
 local Sync = {}
 
+local U = require("lib.util")
 local C = require("lib.constants")
 local L = require("core.lighting")
 local Scenes = require("core.scenes")
@@ -148,34 +149,16 @@ function Sync.full(opts)
         callIfFunction(L.InitLights)
         reconcileSeatPresentationFromState()
 
-        if type(Wait) == "table" and type(Wait.time) == "function" then
-            Wait.time(function()
-                callIfFunction(L.InitLightsDeferred)
-                reconcileSeatPresentationFromState()
-            end, 0.35)
-            Wait.time(function()
-                callIfFunction(L.InitLightsDeferred)
-                reconcileSeatPresentationFromState()
-            end, 1.5)
-            Wait.time(function()
-                callIfFunction(L.InitLightsDeferred)
-                reconcileSeatPresentationFromState()
-            end, 3.0)
-            Wait.time(function()
-                callIfFunction(L.InitLightsDeferred)
-                reconcileSeatPresentationFromState()
-            end, 5.0)
-            Wait.time(function()
-                callIfFunction(L.InitLightsDeferred)
-                reconcileSeatPresentationFromState()
-            end, 8.0)
-        end
+        U.scheduleAtOffsets(function()
+            callIfFunction(L.InitLightsDeferred)
+            reconcileSeatPresentationFromState()
+        end, { 0.35, 1.5, 3.0, 5.0, 8.0 })
     else
         -- Runtime path: avoid load-only full re-init/retry churn; reconcile state diffs only.
         reconcileSeatPresentationFromState()
     end
 
-    --- `sessionScene.npcWorld` (`preload` + `byArea`) — see `NPCS.reconcileSessionSceneNpcWorldFromState`.
+    --- `sessionScene.npcWorld.byArea` — see `NPCS.reconcileSessionSceneNpcWorldFromState`.
     --- Incremental `Sync.ui` also refreshes `gameStateOverlay` via `UpdateUIDisplays` (`GameStateOverlay.reconcileFromState`).
     callIfFunction(NPCS.reconcileSessionSceneNpcWorldFromState, { deferUiRefresh = true })
 
@@ -196,32 +179,19 @@ function Sync.full(opts)
     if not didBootstrapFullSync then
         -- Some world objects (notably hunger smoke props) can be unavailable on the first
         -- onLoad-frame sync. Re-run overlays after startup settles only during bootstrap.
-        if type(Wait) == "table" and type(Wait.time) == "function" then
-            Wait.time(function()
-                Sync.ui({ overlays = true })
-            end, 1.0)
-            Wait.time(function()
-                Sync.ui({ overlays = true })
-            end, 2.5)
-            Wait.time(function()
-                Sync.ui({ overlays = true })
-            end, 5.0)
-            Wait.time(function()
-                Sync.ui({ overlays = true })
-            end, 8.0)
-        end
+        U.scheduleAtOffsets(function()
+            Sync.ui({ overlays = true })
+        end, { 1.0, 2.5, 5.0, 8.0 })
 
         -- Refresh roll panels and NPC storyteller panel once during bootstrap restore.
         if type(RUI) == "table" and type(RUI.refreshAll) == "function" then
             RUI.refreshAll()
         end
-        if type(Wait) == "table" and type(Wait.time) == "function" then
-            Wait.time(function()
-                if type(NPCS) == "table" and type(NPCS.refreshStorytellerUIIfVisible) == "function" then
-                    NPCS.refreshStorytellerUIIfVisible()
-                end
-            end, 0.15)
-        end
+        U.delay(function()
+            if type(NPCS) == "table" and type(NPCS.refreshStorytellerUIIfVisible) == "function" then
+                NPCS.refreshStorytellerUIIfVisible()
+            end
+        end, 0.15)
     end
 
     didBootstrapFullSync = true

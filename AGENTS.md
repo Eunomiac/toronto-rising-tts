@@ -42,6 +42,7 @@ bullets without evidence, confidence, or sourcing metadata.
 - Player lighting is state-derived (no restore stack): `ROLLING` > `NPC-role exception (future)` > `DARK/absent` > `HUNGRY` > `STANDARD`; `dark` and seat-layout absence both resolve to `OFF`.
 - Scene APIs (`Scenes.loadScene` / `Scenes.fadeToScene`) are state-mutation helpers; live scene effects must be applied via `Scenes.reconcileFromState()` through `Sync.*`.
 - Coroutine helpers (`U.waitUntil`, `U.RunSequence`, `U.Lerp`) require `startLuaCoroutine(Global, "FunctionName")` and run in Global context where `self` refers to Global.
+- Do not call `Wait.time`, `Wait.condition`, or `Wait.stop` outside `lib/util.ttslua`; use `U.delay`, `U.stopDelay`, `U.waitForCondition`, `U.scheduleAtOffsets`, and higher-level sequence helpers. The build gate enforces zero raw Wait usage in game code (`docs/solutions/lua-wait-api-policy.md`).
 - Before writing new helpers, check `.dev/AVAILABLE_FUNCTIONS.md` and `lib/util.ttslua` (75+ utilities) so existing `U.map`, `U.filter`, `U.Type`, `U.Val`, etc. are reused instead of reimplemented.
 - Implementation plans and design notes belong under `.dev/plans/` unless the user specifies another path; do not invent a top-level `docs/` tree for that purpose.
 - The canonical Miro board for Toronto Rising work is `https://miro.com/app/board/uXjVGfp9Sdk=/`; enumerate canvas content with `board_list_items` (paginating via `nextCursor`) because `context_explore` only surfaces high-level item kinds.

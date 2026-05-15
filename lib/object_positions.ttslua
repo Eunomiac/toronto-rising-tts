@@ -304,7 +304,7 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
     end
 
     local finalizeDelay = duration > 0 and duration or 0
-    Wait.time(function()
+    U.delay(function()
       if shouldAbort ~= nil and shouldAbort() then
         return
       end
@@ -322,7 +322,7 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
   end
 
   if delay > 0 then
-    Wait.time(run, delay)
+    U.delay(run, delay)
   else
     run()
   end

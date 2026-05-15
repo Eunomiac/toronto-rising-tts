@@ -48,7 +48,7 @@ Below is one **complete** wrapper object valid for the Import modal: all five **
         "isPlayingNPC": false,
         "isPresent": true
       },
-      "Red": {
+  "Red": {
         "characterKey": "lucien",
         "isPlayingNPC": true,
         "npcCharacterKey": "myleneHamelin",
@@ -64,7 +64,7 @@ Below is one **complete** wrapper object valid for the Import modal: all five **
         "isPlayingNPC": false,
         "isPresent": true
       },
-      "NPC1": {
+  "NPC1": {
         "slotEmpty": true
       },
       "NPC2": {
@@ -90,11 +90,11 @@ Below is one **complete** wrapper object valid for the Import modal: all five **
     },
     "rollDefaults": {},
     "soundscapeNarrative": {
-      "backgroundMusic": "casaLoma",
-      "location": "silent",
-      "wind": "silent",
-      "rain": "silent",
-      "thunderstorm": false,
+  "backgroundMusic": "casaLoma",
+  "location": "silent",
+  "wind": "silent",
+  "rain": "silent",
+  "thunderstorm": false,
       "isIndoors": true
     },
     "npcWorld": {
@@ -102,23 +102,18 @@ Below is one **complete** wrapper object valid for the Import modal: all five **
         "nearLeft": {
           "1": {
             "characterKey": "adrianVarga",
-            "npcLightMode": "OFF"
-          },
+    "npcLightMode": "OFF"
+   },
           "3": {
             "characterKey": "theAristocrat",
-            "npcLightMode": "OFF"
-          }
+    "npcLightMode": "OFF"
+   }
         },
         "centerForward": {},
         "nearRight": {},
         "farLeft": {},
         "farRight": {}
-      },
-      "preload": [
-        "evangelineDupont",
-        "oliverGagnon",
-        "eddie"
-      ]
+      }
     }
   }
 }
@@ -142,7 +137,7 @@ Use **flat** keys that already exist on live `sessionScene` (do not nest a separ
 | `chronicleWeatherManualHold` | boolean | When `true`, chronicle weather is not auto-applied on clock updates. **Import:** **`true`** when all three narrative weather fields are set; **`false`** when none are. |
 | `rollDefaults` | object | Same keys as `active.rollOptions` merges. |
 | `soundscapeNarrative` | object | Optional **intent** consumed **only on scene apply**: mapped into `gameState.soundscape` with the same setters / helpers the Storyteller UI uses. Empty `{}` if unused. **Import:** `wind`, `rain`, and `thunderstorm` must be **all** non-`null` together or **all** omitted / `null` — mixed is a validation error; when all three are set, the importer sets `chronicleWeatherManualHold` / `chronicleWeatherFollowSchedule` (see table above). See **Soundscape** below. |
-| `npcWorld` | object | `byArea` (sparse slot maps) + `preload` — see **NPC world** below. |
+| `npcWorld` | object | `byArea` sparse slot maps — see **NPC world** below. |
 
 ### `npcRoleOverride` (`sessionScene.npcRoleOverride`)
 
@@ -213,15 +208,13 @@ Avoid long arrays with empty placeholders. Use **sparse maps** keyed by string s
       "1": { "characterKey": "adrianVarga", "npcLightMode": "OFF" },
       "3": { "characterKey": "theAristocrat", "npcLightMode": "OFF" }
     }
-  },
-  "preload": ["evangelineDupont", "oliverGagnon", "eddie"]
+  }
 }
 ```
 
-- `preload` — array of `characterKey` strings to ensure in the preload zone when the scene bundle is applied. **`Sync.full`** calls `NPCS.reconcileSessionSceneNpcWorldFromState` (alias: `reconcileSessionScenePreloadNpcs`), which fingerprints `npcWorld`; when it changes and there is placement intent, existing figurines are parked at **Y = -200**, then missing `preload` entries spawn into the **`preload`** area in [`lib/npcs_data.ttslua`](../../lib/npcs_data.ttslua) (`groundLevel = -200` world Y, paired NPC lights with `autoLight`).
-- `byArea` — per area key (`nearLeft`, `centerForward`, …), numeric slot index → `{ characterKey, npcLightMode? }`. The same reconciler applies these placements after preload (same staggered `Wait.time` queue). `npcLightMode` from JSON overrides the area’s `autoLight` default when valid (`OFF` / `STANDARD` / `SPOTLIGHT`).
+- `byArea` — per area key (`nearLeft`, `centerForward`, …), numeric slot index → `{ characterKey, npcLightMode? }`. **`Sync.full`** calls `NPCS.reconcileSessionSceneNpcWorldFromState` (alias: `reconcileSessionScenePreloadNpcs`), which fingerprints `npcWorld`; when it changes and there is placement intent, existing figurines are **parked into the global `preload` grid** (small scale, under playfield), then these placements run (staggered `Wait.time`). `npcLightMode` from JSON overrides the area’s `autoLight` default when valid (`OFF` / `STANDARD` / `SPOTLIGHT`).
 
-Runtime NPC instances remain under **`gameState.npcs.instances`**; `npcWorld` is the **saved scene’s staging intent**, copied into live NPC flows during apply.
+Runtime NPC instances remain under **`gameState.npcs.instances`**; `npcWorld.byArea` is the **saved scene’s staging intent**, copied into live NPC flows during apply. **Scene bundles should omit `preload`** — the engine preloads all characters automatically.
 
 ## Switching scenes
 
@@ -413,11 +406,7 @@ This gives you “always current” for the **active** saved scene with **one** 
             "npcLightMode": "OFF"
           }
         }
-      },
-      "preload": [
-        "abbasFaruk",
-        "adrianGerrard"
-      ]
+      }
     }
   }
 }

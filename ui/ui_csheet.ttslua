@@ -179,7 +179,7 @@ local function applyCsheetPageState(obj, state)
   local visible = (targetPos.y >= 0)
   local duration, delay = OP.resolveTransitionTiming(posData, 0, 0)
   OP.applyResolvedPose(obj, posData, 0, 0)
-  Wait.time(function()
+  U.delay(function()
     obj.interactable = visible
     if visible then
       obj.setInvisibleTo({})

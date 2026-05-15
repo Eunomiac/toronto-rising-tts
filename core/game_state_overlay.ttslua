@@ -444,14 +444,14 @@ end
 
 local function scheduleNextTick()
     if tickerHandle ~= nil then
-        Wait.stop(tickerHandle)
+        U.stopDelay(tickerHandle)
         tickerHandle = nil
     end
     local ckPre = S.getStateVal("sessionScene", "clock")
     if type(ckPre) ~= "table" or ckPre.useRealTime ~= true then
         return
     end
-    tickerHandle = Wait.time(function()
+    tickerHandle = U.delay(function()
         tickerHandle = nil
         GameStateOverlay.tickRealTimeClock()
         scheduleNextTick()
@@ -469,7 +469,7 @@ end
 --- Stops the ticker (e.g. when turning real-time off).
 function GameStateOverlay.stopTicker()
     if tickerHandle ~= nil then
-        Wait.stop(tickerHandle)
+        U.stopDelay(tickerHandle)
         tickerHandle = nil
     end
     rtMinuteCarry = 0

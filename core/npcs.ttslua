@@ -1,6 +1,6 @@
 --[[
     NPC spawning, areas, paired spotlights, and Storyteller HUD integration.
-    Data: lib/npcs_data.ttslua (NPCS.characters, NPCS.lights, NPCS.areas — includes off-table `preload` at world y=-200).
+    Data: lib/npcs_data.ttslua (NPCS.characters, NPCS.lights, NPCS.areas — includes off-table `preload` pool at world y=-200).
     Spec: .dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md
     Related: .dev/NPC Object Spawning & Spotlighting/NPC Light Object Data.jsonc; .dev/Game State Data.jsonc;
     .dev/Chronicle Data/NPCS_*.md (content keys); .dev/HUD_FUNCTIONS.md (Storyteller NPC panel); .dev/DEBUG_FILE_LOGGING.md.
@@ -35,9 +35,35 @@ local GM_PREFIX = "npcInstance:"
 --- Area key whose `distance` / `rotation = 0` define canonical slot layout in table XZ (similarity about origin).
 local REF_AREA_KEY = "centerForward"
 
---- `sessionScene.npcWorld.preload` spawns here (under playfield, `groundLevel` = -200). Hidden from Storyteller NPC panel rows.
+--- Off-table `preload` area in `npcs_data` holds the **global** small-scale NPC + light pool (`NPCS.ensureAllNpcsPreload*`).
 local PRELOAD_AREA_KEY = "preload"
 NPCS.PRELOAD_AREA_KEY = PRELOAD_AREA_KEY
+
+--- Non-area key for `applyNpcPairPhysicalPresentation` at table seats (active scale, tooltips on).
+local SEAT_PLACEMENT_KEY = "seat"
+
+--- Grow `areas.preload.positions` at runtime so every `characters` entry gets a stable under-table slot.
+local function ensurePreloadLayoutCapacity()
+    local area = NPCS.areas[PRELOAD_AREA_KEY]
+    if area == nil or U.Type(area.positions) ~= "table" then
+        return
+    end
+    local want = 0
+    for _ in pairs(NPCS.characters or {}) do
+        want = want + 1
+    end
+    local spacing = 14
+    local cols = 10
+    while #area.positions < want do
+        local i = #area.positions + 1
+        local zero = i - 1
+        local col = zero % cols
+        local row = math.floor(zero / cols)
+        area.positions[i] = { x = col * spacing, z = row * spacing }
+    end
+end
+
+ensurePreloadLayoutCapacity()
 
 --- Sentinel `areaKey` while figurines are parked at `NPC_DISABLE_WORLD_Y` before applying a new scene NPC layout.
 local STASH_AREA_KEY = "__npcSceneStash"
@@ -93,8 +119,14 @@ local NPC_LIGHT_SPAWN_OFFSET = { x = 3, y = 8, z = 3 }
 local NPC_LIGHT_POST_READY_DELAY_SEC = 1.5
 
 --- Extra yaw (degrees) for figurines in NPC **area** slots only. `Figurine_Custom` front/back UVs face opposite the legacy single-image cutouts for the same `atan2` pivot math toward table center.
---- Table **seats** use `SEAT_FIGURE_*` objects (`applySeatFigurineVisuals`); do not add this offset there.
+--- Table **seats** place the pooled `npc_figurine` at `SEAT_FIGURE_*` anchors (no area yaw offset).
 local AREA_NPC_FIGURINE_YAW_OFFSET_DEG = 180
+
+--- World scale for paired NPC objects while parked in the global under-table preload pool (`preload` area).
+local NPC_PRELOAD_FIGURE_SCALE = 0.12
+local NPC_PRELOAD_LIGHT_SCALE = 0.12
+local NPC_ACTIVE_FIGURE_SCALE = 1
+local NPC_ACTIVE_LIGHT_SCALE = 1
 
 --- Deep-clone TTS object state for `spawnObjectData` and clear `GUID` so the engine assigns a new id (avoids mutating live template data).
 --- @param data table|nil
@@ -137,8 +169,13 @@ end
 --- @param imageURL string
 --- @param imageSecondaryURL string
 --- @param imageScalar number
+--- @param uniformFigureScale number|nil
 --- @return table
-local function buildNpcFigurineSpawnData(spawnPos, yawDeg, nickname, gmNotes, tags, imageURL, imageSecondaryURL, imageScalar)
+local function buildNpcFigurineSpawnData(spawnPos, yawDeg, nickname, gmNotes, tags, imageURL, imageSecondaryURL, imageScalar, uniformFigureScale)
+    local us = tonumber(uniformFigureScale)
+    if us == nil or us ~= us or us <= 0 then
+        us = 1
+    end
     return {
         GUID = "",
         Name = "Figurine_Custom",
@@ -149,9 +186,9 @@ local function buildNpcFigurineSpawnData(spawnPos, yawDeg, nickname, gmNotes, ta
             rotX = 0,
             rotY = yawDeg,
             rotZ = 0,
-            scaleX = 1,
-            scaleY = 1,
-            scaleZ = 1,
+            scaleX = us,
+            scaleY = us,
+            scaleZ = us,
         },
         Nickname = nickname,
         Description = "",
@@ -283,11 +320,13 @@ local function getSeatOccupant(seatKey)
     return getOccupiedNpcSeatMap()[seatKey]
 end
 
---- @return table<string, boolean> NPCs whose instance is assigned to a real area (not scene-stash sentinel).
+--- @return table<string, boolean> NPCs whose instance is on the table in a panel-listed area (not stash/preload staging).
 local function getAreaNpcSet()
     local set = {}
     for npcName, rec in pairs(getInstances()) do
-        if U.Type(npcName) == "string" and U.Type(rec) == "table" and U.Type(rec.areaKey) == "string" and rec.areaKey ~= STASH_AREA_KEY then
+        local ak = rec and rec.areaKey
+        local area = U.Type(ak) == "string" and NPCS.areas[ak] or nil
+        if U.Type(npcName) == "string" and U.Type(rec) == "table" and U.Type(ak) == "string" and ak ~= STASH_AREA_KEY and area ~= nil and area.excludeFromNpcPanel ~= true then
             set[npcName] = true
         end
     end
@@ -307,7 +346,7 @@ local function requestSeatLayoutSync()
         return
     end
     seatSyncQueued = true
-    Wait.time(function()
+    U.delay(function()
         seatSyncQueued = false
         if R and type(R.SyncTable) == "function" then
             R.SyncTable()
@@ -387,15 +426,110 @@ local function applySeatFigurineVisuals(npcName, seatKey)
     end
 end
 
+--- Figurine scale + tooltip and paired spotlight scale (under-table pool uses small objects, no figurine tooltips).
+--- @param fig Object|nil
+--- @param lit Object|nil
+--- @param areaKey string
+local function applyNpcPairPhysicalPresentation(fig, lit, areaKey)
+    local isPreload = (areaKey == PRELOAD_AREA_KEY)
+    local fs = isPreload and NPC_PRELOAD_FIGURE_SCALE or NPC_ACTIVE_FIGURE_SCALE
+    local ls = isPreload and NPC_PRELOAD_LIGHT_SCALE or NPC_ACTIVE_LIGHT_SCALE
+    if U.isGameObject(fig) and fig.setScale ~= nil then
+        fig.setScale(Vector(fs, fs, fs))
+        if fig.tooltip ~= nil then
+            fig.tooltip = not isPreload
+        end
+    end
+    if U.isGameObject(lit) and lit.setScale ~= nil then
+        lit.setScale(Vector(ls, ls, ls))
+    end
+end
+
+--- @param rec table|nil
+--- @return boolean
+local function npcInstanceIsParkedInPreload(rec)
+    if U.Type(rec) ~= "table" then
+        return false
+    end
+    if rec.areaKey ~= PRELOAD_AREA_KEY then
+        return false
+    end
+    if U.Type(rec.seatedSeatKey) == "string" and rec.seatedSeatKey ~= "" then
+        return false
+    end
+    return true
+end
+
+--- Fail loudly when spawn/activate is attempted without the global preload pool.
+--- @param message string
+local function npcPoolPolicyError(message)
+    error("[NPCS] " .. tostring(message), 2)
+end
+
+--- Hide or show built-in `SEAT_FIGURE_*` while the pooled figurine occupies the seat.
+--- @param seatKey string
+--- @param hidden boolean
+local function setSeatPlaceholderHidden(seatKey, hidden)
+    local placeholder = resolveSeatFigurineObject(seatKey)
+    if not U.isGameObject(placeholder) or placeholder.setInvisibleTo == nil then
+        return
+    end
+    if hidden then
+        placeholder.setInvisibleTo(C.PlayerColors or {})
+    else
+        placeholder.setInvisibleTo({})
+    end
+end
+
+--- Move pooled figurine + light to a table seat anchor (`SEAT_FIGURE_*` object).
+--- @param figurine Object
+--- @param lit Object|nil
+--- @param seatKey string
+local function applyFigurineToNpcSeat(figurine, lit, seatKey)
+    local anchor = resolveSeatFigurineObject(seatKey)
+    if not U.isGameObject(figurine) then
+        npcPoolPolicyError("applyFigurineToNpcSeat: missing figurine for seat " .. tostring(seatKey))
+    end
+    if not U.isGameObject(anchor) then
+        npcPoolPolicyError("applyFigurineToNpcSeat: no seat anchor for " .. tostring(seatKey))
+    end
+    local pos = anchor.getPosition()
+    figurine.setPosition(pos)
+    figurine.setRotation(anchor.getRotation())
+    if U.isGameObject(lit) and lit.setPosition ~= nil then
+        lit.setPosition(Vector(
+            pos.x + NPC_LIGHT_SPAWN_OFFSET.x,
+            pos.y + NPC_LIGHT_SPAWN_OFFSET.y,
+            pos.z + NPC_LIGHT_SPAWN_OFFSET.z
+        ))
+    end
+    applyNpcPairPhysicalPresentation(figurine, lit, SEAT_PLACEMENT_KEY)
+end
+
 --- @param seatKey string
 --- @return boolean, string|nil
 local function clearNpcSeat(seatKey)
     if not isValidNpcSeatKey(seatKey) then
         return false, "Invalid NPC seat key."
     end
+    setSeatPlaceholderHidden(seatKey, false)
+    local toPark = {}
+    for name, r in pairs(getInstances()) do
+        if U.Type(name) == "string" and U.Type(r) == "table" and r.seatedSeatKey == seatKey then
+            toPark[#toPark + 1] = name
+        end
+    end
     local occupied = U.clone(getOccupiedNpcSeatMap())
     occupied[seatKey] = false
     setOccupiedNpcSeatMap(occupied)
+    for _, name in ipairs(toPark) do
+        local r = getInstances()[name]
+        if U.Type(r) == "table" then
+            r.seatedSeatKey = nil
+            setInstanceRecord(name, r)
+        end
+        NPCS.retreatNpcInstanceToPreloadPool(name, { skipUiRefresh = true, skipSeatSync = true })
+    end
     requestSeatLayoutSync()
     return true, nil
 end
@@ -413,21 +547,54 @@ local function assignNpcToSeat(npcName, seatKey)
     if not isValidNpcSeatKey(seatKey) then
         return false, "Invalid NPC seat key."
     end
-    if getInstances()[npcName] ~= nil then
-        NPCS.removeNpc(npcName, {
-            skipUiRefresh = true,
-            skipSeatSync = true,
-        })
+    local rec = getInstances()[npcName]
+    if rec == nil then
+        npcPoolPolicyError("assignNpcToSeat: NPC '" .. tostring(npcName) .. "' has no pooled instance (wait for preload).")
+    end
+    if not npcInstanceIsParkedInPreload(rec) then
+        npcPoolPolicyError(
+            "assignNpcToSeat: NPC '"
+                .. tostring(npcName)
+                .. "' must be parked in preload before seating (area="
+                .. tostring(rec.areaKey)
+                .. ")."
+        )
+    end
+    if U.Type(rec.seatedSeatKey) == "string" and rec.seatedSeatKey ~= seatKey then
+        setSeatPlaceholderHidden(rec.seatedSeatKey, false)
+        rec.seatedSeatKey = nil
+        setInstanceRecord(npcName, rec)
     end
     local occupied = U.clone(getOccupiedNpcSeatMap())
+    local prev = occupied[seatKey]
+    if U.Type(prev) == "string" and prev ~= "" and prev ~= npcName then
+        clearNpcSeat(seatKey)
+        occupied = getOccupiedNpcSeatMap()
+    end
     for _, key in ipairs(C.NPCSeats or {}) do
         if occupied[key] == npcName then
             occupied[key] = false
+            setSeatPlaceholderHidden(key, false)
         end
     end
     occupied[seatKey] = npcName
     setOccupiedNpcSeatMap(occupied)
-    applySeatFigurineVisuals(npcName, seatKey)
+    rec = getInstances()[npcName]
+    if rec == nil then
+        return false, "NPC instance lost."
+    end
+    local fig = getObjectFromGUID(rec.figurineGuid or "")
+    local lit = getObjectFromGUID(rec.lightGuid or "")
+    if fig == nil then
+        setInstanceRecord(npcName, nil)
+        return false, "Figurine missing for seated NPC."
+    end
+    applyFigurineToNpcSeat(fig, lit, seatKey)
+    rec.seatedSeatKey = seatKey
+    rec.npcLightMode = "STANDARD"
+    setInstanceRecord(npcName, rec)
+    setSeatPlaceholderHidden(seatKey, true)
+    NPCS.applyCurrentLightMode(npcName, 0)
     requestSeatLayoutSync()
     return true, nil
 end
@@ -757,6 +924,26 @@ local function validateNpcNameKey(npcName)
     return U.Type(npcName) == "string" and string.match(npcName, "^[%a_][%w_]*$") ~= nil
 end
 
+--- Deterministic preload grid slot per character key (sorted `NPCS.characters` keys).
+--- @param npcName string
+--- @return number|nil
+local function stablePreloadSlotIndex(npcName)
+    if not validateNpcNameKey(npcName) or NPCS.characters[npcName] == nil then
+        return nil
+    end
+    local keys = {}
+    for k, _ in pairs(NPCS.characters or {}) do
+        keys[#keys + 1] = k
+    end
+    table.sort(keys)
+    for i, k in ipairs(keys) do
+        if k == npcName then
+            return i
+        end
+    end
+    return nil
+end
+
 --- @param area table|nil
 --- @param opts table|nil
 --- @return string
@@ -813,19 +1000,6 @@ end
 --- @return string
 local function sessionNpcWorldFingerprint()
     local lines = {}
-    local list = S.getStateVal("sessionScene", "npcWorld", "preload")
-    if type(list) == "table" then
-        local names = {}
-        for i = 1, #list do
-            if type(list[i]) == "string" and list[i] ~= "" then
-                names[#names + 1] = list[i]
-            end
-        end
-        table.sort(names)
-        for _, n in ipairs(names) do
-            lines[#lines + 1] = "p:" .. n
-        end
-    end
     local placements = collectSessionByAreaPlacements()
     for _, pl in ipairs(placements) do
         local lm = pl.npcLightMode
@@ -840,32 +1014,25 @@ end
 
 --- @return boolean
 local function npcWorldHasPlacementIntent()
-    local list = S.getStateVal("sessionScene", "npcWorld", "preload")
-    if type(list) == "table" then
-        for i = 1, #list do
-            if type(list[i]) == "string" and list[i] ~= "" then
-                return true
-            end
-        end
-    end
     return #collectSessionByAreaPlacements() > 0
 end
 
---- Park every spawned NPC figurine under the table and clear logical area occupancy so `byArea` can assign slots.
+--- Park every spawned NPC into the deterministic under-table preload grid so `byArea` can assign slots.
 local function stashAllNpcFigurinesForSessionSceneLayout()
     for name, rec in pairs(getInstances()) do
         if U.Type(name) == "string" and U.Type(rec) == "table" and U.Type(rec.figurineGuid) == "string" and rec.figurineGuid ~= "" then
-            local fig = getObjectFromGUID(rec.figurineGuid)
-            if fig ~= nil and fig.getPosition ~= nil and fig.setPosition ~= nil then
-                local pos = fig.getPosition()
-                fig.setPosition(Vector(pos.x, NPC_DISABLE_WORLD_Y, pos.z))
-            end
-            rec.areaKey = STASH_AREA_KEY
-            rec.slotIndex = nil
-            rec.npcLightMode = "OFF"
-            setInstanceRecord(name, rec)
-            if U.Type(rec.lightGuid) == "string" and rec.lightGuid ~= "" then
-                NPCS.applyCurrentLightMode(name, 0)
+            local slot = stablePreloadSlotIndex(name)
+            if slot ~= nil then
+                local ok, err = NPCS.moveNpcToArea(name, PRELOAD_AREA_KEY, {
+                    preferredSlot = slot,
+                    forceNpcLightMode = "OFF",
+                    skipUiRefresh = true,
+                    skipSeatSync = true,
+                    forceSessionLayoutStash = true,
+                })
+                if not ok then
+                    print("[NPCS] stash to preload failed for " .. tostring(name) .. ": " .. tostring(err))
+                end
             end
         end
     end
@@ -877,6 +1044,11 @@ end
 --- @param opts table|nil optional: deferUiRefresh — when true, skip storyteller NPC panel rebuild (caller refreshes once, e.g. group spawn).
 --- @return boolean, string|nil error
 function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
+    if areaKey ~= PRELOAD_AREA_KEY then
+        npcPoolPolicyError(
+            "spawnNpcAtSlot: spawning is only allowed into preload; use moveNpcToArea to activate on stage or at seats."
+        )
+    end
     opts = U.Type(opts) == "table" and opts or {}
     local deferUiRefresh = opts.deferUiRefresh == true
     local skipSeatSync = opts.skipSeatSync == true
@@ -900,6 +1072,10 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
         return false, "Set figurine.images.front in lib/npcs_data for " .. npcName
     end
     local spawnPos = NPCS.computeSlotWorldPosition(areaKey, slotIndex)
+
+    local isPreloadArea = (areaKey == PRELOAD_AREA_KEY)
+    local figureUniformScale = isPreloadArea and NPC_PRELOAD_FIGURE_SCALE or NPC_ACTIVE_FIGURE_SCALE
+    local lightUniformScale = isPreloadArea and NPC_PRELOAD_LIGHT_SCALE or NPC_ACTIVE_LIGHT_SCALE
 
     --- Final facing matches `applyFigurinePlacement` so the cutout is not briefly wrong-rotated at spawn.
     local areaForSpawn = NPCS.areas[areaKey]
@@ -931,7 +1107,8 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
         { TAG_FIG },
         front,
         back,
-        imageScalar
+        imageScalar,
+        figureUniformScale
     )
     local spawnedFig
     ---@diagnostic disable-next-line: undefined-global
@@ -944,7 +1121,6 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                     return
                 end
                 fig.setLock(true)
-                fig.tooltip = true
 
                 --- Light: `spawnObjectData` from embedded save-shape defaults (lib/npcs_light_spawn_defaults.ttslua).
                 --- No in-world template object required — unlike `Object.clone()`, `spawnObject` / `spawnObjectData` do not.
@@ -958,6 +1134,11 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                 end
                 lightData.Nickname = "NPC Light " .. npcName
                 lightData.Tags = { TAG_LIT }
+                if U.Type(lightData.Transform) == "table" then
+                    lightData.Transform.scaleX = lightUniformScale
+                    lightData.Transform.scaleY = lightUniformScale
+                    lightData.Transform.scaleZ = lightUniformScale
+                end
 
                 local lx = spawnPos.x + NPC_LIGHT_SPAWN_OFFSET.x
                 local ly = spawnPos.y + NPC_LIGHT_SPAWN_OFFSET.y
@@ -975,6 +1156,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                     lit.AssetBundle.playLoopingEffect(1)
                 end
                 ensureSpotlightTag(lit)
+                applyNpcPairPhysicalPresentation(fig, lit, areaKey)
                 local lg = lit.getGUID and lit.getGUID() or ""
                 if lg == "" then
                     error("spawned NPC light has no GUID for " .. npcName)
@@ -997,25 +1179,34 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                 --- before `SetLightMode` takes effect (see `NPC_LIGHT_POST_READY_DELAY_SEC`).
                 local deferFig = fig
                 local deferLg = lg
-                Wait.time(function()
-                    local reg = NPCS.lightRegistryName(deferLg)
-                    Wait.condition(function()
-                        Wait.time(function()
-                            lightAlignFigOverride[npcName] = deferFig
-                            -- pcall: Deferred apply races teardown of the freshly spawned light; we must clear lightAlignFigOverride even when SetLightMode throws so later layout passes do not read a stale figurine override. Propagating would leave override pinned and obscure the real lighting error behind secondary faults.
-                            local applyOk, applyErr = pcall(function()
-                                NPCS.applyCurrentLightMode(npcName, 0)
-                            end)
-                            lightAlignFigOverride[npcName] = nil
-                            if not applyOk then
-                                print("[NPCS] deferred applyCurrentLightMode failed: " .. tostring(applyErr))
-                                safeAlertGM("NPCS spawn light apply: " .. tostring(applyErr))
-                            end
-                        end, NPC_LIGHT_POST_READY_DELAY_SEC)
-                    end, function()
-                        return npcSpotlightReadyForApply(deferLg, reg)
-                    end)
-                end, 0)
+                local deferName = npcName
+                U.RunSequence({
+                    function()
+                        return 0
+                    end,
+                    function()
+                        local reg = NPCS.lightRegistryName(deferLg)
+                        return function()
+                            return npcSpotlightReadyForApply(deferLg, reg)
+                        end
+                    end,
+                    function()
+                        return NPC_LIGHT_POST_READY_DELAY_SEC
+                    end,
+                    function()
+                        lightAlignFigOverride[deferName] = deferFig
+                        -- pcall: Deferred apply races teardown of the freshly spawned light; we must clear lightAlignFigOverride even when SetLightMode throws so later layout passes do not read a stale figurine override. Propagating would leave override pinned and obscure the real lighting error behind secondary faults.
+                        local applyOk, applyErr = pcall(function()
+                            NPCS.applyCurrentLightMode(deferName, 0)
+                        end)
+                        lightAlignFigOverride[deferName] = nil
+                        if not applyOk then
+                            print("[NPCS] deferred applyCurrentLightMode failed: " .. tostring(applyErr))
+                            safeAlertGM("NPCS spawn light apply: " .. tostring(applyErr))
+                        end
+                        return 0
+                    end,
+                })
                 if not deferUiRefresh then
                     NPCS.refreshStorytellerUIIfVisible()
                 end
@@ -1028,10 +1219,9 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
     return true, nil
 end
 
---- Spawn `npcName` into the off-table preload zone if not already spawned, or already staged on the table.
---- Lights use the area `autoLight` rule (STANDARD in `preload`). Skips invalid keys and unknown NPCs.
+--- Ensure `npcName` exists in the global under-table preload pool (stable slot). No-op when already placed in a play area.
 --- @param npcName string
---- @param opts table|nil `deferUiRefresh`, `skipSeatSync` — forwarded to `spawnNpcAtSlot` when spawning.
+--- @param opts table|nil `deferUiRefresh`, `skipSeatSync`, `forceNpcLightMode`
 --- @return boolean ok
 --- @return string|nil err
 function NPCS.ensureNpcInPreloadZone(npcName, opts)
@@ -1041,11 +1231,14 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
     if NPCS.characters[npcName] == nil then
         return false, "Unknown NPC: " .. tostring(npcName)
     end
-    local area = NPCS.areas[PRELOAD_AREA_KEY]
-    if area == nil then
+    if NPCS.areas[PRELOAD_AREA_KEY] == nil then
         return false, "preload area missing from npcs_data.areas."
     end
     opts = U.Type(opts) == "table" and opts or {}
+    local slot = stablePreloadSlotIndex(npcName)
+    if slot == nil then
+        return false, "NPC preload: no stable slot."
+    end
     local rec = getInstances()[npcName]
     if rec ~= nil then
         local ak = rec.areaKey
@@ -1055,39 +1248,27 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
         local fig = getObjectFromGUID(rec.figurineGuid or "")
         if fig == nil then
             setInstanceRecord(npcName, nil)
-        else
-            local slot = nil
-            if ak == PRELOAD_AREA_KEY and U.Type(rec.slotIndex) == "number" then
-                slot = rec.slotIndex
-            else
-                slot = NPCS.findNextFreeSlotIndex(PRELOAD_AREA_KEY)
-            end
-            if slot == nil then
-                return false, "NPC preload zone has no free slots."
-            end
-            NPCS.applyFigurinePlacement(fig, PRELOAD_AREA_KEY, slot)
-            rec.areaKey = PRELOAD_AREA_KEY
-            rec.slotIndex = slot
-            rec.npcLightMode = effectiveNpcLightModeForAreaPlacement(area, opts)
-            setInstanceRecord(npcName, rec)
-            Wait.time(function()
-                NPCS.applyCurrentLightMode(npcName, 0)
-            end, 0)
+            return NPCS.spawnNpcAtSlot(npcName, PRELOAD_AREA_KEY, slot, opts)
+        end
+        if ak == PRELOAD_AREA_KEY and U.Type(rec.slotIndex) == "number" and rec.slotIndex == slot
+            and not (U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey)) then
+            local lit = getObjectFromGUID(rec.lightGuid or "")
+            applyNpcPairPhysicalPresentation(fig, lit, PRELOAD_AREA_KEY)
             return true, nil
         end
-    end
-    if not NPCS.areaHasFreeSlot(PRELOAD_AREA_KEY) then
-        return false, "NPC preload zone has no free slots."
-    end
-    local slot = NPCS.findNextFreeSlotIndex(PRELOAD_AREA_KEY)
-    if slot == nil then
-        return false, "NPC preload zone has no free slots."
+        return NPCS.moveNpcToArea(npcName, PRELOAD_AREA_KEY, {
+            preferredSlot = slot,
+            forceNpcLightMode = U.Type(opts.forceNpcLightMode) == "string" and opts.forceNpcLightMode or "OFF",
+            skipUiRefresh = opts.deferUiRefresh == true,
+            skipSeatSync = opts.skipSeatSync == true,
+            forceSessionLayoutStash = true,
+        })
     end
     return NPCS.spawnNpcAtSlot(npcName, PRELOAD_AREA_KEY, slot, opts)
 end
 
---- Applies `gameState.sessionScene.npcWorld`: when authored data changed, optionally stash all figurines under the
---- table, then stagger `preload` ensures and `byArea` slot placements. Idempotent; safe from `Sync.full`.
+--- Applies `gameState.sessionScene.npcWorld.byArea`: when authored data changed, optionally stash all figurines into
+--- the global preload grid, then stagger `byArea` slot placements. Idempotent; safe from `Sync.full`.
 --- @param opts table|nil `deferUiRefresh`, `forceSessionNpcWorld` (bypass fingerprint and re-apply)
 function NPCS.reconcileSessionSceneNpcWorldFromState(opts)
     opts = U.Type(opts) == "table" and opts or {}
@@ -1106,24 +1287,6 @@ function NPCS.reconcileSessionSceneNpcWorldFromState(opts)
     local delay = 0
     local anyWork = false
 
-    local list = S.getStateVal("sessionScene", "npcWorld", "preload")
-    if type(list) == "table" and NPCS.areas[PRELOAD_AREA_KEY] ~= nil then
-        for i = 1, #list do
-            local npcName = list[i]
-            if type(npcName) == "string" and npcName ~= "" and validateNpcNameKey(npcName) and NPCS.characters[npcName] ~= nil then
-                anyWork = true
-                local captureName = npcName
-                Wait.time(function()
-                    local ok, err = NPCS.ensureNpcInPreloadZone(captureName, { deferUiRefresh = true, skipSeatSync = true })
-                    if not ok then
-                        print("[NPCS] preload ensure failed for " .. tostring(captureName) .. ": " .. tostring(err))
-                    end
-                end, delay)
-                delay = delay + 0.28
-            end
-        end
-    end
-
     local placements = collectSessionByAreaPlacements()
     for _, pl in ipairs(placements) do
         if validateNpcNameKey(pl.characterKey) and NPCS.characters[pl.characterKey] ~= nil then
@@ -1132,7 +1295,16 @@ function NPCS.reconcileSessionSceneNpcWorldFromState(opts)
             local carea = pl.areaKey
             local cslot = pl.slotIndex
             local clm = pl.npcLightMode
-            Wait.time(function()
+            U.delay(function()
+                local preOk, preErr = NPCS.ensureNpcInPreloadZone(cname, {
+                    deferUiRefresh = true,
+                    skipSeatSync = true,
+                    forceNpcLightMode = "OFF",
+                })
+                if not preOk then
+                    print("[NPCS] byArea preload ensure failed for " .. tostring(cname) .. ": " .. tostring(preErr))
+                    return
+                end
                 local modeOpt = {
                     preferredSlot = cslot,
                     skipUiRefresh = true,
@@ -1153,7 +1325,7 @@ function NPCS.reconcileSessionSceneNpcWorldFromState(opts)
     lastSessionNpcWorldFingerprint = fp
 
     if deferUiRefresh and anyWork then
-        Wait.time(function()
+        U.delay(function()
             NPCS.refreshStorytellerUIIfVisible()
             requestSeatLayoutSync()
         end, delay + 0.12)
@@ -1173,49 +1345,90 @@ end
 function NPCS.spawnOrMoveIndividual(npcName, areaKey, opts)
     opts = U.Type(opts) == "table" and opts or {}
     local rec = getInstances()[npcName]
-    if rec ~= nil and isNpcLocked(rec) then
+    if rec ~= nil and isNpcLocked(rec) and opts.forceSessionLayoutStash ~= true then
         return false, "NPC is locked in place. Unlock before moving."
     end
     if rec ~= nil then
         return NPCS.moveNpcToArea(npcName, areaKey, opts)
     end
-    local preferred = opts.preferredSlot
-    local slot = nil
-    if U.Type(preferred) == "number" then
-        slot = resolveSlotForMove(areaKey, preferred)
+    if areaKey ~= PRELOAD_AREA_KEY then
+        npcPoolPolicyError(
+            "spawnOrMoveIndividual: NPC '"
+                .. tostring(npcName)
+                .. "' is not in the preload pool; wait for ensureAllNpcsPreloaded before activating."
+        )
+    end
+    local slot = opts.preferredSlot
+    if U.Type(slot) ~= "number" then
+        slot = stablePreloadSlotIndex(npcName)
     end
     if slot == nil then
-        if not NPCS.areaHasFreeSlot(areaKey) then
-            return false, "No free slot in area."
-        end
-        slot = NPCS.findNextFreeSlotIndex(areaKey)
+        return false, "No preload slot for NPC."
     end
-    if slot == nil then
-        return false, "No free slot in area."
-    end
-    return NPCS.spawnNpcAtSlot(npcName, areaKey, slot, opts)
+    return NPCS.spawnNpcAtSlot(npcName, PRELOAD_AREA_KEY, slot, opts)
 end
 
 --- @param npcName string
 --- @param areaKey string
---- @param opts table|nil optional: skipUiRefresh — when true, do not rebuild NPC panel (batch moveGroup / chained callers refresh once).
+--- @param opts table|nil optional: `preferredSlot`, `forceNpcLightMode`, `skipUiRefresh`, `skipSeatSync`, `forceSessionLayoutStash` (scene stash bypasses lock)
 --- @return boolean, string|nil
 function NPCS.moveNpcToArea(npcName, areaKey, opts)
     opts = U.Type(opts) == "table" and opts or {}
     local skipSeatSync = opts.skipSeatSync == true
+    local bypassLock = opts.forceSessionLayoutStash == true
     local rec = getInstances()[npcName]
+    if rec == nil then
+        npcPoolPolicyError("moveNpcToArea: NPC '" .. tostring(npcName) .. "' has no pooled instance.")
+    end
+    if U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey) then
+        local sk = rec.seatedSeatKey
+        setSeatPlaceholderHidden(sk, false)
+        rec.seatedSeatKey = nil
+        setInstanceRecord(npcName, rec)
+        local occ = U.clone(getOccupiedNpcSeatMap())
+        if occ[sk] == npcName then
+            occ[sk] = false
+        end
+        setOccupiedNpcSeatMap(occ)
+        requestSeatLayoutSync()
+        rec = getInstances()[npcName]
+    end
     if rec == nil then
         return false, "NPC not spawned."
     end
-    if isNpcLocked(rec) then
+    if areaKey ~= PRELOAD_AREA_KEY and not bypassLock then
+        local ak = rec.areaKey
+        local fromPreload = (ak == PRELOAD_AREA_KEY)
+        local fromPlayArea = U.Type(ak) == "string"
+            and ak ~= PRELOAD_AREA_KEY
+            and ak ~= STASH_AREA_KEY
+            and NPCS.areas[ak] ~= nil
+        if not fromPreload and not fromPlayArea then
+            npcPoolPolicyError(
+                "moveNpcToArea: NPC '"
+                    .. tostring(npcName)
+                    .. "' must be parked in preload before stage placement."
+            )
+        end
+    end
+    if isNpcLocked(rec) and not bypassLock then
         return false, "NPC is locked in place. Unlock before moving."
     end
-    local preferredSlot = U.Type(opts.preferredSlot) == "number" and opts.preferredSlot or rec.slotIndex
-    local slot = resolveSlotForMove(areaKey, preferredSlot)
-    if slot == nil then
-        return false, "No free slot in area."
+    local slot
+    if areaKey == PRELOAD_AREA_KEY then
+        slot = stablePreloadSlotIndex(npcName)
+        if slot == nil then
+            return false, "No stable preload slot for NPC."
+        end
+    else
+        local preferredSlot = U.Type(opts.preferredSlot) == "number" and opts.preferredSlot or rec.slotIndex
+        slot = resolveSlotForMove(areaKey, preferredSlot)
+        if slot == nil then
+            return false, "No free slot in area."
+        end
     end
     local fig = getObjectFromGUID(rec.figurineGuid or "")
+    local lit = getObjectFromGUID(rec.lightGuid or "")
     if fig == nil then
         setInstanceRecord(npcName, nil)
         unregisterDynamicLightModes(rec.lightGuid)
@@ -1227,6 +1440,11 @@ function NPCS.moveNpcToArea(npcName, areaKey, opts)
     rec.slotIndex = slot
     rec.npcLightMode = effectiveNpcLightModeForAreaPlacement(area, opts)
     setInstanceRecord(npcName, rec)
+    if lit ~= nil and lit.setPosition ~= nil then
+        local pos = NPCS.computeSlotWorldPosition(areaKey, slot)
+        lit.setPosition(Vector(pos.x + NPC_LIGHT_SPAWN_OFFSET.x, pos.y + NPC_LIGHT_SPAWN_OFFSET.y, pos.z + NPC_LIGHT_SPAWN_OFFSET.z))
+    end
+    applyNpcPairPhysicalPresentation(fig, lit, areaKey)
     NPCS.applyCurrentLightMode(npcName, 0)
     if not skipSeatSync then
         requestSeatLayoutSync()
@@ -1322,15 +1540,7 @@ function NPCS.spawnGroup(groupId, areaKey)
         local targetSlot = assignments[row.name]
         if targetSlot ~= nil then
             if rec == nil then
-                local captureName = row.name
-                local captureSlot = targetSlot
-                Wait.time(function()
-                    local ok, err = NPCS.spawnNpcAtSlot(captureName, areaKey, captureSlot, { deferUiRefresh = true })
-                    if not ok then
-                        safeAlertGM("NPCS group spawn: " .. tostring(err))
-                    end
-                end, delay)
-                delay = delay + 0.28
+                return false, "NPC " .. tostring(row.name) .. " is not in the preload pool (wait for preload)."
             else
                 local ok, err = NPCS.moveNpcToArea(row.name, areaKey, {
                     skipUiRefresh = true,
@@ -1342,7 +1552,7 @@ function NPCS.spawnGroup(groupId, areaKey)
             end
         end
     end
-    Wait.time(function()
+    U.delay(function()
         NPCS.refreshStorytellerUIIfVisible()
     end, delay + 0.12)
     return true, nil
@@ -1357,9 +1567,39 @@ function NPCS.clearArea(areaKey)
         end
     end
     for _, name in ipairs(toRemove) do
-        NPCS.removeNpc(name, { skipUiRefresh = true })
+        NPCS.retreatNpcInstanceToPreloadPool(name, { skipUiRefresh = true, skipSeatSync = true })
     end
     NPCS.refreshStorytellerUIIfVisible()
+end
+
+--- Move paired NPC objects back under the table (default). Use `hardDestroy` to delete objects and state.
+--- @param npcName string
+--- @param opts table|nil optional: `skipUiRefresh`, `skipSeatSync`, `hardDestroy`
+function NPCS.retreatNpcInstanceToPreloadPool(npcName, opts)
+    opts = U.Type(opts) == "table" and opts or {}
+    local rec = getInstances()[npcName]
+    if U.Type(rec) == "table" and U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey) then
+        local sk = rec.seatedSeatKey
+        setSeatPlaceholderHidden(sk, false)
+        rec.seatedSeatKey = nil
+        setInstanceRecord(npcName, rec)
+        local occ = U.clone(getOccupiedNpcSeatMap())
+        if occ[sk] == npcName then
+            occ[sk] = false
+        end
+        setOccupiedNpcSeatMap(occ)
+    end
+    local slot = stablePreloadSlotIndex(npcName)
+    if slot == nil then
+        return false, "No stable preload slot."
+    end
+    return NPCS.moveNpcToArea(npcName, PRELOAD_AREA_KEY, {
+        preferredSlot = slot,
+        forceNpcLightMode = "OFF",
+        skipUiRefresh = opts.skipUiRefresh == true,
+        skipSeatSync = opts.skipSeatSync == true,
+        forceSessionLayoutStash = true,
+    })
 end
 
 --- @param npcName string
@@ -1369,6 +1609,17 @@ function NPCS.removeNpc(npcName, opts)
     local skipSeatSync = opts.skipSeatSync == true
     local rec = getInstances()[npcName]
     if rec == nil then
+        return
+    end
+    if opts.hardDestroy ~= true then
+        local okPark, errPark = NPCS.retreatNpcInstanceToPreloadPool(npcName, opts)
+        if okPark then
+            if not opts.skipUiRefresh then
+                NPCS.refreshStorytellerUIIfVisible()
+            end
+            return
+        end
+        print("[NPCS] removeNpc park failed for " .. tostring(npcName) .. ": " .. tostring(errPark))
         return
     end
     local fig = rec.figurineGuid and getObjectFromGUID(rec.figurineGuid)
@@ -1387,7 +1638,7 @@ function NPCS.removeNpc(npcName, opts)
     setInstanceRecord(npcName, nil)
     local seatKey = findSeatByNpcKey(npcName)
     if seatKey ~= nil then
-        applySeatFigurineVisuals(npcName, seatKey)
+        setSeatPlaceholderHidden(seatKey, false)
     end
     if not skipSeatSync then
         requestSeatLayoutSync()
@@ -1400,7 +1651,7 @@ end
 function NPCS.destroyAllWorldAndState()
     local names = U.getKeys(getInstances())
     for _, name in ipairs(names) do
-        NPCS.removeNpc(name, { skipUiRefresh = true })
+        NPCS.removeNpc(name, { skipUiRefresh = true, hardDestroy = true })
     end
     setAllInstances({})
     local lights = U.clone(S.getStateVal("lights") or {})
@@ -1570,10 +1821,50 @@ function NPCS.restoreAfterStateLoad()
         local occupant = occupied[seatKey]
         if U.Type(occupant) == "string" and occupant ~= "" then
             ---@cast occupant string
-            applySeatFigurineVisuals(occupant, seatKey)
+            local seatRec = getInstances()[occupant]
+            if U.Type(seatRec) == "table" then
+                seatRec.seatedSeatKey = seatKey
+                setInstanceRecord(occupant, seatRec)
+                local fig = getObjectFromGUID(seatRec.figurineGuid or "")
+                local lit = getObjectFromGUID(seatRec.lightGuid or "")
+                if fig ~= nil then
+                    applyFigurineToNpcSeat(fig, lit, seatKey)
+                    setSeatPlaceholderHidden(seatKey, true)
+                    NPCS.applyCurrentLightMode(occupant, 0)
+                end
+            end
         end
     end
     requestSeatLayoutSync()
+    NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true })
+end
+
+--- Spawn missing `NPCS.characters` entries into the under-table preload pool (staggered; safe after save restore).
+--- @param opts table|nil `deferUiRefresh`
+function NPCS.ensureAllNpcsPreloaded(opts)
+    ensurePreloadLayoutCapacity()
+    opts = U.Type(opts) == "table" and opts or {}
+    local names = U.getKeys(NPCS.characters or {})
+    table.sort(names)
+    local delay = 0
+    for _, name in ipairs(names) do
+        if validateNpcNameKey(name) and getInstances()[name] == nil then
+            local cap = name
+            U.delay(function()
+                local ok, err = NPCS.ensureNpcInPreloadZone(cap, { deferUiRefresh = true, skipSeatSync = true })
+                if not ok then
+                    print("[NPCS] ensureAllNpcsPreloaded failed for " .. tostring(cap) .. ": " .. tostring(err))
+                end
+            end, delay)
+            delay = delay + 0.06
+        end
+    end
+    if opts.deferUiRefresh == true then
+        U.delay(function()
+            NPCS.refreshStorytellerUIIfVisible()
+            requestSeatLayoutSync()
+        end, delay + 0.15)
+    end
 end
 
 --- Escape text for XML body.
@@ -1703,12 +1994,7 @@ function NPCS.dispatchNpcUiClick(id)
             return
         end
         ---@cast occupant string
-        local ok, err
-        if getInstances()[occupant] ~= nil then
-            ok, err = NPCS.moveNpcToArea(occupant, seatedArea)
-        else
-            ok, err = NPCS.spawnOrMoveIndividual(occupant, seatedArea)
-        end
+        local ok, err = NPCS.moveNpcToArea(occupant, seatedArea)
         if not ok then
             safeAlertGM("NPC seat transfer: " .. tostring(err))
         end
@@ -1786,7 +2072,7 @@ end
 
 --- Schedule a refresh after TTS applies panel visibility (fixes empty NPC list on first open).
 function NPCS.refreshStorytellerUIDeferred()
-    Wait.time(function()
+    U.delay(function()
         NPCS.refreshStorytellerUI()
     end, 0.12)
 end
@@ -2100,9 +2386,11 @@ function NPCS.refreshStorytellerUI()
         occupiedByArea[areaKey] = {}
     end
     for npcName, rec in pairs(instances) do
-        if U.Type(rec) == "table" and U.Type(rec.areaKey) == "string" and rec.areaKey ~= STASH_AREA_KEY and NPCS.areas[rec.areaKey] ~= nil then
-            occupiedByArea[rec.areaKey] = occupiedByArea[rec.areaKey] or {}
-            occupiedByArea[rec.areaKey][npcName] = true
+        local ak = rec and rec.areaKey
+        local area = U.Type(ak) == "string" and NPCS.areas[ak] or nil
+        if U.Type(rec) == "table" and U.Type(ak) == "string" and ak ~= STASH_AREA_KEY and area ~= nil and area.excludeFromNpcPanel ~= true then
+            occupiedByArea[ak] = occupiedByArea[ak] or {}
+            occupiedByArea[ak][npcName] = true
         end
     end
 
