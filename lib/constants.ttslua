@@ -417,6 +417,87 @@ C.CHRONICLE_DATA = {
 C.Clans = {
     "Banu Haqim", "Brujah", "Caitif", "Cappadocian", "Gangrel", "Giovanni", "Lasombra", "Malkavian", "Ministry", "Nosferatu", "Ravnos", "Salubri", "Thin-Blood", "Toreador", "Tremere", "Tzimisce", "Ventrue"
 }
+
+-- Blood Potency Derived Stats
+C.BloodPotency = {
+  [0] = {
+    bloodSurge = 1,
+    mending = 1,
+    discBonus = 0,
+    discReroll = 0,
+    baneSeverity = 0
+  },
+  [1] = {
+    bloodSurge = 2,
+    mending = 1,
+    discBonus = 0,
+    discReroll = 1,
+    baneSeverity = 2
+  },
+  [2] = {
+    bloodSurge = 2,
+    mending = 2,
+    discBonus = 1,
+    discReroll = 1,
+    baneSeverity = 2
+  },
+  [3] = {
+    bloodSurge = 3,
+    mending = 2,
+    discBonus = 1,
+    discReroll = 2,
+    baneSeverity = 3
+  },
+  [4] = {
+    bloodSurge = 3,
+    mending = 3,
+    discBonus = 2,
+    discReroll = 2,
+    baneSeverity = 3
+  },
+  [5] = {
+    bloodSurge = 4,
+    mending = 3,
+    discBonus = 2,
+    discReroll = 3,
+    baneSeverity = 4
+  },
+  [6] = {
+    bloodSurge = 4,
+    mending = 3,
+    discBonus = 3,
+    discReroll = 3,
+    baneSeverity = 4
+  },
+  [7] = {
+    bloodSurge = 5,
+    mending = 3,
+    discBonus = 3,
+    discReroll = 4,
+    baneSeverity = 5
+  },
+  [8] = {
+    bloodSurge = 5,
+    mending = 4,
+    discBonus = 4,
+    discReroll = 4,
+    baneSeverity = 5
+  },
+  [9] = {
+    bloodSurge = 6,
+    mending = 4,
+    discBonus = 4,
+    discReroll = 5,
+    baneSeverity = 6
+  },
+  [10] = {
+    bloodSurge = 6,
+    mending = 5,
+    discBonus = 5,
+    discReroll = 5,
+    baneSeverity = 6
+  }
+}
 -- #endregion
 
 -- #region Hiding & Locking Objects
