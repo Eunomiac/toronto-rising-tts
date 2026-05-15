@@ -117,6 +117,8 @@ local lastNpcPanelLayoutFingerprint = nil
 local NPC_LIGHT_SPAWN_OFFSET = { x = 3, y = 8, z = 3 }
 --- After `npcSpotlightReadyForApply`, extra wall-clock delay before `SetLightMode` so the spotlight beam reliably applies on spawn.
 local NPC_LIGHT_POST_READY_DELAY_SEC = 1.5
+--- Stagger between NPC figurine moves in group spawn and scene `byArea` reconcile (avoids same-frame physics churn).
+local NPC_PLACEMENT_STAGGER_SEC = 0.28
 
 --- Extra yaw (degrees) for figurines in NPC **area** slots only. `Figurine_Custom` front/back UVs face opposite the legacy single-image cutouts for the same `atan2` pivot math toward table center.
 --- Table **seats** place the pooled `npc_figurine` at `SEAT_FIGURE_*` anchors (no area yaw offset).
@@ -1330,7 +1332,7 @@ function NPCS.reconcileSessionSceneNpcWorldFromState(opts)
                     print("[NPCS] byArea placement failed for " .. tostring(cname) .. ": " .. tostring(err))
                 end
             end, delay)
-            delay = delay + 0.28
+            delay = delay + NPC_PLACEMENT_STAGGER_SEC
         end
     end
 
@@ -1553,15 +1555,21 @@ function NPCS.spawnGroup(groupId, areaKey)
         if targetSlot ~= nil then
             if rec == nil then
                 return false, "NPC " .. tostring(row.name) .. " is not in the preload pool (wait for preload)."
-            else
-                local ok, err = NPCS.moveNpcToArea(row.name, areaKey, {
+            end
+            local capName = row.name
+            local capArea = areaKey
+            local capSlot = targetSlot
+            U.delay(function()
+                local ok, err = NPCS.moveNpcToArea(capName, capArea, {
                     skipUiRefresh = true,
-                    preferredSlot = targetSlot,
+                    preferredSlot = capSlot,
                 })
                 if not ok then
-                    return false, tostring(err)
+                    print("[NPCS] spawnGroup move failed for " .. tostring(capName) .. ": " .. tostring(err))
+                    safeAlertGM("NPC group move: " .. tostring(err))
                 end
-            end
+            end, delay)
+            delay = delay + NPC_PLACEMENT_STAGGER_SEC
         end
     end
     U.delay(function()
