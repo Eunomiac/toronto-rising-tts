@@ -91,28 +91,6 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
         </VerticalLayout>
       </VerticalLayout>
 
-      <VerticalLayout class="box_column">
-        <VerticalLayout class="box_text_container">
-          <Panel class="box_text_panel_title">
-            <Text class="box_text_panel_title_text" text="Thrall" />
-          </Panel>
-          <Panel class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </Panel>
-        </VerticalLayout>
-      </VerticalLayout>
-
-      <VerticalLayout class="box_column">
-        <VerticalLayout class="box_text_container">
-          <Panel class="box_text_panel_title">
-            <Text class="box_text_panel_title_text" text="Thrall" />
-          </Panel>
-          <Panel class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </Panel>
-        </VerticalLayout>
-      </VerticalLayout>
-
     </HorizontalLayout>
     <Image id="divider_otherRelationships" image="divider_otherRelationships" />
 
@@ -145,28 +123,6 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
             <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
           </Panel>
         </VerticalLayout>
-        <VerticalLayout class="box_text_container">
-          <Panel class="box_text_panel_title">
-            <Text class="box_text_panel_title_text" text="Thrall" />
-          </Panel>
-          <Panel class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </Panel>
-        </VerticalLayout>
-      </VerticalLayout>
-
-      <VerticalLayout class="box_column">
-        <VerticalLayout class="box_text_container">
-          <Panel class="box_text_panel_title">
-            <Text class="box_text_panel_title_text" text="Thrall" />
-          </Panel>
-          <Panel class="box_text_panel_body">
-            <Text class="box_text" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vitae accumsan enim, eu aliquam erat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium. Suspendisse potenti. Morbi ullamcorper turpis sed est faucibus, sed dictum massa porta. Nullam aliquet, lacus at iaculis accumsan, urna sapien volutpat odio, eu tempor elit purus eu erat. Etiam pretium euismod risus ac gravida." />
-          </Panel>
-        </VerticalLayout>
-      </VerticalLayout>
-
-      <VerticalLayout class="box_column">
         <VerticalLayout class="box_text_container">
           <Panel class="box_text_panel_title">
             <Text class="box_text_panel_title_text" text="Thrall" />
