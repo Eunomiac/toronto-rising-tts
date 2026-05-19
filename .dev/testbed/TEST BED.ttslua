@@ -1736,9 +1736,10 @@ end
 -- getObjectFromGUID(G.GUIDS.PRINCE_SIGNET_BORDER_RED).setInvisibleTo({})
 -- getObjectFromGUID(G.GUIDS.PRINCE_SIGNET_RED).setInvisibleTo({})
 -- getObjectFromGUID(G.GUIDS.PRINCE_CURTAIN_RED).setInvisibleTo({})
--- UI.hide("verticalScrollViewTest")
+UI.hide("verticalScrollViewTest")
 
 UI.setAttributes("verticalLayoutTestContainer", {minHeight = "2000", height = "2000", preferredHeight = "2000", flexibleHeight="0"})
+UI.hide("verticalLayoutTestContainer")
 UI.setAttributes("vLT_textTest1", {minHeight = "200"})
 UI.setAttributes("vLT_textTest2", {minHeight = "200"})
 UI.setAttributes("vLT_textTest3", {minHeight = "200"})

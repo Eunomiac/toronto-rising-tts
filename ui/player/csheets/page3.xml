@@ -1,0 +1,39 @@
+<!-- Placeholder for TTS object XML includes (CSHEET_PAGE_3_* stubs under .tts/objects).
+     Layout and PCS-driven content are applied at runtime via UI.setXml in ui/ui_csheet.ttslua
+     (lib/csheet_page3_xml.ttslua + embedded ui/.templates/csheet/page3.xml).
+     Edit the template under ui/.templates/csheet/, not this file, for page 3 layout changes. -->
+
+<Include src="csheet_defaults.xml" />
+
+<Panel id="paper_root" class="page_root padded_border">
+
+  <Button id="pageBack" class="page_navigation page_back" />
+
+  <VerticalLayout class="vertical_section_container">
+    <Panel class="spacer" color="rgba(0, 0, 0, 0)" preferredHeight="20" flexibleHeight="0" minHeight="20" />
+
+    <HorizontalLayout class="box_column_container">
+      <VerticalLayout class="box_column" />
+      <VerticalLayout class="box_column" />
+      <VerticalLayout class="box_column" />
+    </HorizontalLayout>
+
+    <Image id="divider_merits" image="divider_merits" />
+
+    <HorizontalLayout class="box_column_container">
+      <VerticalLayout class="box_column" />
+      <VerticalLayout class="box_column" />
+      <VerticalLayout class="box_column" />
+    </HorizontalLayout>
+
+    <Image id="divider_flaws" image="divider_flaws_Purple" />
+
+    <HorizontalLayout class="box_column_container">
+      <VerticalLayout class="box_column" />
+      <VerticalLayout class="box_column" />
+      <VerticalLayout class="box_column" />
+    </HorizontalLayout>
+
+  </VerticalLayout>
+
+</Panel>

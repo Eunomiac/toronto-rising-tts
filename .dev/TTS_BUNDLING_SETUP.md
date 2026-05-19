@@ -206,9 +206,27 @@ See [TTS_MCP.md](TTS_MCP.md) for setup and Cursor configuration.
   - This rewrites **`lib/csheet_defaults_xml.ttslua`** (committed) so dynamic XML builders can embed the same defaults while XML remains the source of truth.
 - The default VS Code build task runs `npm run csheet-defaults:generate` as part of `npm run build`.
 
+## Character sheet pages 1–8 (object UI)
+
+Every `CSHEET_PAGE_<n>_<COLOR>` object has a one-line stub under **`.tts/objects/`** (normalized by `npm run tts-objects:fix-stubs`):
+
+```xml
+<Include src="ui/player/csheets/page<n>.xml" />
+```
+
+TTS resolves that path on **Save & Play** before object Lua runs. You always need a file at **`ui/player/csheets/page<n>.xml`** for each page index in use.
+
+| Pages | Mode today | What to edit |
+| ----- | ---------- | ------------- |
+| **1–2** | Static shipped XML | `ui/player/csheets/page1.xml`, `page2.xml` — dot/box updates via `UI.setAttribute` in `ui/ui_csheet.ttslua` |
+| **3** | **Dynamic** (`UI.setXml`) | Layout: **`ui/.templates/csheet/page3.xml`** + partials; builder: **`lib/csheet_page3_xml.ttslua`**. Shipped **`ui/player/csheets/page3.xml`** is only a minimal Include placeholder (not the source of truth). |
+| **4–8** | Static shipped XML (scaffolding / WIP) | `ui/player/csheets/page4.xml` … `page8.xml` — already satisfy object Includes; no template embed or `setXml` yet |
+
+**Do not** pre-build dynamic page 4–8 machinery until you design a page. When a page needs PCS-driven layout like page 3: (1) add templates under `ui/.templates/csheet/`, (2) add `lib/csheet_pageN_xml.ttslua` + wire `ui/ui_csheet.ttslua`, (3) run `npm run ui-xml-templates:embed`, (4) **replace** the shipped `ui/player/csheets/pageN.xml` with a thin placeholder (keep the file so Includes still resolve). Until then, keep editing the static `pageN.xml` files directly.
+
 ## Runtime UI XML templates (`ui/.templates/`)
 
-Some panels are assembled at runtime via `UI.setXml` (for example character sheet page 3). Lua cannot read the repo filesystem in TTS, so template XML is **embedded at build time**:
+Some panels are assembled at runtime via `UI.setXml` (character sheet **page 3** today). Lua cannot read the repo filesystem in TTS, so template XML is **embedded at build time**:
 
 - **Authoring**: Edit templates under **`ui/.templates/csheet/`** only (for example `page3.xml` and `partials/*.xml`). The embed script does not read top-level `ui/.templates/*.xml` (those are color-expansion sources).
 - **Parameters**: `@@NAME@@` tokens substituted by `lib/ui_xml_template.ttslua` at runtime.
