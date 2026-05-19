@@ -23,7 +23,7 @@
 --   9. Debug & Logging (alerts, GM messaging)
 --  10. Player & Network Utilities (host detection, UID generation)
 --  11. Zone Utilities (zone bounds, containment checks)
---  12. Lighting Utilities (global lighting changes)
+--  12. Lighting Utilities (global lighting changes, `C.LightModes` presets with optional `spotlights`)
 --  13. Animation & Interpolation (smooth object movement, rotation, scaling)
 --  14. Time & Sequence Utilities (coroutine-based async operations)
 --  15. Clone & Copy Utilities (table copying)
@@ -2075,25 +2075,197 @@ end
 --- Changes global lighting with a delay
 -- Applies lighting changes and calls Lighting.apply after a delay.
 -- Parameters starting with "set" are treated as function calls (e.g., setLightColor).
+-- When `params.gradientColor` is present (`ground`, `equator`, `sky` as Color or color-like tables),
+-- `ambient_type` is applied first (so gradient mode is active) then the three
+-- `Lighting.setAmbient*Color` APIs are used; `gradientColor` is not assigned as a Lighting member.
 -- @param params table Table of lighting properties to change, e.g. {ambient_intensity=1.0, light_intensity=0.8}
 -- @return nil
 -- @usage U.changeLighting({ambient_intensity=0.5, light_intensity=0.3})
 function U.changeLighting(params)
 	if params == nil then return nil end
 
+	local gradient = params.gradientColor
+	local hasGradient = U.Type(gradient) == "table"
+
+	-- Normalize to Color for Lighting.setAmbient*Color (accepts Color or color-like table).
+	local function toAmbientTint(c)
+		if c == nil then
+			return nil
+		end
+		return Color(c)
+	end
+
 	U.sequence({
 		function()
+			-- Gradient colors only take effect when ambient_type is 2; set it before other members
+			-- so `Lighting.setAmbient*Color` runs in the correct mode (see TTS Lighting API).
+			if params.ambient_type ~= nil then
+				Lighting.ambient_type = params.ambient_type
+			end
+
 			for param, val in pairs(params) do
-				-- log("CHANGING " .. param .. " to " .. val)
-				if string.match(param, "^set") then
+				if param == "gradientColor" then
+					-- handled after scalar Lighting members
+				elseif param == "spotlights" then
+					-- `C.LightModes` extension: applied by `U.applyLightingPreset`, not a Lighting member
+				elseif param == "ambient_type" and params.ambient_type ~= nil then
+					-- already applied above
+				elseif string.match(param, "^set") then
 					Lighting[param](val)
 				else
 					Lighting[param] = val
 				end
 			end
+
+			if hasGradient then
+				local g = gradient
+				local groundTint = toAmbientTint(g.ground)
+				local equatorTint = toAmbientTint(g.equator)
+				local skyTint = toAmbientTint(g.sky)
+				if groundTint ~= nil then
+					Lighting.setAmbientGroundColor(groundTint)
+				end
+				if equatorTint ~= nil then
+					Lighting.setAmbientEquatorColor(equatorTint)
+				end
+				if skyTint ~= nil then
+					Lighting.setAmbientSkyColor(skyTint)
+				end
+			end
 		end,
 		Lighting.apply
 	}, 0.5)
+end
+
+-- ============================================================================
+-- NARRATIVE CLOCK (in-fiction datetime; not wall-clock)
+-- ============================================================================
+
+--- True when all of hour, minute, day, month, year are present as numbers.
+--- @param clock table|nil
+--- @return boolean
+function U.narrativeClockHasDatetime(clock)
+	if U.Type(clock) ~= "table" then
+		return false
+	end
+	local y = tonumber(clock.year)
+	local mo = tonumber(clock.month)
+	local d = tonumber(clock.day)
+	local h = tonumber(clock.hour)
+	local m = tonumber(clock.minute)
+	return y ~= nil and mo ~= nil and d ~= nil and h ~= nil and m ~= nil
+end
+
+--- @param clock table|nil
+--- @return table|nil  `{ year, month, day, hour, minute }` or nil
+function U.narrativeClockDatetimeOnly(clock)
+	if not U.narrativeClockHasDatetime(clock) then
+		return nil
+	end
+	return {
+		year = math.floor(tonumber(clock.year)),
+		month = math.floor(tonumber(clock.month)),
+		day = math.floor(tonumber(clock.day)),
+		hour = math.floor(tonumber(clock.hour)),
+		minute = math.floor(tonumber(clock.minute)),
+	}
+end
+
+--- Lexicographic compare on Y/M/D/h/m. Returns -1, 0, or 1; nil clocks sort before set clocks.
+--- @param a table|nil
+--- @param b table|nil
+--- @return number
+function U.compareNarrativeClock(a, b)
+	local da = U.narrativeClockDatetimeOnly(a)
+	local db = U.narrativeClockDatetimeOnly(b)
+	if da == nil and db == nil then
+		return 0
+	end
+	if da == nil then
+		return -1
+	end
+	if db == nil then
+		return 1
+	end
+	local keys = { "year", "month", "day", "hour", "minute" }
+	for _, k in ipairs(keys) do
+		if da[k] < db[k] then
+			return -1
+		end
+		if da[k] > db[k] then
+			return 1
+		end
+	end
+	return 0
+end
+
+--- Apply a `C.LightModes` preset: global `Lighting` fields (and `gradientColor`) via `U.changeLighting`,
+--- then optional `spotlights` on registered `L.LIGHTMODES` keys.
+--- Non-seat refs apply immediately via `L.SetLightMode`. Seat refs (`playerLight*`, `npcLight*`) are stored on
+--- `gameState.sessionScene.lightingSeatSpotlightPreset` (mode string or JSON-safe inline table) for
+--- `L.reconcileForPlayer` to merge **after** hunger / dark / rolling / condition overrides.
+--- When `spotlights` is absent, the seat preset map is cleared (`{}`).
+--- @param preset table|nil
+--- @param opts table|nil `{ spotlightTransitionTime = number }` — lerp duration for each `L.SetLightMode` patch (default 0)
+function U.applyLightingPreset(preset, opts)
+	if preset == nil or U.Type(preset) ~= "table" then
+		return nil
+	end
+	opts = U.Type(opts) == "table" and opts or {}
+	local spotTransition = tonumber(opts.spotlightTransitionTime) or 0
+
+	local ambient = {}
+	for k, v in pairs(preset) do
+		if k ~= "spotlights" then
+			ambient[k] = v
+		end
+	end
+	if next(ambient) ~= nil then
+		U.changeLighting(ambient)
+	end
+
+	local S = require("core.state")
+	local spots = preset.spotlights
+	if U.Type(spots) ~= "table" then
+		S.setStateVal({}, "sessionScene", "lightingSeatSpotlightPreset")
+		return nil
+	end
+
+	local L = require("core.lighting")
+	local modes = L.LIGHTMODES
+	if U.Type(modes) ~= "table" then
+		S.setStateVal({}, "sessionScene", "lightingSeatSpotlightPreset")
+		return nil
+	end
+
+	local seatPreset = {}
+	for ref, patch in pairs(spots) do
+		if U.Type(ref) ~= "string" or ref == "" then
+			-- ignore invalid keys
+		elseif modes[ref] == nil then
+			print("[applyLightingPreset] Unknown light registry key in spotlights: " .. tostring(ref))
+		elseif U.lightRefIsSeatSpotlight(ref) then
+			if U.Type(patch) == "string" and patch ~= "" then
+				seatPreset[ref] = patch
+			elseif U.Type(patch) == "table" then
+				local sanitized = L.sanitizeLightModeTableForPersistence(patch)
+				if sanitized ~= nil and next(sanitized) ~= nil then
+					seatPreset[ref] = sanitized
+				end
+			else
+				print("[applyLightingPreset] Invalid spotlights value for seat ref " .. tostring(ref))
+			end
+		elseif U.Type(patch) == "string" and patch ~= "" then
+			L.SetLightMode(ref, patch, nil, spotTransition)
+		elseif U.Type(patch) == "table" then
+			L.SetLightMode(ref, patch, nil, spotTransition)
+		else
+			print("[applyLightingPreset] Invalid spotlights value for ref " .. tostring(ref))
+		end
+	end
+
+	S.setStateVal(seatPreset, "sessionScene", "lightingSeatSpotlightPreset")
+	return nil
 end
 
 -- ============================================================================

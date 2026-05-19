@@ -5,7 +5,7 @@
 
   <Panel class="gameStateOverlay" height="100%" width="100%" raycastTarget="false" />
 
-  <VerticalLayout class="gameStateOverlay_topCenter" width="900" height="170" rectAlignment="UpperCenter" childAlignment="MiddleCenter" spacing="5" padding="5 5 5 5" />
+  <VerticalLayout class="gameStateOverlay_topCenter" width="900" height="170" rectAlignment="UpperCenter" childAlignment="MiddleCenter" spacing="5" padding="5 5 5 5" scale="0.8" />
 
   <VerticalLayout class="gameStateOverlay_topRight" width="372" height="110" rectAlignment="UpperRight" childAlignment="UpperRight" spacing="5" padding="5 5 5 5" offsetXY="2 0" />
 
@@ -22,7 +22,7 @@
 
 <Panel id="gameStateOverlay_root" class="gameStateOverlay">
   <!--
-U.setAttributes("gameStateOverlay_timeAndLocation", {height = "170", width="900", color="clear", childAlignment="MiddleCenter"})
+U.setAttributes("gameStateOverlay_timeAndLocation", {scale = "1", offsetXY = "0 15"})
 -->
 
   <VerticalLayout id="gameStateOverlay_timeAndLocation" class="gameStateOverlay_topCenter">

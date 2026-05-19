@@ -14,7 +14,7 @@ local C = require("lib.constants")
 local U = require("lib.util")
 
 --- Highest `schemaVersion` this build accepts from import JSON.
-SceneLibrary.IMPORT_SCHEMA_VERSION = 1
+SceneLibrary.IMPORT_SCHEMA_VERSION = 2
 
 --- @param v any
 --- @return boolean
@@ -123,6 +123,70 @@ local function normalizeSeatSlotsForImport(sessionScene)
     return out
 end
 
+--- @param npcWorld table|nil
+--- @return boolean ok
+--- @return string|nil err
+local function rejectNpcWorldPreload(npcWorld)
+    if type(npcWorld) ~= "table" then
+        return true, nil
+    end
+    if npcWorld.preload ~= nil then
+        return false,
+            "sessionScene.npcWorld.preload: remove this key — NPC preload is engine-managed; use byArea only."
+    end
+    return true, nil
+end
+
+--- Schema v2+: `clock.isPresentDay` required; historical scenes need full datetime.
+--- @param clock table|nil
+--- @return boolean ok
+--- @return string|nil err
+local function validateClockForImportV2(clock)
+    if type(clock) ~= "table" then
+        return false, "sessionScene.clock: required object."
+    end
+    if clock.isPresentDay ~= true and clock.isPresentDay ~= false then
+        return false, "sessionScene.clock.isPresentDay: required boolean."
+    end
+    if clock.isPresentDay == false and not U.narrativeClockHasDatetime(clock) then
+        return false,
+            "sessionScene.clock: hour, minute, day, month, and year are required when isPresentDay is false."
+    end
+    return true, nil
+end
+
+--- Schema v2+ required fields on `sessionScene`.
+--- @param sessionScene table
+--- @return boolean ok
+--- @return string|nil err
+local function validateSessionSceneV2(sessionScene)
+    local lp = sessionScene.lightingPresetKey
+    if not isNonEmptyString(lp) then
+        return false, "sessionScene.lightingPresetKey: required non-empty string (a key in C.LightModes)."
+    end
+    local k = string.gsub(string.gsub(lp, "^%s+", ""), "%s+$", "")
+    if not C.isValidLightModeKey(k) then
+        return false, "sessionScene.lightingPresetKey: unknown key '" .. tostring(k) .. "' (must exist in C.LightModes)."
+    end
+    sessionScene.lightingPresetKey = k
+
+    if sessionScene.isTopFogActive ~= true and sessionScene.isTopFogActive ~= false then
+        return false, "sessionScene.isTopFogActive: required boolean."
+    end
+
+    local okClock, errClock = validateClockForImportV2(sessionScene.clock)
+    if not okClock then
+        return false, errClock
+    end
+
+    local okPreload, errPreload = rejectNpcWorldPreload(sessionScene.npcWorld)
+    if not okPreload then
+        return false, errPreload
+    end
+
+    return true, nil
+end
+
 --- Validate import wrapper + `sessionScene` (including all five PC `seatSlots` rows).
 --- On success, returns a normalized table safe to merge into `sceneLibrary.scenes[sceneKey]`
 --- (`receivesLiveWrites` is left to the caller — typically `false`).
@@ -137,6 +201,7 @@ function SceneLibrary.validateAndNormalizeImportPayload(raw)
     end
 
     local sv = raw.schemaVersion
+    local schemaNum = 1
     if sv ~= nil then
         local n = tonumber(sv)
         if n == nil or math.floor(n) ~= n then
@@ -148,6 +213,7 @@ function SceneLibrary.validateAndNormalizeImportPayload(raw)
         if n < 1 then
             return false, "schemaVersion: must be >= 1 if present.", nil
         end
+        schemaNum = n
     end
 
     local sceneKey = raw.sceneKey
@@ -196,6 +262,18 @@ function SceneLibrary.validateAndNormalizeImportPayload(raw)
     local okWeather, errWeather = validateSoundscapeWeatherTrioForImport(sessionScene)
     if not okWeather then
         return false, errWeather or "sessionScene.soundscapeNarrative: weather trio validation failed.", nil
+    end
+
+    if schemaNum >= 2 then
+        local okV2, errV2 = validateSessionSceneV2(sessionScene)
+        if not okV2 then
+            return false, errV2, nil
+        end
+    else
+        local okPreload, errPreload = rejectNpcWorldPreload(sessionScene.npcWorld)
+        if not okPreload then
+            return false, errPreload, nil
+        end
     end
 
     local sessNorm = normalizeSeatSlotsForImport(sessionScene)

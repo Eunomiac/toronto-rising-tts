@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 2,
+  "sceneKey": "openingCouncil",
+  "title": "Opening Council",
+  "sessionScene": {
+    "lightingPresetKey": "IndoorBright",
+    "isTopFogActive": false,
+    "tableKey": "Table B1",
+    "seatSlots": {
+      "Red": {
+        "characterKey": "lordLucien",
+        "isPlayingNPC": false,
+        "isPresent": true
+      },
+      "Orange": {
+        "characterKey": "rashid",
+        "isPlayingNPC": false,
+        "isPresent": true
+      },
+      "Pink": {
+        "characterKey": "aishe",
+        "isPlayingNPC": false,
+        "isPresent": true
+      },
+      "Brown": {
+        "characterKey": "fomorach",
+        "isPlayingNPC": false,
+        "isPresent": true
+      },
+      "Purple": {
+        "characterKey": "blackCaesar",
+        "isPlayingNPC": false,
+        "isPresent": true
+      },
+      "NPC1": {
+        "characterKey": "myleneHamelin",
+        "isPresent": true
+      },
+      "NPC2": {
+        "slotEmpty": true
+      },
+      "NPC3": {
+        "slotEmpty": true
+      },
+      "NPC4": {
+        "slotEmpty": true
+      },
+    },
+    "districtKey": "BayStFinancial",
+    "siteKey": "StRegisCouncilChamber",
+    "clock": {
+      "hour": 22,
+      "minute": 15,
+      "day": 14,
+      "month": 9,
+      "year": 2026,
+      "useRealTime": true,
+      "realTimeSpeed": 1,
+      "isPresentDay": true
+    },
+    "rollDefaults": {},
+    "soundscapeNarrative": {
+      "location": "library",
+    },
+    "npcWorld": {
+      "byArea": {
+        "farLeft": {},
+        "nearLeft": {},
+        "centerForward": {},
+        "nearRight": {},
+        "farRight": {},
+      },
+    }
+  }
+}

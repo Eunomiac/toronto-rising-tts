@@ -930,9 +930,15 @@ function HUD_selectAdminLightingScene(player, button, id)
         return
     end
 
+    local presetMap = {
+        dark = "AdminDark",
+        standard = "AdminStandard",
+        bright = "AdminBright",
+    }
+    local presetKey = presetMap[sceneName]
     -- State-first scene selection, then reconcile through the sync pipeline.
     S.setStateVal(sceneName, "currentScene")
-    S.setStateVal(sceneName, "sessionScene", "lightingPresetKey")
+    S.setStateVal(presetKey, "sessionScene", "lightingPresetKey")
     S.setStateVal(nil, "sceneTransition")
     if Sync and type(Sync.full) == "function" then
         Sync.full({ reason = "HUD_selectAdminLightingScene" })

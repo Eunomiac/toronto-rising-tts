@@ -70,8 +70,8 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
-| `U.lightRefIsPlayerSeat(lightRef)` | PC seat spotlight registry key | Gate scene `lightStages`, skip saved replay |
-| `U.lightRefIsNpcSeat(lightRef)` | NPC seat spotlight key (`npcLight…`) | Same |
+| `U.lightRefIsPlayerSeat(lightRef)` | PC seat spotlight registry key | Gate custom lighting paths; seat presets use `U.applyLightingPreset` + `L.reconcileForPlayer` |
+| `U.lightRefIsNpcSeat(lightRef)` | NPC seat spotlight key (`npcLight…`) | Same as player row for NPC seat rigs |
 | `U.lightRefIsSeatSpotlight(lightRef)` | Player or NPC seat spotlight | `if U.lightRefIsSeatSpotlight(ref) then …` |
 
 ### 1.3 Type Checking & Validation

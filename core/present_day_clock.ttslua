@@ -1,0 +1,168 @@
+--[[
+    Present day clock — chronicle-wide narrative "now" (in-fiction, not wall-clock).
+
+    `gameState.presentDayClock` stores Y/M/D/h/m only. Scene clocks carry flags
+    (`useRealTime`, `isPresentDay`, etc.) on `sessionScene.clock` and per library row.
+
+    Agent guidance: `.dev/Scene Constructor/Scene Constructor Overview.md` (Present day clock).
+]]
+
+local PresentDayClock = {}
+
+local U = require("lib.util")
+local S = require("core.state")
+
+--- @param clock table|nil
+--- @return boolean
+function PresentDayClock.clockHasDatetime(clock)
+    return U.narrativeClockHasDatetime(clock)
+end
+
+--- Copies hour/minute/day/month/year into a new table (no flags).
+--- @param clock table|nil
+--- @return table|nil
+function PresentDayClock.datetimeOnly(clock)
+    return U.narrativeClockDatetimeOnly(clock)
+end
+
+--- @param clock table|nil
+--- @return table|nil presentDay-shaped table
+function PresentDayClock.getPresentDay()
+    local pd = S.getStateVal("presentDayClock")
+    if type(pd) ~= "table" or not PresentDayClock.clockHasDatetime(pd) then
+        return nil
+    end
+    return PresentDayClock.datetimeOnly(pd)
+end
+
+--- One-time bootstrap when first present-day scene with authored datetime activates.
+--- @param clock table|nil
+--- @return boolean initialized
+function PresentDayClock.tryInitFromScene(clock)
+    if PresentDayClock.getPresentDay() ~= nil then
+        return false
+    end
+    local dt = PresentDayClock.datetimeOnly(clock)
+    if dt == nil then
+        return false
+    end
+    S.setStateVal(dt, "presentDayClock")
+    return true
+end
+
+--- Advances `presentDayClock` when `newClock` is strictly later (monotonic forward only).
+--- @param newClock table|nil
+function PresentDayClock.tryAdvance(newClock)
+    if not PresentDayClock.clockHasDatetime(newClock) then
+        return
+    end
+    local incoming = PresentDayClock.datetimeOnly(newClock)
+    if incoming == nil then
+        return
+    end
+    local pd = PresentDayClock.getPresentDay()
+    if pd == nil then
+        return
+    end
+    if U.compareNarrativeClock(incoming, pd) > 0 then
+        S.setStateVal(incoming, "presentDayClock")
+    end
+end
+
+--- Persists live `sessionScene.clock` onto a library row (always-on per-scene saved time).
+--- @param sceneKey string
+function PresentDayClock.flushLibraryRowClock(sceneKey)
+    if type(sceneKey) ~= "string" or sceneKey == "" then
+        return
+    end
+    if type(S.getStateVal("sceneLibrary", "scenes", sceneKey)) ~= "table" then
+        return
+    end
+    local live = S.getStateVal("sessionScene", "clock")
+    if type(live) ~= "table" then
+        return
+    end
+    S.setStateVal(U.merge({}, live), "sceneLibrary", "scenes", sceneKey, "sessionScene", "clock")
+end
+
+--- Merges bundle clock flags with datetime from `source` (present day or bundle).
+--- @param bundleClock table
+--- @param datetimeSource table
+--- @return table
+local function mergeClockWithDatetime(bundleClock, datetimeSource)
+    local out = U.merge({}, bundleClock)
+    out.year = datetimeSource.year
+    out.month = datetimeSource.month
+    out.day = datetimeSource.day
+    out.hour = datetimeSource.hour
+    out.minute = datetimeSource.minute
+    if out.useRealTime == nil then
+        out.useRealTime = false
+    end
+    if out.realTimeSpeed == nil then
+        out.realTimeSpeed = 1
+    end
+    if out.isPresentDay == nil then
+        out.isPresentDay = false
+    end
+    return out
+end
+
+--- Resolves live clock for library apply from an incoming `sessionScene` bundle.
+--- @param bundle table sessionScene-shaped table (mutated in place for clock)
+--- @return boolean ok
+--- @return string|nil err
+function PresentDayClock.resolveAndApplyActivationClock(bundle)
+    if type(bundle) ~= "table" then
+        return false, "Internal error: scene bundle is not a table."
+    end
+    local ck = bundle.clock
+    if type(ck) ~= "table" then
+        ck = {}
+        bundle.clock = ck
+    end
+    local isPresentDay = ck.isPresentDay == true
+
+    if PresentDayClock.clockHasDatetime(ck) then
+        if isPresentDay then
+            PresentDayClock.tryInitFromScene(ck)
+        end
+        S.setStateVal(ck, "sessionScene", "clock")
+        PresentDayClock.tryAdvance(ck)
+        return true, nil
+    end
+
+    if not isPresentDay then
+        return false, "Scene clock requires hour, minute, day, month, and year when isPresentDay is false."
+    end
+
+    local pd = PresentDayClock.getPresentDay()
+    if pd == nil then
+        return false,
+            "Present day clock is not initialized. Import or activate a present-day scene with a full clock time first."
+    end
+
+    local resolved = mergeClockWithDatetime(ck, pd)
+    bundle.clock = resolved
+    S.setStateVal(resolved, "sessionScene", "clock")
+    PresentDayClock.tryAdvance(resolved)
+    return true, nil
+end
+
+--- Before applying library scene `incomingKey`, flush the previously live scene row clock.
+--- @param incomingKey string
+function PresentDayClock.flushPreviousAppliedScene(incomingKey)
+    local prev = S.getStateVal("sceneLibrary", "lastAppliedKey")
+    if type(prev) == "string" and prev ~= "" and prev ~= incomingKey then
+        PresentDayClock.flushLibraryRowClock(prev)
+    end
+end
+
+--- @param incomingKey string
+function PresentDayClock.markApplied(incomingKey)
+    if type(incomingKey) == "string" and incomingKey ~= "" then
+        S.setStateVal(incomingKey, "sceneLibrary", "lastAppliedKey")
+    end
+end
+
+return PresentDayClock

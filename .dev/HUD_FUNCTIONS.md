@@ -46,7 +46,7 @@ The **Scenes** toolbar tab opens `panel_scenes_host` (**1200px** total: two **59
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
-| `HUD_selectAdminLightingScene` | `adminScene_dark`, `adminScene_standard`, `adminScene_bright` | `(player, button, id)` | Sets `currentScene`, `sessionScene.lightingPresetKey`, clears `sceneTransition`, calls `Sync.full()`. |
+| `HUD_selectAdminLightingScene` | `adminScene_dark`, `adminScene_standard`, `adminScene_bright` | `(player, button, id)` | Sets `currentScene` (HUD highlight), `sessionScene.lightingPresetKey` to `AdminDark` / `AdminStandard` / `AdminBright` (`C.LightModes`), clears `sceneTransition`, `Sync.full()`. |
 | `HUD_scenesPanel` | `scenes_tbl_*`, `scenes_seat_*` | `(player, button, id)` | `core/storyteller_scenes_panel.ttslua`: table buttons call `rotational-seat-layout.SetTableTo` after `sessionScene.tableKey`; seat buttons cycle `sessionScene.seatPresent` (`nil` → absent → present → neutral) and run `L.reconcileAllPlayers()`. |
 | `HUD_scenesClockFieldChanged` | `scenes_clock_day`, `scenes_clock_year`, `scenes_clock_time12`, `scenes_clock_speed` | `(player, value, id)` | `StorytellerScenesPanel.onClockInputChanged` — stashes typed text for **Apply clock** (TTS `UI.getValue` on `InputField` is unreliable; same pattern as roll UI / Scene Constructor modals). `HUD_scenesPanelInput` is an alias for the same handler. |
 | `HUD_scenesOpenDistrictModal` | `Browse districts...` | `(player, button, id)` | Shows `scenes_modal_districts_root` (`ui/storyteller/panel_scenes_location_modals.xml`, generated from `C.Districts`). |
@@ -69,7 +69,7 @@ The **Scenes** toolbar tab opens `panel_scenes_host` (**1200px** total: two **59
 | `HUD_scenesLibSlot` | `scenes_lib_slot_01` … `scenes_lib_slot_20` | `(player, button, id)` | Host: sets `sceneLibrary.activeKey` from `order[slot]`; `StorytellerScenesPanel.refresh()`. |
 | `HUD_scenesLibUnlink` | `scenes_lib_btn_unlink` | `(player, button, id)` | Host: `receivesLiveWrites = false` on active row. |
 | `HUD_scenesLibDelete` | `scenes_lib_btn_delete` | `(player, button, id)` | Host: two-step delete (arm then confirm within 5s) removes **active** key from `scenes` + `order`, clears `activeKey`. |
-| `HUD_scenesLibApply` | `scenes_lib_btn_apply` | `(player, button, id)` | Host: clones `sceneLibrary.scenes[activeKey].sessionScene` into live `sessionScene`, sets `currentScene` from `lightingPresetKey`, `RSL.SetTableTo` when `tableKey` is valid, arms map pin relocation for scene-cast rules, `Soundscape.contextFromSite` / `applyContext`, optional `soundscapeNarrative` via `Soundscape.applySessionSceneNarrativeOverrides`, chronicle weather when not manual-hold, then `Sync.full`. |
+| `HUD_scenesLibApply` | `scenes_lib_btn_apply` | `(player, button, id)` | Host: flush prior applied row clock, clone library `sessionScene` (validates `lightingPresetKey` ∈ `C.LightModes`, resolves present-day clock via `PresentDayClock`), `RSL.SetTableTo` when `tableKey` valid, soundscape site + narrative, chronicle weather when not manual-hold, `Sync.full` (lighting + top fog reconcilers). |
 | `HUD_scenesLibEnd` | `scenes_lib_btn_end` | `(player, button, id)` | Host: `U.Alert` to table, `Soundscape.setLocationAudio("none")`, `reapplyWeatherNaturalVolumes`, `invalidateReconcileCache`, `Sync.full` (does not clear `sessionScene`). |
 
 ## Game state overlay (`ui/shared/game_state_overlay.xml`)

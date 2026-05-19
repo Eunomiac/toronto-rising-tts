@@ -297,7 +297,7 @@ Existing functions that already fit (sometimes need renaming for consistency):
 | `HO.syncAll()` | `HO.reconcileAll()` (or new `HO.reconcileForPlayer(color)`) |
 | `L.syncHungryModesForAllPlayers()` | replaced by `L.reconcileAllPlayers()` / `L.reconcileForPlayer(color)` |
 | `Scenes.loadScene(name, transitionTime)` | stays as the **mutation** API; new `Scenes.reconcileFromState()` reapplies the saved scene without mutating it |
-| Scene stage application (`lightStages`) | applies ambient/non-player lights; player-seat lights are reconciler-owned |
+| `U.applyLightingPreset` on `C.LightModes` (from `Scenes.reconcileFromState`) | global `Lighting` + immediate non-seat `L.SetLightMode`; seat keys → `sessionScene.lightingSeatSpotlightPreset` for `L.reconcileForPlayer` (overrides win) |
 | `Soundscape.reconcileFromState()` | reconciles audio playback from persisted state during sync/load |
 | Dual eager + reconcile | See [Dual_apply_survey.md](Dual_apply_survey.md): avoid stacking fades when setters already matched emitters to state (`markReconciledToCurrentState` vs `invalidateReconcileCache`) |
 | `Sync.full({ force = true })` vs incremental | **Storyteller debug “Sync All (force)”** bypasses scene/soundscape fingerprints and runs full UI; **Sync (incremental)** uses fingerprints + narrow `UpdateUIDisplays` delta |

@@ -1,33 +1,118 @@
 # Running Tasklist for Toronto Rising Development
 
-This file will be continuously updated with new issues and plans for feature development.
+This file is continuously updated with issues and plans for feature development. Merged from `.dev/Draft Tasklist.md` on 2026-05-17.
+
+---
 
 ## Dice Roller
 
 - [x] Roll conditions set on rolls via the Storyteller control panel are not persisted and do not apply to rolls. _(Addressed: `roll_ui.ttslua` `uiToggleGet` normalizes Toggle `isOn` from string/boolean/number so Apply writes correct booleans.)_
 - [x] Automatic camera repositioning during the roll sequence is inconsistent. Should be modeled off of how the camera controls are applied in the Admin Debug panel (since they work flawlessly). _(Addressed: `main.ttslua` `M.setCamera` now applies `lookAt(intermediateCameraData)` before the final preset.)_
+- [ ] **Roll baton-pass camera (remaining):** Too many camera applications during the rolling handoff, including some that reapply the current angle; cuts are jumpier than Admin Debug Camera or Camera PC controls. Audit the roll pipeline and route roll-time switches through the same code path as those controls.
+- [ ] **Take Half redesign:** Available on any roll without difficulty. Synthetic result = half the pool size in **normal successes (rounded down)**, remainder **blank**, all treated as normal dice (Hunger dice count toward pool size but do not use Hunger faces). Example: pool 13 → 6 successes, 7 blanks. Downstream UI/ST confirmation should behave like a completed physical roll.
+- [ ] **Extended Tests:** An "extended test" is a series of rolls, with each roll contributing to a Running Total until a Target (defined by the Storyteller) is met, or the Storyteller stops the test early for any reason. There are four types of extended tests -- Standard, Series, Hard and Cascade -- which define what the Running Total and Target count, and how each roll adds to the Running Total. When the process stops, the final result is a Win if the Running Total equals or exceeds the Target, or a Failure otherwise.
+  - **Standard:** The Target represents a total number of successes that the player's Running Total must meet. Each roll contributes its successes to the Running Total. Each roll is made against a Difficulty of zero (i.e. each roll contributes all of its successes to the Running Total).
+  - **Series:** The Storyteller defines a Difficulty that applies to each roll the player makes. The Target represents the number of successful rolls the player must make (i.e. rolls where successes equal or exceed the Difficulty). Successes are not counted, only Wins.
+  - **Hard:** A combination of Standard and Series: The Target represents a total number of successes, but a Difficulty _is_ applied to each roll, and only the margin on each roll contributes to the Running Total. Failures (i.e. negative margins) do not subtract from the Running Total.
+  - **Cascade:** As Standard, with two changes. First, the number of successes on each roll becomes a positive modifier to the dice pool of the next roll. Second, if any roll fails, the test ends immediately in failure.
+- [ ] **Oblivion rouse checks:** Finish end-to-end (`C.RollType.ROUSE_OBLIVION` — UI, validation, result handling).
+
+## Camera
+
+- [ ] Nudge the **Red** player **`sheet`** preset slightly farther back on **Z** (away from table center) so the center-top game-state overlay does not block the top of the character sheet.
 
 ## NPC Spawning
 
-- [ ] Loading time for NPC cutouts is excessive. Proposed solution: Spawn in all NPC figurines in an out-of-sight area beneath the table (y ~= -100) and at small scale, so the image files are always loaded.
-- [ ] _New Feature:_ Ability for NPCs, both seated at the table and spawned into areas, to roll dice from the Storyteller dice control panel.
+See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Object%20Overview.md).
+
+- [x] **Preload pool:** Spawn all NPC figurines off-table (preload grid, small scale) so cutout images are loaded before activation. _( `npcs_data` preload at y = -200; `NPCS.ensureAllNpcsPreloaded`.)_
+- [x] **Seat spawn:** Pooled figurine uses seat `*Object` tag + `SEAT_FIGURE` rotational layout; `postCorrectionsBySeatRole`; area spotlight hidden at seat; workshop `SEAT_LIGHT_*_NPC*` only.
+- [x] **Seat tags:** `npc_figurine` ↔ `NPCnObject` on seat/unseat; layout matches pooled figurine by tag + `Figurine_Custom` (`NPCS.isPooledFigurineObject`).
+- [ ] **Group spawn exclusion:** When spawning an NPC group into a stage area, do not pull members who are already seated (e.g. `fiveKeys` spawn must leave `myleneHamelin` in her table seat).
+- [ ] _New feature:_ Storyteller rolls dice for NPCs from the dice control panel — spawn/show dice tray, appropriate camera angle, roll-controller wiring for NPC/non-player identity.
 
 ## Soundscape
 
-- [x] On load, emitters automatically play any tracks that were playing when the game was last saved. Proposed solution: A "silence all emitters" button the Storyteller can trigger at the end of each session, ensuring the save sets all emitters to play silence. _(Implemented: **Silence for save** on the Sound panel → `Soundscape.prepareEmittersForSave()`; Unity may still resume loops until the storyteller runs this before saving.)_
+- [x] On load, emitters automatically play tracks from the last save. _(Mitigation: **Silence for save** on Sound panel → `Soundscape.prepareEmittersForSave()`; fold into End Session sequence when defined.)_
+- [ ] **Background music policy:** In any phase **other than Session Start**, background music should always play. When the active site or scene specifies no music, default to the **`Main`** playlist (`lib/soundscape_catalog.ttslua`).
+- [ ] **Site weather ducking:** Site (not only indoors/outdoors) sets the weather audio ducking multiplier in soundscape.
 
 ## Lighting
 
-- [x] _New Feature:_ All reconciler lighting updates should be lerped for a gradual transition over a default of 2 seconds. _(Implemented: `core/lighting.ttslua` `L.DEFAULT_RECONCILE_LERP_SECONDS` + `reconcileForPlayer` uses it.)_
-- [x] _New Feature:_ Add functions to `TEST BED.ttslua` that will allow direct control of all seat lights, for tuning lighting settings and positions. Desired behavior: Calling the function with a seat light index (1, 2 or 3), light settings, position, and rotation should apply settings to the RED player's seat light, and then apply the same settings to all other active seat lights, rotating position/rotation transforms around the table as appropriate. _(Implemented: `TestBed_applyPlayerSeatLightsFromRed` — same segment yaw step as the camera test in that file; requires this chunk live in Global.)_
+- [x] Reconciler lighting updates lerped (default 2s). _( `core/lighting.ttslua` `L.DEFAULT_RECONCILE_LERP_SECONDS`.)_
+- [x] Test-bed helpers to apply seat-light settings from Red to all active seats. _( `TestBed_applyPlayerSeatLightsFromRed`.)_
+- [ ] **Centralize light modes** in `C.LightModes` for scenes, NPCs, and reconciler.
+- [ ] **Scenes/locations** drive skybox URL and global/seat light mode via state → `Scenes.reconcileFromState` / lighting reconciler (no dual apply).
+
+## Scenes Panel & Scene State
+
+- [x] Dark panel backgrounds, site modal layout, scene location as text, scene time controls, real-time clock toggle, chronicle weather removed, game-state overlay. _(See completed UI Panels items below.)_
+- [ ] **District/site labels:** Keep Scenes panel display fields in sync with `gameState.sessionScene` after modal picks and library Apply.
+- [ ] **Site modal overlap:** Fix overlapping site buttons so district-specific rows are fully clickable (not covered by generic site bucket).
+- [ ] **Site fog:** Site controls whether the fog object is enabled/disabled.
+- [ ] **Site & district modifiers:** Apply to rolls (and possibly stats) only for characters marked **present** in the active scene/seat layout.
 
 ## UI Panels
 
-- [x] All Storyteller UI panels should receive a dark background: `rgba(0, 0, 0, 0.8)`. _(Class `storyteller_panel_surface` in `hud_storyteller_defaults.xml`; Scenes/Phases/Sound root layouts; PCs/NPCs via panel defaults.)_
-- [x] **Scenes Panel:** Storyteller modals for setting current Site currently hide the District-unique sites behind the generic sites, which are overlayed on top, likely due to layout issues with inactive panels. Proposed solution: Create a permanently-active blank panel to occupy the necessary space, allowing room for any unique site groups to be displayed accurately. _(Addressed by reordering generated modal body: generic bucket first, district buckets after — district list draws above generic.)_
-- [x] **Scenes Panel - Scene location:** Storyteller "Scene location" section includes input elements for Districts and Sites. These should be replaced by Text elements displaying the full name (not key) of the District and Site, since Districts and Sites are chosen by modal popups and not direct text entry.
-- [x] **Scenes Panel - Scene time:** Current five input elements are ambiguous, unlabeled, and unintuitive. Ideal replacement would be with a dropdown to set the month, a number input to set the day, a single input to set time in the format `hh:mm AM/PM`, and an "Apply" button to save to state and trigger the reconciler.
-- [x] **Scenes Panel - Scene time:** _New Feature:_ A toggle button (green for active, grey for inactive) controls whether game time advances in real time. An input to the right applies a speed multiplier for in-game time progression, defaulting to 1 (e.g. a value of "2" would result in time moving twice as fast in-game).
-- [x] **Scenes Panel - Chronicle weather:** Remove. Chronicle weather is always aligned to game time.
-- [x] **Scenes Panel - NPC role snapshot:** Remove as unnecessary.
-- [x] **Player Game State Overlay:** _New Feature:_ A center-top panel with transparent background and red text should display the current game phase, the current date, and the current time in 12-hour format. Time (and date) should be constantly updated if real-time clock progression is active. _(See `ui/shared/game_state_overlay.xml` + `core/game_state_overlay.ttslua`.)_
+- [x] All Storyteller UI panels: dark background `rgba(0, 0, 0, 0.8)`.
+- [x] **Scenes Panel:** Site modal — district-unique sites above generic bucket.
+- [x] **Scenes Panel — Scene location:** District/Site as text from modals, not free-text inputs.
+- [x] **Scenes Panel — Scene time:** Month/day/time inputs + Apply; real-time clock toggle + speed multiplier.
+- [x] **Scenes Panel:** Chronicle weather and NPC role snapshot removed.
+- [x] **Player game-state overlay:** Center-top phase, date, time (`ui/shared/game_state_overlay.xml`, `core/game_state_overlay.ttslua`).
+- [ ] **Center-top overlay polish:** Scale down overlay; fix background image alignment/scaling.
+- [ ] **Weather on overlay:** Show weather icon/label on center-top overlay (aligned with chronicle/scene clock), not only Scenes panel.
+- [ ] **PCs panel:** Manually deactivate a PC (absent without removing data).
+- [ ] **PCs panel:** Set PC map location via popout modal (writes state, reconciles overlays). _(Open: same as `seatPresent`/district-site or separate map pin?)_
+- [ ] **Start / End Session buttons:** Place on appropriate ST panels as placeholders. **End Session** will eventually run a defined sequence including **Silence for save**. **Start Session** sequence TBD. Minimal behavior until event lists are specified.
+- [ ] **Scrolling viewbox:** Author experimenting in TTS on scroll-container height — no implementation until after tinkering.
+
+## Character Sheets
+
+_Blocked: author must define data binding approach before substantial implementation._
+
+- [ ] **Page 4:** PC relationships; Blood Bonds. _(Partial: `lib/json/PC_Relationships.json`, `lib/pcs_data.ttslua`.)_
+- [ ] **Page 5:** Projects; Equipment; Boons.
+- [ ] **Page 6:** Character history; scrolling XP log.
+- [ ] **Decals:** Sheet object decals update from Blood Potency (state → UI reconcile).
+
+## Players & Connection
+
+- [ ] **Auto seat/color on connect** from Steam ID (chronicle mapping).
+- [ ] **Play as NPC:** PC at table uses NPC sheet/figurine; `sessionScene.npcRoleOverride` / `seatSlots`; lighting exception per Scene Constructor spec ([Scene Constructor Overview](Scene%20Constructor/Scene%20Constructor%20Overview.md)).
+
+## Table Objects
+
+- [ ] **Tarot hide:** `G.GUIDS.TAROT_BUTTON_PINK` / [`ui/ui_tarot_button.ttslua`](../ui/ui_tarot_button.ttslua) — when hiding the deck, return all drawn tarot cards to the deck first, then hide (no orphans on table).
+
+## New Features (pending design)
+
+- [ ] **Desires** — placeholder; pending author details.
+- [ ] **Spotlight phase** — placeholder; pending author details.
+- [ ] **Memoriam toggle** — placeholder; pending author details (global LUT + HUD overlay per sync architecture, not a per-player light tier).
+- [ ] **Spotlight NPC distinction:** Use player color or other visual to distinguish spotlighted NPCs in-world and UI.
+
+## Agent Reviews
+
+- [ ] Author **reconciler contract** doc (when each `reconcile*` runs, reads, applies, must not write back). → Prompt 1 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md)
+- [ ] Agent prompt: find **runtime object updates outside reconcilers** (dual-apply audit). → Prompt 2 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md)
+- [ ] Agent prompt: find **invalid `getStateVal` / `getPlayerVal`** paths; draft fix plan. → Prompt 3 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md)
+- [ ] Agent prompt: **performance** hotspots (`Sync.full`, spawn pools, lighting lerps, UI refresh). → Prompt 4 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md)
+
+## Out of Scope for Cursor
+
+_Workshop save, external art, or design TBD outside the repo._
+
+| Item | Notes |
+|------|--------|
+| Reference images | The Court, Social Combat, XP, Physical Combat, Frenzy, Resonance, Recovery |
+| Impairment overlays | Health, Willpower, Humanity |
+| Face-to-face table | Layout/table variant in save |
+| Debug sound window | ST debug panel |
+| Hunting vs Resonance | Feeding/resonance mechanics |
+| Famulus & other cutouts | Art + spawn data in workshop |
+| Additional skyboxes | Sites/scenes |
+| Hunger / frenzy overlays | Art and tuning in workshop |
+| Tune seat lights | All table configs (use test-bed helpers in-repo when ready) |
+| Tune audio volumes | Emitters, weather, ducking in save |
+| Scene Constructor (Google Sheets) | Import/export workflow — author to define approach first |

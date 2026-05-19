@@ -34,6 +34,9 @@ G.GUIDS = {
     MAIN_LIGHT_LEFT = "573771",
     MAIN_LIGHT_RIGHT = "13466d",
 
+    -- Ambient Effects (toggleable emitters of ambient effects)
+    TOP_FOG = "db3de2",
+
     SEAT_LIGHT_1_BROWN = "f251e0",
     SEAT_LIGHT_1_ORANGE = "d3356d",
     SEAT_LIGHT_1_RED = "0cd76a",
@@ -188,10 +191,6 @@ G.GUIDS = {
     SEAT_FIGURE_PINK = "390349",
     SEAT_FIGURE_PURPLE = "923872",
     SEAT_FIGURE_RED = "1e70cf",
-    SEAT_FIGURE_NPC1 = "df88fd",
-    SEAT_FIGURE_NPC2 = "43e314",
-    SEAT_FIGURE_NPC3 = "16316e",
-    SEAT_FIGURE_NPC4 = "977ba7",
 
     -- Player-Specific Objects
     PRINCE_SIGNET_BORDER_RED = "4506f3",

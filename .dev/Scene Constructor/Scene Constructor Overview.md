@@ -125,14 +125,15 @@ Use **flat** keys that already exist on live `sessionScene` (do not nest a separ
 
 | Key | Type | Role |
 |-----|------|------|
-| `lightingPresetKey` | string \| null | Same semantics as today. |
+| `lightingPresetKey` | string | **Schema v2:** required; must be a key in **`C.LightModes`** (e.g. `IndoorBright`). Applied via `Scenes.reconcileFromState` → `U.applyLightingPreset`; seat spotlights still follow `L.reconcileForPlayer` priority. v1 imports may omit (null). |
+| `isTopFogActive` | boolean | **Schema v2:** required. Reconciler sets `G.GUIDS.TOP_FOG` object state **2** (on) / **1** (off). |
 | `tableKey` | string \| null | e.g. table id used with `RSL.SetTableTo` / `C.Tables`. |
 | `seatPresent` | object | Sparse tri-state map (`nil` / `false` / `true`) — **derived** from `seatSlots` when `isPresent` is set (see `normalizeLiveSessionSceneSeatSlots` in `core/state.ttslua`). Imports may omit if every seat is described in `seatSlots`. |
 | `seatSlots` | object | Per-seat rows (keys: `Brown`, `Orange`, `Red`, `Pink`, `Purple`, `NPC1`…`NPC4`). See **Seat slots** below. |
 | `npcRoleOverride` | object | **Sparse** map: keys are **`C.PlayerColors`** only; value is an **NPC** `characterKey` string when that PC is playing as that NPC. Absent keys = no override. **Not authored in import JSON** — rebuilt from PC `seatSlots` by `SceneLibrary.syncNpcRoleOverrideFromSeatSlots` (import + `S.validateState`). |
 | `districtKey` | string \| null | Chronicle district. |
 | `siteKey` | string \| null | Site within district. |
-| `clock` | object | `hour`, `minute`, `day`, `month`, `year`, `useRealTime`, `realTimeSpeed` (same names as live state). **`realTimeSpeed`**: multiplier on wall-clock when `useRealTime` is true — `1` ⇒ one narrative minute every 60 real seconds; `2` ⇒ twice that fast. |
+| `clock` | object | `hour`, `minute`, `day`, `month`, `year`, `useRealTime`, `realTimeSpeed`, **`isPresentDay`** (v2). Datetime fields may be omitted when `isPresentDay` is true (see **Present day clock**). **`realTimeSpeed`**: narrative-time multiplier when `useRealTime` is true — `1` ⇒ one in-fiction minute every 60 real seconds (not wall-calendar sync). |
 | `chronicleWeatherFollowSchedule` | boolean | When `true`, clock-driven chronicle weather may feed soundscape. **Scene Constructor import:** set only by the importer from `soundscapeNarrative` — if **`wind`**, **`rain`**, and **`thunderstorm`** are all non-`null`, becomes **`false`** (weather locked to narrative); if none of those three are set, becomes **`true`**. Pasted values for these two flags are **overwritten** on import. |
 | `chronicleWeatherManualHold` | boolean | When `true`, chronicle weather is not auto-applied on clock updates. **Import:** **`true`** when all three narrative weather fields are set; **`false`** when none are. |
 | `rollDefaults` | object | Same keys as `active.rollOptions` merges. |
@@ -212,9 +213,31 @@ Avoid long arrays with empty placeholders. Use **sparse maps** keyed by string s
 }
 ```
 
-- `byArea` — per area key (`nearLeft`, `centerForward`, …), numeric slot index → `{ characterKey, npcLightMode? }`. **`Sync.full`** calls `NPCS.reconcileSessionSceneNpcWorldFromState` (alias: `reconcileSessionScenePreloadNpcs`), which fingerprints `npcWorld`; when it changes and there is placement intent, existing figurines are **parked into the global `preload` grid** (small scale, under playfield), then these placements run (staggered `Wait.time`). `npcLightMode` from JSON overrides the area’s `autoLight` default when valid (`OFF` / `STANDARD` / `SPOTLIGHT`).
+- `byArea` — per area key (`nearLeft`, `centerForward`, …), numeric slot index → `{ characterKey, npcLightMode? }`. **`Sync.full`** calls `NPCS.reconcileSessionSceneNpcWorldFromState`, which fingerprints `npcWorld`; when it changes and there is placement intent, existing figurines are **parked into the global `preload` grid** (small scale, under playfield), then these placements run **synchronously**. `npcLightMode` from JSON overrides the area’s `autoLight` default when valid (`OFF` / `STANDARD` / `SPOTLIGHT`).
 
-Runtime NPC instances remain under **`gameState.npcs.instances`**; `npcWorld.byArea` is the **saved scene’s staging intent**, copied into live NPC flows during apply. **Scene bundles should omit `preload`** — the engine preloads all characters automatically.
+Runtime NPC instances remain under **`gameState.npcs.instances`**; `npcWorld.byArea` is the **saved scene’s staging intent**, copied into live NPC flows during apply. **Do not author `npcWorld.preload`** — v2 import rejects it; the engine maintains an internal under-table preload pool automatically.
+
+### Present day clock (`clock.isPresentDay`)
+
+In-fiction chronicle time — **not** real-world date/time.
+
+| State | Role |
+|-------|------|
+| `gameState.presentDayClock` | Monotonic chronicle “now” (`year`…`minute` only). |
+| `gameState.sessionScene.clock` | Live clock for the active scene. |
+| `sceneLibrary.scenes[sceneKey].sessionScene.clock` | **Each** library row’s saved clock (always maintained; active linked rows also mirror from live on `Sync.full`). |
+
+**Rules**
+
+1. **Bootstrap:** First activation of a scene with `isPresentDay == true` and a **full** datetime while `presentDayClock` is unset → initialize `presentDayClock` from that scene.
+2. **Monotonic advance:** Whenever any path sets or ticks a scene clock to time **T**, if **T** is later than `presentDayClock`, advance `presentDayClock` (no rewind).
+3. **Apply without datetime:** Present-day scene may omit datetime fields (flags only). On apply, copy datetime from `presentDayClock` (error if present day was never initialized).
+4. **Historical scenes:** `isPresentDay == false` requires full datetime on import.
+5. **Return to scene:** Apply uses the **library row’s saved clock** (may be behind present day). Real-time ticks advance present day only after scene time catches up.
+
+**Clock “not set”:** `clock` may exist with only flags — all five datetime fields absent.
+
+Implementation: [`core/present_day_clock.ttslua`](../../core/present_day_clock.ttslua); `sceneLibrary.lastAppliedKey` flushes the previously applied row’s clock before switching.
 
 ## Switching scenes
 
@@ -229,7 +252,9 @@ The Host’s pasted text is passed through **`U.sanitizeJsonTextRemoveTrailingCo
 - If validation **fails**: keep the modal open; set a dedicated UI **text element** under the confirm control to a **short, actionable** message (one primary error first; optional “also:” second line if cheap).
 - If validation **succeeds**: close the modal, write `sceneLibrary`, then `S.validateState` and refresh buttons.
 
-Messages should name the **JSON path** and the **fix** (e.g. `sessionScene.seatSlots.NPC2.characterKey: expected string or omit key; got number.`, `sessionScene.soundscapeNarrative: set wind, rain, and thunderstorm together, or omit all three — mixed weather overrides are invalid.`, `sceneKey: must match pattern …`, `schemaVersion: unsupported value 7; this build supports 1.`).
+**Schema v2** (`schemaVersion: 2`): requires `lightingPresetKey` (valid `C.LightModes` key), `isTopFogActive` (boolean), `clock.isPresentDay` (boolean); rejects `npcWorld.preload`. Historical scenes (`isPresentDay: false`) require full clock datetime.
+
+Messages should name the **JSON path** and the **fix** (e.g. `sessionScene.seatSlots.NPC2.characterKey: expected string or omit key; got number.`, `sessionScene.soundscapeNarrative: set wind, rain, and thunderstorm together, or omit all three — mixed weather overrides are invalid.`, `sceneKey: must match pattern …`, `schemaVersion: unsupported value 7; this build supports 2.`).
 
 **`InputField` for paste / titles:** Do not read live `InputField` text with `UI.getValue` on confirm. Follow the TTS contract and in-repo reference (`rollDash_difficulty_*` + `HUD_rollSetDifficulty`): use **`onValueChanged` / `onEndEdit`** to stash the **`value`** argument, prefill with **`UI.setAttribute(id, "text", …)`**, and read from stash on confirm. See [`.dev/SOLVING ISSUES & DEBUGGING.md`](../SOLVING%20ISSUES%20%26%20DEBUGGING.md) (*Global UI `InputField` — typed text*).
 

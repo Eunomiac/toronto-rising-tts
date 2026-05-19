@@ -93,6 +93,7 @@ function Sync.lighting(opts)
     opts = type(opts) == "table" and opts or {}
     -- Scene/ambient/non-player lighting writes are reconciler-owned.
     callIfFunction(Scenes.reconcileFromState, opts)
+    callIfFunction(Scenes.reconcileTopFogFromState, opts)
 
     -- Preserve current light initialization path as a compatible delegate.
     callIfFunction(L.InitLights)
@@ -140,6 +141,7 @@ function Sync.full(opts)
     local reconcileOpts = force and { force = true } or {}
 
     callIfFunction(Scenes.reconcileFromState, reconcileOpts)
+    callIfFunction(Scenes.reconcileTopFogFromState, reconcileOpts)
     callIfFunction(Soundscape.reconcileFromState, reconcileOpts)
 
     if not didBootstrapFullSync then

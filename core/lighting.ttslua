@@ -908,6 +908,11 @@ local function sanitizeModeForPersistence(mt)
     return out
 end
 
+--- Public: JSON-safe shallow copy of an inline spotlight mode table for `gameState` / session bundles.
+--- @param mt table|nil
+--- @return table|nil
+L.sanitizeLightModeTableForPersistence = sanitizeModeForPersistence
+
 --- True if `v` is a valid `gameState.lights` value (mode name or inline snapshot).
 --- @param v any
 --- @return boolean
@@ -1226,8 +1231,14 @@ local function getPlayerRollingState(playerColor)
     return S.getStateVal("playerData", playerID, "lighting", "isRolling") == true
 end
 
+--- Dark scene forces seat spotlights OFF (priority above hunger / scene seat preset).
+--- Uses `sessionScene.lightingPresetKey` (`AdminDark`, `*Dark`, `DARK`) and legacy `currentScene == "dark"`.
 --- @return boolean
 local function isDarkSceneActive()
+    local presetKey = S.getStateVal("sessionScene", "lightingPresetKey")
+    if C.isDarkLightingPresetKey(presetKey) then
+        return true
+    end
     local currentScene = nil
     if Scenes and type(Scenes.getCurrentScene) == "function" then
         currentScene = Scenes.getCurrentScene()
@@ -1335,9 +1346,20 @@ local function getConditionLightOverrideMode(lightRef, playerColor)
 end
 
 --- @param lightRef string
+--- @return any|nil value from `sessionScene.lightingSeatSpotlightPreset` for this ref
+local function getSessionSeatSpotlightPreset(lightRef)
+    local m = S.getStateVal("sessionScene", "lightingSeatSpotlightPreset")
+    if U.Type(m) ~= "table" then
+        return nil
+    end
+    return m[lightRef]
+end
+
+--- High-priority seat spotlight modes (rolling, dark / absent, conditions, hunger).
+--- @param lightRef string
 --- @param seatKey string
---- @return string|nil
-local function computeDesiredPlayerLightMode(lightRef, seatKey)
+--- @return string|nil mode name when an override applies; nil to use scene seat preset / defaults
+local function computeSeatSpotlightPriorityOverride(lightRef, seatKey)
     local lData = L.LIGHTMODES[lightRef]
     if U.Type(lData) ~= "table" then
         return nil
@@ -1345,12 +1367,9 @@ local function computeDesiredPlayerLightMode(lightRef, seatKey)
 
     local isPlayerSeat = isPlayerSeatKey(seatKey)
 
-    -- Priority: ROLLING > NPC-role-leave-alone > DARK/absent > HUNGRY > STANDARD
     if isPlayerSeat and getPlayerRollingState(seatKey) and lData.ROLLING ~= nil then
         return "ROLLING"
     end
-
-    -- Future NPC-role exception hook: currently no role-assumption system exists yet.
 
     local seatPresenceOff = shouldEnforceSeatPresenceLights() and not L.isPlayerPresentInActiveSeatLayout(seatKey)
     if (isDarkSceneActive() or seatPresenceOff) and lData.OFF ~= nil then
@@ -1369,14 +1388,40 @@ local function computeDesiredPlayerLightMode(lightRef, seatKey)
         end
     end
 
+    return nil
+end
+
+--- Resolves desired apply for a seat-matched registered light: override, scene `C.LightModes` seat preset, or default.
+--- @param lightRef string
+--- @param seatKey string
+--- @return table|nil `{ kind = "named", mode = string }` or `{ kind = "inline", patch = table }`, or nil when no apply
+local function computeDesiredSeatLightResolution(lightRef, seatKey)
+    local lData = L.LIGHTMODES[lightRef]
+    if U.Type(lData) ~= "table" then
+        return nil
+    end
+
+    local ovr = computeSeatSpotlightPriorityOverride(lightRef, seatKey)
+    if U.Type(ovr) == "string" and ovr ~= "" and lData[ovr] ~= nil then
+        return { kind = "named", mode = ovr }
+    end
+
+    local preset = getSessionSeatSpotlightPreset(lightRef)
+    if U.Type(preset) == "string" and preset ~= "" and lData[preset] ~= nil then
+        return { kind = "named", mode = preset }
+    end
+    if U.Type(preset) == "table" and next(preset) ~= nil then
+        return { kind = "inline", patch = preset }
+    end
+
     if lData.STANDARD ~= nil then
-        return "STANDARD"
+        return { kind = "named", mode = "STANDARD" }
     end
     if U.Type(lData.default) == "string" and lData[lData.default] ~= nil then
-        return lData.default
+        return { kind = "named", mode = lData.default }
     end
     if lData.OFF ~= nil then
-        return "OFF"
+        return { kind = "named", mode = "OFF" }
     end
     return nil
 end
@@ -1394,15 +1439,17 @@ function L.reconcileForPlayer(seatKey)
             and U.Type(lData) == "table"
             and lightRefMatchesSeatColor(lightRef, seatKey)
         then
-            local desiredMode = computeDesiredPlayerLightMode(lightRef, seatKey)
-            if U.Type(desiredMode) == "string" then
-                -- Always persist + push world: persisted mode can match desired while components
-                -- are still dark (load order, missed apply, or external stomp). Debug logs compare
-                -- desired vs `gameState.lights` only — they do not read Light intensity.
-                S.setStateVal(desiredMode, "lights", lightRef)
+            local res = computeDesiredSeatLightResolution(lightRef, seatKey)
+            if U.Type(res) == "table" and res.kind == "named" and U.Type(res.mode) == "string" then
+                S.setStateVal(res.mode, "lights", lightRef)
                 local lit = getLight(lightRef, true)
                 if lit ~= nil then
-                    L.SetLightMode(lightRef, desiredMode, seatKey, L.DEFAULT_RECONCILE_LERP_SECONDS)
+                    L.SetLightMode(lightRef, res.mode, seatKey, L.DEFAULT_RECONCILE_LERP_SECONDS)
+                end
+            elseif U.Type(res) == "table" and res.kind == "inline" and U.Type(res.patch) == "table" then
+                local lit = getLight(lightRef, true)
+                if lit ~= nil then
+                    L.SetLightMode(lightRef, res.patch, seatKey, L.DEFAULT_RECONCILE_LERP_SECONDS)
                 end
             end
         end

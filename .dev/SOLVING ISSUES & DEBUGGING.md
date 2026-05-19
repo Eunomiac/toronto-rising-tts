@@ -30,9 +30,15 @@ Quick chat commands: `/dbcheck` (compact) and `/dbfullcheck` (full).
 - [ ] Are load-time restore paths re-stamping stale values?
 - [ ] For missing state records, is default behavior explicit and safe (never implicit)?
 
+### Rotational seat layout (`postCorrections`)
+
+- **`C.TableSourceObjects.postCorrections`** — per-GUID overrides after layout; missing targets are skipped with a log line (optional workshop pieces).
+- **`C.TableSourceObjects.postCorrectionsBySeatRole`** — same shape keyed by seat + role (e.g. `NPC1` / `SEAT_FIGURE` for pooled seated figurines).
+- Seated NPC figurines: tag `NPCnObject` + `NPCS.isPooledFigurineObject`; layout moves them as `SEAT_FIGURE`; unseat clears seat tags and returns to preload.
+
 ### Storyteller Scenes vs lighting preset
 
-- **Seat spotlight refs** (`playerLight…`, `npcLight…`): scene `lightStages` must skip these — hunger/seat reconcilers own PC modes. Use `U.lightRefIsPlayerSeat` / `U.lightRefIsSeatSpotlight`; never use `string.sub(ref, 1, 10)` against `"playerLight"` (prefix is **11** chars; a too-short sub never matched and let presets stamp `STANDARD` over `HUNGRY`).
+- **Seat spotlight refs** (`playerLight…`, `npcLight…`): `C.LightModes.*.spotlights` may list them, but `U.applyLightingPreset` only **stores** them on `gameState.sessionScene.lightingSeatSpotlightPreset`; **`L.reconcileForPlayer`** applies them **after** rolling / dark or absent seat / conditions / hunger overrides. Use `U.lightRefIsPlayerSeat` / `U.lightRefIsSeatSpotlight`; never use `string.sub(ref, 1, 10)` against `"playerLight"` (prefix is **11** chars; a too-short sub never matched and let presets stamp `STANDARD` over `HUNGRY`).
 - **`gameState.currentScene`** — lighting preset key for `Scenes.reconcileFromState` (admin dark/standard/bright and any legacy named scene ids).
 - **`gameState.sessionScene`** — narrative/session bundle: table selection mirror, optional seat-presence map for lighting when paired with `seatLayout.enforceActiveSeatLighting`, district/site keys for soundscape context, clock fields, roll-default overlays (`RO.seedActiveRoll`), and stub NPC scene notes. The Storyteller toolbar **Light** tab was removed; use **Scenes → Lighting presets**.
 

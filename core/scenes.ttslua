@@ -10,7 +10,7 @@
     Scene transitions can be instant or smooth (with fade/duration).
 
     Pattern: Combines lighting module patterns with ambient lighting control.
-    Integration: Uses L.SetLightMode for individual lights, Lighting API for ambient.
+    Integration: `U.applyLightingPreset` for ambient + `spotlights`; `L.SetLightMode` for legacy `lights` list.
 
     Agent guidance: .dev/TESTING.md (scene tests); .dev/AVAILABLE_FUNCTIONS.md.
 ]]
@@ -19,12 +19,13 @@ local Scenes = {}
 local U = require("lib.util")
 local S = require("core.state")
 local C = require("lib.constants")
+local G = require("lib.guids")
 local L = require("core.lighting")
 local Soundscape = require("core.soundscape")
-local NPCS = require("core.npcs")
 
 --- Last scene+transition fingerprint successfully applied to the live world (incremental sync skips when unchanged).
 local lastSceneReconcileFingerprint = nil
+local lastTopFogReconcileFingerprint = nil
 
 -- ============================================================================
 -- CONFIGURATION
@@ -40,20 +41,9 @@ local DefaultTransitionTime = 2.0
 --- Scene Preset Structure
 --
 -- Each scene preset contains:
---   ambient: Table with ambient lighting settings (see TTS Lighting API)
---     - ambient_intensity (number): 0-4, brightness of ambient light
---     - ambient_type (number): 1 or 2, type of ambient lighting
---     - light_intensity (number): 0-4, brightness of directional light
---     - lut_contribution (number): 0-1, color grading lookup table contribution
---     - lut_index (number): 1-114, which LUT preset to use
---     - reflection_intensity (number): 0-1, surface reflection intensity
---   lights: Table of {name, mode} pairs for individual light objects
---     - name (string): Light name/tag matching L.LIGHTMODES key
---     - mode (string): Light mode name (e.g., "ambient", "bright", "dim")
---   musicTrack (number, optional): Music track index (1-10, if tracks are configured)
---   musicMood (string, optional): Soundscape music mood key (e.g., "main", "intrigue", "combat")
---   soundscapeContext (table, optional): Partial context passed to Soundscape.applyContext
---   description (string, optional): Human-readable scene description
+--   ambient: Table with global lighting + optional `spotlights` (see `C.LightModes`, `U.applyLightingPreset`)
+--   lights: Table of {name, mode} pairs for legacy per-light entries (non-seat refs preferred)
+--   musicTrack, musicMood, soundscapeContext, description (optional)
 
 Scenes.SCENES = {
     -- Default/neutral scene (uses DARK mode)
@@ -63,209 +53,24 @@ Scenes.SCENES = {
         description = "Default dark lighting"
     },
     debug = {
-        ambient = C.LightModes.DEBUG,
-        lightStages = {
-            {
-                refs = "__all_registered__",
-                mode = "OFF",
-                duration = 5.0
-            }
-        },
+        ambient = C.LightModes.AdminDebug,
+        lights = {},
         description = "Admin debug mode - all registered lights OFF, minimal ambient lighting"
     },
     dark = {
-        ambient = C.LightModes.DARK,
-        lightStages = {
-            {
-                refs = "__all_registered__",
-                mode = "OFF",
-                duration = 5.0
-            },
-            {
-                delay = 6,
-                duration = 0.0,
-                mode = "STANDARD",
-                refs = {
-                  "gmLight"
-                }
-            },
-        },
+        ambient = C.LightModes.AdminDark,
+        lights = {},
         description = "Admin dark mode - all registered lights OFF"
     },
     standard = {
-        ambient = C.LightModes.DARK,
-        lightStages = {
-            {
-                delay = 0.0,
-                duration = 0.0,
-                mode = "STANDARD",
-                refs = {
-                  "gmLight"
-                }
-            },
-            {
-                delay = 0.0,
-                duration = 5.0,
-                mode = "STANDARD",
-                refs = {
-                    "playerLight1Red",
-                    "playerLight2Red",
-                    "playerLight3Red",
-                }
-            },
-            {
-                delay = 1.0,
-                duration = 4.0,
-                mode = "STANDARD",
-                refs = {
-                    "playerLight1Orange",
-                    "playerLight2Orange",
-                    "playerLight3Orange",
-                    "playerLight1Pink",
-                    "playerLight2Pink",
-                    "playerLight3Pink",
-                }
-            },
-            {
-                delay = 2.0,
-                duration = 3.0,
-                mode = "STANDARD",
-                refs = {
-                    "npcLight2NPC1"
-                }
-            },
-            {
-                delay = 2.5,
-                duration = 2.5,
-                mode = "STANDARD",
-                refs = {
-                    "npcLight2NPC2"
-                }
-            },
-            {
-                delay = 3.0,
-                duration = 2.0,
-                mode = "STANDARD",
-                refs = {
-                    "npcLight2NPC3",
-                    "npcLight2NPC4"
-                }
-            },
-            {
-                delay = 4.0,
-                duration = 1.0,
-                mode = "STANDARD",
-                refs = {
-                    "playerLight1Brown",
-                    "playerLight2Brown",
-                    "playerLight3Brown",
-                    "playerLight1Purple",
-                    "playerLight2Purple",
-                    "playerLight3Purple",
-                }
-            },
-            {
-                delay = 4.0,
-                duration = 5.0,
-                mode = "STANDARD",
-                refs = {
-                    "mainLightLeft",
-                    "mainLightRight",
-                }
-            }
-        },
-        description = "Admin standard mode - staggered player/main lighting"
+        ambient = C.LightModes.AdminStandard,
+        lights = {},
+        description = "Admin standard mode - full table lighting from C.LightModes"
     },
     bright = {
-        ambient = {
-            ambient_intensity = 1,
-            ambient_type = 1,
-            light_intensity = 1,
-            lut_contribution = 0,
-            lut_index = 1,
-            reflection_intensity = 0
-        },
-        lightStages = {
-            {
-                delay = 0.0,
-                duration = 0.0,
-                mode = "STANDARD",
-                refs = {
-                  "gmLight"
-                }
-            },
-            {
-                delay = 0.0,
-                duration = 5.0,
-                mode = "STANDARD",
-                refs = {
-                    "playerLight1Red",
-                    "playerLight2Red",
-                    "playerLight3Red",
-                }
-            },
-            {
-                delay = 1.0,
-                duration = 4.0,
-                mode = "STANDARD",
-                refs = {
-                    "playerLight1Orange",
-                    "playerLight2Orange",
-                    "playerLight3Orange",
-                    "playerLight1Pink",
-                    "playerLight2Pink",
-                    "playerLight3Pink",
-                }
-            },
-            {
-                delay = 2.0,
-                duration = 3.0,
-                mode = "STANDARD",
-                refs = {
-                    "playerLight1Brown",
-                    "playerLight2Brown",
-                    "playerLight3Brown",
-                    "playerLight1Purple",
-                    "playerLight2Purple",
-                    "playerLight3Purple",
-                }
-            },
-            {
-                delay = 2.0,
-                duration = 3.0,
-                mode = "STANDARD",
-                refs = {
-                    "npcLight2NPC1"
-                }
-            },
-            {
-                delay = 2.5,
-                duration = 2.5,
-                mode = "STANDARD",
-                refs = {
-                    "npcLight2NPC2"
-                }
-            },
-            {
-                delay = 3.0,
-                duration = 2.0,
-                mode = "STANDARD",
-                refs = {
-                    "npcLight2NPC3",
-                    "npcLight2NPC4"
-                }
-            },
-            {
-                delay = 4.0,
-                duration = 5.0,
-                mode = "STANDARD",
-                refs = {
-                    "mainLightLeft",
-                    "mainLightRight",
-                }
-            }
-        },
-        description = "Admin bright mode - 25% ambient and staggered lighting"
+        ambient = C.LightModes.AdminBright,
+        lights = {},
+        description = "Admin bright mode - bright ambient and standard spotlights"
     },
 
     -- Elysium: Formal gathering place, elegant and refined
@@ -388,20 +193,17 @@ Scenes.SCENES = {
 -- HELPER FUNCTIONS
 -- ============================================================================
 
---- Applies ambient lighting settings to TTS global lighting
--- Uses U.changeLighting utility function to set ambient lighting properties
--- @param ambientSettings table Table containing ambient lighting properties
+--- Applies ambient lighting settings to TTS global lighting (and optional `spotlights` on `C.LightModes` rows).
+--- @param ambientSettings table Table containing ambient lighting properties
 -- @param transitionTime number Optional. Duration for smooth transition (0 = instant)
 local function applyAmbientLighting(ambientSettings, transitionTime)
     if ambientSettings == nil then return end
 
     transitionTime = transitionTime or 0
 
-    -- Use U.changeLighting utility function which handles Lighting API correctly
-    -- It sets properties directly (e.g., Lighting.ambient_intensity = val) and calls Lighting.apply()
-    -- For now, we apply instantly regardless of transitionTime
-    -- TODO: Implement smooth transitions using U.Lerp if needed in the future
-    U.changeLighting(ambientSettings)
+    -- `C.LightModes` rows may include `spotlights` (registered refs → partial mode tables); those apply here too.
+    -- Global Lighting fields still use `U.changeLighting` inside `U.applyLightingPreset`.
+    U.applyLightingPreset(ambientSettings, { spotlightTransitionTime = transitionTime })
 end
 
 --- Coroutine for smooth ambient lighting transitions (Global context only)
@@ -469,177 +271,6 @@ local function applySceneLights(lights, transitionTime)
     end
 end
 
---- Returns stage refs normalized to an array of light references.
---- Supports:
---- - stage.refs = "__all_registered__"
---- - stage.refs = "lightName"
---- - stage.refs = { "lightA", "lightB" }
---- - Alternate keys: stage.name / stage.lightRef (treated like refs)
---- @param stage table
---- @return table
-local function getStageRefs(stage)
-    if stage == nil or type(stage) ~= "table" then
-        return {}
-    end
-
-    local refs = stage.refs or stage.lightRef or stage.name
-    if refs == "__all_registered__" then
-        return U.getKeys(L.LIGHTMODES or {})
-    end
-    if type(refs) == "string" then
-        return { refs }
-    end
-    if type(refs) == "table" then
-        return refs
-    end
-    return {}
-end
-
---- Resolve a requested mode string against a registered light's available keys.
---- Falls back to case variants for convenience (OFF/off, STANDARD/standard).
---- @param lightRef string
---- @param requestedMode string
---- @return string|nil
-local function resolveModeForRegisteredLight(lightRef, requestedMode)
-    if type(lightRef) ~= "string" or type(requestedMode) ~= "string" then
-        return nil
-    end
-
-    local lData = L.LIGHTMODES and L.LIGHTMODES[lightRef]
-    if type(lData) ~= "table" then
-        return requestedMode
-    end
-
-    if requestedMode == "default" and type(lData.default) == "string" and lData[lData.default] ~= nil then
-        return lData.default
-    end
-
-    if lData[requestedMode] ~= nil then
-        return requestedMode
-    end
-
-    local lower = string.lower(requestedMode)
-    if lData[lower] ~= nil then
-        return lower
-    end
-
-    local upper = string.upper(requestedMode)
-    if lData[upper] ~= nil then
-        return upper
-    end
-
-    return nil
-end
-
---- Returns true when the persisted light state already matches the target mode string.
---- For non-string modes we conservatively return false (apply).
---- @param lightRef string
---- @param mode any
---- @return boolean
-local function lightAlreadyAtTargetMode(lightRef, mode)
-    if type(lightRef) ~= "string" or type(mode) ~= "string" then
-        return false
-    end
-    local current = S.getStateVal("lights", lightRef)
-    return type(current) == "string" and current == mode
-end
-
---- @param lightRef string
---- @return boolean
-local function isSeatLightRef(lightRef)
-    if type(lightRef) ~= "string" then
-        return false
-    end
-
-    if U.lightRefIsPlayerSeat(lightRef) then
-        for _, seatColor in ipairs(C.PlayerColors or {}) do
-            if string.sub(lightRef, -#seatColor) == seatColor then
-                return true
-            end
-        end
-    end
-
-    if string.sub(lightRef, 1, 8) == "npcLight" then
-        for _, seatKey in ipairs(C.NPCSeats or {}) do
-            if string.sub(lightRef, -#seatKey) == seatKey then
-                return true
-            end
-        end
-    end
-
-    return false
-end
-
---- Applies staged light transitions with defaults and idempotent skip behavior.
---- Reconciler-only helper: do not call from mutation/event handlers.
---- Stage schema (all optional, with defaults):
---- - refs/lightRef/name: light ref(s)
---- - mode: target mode key (default "default")
---- - player: player context (default nil)
---- - delay: start delay seconds (default 0)
---- - duration: transition seconds (default transitionTime/default)
---- @param stages table
---- @param transitionTime number
---- @param allowDelays boolean
-local function applySceneLightStages(stages, transitionTime, allowDelays)
-    if stages == nil or type(stages) ~= "table" or #stages == 0 then
-        return
-    end
-
-    local fallbackDuration = transitionTime or DefaultTransitionTime
-    if fallbackDuration == nil then
-        fallbackDuration = DefaultTransitionTime
-    end
-
-    for _, stage in ipairs(stages) do
-        if type(stage) == "table" then
-            local stageDelay = tonumber(stage.delay) or 0
-            if not allowDelays then
-                stageDelay = 0
-            end
-
-            local requestedMode = stage.mode
-            if requestedMode == nil then
-                requestedMode = "default"
-            end
-            local stagePlayer = stage.player
-            local stageDuration = tonumber(stage.duration)
-            if stageDuration == nil then
-                stageDuration = fallbackDuration
-            end
-
-            local refsToApply = {}
-            for _, lightRef in ipairs(getStageRefs(stage)) do
-                if type(lightRef) == "string" and lightRef ~= "" then
-                    -- Seat lights (PC + seated NPC) are state-driven by the lighting reconciler.
-                    -- Scene stages should only author static/environment lights.
-                    if not isSeatLightRef(lightRef) then
-                        local resolvedMode = requestedMode
-                        if type(requestedMode) == "string" then
-                            resolvedMode = resolveModeForRegisteredLight(lightRef, requestedMode)
-                        end
-
-                        if resolvedMode ~= nil and not lightAlreadyAtTargetMode(lightRef, resolvedMode) then
-                            table.insert(refsToApply, {
-                                ref = lightRef,
-                                mode = resolvedMode,
-                            })
-                        end
-                    end
-                end
-            end
-
-            if #refsToApply > 0 then
-                U.delay(function()
-                    for _, applyRef in ipairs(refsToApply) do
-                        L.SetLightMode(applyRef.ref, applyRef.mode, stagePlayer, stageDuration)
-                    end
-                end, stageDelay)
-            end
-        end
-    end
-end
-
 --- Plays background music track (if configured)
 -- Uses TTS MusicPlayer API to play a specific track
 -- Note: TTS uses 0-based indexing for tracks (0 = first track, 9 = 10th track)
@@ -663,76 +294,48 @@ local function playSceneMusic(trackIndex)
     end
 end
 
---- @param sceneName string
---- @return boolean
-local function sceneNeedsNpcLightRestore(sceneName)
-    return sceneName == "standard" or sceneName == "bright"
-end
-
---- @param scene table
---- @param transitionTime number
---- @param allowDelays boolean
---- @return number
-local function getNpcRestoreDelay(scene, transitionTime, allowDelays)
-    local maxDelay = 0
-    local fallbackDuration = transitionTime or DefaultTransitionTime
-    if type(scene) ~= "table" or type(scene.lightStages) ~= "table" then
-        return maxDelay
-    end
-    for _, stage in ipairs(scene.lightStages) do
-        if type(stage) == "table" then
-            local stageDelay = allowDelays and (tonumber(stage.delay) or 0) or 0
-            local stageDuration = tonumber(stage.duration)
-            if stageDuration == nil then
-                stageDuration = fallbackDuration
-            end
-            local stageEnd = stageDelay + stageDuration
-            if stageEnd > maxDelay then
-                maxDelay = stageEnd
-            end
+--- Resolves ambient preset for reconciliation: `sessionScene.lightingPresetKey` → `C.LightModes`, then legacy `Scenes.SCENES`.
+--- @return table preset, string key, string source
+function Scenes.resolveLightingPresetFromState()
+    local key = S.getStateVal("sessionScene", "lightingPresetKey")
+    if type(key) == "string" then
+        key = string.gsub(string.gsub(key, "^%s+", ""), "%s+$", "")
+        if key ~= "" and C.isValidLightModeKey(key) then
+            return C.LightModes[key], key, "lightingPresetKey"
+        end
+        if key ~= "" then
+            print("[Scenes] Unknown sessionScene.lightingPresetKey: " .. key)
         end
     end
-    return maxDelay
+
+    local sceneName = Scenes.getCurrentScene()
+    if type(sceneName) == "string" and Scenes.SCENES[sceneName] ~= nil and Scenes.SCENES[sceneName].ambient ~= nil then
+        return Scenes.SCENES[sceneName].ambient, sceneName, "currentScene"
+    end
+
+    return C.LightModes.STANDARD, "STANDARD", "default"
 end
 
---- Shared scene reconciliation used by Sync/restore paths.
---- This is the reconciler-owned scene world writer.
+--- Applies legacy mood-scene extras (per-light list, music, soundscape) without duplicating ambient from `C.LightModes`.
 --- @param sceneName string
 --- @param transitionTime number
---- @param allowDelays boolean
 --- @return boolean
-local function applySceneByName(sceneName, transitionTime, allowDelays)
+local function applyLegacySceneExtras(sceneName, transitionTime)
     local scene = Scenes.SCENES[sceneName]
     if scene == nil then
-        U.AlertGM("Scenes: Scene not found: " .. tostring(sceneName))
-        print("Scenes: Available scenes: " .. table.concat(U.getKeys(Scenes.SCENES), ", "))
         return false
     end
 
-    local effectiveTransition = transitionTime
-    if effectiveTransition == nil then
-        effectiveTransition = DefaultTransitionTime
-    end
+    local effectiveTransition = transitionTime or DefaultTransitionTime
 
-    -- Apply ambient lighting first.
-    if scene.ambient then
-        applyAmbientLighting(scene.ambient, effectiveTransition)
-    end
-
-    -- New staged system (preferred when present).
-    if scene.lightStages ~= nil and type(scene.lightStages) == "table" and #scene.lightStages > 0 then
-        applySceneLightStages(scene.lightStages, effectiveTransition, allowDelays == true)
-    -- Or apply a flat per-light list when no stages are defined.
-    elseif scene.lights then
+    if scene.lights ~= nil and type(scene.lights) == "table" and #scene.lights > 0 then
         applySceneLights(scene.lights, effectiveTransition)
     end
 
-    -- Music remains immediate.
     if scene.musicTrack ~= nil then
         playSceneMusic(scene.musicTrack)
     end
 
-    -- Soundscape is independent from scenes, but scenes may provide defaults when useful.
     if scene.musicMood ~= nil or scene.soundscapeContext ~= nil then
         local context = {}
         if type(scene.soundscapeContext) == "table" then
@@ -743,13 +346,6 @@ local function applySceneByName(sceneName, transitionTime, allowDelays)
         end
         Soundscape.applyContext(context)
         Soundscape.markReconciledToCurrentState()
-    end
-
-    if sceneNeedsNpcLightRestore(sceneName) then
-        local restoreDelay = getNpcRestoreDelay(scene, effectiveTransition, allowDelays == true)
-        U.delay(function()
-            NPCS.reapplyAllCurrentLightModes(0)
-        end, restoreDelay + 0.05)
     end
 
     return true
@@ -815,6 +411,48 @@ end
 --- Clears incremental scene reconcile memory so the next `reconcileFromState` always applies (e.g. world drift).
 function Scenes.invalidateReconcileCache()
     lastSceneReconcileFingerprint = nil
+    lastTopFogReconcileFingerprint = nil
+end
+
+--- Reconciles top fog emitter from `sessionScene.isTopFogActive` (TTS object state 2 = on, 1 = off).
+--- @param opts table|nil `{ force = boolean }`
+--- @return boolean
+function Scenes.reconcileTopFogFromState(opts)
+    opts = type(opts) == "table" and opts or {}
+    local force = opts.force == true
+
+    local sessionScene = S.getStateVal("sessionScene")
+    if type(sessionScene) ~= "table" then
+        return true
+    end
+    local fogVal = sessionScene.isTopFogActive
+    if fogVal == nil then
+        return true
+    end
+
+    local active = fogVal == true
+    local fp = active and "1" or "0"
+    if not force and lastTopFogReconcileFingerprint == fp then
+        return true
+    end
+
+    local guid = G.GUIDS and G.GUIDS.TOP_FOG
+    if type(guid) ~= "string" or guid == "" then
+        print("[Scenes] reconcileTopFogFromState: TOP_FOG GUID missing from lib.guids.")
+        return false
+    end
+    local obj = U.getObject(guid, true)
+    if obj == nil then
+        print("[Scenes] reconcileTopFogFromState: no object for TOP_FOG guid " .. guid)
+        return false
+    end
+    if type(obj.setState) ~= "function" then
+        print("[Scenes] reconcileTopFogFromState: TOP_FOG object has no setState.")
+        return false
+    end
+    obj.setState(active and 2 or 1)
+    lastTopFogReconcileFingerprint = fp
+    return true
 end
 
 --- Reconciles live scene effects from persisted scene state.
@@ -838,7 +476,12 @@ function Scenes.reconcileFromState(opts)
         allowDelays = transition.allowDelays == true
     end
 
-    local desiredFingerprint = tostring(sceneName)
+    local preset, presetKey, presetSource = Scenes.resolveLightingPresetFromState()
+    local desiredFingerprint = tostring(presetKey)
+        .. "\t"
+        .. tostring(presetSource)
+        .. "\t"
+        .. tostring(sceneName)
         .. "\t"
         .. tostring(transitionTime)
         .. "\t"
@@ -848,11 +491,17 @@ function Scenes.reconcileFromState(opts)
         return true
     end
 
-    local ok = applySceneByName(sceneName, transitionTime, allowDelays)
-    if ok then
-        lastSceneReconcileFingerprint = desiredFingerprint
+    if preset ~= nil then
+        applyAmbientLighting(preset, transitionTime)
     end
-    return ok
+
+    -- Legacy per-light list / music / soundscape only when ambient was resolved from `Scenes.SCENES` (not `C.LightModes` alone).
+    if presetSource == "currentScene" and type(sceneName) == "string" and Scenes.SCENES[sceneName] ~= nil then
+        applyLegacySceneExtras(sceneName, transitionTime)
+    end
+
+    lastSceneReconcileFingerprint = desiredFingerprint
+    return true
 end
 
 --- Gets the current scene name from game state

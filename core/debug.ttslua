@@ -1693,7 +1693,7 @@ function DEBUG.initLightingAndSignals()
 
     -- Set ambient lighting to DARK mode (instant)
     if C.LightModes.DARK then
-        U.changeLighting(C.LightModes.DARK)
+        U.applyLightingPreset(C.LightModes.DARK, { spotlightTransitionTime = 0 })
         print("✅ Ambient lighting set to DARK mode")
     else
         print("⚠️  DARK mode not found in C.LightModes")

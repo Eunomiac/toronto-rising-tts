@@ -100,7 +100,7 @@ Typical layout (paths relative to the **folder** you opened in Cursor / VS Code,
             └── seat_layout_frame_refs.lua   -- from rotational layout export, if you use that path
 ```
 
-(The **`.dev/.debug/`** tree is gitignored.)
+(The **`.dev/.debug/`** tree is gitignored — runtime bridge output only. Source test harnesses live under **`.dev/testbed/`**.)
 
 ## File Format
 

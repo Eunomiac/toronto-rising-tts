@@ -171,7 +171,7 @@ test("soundscape debug helpers expose expanded lane controls", () => {
 });
 
 test("soundscape test bed exposes a site-change simulation helper", () => {
-  const source = readRepoFile(".dev/.debug/TEST BED.ttslua");
+  const source = readRepoFile(".dev/testbed/TEST BED.ttslua");
 
   [
     "local function SoundscapeSiteTest(site)",
@@ -179,7 +179,7 @@ test("soundscape test bed exposes a site-change simulation helper", () => {
     "siteData.soundscape.backgroundMusic",
     "siteData.soundscape.location",
     "Soundscape.applyContext(context)",
-    "-- SoundscapeSiteTest(\"CasaLoma\")",
+    "-- SoundscapeSiteTest(\"CLVestibule\")",
     "local SOUNDSCAPE_TEST_MOOD = \"intrigue\"",
     "local SOUNDSCAPE_TEST_LOCATION = \"softIndoor\"",
     "local SOUNDSCAPE_TEST_LOCATION_MUSIC = \"casaLoma\"",
@@ -218,7 +218,7 @@ test("soundscape Lua files parse as Lua 5.1", () => {
     "core/debug.ttslua",
     "core/soundscape_debug_panel.ttslua",
     "core/storyteller_panel_ui.ttslua",
-    ".dev/.debug/TEST BED.ttslua",
+    ".dev/testbed/TEST BED.ttslua",
   ].forEach((relativePath) => {
     assert.doesNotThrow(() => {
       luaparse.parse(readRepoFile(relativePath), { luaVersion: "5.1" });

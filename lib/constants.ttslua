@@ -28,46 +28,46 @@ C.PlayerIDs = {
 -- Keyed by player ID (steam_id). Storyteller uses C.StorytellerID. Other players are added by the GM when they set up character details (after a player joins and selects a seat).
 -- When a new player selects a seat, their steam_id is extracted and a minimal dynamic entry is created in gameState.playerData. The GM is notified to add full character data here.
 C.PlayerData = {
-    [C.StorytellerID] = {
-      color = "Black",
-      playerName = "Storyteller",
-      charName = "Storyteller"
-    },
-    [C.PlayerIDs.Thaumaterge] = {
-      color = "Brown",
-      playerName = "Thaumaterge",
-      charKey = "fomorach",
-      charName = "Fomórach"
-    },
-    [C.PlayerIDs.Hastur] = {
-      color = "Orange",
-      playerName = "Hastur",
-      charKey = "rashid",
-      charName = "Rashid Abdulrahman"
-    },
-    [C.PlayerIDs.PixelPuzzler] = {
-      color = "Red",
-      playerName = "PixelPuzzler",
-      charKey = "lucien",
-      charName = "Lord Lucien"
-    },
-    [C.PlayerIDs.JRook] = {
-      color = "Pink",
-      playerName = "JRook",
-      charKey = "aishe",
-      charName = "Aishe Tache"
-    },
-    [C.PlayerIDs.Roarshack] = {
-      color = "Purple",
-      playerName = "Roarshack",
-      charKey = "blackCaesar",
-      charName = "Black Caesar"
-    }
+  [C.StorytellerID] = {
+    color = "Black",
+    playerName = "Storyteller",
+    charName = "Storyteller"
+  },
+  [C.PlayerIDs.Thaumaterge] = {
+    color = "Brown",
+    playerName = "Thaumaterge",
+    charKey = "fomorach",
+    charName = "Fomórach"
+  },
+  [C.PlayerIDs.Hastur] = {
+    color = "Orange",
+    playerName = "Hastur",
+    charKey = "rashid",
+    charName = "Rashid Abdulrahman"
+  },
+  [C.PlayerIDs.PixelPuzzler] = {
+    color = "Red",
+    playerName = "PixelPuzzler",
+    charKey = "lucien",
+    charName = "Lord Lucien"
+  },
+  [C.PlayerIDs.JRook] = {
+    color = "Pink",
+    playerName = "JRook",
+    charKey = "aishe",
+    charName = "Aishe Tache"
+  },
+  [C.PlayerIDs.Roarshack] = {
+    color = "Purple",
+    playerName = "Roarshack",
+    charKey = "blackCaesar",
+    charName = "Black Caesar"
+  }
 }
 
 -- Player Colors (PC seats). Storyteller may sit any TTS color; use C.GetPlayerColor for their live seat.
 C.PlayerColors = {
-    "Brown", "Orange", "Red", "Pink", "Purple"
+  "Brown", "Orange", "Red", "Pink", "Purple"
 }
 
 --- Resolve playerRef to a storage / Steam ID string (Storyteller normalized to C.StorytellerID).
@@ -119,8 +119,8 @@ C.GetPlayerID = function(playerRef)
     if type(playerData) == "table" then
       local col, nm, ck = playerData.color, playerData.playerName, playerData.charKey
       if (type(col) == "string" and string.lower(col) == lr)
-        or (type(nm) == "string" and string.lower(nm) == lr)
-        or (type(ck) == "string" and string.lower(ck) == lr) then
+          or (type(nm) == "string" and string.lower(nm) == lr)
+          or (type(ck) == "string" and string.lower(ck) == lr) then
         return playerID
       end
     end
@@ -176,8 +176,8 @@ C.GetPlayerIDOrNil = function(playerRef)
     if type(playerData) == "table" then
       local col, nm, ck = playerData.color, playerData.playerName, playerData.charKey
       if (type(col) == "string" and string.lower(col) == lr)
-        or (type(nm) == "string" and string.lower(nm) == lr)
-        or (type(ck) == "string" and string.lower(ck) == lr) then
+          or (type(nm) == "string" and string.lower(nm) == lr)
+          or (type(ck) == "string" and string.lower(ck) == lr) then
         return playerID
       end
     end
@@ -234,83 +234,83 @@ end
 -- NPC Seats
 -- The up-to-four table slots for NPCs, identified by the tags NPC1, NPC2, NPC3, NPC4
 C.NPCSeats = {
-    "NPC1", "NPC2", "NPC3", "NPC4"
+  "NPC1", "NPC2", "NPC3", "NPC4"
 }
 
 -- Game Phases (VTM5E / Toronto Rising)
 -- Stored in state as currentPhase; validated via U.isIn(phase, C.Phases).
 -- Player HUD: "main" = majority of gameplay (Humanity stain/heal); "end" = end-of-session (e.g. Remorse).
 C.Phases = {
-    SESSION_START = "SessionStart",
-    PLAY = "Play",
-    DOWNTIME = "Downtime",
-    MEMORIAM = "Memoriam",
-    SESSION_END = "SessionEnd"
+  SESSION_START = "SessionStart",
+  PLAY = "Play",
+  DOWNTIME = "Downtime",
+  MEMORIAM = "Memoriam",
+  SESSION_END = "SessionEnd"
 }
 
 -- PC name/color/keys: C.PlayerData + charKey; full stat blocks: lib/pcs_data.ttslua (from lib/json/PCS.json).
 C.CHRONICLE_DATA = {
-	disciplines = {
-		animalism = {
-			name = "Animalism"
-		},
-		auspex = {
-			name = "Auspex"
-		},
-		bloodSorcery = {
-			name = "Blood Sorcery"
-		},
-		celerity = {
-			name = "Celerity"
-		},
-		dominate = {
-			name = "Dominate"
-		},
-		fortitude = {
-			name = "Fortitude"
-		},
-		obfuscate = {
-			name = "Obfuscate"
-		},
-		oblivion = {
-			name = "Oblivion"
-		},
-		potence = {
-			name = "Potence"
-		},
-		presence = {
-			name = "Presence"
-		},
-		protean = {
-			name = "Protean"
-		}
-	},
-	coteries = {
-		autarkis = {
-			name = "Autarkis",
+  disciplines = {
+    animalism = {
+      name = "Animalism"
+    },
+    auspex = {
+      name = "Auspex"
+    },
+    bloodSorcery = {
+      name = "Blood Sorcery"
+    },
+    celerity = {
+      name = "Celerity"
+    },
+    dominate = {
+      name = "Dominate"
+    },
+    fortitude = {
+      name = "Fortitude"
+    },
+    obfuscate = {
+      name = "Obfuscate"
+    },
+    oblivion = {
+      name = "Oblivion"
+    },
+    potence = {
+      name = "Potence"
+    },
+    presence = {
+      name = "Presence"
+    },
+    protean = {
+      name = "Protean"
+    }
+  },
+  coteries = {
+    autarkis = {
+      name = "Autarkis",
       affiliation = "Independent",
-			inCoterieRef = false
-		},
-		beesHive = {
-			name = "Bee's Hive",
+      inCoterieRef = false
+    },
+    beesHive = {
+      name = "Bee's Hive",
       affiliation = "Camarilla",
-			inCoterieRef = true
-		},
-		colorBlitz = {
-			name = "Color Blitz",
+      inCoterieRef = true
+    },
+    colorBlitz = {
+      name = "Color Blitz",
       affiliation = "Anarch",
-			inCoterieRef = false
-		},
+      inCoterieRef = false
+    },
     deepSix = {
       name = "Deep Six",
       affiliation = "Sabbat",
       inCoterieRef = false
     },
-		fiveKeys = {
-			name = "the Five Keys",
+    fiveKeys = {
+      name = "the Five Keys",
       affiliation = "Camarilla",
-			inCoterieRef = true
-		},
+      inCoterieRef = true
+    },
     freeChantry = {
       name = "the Free Chantry",
       affiliation = "Camarilla",
@@ -326,96 +326,97 @@ C.CHRONICLE_DATA = {
       affiliation = "Anarch",
       inCoterieRef = true
     },
-		harpies = {
-			name = "the Harpies",
+    harpies = {
+      name = "the Harpies",
       affiliation = "Camarilla",
-			inCoterieRef = true
-		},
-		houseRustovich = {
-			name = "the House of Rustovich",
+      inCoterieRef = true
+    },
+    houseRustovich = {
+      name = "the House of Rustovich",
       affiliation = "Anarch",
-			inCoterieRef = false
-		},
-		ironGuard = {
-			name = "the Iron Guard",
+      inCoterieRef = false
+    },
+    ironGuard = {
+      name = "the Iron Guard",
       affiliation = "Camarilla",
-			inCoterieRef = true
-		},
-		jarvisJacks = {
-			name = "the Jarvis Jacks",
+      inCoterieRef = true
+    },
+    jarvisJacks = {
+      name = "the Jarvis Jacks",
       affiliation = "Anarch",
-			inCoterieRef = false
-		},
-		theLine = {
-			name = "the Line",
+      inCoterieRef = false
+    },
+    theLine = {
+      name = "the Line",
       affiliation = "Anarch",
-			inCoterieRef = true
-		},
-		menInBlack = {
-			name = "the Men-In-Black",
+      inCoterieRef = true
+    },
+    menInBlack = {
+      name = "the Men-In-Black",
       affiliation = "Anarch",
-			inCoterieRef = false
-		},
-		midnightMass = {
-			name = "the Midnight Mass at St. Michael's",
+      inCoterieRef = false
+    },
+    midnightMass = {
+      name = "the Midnight Mass at St. Michael's",
       affiliation = "Camarilla",
-			inCoterieRef = true
-		},
-		moonClub = {
-			name = "the Moon Club",
+      inCoterieRef = true
+    },
+    moonClub = {
+      name = "the Moon Club",
       affiliation = "Camarilla",
-			inCoterieRef = true
-		},
-		nightwolves = {
-			name = "the Nightwolves",
+      inCoterieRef = true
+    },
+    nightwolves = {
+      name = "the Nightwolves",
       affiliation = "Anarch",
-			inCoterieRef = false
-		},
-		openSanctum = {
-			name = "Open Sanctum",
+      inCoterieRef = false
+    },
+    openSanctum = {
+      name = "Open Sanctum",
       affiliation = "Anarch",
-			inCoterieRef = false
-		},
-		petitioners = {
-			name = "Petitioners",
+      inCoterieRef = false
+    },
+    petitioners = {
+      name = "Petitioners",
       affiliation = "Independent",
-			inCoterieRef = false
-		},
-		princesCourt = {
-			name = "the Prince's Court",
+      inCoterieRef = false
+    },
+    princesCourt = {
+      name = "the Prince's Court",
       affiliation = "Camarilla",
-			inCoterieRef = false
-		},
-		redeemers = {
-			name = "the Redeemers",
+      inCoterieRef = false
+    },
+    redeemers = {
+      name = "the Redeemers",
       affiliation = "Anarch",
-			inCoterieRef = true
-		},
-		redFlag = {
-			name = "Red Flag",
+      inCoterieRef = true
+    },
+    redFlag = {
+      name = "Red Flag",
       affiliation = "Anarch",
-			inCoterieRef = true
-		},
-		regencyUniversityChantry = {
-			name = "the Regency of the University Chantry",
+      inCoterieRef = true
+    },
+    regencyUniversityChantry = {
+      name = "the Regency of the University Chantry",
       affiliation = "Camarilla",
-			inCoterieRef = true
-		},
-		scarlettAndTheBoys = {
-			name = "Scarlett & the Boys",
+      inCoterieRef = true
+    },
+    scarlettAndTheBoys = {
+      name = "Scarlett & the Boys",
       affiliation = "Camarilla",
-			  inCoterieRef = true
-		},
-		wychwoodHecata = {
-			name = "the Wychwood Hecata",
+      inCoterieRef = true
+    },
+    wychwoodHecata = {
+      name = "the Wychwood Hecata",
       affiliation = "Independent",
-			inCoterieRef = true
-		}
-	}
+      inCoterieRef = true
+    }
+  }
 }
-    -- VTM5E clans list
+-- VTM5E clans list
 C.Clans = {
-    "Banu Haqim", "Brujah", "Caitif", "Cappadocian", "Gangrel", "Giovanni", "Lasombra", "Malkavian", "Ministry", "Nosferatu", "Ravnos", "Salubri", "Thin-Blood", "Toreador", "Tremere", "Tzimisce", "Ventrue"
+  "Banu Haqim", "Brujah", "Caitif", "Cappadocian", "Gangrel", "Giovanni", "Lasombra", "Malkavian", "Ministry",
+  "Nosferatu", "Ravnos", "Salubri", "Thin-Blood", "Toreador", "Tremere", "Tzimisce", "Ventrue"
 }
 
 -- Blood Potency Derived Stats
@@ -557,10 +558,6 @@ C.LockedObjects = {
   G.GUIDS.SEAT_FIGURE_PINK,
   G.GUIDS.SEAT_FIGURE_PURPLE,
   G.GUIDS.SEAT_FIGURE_RED,
-  G.GUIDS.SEAT_FIGURE_NPC1,
-  G.GUIDS.SEAT_FIGURE_NPC2,
-  G.GUIDS.SEAT_FIGURE_NPC3,
-  G.GUIDS.SEAT_FIGURE_NPC4,
   G.GUIDS.HUNGER_SMOKE_BROWN,
   G.GUIDS.HUNGER_SMOKE_ORANGE,
   G.GUIDS.HUNGER_SMOKE_RED,
@@ -576,21 +573,21 @@ C.LockedObjects = {
 
 -- C.HiddenObjects is a table of all objects that should be `setInvisibleTo`, and the values contain the colors to hide the object from. Objects are presented as GUIDs.
 C.HiddenObjects = {
-  [G.GUIDS.GM_TABLE] = {"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey"},
-  [G.GUIDS.GM_LIGHT] = {"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey"},
-  [G.GUIDS.SEAT_CHAIR_RED] = {"Red"},
-  [G.GUIDS.SEAT_CHAIR_ORANGE] = {"Orange"},
-  [G.GUIDS.SEAT_CHAIR_PINK] = {"Pink"},
-  [G.GUIDS.SEAT_CHAIR_PURPLE] = {"Purple"},
-  [G.GUIDS.SEAT_CHAIR_BROWN] = {"Brown"},
-  [G.GUIDS.SEAT_FIGURE_BROWN] = {"Brown"},
-  [G.GUIDS.SEAT_FIGURE_ORANGE] = {"Orange"},
-  [G.GUIDS.SEAT_FIGURE_PINK] = {"Pink"},
-  [G.GUIDS.SEAT_FIGURE_PURPLE] = {"Purple"},
-  [G.GUIDS.SEAT_FIGURE_RED] = {"Red"},
-  [G.GUIDS.PRINCE_SIGNET_BORDER_RED] = {"Red"},
-  [G.GUIDS.PRINCE_SIGNET_RED] = {"Red"},
-  [G.GUIDS.PRINCE_CURTAIN_RED] = {"Red"}
+  [G.GUIDS.GM_TABLE] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.GM_LIGHT] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.SEAT_CHAIR_RED] = { "Red" },
+  [G.GUIDS.SEAT_CHAIR_ORANGE] = { "Orange" },
+  [G.GUIDS.SEAT_CHAIR_PINK] = { "Pink" },
+  [G.GUIDS.SEAT_CHAIR_PURPLE] = { "Purple" },
+  [G.GUIDS.SEAT_CHAIR_BROWN] = { "Brown" },
+  [G.GUIDS.SEAT_FIGURE_BROWN] = { "Brown" },
+  [G.GUIDS.SEAT_FIGURE_ORANGE] = { "Orange" },
+  [G.GUIDS.SEAT_FIGURE_PINK] = { "Pink" },
+  [G.GUIDS.SEAT_FIGURE_PURPLE] = { "Purple" },
+  [G.GUIDS.SEAT_FIGURE_RED] = { "Red" },
+  [G.GUIDS.PRINCE_SIGNET_BORDER_RED] = { "Red" },
+  [G.GUIDS.PRINCE_SIGNET_RED] = { "Red" },
+  [G.GUIDS.PRINCE_CURTAIN_RED] = { "Red" }
 }
 -- #endregion
 
@@ -603,7 +600,7 @@ C.DICE_CRITICAL_SUCCESS_VALUE = 10
 -- Hunger Constants (VTM5E)
 -- Note: Willpower and Health do not have default values under V5 rules
 -- They are character-specific and stored in C.PlayerData
-C.MAX_HUNGER = 5  -- Maximum hunger value (0-5 scale)
+C.MAX_HUNGER = 5 -- Maximum hunger value (0-5 scale)
 
 -- ============================================================================
 -- DICE SYSTEM ENUMERATIONS
@@ -618,16 +615,16 @@ C.MAX_HUNGER = 5  -- Maximum hunger value (0-5 scale)
 -- WILLPOWER_ROLL / HUMANITY_ROLL / FRENZY: Normal pool, no Hunger dice.
 -- LAUNCH / GOAL: Related to launching and rushing Projects. No Willpower, and no criticals on Goal rolls.
 C.RollType = {
-    STANDARD        = "standard",
-    SIMPLE_CHECK    = "simpleCheck",
-    ROUSE           = "rouse",
-    ROUSE_OBLIVION  = "rouseOblivion",
-    REMORSE         = "remorse",
-    WILLPOWER_ROLL  = "willpowerRoll",
-    HUMANITY_ROLL   = "humanityRoll",
-    FRENZY          = "frenzy",
-    LAUNCH          = "launch",
-    GOAL            = "goal"
+  STANDARD       = "standard",
+  SIMPLE_CHECK   = "simpleCheck",
+  ROUSE          = "rouse",
+  ROUSE_OBLIVION = "rouseOblivion",
+  REMORSE        = "remorse",
+  WILLPOWER_ROLL = "willpowerRoll",
+  HUMANITY_ROLL  = "humanityRoll",
+  FRENZY         = "frenzy",
+  LAUNCH         = "launch",
+  GOAL           = "goal"
 }
 
 --- Roll phases. Each roll progresses through these states in order.
@@ -637,104 +634,104 @@ C.RollType = {
 -- POST_ROLL: All dice settled; Willpower reroll available; awaiting player confirmation.
 -- RESOLVED:  Final result calculated and broadcast; roll will be cleared from state.
 C.RollPhase = {
-    SETUP       = "setup",
-    PRE_ROLL    = "preRoll",
-    ROLLING     = "rolling",
-    POST_ROLL   = "postRoll",
-    RESOLVED    = "resolved",
+  SETUP     = "setup",
+  PRE_ROLL  = "preRoll",
+  ROLLING   = "rolling",
+  POST_ROLL = "postRoll",
+  RESOLVED  = "resolved",
 }
 
 --- Baton holder: who must act to advance the current roll.
 C.BatonHolder = {
-    PLAYER      = "player",
-    STORYTELLER = "storyteller",
-    AUTO        = "auto",  -- System advances automatically; no human input required
+  PLAYER      = "player",
+  STORYTELLER = "storyteller",
+  AUTO        = "auto",   -- System advances automatically; no human input required
 }
 
 --- Result classification for a completed roll (seven classes per VTM5E).
 -- See Dice System Outline §1.3 for the full classification algorithm.
 C.ResultClass = {
-    MESSY_CRITICAL          = "messyCritical",
-    CRITICAL_WIN            = "criticalWin",
-    WIN                     = "win",
-    FAILURE                 = "failure",
-    BESTIAL_FAILURE         = "bestialFailure",
-    TOTAL_FAILURE           = "totalFailure",
-    TOTAL_BESTIAL_FAILURE   = "totalBestialFailure",
+  MESSY_CRITICAL        = "messyCritical",
+  CRITICAL_WIN          = "criticalWin",
+  WIN                   = "win",
+  FAILURE               = "failure",
+  BESTIAL_FAILURE       = "bestialFailure",
+  TOTAL_FAILURE         = "totalFailure",
+  TOTAL_BESTIAL_FAILURE = "totalBestialFailure",
 }
 
 --- Human-readable display labels for result classes (chat broadcast and UI panels).
 -- Note: Rouse and Remorse rolls override these with narrative labels at broadcast time.
 -- See RUI.narrativeLabel() in core/roll_ui.ttslua.
 C.ResultClassLabel = {
-    messyCritical           = "MESSY CRITICAL",
-    criticalWin             = "CRITICAL WIN",
-    win                     = "SUCCESS",
-    failure                 = "FAILURE",
-    bestialFailure          = "BESTIAL FAILURE",
-    totalFailure            = "TOTAL FAILURE",
-    totalBestialFailure     = "TOTAL BESTIAL FAILURE",
+  messyCritical       = "MESSY CRITICAL",
+  criticalWin         = "CRITICAL WIN",
+  win                 = "SUCCESS",
+  failure             = "FAILURE",
+  bestialFailure      = "BESTIAL FAILURE",
+  totalFailure        = "TOTAL FAILURE",
+  totalBestialFailure = "TOTAL BESTIAL FAILURE",
 }
 
 --- Human-readable display labels for roll types (UI panels and chat).
 C.RollTypeLabel = {
-    standard        = "Standard Roll",
-    simpleCheck     = "Simple Check",
-    rouse           = "Rouse Check",
-    rouseOblivion   = "Rouse Check (Oblivion)",
-    remorse         = "Remorse Roll",
-    willpowerRoll   = "Willpower Roll",
-    humanityRoll    = "Humanity Roll",
-    frenzy          = "Frenzy Roll",
-    launch          = "Launch Roll",
-    goal            = "Goal Roll"
+  standard      = "Standard Roll",
+  simpleCheck   = "Simple Check",
+  rouse         = "Rouse Check",
+  rouseOblivion = "Rouse Check (Oblivion)",
+  remorse       = "Remorse Roll",
+  willpowerRoll = "Willpower Roll",
+  humanityRoll  = "Humanity Roll",
+  frenzy        = "Frenzy Roll",
+  launch        = "Launch Roll",
+  goal          = "Goal Roll"
 }
 
 --- Roll types that do not substitute Hunger dice into the pool.
 -- Note: ROUSE and ROUSE_OBLIVION are intentionally NOT listed here —
 -- they use Hunger dice (pool = {normal=0, hunger=1}) by design.
 C.RollTypesWithoutHunger = {
-    [C.RollType.SIMPLE_CHECK]   = true,
-    [C.RollType.REMORSE]        = true,
-    [C.RollType.WILLPOWER_ROLL] = true,
-    [C.RollType.HUMANITY_ROLL]  = true,
-    [C.RollType.FRENZY]         = true,
+  [C.RollType.SIMPLE_CHECK]   = true,
+  [C.RollType.REMORSE]        = true,
+  [C.RollType.WILLPOWER_ROLL] = true,
+  [C.RollType.HUMANITY_ROLL]  = true,
+  [C.RollType.FRENZY]         = true,
 }
 
 --- Roll types for which "Take Half" is not offered as an option.
 -- Auto-set rolls (SIMPLE_CHECK, ROUSE, REMORSE) always resolve through the dice —
 -- there is no meaningful "take half" for a single-die or difficulty-1 roll.
 C.RollTypesNoTakeHalf = {
-    [C.RollType.SIMPLE_CHECK]   = true,
-    [C.RollType.ROUSE]          = true,
-    [C.RollType.ROUSE_OBLIVION] = true,
-    [C.RollType.REMORSE]        = true,
-    [C.RollType.FRENZY]         = true,
-    [C.RollType.HUMANITY_ROLL]  = true,
-    [C.RollType.LAUNCH]         = true,
-    [C.RollType.GOAL]           = true
+  [C.RollType.SIMPLE_CHECK]   = true,
+  [C.RollType.ROUSE]          = true,
+  [C.RollType.ROUSE_OBLIVION] = true,
+  [C.RollType.REMORSE]        = true,
+  [C.RollType.FRENZY]         = true,
+  [C.RollType.HUMANITY_ROLL]  = true,
+  [C.RollType.LAUNCH]         = true,
+  [C.RollType.GOAL]           = true
 }
 
 --- Roll types for which Willpower rerolls are not permitted.
 C.RollTypesNoWillpower = {
-    [C.RollType.SIMPLE_CHECK]   = true,
-    [C.RollType.ROUSE]          = true,
-    [C.RollType.ROUSE_OBLIVION] = true,
-    [C.RollType.REMORSE]        = true,
-    [C.RollType.LAUNCH]         = true,
-    [C.RollType.GOAL]           = true
+  [C.RollType.SIMPLE_CHECK]   = true,
+  [C.RollType.ROUSE]          = true,
+  [C.RollType.ROUSE_OBLIVION] = true,
+  [C.RollType.REMORSE]        = true,
+  [C.RollType.LAUNCH]         = true,
+  [C.RollType.GOAL]           = true
 }
 
 --- Roll types for which criticals are disabled (i.e. each '10' simply counts as one success)
 C.RollTypesNoCriticals = {
-    [C.RollType.GOAL]           = true
+  [C.RollType.GOAL] = true
 }
 
 --- Roll types that should automatically broadcast without waiting for the ST to confirm the roll after the dice have settled.
 C.RollTypesAutoBroadcast = {
-    [C.RollType.ROUSE]          = true,
-    [C.RollType.ROUSE_OBLIVION] = true,
-    [C.RollType.REMORSE]        = true
+  [C.RollType.ROUSE]          = true,
+  [C.RollType.ROUSE_OBLIVION] = true,
+  [C.RollType.REMORSE]        = true
 }
 
 --- Seconds to wait after the last die randomize event before reading all settled die values.
@@ -756,117 +753,125 @@ C.ROLL_RESULT_BROADCAST_SECONDS = 6
 -- Only listed values should be changed
 C.ObjectPositions = {
   SIGNAL_FIRE = {
-    target = {G.GUIDS.SIGNAL_FIRE_RED, G.GUIDS.SIGNAL_FIRE_BROWN, G.GUIDS.SIGNAL_FIRE_ORANGE, G.GUIDS.SIGNAL_FIRE_PINK, G.GUIDS.SIGNAL_FIRE_PURPLE},
-    on = {position = {y=7.85}, duration = 0},
-    off = {position = {y=-200}, duration = 0, isHidden = true}
+    target = { G.GUIDS.SIGNAL_FIRE_RED, G.GUIDS.SIGNAL_FIRE_BROWN, G.GUIDS.SIGNAL_FIRE_ORANGE, G.GUIDS.SIGNAL_FIRE_PINK, G.GUIDS.SIGNAL_FIRE_PURPLE },
+    on = { position = { y = 7.85 }, duration = 0 },
+    off = { position = { y = -200 }, duration = 0, isHidden = true }
   },
   HUNGER_SMOKE = {
-    target = {G.GUIDS.HUNGER_SMOKE_RED, G.GUIDS.HUNGER_SMOKE_BROWN, G.GUIDS.HUNGER_SMOKE_ORANGE, G.GUIDS.HUNGER_SMOKE_PINK, G.GUIDS.HUNGER_SMOKE_PURPLE},
-    on = {position = {y = 1.87}, duration = 0},
-    off = {position = {y = -200}, duration = 0,isHidden = true}
+    target = { G.GUIDS.HUNGER_SMOKE_RED, G.GUIDS.HUNGER_SMOKE_BROWN, G.GUIDS.HUNGER_SMOKE_ORANGE, G.GUIDS.HUNGER_SMOKE_PINK, G.GUIDS.HUNGER_SMOKE_PURPLE },
+    on = { position = { y = 1.87 }, duration = 0 },
+    off = { position = { y = -200 }, duration = 0, isHidden = true }
   },
   CSHEET_PAGE = {
     target = {
-      G.GUIDS.CSHEET_PAGE_1_RED, G.GUIDS.CSHEET_PAGE_1_BROWN, G.GUIDS.CSHEET_PAGE_1_ORANGE, G.GUIDS.CSHEET_PAGE_1_PINK, G.GUIDS.CSHEET_PAGE_1_PURPLE,
-      G.GUIDS.CSHEET_PAGE_2_RED, G.GUIDS.CSHEET_PAGE_2_BROWN, G.GUIDS.CSHEET_PAGE_2_ORANGE, G.GUIDS.CSHEET_PAGE_2_PINK, G.GUIDS.CSHEET_PAGE_2_PURPLE,
-      G.GUIDS.CSHEET_PAGE_3_RED, G.GUIDS.CSHEET_PAGE_3_BROWN, G.GUIDS.CSHEET_PAGE_3_ORANGE, G.GUIDS.CSHEET_PAGE_3_PINK, G.GUIDS.CSHEET_PAGE_3_PURPLE,
-      G.GUIDS.CSHEET_PAGE_4_RED, G.GUIDS.CSHEET_PAGE_4_BROWN, G.GUIDS.CSHEET_PAGE_4_ORANGE, G.GUIDS.CSHEET_PAGE_4_PINK, G.GUIDS.CSHEET_PAGE_4_PURPLE,
-      G.GUIDS.CSHEET_PAGE_5_RED, G.GUIDS.CSHEET_PAGE_5_BROWN, G.GUIDS.CSHEET_PAGE_5_ORANGE, G.GUIDS.CSHEET_PAGE_5_PINK, G.GUIDS.CSHEET_PAGE_5_PURPLE,
-      G.GUIDS.CSHEET_PAGE_6_RED, G.GUIDS.CSHEET_PAGE_6_BROWN, G.GUIDS.CSHEET_PAGE_6_ORANGE, G.GUIDS.CSHEET_PAGE_6_PINK, G.GUIDS.CSHEET_PAGE_6_PURPLE,
-      G.GUIDS.CSHEET_PAGE_7_RED, G.GUIDS.CSHEET_PAGE_7_BROWN, G.GUIDS.CSHEET_PAGE_7_ORANGE, G.GUIDS.CSHEET_PAGE_7_PINK, G.GUIDS.CSHEET_PAGE_7_PURPLE,
-      G.GUIDS.CSHEET_PAGE_8_RED, G.GUIDS.CSHEET_PAGE_8_BROWN, G.GUIDS.CSHEET_PAGE_8_ORANGE, G.GUIDS.CSHEET_PAGE_8_PINK, G.GUIDS.CSHEET_PAGE_8_PURPLE
+      G.GUIDS.CSHEET_PAGE_1_RED, G.GUIDS.CSHEET_PAGE_1_BROWN, G.GUIDS.CSHEET_PAGE_1_ORANGE, G.GUIDS.CSHEET_PAGE_1_PINK, G
+        .GUIDS.CSHEET_PAGE_1_PURPLE,
+      G.GUIDS.CSHEET_PAGE_2_RED, G.GUIDS.CSHEET_PAGE_2_BROWN, G.GUIDS.CSHEET_PAGE_2_ORANGE, G.GUIDS.CSHEET_PAGE_2_PINK, G
+        .GUIDS.CSHEET_PAGE_2_PURPLE,
+      G.GUIDS.CSHEET_PAGE_3_RED, G.GUIDS.CSHEET_PAGE_3_BROWN, G.GUIDS.CSHEET_PAGE_3_ORANGE, G.GUIDS.CSHEET_PAGE_3_PINK, G
+        .GUIDS.CSHEET_PAGE_3_PURPLE,
+      G.GUIDS.CSHEET_PAGE_4_RED, G.GUIDS.CSHEET_PAGE_4_BROWN, G.GUIDS.CSHEET_PAGE_4_ORANGE, G.GUIDS.CSHEET_PAGE_4_PINK, G
+        .GUIDS.CSHEET_PAGE_4_PURPLE,
+      G.GUIDS.CSHEET_PAGE_5_RED, G.GUIDS.CSHEET_PAGE_5_BROWN, G.GUIDS.CSHEET_PAGE_5_ORANGE, G.GUIDS.CSHEET_PAGE_5_PINK, G
+        .GUIDS.CSHEET_PAGE_5_PURPLE,
+      G.GUIDS.CSHEET_PAGE_6_RED, G.GUIDS.CSHEET_PAGE_6_BROWN, G.GUIDS.CSHEET_PAGE_6_ORANGE, G.GUIDS.CSHEET_PAGE_6_PINK, G
+        .GUIDS.CSHEET_PAGE_6_PURPLE,
+      G.GUIDS.CSHEET_PAGE_7_RED, G.GUIDS.CSHEET_PAGE_7_BROWN, G.GUIDS.CSHEET_PAGE_7_ORANGE, G.GUIDS.CSHEET_PAGE_7_PINK, G
+        .GUIDS.CSHEET_PAGE_7_PURPLE,
+      G.GUIDS.CSHEET_PAGE_8_RED, G.GUIDS.CSHEET_PAGE_8_BROWN, G.GUIDS.CSHEET_PAGE_8_ORANGE, G.GUIDS.CSHEET_PAGE_8_PINK, G
+        .GUIDS.CSHEET_PAGE_8_PURPLE
     },
-    on = {position = {y = 3.19}, duration = 0},
-    off = {position = {y = -200}, duration = 0, isHidden = true}
+    on = { position = { y = 3.19 }, duration = 0 },
+    off = { position = { y = -200 }, duration = 0, isHidden = true }
   },
   CSHEET_DICE_DRAWER_BROWN = {
     target = G.GUIDS.CSHEET_DICE_DRAWER_BROWN,
     on = {
       anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_BROWN,
-      height = {y = 2.97},
-      scale = Vector({23.57, 3.92, 7.68})
+      height = { y = 2.97 },
+      scale = Vector({ 23.57, 3.92, 7.68 })
     },
     off = {
       anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_BROWN,
-      height = {y = -1},
-      scale = Vector({23.57, 0.1, 7.68})
+      height = { y = -1 },
+      scale = Vector({ 23.57, 0.1, 7.68 })
     }
   },
   CSHEET_DICE_DRAWER_ORANGE = {
     target = G.GUIDS.CSHEET_DICE_DRAWER_ORANGE,
     on = {
       anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_ORANGE,
-      height = {y = 2.97},
-      scale = Vector({23.57, 3.92, 7.68})
+      height = { y = 2.97 },
+      scale = Vector({ 23.57, 3.92, 7.68 })
     },
     off = {
       anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_ORANGE,
-      height = {y = -1},
-      scale = Vector({23.57, 0.1, 7.68})
+      height = { y = -1 },
+      scale = Vector({ 23.57, 0.1, 7.68 })
     }
   },
   CSHEET_DICE_DRAWER_RED = {
     target = G.GUIDS.CSHEET_DICE_DRAWER_RED,
     on = {
       anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_RED,
-      height = {y = 2.97},
-      scale = Vector({23.57, 3.92, 7.68})
+      height = { y = 2.97 },
+      scale = Vector({ 23.57, 3.92, 7.68 })
     },
     off = {
       anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_RED,
-      height = {y = -1},
-      scale = Vector({23.57, 0.1, 7.68})
+      height = { y = -1 },
+      scale = Vector({ 23.57, 0.1, 7.68 })
     }
   },
   CSHEET_DICE_DRAWER_PINK = {
     target = G.GUIDS.CSHEET_DICE_DRAWER_PINK,
     on = {
       anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_PINK,
-      height = {y = 2.97},
-      scale = Vector({23.57, 3.92, 7.68})
+      height = { y = 2.97 },
+      scale = Vector({ 23.57, 3.92, 7.68 })
     },
     off = {
       anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_PINK,
-      height = {y = -1},
-      scale = Vector({23.57, 0.1, 7.68})
+      height = { y = -1 },
+      scale = Vector({ 23.57, 0.1, 7.68 })
     }
   },
   CSHEET_DICE_DRAWER_PURPLE = {
     target = G.GUIDS.CSHEET_DICE_DRAWER_PURPLE,
     on = {
       anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_PURPLE,
-      height = {y = 2.97},
-      scale = Vector({23.57, 3.92, 7.68})
+      height = { y = 2.97 },
+      scale = Vector({ 23.57, 3.92, 7.68 })
     },
     off = {
       anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_PURPLE,
-      height = {y = -1},
-      scale = Vector({23.57, 0.1, 7.68})
+      height = { y = -1 },
+      scale = Vector({ 23.57, 0.1, 7.68 })
     }
   },
   TAROT_DRAWER_PINK = {
     target = G.GUIDS.TAROT_DRAWER_PINK,
     on = {
       anchor = G.GUIDS.TAROT_DRAWER_ANCHOR_ON_PINK,
-      height = {y = 7.12},
-      scale = Vector({7.49, 0.31, 5.72})
+      height = { y = 7.12 },
+      scale = Vector({ 7.49, 0.31, 5.72 })
     },
     off = {
       anchor = G.GUIDS.TAROT_DRAWER_ANCHOR_OFF_PINK,
-      height = {y = 2.41},
-      scale = Vector({7.49, 0.01, 5.72})
+      height = { y = 2.41 },
+      scale = Vector({ 7.49, 0.01, 5.72 })
     }
   },
   TAROT_DECK_PINK = {
     target = G.GUIDS.TAROT_DECK_PINK,
     on = {
-      position = {y = 12},
+      position = { y = 12 },
       duration = 0,
       delay = 1.5,
       isLocked = false
     },
     off = {
-      position = {y = -10},
+      position = { y = -10 },
       duration = 0,
       delay = 0,
       isLocked = true,
@@ -922,12 +927,12 @@ C.CameraModes = {
 --- `lib.rotational-seat-layout` adds `(activeTable.referenceHandPosition - this)` to **position** only for
 --- presets with `isRelativeToReferenceHandPosition == true` (Red-derived and selected `C.UniversalCameraAngles`).
 --- Keep in sync with the canonical layout table (currently `Table A` `referenceHandPosition`).
-C.CameraAuthoringReferenceHandPosition = Vector({0.00, 3.22, -76.61})
+C.CameraAuthoringReferenceHandPosition = Vector({ 0.00, 3.22, -76.61 })
 
 C.RedCameraAngles = {
   default = {
     cameraMode = "FirstPerson",
-    position = Vector({0, 28.5760, -54.5664}),
+    position = Vector({ 0, 28.5760, -54.5664 }),
     pitch = 0,
     yaw = 0,
     distance = 27.6598,
@@ -935,7 +940,7 @@ C.RedCameraAngles = {
   },
   sheet = {
     cameraMode = "FirstPerson",
-    position = Vector({0, 5.8436, -53.0298}),
+    position = Vector({0.0000, 5.8436, -52.0298}),
     pitch = 70.5275,
     yaw = 0,
     distance = 11,
@@ -944,15 +949,15 @@ C.RedCameraAngles = {
   roll = {
 
     cameraMode = "FirstPerson",
-    position = Vector({0, 5.8436, -50.6698}),
-    pitch = 50.9174,
+    position = Vector({ 0, 5.8436, -50.6698 }),
+    pitch = 35.9174,
     yaw = 0,
     distance = 17.2098,
     isRelativeToReferenceHandPosition = true
   },
   diceTray = {
     cameraMode = "FirstPerson",
-    position = Vector({0, 17.8731, -43.3904}),
+    position = Vector({ 0, 17.8731, -43.3904 }),
     pitch = 58.6195,
     yaw = 0,
     distance = 10.8949,
@@ -960,7 +965,7 @@ C.RedCameraAngles = {
   },
   facing = {
     cameraMode = "FirstPerson",
-    position = Vector({0.0000, 28.1757, -36.0090}),
+    position = Vector({ 0.0000, 28.1757, -36.0090 }),
     pitch = 14.6121,
     yaw = 177.8662,
     distance = 27.3856,
@@ -973,7 +978,7 @@ C.RedCameraAngles = {
 C.UniversalCameraAngles = {
   districtCard = {
     cameraMode = "FirstPerson",
-    position = Vector({0, 37.7789, -25.0052}),
+    position = Vector({ 0, 37.7789, -25.0052 }),
     pitch = 15.8187,
     yaw = 0.0000,
     distance = 27.3856,
@@ -981,7 +986,7 @@ C.UniversalCameraAngles = {
   },
   siteCard = {
     cameraMode = "FirstPerson",
-    position = Vector({0, 37.7789, -25.0052}),
+    position = Vector({ 0, 37.7789, -25.0052 }),
     pitch = 15.8187,
     yaw = 0.0000,
     distance = 27.3856,
@@ -989,7 +994,7 @@ C.UniversalCameraAngles = {
   },
   npcCenter = {
     cameraMode = "FirstPerson",
-    position = Vector({0, 0, 0}),
+    position = Vector({ 0, 0, 0 }),
     pitch = 0,
     yaw = 0,
     distance = 0,
@@ -997,7 +1002,7 @@ C.UniversalCameraAngles = {
   },
   npcNearLeft = {
     cameraMode = "FirstPerson",
-    position = Vector({0, 0, 0}),
+    position = Vector({ 0, 0, 0 }),
     pitch = 0,
     yaw = 0,
     distance = 0,
@@ -1005,7 +1010,7 @@ C.UniversalCameraAngles = {
   },
   npcNearRight = {
     cameraMode = "FirstPerson",
-    position = Vector({0, 0, 0}),
+    position = Vector({ 0, 0, 0 }),
     pitch = 0,
     yaw = 0,
     distance = 0,
@@ -1013,7 +1018,7 @@ C.UniversalCameraAngles = {
   },
   npcFarLeft = {
     cameraMode = "FirstPerson",
-    position = Vector({0, 0, 0}),
+    position = Vector({ 0, 0, 0 }),
     pitch = 0,
     yaw = 0,
     distance = 0,
@@ -1021,7 +1026,7 @@ C.UniversalCameraAngles = {
   },
   npcFarRight = {
     cameraMode = "FirstPerson",
-    position = Vector({0, 0, 0}),
+    position = Vector({ 0, 0, 0 }),
     pitch = 0,
     yaw = 0,
     distance = 0,
@@ -1029,7 +1034,7 @@ C.UniversalCameraAngles = {
   },
   wide = {
     cameraMode = "FirstPerson",
-    position = Vector({0, 37.7789, -25.0052}),
+    position = Vector({ 0, 37.7789, -25.0052 }),
     pitch = 15.8187,
     yaw = 0.0000,
     distance = 27.3856,
@@ -1037,7 +1042,7 @@ C.UniversalCameraAngles = {
   },
   wideFacing = {
     cameraMode = "FirstPerson",
-    position = Vector({0.0000, 79.4413, 66.9976}),
+    position = Vector({ 0.0000, 79.4413, 66.9976 }),
     pitch = 34.4825,
     yaw = 177.8662,
     distance = 27.3856,
@@ -1111,9 +1116,9 @@ end
 C.Tables = {
   ["Table A"] = {
     guid = "92ac34",
-    centerPoint = Vector({0, 0, 50}),
-    activePosition = Vector({0.00, 0.00, 53.66}),
-    inactivePosition = Vector({0.00, -200, 100}),
+    centerPoint = Vector({ 0, 0, 50 }),
+    activePosition = Vector({ 0.00, 0.00, 53.66 }),
+    inactivePosition = Vector({ 0.00, -200, 100 }),
     numSegments = 20,
     angleSegmentOne = 0,
     playerToPositionMap = {
@@ -1128,49 +1133,49 @@ C.Tables = {
       Purple = 13
     },
     referencePlayerColor = "Red",
-    referenceHandPosition = Vector({0.00, 3.22, -76.61}),
+    referenceHandPosition = Vector({ 0.00, 3.22, -76.61 }),
     components = {
       ["Table Leaf Near Left"] = {
         guid = "6db794",
-        activePosition = Vector({0.00, 0.00, 53.66}),
-        inactivePosition = Vector({0.00, -200, 100}),
+        activePosition = Vector({ 0.00, 0.00, 53.66 }),
+        inactivePosition = Vector({ 0.00, -200, 100 }),
         usedBy = "NPC2"
       },
       ["Table Leaf Near Right"] = {
         guid = "443d5a",
-        activePosition = Vector({0.00, 0.00, 53.66}),
-        inactivePosition = Vector({0.00, -200, 100}),
+        activePosition = Vector({ 0.00, 0.00, 53.66 }),
+        inactivePosition = Vector({ 0.00, -200, 100 }),
         usedBy = "NPC1"
       },
       ["Table Leaf Far Left"] = {
         guid = "f09667",
-        activePosition = Vector({0.00, 0.00, 53.66}),
-        inactivePosition = Vector({0.00, -200, 100}),
+        activePosition = Vector({ 0.00, 0.00, 53.66 }),
+        inactivePosition = Vector({ 0.00, -200, 100 }),
         usedBy = "NPC4"
       },
       ["Table Leaf Far Right"] = {
         guid = "66f42d",
-        activePosition = Vector({0.00, 0.00, 53.66}),
-        inactivePosition = Vector({0.00, -200, 100}),
+        activePosition = Vector({ 0.00, 0.00, 53.66 }),
+        inactivePosition = Vector({ 0.00, -200, 100 }),
         usedBy = "NPC3"
       }
     },
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
-        position = {z = -31.04}
+        position = { z = -31.04 }
       },
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
-        position = {z = -31.04}
+        position = { z = -31.04 }
       }
     }
   },
   ["Table B"] = {
     guid = "b086ae",
-    centerPoint = Vector({0, 0, -90.26}),
-    activePosition = Vector({0.00, 0, -90.26}),
-    inactivePosition = Vector({0.00, -200, 50}),
+    centerPoint = Vector({ 0, 0, -90.26 }),
+    activePosition = Vector({ 0.00, 0, -90.26 }),
+    inactivePosition = Vector({ 0.00, -200, 50 }),
     numSegments = 10,
     angleSegmentOne = 0,
     playerToPositionMap = {
@@ -1185,23 +1190,23 @@ C.Tables = {
       Purple = 8
     },
     referencePlayerColor = "Red",
-    referenceHandPosition = Vector({0.00, 3.22, -162}),
+    referenceHandPosition = Vector({ 0.00, 3.22, -162 }),
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
-        position = {z = -100}
+        position = { z = -100 }
       },
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
-        position = {z = -100}
+        position = { z = -100 }
       }
     }
   },
   ["Table B1"] = {
     guid = "c52bcd",
-    centerPoint = Vector({0, 0, -41.07}),
-    activePosition = Vector({0.00, 0, -41.07}),
-    inactivePosition = Vector({0.00, -200, 100}),
+    centerPoint = Vector({ 0, 0, -41.07 }),
+    activePosition = Vector({ 0.00, 0, -41.07 }),
+    inactivePosition = Vector({ 0.00, -200, 100 }),
     numSegments = 6,
     angleSegmentOne = 0,
     playerToPositionMap = {
@@ -1213,23 +1218,23 @@ C.Tables = {
       Purple = 6,
     },
     referencePlayerColor = "Red",
-    referenceHandPosition = Vector({0.00, 3.22, -106.61}),
+    referenceHandPosition = Vector({ 0.00, 3.22, -106.61 }),
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
-        position = {z = -50}
+        position = { z = -50 }
       },
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
-        position = {z = -50}
+        position = { z = -50 }
       }
     }
   },
   ["Table B2"] = {
     guid = "f14ede",
-    centerPoint = Vector({0, 0, -38.83}),
-    activePosition = Vector({0.00, 0, -38.83}),
-    inactivePosition = Vector({0.00, -200, 100}),
+    centerPoint = Vector({ 0, 0, -38.83 }),
+    activePosition = Vector({ 0.00, 0, -38.83 }),
+    inactivePosition = Vector({ 0.00, -200, 100 }),
     numSegments = 7,
     angleSegmentOne = 25.7,
     playerToPositionMap = {
@@ -1242,23 +1247,23 @@ C.Tables = {
       Purple = 6,
     },
     referencePlayerColor = "Red",
-    referenceHandPosition = Vector({0.00, 3.22, -106.61}),
+    referenceHandPosition = Vector({ 0.00, 3.22, -106.61 }),
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
-        position = {z = -50}
+        position = { z = -50 }
       },
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
-        position = {z = -50}
+        position = { z = -50 }
       }
     }
   },
   ["Table B3"] = {
     guid = "323c52",
-    centerPoint = Vector({0, 0, -37.25}),
-    activePosition = Vector({0.00, 0, -37.25}),
-    inactivePosition = Vector({0.00, -200, 100}),
+    centerPoint = Vector({ 0, 0, -37.25 }),
+    activePosition = Vector({ 0.00, 0, -37.25 }),
+    inactivePosition = Vector({ 0.00, -200, 100 }),
     numSegments = 8,
     angleSegmentOne = 0,
     playerToPositionMap = {
@@ -1272,23 +1277,23 @@ C.Tables = {
       Purple = 7,
     },
     referencePlayerColor = "Red",
-    referenceHandPosition = Vector({0.00, 3.22, -106.61}),
+    referenceHandPosition = Vector({ 0.00, 3.22, -106.61 }),
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
-        position = {z = -50}
+        position = { z = -50 }
       },
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
-        position = {z = -50}
+        position = { z = -50 }
       }
     }
   },
   ["Table B4"] = {
     guid = "ad8530",
-    centerPoint = Vector({0, 0, -36.04}),
-    activePosition = Vector({0, 0, -36.04}),
-    inactivePosition = Vector({0.00, -200, 100}),
+    centerPoint = Vector({ 0, 0, -36.04 }),
+    activePosition = Vector({ 0, 0, -36.04 }),
+    inactivePosition = Vector({ 0.00, -200, 100 }),
     numSegments = 9,
     angleSegmentOne = 20,
     playerToPositionMap = {
@@ -1303,15 +1308,15 @@ C.Tables = {
       Purple = 7,
     },
     referencePlayerColor = "Red",
-    referenceHandPosition = Vector({0.00, 3.22, -106.61}),
+    referenceHandPosition = Vector({ 0.00, 3.22, -106.61 }),
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
-        position = {z = -50}
+        position = { z = -50 }
       },
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
-        position = {z = -50}
+        position = { z = -50 }
       }
     }
   }
@@ -1370,63 +1375,66 @@ C.TableSourceObjects = {
   postCorrections = {
     [G.GUIDS.SEAT_CHAIR_BROWN] = {
       anchor = G.GUIDS.HAND_BROWN,
-      rotationDelta = Vector({0, 180, 0}),
-      position = {y = -44.86}
+      rotationDelta = Vector({ 0, 180, 0 }),
+      position = { y = -44.86 }
     },
     [G.GUIDS.SEAT_CHAIR_ORANGE] = {
       anchor = G.GUIDS.HAND_ORANGE,
-      rotationDelta = Vector({0, 180, 0}),
-      position = {y = -17.75}
+      rotationDelta = Vector({ 0, 180, 0 }),
+      position = { y = -17.75 }
     },
     [G.GUIDS.SEAT_CHAIR_PINK] = {
       anchor = G.GUIDS.HAND_PINK,
-      rotationDelta = Vector({0, 180, 0}),
-      position = {y = -20.29}
+      rotationDelta = Vector({ 0, 180, 0 }),
+      position = { y = -20.29 }
     },
     [G.GUIDS.SEAT_CHAIR_PURPLE] = {
-      position = {y = -37.08}
+      position = { y = -37.08 }
     },
     [G.GUIDS.SEAT_CHAIR_NPC1] = {
-      anchor = G.GUIDS.SEAT_FIGURE_NPC1,
-      rotationDelta = Vector({0, 0, 0}),
-      position = {y = -40}
+      position = { y = -40 }
     },
     [G.GUIDS.SEAT_CHAIR_NPC2] = {
-      anchor = G.GUIDS.SEAT_FIGURE_NPC2,
-      rotationDelta = Vector({0, 0, 0}),
-      position = {y = -40}
+      position = { y = -40 }
     },
     [G.GUIDS.SEAT_CHAIR_NPC3] = {
-      anchor = G.GUIDS.SEAT_FIGURE_NPC3,
-      rotationDelta = Vector({0, 0, 0}),
-      position = {y = -40}
+      position = { y = -40 }
     },
     [G.GUIDS.SEAT_CHAIR_NPC4] = {
-      anchor = G.GUIDS.SEAT_FIGURE_NPC4,
-      rotationDelta = Vector({0, 0, 0}),
-      position = {y = -40}
+      position = { y = -40 }
     },
     [G.GUIDS.SEAT_FIGURE_BROWN] = {
-      position = {y = -50}
+      position = { y = -50 }
     },
     [G.GUIDS.SEAT_FIGURE_PURPLE] = {
-      position = {y = -50.67}
+      position = { y = -50.67 }
+    }
+  },
+  --- Applied to the live object in each seat/role (e.g. pooled `SEAT_FIGURE` at `NPC1`), not fixed workshop GUIDs.
+  postCorrectionsBySeatRole = {
+    NPC1 = {
+      SEAT_FIGURE = {
+        position = { y = -67 },
+        scale = { x = 1.25, y = 1.25, z = 1.25 }
+      }
     },
-    [G.GUIDS.SEAT_FIGURE_NPC1] = {
-      position = {y = -67},
-      scale = {x = 1.25, y = 1.25, z = 1.25}
+    NPC2 = {
+      SEAT_FIGURE = {
+        position = { y = -67 },
+        scale = { x = 1.25, y = 1.25, z = 1.25 }
+      }
     },
-    [G.GUIDS.SEAT_FIGURE_NPC2] = {
-      position = {y = -67},
-      scale = {x = 1.25, y = 1.25, z = 1.25}
+    NPC3 = {
+      SEAT_FIGURE = {
+        position = { y = -67 },
+        scale = { x = 1.25, y = 1.25, z = 1.25 }
+      }
     },
-    [G.GUIDS.SEAT_FIGURE_NPC3] = {
-      position = {y = -67},
-      scale = {x = 1.25, y = 1.25, z = 1.25}
-    },
-    [G.GUIDS.SEAT_FIGURE_NPC4] = {
-      position = {y = -67},
-      scale = {x = 1.25, y = 1.25, z = 1.25}
+    NPC4 = {
+      SEAT_FIGURE = {
+        position = { y = -67 },
+        scale = { x = 1.25, y = 1.25, z = 1.25 }
+      }
     }
   },
   -- Derived from C.RedCameraAngles (and aligned with C.UniversalCameraAngles runtime merge behavior).
@@ -1438,59 +1446,678 @@ C.TableSourceObjects = {
 
 -- #region Light Presets
 
--- Light Presets (scene lighting configurations)
--- Note: Color is controlled via LUT (Look-Up Table) indices, not a direct color property
--- Use lut_index and lut_contribution for color grading effects
-C.LightModes = {
-    BRIGHT = {
-        ambient_intensity = 1.0,
-        light_intensity = 1.0,
-        ambient_type = 1,
-        lut_contribution = 0,
-        lut_index = 1,
-        reflection_intensity = 0
-    },
-    DIM = {
-        ambient_intensity = 0.2,
-        light_intensity = 0.5,
-        ambient_type = 1,
-        lut_contribution = 0,
-        lut_index = 1,
-        reflection_intensity = 0
-    },
-    DEBUG = {
-      ambient_intensity = 0.8,
-      light_intensity = 0.0,
-      ambient_type = 1,
-      lut_contribution = 0,
-      lut_index = 1,
-      reflection_intensity = 0
-    },
-    DARK = {
-        ambient_intensity = 0.0,
-        light_intensity = 0.0,
-        ambient_type = 1,
-        lut_contribution = 0,
-        lut_index = 1,
-        reflection_intensity = 0
-    },
-    TENSION = {
-        ambient_intensity = 0.3,
-        light_intensity = 0.8,
-        ambient_type = 1,
-        lut_contribution = 0,
-        lut_index = 1,
-        reflection_intensity = 0
-    },
-    STANDARD = {
-        ambient_intensity = 0.5546665,
-        ambient_type = 1,
-        light_intensity = 0.5333346,
-        lut_contribution = 0,
-        lut_index = 1,
-        reflection_intensity = 0
-    }
+-- Registry keys matching `core/lighting.ttslua` `L.LIGHTMODES` (admin / uniform spotlight maps).
+local LIGHTMODES_REGISTRY_KEYS_ORDERED = {
+  "gmLight",
+  "mainLightLeft",
+  "mainLightRight",
+  "playerLight1Brown",
+  "playerLight1Orange",
+  "playerLight1Red",
+  "playerLight1Pink",
+  "playerLight1Purple",
+  "playerLight2Brown",
+  "playerLight2Orange",
+  "playerLight2Red",
+  "playerLight2Pink",
+  "playerLight2Purple",
+  "npcLight1NPC1",
+  "npcLight1NPC2",
+  "npcLight1NPC3",
+  "npcLight1NPC4",
+  "npcLight2NPC1",
+  "npcLight2NPC2",
+  "npcLight2NPC3",
+  "npcLight2NPC4",
+  "playerLight3Red",
+  "playerLight3Orange",
+  "playerLight3Pink",
+  "playerLight3Brown",
+  "playerLight3Purple",
 }
+
+--- @param modeStr string
+--- @return table
+local function spotlightMapUniform(modeStr)
+  local t = {}
+  for _, k in ipairs(LIGHTMODES_REGISTRY_KEYS_ORDERED) do
+    t[k] = modeStr
+  end
+  return t
+end
+
+-- Light Presets: global `Lighting` fields + optional `spotlights` (`L.LIGHTMODES` key → mode string or inline patch).
+-- Seat refs are stored on `gameState.sessionScene.lightingSeatSpotlightPreset` and merged in `L.reconcileForPlayer`
+-- after rolling / dark or absent seat / conditions / hunger.
+C.LightModes = {
+  BRIGHT = {
+    ambient_intensity = 1.0,
+    light_intensity = 1.0,
+    ambient_type = 1,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0
+  },
+  DIM = {
+    ambient_intensity = 0.2,
+    light_intensity = 0.5,
+    ambient_type = 1,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0
+  },
+  DEBUG = {
+    ambient_intensity = 0.8,
+    light_intensity = 0.0,
+    ambient_type = 1,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0
+  },
+  DARK = {
+    ambient_intensity = 0.0,
+    light_intensity = 0.0,
+    ambient_type = 1,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0
+  },
+  TENSION = {
+    ambient_intensity = 0.3,
+    light_intensity = 0.8,
+    ambient_type = 1,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0
+  },
+  STANDARD = {
+    ambient_intensity = 0.5546665,
+    ambient_type = 1,
+    light_intensity = 0.5333346,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0
+  },
+  --- Admin Storyteller scene `dark`: dark ambient, every registered spotlight OFF.
+  AdminDark = {
+    ambient_intensity = 0.0,
+    light_intensity = 0.0,
+    ambient_type = 1,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0,
+    spotlights = spotlightMapUniform("OFF"),
+  },
+  --- Admin Storyteller scene `standard`: dark ambient, full table + seats at STANDARD (hunger etc. still override).
+  AdminStandard = {
+    ambient_intensity = 0.0,
+    light_intensity = 0.0,
+    ambient_type = 1,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0,
+    spotlights = spotlightMapUniform("STANDARD"),
+  },
+  --- Admin Storyteller scene `bright`: bright ambient, all spotlights STANDARD.
+  AdminBright = {
+    ambient_intensity = 1,
+    light_intensity = 1,
+    ambient_type = 1,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0,
+    spotlights = spotlightMapUniform("STANDARD"),
+  },
+  --- Admin Storyteller scene `debug`: DEBUG ambient, all spotlights OFF.
+  AdminDebug = {
+    ambient_intensity = 0.8,
+    light_intensity = 0.0,
+    ambient_type = 1,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0,
+    spotlights = spotlightMapUniform("OFF"),
+  },
+  IndoorBright = {
+    ambient_intensity = 1.10933303833008,
+    ambient_type = 2,
+    light_intensity = 0,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0.21866674721241,
+    gradientColor = {
+      ground = Color({ 1, 0.85, 0.65, 1 }),
+    },
+    spotlights = {
+      gmLight = "STANDARD",
+      mainLightLeft = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      mainLightRight = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      playerLight1Red = "STANDARD",
+      playerLight2Red = "STANDARD",
+      playerLight3Red = "STANDARD",
+      playerLight1Orange = "STANDARD",
+      playerLight2Orange = "STANDARD",
+      playerLight3Orange = "STANDARD",
+      playerLight1Pink = "STANDARD",
+      playerLight2Pink = "STANDARD",
+      playerLight3Pink = "STANDARD",
+      playerLight1Brown = "STANDARD",
+      playerLight2Brown = "STANDARD",
+      playerLight3Brown = "STANDARD",
+      playerLight1Purple = "STANDARD",
+      playerLight2Purple = "STANDARD",
+      playerLight3Purple = "STANDARD",
+      npcLight1NPC1 = "STANDARD",
+      npcLight1NPC2 = "STANDARD",
+      npcLight1NPC3 = "STANDARD",
+      npcLight1NPC4 = "STANDARD",
+      npcLight2NPC1 = "STANDARD",
+      npcLight2NPC2 = "STANDARD",
+      npcLight2NPC3 = "STANDARD",
+      npcLight2NPC4 = "STANDARD"
+    }
+  },
+  IndoorDim = {
+    ambient_intensity = 1.10933303833008,
+    ambient_type = 2,
+    light_intensity = 0,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0.21866674721241,
+    gradientColor = {
+      ground = Color({ 1, 0.85, 0.65, 1 }),
+    },
+    spotlights = {
+      gmLight = "STANDARD",
+      mainLightLeft = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      mainLightRight = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      playerLight1Red = "STANDARD",
+      playerLight2Red = "STANDARD",
+      playerLight3Red = "STANDARD",
+      playerLight1Orange = "STANDARD",
+      playerLight2Orange = "STANDARD",
+      playerLight3Orange = "STANDARD",
+      playerLight1Pink = "STANDARD",
+      playerLight2Pink = "STANDARD",
+      playerLight3Pink = "STANDARD",
+      playerLight1Brown = "STANDARD",
+      playerLight2Brown = "STANDARD",
+      playerLight3Brown = "STANDARD",
+      playerLight1Purple = "STANDARD",
+      playerLight2Purple = "STANDARD",
+      playerLight3Purple = "STANDARD",
+      npcLight1NPC1 = "STANDARD",
+      npcLight1NPC2 = "STANDARD",
+      npcLight1NPC3 = "STANDARD",
+      npcLight1NPC4 = "STANDARD",
+      npcLight2NPC1 = "STANDARD",
+      npcLight2NPC2 = "STANDARD",
+      npcLight2NPC3 = "STANDARD",
+      npcLight2NPC4 = "STANDARD"
+    }
+  },
+  IndoorDark = {
+    ambient_intensity = 1.10933303833008,
+    ambient_type = 2,
+    light_intensity = 0,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0.21866674721241,
+    gradientColor = {
+      ground = Color({ 1, 0.85, 0.65, 1 }),
+    },
+    spotlights = {
+      gmLight = "STANDARD",
+      mainLightLeft = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      mainLightRight = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      playerLight1Red = "STANDARD",
+      playerLight2Red = "STANDARD",
+      playerLight3Red = "STANDARD",
+      playerLight1Orange = "STANDARD",
+      playerLight2Orange = "STANDARD",
+      playerLight3Orange = "STANDARD",
+      playerLight1Pink = "STANDARD",
+      playerLight2Pink = "STANDARD",
+      playerLight3Pink = "STANDARD",
+      playerLight1Brown = "STANDARD",
+      playerLight2Brown = "STANDARD",
+      playerLight3Brown = "STANDARD",
+      playerLight1Purple = "STANDARD",
+      playerLight2Purple = "STANDARD",
+      playerLight3Purple = "STANDARD",
+      npcLight1NPC1 = "STANDARD",
+      npcLight1NPC2 = "STANDARD",
+      npcLight1NPC3 = "STANDARD",
+      npcLight1NPC4 = "STANDARD",
+      npcLight2NPC1 = "STANDARD",
+      npcLight2NPC2 = "STANDARD",
+      npcLight2NPC3 = "STANDARD",
+      npcLight2NPC4 = "STANDARD"
+    }
+  },
+  OutdoorBright = {
+    ambient_intensity = 1.10933303833008,
+    ambient_type = 2,
+    light_intensity = 0,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0.21866674721241,
+    gradientColor = {
+      ground = Color({ 1, 0.85, 0.65, 1 }),
+    },
+    spotlights = {
+      gmLight = "STANDARD",
+      mainLightLeft = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      mainLightRight = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      playerLight1Red = "STANDARD",
+      playerLight2Red = "STANDARD",
+      playerLight3Red = "STANDARD",
+      playerLight1Orange = "STANDARD",
+      playerLight2Orange = "STANDARD",
+      playerLight3Orange = "STANDARD",
+      playerLight1Pink = "STANDARD",
+      playerLight2Pink = "STANDARD",
+      playerLight3Pink = "STANDARD",
+      playerLight1Brown = "STANDARD",
+      playerLight2Brown = "STANDARD",
+      playerLight3Brown = "STANDARD",
+      playerLight1Purple = "STANDARD",
+      playerLight2Purple = "STANDARD",
+      playerLight3Purple = "STANDARD",
+      npcLight1NPC1 = "STANDARD",
+      npcLight1NPC2 = "STANDARD",
+      npcLight1NPC3 = "STANDARD",
+      npcLight1NPC4 = "STANDARD",
+      npcLight2NPC1 = "STANDARD",
+      npcLight2NPC2 = "STANDARD",
+      npcLight2NPC3 = "STANDARD",
+      npcLight2NPC4 = "STANDARD"
+    }
+  },
+  OutdoorDim = {
+    ambient_intensity = 1.10933303833008,
+    ambient_type = 2,
+    light_intensity = 0,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0.21866674721241,
+    gradientColor = {
+      ground = Color({ 1, 0.85, 0.65, 1 }),
+    },
+    spotlights = {
+      gmLight = "STANDARD",
+      mainLightLeft = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      mainLightRight = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      playerLight1Red = "STANDARD",
+      playerLight2Red = "STANDARD",
+      playerLight3Red = "STANDARD",
+      playerLight1Orange = "STANDARD",
+      playerLight2Orange = "STANDARD",
+      playerLight3Orange = "STANDARD",
+      playerLight1Pink = "STANDARD",
+      playerLight2Pink = "STANDARD",
+      playerLight3Pink = "STANDARD",
+      playerLight1Brown = "STANDARD",
+      playerLight2Brown = "STANDARD",
+      playerLight3Brown = "STANDARD",
+      playerLight1Purple = "STANDARD",
+      playerLight2Purple = "STANDARD",
+      playerLight3Purple = "STANDARD",
+      npcLight1NPC1 = "STANDARD",
+      npcLight1NPC2 = "STANDARD",
+      npcLight1NPC3 = "STANDARD",
+      npcLight1NPC4 = "STANDARD",
+      npcLight2NPC1 = "STANDARD",
+      npcLight2NPC2 = "STANDARD",
+      npcLight2NPC3 = "STANDARD",
+      npcLight2NPC4 = "STANDARD"
+    }
+  },
+  OutdoorDark = {
+    ambient_intensity = 1.10933303833008,
+    ambient_type = 2,
+    light_intensity = 0,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0.21866674721241,
+    gradientColor = {
+      ground = Color({ 1, 0.85, 0.65, 1 }),
+    },
+    spotlights = {
+      gmLight = "STANDARD",
+      mainLightLeft = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      mainLightRight = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      playerLight1Red = "STANDARD",
+      playerLight2Red = "STANDARD",
+      playerLight3Red = "STANDARD",
+      playerLight1Orange = "STANDARD",
+      playerLight2Orange = "STANDARD",
+      playerLight3Orange = "STANDARD",
+      playerLight1Pink = "STANDARD",
+      playerLight2Pink = "STANDARD",
+      playerLight3Pink = "STANDARD",
+      playerLight1Brown = "STANDARD",
+      playerLight2Brown = "STANDARD",
+      playerLight3Brown = "STANDARD",
+      playerLight1Purple = "STANDARD",
+      playerLight2Purple = "STANDARD",
+      playerLight3Purple = "STANDARD",
+      npcLight1NPC1 = "STANDARD",
+      npcLight1NPC2 = "STANDARD",
+      npcLight1NPC3 = "STANDARD",
+      npcLight1NPC4 = "STANDARD",
+      npcLight2NPC1 = "STANDARD",
+      npcLight2NPC2 = "STANDARD",
+      npcLight2NPC3 = "STANDARD",
+      npcLight2NPC4 = "STANDARD"
+    }
+  },
+  UndergroundBright = {
+    ambient_intensity = 1.10933303833008,
+    ambient_type = 2,
+    light_intensity = 0,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0.21866674721241,
+    gradientColor = {
+      ground = Color({ 1, 0.85, 0.65, 1 }),
+    },
+    spotlights = {
+      gmLight = "STANDARD",
+      mainLightLeft = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      mainLightRight = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      playerLight1Red = "STANDARD",
+      playerLight2Red = "STANDARD",
+      playerLight3Red = "STANDARD",
+      playerLight1Orange = "STANDARD",
+      playerLight2Orange = "STANDARD",
+      playerLight3Orange = "STANDARD",
+      playerLight1Pink = "STANDARD",
+      playerLight2Pink = "STANDARD",
+      playerLight3Pink = "STANDARD",
+      playerLight1Brown = "STANDARD",
+      playerLight2Brown = "STANDARD",
+      playerLight3Brown = "STANDARD",
+      playerLight1Purple = "STANDARD",
+      playerLight2Purple = "STANDARD",
+      playerLight3Purple = "STANDARD",
+      npcLight1NPC1 = "STANDARD",
+      npcLight1NPC2 = "STANDARD",
+      npcLight1NPC3 = "STANDARD",
+      npcLight1NPC4 = "STANDARD",
+      npcLight2NPC1 = "STANDARD",
+      npcLight2NPC2 = "STANDARD",
+      npcLight2NPC3 = "STANDARD",
+      npcLight2NPC4 = "STANDARD"
+    }
+  },
+  UndergroundDim = {
+    ambient_intensity = 1.10933303833008,
+    ambient_type = 2,
+    light_intensity = 0,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0.21866674721241,
+    gradientColor = {
+      ground = Color({ 1, 0.85, 0.65, 1 }),
+    },
+    spotlights = {
+      gmLight = "STANDARD",
+      mainLightLeft = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      mainLightRight = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      playerLight1Red = "STANDARD",
+      playerLight2Red = "STANDARD",
+      playerLight3Red = "STANDARD",
+      playerLight1Orange = "STANDARD",
+      playerLight2Orange = "STANDARD",
+      playerLight3Orange = "STANDARD",
+      playerLight1Pink = "STANDARD",
+      playerLight2Pink = "STANDARD",
+      playerLight3Pink = "STANDARD",
+      playerLight1Brown = "STANDARD",
+      playerLight2Brown = "STANDARD",
+      playerLight3Brown = "STANDARD",
+      playerLight1Purple = "STANDARD",
+      playerLight2Purple = "STANDARD",
+      playerLight3Purple = "STANDARD",
+      npcLight1NPC1 = "STANDARD",
+      npcLight1NPC2 = "STANDARD",
+      npcLight1NPC3 = "STANDARD",
+      npcLight1NPC4 = "STANDARD",
+      npcLight2NPC1 = "STANDARD",
+      npcLight2NPC2 = "STANDARD",
+      npcLight2NPC3 = "STANDARD",
+      npcLight2NPC4 = "STANDARD"
+    }
+  },
+  UndergroundDark = {
+    ambient_intensity = 1.10933303833008,
+    ambient_type = 2,
+    light_intensity = 0,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0.21866674721241,
+    gradientColor = {
+      ground = Color({ 1, 0.85, 0.65, 1 }),
+    },
+    spotlights = {
+      gmLight = "STANDARD",
+      mainLightLeft = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      mainLightRight = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      playerLight1Red = "STANDARD",
+      playerLight2Red = "STANDARD",
+      playerLight3Red = "STANDARD",
+      playerLight1Orange = "STANDARD",
+      playerLight2Orange = "STANDARD",
+      playerLight3Orange = "STANDARD",
+      playerLight1Pink = "STANDARD",
+      playerLight2Pink = "STANDARD",
+      playerLight3Pink = "STANDARD",
+      playerLight1Brown = "STANDARD",
+      playerLight2Brown = "STANDARD",
+      playerLight3Brown = "STANDARD",
+      playerLight1Purple = "STANDARD",
+      playerLight2Purple = "STANDARD",
+      playerLight3Purple = "STANDARD",
+      npcLight1NPC1 = "STANDARD",
+      npcLight1NPC2 = "STANDARD",
+      npcLight1NPC3 = "STANDARD",
+      npcLight1NPC4 = "STANDARD",
+      npcLight2NPC1 = "STANDARD",
+      npcLight2NPC2 = "STANDARD",
+      npcLight2NPC3 = "STANDARD",
+      npcLight2NPC4 = "STANDARD"
+    }
+  },
+  MemoriamBright = {
+    ambient_intensity = 1.10933303833008,
+    ambient_type = 2,
+    light_intensity = 0,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0.21866674721241,
+    gradientColor = {
+      ground = Color({ 1, 0.85, 0.65, 1 }),
+    },
+    spotlights = {
+      gmLight = "STANDARD",
+      mainLightLeft = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      mainLightRight = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      playerLight1Red = "STANDARD",
+      playerLight2Red = "STANDARD",
+      playerLight3Red = "STANDARD",
+      playerLight1Orange = "STANDARD",
+      playerLight2Orange = "STANDARD",
+      playerLight3Orange = "STANDARD",
+      playerLight1Pink = "STANDARD",
+      playerLight2Pink = "STANDARD",
+      playerLight3Pink = "STANDARD",
+      playerLight1Brown = "STANDARD",
+      playerLight2Brown = "STANDARD",
+      playerLight3Brown = "STANDARD",
+      playerLight1Purple = "STANDARD",
+      playerLight2Purple = "STANDARD",
+      playerLight3Purple = "STANDARD",
+      npcLight1NPC1 = "STANDARD",
+      npcLight1NPC2 = "STANDARD",
+      npcLight1NPC3 = "STANDARD",
+      npcLight1NPC4 = "STANDARD",
+      npcLight2NPC1 = "STANDARD",
+      npcLight2NPC2 = "STANDARD",
+      npcLight2NPC3 = "STANDARD",
+      npcLight2NPC4 = "STANDARD"
+    }
+  },
+  MemoriamDim = {
+    ambient_intensity = 1.10933303833008,
+    ambient_type = 2,
+    light_intensity = 0,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0.21866674721241,
+    gradientColor = {
+      ground = Color({ 1, 0.85, 0.65, 1 }),
+    },
+    spotlights = {
+      gmLight = "STANDARD",
+      mainLightLeft = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      mainLightRight = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      playerLight1Red = "STANDARD",
+      playerLight2Red = "STANDARD",
+      playerLight3Red = "STANDARD",
+      playerLight1Orange = "STANDARD",
+      playerLight2Orange = "STANDARD",
+      playerLight3Orange = "STANDARD",
+      playerLight1Pink = "STANDARD",
+      playerLight2Pink = "STANDARD",
+      playerLight3Pink = "STANDARD",
+      playerLight1Brown = "STANDARD",
+      playerLight2Brown = "STANDARD",
+      playerLight3Brown = "STANDARD",
+      playerLight1Purple = "STANDARD",
+      playerLight2Purple = "STANDARD",
+      playerLight3Purple = "STANDARD",
+      npcLight1NPC1 = "STANDARD",
+      npcLight1NPC2 = "STANDARD",
+      npcLight1NPC3 = "STANDARD",
+      npcLight1NPC4 = "STANDARD",
+      npcLight2NPC1 = "STANDARD",
+      npcLight2NPC2 = "STANDARD",
+      npcLight2NPC3 = "STANDARD",
+      npcLight2NPC4 = "STANDARD"
+    }
+  },
+  MemoriamDark = {
+    ambient_intensity = 1.10933303833008,
+    ambient_type = 2,
+    light_intensity = 0,
+    lut_contribution = 0,
+    lut_index = 1,
+    reflection_intensity = 0.21866674721241,
+    gradientColor = {
+      ground = Color({ 1, 0.85, 0.65, 1 }),
+    },
+    spotlights = {
+      gmLight = "STANDARD",
+      mainLightLeft = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      mainLightRight = {
+        color = Color({ 1, 0.85, 0.65, 1 })
+      },
+      playerLight1Red = "STANDARD",
+      playerLight2Red = "STANDARD",
+      playerLight3Red = "STANDARD",
+      playerLight1Orange = "STANDARD",
+      playerLight2Orange = "STANDARD",
+      playerLight3Orange = "STANDARD",
+      playerLight1Pink = "STANDARD",
+      playerLight2Pink = "STANDARD",
+      playerLight3Pink = "STANDARD",
+      playerLight1Brown = "STANDARD",
+      playerLight2Brown = "STANDARD",
+      playerLight3Brown = "STANDARD",
+      playerLight1Purple = "STANDARD",
+      playerLight2Purple = "STANDARD",
+      playerLight3Purple = "STANDARD",
+      npcLight1NPC1 = "STANDARD",
+      npcLight1NPC2 = "STANDARD",
+      npcLight1NPC3 = "STANDARD",
+      npcLight1NPC4 = "STANDARD",
+      npcLight2NPC1 = "STANDARD",
+      npcLight2NPC2 = "STANDARD",
+      npcLight2NPC3 = "STANDARD",
+      npcLight2NPC4 = "STANDARD"
+    }
+  }
+}
+
+--- @param key any
+--- @return boolean
+function C.isValidLightModeKey(key)
+  if type(key) ~= "string" or key == "" then
+    return false
+  end
+  return type(C.LightModes[key]) == "table"
+end
+
+--- Seat-dark override: `sessionScene.lightingPresetKey` or legacy admin scene name.
+--- @param key any
+--- @return boolean
+function C.isDarkLightingPresetKey(key)
+  if type(key) ~= "string" or key == "" then
+    return false
+  end
+  if key == "dark" or key == "AdminDark" or key == "DARK" then
+    return true
+  end
+  return string.sub(key, -4) == "Dark"
+end
+
 -- #endregion
 
 -- #region Districts
@@ -1498,147 +2125,183 @@ C.LightModes = {
 C.Districts = {
   Annex = {
     name = "The Annex",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Annex.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Annex.webp"
   },
   BayStFinancial = {
     name = "The Bay St. Financial District",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/BayStFinancial.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/BayStFinancial.webp"
   },
   Bennington = {
     name = "Bennington Heights",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Bennington.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Bennington.webp"
   },
   Cabbagetown = {
     name = "Cabbagetown",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Cabbagetown.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Cabbagetown.webp"
   },
   CentreIsland = {
     name = "Centre Island",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/CentreIsland.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/CentreIsland.webp"
   },
   Chinatown = {
     name = "Chinatown",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Chinatown.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Chinatown.webp"
   },
   Corktown = {
     name = "Corktown",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Corktown.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Corktown.webp"
   },
   Danforth = {
     name = "The Danforth",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Danforth.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Danforth.webp"
   },
   DeerPark = {
     name = "Deer Park",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/DeerPark.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/DeerPark.webp"
   },
   Discovery = {
     name = "The Discovery District",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Discovery.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Discovery.webp"
   },
   DistilleryDist = {
     name = "The Distillery District",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/DistilleryDist.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/DistilleryDist.webp"
   },
   DonRavine = {
     name = "The Don River Ravine",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/DonRavine.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/DonRavine.webp"
   },
   DupontByTheCastle = {
     name = "Dupont By The Castle",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/DupontByTheCastle.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/DupontByTheCastle.webp"
   },
   GayVillage = {
     name = "The Gay Village",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/GayVillage.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/GayVillage.webp"
   },
   HarbordVillage = {
     name = "Harbord Village",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/HarbordVillage.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/HarbordVillage.webp"
   },
   Humewood = {
     name = "Humewood",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Humewood.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Humewood.webp"
   },
   LakeOntario = {
     name = "Lake Ontario",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/LakeOntario.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/LakeOntario.webp"
   },
   LibertyVillage = {
     name = "Liberty Village",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/LibertyVillage.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/LibertyVillage.webp"
   },
   LittleItaly = {
     name = "Little Italy",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/LittleItaly.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/LittleItaly.webp"
   },
   LittlePortugal = {
     name = "Little Portugal",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/LittlePortugal.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/LittlePortugal.webp"
   },
   PATH = {
     name = "P.A.T.H.",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/PATH.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/PATH.webp"
   },
   RegentPark = {
     name = "Regent Park",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/RegentPark.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/RegentPark.webp"
   },
   Riverdale = {
     name = "Riverdale",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Riverdale.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Riverdale.webp"
   },
   Rosedale = {
     name = "Rosedale",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Rosedale.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Rosedale.webp"
   },
   Sewers = {
     name = "The Sewers",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Sewers.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Sewers.webp"
   },
   StJamesTown = {
     name = "St. James Town",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/StJamesTown.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/StJamesTown.webp"
   },
   Streets = {
     name = "The Streets",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Streets.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Streets.webp"
   },
   Subway = {
     name = "The Subway",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Subway.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Subway.webp"
   },
   Summerhill = {
     name = "Summerhill",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Summerhill.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Summerhill.webp"
   },
   Waterfront = {
     name = "The Waterfront",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Waterfront.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Waterfront.webp"
   },
   WestQueenWest = {
     name = "West Queen West",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/WestQueenWest.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/WestQueenWest.webp"
   },
   Wychwood = {
     name = "Wychwood",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Wychwood.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Wychwood.webp"
   },
   YongeBloorMuseum = {
     name = "The Young & Bloor Museum District",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/YongeBloorMuseum.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/YongeBloorMuseum.webp"
   },
   YongeDundasHospital = {
     name = "The Yonge & Dundas Hospital District",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/YongeDundasHospital.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/YongeDundasHospital.webp"
   },
   YongeStreet = {
     name = "Yonge Street",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/YongeStreet.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/YongeStreet.webp"
   },
   Yorkville = {
     name = "Yorkville",
-    image = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Yorkville.webp"
+    image =
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Yorkville.webp"
   }
 }
 
@@ -1664,1896 +2327,2085 @@ C.Sites = {
     key = "CLGrounds",
     name = "Casa Loma: Estate Grounds",
     image = "siteCard_CLGrounds",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLGrounds.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/13443337467401511492/76214FA5BAEFB5198E43592750EFE4B73FB1B198/",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
       location = {playlist = "location", track = "citySuburb"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
     offsetXY = "-254.33 441.43"
   },
   CLGallery = {
     key = "CLGallery",
     name = "Casa Loma: Gallery of Mirrors",
     image = "siteCard_CLGallery",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLGallery.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
     offsetXY = "-254.33 441.43"
   },
   CLGreatHall = {
     key = "CLGreatHall",
     name = "Casa Loma: Great Hall",
     image = "siteCard_CLGreatHall",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLGreatHall.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "-254.33 441.43"
   },
   CLDrawingRoom = {
     key = "CLDrawingRoom",
     name = "Casa Loma: Maximillian Steele Drawing Room",
     image = "siteCard_CLDrawingRoom",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLDrawingRoom.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
       location = {playlist = "location", track = "library"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorDim",
     offsetXY = "-254.33 441.43"
   },
   CLTerrace = {
     key = "CLTerrace",
     name = "Casa Loma: Moonlit Terrace",
     image = "siteCard_CLTerrace",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLTerrace.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/13443337467401511492/76214FA5BAEFB5198E43592750EFE4B73FB1B198/",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
       location = {playlist = "location", track = "cityPark"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
     offsetXY = "-254.33 441.43"
   },
   CLOverlook = {
     key = "CLOverlook",
     name = "Casa Loma: Overlook",
     image = "siteCard_CLOverlook",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLOverlook.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "-254.33 441.43"
   },
   CLLibrary = {
     key = "CLLibrary",
     name = "Casa Loma: Tacettin Ayhan Library",
     image = "siteCard_CLLibrary",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLLibrary.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
       location = {playlist = "location", track = "library"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorDim",
     offsetXY = "-254.33 441.43"
   },
   CLVestibule = {
     key = "CLVestibule",
     name = "Casa Loma: Vestibule",
     image = "siteCard_CLVestibule",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CLVestibule.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0.4,
+    lightMode = "IndoorBright",
     offsetXY = "-254.33 441.43"
   },
-
   GECatacombs = {
     key = "GECatacombs",
     name = "The Giovanni Estate: Catacombs",
     image = "siteCard_GECatacombs",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GECatacombs.webp",
     district = C.Districts.Wychwood,
     soundscape = {
       backgroundMusic = {playlist = "gioCatacombs"},
       location = {playlist = "location", track = "whisperGhosts"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "UndergroundDim",
     offsetXY = "-435.62 426.13"
   },
   GEDiningHall = {
     key = "GEDiningHall",
     name = "The Giovanni Estate: Dining Hall",
     image = "siteCard_GEDiningHall",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GEDiningHall.webp",
     district = C.Districts.Wychwood,
     soundscape = {
       backgroundMusic = {playlist = "gioEstate"},
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.4,
+    lightMode = "IndoorDim",
     offsetXY = "-435.62 426.13"
   },
   GEEstateGrounds = {
     key = "GEEstateGrounds",
     name = "The Giovanni Estate: Estate Grounds",
     image = "siteCard_GEEstateGrounds",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GEEstateGrounds.webp",
     district = C.Districts.Wychwood,
     soundscape = {
       backgroundMusic = {playlist = "gioEstate"},
       location = {playlist = "location", track = "eerieForest"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
     offsetXY = "-435.62 426.13"
   },
   GEMortuary = {
     key = "GEMortuary",
     name = "The Giovanni Estate: Mortuary",
     image = "siteCard_GEMortuary",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GEMortuary.webp",
     district = C.Districts.Wychwood,
     soundscape = {
       backgroundMusic = {playlist = "gioEstate"},
       location = {playlist = "location", track = "laboratory"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorDim",
     offsetXY = "-435.62 426.13"
   },
   GETowerRoom = {
     key = "GETowerRoom",
     name = "The Giovanni Estate: Tower Room",
     image = "siteCard_GETowerRoom",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GETowerRoom.webp",
     district = C.Districts.Wychwood,
     soundscape = {
       backgroundMusic = {playlist = "gioEstate"},
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0.4,
+    lightMode = "IndoorDim",
     offsetXY = "-435.62 426.13"
   },
-
   WarrensAntechamber = {
     key = "WarrensAntechamber",
     name = "The Nosferatu Warrens: Antechamber",
     image = "siteCard_WarrensAntechamber",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WarrensAntechamber.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14904535142342080917/13645726B71BCA116A015D1DB0F14EC5D71CA709/",
     district = C.Districts.Sewers,
     soundscape = {
       backgroundMusic = {playlist = "nosWarrens"},
       location = {playlist = "location", track = "warrens"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "UndergroundDim",
   },
   WarrensDrakes = {
     key = "WarrensDrakes",
     name = "The Nosferatu Warrens: Drake's",
     image = "siteCard_WarrensDrakes",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WarrensDrakes.webp",
     district = C.Districts.Sewers,
     soundscape = {
       backgroundMusic = {playlist = "nosWarrens"},
       location = {playlist = "location", track = "warrens"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "UndergroundBright",
   },
   WarrensLabyrinth = {
     key = "WarrensLabyrinth",
     name = "The Nosferatu Warrens: Labyrinth",
     image = "siteCard_WarrensLabyrinth",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WarrensLabyrinth.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14904535142342080917/13645726B71BCA116A015D1DB0F14EC5D71CA709/",
     district = C.Districts.Sewers,
     soundscape = {
       backgroundMusic = {playlist = "nosWarrens"},
       location = {playlist = "location", track = "warrens"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "UndergroundDim",
   },
   WarrensSpawningPool = {
     key = "WarrensSpawningPool",
     name = "The Nosferatu Warrens: Spawning Pool",
     image = "siteCard_WarrensSpawningPool",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WarrensSpawningPool.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14904535142342080917/13645726B71BCA116A015D1DB0F14EC5D71CA709/",
     district = C.Districts.Sewers,
     soundscape = {
       backgroundMusic = {playlist = "nosWarrens"},
       location = {playlist = "location", track = "warrens"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "UndergroundDim",
   },
   WarrensTunnelJunction = {
     key = "WarrensTunnelJunction",
     name = "The Nosferatu Warrens: Tunnel Junction",
     image = "siteCard_WarrensTunnelJunction",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WarrensTunnelJunction.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14904535142342080917/13645726B71BCA116A015D1DB0F14EC5D71CA709/",
     district = C.Districts.Sewers,
     soundscape = {
       backgroundMusic = {playlist = "nosWarrens"},
       location = {playlist = "location", track = "warrens"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "UndergroundDim",
   },
-
   ROMLoadingZone = {
     key = "ROMLoadingZone",
     name = "Royal Ontario Museum: Bloor Street Loading Zone",
     image = "siteCard_ROMLoadingZone",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ROMLoadingZone.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16833409399715282792/D3B9B667F733EF17DAF88A22D806287F8A73D338/",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
     offsetXY = "-88.09 254.58"
   },
   ROMC5Lounge = {
     key = "ROMC5Lounge",
     name = "Royal Ontario Museum: C5 Lounge",
     image = "siteCard_ROMC5Lounge",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ROMC5Lounge.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16833409399715282792/D3B9B667F733EF17DAF88A22D806287F8A73D338/",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
     offsetXY = "-88.09 254.58"
   },
   ROMRotunda = {
     key = "ROMRotunda",
     name = "Royal Ontario Museum: Rotunda Mezzanine",
     image = "siteCard_ROMRotunda",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ROMRotunda.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16833409399715282792/D3B9B667F733EF17DAF88A22D806287F8A73D338/",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "-88.09 254.58"
   },
   ROMSpiritHouse = {
     key = "ROMSpiritHouse",
     name = "Royal Ontario Museum: Spirit House",
     image = "siteCard_ROMSpiritHouse",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ROMSpiritHouse.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16833409399715282792/D3B9B667F733EF17DAF88A22D806287F8A73D338/",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorDim",
     offsetXY = "-88.09 254.58"
   },
   ROMHallOfExtinction = {
     key = "ROMHallOfExtinction",
     name = "Royal Ontario Museum: The Hall of Extinction",
     image = "siteCard_ROMHallOfExtinction",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ROMHallOfExtinction.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16833409399715282792/D3B9B667F733EF17DAF88A22D806287F8A73D338/",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorDim",
     offsetXY = "-88.09 254.58"
   },
-
   StRegisRoom101 = {
     key = "StRegisRoom101",
     name = "The St. Regis Toronto: Room 101",
     image = "siteCard_StRegisRoom101",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StRegisRoom101.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/12529850396848916176/59098191C81FF2BFA270146F899390BE8EC15E7B/",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "computer"}
     },
     isIndoors = true,
-    offsetXY = "155.04 -84.57"
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
+    offsetXY = "155.04 −84.57"
   },
   StRegisCouncilChamber = {
     key = "StRegisCouncilChamber",
     name = "The St. Regis Toronto: Council Chamber",
     image = "siteCard_StRegisCouncilChamber",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StRegisCouncilChamber.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/9611213725827991921/5D41F79E80086CF077056C37E86332384B20655B/",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "155.04 -84.57"
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
+    offsetXY = "155.04 −84.57"
   },
   StRegisFoyer = {
     key = "StRegisFoyer",
     name = "The St. Regis Toronto: Foyer",
     image = "siteCard_StRegisFoyer",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StRegisFoyer.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/11954366155046663954/D22546D47BA47EBAFF7FFD032F0C7D89FCF53383/",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "155.04 -84.57"
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
+    offsetXY = "155.04 −84.57"
   },
   StRegisGrandSalon = {
     key = "StRegisGrandSalon",
     name = "The St. Regis Toronto: Grand Salon",
     image = "siteCard_StRegisGrandSalon",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StRegisGrandSalon.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/11954366155046663954/D22546D47BA47EBAFF7FFD032F0C7D89FCF53383/",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "155.04 -84.57"
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+    offsetXY = "155.04 −84.57"
   },
-
   UnionConcourse = {
     key = "UnionConcourse",
     name = "Union Station: Bay St. Concourse",
     image = "siteCard_UnionConcourse",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionConcourse.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "cityWalking"}
     },
     isIndoors = true,
-    offsetXY = "203.55 -211.79"
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+    offsetXY = "203.55 −211.79"
   },
   UnionGrandClock = {
     key = "UnionGrandClock",
     name = "Union Station: Grand Clock",
     image = "siteCard_UnionGrandClock",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionGrandClock.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "cityWalking"}
     },
     isIndoors = true,
-    offsetXY = "203.55 -211.79"
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+    offsetXY = "203.55 −211.79"
   },
   UnionLine1 = {
     key = "UnionLine1",
     name = "Union Station: Line 1",
     image = "siteCard_UnionLine1",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionLine1.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "subway"}
     },
     isIndoors = true,
-    offsetXY = "203.55 -211.79"
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
+    offsetXY = "203.55 −211.79"
   },
   UnionSecOffice = {
     key = "UnionSecOffice",
     name = "Union Station: Security Office",
     image = "siteCard_UnionSecOffice",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionSecOffice.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "computer"}
     },
     isIndoors = true,
-    offsetXY = "203.55 -211.79"
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
+    offsetXY = "203.55 −211.79"
   },
   UnionServiceCorridor = {
     key = "UnionServiceCorridor",
     name = "Union Station: Service Corridor",
     image = "siteCard_UnionServiceCorridor",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionServiceCorridor.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "softHum"}
     },
     isIndoors = true,
-    offsetXY = "203.55 -211.79"
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
+    offsetXY = "203.55 −211.79"
   },
   UnionUPExpress = {
     key = "UnionUPExpress",
     name = "Union Station: UP Express Platform",
     image = "siteCard_UnionUPExpress",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UnionUPExpress.webp",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "203.55 -211.79"
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+    offsetXY = "203.55 −211.79"
   },
-
   ChantryLibrary = {
     key = "ChantryLibrary",
     name = "The University Chantry: Grand Library",
     image = "siteCard_ChantryLibrary",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ChantryLibrary.webp",
     district = C.Districts.Discovery,
     soundscape = {
       location = {playlist = "location", track = "library"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorDim",
     offsetXY = "-33.9 212.64"
   },
   ChantryGrounds = {
     key = "ChantryGrounds",
     name = "The University Chantry: Grounds",
     image = "siteCard_ChantryGrounds",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ChantryGrounds.webp",
     district = C.Districts.Discovery,
     soundscape = {
       location = {playlist = "location", track = "church"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
     offsetXY = "-33.9 212.64"
   },
   ChantryQuarters = {
     key = "ChantryQuarters",
     name = "The University Chantry: Quarters",
     image = "siteCard_ChantryQuarters",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ChantryQuarters.webp",
     district = C.Districts.Discovery,
     soundscape = {
       location = {playlist = "location", track = "church"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "-33.9 212.64"
   },
   ChantryThaumatorium = {
     key = "ChantryThaumatorium",
     name = "The University Chantry: Thaumatorium",
     image = "siteCard_ChantryThaumatorium",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ChantryThaumatorium.webp",
     district = C.Districts.Discovery,
     soundscape = {
       location = {playlist = "location", track = "ritualRoom"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
     offsetXY = "-33.9 212.64"
   },
   AnarchBar = {
     key = "AnarchBar",
     name = "Anarch Dive Bar",
     image = "siteCard_AnarchBar",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/AnarchBar.webp",
     soundscape = {
       location = {playlist = "location", track = "diveBar"}
     },
     isIndoors = true,
+    weatherDucking = 0.4,
+    lightMode = "IndoorDim",
   },
   AptCorridor = {
     key = "AptCorridor",
     name = "Apartment Corridor",
     image = "siteCard_AptCorridor",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/AptCorridor.webp",
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
   },
   AptLobby = {
     key = "AptLobby",
     name = "Apartment Lobby",
     image = "siteCard_AptLobby",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/AptLobby.webp",
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
   },
   AptStreetside = {
     key = "AptStreetside",
     name = "Apartment Streetside",
     image = "siteCard_AptStreetside",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/AptStreetside.webp",
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
   },
   ArtGallery = {
     key = "ArtGallery",
     name = "Art Gallery of Ontario",
     image = "siteCard_ArtGallery",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ArtGallery.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "-50.78 -9.35"
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+    offsetXY = "-50.78 −9.35"
   },
   AutoMechanic = {
     key = "AutoMechanic",
     name = "Auto Mechanic",
     image = "siteCard_AutoMechanic",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/AutoMechanic.webp",
     soundscape = {
       location = {playlist = "location", track = "autoShop"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
   },
   BackAlley1 = {
     key = "BackAlley1",
     name = "Back Alley",
     image = "siteCard_BackAlley1",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BackAlley1.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
   },
   BackAlley2 = {
     key = "BackAlley2",
     name = "Back Alley",
     image = "siteCard_BackAlley2",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BackAlley2.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
   },
   BackAlley3 = {
     key = "BackAlley3",
     name = "Back Alley",
     image = "siteCard_BackAlley3",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BackAlley3.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
   },
   BayTower = {
     key = "BayTower",
     name = "Bay Wellington Tower",
     image = "siteCard_BayTower",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BayTower.webp",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "153.91 -119.43"
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+    offsetXY = "153.91 −119.43"
   },
   BierMarkt = {
     key = "BierMarkt",
     name = "Bier Markt",
     image = "siteCard_BierMarkt",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BierMarkt.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "bar"}
     },
     isIndoors = true,
-    offsetXY = "-134.47 -133.17"
+    weatherDucking = 0.25,
+    lightMode = "IndoorDim",
+    offsetXY = "-134.47 −133.17"
   },
   BillyBishopAirport = {
     key = "BillyBishopAirport",
     name = "Billy Bishop Airport",
     image = "siteCard_BillyBishopAirport",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BillyBishopAirport.webp",
     district = C.Districts.CentreIsland,
     soundscape = {
       location = {playlist = "location", track = "airport"}
     },
     isIndoors = true,
-    offsetXY = "-105.82 -442.28"
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
+    offsetXY = "-105.82 −442.28"
   },
   BillyBishopFerry = {
     key = "BillyBishopFerry",
     name = "Billy Bishop Ferry",
     image = "siteCard_BillyBishopFerry",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BillyBishopFerry.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "waterside"}
     },
     isIndoors = true,
-    offsetXY = "-99.58 -362.38"
+    weatherDucking = 0.4,
+    lightMode = "IndoorDim",
+    offsetXY = "-99.58 −362.38"
   },
   CabbagetownPenthouse = {
     key = "CabbagetownPenthouse",
     name = "Cabbagetown Penthouse",
     image = "siteCard_CabbagetownPenthouse",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CabbagetownPenthouse.webp",
     district = C.Districts.Cabbagetown,
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
     offsetXY = "240.86 75.08"
   },
   CNE = {
     key = "CNE",
     name = "Canadian National Exhibition Place",
     image = "siteCard_CNE",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CNE.webp",
     district = C.Districts.LibertyVillage,
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = false,
-    offsetXY = "-307.53 -332.07"
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
+    offsetXY = "-307.53 −332.07"
   },
   Cemetery = {
     key = "Cemetery",
     name = "Cemetery",
     image = "siteCard_Cemetery",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Cemetery.webp",
     soundscape = {
       location = {playlist = "location", track = "eerieForest"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
   },
   CAMH = {
     key = "CAMH",
     name = "Centre for Addiction & Mental Health",
     image = "siteCard_CAMH",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CAMH.webp",
     district = C.Districts.HarbordVillage,
     soundscape = {
       location = {playlist = "location", track = "hospital"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorDim",
     offsetXY = "-168.8 109.93"
   },
   CentrevillePark = {
     key = "CentrevillePark",
     name = "Centreville Theme Park",
     image = "siteCard_CentrevillePark",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CentrevillePark.webp",
     district = C.Districts.CentreIsland,
     soundscape = {
       location = {playlist = "location", track = "cityPark"}
     },
     isIndoors = false,
-    offsetXY = "213.91 -598.68"
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
+    offsetXY = "213.91 −598.68"
   },
   ChristiePitsPark = {
     key = "ChristiePitsPark",
     name = "Christie Pits Park",
     image = "siteCard_ChristiePitsPark",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ChristiePitsPark.webp",
     district = C.Districts.Wychwood,
     soundscape = {
       location = {playlist = "location", track = "cityPark"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
     offsetXY = "-405.69 204.57"
   },
   CityApt1 = {
     key = "CityApt1",
     name = "City Apartment",
     image = "siteCard_CityApt1",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CityApt1.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
   },
   CityApt2 = {
     key = "CityApt2",
     name = "City Apartment",
     image = "siteCard_CityApt2",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CityApt2.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
   },
   CityApt3 = {
     key = "CityApt3",
     name = "City Apartment",
     image = "siteCard_CityApt3",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CityApt3.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
   },
   CityHall = {
     key = "CityHall",
     name = "City Hall",
     image = "siteCard_CityHall",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CityHall.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "82.13 -3.26"
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+    offsetXY = "82.13 −3.26"
   },
   CityPark = {
     key = "CityPark",
     name = "City Park",
     image = "siteCard_CityPark",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CityPark.webp",
     soundscape = {
       location = {playlist = "location", track = "cityPark"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
   },
   CNTower = {
     key = "CNTower",
     name = "CN Tower",
     image = "siteCard_CNTower",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CNTower.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "rooftop"}
     },
     isIndoors = true,
-    offsetXY = "54.04 -226.24"
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+    offsetXY = "54.04 −226.24"
   },
   CorktownCommon = {
     key = "CorktownCommon",
     name = "Corktown Common",
     image = "siteCard_CorktownCommon",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CorktownCommon.webp",
     district = C.Districts.DonRavine,
     soundscape = {
       location = {playlist = "location", track = "eerieForest"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
     offsetXY = "503.56 1.13"
   },
   DanforthHall = {
     key = "DanforthHall",
     name = "Danforth Music Hall",
     image = "siteCard_DanforthHall",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/DanforthHall.webp",
     district = C.Districts.Danforth,
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
     offsetXY = "426.68 411.68"
   },
   DerelictWarehouse = {
     key = "DerelictWarehouse",
     name = "Derelict Warehouse",
     image = "siteCard_DerelictWarehouse",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/DerelictWarehouse.webp",
     soundscape = {
       location = {playlist = "location", track = "urbanDark"}
     },
     isIndoors = true,
+    weatherDucking = 0.4,
+    lightMode = "IndoorDark",
   },
   Docks = {
     key = "Docks",
     name = "The Docks",
     image = "siteCard_Docks",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Docks.webp",
     district = C.Districts.DistilleryDist,
     soundscape = {
       location = {playlist = "location", track = "waterside"}
     },
     isIndoors = false,
-    offsetXY = "497.46 -221.99"
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
+    offsetXY = "497.46 −221.99"
   },
   DogPark = {
     key = "DogPark",
     name = "Dog Park",
     image = "siteCard_DogPark",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/DogPark.webp",
     soundscape = {
       location = {playlist = "location", track = "cityPark"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
   },
   Drake = {
     key = "Drake",
     name = "The Drake Hotel",
     image = "siteCard_Drake",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Drake.webp",
     district = C.Districts.LittlePortugal,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "-454.91 -172.69"
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
+    offsetXY = "-454.91 −172.69"
   },
   EatonCentre = {
     key = "EatonCentre",
     name = "Eaton Centre",
     image = "siteCard_EatonCentre",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/EatonCentre.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "indoorMarket"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "117.02 19.41"
   },
   Elevator = {
     key = "Elevator",
     name = "Elevator",
     image = "siteCard_Elevator",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Elevator.webp",
     soundscape = {
       location = {playlist = "location", track = "softHum"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
   },
   BrickWorks = {
     key = "BrickWorks",
     name = "Evergreen Brick Works",
     image = "siteCard_BrickWorks",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BrickWorks.webp",
     district = C.Districts.DonRavine,
     soundscape = {
       location = {playlist = "location", track = "eerieForest"}
     },
     isIndoors = true,
+    weatherDucking = 0.4,
+    lightMode = "IndoorDim",
     offsetXY = "320.58 569.78"
   },
   EvergreenPalisades = {
     key = "EvergreenPalisades",
     name = "Evergreen Palisades",
     image = "siteCard_EvergreenPalisades",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/EvergreenPalisades.webp",
     district = C.Districts.RegentPark,
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.4,
+    lightMode = "IndoorDim",
     offsetXY = "512.07 302.32"
   },
   Fairmont = {
     key = "Fairmont",
     name = "Fairmont Royal York",
     image = "siteCard_Fairmont",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Fairmont.webp",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "113.19 -122.68"
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+    offsetXY = "113.19 −122.68"
   },
   FightClub = {
     key = "FightClub",
     name = "Fight Club",
     image = "siteCard_FightClub",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/FightClub.webp",
     soundscape = {
       location = {playlist = "location", track = "diveBar"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorDim",
   },
   FortYork = {
     key = "FortYork",
     name = "Fort York",
     image = "siteCard_FortYork",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/FortYork.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "cityWalking"}
     },
     isIndoors = true,
-    offsetXY = "-216.46 -279.93"
+    weatherDucking = 0.4,
+    lightMode = "IndoorBright",
+    offsetXY = "-216.46 −279.93"
   },
   CeramicsMuseum = {
     key = "CeramicsMuseum",
     name = "Gardiner Ceramics Museum",
     image = "siteCard_CeramicsMuseum",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/CeramicsMuseum.webp",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "-65.25 262.08"
   },
   GayBar = {
     key = "GayBar",
     name = "Gay Bar",
     image = "siteCard_GayBar",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GayBar.webp",
     soundscape = {
       location = {playlist = "location", track = "diveBar"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorDim",
   },
   GayClub = {
     key = "GayClub",
     name = "Gay Nightclub",
     image = "siteCard_GayClub",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GayClub.webp",
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
   },
   GeorgeBrown = {
     key = "GeorgeBrown",
     name = "George Brown College",
     image = "siteCard_GeorgeBrown",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GeorgeBrown.webp",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "-247.38 409.7"
   },
   GraffitiAlley = {
     key = "GraffitiAlley",
     name = "Graffiti Alley",
     image = "siteCard_GraffitiAlley",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/GraffitiAlley.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
-    offsetXY = "-143.83 -96.33"
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
+    offsetXY = "-143.83 −96.33"
   },
   HarbourfrontCentre = {
     key = "HarbourfrontCentre",
     name = "Harbourfront Centre",
     image = "siteCard_HarbourfrontCentre",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/HarbourfrontCentre.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = true,
-    offsetXY = "102.41 -275.97"
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
+    offsetXY = "102.41 −275.97"
   },
   Highway = {
     key = "Highway",
     name = "Highway",
     image = "siteCard_Highway",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Highway.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
   },
   Distillery = {
     key = "Distillery",
     name = "The Historic Distillery",
     image = "siteCard_Distillery",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Distillery.webp",
     district = C.Districts.DistilleryDist,
     soundscape = {
       location = {playlist = "location", track = "industry"}
     },
     isIndoors = true,
-    offsetXY = "448.95 -52.84"
+    weatherDucking = 0.4,
+    lightMode = "IndoorDim",
+    offsetXY = "448.95 −52.84"
   },
   HockeyHallOfFame = {
     key = "HockeyHallOfFame",
     name = "Hockey Hall of Fame",
     image = "siteCard_HockeyHallOfFame",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/HockeyHallOfFame.webp",
     district = C.Districts.PATH,
     soundscape = {
       location = {playlist = "location", track = "indoorMarket"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
   },
   SickKids = {
     key = "SickKids",
     name = "Hospital for Sick Children",
     image = "siteCard_SickKids",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SickKids.webp",
     district = C.Districts.YongeDundasHospital,
     soundscape = {
       location = {playlist = "location", track = "hospital"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "34.61 48.45"
   },
   JRRLibrary = {
     key = "JRRLibrary",
     name = "John Roberts Research Library",
     image = "siteCard_JRRLibrary",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/JRRLibrary.webp",
     district = C.Districts.Discovery,
     soundscape = {
       location = {playlist = "location", track = "library"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
     offsetXY = "-124.83 200.6"
   },
   Junkyard = {
     key = "Junkyard",
     name = "Junkyard",
     image = "siteCard_Junkyard",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Junkyard.webp",
     soundscape = {
       location = {playlist = "location", track = "autoShop"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
   },
   Kensington = {
     key = "Kensington",
     name = "Kensington Market",
     image = "siteCard_Kensington",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Kensington.webp",
     district = C.Districts.HarbordVillage,
     soundscape = {
       location = {playlist = "location", track = "cityWalking"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
     offsetXY = "-131.21 16.29"
   },
   Laboratory = {
     key = "Laboratory",
     name = "Laboratory",
     image = "siteCard_Laboratory",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Laboratory.webp",
     soundscape = {
       location = {playlist = "location", track = "laboratory"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
   },
   LectureHall = {
     key = "LectureHall",
     name = "Lecture Hall",
     image = "siteCard_LectureHall",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/LectureHall.webp",
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
   },
   Library = {
     key = "Library",
     name = "Library",
     image = "siteCard_Library",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Library.webp",
     soundscape = {
       location = {playlist = "location", track = "library"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
   },
   LowerParklands = {
     key = "LowerParklands",
     name = "Lower Don Parklands",
     image = "siteCard_LowerParklands",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/LowerParklands.webp",
     district = C.Districts.DonRavine,
     soundscape = {
       location = {playlist = "location", track = "eerieForest"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
     offsetXY = "398.31 740.07"
   },
   Yacht = {
     key = "Yacht",
     name = "Luxury Yacht",
     image = "siteCard_Yacht",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Yacht.webp",
     soundscape = {
       location = {playlist = "location", track = "waterside"}
     },
     isIndoors = true,
+    weatherDucking = 0.4,
+    lightMode = "IndoorBright",
   },
   MadinaMasjid = {
     key = "MadinaMasjid",
     name = "Madina Masjid",
     image = "siteCard_MadinaMasjid",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/MadinaMasjid.webp",
     district = C.Districts.Danforth,
     soundscape = {
       location = {playlist = "location", track = "church"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorDim",
     offsetXY = "533.35 523.6"
   },
   MasseyHall = {
     key = "MasseyHall",
     name = "Massey Hall",
     image = "siteCard_MasseyHall",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/MasseyHall.webp",
     district = C.Districts.YongeStreet,
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
-    offsetXY = "170.22 -100.02"
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
+    offsetXY = "170.22 −100.02"
   },
   MiddleOfRoad = {
     key = "MiddleOfRoad",
     name = "Middle of the Road",
     image = "siteCard_MiddleOfRoad",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/MiddleOfRoad.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
   },
   ModClub = {
     key = "ModClub",
     name = "Mod Club",
     image = "siteCard_ModClub",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ModClub.webp",
     district = C.Districts.LittleItaly,
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
     offsetXY = "-384.69 45.33"
   },
   MountSinai = {
     key = "MountSinai",
     name = "Mount Sinai Hospital",
     image = "siteCard_MountSinai",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/MountSinai.webp",
     district = C.Districts.YongeDundasHospital,
     soundscape = {
       location = {playlist = "location", track = "hospital"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "0 36.83"
   },
   Nightclub1 = {
     key = "Nightclub1",
     name = "Nightclub",
     image = "siteCard_Nightclub1",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Nightclub1.webp",
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
   },
   Nightclub2 = {
     key = "Nightclub2",
     name = "Nightclub",
     image = "siteCard_Nightclub2",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Nightclub2.webp",
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
   },
   Nightclub3 = {
     key = "Nightclub3",
     name = "Nightclub",
     image = "siteCard_Nightclub3",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Nightclub3.webp",
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
   },
   OCAD = {
     key = "OCAD",
     name = "OCAD University",
     image = "siteCard_OCAD",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/OCAD.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = true,
-    offsetXY = "-24.4 -28.05"
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+    offsetXY = "-24.4 −28.05"
   },
   Office = {
     key = "Office",
     name = "Office",
     image = "siteCard_Office",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Office.webp",
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
   },
   OldOsgoodeHall = {
     key = "OldOsgoodeHall",
     name = "Old Osgoode Hall",
     image = "siteCard_OldOsgoodeHall",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/OldOsgoodeHall.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "22.41 -11.33"
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+    offsetXY = "22.41 −11.33"
   },
   OntarioPlaceMarina = {
     key = "OntarioPlaceMarina",
     name = "Ontario Place Marina",
     image = "siteCard_OntarioPlaceMarina",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/OntarioPlaceMarina.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "waterside"}
     },
     isIndoors = false,
-    offsetXY = "-379.3 -473.73"
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
+    offsetXY = "-379.3 −473.73"
   },
   ParkDriveReservation = {
     key = "ParkDriveReservation",
     name = "Park Drive Reservation Lands",
     image = "siteCard_ParkDriveReservation",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ParkDriveReservation.webp",
     district = C.Districts.DonRavine,
     soundscape = {
       location = {playlist = "location", track = "eerieForest"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
     offsetXY = "272.92 502.92"
   },
   ParkingLot = {
     key = "ParkingLot",
     name = "Parking Lot",
     image = "siteCard_ParkingLot",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ParkingLot.webp",
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
   },
   PenthouseApt1 = {
     key = "PenthouseApt1",
     name = "Penthouse Apartment",
     image = "siteCard_PenthouseApt1",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/PenthouseApt1.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
   },
   PenthouseApt2 = {
     key = "PenthouseApt2",
     name = "Penthouse Apartment",
     image = "siteCard_PenthouseApt2",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/PenthouseApt2.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
   },
   PenthouseApt3 = {
     key = "PenthouseApt3",
     name = "Penthouse Apartment",
     image = "siteCard_PenthouseApt3",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/PenthouseApt3.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
   },
   PhoenixTheatre = {
     key = "PhoenixTheatre",
     name = "Phoenix Concert Hall & Theatre",
     image = "siteCard_PhoenixTheatre",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/PhoenixTheatre.webp",
     district = C.Districts.Riverdale,
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
     offsetXY = "222.42 205.42"
   },
   PMHospital = {
     key = "PMHospital",
     name = "Princess Margaret Hospital",
     image = "siteCard_PMHospital",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/PMHospital.webp",
     district = C.Districts.YongeDundasHospital,
     soundscape = {
       location = {playlist = "location", track = "hospital"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "-11.63 86.13"
   },
   ProfOffice = {
     key = "ProfOffice",
     name = "Professor's Office",
     image = "siteCard_ProfOffice",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ProfOffice.webp",
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
   },
   ReconciliationHouse = {
     key = "ReconciliationHouse",
     name = "Reconciliation House",
     image = "siteCard_ReconciliationHouse",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ReconciliationHouse.webp",
     district = C.Districts.Chinatown,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "-341.43 -213.78"
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
+    offsetXY = "-341.43 −213.78"
   },
   RedemptionHouse = {
     key = "RedemptionHouse",
     name = "Redemption House",
     image = "siteCard_RedemptionHouse",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RedemptionHouse.webp",
     district = C.Districts.Danforth,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
     offsetXY = "465.97 437.89"
   },
   RemembranceHouse = {
     key = "RemembranceHouse",
     name = "Remembrance House",
     image = "siteCard_RemembranceHouse",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RemembranceHouse.webp",
     district = C.Districts.LittleItaly,
     soundscape = {
       location = {playlist = "location", track = "church"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
     offsetXY = "-257.74 97.33"
   },
   RevelationHouse = {
     key = "RevelationHouse",
     name = "Revelation House",
     image = "siteCard_RevelationHouse",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RevelationHouse.webp",
     district = C.Districts.GayVillage,
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
     offsetXY = "124.12 279.23"
   },
   RogersCentre = {
     key = "RogersCentre",
     name = "Rogers Centre",
     image = "siteCard_RogersCentre",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RogersCentre.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "cityPark"}
     },
     isIndoors = false,
-    offsetXY = "8.37 -205.28"
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
+    offsetXY = "8.37 −205.28"
   },
   Rooftop = {
     key = "Rooftop",
     name = "Rooftop",
     image = "siteCard_Rooftop",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Rooftop.webp",
     soundscape = {
       location = {playlist = "location", track = "rooftop"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
   },
   RunDownApt1 = {
     key = "RunDownApt1",
     name = "Run-Down Apartment",
     image = "siteCard_RunDownApt1",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RunDownApt1.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorDim",
   },
   RunDownApt2 = {
     key = "RunDownApt2",
     name = "Run-Down Apartment",
     image = "siteCard_RunDownApt2",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RunDownApt2.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorDim",
   },
   RunDownApt3 = {
     key = "RunDownApt3",
     name = "Run-Down Apartment",
     image = "siteCard_RunDownApt3",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/RunDownApt3.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorDim",
   },
   Ryerson = {
     key = "Ryerson",
     name = "Ryerson University",
     image = "siteCard_Ryerson",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Ryerson.webp",
     district = C.Districts.Cabbagetown,
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "167.95 97.75"
   },
   ScotiabankTheatre = {
     key = "ScotiabankTheatre",
     name = "Scotiabank Theatre",
     image = "siteCard_ScotiabankTheatre",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ScotiabankTheatre.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
-    offsetXY = "145.82 -180.48"
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
+    offsetXY = "145.82 −180.48"
   },
   SecludedDeadEnd = {
     key = "SecludedDeadEnd",
     name = "Secluded Dead End",
     image = "siteCard_SecludedDeadEnd",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SecludedDeadEnd.webp",
     soundscape = {
       location = {playlist = "location", track = "cityPark"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
   },
   SewerTunnel1 = {
     key = "SewerTunnel1",
     name = "Sewer Tunnel",
     image = "siteCard_SewerTunnel1",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SewerTunnel1.webp",
     soundscape = {
       location = {playlist = "location", track = "sewers"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "UndergroundDim",
   },
   SewerTunnel2 = {
     key = "SewerTunnel2",
     name = "Sewer Tunnel",
     image = "siteCard_SewerTunnel2",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SewerTunnel2.webp",
     soundscape = {
       location = {playlist = "location", track = "sewers"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "UndergroundDim",
   },
   SheratonCentre = {
     key = "SheratonCentre",
     name = "Sheraton Centre",
     image = "siteCard_SheratonCentre",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SheratonCentre.webp",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
-    offsetXY = "71.49 -51"
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+    offsetXY = "71.49 −51"
   },
   Sidewalk1 = {
     key = "Sidewalk1",
     name = "Sidewalk",
     image = "siteCard_Sidewalk1",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Sidewalk1.webp",
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
   },
   Sidewalk2 = {
     key = "Sidewalk2",
     name = "Sidewalk",
     image = "siteCard_Sidewalk2",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Sidewalk2.webp",
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
   },
   Sidewalk3 = {
     key = "Sidewalk3",
     name = "Sidewalk",
     image = "siteCard_Sidewalk3",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Sidewalk3.webp",
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
   },
   SnakesLattes = {
     key = "SnakesLattes",
     name = "Snakes & Lattes",
     image = "siteCard_SnakesLattes",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SnakesLattes.webp",
     district = C.Districts.Wychwood,
     soundscape = {
       location = {playlist = "location", track = "diveBar"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "-307.53 205.7"
   },
   SneakyDees = {
     key = "SneakyDees",
     name = "Sneaky Dee's",
     image = "siteCard_SneakyDees",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SneakyDees.webp",
     district = C.Districts.HarbordVillage,
     soundscape = {
       location = {playlist = "location", track = "diveBar"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "-232.06 54.12"
   },
   StLawrenceMarket = {
     key = "StLawrenceMarket",
     name = "St. Lawrence Market",
     image = "siteCard_StLawrenceMarket",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StLawrenceMarket.webp",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "indoorMarket"}
     },
     isIndoors = true,
-    offsetXY = "262.99 -156.12"
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
+    offsetXY = "262.99 −156.12"
   },
   StMichaelsCathedral = {
     key = "StMichaelsCathedral",
     name = "St. Michael's Cathedral Basilica",
     image = "siteCard_StMichaelsCathedral",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StMichaelsCathedral.webp",
     district = C.Districts.Cabbagetown,
     soundscape = {
       location = {playlist = "location", track = "church"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorDim",
     offsetXY = "168.94 44.06"
   },
   StMichaelsHospital = {
     key = "StMichaelsHospital",
     name = "St. Michael's Hospital",
     image = "siteCard_StMichaelsHospital",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StMichaelsHospital.webp",
     district = C.Districts.Cabbagetown,
     soundscape = {
       location = {playlist = "location", track = "hospital"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "202.28 8.5"
   },
   Stairwell = {
     key = "Stairwell",
     name = "Stairwell",
     image = "siteCard_Stairwell",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Stairwell.webp",
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
   },
   StreetCorner1 = {
     key = "StreetCorner1",
     name = "Street Corner",
     image = "siteCard_StreetCorner1",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StreetCorner1.webp",
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
   },
   StreetCorner2 = {
     key = "StreetCorner2",
     name = "Street Corner",
     image = "siteCard_StreetCorner2",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StreetCorner2.webp",
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
   },
   StreetCorner3 = {
     key = "StreetCorner3",
     name = "Street Corner",
     image = "siteCard_StreetCorner3",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StreetCorner3.webp",
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
   },
   StripClub = {
     key = "StripClub",
     name = "Strip Club",
     image = "siteCard_StripClub",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StripClub.webp",
     soundscape = {
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
   },
   StudentVillage = {
     key = "StudentVillage",
     name = "Student Village",
     image = "siteCard_StudentVillage",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/StudentVillage.webp",
     district = C.Districts.Discovery,
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
     offsetXY = "-128.51 170.28"
   },
   SuburbanHouse1 = {
     key = "SuburbanHouse1",
     name = "Suburban House",
     image = "siteCard_SuburbanHouse1",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SuburbanHouse1.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
   },
   SuburbanHouse2 = {
     key = "SuburbanHouse2",
     name = "Suburban House",
     image = "siteCard_SuburbanHouse2",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SuburbanHouse2.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
   },
   SuburbanHouse3 = {
     key = "SuburbanHouse3",
     name = "Suburban House",
     image = "siteCard_SuburbanHouse3",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SuburbanHouse3.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
   },
   SubwayStation = {
     key = "SubwayStation",
     name = "Subway Station",
     image = "siteCard_SubwayStation",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SubwayStation.webp",
     soundscape = {
       location = {playlist = "location", track = "subway"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
   },
   SubwayTunnels = {
     key = "SubwayTunnels",
     name = "Subway Tunnels",
     image = "siteCard_SubwayTunnels",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SubwayTunnels.webp",
     soundscape = {
       location = {playlist = "location", track = "sewers"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "UndergroundDim",
   },
   ThreefoldExchange = {
     key = "ThreefoldExchange",
     name = "The Threefold Exchange",
     image = "siteCard_ThreefoldExchange",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/ThreefoldExchange.webp",
     district = C.Districts.Chinatown,
     soundscape = {
       location = {playlist = "location", track = "apothecary"}
     },
     isIndoors = true,
-    offsetXY = "-385.26 -208.82"
+    weatherDucking = 0.25,
+    lightMode = "IndoorDim",
+    offsetXY = "-385.26 −208.82"
   },
   TIFFLightbox = {
     key = "TIFFLightbox",
     name = "TIFF Bell Lightbox",
     image = "siteCard_TIFFLightbox",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/TIFFLightbox.webp",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
-    offsetXY = "-7.66 -119.57"
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
+    offsetXY = "-7.66 −119.57"
   },
   TorontoGeneral = {
     key = "TorontoGeneral",
     name = "Toronto General Hospital",
     image = "siteCard_TorontoGeneral",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/TorontoGeneral.webp",
     district = C.Districts.YongeDundasHospital,
     soundscape = {
       location = {playlist = "location", track = "hospital"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "23.97 99.59"
   },
   UndergroundMedClinic = {
     key = "UndergroundMedClinic",
     name = "Underground Medical Clinic",
     image = "siteCard_UndergroundMedClinic",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UndergroundMedClinic.webp",
     soundscape = {
       location = {playlist = "location", track = "hospital"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
   },
   UndergroundMedOffice = {
     key = "UndergroundMedOffice",
     name = "Underground Medical Office",
     image = "siteCard_UndergroundMedOffice",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UndergroundMedOffice.webp",
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
     },
     isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
   },
   UndergroundParking = {
     key = "UndergroundParking",
     name = "Underground Parking Garage",
     image = "siteCard_UndergroundParking",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UndergroundParking.webp",
     soundscape = {
       location = {playlist = "location", track = "urbanDark"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorDim",
   },
   UpperCanadaCollege = {
     key = "UpperCanadaCollege",
     name = "Upper Canada College",
     image = "siteCard_UpperCanadaCollege",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/UpperCanadaCollege.webp",
     district = C.Districts.DeerPark,
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "-185.54 742.33"
   },
   VacantLot = {
     key = "VacantLot",
     name = "Vacant Lot",
     image = "siteCard_VacantLot",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/VacantLot.webp",
     soundscape = {
       location = {playlist = "location", track = "urbanDark"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
   },
   LuxuryDriving = {
     key = "LuxuryDriving",
     name = "Driving",
     image = "siteCard_LuxuryDriving",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/LuxuryDriving.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "IndoorDim",
   },
   BackseatSedan = {
     key = "BackseatSedan",
     name = "Vehicle",
     image = "siteCard_BackseatSedan",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/BackseatSedan.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "IndoorDim",
   },
   Limousine = {
     key = "Limousine",
     name = "Limousine",
     image = "siteCard_Limousine",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Limousine.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "IndoorDim",
   },
   SUV = {
     key = "SUV",
     name = "SUV",
     image = "siteCard_SUV",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/SUV.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "IndoorDim",
   },
   Taxi = {
     key = "Taxi",
     name = "Taxi",
     image = "siteCard_Taxi",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/Taxi.webp",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "IndoorDim",
   },
   WalkingPath = {
     key = "WalkingPath",
     name = "Walking Path",
     image = "siteCard_WalkingPath",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WalkingPath.webp",
     soundscape = {
       location = {playlist = "location", track = "cityPark"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
   },
   WealthyEstate1 = {
     key = "WealthyEstate1",
     name = "Wealthy Estate",
     image = "siteCard_WealthyEstate1",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WealthyEstate1.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
   },
   WealthyEstate2 = {
     key = "WealthyEstate2",
     name = "Wealthy Estate",
     image = "siteCard_WealthyEstate2",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WealthyEstate2.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
   },
   WealthyEstate3 = {
     key = "WealthyEstate3",
     name = "Wealthy Estate",
     image = "siteCard_WealthyEstate3",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WealthyEstate3.webp",
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
   },
   WychwoodPub = {
     key = "WychwoodPub",
     name = "Wychwood Pub",
     image = "siteCard_WychwoodPub",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/WychwoodPub.webp",
     soundscape = {
       location = {playlist = "location", track = "diveBar"}
     },
     isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorDim",
   },
   YongeDundasSquare = {
     key = "YongeDundasSquare",
     name = "Yonge & Dundas Square",
     image = "siteCard_YongeDundasSquare",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/YongeDundasSquare.webp",
     district = C.Districts.YongeStreet,
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
     isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
     offsetXY = "129.93 53.55"
   },
   YorkvilleApt1 = {
     key = "YorkvilleApt1",
     name = "Yorkville Apartment",
     image = "siteCard_YorkvilleApt1",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/YorkvilleApt1.webp",
     district = C.Districts.Yorkville,
     soundscape = {
       location = {playlist = "location", track = "silent"}
     },
     isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
     offsetXY = "-58.44 328.67"
   },
   YouthShelter = {
     key = "YouthShelter",
     name = "Youth Shelter",
     image = "siteCard_YouthShelter",
-    localImage = "file:///D:/Projects/!Roleplaying/VAMPIRE THE MASQUERADE/!!!New Chronicle/Districts & Sites/VSC Photoshop Script/Exports/Sites/WEBP/YouthShelter.webp",
     soundscape = {
       location = {playlist = "location", track = "cityRevelers"}
     },
     isIndoors = true,
-  },
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+  }
 }
 
 -- #endregion

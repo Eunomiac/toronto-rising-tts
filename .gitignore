@@ -31,7 +31,8 @@ logs/
 .tts/output/**/*.txt
 .tts/output/**/*.log
 
-# Bridge / extension debug writes (see .dev/DEBUG_FILE_LOGGING.md; default root .dev/.debug)
+# Bridge / extension debug writes — runtime output only (see .dev/DEBUG_FILE_LOGGING.md).
+# Source test harnesses live under .dev/testbed/ (tracked).
 .dev/.debug/
 
 # Compiled CSS (source SCSS is tracked)

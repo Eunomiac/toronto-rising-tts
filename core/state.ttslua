@@ -302,9 +302,15 @@ function S.GetDefaultGameState()
         npcs = {
             instances = {},
         },
-        --- Narrative/session scene bundle (table presence, location, clock, roll defaults). Lighting preset remains `currentScene` until fully bridged.
+        --- Chronicle in-fiction "now" (Y/M/D/h/m only). Set on first present-day scene with datetime; advances monotonically.
+        presentDayClock = nil,
+        --- Narrative/session scene bundle (table presence, location, clock, roll defaults).
         sessionScene = {
             lightingPresetKey = nil,
+            --- Top fog particle emitter active (reconciled to `G.GUIDS.TOP_FOG` object state 2/1).
+            isTopFogActive = false,
+            --- Seat spotlight baseline from the active scene's `C.LightModes.*.spotlights` (string mode or inline table per ref). Merged in `L.reconcileForPlayer` after hunger/dark/rolling/conditions.
+            lightingSeatSpotlightPreset = {},
             tableKey = nil,
             seatPresent = {},
             --- Per-seat narrative/config (Scene Constructor + panel). When `isPresent` is set here, it wins over `seatPresent` after backfill (see `normalizeLiveSessionSceneSeatSlots`).
@@ -322,6 +328,8 @@ function S.GetDefaultGameState()
                 useRealTime = false,
                 --- When `useRealTime` is true: multiplier on wall-clock pace. `1` => one narrative minute every 60 real seconds; `2` => twice that fast. `0` freezes narrative time in the ticker.
                 realTimeSpeed = 1,
+                --- When true, scene participates in present-day clock rules (see `core/present_day_clock.ttslua`).
+                isPresentDay = false,
             },
             --- When true (default), applying scene clock runs CSV chronicle weather → soundscape. Scene Constructor import may set this from `soundscapeNarrative` wind/rain/thunderstorm (see `.dev/Scene Constructor/Scene Constructor Overview.md`).
             chronicleWeatherFollowSchedule = true,
@@ -338,6 +346,8 @@ function S.GetDefaultGameState()
         },
         --- Saved scene bundles (same `sessionScene` shape per entry) + UI ordering. Only `gameState.sessionScene` drives live reconciliation.
         sceneLibrary = {
+            --- Last library scene applied to live state (used to flush per-row clocks on switch).
+            lastAppliedKey = nil,
             --- When set, names the library entry that receives mirrored runtime writes (`receivesLiveWrites`).
             activeKey = nil,
             --- Button order; values must be keys of `scenes`.
@@ -573,6 +583,17 @@ function S.validateState()
         gameState.sessionScene = {}
     end
     S.mergeDefaults(gameState.sessionScene, S.GetDefaultGameState().sessionScene)
+    local lpKey = gameState.sessionScene.lightingPresetKey
+    if lpKey ~= nil and type(lpKey) == "string" and lpKey ~= "" and not C.isValidLightModeKey(lpKey) then
+        print("[state] sessionScene.lightingPresetKey invalid: " .. tostring(lpKey) .. " — clearing.")
+        gameState.sessionScene.lightingPresetKey = nil
+    end
+    if gameState.presentDayClock ~= nil and type(gameState.presentDayClock) ~= "table" then
+        gameState.presentDayClock = nil
+    end
+    if type(gameState.presentDayClock) == "table" and not U.narrativeClockHasDatetime(gameState.presentDayClock) then
+        gameState.presentDayClock = nil
+    end
     if not gameState.seatLayout or type(gameState.seatLayout) ~= "table" then
         gameState.seatLayout = {}
     end
@@ -618,6 +639,13 @@ function S.validateState()
     end
     if gameState.sceneLibrary.activeKey ~= nil and gameState.sceneLibrary.scenes[gameState.sceneLibrary.activeKey] == nil then
         gameState.sceneLibrary.activeKey = nil
+    end
+    if gameState.sceneLibrary.lastAppliedKey ~= nil and type(gameState.sceneLibrary.lastAppliedKey) ~= "string" then
+        gameState.sceneLibrary.lastAppliedKey = nil
+    end
+    if type(gameState.sceneLibrary.lastAppliedKey) == "string"
+        and gameState.sceneLibrary.scenes[gameState.sceneLibrary.lastAppliedKey] == nil then
+        gameState.sceneLibrary.lastAppliedKey = nil
     end
     do
         local lib = gameState.sceneLibrary
@@ -883,6 +911,12 @@ local function buildSaveState()
 
     if gameState.currentScene then
         saveState.currentScene = gameState.currentScene
+    end
+
+    if gameState.presentDayClock and type(gameState.presentDayClock) == "table" then
+        if isValueSafeForState(gameState.presentDayClock, "presentDayClock") then
+            saveState.presentDayClock = U.clone(gameState.presentDayClock, true)
+        end
     end
 
     -- Copy playerData (all dynamic values - static data still comes from C.PlayerData).

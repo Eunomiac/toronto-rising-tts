@@ -16,7 +16,7 @@ local SS = require("core.soundscape")
 local ChronicleWeather = require("lib.chronicle_weather")
 local GameStateOverlay = require("core.game_state_overlay")
 local SceneLibrary = require("core.scene_library")
-local Scenes = require("core.scenes")
+local PresentDayClock = require("core.present_day_clock")
 
 local GREEN = "#228B22|#32CD32|#006400|#228B22"
 local GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
@@ -51,25 +51,20 @@ local function effectiveTableKey()
 end
 
 --- @param raw any
---- @return string  key present in `Scenes.SCENES`
-local function normalizeLightingPresetKey(raw)
+--- @return string|nil key
+--- @return string|nil err
+local function validateLightingPresetKey(raw)
     if type(raw) ~= "string" then
-        return "standard"
+        return nil, "sessionScene.lightingPresetKey is missing or not a string."
     end
     local k = string.gsub(string.gsub(raw, "^%s+", ""), "%s+$", "")
     if k == "" then
-        return "standard"
+        return nil, "sessionScene.lightingPresetKey cannot be empty."
     end
-    if Scenes.SCENES[k] ~= nil then
-        return k
+    if not C.isValidLightModeKey(k) then
+        return nil, "Unknown lightingPresetKey `" .. k .. "` (not in C.LightModes)."
     end
-    local low = string.lower(k)
-    for name, _ in pairs(Scenes.SCENES or {}) do
-        if type(name) == "string" and string.lower(name) == low then
-            return name
-        end
-    end
-    return "standard"
+    return k, nil
 end
 
 --- @param raw string|nil
@@ -451,14 +446,27 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
         return
     end
 
+    PresentDayClock.flushPreviousAppliedScene(K)
+
     -- Deep copy: `U.clone(..., true)` is shallow only (see `lib/util.ttslua`); `U.merge` recurses nested tables.
     local bundle = U.merge({}, ent.sessionScene)
     SceneLibrary.syncNpcRoleOverrideFromSeatSlots(bundle)
-    local lightingKey = normalizeLightingPresetKey(bundle.lightingPresetKey)
+    local lightingKey, lightingErr = validateLightingPresetKey(bundle.lightingPresetKey)
+    if lightingKey == nil then
+        U.AlertGM("Apply failed: " .. tostring(lightingErr))
+        return
+    end
     bundle.lightingPresetKey = lightingKey
+
+    local clockOk, clockErr = PresentDayClock.resolveAndApplyActivationClock(bundle)
+    if not clockOk then
+        U.AlertGM("Apply failed: " .. tostring(clockErr))
+        return
+    end
+
     S.setStateVal(bundle, "sessionScene")
-    S.setStateVal(lightingKey, "currentScene")
     S.validateState()
+    PresentDayClock.markApplied(K)
 
     local tk = S.getStateVal("sessionScene", "tableKey")
     if type(tk) == "string" then
@@ -717,6 +725,7 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
 
     local prev = S.getStateVal("sessionScene", "clock")
     local prevHour = type(prev) == "table" and tonumber(prev.hour) or nil
+    local prevIsPresentDay = type(prev) == "table" and prev.isPresentDay == true
 
     local day = numField("scenes_clock_day", "day", 1)
     local year = numField("scenes_clock_year", "year", 2026)
@@ -740,6 +749,7 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
         year = year,
         useRealTime = S.getStateVal("sessionScene", "clock", "useRealTime") == true,
         realTimeSpeed = spd,
+        isPresentDay = prevIsPresentDay,
     }
     if clock.month < 1 then
         clock.month = 1
@@ -752,6 +762,10 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
         GameStateOverlay.resetRealTimeCarry()
     end
     S.setStateVal(clock, "sessionScene", "clock")
+    if clock.isPresentDay == true then
+        PresentDayClock.tryInitFromScene(clock)
+    end
+    PresentDayClock.tryAdvance(clock)
     StorytellerScenesPanel.refresh()
 
     local _, weatherMsg = ChronicleWeather.applyScheduledWeather({ force = false })

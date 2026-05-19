@@ -13,6 +13,7 @@
 local GameStateOverlay = {}
 
 local C = require("lib.constants")
+local PresentDayClock = require("core.present_day_clock")
 local S = require("core.state")
 local U = require("lib.util")
 local ChronicleWeather = require("lib.chronicle_weather")
@@ -432,8 +433,10 @@ function GameStateOverlay.tickRealTimeClock()
         minute = m,
         useRealTime = true,
         realTimeSpeed = speed,
+        isPresentDay = ck.isPresentDay == true,
     }
     S.setStateVal(nextClock, "sessionScene", "clock")
+    PresentDayClock.tryAdvance(nextClock)
     if h ~= oldHour or d ~= oldDay then
         ChronicleWeather.applyScheduledWeather({ force = false })
     end

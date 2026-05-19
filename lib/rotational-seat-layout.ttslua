@@ -1691,7 +1691,9 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
               local disp = tryMatchingDisplayName(o)
               if disp ~= nil then
                 local role, _ = parseRoleAndSuffix(disp)
-                if byRole[role] ~= nil then
+                if role == "SEAT_FIGURE" and not isPlayerSeatKey(color) then
+                  -- NPC seat figurine is the pooled instance (tag + layout), not a workshop Name.
+                elseif byRole[role] ~= nil then
                   error(
                     "rotational-seat-layout: seat '"
                     .. color
@@ -1701,6 +1703,18 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
                   )
                 end
                 byRole[role] = o
+              elseif not isPlayerSeatKey(color) and NPCS.isPooledFigurineObject(o) then
+                local sk = deriveSeatKeyFromObjectTag(o)
+                if sk == color then
+                  if byRole["SEAT_FIGURE"] ~= nil and byRole["SEAT_FIGURE"] ~= o then
+                    error(
+                      "rotational-seat-layout: seat '"
+                      .. color
+                      .. "' has two pooled figurines tagged for SEAT_FIGURE"
+                    )
+                  end
+                  byRole["SEAT_FIGURE"] = o
+                end
               else
                 skippedNoPattern = skippedNoPattern + 1
                 local objGuid = "unknown-guid"
@@ -2315,7 +2329,11 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
           local guid = obj.getGUID and obj.getGUID() or ""
           -- Never hide template source refs; they are needed for cloning.
           local isTemplateSource = templateGuidSet[guid] == true
-          if not isTemplateSource then
+          if NPCS.isPooledFigurineObject(obj) then
+            if visible and obj.setInvisibleTo ~= nil then
+              obj.setInvisibleTo({})
+            end
+          elseif not isTemplateSource then
             if visible then
               obj.setInvisibleTo({})
             else
@@ -2370,7 +2388,35 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
   end
 end
 
+--- @param seatKey string
+--- @param roleKey string
+--- @return Object|nil
+local function findObjectForSeatRoleCorrection(seatKey, roleKey)
+  local tag = objectTagForPlayerColor(seatKey)
+  local objs = getObjectsWithTag(tag)
+  if U.Type(objs) ~= "table" then
+    return nil
+  end
+  for _, o in ipairs(objs) do
+    if roleKey == "SEAT_FIGURE" and not isPlayerSeatKey(seatKey) then
+      if NPCS.isPooledFigurineObject(o) and deriveSeatKeyFromObjectTag(o) == seatKey then
+        return o
+      end
+    else
+      local disp = tryMatchingDisplayName(o)
+      if disp ~= nil then
+        local rk, _ = parseRoleAndSuffix(disp)
+        if rk == roleKey then
+          return o
+        end
+      end
+    end
+  end
+  return nil
+end
+
 --- Apply optional post-move transform corrections keyed by object GUID.
+--- Rows whose `targetGuid` is not present in the game are skipped (one print per GUID); optional workshop pieces may be absent.
 --- sourceObjects.postCorrections = {
 ---   [targetGuid] = {
 ---     anchor = "<guid>",                -- required when rotationDelta is provided
@@ -2379,6 +2425,7 @@ end
 ---     scale = { x = <number>, y = ..., z = ... }  -- optional; omitted axes keep current scale
 ---   }
 --- }
+--- `postCorrectionsBySeatRole` applies the same shape per seat/role (e.g. pooled `SEAT_FIGURE` at `NPC1`).
 --- @param sourceObjects table
 --- @param computed table|nil
 local function applyPostCorrections(sourceObjects, computed)
@@ -2387,7 +2434,7 @@ local function applyPostCorrections(sourceObjects, computed)
   end
   local postCorrections = sourceObjects.postCorrections
   if U.Type(postCorrections) ~= "table" then
-    return
+    postCorrections = {}
   end
   for guid, correction in pairs(postCorrections) do
     if U.Type(guid) ~= "string" or guid == "" then
@@ -2396,11 +2443,14 @@ local function applyPostCorrections(sourceObjects, computed)
     if U.Type(correction) ~= "table" then
       error("rotational-seat-layout: postCorrection value must be a table for guid '" .. tostring(guid) .. "'")
     end
-    local obj = getObjectFromGUID(guid)
-    if obj == nil then
-      error("rotational-seat-layout: postCorrection target object missing for guid '" .. tostring(guid) .. "'")
-    end
+    --- Zero rotationDelta is a no-op: do not require `anchor`.
     local hasRotationCorrection = correction.rotationDelta ~= nil
+    if hasRotationCorrection then
+      local d = Vector(correction.rotationDelta)
+      if math.abs(d.x) < 1e-6 and math.abs(d.y) < 1e-6 and math.abs(d.z) < 1e-6 then
+        hasRotationCorrection = false
+      end
+    end
     local hasPositionCorrection = U.Type(correction.position) == "table" and correction.position.y ~= nil
     local scaleTbl = U.Type(correction.scale) == "table" and correction.scale or nil
     local hasScaleCorrection = scaleTbl ~= nil
@@ -2416,6 +2466,16 @@ local function applyPostCorrections(sourceObjects, computed)
         .. "' must include rotationDelta, position.y, and/or scale (numeric x/y/z)"
       )
     end
+
+    local obj = getObjectFromGUID(guid)
+    if obj == nil then
+      print(
+        "[rotational-seat-layout] postCorrection skipped: target object missing for guid '"
+          .. tostring(guid)
+          .. "'"
+      )
+    end
+    if obj ~= nil then
 
     local function formatVec(v)
       local vv = Vector(v)
@@ -2537,6 +2597,67 @@ local function applyPostCorrections(sourceObjects, computed)
     --   .. " targetRot="
     --   .. formatVec(targetAfterRot)
     -- )
+    end
+  end
+
+  local bySeatRole = sourceObjects.postCorrectionsBySeatRole
+  if U.Type(bySeatRole) == "table" and U.Type(computed) == "table" and U.Type(computed.byColor) == "table" then
+    for seatKey, roleMap in pairs(bySeatRole) do
+      if U.Type(seatKey) == "string" and U.Type(roleMap) == "table" then
+        for roleKey, correction in pairs(roleMap) do
+          if U.Type(roleKey) == "string" and U.Type(correction) == "table" then
+            local obj = findObjectForSeatRoleCorrection(seatKey, roleKey)
+            if obj ~= nil then
+              local nextPos = Vector(obj.getPosition())
+              local nextRot = Vector(obj.getRotation())
+              local pack = computed.byColor[seatKey]
+              if U.Type(pack) == "table" and U.Type(pack.slots) == "table" then
+                for i = 1, #pack.slots do
+                  local slot = pack.slots[i]
+                  if slot.roleKey == roleKey
+                    and U.Type(slot.frame) == "table"
+                    and slot.frame.position ~= nil
+                  then
+                    local seatPos = Vector(slot.frame.position)
+                    nextPos = Vector({ x = seatPos.x, y = nextPos.y, z = seatPos.z })
+                    break
+                  end
+                end
+              end
+              if U.Type(correction.position) == "table" and correction.position.y ~= nil then
+                local yVal = tonumber(correction.position.y)
+                if yVal == nil then
+                  error(
+                    "rotational-seat-layout: postCorrectionsBySeatRole position.y must be numeric for "
+                    .. seatKey
+                    .. "/"
+                    .. roleKey
+                  )
+                end
+                nextPos = Vector({ x = nextPos.x, y = yVal, z = nextPos.z })
+              end
+              placeObjectExact(obj, nextPos, nextRot)
+              local scaleTbl = U.Type(correction.scale) == "table" and correction.scale or nil
+              if scaleTbl ~= nil then
+                local curScale = obj.getScale and obj.getScale() or nil
+                if curScale == nil then
+                  error(
+                    "rotational-seat-layout: postCorrectionsBySeatRole scale requires getScale() for "
+                    .. seatKey
+                    .. "/"
+                    .. roleKey
+                  )
+                end
+                local sx = tonumber(scaleTbl.x) ~= nil and tonumber(scaleTbl.x) or curScale.x
+                local sy = tonumber(scaleTbl.y) ~= nil and tonumber(scaleTbl.y) or curScale.y
+                local sz = tonumber(scaleTbl.z) ~= nil and tonumber(scaleTbl.z) or curScale.z
+                obj.setScale({ x = sx, y = sy, z = sz })
+              end
+            end
+          end
+        end
+      end
+    end
   end
 end
 
@@ -2742,7 +2863,10 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   if U.Type(npcInstances) == "table" then
     for npcName, rec in pairs(npcInstances) do
       if U.Type(npcName) == "string" and U.Type(rec) == "table" then
-        NPCS.applyCurrentLightMode(npcName, 0)
+        local seated = U.Type(rec.seatedSeatKey) == "string" and U.isIn(rec.seatedSeatKey, C.NPCSeats or {})
+        if not seated then
+          NPCS.applyCurrentLightMode(npcName, 0)
+        end
       end
     end
   end
