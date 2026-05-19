@@ -1,0 +1,70 @@
+# Lua full-UI XML refresh policy (Toronto Rising TTS)
+
+## Goal
+
+Avoid replacing entire Global or Object UI trees at runtime when **targeted** updates suffice. `UI.setXml` and `UI.setXmlTable` (and the same methods on `object.UI` / `zone.UI`) **replace the whole UI document** for that target — expensive, can drop transient state, and complicates click-route registration.
+
+Prefer pre-declared elements in editor XML (or generated static bundles at Save & Play) plus:
+
+| Need | Use |
+|------|-----|
+| One attribute | `UI.setAttribute(id, name, value)` |
+| Several attributes | `UI.setAttributes(id, { ... })` |
+| Inner text | `UI.setValue(id, text)` |
+| Show/hide with animation | `UI.show` / `UI.hide` |
+| Visibility without animation | `active` via `setAttribute` |
+
+TTS documents both APIs in [`.dev/tts-api/Scripting API/UI.md`](../../.dev/tts-api/Scripting%20API/UI.md): `setXml(xml, assets?)` and `setXmlTable(data, assets?)` each **set/replace the UI** with the provided payload.
+
+## Build gate
+
+`npm run check:pcall-gate` (see [`.tools/pcall-gate/check-pcall-gate.mjs`](../../.tools/pcall-gate/check-pcall-gate.mjs)) also tracks:
+
+| Metric | Regex (all scanned `*.ttslua`) |
+|--------|--------------------------------|
+| `setXml` | `\bsetXml\s*\(` |
+| `setXmlTable` | `\bsetXmlTable\s*\(` |
+
+Log lines in [`.dev/build-logs/pcall-gate.txt`](../../.dev/build-logs/pcall-gate.txt):
+
+`ISO8601\tpcall=N\twaitTime=N\twaitCondition=N\tsetXml=N\tsetXmlTable=N`
+
+The gate fails when any metric **increases** above the last logged baseline. After intentional adds, bump the last line before building.
+
+Counts include **comments and strings** that contain `setXml(` or `setXmlTable(` — same rule as `Wait.time` / `pcall`. In comments, prefer `` `setAttribute` `` or “full XML refresh” without those substrings unless documenting a real call site.
+
+Related: [`lua-wait-api-policy.md`](lua-wait-api-policy.md), [`lua-pcall-policy.md`](lua-pcall-policy.md).
+
+## When full refresh is acceptable
+
+1. **Object UI with runtime-generated structure** where editor `<Include>` does not apply to strings passed to `setXml` (character sheet page 3: backgrounds / merits / flaws).
+2. **Dev/debug panels** with dynamic lists not worth static row matrices (approved: `core/soundscape_debug_panel.ttslua`), if kept out of player-facing hot paths.
+3. **Bootstrap** loading bundled Global XML from the global script when that is the initial `setXml` at load (not counted if it lives outside scanned trees).
+
+## When to refactor away
+
+- Lists, toggles, or labels that can be **pre-declared** in XML with stable `id`s (Storyteller NPC panel pattern: `NPCS.refreshStorytellerUI` uses `setUiAttrSafe` / `setUiActiveSafe` only).
+- Refreshing a subsection by `getXml` + string splice + `setXml` — prefer a static container `id` and update children via attributes.
+- Any **per-frame** or **high-frequency** sync path (use `Sync` + targeted attribute reconciliation instead).
+
+## Approved baseline (gate)
+
+Recorded in [`.dev/build-logs/pcall-gate.txt`](../../.dev/build-logs/pcall-gate.txt) (last data line):
+
+| Metric | Approved count |
+|--------|----------------|
+| `setXml` | **2** |
+| `setXmlTable` | **0** |
+
+Do not add call sites without review; bump the **last** log line to the new totals before merging.
+
+## Inventory (approved call sites)
+
+| File | Line | Kind | Verdict |
+|------|------|------|---------|
+| `ui/ui_csheet.ttslua` | 431 | **Runtime** `self.UI.setXml` for PCS page 3 | **Approved** — dynamic backgrounds/merits/flaws; runtime strings cannot use editor `<Include>`; fingerprint skip |
+| `core/soundscape_debug_panel.ttslua` | 166 | **Runtime** Global `UI.setXml` after `getXml` splice | **Approved** — debug soundscape panel; dynamic category/track lists |
+
+**No `setXmlTable` in scanned trees.** NPC Storyteller panel previously used full refresh; now `NPCS.refreshStorytellerUI` is attribute-only (`core/npcs.ttslua`). Scenes library panel uses pre-declared XML rows (`core/storyteller_scenes_panel.ttslua`).
+
+**Outside gate:** `.dev/scripts/generate_csheet_defaults_lua.js` and editor-bundled Global XML are not `*.ttslua` under `core/`, `global/`, `lib/`, `objects/`, `ui/`.

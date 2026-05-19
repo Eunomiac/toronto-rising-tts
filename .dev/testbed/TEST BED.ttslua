@@ -1334,6 +1334,156 @@ end
 
 -- #region DATA RETRIEVAL FUNCTIONS
 
+--- Best-effort XML pretty-printer (2-space indent). Not a validating parser.
+--- @param rawXml string
+--- @return string
+local function prettyPrintXml(rawXml)
+  if type(rawXml) ~= "string" or rawXml == "" then
+    return rawXml or ""
+  end
+
+  local xml = string.gsub(rawXml, "\r\n", "\n")
+  xml = string.gsub(xml, ">%s+<", "><")
+
+  local tokens = {}
+  local pos = 1
+  while pos <= #xml do
+    local lt = string.find(xml, "<", pos, true)
+    if lt == nil then
+      local tail = string.sub(xml, pos)
+      if string.match(tail, "%S") then
+        table.insert(tokens, tail)
+      end
+      break
+    end
+    if lt > pos then
+      local text = string.sub(xml, pos, lt - 1)
+      if string.match(text, "%S") then
+        table.insert(tokens, text)
+      end
+    end
+    local gt = string.find(xml, ">", lt, true)
+    if gt == nil then
+      table.insert(tokens, string.sub(xml, lt))
+      break
+    end
+    table.insert(tokens, string.sub(xml, lt, gt))
+    pos = gt + 1
+  end
+
+  local indent = 0
+  local lines = {}
+  for t = 1, #tokens do
+    local token = tokens[t]
+    if string.sub(token, 1, 1) == "<" then
+      local tag = token
+      local isClosing = string.match(tag, "^</") ~= nil
+      local isSelfClosing = string.match(tag, "/>$") ~= nil
+      local isDeclaration = string.match(tag, "^<%?") ~= nil or string.match(tag, "^<!") ~= nil
+
+      if isClosing then
+        indent = math.max(0, indent - 1)
+      end
+      table.insert(lines, string.rep("  ", indent) .. tag)
+      if not isClosing and not isSelfClosing and not isDeclaration then
+        local openName = string.match(tag, "^<([%w_%-]+)")
+        if openName ~= nil and string.match(tag, "</" .. openName .. ">$") == nil then
+          indent = indent + 1
+        end
+      end
+    else
+      local text = string.gsub(token, "^%s+", "")
+      text = string.gsub(text, "%s+$", "")
+      if text ~= "" then
+        table.insert(lines, string.rep("  ", indent) .. text)
+      end
+    end
+  end
+
+  return table.concat(lines, "\n")
+end
+
+--- Label for dump headers: scripted name, saved Name, or Nickname.
+--- @param obj Object
+--- @return string
+local function objectDisplayName(obj)
+  if obj == nil then
+    return "(nil object)"
+  end
+  local scripted = obj.getName and obj.getName() or ""
+  if type(scripted) == "string" and scripted ~= "" then
+    return scripted
+  end
+  local data = (obj.getData and obj.getData()) or {}
+  if type(data.Name) == "string" and data.Name ~= "" then
+    return data.Name
+  end
+  if type(data.Nickname) == "string" and data.Nickname ~= "" then
+    return data.Nickname
+  end
+  return "(unnamed)"
+end
+
+--- Read an object's **runtime** UI XML (`object.UI.getXml()`), pretty-print, write under `.dev/.debug/`.
+--- This is the live UI tree in-game, not necessarily the editor `.xml` source (which may be only `<Include ...>`).
+--- Requires TTS Tools / bridge on 39998 for file write (same as `writeLog` / `getObjectsByName`).
+--- @param objectGuid string Object GUID
+--- @param relativePath string|nil e.g. `debug_logs/csheet_page4_pink.xml` (default includes guid + os.time())
+--- @return boolean ok True when XML was non-empty and write was attempted
+function dumpObjectXmlToFile(objectGuid, relativePath)
+  if type(objectGuid) ~= "string" or objectGuid == "" then
+    print("dumpObjectXmlToFile: objectGuid must be a non-empty string")
+    return false
+  end
+
+  relativePath = relativePath
+    or ("debug_logs/object_xml_" .. string.gsub(objectGuid, "[^%w]", "_") .. "_" .. tostring(os.time()) .. ".xml")
+
+  local obj = getObjectFromGUID(objectGuid)
+  if obj == nil then
+    print("dumpObjectXmlToFile: no object for guid=" .. tostring(objectGuid))
+    return false
+  end
+
+  if obj.UI == nil or type(obj.UI.getXml) ~= "function" then
+    print("dumpObjectXmlToFile: object has no UI.getXml (guid=" .. tostring(objectGuid) .. ")")
+    return false
+  end
+
+  local rawXml = obj.UI.getXml()
+  if type(rawXml) ~= "string" then
+    print("dumpObjectXmlToFile: getXml() did not return a string (guid=" .. tostring(objectGuid) .. ")")
+    return false
+  end
+  if rawXml == "" then
+    print("dumpObjectXmlToFile: getXml() returned empty string (guid=" .. tostring(objectGuid) .. ")")
+    return false
+  end
+
+  local header = table.concat({
+    "<!--",
+    "  dumpObjectXmlToFile",
+    "  os.time=" .. tostring(os.time()),
+    "  guid=" .. tostring(objectGuid),
+    "  name=" .. objectDisplayName(obj),
+    "  note=Runtime UI from object.UI.getXml(); editor source may differ.",
+    "-->",
+    "",
+  }, "\n")
+
+  local body = prettyPrintXml(rawXml)
+  local ok = writeLog(relativePath, header .. body)
+  print(
+    string.format(
+      "dumpObjectXmlToFile: chars=%d ok=%s -> .dev/.debug/%s",
+      #body,
+      tostring(ok),
+      relativePath
+    )
+  )
+  return ok
+end
+
 --- Case-sensitive substring search over all spawned objects; writes GUID lines to the workspace debug folder.
 --- @param substring string Non-empty substring (plain text, not a Lua pattern).
 --- @param relativePath string|nil Optional path under .dev/.debug (default: debug_logs/objects_by_name_<time>.lua).
@@ -1471,9 +1621,11 @@ end
 -- destroyAllNpcWorldObjects()
 
 -- ToggleSoundEmitters()
-ToggleFigures()
+-- ToggleFigures()
 
 -- getObjectsByName("SEAT_")
+-- dumpObjectXmlToFile("802d14", "debug_logs/csheet_page4_pink_runtime.xml")
+-- dumpObjectXmlToFile(G.GUIDS.CSHEET_PAGE_4_PINK)
 -- getObjectFromGUID("fe1fb7").interactable = false
 -- print(JSON.encode_pretty(UI.getAttributes("playerHud_mapPanel_districtCard_Red")))
 -- U.setAttributes("npc_memberLock_harpies_theAristocrat", {pivot = "0.5 0.5", scale = "0.8"})
@@ -1577,36 +1729,56 @@ function checkNpcSeatWorldObjects()
   end
 end
 
-checkNpcSeatWorldObjects()
+-- checkNpcSeatWorldObjects()
 
 
-getObjectFromGUID(G.GUIDS.SEAT_FIGURE_RED).setInvisibleTo({})
-getObjectFromGUID(G.GUIDS.PRINCE_SIGNET_BORDER_RED).setInvisibleTo({})
-getObjectFromGUID(G.GUIDS.PRINCE_SIGNET_RED).setInvisibleTo({})
-getObjectFromGUID(G.GUIDS.PRINCE_CURTAIN_RED).setInvisibleTo({})
+-- getObjectFromGUID(G.GUIDS.SEAT_FIGURE_RED).setInvisibleTo({})
+-- getObjectFromGUID(G.GUIDS.PRINCE_SIGNET_BORDER_RED).setInvisibleTo({})
+-- getObjectFromGUID(G.GUIDS.PRINCE_SIGNET_RED).setInvisibleTo({})
+-- getObjectFromGUID(G.GUIDS.PRINCE_CURTAIN_RED).setInvisibleTo({})
+-- UI.hide("verticalScrollViewTest")
 
-M.setCamera("Red", "default")
-M.setCamera("Red", "wideFacing")
+UI.setAttributes("verticalLayoutTestContainer", {minHeight = "2000", height = "2000", preferredHeight = "2000", flexibleHeight="0"})
+UI.setAttributes("vLT_textTest1", {minHeight = "200"})
+UI.setAttributes("vLT_textTest2", {minHeight = "200"})
+UI.setAttributes("vLT_textTest3", {minHeight = "200"})
+UI.setAttributes("vLT_textTest4", {minHeight = "200"})
+UI.setAttributes("vLT_textTest5", {minHeight = "200"})
+UI.setAttributes("vLT_textTest6", {minHeight = "200"})
+UI.setAttributes("vLT_textTest7", {minHeight = "200"})
+UI.setAttributes("vLT_textTest8", {minHeight = "200"})
+UI.setAttributes("vLT_textTest9", {minHeight = "200"})
+UI.setAttributes("vLT_textTest10", {minHeight = "200"})
+UI.setAttributes("vLT_textTest11", {minHeight = "200"})
+UI.setAttributes("vLT_textTest12", {minHeight = "200"})
+UI.setAttributes("vLT_textTest13", {minHeight = "200"})
+UI.setAttributes("vLT_textTest14", {minHeight = "200"})
+UI.setAttributes("vLT_textTest15", {minHeight = "200"})
+UI.setAttributes("vLT_textTest16", {minHeight = "200"})
 
 
-Player.Black.lookAt({
-  position = Vector({0.0000, 5.8436, -52.0298}),
-  pitch = 70.5275,
-  yaw = 0,
-  distance = 11
-})
+dumpObjectXmlToFile("631323")
+-- M.setCamera("Red", "default")
+-- M.setCamera("Red", "wideFacing")
+
+-- Player.Black.lookAt({
+--   position = Vector({0.0000, 5.8436, -52.0298}),
+--   pitch = 70.5275,
+--   yaw = 0,
+--   distance = 11
+-- })
 
 
-Player.Black.lookAt({
-  position = Vector({ 0, 5.8436, -50.6698 }),
-  pitch = 35.9174,
-  yaw = 0,
-  distance = 17.2098
-})
+-- Player.Black.lookAt({
+--   position = Vector({ 0, 5.8436, -50.6698 }),
+--   pitch = 35.9174,
+--   yaw = 0,
+--   distance = 17.2098
+-- })
 
-Player.Black.lookAt({
-  position = Vector({ 0, 17.8731, -43.3904 }),
-  pitch = 58.6195,
-  yaw = 0,
-  distance = 10.8949
-})
+-- Player.Black.lookAt({
+--   position = Vector({ 0, 17.8731, -43.3904 }),
+--   pitch = 58.6195,
+--   yaw = 0,
+--   distance = 10.8949
+-- })

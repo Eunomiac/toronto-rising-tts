@@ -37,18 +37,18 @@ local pulseGenByColor = {}
 --- @type table<number, HungerPulseConfig>
 local HEARTBEAT_BY_HUNGER = {
   [4] = {
-    pulse1Alpha = 0.25,
+    pulse1Alpha = 0.5,
     pulse1Duration = 0.5,
-    pulse2Alpha = 1,
+    pulse2Alpha = 0.25,
     pulse2Duration = 0.75,
     interPulseGap = 0,
     beatGap = 15,
   },
   [5] = {
-    pulse1Alpha = 0.25,
+    pulse1Alpha = 1,
     pulse1Duration = 0.25,
-    pulse2Alpha = 1,
-    pulse2Duration = 0.4,
+    pulse2Alpha = 0.5,
+    pulse2Duration = 0.5,
     interPulseGap = 0,
     beatGap = 5,
   },

@@ -1,0 +1,144 @@
+--[[
+  Runtime XML template engine: @@parameter@@ substitution and ##IF @@KEY@@## conditionals.
+  Template bodies are embedded at build time in lib/ui_xml_templates.ttslua (see embed_ui_xml_templates.js).
+
+  ##IF: include inner XML only when the parameter key exists in the params table (any value, including "").
+  Callers must omit keys for content that should not appear.
+
+  apply() escapes substituted values for XML attributes unless opts.rawKeys[key] is true (pre-rendered XML fragments).
+]]
+
+local M = {}
+
+local TEMPLATES = require("lib.ui_xml_templates")
+
+--- @param s string|nil
+--- @return string
+function M.xmlEscapeAttr(s)
+  if s == nil then
+    return ""
+  end
+  local t = tostring(s)
+  t = t:gsub("%c", function(ch)
+    local b = string.byte(ch)
+    if b == 9 or b == 10 or b == 13 then
+      return ch
+    end
+    return " "
+  end)
+  t = t:gsub("&", "&amp;")
+  t = t:gsub("<", "&lt;")
+  t = t:gsub(">", "&gt;")
+  t = t:gsub('"', "&quot;")
+  return t
+end
+
+--- @param haystack string
+--- @param needle string
+--- @param replacement string
+--- @return string
+local function replaceAllPlain(haystack, needle, replacement)
+  if needle == "" then
+    return haystack
+  end
+  local parts = {}
+  local start = 1
+  while true do
+    local s, e = haystack:find(needle, start, true)
+    if not s then
+      parts[#parts + 1] = haystack:sub(start)
+      break
+    end
+    parts[#parts + 1] = haystack:sub(start, s - 1)
+    parts[#parts + 1] = replacement
+    start = e + 1
+  end
+  return table.concat(parts)
+end
+
+--- @param template string
+--- @param params table<string, string|number|boolean>
+--- @return string
+local function processConditionals(template, params)
+  local result = template
+  while true do
+    local startIdx, endIdx, key, inner = result:find("##IF%s+@@([A-Za-z0-9_]+)@@%s*##(.-)##ENDIF##")
+    if startIdx == nil then
+      break
+    end
+    local replacement = ""
+    if params[key] ~= nil then
+      replacement = inner
+    end
+    result = result:sub(1, startIdx - 1) .. replacement .. result:sub(endIdx + 1)
+  end
+  return result
+end
+
+--- @param template string
+--- @param params table<string, string|number|boolean>
+--- @param rawKeys table<string, boolean>|nil
+--- @return string
+local function substituteTokens(template, params, rawKeys)
+  rawKeys = type(rawKeys) == "table" and rawKeys or {}
+  local keys = {}
+  for k in pairs(params) do
+    keys[#keys + 1] = k
+  end
+  table.sort(keys, function(a, b)
+    return #a > #b
+  end)
+
+  local out = template
+  for _, key in ipairs(keys) do
+    local token = "@@" .. key .. "@@"
+    local raw = params[key]
+    local val
+    if rawKeys[key] then
+      val = tostring(raw)
+    else
+      val = M.xmlEscapeAttr(raw)
+    end
+    out = replaceAllPlain(out, token, val)
+  end
+  return out
+end
+
+--- @param template string
+--- @param templateName string
+--- @return string
+local function assertNoUnfilledTokens(template, templateName)
+  local unfilled = template:match("@@([A-Za-z0-9_]+)@@")
+  if unfilled ~= nil then
+    error(string.format(
+      "[ui_xml_template] Unfilled token @@%s@@ after apply (template %s)",
+      unfilled,
+      tostring(templateName)
+    ))
+  end
+  return template
+end
+
+--- Apply a named embedded template.
+--- @param templateName string e.g. "csheet/page3"
+--- @param params table<string, string|number|boolean>|nil
+--- @param opts table|nil opts.rawKeys — map of param names whose values are already XML (not escaped)
+--- @return string
+function M.apply(templateName, params, opts)
+  if type(templateName) ~= "string" or templateName == "" then
+    error("[ui_xml_template] apply requires a non-empty templateName")
+  end
+  params = type(params) == "table" and params or {}
+  opts = type(opts) == "table" and opts or {}
+
+  local template = TEMPLATES.get(templateName)
+  if type(template) ~= "string" then
+    error("[ui_xml_template] Unknown template: " .. tostring(templateName))
+  end
+
+  local afterIf = processConditionals(template, params)
+  local out = substituteTokens(afterIf, params, opts.rawKeys)
+  return assertNoUnfilledTokens(out, templateName)
+end
+
+return M

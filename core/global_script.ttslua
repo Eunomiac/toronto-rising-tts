@@ -1802,20 +1802,6 @@ function HUD_debugTestEasing(player, button, id)
     if testEasing then testEasing() else broadcastToAll("testEasing not loaded", {1, 0.5, 0}) end
 end
 
---- Toggles auto-export of NPC storyteller panel row XML to the IDE workspace (TTS Tools) on each panel refresh.
---- Admin button: grey (off), green (on).
-function HUD_toggleNpcPanelXmlDump(player, button, id)
-    if NPCS == nil or NPCS.setAutoDumpStorytellerNpcPanelXmlEnabled == nil then
-        return
-    end
-    local nextOn = not NPCS.isAutoDumpStorytellerNpcPanelXmlEnabled()
-    NPCS.setAutoDumpStorytellerNpcPanelXmlEnabled(nextOn)
-    NPCS.syncAdminNpcPanelXmlDumpButton()
-    if nextOn and NPCS.refreshStorytellerUIIfVisible then
-        NPCS.refreshStorytellerUIIfVisible()
-    end
-end
-
 function HUD_debugTestIntegration(player, button, id)
     if testIntegration then testIntegration() else broadcastToAll("testIntegration not loaded", {1, 0.5, 0}) end
 end
@@ -1890,7 +1876,7 @@ end
 -- Called after state changes (phase, scene, etc.)
 -- Exposed globally for testing/debugging.
 -- Optional `delta` flags allow targeted refreshes:
---   phase, scene, adminLighting, soundscape, playerStats, playerHud, overlays, npcAdminButton, pcstRows, pcstSheets, gameStateOverlay
+--   phase, scene, adminLighting, soundscape, playerStats, playerHud, overlays, pcstRows, pcstSheets, gameStateOverlay
 -- Optional `delta.colors` — array of seat color strings; when set, `playerStats` / `playerHud` loop only those seats.
 -- When omitted, all sections refresh (legacy behavior).
 -- @param delta table|nil
@@ -1992,10 +1978,6 @@ function UpdateUIDisplays(delta)
     -- NPC storyteller panel: do not refresh here. `UpdateUIDisplays` runs on phase/scene/etc.;
     -- NPC panel updates are triggered by NPC changes and when the NPC tab is opened
     -- (`HUD_selectStorytellerPanel` → deferred refresh).
-
-    if wants("npcAdminButton") and NPCS and NPCS.syncAdminNpcPanelXmlDumpButton then
-        NPCS.syncAdminNpcPanelXmlDumpButton()
-    end
 
     if wants("pcstRows") and PCST and PCST.refreshAllRows then
         PCST.refreshAllRows()

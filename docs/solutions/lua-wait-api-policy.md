@@ -13,9 +13,11 @@ Game-facing Lua must not call TTS `Wait.time`, `Wait.condition`, or `Wait.stop` 
 | `waitTime` | `\bWait\.time\s*\(` and `\bW\.time\s*\(` |
 | `waitCondition` | `\bWait\.condition\s*\(` |
 
+Full-UI XML refresh (`setXml` / `setXmlTable`) is tracked in the same gate; see [`lua-ui-full-xml-policy.md`](lua-ui-full-xml-policy.md).
+
 Log lines in [`.dev/build-logs/pcall-gate.txt`](../../.dev/build-logs/pcall-gate.txt) use:
 
-`ISO8601\tpcall=N\twaitTime=N\twaitCondition=N`
+`ISO8601\tpcall=N\twaitTime=N\twaitCondition=N\tsetXml=N\tsetXmlTable=N`
 
 The gate fails when any metric **increases** above the last logged baseline. After intentional adds, bump the last line before building.
 

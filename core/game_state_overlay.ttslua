@@ -8,6 +8,9 @@
     Real-time clock: `tickRealTimeClock` mutates `sessionScene.clock` once per wall second when enabled.
     When no narrative minute elapses, the tick returns without UI work. When only the time-of-day changes,
     only `gameStateOverlay_time` is updated; the date line updates when the calendar date changes.
+    Weather panel (`gameStateOverlay_weather*`): `reconcileWeatherFromState()` parses the chronicle code via
+    `ChronicleWeather.resolveHudForClock`; hidden when the current site is indoors with `weatherDucking == 0`.
+    Hour/day changes refresh weather text and call `applyScheduledWeather`.
 ]]
 
 local GameStateOverlay = {}
@@ -262,6 +265,87 @@ local function resolveLocationLabelsFromState()
     return districtLabel, siteFull
 end
 
+--- Indoor sites with `C.Sites[siteKey].weatherDucking == 0` suppress the weather HUD (fully ducked / inaudible outdoors).
+--- @return boolean
+local function shouldHideWeatherHudForCurrentSite()
+    local sKey = S.getStateVal("sessionScene", "siteKey")
+    if type(sKey) ~= "string" then
+        return false
+    end
+    sKey = trimString(sKey)
+    if sKey == "" then
+        return false
+    end
+    local site = C.Sites[sKey]
+    if type(site) ~= "table" then
+        return false
+    end
+    if site.isIndoors ~= true then
+        return false
+    end
+    local duck = tonumber(site.weatherDucking)
+    if duck == nil then
+        return false
+    end
+    return duck == 0
+end
+
+--- Weather panel (top-right): parsed chronicle code for current clock hour.
+function GameStateOverlay.reconcileWeatherFromState()
+    if UI == nil or UI.setValue == nil or UI.setAttribute == nil then
+        return
+    end
+
+    if not shouldShowNarrativeClockOnOverlay() then
+        pushOverlayActive("gameStateOverlay_weather", false)
+        return
+    end
+
+    if shouldHideWeatherHudForCurrentSite() then
+        pushOverlayActive("gameStateOverlay_weather", false)
+        return
+    end
+
+    pushOverlayActive("gameStateOverlay_weather", true)
+
+    local ck = S.getStateVal("sessionScene", "clock")
+    if type(ck) ~= "table" then
+        pushOverlayText("gameStateOverlay_weatherBase", "")
+        pushOverlayActive("gameStateOverlay_weatherHumidity", false)
+        pushOverlayText("gameStateOverlay_weatherHumidity", "")
+        pushOverlayText("gameStateOverlay_weatherWind", "")
+        pushOverlayText("gameStateOverlay_temperatureC", "")
+        pushOverlayText("gameStateOverlay_temperatureF", "")
+        return
+    end
+
+    local resolved = ChronicleWeather.resolveHudForClock(ck.month, ck.day, ck.hour)
+    if resolved == nil then
+        pushOverlayText("gameStateOverlay_weatherBase", "")
+        pushOverlayActive("gameStateOverlay_weatherHumidity", false)
+        pushOverlayText("gameStateOverlay_weatherHumidity", "")
+        pushOverlayText("gameStateOverlay_weatherWind", "")
+        pushOverlayText("gameStateOverlay_temperatureC", "")
+        pushOverlayText("gameStateOverlay_temperatureF", "")
+        return
+    end
+
+    pushOverlayText("gameStateOverlay_weatherBase", resolved.baseText or "")
+
+    local humidityText = resolved.humidityText
+    if type(humidityText) == "string" and humidityText ~= "" then
+        pushOverlayActive("gameStateOverlay_weatherHumidity", true)
+        pushOverlayText("gameStateOverlay_weatherHumidity", humidityText)
+    else
+        pushOverlayActive("gameStateOverlay_weatherHumidity", false)
+        pushOverlayText("gameStateOverlay_weatherHumidity", "")
+    end
+
+    pushOverlayText("gameStateOverlay_weatherWind", resolved.windText or "")
+    pushOverlayText("gameStateOverlay_temperatureC", string.format("%d°C", resolved.tempC or 0))
+    pushOverlayText("gameStateOverlay_temperatureF", string.format("(%d°F)", resolved.tempF or 0))
+end
+
 --- Push district / site row (parent site + separator only when the site name contains a ":" split).
 local function reconcileLocationRowFromState()
     local districtLabel, siteFull = resolveLocationLabelsFromState()
@@ -289,6 +373,7 @@ function GameStateOverlay.reconcileFromState()
 
     if not shouldShowNarrativeClockOnOverlay() then
         pushOverlayActive("gameStateOverlay_root", false)
+        pushOverlayActive("gameStateOverlay_weather", false)
         pushOverlayText("gameStateOverlay_datetime", "")
         pushOverlayText("gameStateOverlay_time", "")
         clearOverlayUiCaches()
@@ -303,6 +388,7 @@ function GameStateOverlay.reconcileFromState()
     if type(ck) ~= "table" then
         pushOverlayText("gameStateOverlay_datetime", "—")
         pushOverlayText("gameStateOverlay_time", "")
+        GameStateOverlay.reconcileWeatherFromState()
         return
     end
 
@@ -311,18 +397,20 @@ function GameStateOverlay.reconcileFromState()
     local d = tonumber(ck.day) or 1
     pushOverlayText("gameStateOverlay_datetime", formatOverlayDateLine(y, mo, d))
     pushOverlayText("gameStateOverlay_time", format12h(ck.hour, ck.minute))
+    GameStateOverlay.reconcileWeatherFromState()
 end
 
 --- After a real-time tick that advanced the narrative clock, update only the UI elements that changed.
 --- @param prevY number
 --- @param prevMo number
 --- @param prevD number
+--- @param prevH number
 --- @param y number
 --- @param mo number
 --- @param d number
 --- @param hour24 number
 --- @param minute number
-local function reconcileOverlayAfterClockTick(prevY, prevMo, prevD, y, mo, d, hour24, minute)
+local function reconcileOverlayAfterClockTick(prevY, prevMo, prevD, prevH, y, mo, d, hour24, minute)
     if UI == nil or UI.setValue == nil or UI.setAttribute == nil then
         return
     end
@@ -340,6 +428,11 @@ local function reconcileOverlayAfterClockTick(prevY, prevMo, prevD, y, mo, d, ho
         pushOverlayText("gameStateOverlay_datetime", formatOverlayDateLine(y, mo, d))
     end
     pushOverlayText("gameStateOverlay_time", format12h(hour24, minute))
+
+    local hourChanged = prevH ~= hour24
+    if dateChanged or hourChanged then
+        GameStateOverlay.reconcileWeatherFromState()
+    end
 end
 
 --- Advances `sessionScene.clock` when real-time simulation is enabled.
@@ -441,7 +534,7 @@ function GameStateOverlay.tickRealTimeClock()
         ChronicleWeather.applyScheduledWeather({ force = false })
     end
 
-    reconcileOverlayAfterClockTick(prevY, prevMo, prevD, y, mo, d, h, m)
+    reconcileOverlayAfterClockTick(prevY, prevMo, prevD, oldHour, y, mo, d, h, m)
     return true
 end
 

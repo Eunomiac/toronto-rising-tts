@@ -69,7 +69,7 @@ Runtime order:
     - Overlay-only UI retries are folded into the unified bootstrap retry schedule (step 5 above).
 12. Set `didBootstrapFullSync = true`.
 
-`SYNC_INCREMENTAL_UI_DELTA` contains `phase`, `scene`, `adminLighting`, `scenesPanel`, `gameStateOverlay`, `soundscape`, `playerStats`, `playerHud`, and `npcAdminButton`. It intentionally omits `overlays` because `HO.syncAll()` already ran in the seat presentation step.
+`SYNC_INCREMENTAL_UI_DELTA` contains `phase`, `scene`, `adminLighting`, `scenesPanel`, `gameStateOverlay`, `soundscape`, `playerStats`, and `playerHud`. It intentionally omits `overlays` because `HO.syncAll()` already ran in the seat presentation step.
 
 ## `Sync.player(color)` scope
 

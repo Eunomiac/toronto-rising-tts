@@ -1,14 +1,21 @@
 --[[
-    Chronicle hourly weather: lookup generated `lib/tr_weather_schedule.ttslua` and apply
-    rain/wind/thunder intent through `core.soundscape` (layered mode: `soundscape.weather` = "none").
-    Agent guidance: `.dev/Chronicle Data/TR_Weather.csv`; node `.dev/scripts/generate_tr_weather_lua.js`.
+    Chronicle hourly weather: lookup `lib/tr_weather_schedule.ttslua`, parse five-character codes
+    via `C.WEATHER`, apply rain/wind/thunder through `core.soundscape`, and expose HUD fields for
+    `GameStateOverlay`. Agent guidance: `lib/json/Weather.json`; node `.dev/scripts/generate_tr_weather_lua.js`.
 ]]
 
 local ChronicleWeather = {}
 
+local C = require("lib.constants")
 local S = require("core.state")
 local Soundscape = require("core.soundscape")
 local Schedule = require("lib.tr_weather_schedule")
+
+local W = C.WEATHER
+local HUD_OVERRIDES = C.WEATHER_AUDIO_OVERRIDES
+
+local BY_RAIN_AUDIO = "BY_RAIN_AUDIO"
+local BY_WIND_AUDIO = "BY_WIND_AUDIO"
 
 --- @param value number|nil
 --- @param lo number
@@ -30,30 +37,297 @@ local function clampInt(value, lo, hi, fallback)
     return k
 end
 
+--- Maps layered-weather `"none"` to override-table key `"silent"`.
+--- @param layerKey string|nil
+--- @return string
+local function audioOverrideLookupKey(layerKey)
+    if type(layerKey) ~= "string" or layerKey == "" or layerKey == "none" then
+        return "silent"
+    end
+    return layerKey
+end
+
+--- Maps catalog "silent" to layered-weather "none" (Soundscape.set* API).
+--- @param catalogKey string|nil
+--- @return string
+local function weatherLayerKey(catalogKey)
+    if type(catalogKey) ~= "string" or catalogKey == "" or catalogKey == "silent" then
+        return "none"
+    end
+    return catalogKey
+end
+
+--- @param tempC number
+--- @return number
+local function celsiusToFahrenheitRounded(tempC)
+    return math.floor((tonumber(tempC) or 0) * 1.8 + 32 + 0.5)
+end
+
+--- @param month number|nil
+--- @param day number|nil
+--- @param hour number|nil
+--- @return string|nil code
+--- @return number|nil avgTemp Celsius baseline for the month
+function ChronicleWeather.getCode(month, day, hour)
+    local m = clampInt(month, 1, 12, 1)
+    local d = clampInt(day, 1, 31, 1)
+    local h = clampInt(hour, 0, 23, 0)
+
+    local monthEntry = Schedule.DATA[m]
+    if type(monthEntry) ~= "table" then
+        return nil, nil
+    end
+
+    local byDay = monthEntry.weather
+    if type(byDay) ~= "table" then
+        return nil, nil
+    end
+
+    local dayHours = byDay[d]
+    if type(dayHours) ~= "table" then
+        return nil, nil
+    end
+
+    local code = dayHours[h + 1]
+    if type(code) ~= "string" or string.len(code) ~= 5 then
+        return nil, nil
+    end
+
+    local avgTemp = tonumber(monthEntry.avgTemp)
+    if avgTemp == nil then
+        error(string.format("ChronicleWeather.getCode: month %d missing numeric avgTemp", m))
+    end
+
+    return code, math.floor(avgTemp + 0.0)
+end
+
+--- Parses one five-character chronicle weather code (see `C.WEATHER` comment block).
+--- @param code string
+--- @param avgTemp number month baseline Celsius
+--- @return table resolved `{ rainKey, windKey, thunder, baseText, humidityText, windText, tempC, tempF }`
+function ChronicleWeather.parseCode(code, avgTemp)
+    if type(code) ~= "string" or string.len(code) ~= 5 then
+        error(string.format("ChronicleWeather.parseCode: expected 5-character code, got %s", tostring(code)))
+    end
+
+    local baseKey = string.sub(code, 1, 2)
+    local tempKey = string.sub(code, 3, 3)
+    local humidityKey = string.sub(code, 4, 4)
+    local windKeyChar = string.sub(code, 5, 5)
+
+    local base = W.Base[baseKey]
+    if type(base) ~= "table" then
+        error(string.format("ChronicleWeather.parseCode: unknown base %q in %q", baseKey, code))
+    end
+
+    local delta = W.TemperatureDelta[tempKey]
+    if delta == nil then
+        error(string.format("ChronicleWeather.parseCode: unknown temperature delta %q in %q", tempKey, code))
+    end
+
+    if W.Humidity[humidityKey] == nil and humidityKey ~= "x" then
+        error(string.format("ChronicleWeather.parseCode: unknown humidity %q in %q", humidityKey, code))
+    end
+
+    local windEntry = W.Wind[windKeyChar]
+    if type(windEntry) ~= "table" then
+        error(string.format("ChronicleWeather.parseCode: unknown wind %q in %q", windKeyChar, code))
+    end
+
+    local tempC = math.floor((tonumber(avgTemp) or 0) + delta + 0.0)
+    local tempF = celsiusToFahrenheitRounded(tempC)
+    local isWarm = tempC > W.WARM_TEMPERATURE_THRESHOLD
+
+    local windText = isWarm and windEntry.textIfWarm or windEntry.textIfCold
+    local windAudio = isWarm and windEntry.windAudioIfWarm or windEntry.windAudioIfCold
+
+    local humidityText = W.Humidity[humidityKey]
+
+    return {
+        rainKey = weatherLayerKey(base.rainAudio),
+        windKey = weatherLayerKey(windAudio),
+        thunder = base.isThunder == true,
+        baseText = base.text or "",
+        humidityText = humidityText,
+        windText = windText or "",
+        tempC = tempC,
+        tempF = tempF,
+    }
+end
+
+--- @param month number|nil
+--- @param day number|nil
+--- @param hour number|nil
+--- @return table|nil resolved See `ChronicleWeather.parseCode`
+function ChronicleWeather.resolveForClock(month, day, hour)
+    local code, avgTemp = ChronicleWeather.getCode(month, day, hour)
+    if code == nil or avgTemp == nil then
+        return nil
+    end
+    return ChronicleWeather.parseCode(code, avgTemp)
+end
+
+--- @param map table
+--- @param layerKey string
+--- @param field string
+--- @param mapLabel string
+--- @return string
+local function requireHudOverrideField(map, layerKey, field, mapLabel)
+    local lookupKey = audioOverrideLookupKey(layerKey)
+    local row = map[lookupKey]
+    if type(row) ~= "table" then
+        error(
+            string.format(
+                "ChronicleWeather: missing C.WEATHER_AUDIO_OVERRIDES.%s[%q] for layer %q",
+                mapLabel,
+                lookupKey,
+                tostring(layerKey)
+            )
+        )
+    end
+    local text = row[field]
+    if type(text) ~= "string" or text == "" then
+        error(
+            string.format(
+                "ChronicleWeather: missing C.WEATHER_AUDIO_OVERRIDES.%s[%q].%s",
+                mapLabel,
+                lookupKey,
+                field
+            )
+        )
+    end
+    return text
+end
+
+--- @param rainKey string|nil
+--- @return string
+local function hudBaseTextFromRainAudio(rainKey)
+    return requireHudOverrideField(HUD_OVERRIDES.rainAudio, rainKey or "none", "Base", "rainAudio")
+end
+
+--- @param windKey string|nil
+--- @return string
+local function hudWindTextFromWindAudio(windKey)
+    return requireHudOverrideField(HUD_OVERRIDES.windAudio, windKey or "none", "Wind", "windAudio")
+end
+
+--- When `sessionScene.chronicleWeatherManualHold` is set (Scene Constructor weather trio), align HUD
+--- base/wind labels with forced rain/wind/thunder audio in `gameState.soundscape` per `C.WEATHER_AUDIO_OVERRIDES`.
+--- Temperature and humidity remain from the chronicle schedule for the current clock hour.
+--- @param resolved table chronicle parse result (mutated copy returned)
+--- @return table
+function ChronicleWeather.applyHudAudioOverrides(resolved)
+    if type(resolved) ~= "table" then
+        return resolved
+    end
+
+    if S.getStateVal("sessionScene", "chronicleWeatherManualHold") ~= true then
+        return resolved
+    end
+
+    local soundscape = S.getStateVal("gameState", "soundscape")
+    if type(soundscape) ~= "table" then
+        error("ChronicleWeather.applyHudAudioOverrides: missing gameState.soundscape during manual weather hold")
+    end
+
+    local rainKey = soundscape.rain
+    local windKey = soundscape.wind
+    if type(rainKey) ~= "string" or rainKey == "" then
+        rainKey = "none"
+    end
+    if type(windKey) ~= "string" or windKey == "" then
+        windKey = "none"
+    end
+
+    local out = {
+        rainKey = resolved.rainKey,
+        windKey = resolved.windKey,
+        thunder = resolved.thunder,
+        baseText = resolved.baseText,
+        humidityText = resolved.humidityText,
+        windText = resolved.windText,
+        tempC = resolved.tempC,
+        tempF = resolved.tempF,
+    }
+
+    local thunderRules = HUD_OVERRIDES.thunderstorm
+    if type(thunderRules) ~= "table" then
+        error("ChronicleWeather.applyHudAudioOverrides: missing C.WEATHER_AUDIO_OVERRIDES.thunderstorm")
+    end
+
+    if soundscape.thunderEnabled == true then
+        local forcedOn = thunderRules.forcedOn
+        if type(forcedOn) ~= "table" then
+            error("ChronicleWeather.applyHudAudioOverrides: missing thunderstorm.forcedOn")
+        end
+        if type(forcedOn.Base) ~= "string" or forcedOn.Base == "" then
+            error("ChronicleWeather.applyHudAudioOverrides: missing thunderstorm.forcedOn.Base")
+        end
+        if type(forcedOn.Wind) ~= "string" or forcedOn.Wind == "" then
+            error("ChronicleWeather.applyHudAudioOverrides: missing thunderstorm.forcedOn.Wind")
+        end
+        out.baseText = forcedOn.Base
+        out.windText = forcedOn.Wind
+        return out
+    end
+
+    local forcedOff = thunderRules.forcedOff
+    if type(forcedOff) ~= "table" then
+        error("ChronicleWeather.applyHudAudioOverrides: missing thunderstorm.forcedOff")
+    end
+
+    local baseRule = forcedOff.Base
+    if baseRule == BY_RAIN_AUDIO then
+        out.baseText = hudBaseTextFromRainAudio(rainKey)
+    elseif type(baseRule) == "string" and baseRule ~= "" then
+        out.baseText = baseRule
+    else
+        error("ChronicleWeather.applyHudAudioOverrides: invalid thunderstorm.forcedOff.Base")
+    end
+
+    local windRule = forcedOff.Wind
+    if windRule == BY_WIND_AUDIO then
+        out.windText = hudWindTextFromWindAudio(windKey)
+    elseif type(windRule) == "string" and windRule ~= "" then
+        out.windText = windRule
+    else
+        error("ChronicleWeather.applyHudAudioOverrides: invalid thunderstorm.forcedOff.Wind")
+    end
+
+    return out
+end
+
+--- Chronicle schedule + optional Scene Constructor HUD overrides for the overlay weather panel.
+--- @param month number|nil
+--- @param day number|nil
+--- @param hour number|nil
+--- @return table|nil
+function ChronicleWeather.resolveHudForClock(month, day, hour)
+    local resolved = ChronicleWeather.resolveForClock(month, day, hour)
+    if resolved == nil then
+        return nil
+    end
+    return ChronicleWeather.applyHudAudioOverrides(resolved)
+end
+
+--- Legacy shape for callers that expect `{ wind, rain, thunder }` catalog layer keys.
 --- @param month number|nil
 --- @param day number|nil
 --- @param hour number|nil
 --- @return table|nil slot `{ wind, rain, thunder }`
 function ChronicleWeather.getRow(month, day, hour)
-    local m = clampInt(month, 1, 12, 1)
-    local d = clampInt(day, 1, 31, 1)
-    local h = clampInt(hour, 0, 23, 0)
-    local byMonth = Schedule.DATA[m]
-    if type(byMonth) ~= "table" then
+    local resolved = ChronicleWeather.resolveForClock(month, day, hour)
+    if resolved == nil then
         return nil
     end
-    local byDay = byMonth[d]
-    if type(byDay) ~= "table" then
-        return nil
-    end
-    local slot = byDay[h]
-    if type(slot) ~= "table" then
-        return nil
-    end
-    return slot
+    return {
+        wind = resolved.windKey,
+        rain = resolved.rainKey,
+        thunder = resolved.thunder,
+    }
 end
 
---- Chronicle weather always tracks `sessionScene.clock` (hourly CSV). Storyteller toggles for
+--- Chronicle weather always tracks `sessionScene.clock` (hourly schedule). Storyteller toggles for
 --- follow/hold were removed; `opts.force` remains for callers that want to bypass invariants.
 --- @return boolean
 function ChronicleWeather.shouldAutoApply()
@@ -78,8 +352,8 @@ function ChronicleWeather.applyScheduledWeather(opts)
         return false, "Chronicle weather: missing sessionScene.clock."
     end
 
-    local row = ChronicleWeather.getRow(clock.month, clock.day, clock.hour)
-    if row == nil then
+    local resolved = ChronicleWeather.resolveForClock(clock.month, clock.day, clock.hour)
+    if resolved == nil then
         return false,
             string.format(
                 "No chronicle weather row for Mo %s / Day %s / %02d:00.",
@@ -89,15 +363,9 @@ function ChronicleWeather.applyScheduledWeather(opts)
             )
     end
 
-    local rainKey = row.rain
-    local windKey = row.wind
-    local thunderOn = row.thunder == true
-    if type(rainKey) ~= "string" or rainKey == "" then
-        rainKey = "none"
-    end
-    if type(windKey) ~= "string" or windKey == "" then
-        windKey = "none"
-    end
+    local rainKey = resolved.rainKey
+    local windKey = resolved.windKey
+    local thunderOn = resolved.thunder == true
 
     S.setStateVal("none", "soundscape", "weather")
 
@@ -106,8 +374,6 @@ function ChronicleWeather.applyScheduledWeather(opts)
     local okTh, msgTh = Soundscape.setThunderEnabled(thunderOn)
 
     if okRain and okWind and okTh then
-        --- Emitters already match `gameState.soundscape`; priming the reconcile fingerprint avoids
-        --- `Sync.full` → `Soundscape.reconcileFromState` scheduling a second identical rain/wind fade.
         if type(Soundscape.markReconciledToCurrentState) == "function" then
             Soundscape.markReconciledToCurrentState()
         end

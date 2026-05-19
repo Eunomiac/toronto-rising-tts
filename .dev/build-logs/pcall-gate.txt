@@ -1,6 +1,11 @@
-# pcall gate log — baseline from first run. One line per successful check:
-# <ISO8601>\t<count>
-# To allow a higher count, set the LAST line's count (or add a new last line) before building.
+# Lua API gate log — one data line per successful check:
+#   <ISO8601>\tpcall=N\twaitTime=N\twaitCondition=N\tsetXml=N\tsetXmlTable=N
+# waitTime/waitCondition exclude lib/util.ttslua. To allow increases, set LAST data line >= current.
+#
+# Approved full-UI XML refresh ceiling (2026-05-19; see docs/solutions/lua-ui-full-xml-policy.md):
+#   setXml=2 — ui/ui_csheet.ttslua:431 (PCS page 3), core/soundscape_debug_panel.ttslua:166 (debug panel)
+#   setXmlTable=0
+#
 2026-05-07T12:00:00.000Z	95
 2026-05-07T18:00:00.000Z	146
 2026-05-07T22:21:26.192Z	146
@@ -107,3 +112,17 @@
 2026-05-19T06:53:41.150Z	pcall=25	waitTime=0	waitCondition=0
 2026-05-19T10:48:39.588Z	pcall=25	waitTime=0	waitCondition=0
 2026-05-19T10:48:59.269Z	pcall=25	waitTime=0	waitCondition=0
+2026-05-19T10:59:00.713Z	pcall=25	waitTime=0	waitCondition=0	setXml=3	setXmlTable=0
+2026-05-19T10:59:10.637Z	pcall=25	waitTime=0	waitCondition=0	setXml=2	setXmlTable=0
+2026-05-19T10:59:36.724Z	pcall=25	waitTime=0	waitCondition=0	setXml=2	setXmlTable=0
+2026-05-19T11:00:41.301Z	pcall=25	waitTime=0	waitCondition=0	setXml=2	setXmlTable=0
+2026-05-19T11:00:56.350Z	pcall=25	waitTime=0	waitCondition=0	setXml=2	setXmlTable=0
+2026-05-19T11:01:43.833Z	pcall=25	waitTime=0	waitCondition=0	setXml=2	setXmlTable=0
+2026-05-19T11:06:23.878Z	pcall=25	waitTime=0	waitCondition=0	setXml=2	setXmlTable=0
+2026-05-19T11:07:42.817Z	pcall=25	waitTime=0	waitCondition=0	setXml=2	setXmlTable=0
+2026-05-19T11:11:05.207Z	pcall=25	waitTime=0	waitCondition=0	setXml=2	setXmlTable=0
+2026-05-19T11:30:22.948Z	pcall=25	waitTime=0	waitCondition=0	setXml=2	setXmlTable=0
+2026-05-19T12:29:24.707Z	pcall=24	waitTime=0	waitCondition=0	setXml=2	setXmlTable=0
+2026-05-19T14:27:26.120Z	pcall=24	waitTime=0	waitCondition=0	setXml=2	setXmlTable=0
+2026-05-19T14:54:24.367Z	pcall=24	waitTime=0	waitCondition=0	setXml=2	setXmlTable=0
+2026-05-19T14:56:20.754Z	pcall=24	waitTime=0	waitCondition=0	setXml=2	setXmlTable=0

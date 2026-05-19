@@ -368,13 +368,18 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 ### Chronicle weather (`lib/chronicle_weather.ttslua`)
 
 **Require:** `local ChronicleWeather = require("lib.chronicle_weather")`
-**Data:** `node .dev/scripts/generate_tr_weather_lua.js` embeds `.dev/Chronicle Data/TR_Weather.csv` into `lib/tr_weather_schedule.ttslua`.
+**Data:** `node .dev/scripts/generate_tr_weather_lua.js` embeds `lib/json/Weather.json` into `lib/tr_weather_schedule.ttslua` (`TRWeatherSchedule.DATA` with five-character hourly codes).
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
-| `ChronicleWeather.getRow(month, day, hour)` | Returns `{ wind, rain, thunder }` for that calendar hour or `nil` | Inspect scheduled intent |
+| `ChronicleWeather.getCode(month, day, hour)` | Returns five-character code + month `avgTemp`, or `nil` | Debug schedule lookup |
+| `ChronicleWeather.parseCode(code, avgTemp)` | Parses code via `C.WEATHER` → rain/wind keys, HUD strings, `tempC`/`tempF` | Unit-style inspection |
+| `ChronicleWeather.resolveForClock(month, day, hour)` | `getCode` + `parseCode` combined | HUD + audio derivation |
+| `ChronicleWeather.applyHudAudioOverrides(resolved)` | When `chronicleWeatherManualHold`, maps `gameState.soundscape` rain/wind/thunder to `C.WEATHER_AUDIO_OVERRIDES` HUD text | Scene Constructor weather lock |
+| `ChronicleWeather.resolveHudForClock(month, day, hour)` | `resolveForClock` + `applyHudAudioOverrides` for overlay | `GameStateOverlay.reconcileWeatherFromState` |
+| `ChronicleWeather.getRow(month, day, hour)` | Returns `{ wind, rain, thunder }` layer keys for that hour or `nil` | Legacy inspect shape |
 | `ChronicleWeather.shouldAutoApply()` | Currently always `true` (gates removed); reserved for future hold/follow wiring | Rarely called directly |
-| `ChronicleWeather.applyScheduledWeather(opts)` | Sets `soundscape.weather` to `"none"`, applies rain/wind/thunder via `Soundscape.set*`; on **full success** primes `Soundscape.markReconciledToCurrentState` so the next `Sync.full` does not double-fade; on **partial failure** calls `invalidateReconcileCache` for recovery; `opts.force` | `ChronicleWeather.applyScheduledWeather({ force = true })` |
+| `ChronicleWeather.applyScheduledWeather(opts)` | Resolves schedule, sets `soundscape.weather` to `"none"`, applies rain/wind/thunder via `Soundscape.set*`; on **full success** primes `Soundscape.markReconciledToCurrentState`; on **partial failure** calls `invalidateReconcileCache`; `opts.force` | `ChronicleWeather.applyScheduledWeather({ force = true })` |
 
 ---
 

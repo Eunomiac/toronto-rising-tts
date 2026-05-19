@@ -1,0 +1,177 @@
+--[[
+    Embedded UI XML templates from ui/.templates/csheet/
+    DO NOT EDIT BY HAND - regenerate: node .dev/scripts/embed_ui_xml_templates.js
+]]
+
+local M = {}
+
+M._byKey = {}
+
+M._byKey["csheet/page3"] = [=[
+<Panel id="paper_root" class="page_root padded_border">
+
+  <Button id="pageBack" class="page_navigation page_back" />
+
+  <VerticalLayout class="vertical_section_container" color="rgba(155, 0, 0, 0.15)">
+    <Panel class="spacer" color="#FF0000" preferredHeight="20" flexibleHeight="0" minHeight="20" />
+
+    <HorizontalLayout class="box_column_container">
+      <VerticalLayout class="box_column">@@BACKGROUNDS_COLUMN_1@@</VerticalLayout>
+      <VerticalLayout class="box_column">@@BACKGROUNDS_COLUMN_2@@</VerticalLayout>
+      <VerticalLayout class="box_column">@@BACKGROUNDS_COLUMN_3@@</VerticalLayout>
+    </HorizontalLayout>
+
+    <Image id="divider_merits" image="divider_merits" />
+
+    <HorizontalLayout class="box_column_container">
+      <VerticalLayout class="box_column">@@MERITS_COLUMN_1@@</VerticalLayout>
+      <VerticalLayout class="box_column">@@MERITS_COLUMN_2@@</VerticalLayout>
+      <VerticalLayout class="box_column">@@MERITS_COLUMN_3@@</VerticalLayout>
+    </HorizontalLayout>
+
+    <Image id="divider_flaws" image="divider_flaws_@@COLOR@@" />
+
+    <HorizontalLayout class="box_column_container">
+      <VerticalLayout class="box_column">@@FLAWS_COLUMN_1@@</VerticalLayout>
+      <VerticalLayout class="box_column">@@FLAWS_COLUMN_2@@</VerticalLayout>
+      <VerticalLayout class="box_column">@@FLAWS_COLUMN_3@@</VerticalLayout>
+    </HorizontalLayout>
+
+  </VerticalLayout>
+
+</Panel>
+]=]
+
+M._byKey["csheet/partials/bg_block"] = [=[
+<VerticalLayout class="box_text_container">
+  <HorizontalLayout class="box_text_title_bar @@TITLE_BAR_DOT_CLASS@@">
+    <Text class="box_text_title_text" text="@@TITLE_TEXT@@" />
+    <Panel class="box_text_panel_title_dotline">
+      ##IF @@DOT_IMG_1@@##
+      <Image id="p@@PAGE_NUM@@_bg_@@INDEX@@_dot_1" image="@@DOT_IMG_1@@" class="dot box_text_title_dot dot_1" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_2@@##
+      <Image id="p@@PAGE_NUM@@_bg_@@INDEX@@_dot_2" image="@@DOT_IMG_2@@" class="dot box_text_title_dot dot_2" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_3@@##
+      <Image id="p@@PAGE_NUM@@_bg_@@INDEX@@_dot_3" image="@@DOT_IMG_3@@" class="dot box_text_title_dot dot_3" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_4@@##
+      <Image id="p@@PAGE_NUM@@_bg_@@INDEX@@_dot_4" image="@@DOT_IMG_4@@" class="dot box_text_title_dot dot_4" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_5@@##
+      <Image id="p@@PAGE_NUM@@_bg_@@INDEX@@_dot_5" image="@@DOT_IMG_5@@" class="dot box_text_title_dot dot_5" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_6@@##
+      <Image id="p@@PAGE_NUM@@_bg_@@INDEX@@_dot_6" image="@@DOT_IMG_6@@" class="dot box_text_title_dot dot_6" />
+      ##ENDIF##
+    </Panel>
+  </HorizontalLayout>
+  <VerticalLayout class="box_text_panel_body">
+    ##IF @@FLAVOR_TEXT@@##
+    <Text class="box_text flavor_text" text="@@FLAVOR_TEXT@@" />
+    ##ENDIF##
+    ##IF @@RULES_TEXT@@##
+    <Text class="box_text rules_text" text="@@RULES_TEXT@@" />
+    ##ENDIF##
+  </VerticalLayout>
+  ##IF @@SOURCE_TEXT@@##
+  <Panel class="box_text_panel_source">
+    <Text class="box_text_panel_source_text" text="@@SOURCE_TEXT@@" />
+  </Panel>
+  ##ENDIF##
+</VerticalLayout>
+]=]
+
+M._byKey["csheet/partials/flaw_block"] = [=[
+<VerticalLayout class="box_text_container">
+  <HorizontalLayout class="box_text_title_bar @@TITLE_BAR_DOT_CLASS@@">
+    <Text class="box_text_title_text flaw_title" text="@@TITLE_TEXT@@" />
+    <Panel class="box_text_panel_title_dotline">
+      ##IF @@DOT_IMG_1@@##
+      <Image id="p@@PAGE_NUM@@_flaw_@@INDEX@@_dot_1" image="@@DOT_IMG_1@@" class="dot box_text_title_dot dot_1" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_2@@##
+      <Image id="p@@PAGE_NUM@@_flaw_@@INDEX@@_dot_2" image="@@DOT_IMG_2@@" class="dot box_text_title_dot dot_2" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_3@@##
+      <Image id="p@@PAGE_NUM@@_flaw_@@INDEX@@_dot_3" image="@@DOT_IMG_3@@" class="dot box_text_title_dot dot_3" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_4@@##
+      <Image id="p@@PAGE_NUM@@_flaw_@@INDEX@@_dot_4" image="@@DOT_IMG_4@@" class="dot box_text_title_dot dot_4" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_5@@##
+      <Image id="p@@PAGE_NUM@@_flaw_@@INDEX@@_dot_5" image="@@DOT_IMG_5@@" class="dot box_text_title_dot dot_5" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_6@@##
+      <Image id="p@@PAGE_NUM@@_flaw_@@INDEX@@_dot_6" image="@@DOT_IMG_6@@" class="dot box_text_title_dot dot_6" />
+      ##ENDIF##
+    </Panel>
+  </HorizontalLayout>
+  <VerticalLayout class="box_text_panel_body">
+    ##IF @@FLAVOR_TEXT@@##
+    <Text class="box_text flavor_text" text="@@FLAVOR_TEXT@@" />
+    ##ENDIF##
+    ##IF @@RULES_TEXT@@##
+    <Text class="box_text rules_text" text="@@RULES_TEXT@@" />
+    ##ENDIF##
+  </VerticalLayout>
+  ##IF @@SOURCE_TEXT@@##
+  <Panel class="box_text_panel_source">
+    <Text class="box_text_panel_source_text" text="@@SOURCE_TEXT@@" />
+  </Panel>
+  ##ENDIF##
+</VerticalLayout>
+]=]
+
+M._byKey["csheet/partials/merit_block"] = [=[
+<VerticalLayout class="box_text_container">
+  <HorizontalLayout class="box_text_title_bar @@TITLE_BAR_DOT_CLASS@@">
+    <Text class="box_text_title_text" text="@@TITLE_TEXT@@" />
+    <Panel class="box_text_panel_title_dotline">
+      ##IF @@DOT_IMG_1@@##
+      <Image id="p@@PAGE_NUM@@_merit_@@INDEX@@_dot_1" image="@@DOT_IMG_1@@" class="dot box_text_title_dot dot_1" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_2@@##
+      <Image id="p@@PAGE_NUM@@_merit_@@INDEX@@_dot_2" image="@@DOT_IMG_2@@" class="dot box_text_title_dot dot_2" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_3@@##
+      <Image id="p@@PAGE_NUM@@_merit_@@INDEX@@_dot_3" image="@@DOT_IMG_3@@" class="dot box_text_title_dot dot_3" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_4@@##
+      <Image id="p@@PAGE_NUM@@_merit_@@INDEX@@_dot_4" image="@@DOT_IMG_4@@" class="dot box_text_title_dot dot_4" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_5@@##
+      <Image id="p@@PAGE_NUM@@_merit_@@INDEX@@_dot_5" image="@@DOT_IMG_5@@" class="dot box_text_title_dot dot_5" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_6@@##
+      <Image id="p@@PAGE_NUM@@_merit_@@INDEX@@_dot_6" image="@@DOT_IMG_6@@" class="dot box_text_title_dot dot_6" />
+      ##ENDIF##
+    </Panel>
+  </HorizontalLayout>
+  <VerticalLayout class="box_text_panel_body">
+    ##IF @@FLAVOR_TEXT@@##
+    <Text class="box_text flavor_text" text="@@FLAVOR_TEXT@@" />
+    ##ENDIF##
+    ##IF @@RULES_TEXT@@##
+    <Text class="box_text rules_text" text="@@RULES_TEXT@@" />
+    ##ENDIF##
+  </VerticalLayout>
+  ##IF @@SOURCE_TEXT@@##
+  <Panel class="box_text_panel_source">
+    <Text class="box_text_panel_source_text" text="@@SOURCE_TEXT@@" />
+  </Panel>
+  ##ENDIF##
+</VerticalLayout>
+]=]
+
+--- @param templateKey string e.g. "csheet/page3"
+--- @return string|nil
+function M.get(templateKey)
+  if type(templateKey) ~= "string" or templateKey == "" then
+    return nil
+  end
+  return M._byKey[templateKey]
+end
+
+return M

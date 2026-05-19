@@ -1,6 +1,6 @@
 /**
- * Converts `.dev/Chronicle Data/TR_Weather.csv` into `lib/tr_weather_schedule.ttslua`.
- * Validates Wind/Rain keys against `lib/soundscape_catalog.ttslua` weather tracks ("none" allowed).
+ * Embeds `lib/json/Weather.json` into `lib/tr_weather_schedule.ttslua` as `TRWeatherSchedule.DATA`.
+ * Five-character hourly codes are validated against `C.WEATHER` in `lib/constants.ttslua`.
  *
  * Run from repo root: node .dev/scripts/generate_tr_weather_lua.js
  */
@@ -8,66 +8,117 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.resolve(__dirname, "..", "..");
-const csvPath = path.join(root, ".dev", "Chronicle Data", "TR_Weather.csv");
-const catalogPath = path.join(root, "lib", "soundscape_catalog.ttslua");
+const jsonPath = path.join(root, "lib", "json", "Weather.json");
+const constantsPath = path.join(root, "lib", "constants.ttslua");
 const outPath = path.join(root, "lib", "tr_weather_schedule.ttslua");
+
+const HOURS_PER_DAY = 24;
+const MONTH_MIN = 1;
+const MONTH_MAX = 12;
 
 /**
  * @param {string} luaSource
- * @param {"rain"|"wind"} subType
- * @returns {Set<string>}
+ * @param {string} tableName
+ * @param {string} nextTableName
+ * @returns {string}
  */
-function extractCatalogWeatherKeys(luaSource, subType) {
-  const keys = new Set();
-  // Anchor to catalog layout: key line immediately after `{`, then type/subType for weather.
-  const re =
-    /\r?\n\s{2}(\w+)\s*=\s*\{\s*\r?\n\s+key\s*=\s*"([^"]+)",\s*\r?\n\s+type\s*=\s*"weather",\s*\r?\n\s+subType\s*=\s*"([^"]+)"/g;
-  let m = re.exec(luaSource);
+function sliceWeatherSubTable(luaSource, tableName, nextTableName) {
+  const open = `${tableName} = {`;
+  const start = luaSource.indexOf(open);
+  if (start < 0) {
+    throw new Error(`C.WEATHER.${tableName} not found in lib/constants.ttslua`);
+  }
+  const bodyStart = start + open.length;
+  const nextIdx = luaSource.indexOf(`${nextTableName} = {`, bodyStart);
+  if (nextIdx < 0) {
+    throw new Error(`C.WEATHER.${nextTableName} not found after ${tableName} in lib/constants.ttslua`);
+  }
+  return luaSource.slice(bodyStart, nextIdx);
+}
+
+/**
+ * @param {string} constantsSource
+ * @returns {{
+ *   base: Set<string>,
+ *   temperatureDelta: Set<string>,
+ *   humidity: Set<string>,
+ *   wind: Set<string>,
+ * }}
+ */
+function loadWeatherValidationSets(constantsSource) {
+  const weatherStart = constantsSource.indexOf("C.WEATHER = {");
+  if (weatherStart < 0) {
+    throw new Error("C.WEATHER not found in lib/constants.ttslua");
+  }
+  const weatherEnd = constantsSource.indexOf("-- #endregion", weatherStart);
+  if (weatherEnd < 0) {
+    throw new Error("C.WEATHER region end not found in lib/constants.ttslua");
+  }
+  const weatherBlock = constantsSource.slice(weatherStart, weatherEnd);
+
+  const baseBody = sliceWeatherSubTable(weatherBlock, "Base", "TemperatureDelta");
+  const tempBody = sliceWeatherSubTable(weatherBlock, "TemperatureDelta", "Humidity");
+  const humidityBody = sliceWeatherSubTable(weatherBlock, "Humidity", "Wind");
+  const windEnd = weatherBlock.lastIndexOf("  }");
+  const windOpen = weatherBlock.indexOf("Wind = {");
+  if (windOpen < 0) {
+    throw new Error("C.WEATHER.Wind not found in lib/constants.ttslua");
+  }
+  const windBody = weatherBlock.slice(windOpen + "Wind = {".length, windEnd);
+
+  /** @type {Set<string>} */
+  const base = new Set();
+  const baseKeyRe = /^\s+([a-z]{2})\s*=\s*\{/gim;
+  let m = baseKeyRe.exec(baseBody);
   while (m !== null) {
-    if (m[3] === subType) {
-      keys.add(m[1]);
-    }
-    m = re.exec(luaSource);
+    base.add(m[1]);
+    m = baseKeyRe.exec(baseBody);
   }
-  return keys;
+  if (base.size === 0) {
+    throw new Error("No C.WEATHER.Base keys parsed from lib/constants.ttslua");
+  }
+
+  /** @type {Set<string>} */
+  const temperatureDelta = new Set();
+  const tempKeyRe = /^\s+(?:\["([^"]+)"\]|([A-Za-z]))\s*=/gm;
+  m = tempKeyRe.exec(tempBody);
+  while (m !== null) {
+    temperatureDelta.add(m[1] !== undefined ? m[1] : m[2]);
+    m = tempKeyRe.exec(tempBody);
+  }
+  if (temperatureDelta.size === 0) {
+    throw new Error("No C.WEATHER.TemperatureDelta keys parsed from lib/constants.ttslua");
+  }
+
+  /** @type {Set<string>} */
+  const humidity = new Set();
+  const humidityKeyRe = /^\s+([a-zA-Z0-9])\s*=/gm;
+  m = humidityKeyRe.exec(humidityBody);
+  while (m !== null) {
+    humidity.add(m[1]);
+    m = humidityKeyRe.exec(humidityBody);
+  }
+  if (humidity.size === 0) {
+    throw new Error("No C.WEATHER.Humidity keys parsed from lib/constants.ttslua");
+  }
+
+  /** @type {Set<string>} */
+  const wind = new Set();
+  const windKeyRe = /^\s+([a-z])\s*=\s*\{/gim;
+  m = windKeyRe.exec(windBody);
+  while (m !== null) {
+    wind.add(m[1]);
+    m = windKeyRe.exec(windBody);
+  }
+  if (wind.size === 0) {
+    throw new Error("No C.WEATHER.Wind keys parsed from lib/constants.ttslua");
+  }
+
+  return { base, temperatureDelta, humidity, wind };
 }
 
-/**
- * @param {string} line
- * @returns {string[]}
- */
-function splitCsvLine(line) {
-  return line.split(",").map((cell) => cell.trim());
-}
-
-/**
- * @param {string} raw
- * @returns {boolean}
- */
-function parseThunder(raw) {
-  const u = String(raw || "").trim().toUpperCase();
-  if (u === "TRUE" || u === "1" || u === "YES") {
-    return true;
-  }
-  if (u === "FALSE" || u === "" || u === "0" || u === "NO") {
-    return false;
-  }
-  throw new Error(`Invalid Thunder value (expected TRUE/FALSE): "${raw}"`);
-}
-
-/**
- * @param {string} key
- * @param {Set<string>} allowed
- * @param {string} column
- */
-function validateTrackKey(key, allowed, column) {
-  if (key === "none") {
-    return;
-  }
-  if (!allowed.has(key)) {
-    throw new Error(`${column}: unknown catalog key "${key}"`);
-  }
-}
+/** @type {ReturnType<typeof loadWeatherValidationSets>} */
+const WEATHER_KEYS = loadWeatherValidationSets(fs.readFileSync(constantsPath, "utf8"));
 
 /**
  * @param {string} s
@@ -77,97 +128,157 @@ function luaString(s) {
   return `"${String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 }
 
-const catalogSrc = fs.readFileSync(catalogPath, "utf8");
-const rainKeys = extractCatalogWeatherKeys(catalogSrc, "rain");
-const windKeys = extractCatalogWeatherKeys(catalogSrc, "wind");
+/**
+ * @param {string} code
+ * @param {string} context
+ */
+function validateWeatherCode(code, context) {
+  if (typeof code !== "string" || code.length !== 5) {
+    throw new Error(`${context}: expected 5-character code, got ${JSON.stringify(code)}`);
+  }
 
-const csvRaw = fs.readFileSync(csvPath, "utf8");
-const lines = csvRaw.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
-const header = splitCsvLine(lines[0] || "");
-const expected = ["Month", "Day", "Hour", "Wind", "Rain", "Thunder"];
-for (let i = 0; i < expected.length; i++) {
-  if (header[i] !== expected[i]) {
+  const base = code.slice(0, 2);
+  const temp = code[2];
+  const humidity = code[3];
+  const wind = code[4];
+
+  if (!WEATHER_KEYS.base.has(base)) {
     throw new Error(
-      `Unexpected CSV header at column ${i + 1}: got "${header[i]}", want "${expected[i]}"`,
+      `${context}: invalid base weather "${base}" (chars 1–2) in ${JSON.stringify(code)}; ` +
+        `expected one of: ${[...WEATHER_KEYS.base].sort().join(", ")}`,
+    );
+  }
+  if (!WEATHER_KEYS.temperatureDelta.has(temp)) {
+    throw new Error(
+      `${context}: invalid temperature delta "${temp}" (char 3) in ${JSON.stringify(code)}; ` +
+        `expected one of: ${[...WEATHER_KEYS.temperatureDelta].sort().join(", ")}`,
+    );
+  }
+  if (!WEATHER_KEYS.humidity.has(humidity)) {
+    throw new Error(
+      `${context}: invalid humidity "${humidity}" (char 4) in ${JSON.stringify(code)}; ` +
+        `expected one of: ${[...WEATHER_KEYS.humidity].sort().join(", ")}`,
+    );
+  }
+  if (!WEATHER_KEYS.wind.has(wind)) {
+    throw new Error(
+      `${context}: invalid wind "${wind}" (char 5) in ${JSON.stringify(code)}; ` +
+        `expected one of: ${[...WEATHER_KEYS.wind].sort().join(", ")}`,
     );
   }
 }
 
-/** @type {Map<string, { month: number, day: number, hour: number, wind: string, rain: string, thunder: boolean }>} */
-const bySlot = new Map();
-
-for (let li = 1; li < lines.length; li++) {
-  const line = lines[li];
-  if (line === undefined || line.trim() === "") {
-    continue;
+/**
+ * @param {unknown} raw
+ * @param {string} context
+ * @returns {number}
+ */
+function parseAvgTemp(raw, context) {
+  const n = Number(raw);
+  if (!Number.isFinite(n)) {
+    throw new Error(`${context}: avgTemp must be numeric, got ${JSON.stringify(raw)}`);
   }
-  const parts = splitCsvLine(line);
-  if (parts.length < 6) {
-    throw new Error(`Line ${li + 1}: expected 6 columns, got ${parts.length}`);
-  }
-  const month = Number(parts[0]);
-  const day = Number(parts[1]);
-  const hour = Number(parts[2]);
-  let wind = String(parts[3] || "").trim();
-  let rain = String(parts[4] || "").trim();
-  const thunder = parseThunder(parts[5]);
-
-  if (!Number.isInteger(month) || month < 1 || month > 12) {
-    throw new Error(`Line ${li + 1}: invalid Month ${parts[0]}`);
-  }
-  if (!Number.isInteger(day) || day < 1 || day > 31) {
-    throw new Error(`Line ${li + 1}: invalid Day ${parts[1]}`);
-  }
-  if (!Number.isInteger(hour) || hour < 0 || hour > 23) {
-    throw new Error(`Line ${li + 1}: invalid Hour ${parts[2]}`);
-  }
-
-  if (wind === "") {
-    wind = "none";
-  }
-  if (rain === "") {
-    rain = "none";
-  }
-
-  validateTrackKey(wind, windKeys, "Wind");
-  validateTrackKey(rain, rainKeys, "Rain");
-
-  const slotKey = `${month}|${day}|${hour}`;
-  if (bySlot.has(slotKey)) {
-    throw new Error(`Line ${li + 1}: duplicate slot Month=${month} Day=${day} Hour=${hour}`);
-  }
-  bySlot.set(slotKey, { month, day, hour, wind, rain, thunder });
+  return Math.trunc(n);
 }
 
-const rows = Array.from(bySlot.values());
-rows.sort((a, b) => {
-  if (a.month !== b.month) {
-    return a.month - b.month;
-  }
-  if (a.day !== b.day) {
-    return a.day - b.day;
-  }
-  return a.hour - b.hour;
-});
+/**
+ * @param {Record<string, { avgTemp: string, weather: Record<string, string[]> }>} data
+ * @returns {{ monthCount: number, dayCount: number, slotCount: number }}
+ */
+function validateAndSummarize(data) {
+  let monthCount = 0;
+  let dayCount = 0;
+  let slotCount = 0;
 
-/** @type {Map<number, Map<number, Map<number, typeof rows[0]>>>} */
-const nested = new Map();
-for (const row of rows) {
-  if (!nested.has(row.month)) {
-    nested.set(row.month, new Map());
+  for (let month = MONTH_MIN; month <= MONTH_MAX; month += 1) {
+    const monthKey = String(month);
+    const monthEntry = data[monthKey];
+    const monthCtx = `Month ${month}`;
+    if (monthEntry === undefined || typeof monthEntry !== "object" || monthEntry === null) {
+      throw new Error(`Missing month entry ${monthKey} in Weather.json`);
+    }
+    parseAvgTemp(monthEntry.avgTemp, `${monthCtx} avgTemp`);
+    const byDay = monthEntry.weather;
+    if (typeof byDay !== "object" || byDay === null) {
+      throw new Error(`${monthCtx}: weather must be an object`);
+    }
+
+    const days = Object.keys(byDay)
+      .map((k) => Number(k))
+      .filter((n) => Number.isInteger(n) && n >= 1 && n <= 31);
+    if (days.length === 0) {
+      throw new Error(`${monthCtx}: weather has no day entries`);
+    }
+    days.sort((a, b) => a - b);
+
+    monthCount += 1;
+    for (const day of days) {
+      const dayKey = String(day);
+      const hours = byDay[dayKey];
+      const dayCtx = `${monthCtx} Day ${day}`;
+      if (!Array.isArray(hours)) {
+        throw new Error(`${dayCtx}: expected array of hourly codes`);
+      }
+      if (hours.length !== HOURS_PER_DAY) {
+        throw new Error(`${dayCtx}: expected ${HOURS_PER_DAY} hours, got ${hours.length}`);
+      }
+      for (let hour = 0; hour < HOURS_PER_DAY; hour += 1) {
+        validateWeatherCode(hours[hour], `${dayCtx} Hour ${hour}`);
+      }
+      dayCount += 1;
+      slotCount += HOURS_PER_DAY;
+    }
   }
-  const byDay = nested.get(row.month);
-  if (!byDay.has(row.day)) {
-    byDay.set(row.day, new Map());
-  }
-  byDay.get(row.day).set(row.hour, row);
+
+  return { monthCount, dayCount, slotCount };
 }
+
+/**
+ * @param {string[]} hours
+ * @returns {string}
+ */
+function formatHourArray(hours) {
+  return `{ ${hours.map((code) => luaString(code)).join(", ")} }`;
+}
+
+/**
+ * @param {number} month
+ * @param {{ avgTemp: string, weather: Record<string, string[]> }} monthEntry
+ * @returns {string}
+ */
+function formatMonthBlock(month, monthEntry) {
+  const lines = [];
+  const avgTemp = parseAvgTemp(monthEntry.avgTemp, `Month ${month} avgTemp`);
+  lines.push(`  [${month}] = {`);
+  lines.push(`    avgTemp = ${avgTemp},`);
+  lines.push("    weather = {");
+
+  const days = Object.keys(monthEntry.weather)
+    .map((k) => Number(k))
+    .filter((n) => Number.isInteger(n))
+    .sort((a, b) => a - b);
+
+  for (const day of days) {
+    const hours = monthEntry.weather[String(day)];
+    lines.push(`      [${day}] = ${formatHourArray(hours)},`);
+  }
+
+  lines.push("    }");
+  lines.push("  },");
+  return lines.join("\n");
+}
+
+const jsonRaw = fs.readFileSync(jsonPath, "utf8");
+/** @type {Record<string, { avgTemp: string, weather: Record<string, string[]> }>} */
+const weatherData = JSON.parse(jsonRaw);
+const summary = validateAndSummarize(weatherData);
 
 const out = [];
 out.push(`--[[
-    Toronto Rising — chronicle hourly weather schedule (nested lookup by month / day / hour).
-    AUTO-GENERATED from .dev/Chronicle Data/TR_Weather.csv — DO NOT EDIT BY HAND.
+    Toronto Rising — chronicle hourly weather schedule (month / day / hour codes).
+    AUTO-GENERATED from lib/json/Weather.json — DO NOT EDIT BY HAND.
     Regenerate: node .dev/scripts/generate_tr_weather_lua.js
+    Code format: see C.WEATHER in lib/constants.ttslua.
 ]]
 
 local TRWeatherSchedule = {}
@@ -175,30 +286,13 @@ local TRWeatherSchedule = {}
 TRWeatherSchedule.DATA = {
 `);
 
-const months = Array.from(nested.keys()).sort((a, b) => a - b);
-for (const m of months) {
-  out.push(`  [${m}] = {\n`);
-  const byDay = nested.get(m);
-  const days = Array.from(byDay.keys()).sort((a, b) => a - b);
-  for (const d of days) {
-    out.push(`    [${d}] = {\n`);
-    const byHour = byDay.get(d);
-    const hours = Array.from(byHour.keys()).sort((a, b) => a - b);
-    for (const h of hours) {
-      const r = byHour.get(h);
-      const th = r.thunder ? "true" : "false";
-      out.push(
-        `      [${h}] = { wind = ${luaString(r.wind)}, rain = ${luaString(r.rain)}, thunder = ${th} },\n`,
-      );
-    }
-    out.push(`    },\n`);
-  }
-  out.push(`  },\n`);
+for (let month = MONTH_MIN; month <= MONTH_MAX; month += 1) {
+  out.push(`${formatMonthBlock(month, weatherData[String(month)])}\n`);
 }
 
 out.push(`}
 
-TRWeatherSchedule.ROW_COUNT = ${rows.length}
+TRWeatherSchedule.ROW_COUNT = ${summary.slotCount}
 
 return TRWeatherSchedule
 `);
@@ -207,5 +301,5 @@ fs.writeFileSync(outPath, out.join(""), "utf8");
 console.log(
   "Wrote",
   outPath,
-  "(" + rows.length + " rows, " + (fs.statSync(outPath).size / 1024).toFixed(1) + " KB)",
+  `(${summary.monthCount} months, ${summary.dayCount} days, ${summary.slotCount} hourly slots, ${(fs.statSync(outPath).size / 1024).toFixed(1)} KB)`,
 );

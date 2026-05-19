@@ -1,0 +1,45 @@
+<!-- Parameters:
+@@COLOR@@ - Title-case seat suffix for divider_flaws image (e.g. "Purple")
+@@BACKGROUNDS_COLUMN_1@@ - concatenated bg_block renders
+@@BACKGROUNDS_COLUMN_2@@
+@@BACKGROUNDS_COLUMN_3@@
+@@MERITS_COLUMN_1@@ - concatenated merit_block renders
+@@MERITS_COLUMN_2@@
+@@MERITS_COLUMN_3@@
+@@FLAWS_COLUMN_1@@ - concatenated flaw_block renders
+@@FLAWS_COLUMN_2@@
+@@FLAWS_COLUMN_3@@
+-->
+
+<Panel id="paper_root" class="page_root padded_border">
+
+  <Button id="pageBack" class="page_navigation page_back" />
+
+  <VerticalLayout class="vertical_section_container" color="rgba(155, 0, 0, 0.15)">
+    <Panel class="spacer" color="#FF0000" preferredHeight="20" flexibleHeight="0" minHeight="20" />
+
+    <HorizontalLayout class="box_column_container">
+      <VerticalLayout class="box_column">@@BACKGROUNDS_COLUMN_1@@</VerticalLayout>
+      <VerticalLayout class="box_column">@@BACKGROUNDS_COLUMN_2@@</VerticalLayout>
+      <VerticalLayout class="box_column">@@BACKGROUNDS_COLUMN_3@@</VerticalLayout>
+    </HorizontalLayout>
+
+    <Image id="divider_merits" image="divider_merits" />
+
+    <HorizontalLayout class="box_column_container">
+      <VerticalLayout class="box_column">@@MERITS_COLUMN_1@@</VerticalLayout>
+      <VerticalLayout class="box_column">@@MERITS_COLUMN_2@@</VerticalLayout>
+      <VerticalLayout class="box_column">@@MERITS_COLUMN_3@@</VerticalLayout>
+    </HorizontalLayout>
+
+    <Image id="divider_flaws" image="divider_flaws_@@COLOR@@" />
+
+    <HorizontalLayout class="box_column_container">
+      <VerticalLayout class="box_column">@@FLAWS_COLUMN_1@@</VerticalLayout>
+      <VerticalLayout class="box_column">@@FLAWS_COLUMN_2@@</VerticalLayout>
+      <VerticalLayout class="box_column">@@FLAWS_COLUMN_3@@</VerticalLayout>
+    </HorizontalLayout>
+
+  </VerticalLayout>
+
+</Panel>

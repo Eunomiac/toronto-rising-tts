@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build: All non-Lua tooling (TTS MCP + generated Lua + UI XML templates)",
+      "label": "Build: Module tooling (gate + generated Lua + UI XML templates)",
       "type": "shell",
       "command": "npm run build",
       "options": {
@@ -43,8 +43,12 @@
         "isDefault": false
       },
       "presentation": {
-        "reveal": "silent",
-        "panel": "shared"
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
       }
     },
     {

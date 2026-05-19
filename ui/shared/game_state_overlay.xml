@@ -5,7 +5,7 @@
 
   <Panel class="gameStateOverlay" height="100%" width="100%" raycastTarget="false" />
 
-  <VerticalLayout class="gameStateOverlay_topCenter" width="900" height="170" rectAlignment="UpperCenter" childAlignment="MiddleCenter" spacing="5" padding="5 5 5 5" scale="0.8" />
+  <VerticalLayout class="gameStateOverlay_topCenter" width="900" height="170" rectAlignment="UpperCenter" childAlignment="MiddleCenter" spacing="5" padding="5 5 5 5" scale="1" offsetXY="0 15" />
 
   <VerticalLayout class="gameStateOverlay_topRight" width="372" height="110" rectAlignment="UpperRight" childAlignment="UpperRight" spacing="5" padding="5 5 5 5" offsetXY="2 0" />
 
@@ -21,36 +21,31 @@
 </Defaults>
 
 <Panel id="gameStateOverlay_root" class="gameStateOverlay">
-  <!--
-U.setAttributes("gameStateOverlay_timeAndLocation", {scale = "1", offsetXY = "0 15"})
--->
 
   <VerticalLayout id="gameStateOverlay_timeAndLocation" class="gameStateOverlay_topCenter">
     <Image id="gameStateOverlay_timeAndLocation_background" class="gameStateOverlay_background" image="bg_playerOverlay_timeLocation" />
-    <!--
-U.setAttributes("gameStateOverlay_sesionNumber", {text = "− Ⅰ −"})
--->
-    <Text id="gameStateOverlay_sesionNumber" class="small_red_text" text="− Ⅼ Ⅹ Ⅴ Ⅰ Ⅰ −" />
+    <Text id="gameStateOverlay_sesionNumber" class="small_red_text" text="− Ⅰ −" />
     <HorizontalLayout class="gameStateOverlay_location" spacing="5" childAlignment="UpperCenter">
-      <Text id="gameStateOverlay_district" class="small_white_text" text="Yonge &amp; Bloor Museum District" />
+      <Text id="gameStateOverlay_district" class="small_white_text" text="" />
       <Text class="small_red_text" text="◆" />
       <Text id="gameStateOverlay_parentSite" class="small_white_text" text="" active="false" />
       <Text id="gameStateOverlay_parentSiteSeparator" class="small_red_text" text="◆" active="false" />
-      <Text id="gameStateOverlay_site" class="small_white_text" text="Bloor Street Loading Zone" />
+      <Text id="gameStateOverlay_site" class="small_white_text" text="" />
     </HorizontalLayout>
-    <Text id="gameStateOverlay_datetime" class="med_red_text" text="Monday, September 14th, 2026" />
-    <Text id="gameStateOverlay_time" class="large_red_text" text="10:36 PM" />
+    <Text id="gameStateOverlay_datetime" class="med_red_text" text="" />
+    <Text id="gameStateOverlay_time" class="large_red_text" text="" />
   </VerticalLayout>
 
-  <!--
-U.setAttributes("gameStateOverlay_weather", {offsetXY = "2 0"})
--->
   <VerticalLayout id="gameStateOverlay_weather" class="gameStateOverlay_topRight">
     <Image class="gameStateOverlay_background" image="bg_playerOverlay_weather" />
-    <Text id="gameStateOverlay_weatherSummary" class="small_red_text" text="Thunderstorm ◆ Driving Winds" />
-    <Text id="gameStateOverlay_temperatureC" class="large_red_text" text="10°C" />
-    <Text id="gameStateOverlay_temperatureF" class="small_red_text" fontStyle="Italic" text="(10°F)" />
-  </VerticalLayout>
+    <Text id="gameStateOverlay_weatherBase" class="small_red_text" text="" />
+    <Text id="gameStateOverlay_weatherHumidity" class="small_red_text" text="" />
+    <Text id="gameStateOverlay_weatherWind" class="small_red_text" text="" />
+    <HorizontalLayout class="gameStateOverlay_temperature" spacing="5" childAlignment="UpperRight">
+      <Text id="gameStateOverlay_temperatureC" class="large_red_text" text="10°C" />
+      <Text id="gameStateOverlay_temperatureF" class="small_red_text" fontStyle="Italic" text="(10°F)" />
+    </HorizontalLayout>
 
+  </VerticalLayout>
 
 </Panel>

@@ -35,7 +35,6 @@ local SYNC_INCREMENTAL_UI_DELTA = {
     soundscape = true,
     playerStats = true,
     playerHud = true,
-    npcAdminButton = true,
 }
 
 --- Offsets for unified bootstrap seat + overlay retries (lights deferred init + presentation + overlay UI).

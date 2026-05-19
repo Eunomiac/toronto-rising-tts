@@ -19,13 +19,7 @@ NPCS.characters = DATA.characters or {}
 NPCS.lights = DATA.lights or {}
 NPCS.areas = DATA.areas or {}
 
---- Default path for NPC panel row XML snapshots (TTS Tools workspace write).
-NPCS.NPC_PANEL_XML_WORKSPACE_PATH = "debug_logs/npcs_storyteller_panel.txt"
---- Admin HUD button id (Host panel, left column).
-NPCS.ADMIN_NPC_XML_DUMP_BUTTON_ID = "toggle_npcPanelXmlDump"
-
---- TEMP (layout experiments): when true, `refreshStorytellerUI` does not splice rows or call setXml — use static XML from `ui/storyteller/panel_npcs.xml` only.
---- Revert to false (or delete this flag) when finished; NPC panel buttons need Lua-generated `npcRoute*` ids to dispatch.
+--- When true, `refreshStorytellerUI` / `refreshStorytellerUIIfVisible` are no-ops (static `ui/storyteller/panel_npcs.xml` only).
 NPCS.DISABLE_STORYTELLER_NPC_PANEL_XML_REFRESH = false
 
 local TAG_FIG = "npc_figurine"
@@ -100,18 +94,7 @@ local function npcSpotlightReadyForApply(lightGuid, reg)
     return L.GetLight(reg, true) ~= nil
 end
 
---- When true, each successful NPC storyteller panel XML refresh writes rows to the IDE workspace (TTS Tools).
-local autoDumpStorytellerNpcPanelXml = false
---- Cached DEBUG.writeWorkspaceFile after first resolve (avoid require on every refresh).
-local cachedWriteWorkspaceFile = nil
-
---- Ephemeral click payloads for dynamic NPC panel (replaced only after a successful UI refresh).
-local clickRoutes = {}
-local clickRouteSeq = 0
---- When non-nil, `newClickRoute` registers into `.routes` / `.seq` instead of mutating `clickRoutes` (atomic commit after setXml).
-local clickRouteBuild = nil
-
---- After a successful NPC panel `UI.setXml`, equals `computeNpcPanelLayoutFingerprint()`; used to skip redundant full-XML rebuilds.
+--- After a successful NPC panel attribute refresh, equals `computeNpcPanelLayoutFingerprint()`; used to skip redundant updates.
 local lastNpcPanelLayoutFingerprint = nil
 
 --- World offset from figurine root position to NPC spotlight spawn (matches prior clone placement).
@@ -234,22 +217,6 @@ local function safeAlertGM(message)
     if broadcastToAll ~= nil then
         broadcastToAll("[NPCS] " .. msg, Color(1, 0.55, 0.2))
     end
-end
-
---- @param payload table
---- @return string element id
-local function newClickRoute(payload)
-    local b = clickRouteBuild
-    if b ~= nil and U.Type(b.routes) == "table" and U.Type(b.seq) == "number" then
-        b.seq = b.seq + 1
-        local id = "npcRoute" .. tostring(b.seq)
-        b.routes[id] = payload
-        return id
-    end
-    clickRouteSeq = clickRouteSeq + 1
-    local id = "npcRoute" .. tostring(clickRouteSeq)
-    clickRoutes[id] = payload
-    return id
 end
 
 --- @param base table|nil
@@ -2071,16 +2038,6 @@ function NPCS.ensureAllNpcsPreloaded(opts)
     spawnNextBatch()
 end
 
---- Escape text for XML body.
---- @param s string
---- @return string
-local function xmlEscape(s)
-    if U.Type(s) ~= "string" then
-        return ""
-    end
-    return (s:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;"):gsub("\"", "&quot;"))
-end
-
 --- Dispatch NPC panel clicks (stable semantic ids from generated panel_npcs.xml).
 --- @param id string
 function NPCS.dispatchNpcUiClick(id)
@@ -2292,199 +2249,6 @@ function NPCS.refreshStorytellerUIIfVisible()
     end
 end
 
---- @return boolean True if TTS reports UI is still applying a prior XML change (getXml/setXml are stale until this clears).
-local function isUiDocumentLoading()
-    return UI.loading == true
-end
-
---- Placeholder row id in early bundles; not present after the first successful NPC table splice.
-local PLACEHOLDER_ROW_ID = "npcPanelRowsPlaceholder"
---- Stable anchor for the NPC panel grid; inner `<Row>` markup is replaced on every refresh.
-local NPC_PANEL_TABLE_LAYOUT_ID = "npcPanelNpcsTable"
-
---- Find the inclusive range of inner XML inside `<TableLayout id="...">` (balanced nested layouts).
---- @param xml string
---- @param tableId string
---- @return integer|nil innerStart first character index of content to replace
---- @return integer|nil innerEnd last character index of content to replace (inclusive; may be < innerStart when empty)
-local function findNpcPanelTableInnerRange(xml, tableId)
-    if U.Type(xml) ~= "string" or xml == "" or U.Type(tableId) ~= "string" or tableId == "" then
-        return nil, nil
-    end
-    local idDouble = 'id="' .. tableId .. '"'
-    local idSingle = "id='" .. tableId .. "'"
-    local pos = 1
-    while true do
-        local openStart = xml:find("<TableLayout", pos, true)
-        if not openStart then
-            return nil, nil
-        end
-        local openEnd = xml:find(">", openStart, true)
-        if not openEnd then
-            return nil, nil
-        end
-        local openTag = xml:sub(openStart, openEnd)
-        if string.find(openTag, idDouble, 1, true) or string.find(openTag, idSingle, 1, true) then
-            local innerStart = openEnd + 1
-            local scan = innerStart
-            local depth = 1
-            while depth > 0 do
-                local nextOpen = xml:find("<TableLayout", scan, true)
-                local nextClose = xml:find("</TableLayout>", scan, true)
-                if not nextClose then
-                    return nil, nil
-                end
-                if nextOpen and nextOpen < nextClose then
-                    depth = depth + 1
-                    scan = nextOpen + #"<TableLayout"
-                else
-                    depth = depth - 1
-                    if depth == 0 then
-                        return innerStart, nextClose - 1
-                    end
-                    scan = nextClose + #"</TableLayout>"
-                end
-            end
-            return nil, nil
-        end
-        pos = openStart + 1
-    end
-end
-
---- Replace NPC panel table body: prefer `TableLayout id=npcPanelNpcsTable` (survives every refresh); else the single-row placeholder id.
---- @param xml string
---- @param tableXml string
---- @return string|nil merged
---- @return string|nil err
-local function spliceNpcPanelRowsIntoUiXml(xml, tableXml)
-    if U.Type(xml) ~= "string" or xml == "" then
-        return nil, "empty xml"
-    end
-    if U.Type(tableXml) ~= "string" then
-        return nil, "empty tableXml"
-    end
-    local innerStart, innerEnd = findNpcPanelTableInnerRange(xml, NPC_PANEL_TABLE_LAYOUT_ID)
-    if innerStart ~= nil and innerEnd ~= nil then
-        return xml:sub(1, innerStart - 1) .. tableXml .. xml:sub(innerEnd + 1), nil
-    end
-    local placeholderId = PLACEHOLDER_ROW_ID
-    if not string.find(xml, placeholderId, 1, true) then
-        return nil, "placeholder id not in xml"
-    end
-    local idIdx = xml:find('id="' .. placeholderId .. '"', 1, true)
-    if not idIdx then
-        idIdx = xml:find("id='" .. placeholderId .. "'", 1, true)
-    end
-    if not idIdx then
-        return nil, "could not locate id attribute for placeholder row"
-    end
-    local startIdx = nil
-    local pos = 1
-    while true do
-        local found = xml:find("<Row", pos, true)
-        if not found or found > idIdx then
-            break
-        end
-        startIdx = found
-        pos = found + 1
-    end
-    if startIdx == nil then
-        return nil, "could not find opening <Row for placeholder"
-    end
-    local endTag = "</Row>"
-    local endIdx = xml:find(endTag, idIdx, true)
-    if not endIdx then
-        return nil, "placeholder Row has no closing </Row>"
-    end
-    endIdx = endIdx + #endTag - 1
-    local before = xml:sub(1, startIdx - 1)
-    local after = xml:sub(endIdx + 1)
-    return before .. tableXml .. after, nil
-end
-
---- @return function|nil `DEBUG.writeWorkspaceFile` or nil if unavailable
-local function resolveWriteWorkspaceFile()
-    if cachedWriteWorkspaceFile == false then
-        return nil
-    end
-    if cachedWriteWorkspaceFile ~= nil then
-        return cachedWriteWorkspaceFile
-    end
-    -- pcall: core.debug is absent in some stripped Save & Play bundles, so require must not abort NPC panel tooling. Propagating would prevent panel XML dumps in exactly the configurations where file logging is unavailable.
-    local ok, DBG = pcall(require, "core.debug")
-    if ok and DBG ~= nil and U.Type(DBG.writeWorkspaceFile) == "function" then
-        cachedWriteWorkspaceFile = DBG.writeWorkspaceFile
-        return cachedWriteWorkspaceFile
-    end
-    cachedWriteWorkspaceFile = false
-    return nil
-end
-
---- Readable text file body for the current dynamic rows snapshot.
---- @param tableXml string
---- @param routeBuild table|nil
---- @return string
-local function formatNpcPanelSnapshotFileContent(tableXml, routeBuild)
-    local ts = tostring(os and os.time and os.time() or 0)
-    local nRoutes = 0
-    if routeBuild ~= nil and U.Type(routeBuild.routes) == "table" then
-        nRoutes = #U.getKeys(routeBuild.routes)
-    end
-    return table.concat({
-        string.rep("=", 72),
-        "Toronto Rising — NPC Storyteller panel (dynamic rows)",
-        "TableLayout id: " .. NPC_PANEL_TABLE_LAYOUT_ID .. " (placeholder row id: " .. PLACEHOLDER_ROW_ID .. ")",
-        string.format("Generated os.time: %s", ts),
-        string.format("Ephemeral click routes in this snapshot: %d (npcRoute*)", nRoutes),
-        string.rep("=", 72),
-        "",
-        "--- Dynamic row XML ---",
-        "",
-        tableXml,
-        "",
-    }, "\n")
-end
-
---- Writes row XML to workspace; used by auto-dump and shares formatting with manual dump.
---- @param tableXml string
---- @param routeBuild table|nil
---- @param silent boolean|nil
---- @return boolean
-local function writeNpcPanelSnapshotToWorkspace(tableXml, routeBuild, silent)
-    local fn = resolveWriteWorkspaceFile()
-    if fn == nil or type(fn) ~= "function" then
-        return false
-    end
-    if U.Type(tableXml) ~= "string" then
-        return false
-    end
-    return fn(NPCS.NPC_PANEL_XML_WORKSPACE_PATH, formatNpcPanelSnapshotFileContent(tableXml, routeBuild), "none", silent == true)
-end
-
---- @return boolean
-function NPCS.isAutoDumpStorytellerNpcPanelXmlEnabled()
-    return autoDumpStorytellerNpcPanelXml == true
-end
-
---- @param enabled boolean
-function NPCS.setAutoDumpStorytellerNpcPanelXmlEnabled(enabled)
-    autoDumpStorytellerNpcPanelXml = enabled == true
-end
-
---- Updates admin toggle colors/text (grey = off, green = on). Safe if UI not loaded.
-function NPCS.syncAdminNpcPanelXmlDumpButton()
-    local id = NPCS.ADMIN_NPC_XML_DUMP_BUTTON_ID
-    if UI.getAttribute == nil or id == nil or id == "" then
-        return
-    end
-    local on = autoDumpStorytellerNpcPanelXml == true
-    --- TTS Button colors: Normal|Highlighted|Pressed|Disabled
-    local colorsOff = "#666666|#555555|#777777|rgba(0.22,0.22,0.22,0.45)"
-    local colorsOn = "#2E8B57|#3CB371|#228B22|rgba(0.12,0.45,0.22,0.85)"
-    U.setAttribute(id, "colors", on and colorsOn or colorsOff)
-    U.setAttribute(id, "text", on and "NPC XML → IDE (on)" or "NPC XML → IDE (off)")
-end
-
 --- Fingerprint of instance layout + spawn/group affordances used by targeted NPC panel updates.
 --- Must stay in sync with panel state toggles so redundant refreshes are skipped safely.
 --- @return string
@@ -2570,7 +2334,7 @@ local function setUiButtonAttrsSafe(id, attrs)
     setUiAttrsSafe(id, out)
 end
 
---- Targeted NPC panel refresh against generated static XML rows (no `UI.setXml`).
+--- Targeted NPC panel refresh: toggles `active` / attrs on pre-generated `ui/storyteller/panel_npcs.xml` rows (no `UI.setXml`).
 function NPCS.refreshStorytellerUI()
     if NPCS.DISABLE_STORYTELLER_NPC_PANEL_XML_REFRESH then
         return

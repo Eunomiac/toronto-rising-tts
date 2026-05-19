@@ -645,7 +645,7 @@ C.RollPhase = {
 C.BatonHolder = {
   PLAYER      = "player",
   STORYTELLER = "storyteller",
-  AUTO        = "auto",   -- System advances automatically; no human input required
+  AUTO        = "auto", -- System advances automatically; no human input required
 }
 
 --- Result classification for a completed roll (seven classes per VTM5E).
@@ -940,7 +940,7 @@ C.RedCameraAngles = {
   },
   sheet = {
     cameraMode = "FirstPerson",
-    position = Vector({0.0000, 5.8436, -52.0298}),
+    position = Vector({ 0.0000, 5.8436, -52.0298 }),
     pitch = 70.5275,
     yaw = 0,
     distance = 11,
@@ -2327,11 +2327,12 @@ C.Sites = {
     key = "CLGrounds",
     name = "Casa Loma: Estate Grounds",
     image = "siteCard_CLGrounds",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/13443337467401511492/76214FA5BAEFB5198E43592750EFE4B73FB1B198/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/13443337467401511492/76214FA5BAEFB5198E43592750EFE4B73FB1B198/",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
-      backgroundMusic = {playlist = "casaLoma"},
-      location = {playlist = "location", track = "citySuburb"}
+      backgroundMusic = { playlist = "casaLoma" },
+      location = { playlist = "location", track = "citySuburb" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -2342,11 +2343,12 @@ C.Sites = {
     key = "CLGallery",
     name = "Casa Loma: Gallery of Mirrors",
     image = "siteCard_CLGallery",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
-      backgroundMusic = {playlist = "casaLoma"},
-      location = {playlist = "location", track = "softIndoor"}
+      backgroundMusic = { playlist = "casaLoma" },
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -2357,11 +2359,12 @@ C.Sites = {
     key = "CLGreatHall",
     name = "Casa Loma: Great Hall",
     image = "siteCard_CLGreatHall",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
-      backgroundMusic = {playlist = "casaLoma"},
-      location = {playlist = "location", track = "softIndoor"}
+      backgroundMusic = { playlist = "casaLoma" },
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -2372,11 +2375,12 @@ C.Sites = {
     key = "CLDrawingRoom",
     name = "Casa Loma: Maximillian Steele Drawing Room",
     image = "siteCard_CLDrawingRoom",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
-      backgroundMusic = {playlist = "casaLoma"},
-      location = {playlist = "location", track = "library"}
+      backgroundMusic = { playlist = "casaLoma" },
+      location = { playlist = "location", track = "library" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -2387,11 +2391,12 @@ C.Sites = {
     key = "CLTerrace",
     name = "Casa Loma: Moonlit Terrace",
     image = "siteCard_CLTerrace",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/13443337467401511492/76214FA5BAEFB5198E43592750EFE4B73FB1B198/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/13443337467401511492/76214FA5BAEFB5198E43592750EFE4B73FB1B198/",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
-      backgroundMusic = {playlist = "casaLoma"},
-      location = {playlist = "location", track = "cityPark"}
+      backgroundMusic = { playlist = "casaLoma" },
+      location = { playlist = "location", track = "cityPark" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -2402,11 +2407,12 @@ C.Sites = {
     key = "CLOverlook",
     name = "Casa Loma: Overlook",
     image = "siteCard_CLOverlook",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
-      backgroundMusic = {playlist = "casaLoma"},
-      location = {playlist = "location", track = "softIndoor"}
+      backgroundMusic = { playlist = "casaLoma" },
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -2417,11 +2423,12 @@ C.Sites = {
     key = "CLLibrary",
     name = "Casa Loma: Tacettin Ayhan Library",
     image = "siteCard_CLLibrary",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
-      backgroundMusic = {playlist = "casaLoma"},
-      location = {playlist = "location", track = "library"}
+      backgroundMusic = { playlist = "casaLoma" },
+      location = { playlist = "location", track = "library" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -2432,11 +2439,12 @@ C.Sites = {
     key = "CLVestibule",
     name = "Casa Loma: Vestibule",
     image = "siteCard_CLVestibule",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/14569662767509453584/462F451C904EBD282F47CF930BAC5D560F2D4BB1/",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
-      backgroundMusic = {playlist = "casaLoma"},
-      location = {playlist = "location", track = "softIndoor"}
+      backgroundMusic = { playlist = "casaLoma" },
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.4,
@@ -2449,8 +2457,8 @@ C.Sites = {
     image = "siteCard_GECatacombs",
     district = C.Districts.Wychwood,
     soundscape = {
-      backgroundMusic = {playlist = "gioCatacombs"},
-      location = {playlist = "location", track = "whisperGhosts"}
+      backgroundMusic = { playlist = "gioCatacombs" },
+      location = { playlist = "location", track = "whisperGhosts" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -2463,8 +2471,8 @@ C.Sites = {
     image = "siteCard_GEDiningHall",
     district = C.Districts.Wychwood,
     soundscape = {
-      backgroundMusic = {playlist = "gioEstate"},
-      location = {playlist = "location", track = "silent"}
+      backgroundMusic = { playlist = "gioEstate" },
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.4,
@@ -2477,8 +2485,8 @@ C.Sites = {
     image = "siteCard_GEEstateGrounds",
     district = C.Districts.Wychwood,
     soundscape = {
-      backgroundMusic = {playlist = "gioEstate"},
-      location = {playlist = "location", track = "eerieForest"}
+      backgroundMusic = { playlist = "gioEstate" },
+      location = { playlist = "location", track = "eerieForest" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -2491,8 +2499,8 @@ C.Sites = {
     image = "siteCard_GEMortuary",
     district = C.Districts.Wychwood,
     soundscape = {
-      backgroundMusic = {playlist = "gioEstate"},
-      location = {playlist = "location", track = "laboratory"}
+      backgroundMusic = { playlist = "gioEstate" },
+      location = { playlist = "location", track = "laboratory" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -2505,8 +2513,8 @@ C.Sites = {
     image = "siteCard_GETowerRoom",
     district = C.Districts.Wychwood,
     soundscape = {
-      backgroundMusic = {playlist = "gioEstate"},
-      location = {playlist = "location", track = "softIndoor"}
+      backgroundMusic = { playlist = "gioEstate" },
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.4,
@@ -2517,11 +2525,12 @@ C.Sites = {
     key = "WarrensAntechamber",
     name = "The Nosferatu Warrens: Antechamber",
     image = "siteCard_WarrensAntechamber",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14904535142342080917/13645726B71BCA116A015D1DB0F14EC5D71CA709/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/14904535142342080917/13645726B71BCA116A015D1DB0F14EC5D71CA709/",
     district = C.Districts.Sewers,
     soundscape = {
-      backgroundMusic = {playlist = "nosWarrens"},
-      location = {playlist = "location", track = "warrens"}
+      backgroundMusic = { playlist = "nosWarrens" },
+      location = { playlist = "location", track = "warrens" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -2533,8 +2542,8 @@ C.Sites = {
     image = "siteCard_WarrensDrakes",
     district = C.Districts.Sewers,
     soundscape = {
-      backgroundMusic = {playlist = "nosWarrens"},
-      location = {playlist = "location", track = "warrens"}
+      backgroundMusic = { playlist = "nosWarrens" },
+      location = { playlist = "location", track = "warrens" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -2544,11 +2553,12 @@ C.Sites = {
     key = "WarrensLabyrinth",
     name = "The Nosferatu Warrens: Labyrinth",
     image = "siteCard_WarrensLabyrinth",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14904535142342080917/13645726B71BCA116A015D1DB0F14EC5D71CA709/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/14904535142342080917/13645726B71BCA116A015D1DB0F14EC5D71CA709/",
     district = C.Districts.Sewers,
     soundscape = {
-      backgroundMusic = {playlist = "nosWarrens"},
-      location = {playlist = "location", track = "warrens"}
+      backgroundMusic = { playlist = "nosWarrens" },
+      location = { playlist = "location", track = "warrens" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -2558,11 +2568,12 @@ C.Sites = {
     key = "WarrensSpawningPool",
     name = "The Nosferatu Warrens: Spawning Pool",
     image = "siteCard_WarrensSpawningPool",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14904535142342080917/13645726B71BCA116A015D1DB0F14EC5D71CA709/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/14904535142342080917/13645726B71BCA116A015D1DB0F14EC5D71CA709/",
     district = C.Districts.Sewers,
     soundscape = {
-      backgroundMusic = {playlist = "nosWarrens"},
-      location = {playlist = "location", track = "warrens"}
+      backgroundMusic = { playlist = "nosWarrens" },
+      location = { playlist = "location", track = "warrens" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -2572,11 +2583,12 @@ C.Sites = {
     key = "WarrensTunnelJunction",
     name = "The Nosferatu Warrens: Tunnel Junction",
     image = "siteCard_WarrensTunnelJunction",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14904535142342080917/13645726B71BCA116A015D1DB0F14EC5D71CA709/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/14904535142342080917/13645726B71BCA116A015D1DB0F14EC5D71CA709/",
     district = C.Districts.Sewers,
     soundscape = {
-      backgroundMusic = {playlist = "nosWarrens"},
-      location = {playlist = "location", track = "warrens"}
+      backgroundMusic = { playlist = "nosWarrens" },
+      location = { playlist = "location", track = "warrens" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -2586,10 +2598,11 @@ C.Sites = {
     key = "ROMLoadingZone",
     name = "Royal Ontario Museum: Bloor Street Loading Zone",
     image = "siteCard_ROMLoadingZone",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16833409399715282792/D3B9B667F733EF17DAF88A22D806287F8A73D338/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/16833409399715282792/D3B9B667F733EF17DAF88A22D806287F8A73D338/",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
-      location = {playlist = "location", track = "quietCity"}
+      location = { playlist = "location", track = "quietCity" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -2600,10 +2613,11 @@ C.Sites = {
     key = "ROMC5Lounge",
     name = "Royal Ontario Museum: C5 Lounge",
     image = "siteCard_ROMC5Lounge",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16833409399715282792/D3B9B667F733EF17DAF88A22D806287F8A73D338/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/16833409399715282792/D3B9B667F733EF17DAF88A22D806287F8A73D338/",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -2614,10 +2628,11 @@ C.Sites = {
     key = "ROMRotunda",
     name = "Royal Ontario Museum: Rotunda Mezzanine",
     image = "siteCard_ROMRotunda",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16833409399715282792/D3B9B667F733EF17DAF88A22D806287F8A73D338/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/16833409399715282792/D3B9B667F733EF17DAF88A22D806287F8A73D338/",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -2628,10 +2643,11 @@ C.Sites = {
     key = "ROMSpiritHouse",
     name = "Royal Ontario Museum: Spirit House",
     image = "siteCard_ROMSpiritHouse",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16833409399715282792/D3B9B667F733EF17DAF88A22D806287F8A73D338/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/16833409399715282792/D3B9B667F733EF17DAF88A22D806287F8A73D338/",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -2642,10 +2658,11 @@ C.Sites = {
     key = "ROMHallOfExtinction",
     name = "Royal Ontario Museum: The Hall of Extinction",
     image = "siteCard_ROMHallOfExtinction",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16833409399715282792/D3B9B667F733EF17DAF88A22D806287F8A73D338/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/16833409399715282792/D3B9B667F733EF17DAF88A22D806287F8A73D338/",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -2656,10 +2673,11 @@ C.Sites = {
     key = "StRegisRoom101",
     name = "The St. Regis Toronto: Room 101",
     image = "siteCard_StRegisRoom101",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/12529850396848916176/59098191C81FF2BFA270146F899390BE8EC15E7B/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/12529850396848916176/59098191C81FF2BFA270146F899390BE8EC15E7B/",
     district = C.Districts.BayStFinancial,
     soundscape = {
-      location = {playlist = "location", track = "computer"}
+      location = { playlist = "location", track = "computer" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -2670,10 +2688,11 @@ C.Sites = {
     key = "StRegisCouncilChamber",
     name = "The St. Regis Toronto: Council Chamber",
     image = "siteCard_StRegisCouncilChamber",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/9611213725827991921/5D41F79E80086CF077056C37E86332384B20655B/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/9611213725827991921/5D41F79E80086CF077056C37E86332384B20655B/",
     district = C.Districts.BayStFinancial,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -2684,10 +2703,11 @@ C.Sites = {
     key = "StRegisFoyer",
     name = "The St. Regis Toronto: Foyer",
     image = "siteCard_StRegisFoyer",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/11954366155046663954/D22546D47BA47EBAFF7FFD032F0C7D89FCF53383/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/11954366155046663954/D22546D47BA47EBAFF7FFD032F0C7D89FCF53383/",
     district = C.Districts.BayStFinancial,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -2698,10 +2718,11 @@ C.Sites = {
     key = "StRegisGrandSalon",
     name = "The St. Regis Toronto: Grand Salon",
     image = "siteCard_StRegisGrandSalon",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/11954366155046663954/D22546D47BA47EBAFF7FFD032F0C7D89FCF53383/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/11954366155046663954/D22546D47BA47EBAFF7FFD032F0C7D89FCF53383/",
     district = C.Districts.BayStFinancial,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -2712,10 +2733,11 @@ C.Sites = {
     key = "UnionConcourse",
     name = "Union Station: Bay St. Concourse",
     image = "siteCard_UnionConcourse",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "cityWalking"}
+      location = { playlist = "location", track = "cityWalking" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -2726,10 +2748,11 @@ C.Sites = {
     key = "UnionGrandClock",
     name = "Union Station: Grand Clock",
     image = "siteCard_UnionGrandClock",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "cityWalking"}
+      location = { playlist = "location", track = "cityWalking" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -2740,10 +2763,11 @@ C.Sites = {
     key = "UnionLine1",
     name = "Union Station: Line 1",
     image = "siteCard_UnionLine1",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "subway"}
+      location = { playlist = "location", track = "subway" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -2754,10 +2778,11 @@ C.Sites = {
     key = "UnionSecOffice",
     name = "Union Station: Security Office",
     image = "siteCard_UnionSecOffice",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "computer"}
+      location = { playlist = "location", track = "computer" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -2768,10 +2793,11 @@ C.Sites = {
     key = "UnionServiceCorridor",
     name = "Union Station: Service Corridor",
     image = "siteCard_UnionServiceCorridor",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "softHum"}
+      location = { playlist = "location", track = "softHum" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -2782,10 +2808,11 @@ C.Sites = {
     key = "UnionUPExpress",
     name = "Union Station: UP Express Platform",
     image = "siteCard_UnionUPExpress",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
+    skyboxURL =
+    "https://steamusercontent-a.akamaihd.net/ugc/14758996697666064808/FCF5D512206E54ACC687AFBD54257F50593457AB/",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -2798,7 +2825,7 @@ C.Sites = {
     image = "siteCard_ChantryLibrary",
     district = C.Districts.Discovery,
     soundscape = {
-      location = {playlist = "location", track = "library"}
+      location = { playlist = "location", track = "library" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -2811,7 +2838,7 @@ C.Sites = {
     image = "siteCard_ChantryGrounds",
     district = C.Districts.Discovery,
     soundscape = {
-      location = {playlist = "location", track = "church"}
+      location = { playlist = "location", track = "church" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -2824,7 +2851,7 @@ C.Sites = {
     image = "siteCard_ChantryQuarters",
     district = C.Districts.Discovery,
     soundscape = {
-      location = {playlist = "location", track = "church"}
+      location = { playlist = "location", track = "church" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -2837,7 +2864,7 @@ C.Sites = {
     image = "siteCard_ChantryThaumatorium",
     district = C.Districts.Discovery,
     soundscape = {
-      location = {playlist = "location", track = "ritualRoom"}
+      location = { playlist = "location", track = "ritualRoom" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -2849,7 +2876,7 @@ C.Sites = {
     name = "Anarch Dive Bar",
     image = "siteCard_AnarchBar",
     soundscape = {
-      location = {playlist = "location", track = "diveBar"}
+      location = { playlist = "location", track = "diveBar" }
     },
     isIndoors = true,
     weatherDucking = 0.4,
@@ -2860,7 +2887,7 @@ C.Sites = {
     name = "Apartment Corridor",
     image = "siteCard_AptCorridor",
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -2871,7 +2898,7 @@ C.Sites = {
     name = "Apartment Lobby",
     image = "siteCard_AptLobby",
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -2882,7 +2909,7 @@ C.Sites = {
     name = "Apartment Streetside",
     image = "siteCard_AptStreetside",
     soundscape = {
-      location = {playlist = "location", track = "quietCity"}
+      location = { playlist = "location", track = "quietCity" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -2894,7 +2921,7 @@ C.Sites = {
     image = "siteCard_ArtGallery",
     district = C.Districts.WestQueenWest,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -2906,7 +2933,7 @@ C.Sites = {
     name = "Auto Mechanic",
     image = "siteCard_AutoMechanic",
     soundscape = {
-      location = {playlist = "location", track = "autoShop"}
+      location = { playlist = "location", track = "autoShop" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -2917,7 +2944,7 @@ C.Sites = {
     name = "Back Alley",
     image = "siteCard_BackAlley1",
     soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
+      location = { playlist = "location", track = "cityTraffic" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -2928,7 +2955,7 @@ C.Sites = {
     name = "Back Alley",
     image = "siteCard_BackAlley2",
     soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
+      location = { playlist = "location", track = "cityTraffic" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -2939,7 +2966,7 @@ C.Sites = {
     name = "Back Alley",
     image = "siteCard_BackAlley3",
     soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
+      location = { playlist = "location", track = "cityTraffic" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -2951,7 +2978,7 @@ C.Sites = {
     image = "siteCard_BayTower",
     district = C.Districts.BayStFinancial,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -2964,7 +2991,7 @@ C.Sites = {
     image = "siteCard_BierMarkt",
     district = C.Districts.WestQueenWest,
     soundscape = {
-      location = {playlist = "location", track = "bar"}
+      location = { playlist = "location", track = "bar" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -2977,7 +3004,7 @@ C.Sites = {
     image = "siteCard_BillyBishopAirport",
     district = C.Districts.CentreIsland,
     soundscape = {
-      location = {playlist = "location", track = "airport"}
+      location = { playlist = "location", track = "airport" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -2990,7 +3017,7 @@ C.Sites = {
     image = "siteCard_BillyBishopFerry",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "waterside"}
+      location = { playlist = "location", track = "waterside" }
     },
     isIndoors = true,
     weatherDucking = 0.4,
@@ -3003,7 +3030,7 @@ C.Sites = {
     image = "siteCard_CabbagetownPenthouse",
     district = C.Districts.Cabbagetown,
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -3016,7 +3043,7 @@ C.Sites = {
     image = "siteCard_CNE",
     district = C.Districts.LibertyVillage,
     soundscape = {
-      location = {playlist = "location", track = "cityRevelers"}
+      location = { playlist = "location", track = "cityRevelers" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3028,7 +3055,7 @@ C.Sites = {
     name = "Cemetery",
     image = "siteCard_Cemetery",
     soundscape = {
-      location = {playlist = "location", track = "eerieForest"}
+      location = { playlist = "location", track = "eerieForest" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3040,7 +3067,7 @@ C.Sites = {
     image = "siteCard_CAMH",
     district = C.Districts.HarbordVillage,
     soundscape = {
-      location = {playlist = "location", track = "hospital"}
+      location = { playlist = "location", track = "hospital" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3053,7 +3080,7 @@ C.Sites = {
     image = "siteCard_CentrevillePark",
     district = C.Districts.CentreIsland,
     soundscape = {
-      location = {playlist = "location", track = "cityPark"}
+      location = { playlist = "location", track = "cityPark" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3066,7 +3093,7 @@ C.Sites = {
     image = "siteCard_ChristiePitsPark",
     district = C.Districts.Wychwood,
     soundscape = {
-      location = {playlist = "location", track = "cityPark"}
+      location = { playlist = "location", track = "cityPark" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3078,7 +3105,7 @@ C.Sites = {
     name = "City Apartment",
     image = "siteCard_CityApt1",
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -3089,7 +3116,7 @@ C.Sites = {
     name = "City Apartment",
     image = "siteCard_CityApt2",
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -3100,7 +3127,7 @@ C.Sites = {
     name = "City Apartment",
     image = "siteCard_CityApt3",
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -3112,7 +3139,7 @@ C.Sites = {
     image = "siteCard_CityHall",
     district = C.Districts.WestQueenWest,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3124,7 +3151,7 @@ C.Sites = {
     name = "City Park",
     image = "siteCard_CityPark",
     soundscape = {
-      location = {playlist = "location", track = "cityPark"}
+      location = { playlist = "location", track = "cityPark" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3136,7 +3163,7 @@ C.Sites = {
     image = "siteCard_CNTower",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "rooftop"}
+      location = { playlist = "location", track = "rooftop" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3149,7 +3176,7 @@ C.Sites = {
     image = "siteCard_CorktownCommon",
     district = C.Districts.DonRavine,
     soundscape = {
-      location = {playlist = "location", track = "eerieForest"}
+      location = { playlist = "location", track = "eerieForest" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3162,7 +3189,7 @@ C.Sites = {
     image = "siteCard_DanforthHall",
     district = C.Districts.Danforth,
     soundscape = {
-      location = {playlist = "location", track = "nightclub"}
+      location = { playlist = "location", track = "nightclub" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3174,7 +3201,7 @@ C.Sites = {
     name = "Derelict Warehouse",
     image = "siteCard_DerelictWarehouse",
     soundscape = {
-      location = {playlist = "location", track = "urbanDark"}
+      location = { playlist = "location", track = "urbanDark" }
     },
     isIndoors = true,
     weatherDucking = 0.4,
@@ -3186,7 +3213,7 @@ C.Sites = {
     image = "siteCard_Docks",
     district = C.Districts.DistilleryDist,
     soundscape = {
-      location = {playlist = "location", track = "waterside"}
+      location = { playlist = "location", track = "waterside" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3198,7 +3225,7 @@ C.Sites = {
     name = "Dog Park",
     image = "siteCard_DogPark",
     soundscape = {
-      location = {playlist = "location", track = "cityPark"}
+      location = { playlist = "location", track = "cityPark" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3210,7 +3237,7 @@ C.Sites = {
     image = "siteCard_Drake",
     district = C.Districts.LittlePortugal,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -3223,7 +3250,7 @@ C.Sites = {
     image = "siteCard_EatonCentre",
     district = C.Districts.WestQueenWest,
     soundscape = {
-      location = {playlist = "location", track = "indoorMarket"}
+      location = { playlist = "location", track = "indoorMarket" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3235,7 +3262,7 @@ C.Sites = {
     name = "Elevator",
     image = "siteCard_Elevator",
     soundscape = {
-      location = {playlist = "location", track = "softHum"}
+      location = { playlist = "location", track = "softHum" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3247,7 +3274,7 @@ C.Sites = {
     image = "siteCard_BrickWorks",
     district = C.Districts.DonRavine,
     soundscape = {
-      location = {playlist = "location", track = "eerieForest"}
+      location = { playlist = "location", track = "eerieForest" }
     },
     isIndoors = true,
     weatherDucking = 0.4,
@@ -3260,7 +3287,7 @@ C.Sites = {
     image = "siteCard_EvergreenPalisades",
     district = C.Districts.RegentPark,
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.4,
@@ -3273,7 +3300,7 @@ C.Sites = {
     image = "siteCard_Fairmont",
     district = C.Districts.BayStFinancial,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3285,7 +3312,7 @@ C.Sites = {
     name = "Fight Club",
     image = "siteCard_FightClub",
     soundscape = {
-      location = {playlist = "location", track = "diveBar"}
+      location = { playlist = "location", track = "diveBar" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -3297,7 +3324,7 @@ C.Sites = {
     image = "siteCard_FortYork",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "cityWalking"}
+      location = { playlist = "location", track = "cityWalking" }
     },
     isIndoors = true,
     weatherDucking = 0.4,
@@ -3310,7 +3337,7 @@ C.Sites = {
     image = "siteCard_CeramicsMuseum",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3322,7 +3349,7 @@ C.Sites = {
     name = "Gay Bar",
     image = "siteCard_GayBar",
     soundscape = {
-      location = {playlist = "location", track = "diveBar"}
+      location = { playlist = "location", track = "diveBar" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -3333,7 +3360,7 @@ C.Sites = {
     name = "Gay Nightclub",
     image = "siteCard_GayClub",
     soundscape = {
-      location = {playlist = "location", track = "nightclub"}
+      location = { playlist = "location", track = "nightclub" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3345,7 +3372,7 @@ C.Sites = {
     image = "siteCard_GeorgeBrown",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
-      location = {playlist = "location", track = "cityRevelers"}
+      location = { playlist = "location", track = "cityRevelers" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3358,7 +3385,7 @@ C.Sites = {
     image = "siteCard_GraffitiAlley",
     district = C.Districts.WestQueenWest,
     soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
+      location = { playlist = "location", track = "cityTraffic" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3371,7 +3398,7 @@ C.Sites = {
     image = "siteCard_HarbourfrontCentre",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "cityRevelers"}
+      location = { playlist = "location", track = "cityRevelers" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -3383,7 +3410,7 @@ C.Sites = {
     name = "Highway",
     image = "siteCard_Highway",
     soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
+      location = { playlist = "location", track = "cityTraffic" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3395,7 +3422,7 @@ C.Sites = {
     image = "siteCard_Distillery",
     district = C.Districts.DistilleryDist,
     soundscape = {
-      location = {playlist = "location", track = "industry"}
+      location = { playlist = "location", track = "industry" }
     },
     isIndoors = true,
     weatherDucking = 0.4,
@@ -3408,7 +3435,7 @@ C.Sites = {
     image = "siteCard_HockeyHallOfFame",
     district = C.Districts.PATH,
     soundscape = {
-      location = {playlist = "location", track = "indoorMarket"}
+      location = { playlist = "location", track = "indoorMarket" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3420,7 +3447,7 @@ C.Sites = {
     image = "siteCard_SickKids",
     district = C.Districts.YongeDundasHospital,
     soundscape = {
-      location = {playlist = "location", track = "hospital"}
+      location = { playlist = "location", track = "hospital" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3433,7 +3460,7 @@ C.Sites = {
     image = "siteCard_JRRLibrary",
     district = C.Districts.Discovery,
     soundscape = {
-      location = {playlist = "location", track = "library"}
+      location = { playlist = "location", track = "library" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3445,7 +3472,7 @@ C.Sites = {
     name = "Junkyard",
     image = "siteCard_Junkyard",
     soundscape = {
-      location = {playlist = "location", track = "autoShop"}
+      location = { playlist = "location", track = "autoShop" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3457,7 +3484,7 @@ C.Sites = {
     image = "siteCard_Kensington",
     district = C.Districts.HarbordVillage,
     soundscape = {
-      location = {playlist = "location", track = "cityWalking"}
+      location = { playlist = "location", track = "cityWalking" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3469,7 +3496,7 @@ C.Sites = {
     name = "Laboratory",
     image = "siteCard_Laboratory",
     soundscape = {
-      location = {playlist = "location", track = "laboratory"}
+      location = { playlist = "location", track = "laboratory" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3480,7 +3507,7 @@ C.Sites = {
     name = "Lecture Hall",
     image = "siteCard_LectureHall",
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3491,7 +3518,7 @@ C.Sites = {
     name = "Library",
     image = "siteCard_Library",
     soundscape = {
-      location = {playlist = "location", track = "library"}
+      location = { playlist = "location", track = "library" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3503,7 +3530,7 @@ C.Sites = {
     image = "siteCard_LowerParklands",
     district = C.Districts.DonRavine,
     soundscape = {
-      location = {playlist = "location", track = "eerieForest"}
+      location = { playlist = "location", track = "eerieForest" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3515,7 +3542,7 @@ C.Sites = {
     name = "Luxury Yacht",
     image = "siteCard_Yacht",
     soundscape = {
-      location = {playlist = "location", track = "waterside"}
+      location = { playlist = "location", track = "waterside" }
     },
     isIndoors = true,
     weatherDucking = 0.4,
@@ -3527,7 +3554,7 @@ C.Sites = {
     image = "siteCard_MadinaMasjid",
     district = C.Districts.Danforth,
     soundscape = {
-      location = {playlist = "location", track = "church"}
+      location = { playlist = "location", track = "church" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3540,7 +3567,7 @@ C.Sites = {
     image = "siteCard_MasseyHall",
     district = C.Districts.YongeStreet,
     soundscape = {
-      location = {playlist = "location", track = "nightclub"}
+      location = { playlist = "location", track = "nightclub" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3552,7 +3579,7 @@ C.Sites = {
     name = "Middle of the Road",
     image = "siteCard_MiddleOfRoad",
     soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
+      location = { playlist = "location", track = "cityTraffic" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3564,7 +3591,7 @@ C.Sites = {
     image = "siteCard_ModClub",
     district = C.Districts.LittleItaly,
     soundscape = {
-      location = {playlist = "location", track = "nightclub"}
+      location = { playlist = "location", track = "nightclub" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3577,7 +3604,7 @@ C.Sites = {
     image = "siteCard_MountSinai",
     district = C.Districts.YongeDundasHospital,
     soundscape = {
-      location = {playlist = "location", track = "hospital"}
+      location = { playlist = "location", track = "hospital" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3589,7 +3616,7 @@ C.Sites = {
     name = "Nightclub",
     image = "siteCard_Nightclub1",
     soundscape = {
-      location = {playlist = "location", track = "nightclub"}
+      location = { playlist = "location", track = "nightclub" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3600,7 +3627,7 @@ C.Sites = {
     name = "Nightclub",
     image = "siteCard_Nightclub2",
     soundscape = {
-      location = {playlist = "location", track = "nightclub"}
+      location = { playlist = "location", track = "nightclub" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3611,7 +3638,7 @@ C.Sites = {
     name = "Nightclub",
     image = "siteCard_Nightclub3",
     soundscape = {
-      location = {playlist = "location", track = "nightclub"}
+      location = { playlist = "location", track = "nightclub" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3623,7 +3650,7 @@ C.Sites = {
     image = "siteCard_OCAD",
     district = C.Districts.WestQueenWest,
     soundscape = {
-      location = {playlist = "location", track = "cityRevelers"}
+      location = { playlist = "location", track = "cityRevelers" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3635,7 +3662,7 @@ C.Sites = {
     name = "Office",
     image = "siteCard_Office",
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3647,7 +3674,7 @@ C.Sites = {
     image = "siteCard_OldOsgoodeHall",
     district = C.Districts.WestQueenWest,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3660,7 +3687,7 @@ C.Sites = {
     image = "siteCard_OntarioPlaceMarina",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "waterside"}
+      location = { playlist = "location", track = "waterside" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3673,7 +3700,7 @@ C.Sites = {
     image = "siteCard_ParkDriveReservation",
     district = C.Districts.DonRavine,
     soundscape = {
-      location = {playlist = "location", track = "eerieForest"}
+      location = { playlist = "location", track = "eerieForest" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3685,7 +3712,7 @@ C.Sites = {
     name = "Parking Lot",
     image = "siteCard_ParkingLot",
     soundscape = {
-      location = {playlist = "location", track = "quietCity"}
+      location = { playlist = "location", track = "quietCity" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3696,7 +3723,7 @@ C.Sites = {
     name = "Penthouse Apartment",
     image = "siteCard_PenthouseApt1",
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -3707,7 +3734,7 @@ C.Sites = {
     name = "Penthouse Apartment",
     image = "siteCard_PenthouseApt2",
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -3718,7 +3745,7 @@ C.Sites = {
     name = "Penthouse Apartment",
     image = "siteCard_PenthouseApt3",
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -3730,7 +3757,7 @@ C.Sites = {
     image = "siteCard_PhoenixTheatre",
     district = C.Districts.Riverdale,
     soundscape = {
-      location = {playlist = "location", track = "nightclub"}
+      location = { playlist = "location", track = "nightclub" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3743,7 +3770,7 @@ C.Sites = {
     image = "siteCard_PMHospital",
     district = C.Districts.YongeDundasHospital,
     soundscape = {
-      location = {playlist = "location", track = "hospital"}
+      location = { playlist = "location", track = "hospital" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3755,7 +3782,7 @@ C.Sites = {
     name = "Professor's Office",
     image = "siteCard_ProfOffice",
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3767,7 +3794,7 @@ C.Sites = {
     image = "siteCard_ReconciliationHouse",
     district = C.Districts.Chinatown,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3780,7 +3807,7 @@ C.Sites = {
     image = "siteCard_RedemptionHouse",
     district = C.Districts.Danforth,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3793,7 +3820,7 @@ C.Sites = {
     image = "siteCard_RemembranceHouse",
     district = C.Districts.LittleItaly,
     soundscape = {
-      location = {playlist = "location", track = "church"}
+      location = { playlist = "location", track = "church" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3806,7 +3833,7 @@ C.Sites = {
     image = "siteCard_RevelationHouse",
     district = C.Districts.GayVillage,
     soundscape = {
-      location = {playlist = "location", track = "nightclub"}
+      location = { playlist = "location", track = "nightclub" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3819,7 +3846,7 @@ C.Sites = {
     image = "siteCard_RogersCentre",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "cityPark"}
+      location = { playlist = "location", track = "cityPark" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3831,7 +3858,7 @@ C.Sites = {
     name = "Rooftop",
     image = "siteCard_Rooftop",
     soundscape = {
-      location = {playlist = "location", track = "rooftop"}
+      location = { playlist = "location", track = "rooftop" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3842,7 +3869,7 @@ C.Sites = {
     name = "Run-Down Apartment",
     image = "siteCard_RunDownApt1",
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -3853,7 +3880,7 @@ C.Sites = {
     name = "Run-Down Apartment",
     image = "siteCard_RunDownApt2",
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -3864,7 +3891,7 @@ C.Sites = {
     name = "Run-Down Apartment",
     image = "siteCard_RunDownApt3",
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -3876,7 +3903,7 @@ C.Sites = {
     image = "siteCard_Ryerson",
     district = C.Districts.Cabbagetown,
     soundscape = {
-      location = {playlist = "location", track = "cityRevelers"}
+      location = { playlist = "location", track = "cityRevelers" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3889,7 +3916,7 @@ C.Sites = {
     image = "siteCard_ScotiabankTheatre",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "nightclub"}
+      location = { playlist = "location", track = "nightclub" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3901,7 +3928,7 @@ C.Sites = {
     name = "Secluded Dead End",
     image = "siteCard_SecludedDeadEnd",
     soundscape = {
-      location = {playlist = "location", track = "cityPark"}
+      location = { playlist = "location", track = "cityPark" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3912,7 +3939,7 @@ C.Sites = {
     name = "Sewer Tunnel",
     image = "siteCard_SewerTunnel1",
     soundscape = {
-      location = {playlist = "location", track = "sewers"}
+      location = { playlist = "location", track = "sewers" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3923,7 +3950,7 @@ C.Sites = {
     name = "Sewer Tunnel",
     image = "siteCard_SewerTunnel2",
     soundscape = {
-      location = {playlist = "location", track = "sewers"}
+      location = { playlist = "location", track = "sewers" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -3935,7 +3962,7 @@ C.Sites = {
     image = "siteCard_SheratonCentre",
     district = C.Districts.BayStFinancial,
     soundscape = {
-      location = {playlist = "location", track = "nightclub"}
+      location = { playlist = "location", track = "nightclub" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3947,7 +3974,7 @@ C.Sites = {
     name = "Sidewalk",
     image = "siteCard_Sidewalk1",
     soundscape = {
-      location = {playlist = "location", track = "quietCity"}
+      location = { playlist = "location", track = "quietCity" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3958,7 +3985,7 @@ C.Sites = {
     name = "Sidewalk",
     image = "siteCard_Sidewalk2",
     soundscape = {
-      location = {playlist = "location", track = "quietCity"}
+      location = { playlist = "location", track = "quietCity" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3969,7 +3996,7 @@ C.Sites = {
     name = "Sidewalk",
     image = "siteCard_Sidewalk3",
     soundscape = {
-      location = {playlist = "location", track = "quietCity"}
+      location = { playlist = "location", track = "quietCity" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -3981,7 +4008,7 @@ C.Sites = {
     image = "siteCard_SnakesLattes",
     district = C.Districts.Wychwood,
     soundscape = {
-      location = {playlist = "location", track = "diveBar"}
+      location = { playlist = "location", track = "diveBar" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -3994,7 +4021,7 @@ C.Sites = {
     image = "siteCard_SneakyDees",
     district = C.Districts.HarbordVillage,
     soundscape = {
-      location = {playlist = "location", track = "diveBar"}
+      location = { playlist = "location", track = "diveBar" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -4007,7 +4034,7 @@ C.Sites = {
     image = "siteCard_StLawrenceMarket",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "indoorMarket"}
+      location = { playlist = "location", track = "indoorMarket" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -4020,7 +4047,7 @@ C.Sites = {
     image = "siteCard_StMichaelsCathedral",
     district = C.Districts.Cabbagetown,
     soundscape = {
-      location = {playlist = "location", track = "church"}
+      location = { playlist = "location", track = "church" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -4033,7 +4060,7 @@ C.Sites = {
     image = "siteCard_StMichaelsHospital",
     district = C.Districts.Cabbagetown,
     soundscape = {
-      location = {playlist = "location", track = "hospital"}
+      location = { playlist = "location", track = "hospital" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -4045,7 +4072,7 @@ C.Sites = {
     name = "Stairwell",
     image = "siteCard_Stairwell",
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -4056,7 +4083,7 @@ C.Sites = {
     name = "Street Corner",
     image = "siteCard_StreetCorner1",
     soundscape = {
-      location = {playlist = "location", track = "quietCity"}
+      location = { playlist = "location", track = "quietCity" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -4067,7 +4094,7 @@ C.Sites = {
     name = "Street Corner",
     image = "siteCard_StreetCorner2",
     soundscape = {
-      location = {playlist = "location", track = "quietCity"}
+      location = { playlist = "location", track = "quietCity" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -4078,7 +4105,7 @@ C.Sites = {
     name = "Street Corner",
     image = "siteCard_StreetCorner3",
     soundscape = {
-      location = {playlist = "location", track = "quietCity"}
+      location = { playlist = "location", track = "quietCity" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -4089,7 +4116,7 @@ C.Sites = {
     name = "Strip Club",
     image = "siteCard_StripClub",
     soundscape = {
-      location = {playlist = "location", track = "nightclub"}
+      location = { playlist = "location", track = "nightclub" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -4101,7 +4128,7 @@ C.Sites = {
     image = "siteCard_StudentVillage",
     district = C.Districts.Discovery,
     soundscape = {
-      location = {playlist = "location", track = "cityRevelers"}
+      location = { playlist = "location", track = "cityRevelers" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -4113,7 +4140,7 @@ C.Sites = {
     name = "Suburban House",
     image = "siteCard_SuburbanHouse1",
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -4124,7 +4151,7 @@ C.Sites = {
     name = "Suburban House",
     image = "siteCard_SuburbanHouse2",
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -4135,7 +4162,7 @@ C.Sites = {
     name = "Suburban House",
     image = "siteCard_SuburbanHouse3",
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -4146,7 +4173,7 @@ C.Sites = {
     name = "Subway Station",
     image = "siteCard_SubwayStation",
     soundscape = {
-      location = {playlist = "location", track = "subway"}
+      location = { playlist = "location", track = "subway" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -4157,7 +4184,7 @@ C.Sites = {
     name = "Subway Tunnels",
     image = "siteCard_SubwayTunnels",
     soundscape = {
-      location = {playlist = "location", track = "sewers"}
+      location = { playlist = "location", track = "sewers" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -4169,7 +4196,7 @@ C.Sites = {
     image = "siteCard_ThreefoldExchange",
     district = C.Districts.Chinatown,
     soundscape = {
-      location = {playlist = "location", track = "apothecary"}
+      location = { playlist = "location", track = "apothecary" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -4182,7 +4209,7 @@ C.Sites = {
     image = "siteCard_TIFFLightbox",
     district = C.Districts.WestQueenWest,
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -4195,7 +4222,7 @@ C.Sites = {
     image = "siteCard_TorontoGeneral",
     district = C.Districts.YongeDundasHospital,
     soundscape = {
-      location = {playlist = "location", track = "hospital"}
+      location = { playlist = "location", track = "hospital" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -4207,7 +4234,7 @@ C.Sites = {
     name = "Underground Medical Clinic",
     image = "siteCard_UndergroundMedClinic",
     soundscape = {
-      location = {playlist = "location", track = "hospital"}
+      location = { playlist = "location", track = "hospital" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -4218,7 +4245,7 @@ C.Sites = {
     name = "Underground Medical Office",
     image = "siteCard_UndergroundMedOffice",
     soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
+      location = { playlist = "location", track = "softIndoor" }
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -4229,7 +4256,7 @@ C.Sites = {
     name = "Underground Parking Garage",
     image = "siteCard_UndergroundParking",
     soundscape = {
-      location = {playlist = "location", track = "urbanDark"}
+      location = { playlist = "location", track = "urbanDark" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -4241,7 +4268,7 @@ C.Sites = {
     image = "siteCard_UpperCanadaCollege",
     district = C.Districts.DeerPark,
     soundscape = {
-      location = {playlist = "location", track = "cityRevelers"}
+      location = { playlist = "location", track = "cityRevelers" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -4253,7 +4280,7 @@ C.Sites = {
     name = "Vacant Lot",
     image = "siteCard_VacantLot",
     soundscape = {
-      location = {playlist = "location", track = "urbanDark"}
+      location = { playlist = "location", track = "urbanDark" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -4264,7 +4291,7 @@ C.Sites = {
     name = "Driving",
     image = "siteCard_LuxuryDriving",
     soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
+      location = { playlist = "location", track = "cityTraffic" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -4275,7 +4302,7 @@ C.Sites = {
     name = "Vehicle",
     image = "siteCard_BackseatSedan",
     soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
+      location = { playlist = "location", track = "cityTraffic" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -4286,7 +4313,7 @@ C.Sites = {
     name = "Limousine",
     image = "siteCard_Limousine",
     soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
+      location = { playlist = "location", track = "cityTraffic" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -4297,7 +4324,7 @@ C.Sites = {
     name = "SUV",
     image = "siteCard_SUV",
     soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
+      location = { playlist = "location", track = "cityTraffic" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -4308,7 +4335,7 @@ C.Sites = {
     name = "Taxi",
     image = "siteCard_Taxi",
     soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
+      location = { playlist = "location", track = "cityTraffic" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -4319,7 +4346,7 @@ C.Sites = {
     name = "Walking Path",
     image = "siteCard_WalkingPath",
     soundscape = {
-      location = {playlist = "location", track = "cityPark"}
+      location = { playlist = "location", track = "cityPark" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -4330,7 +4357,7 @@ C.Sites = {
     name = "Wealthy Estate",
     image = "siteCard_WealthyEstate1",
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -4341,7 +4368,7 @@ C.Sites = {
     name = "Wealthy Estate",
     image = "siteCard_WealthyEstate2",
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -4352,7 +4379,7 @@ C.Sites = {
     name = "Wealthy Estate",
     image = "siteCard_WealthyEstate3",
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -4363,7 +4390,7 @@ C.Sites = {
     name = "Wychwood Pub",
     image = "siteCard_WychwoodPub",
     soundscape = {
-      location = {playlist = "location", track = "diveBar"}
+      location = { playlist = "location", track = "diveBar" }
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -4375,7 +4402,7 @@ C.Sites = {
     image = "siteCard_YongeDundasSquare",
     district = C.Districts.YongeStreet,
     soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
+      location = { playlist = "location", track = "cityTraffic" }
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -4388,7 +4415,7 @@ C.Sites = {
     image = "siteCard_YorkvilleApt1",
     district = C.Districts.Yorkville,
     soundscape = {
-      location = {playlist = "location", track = "silent"}
+      location = { playlist = "location", track = "silent" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -4400,7 +4427,7 @@ C.Sites = {
     name = "Youth Shelter",
     image = "siteCard_YouthShelter",
     soundscape = {
-      location = {playlist = "location", track = "cityRevelers"}
+      location = { playlist = "location", track = "cityRevelers" }
     },
     isIndoors = true,
     weatherDucking = 0.1,
@@ -4410,4 +4437,220 @@ C.Sites = {
 
 -- #endregion
 
+-- #region Weather
+--[[
+`./json/Weather.json` contains an entry for every month of the year. Each entry contains an `"avgTemp"` key, and a `"weather"` key.
+The `"weather"` key contains one entry for each day of the month. Each of those entries is a 24-element array of five-character codes, representing the weather conditions for that hour.
+To derive the weather for a given hour from its five-character code, the hour's code should be parsed as follows:
+
+- Character 1 & Character 2: Base weather string. Lookup in `C.WEATHER.Base`. Each entry contains a descriptive text string to be added to the associated element in the HUD, the audio key for the rain emitter, and a boolean indicating whether there is thunder.
+- Character 3: Temperature delta. Lookup in `C.WEATHER.TemperatureDelta`, then add to `"avgTemp"` for the month. This value is in Celsius, so convert to Fahrenheit by multiplying by 1.8 and adding 32 to provide both temperatures in the HUD.
+- Character 4: Humidity. Lookup in `C.WEATHER.Humidity`. This is a descriptive text string to be added to the associated HUD element.
+- Character 5: Wind. Lookup in `C.WEATHER.Wind`. Each entry contains a descriptive text string to be added to the associated HUD element, as well as two audio keys for the wind emitter: `"windAudioIfWarm"` and `"windAudioIfCold"`. The warm audio key is used if the temperature is above `C.WEATHER.WARM_TEMPERATURE_THRESHOLD`, the cold audio key is used if the temperature is at or below.
+]]
+
+C.WEATHER = {
+  WARM_TEMPERATURE_THRESHOLD = 0,
+  Base = {
+    xx = {
+      text = "Clear",
+      rainAudio = "silent",
+      isThunder = false
+    },
+    xf = {
+      text = "Foggy",
+      rainAudio = "silent",
+      isThunder = false
+    },
+    bx = {
+      text = "Blizzard",
+      rainAudio = "silent",
+      isThunder = false
+    },
+    bf = {
+      text = "Whiteout",
+      rainAudio = "silent",
+      isThunder = false
+    },
+    cx = {
+      text = "Overcast",
+      rainAudio = "silent",
+      isThunder = false
+    },
+    cf = {
+      text = "Thick Fog",
+      rainAudio = "silent",
+      isThunder = false
+    },
+    px = {
+      text = "Downpour",
+      rainAudio = "rainHeavy",
+      isThunder = false
+    },
+    pf = {
+      text = "Foggy Downpour",
+      rainAudio = "rainHeavy",
+      isThunder = false
+    },
+    sx = {
+      text = "Snowing",
+      rainAudio = "silent",
+      isThunder = false
+    },
+    sf = {
+      text = "Whiteout",
+      rainAudio = "silent",
+      isThunder = false
+    },
+    tx = {
+      text = "Thunderstorm",
+      rainAudio = "rainHeavy",
+      isThunder = true
+    },
+    tf = {
+      text = "Thunderstorm",
+      rainAudio = "rainHeavy",
+      isThunder = true
+    },
+    wx = {
+      text = "Raining",
+      rainAudio = "rainLight",
+      isThunder = false
+    },
+    wf = {
+      text = "Drizzle",
+      rainAudio = "rainLight",
+      isThunder = false
+    }
+  },
+  TemperatureDelta = {
+    ["0"] = 0,
+    A = 1,
+    B = 2,
+    C = 3,
+    D = 4,
+    E = 5,
+    F = 6,
+    G = 7,
+    H = 8,
+    I = 9,
+    J = 10,
+    K = 11,
+    L = 12,
+    M = 13,
+    N = 14,
+    O = 15,
+    P = 16,
+    Q = 17,
+    R = 18,
+    S = 19,
+    T = 20,
+    U = 21,
+    V = 22,
+    W = 23,
+    X = 24,
+    Y = 25,
+    Z = 26,
+    a = -1,
+    b = -2,
+    c = -3,
+    d = -4,
+    e = -5,
+    f = -6,
+    g = -7,
+    h = -8,
+    i = -9,
+    j = -10,
+    k = -11,
+    l = -12,
+    m = -13,
+    n = -14,
+    o = -15,
+    p = -16,
+    q = -17,
+    r = -18,
+    s = -19,
+    t = -20,
+    u = -21,
+    v = -22,
+    w = -23,
+    x = -24,
+    y = -25,
+    z = -26
+  },
+  Humidity = {
+    x = nil, -- The humidity text element should be set inactive if the humidity is nil.
+    d = "◆ Dry",
+    h = "◆ Humid",
+    m = "◆ Muggy",
+    s = "◆ Stifling"
+  },
+  Wind = {
+    x = {
+      textIfWarm = "◆ Still",
+      textIfCold = "◆ Still",
+      windAudioIfWarm = "silent",
+      windAudioIfCold = "silent"
+    },
+    s = {
+      textIfWarm = "◆ Soft Breeze",
+      textIfCold = "◆ Chill Breeze",
+      windAudioIfWarm = "silent",
+      windAudioIfCold = "windWinterLow"
+    },
+    b = {
+      textIfWarm = "◆ Breeze",
+      textIfCold = "◆ Cutting Breeze",
+      windAudioIfWarm = "windLow",
+      windAudioIfCold = "windWinterLow"
+    },
+    w = {
+      textIfWarm = "◆ Blustery",
+      textIfCold = "◆ Freezing Winds",
+      windAudioIfWarm = "windMed",
+      windAudioIfCold = "windWinterMed"
+    },
+    g = {
+      textIfWarm = "◆ Gale",
+      textIfCold = "◆ Driving Winds",
+      windAudioIfWarm = "windMed",
+      windAudioIfCold = "windWinterMed"
+    },
+    h = {
+      textIfWarm = "◆ Howling Winds",
+      textIfCold = "◆ Howling Winds",
+      windAudioIfWarm = "windMax",
+      windAudioIfCold = "windWinterMax"
+    },
+    v = {
+      textIfWarm = "◆ Violent Winds",
+      textIfCold = "◆ Violent Winds",
+      windAudioIfWarm = "windMax",
+      windAudioIfCold = "windWinterMax"
+    }
+  }
+}
+
+-- If a scene overrides weather audio or sets thunderstorm to true, the HUD elements should be changed as follows:
+C.WEATHER_AUDIO_OVERRIDES = {
+  windAudio = {
+    silent = {Wind = "◆ Still"},
+    windLow = {Wind = "◆ Soft Breeze"},
+    windMed = {Wind = "◆ Blustery"},
+    windMax = {Wind = "◆ Violent Winds"},
+    windWinterLow = {Wind = "◆ Chill Breeze"},
+    windWinterMed = {Wind = "◆ Freezing Winds"},
+    windWinterMax = {Wind = "◆ Howling Winds"},
+  },
+  rainAudio = {
+    silent = {Base = "Clear"},
+    rainLight = {Base = "Raining"},
+    rainHeavy = {Base = "Downpour"},
+  },
+  thunderstorm = {
+    forcedOn = { Base = "Thunderstorm", Wind = "◆ Violent Winds"},
+    forcedOff = { Base = "BY_RAIN_AUDIO", Wind = "BY_WIND_AUDIO"}
+  }
+}
+-- #endregion
 return C

@@ -204,7 +204,18 @@ See [TTS_MCP.md](TTS_MCP.md) for setup and Cursor configuration.
 - **TTS runtime**: `UI.setXml(...)` cannot resolve `<Include>` from runtime strings, so dynamic character sheet pages use generated Lua defaults:
   - From repo root: `node .dev/scripts/generate_csheet_defaults_lua.js`
   - This rewrites **`lib/csheet_defaults_xml.ttslua`** (committed) so dynamic XML builders can embed the same defaults while XML remains the source of truth.
-- The default VS Code build task runs this generator before UI XML template generation.
+- The default VS Code build task runs `npm run csheet-defaults:generate` as part of `npm run build`.
+
+## Runtime UI XML templates (`ui/.templates/`)
+
+Some panels are assembled at runtime via `UI.setXml` (for example character sheet page 3). Lua cannot read the repo filesystem in TTS, so template XML is **embedded at build time**:
+
+- **Authoring**: Edit templates under **`ui/.templates/csheet/`** only (for example `page3.xml` and `partials/*.xml`). The embed script does not read top-level `ui/.templates/*.xml` (those are color-expansion sources).
+- **Parameters**: `@@NAME@@` tokens substituted by `lib/ui_xml_template.ttslua` at runtime.
+- **Conditionals**: `##IF @@NAME@@##` … `##ENDIF##` — inner XML is kept only when the caller included `NAME` in the params table (omit keys you do not want rendered).
+- **Build**: `npm run ui-xml-templates:embed` (also in `npm run build`) writes **`lib/ui_xml_templates.ttslua`**.
+- **Consumers**: Domain modules map data → params and call `require("lib.ui_xml_template").apply(templateKey, params, opts)`; use `opts.rawKeys` for values that are already XML fragments (column slot concatenations).
+- **Not the same as color templates**: Top-level `ui/.templates/*.xml` files with `<!-- TARGET: ui/... -->` are processed by `xml_color_template_generator.js` into shipped per-color UI files. Nested folders such as `ui/.templates/csheet/` are **embed-only** (no `TARGET` line).
 
 ## File Structure
 

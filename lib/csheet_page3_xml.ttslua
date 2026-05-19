@@ -1,24 +1,27 @@
 --[[
   Build character sheet page 3 UI XML from stats.backgrounds / merits / flaws (PCS-shaped entries).
-  Consumed by ui/ui_csheet.ttslua via self.UI.setXml(fullDocument).
+  Consumed by ui/ui_csheet.ttslua via full-document Object UI refresh on page 3.
 
   Optional per-entry field `sheetDisplay` (JSON boolean): when `false`, that background/merit/flaw is omitted from page 3.
   Omitted or `true` shows the row. Field is preserved via PCS → stats merge / hydrate.
 
-  TTS does not resolve `<Include>` inside strings passed to `UI.setXml` (only the editor bundles Includes at Save & Play).
-  Runtime XML therefore embeds generated defaults from lib/csheet_defaults_xml.ttslua.
-
-  Layout toggles (below): when true, join that field's string array into one Text node (space-separated).
+  Layout markup lives in ui/.templates/csheet/ (embedded at build time). This module maps stats → template params
+  and column packing only. TTS does not resolve `<Include>` in UI.setXml strings; defaults come from csheet_defaults_xml.
 ]]
 
 local M = {}
+
 local CSHEET_DEFAULTS = require("lib.csheet_defaults_xml")
+local TPL = require("lib.ui_xml_template")
 
---- If true, `description` arrays render as a single `Text` (lines joined with a space). If false, one `Text` per array element.
-local CONCATENATE_DESCRIPTION = true
+local PAGE_NUM = 3
+local TEMPLATE_PAGE = "csheet/page3"
 
---- If true, `rules` arrays render as a single `Text` (lines joined with a space). If false, one `Text` per array element.
-local CONCATENATE_RULES = true
+local TEMPLATE_TRAIT_BY_SECTION = {
+  bg = "csheet/partials/bg_block",
+  merit = "csheet/partials/merit_block",
+  flaw = "csheet/partials/flaw_block",
+}
 
 --- Maximum dots supported by csheet_defaults.xml title-bar classes (1_dot ... 6_dots).
 local MAX_TITLE_DOTS = 6
@@ -29,27 +32,18 @@ local W_DESC_LINE = 3
 local W_RULE_LINE = 2
 local W_SOURCE = 2
 
---- @param s string|nil
---- @return string
-local function xmlEscapeAttr(s)
-  if s == nil then
-    return ""
-  end
-  local t = tostring(s)
-  -- XML 1.0: disallow most C0 controls in character data (can confuse TTS Xml UI builder).
-  t = t:gsub("%c", function(ch)
-    local b = string.byte(ch)
-    if b == 9 or b == 10 or b == 13 then
-      return ch
-    end
-    return " "
-  end)
-  t = t:gsub("&", "&amp;")
-  t = t:gsub("<", "&lt;")
-  t = t:gsub(">", "&gt;")
-  t = t:gsub('"', "&quot;")
-  return t
-end
+--- Page shell column slots are pre-rendered XML fragments (not attribute-escaped).
+local PAGE_RAW_KEYS = {
+  BACKGROUNDS_COLUMN_1 = true,
+  BACKGROUNDS_COLUMN_2 = true,
+  BACKGROUNDS_COLUMN_3 = true,
+  MERITS_COLUMN_1 = true,
+  MERITS_COLUMN_2 = true,
+  MERITS_COLUMN_3 = true,
+  FLAWS_COLUMN_1 = true,
+  FLAWS_COLUMN_2 = true,
+  FLAWS_COLUMN_3 = true,
+}
 
 --- Trim without `.-` (Lua "pattern too complex" on long PCS blurbs if `^%s*(.-)%s*$` is used).
 --- @param s string|nil
@@ -62,9 +56,8 @@ local function trimWhitespace(s)
 end
 
 --- Map seat color to custom UI image suffix: `divider_flaws_<this>`.
---- `colorRaw` is the alphabetic segment from the sheet nickname (`CSHEET_PAGE_3_PINK` → `PINK`), same seat as `<Color>Object`.
 --- @param colorRaw string|nil e.g. "PURPLE" from object nickname
---- @return string e.g. "Purple" for asset name `divider_flaws_Purple`
+--- @return string e.g. "Purple"
 local function dividerFlawsImageSuffix(colorRaw)
   if type(colorRaw) ~= "string" or colorRaw == "" then
     return "Purple"
@@ -86,11 +79,10 @@ local function entryTitleUpper(entry)
   local focus = entry.focus
   local nameStr = type(name) == "string" and name or ""
   local focusStr = type(focus) == "string" and trimWhitespace(focus) or ""
-  local upperName = string.upper(nameStr)
   if focusStr ~= "" then
     return string.upper(nameStr .. ": " .. focusStr)
   end
-  return upperName
+  return string.upper(nameStr)
 end
 
 --- @param n number
@@ -107,8 +99,8 @@ local function titleBarDotClass(n)
 end
 
 --- @param entry table
---- @return integer slotCount clamped 1..MAX_TITLE_DOTS
---- @return integer baseCount clamped 0..slotCount
+--- @return integer slotCount
+--- @return integer baseCount
 local function slotAndBase(entry)
   if type(entry) ~= "table" then
     return 1, 0
@@ -128,38 +120,14 @@ local function slotAndBase(entry)
   return slot, base
 end
 
---- @param slotCount integer
---- @param baseCount integer
---- @param filledImage string  dot_yellow | dot_red
---- @param idPrefix string unique prefix for Image ids
---- @return string XML fragment
-local function buildDotImagesXml(slotCount, baseCount, filledImage, idPrefix)
-  local parts = {}
-  for i = 1, slotCount do
-    local img = "dot_blank"
-    if i > (slotCount - baseCount) then
-      img = filledImage
-    end
-    parts[#parts + 1] = string.format(
-      '<Image id="%s_dot_%d" image="%s" class="dot box_text_title_dot dot_%d" />',
-      idPrefix,
-      i,
-      img,
-      i
-    )
-  end
-  return table.concat(parts)
-end
-
 --- @param lines any
 --- @return string[]
 local function coerceStringLines(lines)
   if type(lines) == "string" then
-    local t = trimWhitespace(lines)
-    if t == "" then
+    if trimWhitespace(lines) == "" then
       return {}
     end
-    return { t }
+    return { lines }
   end
   if type(lines) ~= "table" then
     return {}
@@ -173,21 +141,35 @@ local function coerceStringLines(lines)
   return out
 end
 
---- @param lines string[]
---- @param concatenate boolean
---- @return string[]
-local function maybeConcatLines(lines, concatenate)
-  if type(lines) ~= "table" then
-    return {}
+--- Join PCS description/rules into one attribute value with paragraph line breaks.
+--- @param lines any
+--- @return string|nil nil when no content (caller omits template key)
+local function joinMultilineField(lines)
+  local arr = coerceStringLines(lines)
+  if #arr == 0 then
+    return nil
   end
-  if not concatenate or #lines <= 1 then
-    return lines
+  return table.concat(arr, "\n")
+end
+
+--- @param text string|nil
+--- @return integer
+local function countDisplayLines(text)
+  if type(text) ~= "string" or text == "" then
+    return 0
   end
-  return { table.concat(lines, " ") }
+  local n = 0
+  for _ in string.gmatch(text, "[^\n]+") do
+    n = n + 1
+  end
+  if n == 0 then
+    return 1
+  end
+  return n
 end
 
 --- @param entry table|nil
---- @return string|nil  nil to omit source panel
+--- @return string|nil
 local function formatSourceLine(entry)
   if type(entry) ~= "table" then
     return nil
@@ -210,7 +192,7 @@ local function formatSourceLine(entry)
   return book .. ", p." .. tostring(page)
 end
 
---- PCS optional `sheetDisplay`: only strict `false` hides the row on page 3 (omit field or use `true` to show).
+--- PCS optional `sheetDisplay`: only strict `false` hides the row on page 3.
 --- @param entry table|nil
 --- @return boolean
 local function isTraitShownOnSheet(entry)
@@ -224,8 +206,51 @@ end
 --- @param sectionKey string  "bg" | "merit" | "flaw"
 --- @param entryIndex integer 0-based
 --- @param isFlaw boolean
---- @return string XML fragment for one box_text_container
+--- @return table params for trait partial template
 --- @return integer weight for column packing
+local function buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw)
+  local slotCount, baseCount = slotAndBase(entry)
+  local filledImg = isFlaw and "dot_red" or "dot_yellow"
+  local params = {
+    TITLE_BAR_DOT_CLASS = titleBarDotClass(slotCount),
+    TITLE_TEXT = entryTitleUpper(entry),
+    PAGE_NUM = tostring(PAGE_NUM),
+    INDEX = tostring(entryIndex),
+  }
+  for i = 1, slotCount do
+    local img = "dot_blank"
+    if i > (slotCount - baseCount) then
+      img = filledImg
+    end
+    params["DOT_IMG_" .. tostring(i)] = img
+  end
+
+  local flavor = joinMultilineField(entry.description)
+  local rules = joinMultilineField(entry.rules)
+  if flavor ~= nil then
+    params.FLAVOR_TEXT = flavor
+  end
+  if rules ~= nil then
+    params.RULES_TEXT = rules
+  end
+  local sourceLine = formatSourceLine(entry)
+  if sourceLine ~= nil then
+    params.SOURCE_TEXT = sourceLine
+  end
+
+  local w = W_TITLE + countDisplayLines(flavor) * W_DESC_LINE + countDisplayLines(rules) * W_RULE_LINE
+  if sourceLine ~= nil then
+    w = w + W_SOURCE
+  end
+  return params, w
+end
+
+--- @param entry table
+--- @param sectionKey string
+--- @param entryIndex integer
+--- @param isFlaw boolean
+--- @return string XML fragment
+--- @return integer weight
 function M.buildTraitBoxXml(entry, sectionKey, entryIndex, isFlaw)
   if type(entry) ~= "table" then
     return "", 0
@@ -233,80 +258,27 @@ function M.buildTraitBoxXml(entry, sectionKey, entryIndex, isFlaw)
   if entry.sheetDisplay == false then
     return "", 0
   end
-  local slotCount, baseCount = slotAndBase(entry)
-  local title = entryTitleUpper(entry)
-  local titleBarClass = "box_text_title_bar " .. titleBarDotClass(slotCount)
-  local titleTextClass = isFlaw and "box_text_title_text flaw_title" or "box_text_title_text"
-  local filledImg = isFlaw and "dot_red" or "dot_yellow"
-  local idPrefix = string.format("p3_%s_%d", sectionKey, entryIndex)
-  local dotsXml = buildDotImagesXml(slotCount, baseCount, filledImg, idPrefix)
-
-  local descLines = maybeConcatLines(coerceStringLines(entry.description), CONCATENATE_DESCRIPTION)
-  local rulesLines = maybeConcatLines(coerceStringLines(entry.rules), CONCATENATE_RULES)
-
-  local bodyParts = {}
-  bodyParts[#bodyParts + 1] = '<VerticalLayout class="box_text_panel_body">'
-  for _, line in ipairs(descLines) do
-    bodyParts[#bodyParts + 1] = string.format(
-      '<Text class="box_text flavor_text" text="%s" />',
-      xmlEscapeAttr(line)
-    )
+  local templateKey = TEMPLATE_TRAIT_BY_SECTION[sectionKey]
+  if templateKey == nil then
+    error("[csheet_page3_xml] Unknown sectionKey: " .. tostring(sectionKey))
   end
-  for _, line in ipairs(rulesLines) do
-    bodyParts[#bodyParts + 1] = string.format(
-      '<Text class="box_text rules_text" text="%s" />',
-      xmlEscapeAttr(line)
-    )
+  local params, w = buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw)
+  if w <= 0 then
+    return "", 0
   end
-  bodyParts[#bodyParts + 1] = "</VerticalLayout>"
-
-  local sourceLine = formatSourceLine(entry)
-  local footer = ""
-  if sourceLine ~= nil then
-    footer = string.format(
-      '<Panel class="box_text_panel_source"><Text class="box_text_panel_source_text" text="%s" /></Panel>',
-      xmlEscapeAttr(sourceLine)
-    )
-  end
-
-  local xml = table.concat({
-    '<VerticalLayout class="box_text_container">',
-    "<HorizontalLayout ",
-    'class="',
-    titleBarClass,
-    '">',
-    string.format('<Text class="%s" text="%s" />', titleTextClass, xmlEscapeAttr(title)),
-    '<Panel class="box_text_panel_title_dotline">',
-    dotsXml,
-    "</Panel>",
-    "</HorizontalLayout>",
-    table.concat(bodyParts),
-    footer,
-    "</VerticalLayout>",
-  })
-
-  local descN = #descLines
-  local rulesN = #rulesLines
-  local w = W_TITLE + descN * W_DESC_LINE + rulesN * W_RULE_LINE
-  if sourceLine ~= nil then
-    w = w + W_SOURCE
-  end
+  local xml = TPL.apply(templateKey, params)
   return xml, w
 end
 
 --- @param entries table
 --- @param sectionKey string
 --- @param isFlaw boolean
---- @return string XML HorizontalLayout box_column_container
-local function buildBalancedColumnsXml(entries, sectionKey, isFlaw)
+--- @return string col1 concatenated blocks
+--- @return string col2
+--- @return string col3
+local function buildBalancedColumnContents(entries, sectionKey, isFlaw)
   if type(entries) ~= "table" or #entries == 0 then
-    return table.concat({
-      '<HorizontalLayout class="box_column_container">',
-      '<VerticalLayout class="box_column"></VerticalLayout>',
-      '<VerticalLayout class="box_column"></VerticalLayout>',
-      '<VerticalLayout class="box_column"></VerticalLayout>',
-      "</HorizontalLayout>",
-    })
+    return "", "", ""
   end
 
   local items = {}
@@ -321,7 +293,7 @@ local function buildBalancedColumnsXml(entries, sectionKey, isFlaw)
     end
   end
   if #items == 0 then
-    return buildBalancedColumnsXml({}, sectionKey, isFlaw)
+    return "", "", ""
   end
 
   table.sort(items, function(a, b)
@@ -340,77 +312,44 @@ local function buildBalancedColumnsXml(entries, sectionKey, isFlaw)
     cols[best].chunks[#cols[best].chunks + 1] = it.xml
   end
 
-  local colStrs = {}
-  for c = 1, 3 do
-    colStrs[c] = string.format(
-      '<VerticalLayout class="box_column">%s</VerticalLayout>',
-      table.concat(cols[c].chunks)
-    )
-  end
-
-  return table.concat({
-    '<HorizontalLayout class="box_column_container">',
-    colStrs[1],
-    colStrs[2],
-    colStrs[3],
-    "</HorizontalLayout>",
-  })
+  return table.concat(cols[1].chunks), table.concat(cols[2].chunks), table.concat(cols[3].chunks)
 end
 
 --- @param stats table|nil
---- @param seatColorRaw string|nil  last segment of `CSHEET_PAGE_<n>_<COLOR>` (e.g. `PINK`); drives `divider_flaws_<TitleCase>`.
+--- @param seatColorRaw string|nil
 --- @return string full UI XML document
 function M.buildPage3DocumentXml(stats, seatColorRaw)
   stats = type(stats) == "table" and stats or {}
-  local bg = stats.backgrounds
-  local merits = stats.merits
-  local flaws = stats.flaws
-  if type(bg) ~= "table" then
-    bg = {}
-  end
-  if type(merits) ~= "table" then
-    merits = {}
-  end
-  if type(flaws) ~= "table" then
-    flaws = {}
-  end
+  local bg = type(stats.backgrounds) == "table" and stats.backgrounds or {}
+  local merits = type(stats.merits) == "table" and stats.merits or {}
+  local flaws = type(stats.flaws) == "table" and stats.flaws or {}
 
-  local flawsDivider = "divider_flaws_" .. dividerFlawsImageSuffix(seatColorRaw)
+  local bg1, bg2, bg3 = buildBalancedColumnContents(bg, "bg", false)
+  local m1, m2, m3 = buildBalancedColumnContents(merits, "merit", false)
+  local f1, f2, f3 = buildBalancedColumnContents(flaws, "flaw", true)
 
+  local pageParams = {
+    COLOR = dividerFlawsImageSuffix(seatColorRaw),
+    BACKGROUNDS_COLUMN_1 = bg1,
+    BACKGROUNDS_COLUMN_2 = bg2,
+    BACKGROUNDS_COLUMN_3 = bg3,
+    MERITS_COLUMN_1 = m1,
+    MERITS_COLUMN_2 = m2,
+    MERITS_COLUMN_3 = m3,
+    FLAWS_COLUMN_1 = f1,
+    FLAWS_COLUMN_2 = f2,
+    FLAWS_COLUMN_3 = f3,
+  }
+
+  local pageXml = TPL.apply(TEMPLATE_PAGE, pageParams, { rawKeys = PAGE_RAW_KEYS })
   return table.concat({
     CSHEET_DEFAULTS.getXml(),
     "",
-    '<Panel id="paper_root" class="page_root padded_border">',
-    "",
-    '  <Button id="pageBack" class="page_navigation page_back" />',
-    "",
-    '  <VerticalLayout class="vertical_section_container">',
-    '    <Panel class="spacer" color="rgba(0, 0, 0, 0)" preferredHeight="90" flexibleHeight="0" minHeight="90" />',
-    "",
-    "    ",
-    buildBalancedColumnsXml(bg, "bg", false),
-    "",
-    '    <Image id="divider_merits" image="divider_merits" />',
-    "",
-    "    ",
-    buildBalancedColumnsXml(merits, "merit", false),
-    "",
-    -- One string: outer `table.concat(..., "\n")` must not split inside the `image="..."` attribute.
-    string.format('    <Image id="divider_flaws" image="%s" />', xmlEscapeAttr(flawsDivider)),
-    "",
-    "    ",
-    buildBalancedColumnsXml(flaws, "flaw", true),
-    "",
-    "  </VerticalLayout>",
-    "",
-    "</Panel>",
+    pageXml,
     "",
   }, "\n")
 end
 
---- Fingerprint for skipping redundant `setXml`. Must not pass merged `stats` subtrees to `JSON.encode`:
---- those tables are owned by Global's Lua VM; encoding them from an object script raises
---- "Attempt to perform operations with resources owned by different scripts."
 --- @param entry table|nil
 --- @return string
 local function fingerprintOneTraitEntry(entry)
@@ -483,10 +422,6 @@ function M.fingerprintPage3Stats(stats)
     fingerprintTraitArray(stats.merits),
     "\3",
     fingerprintTraitArray(stats.flaws),
-    "\3",
-    CONCATENATE_DESCRIPTION and "1" or "0",
-    ":",
-    CONCATENATE_RULES and "1" or "0",
   })
 end
 

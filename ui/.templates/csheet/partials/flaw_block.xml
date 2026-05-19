@@ -1,0 +1,49 @@
+<!-- Parameters:
+@@TITLE_BAR_DOT_CLASS@@ - "1_dot" .. "6_dots"
+@@TITLE_TEXT@@ - uppercase title
+@@PAGE_NUM@@ - page number (1-based)
+@@INDEX@@ - entry index (0-based)
+@@DOT_IMG_1@@ .. @@DOT_IMG_6@@ - dot image id when slot active (omit key when unused)
+@@FLAVOR_TEXT@@ - description (newline-separated in one Text)
+@@RULES_TEXT@@ - rules (newline-separated in one Text)
+@@SOURCE_TEXT@@ - source line (omit key when absent)
+-->
+
+<VerticalLayout class="box_text_container">
+  <HorizontalLayout class="box_text_title_bar @@TITLE_BAR_DOT_CLASS@@">
+    <Text class="box_text_title_text flaw_title" text="@@TITLE_TEXT@@" />
+    <Panel class="box_text_panel_title_dotline">
+      ##IF @@DOT_IMG_1@@##
+      <Image id="p@@PAGE_NUM@@_flaw_@@INDEX@@_dot_1" image="@@DOT_IMG_1@@" class="dot box_text_title_dot dot_1" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_2@@##
+      <Image id="p@@PAGE_NUM@@_flaw_@@INDEX@@_dot_2" image="@@DOT_IMG_2@@" class="dot box_text_title_dot dot_2" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_3@@##
+      <Image id="p@@PAGE_NUM@@_flaw_@@INDEX@@_dot_3" image="@@DOT_IMG_3@@" class="dot box_text_title_dot dot_3" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_4@@##
+      <Image id="p@@PAGE_NUM@@_flaw_@@INDEX@@_dot_4" image="@@DOT_IMG_4@@" class="dot box_text_title_dot dot_4" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_5@@##
+      <Image id="p@@PAGE_NUM@@_flaw_@@INDEX@@_dot_5" image="@@DOT_IMG_5@@" class="dot box_text_title_dot dot_5" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_6@@##
+      <Image id="p@@PAGE_NUM@@_flaw_@@INDEX@@_dot_6" image="@@DOT_IMG_6@@" class="dot box_text_title_dot dot_6" />
+      ##ENDIF##
+    </Panel>
+  </HorizontalLayout>
+  <VerticalLayout class="box_text_panel_body">
+    ##IF @@FLAVOR_TEXT@@##
+    <Text class="box_text flavor_text" text="@@FLAVOR_TEXT@@" />
+    ##ENDIF##
+    ##IF @@RULES_TEXT@@##
+    <Text class="box_text rules_text" text="@@RULES_TEXT@@" />
+    ##ENDIF##
+  </VerticalLayout>
+  ##IF @@SOURCE_TEXT@@##
+  <Panel class="box_text_panel_source">
+    <Text class="box_text_panel_source_text" text="@@SOURCE_TEXT@@" />
+  </Panel>
+  ##ENDIF##
+</VerticalLayout>
