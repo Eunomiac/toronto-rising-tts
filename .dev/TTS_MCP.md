@@ -5,7 +5,7 @@ This repo includes a small **Model Context Protocol** server that runs **Tableto
 ## Prerequisites
 
 1. **Tabletop Simulator** is running with a game loaded.
-2. **External Editor** is enabled in TTS (**Options → General → External Editor**). See [TTS_BUNDLING_SETUP.md](TTS_BUNDLING_SETUP.md) (Issue 0).
+2. **Tabletop Simulator** is running with a game loaded (External Editor listens on **39999** automatically — no in-game toggle).
 3. **Node.js 18+** and project dependencies: `npm install` at the repo root.
 4. **Build** the MCP server when you change bridge/MCP TypeScript or after pull: `npm run tts-mcp:build` (runs `tts-bridge:build` then `tts-mcp:compile`). VS Code/Cursor task **Build: TTS MCP (Node)** runs the same command. This is **not** part of the default module build (`npm run build` / Ctrl+Shift+B). Outputs go to `.tools/tts-bridge/dist/` and `.tools/tts-mcp/dist/` (ignored by git).
 

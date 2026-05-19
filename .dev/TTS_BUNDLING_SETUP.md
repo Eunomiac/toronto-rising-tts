@@ -67,7 +67,39 @@ Official reference: [Module resolution](https://github.com/rolandostar/tabletops
 1. Edit `.tts/bundled/Global.lua` directly
 2. Use "Save and Play (Bundled)" to send as-is (no bundling)
 
-## Common Issues
+### Inject bundled Global into save JSON (no External Editor send)
+
+When extension **Save & Play** hangs on “Sending Scripts” (often due to ~150 MB of duplicated object bundles), you can patch **Global only** directly into the on-disk save file — same pattern as [custom UI merge](../.tools/custom-ui-assets/merge-custom-ui-assets.js).
+
+**Prerequisites**
+
+1. Bundle Global first (extension bundle step, or any flow that writes `.tts/bundled/Global.lua` and `Global.xml`).
+2. Know your TTS save slot (e.g. `123` → `TS_Save_123.json`).
+3. **Close TTS** or load a different slot before patching (avoid writing while the game holds the file open).
+
+**Cursor task**
+
+**Tasks: Run Task** → **TTS: Inject Bundled Global into Save JSON** — prompts for save id, then writes root `LuaScript`, `XmlUI`, and clears `LuaScriptState`.
+
+**CLI**
+
+```text
+npm run tts-save:inject-global -- --saveName 123
+```
+
+Optional: `--savesDir <path>` (override Saves folder), `--lua`, `--xml`, `--dryRun`, `--noBackup`.
+
+Default Saves folder resolution: `--savesDir` → env `TTS_SAVES_DIR` → `D:/OneDrive/Documents/My Games/Tabletop Simulator/Saves` if present → `%USERPROFILE%/Documents/My Games/Tabletop Simulator/Saves`.
+
+**After inject**
+
+1. Load the patched save from the TTS menu.
+2. Save in-game if you want the slot persisted.
+
+A timestamped backup is written beside the save (`TS_Save_<n>.pre-inject-global.<timestamp>.json`) unless `--noBackup`.
+
+**Scope:** Global Lua + Global UI only. Object scripts (character sheets, dice bags, etc.) are unchanged.
+
 
 ### Issue 0: Connection Refused (ECONNREFUSED 127.0.0.1:39999)
 
@@ -77,38 +109,17 @@ Official reference: [Module resolution](https://github.com/rolandostar/tabletops
 - "Load Objects" doesn't work
 - Extension can't communicate with TTS
 
-**Root Cause**: The TTS Tools extension connects to TTS on port 39999 (TTS External Editor API). If TTS isn't running or the API isn't enabled, the connection fails.
+**Root Cause**: The extension connects to TTS on port **39999** (External Editor API). Get Lua Scripts can work while Save & Play hangs — often because Save sends **all modified object bundles** (~150 MB for this mod), not because External Editor is “disabled” in a menu (there is no such toggle in current TTS builds).
 
 **Solution**:
 
-1. **Ensure TTS is Running**:
-   - Tabletop Simulator must be open and running
-   - Load a game or create a new game (doesn't matter which)
-   - The game doesn't need to be saved, but TTS must be running
+1. **Ensure TTS is Running** with your save loaded when using the extension.
+2. **Verify port 39999** while TTS has a table open: `netstat -ano | findstr ":39999"` should show `LISTENING`.
+3. **Avoid port 39998 conflicts** — only one listener (extension or repo tts-bridge/MCP). See Issue 0b.
+4. **Prefer Global-only deploy** when object scripts did not change — use **Inject bundled Global into save JSON** (above) or in-game paste of `.tts/bundled/Global.lua` + `Global.xml`.
+5. **Alternative: Manual Script Loading** — paste bundled Global into the in-game Scripting editor and Save & Play there.
 
-2. **Enable External Editor API in TTS**:
-   - In TTS, go to **Options** → **General** tab
-   - Scroll down to find **"External Editor"** section
-   - Check **"Enable External Editor"** (or similar checkbox)
-   - This enables TTS to listen on port 39999 for editor connections
-
-3. **Verify Port Availability**:
-   - Port 39999 should be available (not blocked by firewall)
-   - Windows Firewall may block the connection - check if TTS is allowed
-   - If using antivirus, ensure it's not blocking localhost connections
-
-4. **Test Connection**:
-   - After enabling External Editor API, try "Save & Play" again
-   - The extension should now be able to connect to TTS
-   - You should see scripts being sent to TTS without connection errors
-
-5. **Alternative: Manual Script Loading**:
-   - If connection still fails, you can manually copy bundled scripts:
-   - Use "Bundle Scripts" command (if available) to generate `.tts/bundled/Global.lua`
-   - Manually copy the content into TTS Global script editor
-   - This is a workaround, not a permanent solution
-
-**Note**: The External Editor API must be enabled in TTS for the extension to work. This is a TTS setting, not an extension setting.
+**Note**: External Editor is built into TTS when a game is loaded; no in-game checkbox is required.
 
 ### Issue 0b: Port 39998 already in use (EADDRINUSE)
 
@@ -210,6 +221,39 @@ See [TTS_MCP.md](TTS_MCP.md) for setup and Cursor configuration.
 
 Every `CSHEET_PAGE_<n>_<COLOR>` object has a one-line stub under **`.tts/objects/`** (normalized by `npm run tts-objects:fix-stubs`):
 
+```lua
+require("ui.ui_csheet")
+```
+
+Object scripts run in a **separate Lua VM** from Global. They must not pull the full game stack (`lib.pc_stats` → `core.sync`, etc.). Thin modules and `Global.call` keep each CSHEET bundle small (~tens of KB vs ~1.4 MB before slimming).
+
+| Layer | Module | Role |
+| ----- | ------ | ---- |
+| Object UI | `ui/ui_csheet.ttslua` | Page/seat from object name; navigation; applies UI from Global payloads |
+| Sheet diffs (Global) | `GlobalCollectSheetImageUpdates` → `lib/pc_sheet_collect.ttslua` | Dot/box `setAttribute` list from merged stats |
+| Page 3 XML (Global) | `GlobalBuildCsheetPage3Xml`, `GlobalFingerprintCsheetPage3` → `lib/csheet_page3_xml.ttslua` | Dynamic `setXml` only on page 3 |
+| Object-only | `lib/csheet_constants.ttslua`, `lib/csheet_util.ttslua`, `lib/csheet_pose.ttslua` | CSHEET poses, delay, AlertGM — no `core.*` |
+
+**Verify bundle size**
+
+```powershell
+npm run tts-save:bundle-csheet-sample   # local luabundle without Save & Play
+npm run tts-save:measure-bundles        # sizes + regression checks
+npm run tts-save:measure-bundles -- --estimate   # require-tree only
+```
+
+Without `.tts/bundled/` output, the script prints a **require-tree estimate** from `ui.ui_csheet` and flags heavy modules (`core.*`, `lib.pc_stats`, `lib.constants`, …). After Save & Play bundles one CSHEET object, it also reports `.tts/bundled/CSHEET_*.lua` sizes and regression checks.
+
+**Smoke checklist (after re-bundle)**
+
+1. Page 1: dot/box refresh when ST panel or conditions change (`obj.call("refreshFromGameState")`).
+2. Page 2: discipline dots update.
+3. Page 3: `setXml` when backgrounds/merits/flaws change; fingerprint skips redundant rebuilds.
+4. Spread navigation (on/off y poses).
+5. Roll clicks (humanity / willpower / rouse / frenzy) via `GlobalInitiateRoll`.
+
+Shipped XML per page (object Custom UI asset):
+
 ```xml
 <Include src="ui/player/csheets/page<n>.xml" />
 ```
@@ -218,8 +262,8 @@ TTS resolves that path on **Save & Play** before object Lua runs. You always nee
 
 | Pages | Mode today | What to edit |
 | ----- | ---------- | ------------- |
-| **1–2** | Static shipped XML | `ui/player/csheets/page1.xml`, `page2.xml` — dot/box updates via `UI.setAttribute` in `ui/ui_csheet.ttslua` |
-| **3** | **Dynamic** (`UI.setXml`) | Layout: **`ui/.templates/csheet/page3.xml`** + partials; builder: **`lib/csheet_page3_xml.ttslua`**. Shipped **`ui/player/csheets/page3.xml`** is only a minimal Include placeholder (not the source of truth). |
+| **1–2** | Static shipped XML | `ui/player/csheets/page1.xml`, `page2.xml` — dot/box updates via `UI.setAttribute` from `GlobalCollectSheetImageUpdates` |
+| **3** | **Dynamic** (`UI.setXml`) | Layout: **`ui/.templates/csheet/page3.xml`** + partials; builder: **`lib/csheet_page3_xml.ttslua`** (Global bundle only). Shipped **`ui/player/csheets/page3.xml`** is only a minimal Include placeholder (not the source of truth). |
 | **4–8** | Static shipped XML (scaffolding / WIP) | `ui/player/csheets/page4.xml` … `page8.xml` — already satisfy object Includes; no template embed or `setXml` yet |
 
 **Do not** pre-build dynamic page 4–8 machinery until you design a page. When a page needs PCS-driven layout like page 3: (1) add templates under `ui/.templates/csheet/`, (2) add `lib/csheet_pageN_xml.ttslua` + wire `ui/ui_csheet.ttslua`, (3) run `npm run ui-xml-templates:embed`, (4) **replace** the shipped `ui/player/csheets/pageN.xml` with a thin placeholder (keep the file so Includes still resolve). Until then, keep editing the static `pageN.xml` files directly.

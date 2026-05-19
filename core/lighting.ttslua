@@ -1364,11 +1364,6 @@ function L.isPlayerPresentInActiveSeatLayout(seatKey)
     return atTable
 end
 
---- @return boolean
-local function shouldEnforceSeatPresenceLights()
-    return S.getStateVal("seatLayout", "enforceActiveSeatLighting") == true
-end
-
 --- @param rawKey string
 --- @param playerColor string
 --- @return string|nil
@@ -1451,7 +1446,7 @@ local function computeSeatSpotlightPriorityOverride(lightRef, seatKey)
         return "ROLLING"
     end
 
-    local seatPresenceOff = shouldEnforceSeatPresenceLights() and not L.isPlayerPresentInActiveSeatLayout(seatKey)
+    local seatPresenceOff = not L.isPlayerPresentInActiveSeatLayout(seatKey)
     if (isDarkSceneActive() or seatPresenceOff) and lData.OFF ~= nil then
         return "OFF"
     end

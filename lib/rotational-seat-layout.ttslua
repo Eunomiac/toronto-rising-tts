@@ -27,12 +27,17 @@
 local U = require("lib.util")
 local C = require("lib.constants")
 local S = require("core.state")
-local DEBUG = require("core.debug")
 local P = require("lib.pc_stats")
 local OP = require("lib.object_positions")
 local L_LIGHT = require("core.lighting")
 local NPCS = require("core.npcs")
 local PCST_PANEL = require("core.pc_storyteller_panel")
+
+--- Lazy load: core.debug is large; only needed for workspace file export helpers.
+--- @return table
+local function getDebugModule()
+    return require("core.debug")
+end
 
 local M = {}
 
@@ -1506,7 +1511,7 @@ function M.generateRotationalCoordinates(
   if WRITE_RESULTS_TO_FILE then
     assertSendExternalMessage()
     local frameLua = serializeFrameRefsLua(frameVar, nestedFrameExport)
-    local okWrite = DEBUG.writeWorkspaceFile(framePath, frameLua, "none", false)
+    local okWrite = getDebugModule().writeWorkspaceFile(framePath, frameLua, "none", false)
     if not okWrite then
       error("rotational-seat-layout: DEBUG.writeWorkspaceFile failed for frame refs at '" .. framePath .. "'")
     end
@@ -1692,7 +1697,7 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
               if disp ~= nil then
                 local role, _ = parseRoleAndSuffix(disp)
                 if role == "SEAT_FIGURE" and not isPlayerSeatKey(color) then
-                  -- NPC seat figurine is the pooled instance (tag + layout), not a workshop Name.
+                  -- Workshop anchor keeps SEAT_FIGURE_* Name; pooled figurine owns SEAT_FIGURE for layout.
                 elseif byRole[role] ~= nil then
                   error(
                     "rotational-seat-layout: seat '"
@@ -1701,8 +1706,9 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
                     .. role
                     .. "' (from Name/Nickname); cannot pick one to move"
                   )
+                else
+                  byRole[role] = o
                 end
-                byRole[role] = o
               elseif not isPlayerSeatKey(color) and NPCS.isPooledFigurineObject(o) then
                 local sk = deriveSeatKeyFromObjectTag(o)
                 if sk == color then
@@ -2086,7 +2092,7 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
     local tfLua = serializeObjectTransformsLua(tfVar, transformNested)
     local followerTfLua = serializeFollowerTransformsLua(followerTfVar, followerTransformsBySeat)
     local outputLua = guidLua .. "\n\n" .. tfLua .. "\n\n" .. followerTfLua
-    local okGWrite = DEBUG.writeWorkspaceFile(guidPath, outputLua, "none", false)
+    local okGWrite = getDebugModule().writeWorkspaceFile(guidPath, outputLua, "none", false)
     if not okGWrite then
       error("rotational-seat-layout: DEBUG.writeWorkspaceFile failed for GUID map at '" .. guidPath .. "'")
     end

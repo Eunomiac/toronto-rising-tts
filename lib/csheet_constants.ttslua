@@ -1,0 +1,23 @@
+--[[
+  Minimal constants for character sheet object scripts (bundle-safe slice).
+  Canonical player roster and full ObjectPositions live in lib.constants (Global bundle).
+
+  Keep CSHEET_PAGE on/off poses in sync with lib.constants.ttslua → C.ObjectPositions.CSHEET_PAGE.
+
+  Agent guidance: .dev/TTS_BUNDLING_SETUP.md
+]]
+
+local CC = {}
+
+--- Storyteller steam id — must match lib.constants C.StorytellerID.
+CC.StorytellerID = "76561198002132577"
+
+--- Character sheet page visibility poses (y only; csheet nav uses instant moves).
+CC.ObjectPositions = {
+  CSHEET_PAGE = {
+    on = { position = { y = 3.19 }, duration = 0 },
+    off = { position = { y = -200 }, duration = 0, isHidden = true },
+  },
+}
+
+return CC

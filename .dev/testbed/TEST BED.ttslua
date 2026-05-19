@@ -1757,6 +1757,9 @@ UI.setAttributes("vLT_textTest14", {minHeight = "200"})
 UI.setAttributes("vLT_textTest15", {minHeight = "200"})
 UI.setAttributes("vLT_textTest16", {minHeight = "200"})
 
+UI.show("gameStateOverlay_root")
+UI.setAttributes("gameStateOverlay_root", {active = "true"})
+
 
 dumpObjectXmlToFile("631323")
 -- M.setCamera("Red", "default")

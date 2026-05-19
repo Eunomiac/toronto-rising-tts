@@ -470,6 +470,33 @@ function GlobalRegisterTrackerDisplay(cfg)
     }
 end
 
+--- Build character sheet dot/box UI attribute updates (object scripts call via Global.call).
+--- @param stats table
+--- @param conditions table|nil
+--- @param pageNum number|nil
+--- @return table[]
+function GlobalCollectSheetImageUpdates(stats, conditions, pageNum)
+    local PSC = require("lib.pc_sheet_collect")
+    return PSC.collectSheetImageUpdates(stats, conditions, pageNum)
+end
+
+--- Fingerprint page-3 stats for skip-redundant setXml on character sheet objects.
+--- @param stats table
+--- @return string|nil
+function GlobalFingerprintCsheetPage3(stats)
+    local PAGE3 = require("lib.csheet_page3_xml")
+    return PAGE3.fingerprintPage3Stats(stats)
+end
+
+--- Build full page-3 character sheet XML document (object UI.setXml).
+--- @param stats table
+--- @param seatColor string|nil
+--- @return string|nil
+function GlobalBuildCsheetPage3Xml(stats, seatColor)
+    local PAGE3 = require("lib.csheet_page3_xml")
+    return PAGE3.buildPage3DocumentXml(stats, seatColor)
+end
+
 function onLoad(saved_data)
     -- Emitters and `Wait.time` are typically available here; chunk-level pass often sees 0/9 GUIDs.
     trEarlySilenceSoundscapeEmitters("onLoad-sync-immediate")

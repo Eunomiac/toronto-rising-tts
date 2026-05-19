@@ -56,21 +56,31 @@ local function replaceAllPlain(haystack, needle, replacement)
   return table.concat(parts)
 end
 
+--- Process ##IF @@KEY@@## ... ##ENDIF## without `(.-)` (Lua "pattern too complex" on long templates).
 --- @param template string
 --- @param params table<string, string|number|boolean>
 --- @return string
 local function processConditionals(template, params)
   local result = template
+  local headerPattern = "##IF%s+@@([A-Za-z0-9_]+)@@%s*##"
+  local endifMarker = "##ENDIF##"
   while true do
-    local startIdx, endIdx, key, inner = result:find("##IF%s+@@([A-Za-z0-9_]+)@@%s*##(.-)##ENDIF##")
+    local startIdx, headerEnd, key = result:find(headerPattern)
     if startIdx == nil then
       break
     end
+    local innerStart = headerEnd + 1
+    local endIdx = result:find(endifMarker, innerStart, true)
+    if endIdx == nil then
+      error(string.format("[ui_xml_template] Missing %s for ##IF @@%s@@##", endifMarker, tostring(key)))
+    end
+    local inner = result:sub(innerStart, endIdx - 1)
     local replacement = ""
     if params[key] ~= nil then
       replacement = inner
     end
-    result = result:sub(1, startIdx - 1) .. replacement .. result:sub(endIdx + 1)
+    local afterEnd = endIdx + #endifMarker - 1
+    result = result:sub(1, startIdx - 1) .. replacement .. result:sub(afterEnd + 1)
   end
   return result
 end

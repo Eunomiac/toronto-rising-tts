@@ -180,6 +180,8 @@ local function defaultState()
         thunderEnabled = Catalog.DEFAULTS.thunderEnabled,
         location = Catalog.DEFAULTS.location,
         isIndoors = Catalog.DEFAULTS.isIndoors,
+        --- Indoor weather volume multiplier from `C.Sites[siteKey].weatherDucking` when set via `applyContext`.
+        siteWeatherDucking = nil,
         channels = channels,
         capabilities = {
             volumeControl = nil,
@@ -222,13 +224,26 @@ local function updateChannelState(channelKey, patch)
     end
 end
 
+--- Resolves the weather volume multiplier for the current site and indoors/outdoors mode.
+--- @param state table soundscape state from `ensureState()`
+--- @return number
+local function resolveWeatherDuckingMultiplier(state)
+    if state.isIndoors ~= true then
+        return tonumber(Catalog.DEFAULTS.weatherDucking.outdoorMultiplier) or 1
+    end
+    local siteMult = tonumber(state.siteWeatherDucking)
+    if siteMult ~= nil then
+        return siteMult
+    end
+    return tonumber(Catalog.DEFAULTS.weatherDucking.indoorMultiplier) or 1
+end
+
 --- Applies indoor/outdoor ducking to a **natural** weather volume (0..1).
 -- @param baseVolume number|string|nil
 -- @return number
 local function weatherVolume(baseVolume)
     local state = ensureState()
-    local ducking = Catalog.DEFAULTS.weatherDucking
-    local multiplier = state.isIndoors and ducking.indoorMultiplier or ducking.outdoorMultiplier
+    local multiplier = resolveWeatherDuckingMultiplier(state)
     return clamp01((tonumber(baseVolume) or 0) * multiplier)
 end
 
@@ -1447,9 +1462,7 @@ end
 -- @return table[]
 function Soundscape.getPlayingLanesForUi()
     local state = ensureState()
-    local duck = Catalog.DEFAULTS.weatherDucking
-    local mult = state.isIndoors == true and (tonumber(duck.indoorMultiplier) or 1)
-        or (tonumber(duck.outdoorMultiplier) or 1)
+    local mult = resolveWeatherDuckingMultiplier(state)
     local weatherDucked = state.isIndoors == true and mult < 0.999
 
     local rows = {}
@@ -1562,8 +1575,13 @@ function Soundscape.applyContext(context)
         applySilentSiteAmbient()
         collect(true, "Silent site: ambient layers cleared (featured lane unchanged)")
     else
+        if context.weatherDucking ~= nil then
+            ensureState().siteWeatherDucking = tonumber(context.weatherDucking)
+        end
         if context.isIndoors ~= nil then
             collect(Soundscape.setIndoors(context.isIndoors))
+        elseif context.weatherDucking ~= nil then
+            collect(Soundscape.reapplyWeatherNaturalVolumes())
         end
         local moodKey = context.musicMood
         local locMusKey = context.locationMusic
@@ -1644,6 +1662,21 @@ function Soundscape.mergeSessionSceneNarrativeIntoContext(sessionScene, base)
         out.wind = sn.wind
         out.thunderEnabled = sn.thunderstorm == true
     end
+    return Soundscape.withDefaultBackgroundMusic(out)
+end
+
+--- When a scene/site bundle does not specify background music, apply the catalog default mood (`main`).
+--- Skips silent sites and any context that already sets mood or location playlist.
+--- @param context table|nil
+--- @return table
+function Soundscape.withDefaultBackgroundMusic(context)
+    local out = type(context) == "table" and context or {}
+    if out.isSilent == true then
+        return out
+    end
+    if out.musicMood == nil and out.locationMusic == nil then
+        out.musicMood = Catalog.DEFAULTS.musicMood
+    end
     return out
 end
 
@@ -1685,6 +1718,9 @@ function Soundscape.contextFromSite(site, siteKey)
     end
     if site.isIndoors ~= nil then
         ctx.isIndoors = site.isIndoors
+    end
+    if site.weatherDucking ~= nil then
+        ctx.weatherDucking = site.weatherDucking
     end
     local sc = site.soundscape
     if type(sc) == "table" then
@@ -1941,8 +1977,7 @@ function Soundscape.reapplyWeatherNaturalVolumes()
             if natural == nil then
                 natural = tonumber(ch.volume) or 0
                 if state.isIndoors == true then
-                    local duck = Catalog.DEFAULTS.weatherDucking
-                    local mult = tonumber(duck.indoorMultiplier) or 1
+                    local mult = resolveWeatherDuckingMultiplier(state)
                     if mult > 0 and mult < 1 then
                         natural = math.min(1, natural / mult)
                     end

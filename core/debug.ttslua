@@ -4451,9 +4451,8 @@ local function debugComputeDesiredSeatLightMode(seatKey, lData)
 
     local currentScene = Scenes.getCurrentScene and Scenes.getCurrentScene() or S.getStateVal("currentScene")
     local isDark = type(currentScene) == "string" and string.lower(currentScene) == "dark"
-    local enforceSeatPresence = S.getStateVal("seatLayout", "enforceActiveSeatLighting") == true
     local seatPresent = debugIsSeatPresentInActiveLayout(seatKey)
-    if (isDark or (enforceSeatPresence and not seatPresent)) and lData.OFF ~= nil then
+    if (isDark or not seatPresent) and lData.OFF ~= nil then
         return "OFF"
     end
 
@@ -4501,7 +4500,7 @@ function DEBUG.logSeatLightsToFile(filename)
     local timestamp = getTimestamp()
     local rows = {
         "Seat Light Diagnostics - " .. tostring(timestamp),
-        "seat | seatType | occupant | playerID | hunger | rolling | scene | enforceSeatLighting | seatPresent | desired | current | smokeWanted",
+        "seat | seatType | occupant | playerID | hunger | rolling | scene | seatPresent | desired | current | smokeWanted",
     }
 
     local occupiedNpcSlots = debugGetOccupiedNPCSlotSet()
@@ -4524,7 +4523,6 @@ function DEBUG.logSeatLightsToFile(filename)
         local hunger = isPlayerSeat and (tonumber(S.getPlayerVal(seatKey, "hunger")) or 0) or 0
         local rolling = playerID ~= nil and S.getStateVal("playerData", playerID, "lighting", "isRolling") == true
         local currentScene = Scenes.getCurrentScene and Scenes.getCurrentScene() or S.getStateVal("currentScene")
-        local enforceSeatPresence = S.getStateVal("seatLayout", "enforceActiveSeatLighting") == true
         local seatPresent = debugIsSeatPresentInActiveLayout(seatKey)
         local smokeWanted = isPlayerSeat and hunger >= 4
 
@@ -4550,7 +4548,7 @@ function DEBUG.logSeatLightsToFile(filename)
         end
 
         rows[#rows + 1] = string.format(
-            "%s | %s | %s | %s | %d | %s | %s | %s | %s | %s | %s | %s",
+            "%s | %s | %s | %s | %d | %s | %s | %s | %s | %s | %s",
             tostring(seatKey),
             tostring(seatType),
             tostring(occupant),
@@ -4558,7 +4556,6 @@ function DEBUG.logSeatLightsToFile(filename)
             hunger,
             tostring(rolling),
             tostring(currentScene),
-            tostring(enforceSeatPresence),
             tostring(seatPresent),
             table.concat(desiredParts, ", "),
             table.concat(currentParts, ", "),

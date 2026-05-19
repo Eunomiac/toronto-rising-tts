@@ -425,12 +425,7 @@ function Scenes.reconcileTopFogFromState(opts)
     if type(sessionScene) ~= "table" then
         return true
     end
-    local fogVal = sessionScene.isTopFogActive
-    if fogVal == nil then
-        return true
-    end
-
-    local active = fogVal == true
+    local active = sessionScene.isTopFogActive == true
     local fp = active and "1" or "0"
     if not force and lastTopFogReconcileFingerprint == fp then
         return true

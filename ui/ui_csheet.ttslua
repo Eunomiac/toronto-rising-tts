@@ -3,15 +3,15 @@
 -- Host object Lua must be only `require("ui.ui_csheet")`. A second global `function onLoad()`
 -- after that require replaces this file's onLoad and breaks navigation / state (pageNum stays nil).
 -- Any page index n is accepted; automated dot/box toggles are controlled per page in
--- `lib/pc_stats.ttslua` (`P.SHEET_PAGE_UPDATE_PROFILE`). Pages without a profile get no bulk
+-- `lib/pc_sheet_collect.ttslua` (`PSC.SHEET_PAGE_UPDATE_PROFILE`). Pages without a profile get no bulk
 -- updates until you add one (room for pages 3–8+). Page-specific extras (e.g. another Text id)
 -- can branch on `pageNum` below.
--- Object scripts do not share Global's `gameState`; merged player data comes via Global.call.
+-- Object scripts do not share Global's `gameState`; merged player data and UI diffs come via Global.call.
 -- Agent guidance: .dev/PC Data & Tracking/PC Tracking & State Behavior.md; .dev/TTS_BUNDLING_SETUP.md
 
 -- =============================================================================
 -- Tracker presentation (edit here)
--- Pushed to Global on load so `lib.pc_stats` can format Storyteller strip text and optionally
+-- Pushed to Global on load so Global-side collect can format Storyteller strip text and optionally
 -- set sheet box `image` ids. Health and Willpower share the same damage-track glyph set.
 -- `sheetImages` values must match custom UI asset names available in this game / page1.xml.
 -- =============================================================================
@@ -51,11 +51,9 @@ local CSHEET_TRACKER_DISPLAY = {
   },
 }
 
-local C = require("lib.constants")
-local P = require("lib.pc_stats")
-local PAGE3 = require("lib.csheet_page3_xml")
-local U = require("lib.util")
-local OP = require("lib.object_positions")
+local CC = require("lib.csheet_constants")
+local CU = require("lib.csheet_util")
+local CP = require("lib.csheet_pose")
 
 --- Register tracker glyphs/images with Global (separate Lua VM). No-op if Global unavailable.
 local function pushTrackerDisplayToGlobal()
@@ -170,16 +168,16 @@ local function applyCsheetPageState(obj, state)
   if obj == nil or type(state) ~= "string" then
     return false
   end
-  local entry = C.ObjectPositions.CSHEET_PAGE
-  local posData = OP.resolveStatePose(obj, entry, state)
+  local entry = CC.ObjectPositions.CSHEET_PAGE
+  local posData = CP.resolveStatePose(entry, state)
   if type(posData) ~= "table" or type(posData.position) ~= "table" then
     return false
   end
-  local targetPos = OP.mergePosition(obj, posData.position)
+  local targetPos = CP.mergePosition(obj, posData.position)
   local visible = (targetPos.y >= 0)
-  local duration, delay = OP.resolveTransitionTiming(posData, 0, 0)
-  OP.applyResolvedPose(obj, posData, 0, 0)
-  U.delay(function()
+  local duration, delay = CP.resolveTransitionTiming(posData, 0, 0)
+  CP.applyResolvedPose(obj, posData, 0, 0)
+  CU.delay(function()
     obj.interactable = visible
     if visible then
       obj.setInvisibleTo({})
@@ -196,8 +194,8 @@ end
 --- Uses midpoint between configured on/off Y values when available.
 --- @return number
 local function getCsheetDisableThresholdY()
-  local onPos = C.ObjectPositions and C.ObjectPositions.CSHEET_PAGE and C.ObjectPositions.CSHEET_PAGE.on
-  local offPos = C.ObjectPositions and C.ObjectPositions.CSHEET_PAGE and C.ObjectPositions.CSHEET_PAGE.off
+  local onPos = CC.ObjectPositions and CC.ObjectPositions.CSHEET_PAGE and CC.ObjectPositions.CSHEET_PAGE.on
+  local offPos = CC.ObjectPositions and CC.ObjectPositions.CSHEET_PAGE and CC.ObjectPositions.CSHEET_PAGE.off
   local onY = type(onPos) == "table" and type(onPos.position) == "table" and tonumber(onPos.position.y) or nil
   local offY = type(offPos) == "table" and type(offPos.position) == "table" and tonumber(offPos.position.y) or nil
   if onY ~= nil and offY ~= nil then
@@ -255,7 +253,7 @@ local function navigateCsheetPagePair(colorUpper, outFirst, outSecond, inFirst, 
   local inA = resolveCsheetPageObject(colorUpper, inFirst)
   local inB = resolveCsheetPageObject(colorUpper, inSecond)
   if inA == nil or inB == nil then
-    U.AlertGM(
+    CU.AlertGM(
       string.format(
         "Character sheet (%s): cannot show pages %d and %d (one or both missing).",
         colorUpper,
@@ -278,7 +276,7 @@ local function navigateCsheetPagePair(colorUpper, outFirst, outSecond, inFirst, 
 end
 
 --- Snap this sheet to the same x/z and rotation as page 1 (odd index) or page 2 (even index) for this seat color.
---- Pages 1–2 use the "on" y from `C.ObjectPositions.CSHEET_PAGE`; all others use the "off" y (hidden below table).
+--- Pages 1–2 use the "on" y from `CC.ObjectPositions.CSHEET_PAGE`; all others use the "off" y (hidden below table).
 --- Runs once per object; after success adds `CSHEET_ALIGNMENT_DONE_TAG` so reloads keep saved transforms.
 local function applyCsheetLayoutFromFirstSpread()
   if sheetHasAlignmentDoneTag() then
@@ -294,8 +292,8 @@ local function applyCsheetLayoutFromFirstSpread()
     print(string.format("[ui_csheet] Layout reference missing: %s page %d", colorUpper, refPage))
     return
   end
-  local onPos = C.ObjectPositions.CSHEET_PAGE.on
-  local offPos = C.ObjectPositions.CSHEET_PAGE.off
+  local onPos = CC.ObjectPositions.CSHEET_PAGE.on
+  local offPos = CC.ObjectPositions.CSHEET_PAGE.off
   if type(onPos) ~= "table" or type(onPos.position) ~= "table" or type(offPos) ~= "table" or type(offPos.position) ~= "table" then
     return
   end
@@ -313,22 +311,19 @@ local function applyCsheetLayoutFromFirstSpread()
   self.addTag(CSHEET_ALIGNMENT_DONE_TAG)
 end
 
+--- Resolve steam id for this seat via Global (object bundle must not depend on lib.constants).
 --- @return boolean
 local function resolvePlayer()
   if not seatColor then
     return false
   end
-  -- Prefer Global lookup: object bundles can lag `lib.constants`; names use UPPERCASE from TTS objects.
-  if Global ~= nil and type(Global.call) == "function" then
-    local pid = Global.call("GlobalResolveSheetPlayerID", seatColor)
-    if type(pid) == "string" and pid ~= "" then
-      playerID = pid
-      return true
-    end
+  if Global == nil or type(Global.call) ~= "function" then
+    playerID = nil
+    return false
   end
-  local pid2 = C.GetPlayerIDOrNil(seatColor)
-  if type(pid2) == "string" then
-    playerID = pid2
+  local pid = Global.call("GlobalResolveSheetPlayerID", seatColor)
+  if type(pid) == "string" and pid ~= "" then
+    playerID = pid
     return true
   end
   playerID = nil
@@ -415,19 +410,21 @@ local function applyPage3DynamicXml()
     return
   end
   resolvePlayer()
-  if playerID == nil or playerID == C.StorytellerID then
+  if playerID == nil or playerID == CC.StorytellerID then
     return
   end
   local pd = getMergedPlayerDataFromGlobal(playerID)
   if type(pd) ~= "table" or type(pd.stats) ~= "table" then
     return
   end
-  local fp = PAGE3.fingerprintPage3Stats(pd.stats)
+  local fp = Global.call("GlobalFingerprintCsheetPage3", pd.stats)
   if fp == lastPage3XmlFingerprint then
     return
   end
-  -- `divider_flaws_<Color>` and layout use seat color from nickname `CSHEET_PAGE_<n>_<COLOR>` (see `parseSheetObjectName`).
-  local xml = PAGE3.buildPage3DocumentXml(pd.stats, seatColor)
+  local xml = Global.call("GlobalBuildCsheetPage3Xml", pd.stats, seatColor)
+  if type(xml) ~= "string" or xml == "" then
+    return
+  end
   self.UI.setXml(xml)
   lastPage3XmlFingerprint = fp
   Wait.frames(function()
@@ -457,7 +454,7 @@ end
 function refreshCharacterSheetUi()
   syncSheetContextFromObjectName()
   resolvePlayer()
-  if playerID == nil or playerID == C.StorytellerID or pageNum == nil then
+  if playerID == nil or playerID == CC.StorytellerID or pageNum == nil then
     return
   end
 
@@ -468,9 +465,13 @@ function refreshCharacterSheetUi()
 
   local stats = pd.stats
   local conditions = pd.conditions
-  -- Page 1: attributes, skills, trackers, blood potency, humanity; not discipline dot-lines.
-  -- Page 2: discipline dot-lines only (`P.collectSheetImageUpdates` filters by pageNum).
-  local updates = P.collectSheetImageUpdates(stats, conditions, pageNum)
+  local updates = nil
+  if Global ~= nil and type(Global.call) == "function" then
+    updates = Global.call("GlobalCollectSheetImageUpdates", stats, conditions, pageNum)
+  end
+  if type(updates) ~= "table" then
+    updates = {}
+  end
   applyUiUpdates(updates)
 
   if pageNum == 1 and self.UI then

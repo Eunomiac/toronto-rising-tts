@@ -1,0 +1,122 @@
+--[[
+  Character sheet pose helpers for object scripts (no core.state / lib.object_positions).
+
+  CSHEET_PAGE entries only use simple on/off y positions — no anchors or radial layout.
+
+  Agent guidance: .dev/TTS_BUNDLING_SETUP.md
+]]
+
+local CU = require("lib.csheet_util")
+
+local CP = {}
+
+CP.DEFAULT_TRANSITION_DURATION = 0
+
+--- @param obj Object
+--- @param partialPos table|nil
+--- @return Vector
+function CP.mergePosition(obj, partialPos)
+  partialPos = partialPos or {}
+  local currentPos = obj.getPosition()
+  return currentPos:copy():set(partialPos.x, partialPos.y, partialPos.z)
+end
+
+--- @param entry table
+--- @param state string
+--- @return table|nil
+function CP.resolveStatePose(entry, state)
+  if type(entry) ~= "table" or type(state) ~= "string" then
+    return nil
+  end
+  local pose = entry[state]
+  if type(pose) ~= "table" then
+    return nil
+  end
+  return {
+    position = pose.position,
+    scale = pose.scale,
+    rotation = pose.rotation,
+    isLocked = pose.isLocked,
+    isHidden = pose.isHidden,
+    duration = pose.duration,
+    delay = pose.delay,
+    transitionDuration = pose.transitionDuration,
+    transitionDelay = pose.transitionDelay,
+  }
+end
+
+--- @param pose table|nil
+--- @param baseDuration number|nil
+--- @param baseDelay number|nil
+--- @return number duration
+--- @return number delay
+function CP.resolveTransitionTiming(pose, baseDuration, baseDelay)
+  local duration = type(baseDuration) == "number" and baseDuration or CP.DEFAULT_TRANSITION_DURATION
+  local delay = type(baseDelay) == "number" and baseDelay or 0
+  if type(pose) == "table" then
+    if type(pose.duration) == "number" then
+      duration = pose.duration
+    elseif type(pose.transitionDuration) == "number" then
+      duration = pose.transitionDuration
+    end
+    if type(pose.delay) == "number" then
+      delay = delay + pose.delay
+    elseif type(pose.transitionDelay) == "number" then
+      delay = delay + pose.transitionDelay
+    end
+  end
+  if duration < 0 then
+    duration = 0
+  end
+  if delay < 0 then
+    delay = 0
+  end
+  return duration, delay
+end
+
+--- Apply resolved pose (instant when duration is 0 — csheet default).
+--- @param obj Object
+--- @param pose table
+--- @param baseDuration number|nil
+--- @param baseDelay number|nil
+--- @return number duration
+--- @return number delay
+function CP.applyResolvedPose(obj, pose, baseDuration, baseDelay)
+  if type(obj) ~= "userdata" or type(pose) ~= "table" then
+    return 0, 0
+  end
+
+  local duration, delay = CP.resolveTransitionTiming(pose, baseDuration, baseDelay)
+
+  local function run()
+    if pose.position ~= nil then
+      local targetPos = CP.mergePosition(obj, pose.position)
+      obj.setPosition(targetPos)
+    end
+    if pose.rotation ~= nil then
+      local currentRot = obj.getRotation()
+      local partialRot = pose.rotation
+      obj.setRotation(currentRot:copy():set(partialRot.x, partialRot.y, partialRot.z))
+    end
+    if pose.scale ~= nil then
+      obj.setScale(Vector(pose.scale))
+    end
+    if type(pose.isLocked) == "boolean" then
+      obj.setLock(pose.isLocked)
+    end
+    if pose.isHidden == true then
+      obj.setInvisibleTo({"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey", "Black"})
+    elseif pose.isHidden == false then
+      obj.setInvisibleTo({})
+    end
+  end
+
+  if delay > 0 then
+    CU.delay(run, delay)
+  else
+    run()
+  end
+  return duration, delay
+end
+
+return CP

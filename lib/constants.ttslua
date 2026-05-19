@@ -2311,6 +2311,8 @@ C.Districts = {
 
 -- Sites
 -- Optional `isSilent = true`: full ambient mute (background, location ambience, weather); featured music may still be played via Storyteller action. Merge with `Soundscape.applyContext(Soundscape.contextFromSite(site))`.
+-- Optional `isTopFogActive` (boolean): when set, `SceneLibrary.applySiteTopFogToSessionScene` writes `sessionScene.isTopFogActive` on location apply; when omitted, indoor sites default fog off and outdoor on.
+-- `weatherDucking` (number 0..1): indoor weather volume multiplier passed through `Soundscape.applyContext` (outdoor always uses catalog outdoor multiplier).
 
 -- NOTE for Asset Import Functionality:
 -- Each `C.Sites` entry uses `localImage` (absolute `file:///...` or OS path to WEBP on disk) and `image` (Custom UI asset

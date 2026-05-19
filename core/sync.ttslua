@@ -108,6 +108,7 @@ local function reconcileSeatPresentationFromState(opts)
     opts = type(opts) == "table" and opts or {}
     callIfFunction(L.reconcileAllPlayers, opts)
     callIfFunction(HO.syncAll)
+    callIfFunction(Scenes.reconcileTopFogFromState, opts)
 end
 
 --- Bootstrap retry: deferred light init, seat presentation, overlay-only UI refresh.
@@ -239,6 +240,10 @@ function Sync.full(opts)
     callIfFunction(NPCS.reconcileSessionSceneNpcWorldFromState, {
         deferUiRefresh = true,
         forceSessionNpcWorld = force,
+    })
+    callIfFunction(NPCS.reconcileOccupiedNpcSeatsFromState, {
+        deferUiRefresh = true,
+        forceOccupiedNpcSeats = force,
     })
 
     if not didBootstrapFullSync then

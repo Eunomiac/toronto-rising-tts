@@ -13,6 +13,9 @@
     "custom-ui-assets:manifest-sites:batch": "node .tools/custom-ui-assets/build-upload-manifest-from-sites-constants.js --constants lib/constants.ttslua --batch --out .dev/custom-ui-assets/manifest.json --luaOut .dev/custom-ui-assets/manifest.lua --moduleOut lib/custom_ui_upload_manifest.ttslua",
     "custom-ui-assets:pipeline": "node .tools/custom-ui-assets/run-custom-ui-assets-pipeline.js",
     "custom-ui-assets:merge": "node .tools/custom-ui-assets/merge-custom-ui-assets.js",
+    "tts-save:inject-global": "node .tools/tts-save/inject-bundled-global-from-save-name.js",
+    "tts-save:measure-bundles": "node .tools/tts-save/measure-bundles.js",
+    "tts-save:bundle-csheet-sample": "node .tools/tts-save/bundle-csheet-sample.js",
     "tts-bridge:build": "tsc -p .tools/tts-bridge/tsconfig.build.json",
     "tts-bridge:test": "vitest run --config .tools/tts-bridge/vitest.config.ts",
     "tts-bridge:run-sequence-test": "npm run tts-bridge:build && node .tools/tts-bridge/scripts/run-sequence-live-test.mjs",
@@ -47,6 +50,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
+    "luabundle": "^1.7.0",
     "typescript": "^6.0.2",
     "vitest": "^4.1.2"
   },

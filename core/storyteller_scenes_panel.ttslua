@@ -475,6 +475,11 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
     S.validateState()
     PresentDayClock.markApplied(K)
 
+    -- Applying a library scene starts in-world play at that bundle; overlay is Play/Downtime-only.
+    if S.getStateVal("currentPhase") == C.Phases.SESSION_START then
+        S.setCurrentPhase(C.Phases.PLAY)
+    end
+
     local tk = S.getStateVal("sessionScene", "tableKey")
     if type(tk) == "string" then
         tk = string.gsub(string.gsub(tk, "^%s+", ""), "%s+$", "")
@@ -699,7 +704,16 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
     S.setStateVal(dKey ~= "" and dKey or nil, "sessionScene", "districtKey")
     S.setStateVal(sKey, "sessionScene", "siteKey")
 
+    if SceneLibrary and type(SceneLibrary.applySiteTopFogToSessionScene) == "function" then
+        SceneLibrary.applySiteTopFogToSessionScene(sKey)
+    end
+
     local ctx = SS.contextFromSite(site, sKey)
+    if SS.mergeSessionSceneNarrativeIntoContext ~= nil then
+        ctx = SS.mergeSessionSceneNarrativeIntoContext(S.getStateVal("sessionScene"), ctx)
+    elseif SS.withDefaultBackgroundMusic ~= nil then
+        ctx = SS.withDefaultBackgroundMusic(ctx)
+    end
     local result = SS.applyContext(ctx)
     if SS.markReconciledToCurrentState ~= nil then
         SS.markReconciledToCurrentState()

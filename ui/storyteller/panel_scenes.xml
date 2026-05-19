@@ -26,7 +26,7 @@
     </HorizontalLayout>
 
     <Text class="hud_storyteller_label">Seat presence (narrative)</Text>
-    <Text fontSize="9" color="#AAAAAA">When `enforceActiveSeatLighting` is on, explicit “off” dims that seat. Neutral leaves layout-only rules.</Text>
+    <Text fontSize="9" color="#AAAAAA">Absent seats (grey) turn seat spotlights off. Neutral leaves layout-only presence rules.</Text>
     <HorizontalLayout class="hud_storyteller_button_row" spacing="3" childForceExpandWidth="false">
       <Button id="scenes_seat_Brown" text="Brown" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
       <Button id="scenes_seat_Orange" text="Orange" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />

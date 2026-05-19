@@ -1,0 +1,60 @@
+--[[
+  Minimal utilities for character sheet object scripts (no lib.util dependency).
+
+  Agent guidance: .dev/TTS_BUNDLING_SETUP.md
+]]
+
+local CU = {}
+
+--- @return Player|nil
+local function getHostPlayer()
+  if Player == nil or type(Player.getPlayers) ~= "function" then
+    return nil
+  end
+  local players = Player.getPlayers()
+  if type(players) ~= "table" then
+    return nil
+  end
+  for _, p in ipairs(players) do
+    if p ~= nil and p.host == true then
+      return p
+    end
+  end
+  if Player.Brown ~= nil then
+    return Player.Brown
+  end
+  return nil
+end
+
+--- Schedules a one-shot callback after `seconds`.
+--- @param callback function
+--- @param seconds number|nil
+--- @return any
+function CU.delay(callback, seconds)
+  if type(callback) ~= "function" then
+    error("csheet_util.delay: callback must be a function")
+  end
+  if seconds == nil then
+    seconds = 0
+  end
+  return Wait.time(callback, seconds)
+end
+
+--- Alerts the host (GM) with a message.
+--- @param message string
+--- @param color Color|nil
+function CU.AlertGM(message, color)
+  if color == nil then
+    color = Color(1, 1, 0)
+  end
+  local host = getHostPlayer()
+  if host ~= nil and type(host.color) == "string" then
+    broadcastToColor(message, host.color, color)
+    return
+  end
+  if broadcastToAll ~= nil then
+    broadcastToAll(message, color)
+  end
+end
+
+return CU

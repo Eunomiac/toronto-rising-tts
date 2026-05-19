@@ -384,6 +384,34 @@ local function setPooledSpotlightHidden(lit, hidden)
     end
 end
 
+--- NPC figurines stay TTS-locked at all times (players cannot drag); `rec.locked` is Storyteller "pin" for script moves only.
+--- @param fig Object|nil
+local function ensureNpcFigurinePhysicsLocked(fig)
+    if U.isGameObject(fig) and fig.setLock ~= nil then
+        fig.setLock(true)
+    end
+end
+
+--- Figurine scale + tooltip and paired spotlight scale (preload = small, tooltips off; active areas/seats = full, tooltips on).
+--- @param fig Object|nil
+--- @param lit Object|nil
+--- @param areaKey string
+local function applyNpcPairPhysicalPresentation(fig, lit, areaKey)
+    local isPreload = (areaKey == PRELOAD_AREA_KEY)
+    local fs = isPreload and NPC_PRELOAD_FIGURE_SCALE or NPC_ACTIVE_FIGURE_SCALE
+    local ls = isPreload and NPC_PRELOAD_LIGHT_SCALE or NPC_ACTIVE_LIGHT_SCALE
+    if U.isGameObject(fig) and fig.setScale ~= nil then
+        fig.setScale(Vector(fs, fs, fs))
+        if fig.tooltip ~= nil then
+            fig.tooltip = not isPreload
+        end
+    end
+    if U.isGameObject(lit) and lit.setScale ~= nil then
+        lit.setScale(Vector(ls, ls, ls))
+    end
+    ensureNpcFigurinePhysicsLocked(fig)
+end
+
 --- Swap pooled figurine tags for table-seat layout (`SEAT_FIGURE` role); hide paired area spotlight.
 --- @param fig Object
 --- @param lit Object|nil
@@ -457,34 +485,6 @@ local function clearNpcFigurineSeatIdentity(fig, lit)
         fig.setTags(out)
     end
     setPooledSpotlightHidden(lit, false)
-end
-
---- NPC figurines stay TTS-locked at all times (players cannot drag); `rec.locked` is Storyteller "pin" for script moves only.
---- @param fig Object|nil
-local function ensureNpcFigurinePhysicsLocked(fig)
-    if U.isGameObject(fig) and fig.setLock ~= nil then
-        fig.setLock(true)
-    end
-end
-
---- Figurine scale + tooltip and paired spotlight scale (preload = small, tooltips off; active areas/seats = full, tooltips on).
---- @param fig Object|nil
---- @param lit Object|nil
---- @param areaKey string
-local function applyNpcPairPhysicalPresentation(fig, lit, areaKey)
-    local isPreload = (areaKey == PRELOAD_AREA_KEY)
-    local fs = isPreload and NPC_PRELOAD_FIGURE_SCALE or NPC_ACTIVE_FIGURE_SCALE
-    local ls = isPreload and NPC_PRELOAD_LIGHT_SCALE or NPC_ACTIVE_LIGHT_SCALE
-    if U.isGameObject(fig) and fig.setScale ~= nil then
-        fig.setScale(Vector(fs, fs, fs))
-        if fig.tooltip ~= nil then
-            fig.tooltip = not isPreload
-        end
-    end
-    if U.isGameObject(lit) and lit.setScale ~= nil then
-        lit.setScale(Vector(ls, ls, ls))
-    end
-    ensureNpcFigurinePhysicsLocked(fig)
 end
 
 --- @param rec table|nil
@@ -1416,6 +1416,106 @@ function NPCS.reconcileSessionSceneNpcWorldFromState(opts)
     if deferUiRefresh and anyWork then
         NPCS.refreshStorytellerUIIfVisible()
         requestSeatLayoutSync()
+    end
+end
+
+--- Fingerprint of `seatLayout.occupiedNPCSlots` (from session `seatSlots` via `S.validateState`).
+--- @return string
+local function occupiedNpcSeatsFingerprint()
+    local lines = {}
+    local occupied = getOccupiedNpcSeatMap()
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local slotValue = occupied[seatKey]
+        if slotValue == false then
+            slotValue = ""
+        end
+        lines[#lines + 1] = seatKey .. "=" .. tostring(slotValue or "")
+    end
+    table.sort(lines)
+    return table.concat(lines, "\n")
+end
+
+local lastOccupiedNpcSeatsFingerprint = ""
+
+--- Places pooled NPC figurines into table seats from `seatLayout.occupiedNPCSlots`.
+--- Runs after `reconcileSessionSceneNpcWorldFromState` so session `byArea` stash does not leave seats empty.
+--- @param opts table|nil `deferUiRefresh`, `forceOccupiedNpcSeats` or `force` (bypass fingerprint)
+function NPCS.reconcileOccupiedNpcSeatsFromState(opts)
+    opts = U.Type(opts) == "table" and opts or {}
+    local force = opts.forceOccupiedNpcSeats == true or opts.force == true
+    local deferUiRefresh = opts.deferUiRefresh == true
+
+    local fp = occupiedNpcSeatsFingerprint()
+    if not force and fp == lastOccupiedNpcSeatsFingerprint then
+        return
+    end
+
+    local occupied = getOccupiedNpcSeatMap()
+    local anyWork = false
+    local allOk = true
+
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local desired = occupied[seatKey]
+        if type(desired) == "string" and desired ~= "" then
+            anyWork = true
+            local rec = getInstances()[desired]
+            local needsPlace = true
+            if U.Type(rec) == "table" and rec.seatedSeatKey == seatKey then
+                local fig = getObjectFromGUID(rec.figurineGuid or "")
+                if fig ~= nil then
+                    needsPlace = false
+                end
+            end
+            if needsPlace then
+                local ok, err = assignNpcToSeat(desired, seatKey)
+                if not ok then
+                    allOk = false
+                    print(
+                        "[NPCS] reconcileOccupiedNpcSeats: seat "
+                            .. tostring(seatKey)
+                            .. " for "
+                            .. tostring(desired)
+                            .. ": "
+                            .. tostring(err)
+                    )
+                end
+            else
+                -- State already seated; still run rotational layout so pose matches hand-zone anchor.
+                requestSeatLayoutSync()
+            end
+        else
+            local staleOccupant = nil
+            for name, rec in pairs(getInstances()) do
+                if U.Type(rec) == "table" and rec.seatedSeatKey == seatKey then
+                    staleOccupant = name
+                    break
+                end
+            end
+            if staleOccupant ~= nil then
+                anyWork = true
+                local ok, err = clearNpcSeat(seatKey)
+                if not ok then
+                    allOk = false
+                    print(
+                        "[NPCS] reconcileOccupiedNpcSeats: clear "
+                            .. tostring(seatKey)
+                            .. ": "
+                            .. tostring(err)
+                    )
+                end
+            end
+        end
+    end
+
+    if not anyWork or allOk then
+        lastOccupiedNpcSeatsFingerprint = fp
+    end
+
+    if anyWork then
+        requestSeatLayoutSync()
+        if deferUiRefresh then
+            NPCS.refreshStorytellerUIIfVisible()
+        end
     end
 end
 

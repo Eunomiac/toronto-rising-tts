@@ -273,6 +273,25 @@
         "panel": "shared",
         "focus": true
       }
+    },
+    {
+      "label": "TTS: Inject Bundled Global into Save JSON",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        ".tools/tts-save/inject-bundled-global-from-save-name.js",
+        "--saveName",
+        "${input:ttsSaveName}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      }
     }
   ],
   "inputs": [
@@ -296,6 +315,12 @@
       "id": "customUiAssetsSaveName",
       "type": "promptString",
       "description": "TTS save name or number (examples: 123, TS_Save_123, TS_Save_123.json)",
+      "default": "TS_Save_"
+    },
+    {
+      "id": "ttsSaveName",
+      "type": "promptString",
+      "description": "TTS save slot to patch (examples: 123, TS_Save_123). Requires .tts/bundled/Global.lua + Global.xml first.",
       "default": "TS_Save_"
     }
   ]

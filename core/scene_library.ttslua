@@ -318,6 +318,36 @@ end
 --- When `sceneLibrary.activeKey` names a row with `receivesLiveWrites`, deep-clone live `sessionScene` into that row.
 --- Invoked from `Sync.full` after reconcilers so one mutation batch ends with an up-to-date library mirror.
 --- Lazy-requires `core.state` to avoid cycles during `state` module initialization.
+--- Derives top fog from `C.Sites[siteKey]` and writes `sessionScene.isTopFogActive`.
+--- Explicit `site.isTopFogActive` wins; otherwise indoor sites default off, outdoor on.
+--- @param siteKey string|nil
+function SceneLibrary.applySiteTopFogToSessionScene(siteKey)
+    if type(siteKey) ~= "string" then
+        return
+    end
+    siteKey = string.gsub(string.gsub(siteKey, "^%s+", ""), "%s+$", "")
+    if siteKey == "" then
+        return
+    end
+    local site = C.Sites[siteKey]
+    if type(site) ~= "table" then
+        return
+    end
+    local fogActive = nil
+    if site.isTopFogActive == true or site.isTopFogActive == false then
+        fogActive = site.isTopFogActive
+    elseif site.isIndoors == true then
+        fogActive = false
+    elseif site.isIndoors == false then
+        fogActive = true
+    end
+    if fogActive == nil then
+        return
+    end
+    local S = require("core.state")
+    S.setStateVal(fogActive, "sessionScene", "isTopFogActive")
+end
+
 function SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()
     local S = require("core.state")
     local K = S.getStateVal("sceneLibrary", "activeKey")

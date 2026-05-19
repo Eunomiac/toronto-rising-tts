@@ -10,7 +10,7 @@
     only `gameStateOverlay_time` is updated; the date line updates when the calendar date changes.
     Weather panel (`gameStateOverlay_weather*`): `reconcileWeatherFromState()` parses the chronicle code via
     `ChronicleWeather.resolveHudForClock`; hidden when the current site is indoors with `weatherDucking == 0`.
-    Hour/day changes refresh weather text and call `applyScheduledWeather`.
+    Phase gating toggles `gameStateOverlay_timeAndLocation` and `gameStateOverlay_weather` (not `gameStateOverlay_root`).
 ]]
 
 local GameStateOverlay = {}
@@ -26,9 +26,14 @@ local tickerHandle = nil
 --- Fractional narrative minutes accumulated between integer minute updates (see `tickRealTimeClock`).
 local rtMinuteCarry = 0
 
---- Last pushed UI values to avoid redundant `UI.setValue` / attribute writes (hot path: RT tick).
+--- Last pushed UI text values to avoid redundant `UI.setValue` on hot paths (RT tick).
 local overlayTextCache = {}
-local overlayActiveCache = {}
+
+--- Last session-scene fingerprint; bust text cache when district/site/clock changes.
+local lastSessionSceneOverlayFingerprint = nil
+
+local OVERLAY_TIME_LOCATION_ID = "gameStateOverlay_timeAndLocation"
+local OVERLAY_WEATHER_ID = "gameStateOverlay_weather"
 
 local WEEKDAY_NAMES = {
     "Sunday",
@@ -86,18 +91,53 @@ local function pushOverlayActive(id, active)
     if UI == nil or UI.setAttribute == nil then
         return
     end
-    local nextAttr = active and "true" or "false"
-    if overlayActiveCache[id] == nextAttr then
-        return
-    end
-    U.setAttribute(id, "active", nextAttr)
-    overlayActiveCache[id] = nextAttr
+    -- Always write active flags (no cache): scene/phase changes must not be skipped after a prior hide.
+    U.setAttribute(id, "active", active and "true" or "false")
 end
 
---- Clear push caches so the next reconcile always applies (e.g. after hiding the overlay root).
-local function clearOverlayUiCaches()
+--- Build a cheap fingerprint for session scene fields that drive the center overlay.
+--- @return string
+local function sessionSceneOverlayFingerprint()
+    local dKey = S.getStateVal("sessionScene", "districtKey")
+    local sKey = S.getStateVal("sessionScene", "siteKey")
+    local ck = S.getStateVal("sessionScene", "clock")
+    if type(dKey) ~= "string" then
+        dKey = ""
+    end
+    if type(sKey) ~= "string" then
+        sKey = ""
+    end
+    local ckParts = { y = "", mo = "", d = "", h = "", m = "" }
+    if type(ck) == "table" then
+        ckParts.y = tostring(ck.year)
+        ckParts.mo = tostring(ck.month)
+        ckParts.d = tostring(ck.day)
+        ckParts.h = tostring(ck.hour)
+        ckParts.m = tostring(ck.minute)
+    end
+    return table.concat({
+        dKey,
+        sKey,
+        ckParts.y,
+        ckParts.mo,
+        ckParts.d,
+        ckParts.h,
+        ckParts.m,
+    }, "|")
+end
+
+--- Clear text push cache when session scene changes so location/date refresh always applies.
+local function bustTextCacheIfSessionSceneChanged()
+    local fp = sessionSceneOverlayFingerprint()
+    if fp ~= lastSessionSceneOverlayFingerprint then
+        lastSessionSceneOverlayFingerprint = fp
+        overlayTextCache = {}
+    end
+end
+
+--- Clear overlay text cache (e.g. after hiding panels for non-play phases).
+local function clearOverlayTextCache()
     overlayTextCache = {}
-    overlayActiveCache = {}
 end
 
 --- Narrative clock + location row are shown only when chronicle phase is in-world play (not session bookends).
@@ -297,16 +337,16 @@ function GameStateOverlay.reconcileWeatherFromState()
     end
 
     if not shouldShowNarrativeClockOnOverlay() then
-        pushOverlayActive("gameStateOverlay_weather", false)
+        pushOverlayActive(OVERLAY_WEATHER_ID, false)
         return
     end
 
     if shouldHideWeatherHudForCurrentSite() then
-        pushOverlayActive("gameStateOverlay_weather", false)
+        pushOverlayActive(OVERLAY_WEATHER_ID, false)
         return
     end
 
-    pushOverlayActive("gameStateOverlay_weather", true)
+    pushOverlayActive(OVERLAY_WEATHER_ID, true)
 
     local ck = S.getStateVal("sessionScene", "clock")
     if type(ck) ~= "table" then
@@ -372,15 +412,16 @@ function GameStateOverlay.reconcileFromState()
     end
 
     if not shouldShowNarrativeClockOnOverlay() then
-        pushOverlayActive("gameStateOverlay_root", false)
-        pushOverlayActive("gameStateOverlay_weather", false)
+        pushOverlayActive(OVERLAY_TIME_LOCATION_ID, false)
+        pushOverlayActive(OVERLAY_WEATHER_ID, false)
         pushOverlayText("gameStateOverlay_datetime", "")
         pushOverlayText("gameStateOverlay_time", "")
-        clearOverlayUiCaches()
+        clearOverlayTextCache()
         return
     end
 
-    pushOverlayActive("gameStateOverlay_root", true)
+    bustTextCacheIfSessionSceneChanged()
+    pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
 
     reconcileLocationRowFromState()
 
@@ -416,12 +457,12 @@ local function reconcileOverlayAfterClockTick(prevY, prevMo, prevD, prevH, y, mo
     end
 
     if not shouldShowNarrativeClockOnOverlay() then
-        pushOverlayActive("gameStateOverlay_root", false)
-        clearOverlayUiCaches()
+        pushOverlayActive(OVERLAY_TIME_LOCATION_ID, false)
+        clearOverlayTextCache()
         return
     end
 
-    pushOverlayActive("gameStateOverlay_root", true)
+    pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
 
     local dateChanged = prevY ~= y or prevMo ~= mo or prevD ~= d
     if dateChanged then
