@@ -1,5 +1,19 @@
 # Performance Audit — Sync / World / UI Paths
 
+## Implementation status (2026-05-19)
+
+| Rank | Topic | Status |
+| --- | --- | --- |
+| 1 | `Sync.player` duplicate overlay/HUD | **Done** — `HO.reconcileForSeat` / `HUP.reconcileForSeat`; scoped `UpdateUIDisplays`; no duplicate `overlays` / all-player `playerHud` |
+| 2 | Startup bootstrap stacks | **Done** — unified `BOOTSTRAP_RETRY_OFFSETS_SEC` coordinator in `core/sync.ttslua`; `NPCS.registerRestoredInstancesFromState` split from batched preload |
+| 3 | Seat lighting redundant lerps | **Partial** — `lastReconciledModeByRef` + `L.invalidateReconcileCache()` + `force` on reconcile; 2s default lerp unchanged (measure before tuning) |
+| 4 | Soundscape deferred duplicates | **Done** — `pendingSoundscapeReconcileFingerprint` + `soundscapeReconcileGeneration`; fade-step metrics |
+| 5 | NPC preload / scene world | **Partial** — batched `ensureAllNpcsPreloaded`; scene reconcile fingerprint unchanged; `npc_preload` agent metrics |
+| 6 | `UpdateUIDisplays` broad deltas | **Done** — `delta.colors` seat filter |
+| 7 | Map/HUD scoped refresh | **Deferred** — cross-seat HUD split (`reconcileSeatHud` / `reconcileCrossSeatRows`) not started |
+
+Opt-in metrics: `Sync.setMetricsEnabled(true)` or `gameState.debug.syncMetricsEnabled` → `U.emitForAgent("sync_metrics", …)`. See [`.dev/TTS_MCP.md`](../TTS_MCP.md).
+
 ## Scope and guardrails
 
 This audit ranks expensive or repeatedly-triggered paths by static **impact x frequency hypotheses**. It is based on source reading and bounded ripgrep of `Sync.full(`, `Sync.player(`, `UpdateUIDisplays(`, `HO.syncAll(`, `L.reconcileAllPlayers(`, `U.scheduleAtOffsets`, `U.delay`, and NPC preload/spawn paths. Runtime counters should validate these rankings before behavior-tuning work lands.
@@ -250,4 +264,3 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 4. **Structural:** Add `HO.reconcileForSeat` / `HUP.reconcileForSeat`, then wire `Sync.player` to those.
 5. **Structural:** Add lighting applied-fingerprint cache with explicit invalidation/force semantics.
 6. **Structural:** Batch NPC preload spawns and split load restoration from missing-pool creation.
-

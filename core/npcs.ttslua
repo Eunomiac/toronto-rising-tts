@@ -1395,7 +1395,7 @@ function NPCS.reconcileSessionSceneNpcWorldFromState(opts)
     if npcWorldHasPlacementIntent() then
         stashAllNpcFigurinesForSessionSceneLayout()
         --- Global policy: every `NPCS.characters` entry lives in the off-table preload pool before stage placement.
-        NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true })
+        NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true, immediate = true })
     end
 
     local anyWork = false
@@ -1920,11 +1920,24 @@ function NPCS.unseatNpc(npcName)
     return true, nil
 end
 
---- Sanitize `npcs.instances` and register NPC spotlight rows on `L.LIGHTMODES` when both objects exist.
+--- How many missing preload spawns to issue per scheduled batch tick.
+local PRELOAD_SPAWN_BATCH_SIZE = 2
+--- Delay between preload spawn batches (seconds).
+local PRELOAD_SPAWN_BATCH_DELAY_SEC = 0.12
+
+--- @param payload table
+local function emitNpcPreloadMetrics(payload)
+    if type(U.emitForAgent) ~= "function" then
+        return
+    end
+    U.emitForAgent("npc_preload", payload)
+end
+
+--- Sanitize `npcs.instances`, register spotlights, and repair seated NPC rows from saved state (no preload spawns).
 --- Call after `S.InitializeGameState`, before `L.InitLights`. Orphan `gameState.lights` keys are pruned by `L.cleanupLightsState`.
 --- IMPORTANT: Never drop instance rows when `getObjectFromGUID` is nil on the first onLoad frame — objects can
 --- appear slightly later; dropping them removed all NPC state and made Storyteller buttons no-ops.
-function NPCS.restoreAfterStateLoad()
+function NPCS.registerRestoredInstancesFromState()
     local inst = getInstances()
     local cleaned = {}
     for name, rec in pairs(inst) do
@@ -1972,30 +1985,90 @@ function NPCS.restoreAfterStateLoad()
         end
     end
     requestSeatLayoutSync()
+end
+
+--- Register restored instances and warm the preload pool (save/load bootstrap entry point).
+function NPCS.restoreAfterStateLoad()
+    NPCS.registerRestoredInstancesFromState()
     NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true })
 end
 
---- Spawn missing `NPCS.characters` entries into the under-table preload pool (immediate; safe after save restore).
---- @param opts table|nil `deferUiRefresh`
+--- Spawn missing `NPCS.characters` entries into the under-table preload pool.
+--- @param opts table|nil `deferUiRefresh`, `immediate` (when true, spawn all missing in one pass — required before session scene placement)
 function NPCS.ensureAllNpcsPreloaded(opts)
     ensurePreloadLayoutCapacity()
     opts = U.Type(opts) == "table" and opts or {}
     local names = U.getKeys(NPCS.characters or {})
     table.sort(names)
-    local anySpawn = false
+
+    local missing = {}
     for _, name in ipairs(names) do
         if validateNpcNameKey(name) and getInstances()[name] == nil then
-            anySpawn = true
+            missing[#missing + 1] = name
+        end
+    end
+
+    emitNpcPreloadMetrics({
+        phase = "start",
+        characterCount = #names,
+        missingCount = #missing,
+        batchSize = opts.immediate == true and #missing or PRELOAD_SPAWN_BATCH_SIZE,
+        immediate = opts.immediate == true,
+    })
+
+    if #missing == 0 then
+        return
+    end
+
+    local function afterSpawns(spawnPairsIssued)
+        emitNpcPreloadMetrics({
+            phase = "complete",
+            characterCount = #names,
+            missingCount = #missing,
+            spawnPairsIssued = spawnPairsIssued,
+            immediate = opts.immediate == true,
+        })
+        if opts.deferUiRefresh == true then
+            NPCS.refreshStorytellerUIIfVisible()
+            requestSeatLayoutSync()
+        end
+    end
+
+    if opts.immediate == true then
+        local spawnPairsIssued = 0
+        for _, name in ipairs(missing) do
             local ok, err = NPCS.ensureNpcInPreloadZone(name, { deferUiRefresh = true, skipSeatSync = true })
+            spawnPairsIssued = spawnPairsIssued + 1
             if not ok then
                 print("[NPCS] ensureAllNpcsPreloaded failed for " .. tostring(name) .. ": " .. tostring(err))
             end
         end
+        afterSpawns(spawnPairsIssued)
+        return
     end
-    if opts.deferUiRefresh == true and anySpawn then
-        NPCS.refreshStorytellerUIIfVisible()
-        requestSeatLayoutSync()
+
+    local spawnIndex = 1
+    local spawnPairsIssued = 0
+
+    local function spawnNextBatch()
+        local batchEnd = math.min(spawnIndex + PRELOAD_SPAWN_BATCH_SIZE - 1, #missing)
+        for i = spawnIndex, batchEnd do
+            local name = missing[i]
+            local ok, err = NPCS.ensureNpcInPreloadZone(name, { deferUiRefresh = true, skipSeatSync = true })
+            spawnPairsIssued = spawnPairsIssued + 1
+            if not ok then
+                print("[NPCS] ensureAllNpcsPreloaded failed for " .. tostring(name) .. ": " .. tostring(err))
+            end
+        end
+        spawnIndex = batchEnd + 1
+        if spawnIndex <= #missing then
+            U.delay(spawnNextBatch, PRELOAD_SPAWN_BATCH_DELAY_SEC)
+        else
+            afterSpawns(spawnPairsIssued)
+        end
     end
+
+    spawnNextBatch()
 end
 
 --- Escape text for XML body.

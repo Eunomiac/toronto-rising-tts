@@ -12,6 +12,20 @@ function readRepoFile(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), "utf8");
 }
 
+test("soundscape reconcileFromState guards duplicate deferred apply", () => {
+  const source = readRepoFile("core/soundscape.ttslua");
+
+  [
+    "pendingSoundscapeReconcileFingerprint",
+    "soundscapeReconcileGeneration",
+    "myGeneration ~= soundscapeReconcileGeneration",
+    "pendingSoundscapeReconcileFingerprint == desiredFingerprint",
+    "function Soundscape.consumeReconcileFadeStepsScheduled()",
+  ].forEach((needle) => {
+    assert.ok(source.includes(needle), `missing deferred reconcile guard: ${needle}`);
+  });
+});
+
 test("soundscape runtime module exposes the planned API", () => {
   const source = readRepoFile("core/soundscape.ttslua");
 

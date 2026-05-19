@@ -4,17 +4,13 @@
     Thin coordination layer for state-driven reconciliation.
     This module intentionally contains no low-level business logic; it only
     delegates to existing domain modules.
-
-    Step 1 scope:
-    - Introduce the Sync module API surface.
-    - Delegate to existing functions where available.
-    - Do not change existing call sites yet.
 ]]
 
 local Sync = {}
 
 local U = require("lib.util")
 local C = require("lib.constants")
+local S = require("core.state")
 local L = require("core.lighting")
 local Scenes = require("core.scenes")
 local Soundscape = require("core.soundscape")
@@ -22,7 +18,11 @@ local NPCS = require("core.npcs")
 local SceneLibrary = require("core.scene_library")
 local HUDP = require("core.hud_player")
 local HO = require("core.hud_overlays")
+local HUP = require("core.hud_hunger_pulse")
+
 local didBootstrapFullSync = false
+--- Incremented when a new bootstrap retry schedule starts; stale callbacks no-op.
+local bootstrapRetryGeneration = 0
 
 --- UI sections refreshed after `Sync.full` when `force` is false — omits `overlays` because `HO.syncAll` already ran.
 --- Includes `gameStateOverlay` so district/site + narrative clock stay aligned after every `Sync.full` incremental pass.
@@ -38,6 +38,18 @@ local SYNC_INCREMENTAL_UI_DELTA = {
     npcAdminButton = true,
 }
 
+--- Offsets for unified bootstrap seat + overlay retries (lights deferred init + presentation + overlay UI).
+local BOOTSTRAP_RETRY_OFFSETS_SEC = { 0.35, 1.0, 1.5, 2.5, 3.0, 5.0, 8.0 }
+
+--- Opt-in via `Sync.setMetricsEnabled(true)` or `gameState.debug.syncMetricsEnabled`.
+Sync.metricsEnabled = false
+
+--- Enable or disable `sync_metrics` agent lines from this module.
+--- @param enabled boolean
+function Sync.setMetricsEnabled(enabled)
+    Sync.metricsEnabled = enabled == true
+end
+
 --- Safe delegate helper for optional function calls.
 --- @param fn any
 --- @param ... any
@@ -48,54 +60,120 @@ local function callIfFunction(fn, ...)
     return nil
 end
 
+--- @return boolean
+local function syncMetricsEnabled()
+    if Sync.metricsEnabled == true then
+        return true
+    end
+    local dbg = S.getStateVal("debug")
+    if type(dbg) == "table" and dbg.syncMetricsEnabled == true then
+        return true
+    end
+    return false
+end
+
+--- @param payload table
+local function emitSyncMetrics(payload)
+    if not syncMetricsEnabled() then
+        return
+    end
+    if type(U.emitForAgent) ~= "function" then
+        return
+    end
+    U.emitForAgent("sync_metrics", payload)
+end
+
+--- @param pass string
+--- @param t0 number os.clock at pass start
+--- @param fields table|nil extra counters
+local function finishSyncMetrics(pass, t0, fields)
+    local payload = {
+        pass = pass,
+        elapsedSec = os.clock() - t0,
+        bootstrap = not didBootstrapFullSync,
+    }
+    if type(fields) == "table" then
+        for k, v in pairs(fields) do
+            payload[k] = v
+        end
+    end
+    if type(Soundscape.consumeReconcileFadeStepsScheduled) == "function" then
+        payload.soundscapeFadeSteps = Soundscape.consumeReconcileFadeStepsScheduled()
+    end
+    emitSyncMetrics(payload)
+end
+
 --- Reconcile seat-light and hunger-overlay state from persisted game state.
--- Used by runtime sync and by bootstrap deferred retries so late-spawned
--- light objects converge to HUNGRY/STANDARD correctly without manual Sync All.
-local function reconcileSeatPresentationFromState()
-    callIfFunction(L.reconcileAllPlayers)
-    -- `HO.syncAll` ends with `HUP.syncHungerPulseAll`; do not duplicate pulse work here.
+--- @param opts table|nil `{ force = boolean? }` forwarded to `L.reconcileAllPlayers`
+local function reconcileSeatPresentationFromState(opts)
+    opts = type(opts) == "table" and opts or {}
+    callIfFunction(L.reconcileAllPlayers, opts)
     callIfFunction(HO.syncAll)
 end
 
---- Reconcile one player scope (thin wrapper over existing behavior).
+--- Bootstrap retry: deferred light init, seat presentation, overlay-only UI refresh.
+--- @param passIndex number 1-based index into `BOOTSTRAP_RETRY_OFFSETS_SEC`
+--- @param generation number schedule generation captured at schedule time
+local function runBootstrapRetryTick(passIndex, generation)
+    if generation ~= bootstrapRetryGeneration then
+        return
+    end
+    local t0 = os.clock()
+    callIfFunction(L.InitLightsDeferred)
+    reconcileSeatPresentationFromState({})
+    Sync.ui({ overlays = true })
+    finishSyncMetrics("bootstrap_retry", t0, {
+        passIndex = passIndex,
+        offsetSec = BOOTSTRAP_RETRY_OFFSETS_SEC[passIndex],
+    })
+end
+
+--- Schedules unified bootstrap retries (seat lights + overlays); replaces separate overlay/light stacks.
+local function scheduleBootstrapRetries()
+    bootstrapRetryGeneration = bootstrapRetryGeneration + 1
+    local generation = bootstrapRetryGeneration
+    local passIndex = 0
+    U.scheduleAtOffsets(function()
+        passIndex = passIndex + 1
+        runBootstrapRetryTick(passIndex, generation)
+    end, BOOTSTRAP_RETRY_OFFSETS_SEC)
+end
+
+--- Reconcile one player scope (per-seat lights, HUD, overlays, hunger pulse, storyteller stat row).
 --- @param color string Seat color (e.g., "Red")
 function Sync.player(color)
     if type(color) ~= "string" or color == "" then
         return
     end
 
-    -- Player light reconciliation now derives desired mode from state.
+    local t0 = os.clock()
+
     callIfFunction(L.reconcileForPlayer, color)
 
-    -- Player HUD refresh (currently delegated to global UpdateUIDisplays path).
-    -- If/when HUDP grows a dedicated reconcile API, this delegate can switch.
     local player = Player and Player[color] or nil
     if player ~= nil then
         callIfFunction(HUDP.updatePlayerUI, player, color)
     end
 
-    -- Overlays + hunger pulse are currently all-player APIs.
-    callIfFunction(HO.syncAll)
+    callIfFunction(HO.reconcileForSeat, color)
+    callIfFunction(HUP.reconcileForSeat, color)
 
-    -- Existing global UI refresh with deltas (if available in current context).
     if type(UpdateUIDisplays) == "function" then
         UpdateUIDisplays({
             playerStats = true,
-            playerHud = true,
-            overlays = true
+            colors = { color },
         })
     end
+
+    finishSyncMetrics("player", t0, { color = color })
 end
 
 --- Shared lighting pass (scene-level and non-player-scoped light systems).
 --- @param opts table|nil forwarded to `Scenes.reconcileFromState` (e.g. `{ force = true }`).
 function Sync.lighting(opts)
     opts = type(opts) == "table" and opts or {}
-    -- Scene/ambient/non-player lighting writes are reconciler-owned.
     callIfFunction(Scenes.reconcileFromState, opts)
     callIfFunction(Scenes.reconcileTopFogFromState, opts)
-
-    -- Preserve current light initialization path as a compatible delegate.
     callIfFunction(L.InitLights)
 end
 
@@ -134,42 +212,40 @@ end
 function Sync.full(opts)
     opts = type(opts) == "table" and opts or {}
     local force = opts.force == true
-    if type(opts.reason) == "string" and opts.reason ~= "" then
-        print("[Sync.full] reason=" .. opts.reason .. " force=" .. tostring(force))
+    local reason = type(opts.reason) == "string" and opts.reason or ""
+    if reason ~= "" then
+        print("[Sync.full] reason=" .. reason .. " force=" .. tostring(force))
     end
 
+    local t0 = os.clock()
     local reconcileOpts = force and { force = true } or {}
+
+    if force then
+        callIfFunction(L.invalidateReconcileCache)
+    end
 
     callIfFunction(Scenes.reconcileFromState, reconcileOpts)
     callIfFunction(Scenes.reconcileTopFogFromState, reconcileOpts)
     callIfFunction(Soundscape.reconcileFromState, reconcileOpts)
 
     if not didBootstrapFullSync then
-        -- Bootstrap path for load/save-restore: register dynamic NPC lights and run
-        -- deferred retries while light objects are still spawning.
-        callIfFunction(NPCS.restoreAfterStateLoad)
+        callIfFunction(NPCS.registerRestoredInstancesFromState)
         callIfFunction(L.InitLights)
-        reconcileSeatPresentationFromState()
-
-        U.scheduleAtOffsets(function()
-            callIfFunction(L.InitLightsDeferred)
-            reconcileSeatPresentationFromState()
-        end, { 0.35, 1.5, 3.0, 5.0, 8.0 })
+        reconcileSeatPresentationFromState(reconcileOpts)
+        scheduleBootstrapRetries()
     else
-        -- Runtime path: avoid load-only full re-init/retry churn; reconcile state diffs only.
-        reconcileSeatPresentationFromState()
+        reconcileSeatPresentationFromState(reconcileOpts)
     end
 
-    --- `sessionScene.npcWorld.byArea` — stashes to preload, warms full catalog pool, then places (see `NPCS.reconcileSessionSceneNpcWorldFromState`).
-    --- Incremental `Sync.ui` also refreshes `gameStateOverlay` via `UpdateUIDisplays` (`GameStateOverlay.reconcileFromState`).
-    callIfFunction(NPCS.reconcileSessionSceneNpcWorldFromState, { deferUiRefresh = true })
+    callIfFunction(NPCS.reconcileSessionSceneNpcWorldFromState, {
+        deferUiRefresh = true,
+        forceSessionNpcWorld = force,
+    })
 
-    -- Global UI: camera overlay “other” rows default active=true in XML; hide self-match rows once before HUD refresh.
     if not didBootstrapFullSync then
         callIfFunction(HUDP.reconcileCameraOverlaySelfMatchRowsFromXmlDefaults)
     end
 
-    -- Update UI displays: incremental omits overlays (already synced via `HO.syncAll` above).
     if force then
         Sync.ui()
     else
@@ -179,13 +255,6 @@ function Sync.full(opts)
     callIfFunction(SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked)
 
     if not didBootstrapFullSync then
-        -- Some world objects (notably hunger smoke props) can be unavailable on the first
-        -- onLoad-frame sync. Re-run overlays after startup settles only during bootstrap.
-        U.scheduleAtOffsets(function()
-            Sync.ui({ overlays = true })
-        end, { 1.0, 2.5, 5.0, 8.0 })
-
-        -- Refresh roll panels and NPC storyteller panel once during bootstrap restore.
         if type(RUI) == "table" and type(RUI.refreshAll) == "function" then
             RUI.refreshAll()
         end
@@ -194,9 +263,15 @@ function Sync.full(opts)
                 NPCS.refreshStorytellerUIIfVisible()
             end
         end, 0.15)
+        callIfFunction(NPCS.ensureAllNpcsPreloaded, { deferUiRefresh = true })
     end
 
     didBootstrapFullSync = true
+
+    finishSyncMetrics("full", t0, {
+        reason = reason,
+        force = force,
+    })
 end
 
 return Sync

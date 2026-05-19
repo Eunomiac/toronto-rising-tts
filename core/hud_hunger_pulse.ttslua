@@ -206,21 +206,26 @@ local function startHeartbeatLoop(hunger, seatColor, gen)
   runHeartbeatLoop(seatColor, hunger, gen, cfg)
 end
 
+--- Reconcile hunger pulse overlays for one seat.
+--- @param seatColor string e.g. "Red"
+function HUP.reconcileForSeat(seatColor)
+  if type(seatColor) ~= "string" then
+    return
+  end
+  local playerID = C.GetPlayerID(seatColor)
+  local hunger = resolveHunger(playerID, seatColor)
+  pulseGenByColor[seatColor] = (pulseGenByColor[seatColor] or 0) + 1
+  local gen = pulseGenByColor[seatColor]
+  setAllPulseTransparent(seatColor)
+  if hunger == 4 or hunger == 5 then
+    startHeartbeatLoop(hunger, seatColor, gen)
+  end
+end
+
 --- Reconcile pulse overlays for every player color after hunger / conditions sync.
 function HUP.syncHungerPulseAll()
   for _, seatColor in ipairs(C.PlayerColors) do
-    local playerID = C.GetPlayerID(seatColor)
-
-    local hunger = resolveHunger(playerID, seatColor)
-    pulseGenByColor[seatColor] = (pulseGenByColor[seatColor] or 0) + 1
-    local gen = pulseGenByColor[seatColor]
-
-    -- Always clear both pulse images first so only one can remain visible.
-    setAllPulseTransparent(seatColor)
-
-    if hunger == 4 or hunger == 5 then
-      startHeartbeatLoop(hunger, seatColor, gen)
-    end
+    HUP.reconcileForSeat(seatColor)
   end
 end
 

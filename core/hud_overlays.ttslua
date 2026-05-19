@@ -185,31 +185,38 @@ function HO.invalidateSeatCache(seatColor)
   end
 end
 
+--- Reconcile condition/hunger overlays and hunger smoke for one seat (no hunger pulse animation).
+--- @param seatColor string e.g. "Red"
+function HO.reconcileForSeat(seatColor)
+  if type(seatColor) ~= "string" then
+    return
+  end
+  local playerID = S.getPlayerID(seatColor)
+  local want = computeDesiredVisibility(playerID, seatColor)
+  local ids = allManagedOverlayIdsForSeat(seatColor)
+  for _, eid in ipairs(ids) do
+    if not string.match(eid, "^overlay_hunger_%d+_") then
+      if want[eid] ~= true then
+        applyOverlayVisibility(eid, false)
+      end
+    end
+  end
+  for _, eid in ipairs(ids) do
+    if not string.match(eid, "^overlay_hunger_%d+_") then
+      if want[eid] == true then
+        applyOverlayVisibility(eid, true)
+      end
+    end
+  end
+  local hungerLevel = desiredHungerLevelFromWant(want, seatColor)
+  applyHungerOverlaysExclusive(seatColor, hungerLevel)
+  syncHungerSmokeForSeat(seatColor, hungerLevel)
+end
+
 --- Refresh overlay visibility for every player color row.
 function HO.syncAll()
   for _, seatColor in ipairs(C.PlayerColors) do
-    local playerID = S.getPlayerID(seatColor)
-    local want = computeDesiredVisibility(playerID, seatColor)
-    local ids = allManagedOverlayIdsForSeat(seatColor)
-    -- Non-hunger overlays: incremental show/hide (conditions, frenzy, blindfold, etc.).
-    for _, eid in ipairs(ids) do
-      if not string.match(eid, "^overlay_hunger_%d+_") then
-        if want[eid] ~= true then
-          applyOverlayVisibility(eid, false)
-        end
-      end
-    end
-    for _, eid in ipairs(ids) do
-      if not string.match(eid, "^overlay_hunger_%d+_") then
-        if want[eid] == true then
-          applyOverlayVisibility(eid, true)
-        end
-      end
-    end
-    -- Hunger: always drive all six tier layers explicitly so only one can be visible.
-    local hungerLevel = desiredHungerLevelFromWant(want, seatColor)
-    applyHungerOverlaysExclusive(seatColor, hungerLevel)
-    syncHungerSmokeForSeat(seatColor, hungerLevel)
+    HO.reconcileForSeat(seatColor)
   end
 
   local HUP = require("core.hud_hunger_pulse")

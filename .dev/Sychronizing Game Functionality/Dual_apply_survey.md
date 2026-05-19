@@ -10,11 +10,14 @@
 
 **Result:** No new **P0 dual-apply** issue found in this pass. The prior chronicle-weather P0 is fixed in code: successful scheduled weather now primes `Soundscape.markReconciledToCurrentState()`, while partial failures still invalidate the reconcile cache for recovery.
 
-**Notable current risks (post P1 implementation, 2026-05-19):**
+**Notable current risks (post performance-audit implementation, 2026-05-19):**
 
-- **Mitigated:** Storyteller Sound steady-state HUD (`HUD_soundscapeSetMusicMood`, `HUD_soundscapeSetBackgroundLocation`, `HUD_soundscapeStopAll`) calls `Soundscape.commitEagerSteadyState(ok)` after eager apply. Featured/debug one-shots remain un-primed.
-- **Mitigated:** Seat-light reconcile skips redundant `SetLightMode` when `lastReconciledModeByRef` matches persisted desired mode (`core/lighting.ttslua`).
-- **Mitigated:** `NPCS.reconcileSessionSceneNpcWorldFromState` warms the full catalog via `ensureAllNpcsPreloaded` after stash, places from preload without per-row preload ensure, repairs with `ensureNpcInPreloadZone` only on failure, and commits fingerprint only when all placements succeed.
+- **Mitigated:** Storyteller Sound steady-state HUD calls `Soundscape.commitEagerSteadyState(ok)` after eager apply. Featured/debug one-shots remain un-primed.
+- **Mitigated:** Seat-light reconcile skips redundant `SetLightMode` via `lastReconciledModeByRef`; `L.invalidateReconcileCache()` pairs with `Sync.full({ force = true })`.
+- **Mitigated:** `Soundscape.reconcileFromState` uses pending fingerprint + generation token so duplicate deferred applies within the defer window do not stack fades.
+- **Mitigated:** `Sync.player` uses per-seat overlay/pulse reconcilers and scoped `UpdateUIDisplays` (no second `HO.syncAll` from UI delta).
+- **Mitigated:** `NPCS.reconcileSessionSceneNpcWorldFromState` stash → preload → place; fingerprint only on full success; `ensureAllNpcsPreloaded` batches missing spawns.
+- **Open (P2):** Bootstrap still runs multiple timed retries (now one unified schedule); measure with `sync_metrics` before reducing offsets.
 
 ## Risk matrix
 
@@ -26,7 +29,7 @@
 | **Scenes (presets + top fog)** | `sessionScene.lightingPresetKey`, `currentScene`, `sceneTransition`, `lightingSeatSpotlightPreset`, `isTopFogActive` | Global `Lighting`, non-seat `L.SetLightMode`, top fog `setState`, legacy scene soundscape extras | `Scenes.loadScene` / `fadeToScene` / admin lighting buttons are state-only; `Scenes.onLoad` is not called by current global load path | `Scenes.reconcileFromState` + `Scenes.reconcileTopFogFromState` | OK: scene fingerprint skips duplicate ambient/top-fog apply; legacy soundscape extras mark soundscape reconciled | Keep scene world writes in reconcilers; keep seat spotlights stored for `L.reconcileForPlayer` priority | **P2** |
 | **Lighting (seat presentation)** | `gameState.lights`, `sessionScene.lightingSeatSpotlightPreset`, `sessionScene.seatPresent`, `seatLayout.*`, player hunger/rolling/conditions | `L.SetLightMode`, Unity light component setters through `L.SetLightMode` | Storyteller seat toggle, `RSL.SyncTable`, NPC seat changes call `L.reconcileAllPlayers` directly | `Sync.full` → seat presentation → `L.reconcileAllPlayers`; `Sync.player` → `L.reconcileForPlayer` | Mitigated: `lastReconciledModeByRef` skips redundant `SetLightMode` when desired mode unchanged | `transitionEpoch` for stale steps; `lastReconciledModeByRef` for duplicate reconcile passes | **P2** |
 | **NPCs (session scene layout)** | `npcs.instances`, `sessionScene.npcWorld`, `seatLayout.occupiedNPCSlots`, `gameState.lights[npcLight_*]` | `spawnObjectData`, figurine/light moves, NPC spotlight `L.reconcileLightRef`, `RSL.SyncTable` queue | NPC Storyteller panel spawn/move helpers; scene-library apply writes `sessionScene` then `Sync.full` | `NPCS.reconcileSessionSceneNpcWorldFromState` in `Sync.full` | Mitigated: stash → `ensureAllNpcsPreloaded` → `byArea` place; fingerprint only on full success; `ensureNpcInPreloadZone` repair on failed move only | Global preload pool is authoritative; panel helpers remain pool writers for manual moves | **P2** |
-| **Overlays / HUD** | `playerData`, overlay flags, active scene/phase summaries | `HO.syncAll`, `HUDP.updatePlayerUI`, `UI.*` | `Sync.player`, `UpdateUIDisplays`, Storyteller scene seat toggle | `Sync.ui` / `UpdateUIDisplays`; `Sync.full` calls `HO.syncAll` before narrow UI delta | UI-only duplicate refresh possible; mostly no-op because attributes/visibility converge | Incremental `Sync.full` omits overlays after `HO.syncAll`; keep `UpdateUIDisplays` deltas narrow | **P2** |
+| **Overlays / HUD** | `playerData`, overlay flags, active scene/phase summaries | `HO.reconcileForSeat`, `HUP.reconcileForSeat`, `HUDP.updatePlayerUI`, `UI.*` | `Sync.player`, `UpdateUIDisplays`, Storyteller scene seat toggle | `Sync.ui` / `UpdateUIDisplays`; `Sync.full` calls `HO.syncAll` before narrow UI delta | Mitigated for `Sync.player`: per-seat overlay/pulse + `UpdateUIDisplays({ playerStats, colors })` only | Incremental `Sync.full` omits overlays after `HO.syncAll`; use `delta.colors` for seat-scoped stats/HUD | **P2** |
 | **End scene narrative** | soundscape state | `setLocationAudio("none")`, weather natural volume reapply | `StorytellerScenesPanel.endSceneNarrative` | `invalidateReconcileCache` + `Sync.full` | Documented exception: world was intentionally cleared outside the normal reconcile snapshot, then forced to converge | Keep `invalidateReconcileCache` when world may be out of sync with state; do not replace with mark unless state and emitters already match | **P3** |
 | **Table layout / rotational seats** | `sessionScene.tableKey`, `seatLayout.currentTableKey`, `seatLayout.occupiedNPCSlots` | `RSL.SetTableTo`, object transforms, blindfolds, delayed table switch, seat lights/overlays at boundary | Storyteller table toggle and library scene apply call `RSL.SetTableTo` before `Sync.full` | `Sync.full` does not re-call `RSL.SetTableTo`; `RSL.SyncTable` calls seat light/overlay reconcilers after geometry | Documented exception: table geometry is outside `Sync.full`; bootstrap and same-table repair can re-run idempotent seat reconciliation | Keep `RSL.SetTableTo` as the single table-geometry writer; keep state keys in sync before calling it | **P2** |
 | **Global onLoad / bootstrap** | saved `gameState` slices | early soundscape hard mute, `R.SyncTable`, scene/soundscape/lighting/NPC/UI reconcilers, deferred retry timers | `global_script.onLoad` chunk/onLoad silence, scheduled table sync, initial `Sync.full`, startup-gate `Sync.full` | Same `Sync.full` pipeline, plus bootstrap-only deferred retries | Documented exception: multiple applies are intentional load recovery while objects/components appear; not a runtime steady-state dual-apply path | Soundscape fingerprint + early silence; lighting epoch + deferred retry list; UI/overlay idempotence | **P2** |
@@ -41,9 +44,18 @@ No new **P0** dual-apply issues were found in this audit.
 2. **Seat-light redundant lerps:** `lastReconciledModeByRef` diff-skip in `L.reconcileForPlayer`, `L.reconcileLightRef`, and `L.SetLightMode`.
 3. **NPC scene-layout:** stash → `ensureAllNpcsPreloaded` → `byArea` placement; fingerprint not committed when placement fails; per-NPC preload repair only on failed move.
 
+**Implemented (performance audit, 2026-05-19):**
+
+4. **`Sync.player` / overlay scope:** `HO.reconcileForSeat`, `HUP.reconcileForSeat`, `UpdateUIDisplays.colors`.
+5. **Soundscape deferred duplicate:** pending fingerprint + generation in `Soundscape.reconcileFromState`.
+6. **Bootstrap coordinator:** unified retry schedule in `core/sync.ttslua`; `NPCS.registerRestoredInstancesFromState` split from batched preload.
+7. **Force repair:** `L.invalidateReconcileCache` + `forceSessionNpcWorld` on `Sync.full({ force = true })`.
+8. **Metrics:** `Sync.setMetricsEnabled` / `gameState.debug.syncMetricsEnabled` → `sync_metrics` and `npc_preload` agent lines.
+
 **Remaining:**
 
-4. **P2 — Bootstrap documentation:** Keep `Sync.full` order notes current whenever bootstrap-only init/retry steps move.
+9. **P2 — Bootstrap tuning:** Reduce retry offsets only after `sync_metrics` load profiles justify it.
+10. **P2 — HUD cross-seat split:** optional `HUDP.reconcileCrossSeatRows` if seat-scoped HUD still hot.
 
 ## Repeat survey (suggested cadence)
 

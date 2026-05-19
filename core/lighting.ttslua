@@ -1506,14 +1506,22 @@ local function computeDesiredSeatLightResolution(lightRef, seatKey)
     return nil
 end
 
+--- Clears runtime reconcile apply cache so the next seat reconcile re-applies live lights (pair with `force` repair).
+function L.invalidateReconcileCache()
+    lastReconciledModeByRef = {}
+end
+
 --- Reconcile one seat's lights against current state-derived priorities.
 --- For player seats, this includes rolling/conditions/hunger rules.
 --- For NPC seats, this applies scene/presence/default-derived modes.
 --- @param seatKey string
-function L.reconcileForPlayer(seatKey)
+--- @param opts table|nil `{ force = boolean? }` when true, skips `lastReconciledModeByRef` short-circuit
+function L.reconcileForPlayer(seatKey, opts)
     if U.Type(seatKey) ~= "string" then
         return
     end
+    opts = type(opts) == "table" and opts or {}
+    local force = opts.force == true
     for lightRef, lData in pairs(L.LIGHTMODES or {}) do
         if U.Type(lightRef) == "string"
             and U.Type(lData) == "table"
@@ -1523,12 +1531,12 @@ function L.reconcileForPlayer(seatKey)
             if U.Type(res) == "table" and res.kind == "named" and U.Type(res.mode) == "string" then
                 S.setStateVal(res.mode, "lights", lightRef)
                 local lit = getLight(lightRef, true)
-                if lit ~= nil and not reconcileTargetAlreadyApplied(lightRef, res.mode) then
+                if lit ~= nil and (force or not reconcileTargetAlreadyApplied(lightRef, res.mode)) then
                     L.SetLightMode(lightRef, res.mode, seatKey, L.DEFAULT_RECONCILE_LERP_SECONDS)
                 end
             elseif U.Type(res) == "table" and res.kind == "inline" and U.Type(res.patch) == "table" then
                 local lit = getLight(lightRef, true)
-                if lit ~= nil and not reconcileTargetAlreadyApplied(lightRef, res.patch) then
+                if lit ~= nil and (force or not reconcileTargetAlreadyApplied(lightRef, res.patch)) then
                     L.SetLightMode(lightRef, res.patch, seatKey, L.DEFAULT_RECONCILE_LERP_SECONDS)
                 end
             end
@@ -1537,22 +1545,26 @@ function L.reconcileForPlayer(seatKey)
 end
 
 --- Reconcile all player lights from state.
-function L.reconcileAllPlayers()
+--- @param opts table|nil forwarded to `L.reconcileForPlayer`
+function L.reconcileAllPlayers(opts)
     for _, color in ipairs(C.PlayerColors or {}) do
-        L.reconcileForPlayer(color)
+        L.reconcileForPlayer(color, opts)
     end
     for _, seatKey in ipairs(C.NPCSeats or {}) do
-        L.reconcileForPlayer(seatKey)
+        L.reconcileForPlayer(seatKey, opts)
     end
 end
 
 --- Reconcile one light reference from persisted state (non-player or targeted repairs).
 --- @param lightRef string
 --- @param transitionTime number|nil
-function L.reconcileLightRef(lightRef, transitionTime)
+--- @param opts table|nil `{ force = boolean? }`
+function L.reconcileLightRef(lightRef, transitionTime, opts)
     if U.Type(lightRef) ~= "string" or lightRef == "" then
         return true
     end
+    opts = type(opts) == "table" and opts or {}
+    local force = opts.force == true
 
     local lData = L.LIGHTMODES[lightRef]
     if U.Type(lData) ~= "table" then
@@ -1585,7 +1597,7 @@ function L.reconcileLightRef(lightRef, transitionTime)
         return true
     end
 
-    if reconcileTargetAlreadyApplied(lightRef, desiredMode) then
+    if not force and reconcileTargetAlreadyApplied(lightRef, desiredMode) then
         return true
     end
 

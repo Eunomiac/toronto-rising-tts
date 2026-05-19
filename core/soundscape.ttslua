@@ -27,6 +27,12 @@ local cachedEmitters = {}
 
 --- Last fingerprint successfully applied by `reconcileFromState` deferred apply (incremental sync skips when unchanged).
 local lastSoundscapeReconcileFingerprint = nil
+--- Fingerprint scheduled but not yet applied (prevents duplicate deferred callbacks within the defer window).
+local pendingSoundscapeReconcileFingerprint = nil
+--- Incremented when a new reconcile is scheduled or cache is invalidated; stale deferred callbacks no-op.
+local soundscapeReconcileGeneration = 0
+--- Fade steps scheduled during reconcile (metrics); consumed by `consumeReconcileFadeStepsScheduled`.
+local reconcileFadeStepsScheduled = 0
 
 local BACKGROUND_KIND_MOOD = "mood"
 local BACKGROUND_KIND_LOCATION = "locationMusic"
@@ -422,6 +428,7 @@ local function fadeEmitterVolume(obj, fromVolume, toVolume, seconds)
 
     local hasAudioSource = #getAudioSources(obj) > 0
     local steps = math.max(1, math.floor(duration * 10))
+    reconcileFadeStepsScheduled = reconcileFadeStepsScheduled + steps
     local scheduled = false
     for i = 1, steps do
         local ratio = i / steps
@@ -1151,6 +1158,16 @@ end
 --- Clears incremental soundscape reconcile memory so the next `reconcileFromState` always schedules apply.
 function Soundscape.invalidateReconcileCache()
     lastSoundscapeReconcileFingerprint = nil
+    pendingSoundscapeReconcileFingerprint = nil
+    soundscapeReconcileGeneration = soundscapeReconcileGeneration + 1
+end
+
+--- Returns fade step count scheduled since last consume (sync metrics).
+--- @return number
+function Soundscape.consumeReconcileFadeStepsScheduled()
+    local n = reconcileFadeStepsScheduled
+    reconcileFadeStepsScheduled = 0
+    return n
 end
 
 --- After `applyContext` (or equivalent) has already driven emitters to match `gameState.soundscape`, call this
@@ -1159,6 +1176,7 @@ end
 function Soundscape.markReconciledToCurrentState()
     ensureState()
     lastSoundscapeReconcileFingerprint = soundscapeReconcileFingerprint(ensureState())
+    pendingSoundscapeReconcileFingerprint = nil
 end
 
 --- After eager steady-state HUD/panel setters (`setMusicMood`, `stopAll`, etc.), prime or clear reconcile
@@ -1192,12 +1210,25 @@ function Soundscape.reconcileFromState(opts)
     if not force and lastSoundscapeReconcileFingerprint == desiredFingerprint then
         return
     end
+    if not force and pendingSoundscapeReconcileFingerprint == desiredFingerprint then
+        return
+    end
+
+    soundscapeReconcileGeneration = soundscapeReconcileGeneration + 1
+    local myGeneration = soundscapeReconcileGeneration
+    pendingSoundscapeReconcileFingerprint = desiredFingerprint
 
     cachedEmitters = {}
     local fp = desiredFingerprint
     local function runApply()
+        if myGeneration ~= soundscapeReconcileGeneration then
+            return
+        end
         applySoundscapeReconcileFromStateSnapshot(state)
         lastSoundscapeReconcileFingerprint = fp
+        if pendingSoundscapeReconcileFingerprint == fp then
+            pendingSoundscapeReconcileFingerprint = nil
+        end
     end
     if not waitTime(runApply, deferSeconds) then
         runApply()

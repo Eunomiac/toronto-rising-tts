@@ -113,6 +113,21 @@ For automation and MCP, prefer **structured lines** over many unrelated `print` 
 
 Defined in [`lib/util.ttslua`](../lib/util.ttslua) (`U.AGENT_EMIT_LINE_PREFIX`, `U.emitForAgent`, `U.mcpEmitResult`).
 
+### Sync performance metrics (`kind` = `sync_metrics`)
+
+When profiling sync cost, enable metrics before exercising the game:
+
+```lua
+Sync.setMetricsEnabled(true)
+-- or persist: S.setStateVal({ syncMetricsEnabled = true }, "debug")
+```
+
+Then trigger `Sync.full({ reason = "..." })` or `Sync.player("Red")`. Each pass emits one **`TR_AGENT_V1`** line with **`kind`** = **`sync_metrics`** and **`data`** fields such as **`pass`** (`full` | `player` | `bootstrap_retry`), **`reason`**, **`force`**, **`elapsedSec`**, **`soundscapeFadeSteps`**, and **`color`** (player pass).
+
+NPC preload batches emit **`kind`** = **`npc_preload`** with **`characterCount`**, **`missingCount`**, and **`spawnPairsIssued`**.
+
+**Verification:** Save and Play, run a hunger change or load, then parse MCP **`prints`** for `TR_AGENT_V1` lines (filter `kind === "sync_metrics"`). Compare before/after optimization work.
+
 ## Orchestration (`U.RunSequence` / `U.RunSequenceWithOptions`)
 
 Multi-step table logic in this project often uses [`U.RunSequence`](../lib/util.ttslua) (coroutine-driven via `U.waitUntil`). Important for agents:

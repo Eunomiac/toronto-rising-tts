@@ -1412,7 +1412,11 @@ function HUD_syncAll(player, button, id)
         return
     end
     Sync.full({ force = true, reason = "HUD_syncAll" })
-    broadcastToColor("Full sync (force): scenes, soundscape, overlays, and UI refreshed.", player.color, {0, 1, 1})
+    broadcastToColor(
+        "Full sync (force): scenes, soundscape, seat lights, NPC layout, overlays, and UI refreshed.",
+        player.color,
+        {0, 1, 1}
+    )
 end
 
 --- Incremental sync from current state (fingerprints + narrow UI); use when desync is unlikely or for routine refresh.
@@ -1887,12 +1891,31 @@ end
 -- Exposed globally for testing/debugging.
 -- Optional `delta` flags allow targeted refreshes:
 --   phase, scene, adminLighting, soundscape, playerStats, playerHud, overlays, npcAdminButton, pcstRows, pcstSheets, gameStateOverlay
+-- Optional `delta.colors` — array of seat color strings; when set, `playerStats` / `playerHud` loop only those seats.
 -- When omitted, all sections refresh (legacy behavior).
 -- @param delta table|nil
 function UpdateUIDisplays(delta)
     local refreshAll = (type(delta) ~= "table")
     local function wants(key)
         return refreshAll or delta[key] == true
+    end
+
+    --- @param seatColor string
+    --- @return boolean
+    local function wantsSeatColor(seatColor)
+        if refreshAll or type(delta) ~= "table" then
+            return true
+        end
+        local colors = delta.colors
+        if type(colors) ~= "table" or #colors == 0 then
+            return true
+        end
+        for _, c in ipairs(colors) do
+            if c == seatColor then
+                return true
+            end
+        end
+        return false
     end
 
     if wants("phase") then
@@ -1927,6 +1950,9 @@ function UpdateUIDisplays(delta)
 
     if wants("playerStats") or wants("playerHud") then
         M.forPlayers(function(player, color)
+            if not wantsSeatColor(color) then
+                return
+            end
             local pid = S.getPlayerID(player) or S.getPlayerID(color)
             local hunger = pid and S.getPlayerVal(color, "hunger") or 0
             local willpower = 5
