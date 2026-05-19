@@ -46,3 +46,12 @@ bullets without evidence, confidence, or sourcing metadata.
 - Before writing new helpers, check `.dev/AVAILABLE_FUNCTIONS.md` and `lib/util.ttslua` (75+ utilities) so existing `U.map`, `U.filter`, `U.Type`, `U.Val`, etc. are reused instead of reimplemented.
 - Implementation plans and design notes belong under `.dev/plans/` unless the user specifies another path; do not invent a top-level `docs/` tree for that purpose.
 - The canonical Miro board for Toronto Rising work is `https://miro.com/app/board/uXjVGfp9Sdk=/`; enumerate canvas content with `board_list_items` (paginating via `nextCursor`) because `context_explore` only surfaces high-level item kinds.
+
+## Cursor Cloud specific instructions
+
+- **What runs on the Cloud VM vs locally:** The Node.js tooling (build, tests, code generation, pcall gate, code-review validator) all run on the Linux Cloud VM. Tabletop Simulator itself is a Windows desktop application and **cannot** run here; in-game testing requires the developer's local Windows machine with TTS + a VS Code/Cursor TTS extension.
+- **Build:** `npm run build` runs the full pipeline — pcall gate check, TypeScript compilation (tts-bridge + tts-mcp), Lua data generation (PCs, weather, character sheet defaults), XML template generation (UI panels, NPC panel, scene modals), and TTS object stub fixes. See `package.json` `build:all-tooling` for the chain.
+- **Tests:** `npm run tts-bridge:test` (15 tests) and `npm run code-review:test` (5 tests) run vitest suites for the TypeScript tooling. These do not require a live TTS instance.
+- **Lint / validation:** `npm run check:pcall-gate` enforces the pcall/Wait baseline. `npm run code-review:validate` checks `.ttslua` files for `#region` markers (exits non-zero for files lacking them; this is the existing codebase state, not a build-breaking error).
+- **Dependencies:** Root `npm install` covers all tooling. `.tools/code-review/` has a separate `package-lock.json` and needs its own `npm install` (only `@types/node`).
+- **No ESLint / Prettier / pre-commit hooks:** The codebase has no JS/TS linter config, no `.husky/`, no `.pre-commit-config.yaml`, and no `lint-staged`. The pcall gate and code-review validator serve as the static analysis layer.
