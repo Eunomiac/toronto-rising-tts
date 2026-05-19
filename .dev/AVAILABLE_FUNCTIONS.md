@@ -4,7 +4,7 @@
 
 **Status:** This document should be updated whenever new functions are added to any module.
 
-**Last Updated:** 2026-05-04
+**Last Updated:** 2026-05-19
 
 ---
 
@@ -228,10 +228,10 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | :--------- | :------------- | :--------------- |
 | `S.InitializeGameState(saved_data)` | Load or create game state | Called in `onLoad` |
 | `S.GetDefaultGameState()` | Return default state structure | Initialization |
-| `S.getGameState(shouldSanitize)` | Get global gameState table | Access state |
+| `S.getGameState(shouldSanitize)` | Get raw or save-safe state table; prefer nested access outside save/debug code | `S.getGameState(true)` in `onSave` |
 | `S.setGameState(data)` | Set entire game state | Bulk state update |
-| `S.getStateVal(...)` | Get nested state value safely | `S.getStateVal("players", "Red", "hunger")` |
-| `S.setStateVal(value, ...)` | Set nested state value safely | `S.setStateVal(3, "players", "Red", "hunger")` |
+| `S.getStateVal(...)` | Get nested state value safely | `S.getStateVal("sessionScene", "clock")` |
+| `S.setStateVal(value, ...)` | Set nested state value safely | `S.setStateVal(clock, "sessionScene", "clock")` |
 | `S.mergeDefaults(target, defaults)` | Merge default values into state | Ensure all keys exist |
 | `S.resetGameState()` | Reset to defaults | New game |
 | `S.validateState()` | Validate state structure | State integrity check |
@@ -249,6 +249,20 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `S.setPlayerVal(playerRef, key, value)` | Set player-specific value | `S.setPlayerVal("Red", "hunger", 3)` |
 | `S.getPlayerVal(playerRef, key)` | Get player-specific value | `S.getPlayerVal("Red", "hunger")` |
 | `S.mergePlayerData(statePlayerData)` | Merge player data with defaults | Player initialization |
+
+### Canonical State Access Patterns
+
+`gameState.playerData` is keyed by Steam ID, not seat color. Resolve a player ID before reading nested player state unless the value is the special hunger helper.
+
+| Field | Read Pattern | Write Pattern |
+| :--------- | :------------- | :--------------- |
+| Hunger | `S.getPlayerVal(color, "hunger")` | `S.setPlayerVal(color, "hunger", value)` |
+| Player stats | `local pid = S.getPlayerID(color); S.getStateVal("playerData", pid, "stats", "willpower", "superficial")` | `S.setStateVal(value, "playerData", pid, "stats", "willpower", "superficial")` |
+| Player conditions | `S.getStateVal("playerData", pid, "conditions", conditionKey)` | `S.setStateVal(entry, "playerData", pid, "conditions", conditionKey)` |
+| Player HUD | `S.getStateVal("playerData", pid, "hud", "rollData", "active")` | `S.setStateVal(active, "playerData", pid, "hud", "rollData", "active")` |
+| Player rolling light context | `S.getStateVal("playerData", pid, "lighting", "isRolling")` | `S.setStateVal(isRolling, "playerData", pid, "lighting", "isRolling")` |
+| Scene lighting preset | `S.getStateVal("sessionScene", "lightingPresetKey")` | `S.setStateVal(presetKey, "sessionScene", "lightingPresetKey")` |
+| Zone lock state | `S.getStateVal("zones", "allLocked")` | `S.setStateVal(isLocked, "zones", "allLocked")` |
 
 ---
 
@@ -488,7 +502,7 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 
 ### Need to access game state?
 
-→ Use `S.getStateVal()`, `S.setStateVal()`, `S.getPlayerVal()`, `S.setPlayerVal()`
+→ Use `S.getStateVal()` / `S.setStateVal()` for exact schema paths. Use `S.getPlayerID(color)` before nested `playerData` paths. Use `S.getPlayerVal()` / `S.setPlayerVal()` for `hunger` only.
 
 ### Need to query objects in zones?
 
