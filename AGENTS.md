@@ -46,3 +46,14 @@ bullets without evidence, confidence, or sourcing metadata.
 - Before writing new helpers, check `.dev/AVAILABLE_FUNCTIONS.md` and `lib/util.ttslua` (75+ utilities) so existing `U.map`, `U.filter`, `U.Type`, `U.Val`, etc. are reused instead of reimplemented.
 - Implementation plans and design notes belong under `.dev/plans/` unless the user specifies another path; do not invent a top-level `docs/` tree for that purpose.
 - The canonical Miro board for Toronto Rising work is `https://miro.com/app/board/uXjVGfp9Sdk=/`; enumerate canvas content with `board_list_items` (paginating via `nextCursor`) because `context_explore` only surfaces high-level item kinds.
+
+## Cursor Cloud specific instructions
+
+- **Runtime dependency**: The only dependency refresh needed is `npm install` at the repo root. All TypeScript tooling, Vitest, and code generators are installed through it.
+- **Build order matters**: `tts-mcp:compile` depends on `tts-bridge` dist output. Always build tts-bridge first, or use `npm run tts-mcp:build` which chains them. The single `npm run build` command handles the full pipeline correctly.
+- **Lint**: `npm run check:pcall-gate` is the primary lint gate. It enforces no `pcall` in production paths and no raw `Wait.time`/`Wait.condition` outside `lib/util.ttslua`.
+- **Tests**: `npm run tts-bridge:test` (15 tests) and `npm run code-review:test` (5 tests) are the automated test suites (Vitest). Both run without needing TTS or any external service.
+- **Full build**: `npm run build` runs the pcall-gate check, compiles all TypeScript, and runs all Lua/XML code generators. This is the equivalent of a CI build check.
+- **code-review:validate**: Exits non-zero when files lack `#region` blocks (informational). This is pre-existing codebase state, not a build failure.
+- **No TTS runtime in Cloud**: Tabletop Simulator is a Windows desktop application and cannot run in Cloud Agent VMs. The `tts:smoke`, `tts-bridge:listen`, and `tts-bridge:run-easing-mcp-test` scripts require a live TTS instance and will not work here. All offline tooling (build, lint, unit tests, code generators) works without TTS.
+- **Shell**: Cloud Agent VMs run Linux/bash, not Windows/PowerShell. Commands documented in AGENTS.md and `.cursorrules` assuming PowerShell work fine in bash for this codebase since all tooling uses npm scripts.
