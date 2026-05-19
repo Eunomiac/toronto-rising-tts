@@ -160,7 +160,7 @@ function Sync.full(opts)
         reconcileSeatPresentationFromState()
     end
 
-    --- `sessionScene.npcWorld.byArea` — see `NPCS.reconcileSessionSceneNpcWorldFromState`.
+    --- `sessionScene.npcWorld.byArea` — stashes to preload, warms full catalog pool, then places (see `NPCS.reconcileSessionSceneNpcWorldFromState`).
     --- Incremental `Sync.ui` also refreshes `gameStateOverlay` via `UpdateUIDisplays` (`GameStateOverlay.reconcileFromState`).
     callIfFunction(NPCS.reconcileSessionSceneNpcWorldFromState, { deferUiRefresh = true })
 

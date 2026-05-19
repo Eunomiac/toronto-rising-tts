@@ -612,7 +612,9 @@ local function assignNpcToSeat(npcName, seatKey)
         end
         rec = getInstances()[npcName]
         if rec == nil then
-            return false, "NPC '" .. tostring(npcName) .. "' has no pooled instance (wait for preload)."
+            return false, "NPC '"
+                .. tostring(npcName)
+                .. "' has no pooled instance; global preload pool is missing this entry (see console)."
         end
     end
     if not npcInstanceIsParkedInPreload(rec) then
@@ -1315,7 +1317,8 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
     return true, nil
 end
 
---- Ensure `npcName` exists in the global under-table preload pool (stable slot). No-op when already placed in a play area.
+--- Ensure `npcName` exists in the global under-table preload pool (stable slot). Used for single-NPC repair
+--- (seating, broken GUID respawn) and after failed scene placement; catalog-wide warm-up is `ensureAllNpcsPreloaded`.
 --- @param npcName string
 --- @param opts table|nil `deferUiRefresh`, `skipSeatSync`, `forceNpcLightMode`
 --- @return boolean ok
@@ -1375,8 +1378,9 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
     return NPCS.spawnNpcAtSlot(npcName, PRELOAD_AREA_KEY, spawnSlot, opts)
 end
 
---- Applies `gameState.sessionScene.npcWorld.byArea`: when authored data changed, optionally stash all figurines into
---- the global preload grid, then apply `byArea` slot placements immediately. Idempotent; safe from `Sync.full`.
+--- Applies `gameState.sessionScene.npcWorld.byArea`: when authored data changed, stash figurines into the
+--- global preload grid, warm the full catalog pool (`ensureAllNpcsPreloaded`), then apply `byArea` placements.
+--- Idempotent; safe from `Sync.full`. Per-row preload ensure is only used as a repair after a failed move.
 --- @param opts table|nil `deferUiRefresh`, `forceSessionNpcWorld` (bypass fingerprint and re-apply)
 function NPCS.reconcileSessionSceneNpcWorldFromState(opts)
     opts = U.Type(opts) == "table" and opts or {}
@@ -1390,9 +1394,12 @@ function NPCS.reconcileSessionSceneNpcWorldFromState(opts)
 
     if npcWorldHasPlacementIntent() then
         stashAllNpcFigurinesForSessionSceneLayout()
+        --- Global policy: every `NPCS.characters` entry lives in the off-table preload pool before stage placement.
+        NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true })
     end
 
     local anyWork = false
+    local allPlacementsOk = true
 
     local placements = collectSessionByAreaPlacements()
     for _, pl in ipairs(placements) do
@@ -1400,31 +1407,44 @@ function NPCS.reconcileSessionSceneNpcWorldFromState(opts)
             anyWork = true
             local cname = pl.characterKey
             local clm = pl.npcLightMode
-            local preOk, preErr = NPCS.ensureNpcInPreloadZone(cname, {
-                deferUiRefresh = true,
+            local modeOpt = {
+                preferredSlot = pl.slotIndex,
+                skipUiRefresh = true,
                 skipSeatSync = true,
-                forceNpcLightMode = "OFF",
-            })
-            if not preOk then
-                print("[NPCS] byArea preload ensure failed for " .. tostring(cname) .. ": " .. tostring(preErr))
-            else
-                local modeOpt = {
-                    preferredSlot = pl.slotIndex,
-                    skipUiRefresh = true,
+            }
+            if U.Type(clm) == "string" then
+                modeOpt.forceNpcLightMode = clm
+            end
+            local ok, err = NPCS.spawnOrMoveIndividual(cname, pl.areaKey, modeOpt)
+            if not ok then
+                local repairOk, repairErr = NPCS.ensureNpcInPreloadZone(cname, {
+                    deferUiRefresh = true,
                     skipSeatSync = true,
-                }
-                if U.Type(clm) == "string" then
-                    modeOpt.forceNpcLightMode = clm
+                    forceNpcLightMode = "OFF",
+                })
+                if repairOk then
+                    ok, err = NPCS.spawnOrMoveIndividual(cname, pl.areaKey, modeOpt)
+                else
+                    print(
+                        "[NPCS] byArea preload repair failed for "
+                            .. tostring(cname)
+                            .. ": "
+                            .. tostring(repairErr)
+                    )
                 end
-                local ok, err = NPCS.spawnOrMoveIndividual(cname, pl.areaKey, modeOpt)
-                if not ok then
-                    print("[NPCS] byArea placement failed for " .. tostring(cname) .. ": " .. tostring(err))
-                end
+            end
+            if not ok then
+                allPlacementsOk = false
+                print("[NPCS] byArea placement failed for " .. tostring(cname) .. ": " .. tostring(err))
             end
         end
     end
 
-    lastSessionNpcWorldFingerprint = fp
+    if not anyWork or allPlacementsOk then
+        lastSessionNpcWorldFingerprint = fp
+    elseif anyWork and not allPlacementsOk then
+        print("[NPCS] sessionScene.npcWorld: placement incomplete; reconcile fingerprint not committed (will retry on next Sync.full)")
+    end
 
     if deferUiRefresh and anyWork then
         NPCS.refreshStorytellerUIIfVisible()
@@ -1448,7 +1468,7 @@ function NPCS.spawnOrMoveIndividual(npcName, areaKey, opts)
     if areaKey ~= PRELOAD_AREA_KEY then
         return false, "NPC '"
             .. tostring(npcName)
-            .. "' is not in the preload pool; wait for ensureAllNpcsPreloaded before activating."
+            .. "' has no pooled instance; global preload pool is missing this entry (see console)."
     end
     if stablePreloadSlotIndex(npcName) == nil and U.Type(opts.preferredSlot) ~= "number" then
         return false, "No preload slot for NPC."
@@ -1640,7 +1660,9 @@ function NPCS.spawnGroup(groupId, areaKey)
         local targetSlot = assignments[row.name]
         if targetSlot ~= nil then
             if rec == nil then
-                return false, "NPC " .. tostring(row.name) .. " is not in the preload pool (wait for preload)."
+                return false, "NPC "
+                    .. tostring(row.name)
+                    .. " has no pooled instance; run global preload or spawn from the NPC panel first."
             end
             local ok, err = NPCS.moveNpcToArea(row.name, areaKey, {
                 skipUiRefresh = true,

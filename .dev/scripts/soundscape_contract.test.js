@@ -19,6 +19,7 @@ test("soundscape runtime module exposes the planned API", () => {
     "function Soundscape.reconcileFromState(opts)",
     "function Soundscape.invalidateReconcileCache()",
     "function Soundscape.markReconciledToCurrentState()",
+    "function Soundscape.commitEagerSteadyState(ok)",
     "function Soundscape.applyContext(context)",
     "function Soundscape.contextFromSite(site, siteKey)",
     "function Soundscape.mergeSessionSceneNarrativeIntoContext(sessionScene, base)",
@@ -44,6 +45,38 @@ test("soundscape runtime module exposes the planned API", () => {
   ].forEach((signature) => {
     assert.ok(source.includes(signature), `missing ${signature}`);
   });
+});
+
+test("Storyteller Sound HUD steady-state handlers prime eager reconcile fingerprint", () => {
+  const source = readRepoFile("core/global_script.ttslua");
+
+  const handlers = [
+    "function HUD_soundscapeSetMusicMood",
+    "function HUD_soundscapeSetBackgroundLocation",
+    "function HUD_soundscapeStopAll",
+  ];
+
+  for (const handler of handlers) {
+    const start = source.indexOf(handler);
+    assert.ok(start >= 0, `missing ${handler}`);
+    const end = source.indexOf("\nfunction ", start + 1);
+    const body = end >= 0 ? source.slice(start, end) : source.slice(start);
+    assert.ok(
+      body.includes("commitEagerSteadyState"),
+      `${handler} should call SS.commitEagerSteadyState after steady-state mutation`,
+    );
+  }
+
+  const featuredStart = source.indexOf("function HUD_soundscapePlayFeatured");
+  assert.ok(featuredStart >= 0);
+  const featuredEnd = source.indexOf("\nfunction ", featuredStart + 1);
+  const featuredBody =
+    featuredEnd >= 0 ? source.slice(featuredStart, featuredEnd) : source.slice(featuredStart);
+  assert.equal(
+    featuredBody.includes("commitEagerSteadyState"),
+    false,
+    "featured one-shots should not prime steady-state reconcile fingerprint",
+  );
 });
 
 test("soundscape catalog defines generated playlists, channels, and context defaults", () => {

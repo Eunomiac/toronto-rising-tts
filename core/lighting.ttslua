@@ -35,6 +35,8 @@ local OP = require("lib.object_positions")
 
 -- Last-wins: each SetLightMode bumps this; in-flight lerp steps no-op when stale.
 local transitionEpoch = {}
+--- Last mode fingerprint applied per lightRef; reconcile skips redundant `SetLightMode` lerps.
+local lastReconciledModeByRef = {}
 -- InitLights first-pass misses (object not ready); deferred pass retries these keys only.
 local initLightsRetryKeys = {}
 -- Warn each missing-OFF light at most once per session.
@@ -913,6 +915,84 @@ end
 --- @return table|nil
 L.sanitizeLightModeTableForPersistence = sanitizeModeForPersistence
 
+--- @param tbl table
+--- @return string
+local function inlineModeTableFingerprint(tbl)
+    local safe = sanitizeModeForPersistence(tbl)
+    if safe == nil or next(safe) == nil then
+        return ""
+    end
+    local keys = {}
+    for k in pairs(safe) do
+        keys[#keys + 1] = k
+    end
+    table.sort(keys)
+    local parts = {}
+    for _, k in ipairs(keys) do
+        local v = safe[k]
+        if U.Type(v) == "table" then
+            if v.r ~= nil then
+                parts[#parts + 1] = k
+                    .. ":"
+                    .. tostring(v.r)
+                    .. ","
+                    .. tostring(v.g)
+                    .. ","
+                    .. tostring(v.b)
+            elseif v.x ~= nil then
+                parts[#parts + 1] = k .. ":" .. tostring(v.x) .. "," .. tostring(v.y) .. "," .. tostring(v.z)
+            else
+                parts[#parts + 1] = k .. ":table"
+            end
+        else
+            parts[#parts + 1] = k .. ":" .. tostring(v)
+        end
+    end
+    return table.concat(parts, "|")
+end
+
+--- @param mode string|table|nil
+--- @return string|nil
+local function reconcileModeFingerprint(mode)
+    if U.Type(mode) == "string" then
+        return "n:" .. mode
+    end
+    if U.Type(mode) == "table" then
+        local body = inlineModeTableFingerprint(mode)
+        if body == "" then
+            return "t:empty"
+        end
+        return "t:" .. body
+    end
+    return nil
+end
+
+--- @param lightRef string
+--- @param mode string|table|nil
+--- @return boolean
+local function reconcileTargetAlreadyApplied(lightRef, mode)
+    if U.Type(lightRef) ~= "string" then
+        return false
+    end
+    local fp = reconcileModeFingerprint(mode)
+    if fp == nil then
+        return false
+    end
+    return lastReconciledModeByRef[lightRef] == fp
+end
+
+--- @param lightRef string
+--- @param mode string|table|nil
+local function recordReconciledMode(lightRef, mode)
+    if U.Type(lightRef) ~= "string" then
+        return
+    end
+    local fp = reconcileModeFingerprint(mode)
+    if fp ~= nil then
+        lastReconciledModeByRef[lightRef] = fp
+    end
+end
+
 --- True if `v` is a valid `gameState.lights` value (mode name or inline snapshot).
 --- @param v any
 --- @return boolean
@@ -1443,12 +1523,12 @@ function L.reconcileForPlayer(seatKey)
             if U.Type(res) == "table" and res.kind == "named" and U.Type(res.mode) == "string" then
                 S.setStateVal(res.mode, "lights", lightRef)
                 local lit = getLight(lightRef, true)
-                if lit ~= nil then
+                if lit ~= nil and not reconcileTargetAlreadyApplied(lightRef, res.mode) then
                     L.SetLightMode(lightRef, res.mode, seatKey, L.DEFAULT_RECONCILE_LERP_SECONDS)
                 end
             elseif U.Type(res) == "table" and res.kind == "inline" and U.Type(res.patch) == "table" then
                 local lit = getLight(lightRef, true)
-                if lit ~= nil then
+                if lit ~= nil and not reconcileTargetAlreadyApplied(lightRef, res.patch) then
                     L.SetLightMode(lightRef, res.patch, seatKey, L.DEFAULT_RECONCILE_LERP_SECONDS)
                 end
             end
@@ -1502,6 +1582,10 @@ function L.reconcileLightRef(lightRef, transitionTime)
     end
 
     if U.Type(desiredMode) ~= "string" and U.Type(desiredMode) ~= "table" then
+        return true
+    end
+
+    if reconcileTargetAlreadyApplied(lightRef, desiredMode) then
         return true
     end
 
@@ -1675,8 +1759,20 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
         end
     end
 
+    local fingerprintMode = mode
+    local savedMode = S.getStateVal("lights", lightRef)
+    if U.Type(savedMode) == "string" or U.Type(savedMode) == "table" then
+        fingerprintMode = savedMode
+    elseif U.Type(modeDef) == "table" then
+        fingerprintMode = modeDef
+    end
+    if reconcileTargetAlreadyApplied(lightRef, fingerprintMode) then
+        return nil
+    end
+
     transitionEpoch[lightRef] = (transitionEpoch[lightRef] or 0) + 1
     local myEpoch = transitionEpoch[lightRef]
+    recordReconciledMode(lightRef, fingerprintMode)
 
     -- Apply the light mode with smooth transitions
     local function activateLight()

@@ -1001,6 +1001,9 @@ end
 function HUD_soundscapeSetMusicMood(player, button, id)
     local moodKey = string.gsub(id or "", "^soundscapeMood_", "")
     local ok, message = SS.setMusicMood(moodKey)
+    if SS.commitEagerSteadyState ~= nil then
+        SS.commitEagerSteadyState(ok)
+    end
     if ok then
         U.AlertGM("Soundscape music mood: " .. tostring(moodKey))
     else
@@ -1012,6 +1015,9 @@ end
 --- Storyteller soundscape panel: stop all layers through the silent loop.
 function HUD_soundscapeStopAll(player, button, id)
     local ok, message = SS.stopAll()
+    if SS.commitEagerSteadyState ~= nil then
+        SS.commitEagerSteadyState(ok)
+    end
     if ok then
         U.AlertGM("Soundscape stopped.")
     else
@@ -1062,6 +1068,9 @@ function HUD_soundscapeSetBackgroundLocation(player, button, id)
         return
     end
     local ok, message = SS.setLocationMusic(playlist)
+    if SS.commitEagerSteadyState ~= nil then
+        SS.commitEagerSteadyState(ok)
+    end
     if ok then
         U.AlertGM("Location background music: " .. tostring(playlist))
     else

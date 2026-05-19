@@ -1161,6 +1161,17 @@ function Soundscape.markReconciledToCurrentState()
     lastSoundscapeReconcileFingerprint = soundscapeReconcileFingerprint(ensureState())
 end
 
+--- After eager steady-state HUD/panel setters (`setMusicMood`, `stopAll`, etc.), prime or clear reconcile
+--- memory so a later incremental `Sync.full` does not replay identical emitter fades.
+--- @param ok boolean true when state and emitters already match persisted intent
+function Soundscape.commitEagerSteadyState(ok)
+    if ok == true then
+        Soundscape.markReconciledToCurrentState()
+    else
+        Soundscape.invalidateReconcileCache()
+    end
+end
+
 --- Default delay before applying reconcile (emitters must exist; was 1.0s and caused long stray-audio windows).
 local RECONCILE_APPLY_DEFER_SECONDS = 0.15
 
