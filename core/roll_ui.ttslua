@@ -120,6 +120,12 @@ end
 -- Color whose roll options modal is open (nil when closed).
 local rollOptsTargetColor = nil
 
+--- Stashed numeric InputField text for roll options modal (TTS InputField contract).
+local rollOptsDraft = {
+    numberOfRerolls = "1",
+    numberOfDiceRerolled = "3",
+}
+
 --- Sets a Toggle's on state (TTS uses string "true"/"false" on isOn).
 -- @param elementId string
 -- @param on boolean
@@ -624,8 +630,12 @@ function RUI.openRollOptionsModal(color)
     uiToggleSet("rollOpts_roll_canRerollHunger", ro[RO.ROLL_CAN_REROLL_HUNGER] == true)
     uiToggleSet("rollOpts_roll_crits",       ro[RO.ROLL_CRITS] ~= false)
 
-    uiSetInputField("rollOpts_roll_numberOfRerolls", tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS)))
-    uiSetInputField("rollOpts_roll_numberOfDiceRerolled", tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED)))
+    local rerollsStr = tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS))
+    local diceRerolledStr = tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED))
+    rollOptsDraft.numberOfRerolls = rerollsStr
+    rollOptsDraft.numberOfDiceRerolled = diceRerolledStr
+    uiSetInputField("rollOpts_roll_numberOfRerolls", rerollsStr)
+    uiSetInputField("rollOpts_roll_numberOfDiceRerolled", diceRerolledStr)
 
     local rt = active.rollType
     uiSetInteractable("rollOpts_roll_takeHalf",    not RO.isTakeHalfLocked(rt))
@@ -633,6 +643,19 @@ function RUI.openRollOptionsModal(color)
     uiSetActive("rollOpts_row_bestialNull", RO.isBestialNullVisible(rt))
 
     uiSetActive("rollOpts_modal", true)
+end
+
+--- Stashes roll options modal InputField text from `onValueChanged` / `onEndEdit`.
+-- @param player Player
+-- @param value string|nil
+-- @param id string|nil
+function RUI.onRollOptsInputChanged(player, value, id)
+    local v = type(value) == "string" and value or ""
+    if id == "rollOpts_roll_numberOfRerolls" then
+        rollOptsDraft.numberOfRerolls = v
+    elseif id == "rollOpts_roll_numberOfDiceRerolled" then
+        rollOptsDraft.numberOfDiceRerolled = v
+    end
 end
 
 --- Closes the modal without saving (Cancel).
@@ -680,8 +703,16 @@ function RUI.applyRollOptionsModal(rcModule)
     end
 
     rollOptsApply[RO.ROLL_CAN_REROLL_HUNGER] = uiToggleGet("rollOpts_roll_canRerollHunger")
-    rollOptsApply[RO.ROLL_NUMBER_OF_REROLLS] = math.max(0, math.floor(tonumber(UI.getValue("rollOpts_roll_numberOfRerolls")) or 1))
-    rollOptsApply[RO.ROLL_NUMBER_OF_DICE_REROLLED] = math.floor(tonumber(UI.getValue("rollOpts_roll_numberOfDiceRerolled")) or 3)
+    local rerollsNum = tonumber(rollOptsDraft.numberOfRerolls)
+    if rerollsNum == nil then
+        error("RUI.applyRollOptionsModal: rollOptsDraft.numberOfRerolls is not a number", 2)
+    end
+    local diceRerolledNum = tonumber(rollOptsDraft.numberOfDiceRerolled)
+    if diceRerolledNum == nil then
+        error("RUI.applyRollOptionsModal: rollOptsDraft.numberOfDiceRerolled is not a number", 2)
+    end
+    rollOptsApply[RO.ROLL_NUMBER_OF_REROLLS] = math.max(0, math.floor(rerollsNum))
+    rollOptsApply[RO.ROLL_NUMBER_OF_DICE_REROLLED] = math.floor(diceRerolledNum)
 
     rcModule.setRollOptions(color, rollOptsApply)
 

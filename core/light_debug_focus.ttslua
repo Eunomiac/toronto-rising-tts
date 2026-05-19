@@ -52,21 +52,10 @@ local function trim(s)
     return (s:gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
---- Latest GUID field text: prefer callback cache (TTS InputField is unreliable for `UI.getValue`), then `text` attribute, then getValue body.
+--- Latest GUID from `HUD_debugLightGuidInput` stash only (TTS InputField contract).
 --- @return string
 local function readGuidFromUi()
-    if trim(lastDlGuidInput) ~= "" then
-        return lastDlGuidInput
-    end
-    local attrVal = UI.getAttribute("dl_guid", "text")
-    if type(attrVal) == "string" and trim(attrVal) ~= "" then
-        return attrVal
-    end
-    local gv = UI.getValue("dl_guid")
-    if type(gv) == "string" and trim(gv) ~= "" then
-        return gv
-    end
-    return ""
+    return trim(lastDlGuidInput)
 end
 
 --- Called from InputField onValueChanged / onEndEdit (Global UI).

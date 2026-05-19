@@ -47,7 +47,7 @@ ui/
 1. Edit modular XML files in `ui/` directory
 2. The extension’s synced **Global** entry should keep a thin stub that loads your workspace global script and UI bundle path per that extension’s docs. If TTS replaces it with inlined code, restore the one-line `require`/include pattern.
 3. Use "Save and Play" – extension bundles and sends to TTS
-4. **No hardcoded XML in Lua** – `LightDebug.refreshLightDebugPanel()` injects dynamic spotlight rows at `lightTableRowsPlaceholder`
+4. **No hardcoded XML in Lua** – prefer static XML under `ui/`; focused light debug uses `panel_debug_light.xml` + `LightDebugFocus` (no dynamic row injection).
 
 ---
 

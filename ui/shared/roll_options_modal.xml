@@ -41,11 +41,11 @@
       <Toggle id="rollOpts_roll_canRerollHunger" isOn="false" fontSize="11" color="#DDDDDD">Can Reroll Hunger (WP)</Toggle>
       <HorizontalLayout spacing="8" childAlignment="MiddleLeft">
         <Text fontSize="11" color="#AAAAAA" preferredWidth="160">WP rerolls / roll:</Text>
-        <InputField id="rollOpts_roll_numberOfRerolls" fontSize="11" preferredWidth="48" minWidth="40" text="1" />
+        <InputField id="rollOpts_roll_numberOfRerolls" fontSize="11" preferredWidth="48" minWidth="40" text="1" onValueChanged="HUD_rollOptsInputChanged" onEndEdit="HUD_rollOptsInputChanged" />
       </HorizontalLayout>
       <HorizontalLayout spacing="8" childAlignment="MiddleLeft">
         <Text fontSize="11" color="#AAAAAA" preferredWidth="160">Dice per WP spend (0=∞):</Text>
-        <InputField id="rollOpts_roll_numberOfDiceRerolled" fontSize="11" preferredWidth="48" minWidth="40" text="3" />
+        <InputField id="rollOpts_roll_numberOfDiceRerolled" fontSize="11" preferredWidth="48" minWidth="40" text="3" onValueChanged="HUD_rollOptsInputChanged" onEndEdit="HUD_rollOptsInputChanged" />
       </HorizontalLayout>
       <Toggle id="rollOpts_roll_crits" isOn="true" fontSize="11" color="#DDDDDD">Criticals</Toggle>
     </VerticalLayout>

@@ -1342,29 +1342,6 @@ function HUD_toggleZones(player, button, id)
     print("HUD: Zones toggled by " .. player.color)
 end
 
---- Update a spotlight's Color, Range, Angle, Intensity from the light debug panel
--- Called when the "Update" button is clicked for a specific light row
--- @param player Player The player who clicked the button
--- @param value string The GUID of the light object (passed from onClick)
--- @param id string The UI element ID (e.g., "lightUpdate_4148ba")
-function HUD_lightUpdate(player, value, id)
-    local guid = value
-    if type(guid) ~= "string" or guid == "" then
-        broadcastToColor("Light Debug: Invalid GUID.", player.color, {1, 0, 0})
-        return
-    end
-    local colorVal = UI.getValue("lightColor_" .. guid) or ""
-    local rangeVal = UI.getValue("lightRange_" .. guid) or ""
-    local angleVal = UI.getValue("lightAngle_" .. guid) or ""
-    local intensityVal = UI.getValue("lightIntensity_" .. guid) or ""
-    local success = LightDebug.applyLightUpdate(guid, colorVal, rangeVal, angleVal, intensityVal)
-    if success then
-        broadcastToColor("Light updated.", player.color, {0, 1, 0})
-    else
-        broadcastToColor("Light Debug: Failed to update light.", player.color, {1, 0, 0})
-    end
-end
-
 --- Log current game state to console (debug function)
 -- Called when the "Log State" debug button is clicked
 -- @param player Player The player who clicked the button
@@ -2507,6 +2484,16 @@ function HUD_rollOptsOpen(player, value, id)
     local active = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active")
     if active == nil then return end
     RUI.openRollOptionsModal(color)
+end
+
+--- Stashes roll options modal numeric InputFields (`onValueChanged` / `onEndEdit`).
+-- @param player Player
+-- @param value string|nil
+-- @param id string|nil
+function HUD_rollOptsInputChanged(player, value, id)
+    if RUI and RUI.onRollOptsInputChanged then
+        RUI.onRollOptsInputChanged(player, value, id)
+    end
 end
 
 function HUD_rollOptsApply(player, value, id)

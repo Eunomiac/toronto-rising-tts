@@ -21,6 +21,13 @@ local PresentDayClock = require("core.present_day_clock")
 local GREEN = "#228B22|#32CD32|#006400|#228B22"
 local GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
 
+--- Sets Global UI InputField display text (`UI.setAttribute` — reliable when inactive).
+-- @param elementId string
+-- @param value string
+local function setInputFieldText(elementId, value)
+    U.setAttribute(elementId, "text", tostring(value or ""))
+end
+
 --- Maps XML button ids (no spaces) to `C.Tables` keys.
 local TABLE_TOGGLE_IDS = {
     scenes_tbl_TableA = "Table A",
@@ -137,7 +144,7 @@ local function formatTime12h(hour24, minute)
     return string.format("%d:%02d %s", h12, m, suffix)
 end
 
---- Mirrors `sessionScene.clock` into `clockDraft` after `refresh` pushes `UI.setValue` (Apply reads draft; `UI.getValue` is unreliable).
+--- Mirrors `sessionScene.clock` into `clockDraft` after `refresh` pushes InputField `text` (Apply reads draft only).
 local clockDraft = {
     day = nil,
     year = nil,
@@ -248,14 +255,14 @@ function StorytellerScenesPanel.refresh()
                     textColor = "#FFFFFF",
                 })
             end
-            UI.setValue("scenes_clock_day", tostring(tonumber(ck.day) or 1))
-            UI.setValue("scenes_clock_year", tostring(tonumber(ck.year) or 2026))
-            UI.setValue("scenes_clock_time12", formatTime12h(ck.hour, ck.minute))
+            setInputFieldText("scenes_clock_day", tostring(tonumber(ck.day) or 1))
+            setInputFieldText("scenes_clock_year", tostring(tonumber(ck.year) or 2026))
+            setInputFieldText("scenes_clock_time12", formatTime12h(ck.hour, ck.minute))
             local spd = tonumber(ck.realTimeSpeed)
             if spd == nil then
                 spd = 1
             end
-            UI.setValue("scenes_clock_speed", tostring(spd))
+            setInputFieldText("scenes_clock_speed", tostring(spd))
             local rt = ck.useRealTime == true
             U.setAttributes("scenes_clock_rtToggle", {
                 text = rt and "ON" or "OFF",
@@ -706,19 +713,32 @@ end
 
 --- @param player Player
 function StorytellerScenesPanel.applyClockFromInputs(player)
-    local function rawClockField(elemId, draftKey)
+    local function rawClockField(draftKey)
         local d = clockDraft[draftKey]
-        if type(d) == "string" and string.match(d, "%S") then
-            return d
+        if type(d) ~= "string" then
+            return ""
         end
-        return UI and UI.getValue and UI.getValue(elemId) or ""
+        return d
     end
 
-    local function numField(elemId, draftKey, fallback)
-        local raw = rawClockField(elemId, draftKey)
+    local function requireNonEmpty(draftKey, label)
+        local raw = rawClockField(draftKey)
+        if not string.match(raw, "%S") then
+            U.AlertGM(label .. " cannot be empty.")
+            return nil
+        end
+        return raw
+    end
+
+    local function numField(draftKey, label)
+        local raw = requireNonEmpty(draftKey, label)
+        if raw == nil then
+            return nil
+        end
         local n = tonumber(raw)
         if n == nil then
-            return fallback
+            U.AlertGM(label .. " must be a number.")
+            return nil
         end
         return math.floor(n)
     end
@@ -727,18 +747,32 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
     local prevHour = type(prev) == "table" and tonumber(prev.hour) or nil
     local prevIsPresentDay = type(prev) == "table" and prev.isPresentDay == true
 
-    local day = numField("scenes_clock_day", "day", 1)
-    local year = numField("scenes_clock_year", "year", 2026)
-    local timeRaw = rawClockField("scenes_clock_time12", "time12")
+    local day = numField("day", "Day")
+    if day == nil then
+        return
+    end
+    local year = numField("year", "Year")
+    if year == nil then
+        return
+    end
+    local timeRaw = requireNonEmpty("time12", "Time")
+    if timeRaw == nil then
+        return
+    end
     local h24, min = parseTime12h(timeRaw)
     if h24 == nil then
         U.AlertGM("Invalid time. Use 12-hour format like 7:05 PM or 09:30 AM.")
         return
     end
 
-    local spd = tonumber(rawClockField("scenes_clock_speed", "speed"))
+    local speedRaw = requireNonEmpty("speed", "Real-time speed")
+    if speedRaw == nil then
+        return
+    end
+    local spd = tonumber(speedRaw)
     if spd == nil or spd < 0 then
-        spd = 1
+        U.AlertGM("Real-time speed must be a non-negative number.")
+        return
     end
 
     local clock = {

@@ -110,7 +110,7 @@
       <VerticalLayout padding="10 10 10 10" spacing="6" childForceExpandWidth="true" childForceExpandHeight="true">
         <Text class="hud_storyteller_label">Import scene (JSON)</Text>
         <Text fontSize="9" color="#AAAAAA">Wrapper: sceneKey, title, sessionScene. Validates here; entry is saved with receivesLiveWrites false (not activated).</Text>
-        <InputField id="scenes_ctor_import_json" minHeight="140" preferredHeight="160" flexibleHeight="1" flexibleWidth="1" fontSize="11" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="MultiLineSubmit" characterValidation="None" text="" onValueChanged="HUD_scenesCtorImportJsonChanged" />
+        <InputField id="scenes_ctor_import_json" minHeight="140" preferredHeight="160" flexibleHeight="1" flexibleWidth="1" fontSize="11" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="MultiLineSubmit" characterValidation="None" text="" onValueChanged="HUD_scenesCtorImportJsonChanged" onEndEdit="HUD_scenesCtorImportJsonChanged" />
         <Text id="scenes_ctor_import_err" fontSize="10" color="#AAAAAA" minHeight="40" text="" />
         <HorizontalLayout spacing="8" childForceExpandWidth="false" childAlignment="MiddleLeft">
           <Button id="scenes_ctor_import_confirm" class="hud_storyteller_button" text="Import" minWidth="96" onClick="HUD_scenesCtorImportConfirm" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
@@ -124,9 +124,9 @@
         <Text class="hud_storyteller_label">Fork scene</Text>
         <Text fontSize="9" color="#AAAAAA">Titles are captured from the fields as you type (TTS InputField contract). Confirm pins the prior active row and starts mirroring the new row.</Text>
         <Text fontSize="9" color="#CCCCCC">New scene title</Text>
-        <InputField id="scenes_ctor_fork_title_new" class="hud_storyteller_input" minHeight="28" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" text="" onValueChanged="HUD_scenesCtorForkTitleChanged" />
+        <InputField id="scenes_ctor_fork_title_new" class="hud_storyteller_input" minHeight="28" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" text="" onValueChanged="HUD_scenesCtorForkTitleChanged" onEndEdit="HUD_scenesCtorForkTitleChanged" />
         <Text fontSize="9" color="#CCCCCC">Original scene title (frozen row)</Text>
-        <InputField id="scenes_ctor_fork_title_old" class="hud_storyteller_input" minHeight="28" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" text="" onValueChanged="HUD_scenesCtorForkTitleChanged" />
+        <InputField id="scenes_ctor_fork_title_old" class="hud_storyteller_input" minHeight="28" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" text="" onValueChanged="HUD_scenesCtorForkTitleChanged" onEndEdit="HUD_scenesCtorForkTitleChanged" />
         <HorizontalLayout spacing="8" childForceExpandWidth="false" childAlignment="MiddleLeft">
           <Button id="scenes_ctor_fork_confirm" class="hud_storyteller_button" text="Fork" minWidth="96" onClick="HUD_scenesCtorForkConfirm" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
           <Button id="scenes_ctor_fork_cancel" class="hud_storyteller_button" text="Cancel" minWidth="96" onClick="HUD_scenesCtorForkCancel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />

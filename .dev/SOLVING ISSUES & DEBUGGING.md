@@ -77,7 +77,7 @@ Tabletop Simulator documents that **typed text in an `InputField` cannot be read
 
 **Do not treat as authoritative for `InputField` content:**
 
-- `UI.getValue(elementId)` (and helpers that wrap it, e.g. `U.getUIValue`) — may appear to work in some builds or elements; it is **not** the documented way to read live `InputField` text and has failed in-repo (e.g. debug light GUID flow).
+- `UI.getValue(elementId)` and `UI.getAttribute(elementId, "text")` — may appear to work in some builds or elements; they are **not** the documented way to read live `InputField` text and have failed in-repo (e.g. debug light GUID flow, roll options modal).
 
 **Recommended patterns:**
 

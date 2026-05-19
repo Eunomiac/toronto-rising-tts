@@ -4,7 +4,7 @@ Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 
 ## Global UI `InputField` — reading typed text
 
-Per the TTS **InputField** note ([Input Elements](https://api.tabletopsimulator.com/ui/inputelements/)), live typed text is only delivered on **`onValueChanged`** / **`onEndEdit`** as the **`value`** argument. **Do not rely on `UI.getValue`** (or `U.getUIValue`) as the primary read path for `InputField` content. Stash `value` in Lua and read that on **Confirm**; prefill with **`UI.setAttribute(id, "text", ...)`** when the field may be inactive (see `core/roll_ui.ttslua` `uiSetInputField`, `rollDash_difficulty_*` + `HUD_rollSetDifficulty`). Full checklist: [`.dev/SOLVING ISSUES & DEBUGGING.md`](SOLVING%20ISSUES%20%26%20DEBUGGING.md) (*Global UI `InputField` — typed text*).
+Per the TTS **InputField** note ([Input Elements](https://api.tabletopsimulator.com/ui/inputelements/)), live typed text is only delivered on **`onValueChanged`** / **`onEndEdit`** as the **`value`** argument. **Do not read `InputField` content with `UI.getValue` or `UI.getAttribute(id, "text")`.** Stash `value` in Lua and read that on **Confirm**; prefill with **`UI.setAttribute(id, "text", ...)`** when the field may be inactive (see `core/roll_ui.ttslua` `uiSetInputField`, `rollDash_difficulty_*` + `HUD_rollSetDifficulty`, `HUD_rollOptsInputChanged`). Full checklist: [`.dev/SOLVING ISSUES & DEBUGGING.md`](SOLVING%20ISSUES%20%26%20DEBUGGING.md) (*Global UI `InputField` — typed text*).
 
 > **Source files:**
 >
@@ -24,7 +24,7 @@ Per the TTS **InputField** note ([Input Elements](https://api.tabletopsimulator.
 | `HUD_syncAll` | `Sync All (force)` button | `(player, button, id)` | Calls `Sync.full({ force = true })` — bypass scene/soundscape fingerprints; full `UpdateUIDisplays` (overlay repair). |
 | `HUD_clearLoadingOverlay` | `Clear Loading Overlay` button | `(player, button, id)` | Calls `hideStartupLoadingOverlays()` to force-hide `overlay_loadingScreen_<Color>` for all player seats (debug/manual escape hatch). Automatic hide on load uses **`U.RunSequence`** in **`core/global_script.ttslua`** `onLoad` (gates + wall-clock delay). Do not use **`U.waitForCondition`** with nested **`U.delay`** for that path — TTS can fire the timer immediately. |
 | `HUD_debugLightGuidInput` | `dl_guid` `InputField` | `(player, value, id)` | Caches typed GUID (`LightDebugFocus.onGuidInput`). Per TTS docs, `InputField` text is not obtainable outside `onValueChanged`/`onEndEdit`; this handler is the primary source of truth. |
-| `HUD_debugLightActivate` | `Debug Light` button | `(player, button, id)` | Reads GUID in order: `HUD_debugLightGuidInput` cache (authoritative), then `UI.getAttribute("dl_guid","text")`, then `UI.getValue("dl_guid")` as last-resort fallbacks. Trims, `getObjectFromGUID`, validates spotlight via `LightDebug.getLightComponent`. Opens `panel_debug_light_root`, syncs sliders, applies live. Broadcasts errors to the clicking player if invalid. |
+| `HUD_debugLightActivate` | `Debug Light` button | `(player, button, id)` | Reads GUID from `HUD_debugLightGuidInput` stash only (`LightDebugFocus.activate`). Trims, `getObjectFromGUID`, validates spotlight via `LightDebug.getLightComponent`. Opens `panel_debug_light_root`, syncs sliders, applies live. Broadcasts errors to the clicking player if invalid or empty. |
 | `HUD_debugLightEnabled` | `dl_enabled` `Toggle` | `(player, value, id)` | `LightDebugFocus.onEnabledToggle`: sets `cache.enabled`, `L.SetLightMode(..., enabled, ...)` instant apply. |
 | `HUD_debugLightResetRow` | `dl_reset_*` buttons | `(player, button, id)` | `LightDebugFocus.resetRowFromId(id)`: restores that row from session-start snapshot and reapplies. |
 | `HUD_debugLightSlider` | `dl_range`, `dl_angle`, `dl_intensity`, `dl_hue`, `dl_saturation`, `dl_brightness`, `dl_rotX`, `dl_rotY`, `dl_rotZ`, `dl_distance` | `(player, value, id)` | `LightDebugFocus.onSlider`: updates cached values, applies rotation/position. **Distance** moves along the inverse of `U.lookAtRotation` (same convention as `DEBUG.setRotationLookAt`), using object rotation minus `DEBUG.getLookAtOffset(obj)` for the beam axis. `L.SetLightMode` supplies enabled/range/angle/intensity/color (`transitionTime` 0). |
@@ -57,7 +57,7 @@ The **Scenes** toolbar tab opens `panel_scenes_host` (**1200px** total: two **59
 | `HUD_scenesMonthPick` | `scenes_month_1` … `scenes_month_12` | `(player, button, id)` | `StorytellerScenesPanel.setPendingMonth` — updates `sessionScene.clock.month` and refreshes the panel. |
 | `HUD_scenesToggleRealTimeClock` | `scenes_clock_rtToggle` | `(player, button, id)` | `StorytellerScenesPanel.toggleRealTimeClock` — toggles `sessionScene.clock.useRealTime`, starts/stops `GameStateOverlay` ticker, then `Sync.ui({ gameStateOverlay = true })`. |
 | `HUD_scenesApplyLocation` | `Apply location + soundscape` | `(player, button, id)` | Reads **state** `sessionScene.districtKey` / `siteKey` (district/site names are display-only). Validates keys, writes cards + `Soundscape.applyContext` + `Sync.full()`. |
-| `HUD_scenesApplyClock` | `Apply clock` | `(player, button, id)` | Writes `sessionScene.clock` from month (state) + stashed or `UI.getValue` day/year/time12/speed, `ChronicleWeather.applyScheduledWeather({ force = false })`, `Sync.full()` (incremental UI includes `gameStateOverlay`), `GameStateOverlay.resetRealTimeCarry()`, `ensureTicker`. |
+| `HUD_scenesApplyClock` | `Apply clock` | `(player, button, id)` | Writes `sessionScene.clock` from month (state) + `clockDraft` (stashed via `HUD_scenesClockFieldChanged`), `ChronicleWeather.applyScheduledWeather({ force = false })`, `Sync.full()` (incremental UI includes `gameStateOverlay`), `GameStateOverlay.resetRealTimeCarry()`, `ensureTicker`. |
 | `HUD_scenesCtorImportOpen` | `scenes_ctor_btn_import` | `(player, button, id)` | `StorytellerScenesPanel.openImportConstructorModal` — shows import modal, clears error + JSON stash. |
 | `HUD_scenesCtorImportCancel` | `scenes_ctor_import_cancel` | `(player, button, id)` | Closes import modal. |
 | `HUD_scenesCtorImportConfirm` | `scenes_ctor_import_confirm` | `(player, button, id)` | Host-only: `JSON.decode` + `SceneLibrary.validateAndNormalizeImportPayload`, writes `sceneLibrary.scenes[sceneKey]` with `receivesLiveWrites = false`, appends `order` key, `S.validateState()`, closes modal. |
@@ -133,13 +133,6 @@ Root `Panel` id `gameStateOverlay_location_<Color>` uses class `playerHud_overla
 | ------- | ---------------- | ------ | -------- |
 | `HUD_toggleZones` | `debug_zones` | `(player, button, id)` | Checks `S.getStateVal("zones", "allZonesLocked")`. If locked, calls `Z.activateZones()`; otherwise `Z.deactivateZones()`. Broadcasts status to player. |
 | `HUD_logState` | `debug_logState` | `(player, button, id)` | Prints `JSON.encode_pretty(S.getGameState())` to console. Broadcasts confirmation to player. |
-
-## Light Debug Panel (panel_lighting.xml)
-
-| Handler | XML Element(s) | Params | Behavior |
-| ------- | ---------------- | ------ | -------- |
-| `HUD_lightUpdate` | `lightUpdate_<guid>` (dynamically generated) | `(player, value, id)` | `value` contains the light object's GUID. Reads UI input fields `lightColor_<guid>`, `lightRange_<guid>`, `lightAngle_<guid>`, `lightIntensity_<guid>`. Calls `LightDebug.applyLightUpdate(guid, color, range, angle, intensity)`. Broadcasts success/failure. |
-| `HUD_lightRefresh` | `lightDebugRefresh` | `(player, button, id)` | Calls `LightDebug.refreshLightDebugPanel()` to rescan all objects for spotlights and rebuild the light table rows. Broadcasts confirmation. |
 
 ## Focused Debug Light panel (`panel_debug_light.xml`)
 

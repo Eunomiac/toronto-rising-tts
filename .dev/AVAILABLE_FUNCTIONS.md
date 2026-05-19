@@ -421,14 +421,9 @@ General-purpose UI helpers (system-agnostic). Prefer **`U.setAttribute` / `U.set
 | `U.hideXmlElement(elemID)` | Force collapsed | Close section |
 | `U.isXmlElementExpanded(elemID)` | Whether `active` reads as true | State checks |
 
-### Input values
+### Global UI `InputField` text
 
-| Function | Description | Usage Example |
-| :--------- | :------------- | :--------------- |
-| `U.setUIValue(elementID, value)` | Wraps `UI.setValue` with `tostring` | Elements where `setValue` is correct (not the primary pattern for **Global UI `InputField`** text — prefer `U.setAttribute(id, "text", ...)` when mirroring `roll_ui` / TTS behavior) |
-| `U.getUIValue(elementID)` | Wraps `UI.getValue` | **Not** the supported way to read **Global UI `InputField`** typed text per TTS ([InputField note](https://api.tabletopsimulator.com/ui/inputelements/)); use `onValueChanged` / `onEndEdit` and stash the `value` argument. For non-InputField elements where `getValue` is defined, still returns **number** if `tonumber` succeeds, else string |
-
-**`InputField`:** See [`.dev/SOLVING ISSUES & DEBUGGING.md`](SOLVING%20ISSUES%20&%20DEBUGGING.md) section *Global UI `InputField` — typed text*.
+Do not use `UI.getValue` / `UI.getAttribute(id, "text")` to read typed `InputField` content. Use **`onValueChanged` / `onEndEdit`**, stash the callback **`value`**, and prefill with **`U.setAttribute(id, "text", ...)`** (see `uiSetInputField` in `core/roll_ui.ttslua`). Full checklist: [`.dev/SOLVING ISSUES & DEBUGGING.md`](SOLVING%20ISSUES%20&%20DEBUGGING.md) section *Global UI `InputField` — typed text*.
 
 TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when the target may be a **Button**.
 
