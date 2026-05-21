@@ -4568,6 +4568,178 @@ function DEBUG.logSeatLightsToFile(filename)
     print("DEBUG: Seat light diagnostics logged to " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION)
 end
 
+--- Logs Step Zero placement intent plus occupied slots for NPC reconcile verification.
+--- After scene edits, run `Sync.full({ force = true })`, then compare world to intent:
+--- 1) byArea + seatSlots same char → target area; 2) seat only → target seat + physicalSeatAllowed;
+--- 3) seat on table without slot → target preload, assignment retained; 4) assigned + present false → seated layout, hidden props;
+--- 5) seat-only scene change → no full pool stash; 6) save load bootstrap → one successful reconcile.
+--- @param filename string Optional filename (default: "npc_placement_intent")
+function DEBUG.logNpcPlacementIntentToFile(filename)
+    filename = filename or "npc_placement_intent"
+    local NPCS = require("core.npcs")
+    local intent = NPCS.resolveNpcPlacementIntent()
+    local rows = {
+        "character | target | areaKey | slot | seatKey | pendingSeat",
+        "seat | assigned | character | tableHasSlot | present | physicalSeatAllowed | occupiedNPCSlots",
+    }
+    local byCharacter = intent.byCharacter or {}
+    local charKeys = {}
+    for name, _ in pairs(byCharacter) do
+        charKeys[#charKeys + 1] = name
+    end
+    table.sort(charKeys)
+    for i = 1, #charKeys do
+        local name = charKeys[i]
+        local ci = byCharacter[name]
+        rows[#rows + 1] = table.concat({
+            tostring(name),
+            tostring(ci and ci.target or ""),
+            tostring(ci and ci.areaKey or ""),
+            tostring(ci and ci.slotIndex or ""),
+            tostring(ci and ci.seatKey or ""),
+            tostring(ci and ci.pendingSeatKey or ""),
+        }, " | ")
+    end
+    rows[#rows + 1] = ""
+    local occupied = S.getStateVal("seatLayout", "occupiedNPCSlots") or {}
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local info = (intent.bySeat or {})[seatKey] or {}
+        rows[#rows + 1] = table.concat({
+            tostring(seatKey),
+            tostring(info.assigned),
+            tostring(info.assignedCharacter or ""),
+            tostring(info.tableHasSlot),
+            tostring(info.present),
+            tostring(info.physicalSeatAllowed),
+            tostring(occupied[seatKey] or ""),
+        }, " | ")
+    end
+    rows[#rows + 1] = "tableKey=" .. tostring(intent.tableKey or "")
+    writeToFile(filename, table.concat(rows, "\n") .. "\n", "none", false)
+    print(
+        "DEBUG: NPC placement intent logged to "
+            .. WORKSPACE_DEBUG_WRITE_ROOT
+            .. "/"
+            .. LOG_DIR
+            .. "/"
+            .. filename
+            .. "."
+            .. LOG_EXTENSION
+    )
+end
+
+--- Display name for export rows (Nickname wins over Name, matching layout conventions).
+--- @param obj Object|nil
+--- @return string
+local function exportObjectDisplayName(obj)
+    if not U.isGameObject(obj) then
+        return ""
+    end
+    if obj.getNickname ~= nil then
+        local nickname = obj.getNickname()
+        if U.Type(nickname) == "string" and nickname ~= "" then
+            return nickname
+        end
+    end
+    if obj.getName ~= nil then
+        return tostring(obj.getName() or "")
+    end
+    return ""
+end
+
+--- True when an `NPC#Object`-tagged object is a seat figurine (pooled NPC cutout or workshop `SEAT_FIGURE_*`).
+--- @param obj Object|nil
+--- @param npcsModule table core.npcs
+--- @return boolean
+local function isNpcSeatFigurineObject(obj, npcsModule)
+    if not U.isGameObject(obj) then
+        return false
+    end
+    if type(npcsModule.isPooledFigurineObject) == "function" and npcsModule.isPooledFigurineObject(obj) then
+        return true
+    end
+    local disp = exportObjectDisplayName(obj)
+    local roleKey = string.match(disp, "^(.+)_")
+    if roleKey == "SEAT_FIGURE" then
+        return true
+    end
+    if disp == "Figurine_Custom" then
+        return true
+    end
+    return false
+end
+
+--- Collect `NPC1Object`..`NPC4Object` figurines and write a short Lua table `{ name, guid }` to workspace debug logs.
+--- Run from the External Editor / TTS console: `lua DEBUG.exportNpcSeatFigurinesToFile()`.
+--- Requires TTS Tools bridge on port 39998 for file write (`.dev/.debug/debug_logs/...`).
+--- @param relativePath string|nil default `debug_logs/npc_seat_figurines.lua`
+--- @return table rows `{ tag, name, guid }[]`
+--- @return boolean wrote true when sendExternalMessage write succeeded
+function DEBUG.exportNpcSeatFigurinesToFile(relativePath)
+    relativePath = relativePath or "debug_logs/npc_seat_figurines.lua"
+    local NPCS = require("core.npcs")
+    local rows = {}
+    local seenGuids = {}
+
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local tag = tostring(seatKey) .. "Object"
+        local objs = getObjectsWithTag(tag)
+        if type(objs) ~= "table" then
+            objs = {}
+        end
+        for _, obj in ipairs(objs) do
+            if isNpcSeatFigurineObject(obj, NPCS) then
+                local guid = obj.getGUID and obj.getGUID() or nil
+                if U.Type(guid) == "string" and guid ~= "" and seenGuids[guid] ~= true then
+                    seenGuids[guid] = true
+                    rows[#rows + 1] = {
+                        tag = tag,
+                        name = exportObjectDisplayName(obj),
+                        guid = guid,
+                    }
+                end
+            end
+        end
+    end
+
+    table.sort(rows, function(a, b)
+        local ta = tostring(a.tag)
+        local tb = tostring(b.tag)
+        if ta ~= tb then
+            return ta < tb
+        end
+        return tostring(a.name) < tostring(b.name)
+    end)
+
+    local ts = getTimestamp()
+    local lines = {
+        "-- Generated by DEBUG.exportNpcSeatFigurinesToFile at " .. tostring(ts),
+        "-- Tags: NPC1Object .. NPC4Object; figurines only (SEAT_FIGURE_* / pooled npc figurine / Figurine_Custom).",
+        "",
+        "return {",
+    }
+    for i = 1, #rows do
+        local row = rows[i]
+        local nameEsc = string.gsub(tostring(row.name), "\"", "\\\"")
+        lines[#lines + 1] = string.format(
+            "  { tag = \"%s\", name = \"%s\", guid = \"%s\" },",
+            tostring(row.tag),
+            nameEsc,
+            tostring(row.guid)
+        )
+    end
+    lines[#lines + 1] = "}"
+    lines[#lines + 1] = ""
+
+    local content = table.concat(lines, "\n")
+    local wrote = DEBUG.writeWorkspaceFile(relativePath, content, "none", false)
+    print("DEBUG.exportNpcSeatFigurinesToFile: " .. tostring(#rows) .. " figurine(s) → " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. relativePath)
+    if JSON ~= nil and JSON.encode ~= nil then
+        print(JSON.encode({ count = #rows, wrote = wrote, path = relativePath, rows = rows }))
+    end
+    return rows, wrote
+end
+
 --- Logs current scene information to a file
 -- @param filename string Optional filename (default: "scene_info")
 function DEBUG.logSceneToFile(filename)
@@ -5008,6 +5180,8 @@ function DEBUG.help()
     print("\nFILE LOGGING FUNCTIONS:")
     print("  logToFile(level, msg, filename?) - Log a message to file")
     print("  logStateToFile(filename?)       - Log game state to file (JSON)")
+    print("  logNpcPlacementIntentToFile(filename?) - Log Step Zero NPC placement intent (reconcile verify)")
+    print("  exportNpcSeatFigurinesToFile(path?)     - Export NPC#Object figurines (name + GUID) to debug_logs")
     print("  logSceneToFile(filename?)       - Log scene info to file")
     print("  logZonesToFile(filename?)       - Log zone info to file")
     print("  logTestToFile(name, passed, details?, filename?) - Log test result")
@@ -5119,6 +5293,7 @@ clearCustomUiUploadTokens = DEBUG.clearCustomUiUploadTokens
 -- Expose file logging functions
 logToFile = DEBUG.logToFile
 logStateToFile = DEBUG.logStateToFile
+logNpcPlacementIntentToFile = DEBUG.logNpcPlacementIntentToFile
 logSceneToFile = DEBUG.logSceneToFile
 logZonesToFile = DEBUG.logZonesToFile
 logTestToFile = DEBUG.logTestToFile

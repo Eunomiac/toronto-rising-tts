@@ -2,26 +2,51 @@
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/HUDs & Overlays/Player HUD Overview.md. -->
 
 <Panel id="playerHud_overlay_blindfold_Brown" class="playerHud_overlaysLayer" visibility="Brown">
-  <Image id="overlay_blindfold_Brown" image="overlay_blindfold" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" />
-  <Image id="overlay_loadingScreen_Brown" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true"/>
+  <Image id="overlay_blindfold_1_Brown" image="overlay_blindfold_1" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_2_Brown" image="overlay_blindfold_2" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_3_Brown" image="overlay_blindfold_3" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_4_Brown" image="overlay_blindfold_4" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_5_Brown" image="overlay_blindfold_5" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_6_Brown" image="overlay_blindfold_6" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_loadingScreen_Brown" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true" preserveAspect="true" />
 </Panel>
 
 <Panel id="playerHud_overlay_blindfold_Orange" class="playerHud_overlaysLayer" visibility="Orange">
-  <Image id="overlay_blindfold_Orange" image="overlay_blindfold" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" />
-  <Image id="overlay_loadingScreen_Orange" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true"/>
+  <Image id="overlay_blindfold_1_Orange" image="overlay_blindfold_1" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_2_Orange" image="overlay_blindfold_2" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_3_Orange" image="overlay_blindfold_3" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_4_Orange" image="overlay_blindfold_4" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_5_Orange" image="overlay_blindfold_5" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_6_Orange" image="overlay_blindfold_6" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_loadingScreen_Orange" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true" preserveAspect="true" />
 </Panel>
 
 <Panel id="playerHud_overlay_blindfold_Red" class="playerHud_overlaysLayer" visibility="Red">
-  <Image id="overlay_blindfold_Red" image="overlay_blindfold" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" />
-  <Image id="overlay_loadingScreen_Red" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true"/>
+  <Image id="overlay_blindfold_1_Red" image="overlay_blindfold_1" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_2_Red" image="overlay_blindfold_2" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_3_Red" image="overlay_blindfold_3" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_4_Red" image="overlay_blindfold_4" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_5_Red" image="overlay_blindfold_5" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_6_Red" image="overlay_blindfold_6" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_loadingScreen_Red" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true" preserveAspect="true" />
 </Panel>
 
 <Panel id="playerHud_overlay_blindfold_Pink" class="playerHud_overlaysLayer" visibility="Pink">
-  <Image id="overlay_blindfold_Pink" image="overlay_blindfold" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" />
-  <Image id="overlay_loadingScreen_Pink" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true"/>
+  <Image id="overlay_blindfold_1_Pink" image="overlay_blindfold_1" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_2_Pink" image="overlay_blindfold_2" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_3_Pink" image="overlay_blindfold_3" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_4_Pink" image="overlay_blindfold_4" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_5_Pink" image="overlay_blindfold_5" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_6_Pink" image="overlay_blindfold_6" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_loadingScreen_Pink" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true" preserveAspect="true" />
 </Panel>
 
 <Panel id="playerHud_overlay_blindfold_Purple" class="playerHud_overlaysLayer" visibility="Purple">
-  <Image id="overlay_blindfold_Purple" image="overlay_blindfold" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" />
-  <Image id="overlay_loadingScreen_Purple" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true"/>
+  <Image id="overlay_blindfold_1_Purple" image="overlay_blindfold_1" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_2_Purple" image="overlay_blindfold_2" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_3_Purple" image="overlay_blindfold_3" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_4_Purple" image="overlay_blindfold_4" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_5_Purple" image="overlay_blindfold_5" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_6_Purple" image="overlay_blindfold_6" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_loadingScreen_Purple" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true" preserveAspect="true" />
 </Panel>

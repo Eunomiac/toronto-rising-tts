@@ -17,6 +17,8 @@ local ChronicleWeather = require("lib.chronicle_weather")
 local GameStateOverlay = require("core.game_state_overlay")
 local SceneLibrary = require("core.scene_library")
 local PresentDayClock = require("core.present_day_clock")
+local StorytellerPanelUI = require("core.storyteller_panel_ui")
+local HUDBF = require("core.hud_blindfold")
 
 local GREEN = "#228B22|#32CD32|#006400|#228B22"
 local GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
@@ -26,6 +28,13 @@ local GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
 -- @param value string
 local function setInputFieldText(elementId, value)
     U.setAttribute(elementId, "text", tostring(value or ""))
+end
+
+--- Collapses the storyteller Scenes tab after Apply / End scene.
+local function closeScenesPanel()
+    if StorytellerPanelUI and type(StorytellerPanelUI.closeAllPanels) == "function" then
+        StorytellerPanelUI.closeAllPanels()
+    end
 end
 
 --- Maps XML button ids (no spaces) to `C.Tables` keys.
@@ -55,6 +64,49 @@ local function effectiveTableKey()
         return cur
     end
     return nil
+end
+
+--- Narrative presence for panel + reconcilers (`seatSlots.isPresent` wins over `seatPresent`).
+--- @param seatKey string
+--- @return boolean
+local function resolveSeatNarrativePresence(seatKey)
+    local row = S.getStateVal("sessionScene", "seatSlots", seatKey)
+    if type(row) == "table" and row.isPresent ~= nil then
+        return row.isPresent ~= false
+    end
+    local narrative = S.getStateVal("sessionScene", "seatPresent", seatKey)
+    if narrative ~= nil then
+        return narrative ~= false
+    end
+    return true
+end
+
+--- Writes authoritative `seatSlots.isPresent` and mirrored `seatPresent` (panel toggles must update both).
+--- @param seatKey string
+--- @param present boolean
+local function setSeatNarrativePresence(seatKey, present)
+    local ss = S.getStateVal("sessionScene", "seatSlots")
+    if type(ss) ~= "table" then
+        ss = {}
+    end
+    local row = ss[seatKey]
+    if type(row) ~= "table" then
+        row = {}
+    else
+        row = U.clone(row, true)
+    end
+    row.isPresent = present == true
+    ss = U.clone(ss, true)
+    ss[seatKey] = row
+    S.setStateVal(ss, "sessionScene", "seatSlots")
+
+    local sp = S.getStateVal("sessionScene", "seatPresent")
+    if type(sp) ~= "table" then
+        sp = {}
+    end
+    sp = U.clone(sp, true)
+    sp[seatKey] = present == true
+    S.setStateVal(sp, "sessionScene", "seatPresent")
 end
 
 --- @param raw any
@@ -144,16 +196,78 @@ local function formatTime12h(hour24, minute)
     return string.format("%d:%02d %s", h12, m, suffix)
 end
 
---- Mirrors `sessionScene.clock` into `clockDraft` after `refresh` pushes InputField `text` (Apply reads draft only).
+--- Pending activation clock: edits apply when the selected library scene is activated, not on "Apply clock".
+--- When the selected row is the live on-table scene, "Apply clock" still mutates live state immediately.
 local clockDraft = {
     day = nil,
     year = nil,
     time12 = nil,
     speed = nil,
+    month = nil,
+    useRealTime = nil,
+    --- `sceneLibrary.activeKey` this draft belongs to (nil = live / no selection).
+    sceneKey = nil,
+    dirty = false,
 }
 
-function StorytellerScenesPanel.syncClockDraftFromState()
-    local ck = S.getStateVal("sessionScene", "clock")
+--- @return string|nil
+local function getActiveLibraryKey()
+    local k = S.getStateVal("sceneLibrary", "activeKey")
+    if type(k) == "string" and k ~= "" then
+        return k
+    end
+    return nil
+end
+
+--- Selected library row differs from the scene currently on the table.
+--- @param activeKey string|nil
+--- @return boolean
+local function isPendingSceneActivation(activeKey)
+    if type(activeKey) ~= "string" or activeKey == "" then
+        return false
+    end
+    local lastApplied = S.getStateVal("sceneLibrary", "lastAppliedKey")
+    return activeKey ~= lastApplied
+end
+
+--- @param sceneKey string
+--- @return table|nil library row `sessionScene.clock`
+local function getLibraryRowClock(sceneKey)
+    local ent = S.getStateVal("sceneLibrary", "scenes", sceneKey)
+    if type(ent) ~= "table" or type(ent.sessionScene) ~= "table" then
+        return nil
+    end
+    local ck = ent.sessionScene.clock
+    if type(ck) ~= "table" then
+        return nil
+    end
+    return ck
+end
+
+--- Base clock shown when a library row is selected (includes present-day / RT progression via `presentDayClock`).
+--- @param activeKey string
+--- @return table|nil
+local function basePreviewClockForSelection(activeKey)
+    local libClock = getLibraryRowClock(activeKey)
+    if type(libClock) ~= "table" then
+        return nil
+    end
+    local lastApplied = S.getStateVal("sceneLibrary", "lastAppliedKey")
+    if activeKey == lastApplied then
+        local live = S.getStateVal("sessionScene", "clock")
+        if type(live) == "table" then
+            return U.merge({}, live)
+        end
+    end
+    local preview = PresentDayClock.resolveActivationPreviewClock(libClock)
+    if type(preview) == "table" then
+        return preview
+    end
+    return U.merge({}, libClock)
+end
+
+--- @param ck table|nil
+function StorytellerScenesPanel.syncClockDraftFromClock(ck)
     if type(ck) ~= "table" then
         return
     end
@@ -165,6 +279,257 @@ function StorytellerScenesPanel.syncClockDraftFromState()
         spd = 1
     end
     clockDraft.speed = tostring(spd)
+    clockDraft.month = math.floor(tonumber(ck.month) or 1)
+    clockDraft.useRealTime = ck.useRealTime == true
+end
+
+function StorytellerScenesPanel.syncClockDraftFromState()
+    StorytellerScenesPanel.syncClockDraftFromClock(S.getStateVal("sessionScene", "clock"))
+end
+
+--- Resets pending activation draft for a newly selected library row.
+--- @param sceneKey string
+local function resetClockDraftForLibrarySelection(sceneKey)
+    clockDraft.sceneKey = sceneKey
+    clockDraft.dirty = false
+    local preview = basePreviewClockForSelection(sceneKey)
+    StorytellerScenesPanel.syncClockDraftFromClock(preview)
+end
+
+--- True when any datetime InputField in `clockDraft` is empty/whitespace (present-day: use chronicle now instead of saved row time).
+--- @return boolean
+local function draftHasClearedDatetimeFields()
+    local function empty(key)
+        local d = clockDraft[key]
+        return type(d) ~= "string" or not string.match(d, "%S")
+    end
+    return empty("day") or empty("year") or empty("time12")
+end
+
+--- Builds a flags-only present-day clock from library row + draft RT/speed overrides (no Y/M/D/h/m).
+--- @param baseClock table|nil
+--- @return table|nil
+--- @return string|nil err
+local function buildFlagsOnlyClockFromDraft(baseClock)
+    baseClock = type(baseClock) == "table" and baseClock or {}
+    if baseClock.isPresentDay ~= true then
+        return nil, "Historical scenes require a full clock; clearing datetime is only valid for present-day scenes."
+    end
+
+    local useRt = baseClock.useRealTime == true
+    if clockDraft.useRealTime ~= nil then
+        useRt = clockDraft.useRealTime == true
+    end
+
+    local spd = tonumber(baseClock.realTimeSpeed)
+    if spd == nil or spd < 0 then
+        spd = 1
+    end
+    local speedRaw = clockDraft.speed
+    if type(speedRaw) == "string" and string.match(speedRaw, "%S") then
+        local parsed = tonumber(speedRaw)
+        if parsed == nil or parsed < 0 then
+            return nil, "Real-time speed must be a non-negative number."
+        end
+        spd = parsed
+    end
+
+    return {
+        isPresentDay = true,
+        useRealTime = useRt,
+        realTimeSpeed = spd,
+    }, nil
+end
+
+--- Parses day/year/time/month from `clockDraft` (datetime only; no RT flags).
+--- @param baseClock table|nil fallback for month when draft month unset
+--- @return table|nil `{ year, month, day, hour, minute }`
+--- @return string|nil err
+local function parseDatetimeFromClockDraft(baseClock)
+    baseClock = type(baseClock) == "table" and baseClock or {}
+
+    local function rawField(key)
+        local d = clockDraft[key]
+        if type(d) ~= "string" then
+            return ""
+        end
+        return d
+    end
+
+    local function requireNonEmpty(key, label)
+        local raw = rawField(key)
+        if not string.match(raw, "%S") then
+            return nil, label .. " cannot be empty."
+        end
+        return raw, nil
+    end
+
+    local dayRaw, dayErr = requireNonEmpty("day", "Day")
+    if dayRaw == nil then
+        return nil, dayErr
+    end
+    local day = tonumber(dayRaw)
+    if day == nil then
+        return nil, "Day must be a number."
+    end
+
+    local yearRaw, yearErr = requireNonEmpty("year", "Year")
+    if yearRaw == nil then
+        return nil, yearErr
+    end
+    local year = tonumber(yearRaw)
+    if year == nil then
+        return nil, "Year must be a number."
+    end
+
+    local timeRaw, timeErr = requireNonEmpty("time12", "Time")
+    if timeRaw == nil then
+        return nil, timeErr
+    end
+    local h24, min = parseTime12h(timeRaw)
+    if h24 == nil then
+        return nil, "Invalid time. Use 12-hour format like 7:05 PM or 09:30 AM."
+    end
+
+    local month = clockDraft.month
+    if month == nil then
+        month = math.floor(tonumber(baseClock.month) or 1)
+    else
+        month = math.floor(tonumber(month) or 1)
+    end
+    if month < 1 then
+        month = 1
+    end
+    if month > 12 then
+        month = 12
+    end
+
+    return {
+        year = math.floor(year),
+        month = month,
+        day = math.floor(day),
+        hour = h24,
+        minute = min,
+    }, nil
+end
+
+--- Parses `clockDraft` into a full clock using flag defaults from `baseClock` (library row).
+--- @param baseClock table|nil
+--- @return table|nil clock
+--- @return string|nil err
+local function buildClockFromDraft(baseClock)
+    baseClock = type(baseClock) == "table" and baseClock or {}
+
+    local function rawField(key)
+        local d = clockDraft[key]
+        if type(d) ~= "string" then
+            return ""
+        end
+        return d
+    end
+
+    local function requireNonEmpty(key, label)
+        local raw = rawField(key)
+        if not string.match(raw, "%S") then
+            return nil, label .. " cannot be empty."
+        end
+        return raw, nil
+    end
+
+    local speedRaw, speedErr = requireNonEmpty("speed", "Real-time speed")
+    if speedRaw == nil then
+        return nil, speedErr
+    end
+    local spd = tonumber(speedRaw)
+    if spd == nil or spd < 0 then
+        return nil, "Real-time speed must be a non-negative number."
+    end
+
+    local dt, dtErr = parseDatetimeFromClockDraft(baseClock)
+    if dt == nil then
+        return nil, dtErr
+    end
+
+    local useRt = baseClock.useRealTime == true
+    if clockDraft.useRealTime ~= nil then
+        useRt = clockDraft.useRealTime == true
+    end
+
+    return {
+        hour = dt.hour,
+        minute = dt.minute,
+        day = dt.day,
+        month = dt.month,
+        year = dt.year,
+        useRealTime = useRt,
+        realTimeSpeed = spd,
+        isPresentDay = baseClock.isPresentDay == true,
+    }, nil
+end
+
+--- Clock row source: selected library preview (or draft override), else live `sessionScene.clock`.
+--- @return table|nil
+local function resolvePanelDisplayClock()
+    local activeKey = getActiveLibraryKey()
+    if activeKey == nil then
+        local live = S.getStateVal("sessionScene", "clock")
+        return type(live) == "table" and live or nil
+    end
+
+    if clockDraft.sceneKey == activeKey and clockDraft.dirty then
+        if draftHasClearedDatetimeFields() then
+            local base = getLibraryRowClock(activeKey) or {}
+            if base.isPresentDay == true then
+                local flagsOnly, _ = buildFlagsOnlyClockFromDraft(base)
+                if type(flagsOnly) == "table" then
+                    local pdClock = PresentDayClock.mergePresentDayDatetimeWithFlags(flagsOnly)
+                    if type(pdClock) == "table" then
+                        return pdClock
+                    end
+                end
+            end
+        else
+            local base = getLibraryRowClock(activeKey) or {}
+            local built, _ = buildClockFromDraft(base)
+            if type(built) == "table" then
+                return built
+            end
+        end
+    end
+
+    return basePreviewClockForSelection(activeKey)
+end
+
+--- When `clockDraft` is dirty for `sceneKey`, merges parsed draft into `bundle.clock` before activation.
+--- @param bundle table
+--- @param sceneKey string
+--- @return boolean ok
+--- @return string|nil err
+local function mergeActivationClockDraftIntoBundle(bundle, sceneKey)
+    if type(bundle) ~= "table" then
+        return false, "Internal error: scene bundle is not a table."
+    end
+    if clockDraft.sceneKey ~= sceneKey or clockDraft.dirty ~= true then
+        return true, nil
+    end
+
+    local base = type(bundle.clock) == "table" and bundle.clock or {}
+
+    if draftHasClearedDatetimeFields() then
+        local flagsOnly, err = buildFlagsOnlyClockFromDraft(base)
+        if flagsOnly == nil then
+            return false, err
+        end
+        bundle.clock = flagsOnly
+        return SceneLibrary.validateSessionSceneClock(flagsOnly)
+    end
+
+    local built, err = buildClockFromDraft(base)
+    if built == nil then
+        return false, err
+    end
+    bundle.clock = built
+    return SceneLibrary.validateSessionSceneClock(built)
 end
 
 --- @param player Player
@@ -180,6 +545,11 @@ function StorytellerScenesPanel.onClockInputChanged(player, value, id)
         clockDraft.time12 = v
     elseif id == "scenes_clock_speed" then
         clockDraft.speed = v
+    end
+    local activeKey = getActiveLibraryKey()
+    if activeKey ~= nil then
+        clockDraft.sceneKey = activeKey
+        clockDraft.dirty = true
     end
 end
 
@@ -199,14 +569,9 @@ function StorytellerScenesPanel.refresh()
         })
     end
 
-    local sp = S.getStateVal("sessionScene", "seatPresent")
-    if type(sp) ~= "table" then
-        sp = {}
-    end
-
     local function syncSeatButton(seatKey, bid)
-        local narrative = sp[seatKey]
-        local absent = narrative == false
+        local present = resolveSeatNarrativePresence(seatKey)
+        local absent = not present
         local label = seatKey
         if absent then
             label = seatKey .. " (absent)"
@@ -245,8 +610,20 @@ function StorytellerScenesPanel.refresh()
         end
         UI.setValue("scenes_siteNameDisplay", sLabel)
 
-        local ck = S.getStateVal("sessionScene", "clock")
+        local activeKeyForClock = getActiveLibraryKey()
+        if activeKeyForClock ~= nil and clockDraft.sceneKey ~= activeKeyForClock then
+            resetClockDraftForLibrarySelection(activeKeyForClock)
+        end
+
+        local ck = resolvePanelDisplayClock()
         if type(ck) == "table" then
+            local activeKey = getActiveLibraryKey()
+            if activeKey ~= nil and clockDraft.sceneKey == activeKey and clockDraft.dirty ~= true then
+                StorytellerScenesPanel.syncClockDraftFromClock(ck)
+            elseif activeKey == nil then
+                StorytellerScenesPanel.syncClockDraftFromClock(ck)
+            end
+
             local mo = math.floor(tonumber(ck.month) or 1)
             for m = 1, 12 do
                 U.setAttributes("scenes_month_" .. tostring(m), {
@@ -270,14 +647,14 @@ function StorytellerScenesPanel.refresh()
                 fontStyle = "Bold",
                 textColor = "#FFFFFF",
             })
-            StorytellerScenesPanel.syncClockDraftFromState()
         end
     end
 
     StorytellerScenesPanel.refreshSceneLibraryRows()
 end
 
---- Pushes `sceneLibrary.order` into fixed `scenes_lib_slot_*` buttons (activeKey green; unlinked rows dimmer).
+--- Pushes `sceneLibrary.order` into fixed `scenes_lib_slot_*` buttons.
+--- Green = selected (`activeKey`); dimmer + ` · unlinked` = not mirroring; ` · live` = on-table scene when another row is selected.
 function StorytellerScenesPanel.refreshSceneLibraryRows()
     if UI == nil or UI.setAttribute == nil then
         return
@@ -287,6 +664,8 @@ function StorytellerScenesPanel.refreshSceneLibraryRows()
     local order = type(lib) == "table" and lib.order or nil
     local scenes = type(lib) == "table" and lib.scenes or nil
     local activeKey = type(lib) == "table" and lib.activeKey or nil
+    local lastAppliedKey = type(lib) == "table" and lib.lastAppliedKey or nil
+    local mirrorKey = SceneLibrary.resolveMirrorSceneKey()
     if type(order) ~= "table" then
         order = {}
     end
@@ -304,22 +683,33 @@ function StorytellerScenesPanel.refreshSceneLibraryRows()
             if string.len(line) > 58 then
                 line = string.sub(line, 1, 55) .. "..."
             end
-            local isActive = activeKey == key
-            local linked = ent.receivesLiveWrites == true
+            local isSelected = activeKey == key
+            local isLinked = ent.receivesLiveWrites == true
+            local isLiveOnTable = lastAppliedKey == key
+            local isMirroring = mirrorKey == key
             local colors = GREY
-            if isActive then
+            if isSelected then
                 colors = GREEN
-            elseif linked == false then
+            elseif not isLinked then
                 colors = "#333333|#444444|#555555|rgba(0.25,0.25,0.25,0.5)"
             end
+            local suffixParts = {}
+            if isLiveOnTable and not isSelected then
+                suffixParts[#suffixParts + 1] = "live"
+            end
+            if isMirroring then
+                suffixParts[#suffixParts + 1] = "mirroring"
+            elseif not isLinked then
+                suffixParts[#suffixParts + 1] = "unlinked"
+            end
             local suffix = ""
-            if linked == false then
-                suffix = " · unlinked"
+            if #suffixParts > 0 then
+                suffix = " · " .. table.concat(suffixParts, ", ")
             end
             U.setAttributes(bid, {
                 text = line .. suffix,
                 colors = colors,
-                fontStyle = isActive and "Bold" or "Normal",
+                fontStyle = isSelected and "Bold" or "Normal",
                 textColor = "#FFFFFF",
             })
         else
@@ -362,24 +752,28 @@ function StorytellerScenesPanel.onLibrarySlotClick(player, button, id)
     end
     S.setStateVal(key, "sceneLibrary", "activeKey")
     S.validateState()
+    resetClockDraftForLibrarySelection(key)
     StorytellerScenesPanel.refresh()
     U.AlertGM("Active library scene: `" .. key .. "`. Use Apply to switch the live table to this bundle.")
 end
 
---- Sets `receivesLiveWrites = false` on the active library entry (see Scene Constructor Overview).
+--- Sets `receivesLiveWrites = false` on the row currently mirroring (see Scene Constructor Overview).
 --- @param player Player
 function StorytellerScenesPanel.unlinkActiveMirror(player)
     if player == nil or player.host ~= true then
         U.AlertGM("Only the host can unlink a library scene.")
         return
     end
-    local K = S.getStateVal("sceneLibrary", "activeKey")
+    local K = SceneLibrary.resolveMirrorSceneKey()
+    if K == nil then
+        K = S.getStateVal("sceneLibrary", "activeKey")
+    end
     if type(K) ~= "string" or K == "" then
-        U.AlertGM("Unlink: no active library scene — click a row in Scene library first.")
+        U.AlertGM("Unlink: no library scene is linked — click a row in Scene library first.")
         return
     end
     if type(S.getStateVal("sceneLibrary", "scenes", K)) ~= "table" then
-        U.AlertGM("Unlink: active row is missing from state.")
+        U.AlertGM("Unlink: linked row is missing from state.")
         return
     end
     S.setStateVal(false, "sceneLibrary", "scenes", K, "receivesLiveWrites")
@@ -434,8 +828,8 @@ end
 
 --- Applies `sceneLibrary.scenes[activeKey].sessionScene` to live state, switches table when `tableKey` is valid,
 --- reapplies soundscape site context, optional `soundscapeNarrative`, then `Sync.full`.
---- Table switching uses `RSL.SetTableTo` (blindfold path when the key changes). NPC seat → layout wiring
---- follows `S.validateState` (live `sessionScene` only).
+--- Transition blindfold (`core.hud_blindfold`) covers the full apply pipeline and lifts after a 10s settle delay.
+--- Panel close + blindfold are immediate; heavy work is deferred via `U.waitUntil`.
 --- @param player Player
 function StorytellerScenesPanel.applyActiveLibraryScene(player)
     if player == nil or player.host ~= true then
@@ -453,118 +847,156 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
         return
     end
 
-    PresentDayClock.flushPreviousAppliedScene(K)
+    closeScenesPanel()
 
-    -- Deep copy: `U.clone(..., true)` is shallow only (see `lib/util.ttslua`); `U.merge` recurses nested tables.
-    local bundle = U.merge({}, ent.sessionScene)
-    SceneLibrary.syncNpcRoleOverrideFromSeatSlots(bundle)
-    local lightingKey, lightingErr = validateLightingPresetKey(bundle.lightingPresetKey)
-    if lightingKey == nil then
-        U.AlertGM("Apply failed: " .. tostring(lightingErr))
-        return
-    end
-    bundle.lightingPresetKey = lightingKey
+    HUDBF.runTransitionAfterLeadIn(function()
+        local clockOkPre, clockErrPre = SceneLibrary.validateSessionSceneClock(ent.sessionScene.clock)
+        if not clockOkPre then
+            return false, "Apply failed: " .. tostring(clockErrPre)
+        end
 
-    local clockOk, clockErr = PresentDayClock.resolveAndApplyActivationClock(bundle)
-    if not clockOk then
-        U.AlertGM("Apply failed: " .. tostring(clockErr))
-        return
-    end
+        PresentDayClock.flushPreviousAppliedScene(K)
 
-    S.setStateVal(bundle, "sessionScene")
-    S.validateState()
-    PresentDayClock.markApplied(K)
+        -- Deep copy: `U.clone(..., true)` is shallow only (see `lib/util.ttslua`); `U.merge` recurses nested tables.
+        local bundle = U.merge({}, ent.sessionScene)
+        SceneLibrary.syncNpcRoleOverrideFromSeatSlots(bundle)
+        local lightingKey, lightingErr = validateLightingPresetKey(bundle.lightingPresetKey)
+        if lightingKey == nil then
+            return false, "Apply failed: " .. tostring(lightingErr)
+        end
+        bundle.lightingPresetKey = lightingKey
 
-    -- Applying a library scene starts in-world play at that bundle; overlay is Play/Downtime-only.
-    if S.getStateVal("currentPhase") == C.Phases.SESSION_START then
-        S.setCurrentPhase(C.Phases.PLAY)
-    end
+        local draftOk, draftErr = mergeActivationClockDraftIntoBundle(bundle, K)
+        if not draftOk then
+            return false, "Apply failed: " .. tostring(draftErr)
+        end
 
-    local tk = S.getStateVal("sessionScene", "tableKey")
-    if type(tk) == "string" then
-        tk = string.gsub(string.gsub(tk, "^%s+", ""), "%s+$", "")
-    else
-        tk = ""
-    end
-    if tk ~= "" then
-        if C.Tables[tk] ~= nil then
-            RSL.SetTableTo(tk)
+        local clockOk, clockErr = PresentDayClock.resolveAndApplyActivationClock(bundle)
+        if not clockOk then
+            return false, "Apply failed: " .. tostring(clockErr)
+        end
+
+        S.setStateVal(bundle, "sessionScene")
+        SceneLibrary.setExclusiveLiveMirror(K)
+        S.setStateVal(K, "sceneLibrary", "activeKey")
+        S.validateState()
+        PresentDayClock.markApplied(K)
+        clockDraft.sceneKey = K
+        clockDraft.dirty = false
+        StorytellerScenesPanel.syncClockDraftFromClock(S.getStateVal("sessionScene", "clock"))
+
+        -- Applying a library scene starts in-world play at that bundle; overlay is Play/Downtime-only.
+        if S.getStateVal("currentPhase") == C.Phases.SESSION_START then
+            S.setCurrentPhase(C.Phases.PLAY)
+        end
+
+        local tk = S.getStateVal("sessionScene", "tableKey")
+        if type(tk) == "string" then
+            tk = string.gsub(string.gsub(tk, "^%s+", ""), "%s+$", "")
         else
-            U.AlertGM("Scene bundle has unknown tableKey `" .. tk .. "` — seating layout was not switched.")
+            tk = ""
         end
-    end
-
-    if GameStateOverlay and type(GameStateOverlay.resetRealTimeCarry) == "function" then
-        GameStateOverlay.resetRealTimeCarry()
-    end
-
-    local dKey = S.getStateVal("sessionScene", "districtKey")
-    local sKey = S.getStateVal("sessionScene", "siteKey")
-    if type(dKey) ~= "string" then
-        dKey = ""
-    end
-    if type(sKey) ~= "string" then
-        sKey = ""
-    end
-    dKey = string.gsub(string.gsub(dKey, "^%s+", ""), "%s+$", "")
-    sKey = string.gsub(string.gsub(sKey, "^%s+", ""), "%s+$", "")
-
-    local merged = {}
-    if sKey ~= "" then
-        local site = C.Sites[sKey]
-        if type(site) ~= "table" then
-            U.AlertGM("Unknown siteKey in scene bundle: " .. sKey)
-        elseif dKey ~= "" and C.Districts[dKey] == nil then
-            U.AlertGM("Unknown districtKey in scene bundle: " .. dKey)
-        elseif SS.contextFromSite ~= nil then
-            merged = SS.contextFromSite(site, sKey) or {}
+        if tk ~= "" then
+            if C.Tables[tk] ~= nil then
+                RSL.SetTableTo(tk, { skipTransitionBlindfold = true })
+            else
+                U.AlertGM("Scene bundle has unknown tableKey `" .. tk .. "` — seating layout was not switched.")
+            end
         end
-    end
-    if SS.mergeSessionSceneNarrativeIntoContext ~= nil then
-        merged = SS.mergeSessionSceneNarrativeIntoContext(S.getStateVal("sessionScene"), merged)
-    end
-    if SS.applyContext ~= nil and next(merged) ~= nil then
-        SS.applyContext(merged)
-        if SS.markReconciledToCurrentState ~= nil then
-            SS.markReconciledToCurrentState()
+
+        if GameStateOverlay and type(GameStateOverlay.resetRealTimeCarry) == "function" then
+            GameStateOverlay.resetRealTimeCarry()
         end
-    end
 
-    if S.getStateVal("sessionScene", "chronicleWeatherManualHold") ~= true then
-        if type(ChronicleWeather.applyScheduledWeather) == "function" then
-            ChronicleWeather.applyScheduledWeather({ force = false })
+        local dKey = S.getStateVal("sessionScene", "districtKey")
+        local sKey = S.getStateVal("sessionScene", "siteKey")
+        if type(dKey) ~= "string" then
+            dKey = ""
         end
-    end
+        if type(sKey) ~= "string" then
+            sKey = ""
+        end
+        dKey = string.gsub(string.gsub(dKey, "^%s+", ""), "%s+$", "")
+        sKey = string.gsub(string.gsub(sKey, "^%s+", ""), "%s+$", "")
 
-    if type(HUDP.armPinRelocationSceneCast) == "function" then
-        HUDP.armPinRelocationSceneCast()
-    end
+        local merged = {}
+        if sKey ~= "" then
+            local site = C.Sites[sKey]
+            if type(site) ~= "table" then
+                U.AlertGM("Unknown siteKey in scene bundle: " .. sKey)
+            elseif dKey ~= "" and C.Districts[dKey] == nil then
+                U.AlertGM("Unknown districtKey in scene bundle: " .. dKey)
+            elseif SS.contextFromSite ~= nil then
+                merged = SS.contextFromSite(site, sKey) or {}
+            end
+        end
+        if SS.mergeSessionSceneNarrativeIntoContext ~= nil then
+            merged = SS.mergeSessionSceneNarrativeIntoContext(S.getStateVal("sessionScene"), merged)
+        end
+        if SS.applyContext ~= nil and next(merged) ~= nil then
+            SS.applyContext(merged)
+            if SS.markReconciledToCurrentState ~= nil then
+                SS.markReconciledToCurrentState()
+            end
+        end
 
-    if Sync and type(Sync.full) == "function" then
-        Sync.full({ reason = "StorytellerScenesPanel.sceneLibraryApply" })
-    end
+        if S.getStateVal("sessionScene", "chronicleWeatherManualHold") ~= true then
+            if type(ChronicleWeather.applyScheduledWeather) == "function" then
+                ChronicleWeather.applyScheduledWeather({ force = false })
+            end
+        end
 
-    StorytellerScenesPanel.refresh()
-    if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
-        GameStateOverlay.ensureTicker()
-    end
+        if type(HUDP.armPinRelocationSceneCast) == "function" then
+            HUDP.armPinRelocationSceneCast()
+        end
 
-    U.AlertGM("Applied library scene `" .. K .. "` (session bundle, lighting, table, location, soundscape).")
+        if Sync and type(Sync.full) == "function" then
+            Sync.full({ reason = "StorytellerScenesPanel.sceneLibraryApply" })
+        end
+
+        StorytellerScenesPanel.refresh()
+        if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
+            GameStateOverlay.ensureTicker()
+        end
+
+        U.AlertGM("Applied library scene `" .. K .. "` (session bundle, lighting, table, location, soundscape).")
+        return true
+    end)
 end
 
---- Broadcasts a table-wide notice, clears location ambience, reapplies weather volumes, then `Sync.full`.
---- Does not mutate `sessionScene` (narrative state stays for the Storyteller to adjust or re-apply).
+--- Broadcasts a table-wide notice, clears live location keys, stops real-time clock, clears location ambience, then `Sync.full`.
 --- @param player Player
 function StorytellerScenesPanel.endSceneNarrative(player)
     if player == nil or player.host ~= true then
         U.AlertGM("Only the host can end a scene.")
         return
     end
+
+    closeScenesPanel()
     if type(U.Alert) == "function" then
         U.Alert("The current narrative scene is over.")
     else
         broadcastToAll("The current narrative scene is over.", Color(1, 1, 1))
     end
+
+    S.setStateVal(nil, "sessionScene", "districtKey")
+    S.setStateVal(nil, "sessionScene", "siteKey")
+    S.setStateVal(nil, "soundscape", "lastAppliedSiteKey")
+
+    local ck = S.getStateVal("sessionScene", "clock")
+    if type(ck) ~= "table" then
+        ck = {}
+    end
+    if ck.useRealTime == true then
+        ck.useRealTime = false
+        S.setStateVal(ck, "sessionScene", "clock")
+        clockDraft.useRealTime = false
+        if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
+            GameStateOverlay.stopTicker()
+        end
+    end
+    S.validateState()
+
     if SS.setLocationAudio ~= nil then
         SS.setLocationAudio("none")
     end
@@ -577,8 +1009,11 @@ function StorytellerScenesPanel.endSceneNarrative(player)
     if Sync and type(Sync.full) == "function" then
         Sync.full({ reason = "StorytellerScenesPanel.endScene" })
     end
+    if Sync and type(Sync.ui) == "function" then
+        Sync.ui({ gameStateOverlay = true })
+    end
     StorytellerScenesPanel.refresh()
-    U.AlertGM("End scene: location ambience cleared; weather layers refreshed.")
+    U.AlertGM("End scene: location cleared, real-time clock stopped, ambience refreshed.")
 end
 
 --- @param player Player
@@ -594,36 +1029,31 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
             U.AlertGM("Unknown table key: " .. tostring(tableKey))
             return
         end
-        S.setStateVal(tableKey, "sessionScene", "tableKey")
-        RSL.SetTableTo(tableKey)
-        if Sync and type(Sync.full) == "function" then
-            Sync.full({ reason = "StorytellerScenesPanel.table" })
-        end
-        StorytellerScenesPanel.refresh()
+        HUDBF.runTransition(function()
+            S.setStateVal(tableKey, "sessionScene", "tableKey")
+            RSL.SetTableTo(tableKey, { skipTransitionBlindfold = true })
+            if Sync and type(Sync.full) == "function" then
+                Sync.full({ reason = "StorytellerScenesPanel.table" })
+            end
+            StorytellerScenesPanel.refresh()
+            return true
+        end)
         return
     end
 
     local seatKey = string.match(id, "^scenes_seat_(.+)$")
     if seatKey ~= nil then
-        local sp = S.getStateVal("sessionScene", "seatPresent")
-        if type(sp) ~= "table" then
-            sp = {}
+        local nextPresent = not resolveSeatNarrativePresence(seatKey)
+        setSeatNarrativePresence(seatKey, nextPresent)
+        S.validateState()
+        local O = require("core.objects")
+        if U.isIn(seatKey, C.PlayerColors or {}) and type(O.applyPcSeatHiddenObjectPresence) == "function" then
+            O.applyPcSeatHiddenObjectPresence(seatKey, nextPresent)
         end
-        local cur = sp[seatKey]
-        local nextVal = nil
-        if cur == nil then
-            nextVal = false
-        elseif cur == false then
-            nextVal = true
-        else
-            nextVal = nil
+        local NPCS = require("core.npcs")
+        if U.isIn(seatKey, C.NPCSeats or {}) and NPCS and type(NPCS.reconcileAllFromState) == "function" then
+            NPCS.reconcileAllFromState({ force = true, deferUiRefresh = true })
         end
-        if nextVal == nil then
-            sp[seatKey] = nil
-        else
-            sp[seatKey] = nextVal
-        end
-        S.setStateVal(sp, "sessionScene", "seatPresent")
         local L = require("core.lighting")
         if L and type(L.reconcileAllPlayers) == "function" then
             L.reconcileAllPlayers()
@@ -727,84 +1157,47 @@ end
 
 --- @param player Player
 function StorytellerScenesPanel.applyClockFromInputs(player)
-    local function rawClockField(draftKey)
-        local d = clockDraft[draftKey]
-        if type(d) ~= "string" then
-            return ""
-        end
-        return d
+    local activeKey = getActiveLibraryKey()
+    local baseClock = type(activeKey) == "string" and getLibraryRowClock(activeKey) or S.getStateVal("sessionScene", "clock")
+    if type(baseClock) ~= "table" then
+        baseClock = {}
     end
 
-    local function requireNonEmpty(draftKey, label)
-        local raw = rawClockField(draftKey)
-        if not string.match(raw, "%S") then
-            U.AlertGM(label .. " cannot be empty.")
-            return nil
+    if type(activeKey) == "string" and isPendingSceneActivation(activeKey) and draftHasClearedDatetimeFields() then
+        local flagsOnly, flagsErr = buildFlagsOnlyClockFromDraft(baseClock)
+        if flagsOnly == nil then
+            U.AlertGM(flagsErr or "Could not save clock for scene activation.")
+            return
         end
-        return raw
+        clockDraft.sceneKey = activeKey
+        clockDraft.dirty = true
+        StorytellerScenesPanel.refresh()
+        U.AlertGM("Clock saved: `" .. activeKey .. "` will use present-day time on activation.")
+        return
     end
 
-    local function numField(draftKey, label)
-        local raw = requireNonEmpty(draftKey, label)
-        if raw == nil then
-            return nil
-        end
-        local n = tonumber(raw)
-        if n == nil then
-            U.AlertGM(label .. " must be a number.")
-            return nil
-        end
-        return math.floor(n)
+    local clock, err = buildClockFromDraft(baseClock)
+    if clock == nil then
+        U.AlertGM(err or "Could not parse clock inputs.")
+        return
+    end
+
+    local okClock, errClock = SceneLibrary.validateSessionSceneClock(clock)
+    if not okClock then
+        U.AlertGM(errClock or "Invalid scene clock.")
+        return
+    end
+
+    if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
+        clockDraft.sceneKey = activeKey
+        clockDraft.dirty = true
+        StorytellerScenesPanel.refresh()
+        U.AlertGM("Clock saved for scene activation (will apply when you activate `" .. activeKey .. "`).")
+        return
     end
 
     local prev = S.getStateVal("sessionScene", "clock")
     local prevHour = type(prev) == "table" and tonumber(prev.hour) or nil
-    local prevIsPresentDay = type(prev) == "table" and prev.isPresentDay == true
-
-    local day = numField("day", "Day")
-    if day == nil then
-        return
-    end
-    local year = numField("year", "Year")
-    if year == nil then
-        return
-    end
-    local timeRaw = requireNonEmpty("time12", "Time")
-    if timeRaw == nil then
-        return
-    end
-    local h24, min = parseTime12h(timeRaw)
-    if h24 == nil then
-        U.AlertGM("Invalid time. Use 12-hour format like 7:05 PM or 09:30 AM.")
-        return
-    end
-
-    local speedRaw = requireNonEmpty("speed", "Real-time speed")
-    if speedRaw == nil then
-        return
-    end
-    local spd = tonumber(speedRaw)
-    if spd == nil or spd < 0 then
-        U.AlertGM("Real-time speed must be a non-negative number.")
-        return
-    end
-
-    local clock = {
-        hour = h24,
-        minute = min,
-        day = day,
-        month = math.floor(tonumber(S.getStateVal("sessionScene", "clock", "month")) or 1),
-        year = year,
-        useRealTime = S.getStateVal("sessionScene", "clock", "useRealTime") == true,
-        realTimeSpeed = spd,
-        isPresentDay = prevIsPresentDay,
-    }
-    if clock.month < 1 then
-        clock.month = 1
-    end
-    if clock.month > 12 then
-        clock.month = 12
-    end
 
     if GameStateOverlay and type(GameStateOverlay.resetRealTimeCarry) == "function" then
         GameStateOverlay.resetRealTimeCarry()
@@ -814,6 +1207,9 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
         PresentDayClock.tryInitFromScene(clock)
     end
     PresentDayClock.tryAdvance(clock)
+    clockDraft.sceneKey = activeKey
+    clockDraft.dirty = false
+    StorytellerScenesPanel.syncClockDraftFromClock(clock)
     StorytellerScenesPanel.refresh()
 
     local _, weatherMsg = ChronicleWeather.applyScheduledWeather({ force = false })
@@ -829,13 +1225,37 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
     if weatherMsg ~= nil and weatherMsg ~= "" then
         msg = msg .. " " .. weatherMsg
     end
-    if prevHour ~= nil and prevHour ~= h24 then
+    if prevHour ~= nil and prevHour ~= clock.hour then
         msg = msg .. " (hour changed — chronicle weather refreshed.)"
     end
     U.AlertGM(msg)
 end
 
---- Sets pending month (1–12) into `sessionScene.clock` without running reconcilers.
+--- Overwrites `gameState.presentDayClock` from stashed clock inputs (`clockDraft`); does not change live `sessionScene.clock`.
+--- @param player Player
+function StorytellerScenesPanel.setPresentDayClockFromInputs(player)
+    local activeKey = getActiveLibraryKey()
+    local baseClock = type(activeKey) == "string" and getLibraryRowClock(activeKey) or S.getStateVal("sessionScene", "clock")
+    if type(baseClock) ~= "table" then
+        baseClock = {}
+    end
+
+    local dt, err = parseDatetimeFromClockDraft(baseClock)
+    if dt == nil then
+        U.AlertGM(err or "Could not parse clock inputs.")
+        return
+    end
+
+    local ok, setErr = PresentDayClock.setPresentDay(dt)
+    if not ok then
+        U.AlertGM(setErr or "Could not set present day clock.")
+        return
+    end
+
+    U.AlertGM("Present day clock set to chronicle time from inputs.")
+end
+
+--- Sets pending month (1–12). Pending activation: draft only; live scene: writes `sessionScene.clock`.
 --- @param month number
 function StorytellerScenesPanel.setPendingMonth(month)
     local m = math.floor(tonumber(month) or 1)
@@ -845,12 +1265,23 @@ function StorytellerScenesPanel.setPendingMonth(month)
     if m > 12 then
         m = 12
     end
+
+    local activeKey = getActiveLibraryKey()
+    if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
+        clockDraft.sceneKey = activeKey
+        clockDraft.month = m
+        clockDraft.dirty = true
+        StorytellerScenesPanel.refresh()
+        return
+    end
+
     local ck = S.getStateVal("sessionScene", "clock")
     if type(ck) ~= "table" then
         ck = {}
     end
     ck.month = m
     S.setStateVal(ck, "sessionScene", "clock")
+    clockDraft.month = m
     StorytellerScenesPanel.refresh()
 end
 
@@ -1031,17 +1462,13 @@ function StorytellerScenesPanel.confirmForkConstructorModal(player)
             S.setStateVal(oldTitle, "sceneLibrary", "scenes", K, "title")
         end
     end
-    for sk, _ in pairs(scenes) do
-        if type(sk) == "string" then
-            S.setStateVal(false, "sceneLibrary", "scenes", sk, "receivesLiveWrites")
-        end
-    end
     local newEntry = {
         title = newTitle,
         receivesLiveWrites = true,
         sessionScene = U.clone(F, true),
     }
     S.setStateVal(newEntry, "sceneLibrary", "scenes", newKey)
+    SceneLibrary.setExclusiveLiveMirror(newKey)
     local order = S.getStateVal("sceneLibrary", "order")
     if type(order) ~= "table" then
         order = {}
@@ -1060,19 +1487,38 @@ function StorytellerScenesPanel.confirmForkConstructorModal(player)
     S.setStateVal(order, "sceneLibrary", "order")
     S.setStateVal(newKey, "sceneLibrary", "activeKey")
     S.validateState()
+    resetClockDraftForLibrarySelection(newKey)
     StorytellerScenesPanel.closeForkConstructorModal()
     StorytellerScenesPanel.refresh()
     U.AlertGM("Scene forked: active mirror is now `" .. newKey .. "`.")
 end
 
---- Toggles `sessionScene.clock.useRealTime` and starts/stops the overlay ticker.
+--- Toggles `useRealTime` on the pending activation draft or live `sessionScene.clock`.
 function StorytellerScenesPanel.toggleRealTimeClock()
+    local activeKey = getActiveLibraryKey()
+
+    if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
+        local base = getLibraryRowClock(activeKey) or {}
+        local current = clockDraft.useRealTime
+        if current == nil then
+            current = base.useRealTime == true
+        end
+        clockDraft.sceneKey = activeKey
+        clockDraft.useRealTime = not current
+        clockDraft.dirty = true
+        StorytellerScenesPanel.refresh()
+        U.AlertGM(clockDraft.useRealTime and "Real-time narrative clock: ON (applies on scene activation)."
+            or "Real-time narrative clock: OFF (applies on scene activation).")
+        return
+    end
+
     local ck = S.getStateVal("sessionScene", "clock")
     if type(ck) ~= "table" then
         ck = {}
     end
     ck.useRealTime = not (ck.useRealTime == true)
     S.setStateVal(ck, "sessionScene", "clock")
+    clockDraft.useRealTime = ck.useRealTime == true
     StorytellerScenesPanel.refresh()
     if ck.useRealTime == true then
         if GameStateOverlay and type(GameStateOverlay.resetRealTimeCarry) == "function" then

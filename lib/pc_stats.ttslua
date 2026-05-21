@@ -250,13 +250,49 @@ end
 
 --- Storyteller-toggled blindfold overlay (no stat or lighting effects).
 --- @param playerID string
+--- @param variantOptional number|nil 1..6; random when omitted
 --- @return table
-function P.makeHudBlindfoldCondition(playerID)
+function P.makeHudBlindfoldCondition(playerID, variantOptional)
   local pd = S.getPlayerData(playerID) or {}
   local col = pd.color or "Brown"
+  local variant = tonumber(variantOptional)
+  if variant == nil then
+    variant = math.random(1, 6)
+  end
+  if variant < 1 then
+    variant = 1
+  end
+  if variant > 6 then
+    variant = 6
+  end
   return {
     statChanges = {},
-    hudChanges = { ["overlay_blindfold_" .. col] = true },
+    hudChanges = { ["overlay_blindfold_" .. variant .. "_" .. col] = true },
+    blindfoldVariant = variant,
+    removalCriteria = "indefinite"
+  }
+end
+
+--- Scene/table transition blindfold: one random variant for all seated players (no loading screen).
+--- @param playerID string
+--- @param variant number 1..6
+--- @return table
+function P.makeHudTransitionBlindfoldCondition(playerID, variant)
+  local pd = S.getPlayerData(playerID) or {}
+  local col = pd.color or "Brown"
+  local v = tonumber(variant) or 1
+  if v < 1 then
+    v = 1
+  end
+  if v > 6 then
+    v = 6
+  end
+  return {
+    statChanges = {},
+    hudChanges = {
+      ["overlay_blindfold_" .. v .. "_" .. col] = true,
+    },
+    blindfoldVariant = v,
     removalCriteria = "indefinite"
   }
 end

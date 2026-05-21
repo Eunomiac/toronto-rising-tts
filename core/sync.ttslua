@@ -106,7 +106,9 @@ end
 --- @param opts table|nil `{ force = boolean? }` forwarded to `L.reconcileAllPlayers`
 local function reconcileSeatPresentationFromState(opts)
     opts = type(opts) == "table" and opts or {}
-    callIfFunction(L.reconcileAllPlayers, opts)
+    local pcOpts = U.clone(opts, true)
+    pcOpts.skipNpcSeats = true
+    callIfFunction(L.reconcileAllPlayers, pcOpts)
     callIfFunction(HO.syncAll)
     callIfFunction(Scenes.reconcileTopFogFromState, opts)
 end
@@ -174,6 +176,7 @@ function Sync.lighting(opts)
     opts = type(opts) == "table" and opts or {}
     callIfFunction(Scenes.reconcileFromState, opts)
     callIfFunction(Scenes.reconcileTopFogFromState, opts)
+    callIfFunction(Scenes.reconcileSkyboxFromState, opts)
     callIfFunction(L.InitLights)
 end
 
@@ -226,6 +229,7 @@ function Sync.full(opts)
 
     callIfFunction(Scenes.reconcileFromState, reconcileOpts)
     callIfFunction(Scenes.reconcileTopFogFromState, reconcileOpts)
+    callIfFunction(Scenes.reconcileSkyboxFromState, reconcileOpts)
     callIfFunction(Soundscape.reconcileFromState, reconcileOpts)
 
     if not didBootstrapFullSync then
@@ -237,26 +241,22 @@ function Sync.full(opts)
         reconcileSeatPresentationFromState(reconcileOpts)
     end
 
-    callIfFunction(NPCS.reconcileSessionSceneNpcWorldFromState, {
+    callIfFunction(NPCS.reconcileAllFromState, {
         deferUiRefresh = true,
-        forceSessionNpcWorld = force,
-    })
-    callIfFunction(NPCS.reconcileOccupiedNpcSeatsFromState, {
-        deferUiRefresh = true,
-        forceOccupiedNpcSeats = force,
+        force = force,
     })
 
     if not didBootstrapFullSync then
         callIfFunction(HUDP.reconcileCameraOverlaySelfMatchRowsFromXmlDefaults)
     end
 
+    callIfFunction(SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked)
+
     if force then
         Sync.ui()
     else
         Sync.ui(SYNC_INCREMENTAL_UI_DELTA)
     end
-
-    callIfFunction(SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked)
 
     if not didBootstrapFullSync then
         if type(RUI) == "table" and type(RUI.refreshAll) == "function" then

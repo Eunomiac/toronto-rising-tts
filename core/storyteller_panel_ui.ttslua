@@ -82,4 +82,13 @@ function StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen)
     end
 end
 
+--- Closes the storyteller content area and deactivates every toolbar panel (matches re-clicking an open tab).
+function StorytellerPanelUI.closeAllPanels()
+    U.setAttribute(STORYTELLER_CONTENT_AREA_ID, "active", "false")
+    for _, ids in pairs(STORYTELLER_PANELS) do
+        U.setAttribute(ids.panel, "active", "false")
+        setStorytellerToggleVisual(ids.toggle, false)
+    end
+end
+
 return StorytellerPanelUI

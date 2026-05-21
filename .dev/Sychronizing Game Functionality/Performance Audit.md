@@ -40,7 +40,7 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 
 - `Sync.player(color)` calls `L.reconcileForPlayer(color)`, `HUDP.updatePlayerUI(player, color)`, `HO.syncAll()`, then `UpdateUIDisplays({ playerStats = true, playerHud = true, overlays = true })`. `UpdateUIDisplays` loops `M.forPlayers` when `playerStats` or `playerHud` is requested, then calls `HO.syncAll()` again for `overlays`. See `core/sync.ttslua:62-88` and `core/global_script.ttslua:1942-1978`.
 - `HO.syncAll()` loops every `C.PlayerColors` row, computes all managed overlay ids, always drives six hunger layers via `UI.show` / `UI.hide`, updates hunger smoke, then calls `HUP.syncHungerPulseAll()`. See `core/hud_overlays.ttslua:188-217`.
-- `HUP.syncHungerPulseAll()` loops every player color, increments each pulse generation, clears both pulse overlays, and starts heartbeat timers for hunger 4/5. See `core/hud_hunger_pulse.ttslua:209-225`.
+- `HUP.syncHungerPulseAll()` loops every player color, increments each pulse generation, clears the pulse overlay, and starts heartbeat timers for hunger 5. See `core/hud_hunger_pulse.ttslua:209-225`.
 
 **Top call sites**
 

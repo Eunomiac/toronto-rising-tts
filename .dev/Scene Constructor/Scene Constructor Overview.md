@@ -7,8 +7,9 @@ The Scene Constructor lets the Host paste JSON (typically generated from a Googl
 - **`gameState.sessionScene`** is always the **live** narrative bundle that reconcilers and HUD code read. Mutations go through `S.setStateVal` / existing helpers, then the usual sync entry points (`Sync.full`, domain `reconcile*`, etc.).
 - **`gameState.sceneLibrary`** holds **inactive** copies plus the active scene’s **mirror**:
   - `sceneLibrary.order` — array of scene keys for button order.
-  - `sceneLibrary.scenes[sceneKey]` — `{ title, receivesLiveWrites, sessionScene }` where nested `sessionScene` matches the live table’s shape (defaults merged in `S.validateState`). **`receivesLiveWrites` defaults to `false`**; set **`true` only when that scene is activated** as the mirror sink.
-  - `sceneLibrary.activeKey` — which library entry is **currently bound** for optional mirroring (see Unlink below).
+  - `sceneLibrary.scenes[sceneKey]` — `{ title, receivesLiveWrites, sessionScene }` where nested `sessionScene` matches the live table’s shape (defaults merged in `S.validateState`). **`receivesLiveWrites` defaults to `false`**; set **`true` when a scene is applied or forked** as the live mirror sink.
+  - `sceneLibrary.activeKey` — which library entry is **selected** in the Scenes UI (`Apply` / `Unlink` / `Delete` target).
+  - `sceneLibrary.lastAppliedKey` — which library entry was last **applied** to live `sessionScene` (clock flush on switch).
 
 There is **no second reconciler input**: the library is persisted storage and (when linked) a **shadow copy** of the live bundle. The table always reflects `sessionScene` after sync.
 
@@ -132,7 +133,7 @@ Use **flat** keys that already exist on live `sessionScene` (do not nest a separ
 | `seatSlots` | object | Per-seat rows (keys: `Brown`, `Orange`, `Red`, `Pink`, `Purple`, `NPC1`…`NPC4`). See **Seat slots** below. |
 | `npcRoleOverride` | object | **Sparse** map: keys are **`C.PlayerColors`** only; value is an **NPC** `characterKey` string when that PC is playing as that NPC. Absent keys = no override. **Not authored in import JSON** — rebuilt from PC `seatSlots` by `SceneLibrary.syncNpcRoleOverrideFromSeatSlots` (import + `S.validateState`). |
 | `districtKey` | string \| null | Chronicle district. |
-| `siteKey` | string \| null | Site within district. |
+| `siteKey` | string \| null | Site within district. Live location drives skybox via `Scenes.reconcileSkyboxFromState` (`C.Sites[siteKey].skyboxURL` or random `C.GenericSkyboxes`). |
 | `clock` | object | `hour`, `minute`, `day`, `month`, `year`, `useRealTime`, `realTimeSpeed`, **`isPresentDay`** (v2). Datetime fields may be omitted when `isPresentDay` is true (see **Present day clock**). **`realTimeSpeed`**: narrative-time multiplier when `useRealTime` is true — `1` ⇒ one in-fiction minute every 60 real seconds (not wall-calendar sync). |
 | `chronicleWeatherFollowSchedule` | boolean | When `true`, clock-driven chronicle weather may feed soundscape. **Scene Constructor import:** set only by the importer from `soundscapeNarrative` — if **`wind`**, **`rain`**, and **`thunderstorm`** are all non-`null`, becomes **`false`** (weather locked to narrative); if none of those three are set, becomes **`true`**. Pasted values for these two flags are **overwritten** on import. |
 | `chronicleWeatherManualHold` | boolean | When `true`, chronicle weather is not auto-applied on clock updates. **Import:** **`true`** when all three narrative weather fields are set; **`false`** when none are. |
@@ -233,15 +234,17 @@ In-fiction chronicle time — **not** real-world date/time.
 2. **Monotonic advance:** Whenever any path sets or ticks a scene clock to time **T**, if **T** is later than `presentDayClock`, advance `presentDayClock` (no rewind).
 3. **Apply without datetime:** Present-day scene may omit datetime fields (flags only). On apply, copy datetime from `presentDayClock` (error if present day was never initialized).
 4. **Historical scenes:** `isPresentDay == false` requires full datetime on import.
-5. **Return to scene:** Apply uses the **library row’s saved clock** (may be behind present day). Real-time ticks advance present day only after scene time catches up.
+5. **Return to scene:** Apply uses the **library row’s saved clock** (may be behind present day). Real-time ticks advance present day only after scene time catches up. **`presentDayClock` never rewinds on activation** — returning to an earlier saved scene time does not move chronicle “now” backward; `PresentDayClock.tryAdvance` only runs forward. Storyteller **Set** (Scenes panel) may overwrite present day backward via `PresentDayClock.setPresentDay`.
 
-**Clock “not set”:** `clock` may exist with only flags — all five datetime fields absent.
+**Scenes panel clock row:** Selecting a library row previews the clock that **activation** would use. Rows with a **saved datetime** (including present-day scenes left at a specific time) preview that saved time, not current `presentDayClock`. Present-day rows **without** datetime preview current `presentDayClock`. **Set** (beside day/year/time) overwrites `presentDayClock` from the stashed inputs without changing live `sessionScene.clock`. Edits while a **different** row is selected are stored in a pending draft and apply on **Activate scene**. Clearing **any** of day / year / time on a pending **present-day** row ignores the saved row datetime and uses `presentDayClock` on activation instead. Future times on activation advance `presentDayClock` via `PresentDayClock.tryAdvance`.
+
+**Clock “not set”:** `clock` may exist with only flags — all five datetime fields absent. Datetime fields are **never** defaulted during import validation or `S.validateState`; historical scenes without a full datetime fail validation.
 
 Implementation: [`core/present_day_clock.ttslua`](../../core/present_day_clock.ttslua); `sceneLibrary.lastAppliedKey` flushes the previously applied row’s clock before switching.
 
 ## Switching scenes
 
-Same choreography as table switches: blindfold all players → write **live** state from the chosen library entry’s `sessionScene` (and any companion top-level slices the apply pipeline defines) → run reconcilers / `Sync.full` → lift blindfolds.
+Same choreography as table switches: `core.hud_blindfold.runTransitionAfterLeadIn` closes the Scenes panel and shows one random blindfold variant (1..6) immediately, waits **2s** (`U.waitUntil`, longer than the 1s slide-in) then writes **live** state from the chosen library entry’s `sessionScene` → reconcilers / `Sync.full` → at the start of the **10s** settle delay, `M.setCamera(..., "default")` for all seated players → lift blindfolds once.
 
 ## Import validation (modal UX)
 
@@ -252,7 +255,7 @@ The Host’s pasted text is passed through **`U.sanitizeJsonTextRemoveTrailingCo
 - If validation **fails**: keep the modal open; set a dedicated UI **text element** under the confirm control to a **short, actionable** message (one primary error first; optional “also:” second line if cheap).
 - If validation **succeeds**: close the modal, write `sceneLibrary`, then `S.validateState` and refresh buttons.
 
-**Schema v2** (`schemaVersion: 2`): requires `lightingPresetKey` (valid `C.LightModes` key), `isTopFogActive` (boolean), `clock.isPresentDay` (boolean); rejects `npcWorld.preload`. Historical scenes (`isPresentDay: false`) require full clock datetime.
+**Schema v2** (`schemaVersion: 2`): requires `lightingPresetKey` (valid `C.LightModes` key), `isTopFogActive` (boolean), `clock.isPresentDay` (boolean); rejects `npcWorld.preload`. Historical scenes (`isPresentDay: false`) require full clock datetime. Present-day scenes may omit all five datetime fields (flags only). **Datetime defaults are never applied:** partial datetime (some fields set, others missing) is rejected; `S.validateState` merges clock **flags** only, not hour/minute/day/month/year.
 
 Messages should name the **JSON path** and the **fix** (e.g. `sessionScene.seatSlots.NPC2.characterKey: expected string or omit key; got number.`, `sessionScene.soundscapeNarrative: set wind, rain, and thunderstorm together, or omit all three — mixed weather overrides are invalid.`, `sceneKey: must match pattern …`, `schemaVersion: unsupported value 7; this build supports 2.`).
 
@@ -268,7 +271,7 @@ For each key in `sceneLibrary.order`, activate a pre-declared dummy button and s
 - **New Scene** — **fork** the live table into a new library row (see **Forking a scene** below). Does **not** blindfold or apply state: the physical table and `gameState.sessionScene` stay as they are; only `sceneLibrary` changes so future mirrors target the new row while the previous row stays pinned to the fork-time snapshot.
 - **Unlink Scene** — sets `receivesLiveWrites = false` on the **active** library entry only: **stop mirroring** live `sessionScene` into that entry’s stored `sessionScene`. Does **not** snapshot-freeze; the stored bundle simply stops receiving updates until linked again.
 - **Delete Scene** — arm mode → pick scene → confirm → remove from `scenes` and `order`, clear `activeKey` if deleted, then refresh.
-- **End Scene** — narrative end: notify players, fade location audio / unduck weather as today, clear district/site lights per existing patterns.
+- **End Scene** — narrative end: notify players, clear `sessionScene.districtKey` / `siteKey`, stop real-time clock (`useRealTime = false` + overlay ticker), fade location audio / unduck weather, then `Sync.full`. Closes the Scenes panel.
 
 ## Forking a scene (“New Scene”)
 
@@ -303,7 +306,7 @@ Use this when the Storyteller wants to **keep going** on the current table setup
 **Recommended pattern (avoids dual-writer reconciler bugs):**
 
 1. **One live writer:** All runtime mutations continue to update **`gameState.sessionScene`** (and existing companions like `soundscape`, `npcs`, etc.) exactly as they do today.
-2. **At most one mirrored library row:** When `sceneLibrary.activeKey == K` and `scenes[K].receivesLiveWrites == true`, after each `Sync.full` pass, **`SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked`** deep-clones live `gameState.sessionScene` into `sceneLibrary.scenes[K].sessionScene`. No separate “scene truth” feeds lights or audio.
+2. **At most one mirrored library row:** When a row has `receivesLiveWrites == true`, after each `Sync.full` pass **`SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked`** deep-clones live `gameState.sessionScene` into that row’s `sessionScene`. The mirror target is **`SceneLibrary.resolveMirrorSceneKey()`**: linked `activeKey` when set (fork / post-apply), otherwise linked `lastAppliedKey` so selecting another row for a pending Apply does not stop mirroring the scene currently on the table.
 3. **Unlink:** Flip `receivesLiveWrites` to `false` for that entry; mirroring stops. The copy is **whatever it was last time mirroring ran** — not a special freeze pass.
 4. **Inactive scenes:** Other library entries are **not** updated while inactive (no N-way fan-out on every seat toggle).
 

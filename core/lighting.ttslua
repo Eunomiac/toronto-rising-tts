@@ -130,9 +130,9 @@ L.LIGHTMODES = {
       STANDARD = {
         enabled = true,
         range = 80,
-        angle = 90,
+        angle = 47,
         intensity = 5,
-        color = Color(255/255, 200/255, 200/255)
+        color = Color(0.760784, 0.760784, 0.760784)
       }
     },
     -- Main table lights
@@ -621,7 +621,7 @@ L.LIGHTMODES = {
           enabled = true,
           range = 48.645271,
           angle = 68.982948,
-          intensity = 5.514803,
+          intensity = 1,
           color = Color(0.525551, 0.525551, 0.525551)
         }
     },
@@ -640,7 +640,7 @@ L.LIGHTMODES = {
           enabled = true,
           range = 17.689159,
           angle = 135.495407,
-          intensity = 3.124228,
+          intensity = 1,
           color = Color(0.525551, 0.525551, 0.525551)
         }
     },
@@ -659,7 +659,7 @@ L.LIGHTMODES = {
           enabled = true,
           range = 48.018639,
           angle = 119.425003,
-          intensity = 1.488999,
+          intensity = 1,
           color = Color(0.525551, 0.525551, 0.525551)
         }
     },
@@ -678,7 +678,7 @@ L.LIGHTMODES = {
           enabled = true,
           range = 17.689159,
           angle = 135.495407,
-          intensity = 3.124228,
+          intensity = 1,
           color = Color(0.525551, 0.525551, 0.525551)
         }
     },
@@ -697,9 +697,63 @@ L.LIGHTMODES = {
           enabled = true,
           range = 17.689159,
           angle = 135.495407,
-          intensity = 3.124228,
+          intensity = 1,
           color = Color(0.525551, 0.525551, 0.525551)
         }
+    },
+    storytellerDiceLight1 = {
+      guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+        enabled = false,
+        range = 60.976299,
+        angle = 0,
+        intensity = 0,
+        color = Color(0.760784, 0.760784, 0.760784)
+      },
+      STANDARD = {
+        enabled = true,  range = 60.976299,
+        angle = 64.985703,
+        intensity = 3.874348,
+        color = Color(0.760784, 0.760784, 0.760784)
+      }
+    },
+    storytellerDiceLight2 = {
+      guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+        enabled = false,
+        range = 60.976299,
+        angle = 0,
+        intensity = 0,
+        color = Color(0.760784, 0.760784, 0.760784)
+      },
+      STANDARD = {
+        enabled = true,  range = 60.976299,
+        angle = 64.985703,
+        intensity = 3.874348,
+        color = Color(0.760784, 0.760784, 0.760784)
+      }
+    },
+    storytellerDiceLight3 = {
+      guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+        enabled = false,
+        range = 60.976299,
+        angle = 0,
+        intensity = 0,
+        color = Color(0.760784, 0.760784, 0.760784)
+      },
+      STANDARD = {
+        enabled = true,  range = 60.976299,
+        angle = 64.985703,
+        intensity = 3.874348,
+        color = Color(0.760784, 0.760784, 0.760784)
+      }
     }
 }
 
@@ -1540,13 +1594,17 @@ function L.reconcileForPlayer(seatKey, opts)
 end
 
 --- Reconcile all player lights from state.
---- @param opts table|nil forwarded to `L.reconcileForPlayer`
+--- @param opts table|nil forwarded to `L.reconcileForPlayer`; `skipNpcSeats` skips NPC seat keys
 function L.reconcileAllPlayers(opts)
+    opts = type(opts) == "table" and opts or {}
+    local skipNpc = opts.skipNpcSeats == true
     for _, color in ipairs(C.PlayerColors or {}) do
         L.reconcileForPlayer(color, opts)
     end
-    for _, seatKey in ipairs(C.NPCSeats or {}) do
-        L.reconcileForPlayer(seatKey, opts)
+    if not skipNpc then
+        for _, seatKey in ipairs(C.NPCSeats or {}) do
+            L.reconcileForPlayer(seatKey, opts)
+        end
     end
 end
 

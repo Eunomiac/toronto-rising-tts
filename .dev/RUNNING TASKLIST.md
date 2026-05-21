@@ -42,7 +42,8 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] Reconciler lighting updates lerped (default 2s). _( `core/lighting.ttslua` `L.DEFAULT_RECONCILE_LERP_SECONDS`.)_
 - [x] Test-bed helpers to apply seat-light settings from Red to all active seats. _( `TestBed_applyPlayerSeatLightsFromRed`.)_
 - [ ] **Centralize light modes** in `C.LightModes` for scenes, NPCs, and reconciler.
-- [ ] **Scenes/locations** drive skybox URL and global/seat light mode via state → `Scenes.reconcileFromState` / lighting reconciler (no dual apply).
+- [ ] **Scenes/locations** drive global/seat light mode via state → `Scenes.reconcileFromState` / lighting reconciler (no dual apply).
+- [x] **Site skybox:** `sessionScene.siteKey` → `Scenes.reconcileSkyboxFromState` (`C.Sites[*].skyboxURL` or random `C.GenericSkyboxes` via `Backgrounds.setCustomURL`).
 
 ## Scenes Panel & Scene State
 

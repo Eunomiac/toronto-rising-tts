@@ -38,9 +38,11 @@
 
   <VerticalLayout id="gameStateOverlay_weather" class="gameStateOverlay_topRight">
     <Image class="gameStateOverlay_background" image="bg_playerOverlay_weather" />
-    <Text id="gameStateOverlay_weatherBase" class="small_red_text" text="" />
-    <Text id="gameStateOverlay_weatherHumidity" class="small_red_text" text="" />
-    <Text id="gameStateOverlay_weatherWind" class="small_red_text" text="" />
+    <HorizontalLayout class="gameStateOverlay_weather" spacing="5">
+      <Text id="gameStateOverlay_weatherBase" class="small_red_text" text="" />
+      <Text id="gameStateOverlay_weatherHumidity" class="small_red_text" text="" />
+      <Text id="gameStateOverlay_weatherWind" class="small_red_text" text="" />
+    </HorizontalLayout>
     <HorizontalLayout class="gameStateOverlay_temperature" spacing="5" childAlignment="UpperRight">
       <Text id="gameStateOverlay_temperatureC" class="large_red_text" text="10°C" />
       <Text id="gameStateOverlay_temperatureF" class="small_red_text" fontStyle="Italic" text="(10°F)" />

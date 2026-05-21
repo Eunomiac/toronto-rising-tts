@@ -1,0 +1,190 @@
+--[[
+  Scene/table transition blindfold orchestration.
+  Picks one random blindfold variant (1..6) shared by all seated players,
+  runs synchronous work, then lifts blindfolds after a settle delay.
+  Startup loading screen (`overlay_loadingScreen_*`) is owned by `onLoad` only — not transitions.
+  Agent guidance: .dev/Scene Constructor/Scene Constructor Overview.md; .dev/HUD_FUNCTIONS.md.
+]]
+---@diagnostic disable: undefined-global
+
+local HUDBF = {}
+
+local S = require("core.state")
+local U = require("lib.util")
+local P = require("lib.pc_stats")
+local HO = require("core.hud_overlays")
+local Main = require("core.main")
+
+local TRANSITION_SETTLE_DELAY_SEC = 10
+--- Must exceed blindfold slide-in duration (`overlay_anim_slide_top` = 1s) so heavy work does not hitch the animation.
+local TRANSITION_WORK_LEAD_IN_SEC = 2
+local BLINDFOLD_VARIANT_COUNT = 6
+local TRANSITION_CONDITION_KEY = "hudTransitionBlindfold"
+
+local activeTransitionVariant = nil
+local pendingEndDelayId = nil
+
+--- @return number 1..6
+local function pickRandomVariant()
+  return math.random(1, BLINDFOLD_VARIANT_COUNT)
+end
+
+--- @param fn fun(playerID: string)
+local function forEachSeatedPlayer(fn)
+  if type(fn) ~= "function" then
+    return
+  end
+  local seated = Player.getPlayers() or {}
+  for _, player in ipairs(seated) do
+    local color = player and player.color or nil
+    local playerID = U.Type(color) == "string" and S.getPlayerID(color) or nil
+    if U.Type(playerID) == "string" then
+      fn(playerID)
+    end
+  end
+end
+
+--- Reset every seated player to the layout-derived default camera when the pre-lift settle delay starts.
+local function setDefaultCameraForSeatedPlayers()
+  if Main == nil or type(Main.setCamera) ~= "function" then
+    error("hud_blindfold: core.main M.setCamera is required for transition default camera sync")
+  end
+  local seated = Player.getPlayers() or {}
+  for _, player in ipairs(seated) do
+    if player ~= nil then
+      Main.setCamera(player, "default")
+    end
+  end
+end
+
+--- @return number|nil
+function HUDBF.getActiveTransitionVariant()
+  return activeTransitionVariant
+end
+
+--- Apply transition blindfold HUD conditions for all seated players.
+--- @param variantOptional number|nil 1..6; random when omitted
+function HUDBF.beginTransition(variantOptional)
+  if pendingEndDelayId ~= nil then
+    U.stopDelay(pendingEndDelayId)
+    pendingEndDelayId = nil
+  end
+
+  local variant = tonumber(variantOptional)
+  if variant == nil or variant < 1 or variant > BLINDFOLD_VARIANT_COUNT then
+    variant = pickRandomVariant()
+  end
+  activeTransitionVariant = variant
+
+  forEachSeatedPlayer(function(playerID)
+    P.setConditionEntry(
+      playerID,
+      TRANSITION_CONDITION_KEY,
+      P.makeHudTransitionBlindfoldCondition(playerID, variant)
+    )
+  end)
+  if type(HO.applyBlindfoldVariantForSeatedPlayers) == "function" then
+    HO.applyBlindfoldVariantForSeatedPlayers(variant)
+  else
+    P.refreshHudOverlays()
+  end
+end
+
+--- Clear transition blindfold conditions and refresh HUD overlays.
+function HUDBF.endTransition()
+  if pendingEndDelayId ~= nil then
+    U.stopDelay(pendingEndDelayId)
+    pendingEndDelayId = nil
+  end
+  activeTransitionVariant = nil
+
+  forEachSeatedPlayer(function(playerID)
+    P.setConditionEntry(playerID, TRANSITION_CONDITION_KEY, nil)
+  end)
+  P.refreshHudOverlays()
+
+  local PCST = require("core.pc_storyteller_panel")
+  if PCST ~= nil and type(PCST.refreshAllRows) == "function" then
+    PCST.refreshAllRows()
+  end
+end
+
+--- @param delaySec number
+function HUDBF.scheduleEnd(delaySec)
+  if pendingEndDelayId ~= nil then
+    U.stopDelay(pendingEndDelayId)
+    pendingEndDelayId = nil
+  end
+  local d = tonumber(delaySec) or 0
+  if d < 0 then
+    d = 0
+  end
+  if d > 0 then
+    setDefaultCameraForSeatedPlayers()
+  end
+  pendingEndDelayId = U.delay(function()
+    pendingEndDelayId = nil
+    HUDBF.endTransition()
+  end, d)
+end
+
+--- Close panel + blindfold immediately; defer heavy work with `U.waitUntil`, then settle and lift.
+--- @param workFn fun(): boolean, string|nil returns success and optional error message
+--- @param opts table|nil { leadInDelaySec = number, settleDelaySec = number, variant = number|nil }
+function HUDBF.runTransitionAfterLeadIn(workFn, opts)
+  if type(workFn) ~= "function" then
+    error("hud_blindfold.runTransitionAfterLeadIn: workFn must be a function")
+  end
+  opts = opts or {}
+  local leadInDelaySec = opts.leadInDelaySec
+  if leadInDelaySec == nil then
+    leadInDelaySec = TRANSITION_WORK_LEAD_IN_SEC
+  end
+  local settleDelaySec = opts.settleDelaySec
+  if settleDelaySec == nil then
+    settleDelaySec = TRANSITION_SETTLE_DELAY_SEC
+  end
+
+  HUDBF.beginTransition(opts.variant)
+
+  U.waitUntil(function()
+    local ok, errMsg = workFn()
+    if ok ~= true then
+      if type(errMsg) == "string" and errMsg ~= "" then
+        U.AlertGM(errMsg)
+      end
+      HUDBF.scheduleEnd(0)
+      return
+    end
+    HUDBF.scheduleEnd(settleDelaySec)
+  end, leadInDelaySec)
+end
+
+--- Blindfold on → synchronous work → settle delay → blindfold off.
+--- @param workFn fun(): boolean, string|nil returns success and optional error message
+--- @param opts table|nil { settleDelaySec = number }
+--- @return boolean true when workFn succeeded (lift is still delayed)
+function HUDBF.runTransition(workFn, opts)
+  if type(workFn) ~= "function" then
+    error("hud_blindfold.runTransition: workFn must be a function")
+  end
+  opts = opts or {}
+  local settleDelaySec = opts.settleDelaySec
+  if settleDelaySec == nil then
+    settleDelaySec = TRANSITION_SETTLE_DELAY_SEC
+  end
+
+  HUDBF.beginTransition()
+  local ok, errMsg = workFn()
+  if ok ~= true then
+    if type(errMsg) == "string" and errMsg ~= "" then
+      U.AlertGM(errMsg)
+    end
+    HUDBF.scheduleEnd(0)
+    return false
+  end
+  HUDBF.scheduleEnd(settleDelaySec)
+  return true
+end
+
+return HUDBF

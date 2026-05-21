@@ -348,7 +348,7 @@ function S.GetDefaultGameState()
         sceneLibrary = {
             --- Last library scene applied to live state (used to flush per-row clocks on switch).
             lastAppliedKey = nil,
-            --- When set, names the library entry that receives mirrored runtime writes (`receivesLiveWrites`).
+            --- Which library row is selected in the Scenes UI (`Apply` / `Unlink` / `Delete` target).
             activeKey = nil,
             --- Button order; values must be keys of `scenes`.
             order = {},
@@ -375,6 +375,50 @@ function S.mergeDefaults(target, defaults)
             target[k] = U.clone(v) -- Clone to avoid reference issues
         elseif type(v) == "table" and type(target[k]) == "table" then
             S.mergeDefaults(target[k], v) -- Recursively merge nested tables
+        end
+    end
+end
+
+--- Narrative clock datetime keys — never filled from defaults (see `mergeSessionSceneDefaults`).
+local NARRATIVE_CLOCK_DATETIME_KEYS = {
+    hour = true,
+    minute = true,
+    day = true,
+    month = true,
+    year = true,
+}
+
+--- Merges clock flag defaults only; never injects hour/minute/day/month/year.
+--- @param target table
+--- @param defaults table|nil
+local function mergeClockFlagDefaultsOnly(target, defaults)
+    if type(defaults) ~= "table" then
+        return
+    end
+    for k, v in pairs(defaults) do
+        if not NARRATIVE_CLOCK_DATETIME_KEYS[k] and target[k] == nil then
+            target[k] = U.clone(v)
+        end
+    end
+end
+
+--- Like `mergeDefaults` for `sessionScene`, but never applies default narrative clock datetime.
+--- @param target table
+--- @param defaults table|nil
+local function mergeSessionSceneDefaults(target, defaults)
+    if type(defaults) ~= "table" then
+        return
+    end
+    for k, v in pairs(defaults) do
+        if k == "clock" then
+            if type(target.clock) ~= "table" then
+                target.clock = {}
+            end
+            mergeClockFlagDefaultsOnly(target.clock, type(v) == "table" and v or nil)
+        elseif target[k] == nil then
+            target[k] = U.clone(v)
+        elseif type(v) == "table" and type(target[k]) == "table" then
+            S.mergeDefaults(target[k], v)
         end
     end
 end
@@ -582,7 +626,7 @@ function S.validateState()
     if not gameState.sessionScene or type(gameState.sessionScene) ~= "table" then
         gameState.sessionScene = {}
     end
-    S.mergeDefaults(gameState.sessionScene, S.GetDefaultGameState().sessionScene)
+    mergeSessionSceneDefaults(gameState.sessionScene, S.GetDefaultGameState().sessionScene)
     local lpKey = gameState.sessionScene.lightingPresetKey
     if lpKey ~= nil and type(lpKey) == "string" and lpKey ~= "" and not C.isValidLightModeKey(lpKey) then
         print("[state] sessionScene.lightingPresetKey invalid: " .. tostring(lpKey) .. " — clearing.")
@@ -662,9 +706,15 @@ function S.validateState()
             if type(entry.sessionScene) ~= "table" then
                 entry.sessionScene = {}
             end
-            S.mergeDefaults(entry.sessionScene, S.GetDefaultGameState().sessionScene)
+            mergeSessionSceneDefaults(entry.sessionScene, S.GetDefaultGameState().sessionScene)
             if SceneLibrary and type(SceneLibrary.syncNpcRoleOverrideFromSeatSlots) == "function" then
                 SceneLibrary.syncNpcRoleOverrideFromSeatSlots(entry.sessionScene)
+            end
+            if type(SceneLibrary.validateSessionSceneClock) == "function" then
+                local okClock, errClock = SceneLibrary.validateSessionSceneClock(entry.sessionScene.clock)
+                if not okClock then
+                    print("[state] sceneLibrary invalid clock: " .. tostring(errClock))
+                end
             end
             if entry.receivesLiveWrites == nil then
                 entry.receivesLiveWrites = false

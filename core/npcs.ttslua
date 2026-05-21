@@ -37,6 +37,10 @@ NPCS.PRELOAD_AREA_KEY = PRELOAD_AREA_KEY
 --- Non-area key for `applyNpcPairPhysicalPresentation` at table seats (active scale, tooltips on).
 local SEAT_PLACEMENT_KEY = "seat"
 
+--- Forward declarations for reconcile pipeline (defined later in this module).
+local resolveNpcPlacementIntent
+local occupiedNpcSeatsFingerprint
+
 --- Grow `areas.preload.positions` at runtime so every `characters` entry gets a stable under-table slot.
 local function ensurePreloadLayoutCapacity()
     local area = NPCS.areas[PRELOAD_AREA_KEY]
@@ -69,6 +73,21 @@ local NPC_DISABLE_WORLD_Y = -200
 
 --- Fingerprint of authored `sessionScene.npcWorld` so repeated `Sync.full` does not re-run stash/spawn.
 local lastSessionNpcWorldFingerprint = nil
+
+--- Unified NPC reconcile fingerprint (byArea + seats + table + presence).
+local lastNpcReconcileFingerprint = nil
+
+--- Last successful layout commit for Step Three skip verification.
+local lastNpcLayoutCommit = {
+    tableKey = "",
+    fingerprint = "",
+}
+
+--- When true, defer async `requestSeatLayoutSync`; orchestrator runs synchronous layout commit.
+local npcReconcileInProgress = false
+
+--- One-shot layout context for `lib.rotational-seat-layout` during orchestrated reconcile.
+local npcReconcileLayoutContext = nil
 
 --- While true, instance uses spotlight mode until mouse up (not persisted).
 local spotlightHeld = {}
@@ -323,6 +342,9 @@ end
 local seatSyncQueued = false
 
 local function requestSeatLayoutSync()
+    if npcReconcileInProgress then
+        return
+    end
     if seatSyncQueued then
         return
     end
@@ -334,6 +356,108 @@ local function requestSeatLayoutSync()
             rsl.SyncTable()
         end
     end, 0.08)
+end
+
+--- Viewer colors for NPC seat presence hide/show (all seated players + spectators).
+--- @return string[]
+local function allViewerColorsForInvisibility()
+    local out = { "White", "Black", "Grey" }
+    for i = 1, #(C.PlayerColors or {}) do
+        out[#out + 1] = C.PlayerColors[i]
+    end
+    return out
+end
+
+--- Narrative presence for one seat (`seatSlots.isPresent` wins over `seatPresent`).
+--- @param seatKey string
+--- @return boolean
+local function resolveSeatPresenceForSeat(seatKey)
+    local ss = S.getStateVal("sessionScene", "seatSlots")
+    if U.Type(ss) == "table" then
+        local row = ss[seatKey]
+        if U.Type(row) == "table" and row.isPresent ~= nil then
+            return row.isPresent ~= false
+        end
+    end
+    local sp = S.getStateVal("sessionScene", "seatPresent")
+    if U.Type(sp) == "table" and sp[seatKey] ~= nil then
+        return sp[seatKey] ~= false
+    end
+    return true
+end
+
+--- Assigned NPC character for a seat from validated `occupiedNPCSlots`.
+--- @param seatKey string
+--- @return string|nil
+local function resolveAssignedCharacterForSeat(seatKey)
+    local occ = getOccupiedNpcSeatMap()[seatKey]
+    if U.Type(occ) == "string" and occ ~= "" then
+        return occ
+    end
+    return nil
+end
+
+--- @param seatKey string
+--- @return string
+local function seatTagForKey(seatKey)
+    return seatKey .. "Object"
+end
+
+--- @param fig Object|nil
+--- @param seatKey string
+--- @return boolean
+local function figurineHasSeatTag(fig, seatKey)
+    if fig == nil or fig.getTags == nil then
+        return false
+    end
+    local want = seatTagForKey(seatKey)
+    local tags = fig.getTags() or {}
+    if U.Type(tags) ~= "table" then
+        return false
+    end
+    for _, t in ipairs(tags) do
+        if t == want then
+            return true
+        end
+    end
+    return false
+end
+
+--- @param npcName string
+--- @return boolean
+local function npcInstanceInStageArea(npcName)
+    local rec = getInstances()[npcName]
+    if U.Type(rec) ~= "table" then
+        return false
+    end
+    local ak = rec.areaKey
+    if U.Type(ak) ~= "string" or ak == PRELOAD_AREA_KEY or ak == STASH_AREA_KEY then
+        return false
+    end
+    local area = NPCS.areas[ak]
+    return U.Type(area) == "table" and area.excludeFromNpcPanel ~= true
+end
+
+--- @param seatKey string
+--- @return boolean
+local function isNpcPhysicallyAtSeat(seatKey)
+    for _, rec in pairs(getInstances()) do
+        if U.Type(rec) == "table" and rec.seatedSeatKey == seatKey then
+            return true
+        end
+    end
+    local tag = seatTagForKey(seatKey)
+    local objs = getObjectsWithTag(tag)
+    if U.Type(objs) ~= "table" then
+        return false
+    end
+    for i = 1, #objs do
+        local o = objs[i]
+        if o ~= nil and NPCS.isPooledFigurineObject(o) and figurineHasSeatTag(o, seatKey) then
+            return true
+        end
+    end
+    return false
 end
 
 --- @param obj Object|nil
@@ -363,12 +487,6 @@ function NPCS.isPooledFigurineObject(obj)
         return false
     end
     return U.Type(obj.getCustomObject()) == "table"
-end
-
---- @param seatKey string
---- @return string
-local function seatTagForKey(seatKey)
-    return seatKey .. "Object"
 end
 
 --- @param lit Object|nil
@@ -513,32 +631,61 @@ end
 --- @param lit Object|nil
 --- @param npcName string
 --- @param seatKey string
+--- @param opts table|nil optional `deferLayoutSync`
 --- @return boolean, string|nil
-local function prepareNpcFigurineForSeat(figurine, lit, npcName, seatKey)
+local function prepareNpcFigurineForSeat(figurine, lit, npcName, seatKey, opts)
+    opts = U.Type(opts) == "table" and opts or {}
     if not U.isGameObject(figurine) then
         return false, "Missing figurine for seat " .. tostring(seatKey) .. "."
     end
     applyNpcFigurineSeatIdentity(figurine, lit, npcName, seatKey)
-    requestSeatLayoutSync()
+    if opts.deferLayoutSync ~= true then
+        requestSeatLayoutSync()
+    end
     return true, nil
 end
 
+--- Physical teardown for one NPC seat; optional state retention (Step Two case 3).
 --- @param seatKey string
+--- @param opts table|nil `{ retainAssignment?: boolean, skipLayoutSync?: boolean }`
 --- @return boolean, string|nil
-local function clearNpcSeat(seatKey)
+local function clearNpcSeatPhysical(seatKey, opts)
+    opts = U.Type(opts) == "table" and opts or {}
     if not isValidNpcSeatKey(seatKey) then
         return false, "Invalid NPC seat key."
     end
+    local retainAssignment = opts.retainAssignment == true
     local toPark = {}
+    local seen = {}
     for name, r in pairs(getInstances()) do
         if U.Type(name) == "string" and U.Type(r) == "table" and r.seatedSeatKey == seatKey then
             toPark[#toPark + 1] = name
+            seen[name] = true
         end
     end
-    local occupied = U.clone(getOccupiedNpcSeatMap())
-    occupied[seatKey] = false
-    setOccupiedNpcSeatMap(occupied)
-    for _, name in ipairs(toPark) do
+    local tag = seatTagForKey(seatKey)
+    local tagged = getObjectsWithTag(tag)
+    if U.Type(tagged) == "table" then
+        for i = 1, #tagged do
+            local o = tagged[i]
+            if o ~= nil and NPCS.isPooledFigurineObject(o) then
+                for name, r in pairs(getInstances()) do
+                    if not seen[name] and U.Type(r) == "table" and r.figurineGuid == o.getGUID() then
+                        toPark[#toPark + 1] = name
+                        seen[name] = true
+                        break
+                    end
+                end
+            end
+        end
+    end
+    if not retainAssignment then
+        local occupied = U.clone(getOccupiedNpcSeatMap())
+        occupied[seatKey] = false
+        setOccupiedNpcSeatMap(occupied)
+    end
+    for i = 1, #toPark do
+        local name = toPark[i]
         local r = getInstances()[name]
         if U.Type(r) == "table" then
             local fig = getObjectFromGUID(r.figurineGuid or "")
@@ -551,14 +698,64 @@ local function clearNpcSeat(seatKey)
         end
         NPCS.retreatNpcInstanceToPreloadPool(name, { skipUiRefresh = true, skipSeatSync = true })
     end
-    requestSeatLayoutSync()
+    if opts.skipLayoutSync ~= true then
+        requestSeatLayoutSync()
+    end
     return true, nil
+end
+
+--- @param seatKey string
+--- @return boolean, string|nil
+local function clearNpcSeat(seatKey)
+    return clearNpcSeatPhysical(seatKey, { retainAssignment = false })
+end
+
+--- @param seatKey string
+--- @param intent table
+--- @return boolean
+local function seatNeedsPlacement(seatKey, intent)
+    if U.Type(intent) ~= "table" or U.Type(intent.bySeat) ~= "table" then
+        return true
+    end
+    local seatInfo = intent.bySeat[seatKey]
+    if U.Type(seatInfo) ~= "table" or seatInfo.physicalSeatAllowed ~= true then
+        return false
+    end
+    local npcName = seatInfo.assignedCharacter
+    if U.Type(npcName) ~= "string" or npcName == "" then
+        return false
+    end
+    local rec = getInstances()[npcName]
+    if U.Type(rec) ~= "table" then
+        return true
+    end
+    local fig = getObjectFromGUID(rec.figurineGuid or "")
+    if fig == nil then
+        return true
+    end
+    if not figurineHasSeatTag(fig, seatKey) then
+        return true
+    end
+    if rec.seatedSeatKey ~= seatKey then
+        return true
+    end
+    if rec.areaKey == PRELOAD_AREA_KEY or npcInstanceInStageArea(npcName) then
+        return true
+    end
+    local tableKey = S.getStateVal("seatLayout", "currentTableKey") or ""
+    local fp = occupiedNpcSeatsFingerprint()
+    if lastNpcLayoutCommit.tableKey ~= tableKey or lastNpcLayoutCommit.fingerprint ~= fp then
+        return true
+    end
+    return false
 end
 
 --- @param npcName string
 --- @param seatKey string
+--- @param opts table|nil optional `deferLayoutSync`, `blockAreaBound`
 --- @return boolean, string|nil
-local function assignNpcToSeat(npcName, seatKey)
+local function assignNpcToSeat(npcName, seatKey, opts)
+    opts = U.Type(opts) == "table" and opts or {}
     if U.Type(npcName) ~= "string" or string.match(npcName, "^[%a_][%w_]*$") == nil then
         return false, "Invalid NPC name."
     end
@@ -567,6 +764,13 @@ local function assignNpcToSeat(npcName, seatKey)
     end
     if not isValidNpcSeatKey(seatKey) then
         return false, "Invalid NPC seat key."
+    end
+    if opts.blockAreaBound == true then
+        local intent = resolveNpcPlacementIntent()
+        local ci = intent.byCharacter[npcName]
+        if U.Type(ci) == "table" and ci.target == "area" then
+            return false, "NPC is area-bound and cannot be seated."
+        end
     end
     local rec = getInstances()[npcName]
     if rec == nil then
@@ -641,7 +845,7 @@ local function assignNpcToSeat(npcName, seatKey)
         setInstanceRecord(npcName, nil)
         return false, "Figurine missing for seated NPC."
     end
-    local placedOk, placedErr = prepareNpcFigurineForSeat(fig, lit, npcName, seatKey)
+    local placedOk, placedErr = prepareNpcFigurineForSeat(fig, lit, npcName, seatKey, opts)
     if not placedOk then
         return false, placedErr
     end
@@ -1345,83 +1549,19 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
     return NPCS.spawnNpcAtSlot(npcName, PRELOAD_AREA_KEY, spawnSlot, opts)
 end
 
---- Applies `gameState.sessionScene.npcWorld.byArea`: when authored data changed, stash figurines into the
---- global preload grid, warm the full catalog pool (`ensureAllNpcsPreloaded`), then apply `byArea` placements.
---- Idempotent; safe from `Sync.full`. Per-row preload ensure is only used as a repair after a failed move.
+--- Applies `gameState.sessionScene.npcWorld.byArea`: legacy entry; forwards to unified orchestrator.
 --- @param opts table|nil `deferUiRefresh`, `forceSessionNpcWorld` (bypass fingerprint and re-apply)
 function NPCS.reconcileSessionSceneNpcWorldFromState(opts)
     opts = U.Type(opts) == "table" and opts or {}
-    local deferUiRefresh = opts.deferUiRefresh == true
-    local force = opts.forceSessionNpcWorld == true
-
-    local fp = sessionNpcWorldFingerprint()
-    if not force and fp == lastSessionNpcWorldFingerprint then
-        return
-    end
-
-    if npcWorldHasPlacementIntent() then
-        stashAllNpcFigurinesForSessionSceneLayout()
-        --- Global policy: every `NPCS.characters` entry lives in the off-table preload pool before stage placement.
-        NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true, immediate = true })
-    end
-
-    local anyWork = false
-    local allPlacementsOk = true
-
-    local placements = collectSessionByAreaPlacements()
-    for _, pl in ipairs(placements) do
-        if validateNpcNameKey(pl.characterKey) and NPCS.characters[pl.characterKey] ~= nil then
-            anyWork = true
-            local cname = pl.characterKey
-            local clm = pl.npcLightMode
-            local modeOpt = {
-                preferredSlot = pl.slotIndex,
-                skipUiRefresh = true,
-                skipSeatSync = true,
-            }
-            if U.Type(clm) == "string" then
-                modeOpt.forceNpcLightMode = clm
-            end
-            local ok, err = NPCS.spawnOrMoveIndividual(cname, pl.areaKey, modeOpt)
-            if not ok then
-                local repairOk, repairErr = NPCS.ensureNpcInPreloadZone(cname, {
-                    deferUiRefresh = true,
-                    skipSeatSync = true,
-                    forceNpcLightMode = "OFF",
-                })
-                if repairOk then
-                    ok, err = NPCS.spawnOrMoveIndividual(cname, pl.areaKey, modeOpt)
-                else
-                    print(
-                        "[NPCS] byArea preload repair failed for "
-                            .. tostring(cname)
-                            .. ": "
-                            .. tostring(repairErr)
-                    )
-                end
-            end
-            if not ok then
-                allPlacementsOk = false
-                print("[NPCS] byArea placement failed for " .. tostring(cname) .. ": " .. tostring(err))
-            end
-        end
-    end
-
-    if not anyWork or allPlacementsOk then
-        lastSessionNpcWorldFingerprint = fp
-    elseif anyWork and not allPlacementsOk then
-        print("[NPCS] sessionScene.npcWorld: placement incomplete; reconcile fingerprint not committed (will retry on next Sync.full)")
-    end
-
-    if deferUiRefresh and anyWork then
-        NPCS.refreshStorytellerUIIfVisible()
-        requestSeatLayoutSync()
-    end
+    NPCS.reconcileAllFromState({
+        deferUiRefresh = opts.deferUiRefresh == true,
+        force = opts.forceSessionNpcWorld == true or opts.force == true,
+    })
 end
 
 --- Fingerprint of `seatLayout.occupiedNPCSlots` (from session `seatSlots` via `S.validateState`).
 --- @return string
-local function occupiedNpcSeatsFingerprint()
+occupiedNpcSeatsFingerprint = function()
     local lines = {}
     local occupied = getOccupiedNpcSeatMap()
     for _, seatKey in ipairs(C.NPCSeats or {}) do
@@ -1435,88 +1575,410 @@ local function occupiedNpcSeatsFingerprint()
     return table.concat(lines, "\n")
 end
 
-local lastOccupiedNpcSeatsFingerprint = ""
+--- Unified reconcile fingerprint: byArea + seats + table + NPC presence.
+--- @return string
+local function npcReconcileFingerprint()
+    local lines = {}
+    lines[#lines + 1] = "byArea:\n" .. sessionNpcWorldFingerprint()
+    lines[#lines + 1] = "seats:\n" .. occupiedNpcSeatsFingerprint()
+    local tableKey = S.getStateVal("seatLayout", "currentTableKey")
+    lines[#lines + 1] = "table:" .. tostring(tableKey or "")
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        lines[#lines + 1] = "present:" .. seatKey .. "=" .. tostring(resolveSeatPresenceForSeat(seatKey))
+    end
+    return table.concat(lines, "\n")
+end
 
---- Places pooled NPC figurines into table seats from `seatLayout.occupiedNPCSlots`.
---- Runs after `reconcileSessionSceneNpcWorldFromState` so session `byArea` stash does not leave seats empty.
---- @param opts table|nil `deferUiRefresh`, `forceOccupiedNpcSeats` or `force` (bypass fingerprint)
-function NPCS.reconcileOccupiedNpcSeatsFromState(opts)
+--- Step Zero: resolve placement intent from authoring inputs (read-only).
+--- @return table `{ byCharacter, bySeat, tableKey }`
+resolveNpcPlacementIntent = function()
+    local byCharacter = {}
+    for _, pl in ipairs(collectSessionByAreaPlacements()) do
+        byCharacter[pl.characterKey] = {
+            target = "area",
+            areaKey = pl.areaKey,
+            slotIndex = pl.slotIndex,
+            npcLightMode = pl.npcLightMode,
+        }
+    end
+
+    local tableKey = S.getStateVal("seatLayout", "currentTableKey")
+    local tableCfg = U.Type(tableKey) == "string" and C.Tables[tableKey] or nil
+    local map = U.Type(tableCfg) == "table" and tableCfg.playerToPositionMap or {}
+    local bySeat = {}
+
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local assignedChar = resolveAssignedCharacterForSeat(seatKey)
+        local assigned = U.Type(assignedChar) == "string" and assignedChar ~= ""
+        local tableHasSlot = map[seatKey] ~= nil
+        local present = resolveSeatPresenceForSeat(seatKey)
+        local areaBound = assigned and U.Type(byCharacter[assignedChar]) == "table" and byCharacter[assignedChar].target == "area"
+        local physicalSeatAllowed = assigned and tableHasSlot and not areaBound
+        bySeat[seatKey] = {
+            assigned = assigned,
+            assignedCharacter = assignedChar,
+            tableHasSlot = tableHasSlot,
+            present = present,
+            physicalSeatAllowed = physicalSeatAllowed,
+            areaBoundOccupant = areaBound and assignedChar or nil,
+        }
+        if assigned and not areaBound and byCharacter[assignedChar] == nil then
+            if tableHasSlot then
+                byCharacter[assignedChar] = { target = "seat", seatKey = seatKey }
+            else
+                byCharacter[assignedChar] = { target = "preload", pendingSeatKey = seatKey }
+            end
+        end
+    end
+
+    for name, _ in pairs(getInstances()) do
+        if U.Type(name) == "string" and byCharacter[name] == nil then
+            byCharacter[name] = { target = "preload" }
+        end
+    end
+
+    return {
+        byCharacter = byCharacter,
+        bySeat = bySeat,
+        tableKey = tableKey,
+    }
+end
+
+--- @param opts table|nil
+--- @param stepNum number
+--- @return boolean
+local function reconcileStepEnabled(opts, stepNum)
+    local only = opts.onlySteps
+    if U.Type(only) ~= "table" or #only < 1 then
+        return true
+    end
+    for i = 1, #only do
+        if only[i] == stepNum then
+            return true
+        end
+    end
+    return false
+end
+
+--- @param intent table
+--- @return boolean
+local function anyPhysicalSeatAllowed(intent)
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local info = intent.bySeat[seatKey]
+        if U.Type(info) == "table" and info.physicalSeatAllowed == true then
+            return true
+        end
+    end
+    return false
+end
+
+--- Step One: remove NPCs from stage areas that resolved intent no longer assigns there.
+--- @param intent table
+--- @return boolean allOk
+local function reconcileStepOneAreaRemovals(intent)
+    local allOk = true
+    for name, rec in pairs(getInstances()) do
+        if U.Type(name) == "string" and U.Type(rec) == "table" and npcInstanceInStageArea(name) then
+            local ci = intent.byCharacter[name]
+            local keep = U.Type(ci) == "table"
+                and ci.target == "area"
+                and ci.areaKey == rec.areaKey
+                and ci.slotIndex == rec.slotIndex
+            if not keep then
+                local ok, err = NPCS.retreatNpcInstanceToPreloadPool(name, {
+                    skipUiRefresh = true,
+                    skipSeatSync = true,
+                })
+                if not ok then
+                    allOk = false
+                    print("[NPCS] step1 area removal: " .. tostring(name) .. ": " .. tostring(err))
+                end
+            end
+        end
+    end
+    return allOk
+end
+
+--- @param seatKey string
+--- @return string|nil npcName physically at seat, if any
+local function physicalOccupantAtSeat(seatKey)
+    for name, rec in pairs(getInstances()) do
+        if U.Type(rec) == "table" and rec.seatedSeatKey == seatKey then
+            return name
+        end
+    end
+    local tag = seatTagForKey(seatKey)
+    local tagged = getObjectsWithTag(tag)
+    if U.Type(tagged) == "table" then
+        for i = 1, #tagged do
+            local o = tagged[i]
+            if o ~= nil and NPCS.isPooledFigurineObject(o) and figurineHasSeatTag(o, seatKey) then
+                for name, rec in pairs(getInstances()) do
+                    if U.Type(rec) == "table" and rec.figurineGuid == o.getGUID() then
+                        return name
+                    end
+                end
+            end
+        end
+    end
+    return nil
+end
+
+--- Step Two: remove NPCs from table seats per resolved intent.
+--- @param intent table
+--- @return boolean allOk
+local function reconcileStepTwoSeatRemovals(intent)
+    local allOk = true
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local info = intent.bySeat[seatKey]
+        if U.Type(info) == "table" then
+            if not (info.assigned and not info.present) then
+                local physicalName = physicalOccupantAtSeat(seatKey)
+                local atSeat = physicalName ~= nil
+                if not info.assigned then
+                    if atSeat then
+                        local ok, err = clearNpcSeatPhysical(seatKey, { retainAssignment = false, skipLayoutSync = true })
+                        if not ok then
+                            allOk = false
+                            print("[NPCS] step2 unassign clear " .. tostring(seatKey) .. ": " .. tostring(err))
+                        end
+                    end
+                elseif U.Type(info.assignedCharacter) == "string" and physicalName ~= nil and physicalName ~= info.assignedCharacter then
+                    local ok, err = clearNpcSeatPhysical(seatKey, { retainAssignment = false, skipLayoutSync = true })
+                    if not ok then
+                        allOk = false
+                        print("[NPCS] step2 wrong occupant " .. tostring(seatKey) .. ": " .. tostring(err))
+                    end
+                elseif not info.physicalSeatAllowed and atSeat then
+                    local retain = info.assigned and not info.tableHasSlot
+                    local ok, err = clearNpcSeatPhysical(seatKey, {
+                        retainAssignment = retain,
+                        skipLayoutSync = true,
+                    })
+                    if not ok then
+                        allOk = false
+                        print("[NPCS] step2 physical off " .. tostring(seatKey) .. ": " .. tostring(err))
+                    end
+                end
+            end
+        end
+    end
+    return allOk
+end
+
+--- Layout commit A: synchronous table layout using orchestrator context.
+--- @param intent table
+local function commitNpcSeatLayout(intent)
+    local physicalSeatAllowedBySeat = {}
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local info = intent.bySeat[seatKey]
+        if U.Type(info) == "table" then
+            physicalSeatAllowedBySeat[seatKey] = info.physicalSeatAllowed == true
+        end
+    end
+    npcReconcileLayoutContext = {
+        physicalSeatAllowedBySeat = physicalSeatAllowedBySeat,
+    }
+    local tableKey = S.getStateVal("seatLayout", "currentTableKey")
+    local rsl = require("lib.rotational-seat-layout")
+    if rsl ~= nil and type(rsl.SyncTable) == "function" then
+        rsl.SyncTable(tableKey)
+    end
+    lastNpcLayoutCommit = {
+        tableKey = U.Type(tableKey) == "string" and tableKey or "",
+        fingerprint = occupiedNpcSeatsFingerprint(),
+    }
+    npcReconcileLayoutContext = nil
+end
+
+--- Step Three: seat-bound NPCs onto table seats (tags only; layout commit follows).
+--- @param intent table
+--- @return boolean allOk
+local function reconcileStepThreeSeatPlacements(intent)
+    local allOk = true
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        if seatNeedsPlacement(seatKey, intent) then
+            local info = intent.bySeat[seatKey]
+            local npcName = info and info.assignedCharacter
+            if U.Type(npcName) == "string" and npcName ~= "" then
+                local ok, err = assignNpcToSeat(npcName, seatKey, {
+                    deferLayoutSync = true,
+                    blockAreaBound = true,
+                })
+                if not ok then
+                    allOk = false
+                    print(
+                        "[NPCS] step3 seat "
+                            .. tostring(seatKey)
+                            .. " for "
+                            .. tostring(npcName)
+                            .. ": "
+                            .. tostring(err)
+                    )
+                end
+            end
+        end
+    end
+    if anyPhysicalSeatAllowed(intent) then
+        commitNpcSeatLayout(intent)
+    end
+    return allOk
+end
+
+--- Step Four: narrative presence visibility + seat lights for assigned PC and NPC seats.
+--- @param intent table
+local function reconcileSeatNarrativePresenceFromIntent(intent)
+    local O = require("core.objects")
+    if type(O.reconcilePcSeatHiddenObjectsFromState) == "function" then
+        O.reconcilePcSeatHiddenObjectsFromState()
+    end
+
+    local hideColors = allViewerColorsForInvisibility()
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local info = intent.bySeat[seatKey]
+        if U.Type(info) == "table" and info.assigned == true then
+            local visible = info.present == true
+            local tag = seatTagForKey(seatKey)
+            local objs = getObjectsWithTag(tag)
+            if U.Type(objs) == "table" then
+                for i = 1, #objs do
+                    local obj = objs[i]
+                    if obj ~= nil and obj.setInvisibleTo ~= nil then
+                        if visible then
+                            obj.setInvisibleTo({})
+                        else
+                            obj.setInvisibleTo(hideColors)
+                        end
+                    end
+                end
+            end
+            L.reconcileForPlayer(seatKey)
+        end
+    end
+end
+
+--- Step Five: place area-bound NPCs into stage areas.
+--- @param intent table
+--- @return boolean allOk
+local function reconcileStepFiveAreaPopulate(intent)
+    local allOk = true
+    local needPool = false
+    for name, ci in pairs(intent.byCharacter) do
+        if U.Type(ci) == "table" and ci.target == "area" and getInstances()[name] == nil then
+            needPool = true
+            break
+        end
+    end
+    if needPool then
+        NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true, immediate = true })
+    end
+    for name, ci in pairs(intent.byCharacter) do
+        if U.Type(ci) == "table" and ci.target == "area" then
+            local modeOpt = {
+                preferredSlot = ci.slotIndex,
+                skipUiRefresh = true,
+                skipSeatSync = true,
+            }
+            if U.Type(ci.npcLightMode) == "string" then
+                modeOpt.forceNpcLightMode = ci.npcLightMode
+            end
+            local ok, err = NPCS.spawnOrMoveIndividual(name, ci.areaKey, modeOpt)
+            if not ok then
+                local repairOk, repairErr = NPCS.ensureNpcInPreloadZone(name, {
+                    deferUiRefresh = true,
+                    skipSeatSync = true,
+                    forceNpcLightMode = "OFF",
+                })
+                if repairOk then
+                    ok, err = NPCS.spawnOrMoveIndividual(name, ci.areaKey, modeOpt)
+                else
+                    print("[NPCS] step5 preload repair " .. tostring(name) .. ": " .. tostring(repairErr))
+                end
+            end
+            if not ok then
+                allOk = false
+                print("[NPCS] step5 area placement " .. tostring(name) .. ": " .. tostring(err))
+            end
+        end
+    end
+    return allOk
+end
+
+--- Unified NPC reconcile orchestrator (Steps Zero–Five). See `.dev/NPC Object Spawning & Spotlighting/NPC Reconciler Procedure.md`.
+--- @param opts table|nil `{ deferUiRefresh?, force?, onlySteps? }`
+function NPCS.reconcileAllFromState(opts)
     opts = U.Type(opts) == "table" and opts or {}
-    local force = opts.forceOccupiedNpcSeats == true or opts.force == true
     local deferUiRefresh = opts.deferUiRefresh == true
+    local force = opts.force == true
 
-    local fp = occupiedNpcSeatsFingerprint()
-    if not force and fp == lastOccupiedNpcSeatsFingerprint then
+    local fp = npcReconcileFingerprint()
+    if not force and fp == lastNpcReconcileFingerprint then
         return
     end
 
-    local occupied = getOccupiedNpcSeatMap()
-    local anyWork = false
+    local intent = resolveNpcPlacementIntent()
     local allOk = true
+    npcReconcileInProgress = true
 
-    for _, seatKey in ipairs(C.NPCSeats or {}) do
-        local desired = occupied[seatKey]
-        if type(desired) == "string" and desired ~= "" then
-            anyWork = true
-            local rec = getInstances()[desired]
-            local needsPlace = true
-            if U.Type(rec) == "table" and rec.seatedSeatKey == seatKey then
-                local fig = getObjectFromGUID(rec.figurineGuid or "")
-                if fig ~= nil then
-                    needsPlace = false
-                end
-            end
-            if needsPlace then
-                local ok, err = assignNpcToSeat(desired, seatKey)
-                if not ok then
-                    allOk = false
-                    print(
-                        "[NPCS] reconcileOccupiedNpcSeats: seat "
-                            .. tostring(seatKey)
-                            .. " for "
-                            .. tostring(desired)
-                            .. ": "
-                            .. tostring(err)
-                    )
-                end
-            else
-                -- State already seated; still run rotational layout so pose matches hand-zone anchor.
-                requestSeatLayoutSync()
-            end
-        else
-            local staleOccupant = nil
-            for name, rec in pairs(getInstances()) do
-                if U.Type(rec) == "table" and rec.seatedSeatKey == seatKey then
-                    staleOccupant = name
-                    break
-                end
-            end
-            if staleOccupant ~= nil then
-                anyWork = true
-                local ok, err = clearNpcSeat(seatKey)
-                if not ok then
-                    allOk = false
-                    print(
-                        "[NPCS] reconcileOccupiedNpcSeats: clear "
-                            .. tostring(seatKey)
-                            .. ": "
-                            .. tostring(err)
-                    )
-                end
-            end
+    if reconcileStepEnabled(opts, 1) then
+        if not reconcileStepOneAreaRemovals(intent) then
+            allOk = false
+        end
+    end
+    if reconcileStepEnabled(opts, 2) then
+        if not reconcileStepTwoSeatRemovals(intent) then
+            allOk = false
+        end
+    end
+    if reconcileStepEnabled(opts, 3) then
+        if not reconcileStepThreeSeatPlacements(intent) then
+            allOk = false
+        end
+    end
+    if reconcileStepEnabled(opts, 4) then
+        reconcileSeatNarrativePresenceFromIntent(intent)
+    end
+    if reconcileStepEnabled(opts, 5) then
+        if not reconcileStepFiveAreaPopulate(intent) then
+            allOk = false
         end
     end
 
-    if not anyWork or allOk then
-        lastOccupiedNpcSeatsFingerprint = fp
+    npcReconcileInProgress = false
+
+    if allOk then
+        lastNpcReconcileFingerprint = fp
+        lastSessionNpcWorldFingerprint = sessionNpcWorldFingerprint()
+    else
+        print("[NPCS] reconcileAllFromState incomplete; fingerprint not committed (will retry on next Sync.full)")
     end
 
-    if anyWork then
-        requestSeatLayoutSync()
-        if deferUiRefresh then
-            NPCS.refreshStorytellerUIIfVisible()
-        end
+    if deferUiRefresh then
+        NPCS.refreshStorytellerUIIfVisible()
     end
+end
+
+--- Read-only placement intent for debug/tests.
+--- @return table
+function NPCS.resolveNpcPlacementIntent()
+    return resolveNpcPlacementIntent()
+end
+
+--- One-shot layout context for rotational seat layout during orchestrated reconcile.
+--- @return table|nil
+function NPCS.getReconcileLayoutContext()
+    return npcReconcileLayoutContext
+end
+
+--- Places pooled NPC figurines into table seats from `seatLayout.occupiedNPCSlots`.
+--- Legacy entry; forwards to unified orchestrator.
+--- @param opts table|nil `deferUiRefresh`, `forceOccupiedNpcSeats` or `force` (bypass fingerprint)
+function NPCS.reconcileOccupiedNpcSeatsFromState(opts)
+    opts = U.Type(opts) == "table" and opts or {}
+    NPCS.reconcileAllFromState({
+        deferUiRefresh = opts.deferUiRefresh == true,
+        force = opts.forceOccupiedNpcSeats == true or opts.force == true,
+    })
 end
 
 --- @param npcName string
@@ -1963,8 +2425,8 @@ end
 --- @param npcName string
 --- @param seatKey string
 --- @return boolean, string|nil
-function NPCS.assignNpcToSeat(npcName, seatKey)
-    local ok, err = assignNpcToSeat(npcName, seatKey)
+function NPCS.assignNpcToSeat(npcName, seatKey, opts)
+    local ok, err = assignNpcToSeat(npcName, seatKey, opts)
     if not ok then
         return false, err
     end

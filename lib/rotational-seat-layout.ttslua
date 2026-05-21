@@ -27,11 +27,9 @@
 local U = require("lib.util")
 local C = require("lib.constants")
 local S = require("core.state")
-local P = require("lib.pc_stats")
 local OP = require("lib.object_positions")
 local L_LIGHT = require("core.lighting")
 local NPCS = require("core.npcs")
-local PCST_PANEL = require("core.pc_storyteller_panel")
 
 --- Lazy load: core.debug is large; only needed for workspace file export helpers.
 --- @return table
@@ -50,8 +48,6 @@ local DEFAULT_FRAME_REFS_VAR = "SEAT_LAYOUT_FRAME_REFS"
 local DEFAULT_GUID_MAP_VAR = "SEAT_LAYOUT_OBJECT_GUIDS"
 local DEFAULT_GUID_TRANSFORMS_VAR = "SEAT_LAYOUT_OBJECT_TRANSFORMS"
 local DEFAULT_GUID_FOLLOWER_TRANSFORMS_VAR = "SEAT_LAYOUT_FOLLOWER_OBJECT_TRANSFORMS"
-local TABLE_SWITCH_BLINDFOLD_DELAY_SEC = 2
-local TABLE_SWITCH_BLINDFOLD_AFTER_DELAY_SEC = 4
 
 local WRITE_RESULTS_TO_FILE = false
 
@@ -2178,6 +2174,10 @@ local function getOccupiedNPCSlots()
     return {}
   end
   local active = U.clone(raw)
+  local layoutCtx = NPCS.getReconcileLayoutContext and NPCS.getReconcileLayoutContext()
+  if layoutCtx ~= nil then
+    return active
+  end
   local npcInstances = S.getStateVal("npcs", "instances")
   if U.Type(npcInstances) == "table" then
     local inArea = {}
@@ -2206,11 +2206,19 @@ local function buildFilteredSeatMap(tableCfg, occupiedNPCSlots)
   end
   ---@cast tableCfg table
   local map = tableCfg.playerToPositionMap or {}
+  local layoutCtx = NPCS.getReconcileLayoutContext and NPCS.getReconcileLayoutContext()
   for seatKey, segment in pairs(map) do
     if U.Type(seatKey) == "string" then
       local isNpcSeat = U.isIn(seatKey, C.NPCSeats or {})
       local isOccupied = occupiedNPCSlots[seatKey] ~= nil and occupiedNPCSlots[seatKey] ~= false
-      if (not isNpcSeat) or isOccupied then
+      local includeSeat = isOccupied
+      if isNpcSeat and layoutCtx ~= nil and U.Type(layoutCtx.physicalSeatAllowedBySeat) == "table" then
+        local psa = layoutCtx.physicalSeatAllowedBySeat[seatKey]
+        if psa ~= nil then
+          includeSeat = psa == true
+        end
+      end
+      if (not isNpcSeat) or includeSeat then
         out[seatKey] = segment
       end
     end
@@ -2338,6 +2346,8 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
           if NPCS.isPooledFigurineObject(obj) then
             if visible and obj.setInvisibleTo ~= nil then
               obj.setInvisibleTo({})
+            elseif not visible and obj.setInvisibleTo ~= nil then
+              obj.setInvisibleTo(allLayerColors)
             end
           elseif not isTemplateSource then
             if visible then
@@ -2421,17 +2431,99 @@ local function findObjectForSeatRoleCorrection(seatKey, roleKey)
   return nil
 end
 
+--- True when this seat was part of the layout pass that produced `computed` (filtered map).
+--- @param seatKey string
+--- @param computed table|nil
+--- @return boolean
+local function seatIncludedInLayoutPass(seatKey, computed)
+  if U.Type(seatKey) ~= "string" or seatKey == "" or U.Type(computed) ~= "table" then
+    return false
+  end
+  if U.Type(computed.byColor) == "table" and computed.byColor[seatKey] ~= nil then
+    return true
+  end
+  if U.Type(computed.playerToPositionMap) == "table" and computed.playerToPositionMap[seatKey] ~= nil then
+    return true
+  end
+  return false
+end
+
+--- @param seatKey string
+--- @param computed table|nil
+--- @return Vector|nil
+local function extractHandZoneRotationForSeat(seatKey, computed)
+  if U.Type(computed) ~= "table" or U.Type(computed.byColor) ~= "table" then
+    return nil
+  end
+  local pack = computed.byColor[seatKey]
+  if U.Type(pack) ~= "table" or U.Type(pack.slots) ~= "table" then
+    return nil
+  end
+  for i = 1, #pack.slots do
+    local slot = pack.slots[i]
+    if isHandZoneRoleKey(slot.roleKey)
+      and U.Type(slot.frame) == "table"
+      and slot.frame.rotation ~= nil
+    then
+      return Vector(slot.frame.rotation)
+    end
+  end
+  return nil
+end
+
+--- Rotation base for post-corrections: PC seats use the live TTS hand zone; NPC seats use the
+--- virtual hand-zone anchor written during layout (`seatLayout.virtualHandZoneAnchors` or computed slot).
+--- Caller must only invoke for seats included in the current layout pass.
+--- @param correction table
+--- @param targetObj Object|nil
+--- @param computed table|nil
+--- @return Vector|nil
+local function resolvePostCorrectionAnchorRotation(correction, targetObj, computed)
+  if U.Type(correction.anchor) == "string" and correction.anchor ~= "" then
+    local anchorObj = getObjectFromGUID(correction.anchor)
+    if anchorObj == nil or anchorObj.getRotation == nil then
+      return nil
+    end
+    return Vector(anchorObj.getRotation())
+  end
+
+  local seatKey = correction.anchorSeatKey
+  if U.Type(seatKey) ~= "string" or seatKey == "" then
+    seatKey = deriveSeatKeyFromObjectTag(targetObj)
+  end
+  if U.Type(seatKey) ~= "string" or seatKey == "" then
+    return nil
+  end
+
+  if isPlayerSeatKey(seatKey) then
+    local hz = U.getHandZone(seatKey)
+    if hz ~= nil and hz.getRotation ~= nil then
+      return Vector(hz.getRotation())
+    end
+    return nil
+  end
+
+  local virtual = S.getStateVal("seatLayout", "virtualHandZoneAnchors", seatKey)
+  if U.Type(virtual) == "table" and virtual.rotation ~= nil then
+    return Vector(virtual.rotation)
+  end
+
+  return extractHandZoneRotationForSeat(seatKey, computed)
+end
+
 --- Apply optional post-move transform corrections keyed by object GUID.
 --- Rows whose `targetGuid` is not present in the game are skipped (one print per GUID); optional workshop pieces may be absent.
 --- sourceObjects.postCorrections = {
 ---   [targetGuid] = {
----     anchor = "<guid>",                -- required when rotationDelta is provided
+---     anchor = "<guid>",                -- PC hand zone GUID when rotationDelta is provided
+---     anchorSeatKey = "Brown"|"NPC1",   -- alternative: live hand zone (PC) or virtual hand zone (NPC)
 ---     rotationDelta = Vector|table,     -- optional additive offset from anchor rotation
 ---     position = { y = <number> }       -- optional absolute Y override
 ---     scale = { x = <number>, y = ..., z = ... }  -- optional; omitted axes keep current scale
 ---   }
 --- }
 --- `postCorrectionsBySeatRole` applies the same shape per seat/role (e.g. pooled `SEAT_FIGURE` at `NPC1`).
+--- Corrections run only for seats in the filtered layout pass (`computed.byColor` / `playerToPositionMap`).
 --- @param sourceObjects table
 --- @param computed table|nil
 local function applyPostCorrections(sourceObjects, computed)
@@ -2482,6 +2574,15 @@ local function applyPostCorrections(sourceObjects, computed)
       )
     end
     if obj ~= nil then
+      local applySeatKey = correction.anchorSeatKey
+      if U.Type(applySeatKey) ~= "string" or applySeatKey == "" then
+        applySeatKey = deriveSeatKeyFromObjectTag(obj)
+      end
+      local applyCorrection = false
+      if U.Type(applySeatKey) == "string" and applySeatKey ~= "" then
+        applyCorrection = seatIncludedInLayoutPass(applySeatKey, computed)
+      end
+      if applyCorrection then
 
     local function formatVec(v)
       local vv = Vector(v)
@@ -2519,24 +2620,14 @@ local function applyPostCorrections(sourceObjects, computed)
 
     if hasRotationCorrection then
       local delta = Vector(correction.rotationDelta)
-      if U.Type(correction.anchor) ~= "string" or correction.anchor == "" then
+      local baseRot = resolvePostCorrectionAnchorRotation(correction, obj, computed)
+      if baseRot == nil then
         error(
           "rotational-seat-layout: postCorrection for guid '"
           .. tostring(guid)
-          .. "' is missing required 'anchor' GUID for rotationDelta"
+          .. "' could not resolve anchor rotation (set anchor GUID for PC hand zone or anchorSeatKey for virtual hand zone)"
         )
       end
-      local anchorObj = getObjectFromGUID(correction.anchor)
-      if anchorObj == nil or anchorObj.getRotation == nil then
-        error(
-          "rotational-seat-layout: postCorrection anchor object missing for guid '"
-          .. tostring(guid)
-          .. "' anchor='"
-          .. tostring(correction.anchor)
-          .. "'"
-        )
-      end
-      local baseRot = anchorObj.getRotation()
       nextRot = Vector({
         baseRot.x + delta.x,
         baseRot.y + delta.y,
@@ -2603,13 +2694,14 @@ local function applyPostCorrections(sourceObjects, computed)
     --   .. " targetRot="
     --   .. formatVec(targetAfterRot)
     -- )
+      end
     end
   end
 
   local bySeatRole = sourceObjects.postCorrectionsBySeatRole
   if U.Type(bySeatRole) == "table" and U.Type(computed) == "table" and U.Type(computed.byColor) == "table" then
     for seatKey, roleMap in pairs(bySeatRole) do
-      if U.Type(seatKey) == "string" and U.Type(roleMap) == "table" then
+      if U.Type(seatKey) == "string" and U.Type(roleMap) == "table" and seatIncludedInLayoutPass(seatKey, computed) then
         for roleKey, correction in pairs(roleMap) do
           if U.Type(roleKey) == "string" and U.Type(correction) == "table" then
             local obj = findObjectForSeatRoleCorrection(seatKey, roleKey)
@@ -2629,6 +2721,32 @@ local function applyPostCorrections(sourceObjects, computed)
                     break
                   end
                 end
+              end
+              local hasRotationCorrection = correction.rotationDelta ~= nil
+              if hasRotationCorrection then
+                local d = Vector(correction.rotationDelta)
+                if math.abs(d.x) < 1e-6 and math.abs(d.y) < 1e-6 and math.abs(d.z) < 1e-6 then
+                  hasRotationCorrection = false
+                end
+              end
+              if hasRotationCorrection then
+                local roleCorrection = U.clone(correction, true)
+                roleCorrection.anchorSeatKey = seatKey
+                local baseRot = resolvePostCorrectionAnchorRotation(roleCorrection, obj, computed)
+                if baseRot == nil then
+                  error(
+                    "rotational-seat-layout: postCorrectionsBySeatRole could not resolve anchor rotation for "
+                    .. tostring(seatKey)
+                    .. "/"
+                    .. tostring(roleKey)
+                  )
+                end
+                local delta = Vector(correction.rotationDelta)
+                nextRot = Vector({
+                  baseRot.x + delta.x,
+                  baseRot.y + delta.y,
+                  baseRot.z + delta.z,
+                })
               end
               if U.Type(correction.position) == "table" and correction.position.y ~= nil then
                 local yVal = tonumber(correction.position.y)
@@ -2684,37 +2802,6 @@ local function inferActiveTableKeyFromTags()
     return nil
   end
   return guidToTableKey[guid]
-end
-
---- @param enabled boolean
-local function setBlindfoldForSeatedPlayers(enabled)
-  local seated = Player.getPlayers() or {}
-  for _, player in ipairs(seated) do
-    local color = player and player.color or nil
-    local playerID = U.Type(color) == "string" and S.getPlayerID(color) or nil
-    if U.Type(playerID) == "string" then
-      if enabled then
-        P.setConditionEntry(playerID, "hudBlindfold", P.makeHudBlindfoldCondition(playerID))
-      else
-        P.setConditionEntry(playerID, "hudBlindfold", nil)
-      end
-    end
-  end
-  P.refreshHudOverlays()
-  if PCST_PANEL ~= nil and type(PCST_PANEL.refreshAllRows) == "function" then
-    PCST_PANEL.refreshAllRows()
-  end
-end
-
-local function setDefaultCameraModeForSeatedPlayers()
-  local mainModule = _G.M
-  if mainModule == nil or type(mainModule.setCamera) ~= "function" then
-    error("rotational-seat-layout: global M.setCamera is required for SetTableTo default camera sync")
-  end
-  local seated = Player.getPlayers() or {}
-  for _, player in ipairs(seated) do
-    mainModule.setCamera(player, "default")
-  end
 end
 
 --- Before seat-layout generation, shift all reference-seat source objects (`RedObject`) by
@@ -2921,25 +3008,34 @@ end
 
 --- Production entrypoint for table switching.
 --- If `tableKey` is already active, a full sync is run in case the scene drifted.
---- Otherwise: blindfold on -> wait -> resolve/switch -> default camera -> blindfold off.
+--- Otherwise resolves seat geometry synchronously; transition blindfold is owned by `core.hud_blindfold`
+--- (scene apply and manual table toggles call `HUDBF.runTransition` with `skipTransitionBlindfold`).
 --- @param tableKey string
---- @return table|nil computed when immediate sync path is used; async switch returns nil
-function M.SetTableTo(tableKey)
+--- @param opts table|nil { skipTransitionBlindfold = boolean }
+--- @return table|nil computed when immediate sync/switch path is used
+function M.SetTableTo(tableKey, opts)
+  opts = opts or {}
   local resolvedKey, _ = resolveTableRef(tableKey)
   local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
   if currentTableKey == resolvedKey then
     return M.SyncTable(resolvedKey)
   end
 
-  setBlindfoldForSeatedPlayers(true)
-  U.delay(function()
+  local function doSwitch()
     applyReferenceHandPositionDelta(currentTableKey, resolvedKey)
     M.resolveSeatObjectsFromTable(resolvedKey)
-    setDefaultCameraModeForSeatedPlayers()
-    U.delay(function()
-      setBlindfoldForSeatedPlayers(false)
-    end, TABLE_SWITCH_BLINDFOLD_AFTER_DELAY_SEC)
-  end, TABLE_SWITCH_BLINDFOLD_DELAY_SEC)
+  end
+
+  if opts.skipTransitionBlindfold == true then
+    doSwitch()
+    return nil
+  end
+
+  local HUDBF = require("core.hud_blindfold")
+  HUDBF.runTransition(function()
+    doSwitch()
+    return true
+  end)
   return nil
 end
 

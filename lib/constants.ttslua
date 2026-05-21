@@ -541,6 +541,7 @@ C.LockedObjects = {
   G.GUIDS.CSHEET_DICE_DRAWER_PINK,
   G.GUIDS.CSHEET_DICE_DRAWER_PURPLE,
   G.GUIDS.CSHEET_DICE_DRAWER_RED,
+  G.GUIDS.DICE_DRAWER_STORYTELLER,
   G.GUIDS.PRINCE_SIGNET_BORDER_RED,
   G.GUIDS.PRINCE_SIGNET_RED,
   G.GUIDS.PRINCE_CURTAIN_RED,
@@ -890,6 +891,36 @@ C.ObjectPositions = {
       height = 6,
       duration = 0
     }
+  },
+  DICE_DRAWER_STORYTELLER_1 = {
+    target = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
+    on = {
+      position = Vector({0,-0.64,-90}),
+    },
+    off = {
+      position = Vector({0,-200,-90}),
+      isHidden = true,
+    }
+  },
+  DICE_DRAWER_STORYTELLER_2 = {
+    target = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
+    on = {
+      position = Vector({-25,-0.64,-80}),
+    },
+    off = {
+      position = Vector({-25,-200,-80}),
+      isHidden = true,
+    }
+  },
+  DICE_DRAWER_STORYTELLER_3 = {
+    target = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
+    on = {
+      position = Vector({25,-0.64,-80}),
+    },
+    off = {
+      position = Vector({25,-200,-80}),
+      isHidden = true,
+    }
   }
 }
 
@@ -1092,8 +1123,8 @@ end
 
 1. The current-active table should be stored in gameState.
 2. A top-level fuction controls switching between tables. As a first step, it should check whether the table being activated is already active and, if so, do nothing. Otherwise, the function should perform the following sequence of actions simultaneously and instantly unless otherwise specified:
-   a. Toggle the blindfold overlay on for all seated players.
-   b. Wait 0.5s until the blindfold overlay has fully animated in.
+   a. Scene apply and manual table toggles call `core.hud_blindfold.runTransition`: pick one random blindfold variant (1..6) shared by all seated players, run table geometry + reconcilers, then lift blindfolds after a 10s settle delay.
+   b. `RSL.SetTableTo(..., { skipTransitionBlindfold = true })` performs seat geometry only when an outer transition blindfold is already active.
    c. Assemble a (local) collection, `tableSeatObjects`, containing all of the following objects:
       - all `<Color>Object`-tagged objects
       - all `<NPC1|NPC2|NPC3|NPC4>Object`-tagged objects for which gameState.seatLayout.occupiedNPCSlots is truthy
@@ -1109,8 +1140,8 @@ end
    m. If the data for the new table contains a components field, filter out those components whose 'usedBy' field is false in gameState.seatLayout.occupiedNPCSlots (i.e. they are used by NPCs who are not sitting at the table), then move the remaining components to their activePosition, and set their visibility active to all player colors.
    n. Update gameState.seatLayout.currentTableKey to the key of the new table. (Do not change gameState.seatLayout.occupiedNPCSlots; when returning to a table with more slots, NPCs that couldn't sit at the table before can now sit at the new, larger table. NPC active/inactive status is controlled elsewhere.)
    o. Call R.resolveSeatObjects(newTableRef) (using the defaults for sourceObjects and options) to spawn/move objects into the new table's seats, based on the new table's data.
-   p. Set all players' camera modes to (the newly calculated) "default" mode.
-   q. Toggle the blindfold overlay off for all seated players.
+   p. When the outer `hud_blindfold` settle delay before blindfold lift begins, set all seated players' cameras to (the newly calculated) "default" mode via `M.setCamera`.
+   q. Outer `hud_blindfold` transition clears the chosen blindfold variant after the settle delay.
 
 ]]
 C.Tables = {
@@ -1347,6 +1378,7 @@ C.TableSourceObjects = {
     "CSHEET_PAGE_8",
     "DICEBAG_HUNGER",
     "DICEBAG_NORMAL",
+    "DICEBAG_ROUSE",
     "SIGNAL_CANDLE",
     "SIGNAL_FIRE",
     "HUNGER_SMOKE",
@@ -1370,6 +1402,7 @@ C.TableSourceObjects = {
     G.GUIDS.TAROT_DRAWER_ANCHOR_ON_PINK,
     G.GUIDS.TAROT_DRAWER_ANCHOR_OFF_PINK,
     G.GUIDS.TAROT_DECK_ANCHOR_PINK,
+    G.GUIDS.DICEBAG_OBLIVROUSE_PURPLE,
   },
   --- Per-GUID overrides after layout: position.y, anchor+rotationDelta, optional scale ({ x,y,z } partial ok).
   postCorrections = {
@@ -1392,15 +1425,23 @@ C.TableSourceObjects = {
       position = { y = -37.08 }
     },
     [G.GUIDS.SEAT_CHAIR_NPC1] = {
+      anchorSeatKey = "NPC1",
+      rotationDelta = Vector({ 0, 180, 0 }),
       position = { y = -40 }
     },
     [G.GUIDS.SEAT_CHAIR_NPC2] = {
+      anchorSeatKey = "NPC2",
+      rotationDelta = Vector({ 0, 180, 0 }),
       position = { y = -40 }
     },
     [G.GUIDS.SEAT_CHAIR_NPC3] = {
+      anchorSeatKey = "NPC3",
+      rotationDelta = Vector({ 0, 180, 0 }),
       position = { y = -40 }
     },
     [G.GUIDS.SEAT_CHAIR_NPC4] = {
+      anchorSeatKey = "NPC4",
+      rotationDelta = Vector({ 0, 180, 0 }),
       position = { y = -40 }
     },
     [G.GUIDS.SEAT_FIGURE_BROWN] = {
@@ -1474,6 +1515,9 @@ local LIGHTMODES_REGISTRY_KEYS_ORDERED = {
   "playerLight3Pink",
   "playerLight3Brown",
   "playerLight3Purple",
+  "storytellerDiceLight1",
+  "storytellerDiceLight2",
+  "storytellerDiceLight3"
 }
 
 --- @param modeStr string
@@ -2310,19 +2354,55 @@ C.Districts = {
 -- #region Sites
 
 -- Sites
+-- Optional `skyboxURL` (string): custom table background applied via `Scenes.reconcileSkyboxFromState` when this site is live (`sessionScene.siteKey`). When omitted, a random entry from `C.GenericSkyboxes` is used.
 -- Optional `isSilent = true`: full ambient mute (background, location ambience, weather); featured music may still be played via Storyteller action. Merge with `Soundscape.applyContext(Soundscape.contextFromSite(site))`.
 -- Optional `isTopFogActive` (boolean): when set, `SceneLibrary.applySiteTopFogToSessionScene` writes `sessionScene.isTopFogActive` on location apply; when omitted, indoor sites default fog off and outdoor on.
 -- `weatherDucking` (number 0..1): indoor weather volume multiplier passed through `Soundscape.applyContext` (outdoor always uses catalog outdoor multiplier).
 
--- NOTE for Asset Import Functionality:
--- Each `C.Sites` entry uses `localImage` (absolute `file:///...` or OS path to WEBP on disk) and `image` (Custom UI asset
--- name, e.g. siteCard_MySite) for XML `image=` attributes after cloud upload.
--- Generate manifest + Lua module from constants, then TTS upload + merge save URLs:
---   npm run custom-ui-assets:manifest-sites
---   npm run custom-ui-assets:pipeline -- --mode sites-from-constants --saveName <saveId>
--- Optional: `--skipMissing` on the pipeline or manifest script skips sites whose files are absent (partial batches).
--- Batched uploads (alphabetical C.Sites keys): `npm run custom-ui-assets:manifest-sites:batch` or `--batch` / `--batchMax` / `--batchStart` (see `.dev/custom-ui-assets/README.md`).
--- Folder-based workflow (no constants): `npm run custom-ui-assets:pipeline -- --mode directory --input <folder> --saveName <id>`.
+-- Generic skyboxes: A random skybox from this list should be assigned whenever a scene is set at a site without a skyboxURL.
+C.GenericSkyboxes = {
+  "https://steamusercontent-a.akamaihd.net/ugc/9635803439806194822/777817ED5F8282C5C7DD18FFBBF1247513C26E6A/"
+}
+
+--- Resolves the TTS background (`Backgrounds.setCustomURL`) for a site key.
+--- Uses `C.Sites[siteKey].skyboxURL` when present; otherwise picks randomly from `C.GenericSkyboxes`.
+--- @param siteKey string|nil
+--- @return string|nil url
+function C.resolveSkyboxURLForSite(siteKey)
+  if type(siteKey) ~= "string" then
+    return nil
+  end
+  siteKey = string.gsub(string.gsub(siteKey, "^%s+", ""), "%s+$", "")
+  if siteKey == "" then
+    return nil
+  end
+
+  local site = C.Sites[siteKey]
+  if type(site) == "table" and type(site.skyboxURL) == "string" then
+    local authored = string.gsub(string.gsub(site.skyboxURL, "^%s+", ""), "%s+$", "")
+    if authored ~= "" then
+      return authored
+    end
+  end
+
+  local generics = C.GenericSkyboxes
+  if type(generics) ~= "table" then
+    return nil
+  end
+  local count = #generics
+  if count < 1 then
+    return nil
+  end
+  local pick = generics[math.random(count)]
+  if type(pick) ~= "string" then
+    return nil
+  end
+  pick = string.gsub(string.gsub(pick, "^%s+", ""), "%s+$", "")
+  if pick == "" then
+    return nil
+  end
+  return pick
+end
 
 C.Sites = {
   CLGrounds = {
@@ -4582,51 +4662,51 @@ C.WEATHER = {
   },
   Humidity = {
     x = nil, -- The humidity text element should be set inactive if the humidity is nil.
-    d = "◆ Dry",
-    h = "◆ Humid",
-    m = "◆ Muggy",
-    s = "◆ Stifling"
+    d = " ◆ Dry",
+    h = " ◆ Humid",
+    m = " ◆ Muggy",
+    s = " ◆ Stifling"
   },
   Wind = {
     x = {
-      textIfWarm = "◆ Still",
-      textIfCold = "◆ Still",
+      textIfWarm = " ◆ Still",
+      textIfCold = " ◆ Still",
       windAudioIfWarm = "silent",
       windAudioIfCold = "silent"
     },
     s = {
-      textIfWarm = "◆ Soft Breeze",
-      textIfCold = "◆ Chill Breeze",
+      textIfWarm = " ◆ Soft Breeze",
+      textIfCold = " ◆ Chill Breeze",
       windAudioIfWarm = "silent",
       windAudioIfCold = "windWinterLow"
     },
     b = {
-      textIfWarm = "◆ Breeze",
-      textIfCold = "◆ Cutting Breeze",
+      textIfWarm = " ◆ Breeze",
+      textIfCold = " ◆ Cutting Breeze",
       windAudioIfWarm = "windLow",
       windAudioIfCold = "windWinterLow"
     },
     w = {
-      textIfWarm = "◆ Blustery",
-      textIfCold = "◆ Freezing Winds",
+      textIfWarm = " ◆ Blustery",
+      textIfCold = " ◆ Freezing Winds",
       windAudioIfWarm = "windMed",
       windAudioIfCold = "windWinterMed"
     },
     g = {
-      textIfWarm = "◆ Gale",
-      textIfCold = "◆ Driving Winds",
+      textIfWarm = " ◆ Gale",
+      textIfCold = " ◆ Driving Winds",
       windAudioIfWarm = "windMed",
       windAudioIfCold = "windWinterMed"
     },
     h = {
-      textIfWarm = "◆ Howling Winds",
-      textIfCold = "◆ Howling Winds",
+      textIfWarm = " ◆ Howling Winds",
+      textIfCold = " ◆ Howling Winds",
       windAudioIfWarm = "windMax",
       windAudioIfCold = "windWinterMax"
     },
     v = {
-      textIfWarm = "◆ Violent Winds",
-      textIfCold = "◆ Violent Winds",
+      textIfWarm = " ◆ Violent Winds",
+      textIfCold = " ◆ Violent Winds",
       windAudioIfWarm = "windMax",
       windAudioIfCold = "windWinterMax"
     }
@@ -4636,13 +4716,13 @@ C.WEATHER = {
 -- If a scene overrides weather audio or sets thunderstorm to true, the HUD elements should be changed as follows:
 C.WEATHER_AUDIO_OVERRIDES = {
   windAudio = {
-    silent = {Wind = "◆ Still"},
-    windLow = {Wind = "◆ Soft Breeze"},
-    windMed = {Wind = "◆ Blustery"},
-    windMax = {Wind = "◆ Violent Winds"},
-    windWinterLow = {Wind = "◆ Chill Breeze"},
-    windWinterMed = {Wind = "◆ Freezing Winds"},
-    windWinterMax = {Wind = "◆ Howling Winds"},
+    silent = {Wind = " ◆ Still"},
+    windLow = {Wind = " ◆ Soft Breeze"},
+    windMed = {Wind = " ◆ Blustery"},
+    windMax = {Wind = " ◆ Violent Winds"},
+    windWinterLow = {Wind = " ◆ Chill Breeze"},
+    windWinterMed = {Wind = " ◆ Freezing Winds"},
+    windWinterMax = {Wind = " ◆ Howling Winds"},
   },
   rainAudio = {
     silent = {Base = "Clear"},
@@ -4650,7 +4730,7 @@ C.WEATHER_AUDIO_OVERRIDES = {
     rainHeavy = {Base = "Downpour"},
   },
   thunderstorm = {
-    forcedOn = { Base = "Thunderstorm", Wind = "◆ Violent Winds"},
+    forcedOn = { Base = "Thunderstorm", Wind = " ◆ Violent Winds"},
     forcedOff = { Base = "BY_RAIN_AUDIO", Wind = "BY_WIND_AUDIO"}
   }
 }

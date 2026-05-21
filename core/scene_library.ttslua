@@ -137,16 +137,41 @@ local function rejectNpcWorldPreload(npcWorld)
     return true, nil
 end
 
---- Schema v2+: `clock.isPresentDay` required; historical scenes need full datetime.
+local NARRATIVE_CLOCK_DATETIME_KEYS = { "year", "month", "day", "hour", "minute" }
+
+--- Counts how many of year/month/day/hour/minute are numeric on `clock`.
+--- @param clock table|nil
+--- @return integer
+local function countNarrativeClockDatetimeFields(clock)
+    if type(clock) ~= "table" then
+        return 0
+    end
+    local c = 0
+    for _, k in ipairs(NARRATIVE_CLOCK_DATETIME_KEYS) do
+        if tonumber(clock[k]) ~= nil then
+            c = c + 1
+        end
+    end
+    return c
+end
+
+--- Validates `sessionScene.clock` for import, apply, and library rows.
+--- Datetime fields are never defaulted: all five must be authored together, or all omitted (present-day only).
+--- Historical scenes (`isPresentDay == false`) require a full datetime.
 --- @param clock table|nil
 --- @return boolean ok
 --- @return string|nil err
-local function validateClockForImportV2(clock)
+function SceneLibrary.validateSessionSceneClock(clock)
     if type(clock) ~= "table" then
         return false, "sessionScene.clock: required object."
     end
     if clock.isPresentDay ~= true and clock.isPresentDay ~= false then
         return false, "sessionScene.clock.isPresentDay: required boolean."
+    end
+    local dtCount = countNarrativeClockDatetimeFields(clock)
+    if dtCount > 0 and dtCount < 5 then
+        return false,
+            "sessionScene.clock: set all of hour, minute, day, month, and year together, or omit all five (datetime defaults are never applied)."
     end
     if clock.isPresentDay == false and not U.narrativeClockHasDatetime(clock) then
         return false,
@@ -174,7 +199,7 @@ local function validateSessionSceneV2(sessionScene)
         return false, "sessionScene.isTopFogActive: required boolean."
     end
 
-    local okClock, errClock = validateClockForImportV2(sessionScene.clock)
+    local okClock, errClock = SceneLibrary.validateSessionSceneClock(sessionScene.clock)
     if not okClock then
         return false, errClock
     end
@@ -348,13 +373,49 @@ function SceneLibrary.applySiteTopFogToSessionScene(siteKey)
     S.setStateVal(fogActive, "sessionScene", "isTopFogActive")
 end
 
-function SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()
+--- Resolves which library row should receive live `sessionScene` mirrors.
+--- Prefers `activeKey` when linked (fork / post-apply selection). Falls back to `lastAppliedKey`
+--- so selecting another row for a pending Apply does not stop mirroring the scene currently on the table.
+--- @return string|nil sceneKey
+function SceneLibrary.resolveMirrorSceneKey()
     local S = require("core.state")
-    local K = S.getStateVal("sceneLibrary", "activeKey")
-    if type(K) ~= "string" or K == "" then
+    local function isLinked(key)
+        return type(key) == "string" and key ~= ""
+            and type(S.getStateVal("sceneLibrary", "scenes", key)) == "table"
+            and S.getStateVal("sceneLibrary", "scenes", key, "receivesLiveWrites") == true
+    end
+    local active = S.getStateVal("sceneLibrary", "activeKey")
+    if isLinked(active) then
+        return active
+    end
+    local lastApplied = S.getStateVal("sceneLibrary", "lastAppliedKey")
+    if isLinked(lastApplied) then
+        return lastApplied
+    end
+    return nil
+end
+
+--- Sets `receivesLiveWrites = true` on exactly one library row; clears the flag on all others.
+--- @param sceneKey string|nil When nil/empty, clears mirroring on every row.
+function SceneLibrary.setExclusiveLiveMirror(sceneKey)
+    local S = require("core.state")
+    local target = type(sceneKey) == "string" and sceneKey or ""
+    target = string.gsub(string.gsub(target, "^%s+", ""), "%s+$", "")
+    local scenes = S.getStateVal("sceneLibrary", "scenes")
+    if type(scenes) ~= "table" then
         return
     end
-    if S.getStateVal("sceneLibrary", "scenes", K, "receivesLiveWrites") ~= true then
+    for sk, _ in pairs(scenes) do
+        if type(sk) == "string" then
+            S.setStateVal(sk == target, "sceneLibrary", "scenes", sk, "receivesLiveWrites")
+        end
+    end
+end
+
+function SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()
+    local S = require("core.state")
+    local K = SceneLibrary.resolveMirrorSceneKey()
+    if K == nil then
         return
     end
     local live = S.getStateVal("sessionScene")

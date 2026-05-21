@@ -7,10 +7,16 @@
 <Defaults>
   <Image class="player_overlay"
     active="false"
-    height="100%"
-    width="100%"
-    preserveAspect="false"
+    width="1920"
+    height="1200"
+    preserveAspect="true"
     raycastTarget="false"
+    rectAlignment="MiddleCenter"
+  />
+
+  <Image class="squeeze_overlay"
+    height="100%"
+    preserveAspect="false"
   />
 
   <Image class="player_blindfold_overlay"
@@ -33,15 +39,6 @@
   />
 
   <!-- Hunger heartbeat: Lua lerps color alpha on this image (no UI.show/hide); see core/hud_hunger_pulse.ttslua -->
-  <Image class="player_overlay_hunger_4_pulse"
-    image="overlay_hunger_4_pulse"
-    active="true"
-    height="100%"
-    width="100%"
-    preserveAspect="false"
-    raycastTarget="false"
-    color="#FFFFFF00"
-  />
   <Image class="player_overlay_hunger_5_pulse"
     image="overlay_hunger_5_pulse"
     active="true"

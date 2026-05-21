@@ -32,8 +32,8 @@ Quick chat commands: `/dbcheck` (compact) and `/dbfullcheck` (full).
 
 ### Rotational seat layout (`postCorrections`)
 
-- **`C.TableSourceObjects.postCorrections`** — per-GUID overrides after layout; missing targets are skipped with a log line (optional workshop pieces).
-- **`C.TableSourceObjects.postCorrectionsBySeatRole`** — same shape keyed by seat + role (e.g. `NPC1` / `SEAT_FIGURE` for pooled seated figurines).
+- **`C.TableSourceObjects.postCorrections`** — per-GUID overrides after layout; only seats in the current filtered layout pass (`computed.byColor`) run (empty NPC slots are skipped). `rotationDelta` uses `anchor` (PC hand-zone GUID) or `anchorSeatKey` (PC live hand zone / NPC virtual hand zone from layout).
+- **`C.TableSourceObjects.postCorrectionsBySeatRole`** — same shape keyed by seat + role; only seats included in the layout pass.
 - Seated NPC figurines: tag `NPCnObject` + `NPCS.isPooledFigurineObject`; layout moves them as `SEAT_FIGURE`; unseat clears seat tags and returns to preload.
 
 ### Storyteller Scenes vs lighting preset

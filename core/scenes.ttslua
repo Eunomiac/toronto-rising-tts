@@ -26,6 +26,7 @@ local Soundscape = require("core.soundscape")
 --- Last scene+transition fingerprint successfully applied to the live world (incremental sync skips when unchanged).
 local lastSceneReconcileFingerprint = nil
 local lastTopFogReconcileFingerprint = nil
+local lastSkyboxReconcileFingerprint = nil
 
 -- ============================================================================
 -- CONFIGURATION
@@ -412,6 +413,7 @@ end
 function Scenes.invalidateReconcileCache()
     lastSceneReconcileFingerprint = nil
     lastTopFogReconcileFingerprint = nil
+    lastSkyboxReconcileFingerprint = nil
 end
 
 --- Reconciles top fog emitter from `sessionScene.isTopFogActive` (TTS object state 2 = on, 1 = off).
@@ -447,6 +449,49 @@ function Scenes.reconcileTopFogFromState(opts)
     end
     obj.setState(active and 2 or 1)
     lastTopFogReconcileFingerprint = fp
+    return true
+end
+
+--- Reconciles TTS table background (skybox) from `sessionScene.siteKey` via `C.resolveSkyboxURLForSite`.
+--- Sites with `skyboxURL` use that URL; others get a random `C.GenericSkyboxes` entry per site change.
+--- @param opts table|nil `{ force = boolean }`
+--- @return boolean
+function Scenes.reconcileSkyboxFromState(opts)
+    opts = type(opts) == "table" and opts or {}
+    local force = opts.force == true
+
+    local siteKey = S.getStateVal("sessionScene", "siteKey")
+    if type(siteKey) ~= "string" then
+        siteKey = ""
+    end
+    siteKey = string.gsub(string.gsub(siteKey, "^%s+", ""), "%s+$", "")
+    if siteKey == "" then
+        lastSkyboxReconcileFingerprint = nil
+        return true
+    end
+
+    if not force and lastSkyboxReconcileFingerprint == siteKey then
+        return true
+    end
+
+    local url = C.resolveSkyboxURLForSite(siteKey)
+    if type(url) ~= "string" or url == "" then
+        print("[Scenes] reconcileSkyboxFromState: no skybox URL for site `" .. siteKey .. "`.")
+        return false
+    end
+
+    if Backgrounds == nil or type(Backgrounds.setCustomURL) ~= "function" then
+        print("[Scenes] reconcileSkyboxFromState: Backgrounds.setCustomURL unavailable.")
+        return false
+    end
+
+    local ok = Backgrounds.setCustomURL(url)
+    if ok ~= true then
+        print("[Scenes] reconcileSkyboxFromState: Backgrounds.setCustomURL failed for site `" .. siteKey .. "`.")
+        return false
+    end
+
+    lastSkyboxReconcileFingerprint = siteKey
     return true
 end
 

@@ -1166,6 +1166,11 @@ function HUD_scenesApplyClock(player, button, id)
     syncSoundscapeControls()
 end
 
+--- Overwrites `gameState.presentDayClock` from stashed clock field values (month + day/year/time inputs).
+function HUD_scenesSetPresentDayClock(player, button, id)
+    StorytellerScenesPanel.setPresentDayClockFromInputs(player)
+end
+
 --- Scenes panel: open district modal (`panel_scenes_location_modals.xml`, generated from `C.Districts`).
 function HUD_scenesOpenDistrictModal(player, button, id)
     U.setAttribute("scenes_modal_sites_root", "active", "false")

@@ -69,6 +69,20 @@ function PresentDayClock.tryAdvance(newClock)
     end
 end
 
+--- Storyteller override: unconditionally sets chronicle present-day datetime (Y/M/D/h/m only).
+--- Unlike `tryAdvance`, this may move chronicle time backward.
+--- @param clock table|nil must have full narrative datetime
+--- @return boolean ok
+--- @return string|nil err
+function PresentDayClock.setPresentDay(clock)
+    local dt = PresentDayClock.datetimeOnly(clock)
+    if dt == nil then
+        return false, "Present day clock requires hour, minute, day, month, and year."
+    end
+    S.setStateVal(dt, "presentDayClock")
+    return true, nil
+end
+
 --- Persists live `sessionScene.clock` onto a library row (always-on per-scene saved time).
 --- @param sceneKey string
 function PresentDayClock.flushLibraryRowClock(sceneKey)
@@ -106,6 +120,41 @@ local function mergeClockWithDatetime(bundleClock, datetimeSource)
         out.isPresentDay = false
     end
     return out
+end
+
+--- Merges present-day clock flags with current `presentDayClock` datetime (read-only preview / cleared-input activation).
+--- @param clock table|nil flags-only or partial present-day clock
+--- @return table|nil
+function PresentDayClock.mergePresentDayDatetimeWithFlags(clock)
+    if type(clock) ~= "table" or clock.isPresentDay ~= true then
+        return nil
+    end
+    local pd = PresentDayClock.getPresentDay()
+    if pd == nil then
+        return nil
+    end
+    return mergeClockWithDatetime(clock, pd)
+end
+
+--- Read-only activation preview: library clock flags + datetime from row or `presentDayClock`.
+--- Does not mutate `gameState`. Returns nil when historical row lacks datetime.
+--- @param clock table|nil library row `sessionScene.clock`
+--- @return table|nil
+function PresentDayClock.resolveActivationPreviewClock(clock)
+    if type(clock) ~= "table" then
+        return nil
+    end
+    if PresentDayClock.clockHasDatetime(clock) then
+        return U.merge({}, clock)
+    end
+    if clock.isPresentDay ~= true then
+        return nil
+    end
+    local pd = PresentDayClock.getPresentDay()
+    if pd == nil then
+        return U.merge({}, clock)
+    end
+    return mergeClockWithDatetime(clock, pd)
 end
 
 --- Resolves live clock for library apply from an incoming `sessionScene` bundle.

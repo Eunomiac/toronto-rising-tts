@@ -1,8 +1,7 @@
 --[[
   Per-seat hunger pulse on:
-    - overlay_hungerPulse_4_<Color>
     - overlay_hungerPulse_5_<Color>
-  Only hunger 4 and hunger 5 animate.
+  Only hunger 5 animates.
 
   Animation style: heartbeat ("bum-BUM"):
     1) quick, dim pulse
@@ -10,7 +9,7 @@
     3) rest gap before next beat
 
   TTS Image `color` tints the texture; we animate alpha via 8-char hex `#FFFFFFAA`.
-  Uses U.setAttribute("color") only — never UI.show/hide.
+  Pulse elements use U.setAttribute for `color` and `active` only — never UI.show/hide.
   Stale U.delay callbacks no-op when pulseGenByColor[seat] changes.
 ]]
 ---@diagnostic disable: undefined-global
@@ -19,7 +18,7 @@ local HUP = {}
 
 local C = require("lib.constants")
 local U = require("lib.util")
-local S = require("core.state")
+local HO = require("core.hud_overlays")
 
 --- Last applied generation per seat; incremented whenever HO.syncAll refreshes pulse state.
 --- @type table<string, number>
@@ -36,21 +35,13 @@ local pulseGenByColor = {}
 
 --- @type table<number, HungerPulseConfig>
 local HEARTBEAT_BY_HUNGER = {
-  [4] = {
-    pulse1Alpha = 0.5,
-    pulse1Duration = 0.5,
-    pulse2Alpha = 0.25,
-    pulse2Duration = 0.75,
-    interPulseGap = 0,
-    beatGap = 15,
-  },
   [5] = {
     pulse1Alpha = 1,
     pulse1Duration = 0.25,
-    pulse2Alpha = 0.5,
-    pulse2Duration = 0.5,
+    pulse2Alpha = 0.25,
+    pulse2Duration = 0.75,
     interPulseGap = 0,
-    beatGap = 5,
+    beatGap = 0,
   },
 }
 
@@ -96,24 +87,18 @@ local function applyPulseAlpha(hunger, seatColor, a)
   U.setAttribute(pulseElementId(hunger, seatColor), "color", pulseTintColor(a))
 end
 
+--- Hide pulse overlay(s) for one seat. Clears level 5 and legacy level 4 nodes that may
+--- still exist in older saved UI bundles.
 --- @param seatColor string
-local function setAllPulseTransparent(seatColor)
+local function stopPulseForSeat(seatColor)
   if type(seatColor) ~= "string" then
     return
   end
-  applyPulseAlpha(4, seatColor, 0)
-  applyPulseAlpha(5, seatColor, 0)
-end
-
---- Hunger value for overlay logic (matches core/hud_overlays.ttslua).
---- @param playerID string|nil
---- @param seatColor string
---- @return number
-local function resolveHunger(playerID, seatColor)
-  if type(playerID) == "string" and playerID ~= "" and playerID ~= C.StorytellerID then
-    return tonumber(S.getStateVal("playerData", playerID, "stats", "hunger")) or 0
+  for _, hunger in ipairs({ 4, 5 }) do
+    local eid = pulseElementId(hunger, seatColor)
+    applyPulseAlpha(hunger, seatColor, 0)
+    U.setAttribute(eid, "active", "false")
   end
-  return tonumber(S.getPlayerVal(seatColor, "hunger")) or 0
 end
 
 --- Smoothly lerp a single overlay alpha and continue after duration.
@@ -199,9 +184,10 @@ end
 local function startHeartbeatLoop(hunger, seatColor, gen)
   local cfg = HEARTBEAT_BY_HUNGER[hunger]
   if not cfg then
-    setAllPulseTransparent(seatColor)
+    stopPulseForSeat(seatColor)
     return
   end
+  U.setAttribute(pulseElementId(hunger, seatColor), "active", "true")
   applyPulseAlpha(hunger, seatColor, 0)
   runHeartbeatLoop(seatColor, hunger, gen, cfg)
 end
@@ -212,12 +198,11 @@ function HUP.reconcileForSeat(seatColor)
   if type(seatColor) ~= "string" then
     return
   end
-  local playerID = C.GetPlayerID(seatColor)
-  local hunger = resolveHunger(playerID, seatColor)
+  local hunger = HO.resolveHungerLevelForSeat(seatColor)
   pulseGenByColor[seatColor] = (pulseGenByColor[seatColor] or 0) + 1
   local gen = pulseGenByColor[seatColor]
-  setAllPulseTransparent(seatColor)
-  if hunger == 4 or hunger == 5 then
+  stopPulseForSeat(seatColor)
+  if hunger == 5 then
     startHeartbeatLoop(hunger, seatColor, gen)
   end
 end

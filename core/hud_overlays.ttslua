@@ -20,6 +20,15 @@ local lastVisible = {}
 --- Tier images overlay_hunger_0 .. overlay_hunger_5 (mutually exclusive).
 local HUNGER_LEVELS = { 0, 1, 2, 3, 4, 5 }
 
+--- Blindfold art variants overlay_blindfold_1 .. overlay_blindfold_6 (mutually exclusive).
+local BLINDFOLD_VARIANTS = { 1, 2, 3, 4, 5, 6 }
+
+--- @param elementId string
+--- @return boolean
+local function isExclusiveBlindfoldElementId(elementId)
+  return type(elementId) == "string" and string.match(elementId, "^overlay_blindfold_%d+_") ~= nil
+end
+
 --- @param seatColor string
 --- @return string[]
 local function allManagedOverlayIdsForSeat(seatColor)
@@ -31,8 +40,10 @@ local function allManagedOverlayIdsForSeat(seatColor)
     "overlay_health_impaired_" .. seatColor,
     "overlay_humanity_impaired_" .. seatColor,
     "overlay_frenzy_" .. seatColor,
-    "overlay_blindfold_" .. seatColor,
   }
+  for _, variant in ipairs(BLINDFOLD_VARIANTS) do
+    ids[#ids + 1] = "overlay_blindfold_" .. variant .. "_" .. seatColor
+  end
   for _, n in ipairs(HUNGER_LEVELS) do
     ids[#ids + 1] = "overlay_hunger_" .. n .. "_" .. seatColor
   end
@@ -130,6 +141,90 @@ local function desiredHungerLevelFromWant(want, seatColor)
   return 0
 end
 
+--- @param want table<string, boolean>
+--- @param seatColor string
+--- @param playerID string|nil
+--- @return number|nil variant 1..6 when any blindfold overlay is wanted
+local function desiredBlindfoldFromWant(want, seatColor, playerID)
+  if type(want) ~= "table" or type(seatColor) ~= "string" then
+    return nil
+  end
+  local variant = nil
+
+  if type(playerID) == "string" and playerID ~= "" and playerID ~= C.StorytellerID then
+    local conditions = S.getStateVal("playerData", playerID, "conditions")
+    if type(conditions) == "table" then
+      local transition = conditions.hudTransitionBlindfold
+      if type(transition) == "table" then
+        variant = tonumber(transition.blindfoldVariant)
+      end
+      if variant == nil then
+        local manual = conditions.hudBlindfold
+        if type(manual) == "table" then
+          variant = tonumber(manual.blindfoldVariant)
+        end
+      end
+    end
+  end
+
+  if variant == nil then
+    for _, v in ipairs(BLINDFOLD_VARIANTS) do
+      if want["overlay_blindfold_" .. v .. "_" .. seatColor] == true then
+        variant = v
+        break
+      end
+    end
+  end
+
+  return variant
+end
+
+--- Six blindfold Image elements are mutually exclusive.
+--- UI.show/hide only when visibility changes so repeated sync passes do not replay slide animations.
+--- @param seatColor string
+--- @param variant number|nil 1..6 = show only that variant
+local function applyBlindfoldOverlaysExclusive(seatColor, variant)
+  if type(seatColor) ~= "string" then
+    return
+  end
+  for _, v in ipairs(BLINDFOLD_VARIANTS) do
+    local eid = "overlay_blindfold_" .. v .. "_" .. seatColor
+    local shouldShow = variant ~= nil and v == variant
+    local prev = lastVisible[eid]
+    if shouldShow then
+      if prev ~= true then
+        UI.show(eid)
+        lastVisible[eid] = true
+      end
+    else
+      if prev == true then
+        UI.hide(eid)
+        lastVisible[eid] = false
+      elseif prev == nil then
+        lastVisible[eid] = false
+      end
+    end
+  end
+end
+
+--- Show one blindfold variant for every seated player without a full overlay sync (transition lead-in).
+--- @param variant number 1..6
+function HO.applyBlindfoldVariantForSeatedPlayers(variant)
+  local v = tonumber(variant)
+  if v == nil or v < 1 or v > 6 then
+    return
+  end
+  local seated = Player.getPlayers() or {}
+  local seen = {}
+  for _, player in ipairs(seated) do
+    local color = player and player.color or nil
+    if type(color) == "string" and seen[color] ~= true then
+      seen[color] = true
+      applyBlindfoldOverlaysExclusive(color, v)
+    end
+  end
+end
+
 --- Keep hunger smoke synced to hunger threshold:
 --- on for hunger >= 4; off for hunger < 4.
 --- @param seatColor string
@@ -173,6 +268,19 @@ local function applyOverlayVisibility(elementId, shouldShow)
   lastVisible[elementId] = shouldShow
 end
 
+--- Resolve the hunger tier overlay that should be visible for one seat (0..5).
+--- Shared by overlay reconcile and hunger pulse so both read the same runtime hunger.
+--- @param seatColor string e.g. "Red"
+--- @return number
+function HO.resolveHungerLevelForSeat(seatColor)
+  if type(seatColor) ~= "string" then
+    return 0
+  end
+  local playerID = S.getPlayerID(seatColor)
+  local want = computeDesiredVisibility(playerID, seatColor)
+  return desiredHungerLevelFromWant(want, seatColor)
+end
+
 --- Clears incremental visibility memory for one seat so the next syncAll() reapplies UI.show/hide.
 --- Use after automated stat changes (e.g. Rouse) when overlays can desync from lastVisible.
 --- @param seatColor string e.g. "Brown"
@@ -195,19 +303,21 @@ function HO.reconcileForSeat(seatColor)
   local want = computeDesiredVisibility(playerID, seatColor)
   local ids = allManagedOverlayIdsForSeat(seatColor)
   for _, eid in ipairs(ids) do
-    if not string.match(eid, "^overlay_hunger_%d+_") then
+    if not string.match(eid, "^overlay_hunger_%d+_") and not isExclusiveBlindfoldElementId(eid) then
       if want[eid] ~= true then
         applyOverlayVisibility(eid, false)
       end
     end
   end
   for _, eid in ipairs(ids) do
-    if not string.match(eid, "^overlay_hunger_%d+_") then
+    if not string.match(eid, "^overlay_hunger_%d+_") and not isExclusiveBlindfoldElementId(eid) then
       if want[eid] == true then
         applyOverlayVisibility(eid, true)
       end
     end
   end
+  local blindfoldVariant = desiredBlindfoldFromWant(want, seatColor, playerID)
+  applyBlindfoldOverlaysExclusive(seatColor, blindfoldVariant)
   local hungerLevel = desiredHungerLevelFromWant(want, seatColor)
   applyHungerOverlaysExclusive(seatColor, hungerLevel)
   syncHungerSmokeForSeat(seatColor, hungerLevel)

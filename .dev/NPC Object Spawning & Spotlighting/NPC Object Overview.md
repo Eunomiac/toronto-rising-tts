@@ -67,7 +67,7 @@ The `preload` entry in [`lib/npcs_data.ttslua`](../../lib/npcs_data.ttslua) `D.a
 
 **Table seats:** The pooled figurine receives the seat `*Object` tag (e.g. `NPC1Object`) and is moved as role **`SEAT_FIGURE`** by `lib.rotational-seat-layout` (same Red-template rotation as PC figures). `C.TableSourceObjects.postCorrectionsBySeatRole` applies seat Y/scale (e.g. 1.25× at the table). Display **Name** stays the NPC **full name** (tooltip). The paired **area spotlight** is hidden while seated; workshop **`SEAT_LIGHT_1/2_NPC*`** lights (virtual hand-zone rig) are reconciled via `L.reconcileForPlayer`. Unseating clears seat tags, returns the figurine to preload, and restores `npc_figurine` + area spotlight behavior.
 
-`gameState.sessionScene.npcWorld` carries **`byArea` only** for Scene Constructor intent. **`Sync.full`** → `NPCS.reconcileSessionSceneNpcWorldFromState` fingerprints `byArea`; when it changes and there is placement intent, figurines are **parked into the preload grid**, then `byArea` placements run **synchronously** (no intentional delay between figurines).
+`gameState.sessionScene.npcWorld` carries **`byArea` only** for Scene Constructor intent. **`Sync.full`** → **`NPCS.reconcileAllFromState`** resolves placement intent (Step Zero), clears stale area/seat placements, seats allowed NPCs synchronously via rotational layout, applies narrative presence visibility, then populates stage areas — without wholesale stash-all before every `byArea` apply.
 
 ---
 

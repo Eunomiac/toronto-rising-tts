@@ -2,6 +2,11 @@
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (map panels). -->
 <!-- Visibility: TTS `UI.show` / `UI.hide` play showAnimation/hideAnimation (tts-api UI API/Attributes.md). -->
 <Panel id="playerHud_overlay_blindfold_@@color@@" class="playerHud_overlaysLayer" visibility="@@color@@">
-  <Image id="overlay_blindfold_@@color@@" image="overlay_blindfold" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" />
-  <Image id="overlay_loadingScreen_@@color@@" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true"/>
+  <Image id="overlay_blindfold_1_@@color@@" image="overlay_blindfold_1" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_2_@@color@@" image="overlay_blindfold_2" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_3_@@color@@" image="overlay_blindfold_3" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_4_@@color@@" image="overlay_blindfold_4" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_5_@@color@@" image="overlay_blindfold_5" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_6_@@color@@" image="overlay_blindfold_6" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_loadingScreen_@@color@@" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true" preserveAspect="true" />
 </Panel>

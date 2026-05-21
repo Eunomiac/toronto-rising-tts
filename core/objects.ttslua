@@ -18,6 +18,7 @@ local U = require("lib.util")
 local C = require("lib.constants")
 local G = require("lib.guids")
 local OP = require("lib.object_positions")
+local S = require("core.state")
 
 -- ============================================================================
 -- LOCKED / HIDDEN OBJECTS (from C.LockedObjects, C.HiddenObjects)
@@ -63,6 +64,115 @@ function O.ApplyLockedAndHiddenFromConstants()
                     end
                 end
             end
+        end
+    end
+end
+
+--- Viewer colors used when a seat is narratively absent (hide from everyone).
+--- @return string[]
+local function allViewerColorsForInvisibility()
+    local out = { "White", "Black", "Grey" }
+    for i = 1, #(C.PlayerColors or {}) do
+        out[#out + 1] = C.PlayerColors[i]
+    end
+    return out
+end
+
+--- @param seatColor string
+--- @return boolean True when this PC seat exists on the active table layout.
+local function isPcSeatInActiveTableLayout(seatColor)
+    if U.Type(seatColor) ~= "string" or seatColor == "" then
+        return false
+    end
+    local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
+    if U.Type(currentTableKey) ~= "string" or currentTableKey == "" then
+        return true
+    end
+    local tableCfg = C.Tables[currentTableKey]
+    if U.Type(tableCfg) ~= "table" then
+        return true
+    end
+    ---@diagnostic disable-next-line: undefined-field
+    local map = tableCfg.playerToPositionMap
+    if U.Type(map) ~= "table" then
+        return true
+    end
+    return map[seatColor] ~= nil
+end
+
+--- Narrative presence for one seat (`seatSlots.isPresent` wins over `seatPresent`).
+--- @param seatKey string
+--- @return boolean
+local function resolveSeatPresenceForSeat(seatKey)
+    local ss = S.getStateVal("sessionScene", "seatSlots")
+    if U.Type(ss) == "table" then
+        local row = ss[seatKey]
+        if U.Type(row) == "table" and row.isPresent ~= nil then
+            return row.isPresent ~= false
+        end
+    end
+    local sp = S.getStateVal("sessionScene", "seatPresent")
+    if U.Type(sp) == "table" and sp[seatKey] ~= nil then
+        return sp[seatKey] ~= false
+    end
+    return true
+end
+
+--- Applies `C.HiddenObjects` visibility for one PC seat (Step Four — see NPC Reconciler Procedure).
+--- When absent: invisible to all viewer colors. When present: restore catalog defaults.
+--- @param seatColor string Brown | Orange | …
+--- @param present boolean
+function O.applyPcSeatHiddenObjectPresence(seatColor, present)
+    if U.Type(seatColor) ~= "string" or seatColor == "" then
+        return
+    end
+    local hidden = C.HiddenObjects
+    if U.Type(hidden) ~= "table" then
+        return
+    end
+    local hideAll = allViewerColorsForInvisibility()
+    local appliedGuids = {}
+
+    local function applyObject(obj, defaultColors)
+        if obj == nil or type(obj.setInvisibleTo) ~= "function" then
+            return
+        end
+        if present == true then
+            obj.setInvisibleTo(defaultColors)
+        else
+            obj.setInvisibleTo(hideAll)
+        end
+    end
+
+    for guid, defaultColors in pairs(hidden) do
+        if U.Type(guid) == "string" and guid ~= "" and U.Type(defaultColors) == "table" then
+            if #defaultColors == 1 and defaultColors[1] == seatColor then
+                appliedGuids[guid] = true
+                applyObject(getObjectFromGUID(guid), defaultColors)
+            end
+        end
+    end
+
+    local tag = seatColor .. "Object"
+    local tagged = getObjectsWithTag(tag)
+    if U.Type(tagged) == "table" then
+        for i = 1, #tagged do
+            local obj = tagged[i]
+            if obj ~= nil and type(obj.getGUID) == "function" then
+                local guid = obj.getGUID()
+                if U.Type(guid) == "string" and hidden[guid] ~= nil and appliedGuids[guid] ~= true then
+                    applyObject(obj, hidden[guid])
+                end
+            end
+        end
+    end
+end
+
+--- Step Four PC path: `C.HiddenObjects` per assigned player seat from narrative presence.
+function O.reconcilePcSeatHiddenObjectsFromState()
+    for _, seatColor in ipairs(C.PlayerColors or {}) do
+        if isPcSeatInActiveTableLayout(seatColor) then
+            O.applyPcSeatHiddenObjectPresence(seatColor, resolveSeatPresenceForSeat(seatColor))
         end
     end
 end
