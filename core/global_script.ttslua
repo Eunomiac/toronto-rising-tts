@@ -168,6 +168,7 @@ trEarlySilenceSoundscapeEmitters("chunk-sync-immediate")
 U = require("lib.util")
 C = require("lib.constants")
 DK = require("lib.dice_kinds")
+G = require("lib.guids")
 
 trScheduleEarlySoundscapeSilenceDeferred("chunk-load")
 
@@ -354,10 +355,12 @@ function GlobalReportBagDiceCount(params)
 end
 
 --- Resolves which logical die type a bag click should spawn (Auto-Hunger redirect, Hunger Dice off).
--- @param params table  { color: string, requested: "normal"|"hunger" }
--- @return string  "normal" or "hunger"
+-- Hunger redirect applies only to normal/hunger requests on vampire pools. Rouse, Obliv-Rouse,
+-- Werewolf, and Rage kinds are never rewritten to normal.
+-- @param params table  { color: string, requested: string }  DK.KIND_* value
+-- @return string|nil
 function GlobalRollSpawnDieRequest(params)
-    if type(params) ~= "table" then return "normal" end
+    if type(params) ~= "table" then return DK.KIND_NORMAL end
     local color     = params.color
     local requested = params.requested
     if type(color) ~= "string" or type(requested) ~= "string" then return requested end
@@ -382,17 +385,25 @@ function GlobalRollSpawnDieRequest(params)
         return nil
     end
 
+    -- Dedicated / non-vampire kinds: no Auto-Hunger or Hunger-Dice-off rewrite.
+    if requested ~= DK.KIND_NORMAL and requested ~= DK.KIND_HUNGER then
+        return requested
+    end
+
     local RO = require("lib.roll_options")
 
     if not RO.getForActive(active, RO.ROLL_HUNGER_DICE) then
-        return "normal"
+        if requested == DK.KIND_HUNGER then
+            return nil
+        end
+        return DK.KIND_NORMAL
     end
 
-    if RO.getPermanent(RO.PERM_AUTO_HUNGER) and requested == "normal" then
+    if RO.getPermanent(RO.PERM_AUTO_HUNGER) and requested == DK.KIND_NORMAL then
         local ch    = S.getPlayerVal(color, "hunger") or 0
-        local poolH = (active.pool and active.pool.hunger) or 0
+        local poolH = pool.hunger or 0
         if poolH < ch then
-            return "hunger"
+            return DK.KIND_HUNGER
         end
     end
 
@@ -566,7 +577,7 @@ function GlobalDiceBagClick(params)
                 initiator = "player",
                 skipSetup = true,
             }) then
-                spawnDefaultPoolDiceForActive(color)
+                GlobalSpawnDefaultPoolDiceForActive({ color = color })
             end
         elseif dieKind == DK.KIND_OBLIV_ROUSE then
             if RC.initiateRoll(color, {
@@ -575,7 +586,7 @@ function GlobalDiceBagClick(params)
                 initiator = "player",
                 skipSetup = true,
             }) then
-                spawnDefaultPoolDiceForActive(color)
+                GlobalSpawnDefaultPoolDiceForActive({ color = color })
             end
         else
             RC.initiateRoll(color, {
@@ -709,12 +720,20 @@ local function spawnDefaultPoolDiceForActive(color)
         end
         local target = pool[kind] or 0
         for _ = 1, target do
-            GlobalSpawnDieFromBag(color, kind)
+            if color == "Black" then
+                GlobalSpawnDieFromStorytellerBag({ dieKind = kind })
+            else
+                GlobalSpawnDieFromBag(color, kind)
+            end
         end
     elseif active.rollType == C.RollType.SIMPLE_CHECK then
         local target = pool.normal or 0
         for _ = 1, target do
-            GlobalSpawnDieFromBag(color, DK.KIND_NORMAL)
+            if color == "Black" then
+                GlobalSpawnDieFromStorytellerBag({ dieKind = DK.KIND_NORMAL })
+            else
+                GlobalSpawnDieFromBag(color, DK.KIND_NORMAL)
+            end
         end
     end
 end
@@ -875,7 +894,7 @@ function GlobalInitiateRoll(params)
     })
     if ok then
         GlobalRollSeatCamera({ color = color, mode = "roll" })
-        spawnDefaultPoolDiceForActive(color)
+        GlobalSpawnDefaultPoolDiceForActive({ color = color })
     end
     return ok
 end
@@ -2492,7 +2511,6 @@ function HUD_npcSpotUp(player, value, id)
 end
 
 -- Load additional modules that need global exposure (after handlers; onLoad runs later so L exists)
-G = require("lib.guids")
 L = require("core.lighting")
 R = require("lib.rotational-seat-layout")
 LightDebug = require("core.light_debug")
@@ -2737,11 +2755,17 @@ local function getBagSpawnedCount(color, dieTypeName)
     else guid = G.GetDiceNormalGUID(color)
     end
     if type(guid) ~= "string" then
-        error("getBagSpawnedCount: expected string GUID for color '" .. tostring(color) .. "'")
+        print(string.format(
+            "[Roll] getBagSpawnedCount: no %s bag GUID for seat %s (layout or Save & Play stale?)",
+            tostring(dieTypeName), tostring(color)))
+        return 0
     end
     local bag = getObjectFromGUID(guid)
     if bag == nil then
-        error("getBagSpawnedCount: missing bag object for GUID '" .. tostring(guid) .. "'")
+        print(string.format(
+            "[Roll] getBagSpawnedCount: bag object missing for %s %s (GUID %s)",
+            tostring(color), tostring(dieTypeName), tostring(guid)))
+        return 0
     end
     local result = bag.call("getSpawnedCount")
     if type(result) ~= "number" then
@@ -2826,8 +2850,81 @@ function releaseBagDice(color)
     callBagFunction(color, "releaseDice")
 end
 
+--- Destroys normal/hunger staged bag dice and table dice for a roll (keeps Rouse kinds).
+-- @param params table  { color: string, rollId: string }
+function GlobalDestroyNonRouseDiceForRoll(params)
+    if type(params) ~= "table" then return end
+    local color = params.color
+    local rollId = params.rollId
+    if type(color) ~= "string" or type(rollId) ~= "string" then return end
+
+    local bags = G.GetAllPlayerDiceBagGUIDs(color)
+    for _, kind in ipairs({ "normal", "hunger" }) do
+        local guid = bags[kind]
+        if type(guid) == "string" then
+            local bag = getObjectFromGUID(guid)
+            if bag ~= nil then bag.call("destroyDice") end
+        end
+    end
+
+    local ownerTag = color .. "Object"
+    for _, kind in ipairs({ DK.KIND_NORMAL, DK.KIND_HUNGER }) do
+        local dieTag = DK.kindToTag(kind)
+        if dieTag ~= nil then
+            local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
+            for _, obj in ipairs(candidates) do
+                if DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
+                    destroyObject(obj)
+                end
+            end
+        end
+    end
+end
+
+--- Unlocks and releases Rouse/Oblivion-Rouse bag dice for the active roll (Take Half pending).
+-- @param params table  { color: string }
+function GlobalReleaseRouseDiceForActiveRoll(params)
+    if type(params) ~= "table" or type(params.color) ~= "string" then return end
+    local color = params.color
+    local pid = S.getPlayerID(color)
+    if pid == nil then return end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil or type(active.id) ~= "string" then return end
+
+    local bags = G.GetAllPlayerDiceBagGUIDs(color)
+    for _, kind in ipairs({ "rouse", "oblivRouse" }) do
+        local guid = bags[kind]
+        if type(guid) == "string" then
+            local bag = getObjectFromGUID(guid)
+            if bag ~= nil then bag.call("releaseDice") end
+        end
+    end
+
+    local rollId = active.id
+    local ownerTag = color .. "Object"
+    for _, kind in ipairs({ DK.KIND_ROUSE, DK.KIND_OBLIV_ROUSE }) do
+        local dieTag = DK.kindToTag(kind)
+        if dieTag ~= nil then
+            local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
+            for _, obj in ipairs(candidates) do
+                if DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
+                    obj.setLock(false)
+                end
+            end
+        end
+    end
+    DiceDrawer.openForRoll(color)
+end
+
+--- Global.call entry: destroy all bag dice and close the drawer (Take Half without Rouse, cancel, etc.).
+-- @param params table  { color: string }
+function GlobalDestroyBagDice(params)
+    if type(params) ~= "table" or type(params.color) ~= "string" then return end
+    destroyBagDice(params.color)
+end
+
 --- Destroys all hovering dice for a player.
--- Called on: cancel, Take Half, and post-resolution cleanup (after broadcast hides).
+-- Called on: cancel, Take Half (no pending Rouse), and post-resolution cleanup.
 function destroyBagDice(color)
     if color == "Black" then
         local STR = require("core.storyteller_rolls")
@@ -2960,15 +3057,13 @@ function HUD_rollRollButton(player, value, id)
     end
 end
 
---- Player clicks "TAKE HALF" — records take-half successes, skips rolling.
--- Any staged dice are destroyed immediately (they are never rolled).
+--- Player clicks "TAKE HALF" — records take-half successes, skips rolling non-Rouse dice.
+-- When Rouse dice remain, only normal/hunger are destroyed; Rouse dice are released to roll.
 -- id format: "rollPanel_btnHalf_<Color>"
 function HUD_rollTakeHalf(player, value, id)
     local color = colorFromRollElementId(id)
     if color == nil then return end
-    if RC.takeHalf(color) then
-        destroyBagDice(color)
-    end
+    RC.takeHalf(color)
 end
 
 --- Player clicks "SPEND WILLPOWER" — spends 1 Superficial WP, re-enters ROLLING.
@@ -3099,7 +3194,11 @@ function HUD_rollInitiate(player, value, id)
 
     -- ST panel buttons always mark the roll as storyteller-initiated so the player
     -- panel stays hidden until the ST clicks OPEN (PRE_ROLL).
-    RC.initiateRoll(color, { rollType = rollType, initiator = "storyteller" })
+    -- Rouse / Obliv checks skip SETUP and need the default staged die + drawer (first spawn).
+    local ok = RC.initiateRoll(color, { rollType = rollType, initiator = "storyteller" })
+    if ok then
+        GlobalSpawnDefaultPoolDiceForActive({ color = color })
+    end
 end
 
 --- ST sets difficulty from the dashboard input field.

@@ -129,6 +129,22 @@ function DK.vampirePoolTotal(pool)
     return pool.normal + pool.hunger + pool.rouse + pool.oblivRouse
 end
 
+--- Sum normal + hunger only (Take Half sizing when Rouse dice remain to roll).
+-- @param pool table
+-- @return number
+function DK.nonRouseVampirePoolTotal(pool)
+    pool = DK.normalizePool(pool)
+    return pool.normal + pool.hunger
+end
+
+--- True when pool still has Rouse or Oblivion-Rouse dice to resolve.
+-- @param pool table
+-- @return boolean
+function DK.poolHasRouseKind(pool)
+    pool = DK.normalizePool(pool)
+    return pool.rouse > 0 or pool.oblivRouse > 0
+end
+
 --- True if pool contains any werewolf-kind dice.
 -- @param pool table
 -- @return boolean

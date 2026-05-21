@@ -983,8 +983,8 @@ New file. Included from `ui/Global.xml` after all existing includes.
    → phase=POST_ROLL
 
 6. RC.confirmRoll(color):
-   → If TOTAL_FAILURE: S.setPlayerVal(color, "hunger", hunger+1)
-     → If hunger was 5: RC.queueRoll(color, {rollType=FRENZY}) added to queue
+     → If TOTAL_FAILURE: S.setPlayerVal(color, "hunger", hunger+1)
+     → If hunger crosses to MAX (was &lt;5, now 5): RC.queueRoll(color, {rollType=FRENZY}) added to queue
    → If Rouse was triggered by a queue (healing), process next queued roll
 
 Oblivion variant: same, but on TOTAL_FAILURE also S.setPlayerVal(color, "stains", stains+1)

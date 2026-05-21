@@ -272,6 +272,9 @@ local function phaseLabel(active, color)
         -- After a Willpower spend the phase reverts to ROLLING so the player panel stays
         -- visible with a contextual instruction. Once the rerolled dice settle the debounce
         -- fires recalculate(), which transitions back to POST_ROLL and hides the panel.
+        if active.takeHalfAwaitingRouse == true then
+            return "Take Half applied — roll your Rouse dice"
+        end
         if active.willpower ~= nil and active.willpower.wpRerollWave == true then
             local cap = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED)
             if cap <= 0 then
@@ -317,6 +320,9 @@ local function narrativeLabel(rollType, result)
         or rc == C.ResultClass.MESSY_CRITICAL
 
     if rollType == C.RollType.ROUSE or rollType == C.RollType.ROUSE_OBLIVION then
+        if type(result.rouseNarrative) == "string" and result.rouseNarrative ~= "" then
+            return result.rouseNarrative
+        end
         return passed and "Success" or "Hunger Roused"
     elseif rollType == C.RollType.REMORSE then
         return passed and "Success: Stains Cleared" or "Humanity Degenerates"
@@ -510,7 +516,8 @@ function RUI.refreshPlayerRollPanel(color)
         and RO.getForActive(active, RO.ROLL_TAKE_HALF)
     -- Recalculate is shown in ROLLING (manual override) and POST_ROLL (corrections/WP reroll).
     -- Hidden for Take Half (no physical dice to read).
-    local canRecalc  = (isRolling or isPostRoll) and not active.tookHalf
+    local canRecalc  = (isRolling or isPostRoll)
+        and (not active.tookHalf or active.takeHalfAwaitingRouse == true)
 
     -- ROLL button: shown in PRE_ROLL, but greyed (non-interactable) if pool is zero.
     -- Pool of zero means no dice were spawned and no default pool is set — block the roll.

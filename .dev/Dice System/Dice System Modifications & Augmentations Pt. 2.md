@@ -238,6 +238,10 @@ Code paths: `lib/dice_kinds.ttslua`, `lib/rouse_outcomes.ttslua`, `core/roll_con
 - **ST slot CLEAR** (`rollDash_stCancel_1..3` → `HUD_rollCancel`): must be handled before `colorFromRollElementId` (slot ids have no `_Black` suffix).
 - **Dice bag right-click** (`objects/dice_bag.ttslua` `click_roll` `alt_click`): routes to `GlobalDiceBagRightClick` / `STR.onDiceBagRightClick` — remove last staged die; empty pool cancels roll.
 - **Brutal Outcome confirm** (`RC.confirmBrutalChoice` → `RC.confirmRoll`): `confirmRoll` must **not** call `recalculate` after a brutal choice; result carries `brutalNarrative` for broadcast (e.g. "Brutal Win") and adjusted successes/margin.
+- **Frenzy queue** (`maybeQueueFrenzyOnHungerCap`): after rouse hunger increases, queue Frenzy when hunger **reaches** `C.MAX_HUNGER` from below (not when already at max before the bump).
 - **ST bag → name modal** when no live roll; **NPC panel R** → `STR.initiateNpcRoll`.
+- **ST-initiated Rouse/Obliv (PCS panel or NPC roll):** after `RC.initiateRoll`, call `GlobalSpawnDefaultPoolDiceForActive` so the default staged die spawns and the drawer opens on first leave-container (player `DiceDrawer`, Black `STD.openForSlot`).
+- **Blood Surge rouse strip:** surge-tagged dice (`GM Notes` `|bloodSurge`) resolve only in the **Blood Surge Rouse** strip; the general **Rouse** strip uses `RC._getNonSurgeRouseValues` (physical dice without the suffix).
+- **Take Half + Rouse:** if the pool has Rouse/Oblivion-Rouse dice, Take Half applies only to normal+hunger (`DK.nonRouseVampirePoolTotal`), destroys those dice, releases Rouse dice to roll (`takeHalfAwaitingRouse`), then merges strips in `recalculate` before POST_ROLL.
 - **Console helpers:** `rollTest`, `rollStTest`, `rollStSlots` (see `.dev/testbed/TEST BED.ttslua` region 11).
 - **Plan / checklist:** `.dev/plans/dice-system-pt2-implementation.md`.

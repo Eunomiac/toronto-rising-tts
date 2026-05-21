@@ -197,6 +197,8 @@ function STR.initiateNpcRoll(rawLabel, rollType)
 
     if not skipSetupForRollType(rt) then
         RC.openRoll(ST_COLOR)
+    else
+        Global.call("GlobalSpawnDefaultPoolDiceForActive", { color = ST_COLOR })
     end
     local RUI = require("core.roll_ui")
     if RUI.refreshSTDashboard ~= nil then

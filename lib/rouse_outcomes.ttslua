@@ -59,13 +59,13 @@ end
 -- @return table { hungerDelta, stainDelta, narrative }
 local function resolveOblivSingleFace(face)
     if face == 1 then
-        return { hungerDelta = 1, stainDelta = 1, narrative = "Hunger Roused, Stain Conferred" }
+        return { hungerDelta = 1, stainDelta = 1, narrative = "Hunger Roused & Stained" }
     elseif face >= 2 and face <= 5 then
         return { hungerDelta = 1, stainDelta = 0, narrative = "Hunger Roused" }
     elseif face >= 6 and face <= 9 then
         return { hungerDelta = 0, stainDelta = 0, narrative = "Success" }
     elseif face == 10 then
-        return { hungerDelta = 0, stainDelta = 1, narrative = "Stain Conferred" }
+        return { hungerDelta = 0, stainDelta = 1, narrative = "Stained" }
     end
     return { hungerDelta = 0, stainDelta = 0, narrative = "Success" }
 end
@@ -102,7 +102,7 @@ function RO.resolveOblivRouseDice(values)
     end
 
     -- No 2–5: only 1s and/or 10s; at least one 10 (cannot be all 1s — that would match (A)).
-    return { hungerDelta = 0, stainDelta = 1, narrative = "Stain Conferred", pendingChoice = false }
+    return { hungerDelta = 0, stainDelta = 1, narrative = "Stained", pendingChoice = false }
 end
 
 --- Blood-surge rouse die: ≤5 increases Hunger by 1.
