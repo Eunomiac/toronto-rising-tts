@@ -382,6 +382,65 @@ function Dice.classifyRoll(normalDice, hungerDice, difficulty, opts)
     return out
 end
 
+--- Classifies a Werewolf: the Apocalypse pool (Werewolf + Rage dice).
+-- No Messy Criticals or Bestial Failures; paired 10s are always clean Critical Wins.
+-- @param werewolfDice table  Werewolf die values
+-- @param rageDice table      Rage die values
+-- @param difficulty number|nil
+-- @param opts table|nil      { countCriticalPairs = boolean }
+-- @return table|nil
+function Dice.classifyWerewolfRoll(werewolfDice, rageDice, difficulty, opts)
+    U.Val("Dice.classifyWerewolfRoll()",
+        {werewolfDice = werewolfDice, rageDice = rageDice},
+        U.Type(werewolfDice) == "table" and U.Type(rageDice) == "table",
+        "werewolfDice and rageDice must be table arrays")
+
+    if difficulty == nil then
+        return nil
+    end
+
+    opts = (type(opts) == "table") and opts or {}
+    local countCrit = opts.countCriticalPairs ~= false
+
+    local allDice = {}
+    for _, v in ipairs(werewolfDice) do allDice[#allDice + 1] = v end
+    for _, v in ipairs(rageDice) do allDice[#allDice + 1] = v end
+
+    local totalSuccesses, pairs, bonusSuccesses
+    if countCrit then
+        totalSuccesses, pairs, bonusSuccesses = Dice.computeSuccesses(werewolfDice, rageDice)
+    else
+        totalSuccesses, pairs, bonusSuccesses = Dice.computeSuccessesNoPairs(werewolfDice, rageDice)
+    end
+
+    local margin = totalSuccesses - difficulty
+    local hasTens = Dice.anyEquals(allDice, C.DICE_CRITICAL_SUCCESS_VALUE)
+
+    local resultClass
+    if totalSuccesses >= difficulty then
+        if countCrit and pairs > 0 then
+            resultClass = C.ResultClass.CRITICAL_WIN
+        else
+            resultClass = C.ResultClass.WIN
+        end
+    elseif totalSuccesses == 0 then
+        resultClass = C.ResultClass.TOTAL_FAILURE
+    else
+        resultClass = C.ResultClass.FAILURE
+    end
+
+    return {
+        successes      = totalSuccesses,
+        pairs          = pairs,
+        bonusSuccesses = bonusSuccesses,
+        resultClass    = resultClass,
+        margin         = margin,
+        hasTens        = hasTens,
+        hungerTens     = false,
+        hungerOnes     = false,
+    }
+end
+
 --- Calculates the Remorse roll pool size for a character at end-of-session.
 -- Pool = the number of empty (unstained, unscarred) Humanity boxes.
 -- Minimum 1 die even if all boxes are stained or the character has zero humanity.

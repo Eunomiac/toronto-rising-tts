@@ -1,0 +1,141 @@
+--[[
+    Rouse / Oblivion-Rouse outcome resolution (lib/rouse_outcomes.ttslua)
+
+    Pure logic for multi-die Oblivion checks and simple Rouse hunger rules.
+    No TTS API; no state writes.
+]]
+
+local RO = {}
+local DK = require("lib.dice_kinds")
+
+--- True when every value in array is <= threshold.
+-- @param values table
+-- @param threshold number
+-- @return boolean
+local function allAtMost(values, threshold)
+    if #values == 0 then
+        return false
+    end
+    for _, v in ipairs(values) do
+        if v > threshold then
+            return false
+        end
+    end
+    return true
+end
+
+--- True when any value is in [lo, hi].
+-- @param values table
+-- @param lo number
+-- @param hi number
+-- @return boolean
+local function anyInRange(values, lo, hi)
+    for _, v in ipairs(values) do
+        if v >= lo and v <= hi then
+            return true
+        end
+    end
+    return false
+end
+
+--- True when all values are equal.
+-- @param values table
+-- @return boolean, number|nil sharedValue
+local function allSame(values)
+    if #values == 0 then
+        return false, nil
+    end
+    local first = values[1]
+    for i = 2, #values do
+        if values[i] ~= first then
+            return false, nil
+        end
+    end
+    return true, first
+end
+
+--- Resolve a single shared Oblivion face (when all dice match).
+-- @param face number
+-- @return table { hungerDelta, stainDelta, narrative }
+local function resolveOblivSingleFace(face)
+    if face == 1 then
+        return { hungerDelta = 1, stainDelta = 1, narrative = "Hunger Roused, Stain Conferred" }
+    elseif face >= 2 and face <= 5 then
+        return { hungerDelta = 1, stainDelta = 0, narrative = "Hunger Roused" }
+    elseif face >= 6 and face <= 9 then
+        return { hungerDelta = 0, stainDelta = 0, narrative = "Success" }
+    elseif face == 10 then
+        return { hungerDelta = 0, stainDelta = 1, narrative = "Stain Conferred" }
+    end
+    return { hungerDelta = 0, stainDelta = 0, narrative = "Success" }
+end
+
+--- Resolve multiple Oblivion-Rouse dice per Pt.2 procedure (A–D).
+-- @param values table  array of integers 1–10
+-- @return table { hungerDelta, stainDelta, narrative, pendingChoice }
+function RO.resolveOblivRouseDice(values)
+    if type(values) ~= "table" or #values == 0 then
+        return { hungerDelta = 0, stainDelta = 0, narrative = "Success", pendingChoice = false }
+    end
+
+    local same, shared = allSame(values)
+    if same and shared ~= nil then
+        local r = resolveOblivSingleFace(shared)
+        r.pendingChoice = false
+        return r
+    end
+
+    if anyInRange(values, 6, 9) then
+        return { hungerDelta = 0, stainDelta = 0, narrative = "Success", pendingChoice = false }
+    end
+
+    if anyInRange(values, 2, 5) then
+        if anyInRange(values, 10, 10) then
+            return {
+                hungerDelta = 0,
+                stainDelta = 0,
+                narrative = "Choose Hunger or Stain",
+                pendingChoice = true,
+            }
+        end
+        return { hungerDelta = 1, stainDelta = 0, narrative = "Hunger Roused", pendingChoice = false }
+    end
+
+    -- No 2–5: only 1s and/or 10s; at least one 10 (cannot be all 1s — that would match (A)).
+    return { hungerDelta = 0, stainDelta = 1, narrative = "Stain Conferred", pendingChoice = false }
+end
+
+--- Blood-surge rouse die: ≤5 increases Hunger by 1.
+-- @param value number|nil
+-- @return table { hungerDelta, stainDelta, narrative }
+function RO.resolveBloodSurgeRouse(value)
+    local v = tonumber(value)
+    if v ~= nil and v <= 5 then
+        return { hungerDelta = 1, stainDelta = 0, narrative = "Blood Surge: Hunger Roused" }
+    end
+    return { hungerDelta = 0, stainDelta = 0, narrative = "Blood Surge: Success" }
+end
+
+--- Non-surge Rouse dice: ALL ≤5 → +1 Hunger.
+-- @param values table
+-- @return table { hungerDelta, stainDelta, narrative }
+function RO.resolveRouseDice(values)
+    if allAtMost(values, 5) then
+        return { hungerDelta = 1, stainDelta = 0, narrative = "Hunger Roused" }
+    end
+    return { hungerDelta = 0, stainDelta = 0, narrative = "Success" }
+end
+
+--- Dedicated rouse check: any die ≥6 passes.
+-- @param values table
+-- @return boolean passed
+function RO.rouseCheckPassed(values)
+    for _, v in ipairs(values) do
+        if v >= 6 then
+            return true
+        end
+    end
+    return #values == 0
+end
+
+return RO

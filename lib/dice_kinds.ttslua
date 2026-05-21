@@ -1,0 +1,323 @@
+--[[
+    Die kind registry (lib/dice_kinds.ttslua)
+
+    Maps TTS object tags to logical pool keys, UI face assets, and Willpower lock rules.
+    Used by roll_controller, global_script, and dice_bag routing.
+]]
+
+local DK = {}
+
+--- Logical pool keys (counts on active.pool).
+DK.KIND_NORMAL      = "normal"
+DK.KIND_HUNGER      = "hunger"
+DK.KIND_ROUSE       = "rouse"
+DK.KIND_OBLIV_ROUSE = "oblivRouse"
+DK.KIND_WEREWOLF    = "werewolf"
+DK.KIND_RAGE        = "rage"
+
+--- TTS die-type tags on bags and dice.
+DK.TAG_NORMAL      = "NormalDie"
+DK.TAG_HUNGER      = "HungerDie"
+DK.TAG_ROUSE       = "RouseDie"
+DK.TAG_OBLIV_ROUSE = "OblivRouseDie"
+DK.TAG_WEREWOLF    = "WerewolfDie"
+DK.TAG_RAGE        = "RageDie"
+
+DK.OWNER_STORYTELLER_TAG = "StorytellerObject"
+
+--- Vampire pool kinds (player + ST NPC vampire rolls).
+DK.VAMPIRE_KINDS = {
+    DK.KIND_NORMAL,
+    DK.KIND_HUNGER,
+    DK.KIND_ROUSE,
+    DK.KIND_OBLIV_ROUSE,
+}
+
+--- Werewolf-only pool kinds.
+DK.WEREWOLF_KINDS = {
+    DK.KIND_WEREWOLF,
+    DK.KIND_RAGE,
+}
+
+--- All registered kinds (table dice scan).
+DK.ALL_KINDS = {
+    DK.KIND_NORMAL,
+    DK.KIND_HUNGER,
+    DK.KIND_ROUSE,
+    DK.KIND_OBLIV_ROUSE,
+    DK.KIND_WEREWOLF,
+    DK.KIND_RAGE,
+}
+
+--- Tag → logical kind string.
+local TAG_TO_KIND = {
+    [DK.TAG_NORMAL]      = DK.KIND_NORMAL,
+    [DK.TAG_HUNGER]      = DK.KIND_HUNGER,
+    [DK.TAG_ROUSE]       = DK.KIND_ROUSE,
+    [DK.TAG_OBLIV_ROUSE] = DK.KIND_OBLIV_ROUSE,
+    [DK.TAG_WEREWOLF]    = DK.KIND_WEREWOLF,
+    [DK.TAG_RAGE]        = DK.KIND_RAGE,
+}
+
+--- Kind → TTS tag for getObjectsWithAllTags queries.
+local KIND_TO_TAG = {
+    [DK.KIND_NORMAL]      = DK.TAG_NORMAL,
+    [DK.KIND_HUNGER]      = DK.TAG_HUNGER,
+    [DK.KIND_ROUSE]       = DK.TAG_ROUSE,
+    [DK.KIND_OBLIV_ROUSE] = DK.TAG_OBLIV_ROUSE,
+    [DK.KIND_WEREWOLF]    = DK.TAG_WEREWOLF,
+    [DK.KIND_RAGE]        = DK.TAG_RAGE,
+}
+
+--- GM Notes suffix for blood-surge rouse dice.
+DK.GM_NOTE_BLOOD_SURGE_SUFFIX = "|bloodSurge"
+
+--- Pending resolution kinds (active.pendingResolution).
+DK.PENDING_OBLIV_HUNGER_STAIN   = "oblivHungerStain"
+DK.PENDING_BRUTAL_FAIL_VIOLENCE = "brutalFailViolence"
+
+--- Returns empty pool table with all keys at zero.
+-- @return table
+function DK.emptyPool()
+    return {
+        normal      = 0,
+        hunger      = 0,
+        rouse       = 0,
+        oblivRouse  = 0,
+        werewolf    = 0,
+        rage        = 0,
+    }
+end
+
+--- Ensures all pool keys exist on a pool table (mutates in place).
+-- @param pool table|nil
+-- @return table
+function DK.normalizePool(pool)
+    local base = DK.emptyPool()
+    if type(pool) ~= "table" then
+        return base
+    end
+    for k, _ in pairs(base) do
+        local v = pool[k]
+        if type(v) == "number" then
+            base[k] = math.max(0, math.floor(v))
+        end
+    end
+    return base
+end
+
+--- Sum of all pool counts.
+-- @param pool table
+-- @return number
+function DK.poolTotal(pool)
+    pool = DK.normalizePool(pool)
+    local n = 0
+    for _, k in pairs({
+        DK.KIND_NORMAL, DK.KIND_HUNGER, DK.KIND_ROUSE, DK.KIND_OBLIV_ROUSE,
+        DK.KIND_WEREWOLF, DK.KIND_RAGE,
+    }) do
+        n = n + pool[k]
+    end
+    return n
+end
+
+--- Sum vampire-kind dice only.
+-- @param pool table
+-- @return number
+function DK.vampirePoolTotal(pool)
+    pool = DK.normalizePool(pool)
+    return pool.normal + pool.hunger + pool.rouse + pool.oblivRouse
+end
+
+--- True if pool contains any werewolf-kind dice.
+-- @param pool table
+-- @return boolean
+function DK.poolHasWerewolfKind(pool)
+    pool = DK.normalizePool(pool)
+    return pool.werewolf > 0 or pool.rage > 0
+end
+
+--- True if pool contains any vampire-kind dice (excluding pure counts).
+-- @param pool table
+-- @return boolean
+function DK.poolHasVampireKind(pool)
+    pool = DK.normalizePool(pool)
+    return pool.normal > 0 or pool.hunger > 0 or pool.rouse > 0 or pool.oblivRouse > 0
+end
+
+--- Default meta block for active rolls.
+-- @return table
+function DK.defaultMeta()
+    return {
+        bloodSurgeActive       = false,
+        bloodSurgeSpawnedGuids = {},
+    }
+end
+
+--- Normalize meta on active (mutates).
+-- @param active table
+function DK.ensureMeta(active)
+    if type(active) ~= "table" then
+        return
+    end
+    if type(active.meta) ~= "table" then
+        active.meta = DK.defaultMeta()
+    end
+    if type(active.meta.bloodSurgeSpawnedGuids) ~= "table" then
+        active.meta.bloodSurgeSpawnedGuids = {}
+    end
+    active.meta.bloodSurgeActive = active.meta.bloodSurgeActive == true
+end
+
+--- Resolve logical kind from a TTS tag string.
+-- @param tag string
+-- @return string|nil
+function DK.tagToKind(tag)
+    if type(tag) ~= "string" then
+        return nil
+    end
+    return TAG_TO_KIND[tag]
+end
+
+--- Resolve TTS tag from logical kind.
+-- @param kind string
+-- @return string|nil
+function DK.kindToTag(kind)
+    return KIND_TO_TAG[kind]
+end
+
+--- True if object tags include any registered die kind or d10.
+-- @param tags table
+-- @return boolean
+function DK.isDieObjectTags(tags)
+    if type(tags) ~= "table" then
+        return false
+    end
+    for _, tag in ipairs(tags) do
+        if tag == "d10" or TAG_TO_KIND[tag] ~= nil then
+            return true
+        end
+    end
+    return false
+end
+
+--- Owner from tags: seat color or "storyteller".
+-- @param tags table
+-- @param playerColors table|nil  array of seat color strings
+-- @return string|nil  color name or "storyteller"
+function DK.ownerFromTags(tags, playerColors)
+    if type(tags) ~= "table" then
+        return nil
+    end
+    for _, tag in ipairs(tags) do
+        if tag == DK.OWNER_STORYTELLER_TAG then
+            return "storyteller"
+        end
+    end
+    if type(playerColors) == "table" then
+        for _, color in ipairs(playerColors) do
+            local colorTag = color .. "Object"
+            for _, tag in ipairs(tags) do
+                if tag == colorTag then
+                    return color
+                end
+            end
+        end
+    end
+    return nil
+end
+
+--- Encode roll id + optional blood-surge flag for GM Notes.
+-- @param rollId string
+-- @param bloodSurge boolean|nil
+-- @return string
+function DK.encodeGmNotes(rollId, bloodSurge)
+    if bloodSurge == true then
+        return rollId .. DK.GM_NOTE_BLOOD_SURGE_SUFFIX
+    end
+    return rollId
+end
+
+--- Decode GM Notes → rollId, isBloodSurgeRouse.
+-- @param notes string|nil
+-- @return string|nil rollId, boolean isBloodSurge
+function DK.decodeGmNotes(notes)
+    if type(notes) ~= "string" or notes == "" then
+        return nil, false
+    end
+    local suffix = DK.GM_NOTE_BLOOD_SURGE_SUFFIX
+    if string.sub(notes, -#suffix) == suffix then
+        return string.sub(notes, 1, #notes - #suffix), true
+    end
+    return notes, false
+end
+
+--- Notes match a roll id (with or without blood-surge suffix).
+-- @param notes string|nil
+-- @param rollId string
+-- @return boolean
+function DK.gmNotesMatchRoll(notes, rollId)
+    local rid, _ = DK.decodeGmNotes(notes)
+    return rid == rollId
+end
+
+--- UI image asset for a die face.
+-- @param kind string
+-- @param value number
+-- @return string
+function DK.dieFaceImage(kind, value)
+    local v = math.floor(tonumber(value) or 0)
+    if kind == DK.KIND_HUNGER then
+        if v == 1 then return "dieFace_hunger_skull"
+        elseif v <= 5 then return "dieFace_hunger_blank"
+        elseif v <= 9 then return "dieFace_hunger_ankh"
+        else return "dieFace_hunger_crit"
+        end
+    elseif kind == DK.KIND_ROUSE then
+        if v <= 5 then return "dieFace_rouse_fang"
+        else return "dieFace_rouse_blank"
+        end
+    elseif kind == DK.KIND_OBLIV_ROUSE then
+        if v == 1 then return "dieFace_oblivRouse_fangStain"
+        elseif v <= 5 then return "dieFace_oblivRouse_fang"
+        elseif v <= 9 then return "dieFace_oblivRouse_blank"
+        else return "dieFace_oblivRouse_stain"
+        end
+    elseif kind == DK.KIND_WEREWOLF then
+        if v <= 5 then return "dieFace_werewolf_blank"
+        elseif v <= 9 then return "dieFace_werewolf_scratch"
+        else return "dieFace_werewolf_crit"
+        end
+    elseif kind == DK.KIND_RAGE then
+        if v <= 2 then return "dieFace_rage_jaws"
+        elseif v <= 5 then return "dieFace_rage_blank"
+        elseif v <= 9 then return "dieFace_rage_scratch"
+        else return "dieFace_rage_crit"
+        end
+    else
+        if v <= 5 then return "dieFace_normal_blank"
+        elseif v <= 9 then return "dieFace_normal_ankh"
+        else return "dieFace_normal_crit"
+        end
+    end
+end
+
+--- Whether this die kind may be rerolled during a Willpower wave.
+-- @param kind string
+-- @param faceValue number|nil  current face when locking
+-- @return boolean
+function DK.canRerollWithWillpower(kind, faceValue)
+    if kind == DK.KIND_ROUSE or kind == DK.KIND_OBLIV_ROUSE then
+        return false
+    end
+    if kind == DK.KIND_RAGE then
+        local v = tonumber(faceValue)
+        if v == 1 or v == 2 then
+            return false
+        end
+        return true
+    end
+    return true
+end
+
+return DK

@@ -1761,6 +1761,43 @@ UI.show("gameStateOverlay_root")
 UI.setAttributes("gameStateOverlay_root", {active = "true"})
 
 
+-- #region 11. DICE SYSTEM PT.2 — MANUAL SCENARIOS (console)
+
+--[[
+  Dice System Pt.2 — run in TTS console (Global / DEBUG helpers). Save & Play first.
+
+  Player (seat Brown/Orange/…):
+    lua rollTest("Brown", 3)           — standard PRE_ROLL
+    Click bags: Normal / Hunger / Rouse / Obliv-Rouse (Purple only)
+    Blood surge: left Hunger (activate) / left Hunger again (add Hunger die); right Rouse undoes surge; right bag removes last die
+    Rouse / Obliv rouse → auto PRE_ROLL, no SETUP
+    POST_ROLL Obliv (D): Hunger vs Stain confirm buttons
+    Resolved roll → dice destroyed after broadcast (not ST)
+
+  Storyteller (Black):
+    lua rollStTest("Test NPC")         — NPC roll slot + SETUP panel
+    ST bag click (no live roll) → name modal → START ROLL
+    ST bag during PRE_ROLL → spawn into drawer slot arc
+    lua rollStSlots()                  — slot occupancy
+    Dashboard ROLL → programmatic randomize; dice stay until slot CLEAR
+    NPC panel R on a row → initiateNpcRoll(label)
+
+  Werewolf / Brutal:
+    lua rollStTest("Garou", C.RollType.WEREWOLF)
+    Two+ rage dice showing 1–2 → Brutal confirm in POST_ROLL
+
+  Layout: optional per-seat DICEBAG_OBLIVROUSE in C.TableSourceObjects.player
+  (Purple workshop bag GUID in lib/guids.ttslua).
+]]
+
+--- Prints the Dice Pt.2 manual scenario checklist above.
+function printDicePt2ScenarioChecklist()
+  print("[TEST BED] Dice Pt.2 scenarios — see region 11 comment in .dev/testbed/TEST BED.ttslua")
+  print("  rollTest(color, diff?, type?, label?)  |  rollStTest(label?, type?)  |  rollStSlots()")
+end
+
+-- #endregion
+
 dumpObjectXmlToFile("631323")
 -- M.setCamera("Red", "default")
 -- M.setCamera("Red", "wideFacing")

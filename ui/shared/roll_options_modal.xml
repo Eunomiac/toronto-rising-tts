@@ -21,7 +21,7 @@
       text="Permanent (chronicle)" />
 
     <VerticalLayout spacing="4" padding="4 0 8 0">
-      <Toggle id="rollOpts_perm_autoRouse" isOn="true" fontSize="11" color="#DDDDDD">Auto-Rouse</Toggle>
+      <Toggle id="rollOpts_perm_autoApplyRouseOutcomes" isOn="true" fontSize="11" color="#DDDDDD">Auto-apply Rouse outcomes</Toggle>
       <Toggle id="rollOpts_perm_autoWp" isOn="true" fontSize="11" color="#DDDDDD">Auto-WP</Toggle>
       <Toggle id="rollOpts_perm_autoRemorse" isOn="true" fontSize="11" color="#DDDDDD">Auto-Remorse</Toggle>
       <Toggle id="rollOpts_perm_autoHunger" isOn="true" fontSize="11" color="#DDDDDD">Auto-Hunger</Toggle>

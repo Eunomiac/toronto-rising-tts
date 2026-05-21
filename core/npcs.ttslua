@@ -2657,6 +2657,17 @@ function NPCS.dispatchNpcUiClick(id)
         return
     end
 
+    local npcRollKey = string.match(id, "^npc_roll_(.+)$")
+    if npcRollKey ~= nil then
+        local STR = require("core.storyteller_rolls")
+        local label = npcRollKey:gsub("^centerForward_", ""):gsub("_", " ")
+        if label == "" then
+            label = "NPC"
+        end
+        STR.initiateNpcRoll(label)
+        return
+    end
+
     local twirlGroup = string.match(id, "^npc_groupTwirl_([%w]+)$")
     if twirlGroup ~= nil then
         setGroupExpanded(twirlGroup, not isGroupExpanded(twirlGroup))

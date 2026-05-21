@@ -44,6 +44,9 @@ local S    = require("core.state")
 local C    = require("lib.constants")
 local U    = require("lib.util")
 local RO   = require("lib.roll_options")
+local DK   = require("lib.dice_kinds")
+local RouseOutcomes = require("lib.rouse_outcomes")
+local G    = require("lib.guids")
 local P    = require("lib.pc_stats")
 local PCST = require("core.pc_storyteller_panel")
 local Sync = require("core.sync")
@@ -198,16 +201,43 @@ local function ensureWillpowerShape(active)
     active.willpower.wpRerollWave = active.willpower.wpRerollWave == true
 end
 
---- Locks every physical die for this roll (both types).
+--- Die kinds participating in the active roll (vampire vs werewolf pools).
+-- @param active table|nil
+-- @return table
+local function diceKindsForActive(active)
+    if type(active) == "table" and active.rollType == C.RollType.WEREWOLF then
+        return { DK.KIND_WEREWOLF, DK.KIND_RAGE }
+    end
+    return {
+        DK.KIND_NORMAL, DK.KIND_HUNGER, DK.KIND_ROUSE, DK.KIND_OBLIV_ROUSE,
+    }
+end
+
+--- Owner tag for physical dice on the table for this roll.
+-- @param color string
+-- @param active table|nil
+-- @return string
+local function ownerTagForActive(color, active)
+    -- ST/NPC rolls on Black use StorytellerObject-tagged dice (all roll types).
+    if color == "Black" then
+        return DK.OWNER_STORYTELLER_TAG
+    end
+    if type(active) == "table" and active.rollType == C.RollType.WEREWOLF then
+        return DK.OWNER_STORYTELLER_TAG
+    end
+    return color .. "Object"
+end
+
+--- Locks every physical die for this roll (all kinds).
 -- @param color string
 -- @param rollId string
 local function lockAllRollDiceObjects(color, rollId)
-    local normals, hungers = RC._getDiceObjectsForRoll(color, rollId)
-    for _, o in ipairs(normals) do
-        if o ~= nil then o.setLock(true) end
-    end
-    for _, o in ipairs(hungers) do
-        if o ~= nil then o.setLock(true) end
+    local active = getActive(color)
+    local objsByKind = RC._getDiceObjectsByKindForRoll(color, rollId)
+    for _, kind in ipairs(diceKindsForActive(active)) do
+        for _, o in ipairs(objsByKind[kind] or {}) do
+            if o ~= nil then o.setLock(true) end
+        end
     end
 end
 
@@ -219,12 +249,18 @@ local function applyWpRerollWaveStart(color, active)
     cancelWpDieLockWaitsForColor(color)
     active.willpower.rerollRandomizedGuids = {}
     local canHunger = RO.getForActive(active, RO.ROLL_CAN_REROLL_HUNGER)
-    local normals, hungers = RC._getDiceObjectsForRoll(color, active.id)
-    for _, o in ipairs(normals) do
-        if o ~= nil then o.setLock(false) end
-    end
-    for _, o in ipairs(hungers) do
-        if o ~= nil then o.setLock(not canHunger) end
+    local objsByKind = RC._getDiceObjectsByKindForRoll(color, active.id)
+    for _, kind in ipairs(diceKindsForActive(active)) do
+        for _, o in ipairs(objsByKind[kind] or {}) do
+            if o ~= nil then
+                local face = o.getValue()
+                local unlock = DK.canRerollWithWillpower(kind, face)
+                if kind == DK.KIND_HUNGER and not canHunger then
+                    unlock = false
+                end
+                o.setLock(not unlock)
+            end
+        end
     end
 end
 
@@ -236,15 +272,12 @@ local function lockDiceOutsideRerollSelection(color, active)
     if cap <= 0 then return end
     local chosen = active.willpower.rerollRandomizedGuids
     if type(chosen) ~= "table" then return end
-    local normals, hungers = RC._getDiceObjectsForRoll(color, active.id)
-    for _, o in ipairs(normals) do
-        if o ~= nil and not chosen[o.getGUID()] then
-            o.setLock(true)
-        end
-    end
-    for _, o in ipairs(hungers) do
-        if o ~= nil and not chosen[o.getGUID()] then
-            o.setLock(true)
+    local objsByKind = RC._getDiceObjectsByKindForRoll(color, active.id)
+    for _, kind in ipairs(diceKindsForActive(active)) do
+        for _, o in ipairs(objsByKind[kind] or {}) do
+            if o ~= nil and not chosen[o.getGUID()] then
+                o.setLock(true)
+            end
         end
     end
 end
@@ -258,7 +291,8 @@ end
 -- @param diceDisplay string|nil  Formatted dice string (e.g. "7  3  [10]  [1]")
 -- @param rollType string|nil     C.RollType value (e.g. C.RollType.ROUSE)
 -- @param diceFaces table|nil     Sorted face records from Dice.buildDiceFaces(), for image display
-local function appendHistory(color, result, label, diceDisplay, rollType, diceFaces)
+-- @param rouseOutcomeStrips table|nil  Compact rouse strip rows for broadcast
+local function appendHistory(color, result, label, diceDisplay, rollType, diceFaces, rouseOutcomeStrips)
     local pid = S.getPlayerID(color)
     if pid == nil then return end
     local history = S.getStateVal("playerData", pid, "hud", "rollData", "history") or {}
@@ -268,6 +302,7 @@ local function appendHistory(color, result, label, diceDisplay, rollType, diceFa
         diceDisplay = diceDisplay or "",
         rollType    = rollType or "",
         diceFaces   = diceFaces or {},
+        rouseOutcomeStrips = rouseOutcomeStrips or {},
         timestamp   = os.time(),
     }
     while #history > 10 do table.remove(history, 1) end
@@ -289,86 +324,112 @@ end
 -- LIVE DICE READING
 -- ============================================================================
 
---- Reads the current face values of all physical dice on the table belonging to
--- a specific roll, identified by roll ID in the dice GM Notes.
---
--- Dice must be pre-tagged with "NormalDie" or "HungerDie" AND "<Color>Object"
--- (set in the bag at authoring time). The roll ID is written to GM Notes by
--- global_script.onObjectLeaveContainer when each die spawns.
---
--- Returns two arrays; both empty if no matching dice are found.
--- @param color string  Player seat color (e.g. "Red")
--- @param rollId string  Roll ID to match against GM Notes
--- @return table normalDice, table hungerDice
--- @usage local n, h = RC._getDiceForRoll("Red", active.id)
-function RC._getDiceForRoll(color, rollId)
+--- Reads die face values and objects for a roll, grouped by logical kind.
+-- @param color string  Player seat color
+-- @param rollId string
+-- @return table valuesByKind, table objectsByKind
+function RC._getDicePoolsForRoll(color, rollId)
+    local active = getActive(color)
+    local kinds = diceKindsForActive(active)
+    local valuesByKind = {}
+    local objectsByKind = {}
+    for _, kind in ipairs(kinds) do
+        valuesByKind[kind] = {}
+        objectsByKind[kind] = {}
+    end
     if U.Type(color) ~= "string" or U.Type(rollId) ~= "string" then
-        return {}, {}
+        return valuesByKind, objectsByKind
     end
 
-    local colorTag = color .. "Object"
-    local normalDice = {}
-    local hungerDice = {}
-
-    -- Normal dice: tagged NormalDie + d10 + <color>Object, GM Notes == rollId
-    -- The "d10" tag is on dice only, not on the bags (which share NormalDie/<color>Object tags).
-    local normalObjs = getObjectsWithAllTags({"NormalDie", "d10", colorTag})
-    for _, obj in ipairs(normalObjs) do
-        if obj.getGMNotes() == rollId then
-            local val = obj.getValue()
-            if type(val) == "number" then
-                normalDice[#normalDice + 1] = val
+    local ownerTag = ownerTagForActive(color, active)
+    for _, kind in ipairs(kinds) do
+        local dieTag = DK.kindToTag(kind)
+        if dieTag ~= nil then
+            local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
+            for _, obj in ipairs(candidates) do
+                if DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
+                    local val = obj.getValue()
+                    if type(val) == "number" then
+                        valuesByKind[kind][#valuesByKind[kind] + 1] = val
+                        objectsByKind[kind][#objectsByKind[kind] + 1] = obj
+                    end
+                end
             end
         end
     end
-
-    -- Hunger dice: tagged HungerDie + d10 + <color>Object, GM Notes == rollId
-    local hungerObjs = getObjectsWithAllTags({"HungerDie", "d10", colorTag})
-    for _, obj in ipairs(hungerObjs) do
-        if obj.getGMNotes() == rollId then
-            local val = obj.getValue()
-            if type(val) == "number" then
-                hungerDice[#hungerDice + 1] = val
-            end
-        end
-    end
-
-    return normalDice, hungerDice
+    return valuesByKind, objectsByKind
 end
 
---- Physical Object refs for dice belonging to a roll (same filter as _getDiceForRoll).
+--- Back-compat: normal and hunger value arrays only.
 -- @param color string
 -- @param rollId string
--- @return table normals  Array of Object
--- @return table hungers  Array of Object
+-- @return table, table
+function RC._getDiceForRoll(color, rollId)
+    local byKind = RC._getDicePoolsForRoll(color, rollId)
+    return byKind[DK.KIND_NORMAL], byKind[DK.KIND_HUNGER]
+end
+
+--- Physical objects by kind for a player roll.
+-- @param color string
+-- @param rollId string
+-- @return table
+function RC._getDiceObjectsByKindForRoll(color, rollId)
+    local _, objectsByKind = RC._getDicePoolsForRoll(color, rollId)
+    return objectsByKind
+end
+
+--- Back-compat object refs (normal + hunger only).
+-- @param color string
+-- @param rollId string
+-- @return table, table
 function RC._getDiceObjectsForRoll(color, rollId)
+    local objs = RC._getDiceObjectsByKindForRoll(color, rollId)
+    return objs[DK.KIND_NORMAL], objs[DK.KIND_HUNGER]
+end
+
+--- Blood-surge rouse die values (GM Notes carry |bloodSurge suffix).
+-- @param color string
+-- @param rollId string
+-- @return table values, table objects
+function RC._getBloodSurgeRouseForRoll(color, rollId)
+    local values = {}
+    local objects = {}
     if U.Type(color) ~= "string" or U.Type(rollId) ~= "string" then
-        return {}, {}
+        return values, objects
     end
-
-    local colorTag = color .. "Object"
-    local normalObjs = {}
-    local hungerObjs = {}
-
-    local normalCandidates = getObjectsWithAllTags({"NormalDie", "d10", colorTag})
-    for _, obj in ipairs(normalCandidates) do
-        if obj.getGMNotes() == rollId then
-            if type(obj.getValue()) == "number" then
-                normalObjs[#normalObjs + 1] = obj
+    local ownerTag = color .. "Object"
+    local candidates = getObjectsWithAllTags({ DK.TAG_ROUSE, "d10", ownerTag })
+    for _, obj in ipairs(candidates) do
+        local rid, isSurge = DK.decodeGmNotes(obj.getGMNotes())
+        if rid == rollId and isSurge then
+            local val = obj.getValue()
+            if type(val) == "number" then
+                values[#values + 1] = val
+                objects[#objects + 1] = obj
             end
         end
     end
+    return values, objects
+end
 
-    local hungerCandidates = getObjectsWithAllTags({"HungerDie", "d10", colorTag})
-    for _, obj in ipairs(hungerCandidates) do
-        if obj.getGMNotes() == rollId then
-            if type(obj.getValue()) == "number" then
-                hungerObjs[#hungerObjs + 1] = obj
-            end
-        end
+--- Non-surge rouse dice for a roll.
+-- @param color string
+-- @param rollId string
+-- @return table
+function RC._getNonSurgeRouseValues(color, rollId)
+    local byKind = RC._getDicePoolsForRoll(color, rollId)
+    return byKind[DK.KIND_ROUSE] or {}
+end
+
+--- Ensures pool/meta shape on an active roll record.
+-- @param active table
+local function ensureActiveShape(active)
+    if type(active) ~= "table" then return end
+    active.pool = DK.normalizePool(active.pool)
+    DK.ensureMeta(active)
+    if active.rouseOutcomeStrips == nil then
+        active.rouseOutcomeStrips = {}
     end
-
-    return normalObjs, hungerObjs
 end
 
 -- Classification: add functions (active, opts) -> nil; mutate opts for Dice.classifyRoll.
@@ -414,10 +475,11 @@ local function tryClassifyResultInternal(color)
         return
     end
 
-    local normalDice, hungerDice = RC._getDiceForRoll(color, active.id)
+    local valuesByKind = RC._getDicePoolsForRoll(color, active.id)
+    local normalDice = valuesByKind[DK.KIND_NORMAL]
+    local hungerDice = valuesByKind[DK.KIND_HUNGER]
 
     if #normalDice == 0 and #hungerDice == 0 then
-        -- No dice found yet (e.g. ST set difficulty before player rolled)
         active.result      = nil
         active.diceDisplay = nil
         active.diceFaces   = nil
@@ -428,7 +490,7 @@ local function tryClassifyResultInternal(color)
     local cOpts = RC.classifyOptsFromActive(active)
     active.result      = Dice.classifyRoll(normalDice, hungerDice, active.difficulty, cOpts)
     active.diceDisplay = Dice.formatDiceDisplay(normalDice, hungerDice)
-    active.diceFaces   = RC.buildDiceFacesForActive(active, normalDice, hungerDice)
+    active.diceFaces   = RC.buildDiceFacesForActive(active, valuesByKind)
     setActive(color, active)
 end
 
@@ -461,17 +523,14 @@ function RC.initiateRoll(color, config)
     end
 
     -- Auto-compute pool for special roll types
-    local pool = config.pool or { normal = 0, hunger = 0 }
+    local pool = DK.normalizePool(config.pool)
 
     if config.rollType == C.RollType.SIMPLE_CHECK then
-        -- Simple Check: always 1 Normal die, difficulty 1, no Hunger substitution.
-        -- Pool and difficulty are fully auto-set; the ST does not need to configure anything.
-        pool = { normal = 1, hunger = 0 }
-    elseif config.rollType == C.RollType.ROUSE or config.rollType == C.RollType.ROUSE_OBLIVION then
-        -- Rouse Checks use exactly 1 Hunger die. Difficulty is effectively 1 — passing
-        -- requires at least one success (6+). Auto-setting it lets the standard
-        -- classification path handle Rouse without any special-casing.
-        pool = { normal = 0, hunger = 1 }
+        pool = DK.normalizePool({ normal = 1, hunger = 0 })
+    elseif config.rollType == C.RollType.ROUSE then
+        pool = DK.normalizePool({ rouse = 1 })
+    elseif config.rollType == C.RollType.ROUSE_OBLIVION then
+        pool = DK.normalizePool({ oblivRouse = 1 })
     elseif config.rollType == C.RollType.REMORSE then
         local pid            = S.getPlayerID(color)
         local humanityBoxes  = 7
@@ -488,21 +547,29 @@ function RC.initiateRoll(color, config)
                 stains        = tonumber(stats.stains) or 0
             end
         end
-        pool = { normal = Dice.remorsePool(humanityBoxes, stains), hunger = 0 }
+        pool = DK.normalizePool({
+            normal = Dice.remorsePool(humanityBoxes, stains),
+            hunger = 0,
+        })
     elseif C.RollTypesWithoutHunger[config.rollType] then
-        pool = { normal = pool.normal or 0, hunger = 0 }
+        pool.hunger = 0
     end
+
+    local skipSetup = config.skipSetup == true
+        or RO.isRouseFamilyRoll(config.rollType)
 
     local active = {
         id          = newRollId(),
         rollType    = config.rollType,
-        phase       = C.RollPhase.SETUP,
-        batonHolder = C.BatonHolder.STORYTELLER,
-        -- "player": player initiated (show panel in SETUP so they see "Awaiting ST").
-        -- "storyteller": ST initiated (hide panel until OPEN/PRE_ROLL).
+        phase       = skipSetup and C.RollPhase.PRE_ROLL or C.RollPhase.SETUP,
+        batonHolder = skipSetup and C.BatonHolder.PLAYER or C.BatonHolder.STORYTELLER,
         initiator   = config.initiator or "player",
         label       = config.label or nil,
+        stDrawerSlot = config.stDrawerSlot,
         pool        = pool,
+        meta        = DK.defaultMeta(),
+        pendingResolution = nil,
+        rouseOutcomeStrips = {},
         -- Simple Check, Rouse, and Remorse auto-set difficulty=1 so the standard
         -- classification path works without requiring the ST to enter a value.
         -- The difficulty is hidden from the player panel for these roll types.
@@ -523,9 +590,14 @@ function RC.initiateRoll(color, config)
 
     RO.seedActiveRoll(active)
     seedWillpowerBlock(active)
+    ensureActiveShape(active)
 
     setActive(color, active)
     notifyStateChanged(color)
+
+    if skipSetup then
+        rollCamera(color, "roll")
+    end
 
     -- Dev/debug: when Auto-ST mode is on, automatically open the roll after a
     -- brief defer so the host can exercise the full player-side flow solo.
@@ -607,7 +679,31 @@ function RC.setPool(color, normal, hunger)
         -- Per-roll option: Hunger dice not used — pool hunger stays zero; spawns go to normal.
         effectiveHunger = 0
     end
-    active.pool = { normal = normal, hunger = effectiveHunger }
+    active.pool = DK.normalizePool(active.pool)
+    active.pool.normal = normal
+    active.pool.hunger = effectiveHunger
+    ensureActiveShape(active)
+    setActive(color, active)
+    notifyStateChanged(color)
+    return true
+end
+
+--- Updates one pool kind count (PRE_ROLL / SETUP).
+-- @param color string
+-- @param kind string  DK.KIND_* value
+-- @param count number
+-- @return boolean
+function RC.setPoolKindCount(color, kind, count)
+    U.Val("RC.setPoolKindCount()", { color = color, kind = kind, count = count },
+        U.Type(color) == "string" and U.Type(kind) == "string" and U.Type(count) == "number",
+        "invalid arguments")
+    local active = getActive(color)
+    if active == nil then return false end
+    if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
+        return false
+    end
+    ensureActiveShape(active)
+    active.pool[kind] = math.max(0, math.floor(count))
     setActive(color, active)
     notifyStateChanged(color)
     return true
@@ -671,7 +767,7 @@ function RC.takeHalf(color)
         return false
     end
 
-    local poolSize  = (active.pool.normal or 0) + (active.pool.hunger or 0)
+    local poolSize  = DK.vampirePoolTotal(active.pool)
     local successes = Dice.takeHalf(poolSize)
     local passes    = successes >= active.difficulty
 
@@ -805,33 +901,91 @@ function RC.recalculate(color)
     end
 
     ensureWillpowerShape(active)
+    ensureActiveShape(active)
 
     local wasRolling = active.phase == C.RollPhase.ROLLING
     local wasWpWave  = active.willpower ~= nil and active.willpower.wpRerollWave == true
 
-    -- Live read from table
-    local normalDice, hungerDice = RC._getDiceForRoll(color, active.id)
+    local valuesByKind = RC._getDicePoolsForRoll(color, active.id)
+    local normalDice = valuesByKind[DK.KIND_NORMAL] or {}
+    local hungerDice = valuesByKind[DK.KIND_HUNGER] or {}
+    local werewolfDice = valuesByKind[DK.KIND_WEREWOLF] or {}
+    local rageDice = valuesByKind[DK.KIND_RAGE] or {}
 
-    -- Update cached display string (even if classification is deferred)
     if #normalDice > 0 or #hungerDice > 0 then
         active.diceDisplay = Dice.formatDiceDisplay(normalDice, hungerDice)
+    elseif #werewolfDice > 0 or #rageDice > 0 then
+        active.diceDisplay = Dice.formatDiceDisplay(werewolfDice, rageDice)
     else
         active.diceDisplay = nil
-        active.diceFaces   = nil
     end
 
-    -- Classify if difficulty is set; otherwise just record the display and defer.
-    if active.difficulty ~= nil and (#normalDice > 0 or #hungerDice > 0) then
+    active.rouseOutcomeStrips = {}
+    active.pendingResolution = nil
+
+    local isDedicatedRouse = RO.isRouseFamilyRoll(active.rollType)
+    local hasVampireDice = #normalDice > 0 or #hungerDice > 0
+    local isWerewolfRoll = active.rollType == C.RollType.WEREWOLF
+    local hasWerewolfDice = #werewolfDice > 0 or #rageDice > 0
+
+    if isWerewolfRoll and active.difficulty ~= nil and hasWerewolfDice then
+        active.result = Dice.classifyWerewolfRoll(
+            werewolfDice, rageDice, active.difficulty, RC.classifyOptsFromActive(active))
+        active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
+        if RC._countBrutalRageDice(rageDice) >= 2 then
+            active.pendingResolution = C.PendingResolution.BRUTAL_FAIL_VIOLENCE
+        end
+    elseif isDedicatedRouse and not hasVampireDice then
+        local rouseVals = (active.rollType == C.RollType.ROUSE_OBLIVION)
+            and valuesByKind[DK.KIND_OBLIV_ROUSE]
+            or valuesByKind[DK.KIND_ROUSE]
+        if active.difficulty ~= nil and #rouseVals > 0 then
+            local oblivRes = nil
+            if active.rollType == C.RollType.ROUSE_OBLIVION then
+                oblivRes = RouseOutcomes.resolveOblivRouseDice(rouseVals)
+                if oblivRes.pendingChoice == true then
+                    active.pendingResolution = C.PendingResolution.OBLIV_HUNGER_STAIN
+                end
+            end
+            local passed = (oblivRes == nil)
+                and RouseOutcomes.rouseCheckPassed(rouseVals)
+                or (oblivRes ~= nil and oblivRes.hungerDelta == 0 and oblivRes.stainDelta == 0
+                    and oblivRes.pendingChoice ~= true)
+            active.result = {
+                successes = passed and 1 or 0,
+                pairs = 0,
+                bonusSuccesses = 0,
+                resultClass = passed and C.ResultClass.WIN or C.ResultClass.FAILURE,
+                margin = passed and 1 or -1,
+                hasTens = false,
+                hungerTens = false,
+                hungerOnes = false,
+            }
+            active.rouseOutcomeStrips = RC._buildRouseStripsForActive(color, active, valuesByKind)
+        else
+            active.result = nil
+        end
+        active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
+    elseif active.difficulty ~= nil and hasVampireDice then
         active.result = Dice.classifyRoll(normalDice, hungerDice, active.difficulty,
             RC.classifyOptsFromActive(active))
+        active.rouseOutcomeStrips = RC._buildRouseStripsForActive(color, active, valuesByKind)
+        if active.pendingResolution == nil and active.rouseOutcomeStrips ~= nil then
+            for _, strip in ipairs(active.rouseOutcomeStrips) do
+                if strip.pendingChoice == true then
+                    active.pendingResolution = C.PendingResolution.OBLIV_HUNGER_STAIN
+                    break
+                end
+            end
+        end
+        active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
     else
         active.result = nil
-    end
-
-    if active.result ~= nil then
-        active.diceFaces = RC.buildDiceFacesForActive(active, normalDice, hungerDice)
-    elseif #normalDice > 0 or #hungerDice > 0 then
-        active.diceFaces = Dice.buildDiceFaces(normalDice, hungerDice)
+        if DK.poolTotal(active.pool) > 0 then
+            active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
+        else
+            active.diceFaces = nil
+        end
     end
 
     -- Transition ROLLING → POST_ROLL on first settle; stay in POST_ROLL for recalculates
@@ -860,6 +1014,7 @@ function RC.recalculate(color)
     if wasRolling and active.phase == C.RollPhase.POST_ROLL
         and C.RollTypesAutoBroadcast[active.rollType]
         and active.willpower.available ~= true
+        and active.pendingResolution == nil
         and _autoConfirmDepth == 0 then
         _autoConfirmDepth = _autoConfirmDepth + 1
         local ok = RC.confirmRoll(color)
@@ -1029,9 +1184,21 @@ function RC.confirmRoll(color)
         print(string.format("[RC] confirmRoll: %s roll is not in POST_ROLL (phase: %s)", color, active.phase))
         return false
     end
+    if active.pendingResolution ~= nil then
+        print(string.format(
+            "[RC] confirmRoll: %s has pending resolution (%s); use choice buttons first",
+            color, tostring(active.pendingResolution)))
+        return false
+    end
+
+    -- Werewolf Brutal Fail / Violence choice already adjusted active.result; do not
+    -- re-read physical dice (recalculate would wipe +4 successes and brutalNarrative).
+    local brutalLocked = active.result ~= nil
+        and type(active.result.brutalNarrative) == "string"
+        and active.result.brutalNarrative ~= ""
 
     -- Do a final live read to ensure result reflects current table state
-    if not active.tookHalf then
+    if not active.tookHalf and not brutalLocked then
         local preResult      = active.result
         local preDiceFaces   = active.diceFaces
         local preDiceDisplay = active.diceDisplay
@@ -1055,6 +1222,7 @@ function RC.confirmRoll(color)
     -- Apply consequences for Rouse / Remorse
     if active.result ~= nil then
         RC._applyRollConsequences(color, active)
+        RC._applyRouseOutcomeStrips(color, active)
     end
 
     -- Advance to RESOLVED
@@ -1063,12 +1231,21 @@ function RC.confirmRoll(color)
     setActive(color, active)
     notifyStateChanged(color)
 
-    local finalResult      = active.result
-    local finalLabel       = active.label
-    local finalDiceDisplay = active.diceDisplay
-    local finalDiceFaces   = active.diceFaces
+    local finalResult         = active.result
+    local finalLabel          = active.label
+    local finalDiceDisplay    = active.diceDisplay
+    local finalDiceFaces      = active.diceFaces
+    local finalRouseStrips    = active.rouseOutcomeStrips
 
-    appendHistory(color, finalResult, finalLabel, finalDiceDisplay, active.rollType, finalDiceFaces)
+    appendHistory(
+        color,
+        finalResult,
+        finalLabel,
+        finalDiceDisplay,
+        active.rollType,
+        finalDiceFaces,
+        finalRouseStrips
+    )
     notifyRollResolved(color, finalResult, finalLabel)
 
     setActive(color, nil)
@@ -1180,52 +1357,7 @@ function RC._applyRollConsequences(color, active)
     if active.result == nil then return end
     local rc = active.result.resultClass
 
-    if active.rollType == C.RollType.ROUSE or active.rollType == C.RollType.ROUSE_OBLIVION then
-        local rouseMutated = false
-        -- Rouse fails → Hunger increases unless the roll passed (any WIN-class result).
-        local rousePassed = rc == C.ResultClass.WIN
-            or rc == C.ResultClass.CRITICAL_WIN
-            or rc == C.ResultClass.MESSY_CRITICAL
-        if RO.getPermanent(RO.PERM_AUTO_ROUSE) and not rousePassed then
-            local hunger    = S.getPlayerVal(color, "hunger") or 0
-            local newHunger = math.min(hunger + 1, C.MAX_HUNGER)
-            S.setPlayerVal(color, "hunger", newHunger)
-            Sync.player(color)
-            rouseMutated = true
-
-            if hunger >= C.MAX_HUNGER then
-                RC.queueRoll(color, {
-                    rollType = C.RollType.FRENZY,
-                    label    = "Frenzy Check (Hunger exceeded 5)",
-                })
-            end
-        end
-
-        -- ROUSE_OBLIVION: a Hunger die showing 1 always adds a Stain, win or lose.
-        if RO.getPermanent(RO.PERM_AUTO_ROUSE)
-            and active.rollType == C.RollType.ROUSE_OBLIVION
-            and active.result ~= nil
-            and active.result.hungerOnes then
-            P.applyHumanityStainDelta(color, 1)
-            rouseMutated = true
-        end
-
-        if rouseMutated then
-            PCST.refreshCharacterSheetsForColor(color)
-            -- Match ST PC panel hunger Apply: ST strip dots, then invalidate overlay cache + sync.
-            PCST.refreshRow(color)
-            P.refreshHudOverlaysForSeat(color)
-            -- confirmRoll then advances phase and calls notifyStateChanged → RUI.refreshPlayerRollPanel,
-            -- which issues many U.setAttribute/setValue calls on roll UI in the same frame. TTS can
-            -- drop or visually override Global overlay show/hide done here; a next-frame re-sync matches
-            -- what happens when the user later clicks Apply (after roll UI has settled).
-            local seatForOverlay = color
-            Wait.frames(function()
-                P.refreshHudOverlaysForSeat(seatForOverlay)
-            end, 1)
-        end
-
-    elseif active.rollType == C.RollType.REMORSE then
+    if active.rollType == C.RollType.REMORSE then
         if not RO.getPermanent(RO.PERM_AUTO_REMORSE) then
             return
         end
@@ -1264,12 +1396,364 @@ end
 -- @param normalDice table
 -- @param hungerDice table
 -- @return table
-function RC.buildDiceFacesForActive(active, normalDice, hungerDice)
-    local r = active.result
-    if r ~= nil and type(r.bestialNullCanceled) == "table" and #r.bestialNullCanceled > 0 then
-        return Dice.buildDiceFacesWithBestialNull(normalDice, hungerDice, r.bestialNullCanceled)
+--- Builds sorted die-face records for UI from values-by-kind table.
+-- @param active table
+-- @param valuesByKind table|nil
+-- @return table
+function RC.buildDiceFacesForActive(active, valuesByKind)
+    local faces = {}
+    if type(valuesByKind) ~= "table" then
+        return faces
     end
-    return Dice.buildDiceFaces(normalDice, hungerDice)
+    local order = {
+        DK.KIND_WEREWOLF, DK.KIND_RAGE,
+        DK.KIND_ROUSE, DK.KIND_OBLIV_ROUSE, DK.KIND_HUNGER, DK.KIND_NORMAL,
+    }
+    for _, kind in ipairs(order) do
+        for _, val in ipairs(valuesByKind[kind] or {}) do
+            faces[#faces + 1] = {
+                value = val,
+                kind = kind,
+                isHunger = (kind == DK.KIND_HUNGER),
+            }
+        end
+    end
+    table.sort(faces, function(a, b)
+        if a.value ~= b.value then return a.value > b.value end
+        if a.isHunger ~= b.isHunger then return a.isHunger end
+        return false
+    end)
+    return faces
+end
+
+--- Builds rouse outcome strip summaries for broadcast (computed at recalculate).
+-- @param color string
+-- @param active table
+-- @param valuesByKind table
+-- @return table
+function RC._buildRouseStripsForActive(color, active, valuesByKind)
+    local strips = {}
+    if type(valuesByKind) ~= "table" then
+        return strips
+    end
+
+    local surgeVals = RC._getBloodSurgeRouseForRoll(color, active.id)
+    if #surgeVals > 0 then
+        local res = RouseOutcomes.resolveBloodSurgeRouse(surgeVals[1])
+        strips[#strips + 1] = {
+            label = "Blood Surge Rouse",
+            kind = DK.KIND_ROUSE,
+            values = surgeVals,
+            narrative = res.narrative,
+            pendingChoice = false,
+        }
+    end
+
+    local oblivVals = valuesByKind[DK.KIND_OBLIV_ROUSE] or {}
+    if #oblivVals > 0 then
+        local res = RouseOutcomes.resolveOblivRouseDice(oblivVals)
+        strips[#strips + 1] = {
+            label = "Oblivion Rouse",
+            kind = DK.KIND_OBLIV_ROUSE,
+            values = oblivVals,
+            narrative = res.narrative,
+            pendingChoice = res.pendingChoice == true,
+        }
+    end
+
+    local rouseVals = valuesByKind[DK.KIND_ROUSE] or {}
+    if #rouseVals > 0 then
+        local res = RouseOutcomes.resolveRouseDice(rouseVals)
+        strips[#strips + 1] = {
+            label = "Rouse",
+            kind = DK.KIND_ROUSE,
+            values = rouseVals,
+            narrative = res.narrative,
+            pendingChoice = false,
+        }
+    end
+    return strips
+end
+
+--- Applies hunger/stain deltas from rouse strips (standard rolls with extra rouse dice).
+-- @param color string
+-- @param active table
+function RC._applyRouseOutcomeStrips(color, active)
+    if not RO.getPermanent(RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES) then
+        return
+    end
+    if type(active.rouseOutcomeStrips) ~= "table" then
+        return
+    end
+
+    local hungerBefore = S.getPlayerVal(color, "hunger") or 0
+    local hungerDelta = 0
+    local stainDelta = 0
+    for _, strip in ipairs(active.rouseOutcomeStrips) do
+        if strip.pendingChoice == true then
+            -- Resolved via RC.confirmOblivionChoice before confirm.
+        elseif strip.label == "Blood Surge Rouse" then
+            local surgeVals = strip.values or {}
+            local res = RouseOutcomes.resolveBloodSurgeRouse(surgeVals[1])
+            hungerDelta = hungerDelta + res.hungerDelta
+        elseif strip.label == "Oblivion Rouse" then
+            local res = RouseOutcomes.resolveOblivRouseDice(strip.values or {})
+            hungerDelta = hungerDelta + res.hungerDelta
+            stainDelta = stainDelta + res.stainDelta
+        elseif strip.label == "Rouse" then
+            local res = RouseOutcomes.resolveRouseDice(strip.values or {})
+            hungerDelta = hungerDelta + res.hungerDelta
+        end
+    end
+
+    if hungerDelta == 0 and stainDelta == 0 then
+        return
+    end
+
+    if hungerDelta > 0 then
+        local hunger = S.getPlayerVal(color, "hunger") or 0
+        S.setPlayerVal(color, "hunger", math.min(hunger + hungerDelta, C.MAX_HUNGER))
+    end
+    if stainDelta > 0 then
+        P.applyHumanityStainDelta(color, stainDelta)
+    end
+    Sync.player(color)
+    PCST.refreshCharacterSheetsForColor(color)
+    PCST.refreshRow(color)
+    P.refreshHudOverlaysForSeat(color)
+
+    if hungerDelta > 0 and hungerBefore >= C.MAX_HUNGER then
+        RC.queueRoll(color, {
+            rollType = C.RollType.FRENZY,
+            label    = "Frenzy Check (Hunger exceeded 5)",
+        })
+    end
+end
+
+--- Confirms Oblivion (D) choice: hunger or stain (not both).
+-- @param color string
+-- @param choice string  "hunger" | "stain"
+-- @return boolean
+function RC.confirmOblivionChoice(color, choice)
+    local active = getActive(color)
+    if active == nil or active.pendingResolution ~= C.PendingResolution.OBLIV_HUNGER_STAIN then
+        return false
+    end
+    if not RO.getPermanent(RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES) then
+        active.pendingResolution = nil
+        setActive(color, active)
+        notifyStateChanged(color)
+        return RC.confirmRoll(color)
+    end
+    if choice == "hunger" then
+        local hunger = S.getPlayerVal(color, "hunger") or 0
+        S.setPlayerVal(color, "hunger", math.min(hunger + 1, C.MAX_HUNGER))
+    elseif choice == "stain" then
+        P.applyHumanityStainDelta(color, 1)
+    else
+        return false
+    end
+    Sync.player(color)
+    PCST.refreshCharacterSheetsForColor(color)
+    PCST.refreshRow(color)
+    P.refreshHudOverlaysForSeat(color)
+    active.pendingResolution = nil
+    setActive(color, active)
+    notifyStateChanged(color)
+    return RC.confirmRoll(color)
+end
+
+--- Counts Rage dice showing 1 or 2 (Brutal Outcome trigger at >= 2).
+-- @param rageDice table
+-- @return number
+function RC._countBrutalRageDice(rageDice)
+    local n = 0
+    if type(rageDice) ~= "table" then
+        return 0
+    end
+    for _, v in ipairs(rageDice) do
+        if v == 1 or v == 2 then
+            n = n + 1
+        end
+    end
+    return n
+end
+
+--- Broadcast narrative label for a Brutal Outcome (display-only override).
+-- @param resultClass string
+-- @param violence boolean  true when Confirm Violence was chosen
+-- @return string
+local function brutalNarrativeFor(resultClass, violence)
+    if violence then
+        if resultClass == C.ResultClass.TOTAL_FAILURE then
+            return "Total Brutal Failure"
+        elseif resultClass == C.ResultClass.FAILURE then
+            return "Brutal Failure"
+        elseif resultClass == C.ResultClass.CRITICAL_WIN then
+            return "Brutal Critical"
+        elseif resultClass == C.ResultClass.WIN then
+            return "Brutal Win"
+        end
+        return "Brutal Outcome"
+    end
+    if resultClass == C.ResultClass.TOTAL_FAILURE then
+        return "Total Brutal Failure"
+    end
+    return "Brutal Failure"
+end
+
+--- Applies Brutal Fail conversion (downgrade wins to failure, margin -1).
+-- @param result table
+local function applyBrutalFailResult(result)
+    if type(result) ~= "table" then
+        return
+    end
+    local rc = result.resultClass
+    if rc == C.ResultClass.WIN or rc == C.ResultClass.CRITICAL_WIN then
+        result.resultClass = C.ResultClass.FAILURE
+        result.margin = -1
+    end
+    result.brutalNarrative = brutalNarrativeFor(result.resultClass, false)
+end
+
+--- Confirms Brutal Outcome: Fail or Violence (+4 successes, recalc).
+-- @param color string
+-- @param choice string  "fail" | "violence"
+-- @return boolean
+function RC.confirmBrutalChoice(color, choice)
+    local active = getActive(color)
+    if active == nil or active.pendingResolution ~= C.PendingResolution.BRUTAL_FAIL_VIOLENCE then
+        return false
+    end
+    if active.result == nil then
+        return false
+    end
+    if choice == "fail" then
+        applyBrutalFailResult(active.result)
+    elseif choice == "violence" then
+        local res = active.result
+        res.successes = (res.successes or 0) + 4
+        if active.difficulty ~= nil then
+            res.margin = res.successes - active.difficulty
+        end
+        if res.successes >= (active.difficulty or 0) then
+            if (res.pairs or 0) > 0 and RC.classifyOptsFromActive(active).countCriticalPairs ~= false then
+                res.resultClass = C.ResultClass.CRITICAL_WIN
+            else
+                res.resultClass = C.ResultClass.WIN
+            end
+        elseif res.successes == 0 then
+            res.resultClass = C.ResultClass.TOTAL_FAILURE
+        else
+            res.resultClass = C.ResultClass.FAILURE
+        end
+        res.brutalNarrative = brutalNarrativeFor(res.resultClass, true)
+    else
+        return false
+    end
+    active.pendingResolution = nil
+    setActive(color, active)
+    notifyStateChanged(color)
+    return RC.confirmRoll(color)
+end
+
+--- Destroys staged dice on all bags for a player and resets dedicated Rouse check pool.
+-- @param color string
+-- @param rollType string  C.RollType.ROUSE or ROUSE_OBLIVION
+-- @return boolean
+function RC.resetRouseCheckPool(color, rollType)
+    local active = getActive(color)
+    if active == nil then return false end
+    if not RO.isRouseFamilyRoll(active.rollType) then return false end
+
+    Global.call("GlobalDestroyAllPlayerBagDice", { color = color })
+
+    local pool = DK.emptyPool()
+    if rollType == C.RollType.ROUSE_OBLIVION then
+        pool.oblivRouse = 1
+    else
+        pool.rouse = 1
+    end
+    active.pool = pool
+    active.meta = DK.defaultMeta()
+    setActive(color, active)
+    notifyStateChanged(color)
+    Global.call("GlobalSpawnDefaultPoolDiceForActive", { color = color })
+    return true
+end
+
+--- Activates Blood Surge on a standard roll (Hunger bag left-click when surge is off).
+-- @param color string
+-- @return boolean
+function RC.activateBloodSurge(color)
+    local active = getActive(color)
+    if active == nil then return false end
+    if active.rollType ~= C.RollType.STANDARD then return false end
+    if active.phase ~= C.RollPhase.PRE_ROLL then return false end
+
+    ensureActiveShape(active)
+    if active.meta.bloodSurgeActive then
+        return false
+    end
+
+    local stats = S.getPlayerVal(color, "stats") or {}
+    local bp = 0
+    if type(stats.bloodPotency) == "table" then
+        bp = tonumber(stats.bloodPotency.value) or 0
+    elseif type(stats.bloodPotency) == "number" then
+        bp = stats.bloodPotency
+    end
+    local bpEntry = C.BloodPotency[bp]
+    local surgeCount = (type(bpEntry) == "table" and tonumber(bpEntry.bloodSurge)) or 1
+
+    active.meta.bloodSurgeActive = true
+    active.pool.rouse = (active.pool.rouse or 0) + 1
+    setActive(color, active)
+    notifyStateChanged(color)
+
+    Global.call("GlobalSpawnBloodSurgeDice", {
+        color = color,
+        rollId = active.id,
+        surgeCount = surgeCount,
+    })
+    return true
+end
+
+--- Reverses Blood Surge (Rouse bag right-click while surge is active).
+-- @param color string
+-- @return boolean
+function RC.deactivateBloodSurge(color)
+    local active = getActive(color)
+    if active == nil then return false end
+    if active.rollType ~= C.RollType.STANDARD then return false end
+    if active.phase ~= C.RollPhase.PRE_ROLL then return false end
+
+    ensureActiveShape(active)
+    if active.meta.bloodSurgeActive ~= true then
+        return false
+    end
+
+    Global.call("GlobalDestroyBloodSurgeDice", { color = color, rollId = active.id })
+    active.meta.bloodSurgeActive = false
+    active.meta.bloodSurgeSpawnedGuids = {}
+    local pool = active.pool
+    pool.rouse = math.max(0, (pool.rouse or 0) - 1)
+    setActive(color, active)
+    notifyStateChanged(color)
+    return true
+end
+
+--- Toggles Blood Surge (debug / legacy entry).
+-- @param color string
+-- @return boolean
+function RC.toggleBloodSurge(color)
+    local active = getActive(color)
+    if active == nil then return false end
+    ensureActiveShape(active)
+    if active.meta.bloodSurgeActive then
+        return RC.deactivateBloodSurge(color)
+    end
+    return RC.activateBloodSurge(color)
 end
 
 --- Merges Storyteller per-roll option overrides into the active roll.

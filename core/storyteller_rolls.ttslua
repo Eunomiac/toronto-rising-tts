@@ -1,0 +1,488 @@
+--[[
+    Storyteller NPC rolls (core/storyteller_rolls.ttslua)
+
+    Up to three concurrent rolls (drawer slots). One "live" unconfirmed roll receives
+    bag clicks, WP, and Roll. State: gameState.storytellerRolls.
+
+    Live FSM runs on the Storyteller seat (Black) via core.roll_controller; slot metadata
+    tracks drawer occupancy until the ST cancels from the panel.
+]]
+
+local STR = {}
+local S = require("core.state")
+local C = require("lib.constants")
+local U = require("lib.util")
+local DK = require("lib.dice_kinds")
+local G = require("lib.guids")
+local STD = require("lib.st_dice_drawer")
+
+local ST_COLOR = "Black"
+local MAX_SLOTS = 3
+
+--- @param s string|nil
+-- @return string
+local function trimLabel(s)
+    if type(s) ~= "string" then return "" end
+    return (s:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+--- @return table
+local function getRoot()
+    local root = S.getStateVal("storytellerRolls")
+    if type(root) ~= "table" then
+        root = { slots = {}, liveSlotIndex = nil }
+    end
+    if type(root.slots) ~= "table" then
+        root.slots = {}
+    end
+    return root
+end
+
+--- @param root table
+local function saveRoot(root)
+    S.setStateVal(root, "storytellerRolls")
+end
+
+--- @return table|nil active roll on Black
+local function getBlackActive()
+    local pid = S.getPlayerID(ST_COLOR)
+    if pid == nil then return nil end
+    return S.getStateVal("playerData", pid, "hud", "rollData", "active")
+end
+
+--- Case-insensitive trimmed label match among uncleared slots.
+-- @param label string
+-- @param slots table
+-- @return number count of matching labels
+local function countMatchingLabels(label, slots)
+    local key = string.lower(trimLabel(label))
+    local n = 0
+    for _, slot in pairs(slots) do
+        if type(slot) == "table" and slot.cleared ~= true then
+            local existing = string.lower(trimLabel(slot.label))
+            if existing == key then
+                n = n + 1
+            end
+        end
+    end
+    return n
+end
+
+--- @param label string
+-- @param slots table
+-- @return string
+function STR.disambiguateLabel(label, slots)
+    local trimmed = trimLabel(label)
+    if trimmed == "" then
+        trimmed = "NPC"
+    end
+    local matches = countMatchingLabels(trimmed, slots)
+    if matches == 0 then
+        return trimmed
+    end
+    return string.format("%s (%d)", trimmed, matches + 1)
+end
+
+--- @return number|nil first free slot 1..3
+local function firstFreeSlot(slots)
+    local used = {}
+    for _, slot in pairs(slots) do
+        if type(slot) == "table" and slot.cleared ~= true and type(slot.drawerSlot) == "number" then
+            used[slot.drawerSlot] = true
+        end
+    end
+    for i = 1, MAX_SLOTS do
+        if not used[i] then
+            return i
+        end
+    end
+    return nil
+end
+
+--- @param dieKind string|nil
+-- @return string rollType
+local function rollTypeForDieKind(dieKind)
+    if dieKind == DK.KIND_ROUSE then
+        return C.RollType.ROUSE
+    end
+    if dieKind == DK.KIND_OBLIV_ROUSE then
+        return C.RollType.ROUSE_OBLIVION
+    end
+    if dieKind == DK.KIND_WEREWOLF or dieKind == DK.KIND_RAGE then
+        return C.RollType.WEREWOLF
+    end
+    return C.RollType.STANDARD
+end
+
+--- @param rollType string
+-- @return boolean
+local function skipSetupForRollType(rollType)
+    return rollType == C.RollType.ROUSE
+        or rollType == C.RollType.ROUSE_OBLIVION
+end
+
+--- @return boolean true when Black has an in-progress roll
+local function hasLiveBlackRoll()
+    return getBlackActive() ~= nil
+end
+
+--- @return boolean
+function STR.canInitiate()
+    local root = getRoot()
+    return firstFreeSlot(root.slots) ~= nil and not hasLiveBlackRoll()
+end
+
+--- Activates drawer + light on first die spawn for the live slot.
+-- @param slotIndex number
+function STR.activateDrawerForSlot(slotIndex)
+    if type(slotIndex) ~= "number" then
+        return
+    end
+    local root = getRoot()
+    local slot = root.slots[slotIndex]
+    if type(slot) ~= "table" then
+        return
+    end
+    if slot.drawerActive == true then
+        return
+    end
+    slot.drawerActive = true
+    root.slots[slotIndex] = slot
+    saveRoot(root)
+    STD.openForSlot(slotIndex)
+end
+
+--- Initiates an NPC roll on the Storyteller seat (Black).
+-- @param rawLabel string
+-- @param rollType string|nil  C.RollType value (default STANDARD)
+-- @return boolean
+function STR.initiateNpcRoll(rawLabel, rollType)
+    if not STR.canInitiate() then
+        print("[StorytellerRolls] Cannot initiate: no free drawer or a roll is still live.")
+        return false
+    end
+
+    local RC = require("core.roll_controller")
+    local root = getRoot()
+    local slot = firstFreeSlot(root.slots)
+    if slot == nil then
+        return false
+    end
+
+    local rt = rollType or C.RollType.STANDARD
+    local label = STR.disambiguateLabel(rawLabel, root.slots)
+
+    local ok = RC.initiateRoll(ST_COLOR, {
+        rollType = rt,
+        label = label,
+        initiator = "storyteller",
+        stDrawerSlot = slot,
+        skipSetup = skipSetupForRollType(rt),
+    })
+    if not ok then
+        return false
+    end
+
+    root.slots[slot] = {
+        drawerSlot = slot,
+        label = label,
+        rollType = rt,
+        cleared = false,
+        confirmed = false,
+        drawerActive = false,
+        phase = skipSetupForRollType(rt) and C.RollPhase.PRE_ROLL or C.RollPhase.SETUP,
+    }
+    root.liveSlotIndex = slot
+    saveRoot(root)
+
+    if not skipSetupForRollType(rt) then
+        RC.openRoll(ST_COLOR)
+    end
+    local RUI = require("core.roll_ui")
+    if RUI.refreshSTDashboard ~= nil then
+        RUI.refreshSTDashboard()
+    end
+    return true
+end
+
+--- Initiates from ST bag click after name modal (or direct if roll already live).
+-- @param label string
+-- @param dieKind string
+-- @return boolean
+function STR.initiateFromBagLabel(label, dieKind)
+    if hasLiveBlackRoll() then
+        return false
+    end
+    local rt = rollTypeForDieKind(dieKind)
+    return STR.initiateNpcRoll(label, rt)
+end
+
+--- Syncs slot metadata from the live Black active roll.
+function STR.syncSlotsFromActive()
+    local active = getBlackActive()
+    local root = getRoot()
+    if active == nil then
+        root.liveSlotIndex = nil
+        saveRoot(root)
+        return
+    end
+    local slotIdx = active.stDrawerSlot
+    if type(slotIdx) ~= "number" then
+        return
+    end
+    local slot = root.slots[slotIdx]
+    if type(slot) ~= "table" then
+        slot = { drawerSlot = slotIdx, cleared = false, drawerActive = false }
+        root.slots[slotIdx] = slot
+    end
+    slot.label = active.label or slot.label
+    slot.phase = active.phase
+    slot.rollType = active.rollType
+    slot.rollId = active.id
+    slot.confirmed = active.phase == C.RollPhase.RESOLVED
+    if active.phase == C.RollPhase.RESOLVED then
+        root.liveSlotIndex = nil
+    else
+        root.liveSlotIndex = slotIdx
+    end
+    saveRoot(root)
+end
+
+--- Marks a drawer slot cleared (after ST cancel); closes drawer/light.
+-- @param slotIndex number
+function STR.clearSlot(slotIndex)
+    local root = getRoot()
+    local slot = root.slots[slotIndex]
+    if type(slot) == "table" then
+        if slot.drawerActive == true then
+            STD.closeForSlot(slotIndex)
+        end
+        slot.cleared = true
+        slot.phase = nil
+        slot.drawerActive = false
+    end
+    if root.liveSlotIndex == slotIndex then
+        root.liveSlotIndex = nil
+    end
+    saveRoot(root)
+end
+
+--- Destroys staged dice in all Storyteller bags.
+function STR.destroyStagedBagDice()
+    local bags = G.GetAllStorytellerDiceBagGUIDs()
+    for _, guid in pairs(bags) do
+        if type(guid) == "string" then
+            local bag = getObjectFromGUID(guid)
+            if bag ~= nil then
+                bag.call("destroyDice")
+            end
+        end
+    end
+end
+
+--- Destroys all physical dice on the table for the active Black roll.
+function STR.destroyTableDiceForActive()
+    local active = getBlackActive()
+    if active == nil or type(active.id) ~= "string" then
+        return
+    end
+    local rollId = active.id
+    local ownerTag = DK.OWNER_STORYTELLER_TAG
+    for _, kind in ipairs(DK.ALL_KINDS) do
+        local dieTag = DK.kindToTag(kind)
+        if dieTag ~= nil then
+            local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
+            for _, obj in ipairs(candidates) do
+                if obj ~= nil and DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
+                    destroyObject(obj)
+                end
+            end
+        end
+    end
+end
+
+--- Full cleanup for cancel: table dice, bag dice, optional drawer close via clearSlot.
+function STR.cleanupLiveRoll()
+    STR.destroyTableDiceForActive()
+    STR.destroyStagedBagDice()
+end
+
+--- Delay between ST programmatic die rolls (seconds). Stagger helps avoid pile-ups.
+local ST_PHYSICAL_ROLL_STAGGER_SEC = 0.1
+
+--- Physical roll for every die in the active tray (TTS `Object.randomize`, same as R key).
+-- Dice must be unlocked first; call only after `releaseBagDice("Black")` (or unlock here).
+-- Each die is lifted, tumbles, and settles; `onObjectRandomize` drives RC debounce/recalculate.
+function STR.physicalRollTrayDice()
+    local active = getBlackActive()
+    if active == nil or type(active.id) ~= "string" then
+        return
+    end
+    if active.phase ~= C.RollPhase.ROLLING then
+        return
+    end
+
+    local RC = require("core.roll_controller")
+    local _, objectsByKind = RC._getDicePoolsForRoll(ST_COLOR, active.id)
+
+    local diceList = {}
+    for _, kind in ipairs(DK.ALL_KINDS) do
+        for _, obj in ipairs(objectsByKind[kind] or {}) do
+            if obj ~= nil then
+                if obj.getLock ~= nil and obj.getLock() == true then
+                    obj.setLock(false)
+                end
+                diceList[#diceList + 1] = obj
+            end
+        end
+    end
+
+    if #diceList == 0 then
+        return
+    end
+
+    local index = 1
+    local function rollNextDie()
+        if index > #diceList then
+            return
+        end
+        local obj = diceList[index]
+        index = index + 1
+        if obj.randomize ~= nil then
+            -- Optional seat color attributes the roll to Storyteller for TTS callbacks.
+            obj.randomize(ST_COLOR)
+        end
+        if index <= #diceList then
+            U.delay(rollNextDie, ST_PHYSICAL_ROLL_STAGGER_SEC)
+        end
+    end
+
+    rollNextDie()
+end
+
+--- Called when Black roll state changes (hooked from global_script).
+function STR.onRollStateChanged()
+    STR.syncSlotsFromActive()
+end
+
+--- First die leaves ST bag during live roll — open assigned drawer.
+function STR.onFirstDieSpawned()
+    local active = getBlackActive()
+    if active == nil or type(active.stDrawerSlot) ~= "number" then
+        return
+    end
+    if active.phase == C.RollPhase.PRE_ROLL or active.phase == C.RollPhase.ROLLING then
+        STR.activateDrawerForSlot(active.stDrawerSlot)
+    end
+end
+
+--- ST bag click while a live Black roll is in PRE_ROLL.
+-- @param params table  { dieKind }
+function STR.onDiceBagClick(params)
+    if type(params) ~= "table" then return end
+    local dieKind = params.dieKind
+    if type(dieKind) ~= "string" then return end
+
+    local active = getBlackActive()
+    if active == nil then
+        local RUI = require("core.roll_ui")
+        if RUI.openStRollNameModal ~= nil then
+            RUI.openStRollNameModal(dieKind)
+        else
+            print("[StorytellerRolls] Start a roll from the NPC panel (R) first.")
+        end
+        return
+    end
+    if active.phase ~= C.RollPhase.PRE_ROLL then
+        return
+    end
+
+    local pool = DK.normalizePool(active.pool)
+    if active.rollType == C.RollType.WEREWOLF then
+        if dieKind ~= DK.KIND_WEREWOLF and dieKind ~= DK.KIND_RAGE then
+            print("[StorytellerRolls] Werewolf rolls only accept Werewolf and Rage dice.")
+            return
+        end
+    elseif DK.poolHasWerewolfKind(pool) then
+        print("[StorytellerRolls] Cannot mix Werewolf/Rage dice with other types on this roll.")
+        return
+    elseif (dieKind == DK.KIND_WEREWOLF or dieKind == DK.KIND_RAGE) and DK.poolHasVampireKind(pool) then
+        print("[StorytellerRolls] Cannot add Werewolf/Rage dice to a non-Werewolf roll.")
+        return
+    end
+
+    Global.call("GlobalSpawnDieFromStorytellerBag", { dieKind = dieKind })
+end
+
+--- ST bag right-click while a live Black roll is in PRE_ROLL (remove one die).
+-- @param params table  { dieKind }
+function STR.onDiceBagRightClick(params)
+    if type(params) ~= "table" then return end
+    local dieKind = params.dieKind
+    if type(dieKind) ~= "string" then return end
+
+    local active = getBlackActive()
+    if active == nil or active.phase ~= C.RollPhase.PRE_ROLL then
+        return
+    end
+
+    local pool = DK.normalizePool(active.pool)
+    if active.rollType == C.RollType.WEREWOLF then
+        if dieKind ~= DK.KIND_WEREWOLF and dieKind ~= DK.KIND_RAGE then
+            return
+        end
+    elseif DK.poolHasWerewolfKind(pool) then
+        return
+    elseif (dieKind == DK.KIND_WEREWOLF or dieKind == DK.KIND_RAGE) and DK.poolHasVampireKind(pool) then
+        return
+    end
+
+    Global.call("GlobalRemoveDieFromBag", { color = ST_COLOR, dieKind = dieKind })
+end
+
+--- Cancel a occupied slot from the ST slot panel (may or may not be live).
+-- @param slotIndex number
+function STR.cancelSlot(slotIndex)
+    local root = getRoot()
+    local slot = root.slots[slotIndex]
+    if type(slot) ~= "table" or slot.cleared == true then
+        return
+    end
+
+    local active = getBlackActive()
+    if active ~= nil and active.stDrawerSlot == slotIndex then
+        local RC = require("core.roll_controller")
+        RC.cancelRoll(ST_COLOR)
+        STR.cleanupLiveRoll()
+    elseif type(slot.rollId) == "string" then
+        STR.destroyTableDiceForRollId(slot.rollId)
+    end
+    STR.clearSlot(slotIndex)
+    local RUI = require("core.roll_ui")
+    if RUI.refreshSTSlotRows ~= nil then
+        RUI.refreshSTSlotRows()
+    end
+    RUI.refreshSTDashboard()
+end
+
+--- Destroy table dice tagged with a past roll id (resolved slot cleanup).
+-- @param rollId string|nil
+function STR.destroyTableDiceForRollId(rollId)
+    if type(rollId) ~= "string" then
+        return
+    end
+    local ownerTag = DK.OWNER_STORYTELLER_TAG
+    for _, kind in ipairs(DK.ALL_KINDS) do
+        local dieTag = DK.kindToTag(kind)
+        if dieTag ~= nil then
+            local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
+            for _, obj in ipairs(candidates) do
+                if obj ~= nil and DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
+                    destroyObject(obj)
+                end
+            end
+        end
+    end
+end
+
+return STR

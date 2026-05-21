@@ -13,10 +13,13 @@ local C = require("lib.constants")
 local S = require("core.state")
 
 -- Permanent setting keys (persisted in gameState.stRollSettings)
-RO.PERM_AUTO_ROUSE    = "autoRouse"
+RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES = "autoApplyRouseOutcomes"
 RO.PERM_AUTO_WP       = "autoWp"
 RO.PERM_AUTO_REMORSE  = "autoRemorse"
 RO.PERM_AUTO_HUNGER   = "autoHunger"
+
+--- Legacy key migrated on load (pre–Dice System Pt. 2).
+RO.PERM_AUTO_ROUSE_LEGACY = "autoRouse"
 
 -- Per-roll option keys (active.rollOptions)
 RO.ROLL_TAKE_HALF     = "takeHalf"
@@ -33,11 +36,25 @@ RO.ROLL_NUMBER_OF_DICE_REROLLED = "numberOfDiceRerolled"
 -- @return table
 function RO.defaultPermanentSettings()
     return {
-        [RO.PERM_AUTO_ROUSE]   = true,
+        [RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES] = true,
         [RO.PERM_AUTO_WP]      = true,
         [RO.PERM_AUTO_REMORSE] = true,
         [RO.PERM_AUTO_HUNGER]  = true,
     }
+end
+
+--- Migrates legacy stRollSettings keys after load.
+-- @param settings table  gameState.stRollSettings (mutated)
+function RO.migratePermanentSettings(settings)
+    if type(settings) ~= "table" then
+        return
+    end
+    if settings[RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES] == nil
+        and settings[RO.PERM_AUTO_ROUSE_LEGACY] ~= nil
+    then
+        settings[RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES] = settings[RO.PERM_AUTO_ROUSE_LEGACY] == true
+    end
+    settings[RO.PERM_AUTO_ROUSE_LEGACY] = nil
 end
 
 --- Returns default per-roll options for a roll type (before ST overrides).
@@ -68,10 +85,17 @@ function RO.isTakeHalfLocked(rollType)
     return rollType == C.RollType.ROUSE or rollType == C.RollType.ROUSE_OBLIVION
 end
 
---- True when Hunger Dice toggle should be locked (Rouse always uses a Hunger die).
+--- True when Hunger Dice toggle should be locked (dedicated Rouse uses Rouse/Obliv dice only).
 -- @param rollType string
 -- @return boolean
 function RO.isHungerDiceLocked(rollType)
+    return rollType == C.RollType.ROUSE or rollType == C.RollType.ROUSE_OBLIVION
+end
+
+--- True for dedicated Rouse-family roll types.
+-- @param rollType string
+-- @return boolean
+function RO.isRouseFamilyRoll(rollType)
     return rollType == C.RollType.ROUSE or rollType == C.RollType.ROUSE_OBLIVION
 end
 
@@ -91,7 +115,7 @@ function RO.sanitizeRollOptions(active)
         active.rollOptions[RO.ROLL_TAKE_HALF] = false
     end
     if RO.isHungerDiceLocked(rt) then
-        active.rollOptions[RO.ROLL_HUNGER_DICE] = true
+        active.rollOptions[RO.ROLL_HUNGER_DICE] = false
     end
     if not RO.isBestialNullVisible(rt) then
         active.rollOptions[RO.ROLL_BESTIAL_NULL] = false
@@ -147,6 +171,9 @@ function RO.getPermanent(id)
         return defaults[id] == true
     end
     local v = t[id]
+    if v == nil and id == RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES then
+        v = t[RO.PERM_AUTO_ROUSE_LEGACY]
+    end
     if v == nil then
         return defaults[id] == true
     end

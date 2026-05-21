@@ -1,0 +1,94 @@
+--[[
+    Storyteller dice drawer + tray light (lib/st_dice_drawer.ttslua)
+
+    Three NPC roll slots map to DICE_DRAWER_STORYTELLER_1..3 and storytellerDiceLight1..3.
+    Drawer poses: C.ObjectPositions DICE_DRAWER_STORYTELLER_* ; lights: L.LIGHTMODES.
+]]
+
+---@diagnostic disable: undefined-global
+
+local STD = {}
+local C = require("lib.constants")
+local G = require("lib.guids")
+local OP = require("lib.object_positions")
+local L = require("core.lighting")
+
+local SLOT_DRAWER_KEYS = {
+    [1] = "DICE_DRAWER_STORYTELLER_1",
+    [2] = "DICE_DRAWER_STORYTELLER_2",
+    [3] = "DICE_DRAWER_STORYTELLER_3",
+}
+
+local SLOT_LIGHT_REFS = {
+    [1] = "storytellerDiceLight1",
+    [2] = "storytellerDiceLight2",
+    [3] = "storytellerDiceLight3",
+}
+
+--- @param slot number 1..3
+-- @return Object|nil
+local function findDrawerObject(slot)
+    local guid = G.GetStorytellerDiceDrawerGUID(slot)
+    if type(guid) ~= "string" then
+        return nil
+    end
+    return getObjectFromGUID(guid)
+end
+
+--- World-space arc center for spawning dice into an ST roll tray.
+-- @param slot number 1..3
+-- @return Vector|nil
+function STD.arcCenterForSlot(slot)
+    local obj = findDrawerObject(slot)
+    if obj == nil then
+        return nil
+    end
+    local p = obj.getPosition()
+    return Vector(p.x, 5, p.z + 6)
+end
+
+--- Opens drawer pose and STANDARD tray light for a slot.
+-- @param slot number 1..3
+function STD.openForSlot(slot)
+    if type(slot) ~= "number" then
+        return
+    end
+    local key = SLOT_DRAWER_KEYS[slot]
+    if key == nil then
+        return
+    end
+    local entry = C.ObjectPositions[key]
+    local obj = findDrawerObject(slot)
+    if obj ~= nil and type(entry) == "table" and type(entry.on) == "table" then
+        local resolvedPose = OP.resolveStatePose(obj, entry, "on") or entry.on
+        OP.applyResolvedPose(obj, resolvedPose, OP.DEFAULT_TRANSITION_DURATION, 0, { useSmoothSetters = true })
+    end
+    local lightRef = SLOT_LIGHT_REFS[slot]
+    if type(lightRef) == "string" then
+        L.SetLightMode(lightRef, "STANDARD", nil, 0.25)
+    end
+end
+
+--- Closes drawer pose and OFF tray light for a slot.
+-- @param slot number 1..3
+function STD.closeForSlot(slot)
+    if type(slot) ~= "number" then
+        return
+    end
+    local key = SLOT_DRAWER_KEYS[slot]
+    if key == nil then
+        return
+    end
+    local entry = C.ObjectPositions[key]
+    local obj = findDrawerObject(slot)
+    if obj ~= nil and type(entry) == "table" and type(entry.off) == "table" then
+        local resolvedPose = OP.resolveStatePose(obj, entry, "off") or entry.off
+        OP.applyResolvedPose(obj, resolvedPose, OP.DEFAULT_TRANSITION_DURATION, 0, { useSmoothSetters = true })
+    end
+    local lightRef = SLOT_LIGHT_REFS[slot]
+    if type(lightRef) == "string" then
+        L.SetLightMode(lightRef, "OFF", nil, 0.25)
+    end
+end
+
+return STD

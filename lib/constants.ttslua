@@ -611,9 +611,10 @@ C.MAX_HUNGER = 5 -- Maximum hunger value (0-5 scale)
 --- Roll types. Governs pool construction rules and option availability.
 -- STANDARD:      Normal pool with Hunger dice substituted per hunger level.
 -- SIMPLE_CHECK:  Single Normal die, difficulty 1, auto-set — no player input required.
--- ROUSE / ROUSE_OBLIVION: Single Hunger die, difficulty 1, auto-set.
+-- ROUSE / ROUSE_OBLIVION: Single RouseDie or OblivRouseDie; difficulty 1; skip SETUP; auto-broadcast.
 -- REMORSE:       No Hunger dice; pool = max(1, empty Humanity boxes), difficulty 1, auto-set.
 -- WILLPOWER_ROLL / HUMANITY_ROLL / FRENZY: Normal pool, no Hunger dice.
+-- WEREWOLF:      Storyteller-only; WerewolfDie + RageDie pools.
 -- LAUNCH / GOAL: Related to launching and rushing Projects. No Willpower, and no criticals on Goal rolls.
 C.RollType = {
   STANDARD       = "standard",
@@ -624,6 +625,7 @@ C.RollType = {
   WILLPOWER_ROLL = "willpowerRoll",
   HUMANITY_ROLL  = "humanityRoll",
   FRENZY         = "frenzy",
+  WEREWOLF       = "werewolf",
   LAUNCH         = "launch",
   GOAL           = "goal"
 }
@@ -684,19 +686,27 @@ C.RollTypeLabel = {
   willpowerRoll = "Willpower Roll",
   humanityRoll  = "Humanity Roll",
   frenzy        = "Frenzy Roll",
+  werewolf      = "Werewolf Roll",
   launch        = "Launch Roll",
   goal          = "Goal Roll"
 }
 
+--- Pending POST_ROLL resolution forks (blocks auto-broadcast until cleared).
+C.PendingResolution = {
+  OBLIV_HUNGER_STAIN   = "oblivHungerStain",
+  BRUTAL_FAIL_VIOLENCE = "brutalFailViolence",
+}
+
 --- Roll types that do not substitute Hunger dice into the pool.
--- Note: ROUSE and ROUSE_OBLIVION are intentionally NOT listed here —
--- they use Hunger dice (pool = {normal=0, hunger=1}) by design.
 C.RollTypesWithoutHunger = {
   [C.RollType.SIMPLE_CHECK]   = true,
+  [C.RollType.ROUSE]          = true,
+  [C.RollType.ROUSE_OBLIVION] = true,
   [C.RollType.REMORSE]        = true,
   [C.RollType.WILLPOWER_ROLL] = true,
   [C.RollType.HUMANITY_ROLL]  = true,
   [C.RollType.FRENZY]         = true,
+  [C.RollType.WEREWOLF]       = true,
 }
 
 --- Roll types for which "Take Half" is not offered as an option.
@@ -709,6 +719,7 @@ C.RollTypesNoTakeHalf = {
   [C.RollType.REMORSE]        = true,
   [C.RollType.FRENZY]         = true,
   [C.RollType.HUMANITY_ROLL]  = true,
+  [C.RollType.WEREWOLF]       = true,
   [C.RollType.LAUNCH]         = true,
   [C.RollType.GOAL]           = true
 }
@@ -895,30 +906,30 @@ C.ObjectPositions = {
   DICE_DRAWER_STORYTELLER_1 = {
     target = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
     on = {
-      position = Vector({0,-0.64,-90}),
+      position = {y = -0.64}
     },
     off = {
-      position = Vector({0,-200,-90}),
+      position = {y = -200},
       isHidden = true,
     }
   },
   DICE_DRAWER_STORYTELLER_2 = {
     target = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
     on = {
-      position = Vector({-25,-0.64,-80}),
+      position = {y = -0.64}
     },
     off = {
-      position = Vector({-25,-200,-80}),
+      position = {y = -200},
       isHidden = true,
     }
   },
   DICE_DRAWER_STORYTELLER_3 = {
     target = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
     on = {
-      position = Vector({25,-0.64,-80}),
+      position = {y = -0.64}
     },
     off = {
-      position = Vector({25,-200,-80}),
+      position = {y = -200},
       isHidden = true,
     }
   }
@@ -1199,6 +1210,30 @@ C.Tables = {
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
         position = { z = -31.04 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
+        position = { z = -15 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
+        position = { z = -15 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
+        position = { z = -5 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
+        position = { z = -5 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
+        position = { z = -5 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
+        position = { z = -5 }
       }
     }
   },
@@ -1230,6 +1265,30 @@ C.Tables = {
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
         position = { z = -100 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
+        position = { z = -90 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
+        position = { z = -90 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
+        position = { z = -80 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
+        position = { z = -80 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
+        position = { z = -80 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
+        position = { z = -80 }
       }
     }
   },
@@ -1258,6 +1317,30 @@ C.Tables = {
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
         position = { z = -50 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
+        position = { z = 5 }
       }
     }
   },
@@ -1287,6 +1370,30 @@ C.Tables = {
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
         position = { z = -50 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
+        position = { z = 5 }
       }
     }
   },
@@ -1317,6 +1424,30 @@ C.Tables = {
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
         position = { z = -50 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
+        position = { z = 5 }
       }
     }
   },
@@ -1348,6 +1479,30 @@ C.Tables = {
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
         position = { z = -50 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
+        position = { z = 5 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
+        position = { z = 5 }
       }
     }
   }

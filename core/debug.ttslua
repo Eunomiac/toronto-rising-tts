@@ -3983,7 +3983,27 @@ function DEBUG.rollCancelAll()
     for _, color in ipairs(C.PlayerColors) do
         if RC.cancelRoll(color) then count = count + 1 end
     end
+    if RC.cancelRoll("Black") then count = count + 1 end
     print(string.format("[DEBUG.rollCancelAll] Cancelled %d active roll(s).", count))
+end
+
+--- Initiates a Storyteller NPC roll on Black (uses drawer slot 1..3).
+-- @param label string|nil
+-- @param rollType string|nil
+-- @usage lua rollStTest("Evangeline Dupont")
+-- @usage lua rollStTest("Garou", C.RollType.WEREWOLF)
+function DEBUG.rollStTest(label, rollType)
+    local STR = require("core.storyteller_rolls")
+    local lbl = (type(label) == "string" and label ~= "") and label or "Debug NPC"
+    local ok = STR.initiateNpcRoll(lbl, rollType)
+    print(string.format("[DEBUG.rollStTest] initiate: %s", ok and "ok" or "blocked"))
+end
+
+--- Prints gameState.storytellerRolls slots.
+-- @usage lua rollStSlots()
+function DEBUG.rollStSlots()
+    local root = S.getStateVal("storytellerRolls") or {}
+    print("[DEBUG.rollStSlots] " .. JSON.encode_pretty(root))
 end
 
 --- Force-confirms the active roll for a player, simulating the player clicking CONFIRM.
@@ -5194,6 +5214,8 @@ function DEBUG.help()
     print("  rollCancel(color)        - Cancel one player's active roll")
     print("  rollCancelAll()          - Cancel all active rolls (full reset)")
     print("  rollConfirm(color)       - Force-confirm a POST_ROLL result")
+    print("  rollStTest(label?, type?) - Initiate Storyteller NPC roll on Black")
+    print("  rollStSlots()            - Print gameState.storytellerRolls")
     print("\nQUICK SETTERS:")
     print("  setHunger(color, value)  - Set player hunger (e.g., setHunger('Red', 3))")
     print("  changeScene(sceneName)   - Change scene (e.g., changeScene('elysium'))")
@@ -5283,6 +5305,8 @@ rollState     = DEBUG.rollState
 rollCancel    = DEBUG.rollCancel
 rollCancelAll = DEBUG.rollCancelAll
 rollConfirm   = DEBUG.rollConfirm
+rollStTest    = DEBUG.rollStTest
+rollStSlots   = DEBUG.rollStSlots
 tableRotateTo = DEBUG.tableRotateTo
 spawnCustomUiUploadBatchFromManifest = DEBUG.spawnCustomUiUploadBatchFromManifest
 spawnCustomUiUploadBatchFromJson = DEBUG.spawnCustomUiUploadBatchFromJson

@@ -112,7 +112,9 @@ Under the new system, the addition of a third dice bag (`DICEBAG_ROUSE`) allows 
 | Player Clicks `DICEBAG_NORMAL` while assembling a dice pool for a standard roll | One die is added to the dice pool. Depending on the player's Hunger level, the die type added may be a Hunger die or a Normal die. _(No change)_ |
 | Player Clicks `DICEBAG_NORMAL` while assembling a dice pool for a Rouse Check | ⭐ The Rouse Check dice pool is reset (to a single Rouse die). |
 | Player Clicks `DICEBAG_HUNGER` with no active roll | A player-initiated ⭐ Standard Roll is triggered and sent to the Storyteller for approval to open the roll. |
-| Player Clicks `DICEBAG_HUNGER` while assembling a dice pool for a standard roll | ⭐ A "Blood Surge" is triggered, as explained below. If a Blood Surge has already been triggered for this roll, it should be reversed and removed (i.e. all dice added by the Blood Surge process should be removed from the pool). (If the player triggers a Blood Surge for a third time, it proceeds as normal -- basically acting like a toggle.) |
+| Player **left-clicks** `DICEBAG_HUNGER` while assembling a dice pool for a standard roll | ⭐ If Blood Surge is **off**, trigger Blood Surge (below). If surge is **already on**, add one Hunger die to the pool. |
+| Player **right-clicks** any dice bag during `PRE_ROLL` | Remove the last die staged from **that** bag; if the pool total becomes zero, **cancel the roll**. Unspecified opposites do nothing (e.g. right-click Hunger while surge is on only to undo surge — use **right-click Rouse**). |
+| Player **right-clicks** `DICEBAG_ROUSE` during a standard roll while Blood Surge is active | Undo Blood Surge (remove surge dice and decrement surge rouse from pool). |
 | Player Clicks `DICEBAG_HUNGER` while assembling a dice pool for a Rouse Check | ⭐ The Rouse Check dice pool is reset (to a single Rouse die). |
 | Player Clicks `DICEBAG_ROUSE` or `DICEBAG_OBLIVROUSE` with no active roll | A player-initiated Rouse Check or Oblivion Rouse Check is triggered, confirmed, and automatically opened -- no waiting for the Storyteller to approve or open Rouse Checks |
 | Player Clicks `DICEBAG_ROUSE` or `DICEBAG_OBLIVROUSE` while assembling a dice pool for a standard roll or a Rouse Check | A Rouse Die or Oblivion-Rouse Die is added to the dice pool. (The effect of Rouse Dice in standard dice pools is explained below.) |
@@ -171,7 +173,7 @@ There are three dice drawer objects, one for each of the three simultaneous Stor
 
 The first time the Storyteller adds a die to the "live" roll, its dice drawer and dice drawer light should be activated. GUIDs for the dice drawers and lights are provided in `G.GUIDS`, the active and inactive positions for each dice drawer are given in `C.ObjectPositions`, and the "OFF" (inactive) and "STANDARD" (active) modes for each drawer light are given in `L.LIGHTMODES`.
 
-Importantly, unlike with player dice bags, the Storyteller dice bags are not located near the dice drawer. When spawning dice into a Storyteller roll, the center of the arc into which the dice are spawned should equal the X/Z position of the dice drawer plus `Vector({0,0,-3})` (i.e. 3 units "south" of the center of the drawer). The default/initial Y-position should be set to `5`.
+Importantly, unlike with player dice bags, the Storyteller dice bags are not located near the dice drawer. When spawning dice into a Storyteller roll, the arc center is `STD.arcCenterForSlot`: drawer X, Y = `5`, Z = drawer Z **+ 6** (world-space offset along +Z from the drawer center).
 
 ### Rolling Storyteller Rolls
 
@@ -223,3 +225,19 @@ If "Confirm Violence" is clicked, **four additional successes** should be added 
 | Failure | "Brutal Failure" |
 | Win | "Brutal Win" |
 | Critical Win | "Brutal Critical" |
+
+---
+
+## Implementation notes (May 2026)
+
+Code paths: `lib/dice_kinds.ttslua`, `lib/rouse_outcomes.ttslua`, `core/roll_controller.ttslua`, `core/storyteller_rolls.ttslua`, `lib/st_dice_drawer.ttslua`, `objects/dice_bag.ttslua`, `core/global_script.ttslua`, `core/roll_ui.ttslua`, `ui/shared/roll_panels.xml`.
+
+- **ST rolls** use seat `Black` + `gameState.storytellerRolls` (three drawer slots). Resolved dice are **not** auto-destroyed; clear via dashboard slot **CLEAR** (`STR.cancelSlot`).
+- **ST dashboard ROLL** unlocks tray dice, then calls `Object.randomize()` per die (physical tumble, same as R key), staggered ~0.1s — not a silent face assignment.
+- **ST roll control panel** (`rollPanel_Black`, `Black|Host`): same controls as player panels (pool, ROLL, **TAKE HALF**, WP, RECALCULATE, CONFIRM, Obliv/Brutal) alongside the sidebar dashboard. Take Half uses the same rules as player rolls (PRE_ROLL, difficulty set, roll type allowed, roll option enabled).
+- **ST slot CLEAR** (`rollDash_stCancel_1..3` → `HUD_rollCancel`): must be handled before `colorFromRollElementId` (slot ids have no `_Black` suffix).
+- **Dice bag right-click** (`objects/dice_bag.ttslua` `click_roll` `alt_click`): routes to `GlobalDiceBagRightClick` / `STR.onDiceBagRightClick` — remove last staged die; empty pool cancels roll.
+- **Brutal Outcome confirm** (`RC.confirmBrutalChoice` → `RC.confirmRoll`): `confirmRoll` must **not** call `recalculate` after a brutal choice; result carries `brutalNarrative` for broadcast (e.g. "Brutal Win") and adjusted successes/margin.
+- **ST bag → name modal** when no live roll; **NPC panel R** → `STR.initiateNpcRoll`.
+- **Console helpers:** `rollTest`, `rollStTest`, `rollStSlots` (see `.dev/testbed/TEST BED.ttslua` region 11).
+- **Plan / checklist:** `.dev/plans/dice-system-pt2-implementation.md`.

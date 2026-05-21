@@ -357,10 +357,15 @@ function S.GetDefaultGameState()
         },
         -- Storyteller roll automation (chronicle-wide); merged with defaults in validateState
         stRollSettings = {
-            autoRouse   = true,
-            autoWp      = true,
-            autoRemorse = true,
-            autoHunger  = true,
+            autoApplyRouseOutcomes = true,
+            autoWp                 = true,
+            autoRemorse            = true,
+            autoHunger             = true,
+        },
+        --- Storyteller NPC rolls (max 3 drawer slots). See core/storyteller_rolls.ttslua.
+        storytellerRolls = {
+            slots = {},
+            liveSlotIndex = nil,
         },
     }
 end
@@ -740,7 +745,15 @@ function S.validateState()
     end
     do
         local RO = require("lib.roll_options")
+        RO.migratePermanentSettings(gameState.stRollSettings)
         S.mergeDefaults(gameState.stRollSettings, RO.defaultPermanentSettings())
+    end
+
+    if not gameState.storytellerRolls or type(gameState.storytellerRolls) ~= "table" then
+        gameState.storytellerRolls = { slots = {}, liveSlotIndex = nil }
+    end
+    if type(gameState.storytellerRolls.slots) ~= "table" then
+        gameState.storytellerRolls.slots = {}
     end
 
     --- Normalize player dynamic shape: hunger under stats, stats/conditions from PCS when needed, strip ST-only fields.

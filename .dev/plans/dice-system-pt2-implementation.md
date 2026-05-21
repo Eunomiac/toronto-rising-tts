@@ -1,7 +1,7 @@
 # Dice System Pt. 2 — Implementation Plan
 
 **Source spec:** `.dev/Dice System/Dice System Modifications & Augmentations Pt. 2.md`
-**Status:** Ready to implement (requirements locked May 2026)
+**Status:** Implementation complete (May 2026) — ready for full in-game test pass
 **Architecture:** Single roll FSM in `core/roll_controller.ttslua` with player vs storyteller context; mutation on confirm → `Sync.player(color)` for PC stats only.
 
 ---
@@ -41,7 +41,7 @@
 - NPC **R** → SETUP + prefilled name; bag click → name modal (required, any string).
 - **Name dedup:** among uncleared slots, trim + **case-insensitive** match → append ` (2)`, ` (3)`, …
 - Drawer/light: first die added → on until **cancel** (stays through resolved-on-panel).
-- Spawn arc center: drawer X/Z + `Vector(0,0,-3)`, Y = 5.
+- Spawn arc center: drawer X, Y = 5, Z = drawer Z + 6 (`STD.arcCenterForSlot`).
 - **Roll button:** programmatic randomize all tray dice; existing settle/debounce.
 - **No auto cleanup** after broadcast; ST cancels from panel.
 - **WP:** cosmetic only (no stat); same unlock/reroll/lock procedure as players.
@@ -220,10 +220,10 @@ gameState.storytellerRolls.liveSlotIndex = 1|2|3|nil
 
 ## Phase 7 — Layout, objects, verification
 
-- [ ] `lib/rotational-seat-layout.ttslua`: `DICEBAG_ROUSE` per seat; extensible `DICEBAG_OBLIVROUSE_<COLOR>`.
-- [ ] Verify TTS object GUIDs match `G.GUIDS` (fix misnamed `.tts/objects` if needed).
-- [ ] `.dev/testbed/TEST BED.ttslua`: scenarios for bag matrix, surge toggle, Obliv (D), ST 3-slot, brutal.
-- [ ] Grep cleanup: `autoRouse`, `PERM_AUTO_ROUSE`, hunger=1 rouse pool.
+- [x] `C.TableSourceObjects.player`: `DICEBAG_ROUSE` + optional `DICEBAG_OBLIVROUSE` per seat (Purple GUID in `lib/guids.ttslua`).
+- [x] ST bags/drawers: `lib/st_dice_drawer.ttslua`, `G.GetDiceStorytellerBagGUID`, `C.ObjectPositions` DICE_DRAWER_STORYTELLER_*.
+- [x] `.dev/testbed/TEST BED.ttslua`: region 11 manual scenario checklist + `printDicePt2ScenarioChecklist()`.
+- [x] Legacy `autoRouse` migration retained in `lib/roll_options.ttslua` only (intentional one-time load).
 
 ---
 
