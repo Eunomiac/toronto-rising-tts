@@ -2941,17 +2941,22 @@ end
 -- All functions extract the player color from the element id suffix.
 -- ============================================================================
 
---- Extracts a player color from a UI element id of the form "<prefix>_<Color>".
--- Returns nil if no match is found.
+--- Colors that may appear as a roll UI id suffix (longest first avoids ambiguous tails).
+local ROLL_UI_COLOR_SUFFIXES = { "Orange", "Purple", "Brown", "Black", "Pink", "Red" }
+
+--- Extracts a player/ST seat color from a UI element id of the form "<prefix>_<Color>".
+-- Matches suffix only (not substrings). ST slot CLEAR ids (`rollDash_stCancel_1`) have no
+-- color suffix and must be handled before calling this (see HUD_rollCancel).
 -- @param id string  Element id (e.g. "rollPanel_btnRoll_Red")
 -- @return string|nil
 local function colorFromRollElementId(id)
-    if type(id) ~= "string" then return nil end
-    if string.sub(id, -#"Black") == "Black" or string.find(id, "_Black", 1, true) then
-        return "Black"
+    if type(id) ~= "string" or id == "" then
+        return nil
     end
-    for _, color in ipairs(C.PlayerColors) do
-        if string.sub(id, -#color) == color then
+    for _, color in ipairs(ROLL_UI_COLOR_SUFFIXES) do
+        if #id > #color and string.sub(id, -#color) == color
+            and string.sub(id, -#color - 1, -#color - 1) == "_"
+        then
             return color
         end
     end

@@ -235,7 +235,7 @@ Code paths: `lib/dice_kinds.ttslua`, `lib/rouse_outcomes.ttslua`, `core/roll_con
 - **ST rolls** use seat `Black` + `gameState.storytellerRolls` (three drawer slots). Resolved dice are **not** auto-destroyed; clear via dashboard slot **CLEAR** (`STR.cancelSlot`).
 - **ST dashboard ROLL** unlocks tray dice, then calls `Object.randomize()` per die (physical tumble, same as R key), staggered ~0.1s — not a silent face assignment.
 - **ST roll control panel** (`rollPanel_Black`, `Black|Host`): same controls as player panels (pool, ROLL, **TAKE HALF**, WP, RECALCULATE, CONFIRM, Obliv/Brutal) alongside the sidebar dashboard. Take Half uses the same rules as player rolls (PRE_ROLL, difficulty set, roll type allowed, roll option enabled).
-- **ST slot CLEAR** (`rollDash_stCancel_1..3` → `HUD_rollCancel`): must be handled before `colorFromRollElementId` (slot ids have no `_Black` suffix).
+- **ST slot CLEAR** (`rollDash_stCancel_1..3` → `HUD_rollCancel`): must be handled before `colorFromRollElementId` (slot ids have no `_<Color>` suffix).
 - **Dice bag right-click** (`objects/dice_bag.ttslua` `click_roll` `alt_click`): routes to `GlobalDiceBagRightClick` / `STR.onDiceBagRightClick` — remove last staged die; empty pool cancels roll.
 - **Brutal Outcome confirm** (`RC.confirmBrutalChoice` → `RC.confirmRoll`): `confirmRoll` must **not** call `recalculate` after a brutal choice; result carries `brutalNarrative` for broadcast (e.g. "Brutal Win") and adjusted successes/margin.
 - **Frenzy queue** (`maybeQueueFrenzyOnHungerCap`): after rouse hunger increases, queue Frenzy when hunger **reaches** `C.MAX_HUNGER` from below (not when already at max before the bump).
