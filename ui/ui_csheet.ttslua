@@ -424,7 +424,10 @@ local function applyPage3DynamicXml()
   if fp == lastPage3XmlFingerprint then
     return
   end
-  local xml = Global.call("GlobalBuildCsheetPage3Xml", pd.stats, seatColor)
+  local xml = Global.call("GlobalBuildCsheetPage3Xml", {
+    stats = pd.stats,
+    seatColor = seatColor,
+  })
   if type(xml) ~= "string" or xml == "" then
     return
   end
@@ -471,12 +474,13 @@ local function applyBloodPotencyDecals(stats)
     error("[ui_csheet] applyBloodPotencyDecals: Global.call unavailable")
   end
 
-  local fp = Global.call("GlobalFingerprintBloodPotencyDecals", stats, pageNum)
+  local bpParams = { stats = stats, pageNum = pageNum }
+  local fp = Global.call("GlobalFingerprintBloodPotencyDecals", bpParams)
   if fp == lastBloodPotencyDecalFingerprint then
     return
   end
 
-  local updates = Global.call("GlobalResolveBloodPotencyDecals", stats, pageNum)
+  local updates = Global.call("GlobalResolveBloodPotencyDecals", bpParams)
   if type(updates) ~= "table" then
     error("[ui_csheet] applyBloodPotencyDecals: GlobalResolveBloodPotencyDecals returned non-table")
   end
@@ -564,7 +568,11 @@ function refreshCharacterSheetUi()
   local conditions = pd.conditions
   local updates = nil
   if Global ~= nil and type(Global.call) == "function" then
-    updates = Global.call("GlobalCollectSheetImageUpdates", stats, conditions, pageNum)
+    updates = Global.call("GlobalCollectSheetImageUpdates", {
+      stats = stats,
+      conditions = conditions,
+      pageNum = pageNum,
+    })
   end
   if type(updates) ~= "table" then
     updates = {}

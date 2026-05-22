@@ -915,13 +915,18 @@ function GlobalRegisterTrackerDisplay(cfg)
 end
 
 --- Build character sheet dot/box UI attribute updates (object scripts call via Global.call).
---- @param stats table
---- @param conditions table|nil
---- @param pageNum number|nil
+--- TTS `call()` forwards only one parameter — pass a single params table.
+--- @param params table { stats: table, conditions: table|nil, pageNum: number|nil }
 --- @return table[]
-function GlobalCollectSheetImageUpdates(stats, conditions, pageNum)
+function GlobalCollectSheetImageUpdates(params)
+    if type(params) ~= "table" then
+        error("GlobalCollectSheetImageUpdates: params must be a table")
+    end
+    if type(params.stats) ~= "table" then
+        error("GlobalCollectSheetImageUpdates: params.stats must be a table")
+    end
     local PSC = require("lib.pc_sheet_collect")
-    return PSC.collectSheetImageUpdates(stats, conditions, pageNum)
+    return PSC.collectSheetImageUpdates(params.stats, params.conditions, params.pageNum)
 end
 
 --- Fingerprint page-3 stats for skip-redundant setXml on character sheet objects.
@@ -933,44 +938,50 @@ function GlobalFingerprintCsheetPage3(stats)
 end
 
 --- Build full page-3 character sheet XML document (object UI.setXml).
---- @param stats table
---- @param seatColor string|nil
+--- TTS `call()` forwards only one parameter — pass a single params table.
+--- @param params table { stats: table, seatColor: string|nil }
 --- @return string|nil
-function GlobalBuildCsheetPage3Xml(stats, seatColor)
+function GlobalBuildCsheetPage3Xml(params)
+    if type(params) ~= "table" or type(params.stats) ~= "table" then
+        return nil
+    end
     local PAGE3 = require("lib.csheet_page3_xml")
-    return PAGE3.buildPage3DocumentXml(stats, seatColor)
+    return PAGE3.buildPage3DocumentXml(params.stats, params.seatColor)
 end
 
 --- Resolve Blood Potency decal url updates for CSHEET_PAGE_1 or _2 (object scripts call via Global.call).
---- @param stats table
---- @param pageNum number
+--- TTS `call()` forwards only one parameter — pass a single params table.
+--- @param params table { stats: table, pageNum: number }
 --- @return table[] list of { slot = string, url = string }
-function GlobalResolveBloodPotencyDecals(stats, pageNum)
-    if type(stats) ~= "table" then
-        error("GlobalResolveBloodPotencyDecals: stats must be a table")
+function GlobalResolveBloodPotencyDecals(params)
+    if type(params) ~= "table" then
+        error("GlobalResolveBloodPotencyDecals: params must be a table")
     end
-    local pn = tonumber(pageNum)
+    if type(params.stats) ~= "table" then
+        error("GlobalResolveBloodPotencyDecals: params.stats must be a table")
+    end
+    local pn = tonumber(params.pageNum)
     if pn == nil then
-        error("GlobalResolveBloodPotencyDecals: pageNum must be a number")
+        error("GlobalResolveBloodPotencyDecals: params.pageNum must be a number")
     end
     local BPD = require("lib.blood_potency_decals")
-    return BPD.resolveDecalsForPage(stats, pn)
+    return BPD.resolveDecalsForPage(params.stats, pn)
 end
 
 --- Fingerprint BP decal derived values for one sheet page (skip redundant setDecals).
---- @param stats table
---- @param pageNum number
+--- TTS `call()` forwards only one parameter — pass a single params table.
+--- @param params table { stats: table, pageNum: number }
 --- @return string|nil
-function GlobalFingerprintBloodPotencyDecals(stats, pageNum)
-    if type(stats) ~= "table" then
+function GlobalFingerprintBloodPotencyDecals(params)
+    if type(params) ~= "table" or type(params.stats) ~= "table" then
         return nil
     end
-    local pn = tonumber(pageNum)
+    local pn = tonumber(params.pageNum)
     if pn == nil then
         return nil
     end
     local BPD = require("lib.blood_potency_decals")
-    return BPD.fingerprintPageDecals(stats, pn)
+    return BPD.fingerprintPageDecals(params.stats, pn)
 end
 
 --- Switch clicking player to a seat's sheet camera preset (sheetRed, sheetBrown, …).
@@ -2805,9 +2816,14 @@ function callBagFunction(color, funcName)
     end
 end
 
+--- Per-seat bag kinds not in every layout (no console warning when GUID is absent).
+local OPTIONAL_PLAYER_BAG_KINDS = {
+    oblivRouse = true,
+}
+
 --- Returns the number of dice currently hovering in one of a player's bags.
 -- @param color string  Player seat color
--- @param dieTypeName string  "normal" or "hunger"
+-- @param dieTypeName string  "normal"|"hunger"|"rouse"|"oblivRouse"
 -- @return number
 local function getBagSpawnedCount(color, dieTypeName)
     local guid = nil
@@ -2818,9 +2834,11 @@ local function getBagSpawnedCount(color, dieTypeName)
     else guid = G.GetDiceNormalGUID(color)
     end
     if type(guid) ~= "string" then
-        print(string.format(
-            "[Roll] getBagSpawnedCount: no %s bag GUID for seat %s (layout or Save & Play stale?)",
-            tostring(dieTypeName), tostring(color)))
+        if OPTIONAL_PLAYER_BAG_KINDS[dieTypeName] ~= true then
+            print(string.format(
+                "[Roll] getBagSpawnedCount: no %s bag GUID for seat %s (layout or Save & Play stale?)",
+                tostring(dieTypeName), tostring(color)))
+        end
         return 0
     end
     local bag = getObjectFromGUID(guid)
