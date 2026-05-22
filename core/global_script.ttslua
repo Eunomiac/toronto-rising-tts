@@ -973,12 +973,15 @@ end
 --- @param params table { stats: table, pageNum: number }
 --- @return string|nil
 function GlobalFingerprintBloodPotencyDecals(params)
-    if type(params) ~= "table" or type(params.stats) ~= "table" then
-        return nil
+    if type(params) ~= "table" then
+        error("GlobalFingerprintBloodPotencyDecals: params must be a table")
+    end
+    if type(params.stats) ~= "table" then
+        error("GlobalFingerprintBloodPotencyDecals: params.stats must be a table")
     end
     local pn = tonumber(params.pageNum)
     if pn == nil then
-        return nil
+        error("GlobalFingerprintBloodPotencyDecals: params.pageNum must be a number")
     end
     local BPD = require("lib.blood_potency_decals")
     return BPD.fingerprintPageDecals(params.stats, pn)

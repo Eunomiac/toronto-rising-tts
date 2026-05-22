@@ -30,3 +30,5 @@ At reconcile time, only the decal **`url`** changes. The image variant key is `"
 ### Reconcile pipeline
 
 On load and whenever `PCST.refreshCharacterSheetsForColor` runs, `ui/ui_csheet.ttslua` → `applyBloodPotencyDecals` (pages 1–2 only) reads merged stats via Global, resolves derived values and URLs via `lib/blood_potency_decals.ttslua`, and calls `setDecals` (preserving transform). Missing slots, unexpected decal names, or invalid URLs **error loudly** — no legacy name shims.
+
+Object → Global calls must pass **one params table** per `Global.call()` (TTS ignores extra arguments), e.g. `Global.call("GlobalResolveBloodPotencyDecals", { stats = stats, pageNum = pageNum })`.

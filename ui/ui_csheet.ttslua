@@ -475,6 +475,7 @@ local function applyBloodPotencyDecals(stats)
   end
 
   local bpParams = { stats = stats, pageNum = pageNum }
+  -- TTS Global.call() forwards only one argument after the function name; bundle fields in a table.
   local fp = Global.call("GlobalFingerprintBloodPotencyDecals", bpParams)
   if fp == lastBloodPotencyDecalFingerprint then
     return
