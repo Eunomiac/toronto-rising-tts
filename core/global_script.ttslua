@@ -941,6 +941,69 @@ function GlobalBuildCsheetPage3Xml(stats, seatColor)
     return PAGE3.buildPage3DocumentXml(stats, seatColor)
 end
 
+--- Resolve Blood Potency decal url updates for CSHEET_PAGE_1 or _2 (object scripts call via Global.call).
+--- @param stats table
+--- @param pageNum number
+--- @return table[] list of { slot = string, url = string }
+function GlobalResolveBloodPotencyDecals(stats, pageNum)
+    if type(stats) ~= "table" then
+        error("GlobalResolveBloodPotencyDecals: stats must be a table")
+    end
+    local pn = tonumber(pageNum)
+    if pn == nil then
+        error("GlobalResolveBloodPotencyDecals: pageNum must be a number")
+    end
+    local BPD = require("lib.blood_potency_decals")
+    return BPD.resolveDecalsForPage(stats, pn)
+end
+
+--- Fingerprint BP decal derived values for one sheet page (skip redundant setDecals).
+--- @param stats table
+--- @param pageNum number
+--- @return string|nil
+function GlobalFingerprintBloodPotencyDecals(stats, pageNum)
+    if type(stats) ~= "table" then
+        return nil
+    end
+    local pn = tonumber(pageNum)
+    if pn == nil then
+        return nil
+    end
+    local BPD = require("lib.blood_potency_decals")
+    return BPD.fingerprintPageDecals(stats, pn)
+end
+
+--- Switch clicking player to a seat's sheet camera preset (sheetRed, sheetBrown, …).
+--- @param params table { clickerColor: string, sheetSeatColor: string }
+function GlobalSetSheetCamera(params)
+    if type(params) ~= "table" then
+        error("GlobalSetSheetCamera: params must be a table")
+    end
+    local clickerColor = params.clickerColor
+    local sheetSeatColor = params.sheetSeatColor
+    if type(clickerColor) ~= "string" or clickerColor == "" then
+        error("GlobalSetSheetCamera: clickerColor is required")
+    end
+    if type(sheetSeatColor) ~= "string" or sheetSeatColor == "" then
+        error("GlobalSetSheetCamera: sheetSeatColor is required")
+    end
+    local canonSeat = nil
+    local lr = string.lower(sheetSeatColor)
+    for _, col in ipairs(C.PlayerColors or {}) do
+        if string.lower(col) == lr then
+            canonSeat = col
+            break
+        end
+    end
+    if canonSeat == nil then
+        error(string.format("GlobalSetSheetCamera: invalid sheet seat color %q", sheetSeatColor))
+    end
+    if M == nil or type(M.setCamera) ~= "function" then
+        error("GlobalSetSheetCamera: M.setCamera is unavailable")
+    end
+    M.setCamera(clickerColor, "sheet" .. canonSeat)
+end
+
 function onLoad(saved_data)
     -- Emitters and `Wait.time` are typically available here; chunk-level pass often sees 0/9 GUIDs.
     trEarlySilenceSoundscapeEmitters("onLoad-sync-immediate")

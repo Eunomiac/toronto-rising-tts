@@ -48,6 +48,8 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
 
 <Panel id="paper_root" class="page_root">
 
+  <Button id="pageInner" class="page_navigation page_inner_right" />
+
   <!-- === ATTRIBUTES === -->
   <Panel id="attributes_panel">
     <!-- Strength dots -->

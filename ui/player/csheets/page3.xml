@@ -8,6 +8,7 @@
 <Panel id="paper_root" class="page_root padded_border">
 
   <Button id="pageBack" class="page_navigation page_back" />
+  <Button id="pageInner" class="page_navigation page_inner_right" />
 
   <VerticalLayout class="vertical_section_container">
     <Panel class="spacer" color="rgba(0, 0, 0, 0)" preferredHeight="20" flexibleHeight="0" minHeight="20" />

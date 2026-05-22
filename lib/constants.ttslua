@@ -499,6 +499,47 @@ C.BloodPotency = {
     baneSeverity = 6
   }
 }
+
+-- Blood Potency decal image URLs (variant key = statKey .. value, e.g. "bloodSurge3").
+-- Object AttachedDecal.name values are static slot keys (bloodSurge, mending, …); reconcile swaps url only.
+-- REPLACE_ME URLs are placeholders — lib.blood_potency_decals errors until replaced with real Steam CDN URLs.
+C.BloodPotencyDecalUrls = {
+  baneSeverity0 = "https://REPLACE_ME.toronto-rising/baneSeverity0",
+  baneSeverity2 = "https://REPLACE_ME.toronto-rising/baneSeverity2",
+  baneSeverity3 = "https://REPLACE_ME.toronto-rising/baneSeverity3",
+  baneSeverity4 = "https://REPLACE_ME.toronto-rising/baneSeverity4",
+  baneSeverity5 = "https://REPLACE_ME.toronto-rising/baneSeverity5",
+  baneSeverity6 = "https://REPLACE_ME.toronto-rising/baneSeverity6",
+  bloodSurge1 = "https://REPLACE_ME.toronto-rising/bloodSurge1",
+  bloodSurge2 = "https://REPLACE_ME.toronto-rising/bloodSurge2",
+  bloodSurge3 = "https://REPLACE_ME.toronto-rising/bloodSurge3",
+  bloodSurge4 = "https://REPLACE_ME.toronto-rising/bloodSurge4",
+  bloodSurge5 = "https://REPLACE_ME.toronto-rising/bloodSurge5",
+  bloodSurge6 = "https://REPLACE_ME.toronto-rising/bloodSurge6",
+  discBonus0 = "https://REPLACE_ME.toronto-rising/discBonus0",
+  discBonus1 = "https://REPLACE_ME.toronto-rising/discBonus1",
+  discBonus2 = "https://REPLACE_ME.toronto-rising/discBonus2",
+  discBonus3 = "https://REPLACE_ME.toronto-rising/discBonus3",
+  discBonus4 = "https://REPLACE_ME.toronto-rising/discBonus4",
+  discBonus5 = "https://REPLACE_ME.toronto-rising/discBonus5",
+  discReroll0 = "https://REPLACE_ME.toronto-rising/discReroll0",
+  discReroll1 = "https://REPLACE_ME.toronto-rising/discReroll1",
+  discReroll2 = "https://REPLACE_ME.toronto-rising/discReroll2",
+  discReroll3 = "https://REPLACE_ME.toronto-rising/discReroll3",
+  discReroll4 = "https://REPLACE_ME.toronto-rising/discReroll4",
+  discReroll5 = "https://REPLACE_ME.toronto-rising/discReroll5",
+  mending1 = "https://REPLACE_ME.toronto-rising/mending1",
+  mending2 = "https://REPLACE_ME.toronto-rising/mending2",
+  mending3 = "https://REPLACE_ME.toronto-rising/mending3",
+  mending4 = "https://REPLACE_ME.toronto-rising/mending4",
+  mending5 = "https://REPLACE_ME.toronto-rising/mending5",
+}
+
+-- Static AttachedDecal.name on CSHEET_PAGE workshop objects (must match exactly).
+C.BloodPotencyDecalSlots = {
+  page1 = { "bloodSurge", "mending" },
+  page2 = { "baneSeverity", "discBonus", "discReroll" },
+}
 -- #endregion
 
 -- #region Hiding & Locking Objects

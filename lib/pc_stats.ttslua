@@ -75,6 +75,29 @@ local function warnGm(msg)
   print("[PC warnGm] " .. tostring(msg))
 end
 
+--- Effective Blood Potency rating from player stats (base + temp), clamped 0..10.
+--- @param stats table|nil
+--- @return number
+function P.effectiveBloodPotency(stats)
+  if type(stats) ~= "table" then
+    return 0
+  end
+  local bp = stats.bloodPotency
+  if type(bp) == "number" then
+    return math.max(0, math.min(10, math.floor(bp)))
+  end
+  if type(bp) ~= "table" then
+    return 0
+  end
+  local rating
+  if bp.base ~= nil or bp.temp ~= nil then
+    rating = (tonumber(bp.base) or 0) + (tonumber(bp.temp) or 0)
+  else
+    rating = tonumber(bp.value) or 0
+  end
+  return math.max(0, math.min(10, math.floor(rating)))
+end
+
 --- @param playerRef any
 --- @return string|nil
 local function resolvePlayerId(playerRef)

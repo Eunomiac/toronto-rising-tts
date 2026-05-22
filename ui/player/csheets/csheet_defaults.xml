@@ -68,4 +68,8 @@
   <Button class="page_back" rectAlignment="UpperLeft" onClick="onPageBack" color="clear"/>
 
   <Button class="page_forward" rectAlignment="UpperRight" onClick="onPageForward" color="clear"/>
+
+  <Button class="page_inner_left" rectAlignment="UpperLeft" onClick="onPageInnerClick" color="clear"/>
+
+  <Button class="page_inner_right" rectAlignment="UpperRight" onClick="onPageInnerClick" color="clear"/>
 </Defaults>

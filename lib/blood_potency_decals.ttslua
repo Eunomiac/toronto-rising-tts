@@ -1,0 +1,162 @@
+--[[
+  Blood Potency derived-stat decal resolve helpers (Global-side; object scripts call via Global.call).
+  Agent guidance: .dev/PC Data & Tracking/Character Sheet Modifications.md
+]]
+
+local BPD = {}
+
+local C = require("lib.constants")
+local P = require("lib.pc_stats")
+
+local BP_STAT_KEYS = { "bloodSurge", "mending", "discBonus", "discReroll", "baneSeverity" }
+
+--- @param statKey string
+--- @return boolean
+local function isKnownStatKey(statKey)
+  for _, key in ipairs(BP_STAT_KEYS) do
+    if key == statKey then
+      return true
+    end
+  end
+  return false
+end
+
+--- @param url string
+--- @param context string
+--- @return string
+local function assertProductionDecalUrl(url, context)
+  if type(url) ~= "string" or url == "" then
+    error(string.format("blood_potency_decals: missing URL (%s)", tostring(context)))
+  end
+  if url:find("REPLACE_ME", 1, true) ~= nil then
+    error(string.format(
+      "blood_potency_decals: placeholder URL for %s — replace C.BloodPotencyDecalUrls entry with a real Steam CDN URL",
+      tostring(context)
+    ))
+  end
+  if url:sub(1, 8) ~= "https://" then
+    error(string.format("blood_potency_decals: URL must start with https:// (%s)", tostring(context)))
+  end
+  return url
+end
+
+--- @param statKey string
+--- @param value number
+--- @return string
+function BPD.imageKeyForStat(statKey, value)
+  if not isKnownStatKey(statKey) then
+    error(string.format("blood_potency_decals.imageKeyForStat: unknown stat key %q", tostring(statKey)))
+  end
+  local n = tonumber(value)
+  if n == nil then
+    error(string.format("blood_potency_decals.imageKeyForStat: invalid value for %q", tostring(statKey)))
+  end
+  return statKey .. tostring(math.floor(n))
+end
+
+--- @param statKey string
+--- @param value number
+--- @return string
+function BPD.resolveDecalUrl(statKey, value)
+  local key = BPD.imageKeyForStat(statKey, value)
+  local catalog = C.BloodPotencyDecalUrls
+  if type(catalog) ~= "table" then
+    error("blood_potency_decals.resolveDecalUrl: C.BloodPotencyDecalUrls is missing")
+  end
+  local url = catalog[key]
+  return assertProductionDecalUrl(url, key)
+end
+
+--- @param stats table
+--- @return table bloodSurge, mending, discBonus, discReroll, baneSeverity
+function BPD.effectiveDerivedStats(stats)
+  local rating = P.effectiveBloodPotency(stats)
+  local row = C.BloodPotency[rating]
+  if type(row) ~= "table" then
+    error(string.format(
+      "blood_potency_decals.effectiveDerivedStats: C.BloodPotency[%s] is missing",
+      tostring(rating)
+    ))
+  end
+  local out = {}
+  for _, statKey in ipairs(BP_STAT_KEYS) do
+    local v = row[statKey]
+    if v == nil then
+      error(string.format(
+        "blood_potency_decals.effectiveDerivedStats: C.BloodPotency[%s].%s is missing",
+        tostring(rating),
+        statKey
+      ))
+    end
+    out[statKey] = v
+  end
+  return out
+end
+
+--- @param pageNum number
+--- @return string[]|nil
+function BPD.slotsForPage(pageNum)
+  local slotsByPage = C.BloodPotencyDecalSlots
+  if type(slotsByPage) ~= "table" then
+    error("blood_potency_decals.slotsForPage: C.BloodPotencyDecalSlots is missing")
+  end
+  if pageNum == 1 then
+    return slotsByPage.page1
+  end
+  if pageNum == 2 then
+    return slotsByPage.page2
+  end
+  return nil
+end
+
+--- Resolve slot → url updates for one character sheet page (1 or 2).
+--- @param stats table
+--- @param pageNum number
+--- @return table[] list of { slot = string, url = string }
+function BPD.resolveDecalsForPage(stats, pageNum)
+  if pageNum ~= 1 and pageNum ~= 2 then
+    return {}
+  end
+  local slots = BPD.slotsForPage(pageNum)
+  if type(slots) ~= "table" then
+    error(string.format("blood_potency_decals.resolveDecalsForPage: no slot list for page %s", tostring(pageNum)))
+  end
+  local derived = BPD.effectiveDerivedStats(stats)
+  local updates = {}
+  for _, slot in ipairs(slots) do
+    if type(slot) ~= "string" or slot == "" then
+      error("blood_potency_decals.resolveDecalsForPage: invalid slot name in C.BloodPotencyDecalSlots")
+    end
+    local value = derived[slot]
+    if value == nil then
+      error(string.format("blood_potency_decals.resolveDecalsForPage: derived stats missing %q", slot))
+    end
+    updates[#updates + 1] = {
+      slot = slot,
+      url = BPD.resolveDecalUrl(slot, value),
+    }
+  end
+  return updates
+end
+
+--- Fingerprint derived BP decal values for one page (skip redundant setDecals).
+--- @param stats table
+--- @param pageNum number
+--- @return string|nil
+function BPD.fingerprintPageDecals(stats, pageNum)
+  if pageNum ~= 1 and pageNum ~= 2 then
+    return nil
+  end
+  local slots = BPD.slotsForPage(pageNum)
+  if type(slots) ~= "table" then
+    return nil
+  end
+  local derived = BPD.effectiveDerivedStats(stats)
+  local parts = { "bpDecals", tostring(pageNum) }
+  for _, slot in ipairs(slots) do
+    parts[#parts + 1] = slot .. "=" .. tostring(derived[slot])
+  end
+  return table.concat(parts, "|")
+end
+
+return BPD

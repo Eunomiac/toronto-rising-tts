@@ -75,7 +75,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [ ] **Page 4:** PC relationships; Blood Bonds. _(Partial: `lib/json/PC_Relationships.json`, `lib/pcs_data.ttslua`.)_
 - [ ] **Page 5:** Projects; Equipment; Boons.
 - [ ] **Page 6:** Character history; scrolling XP log.
-- [ ] **Decals:** Sheet object decals update from Blood Potency (state → UI reconcile).
+- [x] **Decals:** Sheet object decals update from Blood Potency (state → UI reconcile).
 
 ## Players & Connection
 

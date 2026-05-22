@@ -455,29 +455,6 @@ function RC._getNonSurgeRouseValues(color, rollId)
     return values
 end
 
---- Effective Blood Potency rating from player stats (base + temp), clamped 0..10.
--- @param stats table|nil
--- @return number
-local function effectiveBloodPotency(stats)
-    if type(stats) ~= "table" then
-        return 0
-    end
-    local bp = stats.bloodPotency
-    if type(bp) == "number" then
-        return math.max(0, math.min(10, math.floor(bp)))
-    end
-    if type(bp) ~= "table" then
-        return 0
-    end
-    local rating
-    if bp.base ~= nil or bp.temp ~= nil then
-        rating = (tonumber(bp.base) or 0) + (tonumber(bp.temp) or 0)
-    else
-        rating = tonumber(bp.value) or 0
-    end
-    return math.max(0, math.min(10, math.floor(rating)))
-end
-
 --- Ensures pool/meta shape on an active roll record.
 -- @param active table
 local function ensureActiveShape(active)
@@ -1962,7 +1939,7 @@ function RC.activateBloodSurge(color)
     end
 
     local stats = S.getPlayerVal(color, "stats") or {}
-    local bp = effectiveBloodPotency(stats)
+    local bp = P.effectiveBloodPotency(stats)
     local bpEntry = C.BloodPotency[bp]
     local surgeCount = (type(bpEntry) == "table" and tonumber(bpEntry.bloodSurge)) or 1
 

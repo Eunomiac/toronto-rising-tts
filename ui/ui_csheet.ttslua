@@ -70,6 +70,9 @@ local playerID = nil
 --- Skip redundant `UI.setXml` when backgrounds/merits/flaws unchanged (per object instance).
 local lastPage3XmlFingerprint = nil
 
+--- Skip redundant `setDecals` when derived BP stats for this page unchanged.
+local lastBloodPotencyDecalFingerprint = nil
+
 --- After first successful layout, objects keep this tag so `applyCsheetLayoutFromFirstSpread` does not run on reload.
 local CSHEET_ALIGNMENT_DONE_TAG = "AlignmentDone"
 
@@ -114,8 +117,8 @@ local function seatColorObjectTag(colorUpper)
   return c:sub(1, 1):upper() .. c:sub(2) .. "Object"
 end
 
---- Custom UI ids for spread navigation (`page1`/`page8` omit both).
-local CSHEET_NAV_BUTTON_IDS = { "pageBack", "pageForward" }
+--- Custom UI ids for spread navigation and inner-edge camera control.
+local CSHEET_NAV_BUTTON_IDS = { "pageBack", "pageForward", "pageInner" }
 local CSHEET_ROOT_PANEL_ID = "paper_root"
 
 --- Toggle nav control `active` so clicks do not fire through the table when the sheet is hidden.
@@ -450,6 +453,100 @@ local function applyUiUpdates(updates)
   end
 end
 
+--- Apply Blood Potency derived-stat decal URLs on CSHEET_PAGE_1 / _2 (exact static slot names).
+--- @param stats table
+local function applyBloodPotencyDecals(stats)
+  syncSheetContextFromObjectName()
+  if pageNum ~= 1 and pageNum ~= 2 then
+    return
+  end
+  if type(stats) ~= "table" then
+    return
+  end
+  resolvePlayer()
+  if playerID == nil or playerID == CC.StorytellerID then
+    return
+  end
+  if Global == nil or type(Global.call) ~= "function" then
+    error("[ui_csheet] applyBloodPotencyDecals: Global.call unavailable")
+  end
+
+  local fp = Global.call("GlobalFingerprintBloodPotencyDecals", stats, pageNum)
+  if fp == lastBloodPotencyDecalFingerprint then
+    return
+  end
+
+  local updates = Global.call("GlobalResolveBloodPotencyDecals", stats, pageNum)
+  if type(updates) ~= "table" then
+    error("[ui_csheet] applyBloodPotencyDecals: GlobalResolveBloodPotencyDecals returned non-table")
+  end
+
+  local urlBySlot = {}
+  for _, entry in ipairs(updates) do
+    if type(entry) ~= "table" or type(entry.slot) ~= "string" or type(entry.url) ~= "string" then
+      error("[ui_csheet] applyBloodPotencyDecals: invalid resolve entry")
+    end
+    urlBySlot[entry.slot] = entry.url
+  end
+
+  local existing = self.getDecals()
+  if type(existing) ~= "table" then
+    error(string.format("[ui_csheet] applyBloodPotencyDecals: getDecals failed for %s", tostring(self.getName())))
+  end
+
+  local seenSlot = {}
+  local nextDecals = {}
+  for _, decal in ipairs(existing) do
+    if type(decal) ~= "table" or type(decal.name) ~= "string" then
+      error(string.format("[ui_csheet] applyBloodPotencyDecals: invalid decal entry on %s", tostring(self.getName())))
+    end
+    local slot = decal.name
+    local newUrl = urlBySlot[slot]
+    if newUrl == nil then
+      error(string.format(
+        "[ui_csheet] applyBloodPotencyDecals: unexpected decal %q on %s (only BP slot names allowed)",
+        slot,
+        tostring(self.getName())
+      ))
+    end
+    if seenSlot[slot] then
+      error(string.format(
+        "[ui_csheet] applyBloodPotencyDecals: duplicate decal slot %q on %s",
+        slot,
+        tostring(self.getName())
+      ))
+    end
+    seenSlot[slot] = true
+    nextDecals[#nextDecals + 1] = {
+      name = slot,
+      url = newUrl,
+      position = decal.position,
+      rotation = decal.rotation,
+      scale = decal.scale,
+    }
+  end
+
+  for slot, _ in pairs(urlBySlot) do
+    if not seenSlot[slot] then
+      error(string.format(
+        "[ui_csheet] applyBloodPotencyDecals: missing decal slot %q on %s (workshop AttachedDecal.name must match)",
+        slot,
+        tostring(self.getName())
+      ))
+    end
+  end
+
+  if #nextDecals == 0 then
+    error(string.format("[ui_csheet] applyBloodPotencyDecals: no BP decals on %s", tostring(self.getName())))
+  end
+
+  local ok = self.setDecals(nextDecals)
+  if ok ~= true then
+    error(string.format("[ui_csheet] applyBloodPotencyDecals: setDecals failed on %s", tostring(self.getName())))
+  end
+  lastBloodPotencyDecalFingerprint = fp
+end
+
 --- Refresh images and XP from merged game state (fetched in Global script).
 function refreshCharacterSheetUi()
   syncSheetContextFromObjectName()
@@ -480,6 +577,10 @@ function refreshCharacterSheetUi()
 
   if pageNum == 3 then
     applyPage3DynamicXml()
+  end
+
+  if pageNum == 1 or pageNum == 2 then
+    applyBloodPotencyDecals(stats)
   end
 end
 
@@ -547,4 +648,23 @@ function onPageBack()
   end
   local colorUpper = string.upper(seatColor)
   navigateCsheetPagePair(colorUpper, pageNum, pageNum + 1, pageNum - 2, pageNum - 1)
+end
+
+--- UI: inner spine click — switch clicker to this sheet owner's camera preset (sheetRed, …).
+--- @param player table TTS player who clicked
+function onPageInnerClick(player, value, id)
+  syncSheetContextFromObjectName()
+  if pageNum == nil or seatColor == nil then
+    return
+  end
+  if player == nil or type(player.color) ~= "string" then
+    error("[ui_csheet] onPageInnerClick: invalid player")
+  end
+  if Global == nil or type(Global.call) ~= "function" then
+    error("[ui_csheet] onPageInnerClick: Global.call unavailable")
+  end
+  Global.call("GlobalSetSheetCamera", {
+    clickerColor = player.color,
+    sheetSeatColor = seatColor,
+  })
 end

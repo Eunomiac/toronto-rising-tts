@@ -50,5 +50,6 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
 
 <Panel id="paper_root"  class="page_root padded_border">
   <Button id="pageForward" class="page_navigation page_forward" />
+  <Button id="pageInner" class="page_navigation page_inner_left" />
 
 </Panel>
