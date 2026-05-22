@@ -34,6 +34,25 @@ Use this bucket for **rules that only change how pool math / result class is com
 
 Use this bucket for **what happens on the table** between phases, independent of success counting.
 
+### D. Condition roll policies (`active.rollPolicy`)
+
+- **Declared** in registry `roll = { ... }` on condition entries ([Conditions System Guide §6](../PC%20Data%20&%20Tracking/Conditions%20System%20Guide.md#6-roll-policy-layer)).
+- **Merged** at roll initiate by `Conditions.resolveRollPolicy` → `lib/condition_roll_policies.ttslua`.
+- **Snapshotted** on `active.rollPolicy`; `RC.applyRollPolicyToActive` seeds `rollOptions` (respecting `locked`).
+- **Tier 1** keys (surge multiplier, hunger reroll, classification flags) need no `RC` conditionals beyond apply + existing hooks.
+- **Tier 2** enums (`wpRerollScope`) branch in `applyWpRerollWaveStart`.
+- **Tier 3** lifecycle (`handlers`) dispatches via `core/roll_condition_handlers.ttslua`.
+
+| Hook | Policy / handler use |
+| --- | --- |
+| `RC.initiateRoll` | snapshot + `applyRollPolicyToActive` |
+| `RC.activateBloodSurge` | `bloodSurgeDiceMultiplier` |
+| `CLASSIFICATION_OPT_BUILDERS` | `countCriticalPairs`, `bestialNull` from policy |
+| `applyWpRerollWaveStart` | `wpRerollScope` |
+| `RC.spendWillpower` / `onWpRerollDieRandomized` / `confirmRoll` | Tier 3 handlers |
+
+Roll FSM must **not** scan `playerData.conditions` — only `active.rollPolicy`.
+
 ---
 
 ## What is not fully option-pluggable yet
@@ -65,6 +84,8 @@ Use this bucket for **what happens on the table** between phases, independent of
 | Concern | Primary locations |
 |--------|-------------------|
 | Per-roll keys & defaults | `lib/roll_options.ttslua` |
+| Condition roll policy merge | `lib/condition_roll_policies.ttslua`, `Conditions.resolveRollPolicy`, `RC.applyRollPolicyToActive` |
+| Tier 3 roll handlers | `core/roll_condition_handlers.ttslua` |
 | `opts` assembly for classify | `CLASSIFICATION_OPT_BUILDERS`, `RC.classifyOptsFromActive` — `core/roll_controller.ttslua` |
 | Result math | `core/dice.ttslua` |
 | Die face images for result strip | `RC.buildDiceFacesForActive` — `core/roll_controller.ttslua` |
@@ -75,5 +96,6 @@ Use this bucket for **what happens on the table** between phases, independent of
 
 ## Related documents
 
+- [Conditions System Guide](../PC%20Data%20&%20Tracking/Conditions%20System%20Guide.md) — roll policy §6 + condition authoring
 - [Dice System Outline](Dice%20System%20Outline.md) — full design and control flow.
 - [Dice System Modifications](Dice%20System%20Modifications.md) — recent chronicle-specific requirements log.

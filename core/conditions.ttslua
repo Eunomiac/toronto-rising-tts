@@ -1,6 +1,6 @@
 --[[
   Global-side condition mutation, derivation reconcile, and resolved-effect accessors.
-  Agent guidance: .dev/PC Data & Tracking/PC Tracking & State Behavior.md
+  Agent guidance: .dev/PC Data & Tracking/Conditions System Guide.md
 ]]
 
 ---@diagnostic disable: undefined-global
@@ -12,6 +12,7 @@ local C = require("lib.constants")
 local CD = require("lib.condition_defs")
 local Derive = require("lib.condition_derive")
 local Effects = require("lib.condition_effects")
+local RollPolicies = require("lib.condition_roll_policies")
 
 --- @param conditionId string
 --- @param value any
@@ -153,6 +154,21 @@ function Conditions.resolveForPlayer(playerID)
   return Effects.resolveForPlayer(conditions, stats, seatColor)
 end
 
+--- Merge roll policy from active conditions (snapshot at roll initiate).
+--- @param playerID string
+--- @return table
+function Conditions.resolveRollPolicy(playerID)
+  if type(playerID) ~= "string" or playerID == "" then
+    error("Conditions.resolveRollPolicy: playerID required")
+  end
+  if playerID == C.StorytellerID then
+    return RollPolicies.empty()
+  end
+  local stats = S.getStateVal("playerData", playerID, "stats")
+  local conditions = S.getStateVal("playerData", playerID, "conditions") or {}
+  return RollPolicies.mergeForPlayer(conditions, stats)
+end
+
 --- @param playerID string
 --- @param dotKey string
 --- @return number
@@ -289,7 +305,7 @@ function Conditions.reconcileDerivedForPlayer(playerID)
     if type(def) == "table" and def.kind == "derived" then
       local want = desired[id] == true
       local has = conditions[id] ~= nil
-      local sticky = type(def.derive) == "table" and def.derive.sticky == true
+      local sticky = def.deriveSticky == true
 
       if want and not has then
         S.setStateVal(true, "playerData", playerID, "conditions", id)
@@ -316,6 +332,144 @@ function Conditions.reconcileDerivedAllPlayers()
   for playerID, _ in pairs(pd) do
     if type(playerID) == "string" and playerID ~= C.StorytellerID then
       Conditions.reconcileDerivedForPlayer(playerID)
+    end
+  end
+end
+
+--- Append validated location-kind condition ids from a district or site constants row.
+--- @param out table<string, boolean>
+--- @param locRow table|nil
+--- @param sourceLabel string for errors
+local function collectLocationIdsFromRow(out, locRow, sourceLabel)
+  if type(locRow) ~= "table" or type(locRow.conditions) ~= "table" then
+    return
+  end
+  for _, conditionId in ipairs(locRow.conditions) do
+    if type(conditionId) ~= "string" or conditionId == "" then
+      error(
+        "Conditions: invalid condition id in "
+          .. sourceLabel
+          .. " (expected non-empty string)"
+      )
+    end
+    local def = CD.getDef(conditionId)
+    if def.kind ~= "location" then
+      error(
+        "Conditions: "
+          .. sourceLabel
+          .. " references \""
+          .. conditionId
+          .. "\" which is kind \""
+          .. tostring(def.kind)
+          .. "\" (expected location)"
+      )
+    end
+    out[conditionId] = true
+  end
+end
+
+--- Union of location-hosted condition ids from current session site + district.
+--- @return table<string, boolean>
+function Conditions.collectLocationHostedIdsForSession()
+  local desired = {}
+
+  local siteKey = S.getStateVal("sessionScene", "siteKey")
+  if type(siteKey) == "string" and siteKey ~= "" then
+    local site = C.Sites[siteKey]
+    if type(site) == "table" then
+      collectLocationIdsFromRow(desired, site, "C.Sites." .. siteKey)
+    end
+  end
+
+  local districtKey = S.getStateVal("sessionScene", "districtKey")
+  if type(districtKey) == "string" and districtKey ~= "" then
+    local district = C.Districts[districtKey]
+    if type(district) == "table" then
+      collectLocationIdsFromRow(desired, district, "C.Districts." .. districtKey)
+    end
+  elseif type(siteKey) == "string" and siteKey ~= "" then
+    local site = C.Sites[siteKey]
+    if type(site) == "table" and type(site.district) == "table" then
+      collectLocationIdsFromRow(desired, site.district, "site district for " .. siteKey)
+    end
+  end
+
+  return desired
+end
+
+--- Whether a PC seat is present in the active scene (table + narrative absence rules).
+--- @param seatColor string
+--- @return boolean
+local function isSeatPresentInScene(seatColor)
+  local L = require("core.lighting")
+  return L.isPlayerPresentInActiveSeatLayout(seatColor)
+end
+
+--- Reconcile location-hosted condition keys for one PC.
+--- @param playerID string
+--- @param desired table<string, boolean>
+--- @param present boolean
+--- @return boolean changed
+local function reconcileLocationHostedForPlayer(playerID, desired, present)
+  if playerID == C.StorytellerID then
+    return false
+  end
+
+  local conditions = S.getStateVal("playerData", playerID, "conditions")
+  if type(conditions) ~= "table" then
+    conditions = {}
+    S.setStateVal(conditions, "playerData", playerID, "conditions")
+  end
+
+  local stats = S.getStateVal("playerData", playerID, "stats")
+  local changed = false
+
+  for id, def in pairs(CD.Defs) do
+    if type(def) == "table" and def.kind == "location" and conditions[id] ~= nil then
+      if not present or desired[id] ~= true then
+        S.setStateVal(nil, "playerData", playerID, "conditions", id)
+        changed = true
+      end
+    end
+  end
+
+  if present then
+    for id, _ in pairs(desired) do
+      local def = CD.getDef(id)
+      local want = true
+      if type(def.derive) == "function" then
+        want = def.derive(stats, conditions) == true
+      end
+      local has = conditions[id] ~= nil
+      if want and not has then
+        S.setStateVal(true, "playerData", playerID, "conditions", id)
+        changed = true
+      elseif not want and has then
+        S.setStateVal(nil, "playerData", playerID, "conditions", id)
+        changed = true
+      end
+    end
+  end
+
+  if changed then
+    Conditions.afterChange(playerID)
+  end
+  return changed
+end
+
+--- Apply or remove location-hosted conditions for all PCs present at the current scene.
+function Conditions.reconcileLocationHostedForScene()
+  local desired = Conditions.collectLocationHostedIdsForSession()
+  local pd = S.getStateVal("playerData")
+  if type(pd) ~= "table" then
+    return
+  end
+
+  for playerID, row in pairs(pd) do
+    if type(playerID) == "string" and playerID ~= C.StorytellerID and type(row) == "table" then
+      local seatColor = seatColorForPlayer(playerID)
+      local present = type(seatColor) == "string" and isSeatPresentInScene(seatColor) == true
+      reconcileLocationHostedForPlayer(playerID, desired, present)
     end
   end
 end

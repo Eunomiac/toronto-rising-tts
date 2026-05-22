@@ -1,0 +1,149 @@
+--[[
+  Pure roll-policy merge for active conditions (registry `roll` channel).
+  Agent guidance: .dev/PC Data & Tracking/Conditions System Guide.md §6
+]]
+
+local RollPolicies = {}
+
+local CD = require("lib.condition_defs")
+
+--- Severity order for wpRerollScope (higher wins on merge).
+RollPolicies.WP_REROLL_SCOPE_SEVERITY = {
+  selective = 1,
+  all_optional = 2,
+  all_mandatory = 3,
+}
+
+--- Default merged policy before any condition contributions.
+--- @return table
+function RollPolicies.empty()
+  return {
+    bloodSurgeDiceMultiplier = 1,
+    wpCanRerollHunger = false,
+    wpRerollCountBonus = 0,
+    countCriticalPairs = nil,
+    bestialNull = false,
+    takeHalfAllowed = true,
+    wpRerollScope = "selective",
+    handlers = {},
+    locked = {},
+    contributingConditions = {},
+  }
+end
+
+--- Whether a condition's roll section should apply at resolve time.
+--- @param def table
+--- @param stats table|nil
+--- @param activeConditions table
+--- @return boolean
+local function rollSectionApplies(def, stats, activeConditions)
+  if def.kind == "location" and type(def.derive) == "function" then
+    return def.derive(stats, activeConditions) == true
+  end
+  return true
+end
+
+--- Merge one registry `roll` table into accumulator (mutates acc).
+--- @param roll table|nil
+--- @param acc table
+--- @param conditionId string
+--- @param priority number
+function RollPolicies.mergeConditionRoll(roll, acc, conditionId, priority)
+  if type(roll) ~= "table" then
+    return
+  end
+
+  acc.contributingConditions[#acc.contributingConditions + 1] = conditionId
+
+  local mult = tonumber(roll.bloodSurgeDiceMultiplier)
+  if mult ~= nil and mult > 0 then
+    acc.bloodSurgeDiceMultiplier = acc.bloodSurgeDiceMultiplier * mult
+  end
+
+  if roll.wpCanRerollHunger == true then
+    acc.wpCanRerollHunger = true
+  end
+
+  local bonus = tonumber(roll.wpRerollCountBonus)
+  if bonus ~= nil and bonus ~= 0 then
+    acc.wpRerollCountBonus = acc.wpRerollCountBonus + bonus
+  end
+
+  if type(roll.countCriticalPairs) == "boolean" then
+    acc.countCriticalPairs = roll.countCriticalPairs
+    acc._countCriticalPairsPriority = priority
+  end
+
+  if roll.bestialNull == true then
+    acc.bestialNull = true
+  end
+
+  if roll.takeHalfAllowed == false then
+    acc.takeHalfAllowed = false
+  end
+
+  local scope = roll.wpRerollScope
+  if type(scope) == "string" and RollPolicies.WP_REROLL_SCOPE_SEVERITY[scope] ~= nil then
+    local curSev = RollPolicies.WP_REROLL_SCOPE_SEVERITY[acc.wpRerollScope] or 1
+    local newSev = RollPolicies.WP_REROLL_SCOPE_SEVERITY[scope]
+    if newSev >= curSev then
+      acc.wpRerollScope = scope
+    end
+  end
+
+  if type(roll.handlers) == "table" then
+    for _, handlerName in ipairs(roll.handlers) do
+      if type(handlerName) == "string" and handlerName ~= "" then
+        acc.handlers[handlerName] = true
+      end
+    end
+  end
+
+  if type(roll.locked) == "table" then
+    for fieldName, locked in pairs(roll.locked) do
+      if locked == true and type(fieldName) == "string" then
+        acc.locked[fieldName] = true
+      end
+    end
+  end
+end
+
+--- Merge roll policies for all active conditions (priority ascending).
+--- @param activeConditions table|nil
+--- @param stats table|nil
+--- @return table
+function RollPolicies.mergeForPlayer(activeConditions, stats)
+  local acc = RollPolicies.empty()
+  acc.handlers = {}
+  acc.locked = {}
+
+  if type(activeConditions) ~= "table" then
+    acc.handlers = {}
+    return acc
+  end
+
+  local sortedIds = CD.sortedActiveIds(activeConditions)
+  for _, conditionId in ipairs(sortedIds) do
+    if activeConditions[conditionId] ~= nil then
+      local def = CD.getDef(conditionId)
+      if type(def.roll) == "table" and rollSectionApplies(def, stats, activeConditions) then
+        local priority = tonumber(def.priority) or 0
+        RollPolicies.mergeConditionRoll(def.roll, acc, conditionId, priority)
+      end
+    end
+  end
+
+  local handlerList = {}
+  for name, enabled in pairs(acc.handlers) do
+    if enabled == true then
+      handlerList[#handlerList + 1] = name
+    end
+  end
+  table.sort(handlerList)
+  acc.handlers = handlerList
+  acc._countCriticalPairsPriority = nil
+
+  return acc
+end
+
+return RollPolicies

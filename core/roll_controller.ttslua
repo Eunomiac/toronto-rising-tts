@@ -35,7 +35,7 @@
     - core.roll_ui — UI is refreshed via RC.onRollStateChanged callback.
       Callers (global_script) set RC.onRollStateChanged = function(color) end
 
-    Agent guidance: .dev/Dice System/Dice System Outline.md §7, §11
+    Agent guidance: .dev/Dice System/Custom Roll Mechanics.md; conditions roll policy — .dev/PC Data & Tracking/Conditions System Guide.md §6
 ]]
 
 local RC = {}
@@ -48,6 +48,7 @@ local DK   = require("lib.dice_kinds")
 local RouseOutcomes = require("lib.rouse_outcomes")
 local G    = require("lib.guids")
 local P    = require("lib.pc_stats")
+local RollConditionHandlers = require("core.roll_condition_handlers")
 local PCST = require("core.pc_storyteller_panel")
 local Sync = require("core.sync")
 
@@ -167,6 +168,63 @@ local function cancelWpDieLockWaitsForColor(color)
     end
 end
 
+--- Roll-option keys guarded by rollPolicy.locked (policy schema field names).
+local RO_OPTION_LOCK_POLICY_KEY = {
+    [RO.ROLL_CAN_REROLL_HUNGER]       = "wpCanRerollHunger",
+    [RO.ROLL_NUMBER_OF_REROLLS]       = "numberOfRerolls",
+    [RO.ROLL_CRITS]                   = "countCriticalPairs",
+    [RO.ROLL_BESTIAL_NULL]            = "bestialNull",
+    [RO.ROLL_TAKE_HALF]               = "takeHalfAllowed",
+}
+
+--- @param active table|nil
+--- @return string selective|all_optional|all_mandatory
+local function wpRerollScopeForActive(active)
+    if type(active) == "table" and type(active.rollPolicy) == "table" then
+        local scope = active.rollPolicy.wpRerollScope
+        if type(scope) == "string" then
+            return scope
+        end
+    end
+    return "selective"
+end
+
+--- Applies merged condition roll policy into active.rollOptions (respects locked).
+-- @param active table  Active roll record (mutated)
+function RC.applyRollPolicyToActive(active)
+    if type(active) ~= "table" or type(active.rollPolicy) ~= "table" then
+        return
+    end
+
+    local policy = active.rollPolicy
+    local locked = policy.locked or {}
+    active.rollOptions = active.rollOptions or RO.defaultsForRollType(active.rollType or "")
+
+    if policy.wpCanRerollHunger == true and locked.wpCanRerollHunger ~= true then
+        active.rollOptions[RO.ROLL_CAN_REROLL_HUNGER] = true
+    end
+
+    local bonus = tonumber(policy.wpRerollCountBonus) or 0
+    if bonus ~= 0 and locked.numberOfRerolls ~= true then
+        local base = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS)
+        active.rollOptions[RO.ROLL_NUMBER_OF_REROLLS] = math.max(0, base + bonus)
+    end
+
+    if type(policy.countCriticalPairs) == "boolean" and locked.countCriticalPairs ~= true then
+        active.rollOptions[RO.ROLL_CRITS] = policy.countCriticalPairs
+    end
+
+    if policy.bestialNull == true and locked.bestialNull ~= true then
+        active.rollOptions[RO.ROLL_BESTIAL_NULL] = true
+    end
+
+    if policy.takeHalfAllowed == false and locked.takeHalfAllowed ~= true then
+        active.rollOptions[RO.ROLL_TAKE_HALF] = false
+    end
+
+    RO.sanitizeRollOptions(active)
+end
+
 --- Initializes willpower counters from roll options (call after RO.seedActiveRoll).
 -- @param active table
 local function seedWillpowerBlock(active)
@@ -249,6 +307,7 @@ local function applyWpRerollWaveStart(color, active)
     cancelWpDieLockWaitsForColor(color)
     active.willpower.rerollRandomizedGuids = {}
     local canHunger = RO.getForActive(active, RO.ROLL_CAN_REROLL_HUNGER)
+    local scope = wpRerollScopeForActive(active)
     local objsByKind = RC._getDiceObjectsByKindForRoll(color, active.id)
     for _, kind in ipairs(diceKindsForActive(active)) do
         for _, o in ipairs(objsByKind[kind] or {}) do
@@ -262,6 +321,12 @@ local function applyWpRerollWaveStart(color, active)
             end
         end
     end
+    if scope == "all_mandatory" or scope == "all_optional" then
+        -- Cap ignored: all eligible dice may be rerolled (mandatory enforced at confirm).
+        active.rollOptions = active.rollOptions or RO.defaultsForRollType(active.rollType)
+        active.rollOptions[RO.ROLL_NUMBER_OF_DICE_REROLLED] = 0
+    end
+    RollConditionHandlers.run("onWpRerollWaveStart", color, active)
 end
 
 --- When reroll cap N>0 is reached, lock all dice not yet marked as having randomized this wave.
@@ -510,10 +575,18 @@ end
 -- Classification: add functions (active, opts) -> nil; mutate opts for Dice.classifyRoll.
 local CLASSIFICATION_OPT_BUILDERS = {
     function(active, opts)
-        opts.countCriticalPairs = RO.getForActive(active, RO.ROLL_CRITS)
+        if type(active.rollPolicy) == "table"
+            and type(active.rollPolicy.countCriticalPairs) == "boolean" then
+            opts.countCriticalPairs = active.rollPolicy.countCriticalPairs
+        else
+            opts.countCriticalPairs = RO.getForActive(active, RO.ROLL_CRITS)
+        end
     end,
     function(active, opts)
-        opts.bestialNull = RO.getForActive(active, RO.ROLL_BESTIAL_NULL)
+        local fromPolicy = type(active.rollPolicy) == "table"
+            and active.rollPolicy.bestialNull == true
+        local fromOpts = RO.getForActive(active, RO.ROLL_BESTIAL_NULL)
+        opts.bestialNull = (fromPolicy or fromOpts)
             and active.rollType == C.RollType.STANDARD
     end,
 }
@@ -700,6 +773,13 @@ function RC.initiateRoll(color, config)
     }
 
     RO.seedActiveRoll(active)
+    local policyPlayerID = S.getPlayerID(color)
+    if policyPlayerID ~= nil then
+        local Conditions = require("core.conditions")
+        active.rollPolicy = Conditions.resolveRollPolicy(policyPlayerID)
+        RC.applyRollPolicyToActive(active)
+        RollConditionHandlers.run("onRollInitiated", color, active)
+    end
     seedWillpowerBlock(active)
     ensureActiveShape(active)
 
@@ -1260,7 +1340,11 @@ function RC.onWpRerollDieRandomized(color, obj)
     if obj.getGMNotes() ~= active.id then return end
 
     local guid   = obj.getGUID()
+    local scope  = wpRerollScopeForActive(active)
     local cap    = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED)
+    if scope == "all_optional" or scope == "all_mandatory" then
+        cap = 0
+    end
     local waveId = active.willpower.wpWaveId or 0
 
     if cap <= 0 then
@@ -1270,6 +1354,7 @@ function RC.onWpRerollDieRandomized(color, obj)
     end
 
     active.willpower.rerollRandomizedGuids[guid] = true
+    RollConditionHandlers.run("onWpDieRandomized", color, active)
     setActive(color, active)
 
     if cap > 0 then
@@ -1378,8 +1463,9 @@ function RC.spendWillpower(color)
     active.diceFaces   = nil
     cancelDebounce(color)
 
-    setActive(color, active)
     applyWpRerollWaveStart(color, active)
+    RollConditionHandlers.run("onWillpowerSpent", color, active)
+    setActive(color, active)
     notifyStateChanged(color)
     return true
 end
@@ -1410,6 +1496,9 @@ function RC.confirmRoll(color)
         print(string.format(
             "[RC] confirmRoll: %s has pending resolution (%s); use choice buttons first",
             color, tostring(active.pendingResolution)))
+        return false
+    end
+    if RollConditionHandlers.run("onConfirmRoll", color, active) == false then
         return false
     end
 
@@ -1942,6 +2031,15 @@ function RC.activateBloodSurge(color)
     local bp = P.effectiveBloodPotency(stats)
     local bpEntry = C.BloodPotency[bp]
     local surgeCount = (type(bpEntry) == "table" and tonumber(bpEntry.bloodSurge)) or 1
+    if type(active.rollPolicy) == "table" then
+        local mult = tonumber(active.rollPolicy.bloodSurgeDiceMultiplier) or 1
+        if mult > 0 then
+            surgeCount = math.floor(surgeCount * mult)
+        end
+    end
+    if surgeCount < 1 then
+        surgeCount = 1
+    end
 
     active.meta.bloodSurgeActive = true
     active.pool.rouse = (active.pool.rouse or 0) + 1
@@ -2009,8 +2107,21 @@ function RC.setRollOptions(color, opts)
     end
 
     active.rollOptions = active.rollOptions or RO.defaultsForRollType(active.rollType)
+    local locked = {}
+    if type(active.rollPolicy) == "table" and type(active.rollPolicy.locked) == "table" then
+        locked = active.rollPolicy.locked
+    end
     for k, v in pairs(opts) do
-        if type(v) == "boolean" then
+        local policyLockKey = RO_OPTION_LOCK_POLICY_KEY[k]
+        if policyLockKey ~= nil and locked[policyLockKey] == true then
+            print(string.format(
+                "[RC] setRollOptions: ignored locked option %s for %s (roll policy)",
+                tostring(k), color))
+        elseif locked[k] == true then
+            print(string.format(
+                "[RC] setRollOptions: ignored locked option %s for %s (roll policy)",
+                tostring(k), color))
+        elseif type(v) == "boolean" then
             active.rollOptions[k] = v
         elseif type(v) == "number" then
             active.rollOptions[k] = math.floor(v)

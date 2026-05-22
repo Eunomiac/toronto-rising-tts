@@ -1,0 +1,137 @@
+--[[
+  Tier 3 roll lifecycle handlers referenced from condition registry `roll.handlers`.
+  Agent guidance: .dev/PC Data & Tracking/Conditions System Guide.md §6
+]]
+
+---@diagnostic disable: undefined-global
+local RollConditionHandlers = {}
+
+local DK = require("lib.dice_kinds")
+
+--- Collect GUIDs of dice eligible for WP reroll on this roll.
+--- @param color string
+--- @param active table
+--- @param canHunger boolean
+--- @return table<string, boolean>
+local function collectEligibleDieGuids(color, active, canHunger)
+  local required = {}
+  local objsByKind = require("core.roll_controller")._getDiceObjectsByKindForRoll(color, active.id)
+  local kinds
+  if active.rollType == require("lib.constants").RollType.WEREWOLF then
+    kinds = { DK.KIND_WEREWOLF, DK.KIND_RAGE }
+  else
+    kinds = {
+      DK.KIND_NORMAL, DK.KIND_HUNGER, DK.KIND_ROUSE, DK.KIND_OBLIV_ROUSE,
+    }
+  end
+  for _, kind in ipairs(kinds) do
+    for _, o in ipairs(objsByKind[kind] or {}) do
+      if o ~= nil then
+        local face = o.getValue()
+        local unlock = DK.canRerollWithWillpower(kind, face)
+        if kind == DK.KIND_HUNGER and not canHunger then
+          unlock = false
+        end
+        if unlock then
+          required[o.getGUID()] = true
+        end
+      end
+    end
+  end
+  return required
+end
+
+--- Mandatory full reroll: player must reroll every eligible die before confirm.
+RollConditionHandlers.HANDLERS = {
+  mandatoryFullWpReroll = {
+    --- @param color string
+    --- @param active table
+    onWpRerollWaveStart = function(color, active)
+      if type(active.willpower) ~= "table" then
+        return
+      end
+      local RO = require("lib.roll_options")
+      local canHunger = RO.getForActive(active, RO.ROLL_CAN_REROLL_HUNGER)
+      active.willpower.mandatoryFullRerollRequired = collectEligibleDieGuids(color, active, canHunger)
+      active.willpower.mandatoryFullRerollComplete = false
+    end,
+
+    --- @param color string
+    --- @param active table
+    onWpDieRandomized = function(color, active)
+      if type(active.willpower) ~= "table" then
+        return
+      end
+      local required = active.willpower.mandatoryFullRerollRequired
+      if type(required) ~= "table" then
+        return
+      end
+      local chosen = active.willpower.rerollRandomizedGuids or {}
+      local allDone = true
+      for guid, _ in pairs(required) do
+        if not chosen[guid] then
+          allDone = false
+          break
+        end
+      end
+      active.willpower.mandatoryFullRerollComplete = allDone
+    end,
+
+    --- @param color string
+    --- @param active table
+    --- @return boolean allowConfirm
+    onConfirmRoll = function(_color, active)
+      if type(active.willpower) ~= "table" then
+        return true
+      end
+      local required = active.willpower.mandatoryFullRerollRequired
+      if type(required) ~= "table" or next(required) == nil then
+        return true
+      end
+      if active.willpower.mandatoryFullRerollComplete == true then
+        return true
+      end
+      local chosen = active.willpower.rerollRandomizedGuids or {}
+      for guid, _ in pairs(required) do
+        if not chosen[guid] then
+          print("[RollConditionHandlers] mandatoryFullWpReroll: confirm blocked — not all dice rerolled")
+          return false
+        end
+      end
+      active.willpower.mandatoryFullRerollComplete = true
+      return true
+    end,
+  },
+}
+
+--- Run a named hook for every handler listed on active.rollPolicy.
+--- @param hookName string
+--- @param color string
+--- @param active table
+--- @return boolean|nil when onConfirmRoll: false blocks confirm
+function RollConditionHandlers.run(hookName, color, active, ...)
+  if type(hookName) ~= "string" or type(active) ~= "table" then
+    return nil
+  end
+  local policy = active.rollPolicy
+  if type(policy) ~= "table" or type(policy.handlers) ~= "table" then
+    return nil
+  end
+
+  for _, handlerId in ipairs(policy.handlers) do
+    local entry = RollConditionHandlers.HANDLERS[handlerId]
+    if type(entry) == "table" then
+      local fn = entry[hookName]
+      if type(fn) == "function" then
+        local result = fn(color, active, ...)
+        if hookName == "onConfirmRoll" and result == false then
+          return false
+        end
+      end
+    end
+  end
+
+  return true
+end
+
+return RollConditionHandlers

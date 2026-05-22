@@ -2426,7 +2426,8 @@ C.Districts = {
   DupontByTheCastle = {
     name = "Dupont By The Castle",
     image =
-    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/DupontByTheCastle.webp"
+    "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/DupontByTheCastle.webp",
+    conditions = { "bumpBloodPotency" },
   },
   GayVillage = {
     name = "The Gay Village",

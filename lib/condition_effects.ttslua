@@ -1,6 +1,6 @@
 --[[
   Pure effect resolution for active conditions (statChanges, HUD ids, lighting modes).
-  Agent guidance: .dev/PC Data & Tracking/PC Tracking & State Behavior.md
+  Agent guidance: .dev/PC Data & Tracking/Conditions System Guide.md
 ]]
 
 local Effects = {}
@@ -68,7 +68,7 @@ end
 
 --- Merge all active conditions for one player into resolved effect channels.
 --- @param activeConditions table|nil
---- @param stats table|nil unused today; reserved for future roll/stat hooks
+--- @param stats table|nil used for location-kind derive gating at resolve time
 --- @param seatColor string
 --- @return table { statChanges = table, hudElementIds = table, lightingModes = table }
 function Effects.resolveForPlayer(activeConditions, stats, seatColor)
@@ -92,32 +92,38 @@ function Effects.resolveForPlayer(activeConditions, stats, seatColor)
       local def = CD.getDef(conditionId)
       local instance = validatedInstance(activeConditions[conditionId], def)
 
-      if type(def.statChanges) == "table" then
-        for statKey, delta in pairs(def.statChanges) do
-          if type(statKey) == "string" then
-            resolved.statChanges[statKey] = (resolved.statChanges[statKey] or 0) + (tonumber(delta) or 0)
+      local applyEffects = true
+      if def.kind == "location" and type(def.derive) == "function" then
+        applyEffects = def.derive(stats, activeConditions) == true
+      end
+      if applyEffects then
+        if type(def.statChanges) == "table" then
+          for statKey, delta in pairs(def.statChanges) do
+            if type(statKey) == "string" then
+              resolved.statChanges[statKey] = (resolved.statChanges[statKey] or 0) + (tonumber(delta) or 0)
+            end
           end
         end
-      end
 
-      if type(def.hud) == "table" then
-        if type(def.hud.overlay) == "string" then
-          local elId = Effects.formatHudOverlayId(def.hud.overlay, seatColor)
-          resolved.hudElementIds[elId] = true
-        end
-        if def.hud.blindfoldVariant == true then
-          local inst = instance
-          if type(inst) ~= "table" or inst.variant == nil then
-            error("condition_effects: condition " .. conditionId .. " requires instance.variant")
+        if type(def.hud) == "table" then
+          if type(def.hud.overlay) == "string" then
+            local elId = Effects.formatHudOverlayId(def.hud.overlay, seatColor)
+            resolved.hudElementIds[elId] = true
           end
-          local elId = formatBlindfoldOverlayId(inst.variant, seatColor)
-          resolved.hudElementIds[elId] = true
+          if def.hud.blindfoldVariant == true then
+            local inst = instance
+            if type(inst) ~= "table" or inst.variant == nil then
+              error("condition_effects: condition " .. conditionId .. " requires instance.variant")
+            end
+            local elId = formatBlindfoldOverlayId(inst.variant, seatColor)
+            resolved.hudElementIds[elId] = true
+          end
         end
-      end
 
-      if type(def.lighting) == "table" and type(def.lighting.seatLight2) == "string" then
-        local lightRef = Effects.formatSeatLightRef(seatColor)
-        resolved.lightingModes[lightRef] = def.lighting.seatLight2
+        if type(def.lighting) == "table" and type(def.lighting.seatLight2) == "string" then
+          local lightRef = Effects.formatSeatLightRef(seatColor)
+          resolved.lightingModes[lightRef] = def.lighting.seatLight2
+        end
       end
     end
   end

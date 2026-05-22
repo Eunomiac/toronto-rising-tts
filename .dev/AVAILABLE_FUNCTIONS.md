@@ -258,11 +258,33 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | :--------- | :------------- | :--------------- |
 | Hunger | `S.getPlayerVal(color, "hunger")` | `S.setPlayerVal(color, "hunger", value)` |
 | Player stats | `local pid = S.getPlayerID(color); S.getStateVal("playerData", pid, "stats", "willpower", "superficial")` | `S.setStateVal(value, "playerData", pid, "stats", "willpower", "superficial")` |
-| Player conditions | `S.getStateVal("playerData", pid, "conditions", conditionKey)` | `S.setStateVal(entry, "playerData", pid, "conditions", conditionKey)` |
+| Player conditions (persisted ids) | `S.getStateVal("playerData", pid, "conditions", conditionKey)` | `S.setStateVal(entry, "playerData", pid, "conditions", conditionKey)` — prefer `Conditions.*` mutation APIs |
 | Player HUD | `S.getStateVal("playerData", pid, "hud", "rollData", "active")` | `S.setStateVal(active, "playerData", pid, "hud", "rollData", "active")` |
 | Player rolling light context | `S.getStateVal("playerData", pid, "lighting", "isRolling")` | `S.setStateVal(isRolling, "playerData", pid, "lighting", "isRolling")` |
 | Scene lighting preset | `S.getStateVal("sessionScene", "lightingPresetKey")` | `S.setStateVal(presetKey, "sessionScene", "lightingPresetKey")` |
 | Zone lock state | `S.getStateVal("zones", "allLocked")` | `S.setStateVal(isLocked, "zones", "allLocked")` |
+
+### Conditions module (`core/conditions.ttslua`)
+
+**Require:** `local Conditions = require("core.conditions")`
+**Guide:** `.dev/PC Data & Tracking/Conditions System Guide.md`
+
+| Function | Description |
+| :--------- | :------------- |
+| `Conditions.resolveForPlayer(playerID)` | Merged stat/HUD/lighting effects for presentation |
+| `Conditions.resolveRollPolicy(playerID)` | Merged roll policy (snapshot at roll initiate) |
+| `Conditions.effectiveStatDelta(playerID, dotKey)` | Temp + condition delta for attribute/skill/discipline/BP |
+| `Conditions.effectiveAggregateDelta(playerID, trackerKey)` | Temp + condition delta for health/willpower/humanity boxes |
+| `Conditions.reconcileDerivedForPlayer(playerID)` | Recompute derived condition keys from stats |
+| `Conditions.reconcileLocationHostedForScene()` | Apply district/site location conditions for present PCs |
+| `Conditions.setManual(playerID, id, value)` | ST toggle manual condition |
+| `Conditions.setEvent(playerID, id, instance)` | Scene-driven event condition |
+| `Conditions.clear(playerID, id)` | Remove condition key |
+| `Conditions.afterChange(playerID)` | Sync + sheet refresh after mutation |
+
+**Roll controller:** `RC.applyRollPolicyToActive(active)` seeds `rollOptions` from `active.rollPolicy`.
+
+**Debug:** `DEBUG.dumpConditions(seatColor)`, `DEBUG.dumpRollPolicy(seatColor)`
 
 ---
 

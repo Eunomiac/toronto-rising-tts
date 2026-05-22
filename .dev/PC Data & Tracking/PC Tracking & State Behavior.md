@@ -254,7 +254,8 @@ type ConditionId =
   | "impairedHumanity"
   | "hudFrenzy"
   | "hudBlindfold"
-  | "hudTransitionBlindfold";
+  | "hudTransitionBlindfold"
+  | "bumpBloodPotency";
 
 /** true when no instance fields; otherwise a small table (e.g. blindfold variant). */
 type PersistedCondition = true | { variant?: number };
@@ -262,7 +263,9 @@ type PersistedCondition = true | { variant?: number };
 type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 ```
 
-**Registry (definitions, not persisted):** [`lib/condition_defs.ttslua`](../lib/condition_defs.ttslua) — stat penalties, HUD overlay templates, seat spotlight modes, derive rules, merge priority.
+**Registry (definitions, not persisted):** [`lib/condition_defs.ttslua`](../lib/condition_defs.ttslua) — per-condition `derive(stats, activeConditions)` functions, stat/HUD/light effects, merge priority. Shared math helpers (`CD.trackerMaxFromStats`, `CD.humanityHasImpairedSlot`) live in the same module.
+
+**Derive orchestration:** [`lib/condition_derive.ttslua`](../lib/condition_derive.ttslua) — generic only (`suppressedBy` wrapper); no condition-specific rule catalog.
 
 **Orchestration (Global):** [`core/conditions.ttslua`](../core/conditions.ttslua)
 
@@ -273,11 +276,32 @@ type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 | `Conditions.clear(playerID, id)` | Remove any condition (incl. ST torpor clear) |
 | `Conditions.reconcileDerivedForPlayer(playerID)` | Sync derived keys from stats |
 | `Conditions.reconcileDerivedAllPlayers()` | Load / bulk repair |
+| `Conditions.reconcileLocationHostedForScene()` | Apply/remove location-kind keys from `C.Districts` / `C.Sites` for present PCs |
 | `Conditions.afterChange(playerID)` | `Sync.player(color)` + sheet refresh |
 | `Conditions.resolveForPlayer(playerID)` | Merged statChanges / HUD ids / lighting modes |
 | `Conditions.effectiveStatDelta` / `effectiveAggregateDelta` | Sheet + roll helpers |
 
 **Derive triggers:** health/willpower damage (`P.applyDamageOrHeal`), humanity stain/base/clear, game load (`InitializeGameState` → validate + reconcile), ST torpor clear.
+
+**When conditions refresh (not every stat write):**
+
+| Event | What runs |
+| --- | --- |
+| Health/willpower Apply (ST panel) | `reconcileDerivedForPlayer` → `afterChange` |
+| Humanity stain/base/clear Apply | `reconcileDerivedForPlayer` → `afterChange` |
+| ST torpor clear | `clear("torpor")` → `reconcileDerivedForPlayer` |
+| ST frenzy/blindfold toggle | `setManual` / `clear` → `afterChange` (no derive) |
+| Scene transition blindfold | `setEvent` / `clear` → `afterChange` |
+| Game load | `validateAllPersisted` → `reconcileDerivedAllPlayers` → `reconcileLocationHostedForScene` |
+| Location Apply / scene bundle / End scene | `reconcileLocationHostedForScene` |
+| Seat presence toggle / table switch | `reconcileLocationHostedForScene` (present-only location keys) |
+| Hunger, XP, other stats | **No** automatic condition reconcile unless the mutation path adds it |
+
+**Two phases:**
+
+1. **Derive (mutation)** — recompute which *derived* IDs belong in `playerData.conditions` from current `stats` (+ `suppressedBy` / `deriveSticky`).
+2. **Location (mutation)** — add/remove *location* IDs from district/site `conditions` lists for PCs **present** in the active scene (`L.isPlayerPresentInActiveSeatLayout`).
+3. **Apply (presentation)** — `afterChange` → `Sync.player(color)` (HUD, lights, UI) + character sheet refresh. Consumers also **read** resolved effects on demand (`resolveForPlayer`) during sheet collect, lighting reconcile, and rolls.
 
 **Load policy:** Unknown ids or legacy inline payloads (`statChanges`, `hudChanges`, `lightingModeChanges`, …) → **`error(...)`** (no migrator). One-time fix: clear `conditions = {}` or restore a pre-migration save.
 
@@ -285,7 +309,7 @@ type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 
 **Torpor sticky rule:** Derived `torpor` auto-adds when aggravated health fills the track; it is **not** auto-removed by derive (Storyteller **`Conditions.clear`** / PCs panel **Torpor** button). Reconcile re-adds torpor if the track is still full after a clear.
 
-**Adding a condition:** See [`docs/solutions/conditions-registry-pattern.md`](../docs/solutions/conditions-registry-pattern.md).
+**Adding a condition:** See [Conditions System Guide](Conditions%20System%20Guide.md) (Agent quick guide §0). Pattern digest: [`docs/solutions/conditions-registry-pattern.md`](../docs/solutions/conditions-registry-pattern.md).
 
 ## Dynamic HUD Updates
 

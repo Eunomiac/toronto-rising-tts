@@ -409,6 +409,7 @@ This restates the **Critical Workflow Rules → Documentation Updates — ABSOLU
 
 ### Key Documentation Files
 
+- `.dev/PC Data & Tracking/Conditions System Guide.md` - **First stop for any condition work** (kinds, channels, roll policy)
 - `dev/TESTING.md` - Testing guide and test functions
 - `dev/GUID_REQUIREMENTS.md` - GUID requirements and setup
 - `dev/AVAILABLE_FUNCTIONS.md` - Function reference (check before coding)

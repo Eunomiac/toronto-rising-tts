@@ -20,6 +20,14 @@ local PresentDayClock = require("core.present_day_clock")
 local StorytellerPanelUI = require("core.storyteller_panel_ui")
 local HUDBF = require("core.hud_blindfold")
 
+--- Reconcile location-hosted PC conditions after session location or seat presence changes.
+local function reconcileLocationHostedConditions()
+    local Conditions = require("core.conditions")
+    if type(Conditions.reconcileLocationHostedForScene) == "function" then
+        Conditions.reconcileLocationHostedForScene()
+    end
+end
+
 local GREEN = "#228B22|#32CD32|#006400|#228B22"
 local GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
 
@@ -940,6 +948,8 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
             end
         end
 
+        reconcileLocationHostedConditions()
+
         if S.getStateVal("sessionScene", "chronicleWeatherManualHold") ~= true then
             if type(ChronicleWeather.applyScheduledWeather) == "function" then
                 ChronicleWeather.applyScheduledWeather({ force = false })
@@ -1006,6 +1016,7 @@ function StorytellerScenesPanel.endSceneNarrative(player)
     if SS.invalidateReconcileCache ~= nil then
         SS.invalidateReconcileCache()
     end
+    reconcileLocationHostedConditions()
     if Sync and type(Sync.full) == "function" then
         Sync.full({ reason = "StorytellerScenesPanel.endScene" })
     end
@@ -1032,6 +1043,7 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
         HUDBF.runTransition(function()
             S.setStateVal(tableKey, "sessionScene", "tableKey")
             RSL.SetTableTo(tableKey, { skipTransitionBlindfold = true })
+            reconcileLocationHostedConditions()
             if Sync and type(Sync.full) == "function" then
                 Sync.full({ reason = "StorytellerScenesPanel.table" })
             end
@@ -1058,6 +1070,7 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
         if L and type(L.reconcileAllPlayers) == "function" then
             L.reconcileAllPlayers()
         end
+        reconcileLocationHostedConditions()
         StorytellerScenesPanel.refresh()
         if type(UpdateUIDisplays) == "function" then
             UpdateUIDisplays({ playerHud = true })
@@ -1148,6 +1161,7 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
     if SS.markReconciledToCurrentState ~= nil then
         SS.markReconciledToCurrentState()
     end
+    reconcileLocationHostedConditions()
     if Sync and type(Sync.full) == "function" then
         Sync.full({ reason = "StorytellerScenesPanel.location" })
     end

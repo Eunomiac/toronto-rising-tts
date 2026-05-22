@@ -1,6 +1,7 @@
 --[[
   Static registry of condition definitions (not persisted).
-  Agent guidance: .dev/PC Data & Tracking/PC Tracking & State Behavior.md
+  Each derived condition owns a `derive(stats, activeConditions)` function.
+  Agent guidance: .dev/PC Data & Tracking/Conditions System Guide.md
 ]]
 
 local CD = {}
@@ -14,17 +15,67 @@ CD.LEGACY_PERSISTED_KEYS = {
   blindfoldVariant = true,
 }
 
+--- Tracker max from stats base + temp only (no condition stat deltas).
+--- @param stats table|nil
+--- @param trackerKey string
+--- @return number
+function CD.trackerMaxFromStats(stats, trackerKey)
+  if type(stats) ~= "table" or type(stats[trackerKey]) ~= "table" then
+    return 0
+  end
+  local tr = stats[trackerKey]
+  return (tonumber(tr.base) or 0) + (tonumber(tr.temp) or 0)
+end
+
+--- Whether collision creates impaired humanity box (last humanity slot touched by stains from right).
+--- @param lineLen number
+--- @param stains number
+--- @return boolean
+function CD.humanityHasImpairedSlot(lineLen, stains)
+  if lineLen < 1 or stains < 1 then
+    return false
+  end
+  local firstStainSlot = 11 - stains
+  return firstStainSlot <= lineLen
+end
+
+--- True when stats include a Blood Potency rating (vampire with a BP tracker).
+--- @param stats table|nil
+--- @return boolean
+function CD.statsHasBloodPotencyRating(stats)
+  if type(stats) ~= "table" or type(stats.bloodPotency) ~= "table" then
+    return false
+  end
+  local bp = stats.bloodPotency
+  if bp.base == nil and bp.temp == nil and bp.value == nil then
+    return false
+  end
+  return true
+end
+
 --- @type table<string, table>
 CD.Defs = {
   torpor = {
     id = "torpor",
     kind = "derived",
     priority = 100,
-    derive = {
-      type = "trackerAggravatedFull",
-      tracker = "health",
-      sticky = true,
-    },
+    deriveSticky = true,
+    --- Active when aggravated health damage fills the track.
+    --- @param stats table
+    --- @param _activeConditions table|nil
+    --- @return boolean
+    derive = function(stats, _activeConditions)
+      local maxBoxes = CD.trackerMaxFromStats(stats, "health")
+      if maxBoxes < 1 then
+        return false
+      end
+      local tr = stats.health
+      if type(tr) ~= "table" then
+        return false
+      end
+      local agg = tonumber(tr.aggravated) or 0
+      return agg >= maxBoxes
+    end,
     statChanges = {},
     hud = { overlay = "overlay_torpor" },
     lighting = { seatLight2 = "OFF" },
@@ -33,11 +84,24 @@ CD.Defs = {
     id = "impairedHealth",
     kind = "derived",
     priority = 40,
-    derive = {
-      type = "trackerDamageFull",
-      tracker = "health",
-    },
     suppressedBy = { "torpor" },
+    --- Active when total health damage fills the track (not while torpor suppresses).
+    --- @param stats table
+    --- @param _activeConditions table|nil
+    --- @return boolean
+    derive = function(stats, _activeConditions)
+      local maxBoxes = CD.trackerMaxFromStats(stats, "health")
+      if maxBoxes < 1 then
+        return false
+      end
+      local tr = stats.health
+      if type(tr) ~= "table" then
+        return false
+      end
+      local sup = tonumber(tr.superficial) or 0
+      local agg = tonumber(tr.aggravated) or 0
+      return (sup + agg) >= maxBoxes
+    end,
     statChanges = {
       strength = -2,
       dexterity = -2,
@@ -50,11 +114,24 @@ CD.Defs = {
     id = "impairedWillpower",
     kind = "derived",
     priority = 40,
-    derive = {
-      type = "trackerDamageFull",
-      tracker = "willpower",
-    },
     suppressedBy = { "torpor" },
+    --- Active when total willpower damage fills the track.
+    --- @param stats table
+    --- @param _activeConditions table|nil
+    --- @return boolean
+    derive = function(stats, _activeConditions)
+      local maxBoxes = CD.trackerMaxFromStats(stats, "willpower")
+      if maxBoxes < 1 then
+        return false
+      end
+      local tr = stats.willpower
+      if type(tr) ~= "table" then
+        return false
+      end
+      local sup = tonumber(tr.superficial) or 0
+      local agg = tonumber(tr.aggravated) or 0
+      return (sup + agg) >= maxBoxes
+    end,
     statChanges = {
       charisma = -2,
       manipulation = -2,
@@ -70,9 +147,19 @@ CD.Defs = {
     id = "impairedHumanity",
     kind = "derived",
     priority = 50,
-    derive = {
-      type = "humanityImpaired",
-    },
+    --- Active when stain collision creates an impaired humanity box.
+    --- @param stats table
+    --- @param _activeConditions table|nil
+    --- @return boolean
+    derive = function(stats, _activeConditions)
+      if type(stats.humanity) ~= "table" then
+        return false
+      end
+      local hu = stats.humanity
+      local lineLen = (tonumber(hu.base) or 0) + (tonumber(hu.temp) or 0)
+      local stains = tonumber(hu.stains) or 0
+      return CD.humanityHasImpairedSlot(lineLen, stains)
+    end,
     statChanges = {
       strength = -2,
       dexterity = -2,
@@ -109,6 +196,19 @@ CD.Defs = {
     instanceSchema = { variant = "number" },
     statChanges = {},
     hud = { blindfoldVariant = true },
+  },
+  bumpBloodPotency = {
+    id = "bumpBloodPotency",
+    kind = "location",
+    priority = 10,
+    --- Active for vampires with a Blood Potency rating (location reconciler sets the key).
+    --- @param stats table
+    --- @param _activeConditions table|nil
+    --- @return boolean
+    derive = function(stats, _activeConditions)
+      return CD.statsHasBloodPotencyRating(stats)
+    end,
+    statChanges = { bloodPotency = 1 },
   },
 }
 

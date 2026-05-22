@@ -5365,4 +5365,32 @@ function DEBUG.dumpConditions(seatColor)
   print("  resolved.lightingModes: " .. JSON.encode(resolved.lightingModes))
 end
 
+--- Print merged roll policy for the active roll on one seat (MCP / console diagnosis).
+--- @param seatColor string e.g. "Brown"
+function DEBUG.dumpRollPolicy(seatColor)
+  if type(seatColor) ~= "string" or seatColor == "" then
+    error("DEBUG.dumpRollPolicy: seatColor required")
+  end
+  local S = require("core.state")
+  local Conditions = require("core.conditions")
+  local playerID = S.getPlayerID(seatColor)
+  if type(playerID) ~= "string" then
+    print("[DEBUG.dumpRollPolicy] no playerID for seat " .. seatColor)
+    return
+  end
+  local active = S.getStateVal("playerData", playerID, "hud", "rollData", "active")
+  print("[DEBUG.dumpRollPolicy] seat=" .. seatColor .. " playerID=" .. playerID)
+  if type(active) ~= "table" then
+    print("  no active roll — resolved policy at initiate would be:")
+    print("  " .. JSON.encode(Conditions.resolveRollPolicy(playerID)))
+    return
+  end
+  if type(active.rollPolicy) == "table" then
+    print("  active.rollPolicy: " .. JSON.encode(active.rollPolicy))
+  else
+    print("  active.rollPolicy: (missing — re-initiate roll after deploy)")
+    print("  current merge: " .. JSON.encode(Conditions.resolveRollPolicy(playerID)))
+  end
+end
+
 return DEBUG
