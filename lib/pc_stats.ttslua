@@ -7,9 +7,9 @@
 local P = {}
 local S = require("core.state")
 local C = require("lib.constants")
-local U = require("lib.util")
 local HO = require("core.hud_overlays")
-local Sync = require("core.sync")
+local Conditions = require("core.conditions")
+local Derive = require("lib.condition_derive")
 local PSC = require("lib.pc_sheet_collect")
 
 P.SHEET_PAGE_UPDATE_PROFILE = PSC.SHEET_PAGE_UPDATE_PROFILE
@@ -145,261 +145,23 @@ function P.applyDamageOrHeal(playerRef, which, superficialDelta, aggravatedDelta
     return
   end
   local stats = S.getStateVal("playerData", playerID, "stats")
-  local conditions = S.getStateVal("playerData", playerID, "conditions")
   if type(stats) ~= "table" or type(stats[which]) ~= "table" then
     warnGm("applyDamageOrHeal: missing stats." .. which .. " for player")
     return
   end
   local tr = stats[which]
   local b = tonumber(tr.base) or 0
-  local maxBoxes = b + P.effectiveTempForAggregate(stats, conditions, which)
+  local maxBoxes = b + Conditions.effectiveAggregateDelta(playerID, which)
   if maxBoxes < 1 then
     maxBoxes = 1
   end
   local ns, na = applyTrackDeltasV5(tr, maxBoxes, superficialDelta, aggravatedDelta)
   S.setStateVal(ns, "playerData", playerID, "stats", which, "superficial")
   S.setStateVal(na, "playerData", playerID, "stats", which, "aggravated")
-  P.syncDamageDerivedConditions(playerID)
-  P.applyActiveConditionPresentation(playerID)
-  P.refreshHudOverlays()
+  Conditions.reconcileDerivedForPlayer(playerID)
+  Conditions.afterChange(playerID)
 end
 
---- @param playerID string
-function P.syncDamageDerivedConditions(playerID)
-  if playerID == C.StorytellerID then
-    return
-  end
-  local stats = S.getStateVal("playerData", playerID, "stats")
-  local conditions = S.getStateVal("playerData", playerID, "conditions") or {}
-  if type(stats) ~= "table" then
-    return
-  end
-  if type(conditions) ~= "table" then
-    conditions = {}
-    S.setStateVal(conditions, "playerData", playerID, "conditions")
-  end
-
-  local h = stats.health
-  local w = stats.willpower
-  if type(h) ~= "table" or type(w) ~= "table" then
-    return
-  end
-
-  local hMax = (tonumber(h.base) or 0) + P.effectiveTempForAggregate(stats, conditions, "health")
-  local wMax = (tonumber(w.base) or 0) + P.effectiveTempForAggregate(stats, conditions, "willpower")
-  local hSup = tonumber(h.superficial) or 0
-  local hAgg = tonumber(h.aggravated) or 0
-  local wSup = tonumber(w.superficial) or 0
-  local wAgg = tonumber(w.aggravated) or 0
-
-  local hasTorpor = conditions.torpor ~= nil
-  if hMax > 0 and hAgg >= hMax then
-    if not hasTorpor then
-      P.setConditionEntry(playerID, "torpor", P.makeTorporCondition(playerID))
-    end
-  end
-
-  local impairedH = conditions.impairedHealth
-  if hasTorpor then
-    if impairedH ~= nil then
-      conditions.impairedHealth = nil
-      S.setStateVal(nil, "playerData", playerID, "conditions", "impairedHealth")
-    end
-  elseif hMax > 0 and (hSup + hAgg) >= hMax then
-    if impairedH == nil then
-      P.setConditionEntry(playerID, "impairedHealth", P.makeImpairedHealthCondition(playerID))
-    end
-  else
-    if impairedH ~= nil then
-      conditions.impairedHealth = nil
-      S.setStateVal(nil, "playerData", playerID, "conditions", "impairedHealth")
-    end
-  end
-
-  local impairedW = conditions.impairedWillpower
-  if hasTorpor then
-    if impairedW ~= nil then
-      conditions.impairedWillpower = nil
-      S.setStateVal(nil, "playerData", playerID, "conditions", "impairedWillpower")
-    end
-  elseif wMax > 0 and (wSup + wAgg) >= wMax then
-    if impairedW == nil then
-      P.setConditionEntry(playerID, "impairedWillpower", P.makeImpairedWillpowerCondition(playerID))
-    end
-  else
-    if impairedW ~= nil then
-      conditions.impairedWillpower = nil
-      S.setStateVal(nil, "playerData", playerID, "conditions", "impairedWillpower")
-    end
-  end
-end
-
---- @param playerID string
---- @param key string
---- @param entry table|nil
-function P.setConditionEntry(playerID, key, entry)
-  if entry == nil then
-    S.setStateVal(nil, "playerData", playerID, "conditions", key)
-  else
-    S.setStateVal(entry, "playerData", playerID, "conditions", key)
-  end
-end
-
---- @param playerID string
---- @return table
-function P.makeTorporCondition(playerID)
-  local pd = S.getPlayerData(playerID) or {}
-  local col = pd.color or "Brown"
-  return {
-    statChanges = {},
-    hudChanges = { ["overlay_torpor_" .. col] = true },
-    lightingModeChanges = { ["playerLight2" .. col] = "OFF" },
-    removalCriteria = "indefinite"
-  }
-end
-
---- Storyteller-toggled HUD frenzy image (no stat or lighting effects).
---- @param playerID string
---- @return table
-function P.makeHudFrenzyCondition(playerID)
-  local pd = S.getPlayerData(playerID) or {}
-  local col = pd.color or "Brown"
-  return {
-    statChanges = {},
-    hudChanges = { ["overlay_frenzy_" .. col] = true },
-    removalCriteria = "indefinite"
-  }
-end
-
---- Storyteller-toggled blindfold overlay (no stat or lighting effects).
---- @param playerID string
---- @param variantOptional number|nil 1..6; random when omitted
---- @return table
-function P.makeHudBlindfoldCondition(playerID, variantOptional)
-  local pd = S.getPlayerData(playerID) or {}
-  local col = pd.color or "Brown"
-  local variant = tonumber(variantOptional)
-  if variant == nil then
-    variant = math.random(1, 6)
-  end
-  if variant < 1 then
-    variant = 1
-  end
-  if variant > 6 then
-    variant = 6
-  end
-  return {
-    statChanges = {},
-    hudChanges = { ["overlay_blindfold_" .. variant .. "_" .. col] = true },
-    blindfoldVariant = variant,
-    removalCriteria = "indefinite"
-  }
-end
-
---- Scene/table transition blindfold: one random variant for all seated players (no loading screen).
---- @param playerID string
---- @param variant number 1..6
---- @return table
-function P.makeHudTransitionBlindfoldCondition(playerID, variant)
-  local pd = S.getPlayerData(playerID) or {}
-  local col = pd.color or "Brown"
-  local v = tonumber(variant) or 1
-  if v < 1 then
-    v = 1
-  end
-  if v > 6 then
-    v = 6
-  end
-  return {
-    statChanges = {},
-    hudChanges = {
-      ["overlay_blindfold_" .. v .. "_" .. col] = true,
-    },
-    blindfoldVariant = v,
-    removalCriteria = "indefinite"
-  }
-end
-
---- @param playerID string
---- @return table
-function P.makeImpairedHealthCondition(playerID)
-  local pd = S.getPlayerData(playerID) or {}
-  local col = pd.color or "Brown"
-  return {
-    statChanges = {
-      strength = -2,
-      dexterity = -2,
-      stamina = -2
-    },
-    hudChanges = { ["overlay_health_impaired_" .. col] = true },
-    lightingModeChanges = { ["playerLight2" .. col] = "DIM_RED" },
-    removalCriteria = "indefinite"
-  }
-end
-
---- @param playerID string
---- @return table
-function P.makeImpairedWillpowerCondition(playerID)
-  local pd = S.getPlayerData(playerID) or {}
-  local col = pd.color or "Brown"
-  return {
-    statChanges = {
-      charisma = -2,
-      manipulation = -2,
-      composure = -2,
-      intelligence = -2,
-      wits = -2,
-      resolve = -2
-    },
-    hudChanges = { ["overlay_willpower_impaired_" .. col] = true },
-    lightingModeChanges = { ["playerLight2" .. col] = "DIM_RED" },
-    removalCriteria = "indefinite"
-  }
-end
-
---- @param playerID string
---- @return table
-function P.makeImpairedHumanityCondition(playerID)
-  local pd = S.getPlayerData(playerID) or {}
-  local col = pd.color or "Brown"
-  return {
-    statChanges = {
-      strength = -2,
-      dexterity = -2,
-      stamina = -2,
-      charisma = -2,
-      manipulation = -2,
-      composure = -2,
-      intelligence = -2,
-      wits = -2,
-      resolve = -2
-    },
-    hudChanges = { ["overlay_humanity_impaired_" .. col] = true },
-    lightingModeChanges = { ["playerLight2" .. col] = "DIM_PURPLE" },
-    removalCriteria = "indefinite"
-  }
-end
-
---- Apply lighting from all active conditions (last key wins per light).
---- @param playerID string
-function P.applyActiveConditionPresentation(playerID)
-  if playerID == C.StorytellerID then
-    return
-  end
-  local pd = S.getPlayerData(playerID) or {}
-  local col = pd.color
-  local conditions = S.getStateVal("playerData", playerID, "conditions")
-  if type(conditions) ~= "table" then
-    return
-  end
-  -- Lighting overrides now flow through lighting reconciler derivation
-  -- from persisted condition state (no direct live-world writes here).
-  if type(col) == "string" and col ~= "" then
-    Sync.player(col)
-  end
-end
-
---- Humanity stain delta; updates impairedHumanity from collision rules.
 --- @param playerRef any
 --- @param stainDelta number
 function P.applyHumanityStainDelta(playerRef, stainDelta)
@@ -408,30 +170,14 @@ function P.applyHumanityStainDelta(playerRef, stainDelta)
     return
   end
   local stats = S.getStateVal("playerData", playerID, "stats")
-  local conditions = S.getStateVal("playerData", playerID, "conditions") or {}
   if type(stats) ~= "table" or type(stats.humanity) ~= "table" then
     return
   end
   local hu = stats.humanity
   local stains = math.max(0, (tonumber(hu.stains) or 0) + (tonumber(stainDelta) or 0))
   S.setStateVal(stains, "playerData", playerID, "stats", "humanity", "stains")
-
-  local base = tonumber(hu.base) or 0
-  local effT = P.effectiveTempForAggregate(stats, conditions, "humanity")
-  local lineLen = base + effT
-  local hasImpaired = P.humanityHasImpairedSlot(lineLen, stains)
-
-  if hasImpaired then
-    if conditions.impairedHumanity == nil then
-      P.setConditionEntry(playerID, "impairedHumanity", P.makeImpairedHumanityCondition(playerID))
-    end
-  else
-    if conditions.impairedHumanity ~= nil then
-      P.setConditionEntry(playerID, "impairedHumanity", nil)
-    end
-  end
-  P.applyActiveConditionPresentation(playerID)
-  P.refreshHudOverlays()
+  Conditions.reconcileDerivedForPlayer(playerID)
+  Conditions.afterChange(playerID)
 end
 
 --- Whether collision creates impaired box (last humanity slot touched by stains from right).
@@ -439,28 +185,19 @@ end
 --- @param stains number
 --- @return boolean
 function P.humanityHasImpairedSlot(lineLen, stains)
-  if lineLen < 1 or stains < 1 then
-    return false
-  end
-  local firstStainSlot = 11 - stains
-  return firstStainSlot <= lineLen
+  return Derive.humanityHasImpairedSlot(lineLen, stains)
 end
 
 --- Clear all stains and re-sync impaired humanity.
 --- @param playerRef any
 function P.clearHumanityStains(playerRef)
-  P.applyHumanityStainDelta(playerRef, -(9999))
   local playerID = resolvePlayerId(playerRef)
-  if not playerID then
+  if not playerID or playerID == C.StorytellerID then
     return
   end
   S.setStateVal(0, "playerData", playerID, "stats", "humanity", "stains")
-  local conditions = S.getStateVal("playerData", playerID, "conditions") or {}
-  if conditions.impairedHumanity ~= nil then
-    P.setConditionEntry(playerID, "impairedHumanity", nil)
-  end
-  P.applyActiveConditionPresentation(playerID)
-  P.refreshHudOverlays()
+  Conditions.reconcileDerivedForPlayer(playerID)
+  Conditions.afterChange(playerID)
 end
 
 --- @param playerRef any
@@ -476,21 +213,8 @@ function P.applyHumanityBaseDelta(playerRef, delta)
   end
   local b = math.max(0, math.min(10, (tonumber(hu.base) or 0) + (tonumber(delta) or 0)))
   S.setStateVal(b, "playerData", playerID, "stats", "humanity", "base")
-  local stats2 = S.getStateVal("playerData", playerID, "stats")
-  local cond2 = S.getStateVal("playerData", playerID, "conditions") or {}
-  local lineLen = b + P.effectiveTempForAggregate(stats2, cond2, "humanity")
-  local stains = tonumber(S.getStateVal("playerData", playerID, "stats", "humanity", "stains")) or 0
-  if P.humanityHasImpairedSlot(lineLen, stains) then
-    if cond2.impairedHumanity == nil then
-      P.setConditionEntry(playerID, "impairedHumanity", P.makeImpairedHumanityCondition(playerID))
-    end
-  else
-    if cond2.impairedHumanity ~= nil then
-      P.setConditionEntry(playerID, "impairedHumanity", nil)
-    end
-  end
-  P.applyActiveConditionPresentation(playerID)
-  P.refreshHudOverlays()
+  Conditions.reconcileDerivedForPlayer(playerID)
+  Conditions.afterChange(playerID)
 end
 
 --- Storyteller string: configurable undamaged / superficial / aggravated (defaults O / / X)
@@ -503,13 +227,13 @@ function P.formatDamageTrackText(playerRef, which)
     return ""
   end
   local stats = S.getStateVal("playerData", playerID, "stats")
-  local conditions = S.getStateVal("playerData", playerID, "conditions")
   if type(stats) ~= "table" or type(stats[which]) ~= "table" then
     return ""
   end
+  local resolved = Conditions.resolveForPlayer(playerID)
   local gUnd, gSup, gAgg = damageTrackGlyphs()
   local tr = stats[which]
-  local maxB = (tonumber(tr.base) or 0) + P.effectiveTempForAggregate(stats, conditions, which)
+  local maxB = (tonumber(tr.base) or 0) + PSC.effectiveTempForAggregate(stats, resolved.statChanges, which)
   if maxB < 1 then
     maxB = 1
   end
@@ -537,13 +261,13 @@ function P.formatHumanityTrackText(playerRef)
     return ""
   end
   local stats = S.getStateVal("playerData", playerID, "stats")
-  local conditions = S.getStateVal("playerData", playerID, "conditions")
   if type(stats) ~= "table" or type(stats.humanity) ~= "table" then
     return ""
   end
+  local resolved = Conditions.resolveForPlayer(playerID)
   local gUnused, gFill, gStain, gImp = humanityTrackGlyphs()
   local hu = stats.humanity
-  local lineLen = (tonumber(hu.base) or 0) + P.effectiveTempForAggregate(stats, conditions, "humanity")
+  local lineLen = (tonumber(hu.base) or 0) + PSC.effectiveTempForAggregate(stats, resolved.statChanges, "humanity")
   local stains = tonumber(hu.stains) or 0
   local slotModes = {}
   for i = 1, 10 do
@@ -597,17 +321,15 @@ function P.formatHungerDotLine(seatColor)
   return table.concat(chars, "")
 end
 
---- Torpor cleared by ST; remove if healed below full agg track.
+--- Torpor cleared by ST; reconcile re-applies if aggravated track still full.
 --- @param playerRef any
 function P.storytellerClearTorpor(playerRef)
   local playerID = resolvePlayerId(playerRef)
   if not playerID then
     return
   end
-  P.setConditionEntry(playerID, "torpor", nil)
-  P.syncDamageDerivedConditions(playerID)
-  P.applyActiveConditionPresentation(playerID)
-  P.refreshHudOverlays()
+  Conditions.clear(playerID, "torpor")
+  Conditions.reconcileDerivedForPlayer(playerID)
 end
 
 return P

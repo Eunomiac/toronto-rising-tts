@@ -1,0 +1,128 @@
+--[[
+  Pure effect resolution for active conditions (statChanges, HUD ids, lighting modes).
+  Agent guidance: .dev/PC Data & Tracking/PC Tracking & State Behavior.md
+]]
+
+local Effects = {}
+
+local CD = require("lib.condition_defs")
+
+--- @param overlayBase string e.g. overlay_health_impaired
+--- @param seatColor string e.g. Brown
+--- @return string
+function Effects.formatHudOverlayId(overlayBase, seatColor)
+  if type(overlayBase) ~= "string" or overlayBase == "" then
+    error("condition_effects.formatHudOverlayId: overlayBase must be a non-empty string")
+  end
+  if type(seatColor) ~= "string" or seatColor == "" then
+    error("condition_effects.formatHudOverlayId: seatColor must be a non-empty string")
+  end
+  return overlayBase .. "_" .. seatColor
+end
+
+--- @param seatColor string
+--- @return string LIGHTMODES registry key e.g. playerLight2Brown
+function Effects.formatSeatLightRef(seatColor)
+  if type(seatColor) ~= "string" or seatColor == "" then
+    error("condition_effects.formatSeatLightRef: seatColor must be a non-empty string")
+  end
+  return "playerLight2" .. seatColor
+end
+
+--- @param variant number
+--- @param seatColor string
+--- @return string
+local function formatBlindfoldOverlayId(variant, seatColor)
+  local v = tonumber(variant)
+  if v == nil or v < 1 or v > 6 then
+    error("condition_effects: blindfold variant must be 1..6, got " .. tostring(variant))
+  end
+  return "overlay_blindfold_" .. tostring(math.floor(v)) .. "_" .. seatColor
+end
+
+--- @param instance table|boolean|nil
+--- @param def table
+--- @return table|nil
+local function validatedInstance(instance, def)
+  if instance == true or instance == nil then
+    return nil
+  end
+  if type(instance) ~= "table" then
+    error("condition_effects: instance for " .. tostring(def.id) .. " must be true or a table")
+  end
+  local schema = def.instanceSchema
+  if type(schema) ~= "table" then
+    return instance
+  end
+  for key, expectedType in pairs(schema) do
+    local val = instance[key]
+    if val == nil then
+      error("condition_effects: missing instance." .. key .. " for condition " .. tostring(def.id))
+    end
+    if expectedType == "number" and type(val) ~= "number" then
+      error("condition_effects: instance." .. key .. " must be number for condition " .. tostring(def.id))
+    end
+  end
+  return instance
+end
+
+--- Merge all active conditions for one player into resolved effect channels.
+--- @param activeConditions table|nil
+--- @param stats table|nil unused today; reserved for future roll/stat hooks
+--- @param seatColor string
+--- @return table { statChanges = table, hudElementIds = table, lightingModes = table }
+function Effects.resolveForPlayer(activeConditions, stats, seatColor)
+  if type(seatColor) ~= "string" or seatColor == "" then
+    error("condition_effects.resolveForPlayer: seatColor must be a non-empty string")
+  end
+
+  local resolved = {
+    statChanges = {},
+    hudElementIds = {},
+    lightingModes = {},
+  }
+
+  if type(activeConditions) ~= "table" then
+    return resolved
+  end
+
+  local sortedIds = CD.sortedActiveIds(activeConditions)
+  for _, conditionId in ipairs(sortedIds) do
+    if activeConditions[conditionId] ~= nil then
+      local def = CD.getDef(conditionId)
+      local instance = validatedInstance(activeConditions[conditionId], def)
+
+      if type(def.statChanges) == "table" then
+        for statKey, delta in pairs(def.statChanges) do
+          if type(statKey) == "string" then
+            resolved.statChanges[statKey] = (resolved.statChanges[statKey] or 0) + (tonumber(delta) or 0)
+          end
+        end
+      end
+
+      if type(def.hud) == "table" then
+        if type(def.hud.overlay) == "string" then
+          local elId = Effects.formatHudOverlayId(def.hud.overlay, seatColor)
+          resolved.hudElementIds[elId] = true
+        end
+        if def.hud.blindfoldVariant == true then
+          local inst = instance
+          if type(inst) ~= "table" or inst.variant == nil then
+            error("condition_effects: condition " .. conditionId .. " requires instance.variant")
+          end
+          local elId = formatBlindfoldOverlayId(inst.variant, seatColor)
+          resolved.hudElementIds[elId] = true
+        end
+      end
+
+      if type(def.lighting) == "table" and type(def.lighting.seatLight2) == "string" then
+        local lightRef = Effects.formatSeatLightRef(seatColor)
+        resolved.lightingModes[lightRef] = def.lighting.seatLight2
+      end
+    end
+  end
+
+  return resolved
+end
+
+return Effects

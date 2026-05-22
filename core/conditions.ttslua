@@ -1,0 +1,323 @@
+--[[
+  Global-side condition mutation, derivation reconcile, and resolved-effect accessors.
+  Agent guidance: .dev/PC Data & Tracking/PC Tracking & State Behavior.md
+]]
+
+---@diagnostic disable: undefined-global
+local Conditions = {}
+
+local S = require("core.state")
+local Sync = require("core.sync")
+local C = require("lib.constants")
+local CD = require("lib.condition_defs")
+local Derive = require("lib.condition_derive")
+local Effects = require("lib.condition_effects")
+
+--- @param conditionId string
+--- @param value any
+local function assertPersistedShape(conditionId, value)
+  CD.getDef(conditionId)
+
+  if value == nil then
+    return
+  end
+
+  if value == true then
+    local def = CD.Defs[conditionId]
+    if type(def.instanceSchema) == "table" then
+      error(
+        "Conditions: condition \""
+          .. conditionId
+          .. "\" requires instance data (not true)"
+      )
+    end
+    return
+  end
+
+  if type(value) ~= "table" then
+    error(
+      "Conditions: invalid persisted entry for \""
+        .. conditionId
+        .. "\" — value must be true or an instance table"
+    )
+  end
+
+  for legacyKey, _ in pairs(CD.LEGACY_PERSISTED_KEYS) do
+    if value[legacyKey] ~= nil then
+      error(
+        "Conditions: legacy inline condition payload for \""
+          .. conditionId
+          .. "\" (key \""
+          .. legacyKey
+          .. "\"). Clear playerData.conditions or restore a pre-migration save."
+      )
+    end
+  end
+
+  local def = CD.Defs[conditionId]
+  local schema = def.instanceSchema
+  if type(schema) ~= "table" then
+    error(
+      "Conditions: condition \""
+        .. conditionId
+        .. "\" does not allow instance data; use true"
+    )
+  end
+
+  for key, expectedType in pairs(schema) do
+    local instVal = value[key]
+    if instVal == nil then
+      error("Conditions: missing instance." .. key .. " for \"" .. conditionId .. "\"")
+    end
+    if expectedType == "number" and type(instVal) ~= "number" then
+      error("Conditions: instance." .. key .. " must be number for \"" .. conditionId .. "\"")
+    end
+  end
+
+  if schema.variant == "number" then
+    local v = tonumber(value.variant)
+    if v == nil or v < 1 or v > 6 then
+      error("Conditions: instance.variant must be 1..6 for \"" .. conditionId .. "\"")
+    end
+  end
+end
+
+--- @param conditions table|nil
+local function validateConditionsTable(conditions)
+  if conditions == nil then
+    return
+  end
+  if type(conditions) ~= "table" then
+    error("Conditions: playerData.conditions must be a table")
+  end
+  for conditionId, value in pairs(conditions) do
+    if type(conditionId) ~= "string" then
+      error("Conditions: condition keys must be strings")
+    end
+    if not CD.isKnownId(conditionId) then
+      error("Conditions: unknown persisted condition id \"" .. conditionId .. "\"")
+    end
+    assertPersistedShape(conditionId, value)
+  end
+end
+
+--- Validate every PC's persisted conditions (call after load).
+function Conditions.validateAllPersisted()
+  local pd = S.getStateVal("playerData")
+  if type(pd) ~= "table" then
+    return
+  end
+  for playerID, row in pairs(pd) do
+    if playerID ~= C.StorytellerID and type(row) == "table" then
+      validateConditionsTable(row.conditions)
+    end
+  end
+end
+
+--- @param playerID string
+--- @param conditions table|nil
+function Conditions.validatePersistedShape(playerID, conditions)
+  if playerID == C.StorytellerID then
+    return
+  end
+  validateConditionsTable(conditions)
+end
+
+--- @param playerID string
+--- @return string|nil seat color
+local function seatColorForPlayer(playerID)
+  local pd = S.getPlayerData(playerID) or {}
+  local col = pd.color
+  if type(col) == "string" and col ~= "" then
+    return col
+  end
+  return nil
+end
+
+--- @param playerID string
+--- @return table
+function Conditions.resolveForPlayer(playerID)
+  if type(playerID) ~= "string" or playerID == "" then
+    error("Conditions.resolveForPlayer: playerID required")
+  end
+  if playerID == C.StorytellerID then
+    return {
+      statChanges = {},
+      hudElementIds = {},
+      lightingModes = {},
+    }
+  end
+  local stats = S.getStateVal("playerData", playerID, "stats")
+  local conditions = S.getStateVal("playerData", playerID, "conditions") or {}
+  local seatColor = seatColorForPlayer(playerID) or "Brown"
+  return Effects.resolveForPlayer(conditions, stats, seatColor)
+end
+
+--- @param playerID string
+--- @param dotKey string
+--- @return number
+function Conditions.effectiveStatDelta(playerID, dotKey)
+  if type(dotKey) ~= "string" then
+    return 0
+  end
+  local stats = S.getStateVal("playerData", playerID, "stats")
+  local baseT = 0
+  if type(stats) == "table" then
+    if type(stats.attributes) == "table" and type(stats.attributes[dotKey]) == "table" then
+      baseT = tonumber(stats.attributes[dotKey].temp) or 0
+    elseif type(stats.skills) == "table" and type(stats.skills[dotKey]) == "table" then
+      baseT = tonumber(stats.skills[dotKey].temp) or 0
+    elseif type(stats.disciplines) == "table" and type(stats.disciplines[dotKey]) == "table" then
+      baseT = tonumber(stats.disciplines[dotKey].temp) or 0
+    elseif dotKey == "bloodPotency" and type(stats.bloodPotency) == "table" then
+      baseT = tonumber(stats.bloodPotency.temp) or 0
+    end
+  end
+  local resolved = Conditions.resolveForPlayer(playerID)
+  local add = 0
+  if type(resolved.statChanges) == "table" then
+    add = tonumber(resolved.statChanges[dotKey]) or 0
+  end
+  return baseT + add
+end
+
+--- @param playerID string
+--- @param trackerKey string health|willpower|humanity
+--- @return number
+function Conditions.effectiveAggregateDelta(playerID, trackerKey)
+  if type(trackerKey) ~= "string" then
+    return 0
+  end
+  local stats = S.getStateVal("playerData", playerID, "stats")
+  local baseT = 0
+  if type(stats) == "table" and type(stats[trackerKey]) == "table" then
+    baseT = tonumber(stats[trackerKey].temp) or 0
+  end
+  local resolved = Conditions.resolveForPlayer(playerID)
+  local add = 0
+  if type(resolved.statChanges) == "table" then
+    add = tonumber(resolved.statChanges[trackerKey]) or 0
+  end
+  return baseT + add
+end
+
+--- @param playerID string
+--- @param conditionId string
+--- @param instanceOrTrue boolean|table|nil when nil, treated as true
+function Conditions.setManual(playerID, conditionId, instanceOrTrue)
+  if playerID == C.StorytellerID then
+    return
+  end
+  local def = CD.getDef(conditionId)
+  if def.kind ~= "manual" then
+    error("Conditions.setManual: \"" .. conditionId .. "\" is not a manual condition")
+  end
+  local value = instanceOrTrue
+  if value == nil then
+    value = true
+  end
+  assertPersistedShape(conditionId, value)
+  S.setStateVal(value, "playerData", playerID, "conditions", conditionId)
+  Conditions.afterChange(playerID)
+end
+
+--- @param playerID string
+--- @param conditionId string
+--- @param instance table
+function Conditions.setEvent(playerID, conditionId, instance)
+  if playerID == C.StorytellerID then
+    return
+  end
+  local def = CD.getDef(conditionId)
+  if def.kind ~= "event" then
+    error("Conditions.setEvent: \"" .. conditionId .. "\" is not an event condition")
+  end
+  assertPersistedShape(conditionId, instance)
+  S.setStateVal(instance, "playerData", playerID, "conditions", conditionId)
+  Conditions.afterChange(playerID)
+end
+
+--- @param playerID string
+--- @param conditionId string
+function Conditions.clear(playerID, conditionId)
+  if playerID == C.StorytellerID then
+    return
+  end
+  CD.getDef(conditionId)
+  S.setStateVal(nil, "playerData", playerID, "conditions", conditionId)
+  Conditions.afterChange(playerID)
+end
+
+--- Sync presentation after condition changes (mutation-then-reconcile contract).
+--- @param playerID string
+function Conditions.afterChange(playerID)
+  if playerID == C.StorytellerID then
+    return
+  end
+  local col = seatColorForPlayer(playerID)
+  if type(col) ~= "string" or col == "" then
+    return
+  end
+  Sync.player(col)
+  local PCST = require("core.pc_storyteller_panel")
+  if type(PCST.refreshCharacterSheetsForColor) == "function" then
+    PCST.refreshCharacterSheetsForColor(col)
+  end
+end
+
+--- Reconcile derived condition keys from stats + registry rules.
+--- @param playerID string
+--- @return boolean changed
+function Conditions.reconcileDerivedForPlayer(playerID)
+  if playerID == C.StorytellerID then
+    return false
+  end
+  local stats = S.getStateVal("playerData", playerID, "stats")
+  if type(stats) ~= "table" then
+    return false
+  end
+  local conditions = S.getStateVal("playerData", playerID, "conditions")
+  if type(conditions) ~= "table" then
+    conditions = {}
+    S.setStateVal(conditions, "playerData", playerID, "conditions")
+  end
+
+  local desired = Derive.evaluateDesiredDerived(stats, conditions)
+  local changed = false
+
+  for id, def in pairs(CD.Defs) do
+    if type(def) == "table" and def.kind == "derived" then
+      local want = desired[id] == true
+      local has = conditions[id] ~= nil
+      local sticky = type(def.derive) == "table" and def.derive.sticky == true
+
+      if want and not has then
+        S.setStateVal(true, "playerData", playerID, "conditions", id)
+        changed = true
+      elseif not want and has and not sticky then
+        S.setStateVal(nil, "playerData", playerID, "conditions", id)
+        changed = true
+      end
+    end
+  end
+
+  if changed then
+    Conditions.afterChange(playerID)
+  end
+  return changed
+end
+
+--- Reconcile derived conditions for every PC (load / bulk repair).
+function Conditions.reconcileDerivedAllPlayers()
+  local pd = S.getStateVal("playerData")
+  if type(pd) ~= "table" then
+    return
+  end
+  for playerID, _ in pairs(pd) do
+    if type(playerID) == "string" and playerID ~= C.StorytellerID then
+      Conditions.reconcileDerivedForPlayer(playerID)
+    end
+  end
+end
+
+return Conditions

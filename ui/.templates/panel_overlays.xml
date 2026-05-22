@@ -7,6 +7,7 @@
 
   <Image id="overlay_health_impaired_@@color@@" image="overlay_health_impaired" class="player_overlay squeeze_overlay"  />
   <Image id="overlay_humanity_impaired_@@color@@" image="overlay_humanity_impaired" class="player_overlay squeeze_overlay"  />
+  <Image id="overlay_torpor_@@color@@" image="overlay_torpor" class="player_overlay squeeze_overlay"  />
 
   <Image id="overlay_frenzy_@@color@@" image="overlay_frenzy" class="player_overlay squeeze_overlay overlay_anim_grow" />
 

@@ -5343,4 +5343,26 @@ findPotentialLights = DEBUG.findPotentialLights
 -- Auto-load generated custom UI upload manifest module if available.
 DEBUG.loadCustomUiUploadManifest()
 
+--- Print active condition ids and resolved effects for one seat (MCP / console diagnosis).
+--- @param seatColor string e.g. "Brown"
+function DEBUG.dumpConditions(seatColor)
+  if type(seatColor) ~= "string" or seatColor == "" then
+    error("DEBUG.dumpConditions: seatColor required")
+  end
+  local S = require("core.state")
+  local Conditions = require("core.conditions")
+  local playerID = S.getPlayerID(seatColor)
+  if type(playerID) ~= "string" then
+    print("[DEBUG.dumpConditions] no playerID for seat " .. seatColor)
+    return
+  end
+  local conditions = S.getStateVal("playerData", playerID, "conditions") or {}
+  local resolved = Conditions.resolveForPlayer(playerID)
+  print("[DEBUG.dumpConditions] seat=" .. seatColor .. " playerID=" .. playerID)
+  print("  activeIds: " .. JSON.encode(conditions))
+  print("  resolved.statChanges: " .. JSON.encode(resolved.statChanges))
+  print("  resolved.hudElementIds: " .. JSON.encode(resolved.hudElementIds))
+  print("  resolved.lightingModes: " .. JSON.encode(resolved.lightingModes))
+end
+
 return DEBUG

@@ -1,0 +1,131 @@
+--[[
+  Pure derivation evaluators for registry-driven conditions.
+  Agent guidance: .dev/PC Data & Tracking/PC Tracking & State Behavior.md
+]]
+
+local Derive = {}
+
+local CD = require("lib.condition_defs")
+
+--- @param lineLen number
+--- @param stains number
+--- @return boolean
+function Derive.humanityHasImpairedSlot(lineLen, stains)
+  if lineLen < 1 or stains < 1 then
+    return false
+  end
+  local firstStainSlot = 11 - stains
+  return firstStainSlot <= lineLen
+end
+
+--- Tracker max from stats base + temp only (no condition stat deltas).
+--- @param stats table|nil
+--- @param trackerKey string
+--- @return number
+local function trackerMaxFromStats(stats, trackerKey)
+  if type(stats) ~= "table" or type(stats[trackerKey]) ~= "table" then
+    return 0
+  end
+  local tr = stats[trackerKey]
+  return (tonumber(tr.base) or 0) + (tonumber(tr.temp) or 0)
+end
+
+--- @param activeConditions table|nil
+--- @param suppressors string[]|nil
+--- @return boolean
+local function isSuppressed(activeConditions, suppressors)
+  if type(suppressors) ~= "table" or type(activeConditions) ~= "table" then
+    return false
+  end
+  for _, sid in ipairs(suppressors) do
+    if activeConditions[sid] ~= nil then
+      return true
+    end
+  end
+  return false
+end
+
+--- @param def table registry entry
+--- @param stats table
+--- @param activeConditions table|nil
+--- @return boolean
+function Derive.shouldDerivedBeActive(def, stats, activeConditions)
+  if type(def) ~= "table" or def.kind ~= "derived" or type(def.derive) ~= "table" then
+    return false
+  end
+  if isSuppressed(activeConditions, def.suppressedBy) then
+    return false
+  end
+
+  local rule = def.derive
+  local ruleType = rule.type
+
+  if ruleType == "trackerDamageFull" then
+    local tracker = rule.tracker
+    if tracker ~= "health" and tracker ~= "willpower" then
+      error("condition_derive: trackerDamageFull requires tracker health|willpower for " .. tostring(def.id))
+    end
+    local maxBoxes = trackerMaxFromStats(stats, tracker)
+    if maxBoxes < 1 then
+      return false
+    end
+    local tr = stats[tracker]
+    if type(tr) ~= "table" then
+      return false
+    end
+    local sup = tonumber(tr.superficial) or 0
+    local agg = tonumber(tr.aggravated) or 0
+    return (sup + agg) >= maxBoxes
+  end
+
+  if ruleType == "trackerAggravatedFull" then
+    local tracker = rule.tracker
+    if tracker ~= "health" then
+      error("condition_derive: trackerAggravatedFull requires tracker health for " .. tostring(def.id))
+    end
+    local maxBoxes = trackerMaxFromStats(stats, tracker)
+    if maxBoxes < 1 then
+      return false
+    end
+    local tr = stats.health
+    if type(tr) ~= "table" then
+      return false
+    end
+    local agg = tonumber(tr.aggravated) or 0
+    return agg >= maxBoxes
+  end
+
+  if ruleType == "humanityImpaired" then
+    if type(stats.humanity) ~= "table" then
+      return false
+    end
+    local hu = stats.humanity
+    local lineLen = (tonumber(hu.base) or 0) + (tonumber(hu.temp) or 0)
+    local stains = tonumber(hu.stains) or 0
+    return Derive.humanityHasImpairedSlot(lineLen, stains)
+  end
+
+  error("condition_derive: unknown derive.type \"" .. tostring(ruleType) .. "\" for " .. tostring(def.id))
+end
+
+--- Compute desired derived condition ids from stats and current active set (for suppression).
+--- @param stats table|nil
+--- @param activeConditions table|nil
+--- @return table<string, boolean>
+function Derive.evaluateDesiredDerived(stats, activeConditions)
+  local desired = {}
+  if type(stats) ~= "table" then
+    return desired
+  end
+  local active = type(activeConditions) == "table" and activeConditions or {}
+  for id, def in pairs(CD.Defs) do
+    if type(def) == "table" and def.kind == "derived" then
+      if Derive.shouldDerivedBeActive(def, stats, active) then
+        desired[id] = true
+      end
+    end
+  end
+  return desired
+end
+
+return Derive

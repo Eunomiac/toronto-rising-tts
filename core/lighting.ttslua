@@ -1418,36 +1418,6 @@ function L.isPlayerPresentInActiveSeatLayout(seatKey)
     return atTable
 end
 
---- @param rawKey string
---- @param playerColor string
---- @return string|nil
-local function resolveConditionLightRegistryKey(rawKey, playerColor)
-    if U.Type(rawKey) ~= "string" then
-        return nil
-    end
-    if L.LIGHTMODES[rawKey] ~= nil then
-        return rawKey
-    end
-    if U.Type(playerColor) == "string" then
-        local prefix = "SEAT_LIGHT_2_"
-        if string.sub(rawKey, 1, #prefix) == prefix then
-            local suffix = string.sub(rawKey, #prefix + 1)
-            if suffix == string.upper(suffix) and #suffix > 0 then
-                local title = string.sub(suffix, 1, 1) .. string.lower(string.sub(suffix, 2))
-                local candidate = "playerLight2" .. title
-                if L.LIGHTMODES[candidate] ~= nil then
-                    return candidate
-                end
-            end
-        end
-        local bySeat = "playerLight2" .. playerColor
-        if rawKey == bySeat and L.LIGHTMODES[bySeat] ~= nil then
-            return bySeat
-        end
-    end
-    return rawKey
-end
-
 --- @param lightRef string
 --- @param playerColor string
 --- @return string|nil
@@ -1456,22 +1426,12 @@ local function getConditionLightOverrideMode(lightRef, playerColor)
     if U.Type(playerID) ~= "string" then
         return nil
     end
-    local conditions = S.getStateVal("playerData", playerID, "conditions")
-    if U.Type(conditions) ~= "table" then
+    local Conditions = require("core.conditions")
+    local resolved = Conditions.resolveForPlayer(playerID)
+    if U.Type(resolved.lightingModes) ~= "table" then
         return nil
     end
-    local lastMode = nil
-    for _, cond in pairs(conditions) do
-        if U.Type(cond) == "table" and U.Type(cond.lightingModeChanges) == "table" then
-            for rawKey, mode in pairs(cond.lightingModeChanges) do
-                local reg = resolveConditionLightRegistryKey(rawKey, playerColor)
-                if reg == lightRef and U.Type(mode) == "string" then
-                    lastMode = mode
-                end
-            end
-        end
-    end
-    return lastMode
+    return resolved.lightingModes[lightRef]
 end
 
 --- @param lightRef string

@@ -1,0 +1,157 @@
+--[[
+  Static registry of condition definitions (not persisted).
+  Agent guidance: .dev/PC Data & Tracking/PC Tracking & State Behavior.md
+]]
+
+local CD = {}
+
+--- Keys forbidden in persisted condition values (legacy inline factory payloads).
+CD.LEGACY_PERSISTED_KEYS = {
+  statChanges = true,
+  hudChanges = true,
+  lightingModeChanges = true,
+  removalCriteria = true,
+  blindfoldVariant = true,
+}
+
+--- @type table<string, table>
+CD.Defs = {
+  torpor = {
+    id = "torpor",
+    kind = "derived",
+    priority = 100,
+    derive = {
+      type = "trackerAggravatedFull",
+      tracker = "health",
+      sticky = true,
+    },
+    statChanges = {},
+    hud = { overlay = "overlay_torpor" },
+    lighting = { seatLight2 = "OFF" },
+  },
+  impairedHealth = {
+    id = "impairedHealth",
+    kind = "derived",
+    priority = 40,
+    derive = {
+      type = "trackerDamageFull",
+      tracker = "health",
+    },
+    suppressedBy = { "torpor" },
+    statChanges = {
+      strength = -2,
+      dexterity = -2,
+      stamina = -2,
+    },
+    hud = { overlay = "overlay_health_impaired" },
+    lighting = { seatLight2 = "DIM_RED" },
+  },
+  impairedWillpower = {
+    id = "impairedWillpower",
+    kind = "derived",
+    priority = 40,
+    derive = {
+      type = "trackerDamageFull",
+      tracker = "willpower",
+    },
+    suppressedBy = { "torpor" },
+    statChanges = {
+      charisma = -2,
+      manipulation = -2,
+      composure = -2,
+      intelligence = -2,
+      wits = -2,
+      resolve = -2,
+    },
+    hud = { overlay = "overlay_willpower_impaired" },
+    lighting = { seatLight2 = "DIM_RED" },
+  },
+  impairedHumanity = {
+    id = "impairedHumanity",
+    kind = "derived",
+    priority = 50,
+    derive = {
+      type = "humanityImpaired",
+    },
+    statChanges = {
+      strength = -2,
+      dexterity = -2,
+      stamina = -2,
+      charisma = -2,
+      manipulation = -2,
+      composure = -2,
+      intelligence = -2,
+      wits = -2,
+      resolve = -2,
+    },
+    hud = { overlay = "overlay_humanity_impaired" },
+    lighting = { seatLight2 = "DIM_PURPLE" },
+  },
+  hudFrenzy = {
+    id = "hudFrenzy",
+    kind = "manual",
+    priority = 30,
+    statChanges = {},
+    hud = { overlay = "overlay_frenzy" },
+  },
+  hudBlindfold = {
+    id = "hudBlindfold",
+    kind = "manual",
+    priority = 60,
+    instanceSchema = { variant = "number" },
+    statChanges = {},
+    hud = { blindfoldVariant = true },
+  },
+  hudTransitionBlindfold = {
+    id = "hudTransitionBlindfold",
+    kind = "event",
+    priority = 70,
+    instanceSchema = { variant = "number" },
+    statChanges = {},
+    hud = { blindfoldVariant = true },
+  },
+}
+
+--- @param conditionId string
+--- @return table
+function CD.getDef(conditionId)
+  if type(conditionId) ~= "string" or conditionId == "" then
+    error("condition_defs.getDef: conditionId must be a non-empty string")
+  end
+  local def = CD.Defs[conditionId]
+  if type(def) ~= "table" then
+    error("condition_defs.getDef: unknown condition id \"" .. conditionId .. "\"")
+  end
+  return def
+end
+
+--- @param conditionId string
+--- @return boolean
+function CD.isKnownId(conditionId)
+  return type(conditionId) == "string" and CD.Defs[conditionId] ~= nil
+end
+
+--- Sorted condition ids by registry priority ascending (deterministic merge order).
+--- @param activeConditions table|nil
+--- @return string[]
+function CD.sortedActiveIds(activeConditions)
+  local ids = {}
+  if type(activeConditions) == "table" then
+    for id, _ in pairs(activeConditions) do
+      if type(id) == "string" then
+        ids[#ids + 1] = id
+      end
+    end
+  end
+  table.sort(ids, function(a, b)
+    local pa = (CD.Defs[a] and CD.Defs[a].priority) or 0
+    local pb = (CD.Defs[b] and CD.Defs[b].priority) or 0
+    if pa ~= pb then
+      return pa < pb
+    end
+    return a < b
+  end)
+  return ids
+end
+
+return CD

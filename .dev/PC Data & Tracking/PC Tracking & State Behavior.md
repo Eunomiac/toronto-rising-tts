@@ -244,25 +244,48 @@ To be implemented later. For now, lay the groundwork for these data structures b
 
 ## `playerData.conditions`
 
-Conditions live at **`playerData[playerId].conditions`**, a sibling of **`stats`**. Start from an empty table `{}` until a condition applies. Conditions are assigned by key, and cleared by setting the value to `null`. Prefer the named keys below for built-in mechanics; other keys are reserved for future homebrew.
+Conditions live at **`playerData[playerId].conditions`**, a sibling of **`stats`**. Persisted state stores **only active condition IDs** plus minimal **instance data** — never inline effect payloads.
 
 ```typescript
-  type ConditionKey = "torpor" | "impairedHealth" | "impairedWillpower" | "impairedHumanity";
-  type HudKey = string; // The ID for the HUD element to be toggled via its "active" attribute
-  type RemovalCriteria = "indefinite" | "afterNextRoll" | "onSceneEnd";
-  interface Condition {
-    statChanges: Partial<Record<AttributeKey | SkillKey | DisciplineKey | "bloodPotency" | "health" | "willpower" | "humanity", number>>;
-    hudChanges: Partial<Record<string, boolean>>;
-    /** Keys: registered `playerLight2*` names in `core/lighting.ttslua`, or `SEAT_LIGHT_2_<COLOR>` ids (resolved to those registry names in code). Values: mode name strings, e.g. `"OFF"`, `"STANDARD"`. */
-    lightingModeChanges: Partial<Record<string, string>>;
-    gameObjectChanges: Partial<Record<string, boolean>>;
-    removalCriteria: RemovalCriteria;
-  }
+type ConditionId =
+  | "torpor"
+  | "impairedHealth"
+  | "impairedWillpower"
+  | "impairedHumanity"
+  | "hudFrenzy"
+  | "hudBlindfold"
+  | "hudTransitionBlindfold";
 
-  type PlayerConditions = Partial<Record<ConditionKey | string, Condition>>;
+/** true when no instance fields; otherwise a small table (e.g. blindfold variant). */
+type PersistedCondition = true | { variant?: number };
+
+type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 ```
 
-**Lighting:** If a referenced light or mode is not defined, the implementation **warns the GM** (e.g. broadcast) and **continues** without throwing.
+**Registry (definitions, not persisted):** [`lib/condition_defs.ttslua`](../lib/condition_defs.ttslua) — stat penalties, HUD overlay templates, seat spotlight modes, derive rules, merge priority.
+
+**Orchestration (Global):** [`core/conditions.ttslua`](../core/conditions.ttslua)
+
+| API | Role |
+| --- | --- |
+| `Conditions.setManual(playerID, id, true \| instance)` | Storyteller toggles (`hudFrenzy`, `hudBlindfold`) |
+| `Conditions.setEvent(playerID, id, instance)` | Scene transition blindfold |
+| `Conditions.clear(playerID, id)` | Remove any condition (incl. ST torpor clear) |
+| `Conditions.reconcileDerivedForPlayer(playerID)` | Sync derived keys from stats |
+| `Conditions.reconcileDerivedAllPlayers()` | Load / bulk repair |
+| `Conditions.afterChange(playerID)` | `Sync.player(color)` + sheet refresh |
+| `Conditions.resolveForPlayer(playerID)` | Merged statChanges / HUD ids / lighting modes |
+| `Conditions.effectiveStatDelta` / `effectiveAggregateDelta` | Sheet + roll helpers |
+
+**Derive triggers:** health/willpower damage (`P.applyDamageOrHeal`), humanity stain/base/clear, game load (`InitializeGameState` → validate + reconcile), ST torpor clear.
+
+**Load policy:** Unknown ids or legacy inline payloads (`statChanges`, `hudChanges`, `lightingModeChanges`, …) → **`error(...)`** (no migrator). One-time fix: clear `conditions = {}` or restore a pre-migration save.
+
+**Presentation:** HUD ([`core/hud_overlays.ttslua`](../core/hud_overlays.ttslua)), lighting ([`core/lighting.ttslua`](../core/lighting.ttslua)), and sheets read **resolved effects** only — not raw persisted blobs.
+
+**Torpor sticky rule:** Derived `torpor` auto-adds when aggravated health fills the track; it is **not** auto-removed by derive (Storyteller **`Conditions.clear`** / PCs panel **Torpor** button). Reconcile re-adds torpor if the track is still full after a clear.
+
+**Adding a condition:** See [`docs/solutions/conditions-registry-pattern.md`](../docs/solutions/conditions-registry-pattern.md).
 
 ## Dynamic HUD Updates
 
@@ -272,7 +295,7 @@ The character sheet uses an **object-attached** Custom UI, not the global HUD bu
 2. **Resolve the Steam id** via **`Global.call("GlobalResolveSheetPlayerID", seatColor)`**. Object scripts do not share the Global script’s `gameState` table; do not call `S.getPlayerData` or `C.GetPlayerID` from the sheet object path (those live in the Global bundle).
 3. **Pull merged `playerData`** via **`Global.call("GlobalGetMergedPlayerData", playerID)`**.
 
-**Per-page updates:** **`Global.call("GlobalCollectSheetImageUpdates", { stats = stats, conditions = conditions, pageNum = pageNum })`** delegates to **`lib/pc_sheet_collect.ttslua`** (`PSC.SHEET_PAGE_UPDATE_PROFILE`) to decide what to toggle for each page index. (TTS **`call()` accepts only one parameter** after the function name — always bundle arguments in a table.) Today **page 1** is profile `main` (attributes, skills, blood potency, health, willpower, humanity); **page 2** is `disciplines` (discipline dot-lines only). **Page 3** uses **`GlobalBuildCsheetPage3Xml`** / **`GlobalFingerprintCsheetPage3`** (Global-side `lib/csheet_page3_xml.ttslua`). **Additional pages** (e.g. 4–8): give each object the same `CSHEET_PAGE_<n>_<COLOR>` naming convention, add a bundle/XML for that page, then extend the profile table with `main`, `disciplines`, `none`, or a new profile implemented in `collectSheetImageUpdates`. Pages not listed default to `none` (no bulk id updates) until you wire them. **XP text** is still applied only from `ui/ui_csheet.ttslua` when `pageNum == 1`; add similar branches for other page-only widgets as needed.
+**Per-page updates:** **`Global.call("GlobalCollectSheetImageUpdates", { playerID = playerID, pageNum = pageNum })`** — Global resolves condition stat deltas from the registry, then delegates to **`lib/pc_sheet_collect.ttslua`**. (TTS **`call()` accepts only one parameter** after the function name — always bundle arguments in a table.)
 
 On load, each sheet object calls **`GlobalRegisterTrackerDisplay`** with local tracker glyph/image config so Global-side collect logic can read `_G.TRACKER_DISPLAY` when building box images.
 
@@ -416,53 +439,17 @@ Three conditions depend on the amount of damage a player has suffered to their H
 * **Impaired Health**: A character gains the "Impaired Health" condition if the total amount of damage they have sustained to their Health tracker (regardless of type) equals their current health tracker length (i.e. `"superficial" + "aggravated" = "base" + "temp"`). A character loses the "Impaired Health" condition automatically when they receive enough healing such that the above is no longer true, OR if they receive the "Torpor" condition (which supercedes the "Impaired Health" condition).
 * **Impaired Willpower**: A character gains the "Impaired Willpower" condition if the total amount of damage they have sustained to their Willpower tracker (regardless of type) equals their current willpower tracker length (i.e. `"superficial" + "aggravated" = "base" + "temp"`). A character loses the "Impaired Willpower" condition automatically when they receive enough healing such that the above is no longer true, OR if they receive the "Torpor" condition (which supercedes the "Impaired Willpower" condition).
 
-These conditions are applied to the player's `"conditions"` table as follows:
+These conditions are written to persisted state as **IDs only** (effects come from the registry at read time):
 
 ```lua
-  conditions = {
-    torpor = {
-      statChanges = {},
-      hudChanges = {},
-      lightingModeChanges = {
-        ["SEAT_LIGHT_2_" .. U.upper(playerData.color)] = "OFF"
-      },
-      removalCriteria = "indefinite"
-    },
-    impairedHealth = {
-      statChanges = {
-        strength = -2,
-        dexterity = -2,
-        stamina = -2
-      },
-      hudChanges = {
-        ["overlay_health_impaired_" .. playerData.color] = true
-      },
-      lightingModeChanges = {
-        ["SEAT_LIGHT_2_" .. U.upper(playerData.color)] = "DIM_RED"
-      },
-      removalCriteria = "indefinite" -- Still controlled automatically, by the damage/healing functions described above.
-    },
-    impairedWillpower = {
-      statChanges = {
-        charisma = -2,
-        manipulation = -2,
-        composure = -2,
-        intelligence = -2,
-        wits = -2,
-        resolve = -2
-      },
-      hudChanges = {
-        ["overlay_willpower_impaired_" .. playerData.color] = true
-      },
-      lightingModeChanges = {
-        ["SEAT_LIGHT_2_" .. U.upper(playerData.color)] = "DIM_RED"
-      },
-      removalCriteria = "indefinite" -- Still controlled automatically, by the damage/healing functions described above.
-    }
-  }
+conditions = {
+  torpor = true,
+  impairedHealth = true,
+  impairedWillpower = true,
+}
 ```
 
-The `"removalCriteria"` for each condition should be set to "indefinite" if the condition is controlled automatically, by the damage/healing functions described above. Otherwise, the `"removalCriteria"` should be set to the appropriate value.
+`Conditions.reconcileDerivedForPlayer` runs after damage/heal; **`Conditions.afterChange`** drives HUD, lighting, and sheets via `Sync.player`.
 
 ### Humanity Controls
 
@@ -474,31 +461,12 @@ The `"removalCriteria"` for each condition should be set to "indefinite" if the 
 
 #### Applying Stains
 
-Stains should be applied as described in the section "##### Example: `stats.humanity`", above. The "Impaired Humanity" condition should be applied to the player's `"conditions"` table if that procedure results in the player having an impaired humanity box, and it should be removed when enough Stains have been removed to no longer impair that character's humanity:
+Stains should be applied as described in the section "##### Example: `stats.humanity`", above. When stain collision creates an impaired humanity box, **`impairedHumanity = true`** is set by derived reconcile; it clears automatically when stains no longer impair the track.
 
 ```lua
-  conditions = {
-    impairedHumanity = {
-      statChanges = {
-        strength = -2,
-        dexterity = -2,
-        stamina = -2,
-        charisma = -2,
-        manipulation = -2,
-        composure = -2,
-        intelligence = -2,
-        wits = -2,
-        resolve = -2
-      },
-      hudChanges = {
-        ["overlay_humanity_impaired_" .. playerData.color] = true
-      },
-      lightingModeChanges = {
-        ["SEAT_LIGHT_2_" .. U.upper(playerData.color)] = "DIM_PURPLE"
-      },
-      removalCriteria = "indefinite" -- Still controlled automatically, by the conditions described above.
-    }
-  }
+conditions = {
+  impairedHumanity = true,
+}
 ```
 
 ### XP Controls

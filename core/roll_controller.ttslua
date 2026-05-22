@@ -645,11 +645,11 @@ function RC.initiateRoll(color, config)
         local humanityBoxes  = 7
         local stains         = 0
         if pid ~= nil then
+            local Conditions = require("core.conditions")
             local stats      = S.getStateVal("playerData", pid, "stats")
-            local conditions = S.getStateVal("playerData", pid, "conditions") or {}
             if U.Type(stats) == "table" and type(stats.humanity) == "table" then
                 local hu = stats.humanity
-                humanityBoxes = (tonumber(hu.base) or 0) + P.effectiveTempForAggregate(stats, conditions, "humanity")
+                humanityBoxes = (tonumber(hu.base) or 0) + Conditions.effectiveAggregateDelta(pid, "humanity")
                 stains        = tonumber(hu.stains) or 0
             elseif U.Type(stats) == "table" then
                 humanityBoxes = tonumber(stats.humanity) or 7

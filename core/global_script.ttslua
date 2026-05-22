@@ -916,17 +916,23 @@ end
 
 --- Build character sheet dot/box UI attribute updates (object scripts call via Global.call).
 --- TTS `call()` forwards only one parameter — pass a single params table.
---- @param params table { stats: table, conditions: table|nil, pageNum: number|nil }
+--- @param params table { playerID: string, pageNum: number|nil }
 --- @return table[]
 function GlobalCollectSheetImageUpdates(params)
     if type(params) ~= "table" then
         error("GlobalCollectSheetImageUpdates: params must be a table")
     end
-    if type(params.stats) ~= "table" then
-        error("GlobalCollectSheetImageUpdates: params.stats must be a table")
+    if type(params.playerID) ~= "string" or params.playerID == "" then
+        error("GlobalCollectSheetImageUpdates: params.playerID must be a non-empty string")
     end
+    local stats = S.getStateVal("playerData", params.playerID, "stats")
+    if type(stats) ~= "table" then
+        error("GlobalCollectSheetImageUpdates: missing stats for player " .. params.playerID)
+    end
+    local Conditions = require("core.conditions")
+    local resolved = Conditions.resolveForPlayer(params.playerID)
     local PSC = require("lib.pc_sheet_collect")
-    return PSC.collectSheetImageUpdates(params.stats, params.conditions, params.pageNum)
+    return PSC.collectSheetImageUpdates(stats, resolved.statChanges, params.pageNum)
 end
 
 --- Fingerprint page-3 stats for skip-redundant setXml on character sheet objects.
@@ -1050,6 +1056,11 @@ function onLoad(saved_data)
     -- Initialize game state from saved data or defaults
     setStartupAction("initialize-game-state")
     S.InitializeGameState(saved_data)
+
+    setStartupAction("conditions-validate-and-reconcile")
+    local Conditions = require("core.conditions")
+    Conditions.validateAllPersisted()
+    Conditions.reconcileDerivedAllPlayers()
 
     -- AssetBundles often resume Unity looping AudioSources from the save before reconcile runs; mute stray loops immediately.
     setStartupAction("soundscape-bootstrap-silence")

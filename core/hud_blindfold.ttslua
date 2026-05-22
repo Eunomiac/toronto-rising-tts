@@ -11,7 +11,7 @@ local HUDBF = {}
 
 local S = require("core.state")
 local U = require("lib.util")
-local P = require("lib.pc_stats")
+local Conditions = require("core.conditions")
 local HO = require("core.hud_overlays")
 local Main = require("core.main")
 
@@ -77,16 +77,12 @@ function HUDBF.beginTransition(variantOptional)
   activeTransitionVariant = variant
 
   forEachSeatedPlayer(function(playerID)
-    P.setConditionEntry(
-      playerID,
-      TRANSITION_CONDITION_KEY,
-      P.makeHudTransitionBlindfoldCondition(playerID, variant)
-    )
+    Conditions.setEvent(playerID, TRANSITION_CONDITION_KEY, { variant = variant })
   end)
   if type(HO.applyBlindfoldVariantForSeatedPlayers) == "function" then
     HO.applyBlindfoldVariantForSeatedPlayers(variant)
   else
-    P.refreshHudOverlays()
+    HO.syncAll()
   end
 end
 
@@ -99,9 +95,9 @@ function HUDBF.endTransition()
   activeTransitionVariant = nil
 
   forEachSeatedPlayer(function(playerID)
-    P.setConditionEntry(playerID, TRANSITION_CONDITION_KEY, nil)
+    Conditions.clear(playerID, TRANSITION_CONDITION_KEY)
   end)
-  P.refreshHudOverlays()
+  HO.syncAll()
 
   local PCST = require("core.pc_storyteller_panel")
   if PCST ~= nil and type(PCST.refreshAllRows) == "function" then

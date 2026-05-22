@@ -566,12 +566,10 @@ function refreshCharacterSheetUi()
   end
 
   local stats = pd.stats
-  local conditions = pd.conditions
   local updates = nil
   if Global ~= nil and type(Global.call) == "function" then
     updates = Global.call("GlobalCollectSheetImageUpdates", {
-      stats = stats,
-      conditions = conditions,
+      playerID = playerID,
       pageNum = pageNum,
     })
   end

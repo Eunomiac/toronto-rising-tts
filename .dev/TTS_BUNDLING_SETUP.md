@@ -230,7 +230,7 @@ Object scripts run in a **separate Lua VM** from Global. They must not pull the 
 | Layer | Module | Role |
 | ----- | ------ | ---- |
 | Object UI | `ui/ui_csheet.ttslua` | Page/seat from object name; navigation; applies UI from Global payloads |
-| Sheet diffs (Global) | `GlobalCollectSheetImageUpdates` → `lib/pc_sheet_collect.ttslua` | Dot/box `setAttribute` list from merged stats |
+| Sheet diffs (Global) | `GlobalCollectSheetImageUpdates({ playerID, pageNum })` → resolves registry effects → `lib/pc_sheet_collect.ttslua` | Dot/box `setAttribute` list |
 | Page 3 XML (Global) | `GlobalBuildCsheetPage3Xml`, `GlobalFingerprintCsheetPage3` → `lib/csheet_page3_xml.ttslua` | Dynamic `setXml` only on page 3 |
 | Object-only | `lib/csheet_constants.ttslua`, `lib/csheet_util.ttslua`, `lib/csheet_pose.ttslua` | CSHEET poses, delay, AlertGM — no `core.*` |
 

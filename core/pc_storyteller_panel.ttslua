@@ -6,6 +6,7 @@ local PCST = {}
 local C = require("lib.constants")
 local S = require("core.state")
 local P = require("lib.pc_stats")
+local Conditions = require("core.conditions")
 local PCS = require("lib.pcs_data")
 local U = require("lib.util")
 local Sync = require("core.sync")
@@ -273,16 +274,16 @@ function PCST.onHudClick(player, _button, id)
     PCST.refreshCharacterSheetsForColor(color)
   elseif action == "frenzyToggle" then
     if S.getStateVal("playerData", pid, "conditions", "hudFrenzy") ~= nil then
-      P.setConditionEntry(pid, "hudFrenzy", nil)
+      Conditions.clear(pid, "hudFrenzy")
     else
-      P.setConditionEntry(pid, "hudFrenzy", P.makeHudFrenzyCondition(pid))
+      Conditions.setManual(pid, "hudFrenzy", true)
     end
     PCST.refreshCharacterSheetsForColor(color)
   elseif action == "blindfoldToggle" then
     if S.getStateVal("playerData", pid, "conditions", "hudBlindfold") ~= nil then
-      P.setConditionEntry(pid, "hudBlindfold", nil)
+      Conditions.clear(pid, "hudBlindfold")
     else
-      P.setConditionEntry(pid, "hudBlindfold", P.makeHudBlindfoldCondition(pid))
+      Conditions.setManual(pid, "hudBlindfold", { variant = math.random(1, 6) })
     end
     PCST.refreshCharacterSheetsForColor(color)
   end
