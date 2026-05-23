@@ -131,6 +131,7 @@ Do not embed world side effects in `S.setStateVal` for stats without an explicit
 
 - Listed on `C.Districts[*].conditions` and/or `C.Sites[*].conditions` (string refs).
 - `Conditions.reconcileLocationHostedForScene` applies to **present** PCs only (`L.isPlayerPresentInActiveSeatLayout`).
+- Optional `opts.skipPresentation = true`: mutation only — use when the caller will run `Sync.full` (avoids double HUD/light apply via `afterChange`).
 - Optional `derive` gates who receives the key and presentation effects.
 
 ---

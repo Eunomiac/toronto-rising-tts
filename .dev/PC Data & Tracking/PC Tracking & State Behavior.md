@@ -276,7 +276,7 @@ type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 | `Conditions.clear(playerID, id)` | Remove any condition (incl. ST torpor clear) |
 | `Conditions.reconcileDerivedForPlayer(playerID)` | Sync derived keys from stats |
 | `Conditions.reconcileDerivedAllPlayers()` | Load / bulk repair |
-| `Conditions.reconcileLocationHostedForScene()` | Apply/remove location-kind keys from `C.Districts` / `C.Sites` for present PCs |
+| `Conditions.reconcileLocationHostedForScene(opts?)` | Apply/remove location-kind keys from `C.Districts` / `C.Sites` for present PCs; `skipPresentation` when followed by `Sync.full` |
 | `Conditions.afterChange(playerID)` | `Sync.player(color)` + sheet refresh |
 | `Conditions.resolveForPlayer(playerID)` | Merged statChanges / HUD ids / lighting modes |
 | `Conditions.effectiveStatDelta` / `effectiveAggregateDelta` | Sheet + roll helpers |

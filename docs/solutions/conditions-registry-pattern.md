@@ -59,6 +59,8 @@ Optional `conditions = { "conditionId", ... }` on `C.Districts[*]` and `C.Sites[
 - **Present** (`L.isPlayerPresentInActiveSeatLayout`) — add missing location keys when optional `derive(stats, …)` passes; remove keys no longer listed or failing derive.
 - **Absent** — remove all location-kind keys (location effects do not apply off-scene).
 
+Pass `{ skipPresentation = true }` when the caller runs `Sync.full` immediately afterward (scene apply, location apply, table switch, load) to avoid double HUD/light reconciliation.
+
 Triggers: location Apply, scene library apply, End scene, seat presence toggle, table switch, game load.
 
 Example registry entry:

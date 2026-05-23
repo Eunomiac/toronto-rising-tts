@@ -14,6 +14,7 @@ Before adding or changing any condition, read the **Agent quick guide** in [`.de
 - **Mutation:** reconcile / `setManual` / `setEvent` / `clear` / location reconcile — then `Conditions.afterChange` → `Sync.player(color)`.
 - **Presentation:** consumers call `Conditions.resolveForPlayer(playerID)` — do not scatter `CD.Defs` reads.
 - **Roll FSM:** snapshot `Conditions.resolveRollPolicy(playerID)` on `RC.initiateRoll` → `active.rollPolicy`; `RC` reads policy only, not raw condition tables.
+- **Location reconcile + `Sync.full`:** pass `{ skipPresentation = true }` to `reconcileLocationHostedForScene` so presentation runs once in the caller's sync pass.
 
 ## Modules
 

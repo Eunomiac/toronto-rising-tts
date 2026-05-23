@@ -409,8 +409,9 @@ end
 --- @param playerID string
 --- @param desired table<string, boolean>
 --- @param present boolean
+--- @param skipPresentation boolean|nil when true, mutation only (caller syncs)
 --- @return boolean changed
-local function reconcileLocationHostedForPlayer(playerID, desired, present)
+local function reconcileLocationHostedForPlayer(playerID, desired, present, skipPresentation)
   if playerID == C.StorytellerID then
     return false
   end
@@ -452,13 +453,17 @@ local function reconcileLocationHostedForPlayer(playerID, desired, present)
   end
 
   if changed then
-    Conditions.afterChange(playerID)
+    if skipPresentation ~= true then
+      Conditions.afterChange(playerID)
+    end
   end
   return changed
 end
 
 --- Apply or remove location-hosted conditions for all PCs present at the current scene.
-function Conditions.reconcileLocationHostedForScene()
+--- @param opts table|nil `{ skipPresentation = boolean? }` — when true, mutate only; caller must sync (e.g. `Sync.full`)
+function Conditions.reconcileLocationHostedForScene(opts)
+  local skipPresentation = type(opts) == "table" and opts.skipPresentation == true
   local desired = Conditions.collectLocationHostedIdsForSession()
   local pd = S.getStateVal("playerData")
   if type(pd) ~= "table" then
@@ -469,7 +474,7 @@ function Conditions.reconcileLocationHostedForScene()
     if type(playerID) == "string" and playerID ~= C.StorytellerID and type(row) == "table" then
       local seatColor = seatColorForPlayer(playerID)
       local present = type(seatColor) == "string" and isSeatPresentInScene(seatColor) == true
-      reconcileLocationHostedForPlayer(playerID, desired, present)
+      reconcileLocationHostedForPlayer(playerID, desired, present, skipPresentation)
     end
   end
 end
