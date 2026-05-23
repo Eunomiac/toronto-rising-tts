@@ -59,7 +59,7 @@ Optional `conditions = { "conditionId", ... }` on `C.Districts[*]` and `C.Sites[
 - **Present** (`L.isPlayerPresentInActiveSeatLayout`) — add missing location keys when optional `derive(stats, …)` passes; remove keys no longer listed or failing derive.
 - **Absent** — remove all location-kind keys (location effects do not apply off-scene).
 
-Pass `{ skipPresentation = true }` when the caller runs `Sync.full` immediately afterward (scene apply, location apply, table switch, load) to avoid double HUD/light reconciliation.
+Pass `{ skipPresentation = true }` when the caller runs `Sync.full` immediately afterward (scene apply, location apply, table switch, load) to avoid double HUD/light reconciliation. The caller must also run `PCST.refreshAllCharacterSheets()` after `Sync.full` so CSHEET page 1 dots and BP decals reflect location `statChanges` (`StorytellerScenesPanel` centralizes this in `reconcileLocationSyncAndPresentSheets`).
 
 Triggers: location Apply, scene library apply, End scene, seat presence toggle, table switch, game load.
 

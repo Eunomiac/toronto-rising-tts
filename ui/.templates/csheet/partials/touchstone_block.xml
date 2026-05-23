@@ -8,18 +8,53 @@
 
 
 
-<VerticalLayout class="box_text_container">
-  <HorizontalLayout class="box_header_container">
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_container", {padding = "0 0 0 0"})
+-->
+<VerticalLayout id="page4_touchstone_container" class="box_text_container">
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_header_container", {padding = "10 10 5 0", minHeight = "35", preferredHeight = "35"})
+-->
+  <HorizontalLayout id="page4_touchstone_header_container" class="box_header_container">
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_title_text", {fontSize = "20", fontStyle = "Bold", resizeTextForBestFit = "true", resizeTextMinSize = "16", resizeTextMaxSize = "32"})
+-->
     <Text id="page4_touchstone_title_text" class="box_text_title_text" text="@@TITLE_TEXT@@" />
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_title_text_right", {fontSize = "20", fontStyle = "Normal",resizeTextForBestFit = "true", resizeTextMinSize = "16", resizeTextMaxSize = "32"})
+-->
     <Text id="page4_touchstone_title_text_right" class="box_text_title_text title_text_right" text="@@SUBTITLE_TEXT@@" />
   </HorizontalLayout>
-  <HorizontalLayout class="box_content_container">
+<!--
+getObjectFromGUID("9b845d").UI.setAttributes("page4_touchstone_content_container", {childForceExpandWidth = "true", childForceExpandHeight = "true", spacing = "0", childAlignment="UpperLeft", padding = "0 0 0 0"})
+-->
+  <HorizontalLayout id="page4_touchstone_content_container" class="box_content_container">
+
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_image", {minWidth = "150", minHeight="225", preferredWidth = "150", preferredHeight = "225", flexibleWidth = "0", flexibleHeight = "0", pivot="0 1"})
+-->
     <Image id="page4_touchstone_image" class="box_image" image="@@IMAGE_REF@@" />
-    <VerticalLayout class="box_text_container">
-      <HorizontalLayout class="box_subheader_container">
-        <Text id="page4_touchstone_subheader_text" class="box_text_subheader_text" text="@@SUBHEADER_TEXT@@" />
+<!--
+getObjectFromGUID("9b845d").UI.setAttributes("page4_touchstone_text_container", {preferredWidth = "6000", flexibleWidth = "1", padding = "5 10 0 0", childAlignment="UpperLeft", childForceExpandHeight = "false"})
+-->
+
+    <VerticalLayout id="page4_touchstone_text_container" class="box_body_container">
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_subheader_container", {})
+-->
+      <HorizontalLayout id="page4_touchstone_subheader_container" class="box_subheader_container">
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_subheader_text", {fontSize = "28", fontStyle = "BoldAndItalic",resizeTextForBestFit = "true", resizeTextMinSize = "20", resizeTextMaxSize = "40", minHeight = "40"})
+-->
+        <Text id="page4_touchstone_subheader_text" class="box_text_subheader_text" text="@@SUBHEADER_TEXT@@" fontSize="28" fontStyle="BoldAndItalic" resizeTextForBestFit="true" resizeTextMinSize="20" resizeTextMaxSize="40" minHeight="40"/>
       </HorizontalLayout>
-      <Panel class="box_text_panel_body">
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_body_panel", {})
+-->
+      <Panel id="page4_touchstone_body_panel" class="box_text_panel_body">
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_body_text", {})
+-->
         <Text id="page4_touchstone_body_text" class="box_text" text="@@BODY_TEXT@@" />
       </Panel>
     </VerticalLayout>

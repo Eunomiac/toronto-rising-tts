@@ -182,13 +182,6 @@ function PCST.refreshAllRows()
   end
 end
 
---- Refresh every character sheet object (both pages) from current `gameState`.
-function PCST.refreshAllCharacterSheets()
-  for _, col in ipairs(C.PlayerColors) do
-    PCST.refreshCharacterSheetsForColor(col)
-  end
-end
-
 --- @param player Player|nil
 --- @param _button any
 --- @param id string|nil

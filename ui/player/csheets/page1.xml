@@ -551,16 +551,16 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
     <Image id="box_stain_humanity_10" image="box_black" class="box box_standard" offsetXY="488 -1873" />
 
     <!-- Blood Potency dots -->
-    <Image id="dot_off_bloodPotency_1" image="dot_large_blank" class="dot dot_large" offsetXY="1033 -1842" />
-    <Image id="dot_on_bloodPotency_1" image="dot_large_red" class="dot dot_large" offsetXY="1033 -1842" />
-    <Image id="dot_off_bloodPotency_2" image="dot_large_blank" class="dot dot_large" offsetXY="1101 -1842" />
-    <Image id="dot_on_bloodPotency_2" image="dot_large_red" class="dot dot_large" offsetXY="1101 -1842" />
-    <Image id="dot_off_bloodPotency_3" image="dot_large_blank" class="dot dot_large" offsetXY="1169 -1842" />
-    <Image id="dot_on_bloodPotency_3" image="dot_large_red" class="dot dot_large" offsetXY="1169 -1842" />
-    <Image id="dot_off_bloodPotency_4" image="dot_large_blank" class="dot dot_large" offsetXY="1237 -1842" />
-    <Image id="dot_on_bloodPotency_4" image="dot_large_red" class="dot dot_large" offsetXY="1237 -1842" />
-    <Image id="dot_off_bloodPotency_5" image="dot_large_blank" class="dot dot_large" offsetXY="1305 -1842" />
-    <Image id="dot_on_bloodPotency_5" image="dot_large_red" class="dot dot_large" offsetXY="1305 -1842" />
+    <Image id="dot_off_bloodPotency_1" image="dot_large_blank" class="dot dot_large" offsetXY="1033 -1822" />
+    <Image id="dot_on_bloodPotency_1" image="dot_large_red" class="dot dot_large" offsetXY="1033 -1822" />
+    <Image id="dot_off_bloodPotency_2" image="dot_large_blank" class="dot dot_large" offsetXY="1101 -1822" />
+    <Image id="dot_on_bloodPotency_2" image="dot_large_red" class="dot dot_large" offsetXY="1101 -1822" />
+    <Image id="dot_off_bloodPotency_3" image="dot_large_blank" class="dot dot_large" offsetXY="1169 -1822" />
+    <Image id="dot_on_bloodPotency_3" image="dot_large_red" class="dot dot_large" offsetXY="1169 -1822" />
+    <Image id="dot_off_bloodPotency_4" image="dot_large_blank" class="dot dot_large" offsetXY="1237 -1822" />
+    <Image id="dot_on_bloodPotency_4" image="dot_large_red" class="dot dot_large" offsetXY="1237 -1822" />
+    <Image id="dot_off_bloodPotency_5" image="dot_large_blank" class="dot dot_large" offsetXY="1305 -1822" />
+    <Image id="dot_on_bloodPotency_5" image="dot_large_red" class="dot dot_large" offsetXY="1305 -1822" />
 
     <!-- XP -->
     <Text id="xp_text" class="xp_text" text="0" />

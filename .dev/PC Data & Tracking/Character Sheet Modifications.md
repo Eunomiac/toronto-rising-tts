@@ -38,7 +38,7 @@ Symlink or copy: `.dev/TS_Save_230.json` → `%USERPROFILE%/OneDrive/Documents/M
 
 On load and whenever `PCST.refreshCharacterSheetsForColor` runs, `ui/ui_csheet.ttslua` → `applyBloodPotencyDecals` (pages 1–2 only) calls **`self.getDecals`**, builds the payload with **`lib/blood_potency_decals.ttslua`**, and calls **`self.setDecals`** in the **same object script VM** (TTS rejects decal tables built or returned via `Global.call`). Variant URLs must be registered on that object’s **`CustomUIAssets`** — merge from `DecalPallet` with `.tools/custom-ui-assets/merge-bp-decals-into-csheet-custom-ui-assets.js`. Missing slots, unexpected decal names, or invalid URLs **error loudly** — no legacy name shims.
 
-Effective Blood Potency for decals matches sheet dots: `stats.bloodPotency.base + stats.bloodPotency.temp + resolvedStatChanges.bloodPotency` (via `GlobalGetResolvedStatChangesForPlayer` — location conditions such as `bumpBloodPotency` apply through `statChanges`, not persisted `temp`). Decals live on **pages 1–2 only**; refreshing page 3 alone does not update them — use `PCST.refreshCharacterSheetsForColor` or reload pages 1/2. Scene apply refreshes all sheets after `Sync.full` when location conditions reconcile with `skipPresentation`.
+Effective Blood Potency for decals matches sheet dots: `stats.bloodPotency.base + stats.bloodPotency.temp + resolvedStatChanges.bloodPotency` (via `GlobalGetResolvedStatChangesForPlayer` — location conditions such as `bumpBloodPotency` apply through `statChanges`, not persisted `temp`). Decals live on **pages 1–2 only**; refreshing page 3 alone does not update them — use `PCST.refreshCharacterSheetsForColor` or reload pages 1/2. After location reconcile with `{ skipPresentation = true }`, callers must run `PCST.refreshAllCharacterSheets()` (via `StorytellerScenesPanel` helpers) so page 1 dots and BP decals catch resolved condition statChanges — `Sync.full` alone does not refresh sheets.
 
 ### Dynamic page XML (pages 3–6)
 
@@ -52,3 +52,5 @@ Pages with PCS-driven layout use a **separate object entry** so template builder
 | 6 | `require("ui.ui_csheet_page6")` | `lib/csheet_page6_xml.ttslua` | Placeholder |
 
 Pages **1–2** and **7–8** use `require("ui.ui_csheet")`. Dynamic pages must not use the default entry — core errors if the matching `_G.CSHEET_PAGEN_LOCAL` module was not loaded via `ui/ui_csheet_pageN_local.ttslua`. Stubs are normalized by `npm run tts-objects:fix-stubs`.
+
+Runtime `UI.setXml` strings cannot resolve editor `<Include>`; pages 3–4 prepend `lib/csheet_defaults_xml` via Lua and must not embed `<Include src="csheet_defaults.xml" />` in `ui/.templates/csheet/pageN.xml`. Page 4 relationship portraits and dividers must exist on each `CSHEET_PAGE_4_*` object (`npm run custom-ui-assets:merge-object-assets` from `lib/json/PC_Relationship_Images.json`).

@@ -125,7 +125,7 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
 
     </HorizontalLayout>
 
-    <Image id="divider_experienceLog" image="divider_experienceLog" />
+    <Image id="divider_experienceLog" image="divider_experienceLog" class="divider_image" />
 
     <HorizontalLayout class="box_column_container" spacing="100">
 

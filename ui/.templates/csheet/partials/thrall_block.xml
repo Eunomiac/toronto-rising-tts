@@ -11,8 +11,14 @@
 -->
 
 <VerticalLayout class="box_text_container">
-  <HorizontalLayout class="box_text_title_bar @@TITLE_BAR_DOT_CLASS@@">
+  <HorizontalLayout class="box_header_container @@TITLE_BAR_DOT_CLASS@@">
     <Text id="page4_thrall_@@INDEX@@_title_text" class="box_text_title_text" text="@@TITLE_TEXT@@" />
+
+<!--
+getObjectFromGUID("edf063").UI.setAttributes("page4_thrall_0_title_label", {offsetXY = "-125 0", alignment = "MiddleRight", fontSize = "16"})
+-->
+
+    <Text id="page4_thrall_@@INDEX@@_title_label" class="box_text_title_text title_text_right title_text_label" text="Bond Strength: " />
     <Panel class="box_text_panel_title_dotline">
       ##IF @@DOT_IMG_1@@##
       <Image id="p@@PAGE_NUM@@_thrall_@@INDEX@@_dot_1" image="@@DOT_IMG_1@@" class="dot box_text_title_dot dot_1" />
@@ -36,7 +42,7 @@
   </HorizontalLayout>
   <HorizontalLayout class="box_content_container">
     <Image id="page4_thrall_@@INDEX@@_image" class="box_image" image="@@IMAGE_REF@@" />
-    <VerticalLayout class="box_text_container">
+    <VerticalLayout class="box_body_container">
       <HorizontalLayout class="box_subheader_container">
         <Text id="page4_thrall_@@INDEX@@_subheader_text" class="box_text_subheader_text" text="@@SUBHEADER_TEXT@@" />
         <Text id="page4_thrall_@@INDEX@@_subheader_text_right" class="box_text_subheader_text box_text_subheader_text_right" text="@@SUBHEADER_TEXT_RIGHT@@" />

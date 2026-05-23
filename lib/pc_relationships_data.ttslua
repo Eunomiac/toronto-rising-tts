@@ -151,18 +151,30 @@ PC_REL.RAW_JSON = [==================================================[
 		"Damien Abanda was your attempt to pass the flame onward, and perhaps your first great failure as a sire. Embraced before your flight westward, he survived your tutelage, your indulgences, and your disappearance. Tonight he stands among the Anarchs as a polished diplomat of Red Flag, close enough to your court to wound you and distant enough to deny your authority."
 		]
 	},
-	"keiraVaughan": {
+	"kieraVaughan1": {
 		"pcLinks": {
-			"blackCaesar": "touchstone",
-			"fomorach": "enemy"
+			"blackCaesar": "touchstone"
 		},
-    "portrait": "keiraVaughanPortrait",
-		"headerLeft": "Keira Vaughan",
+    "portrait": "kieraVaughanPortrait",
+		"headerLeft": "Kiera Vaughan",
 		"headerRight": "Chief of Police",
 		"subheaderLeft": "\"My Soldiers Must Be Able to Handle Anything\"",
 		"subheaderRight": "",
 		"body": [
-		"Keira Vaughan is Toronto's police chief. She briefly caught a Masquerade breach before it was scrubbed, tied to one of Mara's dramatic murders of a political official. She is now investigating what she believes is a conspiracy of criminals capable of impossible feats of strength and speed. You admire her ability to bring lieutenants into the fold and convince them fully; her stern leadership reminds you of your days as a ship captain."
+		"Kiera Vaughan is Toronto's police chief. She briefly caught a Masquerade breach before it was scrubbed, and is now investigating what she believes is a conspiracy of criminals capable of impossible feats of strength and speed. You admire her ability to bring lieutenants into the fold and convince them fully; her stern leadership reminds you of your days as a ship captain."
+		]
+	},
+	"kieraVaughan2": {
+		"pcLinks": {
+			"fomorach": "enemy"
+		},
+    "portrait": "kieraVaughanPortrait",
+		"headerLeft": "Kiera Vaughan",
+		"headerRight": "Enemy",
+		"subheaderLeft": "Chief of Police",
+		"subheaderRight": "Toronto PD",
+		"body": [
+		"Kiera Vaughan is Toronto's police chief. She briefly caught a Masquerade breach before it was scrubbed, tied to one of Mara's dramatic murders of a political official. She is now investigating what she believes is a conspiracy of criminals capable of impossible feats of strength and speed, drawing suspicion to you and yours."
 		]
 	},
 	"jervaisDeLaCroix": {
@@ -171,11 +183,11 @@ PC_REL.RAW_JSON = [==================================================[
 		},
     "portrait": "jervaisDeLaCroixPortrait",
 		"headerLeft": "Jervais de la Croix",
-		"headerRight": "House Goratrix",
+		"headerRight": "",
 		"subheaderLeft": "Seventh Generation Elder of Clan Tremere",
 		"subheaderRight": "Sabbat",
 		"body": [
-		"Jervais bani Tremere made you with purpose, not love. He was an old architect of hidden loyalties, a Tremere whose allegiance ran through Goratrix and into Sabbat conspiracy. He Embraced you to use you: a captain, a survivor, a weapon planted in the New World. You escaped him, or killed him, or convinced yourself the difference doesn't matter. Either way, his shadow remains, casting its pall whenever you are reminded of your treachery—and the consequences of its discovery."
+		"You were made with purpose, not love. Your sire, Jervais de la Croix, made you to use you: a captain, a survivor, a weapon planted in the New World. You escaped him, or killed him, or convinced yourself the difference doesn't matter. Either way, his shadow remains, casting its pall whenever you are reminded of your treachery—and the consequences of its discovery."
 		]
 	},
 	"severinKoslov": {
@@ -237,9 +249,9 @@ PC_REL.RAW_JSON = [==================================================[
 		},
     "portrait": "rebeccaRosselliniPortrait",
 		"headerLeft": "Rebecca Rossellini",
-		"headerRight": "Crise de Lwa",
+		"headerRight": "Died 1905",
 		"subheaderLeft": "Wraith",
-		"subheaderRight": "Died 1905",
+		"subheaderRight": "Crise de Lwa",
 		"body": [
 			"A ghoul from the Giovanni gifted to Caesar that was killed in an internal spat during the early 1900s. Her mere presence makes the Hecata uncomfortable due to her hatred of her former family. Most intimidating wraith of the trio. Sees her relationship with Caesar as transactional and a path towards revenge."
 		]
@@ -263,9 +275,9 @@ PC_REL.RAW_JSON = [==================================================[
 		},
     "portrait": "ponticulusPortrait",
 		"headerLeft": "Ponticulus",
-		"headerRight": "Crise de Lwa",
+		"headerRight": "Died 980",
 		"subheaderLeft": "Wraith",
-		"subheaderRight": "Died 980",
+		"subheaderRight": "Crise de Lwa",
 		"body": [
 			"An ancient sorcerer wraith who bonded to you from Ceoris. He urges you to rebuild High Saturday and looks to you as a new hope for the Clan."
 		]
@@ -276,9 +288,9 @@ PC_REL.RAW_JSON = [==================================================[
 		},
     "portrait": "jeanDucheskiIPortrait",
 		"headerLeft": "Jean Ducheski-Francois I",
-		"headerRight": "Crise de Lwa",
+		"headerRight": "Died 1790",
 		"subheaderLeft": "Wraith",
-		"subheaderRight": "Died 1790",
+		"subheaderRight": "Crise de Lwa",
 		"body": [
       "The closest wraith in your retinue, you have known each other for 3 centuries. Very level-headed and tactically minded but also becomes overly worried about 'his captain' easily. Can take drastic measures in an attempt at protection."
 		]
@@ -311,17 +323,17 @@ PC_REL.RAW_JSON = [==================================================[
 			"Despite hailing from the Ducheski stronghold in Poland, Jezdimir has little knowledge of his family's purpose. He looks and acts like an Eastern European hooligan, his petty criminal background is a surprising asset in redwork."
 		]
   },
-  "marieBouchard": {
+  "marieBouschard": {
 		"pcLinks": {
 			"aishe": "enemy"
 		},
-    "portrait": "marieBouchardPortrait",
-		"headerLeft": "Marie Bouchard",
+    "portrait": "marieBouschardPortrait",
+		"headerLeft": "Marie Bouschard",
 		"headerRight": "Enemy",
 		"subheaderLeft": "Journalism Student",
 		"subheaderRight": "",
 		"body": [
-			"22 year-old journalism student at the University of Toronto. You befriended her mother, Camille Bouchard, shortly before Camille divorced her husband. Marie blames you for her parent's divorce (she's right)."
+			"Marie is a 2 year-old journalism student at the University of Toronto. You befriended her mother, Camille Bouschard, shortly before Camille divorced her husband. Marie blames you for her parent's divorce (she's right)."
 		]
   },
   "percivalCavendish": {
@@ -344,11 +356,11 @@ PC_REL.RAW_JSON = [==================================================[
     "portrait": "robinPortrait",
     "bondStrength": 6,
 		"headerLeft": "Robin",
-		"headerRight": "Famulus",
-		"subheaderLeft": "Raccoon",
+		"headerRight": "",
+		"subheaderLeft": "Famulus",
 		"subheaderRight": "",
 		"body": [
-			""
+			"Robin holds court on your shoulder, still enough that fools mistake her for tame, right up until some slight moves her to claws, teeth, and vengeance. You have seen her work latches, windows, drawers, and appliances with patient deftness... but the story about the gun is almost certainly a joke."
 		]
   },
   "sylvain": {
@@ -358,11 +370,11 @@ PC_REL.RAW_JSON = [==================================================[
     "portrait": "sylvainPortrait",
     "bondStrength": 6,
 		"headerLeft": "Sylvain",
-		"headerRight": "Famulus",
-		"subheaderLeft": "Owl",
+		"headerRight": "",
+		"subheaderLeft": "Famulus",
 		"subheaderRight": "",
 		"body": [
-			""
+			"Sylvain perches where she pleases, regarding your court with the exhausted wisdom of an old aunt minding children. She answers affection with sarcasm, danger with dry amusement, and atrocity with some banal proverb she insists is profound. She adores you, but would rather molt in public than say so plainly."
 		]
   },
   "uwuByteMe": {
@@ -386,11 +398,9 @@ function PC_REL.getDecoded()
     if JSON == nil or type(JSON.decode) ~= "function" then
       error("PC_REL.getDecoded: JSON.decode unavailable")
     end
-    local ok, data = pcall(function()
-      return JSON.decode(PC_REL.RAW_JSON)
-    end)
-    if not ok or type(data) ~= "table" then
-      error("PC_REL.getDecoded: invalid JSON — " .. tostring(data))
+    local data = JSON.decode(PC_REL.RAW_JSON)
+    if type(data) ~= "table" then
+      error("PC_REL.getDecoded: decode did not return a table")
     end
     PC_REL._cache = data
   end

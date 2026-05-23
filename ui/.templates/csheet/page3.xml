@@ -24,7 +24,7 @@
       <VerticalLayout class="box_column">@@BACKGROUNDS_COLUMN_3@@</VerticalLayout>
     </HorizontalLayout>
 
-    <Image id="divider_merits" image="divider_merits"/>
+    <Image id="divider_merits" image="divider_merits" class="divider_image" />
 
     <HorizontalLayout class="box_column_container">
       <VerticalLayout class="box_column">@@MERITS_COLUMN_1@@</VerticalLayout>
@@ -32,7 +32,7 @@
       <VerticalLayout class="box_column">@@MERITS_COLUMN_3@@</VerticalLayout>
     </HorizontalLayout>
 
-    <Image id="divider_flaws" image="divider_flaws_@@COLOR@@" />
+    <Image id="divider_flaws" image="divider_flaws_@@COLOR@@" class="divider_flaws_image" />
 
     <HorizontalLayout class="box_column_container">
       <VerticalLayout class="box_column">@@FLAWS_COLUMN_1@@</VerticalLayout>

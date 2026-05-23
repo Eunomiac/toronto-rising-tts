@@ -35,11 +35,9 @@ function PC_REL.getDecoded()
     if JSON == nil or type(JSON.decode) ~= "function" then
       error("PC_REL.getDecoded: JSON.decode unavailable")
     end
-    local ok, data = pcall(function()
-      return JSON.decode(PC_REL.RAW_JSON)
-    end)
-    if not ok or type(data) ~= "table" then
-      error("PC_REL.getDecoded: invalid JSON — " .. tostring(data))
+    local data = JSON.decode(PC_REL.RAW_JSON)
+    if type(data) ~= "table" then
+      error("PC_REL.getDecoded: decode did not return a table")
     end
     PC_REL._cache = data
   end

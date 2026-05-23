@@ -21,7 +21,7 @@ M._byKey["csheet/page3"] = [=[
       <VerticalLayout class="box_column">@@BACKGROUNDS_COLUMN_3@@</VerticalLayout>
     </HorizontalLayout>
 
-    <Image id="divider_merits" image="divider_merits"/>
+    <Image id="divider_merits" image="divider_merits" class="divider_image" />
 
     <HorizontalLayout class="box_column_container">
       <VerticalLayout class="box_column">@@MERITS_COLUMN_1@@</VerticalLayout>
@@ -29,7 +29,7 @@ M._byKey["csheet/page3"] = [=[
       <VerticalLayout class="box_column">@@MERITS_COLUMN_3@@</VerticalLayout>
     </HorizontalLayout>
 
-    <Image id="divider_flaws" image="divider_flaws_@@COLOR@@" />
+    <Image id="divider_flaws" image="divider_flaws_@@COLOR@@" class="divider_flaws_image" />
 
     <HorizontalLayout class="box_column_container">
       <VerticalLayout class="box_column">@@FLAWS_COLUMN_1@@</VerticalLayout>
@@ -43,37 +43,68 @@ M._byKey["csheet/page3"] = [=[
 ]=]
 
 M._byKey["csheet/page4"] = [=[
-<Include src="csheet_defaults.xml" />
-
 <Defaults>
   <Panel class="padded_border" padding="10 10 140 100" />
+  <VerticalLayout class="box_text_container"
+    padding = "0 0 0 0" />
   <HorizontalLayout class="box_header_container"
-    preferredHeight="30"
+    preferredHeight="35"
+    minHeight="35"
+    padding="10 10 5 0"
     flexibleHeight="0"
   />
   <Text class="box_text_title_text"
-    fontSize="24"
+    fontSize="20"
     fontStyle="Bold"
+    resizeTextForBestFit="true"
+    resizeTextMinSize="16"
+    resizeTextMaxSize="32"
   />
   <Text class="title_text_right"
-    fontSize="24"
-    fontStyle="Bold"
+    fontSize="20"
+    fontStyle="Normal"
+    resizeTextForBestFit="true"
+    resizeTextMinSize="16"
+    resizeTextMaxSize="32"
     alignment="MiddleRight"
+  />
+  <Text class="title_text_label"
+    offsetXY="-125 0"
+    resizeTextForBestFit="false"
+    fontStyle="Italic"
+    color="#990000"
+    ignoreLayout="true"
+    rectAlignment="UpperRight"
+    alignment="MiddleRight"
+    fontSize="16"
   />
   <Image class="box_image"
     minWidth="150"
-    preferredHeight=""
+    minHeight="225"
+    preferredWidth="150"
+    preferredHeight="225"
     flexibleHeight="0"
     flexibleWidth="0"
+    pivot="0 1"
+  />\
+  <HorizontalLayout class="box_content_container"
+    childForceExpandWidth="true"
+    childForceExpandHeight="false"
+    childAlignment="UpperLeft"
+    spacing="0"
+    padding="0 0 0 0"
+  />
+  <VerticalLayout class="box_body_container"
+  preferredWidth="6000"
+  flexibleWidth="1"
+  padding="5 10 0 0"
+  childAlignment="UpperLeft"
+  childForceExpandHeight="false"
   />
   <VerticalLayout class="box_column"
     preferredWidth = "1000"
     flexibleWidth = "0.5" />
 
-  <VerticalLayout class="box_text_container"
-    outline="clear"
-    outlineSize="0 0"
-  />
   <HorizontalLayout class="box_subheader_container"
     preferredHeight="30"
     flexibleHeight="0"
@@ -87,6 +118,7 @@ M._byKey["csheet/page4"] = [=[
   <Text class="box_text_subheader_text_right"
     alignment="MiddleRight"
   />
+  <Text class="red_text" color="#FF0000" />
 </Defaults>
 
 <Panel id="paper_root" class="page_root padded_border" height="2050">
@@ -102,9 +134,11 @@ M._byKey["csheet/page4"] = [=[
       <VerticalLayout id="page4_touchstone_column" class="box_column">@@TOUCHSTONE_ENTRY@@</VerticalLayout>
       <VerticalLayout id="page4_sire_column" class="box_column">@@SIRE_ENTRY@@</VerticalLayout>
     </HorizontalLayout>
-
+<!--
+getObjectFromGUID("edf063").UI.setAttributes("divider_childer", {minWidth="1245", preferredWidth="1545", flexibleWidth="1", minHeight="40", preferredHeight="40"})
+-->
     ##IF @@CHILDER_COLUMN_1@@##
-    <Image id="divider_childer" image="divider_childer" />
+    <Image id="divider_childer" image="divider_childer" class="divider_image_small" />
     <HorizontalLayout class="box_column_container">
       <VerticalLayout class="box_column">@@CHILDER_COLUMN_1@@</VerticalLayout>
       <VerticalLayout class="box_column">@@CHILDER_COLUMN_2@@</VerticalLayout>
@@ -112,7 +146,10 @@ M._byKey["csheet/page4"] = [=[
     ##ENDIF##
 
     ##IF @@BLOOD_BONDS_COLUMN_1@@##
-    <Image id="divider_bloodBonds" image="divider_bloodBonds" />
+<!--
+getObjectFromGUID("edf063").UI.setAttributes("divider_bloodBonds", {minHeight="55", preferredHeight="55"})
+-->
+    <Image id="divider_bloodBonds" image="divider_bloodBonds" class="divider_image" />
     <HorizontalLayout class="box_column_container">
       <VerticalLayout class="box_column">@@BLOOD_BONDS_COLUMN_1@@</VerticalLayout>
       <VerticalLayout class="box_column">@@BLOOD_BONDS_COLUMN_2@@</VerticalLayout>
@@ -120,7 +157,7 @@ M._byKey["csheet/page4"] = [=[
     ##ENDIF##
 
     ##IF @@OTHER_RELATIONSHIPS_COLUMN_1@@##
-    <Image id="divider_otherRelationships" image="divider_otherRelationships" />
+    <Image id="divider_otherRelationships" image="divider_otherRelationships" class="divider_image" />
 
     <HorizontalLayout class="box_column_container">
       <VerticalLayout class="box_column">@@OTHER_RELATIONSHIPS_COLUMN_1@@</VerticalLayout>
@@ -181,7 +218,7 @@ M._byKey["csheet/partials/childe_block"] = [=[
   </HorizontalLayout>
   <HorizontalLayout class="box_content_container">
     <Image id="page4_childe_@@INDEX@@_image" class="box_image" image="@@IMAGE_REF@@" />
-    <VerticalLayout class="box_text_container">
+    <VerticalLayout class="box_body_container">
       <HorizontalLayout class="box_subheader_container">
         <Text id="page4_childe_@@INDEX@@_subheader_text" class="box_text_subheader_text" text="@@SUBHEADER_TEXT@@" />
         <Text id="page4_childe_@@INDEX@@_subheader_text_right" class="box_text_subheader_text box_text_subheader_text_right" text="@@SUBHEADER_TEXT_RIGHT@@" />
@@ -284,7 +321,7 @@ M._byKey["csheet/partials/otherRelation_block"] = [=[
   </HorizontalLayout>
   <HorizontalLayout class="box_content_container">
     <Image id="page4_otherRelation_@@INDEX@@_image" class="box_image" image="@@IMAGE_REF@@" />
-    <VerticalLayout class="box_text_container">
+    <VerticalLayout class="box_body_container">
       <HorizontalLayout class="box_subheader_container">
         <Text id="page4_otherRelation_@@INDEX@@_subheader_text" class="box_text_subheader_text" text="@@SUBHEADER_TEXT@@" />
         <Text id="page4_otherRelation_@@INDEX@@_subheader_text_right" class="box_text_subheader_text box_text_subheader_text_right" text="@@SUBHEADER_TEXT_RIGHT@@" />
@@ -299,8 +336,9 @@ M._byKey["csheet/partials/otherRelation_block"] = [=[
 
 M._byKey["csheet/partials/regnant_block"] = [=[
 <VerticalLayout class="box_text_container">
-  <HorizontalLayout class="box_text_title_bar @@TITLE_BAR_DOT_CLASS@@">
+  <HorizontalLayout class="box_header_container @@TITLE_BAR_DOT_CLASS@@">
     <Text id="page4_regnant_@@INDEX@@_title_text" class="box_text_title_text" text="@@TITLE_TEXT@@" />
+    <Text id="page4_regnant_@@INDEX@@_title_label" class="box_text_title_text title_text_right" text="Bond Strength: " />
     <Panel class="box_text_panel_title_dotline">
       ##IF @@DOT_IMG_1@@##
       <Image id="p@@PAGE_NUM@@_regnant_@@INDEX@@_dot_1" image="@@DOT_IMG_1@@" class="dot box_text_title_dot dot_1" />
@@ -324,13 +362,13 @@ M._byKey["csheet/partials/regnant_block"] = [=[
   </HorizontalLayout>
   <HorizontalLayout class="box_content_container">
     <Image id="page4_regnant_@@INDEX@@_image" class="box_image" image="@@IMAGE_REF@@" />
-    <VerticalLayout class="box_text_container">
+    <VerticalLayout class="box_body_container">
       <HorizontalLayout class="box_subheader_container">
-        <Text id="page4_regnant_@@INDEX@@_subheader_text red_text" class="box_text_subheader_text" text="@@SUBHEADER_TEXT@@" />
-        <Text id="page4_regnant_@@INDEX@@_subheader_text_right red_text" class="box_text_subheader_text box_text_subheader_text_right" text="@@SUBHEADER_TEXT_RIGHT@@" />
+        <Text id="page4_regnant_@@INDEX@@_subheader_text" class="box_text_subheader_text red_text" text="@@SUBHEADER_TEXT@@" />
+        <Text id="page4_regnant_@@INDEX@@_subheader_text_right" class="box_text_subheader_text box_text_subheader_text_right red_text" text="@@SUBHEADER_TEXT_RIGHT@@" />
       </HorizontalLayout>
       <Panel class="box_text_panel_body">
-        <Text id="page4_regnant_@@INDEX@@_body_text red_text" class="box_text" text="@@BODY_TEXT@@" />
+        <Text id="page4_regnant_@@INDEX@@_body_text" class="box_text red_text" text="@@BODY_TEXT@@" />
       </Panel>
     </VerticalLayout>
   </HorizontalLayout>
@@ -345,7 +383,7 @@ M._byKey["csheet/partials/sire_block"] = [=[
   </HorizontalLayout>
   <HorizontalLayout class="box_content_container">
     <Image id="page4_sire_image" class="box_image" image="@@IMAGE_REF@@" />
-    <VerticalLayout class="box_text_container">
+    <VerticalLayout class="box_body_container">
       <HorizontalLayout class="box_subheader_container">
         <Text id="page4_sire_subheader_text" class="box_text_subheader_text" text="@@SUBHEADER_TEXT@@" />
         <Text id="page4_sire_subheader_text_right" class="box_text_subheader_text box_text_subheader_text_right" text="@@SUBHEADER_TEXT_RIGHT@@" />
@@ -360,8 +398,14 @@ M._byKey["csheet/partials/sire_block"] = [=[
 
 M._byKey["csheet/partials/thrall_block"] = [=[
 <VerticalLayout class="box_text_container">
-  <HorizontalLayout class="box_text_title_bar @@TITLE_BAR_DOT_CLASS@@">
+  <HorizontalLayout class="box_header_container @@TITLE_BAR_DOT_CLASS@@">
     <Text id="page4_thrall_@@INDEX@@_title_text" class="box_text_title_text" text="@@TITLE_TEXT@@" />
+
+<!--
+getObjectFromGUID("edf063").UI.setAttributes("page4_thrall_0_title_label", {offsetXY = "-125 0", alignment = "MiddleRight", fontSize = "16"})
+-->
+
+    <Text id="page4_thrall_@@INDEX@@_title_label" class="box_text_title_text title_text_right title_text_label" text="Bond Strength: " />
     <Panel class="box_text_panel_title_dotline">
       ##IF @@DOT_IMG_1@@##
       <Image id="p@@PAGE_NUM@@_thrall_@@INDEX@@_dot_1" image="@@DOT_IMG_1@@" class="dot box_text_title_dot dot_1" />
@@ -385,7 +429,7 @@ M._byKey["csheet/partials/thrall_block"] = [=[
   </HorizontalLayout>
   <HorizontalLayout class="box_content_container">
     <Image id="page4_thrall_@@INDEX@@_image" class="box_image" image="@@IMAGE_REF@@" />
-    <VerticalLayout class="box_text_container">
+    <VerticalLayout class="box_body_container">
       <HorizontalLayout class="box_subheader_container">
         <Text id="page4_thrall_@@INDEX@@_subheader_text" class="box_text_subheader_text" text="@@SUBHEADER_TEXT@@" />
         <Text id="page4_thrall_@@INDEX@@_subheader_text_right" class="box_text_subheader_text box_text_subheader_text_right" text="@@SUBHEADER_TEXT_RIGHT@@" />
@@ -399,18 +443,53 @@ M._byKey["csheet/partials/thrall_block"] = [=[
 ]=]
 
 M._byKey["csheet/partials/touchstone_block"] = [=[
-<VerticalLayout class="box_text_container">
-  <HorizontalLayout class="box_header_container">
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_container", {padding = "0 0 0 0"})
+-->
+<VerticalLayout id="page4_touchstone_container" class="box_text_container">
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_header_container", {padding = "10 10 5 0", minHeight = "35", preferredHeight = "35"})
+-->
+  <HorizontalLayout id="page4_touchstone_header_container" class="box_header_container">
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_title_text", {fontSize = "20", fontStyle = "Bold", resizeTextForBestFit = "true", resizeTextMinSize = "16", resizeTextMaxSize = "32"})
+-->
     <Text id="page4_touchstone_title_text" class="box_text_title_text" text="@@TITLE_TEXT@@" />
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_title_text_right", {fontSize = "20", fontStyle = "Normal",resizeTextForBestFit = "true", resizeTextMinSize = "16", resizeTextMaxSize = "32"})
+-->
     <Text id="page4_touchstone_title_text_right" class="box_text_title_text title_text_right" text="@@SUBTITLE_TEXT@@" />
   </HorizontalLayout>
-  <HorizontalLayout class="box_content_container">
+<!--
+getObjectFromGUID("9b845d").UI.setAttributes("page4_touchstone_content_container", {childForceExpandWidth = "true", childForceExpandHeight = "true", spacing = "0", childAlignment="UpperLeft", padding = "0 0 0 0"})
+-->
+  <HorizontalLayout id="page4_touchstone_content_container" class="box_content_container">
+
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_image", {minWidth = "150", minHeight="225", preferredWidth = "150", preferredHeight = "225", flexibleWidth = "0", flexibleHeight = "0", pivot="0 1"})
+-->
     <Image id="page4_touchstone_image" class="box_image" image="@@IMAGE_REF@@" />
-    <VerticalLayout class="box_text_container">
-      <HorizontalLayout class="box_subheader_container">
-        <Text id="page4_touchstone_subheader_text" class="box_text_subheader_text" text="@@SUBHEADER_TEXT@@" />
+<!--
+getObjectFromGUID("9b845d").UI.setAttributes("page4_touchstone_text_container", {preferredWidth = "6000", flexibleWidth = "1", padding = "5 10 0 0", childAlignment="UpperLeft", childForceExpandHeight = "false"})
+-->
+
+    <VerticalLayout id="page4_touchstone_text_container" class="box_body_container">
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_subheader_container", {})
+-->
+      <HorizontalLayout id="page4_touchstone_subheader_container" class="box_subheader_container">
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_subheader_text", {fontSize = "28", fontStyle = "BoldAndItalic",resizeTextForBestFit = "true", resizeTextMinSize = "20", resizeTextMaxSize = "40", minHeight = "40"})
+-->
+        <Text id="page4_touchstone_subheader_text" class="box_text_subheader_text" text="@@SUBHEADER_TEXT@@" fontSize="28" fontStyle="BoldAndItalic" resizeTextForBestFit="true" resizeTextMinSize="20" resizeTextMaxSize="40" minHeight="40"/>
       </HorizontalLayout>
-      <Panel class="box_text_panel_body">
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_body_panel", {})
+-->
+      <Panel id="page4_touchstone_body_panel" class="box_text_panel_body">
+<!--
+getObjectFromGUID("5badcc").UI.setAttributes("page4_touchstone_body_text", {})
+-->
         <Text id="page4_touchstone_body_text" class="box_text" text="@@BODY_TEXT@@" />
       </Panel>
     </VerticalLayout>

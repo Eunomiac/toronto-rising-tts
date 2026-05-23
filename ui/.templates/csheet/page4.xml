@@ -9,37 +9,68 @@
 @@OTHER_RELATIONSHIPS_COLUMN_2@@
 -->
 
-<Include src="csheet_defaults.xml" />
-
 <Defaults>
   <Panel class="padded_border" padding="10 10 140 100" />
+  <VerticalLayout class="box_text_container"
+    padding = "0 0 0 0" />
   <HorizontalLayout class="box_header_container"
-    preferredHeight="30"
+    preferredHeight="35"
+    minHeight="35"
+    padding="10 10 5 0"
     flexibleHeight="0"
   />
   <Text class="box_text_title_text"
-    fontSize="24"
+    fontSize="20"
     fontStyle="Bold"
+    resizeTextForBestFit="true"
+    resizeTextMinSize="16"
+    resizeTextMaxSize="32"
   />
   <Text class="title_text_right"
-    fontSize="24"
-    fontStyle="Bold"
+    fontSize="20"
+    fontStyle="Normal"
+    resizeTextForBestFit="true"
+    resizeTextMinSize="16"
+    resizeTextMaxSize="32"
     alignment="MiddleRight"
+  />
+  <Text class="title_text_label"
+    offsetXY="-125 0"
+    resizeTextForBestFit="false"
+    fontStyle="Italic"
+    color="#990000"
+    ignoreLayout="true"
+    rectAlignment="UpperRight"
+    alignment="MiddleRight"
+    fontSize="16"
   />
   <Image class="box_image"
     minWidth="150"
-    preferredHeight=""
+    minHeight="225"
+    preferredWidth="150"
+    preferredHeight="225"
     flexibleHeight="0"
     flexibleWidth="0"
+    pivot="0 1"
+  />\
+  <HorizontalLayout class="box_content_container"
+    childForceExpandWidth="true"
+    childForceExpandHeight="false"
+    childAlignment="UpperLeft"
+    spacing="0"
+    padding="0 0 0 0"
+  />
+  <VerticalLayout class="box_body_container"
+  preferredWidth="6000"
+  flexibleWidth="1"
+  padding="5 10 0 0"
+  childAlignment="UpperLeft"
+  childForceExpandHeight="false"
   />
   <VerticalLayout class="box_column"
     preferredWidth = "1000"
     flexibleWidth = "0.5" />
 
-  <VerticalLayout class="box_text_container"
-    outline="clear"
-    outlineSize="0 0"
-  />
   <HorizontalLayout class="box_subheader_container"
     preferredHeight="30"
     flexibleHeight="0"
@@ -53,6 +84,7 @@
   <Text class="box_text_subheader_text_right"
     alignment="MiddleRight"
   />
+  <Text class="red_text" color="#FF0000" />
 </Defaults>
 
 <Panel id="paper_root" class="page_root padded_border" height="2050">
@@ -68,9 +100,11 @@
       <VerticalLayout id="page4_touchstone_column" class="box_column">@@TOUCHSTONE_ENTRY@@</VerticalLayout>
       <VerticalLayout id="page4_sire_column" class="box_column">@@SIRE_ENTRY@@</VerticalLayout>
     </HorizontalLayout>
-
+<!--
+getObjectFromGUID("edf063").UI.setAttributes("divider_childer", {minWidth="1245", preferredWidth="1545", flexibleWidth="1", minHeight="40", preferredHeight="40"})
+-->
     ##IF @@CHILDER_COLUMN_1@@##
-    <Image id="divider_childer" image="divider_childer" />
+    <Image id="divider_childer" image="divider_childer" class="divider_image_small" />
     <HorizontalLayout class="box_column_container">
       <VerticalLayout class="box_column">@@CHILDER_COLUMN_1@@</VerticalLayout>
       <VerticalLayout class="box_column">@@CHILDER_COLUMN_2@@</VerticalLayout>
@@ -78,7 +112,10 @@
     ##ENDIF##
 
     ##IF @@BLOOD_BONDS_COLUMN_1@@##
-    <Image id="divider_bloodBonds" image="divider_bloodBonds" />
+<!--
+getObjectFromGUID("edf063").UI.setAttributes("divider_bloodBonds", {minHeight="55", preferredHeight="55"})
+-->
+    <Image id="divider_bloodBonds" image="divider_bloodBonds" class="divider_image" />
     <HorizontalLayout class="box_column_container">
       <VerticalLayout class="box_column">@@BLOOD_BONDS_COLUMN_1@@</VerticalLayout>
       <VerticalLayout class="box_column">@@BLOOD_BONDS_COLUMN_2@@</VerticalLayout>
@@ -86,7 +123,7 @@
     ##ENDIF##
 
     ##IF @@OTHER_RELATIONSHIPS_COLUMN_1@@##
-    <Image id="divider_otherRelationships" image="divider_otherRelationships" />
+    <Image id="divider_otherRelationships" image="divider_otherRelationships" class="divider_image" />
 
     <HorizontalLayout class="box_column_container">
       <VerticalLayout class="box_column">@@OTHER_RELATIONSHIPS_COLUMN_1@@</VerticalLayout>

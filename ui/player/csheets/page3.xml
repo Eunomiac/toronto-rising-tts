@@ -27,7 +27,6 @@
       <VerticalLayout class="box_column" />
     </HorizontalLayout>
 
-    <Image id="divider_flaws" image="divider_flaws_Purple" />
 
     <HorizontalLayout class="box_column_container">
       <VerticalLayout class="box_column" />

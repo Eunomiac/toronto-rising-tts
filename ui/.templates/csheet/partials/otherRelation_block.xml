@@ -15,7 +15,7 @@
   </HorizontalLayout>
   <HorizontalLayout class="box_content_container">
     <Image id="page4_otherRelation_@@INDEX@@_image" class="box_image" image="@@IMAGE_REF@@" />
-    <VerticalLayout class="box_text_container">
+    <VerticalLayout class="box_body_container">
       <HorizontalLayout class="box_subheader_container">
         <Text id="page4_otherRelation_@@INDEX@@_subheader_text" class="box_text_subheader_text" text="@@SUBHEADER_TEXT@@" />
         <Text id="page4_otherRelation_@@INDEX@@_subheader_text_right" class="box_text_subheader_text box_text_subheader_text_right" text="@@SUBHEADER_TEXT_RIGHT@@" />
