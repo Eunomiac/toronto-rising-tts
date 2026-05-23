@@ -1,0 +1,485 @@
+--[[
+  Build character sheet page 4 UI XML from lib/json/PC_Relationships.json (embedded in lib/pc_relationships_data).
+  Consumed via require("ui.ui_csheet_page4") → self.UI.setXml in the object script VM.
+
+  pcLinks keys (aishe, rashid, fomorach, lordLucien, blackCaesar, …) select which PC sheet shows each block.
+  C.PlayerData charKey "lucien" maps to pcLink key "lordLucien".
+
+  Layout: ui/.templates/csheet/page4.xml + partials (embedded at build time).
+]]
+
+local M = {}
+
+local CSHEET_DEFAULTS = require("lib.csheet_defaults_xml")
+local TPL = require("lib.ui_xml_template")
+local PC_REL = require("lib.pc_relationships_data")
+
+local PAGE_NUM = 4
+local TEMPLATE_PAGE = "csheet/page4"
+
+local MAX_BOND_DOTS = 6
+
+--- Heuristic weights for 2-column greedy balancing (tunable).
+local W_TITLE = 10
+local W_SUBHEADER = 2
+local W_BODY_LINE = 3
+
+local PAGE_RAW_KEYS = {
+  TOUCHSTONE_ENTRY = true,
+  SIRE_ENTRY = true,
+  CHILDER_COLUMN_1 = true,
+  CHILDER_COLUMN_2 = true,
+  BLOOD_BONDS_COLUMN_1 = true,
+  BLOOD_BONDS_COLUMN_2 = true,
+  OTHER_RELATIONSHIPS_COLUMN_1 = true,
+  OTHER_RELATIONSHIPS_COLUMN_2 = true,
+}
+
+local TEMPLATE_SINGLETON = {
+  touchstone = "csheet/partials/touchstone_block",
+  sire = "csheet/partials/sire_block",
+}
+
+local TEMPLATE_INDEXED = {
+  childe = "csheet/partials/childe_block",
+  thrall = "csheet/partials/thrall_block",
+  regnant = "csheet/partials/regnant_block",
+  other = "csheet/partials/otherRelation_block",
+}
+
+--- charKey from C.PlayerData → pcLinks key in PC_Relationships.json
+local CHARKEY_TO_PCLINK = {
+  lucien = "lordLucien",
+}
+
+--- @param s string|nil
+--- @return string
+local function trimWhitespace(s)
+  if type(s) ~= "string" or s == "" then
+    return ""
+  end
+  return (s:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+--- @param pd table|nil merged player row from GlobalGetMergedPlayerData
+--- @return string|nil pcLinks lookup key
+local function resolvePcLinkKey(pd)
+  if type(pd) ~= "table" then
+    return nil
+  end
+  local ck = pd.charKey
+  if type(ck) ~= "string" or ck == "" then
+    return nil
+  end
+  return CHARKEY_TO_PCLINK[ck] or ck
+end
+
+--- @param lines any
+--- @return string joined body text, or "" when absent
+local function joinBodyField(lines)
+  if type(lines) == "table" then
+    local parts = {}
+    for i = 1, #lines do
+      if type(lines[i]) == "string" and trimWhitespace(lines[i]) ~= "" then
+        parts[#parts + 1] = lines[i]
+      end
+    end
+    if #parts == 0 then
+      return ""
+    end
+    return table.concat(parts, "\n")
+  end
+  if type(lines) == "string" and trimWhitespace(lines) ~= "" then
+    return lines
+  end
+  return ""
+end
+
+--- @param text string|nil
+--- @return integer
+local function countDisplayLines(text)
+  if type(text) ~= "string" or text == "" then
+    return 0
+  end
+  local n = 0
+  for _ in string.gmatch(text, "[^\n]+") do
+    n = n + 1
+  end
+  if n == 0 then
+    return 1
+  end
+  return n
+end
+
+--- @param n number
+--- @return string
+local function titleBarDotClass(n)
+  local N = math.floor(tonumber(n) or 1)
+  if N < 1 then
+    N = 1
+  end
+  if N > MAX_BOND_DOTS then
+    N = MAX_BOND_DOTS
+  end
+  if N == 1 then
+    return "1_dot"
+  end
+  return tostring(N) .. "_dots"
+end
+
+--- @param bondStrength number|nil
+--- @return table params with DOT_IMG_* and TITLE_BAR_DOT_CLASS
+local function bondDotParams(bondStrength)
+  local filled = math.floor(tonumber(bondStrength) or 0)
+  if filled < 0 then
+    filled = 0
+  end
+  if filled > MAX_BOND_DOTS then
+    filled = MAX_BOND_DOTS
+  end
+  local slotCount = MAX_BOND_DOTS
+  local params = {
+    TITLE_BAR_DOT_CLASS = titleBarDotClass(slotCount),
+    PAGE_NUM = tostring(PAGE_NUM),
+  }
+  for i = 1, slotCount do
+    local img = "box_blank"
+    if i <= filled then
+      img = "box_red"
+    end
+    params["DOT_IMG_" .. tostring(i)] = img
+  end
+  return params
+end
+
+--- @param entry table
+--- @return table template params
+--- @return integer weight for column packing
+local function buildCommonHeaderParams(entry)
+  if type(entry) ~= "table" then
+    return {}, 0
+  end
+  local params = {
+    TITLE_TEXT = tostring(entry.headerLeft or ""),
+    SUBTITLE_TEXT = tostring(entry.headerRight or ""),
+    SUBHEADER_TEXT = tostring(entry.subheaderLeft or ""),
+    SUBHEADER_TEXT_RIGHT = tostring(entry.subheaderRight or ""),
+    BODY_TEXT = joinBodyField(entry.body),
+  }
+  local portrait = entry.portrait
+  if type(portrait) == "string" and portrait ~= "" then
+    params.IMAGE_REF = portrait
+  end
+  local body = params.BODY_TEXT
+  local w = W_TITLE
+  if params.SUBHEADER_TEXT ~= "" then
+    w = w + W_SUBHEADER
+  end
+  if params.SUBHEADER_TEXT_RIGHT ~= "" then
+    w = w + W_SUBHEADER
+  end
+  w = w + countDisplayLines(body) * W_BODY_LINE
+  return params, w
+end
+
+--- @param entry table
+--- @param templateKey string
+--- @param index number|nil 0-based for indexed partials
+--- @param extra table|nil merged into params (bond dots, etc.)
+--- @return string xml
+--- @return integer weight
+local function renderBlock(entry, templateKey, index, extra)
+  if type(entry) ~= "table" or type(templateKey) ~= "string" then
+    return "", 0
+  end
+  local params, w = buildCommonHeaderParams(entry)
+  if type(extra) == "table" then
+    for k, v in pairs(extra) do
+      params[k] = v
+    end
+  end
+  if index ~= nil then
+    params.INDEX = tostring(index)
+  end
+  if w <= 0 and params.TITLE_TEXT == "" then
+    return "", 0
+  end
+  return TPL.apply(templateKey, params), w
+end
+
+--- @param entry table
+--- @param linkType string
+--- @return string xml
+--- @return integer weight
+local function renderRelationshipBlock(entry, linkType, index)
+  if linkType == "touchstone" then
+    return renderBlock(entry, TEMPLATE_SINGLETON.touchstone, nil, nil)
+  end
+  if linkType == "sire" then
+    return renderBlock(entry, TEMPLATE_SINGLETON.sire, nil, nil)
+  end
+  if linkType == "childe" then
+    return renderBlock(entry, TEMPLATE_INDEXED.childe, index, nil)
+  end
+  if linkType == "thrall" then
+    return renderBlock(entry, TEMPLATE_INDEXED.thrall, index, bondDotParams(entry.bondStrength))
+  end
+  if linkType == "regnant" then
+    return renderBlock(entry, TEMPLATE_INDEXED.regnant, index, bondDotParams(entry.bondStrength))
+  end
+  return renderBlock(entry, TEMPLATE_INDEXED.other, index, nil)
+end
+
+--- @param a table { sortKey, entry, linkType }
+--- @param b table
+--- @return boolean
+local function sortRelationshipRows(a, b)
+  local ak = type(a.sortKey) == "string" and a.sortKey or ""
+  local bk = type(b.sortKey) == "string" and b.sortKey or ""
+  if ak ~= bk then
+    return ak < bk
+  end
+  local ah = type(a.entry) == "table" and tostring(a.entry.headerLeft or "") or ""
+  local bh = type(b.entry) == "table" and tostring(b.entry.headerLeft or "") or ""
+  return ah < bh
+end
+
+--- @param rows table[]
+--- @return string col1
+--- @return string col2
+local function buildBalancedTwoColumns(rows)
+  if type(rows) ~= "table" or #rows == 0 then
+    return "", ""
+  end
+
+  local items = {}
+  local visibleIndex = 0
+  for _, row in ipairs(rows) do
+    local xml, w = renderRelationshipBlock(row.entry, row.linkType, visibleIndex)
+    visibleIndex = visibleIndex + 1
+    if w > 0 and xml ~= "" then
+      items[#items + 1] = { w = w, xml = xml }
+    end
+  end
+  if #items == 0 then
+    return "", ""
+  end
+
+  table.sort(items, function(a, b)
+    return a.w > b.w
+  end)
+
+  local cols = { { w = 0, chunks = {} }, { w = 0, chunks = {} } }
+  for _, it in ipairs(items) do
+    local best = 1
+    if cols[2].w < cols[1].w then
+      best = 2
+    end
+    cols[best].w = cols[best].w + it.w
+    cols[best].chunks[#cols[best].chunks + 1] = it.xml
+  end
+
+  return table.concat(cols[1].chunks), table.concat(cols[2].chunks)
+end
+
+--- @param pcLinkKey string
+--- @return table sections with bloodBonds populated
+local function loadSectionsForPcLink(pcLinkKey)
+  local root = PC_REL.getDecoded()
+  local touchstone = nil
+  local sire = nil
+  local childer = {}
+  local thralls = {}
+  local regnants = {}
+  local others = {}
+
+  for relKey, entry in pairs(root) do
+    if type(entry) == "table" and type(entry.pcLinks) == "table" then
+      local linkType = entry.pcLinks[pcLinkKey]
+      if type(linkType) == "string" and linkType ~= "" then
+        local row = {
+          sortKey = tostring(relKey),
+          entry = entry,
+          linkType = linkType,
+        }
+        if linkType == "touchstone" then
+          if touchstone ~= nil then
+            error(
+              string.format(
+                "[csheet_page4_xml] duplicate touchstone for pcLink %s (%s and %s)",
+                pcLinkKey,
+                touchstone.sortKey,
+                relKey
+              )
+            )
+          end
+          touchstone = row
+        elseif linkType == "sire" then
+          if sire ~= nil then
+            error(
+              string.format(
+                "[csheet_page4_xml] duplicate sire for pcLink %s (%s and %s)",
+                pcLinkKey,
+                sire.sortKey,
+                relKey
+              )
+            )
+          end
+          sire = row
+        elseif linkType == "childe" then
+          childer[#childer + 1] = row
+        elseif linkType == "thrall" then
+          thralls[#thralls + 1] = row
+        elseif linkType == "regnant" then
+          regnants[#regnants + 1] = row
+        else
+          others[#others + 1] = row
+        end
+      end
+    end
+  end
+
+  table.sort(childer, sortRelationshipRows)
+  table.sort(thralls, sortRelationshipRows)
+  table.sort(regnants, sortRelationshipRows)
+  table.sort(others, sortRelationshipRows)
+
+  local bloodBonds = {}
+  for _, row in ipairs(thralls) do
+    bloodBonds[#bloodBonds + 1] = row
+  end
+  for _, row in ipairs(regnants) do
+    bloodBonds[#bloodBonds + 1] = row
+  end
+
+  return {
+    touchstone = touchstone,
+    sire = sire,
+    childer = childer,
+    bloodBonds = bloodBonds,
+    others = others,
+  }
+end
+
+--- @param row table|nil
+--- @return string
+local function fingerprintSingletonRow(row)
+  if type(row) ~= "table" or type(row.entry) ~= "table" then
+    return ""
+  end
+  local e = row.entry
+  local body = joinBodyField(e.body) or ""
+  return table.concat({
+    row.linkType or "",
+    "\1",
+    tostring(e.headerLeft or ""),
+    "\1",
+    tostring(e.headerRight or ""),
+    "\1",
+    tostring(e.subheaderLeft or ""),
+    "\1",
+    tostring(e.subheaderRight or ""),
+    "\1",
+    tostring(e.portrait or ""),
+    "\1",
+    body,
+    "\1",
+    tostring(tonumber(e.bondStrength) or ""),
+  })
+end
+
+--- @param rows table[]
+--- @return string
+local function fingerprintRowList(rows)
+  if type(rows) ~= "table" then
+    return ""
+  end
+  local chunks = { tostring(#rows) }
+  for i = 1, #rows do
+    chunks[#chunks + 1] = "\2"
+    chunks[#chunks + 1] = fingerprintSingletonRow(rows[i])
+  end
+  return table.concat(chunks)
+end
+
+--- @param _stats table|nil unused (page 4 reads PC_Relationships, not stats)
+--- @param _seatColorRaw string|nil
+--- @param pd table|nil merged player row (charKey → pcLinks lookup)
+--- @return string
+function M.fingerprintPage4Stats(_stats, _seatColorRaw, pd)
+  local pcLinkKey = resolvePcLinkKey(pd)
+  if pcLinkKey == nil then
+    return ""
+  end
+  local sections = loadSectionsForPcLink(pcLinkKey)
+  return table.concat({
+    pcLinkKey,
+    "\3",
+    fingerprintSingletonRow(sections.touchstone),
+    "\3",
+    fingerprintSingletonRow(sections.sire),
+    "\3",
+    fingerprintRowList(sections.childer),
+    "\3",
+    fingerprintRowList(sections.bloodBonds),
+    "\3",
+    fingerprintRowList(sections.others),
+  })
+end
+
+--- @param _stats table|nil
+--- @param _seatColorRaw string|nil
+--- @param pd table|nil
+--- @return string full UI XML document
+function M.buildPage4DocumentXml(_stats, _seatColorRaw, pd)
+  local pcLinkKey = resolvePcLinkKey(pd)
+  if pcLinkKey == nil then
+    error("[csheet_page4_xml] buildPage4DocumentXml: missing pd.charKey for pcLinks lookup")
+  end
+
+  local sections = loadSectionsForPcLink(pcLinkKey)
+  if sections.touchstone == nil then
+    error(string.format("[csheet_page4_xml] missing touchstone pcLink for %s", pcLinkKey))
+  end
+  if sections.sire == nil then
+    error(string.format("[csheet_page4_xml] missing sire pcLink for %s", pcLinkKey))
+  end
+
+  local touchstoneXml = renderRelationshipBlock(sections.touchstone.entry, "touchstone", nil)
+  local sireXml = renderRelationshipBlock(sections.sire.entry, "sire", nil)
+  if touchstoneXml == "" or sireXml == "" then
+    error(string.format("[csheet_page4_xml] failed to render touchstone/sire for %s", pcLinkKey))
+  end
+
+  local ch1, ch2 = buildBalancedTwoColumns(sections.childer)
+  local bb1, bb2 = buildBalancedTwoColumns(sections.bloodBonds)
+  local ot1, ot2 = buildBalancedTwoColumns(sections.others)
+
+  local pageParams = {
+    TOUCHSTONE_ENTRY = touchstoneXml,
+    SIRE_ENTRY = sireXml,
+  }
+  -- Multi-column sections: ##IF gates on column 1, but the template always references column 2 as well.
+  if #sections.childer > 0 then
+    pageParams.CHILDER_COLUMN_1 = ch1
+    pageParams.CHILDER_COLUMN_2 = ch2
+  end
+  if #sections.bloodBonds > 0 then
+    pageParams.BLOOD_BONDS_COLUMN_1 = bb1
+    pageParams.BLOOD_BONDS_COLUMN_2 = bb2
+  end
+  if #sections.others > 0 then
+    pageParams.OTHER_RELATIONSHIPS_COLUMN_1 = ot1
+    pageParams.OTHER_RELATIONSHIPS_COLUMN_2 = ot2
+  end
+
+  local pageXml = TPL.apply(TEMPLATE_PAGE, pageParams, { rawKeys = PAGE_RAW_KEYS })
+  return table.concat({
+    CSHEET_DEFAULTS.getXml(),
+    "",
+    pageXml,
+    "",
+  }, "\n")
+end
+
+return M

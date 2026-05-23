@@ -40,6 +40,15 @@ On load and whenever `PCST.refreshCharacterSheetsForColor` runs, `ui/ui_csheet.t
 
 Effective Blood Potency for decals matches sheet dots: `stats.bloodPotency.base + stats.bloodPotency.temp + resolvedStatChanges.bloodPotency` (via `GlobalGetResolvedStatChangesForPlayer` — location conditions such as `bumpBloodPotency` apply through `statChanges`, not persisted `temp`). Decals live on **pages 1–2 only**; refreshing page 3 alone does not update them — use `PCST.refreshCharacterSheetsForColor` or reload pages 1/2. Scene apply refreshes all sheets after `Sync.full` when location conditions reconcile with `skipPresentation`.
 
-### Page 3 dynamic XML
+### Dynamic page XML (pages 3–6)
 
-Only **`CSHEET_PAGE_3_*`** objects use `require("ui.ui_csheet_page3")` (bundles `lib/csheet_page3_xml` for local `self.UI.setXml`). All other pages use `require("ui.ui_csheet")`. Page 3 must not use the default entry — it errors if `page3Local` was not initialized.
+Pages with PCS-driven layout use a **separate object entry** so template builders are not bundled on every sheet:
+
+| Page | Object stub | Builder module | Status |
+| :-- | :-- | :-- | :-- |
+| 3 | `require("ui.ui_csheet_page3")` | `lib/csheet_page3_xml.ttslua` | Live (`self.UI.setXml`) |
+| 4 | `require("ui.ui_csheet_page4")` | `lib/csheet_page4_xml.ttslua` | Live (`self.UI.setXml` from `lib/json/PC_Relationships.json`) |
+| 5 | `require("ui.ui_csheet_page5")` | `lib/csheet_page5_xml.ttslua` | Placeholder |
+| 6 | `require("ui.ui_csheet_page6")` | `lib/csheet_page6_xml.ttslua` | Placeholder |
+
+Pages **1–2** and **7–8** use `require("ui.ui_csheet")`. Dynamic pages must not use the default entry — core errors if the matching `_G.CSHEET_PAGEN_LOCAL` module was not loaded via `ui/ui_csheet_pageN_local.ttslua`. Stubs are normalized by `npm run tts-objects:fix-stubs`.

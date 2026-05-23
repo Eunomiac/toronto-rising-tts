@@ -20,6 +20,18 @@ const SAMPLES = [
     outName: "CSHEET_PAGE_3_PURPLE.sample.lua",
     entry: 'require("ui.ui_csheet_page3")\n',
   },
+  {
+    outName: "CSHEET_PAGE_4_PINK.sample.lua",
+    entry: 'require("ui.ui_csheet_page4")\n',
+  },
+  {
+    outName: "CSHEET_PAGE_5_BROWN.sample.lua",
+    entry: 'require("ui.ui_csheet_page5")\n',
+  },
+  {
+    outName: "CSHEET_PAGE_6_ORANGE.sample.lua",
+    entry: 'require("ui.ui_csheet_page6")\n',
+  },
 ];
 
 /**

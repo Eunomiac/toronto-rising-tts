@@ -1,6 +1,6 @@
 ---@diagnostic disable: undefined-global, lowercase-global
 -- Character sheet object UI: derive owner from object name CSHEET_PAGE_<n>_<COLOR>.
--- Entry stubs: `require("ui.ui_csheet")` (pages 1–2, 4–8) or `require("ui.ui_csheet_page3")` (page 3 only).
+-- Entry stubs: `require("ui.ui_csheet")` (pages 1–2, 7–8) or `require("ui.ui_csheet_pageN")` (pages 3–6).
 -- A second global `function onLoad()` after the entry require replaces onLoad and breaks navigation.
 -- Any page index n is accepted; automated dot/box toggles are controlled per page in
 -- `lib/pc_sheet_collect.ttslua` (`PSC.SHEET_PAGE_UPDATE_PROFILE`). Pages without a profile get no bulk
@@ -53,16 +53,50 @@ local CSHEET_TRACKER_DISPLAY = {
 
 local CSHEET = {}
 
---- @return table|nil lib.csheet_page3_xml when this object used require("ui.ui_csheet_page3").
-local function getPage3Module()
-  local mod = rawget(_G, "CSHEET_PAGE3_LOCAL")
+--- Dynamic setXml pages: separate object entry per page so template builders are not bundled on all sheets.
+--- @type table<number, { globalKey: string, fingerprintFn: string, buildFn: string, entryRequire: string }>
+local PAGE_DYNAMIC_XML = {
+  [3] = {
+    globalKey = "CSHEET_PAGE3_LOCAL",
+    fingerprintFn = "fingerprintPage3Stats",
+    buildFn = "buildPage3DocumentXml",
+    entryRequire = "ui.ui_csheet_page3",
+  },
+  [4] = {
+    globalKey = "CSHEET_PAGE4_LOCAL",
+    fingerprintFn = "fingerprintPage4Stats",
+    buildFn = "buildPage4DocumentXml",
+    entryRequire = "ui.ui_csheet_page4",
+  },
+  [5] = {
+    globalKey = "CSHEET_PAGE5_LOCAL",
+    fingerprintFn = "fingerprintPage5Stats",
+    buildFn = "buildPage5DocumentXml",
+    entryRequire = "ui.ui_csheet_page5",
+  },
+  [6] = {
+    globalKey = "CSHEET_PAGE6_LOCAL",
+    fingerprintFn = "fingerprintPage6Stats",
+    buildFn = "buildPage6DocumentXml",
+    entryRequire = "ui.ui_csheet_page6",
+  },
+}
+
+--- @param pageN number
+--- @return table|nil page XML module when this object used the matching ui.ui_csheet_pageN entry
+local function getPageDynamicModule(pageN)
+  local cfg = PAGE_DYNAMIC_XML[pageN]
+  if cfg == nil then
+    return nil
+  end
+  local mod = rawget(_G, cfg.globalKey)
   if type(mod) == "table" then
     return mod
   end
   return nil
 end
 
---- No-op on default entry; page 3 objects load ui.ui_csheet_page3_local first.
+--- No-op on default entry; dynamic pages load ui.ui_csheet_pageN_local first.
 function CSHEET.init(_opts)
 end
 
@@ -83,8 +117,8 @@ local pageNum = nil
 local seatColor = nil
 local playerID = nil
 
---- Skip redundant `UI.setXml` when backgrounds/merits/flaws unchanged (per object instance).
-local lastPage3XmlFingerprint = nil
+--- Skip redundant `UI.setXml` when dynamic page content unchanged (per object instance).
+local lastPageDynamicXmlFingerprint = {}
 
 --- Skip redundant `setDecals` when derived BP stats for this page unchanged.
 local lastBloodPotencyDecalFingerprint = nil
@@ -419,10 +453,12 @@ function onFrenzyClick(player, value, id)
     initiateRollByTrigger("frenzy", "Frenzy Check")
 end
 
---- Replace page 3 markup from PCS-backed stats (`self.UI.setXml`). Cheap no-op when not page 3 or fingerprint unchanged.
-local function applyPage3DynamicXml()
+--- Replace dynamic-page markup from PCS-backed stats (`self.UI.setXml`).
+--- Cheap no-op when not a dynamic page, fingerprint unchanged, or builder returns empty (placeholder).
+local function applyPageDynamicXml()
   syncSheetContextFromObjectName()
-  if pageNum ~= 3 then
+  local cfg = PAGE_DYNAMIC_XML[pageNum]
+  if cfg == nil then
     return
   end
   if self.UI == nil then
@@ -436,22 +472,39 @@ local function applyPage3DynamicXml()
   if type(pd) ~= "table" or type(pd.stats) ~= "table" then
     return
   end
-  local PAGE3 = getPage3Module()
-  if PAGE3 == nil then
+  local pageMod = getPageDynamicModule(pageNum)
+  if pageMod == nil then
     error(
-      "[ui_csheet] page 3 requires object entry require(\"ui.ui_csheet_page3\") — lib.csheet_page3_xml must load in this script VM"
+      string.format(
+        "[ui_csheet] page %s requires object entry require(\"%s\") — page XML module must load in this script VM",
+        tostring(pageNum),
+        cfg.entryRequire
+      )
     )
   end
-  local fp = PAGE3.fingerprintPage3Stats(pd.stats)
-  if fp == lastPage3XmlFingerprint then
+  local fingerprintFn = pageMod[cfg.fingerprintFn]
+  local buildFn = pageMod[cfg.buildFn]
+  if type(fingerprintFn) ~= "function" or type(buildFn) ~= "function" then
+    error(
+      string.format(
+        "[ui_csheet] page %s module missing %s / %s",
+        tostring(pageNum),
+        cfg.fingerprintFn,
+        cfg.buildFn
+      )
+    )
+  end
+  local fp = fingerprintFn(pd.stats, seatColor, pd)
+  if fp == lastPageDynamicXmlFingerprint[pageNum] then
     return
   end
-  local xml = PAGE3.buildPage3DocumentXml(pd.stats, seatColor)
+  local xml = buildFn(pd.stats, seatColor, pd)
   if type(xml) ~= "string" or xml == "" then
+    lastPageDynamicXmlFingerprint[pageNum] = fp
     return
   end
   self.UI.setXml(xml)
-  lastPage3XmlFingerprint = fp
+  lastPageDynamicXmlFingerprint[pageNum] = fp
   Wait.frames(function()
     local y = self.getPosition().y
     applyCsheetNavButtonsActiveOnObject(self, y >= 0)
@@ -549,8 +602,8 @@ function refreshCharacterSheetUi()
     self.UI.setAttribute("xp_text", "text", tostring(tonumber(stats.xp) or 0))
   end
 
-  if pageNum == 3 then
-    applyPage3DynamicXml()
+  if PAGE_DYNAMIC_XML[pageNum] ~= nil then
+    applyPageDynamicXml()
   end
 
   if pageNum == 1 or pageNum == 2 then

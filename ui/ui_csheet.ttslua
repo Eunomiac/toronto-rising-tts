@@ -1,5 +1,5 @@
 ---@diagnostic disable: undefined-global, lowercase-global
--- CSHEET entry for pages 1–2 and 4–8 (no page-3 XML template bundle).
--- Page 3 objects must use require("ui.ui_csheet_page3") instead.
+-- CSHEET entry for pages 1–2 and 7–8 (no per-page dynamic XML template bundle).
+-- Pages 3–6 use require("ui.ui_csheet_page3") … require("ui.ui_csheet_page6") instead.
 local CSHEET = require("ui.ui_csheet_core")
 CSHEET.init({})

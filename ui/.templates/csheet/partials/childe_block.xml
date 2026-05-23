@@ -1,0 +1,28 @@
+<!-- Parameters:
+@@INDEX@@ - entry index (0-based)
+@@TITLE_TEXT@@ - title text
+@@SUBTITLE_TEXT@@ - subtitle text
+@@IMAGE_REF@@ - image reference (by key)
+@@SUBHEADER_TEXT@@ - subheader text
+@@SUBHEADER_TEXT_RIGHT@@ - subheader text right
+@@BODY_TEXT@@ - body text (newline-separated in one Text)
+-->
+
+<VerticalLayout class="box_text_container">
+  <HorizontalLayout class="box_header_container">
+    <Text id="page4_childe_@@INDEX@@_title_text" class="box_text_title_text" text="@@TITLE_TEXT@@" />
+    <Text id="page4_childe_@@INDEX@@_title_text_right" class="box_text_title_text title_text_right" text="@@SUBTITLE_TEXT@@" />
+  </HorizontalLayout>
+  <HorizontalLayout class="box_content_container">
+    <Image id="page4_childe_@@INDEX@@_image" class="box_image" image="@@IMAGE_REF@@" />
+    <VerticalLayout class="box_text_container">
+      <HorizontalLayout class="box_subheader_container">
+        <Text id="page4_childe_@@INDEX@@_subheader_text" class="box_text_subheader_text" text="@@SUBHEADER_TEXT@@" />
+        <Text id="page4_childe_@@INDEX@@_subheader_text_right" class="box_text_subheader_text box_text_subheader_text_right" text="@@SUBHEADER_TEXT_RIGHT@@" />
+      </HorizontalLayout>
+      <Panel class="box_text_panel_body">
+        <Text id="page4_childe_@@INDEX@@_body_text" class="box_text" text="@@BODY_TEXT@@" />
+      </Panel>
+    </VerticalLayout>
+  </HorizontalLayout>
+</VerticalLayout>

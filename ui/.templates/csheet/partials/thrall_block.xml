@@ -1,0 +1,49 @@
+<!-- Parameters:
+@@INDEX@@ - entry index (0-based)
+@@PAGE_NUM@@ - page number (1-based)
+@@TITLE_TEXT@@ - title text
+@@TITLE_BAR_DOT_CLASS@@ - "1_dot" .. "6_dots"
+@@DOT_IMG_1@@ .. @@DOT_IMG_6@@ - dot image id when slot active (omit key when unused). Use box_red for on, box_blank for off.
+@@IMAGE_REF@@ - image reference (by key)
+@@SUBHEADER_TEXT@@ - subheader text
+@@SUBHEADER_TEXT_RIGHT@@ - subheader text right
+@@BODY_TEXT@@ - body text (newline-separated in one Text)
+-->
+
+<VerticalLayout class="box_text_container">
+  <HorizontalLayout class="box_text_title_bar @@TITLE_BAR_DOT_CLASS@@">
+    <Text id="page4_thrall_@@INDEX@@_title_text" class="box_text_title_text" text="@@TITLE_TEXT@@" />
+    <Panel class="box_text_panel_title_dotline">
+      ##IF @@DOT_IMG_1@@##
+      <Image id="p@@PAGE_NUM@@_thrall_@@INDEX@@_dot_1" image="@@DOT_IMG_1@@" class="dot box_text_title_dot dot_1" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_2@@##
+      <Image id="p@@PAGE_NUM@@_thrall_@@INDEX@@_dot_2" image="@@DOT_IMG_2@@" class="dot box_text_title_dot dot_2" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_3@@##
+      <Image id="p@@PAGE_NUM@@_thrall_@@INDEX@@_dot_3" image="@@DOT_IMG_3@@" class="dot box_text_title_dot dot_3" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_4@@##
+      <Image id="p@@PAGE_NUM@@_thrall_@@INDEX@@_dot_4" image="@@DOT_IMG_4@@" class="dot box_text_title_dot dot_4" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_5@@##
+      <Image id="p@@PAGE_NUM@@_thrall_@@INDEX@@_dot_5" image="@@DOT_IMG_5@@" class="dot box_text_title_dot dot_5" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_6@@##
+      <Image id="p@@PAGE_NUM@@_thrall_@@INDEX@@_dot_6" image="@@DOT_IMG_6@@" class="dot box_text_title_dot dot_6" />
+      ##ENDIF##
+    </Panel>
+  </HorizontalLayout>
+  <HorizontalLayout class="box_content_container">
+    <Image id="page4_thrall_@@INDEX@@_image" class="box_image" image="@@IMAGE_REF@@" />
+    <VerticalLayout class="box_text_container">
+      <HorizontalLayout class="box_subheader_container">
+        <Text id="page4_thrall_@@INDEX@@_subheader_text" class="box_text_subheader_text" text="@@SUBHEADER_TEXT@@" />
+        <Text id="page4_thrall_@@INDEX@@_subheader_text_right" class="box_text_subheader_text box_text_subheader_text_right" text="@@SUBHEADER_TEXT_RIGHT@@" />
+      </HorizontalLayout>
+      <Panel class="box_text_panel_body">
+        <Text id="page4_thrall_@@INDEX@@_body_text" class="box_text" text="@@BODY_TEXT@@" />
+      </Panel>
+    </VerticalLayout>
+  </HorizontalLayout>
+</VerticalLayout>

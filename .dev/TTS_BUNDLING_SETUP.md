@@ -225,21 +225,24 @@ Every `CSHEET_PAGE_<n>_<COLOR>` object has a one-line stub under **`.tts/objects
 require("ui.ui_csheet")
 ```
 
-**Page 3 only** (`CSHEET_PAGE_3_*`) uses a separate entry so `lib/csheet_page3_xml` (+ templates) is not bundled into all ~80 sheet objects:
+**Pages 3–6** (`CSHEET_PAGE_3_*` … `CSHEET_PAGE_6_*`) use separate entries so each page’s XML builder (and embedded templates when shipped) is **not** bundled into all ~80 sheet objects:
 
 ```lua
-require("ui.ui_csheet_page3")
+require("ui.ui_csheet_page3")   -- backgrounds / merits / flaws (live)
+require("ui.ui_csheet_page4")   -- relationships / bonds (placeholder builder today)
+require("ui.ui_csheet_page5")   -- projects / equipment (placeholder)
+require("ui.ui_csheet_page6")   -- history / XP log (placeholder)
 ```
 
-That entry loads `ui/ui_csheet_page3_local.ttslua` (registers `lib/csheet_page3_xml` on `_G`) then `ui/ui_csheet_core.ttslua`. Default pages must **not** pull the page-3 template chain (~+30 KB on page 3 objects only).
+Each entry loads `ui/ui_csheet_pageN_local.ttslua` (registers `lib/csheet_pageN_xml` on `_G`) then `ui/ui_csheet_core.ttslua`. Default pages (1–2, 7–8) must **not** pull another page’s template chain. Page 3 adds ~+30 KB vs the default entry; pages 4–6 placeholders add only a few KB until real templates land.
 
 Object scripts run in a **separate Lua VM** from Global. They must not pull the full game stack (`lib.pc_stats` → `core.sync`, etc.). Thin modules and `Global.call` keep each CSHEET bundle small (~tens of KB vs ~1.4 MB before slimming).
 
 | Layer | Module | Role |
 | ----- | ------ | ---- |
-| Object UI (shared) | `ui/ui_csheet_core.ttslua` via `ui/ui_csheet.ttslua` or `ui/ui_csheet_page3.ttslua` | Page/seat from object name; navigation; applies UI from Global payloads |
+| Object UI (shared) | `ui/ui_csheet_core.ttslua` via `ui/ui_csheet.ttslua` or `ui/ui_csheet_pageN.ttslua` | Page/seat from object name; navigation; applies UI from Global payloads |
 | Sheet diffs (Global) | `GlobalCollectSheetImageUpdates({ playerID, pageNum })` → resolves registry effects → `lib/pc_sheet_collect.ttslua` | Dot/box `setAttribute` list |
-| Page 3 XML (page 3 objects) | `require("ui.ui_csheet_page3")` → `ui/ui_csheet_page3_local.ttslua` → `lib/csheet_page3_xml.ttslua` | `self.UI.setXml` in object VM (~+30 KB vs default entry) |
+| Dynamic page XML (pages 3–6 objects) | `require("ui.ui_csheet_pageN")` → `ui/ui_csheet_pageN_local.ttslua` → `lib/csheet_pageN_xml.ttslua` | `self.UI.setXml` in object VM; page 3 live, 4–6 placeholder until templates ship |
 | BP decals (object) | `lib/blood_potency_decals.ttslua` bundled into CSHEET object script | `self.getDecals` / `self.setDecals` — must not cross `Global.call` |
 | Object-only | `lib/csheet_constants.ttslua`, `lib/csheet_util.ttslua`, `lib/csheet_pose.ttslua` | CSHEET poses, delay, AlertGM — no `core.*` |
 
@@ -272,14 +275,16 @@ TTS resolves that path on **Save & Play** before object Lua runs. You always nee
 | Pages | Mode today | What to edit |
 | ----- | ---------- | ------------- |
 | **1–2** | Static shipped XML | `ui/player/csheets/page1.xml`, `page2.xml` — dot/box updates via `UI.setAttribute` from `GlobalCollectSheetImageUpdates` |
-| **3** | **Dynamic** (`UI.setXml`) | Layout: **`ui/.templates/csheet/page3.xml`** + partials; builder: **`lib/csheet_page3_xml.ttslua`** (Global bundle only). Shipped **`ui/player/csheets/page3.xml`** is only a minimal Include placeholder (not the source of truth). |
-| **4–8** | Static shipped XML (scaffolding / WIP) | `ui/player/csheets/page4.xml` … `page8.xml` — already satisfy object Includes; no template embed or `setXml` yet |
+| **3** | **Dynamic** (`UI.setXml`) | Layout: **`ui/.templates/csheet/page3.xml`** + partials; builder: **`lib/csheet_page3_xml.ttslua`**. Shipped **`ui/player/csheets/page3.xml`** is only a minimal Include placeholder. |
+| **4** | **Dynamic** (`UI.setXml`) | **`lib/json/PC_Relationships.json`** → **`lib/csheet_page4_xml.ttslua`**; templates **`ui/.templates/csheet/page4.xml`** + partials. Regenerate data: `node .dev/scripts/generate_pc_relationships_lua.js`. |
+| **5–6** | **Dynamic entry** (placeholder builders) | Object stub `require("ui.ui_csheet_pageN")`; builders still placeholders until templates ship. |
+| **7–8** | Static shipped XML (scaffolding / WIP) | `ui/player/csheets/page7.xml`, `page8.xml` — default csheet entry only |
 
-**Do not** pre-build dynamic page 4–8 machinery until you design a page. When a page needs PCS-driven layout like page 3: (1) add templates under `ui/.templates/csheet/`, (2) add `lib/csheet_pageN_xml.ttslua` + wire `ui/ui_csheet.ttslua`, (3) run `npm run ui-xml-templates:embed`, (4) **replace** the shipped `ui/player/csheets/pageN.xml` with a thin placeholder (keep the file so Includes still resolve). Until then, keep editing the static `pageN.xml` files directly.
+**Do not** bundle dynamic template chains on the default csheet entry. When a page needs PCS-driven layout like page 3: (1) add templates under `ui/.templates/csheet/`, (2) replace **`lib/csheet_pageN_xml.ttslua`** placeholder with a real builder (entry + `_local` shims already exist for pages 4–6), (3) run `npm run ui-xml-templates:embed`, (4) **replace** the shipped `ui/player/csheets/pageN.xml` with a thin placeholder (keep the file so Includes still resolve). Pages 7–8 remain static until you add `ui.ui_csheet_page7` stubs the same way.
 
 ## Runtime UI XML templates (`ui/.templates/`)
 
-Some panels are assembled at runtime via `UI.setXml` (character sheet **page 3** today). Lua cannot read the repo filesystem in TTS, so template XML is **embedded at build time**:
+Some panels are assembled at runtime via `UI.setXml` (character sheet **pages 3–4** today). Lua cannot read the repo filesystem in TTS, so template XML is **embedded at build time**:
 
 - **Authoring**: Edit templates under **`ui/.templates/csheet/`** only (for example `page3.xml` and `partials/*.xml`). The embed script does not read top-level `ui/.templates/*.xml` (those are color-expansion sources).
 - **Parameters**: `@@NAME@@` tokens substituted by `lib/ui_xml_template.ttslua` at runtime.

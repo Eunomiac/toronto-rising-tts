@@ -339,6 +339,40 @@ local function isValidNpcSeatKey(seatKey)
     return U.Type(seatKey) == "string" and U.isIn(seatKey, C.NPCSeats or {})
 end
 
+--- Display label for ST roll HUD from an NPC panel `npc_roll_*` button id suffix.
+--- Seated rows pass a seat key (`NPC1`…`NPC4`); area rows pass `<areaKey>_<npcKey>`.
+--- @param npcRollKey string
+--- @return string|nil  nil when a seated slot has no assigned occupant
+local function resolveNpcRollLabel(npcRollKey)
+    if U.Type(npcRollKey) ~= "string" or npcRollKey == "" then
+        return "NPC"
+    end
+
+    local npcKey = nil
+    if isValidNpcSeatKey(npcRollKey) then
+        npcKey = getSeatOccupant(npcRollKey)
+        if U.Type(npcKey) ~= "string" or npcKey == "" then
+            return nil
+        end
+    else
+        local areaPrefix, namePart = string.match(npcRollKey, "^([%w]+)_([%w]+)$")
+        if areaPrefix ~= nil and namePart ~= nil and NPCS.areas[areaPrefix] ~= nil then
+            npcKey = namePart
+        else
+            npcKey = npcRollKey
+        end
+    end
+
+    local def = NPCS.characters[npcKey]
+    if U.Type(def) == "table" then
+        local display = def.fullName or def.name
+        if U.Type(display) == "string" and display ~= "" then
+            return display
+        end
+    end
+    return npcKey
+end
+
 local seatSyncQueued = false
 
 local function requestSeatLayoutSync()
@@ -2660,9 +2694,10 @@ function NPCS.dispatchNpcUiClick(id)
     local npcRollKey = string.match(id, "^npc_roll_(.+)$")
     if npcRollKey ~= nil then
         local STR = require("core.storyteller_rolls")
-        local label = npcRollKey:gsub("^centerForward_", ""):gsub("_", " ")
-        if label == "" then
-            label = "NPC"
+        local label = resolveNpcRollLabel(npcRollKey)
+        if label == nil then
+            safeAlertGM("No seated NPC assigned to " .. tostring(npcRollKey) .. ".")
+            return
         end
         STR.initiateNpcRoll(label)
         return

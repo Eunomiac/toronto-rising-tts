@@ -38,6 +38,11 @@ const LUA_STUB_RULES = [
   { prefix: "SOUNDSCAPE", line: `require("core.soundscape_emitter_object")` },
   { prefix: "TAROT_BUTTON", line: `require("ui.ui_tarot_button")` },
   { prefix: "DICEBAG", line: `require("objects.dice_bag")` },
+  // Dynamic XML pages: separate entries so template builders are not bundled on all ~80 sheet objects.
+  { prefix: "CSHEET_PAGE_3", line: `require("ui.ui_csheet_page3")` },
+  { prefix: "CSHEET_PAGE_4", line: `require("ui.ui_csheet_page4")` },
+  { prefix: "CSHEET_PAGE_5", line: `require("ui.ui_csheet_page5")` },
+  { prefix: "CSHEET_PAGE_6", line: `require("ui.ui_csheet_page6")` },
   { prefix: "CSHEET", line: `require("ui.ui_csheet")` },
 ];
 

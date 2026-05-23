@@ -1,0 +1,98 @@
+<!-- Parameters:
+@@TOUCHSTONE_ENTRY@@ - touchstone block entry
+@@SIRE_ENTRY@@ - sire block entry
+@@CHILDER_COLUMN_1@@ - concatenated childer block renders
+@@CHILDER_COLUMN_2@@
+@@BLOOD_BONDS_COLUMN_1@@ - concatenated thrall/regnant block renders
+@@BLOOD_BONDS_COLUMN_2@@
+@@OTHER_RELATIONSHIPS_COLUMN_1@@ - concatenated other relationships block renders
+@@OTHER_RELATIONSHIPS_COLUMN_2@@
+-->
+
+<Include src="csheet_defaults.xml" />
+
+<Defaults>
+  <Panel class="padded_border" padding="10 10 140 100" />
+  <HorizontalLayout class="box_header_container"
+    preferredHeight="30"
+    flexibleHeight="0"
+  />
+  <Text class="box_text_title_text"
+    fontSize="24"
+    fontStyle="Bold"
+  />
+  <Text class="title_text_right"
+    fontSize="24"
+    fontStyle="Bold"
+    alignment="MiddleRight"
+  />
+  <Image class="box_image"
+    minWidth="150"
+    preferredHeight=""
+    flexibleHeight="0"
+    flexibleWidth="0"
+  />
+  <VerticalLayout class="box_column"
+    preferredWidth = "1000"
+    flexibleWidth = "0.5" />
+
+  <VerticalLayout class="box_text_container"
+    outline="clear"
+    outlineSize="0 0"
+  />
+  <HorizontalLayout class="box_subheader_container"
+    preferredHeight="30"
+    flexibleHeight="0"
+  />
+  <Text class="box_text_subheader_text"
+    fontSize="20"
+    color="#AAAAAA"
+    fontStyle="Bold"
+    alignment="MiddleLeft"
+  />
+  <Text class="box_text_subheader_text_right"
+    alignment="MiddleRight"
+  />
+</Defaults>
+
+<Panel id="paper_root" class="page_root padded_border" height="2050">
+
+  <Button id="pageForward" class="page_navigation page_forward" />
+  <Button id="pageInner" class="page_navigation page_inner_left" />
+
+  <VerticalLayout class="vertical_section_container">
+
+    <Panel class="spacer" preferredHeight="5" flexibleHeight="0" minHeight="5" />
+
+    <HorizontalLayout class="box_column_container">
+      <VerticalLayout id="page4_touchstone_column" class="box_column">@@TOUCHSTONE_ENTRY@@</VerticalLayout>
+      <VerticalLayout id="page4_sire_column" class="box_column">@@SIRE_ENTRY@@</VerticalLayout>
+    </HorizontalLayout>
+
+    ##IF @@CHILDER_COLUMN_1@@##
+    <Image id="divider_childer" image="divider_childer" />
+    <HorizontalLayout class="box_column_container">
+      <VerticalLayout class="box_column">@@CHILDER_COLUMN_1@@</VerticalLayout>
+      <VerticalLayout class="box_column">@@CHILDER_COLUMN_2@@</VerticalLayout>
+    </HorizontalLayout>
+    ##ENDIF##
+
+    ##IF @@BLOOD_BONDS_COLUMN_1@@##
+    <Image id="divider_bloodBonds" image="divider_bloodBonds" />
+    <HorizontalLayout class="box_column_container">
+      <VerticalLayout class="box_column">@@BLOOD_BONDS_COLUMN_1@@</VerticalLayout>
+      <VerticalLayout class="box_column">@@BLOOD_BONDS_COLUMN_2@@</VerticalLayout>
+    </HorizontalLayout>
+    ##ENDIF##
+
+    ##IF @@OTHER_RELATIONSHIPS_COLUMN_1@@##
+    <Image id="divider_otherRelationships" image="divider_otherRelationships" />
+
+    <HorizontalLayout class="box_column_container">
+      <VerticalLayout class="box_column">@@OTHER_RELATIONSHIPS_COLUMN_1@@</VerticalLayout>
+      <VerticalLayout class="box_column">@@OTHER_RELATIONSHIPS_COLUMN_2@@</VerticalLayout>
+    </HorizontalLayout>
+    ##ENDIF##
+
+  </VerticalLayout>
+</Panel>

@@ -1,0 +1,41 @@
+--[[
+  Placeholder dynamic-XML API for CSHEET pages awaiting template builders.
+  Page modules (lib/csheet_pageN_xml) return makePlaceholder(N) until real builders ship.
+  buildPageNDocumentXml returns nil → object keeps static Include XML; fingerprint is still cached.
+]]
+
+local M = {}
+
+--- @param pageNum number
+--- @return table module with fingerprintPageNStats and buildPageNDocumentXml
+function M.makePlaceholder(pageNum)
+  if type(pageNum) ~= "number" or pageNum < 1 then
+    error("[csheet_page_xml_placeholder] invalid pageNum")
+  end
+  local pageStr = tostring(pageNum)
+  local fpName = "fingerprintPage" .. pageStr .. "Stats"
+  local buildName = "buildPage" .. pageStr .. "DocumentXml"
+  local stubTag = "page" .. pageStr .. ":placeholder"
+
+  local out = {}
+
+  --- @param stats table|nil
+  --- @return string
+  out[fpName] = function(stats)
+    if type(stats) ~= "table" then
+      return ""
+    end
+    return stubTag
+  end
+
+  --- @param stats table|nil
+  --- @param _seatColorRaw string|nil
+  --- @return nil
+  out[buildName] = function(stats, _seatColorRaw)
+    return nil
+  end
+
+  return out
+end
+
+return M

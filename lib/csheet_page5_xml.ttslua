@@ -1,0 +1,7 @@
+--[[
+  Character sheet page 5 dynamic XML (projects / equipment).
+  Replace placeholder with template embed + builder when page 5 layout ships.
+  Loaded only from require("ui.ui_csheet_page5") on CSHEET_PAGE_5_* objects.
+]]
+
+return require("lib.csheet_page_xml_placeholder").makePlaceholder(5)

@@ -1,0 +1,7 @@
+--[[
+  Character sheet page 6 dynamic XML (history / XP log).
+  Replace placeholder with template embed + builder when page 6 layout ships.
+  Loaded only from require("ui.ui_csheet_page6") on CSHEET_PAGE_6_* objects.
+]]
+
+return require("lib.csheet_page_xml_placeholder").makePlaceholder(6)

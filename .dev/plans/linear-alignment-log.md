@@ -14,6 +14,7 @@ Audit trail for the 2026-05-22 Linear alignment pass. Inventory: [linear-alignme
 | Legacy issues updated | TOR-1 – TOR-29 |
 | New feature/tasklist issues | TOR-44 – TOR-114 |
 | **Total issues after alignment** | **114** |
+| **Total issues after 2026-05-23 sync** | **133** |
 
 ## 2026-05-22 — Structure
 
@@ -88,6 +89,42 @@ Audit trail for the 2026-05-22 Linear alignment pass. Inventory: [linear-alignme
 | TOR-55 | Scene library |
 | TOR-67 | Soundscape reconciler |
 | TOR-66 | Rotational seat layout |
+
+## 2026-05-23 — Post-alignment commit sync
+
+Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` before the Linear MCP was available in those sessions. Created real issues **TOR-115**–**TOR-133** (Done) and updated existing issues.
+
+| Action | Linear IDs | Notes |
+|--------|------------|-------|
+| CREATE (Done) | TOR-115 – TOR-133 | Retroactive tracking for May 2026 commits |
+| CLOSE_DONE | TOR-75 | Oblivion rouse E2E (code complete; verify in TTS) |
+| UPDATE | TOR-79 | In Progress — ST NPC rolls partial (camera remaining) |
+| COMMENT | TOR-44, TOR-45, TOR-51, TOR-70, TOR-79 | Cross-links to new issues |
+| UPDATE | `.dev/RUNNING TASKLIST.md` | TOR-75 checked |
+
+### Phantom commit ref → actual Linear id (selected)
+
+| Commit phantom | Actual Linear | Topic |
+|----------------|---------------|-------|
+| TOR-123/124 | TOR-116 | Custom UI assets pipeline |
+| TOR-125/126 | TOR-117 | U.delay migration |
+| TOR-127 | TOR-115 | NPC figurine lock |
+| TOR-128 | TOR-119 | Staggered group spawn |
+| TOR-129 | TOR-118 | NPC slot resolution |
+| TOR-130 | TOR-120 | Page 4 Thrall cleanup |
+| TOR-131 | TOR-121 | NPC spawn errors |
+| TOR-132 | TOR-124 | Overlay layout tweaks |
+| TOR-133 | TOR-123 | Testbed/debug docs |
+| TOR-134 | TOR-122 | InputField callbacks |
+| TOR-135 | TOR-128 | Soundscape/lighting dedup |
+| TOR-136 | TOR-125 | HUD sync scope |
+| TOR-137 | TOR-129 | UI XML embed build |
+| TOR-138 | TOR-127 | TTS bundling page3 |
+| TOR-139 | TOR-126 | luabundle save inject |
+| TOR-140 | TOR-130 | presentDayClock HUD |
+| TOR-141 | TOR-131 | Dice pt.2 enhancements |
+| TOR-142/143/146 | TOR-133 | BP decals + merge |
+| TOR-144/145 | TOR-132 | Conditions refactor + docs |
 
 ## Ongoing hygiene
 

@@ -3,6 +3,7 @@
 		"pcLinks": {
 			"aishe": "touchstone"
 		},
+    "portrait": "kadePhillipsPortrait",
 		"headerLeft": "Kade Phillips",
 		"headerRight": "Hair Stylist",
 		"subheaderLeft": "\"You Must Take Care Of Yourself First\"",
@@ -16,6 +17,7 @@
 		"pcLinks": {
 			"aishe": "sire"
 		},
+    "portrait": "ladyAvelinePortrait",
 		"headerLeft": "Lady Aveline Dubois",
 		"headerRight": "",
 		"subheaderLeft": "Seventh Generation Ancilla of Clan Malkavian",
@@ -28,6 +30,7 @@
 		"pcLinks": {
 			"rashid": "touchstone"
 		},
+    "portrait": "abbasFarukPortrait",
 		"headerLeft": "Abbas Faruk",
 		"headerRight": "Imam, Madina Masjid",
 		"subheaderLeft": "\"The City Must Not Burn\"",
@@ -39,6 +42,7 @@
 		"pcLinks": {
 			"rashid": "sire"
 		},
+    "portrait": "thePieceTakerPortrait",
 		"headerLeft": "Laleh bint Saif, the Piece-Taker",
 		"headerRight": "",
 		"subheaderLeft": "Seventh Generation Elder of the Banu Haqim",
@@ -51,6 +55,7 @@
 		"pcLinks": {
 			"fomorach": "touchstone"
 		},
+    "portrait": "enzoCarusoPortrait",
 		"headerLeft": "Vincenzo \"Enzo\" Caruso",
 		"headerRight": "Retired Mafia Hitman",
 		"subheaderLeft": "\"Clan Over Sect\"",
@@ -63,6 +68,7 @@
 		"pcLinks": {
 			"fomorach": "sire"
 		},
+    "portrait": "drakePortrait",
 		"headerLeft": "Drake",
 		"headerRight": "",
 		"subheaderLeft": "Seventh Generation Elder of Clan Nosferatu",
@@ -75,6 +81,7 @@
 		"pcLinks": {
 			"fomorach": "childe"
 		},
+    "portrait": "maraPortrait",
 		"headerLeft": "Mara",
 		"headerRight": "Embraced 1932",
 		"subheaderLeft": "Ninth Generation Ancilla of Clan Nosferatu",
@@ -83,10 +90,11 @@
 		"Oksana Ziva (\"Mara\") is your blood made spectacle. She took the savagery in your lineage and sharpened it into doctrine, joining the Sabbat and hunting the powerful with theatrical cruelty. Every murder she commits is both execution and sermon: the powerful are prey, walls do not save them, and fear is more useful when it is witnessed. She is your childe, your shame, your warning, and one of the few monsters in Toronto who might understand exactly what you are."
 		]
 	},
-	"Palis": {
+	"palis": {
 		"pcLinks": {
 			"fomorach": "childe"
 		},
+    "portrait": "palisPortrait",
 		"headerLeft": "Palis",
 		"headerRight": "Embraced 1950",
 		"subheaderLeft": "Ninth Generation Neonate of Clan Nosferatu",
@@ -99,18 +107,20 @@
 		"pcLinks": {
 			"lordLucien": "touchstone"
 		},
+    "portrait": "miriamRavenscroftPortrait",
 		"headerLeft": "Miriam Ravenscroft",
 		"headerRight": "ROM Curator & Adjunct Professor",
 		"subheaderLeft": "\"Drama Over Caution\"",
 		"subheaderRight": "",
 		"body": [
-		"Miriam is a curator of Manuscripts and Rare Texts at the Royal Ontario Museum and an adjunct professor at the University of Toronto. She is excitable, animated, passionate to the point of social gracelessness, and notoriously clumsy anywhere outside an archive. She secretly writes raunchy historical fiction under a pseudonym, with a mix of pride and shame. There are rumors she has recently acquired an authentic fragment of Kindred lore of mystical significance."
+		"Miriam is a passionate and animated curator at the Royal Ontario Museum, also teaching at the University of Toronto. Clumsy outside archives, she secretly writes raunchy historical fiction, and rumors say she holds a fragment of mystical Kindred lore."
 		]
 	},
 	"oliverGagnon": {
 		"pcLinks": {
 			"lordLucien": "sire"
 		},
+    "portrait": "oliverGagnonPortrait",
 		"headerLeft": "Oliver Gagnon",
 		"headerRight": "",
 		"subheaderLeft": "Seventh Generation Ancilla of Clan Toreador",
@@ -123,6 +133,7 @@
 		"pcLinks": {
 			"lordLucien": "childe"
 		},
+    "portrait": "damienAbandaPortrait",
 		"headerLeft": "Damien Abanda",
 		"headerRight": "Embraced 1915",
 		"subheaderLeft": "Ninth Generation Ancilla of Clan Toreador",
@@ -136,6 +147,7 @@
 			"blackCaesar": "touchstone",
 			"fomorach": "enemy"
 		},
+    "portrait": "keiraVaughanPortrait",
 		"headerLeft": "Keira Vaughan",
 		"headerRight": "Chief of Police",
 		"subheaderLeft": "\"My Soldiers Must Be Able to Handle Anything\"",
@@ -148,6 +160,7 @@
 		"pcLinks": {
 			"blackCaesar": "sire"
 		},
+    "portrait": "jervaisDeLaCroixPortrait",
 		"headerLeft": "Jervais de la Croix",
 		"headerRight": "House Goratrix",
 		"subheaderLeft": "Seventh Generation Elder of Clan Tremere",
@@ -160,6 +173,7 @@
 		"pcLinks": {
 			"blackCaesar": "childe"
 		},
+    "portrait": "severinKoslovPortrait",
 		"headerLeft": "Severin Koslov",
 		"headerRight": "Embraced 2023",
 		"subheaderLeft": "Ninth Generation Neonate of Clan Tremere",
@@ -167,5 +181,192 @@
 		"body": [
 		"Severin Koslov was chosen because he would not look away. As a mortal, he found irregularities where others saw paperwork, danger where others saw inconvenience, and he kept pulling the thread. You rewarded that stubbornness with the Blood. Now he is still under Accounting, still unfinished, and already entangled with the Hecata's lessons in death. He is a soldier being made, but not entirely by your hand."
 		]
-	}
+	},
+  "christopherGiovanniJr": {
+		"pcLinks": {
+			"blackCaesar": "contact"
+		},
+    "portrait": "christopherGiovanniJrPortrait",
+		"headerLeft": "Christopher Giovanni Jr.",
+		"headerRight": "Contact",
+		"subheaderLeft": "Ghoul",
+		"subheaderRight": "Hecata",
+		"body": [
+			"29-year-old 'made man' stuck cooking the books and serving as go-between for you and Bacchus. He endures it, hoping to be Embraced while still young."
+		]
+  },
+  "evanescentBlue": {
+		"pcLinks": {
+			"lordLucien": "mawla"
+		},
+    "portrait": "evanescentBluePortrait",
+		"headerLeft": "Evanescent Blue",
+		"headerRight": "Mawla",
+		"subheaderLeft": "Ninth Generation Ancilla of Clan Ravnos",
+		"subheaderRight": "Anarch",
+		"body": [
+			"Evanescent Blue is a Ravnos survivor you saved near Kingston, now an Anarch source of diaspora news, warnings, and perspective."
+		]
+  },
+  "merrickSingh": {
+		"pcLinks": {
+			"lordLucien": "mawla"
+		},
+    "portrait": "merrickSinghPortrait",
+		"headerLeft": "Merrick Singh",
+		"headerRight": "Mawla",
+		"subheaderLeft": "Eleventh Generation Neonate of Clan Ravnos",
+		"subheaderRight": "Camarilla",
+		"body": [
+			"A Ravnos survivor you saved near Kingston, Merrick now masquerades as a Toreador under the supervision of your sire, Oliver Gagnon.",
+			"He blends charm, musical oddity, and misdirection—easy to overlook, and therefore easily underestimated and dangerous in a city that values secrets."
+		]
+  },
+  "rebeccaRossellini": {
+		"pcLinks": {
+			"blackCaesar": "criseDeLwa"
+		},
+    "portrait": "rebeccaRosselliniPortrait",
+		"headerLeft": "Rebecca Rossellini",
+		"headerRight": "Crise de Lwa",
+		"subheaderLeft": "Wraith",
+		"subheaderRight": "Died 1905",
+		"body": [
+			"A ghoul from the Giovanni gifted to Caesar that was killed in an internal spat during the early 1900s. Her mere presence makes the Hecata uncomfortable due to her hatred of her former family. Most intimidating wraith of the trio. Sees her relationship with Caesar as transactional and a path towards revenge."
+		]
+  },
+  "theBleakBokor": {
+		"pcLinks": {
+			"blackCaesar": "mawla"
+		},
+    "portrait": "theBleakBokorPortrait",
+		"headerLeft": "The Baron's Bleak Bokor",
+		"headerRight": "Mawla",
+		"subheaderLeft": "Tenth Generation Ancilla of the Samedi",
+		"subheaderRight": "Hecata",
+		"body": [
+			"You and the Bleak Bokor shaped Kindred society in the Caribbean together, especially during the Haitian Revolution. You were both founders of House High Saturday, and though he's no longer a member, your connection endures."
+		]
+  },
+  "ponticulus": {
+		"pcLinks": {
+			"blackCaesar": "criseDeLwa"
+		},
+    "portrait": "ponticulusPortrait",
+		"headerLeft": "Ponticulus",
+		"headerRight": "Crise de Lwa",
+		"subheaderLeft": "Wraith",
+		"subheaderRight": "Died 980",
+		"body": [
+			"An ancient sorcerer wraith who bonded to you from Ceoris. He urges you to rebuild High Saturday and looks to you as a new hope for the Clan."
+		]
+  },
+  "jeanDucheskiI": {
+		"pcLinks": {
+			"blackCaesar": "criseDeLwa"
+		},
+    "portrait": "jeanDucheskiIPortrait",
+		"headerLeft": "Jean Ducheski-Francois I",
+		"headerRight": "Crise de Lwa",
+		"subheaderLeft": "Wraith",
+		"subheaderRight": "Died 1790",
+		"body": [
+      "The closest wraith in your retinue, you have known each other for 3 centuries. Very level-headed and tactically minded but also becomes overly worried about 'his captain' easily. Can take drastic measures in an attempt at protection."
+		]
+  },
+  "jeanDucheskiIII": {
+		"pcLinks": {
+			"blackCaesar": "thrall"
+		},
+    "bondStrength": 6,
+    "portrait": "jeanDucheskiIIIPortrait",
+		"headerLeft": "Jean Ducheski-Francois III",
+		"headerRight": "Retainer",
+		"subheaderLeft": "Ducheski Revenant",
+		"subheaderRight": "Camarilla",
+		"body": [
+			"Jean and his family are the culmination of 100 years of your work to make your own personal mystic soldiers. The patriarch himself is mild-mannered and charming with the air of an academic, and is much older than he looks."
+		]
+  },
+  "jezdimirDucheski": {
+		"pcLinks": {
+			"blackCaesar": "thrall"
+		},
+    "bondStrength": 6,
+    "portrait": "jezdimirDucheskiPortrait",
+		"headerLeft": "Jezdimir Ducheski",
+		"headerRight": "Retainer",
+		"subheaderLeft": "Ducheski Revenant",
+		"subheaderRight": "Camarilla",
+		"body": [
+			"Despite hailing from the Ducheski stronghold in Poland, Jezdimir has little knowledge of his family's purpose. He looks and acts like an Eastern European hooligan, his petty criminal background is a surprising asset in redwork."
+		]
+  },
+  "marieBouchard": {
+		"pcLinks": {
+			"aishe": "enemy"
+		},
+    "portrait": "marieBouchardPortrait",
+		"headerLeft": "Marie Bouchard",
+		"headerRight": "Enemy",
+		"subheaderLeft": "Journalism Student",
+		"subheaderRight": "",
+		"body": [
+			"22 year-old journalism student at the University of Toronto. You befriended her mother, Camille Bouchard, shortly before Camille divorced her husband. Marie blames you for her parent's divorce (she's right)."
+		]
+  },
+  "percivalCavendish": {
+		"pcLinks": {
+			"fomorach": "victim"
+		},
+    "portrait": "percivalCavendishPortrait",
+		"headerLeft": "Percival Cavendish",
+		"headerRight": "Descendant of Lord Cavendish",
+		"subheaderLeft": "",
+		"subheaderRight": "",
+		"body": [
+			"Descendant of Lord Cavendish who, in 1845, leapt on your former family in Ireland the moment the potato blight made their estates vulnerable to financial takeover. You have been actively and with extreme pettiness fucking with his life. If Percival ever confronts you, only then will he learn why his life has been ruined... and then he will die."
+		]
+  },
+  "robin": {
+		"pcLinks": {
+			"fomorach": "thrall"
+		},
+    "portrait": "robinPortrait",
+    "bondStrength": 6,
+		"headerLeft": "Robin",
+		"headerRight": "Famulus",
+		"subheaderLeft": "Raccoon",
+		"subheaderRight": "",
+		"body": [
+			""
+		]
+  },
+  "sylvain": {
+		"pcLinks": {
+			"lordLucien": "thrall"
+		},
+    "portrait": "sylvainPortrait",
+    "bondStrength": 6,
+		"headerLeft": "Sylvain",
+		"headerRight": "Famulus",
+		"subheaderLeft": "Owl",
+		"subheaderRight": "",
+		"body": [
+			""
+		]
+  },
+  "uwuByteMe": {
+		"pcLinks": {
+			"fomorach": "contact"
+		},
+    "portrait": "uwuByteMePortrait",
+		"headerLeft": "UwU Byte Me",
+		"headerRight": "Contact",
+		"subheaderLeft": "Professional Hacker",
+		"subheaderRight": "Real Name: Siobhan Kelleher",
+		"body": [
+			"A hacker/internet security professional who is legitimately employed, genuinely professional. Legitimate employment gives her access to limited spytech and surveillance equipment. She has monitoring tripwires set in various parts of the city, to warn of suspicious electronic activity. She is a massive fan of I.Q.'s VTube channel."
+		]
+  }
 }
