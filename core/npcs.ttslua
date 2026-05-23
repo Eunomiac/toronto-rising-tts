@@ -342,10 +342,10 @@ end
 --- Display label for ST roll HUD from an NPC panel `npc_roll_*` button id suffix.
 --- Seated rows pass a seat key (`NPC1`…`NPC4`); area rows pass `<areaKey>_<npcKey>`.
 --- @param npcRollKey string
---- @return string|nil  nil when a seated slot has no assigned occupant
+--- @return string|nil  nil when input is invalid or a seated slot has no assigned occupant
 local function resolveNpcRollLabel(npcRollKey)
     if U.Type(npcRollKey) ~= "string" or npcRollKey == "" then
-        return "NPC"
+        return nil
     end
 
     local npcKey = nil
