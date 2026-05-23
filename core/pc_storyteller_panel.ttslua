@@ -82,6 +82,13 @@ function PCST.refreshCharacterSheetsForColor(seatColor)
   end
 end
 
+--- Refresh every seat's CSHEET objects (after scene/location reconcile with skipPresentation).
+function PCST.refreshAllCharacterSheets()
+  for _, col in ipairs(C.PlayerColors or {}) do
+    PCST.refreshCharacterSheetsForColor(col)
+  end
+end
+
 local function safeSetValue(elementId, text)
   UI.setValue(elementId, tostring(text))
 end

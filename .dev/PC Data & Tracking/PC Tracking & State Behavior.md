@@ -277,7 +277,7 @@ type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 | `Conditions.reconcileDerivedForPlayer(playerID)` | Sync derived keys from stats |
 | `Conditions.reconcileDerivedAllPlayers()` | Load / bulk repair |
 | `Conditions.reconcileLocationHostedForScene(opts?)` | Apply/remove location-kind keys from `C.Districts` / `C.Sites` for present PCs; `skipPresentation` when followed by `Sync.full` |
-| `Conditions.afterChange(playerID)` | `Sync.player(color)` + sheet refresh |
+| `Conditions.afterChange(playerID)` | Per-player presentation (lights, HUD, overlays, sheets) — mirrors `Sync.player` |
 | `Conditions.resolveForPlayer(playerID)` | Merged statChanges / HUD ids / lighting modes |
 | `Conditions.effectiveStatDelta` / `effectiveAggregateDelta` | Sheet + roll helpers |
 
@@ -301,7 +301,7 @@ type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 
 1. **Derive (mutation)** — recompute which *derived* IDs belong in `playerData.conditions` from current `stats` (+ `suppressedBy` / `deriveSticky`).
 2. **Location (mutation)** — add/remove *location* IDs from district/site `conditions` lists for PCs **present** in the active scene (`L.isPlayerPresentInActiveSeatLayout`).
-3. **Apply (presentation)** — `afterChange` → `Sync.player(color)` (HUD, lights, UI) + character sheet refresh. Consumers also **read** resolved effects on demand (`resolveForPlayer`) during sheet collect, lighting reconcile, and rolls.
+3. **Apply (presentation)** — `afterChange` reconciles seat lights, HUD, overlays, and character sheets for that PC. Consumers also **read** resolved effects on demand (`resolveForPlayer`) during sheet collect, lighting reconcile, and rolls.
 
 **Load policy:** Unknown ids or legacy inline payloads (`statChanges`, `hudChanges`, `lightingModeChanges`, …) → **`error(...)`** (no migrator). One-time fix: clear `conditions = {}` or restore a pre-migration save.
 
@@ -473,7 +473,7 @@ conditions = {
 }
 ```
 
-`Conditions.reconcileDerivedForPlayer` runs after damage/heal; **`Conditions.afterChange`** drives HUD, lighting, and sheets via `Sync.player`.
+`Conditions.reconcileDerivedForPlayer` runs after damage/heal; **`Conditions.afterChange`** drives HUD, lighting, and sheets for that seat.
 
 ### Humanity Controls
 

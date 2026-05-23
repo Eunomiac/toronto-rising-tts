@@ -266,6 +266,24 @@ function GlobalGetMergedPlayerData(playerID)
     return S.getPlayerData(playerID)
 end
 
+--- Resolved condition statChanges for one PC (sheet dots, BP decals). Object scripts have no `core.conditions`.
+--- @param playerID string
+--- @return table statChanges map (may be empty)
+function GlobalGetResolvedStatChangesForPlayer(playerID)
+    if type(playerID) ~= "string" or playerID == "" then
+        return {}
+    end
+    if playerID == C.StorytellerID then
+        return {}
+    end
+    local Conditions = require("core.conditions")
+    local resolved = Conditions.resolveForPlayer(playerID)
+    if type(resolved) ~= "table" or type(resolved.statChanges) ~= "table" then
+        return {}
+    end
+    return resolved.statChanges
+end
+
 --- @return boolean
 local function startupSeatLightsReadyForReveal()
     if L == nil or type(L.GetLight) ~= "function" then
@@ -933,64 +951,6 @@ function GlobalCollectSheetImageUpdates(params)
     local resolved = Conditions.resolveForPlayer(params.playerID)
     local PSC = require("lib.pc_sheet_collect")
     return PSC.collectSheetImageUpdates(stats, resolved.statChanges, params.pageNum)
-end
-
---- Fingerprint page-3 stats for skip-redundant setXml on character sheet objects.
---- @param stats table
---- @return string|nil
-function GlobalFingerprintCsheetPage3(stats)
-    local PAGE3 = require("lib.csheet_page3_xml")
-    return PAGE3.fingerprintPage3Stats(stats)
-end
-
---- Build full page-3 character sheet XML document (object UI.setXml).
---- TTS `call()` forwards only one parameter — pass a single params table.
---- @param params table { stats: table, seatColor: string|nil }
---- @return string|nil
-function GlobalBuildCsheetPage3Xml(params)
-    if type(params) ~= "table" or type(params.stats) ~= "table" then
-        return nil
-    end
-    local PAGE3 = require("lib.csheet_page3_xml")
-    return PAGE3.buildPage3DocumentXml(params.stats, params.seatColor)
-end
-
---- Resolve Blood Potency decal url updates for CSHEET_PAGE_1 or _2 (object scripts call via Global.call).
---- TTS `call()` forwards only one parameter — pass a single params table.
---- @param params table { stats: table, pageNum: number }
---- @return table[] list of { slot = string, url = string }
-function GlobalResolveBloodPotencyDecals(params)
-    if type(params) ~= "table" then
-        error("GlobalResolveBloodPotencyDecals: params must be a table")
-    end
-    if type(params.stats) ~= "table" then
-        error("GlobalResolveBloodPotencyDecals: params.stats must be a table")
-    end
-    local pn = tonumber(params.pageNum)
-    if pn == nil then
-        error("GlobalResolveBloodPotencyDecals: params.pageNum must be a number")
-    end
-    local BPD = require("lib.blood_potency_decals")
-    return BPD.resolveDecalsForPage(params.stats, pn)
-end
-
---- Fingerprint BP decal derived values for one sheet page (skip redundant setDecals).
---- TTS `call()` forwards only one parameter — pass a single params table.
---- @param params table { stats: table, pageNum: number }
---- @return string|nil
-function GlobalFingerprintBloodPotencyDecals(params)
-    if type(params) ~= "table" then
-        error("GlobalFingerprintBloodPotencyDecals: params must be a table")
-    end
-    if type(params.stats) ~= "table" then
-        error("GlobalFingerprintBloodPotencyDecals: params.stats must be a table")
-    end
-    local pn = tonumber(params.pageNum)
-    if pn == nil then
-        error("GlobalFingerprintBloodPotencyDecals: params.pageNum must be a number")
-    end
-    local BPD = require("lib.blood_potency_decals")
-    return BPD.fingerprintPageDecals(params.stats, pn)
 end
 
 --- Switch clicking player to a seat's sheet camera preset (sheetRed, sheetBrown, …).

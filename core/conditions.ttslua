@@ -7,7 +7,6 @@
 local Conditions = {}
 
 local S = require("core.state")
-local Sync = require("core.sync")
 local C = require("lib.constants")
 local CD = require("lib.condition_defs")
 local Derive = require("lib.condition_derive")
@@ -264,7 +263,8 @@ function Conditions.clear(playerID, conditionId)
   Conditions.afterChange(playerID)
 end
 
---- Sync presentation after condition changes (mutation-then-reconcile contract).
+--- Apply per-player presentation after condition mutation.
+--- Mirrors `Sync.player` without requiring `core.sync` (load-time cycle: sync → hud_overlays → conditions).
 --- @param playerID string
 function Conditions.afterChange(playerID)
   if playerID == C.StorytellerID then
@@ -274,7 +274,35 @@ function Conditions.afterChange(playerID)
   if type(col) ~= "string" or col == "" then
     return
   end
-  Sync.player(col)
+
+  local L = require("core.lighting")
+  if type(L.reconcileForPlayer) == "function" then
+    L.reconcileForPlayer(col)
+  end
+
+  local HUDP = require("core.hud_player")
+  local player = Player and Player[col] or nil
+  if player ~= nil and type(HUDP.updatePlayerUI) == "function" then
+    HUDP.updatePlayerUI(player, col)
+  end
+
+  local HO = require("core.hud_overlays")
+  if type(HO.reconcileForSeat) == "function" then
+    HO.reconcileForSeat(col)
+  end
+
+  local HUP = require("core.hud_hunger_pulse")
+  if type(HUP.reconcileForSeat) == "function" then
+    HUP.reconcileForSeat(col)
+  end
+
+  if type(UpdateUIDisplays) == "function" then
+    UpdateUIDisplays({
+      playerStats = true,
+      colors = { col },
+    })
+  end
+
   local PCST = require("core.pc_storyteller_panel")
   if type(PCST.refreshCharacterSheetsForColor) == "function" then
     PCST.refreshCharacterSheetsForColor(col)

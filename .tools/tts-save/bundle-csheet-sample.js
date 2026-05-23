@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 "use strict";
 
-// Bundle one CSHEET object stub locally (luabundle) for size verification without Save & Play.
+// Bundle CSHEET object stubs locally (luabundle) for size verification without Save & Play.
 // Agent guidance: .dev/TTS_BUNDLING_SETUP.md
 
 const fs = require("fs");
@@ -10,7 +10,17 @@ const { bundleString } = require("luabundle");
 
 const REPO_ROOT = path.resolve(__dirname, "../..");
 const OUT_DIR = path.join(REPO_ROOT, ".tts/bundled");
-const ENTRY_LUA = 'require("ui.ui_csheet")\n';
+
+const SAMPLES = [
+  {
+    outName: "CSHEET_PAGE_1_BROWN.sample.lua",
+    entry: 'require("ui.ui_csheet")\n',
+  },
+  {
+    outName: "CSHEET_PAGE_3_PURPLE.sample.lua",
+    entry: 'require("ui.ui_csheet_page3")\n',
+  },
+];
 
 /**
  * Resolve require("lib.foo") to repo path (supports .ttslua).
@@ -29,15 +39,16 @@ function resolveModule(name, packagePaths) {
   return null;
 }
 
-const bundled = bundleString(ENTRY_LUA, {
-  rootModuleName: "__root",
-  paths: ["?.ttslua", "?.lua"],
-  resolveModule,
-  metadata: false,
-});
-
 fs.mkdirSync(OUT_DIR, { recursive: true });
-const outPath = path.join(OUT_DIR, "CSHEET_PAGE_1_BROWN.sample.lua");
-fs.writeFileSync(outPath, bundled, "utf8");
 
-console.log(`Wrote ${outPath} (${bundled.length} bytes)`);
+for (const sample of SAMPLES) {
+  const bundled = bundleString(sample.entry, {
+    rootModuleName: "__root",
+    paths: ["?.ttslua", "?.lua"],
+    resolveModule,
+    metadata: false,
+  });
+  const outPath = path.join(OUT_DIR, sample.outName);
+  fs.writeFileSync(outPath, bundled, "utf8");
+  console.log(`Wrote ${outPath} (${bundled.length} bytes)`);
+}

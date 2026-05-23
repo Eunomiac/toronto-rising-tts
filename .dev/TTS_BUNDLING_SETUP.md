@@ -225,13 +225,22 @@ Every `CSHEET_PAGE_<n>_<COLOR>` object has a one-line stub under **`.tts/objects
 require("ui.ui_csheet")
 ```
 
+**Page 3 only** (`CSHEET_PAGE_3_*`) uses a separate entry so `lib/csheet_page3_xml` (+ templates) is not bundled into all ~80 sheet objects:
+
+```lua
+require("ui.ui_csheet_page3")
+```
+
+That entry loads `ui/ui_csheet_page3_local.ttslua` (registers `lib/csheet_page3_xml` on `_G`) then `ui/ui_csheet_core.ttslua`. Default pages must **not** pull the page-3 template chain (~+30 KB on page 3 objects only).
+
 Object scripts run in a **separate Lua VM** from Global. They must not pull the full game stack (`lib.pc_stats` → `core.sync`, etc.). Thin modules and `Global.call` keep each CSHEET bundle small (~tens of KB vs ~1.4 MB before slimming).
 
 | Layer | Module | Role |
 | ----- | ------ | ---- |
-| Object UI | `ui/ui_csheet.ttslua` | Page/seat from object name; navigation; applies UI from Global payloads |
+| Object UI (shared) | `ui/ui_csheet_core.ttslua` via `ui/ui_csheet.ttslua` or `ui/ui_csheet_page3.ttslua` | Page/seat from object name; navigation; applies UI from Global payloads |
 | Sheet diffs (Global) | `GlobalCollectSheetImageUpdates({ playerID, pageNum })` → resolves registry effects → `lib/pc_sheet_collect.ttslua` | Dot/box `setAttribute` list |
-| Page 3 XML (Global) | `GlobalBuildCsheetPage3Xml`, `GlobalFingerprintCsheetPage3` → `lib/csheet_page3_xml.ttslua` | Dynamic `setXml` only on page 3 |
+| Page 3 XML (page 3 objects) | `require("ui.ui_csheet_page3")` → `ui/ui_csheet_page3_local.ttslua` → `lib/csheet_page3_xml.ttslua` | `self.UI.setXml` in object VM (~+30 KB vs default entry) |
+| BP decals (object) | `lib/blood_potency_decals.ttslua` bundled into CSHEET object script | `self.getDecals` / `self.setDecals` — must not cross `Global.call` |
 | Object-only | `lib/csheet_constants.ttslua`, `lib/csheet_util.ttslua`, `lib/csheet_pose.ttslua` | CSHEET poses, delay, AlertGM — no `core.*` |
 
 **Verify bundle size**

@@ -964,6 +964,11 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
             Sync.full({ reason = "StorytellerScenesPanel.sceneLibraryApply" })
         end
 
+        local PCST = require("core.pc_storyteller_panel")
+        if PCST and type(PCST.refreshAllCharacterSheets) == "function" then
+            PCST.refreshAllCharacterSheets()
+        end
+
         StorytellerScenesPanel.refresh()
         if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
             GameStateOverlay.ensureTicker()
@@ -1062,15 +1067,16 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
         if U.isIn(seatKey, C.PlayerColors or {}) and type(O.applyPcSeatHiddenObjectPresence) == "function" then
             O.applyPcSeatHiddenObjectPresence(seatKey, nextPresent)
         end
-        local NPCS = require("core.npcs")
-        if U.isIn(seatKey, C.NPCSeats or {}) and NPCS and type(NPCS.reconcileAllFromState) == "function" then
-            NPCS.reconcileAllFromState({ force = true, deferUiRefresh = true })
+        reconcileLocationHostedConditions({ skipPresentation = true })
+        if Sync and type(Sync.full) == "function" then
+            Sync.full({ reason = "StorytellerScenesPanel.seatPresence" })
         end
-        local L = require("core.lighting")
-        if L and type(L.reconcileAllPlayers) == "function" then
-            L.reconcileAllPlayers()
+        if U.isIn(seatKey, C.PlayerColors or {}) then
+            local PCST = require("core.pc_storyteller_panel")
+            if PCST and type(PCST.refreshCharacterSheetsForColor) == "function" then
+                PCST.refreshCharacterSheetsForColor(seatKey)
+            end
         end
-        reconcileLocationHostedConditions()
         StorytellerScenesPanel.refresh()
         if type(UpdateUIDisplays) == "function" then
             UpdateUIDisplays({ playerHud = true })

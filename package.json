@@ -14,6 +14,7 @@
     "custom-ui-assets:pipeline": "node .tools/custom-ui-assets/run-custom-ui-assets-pipeline.js",
     "custom-ui-assets:merge": "node .tools/custom-ui-assets/merge-custom-ui-assets.js",
     "custom-ui-assets:extract-bp-decals": "node .tools/custom-ui-assets/extract-bp-decal-urls-from-save.js --save .dev/TS_Save_230.json --luaOut .dev/custom-ui-assets/bp-decal-urls.lua",
+    "custom-ui-assets:merge-bp-decals-into-csheets": "node .tools/custom-ui-assets/merge-bp-decals-into-csheet-custom-ui-assets.js --save .dev/TS_Save_230.json",
     "tts-save:inject-global": "node .tools/tts-save/inject-bundled-global-from-save-name.js",
     "tts-save:measure-bundles": "node .tools/tts-save/measure-bundles.js",
     "tts-save:bundle-csheet-sample": "node .tools/tts-save/bundle-csheet-sample.js",

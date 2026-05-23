@@ -271,8 +271,12 @@ function M.setCamera(player, cameraMode, lookAtPos)
     local playerColor = player     -- Save original string for error message
     -- Safely check if player color exists before accessing
     if not U.isIn(playerColor, Player.getAvailableColors()) then
-      U.AlertGM("M.setCamera: Invalid player color '" .. playerColor .. "'")
-      return
+      if U.isIn("Black", Player.getAvailableColors()) then
+        playerColor = "Black"
+      else
+        U.AlertGM("M.setCamera: Invalid player color '" .. playerColor .. "'")
+        return
+      end
     end
     player = Player[playerColor]
     if player == nil then
@@ -399,18 +403,18 @@ function M.setCamera(player, cameraMode, lookAtPos)
     -- Match debug-camera behavior: nudge away from the current pose first, then apply the
     -- requested preset. Applying the final lookAt immediately can no-op when deltas are tiny.
     U.RunSequence({
-      function()
-        player.lookAt(intermediateCameraData)
-        return 1
-      end,
+      -- function()
+      --   player.lookAt(intermediateCameraData)
+      --   return 1
+      -- end,
       function()
         player.lookAt(cameraData)
         return 3
       end,
-      function()
-        player.setCameraMode(playerCameraMode)
-        return 1
-      end
+      -- function()
+      --   player.setCameraMode(playerCameraMode)
+      --   return 1
+      -- end
     })
   end
 end

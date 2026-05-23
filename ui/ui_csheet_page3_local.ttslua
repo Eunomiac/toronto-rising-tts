@@ -1,0 +1,7 @@
+--[[
+  Page-3-only shim: registers lib.csheet_page3_xml on _G for ui.ui_csheet_core.
+  Loaded only from require("ui.ui_csheet_page3") — not from the default csheet entry.
+]]
+
+local PAGE3 = require("lib.csheet_page3_xml")
+rawset(_G, "CSHEET_PAGE3_LOCAL", PAGE3)

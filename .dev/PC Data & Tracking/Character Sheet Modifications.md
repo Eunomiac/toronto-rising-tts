@@ -29,12 +29,17 @@ At reconcile time, only the decal **`url`** changes. The image variant key is `"
 
 ```text
 node .tools/custom-ui-assets/extract-bp-decal-urls-from-save.js --saveName 230 --luaOut .dev/custom-ui-assets/bp-decal-urls.lua
+node .tools/custom-ui-assets/merge-bp-decals-into-csheet-custom-ui-assets.js --save .dev/TS_Save_230.json
 ```
 
 Symlink or copy: `.dev/TS_Save_230.json` → `%USERPROFILE%/OneDrive/Documents/My Games/Tabletop Simulator/Saves/TS_Save_230.json` (refresh after each TTS save).
 
 ### Reconcile pipeline
 
-On load and whenever `PCST.refreshCharacterSheetsForColor` runs, `ui/ui_csheet.ttslua` → `applyBloodPotencyDecals` (pages 1–2 only) reads merged stats via Global, resolves derived values and URLs via `lib/blood_potency_decals.ttslua`, and calls `setDecals` (preserving transform). Missing slots, unexpected decal names, or invalid URLs **error loudly** — no legacy name shims.
+On load and whenever `PCST.refreshCharacterSheetsForColor` runs, `ui/ui_csheet.ttslua` → `applyBloodPotencyDecals` (pages 1–2 only) calls **`self.getDecals`**, builds the payload with **`lib/blood_potency_decals.ttslua`**, and calls **`self.setDecals`** in the **same object script VM** (TTS rejects decal tables built or returned via `Global.call`). Variant URLs must be registered on that object’s **`CustomUIAssets`** — merge from `DecalPallet` with `.tools/custom-ui-assets/merge-bp-decals-into-csheet-custom-ui-assets.js`. Missing slots, unexpected decal names, or invalid URLs **error loudly** — no legacy name shims.
 
-Object → Global calls must pass **one params table** per `Global.call()` (TTS ignores extra arguments), e.g. `Global.call("GlobalResolveBloodPotencyDecals", { stats = stats, pageNum = pageNum })`.
+Effective Blood Potency for decals matches sheet dots: `stats.bloodPotency.base + stats.bloodPotency.temp + resolvedStatChanges.bloodPotency` (via `GlobalGetResolvedStatChangesForPlayer` — location conditions such as `bumpBloodPotency` apply through `statChanges`, not persisted `temp`). Decals live on **pages 1–2 only**; refreshing page 3 alone does not update them — use `PCST.refreshCharacterSheetsForColor` or reload pages 1/2. Scene apply refreshes all sheets after `Sync.full` when location conditions reconcile with `skipPresentation`.
+
+### Page 3 dynamic XML
+
+Only **`CSHEET_PAGE_3_*`** objects use `require("ui.ui_csheet_page3")` (bundles `lib/csheet_page3_xml` for local `self.UI.setXml`). All other pages use `require("ui.ui_csheet")`. Page 3 must not use the default entry — it errors if `page3Local` was not initialized.

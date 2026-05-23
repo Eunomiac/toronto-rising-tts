@@ -13,7 +13,6 @@ local C = require("lib.constants")
 local S = require("core.state")
 local O = require("core.objects")
 local U = require("lib.util")
-local Conditions = require("core.conditions")
 
 --- elementId -> last visibility we applied (incremental UI.show / UI.hide)
 local lastVisible = {}
@@ -59,6 +58,7 @@ end
 local function computeDesiredVisibility(playerID, seatColor)
   local want = {}
   if type(playerID) == "string" and playerID ~= "" and playerID ~= C.StorytellerID then
+    local Conditions = require("core.conditions")
     local resolved = Conditions.resolveForPlayer(playerID)
     if type(resolved.hudElementIds) == "table" then
       for elId, on in pairs(resolved.hudElementIds) do

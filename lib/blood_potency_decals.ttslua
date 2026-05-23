@@ -1,12 +1,12 @@
 --[[
-  Blood Potency derived-stat decal resolve helpers (Global-side; object scripts call via Global.call).
+  Blood Potency derived-stat decal resolve helpers for CSHEET page 1/2 object scripts.
+  getDecals / setDecals must run in the object script VM (TTS resource ownership).
   Agent guidance: .dev/PC Data & Tracking/Character Sheet Modifications.md
 ]]
 
 local BPD = {}
 
 local C = require("lib.constants")
-local P = require("lib.pc_stats")
 
 local BP_STAT_KEYS = { "bloodSurge", "mending", "discBonus", "discReroll", "baneSeverity" }
 
@@ -67,10 +67,39 @@ function BPD.resolveDecalUrl(statKey, value)
   return assertProductionDecalUrl(url, key)
 end
 
+--- Effective Blood Potency rating: stats.bloodPotency base + temp + resolved condition deltas.
+--- Matches `PSC.effectiveTempForDot` / sheet dot pipeline (location `bumpBloodPotency`, etc.).
+--- @param stats table|nil
+--- @param resolvedStatChanges table|nil merged statChanges from condition resolve
+--- @return number
+local function effectiveBloodPotency(stats, resolvedStatChanges)
+  if type(stats) ~= "table" then
+    return 0
+  end
+  local bp = stats.bloodPotency
+  if type(bp) == "number" then
+    return math.max(0, math.min(10, math.floor(bp)))
+  end
+  if type(bp) ~= "table" then
+    return 0
+  end
+  local rating
+  if bp.base ~= nil or bp.temp ~= nil then
+    rating = (tonumber(bp.base) or 0) + (tonumber(bp.temp) or 0)
+  else
+    rating = tonumber(bp.value) or 0
+  end
+  if type(resolvedStatChanges) == "table" then
+    rating = rating + (tonumber(resolvedStatChanges.bloodPotency) or 0)
+  end
+  return math.max(0, math.min(10, math.floor(rating)))
+end
+
 --- @param stats table
+--- @param resolvedStatChanges table|nil
 --- @return table bloodSurge, mending, discBonus, discReroll, baneSeverity
-function BPD.effectiveDerivedStats(stats)
-  local rating = P.effectiveBloodPotency(stats)
+function BPD.effectiveDerivedStats(stats, resolvedStatChanges)
+  local rating = effectiveBloodPotency(stats, resolvedStatChanges)
   local row = C.BloodPotency[rating]
   if type(row) ~= "table" then
     error(string.format(
@@ -112,8 +141,9 @@ end
 --- Resolve slot → url updates for one character sheet page (1 or 2).
 --- @param stats table
 --- @param pageNum number
+--- @param resolvedStatChanges table|nil
 --- @return table[] list of { slot = string, url = string }
-function BPD.resolveDecalsForPage(stats, pageNum)
+function BPD.resolveDecalsForPage(stats, pageNum, resolvedStatChanges)
   if pageNum ~= 1 and pageNum ~= 2 then
     return {}
   end
@@ -121,7 +151,7 @@ function BPD.resolveDecalsForPage(stats, pageNum)
   if type(slots) ~= "table" then
     error(string.format("blood_potency_decals.resolveDecalsForPage: no slot list for page %s", tostring(pageNum)))
   end
-  local derived = BPD.effectiveDerivedStats(stats)
+  local derived = BPD.effectiveDerivedStats(stats, resolvedStatChanges)
   local updates = {}
   for _, slot in ipairs(slots) do
     if type(slot) ~= "string" or slot == "" then
@@ -142,8 +172,9 @@ end
 --- Fingerprint derived BP decal values for one page (skip redundant setDecals).
 --- @param stats table
 --- @param pageNum number
+--- @param resolvedStatChanges table|nil
 --- @return string|nil
-function BPD.fingerprintPageDecals(stats, pageNum)
+function BPD.fingerprintPageDecals(stats, pageNum, resolvedStatChanges)
   if pageNum ~= 1 and pageNum ~= 2 then
     return nil
   end
@@ -151,12 +182,115 @@ function BPD.fingerprintPageDecals(stats, pageNum)
   if type(slots) ~= "table" then
     return nil
   end
-  local derived = BPD.effectiveDerivedStats(stats)
+  local derived = BPD.effectiveDerivedStats(stats, resolvedStatChanges)
   local parts = { "bpDecals", tostring(pageNum) }
   for _, slot in ipairs(slots) do
     parts[#parts + 1] = slot .. "=" .. tostring(derived[slot])
   end
   return table.concat(parts, "|")
+end
+
+--- Copy TTS Vector userdata/table into a plain {x,y,z} table for setDecals (avoids cross-script Vector reuse).
+--- @param v table|userdata
+--- @param context string
+--- @return table
+local function vec3ToTable(v, context)
+  if type(v) == "table" then
+    if v.x ~= nil and v.y ~= nil and v.z ~= nil then
+      return { v.x, v.y, v.z }
+    end
+    if v[1] ~= nil and v[2] ~= nil and v[3] ~= nil then
+      return { v[1], v[2], v[3] }
+    end
+  end
+  error(string.format("blood_potency_decals: invalid Vector (%s)", tostring(context)))
+end
+
+--- setDecals scale may be a number or Vector-like table.
+--- @param scale number|table|userdata
+--- @param context string
+--- @return number|table
+local function normalizeScale(scale, context)
+  if type(scale) == "number" then
+    return scale
+  end
+  return vec3ToTable(scale, context)
+end
+
+--- Build setDecals payload: preserve transforms from getDecals(), swap url from derived BP stats.
+--- Must run in the same object script that calls getDecals / setDecals (TTS resource ownership).
+--- @param existing table[] from obj.getDecals()
+--- @param stats table
+--- @param pageNum number
+--- @param objectLabel string for errors
+--- @param resolvedStatChanges table|nil
+--- @return table[] nextDecals
+function BPD.buildSetDecalsPayload(existing, stats, pageNum, objectLabel, resolvedStatChanges)
+  if type(existing) ~= "table" then
+    error(string.format(
+      "blood_potency_decals.buildSetDecalsPayload: getDecals failed for %s",
+      tostring(objectLabel)
+    ))
+  end
+  local updates = BPD.resolveDecalsForPage(stats, pageNum, resolvedStatChanges)
+  local urlBySlot = {}
+  for _, entry in ipairs(updates) do
+    urlBySlot[entry.slot] = entry.url
+  end
+
+  local seenSlot = {}
+  local nextDecals = {}
+  for index, decal in ipairs(existing) do
+    if type(decal) ~= "table" or type(decal.name) ~= "string" then
+      error(string.format(
+        "blood_potency_decals.buildSetDecalsPayload: invalid decal entry on %s",
+        tostring(objectLabel)
+      ))
+    end
+    local slot = decal.name
+    local newUrl = urlBySlot[slot]
+    if newUrl == nil then
+      error(string.format(
+        "blood_potency_decals.buildSetDecalsPayload: unexpected decal %q on %s (workshop AttachedDecal.name must be static slot key)",
+        slot,
+        tostring(objectLabel)
+      ))
+    end
+    if seenSlot[slot] then
+      error(string.format(
+        "blood_potency_decals.buildSetDecalsPayload: duplicate decal slot %q on %s",
+        slot,
+        tostring(objectLabel)
+      ))
+    end
+    seenSlot[slot] = true
+    local ctx = string.format("%s decal[%s]", tostring(objectLabel), tostring(index))
+    nextDecals[#nextDecals + 1] = {
+      name = slot,
+      url = newUrl,
+      position = vec3ToTable(decal.position, ctx .. " position"),
+      rotation = vec3ToTable(decal.rotation, ctx .. " rotation"),
+      scale = normalizeScale(decal.scale, ctx .. " scale"),
+    }
+  end
+
+  for slot, _ in pairs(urlBySlot) do
+    if not seenSlot[slot] then
+      error(string.format(
+        "blood_potency_decals.buildSetDecalsPayload: missing decal slot %q on %s (workshop AttachedDecal.name must match)",
+        slot,
+        tostring(objectLabel)
+      ))
+    end
+  end
+
+  if #nextDecals == 0 then
+    error(string.format(
+      "blood_potency_decals.buildSetDecalsPayload: no BP decals on %s",
+      tostring(objectLabel)
+    ))
+  end
+  return nextDecals
 end
 
 return BPD

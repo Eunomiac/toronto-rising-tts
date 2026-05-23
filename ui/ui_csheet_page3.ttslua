@@ -1,0 +1,5 @@
+---@diagnostic disable: undefined-global, lowercase-global
+-- CSHEET entry for CSHEET_PAGE_3_* only — loads page-3 XML builder before shared core.
+require("ui.ui_csheet_page3_local")
+local CSHEET = require("ui.ui_csheet_core")
+CSHEET.init({})

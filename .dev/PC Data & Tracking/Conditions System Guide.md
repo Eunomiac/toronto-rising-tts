@@ -92,7 +92,7 @@ Changes confirm gating or mandatory full reroll lifecycle?
 Two phases on every change:
 
 1. **Mutation** — write/remove keys in `playerData.conditions` (derive reconcile, location reconcile, setManual, setEvent, clear).
-2. **Presentation** — `Conditions.afterChange` → `Sync.player(color)` + sheet refresh; consumers read **`Conditions.resolveForPlayer`** or **`Conditions.resolveRollPolicy`** on demand.
+2. **Presentation** — `Conditions.afterChange` applies per-player lights/HUD/overlays/sheets (same slice as `Sync.player`, without requiring `core.sync`); consumers read **`Conditions.resolveForPlayer`** or **`Conditions.resolveRollPolicy`** on demand.
 
 Do not embed world side effects in `S.setStateVal` for stats without an explicit sync/reconcile call afterward.
 

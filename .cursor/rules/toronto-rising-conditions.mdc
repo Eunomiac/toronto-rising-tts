@@ -11,7 +11,7 @@ Before adding or changing any condition, read the **Agent quick guide** in [`.de
 
 - **Registry:** `lib/condition_defs.ttslua` — kinds (`derived`, `manual`, `event`, `location`), effect channels (`statChanges`, `hud`, `lighting`, `roll`).
 - **Persisted:** `playerData.conditions` stores active ids (+ instance data only); never inline effect payloads.
-- **Mutation:** reconcile / `setManual` / `setEvent` / `clear` / location reconcile — then `Conditions.afterChange` → `Sync.player(color)`.
+- **Mutation:** reconcile / `setManual` / `setEvent` / `clear` / location reconcile — then `Conditions.afterChange` (per-player presentation; mirrors `Sync.player` without requiring `core.sync`).
 - **Presentation:** consumers call `Conditions.resolveForPlayer(playerID)` — do not scatter `CD.Defs` reads.
 - **Roll FSM:** snapshot `Conditions.resolveRollPolicy(playerID)` on `RC.initiateRoll` → `active.rollPolicy`; `RC` reads policy only, not raw condition tables.
 - **Location reconcile + `Sync.full`:** pass `{ skipPresentation = true }` to `reconcileLocationHostedForScene` so presentation runs once in the caller's sync pass.
