@@ -18,8 +18,9 @@ This project has **long-running** Tabletop Simulator systems (dice, roll pipelin
 
 | Situation | Use |
 |-----------|-----|
+| Starting, continuing, or closing any feature/fix (always) | **Linear** (`.cursor/rules/toronto-rising-linear.mdc`): check `TOR-*` issues, update status/comments, keep RUNNING TASKLIST in sync. |
 | Resuming work, debugging something touched before, or avoiding contradicting earlier design | **Session history** (`ce-sessions` skill): search prior agent sessions for this workspace before large edits. |
-| Multi-step or cross-module change (several files, unclear sequencing) | **Planning** (`ce-plan` / `ce:work` skills): short plan or structured execution, then implement. |
+| Multi-step or cross-module change (several files, unclear sequencing) | **Planning** (`ce-plan` / `ce:work` skills): short plan or structured execution, then implement; create or link Linear issues before coding. |
 | Feature or fix is “done” and non-trivial; before merge/PR | **Structured review** (`ce:review` skill): tiered review appropriate to risk/size. |
 | Shipping: commit message + PR body should match repo standards | **Git / PR** skills (`git-commit`, `git-commit-push-pr`, `ce-pr-description`): align with `.cursorrules` (Linear refs, clear narrative). |
 | After solving a non-obvious bug or pattern worth remembering | **Compound learnings** (`ce:compound` / `cecompound-refresh` when applicable): capture in `docs/solutions/` if that tree exists and the repo uses it. |

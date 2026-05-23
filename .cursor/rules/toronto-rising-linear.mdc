@@ -1,0 +1,52 @@
+---
+description: Toronto Rising — Linear is primary project tracking; keep issues, RUNNING TASKLIST, and code in sync.
+alwaysApply: true
+---
+
+# Toronto Rising — Linear tracking (primary responsibility)
+
+**Linear is a primary source of truth for project state**, alongside the codebase. Agents must treat Linear synchronization as part of completing work — not an optional follow-up.
+
+## Authoritative surfaces
+
+| Surface | Role |
+| --- | --- |
+| **Linear** (`Toronto Rising` team, `TOR-*`) | Status, ownership, history, bug anchors for shipped features |
+| [`.dev/RUNNING TASKLIST.md`](../../.dev/RUNNING%20TASKLIST.md) | Human/agent authoring list for planned work; every bullet has `_(TOR-XX)_` |
+| **Code + `.dev/` docs** | Implementation truth; must match Done issues |
+
+When these diverge, **reconcile immediately** (update Linear and/or tasklist to match code reality).
+
+## Agent workflow (every task)
+
+1. **Before starting** — Search Linear for related `TOR-*` issues; read matching tasklist bullet if present.
+2. **When starting** — Set issue **In Progress**; confirm tasklist bullet has the correct `_(TOR-XX)_`.
+3. **When finishing** — Mark **Done** (or **Canceled** if descoped) with a comment: what changed, key files, verification, commit refs. Update tasklist `[ ]` → `[x]` if applicable. Reference `TOR-XX` in commit body when committing.
+4. **When discovering new work** — Create a Linear issue in the correct **domain project**, add `source:tasklist` if from tasklist, append `_(TOR-XX)_` to tasklist, set **In Progress** if starting immediately.
+5. **When finding bugs on shipped features** — Create a **Bug** issue; `relatedTo` the original **Done** feature issue. Do not reopen unrelated Done issues.
+
+## Domain projects
+
+Use domain projects (not legacy Phase 1/2/3): Foundation & Tooling, Synchronization & State, Dice & Rolls, Scenes & Chronicle, Lighting & Camera, NPC & Spotlight, Soundscape & Audio, UI & HUD, Character Sheets, Players & Connection, Table Objects, Agent Reviews & Quality, Out of Scope (Workshop).
+
+Parent epics: TOR-30 (Foundation) through TOR-43 (Workshop). Attach new issues under the matching epic via `parentId` when applicable.
+
+## Labels
+
+- `Feature`, `Improvement`, or `Bug`
+- `source:tasklist` when the item originates from RUNNING TASKLIST
+- `module:*` matching the domain (`module:dice`, `module:conditions`, etc.)
+
+## Tools
+
+- Linear MCP: `plugin-linear-linear` (`list_issues`, `get_issue`, `save_issue`, `save_comment`)
+- Team: **Toronto Rising**
+- Audit trail: [`.dev/plans/linear-alignment-log.md`](../../.dev/plans/linear-alignment-log.md)
+- Full sync workflow: [`.dev/DEVELOPMENT_WORKFLOW.md`](../../.dev/DEVELOPMENT_WORKFLOW.md) § Linear synchronization
+
+## Non-negotiables
+
+- **Never** leave RUNNING TASKLIST and Linear out of sync after a session.
+- **Never** delete Linear issues; cancel or close with reason.
+- **Never** skip creating a Done issue for shipped work — completed features are bug anchors.
+- **Do not** wait for the user to ask for Linear updates; sync is part of the definition of done.

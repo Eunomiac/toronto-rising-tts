@@ -25,7 +25,13 @@ Slot lists: `C.BloodPotencyDecalSlots.page1` / `.page2`.
 
 ### Image variants (URL catalog)
 
-At reconcile time, only the decal **`url`** changes. The image variant key is `"<statKey><value>"` (e.g. `"bloodSurge3"`), looked up in `C.BloodPotencyDecalUrls`. Placeholder URLs containing `REPLACE_ME` error until replaced with real Steam CDN URLs from the mod Custom Decal library.
+At reconcile time, only the decal **`url`** changes. The image variant key is `"<statKey><value>"` (e.g. `"bloodSurge3"`), looked up in `C.BloodPotencyDecalUrls`. URLs are extracted from the mod save’s **`DecalPallet`** array (`{ Name, ImageURL }` per entry — not `CustomUIAssets`):
+
+```text
+node .tools/custom-ui-assets/extract-bp-decal-urls-from-save.js --saveName 230 --luaOut .dev/custom-ui-assets/bp-decal-urls.lua
+```
+
+Symlink or copy: `.dev/TS_Save_230.json` → `%USERPROFILE%/OneDrive/Documents/My Games/Tabletop Simulator/Saves/TS_Save_230.json` (refresh after each TTS save).
 
 ### Reconcile pipeline
 

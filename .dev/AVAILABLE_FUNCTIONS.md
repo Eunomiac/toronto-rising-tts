@@ -4,7 +4,13 @@
 
 **Status:** This document should be updated whenever new functions are added to any module.
 
-**Last Updated:** 2026-05-19
+**Last Updated:** 2026-05-22
+
+---
+
+## Project tracking (Linear)
+
+**Linear is primary project tracking.** Before starting feature work, check [RUNNING TASKLIST](../RUNNING%20TASKLIST.md) and related `TOR-*` issues. When adding or completing functions tied to planned work, update Linear and the tasklist per [`.cursor/rules/toronto-rising-linear.mdc`](../../.cursor/rules/toronto-rising-linear.mdc).
 
 ---
 

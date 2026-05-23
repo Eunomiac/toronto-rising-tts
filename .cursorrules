@@ -75,15 +75,25 @@ Implement GUID-based player lighting system
 - Related: TOR-9, TOR-10
 ```
 
-### Linear Issue Tracking - MANDATORY
+### Linear Issue Tracking - MANDATORY (primary responsibility)
 
-**Linear is the source of truth for project state and task tracking.** You MUST keep Linear issues synchronized with code changes and development plans.
+**Linear is a primary source of truth for project state**, alongside the codebase. Linear synchronization is part of the definition of done — not an optional follow-up.
+
+**Always-on agent rule:** `.cursor/rules/toronto-rising-linear.mdc` (check before start, In Progress when working, Done + comment when finished, RUNNING TASKLIST ↔ Linear parity).
+
+**Authoritative surfaces:**
+
+- **Linear** — Toronto Rising team (`TOR-*`); domain projects and epics TOR-30–43
+- **`.dev/RUNNING TASKLIST.md`** — planned-work authoring; every bullet has `_(TOR-XX)_`
+- **Code + docs** — implementation truth; must match Done issues
+
+**Full workflow:** `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization. Audit trail: `.dev/plans/linear-alignment-log.md`.
 
 #### When to Check Linear
 
-- **Before starting work**: Check Linear for current project state and assigned tasks
-- **When planning changes**: Review related Linear issues to understand requirements
-- **After completing work**: Update Linear issues to reflect completion and changes
+- **Before starting work**: Search Linear for related `TOR-*` issues and read the matching tasklist bullet
+- **When planning changes**: Create or link issues before coding; attach to domain epic when applicable
+- **After completing work**: Mark **Done**, comment with files/commits/verification, update tasklist checkbox, reference `TOR-XX` in commits
 
 #### When to Update Linear Issues
 
@@ -93,12 +103,13 @@ Implement GUID-based player lighting system
    - Mark issues as "Done" when features/fixes are complete
    - Add comments summarizing what was implemented
    - Include relevant commit hashes or PR references
+   - Update RUNNING TASKLIST `[ ]` → `[x]` when applicable
 
 2. **Changing Development Plans**
    - Update issue descriptions if requirements change
    - Add comments explaining why plans changed
    - Update status if work is blocked or deferred
-   - Create new issues if new tasks are identified
+   - Create new issues if new tasks are identified; append `_(TOR-XX)_` to tasklist
 
 3. **Making Architectural Changes**
    - Update related issues if architecture decisions affect planned work
@@ -106,7 +117,7 @@ Implement GUID-based player lighting system
    - Link related issues if changes impact multiple areas
 
 4. **Discovering Issues or Blockers**
-   - Create new Linear issues for bugs or blockers discovered during work
+   - Create new Linear **Bug** issues for bugs on shipped features (`relatedTo` the Done feature)
    - Update existing issues if blockers are found
    - Add comments with details about the issue
 
@@ -141,31 +152,29 @@ Related issues: TOR-9 (completed), TOR-10 (completed)
 
 #### Linear Issue Status Management
 
-- **In Progress**: Update when actively working on an issue
-- **Done**: Mark when work is complete and committed
+- **In Progress**: Set when actively working on an issue
+- **Done**: Mark when work is complete and committed; tasklist checkbox updated
 - **Blocked**: Update if work cannot proceed (with explanation)
-- **Canceled**: Update if work is no longer needed (with reason)
+- **Canceled**: Update if work is no longer needed (with reason); do not delete issues
 
 #### Consistency Requirements
 
-**Linear issues MUST always be consistent with:**
+**Linear, RUNNING TASKLIST, and code MUST stay aligned:**
 
-- Current codebase state (if issue says "done", code should reflect that)
-- Development plans (if plans change, issues must be updated)
-- Documentation (documentation should match issue descriptions)
-- Commit messages (commits should reference related Linear issues)
+- If tasklist says done, Linear is Done and code reflects it
+- If code ships without a Done issue, create one (completed features are bug anchors)
+- Commit messages reference related `TOR-*` ids when applicable
 
 **If you notice inconsistencies:**
 
-- Update Linear issues immediately to match reality
+- Update Linear and/or tasklist immediately to match reality
 - Add comments explaining any discrepancies
-- Ensure all related issues are synchronized
 
 #### Finding and Using Linear Issues
 
-- Check Linear for issues related to your current work
+- Use Linear MCP (`plugin-linear-linear`) or the Linear app
+- Check Linear for issues related to your current work before coding
 - Reference Linear issue IDs (e.g., "TOR-123") in commit messages
-- Use Linear to understand project priorities and next tasks
 - Review Linear before making significant changes to understand context
 
 ## Code Organization
@@ -409,11 +418,14 @@ This restates the **Critical Workflow Rules → Documentation Updates — ABSOLU
 
 ### Key Documentation Files
 
+- `.cursor/rules/toronto-rising-linear.mdc` - **Primary responsibility:** Linear + RUNNING TASKLIST sync (always-on agent rule)
+- `.dev/RUNNING TASKLIST.md` - Planned work authoring surface; every bullet has `_(TOR-XX)_`
+- `.dev/plans/linear-alignment-log.md` - Linear alignment audit trail (114 issues, domain projects)
 - `.dev/PC Data & Tracking/Conditions System Guide.md` - **First stop for any condition work** (kinds, channels, roll policy)
 - `dev/TESTING.md` - Testing guide and test functions
 - `dev/GUID_REQUIREMENTS.md` - GUID requirements and setup
 - `dev/AVAILABLE_FUNCTIONS.md` - Function reference (check before coding)
-- `dev/DEVELOPMENT_WORKFLOW.md` - Development workflow and best practices
+- `dev/DEVELOPMENT_WORKFLOW.md` - Development workflow, Linear synchronization, best practices
 - `dev/EXTRACTABLE_FUNCTIONS_INDEX.md` - Reference patterns from other modules
 
 ## Player Colors and IDs
@@ -500,21 +512,21 @@ This restates the **Critical Workflow Rules → Documentation Updates — ABSOLU
 
 ## Questions to Ask Before Coding
 
-1. Does this functionality already exist? (Check `dev/AVAILABLE_FUNCTIONS.md`)
-2. Is there a utility function I should use? (Check `lib/util.ttslua`)
-3. Am I following existing patterns? (Check similar code in codebase)
-4. Have I checked Linear for related issues and current project state?
+1. **Is there a Linear issue (`TOR-*`) for this work?** Check Linear and [RUNNING TASKLIST](.dev/RUNNING%20TASKLIST.md); set **In Progress** before coding; create/link issue if missing.
+2. Does this functionality already exist? (Check `dev/AVAILABLE_FUNCTIONS.md`)
+3. Is there a utility function I should use? (Check `lib/util.ttslua`)
+4. Am I following existing patterns? (Check similar code in codebase)
 5. Have I updated documentation? (Update relevant docs)
-6. Have I updated Linear issues to reflect any changes?
+6. **When done:** Mark Linear **Done** with comment, update tasklist checkbox, reference `TOR-XX` in commit?
 7. Should I commit this? (Yes - commit after logical units of work)
 8. For long-running systems (dice, layout, roll pipeline, lighting) or work that continues past sessions, should I use **session continuity** (Compound Engineering) before reinventing decisions?
 9. For multi-file or high-risk changes, should I use a **short plan** and **structured pre-merge review** when proportionate?
 
 ## Compound Engineering (Cursor plugin)
 
-Agents must follow **`.cursor/rules/toronto-rising-compound-engineering.mdc`**. Proactively use Compound Engineering **skills** (session history, planning, review, git/PR helpers, learnings docs) when they reduce rework or improve quality. **Do not require the user to memorize slash-command syntax** (`/ce:…`); match user intent in natural language and apply the same workflows.
+Agents must follow **`.cursor/rules/toronto-rising-compound-engineering.mdc`** and **`.cursor/rules/toronto-rising-linear.mdc`**. Proactively use Compound Engineering **skills** (session history, planning, review, git/PR helpers, learnings docs) when they reduce rework or improve quality. **Do not require the user to memorize slash-command syntax** (`/ce:…`); match user intent in natural language and apply the same workflows.
 
 ---
 
-**Last Updated**: After GUID library separation
+**Last Updated**: 2026-05-22 (Linear as primary responsibility; toronto-rising-linear.mdc)
 **Reference**: See `dev/DEVELOPMENT_WORKFLOW.md` for detailed workflow information
