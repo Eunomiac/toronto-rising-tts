@@ -160,8 +160,8 @@ test("soundscape Unity guide documents setup and live verification steps", () =>
     "Unity 6000.0.62f1",
     "spatialBlend = 0",
     "silent",
-    "testSoundscape",
     "inspectSoundscapeAudio",
+    "Debug Soundscape",
   ].forEach((needle) => {
     assert.ok(source.includes(needle), `missing ${needle}`);
   });

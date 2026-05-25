@@ -33,7 +33,7 @@ bullets without evidence, confidence, or sourcing metadata.
 - `pcall` is forbidden in production paths and allowed only to mask a known, expected, non-actionable failure, with an adjacent comment explaining what is masked, why masking is safe, and what fallback or logging occurs.
 - The Tabletop Simulator MCP / External Editor bridge runs on localhost ports `39999` / `39998`; full setup, tooling (`tts_execute_lua`, `.tools/tts-bridge`), and pitfalls are in `.dev/TTS_MCP.md`.
 - External Editor executes the **saved/bundled** Lua, not the on-disk repo, so use the extension's Save and Play before expecting repo edits to take effect in-game.
-- From Global (`guid` `"-1"`) executes, prefer `spawnObjectData` over `spawnObject` to avoid TTS `.NET` null-reference failures during MCP-driven spawns; see `DEBUG.ensureEasingTestRig()` in `core/debug.ttslua`.
+- From Global (`guid` `"-1"`) executes, prefer `spawnObjectData` over `spawnObject` to avoid TTS `.NET` null-reference failures during MCP-driven spawns; see `core/npcs.ttslua` spawn patterns.
 - For structured return data from TTS, encode JSON in Lua (`JSON.encode` + `print` + `return`) and parse on the Node/TS side, falling back to parsing JSON out of `prints`, because nested tables do not round-trip reliably through `messageID` 5 `returnValue`.
 - Emit agent-readable lines from Lua via `U.emitForAgent(kind, data)` or `U.mcpEmitResult(data)` so each event is a single `TR_AGENT_V1` JSON envelope with `seq`, `kind`, `t`, and nested `data`.
 - Avoid `node -e` with embedded Lua on Windows due to PowerShell quoting; prefer scripts under `.tools/tts-bridge/scripts/` (e.g. `npm run tts-bridge:run-easing-mcp-test`).

@@ -2,7 +2,19 @@
 
 ## Active
 
-_(empty — 2026-05-25 `/tr-inbox` pass)_
+- in the player-facing roll panel, dots representing dice added to the pool are no longer color coded
+  - normal dice should be white
+  - hunger dice should be red
+  - rouse dice should be dark red, and should be offset slightly to the left of the main dice readout
+    - this is true for all rouse pools: if a blood surge is also triggered (which allows a second rouse check to be incorporated into the roll, since blood surges never roll more than one die), it should be offset from any other rouse check rolls included
+  - obliv-rouse dice should be dark purple
+  - werewolf dice should be yellow-green
+  - rage dice should be orange
+- when a player "Takes Half", the broadcast display should depict dice images _as if_ the player rolled their full pool except all dice were Normal Dice, and half of the dice (rounded down) scored a single success, while the rest are displayed blank
+- remove excess verbiage from roll result broadcast: no die roll numbers (the images are enough)
+- as with the roll panel indication of dice pool describe above, roll result images of rouse check(s) should be offset from each other, and from the dice pool proper
+- fade-in of weather audio is very abrupt, possibly because a cross-fade attempt is occurring when the system is under heavy load, resulting in the fade being delayed and jumping to max volume instantly; this _may_ be solved naturally by TOR-147 (which separates fade-outs into an earlier part of scene transition, which might result in smoother fade-ins later in the process)
+
 
 ---
 

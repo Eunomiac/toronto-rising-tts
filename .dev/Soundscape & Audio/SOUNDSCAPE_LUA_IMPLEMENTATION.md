@@ -34,8 +34,8 @@ The current Lua implementation includes:
 - After **`Soundscape.applyContext`** drives emitters to match persisted `gameState.soundscape`, callers that immediately run **`Sync.full`** should invoke **`Soundscape.markReconciledToCurrentState()`** so incremental `Soundscape.reconcileFromState` does not queue a duplicate fade (scene / library apply used to stack three fades: site context, narrative context, reconcile snapshot). On library **Apply active scene**, defer **`markReconciledToCurrentState`** until after chronicle weather / final **`applyContext`** so the fingerprint matches post-weather emitters (see `StorytellerScenesPanel.sceneLibraryApply`).
 - **Looping clip swaps (`playCatalogEntry`):** Before a non-silent looping effect, swap to the catalog **`silent`** stub at zero gain, then call `playLoopingEffect` for the target clip with **`hardSilenceAudioSources`** + volume 0. Unmute or fade-in runs after **`U.delay(..., EMITTER_POST_SWAP_ARM_SECONDS)`** (~one frame) so Unity does not audibly crossfade old→new at full gain. **`playCatalogEntryGeneration`** per channel invalidates stale delayed arms when a newer swap or **`cancelSingleEmitterTransition`** occurs.
 - **Weather rain/wind on scene switch:** **`setRainLayer`** / **`setWindLayer`** skip clip restart when the channel already plays the same catalog effect; they adjust volume only via **`setChannelImmediateVolume`** (indoor ducking changes without a burst-prone restart). _(TOR-136.)_
-- `core/debug.ttslua` exposes console helpers such as `testSoundscape()`,
-  `inspectSoundscapeAudio()`, `soundscapeRain()`, `soundscapeWind()`,
+- `core/debug.ttslua` exposes console helpers such as `inspectSoundscapeAudio()`,
+  `soundscapeRain()`, `soundscapeWind()`,
   `soundscapeThunder()`, and `soundscapeFeatured()`.
 
 ## Target Runtime Shape
@@ -284,8 +284,8 @@ Keep the ownership boundary clear:
 Modify `core/debug.ttslua` so console testing covers the expanded runtime:
 
 - `inspectSoundscapeAudio()`: now prints looping and trigger effects.
-- `testSoundscape()`: starts background music, location ambience, rain, wind, and one
-  thunder trigger.
+- Use **Debug Soundscape** panel or Scenes **Apply location** for live layered playback;
+  `inspectSoundscapeAudio()` for emitter inventory.
 - `soundscapeWeather(weatherKey, isIndoors)`: applies a preset.
 - `soundscapeRain(rainKey)`: tests rain independently.
 - `soundscapeWind(windKey)`: tests wind independently.
@@ -350,8 +350,7 @@ Unity/TTS verification:
 - `lua inspectSoundscapeAudio()` finds all current emitters.
 - Each loop emitter lists the expected Looping Effects, including `silent`.
 - The thunder emitter lists expected Trigger Effects.
-- `lua testSoundscape()` plays background music, location ambience, rain, and wind
-  simultaneously.
+- Apply a scene with site + weather, or use Sound panel / Debug Soundscape for layered playback.
 - `lua soundscapeThunder()` plays one thunder hit without interrupting rain or wind.
 - `lua soundscapeWeather("none")` silences rain and wind and cancels thunder timers.
 - `lua soundscapeWeather("<storm preset>", false)` plays outdoor rain/wind and

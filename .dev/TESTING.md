@@ -1,614 +1,85 @@
-# VTM5E Module - Testing Guide
+# Toronto Rising — testing guide
 
-This document outlines comprehensive tests for the VTM5E Tabletop Simulator module. All test functions are available via the TTS console using the `lua` command.
+Manual verification lives in **[E2E Playbooks](E2E%20Playbooks/README.md)** (TOR-141). This file indexes **remaining** console helpers in [`core/debug.ttslua`](../core/debug.ttslua).
 
-## Quick Start
+## Quick start
 
-1. Open TTS and load your mod
-2. Press `~` (tilde) to open the console
-3. Type `lua debugHelp()` and press Enter to see all available commands
-4. Run individual tests as described below
+1. Load mod → **Save & Play** (bundled Lua must match repo).
+2. You are table **Host** (solo is fine — only one client). Seat **Black** for Scenes/DEBUG/ST; for Dice, use `rollTest` + **View →** target color, or sit that color briefly.
+3. `lua debugHelp()` — list current commands.
+4. Run a playbook: [Scenes-E2E](E2E%20Playbooks/Scenes-E2E.md) or [Dice-E2E](E2E%20Playbooks/Dice-E2E.md).
 
-## Available Test Commands
+## E2E playbooks (primary)
 
-All test functions are exposed globally and can be called from the TTS console:
+| Playbook | When to run |
+| --- | --- |
+| [Scenes-E2E](E2E%20Playbooks/Scenes-E2E.md) | After scene/library/clock/map changes — smoke ~35 min (A–E), full ~100 min (present day, RT ticker, seat absence + map pins F–N) |
+| [Dice-E2E](E2E%20Playbooks/Dice-E2E.md) | After roll pipeline changes — smoke ~30 min (A–E), full ~90 min (G–P: Take Half, WP, compound rouse, bags, baton, Blood Surge, Werewolf, Oblivion corners) |
 
-```lua
-lua testState()              -- Test state management
-lua testScenes()             -- Test scene system
-lua testSoundscape()         -- Test layered soundscape playback
-lua debugHelp()              -- Show all commands
-```
-
----
-
-## Test Categories
-
-### 1. State Management Tests
-
-#### Basic State Operations
+## Console helpers (inspection)
 
 ```lua
-lua testState()
-```
-
-**What it tests:**
-
-- Setting and getting simple state values
-- Nested state access (e.g., `players.Red.hunger`)
-- Handling non-existent keys (should return nil)
-- Current phase access
-
-**Expected Results:**
-
-- All set/get operations should work correctly
-- Nested paths should create intermediate tables automatically
-- Non-existent keys should return nil without errors
-
-#### State Persistence
-
-```lua
-lua testStatePersistence()
-```
-
-**What it tests:**
-
-- JSON encoding of game state
-- JSON decoding of saved data
-- Values preserved correctly through save/load cycle
-
-**Expected Results:**
-
-- State should encode to JSON without errors
-- Decoded state should match original values
-- Nested structures should be preserved
-
-**Visual Check:**
-
-- After running, verify the console shows matching values before/after save
-
----
-
-### 2. Scene Management Tests
-
-#### Basic Scene Loading
-
-```lua
-lua testScenes()
-```
-
-**What it tests:**
-
-- Listing available scenes
-- Loading scenes instantly
-- Getting current scene
-- Handling invalid scene names
-- Smooth scene transitions (fade)
-
-**Expected Results:**
-
-- Should list all 8 scene presets (default, elysium, alley, etc.)
-- Valid scenes should load successfully
-- Invalid scenes should fail gracefully with error message
-- Scene transitions should start smoothly
-
-**Visual Check:**
-
-- Lighting should change when scenes load
-- Scene name should appear in admin panel
-- Transitions should be smooth (2 seconds for fade)
-
-#### Test All Scene Presets
-
-```lua
-lua testAllScenes()
-```
-
-**What it tests:**
-
-- All scene presets load without errors
-- Each scene applies its lighting correctly
-
-**Expected Results:**
-
-- All scenes should load successfully
-- Each scene should have distinct lighting characteristics
-
-**Visual Check:**
-
-- Watch lighting change as each scene loads
-- Verify each scene has the expected atmosphere (bright for elysium, dark for alley, etc.)
-
-#### Quick Scene Change
-
-```lua
-lua changeScene("elysium")
-lua changeScene("tension")
-lua changeScene("alley")
-```
-
-**What it tests:**
-
-- Quick scene switching without full test suite
-
-**Visual Check:**
-
-- Immediate lighting change
-- Admin panel scene display updates
-
----
-
-### 3. Soundscape Tests
-
-#### Inspect Soundscape Emitters
-
-```lua
-lua inspectSoundscapeAudio()
-```
-
-**What it tests:**
-
-- Hidden `Custom_Assetbundle` emitters are present, GUID-registered, and tagged correctly
-- Looping and Trigger effect names match `lib/soundscape_catalog.ttslua`
-- Unity `AudioSource` components are visible to Lua for volume and 2D-audio checks
-
-**Expected Results:**
-
-- Nine emitters should be found: `musicA`, `musicB`, `featuredA`, `featuredB`, `locationA`, `locationB`, `weatherRain`, `weatherWind`, and `weatherThunder`
-- Loop-capable emitters should list expected Looping Effects, including `silent`
-- Trigger-capable emitters should list expected Trigger Effects, including music and thunder entries
-- `tagMatchesGuid` should be true for each tagged emitter
-
-#### Layered Playback
-
-```lua
-lua testSoundscape()
-```
-
-**What it tests:**
-
-- Featured music is exclusive with background music: starting one should fade or pause the other
-- Rain, wind, thunder, and location should continue independently while music lanes switch
-- Debug output includes MCP-friendly `TR_AGENT_V1` summaries when available
-
-**Visual/Audio Check:**
-
-- Host and at least one connected client should hear the active layers
-- Moving the camera away from the hidden emitters should not change perceived volume
-- `lua soundscapeStopAll()` should silence every layer by switching to the `silent` loop
-- Use `lua soundscapeThunder("hit", "thunder1")` to verify a specific thunder Trigger Effect
-- Use `lua soundscapeFeatured("TR_Intro")` to verify the intro-to-loop featured lane
-
----
-
-### 4. Zone Management Tests
-
-#### Zone Activation/Deactivation
-
-```lua
-lua testZones()
-```
-
-**What it tests:**
-
-- Zone state tracking
-- Activating zones (enables `onObjectEnterZone` events)
-- Deactivating zones (disables zone events)
-- Visual show/hide of zones
-
-**Expected Results:**
-
-- Zone state should toggle correctly
-- Zone events should be enabled/disabled accordingly
-- Zones should move above/below table when shown/hidden
-
-**Visual Check:**
-
-- Scripting zones should move when hidden/shown
-- Zone state button in debug panel should reflect status
-- Objects entering zones should trigger events only when active
-
-#### Zone Status Check
-
-```lua
+lua debugHelp()
+lua showState()
+lua showScene()
 lua showZones()
+lua inspectSoundscapeAudio()
+lua DEBUG.dumpConditions("Brown")
+lua DEBUG.dumpRollPolicy("Brown")
 ```
 
-**What it tests:**
+`showScene()` prints `sessionScene` + `sceneLibrary` keys (not legacy preset names).
 
-- Current zone state retrieval
+## Dice debug (solo Host — no second client)
 
-**Expected Results:**
-
-- Should display whether zones are locked (inactive) or active
-
----
-
-### 5. Main Module Tests
-
-#### Main Module Functions
+`rollTest` arms rolls using persisted character ids; you do not need another player seated. Use TTS **View** to show another seat’s roll panel, or sit that color for bag-click steps.
 
 ```lua
-lua testMain()
+lua rollTest("Brown", 3)
+lua rollState("Brown")
+lua rollCancel("Brown")
+lua rollCancelAll()
+lua rollConfirm("Brown")
+lua rollStTest("E2E", C.RollType.STANDARD)
+lua rollStSlots()
 ```
 
-**What it tests:**
-
-- `M.forPlayers()` iteration pattern
-- Phase management
-- Phase advancement
-
-**Expected Results:**
-
-- Should iterate over all connected players
-- Should display current phase
-- Should successfully advance phase
-
-**Visual Check:**
-
-- Admin panel should show updated phase after advancement
-- Console should show player iteration messages
-
-#### Quick Phase Change
-
-```lua
-lua setPhase("PLAY")
-lua setPhase("COMBAT")
-```
-
-**What it tests:**
-
-- Quick phase switching
-
-**Visual Check:**
-
-- Admin panel phase display should update
-- Phase-specific UI elements may change visibility
-
----
-
-### 6. UI Tests
-
-#### UI Display Updates
-
-```lua
-lua testUI()
-```
-
-**What it tests:**
-
-- Phase display updates
-- Scene display updates
-- Player stat updates (hunger, willpower, health)
-
-**Expected Results:**
-
-- UI elements should update to reflect current state
-- Player stats should appear correctly in player HUDs
-
-**Visual Check:**
-
-- **Admin Panel (Storyteller/Host only):**
-  - "Current Phase" display should match actual phase
-  - "Current Scene" display should match actual scene
-- **Player HUDs (visible to each player):**
-  - Hunger, Willpower, Health values should update
-  - Values should match game state
-
-#### Manual UI Updates
-
-After changing state, manually trigger UI update:
+## Quick setters (prefer Scenes / Sound panels for narrative)
 
 ```lua
 lua setHunger("Red", 3)
+lua soundscapeMusic("main")
+lua soundscapeWeather("lightRain", true)
+lua soundscapeLocation("sewers")
+lua soundscapeStopAll()
 ```
 
-Then verify the Red player's HUD shows hunger: 3
+Use **Debug Soundscape** (Storyteller DEBUG panel) to audition catalog tracks with per-lane volume sliders.
 
----
+## File logging
 
-### 7. Utility Functions Tests
-
-#### Core Utilities
+See [DEBUG_FILE_LOGGING.md](DEBUG_FILE_LOGGING.md). Examples:
 
 ```lua
-lua testUtilities()
+lua logStateToFile()
+lua logNpcPlacementIntentToFile()
+lua logAllToFiles()
 ```
 
-**What it tests:**
+## DEBUG panel (in-game)
 
-- `U.Type()` - Type checking
-- `U.map()` - Array transformation
-- `U.filter()` - Array filtering
+Storyteller **== DEBUG ==** column (no automated test suites):
 
-**Expected Results:**
+- Print State, Debug Seat Lights, Sync incremental / Sync All (force)
+- **Debug Soundscape**, **Debug Camera**, **Debug Light** (+ GUID field)
 
-- Type checks should correctly identify table, string, number
-- Map should transform array correctly
-- Filter should return only matching elements
+Legacy **Testing Suites** (Run All Tests, Lighting & Signals, Easing) were removed in TOR-141.
 
-**Note:** These are unit tests - results appear in console only.
+## MCP / agents
 
----
+- [TTS_MCP.md](TTS_MCP.md) — `tts_execute_lua`, `TR_AGENT_V1` lines, timeouts
+- Prefer `U.mcpEmitResult` / `U.emitForAgent` for structured execute output
 
-### 8. Integration Tests
+## Removed (do not document)
 
-#### Full System Integration
-
-```lua
-lua testIntegration()
-```
-
-**What it tests:**
-
-- All modules working together
-- State → Scene → Phase → UI flow
-- End-to-end functionality
-
-**Expected Results:**
-
-- All steps should complete without errors
-- Final state should reflect all changes
-- UI should update correctly
-
-**Visual Check:**
-
-- Watch the sequence of changes
-- Verify final state matches expected values
-- Check UI displays match state
-
----
-
-### 9. State Inspection
-
-#### View Current State
-
-```lua
-lua showState()
-```
-
-**What it displays:**
-
-- Complete game state as formatted JSON
-- Useful for debugging state issues
-
-#### View Current Scene
-
-```lua
-lua showScene()
-```
-
-**What it displays:**
-
-- Current scene name
-- Scene preset data (lighting, lights, music, description)
-
-#### View Zone Status
-
-```lua
-lua showZones()
-```
-
-**What it displays:**
-
-- Whether zones are locked (inactive) or active
-
----
-
-## Quick Reference Commands
-
-### State Manipulation
-
-```lua
-lua setHunger("Red", 3)          -- Set Red player hunger to 3
-lua setHunger("Brown", 0)        -- Set Brown player hunger to 0
-```
-
-### Scene Control
-
-```lua
-lua changeScene("elysium")       -- Load Elysium scene
-lua changeScene("tension")       -- Load Tension scene
-lua changeScene("alley")         -- Load Alley scene
-```
-
-### Soundscape Control
-
-```lua
-lua inspectSoundscapeAudio()             -- Inspect hidden AssetBundle emitters
-lua testSoundscape()                     -- Start music, weather, and location layers
-lua soundscapeMusic("intrigue")          -- Set Storyteller music mood
-lua soundscapeWeather("lightRain", true) -- Set weather and indoor ducking
-lua soundscapeLocation("sewers")         -- Set location ambience
-lua soundscapeStopAll()                  -- Stop all soundscape layers
-```
-
-### Phase Control
-
-```lua
-lua setPhase("PLAY")             -- Set phase to Play
-lua setPhase("COMBAT")           -- Set phase to Combat
-lua setPhase("INIT")             -- Set phase to Initialization
-```
-
-### Inspection
-
-```lua
-lua showState()                  -- View full game state
-lua showScene()                  -- View current scene info
-lua showZones()                  -- View zone status
-lua debugHelp()                  -- Show all commands
-```
-
----
-
-## Manual Testing Checklist
-
-### Module Loading
-
-- [ ] Game loads without Lua errors
-- [ ] All modules initialize correctly (check console output)
-- [ ] UI loads and displays correctly
-- [ ] Initial state is set to defaults
-
-### State Management
-
-- [ ] Game state persists through save/load
-- [ ] Nested state access works (e.g., `players.Red.hunger`)
-- [ ] State values can be modified and retrieved
-
-### Scene System
-
-- [ ] All 8 scene presets load correctly
-- [ ] Lighting changes appropriately for each scene
-- [ ] Scene transitions are smooth (fadeToScene)
-- [ ] Current scene is saved in game state
-- [ ] Scene restores on game load
-
-### Zone Management
-
-- [ ] Zones can be activated/deactivated
-- [ ] Zone events fire correctly when active
-- [ ] Zone events don't fire when deactivated
-- [ ] Zones can be shown/hidden visually
-- [ ] Zone state persists through save/load
-
-### UI Functionality
-
-- [ ] Admin panel visible only to Host/Black player
-- [ ] Player HUDs visible only to respective players
-- [ ] Toggle panels work (collapse/expand)
-- [ ] Soundscape panel opens from the Storyteller toolbar
-- [ ] Soundscape music mood buttons update the current mood summary
-- [ ] Scene buttons change scenes correctly
-- [ ] Phase buttons advance phase correctly
-- [ ] Player stats update correctly in UI
-- [ ] Phase/Scene displays update correctly
-
-### Player Stats
-
-- [ ] Hunger values display correctly (0-5)
-- [ ] Willpower values display correctly (0-5)
-- [ ] Health values display correctly (0-7)
-- [ ] Values update when changed via `setHunger()`
-- [ ] Values persist through save/load
-
-### Soundscape
-
-- [ ] Unity soundscape AssetBundle follows `.dev/SOUNDSCAPE_UNITY_SETUP.md`
-- [ ] Hidden emitters have the required `soundscape_*` tags
-- [ ] Music, weather, and location loops play simultaneously
-- [ ] Audio is non-positional (`spatialBlend = 0`)
-- [ ] Indoor weather ducking lowers weather volume
-- [ ] `soundscapeStopAll()` silences every channel
-- [ ] Soundscape state persists through save/load where useful
-
-### Error Handling
-
-- [ ] Invalid scene names show error messages
-- [ ] Invalid phase names show error messages
-- [ ] Missing state keys return nil (no crashes)
-- [ ] Console errors are informative
-
----
-
-## Testing Workflow
-
-### Initial Load Test
-
-1. Load the mod in TTS
-2. Check console for any initialization errors
-3. Run `lua debugHelp()` to verify debug module loaded
-4. Run `lua testState()` to verify basic functionality
-
-### Functional Tests
-
-1. Run each test category in order:
-
-   ```lua
-   lua testState()
-   lua testScenes()
-   lua testZones()
-   lua testMain()
-   lua testUI()
-   ```
-
-2. Visually verify results in-game
-3. Check console output for any errors
-
-### Integration Test
-
-1. Run `lua testIntegration()` for full system test
-2. Verify all modules work together
-3. Check UI updates correctly
-4. Save and reload game, verify state persists
-
-### Manual Verification
-
-1. Use quick setters to change values
-2. Verify UI updates immediately
-3. Save game, reload, verify persistence
-4. Test edge cases (max values, invalid inputs, etc.)
-
----
-
-## Common Issues and Solutions
-
-### Issue: UI doesn't load
-
-**Solution:** Verify `HUD_XML_PLACEHOLDER` in `global.ttslua` contains the actual XML content from `ui/Global.xml`
-
-### Issue: Test functions not found
-
-**Solution:** Ensure `core/debug.ttslua` is required in `global.ttslua` and the module loaded correctly
-
-### Issue: Scene changes don't affect lighting
-
-**Solution:**
-
-- Verify lights exist in the scene with correct tags
-- Check `L.LIGHTMODES` in `core/lighting.ttslua` has matching light definitions
-- Verify light GUIDs in `lib/constants.ttslua` match actual light objects
-
-### Issue: Zone events don't fire
-
-**Solution:**
-
-- Check zones are activated: `lua showZones()`
-- Verify `ActivateZones()` is called during initialization
-- Check zone event handlers are assigned: `onObjectEnterZone` should not be nil
-
-### Issue: UI displays show wrong values
-
-**Solution:**
-
-- Manually trigger update: Ensure `UpdateUIDisplays()` is called after state changes
-- Check UI element IDs match between XML and update function
-- Verify player colors match (e.g., "Red" vs "red")
-
----
-
-## Performance Testing
-
-While not strictly necessary, you can test performance:
-
-1. **Load time:** Note how long `onLoad()` takes to complete
-2. **Scene transitions:** Verify smooth transitions don't cause lag
-3. **UI updates:** Ensure UI updates don't cause frame drops
-4. **State access:** Test nested state access performance with many players
-
----
-
-## Notes
-
-- All test functions print results to the console
-- Tests that require visual verification are marked
-- Some tests use `Wait.time()` for async operations - allow time to complete
-- Debug module can be disabled in production by not requiring it in `global.ttslua`
-- Test functions are safe to run multiple times
-- State changes from tests persist until manually reset or game reloaded
-
----
-
-**Last Updated:** After Phase 2 completion
-**Module Version:** Development/Testing
+Automated suites (`testState`, `testScenes`, `runTests`, `testEasing`, `changeScene`, `testSoundscape`, etc.) were removed as obsolete. Use E2E playbooks instead.

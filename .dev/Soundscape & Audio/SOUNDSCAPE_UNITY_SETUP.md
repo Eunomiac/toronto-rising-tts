@@ -339,12 +339,10 @@ Recommended object settings:
 After saving the objects into the mod:
 
 1. Use Save & Play so TTS loads the current Lua bundle.
-2. In the TTS console, run:
-   - `lua inspectSoundscapeAudio()`
-   - `lua testSoundscape()`
-3. Confirm `inspectSoundscapeAudio` lists all four emitters, at least one
+2. In the TTS console, run `lua inspectSoundscapeAudio()` (or Sound panel **Inspect**).
+3. Confirm `inspectSoundscapeAudio` lists all emitters, at least one
    `AudioSource` per emitter, and the expected looping effect names.
-4. Confirm `testSoundscape` starts music, weather, and location audio together.
+4. Apply a library scene with site + weather (Scenes panel), or use **Debug Soundscape** to audition tracks — confirm music, weather, and location layers play together.
 5. Ask a connected client to confirm they hear the same non-positional audio.
 6. Move the camera away from the hidden emitters and confirm volume does not change.
 7. Run:

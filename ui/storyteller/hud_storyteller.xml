@@ -13,7 +13,7 @@
     <!-- ================================================================ -->
     <!-- Main Button Column (left side): Print State + debug test buttons  -->
     <!-- ================================================================ -->
-    <VerticalLayout class="storyteller_buttonControls" visibility="Host" height="400">
+    <VerticalLayout class="storyteller_buttonControls" visibility="Host" height="340">
       <Text class="hud_storyteller_header">== DEBUG ==</Text>
       <Button class="hud_storyteller_button" onClick="HUD_printState">Print State</Button>
       <Button class="hud_storyteller_button" onClick="HUD_debugSeatLights">Debug Seat Lights</Button>
@@ -28,11 +28,6 @@
         <Button class="hud_storyteller_button" onClick="HUD_debugLightActivate">Debug Light</Button>
         <InputField id="dl_guid" class="hud_storyteller_input guid_input" onValueChanged="HUD_debugLightGuidInput" onEndEdit="HUD_debugLightGuidInput"></InputField>
       </HorizontalLayout>
-      <Text class="spacer_15"></Text>
-      <Text class="hud_storyteller_label">Testing Suites:</Text>
-      <Button class="hud_storyteller_button" onClick="HUD_debugRunTests">Run All Tests</Button>
-      <Button class="hud_storyteller_button" onClick="HUD_debugTestLightingAndSignals">Lighting &amp; Signals</Button>
-      <Button class="hud_storyteller_button" onClick="HUD_debugTestEasing">Easing</Button>
     </VerticalLayout>
 
     <Include src="panel_debug_light.xml" />

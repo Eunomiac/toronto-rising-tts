@@ -1110,24 +1110,9 @@ Tasks:
 
 ## 14. Testing Notes
 
-All test functions live in `core/debug.ttslua` and are callable from the TTS console.
+Manual dice verification: [`.dev/E2E Playbooks/Dice-E2E.md`](../E2E%20Playbooks/Dice-E2E.md) (TOR-141). Console helpers: `rollTest`, `rollState`, `rollCancel`, `rollCancelAll`, `rollConfirm`, `rollStTest`, `rollStSlots` in `core/debug.ttslua` — see [`.dev/TESTING.md`](../TESTING.md).
 
-```lua
--- Test all 7 result classes
-DEBUG.testDiceClassification()
-
--- Test Remorse pool calculation edge cases
-DEBUG.testRemorsePool()
-
--- Simulate a full Standard Roll flow without physical dice
-DEBUG.testRollFlow_Standard(color, normalValues, hungerValues, difficulty)
-
--- Simulate a Rouse Check failure (verify hunger increment + Frenzy queue)
-DEBUG.testRollFlow_Rouse(color, dieValue)
-
--- Verify state is clean after cancel
-DEBUG.testRollCancel(color)
-```
+Planned automation (`DEBUG.testRollFlow_*`, classification/remorse unit tests) is **not** implemented in the repo; do not reference those names until added.
 
 ---
 
