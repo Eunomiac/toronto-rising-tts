@@ -454,6 +454,19 @@ function SceneLibrary.resolveMirrorSceneKey()
     return nil
 end
 
+--- Stops live→library mirroring and clears on-table / selection indicators after End scene.
+--- Call before live `sessionScene` mutations that must not write back into stored library rows.
+function SceneLibrary.detachLiveTableFromLibraryMirror()
+    local S = require("core.state")
+    local K = SceneLibrary.resolveMirrorSceneKey()
+    if type(K) == "string" and K ~= "" then
+        S.setStateVal(false, "sceneLibrary", "scenes", K, "receivesLiveWrites")
+    end
+    SceneLibrary.setExclusiveLiveMirror(nil)
+    S.setStateVal(nil, "sceneLibrary", "lastAppliedKey")
+    S.setStateVal(nil, "sceneLibrary", "activeKey")
+end
+
 --- Sets `receivesLiveWrites = true` on exactly one library row; clears the flag on all others.
 --- @param sceneKey string|nil When nil/empty, clears mirroring on every row.
 function SceneLibrary.setExclusiveLiveMirror(sceneKey)
@@ -466,7 +479,8 @@ function SceneLibrary.setExclusiveLiveMirror(sceneKey)
     end
     for sk, _ in pairs(scenes) do
         if type(sk) == "string" then
-            S.setStateVal(sk == target, "sceneLibrary", "scenes", sk, "receivesLiveWrites")
+            local linked = target ~= "" and sk == target
+            S.setStateVal(linked, "sceneLibrary", "scenes", sk, "receivesLiveWrites")
         end
     end
 end

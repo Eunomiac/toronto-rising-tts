@@ -2,6 +2,9 @@
 
 ## Active
 
+- when a player's location is set to an unmappable location (i.e. a Site without offsetXY coordinates to apply their pin to the map overlay), their pin should be hidden _and remain hidden until they travel to a mappable location_. Currently, upon switching to a scene where that PC is not active, their pin reappears on the map at their last _mappable_ location
+- only the pins of active players should be hidden when the scene takes place at an unmappable location; players who are absent from the scene should remain visible on the map, assuming _their_ current location is mappable
+
 ---
 
 ## Needs clarification

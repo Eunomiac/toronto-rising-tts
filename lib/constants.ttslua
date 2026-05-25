@@ -634,7 +634,8 @@ C.LockedObjects = {
   G.GUIDS.TAROT_BUTTON_ANCHOR_OFF_PINK,
   G.GUIDS.TAROT_DRAWER_ANCHOR_ON_PINK,
   G.GUIDS.TAROT_DRAWER_ANCHOR_OFF_PINK,
-  G.GUIDS.THE_FLOOR
+  G.GUIDS.THE_FLOOR,
+  G.GUIDS.TABLE_PLINTH
 }
 
 -- C.HiddenObjects is a table of all objects that should be `setInvisibleTo`, and the values contain the colors to hide the object from. Objects are presented as GUIDs.

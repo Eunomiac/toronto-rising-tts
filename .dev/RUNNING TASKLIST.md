@@ -16,12 +16,11 @@ _Stack rank for the current cycle (2026-05-25). **Precedence** (Focus + Linear `
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-145** — End scene library mirroring + location writeback | Every End scene corrupts library row / stale UI |
-| 2 | **TOR-136** — Weather audio burst on scene switch | Audible on every scene change |
-| 3 | **TOR-138** — Soundscape resync after load post silence-for-save | Session start / PLAY audio broken |
-| 4 | **TOR-141** — Manual E2E test playbooks (Dice + Scenes) | Reliable step-by-step + IDE Lua snippets between steps |
-| 5 | **TOR-137** — Unicode minus in Sites import | Quick tooling win; unblocks site data |
-| 6 | **TOR-81** — Light modes cleanup _(In Progress)_ | Larger refactor — continue when above are done |
+| 1 | **TOR-136** — Weather audio burst on scene switch | Audible on every scene change |
+| 2 | **TOR-138** — Soundscape resync after load post silence-for-save | Session start / PLAY audio broken |
+| 3 | **TOR-141** — Manual E2E test playbooks (Dice + Scenes) | Reliable step-by-step + IDE Lua snippets between steps |
+| 4 | **TOR-137** — Unicode minus in Sites import | Quick tooling win; unblocks site data |
+| 5 | **TOR-81** — Light modes cleanup _(In Progress)_ | Larger refactor — continue when above are done |
 
 **Deferred this cycle:** TOR-139 (scenes panel trim + 3-column library grid), TOR-140 (sound panel text + larger font), TOR-142 (four scene Apply clock buttons), TOR-143 (phase system + session lifecycle), TOR-149 (ST dice tray lights), TOR-150 (thunder indoor ducking), TOR-151 (default no-scene environment), TOR-152 (Play load scene restore). Other open bullets unchanged.
 
@@ -84,7 +83,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **Apply active scene — four clock buttons:** Replace single switch button with Apply (scene clock), Apply x5 until present, Apply = PRESENT, Apply (Present); all apply full scene. _(TOR-142)_
 - [ ] **Default no-scene environment:** When no live library scene — Table B1, five PC seats, empty NPC world, OutdoorDim, Main BGM, cleared location/weather on table (do not write cleared location to library or PC pins); overlay blanks date/time + hides weather (do **not** mutate scene-library `clock` or present-day clock — display only); random generic skybox. _(TOR-151)_
 - [ ] **Restore scene on Play load / Start→Play:** Resync active library scene when entering Play with one set; otherwise apply default no-scene. _(TOR-152)_
-- [ ] **End scene library sync:** Stop mirroring / clear live label; do not write cleared location back to linked library row. _(TOR-145)_
+- [x] **End scene library sync:** `detachLiveTableFromLibraryMirror()` before clearing live location — stops mirroring, clears `lastAppliedKey` + `activeKey`, UI hides mirroring when no on-table scene; prevents live→library writeback of cleared keys. _(TOR-145)_
 - [ ] **Delete active scene:** End live scene first when deleting the row that is still on the table. _(TOR-146)_
 - [ ] **Real-time clock too fast (intermittent):** Narrative clock ~6–12× expected rate; investigate duplicate tickers or compounded `realTimeSpeed`. _(TOR-148)_
 - [x] **Site fog:** Site controls whether the fog object is enabled/disabled (`C.Sites.isTopFogActive` or indoor/outdoor default → `sessionScene.isTopFogActive` → `Scenes.reconcileTopFogFromState`). _(TOR-56)_

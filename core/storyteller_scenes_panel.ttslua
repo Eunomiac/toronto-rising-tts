@@ -687,7 +687,7 @@ function StorytellerScenesPanel.refresh()
 end
 
 --- Pushes `sceneLibrary.order` into fixed `scenes_lib_slot_*` buttons.
---- Green = selected (`activeKey`); dimmer + ` · unlinked` = not mirroring; ` · live` = on-table scene when another row is selected.
+--- Green = selected (`activeKey`); dimmer + ` · unlinked` = not mirroring; ` · live` = on-table scene when another row is selected; ` · mirroring` only while a scene is on the table (`lastAppliedKey` set).
 function StorytellerScenesPanel.refreshSceneLibraryRows()
     if UI == nil or UI.setAttribute == nil then
         return
@@ -698,7 +698,8 @@ function StorytellerScenesPanel.refreshSceneLibraryRows()
     local scenes = type(lib) == "table" and lib.scenes or nil
     local activeKey = type(lib) == "table" and lib.activeKey or nil
     local lastAppliedKey = type(lib) == "table" and lib.lastAppliedKey or nil
-    local mirrorKey = SceneLibrary.resolveMirrorSceneKey()
+    local onTableKey = type(lastAppliedKey) == "string" and lastAppliedKey ~= "" and lastAppliedKey or nil
+    local mirrorKey = onTableKey ~= nil and SceneLibrary.resolveMirrorSceneKey() or nil
     if type(order) ~= "table" then
         order = {}
     end
@@ -1011,6 +1012,12 @@ function StorytellerScenesPanel.endSceneNarrative(player)
     else
         broadcastToAll("The current narrative scene is over.", Color(1, 1, 1))
     end
+
+    -- Stop mirroring before clearing live location so `Sync.full` does not persist null keys into the library row.
+    SceneLibrary.detachLiveTableFromLibraryMirror()
+    clockDraft.sceneKey = nil
+    clockDraft.dirty = false
+    StorytellerScenesPanel.syncClockDraftFromState()
 
     S.setStateVal(nil, "sessionScene", "districtKey")
     S.setStateVal(nil, "sessionScene", "siteKey")

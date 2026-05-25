@@ -273,7 +273,7 @@ For each key in `sceneLibrary.order`, activate a pre-declared dummy button and s
 - **New Scene** — **fork** the live table into a new library row (see **Forking a scene** below). Does **not** blindfold or apply state: the physical table and `gameState.sessionScene` stay as they are; only `sceneLibrary` changes so future mirrors target the new row while the previous row stays pinned to the fork-time snapshot.
 - **Unlink Scene** — sets `receivesLiveWrites = false` on the **active** library entry only: **stop mirroring** live `sessionScene` into that entry’s stored `sessionScene`. Does **not** snapshot-freeze; the stored bundle simply stops receiving updates until linked again.
 - **Delete Scene** — arm mode → pick scene → confirm → remove from `scenes` and `order`, clear `activeKey` if deleted, then refresh.
-- **End Scene** — narrative end: notify players, clear `sessionScene.districtKey` / `siteKey`, stop real-time clock (`useRealTime = false` + overlay ticker), fade location audio / unduck weather, then `Sync.full`. Closes the Scenes panel.
+- **End Scene** — narrative end: notify players, **`SceneLibrary.detachLiveTableFromLibraryMirror()`** (stop `receivesLiveWrites`, clear `lastAppliedKey` and `activeKey` so library UI drops live/mirroring/green selection; stored rows are not overwritten), clear `sessionScene.districtKey` / `siteKey`, stop real-time clock (`useRealTime = false` + overlay ticker), fade location audio / unduck weather, then `Sync.full`. Closes the Scenes panel.
 
 ## Forking a scene (“New Scene”)
 
