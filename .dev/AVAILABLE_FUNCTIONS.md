@@ -407,7 +407,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `ChronicleWeather.resolveHudForClock(month, day, hour)` | `resolveForClock` + `applyHudAudioOverrides` for overlay | `GameStateOverlay.reconcileWeatherFromState` |
 | `ChronicleWeather.getRow(month, day, hour)` | Returns `{ wind, rain, thunder }` layer keys for that hour or `nil` | Legacy inspect shape |
 | `ChronicleWeather.shouldAutoApply()` | Currently always `true` (gates removed); reserved for future hold/follow wiring | Rarely called directly |
-| `ChronicleWeather.applyScheduledWeather(opts)` | Resolves schedule, sets `soundscape.weather` to `"none"`, applies rain/wind/thunder via `Soundscape.set*`; on **full success** primes `Soundscape.markReconciledToCurrentState`; on **partial failure** calls `invalidateReconcileCache`; `opts.force` | `ChronicleWeather.applyScheduledWeather({ force = true })` |
+| `ChronicleWeather.applyScheduledWeather(opts)` | Resolves schedule, sets `soundscape.weather` to `"none"`, applies rain/wind/thunder via `Soundscape.set*`; on **full success** primes `Soundscape.markReconciledToCurrentState`; on **partial failure** calls `invalidateReconcileCache`; returns `ok`, `message`, `outcome` (`"skipped"` \| `"applied"` \| `"partial"`); `opts.force` | `local ok, msg, outcome = ChronicleWeather.applyScheduledWeather({ force = true })` |
 
 ---
 

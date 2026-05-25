@@ -340,16 +340,17 @@ end
 --- @param opts table|nil `{ force = boolean }`
 --- @return boolean ok
 --- @return string message
+--- @return string outcome `"skipped"` (no layer apply) | `"applied"` (full success, fingerprint primed) | `"partial"` (layer apply failed, cache invalidated)
 function ChronicleWeather.applyScheduledWeather(opts)
     opts = type(opts) == "table" and opts or {}
     local force = opts.force == true
     if not force and not ChronicleWeather.shouldAutoApply() then
-        return false, "Chronicle weather skipped."
+        return false, "Chronicle weather skipped.", "skipped"
     end
 
     local clock = S.getStateVal("sessionScene", "clock")
     if type(clock) ~= "table" then
-        return false, "Chronicle weather: missing sessionScene.clock."
+        return false, "Chronicle weather: missing sessionScene.clock.", "skipped"
     end
 
     local resolved = ChronicleWeather.resolveForClock(clock.month, clock.day, clock.hour)
@@ -360,7 +361,8 @@ function ChronicleWeather.applyScheduledWeather(opts)
                 tostring(clock.month),
                 tostring(clock.day),
                 tonumber(clock.hour) or 0
-            )
+            ),
+            "skipped"
     end
 
     local rainKey = resolved.rainKey
@@ -383,7 +385,8 @@ function ChronicleWeather.applyScheduledWeather(opts)
                 rainKey,
                 windKey,
                 thunderOn and "on" or "off"
-            )
+            ),
+            "applied"
     end
 
     if type(Soundscape.invalidateReconcileCache) == "function" then
@@ -400,7 +403,7 @@ function ChronicleWeather.applyScheduledWeather(opts)
     if not okTh then
         table.insert(parts, msgTh or "thunder failed")
     end
-    return false, "Chronicle weather partial failure: " .. table.concat(parts, " | ")
+    return false, "Chronicle weather partial failure: " .. table.concat(parts, " | "), "partial"
 end
 
 return ChronicleWeather
