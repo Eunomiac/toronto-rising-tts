@@ -140,7 +140,11 @@ Modules should be loaded in dependency order:
 | **`Answer:` inline** under each `?` in **Needs clarification** | Re-run **“process the inbox”** → read answers from file, promote |
 | Fix obvious bugs in <5 min in code | (Skip inbox) retroactive Linear **Bug** |
 
-**Clarification loop:** Questions and answers live **in INBOX.md** (`?` / `Answer:` on the same item). Chat echo is optional; the file is authoritative. See [INBOX.md § Clarification loop](INBOX.md#clarification-loop-standard).
+**Clarification loop:** Questions and answers live **in INBOX.md** (`?` / `Answer:` on the same item). Chat echo is optional; the file is authoritative. Re-run **`/tr-inbox`** after answering.
+
+**Back-burner confirmation:** When triage would **defer from Focus** an **inbox-promoted** item, the agent **must propose** Focus treatment, **`blockedBy`** links, and Linear **priority** (separate axes) with rationale, and **wait for author OK** before writing. See **`/tr-inbox`**. Do not auto-set **Low** priority because of deferral.
+
+**Linear ID context:** Agents never cite bare `TOR-XXX` without a short label (tasklist/Linear title) in chat, Deferred lines, or summaries.
 
 **Format:** `- summary` or `- [bug][module] summary` — optional indented sub-bullets if you already know repro/context.
 
@@ -153,7 +157,7 @@ When the user says **“process the inbox”** (or similar), run **both phases**
 1. Read **Active** and **Needs clarification** in [`.dev/INBOX.md`](INBOX.md).
 2. For each item **without an `Answer:`** on every open `?` bullet:
    - Search the codebase and Linear for context; resolve alone when unambiguous.
-   - If still unclear: **move the item** from Active → **Needs clarification** (keep type subsection: Bugs / Intents / Ideas).
+   - If still unclear: **move the item** from Active → **Needs clarification** (subsection: **Unclear Bugs** / **Unclear Intents** / **Unclear Ideas**).
    - Append **`?` question bullets** under the item (repro steps, scope, priority, module, duplicate check, etc.).
 3. **Do not require chat replies.** The author answers by editing INBOX inline (`Answer:` on the question line or indented `- Answer:` below). Optionally post a short chat pointer: “Questions parked in INBOX → Needs clarification.”
 4. Items where **every `?` has an `Answer:`** → ready for Phase 2. Do not promote until answers are in the file.
@@ -196,11 +200,33 @@ For every item Phase 1 marked ready (clear Active lines + answered Needs clarifi
 
 After inbox promotion or when the user asks **“what’s next”**, **“prioritize the backlog”**, or **“what should I work on”**:
 
+### Precedence vs priority (two axes)
+
+| Axis | Where | Meaning |
+| --- | --- | --- |
+| **Precedence** | **Focus** table, **Deferred this cycle**, Linear **`blockedBy`** | Work order — what to do *now* vs later; “complete A before B” |
+| **Priority** | Linear **Priority** field | Intrinsic importance when an issue *is* scheduled — **independent** of open bugs elsewhere |
+
+**Agent rules:**
+
+- **Deferral ≠ Low priority.** Deferred inbox features may stay **Medium** or **High** in Linear.
+- **Do not** lower unrelated issues’ priority because Focus has bugs.
+- **Use `blockedBy` liberally** for sequencing (hard or soft “should finish first”). Author audits and removes wrong blocks in Linear — easier than surveying priority drift.
+- **`parentId`** = hierarchy/decomposition; **`relatedTo`** = thematic link, no order; **`blockedBy`** = sequencing.
+
+**Guardrails:** One-way blocking (prerequisite blocks dependent). No circular chains. Prefer **`parentId`** over blocking for parent/child structure.
+
+**Anti-gridlock:** Star pattern — blockers live on the **waiting** issue only. Short direct lists (typically 1–6). No deferred-peer meshes or whole-backlog linking. Remove obsolete blocks when prerequisites go **Done**. Full rules: `.cursor/rules/toronto-rising-linear.mdc` § Anti-gridlock.
+
+### Steps
+
 1. Read **Focus** at the top of [`.dev/RUNNING TASKLIST.md`](RUNNING%20TASKLIST.md) — authoritative stack rank for the current cycle.
-2. Cross-check **Linear**: open **Bug** issues, non-epic **In Progress**, and Focus ids; reconcile if Focus and Linear priority diverge.
-3. Recommend **one** next item (usually top unchecked Focus row). Bugs and session-blocking regressions beat polish unless the user is blocked on ST workflow.
-4. When the user adjusts rank (e.g. elevate QA playbooks after bugs), **update Focus** and set matching **Linear priority** (Urgent / High / Medium / Low).
-5. On Focus item **Done**: check off in domain section, remove or renumber Focus row, update Linear **Done** + comment.
+2. Cross-check **Linear**: open **Bug** issues, non-epic **In Progress**, Focus ids, and **`blockedBy`** on deferred work.
+3. Recommend **one** next item (usually top unchecked Focus row). Precedence favors bugs/regressions unless the user is blocked on ST workflow.
+4. When the user adjusts rank, **update Focus**; set Linear **priority** on intrinsic importance; add **`blockedBy`** for sequencing — not as a substitute for priority.
+5. On Focus item **Done**: check off in domain section, remove or renumber Focus row, update Linear **Done** + comment; remove obsolete **blocks** relations if applicable.
+6. **Inbox back-burner gate:** Before deferring **inbox-promoted-this-session** items from Focus, present **Back-burner proposal** (Focus + proposed blockers + proposed priority) and get author confirmation. See **`/tr-inbox`**.
+7. **Deferred this cycle** and all agent-facing id lists: every `TOR-XXX` gets a short label (e.g. `TOR-139 (scenes panel trim + library grid)`).
 
 **Cadence:** re-stack Focus after **“process the inbox”** or **`/tr-inbox`**, before a play session, or ~weekly — not on every small fix.
 
@@ -244,7 +270,21 @@ Linear is the source of truth for project state. [`.dev/RUNNING TASKLIST.md`](RU
 ### When descoping or deferring
 
 - Linear → **Canceled** or **Backlog** with reason; move or strikethrough the tasklist item.
+- **Focus deferral:** add to **Deferred this cycle**; set **`blockedBy`** on the deferred issue toward prerequisites — do not auto-set **Low** priority.
 - Do not delete Linear issues.
+
+### Issue relationships (Linear MCP)
+
+When creating or updating issues via `save_issue`:
+
+- **`parentId`** — sub-issue under epic or parent feature (structure).
+- **`blockedBy`** — prerequisite issues that should complete first (**liberal use** for soft sequencing). Append-only in MCP; list proposed links in triage summary.
+- **`relatedTo`** — contextual link, no implied order (e.g. bug on shipped feature).
+- **`blocks`** — inverse of `blockedBy`; prefer setting **`blockedBy`** on the dependent issue.
+
+Do not create circular **`blockedBy`** chains. Do not use blocking where **`parentId`** is the correct model.
+
+**Anti-gridlock:** Prefer a **star** from the dependent issue to its prerequisites; avoid peer-to-peer blocking among deferred work; cap direct blockers (~6) unless author approves more; drop **`blocks`** relations when prerequisites complete.
 
 ### When discovering bugs on shipped features
 
@@ -323,5 +363,5 @@ When working on this project:
 
 ---
 
-**Last Updated**: 2026-05-25 (Focus stack rank; `/tr-start` and `/tr-inbox` session commands)
+**Last Updated**: 2026-05-25 (Focus stack rank; `/tr-start` and `/tr-inbox`; Linear ID labels; inbox back-burner; precedence vs priority; liberal `blockedBy` + anti-gridlock)
 **Maintained By**: Development Team

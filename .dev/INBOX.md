@@ -1,91 +1,22 @@
-# Inbox — quick capture (bugs, intents, ideas)
-
-**Dump one-line notes while testing or mid-task.** No templates. Prefixes and module tags are optional — the triage agent infers type and domain when you say **“process the inbox”**.
-
-**Authoritative tracking lives elsewhere:**
-
-| When                    | Where                                                         |
-| ----------------------- | ------------------------------------------------------------- |
-| Quick note (this file)  | `.dev/INBOX.md`                                               |
-| Scheduled / shaped work | Linear `TOR-*` + [RUNNING TASKLIST.md](RUNNING%20TASKLIST.md) |
-| Implementation truth    | Code + `.dev/` docs                                           |
-
-**Agents:** [DEVELOPMENT_WORKFLOW.md § Inbox capture & triage](DEVELOPMENT_WORKFLOW.md#inbox-capture--triage). Slash: **`/tr-inbox`** — full triage + Focus/Linear sync (prep for **`/tr-start`** in a new chat). Always-on: [`.cursor/rules/toronto-rising-linear.mdc`](../.cursor/rules/toronto-rising-linear.mdc).
-
----
-
-## How to capture (human)
-
-Add a single line under **Active** (any subsection, or pick Bugs / Intents / Ideas if you like). Examples:
-
-```markdown
-- weather ducking stuck after site change
-- [bug] roll camera jumpy
-- centralize seat light modes in C.LightModes
-- ST rolls for NPCs from dice panel
-```
-
-Optional hints: `[bug]`, `[intent]`, `[idea]`, `[dice]`, `[lighting]`, … — never required.
-
-**You do not** create Linear issues or tasklist bullets. The triage agent promotes clear items (Backlog and/or RUNNING TASKLIST) based on its assessment.
-
-**Fix in <5 min while already in code?** Fix → commit → Linear **Bug** retroactively. Skip the inbox.
-
-**Do not use GitHub Issues** — Linear is primary.
-
----
-
-## Clarification loop (standard)
-
-When triage parks an item under **Needs clarification**:
-
-1. The agent adds **`?` question bullets** under the item (in this file).
-2. **You reply inline** on the same bullets: append **`Answer:`** on the question line, or add an indented `- Answer: …` bullet immediately below.
-3. Say **“process the inbox”** again — the agent reads answers from the file and promotes (no need to repeat answers in chat).
-
-```markdown
-- roll camera jumpy
-  - ? Which seat color(s) and roll phase?
-  - Answer: Orange, during baton handoff to PRE_ROLL
-```
-
-Chat summaries of clarifications are optional; **the file is the source of truth** for answers.
-
----
+# Inbox
 
 ## Active
 
-_One-line captures. Triage agent moves processed items to **Processed**; unclear items go to **Needs clarification**._
-
-### Bugs
-
-<!-- - one line -->
-
-### Intents (planned changes, refactors, direction)
-
-<!-- - one line -->
-
-### Ideas (new features, design not ready)
-
-<!-- - one line -->
+- the three Storyteller Dice Lights (`storytellerDiceLight1`, `storytellerDiceLight2` and `storytellerDiceLight3`) should be `OFF` until/unless there is a live Storyteller roll in the corresponding storyteller dice drawer (currently, their presence in `LIGHTMODES_REGISTRY_KEYS_ORDERED` is setting them to `STANDARD` in almost all lighting modes)
 
 ---
 
 ## Needs clarification
 
-*Agent parked items here with `?` questions. Reply inline with **`Answer:`** on each question (see **Clarification loop** above), then say **“process the inbox”** again.*
+### Unclear Bugs
 
-### Bugs
+### Unclear Intents
 
-### Intents
-
-### Ideas
+### Unclear Ideas
 
 ---
 
 ## Processed
-
-*Archive: `YYYY-MM-DD TOR-XXX — summary` | `YYYY-MM-DD dismissed — reason` | `YYYY-MM-DD → Needs clarification`*
 
 - 2026-05-25 TOR-135 — [bug] NPC area cutouts missing on active scene apply
 - 2026-05-25 TOR-136 — [bug] Weather audio burst on scene switch
@@ -98,3 +29,11 @@ _One-line captures. Triage agent moves processed items to **Processed**; unclear
 - 2026-05-25 → Needs clarification — Apply active scene four-button clock UX
 - 2026-05-25 TOR-81 — [intent] Light modes cleanup expanded (answered clarification pass)
 - 2026-05-25 TOR-142 — [feature] Apply active scene four clock-aware buttons (answered clarification pass)
+- 2026-05-25 TOR-143 — [feature] Phase system redesign — primary phases, Play sub-phases, session lifecycle, theme/Spotlight audio (supersedes TOR-90)
+- 2026-05-25 TOR-94 — duplicate — auto seat assignment on connect (already scheduled)
+- 2026-05-25 TOR-144 — [QA] Multiplayer E2E playbook (sub-issue of TOR-141)
+- 2026-05-25 TOR-145 — [bug] End scene — library live/mirroring label + cleared location written back
+- 2026-05-25 TOR-146 — [bug] Delete active library scene should end live scene first
+- 2026-05-25 TOR-147 — [improvement] Soundscape BGM/location fade on blindfold down during scene switch
+- 2026-05-25 → Needs clarification — Real-time clock speed faster than multiplier (intermittent)
+- 2026-05-25 TOR-148 — [bug] Real-time narrative clock runs faster than speed multiplier (intermittent)

@@ -4,6 +4,10 @@ description: "Bootstrap a Toronto Rising agent session — Focus, Linear, archit
 
 You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masquerade 5e Tabletop Simulator module (Lua 5.1, `.ttslua` sources). Treat this message as your **session charter**. Do not jump to code until you have read the files below and confirmed scope with the user (unless they already named a specific `TOR-*` issue or task).
 
+**Linear ID context:** Whenever you mention a `TOR-XXX` in chat, include a few words of human-readable context (tasklist/Linear title). Never bare ids alone — e.g. `TOR-135 (NPC cutouts on scene apply)`, not just `TOR-135`. Focus table rows may use the **Why now** column for context.
+
+**Precedence vs priority:** **Focus** and Linear **`blockedBy`** = work order. Linear **Priority** = intrinsic importance — deferral from Focus does **not** mean Low priority. Use **`blockedBy` liberally** for “should complete before” sequencing; **anti-gridlock:** star pattern, short blocker lists, no deferred-peer meshes (see `toronto-rising-linear.mdc`).
+
 ## 1) Read first (in order)
 
 **Tracking & scope**
@@ -51,7 +55,7 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 
 ## 3) How to choose work
 
-- If the user **named a task** (e.g. `TOR-135`, “fix weather burst”, “process the inbox”): that is scope — confirm briefly, set Linear **In Progress**, proceed.
+- If the user **named a task** (e.g. `TOR-135` NPC cutouts, “fix weather burst”, “process the inbox”): that is scope — confirm briefly with labeled id, set Linear **In Progress**, proceed.
 - If the user asked **“what’s next”** or did not name a task: read **Focus**, cross-check Linear open **Bugs**, recommend **one** item (usually top Focus row), and wait for confirmation unless they said to start immediately.
 - **“Process the inbox”** → follow `.dev/DEVELOPMENT_WORKFLOW.md` § Inbox (Phase 1: `?` in file; Phase 2: promote when every `?` has inline **`Answer:`**).
 - For large or resumed work: search prior agent sessions (`ce-sessions`) before contradicting earlier design.
@@ -60,7 +64,7 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 
 Post a **short orientation** (not a wall of text):
 
-1. **Focus snapshot** — top 3 Focus rows + whether any match the user’s intent.
+1. **Focus snapshot** — top 3 Focus rows (issue + **Why now**) + whether any match the user’s intent. If citing ids outside the table, add short labels.
 2. **Assumed scope** — one sentence (or ask one clarifying question if ambiguous).
 3. **Docs you read** — checklist of the numbered reads above that you actually opened (honest list).
 4. **Plan** — 3–5 bullets for the first implementation or triage pass.

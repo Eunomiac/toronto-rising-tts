@@ -18,10 +18,67 @@ alwaysApply: true
 
 When these diverge, **reconcile immediately** (update Linear and/or tasklist to match code reality).
 
+## Human-readable Linear references
+
+Whenever an agent writes a `TOR-XXX` id in chat, summaries, Focus **Deferred** lines, or handoffs, **always add a few words of context** from the issue/tasklist title. Never bare ids alone.
+
+- Bad: `Deferred: TOR-139, TOR-140`
+- Good: `Deferred: TOR-139 (scenes panel trim + library grid), TOR-140 (sound panel text)`
+
+Tables with a dedicated title/description column satisfy this for rows in that table only; **inline lists still need labels on every id**.
+
+## Precedence vs priority
+
+**Do not conflate work order with importance.**
+
+| Axis | Surfaces | Agent rule |
+| --- | --- | --- |
+| **Precedence** | **Focus** stack, **Deferred this cycle**, Linear **`blocks` / `blockedBy`** | “Do A before B” — use **`blockedBy` liberally** when B should wait for A (hard or soft sequencing). Author removes wrong blocks in Linear. |
+| **Priority** | Linear **Priority** only | Intrinsic urgency/importance when scheduled. **Deferral from Focus does not imply Low.** Open bugs elsewhere do **not** auto-downgrade unrelated issues. |
+
+### Linear relationship types (when to use which)
+
+| Relation | Use for |
+| --- | --- |
+| **`parentId` / sub-issue** | Hierarchy — feature belongs under epic or parent feature |
+| **`blockedBy` / `blocks`** | Sequencing — prerequisite should finish first (**liberal use OK** for “should complete before”) |
+| **`relatedTo`** | Same theme or context — **no** implied order |
+
+**Agent guardrails:** One direction per sequencing pair (A blocks B, not both ways). Prefer **`parentId`** for decomposition, not blocking. Avoid circular **`blockedBy`** chains. When deferring inbox work, propose **`blockedBy`** + priority separately in **Back-burner proposal**.
+
+### Anti-gridlock (avoid block proliferation)
+
+Liberal blocking is for **auditable sequencing**, not a dense dependency mesh. Gridlock looks like: every open bug **`blockedBy`**-links to every deferred feature, deferred features block each other, or transitive chains where A blocks B blocks C when A→C would suffice.
+
+**Do:**
+
+- Attach blockers **to the waiting issue only** (star pattern): `TOR-143 (phase redesign) blockedBy TOR-141 (E2E playbooks)` — prerequisites do not block each other unless truly required.
+- Keep **`blockedBy` lists short and direct** — typically **1–6** prerequisites on the dependent issue; name each with a label in the Back-burner proposal.
+- Block on **concrete gate issues** (Focus bugs, regression harness, a specific refactor) — not “everything in Backlog.”
+- Use **`relatedTo`** when issues share context but order is flexible.
+- **Remove obsolete `blocks` relations** when a prerequisite is **Done** or deferral is lifted (see Focus step 5 in DEVELOPMENT_WORKFLOW).
+
+**Do not:**
+
+- Make **deferred peers block each other** (e.g. TOR-139 blocks TOR-140) unless one genuinely depends on the other’s output.
+- Add **transitive duplicates** when the chain is already implied (if B blocks C, do not also make A block C when B already blocks C and A blocks B — pick the minimal set).
+- Turn **Focus stack order** into a full mesh — Focus + **Deferred this cycle** already express cycle precedence; `blockedBy` should capture **specific** “wait for these” gates, not re-link the entire board.
+
+If a Back-burner proposal would add **more than ~6** blockers on one issue, stop and justify in chat — or propose a **single** umbrella blocker (e.g. “after TOR-141 (E2E playbooks)”) instead.
+
+## Inbox back-burner confirmation (`/tr-inbox`)
+
+Before an item **promoted from INBOX** is excluded from Focus or marked **Deferred this cycle**:
+
+1. Present a **Back-burner proposal**: `TOR-XXX (label)`, proposed Focus treatment, **proposed blockers** (labeled), **proposed Linear priority** (separate from deferral), and rationale.
+2. **Wait for author confirmation** before writing deferrals, **`blockedBy`** links, or priority changes — unless the author explicitly overrode in the same session.
+
+**Never** set Linear **Low** on a deferred inbox item unless the author confirms low *importance* — not merely “not this cycle.”
+
 ## Capture vs scheduled work
 
 - **Quick note:** one line in [`.dev/INBOX.md`](../../.dev/INBOX.md) under **Active** (prefixes optional).
-- **Triage:** user says **“process the inbox”** → Phase 1: park unclear items in **Needs clarification** with `?` bullets (answers inline as `Answer:`); Phase 2: agent promotes when every `?` is answered — see [INBOX § Clarification loop](../../.dev/INBOX.md#clarification-loop-standard).
+- **Triage:** **`/tr-inbox`** (or “process the inbox”) → Phase 1: park unclear items in **Needs clarification** with `?` bullets (answers inline as `Answer:`); Phase 2: promote when every `?` is answered — see [DEVELOPMENT_WORKFLOW § Inbox](../../.dev/DEVELOPMENT%20WORKFLOW.md#inbox-capture--triage).
 
 ## Agent workflow (every task)
 
@@ -31,8 +88,8 @@ When these diverge, **reconcile immediately** (update Linear and/or tasklist to 
 4. **When discovering new work** — INBOX one-liner if capture-only; otherwise create Linear issue in the correct **domain project**, add `source:tasklist` if from tasklist, append `_(TOR-XX)_` to tasklist, set **In Progress** if starting immediately.
 5. **When finding bugs on shipped features** — Create a **Bug** issue; `relatedTo` the original **Done** feature issue. Do not reopen unrelated Done issues.
 6. **Inbox triage** — On “process the inbox”: Phase 1 park + `?` in INBOX (author replies **`Answer:`** inline); Phase 2 promote when answered.
-7. **What’s next** — On “what’s next” / “prioritize the backlog”: read **Focus** in RUNNING TASKLIST, cross-check Linear Bugs + In Progress, recommend one item; update Focus + Linear priority when user re-stacks.
-8. **Inbox + prioritize** — On **`/tr-inbox`** or “process the inbox” with full sync: run inbox triage (both phases) **and** refresh **Focus** + Linear priorities so **`/tr-start`** works in a new chat.
+7. **What’s next** — On “what’s next” / “prioritize the backlog”: read **Focus** in RUNNING TASKLIST, cross-check Linear Bugs + In Progress, recommend one item; update Focus; set Linear **priority** on intrinsic importance; add **`blockedBy`** for sequencing — do not downgrade unrelated priorities because bugs exist.
+8. **Inbox + prioritize** — On **`/tr-inbox`**: triage + refresh **Focus** + Linear **priority** and **`blockedBy`** per `.cursor/commands/tr-inbox.md`.
 
 ## Domain projects
 
