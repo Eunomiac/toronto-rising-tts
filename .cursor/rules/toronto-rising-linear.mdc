@@ -83,13 +83,14 @@ Before an item **promoted from INBOX** is excluded from Focus or marked **Deferr
 ## Agent workflow (every task)
 
 1. **Before starting** — Search Linear for related `TOR-*` issues; read matching tasklist bullet if present; skim INBOX Active if overlap is likely.
-2. **When starting** — Set issue **In Progress**; confirm tasklist bullet has the correct `_(TOR-XX)_`.
+2. **When starting** — Set issue **In Progress**; confirm tasklist bullet has the correct `_(TOR-XX)_`. Prompt the author once to rename the Cursor chat to **`TOR-XX — short title`** (agents cannot rename chats programmatically — see `.cursor/commands/tr-start.md` § Agent chat title).
 3. **When finishing** — Mark **Done** (or **Canceled** if descoped) with a comment: what changed, key files, verification, commit refs. Update tasklist `[ ]` → `[x]` if applicable. Reference `TOR-XX` in commit body when committing.
-4. **When discovering new work** — INBOX one-liner if capture-only; otherwise create Linear issue in the correct **domain project**, add `source:tasklist` if from tasklist, append `_(TOR-XX)_` to tasklist, set **In Progress** if starting immediately.
-5. **When finding bugs on shipped features** — Create a **Bug** issue; `relatedTo` the original **Done** feature issue. Do not reopen unrelated Done issues.
-6. **Inbox triage** — On “process the inbox”: Phase 1 park + `?` in INBOX (author replies **`Answer:`** inline); Phase 2 promote when answered.
-7. **What’s next** — On “what’s next” / “prioritize the backlog”: read **Focus** in RUNNING TASKLIST, cross-check Linear Bugs + In Progress, recommend one item; update Focus; set Linear **priority** on intrinsic importance; add **`blockedBy`** for sequencing — do not downgrade unrelated priorities because bugs exist.
-8. **Inbox + prioritize** — On **`/tr-inbox`**: triage + refresh **Focus** + Linear **priority** and **`blockedBy`** per `.cursor/commands/tr-inbox.md`.
+4. **Commits during work** — After each logical unit, commit **without asking**; never prompt “want me to commit?” (always yes). See `.cursorrules` § Git Commits.
+5. **When discovering new work** — INBOX one-liner if capture-only; otherwise create Linear issue in the correct **domain project**, add `source:tasklist` if from tasklist, append `_(TOR-XX)_` to tasklist, set **In Progress** if starting immediately.
+6. **When finding bugs on shipped features** — Create a **Bug** issue; `relatedTo` the original **Done** feature issue. Do not reopen unrelated Done issues.
+7. **Inbox triage** — On “process the inbox”: Phase 1 park + `?` in INBOX (author replies **`Answer:`** inline); Phase 2 promote when answered.
+8. **What’s next** — On “what’s next” / “prioritize the backlog”: read **Focus** in RUNNING TASKLIST, cross-check Linear Bugs + In Progress, recommend one item; update Focus; set Linear **priority** on intrinsic importance; add **`blockedBy`** for sequencing — do not downgrade unrelated priorities because bugs exist.
+9. **Inbox + prioritize** — On **`/tr-inbox`**: triage + refresh **Focus** + Linear **priority** and **`blockedBy`** per `.cursor/commands/tr-inbox.md`.
 
 ## Domain projects
 

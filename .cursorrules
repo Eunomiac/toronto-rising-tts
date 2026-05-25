@@ -56,6 +56,7 @@ If something is wrong, fail fast and loudly so the exact failure appears in logs
 - Commit when documentation is updated
 - Commit when multiple related changes are made together
 - **Do NOT wait for explicit user requests to commit**
+- **Do NOT ask** “Should I commit?” / “Want me to commit?” — commit after each logical unit; the answer is always yes
 
 **Commit Message Format:**
 
@@ -96,7 +97,7 @@ Implement GUID-based player lighting system
 - **Clarification loop:** agent adds `?` under **Needs clarification**; you reply **`Answer:`** inline in the file; say **“process the inbox”** again (file is authoritative — chat echo optional)
 - **Agent triage (“process the inbox”):** Phase 1 — park unclear items + `?` bullets. Phase 2 — promote when every `?` has `Answer:` (agent picks Linear Backlog vs RUNNING TASKLIST)
 - **What’s next:** **Focus** section at top of RUNNING TASKLIST; say **“what’s next”** or **“prioritize the backlog”** — agent reads Focus + Linear Bugs, recommends one item
-- **New session bootstrap:** **`/tr-start`** (`.cursor/commands/tr-start.md`) — Focus, policy docs, reconciler contract, gate rules
+- **New session bootstrap:** **`/tr-start`** (`.cursor/commands/tr-start.md`) — Focus, policy docs, reconciler contract, gate rules; commit without asking; prompt author to rename chat after Linear **In Progress**
 - **Inbox + prioritize (prep for /tr-start):** **`/tr-inbox`** (`.cursor/commands/tr-inbox.md`) — full triage + Focus/Linear sync; no code unless asked
 - **Do not** use GitHub Issues for Toronto Rising tracking
 

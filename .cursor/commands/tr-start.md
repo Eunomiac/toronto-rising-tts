@@ -51,7 +51,18 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 | **Player identity** | Per-player state keyed by **steam_id**; Storyteller = `Black`; PC colors per `C.PlayerColors`. |
 | **Minimal diff** | Remove dead code and obsolete shims; update `.dev/` docs in the same change when behavior or public APIs move. |
 | **Linear sync** | Part of **done**: In Progress when starting, Done + comment + tasklist `[x]` when finishing; never leave Focus/tasklist/Linear diverged. |
-| **Commits** | Only when the user explicitly asks. |
+| **Commits** | After every logical unit of work — **without asking**. Never prompt “want me to commit?”; the answer is always **yes**. Reference `TOR-XX` in the commit body. See `.cursorrules` § Git Commits and `.dev/DEVELOPMENT_WORKFLOW.md` § Regular Commits. |
+
+## 2b) Agent chat title (Cursor)
+
+**Agents cannot rename Cursor agent chats programmatically.** Cursor auto-titles threads from early messages; a chat that opens with only `/tr-start` often becomes an unhelpful generic title (e.g. “Start command discussion”).
+
+**Mitigation:**
+
+1. **Do not** treat orientation boilerplate as the “name” of the session — wait until a **`TOR-*` issue is grabbed** (Linear **In Progress** + confirmed scope).
+2. **Immediately after** scope is confirmed and the issue is **In Progress**, add **one line** to your reply asking the author to rename the chat in the sidebar to: **`TOR-XXX — short title`** (use the Linear/tasklist label, not a bare id).
+3. **Prefer** starting with issue context when possible: `/tr-start TOR-138 soundscape resync after load` — still rename manually after confirm; auto-title may stay generic.
+4. **`/tr-inbox` handoff** should name the recommended next `TOR-*` so the follow-up `/tr-start` message can include it.
 
 ## 3) How to choose work
 
@@ -69,8 +80,9 @@ Post a **short orientation** (not a wall of text):
 3. **Docs you read** — checklist of the numbered reads above that you actually opened (honest list).
 4. **Plan** — 3–5 bullets for the first implementation or triage pass.
 5. **Risk callouts** — dual-apply, reconciler boundary, or gate policy if relevant.
+6. **Chat rename** — once scope is confirmed and Linear is **In Progress**, one line: ask the author to rename this chat to **`TOR-XXX — short title`**. Skip only if the user already renamed it or the thread title already matches the issue.
 
-Then execute unless the user only wanted orientation.
+Then execute unless the user only wanted orientation. **Commit** after each logical unit without asking for permission.
 
 ---
 

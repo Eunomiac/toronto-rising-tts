@@ -123,7 +123,7 @@ If **Back-burner proposal** is pending author OK, say so — Focus deferrals, **
 3. **Linear sync** — **priority** changes and new **`blockedBy`** links; each id with label (e.g. `TOR-143 (phase system redesign) → Medium`; `TOR-143 blockedBy TOR-141 (E2E playbooks)`).
 4. **Blocked on author** — any `?` still needing **`Answer:`** in INBOX (copy the questions).
 5. **Back-burner proposal** — if any inbox-promoted item would be deferred from Focus: list each `TOR-XXX (label)` with **proposed Focus treatment**, **proposed blockers** (labeled, minimal star-pattern set), **proposed Linear priority** (separate from deferral), rationale, and ask **Approve / adjust**. If none apply, say *“No inbox items deferred — nothing to confirm.”*
-6. **Handoff** — one sentence with labeled id if naming a specific next task: *“Open a new chat and run `/tr-start` (optionally `/tr-start TOR-135 NPC cutouts on scene apply`) to begin implementation.”*
+6. **Handoff** — one sentence with labeled id if naming a specific next task: *“Open a new chat and run `/tr-start TOR-135 NPC cutouts on scene apply` (include the issue id in the message so scope is obvious). After the agent sets Linear **In Progress**, rename the chat to `TOR-135 — NPC cutouts on scene apply` — agents cannot rename Cursor chats themselves.”*
 
 ---
 

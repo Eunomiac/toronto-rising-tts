@@ -14,7 +14,7 @@ bullets without evidence, confidence, or sourcing metadata.
 - Prefer editing existing files over creating new ones; remove dead branches, unused helpers, and obsolete compatibility shims rather than leaving them "just in case".
 - Update `.dev/` and `docs/solutions/` in the same change whenever behavior, paths, or public APIs move; never defer documentation as a follow-up.
 - Never mask runtime errors; if uncertain whether to fail or fall back, fail loudly so the failure surfaces in logs and chat.
-- Commit after each logical unit of work without being prompted, in present tense, and reference related Linear issues (e.g. `TOR-123`) in the commit body.
+- Commit after each logical unit of work without being prompted, in present tense, and reference related Linear issues (e.g. `TOR-123`) in the commit body. Never ask “want me to commit?” — always commit.
 - **Linear tracking is a primary responsibility:** check `TOR-*` issues before starting work; set **In Progress** when starting; mark **Done** with a comment when finishing; keep `.dev/RUNNING TASKLIST.md` checkboxes and `_(TOR-XX)_` ids aligned with Linear. Never treat Linear sync as optional or defer it. In chat and summaries, never cite a bare `TOR-XXX` without a few words of context (tasklist/Linear title).
 - **Precedence vs priority:** Use **Focus** + Linear **`blockedBy`** for work order; use Linear **Priority** for intrinsic importance. Deferral ≠ Low. Use **`blockedBy` liberally** for sequencing with **anti-gridlock** rules (star pattern, ~1–6 direct blockers, no peer meshes).
 - **Inbox back-burner:** On `/tr-inbox`, do not defer inbox-promoted work from Focus without a **Back-burner proposal** (Focus + proposed blockers + proposed priority) and author confirmation first.

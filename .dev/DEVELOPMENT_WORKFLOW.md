@@ -60,7 +60,15 @@ Commit changes when:
 - Refactoring is complete
 - Multiple related changes are made together
 
-**Do not wait for user prompts** - commit proactively after completing work.
+**Do not wait for user prompts** - commit proactively after completing work. **Never ask** “Should I commit?” or “Want me to commit?” — the answer is always yes.
+
+### Agent chat titles (Cursor)
+
+Cursor **auto-titles** agent threads from early messages. Chats that open with only `/tr-start` often become generic (“Start command discussion”, “Starting a new process”, etc.).
+
+**Agents cannot rename chats programmatically.** After scope is confirmed and the Linear issue is **In Progress**, the agent should ask the author **once** to rename the sidebar title to **`TOR-XXX — short title`**.
+
+**Handoff pattern:** `/tr-inbox` → new chat with `/tr-start TOR-138 soundscape resync after load` → confirm scope → rename chat. Details: `.cursor/commands/tr-start.md` § Agent chat title.
 
 ## Code Organization
 
@@ -335,15 +343,16 @@ When working on this project:
 1. **Linear (primary):** Follow `.cursor/rules/toronto-rising-linear.mdc` — check `TOR-*` before start, **In Progress** when working, **Done** + comment + tasklist when finished
 2. **Inbox:** One-line notes in [`.dev/INBOX.md`](INBOX.md); clarifications via inline **`Answer:`** under **Needs clarification**; **“process the inbox”** to promote
 3. **Focus:** Stack rank at top of [RUNNING TASKLIST](RUNNING%20TASKLIST.md); **“what’s next”** / **“prioritize the backlog”** reads Focus + Linear Bugs
-4. **Session bootstrap:** **`/tr-start`** in Cursor (`.cursor/commands/tr-start.md`) — re-anchor on Focus + architecture policies at the start of a new agent chat
+4. **Session bootstrap:** **`/tr-start`** in Cursor (`.cursor/commands/tr-start.md`) — re-anchor on Focus + architecture policies; commit without asking; prompt chat rename after Linear **In Progress**
 5. **Inbox + prioritize:** **`/tr-inbox`** (`.cursor/commands/tr-inbox.md`) — process INBOX, sync Focus and Linear priorities; then **`/tr-start`** in a fresh chat for implementation
-6. **Commit Regularly**: Commit changes after completing logical units of work without waiting for user prompts; reference `TOR-XX` in commit body
-7. **Clear Messages**: Write descriptive commit messages explaining what changed and why
-8. **Update Documentation**: Keep documentation files updated when making changes
-9. **Test Changes**: Verify changes work in TTS when possible
-10. **Follow Patterns**: Maintain consistency with existing code style and patterns
-11. **Error Handling**: Include appropriate error handling and validation
-12. **Type Safety**: Use strict TypeScript notation where applicable, avoid `any` type
+6. **Commit regularly**: Commit after each logical unit **without asking** — never prompt “want me to commit?” (always yes); reference `TOR-XX` in commit body
+7. **Agent chat titles**: Agents **cannot** rename Cursor chats. After grabbing a `TOR-*` issue, ask the author once to rename the thread to `TOR-XXX — short title` (see `/tr-start` § Agent chat title)
+8. **Clear Messages**: Write descriptive commit messages explaining what changed and why
+9. **Update Documentation**: Keep documentation files updated when making changes
+10. **Test Changes**: Verify changes work in TTS when possible
+11. **Follow Patterns**: Maintain consistency with existing code style and patterns
+12. **Error Handling**: Include appropriate error handling and validation
+13. **Type Safety**: Use strict TypeScript notation where applicable, avoid `any` type
 
 ## Troubleshooting
 
@@ -363,5 +372,5 @@ When working on this project:
 
 ---
 
-**Last Updated**: 2026-05-25 (Focus stack rank; `/tr-start` and `/tr-inbox`; Linear ID labels; inbox back-burner; precedence vs priority; liberal `blockedBy` + anti-gridlock)
+**Last Updated**: 2026-05-25 (Focus stack rank; `/tr-start` and `/tr-inbox`; Linear ID labels; inbox back-burner; precedence vs priority; liberal `blockedBy` + anti-gridlock; proactive commits + agent chat rename prompt)
 **Maintained By**: Development Team
