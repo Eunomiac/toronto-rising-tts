@@ -2,15 +2,7 @@
 
 ## Active
 
-- when a player's location is set to an unmappable location (i.e. a Site without offsetXY coordinates to apply their pin to the map overlay), their pin should be hidden _and remain hidden until they travel to a mappable location_. Currently, upon switching to a scene where that PC is not active, their pin reappears on the map at their last _mappable_ location
-- only the pins of active players should be hidden when the scene takes place at an unmappable location; players who are absent from the scene should remain visible on the map, assuming _their_ current location is mappable
-- [bug] GUIDS for `THE_FLOOR` and `TABLE_PLINTH` were added to `C.LockedObjects`, but they remain interactable after load.
-- update TOR-147 to include weather in the earlier fade-out: the weather track and volume (including ducking) should be compared between the two scenes, and the weather audio volume adjusted as follows:
-  - if the _tracks_ are different, weather should fade out completely during initial fade-out, then new weather should fade-in towards end of transition
-  - if the _volumes_ are different, weather should fade to the _lower_ volume (of the two) at the start of the blindfold sequence, then fade up to the new scene's volume (if it happens to be the louder-weather scene)
-- re: the bug involving the clock speed being too fast: It occurs to me this could be a case of timeout intervals not being cleared. If multiple scenes establish their own time intervals for advancing the clock but don't clear them, then multiples could be running in parallel, advancing the clock too quickly
-
-
+_(empty — 2026-05-25 `/tr-inbox` pass)_
 
 ---
 
@@ -42,10 +34,12 @@
 - 2026-05-25 TOR-144 — [QA] Multiplayer E2E playbook (sub-issue of TOR-141)
 - 2026-05-25 TOR-145 — [bug] End scene — library live/mirroring label + cleared location written back
 - 2026-05-25 TOR-146 — [bug] Delete active library scene should end live scene first
-- 2026-05-25 TOR-147 — [improvement] Soundscape BGM/location fade on blindfold down during scene switch
+- 2026-05-25 TOR-147 — [improvement] Soundscape BGM/location/weather fade on blindfold down (expanded weather policy)
 - 2026-05-25 → Needs clarification — Real-time clock speed faster than multiplier (intermittent)
-- 2026-05-25 TOR-148 — [bug] Real-time narrative clock runs faster than speed multiplier (intermittent)
+- 2026-05-25 TOR-148 — [bug] Real-time narrative clock runs faster than speed multiplier (+ uncleared interval hypothesis)
 - 2026-05-25 TOR-149 — [bug] Storyteller dice tray lights ON during global light modes
 - 2026-05-25 TOR-150 — [bug] Thunder one-shots bypass indoor weather ducking
 - 2026-05-25 TOR-151 — [feature] Default "no scene" environment when no active library scene
 - 2026-05-25 TOR-152 — [feature] Restore active scene on Play load and Start→Play transition
+- 2026-05-25 TOR-153 — [bug] Map pins stale offset + unmappable-scene active-only hide
+- 2026-05-25 TOR-154 — [bug] THE_FLOOR / TABLE_PLINTH interactable despite LockedObjects

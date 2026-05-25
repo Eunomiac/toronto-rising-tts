@@ -21,7 +21,7 @@ _Stack rank for the current cycle (2026-05-25). **Precedence** (Focus + Linear `
 | 3 | **TOR-137** — Unicode minus in Sites import | Quick tooling win; unblocks site data |
 | 4 | **TOR-81** — Light modes cleanup _(In Progress)_ | Larger refactor — continue when above are done |
 
-**Deferred this cycle:** TOR-139 (scenes panel trim + 3-column library grid), TOR-140 (sound panel text + larger font), TOR-142 (four scene Apply clock buttons), TOR-143 (phase system + session lifecycle), TOR-149 (ST dice tray lights), TOR-150 (thunder indoor ducking), TOR-151 (default no-scene environment), TOR-152 (Play load scene restore). Other open bullets unchanged.
+**Deferred this cycle:** TOR-139 (scenes panel trim + 3-column library grid), TOR-140 (sound panel text + larger font), TOR-142 (four scene Apply clock buttons), TOR-143 (phase system + session lifecycle), TOR-146 (delete active scene ends live first), TOR-147 (blindfold soundscape fade + weather), TOR-148 (RT clock too fast), TOR-149 (ST dice tray lights), TOR-150 (thunder indoor ducking), TOR-151 (default no-scene environment), TOR-152 (Play load scene restore). **Pending back-burner confirm:** TOR-153 (map pins unmappable), TOR-154 (floor/plinth locked). Other open bullets unchanged.
 
 ---
 
@@ -61,7 +61,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **Thunder indoor ducking:** Thunder one-shots should use the same indoor/site weather ducking multiplier as rain/wind (`playCatalogEntry` skips `weatherThunder`). _(TOR-150)_
 - [x] **Weather audio burst on scene switch:** Silent stub + zero gain before looping clip swap; one-frame deferred volume arm; rain/wind hold same effect without restart; library Apply defers `markReconciledToCurrentState` after weather apply. Author verified on scene switch. _(TOR-136)_
 - [ ] **Soundscape resync after load:** After **Silence for save** + reload, PLAY phase should restore BGM (Main default) and active scene location/weather audio. _(TOR-138)_
-- [ ] **Soundscape fade on blindfold down:** During library Apply, fade BGM + location audio when blindfolds come down (not after heavy reconcile). _(TOR-147)_
+- [ ] **Soundscape fade on blindfold down:** During library Apply, fade BGM + location + weather when blindfolds come down; weather: full fade-out on track change, duck to lower volume on same-track volume mismatch (see Linear). _(TOR-147)_
 
 ## Lighting
 
@@ -84,7 +84,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **Restore scene on Play load / Start→Play:** Resync active library scene when entering Play with one set; otherwise apply default no-scene. _(TOR-152)_
 - [x] **End scene library sync:** `detachLiveTableFromLibraryMirror()` before clearing live location — stops mirroring, clears `lastAppliedKey` + `activeKey`, UI hides mirroring when no on-table scene; prevents live→library writeback of cleared keys. _(TOR-145)_
 - [ ] **Delete active scene:** End live scene first when deleting the row that is still on the table. _(TOR-146)_
-- [ ] **Real-time clock too fast (intermittent):** Narrative clock ~6–12× expected rate; investigate duplicate tickers or compounded `realTimeSpeed`. _(TOR-148)_
+- [ ] **Real-time clock too fast (intermittent):** Narrative clock ~6–12× expected rate; investigate duplicate tickers, uncleared `U.delay` intervals on scene Apply/load, or compounded `realTimeSpeed`. _(TOR-148)_
 - [x] **Site fog:** Site controls whether the fog object is enabled/disabled (`C.Sites.isTopFogActive` or indoor/outdoor default → `sessionScene.isTopFogActive` → `Scenes.reconcileTopFogFromState`). _(TOR-56)_
 - [ ] **Site & district modifiers:** Apply to rolls (and possibly stats) only for characters marked **present** in the active scene/seat layout. _(TOR-85)_
 
@@ -100,6 +100,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **Weather on overlay:** Show weather icon/label on center-top overlay (aligned with chronicle/scene clock), not only Scenes panel. _(TOR-87)_
 - [ ] **PCs panel:** Manually deactivate a PC (absent without removing data). _(TOR-88)_
 - [ ] **PCs panel:** Set PC map location via popout modal (writes state, reconciles overlays). _(Open: same as `seatPresent`/district-site or separate map pin?)_ _(TOR-89)_
+- [ ] **Map pins — unmappable locations:** Hide pin at unmappable PC site until mappable travel; do not resurrect stale offset when PC absent from scene; at unmappable **scene** site hide only **active** PCs' pins (absent PCs with mappable locations stay visible). _(TOR-153)_
 - [ ] **Phase system redesign:** Four primary phases (`Start`, `Play`, `Spotlight`, `End`); Play sub-phases (`Scene`, `Downtime`, `Memoriam`); trim PHASES panel copy; **Begin Session** / **End Session** buttons; `sessionNum` in gameState + spaced roman overlay; theme playlist on Start/End; silent Spotlight. _(TOR-143)_ _(Supersedes canceled TOR-90.)_
 - [ ] **Scrolling viewbox:** Author experimenting in TTS on scroll-container height — no implementation until after tinkering. _(TOR-91)_
 - [ ] **Sound panel UI trim + larger text:** Remove excess instructional copy; increase Text element font size. _(TOR-140)_
@@ -120,6 +121,7 @@ _Blocked: author must define data binding approach before substantial implementa
 
 ## Table Objects
 
+- [ ] **Locked floor/plinth:** `THE_FLOOR` and `TABLE_PLINTH` in `C.LockedObjects` but still interactable after load — verify GUIDs vs workshop, re-apply lock, audit late `interactable` writes. _(TOR-154)_
 - [ ] **Tarot hide:** `G.GUIDS.TAROT_BUTTON_PINK` / [`ui/ui_tarot_button.ttslua`](../ui/ui_tarot_button.ttslua) — when hiding the deck, return all drawn tarot cards to the deck first, then hide (no orphans on table). _(TOR-96)_
 
 ## New Features (pending design)
