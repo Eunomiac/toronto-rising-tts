@@ -313,7 +313,7 @@ Replace the stacked `modeRestore` mechanism with a pure function. This is the si
 --- Returns the mode key a player-scoped light should currently be in,
 --- derived purely from current `gameState`. No side effects.
 --- Priority (locked in with project owner):
----   ROLLING > NPC-role-leave-alone > DARK/absent > HUNGRY > STANDARD
+---   ROLLING > NPC-role-leave-alone > absent-from-layout > HUNGRY > scene seat preset / STANDARD
 --- @param lightRef string   e.g. "playerLight1Red"
 --- @param color string      e.g. "Red"
 --- @return string|nil       mode key in L.LIGHTMODES[lightRef], or nil if light shouldn't be touched
@@ -572,7 +572,7 @@ Confirmed in chat after the first draft of this proposal:
 | Decision | Outcome |
 |---|---|
 | **Mutation/reconciler split** | Lock it in. `setState` + `Sync.<scope>()` is the standard pattern for live updates whenever state is involved. Reconcilers never write state. |
-| **Lighting priority order** | `ROLLING > NPC-role-leave-alone > DARK/absent > HUNGRY > STANDARD`. "DARK" and "absent from current scene" collapse to the same OFF outcome. ROLLING is highest because the ST permitting a roll implies the player must be able to see. |
+| **Lighting priority order** | `ROLLING > NPC-role-leave-alone > absent-from-layout > HUNGRY > scene seat preset / STANDARD`. Absence from the active seat layout forces OFF. Scene darkness uses explicit `C.LightModes.*.spotlights` entries (not preset name suffix). ROLLING is highest because the ST permitting a roll implies the player must be able to see. |
 | **Memoriam** | Implemented as a **global LUT setting** plus an **HUD overlay image** (smoky/hazy border). **Not** a per-player light tier — does not appear in `computeDesiredPlayerLightMode`. Soundscape mood may follow Memoriam scenes; that's a soundscape catalog detail, not an architectural concern. |
 | **Multiple scenes / party splits** | The Storyteller drives a **single active scene at any moment**. Lighting, soundscape, NPC cutouts, and player lights all follow that one active scene. Players who aren't present in the active scene get their lights set to OFF. (Future "player has assumed an NPC role" exception is reserved with the `Scenes.assumesNpcRole(color)` hook in §3.4 — returns `nil` so the seat light is left alone, since NPC role isn't implemented yet.) |
 | **Soundscape exception** | No exception. The soundscape currently writes state during apply, but the violation is not load-bearing (see §6.3). The channel-A/B alternation is state, but the crossfade itself is animation. The soundscape mutation API is refactored so writes happen up-front, then `Soundscape.reconcile()` is read-only. This adds an item to step 4 of the migration. |

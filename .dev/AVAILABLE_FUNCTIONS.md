@@ -518,7 +518,7 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 - `C.DICE_CRITICAL_SUCCESS_VALUE` - Critical success value (10)
 - `C.StorytellerColor` - Storyteller/GM player color
 - `C.CameraAngles` - Camera preset positions (placeholder structure)
-- `C.LightModes` - Light mode definitions (scene lighting presets)
+- `C.LightModes` - Scene lighting presets (`IndoorBright`, `OutdoorDim`, …). Chronicle presets use `ambient_type = 2` with full `gradientColor` (`sky` / `equator` / `ground`) and explicit `spotlights` maps via `chronicleGradientPreset` / `chronicleSpotlights` in `lib/constants.ttslua`. Darkness is expressed by low `ambient_intensity` and/or `"OFF"` spotlight entries — preset key suffixes (e.g. `IndoorDark`) do not auto-disable seat lights. When `sessionScene.siteKey` is absent, reconcilers apply `C.DefaultNoLocationLightingPresetKey` (`OutdoorDim`) via `Scenes.syncSessionLightingPresetForLocation` / `Scenes.resolveLightingPresetFromState`.
 - `G.GUIDS` - Placeholder GUIDs for TTS objects (in `lib/guids.ttslua`)
 
 ---

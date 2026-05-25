@@ -1016,6 +1016,9 @@ function onLoad(saved_data)
     -- Initialize game state from saved data or defaults
     setStartupAction("initialize-game-state")
     S.InitializeGameState(saved_data)
+    if Scenes ~= nil and type(Scenes.syncSessionLightingPresetForLocation) == "function" then
+        Scenes.syncSessionLightingPresetForLocation()
+    end
 
     setStartupAction("conditions-validate-and-reconcile")
     local Conditions = require("core.conditions")

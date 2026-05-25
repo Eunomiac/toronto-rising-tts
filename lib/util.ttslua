@@ -2057,10 +2057,30 @@ function U.changeLighting(params)
 	local gradient = params.gradientColor
 	local hasGradient = U.Type(gradient) == "table"
 
-	-- Normalize to Color for Lighting.setAmbient*Color (accepts Color or color-like table).
+	-- Normalize to Color for Lighting.setAmbient*Color.
+	-- TTS `Color({ ... })` requires `{ r, g, b, a }` keys — numeric arrays default to black.
 	local function toAmbientTint(c)
 		if c == nil then
 			return nil
+		end
+		if type(c.get) == "function" then
+			local r, g, b, a = c:get()
+			if a ~= nil then
+				return Color(r, g, b, a)
+			end
+			return Color(r, g, b)
+		end
+		if U.Type(c) == "table" then
+			local r = c.r or c[1]
+			local g = c.g or c[2]
+			local b = c.b or c[3]
+			local a = c.a or c[4]
+			if r ~= nil and g ~= nil and b ~= nil then
+				if a ~= nil then
+					return Color(r, g, b, a)
+				end
+				return Color(r, g, b)
+			end
 		end
 		return Color(c)
 	end

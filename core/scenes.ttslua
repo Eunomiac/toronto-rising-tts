@@ -295,9 +295,60 @@ local function playSceneMusic(trackIndex)
     end
 end
 
---- Resolves ambient preset for reconciliation: `sessionScene.lightingPresetKey` → `C.LightModes`, then legacy `Scenes.SCENES`.
+--- Trimmed `sessionScene.siteKey`, or `""` when absent.
+--- @return string
+local function trimmedSessionSiteKey()
+    local siteKey = S.getStateVal("sessionScene", "siteKey")
+    if type(siteKey) ~= "string" then
+        return ""
+    end
+    return string.gsub(string.gsub(siteKey, "^%s+", ""), "%s+$", "")
+end
+
+--- Resolved default lighting preset when no narrative location is active.
+--- @return string
+local function resolveNoLocationLightingPresetKey()
+    local defaultKey = C.DefaultNoLocationLightingPresetKey
+    if type(defaultKey) ~= "string" or defaultKey == "" or not C.isValidLightModeKey(defaultKey) then
+        defaultKey = "OutdoorDim"
+    end
+    return defaultKey
+end
+
+--- @return boolean
+function Scenes.hasActiveSessionLocation()
+    return trimmedSessionSiteKey() ~= ""
+end
+
+--- When `sessionScene.siteKey` is absent, persist the no-location default on `lightingPresetKey`.
+--- @return boolean true when state was updated
+function Scenes.syncSessionLightingPresetForLocation()
+    if Scenes.hasActiveSessionLocation() then
+        return false
+    end
+    local defaultKey = resolveNoLocationLightingPresetKey()
+    local currentKey = S.getStateVal("sessionScene", "lightingPresetKey")
+    if type(currentKey) == "string" then
+        currentKey = string.gsub(string.gsub(currentKey, "^%s+", ""), "%s+$", "")
+    else
+        currentKey = ""
+    end
+    if currentKey == defaultKey then
+        return false
+    end
+    S.setStateVal(defaultKey, "sessionScene", "lightingPresetKey")
+    return true
+end
+
+--- Resolves ambient preset for reconciliation: no-location default → `sessionScene.lightingPresetKey` → legacy `Scenes.SCENES`.
 --- @return table preset, string key, string source
 function Scenes.resolveLightingPresetFromState()
+    local defaultKey = resolveNoLocationLightingPresetKey()
+
+    if not Scenes.hasActiveSessionLocation() then
+        return C.LightModes[defaultKey], defaultKey, "noLocationDefault"
+    end
+
     local key = S.getStateVal("sessionScene", "lightingPresetKey")
     if type(key) == "string" then
         key = string.gsub(string.gsub(key, "^%s+", ""), "%s+$", "")
@@ -314,7 +365,7 @@ function Scenes.resolveLightingPresetFromState()
         return Scenes.SCENES[sceneName].ambient, sceneName, "currentScene"
     end
 
-    return C.LightModes.STANDARD, "STANDARD", "default"
+    return C.LightModes[defaultKey], defaultKey, "default"
 end
 
 --- Applies legacy mood-scene extras (per-light list, music, soundscape) without duplicating ambient from `C.LightModes`.
@@ -503,6 +554,8 @@ function Scenes.reconcileFromState(opts)
     opts = type(opts) == "table" and opts or {}
     local force = opts.force == true
 
+    Scenes.syncSessionLightingPresetForLocation()
+
     local sceneName = Scenes.getCurrentScene()
     if type(sceneName) ~= "string" or Scenes.SCENES[sceneName] == nil then
         sceneName = "default"
@@ -517,11 +570,14 @@ function Scenes.reconcileFromState(opts)
     end
 
     local preset, presetKey, presetSource = Scenes.resolveLightingPresetFromState()
+    local siteKey = trimmedSessionSiteKey()
     local desiredFingerprint = tostring(presetKey)
         .. "\t"
         .. tostring(presetSource)
         .. "\t"
         .. tostring(sceneName)
+        .. "\t"
+        .. siteKey
         .. "\t"
         .. tostring(transitionTime)
         .. "\t"
@@ -581,6 +637,7 @@ function Scenes.onLoad()
         print("Scenes: Restoring saved scene state: " .. savedScene)
     end
     S.setStateVal(nil, "sceneTransition")
+    Scenes.syncSessionLightingPresetForLocation()
     Scenes.reconcileFromState()
 end
 

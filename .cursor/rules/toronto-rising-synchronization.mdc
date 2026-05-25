@@ -40,8 +40,8 @@ Survey notes: [`.dev/Sychronizing Game Functionality/Dual_apply_survey.md`](.dev
 
 - Derive desired player light mode from current state priority, not restore stacks.
 - Current player-light priority is:
-  - `ROLLING` > `NPC-role exception (when implemented)` > `DARK/absent` > `HUNGRY` > `STANDARD`
-- Collapse `dark` scene and "absent from active seat layout" to the same `OFF` outcome.
+  - `ROLLING` > `NPC-role exception (when implemented)` > `absent from seat layout` > `HUNGRY` > scene seat preset / `STANDARD`
+- Collapse seat-layout absence to `OFF`. Scene darkness is explicit in `C.LightModes.*.spotlights`, not inferred from preset key suffix.
 - Do not reintroduce `modeRestore`-style push/pop state.
 
 ## Cleanup expectations

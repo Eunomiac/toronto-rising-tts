@@ -2,7 +2,7 @@
 
 Audit trail for the 2026-05-22 Linear alignment pass. Inventory: [linear-alignment-inventory.md](linear-alignment-inventory.md).
 
-**Ongoing agent responsibility:** Keep Linear, [RUNNING TASKLIST](../RUNNING%20TASKLIST.md), and code aligned per [`.cursor/rules/toronto-rising-linear.mdc`](../../.cursor/rules/toronto-rising-linear.mdc).
+**Ongoing agent responsibility:** Keep Linear, [RUNNING TASKLIST](../RUNNING%20TASKLIST.md), [INBOX](../INBOX.md) triage, and code aligned per [`.cursor/rules/toronto-rising-linear.mdc`](../../.cursor/rules/toronto-rising-linear.mdc).
 
 ## Summary
 
@@ -126,6 +126,14 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | TOR-142/143/146 | TOR-133 | BP decals + merge |
 | TOR-144/145 | TOR-132 | Conditions refactor + docs |
 
+## 2026-05-25 — INBOX capture workflow
+
+| Date | Action | File | Notes |
+|------|--------|------|-------|
+| 2026-05-25 | CREATE | `.dev/INBOX.md` | Quick capture: `[bug]` / `[intent]` / `[idea]` before Linear promotion |
+| 2026-05-25 | UPDATE | `.dev/INBOX.md`, workflow docs | Clarify-then-promote triage; **Needs clarification** section |
+| 2026-05-25 | UPDATE | `.cursor/rules/toronto-rising-linear.mdc`, `.cursorrules`, `AGENTS.md` | INBOX paths and triage for agents |
+
 ## Ongoing hygiene
 
-See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization — diff RUNNING TASKLIST against Linear monthly or before releases.
+See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization and § Inbox capture & triage — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up.

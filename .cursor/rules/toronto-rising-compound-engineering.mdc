@@ -19,6 +19,7 @@ This project has **long-running** Tabletop Simulator systems (dice, roll pipelin
 | Situation | Use |
 |-----------|-----|
 | Starting, continuing, or closing any feature/fix (always) | **Linear** (`.cursor/rules/toronto-rising-linear.mdc`): check `TOR-*` issues, update status/comments, keep RUNNING TASKLIST in sync. |
+| Quick bugs/intents/ideas while testing | **INBOX** ([`.dev/INBOX.md`](../../.dev/INBOX.md)): one-line **Active** notes; **“process the inbox”** → clarify then promote |
 | Resuming work, debugging something touched before, or avoiding contradicting earlier design | **Session history** (`ce-sessions` skill): search prior agent sessions for this workspace before large edits. |
 | Multi-step or cross-module change (several files, unclear sequencing) | **Planning** (`ce-plan` / `ce:work` skills): short plan or structured execution, then implement; create or link Linear issues before coding. |
 | Feature or fix is “done” and non-trivial; before merge/PR | **Structured review** (`ce:review` skill): tiered review appropriate to risk/size. |

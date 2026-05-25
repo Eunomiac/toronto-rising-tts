@@ -13,17 +13,24 @@ alwaysApply: true
 | --- | --- |
 | **Linear** (`Toronto Rising` team, `TOR-*`) | Status, ownership, history, bug anchors for shipped features |
 | [`.dev/RUNNING TASKLIST.md`](../../.dev/RUNNING%20TASKLIST.md) | Human/agent authoring list for planned work; every bullet has `_(TOR-XX)_` |
+| [`.dev/INBOX.md`](../../.dev/INBOX.md) | Quick capture (`bug` / `intent` / `idea`); **not** authoritative for status until triaged |
 | **Code + `.dev/` docs** | Implementation truth; must match Done issues |
 
 When these diverge, **reconcile immediately** (update Linear and/or tasklist to match code reality).
 
+## Capture vs scheduled work
+
+- **Quick note:** one line in [`.dev/INBOX.md`](../../.dev/INBOX.md) under **Active** (prefixes optional).
+- **Triage:** user says **“process the inbox”** → Phase 1: ask clarifications, park unclear items in **Needs clarification**; Phase 2: agent promotes clear items to Linear and/or RUNNING TASKLIST per [DEVELOPMENT_WORKFLOW.md § Inbox capture & triage](../../.dev/DEVELOPMENT%20WORKFLOW.md#inbox-capture--triage).
+
 ## Agent workflow (every task)
 
-1. **Before starting** — Search Linear for related `TOR-*` issues; read matching tasklist bullet if present.
+1. **Before starting** — Search Linear for related `TOR-*` issues; read matching tasklist bullet if present; skim INBOX Active if overlap is likely.
 2. **When starting** — Set issue **In Progress**; confirm tasklist bullet has the correct `_(TOR-XX)_`.
 3. **When finishing** — Mark **Done** (or **Canceled** if descoped) with a comment: what changed, key files, verification, commit refs. Update tasklist `[ ]` → `[x]` if applicable. Reference `TOR-XX` in commit body when committing.
-4. **When discovering new work** — Create a Linear issue in the correct **domain project**, add `source:tasklist` if from tasklist, append `_(TOR-XX)_` to tasklist, set **In Progress** if starting immediately.
+4. **When discovering new work** — INBOX one-liner if capture-only; otherwise create Linear issue in the correct **domain project**, add `source:tasklist` if from tasklist, append `_(TOR-XX)_` to tasklist, set **In Progress** if starting immediately.
 5. **When finding bugs on shipped features** — Create a **Bug** issue; `relatedTo` the original **Done** feature issue. Do not reopen unrelated Done issues.
+6. **Inbox triage** — On “process the inbox”: Phase 1 clarify (chat + **Needs clarification**); Phase 2 promote ready items (agent chooses Backlog vs RUNNING TASKLIST).
 
 ## Domain projects
 
@@ -42,7 +49,7 @@ Parent epics: TOR-30 (Foundation) through TOR-43 (Workshop). Attach new issues u
 - Linear MCP: `plugin-linear-linear` (`list_issues`, `get_issue`, `save_issue`, `save_comment`)
 - Team: **Toronto Rising**
 - Audit trail: [`.dev/plans/linear-alignment-log.md`](../../.dev/plans/linear-alignment-log.md)
-- Full sync workflow: [`.dev/DEVELOPMENT_WORKFLOW.md`](../../.dev/DEVELOPMENT_WORKFLOW.md) § Linear synchronization
+- Full sync workflow: [`.dev/DEVELOPMENT_WORKFLOW.md`](../../.dev/DEVELOPMENT_WORKFLOW.md) § Linear synchronization and § Inbox capture & triage
 
 ## Non-negotiables
 

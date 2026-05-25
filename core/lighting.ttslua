@@ -1365,23 +1365,6 @@ local function getPlayerRollingState(playerColor)
     return S.getStateVal("playerData", playerID, "lighting", "isRolling") == true
 end
 
---- Dark scene forces seat spotlights OFF (priority above hunger / scene seat preset).
---- Uses `sessionScene.lightingPresetKey` (`AdminDark`, `*Dark`, `DARK`) and legacy `currentScene == "dark"`.
---- @return boolean
-local function isDarkSceneActive()
-    local presetKey = S.getStateVal("sessionScene", "lightingPresetKey")
-    if C.isDarkLightingPresetKey(presetKey) then
-        return true
-    end
-    local currentScene = nil
-    if Scenes and type(Scenes.getCurrentScene) == "function" then
-        currentScene = Scenes.getCurrentScene()
-    else
-        currentScene = S.getStateVal("currentScene")
-    end
-    return U.Type(currentScene) == "string" and string.lower(currentScene) == "dark"
-end
-
 --- Seat narrative presence + table membership (see `sessionScene.seatPresent` + `C.Tables` maps).
 --- Exported for HUD map pin relocation; keep semantics aligned with seat-light enforcement.
 --- @param seatKey string Brown | Orange | …
@@ -1444,7 +1427,7 @@ local function getSessionSeatSpotlightPreset(lightRef)
     return m[lightRef]
 end
 
---- High-priority seat spotlight modes (rolling, dark / absent, conditions, hunger).
+--- High-priority seat spotlight modes (rolling, absent seat, conditions, hunger).
 --- @param lightRef string
 --- @param seatKey string
 --- @return string|nil mode name when an override applies; nil to use scene seat preset / defaults
@@ -1461,7 +1444,7 @@ local function computeSeatSpotlightPriorityOverride(lightRef, seatKey)
     end
 
     local seatPresenceOff = not L.isPlayerPresentInActiveSeatLayout(seatKey)
-    if (isDarkSceneActive() or seatPresenceOff) and lData.OFF ~= nil then
+    if seatPresenceOff and lData.OFF ~= nil then
         return "OFF"
     end
 

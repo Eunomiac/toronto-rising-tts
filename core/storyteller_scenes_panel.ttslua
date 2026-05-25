@@ -17,6 +17,7 @@ local ChronicleWeather = require("lib.chronicle_weather")
 local GameStateOverlay = require("core.game_state_overlay")
 local SceneLibrary = require("core.scene_library")
 local PresentDayClock = require("core.present_day_clock")
+local Scenes = require("core.scenes")
 local StorytellerPanelUI = require("core.storyteller_panel_ui")
 local HUDBF = require("core.hud_blindfold")
 local PCST = require("core.pc_storyteller_panel")
@@ -1014,6 +1015,10 @@ function StorytellerScenesPanel.endSceneNarrative(player)
     S.setStateVal(nil, "sessionScene", "districtKey")
     S.setStateVal(nil, "sessionScene", "siteKey")
     S.setStateVal(nil, "soundscape", "lastAppliedSiteKey")
+    Scenes.syncSessionLightingPresetForLocation()
+    if type(Scenes.invalidateReconcileCache) == "function" then
+        Scenes.invalidateReconcileCache()
+    end
 
     local ck = S.getStateVal("sessionScene", "clock")
     if type(ck) ~= "table" then

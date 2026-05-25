@@ -85,9 +85,17 @@ Implement GUID-based player lighting system
 
 - **Linear** — Toronto Rising team (`TOR-*`); domain projects and epics TOR-30–43
 - **`.dev/RUNNING TASKLIST.md`** — planned-work authoring; every bullet has `_(TOR-XX)_`
+- **`.dev/INBOX.md`** — quick capture (`bug` / `intent` / `idea`); triage into Linear + tasklist when scheduled
 - **Code + docs** — implementation truth; must match Done issues
 
-**Full workflow:** `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization. Audit trail: `.dev/plans/linear-alignment-log.md`.
+**Full workflow:** `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization and § Inbox capture & triage. Audit trail: `.dev/plans/linear-alignment-log.md`.
+
+#### Inbox quick capture
+
+- **File:** `.dev/INBOX.md` — one-line notes under **Active** (optional `[bug]` / `[intent]` / `[idea]` tags)
+- **You:** dump notes while testing; answer `?` questions under **Needs clarification** when asked
+- **Agent triage (“process the inbox”):** Phase 1 — batch clarifying questions in chat; park unclear items in **Needs clarification** with `?` bullets. Phase 2 — promote clear items: agent picks Linear Backlog **or** Linear + RUNNING TASKLIST; dedupe/dismiss → **Processed**
+- **Do not** use GitHub Issues for Toronto Rising tracking
 
 #### When to Check Linear
 

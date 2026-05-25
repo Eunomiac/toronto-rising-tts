@@ -8,6 +8,8 @@ This document outlines the development workflow and best practices for this proj
 
 [`.dev/RUNNING TASKLIST.md`](RUNNING%20TASKLIST.md) is the authoring surface for planned work; every bullet must have a matching `_(TOR-XX)_` id. Alignment audit: [`.dev/plans/linear-alignment-log.md`](plans/linear-alignment-log.md).
 
+**Quick capture (not yet scheduled):** [`.dev/INBOX.md`](INBOX.md) — one-line notes; **“process the inbox”** to clarify and promote.
+
 See **§ Linear synchronization (detail)** below for domain projects, labels, and hygiene.
 
 ## Git Workflow
@@ -126,6 +128,68 @@ Modules should be loaded in dependency order:
 3. Main game logic
 4. Debug/testing modules (development only)
 
+## Inbox capture & triage
+
+[`.dev/INBOX.md`](INBOX.md) is the **low-friction capture surface** for bugs, intentions, and feature ideas. The human adds **one-line notes only**; the triage agent decides promotion (Linear Backlog, RUNNING TASKLIST, dismiss, or duplicate). GitHub Issues are **not** used for Toronto Rising project tracking.
+
+### Human capture
+
+| You do | Triage agent does |
+| --- | --- |
+| One line under **Active** (prefixes/tags optional) | Classify, dedupe, ask questions, promote |
+| Answer `?` questions under items in **Needs clarification** | Re-run promotion on next “process the inbox” |
+| Fix obvious bugs in <5 min in code | (Skip inbox) retroactive Linear **Bug** |
+
+**Format:** `- summary` or `- [bug][module] summary` — optional indented sub-bullets if you already know repro/context.
+
+### Agent triage (“process the inbox”)
+
+When the user says **“process the inbox”** (or similar), run **both phases** below in one session unless the user explicitly asked for “clarifications only”.
+
+#### Phase 1 — Clarify (ask first)
+
+1. Read **Active** and **Needs clarification** in [`.dev/INBOX.md`](INBOX.md).
+2. For each item **without sufficient answers** under it:
+   - Search the codebase and Linear for context; resolve alone when unambiguous.
+   - If still unclear: **move the item** from Active → **Needs clarification** (keep type subsection: Bugs / Intents / Ideas).
+   - Append **`?` question bullets** under the item (repro steps, scope, priority, module, duplicate check, etc.).
+3. **Ask the user in chat** for all open questions in one batch — numbered, grouped by inbox line. Do not promote those items yet.
+4. Items in **Needs clarification** that already have **Answer:** (or clear answer bullets) from the user → treat as ready for Phase 2.
+
+#### Phase 2 — Promote (agent decides destination)
+
+For every item Phase 1 marked ready (clear Active lines + answered Needs clarification lines):
+
+1. **Search Linear** for duplicates; merge or dismiss if a matching `TOR-*` exists.
+2. Choose an outcome **by assessment** (user does not pick tier):
+
+| Assessment | Action |
+| --- | --- |
+| **Actionable, scoped** — clear enough to schedule or track as planned work | Linear issue **+** RUNNING TASKLIST `[ ]` bullet with `_(TOR-XX)_`; labels `Bug` / `Improvement` / `Feature` + `module:*` + `source:tasklist`; domain project + epic when applicable |
+| **Worth tracking, not schedulable yet** — vague idea, needs design, large unknown scope | Linear **Backlog** only (no tasklist); note “Promoted from INBOX” in description |
+| **Bug on shipped feature** | `Bug` + `relatedTo` original **Done** feature issue |
+| **Duplicate** | Processed entry referencing existing `TOR-*`; no new issue |
+| **Dismiss** | Processed as `dismissed — reason` |
+| **Trivial fix** (only if user asked to fix during triage) | Fix in code; Linear Bug **Done**; Processed with TOR id |
+
+3. **Move** promoted/dismissed/duplicate lines → **Processed** (`YYYY-MM-DD TOR-XXX — summary`).
+4. Leave **Needs clarification** items that still lack answers in place; remove answered items after promotion.
+5. Preserve section headers in Active / Needs clarification; do not delete structure.
+6. **Never** leave tasklist-scheduled promotions without both Linear and RUNNING TASKLIST sync.
+
+**Cadence:** when user says “process the inbox”; optionally at session end if user added Active items that session; when Active + unanswered Needs clarification total ~5–10 items.
+
+**Re-triage:** After the user adds answers under **Needs clarification**, the next “process the inbox” runs Phase 2 on those items (Phase 1 only if new ambiguities appear).
+
+### Surfaces (do not dual-track)
+
+| Surface | Role |
+| --- | --- |
+| `.dev/INBOX.md` | Ephemeral capture; not authoritative for status |
+| **Linear** | Status, history, bug anchors |
+| `.dev/RUNNING TASKLIST.md` | Shaped planned work with `_(TOR-XX)_` |
+| `docs/solutions/` | Patterns after solving — **not** a tracker |
+
 ## Linear synchronization (detail)
 
 Linear is the source of truth for project state. [`.dev/RUNNING TASKLIST.md`](RUNNING%20TASKLIST.md) is the authoring surface for planned work; every bullet must have a matching `_(TOR-XX)_` id. Alignment audit: [`.dev/plans/linear-alignment-log.md`](plans/linear-alignment-log.md). **Agent rule:** `.cursor/rules/toronto-rising-linear.mdc`.
@@ -175,15 +239,17 @@ Linear is the source of truth for project state. [`.dev/RUNNING TASKLIST.md`](RU
 
 1. Diff RUNNING TASKLIST unchecked items vs Linear Backlog/Todo.
 2. Diff checked items vs Linear Done.
-3. Scan new `core/` / `lib/` modules for missing coverage under domain epics.
-4. Archive completed epics only when all children are Done or Canceled.
+3. Process or clear stale **Active** / **Needs clarification** items in [`.dev/INBOX.md`](INBOX.md) via **“process the inbox”**.
+4. Scan new `core/` / `lib/` modules for missing coverage under domain epics.
+5. Archive completed epics only when all children are Done or Canceled.
 
 ### Agent workflow
 
-- **Before coding:** Search Linear for related `TOR-*` issues; read matching tasklist bullet.
+- **Before coding:** Search Linear for related `TOR-*` issues; read matching tasklist bullet; skim [`.dev/INBOX.md`](INBOX.md) Active if the task might overlap an unprocessed note.
 - **When starting:** Set issue **In Progress**; confirm tasklist has correct `_(TOR-XX)_`.
 - **When finishing:** Mark **Done** with comment (files, commits, verification); update tasklist `[x]`; reference `TOR-XX` in commit body.
-- **New work:** Create Linear issue in domain project first; append `_(TOR-XX)_` to tasklist.
+- **New work:** Create Linear issue in domain project first; append `_(TOR-XX)_` to tasklist (or INBOX first if capture-only).
+- **Inbox triage:** Follow **§ Inbox capture & triage** on “process the inbox”: Phase 1 ask + park unclear items in **Needs clarification**; Phase 2 promote clear items (agent picks Backlog vs tasklist).
 - **Never** leave tasklist and Linear diverged at end of session.
 
 ## Documentation
@@ -197,7 +263,8 @@ Linear is the source of truth for project state. [`.dev/RUNNING TASKLIST.md`](RU
 
 ### Documentation Files
 
-- `.cursor/rules/toronto-rising-linear.mdc` - **Primary:** Linear + RUNNING TASKLIST sync (always-on)
+- `.cursor/rules/toronto-rising-linear.mdc` - **Primary:** Linear + RUNNING TASKLIST + INBOX sync (always-on)
+- `.dev/INBOX.md` - Quick capture: `bug` / `intent` / `idea` before Linear promotion
 - `.dev/RUNNING TASKLIST.md` - Planned work; every bullet `_(TOR-XX)_`
 - `.dev/plans/linear-alignment-log.md` - Linear alignment audit trail
 - `.dev/TESTING.md` - Testing guide and test functions
@@ -210,13 +277,14 @@ Linear is the source of truth for project state. [`.dev/RUNNING TASKLIST.md`](RU
 When working on this project:
 
 1. **Linear (primary):** Follow `.cursor/rules/toronto-rising-linear.mdc` — check `TOR-*` before start, **In Progress** when working, **Done** + comment + tasklist when finished
-2. **Commit Regularly**: Commit changes after completing logical units of work without waiting for user prompts; reference `TOR-XX` in commit body
-3. **Clear Messages**: Write descriptive commit messages explaining what changed and why
-4. **Update Documentation**: Keep documentation files updated when making changes
-5. **Test Changes**: Verify changes work in TTS when possible
-6. **Follow Patterns**: Maintain consistency with existing code style and patterns
-7. **Error Handling**: Include appropriate error handling and validation
-8. **Type Safety**: Use strict TypeScript notation where applicable, avoid `any` type
+2. **Inbox:** One-line notes in [`.dev/INBOX.md`](INBOX.md); **“process the inbox”** runs clarify-then-promote (see **§ Inbox capture & triage**)
+3. **Commit Regularly**: Commit changes after completing logical units of work without waiting for user prompts; reference `TOR-XX` in commit body
+4. **Clear Messages**: Write descriptive commit messages explaining what changed and why
+5. **Update Documentation**: Keep documentation files updated when making changes
+6. **Test Changes**: Verify changes work in TTS when possible
+7. **Follow Patterns**: Maintain consistency with existing code style and patterns
+8. **Error Handling**: Include appropriate error handling and validation
+9. **Type Safety**: Use strict TypeScript notation where applicable, avoid `any` type
 
 ## Troubleshooting
 
@@ -236,5 +304,5 @@ When working on this project:
 
 ---
 
-**Last Updated**: 2026-05-22 (Linear as primary responsibility)
+**Last Updated**: 2026-05-25 (INBOX capture + triage)
 **Maintained By**: Development Team

@@ -14,7 +14,7 @@ This project is iterated **quickly**; requirements and layout change often.
 - When touching an area, **delete** clearly orphaned code paths rather than leaving commented-out or parallel “legacy” copies.
 - After removals, **grep** for stale names (roles, tags, helpers) and fix **call sites, prints, and `.dev` docs** that still mention them.
 - **Documentation:** When behavior, paths, or APIs change, **update `.dev/` and `docs/solutions/` in the same change** — do not wait for the user to ask. See **Documentation Updates — ABSOLUTE REQUIREMENT** in `.cursorrules`.
-- **Linear tracking:** Keep Linear, [RUNNING TASKLIST](../../.dev/RUNNING%20TASKLIST.md), and code aligned on every task — see `.cursor/rules/toronto-rising-linear.mdc`. Linear sync is part of done, not a follow-up.
+- **Linear tracking:** Keep Linear, [RUNNING TASKLIST](../../.dev/RUNNING%20TASKLIST.md), and code aligned on every task — see `.cursor/rules/toronto-rising-linear.mdc`. Linear sync is part of done, not a follow-up. Quick capture before scheduling: [INBOX.md](../../.dev/INBOX.md).
 - When adding/changing conditions, read [Conditions System Guide](../../.dev/PC%20Data%20&%20Tracking/Conditions%20System%20Guide.md) (Agent quick guide) before editing the registry or consumers.
 - For synchronization flow and naming conventions, follow `.cursor/rules/toronto-rising-synchronization.mdc`.
 - Give proactive pushback when a requested path is unsound or overly complex; explain the risk and propose a simpler architecture-aligned alternative immediately.
