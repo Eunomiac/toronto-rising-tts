@@ -14,7 +14,8 @@
 - remove excess verbiage from roll result broadcast: no die roll numbers (the images are enough)
 - as with the roll panel indication of dice pool describe above, roll result images of rouse check(s) should be offset from each other, and from the dice pool proper
 - fade-in of weather audio is very abrupt, possibly because a cross-fade attempt is occurring when the system is under heavy load, resulting in the fade being delayed and jumping to max volume instantly; this _may_ be solved naturally by TOR-147 (which separates fade-outs into an earlier part of scene transition, which might result in smoother fade-ins later in the process)
-
+- upon activating any scene, Storyteller must be presented with a modal containing toggle buttons to activate/deactivate each seat BEFORE transitioning to the new scene (so, e.g., players can be "left behind" at the old scene's location)
+- [bug] activating Blood Surge does not take into account conditions that may be in place which increase/decrease a player's Blood Potency (and derived stats), or even modify Blood Surge directly.
 
 ---
 
