@@ -150,5 +150,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-05-25 | PARK | INBOX Needs clarification | Intermittent real-time clock speed faster than multiplier |
 | 2026-05-25 | CREATE | TOR-148 | Real-time clock faster than multiplier (answered clarification pass) |
 | 2026-05-25 | DONE | TOR-135 | Import root validator rejects mis-nested `npcWorld`; not a reconcile bug |
+| 2026-05-25 | CREATE | TOR-149 – TOR-152 | Inbox batch 4: ST dice tray lights, thunder ducking, default no-scene, Play load scene restore |
+| 2026-05-25 | UPDATE | TOR-151 | Author clarification: “clock cleared” = overlay display only; do not mutate library clock or present-day clock |
+| 2026-05-25 | UPDATE | Focus + Linear relations | Back-burner approved: TOR-149–152 deferred; blockedBy star pattern applied |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

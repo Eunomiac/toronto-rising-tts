@@ -2,8 +2,6 @@
 
 ## Active
 
-- the three Storyteller Dice Lights (`storytellerDiceLight1`, `storytellerDiceLight2` and `storytellerDiceLight3`) should be `OFF` until/unless there is a live Storyteller roll in the corresponding storyteller dice drawer (currently, their presence in `LIGHTMODES_REGISTRY_KEYS_ORDERED` is setting them to `STANDARD` in almost all lighting modes)
-
 ---
 
 ## Needs clarification
@@ -37,3 +35,7 @@
 - 2026-05-25 TOR-147 — [improvement] Soundscape BGM/location fade on blindfold down during scene switch
 - 2026-05-25 → Needs clarification — Real-time clock speed faster than multiplier (intermittent)
 - 2026-05-25 TOR-148 — [bug] Real-time narrative clock runs faster than speed multiplier (intermittent)
+- 2026-05-25 TOR-149 — [bug] Storyteller dice tray lights ON during global light modes
+- 2026-05-25 TOR-150 — [bug] Thunder one-shots bypass indoor weather ducking
+- 2026-05-25 TOR-151 — [feature] Default "no scene" environment when no active library scene
+- 2026-05-25 TOR-152 — [feature] Restore active scene on Play load and Start→Play transition
