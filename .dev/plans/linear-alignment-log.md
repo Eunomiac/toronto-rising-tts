@@ -138,7 +138,17 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-05-25 | UPDATE | `.cursor/rules/toronto-rising-linear.mdc`, `.cursorrules`, `AGENTS.md` | INBOX paths and triage for agents |
 | 2026-05-25 | UPDATE | RUNNING TASKLIST **Focus**, workflow docs | Stack rank: bugs → TOR-141 → TOR-137 → TOR-81; Linear priorities synced |
 | 2026-05-25 | CREATE | `.cursor/commands/tr-inbox.md` | `/tr-inbox`: inbox triage + Focus/Linear sync for `/tr-start` handoff |
-
-## Ongoing hygiene
+| 2026-05-25 | CREATE | TOR-143 | Phase system redesign (inbox batch 2) |
+| 2026-05-25 | CANCELED | TOR-90 | Superseded by TOR-143 |
+| 2026-05-25 | UPDATE | TOR-98, TOR-101 | Partial design absorbed into TOR-143 |
+| 2026-05-25 | UPDATE | TOR-81 | Priority → Low (deferred behind Focus bugs + TOR-141) |
+| 2026-05-25 | UPDATE | Workflow docs | Precedence vs priority decoupled; liberal `blockedBy`; deferral ≠ Low |
+| 2026-05-25 | UPDATE | Workflow docs | Anti-gridlock rules for liberal `blockedBy` (star pattern, cap ~6) |
+| 2026-05-25 | UPDATE | Linear relations | Focus/deferred `blockedBy` star pattern; sub-issues TOR-98/101→143, TOR-100→98; TOR-90 duplicateOf TOR-143; CREATE TOR-144 (multiplayer E2E sub of TOR-141) |
+| 2026-05-25 | CREATE | TOR-145 – TOR-147 | Inbox batch 3: end-scene library sync, delete-live-scene-first, blindfold soundscape fade |
+| 2026-05-25 | UPDATE | RUNNING TASKLIST **Focus** | Insert TOR-145 (end scene library sync) at #2; tasklist bullets for TOR-145/146/147 |
+| 2026-05-25 | PARK | INBOX Needs clarification | Intermittent real-time clock speed faster than multiplier |
+| 2026-05-25 | CREATE | TOR-148 | Real-time clock faster than multiplier (answered clarification pass) |
+| 2026-05-25 | DONE | TOR-135 | Import root validator rejects mis-nested `npcWorld`; not a reconcile bug |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

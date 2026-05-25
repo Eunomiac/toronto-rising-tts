@@ -1898,9 +1898,10 @@ local function reconcileStepFiveAreaPopulate(intent)
     local allOk = true
     local needPool = false
     for name, ci in pairs(intent.byCharacter) do
-        if U.Type(ci) == "table" and ci.target == "area" and getInstances()[name] == nil then
-            needPool = true
-            break
+        if U.Type(ci) == "table" and ci.target == "area" then
+            if getInstances()[name] == nil then
+                needPool = true
+            end
         end
     end
     if needPool then

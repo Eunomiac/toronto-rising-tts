@@ -16,6 +16,60 @@ local U = require("lib.util")
 --- Highest `schemaVersion` this build accepts from import JSON.
 SceneLibrary.IMPORT_SCHEMA_VERSION = 2
 
+--- Keys allowed on the import wrapper root (see `.dev/Scene Constructor/Scene Constructor Overview.md`).
+local IMPORT_ROOT_ALLOWED = {
+    schemaVersion = true,
+    sceneKey = true,
+    title = true,
+    sessionScene = true,
+}
+
+--- `sessionScene` fields that must not appear as siblings of `sessionScene` at import root.
+local IMPORT_MISNESTED_SESSION_KEYS = {
+    npcWorld = "Move npcWorld inside sessionScene — it must not be a sibling of sessionScene at the import root.",
+    seatSlots = "Move seatSlots inside sessionScene.",
+    districtKey = "Move districtKey inside sessionScene.",
+    siteKey = "Move siteKey inside sessionScene.",
+    clock = "Move clock inside sessionScene.",
+    lightingPresetKey = "Move lightingPresetKey inside sessionScene.",
+    isTopFogActive = "Move isTopFogActive inside sessionScene.",
+    soundscapeNarrative = "Move soundscapeNarrative inside sessionScene.",
+    rollDefaults = "Move rollDefaults inside sessionScene.",
+    tableKey = "Move tableKey inside sessionScene.",
+    seatPresent = "Move seatPresent inside sessionScene.",
+    npcRoleOverride = "Remove npcRoleOverride from import root — it is rebuilt from seatSlots inside sessionScene.",
+    chronicleWeatherFollowSchedule = "Move chronicle weather flags inside sessionScene (or omit — importer derives them from soundscapeNarrative).",
+    chronicleWeatherManualHold = "Move chronicle weather flags inside sessionScene (or omit — importer derives them from soundscapeNarrative).",
+}
+
+--- Rejects spreadsheet nesting mistakes (e.g. `npcWorld` at import root instead of under `sessionScene`).
+--- @param raw table
+--- @return boolean ok
+--- @return string|nil err
+local function validateImportRootKeys(raw)
+    local unexpected = {}
+    local hint = nil
+    for k, _ in pairs(raw) do
+        if IMPORT_ROOT_ALLOWED[k] ~= true then
+            unexpected[#unexpected + 1] = tostring(k)
+            if hint == nil and type(IMPORT_MISNESTED_SESSION_KEYS[k]) == "string" then
+                hint = IMPORT_MISNESTED_SESSION_KEYS[k]
+            end
+        end
+    end
+    if #unexpected == 0 then
+        return true, nil
+    end
+    table.sort(unexpected)
+    local msg = "Import root has unexpected key(s): "
+        .. table.concat(unexpected, ", ")
+        .. ". Allowed root keys: schemaVersion, sceneKey, title, sessionScene only."
+    if hint ~= nil then
+        msg = msg .. " " .. hint
+    end
+    return false, msg
+end
+
 --- @param v any
 --- @return boolean
 local function isNonEmptyString(v)
@@ -223,6 +277,11 @@ end
 function SceneLibrary.validateAndNormalizeImportPayload(raw)
     if type(raw) ~= "table" then
         return false, "Root value must be a JSON object.", nil
+    end
+
+    local okRoot, errRoot = validateImportRootKeys(raw)
+    if not okRoot then
+        return false, errRoot, nil
     end
 
     local sv = raw.schemaVersion

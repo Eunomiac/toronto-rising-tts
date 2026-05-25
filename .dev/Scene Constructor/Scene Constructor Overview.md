@@ -24,6 +24,8 @@ The pasted JSON may include a small **import wrapper** (not stored inside nested
 | `title` | Yes | Shown on the scene button. |
 | `sessionScene` | Yes | Object whose keys align with **`gameState.sessionScene`** (see below). |
 
+**Strict root keys:** The import wrapper may contain **only** `schemaVersion`, `sceneKey`, `title`, and `sessionScene`. Any other top-level key (e.g. `npcWorld`, `seatSlots`, `districtKey` pasted as a sibling of `sessionScene`) is a **validation error** with a path-specific message — the importer does **not** hoist or merge misplaced fields.
+
 On successful import: upsert `sceneLibrary.scenes[sceneKey]`, set `title`, set **`receivesLiveWrites` to `false`** (import does **not** activate the scene or set `activeKey`), replace nested `sessionScene` from the payload (then `S.validateState` merges defaults).
 
 ### Full import JSON example (copy-paste)
@@ -257,7 +259,7 @@ The Host’s pasted text is passed through **`U.sanitizeJsonTextRemoveTrailingCo
 
 **Schema v2** (`schemaVersion: 2`): requires `lightingPresetKey` (valid `C.LightModes` key), `isTopFogActive` (boolean), `clock.isPresentDay` (boolean); rejects `npcWorld.preload`. Historical scenes (`isPresentDay: false`) require full clock datetime. Present-day scenes may omit all five datetime fields (flags only). **Datetime defaults are never applied:** partial datetime (some fields set, others missing) is rejected; `S.validateState` merges clock **flags** only, not hour/minute/day/month/year.
 
-Messages should name the **JSON path** and the **fix** (e.g. `sessionScene.seatSlots.NPC2.characterKey: expected string or omit key; got number.`, `sessionScene.soundscapeNarrative: set wind, rain, and thunderstorm together, or omit all three — mixed weather overrides are invalid.`, `sceneKey: must match pattern …`, `schemaVersion: unsupported value 7; this build supports 2.`).
+Messages should name the **JSON path** and the **fix** (e.g. `sessionScene.seatSlots.NPC2.characterKey: expected string or omit key; got number.`, `sessionScene.soundscapeNarrative: set wind, rain, and thunderstorm together, or omit all three — mixed weather overrides are invalid.`, `Import root has unexpected key(s): npcWorld. Allowed root keys: schemaVersion, sceneKey, title, sessionScene only. Move npcWorld inside sessionScene — it must not be a sibling of sessionScene at the import root.`, `sceneKey: must match pattern …`, `schemaVersion: unsupported value 7; this build supports 2.`).
 
 **`InputField` for paste / titles:** Do not read live `InputField` text with `UI.getValue` on confirm. Follow the TTS contract and in-repo reference (`rollDash_difficulty_*` + `HUD_rollSetDifficulty`): use **`onValueChanged` / `onEndEdit`** to stash the **`value`** argument, prefill with **`UI.setAttribute(id, "text", …)`**, and read from stash on confirm. See [`.dev/SOLVING ISSUES & DEBUGGING.md`](../SOLVING%20ISSUES%20%26%20DEBUGGING.md) (*Global UI `InputField` — typed text*).
 
