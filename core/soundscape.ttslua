@@ -23,6 +23,10 @@ local musicGeneration = 0
 local featuredGeneration = 0
 local weatherGeneration = 0
 local singleEmitterTransitionGeneration = {}
+--- Bumped on each `playCatalogEntry` clip swap and `cancelSingleEmitterTransition`; stale `U.delay` volume arms no-op.
+local playCatalogEntryGeneration = {}
+--- Let Unity finish AssetBundle clip swap before unmute/fade (~one frame at 30fps).
+local EMITTER_POST_SWAP_ARM_SECONDS = 0.034
 local cachedEmitters = {}
 
 --- Last fingerprint successfully applied by `reconcileFromState` deferred apply (incremental sync skips when unchanged).
@@ -547,10 +551,21 @@ local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolu
     -- Always arm zero gain before swapping clips; Unity often plays one loud frame otherwise.
     hardSilenceAudioSources(obj)
     setEmitterVolume(obj, 0)
+    -- Looping swaps: drop to the silent stub first so Unity does not crossfade old→new at full gain.
+    if effectList == Catalog.EFFECT_LIST.LOOPING and track.effect ~= Catalog.SILENT_EFFECT then
+        local silentIndex = resolveEffectIndex(obj, Catalog.SILENT_EFFECT, Catalog.EFFECT_LIST.LOOPING)
+        if silentIndex ~= nil then
+            obj.AssetBundle.playLoopingEffect(silentIndex)
+            hardSilenceAudioSources(obj)
+            setEmitterVolume(obj, 0)
+        end
+    end
+    playCatalogEntryGeneration[channelKey] = (playCatalogEntryGeneration[channelKey] or 0) + 1
+    local thisPlayGeneration = playCatalogEntryGeneration[channelKey]
+
     obj.AssetBundle[apiName](index)
     hardSilenceAudioSources(obj)
     setEmitterVolume(obj, 0)
-    local didSetVolume = fadeEmitterVolume(obj, 0, emitterTarget, fadeSec)
 
     local patch = {
         effect = track.effect,
@@ -558,13 +573,34 @@ local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolu
         durationSeconds = track.durationSeconds,
         volume = targetVolume,
         available = true,
-        volumeControl = didSetVolume,
+        volumeControl = nil,
         lastError = nil,
     }
     if naturalWeather ~= nil then
         patch.naturalVolume = naturalWeather
     end
     updateChannelState(channelKey, patch)
+
+    --- Unity may audibly unmute new clips for one frame if gain is raised in the same tick as `playLoopingEffect`.
+    local function armEmitterVolumeAfterClipSwap()
+        if thisPlayGeneration ~= playCatalogEntryGeneration[channelKey] then
+            return
+        end
+        local didSetVolume = false
+        if fadeSec <= 0 then
+            didSetVolume = setEmitterVolume(obj, emitterTarget) == true
+        else
+            didSetVolume = fadeEmitterVolume(obj, 0, emitterTarget, fadeSec) == true
+        end
+        updateChannelState(channelKey, { volumeControl = didSetVolume })
+    end
+
+    if U ~= nil and type(U.delay) == "function" then
+        U.delay(armEmitterVolumeAfterClipSwap, EMITTER_POST_SWAP_ARM_SECONDS)
+    else
+        armEmitterVolumeAfterClipSwap()
+    end
+
     return true, table.concat({ "Playing", tostring(track.effect), "on", tostring(channelKey) }, " ")
 end
 
@@ -632,18 +668,41 @@ local function playPairedEmitterEntry(entry, options)
     return okPlay, message, oldChannel
 end
 
+--- True when the channel is already looping the catalog effect (skip clip restart on scene resync).
+--- @param channelKey string
+--- @param track table normalized catalog entry
+--- @return boolean
+local function weatherLoopChannelMatches(channelKey, track)
+    if type(track) ~= "table" or type(track.effect) ~= "string" then
+        return false
+    end
+    local state = ensureState()
+    local channelState = state.channels and state.channels[channelKey] or nil
+    if type(channelState) ~= "table" or type(channelState.effect) ~= "string" then
+        return false
+    end
+    if channelState.effect == Catalog.SILENT_EFFECT then
+        return false
+    end
+    return channelState.effect == track.effect
+end
+
 local function playSingleEmitterFadeOutIn(channelKey, entry, volume, fadeSeconds)
     singleEmitterTransitionGeneration[channelKey] = (singleEmitterTransitionGeneration[channelKey] or 0) + 1
     local thisTransitionGeneration = singleEmitterTransitionGeneration[channelKey]
-    local targetVolume = clamp01(volume or entry.volume or 0)
+    local track = normalizeEntry(entry)
+    if track == nil then
+        return false, "Invalid soundscape entry for channel " .. tostring(channelKey)
+    end
+    local targetVolume = clamp01(volume or track.volume or 0)
     fadeSeconds = tonumber(fadeSeconds) or 0
     if fadeSeconds <= 0 or not probeVolumeControl() then
-        return playCatalogEntry(channelKey, entry, targetVolume, 0)
+        return playCatalogEntry(channelKey, track, targetVolume, 0)
     end
 
     local obj = resolveEmitter(channelKey)
     if obj == nil then
-        return playCatalogEntry(channelKey, entry, targetVolume, 0)
+        return playCatalogEntry(channelKey, track, targetVolume, 0)
     end
 
     local state = ensureState()
@@ -655,7 +714,7 @@ local function playSingleEmitterFadeOutIn(channelKey, entry, volume, fadeSeconds
     local okPlay, message = true, table.concat({ "Scheduled", tostring(entry.effect or entry.key), "on", tostring(channelKey) }, " ")
     waitTime(function()
         if thisTransitionGeneration == singleEmitterTransitionGeneration[channelKey] then
-            playCatalogEntry(channelKey, entry, targetVolume, halfFadeSeconds, 0)
+            playCatalogEntry(channelKey, track, targetVolume, halfFadeSeconds, 0)
         end
     end, halfFadeSeconds)
     return okPlay, message
@@ -663,6 +722,7 @@ end
 
 local function cancelSingleEmitterTransition(channelKey)
     singleEmitterTransitionGeneration[channelKey] = (singleEmitterTransitionGeneration[channelKey] or 0) + 1
+    playCatalogEntryGeneration[channelKey] = (playCatalogEntryGeneration[channelKey] or 0) + 1
 end
 
 --- Looping emitter channels that can resume wrong audio from a saved AssetBundle before reconcile runs.
@@ -1849,6 +1909,14 @@ function Soundscape.setRainLayer(rainKey)
     if rain == nil then
         return false, "Unknown rain layer: " .. tostring(rainKey)
     end
+    if weatherLoopChannelMatches("weatherRain", rain) and ensureState().rain == rainKey then
+        local natural = tonumber(rain.volume) or 0.5
+        local okVolume, volumeMessage = setChannelImmediateVolume("weatherRain", natural)
+        if okVolume then
+            ensureState().rain = rainKey
+        end
+        return okVolume, volumeMessage or ("Rain layer held: " .. rainKey)
+    end
     local okRain, message = playSingleEmitterFadeOutIn(
         "weatherRain",
         rain,
@@ -1880,6 +1948,14 @@ function Soundscape.setWindLayer(windKey)
     local wind = Catalog.getWeatherTrack("wind", windKey)
     if wind == nil then
         return false, "Unknown wind layer: " .. tostring(windKey)
+    end
+    if weatherLoopChannelMatches("weatherWind", wind) and ensureState().wind == windKey then
+        local natural = tonumber(wind.volume) or 0.5
+        local okVolume, volumeMessage = setChannelImmediateVolume("weatherWind", natural)
+        if okVolume then
+            ensureState().wind = windKey
+        end
+        return okVolume, volumeMessage or ("Wind layer held: " .. windKey)
     end
     local okWind, message = playSingleEmitterFadeOutIn(
         "weatherWind",

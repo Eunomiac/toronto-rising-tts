@@ -153,5 +153,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-05-25 | CREATE | TOR-149 – TOR-152 | Inbox batch 4: ST dice tray lights, thunder ducking, default no-scene, Play load scene restore |
 | 2026-05-25 | UPDATE | TOR-151 | Author clarification: “clock cleared” = overlay display only; do not mutate library clock or present-day clock |
 | 2026-05-25 | UPDATE | Focus + Linear relations | Back-burner approved: TOR-149–152 deferred; blockedBy star pattern applied |
+| 2026-05-25 | DONE | TOR-136 | Weather audio burst on scene switch — author verified; silent stub + deferred volume arm, rain/wind hold, library Apply reconcile fingerprint timing |
+| 2026-05-25 | UPDATE | RUNNING TASKLIST **Focus** | TOR-136 removed from stack; TOR-138 promoted to #1 |
+| 2026-05-25 | UPDATE | `.dev/Soundscape & Audio/SOUNDSCAPE_LUA_IMPLEMENTATION.md` | Document clip-swap burst mitigation + rain/wind hold (TOR-136) |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

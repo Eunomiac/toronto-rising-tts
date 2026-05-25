@@ -967,11 +967,10 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
         if SS.mergeSessionSceneNarrativeIntoContext ~= nil then
             merged = SS.mergeSessionSceneNarrativeIntoContext(S.getStateVal("sessionScene"), merged)
         end
+        local primeSoundscapeReconcile = false
         if SS.applyContext ~= nil and next(merged) ~= nil then
             SS.applyContext(merged)
-            if SS.markReconciledToCurrentState ~= nil then
-                SS.markReconciledToCurrentState()
-            end
+            primeSoundscapeReconcile = true
         end
 
         reconcileLocationHostedConditions({ skipPresentation = true })
@@ -979,7 +978,11 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
         if S.getStateVal("sessionScene", "chronicleWeatherManualHold") ~= true then
             if type(ChronicleWeather.applyScheduledWeather) == "function" then
                 ChronicleWeather.applyScheduledWeather({ force = false })
+                primeSoundscapeReconcile = false
             end
+        end
+        if primeSoundscapeReconcile and SS.markReconciledToCurrentState ~= nil then
+            SS.markReconciledToCurrentState()
         end
 
         if type(HUDP.armPinRelocationSceneCast) == "function" then

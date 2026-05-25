@@ -16,11 +16,10 @@ _Stack rank for the current cycle (2026-05-25). **Precedence** (Focus + Linear `
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-136** — Weather audio burst on scene switch | Audible on every scene change |
-| 2 | **TOR-138** — Soundscape resync after load post silence-for-save | Session start / PLAY audio broken |
-| 3 | **TOR-141** — Manual E2E test playbooks (Dice + Scenes) | Reliable step-by-step + IDE Lua snippets between steps |
-| 4 | **TOR-137** — Unicode minus in Sites import | Quick tooling win; unblocks site data |
-| 5 | **TOR-81** — Light modes cleanup _(In Progress)_ | Larger refactor — continue when above are done |
+| 1 | **TOR-138** — Soundscape resync after load post silence-for-save | Session start / PLAY audio broken |
+| 2 | **TOR-141** — Manual E2E test playbooks (Dice + Scenes) | Reliable step-by-step + IDE Lua snippets between steps |
+| 3 | **TOR-137** — Unicode minus in Sites import | Quick tooling win; unblocks site data |
+| 4 | **TOR-81** — Light modes cleanup _(In Progress)_ | Larger refactor — continue when above are done |
 
 **Deferred this cycle:** TOR-139 (scenes panel trim + 3-column library grid), TOR-140 (sound panel text + larger font), TOR-142 (four scene Apply clock buttons), TOR-143 (phase system + session lifecycle), TOR-149 (ST dice tray lights), TOR-150 (thunder indoor ducking), TOR-151 (default no-scene environment), TOR-152 (Play load scene restore). Other open bullets unchanged.
 
@@ -60,7 +59,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **Background music policy:** In any phase **other than Session Start**, background music should always play. When the active site or scene specifies no music, default to the **`Main`** playlist (`lib/soundscape_catalog.ttslua`). _(TOR-77)_
 - [ ] **Site weather ducking:** Site (not only indoors/outdoors) sets the weather audio ducking multiplier in soundscape. _(TOR-80)_
 - [ ] **Thunder indoor ducking:** Thunder one-shots should use the same indoor/site weather ducking multiplier as rain/wind (`playCatalogEntry` skips `weatherThunder`). _(TOR-150)_
-- [ ] **Weather audio burst on scene switch:** Short high-volume weather bursts when changing scenes — verify volume zeroed before new playback. _(TOR-136)_
+- [x] **Weather audio burst on scene switch:** Silent stub + zero gain before looping clip swap; one-frame deferred volume arm; rain/wind hold same effect without restart; library Apply defers `markReconciledToCurrentState` after weather apply. Author verified on scene switch. _(TOR-136)_
 - [ ] **Soundscape resync after load:** After **Silence for save** + reload, PLAY phase should restore BGM (Main default) and active scene location/weather audio. _(TOR-138)_
 - [ ] **Soundscape fade on blindfold down:** During library Apply, fade BGM + location audio when blindfolds come down (not after heavy reconcile). _(TOR-147)_
 
