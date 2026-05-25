@@ -163,5 +163,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-05-25 | DONE | TOR-138 | Silence for save: physical-only emitter silence; stopAll removed; load branch deferred to TOR-152 |
 | 2026-05-25 | COMMENT | TOR-152 | Absorb load soundscape branch scope from TOR-138 close |
 | 2026-05-25 | UPDATE | TOR-141 | Baseline E2E playbooks shipped; reopened **In Progress** + label `living-doc` (ongoing maintenance, not Done) |
+| 2026-05-25 | UPDATE | TOR-141, workflow docs | `living-doc` in `toronto-rising-linear.mdc` + `DEVELOPMENT_WORKFLOW.md`; TOR-141 description link fix |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

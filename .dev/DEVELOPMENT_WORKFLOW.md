@@ -275,6 +275,18 @@ Linear is the source of truth for project state. [`.dev/RUNNING TASKLIST.md`](RU
 2. Change the tasklist checkbox to `[x]`; keep the TOR id.
 3. Reference the TOR id in git commit bodies (see `.cursorrules`).
 
+### Living documentation (`living-doc` label)
+
+Some issues (e.g. **TOR-141** manual E2E playbooks) ship a **baseline** but stay **In Progress** because the doc must track code forever.
+
+| Step | Rule |
+| --- | --- |
+| Baseline shipped | Tasklist `[x]` on the baseline bullet; Linear **In Progress** + `living-doc`; comment with commit + paths |
+| Later code changes | Update [`.dev/E2E Playbooks/`](E2E%20Playbooks/README.md) (or linked doc) in the **same PR** |
+| Close issue | **Done** only if playbooks are retired or replaced by automation |
+
+See [E2E Playbooks README](E2E%20Playbooks/README.md) maintenance table and `.cursor/rules/toronto-rising-linear.mdc` § Living documentation.
+
 ### When descoping or deferring
 
 - Linear → **Canceled** or **Backlog** with reason; move or strikethrough the tasklist item.
@@ -311,7 +323,7 @@ Do not create circular **`blockedBy`** chains. Do not use blocking where **`pare
 
 - **Before coding:** Search Linear for related `TOR-*` issues; read matching tasklist bullet; skim [`.dev/INBOX.md`](INBOX.md) Active if the task might overlap an unprocessed note.
 - **When starting:** Set issue **In Progress**; confirm tasklist has correct `_(TOR-XX)_`.
-- **When finishing:** Mark **Done** with comment (files, commits, verification); update tasklist `[x]`; reference `TOR-XX` in commit body.
+- **When finishing:** Mark **Done** with comment (files, commits, verification); update tasklist `[x]`; reference `TOR-XX` in commit body. **`living-doc`:** keep issue **In Progress** after baseline; see § Living documentation.
 - **New work:** Create Linear issue in domain project first; append `_(TOR-XX)_` to tasklist (or INBOX first if capture-only).
 - **Inbox triage:** Follow **§ Inbox capture & triage** on “process the inbox”: Phase 1 park + `?` in INBOX; Phase 2 promote when every `?` has inline **`Answer:`**.
 - **Never** leave tasklist and Linear diverged at end of session.

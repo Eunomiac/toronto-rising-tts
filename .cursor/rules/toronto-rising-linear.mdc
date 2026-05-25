@@ -84,7 +84,7 @@ Before an item **promoted from INBOX** is excluded from Focus or marked **Deferr
 
 1. **Before starting** — Search Linear for related `TOR-*` issues; read matching tasklist bullet if present; skim INBOX Active if overlap is likely.
 2. **When starting** — Set issue **In Progress**; confirm tasklist bullet has the correct `_(TOR-XX)_`. Prompt the author once to rename the Cursor chat to **`TOR-XX — short title`** (agents cannot rename chats programmatically — see `.cursor/commands/tr-start.md` § Agent chat title).
-3. **When finishing** — Mark **Done** (or **Canceled** if descoped) with a comment: what changed, key files, verification, commit refs. Update tasklist `[ ]` → `[x]` if applicable. Reference `TOR-XX` in commit body when committing.
+3. **When finishing** — Mark **Done** (or **Canceled** if descoped) with a comment: what changed, key files, verification, commit refs. Update tasklist `[ ]` → `[x]` if applicable. Reference `TOR-XX` in commit body when committing. **`living-doc` issues:** baseline may be `[x]` on tasklist but issue stays **In Progress** — see § Living documentation.
 4. **Commits during work** — After each logical unit, commit **without asking**; never prompt “want me to commit?” (always yes). See `.cursorrules` § Git Commits.
 5. **When discovering new work** — INBOX one-liner if capture-only; otherwise create Linear issue in the correct **domain project**, add `source:tasklist` if from tasklist, append `_(TOR-XX)_` to tasklist, set **In Progress** if starting immediately.
 6. **When finding bugs on shipped features** — Create a **Bug** issue; `relatedTo` the original **Done** feature issue. Do not reopen unrelated Done issues.
@@ -103,6 +103,19 @@ Parent epics: TOR-30 (Foundation) through TOR-43 (Workshop). Attach new issues u
 - `Feature`, `Improvement`, or `Bug`
 - `source:tasklist` when the item originates from RUNNING TASKLIST
 - `module:*` matching the domain (`module:dice`, `module:conditions`, etc.)
+- **`living-doc`** — documentation that must stay current when related code changes; issue stays **In Progress** (do not mark **Done** when only the baseline shipped)
+
+### Living documentation (`living-doc`)
+
+Use for manuals/playbooks/registries that are **never “finished”** (e.g. **TOR-141** E2E playbooks under [`.dev/E2E Playbooks/`](../../.dev/E2E%20Playbooks/README.md)).
+
+| When | Agent rule |
+| --- | --- |
+| Baseline shipped | Comment on issue + tasklist `[x]` for baseline bullet; keep issue **In Progress** + `living-doc` |
+| Related code changes | Update playbook/docs in the **same PR**; optional short Linear comment |
+| “Close” request | Only **Done** if docs retired or replaced by automation; else keep open |
+
+**TOR-141** is the anchor for manual E2E verification — not Focus stack, not Done.
 
 ## Tools
 
