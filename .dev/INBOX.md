@@ -4,13 +4,13 @@
 
 **Authoritative tracking lives elsewhere:**
 
-| When | Where |
-| --- | --- |
-| Quick note (this file) | `.dev/INBOX.md` |
+| When                    | Where                                                         |
+| ----------------------- | ------------------------------------------------------------- |
+| Quick note (this file)  | `.dev/INBOX.md`                                               |
 | Scheduled / shaped work | Linear `TOR-*` + [RUNNING TASKLIST.md](RUNNING%20TASKLIST.md) |
-| Implementation truth | Code + `.dev/` docs |
+| Implementation truth    | Code + `.dev/` docs                                           |
 
-**Agents:** [DEVELOPMENT_WORKFLOW.md § Inbox capture & triage](DEVELOPMENT_WORKFLOW.md#inbox-capture--triage). Always-on: [`.cursor/rules/toronto-rising-linear.mdc`](../.cursor/rules/toronto-rising-linear.mdc).
+**Agents:** [DEVELOPMENT_WORKFLOW.md § Inbox capture & triage](DEVELOPMENT_WORKFLOW.md#inbox-capture--triage). Slash: **`/tr-inbox`** — full triage + Focus/Linear sync (prep for **`/tr-start`** in a new chat). Always-on: [`.cursor/rules/toronto-rising-linear.mdc`](../.cursor/rules/toronto-rising-linear.mdc).
 
 ---
 
@@ -35,6 +35,24 @@ Optional hints: `[bug]`, `[intent]`, `[idea]`, `[dice]`, `[lighting]`, … — n
 
 ---
 
+## Clarification loop (standard)
+
+When triage parks an item under **Needs clarification**:
+
+1. The agent adds **`?` question bullets** under the item (in this file).
+2. **You reply inline** on the same bullets: append **`Answer:`** on the question line, or add an indented `- Answer: …` bullet immediately below.
+3. Say **“process the inbox”** again — the agent reads answers from the file and promotes (no need to repeat answers in chat).
+
+```markdown
+- roll camera jumpy
+  - ? Which seat color(s) and roll phase?
+  - Answer: Orange, during baton handoff to PRE_ROLL
+```
+
+Chat summaries of clarifications are optional; **the file is the source of truth** for answers.
+
+---
+
 ## Active
 
 _One-line captures. Triage agent moves processed items to **Processed**; unclear items go to **Needs clarification**._
@@ -55,30 +73,28 @@ _One-line captures. Triage agent moves processed items to **Processed**; unclear
 
 ## Needs clarification
 
-_Agent parked items here with `?` questions. Add answers as indented bullets under each item, then say **“process the inbox”** again._
+*Agent parked items here with `?` questions. Reply inline with **`Answer:`** on each question (see **Clarification loop** above), then say **“process the inbox”** again.*
 
 ### Bugs
 
-<!-- Example:
-- roll camera jumpy
-  - ? Which seat color(s) and roll phase?
-  - Answer: Orange, during baton handoff
--->
-
 ### Intents
 
-<!-- -->
-
 ### Ideas
-
-<!-- -->
 
 ---
 
 ## Processed
 
-_Archive: `YYYY-MM-DD TOR-XXX — summary` | `YYYY-MM-DD dismissed — reason` | `YYYY-MM-DD → Needs clarification`_
+*Archive: `YYYY-MM-DD TOR-XXX — summary` | `YYYY-MM-DD dismissed — reason` | `YYYY-MM-DD → Needs clarification`*
 
-<!-- Example:
-- 2026-05-25 TOR-115 — [bug] Roll camera jumpy on baton pass (→ Linear + RUNNING TASKLIST)
--->
+- 2026-05-25 TOR-135 — [bug] NPC area cutouts missing on active scene apply
+- 2026-05-25 TOR-136 — [bug] Weather audio burst on scene switch
+- 2026-05-25 TOR-137 — [intent] Normalize unicode minus in C.Sites offsetXY on import
+- 2026-05-25 TOR-138 — [bug] Soundscape not resyncing after load post silence-for-save
+- 2026-05-25 TOR-139 — [intent] Scenes panel trim + 3-column library grid
+- 2026-05-25 TOR-140 — [intent] Sound panel trim + larger text
+- 2026-05-25 TOR-141 — [intent] Manual E2E test playbooks (Dice + Scenes)
+- 2026-05-25 → Needs clarification — Light modes cleanup / presets grid
+- 2026-05-25 → Needs clarification — Apply active scene four-button clock UX
+- 2026-05-25 TOR-81 — [intent] Light modes cleanup expanded (answered clarification pass)
+- 2026-05-25 TOR-142 — [feature] Apply active scene four clock-aware buttons (answered clarification pass)

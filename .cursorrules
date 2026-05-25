@@ -84,7 +84,7 @@ Implement GUID-based player lighting system
 **Authoritative surfaces:**
 
 - **Linear** — Toronto Rising team (`TOR-*`); domain projects and epics TOR-30–43
-- **`.dev/RUNNING TASKLIST.md`** — planned-work authoring; every bullet has `_(TOR-XX)_`
+- **`.dev/RUNNING TASKLIST.md`** — planned-work authoring + **`## Focus`** stack rank; every bullet has `_(TOR-XX)_`
 - **`.dev/INBOX.md`** — quick capture (`bug` / `intent` / `idea`); triage into Linear + tasklist when scheduled
 - **Code + docs** — implementation truth; must match Done issues
 
@@ -93,8 +93,11 @@ Implement GUID-based player lighting system
 #### Inbox quick capture
 
 - **File:** `.dev/INBOX.md` — one-line notes under **Active** (optional `[bug]` / `[intent]` / `[idea]` tags)
-- **You:** dump notes while testing; answer `?` questions under **Needs clarification** when asked
-- **Agent triage (“process the inbox”):** Phase 1 — batch clarifying questions in chat; park unclear items in **Needs clarification** with `?` bullets. Phase 2 — promote clear items: agent picks Linear Backlog **or** Linear + RUNNING TASKLIST; dedupe/dismiss → **Processed**
+- **Clarification loop:** agent adds `?` under **Needs clarification**; you reply **`Answer:`** inline in the file; say **“process the inbox”** again (file is authoritative — chat echo optional)
+- **Agent triage (“process the inbox”):** Phase 1 — park unclear items + `?` bullets. Phase 2 — promote when every `?` has `Answer:` (agent picks Linear Backlog vs RUNNING TASKLIST)
+- **What’s next:** **Focus** section at top of RUNNING TASKLIST; say **“what’s next”** or **“prioritize the backlog”** — agent reads Focus + Linear Bugs, recommends one item
+- **New session bootstrap:** **`/tr-start`** (`.cursor/commands/tr-start.md`) — Focus, policy docs, reconciler contract, gate rules
+- **Inbox + prioritize (prep for /tr-start):** **`/tr-inbox`** (`.cursor/commands/tr-inbox.md`) — full triage + Focus/Linear sync; no code unless asked
 - **Do not** use GitHub Issues for Toronto Rising tracking
 
 #### When to Check Linear

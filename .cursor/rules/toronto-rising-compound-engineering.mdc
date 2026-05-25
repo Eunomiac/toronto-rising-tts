@@ -19,7 +19,10 @@ This project has **long-running** Tabletop Simulator systems (dice, roll pipelin
 | Situation | Use |
 |-----------|-----|
 | Starting, continuing, or closing any feature/fix (always) | **Linear** (`.cursor/rules/toronto-rising-linear.mdc`): check `TOR-*` issues, update status/comments, keep RUNNING TASKLIST in sync. |
-| Quick bugs/intents/ideas while testing | **INBOX** ([`.dev/INBOX.md`](../../.dev/INBOX.md)): one-line **Active** notes; **“process the inbox”** → clarify then promote |
+| Quick bugs/intents/ideas while testing | **INBOX** ([`.dev/INBOX.md`](../../.dev/INBOX.md)): one-line **Active** notes; **`Answer:`** inline under **Needs clarification**; **“process the inbox”** to promote |
+| Choosing the next task | **Focus** ([RUNNING TASKLIST § Focus](../../.dev/RUNNING%20TASKLIST.md)): **“what’s next”** / **“prioritize the backlog”** → read stack rank + Linear Bugs |
+| Starting a fresh agent session | **`/tr-start`** ([`.cursor/commands/tr-start.md`](../../.cursor/commands/tr-start.md)): Focus + mandatory policy reads + architecture non-negotiables |
+| After testing / capture sessions | **`/tr-inbox`** ([`.cursor/commands/tr-inbox.md`](../../.cursor/commands/tr-inbox.md)): process INBOX + sync Focus/Linear → then **`/tr-start`** in a new chat |
 | Resuming work, debugging something touched before, or avoiding contradicting earlier design | **Session history** (`ce-sessions` skill): search prior agent sessions for this workspace before large edits. |
 | Multi-step or cross-module change (several files, unclear sequencing) | **Planning** (`ce-plan` / `ce:work` skills): short plan or structured execution, then implement; create or link Linear issues before coding. |
 | Feature or fix is “done” and non-trivial; before merge/PR | **Structured review** (`ce:review` skill): tiered review appropriate to risk/size. |

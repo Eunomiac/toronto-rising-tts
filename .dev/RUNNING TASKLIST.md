@@ -6,6 +6,25 @@ This file is continuously updated with issues and plans for feature development.
 
 **Quick capture before items are shaped:** [INBOX.md](INBOX.md) — one-line notes only; say **“process the inbox”** to triage (agent promotes to Linear + this file when ready).
 
+**What to work next:** skim **Focus** below, then say **“what’s next”** or pick the top unchecked Focus item. Re-stack Focus when priorities shift (after inbox triage, before a play session, or weekly).
+
+---
+
+## Focus
+
+_Stack rank for the current cycle (2026-05-25). Bugs that break scene/audio flow first; **TOR-141** (manual E2E playbooks) immediately after — months of dev with little regression coverage. UI polish deferred unless blocked._
+
+| # | Issue | Why now |
+| --- | --- | --- |
+| 1 | **TOR-135** — NPC area cutouts on scene apply | Core scene apply broken |
+| 2 | **TOR-136** — Weather audio burst on scene switch | Audible on every scene change |
+| 3 | **TOR-138** — Soundscape resync after load post silence-for-save | Session start / PLAY audio broken |
+| 4 | **TOR-141** — Manual E2E test playbooks (Dice + Scenes) | Reliable step-by-step + IDE Lua snippets between steps |
+| 5 | **TOR-137** — Unicode minus in Sites import | Quick tooling win; unblocks site data |
+| 6 | **TOR-81** — Light modes cleanup _(In Progress)_ | Larger refactor — continue when above are done |
+
+**Deferred this cycle:** TOR-139, TOR-140, TOR-142 (UI / ST workflow polish). Other open bullets unchanged.
+
 ---
 
 ## Dice Roller
@@ -33,6 +52,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Seat spawn:** Pooled figurine uses seat `*Object` tag + `SEAT_FIGURE` rotational layout; `postCorrectionsBySeatRole`; area spotlight hidden at seat; workshop `SEAT_LIGHT_*_NPC*` only. _(TOR-64)_
 - [x] **Seat tags:** `npc_figurine` ↔ `NPCnObject` on seat/unseat; layout matches pooled figurine by tag + `Figurine_Custom` (`NPCS.isPooledFigurineObject`). _(TOR-65)_
 - [ ] **Group spawn exclusion:** When spawning an NPC group into a stage area, do not pull members who are already seated (e.g. `fiveKeys` spawn must leave `myleneHamelin` in her table seat). _(TOR-76)_
+- [ ] **NPC area cutouts on scene apply:** Cutouts not spawned into NPC stage areas when applying/switching the active scene. _(TOR-135)_
 - [ ] _New feature:_ Storyteller rolls dice for NPCs from the dice control panel — spawn/show dice tray, appropriate camera angle, roll-controller wiring for NPC/non-player identity. _(TOR-79)_
 
 ## Soundscape
@@ -40,12 +60,14 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] On load, emitters automatically play tracks from the last save. _(Mitigation: **Silence for save** on Sound panel → `Soundscape.prepareEmittersForSave()`; fold into End Session sequence when defined.)_ _(TOR-71)_
 - [ ] **Background music policy:** In any phase **other than Session Start**, background music should always play. When the active site or scene specifies no music, default to the **`Main`** playlist (`lib/soundscape_catalog.ttslua`). _(TOR-77)_
 - [ ] **Site weather ducking:** Site (not only indoors/outdoors) sets the weather audio ducking multiplier in soundscape. _(TOR-80)_
+- [ ] **Weather audio burst on scene switch:** Short high-volume weather bursts when changing scenes — verify volume zeroed before new playback. _(TOR-136)_
+- [ ] **Soundscape resync after load:** After **Silence for save** + reload, PLAY phase should restore BGM (Main default) and active scene location/weather audio. _(TOR-138)_
 
 ## Lighting
 
 - [x] Reconciler lighting updates lerped (default 2s). _( `core/lighting.ttslua` `L.DEFAULT_RECONCILE_LERP_SECONDS`.)_ _(TOR-59)_
 - [x] Test-bed helpers to apply seat-light settings from Red to all active seats. _( `TestBed_applyPlayerSeatLightsFromRed`.)_ _(TOR-61)_
-- [ ] **Centralize light modes** in `C.LightModes` for scenes, NPCs, and reconciler. _(TOR-81)_
+- [ ] **Centralize light modes (`C.LightModes`):** Remove legacy keys (`BRIGHT`, `DIM`, `TENSION`, `STANDARD`, `AdminDark`, `AdminStandard`, `AdminBright`, `AdminDebug`); update `DEBUG`/`DARK`; Scenes panel dynamic 5-wide preset grid (all keys; active = green bg / white text). **`L.LIGHTMODES` unchanged.** _(TOR-81)_
 - [ ] **Scenes/locations** drive global/seat light mode via state → `Scenes.reconcileFromState` / lighting reconciler (no dual apply). _(TOR-84)_
 - [x] **Site skybox:** `sessionScene.siteKey` → `Scenes.reconcileSkyboxFromState` (`C.Sites[*].skyboxURL` or random `C.GenericSkyboxes` via `Backgrounds.setCustomURL`). _(TOR-58)_
 
@@ -54,6 +76,9 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] Dark panel backgrounds, site modal layout, scene location as text, scene time controls, real-time clock toggle, chronicle weather removed, game-state overlay. _(See completed UI Panels items below.)_ _(TOR-63)_
 - [ ] **District/site labels:** Keep Scenes panel display fields in sync with `gameState.sessionScene` after modal picks and library Apply. _(TOR-82)_
 - [ ] **Site modal overlap:** Fix overlapping site buttons so district-specific rows are fully clickable (not covered by generic site bucket). _(TOR-83)_
+- [ ] **Sites import — unicode minus in offsetXY:** Build script normalizes Google Sheet `−` (U+2212) → ASCII `-` in all `C.Sites` `offsetXY` values. _(TOR-137)_
+- [ ] **Scenes panel UI trim + 3-column library:** Remove instructional copy; scene buttons show name + status only; three-column grid. _(TOR-139)_
+- [ ] **Apply active scene — four clock buttons:** Replace single switch button with Apply (scene clock), Apply x5 until present, Apply = PRESENT, Apply (Present); all apply full scene. _(TOR-142)_
 - [x] **Site fog:** Site controls whether the fog object is enabled/disabled (`C.Sites.isTopFogActive` or indoor/outdoor default → `sessionScene.isTopFogActive` → `Scenes.reconcileTopFogFromState`). _(TOR-56)_
 - [ ] **Site & district modifiers:** Apply to rolls (and possibly stats) only for characters marked **present** in the active scene/seat layout. _(TOR-85)_
 
@@ -71,6 +96,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **PCs panel:** Set PC map location via popout modal (writes state, reconciles overlays). _(Open: same as `seatPresent`/district-site or separate map pin?)_ _(TOR-89)_
 - [ ] **Start / End Session buttons:** Place on appropriate ST panels as placeholders. **End Session** will eventually run a defined sequence including **Silence for save**. **Start Session** sequence TBD. Minimal behavior until event lists are specified. _(TOR-90)_
 - [ ] **Scrolling viewbox:** Author experimenting in TTS on scroll-container height — no implementation until after tinkering. _(TOR-91)_
+- [ ] **Sound panel UI trim + larger text:** Remove excess instructional copy; increase Text element font size. _(TOR-140)_
 
 ## Character Sheets
 
@@ -102,6 +128,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] Author **reconciler contract** doc (when each `reconcile*` runs, reads, applies, must not write back). → [Reconciler Contract](Sychronizing%20Game%20Functionality/Reconciler%20Contract.md); Prompt 1 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md) _(TOR-48)_
 - [ ] Agent prompt: find **runtime object updates outside reconcilers** (dual-apply audit). → Prompt 2 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md) _(TOR-102)_
 - [ ] Agent prompt: find **invalid `getStateVal` / `getPlayerVal`** paths; draft fix plan. → Prompt 3 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md) _(TOR-103)_
+- [ ] **Manual E2E test playbooks (Dice + Scenes):** Step-by-step in-TTS verification scripts with ordered steps and IDE Lua snippets; store under `.dev/`. _(TOR-141)_
 - [x] Agent prompt: **performance** hotspots (`Sync.full`, spawn pools, lighting lerps, UI refresh). → [Performance Audit](Sychronizing%20Game%20Functionality/Performance%20Audit.md); Prompt 4 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md) _(TOR-50)_
 
 ## Out of Scope for Cursor

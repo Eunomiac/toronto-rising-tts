@@ -136,9 +136,11 @@ Modules should be loaded in dependency order:
 
 | You do | Triage agent does |
 | --- | --- |
-| One line under **Active** (prefixes/tags optional) | Classify, dedupe, ask questions, promote |
-| Answer `?` questions under items in **Needs clarification** | Re-run promotion on next “process the inbox” |
+| One line under **Active** (prefixes/tags optional) | Classify, dedupe, park unclear items with `?` bullets |
+| **`Answer:` inline** under each `?` in **Needs clarification** | Re-run **“process the inbox”** → read answers from file, promote |
 | Fix obvious bugs in <5 min in code | (Skip inbox) retroactive Linear **Bug** |
+
+**Clarification loop:** Questions and answers live **in INBOX.md** (`?` / `Answer:` on the same item). Chat echo is optional; the file is authoritative. See [INBOX.md § Clarification loop](INBOX.md#clarification-loop-standard).
 
 **Format:** `- summary` or `- [bug][module] summary` — optional indented sub-bullets if you already know repro/context.
 
@@ -146,15 +148,15 @@ Modules should be loaded in dependency order:
 
 When the user says **“process the inbox”** (or similar), run **both phases** below in one session unless the user explicitly asked for “clarifications only”.
 
-#### Phase 1 — Clarify (ask first)
+#### Phase 1 — Clarify (park + `?` bullets)
 
 1. Read **Active** and **Needs clarification** in [`.dev/INBOX.md`](INBOX.md).
-2. For each item **without sufficient answers** under it:
+2. For each item **without an `Answer:`** on every open `?` bullet:
    - Search the codebase and Linear for context; resolve alone when unambiguous.
    - If still unclear: **move the item** from Active → **Needs clarification** (keep type subsection: Bugs / Intents / Ideas).
    - Append **`?` question bullets** under the item (repro steps, scope, priority, module, duplicate check, etc.).
-3. **Ask the user in chat** for all open questions in one batch — numbered, grouped by inbox line. Do not promote those items yet.
-4. Items in **Needs clarification** that already have **Answer:** (or clear answer bullets) from the user → treat as ready for Phase 2.
+3. **Do not require chat replies.** The author answers by editing INBOX inline (`Answer:` on the question line or indented `- Answer:` below). Optionally post a short chat pointer: “Questions parked in INBOX → Needs clarification.”
+4. Items where **every `?` has an `Answer:`** → ready for Phase 2. Do not promote until answers are in the file.
 
 #### Phase 2 — Promote (agent decides destination)
 
@@ -179,7 +181,7 @@ For every item Phase 1 marked ready (clear Active lines + answered Needs clarifi
 
 **Cadence:** when user says “process the inbox”; optionally at session end if user added Active items that session; when Active + unanswered Needs clarification total ~5–10 items.
 
-**Re-triage:** After the user adds answers under **Needs clarification**, the next “process the inbox” runs Phase 2 on those items (Phase 1 only if new ambiguities appear).
+**Re-triage:** After the user adds **`Answer:`** bullets under **Needs clarification**, the next **“process the inbox”** runs Phase 2 on those items (Phase 1 only if new ambiguities appear).
 
 ### Surfaces (do not dual-track)
 
@@ -187,8 +189,22 @@ For every item Phase 1 marked ready (clear Active lines + answered Needs clarifi
 | --- | --- |
 | `.dev/INBOX.md` | Ephemeral capture; not authoritative for status |
 | **Linear** | Status, history, bug anchors |
-| `.dev/RUNNING TASKLIST.md` | Shaped planned work with `_(TOR-XX)_` |
+| `.dev/RUNNING TASKLIST.md` | Shaped planned work with `_(TOR-XX)_`; **Focus** = current stack rank |
 | `docs/solutions/` | Patterns after solving — **not** a tracker |
+
+## Focus & backlog prioritization
+
+After inbox promotion or when the user asks **“what’s next”**, **“prioritize the backlog”**, or **“what should I work on”**:
+
+1. Read **Focus** at the top of [`.dev/RUNNING TASKLIST.md`](RUNNING%20TASKLIST.md) — authoritative stack rank for the current cycle.
+2. Cross-check **Linear**: open **Bug** issues, non-epic **In Progress**, and Focus ids; reconcile if Focus and Linear priority diverge.
+3. Recommend **one** next item (usually top unchecked Focus row). Bugs and session-blocking regressions beat polish unless the user is blocked on ST workflow.
+4. When the user adjusts rank (e.g. elevate QA playbooks after bugs), **update Focus** and set matching **Linear priority** (Urgent / High / Medium / Low).
+5. On Focus item **Done**: check off in domain section, remove or renumber Focus row, update Linear **Done** + comment.
+
+**Cadence:** re-stack Focus after **“process the inbox”** or **`/tr-inbox`**, before a play session, or ~weekly — not on every small fix.
+
+**Slash command:** **`/tr-inbox`** (`.cursor/commands/tr-inbox.md`) runs inbox triage **and** Focus/Linear prioritization in one session so a new chat can use **`/tr-start`** immediately.
 
 ## Linear synchronization (detail)
 
@@ -249,7 +265,7 @@ Linear is the source of truth for project state. [`.dev/RUNNING TASKLIST.md`](RU
 - **When starting:** Set issue **In Progress**; confirm tasklist has correct `_(TOR-XX)_`.
 - **When finishing:** Mark **Done** with comment (files, commits, verification); update tasklist `[x]`; reference `TOR-XX` in commit body.
 - **New work:** Create Linear issue in domain project first; append `_(TOR-XX)_` to tasklist (or INBOX first if capture-only).
-- **Inbox triage:** Follow **§ Inbox capture & triage** on “process the inbox”: Phase 1 ask + park unclear items in **Needs clarification**; Phase 2 promote clear items (agent picks Backlog vs tasklist).
+- **Inbox triage:** Follow **§ Inbox capture & triage** on “process the inbox”: Phase 1 park + `?` in INBOX; Phase 2 promote when every `?` has inline **`Answer:`**.
 - **Never** leave tasklist and Linear diverged at end of session.
 
 ## Documentation
@@ -277,14 +293,17 @@ Linear is the source of truth for project state. [`.dev/RUNNING TASKLIST.md`](RU
 When working on this project:
 
 1. **Linear (primary):** Follow `.cursor/rules/toronto-rising-linear.mdc` — check `TOR-*` before start, **In Progress** when working, **Done** + comment + tasklist when finished
-2. **Inbox:** One-line notes in [`.dev/INBOX.md`](INBOX.md); **“process the inbox”** runs clarify-then-promote (see **§ Inbox capture & triage**)
-3. **Commit Regularly**: Commit changes after completing logical units of work without waiting for user prompts; reference `TOR-XX` in commit body
-4. **Clear Messages**: Write descriptive commit messages explaining what changed and why
-5. **Update Documentation**: Keep documentation files updated when making changes
-6. **Test Changes**: Verify changes work in TTS when possible
-7. **Follow Patterns**: Maintain consistency with existing code style and patterns
-8. **Error Handling**: Include appropriate error handling and validation
-9. **Type Safety**: Use strict TypeScript notation where applicable, avoid `any` type
+2. **Inbox:** One-line notes in [`.dev/INBOX.md`](INBOX.md); clarifications via inline **`Answer:`** under **Needs clarification**; **“process the inbox”** to promote
+3. **Focus:** Stack rank at top of [RUNNING TASKLIST](RUNNING%20TASKLIST.md); **“what’s next”** / **“prioritize the backlog”** reads Focus + Linear Bugs
+4. **Session bootstrap:** **`/tr-start`** in Cursor (`.cursor/commands/tr-start.md`) — re-anchor on Focus + architecture policies at the start of a new agent chat
+5. **Inbox + prioritize:** **`/tr-inbox`** (`.cursor/commands/tr-inbox.md`) — process INBOX, sync Focus and Linear priorities; then **`/tr-start`** in a fresh chat for implementation
+6. **Commit Regularly**: Commit changes after completing logical units of work without waiting for user prompts; reference `TOR-XX` in commit body
+7. **Clear Messages**: Write descriptive commit messages explaining what changed and why
+8. **Update Documentation**: Keep documentation files updated when making changes
+9. **Test Changes**: Verify changes work in TTS when possible
+10. **Follow Patterns**: Maintain consistency with existing code style and patterns
+11. **Error Handling**: Include appropriate error handling and validation
+12. **Type Safety**: Use strict TypeScript notation where applicable, avoid `any` type
 
 ## Troubleshooting
 
@@ -304,5 +323,5 @@ When working on this project:
 
 ---
 
-**Last Updated**: 2026-05-25 (INBOX capture + triage)
+**Last Updated**: 2026-05-25 (Focus stack rank; `/tr-start` and `/tr-inbox` session commands)
 **Maintained By**: Development Team

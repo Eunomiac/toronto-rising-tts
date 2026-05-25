@@ -12,7 +12,7 @@ alwaysApply: true
 | Surface | Role |
 | --- | --- |
 | **Linear** (`Toronto Rising` team, `TOR-*`) | Status, ownership, history, bug anchors for shipped features |
-| [`.dev/RUNNING TASKLIST.md`](../../.dev/RUNNING%20TASKLIST.md) | Human/agent authoring list for planned work; every bullet has `_(TOR-XX)_` |
+| [`.dev/RUNNING TASKLIST.md`](../../.dev/RUNNING%20TASKLIST.md) | Planned work + **`## Focus`** stack rank; every bullet has `_(TOR-XX)_` |
 | [`.dev/INBOX.md`](../../.dev/INBOX.md) | Quick capture (`bug` / `intent` / `idea`); **not** authoritative for status until triaged |
 | **Code + `.dev/` docs** | Implementation truth; must match Done issues |
 
@@ -21,7 +21,7 @@ When these diverge, **reconcile immediately** (update Linear and/or tasklist to 
 ## Capture vs scheduled work
 
 - **Quick note:** one line in [`.dev/INBOX.md`](../../.dev/INBOX.md) under **Active** (prefixes optional).
-- **Triage:** user says **“process the inbox”** → Phase 1: ask clarifications, park unclear items in **Needs clarification**; Phase 2: agent promotes clear items to Linear and/or RUNNING TASKLIST per [DEVELOPMENT_WORKFLOW.md § Inbox capture & triage](../../.dev/DEVELOPMENT%20WORKFLOW.md#inbox-capture--triage).
+- **Triage:** user says **“process the inbox”** → Phase 1: park unclear items in **Needs clarification** with `?` bullets (answers inline as `Answer:`); Phase 2: agent promotes when every `?` is answered — see [INBOX § Clarification loop](../../.dev/INBOX.md#clarification-loop-standard).
 
 ## Agent workflow (every task)
 
@@ -30,7 +30,9 @@ When these diverge, **reconcile immediately** (update Linear and/or tasklist to 
 3. **When finishing** — Mark **Done** (or **Canceled** if descoped) with a comment: what changed, key files, verification, commit refs. Update tasklist `[ ]` → `[x]` if applicable. Reference `TOR-XX` in commit body when committing.
 4. **When discovering new work** — INBOX one-liner if capture-only; otherwise create Linear issue in the correct **domain project**, add `source:tasklist` if from tasklist, append `_(TOR-XX)_` to tasklist, set **In Progress** if starting immediately.
 5. **When finding bugs on shipped features** — Create a **Bug** issue; `relatedTo` the original **Done** feature issue. Do not reopen unrelated Done issues.
-6. **Inbox triage** — On “process the inbox”: Phase 1 clarify (chat + **Needs clarification**); Phase 2 promote ready items (agent chooses Backlog vs RUNNING TASKLIST).
+6. **Inbox triage** — On “process the inbox”: Phase 1 park + `?` in INBOX (author replies **`Answer:`** inline); Phase 2 promote when answered.
+7. **What’s next** — On “what’s next” / “prioritize the backlog”: read **Focus** in RUNNING TASKLIST, cross-check Linear Bugs + In Progress, recommend one item; update Focus + Linear priority when user re-stacks.
+8. **Inbox + prioritize** — On **`/tr-inbox`** or “process the inbox” with full sync: run inbox triage (both phases) **and** refresh **Focus** + Linear priorities so **`/tr-start`** works in a new chat.
 
 ## Domain projects
 
