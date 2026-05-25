@@ -1549,7 +1549,7 @@ function HUD_soundscapeStopAll(player, button, id)
     syncSoundscapeControls()
 end
 
---- End-of-session: silence all emitters and reconcile so the next save does not resume stray audio.
+--- End-of-session: physically silence emitters before save (does not mutate gameState.soundscape).
 function HUD_soundscapePrepareSave(player, button, id)
     if SS == nil or type(SS.prepareEmittersForSave) ~= "function" then
         U.AlertGM("Soundscape: prepare for save is unavailable.")

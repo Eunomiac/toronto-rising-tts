@@ -117,7 +117,7 @@ Root `Panel` id `gameStateOverlay_location_<Color>` uses class `playerHud_overla
 | `HUD_soundscapeStopFeatured` | `Stop feat.` | `(player, button, id)` | `SS.stopFeaturedMusic()`. |
 | `HUD_soundscapeLaneSlider` | `soundscapeSlider_music`, `..._location`, `..._featured`, `..._rain`, `..._wind` | `(player, value, id)` | Calls `SS.setStorytellerLaneVolume(lane, value)`. Rain/wind sliders edit **natural** volume; indoor ducking is reapplied in soundscape. |
 | `HUD_soundscapeStopAll` | `Stop All` button | `(player, button, id)` | Calls `SS.stopAll()` to silence loop lanes with `silent` and invalidate scheduled background/featured/thunder callbacks. |
-| `HUD_soundscapePrepareSave` | `Silence for save` | `(player, button, id)` | Calls `SS.prepareEmittersForSave()` — `stopAll`, invalidate reconcile cache, `reconcileFromState({ force = true })` so the next table save does not resume stray Unity emitter loops. |
+| `HUD_soundscapePrepareSave` | `Silence for save` | `(player, button, id)` | Calls `SS.prepareEmittersForSave()` — `bootstrapSilenceStrayEmitterLoops` + `invalidateReconcileCache` only (physical silence; does **not** mutate `gameState.soundscape`). Load resync from active scene vs Main-only is **TOR-152**. |
 | `HUD_soundscapeInspect` | `Inspect` button | `(player, button, id)` | Calls `SS.inspectEmitters()`, prints JSON emitter/effect information including GUID/tag validation plus Looping and Trigger Effects, and alerts the GM. |
 
 ## Phase Controls (`panel_phases.xml`)

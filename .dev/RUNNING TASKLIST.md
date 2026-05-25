@@ -16,10 +16,11 @@ _Stack rank for the current cycle (2026-05-25). **Precedence** (Focus + Linear `
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-138** — Soundscape resync after load post silence-for-save | Session start / PLAY audio broken |
-| 2 | **TOR-141** — Manual E2E test playbooks (Dice + Scenes) | Reliable step-by-step + IDE Lua snippets between steps |
-| 3 | **TOR-137** — Unicode minus in Sites import | Quick tooling win; unblocks site data |
-| 4 | **TOR-81** — Light modes cleanup _(In Progress)_ | Larger refactor — continue when above are done |
+| 1 | **TOR-141** — Manual E2E test playbooks (Dice + Scenes) | Reliable step-by-step + IDE Lua snippets between steps |
+| 2 | **TOR-137** — Unicode minus in Sites import | Quick tooling win; unblocks site data |
+| 3 | **TOR-81** — Light modes cleanup _(In Progress)_ | Larger refactor — continue when above are done |
+
+**Done this cycle:** TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152).
 
 **Deferred this cycle:** TOR-139 (scenes panel trim + 3-column library grid), TOR-140 (sound panel text + larger font), TOR-142 (four scene Apply clock buttons), TOR-143 (phase system + session lifecycle), TOR-146 (delete active scene ends live first), TOR-147 (blindfold soundscape fade + weather), TOR-148 (RT clock too fast), TOR-149 (ST dice tray lights), TOR-150 (thunder indoor ducking), TOR-151 (default no-scene environment), TOR-152 (Play load scene restore). **Pending back-burner confirm:** TOR-153 (map pins unmappable), TOR-154 (floor/plinth locked). Other open bullets unchanged.
 
@@ -60,7 +61,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **Site weather ducking:** Site (not only indoors/outdoors) sets the weather audio ducking multiplier in soundscape. _(TOR-80)_
 - [ ] **Thunder indoor ducking:** Thunder one-shots should use the same indoor/site weather ducking multiplier as rain/wind (`playCatalogEntry` skips `weatherThunder`). _(TOR-150)_
 - [x] **Weather audio burst on scene switch:** Silent stub + zero gain before looping clip swap; one-frame deferred volume arm; rain/wind hold same effect without restart; library Apply defers `markReconciledToCurrentState` after weather apply. Author verified on scene switch. _(TOR-136)_
-- [ ] **Soundscape resync after load:** After **Silence for save** + reload, PLAY phase should restore BGM (Main default) and active scene location/weather audio. _(TOR-138)_
+- [x] **Soundscape resync after load:** **Silence for save** no longer wipes `gameState.soundscape` via `stopAll`; load reconcile applies preserved scene audio until **TOR-152** adds explicit active-scene vs Main-only load branch. _(TOR-138)_
 - [ ] **Soundscape fade on blindfold down:** During library Apply, fade BGM + location + weather when blindfolds come down; weather: full fade-out on track change, duck to lower volume on same-track volume mismatch (see Linear). _(TOR-147)_
 
 ## Lighting
@@ -81,7 +82,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **Scenes panel UI trim + 3-column library:** Remove instructional copy; scene buttons show name + status only; three-column grid. _(TOR-139)_
 - [ ] **Apply active scene — four clock buttons:** Replace single switch button with Apply (scene clock), Apply x5 until present, Apply = PRESENT, Apply (Present); all apply full scene. _(TOR-142)_
 - [ ] **Default no-scene environment:** When no live library scene — Table B1, five PC seats, empty NPC world, OutdoorDim, Main BGM, cleared location/weather on table (do not write cleared location to library or PC pins); overlay blanks date/time + hides weather (do **not** mutate scene-library `clock` or present-day clock — display only); random generic skybox. _(TOR-151)_
-- [ ] **Restore scene on Play load / Start→Play:** Resync active library scene when entering Play with one set; otherwise apply default no-scene. _(TOR-152)_
+- [ ] **Restore scene on Play load / Start→Play:** Resync active library scene when entering Play with one set; otherwise apply default no-scene (**TOR-151**). Includes **load soundscape branch**: active scene (`lastAppliedKey`) → site + narrative + chronicle weather like Apply; no scene → Main BGM only. _(TOR-152)_
 - [x] **End scene library sync:** `detachLiveTableFromLibraryMirror()` before clearing live location — stops mirroring, clears `lastAppliedKey` + `activeKey`, UI hides mirroring when no on-table scene; prevents live→library writeback of cleared keys. _(TOR-145)_
 - [ ] **Delete active scene:** End live scene first when deleting the row that is still on the table. _(TOR-146)_
 - [ ] **Real-time clock too fast (intermittent):** Narrative clock ~6–12× expected rate; investigate duplicate tickers, uncleared `U.delay` intervals on scene Apply/load, or compounded `realTimeSpeed`. _(TOR-148)_

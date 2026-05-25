@@ -2214,15 +2214,16 @@ function Soundscape.testLayeredPlayback()
     return payload
 end
 
---- Storyteller end-of-session: write silent looping state to `gameState.soundscape` and force
---- emitters to the silent AssetBundle clip so saves do not resume stray audio on load.
+--- Storyteller end-of-session: physically silence emitters before save without mutating
+--- `gameState.soundscape` (do not call `stopAll` — that clears persisted scene audio intent).
+--- Load-time resync from active scene vs Main-only default is TOR-152; reconcile on load
+--- reads preserved `gameState.soundscape` until that ships.
 --- @return boolean ok
 --- @return string message
 function Soundscape.prepareEmittersForSave()
-    local ok, msg = Soundscape.stopAll()
+    Soundscape.bootstrapSilenceStrayEmitterLoops()
     Soundscape.invalidateReconcileCache()
-    Soundscape.reconcileFromState({ force = true, deferApplySeconds = 0 })
-    return ok, msg or ""
+    return true, "Physical emitter silence only; gameState.soundscape unchanged."
 end
 
 return Soundscape

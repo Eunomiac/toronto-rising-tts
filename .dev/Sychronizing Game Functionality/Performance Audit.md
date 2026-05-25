@@ -134,7 +134,7 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 2. Scene library apply eager `SS.applyContext` + mark + `Sync.full`: `core/storyteller_scenes_panel.ttslua:500-532`.
 3. Location apply eager `SS.applyContext` + mark + `Sync.full`: `core/storyteller_scenes_panel.ttslua:692-701`.
 4. Clock apply weather then `Sync.full`: `core/storyteller_scenes_panel.ttslua:764-773`.
-5. Force save/repair path: `Soundscape.prepareEmittersForSave` calls `invalidateReconcileCache()` then forced immediate reconcile. See `core/soundscape.ttslua:2064-2072`.
+5. Save prep path: `Soundscape.prepareEmittersForSave` calls `bootstrapSilenceStrayEmitterLoops()` + `invalidateReconcileCache()` only (physical silence; no state wipe, no forced reconcile). See `core/soundscape.ttslua` (`prepareEmittersForSave`).
 
 **Why legal but costly:** The reconciler owns soundscape world I/O and uses fingerprints, which is correct. The deferred scheduling window is the gap where identical work can be queued before the fingerprint records success.
 
@@ -236,7 +236,7 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 **Current force callers**
 
 - `HUD_syncAll` debug/repair button: correct force use. See `core/global_script.ttslua:1419-1430`.
-- `Soundscape.prepareEmittersForSave` invalidates and immediately forces soundscape reconcile to silence emitters for save: correct forced domain use. See `core/soundscape.ttslua:2064-2072`.
+- `Soundscape.prepareEmittersForSave` physically silences emitters via bootstrap + invalidates reconcile cache without mutating `gameState.soundscape` (TOR-138). Load soundscape branch → TOR-152.
 
 **Current incremental callers**
 

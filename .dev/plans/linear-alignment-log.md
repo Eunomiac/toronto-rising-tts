@@ -160,5 +160,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-05-25 | UPDATE | TOR-147 | Expand scope: weather fade policy on blindfold scene switch |
 | 2026-05-25 | COMMENT | TOR-148 | INBOX: uncleared clock interval hypothesis |
 | 2026-05-25 | UPDATE | RUNNING TASKLIST, INBOX, Focus deferred | TOR-146/147/148 on deferred line; TOR-153/154 pending back-burner confirm |
+| 2026-05-25 | DONE | TOR-138 | Silence for save: physical-only emitter silence; stopAll removed; load branch deferred to TOR-152 |
+| 2026-05-25 | COMMENT | TOR-152 | Absorb load soundscape branch scope from TOR-138 close |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
