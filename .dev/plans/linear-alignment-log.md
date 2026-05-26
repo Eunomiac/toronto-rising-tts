@@ -170,5 +170,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-05-25 | UPDATE | RUNNING TASKLIST **Focus** | Dice bugs TOR-159/158/155 → #1–3; TOR-137 #4; TOR-81 #5; TOR-156/157 pending back-burner |
 | 2026-05-25 | UPDATE | Focus + Linear relations | Back-burner approved: TOR-153/156/157 deferred + `blockedBy`; TOR-154 kept in Focus (#4) as quick fix |
 | 2026-05-26 | DONE | TOR-159 | Frenzy queue only when hunger already at MAX before rouse bump |
+| 2026-05-26 | DONE | TOR-158 | Blood Surge uses condition-aware BP + fresh roll policy at activation |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

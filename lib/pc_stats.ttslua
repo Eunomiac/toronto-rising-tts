@@ -98,6 +98,19 @@ function P.effectiveBloodPotency(stats)
   return math.max(0, math.min(10, math.floor(rating)))
 end
 
+--- Effective Blood Potency rating including merged condition `statChanges.bloodPotency`.
+--- Matches sheet dots and `blood_potency_decals` (base + temp + condition delta).
+--- @param stats table|nil
+--- @param resolvedStatChanges table|nil
+--- @return number
+function P.effectiveBloodPotencyWithConditions(stats, resolvedStatChanges)
+  local rating = P.effectiveBloodPotency(stats)
+  if type(resolvedStatChanges) == "table" then
+    rating = rating + (tonumber(resolvedStatChanges.bloodPotency) or 0)
+  end
+  return math.max(0, math.min(10, math.floor(rating)))
+end
+
 --- @param playerRef any
 --- @return string|nil
 local function resolvePlayerId(playerRef)

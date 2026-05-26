@@ -16,13 +16,12 @@ _Stack rank for the current cycle (2026-05-25). **Precedence** (Focus + Linear `
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-158** — Blood Surge ignores conditions | Blood Surge must respect condition-modified BP / roll policy |
-| 2 | **TOR-155** — Roll panel pool dots color coding | Player-facing regression — pool kind colors + rouse offset lost |
-| 3 | **TOR-154** — Floor/plinth locked objects | Likely quick fix — `C.LockedObjects` not sticking on load |
-| 4 | **TOR-137** — Unicode minus in Sites import | Quick tooling win; unblocks site data |
-| 5 | **TOR-81** — Light modes cleanup _(In Progress)_ | Larger refactor — continue when above are done |
+| 1 | **TOR-155** — Roll panel pool dots color coding | Player-facing regression — pool kind colors + rouse offset lost |
+| 2 | **TOR-154** — Floor/plinth locked objects | Likely quick fix — `C.LockedObjects` not sticking on load |
+| 3 | **TOR-137** — Unicode minus in Sites import | Quick tooling win; unblocks site data |
+| 4 | **TOR-81** — Light modes cleanup _(In Progress)_ | Larger refactor — continue when above are done |
 
-**Done this cycle:** TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold).
+**Done this cycle:** TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions).
 
 **Ongoing (not Focus stack):** TOR-141 — maintain E2E playbooks when dice/scenes/debug testing changes.
 
@@ -38,7 +37,7 @@ _Stack rank for the current cycle (2026-05-25). **Precedence** (Focus + Linear `
 - [ ] **Take Half redesign:** Available on any roll without difficulty. Synthetic result = half the pool size in **normal successes (rounded down)**, remainder **blank**, all treated as normal dice (Hunger dice count toward pool size but do not use Hunger faces). Example: pool 13 → 6 successes, 7 blanks. **Broadcast:** show full-pool dice images as normal dice — half with one success face, rest blank (no numeric roll text). Downstream UI/ST confirmation should behave like a completed physical roll. _(TOR-73)_
 - [ ] **Roll panel pool dots color coding:** Restore kind colors (normal white, hunger red, rouse dark red offset left, obliv-rouse purple, werewolf yellow-green, rage orange); offset multiple rouse strips (incl. Blood Surge). _(TOR-155)_
 - [ ] **Roll result broadcast trim:** Remove die roll numbers and duplicated type/result language; offset rouse result strips from main pool and from each other. _(TOR-156)_
-- [ ] **Blood Surge + conditions:** Blood Surge must use effective BP / roll policy from `Conditions.resolveForPlayer`, not raw persisted stats. _(TOR-158)_
+- [x] **Blood Surge + conditions:** Blood Surge uses `Conditions.resolveForPlayer` → `P.effectiveBloodPotencyWithConditions` for surge dice count; fresh `resolveRollPolicy` at activation for `bloodSurgeDiceMultiplier`. _(TOR-158)_
 - [x] **Frenzy hunger threshold:** Queue frenzy only when hunger is already at 5 and would increase further — not on first transition to 5. `maybeQueueFrenzyOnHungerCap` gates on `hungerBefore >= C.MAX_HUNGER`. _(TOR-159)_
 - [ ] **Extended Tests:** An "extended test" is a series of rolls, with each roll contributing to a Running Total until a Target (defined by the Storyteller) is met, or the Storyteller stops the test early for any reason. There are four types of extended tests -- Standard, Series, Hard and Cascade -- which define what the Running Total and Target count, and how each roll adds to the Running Total. When the process stops, the final result is a Win if the Running Total equals or exceeds the Target, or a Failure otherwise. _(TOR-74)_
   - **Standard:** The Target represents a total number of successes that the player's Running Total must meet. Each roll contributes its successes to the Running Total. Each roll is made against a Difficulty of zero (i.e. each roll contributes all of its successes to the Running Total).

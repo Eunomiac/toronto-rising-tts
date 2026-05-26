@@ -48,6 +48,7 @@ local DK   = require("lib.dice_kinds")
 local RouseOutcomes = require("lib.rouse_outcomes")
 local G    = require("lib.guids")
 local P    = require("lib.pc_stats")
+local Conditions = require("core.conditions")
 local RollConditionHandlers = require("core.roll_condition_handlers")
 local PCST = require("core.pc_storyteller_panel")
 local Sync = require("core.sync")
@@ -773,7 +774,6 @@ function RC.initiateRoll(color, config)
     RO.seedActiveRoll(active)
     local policyPlayerID = S.getPlayerID(color)
     if policyPlayerID ~= nil then
-        local Conditions = require("core.conditions")
         active.rollPolicy = Conditions.resolveRollPolicy(policyPlayerID)
         RC.applyRollPolicyToActive(active)
         RollConditionHandlers.run("onRollInitiated", color, active)
@@ -2026,11 +2026,19 @@ function RC.activateBloodSurge(color)
     end
 
     local stats = S.getPlayerVal(color, "stats") or {}
-    local bp = P.effectiveBloodPotency(stats)
+    local playerID = S.getPlayerID(color)
+    local resolvedStatChanges = nil
+    local surgePolicy = active.rollPolicy
+    if playerID ~= nil then
+        local resolved = Conditions.resolveForPlayer(playerID)
+        resolvedStatChanges = resolved.statChanges
+        surgePolicy = Conditions.resolveRollPolicy(playerID)
+    end
+    local bp = P.effectiveBloodPotencyWithConditions(stats, resolvedStatChanges)
     local bpEntry = C.BloodPotency[bp]
     local surgeCount = (type(bpEntry) == "table" and tonumber(bpEntry.bloodSurge)) or 1
-    if type(active.rollPolicy) == "table" then
-        local mult = tonumber(active.rollPolicy.bloodSurgeDiceMultiplier) or 1
+    if type(surgePolicy) == "table" then
+        local mult = tonumber(surgePolicy.bloodSurgeDiceMultiplier) or 1
         if mult > 0 then
             surgeCount = math.floor(surgeCount * mult)
         end
