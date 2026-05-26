@@ -385,7 +385,8 @@ local function processQueue(color)
     Wait.frames(function() RC.initiateRoll(color, nextConfig) end, 5)
 end
 
---- Queues a Frenzy check when hunger rises from below MAX_HUNGER to the capped maximum.
+--- Queues a Frenzy check when hunger is already at MAX_HUNGER and an increase is applied (state clamps at cap).
+-- VTM rule: frenzy triggers when hunger would rise past the maximum (5→6), not on first arrival at 5.
 -- @param color string
 -- @param hungerBefore number  Hunger rating before the increase was applied
 local function maybeQueueFrenzyOnHungerCap(color, hungerBefore)
@@ -393,16 +394,13 @@ local function maybeQueueFrenzyOnHungerCap(color, hungerBefore)
         return
     end
     local before = math.floor(tonumber(hungerBefore) or 0)
-    if before >= C.MAX_HUNGER then
+    if before < C.MAX_HUNGER then
         return
     end
-    local after = S.getPlayerVal(color, "hunger") or 0
-    if after >= C.MAX_HUNGER then
-        RC.queueRoll(color, {
-            rollType = C.RollType.FRENZY,
-            label    = "Frenzy Check (Hunger reached maximum)",
-        })
-    end
+    RC.queueRoll(color, {
+        rollType = C.RollType.FRENZY,
+        label    = "Frenzy Check (Hunger would exceed maximum)",
+    })
 end
 
 -- ============================================================================

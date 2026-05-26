@@ -238,7 +238,7 @@ Code paths: `lib/dice_kinds.ttslua`, `lib/rouse_outcomes.ttslua`, `core/roll_con
 - **ST slot CLEAR** (`rollDash_stCancel_1..3` → `HUD_rollCancel`): must be handled before `colorFromRollElementId` (slot ids have no `_<Color>` suffix).
 - **Dice bag right-click** (`objects/dice_bag.ttslua` `click_roll` `alt_click`): routes to `GlobalDiceBagRightClick` / `STR.onDiceBagRightClick` — remove last staged die; empty pool cancels roll.
 - **Brutal Outcome confirm** (`RC.confirmBrutalChoice` → `RC.confirmRoll`): `confirmRoll` must **not** call `recalculate` after a brutal choice; result carries `brutalNarrative` for broadcast (e.g. "Brutal Win") and adjusted successes/margin.
-- **Frenzy queue** (`maybeQueueFrenzyOnHungerCap`): after rouse hunger increases, queue Frenzy when hunger **reaches** `C.MAX_HUNGER` from below (not when already at max before the bump).
+- **Frenzy queue** (`maybeQueueFrenzyOnHungerCap`): after rouse hunger increases, queue Frenzy only when hunger was **already at** `C.MAX_HUNGER` before the bump (would exceed cap; not on first transition to max).
 - **ST bag → name modal** when no live roll; **NPC panel R** → `STR.initiateNpcRoll`.
 - **ST-initiated Rouse/Obliv (PCS panel or NPC roll):** after `RC.initiateRoll`, call `GlobalSpawnDefaultPoolDiceForActive` so the default staged die spawns and the drawer opens on first leave-container (player `DiceDrawer`, Black `STD.openForSlot`).
 - **Blood Surge rouse strip:** surge-tagged dice (`GM Notes` `|bloodSurge`) resolve only in the **Blood Surge Rouse** strip; the general **Rouse** strip uses `RC._getNonSurgeRouseValues` (physical dice without the suffix).

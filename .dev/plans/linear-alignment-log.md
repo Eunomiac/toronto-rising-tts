@@ -164,5 +164,11 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-05-25 | COMMENT | TOR-152 | Absorb load soundscape branch scope from TOR-138 close |
 | 2026-05-25 | UPDATE | TOR-141 | Baseline E2E playbooks shipped; reopened **In Progress** + label `living-doc` (ongoing maintenance, not Done) |
 | 2026-05-25 | UPDATE | TOR-141, workflow docs | `living-doc` in `toronto-rising-linear.mdc` + `DEVELOPMENT_WORKFLOW.md`; TOR-141 description link fix |
+| 2026-05-25 | CREATE | TOR-155 – TOR-159 | Inbox batch 6: roll panel dots, roll broadcast trim, seat modal, Blood Surge conditions, frenzy threshold |
+| 2026-05-25 | UPDATE | TOR-73 | Take Half broadcast synthetic dice display scope from inbox |
+| 2026-05-25 | COMMENT | TOR-147 | INBOX: abrupt weather fade-in may resolve with blindfold fade sequencing |
+| 2026-05-25 | UPDATE | RUNNING TASKLIST **Focus** | Dice bugs TOR-159/158/155 → #1–3; TOR-137 #4; TOR-81 #5; TOR-156/157 pending back-burner |
+| 2026-05-25 | UPDATE | Focus + Linear relations | Back-burner approved: TOR-153/156/157 deferred + `blockedBy`; TOR-154 kept in Focus (#4) as quick fix |
+| 2026-05-26 | DONE | TOR-159 | Frenzy queue only when hunger already at MAX before rouse bump |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

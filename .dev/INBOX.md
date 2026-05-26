@@ -2,21 +2,6 @@
 
 ## Active
 
-- in the player-facing roll panel, dots representing dice added to the pool are no longer color coded
-  - normal dice should be white
-  - hunger dice should be red
-  - rouse dice should be dark red, and should be offset slightly to the left of the main dice readout
-    - this is true for all rouse pools: if a blood surge is also triggered (which allows a second rouse check to be incorporated into the roll, since blood surges never roll more than one die), it should be offset from any other rouse check rolls included
-  - obliv-rouse dice should be dark purple
-  - werewolf dice should be yellow-green
-  - rage dice should be orange
-- when a player "Takes Half", the broadcast display should depict dice images _as if_ the player rolled their full pool except all dice were Normal Dice, and half of the dice (rounded down) scored a single success, while the rest are displayed blank
-- remove excess verbiage from roll result broadcast: no die roll numbers (the images are enough)
-- as with the roll panel indication of dice pool describe above, roll result images of rouse check(s) should be offset from each other, and from the dice pool proper
-- fade-in of weather audio is very abrupt, possibly because a cross-fade attempt is occurring when the system is under heavy load, resulting in the fade being delayed and jumping to max volume instantly; this _may_ be solved naturally by TOR-147 (which separates fade-outs into an earlier part of scene transition, which might result in smoother fade-ins later in the process)
-- upon activating any scene, Storyteller must be presented with a modal containing toggle buttons to activate/deactivate each seat BEFORE transitioning to the new scene (so, e.g., players can be "left behind" at the old scene's location)
-- [bug] activating Blood Surge does not take into account conditions that may be in place which increase/decrease a player's Blood Potency (and derived stats), or even modify Blood Surge directly.
-
 ---
 
 ## Needs clarification
@@ -56,3 +41,10 @@
 - 2026-05-25 TOR-152 — [feature] Restore active scene on Play load and Start→Play transition
 - 2026-05-25 TOR-153 — [bug] Map pins stale offset + unmappable-scene active-only hide
 - 2026-05-25 TOR-154 — [bug] THE_FLOOR / TABLE_PLINTH interactable despite LockedObjects
+- 2026-05-25 TOR-155 — [bug] Roll panel pool dots lost color coding
+- 2026-05-25 TOR-156 — [UI] Roll result broadcast trim verbiage + rouse strip layout
+- 2026-05-25 TOR-147 — related — Weather fade-in abrupt under load (may resolve with blindfold fade work)
+- 2026-05-25 TOR-73 — expanded — Take Half broadcast synthetic dice display (scope added)
+- 2026-05-25 TOR-157 — [feature] Pre-transition seat presence modal on scene Apply
+- 2026-05-25 TOR-158 — [bug] Blood Surge ignores conditions affecting Blood Potency
+- 2026-05-25 TOR-159 — [bug] Frenzy triggers at hunger 5 instead of only when rising past cap
