@@ -819,6 +819,15 @@ function Gameboard.installPolarSnaps(board, options)
     return ok == true
 end
 
+--- Static minimap markers (not npc_control_token): locked so physics does not shove them apart.
+--- @param marker Object|nil
+local function lockControlBoardMarker(marker)
+    if not isGameObject(marker) or marker.setLock == nil then
+        return
+    end
+    marker.setLock(true)
+end
+
 --- @param marker Object
 --- @param board Object
 --- @param u number|nil
@@ -834,6 +843,7 @@ local function placeControlBoardMarker(marker, board, u, v, source, ratioX, rati
     if isGameObject(source) and type(ratioX) == "number" and type(ratioZ) == "number" then
         applyMinimapMarkerScale(marker, source, ratioX, ratioZ, ratioY)
     end
+    lockControlBoardMarker(marker)
 end
 
 --- Position static table/seat markers for active table.
@@ -861,6 +871,7 @@ function Gameboard.reconcileControlBoardFromState()
 
     for _, obj in ipairs(allMarkers) do
         if isGameObject(obj) then
+            lockControlBoardMarker(obj)
             local tableKey = readMarkerKey(obj, DATA.MARKER_TABLE_PREFIX)
             local compKey = readMarkerKey(obj, DATA.MARKER_COMPONENT_PREFIX)
             local pcSeat = readMarkerKey(obj, DATA.MARKER_PC_SEAT_PREFIX)
