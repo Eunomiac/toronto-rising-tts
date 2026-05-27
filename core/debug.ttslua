@@ -1721,6 +1721,7 @@ end
 
 --- E2E: assert `rollResult_*` broadcast UI after `rollForceConfirm` / panel Confirm.
 -- @param expected table|nil  `{ visible = true, resultClass = "Failure", successes = 2, margin = -1 }`
+--   `visible` — when true, or when any field below is set, panel must be active
 --   `resultClass` — substring match (case-insensitive) on `rollResult_class`
 --   `successes` — integer N matches `"N success"` / `"N successes"` on `rollResult_successes`
 --   `margin` — integer matches `Margin: %+d` on `rollResult_margin`
@@ -1733,15 +1734,26 @@ function DEBUG.rollE2eExpectBroadcast(expected)
     end
 
     local failures = {}
-    local visible = rollE2eBroadcastPanelVisible()
+    local panelVisible = rollE2eBroadcastPanelVisible()
+    local wantsContent = type(expected.resultClass) == "string"
+        or type(expected.successes) == "number"
+        or type(expected.margin) == "number"
+    -- Field assertions require a visible panel; omitting visible=true still implies it.
+    local mustBeVisible = expected.visible == true
+        or (expected.visible == nil and wantsContent)
 
-    if expected.visible == true and not visible then
+    if expected.visible == false then
+        if panelVisible then
+            failures[#failures + 1] = "rollResult_panel: visible but expected hidden"
+        end
+        if wantsContent then
+            failures[#failures + 1] = "rollResult_panel: field assertions require visible panel"
+        end
+    elseif mustBeVisible and not panelVisible then
         failures[#failures + 1] = "rollResult_panel: not visible"
-    elseif expected.visible == false and visible then
-        failures[#failures + 1] = "rollResult_panel: visible but expected hidden"
     end
 
-    if visible and expected.visible ~= false then
+    if panelVisible and mustBeVisible then
         local classText = tostring(UI.getValue("rollResult_class") or "")
         if type(expected.resultClass) == "string" then
             local needle = string.lower(expected.resultClass)
