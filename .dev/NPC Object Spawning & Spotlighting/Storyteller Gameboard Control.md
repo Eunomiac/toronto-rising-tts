@@ -27,7 +27,9 @@ Both boards are **different objects** (position, rotation, scale). Map coordinat
 
 **Do not** call `positionToLocal` on CONTROL_BOARD with a playfield world position (e.g. `C.Tables[].centerPoint` at z≈50). That produced markers in a huge arc off the minimap and placed the table marker at the real table instead of on the control board.
 
-Table/seat markers: compute playfield world XZ (table `centerPoint`; seats via segment angle × radius from `referenceHandPosition`), convert with `uvFromWorld`, place with `worldOnControlBoard`. NPC tokens on the control board use the same `u,v` as stage figurines after Apply.
+Table/seat markers: compute playfield world XZ (table `centerPoint`; components via `activePosition`; seats via segment angle × radius from `referenceHandPosition`), convert with `uvFromWorld`, place with `worldOnControlBoard`. NPC tokens on the control board use the same `u,v` as stage figurines after Apply.
+
+**Marker scale:** `Gameboard.reconcileControlBoardFromState` sets each marker’s scale from the playfield object it represents (`C.Tables` GUID, component GUID, or nearest `<seat>Object` to the seat arc), divided by `Gameboard.minimapScaleRatios()` — stage board horizontal bounds ÷ control board bounds (typically ~40× when stage is 800×400 and control is 20×10; recomputed from live `getBounds()` when board sizes change).
 
 ## Workshop tags
 

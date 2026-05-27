@@ -573,6 +573,183 @@ local function mapUvForTableCenter(tableKey)
     return normalizedUvFromWorld(Vector(cfg.centerPoint))
 end
 
+--- @param parentTable string
+--- @param componentName string
+--- @return number|nil u, number|nil v
+local function mapUvForTableComponent(parentTable, componentName)
+    local cfg = tableConfig(parentTable)
+    if cfg == nil or type(cfg.components) ~= "table" then
+        return nil, nil
+    end
+    local comp = cfg.components[componentName]
+    if type(comp) ~= "table" then
+        return nil, nil
+    end
+    if comp.activePosition ~= nil then
+        return normalizedUvFromWorld(Vector(comp.activePosition))
+    end
+    return mapUvForTableCenter(parentTable)
+end
+
+--- Horizontal map extents from board bounds (matches UV math).
+--- @param board Object
+--- @return number sx, number sz
+local function boardMapExtents(board)
+    local sx = 1
+    local sz = 1
+    if isGameObject(board) and board.getBounds ~= nil then
+        local b = board.getBounds()
+        if b ~= nil and b.size ~= nil then
+            sx = b.size.x or b.size[1] or sx
+            sz = b.size.z or b.size[3] or sz
+        end
+    end
+    if sx < 0.01 then
+        sx = 0.01
+    end
+    if sz < 0.01 then
+        sz = 0.01
+    end
+    return sx, sz
+end
+
+--- Stage vs control minimap scale divisors (e.g. ~40 when stage is 800×400 and control is 20×10).
+--- @return number|nil ratioX, number|nil ratioZ, number|nil ratioY
+function Gameboard.minimapScaleRatios()
+    local stage = getStageBoard()
+    local control = getControlBoard()
+    if not isGameObject(stage) or not isGameObject(control) then
+        return nil, nil, nil
+    end
+    local stageSx, stageSz = boardMapExtents(stage)
+    local controlSx, controlSz = boardMapExtents(control)
+    local stageScale = stage.getScale()
+    local controlScale = control.getScale()
+    local stageSy = (stageScale and stageScale.y) or 1
+    local controlSy = (controlScale and controlScale.y) or 1
+    if controlSy < 0.01 then
+        controlSy = 0.01
+    end
+    return stageSx / controlSx, stageSz / controlSz, stageSy / controlSy
+end
+
+--- @param source Object|nil
+--- @return Vector|nil
+local function objectScaleVector(source)
+    if not isGameObject(source) or source.getScale == nil then
+        return nil
+    end
+    local s = source.getScale()
+    return Vector(s.x or 1, s.y or 1, s.z or 1)
+end
+
+--- @param marker Object
+--- @param source Object|nil
+--- @param ratioX number
+--- @param ratioZ number
+--- @param ratioY number|nil
+local function applyMinimapMarkerScale(marker, source, ratioX, ratioZ, ratioY)
+    if not isGameObject(marker) or marker.setScale == nil then
+        return
+    end
+    local src = objectScaleVector(source)
+    if src == nil or type(ratioX) ~= "number" or type(ratioZ) ~= "number" then
+        return
+    end
+    local ry = ratioY
+    if type(ry) ~= "number" or ry < 0.01 then
+        ry = ratioX
+    end
+    if ratioX < 0.01 then
+        ratioX = 0.01
+    end
+    if ratioZ < 0.01 then
+        ratioZ = 0.01
+    end
+    marker.setScale({
+        x = src.x / ratioX,
+        y = src.y / ry,
+        z = src.z / ratioZ,
+    })
+end
+
+--- @param tableKey string
+--- @return Object|nil
+local function sourceObjectForTable(tableKey)
+    local cfg = tableConfig(tableKey)
+    if cfg == nil or type(cfg.guid) ~= "string" or cfg.guid == "" then
+        return nil
+    end
+    return objectFromGuid(cfg.guid)
+end
+
+--- @param parentTable string
+--- @param componentName string
+--- @return Object|nil
+local function sourceObjectForTableComponent(parentTable, componentName)
+    local cfg = tableConfig(parentTable)
+    if cfg == nil or type(cfg.components) ~= "table" then
+        return nil
+    end
+    local comp = cfg.components[componentName]
+    if type(comp) ~= "table" or type(comp.guid) ~= "string" or comp.guid == "" then
+        return nil
+    end
+    return objectFromGuid(comp.guid)
+end
+
+--- Nearest playfield object with `<seatKey>Object` tag to the expected seat position (avoids unrelated tagged props).
+--- @param seatKey string
+--- @param expectedWorldPos Vector|nil
+--- @return Object|nil
+local function sourceObjectForSeat(seatKey, expectedWorldPos)
+    if type(seatKey) ~= "string" or seatKey == "" then
+        return nil
+    end
+    local tag = seatKey .. "Object"
+    local objs = getObjectsWithTag(tag) or {}
+    if expectedWorldPos == nil then
+        for _, obj in ipairs(objs) do
+            if isGameObject(obj) then
+                return obj
+            end
+        end
+        return nil
+    end
+    local best = nil
+    local bestDist = math.huge
+    for _, obj in ipairs(objs) do
+        if isGameObject(obj) and obj.getPosition ~= nil then
+            local dist = U.HorizontalDistance(obj.getPosition(), expectedWorldPos)
+            if dist < bestDist then
+                bestDist = dist
+                best = obj
+            end
+        end
+    end
+    if best ~= nil and bestDist <= 40 then
+        return best
+    end
+    return nil
+end
+
+--- @param marker Object
+--- @param board Object
+--- @param u number|nil
+--- @param v number|nil
+--- @param source Object|nil
+--- @param ratioX number|nil
+--- @param ratioZ number|nil
+--- @param ratioY number|nil
+local function placeControlBoardMarker(marker, board, u, v, source, ratioX, ratioZ, ratioY)
+    if u ~= nil and v ~= nil then
+        marker.setPosition(Gameboard.worldOnControlBoard(board, u, v))
+    end
+    if isGameObject(source) and type(ratioX) == "number" and type(ratioZ) == "number" then
+        applyMinimapMarkerScale(marker, source, ratioX, ratioZ, ratioY)
+    end
+end
+
 --- Position static table/seat markers for active table.
 function Gameboard.reconcileControlBoardFromState()
     local npcWorld = S.getStateVal("sessionScene", "npcWorld")
@@ -585,6 +762,7 @@ function Gameboard.reconcileControlBoardFromState()
     end
     local activeTable = S.getStateVal("seatLayout", "currentTableKey")
     local placements = type(npcWorld) == "table" and npcWorld.placements or {}
+    local ratioX, ratioZ, ratioY = Gameboard.minimapScaleRatios()
     local allMarkers = getObjectsWithTag(TAG_TABLE) or {}
     for _, tag in ipairs({ TAG_PC, TAG_NPC_SEAT, TAG_COMPONENT }) do
         local extra = getObjectsWithTag(tag) or {}
@@ -605,9 +783,16 @@ function Gameboard.reconcileControlBoardFromState()
                 setMarkerVisible(obj, show)
                 if show then
                     local u, v = mapUvForTableCenter(tableKey)
-                    if u ~= nil and v ~= nil then
-                        obj.setPosition(Gameboard.worldOnControlBoard(board, u, v))
-                    end
+                    placeControlBoardMarker(
+                        obj,
+                        board,
+                        u,
+                        v,
+                        sourceObjectForTable(tableKey),
+                        ratioX,
+                        ratioZ,
+                        ratioY
+                    )
                 end
             elseif compKey ~= nil then
                 local parentTable, componentName = string.match(compKey, "^(.-)|(.+)$")
@@ -624,11 +809,18 @@ function Gameboard.reconcileControlBoardFromState()
                 end
                 local show = parentTable == activeTable
                 setMarkerVisible(obj, show)
-                if show and parentTable ~= nil then
-                    local u, v = mapUvForTableCenter(parentTable)
-                    if u ~= nil and v ~= nil then
-                        obj.setPosition(Gameboard.worldOnControlBoard(board, u + 0.02, v + 0.02))
-                    end
+                if show and parentTable ~= nil and componentName ~= nil then
+                    local u, v = mapUvForTableComponent(parentTable, componentName)
+                    placeControlBoardMarker(
+                        obj,
+                        board,
+                        u,
+                        v,
+                        sourceObjectForTableComponent(parentTable, componentName),
+                        ratioX,
+                        ratioZ,
+                        ratioY
+                    )
                 end
             elseif pcSeat ~= nil then
                 local show = activeTable ~= nil
@@ -639,9 +831,16 @@ function Gameboard.reconcileControlBoardFromState()
                     if type(seg) == "number" then
                         local worldSeat = worldPositionForTableSegment(cfg, seg)
                         local u, v = normalizedUvFromWorld(worldSeat)
-                        if u ~= nil and v ~= nil then
-                            obj.setPosition(Gameboard.worldOnControlBoard(board, u, v))
-                        end
+                        placeControlBoardMarker(
+                            obj,
+                            board,
+                            u,
+                            v,
+                            sourceObjectForSeat(pcSeat, worldSeat),
+                            ratioX,
+                            ratioZ,
+                            ratioY
+                        )
                     end
                 end
             elseif npcSeat ~= nil then
@@ -653,9 +852,16 @@ function Gameboard.reconcileControlBoardFromState()
                     if type(seg) == "number" then
                         local worldSeat = worldPositionForTableSegment(cfg, seg)
                         local u, v = normalizedUvFromWorld(worldSeat)
-                        if u ~= nil and v ~= nil then
-                            obj.setPosition(Gameboard.worldOnControlBoard(board, u, v))
-                        end
+                        placeControlBoardMarker(
+                            obj,
+                            board,
+                            u,
+                            v,
+                            sourceObjectForSeat(npcSeat, worldSeat),
+                            ratioX,
+                            ratioZ,
+                            ratioY
+                        )
                     end
                 end
             end
