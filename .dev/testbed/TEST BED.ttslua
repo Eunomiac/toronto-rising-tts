@@ -1730,55 +1730,205 @@ end
 
 -- #region 12. E2E TESTING COMMANDS
 
--- Step 0 - Cleanup
+-- #region Step 0 - Cleanup
 rollCancelAll()
+rollConfirm("Brown", { noActive = true })
+rollConfirm("Purple", { noActive = true })
+rollConfirm("Black", { noActive = true })
+-- #endregion
+
+-- #region Suite A - Standard roll (PRE_ROLL → roll → confirm)
 
 -- Step A1 - Arm Roll
 rollTest("Brown", 3, C.RollType.STANDARD, "E2E Standard")
-print(GlobalGetRollPhase({ color = "Brown" }))
+rollConfirm("Brown", {
+  phase = "preRoll",
+  active = { difficulty = 3, rollType = C.RollType.STANDARD },
+})
 
--- Step A2 - Build Pool & Step A3 - Roll and Confirm
-rollState("Brown")
-
--- Suite B - Cancel and Reset
-rollTest("Brown", 2)
+-- Step A2 - Build Pool
 rollCancel("Brown")
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E A2 pool", 0)
+
+rollConfirm("Brown", { active = { pool = { normal = 5, hunger = 0 } } })
+rollConfirm("Brown", { active = { pool = { normal = 4, hunger = 0 } } })
+rollConfirm("Brown", { active = { pool = { normal = 5, hunger = 0 } } })
+
+-- Step A3 - Roll and confirm
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    result = { present = true, resultClass = { present = true } },
+  },
+})
+-- #endregion
+
+-- #region Suite B - Cancel and Reset
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E B cancel", 0)
+rollCancel("Brown")
+rollConfirm("Brown", { noActive = true })
 rollCancelAll()
+rollConfirm("Brown", { noActive = true })
+-- #endregion
 
--- Suite C - Dedicated rouse check
-rollTest("Brown", 1, C.RollType.ROUSE, "E2E Rouse")
+-- #region Suite C - Dedicated rouse check
 
-rollState("Brown")
+-- Step C1 - Rouse auto on
+rollCancel("Brown")
+S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", true)
+setHunger("Brown", 2)
+rollConfirmTracker("Brown", { hunger = 2 })
+rollTest("Brown", 1, C.RollType.ROUSE, "E2E C1 rouse auto on")
+rollE2eSettlePresetCheck("Brown", { rouse = { 4 } })
+rollConfirm("Brown", { noActive = true })
+rollConfirmTracker("Brown", { hunger = 3 })
+
 rollCancel("Brown")
 
--- Suite D - Oblivion Rouse Dedicated (Purple)
-rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E Oblivion Rouse")
+-- Step C2 - Rouse auto off
+rollCancel("Brown")
+S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", false)
+setHunger("Brown", 2)
+rollConfirmTracker("Brown", { hunger = 2 })
+rollTest("Brown", 1, C.RollType.ROUSE, "E2E C2 rouse auto off")
+rollE2eSettlePresetCheck("Brown", { rouse = { 4 } })
+rollConfirm("Brown", { noActive = true })
+rollConfirmTracker("Brown", { hunger = 2 })
+S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", true)
 
-rollState("Purple")
+rollCancel("Brown")
+-- #endregion
+
+-- #region Suite D - Oblivion Rouse Dedicated (Purple)
 rollCancel("Purple")
+S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", true)
+setHunger("Purple", 1)
+setHumanityStains("Purple", 2)
+rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
+rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E D obliv face 3")
+rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3 } })
+rollConfirm("Purple", { noActive = true })
+rollConfirmTracker("Purple", { hunger = 2, stains = 2 })
 
--- Suite E - Storyteller NPC roll (standard)
+rollCancel("Purple")
+-- #endregion
+
+-- #region Suite E - Storyteller NPC roll (standard)
 rollStTest("E2E ST", C.RollType.STANDARD)
 rollStSlots()
 
 rollCancel("Black")
+-- #endregion
 
--- Suite F - Conditions policy
+-- #region Suite F - Conditions policy
 
--- Suite G - Result calculation accuracy
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G1") -- G1
-rollTest("Brown", 3, C.RollType.STANDARD, "E2E Classify G2") -- G2
-rollTest("Brown", 3, C.RollType.STANDARD, "E2E Classify G3") -- G3
-rollTest("Brown", 7, C.RollType.STANDARD, "E2E Classify G4") -- G4
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G5") -- G5
-rollTest("Brown", 4, C.RollType.STANDARD, "E2E Classify G6") -- G6
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G7") -- G7
+-- Step F1 - Baseline (no condition)
+rollE2eClearConditions("Brown", { "e2eBestialNull" })
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E F baseline")
+
+rollSetFaces("Brown", { normal = {10, 10, 3}, hunger = {1} })
+rollState("Brown")
+
 rollCancel("Brown")
 
--- Suite H - Take Half
-rollTest("Brown", 4, C.RollType.STANDARD, "E2E Take Half") -- H1
-rollTest("Brown", 3, C.RollType.STANDARD, "E2E Take Half Rouse") -- H2
+-- Step F2 - With `e2eBestialNull`
+rollE2eApplyConditions("Brown", { "e2eBestialNull" })
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E F bestialNull")
+
+rollSetFaces("Brown", { normal = {10, 10, 3}, hunger = {1} })
+rollState("Brown")
+DEBUG.dumpRollPolicy("Brown")
+
 rollCancel("Brown")
+rollE2eClearConditions("Brown", { "e2eBestialNull" })
+
+rollCancel("Brown")
+
+-- #endregion
+
+-- #region Suite G - Result calculation accuracy
+
+-- G1 - Win at diff 2
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G1")
+
+rollSetFaces("Brown", { normal = {7, 7} })
+rollState("Brown")
+
+rollCancel("Brown")
+
+-- G2 - Critical at diff 3
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E Classify G2")
+
+rollSetFaces("Brown", { normal = {10, 10}, hunger = {9, 1} })
+rollState("Brown")
+
+rollCancel("Brown")
+
+-- G3 - Messy critical at diff 3
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E Classify G3")
+
+rollSetFaces("Brown", { normal = {10, 10}, hunger = {10, 1} })
+rollState("Brown")
+
+rollCancel("Brown")
+
+-- G4 - Bestial failure at diff 7
+rollTest("Brown", 7, C.RollType.STANDARD, "E2E Classify G4")
+
+rollSetFaces("Brown", { normal = {10, 10}, hunger = {10, 1} })
+rollState("Brown")
+
+rollCancel("Brown")
+
+-- G5 - Total bestial failure at diff 2
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G5", 1)
+
+rollSetFaces("Brown", { normal = {4, 4}, hunger = {1} })
+rollState("Brown")
+
+rollCancel("Brown")
+
+-- G6 - Win with crits off (no 10-pair bonus)
+
+rollTest("Brown", 4, C.RollType.STANDARD, "E2E Classify G6", 2)
+RC.setRollOptions("Brown", { crits = false })
+
+rollSetFaces("Brown", { normal = {10, 8, 7, 6}, hunger = {10} })
+rollState("Brown")
+
+rollCancel("Brown")
+
+-- G7 - Failure with bestial null
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G7", 1)
+RC.setRollOptions("Brown", { bestialNull = true })
+
+rollSetFaces("Brown", { normal = {10, 10, 3}, hunger = {1} })
+rollState("Brown")
+
+rollCancel("Brown")
+
+-- #endregion
+
+-- #region Suite H - Take Half
+
+-- H1 - Simple Take Half (no rouse in pool)
+rollTest("Brown", 4, C.RollType.STANDARD, "E2E Take Half")
+
+rollState("Brown")
+
+rollCancel("Brown")
+
+-- H2 - Take Half + rouse dice still in pool
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E Take Half Rouse")
+
+print(GlobalGetRollPhase({ color = "Brown" }))
+rollState("Brown")
+
+rollState("Brown")
+
+rollCancel("Brown")
+
+-- #endregion
 
 -- #endregion
 

@@ -19,6 +19,7 @@ const SCAN_ROOTS = ["core", "global", "lib", "objects", "ui"];
 
 /** Files that may index C.BloodPotency directly. */
 const ALLOWLIST = new Set([
+  join(REPO_ROOT, "lib", "blood_potency_derived.ttslua"),
   join(REPO_ROOT, "lib", "effective_stats.ttslua"),
   join(REPO_ROOT, "lib", "constants.ttslua"),
   join(REPO_ROOT, "lib", "pc_stats.ttslua"),
@@ -89,7 +90,7 @@ function main() {
   for (const v of violations) {
     console.error(`  ${v.file}: ${v.count}`);
   }
-  console.error("Allowlist: lib/effective_stats, lib/constants, lib/pc_stats, core/roll_controller (fallback path)");
+  console.error("Allowlist: lib/blood_potency_derived, lib/effective_stats, lib/constants, lib/pc_stats, core/roll_controller (fallback path)");
   process.exit(1);
 }
 

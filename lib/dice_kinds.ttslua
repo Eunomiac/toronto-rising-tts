@@ -69,8 +69,11 @@ local KIND_TO_TAG = {
     [DK.KIND_RAGE]        = DK.TAG_RAGE,
 }
 
---- GM Notes suffix for blood-surge rouse dice.
+--- Legacy GM Notes suffix (decode only; new dice use roll id only).
 DK.GM_NOTE_BLOOD_SURGE_SUFFIX = "|bloodSurge"
+
+--- script_state on Normal/Hunger dice spawned by Blood Surge (undo targeting).
+DK.SCRIPT_STATE_BLOOD_SURGE_POOL = "bloodSurgePool"
 
 --- Pending resolution kinds (active.pendingResolution).
 DK.PENDING_OBLIV_HUNGER_STAIN   = "oblivHungerStain"
@@ -165,8 +168,8 @@ end
 -- @return table
 function DK.defaultMeta()
     return {
-        bloodSurgeActive       = false,
-        bloodSurgeSpawnedGuids = {},
+        bloodSurgeActive    = false,
+        bloodSurgeAddedToPool = { normal = 0, hunger = 0 },
     }
 end
 
@@ -179,10 +182,27 @@ function DK.ensureMeta(active)
     if type(active.meta) ~= "table" then
         active.meta = DK.defaultMeta()
     end
-    if type(active.meta.bloodSurgeSpawnedGuids) ~= "table" then
-        active.meta.bloodSurgeSpawnedGuids = {}
+    if type(active.meta.bloodSurgeAddedToPool) ~= "table" then
+        active.meta.bloodSurgeAddedToPool = { normal = 0, hunger = 0 }
     end
+    active.meta.bloodSurgeAddedToPool.normal = math.max(0, math.floor(tonumber(active.meta.bloodSurgeAddedToPool.normal) or 0))
+    active.meta.bloodSurgeAddedToPool.hunger = math.max(0, math.floor(tonumber(active.meta.bloodSurgeAddedToPool.hunger) or 0))
     active.meta.bloodSurgeActive = active.meta.bloodSurgeActive == true
+end
+
+--- True when adding this rouse-family kind would violate pool exclusivity.
+-- @param pool table
+-- @param kind string  DK.KIND_ROUSE or DK.KIND_OBLIV_ROUSE
+-- @return boolean
+function DK.rouseKindBlockedByPool(pool, kind)
+    pool = DK.normalizePool(pool)
+    if kind == DK.KIND_ROUSE and pool.oblivRouse > 0 then
+        return true
+    end
+    if kind == DK.KIND_OBLIV_ROUSE and pool.rouse > 0 then
+        return true
+    end
+    return false
 end
 
 --- Resolve logical kind from a TTS tag string.

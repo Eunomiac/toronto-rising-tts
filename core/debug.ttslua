@@ -823,6 +823,505 @@ function DEBUG.rollTest(color, difficulty, rollType, label, hungerLevel)
     print(string.format("[DEBUG.rollTest] %s PRE_ROLL — diff=%d type=%s label='%s'", color, diff, rType, lbl))
 end
 
+--- Normalizes E2E phase strings to C.RollPhase values.
+-- @param phase string|nil
+-- @return string|nil
+local function normalizeRollPhaseAlias(phase)
+    if type(phase) ~= "string" then
+        return nil
+    end
+    local key = string.gsub(phase, "[%s_]", "")
+    key = string.lower(key)
+    local map = {
+        setup = C.RollPhase.SETUP,
+        preroll = C.RollPhase.PRE_ROLL,
+        rolling = C.RollPhase.ROLLING,
+        postroll = C.RollPhase.POST_ROLL,
+        resolved = C.RollPhase.RESOLVED,
+    }
+    return map[key] or phase
+end
+
+--- True when `expected` is a numeric/presence matcher table (not a data subtree).
+-- @param expected table
+-- @return boolean
+local function isRollExpectMatcher(expected)
+    if type(expected) ~= "table" then
+        return false
+    end
+    local hasMatcher = expected.present == true
+        or type(expected.min) == "number"
+        or type(expected.max) == "number"
+        or type(expected.gte) == "number"
+        or type(expected.lte) == "number"
+        or type(expected.oneOf) == "table"
+    if not hasMatcher then
+        return false
+    end
+    for k, _ in pairs(expected) do
+        if k ~= "present" and k ~= "min" and k ~= "max" and k ~= "gte" and k ~= "lte" and k ~= "oneOf" then
+            return false
+        end
+    end
+    return true
+end
+
+--- Compares actual vs expected for rollConfirm; appends failure lines to `failures`.
+-- @param actual any
+-- @param expected any
+-- @param path string
+-- @param failures table
+local function rollExpectCompare(actual, expected, path, failures)
+    if expected == nil then
+        return
+    end
+
+    if type(expected) == "table" and isRollExpectMatcher(expected) then
+        if expected.present == true then
+            if actual == nil then
+                failures[#failures + 1] = path .. ": expected value to be present, got nil"
+            end
+            return
+        end
+        if type(actual) ~= "number" then
+            failures[#failures + 1] = path .. ": expected number, got " .. type(actual)
+            return
+        end
+        if type(expected.min) == "number" and actual < expected.min then
+            failures[#failures + 1] = path .. ": " .. tostring(actual) .. " < min " .. tostring(expected.min)
+        end
+        if type(expected.max) == "number" and actual > expected.max then
+            failures[#failures + 1] = path .. ": " .. tostring(actual) .. " > max " .. tostring(expected.max)
+        end
+        if type(expected.gte) == "number" and actual < expected.gte then
+            failures[#failures + 1] = path .. ": " .. tostring(actual) .. " < gte " .. tostring(expected.gte)
+        end
+        if type(expected.lte) == "number" and actual > expected.lte then
+            failures[#failures + 1] = path .. ": " .. tostring(actual) .. " > lte " .. tostring(expected.lte)
+        end
+        if type(expected.oneOf) == "table" then
+            local found = false
+            for _, allowed in ipairs(expected.oneOf) do
+                if actual == allowed then
+                    found = true
+                    break
+                end
+            end
+            if not found then
+                failures[#failures + 1] = path .. ": " .. tostring(actual) .. " not in oneOf list"
+            end
+        end
+        return
+    end
+
+    if type(expected) ~= "table" then
+        if actual ~= expected then
+            failures[#failures + 1] = path
+                .. ": got " .. tostring(actual) .. ", want " .. tostring(expected)
+        end
+        return
+    end
+
+    if type(actual) ~= "table" then
+        failures[#failures + 1] = path .. ": expected table, got " .. type(actual)
+        return
+    end
+
+    for key, subExpected in pairs(expected) do
+        rollExpectCompare(actual[key], subExpected, path .. "." .. tostring(key), failures)
+    end
+end
+
+--- Resolves seat color + expectation table from rollConfirm call shapes.
+-- @param colorOrSpec string|table
+-- @param maybeExpected table|nil
+-- @return string|nil color, table|nil expected, string|nil err
+local function parseRollConfirmArgs(colorOrSpec, maybeExpected)
+    if type(colorOrSpec) == "table" and maybeExpected == nil then
+        local spec = colorOrSpec
+        return spec.color, spec, nil
+    end
+    if type(colorOrSpec) ~= "string" then
+        return nil, nil, "first argument must be seat color or { color = ... }"
+    end
+    if string.lower(colorOrSpec) == "global" then
+        if type(maybeExpected) ~= "table" then
+            return nil, nil, "\"Global\" is deprecated — use rollConfirm(\"Brown\", { phase = \"preRoll\", ... })"
+        end
+        local seat = maybeExpected.color
+        if type(seat) ~= "string" then
+            return nil, nil, "with legacy \"Global\", pass expected.color = seat (e.g. \"Brown\")"
+        end
+        return seat, maybeExpected, nil
+    end
+    if type(maybeExpected) ~= "table" then
+        return nil, nil, "second argument must be expectation table"
+    end
+    return colorOrSpec, maybeExpected, nil
+end
+
+--- Asserts roll state against expected values; prints PASS/FAIL with details.
+-- @param colorOrSpec string|table  Seat color, or { color, phase?, active?, pool?, ... }
+-- @param expected table|nil  e.g. { phase = "preRoll", active = { difficulty = 3, rollType = ... } }
+-- @return boolean pass
+-- @usage lua rollConfirm("Brown", { phase = "preRoll", active = { difficulty = 3, rollType = C.RollType.STANDARD } })
+-- @usage lua rollConfirm({ color = "Brown", phase = "postRoll", active = { result = { present = true } } })
+function DEBUG.rollConfirm(colorOrSpec, maybeExpected)
+    -- Legacy one-arg form (pre–TOR-141 E2E harness): force-confirm POST_ROLL.
+    if maybeExpected == nil and type(colorOrSpec) == "string" then
+        print("[rollConfirm] DEPRECATED: one-arg rollConfirm(color) — use rollForceConfirm(color)")
+        return DEBUG.rollForceConfirm(colorOrSpec)
+    end
+
+    local color, expected, err = parseRollConfirmArgs(colorOrSpec, maybeExpected)
+    if err ~= nil then
+        print("[rollConfirm] FAIL: " .. err)
+        return false
+    end
+
+    local failures = {}
+    local label = color
+
+    if expected.noActive == true then
+        label = color .. " noActive"
+        local pid = S.getPlayerID(color)
+        local active = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active")
+        if active ~= nil then
+            failures[#failures + 1] = "expected no active roll, but active roll exists"
+        end
+    else
+        local pid = S.getPlayerID(color)
+        if pid == nil then
+            failures[#failures + 1] = "no playerID for seat " .. tostring(color)
+        else
+            local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+            if active == nil then
+                failures[#failures + 1] = "expected active roll, got nil"
+            else
+                local phaseExpected = expected.phase or expected.preRoll or expected.postRoll
+                    or expected.rolling or expected.setup or expected.resolved
+                if type(phaseExpected) == "string" then
+                    local wantPhase = normalizeRollPhaseAlias(phaseExpected)
+                    local actualPhase = active.phase
+                    if Global ~= nil and type(Global.call) == "function" then
+                        local gPhase = Global.call("GlobalGetRollPhase", { color = color })
+                        if type(gPhase) == "string" then
+                            actualPhase = gPhase
+                        end
+                    end
+                    if actualPhase ~= wantPhase then
+                        failures[#failures + 1] = "phase: got "
+                            .. tostring(actualPhase) .. ", want " .. tostring(wantPhase)
+                    end
+                end
+
+                if type(expected.pool) == "table" then
+                    expected.active = expected.active or {}
+                    expected.active.pool = expected.active.pool or {}
+                    for k, v in pairs(expected.pool) do
+                        expected.active.pool[k] = v
+                    end
+                end
+                if type(expected.meta) == "table" then
+                    expected.active = expected.active or {}
+                    expected.active.meta = expected.active.meta or {}
+                    for k, v in pairs(expected.meta) do
+                        expected.active.meta[k] = v
+                    end
+                end
+                if type(expected.result) == "table" then
+                    expected.active = expected.active or {}
+                    expected.active.result = expected.active.result or {}
+                    for k, v in pairs(expected.result) do
+                        expected.active.result[k] = v
+                    end
+                end
+
+                if type(expected.active) == "table" then
+                    rollExpectCompare(active, expected.active, "active", failures)
+                end
+
+                if type(expected.rouseStripLabel) == "string" then
+                    local strips = active.rouseOutcomeStrips
+                    local found = false
+                    if type(strips) == "table" then
+                        for _, strip in ipairs(strips) do
+                            if type(strip) == "table" and strip.label == expected.rouseStripLabel then
+                                found = true
+                                break
+                            end
+                        end
+                    end
+                    if not found then
+                        failures[#failures + 1] = "rouseOutcomeStrips: no strip labeled "
+                            .. expected.rouseStripLabel
+                    end
+                end
+
+                if type(expected.rouseOutcomeStripsMin) == "number" then
+                    local n = (type(active.rouseOutcomeStrips) == "table") and #active.rouseOutcomeStrips or 0
+                    if n < expected.rouseOutcomeStripsMin then
+                        failures[#failures + 1] = "rouseOutcomeStrips: count "
+                            .. tostring(n) .. " < min " .. tostring(expected.rouseOutcomeStripsMin)
+                    end
+                end
+
+                if type(expected.rouseStrip) == "table" then
+                    local wantLabel = expected.rouseStrip.label
+                    local wantNarrative = expected.rouseStrip.narrative
+                    local strips = active.rouseOutcomeStrips
+                    local found = false
+                    if type(strips) == "table" then
+                        for _, strip in ipairs(strips) do
+                            if type(strip) == "table" then
+                                local labelOk = type(wantLabel) ~= "string" or strip.label == wantLabel
+                                local narrOk = type(wantNarrative) ~= "string"
+                                    or strip.narrative == wantNarrative
+                                if labelOk and narrOk then
+                                    found = true
+                                    break
+                                end
+                            end
+                        end
+                    end
+                    if not found then
+                        failures[#failures + 1] = "rouseOutcomeStrips: no strip matching "
+                            .. JSON.encode(expected.rouseStrip)
+                    end
+                end
+
+                if type(expected.wpRerollChosenCount) == "number" then
+                    local guids = (type(active.willpower) == "table")
+                        and active.willpower.rerollRandomizedGuids or nil
+                    local nChosen = 0
+                    if type(guids) == "table" then
+                        for _ in pairs(guids) do
+                            nChosen = nChosen + 1
+                        end
+                    end
+                    if nChosen ~= expected.wpRerollChosenCount then
+                        failures[#failures + 1] = "willpower.rerollRandomizedGuids: count "
+                            .. tostring(nChosen) .. ", want "
+                            .. tostring(expected.wpRerollChosenCount)
+                    end
+                end
+
+                if type(expected.contributingIncludes) == "table" then
+                    local contrib = (type(active.rollPolicy) == "table")
+                        and active.rollPolicy.contributingConditions or {}
+                    for _, wantId in ipairs(expected.contributingIncludes) do
+                        local foundId = false
+                        if type(contrib) == "table" then
+                            for _, cid in ipairs(contrib) do
+                                if cid == wantId then
+                                    foundId = true
+                                    break
+                                end
+                            end
+                        end
+                        if not foundId then
+                            failures[#failures + 1] = "rollPolicy.contributingConditions: missing "
+                                .. tostring(wantId)
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    if #failures == 0 then
+        print("[rollConfirm] PASS — " .. label)
+        return true
+    end
+    print("[rollConfirm] FAIL — " .. label)
+    for i, line in ipairs(failures) do
+        print(string.format("  %d) %s", i, line))
+    end
+    return false
+end
+
+--- Reads humanity stain count for a seat (player PCs only).
+-- @param color string
+-- @return number
+local function readHumanityStains(color)
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        return 0
+    end
+    local stats = S.getStateVal("playerData", pid, "stats")
+    if type(stats) ~= "table" then
+        return 0
+    end
+    if type(stats.humanity) == "table" then
+        return math.max(0, math.floor(tonumber(stats.humanity.stains) or 0))
+    end
+    return math.max(0, math.floor(tonumber(stats.stains) or 0))
+end
+
+--- Asserts tracker fields (hunger, stains, superficial willpower) for E2E.
+-- @param color string
+-- @param expected table  { hunger?, stains?, willpowerSuperficial? }
+-- @return boolean pass
+-- @usage lua rollConfirmTracker("Brown", { hunger = 3 })
+function DEBUG.rollConfirmTracker(color, expected)
+    if type(color) ~= "string" or type(expected) ~= "table" then
+        print("[rollConfirmTracker] FAIL: usage rollConfirmTracker(color, { hunger = N, ... })")
+        return false
+    end
+    local failures = {}
+    if type(expected.hunger) == "number" then
+        local actual = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
+        if actual ~= expected.hunger then
+            failures[#failures + 1] = "hunger: got " .. tostring(actual)
+                .. ", want " .. tostring(expected.hunger)
+        end
+    end
+    if type(expected.stains) == "number" then
+        local actual = readHumanityStains(color)
+        if actual ~= expected.stains then
+            failures[#failures + 1] = "stains: got " .. tostring(actual)
+                .. ", want " .. tostring(expected.stains)
+        end
+    end
+    if type(expected.willpowerSuperficial) == "number" then
+        local pid = S.getPlayerID(color)
+        local actual = 0
+        if pid ~= nil then
+            local stats = S.getStateVal("playerData", pid, "stats")
+            if type(stats) == "table" and type(stats.willpower) == "table" then
+                actual = math.floor(tonumber(stats.willpower.superficial) or 0)
+            end
+        end
+        if actual ~= expected.willpowerSuperficial then
+            failures[#failures + 1] = "willpower.superficial: got " .. tostring(actual)
+                .. ", want " .. tostring(expected.willpowerSuperficial)
+        end
+    end
+    if #failures == 0 then
+        print("[rollConfirmTracker] PASS — " .. color)
+        return true
+    end
+    print("[rollConfirmTracker] FAIL — " .. color)
+    for i, line in ipairs(failures) do
+        print(string.format("  %d) %s", i, line))
+    end
+    return false
+end
+
+--- Sets humanity stain count for a seat and syncs presentation.
+-- @param color string
+-- @param value number
+-- @usage lua setHumanityStains("Purple", 2)
+function DEBUG.setHumanityStains(color, value)
+    if type(color) ~= "string" or type(value) ~= "number" then
+        print("Usage: setHumanityStains(color, value)")
+        return
+    end
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        print("[setHumanityStains] no playerID for " .. color)
+        return
+    end
+    local n = math.max(0, math.floor(value))
+    S.setStateVal(n, "playerData", pid, "stats", "humanity", "stains")
+    local Conditions = require("core.conditions")
+    Conditions.reconcileDerivedForPlayer(pid)
+    Conditions.afterChange(pid)
+    Sync.player(color)
+    print(string.format("[setHumanityStains] %s stains=%d", color, n))
+end
+
+--- Sets superficial willpower boxes for a seat and syncs presentation.
+-- @param color string
+-- @param value number
+-- @usage lua setWillpowerSuperficial("Brown", 3)
+function DEBUG.setWillpowerSuperficial(color, value)
+    if type(color) ~= "string" or type(value) ~= "number" then
+        print("Usage: setWillpowerSuperficial(color, value)")
+        return
+    end
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        print("[setWillpowerSuperficial] no playerID for " .. color)
+        return
+    end
+    local n = math.max(0, math.floor(value))
+    S.setStateVal(n, "playerData", pid, "stats", "willpower", "superficial")
+    local Conditions = require("core.conditions")
+    Conditions.reconcileDerivedForPlayer(pid)
+    Conditions.afterChange(pid)
+    Sync.player(color)
+    print(string.format("[setWillpowerSuperficial] %s superficial=%d", color, n))
+end
+
+--- Asserts gameState.storytellerRolls fields for E2E.
+-- @param expected table  { liveSlotIndex?, initiateBlocked?, initiateLabel?, initiateRollType? }
+-- @return boolean pass
+-- @usage lua rollStConfirm({ liveSlotIndex = 1 })
+function DEBUG.rollStConfirm(expected)
+    if type(expected) ~= "table" then
+        print("[rollStConfirm] FAIL: expected table required")
+        return false
+    end
+    local failures = {}
+    local root = S.getStateVal("storytellerRolls") or {}
+    if expected.liveSlotIndexAbsent == true then
+        if root.liveSlotIndex ~= nil then
+            failures[#failures + 1] = "liveSlotIndex: expected nil, got "
+                .. tostring(root.liveSlotIndex)
+        end
+    elseif type(expected.liveSlotIndex) == "number" then
+        local actual = root.liveSlotIndex
+        if actual ~= expected.liveSlotIndex then
+            failures[#failures + 1] = "liveSlotIndex: got " .. tostring(actual)
+                .. ", want " .. tostring(expected.liveSlotIndex)
+        end
+    end
+    if expected.initiateBlocked == true then
+        local STR = require("core.storyteller_rolls")
+        local lbl = (type(expected.initiateLabel) == "string") and expected.initiateLabel or "E2E blocked"
+        local rt = expected.initiateRollType or C.RollType.STANDARD
+        local ok = STR.initiateNpcRoll(lbl, rt)
+        if ok then
+            failures[#failures + 1] = "initiateNpcRoll: expected blocked, got ok"
+        end
+    end
+    if #failures == 0 then
+        print("[rollStConfirm] PASS")
+        return true
+    end
+    print("[rollStConfirm] FAIL")
+    for i, line in ipairs(failures) do
+        print(string.format("  %d) %s", i, line))
+    end
+    return false
+end
+
+--- E2E: preset faces on check dice, start rolling, settle without randomizing (dedicated Rouse/Obliv).
+-- @param color string
+-- @param facesByKind table
+-- @return boolean pass
+-- @usage lua rollE2eSettlePresetCheck("Brown", { rouse = { 4 } })
+function DEBUG.rollE2eSettlePresetCheck(color, facesByKind)
+    if RC == nil then
+        print("[rollE2eSettlePresetCheck] FAIL: RC not loaded")
+        return false
+    end
+    if type(color) ~= "string" or type(facesByKind) ~= "table" then
+        print("[rollE2eSettlePresetCheck] FAIL: usage rollE2eSettlePresetCheck(color, { rouse = { 4 } })")
+        return false
+    end
+    DEBUG.rollSetFaces(color, facesByKind)
+    local started = RC.startRolling(color)
+    if started ~= true then
+        print("[rollE2eSettlePresetCheck] FAIL: RC.startRolling failed")
+        return false
+    end
+    RC.onDiceSettled(color)
+    print("[rollE2eSettlePresetCheck] settled with preset faces for " .. color)
+    return true
+end
+
 --- Prints the full active roll record and queue for a player.
 -- @param color string  Player seat color
 -- @usage lua rollState("Brown")
@@ -997,16 +1496,14 @@ function DEBUG.rollStSlots()
     print("[DEBUG.rollStSlots] " .. JSON.encode_pretty(root))
 end
 
---- Force-confirms the active roll for a player, simulating the player clicking CONFIRM.
--- Runs the full resolution path: consequences, broadcast panel, history append.
--- The roll must be in POST_ROLL phase (dice must have settled or Recalculate pressed first).
+--- Force-confirms the active roll (clicks CONFIRM). Use after POST_ROLL settle/recalc.
 -- @param color string  Player seat color
--- @usage lua rollConfirm("Brown")
-function DEBUG.rollConfirm(color)
-    if RC == nil then print("[DEBUG.rollConfirm] RC not loaded"); return end
-    if type(color) ~= "string" then print("Usage: rollConfirm(color)"); return end
+-- @usage lua rollForceConfirm("Brown")
+function DEBUG.rollForceConfirm(color)
+    if RC == nil then print("[DEBUG.rollForceConfirm] RC not loaded"); return end
+    if type(color) ~= "string" then print("Usage: rollForceConfirm(color)"); return end
     local ok = RC.confirmRoll(color)
-    print(string.format("[DEBUG.rollConfirm] %s: %s",
+    print(string.format("[DEBUG.rollForceConfirm] %s: %s",
         color, ok and "roll confirmed and resolved" or "confirm failed — is the roll in POST_ROLL?"))
 end
 
@@ -2190,9 +2687,14 @@ function DEBUG.help()
     print("  rollSetFaces(color, { normal={7,7}, hunger={10,1} }) - Set faces + recalculate (POST_ROLL)")
     print("  rollE2eApplyConditions(color, { 'e2eBestialNull' }) / rollE2eClearConditions(color, ids?)")
     print("  rollState(color)         - Print active roll record for a player")
+    print("  rollConfirm(color, expected) - Assert roll state; prints PASS/FAIL (E2E)")
+    print("  rollConfirmTracker(color, { hunger?, stains?, willpowerSuperficial? })")
+    print("  rollStConfirm({ liveSlotIndex?, initiateBlocked? }) - ST slots E2E")
+    print("  rollE2eSettlePresetCheck(color, faces) - Dedicated check: preset face + settle")
+    print("  setHumanityStains(color, n) / setWillpowerSuperficial(color, n)")
+    print("  rollForceConfirm(color)  - Force-confirm POST_ROLL (UI CONFIRM)")
     print("  rollCancel(color)        - Cancel roll; Black also clears ST slots/drawers")
     print("  rollCancelAll()          - Cancel all rolls + ST slots")
-    print("  rollConfirm(color)       - Force-confirm a POST_ROLL result")
     print("  rollStTest(label?, type?) - ST NPC roll on Black (e2e seat/camera prep)")
     print("  rollStSlots()            - Print gameState.storytellerRolls")
     print("\nQUICK SETTERS (prefer Scenes/Sound panels for narrative apply):")
@@ -2251,6 +2753,8 @@ inspectSoundscapeAudio = DEBUG.inspectSoundscapeAudio
 
 -- Expose quick setters
 setHunger = DEBUG.setHunger
+setHumanityStains = DEBUG.setHumanityStains
+setWillpowerSuperficial = DEBUG.setWillpowerSuperficial
 soundscapeMusic = DEBUG.soundscapeMusic
 soundscapeWeather = DEBUG.soundscapeWeather
 soundscapeRain = DEBUG.soundscapeRain
@@ -2271,9 +2775,13 @@ rollE2eClearConditions = DEBUG.rollE2eClearConditions
 rollState     = DEBUG.rollState
 rollCancel    = DEBUG.rollCancel
 rollCancelAll = DEBUG.rollCancelAll
-rollConfirm   = DEBUG.rollConfirm
+rollConfirm       = DEBUG.rollConfirm
+rollConfirmTracker = DEBUG.rollConfirmTracker
+rollForceConfirm  = DEBUG.rollForceConfirm
 rollStTest    = DEBUG.rollStTest
+rollStConfirm = DEBUG.rollStConfirm
 rollStSlots   = DEBUG.rollStSlots
+rollE2eSettlePresetCheck = DEBUG.rollE2eSettlePresetCheck
 tableRotateTo = DEBUG.tableRotateTo
 spawnCustomUiUploadBatchFromManifest = DEBUG.spawnCustomUiUploadBatchFromManifest
 spawnCustomUiUploadBatchFromJson = DEBUG.spawnCustomUiUploadBatchFromJson

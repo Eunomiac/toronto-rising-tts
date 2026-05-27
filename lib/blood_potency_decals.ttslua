@@ -7,7 +7,7 @@
 local BPD = {}
 
 local C = require("lib.constants")
-local ES = require("lib.effective_stats")
+local BPDer = require("lib.blood_potency_derived")
 
 local BP_STAT_KEYS = { "bloodSurge", "mending", "discBonus", "discReroll", "baneSeverity" }
 
@@ -72,7 +72,7 @@ end
 --- @param resolvedStatChanges table|nil merged statChanges from condition resolve
 --- @return table bloodSurge, mending, discBonus, discReroll, baneSeverity
 function BPD.effectiveDerivedStats(stats, resolvedStatChanges)
-  return ES.bloodPotencyDerivedFromStats(stats, resolvedStatChanges)
+  return BPDer.derivedFromStats(stats, resolvedStatChanges)
 end
 
 --- @param pageNum number

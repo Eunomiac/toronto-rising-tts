@@ -382,7 +382,7 @@ ctx.rollPolicy()                   -- convenience; rolls still snapshot at initi
 
 Allowed without `EffectiveStats` (mutation, bootstrap, pure math):
 
-- `lib/effective_stats.ttslua`, `lib/pc_sheet_collect.ttslua`
+- `lib/effective_stats.ttslua`, `lib/blood_potency_derived.ttslua` (BP rating + derived row lookup; object-safe split for CSHEET bundles), `lib/pc_sheet_collect.ttslua`
 - `core/state.ttslua`, `lib/pc_bootstrap.ttslua` (bootstrap / persistence)
 - `lib/condition_defs.ttslua` (registry only — derive receives pre-merged `statChanges`)
 - Tests / `.tools/` gate scripts

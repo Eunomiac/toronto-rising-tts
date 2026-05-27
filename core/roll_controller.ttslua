@@ -472,54 +472,6 @@ function RC._getDiceObjectsForRoll(color, rollId)
     return objs[DK.KIND_NORMAL], objs[DK.KIND_HUNGER]
 end
 
---- Blood-surge rouse die values (GM Notes carry |bloodSurge suffix).
--- @param color string
--- @param rollId string
--- @return table values, table objects
-function RC._getBloodSurgeRouseForRoll(color, rollId)
-    local values = {}
-    local objects = {}
-    if U.Type(color) ~= "string" or U.Type(rollId) ~= "string" then
-        return values, objects
-    end
-    local ownerTag = ownerTagForActive(color, getActive(color))
-    local candidates = getObjectsWithAllTags({ DK.TAG_ROUSE, "d10", ownerTag })
-    for _, obj in ipairs(candidates) do
-        local rid, isSurge = DK.decodeGmNotes(obj.getGMNotes())
-        if rid == rollId and isSurge then
-            local val = obj.getValue()
-            if type(val) == "number" then
-                values[#values + 1] = val
-                objects[#objects + 1] = obj
-            end
-        end
-    end
-    return values, objects
-end
-
---- Non-surge rouse die values for a roll (excludes GM Notes |bloodSurge suffix).
--- @param color string
--- @param rollId string
--- @return table
-function RC._getNonSurgeRouseValues(color, rollId)
-    local values = {}
-    if U.Type(color) ~= "string" or U.Type(rollId) ~= "string" then
-        return values
-    end
-    local ownerTag = ownerTagForActive(color, getActive(color))
-    local candidates = getObjectsWithAllTags({ DK.TAG_ROUSE, "d10", ownerTag })
-    for _, obj in ipairs(candidates) do
-        local rid, isSurge = DK.decodeGmNotes(obj.getGMNotes())
-        if rid == rollId and not isSurge then
-            local val = obj.getValue()
-            if type(val) == "number" then
-                values[#values + 1] = val
-            end
-        end
-    end
-    return values
-end
-
 --- Ensures pool/meta shape on an active roll record.
 -- @param active table
 local function ensureActiveShape(active)
@@ -1746,18 +1698,6 @@ function RC._buildRouseStripsForActive(color, active, valuesByKind)
         return strips
     end
 
-    local surgeVals = RC._getBloodSurgeRouseForRoll(color, active.id)
-    if #surgeVals > 0 then
-        local res = RouseOutcomes.resolveBloodSurgeRouse(surgeVals[1])
-        strips[#strips + 1] = {
-            label = "Blood Surge Rouse",
-            kind = DK.KIND_ROUSE,
-            values = surgeVals,
-            narrative = res.narrative,
-            pendingChoice = false,
-        }
-    end
-
     local oblivVals = valuesByKind[DK.KIND_OBLIV_ROUSE] or {}
     if #oblivVals > 0 then
         local res = RouseOutcomes.resolveOblivRouseDice(oblivVals)
@@ -1770,7 +1710,7 @@ function RC._buildRouseStripsForActive(color, active, valuesByKind)
         }
     end
 
-    local rouseVals = RC._getNonSurgeRouseValues(color, active.id)
+    local rouseVals = valuesByKind[DK.KIND_ROUSE] or {}
     if #rouseVals > 0 then
         local res = RouseOutcomes.resolveRouseDice(rouseVals)
         strips[#strips + 1] = {
@@ -1801,10 +1741,6 @@ function RC._applyRouseOutcomeStrips(color, active)
     for _, strip in ipairs(active.rouseOutcomeStrips) do
         if strip.pendingChoice == true then
             -- Resolved via RC.confirmOblivionChoice before confirm.
-        elseif strip.label == "Blood Surge Rouse" then
-            local surgeVals = strip.values or {}
-            local res = RouseOutcomes.resolveBloodSurgeRouse(surgeVals[1])
-            hungerDelta = hungerDelta + res.hungerDelta
         elseif strip.label == "Oblivion Rouse" then
             local res = RouseOutcomes.resolveOblivRouseDice(strip.values or {})
             hungerDelta = hungerDelta + res.hungerDelta
@@ -2024,6 +1960,10 @@ function RC.activateBloodSurge(color)
     if active.meta.bloodSurgeActive then
         return false
     end
+    local poolCheck = DK.normalizePool(active.pool)
+    if DK.rouseKindBlockedByPool(poolCheck, DK.KIND_ROUSE) then
+        return false
+    end
 
     local stats = S.getPlayerVal(color, "stats") or {}
     local playerID = S.getPlayerID(color)
@@ -2061,7 +2001,28 @@ function RC.activateBloodSurge(color)
     return true
 end
 
---- Reverses Blood Surge (Rouse bag right-click while surge is active).
+--- Records normal/hunger dice added by Blood Surge (for undo pool adjustment).
+-- @param color string
+-- @param kind string  DK.KIND_NORMAL or DK.KIND_HUNGER
+-- @param count number
+function RC.recordBloodSurgePoolAdd(color, kind, count)
+    local active = getActive(color)
+    if active == nil then return end
+    ensureActiveShape(active)
+    if active.meta.bloodSurgeActive ~= true then return end
+    if kind ~= DK.KIND_NORMAL and kind ~= DK.KIND_HUNGER then return end
+    local n = math.max(0, math.floor(tonumber(count) or 0))
+    if n < 1 then return end
+    local added = active.meta.bloodSurgeAddedToPool
+    if kind == DK.KIND_NORMAL then
+        added.normal = (added.normal or 0) + n
+    else
+        added.hunger = (added.hunger or 0) + n
+    end
+    setActive(color, active)
+end
+
+--- Reverses Blood Surge (Hunger bag right-click while surge is active).
 -- @param color string
 -- @return boolean
 function RC.deactivateBloodSurge(color)
@@ -2076,10 +2037,14 @@ function RC.deactivateBloodSurge(color)
     end
 
     Global.call("GlobalDestroyBloodSurgeDice", { color = color, rollId = active.id })
+    local added = active.meta.bloodSurgeAddedToPool or { normal = 0, hunger = 0 }
+    local pool = DK.normalizePool(active.pool)
+    pool.rouse = 0
+    pool.normal = math.max(0, pool.normal - (tonumber(added.normal) or 0))
+    pool.hunger = math.max(0, pool.hunger - (tonumber(added.hunger) or 0))
+    active.pool = pool
     active.meta.bloodSurgeActive = false
-    active.meta.bloodSurgeSpawnedGuids = {}
-    local pool = active.pool
-    pool.rouse = math.max(0, (pool.rouse or 0) - 1)
+    active.meta.bloodSurgeAddedToPool = { normal = 0, hunger = 0 }
     setActive(color, active)
     notifyStateChanged(color)
     return true

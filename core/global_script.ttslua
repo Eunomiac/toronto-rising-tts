@@ -317,6 +317,24 @@ function GlobalGetSeatLayoutCenterPoint()
     return nil
 end
 
+--- Toggles a player's signal fire from object scripts (signal candle click target).
+--- @param params table { color: string, duration: number|nil }
+--- @return string|nil "on" or "off", or nil on failure
+function GlobalToggleSignalFireState(params)
+    if type(params) ~= "table" then
+        return nil
+    end
+    local color = params.color
+    if type(color) ~= "string" or color == "" then
+        return nil
+    end
+    local duration = tonumber(params.duration)
+    if duration == nil then
+        duration = 0.2
+    end
+    return O.ToggleSignalFireState(color, duration)
+end
+
 --- Returns the phase string of a player's active roll, or nil if no roll is active.
 -- Called by dice bag objects (via Global.call) so they know whether to spawn a die
 -- or initiate a new roll when clicked.
@@ -397,6 +415,14 @@ function GlobalRollSpawnDieRequest(params)
         and DK.poolHasVampireKind(pool) then
         print("[Roll] Cannot add Werewolf/Rage dice to a non-Werewolf roll.")
         return nil
+    end
+
+    -- Rouse and Oblivion-Rouse are mutually exclusive in one roll (silent bag fail).
+    if requested == DK.KIND_ROUSE or requested == DK.KIND_OBLIV_ROUSE then
+        if DK.rouseKindBlockedByPool(pool, requested) then
+            return nil
+        end
+        return requested
     end
 
     -- Dedicated / non-vampire kinds: no Auto-Hunger or Hunger-Dice-off rewrite.
@@ -523,8 +549,8 @@ function GlobalDiceBagRightClick(params)
 
     if active.rollType == C.RollType.STANDARD then
         if dieKind == DK.KIND_HUNGER then
-            -- Left-click toggled surge off here; undo surge is Rouse bag right-click.
             if surgeActive then
+                RC.deactivateBloodSurge(color)
                 return
             end
             if removeDieFromBag(color, DK.KIND_HUNGER) then
@@ -533,10 +559,6 @@ function GlobalDiceBagRightClick(params)
             return
         end
         if dieKind == DK.KIND_ROUSE then
-            if surgeActive then
-                RC.deactivateBloodSurge(color)
-                return
-            end
             if removeDieFromBag(color, DK.KIND_ROUSE) then
                 maybeCancelRollIfPoolEmpty(color)
             end
@@ -648,7 +670,10 @@ function GlobalDiceBagClick(params)
             return
         end
         if dieKind == DK.KIND_ROUSE or dieKind == DK.KIND_OBLIV_ROUSE then
-            GlobalSpawnDieFromBag(color, dieKind)
+            local logical = GlobalRollSpawnDieRequest({ color = color, requested = dieKind })
+            if logical ~= nil then
+                GlobalSpawnDieFromBag(color, logical)
+            end
             return
         end
     end
@@ -692,10 +717,11 @@ end
 -- Always uses that bag's contents; never redirects Rouse/Obliv spawns to Normal/Hunger bags.
 -- @param color string
 -- @param dieKind string  DK.KIND_* value
-function GlobalSpawnDieFromBag(color, dieKind)
+function GlobalSpawnDieFromBag(color, dieKind, opts)
     if type(color) ~= "string" or type(dieKind) ~= "string" then
         return
     end
+    local bloodSurgePool = type(opts) == "table" and opts.bloodSurgePool == true
     local guid = nil
     if dieKind == DK.KIND_NORMAL then guid = G.GetDiceNormalGUID(color)
     elseif dieKind == DK.KIND_HUNGER then guid = G.GetDiceHungerGUID(color)
@@ -709,7 +735,14 @@ function GlobalSpawnDieFromBag(color, dieKind)
     if bag == nil then
         return
     end
-    bag.call("spawnDieRedirect", { bagColor = color, dieType = dieKind })
+    bag.call("spawnDieRedirect", {
+        bagColor = color,
+        dieType = dieKind,
+        bloodSurgePool = bloodSurgePool,
+    })
+    if bloodSurgePool and (dieKind == DK.KIND_NORMAL or dieKind == DK.KIND_HUNGER) then
+        RC.recordBloodSurgePoolAdd(color, dieKind, 1)
+    end
 end
 
 --- Spawns staged dice for dedicated check pools (Rouse / Obliv / Simple) after initiate.
@@ -785,14 +818,14 @@ function GlobalSpawnBloodSurgeDice(params)
     if type(rouseGuid) == "string" then
         local bag = getObjectFromGUID(rouseGuid)
         if bag ~= nil then
-            bag.call("spawnDieRedirect", { bagColor = color, dieType = DK.KIND_ROUSE, bloodSurge = true })
+            bag.call("spawnDieRedirect", { bagColor = color, dieType = DK.KIND_ROUSE })
         end
     end
 
     for _ = 1, surgeCount do
         local logical = GlobalRollSpawnDieRequest({ color = color, requested = DK.KIND_NORMAL })
         if logical ~= nil then
-            GlobalSpawnDieFromBag(color, logical)
+            GlobalSpawnDieFromBag(color, logical, { bloodSurgePool = true })
         end
     end
 end
@@ -820,7 +853,7 @@ function GlobalStorytellerDiceBagClick(params)
     end
 end
 
---- Removes blood-surge-tagged dice for a roll from the table.
+--- Removes Blood Surge dice for a roll: all rouse + surge-spawned normal/hunger.
 -- @param params table  { color, rollId }
 function GlobalDestroyBloodSurgeDice(params)
     if type(params) ~= "table" then return end
@@ -828,17 +861,37 @@ function GlobalDestroyBloodSurgeDice(params)
     local rollId = params.rollId
     if type(color) ~= "string" or type(rollId) ~= "string" then return end
     local ownerTag = color .. "Object"
-    local candidates = getObjectsWithAllTags({ DK.TAG_ROUSE, "d10", ownerTag })
-    for _, obj in ipairs(candidates) do
-        local rid, isSurge = DK.decodeGmNotes(obj.getGMNotes())
-        if rid == rollId and isSurge then
-            destroyObject(obj)
+    local kinds = {
+        { tag = DK.TAG_ROUSE, surgePoolOnly = false },
+        { tag = DK.TAG_NORMAL, surgePoolOnly = true },
+        { tag = DK.TAG_HUNGER, surgePoolOnly = true },
+    }
+    for _, spec in ipairs(kinds) do
+        local candidates = getObjectsWithAllTags({ spec.tag, "d10", ownerTag })
+        for _, obj in ipairs(candidates) do
+            if DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
+                local destroyIt = true
+                if spec.surgePoolOnly and obj.script_state ~= DK.SCRIPT_STATE_BLOOD_SURGE_POOL then
+                    destroyIt = false
+                end
+                if destroyIt then
+                    destroyObject(obj)
+                end
+            end
         end
     end
-    local bags = G.GetAllPlayerDiceBagGUIDs(color)
-    for _, guid in pairs(bags) do
-        local bag = getObjectFromGUID(guid)
-        if bag ~= nil then bag.call("destroyDice") end
+    for _, dieKind in ipairs({ DK.KIND_ROUSE, DK.KIND_NORMAL, DK.KIND_HUNGER }) do
+        local guid = nil
+        if dieKind == DK.KIND_NORMAL then guid = G.GetDiceNormalGUID(color)
+        elseif dieKind == DK.KIND_HUNGER then guid = G.GetDiceHungerGUID(color)
+        elseif dieKind == DK.KIND_ROUSE then guid = G.GetDiceRouseGUID(color)
+        end
+        if type(guid) == "string" then
+            local bag = getObjectFromGUID(guid)
+            if bag ~= nil then
+                bag.call("destroyDice")
+            end
+        end
     end
 end
 
@@ -2680,20 +2733,7 @@ function onObjectLeaveContainer(container, obj)
     -- The roll ID is fixed from initiation, so writing it early is always correct.
     -- Skip only if the roll is already RESOLVED (die is unrelated to any active roll).
     if active.phase == C.RollPhase.RESOLVED then return end
-    local notes = active.id
-    if type(obj.script_state) == "string" and obj.script_state == "bloodSurge" then
-        notes = DK.encodeGmNotes(active.id, true)
-    elseif type(active.meta) == "table" and active.meta.bloodSurgeActive == true
-        and type(obj.getTags()) == "table"
-    then
-        for _, tag in ipairs(obj.getTags()) do
-            if tag == DK.TAG_ROUSE then
-                notes = DK.encodeGmNotes(active.id, true)
-                break
-            end
-        end
-    end
-    obj.setGMNotes(notes)
+    obj.setGMNotes(active.id)
 
     -- Open drawer on first bag spawn (PRE_ROLL) or auto-spawn after Roll (ROLLING).
     if active.phase == C.RollPhase.PRE_ROLL or active.phase == C.RollPhase.ROLLING then

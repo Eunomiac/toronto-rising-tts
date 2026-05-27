@@ -32,6 +32,14 @@ const SAMPLES = [
     outName: "CSHEET_PAGE_6_ORANGE.sample.lua",
     entry: 'require("ui.ui_csheet_page6")\n',
   },
+  {
+    outName: "SIGNAL_CANDLE_RED.sample.lua",
+    entry: 'require("ui.ui_signal_candle")\n',
+  },
+  {
+    outName: "TAROT_BUTTON_PINK.sample.lua",
+    entry: 'require("ui.ui_tarot_button")\n',
+  },
 ];
 
 /**

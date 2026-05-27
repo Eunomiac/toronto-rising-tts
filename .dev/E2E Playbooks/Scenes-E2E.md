@@ -8,6 +8,17 @@ Ground truth: [`core/storyteller_scenes_panel.ttslua`](../../core/storyteller_sc
 
 **Deferred in code (document only):** TOR-142 (four clock-aware Apply buttons), TOR-152 (Play load scene restore), TOR-153 (unmappable pin hide rules).
 
+## Deterministic test conventions
+
+Every step in a suite you run is **mandatory** for that suite. Do not improvise row keys, site keys, click counts, or expected values.
+
+| Rule | Requirement |
+| --- | --- |
+| Library rows | Name exact `scenes_lib_slot_XX` / row keys in each step (from your prereq notes) |
+| Pass criteria | State exact values in console checks (`siteKey`, `activeKey`, clock fields) — no “or equivalent” |
+| RT speed | Set **`realTimeSpeed` = 60** when a step says so; reset to **1** in the same suite |
+| Deferred suites | **E, N, M2, M mirror** are **not** in smoke A–E; run only when listed in full pass |
+
 ---
 
 ## Solo Host (one client)
@@ -24,8 +35,8 @@ Ground truth: [`core/storyteller_scenes_panel.ttslua`](../../core/storyteller_sc
 2. **Phase Play** (or apply from Session Start — apply promotes Start → Play).
 3. **Scene library:** at least **two** rows with **different** `siteKey` (strongly different `offsetXY` on map) and **different** saved clocks for Suite B / F / G.
 4. **Present-day row:** one scene with `sessionScene.clock.isPresentDay: true` and full datetime (for chronicle bootstrap).
-5. **Optional historical row:** `isPresentDay: false` with full datetime (for rejection test M2).
-6. Note site keys and offsets before testing (Scenes panel or console below).
+5. **Historical row (full pass only):** one scene with `isPresentDay: false` and full datetime — required **only** for Suite M2.
+6. Record **exact** library slot keys, `siteKey` values, and `offsetXY` for rows **A** and **B** before Suite A.
 
 ## Inspection cheat sheet
 
@@ -72,7 +83,7 @@ DEBUG.inspectSoundscapeAudio()
 
 ## Step 0 — Cleanup
 
-**Human:** If a scene is live, note `lastAppliedKey`. Optional: **End scene** to clear location before structured runs.
+**Human:** If `sessionScene.siteKey` is set, click **End scene** to clear location. Record `lastAppliedKey` from console.
 
 ```lua
 print("lastAppliedKey", S.getStateVal("sceneLibrary", "lastAppliedKey"))
@@ -180,7 +191,7 @@ print(JSON.encode_pretty(S.getStateVal("soundscape")))
 
 ---
 
-### Suite E — Apply location + soundscape (optional)
+### Suite E — Apply location + soundscape (full pass only)
 
 **Human:** District/site modals → pick site → **Apply location + soundscape**.
 
@@ -458,7 +469,7 @@ if sk and C.Sites[sk] then print("offsetXY", C.Sites[sk].offsetXY) end
 
 ---
 
-## Suite N — Chronicle weather vs clock (optional)
+## Suite N — Chronicle weather vs clock (full pass only)
 
 **Setup:** Scene with chronicle weather schedule; RT on; cross an hour boundary on overlay.
 

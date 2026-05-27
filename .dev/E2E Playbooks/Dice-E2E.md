@@ -16,23 +16,83 @@ Ground truth: `[core/roll_controller.ttslua](../../core/roll_controller.ttslua)`
 
 You do **not** need a second player connected. `rollTest` / `rollStTest` move the Host to the target seat (`Player.changeColor`), hide that seat’s loading overlay, and apply Debug Camera spoof **before** arming the roll. `rollCancel(color)` returns the Host to **Black** when `color` is not Black.
 
-| Goal | Solo approach |
-| --- | --- |
-| Arm roll / read state | Console: `rollTest`, `rollState`, `print(GlobalGetRollPhase(...))` |
-| Click dice bags + panel | Host is already on the roll seat after `rollTest` |
-| Skip physics, finish FSM | `rollConfirm(color)` in **POST_ROLL** only (after settle/recalc) |
-| Storyteller NPC roll | `rollStTest()` (prep on **Black**) + ST dashboard |
-| Oblivion rouse (D, P) | `rollTest("Purple", …)` |
+
+| Goal                     | Solo approach                                                         |
+| ------------------------ | --------------------------------------------------------------------- |
+| Arm roll / read state    | Console: `rollTest`, `rollState`, `print(GlobalGetRollPhase(...))`    |
+| Click dice bags + panel  | Host is already on the roll seat after `rollTest`                     |
+| Skip physics, finish FSM | `rollForceConfirm(color)` in **POST_ROLL** only (after settle/recalc) |
+| Assert state (E2E)       | `rollConfirm(color, { phase, active, pool, ... })` → PASS/FAIL        |
+| Storyteller NPC roll     | `rollStTest()` (prep on **Black**) + ST dashboard                     |
+| Oblivion rouse (D, P)    | `rollTest("Purple", …)`                                               |
+
 
 ### E2E harness helpers (console)
 
-| Helper | Purpose |
-| --- | --- |
-| `rollTest(color, diff?, type?, label?, hungerLevel?)` | Seat prep + arm **PRE_ROLL**; 5th arg sets hunger 0–5 when needed |
-| `rollStTest(label?, type?)` | Seat prep on **Black** + ST NPC roll |
-| `rollSetFaces(color, { normal, hunger, rouse, oblivRouse })` | After settle: set faces + `RC.recalculate` |
-| `rollE2eApplyConditions` / `rollE2eClearConditions` | Suite F (`e2eBestialNull`) |
-| `rollCancel(color)` | Cancel roll; non-Black returns Host to **Black**; **Black** clears ST slots |
+
+| Helper                                                                   | Purpose                                                                     |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| `rollTest(color, diff?, type?, label?, hungerLevel?)`                    | Seat prep + arm **PRE_ROLL**; 5th arg sets hunger 0–5 when needed           |
+| `rollStTest(label?, type?)`                                              | Seat prep on **Black** + ST NPC roll                                        |
+| `rollSetFaces(color, { normal, hunger, rouse, oblivRouse })`             | After settle: set faces + `RC.recalculate`                                  |
+| `rollE2eApplyConditions` / `rollE2eClearConditions`                      | Suite F (`e2eBestialNull`)                                                  |
+| `rollCancel(color)`                                                      | Cancel roll; non-Black returns Host to **Black**; **Black** clears ST slots |
+| `rollConfirm(color, expected)`                                           | Assert roll state; prints **PASS** / **FAIL** + mismatch list (E2E)         |
+| `rollForceConfirm(color)`                                                | Force **CONFIRM** in POST_ROLL (automation only — not in human step lists)  |
+| `rollConfirmTracker(color, { hunger?, stains?, willpowerSuperficial? })` | Tracker PASS/FAIL after confirm/broadcast                                   |
+| `rollE2eSettlePresetCheck(color, faces)`                                 | Dedicated check: `rollSetFaces` + `startRolling` + settle (no Roll click)   |
+| `rollStConfirm({ liveSlotIndex?, initiateBlocked? })`                    | ST slot assertions                                                          |
+| `setHumanityStains(color, n)` / `setWillpowerSuperficial(color, n)`      | Seed tracker before outcome tests                                           |
+
+
+### `rollConfirm` (assertions)
+
+Phase is `active.phase` (same value as `GlobalGetRollPhase({ color })`). Aliases: `preRoll`, `PRE_ROLL`, `postRoll`, etc.
+
+```lua
+rollConfirm("Brown", {
+  phase = "preRoll",
+  active = { difficulty = 3, rollType = C.RollType.STANDARD },
+})
+rollConfirm("Brown", { noActive = true })
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = { result = { present = true, resultClass = { present = true } } },
+})
+rollConfirm("Brown", { pool = { rouse = 1 }, meta = { bloodSurgeActive = true } })
+rollConfirm("Brown", { rouseStripLabel = "Rouse" })
+rollConfirm("Brown", { wpRerollChosenCount = 1 })  -- after WP reroll cap test (I2)
+```
+
+**Matchers:** `{ present = true }` when the value is unknown until dice settle. Otherwise use **exact** literals (`pool = { normal = 5 }`). Shorthand keys `pool`, `meta`, `result` merge into `active.*`.
+
+## Deterministic test conventions
+
+Every step is **mandatory**. Do not improvise pool sizes, click counts, or assertion values.
+
+
+| Rule                             | Requirement                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pool size                        | Exact counts only (e.g. **5 dice**, not "about 5")                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Bag clicks                       | State **how many** left/right clicks on **which** bag                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `rollTest` hunger                | Pass 5th arg `hungerLevel` whenever the pool needs hunger dice (`0` = Normal bag adds only Normal dice)                                                                                                                                                                                                                                                                                                                                                 |
+| **Auto-Hunger** (default **on**) | **Do not** left-click the **Hunger bag** to add hunger dice on standard rolls — that triggers **Blood Surge**. With `autoHunger` on, each **left-click Normal bag** adds a **Hunger** die while `pool.hunger < hungerLevel`, then **Normal** dice. To build **N** normal + **H** hunger: left-click **Normal bag `(hungerLevel + N)` times** when `H == hungerLevel` (typical). Example: `rollTest(..., 2)` and pool `2N+2H` → **4** Normal bag clicks. |
+| `rollConfirm`                    | Use **exact** numbers. Avoid `{ min = N }` unless this doc cites a named constant. `**wpRerollChosenCount`** — count of dice randomized in the current WP wave (cap tests, e.g. I2)                                                                                                                                                                                                                                                                     |
+| `rollConfirmTracker`             | Assert hunger / stains / superficial willpower after consequences apply                                                                                                                                                                                                                                                                                                                                                                                 |
+| `rollE2eSettlePresetCheck`       | Dedicated Rouse/Obliv checks: preset face + settle (no die randomize step)                                                                                                                                                                                                                                                                                                                                                                              |
+| `rollStConfirm`                  | Assert `liveSlotIndex` and ST initiate blocking                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Panel actions                    | Prefer console `RC.takeHalf`, `RC.openRoll` when listed; otherwise click the named panel control                                                                                                                                                                                                                                                                                                                                                        |
+| Visual-only                      | **Only** when this doc explicitly says **Visual check** (dashboard label, known-bug UI)                                                                                                                                                                                                                                                                                                                                                                 |
+
+
+### Brown fixture constants (re-verify after test-sheet BP change)
+
+
+| Constant                        | Value | How to set                                                                        |
+| ------------------------------- | ----- | --------------------------------------------------------------------------------- |
+| `BROWN_SURGE_DICE`              | **2** | Brown Blood Potency yields `bloodSurge = 2` (`DEBUG.dumpEffectiveStats("Brown")`) |
+| Brown hunger for bag-pool tests | **0** | `rollTest(..., 0)` as 5th argument unless step says otherwise                     |
+
 
 ## Prerequisites
 
@@ -40,7 +100,7 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 - **Save & Play** so bundled Lua matches repo.
 - Character data for test colors: **Brown** (suites A–C, F, G–N), **Purple** (D, P), **Black** (E, O).
 - No active roll on any seat (Step 0).
-- Optional: note starting **hunger** / **willpower** for Brown before Suites I, N (for consequence checks).
+- **Suite I** seeds Brown superficial willpower via `setWillpowerSuperficial` (see Suite I setup).
 
 ## Inspection cheat sheet
 
@@ -58,6 +118,8 @@ rollStSlots()                         -- ST drawer slots
 
 **Permanent automation** (`gameState.stRollSettings`): `autoHunger`, `autoWp`, `autoApplyRouseOutcomes`, `autoRemorse` — toggles in ST **Roll options** modal (`rollOpts_perm_`*).
 
+**Pool composition (standard rolls):** At most one **main** pool (normal + hunger), one **rouse** check (`pool.rouse` — extra Rouse clicks add to the same check), and one **oblivion-rouse** check. Rouse and Oblivion-Rouse are **mutually exclusive** (silent bag fail). Blood Surge adds rouse + bonus normal/hunger; **Hunger bag right-click** undoes surge and clears **all** rouse dice. See Dice System Pt. 2 § Pool composition.
+
 **Per-roll options:** Set with `RC.setRollOptions` **immediately after** `rollTest` and **before** **Roll** / **Spend WP**. Do not use the ST Opts modal during E2E (TOR-162).
 
 ```lua
@@ -68,11 +130,16 @@ RC.setRollOptions("Brown", { wpReroll = true, numberOfDiceRerolled = 3, canRerol
 
 ## Step 0 — Cleanup
 
+**Harness check:** After **Save & Play**, `lua debugHelp()` must list `rollConfirm(color, expected)` (E2E assertions). If Step 0 prints `[DEBUG.rollConfirm] Brown: confirm failed — is the roll in POST_ROLL?`, the table is still on the **legacy** one-argument `rollConfirm` (force-confirm only) — save bundled Lua again and retry.
+
 ```lua
 rollCancelAll()
+rollConfirm("Brown", { noActive = true })
+rollConfirm("Purple", { noActive = true })
+rollConfirm("Black", { noActive = true })
 ```
 
-**Pass if:** No stuck roll UI; `rollState` shows no active roll for Brown/Purple/Black.
+**Pass if:** All three `rollConfirm` calls print **`[rollConfirm] PASS — … noActive`** (not `confirm failed`).
 
 > ✅
 
@@ -88,36 +155,48 @@ Quick regression after roll-pipeline edits. Full coverage is in Suites G–P bel
 
 ```lua
 rollTest("Brown", 3, C.RollType.STANDARD, "E2E Standard")
-print(GlobalGetRollPhase({ color = "Brown" }))
+rollConfirm("Brown", {
+  phase = "preRoll",
+  active = { difficulty = 3, rollType = C.RollType.STANDARD },
+})
 ```
 
-**Immediately after arming — check:**
-
-| Command | Expect |
-| --- | --- |
-| `print(GlobalGetRollPhase({ color = "Brown" }))` | Phase string **`preRoll`** |
-| `rollState("Brown")` | `active.difficulty == 3`, `active.rollType` = standard |
+**Pass if:** `rollConfirm` prints **PASS**.
 
 > ✅
 
 #### Step A2 — Build pool (bags)
 
-**Human:** Left-click **normal** / **hunger** bags until pool ≈ 5 dice. Right-click removes last die of that kind (Suite K).
-
-**After pool is built — check:**
+Re-arm with hunger **0** so Normal-bag clicks add Normal dice only:
 
 ```lua
-rollState("Brown")
+rollCancel("Brown")
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E A2 pool", 0)
 ```
 
-| Field | Expect |
-| --- | --- |
-| `active.pool.normal` / `.hunger` | Counts match staged dice |
-| Roll panel pool dots | Count matches pool (hunger dots should be red — see known bugs below) |
+**Human — build pool to exactly 5 dice:**
 
-> ❌ `active.pool` is accurate, and the *number* of dice displayed with dots in the roll panel is accurate. However, the displayed dice-dots are all the same color (white). **Expected Behavior:** Hunger dice in the pool should be displayed as *red* dots in the player roll panel.
->
-> ❌ Right-clicking on the Normal dice bag does not remove Hunger dice from the roll. **Expected Behavior:** Right-clicking on the Normal dice bag should remove the last Normal *or* Hunger die that was added to the pool, regardless of type.  Right-clicking on the Hunger dice bag, conversely, should undo a Blood Surge if one has been taken for this roll. If no Blood Surge has been applied, it should instead remove a Hunger die from the pool, if possible.
+1. **Left-click Normal bag 5 times.**
+
+```lua
+rollConfirm("Brown", { active = { pool = { normal = 5, hunger = 0 } } })
+```
+
+1. **Right-click Normal bag 1 time** (removes last Normal die).
+
+```lua
+rollConfirm("Brown", { active = { pool = { normal = 4, hunger = 0 } } })
+```
+
+1. **Left-click Normal bag 1 time** (restore pool to 5).
+
+```lua
+rollConfirm("Brown", { active = { pool = { normal = 5, hunger = 0 } } })
+```
+
+**Pass if:** All three `rollConfirm` calls print **PASS**.
+
+**Visual check (known bug TOR-155):** Roll panel shows **5** white pool dots (no hunger dice in this step).
 
 #### Step A3 — Roll and confirm
 
@@ -126,18 +205,15 @@ rollState("Brown")
 **Before Confirm — check:**
 
 ```lua
-print(GlobalGetRollPhase({ color = "Brown" }))
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    result = { present = true, resultClass = { present = true } },
+  },
+})
 ```
 
-| Field | Expect |
-| --- | --- |
-| Phase | **`postRoll`** |
-| `active.result` | Non-nil |
-| `active.result.resultClass` | Present |
-| `active.result.successes` | Number |
-
-Then **Confirm**. Do **not** call `rollState` after confirm (active clears).
+**Pass if:** **PASS**. Then click **Confirm**. Do **not** call `rollConfirm` after confirm — active clears.
 
 > ❌ Prior run: confirmed then called `rollState` — active already cleared. Use POST_ROLL inspection above.
 
@@ -146,12 +222,14 @@ Then **Confirm**. Do **not** call `rollState` after confirm (active clears).
 ### Suite B — Cancel and reset
 
 ```lua
-rollTest("Brown", 2)
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E B cancel", 0)
 rollCancel("Brown")
+rollConfirm("Brown", { noActive = true })
 rollCancelAll()
+rollConfirm("Brown", { noActive = true })
 ```
 
-**Pass if:** No active roll after each step.
+**Pass if:** Both `noActive` checks print **PASS**.
 
 > ✅
 
@@ -159,32 +237,44 @@ rollCancelAll()
 
 ### Suite C — Dedicated rouse check
 
+#### C1 — `autoApplyRouseOutcomes` **on** (hunger +1)
+
 ```lua
-rollTest("Brown", 1, C.RollType.ROUSE, "E2E Rouse")
+rollCancel("Brown")
+S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", true)
+setHunger("Brown", 2)
+rollConfirmTracker("Brown", { hunger = 2 })
+rollTest("Brown", 1, C.RollType.ROUSE, "E2E C1 rouse auto on")
+rollE2eSettlePresetCheck("Brown", { rouse = { 4 } })
+rollConfirm("Brown", { noActive = true })
+rollConfirmTracker("Brown", { hunger = 3 })
 ```
 
-**Human:** Roll the spawned **rouse** die (auto-spawned). Rouse-family rolls **auto-broadcast** on settle when no WP pending.
+**Pass if:** All `rollConfirm` / `rollConfirmTracker` calls print **PASS** (face **4** → hunger +1).
 
-**After settle — force fail face, then check:**
+> ⚠️ Player roll panel displays "`R1`" text instead of a dark red dot (TOR-155).
 
 ```lua
-rollSetFaces("Brown", { rouse = { 4 } })
-rollState("Brown")
+rollCancel("Brown")
 ```
 
-| Field / tracker | Expect |
-| --- | --- |
-| `active.result` | Populated for rouse check |
-| Hunger tracker | +1 on face ≤5 when `autoApplyRouseOutcomes` on |
-
-> ✅ Roll completed, and increased Hunger by 1 on failure.
->
-> ⚠️ Player roll panel displays "`R1`" in the dice pool display. **Expected Behavior:** Rouse dice, like Hunger and Normal dice, should be displayed as a colored dot. Rouse dice should be displayed a dark red dot.
->
-> ⚠️ Roll broadcast display shows the text "`Rouse [1]: Hunger Roused`". **Expected Behavior:** This line of redundant text should be removed.
+#### C2 — `autoApplyRouseOutcomes` **off** (hunger unchanged)
 
 ```lua
-rollState("Brown")
+rollCancel("Brown")
+S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", false)
+setHunger("Brown", 2)
+rollConfirmTracker("Brown", { hunger = 2 })
+rollTest("Brown", 1, C.RollType.ROUSE, "E2E C2 rouse auto off")
+rollE2eSettlePresetCheck("Brown", { rouse = { 4 } })
+rollConfirm("Brown", { noActive = true })
+rollConfirmTracker("Brown", { hunger = 2 })
+S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", true)
+```
+
+**Pass if:** Hunger stays **2** after the same fail face **4**.
+
+```lua
 rollCancel("Brown")
 ```
 
@@ -192,33 +282,25 @@ rollCancel("Brown")
 
 ### Suite D — Oblivion rouse dedicated (Purple)
 
+Single-die dedicated check. Multi-die cases → **Suite P**.
+
 ```lua
-rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E Oblivion Rouse")
+rollCancel("Purple")
+S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", true)
+setHunger("Purple", 1)
+setHumanityStains("Purple", 2)
+rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
+rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E D obliv face 3")
+rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3 } })
+rollConfirm("Purple", { noActive = true })
+rollConfirmTracker("Purple", { hunger = 2, stains = 2 })
 ```
 
-**Human:** Roll the Oblivion rouse die. Multi-die corners → **Suite P**.
+**Pass if:** Face **3** → hunger **+1**, stains **unchanged** (still **2**).
 
-**After settle — check (pick one face case):**
-
-```lua
-rollSetFaces("Purple", { oblivRouse = { 3 } })   -- hunger +1 on ≤5
-rollState("Purple")
--- or: rollSetFaces("Purple", { oblivRouse = { 6 } }) then rollState
-```
-
-| Expect | Notes |
-| --- | --- |
-| Roll completes on settle | Single-die dedicated check — no pending choice |
-| Hunger / stains | Per face rules when auto-apply on |
-
-> ✅ Roll completed. Hunger increased on results <= 5, and Stains were conferred on rolls of 1 or 10.
->
-> ⚠️ Player roll panel displays "`O1`" in the dice pool display. **Expected Behavior:** Oblivion-Rouse dice, like Rouse, Hunger and Normal dice, should be displayed as a colored dot. Oblivion-Rouse dice should be displayed a dark purple dot.
->
-> ⚠️ Roll broadcast display shows summary text, e.g. "`Oblivion Rouse [1]: Hunger Roused & Stained`" or "`Oblivion Rouse [10]: Stained`". **Expected Behavior:** This line of redundant text should be removed.
+> ⚠️ Player roll panel displays "`O1`" text instead of a dark purple dot (TOR-155).
 
 ```lua
-rollState("Purple")
 rollCancel("Purple")
 ```
 
@@ -227,21 +309,25 @@ rollCancel("Purple")
 ### Suite E — Storyteller NPC roll (standard)
 
 ```lua
+rollCancel("Black")
 rollStTest("E2E ST", C.RollType.STANDARD)
+rollStConfirm({ liveSlotIndex = 1 })
 ```
 
-**Immediately after `rollStTest` — check:**
+**Visual check:** ST dashboard roll label reads **E2E ST**.
+
+**Human:** **Left-click Normal bag 1 time** in the ST drawer (drawer opens on first spawn).
 
 ```lua
-rollStSlots()
+rollStConfirm({
+  initiateBlocked = true,
+  initiateLabel = "NPC Two",
+  initiateRollType = C.RollType.STANDARD,
+})
+rollCancel("Black")
 ```
 
-| Field | Expect |
-| --- | --- |
-| `liveSlotIndex` | `1`, `2`, or `3` (slot in use) |
-| ST dashboard | Roll visible for label **E2E ST** |
-
-**Human:** Spawn dice from ST drawer bags → drawer opens on first spawn.
+**Pass if:** `rollStConfirm` **PASS** for `liveSlotIndex = 1` and blocked second initiate.
 
 > ✅ `liveSlotIndex` set, dashboard shows roll, drawer opens on die spawn, ST bags spawn into drawer arc.
 >
@@ -257,29 +343,30 @@ rollCancel("Black")   -- also clears resolved ST slots + drawer dice
 
 ### Suite F — Conditions roll policy (`e2eBestialNull`)
 
-Uses manual condition **`e2eBestialNull`** (`roll.bestialNull = true` in `lib/condition_defs.ttslua`). Same forced faces at difficulty **2**; **without** the condition you should **not** get `failure`; **with** it you **must** get `failure`. If both runs classify the same, the condition policy is not applied.
+Uses manual condition `**e2eBestialNull**` (`roll.bestialNull = true` in `lib/condition_defs.ttslua`). Both runs use the **same** forced faces at difficulty **2** and the **same** pool build. F1 must classify `**messyCritical`**; F2 must classify `**failure**`.
 
 #### F1 — Baseline (no condition)
 
 ```lua
 rollE2eClearConditions("Brown", { "e2eBestialNull" })
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E F baseline")
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E F baseline", 1)
+RC.setPool("Brown", 3, 1)
+GlobalSpawnDefaultPoolDiceForActive({ color = "Brown" })
+rollConfirm("Brown", { pool = { normal = 3, hunger = 1, rouse = 0 } })
 ```
 
-**Human:** Build pool **3 normal + 1 hunger** (bags). **Roll** → settle.
+**Human:** Click **Roll** → wait for settle.
 
 ```lua
 rollSetFaces("Brown", { normal = {10, 10, 3}, hunger = {1} })
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    result = { resultClass = "messyCritical", successes = 3 },
+    rollPolicy = { bestialNull = false },
+  },
+})
 ```
-
-**Check now (POST_ROLL, before Confirm):**
-
-| Field | Expect |
-| --- | --- |
-| `active.result.resultClass` | **`messyCritical`** or **`critical`** (3 successes at diff 2) — **not** `failure` |
-| `active.result.successes` | `3` |
-| `active.rollPolicy.bestialNull` | `false` or absent |
 
 ```lua
 rollCancel("Brown")
@@ -289,33 +376,34 @@ rollCancel("Brown")
 
 ```lua
 rollE2eApplyConditions("Brown", { "e2eBestialNull" })
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E F bestialNull")
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E F bestialNull", 1)
+RC.setPool("Brown", 3, 1)
+GlobalSpawnDefaultPoolDiceForActive({ color = "Brown" })
+rollConfirm("Brown", { pool = { normal = 3, hunger = 1, rouse = 0 } })
 ```
 
-**Human:** Same pool (**3 normal + 1 hunger**). **Roll** → settle.
+**Human:** Click **Roll** → wait for settle.
 
 ```lua
 rollSetFaces("Brown", { normal = {10, 10, 3}, hunger = {1} })
-rollState("Brown")
-DEBUG.dumpRollPolicy("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    result = { resultClass = "failure", successes = 2, margin = -1 },
+    rollPolicy = { bestialNull = true },
+  },
+  contributingIncludes = { "e2eBestialNull" },
+})
 ```
 
-**Check now (POST_ROLL, before Confirm):**
-
-| Field | Expect |
-| --- | --- |
-| `active.result.resultClass` | **`failure`** (hunger 1 nullifies one 10 → 2 successes vs diff 2) |
-| `active.result.successes` | `2` |
-| `active.result.margin` | `-1` (or equivalent failure margin) |
-| `active.rollPolicy.bestialNull` | **`true`** |
-| `DEBUG.dumpRollPolicy` | `contributingConditions` includes **`e2eBestialNull`** |
+**Pass if:** F2 `rollConfirm` prints **PASS** (includes `e2eBestialNull` in `contributingConditions`).
 
 ```lua
 rollCancel("Brown")
 rollE2eClearConditions("Brown", { "e2eBestialNull" })
 ```
 
-**Pass if:** F1 and F2 produce **different** `resultClass` as above. **Fail if:** Both runs yield the same classification.
+**Pass if:** F1 classified `**messyCritical`** and F2 classified `**failure**` (different `resultClass`).
 
 > Re-test after Save & Play with harness above.
 
@@ -323,13 +411,13 @@ rollE2eClearConditions("Brown", { "e2eBestialNull" })
 
 ## Suite G — Result calculation accuracy
 
-After **Roll** + settle, run `rollSetFaces` then `rollState` **before Confirm**. Verify `active.result.resultClass`, `active.result.successes`, and `active.result.margin`.
+After **Roll** + settle, run `rollSetFaces` then `rollConfirm` **before Confirm**. Each test lists exact expected `resultClass`, `successes`, and `margin`.
 
 For **G6** / **G7**, set per-roll options via console (ST Opts panel may not stick — see TOR-162):
 
 ```lua
 RC.setRollOptions("Brown", { crits = false })        -- G6
-RC.setRollOptions("Brown", { bestialNull = true }) -- G7 (or use Suite F condition instead)
+RC.setRollOptions("Brown", { bestialNull = true })
 ```
 
 Call `setRollOptions` **after** `rollTest` returns and **before** clicking **Roll**.
@@ -337,21 +425,18 @@ Call `setRollOptions` **after** `rollTest` returns and **before** clicking **Rol
 ### G1 — Win at diff 2
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G1")
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G1", 0)
 ```
 
-**Human:** Pool **2 normal** (no hunger). **Roll** → settle.
+**Human:** **Left-click Normal bag 2 times** (no hunger dice). **Roll** → settle.
 
 ```lua
 rollSetFaces("Brown", { normal = {7, 7} })
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = { result = { resultClass = "win", successes = 2, margin = 0 } },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.result.resultClass` | **`win`** |
-| `active.result.successes` | `2` |
-| `active.result.margin` | `0` |
 
 ```lua
 rollCancel("Brown")
@@ -365,17 +450,15 @@ rollCancel("Brown")
 rollTest("Brown", 3, C.RollType.STANDARD, "E2E Classify G2", 2)
 ```
 
-**Human:** Pool **2 normal + 2 hunger**. **Roll** → settle.
+**Human:** **Left-click Normal bag 4 times** (`rollTest` set hunger **2**; Auto-Hunger adds **2** hunger dice, then **2** normal). **Roll** → settle.
 
 ```lua
 rollSetFaces("Brown", { normal = {10, 10}, hunger = {9, 1} })
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = { result = { resultClass = "criticalWin", margin = 2 } },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.result.resultClass` | **`critical`** |
-| `active.result.margin` | `+2` (typical) |
 
 ```lua
 rollCancel("Brown")
@@ -389,16 +472,15 @@ rollCancel("Brown")
 rollTest("Brown", 3, C.RollType.STANDARD, "E2E Classify G3", 2)
 ```
 
-**Human:** Pool **2 normal + 2 hunger**. **Roll** → settle.
+**Human:** **Left-click Normal bag 4 times** (hunger **2** via `rollTest`; pool **2N+2H**). **Roll** → settle.
 
 ```lua
 rollSetFaces("Brown", { normal = {10, 10}, hunger = {10, 1} })
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = { result = { resultClass = "messyCritical" } },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.result.resultClass` | **`messyCritical`** |
 
 ```lua
 rollCancel("Brown")
@@ -412,17 +494,15 @@ rollCancel("Brown")
 rollTest("Brown", 7, C.RollType.STANDARD, "E2E Classify G4", 2)
 ```
 
-**Human:** Pool **2 normal + 2 hunger**. **Roll** → settle.
+**Human:** **Left-click Normal bag 4 times** (hunger **2** via `rollTest`; pool **2N+2H**). **Roll** → settle.
 
 ```lua
 rollSetFaces("Brown", { normal = {10, 10}, hunger = {10, 1} })
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = { result = { resultClass = "bestialFailure", margin = -2 } },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.result.resultClass` | **`bestialFailure`** |
-| `active.result.margin` | `-2` (typical) |
 
 ```lua
 rollCancel("Brown")
@@ -436,16 +516,15 @@ rollCancel("Brown")
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G5", 1)
 ```
 
-**Human:** Pool **2 normal + 1 hunger** (hunger face **1**). **Roll** → settle.
+**Human:** **Left-click Normal bag 3 times** (`rollTest` hunger **1**; pool **2N+1H**). **Roll** → settle.
 
 ```lua
 rollSetFaces("Brown", { normal = {4, 4}, hunger = {1} })
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = { result = { resultClass = "totalBestialFailure" } },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.result.resultClass` | **`totalBestialFailure`** |
 
 ```lua
 rollCancel("Brown")
@@ -456,21 +535,22 @@ rollCancel("Brown")
 ### G6 — Win with crits off (no 10-pair bonus)
 
 ```lua
-rollTest("Brown", 4, C.RollType.STANDARD, "E2E Classify G6", 2)
+rollTest("Brown", 4, C.RollType.STANDARD, "E2E Classify G6", 1)
 RC.setRollOptions("Brown", { crits = false })
 ```
 
-**Human:** Pool **4 normal + 1 hunger**. **Roll** → settle.
+**Human:** **Left-click Normal bag 5 times** (`rollTest` hunger **1**; pool **4N+1H**). **Roll** → settle.
 
 ```lua
 rollSetFaces("Brown", { normal = {10, 8, 7, 6}, hunger = {10} })
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    result = { resultClass = "win" },
+    rollOptions = { crits = false },
+  },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.result.resultClass` | **`win`** (not messy/critical from 10 pair) |
-| `active.rollOptions.crits` | **`false`** |
 
 ```lua
 rollCancel("Brown")
@@ -485,19 +565,18 @@ rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G7", 1)
 RC.setRollOptions("Brown", { bestialNull = true })
 ```
 
-**Human:** Pool **3 normal + 1 hunger**. **Roll** → settle.
+**Human:** **Left-click Normal bag 4 times** (`rollTest` hunger **1**; pool **3N+1H**). **Roll** → settle.
 
 ```lua
 rollSetFaces("Brown", { normal = {10, 10, 3}, hunger = {1} })
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    result = { resultClass = "failure", successes = 2, margin = -1 },
+    rollOptions = { bestialNull = true },
+  },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.result.resultClass` | **`failure`** |
-| `active.result.successes` | `2` |
-| `active.result.margin` | `-1` |
-| `active.rollOptions.bestialNull` | **`true`** |
 
 ```lua
 rollCancel("Brown")
@@ -505,7 +584,7 @@ rollCancel("Brown")
 
 > ❌ Result = Critical Win. **Expected Behavior:** Result = Failure. Use console `setRollOptions` (TOR-162).
 
-**Stop if:** Any G row shows wrong `resultClass` with the forced faces above — bug in `classifyRoll` or face read.
+**Pass if:** Each `rollConfirm` prints **PASS** for the forced faces above.
 
 ---
 
@@ -514,23 +593,23 @@ rollCancel("Brown")
 ### H1 — Simple Take Half (no rouse in pool)
 
 ```lua
-rollTest("Brown", 4, C.RollType.STANDARD, "E2E Take Half")
+rollTest("Brown", 4, C.RollType.STANDARD, "E2E Take Half", 0)
 ```
 
-**Human:** Add **4** normal+hunger dice only (no rouse/obliv). Click **Take Half**.
+**Human:** **Left-click Normal bag 4 times**, then run `RC.takeHalf("Brown")`.
 
 **After Take Half resolves to POST_ROLL — check:**
 
 ```lua
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    tookHalf = true,
+    result = { resultClass = "failure", successes = 2 },
+    batonHolder = "storyteller",
+  },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.tookHalf` | **`true`** |
-| `active.result.resultClass` | **`failure`** |
-| `active.result.successes` | **`2`** |
-| `active.batonHolder` | **`storyteller`** (confirm step) |
 
 > ✅
 >
@@ -539,33 +618,39 @@ rollState("Brown")
 ### H2 — Take Half + rouse dice still in pool
 
 ```lua
-rollTest("Brown", 3, C.RollType.STANDARD, "E2E Take Half Rouse")
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E Take Half Rouse", 0)
 ```
 
-**Human:** Add 4 normal/hunger **and** 1+ **rouse** (left-click rouse bag). **Take Half**.
+**Human:** **Left-click Normal bag 4 times**, **left-click Rouse bag 1 time**, then run `RC.takeHalf("Brown")`.
 
 **After Take Half (rouse still in pool) — check:**
 
 ```lua
-print(GlobalGetRollPhase({ color = "Brown" }))
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "rolling",
+  active = { takeHalfAwaitingRouse = true },
+})
 ```
 
-| Field | Expect |
-| --- | --- |
-| Phase | **`rolling`** while rouse throws |
-| `active.takeHalfAwaitingRouse` | **`true`** until rouse settles |
+**Preset rouse face and settle (no randomize):**
+
+```lua
+rollSetFaces("Brown", { rouse = { 4 } })
+RC.onDiceSettled("Brown")
+```
 
 **After rouse settle (POST_ROLL) — check:**
 
 ```lua
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    tookHalf = true,
+    result = { resultClass = "failure", successes = 2, margin = -1 },
+  },
+  rouseStrip = { label = "Rouse", narrative = "Hunger Roused" },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.rouseOutcomeStrips` | Non-empty |
-| `active.result.resultClass` | **`failure`** (Take Half half-pool) |
 
 > ❌ When Take Half is clicked and the non-rouse dice are removed, the Rouse dice fall to the table where they *should* await the player to randomize them. However, the falling rouse dice are apparently treated like a roll and, when they settle, they are parsed as if they had already been rolled.
 >
@@ -581,7 +666,6 @@ rollState("Brown")
 > ```
 
 ```lua
-rollState("Brown")
 rollCancel("Brown")
 ```
 
@@ -589,9 +673,14 @@ rollCancel("Brown")
 
 ## Suite I — Spend Willpower
 
-**Prerequisite:** Brown has **willpower ≥ 1** superficial (note tracker before I1).
+```lua
+setWillpowerSuperficial("Brown", 3)
+rollConfirmTracker("Brown", { willpowerSuperficial = 3 })
+```
 
-Shared failure pool for I1–I3: **3 normal** dice, faces all fail vs diff **3**.
+**Pass if:** Brown superficial willpower is **3** before I1.
+
+Shared failure pool for I1–I3: **3 normal** dice, faces `{4,4,4}` vs difficulty **3**.
 
 ---
 
@@ -599,7 +688,7 @@ Shared failure pool for I1–I3: **3 normal** dice, faces all fail vs diff **3**
 
 ```lua
 rollCancel("Brown")
-rollTest("Brown", 3, C.RollType.STANDARD, "E2E I1 WP default")
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E I1 WP default", 0)
 RC.setRollOptions("Brown", {
   wpReroll = true,
   numberOfRerolls = 1,
@@ -608,48 +697,43 @@ RC.setRollOptions("Brown", {
 })
 ```
 
-**Human:** Pool **3 normal** (no hunger, no rouse). **Roll** → settle.
+**Human:** **Left-click Normal bag 3 times** (no hunger, no rouse). **Roll** → settle.
 
 ```lua
 rollSetFaces("Brown", { normal = {4, 4, 4} })
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    result = { resultClass = "failure" },
+    willpower = { available = true },
+    rollOptions = { numberOfDiceRerolled = 3, canRerollHunger = false },
+  },
+})
 ```
 
-**Before Spend WP — check:**
-
-| Field | Expect |
-| --- | --- |
-| Phase | **`postRoll`** |
-| `active.result.resultClass` | **`failure`** |
-| `active.willpower.available` | **`true`** |
-| `active.rollOptions.numberOfDiceRerolled` | **`3`** |
-| `active.rollOptions.canRerollHunger` | **`false`** |
-
-**Human:** Click **Spend WP** (not Take Half). Reroll up to **3** normal dice (hunger would be locked if present).
+**Human:** Click **Spend WP**. **Left-click** each of the **3** normal dice on the table once (reroll wave).
 
 **Immediately after Spend WP — check:**
 
 ```lua
-print(GlobalGetRollPhase({ color = "Brown" }))
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "rolling",
+  active = {
+    willpower = { wpRerollWave = true, rerollsRemaining = 0 },
+  },
+})
 ```
 
-| Field | Expect |
-| --- | --- |
-| Phase | **`rolling`** |
-| `active.willpower.wpRerollWave` | **`true`** |
-| `active.willpower.rerollsRemaining` | **`0`** (one spend of default 1 reroll) |
+**Human:** Wait for reroll settle.
 
 **After reroll settle — check:**
 
 ```lua
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = { willpower = { wpRerollWave = false } },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| Phase | **`postRoll`** |
-| `active.willpower.wpRerollWave` | **`false`** |
 
 ```lua
 rollCancel("Brown")
@@ -669,27 +753,29 @@ RC.setRollOptions("Brown", {
 })
 ```
 
-**Human:** Pool **3 normal**. **Roll** → settle.
+**Human:** **Left-click Normal bag 3 times**. **Roll** → settle.
 
 ```lua
 rollSetFaces("Brown", { normal = {4, 4, 4} })
-rollState("Brown")
+rollConfirm("Brown", { phase = "postRoll", active = { result = { resultClass = "failure" } } })
 ```
 
-**Human:** **Spend WP**. Reroll **exactly one** die (pick one normal; leave others untouched).
+**Human:** Click **Spend WP**. **Left-click** any **one** normal die on the table (first reroll). **Then attempt** to **left-click a second** normal die — it must **not** randomize (cap **1** locks the rest after the first choice).
 
-**After first die randomized and locked — check:**
+**After the second-die attempt — check:**
 
 ```lua
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "rolling",
+  active = {
+    willpower = { wpRerollWave = true },
+    rollOptions = { numberOfDiceRerolled = 1 },
+  },
+  wpRerollChosenCount = 1,
+})
 ```
 
-| Field / observation | Expect |
-| --- | --- |
-| `active.rollOptions.numberOfDiceRerolled` | **`1`** |
-| Other normal dice | **Locked** (cannot randomize a second normal) |
-
-**Human:** Finish reroll wave (randomize the one allowed die, wait for settle).
+**Human:** Wait for the **one** rerolled die to settle.
 
 ```lua
 rollCancel("Brown")
@@ -709,23 +795,28 @@ RC.setRollOptions("Brown", {
 })
 ```
 
-**Human:** Pool **2 normal + 1 hunger**. **Roll** → settle.
+**Human:** **Left-click Normal bag 3 times** (`rollTest` hunger **1**; pool **2N+1H**). **Roll** → settle.
 
 ```lua
 rollSetFaces("Brown", { normal = {4, 4}, hunger = {4} })
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = { rollOptions = { canRerollHunger = true } },
+})
 ```
 
-**Human:** **Spend WP**.
+**Human:** Click **Spend WP**, then **left-click the hunger die 1 time** (do not reroll normal dice).
 
 **Immediately after Spend WP — check:**
 
-| Observation | Expect |
-| --- | --- |
-| Hunger die on table | **Unlocked** (can be picked up / randomized) |
-| `active.rollOptions.canRerollHunger` | **`true`** |
+```lua
+rollConfirm("Brown", {
+  phase = "rolling",
+  active = { rollOptions = { canRerollHunger = true } },
+})
+```
 
-**Human:** Randomize the **hunger** die (and any normals you choose, up to cap 3). Wait for settle.
+**Human:** Wait for reroll settle.
 
 ```lua
 rollCancel("Brown")
@@ -745,21 +836,23 @@ RC.setRollOptions("Brown", {
 })
 ```
 
-**Human:** Pool **2 normal + 1 rouse** (left-click rouse bag once). **Roll** → settle.
+**Human:** **Left-click Normal bag 2 times**, then **left-click Rouse bag 1 time**. **Roll** → settle.
 
 ```lua
 rollSetFaces("Brown", { normal = {4, 4}, rouse = {6} })
-rollState("Brown")
+rollConfirm("Brown", { phase = "postRoll" })
 ```
 
-**Human:** **Spend WP**.
+**Human:** Click **Spend WP**, then attempt to **left-click the rouse die** (must stay locked).
 
-**Immediately after Spend WP — check:**
+```lua
+rollConfirm("Brown", {
+  phase = "rolling",
+  active = { rollOptions = { numberOfDiceRerolled = 3 } },
+})
+```
 
-| Observation | Expect |
-| --- | --- |
-| Rouse die on table | **Stays locked** (cannot randomize for WP reroll) |
-| Normal dice | Unlocked for reroll (up to 3) |
+**Human:** **Left-click both normal dice 1 time each**, wait for reroll settle.
 
 ```lua
 rollCancel("Brown")
@@ -772,25 +865,21 @@ rollCancel("Brown")
 ### J1 — One rouse in standard pool
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E J1 Compound")
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E J1 Compound", 0)
 ```
 
-**Human:** Pool **2 normal** + **1 rouse** (rouse bag left-click). **Roll** → settle.
+**Human:** **Left-click Normal bag 2 times**, then **left-click Rouse bag 1 time**. **Roll** → settle.
 
 ```lua
 rollSetFaces("Brown", { normal = {7, 3}, rouse = {4} })
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  rouseOutcomeStripsMin = 1,
+  active = { result = { resultClass = "win", successes = 2 } },
+})
 ```
 
-**Before Confirm — check:**
-
-| Field | Expect |
-| --- | --- |
-| `active.result` | Main V5 result present |
-| `active.rouseOutcomeStrips` | **Non-empty** (rouse strip for face 4) |
-| `active.result.resultClass` | **`win`** at diff 2 (2 successes from normals) |
-
-**Human:** **Confirm** once.
+**Human:** Click **Confirm** once.
 
 ```lua
 rollCancel("Brown")
@@ -801,34 +890,31 @@ rollCancel("Brown")
 ### J2 — Blood surge + compound (same roll)
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E J2 Surge compound")
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E J2 Surge compound", 0)
 ```
 
-**Human:** **Left-click Hunger bag once** (Blood Surge — no hunger die yet).
-
-**After surge — check:**
+**Human:** **Left-click Hunger bag 1 time** (Blood Surge — no hunger die yet).
 
 ```lua
-rollState("Brown")
+rollConfirm("Brown", {
+  meta = { bloodSurgeActive = true },
+  pool = { rouse = 1, normal = 2, hunger = 0 },
+})
 ```
 
-| Field | Expect |
-| --- | --- |
-| `active.meta.bloodSurgeActive` | **`true`** |
-| `active.pool.rouse` | **≥ 1** |
-| Spawned dice | **1 rouse** + **N normal** (N = character Blood Surge count) |
-
-**Human:** **Roll** all dice → settle → **Confirm**.
-
-**Before Confirm — check:**
+**Human:** Click **Roll** → wait for settle.
 
 ```lua
-rollState("Brown")
+rollSetFaces("Brown", { normal = { 7, 3 }, rouse = { 4 } })
+rollConfirm("Brown", {
+  phase = "postRoll",
+  rouseOutcomeStripsMin = 1,
+  active = { result = { resultClass = "win", successes = 2 } },
+  rouseStripLabel = "Rouse",
+})
 ```
 
-| Field | Expect |
-| --- | --- |
-| `active.rouseOutcomeStrips` | Includes **Blood Surge** rouse strip (not only a manual rouse bag add) |
+**Human:** Click **Confirm** once.
 
 ```lua
 rollCancel("Brown")
@@ -856,19 +942,16 @@ Host is on the roll seat after `rollTest` (automatic seat prep).
 rollCancelAll()
 ```
 
-**Human:** **Left-click Hunger bag** (no roll active).
+**Human:** **Left-click Hunger bag 1 time** (no roll active).
 
 **Check:**
 
 ```lua
-print(GlobalGetRollPhase({ color = "Brown" }))
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "preRoll",
+  active = { rollType = C.RollType.STANDARD },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| Phase | **`preRoll`** |
-| `active.rollType` | **STANDARD** |
 
 ```lua
 rollCancel("Brown")
@@ -880,18 +963,16 @@ rollCancel("Brown")
 rollCancelAll()
 ```
 
-**Human:** **Left-click Rouse bag**.
+**Human:** **Left-click Rouse bag 1 time**.
 
 **Check:**
 
 ```lua
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "preRoll",
+  active = { rollType = C.RollType.ROUSE, pool = { rouse = 1 } },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.rollType` | **ROUSE** |
-| `active.pool.rouse` | **`1`** |
 
 ```lua
 rollCancel("Brown")
@@ -903,17 +984,16 @@ rollCancel("Brown")
 rollCancelAll()
 ```
 
-**Human:** **Left-click Normal bag**.
+**Human:** **Left-click Normal bag 1 time**.
 
 **Check:**
 
 ```lua
-print(GlobalGetRollPhase({ color = "Brown" }))
+rollConfirm("Brown", {
+  phase = "preRoll",
+  active = { rollType = C.RollType.STANDARD },
+})
 ```
-
-| Expect |
-| --- |
-| Phase **`preRoll`**, STANDARD roll |
 
 ```lua
 rollCancel("Brown")
@@ -926,38 +1006,30 @@ rollCancel("Brown")
 #### K2a — Normal bag left adds die
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2a")
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2a", 0)
 ```
 
-**Human:** **Left-click Normal bag** twice.
+**Human:** **Left-click Normal bag 2 times**.
 
 **Check:**
 
 ```lua
-rollState("Brown")
+rollConfirm("Brown", { active = { pool = { normal = 2 } } })
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.pool.normal` | **`2`** |
 
 #### K2b — Normal bag right removes last normal/hunger
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2b")
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2b", 0)
 ```
 
-**Human:** Left-click Normal **twice**, then **right-click Normal** once.
+**Human:** **Left-click Normal bag 2 times**, then **right-click Normal bag 1 time**.
 
 **Check:**
 
 ```lua
-rollState("Brown")
+rollConfirm("Brown", { active = { pool = { normal = 1 } } })
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.pool.normal` | **`1`** |
 
 ```lua
 rollCancel("Brown")
@@ -966,21 +1038,19 @@ rollCancel("Brown")
 #### K2c — Hunger bag left (surge off) → Blood Surge
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2c surge")
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2c surge", 0)
 ```
 
-**Human:** **Left-click Hunger bag** once (surge not active).
+**Human:** **Left-click Hunger bag 1 time** (surge not active).
 
 **Check:**
 
 ```lua
-rollState("Brown")
+rollConfirm("Brown", {
+  meta = { bloodSurgeActive = true },
+  pool = { hunger = 0, rouse = 1, normal = 2 },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.meta.bloodSurgeActive` | **`true`** |
-| `active.pool.hunger` | **`0`** (no hunger die added on first click) |
 
 ```lua
 rollCancel("Brown")
@@ -989,20 +1059,19 @@ rollCancel("Brown")
 #### K2d — Hunger bag left (surge on) adds hunger
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2d hunger")
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2d hunger", 0)
 ```
 
-**Human:** Left-click Hunger once (activate surge), then **left-click Hunger** again.
+**Human:** **Left-click Hunger bag 1 time** (surge on), then **left-click Hunger bag 1 time** (hunger die).
 
 **Check:**
 
 ```lua
-rollState("Brown")
+rollConfirm("Brown", {
+  meta = { bloodSurgeActive = true },
+  pool = { hunger = 1, rouse = 1, normal = 2 },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.pool.hunger` | **`1`** |
 
 ```lua
 rollCancel("Brown")
@@ -1011,46 +1080,66 @@ rollCancel("Brown")
 #### K2e — Rouse bag left adds rouse
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2e rouse")
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2e rouse", 0)
 ```
 
-**Human:** **Left-click Rouse bag** once.
+**Human:** **Left-click Rouse bag 1 time**.
 
 **Check:**
 
 ```lua
-rollState("Brown")
+rollConfirm("Brown", { active = { pool = { rouse = 1 } } })
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.pool.rouse` | **`1`** |
 
 ```lua
 rollCancel("Brown")
 ```
 
-#### K2f — Rouse bag right with surge active deactivates surge
+#### K2f — Hunger bag right with surge active deactivates surge
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2f surge off")
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2f surge off", 0)
 ```
 
-**Human:** Left-click Hunger once (surge on), then **right-click Rouse bag**.
+**Human:** **Left-click Hunger bag 1 time** (surge on), then **right-click Hunger bag 1 time** (undo surge).
 
 **Check:**
 
 ```lua
-rollState("Brown")
+rollConfirm("Brown", {
+  meta = { bloodSurgeActive = false },
+  pool = { rouse = 0, normal = 0, hunger = 0 },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.meta.bloodSurgeActive` | **`false`** |
-| Surge-spawned dice | **Destroyed** |
 
 ```lua
 rollCancel("Brown")
+```
+
+#### K2g-Brown — Rouse blocks Oblivion-Rouse (silent fail)
+
+```lua
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2g Brown", 0)
+```
+
+**Human:** **Left-click Rouse bag 1 time**, then **left-click Oblivion-Rouse bag 1 time** (must fail silently on Brown).
+
+```lua
+rollConfirm("Brown", { pool = { rouse = 1, oblivRouse = 0 } })
+rollCancel("Brown")
+```
+
+#### K2g-Purple — Oblivion-Rouse blocks Rouse (silent fail)
+
+```lua
+rollTest("Purple", 2, C.RollType.STANDARD, "E2E K2g Purple", 0)
+```
+
+**Human:** **Left-click Oblivion-Rouse bag 1 time**, then **left-click Rouse bag 1 time** (must fail silently on Purple).
+
+```lua
+rollConfirm("Purple", { pool = { rouse = 0, oblivRouse = 1 } })
+rollCancel("Purple")
 ```
 
 ---
@@ -1063,17 +1152,13 @@ rollCancel("Brown")
 rollTest("Brown", 1, C.RollType.ROUSE, "E2E K3a")
 ```
 
-**Human:** Left-click Rouse until pool has **2** rouse dice, then **left-click Normal bag**.
+**Human:** **Left-click Rouse bag 2 times**, then **left-click Normal bag 1 time**.
 
 **Check:**
 
 ```lua
-rollState("Brown")
+rollConfirm("Brown", { active = { pool = { rouse = 1 } } })
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.pool.rouse` | **`1`** |
 
 ```lua
 rollCancel("Brown")
@@ -1085,19 +1170,12 @@ rollCancel("Brown")
 rollTest("Brown", 1, C.RollType.ROUSE, "E2E K3b")
 ```
 
-**Human:** Left-click Rouse **twice**, then **right-click Rouse** once.
+**Human:** **Left-click Rouse bag 2 times**, then **right-click Rouse bag 1 time**.
 
 **Check:**
 
 ```lua
-rollState("Brown")
-```
-
-| Field | Expect |
-| --- | --- |
-| `active.pool.rouse` | **`1`** |
-
-```lua
+rollConfirm("Brown", { active = { pool = { rouse = 1 } } })
 rollCancel("Brown")
 ```
 
@@ -1106,24 +1184,15 @@ rollCancel("Brown")
 ### K4 — Empty pool right-click cancels roll
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E K4")
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E K4", 0)
 ```
 
-**Human:** Left-click Normal until pool has dice, then **right-click** Normal (or Hunger/Rouse) until pool is **empty**.
+**Human:** **Left-click Normal bag 2 times**, then **right-click Normal bag 2 times** (pool empty → roll cancels).
 
 **Check:**
 
 ```lua
-rollState("Brown")
-print(GlobalGetRollPhase({ color = "Brown" }))
-```
-
-| Expect |
-| --- |
-| No active roll; phase idle / panel closed |
-
-```lua
-rollCancel("Brown")
+rollConfirm("Brown", { noActive = true })
 ```
 
 ---
@@ -1135,53 +1204,35 @@ rollCancel("Brown")
 ```lua
 rollCancel("Brown")
 RC.initiateRoll("Brown", { rollType = C.RollType.STANDARD, label = "E2E Baton" })
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "setup",
+  active = { batonHolder = "storyteller" },
+})
 ```
-
-**Check immediately:**
-
-| Field | Expect |
-| --- | --- |
-| `active.phase` | **`setup`** |
-| `active.batonHolder` | **`storyteller`** |
 
 ---
 
 ### L1b — Open roll: baton to player
 
-**Human (ST):** Set difficulty on ST dashboard for Brown, then **Open roll** (or console):
+**Human (ST):** Set difficulty **2** on ST dashboard for Brown, then click **Open roll**.
 
 ```lua
-RC.openRoll("Brown")
-print(GlobalGetRollPhase({ color = "Brown" }))
-rollState("Brown")
+rollConfirm("Brown", {
+  phase = "preRoll",
+  active = { batonHolder = "player", difficulty = 2 },
+})
 ```
-
-**Check:**
-
-| Field | Expect |
-| --- | --- |
-| Phase | **`preRoll`** |
-| `active.batonHolder` | **`player`** |
 
 ---
 
 ### L1c — Roll: phases through rolling → postRoll
 
-**Human:** Click **Roll** → wait for settle.
+**Human:** **Left-click Normal bag 2 times**, click **Roll** → wait for settle.
 
 **After settle — check:**
 
 ```lua
-print(GlobalGetRollPhase({ color = "Brown" }))
-rollState("Brown")
-```
-
-| Field | Expect |
-| --- | --- |
-| Phase | **`postRoll`** |
-
-```lua
+rollConfirm("Brown", { phase = "postRoll" })
 rollCancel("Brown")
 ```
 
@@ -1194,20 +1245,12 @@ S.setStateVal("stRollSettings", "autoHunger", false)
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E L2a autoHunger off")
 ```
 
-**Human:** **Left-click Normal bag** once (Brown below hunger cap).
+**Human:** **Left-click Normal bag 1 time** (Brown below hunger cap).
 
 **Check:**
 
 ```lua
-rollState("Brown")
-```
-
-| Field | Expect |
-| --- | --- |
-| `active.pool.normal` | **`1`** |
-| `active.pool.hunger` | **`0`** (no auto-redirect to hunger die) |
-
-```lua
+rollConfirm("Brown", { pool = { normal = 1, hunger = 0 } })
 rollCancel("Brown")
 S.setStateVal("stRollSettings", "autoHunger", true)
 ```
@@ -1218,13 +1261,23 @@ S.setStateVal("stRollSettings", "autoHunger", true)
 
 ```lua
 S.setStateVal("stRollSettings", "autoWp", false)
+setWillpowerSuperficial("Brown", 3)
+rollConfirmTracker("Brown", { willpowerSuperficial = 3 })
+rollCancel("Brown")
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E L2b WP no auto", 0)
+RC.setRollOptions("Brown", {
+  wpReroll = true,
+  numberOfRerolls = 1,
+  numberOfDiceRerolled = 3,
+  canRerollHunger = false,
+})
 ```
 
-Run **Suite I1** through **Spend WP**, then note Brown **superficial willpower** on tracker.
-
-**Check:** Superficial willpower **unchanged** after Spend WP (no +1 damage).
+**Human:** **Left-click Normal bag 3 times**, **Roll** → settle, click **Spend WP**, **left-click Normal die 1 time**, **left-click Normal die 1 time**, **left-click Normal die 1 time**, wait for reroll settle.
 
 ```lua
+rollConfirmTracker("Brown", { willpowerSuperficial = 3 })
+rollCancel("Brown")
 S.setStateVal("stRollSettings", "autoWp", true)
 ```
 
@@ -1234,23 +1287,14 @@ S.setStateVal("stRollSettings", "autoWp", true)
 
 ```lua
 S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", false)
+setHunger("Brown", 2)
+rollConfirmTracker("Brown", { hunger = 2 })
 rollTest("Brown", 1, C.RollType.ROUSE, "E2E L2c rouse no auto")
-```
-
-**Human:** Roll rouse die → settle.
-
-```lua
-rollSetFaces("Brown", { rouse = { 3 } })
-rollState("Brown")
-```
-
-Note Brown **hunger** on tracker, then **Confirm** (or auto-broadcast path).
-
-**Check:** Hunger tracker **unchanged** after confirm (fail face ≤5 would normally +1).
-
-```lua
-rollCancel("Brown")
+rollE2eSettlePresetCheck("Brown", { rouse = { 3 } })
+rollConfirm("Brown", { noActive = true })
+rollConfirmTracker("Brown", { hunger = 2 })
 S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", true)
+rollCancel("Brown")
 ```
 
 ---
@@ -1260,25 +1304,21 @@ S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", true)
 Distinct from **G7** (faces `10,10,3` + hunger `1`). Uses smaller faces so margin is unambiguous.
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E M1 bestialNull opt")
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E M1 bestialNull opt", 1)
 RC.setRollOptions("Brown", { bestialNull = true })
 ```
 
-**Human:** Pool **2 normal + 1 hunger** (`7`, `3`, hunger `1`). **Roll** → settle.
+**Human:** **Left-click Normal bag 3 times** (`rollTest` hunger **1**; pool **2N+1H**). **Roll** → settle.
 
 ```lua
 rollSetFaces("Brown", { normal = {7, 3}, hunger = {1} })
-rollState("Brown")
-```
-
-**Before Confirm — check:**
-
-| Field | Expect |
-| --- | --- |
-| `active.result.resultClass` | **`failure`** (2 raw successes − bestial null on hunger 1 → 1 success vs diff 2) |
-| `active.rollOptions.bestialNull` | **`true`** |
-
-```lua
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    result = { resultClass = "failure" },
+    rollOptions = { bestialNull = true },
+  },
+})
 rollCancel("Brown")
 ```
 
@@ -1289,22 +1329,19 @@ rollCancel("Brown")
 ### N1 — First hunger click activates surge
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E N1 surge")
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E N1 surge", 0)
 ```
 
-**Human:** **Left-click Hunger bag** once.
+**Human:** **Left-click Hunger bag 1 time**.
 
 **Check:**
 
 ```lua
-rollState("Brown")
+rollConfirm("Brown", {
+  meta = { bloodSurgeActive = true },
+  pool = { rouse = 1, normal = 2, hunger = 0 },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.meta.bloodSurgeActive` | **`true`** |
-| `active.pool.rouse` | **≥ 1** |
-| `active.pool.hunger` | **`0`** |
 
 ```lua
 rollCancel("Brown")
@@ -1315,21 +1352,19 @@ rollCancel("Brown")
 ### N2 — Second hunger click adds hunger die
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E N2 hunger die")
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E N2 hunger die", 0)
 ```
 
-**Human:** Left-click Hunger **twice**.
+**Human:** **Left-click Hunger bag 1 time** (surge on), then **left-click Hunger bag 1 time** (hunger die).
 
 **Check:**
 
 ```lua
-rollState("Brown")
+rollConfirm("Brown", {
+  meta = { bloodSurgeActive = true },
+  pool = { hunger = 1, rouse = 1, normal = 2 },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.meta.bloodSurgeActive` | **`true`** |
-| `active.pool.hunger` | **`1`** |
 
 ```lua
 rollCancel("Brown")
@@ -1337,23 +1372,22 @@ rollCancel("Brown")
 
 ---
 
-### N3 — Rouse bag right deactivates surge
+### N3 — Hunger bag right deactivates surge (clears all rouse)
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E N3 surge cancel")
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E N3 surge cancel", 0)
 ```
 
-**Human:** Left-click Hunger once (surge on), then **right-click Rouse bag**.
+**Human:** **Left-click Hunger bag 1 time** (surge on), then **right-click Hunger bag 1 time**.
 
 **Check:**
 
 ```lua
-rollState("Brown")
+rollConfirm("Brown", {
+  meta = { bloodSurgeActive = false },
+  pool = { rouse = 0, normal = 0, hunger = 0 },
+})
 ```
-
-| Field | Expect |
-| --- | --- |
-| `active.meta.bloodSurgeActive` | **`false`** |
 
 ```lua
 rollCancel("Brown")
@@ -1368,22 +1402,13 @@ rollCancel("Brown")
 ```lua
 rollCancel("Black")
 rollStTest("NPC One", C.RollType.STANDARD)
-rollStSlots()
-```
-
-**Check:**
-
-| Field | Expect |
-| --- | --- |
-| `liveSlotIndex` | **`1`**, **`2`**, or **`3`** |
-
-```lua
+rollStConfirm({ liveSlotIndex = 1 })
 rollStTest("NPC Two", C.RollType.STANDARD)
-```
-
-**Check:** Second initiate **blocked** (no second live slot).
-
-```lua
+rollStConfirm({
+  initiateBlocked = true,
+  initiateLabel = "NPC Two",
+  initiateRollType = C.RollType.STANDARD,
+})
 rollCancel("Black")
 ```
 
@@ -1392,18 +1417,21 @@ rollCancel("Black")
 ### O1b — Slot persists until CLEAR
 
 ```lua
+rollCancel("Black")
 rollStTest("NPC One", C.RollType.STANDARD)
+rollStConfirm({ liveSlotIndex = 1 })
 ```
 
-**Human:** Complete roll on ST dashboard → **Confirm**.
+**Human:** **Left-click Normal bag 2 times** in ST drawer, set difficulty **2**, **Roll** → settle, click **Confirm** on ST dashboard.
 
 ```lua
-rollStSlots()
+rollStConfirm({ liveSlotIndex = 1 })
 ```
 
-**Check:** Slot row still shows resolved roll until ST clicks **CLEAR**.
+**Human:** Click **CLEAR** on slot **1** in ST dashboard.
 
 ```lua
+rollStConfirm({ liveSlotIndexAbsent = true })
 rollCancel("Black")
 ```
 
@@ -1415,20 +1443,16 @@ rollCancel("Black")
 rollStTest("Garou", C.RollType.WEREWOLF)
 ```
 
-**Human:** ST **werewolf** / **rage** bags only — build pool, set difficulty, **Roll** → settle.
+**Human:** **Left-click Werewolf bag 2 times**, **left-click Rage bag 2 times**. Set difficulty **3** on ST dashboard, click **Roll** → wait for settle.
 
 ```lua
-rollSetFaces("Black", { werewolf = {8, 6}, rage = {5, 7} })
-rollState("Black")
-```
-
-**Before Confirm — check:**
-
-| Field | Expect |
-| --- | --- |
-| `active.result.resultClass` | **Not** `messyCritical`, `bestialFailure`, or `totalBestialFailure` (werewolf classifier) |
-
-```lua
+rollSetFaces("Black", { werewolf = { 8, 6 }, rage = { 5, 7 } })
+RC.startRolling("Black")
+RC.onDiceSettled("Black")
+rollConfirm("Black", {
+  phase = "postRoll",
+  active = { result = { resultClass = "win", successes = 3, margin = 1 } },
+})
 rollCancel("Black")
 ```
 
@@ -1440,21 +1464,16 @@ rollCancel("Black")
 rollStTest("Garou Brutal", C.RollType.WEREWOLF)
 ```
 
-**Human:** Pool **≥ 2 rage** dice only. **Roll** → settle.
+**Human:** **Left-click Rage bag 2 times** (no werewolf dice). Set difficulty **2** on ST dashboard, click **Roll** → wait for settle.
 
 ```lua
-rollSetFaces("Black", { rage = {1, 2} })
-rollState("Black")
-```
-
-**Before Confirm — check:**
-
-| Field | Expect |
-| --- | --- |
-| `active.pendingResolution` | **`brutalFailViolence`** |
-| Confirm button | **Blocked** until Fail vs Violence choice |
-
-```lua
+rollSetFaces("Black", { rage = { 1, 2 } })
+RC.startRolling("Black")
+RC.onDiceSettled("Black")
+rollConfirm("Black", {
+  phase = "postRoll",
+  active = { pendingResolution = "brutalFailViolence" },
+})
 rollCancel("Black")
 ```
 
@@ -1469,24 +1488,21 @@ Each case is a **dedicated** `ROUSE_OBLIVION` roll with **2** oblivion dice in p
 ### P-A — All 6s: success, no hunger/stain
 
 ```lua
+rollCancel("Purple")
+S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", true)
+setHunger("Purple", 1)
+setHumanityStains("Purple", 2)
+rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
 rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E P-A")
+-- Pool: 2 oblivion dice (left-click bag twice before settle helper)
 ```
 
-**Human:** Left-click **Obliv-Rouse bag** twice (2 dice). **Roll** → settle.
+**Human:** **Left-click Oblivion-Rouse bag 2 times**.
 
 ```lua
-rollSetFaces("Purple", { oblivRouse = {6, 6} })
-rollState("Purple")
-```
-
-**Check:**
-
-| Field | Expect |
-| --- | --- |
-| Outcome | **Success**; **no** hunger +1, **no** stain |
-| `active.pendingResolution` | **nil** |
-
-```lua
+rollE2eSettlePresetCheck("Purple", { oblivRouse = { 6, 6 } })
+rollConfirm("Purple", { noActive = true })
+rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
 rollCancel("Purple")
 ```
 
@@ -1495,19 +1511,19 @@ rollCancel("Purple")
 ### P-B — All 3s: hunger +1
 
 ```lua
+rollCancel("Purple")
+setHunger("Purple", 1)
+setHumanityStains("Purple", 2)
+rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
 rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E P-B")
 ```
 
-**Human:** 2 oblivion dice. **Roll** → settle.
+**Human:** **Left-click Oblivion-Rouse bag 2 times**.
 
 ```lua
-rollSetFaces("Purple", { oblivRouse = {3, 3} })
-rollState("Purple")
-```
-
-**Check:** Hunger **+1** on confirm/auto-apply; **no** stain.
-
-```lua
+rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 3 } })
+rollConfirm("Purple", { noActive = true })
+rollConfirmTracker("Purple", { hunger = 2, stains = 2 })
 rollCancel("Purple")
 ```
 
@@ -1516,23 +1532,22 @@ rollCancel("Purple")
 ### P-C — 3 and 10: pending Hunger vs Stain
 
 ```lua
+rollCancel("Purple")
+setHunger("Purple", 1)
+setHumanityStains("Purple", 2)
 rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E P-C")
 ```
 
-**Human:** 2 oblivion dice. **Roll** → settle.
+**Human:** **Left-click Oblivion-Rouse bag 2 times**.
 
 ```lua
-rollSetFaces("Purple", { oblivRouse = {3, 10} })
-rollState("Purple")
-```
-
-**Check:**
-
-| Field | Expect |
-| --- | --- |
-| `active.pendingResolution` | Player must choose **Hunger** or **Stain** (not auto-resolved) |
-
-```lua
+rollSetFaces("Purple", { oblivRouse = { 3, 10 } })
+RC.startRolling("Purple")
+RC.onDiceSettled("Purple")
+rollConfirm("Purple", {
+  phase = "postRoll",
+  active = { pendingResolution = "oblivHungerStain" },
+})
 rollCancel("Purple")
 ```
 
@@ -1541,19 +1556,19 @@ rollCancel("Purple")
 ### P-D — 1 and 10 (mixed): stained
 
 ```lua
+rollCancel("Purple")
+setHunger("Purple", 1)
+setHumanityStains("Purple", 2)
+rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
 rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E P-D")
 ```
 
-**Human:** 2 oblivion dice. **Roll** → settle.
+**Human:** **Left-click Oblivion-Rouse bag 2 times**.
 
 ```lua
-rollSetFaces("Purple", { oblivRouse = {1, 10} })
-rollState("Purple")
-```
-
-**Check:** **+1 stain** applied (no pending choice).
-
-```lua
+rollE2eSettlePresetCheck("Purple", { oblivRouse = { 1, 10 } })
+rollConfirm("Purple", { noActive = true })
+rollConfirmTracker("Purple", { hunger = 1, stains = 3 })
 rollCancel("Purple")
 ```
 
@@ -1562,19 +1577,19 @@ rollCancel("Purple")
 ### P-E — 3 and 7: success (6–9 present)
 
 ```lua
+rollCancel("Purple")
+setHunger("Purple", 1)
+setHumanityStains("Purple", 2)
+rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
 rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E P-E")
 ```
 
-**Human:** 2 oblivion dice. **Roll** → settle.
+**Human:** **Left-click Oblivion-Rouse bag 2 times**.
 
 ```lua
-rollSetFaces("Purple", { oblivRouse = {3, 7} })
-rollState("Purple")
-```
-
-**Check:** **Success** despite low `3` (because `7` is 6–9).
-
-```lua
+rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 7 } })
+rollConfirm("Purple", { noActive = true })
+rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
 rollCancel("Purple")
 ```
 
@@ -1583,24 +1598,25 @@ rollCancel("Purple")
 ### P-F — Oblivion in STANDARD compound (Purple)
 
 ```lua
-rollTest("Purple", 2, C.RollType.STANDARD, "E2E P-F compound")
+rollCancel("Purple")
+setHunger("Purple", 1)
+setHumanityStains("Purple", 2)
+rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
+rollTest("Purple", 2, C.RollType.STANDARD, "E2E P-F compound", 0)
 ```
 
-**Human:** Pool **2 normal** + **2 oblivRouse** (Obliv bag left-click twice). **Roll** → settle.
+**Human:** **Left-click Normal bag 2 times**, **left-click Oblivion-Rouse bag 2 times**. Click **Roll** → wait for settle.
 
 ```lua
-rollSetFaces("Purple", { normal = {7, 7}, oblivRouse = {3, 10} })
-rollState("Purple")
-```
-
-**Before Confirm — check:**
-
-| Field | Expect |
-| --- | --- |
-| `active.rouseOutcomeStrips` | Oblivion strip present |
-| `active.pendingResolution` | **Hunger vs Stain** choice if faces `3` + `10` on obliv dice |
-
-```lua
+rollSetFaces("Purple", { normal = { 7, 7 }, oblivRouse = { 3, 10 } })
+RC.startRolling("Purple")
+RC.onDiceSettled("Purple")
+rollConfirm("Purple", {
+  phase = "postRoll",
+  rouseOutcomeStripsMin = 1,
+  active = { pendingResolution = "oblivHungerStain" },
+})
+rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
 rollCancel("Purple")
 ```
 
@@ -1609,25 +1625,25 @@ rollCancel("Purple")
 ## Sign-off
 
 
-| Suite | Pass | Notes |
-| --- | --- | --- |
-| 0 Cleanup | ☐ | |
-| A Standard smoke | ☐ | A1–A3 |
-| B Cancel | ☐ | |
-| C Rouse dedicated | ☐ | |
-| D Oblivion dedicated (Purple) | ☐ | |
-| E ST standard | ☐ | |
-| F Conditions (`e2eBestialNull`) | ☐ | F1–F2 |
-| G Classification | ☐ | G1–G7 |
-| H Take Half | ☐ | H1–H2 |
-| I Spend WP | ☐ | I1–I4 |
-| J Compound rouse | ☐ | J1–J2 |
-| K Bag clicks | ☐ | K1a–K4 |
-| L Baton + automation | ☐ | L1a–L2c |
-| M Bestial Null (opt) | ☐ | M1 |
-| N Blood Surge | ☐ | N1–N3 |
-| O ST / Werewolf / Brutal | ☐ | O1a–O3 |
-| P Oblivion multi-die | ☐ | P-A–P-F, Purple |
+| Suite                           | Pass | Notes                    |
+| ------------------------------- | ---- | ------------------------ |
+| 0 Cleanup                       | ☐    |                          |
+| A Standard smoke                | ☐    | A1–A3                    |
+| B Cancel                        | ☐    |                          |
+| C Rouse dedicated               | ☐    | C1–C2                    |
+| D Oblivion dedicated (Purple)   | ☐    |                          |
+| E ST standard                   | ☐    |                          |
+| F Conditions (`e2eBestialNull`) | ☐    | F1–F2                    |
+| G Classification                | ☐    | G1–G7                    |
+| H Take Half                     | ☐    | H1–H2                    |
+| I Spend WP                      | ☐    | I1–I4                    |
+| J Compound rouse                | ☐    | J1–J2                    |
+| K Bag clicks                    | ☐    | K1a–K4, K2g-Brown/Purple |
+| L Baton + automation            | ☐    | L1a–L2c                  |
+| M Bestial Null (roll option)    | ☐    | M1                       |
+| N Blood Surge                   | ☐    | N1–N3                    |
+| O ST / Werewolf / Brutal        | ☐    | O1a–O3                   |
+| P Oblivion multi-die            | ☐    | P-A–P-F, Purple          |
 
 
 ---

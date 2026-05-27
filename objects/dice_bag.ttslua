@@ -120,11 +120,11 @@ function spawnDieRedirect(params)
     if type(params) ~= "table" or type(params.bagColor) ~= "string" or type(params.dieType) ~= "string" then
         return
     end
-    spawnDie(params.bagColor, params.dieType, params.bloodSurge == true, params.arcCenter)
+    spawnDie(params.bagColor, params.dieType, params.bloodSurgePool == true, params.arcCenter)
 end
 
 --- @param arcCenter Vector|table|nil  World-space arc center (ST drawer tray); nil uses bag position
-function spawnDie(bagColor, dieType, bloodSurge, arcCenter)
+function spawnDie(bagColor, dieType, bloodSurgePool, arcCenter)
     local newCount = #spawnedDice + 1
 
     local function worldArcPoint(i, total)
@@ -154,8 +154,9 @@ function spawnDie(bagColor, dieType, bloodSurge, arcCenter)
     die.setScale({ SCALE, SCALE, SCALE })
     die.setLock(true)
     die.script_state = " "
-    if bloodSurge == true then
-        die.script_state = "bloodSurge"
+    if bloodSurgePool == true then
+        local DK = require("lib.dice_kinds")
+        die.script_state = DK.SCRIPT_STATE_BLOOD_SURGE_POOL
     end
 
     table.insert(spawnedDice, die)

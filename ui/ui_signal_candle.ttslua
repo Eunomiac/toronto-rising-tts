@@ -4,11 +4,10 @@
 
     Attach this script to each player's unlit signal candle. The candle reads its
     owner from the "<Color>Object" tag and creates an invisible click target on
-    its top face. Clicking the candle toggles that player's signal fire.
+    its top face. Clicking the candle toggles that player's signal fire via Global.call.
 ]]
 
-local C = require("lib.constants")
-local O = require("core.objects")
+local PLAYER_COLORS = { "Brown", "Orange", "Red", "Pink", "Purple" }
 
 local BUTTON_POSITION = { 0, 0.42, 0 }
 local BUTTON_WIDTH = 850
@@ -22,7 +21,7 @@ local TOGGLE_DURATION = 0
 local function getSignalCandleColor()
     local tags = self.getTags()
     for _, tag in ipairs(tags) do
-        for _, color in ipairs(C.PlayerColors) do
+        for _, color in ipairs(PLAYER_COLORS) do
             if tag == string.format("%sObject", color) then
                 return color
             end
@@ -62,7 +61,13 @@ function click_signalCandle(_buttonId, clickColor)
         return
     end
 
-    local nextState = O.ToggleSignalFireState(playerColor, TOGGLE_DURATION)
+    local nextState = nil
+    if Global ~= nil and type(Global.call) == "function" then
+        nextState = Global.call("GlobalToggleSignalFireState", {
+            color = playerColor,
+            duration = TOGGLE_DURATION,
+        })
+    end
     if nextState == nil then
         print(string.format("[SignalCandle] Failed to toggle signal light for %s.", playerColor))
         return

@@ -8,8 +8,8 @@
 
 local C = require("lib.constants")
 local G = require("lib.guids")
-local U = require("lib.util")
-local OP = require("lib.object_positions")
+local CU = require("lib.csheet_util")
+local OP = require("lib.object_positions_object")
 
 local STATE_OFF = "off"
 local STATE_ON = "on"
@@ -79,9 +79,9 @@ local function runWhenSeatLayoutReady(callback, attempt)
             return
         end
         local delaySeconds = getBackoffDelaySeconds(currentAttempt)
-        U.waitUntil(function()
+        CU.delay(function()
             retry(currentAttempt + 1)
-        end, delaySeconds, false, delaySeconds + 1, 0.1)
+        end, delaySeconds)
     end
 
     retry(startAttempt)
@@ -145,7 +145,6 @@ local function applyObjectState(key, state, token)
         end
     end
     OP.applyResolvedPose(obj, effectivePose, OP.DEFAULT_TRANSITION_DURATION, 0, {
-        useSmoothSetters = true,
         shouldAbort = function()
             return not isTokenCurrent(token)
         end

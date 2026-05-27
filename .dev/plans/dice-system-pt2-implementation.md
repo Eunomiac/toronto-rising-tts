@@ -21,16 +21,14 @@
 | Rouse/Obliv, standard or Rouse pool | Add die to pool |
 
 ### Blood Surge (toggle)
-1. Tagged surge Rouse die (logical bucket, not a second roll).
-2. Add `bloodSurge` count of normal/hunger via same auto-hunger rules as manual adds.
-3. Second Hunger click **removes** surge rouse + surge-added dice only (track provenance).
-4. Third click toggles on again.
-5. Step 1 processing: surge rouse only; ≤5 → +1 Hunger on confirm (if auto-apply on).
+1. Add one Rouse die to the **single** rouse check (no tagging).
+2. Add `bloodSurge` count of normal/hunger via auto-hunger rules (`bloodSurgePool` script_state for undo).
+3. Hunger bag **right-click** while surge active: remove **all** rouse + surge normal/hunger; clear `bloodSurgeActive`.
+4. Second Hunger **left-click** while surge on adds one Hunger die.
 
 ### Rouse/Obliv in pools (on confirm, if `PERM_AUTO_APPLY_ROUSE_OUTCOMES`)
-1. Blood surge rouse first (then ignore for steps 2–3).
-2. Obliv tree (132–140); (D) → **Confirm – Hunger** / **Confirm – Stain** after WP phase.
-3. Other rouse dice: ALL ≤5 → +1 Hunger.
+1. Obliv tree (132–140); (D) → **Confirm – Hunger** / **Confirm – Stain** after WP phase.
+2. All rouse dice: ALL ≤5 → +1 Hunger (one **Rouse** strip; includes Blood Surge dice).
 4. Dedicated Rouse Check: stop after 1–3; no VTM classify on normal/hunger.
 5. Standard: then classify normal+hunger (+werewolf N/A for players).
 

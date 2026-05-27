@@ -113,25 +113,41 @@ Under the new system, the addition of a third dice bag (`DICEBAG_ROUSE`) allows 
 | Player Clicks `DICEBAG_NORMAL` while assembling a dice pool for a Rouse Check | ⭐ The Rouse Check dice pool is reset (to a single Rouse die). |
 | Player Clicks `DICEBAG_HUNGER` with no active roll | A player-initiated ⭐ Standard Roll is triggered and sent to the Storyteller for approval to open the roll. |
 | Player **left-clicks** `DICEBAG_HUNGER` while assembling a dice pool for a standard roll | ⭐ If Blood Surge is **off**, trigger Blood Surge (below). If surge is **already on**, add one Hunger die to the pool. |
-| Player **right-clicks** any dice bag during `PRE_ROLL` | Remove the last die staged from **that** bag; if the pool total becomes zero, **cancel the roll**. Unspecified opposites do nothing (e.g. right-click Hunger while surge is on only to undo surge — use **right-click Rouse**). |
-| Player **right-clicks** `DICEBAG_ROUSE` during a standard roll while Blood Surge is active | Undo Blood Surge (remove surge dice and decrement surge rouse from pool). |
+| Player **right-clicks** any dice bag during `PRE_ROLL` | Remove the last die staged from **that** bag; if the pool total becomes zero, **cancel the roll**. Unspecified opposites do nothing. |
+| Player **right-clicks** `DICEBAG_HUNGER` during a standard roll while Blood Surge is active | Undo Blood Surge (see below). |
+| Player **left-clicks** `DICEBAG_ROUSE` while the pool already has Oblivion-Rouse dice (or vice versa) | **Silent fail** — bag click does nothing. |
 | Player Clicks `DICEBAG_HUNGER` while assembling a dice pool for a Rouse Check | ⭐ The Rouse Check dice pool is reset (to a single Rouse die). |
 | Player Clicks `DICEBAG_ROUSE` or `DICEBAG_OBLIVROUSE` with no active roll | A player-initiated Rouse Check or Oblivion Rouse Check is triggered, confirmed, and automatically opened -- no waiting for the Storyteller to approve or open Rouse Checks |
 | Player Clicks `DICEBAG_ROUSE` or `DICEBAG_OBLIVROUSE` while assembling a dice pool for a standard roll or a Rouse Check | A Rouse Die or Oblivion-Rouse Die is added to the dice pool. (The effect of Rouse Dice in standard dice pools is explained below.) |
 
+#### Pool composition (standard rolls)
+
+Every standard roll assembles **at most three logical groups**:
+
+| Group | Pool keys | Notes |
+| --- | --- | --- |
+| **Main roll** | `normal` + `hunger` | One success test after any rouse steps |
+| **Rouse check** | `rouse` | At most **one** rouse check per roll; extra Rouse bag clicks add dice to the **same** check (never a second or third rouse check) |
+| **Oblivion-Rouse check** | `oblivRouse` | At most **one** oblivion-rouse check per roll; same merge rule as rouse |
+
+**Rouse vs Oblivion-Rouse are mutually exclusive** on the same roll. If the pool already has `rouse` dice, clicking the Oblivion-Rouse bag does nothing (silent fail). If the pool already has `oblivRouse` dice, clicking the Rouse bag does nothing (silent fail). Blood Surge activation also fails silently if `oblivRouse` is already in the pool.
+
+Blood Surge rouse dice are **not** tagged or resolved separately — they use the same single **Rouse** outcome strip as any other rouse dice in the pool.
+
 #### Blood Surges
 
-When a "Blood Surge" is triggered, the following should occur:
+When a "Blood Surge" is triggered (Hunger bag left-click while surge is off on a standard roll):
 
-1. A Rouse Die should be added to the dice pool being assembled. This Rouse Die should receive a special tag that distinguishes it from any other Rouse Dice added to the pool, either before or after.
-2. A number of Standard or Hunger dice (depending on the player's Hunger rating, and the number of Hunger dice already in the pool) equal to the player's Blood Surge rating (derived from `C.BloodPotency[Blood Potency Value].bloodSurge`) should be added to the dice pool.
+1. Add **one** Rouse die to the pool (same rouse check as any later Rouse bag adds).
+2. Add a number of Standard or Hunger dice (per hunger rules) equal to the player's Blood Surge rating (`bloodPotencyDerived().bloodSurge`, with `bloodSurgeDiceMultiplier` from roll policy). Surge-spawned normal/hunger dice are tracked for undo only (`script_state` `bloodSurgePool`).
+
+**Undo Blood Surge:** Hunger bag **right-click** while `bloodSurgeActive`. Removes **all** rouse dice from the pool, all surge-spawned normal/hunger dice, clears `bloodSurgeActive`, and adjusts pool counts accordingly. (Any rouse dice present are treated as tied to the surge being reversed.)
 
 #### Rouse/Oblivion-Rouse Dice in Standard Pools
 
-The presence of Rouse/Oblivion-Rouse Dice in any roll (whether Rouse Check or otherwise) should be handled the same way, by following this procedure:
+After the main pool is rolled, resolve rouse-family dice in order:
 
-1. Have any Rouse Dice been flagged as part of a triggered Blood Surge, as described above? If so, process that die first: if the die rolled a 5 or lower, the player's Hunger is automatically increased by one once the result of the roll is Confirmed. Ignore this Rouse Die moving forward.
-2. Are there any Oblivion-Rouse Dice in the pool? If so, perform the following flow of checks:
+1. Are there any Oblivion-Rouse Dice in the pool? If so, perform the following flow of checks:
   (A) **Did ALL Oblivion-Rouse dice roll the same number?** If NO, proceed to check (B). If YES, resolve the Oblivion Rouse check according to that number:
      `1` = +1 Hunger AND Confer a Stain
      `2-5` = +1 Hunger
@@ -140,9 +156,9 @@ The presence of Rouse/Oblivion-Rouse Dice in any roll (whether Rouse Check or ot
   (B) **Did ANY Oblivion-Rouse die roll a 6, 7, 8, or 9?** If YES, resolve the Oblivion Rouse check as succeeding, with no changes to Hunger or Stains. If NO, proceed to check (C).
   (C) **Did ANY Oblivion-Rouse die roll a 2, 3, 4, or 5?** If YES, proceed to check (D). If NO, then the dice pool contains at least one `10` -- resolve the Oblivion Rouse check according to that number (i.e. Confer a Stain, Hunger remains unchanged).
     (D) **Did ANY Oblivion-Rouse die roll a 10?** If YES, replace the Confirm button with two variations: "Confirm - Hunger" and "Confirm - Stain". If the player clicks "Confirm - Hunger", their Hunger increases by 1 (but they gain no Stain). If the player clicks "Confirm - Stain", they gain a Stain (but their Hunger remains unchanged). If NO, resolve the Oblivion Rouse check as a 2-5 result (i.e. +1 Hunger, no Stains conferred).
-3. Are there any Rouse Dice in the pool, other than one flagged as part of a Blood Surge? If so, perform the following check:
-  - **Did ALL Rouse dice roll a 5 or lower?** If so, the player's Hunger is automatically increased by one once the result of the roll is Confirmed (in addition to any other Hunger increases, e.g., from the Blood  or Oblivion-Rouse steps above).
-4. If this roll was a Rouse Check, all dice have been processed by now and the result can be displayed and confirmed. Otherwise, after processing all Rouse and Oblivion-Rouse dice, continue to process the other dice in the pool as normal (assuming a standard roll).
+2. Are there any Rouse Dice in the pool? If so:
+  - **Did ALL Rouse dice roll a 5 or lower?** If so, the player's Hunger is automatically increased by one once the result of the roll is Confirmed (in addition to any other Hunger increases from Oblivion-Rouse above).
+3. If this roll was a Rouse Check, all dice have been processed by now and the result can be displayed and confirmed. Otherwise, after processing all Rouse and Oblivion-Rouse dice, continue to process the other dice in the pool as normal (assuming a standard roll).
 
 All automatic changes to stats (i.e. Hunger or Stains) described above stack, and they should only be applied to the character once the roll result has been Confirmed (i.e. at the same time as the results are broadcast).
 
@@ -241,8 +257,10 @@ Code paths: `lib/dice_kinds.ttslua`, `lib/rouse_outcomes.ttslua`, `core/roll_con
 - **Frenzy queue** (`maybeQueueFrenzyOnHungerCap`): after rouse hunger increases, queue Frenzy only when hunger was **already at** `C.MAX_HUNGER` before the bump (would exceed cap; not on first transition to max).
 - **ST bag → name modal** when no live roll; **NPC panel R** → `STR.initiateNpcRoll`.
 - **ST-initiated Rouse/Obliv (PCS panel or NPC roll):** after `RC.initiateRoll`, call `GlobalSpawnDefaultPoolDiceForActive` so the default staged die spawns and the drawer opens on first leave-container (player `DiceDrawer`, Black `STD.openForSlot`).
-- **Blood Surge rouse strip:** surge-tagged dice (`GM Notes` `|bloodSurge`) resolve only in the **Blood Surge Rouse** strip; the general **Rouse** strip uses `RC._getNonSurgeRouseValues` (physical dice without the suffix).
-- **Blood Surge activation:** `RC.activateBloodSurge` uses `EffectiveStats.forSeat` → `bloodPotencyDerived().bloodSurge` and fresh `ctx.rollPolicy()` for `bloodSurgeDiceMultiplier` (not raw persisted BP alone).
+- **Single rouse check:** `RC._buildRouseStripsForActive` emits one **Rouse** strip (all `pool.rouse` dice) and one **Oblivion Rouse** strip when applicable — no separate Blood Surge rouse strip.
+- **Rouse/Obliv exclusivity:** `DK.rouseKindBlockedByPool` + `GlobalRollSpawnDieRequest` return `nil` (silent bag fail).
+- **Blood Surge activation:** `RC.activateBloodSurge` uses `EffectiveStats.forSeat` → `bloodPotencyDerived().bloodSurge` and fresh `ctx.rollPolicy()` for `bloodSurgeDiceMultiplier`; fails if `oblivRouse` already in pool.
+- **Blood Surge undo:** Hunger bag right-click → `RC.deactivateBloodSurge` → `GlobalDestroyBloodSurgeDice` (all rouse for roll + surge normal/hunger with `bloodSurgePool` script_state).
 - **Take Half + Rouse:** if the pool has Rouse/Oblivion-Rouse dice, Take Half applies only to normal+hunger (`DK.nonRouseVampirePoolTotal`), destroys those dice, releases Rouse dice to roll (`takeHalfAwaitingRouse`), then merges strips in `recalculate` before POST_ROLL.
 - **Console helpers:** `rollTest`, `rollStTest`, `rollStSlots` (see `.dev/testbed/TEST BED.ttslua` region 11).
 - **Plan / checklist:** `.dev/plans/dice-system-pt2-implementation.md`.

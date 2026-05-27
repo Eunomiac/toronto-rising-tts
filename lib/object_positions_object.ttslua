@@ -1,0 +1,293 @@
+--[[
+  ObjectPositions resolver for object-script VMs (no core.state / lib.util).
+  Seat layout center comes from Global.call only.
+
+  Agent guidance: .dev/TTS_BUNDLING_SETUP.md
+]]
+
+local OP = {}
+
+local G = require("lib.guids")
+local CU = require("lib.csheet_util")
+
+OP.DEFAULT_TRANSITION_DURATION = 0.5
+
+--- @param obj Object
+--- @param partialPos table|nil
+--- @return Vector
+function OP.mergePosition(obj, partialPos)
+  partialPos = partialPos or {}
+  local currentPos = obj.getPosition()
+  return currentPos:copy():set(partialPos.x, partialPos.y, partialPos.z)
+end
+
+--- @param obj Object
+--- @param partialRot table|nil
+--- @return Vector
+function OP.mergeRotation(obj, partialRot)
+  partialRot = partialRot or {}
+  local currentRot = obj.getRotation()
+  return currentRot:copy():set(partialRot.x, partialRot.y, partialRot.z)
+end
+
+--- @param obj Object|nil
+--- @param anchorRef any
+--- @return Object|nil
+local function resolveAnchorObject(obj, anchorRef)
+  if anchorRef == nil then
+    return nil
+  end
+  if type(anchorRef) == "userdata" then
+    return anchorRef
+  end
+  if type(anchorRef) == "string" and anchorRef ~= "" then
+    local anchor = getObjectFromGUID(anchorRef)
+    if anchor ~= nil then
+      return anchor
+    end
+    if G ~= nil and type(G.GUIDS) == "table" and type(G.GUIDS[anchorRef]) == "string" then
+      return getObjectFromGUID(G.GUIDS[anchorRef])
+    end
+  end
+  return nil
+end
+
+--- @param center table|nil
+--- @return boolean
+local function isCenterPoint(center)
+  return type(center) == "table"
+    and type(center.x) == "number"
+    and type(center.y) == "number"
+    and type(center.z) == "number"
+end
+
+--- @return table|nil
+local function resolveSeatLayoutCenterPoint()
+  if Global ~= nil and type(Global.call) == "function" then
+    local cp = Global.call("GlobalGetSeatLayoutCenterPoint")
+    if isCenterPoint(cp) then
+      return cp
+    end
+  end
+  return nil
+end
+
+--- @param obj Object
+--- @param entry table
+--- @param state string
+--- @return table|nil
+function OP.resolveStatePose(obj, entry, state)
+  if type(obj) ~= "userdata" or type(entry) ~= "table" or type(state) ~= "string" then
+    return nil
+  end
+  local pose = entry[state]
+  if type(pose) ~= "table" then
+    return nil
+  end
+
+  local resolved = {
+    position = pose.position,
+    scale = pose.scale,
+    rotation = pose.rotation,
+    isLocked = pose.isLocked,
+    isHidden = pose.isHidden,
+    duration = pose.duration,
+    delay = pose.delay,
+    transitionDuration = pose.transitionDuration,
+    transitionDelay = pose.transitionDelay,
+  }
+  if resolved.isLocked == nil and type(pose.setLock) == "boolean" then
+    resolved.isLocked = pose.setLock
+  end
+
+  local anchorRef = pose.anchor
+  local anchorObj = resolveAnchorObject(obj, anchorRef)
+  if anchorObj ~= nil then
+    local anchorPos = anchorObj.getPosition()
+    local anchorRot = anchorObj.getRotation()
+    local height = pose.height
+    local yHeight = nil
+    if type(height) == "table" then
+      yHeight = height.y
+    elseif type(height) == "number" then
+      yHeight = height
+    end
+    resolved.position = {
+      x = anchorPos.x,
+      y = yHeight ~= nil and yHeight or anchorPos.y,
+      z = anchorPos.z,
+    }
+    resolved.rotation = {
+      x = anchorRot.x,
+      y = anchorRot.y,
+      z = anchorRot.z,
+    }
+  elseif pose.anchor ~= nil then
+    print("[ObjectPositionsObject] Anchored pose anchor not found: " .. tostring(pose.anchor))
+  end
+
+  local anchorGUID = pose.anchorGUID
+  local hasAnchor = type(anchorGUID) == "string" and anchorGUID ~= ""
+  local anchor = nil
+  if hasAnchor then
+    anchor = getObjectFromGUID(anchorGUID)
+    if anchor == nil then
+      print("[ObjectPositionsObject] Relative pose anchor not found for GUID: " .. tostring(anchorGUID))
+      return resolved
+    end
+  end
+
+  if anchor ~= nil and pose.rotationDelta ~= nil then
+    local anchorRot = anchor.getRotation()
+    local rotDelta = Vector(pose.rotationDelta)
+    resolved.rotation = {
+      x = anchorRot.x + rotDelta.x,
+      y = anchorRot.y + rotDelta.y,
+      z = anchorRot.z + rotDelta.z,
+    }
+  end
+
+  local distanceDelta = pose.distanceDelta
+  if anchor ~= nil and type(distanceDelta) == "number" then
+    local center = resolveSeatLayoutCenterPoint()
+    if center == nil then
+      print("[ObjectPositionsObject] Relative pose requires seatLayout center via Global.call; using unresolved pose.")
+      return resolved
+    end
+
+    local anchorPos = anchor.getPosition()
+    local objPos = obj.getPosition()
+    local dx = anchorPos.x - center.x
+    local dz = anchorPos.z - center.z
+    local radius = math.sqrt(dx * dx + dz * dz)
+    if radius < 1e-6 then
+      print("[ObjectPositionsObject] Relative pose anchor is too close to center; using unresolved pose.")
+      return resolved
+    end
+
+    local targetRadius = radius + distanceDelta
+    local nx = dx / radius
+    local nz = dz / radius
+    local partialPos = type(pose.position) == "table" and pose.position or {}
+    resolved.position = {
+      x = center.x + nx * targetRadius,
+      y = partialPos.y ~= nil and partialPos.y or objPos.y,
+      z = center.z + nz * targetRadius,
+    }
+  end
+
+  return resolved
+end
+
+--- @param pose table|nil
+--- @param baseDuration number|nil
+--- @param baseDelay number|nil
+--- @return number duration
+--- @return number delay
+function OP.resolveTransitionTiming(pose, baseDuration, baseDelay)
+  local duration = type(baseDuration) == "number" and baseDuration or OP.DEFAULT_TRANSITION_DURATION
+  local delay = type(baseDelay) == "number" and baseDelay or 0
+  if type(pose) == "table" then
+    if type(pose.duration) == "number" then
+      duration = pose.duration
+    elseif type(pose.transitionDuration) == "number" then
+      duration = pose.transitionDuration
+    end
+    if type(pose.delay) == "number" then
+      delay = delay + pose.delay
+    elseif type(pose.transitionDelay) == "number" then
+      delay = delay + pose.transitionDelay
+    end
+  end
+  if duration < 0 then
+    duration = 0
+  end
+  if delay < 0 then
+    delay = 0
+  end
+  return duration, delay
+end
+
+--- @param obj Object
+--- @param pose table
+--- @param baseDuration number|nil
+--- @param baseDelay number|nil
+--- @param opts table|nil
+--- @return number duration
+--- @return number delay
+function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
+  if type(obj) ~= "userdata" or type(pose) ~= "table" then
+    return 0, 0
+  end
+  opts = opts or {}
+  local shouldAbort = nil
+  if type(opts.shouldAbort) == "function" then
+    shouldAbort = opts.shouldAbort
+  end
+
+  local duration, delay = OP.resolveTransitionTiming(pose, baseDuration, baseDelay)
+  local initialLock = obj.getLock()
+  local desiredLock = pose.isLocked
+  if desiredLock == nil and type(pose.setLock) == "boolean" then
+    desiredLock = pose.setLock
+  end
+
+  local function run()
+    if shouldAbort ~= nil and shouldAbort() then
+      return
+    end
+    if type(desiredLock) == "boolean" and desiredLock == true then
+      obj.setLock(true)
+    end
+    if pose.position ~= nil then
+      local targetPos = OP.mergePosition(obj, pose.position)
+      if duration > 0 then
+        obj.setPositionSmooth(targetPos, false, false)
+      else
+        obj.setPosition(targetPos)
+      end
+    end
+    if pose.rotation ~= nil then
+      local targetRot = OP.mergeRotation(obj, pose.rotation)
+      if duration > 0 then
+        obj.setRotationSmooth(targetRot, false, false)
+      else
+        obj.setRotation(targetRot)
+      end
+    end
+    if pose.scale ~= nil then
+      local targetScale = Vector(pose.scale)
+      if duration > 0 then
+        obj.setScale(targetScale, false, false)
+      else
+        obj.setScale(targetScale)
+      end
+    end
+
+    local finalizeDelay = duration > 0 and duration or 0
+    CU.delay(function()
+      if shouldAbort ~= nil and shouldAbort() then
+        return
+      end
+      if type(desiredLock) == "boolean" then
+        obj.setLock(desiredLock)
+      elseif type(initialLock) == "boolean" then
+        obj.setLock(initialLock)
+      end
+      if pose.isHidden == true then
+        obj.setInvisibleTo({"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey", "Black"})
+      else
+        obj.setInvisibleTo({})
+      end
+    end, finalizeDelay)
+  end
+
+  if delay > 0 then
+    CU.delay(run, delay)
+  else
+    run()
+  end
+  return duration, delay
+end
+
+return OP

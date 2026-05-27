@@ -105,18 +105,7 @@ function RO.resolveOblivRouseDice(values)
     return { hungerDelta = 0, stainDelta = 1, narrative = "Stained", pendingChoice = false }
 end
 
---- Blood-surge rouse die: ≤5 increases Hunger by 1.
--- @param value number|nil
--- @return table { hungerDelta, stainDelta, narrative }
-function RO.resolveBloodSurgeRouse(value)
-    local v = tonumber(value)
-    if v ~= nil and v <= 5 then
-        return { hungerDelta = 1, stainDelta = 0, narrative = "Blood Surge: Hunger Roused" }
-    end
-    return { hungerDelta = 0, stainDelta = 0, narrative = "Blood Surge: Success" }
-end
-
---- Non-surge Rouse dice: ALL ≤5 → +1 Hunger.
+--- Rouse dice in a standard pool: ALL ≤5 → +1 Hunger.
 -- @param values table
 -- @return table { hungerDelta, stainDelta, narrative }
 function RO.resolveRouseDice(values)

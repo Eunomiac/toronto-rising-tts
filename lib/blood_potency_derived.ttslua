@@ -1,0 +1,77 @@
+--[[
+  Blood Potency rating + derived row lookup (stats + condition statChanges only).
+  Object-safe: no core.* or lib.pc_stats — for CSHEET decals and effective_stats facade.
+
+  Agent guidance: .dev/PC Data & Tracking/Conditions System Guide.md §10
+]]
+
+local BPDer = {}
+
+local C = require("lib.constants")
+
+local BP_DERIVED_KEYS = { "bloodSurge", "mending", "discBonus", "discReroll", "baneSeverity" }
+
+--- Effective Blood Potency rating from player stats (base + temp), clamped 0..10.
+--- @param stats table|nil
+--- @return number raw persisted rating only (no condition merge)
+local function ratingFromStatsOnly(stats)
+  if type(stats) ~= "table" then
+    return 0
+  end
+  local bp = stats.bloodPotency
+  if type(bp) == "number" then
+    return math.max(0, math.min(10, math.floor(bp)))
+  end
+  if type(bp) ~= "table" then
+    return 0
+  end
+  local rating
+  if bp.base ~= nil or bp.temp ~= nil then
+    rating = (tonumber(bp.base) or 0) + (tonumber(bp.temp) or 0)
+  else
+    rating = tonumber(bp.value) or 0
+  end
+  return math.max(0, math.min(10, math.floor(rating)))
+end
+
+--- Blood Potency rating including condition deltas (legacy number/table shapes).
+--- @param stats table|nil
+--- @param statChanges table|nil
+--- @return number
+function BPDer.ratingFromStats(stats, statChanges)
+  local rating = ratingFromStatsOnly(stats)
+  if type(statChanges) == "table" then
+    rating = rating + (tonumber(statChanges.bloodPotency) or 0)
+  end
+  return math.max(0, math.min(10, math.floor(rating)))
+end
+
+--- Lookup C.BloodPotency row from effective rating.
+--- @param stats table|nil
+--- @param statChanges table|nil
+--- @return table bloodSurge, mending, discBonus, discReroll, baneSeverity
+function BPDer.derivedFromStats(stats, statChanges)
+  local rating = BPDer.ratingFromStats(stats, statChanges)
+  local row = C.BloodPotency[rating]
+  if type(row) ~= "table" then
+    error(string.format(
+      "blood_potency_derived.derivedFromStats: C.BloodPotency[%s] is missing",
+      tostring(rating)
+    ))
+  end
+  local out = {}
+  for _, statKey in ipairs(BP_DERIVED_KEYS) do
+    local v = row[statKey]
+    if v == nil then
+      error(string.format(
+        "blood_potency_derived.derivedFromStats: C.BloodPotency[%s].%s is missing",
+        tostring(rating),
+        statKey
+      ))
+    end
+    out[statKey] = v
+  end
+  return out
+end
+
+return BPDer

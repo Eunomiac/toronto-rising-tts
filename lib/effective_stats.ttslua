@@ -13,8 +13,7 @@ local Conditions = require("core.conditions")
 local PSC = require("lib.pc_sheet_collect")
 local P = require("lib.pc_stats")
 local CD = require("lib.condition_defs")
-
-local BP_DERIVED_KEYS = { "bloodSurge", "mending", "discBonus", "discReroll", "baneSeverity" }
+local BPDer = require("lib.blood_potency_derived")
 
 --- @param stats table|nil
 --- @param statChanges table|nil
@@ -29,11 +28,7 @@ end
 --- @param statChanges table|nil
 --- @return number
 function ES.bloodPotencyRatingFromStats(stats, statChanges)
-  local rating = P.effectiveBloodPotency(stats)
-  if type(statChanges) == "table" then
-    rating = rating + (tonumber(statChanges.bloodPotency) or 0)
-  end
-  return math.max(0, math.min(10, math.floor(rating)))
+  return BPDer.ratingFromStats(stats, statChanges)
 end
 
 --- Lookup C.BloodPotency row from effective rating.
@@ -41,27 +36,7 @@ end
 --- @param statChanges table|nil
 --- @return table
 function ES.bloodPotencyDerivedFromStats(stats, statChanges)
-  local rating = ES.bloodPotencyRatingFromStats(stats, statChanges)
-  local row = C.BloodPotency[rating]
-  if type(row) ~= "table" then
-    error(string.format(
-      "effective_stats.bloodPotencyDerivedFromStats: C.BloodPotency[%s] is missing",
-      tostring(rating)
-    ))
-  end
-  local out = {}
-  for _, statKey in ipairs(BP_DERIVED_KEYS) do
-    local v = row[statKey]
-    if v == nil then
-      error(string.format(
-        "effective_stats.bloodPotencyDerivedFromStats: C.BloodPotency[%s].%s is missing",
-        tostring(rating),
-        statKey
-      ))
-    end
-    out[statKey] = v
-  end
-  return out
+  return BPDer.derivedFromStats(stats, statChanges)
 end
 
 --- @param playerID string

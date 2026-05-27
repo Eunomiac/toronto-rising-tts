@@ -180,5 +180,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-05-26 | COMMENT | TOR-141 | E2E pass summary + new issue ids |
 | 2026-05-26 | UPDATE | RUNNING TASKLIST **Focus** | TOR-155 → #1; TOR-162 → #2; TOR-161 → #3; TOR-163 → #4; TOR-154/137/81 deferred |
 | 2026-05-26 | UPDATE | RUNNING TASKLIST **Focus** | Author: TOR-164 (Dice-E2E harness) → #1; dice bugs 155/162/161/163 → #2–5; TOR-164 Linear priority → High |
+| 2026-05-26 | UPDATE | TOR-155, TOR-156, TOR-161 | Pool composition spec: single rouse check, rouse/obliv exclusivity, Blood Surge undo via Hunger R-C, no rouse tagging |
+| 2026-05-26 | COMMENT | TOR-141 | Dice pool rules doc + code alignment |
+| 2026-05-26 | CODE+DOC | Dice rouse pool | `global_script`, `roll_controller`, `dice_kinds`, `dice_bag`, `rouse_outcomes`; Dice System Pt. 2; Dice-E2E |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
