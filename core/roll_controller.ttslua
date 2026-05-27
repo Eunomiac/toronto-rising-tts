@@ -48,6 +48,7 @@ local DK   = require("lib.dice_kinds")
 local RouseOutcomes = require("lib.rouse_outcomes")
 local G    = require("lib.guids")
 local P    = require("lib.pc_stats")
+local ES   = require("lib.effective_stats")
 local Conditions = require("core.conditions")
 local RollConditionHandlers = require("core.roll_condition_handlers")
 local PCST = require("core.pc_storyteller_panel")
@@ -717,12 +718,11 @@ function RC.initiateRoll(color, config)
         local humanityBoxes  = 7
         local stains         = 0
         if pid ~= nil then
-            local Conditions = require("core.conditions")
-            local stats      = S.getStateVal("playerData", pid, "stats")
+            local stats = S.getStateVal("playerData", pid, "stats")
             if U.Type(stats) == "table" and type(stats.humanity) == "table" then
-                local hu = stats.humanity
-                humanityBoxes = (tonumber(hu.base) or 0) + Conditions.effectiveAggregateDelta(pid, "humanity")
-                stains        = tonumber(hu.stains) or 0
+                local ctx = ES.forPlayer(pid)
+                humanityBoxes = ctx.trackerMax("humanity")
+                stains        = tonumber(stats.humanity.stains) or 0
             elseif U.Type(stats) == "table" then
                 humanityBoxes = tonumber(stats.humanity) or 7
                 stains        = tonumber(stats.stains) or 0
@@ -2027,16 +2027,17 @@ function RC.activateBloodSurge(color)
 
     local stats = S.getPlayerVal(color, "stats") or {}
     local playerID = S.getPlayerID(color)
-    local resolvedStatChanges = nil
     local surgePolicy = active.rollPolicy
+    local surgeCount = 1
     if playerID ~= nil then
-        local resolved = Conditions.resolveForPlayer(playerID)
-        resolvedStatChanges = resolved.statChanges
-        surgePolicy = Conditions.resolveRollPolicy(playerID)
+        local ctx = ES.forSeat(color)
+        surgePolicy = ctx.rollPolicy()
+        surgeCount = tonumber(ctx.bloodPotencyDerived().bloodSurge) or 1
+    else
+        local bp = P.effectiveBloodPotency(stats)
+        local bpEntry = C.BloodPotency[bp]
+        surgeCount = (type(bpEntry) == "table" and tonumber(bpEntry.bloodSurge)) or 1
     end
-    local bp = P.effectiveBloodPotencyWithConditions(stats, resolvedStatChanges)
-    local bpEntry = C.BloodPotency[bp]
-    local surgeCount = (type(bpEntry) == "table" and tonumber(bpEntry.bloodSurge)) or 1
     if type(surgePolicy) == "table" then
         local mult = tonumber(surgePolicy.bloodSurgeDiceMultiplier) or 1
         if mult > 0 then

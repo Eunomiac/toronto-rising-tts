@@ -276,12 +276,8 @@ function GlobalGetResolvedStatChangesForPlayer(playerID)
     if playerID == C.StorytellerID then
         return {}
     end
-    local Conditions = require("core.conditions")
-    local resolved = Conditions.resolveForPlayer(playerID)
-    if type(resolved) ~= "table" or type(resolved.statChanges) ~= "table" then
-        return {}
-    end
-    return resolved.statChanges
+    local ES = require("lib.effective_stats")
+    return ES.forPlayer(playerID).statChanges
 end
 
 --- @return boolean
@@ -947,10 +943,10 @@ function GlobalCollectSheetImageUpdates(params)
     if type(stats) ~= "table" then
         error("GlobalCollectSheetImageUpdates: missing stats for player " .. params.playerID)
     end
-    local Conditions = require("core.conditions")
-    local resolved = Conditions.resolveForPlayer(params.playerID)
+    local ES = require("lib.effective_stats")
+    local ctx = ES.forPlayer(params.playerID)
     local PSC = require("lib.pc_sheet_collect")
-    return PSC.collectSheetImageUpdates(stats, resolved.statChanges, params.pageNum)
+    return PSC.collectSheetImageUpdates(ctx.stats, ctx.statChanges, params.pageNum)
 end
 
 --- Switch clicking player to a seat's sheet camera preset (sheetRed, sheetBrown, …).
@@ -2411,15 +2407,10 @@ function UpdateUIDisplays(delta)
             local willpower = 5
             local health = 7
             if pid then
-                local st = S.getStateVal("playerData", pid, "stats")
-                if type(st) == "table" then
-                    if type(st.willpower) == "table" then
-                        willpower = (tonumber(st.willpower.base) or 0) + (tonumber(st.willpower.temp) or 0)
-                    end
-                    if type(st.health) == "table" then
-                        health = (tonumber(st.health.base) or 0) + (tonumber(st.health.temp) or 0)
-                    end
-                end
+                local ES = require("lib.effective_stats")
+                local ctx = ES.forPlayer(pid)
+                willpower = ctx.trackerMax("willpower")
+                health = ctx.trackerMax("health")
             end
 
             if wants("playerStats") then

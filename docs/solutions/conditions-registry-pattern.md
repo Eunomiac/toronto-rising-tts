@@ -8,10 +8,12 @@ Toronto Rising stores **which** conditions are active in `gameState.playerData[i
 
 | Module | Role |
 | --- | --- |
-| `lib/condition_defs.ttslua` | Registry: per-condition `derive(stats, activeConditions)`, effects, priority |
-| `lib/condition_derive.ttslua` | Generic derive wrapper (`suppressedBy` only) |
+| `lib/condition_defs.ttslua` | Registry: per-condition `derive(stats, activeConditions, statChanges?)`, effects, priority |
+| `lib/condition_derive.ttslua` | Generic derive wrapper (`suppressedBy`); passes merged `statChanges` into derive |
 | `lib/condition_effects.ttslua` | Pure merge → `statChanges`, `hudElementIds`, `lightingModes` |
 | `lib/condition_roll_policies.ttslua` | Pure merge → roll policy snapshot |
+| `lib/effective_stats.ttslua` | Read-time facade: one resolve pass, typed stat getters |
+| `lib/pc_sheet_collect.ttslua` | Pure merge math: `trackerMaxFromStats`, `effectiveTempForDot/Aggregate` |
 | `core/conditions.ttslua` | Mutate, reconcile, validate, `afterChange`, `resolveRollPolicy` |
 | `core/roll_condition_handlers.ttslua` | Tier 3 roll lifecycle handlers |
 
@@ -35,8 +37,8 @@ impairedHealth = {
   kind = "derived",
   priority = 40,
   suppressedBy = { "torpor" },
-  derive = function(stats, activeConditions)
-    local maxBoxes = CD.trackerMaxFromStats(stats, "health")
+  derive = function(stats, _activeConditions, statChanges)
+    local maxBoxes = PSC.trackerMaxFromStats(stats, statChanges, "health")
     -- ...
     return (sup + agg) >= maxBoxes
   end,
@@ -91,9 +93,10 @@ See the **8-step checklist** in [Conditions System Guide §0](../../.dev/PC%20Da
 
 - Registry `roll = { ... }` merges into `active.rollPolicy` at roll initiate via `Conditions.resolveRollPolicy`.
 - Roll FSM reads **`active.rollPolicy`** only — not `playerData.conditions` or `CD.Defs`.
-- Stat helpers: `Conditions.effectiveStatDelta`, `Conditions.effectiveAggregateDelta`.
+- Stat helpers: **`EffectiveStats.forPlayer`** (preferred); legacy `Conditions.effectiveStatDelta`, `Conditions.effectiveAggregateDelta` delegate to the facade.
 
 ## Debug
 
 - `DEBUG.dumpConditions("Brown")` — active ids and resolved stat/HUD/light effects.
+- `DEBUG.dumpEffectiveStats("Brown")` — effective tracker max, BP rating, derived bloodSurge.
 - `DEBUG.dumpRollPolicy("Brown")` — merged roll policy on the active roll.

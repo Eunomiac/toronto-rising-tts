@@ -21,7 +21,7 @@ Canonical reference for creating or changing **any** condition in Toronto Rising
 
 | Channel | Registry key | Consumers (do not edit unless new channel) |
 | --- | --- | --- |
-| Stat dots / tracker length | `statChanges` | Sheets (`resolveForPlayer`), `effectiveStatDelta`, `effectiveAggregateDelta` |
+| Stat dots / tracker length | `statChanges` | Sheets (`resolveForPlayer`), **`EffectiveStats.forPlayer`**, legacy `Conditions.effectiveStatDelta` / `effectiveAggregateDelta` |
 | HUD overlay | `hud.overlay` or `hud.blindfoldVariant` | `core/hud_overlays.ttslua` |
 | Seat spotlight | `lighting.seatLight2` | `core/lighting.ttslua` |
 | Roll behavior | `roll = { ... }` | `active.rollPolicy` snapshot → `RC` hooks (see §6) |
@@ -29,7 +29,7 @@ Canonical reference for creating or changing **any** condition in Toronto Rising
 ### Checklist
 
 1. Add entry to [`lib/condition_defs.ttslua`](../../lib/condition_defs.ttslua): `id`, `kind`, `priority`, effect channels.
-2. If `derived` or `location`: add `derive(stats, activeConditions)`; optional `deriveSticky`, `suppressedBy`.
+2. If `derived` or `location`: add `derive(stats, activeConditions, statChanges?)`; optional `deriveSticky`, `suppressedBy`. Derived reconcile passes merged `statChanges` from `Effects.resolveForPlayer`.
 3. Wire **mutation** (skip if reconcile handles it):
    - Stats → `Conditions.reconcileDerivedForPlayer` on the mutation path
    - Location → `conditions = { "id" }` on district/site; reconciler runs on location/presence changes
@@ -140,7 +140,7 @@ Do not embed world side effects in `S.setStateVal` for stats without an explicit
 
 ### `statChanges`
 
-Merged into presentation via `Conditions.resolveForPlayer`. Sheets and rolls use `effectiveStatDelta` / `effectiveAggregateDelta` (base/temp + merged deltas).
+Merged into presentation via `Conditions.resolveForPlayer`. **Read-time game logic** must use [`lib/effective_stats.ttslua`](../../lib/effective_stats.ttslua) (`EffectiveStats.forPlayer` / `forSeat`) — see §10. Legacy `Conditions.effectiveStatDelta` / `effectiveAggregateDelta` delegate to the same math.
 
 ### `hud` / `lighting`
 
@@ -195,6 +195,8 @@ hudFrenzy = {
   hud = { overlay = "overlay_frenzy" },
 }
 ```
+
+**Manual — e2eBestialNull (E2E only):** `roll = { bestialNull = true }` for Dice-E2E Suite F. Apply via `rollE2eApplyConditions`; not for chronicle play.
 
 **Event — hudTransitionBlindfold:**
 
@@ -327,6 +329,7 @@ Implementation checklist: [`.dev/plans/roll-conditions-policy-layer.md`](../plan
 | Check | Command / action |
 | --- | --- |
 | Active ids + presentation | `DEBUG.dumpConditions("Brown")` |
+| Effective stat getters | `DEBUG.dumpEffectiveStats("Brown")` |
 | Roll policy on active roll | `DEBUG.dumpRollPolicy("Brown")` |
 | Location condition | Apply Dupont site; verify `bumpBloodPotency` on present PC |
 | Roll Tier 1 | Blood Surge with multiplier condition; WP reroll hunger toggle |
@@ -334,7 +337,61 @@ Implementation checklist: [`.dev/plans/roll-conditions-policy-layer.md`](../plan
 
 ---
 
-## 9. Related documents
+## 9. Effective stats (read-time)
+
+**Single facade:** [`lib/effective_stats.ttslua`](../../lib/effective_stats.ttslua) — one `Conditions.resolveForPlayer` pass per `forPlayer` / `forSeat` call; typed getters by stat family.
+
+```lua
+local ES = require("lib.effective_stats")
+local ctx = ES.forPlayer(playerID)  -- or ES.forSeat(color)
+
+ctx.trackerMax("health")           -- damage overflow, remorse pool, derive thresholds
+ctx.bloodPotencyDerived().bloodSurge
+ctx.humanityLineLen()
+ctx.dotRating("athletics")         -- future roll pool hooks (v1: not used for pool sizing)
+ctx.scalar("hunger")               -- explicit no-merge scalars
+ctx.rollPolicy()                   -- convenience; rolls still snapshot at initiateRoll
+```
+
+**Pure helper (no playerID):** `EffectiveStats.trackerMaxFromStats(stats, statChanges, trackerKey)` — shared with derive predicates via `PSC.trackerMaxFromStats`.
+
+**Roll policy vs stats:** Stat-derived values use `EffectiveStats`. Roll knobs (`crits`, WP scope, surge multiplier) stay on **`active.rollPolicy`** snapshot at `initiateRoll`. Blood Surge may re-resolve policy at activation via `ctx.rollPolicy()` (intentional mid-PRE_ROLL exception).
+
+### Anti-patterns
+
+- Manual `base + temp` on health/willpower/humanity for outcomes (damage, remorse, derive, admin HUD).
+- `S.getPlayerVal(..., "stats")` + ad-hoc condition math in game logic.
+- `CD.trackerMaxFromStats` for outcome thresholds without merged `statChanges` (deprecated wrapper — base+temp only).
+- `P.effectiveBloodPotencyWithConditions` (removed — use facade).
+
+### Audit appendix — stat read access points
+
+| Area | Module / function | Pattern | Verdict |
+| --- | --- | --- | --- |
+| Blood Surge dice | `RC.activateBloodSurge` | `ES.forSeat` → `bloodPotencyDerived` + `rollPolicy` | Facade |
+| Remorse pool | `RC.initiateRoll` REMORSE | `ctx.trackerMax("humanity")` | Facade |
+| Roll policy | `RC.initiateRoll` | `resolveRollPolicy` snapshot on `active` | Keep separate |
+| Damage overflow | `P.applyDamageOrHeal` | `ctx.trackerMax(which)` | Facade |
+| Derived conditions | `condition_defs` derive fns | `PSC.trackerMaxFromStats(stats, statChanges, …)` | Effective |
+| Admin sidebar HUD | `UpdateUIDisplays` | `ctx.trackerMax` health/willpower | Facade |
+| Sheets / decals | `GlobalCollectSheetImageUpdates`, `BPD` | `EffectiveStats` / `ctx.statChanges` | Facade |
+| Attribute pool sizing | roll pool build | **Not consumed v1** | Documented non-goal |
+| Hunger / XP | various | `ctx.scalar` / raw | No condition channel v1 |
+
+### Raw stat read allowlist (grep gate)
+
+Allowed without `EffectiveStats` (mutation, bootstrap, pure math):
+
+- `lib/effective_stats.ttslua`, `lib/pc_sheet_collect.ttslua`
+- `core/state.ttslua`, `lib/pc_bootstrap.ttslua` (bootstrap / persistence)
+- `lib/condition_defs.ttslua` (registry only — derive receives pre-merged `statChanges`)
+- Tests / `.tools/` gate scripts
+
+New game-logic consumers needing condition-aware values **must** use `EffectiveStats.forPlayer`.
+
+---
+
+## 10. Related documents
 
 - [PC Tracking & State Behavior](PC%20Tracking%20&%20State%20Behavior.md) — persisted shape, sheet math, API table
 - [conditions-registry-pattern.md](../../docs/solutions/conditions-registry-pattern.md) — solutions digest

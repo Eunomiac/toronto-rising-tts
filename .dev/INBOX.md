@@ -2,6 +2,8 @@
 
 ## Active
 
+_(empty)_
+
 ---
 
 ## Needs clarification
@@ -48,3 +50,4 @@
 - 2026-05-25 TOR-157 — [feature] Pre-transition seat presence modal on scene Apply
 - 2026-05-25 TOR-158 — [bug] Blood Surge ignores conditions affecting Blood Potency
 - 2026-05-25 TOR-159 — [bug] Frenzy triggers at hunger 5 instead of only when rising past cap
+- 2026-05-26 Dice-E2E pass — TOR-161 (normal bag right-click), TOR-162 (ST Opts stick), TOR-163 (no-difficulty broadcast), TOR-164 (playbook + rollTest harness 😀); reaffirmed TOR-155/156/73 via E2E markers

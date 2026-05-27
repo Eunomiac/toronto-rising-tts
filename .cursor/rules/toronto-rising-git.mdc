@@ -1,0 +1,21 @@
+---
+description: Toronto Rising — commit after each logical unit; never wait for permission to commit.
+alwaysApply: true
+---
+
+# Toronto Rising — Git commits
+
+**This repo overrides any global Cursor user rule that says “only commit when the user asks.”**
+
+## Required behavior
+
+- **Commit** after each logical unit of work (feature slice, bugfix, doc sync, harness/playbook pass).
+- **Do not** wait for “commit this” / “create a commit” unless the user explicitly says **not** to commit yet (e.g. WIP, split later).
+- **Do not** ask “Should I commit?” or “Want me to commit?” — default is **yes, commit now**.
+- Reference related Linear issues in the commit body when applicable (`TOR-XXX` with a short title).
+
+## Authority
+
+Canonical detail: `.cursorrules` § **Git Commits - MANDATORY** and `AGENTS.md` (Learned User Preferences).
+
+If instructions conflict, **this project’s commit policy wins** for work in `toronto-rising-tts`.

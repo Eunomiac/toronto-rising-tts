@@ -263,7 +263,9 @@ type PersistedCondition = true | { variant?: number };
 type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 ```
 
-**Registry (definitions, not persisted):** [`lib/condition_defs.ttslua`](../lib/condition_defs.ttslua) — per-condition `derive(stats, activeConditions)` functions, stat/HUD/light effects, merge priority. Shared math helpers (`CD.trackerMaxFromStats`, `CD.humanityHasImpairedSlot`) live in the same module.
+**Registry (definitions, not persisted):** [`lib/condition_defs.ttslua`](../lib/condition_defs.ttslua) — per-condition `derive(stats, activeConditions, statChanges?)` functions, stat/HUD/light effects, merge priority. Shared math: `PSC.trackerMaxFromStats`, `CD.humanityHasImpairedSlot`.
+
+**Effective stats (read-time):** [`lib/effective_stats.ttslua`](../lib/effective_stats.ttslua) — `EffectiveStats.forPlayer` / `forSeat` for condition-aware tracker max, dot ratings, BP derived row. See [Conditions System Guide §9](Conditions%20System%20Guide.md#9-effective-stats-read-time).
 
 **Derive orchestration:** [`lib/condition_derive.ttslua`](../lib/condition_derive.ttslua) — generic only (`suppressedBy` wrapper); no condition-specific rule catalog.
 
@@ -279,7 +281,8 @@ type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 | `Conditions.reconcileLocationHostedForScene(opts?)` | Apply/remove location-kind keys from `C.Districts` / `C.Sites` for present PCs; `skipPresentation` when followed by `Sync.full` |
 | `Conditions.afterChange(playerID)` | Per-player presentation (lights, HUD, overlays, sheets) — mirrors `Sync.player` |
 | `Conditions.resolveForPlayer(playerID)` | Merged statChanges / HUD ids / lighting modes |
-| `Conditions.effectiveStatDelta` / `effectiveAggregateDelta` | Sheet + roll helpers |
+| `EffectiveStats.forPlayer(playerID)` / `forSeat(color)` | **Preferred** read-time stat math (tracker max, BP, dots) |
+| `Conditions.effectiveStatDelta` / `effectiveAggregateDelta` | Legacy delegates to `EffectiveStats` |
 
 **Derive triggers:** health/willpower damage (`P.applyDamageOrHeal`), humanity stain/base/clear, game load (`InitializeGameState` → validate + reconcile), ST torpor clear.
 

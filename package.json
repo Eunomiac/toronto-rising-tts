@@ -4,6 +4,7 @@
   "description": "Tabletop Simulator LUA modding project",
   "scripts": {
     "check:pcall-gate": "node .tools/pcall-gate/check-pcall-gate.mjs",
+    "check:effective-stats-gate": "node .tools/effective-stats-gate/check-effective-stats-gate.mjs",
     "csheet-defaults:generate": "node .dev/scripts/generate_csheet_defaults_lua.js",
     "ui-xml-templates:embed": "node .dev/scripts/embed_ui_xml_templates.js",
     "tts-objects:fix-stubs": "node .dev/scripts/fix_tts_object_stubs.js",
@@ -24,7 +25,7 @@
     "tts-bridge:run-sequence-test": "npm run tts-bridge:build && node .tools/tts-bridge/scripts/run-sequence-live-test.mjs",
     "tts-mcp:compile": "tsc -p .tools/tts-mcp/tsconfig.json",
     "tts-mcp:build": "npm run tts-bridge:build && npm run tts-mcp:compile",
-    "build:all-tooling": "npm run check:pcall-gate && node .dev/scripts/generate_pcs_data_lua.js && node .dev/scripts/generate_pc_relationships_lua.js && node .dev/scripts/generate_tr_weather_lua.js && npm run csheet-defaults:generate && npm run ui-xml-templates:embed && node .dev/scripts/xml_color_template_generator.js --templateDir ui/.templates && node .dev/scripts/generate_npc_panel_xml.js && node .dev/scripts/generate_scenes_location_modals_xml.js && node .dev/scripts/fix_tts_object_stubs.js --quiet && npm run custom-ui-assets:merge-object-assets",
+    "build:all-tooling": "npm run check:pcall-gate && npm run check:effective-stats-gate && node .dev/scripts/generate_pcs_data_lua.js && node .dev/scripts/generate_pc_relationships_lua.js && node .dev/scripts/generate_tr_weather_lua.js && npm run csheet-defaults:generate && npm run ui-xml-templates:embed && node .dev/scripts/xml_color_template_generator.js --templateDir ui/.templates && node .dev/scripts/generate_npc_panel_xml.js && node .dev/scripts/generate_scenes_location_modals_xml.js && node .dev/scripts/fix_tts_object_stubs.js --quiet && npm run custom-ui-assets:merge-object-assets",
     "build": "npm run build:all-tooling",
     "tts-mcp:start": "node .tools/tts-mcp/dist/index.js",
     "tts:smoke": "node .tools/tts-bridge/scripts/smoke-test.mjs",

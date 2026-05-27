@@ -1,5 +1,5 @@
 --[[
-  Derived-condition evaluation: calls each registry entry's `derive(stats, activeConditions)`.
+  Derived-condition evaluation: calls each registry entry's `derive(stats, activeConditions, statChanges?)`.
   Generic wrappers only (suppression); condition-specific logic lives in lib/condition_defs.
   Agent guidance: .dev/PC Data & Tracking/Conditions System Guide.md
 ]]
@@ -33,8 +33,9 @@ end
 --- @param def table registry entry
 --- @param stats table
 --- @param activeConditions table|nil
+--- @param statChanges table|nil merged condition statChanges for effective tracker math
 --- @return boolean
-function Derive.shouldDerivedBeActive(def, stats, activeConditions)
+function Derive.shouldDerivedBeActive(def, stats, activeConditions, statChanges)
   if type(def) ~= "table" or def.kind ~= "derived" then
     return false
   end
@@ -44,14 +45,15 @@ function Derive.shouldDerivedBeActive(def, stats, activeConditions)
   if isSuppressed(activeConditions, def.suppressedBy) then
     return false
   end
-  return def.derive(stats, activeConditions) == true
+  return def.derive(stats, activeConditions, statChanges) == true
 end
 
 --- Compute desired derived condition ids from stats and current active set (for suppression).
 --- @param stats table|nil
 --- @param activeConditions table|nil
+--- @param statChanges table|nil merged condition statChanges for effective tracker math
 --- @return table<string, boolean>
-function Derive.evaluateDesiredDerived(stats, activeConditions)
+function Derive.evaluateDesiredDerived(stats, activeConditions, statChanges)
   local desired = {}
   if type(stats) ~= "table" then
     return desired
@@ -59,7 +61,7 @@ function Derive.evaluateDesiredDerived(stats, activeConditions)
   local active = type(activeConditions) == "table" and activeConditions or {}
   for id, def in pairs(CD.Defs) do
     if type(def) == "table" and def.kind == "derived" then
-      if Derive.shouldDerivedBeActive(def, stats, active) then
+      if Derive.shouldDerivedBeActive(def, stats, active, statChanges) then
         desired[id] = true
       end
     end

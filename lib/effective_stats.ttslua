@@ -1,0 +1,229 @@
+--[[
+  Effective player stats — single read-time facade for condition-aware stat math.
+  One resolve pass per forPlayer call; typed getters by stat family.
+
+  Agent guidance: .dev/PC Data & Tracking/Conditions System Guide.md §10
+]]
+
+local ES = {}
+
+local S = require("core.state")
+local C = require("lib.constants")
+local Conditions = require("core.conditions")
+local PSC = require("lib.pc_sheet_collect")
+local P = require("lib.pc_stats")
+local CD = require("lib.condition_defs")
+
+local BP_DERIVED_KEYS = { "bloodSurge", "mending", "discBonus", "discReroll", "baneSeverity" }
+
+--- @param stats table|nil
+--- @param statChanges table|nil
+--- @param trackerKey string
+--- @return number
+function ES.trackerMaxFromStats(stats, statChanges, trackerKey)
+  return PSC.trackerMaxFromStats(stats, statChanges, trackerKey)
+end
+
+--- Blood Potency rating including condition deltas (legacy number/table shapes).
+--- @param stats table|nil
+--- @param statChanges table|nil
+--- @return number
+function ES.bloodPotencyRatingFromStats(stats, statChanges)
+  local rating = P.effectiveBloodPotency(stats)
+  if type(statChanges) == "table" then
+    rating = rating + (tonumber(statChanges.bloodPotency) or 0)
+  end
+  return math.max(0, math.min(10, math.floor(rating)))
+end
+
+--- Lookup C.BloodPotency row from effective rating.
+--- @param stats table|nil
+--- @param statChanges table|nil
+--- @return table
+function ES.bloodPotencyDerivedFromStats(stats, statChanges)
+  local rating = ES.bloodPotencyRatingFromStats(stats, statChanges)
+  local row = C.BloodPotency[rating]
+  if type(row) ~= "table" then
+    error(string.format(
+      "effective_stats.bloodPotencyDerivedFromStats: C.BloodPotency[%s] is missing",
+      tostring(rating)
+    ))
+  end
+  local out = {}
+  for _, statKey in ipairs(BP_DERIVED_KEYS) do
+    local v = row[statKey]
+    if v == nil then
+      error(string.format(
+        "effective_stats.bloodPotencyDerivedFromStats: C.BloodPotency[%s].%s is missing",
+        tostring(rating),
+        statKey
+      ))
+    end
+    out[statKey] = v
+  end
+  return out
+end
+
+--- @param playerID string
+--- @return table ctx
+local function emptyContext(playerID)
+  return {
+    playerID = playerID,
+    stats = {},
+    statChanges = {},
+    resolved = {
+      statChanges = {},
+      hudElementIds = {},
+      lightingModes = {},
+    },
+    dotTempDelta = function(_key)
+      return 0
+    end,
+    dotRating = function(_key, _clampMax)
+      return 0
+    end,
+    trackerTempDelta = function(_key)
+      return 0
+    end,
+    trackerMax = function(_key)
+      return 0
+    end,
+    humanityLineLen = function()
+      return 0
+    end,
+    humanityHasImpairedSlot = function()
+      return false
+    end,
+    bloodPotencyRating = function()
+      return 0
+    end,
+    bloodPotencyDerived = function()
+      return ES.bloodPotencyDerivedFromStats({}, {})
+    end,
+    scalar = function(_key)
+      return 0
+    end,
+    rollPolicy = function()
+      return Conditions.resolveRollPolicy(playerID)
+    end,
+  }
+end
+
+--- @param playerID string
+--- @return table ctx
+local function buildContext(playerID)
+  if playerID == C.StorytellerID then
+    return emptyContext(playerID)
+  end
+
+  local stats = S.getStateVal("playerData", playerID, "stats")
+  if type(stats) ~= "table" then
+    stats = {}
+  end
+
+  local resolved = Conditions.resolveForPlayer(playerID)
+  local statChanges = resolved.statChanges or {}
+
+  local ctx = {
+    playerID = playerID,
+    stats = stats,
+    statChanges = statChanges,
+    resolved = resolved,
+  }
+
+  --- @param key string
+  --- @return number
+  function ctx.dotTempDelta(key)
+    return PSC.effectiveTempForDot(stats, statChanges, key)
+  end
+
+  --- @param key string
+  --- @param clampMax number|nil
+  --- @return number
+  function ctx.dotRating(key, clampMax)
+    if key == "bloodPotency" then
+      return ES.bloodPotencyRatingFromStats(stats, statChanges)
+    end
+    return PSC.dotRatingFromStats(stats, statChanges, key, clampMax)
+  end
+
+  --- @param key string
+  --- @return number
+  function ctx.trackerTempDelta(key)
+    return PSC.effectiveTempForAggregate(stats, statChanges, key)
+  end
+
+  --- @param key string health|willpower|humanity
+  --- @return number
+  function ctx.trackerMax(key)
+    return ES.trackerMaxFromStats(stats, statChanges, key)
+  end
+
+  function ctx.humanityLineLen()
+    return ctx.trackerMax("humanity")
+  end
+
+  function ctx.humanityHasImpairedSlot()
+    if type(stats.humanity) ~= "table" then
+      return false
+    end
+    local stains = tonumber(stats.humanity.stains) or 0
+    return CD.humanityHasImpairedSlot(ctx.humanityLineLen(), stains)
+  end
+
+  function ctx.bloodPotencyRating()
+    return ES.bloodPotencyRatingFromStats(stats, statChanges)
+  end
+
+  function ctx.bloodPotencyDerived()
+    return ES.bloodPotencyDerivedFromStats(stats, statChanges)
+  end
+
+  --- @param key string hunger|xp|other scalar — no condition merge in v1
+  --- @return number
+  function ctx.scalar(key)
+    if type(key) ~= "string" then
+      return 0
+    end
+    if key == "hunger" then
+      local col = S.getStateVal("playerData", playerID, "color")
+      if type(col) == "string" and col ~= "" then
+        return tonumber(S.getPlayerVal(col, "hunger")) or 0
+      end
+    end
+    local v = stats[key]
+    return tonumber(v) or 0
+  end
+
+  function ctx.rollPolicy()
+    return Conditions.resolveRollPolicy(playerID)
+  end
+
+  return ctx
+end
+
+--- One resolve pass; typed getters for condition-aware stat reads.
+--- @param playerID string
+--- @return table ctx
+function ES.forPlayer(playerID)
+  if type(playerID) ~= "string" or playerID == "" then
+    error("effective_stats.forPlayer: playerID required")
+  end
+  return buildContext(playerID)
+end
+
+--- Seat-color convenience for roll_controller and bag paths.
+--- @param color string
+--- @return table ctx
+function ES.forSeat(color)
+  if type(color) ~= "string" or color == "" then
+    error("effective_stats.forSeat: color required")
+  end
+  local playerID = S.getPlayerID(color)
+  if playerID == nil then
+    error(string.format("effective_stats.forSeat: no playerID for seat %q", color))
+  end
+  return ES.forPlayer(playerID)
+end
+
+return ES

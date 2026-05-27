@@ -23,7 +23,7 @@ Agents: if shipped code diverges from a playbook step, fix the doc or file a **B
 2. **Single connection (typical solo dev):** You are the only player at the table. You have **Host** privileges regardless of which seat color you occupy. You **cannot** be seated at Black and Brown simultaneously — only one seat at a time.
 3. **Seat choice:**
    - **Scenes + DEBUG + Storyteller toolbar:** Recommended seat **Black** (Storyteller). UI uses `visibility="Host"`; Black matches ST/dice-tray layout.
-   - **Dice (physical bags / roll panel):** Arm rolls with `rollTest("Brown", …)` from console (no second client required). To click bags or read Brown’s panel while staying on Black: TTS **View** → show **Brown** (and hide others if helpful). Alternatively, sit at **Brown** only for those steps, then return to Black for ST roll checks.
+   - **Dice (physical bags / roll panel):** `rollTest` / `rollStTest` move Host to the roll seat, hide loading overlay, and spoof camera automatically. `rollCancel` returns Host to **Black** when testing a PC color.
 4. Scene library has **two distinct scenes** prepared for Suite B (different `siteKey`, lighting preset, and `npcWorld.byArea` if possible).
 5. TTS console (`~`) or **External Editor** execute on Global (`guid` `-1`) for Lua snippets below.
 

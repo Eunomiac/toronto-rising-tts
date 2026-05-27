@@ -1,10 +1,12 @@
 --[[
   Static registry of condition definitions (not persisted).
-  Each derived condition owns a `derive(stats, activeConditions)` function.
+  Each derived condition owns a `derive(stats, activeConditions, statChanges?)` function.
   Agent guidance: .dev/PC Data & Tracking/Conditions System Guide.md
 ]]
 
 local CD = {}
+
+local PSC = require("lib.pc_sheet_collect")
 
 --- Keys forbidden in persisted condition values (legacy inline factory payloads).
 CD.LEGACY_PERSISTED_KEYS = {
@@ -16,15 +18,12 @@ CD.LEGACY_PERSISTED_KEYS = {
 }
 
 --- Tracker max from stats base + temp only (no condition stat deltas).
+--- Deprecated: prefer `PSC.trackerMaxFromStats(stats, statChanges, key)` with merged statChanges.
 --- @param stats table|nil
 --- @param trackerKey string
 --- @return number
 function CD.trackerMaxFromStats(stats, trackerKey)
-  if type(stats) ~= "table" or type(stats[trackerKey]) ~= "table" then
-    return 0
-  end
-  local tr = stats[trackerKey]
-  return (tonumber(tr.base) or 0) + (tonumber(tr.temp) or 0)
+  return PSC.trackerMaxFromStats(stats, nil, trackerKey)
 end
 
 --- Whether collision creates impaired humanity box (last humanity slot touched by stains from right).
@@ -64,8 +63,8 @@ CD.Defs = {
     --- @param stats table
     --- @param _activeConditions table|nil
     --- @return boolean
-    derive = function(stats, _activeConditions)
-      local maxBoxes = CD.trackerMaxFromStats(stats, "health")
+    derive = function(stats, _activeConditions, statChanges)
+      local maxBoxes = PSC.trackerMaxFromStats(stats, statChanges, "health")
       if maxBoxes < 1 then
         return false
       end
@@ -89,8 +88,8 @@ CD.Defs = {
     --- @param stats table
     --- @param _activeConditions table|nil
     --- @return boolean
-    derive = function(stats, _activeConditions)
-      local maxBoxes = CD.trackerMaxFromStats(stats, "health")
+    derive = function(stats, _activeConditions, statChanges)
+      local maxBoxes = PSC.trackerMaxFromStats(stats, statChanges, "health")
       if maxBoxes < 1 then
         return false
       end
@@ -119,8 +118,8 @@ CD.Defs = {
     --- @param stats table
     --- @param _activeConditions table|nil
     --- @return boolean
-    derive = function(stats, _activeConditions)
-      local maxBoxes = CD.trackerMaxFromStats(stats, "willpower")
+    derive = function(stats, _activeConditions, statChanges)
+      local maxBoxes = PSC.trackerMaxFromStats(stats, statChanges, "willpower")
       if maxBoxes < 1 then
         return false
       end
@@ -151,12 +150,12 @@ CD.Defs = {
     --- @param stats table
     --- @param _activeConditions table|nil
     --- @return boolean
-    derive = function(stats, _activeConditions)
+    derive = function(stats, _activeConditions, statChanges)
       if type(stats.humanity) ~= "table" then
         return false
       end
       local hu = stats.humanity
-      local lineLen = (tonumber(hu.base) or 0) + (tonumber(hu.temp) or 0)
+      local lineLen = PSC.trackerMaxFromStats(stats, statChanges, "humanity")
       local stains = tonumber(hu.stains) or 0
       return CD.humanityHasImpairedSlot(lineLen, stains)
     end,
@@ -180,6 +179,14 @@ CD.Defs = {
     priority = 30,
     statChanges = {},
     hud = { overlay = "overlay_frenzy" },
+  },
+  --- E2E-only manual condition (Dice-E2E Suite F). Not for chronicle play — remove via console after test.
+  e2eBestialNull = {
+    id = "e2eBestialNull",
+    kind = "manual",
+    priority = 5,
+    statChanges = {},
+    roll = { bestialNull = true },
   },
   hudBlindfold = {
     id = "hudBlindfold",

@@ -1564,101 +1564,7 @@ end
 
 -- #endregion
 
---- One-shot cleanup: all NPC figurines + paired lights in the world, then clear NPC instance state.
---- Run from External Editor console:  lua destroyAllNpcWorldObjects()
-function destroyAllNpcWorldObjects()
-  local TAG_FIG = "npc_figurine"
-  local TAG_LIT = "npc_light"
-  local destroyed = { figurines = 0, lights = 0 }
-  local seenGuids = {}
-
-  local function destroyOne(obj, bucket)
-      if obj == nil or obj.destruct == nil then
-          return
-      end
-      local guid = obj.getGUID ~= nil and obj.getGUID() or nil
-      if guid ~= nil and guid ~= "" then
-          if seenGuids[guid] then
-              return
-          end
-          seenGuids[guid] = true
-      end
-      if obj.getLock ~= nil and obj.getLock() then
-          obj.setLock(false)
-      end
-      obj.destruct()
-      destroyed[bucket] = destroyed[bucket] + 1
-  end
-
-  for _, obj in ipairs(getObjectsWithTag(TAG_FIG) or {}) do
-      destroyOne(obj, "figurines")
-  end
-  for _, obj in ipairs(getObjectsWithTag(TAG_LIT) or {}) do
-      destroyOne(obj, "lights")
-  end
-
-  -- Clear state so restored GUIDs / instances do not reference deleted objects.
-  -- local S = require("core.state")
-  S.setStateVal({}, "npcs", "instances")
-
-  local lights = S.getStateVal("lights") or {}
-  for regName, _ in pairs(lights) do
-      if type(regName) == "string" and string.sub(regName, 1, 9) == "npcLight_" then
-          lights[regName] = nil
-      end
-  end
-  S.setStateVal(lights, "lights")
-  S.setStateVal({}, "seatLayout", "occupiedNPCSlots")
-
-  print(string.format(
-      "[TR] destroyAllNpcWorldObjects: figurines=%d lights=%d (state cleared)",
-      destroyed.figurines,
-      destroyed.lights
-  ))
-  return destroyed
-end
-
--- destroyAllNpcWorldObjects()
-
--- ToggleSoundEmitters()
--- ToggleFigures()
-
--- getObjectsByName("SEAT_")
--- dumpObjectXmlToFile("802d14", "debug_logs/csheet_page4_pink_runtime.xml")
--- dumpObjectXmlToFile(G.GUIDS.CSHEET_PAGE_4_PINK)
--- getObjectFromGUID("fe1fb7").interactable = false
--- print(JSON.encode_pretty(UI.getAttributes("playerHud_mapPanel_districtCard_Red")))
--- U.setAttributes("npc_memberLock_harpies_theAristocrat", {pivot = "0.5 0.5", scale = "0.8"})
--- print(JSON.encode_pretty(UI.getAttributes("dc_mode_input")))
-
--- ==== Comment Out All Functions You Don't Want To Run ===
--- CameraGenerationTest()
--- PreflightTest()
--- GeometryDryRunTest()
--- RealDataGenerationTest()
--- LimitedResolveTest()
--- FullApplyTest()
--- TableSwitchSequenceTest()
--- InitializeAllTablesToHidden()
--- SourceResolutionDiagnosticTest()
--- SoundscapeInspectEmittersTest()
--- SoundscapeStopAllTest()
--- SoundscapeMoodTest()
--- SoundscapeMoodCycleTest()
--- SoundscapeLocationMusicTest()
--- SoundscapeLocationAmbienceTest()
--- SoundscapeWeatherPresetTest()
--- SoundscapeFocusedWeatherLayersTest()
--- SoundscapeIndoorDuckingTest()
--- SoundscapeFeaturedMusicTest()
--- SoundscapeStopFeaturedTest()
--- SoundscapeResumeBackgroundTest()
--- SoundscapeFullLayeredSmokeTest()
--- SoundscapeApplyContextTest()
--- SoundscapeSiteTest("CLVestibule")
--- SoundscapeSiteTest("StRegisRoom101")
-
--- print(JSON.encode_pretty(getGlobalLightingValues()))
+-- #region NPC WORLD FUNCTIONS
 
 --- One-shot: print which NPC seat workshop objects are missing (chair, figure anchor, two seat lights).
 --- Optional: warns if `SEAT_FIGURE_NPC*` exists but lacks the `NPC#Object` tag (NPCS.resolveSeatFigurineObject uses tags).
@@ -1729,37 +1635,61 @@ function checkNpcSeatWorldObjects()
   end
 end
 
--- checkNpcSeatWorldObjects()
+--- One-shot cleanup: all NPC figurines + paired lights in the world, then clear NPC instance state.
+--- Run from External Editor console:  lua destroyAllNpcWorldObjects()
+function destroyAllNpcWorldObjects()
+  local TAG_FIG = "npc_figurine"
+  local TAG_LIT = "npc_light"
+  local destroyed = { figurines = 0, lights = 0 }
+  local seenGuids = {}
 
+  local function destroyOne(obj, bucket)
+      if obj == nil or obj.destruct == nil then
+          return
+      end
+      local guid = obj.getGUID ~= nil and obj.getGUID() or nil
+      if guid ~= nil and guid ~= "" then
+          if seenGuids[guid] then
+              return
+          end
+          seenGuids[guid] = true
+      end
+      if obj.getLock ~= nil and obj.getLock() then
+          obj.setLock(false)
+      end
+      obj.destruct()
+      destroyed[bucket] = destroyed[bucket] + 1
+  end
 
--- getObjectFromGUID(G.GUIDS.SEAT_FIGURE_RED).setInvisibleTo({})
--- getObjectFromGUID(G.GUIDS.PRINCE_SIGNET_BORDER_RED).setInvisibleTo({})
--- getObjectFromGUID(G.GUIDS.PRINCE_SIGNET_RED).setInvisibleTo({})
--- getObjectFromGUID(G.GUIDS.PRINCE_CURTAIN_RED).setInvisibleTo({})
-UI.hide("verticalScrollViewTest")
+  for _, obj in ipairs(getObjectsWithTag(TAG_FIG) or {}) do
+      destroyOne(obj, "figurines")
+  end
+  for _, obj in ipairs(getObjectsWithTag(TAG_LIT) or {}) do
+      destroyOne(obj, "lights")
+  end
 
-UI.setAttributes("verticalLayoutTestContainer", {minHeight = "2000", height = "2000", preferredHeight = "2000", flexibleHeight="0"})
-UI.hide("verticalLayoutTestContainer")
-UI.setAttributes("vLT_textTest1", {minHeight = "200"})
-UI.setAttributes("vLT_textTest2", {minHeight = "200"})
-UI.setAttributes("vLT_textTest3", {minHeight = "200"})
-UI.setAttributes("vLT_textTest4", {minHeight = "200"})
-UI.setAttributes("vLT_textTest5", {minHeight = "200"})
-UI.setAttributes("vLT_textTest6", {minHeight = "200"})
-UI.setAttributes("vLT_textTest7", {minHeight = "200"})
-UI.setAttributes("vLT_textTest8", {minHeight = "200"})
-UI.setAttributes("vLT_textTest9", {minHeight = "200"})
-UI.setAttributes("vLT_textTest10", {minHeight = "200"})
-UI.setAttributes("vLT_textTest11", {minHeight = "200"})
-UI.setAttributes("vLT_textTest12", {minHeight = "200"})
-UI.setAttributes("vLT_textTest13", {minHeight = "200"})
-UI.setAttributes("vLT_textTest14", {minHeight = "200"})
-UI.setAttributes("vLT_textTest15", {minHeight = "200"})
-UI.setAttributes("vLT_textTest16", {minHeight = "200"})
+  -- Clear state so restored GUIDs / instances do not reference deleted objects.
+  -- local S = require("core.state")
+  S.setStateVal({}, "npcs", "instances")
 
-UI.show("gameStateOverlay_root")
-UI.setAttributes("gameStateOverlay_root", {active = "true"})
+  local lights = S.getStateVal("lights") or {}
+  for regName, _ in pairs(lights) do
+      if type(regName) == "string" and string.sub(regName, 1, 9) == "npcLight_" then
+          lights[regName] = nil
+      end
+  end
+  S.setStateVal(lights, "lights")
+  S.setStateVal({}, "seatLayout", "occupiedNPCSlots")
 
+  print(string.format(
+      "[TR] destroyAllNpcWorldObjects: figurines=%d lights=%d (state cleared)",
+      destroyed.figurines,
+      destroyed.lights
+  ))
+  return destroyed
+end
+
+-- #endregion
 
 -- #region 11. DICE SYSTEM PT.2 — MANUAL SCENARIOS (console)
 
@@ -1798,31 +1728,85 @@ end
 
 -- #endregion
 
-dumpObjectXmlToFile("631323")
--- M.setCamera("Red", "default")
--- M.setCamera("Red", "wideFacing")
+-- #region 12. E2E TESTING COMMANDS
 
--- Player.Black.lookAt({
---   position = Vector({0.0000, 5.8436, -52.0298}),
---   pitch = 70.5275,
---   yaw = 0,
---   distance = 11
--- })
+-- Step 0 - Cleanup
+rollCancelAll()
 
+-- Step A1 - Arm Roll
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E Standard")
+print(GlobalGetRollPhase({ color = "Brown" }))
 
--- Player.Black.lookAt({
---   position = Vector({ 0, 5.8436, -50.6698 }),
---   pitch = 35.9174,
---   yaw = 0,
---   distance = 17.2098
--- })
+-- Step A2 - Build Pool & Step A3 - Roll and Confirm
+rollState("Brown")
 
--- Player.Black.lookAt({
---   position = Vector({ 0, 17.8731, -43.3904 }),
---   pitch = 58.6195,
---   yaw = 0,
---   distance = 10.8949
--- })
+-- Suite B - Cancel and Reset
+rollTest("Brown", 2)
+rollCancel("Brown")
+rollCancelAll()
 
+-- Suite C - Dedicated rouse check
+rollTest("Brown", 1, C.RollType.ROUSE, "E2E Rouse")
 
-getObjectFromGUID("8ae9ac").interactable = true
+rollState("Brown")
+rollCancel("Brown")
+
+-- Suite D - Oblivion Rouse Dedicated (Purple)
+rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E Oblivion Rouse")
+
+rollState("Purple")
+rollCancel("Purple")
+
+-- Suite E - Storyteller NPC roll (standard)
+rollStTest("E2E ST", C.RollType.STANDARD)
+rollStSlots()
+
+rollCancel("Black")
+
+-- Suite F - Conditions policy
+
+-- Suite G - Result calculation accuracy
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G1") -- G1
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E Classify G2") -- G2
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E Classify G3") -- G3
+rollTest("Brown", 7, C.RollType.STANDARD, "E2E Classify G4") -- G4
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G5") -- G5
+rollTest("Brown", 4, C.RollType.STANDARD, "E2E Classify G6") -- G6
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G7") -- G7
+rollCancel("Brown")
+
+-- Suite H - Take Half
+rollTest("Brown", 4, C.RollType.STANDARD, "E2E Take Half") -- H1
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E Take Half Rouse") -- H2
+rollCancel("Brown")
+
+-- #endregion
+
+-- ==== Comment Out All Functions You Don't Want To Run ===
+-- ToggleSoundEmitters()
+-- ToggleFigures()
+-- CameraGenerationTest()
+-- PreflightTest()
+-- GeometryDryRunTest()
+-- RealDataGenerationTest()
+-- LimitedResolveTest()
+-- FullApplyTest()
+-- TableSwitchSequenceTest()
+-- InitializeAllTablesToHidden()
+-- SourceResolutionDiagnosticTest()
+-- SoundscapeInspectEmittersTest()
+-- SoundscapeStopAllTest()
+-- SoundscapeMoodTest()
+-- SoundscapeMoodCycleTest()
+-- SoundscapeLocationMusicTest()
+-- SoundscapeLocationAmbienceTest()
+-- SoundscapeWeatherPresetTest()
+-- SoundscapeFocusedWeatherLayersTest()
+-- SoundscapeIndoorDuckingTest()
+-- SoundscapeFeaturedMusicTest()
+-- SoundscapeStopFeaturedTest()
+-- SoundscapeResumeBackgroundTest()
+-- SoundscapeFullLayeredSmokeTest()
+-- SoundscapeApplyContextTest()
+-- SoundscapeSiteTest("CLVestibule")
+-- SoundscapeSiteTest("StRegisRoom101")

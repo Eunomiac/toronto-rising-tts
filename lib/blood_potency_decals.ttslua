@@ -7,6 +7,7 @@
 local BPD = {}
 
 local C = require("lib.constants")
+local ES = require("lib.effective_stats")
 
 local BP_STAT_KEYS = { "bloodSurge", "mending", "discBonus", "discReroll", "baneSeverity" }
 
@@ -67,59 +68,11 @@ function BPD.resolveDecalUrl(statKey, value)
   return assertProductionDecalUrl(url, key)
 end
 
---- Effective Blood Potency rating: stats.bloodPotency base + temp + resolved condition deltas.
---- Matches `PSC.effectiveTempForDot` / sheet dot pipeline (location `bumpBloodPotency`, etc.).
 --- @param stats table|nil
 --- @param resolvedStatChanges table|nil merged statChanges from condition resolve
---- @return number
-local function effectiveBloodPotency(stats, resolvedStatChanges)
-  if type(stats) ~= "table" then
-    return 0
-  end
-  local bp = stats.bloodPotency
-  if type(bp) == "number" then
-    return math.max(0, math.min(10, math.floor(bp)))
-  end
-  if type(bp) ~= "table" then
-    return 0
-  end
-  local rating
-  if bp.base ~= nil or bp.temp ~= nil then
-    rating = (tonumber(bp.base) or 0) + (tonumber(bp.temp) or 0)
-  else
-    rating = tonumber(bp.value) or 0
-  end
-  if type(resolvedStatChanges) == "table" then
-    rating = rating + (tonumber(resolvedStatChanges.bloodPotency) or 0)
-  end
-  return math.max(0, math.min(10, math.floor(rating)))
-end
-
---- @param stats table
---- @param resolvedStatChanges table|nil
 --- @return table bloodSurge, mending, discBonus, discReroll, baneSeverity
 function BPD.effectiveDerivedStats(stats, resolvedStatChanges)
-  local rating = effectiveBloodPotency(stats, resolvedStatChanges)
-  local row = C.BloodPotency[rating]
-  if type(row) ~= "table" then
-    error(string.format(
-      "blood_potency_decals.effectiveDerivedStats: C.BloodPotency[%s] is missing",
-      tostring(rating)
-    ))
-  end
-  local out = {}
-  for _, statKey in ipairs(BP_STAT_KEYS) do
-    local v = row[statKey]
-    if v == nil then
-      error(string.format(
-        "blood_potency_decals.effectiveDerivedStats: C.BloodPotency[%s].%s is missing",
-        tostring(rating),
-        statKey
-      ))
-    end
-    out[statKey] = v
-  end
-  return out
+  return ES.bloodPotencyDerivedFromStats(stats, resolvedStatChanges)
 end
 
 --- @param pageNum number

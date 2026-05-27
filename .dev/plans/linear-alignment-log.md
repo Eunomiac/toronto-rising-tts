@@ -171,5 +171,14 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-05-25 | UPDATE | Focus + Linear relations | Back-burner approved: TOR-153/156/157 deferred + `blockedBy`; TOR-154 kept in Focus (#4) as quick fix |
 | 2026-05-26 | DONE | TOR-159 | Frenzy queue only when hunger already at MAX before rouse bump |
 | 2026-05-26 | DONE | TOR-158 | Blood Surge uses condition-aware BP + fresh roll policy at activation |
+| 2026-05-26 | INBOX | Dice-E2E.md pass | Processed 😀/❌/⚠️ markers per AGENT INSTRUCTION |
+| 2026-05-26 | CREATE | TOR-161 | Bug: normal bag right-click does not undo hunger (Dice-E2E A2/K2) |
+| 2026-05-26 | CREATE | TOR-162 | Bug: ST per-roll Opts not persisting/applying (Dice-E2E G6/G7) |
+| 2026-05-26 | CREATE | TOR-163 | Bug: roll broadcast empty when no difficulty (Dice-E2E Suite E) |
+| 2026-05-26 | CREATE | TOR-164 | Sub-issue of TOR-141: Dice-E2E playbook + rollTest harness (all 😀) |
+| 2026-05-26 | UPDATE | TOR-73 | Dice-E2E Suite H: H2 rouse auto-parse; H1 images; related TOR-156 |
+| 2026-05-26 | COMMENT | TOR-141 | E2E pass summary + new issue ids |
+| 2026-05-26 | UPDATE | RUNNING TASKLIST **Focus** | TOR-155 → #1; TOR-162 → #2; TOR-161 → #3; TOR-163 → #4; TOR-154/137/81 deferred |
+| 2026-05-26 | UPDATE | RUNNING TASKLIST **Focus** | Author: TOR-164 (Dice-E2E harness) → #1; dice bugs 155/162/161/163 → #2–5; TOR-164 Linear priority → High |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

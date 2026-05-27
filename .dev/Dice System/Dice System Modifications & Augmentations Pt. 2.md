@@ -242,7 +242,7 @@ Code paths: `lib/dice_kinds.ttslua`, `lib/rouse_outcomes.ttslua`, `core/roll_con
 - **ST bag → name modal** when no live roll; **NPC panel R** → `STR.initiateNpcRoll`.
 - **ST-initiated Rouse/Obliv (PCS panel or NPC roll):** after `RC.initiateRoll`, call `GlobalSpawnDefaultPoolDiceForActive` so the default staged die spawns and the drawer opens on first leave-container (player `DiceDrawer`, Black `STD.openForSlot`).
 - **Blood Surge rouse strip:** surge-tagged dice (`GM Notes` `|bloodSurge`) resolve only in the **Blood Surge Rouse** strip; the general **Rouse** strip uses `RC._getNonSurgeRouseValues` (physical dice without the suffix).
-- **Blood Surge activation:** `RC.activateBloodSurge` uses `Conditions.resolveForPlayer` → `P.effectiveBloodPotencyWithConditions` for surge pool size and fresh `resolveRollPolicy` for `bloodSurgeDiceMultiplier` (not raw persisted BP alone).
+- **Blood Surge activation:** `RC.activateBloodSurge` uses `EffectiveStats.forSeat` → `bloodPotencyDerived().bloodSurge` and fresh `ctx.rollPolicy()` for `bloodSurgeDiceMultiplier` (not raw persisted BP alone).
 - **Take Half + Rouse:** if the pool has Rouse/Oblivion-Rouse dice, Take Half applies only to normal+hunger (`DK.nonRouseVampirePoolTotal`), destroys those dice, releases Rouse dice to roll (`takeHalfAwaitingRouse`), then merges strips in `recalculate` before POST_ROLL.
 - **Console helpers:** `rollTest`, `rollStTest`, `rollStSlots` (see `.dev/testbed/TEST BED.ttslua` region 11).
 - **Plan / checklist:** `.dev/plans/dice-system-pt2-implementation.md`.

@@ -91,6 +91,44 @@ function PSC.effectiveTempForDot(stats, resolvedStatChanges, dotKey)
   return baseT + add
 end
 
+--- Max tracker boxes: base + temp + merged condition statChanges.
+--- Shared by damage overflow, remorse pool, derived condition derive, and EffectiveStats.
+--- @param stats table|nil
+--- @param resolvedStatChanges table|nil
+--- @param trackerKey string health|willpower|humanity
+--- @return number
+function PSC.trackerMaxFromStats(stats, resolvedStatChanges, trackerKey)
+  local base = 0
+  if type(stats) == "table" and type(stats[trackerKey]) == "table" then
+    base = tonumber(stats[trackerKey].base) or 0
+  end
+  return base + PSC.effectiveTempForAggregate(stats, resolvedStatChanges, trackerKey)
+end
+
+--- Dot-line rating: base + temp + condition delta, clamped.
+--- @param stats table|nil
+--- @param resolvedStatChanges table|nil
+--- @param dotKey string
+--- @param clampMax number|nil default 5
+--- @return number
+function PSC.dotRatingFromStats(stats, resolvedStatChanges, dotKey, clampMax)
+  local base = 0
+  if type(stats) == "table" then
+    if dotKey == "bloodPotency" and type(stats.bloodPotency) == "table" then
+      base = tonumber(stats.bloodPotency.base) or 0
+    elseif type(stats.attributes) == "table" and type(stats.attributes[dotKey]) == "table" then
+      base = tonumber(stats.attributes[dotKey].base) or 0
+    elseif type(stats.skills) == "table" and type(stats.skills[dotKey]) == "table" then
+      base = tonumber(stats.skills[dotKey].base) or 0
+    elseif type(stats.disciplines) == "table" and type(stats.disciplines[dotKey]) == "table" then
+      base = tonumber(stats.disciplines[dotKey].base) or 0
+    end
+  end
+  local maxRating = tonumber(clampMax) or 5
+  local rating = base + PSC.effectiveTempForDot(stats, resolvedStatChanges, dotKey)
+  return math.max(0, math.min(maxRating, math.floor(rating)))
+end
+
 --- Build XML attribute updates for character sheet objects.
 --- @param stats table
 --- @param resolvedStatChanges table|nil merged statChanges from condition_effects

@@ -12,20 +12,20 @@ This file is continuously updated with issues and plans for feature development.
 
 ## Focus
 
-_Stack rank for the current cycle (2026-05-25). **Precedence** (Focus + Linear `blockedBy`) — not Linear priority. **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). Deferred items may still be Medium/High importance in Linear._
+_Stack rank for the current cycle (2026-05-26). **Precedence** (Focus + Linear `blockedBy`) — not Linear priority. **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). Deferred items may still be Medium/High importance in Linear._
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-155** — Roll panel pool dots color coding | Player-facing regression — pool kind colors + rouse offset lost |
-| 2 | **TOR-154** — Floor/plinth locked objects | Likely quick fix — `C.LockedObjects` not sticking on load |
-| 3 | **TOR-137** — Unicode minus in Sites import | Quick tooling win; unblocks site data |
-| 4 | **TOR-81** — Light modes cleanup _(In Progress)_ | Larger refactor — continue when above are done |
+| 1 | **TOR-155** — Roll panel pool dots color coding | Dice-E2E A2/C/D/E — all pool dots white / `R1` / `5N+2H` text |
+| 2 | **TOR-162** — ST per-roll Opts not sticking | Dice-E2E G6/G7 — `crits` / `bestialNull` ignored; wrong `resultClass` |
+| 3 | **TOR-161** — Normal bag right-click undo | Dice-E2E A2/K2 — cannot remove hunger via normal bag right-click |
+| 4 | **TOR-163** — Broadcast when no difficulty | Dice-E2E Suite E — confirm shows only "Roll Completed" |
 
-**Done this cycle:** TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions).
+**Done this cycle:** TOR-164 (Dice-E2E harness + doc). TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions).
 
 **Ongoing (not Focus stack):** TOR-141 — maintain E2E playbooks when dice/scenes/debug testing changes.
 
-**Deferred this cycle:** TOR-139 (scenes panel trim + 3-column library grid), TOR-140 (sound panel text + larger font), TOR-142 (four scene Apply clock buttons), TOR-143 (phase system + session lifecycle), TOR-146 (delete active scene ends live first), TOR-147 (blindfold soundscape fade + weather), TOR-148 (RT clock too fast), TOR-149 (ST dice tray lights), TOR-150 (thunder indoor ducking), TOR-151 (default no-scene environment), TOR-152 (Play load scene restore), TOR-73 (Take Half redesign + broadcast display), TOR-153 (map pins unmappable), TOR-156 (roll broadcast trim), TOR-157 (pre-Apply seat modal). Other open bullets unchanged.
+**Deferred this cycle:** TOR-139 (scenes panel trim + 3-column library grid), TOR-140 (sound panel text + larger font), TOR-142 (four scene Apply clock buttons), TOR-143 (phase system + session lifecycle), TOR-146 (delete active scene ends live first), TOR-147 (blindfold soundscape fade + weather), TOR-148 (RT clock too fast), TOR-149 (ST dice tray lights), TOR-150 (thunder indoor ducking), TOR-151 (default no-scene environment), TOR-152 (Play load scene restore), TOR-73 (Take Half redesign + H2 rouse auto-parse), TOR-153 (map pins unmappable), TOR-154 (floor/plinth locked), TOR-156 (roll broadcast trim), TOR-157 (pre-Apply seat modal), TOR-137 (Sites unicode minus), TOR-81 (light modes cleanup). Other open bullets unchanged.
 
 ---
 
@@ -34,10 +34,14 @@ _Stack rank for the current cycle (2026-05-25). **Precedence** (Focus + Linear `
 - [x] Roll conditions set on rolls via the Storyteller control panel are not persisted and do not apply to rolls. _(Addressed: `roll_ui.ttslua` `uiToggleGet` normalizes Toggle `isOn` from string/boolean/number so Apply writes correct booleans.)_ _(TOR-54)_
 - [x] Automatic camera repositioning during the roll sequence is inconsistent. Should be modeled off of how the camera controls are applied in the Admin Debug panel (since they work flawlessly). _(Addressed: `main.ttslua` `M.setCamera` now applies `lookAt(intermediateCameraData)` before the final preset.)_ _(TOR-57)_
 - [ ] **Roll baton-pass camera (remaining):** Too many camera applications during the rolling handoff, including some that reapply the current angle; cuts are jumpier than Admin Debug Camera or Camera PC controls. Audit the roll pipeline and route roll-time switches through the same code path as those controls. _(TOR-72)_
-- [ ] **Take Half redesign:** Available on any roll without difficulty. Synthetic result = half the pool size in **normal successes (rounded down)**, remainder **blank**, all treated as normal dice (Hunger dice count toward pool size but do not use Hunger faces). Example: pool 13 → 6 successes, 7 blanks. **Broadcast:** show full-pool dice images as normal dice — half with one success face, rest blank (no numeric roll text). Downstream UI/ST confirmation should behave like a completed physical roll. _(TOR-73)_
+- [ ] **Take Half redesign:** Available on any roll without difficulty. Synthetic result = half the pool size in **normal successes (rounded down)**, remainder **blank**, all treated as normal dice (Hunger dice count toward pool size but do not use Hunger faces). Example: pool 13 → 6 successes, 7 blanks. **Broadcast:** show full-pool dice images as normal dice — half with one success face, rest blank (no numeric roll text). **Dice-E2E H2:** rouse dice must await player throw after Take Half — not auto-parse on settle. _(TOR-73)_
 - [ ] **Roll panel pool dots color coding:** Restore kind colors (normal white, hunger red, rouse dark red offset left, obliv-rouse purple, werewolf yellow-green, rage orange); offset multiple rouse strips (incl. Blood Surge). _(TOR-155)_
+- [ ] **Normal bag right-click undo:** Right-click normal bag removes last normal **or** hunger die; hunger bag undoes Blood Surge or removes hunger per Suite K. _(TOR-161)_
+- [ ] **ST per-roll Opts persistence:** `crits`, `bestialNull`, etc. stick in Opts modal and apply to `active.rollOptions` before classify. _(TOR-162)_
+- [ ] **Roll broadcast without difficulty:** Unset difficulty → default 1 for display; show dice images + successes; omit margin. _(TOR-163)_
 - [ ] **Roll result broadcast trim:** Remove die roll numbers and duplicated type/result language; offset rouse result strips from main pool and from each other. _(TOR-156)_
-- [x] **Blood Surge + conditions:** Blood Surge uses `Conditions.resolveForPlayer` → `P.effectiveBloodPotencyWithConditions` for surge dice count; fresh `resolveRollPolicy` at activation for `bloodSurgeDiceMultiplier`. _(TOR-158)_
+- [x] **Blood Surge + conditions:** Blood Surge uses `EffectiveStats.forSeat` → `bloodPotencyDerived` for surge dice count; fresh `rollPolicy()` at activation for `bloodSurgeDiceMultiplier`. _(TOR-158; facade in TOR-160)_
+- [x] **Effective stats facade:** Unified read-time API (`lib/effective_stats.ttslua`); derive alignment; migrated roll/damage/HUD/sheet consumers. _(TOR-160)_
 - [x] **Frenzy hunger threshold:** Queue frenzy only when hunger is already at 5 and would increase further — not on first transition to 5. `maybeQueueFrenzyOnHungerCap` gates on `hungerBefore >= C.MAX_HUNGER`. _(TOR-159)_
 - [ ] **Extended Tests:** An "extended test" is a series of rolls, with each roll contributing to a Running Total until a Target (defined by the Storyteller) is met, or the Storyteller stops the test early for any reason. There are four types of extended tests -- Standard, Series, Hard and Cascade -- which define what the Running Total and Target count, and how each roll adds to the Running Total. When the process stops, the final result is a Win if the Running Total equals or exceeds the Target, or a Failure otherwise. _(TOR-74)_
   - **Standard:** The Target represents a total number of successes that the player's Running Total must meet. Each roll contributes its successes to the Running Total. Each roll is made against a Difficulty of zero (i.e. each roll contributes all of its successes to the Running Total).
@@ -146,6 +150,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [ ] Agent prompt: find **runtime object updates outside reconcilers** (dual-apply audit). → Prompt 2 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md) _(TOR-102)_
 - [ ] Agent prompt: find **invalid `getStateVal` / `getPlayerVal`** paths; draft fix plan. → Prompt 3 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md) _(TOR-103)_
 - [x] **Manual E2E test playbooks (Dice + Scenes) — baseline:** [`.dev/E2E Playbooks/`](E2E%20Playbooks/README.md) shipped; legacy Testing Suites removed from DEBUG panel. _(TOR-141)_ — **ongoing:** update playbooks when related APIs change (`living-doc`; issue stays open).
+- [x] **Dice-E2E playbook + rollTest harness:** Solo-host doc (no View); `rollE2eSeatPrep`, `rollSetFaces`, hunger 5th param, Suite F conditions helpers; `rollCancel` clears ST slots. _(TOR-164)_ — sub-issue of TOR-141; re-verify in TTS after Save & Play
 - [ ] **Multiplayer E2E playbook:** Pre-invite solo-suite checklist + multi-client test plan (sub-issue of TOR-141). _(TOR-144)_
 - [x] Agent prompt: **performance** hotspots (`Sync.full`, spawn pools, lighting lerps, UI refresh). → [Performance Audit](Sychronizing%20Game%20Functionality/Performance%20Audit.md); Prompt 4 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md) _(TOR-50)_
 

@@ -279,8 +279,11 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | :--------- | :------------- |
 | `Conditions.resolveForPlayer(playerID)` | Merged stat/HUD/lighting effects for presentation |
 | `Conditions.resolveRollPolicy(playerID)` | Merged roll policy (snapshot at roll initiate) |
-| `Conditions.effectiveStatDelta(playerID, dotKey)` | Temp + condition delta for attribute/skill/discipline/BP |
-| `Conditions.effectiveAggregateDelta(playerID, trackerKey)` | Temp + condition delta for health/willpower/humanity boxes |
+| `EffectiveStats.forPlayer(playerID)` | One resolve pass; `trackerMax`, `dotRating`, `bloodPotencyDerived`, etc. |
+| `EffectiveStats.forSeat(color)` | Seat-color convenience for roll paths |
+| `EffectiveStats.trackerMaxFromStats(stats, statChanges, key)` | Pure helper (derive, tests) |
+| `Conditions.effectiveStatDelta(playerID, dotKey)` | Legacy: temp + condition delta for dot lines |
+| `Conditions.effectiveAggregateDelta(playerID, trackerKey)` | Legacy: temp + condition delta for trackers |
 | `Conditions.reconcileDerivedForPlayer(playerID)` | Recompute derived condition keys from stats |
 | `Conditions.reconcileLocationHostedForScene(opts?)` | Apply district/site location conditions for present PCs; pass `{ skipPresentation = true }` when caller runs `Sync.full` |
 | `Conditions.setManual(playerID, id, value)` | ST toggle manual condition |

@@ -705,24 +705,89 @@ end
 -- Solo/dev-mode shortcuts for testing roll flow without a second player.
 -- Call from the TTS console with:  lua rollTest("Brown", 3)
 -- Or via the "DICE DEBUG" buttons in the admin panel (Host only).
+-- E2E harness (TOR-164): rollE2eSeatPrep, rollSetFaces, rollE2eApplyConditions.
 -- ============================================================================
 
+local DK = require("lib.dice_kinds")
+
+--- Optional 5th argument to rollTest: hunger level (number) only.
+-- @param extra number|nil
+-- @return table opts { hunger? }
+local function parseRollTestExtras(extra)
+    local opts = {}
+    if type(extra) == "number" then
+        opts.hunger = extra
+    end
+    return opts
+end
+
+--- Host seat color after E2E roll tests (Storyteller).
+local E2E_RETURN_SEAT = "Black"
+
+--- Move Host to seat, hide loading overlay, apply Debug Camera spoof for that seat.
+-- @param targetColor string
+-- @return boolean ok
+local function rollE2eSeatPrepInternal(targetColor)
+    if type(targetColor) ~= "string" or targetColor == "" then
+        return false
+    end
+
+    local hostPlayer = Player and Player[E2E_RETURN_SEAT] or nil
+    if hostPlayer == nil then
+        U.AlertGM("rollE2eSeatPrep: Host player not seated at " .. E2E_RETURN_SEAT)
+        return false
+    end
+
+    if type(hostPlayer.changeColor) == "function" then
+        local changed = hostPlayer.changeColor(targetColor)
+        if changed ~= true then
+            U.AlertGM("rollE2eSeatPrep: changeColor failed for " .. targetColor)
+            return false
+        end
+    end
+
+    UI.hide("overlay_loadingScreen_" .. tostring(targetColor))
+
+    local CameraDebugFocus = require("core.camera_debug_focus")
+    local ok = CameraDebugFocus.onSpoofColor(hostPlayer, targetColor)
+    if ok ~= true then
+        U.AlertGM("rollE2eSeatPrep: camera spoof failed for " .. targetColor)
+        return false
+    end
+    return true
+end
+
+--- Return Host to Black after testing another seat.
+local function rollE2eReturnHostSeat()
+    local hostPlayer = Player and Player[E2E_RETURN_SEAT] or nil
+    if hostPlayer ~= nil and type(hostPlayer.changeColor) == "function" then
+        hostPlayer.changeColor(E2E_RETURN_SEAT)
+    end
+end
+
+--- Manual seat prep only; rollTest / rollStTest run prep automatically.
+-- @param targetColor string
+function DEBUG.rollE2eSeatPrep(targetColor)
+    if type(targetColor) ~= "string" or targetColor == "" then
+        print("Usage: rollE2eSeatPrep(targetColor)")
+        return
+    end
+    rollE2eSeatPrepInternal(targetColor)
+end
+
 --- Initiates, opens, and arms a roll for a player in one shot.
--- Cancels any existing active roll first, so it can safely be re-called between tests.
--- Puts the player panel into PRE_ROLL state (ROLL and TAKE HALF buttons live).
--- Sit in the target color seat (or enable Host visibility) to see the panel.
+-- Always runs E2E seat prep: Host changeColor → target seat, loading overlay hide, camera spoof.
 --
 -- @param color      string       Player seat color (e.g. "Brown")
 -- @param difficulty number|nil   Required successes; default 2
 -- @param rollType   string|nil   C.RollType value; default C.RollType.STANDARD
 -- @param label      string|nil   Roll label shown in the panel; default "Debug Test"
--- @usage lua rollTest("Brown")
--- @usage lua rollTest("Red", 4, C.RollType.STANDARD, "Dominate")
-function DEBUG.rollTest(color, difficulty, rollType, label)
+-- @param hungerLevel number|nil  Sets player hunger 0–5 before arming (Suite G, etc.)
+-- @usage lua rollTest("Brown", 3)
+-- @usage lua rollTest("Brown", 3, C.RollType.STANDARD, "E2E G2", 2)
+function DEBUG.rollTest(color, difficulty, rollType, label, hungerLevel)
     if type(color) ~= "string" then
-        print("Usage: rollTest(color, difficulty?, rollType?, label?)")
-        print("  e.g. rollTest('Brown', 3)")
-        print("  e.g. rollTest('Red', 2, C.RollType.ROUSE)")
+        print("Usage: rollTest(color, difficulty?, rollType?, label?, hungerLevel?)")
         return
     end
     if RC == nil then
@@ -730,28 +795,32 @@ function DEBUG.rollTest(color, difficulty, rollType, label)
         return
     end
 
+    local opts = parseRollTestExtras(hungerLevel)
     local diff  = (type(difficulty) == "number") and difficulty or 2
     local rType = (type(rollType) == "string" and rollType ~= "") and rollType or C.RollType.STANDARD
     local lbl   = (type(label) == "string" and label ~= "") and label or "Debug Test"
 
-    -- Silently cancel any existing roll so re-running the command always works cleanly
+    if rollE2eSeatPrepInternal(color) ~= true then
+        print("[DEBUG.rollTest] E2E seat prep failed — aborting.")
+        return
+    end
+
+    if type(opts.hunger) == "number" then
+        setHungerAndSync(color, opts.hunger)
+    end
+
     RC.cancelRoll(color)
 
     local ok = RC.initiateRoll(color, { rollType = rType, label = lbl })
     if not ok then
         print(string.format("[DEBUG.rollTest] initiateRoll failed for %s (already active?)", color))
+        rollE2eReturnHostSeat()
         return
     end
     RC.openRoll(color)
     RC.setDifficulty(color, diff)
 
-    print(string.format(
-        "[DEBUG.rollTest] Roll armed for %s — type=%s  difficulty=%d  label='%s'",
-        color, rType, diff, lbl))
-    print(string.format(
-        "  → Panel is now in PRE_ROLL. Sit in the %s seat (or enable Host visibility) to see it.", color))
-    print(string.format(
-        "  → Roll dice, or call: lua rollConfirm('%s')  to auto-confirm.", color))
+    print(string.format("[DEBUG.rollTest] %s PRE_ROLL — diff=%d type=%s label='%s'", color, diff, rType, lbl))
 end
 
 --- Prints the full active roll record and queue for a player.
@@ -776,13 +845,117 @@ function DEBUG.rollState(color)
     end
 end
 
+--- Sets physical die faces for the active roll (POST_ROLL or ROLLING), then recalculates.
+-- @param color string
+-- @param facesByKind table e.g. { normal = {7, 7}, hunger = {10, 1}, rouse = {4} }
+-- @usage lua rollSetFaces("Brown", { normal = {4, 4}, hunger = {10, 1} })
+function DEBUG.rollSetFaces(color, facesByKind)
+    if RC == nil then
+        print("[DEBUG.rollSetFaces] RC not loaded")
+        return
+    end
+    if type(color) ~= "string" or type(facesByKind) ~= "table" then
+        print("Usage: rollSetFaces(color, { normal = {7,7}, hunger = {10,1}, ... })")
+        return
+    end
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        print("[DEBUG.rollSetFaces] no playerID for " .. color)
+        return
+    end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil or type(active.id) ~= "string" then
+        print("[DEBUG.rollSetFaces] no active roll for " .. color)
+        return
+    end
+    local _, objectsByKind = RC._getDicePoolsForRoll(color, active.id)
+    local setCount = 0
+    for kind, values in pairs(facesByKind) do
+        if type(values) == "table" and type(objectsByKind[kind]) == "table" then
+            local objs = objectsByKind[kind]
+            for i, faceVal in ipairs(values) do
+                local obj = objs[i]
+                if obj ~= nil and type(faceVal) == "number" then
+                    obj.setValue(faceVal)
+                    setCount = setCount + 1
+                end
+            end
+        end
+    end
+    RC.recalculate(color)
+    print(string.format("[DEBUG.rollSetFaces] %s: set %d face(s); recalculated.", color, setCount))
+end
+
+--- Apply temporary manual conditions for E2E (e.g. Suite F). Cleared with rollE2eClearConditions.
+-- @param color string
+-- @param conditionIds table Array of condition id strings from condition_defs
+-- @usage lua rollE2eApplyConditions("Brown", { "e2eBestialNull" })
+function DEBUG.rollE2eApplyConditions(color, conditionIds)
+    if type(color) ~= "string" or type(conditionIds) ~= "table" then
+        print("Usage: rollE2eApplyConditions(color, { 'conditionId', ... })")
+        return
+    end
+    local playerID = S.getPlayerID(color)
+    if playerID == nil then
+        print("[DEBUG.rollE2eApplyConditions] no playerID for " .. color)
+        return
+    end
+    local Conditions = require("core.conditions")
+    for _, cid in ipairs(conditionIds) do
+        if type(cid) == "string" and cid ~= "" then
+            Conditions.setManual(playerID, cid, true)
+            print("[DEBUG.rollE2eApplyConditions] set " .. cid .. " on " .. color)
+        end
+    end
+end
+
+--- Clear manual conditions applied for E2E on one seat.
+-- @param color string
+-- @param conditionIds table|nil  If nil, clears e2eBestialNull
+function DEBUG.rollE2eClearConditions(color, conditionIds)
+    if type(color) ~= "string" then
+        print("Usage: rollE2eClearConditions(color, conditionIds?)")
+        return
+    end
+    local playerID = S.getPlayerID(color)
+    if playerID == nil then
+        return
+    end
+    local ids = conditionIds
+    if type(ids) ~= "table" then
+        ids = { "e2eBestialNull" }
+    end
+    local Conditions = require("core.conditions")
+    for _, cid in ipairs(ids) do
+        if type(cid) == "string" and cid ~= "" then
+            Conditions.clear(playerID, cid)
+        end
+    end
+    print("[DEBUG.rollE2eClearConditions] cleared on " .. color)
+end
+
+--- Clears all Storyteller roll drawer slots (live + resolved rows).
+local function clearAllStorytellerRollSlots()
+    local STR = require("core.storyteller_rolls")
+    for slotIndex = 1, 3 do
+        STR.cancelSlot(slotIndex)
+    end
+end
+
 --- Cancels the active roll for a single player. Useful for mid-test cleanup.
+-- On Black, also clears all ST dashboard slots and drawer dice.
 -- @param color string  Player seat color
 -- @usage lua rollCancel("Brown")
 function DEBUG.rollCancel(color)
     if RC == nil then print("[DEBUG.rollCancel] RC not loaded"); return end
     if type(color) ~= "string" then print("Usage: rollCancel(color)"); return end
     local cancelled = RC.cancelRoll(color)
+    if color == "Black" then
+        clearAllStorytellerRollSlots()
+    end
+    if color ~= E2E_RETURN_SEAT then
+        rollE2eReturnHostSeat()
+    end
     print(string.format("[DEBUG.rollCancel] %s: %s",
         color, cancelled and "roll cancelled" or "no active roll to cancel"))
 end
@@ -796,6 +969,8 @@ function DEBUG.rollCancelAll()
         if RC.cancelRoll(color) then count = count + 1 end
     end
     if RC.cancelRoll("Black") then count = count + 1 end
+    clearAllStorytellerRollSlots()
+    rollE2eReturnHostSeat()
     print(string.format("[DEBUG.rollCancelAll] Cancelled %d active roll(s).", count))
 end
 
@@ -805,6 +980,10 @@ end
 -- @usage lua rollStTest("Evangeline Dupont")
 -- @usage lua rollStTest("Garou", C.RollType.WEREWOLF)
 function DEBUG.rollStTest(label, rollType)
+    if rollE2eSeatPrepInternal("Black") ~= true then
+        print("[DEBUG.rollStTest] E2E seat prep failed — aborting.")
+        return
+    end
     local STR = require("core.storyteller_rolls")
     local lbl = (type(label) == "string" and label ~= "") and label or "Debug NPC"
     local ok = STR.initiateNpcRoll(lbl, rollType)
@@ -1993,6 +2172,7 @@ function DEBUG.help()
     print("  showZones()              - Zone lock state")
     print("  inspectSoundscapeAudio() - Emitter GUID/tag/effect inventory")
     print("  dumpConditions(color)    - Active conditions + resolved effects")
+    print("  dumpEffectiveStats(color) - Effective stat getters (tracker max, BP, …)")
     print("  dumpRollPolicy(color)    - Merged roll policy on active roll")
     print("\nFILE LOGGING:")
     print("  logToFile(level, msg, filename?) - Log a message to file")
@@ -2005,13 +2185,15 @@ function DEBUG.help()
     print("  logAllToFiles()                   - Log all debug info to files")
     print("  clearAllLogs()                    - Clear all log files (starts new session)")
     print("\nDICE DEBUG (solo — no second player):")
-    print("  rollTest(color, diff?, type?, label?)")
-    print("                           - Arm a test roll in PRE_ROLL (e.g. rollTest('Brown', 3))")
+    print("  rollTest(color, diff?, type?, label?, hungerLevel?) - Arm PRE_ROLL (auto seat + camera prep)")
+    print("  rollE2eSeatPrep(color)     - Manual prep only; rollTest/rollStTest include this")
+    print("  rollSetFaces(color, { normal={7,7}, hunger={10,1} }) - Set faces + recalculate (POST_ROLL)")
+    print("  rollE2eApplyConditions(color, { 'e2eBestialNull' }) / rollE2eClearConditions(color, ids?)")
     print("  rollState(color)         - Print active roll record for a player")
-    print("  rollCancel(color)        - Cancel one player's active roll")
-    print("  rollCancelAll()          - Cancel all active rolls (full reset)")
+    print("  rollCancel(color)        - Cancel roll; Black also clears ST slots/drawers")
+    print("  rollCancelAll()          - Cancel all rolls + ST slots")
     print("  rollConfirm(color)       - Force-confirm a POST_ROLL result")
-    print("  rollStTest(label?, type?) - Initiate Storyteller NPC roll on Black")
+    print("  rollStTest(label?, type?) - ST NPC roll on Black (e2e seat/camera prep)")
     print("  rollStSlots()            - Print gameState.storytellerRolls")
     print("\nQUICK SETTERS (prefer Scenes/Sound panels for narrative apply):")
     print("  setHunger(color, value)  - Set player hunger (e.g., setHunger('Red', 3))")
@@ -2082,6 +2264,10 @@ soundscapeStopAll = DEBUG.soundscapeStopAll
 
 -- Expose dice system debug helpers
 rollTest      = DEBUG.rollTest
+rollE2eSeatPrep = DEBUG.rollE2eSeatPrep
+rollSetFaces  = DEBUG.rollSetFaces
+rollE2eApplyConditions = DEBUG.rollE2eApplyConditions
+rollE2eClearConditions = DEBUG.rollE2eClearConditions
 rollState     = DEBUG.rollState
 rollCancel    = DEBUG.rollCancel
 rollCancelAll = DEBUG.rollCancelAll
@@ -2141,6 +2327,30 @@ function DEBUG.dumpConditions(seatColor)
   print("  resolved.statChanges: " .. JSON.encode(resolved.statChanges))
   print("  resolved.hudElementIds: " .. JSON.encode(resolved.hudElementIds))
   print("  resolved.lightingModes: " .. JSON.encode(resolved.lightingModes))
+end
+
+--- Print effective stat getters for one seat (MCP / console diagnosis).
+--- @param seatColor string e.g. "Brown"
+function DEBUG.dumpEffectiveStats(seatColor)
+  if type(seatColor) ~= "string" or seatColor == "" then
+    error("DEBUG.dumpEffectiveStats: seatColor required")
+  end
+  local S = require("core.state")
+  local ES = require("lib.effective_stats")
+  local playerID = S.getPlayerID(seatColor)
+  if type(playerID) ~= "string" then
+    print("[DEBUG.dumpEffectiveStats] no playerID for seat " .. seatColor)
+    return
+  end
+  local ctx = ES.forPlayer(playerID)
+  print("[DEBUG.dumpEffectiveStats] seat=" .. seatColor .. " playerID=" .. playerID)
+  print("  trackerMax health=" .. tostring(ctx.trackerMax("health"))
+    .. " willpower=" .. tostring(ctx.trackerMax("willpower"))
+    .. " humanity=" .. tostring(ctx.trackerMax("humanity")))
+  print("  bloodPotencyRating=" .. tostring(ctx.bloodPotencyRating())
+    .. " bloodSurge=" .. tostring(ctx.bloodPotencyDerived().bloodSurge))
+  print("  humanityHasImpairedSlot=" .. tostring(ctx.humanityHasImpairedSlot()))
+  print("  statChanges: " .. JSON.encode(ctx.statChanges))
 end
 
 --- Print merged roll policy for the active roll on one seat (MCP / console diagnosis).

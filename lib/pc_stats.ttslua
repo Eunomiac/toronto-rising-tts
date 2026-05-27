@@ -77,7 +77,7 @@ end
 
 --- Effective Blood Potency rating from player stats (base + temp), clamped 0..10.
 --- @param stats table|nil
---- @return number
+--- @return number raw persisted rating only (no condition merge)
 function P.effectiveBloodPotency(stats)
   if type(stats) ~= "table" then
     return 0
@@ -94,19 +94,6 @@ function P.effectiveBloodPotency(stats)
     rating = (tonumber(bp.base) or 0) + (tonumber(bp.temp) or 0)
   else
     rating = tonumber(bp.value) or 0
-  end
-  return math.max(0, math.min(10, math.floor(rating)))
-end
-
---- Effective Blood Potency rating including merged condition `statChanges.bloodPotency`.
---- Matches sheet dots and `blood_potency_decals` (base + temp + condition delta).
---- @param stats table|nil
---- @param resolvedStatChanges table|nil
---- @return number
-function P.effectiveBloodPotencyWithConditions(stats, resolvedStatChanges)
-  local rating = P.effectiveBloodPotency(stats)
-  if type(resolvedStatChanges) == "table" then
-    rating = rating + (tonumber(resolvedStatChanges.bloodPotency) or 0)
   end
   return math.max(0, math.min(10, math.floor(rating)))
 end
@@ -163,8 +150,8 @@ function P.applyDamageOrHeal(playerRef, which, superficialDelta, aggravatedDelta
     return
   end
   local tr = stats[which]
-  local b = tonumber(tr.base) or 0
-  local maxBoxes = b + Conditions.effectiveAggregateDelta(playerID, which)
+  local ES = require("lib.effective_stats")
+  local maxBoxes = ES.forPlayer(playerID).trackerMax(which)
   if maxBoxes < 1 then
     maxBoxes = 1
   end
@@ -243,10 +230,10 @@ function P.formatDamageTrackText(playerRef, which)
   if type(stats) ~= "table" or type(stats[which]) ~= "table" then
     return ""
   end
-  local resolved = Conditions.resolveForPlayer(playerID)
   local gUnd, gSup, gAgg = damageTrackGlyphs()
   local tr = stats[which]
-  local maxB = (tonumber(tr.base) or 0) + PSC.effectiveTempForAggregate(stats, resolved.statChanges, which)
+  local ES = require("lib.effective_stats")
+  local maxB = ES.forPlayer(playerID).trackerMax(which)
   if maxB < 1 then
     maxB = 1
   end
@@ -277,10 +264,10 @@ function P.formatHumanityTrackText(playerRef)
   if type(stats) ~= "table" or type(stats.humanity) ~= "table" then
     return ""
   end
-  local resolved = Conditions.resolveForPlayer(playerID)
   local gUnused, gFill, gStain, gImp = humanityTrackGlyphs()
   local hu = stats.humanity
-  local lineLen = (tonumber(hu.base) or 0) + PSC.effectiveTempForAggregate(stats, resolved.statChanges, "humanity")
+  local ES = require("lib.effective_stats")
+  local lineLen = ES.forPlayer(playerID).humanityLineLen()
   local stains = tonumber(hu.stains) or 0
   local slotModes = {}
   for i = 1, 10 do

@@ -5,7 +5,7 @@ Manual verification lives in **[E2E Playbooks](E2E%20Playbooks/README.md)** (TOR
 ## Quick start
 
 1. Load mod → **Save & Play** (bundled Lua must match repo).
-2. You are table **Host** (solo is fine — only one client). Seat **Black** for Scenes/DEBUG/ST; for Dice, use `rollTest` + **View →** target color, or sit that color briefly.
+2. You are table **Host** (solo is fine — only one client). Seat **Black** for Scenes/DEBUG/ST; for Dice, use `rollTest` and change seat to the target color when bag/camera steps require it (no TTS View command).
 3. `lua debugHelp()` — list current commands.
 4. Run a playbook: [Scenes-E2E](E2E%20Playbooks/Scenes-E2E.md) or [Dice-E2E](E2E%20Playbooks/Dice-E2E.md).
 
@@ -32,17 +32,23 @@ lua DEBUG.dumpRollPolicy("Brown")
 
 ## Dice debug (solo Host — no second client)
 
-`rollTest` arms rolls using persisted character ids; you do not need another player seated. Use TTS **View** to show another seat’s roll panel, or sit that color for bag-click steps.
+`rollTest` arms rolls using persisted character ids; you do not need another player seated.
 
 ```lua
-lua rollTest("Brown", 3)
+lua rollTest("Brown", 3)   -- auto: changeColor + overlay + camera spoof
+lua rollTest("Brown", 3, C.RollType.STANDARD, "E2E G2", 2)   -- 5th arg = hunger level
+lua rollSetFaces("Brown", { normal = {4, 4}, hunger = {10, 1} })
 lua rollState("Brown")
-lua rollCancel("Brown")
+lua rollCancel("Brown")      -- returns Host to Black; Black also clears ST slots
 lua rollCancelAll()
 lua rollConfirm("Brown")
 lua rollStTest("E2E", C.RollType.STANDARD)
 lua rollStSlots()
+lua rollE2eApplyConditions("Brown", { "e2eBestialNull" })
+lua rollE2eClearConditions("Brown")
 ```
+
+See [Dice-E2E.md](E2E%20Playbooks/Dice-E2E.md) § Solo Host for the full harness table.
 
 ## Quick setters (prefer Scenes / Sound panels for narrative)
 

@@ -175,45 +175,19 @@ function Conditions.effectiveStatDelta(playerID, dotKey)
   if type(dotKey) ~= "string" then
     return 0
   end
-  local stats = S.getStateVal("playerData", playerID, "stats")
-  local baseT = 0
-  if type(stats) == "table" then
-    if type(stats.attributes) == "table" and type(stats.attributes[dotKey]) == "table" then
-      baseT = tonumber(stats.attributes[dotKey].temp) or 0
-    elseif type(stats.skills) == "table" and type(stats.skills[dotKey]) == "table" then
-      baseT = tonumber(stats.skills[dotKey].temp) or 0
-    elseif type(stats.disciplines) == "table" and type(stats.disciplines[dotKey]) == "table" then
-      baseT = tonumber(stats.disciplines[dotKey].temp) or 0
-    elseif dotKey == "bloodPotency" and type(stats.bloodPotency) == "table" then
-      baseT = tonumber(stats.bloodPotency.temp) or 0
-    end
-  end
-  local resolved = Conditions.resolveForPlayer(playerID)
-  local add = 0
-  if type(resolved.statChanges) == "table" then
-    add = tonumber(resolved.statChanges[dotKey]) or 0
-  end
-  return baseT + add
+  local ES = require("lib.effective_stats")
+  return ES.forPlayer(playerID).dotTempDelta(dotKey)
 end
 
 --- @param playerID string
 --- @param trackerKey string health|willpower|humanity
---- @return number
+--- @return number temp + merged condition delta (not including base)
 function Conditions.effectiveAggregateDelta(playerID, trackerKey)
   if type(trackerKey) ~= "string" then
     return 0
   end
-  local stats = S.getStateVal("playerData", playerID, "stats")
-  local baseT = 0
-  if type(stats) == "table" and type(stats[trackerKey]) == "table" then
-    baseT = tonumber(stats[trackerKey].temp) or 0
-  end
-  local resolved = Conditions.resolveForPlayer(playerID)
-  local add = 0
-  if type(resolved.statChanges) == "table" then
-    add = tonumber(resolved.statChanges[trackerKey]) or 0
-  end
-  return baseT + add
+  local ES = require("lib.effective_stats")
+  return ES.forPlayer(playerID).trackerTempDelta(trackerKey)
 end
 
 --- @param playerID string
@@ -326,7 +300,11 @@ function Conditions.reconcileDerivedForPlayer(playerID)
     S.setStateVal(conditions, "playerData", playerID, "conditions")
   end
 
-  local desired = Derive.evaluateDesiredDerived(stats, conditions)
+  local seatColor = seatColorForPlayer(playerID) or "Brown"
+  local resolvedEffects = Effects.resolveForPlayer(conditions, stats, seatColor)
+  local statChanges = type(resolvedEffects.statChanges) == "table" and resolvedEffects.statChanges or {}
+
+  local desired = Derive.evaluateDesiredDerived(stats, conditions, statChanges)
   local changed = false
 
   for id, def in pairs(CD.Defs) do
