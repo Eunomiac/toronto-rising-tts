@@ -404,10 +404,16 @@
       text="Awaiting Storyteller..." />
 
     <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
-      <!-- Pool: white diamonds for normal dice, red for hunger dice -->
-      <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
-        <Text id="rollPanel_pool_normal_Brown" fontSize="14" color="#FFFFFF" text="" />
-        <Text id="rollPanel_pool_hunger_Brown" fontSize="14" color="#CC3333" text="" />
+      <!-- Pool dots (TOR-155): rouse left; normal/hunger/obliv/werewolf/rage colored ◆ -->
+      <HorizontalLayout spacing="6" childAlignment="MiddleCenter" childForceExpandWidth="false">
+        <Text id="rollPanel_pool_rouse_Brown" fontSize="14" color="#8B1A1A" text="" />
+        <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
+          <Text id="rollPanel_pool_normal_Brown" fontSize="14" color="#FFFFFF" text="" />
+          <Text id="rollPanel_pool_hunger_Brown" fontSize="14" color="#CC3333" text="" />
+          <Text id="rollPanel_pool_obliv_Brown" fontSize="14" color="#5C2D7A" text="" />
+          <Text id="rollPanel_pool_werewolf_Brown" fontSize="14" color="#9ACD32" text="" />
+          <Text id="rollPanel_pool_rage_Brown" fontSize="14" color="#FF8C00" text="" />
+        </HorizontalLayout>
       </HorizontalLayout>
       <Text id="rollPanel_diff_Brown"
         fontSize="12"
@@ -548,9 +554,15 @@
     <Text id="rollPanel_type_Orange"   fontSize="14" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="" />
     <Text id="rollPanel_phase_Orange"  fontSize="12" color="#CCCCCC" alignment="MiddleCenter" text="Awaiting Storyteller..." />
     <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
-      <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
-        <Text id="rollPanel_pool_normal_Orange" fontSize="14" color="#FFFFFF" text="" />
-        <Text id="rollPanel_pool_hunger_Orange" fontSize="14" color="#CC3333" text="" />
+      <HorizontalLayout spacing="6" childAlignment="MiddleCenter" childForceExpandWidth="false">
+        <Text id="rollPanel_pool_rouse_Orange" fontSize="14" color="#8B1A1A" text="" />
+        <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
+          <Text id="rollPanel_pool_normal_Orange" fontSize="14" color="#FFFFFF" text="" />
+          <Text id="rollPanel_pool_hunger_Orange" fontSize="14" color="#CC3333" text="" />
+          <Text id="rollPanel_pool_obliv_Orange" fontSize="14" color="#5C2D7A" text="" />
+          <Text id="rollPanel_pool_werewolf_Orange" fontSize="14" color="#9ACD32" text="" />
+          <Text id="rollPanel_pool_rage_Orange" fontSize="14" color="#FF8C00" text="" />
+        </HorizontalLayout>
       </HorizontalLayout>
       <Text id="rollPanel_diff_Orange" fontSize="12" color="#AAAAAA" text="Difficulty: —" />
     </HorizontalLayout>
@@ -599,9 +611,15 @@
     <Text id="rollPanel_type_Red"   fontSize="14" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="" />
     <Text id="rollPanel_phase_Red"  fontSize="12" color="#CCCCCC" alignment="MiddleCenter" text="Awaiting Storyteller..." />
     <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
-      <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
-        <Text id="rollPanel_pool_normal_Red" fontSize="14" color="#FFFFFF" text="" />
-        <Text id="rollPanel_pool_hunger_Red" fontSize="14" color="#CC3333" text="" />
+      <HorizontalLayout spacing="6" childAlignment="MiddleCenter" childForceExpandWidth="false">
+        <Text id="rollPanel_pool_rouse_Red" fontSize="14" color="#8B1A1A" text="" />
+        <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
+          <Text id="rollPanel_pool_normal_Red" fontSize="14" color="#FFFFFF" text="" />
+          <Text id="rollPanel_pool_hunger_Red" fontSize="14" color="#CC3333" text="" />
+          <Text id="rollPanel_pool_obliv_Red" fontSize="14" color="#5C2D7A" text="" />
+          <Text id="rollPanel_pool_werewolf_Red" fontSize="14" color="#9ACD32" text="" />
+          <Text id="rollPanel_pool_rage_Red" fontSize="14" color="#FF8C00" text="" />
+        </HorizontalLayout>
       </HorizontalLayout>
       <Text id="rollPanel_diff_Red" fontSize="12" color="#AAAAAA" text="Difficulty: —" />
     </HorizontalLayout>
@@ -650,9 +668,15 @@
     <Text id="rollPanel_type_Pink"   fontSize="14" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="" />
     <Text id="rollPanel_phase_Pink"  fontSize="12" color="#CCCCCC" alignment="MiddleCenter" text="Awaiting Storyteller..." />
     <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
-      <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
-        <Text id="rollPanel_pool_normal_Pink" fontSize="14" color="#FFFFFF" text="" />
-        <Text id="rollPanel_pool_hunger_Pink" fontSize="14" color="#CC3333" text="" />
+      <HorizontalLayout spacing="6" childAlignment="MiddleCenter" childForceExpandWidth="false">
+        <Text id="rollPanel_pool_rouse_Pink" fontSize="14" color="#8B1A1A" text="" />
+        <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
+          <Text id="rollPanel_pool_normal_Pink" fontSize="14" color="#FFFFFF" text="" />
+          <Text id="rollPanel_pool_hunger_Pink" fontSize="14" color="#CC3333" text="" />
+          <Text id="rollPanel_pool_obliv_Pink" fontSize="14" color="#5C2D7A" text="" />
+          <Text id="rollPanel_pool_werewolf_Pink" fontSize="14" color="#9ACD32" text="" />
+          <Text id="rollPanel_pool_rage_Pink" fontSize="14" color="#FF8C00" text="" />
+        </HorizontalLayout>
       </HorizontalLayout>
       <Text id="rollPanel_diff_Pink" fontSize="12" color="#AAAAAA" text="Difficulty: —" />
     </HorizontalLayout>
@@ -701,9 +725,15 @@
     <Text id="rollPanel_type_Purple"   fontSize="14" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="" />
     <Text id="rollPanel_phase_Purple"  fontSize="12" color="#CCCCCC" alignment="MiddleCenter" text="Awaiting Storyteller..." />
     <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
-      <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
-        <Text id="rollPanel_pool_normal_Purple" fontSize="14" color="#FFFFFF" text="" />
-        <Text id="rollPanel_pool_hunger_Purple" fontSize="14" color="#CC3333" text="" />
+      <HorizontalLayout spacing="6" childAlignment="MiddleCenter" childForceExpandWidth="false">
+        <Text id="rollPanel_pool_rouse_Purple" fontSize="14" color="#8B1A1A" text="" />
+        <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
+          <Text id="rollPanel_pool_normal_Purple" fontSize="14" color="#FFFFFF" text="" />
+          <Text id="rollPanel_pool_hunger_Purple" fontSize="14" color="#CC3333" text="" />
+          <Text id="rollPanel_pool_obliv_Purple" fontSize="14" color="#5C2D7A" text="" />
+          <Text id="rollPanel_pool_werewolf_Purple" fontSize="14" color="#9ACD32" text="" />
+          <Text id="rollPanel_pool_rage_Purple" fontSize="14" color="#FF8C00" text="" />
+        </HorizontalLayout>
       </HorizontalLayout>
       <Text id="rollPanel_diff_Purple" fontSize="12" color="#AAAAAA" text="Difficulty: —" />
     </HorizontalLayout>
@@ -752,9 +782,15 @@
     <Text id="rollPanel_type_Black"   fontSize="14" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="" />
     <Text id="rollPanel_phase_Black"  fontSize="12" color="#CCCCCC" alignment="MiddleCenter" text="" />
     <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
-      <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
-        <Text id="rollPanel_pool_normal_Black" fontSize="14" color="#FFFFFF" text="" />
-        <Text id="rollPanel_pool_hunger_Black" fontSize="14" color="#CC3333" text="" />
+      <HorizontalLayout spacing="6" childAlignment="MiddleCenter" childForceExpandWidth="false">
+        <Text id="rollPanel_pool_rouse_Black" fontSize="14" color="#8B1A1A" text="" />
+        <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
+          <Text id="rollPanel_pool_normal_Black" fontSize="14" color="#FFFFFF" text="" />
+          <Text id="rollPanel_pool_hunger_Black" fontSize="14" color="#CC3333" text="" />
+          <Text id="rollPanel_pool_obliv_Black" fontSize="14" color="#5C2D7A" text="" />
+          <Text id="rollPanel_pool_werewolf_Black" fontSize="14" color="#9ACD32" text="" />
+          <Text id="rollPanel_pool_rage_Black" fontSize="14" color="#FF8C00" text="" />
+        </HorizontalLayout>
       </HorizontalLayout>
       <Text id="rollPanel_diff_Black" fontSize="12" color="#AAAAAA" text="Difficulty: —" />
     </HorizontalLayout>

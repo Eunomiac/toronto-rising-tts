@@ -93,7 +93,7 @@ local function characterName(pid, color)
 end
 
 --- Returns a string of N filled-diamond characters (◆).
--- Used for the visual pool display: white = normal dice, red = hunger dice.
+-- Color comes from the target Text element in roll_panels.xml (TOR-155).
 -- @param count number  Number of diamonds to produce
 -- @return string
 local function diamonds(count)
@@ -103,6 +103,28 @@ local function diamonds(count)
         parts[i] = "◆"
     end
     return table.concat(parts, "")
+end
+
+--- Pool dot Text ids per dice kind (suffix matches roll_panels.xml).
+local POOL_DOT_FIELDS = {
+    { poolKey = "rouse",      idSuffix = "rouse" },
+    { poolKey = "normal",     idSuffix = "normal" },
+    { poolKey = "hunger",     idSuffix = "hunger" },
+    { poolKey = "oblivRouse", idSuffix = "obliv" },
+    { poolKey = "werewolf",   idSuffix = "werewolf" },
+    { poolKey = "rage",       idSuffix = "rage" },
+}
+
+--- Updates colored pool-dot Text elements for one roll panel.
+-- @param color string  Seat color (Brown, Black, …)
+-- @param pool table    Normalized pool counts from DK.normalizePool
+local function refreshPoolDots(color, pool)
+    pool = DK.normalizePool(pool)
+    for _, field in ipairs(POOL_DOT_FIELDS) do
+        local count = pool[field.poolKey] or 0
+        local id = string.format("rollPanel_pool_%s_%s", field.idSuffix, color)
+        uiSetValue(id, diamonds(count))
+    end
 end
 
 --- @param s string
@@ -177,8 +199,6 @@ local MAX_DIE_SLOTS = 15
 -- @param value    number   The rolled value (1–10)
 -- @param isHunger boolean  true for a Hunger die, false for a Normal die
 -- @return string  Custom UI image asset name (e.g. "dieFace_normal_ankh")
-local DK = require("lib.dice_kinds")
-
 local function dieFaceImage(value, faceRecord)
     local kind = DK.KIND_NORMAL
     if type(faceRecord) == "table" and type(faceRecord.kind) == "string" then
@@ -459,24 +479,9 @@ function RUI.refreshPlayerRollPanel(color)
     end
     uiSetValue(string.format("rollPanel_type_%s", color), rollLabel)
 
-    -- Pool display: diamonds for normal/hunger on player seats; compact line for Black (all kinds).
+    -- Pool display: colored ◆ per kind (XML Text color); rouse strip left of main kinds (TOR-155).
     local pool = DK.normalizePool(active.pool)
-    local normalCount = pool.normal
-    local hungerCount = pool.hunger
-    if isStPanel then
-        uiSetValue(string.format("rollPanel_pool_normal_%s", color), formatPoolCompact(pool))
-        uiSetValue(string.format("rollPanel_pool_hunger_%s", color), "")
-    else
-        local poolLine = diamonds(normalCount) .. diamonds(hungerCount)
-        if pool.rouse > 0 then
-            poolLine = poolLine .. " R" .. tostring(pool.rouse)
-        end
-        if pool.oblivRouse > 0 then
-            poolLine = poolLine .. " O" .. tostring(pool.oblivRouse)
-        end
-        uiSetValue(string.format("rollPanel_pool_normal_%s", color), poolLine)
-        uiSetValue(string.format("rollPanel_pool_hunger_%s", color), "")
-    end
+    refreshPoolDots(color, pool)
 
     -- Difficulty display: hidden until POST_ROLL so the player cannot see it before
     -- deciding whether to roll or Take Half. The ST communicates it verbally if needed.
