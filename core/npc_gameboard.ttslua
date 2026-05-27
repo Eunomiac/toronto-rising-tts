@@ -1054,6 +1054,7 @@ function Gameboard.buildControlBoardSnapPoints(board, config)
                     position = { lp.x, lp.y, lp.z },
                     rotation = { 0, yawDeg, 0 },
                     rotation_snap = true,
+                    tags = { TAG_TOKEN },
                 }
             end
         end
@@ -1088,6 +1089,7 @@ local function controlBoardSnapFingerprintFor(board, config)
             parts[#parts + 1] = tostring(group.num) .. ":" .. tostring(group.angleDelta)
         end
     end
+    parts[#parts + 1] = "snapTag:" .. TAG_TOKEN
     return table.concat(parts, ":")
 end
 
@@ -1418,16 +1420,17 @@ function Gameboard.reconcileControlBoardFromState()
     -- #endregion
 
     --- Mirror NPC tokens from placements (skip when layout locked — checked above).
-    local tokenObjs = getObjectsWithTag(TAG_TOKEN) or {}
+    --- Use board.getObjects (not getParent) — Custom_Tile tokens do not expose getParent.
     local byChar = {}
+    local tokenObjs = board.getObjects and board.getObjects() or {}
+    if type(tokenObjs) ~= "table" then
+        tokenObjs = {}
+    end
     for _, obj in ipairs(tokenObjs) do
-        if isGameObject(obj) and obj.hasTag(TAG_TOKEN) then
-            local parent = obj.getParent and obj.getParent() or nil
-            if parent == nil or parent.getGUID() == board.getGUID() then
-                local ck = resolveTokenCharacterKey(obj)
-                if ck ~= nil then
-                    byChar[ck] = obj
-                end
+        if isGameObject(obj) and obj.hasTag ~= nil and obj.hasTag(TAG_TOKEN) == true then
+            local ck = resolveTokenCharacterKey(obj)
+            if ck ~= nil then
+                byChar[ck] = obj
             end
         end
     end

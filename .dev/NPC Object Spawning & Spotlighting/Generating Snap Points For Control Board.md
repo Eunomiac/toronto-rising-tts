@@ -83,7 +83,7 @@ end
 Example: ring 3, `num=5`, `angleDelta=4`, `anchorDeg=90` → **82°, 86°, 90°, 94°, 98°**.
 
 - **Duplicates** at overlapping angles are allowed (no dedupe).
-- Every snap uses `rotation_snap = true` and yaw **toward** `origin` in board-local XZ.
+- Every snap uses `rotation_snap = true`, `tags = { "npc_control_token" }` (tagged snaps match control tokens), and yaw **toward** `origin` in board-local XZ.
 
 ## Visual illustrations
 

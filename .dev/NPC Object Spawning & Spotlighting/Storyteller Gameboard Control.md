@@ -59,7 +59,7 @@ GUIDs: `G.GUIDS.STAGE_BOARD`, `G.GUIDS.CONTROL_BOARD` in `lib/guids.ttslua`.
 
 Snap points are installed by `Gameboard.installPolarSnaps` (alias `installControlBoardSnaps`) from **`reconcileControlBoardFromState`** (every `Sync.npcs` / load) — the CONTROL_BOARD object does **not** need a bundled script in the save for snaps to appear. Optional: attach `objects/npc_control_board.ttslua` for Apply/Clear/Read/Lock/Load buttons on the tile.
 
-Config: `D.CONTROL_BOARD_SNAP` in `lib/npc_gameboard_data.ttslua` — elliptical rings with **absolute** `innerRingMaxU/V` and `outerRingMaxU/V`, `rays`, and per-ring `snapGroups` (`num`, `angleDelta`). Default install prints **~160** snaps (`16 × (1+3+5+1)`). Same `boardLocalFromUv` frame as token placement; each snap yaws toward `origin`.
+Config: `D.CONTROL_BOARD_SNAP` in `lib/npc_gameboard_data.ttslua` — elliptical rings with **absolute** `innerRingMaxU/V` and `outerRingMaxU/V`, `rays`, and per-ring `snapGroups` (`num`, `angleDelta`). Default install prints **~160** snaps (`16 × (1+3+5+1)`). Same `boardLocalFromUv` frame as token placement; each snap yaws toward `origin` and is tagged `npc_control_token` so only control tokens snap there.
 
 Manual refresh / IDE tuning (after Save & Play):
 
