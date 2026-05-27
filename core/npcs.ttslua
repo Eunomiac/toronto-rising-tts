@@ -2325,6 +2325,7 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
     if isNpcLocked(rec) and not bypassLock then
         return false, "NPC is locked in place. Unlock before moving."
     end
+    local didUnseat = false
     if U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey) then
         local sk = rec.seatedSeatKey
         local seatFig = getObjectFromGUID(rec.figurineGuid or "")
@@ -2339,9 +2340,7 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
             occ[sk] = false
         end
         setOccupiedNpcSeatMap(occ)
-        if not skipSeatSync then
-            requestSeatLayoutSync()
-        end
+        didUnseat = true
         rec = getInstances()[npcName]
     end
     local fig = getObjectFromGUID(rec.figurineGuid or "")
@@ -2349,6 +2348,9 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
     if fig == nil then
         setInstanceRecord(npcName, nil)
         unregisterDynamicLightModes(rec.lightGuid)
+        if didUnseat and not skipSeatSync then
+            requestSeatLayoutSync()
+        end
         return false, "Figurine missing; cleared record."
     end
     NPCS.applyFigurinePlacementAtWorld(fig, placement)
