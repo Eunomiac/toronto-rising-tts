@@ -246,6 +246,49 @@ function Gameboard.worldOnControlBoard(board, u, v)
     return boardLocalToWorld(board, boardLocalFromUv(board, u, v))
 end
 
+--- World position for an off-map palette slot on CONTROL_BOARD (UV grid on the minimap).
+--- @param board Object
+--- @param paletteIndex number 0-based
+--- @param options table|nil { total?, columns?, uMin?, uMax?, vMin?, vMax? }
+--- @return Vector|nil
+function Gameboard.paletteWorldPosition(board, paletteIndex, options)
+    if not isGameObject(board) or type(paletteIndex) ~= "number" then
+        return nil
+    end
+    local opts = options or {}
+    local total = tonumber(opts.total) or 61
+    if total < 1 then
+        total = 1
+    end
+    local columns = tonumber(opts.columns) or DATA.TOKEN_PALETTE_COLUMNS or 8
+    if columns < 1 then
+        columns = 8
+    end
+    local rows = math.ceil(total / columns)
+    if rows < 1 then
+        rows = 1
+    end
+    local col = paletteIndex % columns
+    local row = math.floor(paletteIndex / columns)
+    if row >= rows then
+        row = rows - 1
+    end
+    local uv = DATA.TOKEN_PALETTE_UV or {}
+    local uMin = tonumber(opts.uMin) or uv.uMin or 0.04
+    local uMax = tonumber(opts.uMax) or uv.uMax or 0.36
+    local vMin = tonumber(opts.vMin) or uv.vMin or 0.64
+    local vMax = tonumber(opts.vMax) or uv.vMax or 0.94
+    local u = uMin
+    local v = vMin
+    if columns > 1 then
+        u = uMin + (col / (columns - 1)) * (uMax - uMin)
+    end
+    if rows > 1 then
+        v = vMin + (row / (rows - 1)) * (vMax - vMin)
+    end
+    return Gameboard.worldOnControlBoard(board, u, v)
+end
+
 --- @param obj Object
 --- @return string|nil
 local function readMarkerKey(obj, prefix)
@@ -403,17 +446,20 @@ function Gameboard.clearControlBoard()
     local board = getControlBoard()
     S.setStateVal({}, "sessionScene", "npcWorld", "placements")
     if isGameObject(board) and board.getObjects ~= nil then
-        local palette = DATA.TOKEN_PALETTE_LOCAL
-        local idx = 0
+        local tokens = {}
         for _, obj in ipairs(board.getObjects()) do
             if isGameObject(obj) and obj.hasTag ~= nil and obj.hasTag(TAG_TOKEN) == true then
-                idx = idx + 1
-                local offset = (idx - 1) * 0.55
-                if isGameObject(board) then
-                    obj.setPosition(boardLocalToWorld(board, Vector(palette.x, palette.y, palette.z + offset)))
-                else
-                    destroyObject(obj)
-                end
+                tokens[#tokens + 1] = obj
+            end
+        end
+        local columns = DATA.TOKEN_PALETTE_COLUMNS or 8
+        for i, obj in ipairs(tokens) do
+            local pos = Gameboard.paletteWorldPosition(board, i - 1, {
+                total = #tokens,
+                columns = columns,
+            })
+            if pos ~= nil then
+                obj.setPosition(pos)
             end
         end
     end

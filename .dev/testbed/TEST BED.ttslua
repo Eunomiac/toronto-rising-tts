@@ -748,7 +748,6 @@ local function GetIntermediateCameraData(cameraData)
 end
 
 local function DoubleSetLookAt(cameraData, cameraMode, playerColor)
-
   if playerColor == nil then
     playerColor = "Black"
   end
@@ -781,19 +780,19 @@ end
 
 local cData = {
   sheet = {
-    position = Vector({0.0000, 5.8436, -53.0298}),
+    position = Vector({ 0.0000, 5.8436, -53.0298 }),
     pitch = 70.5275,
     yaw = 0,
     distance = 11,
   },
   roll = {
-    position = Vector({0.0000, 5.8436, -50.8718}),
+    position = Vector({ 0.0000, 5.8436, -50.8718 }),
     pitch = 70.5275,
     yaw = 0.1000,
     distance = 16.5598,
   },
   diceTray = {
-    position = Vector({0.0000, 17.8731, -43.3904}),
+    position = Vector({ 0.0000, 17.8731, -43.3904 }),
     pitch = 58.6195,
     yaw = 0.1000,
     distance = 10.8949,
@@ -896,6 +895,7 @@ function getGlobalLightingValues()
   }
   return data
 end
+
 -- #endregion
 
 -- #region SOUNDSCAPE TESTS
@@ -1261,7 +1261,6 @@ local function ToggleFigures()
 end
 
 local function ToggleSoundEmitters(override)
-
   local function isVisible(emitter)
     return emitter.getPosition().y > 0
   end
@@ -1284,9 +1283,9 @@ local function ToggleSoundEmitters(override)
       toggleState = override
     end
     if toggleState then
-      soundEmitter.setPosition(Vector({soundEmitter.getPosition().x, 5, soundEmitter.getPosition().z}))
+      soundEmitter.setPosition(Vector({ soundEmitter.getPosition().x, 5, soundEmitter.getPosition().z }))
     else
-      soundEmitter.setPosition(Vector({soundEmitter.getPosition().x, -100, soundEmitter.getPosition().z}))
+      soundEmitter.setPosition(Vector({ soundEmitter.getPosition().x, -100, soundEmitter.getPosition().z }))
     end
   end
 end
@@ -1299,9 +1298,9 @@ local function ToggleThrone(throneGuid, overrideState)
   -- If overrideState is true or false, set the throne to that state
   if overrideState ~= nil then
     if thronePos.y > 100 and overrideState == true then
-      throne.setPosition(throne.getPosition():sub(Vector({0, 100, 0})))
+      throne.setPosition(throne.getPosition():sub(Vector({ 0, 100, 0 })))
     elseif thronePos.y < 100 and overrideState == false then
-      throne.setPosition(throne.getPosition():add(Vector({0, 100, 0})))
+      throne.setPosition(throne.getPosition():add(Vector({ 0, 100, 0 })))
     end
     return
   end
@@ -1309,14 +1308,13 @@ local function ToggleThrone(throneGuid, overrideState)
   -- If throne y-position is over 100, add 100 to it
   -- Otherwise, subtract 100 from it
   if thronePos.y > 100 then
-    throne.setPosition(throne.getPosition():add(Vector({0, 100, 0})))
+    throne.setPosition(throne.getPosition():add(Vector({ 0, 100, 0 })))
   else
-    throne.setPosition(throne.getPosition():sub(Vector({0, 100, 0})))
+    throne.setPosition(throne.getPosition():sub(Vector({ 0, 100, 0 })))
   end
 end
 
 local function SwapThrone(throneGuid, newThroneGuid, newScale)
-
   local throne = getObjectFromGUID(throneGuid)
   local newThrone = getObjectFromGUID(newThroneGuid)
   local thronePos = throne.getPosition()
@@ -1437,7 +1435,7 @@ function dumpObjectXmlToFile(objectGuid, relativePath)
   end
 
   relativePath = relativePath
-    or ("debug_logs/object_xml_" .. string.gsub(objectGuid, "[^%w]", "_") .. "_" .. tostring(os.time()) .. ".xml")
+      or ("debug_logs/object_xml_" .. string.gsub(objectGuid, "[^%w]", "_") .. "_" .. tostring(os.time()) .. ".xml")
 
   local obj = getObjectFromGUID(objectGuid)
   if obj == nil then
@@ -1494,7 +1492,7 @@ function getObjectsByName(substring, relativePath)
   end
 
   relativePath = relativePath
-    or ("debug_logs/objects_by_name_" .. tostring(os.time()) .. ".lua")
+      or ("debug_logs/objects_by_name_" .. tostring(os.time()) .. ".lua")
 
   --- Prefer scripted name, then saved Name, then Nickname.
   --- @param obj Object
@@ -1597,8 +1595,8 @@ function checkNpcSeatWorldObjects()
   for r = 1, #rows do
     local row = rows[r]
     local checks = {
-      { role = "SEAT_CHAIR", guid = row.chair },
-      { role = "SEAT_FIGURE", guid = row.figure },
+      { role = "SEAT_CHAIR",   guid = row.chair },
+      { role = "SEAT_FIGURE",  guid = row.figure },
       { role = "SEAT_LIGHT_1", guid = row.light1 },
       { role = "SEAT_LIGHT_2", guid = row.light2 },
     }
@@ -1617,7 +1615,8 @@ function checkNpcSeatWorldObjects()
     end
     local fig = getObjectFromGUID(row.figure)
     if fig ~= nil and not hasTag(fig, row.tag) then
-      line("WARN", row.seatKey, "SEAT_FIGURE tag", row.figure, "expected tag '" .. row.tag .. "' for NPCS.resolveSeatFigurineObject")
+      line("WARN", row.seatKey, "SEAT_FIGURE tag", row.figure,
+        "expected tag '" .. row.tag .. "' for NPCS.resolveSeatFigurineObject")
     end
     local tagged = getObjectsWithTag(row.tag)
     if type(tagged) ~= "table" or #tagged == 0 then
@@ -1644,28 +1643,28 @@ function destroyAllNpcWorldObjects()
   local seenGuids = {}
 
   local function destroyOne(obj, bucket)
-      if obj == nil or obj.destruct == nil then
-          return
+    if obj == nil or obj.destruct == nil then
+      return
+    end
+    local guid = obj.getGUID ~= nil and obj.getGUID() or nil
+    if guid ~= nil and guid ~= "" then
+      if seenGuids[guid] then
+        return
       end
-      local guid = obj.getGUID ~= nil and obj.getGUID() or nil
-      if guid ~= nil and guid ~= "" then
-          if seenGuids[guid] then
-              return
-          end
-          seenGuids[guid] = true
-      end
-      if obj.getLock ~= nil and obj.getLock() then
-          obj.setLock(false)
-      end
-      obj.destruct()
-      destroyed[bucket] = destroyed[bucket] + 1
+      seenGuids[guid] = true
+    end
+    if obj.getLock ~= nil and obj.getLock() then
+      obj.setLock(false)
+    end
+    obj.destruct()
+    destroyed[bucket] = destroyed[bucket] + 1
   end
 
   for _, obj in ipairs(getObjectsWithTag(TAG_FIG) or {}) do
-      destroyOne(obj, "figurines")
+    destroyOne(obj, "figurines")
   end
   for _, obj in ipairs(getObjectsWithTag(TAG_LIT) or {}) do
-      destroyOne(obj, "lights")
+    destroyOne(obj, "lights")
   end
 
   -- Clear state so restored GUIDs / instances do not reference deleted objects.
@@ -1674,17 +1673,17 @@ function destroyAllNpcWorldObjects()
 
   local lights = S.getStateVal("lights") or {}
   for regName, _ in pairs(lights) do
-      if type(regName) == "string" and string.sub(regName, 1, 9) == "npcLight_" then
-          lights[regName] = nil
-      end
+    if type(regName) == "string" and string.sub(regName, 1, 9) == "npcLight_" then
+      lights[regName] = nil
+    end
   end
   S.setStateVal(lights, "lights")
   S.setStateVal({}, "seatLayout", "occupiedNPCSlots")
 
   print(string.format(
-      "[TR] destroyAllNpcWorldObjects: figurines=%d lights=%d (state cleared)",
-      destroyed.figurines,
-      destroyed.lights
+    "[TR] destroyAllNpcWorldObjects: figurines=%d lights=%d (state cleared)",
+    destroyed.figurines,
+    destroyed.lights
   ))
   return destroyed
 end
@@ -1834,7 +1833,7 @@ rollE2eClearConditions("Brown", { "e2eBestialNull" })
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E F baseline", 1)
 rollE2eSetPoolAndSpawn("Brown", 3, 1)
 rollConfirm("Brown", { pool = { normal = 3, hunger = 1, rouse = 0 } })
-rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {10} })
+rollE2eSettlePresetCheck("Brown", { normal = { 10, 10, 3 }, hunger = { 10 } })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = {
@@ -1850,7 +1849,7 @@ rollE2eApplyConditions("Brown", { "e2eBestialNull" })
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E F bestialNull", 1)
 rollE2eSetPoolAndSpawn("Brown", 3, 1)
 rollConfirm("Brown", { pool = { normal = 3, hunger = 1, rouse = 0 } })
-rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {1} })
+rollE2eSettlePresetCheck("Brown", { normal = { 10, 10, 3 }, hunger = { 1 } })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = {
@@ -1869,7 +1868,7 @@ rollE2eClearConditions("Brown", { "e2eBestialNull" })
 -- G1 - Win at diff 2 (2 Normal bag clicks, hunger 0)
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G1", 0)
 rollE2eSetPoolAutoHunger("Brown", 2)
-rollE2eSettlePresetCheck("Brown", { normal = {7, 7} })
+rollE2eSettlePresetCheck("Brown", { normal = { 7, 7 } })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = { result = { resultClass = "win", successes = 2, margin = 0 } },
@@ -1879,7 +1878,7 @@ rollCancel("Brown")
 -- G2 - Critical at diff 3 (4 Normal bag clicks, hunger 2)
 rollTest("Brown", 3, C.RollType.STANDARD, "E2E Classify G2", 2)
 rollE2eSetPoolAutoHunger("Brown", 4)
-rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {9, 1} })
+rollE2eSettlePresetCheck("Brown", { normal = { 10, 10 }, hunger = { 9, 1 } })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = { result = { resultClass = "criticalWin", margin = 2 } },
@@ -1889,7 +1888,7 @@ rollCancel("Brown")
 -- G3 - Messy critical at diff 3
 rollTest("Brown", 3, C.RollType.STANDARD, "E2E Classify G3", 2)
 rollE2eSetPoolAutoHunger("Brown", 4)
-rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {10, 1} })
+rollE2eSettlePresetCheck("Brown", { normal = { 10, 10 }, hunger = { 10, 1 } })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = { result = { resultClass = "messyCritical" } },
@@ -1899,7 +1898,7 @@ rollCancel("Brown")
 -- G4 - Bestial failure at diff 7
 rollTest("Brown", 7, C.RollType.STANDARD, "E2E Classify G4", 2)
 rollE2eSetPoolAutoHunger("Brown", 4)
-rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {10, 1} })
+rollE2eSettlePresetCheck("Brown", { normal = { 10, 10 }, hunger = { 10, 1 } })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = { result = { resultClass = "bestialFailure", margin = -2 } },
@@ -1909,7 +1908,7 @@ rollCancel("Brown")
 -- G5 - Total bestial failure at diff 2 (3 Normal bag clicks, hunger 1)
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G5", 1)
 rollE2eSetPoolAutoHunger("Brown", 3)
-rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, hunger = {1} })
+rollE2eSettlePresetCheck("Brown", { normal = { 4, 4 }, hunger = { 1 } })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = { result = { resultClass = "totalBestialFailure" } },
@@ -1920,7 +1919,7 @@ rollCancel("Brown")
 rollTest("Brown", 4, C.RollType.STANDARD, "E2E Classify G6", 1)
 RC.setRollOptions("Brown", { crits = false })
 rollE2eSetPoolAutoHunger("Brown", 5)
-rollE2eSettlePresetCheck("Brown", { normal = {10, 8, 7, 6}, hunger = {10} })
+rollE2eSettlePresetCheck("Brown", { normal = { 10, 8, 7, 6 }, hunger = { 10 } })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = {
@@ -1934,7 +1933,7 @@ rollCancel("Brown")
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G7", 1)
 RC.setRollOptions("Brown", { bestialNull = true })
 rollE2eSetPoolAutoHunger("Brown", 4)
-rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {1} })
+rollE2eSettlePresetCheck("Brown", { normal = { 10, 10, 3 }, hunger = { 1 } })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = {
@@ -2004,7 +2003,7 @@ RC.setRollOptions("Brown", {
   canRerollHunger = false,
 })
 rollE2eSetPoolAndSpawn("Brown", 3, 0)
-rollE2eSettlePresetCheck("Brown", { normal = {4, 4, 4} })
+rollE2eSettlePresetCheck("Brown", { normal = { 4, 4, 4 } })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = {
@@ -2025,7 +2024,7 @@ RC.setRollOptions("Brown", {
   canRerollHunger = false,
 })
 rollE2eSetPoolAndSpawn("Brown", 3, 0)
-rollE2eSettlePresetCheck("Brown", { normal = {4, 4, 4} })
+rollE2eSettlePresetCheck("Brown", { normal = { 4, 4, 4 } })
 -- Human: Spend WP, hover one normal die + press R, wait settle, then:
 -- rollConfirm("Brown", { phase = "postRoll", active = { willpower = { wpRerollWave = false } }, wpRerollChosenCount = 1 })
 
@@ -2039,7 +2038,7 @@ RC.setRollOptions("Brown", {
   canRerollHunger = true,
 })
 rollE2eSetPoolAutoHunger("Brown", 3)
-rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, hunger = {4} })
+rollE2eSettlePresetCheck("Brown", { normal = { 4, 4 }, hunger = { 4 } })
 -- Human: Spend WP, hover hunger die + press R once, wait settle, then:
 -- rollConfirm("Brown", { phase = "postRoll", wpRerollChosenCount = 1, active = { willpower = { wpRerollWave = false } } })
 
@@ -2054,7 +2053,7 @@ RC.setRollOptions("Brown", {
 })
 rollE2eSetPoolAndSpawn("Brown", 2, 0)
 rollE2eAddPoolKindSpawn("Brown", "rouse", 1)
-rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, rouse = {6} })
+rollE2eSettlePresetCheck("Brown", { normal = { 4, 4 }, rouse = { 6 } })
 -- Human: Spend WP, hover each normal die + press R (x2; rouse locked), wait settle, then:
 -- rollConfirm("Brown", { phase = "postRoll", wpRerollChosenCount = 2, active = { willpower = { wpRerollWave = false } } })
 
@@ -2090,3 +2089,277 @@ rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, rouse = {6} })
 -- SoundscapeApplyContextTest()
 -- SoundscapeSiteTest("CLVestibule")
 -- SoundscapeSiteTest("StRegisRoom101")
+
+-- #region 12. TABLE STACK FOR GAMEBOARD PREP
+--[[
+  Inactive tables: `applyTableObjectState` → `setColorTint({ a = 0 })` at y ≈ -200.
+  Not `setInvisibleTo` — Black/Storyteller is still fully transparent on inactive tables.
+
+  `Object.clone()` copies that hidden runtime state; only the active table (alpha 1) looks right.
+  Use `spawnObjectData(getData())` with opaque `ColorDiffuse` instead.
+
+  Console (after Save & Play loads Global + this file, or paste functions):
+    lua SpawnTableClones()
+    lua DiagnoseTableClones()
+    lua DestroyTableClones()
+]]
+--[[
+
+SEAT_CHAIR_RED = "474c0d",
+SEAT_CHAIR_ORANGE = "c3a355",
+SEAT_CHAIR_BROWN = "3da314",
+SEAT_CHAIR_PINK = "570f9b",
+SEAT_CHAIR_PURPLE = "ede3ce",
+SEAT_CHAIR_NPC1 = "75aa53",
+SEAT_CHAIR_NPC2 = "3d6084",
+SEAT_CHAIR_NPC3 = "bae868",
+SEAT_CHAIR_NPC4 = "6bcded",
+
+-- Player Figures (placed at player seats)
+SEAT_FIGURE_BROWN = "1c5b18",
+SEAT_FIGURE_ORANGE = "e1a378",
+SEAT_FIGURE_PINK = "390349",
+SEAT_FIGURE_PURPLE = "923872",
+SEAT_FIGURE_RED = "1e70cf",
+
+-- Player-Specific Objects
+PRINCE_SIGNET_BORDER_RED = "4506f3",
+PRINCE_SIGNET_RED = "9a2f2d",
+PRINCE_CURTAIN_RED = "d175e4"
+
+--]]
+
+--- @param obj Object|nil
+--- @return string
+local function formatTableTintForLog(obj)
+  if obj == nil or obj.getColorTint == nil then
+    return "tint=?"
+  end
+  local tint = obj.getColorTint()
+  if type(tint) ~= "table" then
+    return "tint=?"
+  end
+  local a = tint.a or tint[4] or 1
+  return string.format("tint.a=%.3f", tonumber(a) or -1)
+end
+
+--- @param obj Object|nil
+local function makeTableStackSpawnVisible(obj)
+  if obj == nil then
+    return
+  end
+  if obj.setColorTint ~= nil then
+    obj.setColorTint({ r = 1, g = 1, b = 1, a = 1 })
+  end
+  if obj.setInvisibleTo ~= nil then
+    obj.setInvisibleTo({})
+  end
+end
+
+--- Spawn `C.Tables` roots + components at (0, y, 150). Scale defaults to 1 (workshop size).
+--- @param opts table|nil { baseY?, stackX?, stackZ?, yStep?, workshopScale? }
+--- @return number spawn count
+function SpawnTableClones(opts)
+  opts = type(opts) == "table" and opts or {}
+  local baseY = tonumber(opts.baseY) or 15
+  local stackX = tonumber(opts.stackX) or 0
+  local stackZ = tonumber(opts.stackZ) or 150
+  local yStep = tonumber(opts.yStep) or 4
+  local workshopScale = tonumber(opts.workshopScale) or 1
+  local stackIndex = 0
+
+  if type(C) ~= "table" or type(C.Tables) ~= "table" then
+    print("[table stack] C.Tables not available — load the save first.")
+    return 0
+  end
+
+  --- @param label string
+  --- @param guid string
+  --- @return Object|nil
+  local function spawnGuidToStack(label, guid)
+    if type(guid) ~= "string" or guid == "" then
+      print("[table stack] SKIP (no guid): " .. label)
+      return nil
+    end
+
+    local src = getObjectFromGUID(guid)
+    if src == nil then
+      print("[table stack] MISSING: " .. label .. " guid=" .. guid)
+      return nil
+    end
+
+    local y = baseY + (stackIndex * yStep)
+    stackIndex = stackIndex + 1
+
+    local srcPos = src.getPosition()
+    print(string.format(
+      "[table stack] source %s guid=%s pos=(%.1f,%.1f,%.1f) %s",
+      label,
+      guid,
+      srcPos.x,
+      srcPos.y,
+      srcPos.z,
+      formatTableTintForLog(src)
+    ))
+
+    if type(src.getData) ~= "function" then
+      print("[table stack] getData unavailable: " .. label)
+      return nil
+    end
+
+    local data = src.getData()
+    if type(data) ~= "table" then
+      print("[table stack] getData returned non-table: " .. label)
+      return nil
+    end
+
+    data.GUID = ""
+    data.ColorDiffuse = { r = 1, g = 1, b = 1 }
+    data.Nickname = "STACK " .. label
+    data.Locked = true
+    if type(data.Transform) ~= "table" then
+      data.Transform = {}
+    end
+    data.Transform.posX = stackX
+    data.Transform.posY = y
+    data.Transform.posZ = stackZ
+    data.Transform.scaleX = workshopScale
+    data.Transform.scaleY = workshopScale
+    data.Transform.scaleZ = workshopScale
+
+    local spawnPos = Vector(stackX, y, stackZ)
+    local copy = spawnObjectData({ data = data, position = spawnPos })
+    if copy == nil then
+      print("[table stack] spawnObjectData FAILED: " .. label)
+      return nil
+    end
+
+    makeTableStackSpawnVisible(copy)
+    copy.setPosition(spawnPos)
+    copy.setScale({ x = workshopScale, y = workshopScale, z = workshopScale })
+    copy.interactable = true
+    copy.setLock(true)
+    copy.setName("STACK " .. label)
+
+    local copyPos = copy.getPosition()
+    print(string.format(
+      "[table stack] spawned %s copyGuid=%s pos=(%.1f,%.1f,%.1f) %s",
+      label,
+      copy.getGUID(),
+      copyPos.x,
+      copyPos.y,
+      copyPos.z,
+      formatTableTintForLog(copy)
+    ))
+    return copy
+  end
+
+  local tableKeys = {}
+  for tableKey, _ in pairs(C.Tables) do
+    tableKeys[#tableKeys + 1] = tableKey
+  end
+  table.sort(tableKeys)
+
+  for _, tableKey in ipairs(tableKeys) do
+    local cfg = C.Tables[tableKey]
+    if type(cfg) == "table" then
+      spawnGuidToStack(tableKey, cfg.guid)
+
+      local comps = cfg.components
+      if type(comps) == "table" then
+        local compNames = {}
+        for compName, _ in pairs(comps) do
+          compNames[#compNames + 1] = compName
+        end
+        table.sort(compNames)
+
+        for _, compName in ipairs(compNames) do
+          local compCfg = comps[compName]
+          local compGuid = type(compCfg) == "table" and compCfg.guid or nil
+          spawnGuidToStack(tableKey .. " / " .. compName, compGuid)
+        end
+      end
+    end
+  end
+
+  print(string.format(
+    "[table stack] Done — %d spawn(s) at x=%.0f z=%.0f, y %.0f..%.0f step %.0f scale %.2f. Camera: look at z=%.0f.",
+    stackIndex,
+    stackX,
+    stackZ,
+    baseY,
+    baseY + math.max(0, (stackIndex - 1) * yStep),
+    yStep,
+    workshopScale,
+    stackZ
+  ))
+  return stackIndex
+end
+
+--- Log every `STACK …` object (position + tint) to verify inactive spawns are visible.
+--- @return number
+function DiagnoseTableClones()
+  local found = 0
+  for _, obj in ipairs(getAllObjects()) do
+    if obj ~= nil and obj.getName ~= nil then
+      local name = obj.getName()
+      if type(name) == "string" and string.sub(name, 1, 5) == "STACK" then
+        found = found + 1
+        local pos = obj.getPosition()
+        print(string.format(
+          "[table stack] %s guid=%s pos=(%.1f,%.1f,%.1f) %s",
+          name,
+          obj.getGUID(),
+          pos.x,
+          pos.y,
+          pos.z,
+          formatTableTintForLog(obj)
+        ))
+      end
+    end
+  end
+  print("[table stack] diagnose: " .. tostring(found) .. " STACK object(s)")
+  return found
+end
+
+function DestroyTableClones()
+  local destroyed = 0
+  local skipped = 0
+
+  for _, obj in ipairs(getAllObjects()) do
+    if obj ~= nil and obj.getName ~= nil then
+      local name = obj.getName()
+      if type(name) == "string" and string.sub(name, 1, 5) == "STACK" then
+        local guid = (obj.getGUID ~= nil) and obj.getGUID() or "?"
+        print("[table stack] destroy: " .. name .. "  guid=" .. tostring(guid))
+
+        if obj.destruct ~= nil then
+          obj.destruct()
+          destroyed = destroyed + 1
+        elseif destroyObject ~= nil then
+          destroyObject(obj)
+          destroyed = destroyed + 1
+        else
+          print("[table stack] WARN: no destruct API for " .. name)
+          skipped = skipped + 1
+        end
+      end
+    end
+  end
+
+  print(string.format("[table stack] Cleanup done — destroyed %d, skipped %d", destroyed, skipped))
+  return destroyed
+end
+-- #endregion
+
+SpawnTableClones()
+-- DiagnoseTableClones()
+-- DestroyTableClones()
+
+DEBUG.clearCustomUiUploadTokens()
+
+DEBUG.clearNpcControlBoardTokens()
+
+DEBUG.spawnNpcControlBoardTokens()
+
+DEBUG.spawnNpcTokenUploadBatch({ columns = 12, gap = 2, startY = 3 })

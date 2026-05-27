@@ -63,6 +63,60 @@ lua DEBUG.spawnCustomUiUploadBatchFromManifest(customUiUploadManifest, { columns
 
 Then Cloud Manager → **Upload All Loaded Files**, save the game, press Enter in the terminal to run merge, and finally `lua DEBUG.clearCustomUiUploadTokens()`.
 
+## NPC gameboard tokens (`tokenFront_*` / `tokenBack_*`)
+
+For **TOR-169** control-board tokens, place paired WEBPs in the repo folder:
+
+**`assets/images/NPC Tokens/`**
+
+| File | Custom UI asset name after upload |
+| --- | --- |
+| `tokenFront_<characterKey>.webp` | `tokenFront_<characterKey>` (face-up / STANDARD) |
+| `tokenBack_<characterKey>.webp` | `tokenBack_<characterKey>` (face-down / OFF) |
+
+`<characterKey>` must match `D.characters` keys in `lib/npcs_data.ttslua` (e.g. `myleneHamelin`).
+
+**Build manifest** (default dir is `assets/images/NPC Tokens`; writes `.dev/custom-ui-assets/npc-token-manifest.json` and `lib/npc_token_upload_manifest.ttslua`):
+
+```text
+npm run custom-ui-assets:manifest-npc-tokens
+```
+
+Override folder: `--dir <other-path>`
+
+Batched upload (default **20 characters** = 40 upload tokens per manifest):
+
+```text
+npm run custom-ui-assets:manifest-npc-tokens:batch -- --batchStart myleneHamelin
+```
+
+**TTS — control-board tokens (61 paired tiles, not upload temps):** Save & Play → `lua DEBUG.spawnNpcControlBoardTokens()` — places round flip tiles (`type=2`, `thickness=0.1`) on **CONTROL_BOARD** in the `TOKEN_PALETTE_UV` strip (`npc_control_token`, `npcToken:<key>`). Optional: `{ columns = 8, scale = 0.38 }` (spacing is UV-based, not world/local offsets).
+
+**TTS — Cloud upload (122 single-face temps):** Save & Play → `lua DEBUG.spawnNpcTokenUploadBatch({ columns = 12, gap = 2, startY = 3 })` → Cloud Manager **Upload All Loaded Files** → save game.
+
+**Merge** (required before extract — copies hosted URLs from spawned upload tokens into the save + `npc-generated-assets.json`):
+
+```text
+npm run custom-ui-assets:merge-npc-tokens
+```
+
+If your save file is not `.dev/TS_Save_230.json`, pass `--save` on the underlying merge command (see `package.json` script).
+
+**Extract paired Steam URLs** (per-character `front` + `back`):
+
+```text
+npm run custom-ui-assets:extract-npc-token-urls
+```
+
+After extract: Save & Play → `lua DEBUG.applyNpcControlTokenHostedImages()` (or re-run `spawnNpcControlBoardTokens`).
+
+Outputs:
+
+- `.dev/custom-ui-assets/npc-token-hosted-urls.json`
+- `lib/npc_token_hosted_urls.ttslua` — `require("lib.npc_token_hosted_urls")[characterKey].front` / `.back`
+
+VS Code task **Custom UI Assets: Build Manifest from Image Files** → mode **`npc-tokens`**.
+
 ## Folder mode (legacy)
 
 Scans a directory of images (PNG→WEBP conversion, then manifest from filenames):

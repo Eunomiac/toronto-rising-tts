@@ -50,7 +50,9 @@ Debug: `DEBUG.dumpNpcPlacements()` in TTS console.
 
 ## Token images (Custom UI upload)
 
-Gameboard control tokens are **Custom_Tile** objects — **circle** shape (`Type = 2`), **thickness 0.1**, two-sided (`image` + `image_bottom` / save `ImageURL` + `ImageSecondaryURL`). They flip with the normal **Flip** key (`Object.flip()`); there is no `is_face_up` on tiles — OFF vs STANDARD is inferred from X rotation.
+Gameboard control tokens are **Custom_Tile** objects — **circle** shape (`Type = 2`), **thickness 0.1**, two-sided (`image` + `image_bottom` / save `ImageURL` + `ImageSecondaryURL`). `DEBUG.spawnNpcControlBoardTokens` sets these in spawn data **and** calls `setCustomObject` + `reload` after spawn (TTS often ignores `CustomTile` on `spawnObjectData` alone). `DEBUG.applyNpcControlTokenHostedImages` applies the same shape to existing tokens. They flip with the normal **Flip** key (`Object.flip()`); there is no `is_face_up` on tiles — OFF vs STANDARD is inferred from X rotation.
+
+**Palette spawn:** tokens grid in `TOKEN_PALETTE_UV` on CONTROL_BOARD (normalized u,v, default 8 columns) via `Gameboard.paletteWorldPosition` — not raw local offsets (those overshoot the minimap and fall off the table).
 
 **Upload batch only** uses **Custom_Token** (single `image` per object — correct for Cloud upload, not for the minimap).
 

@@ -2751,20 +2751,14 @@ end
 local DEBUG_UPLOAD_GMNOTES_PREFIX = "debug-custom-ui-upload:"
 local DEBUG_UPLOAD_TAG = "debug-custom-ui-upload"
 local DEBUG_UPLOAD_MANIFEST_MODULE = "lib.custom_ui_upload_manifest"
-local DEBUG_UPLOAD_MANIFEST_MODULE_ALT = "lib/custom_ui_upload_manifest"
 DEBUG.customUiUploadManifest = nil
 
--- Static preload so bundlers that only track literal require() calls include this module.
--- If not present yet, keep going; users can regenerate and Save & Play.
-do
-    -- pcall: Generated manifest module may be missing until the Node build step runs; debug load must not fail the whole Global script. Propagating would brick Save & Play for unrelated systems that only need other DEBUG helpers.
-    local ok, preloadManifest = pcall(function()
-        return require("lib.custom_ui_upload_manifest")
-    end)
-    if ok and U.Type(preloadManifest) == "table" then
-        DEBUG.customUiUploadManifest = preloadManifest
-    end
-end
+-- Module-level requires so luabundle ships generated manifests (.dev/TTS_BUNDLING_SETUP.md § Issue 2a).
+-- Regenerate with npm run custom-ui-assets:manifest-npc-tokens (or manifest-sites) before Save & Play.
+local CUSTOM_UI_UPLOAD_MANIFEST = require("lib.custom_ui_upload_manifest")
+local NPC_TOKEN_UPLOAD_MANIFEST = require("lib.npc_token_upload_manifest")
+local NPC_TOKEN_HOSTED_URLS = require("lib.npc_token_hosted_urls")
+DEBUG.customUiUploadManifest = CUSTOM_UI_UPLOAD_MANIFEST
 
 --- Parse an optional options table for upload spawn settings.
 -- @param options table|nil
@@ -2964,32 +2958,10 @@ function DEBUG.loadCustomUiUploadManifest(moduleName, forceReload)
     if shouldForceReload then
         if U.Type(package) == "table" and U.Type(package.loaded) == "table" then
             package.loaded[targetModule] = nil
-            package.loaded[DEBUG_UPLOAD_MANIFEST_MODULE_ALT] = nil
         end
     end
 
-    -- pcall: Primary manifest path uses dot module id; generator output or bundler quirks may only resolve the slash alias. Propagating the first require error would block fallback loading entirely.
-    local ok, manifest = pcall(function()
-        return require(targetModule)
-    end)
-    local firstErr = manifest
-
-    if not ok then
-        -- pcall: Alternate require path exists for file-backed layouts that only register under the slash key after forceReload. Propagating would discard the working module when both paths are valid across environments.
-        local okAlt, manifestAlt = pcall(function()
-            return require(DEBUG_UPLOAD_MANIFEST_MODULE_ALT)
-        end)
-        if okAlt then
-            manifest = manifestAlt
-            ok = true
-            targetModule = DEBUG_UPLOAD_MANIFEST_MODULE_ALT
-        else
-            print("DEBUG.loadCustomUiUploadManifest: failed to require module '" .. tostring(targetModule) .. "'")
-            print("  require error: " .. tostring(firstErr))
-            print("  fallback require error (" .. DEBUG_UPLOAD_MANIFEST_MODULE_ALT .. "): " .. tostring(manifestAlt))
-            return nil
-        end
-    end
+    local manifest = require(targetModule)
 
     if U.Type(manifest) ~= "table" then
         print("DEBUG.loadCustomUiUploadManifest: module '" .. tostring(targetModule) .. "' did not return a table")
@@ -3003,6 +2975,13 @@ function DEBUG.loadCustomUiUploadManifest(moduleName, forceReload)
     end
     print("DEBUG.loadCustomUiUploadManifest: loaded " .. tostring(count) .. " assets from " .. tostring(targetModule))
     return manifest
+end
+
+--- Spawn upload tokens from lib.npc_token_upload_manifest (tokenFront_* / tokenBack_* WEBPs).
+-- @param options table|nil Optional grid: columns, gap, startY, etc.
+-- @return number Count of spawned tokens
+function DEBUG.spawnNpcTokenUploadBatch(options)
+    return DEBUG.spawnCustomUiUploadBatch(options, "lib.npc_token_upload_manifest")
 end
 
 --- Spawn a batch from the default generated manifest module.
@@ -3051,6 +3030,389 @@ function DEBUG.clearCustomUiUploadTokens()
 
     print("DEBUG.clearCustomUiUploadTokens: Deleted " .. tostring(deleted) .. " uploader tokens (matched by tag or GM notes)")
     return deleted
+end
+
+--[[
+    NPC control-board tokens (paired front/back Custom_Tile on CONTROL_BOARD).
+    Distinct from upload-batch Custom_Token spawns (Cloud Manager upload only).
+]]
+
+local NPC_GAMEBOARD_DATA = require("lib.npc_gameboard_data")
+local Gameboard = require("core.npc_gameboard")
+local NPC_CONTROL_TOKEN_TAG = NPC_GAMEBOARD_DATA.TAG_NPC_CONTROL_TOKEN
+local NPC_TOKEN_GM_PREFIX = NPC_GAMEBOARD_DATA.TOKEN_GM_PREFIX
+local NPC_TOKEN_MANIFEST_MODULE = "lib.npc_token_upload_manifest"
+--- Custom_Tile.Type: 0 square, 1 hex, 2 circle (round), 3 rounded square (.dev/tts-api Custom Tile).
+local NPC_CONTROL_TOKEN_TILE_TYPE = 2
+local NPC_CONTROL_TOKEN_TILE_THICKNESS = 0.1
+
+--- @param url string|nil
+--- @return boolean
+local function isFileUrl(url)
+    return U.Type(url) == "string" and string.find(url, "^file:///") ~= nil
+end
+
+--- @param url string|nil
+--- @return boolean
+local function isHostedSteamUrl(url)
+    return U.Type(url) == "string"
+        and string.find(url, "^https?://") ~= nil
+        and (
+            string.find(url, "steamusercontent") ~= nil
+            or string.find(url, "steamusercontent%-a%.akamaihd%.net") ~= nil
+        )
+end
+
+--- @param manifest table
+--- @return table|nil characterKey -> { front: string, back: string }
+local function indexNpcTokenPairsFromManifest(manifest)
+    if U.Type(manifest) ~= "table" then
+        return nil
+    end
+    local assets = manifest.assets
+    if U.Type(assets) ~= "table" then
+        return nil
+    end
+    local pairsByKey = {}
+    for _, asset in ipairs(assets) do
+        if U.Type(asset) == "table" then
+            local characterKey = asset.characterKey
+            local side = asset.side
+            local fileUrl = asset.fileUrl or asset.url or asset.URL
+            if U.Type(characterKey) == "string" and characterKey ~= "" and U.Type(fileUrl) == "string" and fileUrl ~= "" then
+                local row = pairsByKey[characterKey]
+                if row == nil then
+                    row = {}
+                    pairsByKey[characterKey] = row
+                end
+                if side == "front" then
+                    row.front = fileUrl
+                elseif side == "back" then
+                    row.back = fileUrl
+                end
+            end
+        end
+    end
+    return pairsByKey
+end
+
+--- Prefer Steam URLs from lib.npc_token_hosted_urls; else file:/// rows from upload manifest.
+--- @param options table|nil { preferHosted?: boolean }
+--- @return table|nil pairsByKey, string sourceLabel
+local function loadNpcControlTokenPairUrls(options)
+    local opts = options or {}
+    local preferHosted = opts.preferHosted
+    if preferHosted == nil then
+        preferHosted = true
+    end
+
+    if preferHosted and U.Type(NPC_TOKEN_HOSTED_URLS) == "table" then
+        local hosted = NPC_TOKEN_HOSTED_URLS
+        local pairsByKey = {}
+        for characterKey, row in pairs(hosted) do
+            if U.Type(characterKey) == "string" and U.Type(row) == "table" then
+                local front = row.front or row.Front
+                local back = row.back or row.Back
+                if isHostedSteamUrl(front) and isHostedSteamUrl(back) then
+                    pairsByKey[characterKey] = { front = front, back = back }
+                end
+            end
+        end
+        local count = 0
+        for _ in pairs(pairsByKey) do
+            count = count + 1
+        end
+        if count > 0 then
+            return pairsByKey, "lib.npc_token_hosted_urls"
+        end
+    end
+
+    local manifest = DEBUG.loadCustomUiUploadManifest(NPC_TOKEN_MANIFEST_MODULE, true)
+    if manifest == nil then
+        return nil, "none"
+    end
+    return indexNpcTokenPairsFromManifest(manifest), NPC_TOKEN_MANIFEST_MODULE
+end
+
+--- @param pairsByKey table
+--- @return string[] sorted character keys with both sides
+local function sortedCompleteNpcTokenKeys(pairsByKey)
+    local keys = {}
+    for characterKey, row in pairs(pairsByKey) do
+        if U.Type(row) == "table" then
+            local frontOk = isFileUrl(row.front) or isHostedSteamUrl(row.front)
+            local backOk = isFileUrl(row.back) or isHostedSteamUrl(row.back)
+            if frontOk and backOk then
+                keys[#keys + 1] = characterKey
+            end
+        end
+    end
+    table.sort(keys)
+    return keys
+end
+
+--- Save-format spawn data for a flip-capable NPC control token (matches dual-image Custom_Tile in save).
+--- @param worldPos { x: number, y: number, z: number }
+--- @param yawDeg number
+--- @param characterKey string
+--- @param frontUrl string
+--- @param backUrl string
+--- @param scale number|nil
+--- @param faceUp boolean|nil
+--- @return table
+local function buildNpcControlTokenSpawnData(worldPos, yawDeg, characterKey, frontUrl, backUrl, scale, faceUp)
+    local s = tonumber(scale)
+    if s == nil or s ~= s or s <= 0 then
+        s = 0.38
+    end
+    local showFront = faceUp ~= false
+    return {
+        GUID = "",
+        Name = "Custom_Tile",
+        Transform = {
+            posX = worldPos.x,
+            posY = worldPos.y,
+            posZ = worldPos.z,
+            rotX = showFront and 0 or 180,
+            rotY = yawDeg,
+            rotZ = 0,
+            scaleX = s,
+            scaleY = 1,
+            scaleZ = s,
+        },
+        Nickname = characterKey,
+        Description = "",
+        GMNotes = NPC_TOKEN_GM_PREFIX .. characterKey,
+        AltLookAngle = { x = 0, y = 0, z = 0 },
+        ColorDiffuse = { r = 1, g = 1, b = 1 },
+        LayoutGroupSortIndex = 0,
+        Value = 0,
+        Locked = false,
+        Grid = false,
+        Snap = false,
+        IgnoreFoW = false,
+        MeasureMovement = false,
+        DragSelectable = true,
+        Autoraise = true,
+        Sticky = false,
+        Tooltip = true,
+        GridProjection = false,
+        HideWhenFaceDown = false,
+        Hands = false,
+        CustomImage = {
+            ImageURL = frontUrl,
+            ImageSecondaryURL = backUrl,
+            ImageScalar = 1,
+            WidthScale = 0,
+            CustomTile = {
+                Type = NPC_CONTROL_TOKEN_TILE_TYPE,
+                Thickness = NPC_CONTROL_TOKEN_TILE_THICKNESS,
+                Stackable = false,
+                Stretch = true,
+            },
+        },
+        LuaScript = "",
+        LuaScriptState = "",
+        XmlUI = "",
+        Tags = { NPC_CONTROL_TOKEN_TAG },
+    }
+end
+
+--- Enforce round Custom_Tile (type 2) and thin thickness on an NPC control token.
+--- spawnObjectData can omit CustomTile fields; setCustomObject + reload applies them in-game.
+--- @param obj Object
+--- @param frontUrl string
+--- @param backUrl string
+--- @return boolean
+local function applyNpcControlTokenTileShape(obj, frontUrl, backUrl)
+    if obj == nil or obj.setCustomObject == nil then
+        return false
+    end
+    obj.setCustomObject({
+        image = frontUrl,
+        image_bottom = backUrl,
+        type = NPC_CONTROL_TOKEN_TILE_TYPE,
+        thickness = NPC_CONTROL_TOKEN_TILE_THICKNESS,
+        stackable = false,
+        stretch = true,
+    })
+    if obj.reload ~= nil then
+        obj.reload()
+    end
+    return true
+end
+
+--- @return Object|nil
+local function getControlBoardObject()
+    local guid = G.GUIDS and G.GUIDS.CONTROL_BOARD
+    if U.Type(guid) ~= "string" or guid == "" then
+        return nil
+    end
+    local board = getObjectFromGUID(guid)
+    if board == nil then
+        return nil
+    end
+    return board
+end
+
+--- Delete every `npc_control_token` on or off the control board.
+-- @return number
+function DEBUG.clearNpcControlBoardTokens()
+    local deleted = 0
+    local tagObjs = getObjectsWithTag(NPC_CONTROL_TOKEN_TAG) or {}
+    for _, obj in ipairs(tagObjs) do
+        if obj ~= nil and obj.destruct ~= nil then
+            obj.destruct()
+            deleted = deleted + 1
+        end
+    end
+    print("DEBUG.clearNpcControlBoardTokens: Deleted " .. tostring(deleted) .. " control-board token(s)")
+    return deleted
+end
+
+--- Apply hosted front/back URLs to existing control-board tokens (after merge + extract).
+-- @return number count updated
+function DEBUG.applyNpcControlTokenHostedImages()
+    local pairsByKey, source = loadNpcControlTokenPairUrls({ preferHosted = true })
+    if pairsByKey == nil then
+        print("DEBUG.applyNpcControlTokenHostedImages: no hosted URL pairs (" .. tostring(source) .. ")")
+        return 0
+    end
+    local updated = 0
+    local tagObjs = getObjectsWithTag(NPC_CONTROL_TOKEN_TAG) or {}
+    for _, obj in ipairs(tagObjs) do
+        if obj ~= nil and obj.getGMNotes ~= nil and obj.setCustomObject ~= nil then
+            local notes = obj.getGMNotes()
+            if U.Type(notes) == "string" and string.find(notes, "^" .. NPC_TOKEN_GM_PREFIX) ~= nil then
+                local characterKey = string.sub(notes, #NPC_TOKEN_GM_PREFIX + 1)
+                local row = pairsByKey[characterKey]
+                if U.Type(row) == "table" and isHostedSteamUrl(row.front) and isHostedSteamUrl(row.back) then
+                    if applyNpcControlTokenTileShape(obj, row.front, row.back) then
+                        updated = updated + 1
+                    end
+                end
+            end
+        end
+    end
+    print("DEBUG.applyNpcControlTokenHostedImages: Updated " .. tostring(updated) .. " token(s) from " .. tostring(source))
+    return updated
+end
+
+--- Spawn paired front/back NPC control tokens on CONTROL_BOARD (palette UV grid on the minimap).
+-- Uses `lib.npc_token_hosted_urls` when populated; otherwise `lib.npc_token_upload_manifest` file:/// URLs.
+-- Tiles: Custom_Tile type 2 (circle), thickness 0.1 — enforced via spawn data + setCustomObject after spawn.
+-- @param options table|nil { destroyExisting?, columns?, total?, uMin?, uMax?, vMin?, vMax?, scale?, preferHosted?, faceUp?, boardYaw? }
+-- @return number spawned
+function DEBUG.spawnNpcControlBoardTokens(options)
+    local opts = options or {}
+    if opts.destroyExisting ~= false then
+        DEBUG.clearNpcControlBoardTokens()
+    end
+
+    local board = getControlBoardObject()
+    if board == nil then
+        print("DEBUG.spawnNpcControlBoardTokens: CONTROL_BOARD missing (GUID " .. tostring(G.GUIDS.CONTROL_BOARD) .. ")")
+        return 0
+    end
+    if type(board.positionToWorld) ~= "function" and type(board.getTransformRight) ~= "function" then
+        print("DEBUG.spawnNpcControlBoardTokens: CONTROL_BOARD cannot convert local positions to world")
+        return 0
+    end
+
+    local pairsByKey, source = loadNpcControlTokenPairUrls(opts)
+    if pairsByKey == nil then
+        print("DEBUG.spawnNpcControlBoardTokens: no token URL pairs — run npm run custom-ui-assets:manifest-npc-tokens")
+        return 0
+    end
+
+    local keys = sortedCompleteNpcTokenKeys(pairsByKey)
+    if #keys == 0 then
+        print("DEBUG.spawnNpcControlBoardTokens: manifest has no complete front+back pairs")
+        return 0
+    end
+
+    local boardRot = board.getRotation()
+    local boardYaw = (boardRot and boardRot.y) or 0
+    if U.Type(opts.boardYaw) == "number" then
+        boardYaw = opts.boardYaw
+    end
+
+    local faceUp = opts.faceUp
+    if faceUp == nil then
+        faceUp = true
+    end
+
+    local columns = opts.columns or NPC_GAMEBOARD_DATA.TOKEN_PALETTE_COLUMNS or 8
+    if columns < 1 then
+        columns = 8
+    end
+    local paletteOpts = {
+        total = opts.total or #keys,
+        columns = columns,
+        uMin = opts.uMin,
+        uMax = opts.uMax,
+        vMin = opts.vMin,
+        vMax = opts.vMax,
+    }
+
+    local spawned = 0
+    local skipped = 0
+    for i, characterKey in ipairs(keys) do
+        local row = pairsByKey[characterKey]
+        local worldPos = Gameboard.paletteWorldPosition(board, i - 1, paletteOpts)
+        if worldPos == nil then
+            skipped = skipped + 1
+        else
+            local data = buildNpcControlTokenSpawnData(
+                { x = worldPos.x, y = worldPos.y, z = worldPos.z },
+                boardYaw,
+                characterKey,
+                row.front,
+                row.back,
+                opts.scale,
+                faceUp
+            )
+            ---@diagnostic disable-next-line: undefined-global
+            local obj = spawnObjectData({ data = data })
+            if obj == nil then
+                print("DEBUG.spawnNpcControlBoardTokens: spawn failed for " .. characterKey)
+                skipped = skipped + 1
+            else
+                applyNpcControlTokenTileShape(obj, row.front, row.back)
+                if obj.setTags ~= nil then
+                    obj.setTags({ NPC_CONTROL_TOKEN_TAG })
+                end
+                if obj.setGMNotes ~= nil then
+                    obj.setGMNotes(NPC_TOKEN_GM_PREFIX .. characterKey)
+                end
+                if obj.setName ~= nil then
+                    obj.setName(characterKey)
+                end
+                spawned = spawned + 1
+            end
+        end
+    end
+
+    print(
+        "DEBUG.spawnNpcControlBoardTokens: Spawned "
+            .. tostring(spawned)
+            .. "/"
+            .. tostring(#keys)
+            .. " on CONTROL_BOARD ("
+            .. tostring(source)
+            .. "; tile type="
+            .. tostring(NPC_CONTROL_TOKEN_TILE_TYPE)
+            .. " circle, thickness="
+            .. tostring(NPC_CONTROL_TOKEN_TILE_THICKNESS)
+            .. ", columns="
+            .. tostring(columns)
+            .. ")"
+    )
+    if skipped > 0 then
+        print("DEBUG.spawnNpcControlBoardTokens: Skipped " .. tostring(skipped))
+    end
+    print("  Drag tokens onto polar snaps, then Gameboard Apply (or lua GlobalGameboardApply())")
+    return spawned
 end
 
 --[[
@@ -3129,6 +3491,14 @@ function DEBUG.help()
     print("                          - Require generated manifest module (default: lib.custom_ui_upload_manifest)")
     print("  DEBUG.spawnCustomUiUploadBatch(options?, moduleName?)")
     print("                          - Spawn from loaded/default manifest module")
+    print("  DEBUG.spawnNpcTokenUploadBatch(options?)")
+    print("                          - Spawn tokenFront_* / tokenBack_* from lib.npc_token_upload_manifest")
+    print("  DEBUG.spawnNpcControlBoardTokens(options?)")
+    print("                          - Spawn 61 paired gameboard tokens on CONTROL_BOARD (palette grid)")
+    print("  DEBUG.clearNpcControlBoardTokens()")
+    print("                          - Delete npc_control_token objects")
+    print("  DEBUG.applyNpcControlTokenHostedImages()")
+    print("                          - After upload+extract, refresh token images from hosted URLs")
     print("  DEBUG.clearCustomUiUploadTokens()")
     print("                          - Delete temporary upload tokens created by debug uploader")
     print("\nLIGHT FEASIBILITY (workshop investigation):")
@@ -3191,6 +3561,10 @@ tableRotateTo = DEBUG.tableRotateTo
 spawnCustomUiUploadBatchFromManifest = DEBUG.spawnCustomUiUploadBatchFromManifest
 spawnCustomUiUploadBatchFromJson = DEBUG.spawnCustomUiUploadBatchFromJson
 spawnCustomUiUploadBatch = DEBUG.spawnCustomUiUploadBatch
+spawnNpcTokenUploadBatch = DEBUG.spawnNpcTokenUploadBatch
+spawnNpcControlBoardTokens = DEBUG.spawnNpcControlBoardTokens
+clearNpcControlBoardTokens = DEBUG.clearNpcControlBoardTokens
+applyNpcControlTokenHostedImages = DEBUG.applyNpcControlTokenHostedImages
 loadCustomUiUploadManifest = DEBUG.loadCustomUiUploadManifest
 clearCustomUiUploadTokens = DEBUG.clearCustomUiUploadTokens
 

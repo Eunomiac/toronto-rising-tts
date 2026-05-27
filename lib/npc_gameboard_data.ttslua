@@ -39,8 +39,16 @@ D.POLAR_SNAP = {
     rotationSnapDeg = 15,
 }
 
---- Off-board token palette (control-board local; no snap points).
-D.TOKEN_PALETTE_LOCAL = { x = -1.35, y = 0.12, z = 0 }
+--- Token palette strip on CONTROL_BOARD (normalized u,v; same frame as placements / polar snaps).
+D.TOKEN_PALETTE_UV = {
+    uMin = 0.04,
+    uMax = 0.36,
+    vMin = 0.64,
+    vMax = 0.94,
+}
+
+--- Default palette grid when spawning 61 NPC control tokens.
+D.TOKEN_PALETTE_COLUMNS = 8
 
 --- Enumerate every table key and component name from C.Tables (for marker registry).
 --- @return table[] { tableKey, componentKey? }
