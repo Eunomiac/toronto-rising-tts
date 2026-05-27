@@ -32,9 +32,9 @@ D.DEFAULT_STAGE_WORLD = {
     groundY = -15,
 }
 
---- Polar snap grid on CONTROL_BOARD (local XZ, Y up).
+--- Polar snap grid on CONTROL_BOARD — radiusFractions are distance from map center in UV space (0–~0.48).
 D.POLAR_SNAP = {
-    radii = { 0.12, 0.22, 0.32, 0.42 },
+    radiusFractions = { 0.12, 0.22, 0.32, 0.42 },
     steps = 12,
     rotationSnapDeg = 15,
 }

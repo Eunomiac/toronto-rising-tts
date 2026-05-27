@@ -20,6 +20,7 @@ local TAG_TABLE = DATA.TAG_GAMEBOARD_TABLE
 local TAG_COMPONENT = DATA.TAG_GAMEBOARD_TABLE_COMPONENT
 
 local clearArmExpireByColor = {}
+local polarSnapInstallFingerprint = nil
 
 --- @param n number
 --- @param lo number
@@ -485,29 +486,6 @@ function Gameboard.tryConfirmClear(playerColor)
     return true
 end
 
---- Install polar snap points on CONTROL_BOARD.
-function Gameboard.installPolarSnaps()
-    local board = getControlBoard()
-    if not isGameObject(board) or board.setSnapPoints == nil then
-        return
-    end
-    local cfg = DATA.POLAR_SNAP
-    local points = {}
-    for _, radius in ipairs(cfg.radii or {}) do
-        local steps = cfg.steps or 8
-        for i = 0, steps - 1 do
-            local angle = (i / steps) * 2 * math.pi
-            points[#points + 1] = {
-                position = { math.cos(angle) * radius, 0.1, math.sin(angle) * radius },
-                rotation = { 0, (i / steps) * 360, 0 },
-                rotation_snap = true,
-            }
-        end
-    end
-    board.setSnapPoints(points)
-    print("[Gameboard] Polar snaps installed (" .. tostring(#points) .. " points)")
-end
-
 --- PC seat colors only — Storyteller (Black) and spectators (White/Grey) still see control-board pieces.
 --- @return string[]
 local function playerColorsHiddenFromControlBoard()
@@ -760,6 +738,87 @@ local function sourceObjectForSeat(seatKey, expectedWorldPos)
     return nil
 end
 
+--- @param board Object
+--- @return string
+local function polarSnapFingerprintFor(board)
+    local sx, sz = boardMapExtents(board)
+    local cfg = DATA.POLAR_SNAP or {}
+    local fractions = cfg.radiusFractions or cfg.radii or {}
+    local fractionParts = {}
+    for fi = 1, #fractions do
+        fractionParts[fi] = tostring(fractions[fi])
+    end
+    return tostring(board.getGUID())
+        .. ":"
+        .. string.format("%.3f,%.3f", sx, sz)
+        .. ":"
+        .. tostring(cfg.steps or 12)
+        .. ":"
+        .. table.concat(fractionParts, ",")
+end
+
+--- Build snap points in board-local space from normalized polar UV (matches placement frame).
+--- @param board Object
+--- @return table[]
+local function buildPolarSnapPoints(board)
+    local cfg = DATA.POLAR_SNAP or {}
+    local steps = tonumber(cfg.steps) or 12
+    if steps < 1 then
+        steps = 12
+    end
+    local fractions = cfg.radiusFractions or cfg.radii or { 0.12, 0.22, 0.32, 0.42 }
+    local points = {}
+    for _, radiusFrac in ipairs(fractions) do
+        local rf = tonumber(radiusFrac)
+        if type(rf) == "number" and rf > 0 then
+            for i = 0, steps - 1 do
+                local angle = (i / steps) * 2 * math.pi
+                local u = 0.5 + math.cos(angle) * rf
+                local v = 0.5 + math.sin(angle) * rf
+                if u >= 0.02 and u <= 0.98 and v >= 0.02 and v <= 0.98 then
+                    local lp = boardLocalFromUv(board, u, v)
+                    points[#points + 1] = {
+                        position = { lp.x, lp.y, lp.z },
+                        rotation = { 0, (i / steps) * 360, 0 },
+                        rotation_snap = true,
+                    }
+                end
+            end
+        end
+    end
+    return points
+end
+
+--- Install polar snap points on CONTROL_BOARD (idempotent; safe from Global reconcile).
+--- @param board Object|nil Defaults to G.GUIDS.CONTROL_BOARD
+--- @param options table|nil { force?: boolean }
+--- @return boolean installed
+function Gameboard.installPolarSnaps(board, options)
+    options = type(options) == "table" and options or {}
+    board = board or getControlBoard()
+    if not isGameObject(board) or board.setSnapPoints == nil then
+        print("[Gameboard] installPolarSnaps: CONTROL_BOARD missing or has no setSnapPoints")
+        return false
+    end
+    local fp = polarSnapFingerprintFor(board)
+    if options.force ~= true and polarSnapInstallFingerprint == fp then
+        return true
+    end
+    local points = buildPolarSnapPoints(board)
+    if #points < 1 then
+        print("[Gameboard] installPolarSnaps: no snap points built")
+        return false
+    end
+    local ok = board.setSnapPoints(points)
+    if ok then
+        polarSnapInstallFingerprint = fp
+        print("[Gameboard] Polar snaps installed (" .. tostring(#points) .. " points on " .. tostring(board.getGUID()) .. ")")
+    else
+        print("[Gameboard] installPolarSnaps: setSnapPoints returned false on " .. tostring(board.getGUID()))
+    end
+    return ok == true
+end
+
 --- @param marker Object
 --- @param board Object
 --- @param u number|nil
@@ -779,12 +838,14 @@ end
 
 --- Position static table/seat markers for active table.
 function Gameboard.reconcileControlBoardFromState()
-    local npcWorld = S.getStateVal("sessionScene", "npcWorld")
-    if type(npcWorld) == "table" and npcWorld.layoutLock == true then
-        return
-    end
     local board = getControlBoard()
     if not isGameObject(board) then
+        return
+    end
+    Gameboard.installPolarSnaps(board)
+
+    local npcWorld = S.getStateVal("sessionScene", "npcWorld")
+    if type(npcWorld) == "table" and npcWorld.layoutLock == true then
         return
     end
     local activeTable = S.getStateVal("seatLayout", "currentTableKey")

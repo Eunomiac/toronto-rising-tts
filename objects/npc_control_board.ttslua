@@ -11,7 +11,7 @@ local DATA = require("lib.npc_gameboard_data")
 function onLoad()
     createBoardButtons()
     local Gameboard = require("core.npc_gameboard")
-    Gameboard.installPolarSnaps()
+    Gameboard.installPolarSnaps(self)
 end
 
 function createBoardButtons()

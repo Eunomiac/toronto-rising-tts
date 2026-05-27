@@ -528,6 +528,13 @@ function DEBUG.dumpNpcPlacements()
     end
 end
 
+--- Force polar snap grid on CONTROL_BOARD (normally runs from reconcile / Sync.npcs).
+-- @return boolean
+function DEBUG.installNpcControlBoardSnaps()
+    local Gameboard = require("core.npc_gameboard")
+    return Gameboard.installPolarSnaps(nil, { force = true }) == true
+end
+
 --- Display zone status
 function DEBUG.showZones()
     printTestHeader("Zone Status")

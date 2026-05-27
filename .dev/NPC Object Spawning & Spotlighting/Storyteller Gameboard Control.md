@@ -45,6 +45,12 @@ Table/seat markers: compute playfield world XZ (table `centerPoint`; components 
 
 GUIDs: `G.GUIDS.STAGE_BOARD`, `G.GUIDS.CONTROL_BOARD` in `lib/guids.ttslua`.
 
+## Polar snaps (CONTROL_BOARD)
+
+Snap points are installed by `Gameboard.installPolarSnaps` from **`reconcileControlBoardFromState`** (every `Sync.npcs` / load) — the CONTROL_BOARD object does **not** need a bundled script in the save for snaps to appear. Optional: attach `objects/npc_control_board.ttslua` for Apply/Clear/Read/Lock/Load buttons on the tile.
+
+Grid: `POLAR_SNAP.radiusFractions` in UV space from map center (4 rings × 12 steps = 48 rotation snaps), positioned via the same `boardLocalFromUv` frame as token placement. Manual refresh: `lua DEBUG.installNpcControlBoardSnaps()`.
+
 ## Buttons (Phase A wired)
 
 - **Apply** / **Clear** — live
