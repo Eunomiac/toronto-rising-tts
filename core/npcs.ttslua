@@ -1819,9 +1819,8 @@ local function reconcileStepOneAreaRemovals(intent)
                         local du = math.abs((tonumber(sp.u) or 0) - (tonumber(ci.u) or 0))
                         local dv = math.abs((tonumber(sp.v) or 0) - (tonumber(ci.v) or 0))
                         local dy = math.abs((tonumber(sp.yaw) or 0) - (tonumber(ci.yaw) or 0))
-                        local lm = ci.npcLightMode or rec.npcLightMode or "STANDARD"
+                        -- Placement only: do not compare rec.npcLightMode here (step 5 applies intent mode).
                         keep = du < 0.002 and dv < 0.002 and dy < 1
-                            and (rec.npcLightMode or "STANDARD") == lm
                     end
                 elseif ci.target == "area" then
                     keep = ci.areaKey == rec.areaKey and ci.slotIndex == rec.slotIndex
