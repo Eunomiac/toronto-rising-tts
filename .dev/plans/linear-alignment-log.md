@@ -183,5 +183,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-05-26 | UPDATE | TOR-155, TOR-156, TOR-161 | Pool composition spec: single rouse check, rouse/obliv exclusivity, Blood Surge undo via Hunger R-C, no rouse tagging |
 | 2026-05-26 | COMMENT | TOR-141 | Dice pool rules doc + code alignment |
 | 2026-05-26 | CODE+DOC | Dice rouse pool | `global_script`, `roll_controller`, `dice_kinds`, `dice_bag`, `rouse_outcomes`; Dice System Pt. 2; Dice-E2E |
+| 2026-05-26 | CREATE | TOR-165 | Bug: WP reroll wave stalls on partial settle; no Confirm during ROLLING wave (Dice-E2E I1); related TOR-141 |
+| 2026-05-26 | DOC | Dice-E2E H–J | Auto spawn, `rollCancel` first, Pass if, `rollE2eExpectBroadcast` / `rollE2eAddPoolKindSpawn`; Suite I restructured |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

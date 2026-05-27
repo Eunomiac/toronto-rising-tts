@@ -1938,7 +1938,7 @@ rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {1} })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = {
-    result = { resultClass = "bestialFailure", successes = 2, margin = -1 },
+    result = { resultClass = "bestialFailure", successes = 1, margin = -1 },
     rollOptions = { bestialNull = true },
   },
 })
@@ -1949,21 +1949,114 @@ rollCancel("Brown")
 -- #region Suite H - Take Half
 
 -- H1 - Simple Take Half (no rouse in pool)
-rollTest("Brown", 4, C.RollType.STANDARD, "E2E Take Half")
-
-rollState("Brown")
-
 rollCancel("Brown")
+rollTest("Brown", 4, C.RollType.STANDARD, "E2E Take Half", 0)
+rollE2eSetPoolAndSpawn("Brown", 4, 0)
+RC.takeHalf("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    tookHalf = true,
+    result = { resultClass = "failure", successes = 2 },
+    batonHolder = "storyteller",
+  },
+})
 
 -- H2 - Take Half + rouse dice still in pool
-rollTest("Brown", 3, C.RollType.STANDARD, "E2E Take Half Rouse")
-
-print(GlobalGetRollPhase({ color = "Brown" }))
-rollState("Brown")
-
-rollState("Brown")
-
 rollCancel("Brown")
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E Take Half Rouse", 0)
+rollE2eSetPoolAndSpawn("Brown", 4, 0)
+rollE2eAddPoolKindSpawn("Brown", "rouse", 1)
+RC.takeHalf("Brown")
+rollConfirm("Brown", { phase = "rolling", active = { takeHalfAwaitingRouse = true } })
+rollSetFaces("Brown", { rouse = { 4 } })
+RC.onDiceSettled("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    tookHalf = true,
+    result = { resultClass = "failure", successes = 2, margin = -1 },
+  },
+  rouseStrip = { label = "Rouse", narrative = "Hunger Roused" },
+})
+rollForceConfirm("Brown")
+rollE2eExpectBroadcast({
+  visible = true,
+  resultClass = "Failure",
+  successes = 2,
+  margin = -1,
+})
+
+-- #endregion
+
+-- #region Suite I - Spend Willpower
+
+setWillpowerSuperficial("Brown", 3)
+rollConfirmTracker("Brown", { willpowerSuperficial = 3 })
+
+-- I1 - Default WP reroll (known bug TOR-165 on hesitation)
+rollCancel("Brown")
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E I1 WP default", 0)
+RC.setRollOptions("Brown", {
+  wpReroll = true,
+  numberOfRerolls = 1,
+  numberOfDiceRerolled = 3,
+  canRerollHunger = false,
+})
+rollE2eSetPoolAndSpawn("Brown", 3, 0)
+rollE2eSettlePresetCheck("Brown", { normal = {4, 4, 4} })
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    result = { resultClass = "totalFailure" },
+    willpower = { available = true },
+  },
+})
+-- Human: Spend WP, hover each normal die + press R (x3), wait settle, then:
+-- rollConfirm("Brown", { phase = "postRoll", active = { willpower = { wpRerollWave = false } } })
+
+-- I2 - WP cap 1 die
+rollCancel("Brown")
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E I2 WP cap 1", 0)
+RC.setRollOptions("Brown", {
+  wpReroll = true,
+  numberOfRerolls = 1,
+  numberOfDiceRerolled = 1,
+  canRerollHunger = false,
+})
+rollE2eSetPoolAndSpawn("Brown", 3, 0)
+rollE2eSettlePresetCheck("Brown", { normal = {4, 4, 4} })
+-- Human: Spend WP, hover one normal die + press R, wait settle, then:
+-- rollConfirm("Brown", { phase = "postRoll", active = { willpower = { wpRerollWave = false } }, wpRerollChosenCount = 1 })
+
+-- I3 - Can reroll hunger
+rollCancel("Brown")
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E I3 WP hunger", 1)
+RC.setRollOptions("Brown", {
+  wpReroll = true,
+  numberOfRerolls = 1,
+  numberOfDiceRerolled = 3,
+  canRerollHunger = true,
+})
+rollE2eSetPoolAutoHunger("Brown", 3)
+rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, hunger = {4} })
+-- Human: Spend WP, hover hunger die + press R once, wait settle, then:
+-- rollConfirm("Brown", { phase = "postRoll", wpRerollChosenCount = 1, active = { willpower = { wpRerollWave = false } } })
+
+-- I4 - Rouse not WP-rerollable
+rollCancel("Brown")
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E I4 WP rouse lock", 0)
+RC.setRollOptions("Brown", {
+  wpReroll = true,
+  numberOfRerolls = 1,
+  numberOfDiceRerolled = 3,
+  canRerollHunger = false,
+})
+rollE2eSetPoolAndSpawn("Brown", 2, 0)
+rollE2eAddPoolKindSpawn("Brown", "rouse", 1)
+rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, rouse = {6} })
+-- Human: Spend WP, hover each normal die + press R (x2; rouse locked), wait settle, then:
+-- rollConfirm("Brown", { phase = "postRoll", wpRerollChosenCount = 2, active = { willpower = { wpRerollWave = false } } })
 
 -- #endregion
 

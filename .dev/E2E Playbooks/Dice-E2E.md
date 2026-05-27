@@ -42,7 +42,9 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 | `rollConfirmTracker(color, { hunger?, stains?, willpowerSuperficial? })` | Tracker PASS/FAIL after confirm/broadcast                                   |
 | `rollE2eSetPoolAndSpawn(color, normal, hunger)`                         | Set `active.pool` + spawn staged dice (PRE_ROLL)                                                            |
 | `rollE2eSetPoolAutoHunger(color, normalBagClicks)`                      | Auto-Hunger pool from virtual Normal-bag clicks + spawn (Suite G)                                           |
+| `rollE2eAddPoolKindSpawn(color, kind, count)`                           | Add pool kind (e.g. `"rouse"`) + spawn after base pool (H2, I4, J1)                                         |
 | `rollE2eSettlePresetCheck(color, faces)`                                 | Spawn pool + `startRolling` + preset faces + settle (Suites C–G; no panel Roll)                             |
+| `rollE2eExpectBroadcast({ visible, resultClass?, successes?, margin? })` | Assert shared `rollResult_*` panel after Confirm / `rollForceConfirm`                                         |
 | `rollStConfirm({ liveSlotIndex?, initiateBlocked? })`                    | ST slot assertions                                                          |
 | `setHumanityStains(color, n)` / `setWillpowerSuperficial(color, n)`      | Seed tracker before outcome tests                                           |
 
@@ -77,12 +79,17 @@ Every step is **mandatory**. Do not improvise pool sizes, click counts, or asser
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Pool size                        | Exact counts only (e.g. **5 dice**, not "about 5")                                                                                                                                                                                                                                                                                                                                                                                                      |
 | Bag clicks                       | State **how many** left/right clicks on **which** bag                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **Tray die reroll**              | **Do not** left-click dice on the tray. **Hover** the die, press **R** to randomize (Willpower reroll, manual corrections). Bag clicks are unchanged.                                                                                                                                                                                                                                                                                                    |
 | `rollTest` hunger                | Pass 5th arg `hungerLevel` whenever the pool needs hunger dice (`0` = Normal bag adds only Normal dice)                                                                                                                                                                                                                                                                                                                                                 |
 | **Auto-Hunger** (default **on**) | **Do not** left-click the **Hunger bag** to add hunger dice on standard rolls — that triggers **Blood Surge**. With `autoHunger` on, each **left-click Normal bag** adds a **Hunger** die while `pool.hunger < hungerLevel`, then **Normal** dice. To build **N** normal + **H** hunger: left-click **Normal bag `(hungerLevel + N)` times** when `H == hungerLevel` (typical). Example: `rollTest(..., 2)` and pool `2N+2H` → **4** Normal bag clicks. |
 | `rollConfirm`                    | Use **exact** numbers. Avoid `{ min = N }` unless this doc cites a named constant. `**wpRerollChosenCount`** — count of dice randomized in the current WP wave (cap tests, e.g. I2)                                                                                                                                                                                                                                                                     |
 | `rollConfirmTracker`             | Assert hunger / stains / superficial willpower after consequences apply                                                                                                                                                                                                                                                                                                                                                                                 |
 | `rollE2eSetPoolAndSpawn` / `rollE2eSetPoolAutoHunger` | After `rollTest`: set pool + spawn staged dice (Suite F explicit counts; Suite G uses `rollE2eSetPoolAutoHunger` with Normal-bag click count) |
+| `rollE2eAddPoolKindSpawn`        | Add a pool kind (e.g. **rouse**) + spawn — use after `rollE2eSetPoolAndSpawn` when the test needs compound pools (H2, I4, J1) |
 | `rollE2eSettlePresetCheck`       | **After pool spawn** — `startRolling`, preset faces, settle (replaces panel Roll; **do not** click Roll between `rollTest` and this helper)                                                                                                                                                                                                                                              |
+| `rollE2eExpectBroadcast`         | After **Confirm** / `rollForceConfirm`: assert `rollResult_panel` visible and class/successes/margin text |
+| Suites **H onward**              | Start each test with `rollCancel(color)`; spawn pool via helpers (**not** bag clicks) unless the step tests bag behavior (Suite **K**) |
+| **Pass if**                      | Every test block includes a **Pass if:** line; agent removes integrated 😀 notes |
 | `rollStConfirm`                  | Assert `liveSlotIndex` and ST initiate blocking                                                                                                                                                                                                                                                                                                                                                                                                         |
 | Panel actions                    | Prefer console `RC.takeHalf`, `RC.openRoll` when listed; otherwise click the named panel control                                                                                                                                                                                                                                                                                                                                                        |
 | Visual-only                      | **Only** when this doc explicitly says **Visual check** (dashboard label, known-bug UI)                                                                                                                                                                                                                                                                                                                                                                 |
@@ -517,7 +524,7 @@ rollConfirm("Brown", {
 rollCancel("Brown")
 ```
 
-> ❌ Result = Messy Critical. **Expected Behavior:** Result = Win. ST Opts panel may not persist options (TOR-162); console `setRollOptions` should be used for this test.
+> ✅
 
 ### G7 — Bestial Failure with bestial null
 
@@ -529,14 +536,14 @@ rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {1} })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = {
-    result = { resultClass = "bestialFailure", successes = 2, margin = -1 },
+    result = { resultClass = "bestialFailure", successes = 1, margin = -1 },
     rollOptions = { bestialNull = true },
   },
 })
 rollCancel("Brown")
 ```
 
-> ❌ Result = Critical Win. **Expected Behavior:** Result = Failure. Use console `setRollOptions` (TOR-162).
+> ✅
 
 **Pass if:** Each `rollConfirm` prints **PASS** for the forced faces above.
 
@@ -547,14 +554,10 @@ rollCancel("Brown")
 ### H1 — Simple Take Half (no rouse in pool)
 
 ```lua
+rollCancel("Brown")
 rollTest("Brown", 4, C.RollType.STANDARD, "E2E Take Half", 0)
-```
-
-**Human:** **Left-click Normal bag 4 times**, then run `RC.takeHalf("Brown")`.
-
-**After Take Half resolves to POST_ROLL — check:**
-
-```lua
+rollE2eSetPoolAndSpawn("Brown", 4, 0)
+RC.takeHalf("Brown")
 rollConfirm("Brown", {
   phase = "postRoll",
   active = {
@@ -565,21 +568,18 @@ rollConfirm("Brown", {
 })
 ```
 
+**Pass if:** `rollConfirm` prints **PASS** (`tookHalf`, 2 successes, ST baton).
+
 > ✅
->
-> ⚠️ The result display panel does not display any dice images. **Expected Behavior:** The roll panel should display four normal dice images, two showing a single ankh (success) and two showing a blank face (failure), representing both the full dice pool and the effective successes after taking half.
 
 ### H2 — Take Half + rouse dice still in pool
 
 ```lua
+rollCancel("Brown")
 rollTest("Brown", 3, C.RollType.STANDARD, "E2E Take Half Rouse", 0)
-```
-
-**Human:** **Left-click Normal bag 4 times**, **left-click Rouse bag 1 time**, then run `RC.takeHalf("Brown")`.
-
-**After Take Half (rouse still in pool) — check:**
-
-```lua
+rollE2eSetPoolAndSpawn("Brown", 4, 0)
+rollE2eAddPoolKindSpawn("Brown", "rouse", 1)
+RC.takeHalf("Brown")
 rollConfirm("Brown", {
   phase = "rolling",
   active = { takeHalfAwaitingRouse = true },
@@ -591,11 +591,6 @@ rollConfirm("Brown", {
 ```lua
 rollSetFaces("Brown", { rouse = { 4 } })
 RC.onDiceSettled("Brown")
-```
-
-**After rouse settle (POST_ROLL) — check:**
-
-```lua
 rollConfirm("Brown", {
   phase = "postRoll",
   active = {
@@ -606,22 +601,20 @@ rollConfirm("Brown", {
 })
 ```
 
-> ❌ When Take Half is clicked and the non-rouse dice are removed, the Rouse dice fall to the table where they *should* await the player to randomize them. However, the falling rouse dice are apparently treated like a roll and, when they settle, they are parsed as if they had already been rolled.
->
-> ⚠️ The result broadcast displays `Rouse [6, 9]: Success` below the two rouse dice images. As with the H1 test, the normal dice representing the take half roll itself are not displayed (making the "Failure" main result confusing, as it appears directly beneath the `Rouse [6, 9]: Success` line. **Expected Behavior**: Remove the `Rouse [6, 9]: Success` line as redundant/obsolete. The panel should appear much like the following example:
->
-> ```
-> Fomorach - Standard Roll: E2E Take Half Rouse
-> <line of images for the Rouse dice>
-> Successful Rouse Check //OR// Hunger Roused (in all caps, but much smaller than the main "failure" line)
-> <line of images for the Normal dice, representing the Take Half result>
-> FAILURE
-> 2 successes                           Margin: -1
-> ```
+**Human:** ST clicks **Confirm** on the Brown roll (or console `rollForceConfirm("Brown")`).
 
 ```lua
-rollCancel("Brown")
+rollE2eExpectBroadcast({
+  visible = true,
+  resultClass = "Failure",
+  successes = 2,
+  margin = -1,
+})
 ```
+
+**Pass if:** Both `rollConfirm` calls print **PASS**; `rollE2eExpectBroadcast` prints **PASS** after confirm.
+
+> ✅
 
 ---
 
@@ -634,11 +627,15 @@ rollConfirmTracker("Brown", { willpowerSuperficial = 3 })
 
 **Pass if:** Brown superficial willpower is **3** before I1.
 
+> ✅
+
 Shared failure pool for I1–I3: **3 normal** dice, faces `{4,4,4}` vs difficulty **3**.
 
 ---
 
 ### I1 — Default WP reroll (3 dice, hunger locked)
+
+**Known bug:** partial settle during the WP wave can leave the wave open indefinitely — see **TOR-165** (WP reroll wave / Confirm). Re-test after fix.
 
 ```lua
 rollCancel("Brown")
@@ -649,97 +646,71 @@ RC.setRollOptions("Brown", {
   numberOfDiceRerolled = 3,
   canRerollHunger = false,
 })
-```
-
-**Human:** **Left-click Normal bag 3 times** (no hunger, no rouse). **Roll** → settle.
-
-```lua
-rollSetFaces("Brown", { normal = {4, 4, 4} })
+rollE2eSetPoolAndSpawn("Brown", 3, 0)
+rollE2eSettlePresetCheck("Brown", { normal = {4, 4, 4} })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = {
-    result = { resultClass = "failure" },
+    result = { resultClass = "totalFailure" },
     willpower = { available = true },
     rollOptions = { numberOfDiceRerolled = 3, canRerollHunger = false },
   },
 })
 ```
 
-**Human:** Click **Spend WP**. **Left-click** each of the **3** normal dice on the table once (reroll wave).
-
-**Immediately after Spend WP — check:**
-
-```lua
-rollConfirm("Brown", {
-  phase = "rolling",
-  active = {
-    willpower = { wpRerollWave = true, rerollsRemaining = 0 },
-  },
-})
-```
-
-**Human:** Wait for reroll settle.
-
-**After reroll settle — check:**
+**Human:** Click **Spend WP**. For each of the **3** normal dice: **hover** the die on the tray and press **R** once (do not left-click). Wait until all rerolled dice have settled (or use **Confirm** when **TOR-165** is fixed).
 
 ```lua
 rollConfirm("Brown", {
   phase = "postRoll",
-  active = { willpower = { wpRerollWave = false } },
+  active = {
+    willpower = { wpRerollWave = false, rerollsRemaining = 0 },
+  },
 })
 ```
 
-```lua
-rollCancel("Brown")
-```
+**Pass if:** Initial and post-reroll `rollConfirm` print **PASS** (wave cleared). If the wave never ends on hesitation, file notes against **TOR-165** — do not treat as a playbook failure.
+
+> ❌ **TOR-165** — partial settle / hesitation during WP wave (see issue).
 
 ---
 
 ### I2 — WP reroll cap: 1 die only
 
 ```lua
-rollTest("Brown", 3, C.RollType.STANDARD, "E2E I2 WP cap 1")
+rollCancel("Brown")
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E I2 WP cap 1", 0)
 RC.setRollOptions("Brown", {
   wpReroll = true,
   numberOfRerolls = 1,
   numberOfDiceRerolled = 1,
   canRerollHunger = false,
 })
+rollE2eSetPoolAndSpawn("Brown", 3, 0)
+rollE2eSettlePresetCheck("Brown", { normal = {4, 4, 4} })
+rollConfirm("Brown", { phase = "postRoll", active = { result = { resultClass = "totalFailure" } } })
 ```
 
-**Human:** **Left-click Normal bag 3 times**. **Roll** → settle.
-
-```lua
-rollSetFaces("Brown", { normal = {4, 4, 4} })
-rollConfirm("Brown", { phase = "postRoll", active = { result = { resultClass = "failure" } } })
-```
-
-**Human:** Click **Spend WP**. **Left-click** any **one** normal die on the table (first reroll). **Then attempt** to **left-click a second** normal die — it must **not** randomize (cap **1** locks the rest after the first choice).
-
-**After the second-die attempt — check:**
+**Human:** Click **Spend WP**. **Hover** any **one** normal die and press **R** (first reroll). **Visual check:** **hover** a **second** normal die and press **R** — it must **not** randomize after the cap locks the tray. Wait for the **one** rerolled die to settle.
 
 ```lua
 rollConfirm("Brown", {
-  phase = "rolling",
-  active = {
-    willpower = { wpRerollWave = true },
-    rollOptions = { numberOfDiceRerolled = 1 },
-  },
+  phase = "postRoll",
+  active = { willpower = { wpRerollWave = false } },
   wpRerollChosenCount = 1,
 })
 ```
 
-**Human:** Wait for the **one** rerolled die to settle.
+**Pass if:** Post-reroll `rollConfirm` prints **PASS** (`wpRerollWave` false, `wpRerollChosenCount` 1); second die did not randomize (manual).
 
-```lua
-rollCancel("Brown")
-```
+> ✅
 
 ---
 
 ### I3 — Can reroll hunger
 
 ```lua
+rollCancel("Brown")
 rollTest("Brown", 3, C.RollType.STANDARD, "E2E I3 WP hunger", 1)
 RC.setRollOptions("Brown", {
   wpReroll = true,
@@ -747,70 +718,66 @@ RC.setRollOptions("Brown", {
   numberOfDiceRerolled = 3,
   canRerollHunger = true,
 })
-```
-
-**Human:** **Left-click Normal bag 3 times** (`rollTest` hunger **1**; pool **2N+1H**). **Roll** → settle.
-
-```lua
-rollSetFaces("Brown", { normal = {4, 4}, hunger = {4} })
+rollE2eSetPoolAutoHunger("Brown", 3)
+rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, hunger = {4} })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = { rollOptions = { canRerollHunger = true } },
 })
 ```
 
-**Human:** Click **Spend WP**, then **left-click the hunger die 1 time** (do not reroll normal dice).
-
-**Immediately after Spend WP — check:**
+**Human:** Click **Spend WP**, then **hover** the **hunger die** and press **R** once only (do not reroll normal dice). Wait for reroll settle.
 
 ```lua
 rollConfirm("Brown", {
-  phase = "rolling",
-  active = { rollOptions = { canRerollHunger = true } },
+  phase = "postRoll",
+  active = {
+    willpower = { wpRerollWave = false },
+    rollOptions = { canRerollHunger = true },
+  },
+  wpRerollChosenCount = 1,
 })
 ```
 
-**Human:** Wait for reroll settle.
+**Pass if:** Post-reroll `rollConfirm` prints **PASS** (hunger die rerolled once, wave cleared).
 
-```lua
-rollCancel("Brown")
-```
+> ✅
 
 ---
 
 ### I4 — Rouse die not WP-rerollable
 
 ```lua
-rollTest("Brown", 3, C.RollType.STANDARD, "E2E I4 WP rouse lock")
+rollCancel("Brown")
+rollTest("Brown", 3, C.RollType.STANDARD, "E2E I4 WP rouse lock", 0)
 RC.setRollOptions("Brown", {
   wpReroll = true,
   numberOfRerolls = 1,
   numberOfDiceRerolled = 3,
   canRerollHunger = false,
 })
-```
-
-**Human:** **Left-click Normal bag 2 times**, then **left-click Rouse bag 1 time**. **Roll** → settle.
-
-```lua
-rollSetFaces("Brown", { normal = {4, 4}, rouse = {6} })
+rollE2eSetPoolAndSpawn("Brown", 2, 0)
+rollE2eAddPoolKindSpawn("Brown", "rouse", 1)
+rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, rouse = {6} })
 rollConfirm("Brown", { phase = "postRoll" })
 ```
 
-**Human:** Click **Spend WP**, then attempt to **left-click the rouse die** (must stay locked).
+**Human:** Click **Spend WP**. **Visual check:** **hover** the **rouse die** and press **R** — it must stay locked. **Hover** each **normal** die and press **R** once, then wait for reroll settle.
 
 ```lua
 rollConfirm("Brown", {
-  phase = "rolling",
-  active = { rollOptions = { numberOfDiceRerolled = 3 } },
+  phase = "postRoll",
+  active = {
+    willpower = { wpRerollWave = false },
+    rollOptions = { numberOfDiceRerolled = 3 },
+  },
+  wpRerollChosenCount = 2,
 })
 ```
 
-**Human:** **Left-click both normal dice 1 time each**, wait for reroll settle.
+**Pass if:** Post-reroll `rollConfirm` prints **PASS** (`wpRerollChosenCount` 2); rouse die never randomized (manual).
 
-```lua
-rollCancel("Brown")
-```
+> ✅
 
 ---
 
@@ -819,13 +786,11 @@ rollCancel("Brown")
 ### J1 — One rouse in standard pool
 
 ```lua
+rollCancel("Brown")
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E J1 Compound", 0)
-```
-
-**Human:** **Left-click Normal bag 2 times**, then **left-click Rouse bag 1 time**. **Roll** → settle.
-
-```lua
-rollSetFaces("Brown", { normal = {7, 3}, rouse = {4} })
+rollE2eSetPoolAndSpawn("Brown", 2, 0)
+rollE2eAddPoolKindSpawn("Brown", "rouse", 1)
+rollE2eSettlePresetCheck("Brown", { normal = {7, 3}, rouse = {4} })
 rollConfirm("Brown", {
   phase = "postRoll",
   rouseOutcomeStripsMin = 1,
@@ -835,31 +800,25 @@ rollConfirm("Brown", {
 
 **Human:** Click **Confirm** once.
 
-```lua
-rollCancel("Brown")
-```
+**Pass if:** `rollConfirm` prints **PASS**; confirm completes without error.
 
 ---
 
 ### J2 — Blood surge + compound (same roll)
 
 ```lua
+rollCancel("Brown")
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E J2 Surge compound", 0)
 ```
 
-**Human:** **Left-click Hunger bag 1 time** (Blood Surge — no hunger die yet).
+**Human:** **Left-click Hunger bag 1 time** (Blood Surge — tests bag surge, not pool helpers).
 
 ```lua
 rollConfirm("Brown", {
   meta = { bloodSurgeActive = true },
   pool = { rouse = 1, normal = 2, hunger = 0 },
 })
-```
-
-**Human:** Click **Roll** → wait for settle.
-
-```lua
-rollSetFaces("Brown", { normal = { 7, 3 }, rouse = { 4 } })
+rollE2eSettlePresetCheck("Brown", { normal = { 7, 3 }, rouse = { 4 } })
 rollConfirm("Brown", {
   phase = "postRoll",
   rouseOutcomeStripsMin = 1,
@@ -870,9 +829,7 @@ rollConfirm("Brown", {
 
 **Human:** Click **Confirm** once.
 
-```lua
-rollCancel("Brown")
-```
+**Pass if:** Both `rollConfirm` calls print **PASS**.
 
 ---
 
@@ -1227,7 +1184,7 @@ RC.setRollOptions("Brown", {
 })
 ```
 
-**Human:** **Left-click Normal bag 3 times**, **Roll** → settle, click **Spend WP**, **left-click Normal die 1 time**, **left-click Normal die 1 time**, **left-click Normal die 1 time**, wait for reroll settle.
+**Human:** **Left-click Normal bag 3 times**, **Roll** → settle, click **Spend WP**, then **hover** each of **3** normal dice and press **R** once, wait for reroll settle.
 
 ```lua
 rollConfirmTracker("Brown", { willpowerSuperficial = 3 })

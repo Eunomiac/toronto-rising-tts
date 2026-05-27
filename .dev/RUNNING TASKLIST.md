@@ -40,6 +40,7 @@ _Stack rank for the current cycle (2026-05-26). **Precedence** (Focus + Linear `
 - [ ] **ST per-roll Opts persistence:** `crits`, `bestialNull`, etc. stick in Opts modal and apply to `active.rollOptions` before classify. _(TOR-162)_
 - [ ] **Roll broadcast without difficulty:** Unset difficulty → default 1 for display; show dice images + successes; omit margin. _(TOR-163)_
 - [ ] **Roll result broadcast trim:** Remove die roll numbers and duplicated type/result language; offset rouse result strips from main pool and from each other. _(TOR-156)_
+- [ ] **WP reroll wave partial settle:** Count randomized dice; lock each die after settle; **Confirm** during WP **ROLLING** wave; wave must end at cap or early confirm. Found Dice-E2E I1. _(TOR-165)_
 - [x] **Blood Surge + conditions:** Blood Surge uses `EffectiveStats.forSeat` → `bloodPotencyDerived` for surge dice count; fresh `rollPolicy()` at activation for `bloodSurgeDiceMultiplier`. _(TOR-158; facade in TOR-160)_
 - [x] **Effective stats facade:** Unified read-time API (`lib/effective_stats.ttslua`); derive alignment; migrated roll/damage/HUD/sheet consumers. _(TOR-160)_
 - [x] **Frenzy hunger threshold:** Queue frenzy only when hunger is already at 5 and would increase further — not on first transition to 5. `maybeQueueFrenzyOnHungerCap` gates on `hungerBefore >= C.MAX_HUNGER`. _(TOR-159)_

@@ -298,9 +298,9 @@ local function phaseLabel(active, color)
         if active.willpower ~= nil and active.willpower.wpRerollWave == true then
             local cap = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED)
             if cap <= 0 then
-                return "Reroll dice (each physical die once) — pick up and throw"
+                return "Reroll dice — hover each die, press R"
             end
-            return string.format("Reroll up to %d dice — pick up and throw", cap)
+            return string.format("Reroll up to %d dice — hover die, press R", cap)
         end
         return "ROLLING — pick up your dice!"
     elseif phase == C.RollPhase.POST_ROLL then

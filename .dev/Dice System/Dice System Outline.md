@@ -65,7 +65,7 @@ Used at end-of-session to resolve accumulated Stains.
 Once per roll (during `POST_ROLL` phase, before result is confirmed):
 
 - Player suffers **1 Superficial Willpower damage**.
-- Player may choose up to **3 dice** from their pool to reroll (physically pick up and throw).
+- Player may choose up to **3 dice** from their pool to reroll (**hover** the die on the tray, press **R** — not left-click).
 - The system records that a reroll occurred; second die readings replace only the rerolled dice.
 - Willpower rerolls are **not** available for Rouse Checks or Remorse rolls.
 - Custom chronicle rules may expand or restrict this (tracked in `rollData.active.willpower`).

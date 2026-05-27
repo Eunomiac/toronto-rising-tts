@@ -1683,6 +1683,105 @@ function DEBUG.rollE2eSetPoolAutoHunger(color, normalBagClicks)
     return DEBUG.rollE2eSetPoolAndSpawn(color, normal, hunger)
 end
 
+--- E2E: add a pool kind count and spawn staged dice (PRE_ROLL only).
+-- Use after `rollE2eSetPoolAndSpawn` when a test needs rouse (or other kinds) in the pool.
+-- @param color string
+-- @param kind string  e.g. `DK.KIND_ROUSE` (`"rouse"`)
+-- @param count number
+-- @return boolean
+-- @usage lua rollE2eAddPoolKindSpawn("Brown", "rouse", 1)
+function DEBUG.rollE2eAddPoolKindSpawn(color, kind, count)
+    if RC == nil then
+        print("[rollE2eAddPoolKindSpawn] FAIL: RC not loaded")
+        return false
+    end
+    if type(color) ~= "string" or type(kind) ~= "string" or type(count) ~= "number" then
+        print("[rollE2eAddPoolKindSpawn] FAIL: usage rollE2eAddPoolKindSpawn(color, kind, count)")
+        return false
+    end
+    if RC.setPoolKindCount(color, kind, count) ~= true then
+        print("[rollE2eAddPoolKindSpawn] FAIL: RC.setPoolKindCount failed for " .. color)
+        return false
+    end
+    if Global == nil or type(Global.call) ~= "function" then
+        print("[rollE2eAddPoolKindSpawn] FAIL: Global.call unavailable")
+        return false
+    end
+    Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+    print(string.format("[rollE2eAddPoolKindSpawn] %s: %s=%d spawned", color, kind, count))
+    return true
+end
+
+--- True when the shared roll result broadcast panel is visible.
+-- @return boolean
+local function rollE2eBroadcastPanelVisible()
+    local activeAttr = UI.getAttribute("rollResult_panel", "active")
+    return activeAttr == "True" or activeAttr == "true"
+end
+
+--- E2E: assert `rollResult_*` broadcast UI after `rollForceConfirm` / panel Confirm.
+-- @param expected table|nil  `{ visible = true, resultClass = "Failure", successes = 2, margin = -1 }`
+--   `resultClass` — substring match (case-insensitive) on `rollResult_class`
+--   `successes` — integer N matches `"N success"` / `"N successes"` on `rollResult_successes`
+--   `margin` — integer matches `Margin: %+d` on `rollResult_margin`
+-- @return boolean pass
+-- @usage lua rollE2eExpectBroadcast({ visible = true, resultClass = "Failure", successes = 2 })
+function DEBUG.rollE2eExpectBroadcast(expected)
+    if type(expected) ~= "table" then
+        print("[rollE2eExpectBroadcast] FAIL: usage rollE2eExpectBroadcast({ visible = true, ... })")
+        return false
+    end
+
+    local failures = {}
+    local visible = rollE2eBroadcastPanelVisible()
+
+    if expected.visible == true and not visible then
+        failures[#failures + 1] = "rollResult_panel: not visible"
+    elseif expected.visible == false and visible then
+        failures[#failures + 1] = "rollResult_panel: visible but expected hidden"
+    end
+
+    if visible and expected.visible ~= false then
+        local classText = tostring(UI.getValue("rollResult_class") or "")
+        if type(expected.resultClass) == "string" then
+            local needle = string.lower(expected.resultClass)
+            if string.find(string.lower(classText), needle, 1, true) == nil then
+                failures[#failures + 1] = "rollResult_class: got \""
+                    .. classText .. "\", want contains \"" .. expected.resultClass .. "\""
+            end
+        end
+
+        if type(expected.successes) == "number" then
+            local succText = tostring(UI.getValue("rollResult_successes") or "")
+            local wantSucc = string.format("%d success", expected.successes)
+            local wantSucces = string.format("%d successes", expected.successes)
+            if succText ~= wantSucc and succText ~= wantSucces then
+                failures[#failures + 1] = "rollResult_successes: got \""
+                    .. succText .. "\", want \"" .. wantSucc .. "\" or \"" .. wantSucces .. "\""
+            end
+        end
+
+        if type(expected.margin) == "number" then
+            local margText = tostring(UI.getValue("rollResult_margin") or "")
+            local wantMarg = string.format("Margin: %+d", expected.margin)
+            if margText ~= wantMarg then
+                failures[#failures + 1] = "rollResult_margin: got \""
+                    .. margText .. "\", want \"" .. wantMarg .. "\""
+            end
+        end
+    end
+
+    if #failures == 0 then
+        print("[rollE2eExpectBroadcast] PASS")
+        return true
+    end
+    print("[rollE2eExpectBroadcast] FAIL")
+    for i, line in ipairs(failures) do
+        print(string.format("  %d) %s", i, line))
+    end
+    return false
+end
+
 --- Clears all Storyteller roll drawer slots (live + resolved rows).
 local function clearAllStorytellerRollSlots()
     local STR = require("core.storyteller_rolls")
@@ -2937,7 +3036,7 @@ function DEBUG.help()
     print("  rollE2eSeatPrep(color)     - Manual prep only; rollTest/rollStTest include this")
     print("  rollSetFaces(color, { normal={7,7}, hunger={10,1} }) - Set faces + recalculate (POST_ROLL)")
     print("  rollE2eApplyConditions(color, { 'e2eBestialNull' }) / rollE2eClearConditions(color, ids?)")
-    print("  rollE2eSetPoolAndSpawn(color, normal, hunger) / rollE2eSetPoolAutoHunger(color, normalBagClicks)")
+    print("  rollE2eSetPoolAndSpawn / rollE2eSetPoolAutoHunger / rollE2eAddPoolKindSpawn / rollE2eExpectBroadcast")
     print("  rollState(color)         - Print active roll record for a player")
     print("  rollConfirm(color, expected) - Assert roll state; prints PASS/FAIL (E2E)")
     print("  rollConfirmTracker(color, { hunger?, stains?, willpowerSuperficial? })")
@@ -3033,9 +3132,11 @@ rollForceConfirm  = DEBUG.rollForceConfirm
 rollStTest    = DEBUG.rollStTest
 rollStConfirm = DEBUG.rollStConfirm
 rollStSlots   = DEBUG.rollStSlots
-rollE2eSetPoolAndSpawn   = DEBUG.rollE2eSetPoolAndSpawn
-rollE2eSetPoolAutoHunger = DEBUG.rollE2eSetPoolAutoHunger
-rollE2eSettlePresetCheck = DEBUG.rollE2eSettlePresetCheck
+rollE2eSetPoolAndSpawn    = DEBUG.rollE2eSetPoolAndSpawn
+rollE2eSetPoolAutoHunger  = DEBUG.rollE2eSetPoolAutoHunger
+rollE2eAddPoolKindSpawn   = DEBUG.rollE2eAddPoolKindSpawn
+rollE2eSettlePresetCheck  = DEBUG.rollE2eSettlePresetCheck
+rollE2eExpectBroadcast    = DEBUG.rollE2eExpectBroadcast
 tableRotateTo = DEBUG.tableRotateTo
 spawnCustomUiUploadBatchFromManifest = DEBUG.spawnCustomUiUploadBatchFromManifest
 spawnCustomUiUploadBatchFromJson = DEBUG.spawnCustomUiUploadBatchFromJson
