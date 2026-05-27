@@ -1,0 +1,5 @@
+-- Committed stub (safe for Save & Play before Cloud upload + extract).
+-- Overwritten by: npm run custom-ui-assets:extract-npc-token-urls
+local M = {}
+
+return M

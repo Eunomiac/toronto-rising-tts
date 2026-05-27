@@ -1,0 +1,9 @@
+-- Committed stub (safe for Save & Play before manifest generation).
+-- Overwritten by: npm run custom-ui-assets:manifest-npc-tokens
+-- Required by DEBUG.loadCustomUiUploadManifest("lib.npc_token_upload_manifest")
+local M = {
+  source = "npc-tokens",
+  assets = {},
+}
+
+return M

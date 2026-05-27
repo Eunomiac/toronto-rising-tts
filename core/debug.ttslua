@@ -2758,12 +2758,12 @@ end
 local DEBUG_UPLOAD_GMNOTES_PREFIX = "debug-custom-ui-upload:"
 local DEBUG_UPLOAD_TAG = "debug-custom-ui-upload"
 local DEBUG_UPLOAD_MANIFEST_MODULE = "lib.custom_ui_upload_manifest"
-DEBUG.customUiUploadManifest = nil
 
--- Module-level requires so luabundle ships generated manifests (.dev/TTS_BUNDLING_SETUP.md § Issue 2a).
--- Regenerate with npm run custom-ui-assets:manifest-npc-tokens (or manifest-sites) before Save & Play.
+-- Module-level requires so luabundle ships these modules (TTS_BUNDLING_SETUP.md § Issue 2a).
+-- Each lib/*.ttslua file is a committed stub with empty data until npm manifest scripts overwrite it.
+-- Do not delete those files — missing modules break Global load at require() time.
 local CUSTOM_UI_UPLOAD_MANIFEST = require("lib.custom_ui_upload_manifest")
-local NPC_TOKEN_UPLOAD_MANIFEST = require("lib.npc_token_upload_manifest")
+require("lib.npc_token_upload_manifest")
 local NPC_TOKEN_HOSTED_URLS = require("lib.npc_token_hosted_urls")
 DEBUG.customUiUploadManifest = CUSTOM_UI_UPLOAD_MANIFEST
 
@@ -2981,6 +2981,11 @@ function DEBUG.loadCustomUiUploadManifest(moduleName, forceReload)
         count = #manifest.assets
     end
     print("DEBUG.loadCustomUiUploadManifest: loaded " .. tostring(count) .. " assets from " .. tostring(targetModule))
+    if count == 0 then
+        print(
+            "DEBUG.loadCustomUiUploadManifest: manifest is empty — run the matching npm custom-ui-assets:manifest-* script, then Save & Play"
+        )
+    end
     return manifest
 end
 

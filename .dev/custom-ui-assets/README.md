@@ -33,6 +33,8 @@ node .tools/custom-ui-assets/build-upload-manifest-from-sites-constants.js --bat
 
 The script prints a suggested **`--batchStart`** for the next run when the slice does not reach the last key. Run **Save & Play**, spawn upload, merge, clear tokens, then regenerate the next batch.
 
+**Committed stubs:** `lib/custom_ui_upload_manifest.ttslua`, `lib/npc_token_upload_manifest.ttslua`, and `lib/npc_token_hosted_urls.ttslua` are always present in git (empty data). Global `require()` at load must not fail on a fresh clone; manifest scripts **overwrite** these files when you generate assets.
+
 **Manifest only** (writes `manifest.json`, `manifest.lua`, and `lib/custom_ui_upload_manifest.ttslua`):
 
 ```text
