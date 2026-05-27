@@ -97,42 +97,53 @@ local function resolveStageWorldExtents()
     }
 end
 
---- @param u number
---- @param v number
---- @return Vector
-function Gameboard.worldFromUv(u, v)
-    local ext = resolveStageWorldExtents()
-    local x = ext.centerX + (u - 0.5) * 2 * ext.halfWidthX
-    local z = ext.centerZ + (v - 0.5) * 2 * ext.halfDepthZ
-    return Vector(x, ext.groundY, z)
+--- @param a Vector
+--- @param b Vector
+--- @return number
+local function vectorDot(a, b)
+    return a.x * b.x + a.y * b.y + a.z * b.z
 end
 
+--- Custom_Tile boards use `positionToWorld` / `positionToLocal` (not `localToWorld`).
+--- @param board Object
+--- @param localPos Vector|table
+--- @return Vector
+local function boardLocalToWorld(board, localPos)
+    local lp = Vector(localPos)
+    if type(board.positionToWorld) == "function" then
+        return board.positionToWorld(lp)
+    end
+    local origin = board.getPosition()
+    local right = board.getTransformRight()
+    local up = board.getTransformUp()
+    local fwd = board.getTransformForward()
+    return origin + right * lp.x + up * lp.y + fwd * lp.z
+end
+
+--- @param board Object
 --- @param worldPos Vector|table
---- @return number|nil u, number|nil v
-function Gameboard.uvFromWorld(worldPos)
-    if worldPos == nil then
-        return nil, nil
+--- @return Vector|nil
+local function boardWorldToLocal(board, worldPos)
+    local wp = Vector(worldPos)
+    if type(board.positionToLocal) == "function" then
+        return board.positionToLocal(wp)
     end
-    local ext = resolveStageWorldExtents()
-    local x = worldPos.x or worldPos[1]
-    local z = worldPos.z or worldPos[3]
-    if type(x) ~= "number" or type(z) ~= "number" then
-        return nil, nil
-    end
-    local u = 0.5 + (x - ext.centerX) / (2 * ext.halfWidthX)
-    local v = 0.5 + (z - ext.centerZ) / (2 * ext.halfDepthZ)
-    return clamp(u, 0, 1), clamp(v, 0, 1)
+    local origin = board.getPosition()
+    local delta = wp - origin
+    local right = board.getTransformRight()
+    local up = board.getTransformUp()
+    local fwd = board.getTransformForward()
+    return Vector(vectorDot(delta, right), vectorDot(delta, up), vectorDot(delta, fwd))
 end
 
 --- @param board Object
 --- @param worldPos Vector|table
 --- @return number|nil u, number|nil v
-local function uvFromWorldOnControlBoard(board, worldPos)
-    if not isGameObject(board) or board.positionToLocal == nil or worldPos == nil then
-        return Gameboard.uvFromWorld(worldPos)
+local function uvFromWorldOnBoard(board, worldPos)
+    if not isGameObject(board) or worldPos == nil then
+        return nil, nil
     end
-    local wp = Vector(worldPos)
-    local localPos = board.positionToLocal(wp)
+    local localPos = boardWorldToLocal(board, worldPos)
     if localPos == nil then
         return nil, nil
     end
@@ -153,8 +164,8 @@ end
 --- @param board Object
 --- @param u number
 --- @param v number
---- @return Vector
-local function controlBoardLocalFromUv(board, u, v)
+--- @return Vector local position on board surface (Y slightly above tile)
+local function boardLocalFromUv(board, u, v)
     local b = board.getBounds()
     local sx = 1
     local sz = 1
@@ -165,15 +176,74 @@ local function controlBoardLocalFromUv(board, u, v)
     return Vector((u - 0.5) * sx, 0.08, (v - 0.5) * sz)
 end
 
+--- Extent-based fallback when STAGE_BOARD is not in the save (workshop prep).
+--- @param worldPos Vector|table
+--- @return number|nil u, number|nil v
+local function uvFromWorldFallbackExtents(worldPos)
+    if worldPos == nil then
+        return nil, nil
+    end
+    local ext = resolveStageWorldExtents()
+    local x = worldPos.x or worldPos[1]
+    local z = worldPos.z or worldPos[3]
+    if type(x) ~= "number" or type(z) ~= "number" then
+        return nil, nil
+    end
+    local u = 0.5 + (x - ext.centerX) / (2 * ext.halfWidthX)
+    local v = 0.5 + (z - ext.centerZ) / (2 * ext.halfDepthZ)
+    return clamp(u, 0, 1), clamp(v, 0, 1)
+end
+
+--- Normalized map UV (0–1) from a world position using STAGE_BOARD as the canonical minimap.
+--- CONTROL_BOARD uses the same u,v via worldOnControlBoard; do not project world XZ through CONTROL_BOARD.
+--- @param worldPos Vector|table
+--- @return number|nil u, number|nil v
+local function normalizedUvFromWorld(worldPos)
+    if worldPos == nil then
+        return nil, nil
+    end
+    local stage = getStageBoard()
+    if isGameObject(stage) then
+        return uvFromWorldOnBoard(stage, worldPos)
+    end
+    return uvFromWorldFallbackExtents(worldPos)
+end
+
+--- @param u number
+--- @param v number
+--- @return Vector world position on STAGE_BOARD map (for figurine placement)
+function Gameboard.worldFromUv(u, v)
+    local stage = getStageBoard()
+    if isGameObject(stage) then
+        return boardLocalToWorld(stage, boardLocalFromUv(stage, u, v))
+    end
+    local ext = resolveStageWorldExtents()
+    local x = ext.centerX + (u - 0.5) * 2 * ext.halfWidthX
+    local z = ext.centerZ + (v - 0.5) * 2 * ext.halfDepthZ
+    return Vector(x, ext.groundY, z)
+end
+
+--- @param worldPos Vector|table
+--- @return number|nil u, number|nil v
+function Gameboard.uvFromWorldFallback(worldPos)
+    return uvFromWorldFallbackExtents(worldPos)
+end
+
+--- @param worldPos Vector|table
+--- @return number|nil u, number|nil v
+function Gameboard.uvFromWorld(worldPos)
+    return normalizedUvFromWorld(worldPos)
+end
+
 --- @param board Object
 --- @param u number
 --- @param v number
---- @return Vector world position on board surface
+--- @return Vector world position on CONTROL_BOARD surface (same u,v as STAGE_BOARD map)
 function Gameboard.worldOnControlBoard(board, u, v)
-    if not isGameObject(board) or board.localToWorld == nil then
+    if not isGameObject(board) then
         return Vector(0, 0, 0)
     end
-    return board.localToWorld(controlBoardLocalFromUv(board, u, v))
+    return boardLocalToWorld(board, boardLocalFromUv(board, u, v))
 end
 
 --- @param obj Object
@@ -215,22 +285,35 @@ local function resolveTokenCharacterKey(obj)
     return nil
 end
 
+--- Custom_Tile (and similar) have no `is_face_up` field — reading it throws. Use X rotation.
 --- @param token Object
---- @return string OFF|STANDARD
-local function tokenLightModeFromFlip(token)
-    if token.is_face_up ~= nil then
-        return token.is_face_up and "STANDARD" or "OFF"
-    end
+--- @return boolean
+local function tokenRotationIsFaceUp(token)
     local rot = token.getRotation()
     if rot == nil then
-        return "STANDARD"
+        return true
     end
     local rx = rot.x or rot[1] or 0
     local norm = ((rx % 360) + 360) % 360
-    if norm > 90 and norm < 270 then
-        return "OFF"
+    return not (norm > 90 and norm < 270)
+end
+
+--- @param token Object
+--- @return string OFF|STANDARD
+local function tokenLightModeFromFlip(token)
+    if tokenRotationIsFaceUp(token) then
+        return "STANDARD"
     end
-    return "STANDARD"
+    return "OFF"
+end
+
+--- @param boardYaw number
+--- @param yawDeg number
+--- @param faceUp boolean
+--- @return Vector
+local function rotationForNpcControlToken(boardYaw, yawDeg, faceUp)
+    local rx = faceUp and 0 or 180
+    return Vector(rx, boardYaw + (yawDeg or 0), 0)
 end
 
 --- @param token Object
@@ -240,22 +323,7 @@ local function tokenPlacementOnBoard(token, board)
     if not isGameObject(token) or not isGameObject(board) then
         return nil, nil, nil
     end
-    local u, v
-    if board.positionToLocal ~= nil then
-        local localPos = board.positionToLocal(token.getPosition())
-        if localPos ~= nil then
-            local b = board.getBounds()
-            local sx = b and b.size and (b.size.x or b.size[1]) or 1
-            local sz = b and b.size and (b.size.z or b.size[3]) or 1
-            if sx > 0.01 and sz > 0.01 then
-                u = clamp(0.5 + localPos.x / sx, 0, 1)
-                v = clamp(0.5 + localPos.z / sz, 0, 1)
-            end
-        end
-    end
-    if u == nil or v == nil then
-        u, v = uvFromWorldOnControlBoard(board, token.getPosition())
-    end
+    local u, v = normalizedUvFromWorld(token.getPosition())
     local boardYaw = board.getRotation().y or 0
     local tokenYaw = token.getRotation().y or 0
     local yaw = ((tokenYaw - boardYaw) % 360 + 360) % 360
@@ -341,8 +409,8 @@ function Gameboard.clearControlBoard()
             if isGameObject(obj) and obj.hasTag ~= nil and obj.hasTag(TAG_TOKEN) == true then
                 idx = idx + 1
                 local offset = (idx - 1) * 0.55
-                if board.localToWorld ~= nil then
-                    obj.setPosition(board.localToWorld(Vector(palette.x, palette.y, palette.z + offset)))
+                if isGameObject(board) then
+                    obj.setPosition(boardLocalToWorld(board, Vector(palette.x, palette.y, palette.z + offset)))
                 else
                     destroyObject(obj)
                 end
@@ -418,17 +486,45 @@ local function tableConfig(tableKey)
     return C.Tables[tableKey]
 end
 
---- World XZ → control-board u,v for table center.
---- @param board Object
+--- World XZ around a table segment (seat arc), from C.Tables layout data.
+--- @param cfg table
+--- @param segmentIndex number
+--- @return Vector|nil
+local function worldPositionForTableSegment(cfg, segmentIndex)
+    if type(cfg) ~= "table" or type(segmentIndex) ~= "number" or cfg.centerPoint == nil then
+        return nil
+    end
+    local cp = Vector(cfg.centerPoint)
+    local numSegments = cfg.numSegments or 10
+    if numSegments < 1 then
+        numSegments = 10
+    end
+    local angleRad = (segmentIndex / numSegments) * (2 * math.pi)
+    local radius = 12
+    if cfg.referenceHandPosition ~= nil then
+        radius = U.HorizontalDistance(cp, Vector(cfg.referenceHandPosition))
+    elseif cfg.activePosition ~= nil then
+        radius = U.HorizontalDistance(cp, Vector(cfg.activePosition))
+    end
+    if radius < 1 then
+        radius = 12
+    end
+    return Vector(
+        cp.x + math.sin(angleRad) * radius,
+        cp.y,
+        cp.z + math.cos(angleRad) * radius
+    )
+end
+
+--- Playfield world XZ → shared map u,v (via STAGE_BOARD), for CONTROL_BOARD marker placement.
 --- @param tableKey string
 --- @return number|nil u, number|nil v
-local function controlUvForTable(board, tableKey)
+local function mapUvForTableCenter(tableKey)
     local cfg = tableConfig(tableKey)
     if cfg == nil or cfg.centerPoint == nil then
         return nil, nil
     end
-    local cp = cfg.centerPoint
-    return uvFromWorldOnControlBoard(board, cp)
+    return normalizedUvFromWorld(Vector(cfg.centerPoint))
 end
 
 --- Position static table/seat markers for active table.
@@ -452,75 +548,72 @@ function Gameboard.reconcileControlBoardFromState()
     end
 
     for _, obj in ipairs(allMarkers) do
-        if not isGameObject(obj) then
-            goto continue_marker
-        end
-        local tableKey = readMarkerKey(obj, DATA.MARKER_TABLE_PREFIX)
-        local compKey = readMarkerKey(obj, DATA.MARKER_COMPONENT_PREFIX)
-        local pcSeat = readMarkerKey(obj, DATA.MARKER_PC_SEAT_PREFIX)
-        local npcSeat = readMarkerKey(obj, DATA.MARKER_NPC_SEAT_PREFIX)
+        if isGameObject(obj) then
+            local tableKey = readMarkerKey(obj, DATA.MARKER_TABLE_PREFIX)
+            local compKey = readMarkerKey(obj, DATA.MARKER_COMPONENT_PREFIX)
+            local pcSeat = readMarkerKey(obj, DATA.MARKER_PC_SEAT_PREFIX)
+            local npcSeat = readMarkerKey(obj, DATA.MARKER_NPC_SEAT_PREFIX)
 
-        if tableKey ~= nil then
-            local show = tableKey == activeTable
-            setMarkerVisible(obj, show)
-            if show then
-                local u, v = controlUvForTable(board, tableKey)
-                if u ~= nil and v ~= nil then
-                    obj.setPosition(Gameboard.worldOnControlBoard(board, u, v))
-                end
-            end
-        elseif compKey ~= nil then
-            local parentTable, componentName = string.match(compKey, "^(.-)|(.+)$")
-            if parentTable == nil then
-                parentTable = nil
-                componentName = compKey
-                for tk, cfg in pairs(C.Tables or {}) do
-                    if type(cfg) == "table" and type(cfg.components) == "table" and cfg.components[compKey] ~= nil then
-                        parentTable = tk
-                        componentName = compKey
-                        break
+            if tableKey ~= nil then
+                local show = tableKey == activeTable
+                setMarkerVisible(obj, show)
+                if show then
+                    local u, v = mapUvForTableCenter(tableKey)
+                    if u ~= nil and v ~= nil then
+                        obj.setPosition(Gameboard.worldOnControlBoard(board, u, v))
                     end
                 end
-            end
-            local show = parentTable == activeTable
-            setMarkerVisible(obj, show)
-            if show and parentTable ~= nil then
-                local u, v = controlUvForTable(board, parentTable)
-                if u ~= nil and v ~= nil then
-                    obj.setPosition(Gameboard.worldOnControlBoard(board, u + 0.02, v + 0.02))
-                end
-            end
-        elseif pcSeat ~= nil then
-            local show = activeTable ~= nil
-            setMarkerVisible(obj, show)
-            if show then
-                local cfg = tableConfig(activeTable)
-                local seg = cfg and cfg.playerToPositionMap and cfg.playerToPositionMap[pcSeat]
-                if type(seg) == "number" and cfg.centerPoint ~= nil then
-                    local u, v = uvFromWorldOnControlBoard(board, cfg.centerPoint)
-                    if u ~= nil then
-                        local angle = (seg / (cfg.numSegments or 10)) * 2 * math.pi
-                        obj.setPosition(Gameboard.worldOnControlBoard(board, u + math.sin(angle) * 0.08, v + math.cos(angle) * 0.08))
+            elseif compKey ~= nil then
+                local parentTable, componentName = string.match(compKey, "^(.-)|(.+)$")
+                if parentTable == nil then
+                    parentTable = nil
+                    componentName = compKey
+                    for tk, cfg in pairs(C.Tables or {}) do
+                        if type(cfg) == "table" and type(cfg.components) == "table" and cfg.components[compKey] ~= nil then
+                            parentTable = tk
+                            componentName = compKey
+                            break
+                        end
                     end
                 end
-            end
-        elseif npcSeat ~= nil then
-            local show = activeTable ~= nil
-            setMarkerVisible(obj, show)
-            if show then
-                local cfg = tableConfig(activeTable)
-                local seg = cfg and cfg.playerToPositionMap and cfg.playerToPositionMap[npcSeat]
-                if type(seg) == "number" and cfg.centerPoint ~= nil then
-                    local u, v = uvFromWorldOnControlBoard(board, cfg.centerPoint)
-                    if u ~= nil then
-                        local angle = (seg / (cfg.numSegments or 10)) * 2 * math.pi
-                        obj.setPosition(Gameboard.worldOnControlBoard(board, u + math.sin(angle) * 0.12, v + math.cos(angle) * 0.12))
+                local show = parentTable == activeTable
+                setMarkerVisible(obj, show)
+                if show and parentTable ~= nil then
+                    local u, v = mapUvForTableCenter(parentTable)
+                    if u ~= nil and v ~= nil then
+                        obj.setPosition(Gameboard.worldOnControlBoard(board, u + 0.02, v + 0.02))
+                    end
+                end
+            elseif pcSeat ~= nil then
+                local show = activeTable ~= nil
+                setMarkerVisible(obj, show)
+                if show then
+                    local cfg = tableConfig(activeTable)
+                    local seg = cfg and cfg.playerToPositionMap and cfg.playerToPositionMap[pcSeat]
+                    if type(seg) == "number" then
+                        local worldSeat = worldPositionForTableSegment(cfg, seg)
+                        local u, v = normalizedUvFromWorld(worldSeat)
+                        if u ~= nil and v ~= nil then
+                            obj.setPosition(Gameboard.worldOnControlBoard(board, u, v))
+                        end
+                    end
+                end
+            elseif npcSeat ~= nil then
+                local show = activeTable ~= nil
+                setMarkerVisible(obj, show)
+                if show then
+                    local cfg = tableConfig(activeTable)
+                    local seg = cfg and cfg.playerToPositionMap and cfg.playerToPositionMap[npcSeat]
+                    if type(seg) == "number" then
+                        local worldSeat = worldPositionForTableSegment(cfg, seg)
+                        local u, v = normalizedUvFromWorld(worldSeat)
+                        if u ~= nil and v ~= nil then
+                            obj.setPosition(Gameboard.worldOnControlBoard(board, u, v))
+                        end
                     end
                 end
             end
         end
-
-        ::continue_marker::
     end
 
     --- Mirror NPC tokens from placements (skip when layout locked — checked above).
@@ -544,14 +637,8 @@ function Gameboard.reconcileControlBoardFromState()
                 token.setPosition(Gameboard.worldOnControlBoard(board, row.u, row.v))
                 local boardYaw = board.getRotation().y or 0
                 local yaw = tonumber(row.yaw) or 0
-                token.setRotation(Vector(0, boardYaw + yaw, 0))
-                local mode = row.npcLightMode
-                local faceUp = mode ~= "OFF"
-                if token.is_face_up ~= nil and token.flip ~= nil then
-                    if token.is_face_up ~= faceUp then
-                        token.flip()
-                    end
-                end
+                local faceUp = row.npcLightMode ~= "OFF"
+                token.setRotation(rotationForNpcControlToken(boardYaw, yaw, faceUp))
             end
         end
     end
