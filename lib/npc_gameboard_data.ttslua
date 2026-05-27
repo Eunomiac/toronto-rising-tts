@@ -10,6 +10,7 @@ local C = require("lib.constants")
 local D = {}
 
 --- Object tags (workshop).
+D.TAG_NPC_CONTROL_BOARD = "npc_control_board"
 D.TAG_NPC_CONTROL_TOKEN = "npc_control_token"
 D.TAG_GAMEBOARD_PC_SEAT = "gameboard_pc_seat"
 D.TAG_GAMEBOARD_NPC_SEAT = "gameboard_npc_seat"

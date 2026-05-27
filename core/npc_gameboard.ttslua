@@ -1134,6 +1134,17 @@ end
 --- Alias for installPolarSnaps (same behavior).
 Gameboard.installControlBoardSnaps = Gameboard.installPolarSnaps
 
+--- Install Apply/Clear/Read/Lock/Load 3D buttons when the save has no object script on CONTROL_BOARD yet.
+--- @param board Object|nil
+function Gameboard.ensureControlBoardObjectUi(board)
+    board = board or getControlBoard()
+    if not isGameObject(board) then
+        return
+    end
+    local BoardUi = require("objects.npc_control_board_ui")
+    BoardUi.installObjectButtons(board)
+end
+
 --- Static minimap markers (not npc_control_token): locked so physics does not shove them apart.
 --- @param marker Object|nil
 local function lockControlBoardMarker(marker)
@@ -1204,6 +1215,7 @@ function Gameboard.reconcileControlBoardFromState()
         return
     end
     Gameboard.installPolarSnaps(board)
+    Gameboard.ensureControlBoardObjectUi(board)
 
     local npcWorld = S.getStateVal("sessionScene", "npcWorld")
     local stage = getStageBoard()

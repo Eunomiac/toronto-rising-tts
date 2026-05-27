@@ -1,0 +1,84 @@
+--[[
+    CONTROL_BOARD 3D object buttons (shared by object script + Global reconcile fallback).
+]]
+
+local NPC_CONTROL_BOARD_UI = {}
+
+local APPLY_LABEL = "Apply"
+local CLEAR_LABEL = "Clear"
+
+--- @param obj Object
+--- @return boolean
+local function isBoardObject(obj)
+    return obj ~= nil and obj.createButton ~= nil and obj.clearButtons ~= nil
+end
+
+--- @param obj Object
+function NPC_CONTROL_BOARD_UI.installObjectButtons(obj)
+    if not isBoardObject(obj) then
+        return
+    end
+    local existing = obj.getButtons and obj.getButtons() or {}
+    if type(existing) == "table" and #existing >= 5 then
+        return
+    end
+    obj.clearButtons()
+    local y = 0.35
+    obj.createButton({
+        label = APPLY_LABEL,
+        click_function = "click_apply",
+        function_owner = obj,
+        position = { -1.1, y, 1.35 },
+        width = 900,
+        height = 280,
+        font_size = 80,
+        color = { 0.2, 0.55, 0.3, 0.95 },
+        font_color = { 1, 1, 1, 1 },
+    })
+    obj.createButton({
+        label = CLEAR_LABEL,
+        click_function = "click_clear",
+        function_owner = obj,
+        position = { -1.1, y, 0.85 },
+        width = 900,
+        height = 280,
+        font_size = 80,
+        color = { 0.55, 0.2, 0.2, 0.95 },
+        font_color = { 1, 1, 1, 1 },
+    })
+    obj.createButton({
+        label = "Read",
+        click_function = "click_read_stub",
+        function_owner = obj,
+        position = { -1.1, y, 0.35 },
+        width = 900,
+        height = 280,
+        font_size = 70,
+        color = { 0.35, 0.35, 0.45, 0.9 },
+        font_color = { 1, 1, 1, 1 },
+    })
+    obj.createButton({
+        label = "Lock",
+        click_function = "click_lock_stub",
+        function_owner = obj,
+        position = { -1.1, y, -0.15 },
+        width = 900,
+        height = 280,
+        font_size = 70,
+        color = { 0.35, 0.35, 0.45, 0.9 },
+        font_color = { 1, 1, 1, 1 },
+    })
+    obj.createButton({
+        label = "Load",
+        click_function = "click_load_stub",
+        function_owner = obj,
+        position = { -1.1, y, -0.65 },
+        width = 900,
+        height = 280,
+        font_size = 70,
+        color = { 0.35, 0.35, 0.45, 0.9 },
+        font_color = { 1, 1, 1, 1 },
+    })
+end
+
+return NPC_CONTROL_BOARD_UI

@@ -57,7 +57,36 @@ GUIDs: `G.GUIDS.STAGE_BOARD`, `G.GUIDS.CONTROL_BOARD` in `lib/guids.ttslua`.
 
 ## Control-board snaps (CONTROL_BOARD)
 
-Snap points are installed by `Gameboard.installPolarSnaps` (alias `installControlBoardSnaps`) from **`reconcileControlBoardFromState`** (every `Sync.npcs` / load) — the CONTROL_BOARD object does **not** need a bundled script in the save for snaps to appear. Optional: attach `objects/npc_control_board.ttslua` for Apply/Clear/Read/Lock/Load buttons on the tile.
+Snap points are installed by `Gameboard.installPolarSnaps` (alias `installControlBoardSnaps`) from **`reconcileControlBoardFromState`** (every `Sync.npcs` / load) — the CONTROL_BOARD object does **not** need a bundled script in the save for snaps to appear.
+
+## Control-board UI (Apply / Clear / …)
+
+**Repo sources (attach on CONTROL_BOARD in TTS Editor):**
+
+| Source | Role |
+| --- | --- |
+| `objects/npc_control_board.ttslua` | Object script: `onLoad` → 3D buttons + polar snaps; `click_apply` / `click_clear` → Global |
+| `ui/objects/npc_control_board.xml` | Object XmlUI (same `click_*` handlers) |
+
+**TTS Editor — Script** (one line):
+
+```lua
+require("objects.npc_control_board")
+```
+
+**TTS Editor — XML**:
+
+```xml
+<Include src="ui/objects/npc_control_board.xml" />
+```
+
+The extension may mirror these under `.tts/objects/CONTROL_BOARD.bea29a.*` (gitignored) when the object is named with GUID `bea29a`.
+
+**Workshop:** tag the tile `npc_control_board` (optional). GUID `bea29a` in `lib/guids.ttslua`.
+
+**In-game buttons:** Five **3D** `createButton` labels beside the minimap (Apply, Clear, Read, Lock, Load). XmlUI is the object’s XML panel when selected. After pulling repo stubs, **Save & Play** so the save bundles script + XML onto `bea29a`. Until then, `reconcileControlBoardFromState` still calls `Gameboard.ensureControlBoardObjectUi` to create the 3D buttons from Global (XmlUI still needs Save & Play).
+
+**Console fallback:** `lua GlobalGameboardApply()` / `lua GlobalGameboardClear()` (Storyteller only for Clear confirm).
 
 Config: `D.CONTROL_BOARD_SNAP` in `lib/npc_gameboard_data.ttslua` — elliptical rings with **absolute** `innerRingMaxU/V` and `outerRingMaxU/V`, `rays`, and per-ring `snapGroups` (`num`, `angleDelta`). Default install prints **~160** snaps (`16 × (1+3+5+1)`). Same `boardLocalFromUv` frame as token placement; each snap yaws toward `origin` and is tagged `npc_control_token` so only control tokens snap there.
 
@@ -73,8 +102,8 @@ See [Generating Snap Points For Control Board.md](./Generating%20Snap%20Points%2
 
 ## Buttons (Phase A wired)
 
-- **Apply** / **Clear** — live
-- **Read** / **Lock** / **Load** — Phase B
+- **Apply** / **Clear** — live (3D buttons + XmlUI; Storyteller / Black only)
+- **Read** / **Lock** / **Load** — Phase B (stubs broadcast “not wired yet”)
 
 Debug: `DEBUG.dumpNpcPlacements()` in TTS console.
 

@@ -2,76 +2,17 @@
 --[[
     CONTROL_BOARD object script (objects/npc_control_board.ttslua).
 
-    Attach to the Storyteller control-board tile on the GM table.
-    Requires tags on the object: `npc_control_board` (optional, for discovery).
+    TTS Editor: `.tts/objects/CONTROL_BOARD.bea29a.ttslua` + `.xml` → Save & Play.
+    Buttons: 3D createButton on the tile edge + XmlUI panel (ui/objects/npc_control_board.xml).
+    Global reconcile also installs 3D buttons if the save has no object script yet.
 ]]
 
-local DATA = require("lib.npc_gameboard_data")
+local BoardUi = require("objects.npc_control_board_ui")
 
 function onLoad()
-    createBoardButtons()
+    BoardUi.installObjectButtons(self)
     local Gameboard = require("core.npc_gameboard")
     Gameboard.installPolarSnaps(self)
-end
-
-function createBoardButtons()
-    self.clearButtons()
-    local y = 0.35
-    self.createButton({
-        label = "Apply",
-        click_function = "click_apply",
-        function_owner = self,
-        position = { -1.1, y, 1.35 },
-        width = 900,
-        height = 280,
-        font_size = 80,
-        color = { 0.2, 0.55, 0.3, 0.95 },
-        font_color = { 1, 1, 1, 1 },
-    })
-    self.createButton({
-        label = "Clear",
-        click_function = "click_clear",
-        function_owner = self,
-        position = { -1.1, y, 0.85 },
-        width = 900,
-        height = 280,
-        font_size = 80,
-        color = { 0.55, 0.2, 0.2, 0.95 },
-        font_color = { 1, 1, 1, 1 },
-    })
-    self.createButton({
-        label = "Read",
-        click_function = "click_read_stub",
-        function_owner = self,
-        position = { -1.1, y, 0.35 },
-        width = 900,
-        height = 280,
-        font_size = 70,
-        color = { 0.35, 0.35, 0.45, 0.9 },
-        font_color = { 1, 1, 1, 1 },
-    })
-    self.createButton({
-        label = "Lock",
-        click_function = "click_lock_stub",
-        function_owner = self,
-        position = { -1.1, y, -0.15 },
-        width = 900,
-        height = 280,
-        font_size = 70,
-        color = { 0.35, 0.35, 0.45, 0.9 },
-        font_color = { 1, 1, 1, 1 },
-    })
-    self.createButton({
-        label = "Load",
-        click_function = "click_load_stub",
-        function_owner = self,
-        position = { -1.1, y, -0.65 },
-        width = 900,
-        height = 280,
-        font_size = 70,
-        color = { 0.35, 0.35, 0.45, 0.9 },
-        font_color = { 1, 1, 1, 1 },
-    })
 end
 
 function click_apply(_, player_color)

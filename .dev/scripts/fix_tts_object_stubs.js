@@ -33,7 +33,24 @@ const CSHEET_PAGE_XML_RE = /^CSHEET_PAGE_(\d+)_/i;
  *
  * @type {readonly { prefix: string, line: string }[]}
  */
+const CONTROL_BOARD_XML_RE = /^CONTROL_BOARD\./i;
+
+/**
+ * @param {string} objectFilename
+ * @returns {string | null}
+ */
+function expectedControlBoardXmlIncludeLine(objectFilename) {
+  if (!CONTROL_BOARD_XML_RE.test(objectFilename)) {
+    return null;
+  }
+  if (!objectFilename.toLowerCase().endsWith(".xml")) {
+    return null;
+  }
+  return `<Include src="ui/objects/npc_control_board.xml" />`;
+}
+
 const LUA_STUB_RULES = [
+  { prefix: "CONTROL_BOARD", line: `require("objects.npc_control_board")` },
   { prefix: "SIGNAL_CANDLE", line: `require("ui.ui_signal_candle")` },
   { prefix: "SOUNDSCAPE", line: `require("core.soundscape_emitter_object")` },
   { prefix: "TAROT_BUTTON", line: `require("ui.ui_tarot_button")` },
@@ -129,6 +146,14 @@ function collectCsheetXmlTargets(objectsDir, entries) {
   const out = [];
   for (const name of entries) {
     if (!name.toLowerCase().endsWith(".xml")) {
+      continue;
+    }
+    const controlBoardWant = expectedControlBoardXmlIncludeLine(name);
+    if (controlBoardWant !== null) {
+      out.push({
+        fullPath: path.join(objectsDir, name),
+        want: controlBoardWant,
+      });
       continue;
     }
     const match = CSHEET_PAGE_XML_RE.exec(name);
