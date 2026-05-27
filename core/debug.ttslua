@@ -551,33 +551,6 @@ function DEBUG.previewControlBoardSnapCount(config)
     end
 end
 
---- Debug session b671ce: reconcile control-board markers and write NDJSON to `debug-b671ce.log`.
---- Requires tts-bridge listen (39998) or MCP so writes land under `.dev/.debug/`.
-function DEBUG.dumpControlBoardMarkerReconcile()
-    printTestHeader("Control board marker reconcile (debug b671ce)")
-    DEBUG.workspaceNdjsonBegin("debug-b671ce.log")
-    local Gameboard = require("core.npc_gameboard")
-    Gameboard.reconcileControlBoardFromState()
-    local diag = Gameboard.getLastControlBoardReconcileDiagnostics()
-    if type(diag) ~= "table" then
-        print("No diagnostics captured.")
-        return
-    end
-    print("activeTable=" .. tostring(diag.activeTable))
-    print("markerCountTotal=" .. tostring(diag.markerCountTotal))
-    print("layoutLock=" .. tostring(diag.layoutLock))
-    print("stageBoardGuid=" .. tostring(diag.stageBoardGuid))
-    print("tableMarkersShown=" .. tostring(diag.tableMarkersShown))
-    print("tableMarkersPlaced=" .. tostring(diag.tableMarkersPlaced))
-    if type(diag.earlyExit) == "string" then
-        print("earlyExit=" .. diag.earlyExit)
-    end
-    if JSON ~= nil and JSON.encode ~= nil then
-        U.mcpEmitResult({ kind = "controlBoardMarkerReconcile", diag = diag })
-        print("Full diag emitted as TR_AGENT_V1 result (see console / MCP prints).")
-    end
-end
-
 --- Display zone status
 function DEBUG.showZones()
     printTestHeader("Zone Status")
@@ -2802,12 +2775,33 @@ local DEBUG_UPLOAD_GMNOTES_PREFIX = "debug-custom-ui-upload:"
 local DEBUG_UPLOAD_TAG = "debug-custom-ui-upload"
 local DEBUG_UPLOAD_MANIFEST_MODULE = "lib.custom_ui_upload_manifest"
 
--- Module-level requires so luabundle ships these modules (TTS_BUNDLING_SETUP.md § Issue 2a).
--- Each lib/*.ttslua file is a committed stub with empty data until npm manifest scripts overwrite it.
--- Do not delete those files — missing modules break Global load at require() time.
-local CUSTOM_UI_UPLOAD_MANIFEST = require("lib.custom_ui_upload_manifest")
-require("lib.npc_token_upload_manifest")
-local NPC_TOKEN_HOSTED_URLS = require("lib.npc_token_hosted_urls")
+--- Load a generated manifest module at Global init without bricking Save & Play.
+--- pcall: module file may be missing on a fresh clone, or fail parse before npm manifest scripts run;
+--- propagating would abort core/debug.ttslua load. Literal require() in each caller keeps luabundle embedding
+--- (TTS_BUNDLING_SETUP.md § Issue 2a). Empty fallback keeps unrelated DEBUG helpers usable.
+--- @param moduleName string
+--- @param fallback table
+--- @return table
+local function loadGeneratedManifestAtInit(moduleName, fallback)
+    local ok, result = pcall(require, moduleName)
+    if ok and U.Type(result) == "table" then
+        return result
+    end
+    print(
+        "[DEBUG] Generated module '"
+            .. tostring(moduleName)
+            .. "' not loaded — using empty fallback. "
+            .. "Run the matching npm custom-ui-assets:manifest-* script, then Save & Play. "
+            .. "Error: "
+            .. tostring(result)
+    )
+    return fallback
+end
+
+-- Module-level literal requires (via helper) so luabundle ships these modules (Issue 2a).
+local CUSTOM_UI_UPLOAD_MANIFEST = loadGeneratedManifestAtInit("lib.custom_ui_upload_manifest", { assets = {} })
+local NPC_TOKEN_UPLOAD_MANIFEST = loadGeneratedManifestAtInit("lib.npc_token_upload_manifest", { assets = {} })
+local NPC_TOKEN_HOSTED_URLS = loadGeneratedManifestAtInit("lib.npc_token_hosted_urls", {})
 DEBUG.customUiUploadManifest = CUSTOM_UI_UPLOAD_MANIFEST
 
 --- Parse an optional options table for upload spawn settings.
@@ -3011,7 +3005,17 @@ function DEBUG.loadCustomUiUploadManifest(moduleName, forceReload)
         end
     end
 
-    local manifest = require(targetModule)
+    -- pcall: same rationale as loadGeneratedManifestAtInit — runtime reload after npm regen must not throw.
+    local ok, manifest = pcall(require, targetModule)
+    if not ok then
+        print(
+            "DEBUG.loadCustomUiUploadManifest: failed to require '"
+                .. tostring(targetModule)
+                .. "': "
+                .. tostring(manifest)
+        )
+        return nil
+    end
 
     if U.Type(manifest) ~= "table" then
         print("DEBUG.loadCustomUiUploadManifest: module '" .. tostring(targetModule) .. "' did not return a table")

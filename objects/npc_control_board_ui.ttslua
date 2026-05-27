@@ -1,11 +1,17 @@
 --[[
     CONTROL_BOARD 3D object buttons (shared by object script + Global reconcile fallback).
+
+    Tile is authored with yaw ≈ 180° (storyteller-facing). Positions are object-local on the
+    east edge of the unit tile; keep width/height modest (tile is ~1 world unit across).
 ]]
 
 local NPC_CONTROL_BOARD_UI = {}
 
 local APPLY_LABEL = "Apply"
 local CLEAR_LABEL = "Clear"
+
+--- Layout generation — bump when positions or sizes change so reinstall replaces stale buttons.
+local UI_LAYOUT_VERSION = 2
 
 --- @param obj Object
 --- @return boolean
@@ -18,64 +24,74 @@ function NPC_CONTROL_BOARD_UI.installObjectButtons(obj)
     if not isBoardObject(obj) then
         return
     end
-    local existing = obj.getButtons and obj.getButtons() or {}
-    if type(existing) == "table" and #existing >= 5 then
-        return
-    end
     obj.clearButtons()
-    local y = 0.35
-    obj.createButton({
+
+    local y = 0.2
+    local x = 0.44
+    local zApply = -0.34
+    local zStep = 0.11
+    local width = 220
+    local height = 60
+    local fontMain = 28
+    local fontStub = 24
+
+    local function addButton(spec)
+        obj.createButton(spec)
+    end
+
+    addButton({
         label = APPLY_LABEL,
         click_function = "click_apply",
         function_owner = obj,
-        position = { -1.1, y, 1.35 },
-        width = 900,
-        height = 280,
-        font_size = 80,
+        position = { x, y, zApply },
+        width = width,
+        height = height,
+        font_size = fontMain,
         color = { 0.2, 0.55, 0.3, 0.95 },
         font_color = { 1, 1, 1, 1 },
+        tooltip = "v" .. tostring(UI_LAYOUT_VERSION),
     })
-    obj.createButton({
+    addButton({
         label = CLEAR_LABEL,
         click_function = "click_clear",
         function_owner = obj,
-        position = { -1.1, y, 0.85 },
-        width = 900,
-        height = 280,
-        font_size = 80,
+        position = { x, y, zApply + zStep },
+        width = width,
+        height = height,
+        font_size = fontMain,
         color = { 0.55, 0.2, 0.2, 0.95 },
         font_color = { 1, 1, 1, 1 },
     })
-    obj.createButton({
+    addButton({
         label = "Read",
         click_function = "click_read_stub",
         function_owner = obj,
-        position = { -1.1, y, 0.35 },
-        width = 900,
-        height = 280,
-        font_size = 70,
+        position = { x, y, zApply + zStep * 2 },
+        width = width,
+        height = height,
+        font_size = fontStub,
         color = { 0.35, 0.35, 0.45, 0.9 },
         font_color = { 1, 1, 1, 1 },
     })
-    obj.createButton({
+    addButton({
         label = "Lock",
         click_function = "click_lock_stub",
         function_owner = obj,
-        position = { -1.1, y, -0.15 },
-        width = 900,
-        height = 280,
-        font_size = 70,
+        position = { x, y, zApply + zStep * 3 },
+        width = width,
+        height = height,
+        font_size = fontStub,
         color = { 0.35, 0.35, 0.45, 0.9 },
         font_color = { 1, 1, 1, 1 },
     })
-    obj.createButton({
+    addButton({
         label = "Load",
         click_function = "click_load_stub",
         function_owner = obj,
-        position = { -1.1, y, -0.65 },
-        width = 900,
-        height = 280,
-        font_size = 70,
+        position = { x, y, zApply + zStep * 4 },
+        width = width,
+        height = height,
+        font_size = fontStub,
         color = { 0.35, 0.35, 0.45, 0.9 },
         font_color = { 1, 1, 1, 1 },
     })

@@ -157,7 +157,7 @@ See [TTS_MCP.md](TTS_MCP.md) for setup and Cursor configuration.
 
 **Solution**: Add a **module-level** `require("lib_that_must_ship")` once from an entry module (e.g. `core/debug.ttslua` already preloads `lib.workspace_ndjson_log`). Do the same for any other “lazy” dependency you need in TTS.
 
-**Generated manifests** (`lib/custom_ui_upload_manifest.ttslua`, `lib/npc_token_upload_manifest.ttslua`, `lib/npc_token_hosted_urls.ttslua`): keep **committed stubs** in git (empty `assets` / `{}`) so `require()` never fails on a fresh clone. `core/debug.ttslua` requires them at module scope for the bundler; `npm run custom-ui-assets:manifest-*` overwrites the stub content. Do not use `pcall(require, …)` here — missing files should be impossible, not silently ignored.
+**Generated manifests** (`lib/custom_ui_upload_manifest.ttslua`, `lib/npc_token_upload_manifest.ttslua`, `lib/npc_token_hosted_urls.ttslua`): keep **committed stubs** in git (empty `assets` / `{}`) when possible. `core/debug.ttslua` calls `pcall(require, "lib.…")` at module init (literal module names) so a missing or broken generated file does not brick Global load, while luabundle still embeds the modules. `npm run custom-ui-assets:manifest-*` overwrites stub content; upload/spawn DEBUG paths print guidance when manifests are empty.
 
 **Object scripts** (e.g. character sheet `ui/ui_csheet.ttslua`): stubs are only `require("ui.ui_csheet")`. Anything you `require` **inside** a function may be **missing at runtime**. Keep **`require("lib.workspace_ndjson_log")`** (and similar) at **file top level**.
 

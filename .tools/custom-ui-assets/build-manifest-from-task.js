@@ -82,8 +82,10 @@ function promptLine(question, defaultValue) {
 async function main() {
   const argvArgs = parseArgs(process.argv.slice(2));
   const mode = (argvArgs.mode || "").trim().toLowerCase();
-  if (mode !== "folder" && mode !== "sites") {
-    console.error('Missing or invalid --mode. Expected "--mode folder" or "--mode sites" (from the Run Task picker).');
+  if (mode !== "folder" && mode !== "sites" && mode !== "npc-tokens") {
+    console.error(
+      'Missing or invalid --mode. Expected "--mode folder", "--mode sites", or "--mode npc-tokens" (from the Run Task picker).',
+    );
     process.exit(1);
   }
 
@@ -91,11 +93,45 @@ async function main() {
   if (mode === "sites") {
     console.log("Mode: Site cards from C.Sites (lib/constants.ttslua)");
     console.log("Uses each row's `image` + `localImage`. Folder path from the task prompt is ignored.");
+  } else if (mode === "npc-tokens") {
+    console.log("Mode: NPC gameboard tokens (tokenFront_<key>.webp + tokenBack_<key>.webp pairs)");
   } else {
     console.log("Mode: Image folder (PNG convert + WEBP manifest scan)");
   }
 
-  if (mode === "sites") {
+  if (mode === "npc-tokens") {
+    const folderModeDefault = "assets/images/new_images";
+    let inputDir = (argvArgs.dir || "").trim();
+    if (inputDir === "") {
+      inputDir = (argvArgs.input || "").trim();
+      if (inputDir.replace(/\\/g, "/") === folderModeDefault) {
+        inputDir = "";
+      }
+    }
+    if (inputDir === "") {
+      if (process.stdin.isTTY) {
+        logSection("Step 1 — NPC token image folder");
+        console.log("Folder must contain paired tokenFront_<characterKey>.webp and tokenBack_<characterKey>.webp files.");
+        inputDir = await promptLine("Relative path to NPC token WEBP folder", "assets/images/NPC Tokens");
+      } else {
+        inputDir = "assets/images/NPC Tokens";
+        console.log(`Using default NPC token folder: ${inputDir}`);
+      }
+    }
+
+    logSection("Step 2 — Validate pairs and write NPC token manifest + Lua module");
+    const buildExit = runNode(".tools/custom-ui-assets/build-upload-manifest-from-npc-tokens.js", [
+      "--dir",
+      inputDir,
+      "--out",
+      ".dev/custom-ui-assets/npc-token-manifest.json",
+      "--moduleOut",
+      "lib/npc_token_upload_manifest.ttslua",
+    ]);
+    if (buildExit !== 0) {
+      process.exit(buildExit);
+    }
+  } else if (mode === "sites") {
     logSection("Step 1 — Validate local files and write manifest + Lua module");
     console.log("Script: .tools/custom-ui-assets/build-upload-manifest-from-sites-constants.js");
     console.log("Inputs:  lib/constants.ttslua  (C.Sites)");
@@ -160,18 +196,27 @@ async function main() {
   }
 
   logSection("Next — Tabletop Simulator");
-  console.log("1) Save & Play so Global loads lib/custom_ui_upload_manifest.ttslua.");
-  console.log("2) In the TTS console, spawn upload tokens:");
-  console.log("     lua DEBUG.spawnCustomUiUploadBatch()");
-  console.log("   Large batches (optional grid):");
-  console.log(
-    "     lua DEBUG.spawnCustomUiUploadBatchFromManifest(customUiUploadManifest, { columns = 12, gap = 2, startY = 3 })",
-  );
+  console.log("1) Save & Play so Global loads the generated manifest module.");
+  if (mode === "npc-tokens") {
+    console.log("2) In the TTS console:");
+    console.log("     lua DEBUG.spawnNpcTokenUploadBatch({ columns = 12, gap = 2, startY = 3 })");
+  } else {
+    console.log("2) In the TTS console, spawn upload tokens:");
+    console.log("     lua DEBUG.spawnCustomUiUploadBatch()");
+    console.log("   Large batches (optional grid):");
+    console.log(
+      "     lua DEBUG.spawnCustomUiUploadBatchFromManifest(customUiUploadManifest, { columns = 12, gap = 2, startY = 3 })",
+    );
+  }
   console.log("3) Cloud Manager → Upload All Loaded Files.");
   console.log("4) Save the game in TTS.");
 
   logSection("Next — Merge hosted URLs (VS Code task)");
   console.log('Run task:  "Custom UI Assets: Merge Hosted URLs into Save CustomUIAssets"');
+  if (mode === "npc-tokens") {
+    console.log("Use manifest path: .dev/custom-ui-assets/npc-token-manifest.json (npm merge with --manifest).");
+    console.log("Then: npm run custom-ui-assets:extract-npc-token-urls");
+  }
   console.log("Enter the same save name / id as the save you just wrote.");
   console.log("");
 

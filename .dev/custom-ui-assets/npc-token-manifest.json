@@ -1,0 +1,864 @@
+{
+  "generatedAt": "2026-05-27T19:53:08.613Z",
+  "source": "npc-tokens",
+  "inputDirectory": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens",
+  "count": 122,
+  "characterCount": 61,
+  "totalCharacterPairsValidated": 61,
+  "assets": [
+    {
+      "name": "tokenFront_adrianVarga",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_adrianVarga.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_adrianVarga.webp",
+      "characterKey": "adrianVarga",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_adrianVarga",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_adrianVarga.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_adrianVarga.webp",
+      "characterKey": "adrianVarga",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_alexandra",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_alexandra.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_alexandra.webp",
+      "characterKey": "alexandra",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_alexandra",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_alexandra.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_alexandra.webp",
+      "characterKey": "alexandra",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_alexisHoltt",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_alexisHoltt.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_alexisHoltt.webp",
+      "characterKey": "alexisHoltt",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_alexisHoltt",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_alexisHoltt.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_alexisHoltt.webp",
+      "characterKey": "alexisHoltt",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_anitaMorris",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_anitaMorris.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_anitaMorris.webp",
+      "characterKey": "anitaMorris",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_anitaMorris",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_anitaMorris.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_anitaMorris.webp",
+      "characterKey": "anitaMorris",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_averyInnis",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_averyInnis.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_averyInnis.webp",
+      "characterKey": "averyInnis",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_averyInnis",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_averyInnis.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_averyInnis.webp",
+      "characterKey": "averyInnis",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_bacchusGiovanni",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_bacchusGiovanni.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_bacchusGiovanni.webp",
+      "characterKey": "bacchusGiovanni",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_bacchusGiovanni",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_bacchusGiovanni.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_bacchusGiovanni.webp",
+      "characterKey": "bacchusGiovanni",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_bee",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_bee.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_bee.webp",
+      "characterKey": "bee",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_bee",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_bee.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_bee.webp",
+      "characterKey": "bee",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_benedictKincaid",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_benedictKincaid.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_benedictKincaid.webp",
+      "characterKey": "benedictKincaid",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_benedictKincaid",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_benedictKincaid.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_benedictKincaid.webp",
+      "characterKey": "benedictKincaid",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_calvinWallace",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_calvinWallace.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_calvinWallace.webp",
+      "characterKey": "calvinWallace",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_calvinWallace",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_calvinWallace.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_calvinWallace.webp",
+      "characterKey": "calvinWallace",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_carol",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_carol.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_carol.webp",
+      "characterKey": "carol",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_carol",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_carol.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_carol.webp",
+      "characterKey": "carol",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_christianne",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_christianne.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_christianne.webp",
+      "characterKey": "christianne",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_christianne",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_christianne.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_christianne.webp",
+      "characterKey": "christianne",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_damienAbanda",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_damienAbanda.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_damienAbanda.webp",
+      "characterKey": "damienAbanda",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_damienAbanda",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_damienAbanda.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_damienAbanda.webp",
+      "characterKey": "damienAbanda",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_damienKline",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_damienKline.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_damienKline.webp",
+      "characterKey": "damienKline",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_damienKline",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_damienKline.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_damienKline.webp",
+      "characterKey": "damienKline",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_deaconReal",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_deaconReal.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_deaconReal.webp",
+      "characterKey": "deaconReal",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_deaconReal",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_deaconReal.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_deaconReal.webp",
+      "characterKey": "deaconReal",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_drIrenaVoss",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_drIrenaVoss.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_drIrenaVoss.webp",
+      "characterKey": "drIrenaVoss",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_drIrenaVoss",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_drIrenaVoss.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_drIrenaVoss.webp",
+      "characterKey": "drIrenaVoss",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_eddie",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_eddie.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_eddie.webp",
+      "characterKey": "eddie",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_eddie",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_eddie.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_eddie.webp",
+      "characterKey": "eddie",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_emilyTheDuskRose",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_emilyTheDuskRose.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_emilyTheDuskRose.webp",
+      "characterKey": "emilyTheDuskRose",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_emilyTheDuskRose",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_emilyTheDuskRose.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_emilyTheDuskRose.webp",
+      "characterKey": "emilyTheDuskRose",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_evanescentBlue",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_evanescentBlue.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_evanescentBlue.webp",
+      "characterKey": "evanescentBlue",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_evanescentBlue",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_evanescentBlue.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_evanescentBlue.webp",
+      "characterKey": "evanescentBlue",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_evangelineDupont",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_evangelineDupont.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_evangelineDupont.webp",
+      "characterKey": "evangelineDupont",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_evangelineDupont",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_evangelineDupont.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_evangelineDupont.webp",
+      "characterKey": "evangelineDupont",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_fatherDiaz",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_fatherDiaz.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_fatherDiaz.webp",
+      "characterKey": "fatherDiaz",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_fatherDiaz",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_fatherDiaz.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_fatherDiaz.webp",
+      "characterKey": "fatherDiaz",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_gabrielCollard",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_gabrielCollard.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_gabrielCollard.webp",
+      "characterKey": "gabrielCollard",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_gabrielCollard",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_gabrielCollard.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_gabrielCollard.webp",
+      "characterKey": "gabrielCollard",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_georgieStJames",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_georgieStJames.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_georgieStJames.webp",
+      "characterKey": "georgieStJames",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_georgieStJames",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_georgieStJames.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_georgieStJames.webp",
+      "characterKey": "georgieStJames",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_ianRammond",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_ianRammond.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_ianRammond.webp",
+      "characterKey": "ianRammond",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_ianRammond",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_ianRammond.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_ianRammond.webp",
+      "characterKey": "ianRammond",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_iq",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_iq.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_iq.webp",
+      "characterKey": "iq",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_iq",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_iq.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_iq.webp",
+      "characterKey": "iq",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_jackBeNimble",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_jackBeNimble.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_jackBeNimble.webp",
+      "characterKey": "jackBeNimble",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_jackBeNimble",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_jackBeNimble.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_jackBeNimble.webp",
+      "characterKey": "jackBeNimble",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_jesseSharp",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_jesseSharp.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_jesseSharp.webp",
+      "characterKey": "jesseSharp",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_jesseSharp",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_jesseSharp.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_jesseSharp.webp",
+      "characterKey": "jesseSharp",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_kai",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_kai.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_kai.webp",
+      "characterKey": "kai",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_kai",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_kai.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_kai.webp",
+      "characterKey": "kai",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_laz",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_laz.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_laz.webp",
+      "characterKey": "laz",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_laz",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_laz.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_laz.webp",
+      "characterKey": "laz",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_lexiMadi",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_lexiMadi.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_lexiMadi.webp",
+      "characterKey": "lexiMadi",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_lexiMadi",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_lexiMadi.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_lexiMadi.webp",
+      "characterKey": "lexiMadi",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_lorenzaGiovanni",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_lorenzaGiovanni.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_lorenzaGiovanni.webp",
+      "characterKey": "lorenzaGiovanni",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_lorenzaGiovanni",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_lorenzaGiovanni.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_lorenzaGiovanni.webp",
+      "characterKey": "lorenzaGiovanni",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_lucasMerrow",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_lucasMerrow.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_lucasMerrow.webp",
+      "characterKey": "lucasMerrow",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_lucasMerrow",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_lucasMerrow.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_lucasMerrow.webp",
+      "characterKey": "lucasMerrow",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_masonSchmidt",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_masonSchmidt.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_masonSchmidt.webp",
+      "characterKey": "masonSchmidt",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_masonSchmidt",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_masonSchmidt.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_masonSchmidt.webp",
+      "characterKey": "masonSchmidt",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_merrickSingh",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_merrickSingh.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_merrickSingh.webp",
+      "characterKey": "merrickSingh",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_merrickSingh",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_merrickSingh.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_merrickSingh.webp",
+      "characterKey": "merrickSingh",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_myleneHamelin",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_myleneHamelin.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_myleneHamelin.webp",
+      "characterKey": "myleneHamelin",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_myleneHamelin",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_myleneHamelin.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_myleneHamelin.webp",
+      "characterKey": "myleneHamelin",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_nasirKhan",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_nasirKhan.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_nasirKhan.webp",
+      "characterKey": "nasirKhan",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_nasirKhan",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_nasirKhan.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_nasirKhan.webp",
+      "characterKey": "nasirKhan",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_niccoloGiovanni",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_niccoloGiovanni.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_niccoloGiovanni.webp",
+      "characterKey": "niccoloGiovanni",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_niccoloGiovanni",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_niccoloGiovanni.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_niccoloGiovanni.webp",
+      "characterKey": "niccoloGiovanni",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_oliverGagnon",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_oliverGagnon.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_oliverGagnon.webp",
+      "characterKey": "oliverGagnon",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_oliverGagnon",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_oliverGagnon.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_oliverGagnon.webp",
+      "characterKey": "oliverGagnon",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_osborneLowell",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_osborneLowell.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_osborneLowell.webp",
+      "characterKey": "osborneLowell",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_osborneLowell",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_osborneLowell.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_osborneLowell.webp",
+      "characterKey": "osborneLowell",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_profEthanKeen",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_profEthanKeen.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_profEthanKeen.webp",
+      "characterKey": "profEthanKeen",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_profEthanKeen",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_profEthanKeen.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_profEthanKeen.webp",
+      "characterKey": "profEthanKeen",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_raduIancu",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_raduIancu.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_raduIancu.webp",
+      "characterKey": "raduIancu",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_raduIancu",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_raduIancu.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_raduIancu.webp",
+      "characterKey": "raduIancu",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_razorWhit",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_razorWhit.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_razorWhit.webp",
+      "characterKey": "razorWhit",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_razorWhit",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_razorWhit.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_razorWhit.webp",
+      "characterKey": "razorWhit",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_ren",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_ren.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_ren.webp",
+      "characterKey": "ren",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_ren",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_ren.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_ren.webp",
+      "characterKey": "ren",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_rosie",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_rosie.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_rosie.webp",
+      "characterKey": "rosie",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_rosie",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_rosie.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_rosie.webp",
+      "characterKey": "rosie",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_rubyRouge",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_rubyRouge.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_rubyRouge.webp",
+      "characterKey": "rubyRouge",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_rubyRouge",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_rubyRouge.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_rubyRouge.webp",
+      "characterKey": "rubyRouge",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_sageSam",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_sageSam.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_sageSam.webp",
+      "characterKey": "sageSam",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_sageSam",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_sageSam.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_sageSam.webp",
+      "characterKey": "sageSam",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_scarlett",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_scarlett.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_scarlett.webp",
+      "characterKey": "scarlett",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_scarlett",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_scarlett.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_scarlett.webp",
+      "characterKey": "scarlett",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_scottTempo",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_scottTempo.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_scottTempo.webp",
+      "characterKey": "scottTempo",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_scottTempo",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_scottTempo.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_scottTempo.webp",
+      "characterKey": "scottTempo",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_sisterCicione",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_sisterCicione.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_sisterCicione.webp",
+      "characterKey": "sisterCicione",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_sisterCicione",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_sisterCicione.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_sisterCicione.webp",
+      "characterKey": "sisterCicione",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_stirlingSiskin",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_stirlingSiskin.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_stirlingSiskin.webp",
+      "characterKey": "stirlingSiskin",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_stirlingSiskin",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_stirlingSiskin.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_stirlingSiskin.webp",
+      "characterKey": "stirlingSiskin",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_suyin",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_suyin.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_suyin.webp",
+      "characterKey": "suyin",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_suyin",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_suyin.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_suyin.webp",
+      "characterKey": "suyin",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_terry",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_terry.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_terry.webp",
+      "characterKey": "terry",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_terry",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_terry.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_terry.webp",
+      "characterKey": "terry",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_theAristocrat",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_theAristocrat.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_theAristocrat.webp",
+      "characterKey": "theAristocrat",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_theAristocrat",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_theAristocrat.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_theAristocrat.webp",
+      "characterKey": "theAristocrat",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_theBleakBokor",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_theBleakBokor.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_theBleakBokor.webp",
+      "characterKey": "theBleakBokor",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_theBleakBokor",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_theBleakBokor.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_theBleakBokor.webp",
+      "characterKey": "theBleakBokor",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_tommy",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_tommy.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_tommy.webp",
+      "characterKey": "tommy",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_tommy",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_tommy.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_tommy.webp",
+      "characterKey": "tommy",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_tyler",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_tyler.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_tyler.webp",
+      "characterKey": "tyler",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_tyler",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_tyler.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_tyler.webp",
+      "characterKey": "tyler",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_ulyssesCelaj",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_ulyssesCelaj.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_ulyssesCelaj.webp",
+      "characterKey": "ulyssesCelaj",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_ulyssesCelaj",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_ulyssesCelaj.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_ulyssesCelaj.webp",
+      "characterKey": "ulyssesCelaj",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_vanceVogel",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_vanceVogel.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_vanceVogel.webp",
+      "characterKey": "vanceVogel",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_vanceVogel",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_vanceVogel.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_vanceVogel.webp",
+      "characterKey": "vanceVogel",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_victorVex",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_victorVex.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_victorVex.webp",
+      "characterKey": "victorVex",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_victorVex",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_victorVex.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_victorVex.webp",
+      "characterKey": "victorVex",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_xavierWhitchurch",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_xavierWhitchurch.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_xavierWhitchurch.webp",
+      "characterKey": "xavierWhitchurch",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_xavierWhitchurch",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_xavierWhitchurch.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_xavierWhitchurch.webp",
+      "characterKey": "xavierWhitchurch",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_yusefShamsin",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_yusefShamsin.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_yusefShamsin.webp",
+      "characterKey": "yusefShamsin",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_yusefShamsin",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_yusefShamsin.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_yusefShamsin.webp",
+      "characterKey": "yusefShamsin",
+      "side": "back"
+    },
+    {
+      "name": "tokenFront_zuriOluwusi",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenFront_zuriOluwusi.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenFront_zuriOluwusi.webp",
+      "characterKey": "zuriOluwusi",
+      "side": "front"
+    },
+    {
+      "name": "tokenBack_zuriOluwusi",
+      "fileUrl": "file:///D:/Projects/.CODING/toronto-rising-tts/assets/images/NPC Tokens/tokenBack_zuriOluwusi.webp",
+      "sourcePath": "D:\\Projects\\.CODING\\toronto-rising-tts\\assets\\images\\NPC Tokens\\tokenBack_zuriOluwusi.webp",
+      "characterKey": "zuriOluwusi",
+      "side": "back"
+    }
+  ]
+}

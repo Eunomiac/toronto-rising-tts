@@ -581,6 +581,7 @@ C.LockedObjects = {
   G.GUIDS.TABLES.TABLE_A_LEAF_FAR_LEFT,
   G.GUIDS.TABLES.TABLE_A_LEAF_FAR_RIGHT,
   G.GUIDS.GM_TABLE,
+  -- G.GUIDS.STAGE_BOARD,
   G.GUIDS.CSHEET_BASE_BACK_BROWN,
   G.GUIDS.CSHEET_BASE_BACK_ORANGE,
   G.GUIDS.CSHEET_BASE_BACK_PINK,
@@ -654,7 +655,9 @@ C.HiddenObjects = {
   [G.GUIDS.SEAT_FIGURE_RED] = { "Red" },
   [G.GUIDS.PRINCE_SIGNET_BORDER_RED] = { "Red" },
   [G.GUIDS.PRINCE_SIGNET_RED] = { "Red" },
-  [G.GUIDS.PRINCE_CURTAIN_RED] = { "Red" }
+  [G.GUIDS.PRINCE_CURTAIN_RED] = { "Red" },
+  [G.GUIDS.STAGE_BOARD] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.CONTROL_BOARD] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" }
 }
 -- #endregion
 

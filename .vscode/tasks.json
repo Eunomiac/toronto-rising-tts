@@ -301,14 +301,15 @@
       "description": "Manifest source: folder (WEBP/PNG) or C.Sites in lib/constants.ttslua (see Terminal for steps)",
       "options": [
         "folder",
-        "sites"
+        "sites",
+        "npc-tokens"
       ],
       "default": "folder"
     },
     {
       "id": "customUiAssetsImageFolder",
       "type": "promptString",
-      "description": "Relative image folder (folder mode only; ignored for sites — you can keep the default)",
+      "description": "Relative image folder (folder mode: new_images; npc-tokens mode: NPC Tokens; ignored for sites)",
       "default": "assets\\images\\new_images"
     },
     {

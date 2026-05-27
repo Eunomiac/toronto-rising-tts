@@ -77,6 +77,8 @@ async function main() {
 
   const buildDirScript = path.resolve(".tools/custom-ui-assets/build-upload-manifest.js");
   const buildSitesScript = path.resolve(".tools/custom-ui-assets/build-upload-manifest-from-sites-constants.js");
+  const buildNpcTokensScript = path.resolve(".tools/custom-ui-assets/build-upload-manifest-from-npc-tokens.js");
+  const extractNpcTokensScript = path.resolve(".tools/custom-ui-assets/extract-npc-token-hosted-urls.js");
   const convertScript = path.resolve(".tools/custom-ui-assets/convert-png-to-webp.js");
   const mergeByNameScript = path.resolve(".tools/custom-ui-assets/merge-custom-ui-assets-from-save-name.js");
 
@@ -110,6 +112,23 @@ async function main() {
       ".dev/custom-ui-assets/manifest.lua",
       "--moduleOut",
       "lib/custom_ui_upload_manifest.ttslua",
+    ]);
+    if (buildExit !== 0) {
+      process.exit(buildExit);
+    }
+  } else if (mode === "npc-tokens") {
+    const inputDir = (args.input || args.dir || "assets/images/NPC Tokens").trim();
+
+    console.log("=== Mode: npc-tokens (paired tokenFront_* + tokenBack_* WEBPs) ===");
+    console.log("");
+    console.log("=== Step 1/3: Build NPC token manifest ===");
+    const buildExit = runNodeScript(buildNpcTokensScript, [
+      "--dir",
+      inputDir,
+      "--out",
+      ".dev/custom-ui-assets/npc-token-manifest.json",
+      "--moduleOut",
+      "lib/npc_token_upload_manifest.ttslua",
     ]);
     if (buildExit !== 0) {
       process.exit(buildExit);
@@ -150,13 +169,22 @@ async function main() {
       process.exit(buildExit);
     }
   } else {
-    throw new Error(`Unknown --mode "${mode}" (use "directory" or "sites-from-constants")`);
+    throw new Error(`Unknown --mode "${mode}" (use "directory", "sites-from-constants", or "npc-tokens")`);
   }
+
+  const manifestPath =
+    mode === "npc-tokens"
+      ? ".dev/custom-ui-assets/npc-token-manifest.json"
+      : ".dev/custom-ui-assets/manifest.json";
 
   console.log("");
   console.log("=== Manual TTS Steps Required ===");
   console.log("1) In TTS, run Save & Play.");
-  console.log("2) In TTS console, run: lua DEBUG.spawnCustomUiUploadBatch()");
+  if (mode === "npc-tokens") {
+    console.log("2) In TTS console, run: lua DEBUG.spawnNpcTokenUploadBatch({ columns = 12, gap = 2, startY = 3 })");
+  } else {
+    console.log("2) In TTS console, run: lua DEBUG.spawnCustomUiUploadBatch()");
+  }
   console.log("3) Open Cloud Manager and click Upload All Loaded Files.");
   console.log("4) Save the game.");
   console.log("");
@@ -168,7 +196,7 @@ async function main() {
     "--saveName",
     saveName,
     "--manifest",
-    ".dev/custom-ui-assets/manifest.json",
+    manifestPath,
     "--assetsOut",
     ".dev/custom-ui-assets/generated-assets.json",
   ]);
@@ -176,9 +204,21 @@ async function main() {
     process.exit(mergeExit);
   }
 
+  if (mode === "npc-tokens") {
+    console.log("");
+    console.log("=== Step 4/4: Extract paired NPC token URLs ===");
+    const extractExit = runNodeScript(extractNpcTokensScript, []);
+    if (extractExit !== 0) {
+      process.exit(extractExit);
+    }
+  }
+
   console.log("");
   console.log("Pipeline complete.");
   console.log("Next (in TTS): lua DEBUG.clearCustomUiUploadTokens()");
+  if (mode === "npc-tokens") {
+    console.log("Hosted pairs: lib/npc_token_hosted_urls.ttslua");
+  }
 }
 
 main().catch((error) => {

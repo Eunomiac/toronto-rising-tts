@@ -9,7 +9,7 @@ Physical **STAGE_BOARD** (hidden world floor) + **CONTROL_BOARD** (GM table mini
 | Surface | Role |
 | --- | --- |
 | `sessionScene.npcWorld.placements` | Authority: `{ characterKey = { u, v, yaw, npcLightMode } }` (0–1 on stage board) |
-| **Apply** | Scan `npc_control_token` on CONTROL_BOARD → write `placements` → `Sync.npcs` |
+| **Apply** | Scan `npc_control_token` on CONTROL_BOARD (snap/minimap only — **not** the palette strip `TOKEN_PALETTE_UV`) → write `placements` → `Sync.npcs` |
 | **Clear** | Double-click → empty `placements`, park tokens to palette, `Sync.npcs` |
 | Reconcile | `NPCS.reconcileAllFromState` → figurines; mirror board unless `layoutLock` |
 
@@ -84,7 +84,9 @@ The extension may mirror these under `.tts/objects/CONTROL_BOARD.bea29a.*` (giti
 
 **Workshop:** tag the tile `npc_control_board` (optional). GUID `bea29a` in `lib/guids.ttslua`.
 
-**In-game buttons:** Five **3D** `createButton` labels beside the minimap (Apply, Clear, Read, Lock, Load). XmlUI is the object’s XML panel when selected. After pulling repo stubs, **Save & Play** so the save bundles script + XML onto `bea29a`. Until then, `reconcileControlBoardFromState` still calls `Gameboard.ensureControlBoardObjectUi` to create the 3D buttons from Global (XmlUI still needs Save & Play).
+**In-game buttons:** Five **3D** `createButton` labels on the tile edge (Apply, Clear, Read, Lock, Load) — sized for a ~1-unit `Custom_Tile` with board yaw ≈ 180°. XmlUI is the object’s XML panel when selected. After pulling repo stubs, **Save & Play** so the save bundles script + XML onto `bea29a`. `reconcileControlBoardFromState` calls `Gameboard.ensureControlBoardObjectUi` each sync (clears stale oversized buttons from earlier layouts).
+
+**Palette vs activated:** Tokens in `TOKEN_PALETTE_UV` are inactive storage; **Apply** ignores them so figurines are not staged until a token is on a polar snap. If everything jumped to stage height after an old Apply, run **Clear** or `lua GlobalGameboardClear()` then `Sync.npcs` / Save & Play.
 
 **Console fallback:** `lua GlobalGameboardApply()` / `lua GlobalGameboardClear()` (Storyteller only for Clear confirm).
 
