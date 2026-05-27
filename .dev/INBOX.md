@@ -52,5 +52,5 @@ _(empty)_
 - 2026-05-25 TOR-159 — [bug] Frenzy triggers at hunger 5 instead of only when rising past cap
 - 2026-05-26 Dice-E2E pass — TOR-161 (normal bag right-click), TOR-162 (ST Opts stick), TOR-163 (no-difficulty broadcast), TOR-164 (playbook + rollTest harness 😀); reaffirmed TOR-155/156/73 via E2E markers
 - 2026-05-27 duplicate — no-difficulty roll broadcast → TOR-163 (already in Focus + tasklist from Dice-E2E 2026-05-26)
-- 2026-05-27 TOR-166 — [improvement] Widen Far Left / Far Right NPC stage area angles
-- 2026-05-27 TOR-167 — [feature] Add Mid-Center and Far-Center NPC stage areas
+- 2026-05-27 TOR-166 — canceled — widen Far Left / Far Right NPC stage area angles superseded by TOR-169 (Storyteller gameboard); Linear Canceled, tasklist `[x]`
+- 2026-05-27 TOR-167 — canceled — Mid-Center / Far-Center NPC stage areas superseded by TOR-169; Linear Canceled, tasklist `[x]`

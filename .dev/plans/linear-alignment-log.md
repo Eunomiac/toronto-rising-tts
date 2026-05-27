@@ -190,6 +190,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-05-27 | CREATE | TOR-167 | Add Mid-Center + Far-Center NPC stage areas; `blockedBy` TOR-166 |
 | 2026-05-27 | UPDATE | RUNNING TASKLIST **Focus** | Dated 2026-05-27; TOR-165 on deferred line; TOR-166/167 tasklist bullets; back-burner pending |
 | 2026-05-27 | UPDATE | RUNNING TASKLIST **Deferred** | Back-burner approved: TOR-166, TOR-167 on deferred line (Medium; TOR-167 blockedBy TOR-166) |
+| 2026-05-27 | CANCEL | TOR-166, TOR-167 | Superseded by TOR-169 (Storyteller NPC gameboard); RUNNING TASKLIST Focus **Canceled** line + `[x]` bullets; INBOX Processed relabeled |
 | 2026-05-27 | DONE | TOR-155 | Roll panel pool dots color coding — author verified; Focus re-stack (162/161/163) |
 | 2026-05-27 | CREATE | TOR-168 | Audit Sync.full usage — narrow sync entry points (Urgent; Synchronization & State; parent TOR-30) |
 
