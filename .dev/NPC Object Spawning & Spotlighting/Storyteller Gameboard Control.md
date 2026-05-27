@@ -27,7 +27,9 @@ Both boards are **different objects** (position, rotation, scale). Map coordinat
 
 **Do not** call `positionToLocal` on CONTROL_BOARD with a playfield world position (e.g. `C.Tables[].centerPoint` at z≈50). That produced markers in a huge arc off the minimap and placed the table marker at the real table instead of on the control board.
 
-Table/seat markers: compute playfield world XZ (table `centerPoint`; components via `activePosition`; seats via segment angle × radius from `referenceHandPosition`), convert with `uvFromWorld`, place with `worldOnControlBoard`. NPC tokens on the control board use the same `u,v` as stage figurines after Apply.
+Table/seat markers: compute playfield world XZ (table `centerPoint`; components via `activePosition`; seats via **1-based** segment index from `playerToPositionMap` and `angleSegmentOne` — same azimuth as `rotational-seat-layout` — × radius from `referenceHandPosition`), convert with `uvFromWorld`, place with `worldOnControlBoard`. NPC tokens on the control board use the same `u,v` as stage figurines after Apply.
+
+**NPC seat markers:** Shown on the minimap only when `seatLayout.occupiedNPCSlots[npcSeat]` is a character key (not `false`) and the active table defines that seat in `playerToPositionMap`. Empty slots are **locked** and parked at world **Y = -200** (`MARKER_STASH_WORLD_Y`, slight X offset per slot so stashes do not stack).
 
 **Marker scale:** `Gameboard.reconcileControlBoardFromState` sets each marker’s scale from the playfield object it represents (`C.Tables` GUID, component GUID, or nearest `<seat>Object` to the seat arc), divided by the uniform horizontal minimap ratio `(ratioX + ratioZ) / 2` from `Gameboard.minimapScaleRatios()` (stage ÷ control board XZ bounds, typically ~40×). All three marker axes use that divisor — not board transform Y (both boards are Y scale 1, which previously left marker Y at full playfield size).
 

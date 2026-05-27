@@ -23,6 +23,9 @@ D.MARKER_COMPONENT_PREFIX = "gameboardComponent:"
 D.MARKER_PC_SEAT_PREFIX = "gameboardPcSeat:"
 D.MARKER_NPC_SEAT_PREFIX = "gameboardNpcSeat:"
 
+--- Parked minimap markers for inactive / empty NPC seats (matches NPC figurine off-table Y).
+D.MARKER_STASH_WORLD_Y = -200
+
 --- Fallback world XZ footprint when STAGE_BOARD is not in the save yet.
 D.DEFAULT_STAGE_WORLD = {
     centerX = 0,

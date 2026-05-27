@@ -537,12 +537,28 @@ local function tableConfig(tableKey)
     return C.Tables[tableKey]
 end
 
+--- True when `seatLayout.occupiedNPCSlots[seatKey]` holds a character key (not false).
+--- @param seatKey string
+--- @return boolean
+local function npcSeatOccupiedOnTable(seatKey)
+    if type(seatKey) ~= "string" or seatKey == "" then
+        return false
+    end
+    local slots = S.getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(slots) ~= "table" then
+        return false
+    end
+    local assigned = slots[seatKey]
+    return type(assigned) == "string" and assigned ~= ""
+end
+
 --- World XZ around a table segment (seat arc), from C.Tables layout data.
+--- Segment indices in `playerToPositionMap` are 1-based (same as rotational-seat-layout).
 --- @param cfg table
---- @param segmentIndex number
+--- @param segmentIndex1Based number
 --- @return Vector|nil
-local function worldPositionForTableSegment(cfg, segmentIndex)
-    if type(cfg) ~= "table" or type(segmentIndex) ~= "number" or cfg.centerPoint == nil then
+local function worldPositionForTableSegment(cfg, segmentIndex1Based)
+    if type(cfg) ~= "table" or type(segmentIndex1Based) ~= "number" or cfg.centerPoint == nil then
         return nil
     end
     local cp = Vector(cfg.centerPoint)
@@ -550,7 +566,9 @@ local function worldPositionForTableSegment(cfg, segmentIndex)
     if numSegments < 1 then
         numSegments = 10
     end
-    local angleRad = (segmentIndex / numSegments) * (2 * math.pi)
+    local angleSegmentOne = tonumber(cfg.angleSegmentOne) or 0
+    local thetaDeg = angleSegmentOne + (segmentIndex1Based - 1) * (360 / numSegments)
+    local angleRad = math.rad(thetaDeg)
     local radius = 12
     if cfg.referenceHandPosition ~= nil then
         radius = U.HorizontalDistance(cp, Vector(cfg.referenceHandPosition))
@@ -821,6 +839,28 @@ local function lockControlBoardMarker(marker)
     marker.setLock(true)
 end
 
+--- Park empty / inactive NPC seat markers off the play surface (locked).
+--- @param marker Object
+--- @param npcSeatKey string|nil Used to spread stash X slightly per slot
+local function stashNpcSeatMarker(marker, npcSeatKey)
+    if not isGameObject(marker) or marker.setPosition == nil then
+        return
+    end
+    local stashY = tonumber(DATA.MARKER_STASH_WORLD_Y) or -200
+    local pos = marker.getPosition()
+    local offsetX = 0
+    if type(npcSeatKey) == "string" then
+        for i = 1, #(C.NPCSeats or {}) do
+            if C.NPCSeats[i] == npcSeatKey then
+                offsetX = (i - 1) * 0.75
+                break
+            end
+        end
+    end
+    marker.setPosition(Vector({ x = pos.x + offsetX, y = stashY, z = pos.z }))
+    lockControlBoardMarker(marker)
+end
+
 --- @param marker Object
 --- @param board Object
 --- @param u number|nil
@@ -936,13 +976,15 @@ function Gameboard.reconcileControlBoardFromState()
                     end
                 end
             elseif npcSeat ~= nil then
+                setMarkerVisible(obj, false)
+                local cfg = tableConfig(activeTable)
+                local seg = cfg and cfg.playerToPositionMap and cfg.playerToPositionMap[npcSeat]
                 local show = activeTable ~= nil
-                setMarkerVisible(obj, show)
+                    and type(seg) == "number"
+                    and npcSeatOccupiedOnTable(npcSeat)
                 if show then
-                    local cfg = tableConfig(activeTable)
-                    local seg = cfg and cfg.playerToPositionMap and cfg.playerToPositionMap[npcSeat]
-                    if type(seg) == "number" then
-                        local worldSeat = worldPositionForTableSegment(cfg, seg)
+                    local worldSeat = worldPositionForTableSegment(cfg, seg)
+                    if worldSeat ~= nil then
                         local u, v = normalizedUvFromWorld(worldSeat)
                         placeControlBoardMarker(
                             obj,
@@ -955,6 +997,8 @@ function Gameboard.reconcileControlBoardFromState()
                             uniformRatio
                         )
                     end
+                else
+                    stashNpcSeatMarker(obj, npcSeat)
                 end
             end
         end
