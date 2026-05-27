@@ -618,8 +618,9 @@ local function boardMapExtents(board)
     return sx, sz
 end
 
---- Stage vs control minimap scale divisors (e.g. ~40 when stage is 800×400 and control is 20×10).
---- @return number|nil ratioX, number|nil ratioZ, number|nil ratioY
+--- Stage vs control minimap scale divisors from board XZ bounds (e.g. ~40 when stage is 800×400 and control is 20×10).
+--- Third return is a uniform divisor for marker scale on all axes (do not use board transform Y — both boards are Y scale 1).
+--- @return number|nil ratioX, number|nil ratioZ, number|nil uniformRatio
 function Gameboard.minimapScaleRatios()
     local stage = getStageBoard()
     local control = getControlBoard()
@@ -628,14 +629,9 @@ function Gameboard.minimapScaleRatios()
     end
     local stageSx, stageSz = boardMapExtents(stage)
     local controlSx, controlSz = boardMapExtents(control)
-    local stageScale = stage.getScale()
-    local controlScale = control.getScale()
-    local stageSy = (stageScale and stageScale.y) or 1
-    local controlSy = (controlScale and controlScale.y) or 1
-    if controlSy < 0.01 then
-        controlSy = 0.01
-    end
-    return stageSx / controlSx, stageSz / controlSz, stageSy / controlSy
+    local ratioX = stageSx / controlSx
+    local ratioZ = stageSz / controlSz
+    return ratioX, ratioZ, (ratioX + ratioZ) * 0.5
 end
 
 --- @param source Object|nil
@@ -652,8 +648,8 @@ end
 --- @param source Object|nil
 --- @param ratioX number
 --- @param ratioZ number
---- @param ratioY number|nil
-local function applyMinimapMarkerScale(marker, source, ratioX, ratioZ, ratioY)
+--- @param uniformRatio number|nil Average XZ board extent ratio; applied to x, y, and z on the marker
+local function applyMinimapMarkerScale(marker, source, ratioX, ratioZ, uniformRatio)
     if not isGameObject(marker) or marker.setScale == nil then
         return
     end
@@ -661,20 +657,17 @@ local function applyMinimapMarkerScale(marker, source, ratioX, ratioZ, ratioY)
     if src == nil or type(ratioX) ~= "number" or type(ratioZ) ~= "number" then
         return
     end
-    local ry = ratioY
-    if type(ry) ~= "number" or ry < 0.01 then
-        ry = ratioX
+    local divisor = uniformRatio
+    if type(divisor) ~= "number" or divisor < 0.01 then
+        divisor = (ratioX + ratioZ) * 0.5
     end
-    if ratioX < 0.01 then
-        ratioX = 0.01
-    end
-    if ratioZ < 0.01 then
-        ratioZ = 0.01
+    if divisor < 0.01 then
+        divisor = 0.01
     end
     marker.setScale({
-        x = src.x / ratioX,
-        y = src.y / ry,
-        z = src.z / ratioZ,
+        x = src.x / divisor,
+        y = src.y / divisor,
+        z = src.z / divisor,
     })
 end
 
@@ -835,13 +828,13 @@ end
 --- @param source Object|nil
 --- @param ratioX number|nil
 --- @param ratioZ number|nil
---- @param ratioY number|nil
-local function placeControlBoardMarker(marker, board, u, v, source, ratioX, ratioZ, ratioY)
+--- @param uniformRatio number|nil
+local function placeControlBoardMarker(marker, board, u, v, source, ratioX, ratioZ, uniformRatio)
     if u ~= nil and v ~= nil then
         marker.setPosition(Gameboard.worldOnControlBoard(board, u, v))
     end
     if isGameObject(source) and type(ratioX) == "number" and type(ratioZ) == "number" then
-        applyMinimapMarkerScale(marker, source, ratioX, ratioZ, ratioY)
+        applyMinimapMarkerScale(marker, source, ratioX, ratioZ, uniformRatio)
     end
     lockControlBoardMarker(marker)
 end
@@ -860,7 +853,7 @@ function Gameboard.reconcileControlBoardFromState()
     end
     local activeTable = S.getStateVal("seatLayout", "currentTableKey")
     local placements = type(npcWorld) == "table" and npcWorld.placements or {}
-    local ratioX, ratioZ, ratioY = Gameboard.minimapScaleRatios()
+    local ratioX, ratioZ, uniformRatio = Gameboard.minimapScaleRatios()
     local allMarkers = getObjectsWithTag(TAG_TABLE) or {}
     for _, tag in ipairs({ TAG_PC, TAG_NPC_SEAT, TAG_COMPONENT }) do
         local extra = getObjectsWithTag(tag) or {}
@@ -890,7 +883,7 @@ function Gameboard.reconcileControlBoardFromState()
                         sourceObjectForTable(tableKey),
                         ratioX,
                         ratioZ,
-                        ratioY
+                        uniformRatio
                     )
                 end
             elseif compKey ~= nil then
@@ -918,7 +911,7 @@ function Gameboard.reconcileControlBoardFromState()
                         sourceObjectForTableComponent(parentTable, componentName),
                         ratioX,
                         ratioZ,
-                        ratioY
+                        uniformRatio
                     )
                 end
             elseif pcSeat ~= nil then
@@ -938,7 +931,7 @@ function Gameboard.reconcileControlBoardFromState()
                             sourceObjectForSeat(pcSeat, worldSeat),
                             ratioX,
                             ratioZ,
-                            ratioY
+                            uniformRatio
                         )
                     end
                 end
@@ -959,7 +952,7 @@ function Gameboard.reconcileControlBoardFromState()
                             sourceObjectForSeat(npcSeat, worldSeat),
                             ratioX,
                             ratioZ,
-                            ratioY
+                            uniformRatio
                         )
                     end
                 end

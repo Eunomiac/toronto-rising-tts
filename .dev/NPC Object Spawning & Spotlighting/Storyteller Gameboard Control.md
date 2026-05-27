@@ -29,7 +29,7 @@ Both boards are **different objects** (position, rotation, scale). Map coordinat
 
 Table/seat markers: compute playfield world XZ (table `centerPoint`; components via `activePosition`; seats via segment angle × radius from `referenceHandPosition`), convert with `uvFromWorld`, place with `worldOnControlBoard`. NPC tokens on the control board use the same `u,v` as stage figurines after Apply.
 
-**Marker scale:** `Gameboard.reconcileControlBoardFromState` sets each marker’s scale from the playfield object it represents (`C.Tables` GUID, component GUID, or nearest `<seat>Object` to the seat arc), divided by `Gameboard.minimapScaleRatios()` — stage board horizontal bounds ÷ control board bounds (typically ~40× when stage is 800×400 and control is 20×10; recomputed from live `getBounds()` when board sizes change).
+**Marker scale:** `Gameboard.reconcileControlBoardFromState` sets each marker’s scale from the playfield object it represents (`C.Tables` GUID, component GUID, or nearest `<seat>Object` to the seat arc), divided by the uniform horizontal minimap ratio `(ratioX + ratioZ) / 2` from `Gameboard.minimapScaleRatios()` (stage ÷ control board XZ bounds, typically ~40×). All three marker axes use that divisor — not board transform Y (both boards are Y scale 1, which previously left marker Y at full playfield size).
 
 **Player visibility:** All `gameboard_*` markers and `npc_control_token` tiles use `setInvisibleTo(C.PlayerColors)` — hidden from every seated PC (Brown–Purple); Storyteller (Black) and spectators (White/Grey) still see them. Reconcile and spawn paths call `Gameboard.setHiddenFromPlayerColors`.
 
