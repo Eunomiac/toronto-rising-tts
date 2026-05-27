@@ -14,7 +14,7 @@ Ground truth: `[core/roll_controller.ttslua](../../core/roll_controller.ttslua)`
 
 ## Solo Host (one client)
 
-You do **not** need a second player connected. `rollTest` / `rollStTest` move the Host to the target seat (`Player.changeColor`), hide that seat’s loading overlay, and apply Debug Camera spoof **before** arming the roll. `rollCancel(color)` returns the Host to **Black** when `color` is not Black.
+You do **not** need a second player connected. `rollTest` / `rollStTest` move the **Host** (whichever seat they occupy) to the target seat via `changeColor`, hide that seat’s loading overlay, and apply Debug Camera spoof **before** arming the roll. If you are **already** on the target seat (e.g. mid–Suite A), prep still succeeds. `rollCancel(color)` returns the Host to **Black** when `color` is not Black.
 
 
 | Goal                     | Solo approach                                                         |
@@ -40,7 +40,9 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 | `rollConfirm(color, expected)`                                           | Assert roll state; prints **PASS** / **FAIL** + mismatch list (E2E)         |
 | `rollForceConfirm(color)`                                                | Force **CONFIRM** in POST_ROLL (automation only — not in human step lists)  |
 | `rollConfirmTracker(color, { hunger?, stains?, willpowerSuperficial? })` | Tracker PASS/FAIL after confirm/broadcast                                   |
-| `rollE2eSettlePresetCheck(color, faces)`                                 | Dedicated check: `rollSetFaces` + `startRolling` + settle (no Roll click)   |
+| `rollE2eSetPoolAndSpawn(color, normal, hunger)`                         | Set `active.pool` + spawn staged dice (PRE_ROLL)                                                            |
+| `rollE2eSetPoolAutoHunger(color, normalBagClicks)`                      | Auto-Hunger pool from virtual Normal-bag clicks + spawn (Suite G)                                           |
+| `rollE2eSettlePresetCheck(color, faces)`                                 | Spawn pool + `startRolling` + preset faces + settle (Suites C–G; no panel Roll)                             |
 | `rollStConfirm({ liveSlotIndex?, initiateBlocked? })`                    | ST slot assertions                                                          |
 | `setHumanityStains(color, n)` / `setWillpowerSuperficial(color, n)`      | Seed tracker before outcome tests                                           |
 
@@ -64,7 +66,7 @@ rollConfirm("Brown", { rouseStripLabel = "Rouse" })
 rollConfirm("Brown", { wpRerollChosenCount = 1 })  -- after WP reroll cap test (I2)
 ```
 
-**Matchers:** `{ present = true }` when the value is unknown until dice settle. Otherwise use **exact** literals (`pool = { normal = 5 }`). Shorthand keys `pool`, `meta`, `result` merge into `active.*`.
+**Matchers:** `{ present = true }` means the value must exist (not nil). You can combine with nested fields, e.g. `result = { present = true, resultClass = { present = true } }` — that asserts `active.result` and `active.result.resultClass` exist; it does **not** look for a literal `.present` key on the result record. Otherwise use **exact** literals (`pool = { normal = 5 }`). Shorthand keys `pool`, `meta`, `result` merge into `active.*`.
 
 ## Deterministic test conventions
 
@@ -79,7 +81,8 @@ Every step is **mandatory**. Do not improvise pool sizes, click counts, or asser
 | **Auto-Hunger** (default **on**) | **Do not** left-click the **Hunger bag** to add hunger dice on standard rolls — that triggers **Blood Surge**. With `autoHunger` on, each **left-click Normal bag** adds a **Hunger** die while `pool.hunger < hungerLevel`, then **Normal** dice. To build **N** normal + **H** hunger: left-click **Normal bag `(hungerLevel + N)` times** when `H == hungerLevel` (typical). Example: `rollTest(..., 2)` and pool `2N+2H` → **4** Normal bag clicks. |
 | `rollConfirm`                    | Use **exact** numbers. Avoid `{ min = N }` unless this doc cites a named constant. `**wpRerollChosenCount`** — count of dice randomized in the current WP wave (cap tests, e.g. I2)                                                                                                                                                                                                                                                                     |
 | `rollConfirmTracker`             | Assert hunger / stains / superficial willpower after consequences apply                                                                                                                                                                                                                                                                                                                                                                                 |
-| `rollE2eSettlePresetCheck`       | Dedicated Rouse/Obliv checks: preset face + settle (no die randomize step)                                                                                                                                                                                                                                                                                                                                                                              |
+| `rollE2eSetPoolAndSpawn` / `rollE2eSetPoolAutoHunger` | After `rollTest`: set pool + spawn staged dice (Suite F explicit counts; Suite G uses `rollE2eSetPoolAutoHunger` with Normal-bag click count) |
+| `rollE2eSettlePresetCheck`       | **After pool spawn** — `startRolling`, preset faces, settle (replaces panel Roll; **do not** click Roll between `rollTest` and this helper)                                                                                                                                                                                                                                              |
 | `rollStConfirm`                  | Assert `liveSlotIndex` and ST initiate blocking                                                                                                                                                                                                                                                                                                                                                                                                         |
 | Panel actions                    | Prefer console `RC.takeHalf`, `RC.openRoll` when listed; otherwise click the named panel control                                                                                                                                                                                                                                                                                                                                                        |
 | Visual-only                      | **Only** when this doc explicitly says **Visual check** (dashboard label, known-bug UI)                                                                                                                                                                                                                                                                                                                                                                 |
@@ -121,6 +124,8 @@ rollStSlots()                         -- ST drawer slots
 **Pool composition (standard rolls):** At most one **main** pool (normal + hunger), one **rouse** check (`pool.rouse` — extra Rouse clicks add to the same check), and one **oblivion-rouse** check. Rouse and Oblivion-Rouse are **mutually exclusive** (silent bag fail). Blood Surge adds rouse + bonus normal/hunger; **Hunger bag right-click** undoes surge and clears **all** rouse dice. See Dice System Pt. 2 § Pool composition.
 
 **Per-roll options:** Set with `RC.setRollOptions` **immediately after** `rollTest` and **before** **Roll** / **Spend WP**. Do not use the ST Opts modal during E2E (TOR-162).
+
+**`S.setStateVal`:** Value first, then path keys — e.g. `S.setStateVal(true, "stRollSettings", "autoApplyRouseOutcomes")`, not `S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", true)`.
 
 ```lua
 RC.setRollOptions("Brown", { wpReroll = true, numberOfDiceRerolled = 3, canRerollHunger = false })
@@ -198,11 +203,13 @@ rollConfirm("Brown", { active = { pool = { normal = 5, hunger = 0 } } })
 
 **Visual check (known bug TOR-155):** Roll panel shows **5** white pool dots (no hunger dice in this step).
 
+> ✅
+
 #### Step A3 — Roll and confirm
 
 **Human:** Click **Roll** → wait for settle (**POST_ROLL**).
 
-**Before Confirm — check:**
+**Before Confirm — check** (paste in a **second** console block **after** Roll + settle — not in the same paste as A2):
 
 ```lua
 rollConfirm("Brown", {
@@ -213,9 +220,9 @@ rollConfirm("Brown", {
 })
 ```
 
-**Pass if:** **PASS**. Then click **Confirm**. Do **not** call `rollConfirm` after confirm — active clears.
+**Pass if:** `rollConfirm` prints **PASS**. Then click **Confirm**. Do **not** call `rollConfirm` after confirm — active clears.
 
-> ❌ Prior run: confirmed then called `rollState` — active already cleared. Use POST_ROLL inspection above.
+> ✅
 
 ---
 
@@ -239,12 +246,19 @@ rollConfirm("Brown", { noActive = true })
 
 #### C1 — `autoApplyRouseOutcomes` **on** (hunger +1)
 
+**Console block 1 — arm dedicated rouse check (PRE_ROLL, no dice on table yet):**
+
 ```lua
 rollCancel("Brown")
-S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", true)
+S.setStateVal(true, "stRollSettings", "autoApplyRouseOutcomes")
 setHunger("Brown", 2)
 rollConfirmTracker("Brown", { hunger = 2 })
 rollTest("Brown", 1, C.RollType.ROUSE, "E2E C1 rouse auto on")
+```
+
+**Console block 2 — spawn, preset face, auto-settle (run immediately; do not click panel Roll first):**
+
+```lua
 rollE2eSettlePresetCheck("Brown", { rouse = { 4 } })
 rollConfirm("Brown", { noActive = true })
 rollConfirmTracker("Brown", { hunger = 3 })
@@ -252,7 +266,7 @@ rollConfirmTracker("Brown", { hunger = 3 })
 
 **Pass if:** All `rollConfirm` / `rollConfirmTracker` calls print **PASS** (face **4** → hunger +1).
 
-> ⚠️ Player roll panel displays "`R1`" text instead of a dark red dot (TOR-155).
+> ✅
 
 ```lua
 rollCancel("Brown")
@@ -262,17 +276,19 @@ rollCancel("Brown")
 
 ```lua
 rollCancel("Brown")
-S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", false)
+S.setStateVal(false, "stRollSettings", "autoApplyRouseOutcomes")
 setHunger("Brown", 2)
 rollConfirmTracker("Brown", { hunger = 2 })
 rollTest("Brown", 1, C.RollType.ROUSE, "E2E C2 rouse auto off")
 rollE2eSettlePresetCheck("Brown", { rouse = { 4 } })
 rollConfirm("Brown", { noActive = true })
 rollConfirmTracker("Brown", { hunger = 2 })
-S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", true)
+S.setStateVal(true, "stRollSettings", "autoApplyRouseOutcomes")
 ```
 
 **Pass if:** Hunger stays **2** after the same fail face **4**.
+
+> ✅
 
 ```lua
 rollCancel("Brown")
@@ -286,7 +302,7 @@ Single-die dedicated check. Multi-die cases → **Suite P**.
 
 ```lua
 rollCancel("Purple")
-S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", true)
+S.setStateVal(true, "stRollSettings", "autoApplyRouseOutcomes")
 setHunger("Purple", 1)
 setHumanityStains("Purple", 2)
 rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
@@ -298,7 +314,7 @@ rollConfirmTracker("Purple", { hunger = 2, stains = 2 })
 
 **Pass if:** Face **3** → hunger **+1**, stains **unchanged** (still **2**).
 
-> ⚠️ Player roll panel displays "`O1`" text instead of a dark purple dot (TOR-155).
+> ✅
 
 ```lua
 rollCancel("Purple")
@@ -329,40 +345,26 @@ rollCancel("Black")
 
 **Pass if:** `rollStConfirm` **PASS** for `liveSlotIndex = 1` and blocked second initiate.
 
-> ✅ `liveSlotIndex` set, dashboard shows roll, drawer opens on die spawn, ST bags spawn into drawer arc.
->
-> ⚠️ The roll panel dice pool shows, e.g., "`5N+2H`". **Expected Behavior:** All dice should be displayed as colored dots. Normal = white, Hunger = bright red, Rouse = dark red, Oblivion-Rouse = dark purple, Werewolf = yellow-green, Rage = orange.
->
-> ⚠️ **(Likely a Problem with ALL rolls, not just ST Rolls)** Upon Confirming a roll for which the ST did not set a Difficulty, the result broadcast displays only "Roll Completed". **Expected Behavior:** A roll without a Difficulty should be treated as having an innate/default difficulty of 1. Dice images should still be displayed, the result should still be determined, and the number of successes should be included in the broadcast message -- but margin should be left out, as there is no difficulty against which to derive a margin.
-
-```lua
-rollCancel("Black")   -- also clears resolved ST slots + drawer dice
-```
+> ✅
 
 ---
 
 ### Suite F — Conditions roll policy (`e2eBestialNull`)
 
-Uses manual condition `**e2eBestialNull**` (`roll.bestialNull = true` in `lib/condition_defs.ttslua`). Both runs use the **same** forced faces at difficulty **2** and the **same** pool build. F1 must classify `**messyCritical`**; F2 must classify `**failure**`.
+Uses manual condition `**e2eBestialNull**` (`roll.bestialNull = true` in `lib/condition_defs.ttslua`). Both runs use the **same** forced faces at difficulty **2** and the **same** pool build. F1 must classify `**messyCritical`**; F2 must classify `**bestialFailure**`.
 
 #### F1 — Baseline (no condition)
 
 ```lua
 rollE2eClearConditions("Brown", { "e2eBestialNull" })
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E F baseline", 1)
-RC.setPool("Brown", 3, 1)
-GlobalSpawnDefaultPoolDiceForActive({ color = "Brown" })
+rollE2eSetPoolAndSpawn("Brown", 3, 1)
 rollConfirm("Brown", { pool = { normal = 3, hunger = 1, rouse = 0 } })
-```
-
-**Human:** Click **Roll** → wait for settle.
-
-```lua
-rollSetFaces("Brown", { normal = {10, 10, 3}, hunger = {1} })
+rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {10} })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = {
-    result = { resultClass = "messyCritical", successes = 3 },
+    result = { resultClass = "messyCritical", successes = 5 },
     rollPolicy = { bestialNull = false },
   },
 })
@@ -372,24 +374,22 @@ rollConfirm("Brown", {
 rollCancel("Brown")
 ```
 
+**Pass if:** F1 `rollConfirm` prints **PASS**.
+
+> ✅
+
 #### F2 — With `e2eBestialNull`
 
 ```lua
 rollE2eApplyConditions("Brown", { "e2eBestialNull" })
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E F bestialNull", 1)
-RC.setPool("Brown", 3, 1)
-GlobalSpawnDefaultPoolDiceForActive({ color = "Brown" })
+rollE2eSetPoolAndSpawn("Brown", 3, 1)
 rollConfirm("Brown", { pool = { normal = 3, hunger = 1, rouse = 0 } })
-```
-
-**Human:** Click **Roll** → wait for settle.
-
-```lua
-rollSetFaces("Brown", { normal = {10, 10, 3}, hunger = {1} })
+rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {1} })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = {
-    result = { resultClass = "failure", successes = 2, margin = -1 },
+    result = { resultClass = "bestialFailure", successes = 1, margin = -1 },
     rollPolicy = { bestialNull = true },
   },
   contributingIncludes = { "e2eBestialNull" },
@@ -398,47 +398,43 @@ rollConfirm("Brown", {
 
 **Pass if:** F2 `rollConfirm` prints **PASS** (includes `e2eBestialNull` in `contributingConditions`).
 
+> ✅
+
 ```lua
 rollCancel("Brown")
 rollE2eClearConditions("Brown", { "e2eBestialNull" })
 ```
 
-**Pass if:** F1 classified `**messyCritical`** and F2 classified `**failure**` (different `resultClass`).
+**Pass if:** F1 classified `**messyCritical`** and F2 classified `**bestialFailure**` (different `resultClass`).
 
-> Re-test after Save & Play with harness above.
+> ✅
 
 ---
 
 ## Suite G — Result calculation accuracy
 
-After **Roll** + settle, run `rollSetFaces` then `rollConfirm` **before Confirm**. Each test lists exact expected `resultClass`, `successes`, and `margin`.
+Each step: `rollTest` → `rollE2eSetPoolAutoHunger` (virtual Normal-bag clicks per table below) → `rollE2eSettlePresetCheck` → `rollConfirm` → `rollCancel`. **No** manual bag clicks or panel **Roll**.
 
-For **G6** / **G7**, set per-roll options via console (ST Opts panel may not stick — see TOR-162):
+For **G6** / **G7**, call `RC.setRollOptions` **after** `rollTest` and **before** `rollE2eSettlePresetCheck` (ST Opts panel may not stick — TOR-162).
 
-```lua
-RC.setRollOptions("Brown", { crits = false })        -- G6
-RC.setRollOptions("Brown", { bestialNull = true })
-```
-
-Call `setRollOptions` **after** `rollTest` returns and **before** clicking **Roll**.
+| Step | `rollTest` hunger (5th arg) | `rollE2eSetPoolAutoHunger` clicks |
+| ---- | --------------------------- | --------------------------------- |
+| G1   | 0                           | 2                                 |
+| G2–G4| 2                           | 4                                 |
+| G5   | 1                           | 3                                 |
+| G6   | 1                           | 5                                 |
+| G7   | 1                           | 4                                 |
 
 ### G1 — Win at diff 2
 
 ```lua
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G1", 0)
-```
-
-**Human:** **Left-click Normal bag 2 times** (no hunger dice). **Roll** → settle.
-
-```lua
-rollSetFaces("Brown", { normal = {7, 7} })
+rollE2eSetPoolAutoHunger("Brown", 2)
+rollE2eSettlePresetCheck("Brown", { normal = {7, 7} })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = { result = { resultClass = "win", successes = 2, margin = 0 } },
 })
-```
-
-```lua
 rollCancel("Brown")
 ```
 
@@ -448,19 +444,12 @@ rollCancel("Brown")
 
 ```lua
 rollTest("Brown", 3, C.RollType.STANDARD, "E2E Classify G2", 2)
-```
-
-**Human:** **Left-click Normal bag 4 times** (`rollTest` set hunger **2**; Auto-Hunger adds **2** hunger dice, then **2** normal). **Roll** → settle.
-
-```lua
-rollSetFaces("Brown", { normal = {10, 10}, hunger = {9, 1} })
+rollE2eSetPoolAutoHunger("Brown", 4)
+rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {9, 1} })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = { result = { resultClass = "criticalWin", margin = 2 } },
 })
-```
-
-```lua
 rollCancel("Brown")
 ```
 
@@ -470,19 +459,12 @@ rollCancel("Brown")
 
 ```lua
 rollTest("Brown", 3, C.RollType.STANDARD, "E2E Classify G3", 2)
-```
-
-**Human:** **Left-click Normal bag 4 times** (hunger **2** via `rollTest`; pool **2N+2H**). **Roll** → settle.
-
-```lua
-rollSetFaces("Brown", { normal = {10, 10}, hunger = {10, 1} })
+rollE2eSetPoolAutoHunger("Brown", 4)
+rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {10, 1} })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = { result = { resultClass = "messyCritical" } },
 })
-```
-
-```lua
 rollCancel("Brown")
 ```
 
@@ -492,19 +474,12 @@ rollCancel("Brown")
 
 ```lua
 rollTest("Brown", 7, C.RollType.STANDARD, "E2E Classify G4", 2)
-```
-
-**Human:** **Left-click Normal bag 4 times** (hunger **2** via `rollTest`; pool **2N+2H**). **Roll** → settle.
-
-```lua
-rollSetFaces("Brown", { normal = {10, 10}, hunger = {10, 1} })
+rollE2eSetPoolAutoHunger("Brown", 4)
+rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {10, 1} })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = { result = { resultClass = "bestialFailure", margin = -2 } },
 })
-```
-
-```lua
 rollCancel("Brown")
 ```
 
@@ -514,19 +489,12 @@ rollCancel("Brown")
 
 ```lua
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G5", 1)
-```
-
-**Human:** **Left-click Normal bag 3 times** (`rollTest` hunger **1**; pool **2N+1H**). **Roll** → settle.
-
-```lua
-rollSetFaces("Brown", { normal = {4, 4}, hunger = {1} })
+rollE2eSetPoolAutoHunger("Brown", 3)
+rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, hunger = {1} })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = { result = { resultClass = "totalBestialFailure" } },
 })
-```
-
-```lua
 rollCancel("Brown")
 ```
 
@@ -537,12 +505,8 @@ rollCancel("Brown")
 ```lua
 rollTest("Brown", 4, C.RollType.STANDARD, "E2E Classify G6", 1)
 RC.setRollOptions("Brown", { crits = false })
-```
-
-**Human:** **Left-click Normal bag 5 times** (`rollTest` hunger **1**; pool **4N+1H**). **Roll** → settle.
-
-```lua
-rollSetFaces("Brown", { normal = {10, 8, 7, 6}, hunger = {10} })
+rollE2eSetPoolAutoHunger("Brown", 5)
+rollE2eSettlePresetCheck("Brown", { normal = {10, 8, 7, 6}, hunger = {10} })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = {
@@ -550,35 +514,25 @@ rollConfirm("Brown", {
     rollOptions = { crits = false },
   },
 })
-```
-
-```lua
 rollCancel("Brown")
 ```
 
 > ❌ Result = Messy Critical. **Expected Behavior:** Result = Win. ST Opts panel may not persist options (TOR-162); console `setRollOptions` should be used for this test.
 
-### G7 — Failure with bestial null
+### G7 — Bestial Failure with bestial null
 
 ```lua
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G7", 1)
 RC.setRollOptions("Brown", { bestialNull = true })
-```
-
-**Human:** **Left-click Normal bag 4 times** (`rollTest` hunger **1**; pool **3N+1H**). **Roll** → settle.
-
-```lua
-rollSetFaces("Brown", { normal = {10, 10, 3}, hunger = {1} })
+rollE2eSetPoolAutoHunger("Brown", 4)
+rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {1} })
 rollConfirm("Brown", {
   phase = "postRoll",
   active = {
-    result = { resultClass = "failure", successes = 2, margin = -1 },
+    result = { resultClass = "bestialFailure", successes = 2, margin = -1 },
     rollOptions = { bestialNull = true },
   },
 })
-```
-
-```lua
 rollCancel("Brown")
 ```
 
@@ -1241,7 +1195,7 @@ rollCancel("Brown")
 ### L2a — `autoHunger` off: normal bag spawns normal
 
 ```lua
-S.setStateVal("stRollSettings", "autoHunger", false)
+S.setStateVal(false, "stRollSettings", "autoHunger")
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E L2a autoHunger off")
 ```
 
@@ -1252,7 +1206,7 @@ rollTest("Brown", 2, C.RollType.STANDARD, "E2E L2a autoHunger off")
 ```lua
 rollConfirm("Brown", { pool = { normal = 1, hunger = 0 } })
 rollCancel("Brown")
-S.setStateVal("stRollSettings", "autoHunger", true)
+S.setStateVal(true, "stRollSettings", "autoHunger")
 ```
 
 ---
@@ -1260,7 +1214,7 @@ S.setStateVal("stRollSettings", "autoHunger", true)
 ### L2b — `autoWp` off: WP spend does not auto-damage
 
 ```lua
-S.setStateVal("stRollSettings", "autoWp", false)
+S.setStateVal(false, "stRollSettings", "autoWp")
 setWillpowerSuperficial("Brown", 3)
 rollConfirmTracker("Brown", { willpowerSuperficial = 3 })
 rollCancel("Brown")
@@ -1278,7 +1232,7 @@ RC.setRollOptions("Brown", {
 ```lua
 rollConfirmTracker("Brown", { willpowerSuperficial = 3 })
 rollCancel("Brown")
-S.setStateVal("stRollSettings", "autoWp", true)
+S.setStateVal(true, "stRollSettings", "autoWp")
 ```
 
 ---
@@ -1286,14 +1240,14 @@ S.setStateVal("stRollSettings", "autoWp", true)
 ### L2c — `autoApplyRouseOutcomes` off: confirm does not apply rouse hunger
 
 ```lua
-S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", false)
+S.setStateVal(false, "stRollSettings", "autoApplyRouseOutcomes")
 setHunger("Brown", 2)
 rollConfirmTracker("Brown", { hunger = 2 })
 rollTest("Brown", 1, C.RollType.ROUSE, "E2E L2c rouse no auto")
 rollE2eSettlePresetCheck("Brown", { rouse = { 3 } })
 rollConfirm("Brown", { noActive = true })
 rollConfirmTracker("Brown", { hunger = 2 })
-S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", true)
+S.setStateVal(true, "stRollSettings", "autoApplyRouseOutcomes")
 rollCancel("Brown")
 ```
 
@@ -1489,7 +1443,7 @@ Each case is a **dedicated** `ROUSE_OBLIVION` roll with **2** oblivion dice in p
 
 ```lua
 rollCancel("Purple")
-S.setStateVal("stRollSettings", "autoApplyRouseOutcomes", true)
+S.setStateVal(true, "stRollSettings", "autoApplyRouseOutcomes")
 setHunger("Purple", 1)
 setHumanityStains("Purple", 2)
 rollConfirmTracker("Purple", { hunger = 1, stains = 2 })

@@ -13,6 +13,7 @@ Based on the [TTS Tools documentation](https://sebaestschjin.github.io/tts-tools
 - **TTS may overwrite** `.tts/objects/Global.lua` when you reload the game or sync from TTS. Treat that file as **volatile**.
 - It should stay a **stub** only: `require("core.global_script")`.
 - **All global game logic** lives in **`core/global_script.ttslua`** (same `require()` roots as `lib/` and `core/`). Edit that file, not the stub, when adding `onLoad`, HUD handlers, etc.
+- **Local function order:** In that file, declare each **`local function`** **before** any `Global.*` / `HUD_*` / callback that calls it — otherwise Lua treats the name as a global and you get **attempt to call a nil value** at runtime. See [`docs/solutions/lua-local-function-order.md`](../docs/solutions/lua-local-function-order.md).
 
 See also [`README.md`](../README.md) at the repo root (Global script overview).
 

@@ -252,6 +252,16 @@ return ModuleName
 - Add inline comments for complex logic
 - Document module purpose at the top of each file
 
+### Lua local function order — ABSOLUTE REQUIREMENT
+
+**In any single `.ttslua` / Global chunk, declare `local function` helpers BEFORE every caller in that file.**
+
+- A `function GlobalSomething()` / `HUD_*` / `onObject*` body that calls `myHelper()` only sees **`local function myHelper`** if `myHelper` is defined **earlier in the same file** (or forward-declared: `local myHelper` then assigned later).
+- If the helper is defined **below** the Global handler, Lua resolves `myHelper` as a **global** → runtime **attempt to call a nil value** (recurring production bug; e.g. `GlobalCancelPendingRollCleanup` / `rollCancel`).
+- **`Global.call("GlobalX", …)`** from `roll_controller` or other modules does not bypass this — `GlobalX` still runs in the Global chunk.
+- Prefer: locals + helpers at the top of the section → `Global.*` entry points → late handlers. For large logic, use a `require()` module instead of a bottom-of-file local.
+- Full write-up: [`docs/solutions/lua-local-function-order.md`](docs/solutions/lua-local-function-order.md)
+
 ### Error Handling
 
 - Do **not** use `pcall` by default; let unexpected failures surface so bugs are visible

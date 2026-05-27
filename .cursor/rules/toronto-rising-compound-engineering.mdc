@@ -28,6 +28,7 @@ This project has **long-running** Tabletop Simulator systems (dice, roll pipelin
 | Feature or fix is “done” and non-trivial; before merge/PR | **Structured review** (`ce:review` skill): tiered review appropriate to risk/size. |
 | Shipping: commit message + PR body should match repo standards | **Git / PR** skills (`git-commit`, `git-commit-push-pr`, `ce-pr-description`): align with `.cursorrules` (Linear refs, clear narrative). |
 | After solving a non-obvious bug or pattern worth remembering | **Compound learnings** (`ce:compound` / `cecompound-refresh` when applicable): capture in `docs/solutions/` if that tree exists and the repo uses it. |
+| Editing `core/global_script.ttslua` or adding `Global.*` / `Global.call` helpers | Read [`docs/solutions/lua-local-function-order.md`](../../docs/solutions/lua-local-function-order.md) — **`local function` before callers** in the same file. |
 
 ## Proportionality
 

@@ -4,6 +4,7 @@
     only require()s this file. Edit here — not .tts/objects/Global.lua (that file may be overwritten on reload).
 
     Agent guidance (.dev/ documentation for this project):
+    docs/solutions/lua-local-function-order.md (declare local functions BEFORE callers in this file),
     DEVELOPMENT_WORKFLOW.md, TESTING.md, TTS_BUNDLING_SETUP.md, DEBUG_FILE_LOGGING.md, TTS_MCP.md,
     HUD_FUNCTIONS.md, HUDs & Overlays/Player HUD Overview.md,
     NPC Object Spawning & Spotlighting/NPC Object Overview.md,
@@ -509,7 +510,6 @@ local function maybeCancelRollIfPoolEmpty(color)
         return
     end
     RC.cancelRoll(color)
-    destroyBagDice(color)
 end
 
 --- Player dice bag right-click: opposite of left-click (usually remove one die).
@@ -745,44 +745,13 @@ function GlobalSpawnDieFromBag(color, dieKind, opts)
     end
 end
 
---- Spawns staged dice for dedicated check pools (Rouse / Obliv / Simple) after initiate.
--- Uses pool counts only (bags were just cleared or are empty); does not call getBagSpawnedCount
--- so this helper can live above bag helpers in this file.
+--- Spawns staged dice for the active PRE_ROLL pool (delegates to GlobalSpawnActivePoolDiceForActive).
 -- @param color string
 local function spawnDefaultPoolDiceForActive(color)
-    local pid = S.getPlayerID(color)
-    if pid == nil then
+    if type(color) ~= "string" then
         return
     end
-    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-    if active == nil or active.phase ~= C.RollPhase.PRE_ROLL then
-        return
-    end
-    local pool = DK.normalizePool(active.pool)
-    local RO = require("lib.roll_options")
-    if RO.isRouseFamilyRoll(active.rollType) then
-        local kind = DK.KIND_ROUSE
-        if active.rollType == C.RollType.ROUSE_OBLIVION then
-            kind = DK.KIND_OBLIV_ROUSE
-        end
-        local target = pool[kind] or 0
-        for _ = 1, target do
-            if color == "Black" then
-                GlobalSpawnDieFromStorytellerBag({ dieKind = kind })
-            else
-                GlobalSpawnDieFromBag(color, kind)
-            end
-        end
-    elseif active.rollType == C.RollType.SIMPLE_CHECK then
-        local target = pool.normal or 0
-        for _ = 1, target do
-            if color == "Black" then
-                GlobalSpawnDieFromStorytellerBag({ dieKind = DK.KIND_NORMAL })
-            else
-                GlobalSpawnDieFromBag(color, DK.KIND_NORMAL)
-            end
-        end
-    end
+    Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
 end
 
 --- Global.call entry: spawn default staged dice for active PRE_ROLL check pools.
@@ -2562,6 +2531,20 @@ RUI = require("core.roll_ui")
 local pendingRollCleanup = {}
 local pendingRollCleanupTimerIds = {}
 
+--- Stops a scheduled post-broadcast dice cleanup for a seat (if any).
+-- @param color string
+local function cancelPendingRollCleanup(color)
+    if type(color) ~= "string" then
+        return
+    end
+    local timerId = pendingRollCleanupTimerIds[color]
+    if timerId ~= nil then
+        U.stopDelay(timerId)
+    end
+    pendingRollCleanup[color] = nil
+    pendingRollCleanupTimerIds[color] = nil
+end
+
 -- Wire RC callback hooks so roll state changes automatically refresh UI.
 -- No pcall here: errors in the UI layer should surface as TTS chat errors
 -- rather than being silently swallowed, making bugs easier to diagnose.
@@ -2853,6 +2836,126 @@ local function autoSpawnBlackPool(pool)
     return didAutoSpawn
 end
 
+--- Bag GUID lookup for player pool auto-spawn by logical kind name.
+-- @param color string
+-- @param kindName string  "normal"|"hunger"|"rouse"|"oblivRouse"
+-- @return string|nil
+local function playerBagGuidForPoolKind(color, kindName)
+    if kindName == "normal" then
+        return G.GetDiceNormalGUID(color)
+    end
+    if kindName == "hunger" then
+        return G.GetDiceHungerGUID(color)
+    end
+    if kindName == "rouse" then
+        return G.GetDiceRouseGUID(color)
+    end
+    if kindName == "oblivRouse" then
+        return G.GetDiceOblivRouseGUID(color)
+    end
+    return nil
+end
+
+--- Auto-spawns missing pool dice on player bags (standard / extended pools).
+-- @param color string
+-- @return boolean true if any bag autoSpawn ran
+local function spawnMissingPoolDiceForColor(color)
+    if type(color) ~= "string" or color == "Black" then
+        return false
+    end
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        return false
+    end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil or active.pool == nil or active.phase ~= C.RollPhase.PRE_ROLL then
+        return false
+    end
+    local pool = DK.normalizePool(active.pool)
+    local didAutoSpawn = false
+    local spawnPlan = {
+        { "normal", pool.normal },
+        { "hunger", pool.hunger },
+        { "rouse", pool.rouse },
+        { "oblivRouse", pool.oblivRouse },
+    }
+    for _, entry in ipairs(spawnPlan) do
+        local kindName = entry[1]
+        local target = entry[2] or 0
+        local needed = target - getBagSpawnedCount(color, kindName)
+        if needed > 0 then
+            local guid = playerBagGuidForPoolKind(color, kindName)
+            if type(guid) == "string" then
+                local bag = getObjectFromGUID(guid)
+                if bag ~= nil then
+                    bag.call("autoSpawn", { count = needed })
+                    didAutoSpawn = true
+                end
+            end
+        end
+    end
+    return didAutoSpawn
+end
+
+--- Spawns staged dice to match active.pool in PRE_ROLL (all roll types).
+-- @param color string
+-- @return boolean true if any dice were auto-spawned
+local function spawnActivePoolDiceForActive(color)
+    if type(color) ~= "string" then
+        return false
+    end
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        return false
+    end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil or active.phase ~= C.RollPhase.PRE_ROLL then
+        return false
+    end
+    local pool = DK.normalizePool(active.pool)
+    local RO = require("lib.roll_options")
+    if RO.isRouseFamilyRoll(active.rollType) then
+        local kind = DK.KIND_ROUSE
+        if active.rollType == C.RollType.ROUSE_OBLIVION then
+            kind = DK.KIND_OBLIV_ROUSE
+        end
+        local target = pool[kind] or 0
+        for _ = 1, target do
+            if color == "Black" then
+                GlobalSpawnDieFromStorytellerBag({ dieKind = kind })
+            else
+                GlobalSpawnDieFromBag(color, kind)
+            end
+        end
+        return target > 0
+    end
+    if active.rollType == C.RollType.SIMPLE_CHECK then
+        local target = pool.normal or 0
+        for _ = 1, target do
+            if color == "Black" then
+                GlobalSpawnDieFromStorytellerBag({ dieKind = DK.KIND_NORMAL })
+            else
+                GlobalSpawnDieFromBag(color, DK.KIND_NORMAL)
+            end
+        end
+        return target > 0
+    end
+    if color == "Black" then
+        return autoSpawnBlackPool(pool)
+    end
+    return spawnMissingPoolDiceForColor(color)
+end
+
+--- Global.call entry: spawn active PRE_ROLL pool dice (player + ST bags).
+-- @param params table  { color: string }
+-- @return boolean|nil  true if any auto-spawn ran
+function GlobalSpawnActivePoolDiceForActive(params)
+    if type(params) ~= "table" or type(params.color) ~= "string" then
+        return false
+    end
+    return spawnActivePoolDiceForActive(params.color)
+end
+
 --- Unlocks all hovering dice for a player so they fall and roll.
 -- Called after the player clicks "ROLL" (PRE_ROLL → ROLLING).
 -- Opens the drawer if dice were already spawned earlier (no new leave-container event on this click).
@@ -2945,6 +3048,13 @@ function GlobalReleaseRouseDiceForActiveRoll(params)
     DiceDrawer.openForRoll(color)
 end
 
+--- Global.call entry: stop a pending post-result dice cleanup timer for a seat.
+-- @param params table  { color: string }
+function GlobalCancelPendingRollCleanup(params)
+    if type(params) ~= "table" or type(params.color) ~= "string" then return end
+    cancelPendingRollCleanup(params.color)
+end
+
 --- Global.call entry: destroy all bag dice and close the drawer (Take Half without Rouse, cancel, etc.).
 -- @param params table  { color: string }
 function GlobalDestroyBagDice(params)
@@ -2952,12 +3062,36 @@ function GlobalDestroyBagDice(params)
     destroyBagDice(params.color)
 end
 
+--- Global.call entry: destroy table dice tagged with a roll id (player seats).
+-- @param params table  { color: string, rollId: string }
+function GlobalDestroyPlayerTableDiceForRoll(params)
+    if type(params) ~= "table" then return end
+    local color = params.color
+    local rollId = params.rollId
+    if type(color) ~= "string" or type(rollId) ~= "string" or color == "Black" then
+        return
+    end
+    local ownerTag = color .. "Object"
+    for _, kind in ipairs(DK.ALL_KINDS) do
+        local dieTag = DK.kindToTag(kind)
+        if dieTag ~= nil then
+            local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
+            for _, obj in ipairs(candidates) do
+                if DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
+                    destroyObject(obj)
+                end
+            end
+        end
+    end
+end
+
 --- Destroys all hovering dice for a player.
 -- Called on: cancel, Take Half (no pending Rouse), and post-resolution cleanup.
 function destroyBagDice(color)
+    cancelPendingRollCleanup(color)
     if color == "Black" then
         local STR = require("core.storyteller_rolls")
-        STR.cleanupLiveRoll()
+        STR.destroyStagedBagDice()
         return
     end
     DiceDrawer.closeAfterRoll(color)
@@ -3000,71 +3134,7 @@ function HUD_rollRollButton(player, value, id)
 
     GlobalRollSeatCamera({ color = color, mode = "diceTray" })
 
-    -- Auto-spawn any missing dice before transitioning to ROLLING.
-    -- This handles roll types with a pre-computed pool (Rouse: 1 hunger die,
-    -- Remorse: N normal dice) where the player hasn't manually spawned dice yet.
-    local pid = S.getPlayerID(color)
-    local didAutoSpawn = false
-    if pid ~= nil then
-        local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-        if active ~= nil and active.pool ~= nil then
-            local pool = DK.normalizePool(active.pool)
-            if color == "Black" then
-                if autoSpawnBlackPool(pool) then
-                    didAutoSpawn = true
-                end
-            else
-            local normalNeeded = pool.normal - getBagSpawnedCount(color, "normal")
-            local hungerNeeded = pool.hunger - getBagSpawnedCount(color, "hunger")
-            local rouseNeeded = pool.rouse - getBagSpawnedCount(color, "rouse")
-            local oblivNeeded = pool.oblivRouse - getBagSpawnedCount(color, "oblivRouse")
-
-            if normalNeeded > 0 then
-                local guid = G.GetDiceNormalGUID(color)
-                if type(guid) == "string" then
-                    local bag = getObjectFromGUID(guid)
-                    if bag ~= nil then
-                        bag.call("autoSpawn", { count = normalNeeded })
-                        didAutoSpawn = true
-                    end
-                end
-            end
-
-            if hungerNeeded > 0 then
-                local guid = G.GetDiceHungerGUID(color)
-                if type(guid) == "string" then
-                    local bag = getObjectFromGUID(guid)
-                    if bag ~= nil then
-                        bag.call("autoSpawn", { count = hungerNeeded })
-                        didAutoSpawn = true
-                    end
-                end
-            end
-
-            if rouseNeeded > 0 then
-                local guid = G.GetDiceRouseGUID(color)
-                if type(guid) == "string" then
-                    local bag = getObjectFromGUID(guid)
-                    if bag ~= nil then
-                        bag.call("autoSpawn", { count = rouseNeeded })
-                        didAutoSpawn = true
-                    end
-                end
-            end
-
-            if oblivNeeded > 0 then
-                local guid = G.GetDiceOblivRouseGUID(color)
-                if type(guid) == "string" then
-                    local bag = getObjectFromGUID(guid)
-                    if bag ~= nil then
-                        bag.call("autoSpawn", { count = oblivNeeded })
-                        didAutoSpawn = true
-                    end
-                end
-            end
-            end
-        end
-    end
+    local didAutoSpawn = spawnActivePoolDiceForActive(color)
 
     if RC.startRolling(color) then
         if color == "Black" then
@@ -3176,7 +3246,6 @@ function HUD_rollCancel(player, value, id)
     end
 
     RC.cancelRoll(color)
-    destroyBagDice(color)
 end
 
 --- Player (or ST) clicks "RECALCULATE" — re-reads all physical dice on the table

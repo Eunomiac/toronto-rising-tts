@@ -27,7 +27,8 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 7. `docs/solutions/lua-pcall-policy.md` — **no `pcall`** in production paths unless annotated necessity + impact.
 8. `docs/solutions/lua-wait-api-policy.md` — **no raw `Wait.time` / `Wait.condition` / `Wait.stop`** outside `lib/util.ttslua`; use `U.delay`, `U.waitForCondition`, `U.RunSequence`, etc.
 9. `docs/solutions/lua-ui-full-xml-policy.md` — avoid **`UI.setXml` / `setXmlTable`**; prefer `setAttribute`, `setAttributes`, `setValue`, `show`/`hide`. Gate counts are baseline — do not add call sites without review.
-10. `.dev/AVAILABLE_FUNCTIONS.md` + `lib/util.ttslua` — **reuse existing helpers** (`U.map`, `U.filter`, `U.Type`, …) before writing new ones.
+10. `docs/solutions/lua-local-function-order.md` — **`local function` before callers** in the same file; `Global.*` / `Global.call` entry points must not reference locals defined later in `global_script.ttslua` (nil at runtime).
+11. `.dev/AVAILABLE_FUNCTIONS.md` + `lib/util.ttslua` — **reuse existing helpers** (`U.map`, `U.filter`, `U.Type`, …) before writing new ones.
 
 **When relevant**
 
@@ -48,6 +49,7 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 | **GUIDs** | `lib/guids.ttslua` (`G` table) — not legacy `C.GUIDS.*`. |
 | **Global script** | Real logic: `core/global_script.ttslua`; `global/global_script.ttslua` is a require shim only. |
 | **Require order** | `lib/constants` → `lib/guids` → `lib/util` → `core/state` → other modules. |
+| **Lua local order** | `local function` helpers declared **above** every caller in the same chunk; see `lua-local-function-order.md`. |
 | **Player identity** | Per-player state keyed by **steam_id**; Storyteller = `Black`; PC colors per `C.PlayerColors`. |
 | **Minimal diff** | Remove dead code and obsolete shims; update `.dev/` docs in the same change when behavior or public APIs move. |
 | **Linear sync** | Part of **done**: In Progress when starting, Done + comment + tasklist `[x]` when finishing; never leave Focus/tasklist/Linear diverged. |

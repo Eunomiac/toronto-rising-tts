@@ -33,7 +33,7 @@ The gate fails when any metric **increases** above the last logged baseline. Aft
 
 Counts include **comments and strings** that contain `setXml(` or `setXmlTable(` — same rule as `Wait.time` / `pcall`. In comments, prefer `` `setAttribute` `` or “full XML refresh” without those substrings unless documenting a real call site.
 
-Related: [`lua-wait-api-policy.md`](lua-wait-api-policy.md), [`lua-pcall-policy.md`](lua-pcall-policy.md).
+Related: [`lua-wait-api-policy.md`](lua-wait-api-policy.md), [`lua-pcall-policy.md`](lua-pcall-policy.md), [`lua-local-function-order.md`](lua-local-function-order.md).
 
 ## When full refresh is acceptable
 

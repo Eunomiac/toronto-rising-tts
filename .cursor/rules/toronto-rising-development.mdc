@@ -17,6 +17,7 @@ This project is iterated **quickly**; requirements and layout change often.
 - **Linear tracking:** Keep Linear, [RUNNING TASKLIST](../../.dev/RUNNING%20TASKLIST.md), and code aligned on every task — see `.cursor/rules/toronto-rising-linear.mdc`. Linear sync is part of done, not a follow-up. Quick capture before scheduling: [INBOX.md](../../.dev/INBOX.md).
 - When adding/changing conditions, read [Conditions System Guide](../../.dev/PC%20Data%20&%20Tracking/Conditions%20System%20Guide.md) (Agent quick guide) before editing the registry or consumers.
 - For synchronization flow and naming conventions, follow `.cursor/rules/toronto-rising-synchronization.mdc`.
+- **Lua local function order:** In each file/chunk, define `local function` helpers **before** any caller (`Global.*`, `HUD_*`, `onObject*`, other locals). Late locals are invisible to earlier global functions → nil call at runtime. See [`docs/solutions/lua-local-function-order.md`](../../docs/solutions/lua-local-function-order.md) (especially `core/global_script.ttslua`).
 - Give proactive pushback when a requested path is unsound or overly complex; explain the risk and propose a simpler architecture-aligned alternative immediately.
 - Favor single-authority ownership per subsystem and call out dual-writer/dual-source-of-truth designs before implementing them.
 

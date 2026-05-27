@@ -16,7 +16,7 @@ Run `npm run check:pcall-gate` (see `.tools/pcall-gate/check-pcall-gate.mjs`). I
 
 That includes **comments and strings** that contain those substrings — avoid prose like `` `pcall(require)` `` or `` `Wait.time(...)` `` in comments outside util or counts will be inflated. Log format: `ISO8601\tpcall=N\twaitTime=N\twaitCondition=N\tsetXml=N\tsetXmlTable=N` in `.dev/build-logs/pcall-gate.txt`. The script **exits with an error** if any metric is **greater** than the last logged baseline. To approve increases, edit the **last** data line (or append) with counts ≥ the new totals, then re-run.
 
-Wait API policy detail: [`lua-wait-api-policy.md`](lua-wait-api-policy.md). Full-UI XML policy: [`lua-ui-full-xml-policy.md`](lua-ui-full-xml-policy.md).
+Wait API policy detail: [`lua-wait-api-policy.md`](lua-wait-api-policy.md). Full-UI XML policy: [`lua-ui-full-xml-policy.md`](lua-ui-full-xml-policy.md). Local function order: [`lua-local-function-order.md`](lua-local-function-order.md).
 
 `npm run build` / `npm run build:all-tooling` (default **Ctrl+Shift+B** pipeline) runs **`check:pcall-gate` first** so a failed gate stops before Lua generators. MCP compile (`npm run tts-mcp:build`) is a separate task. For other workflows, chain `npm run check:pcall-gate` manually before build steps, or run it in CI.
 

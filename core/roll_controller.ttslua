@@ -1558,6 +1558,7 @@ function RC.overrideResult(color, resultClass)
 end
 
 --- Cancels the active roll and clears the queue. Safe to call at any phase.
+-- Also destroys staged/released bag dice (and table dice tagged with this roll id).
 -- @param color string
 -- @return boolean  true if a roll was cancelled; false if nothing was active
 -- @usage RC.cancelRoll("Red")
@@ -1567,18 +1568,34 @@ function RC.cancelRoll(color)
     cancelDebounce(color)
     cancelWpDieLockWaitsForColor(color)
 
-    if getActive(color) == nil then return false end
+    local active = getActive(color)
+    local rollId = type(active) == "table" and type(active.id) == "string" and active.id or nil
+    local hadActive = active ~= nil
 
-    setActive(color, nil)
-
-    local pid = S.getPlayerID(color)
-    if pid ~= nil then
-        S.setStateVal({}, "playerData", pid, "hud", "rollData", "queue")
+    if hadActive then
+        setActive(color, nil)
+        local pid = S.getPlayerID(color)
+        if pid ~= nil then
+            S.setStateVal({}, "playerData", pid, "hud", "rollData", "queue")
+        end
     end
 
-    notifyStateChanged(color)
-    rollCamera(color, "default")
-    return true
+    Global.call("GlobalCancelPendingRollCleanup", { color = color })
+    if type(rollId) == "string" then
+        if color == "Black" then
+            local STR = require("core.storyteller_rolls")
+            STR.destroyTableDiceForRollId(rollId)
+        else
+            Global.call("GlobalDestroyPlayerTableDiceForRoll", { color = color, rollId = rollId })
+        end
+    end
+    Global.call("GlobalDestroyBagDice", { color = color })
+
+    if hadActive then
+        notifyStateChanged(color)
+        rollCamera(color, "default")
+    end
+    return hadActive
 end
 
 --- Adds a RollConfig to the player's queue for automatic sequential execution.

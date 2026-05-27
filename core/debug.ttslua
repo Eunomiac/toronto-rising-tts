@@ -724,6 +724,27 @@ end
 --- Host seat color after E2E roll tests (Storyteller).
 local E2E_RETURN_SEAT = "Black"
 
+--- Seated Host player (any seat). Do not use Player.Black when Host is on Brown, etc.
+-- @return table|nil TTS Player
+local function rollE2eGetHostPlayer()
+    if Player == nil then
+        return nil
+    end
+    local seated = Player.getPlayers()
+    if type(seated) == "table" then
+        for _, p in ipairs(seated) do
+            if p ~= nil and p.host == true then
+                return p
+            end
+        end
+    end
+    local black = Player[E2E_RETURN_SEAT]
+    if black ~= nil and black.seated == true then
+        return black
+    end
+    return nil
+end
+
 --- Move Host to seat, hide loading overlay, apply Debug Camera spoof for that seat.
 -- @param targetColor string
 -- @return boolean ok
@@ -732,16 +753,20 @@ local function rollE2eSeatPrepInternal(targetColor)
         return false
     end
 
-    local hostPlayer = Player and Player[E2E_RETURN_SEAT] or nil
+    local hostPlayer = rollE2eGetHostPlayer()
     if hostPlayer == nil then
-        U.AlertGM("rollE2eSeatPrep: Host player not seated at " .. E2E_RETURN_SEAT)
+        U.AlertGM("rollE2eSeatPrep: no seated Host found (join as Host first)")
         return false
     end
 
-    if type(hostPlayer.changeColor) == "function" then
+    local currentColor = hostPlayer.color
+    if currentColor ~= targetColor and type(hostPlayer.changeColor) == "function" then
         local changed = hostPlayer.changeColor(targetColor)
-        if changed ~= true then
-            U.AlertGM("rollE2eSeatPrep: changeColor failed for " .. targetColor)
+        -- TTS returns false when already on targetColor; re-read seat after change.
+        currentColor = hostPlayer.color
+        if changed ~= true and currentColor ~= targetColor then
+            U.AlertGM("rollE2eSeatPrep: changeColor failed for " .. targetColor
+                .. " (Host on " .. tostring(currentColor) .. ")")
             return false
         end
     end
@@ -759,10 +784,14 @@ end
 
 --- Return Host to Black after testing another seat.
 local function rollE2eReturnHostSeat()
-    local hostPlayer = Player and Player[E2E_RETURN_SEAT] or nil
-    if hostPlayer ~= nil and type(hostPlayer.changeColor) == "function" then
-        hostPlayer.changeColor(E2E_RETURN_SEAT)
+    local hostPlayer = rollE2eGetHostPlayer()
+    if hostPlayer == nil or type(hostPlayer.changeColor) ~= "function" then
+        return
     end
+    if hostPlayer.color == E2E_RETURN_SEAT then
+        return
+    end
+    hostPlayer.changeColor(E2E_RETURN_SEAT)
 end
 
 --- Manual seat prep only; rollTest / rollStTest run prep automatically.
@@ -927,8 +956,25 @@ local function rollExpectCompare(actual, expected, path, failures)
         return
     end
 
+    -- Mixed matcher + fields, e.g. { present = true, resultClass = { present = true } }:
+    -- `present` means the actual table exists; other keys compare into actual (not actual.present).
+    if expected.present == true and actual == nil then
+        failures[#failures + 1] = path .. ": expected value to be present, got nil"
+        return
+    end
+
     for key, subExpected in pairs(expected) do
-        rollExpectCompare(actual[key], subExpected, path .. "." .. tostring(key), failures)
+        if key == "present" then
+            if subExpected == true then
+                if actual == nil then
+                    failures[#failures + 1] = path .. ": expected value to be present, got nil"
+                end
+            else
+                rollExpectCompare(actual, subExpected, path, failures)
+            end
+        else
+            rollExpectCompare(actual[key], subExpected, path .. "." .. tostring(key), failures)
+        end
     end
 end
 
@@ -1297,7 +1343,10 @@ function DEBUG.rollStConfirm(expected)
     return false
 end
 
---- E2E: preset faces on check dice, start rolling, settle without randomizing (dedicated Rouse/Obliv).
+--- E2E: spawn pool dice, startRolling, preset faces, settle (no randomize).
+-- Replaces panel **Roll** + manual face tweak. Run after `rollTest` + pool spawn
+-- (`rollE2eSetPoolAndSpawn` / `rollE2eSetPoolAutoHunger` / Suite F `RC.setPool` + `GlobalSpawnDefaultPoolDiceForActive`).
+-- Do not click panel Roll before this helper.
 -- @param color string
 -- @param facesByKind table
 -- @return boolean pass
@@ -1311,14 +1360,43 @@ function DEBUG.rollE2eSettlePresetCheck(color, facesByKind)
         print("[rollE2eSettlePresetCheck] FAIL: usage rollE2eSettlePresetCheck(color, { rouse = { 4 } })")
         return false
     end
-    DEBUG.rollSetFaces(color, facesByKind)
-    local started = RC.startRolling(color)
-    if started ~= true then
-        print("[rollE2eSettlePresetCheck] FAIL: RC.startRolling failed")
+
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        print("[rollE2eSettlePresetCheck] FAIL: no playerID for " .. color)
         return false
     end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil then
+        print("[rollE2eSettlePresetCheck] FAIL: no active roll for " .. color
+            .. " (run rollTest first; do not click panel Roll before this helper)")
+        return false
+    end
+
+    if active.phase == C.RollPhase.PRE_ROLL then
+        if Global ~= nil and type(Global.call) == "function" then
+            Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+        end
+        if RC.startRolling(color) ~= true then
+            print("[rollE2eSettlePresetCheck] FAIL: RC.startRolling failed (phase="
+                .. tostring(active.phase) .. ")")
+            return false
+        end
+    elseif active.phase ~= C.RollPhase.ROLLING and active.phase ~= C.RollPhase.POST_ROLL then
+        print("[rollE2eSettlePresetCheck] FAIL: phase " .. tostring(active.phase)
+            .. " (expected preRoll, rolling, or postRoll)")
+        return false
+    end
+
+    local facesSet = DEBUG.rollSetFaces(color, facesByKind)
+    if type(facesSet) ~= "number" or facesSet < 1 then
+        print("[rollE2eSettlePresetCheck] FAIL: no check dice on table to preset (facesSet="
+            .. tostring(facesSet) .. ")")
+        return false
+    end
+
     RC.onDiceSettled(color)
-    print("[rollE2eSettlePresetCheck] settled with preset faces for " .. color)
+    print("[rollE2eSettlePresetCheck] PASS — preset faces applied and settle triggered for " .. color)
     return true
 end
 
@@ -1344,28 +1422,136 @@ function DEBUG.rollState(color)
     end
 end
 
---- Sets physical die faces for the active roll (POST_ROLL or ROLLING), then recalculates.
+--- Normalizes a custom-die rotation label (TTS may use string or number).
+-- @param v string|number|nil
+-- @return number|nil
+local function e2eFaceValueNumber(v)
+    if type(v) == "number" then
+        return math.floor(v)
+    end
+    if type(v) == "string" then
+        return tonumber(v)
+    end
+    return nil
+end
+
+--- True when a rotation-value entry matches the target face (1–10).
+-- @param entryValue string|number
+-- @param target number
+-- @return boolean
+local function e2eRotationEntryMatches(entryValue, target)
+    local n = e2eFaceValueNumber(entryValue)
+    return n ~= nil and n == target
+end
+
+--- Reads a custom die face as integer 1–10 (E2E preset verify only).
+-- @param obj Object
+-- @return number|nil
+local function e2eReadDieFaceValue(obj)
+    if obj == nil then
+        return nil
+    end
+    local raw = nil
+    if obj.getRotationValue ~= nil then
+        raw = obj.getRotationValue()
+    end
+    if raw == nil and obj.getValue ~= nil then
+        raw = obj.getValue()
+    end
+    return e2eFaceValueNumber(raw)
+end
+
+--- Applies one custom-die face via instant setRotation (not setRotationValue).
+-- setValue/setRotationValue animate (lift/spin/drop); immediate getValue still reads the old face.
+-- Bag-spawned dice are locked until panel Roll — unlock briefly for the snap.
+-- @param obj Object
+-- @param faceVal number 1–10
+-- @return boolean true when read-back matches target
+local function e2eSetDieFaceValue(obj, faceVal)
+    if obj == nil or type(faceVal) ~= "number" then
+        return false
+    end
+    local target = math.floor(faceVal)
+    if target < 1 or target > 10 then
+        return false
+    end
+
+    local snapRot = nil
+    if obj.getRotationValues ~= nil then
+        local rotValues = obj.getRotationValues()
+        if type(rotValues) == "table" then
+            for _, entry in ipairs(rotValues) do
+                if type(entry) == "table" and e2eRotationEntryMatches(entry.value, target) then
+                    snapRot = entry.rotation
+                    break
+                end
+            end
+        end
+    end
+    if snapRot == nil or type(snapRot.x) ~= "number" then
+        print(string.format(
+            "[DEBUG.rollSetFaces] WARN: no RotationValues entry for face %d (guid=%s)",
+            target, tostring(obj.getGUID())))
+        return false
+    end
+
+    local wasLocked = obj.getLock()
+    if wasLocked then
+        obj.setLock(false)
+    end
+    if obj.setRotation ~= nil then
+        obj.setRotation({ x = snapRot.x, y = snapRot.y, z = snapRot.z })
+    elseif obj.setRotationSmooth ~= nil then
+        obj.setRotationSmooth({ x = snapRot.x, y = snapRot.y, z = snapRot.z }, false, true)
+    else
+        if wasLocked then
+            obj.setLock(true)
+        end
+        return false
+    end
+
+    local actual = e2eReadDieFaceValue(obj)
+    if wasLocked then
+        obj.setLock(true)
+    end
+    if actual ~= target then
+        print(string.format(
+            "[DEBUG.rollSetFaces] WARN: snap face %d read back as %s (guid=%s)",
+            target, tostring(actual), tostring(obj.getGUID())))
+        return false
+    end
+    return true
+end
+
+--- Sets physical die faces for the active roll (ROLLING or POST_ROLL), then recalculates.
 -- @param color string
 -- @param facesByKind table e.g. { normal = {7, 7}, hunger = {10, 1}, rouse = {4} }
+-- @return number facesSet
 -- @usage lua rollSetFaces("Brown", { normal = {4, 4}, hunger = {10, 1} })
 function DEBUG.rollSetFaces(color, facesByKind)
     if RC == nil then
         print("[DEBUG.rollSetFaces] RC not loaded")
-        return
+        return 0
     end
     if type(color) ~= "string" or type(facesByKind) ~= "table" then
-        print("Usage: rollSetFaces(color, { normal = {7,7}, hunger = {10,1}, ... })")
-        return
+        print("Usage: rollSetFaces(color, { normal={7,7}, hunger={10,1}, ... })")
+        return 0
     end
     local pid = S.getPlayerID(color)
     if pid == nil then
         print("[DEBUG.rollSetFaces] no playerID for " .. color)
-        return
+        return 0
     end
     local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
     if active == nil or type(active.id) ~= "string" then
         print("[DEBUG.rollSetFaces] no active roll for " .. color)
-        return
+        return 0
+    end
+    if active.phase ~= C.RollPhase.ROLLING and active.phase ~= C.RollPhase.POST_ROLL then
+        print(string.format(
+            "[DEBUG.rollSetFaces] %s: roll phase is %s (need rolling or postRoll)",
+            color, tostring(active.phase)))
+        return 0
     end
     local _, objectsByKind = RC._getDicePoolsForRoll(color, active.id)
     local setCount = 0
@@ -1375,14 +1561,16 @@ function DEBUG.rollSetFaces(color, facesByKind)
             for i, faceVal in ipairs(values) do
                 local obj = objs[i]
                 if obj ~= nil and type(faceVal) == "number" then
-                    obj.setValue(faceVal)
-                    setCount = setCount + 1
+                    if e2eSetDieFaceValue(obj, faceVal) then
+                        setCount = setCount + 1
+                    end
                 end
             end
         end
     end
     RC.recalculate(color)
     print(string.format("[DEBUG.rollSetFaces] %s: set %d face(s); recalculated.", color, setCount))
+    return setCount
 end
 
 --- Apply temporary manual conditions for E2E (e.g. Suite F). Cleared with rollE2eClearConditions.
@@ -1433,6 +1621,68 @@ function DEBUG.rollE2eClearConditions(color, conditionIds)
     print("[DEBUG.rollE2eClearConditions] cleared on " .. color)
 end
 
+--- Sets active.pool and spawns staged dice (PRE_ROLL). Use before rollE2eSettlePresetCheck.
+-- @param color string
+-- @param normal number
+-- @param hunger number
+-- @return boolean
+-- @usage lua rollE2eSetPoolAndSpawn("Brown", 2, 0)
+function DEBUG.rollE2eSetPoolAndSpawn(color, normal, hunger)
+    if RC == nil then
+        print("[rollE2eSetPoolAndSpawn] FAIL: RC not loaded")
+        return false
+    end
+    if type(color) ~= "string" or type(normal) ~= "number" or type(hunger) ~= "number" then
+        print("[rollE2eSetPoolAndSpawn] FAIL: usage rollE2eSetPoolAndSpawn(color, normal, hunger)")
+        return false
+    end
+    if RC.setPool(color, normal, hunger) ~= true then
+        print("[rollE2eSetPoolAndSpawn] FAIL: RC.setPool failed for " .. color)
+        return false
+    end
+    if Global == nil or type(Global.call) ~= "function" then
+        print("[rollE2eSetPoolAndSpawn] FAIL: Global.call unavailable")
+        return false
+    end
+    Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+    print(string.format(
+        "[rollE2eSetPoolAndSpawn] %s: pool normal=%d hunger=%d spawned",
+        color, normal, hunger))
+    return true
+end
+
+--- Builds pool from Auto-Hunger bag-click rules, then spawns (Suite G classify tests).
+-- Each virtual Normal-bag click adds Hunger while pool.hunger < seat hunger, else Normal.
+-- @param color string
+-- @param normalBagClicks number  Total left-clicks on Normal bag (not Hunger bag)
+-- @return boolean
+-- @usage lua rollE2eSetPoolAutoHunger("Brown", 4)
+function DEBUG.rollE2eSetPoolAutoHunger(color, normalBagClicks)
+    if type(color) ~= "string" or type(normalBagClicks) ~= "number" then
+        print("[rollE2eSetPoolAutoHunger] FAIL: usage rollE2eSetPoolAutoHunger(color, normalBagClicks)")
+        return false
+    end
+    local clicks = math.max(0, math.floor(normalBagClicks))
+    local pid = S.getPlayerID(color)
+    local hungerLevel = 0
+    if pid ~= nil then
+        local stats = S.getStateVal("playerData", pid, "stats")
+        if type(stats) == "table" then
+            hungerLevel = tonumber(stats.hunger) or 0
+        end
+    end
+    local hunger = 0
+    local normal = 0
+    for _ = 1, clicks do
+        if hunger < hungerLevel then
+            hunger = hunger + 1
+        else
+            normal = normal + 1
+        end
+    end
+    return DEBUG.rollE2eSetPoolAndSpawn(color, normal, hunger)
+end
+
 --- Clears all Storyteller roll drawer slots (live + resolved rows).
 local function clearAllStorytellerRollSlots()
     local STR = require("core.storyteller_rolls")
@@ -1442,6 +1692,7 @@ local function clearAllStorytellerRollSlots()
 end
 
 --- Cancels the active roll for a single player. Useful for mid-test cleanup.
+-- Destroys staged/released bag dice and table dice for the roll (via RC.cancelRoll).
 -- On Black, also clears all ST dashboard slots and drawer dice.
 -- @param color string  Player seat color
 -- @usage lua rollCancel("Brown")
@@ -2686,11 +2937,12 @@ function DEBUG.help()
     print("  rollE2eSeatPrep(color)     - Manual prep only; rollTest/rollStTest include this")
     print("  rollSetFaces(color, { normal={7,7}, hunger={10,1} }) - Set faces + recalculate (POST_ROLL)")
     print("  rollE2eApplyConditions(color, { 'e2eBestialNull' }) / rollE2eClearConditions(color, ids?)")
+    print("  rollE2eSetPoolAndSpawn(color, normal, hunger) / rollE2eSetPoolAutoHunger(color, normalBagClicks)")
     print("  rollState(color)         - Print active roll record for a player")
     print("  rollConfirm(color, expected) - Assert roll state; prints PASS/FAIL (E2E)")
     print("  rollConfirmTracker(color, { hunger?, stains?, willpowerSuperficial? })")
     print("  rollStConfirm({ liveSlotIndex?, initiateBlocked? }) - ST slots E2E")
-    print("  rollE2eSettlePresetCheck(color, faces) - Dedicated check: preset face + settle")
+    print("  rollE2eSettlePresetCheck(color, faces) - Spawn pool + startRolling + preset faces + settle")
     print("  setHumanityStains(color, n) / setWillpowerSuperficial(color, n)")
     print("  rollForceConfirm(color)  - Force-confirm POST_ROLL (UI CONFIRM)")
     print("  rollCancel(color)        - Cancel roll; Black also clears ST slots/drawers")
@@ -2781,6 +3033,8 @@ rollForceConfirm  = DEBUG.rollForceConfirm
 rollStTest    = DEBUG.rollStTest
 rollStConfirm = DEBUG.rollStConfirm
 rollStSlots   = DEBUG.rollStSlots
+rollE2eSetPoolAndSpawn   = DEBUG.rollE2eSetPoolAndSpawn
+rollE2eSetPoolAutoHunger = DEBUG.rollE2eSetPoolAutoHunger
 rollE2eSettlePresetCheck = DEBUG.rollE2eSettlePresetCheck
 tableRotateTo = DEBUG.tableRotateTo
 spawnCustomUiUploadBatchFromManifest = DEBUG.spawnCustomUiUploadBatchFromManifest
