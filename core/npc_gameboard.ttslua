@@ -1,0 +1,570 @@
+--[[
+    Storyteller NPC gameboard: CONTROL_BOARD editor, STAGE_BOARD placement math, Apply/Clear.
+
+    Authority: gameState.sessionScene.npcWorld.placements — never figurines directly on Apply.
+    Reconcile: NPCS.reconcileAllFromState then mirror via reconcileControlBoardFromState.
+]]
+
+local Gameboard = {}
+
+local U = require("lib.util")
+local C = require("lib.constants")
+local G = require("lib.guids")
+local S = require("core.state")
+local DATA = require("lib.npc_gameboard_data")
+
+local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
+local TAG_PC = DATA.TAG_GAMEBOARD_PC_SEAT
+local TAG_NPC_SEAT = DATA.TAG_GAMEBOARD_NPC_SEAT
+local TAG_TABLE = DATA.TAG_GAMEBOARD_TABLE
+local TAG_COMPONENT = DATA.TAG_GAMEBOARD_TABLE_COMPONENT
+
+local clearArmExpireByColor = {}
+
+--- @param n number
+--- @param lo number
+--- @param hi number
+--- @return number
+local function clamp(n, lo, hi)
+    if n < lo then
+        return lo
+    end
+    if n > hi then
+        return hi
+    end
+    return n
+end
+
+--- @param obj Object|nil
+--- @return boolean
+local function isGameObject(obj)
+    return U.isGameObject(obj)
+end
+
+--- @param guid string|nil
+--- @return Object|nil
+local function objectFromGuid(guid)
+    if type(guid) ~= "string" or guid == "" then
+        return nil
+    end
+    return getObjectFromGUID(guid)
+end
+
+--- @return Object|nil
+local function getStageBoard()
+    return objectFromGuid(G.GUIDS.STAGE_BOARD)
+end
+
+--- @return Object|nil
+local function getControlBoard()
+    return objectFromGuid(G.GUIDS.CONTROL_BOARD)
+end
+
+--- @return table
+local function defaultStageWorld()
+    local d = DATA.DEFAULT_STAGE_WORLD
+    return {
+        centerX = d.centerX,
+        centerZ = d.centerZ,
+        halfWidthX = d.halfWidthX,
+        halfDepthZ = d.halfDepthZ,
+        groundY = d.groundY,
+    }
+end
+
+--- Derive world XZ extents from STAGE_BOARD bounds when present.
+--- @return table
+local function resolveStageWorldExtents()
+    local board = getStageBoard()
+    if not isGameObject(board) or board.getBounds == nil then
+        return defaultStageWorld()
+    end
+    local b = board.getBounds()
+    if b == nil or b.center == nil or b.size == nil then
+        return defaultStageWorld()
+    end
+    local cx = b.center.x or b.center[1] or 0
+    local cz = b.center.z or b.center[3] or 0
+    local sx = b.size.x or b.size[1] or 1
+    local sz = b.size.z or b.size[3] or 1
+    local cy = b.center.y or b.center[2] or DATA.DEFAULT_STAGE_WORLD.groundY
+    return {
+        centerX = cx,
+        centerZ = cz,
+        halfWidthX = math.max(sx * 0.5, 50),
+        halfDepthZ = math.max(sz * 0.5, 50),
+        groundY = cy,
+    }
+end
+
+--- @param u number
+--- @param v number
+--- @return Vector
+function Gameboard.worldFromUv(u, v)
+    local ext = resolveStageWorldExtents()
+    local x = ext.centerX + (u - 0.5) * 2 * ext.halfWidthX
+    local z = ext.centerZ + (v - 0.5) * 2 * ext.halfDepthZ
+    return Vector(x, ext.groundY, z)
+end
+
+--- @param worldPos Vector|table
+--- @return number|nil u, number|nil v
+function Gameboard.uvFromWorld(worldPos)
+    if worldPos == nil then
+        return nil, nil
+    end
+    local ext = resolveStageWorldExtents()
+    local x = worldPos.x or worldPos[1]
+    local z = worldPos.z or worldPos[3]
+    if type(x) ~= "number" or type(z) ~= "number" then
+        return nil, nil
+    end
+    local u = 0.5 + (x - ext.centerX) / (2 * ext.halfWidthX)
+    local v = 0.5 + (z - ext.centerZ) / (2 * ext.halfDepthZ)
+    return clamp(u, 0, 1), clamp(v, 0, 1)
+end
+
+--- @param board Object
+--- @param worldPos Vector|table
+--- @return number|nil u, number|nil v
+local function uvFromWorldOnControlBoard(board, worldPos)
+    if not isGameObject(board) or board.positionToLocal == nil or worldPos == nil then
+        return Gameboard.uvFromWorld(worldPos)
+    end
+    local wp = Vector(worldPos)
+    local localPos = board.positionToLocal(wp)
+    if localPos == nil then
+        return nil, nil
+    end
+    local b = board.getBounds()
+    if b == nil or b.size == nil then
+        return nil, nil
+    end
+    local sx = b.size.x or b.size[1] or 1
+    local sz = b.size.z or b.size[3] or 1
+    if sx < 0.01 or sz < 0.01 then
+        return nil, nil
+    end
+    local u = 0.5 + localPos.x / sx
+    local v = 0.5 + localPos.z / sz
+    return clamp(u, 0, 1), clamp(v, 0, 1)
+end
+
+--- @param board Object
+--- @param u number
+--- @param v number
+--- @return Vector
+local function controlBoardLocalFromUv(board, u, v)
+    local b = board.getBounds()
+    local sx = 1
+    local sz = 1
+    if b ~= nil and b.size ~= nil then
+        sx = b.size.x or b.size[1] or 1
+        sz = b.size.z or b.size[3] or 1
+    end
+    return Vector((u - 0.5) * sx, 0.08, (v - 0.5) * sz)
+end
+
+--- @param board Object
+--- @param u number
+--- @param v number
+--- @return Vector world position on board surface
+function Gameboard.worldOnControlBoard(board, u, v)
+    if not isGameObject(board) or board.localToWorld == nil then
+        return Vector(0, 0, 0)
+    end
+    return board.localToWorld(controlBoardLocalFromUv(board, u, v))
+end
+
+--- @param obj Object
+--- @return string|nil
+local function readMarkerKey(obj, prefix)
+    if not isGameObject(obj) then
+        return nil
+    end
+    local notes = ""
+    if obj.getGMNotes ~= nil then
+        notes = tostring(obj.getGMNotes() or "")
+    end
+    if notes == "" and obj.getDescription ~= nil then
+        notes = tostring(obj.getDescription() or "")
+    end
+    local key = string.match(notes, "^" .. prefix .. "(.+)$")
+    if type(key) == "string" and key ~= "" then
+        return key
+    end
+    return nil
+end
+
+--- @param obj Object
+--- @return string|nil characterKey
+local function resolveTokenCharacterKey(obj)
+    if not isGameObject(obj) then
+        return nil
+    end
+    local key = readMarkerKey(obj, DATA.TOKEN_GM_PREFIX)
+    if key ~= nil then
+        return key
+    end
+    if obj.getName ~= nil then
+        local name = tostring(obj.getName() or "")
+        if name ~= "" then
+            return name
+        end
+    end
+    return nil
+end
+
+--- @param token Object
+--- @return string OFF|STANDARD
+local function tokenLightModeFromFlip(token)
+    if token.is_face_up ~= nil then
+        return token.is_face_up and "STANDARD" or "OFF"
+    end
+    local rot = token.getRotation()
+    if rot == nil then
+        return "STANDARD"
+    end
+    local rx = rot.x or rot[1] or 0
+    local norm = ((rx % 360) + 360) % 360
+    if norm > 90 and norm < 270 then
+        return "OFF"
+    end
+    return "STANDARD"
+end
+
+--- @param token Object
+--- @param board Object
+--- @return number|nil u, number|nil v, number|nil yaw
+local function tokenPlacementOnBoard(token, board)
+    if not isGameObject(token) or not isGameObject(board) then
+        return nil, nil, nil
+    end
+    local u, v
+    if board.positionToLocal ~= nil then
+        local localPos = board.positionToLocal(token.getPosition())
+        if localPos ~= nil then
+            local b = board.getBounds()
+            local sx = b and b.size and (b.size.x or b.size[1]) or 1
+            local sz = b and b.size and (b.size.z or b.size[3]) or 1
+            if sx > 0.01 and sz > 0.01 then
+                u = clamp(0.5 + localPos.x / sx, 0, 1)
+                v = clamp(0.5 + localPos.z / sz, 0, 1)
+            end
+        end
+    end
+    if u == nil or v == nil then
+        u, v = uvFromWorldOnControlBoard(board, token.getPosition())
+    end
+    local boardYaw = board.getRotation().y or 0
+    local tokenYaw = token.getRotation().y or 0
+    local yaw = ((tokenYaw - boardYaw) % 360 + 360) % 360
+    return u, v, yaw
+end
+
+--- @param board Object
+--- @return table[] rows with characterKey, u, v, yaw, npcLightMode
+function Gameboard.scanControlBoardTokens(board)
+    board = board or getControlBoard()
+    local out = {}
+    if not isGameObject(board) then
+        print("[Gameboard] scan: CONTROL_BOARD missing (GUID " .. tostring(G.GUIDS.CONTROL_BOARD) .. ")")
+        return out
+    end
+    local objs = board.getObjects and board.getObjects() or {}
+    if type(objs) ~= "table" then
+        objs = {}
+    end
+    for _, obj in ipairs(objs) do
+        if isGameObject(obj) and obj.hasTag ~= nil and obj.hasTag(TAG_TOKEN) == true then
+            local characterKey = resolveTokenCharacterKey(obj)
+            if type(characterKey) == "string" and characterKey ~= "" then
+                local u, v, yaw = tokenPlacementOnBoard(obj, board)
+                if type(u) == "number" and type(v) == "number" then
+                    out[#out + 1] = {
+                        characterKey = characterKey,
+                        u = u,
+                        v = v,
+                        yaw = type(yaw) == "number" and yaw or 0,
+                        npcLightMode = tokenLightModeFromFlip(obj),
+                    }
+                end
+            end
+        end
+    end
+    return out
+end
+
+--- Build placements map from scan rows.
+--- @param rows table[]
+--- @return table
+local function placementsMapFromRows(rows)
+    local placements = {}
+    for _, row in ipairs(rows) do
+        if type(row.characterKey) == "string" then
+            placements[row.characterKey] = {
+                u = row.u,
+                v = row.v,
+                yaw = row.yaw,
+                npcLightMode = row.npcLightMode,
+            }
+        end
+    end
+    return placements
+end
+
+--- Apply CONTROL_BOARD tokens → state → Sync.npcs.
+--- @return boolean ok, string|nil message
+function Gameboard.applyFromControlBoard()
+    local board = getControlBoard()
+    if not isGameObject(board) then
+        return false, "CONTROL_BOARD not found — set G.GUIDS.CONTROL_BOARD in lib/guids.ttslua"
+    end
+    local rows = Gameboard.scanControlBoardTokens(board)
+    local placements = placementsMapFromRows(rows)
+    S.setStateVal(placements, "sessionScene", "npcWorld", "placements")
+    local Sync = require("core.sync")
+    Sync.npcs({ reason = "gameboard_apply", force = true })
+    print("[Gameboard] Apply: " .. tostring(#rows) .. " token(s) → placements")
+    return true, nil
+end
+
+--- Remove tokens from control board and clear placements in state.
+--- @return boolean ok, string|nil message
+function Gameboard.clearControlBoard()
+    local board = getControlBoard()
+    S.setStateVal({}, "sessionScene", "npcWorld", "placements")
+    if isGameObject(board) and board.getObjects ~= nil then
+        local palette = DATA.TOKEN_PALETTE_LOCAL
+        local idx = 0
+        for _, obj in ipairs(board.getObjects()) do
+            if isGameObject(obj) and obj.hasTag ~= nil and obj.hasTag(TAG_TOKEN) == true then
+                idx = idx + 1
+                local offset = (idx - 1) * 0.55
+                if board.localToWorld ~= nil then
+                    obj.setPosition(board.localToWorld(Vector(palette.x, palette.y, palette.z + offset)))
+                else
+                    destroyObject(obj)
+                end
+            end
+        end
+    end
+    local Sync = require("core.sync")
+    Sync.npcs({ reason = "gameboard_clear", force = true })
+    print("[Gameboard] Clear: placements emptied")
+    return true, nil
+end
+
+--- @param playerColor string|nil
+--- @return boolean consumed second click
+function Gameboard.tryConfirmClear(playerColor)
+    local color = type(playerColor) == "string" and playerColor or "Black"
+    local now = os.time()
+    if clearArmExpireByColor[color] == nil or now > clearArmExpireByColor[color] then
+        clearArmExpireByColor[color] = now + 5
+        if broadcastToColor ~= nil then
+            broadcastToColor("Click Clear again within 5s to confirm.", color, { 1, 0.35, 0.35 })
+        end
+        return false
+    end
+    clearArmExpireByColor[color] = nil
+    return true
+end
+
+--- Install polar snap points on CONTROL_BOARD.
+function Gameboard.installPolarSnaps()
+    local board = getControlBoard()
+    if not isGameObject(board) or board.setSnapPoints == nil then
+        return
+    end
+    local cfg = DATA.POLAR_SNAP
+    local points = {}
+    for _, radius in ipairs(cfg.radii or {}) do
+        local steps = cfg.steps or 8
+        for i = 0, steps - 1 do
+            local angle = (i / steps) * 2 * math.pi
+            points[#points + 1] = {
+                position = { math.cos(angle) * radius, 0.1, math.sin(angle) * radius },
+                rotation = { 0, (i / steps) * 360, 0 },
+                rotation_snap = true,
+            }
+        end
+    end
+    board.setSnapPoints(points)
+    print("[Gameboard] Polar snaps installed (" .. tostring(#points) .. " points)")
+end
+
+--- @param obj Object
+--- @param visible boolean
+local function setMarkerVisible(obj, visible)
+    if not isGameObject(obj) then
+        return
+    end
+    if obj.setInvisibleTo ~= nil then
+        if visible then
+            obj.setInvisibleTo({})
+        else
+            obj.setInvisibleTo(C.PlayerColors or {})
+        end
+    end
+end
+
+--- @param tableKey string|nil
+--- @return table|nil
+local function tableConfig(tableKey)
+    if type(tableKey) ~= "string" then
+        return nil
+    end
+    return C.Tables[tableKey]
+end
+
+--- World XZ → control-board u,v for table center.
+--- @param board Object
+--- @param tableKey string
+--- @return number|nil u, number|nil v
+local function controlUvForTable(board, tableKey)
+    local cfg = tableConfig(tableKey)
+    if cfg == nil or cfg.centerPoint == nil then
+        return nil, nil
+    end
+    local cp = cfg.centerPoint
+    return uvFromWorldOnControlBoard(board, cp)
+end
+
+--- Position static table/seat markers for active table.
+function Gameboard.reconcileControlBoardFromState()
+    local npcWorld = S.getStateVal("sessionScene", "npcWorld")
+    if type(npcWorld) == "table" and npcWorld.layoutLock == true then
+        return
+    end
+    local board = getControlBoard()
+    if not isGameObject(board) then
+        return
+    end
+    local activeTable = S.getStateVal("seatLayout", "currentTableKey")
+    local placements = type(npcWorld) == "table" and npcWorld.placements or {}
+    local allMarkers = getObjectsWithTag(TAG_TABLE) or {}
+    for _, tag in ipairs({ TAG_PC, TAG_NPC_SEAT, TAG_COMPONENT }) do
+        local extra = getObjectsWithTag(tag) or {}
+        for i = 1, #extra do
+            allMarkers[#allMarkers + 1] = extra[i]
+        end
+    end
+
+    for _, obj in ipairs(allMarkers) do
+        if not isGameObject(obj) then
+            goto continue_marker
+        end
+        local tableKey = readMarkerKey(obj, DATA.MARKER_TABLE_PREFIX)
+        local compKey = readMarkerKey(obj, DATA.MARKER_COMPONENT_PREFIX)
+        local pcSeat = readMarkerKey(obj, DATA.MARKER_PC_SEAT_PREFIX)
+        local npcSeat = readMarkerKey(obj, DATA.MARKER_NPC_SEAT_PREFIX)
+
+        if tableKey ~= nil then
+            local show = tableKey == activeTable
+            setMarkerVisible(obj, show)
+            if show then
+                local u, v = controlUvForTable(board, tableKey)
+                if u ~= nil and v ~= nil then
+                    obj.setPosition(Gameboard.worldOnControlBoard(board, u, v))
+                end
+            end
+        elseif compKey ~= nil then
+            local parentTable, componentName = string.match(compKey, "^(.-)|(.+)$")
+            if parentTable == nil then
+                parentTable = nil
+                componentName = compKey
+                for tk, cfg in pairs(C.Tables or {}) do
+                    if type(cfg) == "table" and type(cfg.components) == "table" and cfg.components[compKey] ~= nil then
+                        parentTable = tk
+                        componentName = compKey
+                        break
+                    end
+                end
+            end
+            local show = parentTable == activeTable
+            setMarkerVisible(obj, show)
+            if show and parentTable ~= nil then
+                local u, v = controlUvForTable(board, parentTable)
+                if u ~= nil and v ~= nil then
+                    obj.setPosition(Gameboard.worldOnControlBoard(board, u + 0.02, v + 0.02))
+                end
+            end
+        elseif pcSeat ~= nil then
+            local show = activeTable ~= nil
+            setMarkerVisible(obj, show)
+            if show then
+                local cfg = tableConfig(activeTable)
+                local seg = cfg and cfg.playerToPositionMap and cfg.playerToPositionMap[pcSeat]
+                if type(seg) == "number" and cfg.centerPoint ~= nil then
+                    local u, v = uvFromWorldOnControlBoard(board, cfg.centerPoint)
+                    if u ~= nil then
+                        local angle = (seg / (cfg.numSegments or 10)) * 2 * math.pi
+                        obj.setPosition(Gameboard.worldOnControlBoard(board, u + math.sin(angle) * 0.08, v + math.cos(angle) * 0.08))
+                    end
+                end
+            end
+        elseif npcSeat ~= nil then
+            local show = activeTable ~= nil
+            setMarkerVisible(obj, show)
+            if show then
+                local cfg = tableConfig(activeTable)
+                local seg = cfg and cfg.playerToPositionMap and cfg.playerToPositionMap[npcSeat]
+                if type(seg) == "number" and cfg.centerPoint ~= nil then
+                    local u, v = uvFromWorldOnControlBoard(board, cfg.centerPoint)
+                    if u ~= nil then
+                        local angle = (seg / (cfg.numSegments or 10)) * 2 * math.pi
+                        obj.setPosition(Gameboard.worldOnControlBoard(board, u + math.sin(angle) * 0.12, v + math.cos(angle) * 0.12))
+                    end
+                end
+            end
+        end
+
+        ::continue_marker::
+    end
+
+    --- Mirror NPC tokens from placements (skip when layout locked — checked above).
+    local tokenObjs = getObjectsWithTag(TAG_TOKEN) or {}
+    local byChar = {}
+    for _, obj in ipairs(tokenObjs) do
+        if isGameObject(obj) and obj.hasTag(TAG_TOKEN) then
+            local parent = obj.getParent and obj.getParent() or nil
+            if parent == nil or parent.getGUID() == board.getGUID() then
+                local ck = resolveTokenCharacterKey(obj)
+                if ck ~= nil then
+                    byChar[ck] = obj
+                end
+            end
+        end
+    end
+    for characterKey, row in pairs(placements) do
+        if type(row) == "table" and type(row.u) == "number" and type(row.v) == "number" then
+            local token = byChar[characterKey]
+            if isGameObject(token) then
+                token.setPosition(Gameboard.worldOnControlBoard(board, row.u, row.v))
+                local boardYaw = board.getRotation().y or 0
+                local yaw = tonumber(row.yaw) or 0
+                token.setRotation(Vector(0, boardYaw + yaw, 0))
+                local mode = row.npcLightMode
+                local faceUp = mode ~= "OFF"
+                if token.is_face_up ~= nil and token.flip ~= nil then
+                    if token.is_face_up ~= faceUp then
+                        token.flip()
+                    end
+                end
+            end
+        end
+    end
+end
+
+--- @param placements table|nil
+function Gameboard.populateControlBoardFromPlacements(placements)
+    placements = type(placements) == "table" and placements or S.getStateVal("sessionScene", "npcWorld", "placements")
+    if type(placements) ~= "table" then
+        placements = {}
+    end
+    S.setStateVal(placements, "sessionScene", "npcWorld", "placements")
+    Gameboard.reconcileControlBoardFromState()
+end
+
+return Gameboard

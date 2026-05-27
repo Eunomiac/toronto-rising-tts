@@ -12,20 +12,20 @@ This file is continuously updated with issues and plans for feature development.
 
 ## Focus
 
-_Stack rank for the current cycle (2026-05-26). **Precedence** (Focus + Linear `blockedBy`) — not Linear priority. **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). Deferred items may still be Medium/High importance in Linear._
+_Stack rank for the current cycle (2026-05-27). **Precedence** (Focus + Linear `blockedBy`) — not Linear priority. **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). Deferred items may still be Medium/High importance in Linear._
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-155** — Roll panel pool dots color coding | Dice-E2E A2/C/D/E — all pool dots white / `R1` / `5N+2H` text |
+| 1 | **TOR-169** — Storyteller NPC gameboard (Phase A code; TTS workshop + Save & Play) | Placements v3, Apply/Clear, `Sync.npcs` — ahead of dice E2E |
 | 2 | **TOR-162** — ST per-roll Opts not sticking | Dice-E2E G6/G7 — `crits` / `bestialNull` ignored; wrong `resultClass` |
 | 3 | **TOR-161** — Normal bag right-click undo | Dice-E2E A2/K2 — cannot remove hunger via normal bag right-click |
 | 4 | **TOR-163** — Broadcast when no difficulty | Dice-E2E Suite E — confirm shows only "Roll Completed" |
 
-**Done this cycle:** TOR-164 (Dice-E2E harness + doc). TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions).
+**Done this cycle:** TOR-155 (roll panel pool dots color coding). TOR-164 (Dice-E2E harness + doc). TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions).
 
 **Ongoing (not Focus stack):** TOR-141 — maintain E2E playbooks when dice/scenes/debug testing changes.
 
-**Deferred this cycle:** TOR-139 (scenes panel trim + 3-column library grid), TOR-140 (sound panel text + larger font), TOR-142 (four scene Apply clock buttons), TOR-143 (phase system + session lifecycle), TOR-146 (delete active scene ends live first), TOR-147 (blindfold soundscape fade + weather), TOR-148 (RT clock too fast), TOR-149 (ST dice tray lights), TOR-150 (thunder indoor ducking), TOR-151 (default no-scene environment), TOR-152 (Play load scene restore), TOR-73 (Take Half redesign + H2 rouse auto-parse), TOR-153 (map pins unmappable), TOR-154 (floor/plinth locked), TOR-156 (roll broadcast trim), TOR-157 (pre-Apply seat modal), TOR-137 (Sites unicode minus), TOR-81 (light modes cleanup). Other open bullets unchanged.
+**Deferred this cycle:** TOR-139 (scenes panel trim + 3-column library grid), TOR-140 (sound panel text + larger font), TOR-142 (four scene Apply clock buttons), TOR-143 (phase system + session lifecycle), TOR-146 (delete active scene ends live first), TOR-147 (blindfold soundscape fade + weather), TOR-148 (RT clock too fast), TOR-149 (ST dice tray lights), TOR-150 (thunder indoor ducking), TOR-151 (default no-scene environment), TOR-152 (Play load scene restore), TOR-73 (Take Half redesign + H2 rouse auto-parse), TOR-153 (map pins unmappable), TOR-154 (floor/plinth locked), TOR-156 (roll broadcast trim), TOR-157 (pre-Apply seat modal), TOR-165 (WP reroll wave partial settle), TOR-137 (Sites unicode minus), TOR-81 (light modes cleanup). **Canceled:** TOR-166 (widen far NPC angles), TOR-167 (mid/far center NPC areas) — superseded by TOR-169 gameboard. Other open bullets unchanged.
 
 ---
 
@@ -35,7 +35,7 @@ _Stack rank for the current cycle (2026-05-26). **Precedence** (Focus + Linear `
 - [x] Automatic camera repositioning during the roll sequence is inconsistent. Should be modeled off of how the camera controls are applied in the Admin Debug panel (since they work flawlessly). _(Addressed: `main.ttslua` `M.setCamera` now applies `lookAt(intermediateCameraData)` before the final preset.)_ _(TOR-57)_
 - [ ] **Roll baton-pass camera (remaining):** Too many camera applications during the rolling handoff, including some that reapply the current angle; cuts are jumpier than Admin Debug Camera or Camera PC controls. Audit the roll pipeline and route roll-time switches through the same code path as those controls. _(TOR-72)_
 - [ ] **Take Half redesign:** Available on any roll without difficulty. Synthetic result = half the pool size in **normal successes (rounded down)**, remainder **blank**, all treated as normal dice (Hunger dice count toward pool size but do not use Hunger faces). Example: pool 13 → 6 successes, 7 blanks. **Broadcast:** show full-pool dice images as normal dice — half with one success face, rest blank (no numeric roll text). **Dice-E2E H2:** rouse dice must await player throw after Take Half — not auto-parse on settle. _(TOR-73)_
-- [ ] **Roll panel pool dots color coding:** Restore kind colors (normal white, hunger red, rouse dark red offset left, obliv-rouse purple, werewolf yellow-green, rage orange). One dot group per pool kind (`pool.rouse` = single rouse check). _(TOR-155)_
+- [x] **Roll panel pool dots color coding:** Restore kind colors (normal white, hunger red, rouse dark red offset left, obliv-rouse purple, werewolf yellow-green, rage orange). One dot group per pool kind (`pool.rouse` = single rouse check). _(TOR-155)_
 - [ ] **Normal bag right-click undo:** Right-click normal bag removes last normal **or** hunger die; hunger bag right-click undoes Blood Surge (clears **all** rouse + surge normal/hunger) or removes hunger when surge off. _(TOR-161)_
 - [ ] **ST per-roll Opts persistence:** `crits`, `bestialNull`, etc. stick in Opts modal and apply to `active.rollOptions` before classify. _(TOR-162)_
 - [ ] **Roll broadcast without difficulty:** Unset difficulty → default 1 for display; show dice images + successes; omit margin. _(TOR-163)_
@@ -63,6 +63,9 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Seat spawn:** Pooled figurine uses seat `*Object` tag + `SEAT_FIGURE` rotational layout; `postCorrectionsBySeatRole`; area spotlight hidden at seat; workshop `SEAT_LIGHT_*_NPC*` only. _(TOR-64)_
 - [x] **Seat tags:** `npc_figurine` ↔ `NPCnObject` on seat/unseat; layout matches pooled figurine by tag + `Figurine_Custom` (`NPCS.isPooledFigurineObject`). _(TOR-65)_
 - [ ] **Group spawn exclusion:** When spawning an NPC group into a stage area, do not pull members who are already seated (e.g. `fiveKeys` spawn must leave `myleneHamelin` in her table seat). _(TOR-76)_
+- [ ] **Storyteller NPC gameboard (Phase A):** `STAGE_BOARD` + `CONTROL_BOARD`, tokens, markers, polar snaps, Apply/Clear wired; `placements` v3 + `Sync.npcs`. Phase B: Read/Lock/Load, spotlight. Phase C: retire panel `byArea`. _(TOR-169)_ — workshop objects + GUIDs in TTS save required
+- [x] **Widen Far Left / Far Right NPC angles:** Canceled — superseded by TOR-169 gameboard. _(TOR-166)_
+- [x] **Mid-Center + Far-Center NPC areas:** Canceled — superseded by TOR-169. _(TOR-167)_
 - [x] **NPC area cutouts on scene apply:** Mis-nested `npcWorld` at import root (spreadsheet JSON) left `sessionScene.npcWorld.byArea` empty — scene apply/reconcile was fine when data was nested correctly. Fixed spreadsheet; import validator now rejects unexpected root keys (no hoisting). _(TOR-135)_
 - [ ] _New feature:_ Storyteller rolls dice for NPCs from the dice control panel — spawn/show dice tray, appropriate camera angle, roll-controller wiring for NPC/non-player identity. _(TOR-79)_
 
@@ -154,6 +157,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] **Dice-E2E playbook + rollTest harness:** Solo-host doc (no View); `rollE2eSeatPrep`, `rollSetFaces`, hunger 5th param, Suite F conditions helpers; `rollCancel` clears ST slots. _(TOR-164)_ — sub-issue of TOR-141; re-verify in TTS after Save & Play
 - [ ] **Multiplayer E2E playbook:** Pre-invite solo-suite checklist + multi-client test plan (sub-issue of TOR-141). _(TOR-144)_
 - [x] Agent prompt: **performance** hotspots (`Sync.full`, spawn pools, lighting lerps, UI refresh). → [Performance Audit](Sychronizing%20Game%20Functionality/Performance%20Audit.md); Prompt 4 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md) _(TOR-50)_
+- [ ] **Sync.full call-site audit:** Inventory every `Sync.full(` in production Lua; classify Keep full vs narrow (`Sync.player`, `Sync.soundscape`, `NPCS.reconcileAllFromState`, planned `Sync.npcs`); update Performance Audit with findings. _(TOR-168)_
 
 ## Out of Scope for Cursor
 

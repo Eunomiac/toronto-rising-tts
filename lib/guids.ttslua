@@ -31,6 +31,10 @@ G.GUIDS = {
     GM_TABLE = "e157b5",
     GM_LIGHT = "4148ba",
 
+    --- Storyteller NPC gameboards (replace with workshop GUIDs after placing objects).
+    STAGE_BOARD = "a1b2c1",
+    CONTROL_BOARD = "a1b2c2",
+
     -- Light objects (for scene lighting)
     MAIN_LIGHT_LEFT = "573771",
     MAIN_LIGHT_RIGHT = "13466d",

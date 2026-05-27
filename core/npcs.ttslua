@@ -67,6 +67,10 @@ ensurePreloadLayoutCapacity()
 --- Sentinel `areaKey` while figurines are parked at `NPC_DISABLE_WORLD_Y` before applying a new scene NPC layout.
 local STASH_AREA_KEY = "__npcSceneStash"
 NPCS.STASH_AREA_KEY = STASH_AREA_KEY
+
+--- Sentinel `areaKey` for free-placement figurines driven by `npcWorld.placements` (gameboard).
+local STAGE_BOARD_AREA_KEY = "__stage_board__"
+NPCS.STAGE_BOARD_AREA_KEY = STAGE_BOARD_AREA_KEY
 --- World Y used to hide NPC figurines under the table when clearing a scene layout (must be below playfield).
 NPCS.NPC_DISABLE_WORLD_Y = -200
 local NPC_DISABLE_WORLD_Y = -200
@@ -464,12 +468,22 @@ local function npcInstanceInStageArea(npcName)
     if U.Type(rec) ~= "table" then
         return false
     end
+    if rec.areaKey == STAGE_BOARD_AREA_KEY then
+        return true
+    end
     local ak = rec.areaKey
     if U.Type(ak) ~= "string" or ak == PRELOAD_AREA_KEY or ak == STASH_AREA_KEY then
         return false
     end
     local area = NPCS.areas[ak]
     return U.Type(area) == "table" and area.excludeFromNpcPanel ~= true
+end
+
+--- Stage figurine (legacy area or gameboard `placements`).
+--- @param npcName string
+--- @return boolean
+local function npcInstanceOnStage(npcName)
+    return npcInstanceInStageArea(npcName)
 end
 
 --- @param seatKey string
@@ -802,8 +816,8 @@ local function assignNpcToSeat(npcName, seatKey, opts)
     if opts.blockAreaBound == true then
         local intent = resolveNpcPlacementIntent()
         local ci = intent.byCharacter[npcName]
-        if U.Type(ci) == "table" and ci.target == "area" then
-            return false, "NPC is area-bound and cannot be seated."
+        if U.Type(ci) == "table" and (ci.target == "area" or ci.target == "stage") then
+            return false, "NPC is stage-bound and cannot be seated."
         end
     end
     local rec = getInstances()[npcName]
@@ -1070,6 +1084,26 @@ function NPCS.applyFigurinePlacement(figurine, areaKey, slotIndex)
     ensureNpcFigurinePhysicsLocked(figurine)
 end
 
+--- Place figurine at gameboard `placements` world pose (STAGE_BOARD u,v,yaw).
+--- @param figurine Object
+--- @param placement table `{ u, v, yaw? }`
+function NPCS.applyFigurinePlacementAtWorld(figurine, placement)
+    if not U.isGameObject(figurine) or type(placement) ~= "table" then
+        return
+    end
+    local Gameboard = require("core.npc_gameboard")
+    local u = tonumber(placement.u)
+    local v = tonumber(placement.v)
+    if u == nil or v == nil then
+        return
+    end
+    local pos = Gameboard.worldFromUv(u, v)
+    figurine.setPosition(pos)
+    local yawDeg = tonumber(placement.yaw) or 0
+    figurine.setRotation(Vector(0, yawDeg, 0))
+    ensureNpcFigurinePhysicsLocked(figurine)
+end
+
 --- @param npcName string
 --- @param modeKey string
 --- @return table
@@ -1252,6 +1286,44 @@ local function effectiveNpcLightModeForAreaPlacement(area, opts)
     return (area and area.autoLight == true) and "STANDARD" or "OFF"
 end
 
+--- Normalized rows from `sessionScene.npcWorld.placements` (gameboard schema v3).
+--- @return table[]
+local function collectSessionStagePlacements()
+    local out = {}
+    local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
+    if type(placements) ~= "table" then
+        return out
+    end
+    local keys = U.getKeys(placements)
+    table.sort(keys)
+    for _, characterKey in ipairs(keys) do
+        local row = placements[characterKey]
+        if type(row) == "table" and type(characterKey) == "string" and characterKey ~= "" then
+            local u = tonumber(row.u)
+            local v = tonumber(row.v)
+            if u ~= nil and v ~= nil then
+                local lm = row.npcLightMode
+                if lm ~= "OFF" and lm ~= "STANDARD" and lm ~= "SPOTLIGHT" then
+                    lm = "STANDARD"
+                end
+                out[#out + 1] = {
+                    characterKey = characterKey,
+                    u = u,
+                    v = v,
+                    yaw = tonumber(row.yaw) or 0,
+                    npcLightMode = lm,
+                }
+            end
+        end
+    end
+    return out
+end
+
+--- @return table[]
+function NPCS.collectSessionStagePlacements()
+    return collectSessionStagePlacements()
+end
+
 --- Sorted placements from `sessionScene.npcWorld.byArea` (numeric slot keys only).
 --- @return table[]
 local function collectSessionByAreaPlacements()
@@ -1294,6 +1366,19 @@ end
 --- @return string
 local function sessionNpcWorldFingerprint()
     local lines = {}
+    local lock = S.getStateVal("sessionScene", "npcWorld", "layoutLock")
+    lines[#lines + 1] = "layoutLock:" .. tostring(lock == true)
+    for _, pl in ipairs(collectSessionStagePlacements()) do
+        local lm = pl.npcLightMode or ""
+        lines[#lines + 1] = string.format(
+            "p:%s:%.4f:%.4f:%.1f:%s",
+            pl.characterKey,
+            pl.u,
+            pl.v,
+            pl.yaw or 0,
+            lm
+        )
+    end
     local placements = collectSessionByAreaPlacements()
     for _, pl in ipairs(placements) do
         local lm = pl.npcLightMode
@@ -1308,7 +1393,7 @@ end
 
 --- @return boolean
 local function npcWorldHasPlacementIntent()
-    return #collectSessionByAreaPlacements() > 0
+    return #collectSessionStagePlacements() > 0 or #collectSessionByAreaPlacements() > 0
 end
 
 --- Park every spawned NPC into the deterministic under-table preload grid so `byArea` can assign slots.
@@ -1613,7 +1698,7 @@ end
 --- @return string
 local function npcReconcileFingerprint()
     local lines = {}
-    lines[#lines + 1] = "byArea:\n" .. sessionNpcWorldFingerprint()
+    lines[#lines + 1] = "npcWorld:\n" .. sessionNpcWorldFingerprint()
     lines[#lines + 1] = "seats:\n" .. occupiedNpcSeatsFingerprint()
     local tableKey = S.getStateVal("seatLayout", "currentTableKey")
     lines[#lines + 1] = "table:" .. tostring(tableKey or "")
@@ -1627,13 +1712,24 @@ end
 --- @return table `{ byCharacter, bySeat, tableKey }`
 resolveNpcPlacementIntent = function()
     local byCharacter = {}
-    for _, pl in ipairs(collectSessionByAreaPlacements()) do
+    for _, pl in ipairs(collectSessionStagePlacements()) do
         byCharacter[pl.characterKey] = {
-            target = "area",
-            areaKey = pl.areaKey,
-            slotIndex = pl.slotIndex,
+            target = "stage",
+            u = pl.u,
+            v = pl.v,
+            yaw = pl.yaw,
             npcLightMode = pl.npcLightMode,
         }
+    end
+    for _, pl in ipairs(collectSessionByAreaPlacements()) do
+        if byCharacter[pl.characterKey] == nil then
+            byCharacter[pl.characterKey] = {
+                target = "area",
+                areaKey = pl.areaKey,
+                slotIndex = pl.slotIndex,
+                npcLightMode = pl.npcLightMode,
+            }
+        end
     end
 
     local tableKey = S.getStateVal("seatLayout", "currentTableKey")
@@ -1646,7 +1742,8 @@ resolveNpcPlacementIntent = function()
         local assigned = U.Type(assignedChar) == "string" and assignedChar ~= ""
         local tableHasSlot = map[seatKey] ~= nil
         local present = resolveSeatPresenceForSeat(seatKey)
-        local areaBound = assigned and U.Type(byCharacter[assignedChar]) == "table" and byCharacter[assignedChar].target == "area"
+        local ciAssigned = assigned and U.Type(byCharacter[assignedChar]) == "table" and byCharacter[assignedChar] or nil
+        local areaBound = ciAssigned ~= nil and (ciAssigned.target == "area" or ciAssigned.target == "stage")
         local physicalSeatAllowed = assigned and tableHasSlot and not areaBound
         bySeat[seatKey] = {
             assigned = assigned,
@@ -1712,12 +1809,24 @@ end
 local function reconcileStepOneAreaRemovals(intent)
     local allOk = true
     for name, rec in pairs(getInstances()) do
-        if U.Type(name) == "string" and U.Type(rec) == "table" and npcInstanceInStageArea(name) then
+        if U.Type(name) == "string" and U.Type(rec) == "table" and npcInstanceOnStage(name) then
             local ci = intent.byCharacter[name]
-            local keep = U.Type(ci) == "table"
-                and ci.target == "area"
-                and ci.areaKey == rec.areaKey
-                and ci.slotIndex == rec.slotIndex
+            local keep = false
+            if U.Type(ci) == "table" then
+                if ci.target == "stage" and rec.areaKey == STAGE_BOARD_AREA_KEY then
+                    local sp = rec.stagePlacement
+                    if U.Type(sp) == "table" then
+                        local du = math.abs((tonumber(sp.u) or 0) - (tonumber(ci.u) or 0))
+                        local dv = math.abs((tonumber(sp.v) or 0) - (tonumber(ci.v) or 0))
+                        local dy = math.abs((tonumber(sp.yaw) or 0) - (tonumber(ci.yaw) or 0))
+                        local lm = ci.npcLightMode or rec.npcLightMode or "STANDARD"
+                        keep = du < 0.002 and dv < 0.002 and dy < 1
+                            and (rec.npcLightMode or "STANDARD") == lm
+                    end
+                elseif ci.target == "area" then
+                    keep = ci.areaKey == rec.areaKey and ci.slotIndex == rec.slotIndex
+                end
+            end
             if not keep then
                 local ok, err = NPCS.retreatNpcInstanceToPreloadPool(name, {
                     skipUiRefresh = true,
@@ -1891,7 +2000,57 @@ local function reconcileSeatNarrativePresenceFromIntent(intent)
     end
 end
 
---- Step Five: place area-bound NPCs into stage areas.
+--- Step Five (a): gameboard `placements` on STAGE_BOARD.
+--- @param intent table
+--- @return boolean allOk
+local function reconcileStepFiveStagePlacements(intent)
+    local allOk = true
+    local needPool = false
+    for name, ci in pairs(intent.byCharacter) do
+        if U.Type(ci) == "table" and ci.target == "stage" then
+            if getInstances()[name] == nil then
+                needPool = true
+            end
+        end
+    end
+    if needPool then
+        NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true, immediate = true })
+    end
+    for name, ci in pairs(intent.byCharacter) do
+        if U.Type(ci) == "table" and ci.target == "stage" then
+            local placement = {
+                u = ci.u,
+                v = ci.v,
+                yaw = ci.yaw,
+                npcLightMode = ci.npcLightMode,
+            }
+            local modeOpt = {
+                skipUiRefresh = true,
+                skipSeatSync = true,
+            }
+            local ok, err = NPCS.moveNpcToStagePlacement(name, placement, modeOpt)
+            if not ok then
+                local repairOk, repairErr = NPCS.ensureNpcInPreloadZone(name, {
+                    deferUiRefresh = true,
+                    skipSeatSync = true,
+                    forceNpcLightMode = "OFF",
+                })
+                if repairOk then
+                    ok, err = NPCS.moveNpcToStagePlacement(name, placement, modeOpt)
+                else
+                    print("[NPCS] step5 stage preload repair " .. tostring(name) .. ": " .. tostring(repairErr))
+                end
+            end
+            if not ok then
+                allOk = false
+                print("[NPCS] step5 stage placement " .. tostring(name) .. ": " .. tostring(err))
+            end
+        end
+    end
+    return allOk
+end
+
+--- Step Five (b): place area-bound NPCs into legacy stage areas.
 --- @param intent table
 --- @return boolean allOk
 local function reconcileStepFiveAreaPopulate(intent)
@@ -1974,6 +2133,9 @@ function NPCS.reconcileAllFromState(opts)
         reconcileSeatNarrativePresenceFromIntent(intent)
     end
     if reconcileStepEnabled(opts, 5) then
+        if not reconcileStepFiveStagePlacements(intent) then
+            allOk = false
+        end
         if not reconcileStepFiveAreaPopulate(intent) then
             allOk = false
         end
@@ -1990,6 +2152,11 @@ function NPCS.reconcileAllFromState(opts)
 
     if deferUiRefresh then
         NPCS.refreshStorytellerUIIfVisible()
+    end
+
+    local Gameboard = require("core.npc_gameboard")
+    if type(Gameboard.reconcileControlBoardFromState) == "function" then
+        Gameboard.reconcileControlBoardFromState()
     end
 end
 
@@ -2130,6 +2297,82 @@ function NPCS.moveNpcToArea(npcName, areaKey, opts)
         lit.setPosition(Vector(pos.x + NPC_LIGHT_SPAWN_OFFSET.x, pos.y + NPC_LIGHT_SPAWN_OFFSET.y, pos.z + NPC_LIGHT_SPAWN_OFFSET.z))
     end
     applyNpcPairPhysicalPresentation(fig, lit, areaKey)
+    NPCS.applyCurrentLightMode(npcName, 0)
+    if not skipSeatSync then
+        requestSeatLayoutSync()
+    end
+    if not opts.skipUiRefresh then
+        NPCS.refreshStorytellerUIIfVisible()
+    end
+    return true, nil
+end
+
+--- Move pooled NPC to a gameboard stage placement (not a legacy `areas` slot).
+--- @param npcName string
+--- @param placement table `{ u, v, yaw?, npcLightMode? }`
+--- @param opts table|nil
+--- @return boolean, string|nil
+function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
+    opts = U.Type(opts) == "table" and opts or {}
+    local skipSeatSync = opts.skipSeatSync == true
+    local bypassLock = opts.forceSessionLayoutStash == true
+    if type(placement) ~= "table" then
+        return false, "Invalid stage placement."
+    end
+    local rec = getInstances()[npcName]
+    if rec == nil then
+        return false, "NPC not spawned."
+    end
+    if isNpcLocked(rec) and not bypassLock then
+        return false, "NPC is locked in place. Unlock before moving."
+    end
+    if U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey) then
+        local sk = rec.seatedSeatKey
+        local seatFig = getObjectFromGUID(rec.figurineGuid or "")
+        local seatLit = getObjectFromGUID(rec.lightGuid or "")
+        if seatFig ~= nil then
+            clearNpcFigurineSeatIdentity(seatFig, seatLit)
+        end
+        rec.seatedSeatKey = nil
+        setInstanceRecord(npcName, rec)
+        local occ = U.clone(getOccupiedNpcSeatMap())
+        if occ[sk] == npcName then
+            occ[sk] = false
+        end
+        setOccupiedNpcSeatMap(occ)
+        if not skipSeatSync then
+            requestSeatLayoutSync()
+        end
+        rec = getInstances()[npcName]
+    end
+    local fig = getObjectFromGUID(rec.figurineGuid or "")
+    local lit = getObjectFromGUID(rec.lightGuid or "")
+    if fig == nil then
+        setInstanceRecord(npcName, nil)
+        unregisterDynamicLightModes(rec.lightGuid)
+        return false, "Figurine missing; cleared record."
+    end
+    NPCS.applyFigurinePlacementAtWorld(fig, placement)
+    rec.areaKey = STAGE_BOARD_AREA_KEY
+    rec.slotIndex = 0
+    rec.stagePlacement = {
+        u = tonumber(placement.u),
+        v = tonumber(placement.v),
+        yaw = tonumber(placement.yaw) or 0,
+    }
+    local mode = placement.npcLightMode
+    if mode == "OFF" or mode == "STANDARD" or mode == "SPOTLIGHT" then
+        rec.npcLightMode = mode
+    else
+        rec.npcLightMode = "STANDARD"
+    end
+    setInstanceRecord(npcName, rec)
+    if lit ~= nil and lit.setPosition ~= nil then
+        local pos = fig.getPosition()
+        lit.setPosition(Vector(pos.x + NPC_LIGHT_SPAWN_OFFSET.x, pos.y + NPC_LIGHT_SPAWN_OFFSET.y, pos.z + NPC_LIGHT_SPAWN_OFFSET.z))
+    end
+    applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY)
+    setPooledSpotlightHidden(lit, false)
     NPCS.applyCurrentLightMode(npcName, 0)
     if not skipSeatSync then
         requestSeatLayoutSync()

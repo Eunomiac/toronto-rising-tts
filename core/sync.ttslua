@@ -202,6 +202,22 @@ function Sync.npcCutouts()
     callIfFunction(NPCS.restoreAfterStateLoad)
 end
 
+--- Narrow NPC + gameboard mirror pass (Apply/Clear, placement-only edits).
+--- @param opts table|nil `{ force?, reason?, deferUiRefresh? }`
+function Sync.npcs(opts)
+    opts = type(opts) == "table" and opts or {}
+    local t0 = os.clock()
+    local reason = type(opts.reason) == "string" and opts.reason or ""
+    if reason ~= "" then
+        print("[Sync.npcs] reason=" .. reason .. " force=" .. tostring(opts.force == true))
+    end
+    callIfFunction(NPCS.reconcileAllFromState, {
+        deferUiRefresh = opts.deferUiRefresh == true,
+        force = opts.force == true,
+    })
+    finishSyncMetrics("npcs", t0, { reason = reason })
+end
+
 --- UI-only refresh passthrough.
 --- @param delta table|nil Optional UpdateUIDisplays delta flags
 function Sync.ui(delta)

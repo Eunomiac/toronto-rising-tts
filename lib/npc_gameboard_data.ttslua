@@ -1,0 +1,72 @@
+--[[
+    Static layout for Storyteller NPC gameboards (STAGE_BOARD / CONTROL_BOARD).
+    Workshop objects must match these tags; GUIDs live in lib/guids.ttslua.
+
+    Agent: .dev/NPC Object Spawning & Spotlighting/Storyteller Gameboard Control.md
+]]
+
+local C = require("lib.constants")
+
+local D = {}
+
+--- Object tags (workshop).
+D.TAG_NPC_CONTROL_TOKEN = "npc_control_token"
+D.TAG_GAMEBOARD_PC_SEAT = "gameboard_pc_seat"
+D.TAG_GAMEBOARD_NPC_SEAT = "gameboard_npc_seat"
+D.TAG_GAMEBOARD_TABLE = "gameboard_table"
+D.TAG_GAMEBOARD_TABLE_COMPONENT = "gameboard_table_component"
+
+--- GM notes / description prefixes for marker identity.
+D.TOKEN_GM_PREFIX = "npcToken:"
+D.MARKER_TABLE_PREFIX = "gameboardTable:"
+D.MARKER_COMPONENT_PREFIX = "gameboardComponent:"
+D.MARKER_PC_SEAT_PREFIX = "gameboardPcSeat:"
+D.MARKER_NPC_SEAT_PREFIX = "gameboardNpcSeat:"
+
+--- Fallback world XZ footprint when STAGE_BOARD is not in the save yet.
+D.DEFAULT_STAGE_WORLD = {
+    centerX = 0,
+    centerZ = 120,
+    halfWidthX = 220,
+    halfDepthZ = 200,
+    groundY = -15,
+}
+
+--- Polar snap grid on CONTROL_BOARD (local XZ, Y up).
+D.POLAR_SNAP = {
+    radii = { 0.12, 0.22, 0.32, 0.42 },
+    steps = 12,
+    rotationSnapDeg = 15,
+}
+
+--- Off-board token palette (control-board local; no snap points).
+D.TOKEN_PALETTE_LOCAL = { x = -1.35, y = 0.12, z = 0 }
+
+--- Enumerate every table key and component name from C.Tables (for marker registry).
+--- @return table[] { tableKey, componentKey? }
+function D.enumerateTableMarkerEntries()
+    local out = {}
+    local keys = {}
+    for tableKey, _ in pairs(C.Tables or {}) do
+        keys[#keys + 1] = tableKey
+    end
+    table.sort(keys)
+    for _, tableKey in ipairs(keys) do
+        out[#out + 1] = { tableKey = tableKey, componentKey = nil }
+        local cfg = C.Tables[tableKey]
+        local comps = type(cfg) == "table" and cfg.components or nil
+        if type(comps) == "table" then
+            local compNames = {}
+            for compName, _ in pairs(comps) do
+                compNames[#compNames + 1] = compName
+            end
+            table.sort(compNames)
+            for _, compName in ipairs(compNames) do
+                out[#out + 1] = { tableKey = tableKey, componentKey = compName }
+            end
+        end
+    end
+    return out
+end
+
+return D

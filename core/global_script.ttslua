@@ -336,6 +336,30 @@ function GlobalToggleSignalFireState(params)
     return O.ToggleSignalFireState(color, duration)
 end
 
+--- NPC gameboard: Apply tokens on CONTROL_BOARD → `sessionScene.npcWorld.placements` → `Sync.npcs`.
+--- @param params table|nil
+--- @return boolean
+function GlobalGameboardApply(params)
+    local Gameboard = require("core.npc_gameboard")
+    local ok = Gameboard.applyFromControlBoard()
+    if type(ok) == "boolean" then
+        return ok
+    end
+    return ok == true
+end
+
+--- NPC gameboard: Clear placements (expects confirmed Clear from object UI).
+--- @param params table|nil
+--- @return boolean
+function GlobalGameboardClear(params)
+    local Gameboard = require("core.npc_gameboard")
+    local ok = Gameboard.clearControlBoard()
+    if type(ok) == "boolean" then
+        return ok
+    end
+    return ok == true
+end
+
 --- Returns the phase string of a player's active roll, or nil if no roll is active.
 -- Called by dice bag objects (via Global.call) so they know whether to spawn a die
 -- or initiate a new roll when clicked.

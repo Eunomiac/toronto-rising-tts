@@ -1,0 +1,120 @@
+---@diagnostic disable: lowercase-global
+--[[
+    CONTROL_BOARD object script (objects/npc_control_board.ttslua).
+
+    Attach to the Storyteller control-board tile on the GM table.
+    Requires tags on the object: `npc_control_board` (optional, for discovery).
+]]
+
+local DATA = require("lib.npc_gameboard_data")
+
+function onLoad()
+    createBoardButtons()
+    local Gameboard = require("core.npc_gameboard")
+    Gameboard.installPolarSnaps()
+end
+
+function createBoardButtons()
+    self.clearButtons()
+    local y = 0.35
+    self.createButton({
+        label = "Apply",
+        click_function = "click_apply",
+        function_owner = self,
+        position = { -1.1, y, 1.35 },
+        width = 900,
+        height = 280,
+        font_size = 80,
+        color = { 0.2, 0.55, 0.3, 0.95 },
+        font_color = { 1, 1, 1, 1 },
+    })
+    self.createButton({
+        label = "Clear",
+        click_function = "click_clear",
+        function_owner = self,
+        position = { -1.1, y, 0.85 },
+        width = 900,
+        height = 280,
+        font_size = 80,
+        color = { 0.55, 0.2, 0.2, 0.95 },
+        font_color = { 1, 1, 1, 1 },
+    })
+    self.createButton({
+        label = "Read",
+        click_function = "click_read_stub",
+        function_owner = self,
+        position = { -1.1, y, 0.35 },
+        width = 900,
+        height = 280,
+        font_size = 70,
+        color = { 0.35, 0.35, 0.45, 0.9 },
+        font_color = { 1, 1, 1, 1 },
+    })
+    self.createButton({
+        label = "Lock",
+        click_function = "click_lock_stub",
+        function_owner = self,
+        position = { -1.1, y, -0.15 },
+        width = 900,
+        height = 280,
+        font_size = 70,
+        color = { 0.35, 0.35, 0.45, 0.9 },
+        font_color = { 1, 1, 1, 1 },
+    })
+    self.createButton({
+        label = "Load",
+        click_function = "click_load_stub",
+        function_owner = self,
+        position = { -1.1, y, -0.65 },
+        width = 900,
+        height = 280,
+        font_size = 70,
+        color = { 0.35, 0.35, 0.45, 0.9 },
+        font_color = { 1, 1, 1, 1 },
+    })
+end
+
+function click_apply(_, player_color)
+    if player_color ~= "Black" then
+        return
+    end
+    Global.call("GlobalGameboardApply", {})
+end
+
+function click_clear(_, player_color)
+    if player_color ~= "Black" then
+        return
+    end
+    local Gameboard = require("core.npc_gameboard")
+    if not Gameboard.tryConfirmClear(player_color) then
+        return
+    end
+    Global.call("GlobalGameboardClear", {})
+end
+
+function click_read_stub(_, player_color)
+    if player_color ~= "Black" then
+        return
+    end
+    if broadcastToColor ~= nil then
+        broadcastToColor("Read: Phase B (not wired yet).", player_color, { 1, 0.8, 0.4 })
+    end
+end
+
+function click_lock_stub(_, player_color)
+    if player_color ~= "Black" then
+        return
+    end
+    if broadcastToColor ~= nil then
+        broadcastToColor("Lock: Phase B (not wired yet).", player_color, { 1, 0.8, 0.4 })
+    end
+end
+
+function click_load_stub(_, player_color)
+    if player_color ~= "Black" then
+        return
+    end
+    if broadcastToColor ~= nil then
+        broadcastToColor("Load: Phase B (not wired yet).", player_color, { 1, 0.8, 0.4 })
+    end
+end

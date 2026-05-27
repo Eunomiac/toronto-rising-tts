@@ -185,5 +185,12 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-05-26 | CODE+DOC | Dice rouse pool | `global_script`, `roll_controller`, `dice_kinds`, `dice_bag`, `rouse_outcomes`; Dice System Pt. 2; Dice-E2E |
 | 2026-05-26 | CREATE | TOR-165 | Bug: WP reroll wave stalls on partial settle; no Confirm during ROLLING wave (Dice-E2E I1); related TOR-141 |
 | 2026-05-26 | DOC | Dice-E2E H–J | Auto spawn, `rollCancel` first, Pass if, `rollE2eExpectBroadcast` / `rollE2eAddPoolKindSpawn`; Suite I restructured |
+| 2026-05-27 | INBOX | duplicate | No-difficulty broadcast re-capture → existing TOR-163 (Focus #4) |
+| 2026-05-27 | CREATE | TOR-166 | Widen Far Left / Far Right NPC stage area angles (inbox) |
+| 2026-05-27 | CREATE | TOR-167 | Add Mid-Center + Far-Center NPC stage areas; `blockedBy` TOR-166 |
+| 2026-05-27 | UPDATE | RUNNING TASKLIST **Focus** | Dated 2026-05-27; TOR-165 on deferred line; TOR-166/167 tasklist bullets; back-burner pending |
+| 2026-05-27 | UPDATE | RUNNING TASKLIST **Deferred** | Back-burner approved: TOR-166, TOR-167 on deferred line (Medium; TOR-167 blockedBy TOR-166) |
+| 2026-05-27 | DONE | TOR-155 | Roll panel pool dots color coding — author verified; Focus re-stack (162/161/163) |
+| 2026-05-27 | CREATE | TOR-168 | Audit Sync.full usage — narrow sync entry points (Urgent; Synchronization & State; parent TOR-30) |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

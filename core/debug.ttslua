@@ -488,6 +488,44 @@ function DEBUG.showScene()
         end
         print("sessionScene.npcWorld.byArea areas: " .. tostring(areaCount))
     end
+    if type(npcWorld) == "table" and type(npcWorld.placements) == "table" then
+        local n = 0
+        for _ in pairs(npcWorld.placements) do
+            n = n + 1
+        end
+        print("sessionScene.npcWorld.placements: " .. tostring(n))
+    end
+end
+
+--- Dump `sessionScene.npcWorld.placements` and live instance stage poses.
+function DEBUG.dumpNpcPlacements()
+    printTestHeader("NPC gameboard placements")
+    local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
+    if type(placements) ~= "table" then
+        print("placements: (none)")
+        return
+    end
+    local keys = {}
+    for k, _ in pairs(placements) do
+        keys[#keys + 1] = k
+    end
+    table.sort(keys)
+    for _, ck in ipairs(keys) do
+        local row = placements[ck]
+        if type(row) == "table" then
+            print(string.format(
+                "  %s u=%.3f v=%.3f yaw=%.0f mode=%s",
+                ck,
+                tonumber(row.u) or 0,
+                tonumber(row.v) or 0,
+                tonumber(row.yaw) or 0,
+                tostring(row.npcLightMode or "")
+            ))
+        end
+    end
+    if NPCS ~= nil and type(NPCS.collectSessionStagePlacements) == "function" then
+        print("collectSessionStagePlacements rows: " .. tostring(#NPCS.collectSessionStagePlacements()))
+    end
 end
 
 --- Display zone status
