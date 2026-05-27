@@ -33,7 +33,11 @@ Table/seat markers: compute playfield world XZ (table `centerPoint`; components 
 
 **NPC seat markers:** Shown on the minimap only when `seatLayout.occupiedNPCSlots[npcSeat]` is a character key (not `false`) and the active table defines that seat in `playerToPositionMap`. Empty slots are **locked** and parked at world **Y = -200** (`MARKER_STASH_WORLD_Y`, slight X offset per slot so stashes do not stack).
 
-**Marker scale:** `Gameboard.reconcileControlBoardFromState` sets each marker’s scale from the playfield object it represents (`C.Tables` GUID, component GUID, or nearest `<seat>Object` to the seat arc), divided by the uniform horizontal minimap ratio `(ratioX + ratioZ) / 2` from `Gameboard.minimapScaleRatios()` (stage ÷ control board XZ bounds, typically ~40×). All three marker axes use that divisor — not board transform Y (both boards are Y scale 1, which previously left marker Y at full playfield size).
+**Marker scale:** For each minimap marker, read `getScale()` on the playfield object it mimics (`C.Tables` table/leaf GUID, or `G.GetThroneGUID` seat chair for PC/NPC seats), then set marker scale to **source ÷ 40** on all three axes (`DATA.MINIMAP_SCALE_DIVISOR`). Do not use nearest `*Object` tag scan for scale — that often hits a scale-1 helper instead of `SEAT_CHAIR_*`.
+
+**Marker rotation:** `marker.setRotation(source.getRotation() + board.getRotation())` per euler axis (playfield mimic + CONTROL_BOARD). Table uses `C.Tables[tableKey].guid`; seats use `G.GetThroneGUID`. Workshop stash euler on markers is overwritten every `reconcileControlBoardFromState` — if rotation still matches the save default, the bundled script was not Save & Play’d.
+
+**Marker height:** `MINIMAP_SURFACE_LOCAL_Y` (default 0.18) + optional `MINIMAP_TABLE_EXTRA_LOCAL_Y` (0.06) for `gameboard_table` markers so thick table meshes sit on the control tile, not clipped inside it.
 
 **Player visibility:** All `gameboard_*` markers and `npc_control_token` tiles use `setInvisibleTo(C.PlayerColors)` — hidden from every seated PC (Brown–Purple); Storyteller (Black) and spectators (White/Grey) still see them. Reconcile and spawn paths call `Gameboard.setHiddenFromPlayerColors`.
 
@@ -51,11 +55,21 @@ Table/seat markers: compute playfield world XZ (table `centerPoint`; components 
 
 GUIDs: `G.GUIDS.STAGE_BOARD`, `G.GUIDS.CONTROL_BOARD` in `lib/guids.ttslua`.
 
-## Polar snaps (CONTROL_BOARD)
+## Control-board snaps (CONTROL_BOARD)
 
-Snap points are installed by `Gameboard.installPolarSnaps` from **`reconcileControlBoardFromState`** (every `Sync.npcs` / load) — the CONTROL_BOARD object does **not** need a bundled script in the save for snaps to appear. Optional: attach `objects/npc_control_board.ttslua` for Apply/Clear/Read/Lock/Load buttons on the tile.
+Snap points are installed by `Gameboard.installPolarSnaps` (alias `installControlBoardSnaps`) from **`reconcileControlBoardFromState`** (every `Sync.npcs` / load) — the CONTROL_BOARD object does **not** need a bundled script in the save for snaps to appear. Optional: attach `objects/npc_control_board.ttslua` for Apply/Clear/Read/Lock/Load buttons on the tile.
 
-Grid: `POLAR_SNAP.radiusFractions` in UV space from map center (4 rings × 12 steps = 48 rotation snaps), positioned via the same `boardLocalFromUv` frame as token placement. Manual refresh: `lua DEBUG.installNpcControlBoardSnaps()`.
+Config: `D.CONTROL_BOARD_SNAP` in `lib/npc_gameboard_data.ttslua` — elliptical rings with **absolute** `innerRingMaxU/V` and `outerRingMaxU/V`, `rays`, and per-ring `snapGroups` (`num`, `angleDelta`). Default install prints **~160** snaps (`16 × (1+3+5+1)`). Same `boardLocalFromUv` frame as token placement; each snap yaws toward `origin`.
+
+Manual refresh / IDE tuning (after Save & Play):
+
+```lua
+lua DEBUG.previewControlBoardSnapCount()
+lua DEBUG.installNpcControlBoardSnaps()
+lua DEBUG.installNpcControlBoardSnaps({ config = { ... full CONTROL_BOARD_SNAP table ... } })
+```
+
+See [Generating Snap Points For Control Board.md](./Generating%20Snap%20Points%20For%20Control%20Board.md).
 
 ## Buttons (Phase A wired)
 

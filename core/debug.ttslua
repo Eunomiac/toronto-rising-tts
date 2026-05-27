@@ -528,11 +528,54 @@ function DEBUG.dumpNpcPlacements()
     end
 end
 
---- Force polar snap grid on CONTROL_BOARD (normally runs from reconcile / Sync.npcs).
--- @return boolean
-function DEBUG.installNpcControlBoardSnaps()
+--- Force CONTROL_BOARD snap grid (normally runs from reconcile / Sync.npcs).
+--- @param options table|nil { config?: table } — override `DATA.CONTROL_BOARD_SNAP` for IDE iteration
+--- @return boolean
+function DEBUG.installNpcControlBoardSnaps(options)
+    options = type(options) == "table" and options or {}
     local Gameboard = require("core.npc_gameboard")
-    return Gameboard.installPolarSnaps(nil, { force = true }) == true
+    return Gameboard.installPolarSnaps(nil, {
+        force = true,
+        config = options.config,
+    }) == true
+end
+
+--- Print snap count from config without installing (fast tuning).
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+function DEBUG.previewControlBoardSnapCount(config)
+    local Gameboard = require("core.npc_gameboard")
+    local total, perRing = Gameboard.countControlBoardSnapPoints(config)
+    print("[DEBUG] CONTROL_BOARD snap count: " .. tostring(total))
+    for ringIndex, ringTotal in ipairs(perRing) do
+        print("  ring " .. tostring(ringIndex) .. ": " .. tostring(ringTotal))
+    end
+end
+
+--- Debug session b671ce: reconcile control-board markers and write NDJSON to `debug-b671ce.log`.
+--- Requires tts-bridge listen (39998) or MCP so writes land under `.dev/.debug/`.
+function DEBUG.dumpControlBoardMarkerReconcile()
+    printTestHeader("Control board marker reconcile (debug b671ce)")
+    DEBUG.workspaceNdjsonBegin("debug-b671ce.log")
+    local Gameboard = require("core.npc_gameboard")
+    Gameboard.reconcileControlBoardFromState()
+    local diag = Gameboard.getLastControlBoardReconcileDiagnostics()
+    if type(diag) ~= "table" then
+        print("No diagnostics captured.")
+        return
+    end
+    print("activeTable=" .. tostring(diag.activeTable))
+    print("markerCountTotal=" .. tostring(diag.markerCountTotal))
+    print("layoutLock=" .. tostring(diag.layoutLock))
+    print("stageBoardGuid=" .. tostring(diag.stageBoardGuid))
+    print("tableMarkersShown=" .. tostring(diag.tableMarkersShown))
+    print("tableMarkersPlaced=" .. tostring(diag.tableMarkersPlaced))
+    if type(diag.earlyExit) == "string" then
+        print("earlyExit=" .. diag.earlyExit)
+    end
+    if JSON ~= nil and JSON.encode ~= nil then
+        U.mcpEmitResult({ kind = "controlBoardMarkerReconcile", diag = diag })
+        print("Full diag emitted as TR_AGENT_V1 result (see console / MCP prints).")
+    end
 end
 
 --- Display zone status

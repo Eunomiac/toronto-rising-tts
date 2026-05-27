@@ -24,6 +24,31 @@ local polarSnapInstallFingerprint = nil
 --- @type table<string, { halfX: number, halfZ: number }>
 local boardUvHalfExtentsCache = {}
 
+-- #region agent log
+local AGENT_DEBUG_LOG_PATH = "debug-b671ce.log"
+local AGENT_DEBUG_SESSION = "b671ce"
+--- @type table|nil Last reconcile marker diagnostics (debug session b671ce).
+local lastControlBoardReconcileDiagnostics = nil
+
+--- @param hypothesisId string
+--- @param location string
+--- @param message string
+--- @param data table|nil
+local function agentDebugLog(hypothesisId, location, message, data)
+    if DEBUG == nil or type(DEBUG.workspaceNdjsonAppend) ~= "function" then
+        return
+    end
+    DEBUG.workspaceNdjsonAppend(AGENT_DEBUG_LOG_PATH, {
+        sessionId = AGENT_DEBUG_SESSION,
+        hypothesisId = hypothesisId,
+        location = location,
+        message = message,
+        data = data or {},
+        runId = "marker-reconcile",
+    })
+end
+-- #endregion
+
 --- @param n number
 --- @param lo number
 --- @param hi number
@@ -43,6 +68,50 @@ end
 local function isGameObject(obj)
     return U.isGameObject(obj)
 end
+
+-- #region agent log
+--- @param board Object|nil
+--- @param pos Vector|table|nil
+--- @return number|nil
+local function horizontalDistanceToBoard(board, pos)
+    if not isGameObject(board) or pos == nil then
+        return nil
+    end
+    local bp = board.getPosition()
+    local px = pos.x or pos[1]
+    local pz = pos.z or pos[3]
+    local bx = bp.x or bp[1]
+    local bz = bp.z or bp[3]
+    if type(px) ~= "number" or type(pz) ~= "number" or type(bx) ~= "number" or type(bz) ~= "number" then
+        return nil
+    end
+    local dx = px - bx
+    local dz = pz - bz
+    return math.sqrt(dx * dx + dz * dz)
+end
+
+--- @param obj Object|nil
+--- @return table|nil
+local function markerPositionSnapshot(obj)
+    if not isGameObject(obj) or obj.getPosition == nil then
+        return nil
+    end
+    local p = obj.getPosition()
+    local s = obj.getScale and obj.getScale() or nil
+    local r = obj.getRotation and obj.getRotation() or nil
+    return {
+        x = p.x,
+        y = p.y,
+        z = p.z,
+        scaleX = s and s.x or nil,
+        scaleY = s and s.y or nil,
+        scaleZ = s and s.z or nil,
+        rotX = r and r.x or nil,
+        rotY = r and r.y or nil,
+        rotZ = r and r.z or nil,
+    }
+end
+-- #endregion
 
 --- @param guid string|nil
 --- @return Object|nil
@@ -208,9 +277,15 @@ end
 --- @param u number
 --- @param v number
 --- @return Vector local position on board surface (Y slightly above tile)
-local function boardLocalFromUv(board, u, v)
+--- @param board Object
+--- @param u number
+--- @param v number
+--- @param extraLocalY number|nil Additional lift in board-local Y (e.g. table mesh thickness)
+local function boardLocalFromUv(board, u, v, extraLocalY)
     local halfX, halfZ = boardLocalSurfaceHalfExtents(board)
-    return Vector((u - 0.5) * 2 * halfX, 0.08, (v - 0.5) * 2 * halfZ)
+    local surfaceY = tonumber(DATA.MINIMAP_SURFACE_LOCAL_Y) or 0.18
+    local lift = tonumber(extraLocalY) or 0
+    return Vector((u - 0.5) * 2 * halfX, surfaceY + lift, (v - 0.5) * 2 * halfZ)
 end
 
 --- Extent-based fallback when STAGE_BOARD is not in the save (workshop prep).
@@ -275,12 +350,14 @@ end
 --- @param board Object
 --- @param u number
 --- @param v number
+--- @param options table|nil { extraLocalY?: number }
 --- @return Vector world position on CONTROL_BOARD surface (same u,v as STAGE_BOARD map)
-function Gameboard.worldOnControlBoard(board, u, v)
+function Gameboard.worldOnControlBoard(board, u, v, options)
     if not isGameObject(board) then
         return Vector(0, 0, 0)
     end
-    return boardLocalToWorld(board, boardLocalFromUv(board, u, v))
+    local extraLocalY = options and options.extraLocalY or nil
+    return boardLocalToWorld(board, boardLocalFromUv(board, u, v, extraLocalY))
 end
 
 --- World position for an off-map palette slot on CONTROL_BOARD (UV grid on the minimap).
@@ -698,23 +775,18 @@ local function objectScaleVector(source)
     return Vector(s.x or 1, s.y or 1, s.z or 1)
 end
 
+--- Minimap marker scale = source playfield object scale ÷ MINIMAP_SCALE_DIVISOR (all three axes).
 --- @param marker Object
---- @param source Object|nil
---- @param ratioX number
---- @param ratioZ number
---- @param uniformRatio number|nil Average XZ board extent ratio; applied to x, y, and z on the marker
-local function applyMinimapMarkerScale(marker, source, ratioX, ratioZ, uniformRatio)
+--- @param source Object|nil Playfield table, leaf, or seat chair being mimicked
+local function applyMinimapMarkerScale(marker, source)
     if not isGameObject(marker) or marker.setScale == nil then
         return
     end
     local src = objectScaleVector(source)
-    if src == nil or type(ratioX) ~= "number" or type(ratioZ) ~= "number" then
+    if src == nil then
         return
     end
-    local divisor = uniformRatio
-    if type(divisor) ~= "number" or divisor < 0.01 then
-        divisor = (ratioX + ratioZ) * 0.5
-    end
+    local divisor = tonumber(DATA.MINIMAP_SCALE_DIVISOR) or 40
     if divisor < 0.01 then
         divisor = 0.01
     end
@@ -723,6 +795,79 @@ local function applyMinimapMarkerScale(marker, source, ratioX, ratioZ, uniformRa
         y = src.y / divisor,
         z = src.z / divisor,
     })
+end
+
+--- @param obj Object|nil
+--- @return table|nil
+local function eulerSnapshot(obj)
+    if not isGameObject(obj) or obj.getRotation == nil then
+        return nil
+    end
+    local r = obj.getRotation()
+    return { x = r.x, y = r.y, z = r.z }
+end
+
+--- Minimap marker rotation = playfield source euler + CONTROL_BOARD euler (per axis).
+--- @param marker Object
+--- @param board Object
+--- @param source Object|nil
+--- @param debugLabel string|nil
+--- @return table|nil rotation debug payload when agent logging is active
+local function applyMinimapMarkerRotation(marker, board, source, debugLabel)
+    local rotBefore = eulerSnapshot(marker)
+    if not isGameObject(marker) or marker.setRotation == nil or not isGameObject(board) then
+        -- #region agent log
+        if type(debugLabel) == "string" then
+            agentDebugLog("H-rot", "applyMinimapMarkerRotation", "early exit", {
+                label = debugLabel,
+                markerGuid = isGameObject(marker) and marker.getGUID() or nil,
+                hasSetRotation = isGameObject(marker) and marker.setRotation ~= nil,
+                hasBoard = isGameObject(board),
+                rotBefore = rotBefore,
+            })
+        end
+        -- #endregion
+        return nil
+    end
+    local boardRot = board.getRotation and board.getRotation() or nil
+    local bx = 0
+    local by = 0
+    local bz = 0
+    if boardRot ~= nil then
+        bx = boardRot.x or 0
+        by = boardRot.y or 0
+        bz = boardRot.z or 0
+    end
+    local sx = 0
+    local sy = 0
+    local sz = 0
+    local sourceGuid = nil
+    if isGameObject(source) and source.getRotation ~= nil then
+        local srcRot = source.getRotation()
+        sx = srcRot.x or 0
+        sy = srcRot.y or 0
+        sz = srcRot.z or 0
+        sourceGuid = source.getGUID()
+    end
+    local applied = Vector(sx + bx, sy + by, sz + bz)
+    marker.setRotation(applied)
+    local rotAfter = eulerSnapshot(marker)
+    -- #region agent log
+    local payload = {
+        label = debugLabel,
+        markerGuid = marker.getGUID(),
+        sourceGuid = sourceGuid,
+        rotBefore = rotBefore,
+        srcEuler = { x = sx, y = sy, z = sz },
+        boardEuler = { x = bx, y = by, z = bz },
+        appliedEuler = { x = applied.x, y = applied.y, z = applied.z },
+        rotAfter = rotAfter,
+    }
+    if type(debugLabel) == "string" then
+        agentDebugLog("H-rot", "applyMinimapMarkerRotation", "applied", payload)
+    end
+    -- #endregion
+    return payload
 end
 
 --- @param tableKey string
@@ -750,95 +895,205 @@ local function sourceObjectForTableComponent(parentTable, componentName)
     return objectFromGuid(comp.guid)
 end
 
---- Nearest playfield object with `<seatKey>Object` tag to the expected seat position (avoids unrelated tagged props).
---- @param seatKey string
---- @param expectedWorldPos Vector|nil
+--- Playfield seat chair for minimap scale (SEAT_CHAIR_* via G.GetThroneGUID), not arbitrary *Object tags.
+--- @param seatKey string PC color or NPC1–NPC4
 --- @return Object|nil
-local function sourceObjectForSeat(seatKey, expectedWorldPos)
+local function sourceObjectForSeat(seatKey)
     if type(seatKey) ~= "string" or seatKey == "" then
         return nil
     end
-    local tag = seatKey .. "Object"
-    local objs = getObjectsWithTag(tag) or {}
-    if expectedWorldPos == nil then
-        for _, obj in ipairs(objs) do
-            if isGameObject(obj) then
-                return obj
-            end
-        end
-        return nil
-    end
-    local best = nil
-    local bestDist = math.huge
-    for _, obj in ipairs(objs) do
-        if isGameObject(obj) and obj.getPosition ~= nil then
-            local dist = U.HorizontalDistance(obj.getPosition(), expectedWorldPos)
-            if dist < bestDist then
-                bestDist = dist
-                best = obj
-            end
-        end
-    end
-    if best ~= nil and bestDist <= 40 then
-        return best
+    local guid = G.GetThroneGUID(seatKey)
+    if type(guid) == "string" and guid ~= "" then
+        return objectFromGuid(guid)
     end
     return nil
 end
 
---- @param board Object
---- @return string
-local function polarSnapFingerprintFor(board)
-    local sx, sz = boardMapExtents(board)
-    local cfg = DATA.POLAR_SNAP or {}
-    local fractions = cfg.radiusFractions or cfg.radii or {}
-    local fractionParts = {}
-    for fi = 1, #fractions do
-        fractionParts[fi] = tostring(fractions[fi])
+--- @param config table|nil
+--- @return table
+local function resolveControlBoardSnapConfig(config)
+    if type(config) == "table" then
+        return config
     end
-    return tostring(board.getGUID())
-        .. ":"
-        .. string.format("%.3f,%.3f", sx, sz)
-        .. ":"
-        .. tostring(cfg.steps or 12)
-        .. ":"
-        .. table.concat(fractionParts, ",")
+    return DATA.CONTROL_BOARD_SNAP or {}
 end
 
---- Build snap points in board-local space from normalized polar UV (matches placement frame).
---- @param board Object
---- @return table[]
-local function buildPolarSnapPoints(board)
-    local cfg = DATA.POLAR_SNAP or {}
-    local steps = tonumber(cfg.steps) or 12
-    if steps < 1 then
-        steps = 12
+--- @param cfg table
+--- @return table cfg, number rings, number rays
+local function validateControlBoardSnapConfig(cfg)
+    if type(cfg) ~= "table" then
+        error("CONTROL_BOARD_SNAP config must be a table")
     end
-    local fractions = cfg.radiusFractions or cfg.radii or { 0.12, 0.22, 0.32, 0.42 }
+    local origin = cfg.origin
+    if type(origin) ~= "table" or type(origin.u) ~= "number" or type(origin.v) ~= "number" then
+        error("CONTROL_BOARD_SNAP.origin must be { u = number, v = number }")
+    end
+    local rings = tonumber(cfg.rings)
+    if rings == nil or rings < 1 or math.floor(rings) ~= rings then
+        error("CONTROL_BOARD_SNAP.rings must be an integer >= 1")
+    end
+    rings = math.floor(rings)
+    local innerRingMaxU = tonumber(cfg.innerRingMaxU)
+    local innerRingMaxV = tonumber(cfg.innerRingMaxV)
+    local outerRingMaxU = tonumber(cfg.outerRingMaxU)
+    local outerRingMaxV = tonumber(cfg.outerRingMaxV)
+    if innerRingMaxU == nil or innerRingMaxV == nil or outerRingMaxU == nil or outerRingMaxV == nil then
+        error("CONTROL_BOARD_SNAP inner/outer RingMaxU/V must be numbers (absolute board u/v)")
+    end
+    local rays = tonumber(cfg.rays)
+    if rays == nil or rays < 1 or math.floor(rays) ~= rays then
+        error("CONTROL_BOARD_SNAP.rays must be an integer >= 1")
+    end
+    rays = math.floor(rays)
+    local snapGroups = cfg.snapGroups
+    if type(snapGroups) ~= "table" or #snapGroups ~= rings then
+        error("CONTROL_BOARD_SNAP.snapGroups must have exactly " .. tostring(rings) .. " entries (one per ring)")
+    end
+    for ringIndex = 1, rings do
+        local group = snapGroups[ringIndex]
+        if type(group) ~= "table" then
+            error("CONTROL_BOARD_SNAP.snapGroups[" .. tostring(ringIndex) .. "] must be a table")
+        end
+        local num = tonumber(group.num)
+        if num == nil or num < 1 or math.floor(num) ~= num then
+            error("CONTROL_BOARD_SNAP.snapGroups[" .. tostring(ringIndex) .. "].num must be an integer >= 1")
+        end
+        if tonumber(group.angleDelta) == nil then
+            error("CONTROL_BOARD_SNAP.snapGroups[" .. tostring(ringIndex) .. "].angleDelta must be a number")
+        end
+    end
+    return cfg, rings, rays
+end
+
+--- Absolute board maxU/maxV for ring index (1 = innermost).
+--- @param cfg table
+--- @param ringIndex number
+--- @param rings number
+--- @return number maxU, number maxV
+local function ringMaxUvForIndex(cfg, ringIndex, rings)
+    local t = 0
+    if rings > 1 then
+        t = (ringIndex - 1) / (rings - 1)
+    end
+    local maxU = cfg.innerRingMaxU + t * (cfg.outerRingMaxU - cfg.innerRingMaxU)
+    local maxV = cfg.innerRingMaxV + t * (cfg.outerRingMaxV - cfg.innerRingMaxV)
+    return maxU, maxV
+end
+
+--- Board u/v on an axis-aligned ellipse: at angleDeg, u reaches maxU on +u axis and v reaches maxV on +v axis.
+--- @param cfg table
+--- @param angleDeg number
+--- @param maxU number absolute board u at theta=0
+--- @param maxV number absolute board v at theta=90
+--- @return number u, number v
+local function uvOnEllipse(cfg, angleDeg, maxU, maxV)
+    local ou = cfg.origin.u
+    local ov = cfg.origin.v
+    local theta = math.rad(angleDeg)
+    local u = ou + math.cos(theta) * (maxU - ou)
+    local v = ov + math.sin(theta) * (maxV - ov)
+    return u, v
+end
+
+--- Yaw in board-local space so snapped tokens face the polar origin.
+--- @param board Object
+--- @param u number
+--- @param v number
+--- @param originU number
+--- @param originV number
+--- @return number yawDeg
+local function snapYawTowardOriginDeg(board, u, v, originU, originV)
+    local snapLp = boardLocalFromUv(board, u, v)
+    local originLp = boardLocalFromUv(board, originU, originV)
+    local dx = originLp.x - snapLp.x
+    local dz = originLp.z - snapLp.z
+    return math.deg(math.atan2(dx, dz))
+end
+
+--- @param config table|nil
+--- @return number total, table perRingCounts indexed by ring
+function Gameboard.countControlBoardSnapPoints(config)
+    local cfg, rings, rays = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
+    local perRing = {}
+    local total = 0
+    for ringIndex = 1, rings do
+        local num = tonumber(cfg.snapGroups[ringIndex].num)
+        local ringTotal = rays * num
+        perRing[ringIndex] = ringTotal
+        total = total + ringTotal
+    end
+    return total, perRing
+end
+
+--- Build TTS snap points in board-local space (combined ray + family angles per ring).
+--- @param board Object
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+--- @return table[]
+function Gameboard.buildControlBoardSnapPoints(board, config)
+    if not isGameObject(board) then
+        error("Gameboard.buildControlBoardSnapPoints: board object required")
+    end
+    local cfg, rings, rays = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
+    local ou = cfg.origin.u
+    local ov = cfg.origin.v
     local points = {}
-    for _, radiusFrac in ipairs(fractions) do
-        local rf = tonumber(radiusFrac)
-        if type(rf) == "number" and rf > 0 then
-            for i = 0, steps - 1 do
-                local angle = (i / steps) * 2 * math.pi
-                local u = 0.5 + math.cos(angle) * rf
-                local v = 0.5 + math.sin(angle) * rf
-                if u >= 0.02 and u <= 0.98 and v >= 0.02 and v <= 0.98 then
-                    local lp = boardLocalFromUv(board, u, v)
-                    points[#points + 1] = {
-                        position = { lp.x, lp.y, lp.z },
-                        rotation = { 0, (i / steps) * 360, 0 },
-                        rotation_snap = true,
-                    }
-                end
+    for ringIndex = 1, rings do
+        local maxU, maxV = ringMaxUvForIndex(cfg, ringIndex, rings)
+        local group = cfg.snapGroups[ringIndex]
+        local num = tonumber(group.num)
+        local angleDelta = tonumber(group.angleDelta) or 0
+        local half = math.floor(num / 2)
+        for rayIndex = 0, rays - 1 do
+            local anchorDeg = (rayIndex / rays) * 360
+            for k = -half, half do
+                local angleDeg = anchorDeg + k * angleDelta
+                local u, v = uvOnEllipse(cfg, angleDeg, maxU, maxV)
+                local lp = boardLocalFromUv(board, u, v)
+                local yawDeg = snapYawTowardOriginDeg(board, u, v, ou, ov)
+                points[#points + 1] = {
+                    position = { lp.x, lp.y, lp.z },
+                    rotation = { 0, yawDeg, 0 },
+                    rotation_snap = true,
+                }
             end
         end
     end
     return points
 end
 
---- Install polar snap points on CONTROL_BOARD (idempotent; safe from Global reconcile).
+--- @param board Object
+--- @param config table|nil
+--- @return string
+local function controlBoardSnapFingerprintFor(board, config)
+    local cfg = resolveControlBoardSnapConfig(config)
+    local sx, sz = boardMapExtents(board)
+    local parts = {
+        tostring(board.getGUID()),
+        string.format("%.3f,%.3f", sx, sz),
+        string.format("%.4f,%.4f", cfg.origin.u, cfg.origin.v),
+        tostring(cfg.rings),
+        string.format(
+            "%.4f,%.4f,%.4f,%.4f",
+            cfg.innerRingMaxU,
+            cfg.innerRingMaxV,
+            cfg.outerRingMaxU,
+            cfg.outerRingMaxV
+        ),
+        tostring(cfg.rays),
+    }
+    local rings = tonumber(cfg.rings) or 0
+    for ringIndex = 1, rings do
+        local group = cfg.snapGroups[ringIndex]
+        if type(group) == "table" then
+            parts[#parts + 1] = tostring(group.num) .. ":" .. tostring(group.angleDelta)
+        end
+    end
+    return table.concat(parts, ":")
+end
+
+--- Install CONTROL_BOARD snap points (idempotent; safe from Global reconcile).
 --- @param board Object|nil Defaults to G.GUIDS.CONTROL_BOARD
---- @param options table|nil { force?: boolean }
+--- @param options table|nil { force?: boolean, config?: table }
 --- @return boolean installed
 function Gameboard.installPolarSnaps(board, options)
     options = type(options) == "table" and options or {}
@@ -848,11 +1103,12 @@ function Gameboard.installPolarSnaps(board, options)
         print("[Gameboard] installPolarSnaps: CONTROL_BOARD missing or has no setSnapPoints")
         return false
     end
-    local fp = polarSnapFingerprintFor(board)
+    local cfg = resolveControlBoardSnapConfig(options.config)
+    local fp = controlBoardSnapFingerprintFor(board, cfg)
     if options.force ~= true and polarSnapInstallFingerprint == fp then
         return true
     end
-    local points = buildPolarSnapPoints(board)
+    local points = Gameboard.buildControlBoardSnapPoints(board, cfg)
     if #points < 1 then
         print("[Gameboard] installPolarSnaps: no snap points built")
         return false
@@ -860,12 +1116,21 @@ function Gameboard.installPolarSnaps(board, options)
     local ok = board.setSnapPoints(points)
     if ok then
         polarSnapInstallFingerprint = fp
-        print("[Gameboard] Polar snaps installed (" .. tostring(#points) .. " points on " .. tostring(board.getGUID()) .. ")")
+        print(
+            "[Gameboard] Control-board snaps installed ("
+                .. tostring(#points)
+                .. " points on "
+                .. tostring(board.getGUID())
+                .. ")"
+        )
     else
         print("[Gameboard] installPolarSnaps: setSnapPoints returned false on " .. tostring(board.getGUID()))
     end
     return ok == true
 end
+
+--- Alias for installPolarSnaps (same behavior).
+Gameboard.installControlBoardSnaps = Gameboard.installPolarSnaps
 
 --- Static minimap markers (not npc_control_token): locked so physics does not shove them apart.
 --- @param marker Object|nil
@@ -902,18 +1167,26 @@ end
 --- @param board Object
 --- @param u number|nil
 --- @param v number|nil
---- @param source Object|nil
---- @param ratioX number|nil
---- @param ratioZ number|nil
---- @param uniformRatio number|nil
-local function placeControlBoardMarker(marker, board, u, v, source, ratioX, ratioZ, uniformRatio)
+--- @param source Object|nil Playfield object this minimap piece mimics (scale + rotation)
+--- @param options table|nil { extraLocalY?: number, debugLabel?: string }
+local function placeControlBoardMarker(marker, board, u, v, source, options)
+    local opts = options or {}
     if u ~= nil and v ~= nil then
-        marker.setPosition(Gameboard.worldOnControlBoard(board, u, v))
+        marker.setPosition(Gameboard.worldOnControlBoard(board, u, v, {
+            extraLocalY = opts.extraLocalY,
+        }))
     end
-    if isGameObject(source) and type(ratioX) == "number" and type(ratioZ) == "number" then
-        applyMinimapMarkerScale(marker, source, ratioX, ratioZ, uniformRatio)
+    if isGameObject(source) then
+        applyMinimapMarkerScale(marker, source)
     end
+    local rotDebug = applyMinimapMarkerRotation(marker, board, source, opts.debugLabel)
     lockControlBoardMarker(marker)
+    return rotDebug
+end
+
+--- @return table|nil
+function Gameboard.getLastControlBoardReconcileDiagnostics()
+    return lastControlBoardReconcileDiagnostics
 end
 
 --- Position static table/seat markers for active table.
@@ -921,17 +1194,39 @@ function Gameboard.reconcileControlBoardFromState()
     boardUvHalfExtentsCache = {}
     local board = getControlBoard()
     if not isGameObject(board) then
+        -- #region agent log
+        agentDebugLog("H1", "reconcileControlBoardFromState", "no CONTROL_BOARD", {
+            controlGuid = G.GUIDS.CONTROL_BOARD,
+        })
+        -- #endregion
         return
     end
     Gameboard.installPolarSnaps(board)
 
     local npcWorld = S.getStateVal("sessionScene", "npcWorld")
+    local stage = getStageBoard()
+    local activeTable = S.getStateVal("seatLayout", "currentTableKey")
+    -- #region agent log
+    local diag = {
+        controlBoardGuid = board.getGUID(),
+        stageBoardGuid = isGameObject(stage) and stage.getGUID() or nil,
+        activeTable = activeTable,
+        layoutLock = type(npcWorld) == "table" and npcWorld.layoutLock == true or false,
+        markers = {},
+    }
+    -- #endregion
     if type(npcWorld) == "table" and npcWorld.layoutLock == true then
+        -- #region agent log
+        diag.earlyExit = "layoutLock"
+        lastControlBoardReconcileDiagnostics = diag
+        agentDebugLog("H5", "reconcileControlBoardFromState", "early exit layoutLock", diag)
+        -- #endregion
         return
     end
-    local activeTable = S.getStateVal("seatLayout", "currentTableKey")
     local placements = type(npcWorld) == "table" and npcWorld.placements or {}
-    local ratioX, ratioZ, uniformRatio = Gameboard.minimapScaleRatios()
+    -- #region agent log
+    diag.minimapScaleDivisor = tonumber(DATA.MINIMAP_SCALE_DIVISOR) or 40
+    -- #endregion
     local allMarkers = getObjectsWithTag(TAG_TABLE) or {}
     for _, tag in ipairs({ TAG_PC, TAG_NPC_SEAT, TAG_COMPONENT }) do
         local extra = getObjectsWithTag(tag) or {}
@@ -939,6 +1234,9 @@ function Gameboard.reconcileControlBoardFromState()
             allMarkers[#allMarkers + 1] = extra[i]
         end
     end
+    -- #region agent log
+    diag.markerCountTotal = #allMarkers
+    -- #endregion
 
     for _, obj in ipairs(allMarkers) do
         if isGameObject(obj) then
@@ -951,19 +1249,41 @@ function Gameboard.reconcileControlBoardFromState()
             if tableKey ~= nil then
                 local show = tableKey == activeTable
                 setMarkerVisible(obj, show)
+                local u, v = nil, nil
+                local tableSource = nil
+                local rotDebug = nil
                 if show then
-                    local u, v = mapUvForTableCenter(tableKey)
-                    placeControlBoardMarker(
+                    u, v = mapUvForTableCenter(tableKey)
+                    tableSource = sourceObjectForTable(tableKey)
+                    rotDebug = placeControlBoardMarker(
                         obj,
                         board,
                         u,
                         v,
-                        sourceObjectForTable(tableKey),
-                        ratioX,
-                        ratioZ,
-                        uniformRatio
+                        tableSource,
+                        {
+                            extraLocalY = tonumber(DATA.MINIMAP_TABLE_EXTRA_LOCAL_Y) or 0.06,
+                            debugLabel = "table:" .. tostring(tableKey),
+                        }
                     )
                 end
+                -- #region agent log
+                local tableCfg = tableConfig(tableKey)
+                diag.markers[#diag.markers + 1] = {
+                    kind = "table",
+                    guid = obj.getGUID(),
+                    key = tableKey,
+                    show = show,
+                    u = u,
+                    v = v,
+                    placed = show == true and u ~= nil and v ~= nil,
+                    distToBoard = horizontalDistanceToBoard(board, obj.getPosition()),
+                    pos = markerPositionSnapshot(obj),
+                    sourceGuid = tableCfg and tableCfg.guid or nil,
+                    sourceResolved = isGameObject(tableSource),
+                    rotation = rotDebug,
+                }
+                -- #endregion
             elseif compKey ~= nil then
                 local parentTable, componentName = string.match(compKey, "^(.-)|(.+)$")
                 if parentTable == nil then
@@ -979,40 +1299,65 @@ function Gameboard.reconcileControlBoardFromState()
                 end
                 local show = parentTable == activeTable
                 setMarkerVisible(obj, show)
+                local u, v = nil, nil
                 if show and parentTable ~= nil and componentName ~= nil then
-                    local u, v = mapUvForTableComponent(parentTable, componentName)
+                    u, v = mapUvForTableComponent(parentTable, componentName)
                     placeControlBoardMarker(
                         obj,
                         board,
                         u,
                         v,
-                        sourceObjectForTableComponent(parentTable, componentName),
-                        ratioX,
-                        ratioZ,
-                        uniformRatio
+                        sourceObjectForTableComponent(parentTable, componentName)
                     )
                 end
+                -- #region agent log
+                diag.markers[#diag.markers + 1] = {
+                    kind = "component",
+                    guid = obj.getGUID(),
+                    key = compKey,
+                    parentTable = parentTable,
+                    show = show,
+                    u = u,
+                    v = v,
+                    placed = show == true and u ~= nil and v ~= nil,
+                    distToBoard = horizontalDistanceToBoard(board, obj.getPosition()),
+                    pos = markerPositionSnapshot(obj),
+                }
+                -- #endregion
             elseif pcSeat ~= nil then
                 local show = activeTable ~= nil
                 setMarkerVisible(obj, show)
+                local u, v = nil, nil
+                local seg = nil
                 if show then
                     local cfg = tableConfig(activeTable)
-                    local seg = cfg and cfg.playerToPositionMap and cfg.playerToPositionMap[pcSeat]
+                    seg = cfg and cfg.playerToPositionMap and cfg.playerToPositionMap[pcSeat]
                     if type(seg) == "number" then
                         local worldSeat = worldPositionForTableSegment(cfg, seg)
-                        local u, v = normalizedUvFromWorld(worldSeat)
+                        u, v = normalizedUvFromWorld(worldSeat)
                         placeControlBoardMarker(
                             obj,
                             board,
                             u,
                             v,
-                            sourceObjectForSeat(pcSeat, worldSeat),
-                            ratioX,
-                            ratioZ,
-                            uniformRatio
+                            sourceObjectForSeat(pcSeat)
                         )
                     end
                 end
+                -- #region agent log
+                diag.markers[#diag.markers + 1] = {
+                    kind = "pc",
+                    guid = obj.getGUID(),
+                    key = pcSeat,
+                    show = show,
+                    segment = seg,
+                    u = u,
+                    v = v,
+                    placed = show == true and u ~= nil and v ~= nil,
+                    distToBoard = horizontalDistanceToBoard(board, obj.getPosition()),
+                    pos = markerPositionSnapshot(obj),
+                }
+                -- #endregion
             elseif npcSeat ~= nil then
                 setMarkerVisible(obj, false)
                 local cfg = tableConfig(activeTable)
@@ -1020,27 +1365,57 @@ function Gameboard.reconcileControlBoardFromState()
                 local show = activeTable ~= nil
                     and type(seg) == "number"
                     and npcSeatOccupiedOnTable(npcSeat)
+                local u, v = nil, nil
                 if show then
                     local worldSeat = worldPositionForTableSegment(cfg, seg)
                     if worldSeat ~= nil then
-                        local u, v = normalizedUvFromWorld(worldSeat)
+                        u, v = normalizedUvFromWorld(worldSeat)
                         placeControlBoardMarker(
                             obj,
                             board,
                             u,
                             v,
-                            sourceObjectForSeat(npcSeat, worldSeat),
-                            ratioX,
-                            ratioZ,
-                            uniformRatio
+                            sourceObjectForSeat(npcSeat)
                         )
                     end
                 else
                     stashNpcSeatMarker(obj, npcSeat)
                 end
+                -- #region agent log
+                diag.markers[#diag.markers + 1] = {
+                    kind = "npc",
+                    guid = obj.getGUID(),
+                    key = npcSeat,
+                    show = show,
+                    segment = seg,
+                    u = u,
+                    v = v,
+                    placed = show == true and u ~= nil and v ~= nil,
+                    stashed = show ~= true,
+                    distToBoard = horizontalDistanceToBoard(board, obj.getPosition()),
+                    pos = markerPositionSnapshot(obj),
+                }
+                -- #endregion
             end
         end
     end
+
+    -- #region agent log
+    local tableShown = 0
+    local tablePlaced = 0
+    for _, row in ipairs(diag.markers) do
+        if row.kind == "table" and row.show == true then
+            tableShown = tableShown + 1
+            if row.placed == true then
+                tablePlaced = tablePlaced + 1
+            end
+        end
+    end
+    diag.tableMarkersShown = tableShown
+    diag.tableMarkersPlaced = tablePlaced
+    lastControlBoardReconcileDiagnostics = diag
+    agentDebugLog("summary", "reconcileControlBoardFromState", "reconcile complete", diag)
+    -- #endregion
 
     --- Mirror NPC tokens from placements (skip when layout locked — checked above).
     local tokenObjs = getObjectsWithTag(TAG_TOKEN) or {}
