@@ -3288,6 +3288,7 @@ function DEBUG.applyNpcControlTokenHostedImages()
                 local row = pairsByKey[characterKey]
                 if U.Type(row) == "table" and isHostedSteamUrl(row.front) and isHostedSteamUrl(row.back) then
                     if applyNpcControlTokenTileShape(obj, row.front, row.back) then
+                        Gameboard.setHiddenFromPlayerColors(obj)
                         updated = updated + 1
                     end
                 end
@@ -3388,6 +3389,7 @@ function DEBUG.spawnNpcControlBoardTokens(options)
                 if obj.setName ~= nil then
                     obj.setName(characterKey)
                 end
+                Gameboard.setHiddenFromPlayerColors(obj)
                 spawned = spawned + 1
             end
         end

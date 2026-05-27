@@ -508,17 +508,44 @@ function Gameboard.installPolarSnaps()
     print("[Gameboard] Polar snaps installed (" .. tostring(#points) .. " points)")
 end
 
+--- PC seat colors only — Storyteller (Black) and spectators (White/Grey) still see control-board pieces.
+--- @return string[]
+local function playerColorsHiddenFromControlBoard()
+    return C.PlayerColors or {}
+end
+
+--- Tokens and markers on CONTROL_BOARD are never visible to seated players.
+--- @param obj Object|nil
+function Gameboard.setHiddenFromPlayerColors(obj)
+    if not isGameObject(obj) or obj.setInvisibleTo == nil then
+        return
+    end
+    obj.setInvisibleTo(playerColorsHiddenFromControlBoard())
+end
+
 --- @param obj Object
---- @param visible boolean
-local function setMarkerVisible(obj, visible)
+--- @param activeForLayout boolean When false, marker is not positioned for the active table (still PC-hidden).
+local function setMarkerVisible(obj, activeForLayout)
     if not isGameObject(obj) then
         return
     end
-    if obj.setInvisibleTo ~= nil then
-        if visible then
-            obj.setInvisibleTo({})
-        else
-            obj.setInvisibleTo(C.PlayerColors or {})
+    Gameboard.setHiddenFromPlayerColors(obj)
+end
+
+local CONTROL_BOARD_COMPONENT_TAGS = {
+    TAG_TABLE,
+    TAG_PC,
+    TAG_NPC_SEAT,
+    TAG_COMPONENT,
+    TAG_TOKEN,
+}
+
+--- Re-apply PC-only invisibility on every control-board marker and token.
+local function applyControlBoardComponentPlayerInvisibility()
+    for _, tag in ipairs(CONTROL_BOARD_COMPONENT_TAGS) do
+        local objs = getObjectsWithTag(tag) or {}
+        for _, obj in ipairs(objs) do
+            Gameboard.setHiddenFromPlayerColors(obj)
         end
     end
 end
@@ -891,9 +918,12 @@ function Gameboard.reconcileControlBoardFromState()
                 local yaw = tonumber(row.yaw) or 0
                 local faceUp = row.npcLightMode ~= "OFF"
                 token.setRotation(rotationForNpcControlToken(boardYaw, yaw, faceUp))
+                Gameboard.setHiddenFromPlayerColors(token)
             end
         end
     end
+
+    applyControlBoardComponentPlayerInvisibility()
 end
 
 --- @param placements table|nil

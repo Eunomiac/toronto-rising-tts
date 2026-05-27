@@ -31,6 +31,8 @@ Table/seat markers: compute playfield world XZ (table `centerPoint`; components 
 
 **Marker scale:** `Gameboard.reconcileControlBoardFromState` sets each marker’s scale from the playfield object it represents (`C.Tables` GUID, component GUID, or nearest `<seat>Object` to the seat arc), divided by `Gameboard.minimapScaleRatios()` — stage board horizontal bounds ÷ control board bounds (typically ~40× when stage is 800×400 and control is 20×10; recomputed from live `getBounds()` when board sizes change).
 
+**Player visibility:** All `gameboard_*` markers and `npc_control_token` tiles use `setInvisibleTo(C.PlayerColors)` — hidden from every seated PC (Brown–Purple); Storyteller (Black) and spectators (White/Grey) still see them. Reconcile and spawn paths call `Gameboard.setHiddenFromPlayerColors`.
+
 ## Workshop tags
 
 | Tag | GM notes example |
