@@ -21,6 +21,8 @@ local TAG_COMPONENT = DATA.TAG_GAMEBOARD_TABLE_COMPONENT
 
 local clearArmExpireByColor = {}
 local polarSnapInstallFingerprint = nil
+--- @type table<string, { halfX: number, halfZ: number }>
+local boardUvHalfExtentsCache = {}
 
 --- @param n number
 --- @param lo number
@@ -121,6 +123,54 @@ local function boardLocalToWorld(board, localPos)
     return origin + right * lp.x + up * lp.y + fwd * lp.z
 end
 
+--- Custom_Tile `positionToLocal` / `positionToWorld` use object-local units (typically ±0.5 on X/Z for a unit tile).
+--- `getBounds().size` is world-space and must not be used as the UV divisor/multiplier.
+--- Derive local half-extents by projecting world bound corners through `positionToLocal`.
+--- @param board Object
+--- @return number halfX, number halfZ
+local function boardLocalSurfaceHalfExtents(board)
+    if not isGameObject(board) then
+        return 0.5, 0.5
+    end
+    local guid = board.getGUID()
+    if type(guid) == "string" and guid ~= "" then
+        local cached = boardUvHalfExtentsCache[guid]
+        if type(cached) == "table" and type(cached.halfX) == "number" and type(cached.halfZ) == "number" then
+            return cached.halfX, cached.halfZ
+        end
+    end
+    local halfX = 0.5
+    local halfZ = 0.5
+    if board.getBounds ~= nil and board.positionToLocal ~= nil then
+        local b = board.getBounds()
+        if b ~= nil and b.center ~= nil and b.size ~= nil then
+            local cx = b.center.x or b.center[1] or 0
+            local cy = b.center.y or b.center[2] or 0
+            local cz = b.center.z or b.center[3] or 0
+            local worldHalfX = (b.size.x or b.size[1] or 1) * 0.5
+            local worldHalfZ = (b.size.z or b.size[3] or 1) * 0.5
+            local cornerX = board.positionToLocal(Vector({ x = cx + worldHalfX, y = cy, z = cz }))
+            local cornerZ = board.positionToLocal(Vector({ x = cx, y = cy, z = cz + worldHalfZ }))
+            if cornerX ~= nil then
+                halfX = math.abs(cornerX.x or 0)
+            end
+            if cornerZ ~= nil then
+                halfZ = math.abs(cornerZ.z or 0)
+            end
+        end
+    end
+    if halfX < 0.01 then
+        halfX = 0.5
+    end
+    if halfZ < 0.01 then
+        halfZ = 0.5
+    end
+    if type(guid) == "string" and guid ~= "" then
+        boardUvHalfExtentsCache[guid] = { halfX = halfX, halfZ = halfZ }
+    end
+    return halfX, halfZ
+end
+
 --- @param board Object
 --- @param worldPos Vector|table
 --- @return Vector|nil
@@ -148,17 +198,9 @@ local function uvFromWorldOnBoard(board, worldPos)
     if localPos == nil then
         return nil, nil
     end
-    local b = board.getBounds()
-    if b == nil or b.size == nil then
-        return nil, nil
-    end
-    local sx = b.size.x or b.size[1] or 1
-    local sz = b.size.z or b.size[3] or 1
-    if sx < 0.01 or sz < 0.01 then
-        return nil, nil
-    end
-    local u = 0.5 + localPos.x / sx
-    local v = 0.5 + localPos.z / sz
+    local halfX, halfZ = boardLocalSurfaceHalfExtents(board)
+    local u = 0.5 + localPos.x / (2 * halfX)
+    local v = 0.5 + localPos.z / (2 * halfZ)
     return clamp(u, 0, 1), clamp(v, 0, 1)
 end
 
@@ -167,14 +209,8 @@ end
 --- @param v number
 --- @return Vector local position on board surface (Y slightly above tile)
 local function boardLocalFromUv(board, u, v)
-    local b = board.getBounds()
-    local sx = 1
-    local sz = 1
-    if b ~= nil and b.size ~= nil then
-        sx = b.size.x or b.size[1] or 1
-        sz = b.size.z or b.size[3] or 1
-    end
-    return Vector((u - 0.5) * sx, 0.08, (v - 0.5) * sz)
+    local halfX, halfZ = boardLocalSurfaceHalfExtents(board)
+    return Vector((u - 0.5) * 2 * halfX, 0.08, (v - 0.5) * 2 * halfZ)
 end
 
 --- Extent-based fallback when STAGE_BOARD is not in the save (workshop prep).
@@ -614,7 +650,7 @@ local function mapUvForTableComponent(parentTable, componentName)
     return mapUvForTableCenter(parentTable)
 end
 
---- Horizontal map extents from board bounds (matches UV math).
+--- World-space XZ extents from `getBounds` (minimap marker scale ratios only — not UV math).
 --- @param board Object
 --- @return number sx, number sz
 local function boardMapExtents(board)
@@ -807,6 +843,7 @@ end
 function Gameboard.installPolarSnaps(board, options)
     options = type(options) == "table" and options or {}
     board = board or getControlBoard()
+    boardUvHalfExtentsCache = {}
     if not isGameObject(board) or board.setSnapPoints == nil then
         print("[Gameboard] installPolarSnaps: CONTROL_BOARD missing or has no setSnapPoints")
         return false
@@ -881,6 +918,7 @@ end
 
 --- Position static table/seat markers for active table.
 function Gameboard.reconcileControlBoardFromState()
+    boardUvHalfExtentsCache = {}
     local board = getControlBoard()
     if not isGameObject(board) then
         return

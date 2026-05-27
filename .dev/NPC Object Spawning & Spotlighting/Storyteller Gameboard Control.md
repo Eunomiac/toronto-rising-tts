@@ -21,9 +21,11 @@ Both boards are **different objects** (position, rotation, scale). Map coordinat
 
 | Step | API | Meaning |
 | --- | --- | --- |
-| World playfield → map | `Gameboard.uvFromWorld(worldPos)` | Project through **STAGE_BOARD** (`positionToLocal` + bounds → normalized `u,v` in 0–1). Fallback: `C` table extents when stage board is missing. |
+| World playfield → map | `Gameboard.uvFromWorld(worldPos)` | Project through **STAGE_BOARD** (`positionToLocal` → normalized `u,v` in 0–1 using **local** half-extents from bound corners, not `getBounds().size`). Fallback: `C` table extents when stage board is missing. |
 | Map → world figurine | `Gameboard.worldFromUv(u, v)` | **STAGE_BOARD** `positionToWorld` at that `u,v`. |
-| Map → control minimap | `Gameboard.worldOnControlBoard(board, u, v)` | Same `u,v` on **CONTROL_BOARD** (TTS transform handles 180° Y rotation and smaller scale). |
+| Map → control minimap | `Gameboard.worldOnControlBoard(board, u, v)` | Same `u,v` on **CONTROL_BOARD** via `positionToWorld` (TTS transform handles rotation/scale). |
+
+**UV frame:** Custom_Tile boards use `positionToLocal` / `positionToWorld` in **object-local** units (≈ ±0.5 on X/Z for a unit tile). Do **not** multiply or divide UV by `getBounds().size` (world units) — that placed snaps/markers in a huge arc off the minimap. Half-extents are derived by projecting world bound corners through `positionToLocal`.
 
 **Do not** call `positionToLocal` on CONTROL_BOARD with a playfield world position (e.g. `C.Tables[].centerPoint` at z≈50). That produced markers in a huge arc off the minimap and placed the table marker at the real table instead of on the control board.
 
