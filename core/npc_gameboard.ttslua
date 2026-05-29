@@ -947,7 +947,8 @@ function Gameboard.buildControlBoardSnapPoints(board, config)
                 local angleDeg = anchorDeg + k * angleDelta
                 local u, v = uvOnEllipse(cfg, angleDeg, maxU, maxV)
                 local lp = boardLocalFromUv(board, u, v)
-                local yawDeg = snapYawTowardOriginDeg(board, u, v, ou, ov)
+                local yawOffset = tonumber(cfg.snapYawOffsetDeg) or 0
+                local yawDeg = ((snapYawTowardOriginDeg(board, u, v, ou, ov) + yawOffset) % 360 + 360) % 360
                 points[#points + 1] = {
                     position = { lp.x, lp.y, lp.z },
                     rotation = { 0, yawDeg, 0 },
