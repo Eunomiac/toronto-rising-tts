@@ -1097,7 +1097,9 @@ function NPCS.applyFigurinePlacementAtWorld(figurine, placement)
     if u == nil or v == nil then
         return
     end
-    local pos = Gameboard.worldFromUv(u, v)
+    local pos = Gameboard.worldFromUv(u, v, {
+        groundLevel = tonumber(placement.groundLevel),
+    })
     figurine.setPosition(pos)
     local yawDeg = tonumber(placement.yaw) or 0
     figurine.setRotation(Vector(0, yawDeg, 0))
@@ -1306,12 +1308,20 @@ local function collectSessionStagePlacements()
                 if lm ~= "OFF" and lm ~= "STANDARD" and lm ~= "SPOTLIGHT" then
                     lm = "STANDARD"
                 end
+                local groundLevel = tonumber(row.groundLevel)
+                if groundLevel == nil then
+                    local Gameboard = require("core.npc_gameboard")
+                    if type(Gameboard.groundLevelForSnapUv) == "function" then
+                        groundLevel = Gameboard.groundLevelForSnapUv(u, v)
+                    end
+                end
                 out[#out + 1] = {
                     characterKey = characterKey,
                     u = u,
                     v = v,
                     yaw = tonumber(row.yaw) or 0,
                     npcLightMode = lm,
+                    groundLevel = tonumber(row.groundLevel),
                 }
             end
         end
@@ -1371,12 +1381,13 @@ local function sessionNpcWorldFingerprint()
     for _, pl in ipairs(collectSessionStagePlacements()) do
         local lm = pl.npcLightMode or ""
         lines[#lines + 1] = string.format(
-            "p:%s:%.4f:%.4f:%.1f:%s",
+            "p:%s:%.4f:%.4f:%.1f:%s:%.3f",
             pl.characterKey,
             pl.u,
             pl.v,
             pl.yaw or 0,
-            lm
+            lm,
+            tonumber(pl.groundLevel) or 0
         )
     end
     local placements = collectSessionByAreaPlacements()
@@ -1607,6 +1618,25 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
     return true, nil
 end
 
+--- True when figurine world pose matches the preload grid slot (guards state/physical desync).
+--- @param fig Object|nil
+--- @param slotIndex number
+--- @return boolean
+local function figurinePhysicallyAtPreloadSlot(fig, slotIndex)
+    if not U.isGameObject(fig) or U.Type(slotIndex) ~= "number" then
+        return false
+    end
+    local pos = fig.getPosition()
+    if pos == nil then
+        return false
+    end
+    local expected = NPCS.computeSlotWorldPosition(PRELOAD_AREA_KEY, slotIndex)
+    local dy = math.abs((pos.y or 0) - expected.y)
+    local dx = math.abs((pos.x or 0) - expected.x)
+    local dz = math.abs((pos.z or 0) - expected.z)
+    return dy < 2 and dx < 3 and dz < 3
+end
+
 --- Ensure `npcName` exists in the global under-table preload pool (stable slot). Used for single-NPC repair
 --- (seating, broken GUID respawn) and after failed scene placement; catalog-wide warm-up is `ensureAllNpcsPreloaded`.
 --- @param npcName string
@@ -1630,10 +1660,6 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
     end
     local rec = getInstances()[npcName]
     if rec ~= nil then
-        local ak = rec.areaKey
-        if U.Type(ak) == "string" and NPCS.areas[ak] ~= nil and ak ~= PRELOAD_AREA_KEY then
-            return true, nil
-        end
         local fig = getObjectFromGUID(rec.figurineGuid or "")
         if fig == nil then
             setInstanceRecord(npcName, nil)
@@ -1647,8 +1673,10 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
         if resolvedSlot == nil then
             return false, "No free slot in preload pool."
         end
+        local ak = rec.areaKey
+        local seated = U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey)
         if ak == PRELOAD_AREA_KEY and U.Type(rec.slotIndex) == "number" and rec.slotIndex == resolvedSlot
-            and not (U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey)) then
+            and not seated and figurinePhysicallyAtPreloadSlot(fig, resolvedSlot) then
             local lit = getObjectFromGUID(rec.lightGuid or "")
             applyNpcPairPhysicalPresentation(fig, lit, PRELOAD_AREA_KEY)
             return true, nil
@@ -1719,6 +1747,7 @@ resolveNpcPlacementIntent = function()
             v = pl.v,
             yaw = pl.yaw,
             npcLightMode = pl.npcLightMode,
+            groundLevel = pl.groundLevel,
         }
     end
     for _, pl in ipairs(collectSessionByAreaPlacements()) do
@@ -1809,31 +1838,48 @@ end
 local function reconcileStepOneAreaRemovals(intent)
     local allOk = true
     for name, rec in pairs(getInstances()) do
-        if U.Type(name) == "string" and U.Type(rec) == "table" and npcInstanceOnStage(name) then
+        if U.Type(name) ~= "string" or U.Type(rec) ~= "table" then
+            -- skip malformed instance row
+        else
             local ci = intent.byCharacter[name]
-            local keep = false
-            if U.Type(ci) == "table" then
-                if ci.target == "stage" and rec.areaKey == STAGE_BOARD_AREA_KEY then
-                    local sp = rec.stagePlacement
-                    if U.Type(sp) == "table" then
-                        local du = math.abs((tonumber(sp.u) or 0) - (tonumber(ci.u) or 0))
-                        local dv = math.abs((tonumber(sp.v) or 0) - (tonumber(ci.v) or 0))
-                        local dy = math.abs((tonumber(sp.yaw) or 0) - (tonumber(ci.yaw) or 0))
-                        -- Placement only: do not compare rec.npcLightMode here (step 5 applies intent mode).
-                        keep = du < 0.002 and dv < 0.002 and dy < 1
+            if npcInstanceOnStage(name) then
+                local keep = false
+                if U.Type(ci) == "table" then
+                    if ci.target == "stage" and rec.areaKey == STAGE_BOARD_AREA_KEY then
+                        local sp = rec.stagePlacement
+                        if U.Type(sp) == "table" then
+                            local du = math.abs((tonumber(sp.u) or 0) - (tonumber(ci.u) or 0))
+                            local dv = math.abs((tonumber(sp.v) or 0) - (tonumber(ci.v) or 0))
+                            local dy = math.abs((tonumber(sp.yaw) or 0) - (tonumber(ci.yaw) or 0))
+                            -- Placement only: do not compare rec.npcLightMode here (step 5 applies intent mode).
+                            keep = du < 0.002 and dv < 0.002 and dy < 1
+                        end
+                    elseif ci.target == "area" then
+                        keep = ci.areaKey == rec.areaKey and ci.slotIndex == rec.slotIndex
                     end
-                elseif ci.target == "area" then
-                    keep = ci.areaKey == rec.areaKey and ci.slotIndex == rec.slotIndex
                 end
-            end
-            if not keep then
-                local ok, err = NPCS.retreatNpcInstanceToPreloadPool(name, {
-                    skipUiRefresh = true,
-                    skipSeatSync = true,
-                })
-                if not ok then
-                    allOk = false
-                    print("[NPCS] step1 area removal: " .. tostring(name) .. ": " .. tostring(err))
+                if not keep then
+                    local ok, err = NPCS.retreatNpcInstanceToPreloadPool(name, {
+                        skipUiRefresh = true,
+                        skipSeatSync = true,
+                    })
+                    if not ok then
+                        allOk = false
+                        print("[NPCS] step1 area removal: " .. tostring(name) .. ": " .. tostring(err))
+                    end
+                end
+            elseif U.Type(ci) == "table" and ci.target == "preload" and rec.areaKey == PRELOAD_AREA_KEY then
+                local fig = getObjectFromGUID(rec.figurineGuid or "")
+                local slot = resolvePreloadSlotForMove(name, stablePreloadSlotIndex(name))
+                if fig ~= nil and U.Type(slot) == "number" and not figurinePhysicallyAtPreloadSlot(fig, slot) then
+                    local ok, err = NPCS.retreatNpcInstanceToPreloadPool(name, {
+                        skipUiRefresh = true,
+                        skipSeatSync = true,
+                    })
+                    if not ok then
+                        allOk = false
+                        print("[NPCS] step1 preload resync: " .. tostring(name) .. ": " .. tostring(err))
+                    end
                 end
             end
         end
@@ -2022,6 +2068,7 @@ local function reconcileStepFiveStagePlacements(intent)
                 v = ci.v,
                 yaw = ci.yaw,
                 npcLightMode = ci.npcLightMode,
+                groundLevel = ci.groundLevel,
             }
             local modeOpt = {
                 skipUiRefresh = true,
@@ -2097,6 +2144,38 @@ local function reconcileStepFiveAreaPopulate(intent)
     return allOk
 end
 
+--- Step Five (c): park resolved **Preload** targets at `areas.preload` groundLevel (-200).
+--- @param intent table
+--- @return boolean allOk
+local function reconcileStepFivePreloadPopulate(intent)
+    local allOk = true
+    local needPool = false
+    for name, ci in pairs(intent.byCharacter) do
+        if U.Type(ci) == "table" and ci.target == "preload" then
+            if getInstances()[name] == nil then
+                needPool = true
+            end
+        end
+    end
+    if needPool then
+        NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true, immediate = true })
+    end
+    for name, ci in pairs(intent.byCharacter) do
+        if U.Type(ci) == "table" and ci.target == "preload" then
+            local ok, err = NPCS.ensureNpcInPreloadZone(name, {
+                deferUiRefresh = true,
+                skipSeatSync = true,
+                forceNpcLightMode = "OFF",
+            })
+            if not ok then
+                allOk = false
+                print("[NPCS] step5 preload park " .. tostring(name) .. ": " .. tostring(err))
+            end
+        end
+    end
+    return allOk
+end
+
 --- Unified NPC reconcile orchestrator (Steps Zero–Five). See `.dev/NPC Object Spawning & Spotlighting/NPC Reconciler Procedure.md`.
 --- @param opts table|nil `{ deferUiRefresh?, force?, onlySteps? }`
 function NPCS.reconcileAllFromState(opts)
@@ -2136,6 +2215,9 @@ function NPCS.reconcileAllFromState(opts)
             allOk = false
         end
         if not reconcileStepFiveAreaPopulate(intent) then
+            allOk = false
+        end
+        if not reconcileStepFivePreloadPopulate(intent) then
             allOk = false
         end
     end
@@ -2289,6 +2371,9 @@ function NPCS.moveNpcToArea(npcName, areaKey, opts)
     local area = NPCS.areas[areaKey]
     rec.areaKey = areaKey
     rec.slotIndex = slot
+    if areaKey == PRELOAD_AREA_KEY then
+        rec.stagePlacement = nil
+    end
     rec.npcLightMode = effectiveNpcLightModeForAreaPlacement(area, opts)
     setInstanceRecord(npcName, rec)
     if lit ~= nil and lit.setPosition ~= nil then
@@ -2360,6 +2445,7 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
         u = tonumber(placement.u),
         v = tonumber(placement.v),
         yaw = tonumber(placement.yaw) or 0,
+        groundLevel = tonumber(placement.groundLevel),
     }
     local mode = placement.npcLightMode
     if mode == "OFF" or mode == "STANDARD" or mode == "SPOTLIGHT" then

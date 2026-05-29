@@ -1,83 +1,127 @@
 --[[
-    CONTROL_BOARD 3D object buttons (shared by object script + Global reconcile fallback).
 
-    Board local frame: X = width (u), Z = depth (v), Y up. UV origin is bottom-left of the
-    minimap — buttons sit on the bottom edge (low v / negative Z), row grows toward +X.
+    CONTROL_BOARD object UI — XmlUI on the tile (same crisp pattern as csheet_defaults `page_root`).
 
-    createButton `rotation` is object-local Euler (axes follow the tile, not world).
-    On this Custom_Tile (yaw ≈ 180°): `{0, 180, 0}` tilted edge-on; `{180, 0, 0}` wrong flip.
-    Use `{0, 0, 180}` (object Z) for right-side-up labels while staying on the board plane.
+
+
+    Do not use createButton on this object: scale is ~{20, 1, 10}, so small width/height values
+
+    stretch and blur. Character sheets use large pixel sizes + scale="0.1 0.1 0.1" + rotation="0 0 180".
+
+
+
+    XmlUI layout source of truth: ui/objects/npc_control_board.xml
+
+    Embedded at build time into lib/npc_control_board_ui_xml.ttslua (npm run npc-control-board-ui:generate).
+
+
+
+    Global reconcile and objects/npc_control_board.ttslua call installObjectUi.
+
 ]]
 
+
+
 local U = require("lib.util")
-local DATA = require("lib.npc_gameboard_data")
+
+local UiXml = require("lib.npc_control_board_ui_xml")
+
+
 
 local NPC_CONTROL_BOARD_UI = {}
 
---- Bump when layout/size/rotation changes so reconcile replaces stale buttons.
-local UI_LAYOUT_VERSION = 6
 
---- Object-local Euler passed to createButton (see file header).
-local LABEL_ROTATION = { 0, 0, 180 }
 
-local BUTTON_SPECS = {
-    { label = "Apply", click_function = "click_apply", width = 72, height = 22, font_size = 14, color = { 0.2, 0.55, 0.3, 0.92 } },
-    { label = "Clear", click_function = "click_clear", width = 72, height = 22, font_size = 14, color = { 0.55, 0.2, 0.2, 0.92 } },
-    { label = "Read", click_function = "click_read_stub", width = 64, height = 22, font_size = 13, color = { 0.35, 0.35, 0.45, 0.9 } },
-    { label = "Lock", click_function = "click_lock_stub", width = 64, height = 22, font_size = 13, color = { 0.35, 0.35, 0.45, 0.9 } },
-    { label = "Load", click_function = "click_load_stub", width = 64, height = 22, font_size = 13, color = { 0.35, 0.35, 0.45, 0.9 } },
-}
+--- Fingerprint of last installed XML (skip redundant setXml when unchanged this session).
+
+local lastInstalledXmlFingerprint = nil
+
+
 
 --- @param obj Object
+
 --- @return boolean
+
 local function isBoardObject(obj)
-    return obj ~= nil and obj.createButton ~= nil and obj.clearButtons ~= nil
+
+    return U.isGameObject(obj) and obj.clearButtons ~= nil
+
 end
 
---- Local Y just above the minimap play surface (same basis as snap/token height).
---- @param obj Object
---- @return number
-local function buttonSurfaceLocalY(obj)
-    local y = tonumber(DATA.MINIMAP_SURFACE_LOCAL_Y) or 0.18
-    if obj.getBounds ~= nil then
-        local bounds = obj.getBounds()
-        if bounds ~= nil and bounds.size ~= nil then
-            local sizeY = bounds.size.y or bounds.size[2]
-            if U.Type(sizeY) == "number" and sizeY > 0.05 then
-                y = math.max(y, sizeY * 0.5 + 0.02)
-            end
-        end
+
+
+--- @param xml string
+
+--- @return string
+
+local function xmlFingerprint(xml)
+
+    if type(xml) ~= "string" then
+
+        return ""
+
     end
-    return y
+
+    return tostring(#xml) .. ":" .. string.sub(xml, 1, 128)
+
 end
 
+
+
+--- Install toolbar XmlUI from embedded source XML; remove legacy 3D createButton labels if present.
+
 --- @param obj Object
-function NPC_CONTROL_BOARD_UI.installObjectButtons(obj)
+
+function NPC_CONTROL_BOARD_UI.installObjectUi(obj)
+
     if not isBoardObject(obj) then
+
         return
+
     end
+
     obj.clearButtons()
 
-    local y = buttonSurfaceLocalY(obj)
-    local z = -0.44
-    local xStart = -0.44
-    local xStep = 0.095
+    if obj.UI == nil or type(obj.UI.setXml) ~= "function" then
 
-    for i, spec in ipairs(BUTTON_SPECS) do
-        obj.createButton({
-            label = spec.label,
-            click_function = spec.click_function,
-            function_owner = obj,
-            position = { xStart + (i - 1) * xStep, y, z },
-            rotation = LABEL_ROTATION,
-            width = spec.width,
-            height = spec.height,
-            font_size = spec.font_size,
-            color = spec.color,
-            font_color = { 1, 1, 1, 1 },
-            tooltip = i == 1 and ("v" .. tostring(UI_LAYOUT_VERSION)) or nil,
-        })
+        print("[npc_control_board_ui] installObjectUi: UI.setXml unavailable on " .. tostring(obj.getGUID()))
+
+        return
+
     end
+
+    local xml = UiXml.getXml()
+
+    local fingerprint = xmlFingerprint(xml)
+
+    if lastInstalledXmlFingerprint == fingerprint then
+
+        return
+
+    end
+
+    local ok = obj.UI.setXml(xml)
+
+    if ok then
+
+        lastInstalledXmlFingerprint = fingerprint
+
+        print("[npc_control_board_ui] XmlUI installed from ui/objects/npc_control_board.xml on " .. tostring(obj.getGUID()))
+
+    else
+
+        print("[npc_control_board_ui] UI.setXml failed on " .. tostring(obj.getGUID()))
+
+    end
+
 end
+
+
+
+--- @param obj Object
+
+NPC_CONTROL_BOARD_UI.installObjectButtons = NPC_CONTROL_BOARD_UI.installObjectUi
+
+
 
 return NPC_CONTROL_BOARD_UI

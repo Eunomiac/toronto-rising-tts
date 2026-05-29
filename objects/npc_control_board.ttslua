@@ -3,14 +3,14 @@
     CONTROL_BOARD object script (objects/npc_control_board.ttslua).
 
     TTS Editor: `.tts/objects/CONTROL_BOARD.bea29a.ttslua` + `.xml` → Save & Play.
-    Buttons: 3D createButton on the tile edge + XmlUI panel (ui/objects/npc_control_board.xml).
-    Global reconcile also installs 3D buttons if the save has no object script yet.
+    XmlUI toolbar on the tile (csheet-style scale/rotation). Source: ui/objects/npc_control_board.xml
+    (embed: npm run npc-control-board-ui:generate). Global reconcile also calls installObjectUi when needed.
 ]]
 
 local BoardUi = require("objects.npc_control_board_ui")
 
 function onLoad()
-    BoardUi.installObjectButtons(self)
+    BoardUi.installObjectUi(self)
     local Gameboard = require("core.npc_gameboard")
     Gameboard.installPolarSnaps(self)
 end

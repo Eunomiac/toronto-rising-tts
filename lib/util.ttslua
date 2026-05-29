@@ -3710,14 +3710,13 @@ end
 -- ============================================================================
 
 --- Creates a shallow copy of a table
--- Note: This is currently a shallow copy (nested tables are not deeply cloned).
--- The isDeepCloning parameter exists for future implementation but is not yet used.
--- For deep copying nested structures, use U.merge with empty table.
+-- Note: Nested tables are not cloned; `U.merge({}, t)` only recurses when the destination
+-- already has the same key (e.g. `snapGroups` array elements stay shared). Use a recursive
+-- copy or JSON round-trip when mutating nested config.
 -- @param t table The table to clone
 -- @param isDeepCloning boolean Currently unused (placeholder for future deep copy)
 -- @return table New table with copied values (shallow copy)
 -- @usage local copy = U.clone(originalTable)
--- @usage local deepCopy = U.merge({}, originalTable) -- Deep copy using merge
 function U.clone(t, isDeepCloning)
 	if U.Type(t) ~= "table" then return t end
   local t2 = {}

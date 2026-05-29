@@ -2,8 +2,9 @@
 #   <ISO8601>\tpcall=N\twaitTime=N\twaitCondition=N\tsetXml=N\tsetXmlTable=N
 # waitTime/waitCondition exclude lib/util.ttslua. To allow increases, set LAST data line >= current.
 #
-# Approved full-UI XML refresh ceiling (2026-05-19; see docs/solutions/lua-ui-full-xml-policy.md):
-#   setXml=2 — ui/ui_csheet.ttslua:431 (PCS page 3), core/soundscape_debug_panel.ttslua:166 (debug panel)
+# Approved full-UI XML refresh ceiling (see docs/solutions/lua-ui-full-xml-policy.md):
+#   setXml=3 — ui/ui_csheet_core.ttslua (PCS dynamic pages), core/soundscape_debug_panel.ttslua (debug panel),
+#              objects/npc_control_board_ui.ttslua (CONTROL_BOARD toolbar; bounds-based position)
 #   setXmlTable=0
 #
 
@@ -139,3 +140,10 @@
 2026-05-27T22:18:22.589Z	pcall=22	waitTime=1	waitCondition=0	setXml=2	setXmlTable=0
 2026-05-29T04:07:04.634Z	pcall=22	waitTime=1	waitCondition=0	setXml=2	setXmlTable=0
 2026-05-29T04:15:57.554Z	pcall=22	waitTime=1	waitCondition=0	setXml=2	setXmlTable=0
+2026-05-29T12:00:00.000Z	pcall=22	waitTime=1	waitCondition=0	setXml=3	setXmlTable=0
+2026-05-29T11:04:40.588Z	pcall=22	waitTime=1	waitCondition=0	setXml=3	setXmlTable=0
+2026-05-29T11:04:51.241Z	pcall=22	waitTime=1	waitCondition=0	setXml=3	setXmlTable=0
+2026-05-29T11:10:48.984Z	pcall=22	waitTime=1	waitCondition=0	setXml=3	setXmlTable=0
+2026-05-29T11:15:54.641Z	pcall=22	waitTime=1	waitCondition=0	setXml=3	setXmlTable=0
+2026-05-29T11:19:35.569Z	pcall=22	waitTime=1	waitCondition=0	setXml=3	setXmlTable=0
+2026-05-29T11:26:50.255Z	pcall=22	waitTime=1	waitCondition=0	setXml=3	setXmlTable=0

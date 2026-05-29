@@ -33,6 +33,8 @@ Table/seat markers: compute playfield world XZ (table `centerPoint`; components 
 
 **NPC seat markers:** Shown on the minimap only when `seatLayout.occupiedNPCSlots[npcSeat]` is a character key (not `false`) and the active table defines that seat in `playerToPositionMap`. Empty slots are **locked** and parked at world **Y = -200** (`MARKER_STASH_WORLD_Y`, slight X offset per slot so stashes do not stack).
 
+**Table leaf / component markers (`gameboard_table_component`):** Same activation rule as playfield leaves in `lib.rotational-seat-layout` — shown only when the active table matches **and** `occupiedNPCSlots[component.usedBy]` is a character key. Inactive leaves are stashed at **Y = -200**. Placement uses the **`usedBy` NPC seat arc** on the minimap (not table center). Table A mapping in `C.Tables`: **NPC1 → Table Leaf Near Right**, **NPC2 → Table Leaf Near Left**, **NPC3 → Table Leaf Far Right**, **NPC4 → Table Leaf Far Left**.
+
 **Marker scale:** For each minimap marker, read `getScale()` on the playfield object it mimics (`C.Tables` table/leaf GUID, or `G.GetThroneGUID` seat chair for PC/NPC seats), then set marker scale to **source ÷ 40** on all three axes (`DATA.MINIMAP_SCALE_DIVISOR`). Do not use nearest `*Object` tag scan for scale — that often hits a scale-1 helper instead of `SEAT_CHAIR_*`.
 
 **Marker rotation:** `marker.setRotation(source.getRotation() + board.getRotation())` per euler axis (playfield mimic + CONTROL_BOARD). Table uses `C.Tables[tableKey].guid`; seats use `G.GetThroneGUID`. Workshop stash euler on markers is overwritten every `reconcileControlBoardFromState` — if rotation still matches the save default, the bundled script was not Save & Play’d.
@@ -65,8 +67,10 @@ Snap points are installed by `Gameboard.installPolarSnaps` (alias `installContro
 
 | Source | Role |
 | --- | --- |
-| `objects/npc_control_board.ttslua` | Object script: `onLoad` → 3D buttons + polar snaps; `click_apply` / `click_clear` → Global |
-| `ui/objects/npc_control_board.xml` | Object XmlUI (same `click_*` handlers) |
+| `objects/npc_control_board.ttslua` | Object script: `onLoad` → XmlUI toolbar + polar snaps; `click_*` → Global |
+| `objects/npc_control_board_ui.ttslua` | `installObjectUi` (embedded XML via `UI.setXml`, clears legacy 3D buttons) |
+| `lib/npc_control_board_ui_xml.ttslua` | **Generated** — embedded copy of `ui/objects/npc_control_board.xml` for runtime `UI.setXml` |
+| `ui/objects/npc_control_board.xml` | **Source of truth** for toolbar XmlUI (csheet-style scale/rotation) |
 
 **TTS Editor — Script** (one line):
 
@@ -84,7 +88,16 @@ The extension may mirror these under `.tts/objects/CONTROL_BOARD.bea29a.*` (giti
 
 **Workshop:** tag the tile `npc_control_board` (optional). GUID `bea29a` in `lib/guids.ttslua`.
 
-**In-game buttons:** Five small **3D** `createButton` labels in one row along the **bottom-left** of the tile (Apply → Clear → Read → Lock → Load), coplanar with the minimap (`MINIMAP_SURFACE_LOCAL_Y` + small lift). Label rotation is object-local `{0, 0, 180}` (readable on yaw≈180° tile; avoid `{0, 180, 0}` / `{180, 0, 0}`). XmlUI is the object’s XML panel when selected. After pulling repo stubs, **Save & Play** so the save bundles script + XML onto `bea29a`. `reconcileControlBoardFromState` calls `Gameboard.ensureControlBoardObjectCallbacks` then `ensureControlBoardObjectUi` each sync (layout version in `objects/npc_control_board_ui.ttslua` forces reinstall).
+**In-game toolbar (XmlUI only):** Same crisp pattern as character sheets (`ui/player/csheets/csheet_defaults.xml` `page_root`): large pixel sizes (`width`/`fontSize`), then **`scale="0.1 0.1 0.1"`** and **`rotation="0 0 180"`** on the root `Panel`. Do **not** use `createButton` on CONTROL_BOARD — the tile is scale **{20, 1, 10}**, so small button dimensions stretch and blur.
+
+| Piece | Path |
+| --- | --- |
+| **Source of truth (edit layout here)** | [`ui/objects/npc_control_board.xml`](../../ui/objects/npc_control_board.xml) — `gb_root` position, `scale`, `rotation`, button sizes |
+| **Build embed** | `npm run npc-control-board-ui:generate` → [`lib/npc_control_board_ui_xml.ttslua`](../../lib/npc_control_board_ui_xml.ttslua) (do not edit by hand) |
+| **Runtime install** | [`objects/npc_control_board_ui.ttslua`](../../objects/npc_control_board_ui.ttslua) — `installObjectUi` applies embedded XML via `UI.setXml` (skips when unchanged) |
+| **Csheet reference** | [`ui/player/csheets/csheet_defaults.xml`](../../ui/player/csheets/csheet_defaults.xml) — same embed pattern via `npm run csheet-defaults:generate` |
+
+**Workflow:** edit `ui/objects/npc_control_board.xml` → `npm run npc-control-board-ui:generate` (or `npm run build`) → **Save & Play** → reconcile installs toolbar from embedded XML. Console: **`XmlUI installed from ui/objects/npc_control_board.xml`** after first install each session.
 
 **Apply click error (`click_apply` is not a function):** The save often has **empty** `LuaScript` on `bea29a` while Global still installs 3D buttons that reference `click_apply` on the board object. After **Save & Play** with the bundled stub, handlers live in the object script. Until then, the first `Sync.npcs` / reconcile injects a minimal `click_*` script via `setLuaScript` (`Gameboard.ensureControlBoardObjectCallbacks`). Console: `lua GlobalGameboardApply()` / `lua GlobalGameboardClearClick({ player_color = "Black" })` (double-click Clear confirm).
 
@@ -94,6 +107,8 @@ The extension may mirror these under `.tts/objects/CONTROL_BOARD.bea29a.*` (giti
 
 Config: `D.CONTROL_BOARD_SNAP` in `lib/npc_gameboard_data.ttslua` — elliptical rings with **absolute** `innerRingMaxU/V` and `outerRingMaxU/V`, and per-ring `snapGroups` (`num`, `angleDelta`, `rays`). Default install prints **136** snaps (`4×1 + 12×3 + 16×5 + 20×1`). Each snap yaws toward `origin` and is tagged `npc_control_token`.
 
+**Anchor snap group spread:** When a grouped `npc_control_token` is dropped on CONTROL_BOARD, Global `onObjectDrop` → `Gameboard.onNpcControlTokenDropped` (50ms defer so TTS snap settles). If **all** of: (1) token resolves to a non-blacklisted palette group via `Palette.resolveGroupForCharacterKey`, (2) drop lands on the **anchor** snap of a ray family (`familyK == 0`, center of `num`/`angleDelta` cluster), (3) every **other** snap in that family is empty — then remaining group members **not already on CONTROL_BOARD** (palette or elsewhere) are snapped onto sibling family slots in **slotIndex** order (lowest first) until the family is full. Programmatic moves suppress re-entry via an internal depth guard. Manual test: `lua require("core.npc_gameboard").tryAnchorFamilyGroupSpread(getObjectFromGUID("…"))`.
+
 ## Token palette (CONTROL_BOARD_PALETTE)
 
 Workshop object **CONTROL_BOARD_PALETTE** (typical scale `{5, 1, 10}` — wide on X, tall on Z). **20×40** snap grid (`800` points). Object script:
@@ -102,7 +117,7 @@ Workshop object **CONTROL_BOARD_PALETTE** (typical scale `{5, 1, 10}` — wide o
 require("objects.npc_control_board_palette")
 ```
 
-`lib/npc_control_board_palette.ttslua` installs snaps and parks tokens by **coterie group** from `lib/npcs_data` (`groups.fiveKeys = 1`, etc.). Groups in `D.PALETTE_GROUP_BLACKLIST` (currently `princesCourt`) are skipped when picking a character’s palette group. One surviving group → that group; several survivors → lexicographically smallest non-blacklisted `groupId`. Layout: members adjacent in slot order, whole group moves to the next row when a row would wrap, **one empty snap** between groups (not a full blank row), first token at top-left. Token keys from GM notes use the same `npcToken:<key>` capture as the control board (stops at comma or newline).
+`lib/npc_control_board_palette.ttslua` installs snaps and parks tokens by **coterie group** from `lib/npcs_data` (`groups.fiveKeys = 1`, etc.). Snap yaw uses `D.CONTROL_BOARD_PALETTE_SNAP.snapYawOffsetDeg` (default **180** on the rectangular palette). Minimap polar snaps use **toward-origin** yaw + `D.CONTROL_BOARD_SNAP.snapYawOffsetDeg` (default **0**). `syncTokensToPalette` applies matching world rotation when parking. Groups in `D.PALETTE_GROUP_BLACKLIST` (currently `princesCourt`) are skipped when picking a character’s palette group. One surviving group → that group; several survivors → lexicographically smallest non-blacklisted `groupId`. Layout: members adjacent in slot order, whole group moves to the next row when a row would wrap, **one empty snap** between groups (not a full blank row), first token at top-left. Token keys from GM notes use the same `npcToken:<key>` capture as the control board (stops at comma or newline).
 
 Manual refresh / IDE tuning (after Save & Play):
 

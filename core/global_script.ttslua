@@ -1295,6 +1295,12 @@ function onObjectDrop(playerColor, object)
     if object ~= nil and NPCS and NPCS.onObjectDropped then
         NPCS.onObjectDropped(object)
     end
+    if object ~= nil and object.hasTag ~= nil and object.hasTag("npc_control_token") == true then
+        local Gameboard = require("core.npc_gameboard")
+        if Gameboard.onNpcControlTokenDropped then
+            Gameboard.onNpcControlTokenDropped(object, playerColor)
+        end
+    end
 end
 
 --[[

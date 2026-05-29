@@ -52,14 +52,15 @@ D.DEFAULT_STAGE_WORLD = {
 --- See .dev/NPC Object Spawning & Spotlighting/Generating Snap Points For Control Board.md
 D.CONTROL_BOARD_SNAP = {
     origin = { u = 0.5, v = 0.2 },
-    --- Added to board-local snap yaw (toward origin); 180 flips inverted token facing on the minimap.
-    snapYawOffsetDeg = 180,
+    --- Added to board-local snap yaw (toward origin). Polar minimap snaps do not use the palette’s fixed 180°.
+    snapYawOffsetDeg = 0,
     rings = 4,
     innerRingMaxU = 0.6,
     innerRingMaxV = 0.3,
     outerRingMaxU = 0.9,
     outerRingMaxV = 0.9,
     snapGroups = {
+        --- Per ring: `num`, `angleDelta`, `rays`, optional `groundLevel` (board-local Y on the tile).
         { num = 1, angleDelta = 0, rays = 4 },
         { num = 3, angleDelta = 3, rays = 12 },
         { num = 5, angleDelta = 4, rays = 16 },
@@ -73,6 +74,8 @@ D.CONTROL_BOARD_PALETTE_SNAP = {
     rows = 40,
     uMargin = 0.02,
     vMargin = 0.02,
+    --- Board-local snap yaw for rectangular grid (tokens inverted at 0 on palette tile).
+    snapYawOffsetDeg = 180,
 }
 
 --- Groups excluded when picking palette row membership from `npcs_data` character `groups`.

@@ -20,13 +20,23 @@ Snap points are generated in polar coordinates on the control board. Several set
 | `rings` | Number of concentric elliptical rings |
 | `innerRingMaxU` & `innerRingMaxV` | **Absolute** board u/v reached by the **innermost** ring (distance along axes from the **0,0** corner — not a delta from `origin`) |
 | `outerRingMaxU` & `outerRingMaxV` | **Absolute** board u/v for the **outermost** ring; intermediate rings linearly interpolate inner → outer |
-| `snapGroups` | One entry per ring (**index 1 = innermost**): `{ num, angleDelta, rays }` — family size, angular spacing, and ray count **for that ring** |
+| `snapGroups` | One entry per ring (**index 1 = innermost**): `{ num, angleDelta, rays, groundLevel? }` — family size, angular spacing, ray count, and optional **board-local Y** for that ring |
+| `snapYawOffsetDeg` | Added to toward-origin yaw on each snap (default **0** on control board; palette uses **180**) |
 
-### Example Configuration (shipped default)
+### `groundLevel` (per ring, optional)
+
+- **Board-local Y** on the map tile (same units as `D.MINIMAP_SURFACE_LOCAL_Y`, default **0.18**).
+- Used for **generated snap point positions** on CONTROL_BOARD.
+- On **Apply**, persisted in `sessionScene.npcWorld.placements[*].groundLevel` and applied to **STAGE_BOARD figurines** via `Gameboard.worldFromUv(u, v, { groundLevel = … })`.
+- When omitted on a ring, falls back to `MINIMAP_SURFACE_LOCAL_Y`.
+- Ring is inferred from `(u, v)` by closest matching ellipse (`Gameboard.resolveSnapRingIndexForUv` / `Gameboard.groundLevelForSnapUv`).
+
+### Example Configuration (shipped default — no per-ring Y override)
 
 ```lua
 D.CONTROL_BOARD_SNAP = {
   origin = { u = 0.5, v = 0.2 },
+  snapYawOffsetDeg = 0,
   rings = 4,
   innerRingMaxU = 0.6,
   innerRingMaxV = 0.3,
@@ -75,14 +85,14 @@ anchorDeg = (rayIndex / rays) * 360   -- rayIndex = 0 .. rays-1
 half = math.floor(num / 2)
 for k = -half, half do
   angleDeg = anchorDeg + k * angleDelta
-  -- u,v, board-local position, yaw toward origin
+  -- u,v, board-local position (Y = snapGroups[ringIndex].groundLevel or MINIMAP_SURFACE_LOCAL_Y), yaw toward origin
 end
 ```
 
 Example: ring 3, `num=5`, `angleDelta=4`, `anchorDeg=90` → **82°, 86°, 90°, 94°, 98°**.
 
 - **Duplicates** at overlapping angles are allowed (no dedupe).
-- Every snap uses `rotation_snap = true`, `tags = { "npc_control_token" }` (tagged snaps match control tokens), and board-local yaw **toward** `origin` plus `snapYawOffsetDeg` (default **180** on `D.CONTROL_BOARD_SNAP` so tokens face correctly on the minimap tile).
+- Every snap uses `rotation_snap = true`, `tags = { "npc_control_token" }` (tagged snaps match control tokens), and board-local yaw **toward** `origin` plus `snapYawOffsetDeg`.
 
 ## Visual illustrations
 
@@ -96,28 +106,64 @@ Step 3 dotted circles use the **same** ring geometry as Step 2.
 
 ## IDE iteration (Save & Play first)
 
-```lua
-lua DEBUG.previewControlBoardSnapCount()  -- count only
+Preview count only:
 
+```lua
+lua DEBUG.previewControlBoardSnapCount()
+```
+
+Regenerate snaps with a **full** config table (validation requires all top-level fields and `#snapGroups == rings`):
+
+```lua
 lua DEBUG.installNpcControlBoardSnaps({
   config = {
     origin = { u = 0.5, v = 0.2 },
+    snapYawOffsetDeg = 0,
     rings = 4,
     innerRingMaxU = 0.6,
     innerRingMaxV = 0.3,
     outerRingMaxU = 0.9,
     outerRingMaxV = 0.9,
     snapGroups = {
-      { num = 1, angleDelta = 0, rays = 4 },
-      { num = 3, angleDelta = 3, rays = 12 },
-      { num = 5, angleDelta = 4, rays = 16 },
-      { num = 1, angleDelta = 0, rays = 20 },
+      { num = 1, angleDelta = 0, rays = 4,  groundLevel = 0.18 },
+      { num = 3, angleDelta = 3, rays = 12, groundLevel = 0.22 },
+      { num = 5, angleDelta = 4, rays = 16, groundLevel = 0.26 },
+      { num = 1, angleDelta = 0, rays = 20, groundLevel = 0.30 },
     },
   },
 })
 ```
 
-Pass a **full** config table when overriding — validation requires all fields and `#snapGroups == rings`.
+Or call the gameboard API directly:
+
+```lua
+lua require("core.npc_gameboard").installPolarSnaps(nil, {
+  force = true,
+  config = {
+    origin = { u = 0.5, v = 0.2 },
+    snapYawOffsetDeg = 0,
+    rings = 4,
+    innerRingMaxU = 0.6,
+    innerRingMaxV = 0.3,
+    outerRingMaxU = 0.9,
+    outerRingMaxV = 0.9,
+    snapGroups = {
+      { num = 1, angleDelta = 0, rays = 4,  groundLevel = 0.18 },
+      { num = 3, angleDelta = 3, rays = 12, groundLevel = 0.22 },
+      { num = 5, angleDelta = 4, rays = 16, groundLevel = 0.26 },
+      { num = 1, angleDelta = 0, rays = 20, groundLevel = 0.30 },
+    },
+  },
+})
+```
+
+Inspect ring resolution for a token u/v:
+
+```lua
+lua local G = require("core.npc_gameboard"); print(G.resolveSnapRingIndexForUv(0.72, 0.55)); print(G.groundLevelForSnapUv(0.72, 0.55))
+```
+
+Pass a **full** config when overriding — partial tables fail validation.
 
 ## Additional Guidelines
 

@@ -1768,8 +1768,25 @@ local function chronicleSpotlights(mainLightPatch, seatMode)
   return t
 end
 
+--- Brighten a gradient stop toward white so `ambient_intensity` can scale visible luminance
+--- (very dark RGB tints stay near-black regardless of intensity).
+--- @param r number
+--- @param g number
+--- @param b number
+--- @param lift number|nil fraction toward white; default `AMBIENT_GRADIENT_LIFT`
+--- @return userdata
+local AMBIENT_GRADIENT_LIFT = 0.50
+
+local function liftAmbientColor(r, g, b, lift)
+  lift = lift or AMBIENT_GRADIENT_LIFT
+  local function ch(c)
+    return math.min(1, c + (1 - c) * lift)
+  end
+  return Color(ch(r), ch(g), ch(b), 1)
+end
+
 --- Gradient ambient chronicle preset (`ambient_type = 2`) with full spotlight map.
---- Use `Color(r, g, b, a)` — not `Color({ r, g, b, a })` (TTS table ctor expects `{ r, g, b, a }` keys).
+--- Use `liftAmbientColor(r, g, b)` for gradient stops — not `Color({ r, g, b, a })` (TTS table ctor expects keys).
 --- @param ambientIntensity number
 --- @param reflectionIntensity number
 --- @param gradientColor table `{ sky, equator, ground }` as `Color(...)`
@@ -1885,9 +1902,9 @@ C.LightModes = {
     1.05,
     0.18,
     {
-      sky = Color(0.92, 0.95, 1.00, 1),
-      equator = Color(0.88, 0.91, 0.93, 1),
-      ground = Color(0.82, 0.86, 0.84, 1),
+      sky = liftAmbientColor(0.92, 0.95, 1.00),
+      equator = liftAmbientColor(0.88, 0.91, 0.93),
+      ground = liftAmbientColor(0.82, 0.86, 0.84),
     },
     {
       color = Color(0.92, 0.95, 1.00, 1),
@@ -1899,9 +1916,9 @@ C.LightModes = {
     0.60,
     0.15,
     {
-      sky = Color(1.00, 0.82, 0.55, 1),
-      equator = Color(0.55, 0.38, 0.22, 1),
-      ground = Color(0.30, 0.18, 0.10, 1),
+      sky = liftAmbientColor(1.00, 0.82, 0.55),
+      equator = liftAmbientColor(0.55, 0.38, 0.22),
+      ground = liftAmbientColor(0.30, 0.18, 0.10),
     },
     {
       color = Color(1.00, 0.78, 0.45, 1),
@@ -1913,9 +1930,9 @@ C.LightModes = {
     0.22,
     0.06,
     {
-      sky = Color(0.12, 0.14, 0.22, 1),
-      equator = Color(0.08, 0.07, 0.10, 1),
-      ground = Color(0.06, 0.04, 0.03, 1),
+      sky = liftAmbientColor(0.12, 0.14, 0.22),
+      equator = liftAmbientColor(0.08, 0.07, 0.10),
+      ground = liftAmbientColor(0.06, 0.04, 0.03),
     },
     {
       color = Color(1.00, 0.70, 0.40, 1),
@@ -1927,9 +1944,9 @@ C.LightModes = {
     0.70,
     0.10,
     {
-      sky = Color(0.06, 0.08, 0.18, 1),
-      equator = Color(0.45, 0.32, 0.12, 1),
-      ground = Color(0.08, 0.06, 0.05, 1),
+      sky = liftAmbientColor(0.06, 0.08, 0.18),
+      equator = liftAmbientColor(0.45, 0.32, 0.12),
+      ground = liftAmbientColor(0.08, 0.06, 0.05),
     },
     {
       color = Color(1.00, 0.75, 0.35, 1),
@@ -1941,9 +1958,9 @@ C.LightModes = {
     0.45,
     0.08,
     {
-      sky = Color(0.04, 0.07, 0.20, 1),
-      equator = Color(0.06, 0.10, 0.16, 1),
-      ground = Color(0.03, 0.03, 0.04, 1),
+      sky = liftAmbientColor(0.04, 0.07, 0.20),
+      equator = liftAmbientColor(0.06, 0.10, 0.16),
+      ground = liftAmbientColor(0.03, 0.03, 0.04),
     },
     {
       color = Color(0.60, 0.65, 0.75, 1),
@@ -1955,9 +1972,9 @@ C.LightModes = {
     0.28,
     0.04,
     {
-      sky = Color(0.10, 0.14, 0.28, 1),
-      equator = Color(0.06, 0.08, 0.14, 1),
-      ground = Color(0.02, 0.02, 0.03, 1),
+      sky = liftAmbientColor(0.10, 0.14, 0.28),
+      equator = liftAmbientColor(0.06, 0.08, 0.14),
+      ground = liftAmbientColor(0.02, 0.02, 0.03),
     },
     {
       color = Color(0.75, 0.82, 0.95, 1),
@@ -1969,9 +1986,9 @@ C.LightModes = {
     0.55,
     0.05,
     {
-      sky = Color(0.08, 0.18, 0.10, 1),
-      equator = Color(0.12, 0.22, 0.14, 1),
-      ground = Color(0.35, 0.22, 0.12, 1),
+      sky = liftAmbientColor(0.08, 0.18, 0.10),
+      equator = liftAmbientColor(0.12, 0.22, 0.14),
+      ground = liftAmbientColor(0.35, 0.22, 0.12),
     },
     {
       color = Color(1.00, 0.78, 0.45, 1),
@@ -1982,9 +1999,9 @@ C.LightModes = {
     0.35,
     0.04,
     {
-      sky = Color(0.05, 0.12, 0.07, 1),
-      equator = Color(0.08, 0.16, 0.10, 1),
-      ground = Color(0.22, 0.14, 0.08, 1),
+      sky = liftAmbientColor(0.05, 0.12, 0.07),
+      equator = liftAmbientColor(0.08, 0.16, 0.10),
+      ground = liftAmbientColor(0.22, 0.14, 0.08),
     },
     {
       color = Color(1.00, 0.72, 0.40, 1),
@@ -1995,9 +2012,9 @@ C.LightModes = {
     0.20,
     0.03,
     {
-      sky = Color(0.04, 0.10, 0.06, 1),
-      equator = Color(0.05, 0.08, 0.06, 1),
-      ground = Color(0.04, 0.03, 0.02, 1),
+      sky = liftAmbientColor(0.04, 0.10, 0.06),
+      equator = liftAmbientColor(0.05, 0.08, 0.06),
+      ground = liftAmbientColor(0.04, 0.03, 0.02),
     },
     {
       color = Color(1.00, 0.68, 0.38, 1),

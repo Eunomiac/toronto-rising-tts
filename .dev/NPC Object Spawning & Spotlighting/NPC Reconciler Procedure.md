@@ -82,7 +82,7 @@ Steps run in this order:
 | **Three** | Seat NPCs that are seat-bound |
 | **Layout commit A** | One table layout pass (`playerToPositionMap` rotation + `postCorrections`) |
 | **Four** | Apply narrative presence (visibility / seat lights) on **assigned** seats |
-| **Five** | Place area-bound NPCs into stage areas |
+| **Five** | Stage placements, legacy areas, then preload pool (-200) |
 
 **Layout commits:** Rotational seating is table-wide. Do not treat Step Three as N independent moves. After Step Three finishes all tag/instance updates for seat-bound NPCs, run **one** layout sync for the active table, then apply `C.TableSourceObjects.postCorrections` / `postCorrectionsBySeatRole`. Step Five moves figurines out of seats/preload into areas; if any seat-bound NPC was incorrectly left at the table, do not run a second full layout unless Step Three runs again.
 
@@ -195,7 +195,19 @@ Reverse the above: PC hidden-object visibility per `C.HiddenObjects`; NPC figuri
 
 ---
 
-## Step Five: Populate NPC areas
+## Step Five: Populate world from resolved intent
+
+Step Five runs three passes (implementation order):
+
+| Pass | Target | Action |
+| --- | --- | --- |
+| **(a) Stage** | `sessionScene.npcWorld.placements` (gameboard u/v) | `moveNpcToStagePlacement` — world Y from **STAGE_BOARD** bounds (often ~table height, not -200) |
+| **(b) Areas** | `byArea` legacy stage areas | `spawnOrMoveIndividual` into `npcs_data` area slots |
+| **(c) Preload** | Step Zero target **Preload** | `ensureNpcInPreloadZone` — world Y = `areas.preload.groundLevel` (**-200**) |
+
+Characters with active **placements** rows are **not** preload targets; park them only after Clear / empty `placements`.
+
+### Populate NPC areas (pass b)
 
 Align stage areas with resolved intent: for each character whose target is **Area**, move figurine + paired area spotlight into the assigned area slot (normal area placement procedures).
 

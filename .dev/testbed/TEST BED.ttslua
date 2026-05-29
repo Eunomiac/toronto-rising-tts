@@ -2363,3 +2363,19 @@ DEBUG.clearNpcControlBoardTokens()
 DEBUG.spawnNpcControlBoardTokens()
 
 DEBUG.spawnNpcTokenUploadBatch({ columns = 12, gap = 2, startY = 3 })
+
+DEBUG.installNpcControlBoardSnaps({
+  origin = { u = 0.5, v = 0.3 },
+  snapYawOffsetDeg = 0,
+  rings = 4,
+  innerRingMaxU = 0.6,
+  innerRingMaxV = 0.4,
+  outerRingMaxU = 0.9,
+  outerRingMaxV = 0.9,
+  snapGroups = {
+    { num = 1, angleDelta = 0, rays = 4,  groundLevel = -50 },
+    { num = 5, angleDelta = 3, rays = 12, groundLevel = -50 },
+    { num = 5, angleDelta = 3, rays = 16, groundLevel = -50 },
+    { num = 5, angleDelta = 2, rays = 20, groundLevel = -50 },
+  },
+})

@@ -50,6 +50,47 @@ function Palette.resolvePaletteGroupForCharacter(characterDef)
     return survivors[1].groupId, survivors[1].slotIndex
 end
 
+--- @param characterKey string|nil
+--- @return string|nil groupId, number|nil slotIndex
+function Palette.resolveGroupForCharacterKey(characterKey)
+    if U.Type(characterKey) ~= "string" or characterKey == "" then
+        return nil, nil
+    end
+    local characters = NPCS_DATA.characters
+    if U.Type(characters) ~= "table" then
+        return nil, nil
+    end
+    return Palette.resolvePaletteGroupForCharacter(characters[characterKey])
+end
+
+--- Sorted roster for a palette group (lowest slotIndex first).
+--- @param groupId string|nil
+--- @return table[] { characterKey: string, slotIndex: number }
+function Palette.getSortedGroupMembers(groupId)
+    if U.Type(groupId) ~= "string" or groupId == "" then
+        return {}
+    end
+    local _, byGroup = Palette.buildTokenSnapAssignments()
+    local members = byGroup[groupId]
+    if U.Type(members) ~= "table" or #members == 0 then
+        return {}
+    end
+    local out = {}
+    for i, member in ipairs(members) do
+        out[i] = {
+            characterKey = member.characterKey,
+            slotIndex = tonumber(member.slotIndex) or 0,
+        }
+    end
+    table.sort(out, function(a, b)
+        if a.slotIndex == b.slotIndex then
+            return tostring(a.characterKey) < tostring(b.characterKey)
+        end
+        return a.slotIndex < b.slotIndex
+    end)
+    return out
+end
+
 --- @return table cfg columns, rows, uMargin, vMargin
 local function paletteSnapConfig()
     local cfg = DATA.CONTROL_BOARD_PALETTE_SNAP or {}
@@ -66,7 +107,36 @@ local function paletteSnapConfig()
         rows = math.floor(rows),
         uMargin = tonumber(cfg.uMargin) or 0.02,
         vMargin = tonumber(cfg.vMargin) or 0.02,
+        snapYawOffsetDeg = tonumber(cfg.snapYawOffsetDeg) or 180,
     }
+end
+
+--- @param rot Vector|nil
+--- @return boolean
+local function tokenFaceUpFromRotation(rot)
+    if rot == nil then
+        return true
+    end
+    local norm = ((rot.x or 0) % 360 + 360) % 360
+    return not (norm > 90 and norm < 270)
+end
+
+--- @param palette Object
+--- @param token Object|nil
+--- @return Vector
+local function tokenRotationForPalette(palette, token)
+    local boardYaw = 0
+    if U.isGameObject(palette) and palette.getRotation ~= nil then
+        local boardRot = palette.getRotation()
+        boardYaw = (boardRot and boardRot.y) or 0
+    end
+    local yawOffset = paletteSnapConfig().snapYawOffsetDeg
+    local faceUp = true
+    if U.isGameObject(token) and token.getRotation ~= nil then
+        faceUp = tokenFaceUpFromRotation(token.getRotation())
+    end
+    local rx = faceUp and 0 or 180
+    return Vector(rx, boardYaw + yawOffset, 0)
 end
 
 --- @param board Object
@@ -173,6 +243,7 @@ function Palette.buildSnapPoints(board)
         error("Palette.buildSnapPoints: board object required")
     end
     local cfg = paletteSnapConfig()
+    local yawDeg = ((cfg.snapYawOffsetDeg % 360) + 360) % 360
     local points = {}
     for row = 0, cfg.rows - 1 do
         for col = 0, cfg.columns - 1 do
@@ -180,7 +251,7 @@ function Palette.buildSnapPoints(board)
             local lp = boardLocalFromUv(board, u, v)
             points[#points + 1] = {
                 position = { lp.x, lp.y, lp.z },
-                rotation = { 0, 0, 0 },
+                rotation = { 0, yawDeg, 0 },
                 rotation_snap = true,
                 tags = { TAG_TOKEN },
             }
@@ -371,8 +442,6 @@ function Palette.syncTokensToPalette(palette)
     end
 
     local moved = 0
-    local boardRot = palette.getRotation()
-    local boardYaw = (boardRot and boardRot.y) or 0
 
     --- Phase 1: tokens on palette → correct snap (nearest-snap detect via findSnapPoint).
     local onPalette = Palette.tokensOnBoard(palette)
@@ -417,7 +486,7 @@ function Palette.syncTokensToPalette(palette)
                 end
                 if not alreadyCorrect then
                     token.setPosition(snapWorld[wantIndex])
-                    token.setRotation(Vector(0, boardYaw, 0))
+                    token.setRotation(tokenRotationForPalette(palette, token))
                     if token.setInvisibleTo ~= nil then
                         token.setInvisibleTo(C.PlayerColors or {})
                     end
