@@ -50,6 +50,7 @@ function expectedControlBoardXmlIncludeLine(objectFilename) {
 }
 
 const LUA_STUB_RULES = [
+  { prefix: "CONTROL_BOARD_PALETTE", line: `require("objects.npc_control_board_palette")` },
   { prefix: "CONTROL_BOARD", line: `require("objects.npc_control_board")` },
   { prefix: "SIGNAL_CANDLE", line: `require("ui.ui_signal_candle")` },
   { prefix: "SOUNDSCAPE", line: `require("core.soundscape_emitter_object")` },

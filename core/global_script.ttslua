@@ -348,6 +348,18 @@ function GlobalGameboardApply(params)
     return ok == true
 end
 
+--- NPC gameboard: Clear with double-click confirm (object `click_clear` → Global.call).
+--- @param params table|nil `{ player_color?: string }`
+--- @return boolean
+function GlobalGameboardClearClick(params)
+    local color = type(params) == "table" and params.player_color or "Black"
+    local Gameboard = require("core.npc_gameboard")
+    if not Gameboard.tryConfirmClear(color) then
+        return false
+    end
+    return GlobalGameboardClear(params)
+end
+
 --- NPC gameboard: Clear placements (expects confirmed Clear from object UI).
 --- @param params table|nil
 --- @return boolean

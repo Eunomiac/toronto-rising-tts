@@ -26,11 +26,7 @@ function click_clear(_, player_color)
     if player_color ~= "Black" then
         return
     end
-    local Gameboard = require("core.npc_gameboard")
-    if not Gameboard.tryConfirmClear(player_color) then
-        return
-    end
-    Global.call("GlobalGameboardClear", {})
+    Global.call("GlobalGameboardClearClick", { player_color = player_color })
 end
 
 function click_read_stub(_, player_color)

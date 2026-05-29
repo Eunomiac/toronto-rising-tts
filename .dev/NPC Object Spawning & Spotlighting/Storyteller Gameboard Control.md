@@ -84,11 +84,13 @@ The extension may mirror these under `.tts/objects/CONTROL_BOARD.bea29a.*` (giti
 
 **Workshop:** tag the tile `npc_control_board` (optional). GUID `bea29a` in `lib/guids.ttslua`.
 
-**In-game buttons:** Five small **3D** `createButton` labels in one row along the **bottom-left** of the tile (Apply → Clear → Read → Lock → Load), `rotation = {0,180,0}` for readable labels when the board yaw ≈ 180°. XmlUI is the object’s XML panel when selected. After pulling repo stubs, **Save & Play** so the save bundles script + XML onto `bea29a`. `reconcileControlBoardFromState` calls `Gameboard.ensureControlBoardObjectUi` each sync (layout version in `objects/npc_control_board_ui.ttslua` forces reinstall).
+**In-game buttons:** Five small **3D** `createButton` labels in one row along the **bottom-left** of the tile (Apply → Clear → Read → Lock → Load), `rotation = {0,180,0}` for readable labels when the board yaw ≈ 180°. XmlUI is the object’s XML panel when selected. After pulling repo stubs, **Save & Play** so the save bundles script + XML onto `bea29a`. `reconcileControlBoardFromState` calls `Gameboard.ensureControlBoardObjectCallbacks` then `ensureControlBoardObjectUi` each sync (layout version in `objects/npc_control_board_ui.ttslua` forces reinstall).
+
+**Apply click error (`click_apply` is not a function):** The save often has **empty** `LuaScript` on `bea29a` while Global still installs 3D buttons that reference `click_apply` on the board object. After **Save & Play** with the bundled stub, handlers live in the object script. Until then, the first `Sync.npcs` / reconcile injects a minimal `click_*` script via `setLuaScript` (`Gameboard.ensureControlBoardObjectCallbacks`). Console: `lua GlobalGameboardApply()` / `lua GlobalGameboardClearClick({ player_color = "Black" })` (double-click Clear confirm).
 
 **Palette vs activated:** Tokens on **CONTROL_BOARD_PALETTE** are inactive storage; **Apply** ignores them until a token is on a CONTROL_BOARD polar snap. **Clear** runs `Palette.syncTokensToPalette` (group order from `lib/npcs_data` `characters[].groups`, minus `PALETTE_GROUP_BLACKLIST` e.g. `princesCourt`).
 
-**Console fallback:** `lua GlobalGameboardApply()` / `lua GlobalGameboardClear()` (Storyteller only for Clear confirm).
+**Console fallback:** `lua GlobalGameboardApply()` / `lua GlobalGameboardClearClick({ player_color = "Black" })` (Storyteller only; Clear needs two calls within 5s, same as the button).
 
 Config: `D.CONTROL_BOARD_SNAP` in `lib/npc_gameboard_data.ttslua` — elliptical rings with **absolute** `innerRingMaxU/V` and `outerRingMaxU/V`, and per-ring `snapGroups` (`num`, `angleDelta`, `rays`). Default install prints **136** snaps (`4×1 + 12×3 + 16×5 + 20×1`). Each snap yaws toward `origin` and is tagged `npc_control_token`.
 
