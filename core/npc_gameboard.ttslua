@@ -796,13 +796,12 @@ local function sourceObjectForSeat(seatKey)
     return nil
 end
 
+--- Working copy so validateControlBoardSnapConfig can normalize `group.rays` without mutating `DATA.CONTROL_BOARD_SNAP` or caller tables.
 --- @param config table|nil
 --- @return table
 local function resolveControlBoardSnapConfig(config)
-    if type(config) == "table" then
-        return config
-    end
-    return DATA.CONTROL_BOARD_SNAP or {}
+    local src = type(config) == "table" and config or (DATA.CONTROL_BOARD_SNAP or {})
+    return U.merge({}, src)
 end
 
 --- @param cfg table
