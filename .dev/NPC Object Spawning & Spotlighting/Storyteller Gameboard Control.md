@@ -102,7 +102,7 @@ Workshop object **CONTROL_BOARD_PALETTE** (typical scale `{5, 1, 10}` — wide o
 require("objects.npc_control_board_palette")
 ```
 
-`lib/npc_control_board_palette.ttslua` installs snaps and parks tokens by **coterie group** from `lib/npcs_data` (`groups.fiveKeys = 1`, etc.). Groups in `D.PALETTE_GROUP_BLACKLIST` (currently `princesCourt`) are skipped when picking a character’s palette group. One surviving group → that group; several survivors → first non-blacklisted entry from `pairs()`. Layout: members adjacent in slot order, whole group moves to the next row when a row would wrap, one empty snap between groups, first token at top-left.
+`lib/npc_control_board_palette.ttslua` installs snaps and parks tokens by **coterie group** from `lib/npcs_data` (`groups.fiveKeys = 1`, etc.). Groups in `D.PALETTE_GROUP_BLACKLIST` (currently `princesCourt`) are skipped when picking a character’s palette group. One surviving group → that group; several survivors → lexicographically smallest non-blacklisted `groupId`. Layout: members adjacent in slot order, whole group moves to the next row when a row would wrap, **one empty snap** between groups (not a full blank row), first token at top-left. Token keys from GM notes use the same `npcToken:<key>` capture as the control board (stops at comma or newline).
 
 Manual refresh / IDE tuning (after Save & Play):
 

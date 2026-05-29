@@ -25,7 +25,7 @@ function Palette.isGroupBlacklisted(groupId)
 end
 
 --- Pick palette group + slot index from character def (npcs_data).
---- Blacklisted groups are ignored. One survivor → that group; several → first from `pairs()`.
+--- Blacklisted groups are ignored. Several survivors → lowest `groupId` (stable, not `pairs()` order).
 --- @param characterDef table|nil
 --- @return string|nil groupId, number|nil slotIndex
 function Palette.resolvePaletteGroupForCharacter(characterDef)
@@ -44,15 +44,10 @@ function Palette.resolvePaletteGroupForCharacter(characterDef)
     if #survivors == 0 then
         return nil, nil
     end
-    if #survivors == 1 then
-        return survivors[1].groupId, survivors[1].slotIndex
-    end
-    for groupId, slotIndex in pairs(characterDef.groups) do
-        if U.Type(groupId) == "string" and groupId ~= "" and not Palette.isGroupBlacklisted(groupId) then
-            return groupId, tonumber(slotIndex) or 0
-        end
-    end
-    return nil, nil
+    table.sort(survivors, function(a, b)
+        return a.groupId < b.groupId
+    end)
+    return survivors[1].groupId, survivors[1].slotIndex
 end
 
 --- @return table cfg columns, rows, uMargin, vMargin
@@ -267,9 +262,7 @@ function Palette.buildTokenSnapAssignments()
     for gi, groupId in ipairs(groupIds) do
         if gi > 1 then
             advanceGap()
-            row = row + 1
-            col = 0
-        else
+        elseif col ~= 0 then
             col = 0
         end
         placeGroup(byGroup[groupId])
@@ -278,8 +271,6 @@ function Palette.buildTokenSnapAssignments()
     if #ungrouped > 0 then
         if next(assignments) ~= nil then
             advanceGap()
-            row = row + 1
-            col = 0
         end
         local members = {}
         for i, characterKey in ipairs(ungrouped) do
@@ -304,7 +295,7 @@ local function tokenCharacterKey(obj)
     if notes == "" and obj.getDescription ~= nil then
         notes = tostring(obj.getDescription() or "")
     end
-    local key = string.match(notes, "^" .. TOKEN_PREFIX .. "([^,]+)")
+    local key = string.match(notes, "^" .. TOKEN_PREFIX .. "([^,\r\n]+)")
     if U.Type(key) == "string" and key ~= "" then
         return key
     end
