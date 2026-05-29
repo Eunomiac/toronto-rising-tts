@@ -22,12 +22,35 @@ local TAG_COMPONENT = DATA.TAG_GAMEBOARD_TABLE_COMPONENT
 
 local clearArmExpireByColor = {}
 local polarSnapInstallFingerprint = nil
+local lastControlBoardMirrorFingerprint = nil
 --- @type table<string, { halfX: number, halfZ: number }>
 local boardUvHalfExtentsCache = {}
 --- World XZ tolerance when matching tokens to installed control-board snap points.
 local CONTROL_BOARD_SNAP_MATCH_FUZZINESS = 0.45
 --- Prevents recursive anchor-family spread when programmatic moves fire onObjectDrop.
 local anchorFamilySpreadDepth = 0
+
+--- @param obj Object|nil
+--- @return boolean
+local function isGameObject(obj)
+    return U.isGameObject(obj)
+end
+
+--- @param board Object
+--- @return number
+local function snapMatchFuzzinessForBoard(board)
+    if not isGameObject(board) or board.getBounds == nil then
+        return CONTROL_BOARD_SNAP_MATCH_FUZZINESS
+    end
+    local b = board.getBounds()
+    if b == nil or b.size == nil then
+        return CONTROL_BOARD_SNAP_MATCH_FUZZINESS
+    end
+    local sx = b.size.x or b.size[1] or 1
+    local sz = b.size.z or b.size[3] or 1
+    local scaleHint = math.min(math.abs(sx), math.abs(sz))
+    return math.max(CONTROL_BOARD_SNAP_MATCH_FUZZINESS, scaleHint * 0.035)
+end
 
 --- @param n number
 --- @param lo number
@@ -41,12 +64,6 @@ local function clamp(n, lo, hi)
         return hi
     end
     return n
-end
-
---- @param obj Object|nil
---- @return boolean
-local function isGameObject(obj)
-    return U.isGameObject(obj)
 end
 
 --- @param guid string|nil
@@ -259,6 +276,17 @@ local function boardLocalFromUv(board, u, v, extraLocalY)
     return Vector((u - 0.5) * 2 * halfX, surfaceY + lift, (v - 0.5) * 2 * halfZ)
 end
 
+--- Inverse of `boardLocalFromUv` for surface XZ (ignores local Y).
+--- @param board Object
+--- @param localPos Vector|table
+--- @return number u, number v
+local function uvFromBoardLocal(board, localPos)
+    local halfX, halfZ = boardLocalSurfaceHalfExtents(board)
+    local lx = localPos.x or localPos[1] or 0
+    local lz = localPos.z or localPos[3] or 0
+    return 0.5 + lx / (2 * halfX), 0.5 + lz / (2 * halfZ)
+end
+
 --- Extent-based fallback when STAGE_BOARD is not in the save (workshop prep).
 --- @param worldPos Vector|table
 --- @return number|nil u, number|nil v
@@ -292,27 +320,45 @@ local function normalizedUvFromWorld(worldPos)
     return uvFromWorldFallbackExtents(worldPos)
 end
 
---- World position on STAGE_BOARD for figurine placement from normalized u/v.
+--- World position for figurine placement from normalized u/v on STAGE_BOARD.
+--- X/Z come from STAGE_BOARD `positionToWorld`; `groundLevel` when set is **absolute world Y** (not board-local).
 --- @param u number
 --- @param v number
---- @param options table|nil `{ groundLevel?: number }` board-local Y on the stage tile (from snap ring)
+--- @param options table|nil `{ groundLevel?: number }` absolute world Y from snap ring (optional)
 --- @return Vector
 function Gameboard.worldFromUv(u, v, options)
     options = type(options) == "table" and options or {}
-    local groundLevel = tonumber(options.groundLevel)
+    local worldY = tonumber(options.groundLevel)
     local stage = getStageBoard()
     if isGameObject(stage) then
         local lp = boardLocalFromUv(stage, u, v)
-        if groundLevel ~= nil then
-            lp = Vector(lp.x, groundLevel, lp.z)
+        local wp = boardLocalToWorld(stage, lp)
+        if worldY ~= nil then
+            return Vector(wp.x, worldY, wp.z)
         end
-        return boardLocalToWorld(stage, lp)
+        return wp
     end
+    print("[Gameboard] worldFromUv: STAGE_BOARD missing (GUID "
+        .. tostring(G.GUIDS.STAGE_BOARD)
+        .. ") — using DEFAULT_STAGE_WORLD fallback")
     local ext = resolveStageWorldExtents()
     local x = ext.centerX + (u - 0.5) * 2 * ext.halfWidthX
     local z = ext.centerZ + (v - 0.5) * 2 * ext.halfDepthZ
-    local y = groundLevel ~= nil and groundLevel or ext.groundY
+    local y = worldY ~= nil and worldY or ext.groundY
     return Vector(x, y, z)
+end
+
+--- World Y rotation for a figurine on STAGE_BOARD at the same u,v as a control-board token.
+--- `placementYaw` is board-relative (token Y minus CONTROL_BOARD Y at scan/Apply).
+--- Adds STAGE_BOARD yaw plus `D.STAGE_FIGURINE_YAW_OFFSET_DEG` for `Figurine_Custom` cutout orientation.
+--- @param placementYaw number|nil
+--- @return number
+function Gameboard.stageFigurineWorldYawDeg(placementYaw)
+    local stage = getStageBoard()
+    local stageYaw = isGameObject(stage) and (stage.getRotation().y or 0) or 0
+    local rel = tonumber(placementYaw) or 0
+    local offset = tonumber(DATA.STAGE_FIGURINE_YAW_OFFSET_DEG) or 0
+    return (stageYaw + rel + offset) % 360
 end
 
 --- @param worldPos Vector|table
@@ -354,10 +400,37 @@ local function readMarkerKey(obj, prefix)
         notes = tostring(obj.getDescription() or "")
     end
     local key = string.match(notes, "^" .. prefix .. "([^,\r\n]+)")
+    if type(key) == "string" then
+        key = string.match(key, "^%s*(.-)%s*$")
+    end
     if type(key) == "string" and key ~= "" then
         return key
     end
     return nil
+end
+
+--- @param compKey string|nil Raw value after `gameboardComponent:` prefix
+--- @return string|nil parentTable, string|nil componentName
+local function parseComponentMarkerKey(compKey)
+    if type(compKey) ~= "string" or compKey == "" then
+        return nil, nil
+    end
+    compKey = string.match(compKey, "^%s*(.-)%s*$") or compKey
+    local pipeAt = compKey:find("|", 1, true)
+    if pipeAt ~= nil then
+        local parentTable = string.match(compKey:sub(1, pipeAt - 1), "^%s*(.-)%s*$")
+        local componentName = string.match(compKey:sub(pipeAt + 1), "^%s*(.-)%s*$")
+        if type(parentTable) == "string" and parentTable ~= ""
+            and type(componentName) == "string" and componentName ~= "" then
+            return parentTable, componentName
+        end
+    end
+    for tk, cfg in pairs(C.Tables or {}) do
+        if type(cfg) == "table" and type(cfg.components) == "table" and cfg.components[compKey] ~= nil then
+            return tk, compKey
+        end
+    end
+    return nil, compKey
 end
 
 --- @param obj Object
@@ -444,19 +517,139 @@ function Gameboard.scanControlBoardTokens(board)
                     -- Inactive storage on CONTROL_BOARD_PALETTE — not a minimap placement until snapped + Apply.
                 elseif type(u) == "number" and type(v) == "number" then
                     local groundLevel = Gameboard.groundLevelForSnapUv(u, v)
-                    out[#out + 1] = {
+                    local row = {
                         characterKey = characterKey,
                         u = u,
                         v = v,
                         yaw = type(yaw) == "number" and yaw or 0,
                         npcLightMode = tokenLightModeFromFlip(obj),
-                        groundLevel = groundLevel,
                     }
+                    if groundLevel ~= nil then
+                        row.groundLevel = groundLevel
+                    end
+                    out[#out + 1] = row
                 end
             end
         end
     end
     return out
+end
+
+--- @param row table|nil
+--- @return table|nil normalized row for comparison
+local function normalizePlacementRow(row)
+    if type(row) ~= "table" then
+        return nil
+    end
+    local u = tonumber(row.u)
+    local v = tonumber(row.v)
+    if u == nil or v == nil then
+        return nil
+    end
+    local out = {
+        u = u,
+        v = v,
+        yaw = tonumber(row.yaw) or 0,
+        npcLightMode = row.npcLightMode,
+    }
+    local groundLevel = tonumber(row.groundLevel)
+    if groundLevel ~= nil then
+        out.groundLevel = groundLevel
+    end
+    if out.npcLightMode ~= "OFF" and out.npcLightMode ~= "STANDARD" and out.npcLightMode ~= "SPOTLIGHT" then
+        out.npcLightMode = "STANDARD"
+    end
+    return out
+end
+
+--- @param a table|nil
+--- @param b table|nil
+--- @return boolean
+local function placementRowsEqual(a, b)
+    local na = normalizePlacementRow(a)
+    local nb = normalizePlacementRow(b)
+    if na == nil or nb == nil then
+        return false
+    end
+    if math.abs(na.u - nb.u) > 0.0001 or math.abs(na.v - nb.v) > 0.0001 then
+        return false
+    end
+    if math.abs(na.yaw - nb.yaw) > 0.5 then
+        return false
+    end
+    if na.npcLightMode ~= nb.npcLightMode then
+        return false
+    end
+    return (na.groundLevel or nil) == (nb.groundLevel or nil)
+end
+
+--- @param nextMap table|nil
+--- @param prevMap table|nil
+--- @return boolean
+local function placementsMapsEqual(nextMap, prevMap)
+    nextMap = type(nextMap) == "table" and nextMap or {}
+    prevMap = type(prevMap) == "table" and prevMap or {}
+    local keys = {}
+    local seen = {}
+    for key in pairs(nextMap) do
+        if type(key) == "string" and key ~= "" then
+            keys[#keys + 1] = key
+            seen[key] = true
+        end
+    end
+    for key in pairs(prevMap) do
+        if type(key) == "string" and key ~= "" and not seen[key] then
+            keys[#keys + 1] = key
+            seen[key] = true
+        end
+    end
+    table.sort(keys)
+    for _, key in ipairs(keys) do
+        if not placementRowsEqual(nextMap[key], prevMap[key]) then
+            return false
+        end
+    end
+    return true
+end
+
+--- Fingerprint for static marker + token mirror work on CONTROL_BOARD.
+--- @param activeTable string|nil
+--- @param layoutLocked boolean
+--- @param placements table|nil
+--- @return string
+local function controlBoardMirrorFingerprint(activeTable, layoutLocked, placements)
+    local lines = {}
+    lines[#lines + 1] = "table:" .. tostring(activeTable or "")
+    lines[#lines + 1] = "lock:" .. tostring(layoutLocked == true)
+    local slots = S.getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(slots) == "table" then
+        for _, seatKey in ipairs(C.NPCSeats or {}) do
+            lines[#lines + 1] = "occ:" .. seatKey .. "=" .. tostring(slots[seatKey] or "")
+        end
+    end
+    placements = type(placements) == "table" and placements or {}
+    local keys = {}
+    for key in pairs(placements) do
+        if type(key) == "string" and key ~= "" then
+            keys[#keys + 1] = key
+        end
+    end
+    table.sort(keys)
+    for _, characterKey in ipairs(keys) do
+        local row = normalizePlacementRow(placements[characterKey])
+        if row ~= nil then
+            lines[#lines + 1] = string.format(
+                "p:%s:%.4f:%.4f:%.1f:%s:%s",
+                characterKey,
+                row.u,
+                row.v,
+                row.yaw,
+                row.npcLightMode or "",
+                tostring(row.groundLevel or "")
+            )
+        end
+    end
+    return table.concat(lines, "\n")
 end
 
 --- Build placements map from scan rows.
@@ -487,9 +680,22 @@ function Gameboard.applyFromControlBoard()
     end
     local rows = Gameboard.scanControlBoardTokens(board)
     local placements = placementsMapFromRows(rows)
+    local existing = S.getStateVal("sessionScene", "npcWorld", "placements")
+    if placementsMapsEqual(placements, existing) then
+        print("[Gameboard] Apply: placements unchanged (" .. tostring(#rows) .. " token(s)) — skipped figurine reconcile")
+        Gameboard.reconcileControlBoardFromState()
+        return true, nil
+    end
     S.setStateVal(placements, "sessionScene", "npcWorld", "placements")
     local Sync = require("core.sync")
-    Sync.npcs({ reason = "gameboard_apply", force = true })
+    Sync.npcs({
+        reason = "gameboard_apply",
+        force = true,
+        onlySteps = { 1, 5 },
+        deferUiRefresh = true,
+        skipAreaPopulate = true,
+        skipPreloadPopulate = true,
+    })
     print("[Gameboard] Apply: " .. tostring(#rows) .. " token(s) → placements")
     return true, nil
 end
@@ -942,24 +1148,25 @@ local function validateControlBoardSnapConfig(cfg)
                     .. "].groundLevel must be a number when set"
             )
         end
+        if group.radialStagger ~= nil and tonumber(group.radialStagger) == nil then
+            error(
+                "CONTROL_BOARD_SNAP.snapGroups["
+                    .. tostring(ringIndex)
+                    .. "].radialStagger must be a number when set"
+            )
+        end
     end
     return cfg, rings
 end
 
---- Board-local Y for snap points when a ring omits `groundLevel`.
---- @return number
-local function defaultSnapGroundLevel()
-    return tonumber(DATA.MINIMAP_SURFACE_LOCAL_Y) or 0.18
-end
-
---- Per-ring board-local Y for generated snaps and stage figurines from that ring.
+--- Absolute world Y for figurines on a ring when `snapGroups[ring].groundLevel` is set.
 --- @param group table
---- @return number
+--- @return number|nil
 local function resolveSnapGroupGroundLevel(group)
     if type(group) == "table" and tonumber(group.groundLevel) ~= nil then
         return tonumber(group.groundLevel)
     end
-    return defaultSnapGroundLevel()
+    return nil
 end
 
 --- Absolute board maxU/maxV for ring index (1 = innermost).
@@ -990,6 +1197,101 @@ local function uvOnEllipse(cfg, angleDeg, maxU, maxV)
     local u = ou + math.cos(theta) * (maxU - ou)
     local v = ov + math.sin(theta) * (maxV - ov)
     return u, v
+end
+
+--- True when normalized board u/v lies on the minimap tile (inclusive 0–1).
+--- @param u number
+--- @param v number
+--- @return boolean
+local function snapUvOnBoard(u, v)
+    if type(u) ~= "number" or type(v) ~= "number" then
+        return false
+    end
+    return u >= 0 and u <= 1 and v >= 0 and v <= 1
+end
+
+--- Push snap u/v outward from polar origin by `abs(familyK) * radialStagger` along STAGE world XZ.
+--- Anchor (`familyK == 0`) is unchanged. Units are STAGE_BOARD / playfield world inches (not CONTROL_BOARD minimap inches).
+--- @param cfg table validated CONTROL_BOARD_SNAP (for origin u/v)
+--- @param familyK number
+--- @param radialStagger number world XZ inches on STAGE_BOARD per family step from anchor
+--- @param u number
+--- @param v number
+--- @return number u, number v
+local function applyRadialStaggerUv(cfg, familyK, radialStagger, u, v)
+    local k = tonumber(familyK) or 0
+    local staggerStep = tonumber(radialStagger) or 0
+    if k == 0 or staggerStep == 0 then
+        return u, v
+    end
+    local ou = cfg.origin.u
+    local ov = cfg.origin.v
+    local du = u - ou
+    local dv = v - ov
+    local stage = getStageBoard()
+    if not isGameObject(stage) then
+        local ext = defaultStageWorld()
+        local x0 = ext.centerX + (ou - 0.5) * 2 * ext.halfWidthX
+        local z0 = ext.centerZ + (ov - 0.5) * 2 * ext.halfDepthZ
+        local x1 = ext.centerX + (u - 0.5) * 2 * ext.halfWidthX
+        local z1 = ext.centerZ + (v - 0.5) * 2 * ext.halfDepthZ
+        local dx = x1 - x0
+        local dz = z1 - z0
+        local worldDist = math.sqrt(dx * dx + dz * dz)
+        if worldDist < 1e-6 then
+            return u, v
+        end
+        local scale = (worldDist + math.abs(k) * staggerStep) / worldDist
+        return ou + du * scale, ov + dv * scale
+    end
+    local originLp = boardLocalFromUv(stage, ou, ov)
+    local snapLp = boardLocalFromUv(stage, u, v)
+    local originWp = boardLocalToWorld(stage, originLp)
+    local snapWp = boardLocalToWorld(stage, snapLp)
+    local dx = snapWp.x - originWp.x
+    local dz = snapWp.z - originWp.z
+    local worldDist = math.sqrt(dx * dx + dz * dz)
+    if worldDist < 1e-6 then
+        return u, v
+    end
+    local scale = (worldDist + math.abs(k) * staggerStep) / worldDist
+    local newWp = Vector(originWp.x + dx * scale, snapWp.y, originWp.z + dz * scale)
+    local newLp = boardWorldToLocal(stage, newWp)
+    if newLp == nil then
+        return u, v
+    end
+    -- Unclamped u/v so off-board stagger candidates are pruned by snapUvOnBoard (not pinned to edges).
+    return uvFromBoardLocal(stage, newLp)
+end
+
+--- Ellipse u/v + optional radial stagger for one family member; nil when off the minimap tile.
+--- @param board Object|nil Used for snap local position on CONTROL_BOARD (stagger uses STAGE_BOARD)
+--- @param cfg table
+--- @param rings number
+--- @param ringIndex number
+--- @param rayIndex number 0-based
+--- @param familyK number
+--- @return number|nil u, number|nil v, Vector|nil localPos
+local function controlBoardSnapCandidate(board, cfg, rings, ringIndex, rayIndex, familyK)
+    local group = cfg.snapGroups[ringIndex]
+    local rays = tonumber(group.rays)
+    local angleDelta = tonumber(group.angleDelta) or 0
+    local radialStagger = tonumber(group.radialStagger) or 0
+    local maxU, maxV = ringMaxUvForIndex(cfg, ringIndex, rings)
+    local anchorDeg = (rayIndex / rays) * 360
+    local angleDeg = anchorDeg + familyK * angleDelta
+    local u, v = uvOnEllipse(cfg, angleDeg, maxU, maxV)
+    if radialStagger ~= 0 and familyK ~= 0 then
+        u, v = applyRadialStaggerUv(cfg, familyK, radialStagger, u, v)
+    end
+    if not snapUvOnBoard(u, v) then
+        return nil, nil, nil
+    end
+    local lp = nil
+    if isGameObject(board) then
+        lp = boardLocalFromUv(board, u, v)
+    end
+    return u, v, lp
 end
 
 --- Pick the ring whose ellipse best matches normalized board u/v (same geometry as snap generation).
@@ -1043,37 +1345,34 @@ local function buildControlBoardSnapEntries(board, cfg, rings)
     local ov = cfg.origin.v
     local entries = {}
     for ringIndex = 1, rings do
-        local maxU, maxV = ringMaxUvForIndex(cfg, ringIndex, rings)
         local group = cfg.snapGroups[ringIndex]
         local num = tonumber(group.num)
         local rays = tonumber(group.rays)
-        local angleDelta = tonumber(group.angleDelta) or 0
         local ringGroundLevel = resolveSnapGroupGroundLevel(group)
         local half = math.floor(num / 2)
         for rayIndex = 0, rays - 1 do
-            local anchorDeg = (rayIndex / rays) * 360
             local familyId = tostring(ringIndex) .. ":" .. tostring(rayIndex)
             for k = -half, half do
-                local angleDeg = anchorDeg + k * angleDelta
-                local u, v = uvOnEllipse(cfg, angleDeg, maxU, maxV)
-                local lp = boardLocalFromUv(board, u, v)
-                lp = Vector(lp.x, ringGroundLevel, lp.z)
-                local yawOffset = tonumber(cfg.snapYawOffsetDeg) or 0
-                local yawDeg = ((snapYawTowardOriginDeg(board, u, v, ou, ov) + yawOffset) % 360 + 360) % 360
-                entries[#entries + 1] = {
-                    snapIndex = #entries + 1,
-                    ringIndex = ringIndex,
-                    rayIndex = rayIndex,
-                    familyId = familyId,
-                    familyK = k,
-                    isAnchor = (k == 0),
-                    u = u,
-                    v = v,
-                    yawDeg = yawDeg,
-                    localPos = lp,
-                    worldPos = boardLocalToWorld(board, lp),
-                    groundLevel = ringGroundLevel,
-                }
+                local u, v, lp = controlBoardSnapCandidate(board, cfg, rings, ringIndex, rayIndex, k)
+                if u ~= nil and lp ~= nil then
+                    --- ringGroundLevel (when set) is absolute world Y for figurines on Apply — catalog metadata only; snaps stay on tile surface.
+                    local yawOffset = tonumber(cfg.snapYawOffsetDeg) or 0
+                    local yawDeg = ((snapYawTowardOriginDeg(board, u, v, ou, ov) + yawOffset) % 360 + 360) % 360
+                    entries[#entries + 1] = {
+                        snapIndex = #entries + 1,
+                        ringIndex = ringIndex,
+                        rayIndex = rayIndex,
+                        familyId = familyId,
+                        familyK = k,
+                        isAnchor = (k == 0),
+                        u = u,
+                        v = v,
+                        yawDeg = yawDeg,
+                        localPos = lp,
+                        worldPos = boardLocalToWorld(board, lp),
+                        groundLevel = ringGroundLevel,
+                    }
+                end
             end
         end
     end
@@ -1084,13 +1383,23 @@ end
 --- @return number total, table perRingCounts indexed by ring
 function Gameboard.countControlBoardSnapPoints(config)
     local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
+    local board = getControlBoard()
     local perRing = {}
     local total = 0
     for ringIndex = 1, rings do
         local group = cfg.snapGroups[ringIndex]
         local num = tonumber(group.num)
         local rays = tonumber(group.rays)
-        local ringTotal = rays * num
+        local half = math.floor(num / 2)
+        local ringTotal = 0
+        for rayIndex = 0, rays - 1 do
+            for k = -half, half do
+                local u, _, _ = controlBoardSnapCandidate(board, cfg, rings, ringIndex, rayIndex, k)
+                if u ~= nil then
+                    ringTotal = ringTotal + 1
+                end
+            end
+        end
         perRing[ringIndex] = ringTotal
         total = total + ringTotal
     end
@@ -1161,6 +1470,8 @@ local function controlBoardSnapFingerprintFor(board, config)
                 .. tostring(group.rays)
                 .. ":"
                 .. tostring(group.groundLevel or "")
+                .. ":"
+                .. tostring(group.radialStagger or "")
         end
     end
     parts[#parts + 1] = "snapTag:" .. TAG_TOKEN
@@ -1209,11 +1520,12 @@ end
 --- Alias for installPolarSnaps (same behavior).
 Gameboard.installControlBoardSnaps = Gameboard.installPolarSnaps
 
---- Board-local Y for a normalized u/v on the control-board snap grid (from matching ring `groundLevel`).
+--- Absolute world Y for a normalized u/v on the control-board snap grid (from matching ring `groundLevel`).
+--- When the ring omits `groundLevel`, returns nil and `worldFromUv` uses STAGE_BOARD surface world Y at u,v.
 --- @param u number
 --- @param v number
 --- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
---- @return number
+--- @return number|nil
 function Gameboard.groundLevelForSnapUv(u, v, config)
     local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
     local ringIndex = resolveRingIndexForUv(cfg, u, v, rings)
@@ -1235,21 +1547,34 @@ end
 local CONTROL_BOARD_FALLBACK_LUA_SCRIPT = [=[--- Toronto Rising — CONTROL_BOARD fallback (Global-injected when save LuaScript is empty).
 --- Persist a bundled script: `.tts/objects/CONTROL_BOARD.*.ttslua` → require("objects.npc_control_board") → Save & Play.
 
-function click_apply(_, player_color)
+local function resolveControlBoardClickColor(arg1, arg2)
+    if arg1 ~= nil and type(arg1.color) == "string" and arg1.color ~= "" then
+        return arg1.color
+    end
+    if type(arg2) == "string" and arg2 ~= "" then
+        return arg2
+    end
+    return nil
+end
+
+function click_apply(player, value, id)
+    local player_color = resolveControlBoardClickColor(player, value)
     if player_color ~= "Black" then
         return
     end
     Global.call("GlobalGameboardApply", {})
 end
 
-function click_clear(_, player_color)
+function click_clear(player, value, id)
+    local player_color = resolveControlBoardClickColor(player, value)
     if player_color ~= "Black" then
         return
     end
     Global.call("GlobalGameboardClearClick", { player_color = player_color })
 end
 
-function click_read_stub(_, player_color)
+function click_read_stub(player, value, id)
+    local player_color = resolveControlBoardClickColor(player, value)
     if player_color ~= "Black" then
         return
     end
@@ -1258,7 +1583,8 @@ function click_read_stub(_, player_color)
     end
 end
 
-function click_lock_stub(_, player_color)
+function click_lock_stub(player, value, id)
+    local player_color = resolveControlBoardClickColor(player, value)
     if player_color ~= "Black" then
         return
     end
@@ -1267,7 +1593,8 @@ function click_lock_stub(_, player_color)
     end
 end
 
-function click_load_stub(_, player_color)
+function click_load_stub(player, value, id)
+    local player_color = resolveControlBoardClickColor(player, value)
     if player_color ~= "Black" then
         return
     end
@@ -1280,7 +1607,9 @@ end
 --- @param script string|nil
 --- @return boolean
 local function controlBoardScriptDefinesClickApply(script)
-    return type(script) == "string" and script:find("function click_apply", 1, true) ~= nil
+    return type(script) == "string"
+        and script:find("function click_apply", 1, true) ~= nil
+        and script:find("resolveControlBoardClickColor", 1, true) ~= nil
 end
 
 --- Inject `click_*` handlers when the workshop save has empty CONTROL_BOARD LuaScript.
@@ -1391,7 +1720,9 @@ local function placeControlBoardMarker(marker, board, u, v, source, options)
 end
 
 --- Position static table/seat markers for active table.
-function Gameboard.reconcileControlBoardFromState()
+--- @param opts table|nil `{ force?: boolean }`
+function Gameboard.reconcileControlBoardFromState(opts)
+    opts = type(opts) == "table" and opts or {}
     boardUvHalfExtentsCache = {}
     local board = getControlBoard()
     if not isGameObject(board) then
@@ -1403,10 +1734,13 @@ function Gameboard.reconcileControlBoardFromState()
 
     local npcWorld = S.getStateVal("sessionScene", "npcWorld")
     local activeTable = S.getStateVal("seatLayout", "currentTableKey")
-    if type(npcWorld) == "table" and npcWorld.layoutLock == true then
+    local layoutLocked = type(npcWorld) == "table" and npcWorld.layoutLock == true
+    local placements = type(npcWorld) == "table" and npcWorld.placements or {}
+    local mirrorFp = controlBoardMirrorFingerprint(activeTable, layoutLocked, placements)
+    if opts.force ~= true and mirrorFp == lastControlBoardMirrorFingerprint then
         return
     end
-    local placements = type(npcWorld) == "table" and npcWorld.placements or {}
+    lastControlBoardMirrorFingerprint = mirrorFp
     local allMarkers = getObjectsWithTag(TAG_TABLE) or {}
     for _, tag in ipairs({ TAG_PC, TAG_NPC_SEAT, TAG_COMPONENT }) do
         local extra = getObjectsWithTag(tag) or {}
@@ -1440,31 +1774,35 @@ function Gameboard.reconcileControlBoardFromState()
                     )
                 end
             elseif compKey ~= nil then
-                local parentTable, componentName = string.match(compKey, "^(.-)|(.+)$")
-                if parentTable == nil then
-                    parentTable = nil
-                    componentName = compKey
-                    for tk, cfg in pairs(C.Tables or {}) do
-                        if type(cfg) == "table" and type(cfg.components) == "table" and cfg.components[compKey] ~= nil then
-                            parentTable = tk
-                            componentName = compKey
-                            break
-                        end
-                    end
-                end
+                local parentTable, componentName = parseComponentMarkerKey(compKey)
                 local show = parentTable == activeTable
                     and type(componentName) == "string"
+                    and componentName ~= ""
                     and tableComponentActiveForOccupiedSlots(parentTable, componentName)
                 setMarkerVisible(obj, show)
                 if show and parentTable ~= nil and componentName ~= nil then
                     local u, v = mapUvForTableComponentMarker(parentTable, componentName)
-                    placeControlBoardMarker(
-                        obj,
-                        board,
-                        u,
-                        v,
-                        sourceObjectForTableComponent(parentTable, componentName)
-                    )
+                    if u == nil or v == nil then
+                        u, v = mapUvForTableComponent(parentTable, componentName)
+                    end
+                    if u ~= nil and v ~= nil then
+                        placeControlBoardMarker(
+                            obj,
+                            board,
+                            u,
+                            v,
+                            sourceObjectForTableComponent(parentTable, componentName)
+                        )
+                    else
+                        print(
+                            "[Gameboard] component marker "
+                                .. tostring(componentName)
+                                .. " active on "
+                                .. tostring(parentTable)
+                                .. " but u,v mapping failed"
+                        )
+                        stashTableComponentMarker(obj, componentName)
+                    end
                 else
                     stashTableComponentMarker(obj, componentName)
                 end
@@ -1515,28 +1853,30 @@ function Gameboard.reconcileControlBoardFromState()
         end
     end
 
-    --- Mirror NPC tokens from placements (skip when layout locked — checked above).
-    --- Tag scan + board-local bounds — Custom_Tile has no working getObjects(); tokens lack getParent.
-    local byChar = {}
-    local tokenObjs = objectsOnControlBoard(board, TAG_TOKEN)
-    for _, obj in ipairs(tokenObjs) do
-        if isGameObject(obj) then
-            local ck = resolveTokenCharacterKey(obj)
-            if ck ~= nil then
-                byChar[ck] = obj
+    --- Mirror NPC tokens from placements (skip when layout locked — manual board edits preserved).
+    if not layoutLocked then
+        --- Tag scan + board-local bounds — Custom_Tile has no working getObjects(); tokens lack getParent.
+        local byChar = {}
+        local tokenObjs = objectsOnControlBoard(board, TAG_TOKEN)
+        for _, obj in ipairs(tokenObjs) do
+            if isGameObject(obj) then
+                local ck = resolveTokenCharacterKey(obj)
+                if ck ~= nil then
+                    byChar[ck] = obj
+                end
             end
         end
-    end
-    for characterKey, row in pairs(placements) do
-        if type(row) == "table" and type(row.u) == "number" and type(row.v) == "number" then
-            local token = byChar[characterKey]
-            if isGameObject(token) then
-                token.setPosition(Gameboard.worldOnControlBoard(board, row.u, row.v))
-                local boardYaw = board.getRotation().y or 0
-                local yaw = tonumber(row.yaw) or 0
-                local faceUp = row.npcLightMode ~= "OFF"
-                token.setRotation(rotationForNpcControlToken(boardYaw, yaw, faceUp))
-                Gameboard.setHiddenFromPlayerColors(token)
+        for characterKey, row in pairs(placements) do
+            if type(row) == "table" and type(row.u) == "number" and type(row.v) == "number" then
+                local token = byChar[characterKey]
+                if isGameObject(token) then
+                    token.setPosition(Gameboard.worldOnControlBoard(board, row.u, row.v))
+                    local boardYaw = board.getRotation().y or 0
+                    local yaw = tonumber(row.yaw) or 0
+                    local faceUp = row.npcLightMode ~= "OFF"
+                    token.setRotation(rotationForNpcControlToken(boardYaw, yaw, faceUp))
+                    Gameboard.setHiddenFromPlayerColors(token)
+                end
             end
         end
     end
@@ -1550,11 +1890,16 @@ local function isNpcControlToken(obj)
     return isGameObject(obj) and obj.hasTag ~= nil and obj.hasTag(TAG_TOKEN) == true
 end
 
+--- True when token is on CONTROL_BOARD minimap, excluding CONTROL_BOARD_PALETTE storage.
 --- @param board Object
 --- @param token Object
 --- @return boolean
 local function isTokenOnControlBoardSurface(board, token)
     if not isGameObject(board) or not isGameObject(token) then
+        return false
+    end
+    local palette = getControlBoardPalette()
+    if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
         return false
     end
     for _, obj in ipairs(objectsOnControlBoard(board, TAG_TOKEN)) do
@@ -1563,6 +1908,80 @@ local function isTokenOnControlBoardSurface(board, token)
         end
     end
     return false
+end
+
+--- Nearest installed snap catalog entry for a token on CONTROL_BOARD (world XZ within fuzziness).
+--- @param board Object
+--- @param token Object
+--- @param fuzziness number|nil
+--- @param config table|nil
+--- @return table|nil catalog entry with snapIndex, isAnchor, familyK, worldPos, …
+local function resolveTokenSnapCatalogEntry(board, token, fuzziness, config)
+    if not isGameObject(board) or not isGameObject(token) then
+        return nil
+    end
+    fuzziness = tonumber(fuzziness) or snapMatchFuzzinessForBoard(board)
+    local catalog = Gameboard.buildControlBoardSnapCatalog(board, config)
+    if #catalog == 0 then
+        return nil
+    end
+    local pos = token.getPosition()
+    if pos == nil then
+        return nil
+    end
+    local fuzzSq = fuzziness * fuzziness
+    local best = nil
+    local bestDistSq = math.huge
+    for _, entry in ipairs(catalog) do
+        local wp = entry.worldPos
+        if wp ~= nil then
+            local dx = (pos.x or 0) - (wp.x or 0)
+            local dz = (pos.z or 0) - (wp.z or 0)
+            local distSq = dx * dx + dz * dz
+            if distSq <= fuzzSq and distSq < bestDistSq then
+                bestDistSq = distSq
+                best = entry
+            end
+        end
+    end
+    return best
+end
+
+--- @param board Object
+--- @param token Object
+--- @param fuzziness number|nil
+--- @return number|nil snapIndex 1-based in installed getSnapPoints order
+local function resolveTokenSnapSlot(board, token, fuzziness)
+    local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+    return entry and entry.snapIndex or nil
+end
+
+--- @param result table
+local function logAnchorSpreadResult(result)
+    if type(result) ~= "table" or result.reason == "suppressed" then
+        return
+    end
+    if (result.placed or 0) > 0 then
+        print(
+            "[Gameboard] anchor spread: placed "
+                .. tostring(result.placed)
+                .. " token(s) for group "
+                .. tostring(result.groupId)
+        )
+        return
+    end
+    local detail = tostring(result.reason or "unknown")
+    if type(result.groupId) == "string" and result.groupId ~= "" then
+        detail = detail .. " (group=" .. result.groupId .. ")"
+    end
+    if result.matchedSnapIndex ~= nil then
+        detail = detail
+            .. " snap="
+            .. tostring(result.matchedSnapIndex)
+            .. " familyK="
+            .. tostring(result.familyK)
+    end
+    print("[Gameboard] anchor spread skipped: " .. detail)
 end
 
 --- @return table<string, Object>
@@ -1646,21 +2065,35 @@ function Gameboard.tryAnchorFamilyGroupSpread(droppedToken)
     if type(installedSnaps) ~= "table" or #installedSnaps == 0 then
         return { placed = 0, reason = "no_snaps" }
     end
-    local snapSlot = U.findSnapPoint(board, droppedToken, CONTROL_BOARD_SNAP_MATCH_FUZZINESS)
-    if snapSlot == nil then
+    local fuzziness = snapMatchFuzzinessForBoard(board)
+    local catalog = Gameboard.buildControlBoardSnapCatalog(board, nil)
+    if #catalog ~= #installedSnaps then
+        print(
+            "[Gameboard] anchor spread: snap catalog mismatch (installed="
+                .. tostring(#installedSnaps)
+                .. " catalog="
+                .. tostring(#catalog)
+                .. "); Save & Play or Sync.npcs to reinstall snaps"
+        )
+    end
+    local anchorEntry = resolveTokenSnapCatalogEntry(board, droppedToken, fuzziness, nil)
+    if anchorEntry == nil then
         return { placed = 0, reason = "no_snap_match" }
     end
-    local catalog = Gameboard.buildControlBoardSnapCatalog(board, nil)
-    local anchorEntry = catalog[snapSlot]
-    if anchorEntry == nil or anchorEntry.isAnchor ~= true then
-        return { placed = 0, reason = "not_anchor" }
+    if anchorEntry.isAnchor ~= true then
+        return {
+            placed = 0,
+            reason = "not_anchor",
+            matchedSnapIndex = anchorEntry.snapIndex,
+            familyK = anchorEntry.familyK,
+        }
     end
     for _, entry in ipairs(catalog) do
         if entry.familyId == anchorEntry.familyId and entry.isAnchor ~= true then
             local occupant = findOccupyingTokenAtSnapWorld(
                 board,
                 entry.worldPos,
-                CONTROL_BOARD_SNAP_MATCH_FUZZINESS,
+                fuzziness,
                 droppedToken
             )
             if occupant ~= nil then
@@ -1695,8 +2128,11 @@ function Gameboard.tryAnchorFamilyGroupSpread(droppedToken)
     table.sort(emptyFamilySnaps, function(a, b)
         return a.familyK < b.familyK
     end)
-    if #toPlace == 0 or #emptyFamilySnaps == 0 then
+    if #toPlace == 0 then
         return { placed = 0, reason = "nothing_to_place", groupId = groupId }
+    end
+    if #emptyFamilySnaps == 0 then
+        return { placed = 0, reason = "family_has_no_sibling_snaps", groupId = groupId }
     end
     local boardYaw = board.getRotation().y or 0
     anchorFamilySpreadDepth = anchorFamilySpreadDepth + 1
@@ -1710,16 +2146,37 @@ function Gameboard.tryAnchorFamilyGroupSpread(droppedToken)
     return { placed = placed, reason = "ok", groupId = groupId }
 end
 
---- Global onObjectDrop hook: defer briefly so TTS snap settles, then try anchor-family spread.
+--- Global onObjectDrop hook: wait for TTS snap to settle, then try anchor-family spread.
 --- @param token Object
 --- @param playerColor string|nil
 function Gameboard.onNpcControlTokenDropped(token, playerColor)
     if not isNpcControlToken(token) then
         return
     end
-    U.delay(function()
-        Gameboard.tryAnchorFamilyGroupSpread(token)
-    end, 0.05)
+    local board = getControlBoard()
+    if not isGameObject(board) then
+        return
+    end
+    local fuzziness = snapMatchFuzzinessForBoard(board)
+    U.waitForCondition(
+        function()
+            if not isGameObject(token) then
+                return
+            end
+            logAnchorSpreadResult(Gameboard.tryAnchorFamilyGroupSpread(token))
+        end,
+        function()
+            if not isGameObject(token) then
+                return true
+            end
+            if not isTokenOnControlBoardSurface(board, token) then
+                return false
+            end
+            local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+            return entry ~= nil and entry.isAnchor == true
+        end,
+        1.0
+    )
 end
 
 --- @param placements table|nil

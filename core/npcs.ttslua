@@ -653,6 +653,45 @@ local function clearNpcFigurineSeatIdentity(fig, lit)
     setPooledSpotlightHidden(lit, false)
 end
 
+--- Resolve spotlight from figurine bounds after active-scale presentation (not preload-scale feet offset).
+--- @param npcName string
+--- @param fig Object|nil
+--- @param transitionTime number|nil
+local function applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime)
+    if not U.isGameObject(fig) then
+        return
+    end
+    lightAlignFigOverride[npcName] = fig
+    NPCS.applyCurrentLightMode(npcName, transitionTime, { force = true })
+    lightAlignFigOverride[npcName] = nil
+end
+
+--- @param stored table|nil
+--- @param placement table
+--- @return boolean
+local function stagePlacementMatchesRecord(stored, placement)
+    if type(stored) ~= "table" or type(placement) ~= "table" then
+        return false
+    end
+    local du = math.abs((tonumber(stored.u) or 0) - (tonumber(placement.u) or 0))
+    local dv = math.abs((tonumber(stored.v) or 0) - (tonumber(placement.v) or 0))
+    local dy = math.abs((tonumber(stored.yaw) or 0) - (tonumber(placement.yaw) or 0))
+    if du >= 0.002 or dv >= 0.002 or dy >= 1 then
+        return false
+    end
+    return (tonumber(stored.groundLevel) or nil) == (tonumber(placement.groundLevel) or nil)
+end
+
+--- @param placement table
+--- @return string OFF|STANDARD|SPOTLIGHT
+local function normalizedStageNpcLightMode(placement)
+    local mode = placement.npcLightMode
+    if mode == "OFF" or mode == "STANDARD" or mode == "SPOTLIGHT" then
+        return mode
+    end
+    return "STANDARD"
+end
+
 --- @param rec table|nil
 --- @return boolean
 local function npcInstanceIsParkedInPreload(rec)
@@ -1097,13 +1136,39 @@ function NPCS.applyFigurinePlacementAtWorld(figurine, placement)
     if u == nil or v == nil then
         return
     end
+    local groundLevel = tonumber(placement.groundLevel)
+    if groundLevel == nil and type(Gameboard.groundLevelForSnapUv) == "function" then
+        groundLevel = Gameboard.groundLevelForSnapUv(u, v)
+    end
     local pos = Gameboard.worldFromUv(u, v, {
-        groundLevel = tonumber(placement.groundLevel),
+        groundLevel = groundLevel,
     })
     figurine.setPosition(pos)
-    local yawDeg = tonumber(placement.yaw) or 0
+    local relYaw = tonumber(placement.yaw) or 0
+    local yawDeg = relYaw
+    if type(Gameboard.stageFigurineWorldYawDeg) == "function" then
+        yawDeg = Gameboard.stageFigurineWorldYawDeg(relYaw)
+    end
     figurine.setRotation(Vector(0, yawDeg, 0))
     ensureNpcFigurinePhysicsLocked(figurine)
+    local notes = ""
+    if figurine.getGMNotes ~= nil then
+        notes = tostring(figurine.getGMNotes() or "")
+    end
+    local displayName = figurine.getName and figurine.getName() or "?"
+    print(string.format(
+        "[NPCS] figurine stage placement %s (%s) u=%.4f v=%.4f relYaw=%.1f worldYaw=%.1f ground=%.3f → world (%.2f, %.2f, %.2f)",
+        tostring(displayName),
+        notes ~= "" and notes or "?",
+        u,
+        v,
+        relYaw,
+        yawDeg,
+        tonumber(groundLevel) or 0,
+        pos.x,
+        pos.y,
+        pos.z
+    ))
 end
 
 --- @param npcName string
@@ -1187,7 +1252,9 @@ end
 
 --- @param npcName string
 --- @param transitionTime number|nil
-function NPCS.applyCurrentLightMode(npcName, transitionTime)
+--- @param opts table|nil `{ force?: boolean }`
+function NPCS.applyCurrentLightMode(npcName, transitionTime, opts)
+    opts = type(opts) == "table" and opts or {}
     local rec = NPCS.getInstanceRecord(npcName)
     if rec == nil or rec.lightGuid == nil then
         return
@@ -1205,7 +1272,7 @@ function NPCS.applyCurrentLightMode(npcName, transitionTime)
     end
     -- State-first mutation; lighting module reconcile owns live-world writes.
     S.setStateVal(modeKey, "lights", reg)
-    L.reconcileLightRef(reg, transitionTime)
+    L.reconcileLightRef(reg, transitionTime, { force = opts.force == true })
 end
 
 --- Re-apply each spawned NPC's current light mode (used after scene transitions that force OFF).
@@ -1315,14 +1382,17 @@ local function collectSessionStagePlacements()
                         groundLevel = Gameboard.groundLevelForSnapUv(u, v)
                     end
                 end
-                out[#out + 1] = {
+                local placementRow = {
                     characterKey = characterKey,
                     u = u,
                     v = v,
                     yaw = tonumber(row.yaw) or 0,
                     npcLightMode = lm,
-                    groundLevel = tonumber(row.groundLevel),
                 }
+                if groundLevel ~= nil then
+                    placementRow.groundLevel = groundLevel
+                end
+                out[#out + 1] = placementRow
             end
         end
     end
@@ -1429,6 +1499,173 @@ local function stashAllNpcFigurinesForSessionSceneLayout()
 end
 
 --- @param npcName string
+--- @return Object|nil first unclaimed pooled figurine with `npcInstance:<npcName>` GM notes
+local function findExistingPooledFigurineForNpcName(npcName)
+    if not validateNpcNameKey(npcName) then
+        return nil
+    end
+    local expectedNotes = GM_PREFIX .. npcName
+    local objs = getObjectsWithTag(TAG_FIG) or {}
+    local fallback = nil
+    for i = 1, #objs do
+        local obj = objs[i]
+        if obj ~= nil and NPCS.isPooledFigurineObject(obj) then
+            local notes = ""
+            if obj.getGMNotes ~= nil then
+                notes = tostring(obj.getGMNotes() or "")
+            end
+            if notes == expectedNotes then
+                local figGuid = obj.getGUID and obj.getGUID() or ""
+                local claimedByOther = false
+                for otherName, rec in pairs(getInstances()) do
+                    if otherName ~= npcName and U.Type(rec) == "table" and rec.figurineGuid == figGuid then
+                        claimedByOther = true
+                        break
+                    end
+                end
+                if not claimedByOther then
+                    return obj
+                end
+                if fallback == nil then
+                    fallback = obj
+                end
+            end
+        end
+    end
+    return fallback
+end
+
+--- @param npcName string
+--- @return Object|nil paired spotlight when still in-world (saved instance `lightGuid` only)
+local function findExistingPooledSpotlightForNpcName(npcName)
+    if not validateNpcNameKey(npcName) then
+        return nil
+    end
+    local rec = getInstances()[npcName]
+    if U.Type(rec) == "table" and U.Type(rec.lightGuid) == "string" and rec.lightGuid ~= "" then
+        return getObjectFromGUID(rec.lightGuid)
+    end
+    return nil
+end
+
+--- Spawn only the paired preload spotlight (figurine already exists in-world).
+--- @param npcName string
+--- @param slotIndex number
+--- @return Object|nil
+--- @return string|nil err
+local function spawnPreloadSpotlightForNpc(npcName, slotIndex)
+    local defaults = NLIGHT.NPC_LIGHT_OBJECT_DATA_DEFAULTS
+    if U.Type(defaults) ~= "table" then
+        return nil, "NPC_LIGHT_OBJECT_DATA_DEFAULTS missing"
+    end
+    local lightData = cloneObjectDataForSpawn(defaults)
+    if lightData == nil then
+        return nil, "NPC light spawn data copy failed"
+    end
+    lightData.Nickname = "NPC Light " .. npcName
+    lightData.Tags = { TAG_LIT }
+    local lightUniformScale = NPC_PRELOAD_LIGHT_SCALE
+    if U.Type(lightData.Transform) == "table" then
+        lightData.Transform.scaleX = lightUniformScale
+        lightData.Transform.scaleY = lightUniformScale
+        lightData.Transform.scaleZ = lightUniformScale
+    end
+    local spawnPos = NPCS.computeSlotWorldPosition(PRELOAD_AREA_KEY, slotIndex)
+    local lx = spawnPos.x + NPC_LIGHT_SPAWN_OFFSET.x
+    local ly = spawnPos.y + NPC_LIGHT_SPAWN_OFFSET.y
+    local lz = spawnPos.z + NPC_LIGHT_SPAWN_OFFSET.z
+    ---@diagnostic disable-next-line: undefined-global
+    local lit = spawnObjectData({
+        data = lightData,
+        position = { lx, ly, lz },
+    })
+    if lit == nil then
+        return nil, "spawnObjectData returned nil for NPC light"
+    end
+    if lit.AssetBundle ~= nil and lit.AssetBundle.playLoopingEffect ~= nil then
+        lit.AssetBundle.playLoopingEffect(1)
+    end
+    ensureSpotlightTag(lit)
+    return lit, nil
+end
+
+--- Find in-world paired spotlight or spawn a new preload pool light when missing.
+--- @param npcName string
+--- @param slotIndex number
+--- @return Object|nil
+--- @return string|nil err
+local function ensurePooledSpotlightForNpc(npcName, slotIndex)
+    local lit = findExistingPooledSpotlightForNpcName(npcName)
+    if lit ~= nil then
+        return lit, nil
+    end
+    return spawnPreloadSpotlightForNpc(npcName, slotIndex)
+end
+
+--- Re-link an in-world figurine (`npcInstance:` GM notes) into the preload pool instead of spawning a duplicate.
+--- @param npcName string
+--- @param figurine Object
+--- @param slotIndex number
+--- @param opts table|nil
+--- @return boolean
+--- @return string|nil
+local function adoptExistingPooledFigurineAtPreloadSlot(npcName, figurine, slotIndex, opts)
+    opts = U.Type(opts) == "table" and opts or {}
+    local deferUiRefresh = opts.deferUiRefresh == true
+    local skipSeatSync = opts.skipSeatSync == true
+    local area = NPCS.areas[PRELOAD_AREA_KEY]
+    if area == nil or U.Type(slotIndex) ~= "number" then
+        return false, "Invalid preload adopt target."
+    end
+    if getInstances()[npcName] ~= nil then
+        return false, "NPC already has instance record."
+    end
+    if not U.isGameObject(figurine) or not NPCS.isPooledFigurineObject(figurine) then
+        return false, "Not a pooled NPC figurine."
+    end
+    ensureNpcFigurinePhysicsLocked(figurine)
+    local figGuid = figurine.getGUID and figurine.getGUID() or ""
+    if figGuid == "" then
+        return false, "Adopt figurine has no GUID."
+    end
+
+    local lit, litErr = ensurePooledSpotlightForNpc(npcName, slotIndex)
+    if lit == nil then
+        return false, litErr or "Could not spawn paired NPC light."
+    end
+    local lg = lit.getGUID and lit.getGUID() or ""
+    if lg == "" then
+        return false, "Adopted NPC light has no GUID."
+    end
+    L.registerNpcSpotlightModes(npcName, lg)
+
+    local rec = {
+        figurineGuid = figGuid,
+        lightGuid = lg,
+        areaKey = PRELOAD_AREA_KEY,
+        slotIndex = slotIndex,
+        npcLightMode = effectiveNpcLightModeForAreaPlacement(area, opts),
+        locked = false,
+    }
+    setInstanceRecord(npcName, rec)
+    NPCS.applyFigurinePlacement(figurine, PRELOAD_AREA_KEY, slotIndex)
+    local pos = NPCS.computeSlotWorldPosition(PRELOAD_AREA_KEY, slotIndex)
+    if lit.setPosition ~= nil then
+        lit.setPosition(Vector(pos.x + NPC_LIGHT_SPAWN_OFFSET.x, pos.y + NPC_LIGHT_SPAWN_OFFSET.y, pos.z + NPC_LIGHT_SPAWN_OFFSET.z))
+    end
+    applyNpcPairPhysicalPresentation(figurine, lit, PRELOAD_AREA_KEY)
+    if not skipSeatSync then
+        requestSeatLayoutSync()
+    end
+    NPCS.applyCurrentLightMode(npcName, 0)
+    if not deferUiRefresh then
+        NPCS.refreshStorytellerUIIfVisible()
+    end
+    print("[NPCS] adopted existing figurine for " .. tostring(npcName) .. " at preload slot " .. tostring(slotIndex))
+    return true, nil
+end
+
+--- @param npcName string
 --- @param areaKey string
 --- @param slotIndex number
 --- @param opts table|nil optional: deferUiRefresh — when true, skip storyteller NPC panel rebuild (caller refreshes once, e.g. group spawn).
@@ -1463,6 +1700,12 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
             return false, "No free slot in preload pool."
         end
         slotIndex = resolved
+    end
+    if areaKey == PRELOAD_AREA_KEY then
+        local existingFig = findExistingPooledFigurineForNpcName(npcName)
+        if existingFig ~= nil then
+            return adoptExistingPooledFigurineAtPreloadSlot(npcName, existingFig, slotIndex, opts)
+        end
     end
     local front = def.figurine and def.figurine.images and def.figurine.images.front or ""
     local back = def.figurine and def.figurine.images and def.figurine.images.back or ""
@@ -1678,6 +1921,23 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
         if ak == PRELOAD_AREA_KEY and U.Type(rec.slotIndex) == "number" and rec.slotIndex == resolvedSlot
             and not seated and figurinePhysicallyAtPreloadSlot(fig, resolvedSlot) then
             local lit = getObjectFromGUID(rec.lightGuid or "")
+            if lit == nil then
+                local litErr
+                lit, litErr = ensurePooledSpotlightForNpc(npcName, resolvedSlot)
+                if lit ~= nil then
+                    local lg = lit.getGUID and lit.getGUID() or ""
+                    if lg ~= "" then
+                        rec.lightGuid = lg
+                        L.registerNpcSpotlightModes(npcName, lg)
+                        setInstanceRecord(npcName, rec)
+                    end
+                elseif litErr ~= nil then
+                    print("[NPCS] ensureNpcInPreloadZone spotlight repair for "
+                        .. tostring(npcName)
+                        .. ": "
+                        .. tostring(litErr))
+                end
+            end
             applyNpcPairPhysicalPresentation(fig, lit, PRELOAD_AREA_KEY)
             return true, nil
         end
@@ -1692,6 +1952,10 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
     local spawnSlot = resolvePreloadSlotForMove(npcName, slot)
     if spawnSlot == nil then
         return false, "No free slot in preload pool."
+    end
+    local existingFig = findExistingPooledFigurineForNpcName(npcName)
+    if existingFig ~= nil then
+        return adoptExistingPooledFigurineAtPreloadSlot(npcName, existingFig, spawnSlot, opts)
     end
     return NPCS.spawnNpcAtSlot(npcName, PRELOAD_AREA_KEY, spawnSlot, opts)
 end
@@ -2177,7 +2441,7 @@ local function reconcileStepFivePreloadPopulate(intent)
 end
 
 --- Unified NPC reconcile orchestrator (Steps Zero–Five). See `.dev/NPC Object Spawning & Spotlighting/NPC Reconciler Procedure.md`.
---- @param opts table|nil `{ deferUiRefresh?, force?, onlySteps? }`
+--- @param opts table|nil `{ deferUiRefresh?, force?, onlySteps?, skipAreaPopulate?, skipPreloadPopulate? }`
 function NPCS.reconcileAllFromState(opts)
     opts = U.Type(opts) == "table" and opts or {}
     local deferUiRefresh = opts.deferUiRefresh == true
@@ -2185,6 +2449,10 @@ function NPCS.reconcileAllFromState(opts)
 
     local fp = npcReconcileFingerprint()
     if not force and fp == lastNpcReconcileFingerprint then
+        local Gameboard = require("core.npc_gameboard")
+        if type(Gameboard.reconcileControlBoardFromState) == "function" then
+            Gameboard.reconcileControlBoardFromState()
+        end
         return
     end
 
@@ -2214,10 +2482,10 @@ function NPCS.reconcileAllFromState(opts)
         if not reconcileStepFiveStagePlacements(intent) then
             allOk = false
         end
-        if not reconcileStepFiveAreaPopulate(intent) then
+        if opts.skipAreaPopulate ~= true and not reconcileStepFiveAreaPopulate(intent) then
             allOk = false
         end
-        if not reconcileStepFivePreloadPopulate(intent) then
+        if opts.skipPreloadPopulate ~= true and not reconcileStepFivePreloadPopulate(intent) then
             allOk = false
         end
     end
@@ -2438,6 +2706,22 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
         end
         return false, "Figurine missing; cleared record."
     end
+    local desiredMode = normalizedStageNpcLightMode(placement)
+    if opts.force ~= true
+        and rec.areaKey == STAGE_BOARD_AREA_KEY
+        and stagePlacementMatchesRecord(rec.stagePlacement, placement)
+    then
+        if rec.npcLightMode == desiredMode then
+            return true, nil
+        end
+        rec.npcLightMode = desiredMode
+        setInstanceRecord(npcName, rec)
+        applyNpcSpotlightAlignedToFigurine(npcName, fig, 0)
+        if not opts.skipUiRefresh then
+            NPCS.refreshStorytellerUIIfVisible()
+        end
+        return true, nil
+    end
     NPCS.applyFigurinePlacementAtWorld(fig, placement)
     rec.areaKey = STAGE_BOARD_AREA_KEY
     rec.slotIndex = 0
@@ -2447,20 +2731,11 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
         yaw = tonumber(placement.yaw) or 0,
         groundLevel = tonumber(placement.groundLevel),
     }
-    local mode = placement.npcLightMode
-    if mode == "OFF" or mode == "STANDARD" or mode == "SPOTLIGHT" then
-        rec.npcLightMode = mode
-    else
-        rec.npcLightMode = "STANDARD"
-    end
+    rec.npcLightMode = desiredMode
     setInstanceRecord(npcName, rec)
-    if lit ~= nil and lit.setPosition ~= nil then
-        local pos = fig.getPosition()
-        lit.setPosition(Vector(pos.x + NPC_LIGHT_SPAWN_OFFSET.x, pos.y + NPC_LIGHT_SPAWN_OFFSET.y, pos.z + NPC_LIGHT_SPAWN_OFFSET.z))
-    end
     applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY)
     setPooledSpotlightHidden(lit, false)
-    NPCS.applyCurrentLightMode(npcName, 0)
+    applyNpcSpotlightAlignedToFigurine(npcName, fig, 0)
     if not skipSeatSync then
         requestSeatLayoutSync()
     end

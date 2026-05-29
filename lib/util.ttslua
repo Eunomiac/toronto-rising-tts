@@ -689,30 +689,39 @@ function U.findSnapPoint(snapPoints, pos, fuzziness)
 			pos = snapObj.getPosition()
 		end
     fuzziness = fuzziness or 0.1
+    local xPos = pos.x ~= nil and U.pFloat(pos.x) or nil
+    local zPos = pos.z ~= nil and U.pFloat(pos.z) or nil
+    local bestSlot = nil
+    local bestDistSq = math.huge
     for slot, snap in ipairs(snapPoints) do
-        if (snap.position) then
-          snap = snap.position
+        if snap.position then
+            snap = snap.position
         end
-        local xPos = U.pFloat(pos.x)
-        local zPos = U.pFloat(pos.z)
         local xSnap = U.pFloat(snap.x)
         local zSnap = U.pFloat(snap.z)
         local isXOkay = false
         local isZOkay = false
-        if (pos.x == nil) then
+        if xPos == nil then
             isXOkay = true
-        elseif (xPos >= (xSnap - fuzziness) and xPos <= (xSnap + fuzziness)) then
+        elseif xPos >= (xSnap - fuzziness) and xPos <= (xSnap + fuzziness) then
             isXOkay = true
         end
-        if (pos.z == nil) then
+        if zPos == nil then
             isZOkay = true
-        elseif (zPos >= (zSnap - fuzziness) and zPos <= (zSnap + fuzziness)) then
+        elseif zPos >= (zSnap - fuzziness) and zPos <= (zSnap + fuzziness) then
             isZOkay = true
         end
-        if (isXOkay and isZOkay) then
-            return slot
+        if isXOkay and isZOkay then
+            local dx = (xPos or xSnap) - xSnap
+            local dz = (zPos or zSnap) - zSnap
+            local distSq = dx * dx + dz * dz
+            if distSq < bestDistSq then
+                bestDistSq = distSq
+                bestSlot = slot
+            end
         end
     end
+    return bestSlot
 end
 
 -- ============================================================================

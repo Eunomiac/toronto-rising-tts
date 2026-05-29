@@ -528,15 +528,28 @@ function DEBUG.dumpNpcPlacements()
     end
 end
 
+--- Snap table from DEBUG.installNpcControlBoardSnaps options (flat fields or `{ config = … }`).
+--- @param options table|nil
+--- @return table|nil
+local function resolveDebugControlBoardSnapConfig(options)
+    options = type(options) == "table" and options or {}
+    if type(options.config) == "table" then
+        return options.config
+    end
+    if type(options.origin) == "table" or type(options.snapGroups) == "table" or options.rings ~= nil then
+        return options
+    end
+    return nil
+end
+
 --- Force CONTROL_BOARD snap grid (normally runs from reconcile / Sync.npcs).
---- @param options table|nil { config?: table } — override `DATA.CONTROL_BOARD_SNAP` for IDE iteration
+--- @param options table|nil Full `CONTROL_BOARD_SNAP` table, or `{ config?: table }` — overrides `DATA.CONTROL_BOARD_SNAP` for IDE iteration
 --- @return boolean
 function DEBUG.installNpcControlBoardSnaps(options)
-    options = type(options) == "table" and options or {}
     local Gameboard = require("core.npc_gameboard")
     return Gameboard.installPolarSnaps(nil, {
         force = true,
-        config = options.config,
+        config = resolveDebugControlBoardSnapConfig(options),
     }) == true
 end
 

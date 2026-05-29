@@ -4,6 +4,8 @@
  * Normalizes scrambled one-line stubs under `.tts/objects`:
  *
  * - **XML:** `CSHEET_PAGE_<n>_*.xml` → `<Include src="ui/player/csheets/page<n>.xml" />`
+ * - **XML:** `CONTROL_BOARD.*.xml` → `<Include src="ui/objects/npc_control_board.xml" />`
+ * - **XML:** `CONTROL_BOARD_PALETTE.*.xml` → `<Panel />` (palette has no XmlUI toolbar)
  * - **Lua / TTS Lua:** `.lua` or `.ttslua` files whose names start with a known prefix → a single
  *   `require("...")` line derived from the prefix (see `LUA_STUB_RULES`).
  *
@@ -27,19 +29,32 @@ const OBJECTS_REL_PATH = [".tts", "objects"];
 /** Filename prefix pattern: CSHEET_PAGE_<digits>_ */
 const CSHEET_PAGE_XML_RE = /^CSHEET_PAGE_(\d+)_/i;
 
-/**
- * Longer prefixes first for predictable matching if new rules are added later.
- * Match is case-insensitive on the filename stem (basename without `.lua` / `.ttslua`).
- *
- * @type {readonly { prefix: string, line: string }[]}
- */
+/** Filename prefix patterns for gameboard object Custom UI stubs. */
+const CONTROL_BOARD_PALETTE_XML_RE = /^CONTROL_BOARD_PALETTE\./i;
 const CONTROL_BOARD_XML_RE = /^CONTROL_BOARD\./i;
 
 /**
  * @param {string} objectFilename
  * @returns {string | null}
  */
+function expectedControlBoardPaletteXmlLine(objectFilename) {
+  if (!CONTROL_BOARD_PALETTE_XML_RE.test(objectFilename)) {
+    return null;
+  }
+  if (!objectFilename.toLowerCase().endsWith(".xml")) {
+    return null;
+  }
+  return `<Panel />`;
+}
+
+/**
+ * @param {string} objectFilename
+ * @returns {string | null}
+ */
 function expectedControlBoardXmlIncludeLine(objectFilename) {
+  if (CONTROL_BOARD_PALETTE_XML_RE.test(objectFilename)) {
+    return null;
+  }
   if (!CONTROL_BOARD_XML_RE.test(objectFilename)) {
     return null;
   }
@@ -49,6 +64,12 @@ function expectedControlBoardXmlIncludeLine(objectFilename) {
   return `<Include src="ui/objects/npc_control_board.xml" />`;
 }
 
+/**
+ * Longer prefixes first for predictable matching if new rules are added later.
+ * Match is case-insensitive on the filename stem (basename without `.lua` / `.ttslua`).
+ *
+ * @type {readonly { prefix: string, line: string }[]}
+ */
 const LUA_STUB_RULES = [
   { prefix: "CONTROL_BOARD_PALETTE", line: `require("objects.npc_control_board_palette")` },
   { prefix: "CONTROL_BOARD", line: `require("objects.npc_control_board")` },
@@ -147,6 +168,14 @@ function collectCsheetXmlTargets(objectsDir, entries) {
   const out = [];
   for (const name of entries) {
     if (!name.toLowerCase().endsWith(".xml")) {
+      continue;
+    }
+    const paletteXmlWant = expectedControlBoardPaletteXmlLine(name);
+    if (paletteXmlWant !== null) {
+      out.push({
+        fullPath: path.join(objectsDir, name),
+        want: paletteXmlWant,
+      });
       continue;
     }
     const controlBoardWant = expectedControlBoardXmlIncludeLine(name);
@@ -300,7 +329,7 @@ function main() {
   }
 
   console.log(
-    `CSheet object XML includes: ${xmlTargets.length} file(s), ${xmlResult.ok} already correct, ${xmlResult.fixed} ${dryRun ? "would change" : "updated"}.`,
+    `TTS object XML stubs: ${xmlTargets.length} file(s), ${xmlResult.ok} already correct, ${xmlResult.fixed} ${dryRun ? "would change" : "updated"}.`,
   );
   console.log(
     `TTS object Lua stubs: ${luaTargets.length} file(s), ${luaResult.ok} already correct, ${luaResult.fixed} ${dryRun ? "would change" : "updated"}.`,

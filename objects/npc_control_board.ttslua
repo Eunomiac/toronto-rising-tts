@@ -9,27 +9,44 @@
 
 local BoardUi = require("objects.npc_control_board_ui")
 
+--- XmlUI: `(player, value, id)`; legacy createButton: `(_, clickColor, altClick)`.
+--- @param arg1 Player|Object|nil
+--- @param arg2 string|nil
+--- @return string|nil
+local function resolveControlBoardClickColor(arg1, arg2)
+    if arg1 ~= nil and type(arg1.color) == "string" and arg1.color ~= "" then
+        return arg1.color
+    end
+    if type(arg2) == "string" and arg2 ~= "" then
+        return arg2
+    end
+    return nil
+end
+
 function onLoad()
     BoardUi.installObjectUi(self)
     local Gameboard = require("core.npc_gameboard")
     Gameboard.installPolarSnaps(self)
 end
 
-function click_apply(_, player_color)
+function click_apply(player, value, id)
+    local player_color = resolveControlBoardClickColor(player, value)
     if player_color ~= "Black" then
         return
     end
     Global.call("GlobalGameboardApply", {})
 end
 
-function click_clear(_, player_color)
+function click_clear(player, value, id)
+    local player_color = resolveControlBoardClickColor(player, value)
     if player_color ~= "Black" then
         return
     end
     Global.call("GlobalGameboardClearClick", { player_color = player_color })
 end
 
-function click_read_stub(_, player_color)
+function click_read_stub(player, value, id)
+    local player_color = resolveControlBoardClickColor(player, value)
     if player_color ~= "Black" then
         return
     end
@@ -38,7 +55,8 @@ function click_read_stub(_, player_color)
     end
 end
 
-function click_lock_stub(_, player_color)
+function click_lock_stub(player, value, id)
+    local player_color = resolveControlBoardClickColor(player, value)
     if player_color ~= "Black" then
         return
     end
@@ -47,7 +65,8 @@ function click_lock_stub(_, player_color)
     end
 end
 
-function click_load_stub(_, player_color)
+function click_load_stub(player, value, id)
+    local player_color = resolveControlBoardClickColor(player, value)
     if player_color ~= "Black" then
         return
     end

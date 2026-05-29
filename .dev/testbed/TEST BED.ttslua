@@ -2364,6 +2364,8 @@ DEBUG.spawnNpcControlBoardTokens()
 
 DEBUG.spawnNpcTokenUploadBatch({ columns = 12, gap = 2, startY = 3 })
 
+-- Snap UV layout (origin, ring maxU/V, snapGroups). groundLevel = absolute world Y for figurines on Apply (XZ from STAGE_BOARD u,v only).
+-- Next Sync.npcs / reconcile reinstalls snaps from lib/npcs_data unless you re-run this or edit DATA.CONTROL_BOARD_SNAP.
 DEBUG.installNpcControlBoardSnaps({
   origin = { u = 0.5, v = 0.3 },
   snapYawOffsetDeg = 0,
@@ -2373,9 +2375,14 @@ DEBUG.installNpcControlBoardSnaps({
   outerRingMaxU = 0.9,
   outerRingMaxV = 0.9,
   snapGroups = {
-    { num = 1, angleDelta = 0, rays = 4,  groundLevel = -50 },
-    { num = 5, angleDelta = 3, rays = 12, groundLevel = -50 },
-    { num = 5, angleDelta = 3, rays = 16, groundLevel = -50 },
-    { num = 5, angleDelta = 2, rays = 20, groundLevel = -50 },
+    { num = 1, angleDelta = 0, rays = 16, groundLevel = -50, radialStagger = 1},
+    { num = 5, angleDelta = 3, rays = 12, groundLevel = -50, radialStagger = 1},
+    { num = 5, angleDelta = 3, rays = 16, groundLevel = -50, radialStagger = 1},
+    { num = 5, angleDelta = 2, rays = 20, groundLevel = -50, radialStagger = 1},
   },
 })
+
+for _, o in ipairs(getObjectsWithTag("npc_light") or {}) do if o then o.destroy() end end
+local n = 0; for _, o in ipairs(getObjectsWithTag("npc_figurine") or {}) do if o then o.destroy(); n = n + 1 end end; print("destroyed " .. n .. " npc figurines")
+-- Sync.full below reinstalls default snaps from lib/npcs_data — run installNpcControlBoardSnaps again after if tuning layout.
+require("core.sync").full({ force = true })

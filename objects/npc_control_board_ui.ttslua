@@ -80,8 +80,6 @@ function NPC_CONTROL_BOARD_UI.installObjectUi(obj)
 
     end
 
-    obj.clearButtons()
-
     if obj.UI == nil or type(obj.UI.setXml) ~= "function" then
 
         print("[npc_control_board_ui] installObjectUi: UI.setXml unavailable on " .. tostring(obj.getGUID()))
@@ -99,6 +97,8 @@ function NPC_CONTROL_BOARD_UI.installObjectUi(obj)
         return
 
     end
+
+    obj.clearButtons()
 
     local ok = obj.UI.setXml(xml)
 

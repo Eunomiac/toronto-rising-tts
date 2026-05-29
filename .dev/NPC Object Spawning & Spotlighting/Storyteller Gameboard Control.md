@@ -11,7 +11,7 @@ Physical **STAGE_BOARD** (hidden world floor) + **CONTROL_BOARD** (GM table mini
 | `sessionScene.npcWorld.placements` | Authority: `{ characterKey = { u, v, yaw, npcLightMode } }` (0–1 on stage board) |
 | **Apply** | Scan `npc_control_token` on CONTROL_BOARD minimap only (**not** on `CONTROL_BOARD_PALETTE`) → write `placements` → `Sync.npcs` |
 | **Clear** | Double-click → empty `placements`, `Gameboard.syncTokensToPalette()` (group layout from `npcs_data`), `Sync.npcs` |
-| Reconcile | `NPCS.reconcileAllFromState` → figurines; mirror board unless `layoutLock` |
+| Reconcile | `NPCS.reconcileAllFromState` → figurines; CONTROL_BOARD markers always; token mirror skipped when `layoutLock` |
 
 Legacy `byArea` still reconciles when `placements` does not claim a character (until Phase C retires areas).
 
@@ -44,6 +44,8 @@ Table/seat markers: compute playfield world XZ (table `centerPoint`; components 
 **Player visibility:** All `gameboard_*` markers and `npc_control_token` tiles use `setInvisibleTo(C.PlayerColors)` — hidden from every seated PC (Brown–Purple); Storyteller (Black) and spectators (White/Grey) still see them. Reconcile and spawn paths call `Gameboard.setHiddenFromPlayerColors`.
 
 **Marker lock:** `gameboard_table`, `gameboard_table_component`, `gameboard_pc_seat`, and `gameboard_npc_seat` objects are `setLock(true)` on reconcile so minimap pieces do not collide and drift. `npc_control_token` tiles stay unlocked for drag-to-snap + Apply.
+
+**Layout lock:** When `sessionScene.npcWorld.layoutLock` is true, **token** positions on CONTROL_BOARD are not overwritten from state; **table/seat/component markers** still reconcile (Table A leaves follow `occupiedNPCSlots` for their `usedBy` seat).
 
 ## Workshop tags
 
@@ -84,7 +86,14 @@ require("objects.npc_control_board")
 <Include src="ui/objects/npc_control_board.xml" />
 ```
 
-The extension may mirror these under `.tts/objects/CONTROL_BOARD.bea29a.*` (gitignored) when the object is named with GUID `bea29a`.
+The extension may mirror these under `.tts/objects/CONTROL_BOARD.bea29a.*` (gitignored) when the object is named with GUID `bea29a`. **`npm run build`** (via `fix_tts_object_stubs.js`) normalizes scrambled extension stubs:
+
+| Object | `.tts/objects` Lua stub | `.tts/objects` XML stub |
+| --- | --- | --- |
+| `CONTROL_BOARD.*` | `require("objects.npc_control_board")` | `<Include src="ui/objects/npc_control_board.xml" />` |
+| `CONTROL_BOARD_PALETTE.*` | `require("objects.npc_control_board_palette")` | `<Panel />` (no toolbar) |
+
+Manual repair: `npm run tts-objects:fix-stubs` or VS Code task **Fix TTS object stubs (.tts/objects XML + Lua)**.
 
 **Workshop:** tag the tile `npc_control_board` (optional). GUID `bea29a` in `lib/guids.ttslua`.
 
@@ -99,15 +108,21 @@ The extension may mirror these under `.tts/objects/CONTROL_BOARD.bea29a.*` (giti
 
 **Workflow:** edit `ui/objects/npc_control_board.xml` → `npm run npc-control-board-ui:generate` (or `npm run build`) → **Save & Play** → reconcile installs toolbar from embedded XML. Console: **`XmlUI installed from ui/objects/npc_control_board.xml`** after first install each session.
 
-**Apply click error (`click_apply` is not a function):** The save often has **empty** `LuaScript` on `bea29a` while Global still installs 3D buttons that reference `click_apply` on the board object. After **Save & Play** with the bundled stub, handlers live in the object script. Until then, the first `Sync.npcs` / reconcile injects a minimal `click_*` script via `setLuaScript` (`Gameboard.ensureControlBoardObjectCallbacks`). Console: `lua GlobalGameboardApply()` / `lua GlobalGameboardClearClick({ player_color = "Black" })` (double-click Clear confirm).
+**Apply click error (`click_apply` is not a function):** The save often has **empty** `LuaScript` on `bea29a` while Global still installs 3D buttons that reference `click_apply` on the board object. After **Save & Play** with the bundled stub, handlers live in the object script. Until then, the first `Sync.npcs` / reconcile injects a minimal `click_*` script via `setLuaScript` (`Gameboard.ensureControlBoardObjectCallbacks`). **XmlUI toolbar** passes `(player, value, id)` to `click_*` — use `player.color`, not createButton’s `(_, player_color)` signature. Console: `lua GlobalGameboardApply()` / `lua GlobalGameboardClearClick({ player_color = "Black" })` (double-click Clear confirm).
 
 **Palette vs activated:** Tokens on **CONTROL_BOARD_PALETTE** are inactive storage; **Apply** ignores them until a token is on a CONTROL_BOARD polar snap. **Clear** runs `Palette.syncTokensToPalette` (group order from `lib/npcs_data` `characters[].groups`, minus `PALETTE_GROUP_BLACKLIST` e.g. `princesCourt`).
 
 **Console fallback:** `lua GlobalGameboardApply()` / `lua GlobalGameboardClearClick({ player_color = "Black" })` (Storyteller only; Clear needs two calls within 5s, same as the button).
 
-Config: `D.CONTROL_BOARD_SNAP` in `lib/npc_gameboard_data.ttslua` — elliptical rings with **absolute** `innerRingMaxU/V` and `outerRingMaxU/V`, and per-ring `snapGroups` (`num`, `angleDelta`, `rays`). Default install prints **136** snaps (`4×1 + 12×3 + 16×5 + 20×1`). Each snap yaws toward `origin` and is tagged `npc_control_token`.
+**Apply performance:** When scanned token placements match persisted `sessionScene.npcWorld.placements`, Apply skips figurine reconcile (logs `placements unchanged`). Changed Apply runs a narrow `Sync.npcs` pass (steps **1 + 5** only, skips bulk area/preload repark and seat steps **2–4**). `reconcileControlBoardFromState` skips marker/token mirror when its fingerprint is unchanged. CONTROL_BOARD XmlUI install no longer calls `clearButtons()` every reconcile when XML is already loaded.
 
-**Anchor snap group spread:** When a grouped `npc_control_token` is dropped on CONTROL_BOARD, Global `onObjectDrop` → `Gameboard.onNpcControlTokenDropped` (50ms defer so TTS snap settles). If **all** of: (1) token resolves to a non-blacklisted palette group via `Palette.resolveGroupForCharacterKey`, (2) drop lands on the **anchor** snap of a ray family (`familyK == 0`, center of `num`/`angleDelta` cluster), (3) every **other** snap in that family is empty — then remaining group members **not already on CONTROL_BOARD** (palette or elsewhere) are snapped onto sibling family slots in **slotIndex** order (lowest first) until the family is full. Programmatic moves suppress re-entry via an internal depth guard. Manual test: `lua require("core.npc_gameboard").tryAnchorFamilyGroupSpread(getObjectFromGUID("…"))`.
+**Stage figurine yaw:** `Gameboard.stageFigurineWorldYawDeg` = STAGE_BOARD Y + board-relative token yaw + **`D.STAGE_FIGURINE_YAW_OFFSET_DEG` (180)** for `Figurine_Custom` cutout orientation vs control-board tiles.
+
+**Apply figurine placement (debug):** Figurines move via `Gameboard.worldFromUv`: **X/Z** from **STAGE_BOARD** u,v; **Y** from ring `groundLevel` when set (**absolute world Y**). World Y rotation uses `Gameboard.stageFigurineWorldYawDeg(placement.yaw)` = **STAGE_BOARD** Y + board-relative token yaw + **180°** figurine cutout offset (`D.STAGE_FIGURINE_YAW_OFFSET_DEG`).
+
+Config: `D.CONTROL_BOARD_SNAP` in `lib/npc_gameboard_data.ttslua` — elliptical rings with **absolute** `innerRingMaxU/V` and `outerRingMaxU/V`, and per-ring `snapGroups` (`num`, `angleDelta`, `rays`, optional `groundLevel`, optional `radialStagger` in **STAGE** world XZ inches). Snaps whose `(u,v)` fall outside `[0,1]` are omitted. Default config yields up to **136** snaps before filter (stagger may omit more); `DEBUG.previewControlBoardSnapCount()` prints the filtered total. Each snap yaws toward `origin` and is tagged `npc_control_token`.
+
+**Anchor snap group spread:** When a grouped `npc_control_token` is dropped on CONTROL_BOARD, Global `onObjectDrop` → `Gameboard.onNpcControlTokenDropped` (waits up to 1s until the token’s **nearest** catalog snap within fuzziness is the **anchor** of a ray family — avoids firing on a sibling snap while the token is still settling). If **all** of: (1) token resolves to a non-blacklisted palette group via `Palette.resolveGroupForCharacterKey`, (2) drop lands on the **anchor** snap of a ray family (`familyK == 0`, center of `num`/`angleDelta` cluster — **rings with `num = 1` have no sibling snaps**), (3) every **other** snap in that family is empty — then remaining group members **not on CONTROL_BOARD** (palette tokens count as off-board) are snapped onto sibling family slots in **slotIndex** order (lowest first) until the family is full. Snap match uses **nearest** world XZ distance in the snap catalog (not first snap in install order). Console: `[Gameboard] anchor spread: placed N…` or `anchor spread skipped: <reason>` (with `snap=` / `familyK=` on `not_anchor`). Manual test: `lua print(require("core.npc_gameboard").tryAnchorFamilyGroupSpread(getObjectFromGUID("…")))`.
 
 ## Token palette (CONTROL_BOARD_PALETTE)
 

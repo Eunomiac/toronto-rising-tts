@@ -10,7 +10,7 @@ Snap points are generated in polar coordinates on the control board. Several set
 
 - Board **u/v** are normalized **0–1** on the tile: **u = local X**, **v = local Z**, origin at the bottom-left corner of the map (Step 1).
 - Placement uses `(u,v)` → `boardLocalFromUv` → `boardLocalToWorld` (same frame as tokens and minimap markers).
-- Generated `(u,v)` are **not** clamped to `[0,1]` — off-board snaps are allowed.
+- Generated `(u,v)` outside the board are **skipped** — only snaps with `0 ≤ u ≤ 1` and `0 ≤ v ≤ 1` are installed.
 
 ## Configuration Values
 
@@ -20,16 +20,28 @@ Snap points are generated in polar coordinates on the control board. Several set
 | `rings` | Number of concentric elliptical rings |
 | `innerRingMaxU` & `innerRingMaxV` | **Absolute** board u/v reached by the **innermost** ring (distance along axes from the **0,0** corner — not a delta from `origin`) |
 | `outerRingMaxU` & `outerRingMaxV` | **Absolute** board u/v for the **outermost** ring; intermediate rings linearly interpolate inner → outer |
-| `snapGroups` | One entry per ring (**index 1 = innermost**): `{ num, angleDelta, rays, groundLevel? }` — family size, angular spacing, ray count, and optional **board-local Y** for that ring |
+| `snapGroups` | One entry per ring (**index 1 = innermost**): `{ num, angleDelta, rays, groundLevel?, radialStagger? }` — family size, angular spacing, ray count, optional **absolute world Y** for figurines on that ring, and optional **STAGE world XZ** radial push per family step (see below) |
 | `snapYawOffsetDeg` | Added to toward-origin yaw on each snap (default **0** on control board; palette uses **180**) |
 
 ### `groundLevel` (per ring, optional)
 
-- **Board-local Y** on the map tile (same units as `D.MINIMAP_SURFACE_LOCAL_Y`, default **0.18**).
-- Used for **generated snap point positions** on CONTROL_BOARD.
-- On **Apply**, persisted in `sessionScene.npcWorld.placements[*].groundLevel` and applied to **STAGE_BOARD figurines** via `Gameboard.worldFromUv(u, v, { groundLevel = … })`.
-- When omitted on a ring, falls back to `MINIMAP_SURFACE_LOCAL_Y`.
+- **Absolute world Y** for figurines placed on Apply (same convention as `D.areas[*].groundLevel` in `lib/npcs_data.ttslua`, e.g. `-50`, `-15`).
+- **Does not** affect CONTROL_BOARD snap points — snaps always sit at `D.MINIMAP_SURFACE_LOCAL_Y` on the minimap tile.
+- **Does not** add STAGE_BOARD or CONTROL_BOARD object Y — boards only map u,v → world **X/Z**; `groundLevel` sets figurine **Y** directly when present.
+- On **Apply**, persisted in `sessionScene.npcWorld.placements[*].groundLevel` and passed to `Gameboard.worldFromUv(u, v, { groundLevel = … })`.
+- When omitted on a ring, figurine Y is STAGE_BOARD surface world Y at u,v (or `DEFAULT_STAGE_WORLD.groundY` if STAGE_BOARD is missing).
 - Ring is inferred from `(u, v)` by closest matching ellipse (`Gameboard.resolveSnapRingIndexForUv` / `Gameboard.groundLevelForSnapUv`).
+
+### `radialStagger` (per ring, optional)
+
+- **Unit:** **STAGE_BOARD / playfield world XZ inches** — the same ~400-unit frame as `STAGE_BOARD` bounds, **not** CONTROL_BOARD minimap world inches. Shared `(u,v)` is derived from STAGE for playfield mapping; staggering on the smaller minimap world space inflated u/v by roughly the stage÷control scale (~40× with default `MINIMAP_SCALE_DIVISOR`).
+- After placing a family member on its ring ellipse, non-anchor snaps (`familyK ≠ 0`) move **outward** along that snap’s STAGE world radial from `origin` by `abs(familyK) * radialStagger`, then `(u,v)` is recomputed from STAGE.
+- **Anchor** (`familyK == 0`) stays on the ring ellipse unchanged.
+- Example: `num = 5`, anchor 50 world inches from origin on STAGE, `radialStagger = 1` → **52, 51, 50, 51, 52** world inches along each member’s radial.
+- On a ~400-unit-tall stage, `radialStagger = 1` is a subtle nudge; `5` is still modest. Tune on STAGE scale, not minimap tile size.
+- **Angular spread** in each family is separate (`angleDelta`); the visible “V” is often mostly angle, with radial stagger as a fine adjustment.
+- Omitted or `0` → no radial offset.
+- After stagger, `(u,v)` outside `[0,1]` are **omitted** (not clamped to the board edge).
 
 ### Example Configuration (shipped default — no per-ring Y override)
 
@@ -51,7 +63,7 @@ D.CONTROL_BOARD_SNAP = {
 }
 ```
 
-**Snap count:** `sum over rings r of snapGroups[r].rays * snapGroups[r].num` → default **4×1 + 12×3 + 16×5 + 20×1 = 136**.
+**Snap count:** `sum over rings r of snapGroups[r].rays * snapGroups[r].num`, **minus** any candidate whose `(u,v)` falls outside `[0,1]`. Default config → **136** before filter; run `DEBUG.previewControlBoardSnapCount()` for the installed count (typically fewer when outer-ring rays dip below `v = 0`).
 
 ### Ring interpolation
 
@@ -85,13 +97,15 @@ anchorDeg = (rayIndex / rays) * 360   -- rayIndex = 0 .. rays-1
 half = math.floor(num / 2)
 for k = -half, half do
   angleDeg = anchorDeg + k * angleDelta
-  -- u,v, board-local position (Y = snapGroups[ringIndex].groundLevel or MINIMAP_SURFACE_LOCAL_Y), yaw toward origin
+  -- u,v on ring ellipse; optional radialStagger pushes non-anchor snaps outward in STAGE world XZ inches
+  -- board-local snap position (Y = MINIMAP_SURFACE_LOCAL_Y on tile); figurine Y on Apply = optional absolute world groundLevel on ring
 end
 ```
 
 Example: ring 3, `num=5`, `angleDelta=4`, `anchorDeg=90` → **82°, 86°, 90°, 94°, 98°**.
 
 - **Duplicates** at overlapping angles are allowed (no dedupe).
+- Candidates with `u` or `v` outside `[0, 1]` are omitted (not clamped).
 - Every snap uses `rotation_snap = true`, `tags = { "npc_control_token" }` (tagged snaps match control tokens), and board-local yaw **toward** `origin` plus `snapYawOffsetDeg`.
 
 ## Visual illustrations
@@ -112,27 +126,27 @@ Preview count only:
 lua DEBUG.previewControlBoardSnapCount()
 ```
 
-Regenerate snaps with a **full** config table (validation requires all top-level fields and `#snapGroups == rings`):
+Regenerate snaps with a **full** config table (validation requires all top-level fields and `#snapGroups == rings`). Pass fields **directly** or wrapped in `{ config = { … } }`:
 
 ```lua
 lua DEBUG.installNpcControlBoardSnaps({
-  config = {
-    origin = { u = 0.5, v = 0.2 },
-    snapYawOffsetDeg = 0,
-    rings = 4,
-    innerRingMaxU = 0.6,
-    innerRingMaxV = 0.3,
-    outerRingMaxU = 0.9,
-    outerRingMaxV = 0.9,
-    snapGroups = {
-      { num = 1, angleDelta = 0, rays = 4,  groundLevel = 0.18 },
-      { num = 3, angleDelta = 3, rays = 12, groundLevel = 0.22 },
-      { num = 5, angleDelta = 4, rays = 16, groundLevel = 0.26 },
-      { num = 1, angleDelta = 0, rays = 20, groundLevel = 0.30 },
-    },
+  origin = { u = 0.5, v = 0.2 },
+  snapYawOffsetDeg = 0,
+  rings = 4,
+  innerRingMaxU = 0.6,
+  innerRingMaxV = 0.3,
+  outerRingMaxU = 0.9,
+  outerRingMaxV = 0.9,
+  snapGroups = {
+    { num = 1, angleDelta = 0, rays = 4,  groundLevel = -15 },
+    { num = 3, angleDelta = 3, rays = 12, groundLevel = -15 },
+    { num = 5, angleDelta = 4, rays = 16, groundLevel = -40 },
+    { num = 1, angleDelta = 0, rays = 20, groundLevel = -40 },
   },
 })
 ```
+
+**Note:** `groundLevel` on a ring is **absolute world Y** for figurines on Apply — CONTROL_BOARD snap XZ/Y on the tile are unchanged (`MINIMAP_SURFACE_LOCAL_Y`). **`Sync.npcs` / `Sync.full`** calls `reconcileControlBoardFromState` → `installPolarSnaps` with **`lib/npc_gameboard_data` defaults**, which overwrites a debug install unless you edit `D.CONTROL_BOARD_SNAP` or re-run `DEBUG.installNpcControlBoardSnaps` after sync.
 
 Or call the gameboard API directly:
 
@@ -148,10 +162,10 @@ lua require("core.npc_gameboard").installPolarSnaps(nil, {
     outerRingMaxU = 0.9,
     outerRingMaxV = 0.9,
     snapGroups = {
-      { num = 1, angleDelta = 0, rays = 4,  groundLevel = 0.18 },
-      { num = 3, angleDelta = 3, rays = 12, groundLevel = 0.22 },
-      { num = 5, angleDelta = 4, rays = 16, groundLevel = 0.26 },
-      { num = 1, angleDelta = 0, rays = 20, groundLevel = 0.30 },
+      { num = 1, angleDelta = 0, rays = 4,  groundLevel = -15 },
+      { num = 3, angleDelta = 3, rays = 12, groundLevel = -15 },
+      { num = 5, angleDelta = 4, rays = 16, groundLevel = -40 },
+      { num = 1, angleDelta = 0, rays = 20, groundLevel = -40 },
     },
   },
 })

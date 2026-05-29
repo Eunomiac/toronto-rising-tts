@@ -27,6 +27,9 @@ D.MARKER_NPC_SEAT_PREFIX = "gameboardNpcSeat:"
 --- Parked minimap markers for inactive / empty NPC seats (matches NPC figurine off-table Y).
 D.MARKER_STASH_WORLD_Y = -200
 
+--- Extra world Y yaw (degrees) for stage figurines from control-board token facing (`Figurine_Custom` front/back vs tile).
+D.STAGE_FIGURINE_YAW_OFFSET_DEG = 180
+
 --- Minimap marker scale = playfield source `getScale()` ÷ this (stage ÷ control board, typically 40).
 D.MINIMAP_SCALE_DIVISOR = 40
 
@@ -49,23 +52,22 @@ D.DEFAULT_STAGE_WORLD = {
 }
 
 --- CONTROL_BOARD snap grid: elliptical rings in board u/v; per-ring `rays` in snapGroups.
+--- `radialStagger` (optional): STAGE_BOARD / playfield world XZ inches per family step from anchor (`abs(k) * radialStagger` along each snap's radial from `origin` on STAGE; anchor k=0 unchanged). Calibrate against STAGE size (~400), not CONTROL_BOARD minimap size (~40).
 --- See .dev/NPC Object Spawning & Spotlighting/Generating Snap Points For Control Board.md
 D.CONTROL_BOARD_SNAP = {
-    origin = { u = 0.5, v = 0.2 },
-    --- Added to board-local snap yaw (toward origin). Polar minimap snaps do not use the palette’s fixed 180°.
-    snapYawOffsetDeg = 0,
-    rings = 4,
-    innerRingMaxU = 0.6,
-    innerRingMaxV = 0.3,
-    outerRingMaxU = 0.9,
-    outerRingMaxV = 0.9,
-    snapGroups = {
-        --- Per ring: `num`, `angleDelta`, `rays`, optional `groundLevel` (board-local Y on the tile).
-        { num = 1, angleDelta = 0, rays = 4 },
-        { num = 3, angleDelta = 3, rays = 12 },
-        { num = 5, angleDelta = 4, rays = 16 },
-        { num = 1, angleDelta = 0, rays = 20 },
-    },
+  origin = { u = 0.5, v = 0.3 },
+  snapYawOffsetDeg = 0,
+  rings = 4,
+  innerRingMaxU = 0.6,
+  innerRingMaxV = 0.4,
+  outerRingMaxU = 0.9,
+  outerRingMaxV = 0.9,
+  snapGroups = {
+    { num = 1, angleDelta = 0, rays = 16, groundLevel = -50, radialStagger = 5},
+    { num = 5, angleDelta = 3, rays = 12, groundLevel = -50, radialStagger = 5},
+    { num = 5, angleDelta = 3, rays = 16, groundLevel = -50, radialStagger = 5},
+    { num = 5, angleDelta = 2, rays = 20, groundLevel = -50, radialStagger = 5},
+  },
 }
 
 --- CONTROL_BOARD_PALETTE: 20 columns × 40 rows (800 snaps). Object scale typically {5, 1, 10} (X wide, Z tall).

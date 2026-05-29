@@ -228,6 +228,15 @@ Every `CSHEET_PAGE_<n>_<COLOR>` object has a one-line stub under **`.tts/objects
 require("ui.ui_csheet")
 ```
 
+**NPC gameboard objects** (same script / build task):
+
+| Object prefix | Lua stub | XML stub |
+| --- | --- | --- |
+| `CONTROL_BOARD.*` | `require("objects.npc_control_board")` | `<Include src="ui/objects/npc_control_board.xml" />` |
+| `CONTROL_BOARD_PALETTE.*` | `require("objects.npc_control_board_palette")` | `<Panel />` |
+
+The TTS extension often scrambles these (e.g. pasting a csheet `<Include>` or the Global-injected fallback `click_*` script onto the board object). Run **`npm run tts-objects:fix-stubs`** after Save & Play if stubs drift.
+
 **Pages 3–6** (`CSHEET_PAGE_3_*` … `CSHEET_PAGE_6_*`) use separate entries so each page’s XML builder (and embedded templates when shipped) is **not** bundled into all ~80 sheet objects:
 
 ```lua
