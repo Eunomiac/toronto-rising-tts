@@ -17,11 +17,11 @@ local TOKEN_PREFIX = DATA.TOKEN_GM_PREFIX
 --- @param groupId string|nil
 --- @return boolean
 function Palette.isGroupBlacklisted(groupId)
-    if type(groupId) ~= "string" or groupId == "" then
+    if U.Type(groupId) ~= "string" or groupId == "" then
         return false
     end
     local bl = DATA.PALETTE_GROUP_BLACKLIST
-    return type(bl) == "table" and bl[groupId] == true
+    return U.Type(bl) == "table" and bl[groupId] == true
 end
 
 --- Pick palette group + slot index from character def (npcs_data).
@@ -29,12 +29,12 @@ end
 --- @param characterDef table|nil
 --- @return string|nil groupId, number|nil slotIndex
 function Palette.resolvePaletteGroupForCharacter(characterDef)
-    if type(characterDef) ~= "table" or type(characterDef.groups) ~= "table" then
+    if U.Type(characterDef) ~= "table" or U.Type(characterDef.groups) ~= "table" then
         return nil, nil
     end
     local survivors = {}
     for groupId, slotIndex in pairs(characterDef.groups) do
-        if type(groupId) == "string" and groupId ~= "" and not Palette.isGroupBlacklisted(groupId) then
+        if U.Type(groupId) == "string" and groupId ~= "" and not Palette.isGroupBlacklisted(groupId) then
             survivors[#survivors + 1] = {
                 groupId = groupId,
                 slotIndex = tonumber(slotIndex) or 0,
@@ -48,7 +48,7 @@ function Palette.resolvePaletteGroupForCharacter(characterDef)
         return survivors[1].groupId, survivors[1].slotIndex
     end
     for groupId, slotIndex in pairs(characterDef.groups) do
-        if type(groupId) == "string" and groupId ~= "" and not Palette.isGroupBlacklisted(groupId) then
+        if U.Type(groupId) == "string" and groupId ~= "" and not Palette.isGroupBlacklisted(groupId) then
             return groupId, tonumber(slotIndex) or 0
         end
     end
@@ -143,7 +143,7 @@ end
 --- @param localPos Vector
 --- @return Vector|nil
 local function boardLocalToWorld(board, localPos)
-    if type(board.positionToWorld) == "function" then
+    if board.positionToWorld ~= nil then
         return board.positionToWorld(localPos)
     end
     local origin = board.getPosition()
@@ -157,7 +157,7 @@ end
 --- @param snapIndex number 0-based linear index (row-major; col 0 = left, row 0 = top)
 --- @return Vector|nil
 function Palette.worldPositionForSnapIndex(board, snapIndex)
-    if not U.isGameObject(board) or type(snapIndex) ~= "number" then
+    if not U.isGameObject(board) or U.Type(snapIndex) ~= "number" then
         return nil
     end
     local cfg = paletteSnapConfig()
@@ -210,7 +210,7 @@ function Palette.buildTokenSnapAssignments()
     local ungrouped = {}
 
     for characterKey, def in pairs(NPCS_DATA.characters or {}) do
-        if type(characterKey) == "string" and type(def) == "table" then
+        if U.Type(characterKey) == "string" and U.Type(def) == "table" then
             local groupId, slotIndex = Palette.resolvePaletteGroupForCharacter(def)
             if groupId ~= nil then
                 byGroup[groupId] = byGroup[groupId] or {}
@@ -305,7 +305,7 @@ local function tokenCharacterKey(obj)
         notes = tostring(obj.getDescription() or "")
     end
     local key = string.match(notes, "^" .. TOKEN_PREFIX .. "([^,]+)")
-    if type(key) == "string" and key ~= "" then
+    if U.Type(key) == "string" and key ~= "" then
         return key
     end
     if obj.getName ~= nil then
@@ -395,11 +395,11 @@ function Palette.syncTokensToPalette(palette)
     for _, token in ipairs(onPalette) do
         local ck = tokenCharacterKey(token)
         local wantIndex = ck ~= nil and assignments[ck] or nil
-        if type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
+        if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
             local pos = token.getPosition()
             local nearestSlot = U.findSnapPoint(snapPointsForFind, pos, 0.35)
             local nearestIndex = nil
-            if type(nearestSlot) == "number" and snapPointsForFind[nearestSlot] ~= nil then
+            if U.Type(nearestSlot) == "number" and snapPointsForFind[nearestSlot] ~= nil then
                 nearestIndex = snapPointsForFind[nearestSlot].snapIndex
             end
             if nearestIndex ~= wantIndex then
@@ -415,12 +415,12 @@ function Palette.syncTokensToPalette(palette)
         if U.isGameObject(token) then
             local ck = tokenCharacterKey(token)
             local wantIndex = ck ~= nil and assignments[ck] or nil
-            if type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
+            if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
                 local onPalette = isWorldPosOnPaletteBoard(palette, token.getPosition())
                 local alreadyCorrect = false
                 if onPalette then
                     local nearestSlot = U.findSnapPoint(snapPointsForFind, token.getPosition(), 0.35)
-                    if type(nearestSlot) == "number" and snapPointsForFind[nearestSlot] ~= nil then
+                    if U.Type(nearestSlot) == "number" and snapPointsForFind[nearestSlot] ~= nil then
                         alreadyCorrect = snapPointsForFind[nearestSlot].snapIndex == wantIndex
                     end
                 end
@@ -443,7 +443,7 @@ end
 --- @param options table|nil { force?: boolean }
 --- @return boolean
 function Palette.installSnaps(board, options)
-    options = type(options) == "table" and options or {}
+    options = U.Type(options) == "table" and options or {}
     if not U.isGameObject(board) or board.setSnapPoints == nil then
         print("[Palette] installSnaps: board missing or no setSnapPoints")
         return false
