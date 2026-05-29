@@ -688,34 +688,61 @@ function U.findSnapPoint(snapPoints, pos, fuzziness)
 			snapObj = pos
 			pos = snapObj.getPosition()
 		end
+    --- @param source table|nil
+    --- @param letter string
+    --- @param arrayIndex number|nil
+    --- @return number|nil
+    local function readAxisCoord(source, letter, arrayIndex)
+        if type(source) ~= "table" then
+            return nil
+        end
+        local raw = source[letter]
+        if raw == nil and arrayIndex ~= nil then
+            raw = source[arrayIndex]
+        end
+        if raw == nil then
+            return nil
+        end
+        return U.pFloat(raw)
+    end
     fuzziness = fuzziness or 0.1
-    local xPos = pos.x ~= nil and U.pFloat(pos.x) or nil
-    local zPos = pos.z ~= nil and U.pFloat(pos.z) or nil
+    local xPos = readAxisCoord(pos, "x", 1)
+    local zPos = readAxisCoord(pos, "z", 3)
     local bestSlot = nil
     local bestDistSq = math.huge
     for slot, snap in ipairs(snapPoints) do
         if snap.position then
             snap = snap.position
         end
-        local xSnap = U.pFloat(snap.x)
-        local zSnap = U.pFloat(snap.z)
+        local xSnap = readAxisCoord(snap, "x", 1)
+        local zSnap = readAxisCoord(snap, "z", 3)
         local isXOkay = false
         local isZOkay = false
         if xPos == nil then
             isXOkay = true
-        elseif xPos >= (xSnap - fuzziness) and xPos <= (xSnap + fuzziness) then
+        elseif xSnap ~= nil and xPos >= (xSnap - fuzziness) and xPos <= (xSnap + fuzziness) then
             isXOkay = true
         end
         if zPos == nil then
             isZOkay = true
-        elseif zPos >= (zSnap - fuzziness) and zPos <= (zSnap + fuzziness) then
+        elseif zSnap ~= nil and zPos >= (zSnap - fuzziness) and zPos <= (zSnap + fuzziness) then
             isZOkay = true
         end
         if isXOkay and isZOkay then
-            local dx = (xPos or xSnap) - xSnap
-            local dz = (zPos or zSnap) - zSnap
-            local distSq = dx * dx + dz * dz
-            if distSq < bestDistSq then
+            local distSq = 0
+            local hasAxis = false
+            if xPos ~= nil and xSnap ~= nil then
+                local dx = xPos - xSnap
+                distSq = distSq + dx * dx
+                hasAxis = true
+            end
+            if zPos ~= nil and zSnap ~= nil then
+                local dz = zPos - zSnap
+                distSq = distSq + dz * dz
+                hasAxis = true
+            end
+            -- Only rank when at least one axis is present; nil-nil used to tie all snaps at dist 0.
+            if hasAxis and distSq < bestDistSq then
                 bestDistSq = distSq
                 bestSlot = slot
             end
