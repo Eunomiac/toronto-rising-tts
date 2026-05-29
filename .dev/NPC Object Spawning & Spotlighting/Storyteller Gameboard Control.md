@@ -84,7 +84,7 @@ The extension may mirror these under `.tts/objects/CONTROL_BOARD.bea29a.*` (giti
 
 **Workshop:** tag the tile `npc_control_board` (optional). GUID `bea29a` in `lib/guids.ttslua`.
 
-**In-game buttons:** Five **3D** `createButton` labels on the tile edge (Apply, Clear, Read, Lock, Load) — sized for a ~1-unit `Custom_Tile` with board yaw ≈ 180°. XmlUI is the object’s XML panel when selected. After pulling repo stubs, **Save & Play** so the save bundles script + XML onto `bea29a`. `reconcileControlBoardFromState` calls `Gameboard.ensureControlBoardObjectUi` each sync (clears stale oversized buttons from earlier layouts).
+**In-game buttons:** Five small **3D** `createButton` labels in one row along the **bottom-left** of the tile (Apply → Clear → Read → Lock → Load), `rotation = {0,180,0}` for readable labels when the board yaw ≈ 180°. XmlUI is the object’s XML panel when selected. After pulling repo stubs, **Save & Play** so the save bundles script + XML onto `bea29a`. `reconcileControlBoardFromState` calls `Gameboard.ensureControlBoardObjectUi` each sync (layout version in `objects/npc_control_board_ui.ttslua` forces reinstall).
 
 **Palette vs activated:** Tokens on **CONTROL_BOARD_PALETTE** are inactive storage; **Apply** ignores them until a token is on a CONTROL_BOARD polar snap. **Clear** runs `Palette.syncTokensToPalette` (group order from `lib/npcs_data` `characters[].groups`, minus `PALETTE_GROUP_BLACKLIST` e.g. `princesCourt`).
 

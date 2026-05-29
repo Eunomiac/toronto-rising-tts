@@ -1,17 +1,23 @@
 --[[
     CONTROL_BOARD 3D object buttons (shared by object script + Global reconcile fallback).
 
-    Tile is authored with yaw ≈ 180° (storyteller-facing). Positions are object-local on the
-    east edge of the unit tile; keep width/height modest (tile is ~1 world unit across).
+    Board local frame: X = width (u), Z = depth (v), Y up. UV origin is bottom-left of the
+    minimap — buttons sit on the bottom edge (low v / negative Z), row grows toward +X.
+    Tile is often authored with yaw ≈ 180°; per-button rotation keeps labels readable from above.
 ]]
 
 local NPC_CONTROL_BOARD_UI = {}
 
-local APPLY_LABEL = "Apply"
-local CLEAR_LABEL = "Clear"
+--- Bump when layout/size/rotation changes so reconcile replaces stale buttons.
+local UI_LAYOUT_VERSION = 3
 
---- Layout generation — bump when positions or sizes change so reinstall replaces stale buttons.
-local UI_LAYOUT_VERSION = 2
+local BUTTON_SPECS = {
+    { label = "Apply", click_function = "click_apply", width = 72, height = 22, font_size = 14, color = { 0.2, 0.55, 0.3, 0.92 } },
+    { label = "Clear", click_function = "click_clear", width = 72, height = 22, font_size = 14, color = { 0.55, 0.2, 0.2, 0.92 } },
+    { label = "Read", click_function = "click_read_stub", width = 64, height = 22, font_size = 13, color = { 0.35, 0.35, 0.45, 0.9 } },
+    { label = "Lock", click_function = "click_lock_stub", width = 64, height = 22, font_size = 13, color = { 0.35, 0.35, 0.45, 0.9 } },
+    { label = "Load", click_function = "click_load_stub", width = 64, height = 22, font_size = 13, color = { 0.35, 0.35, 0.45, 0.9 } },
+}
 
 --- @param obj Object
 --- @return boolean
@@ -26,75 +32,27 @@ function NPC_CONTROL_BOARD_UI.installObjectButtons(obj)
     end
     obj.clearButtons()
 
-    local y = 0.2
-    local x = 0.44
-    local zApply = -0.34
-    local zStep = 0.11
-    local width = 220
-    local height = 60
-    local fontMain = 28
-    local fontStub = 24
+    local y = 0.16
+    local z = -0.44
+    local xStart = -0.44
+    local xStep = 0.095
+    local labelRotation = { 0, 180, 0 }
 
-    local function addButton(spec)
-        obj.createButton(spec)
+    for i, spec in ipairs(BUTTON_SPECS) do
+        obj.createButton({
+            label = spec.label,
+            click_function = spec.click_function,
+            function_owner = obj,
+            position = { xStart + (i - 1) * xStep, y, z },
+            rotation = labelRotation,
+            width = spec.width,
+            height = spec.height,
+            font_size = spec.font_size,
+            color = spec.color,
+            font_color = { 1, 1, 1, 1 },
+            tooltip = i == 1 and ("v" .. tostring(UI_LAYOUT_VERSION)) or nil,
+        })
     end
-
-    addButton({
-        label = APPLY_LABEL,
-        click_function = "click_apply",
-        function_owner = obj,
-        position = { x, y, zApply },
-        width = width,
-        height = height,
-        font_size = fontMain,
-        color = { 0.2, 0.55, 0.3, 0.95 },
-        font_color = { 1, 1, 1, 1 },
-        tooltip = "v" .. tostring(UI_LAYOUT_VERSION),
-    })
-    addButton({
-        label = CLEAR_LABEL,
-        click_function = "click_clear",
-        function_owner = obj,
-        position = { x, y, zApply + zStep },
-        width = width,
-        height = height,
-        font_size = fontMain,
-        color = { 0.55, 0.2, 0.2, 0.95 },
-        font_color = { 1, 1, 1, 1 },
-    })
-    addButton({
-        label = "Read",
-        click_function = "click_read_stub",
-        function_owner = obj,
-        position = { x, y, zApply + zStep * 2 },
-        width = width,
-        height = height,
-        font_size = fontStub,
-        color = { 0.35, 0.35, 0.45, 0.9 },
-        font_color = { 1, 1, 1, 1 },
-    })
-    addButton({
-        label = "Lock",
-        click_function = "click_lock_stub",
-        function_owner = obj,
-        position = { x, y, zApply + zStep * 3 },
-        width = width,
-        height = height,
-        font_size = fontStub,
-        color = { 0.35, 0.35, 0.45, 0.9 },
-        font_color = { 1, 1, 1, 1 },
-    })
-    addButton({
-        label = "Load",
-        click_function = "click_load_stub",
-        function_owner = obj,
-        position = { x, y, zApply + zStep * 4 },
-        width = width,
-        height = height,
-        font_size = fontStub,
-        color = { 0.35, 0.35, 0.45, 0.9 },
-        font_color = { 1, 1, 1, 1 },
-    })
 end
 
 return NPC_CONTROL_BOARD_UI
