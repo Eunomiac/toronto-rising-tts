@@ -6,6 +6,7 @@
     Do not set createButton rotation around X — that tilts labels edge-on into the tile.
 ]]
 
+local U = require("lib.util")
 local DATA = require("lib.npc_gameboard_data")
 
 local NPC_CONTROL_BOARD_UI = {}
@@ -36,7 +37,7 @@ local function buttonSurfaceLocalY(obj)
         local bounds = obj.getBounds()
         if bounds ~= nil and bounds.size ~= nil then
             local sizeY = bounds.size.y or bounds.size[2]
-            if type(sizeY) == "number" and sizeY > 0.05 then
+            if U.Type(sizeY) == "number" and sizeY > 0.05 then
                 y = math.max(y, sizeY * 0.5 + 0.02)
             end
         end
