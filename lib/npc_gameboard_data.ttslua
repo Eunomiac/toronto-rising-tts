@@ -36,6 +36,9 @@ D.MINIMAP_SURFACE_LOCAL_Y = 0.18
 --- Extra local Y for table markers (thick mesh pivot sits below center).
 D.MINIMAP_TABLE_EXTRA_LOCAL_Y = 0.06
 
+--- Local Y above CONTROL_BOARD_PALETTE surface for token snaps.
+D.PALETTE_SURFACE_LOCAL_Y = 0.18
+
 --- Fallback world XZ footprint when STAGE_BOARD is not in the save yet.
 D.DEFAULT_STAGE_WORLD = {
     centerX = 0,
@@ -45,7 +48,7 @@ D.DEFAULT_STAGE_WORLD = {
     groundY = -15,
 }
 
---- CONTROL_BOARD snap grid: elliptical rings in board u/v, rays, per-ring families.
+--- CONTROL_BOARD snap grid: elliptical rings in board u/v; per-ring `rays` in snapGroups.
 --- See .dev/NPC Object Spawning & Spotlighting/Generating Snap Points For Control Board.md
 D.CONTROL_BOARD_SNAP = {
     origin = { u = 0.5, v = 0.2 },
@@ -54,25 +57,27 @@ D.CONTROL_BOARD_SNAP = {
     innerRingMaxV = 0.3,
     outerRingMaxU = 0.9,
     outerRingMaxV = 0.9,
-    rays = 16,
     snapGroups = {
-        { num = 1, angleDelta = 0 },
-        { num = 3, angleDelta = 3 },
-        { num = 5, angleDelta = 4 },
-        { num = 1, angleDelta = 0 },
+        { num = 1, angleDelta = 0, rays = 4 },
+        { num = 3, angleDelta = 3, rays = 12 },
+        { num = 5, angleDelta = 4, rays = 16 },
+        { num = 1, angleDelta = 0, rays = 20 },
     },
 }
 
---- Token palette strip on CONTROL_BOARD (normalized u,v; same frame as placements / polar snaps).
-D.TOKEN_PALETTE_UV = {
-    uMin = 0.04,
-    uMax = 0.36,
-    vMin = 0.64,
-    vMax = 0.94,
+--- CONTROL_BOARD_PALETTE: 20 columns × 40 rows (800 snaps). Object scale typically {5, 1, 10} (X wide, Z tall).
+D.CONTROL_BOARD_PALETTE_SNAP = {
+    columns = 20,
+    rows = 40,
+    uMargin = 0.02,
+    vMargin = 0.02,
 }
 
---- Default palette grid when spawning 61 NPC control tokens.
-D.TOKEN_PALETTE_COLUMNS = 8
+--- Groups excluded when picking palette row membership from `npcs_data` character `groups`.
+--- After filtering, a single remaining group wins; if multiple remain, `pairs()` picks one.
+D.PALETTE_GROUP_BLACKLIST = {
+    princesCourt = true,
+}
 
 --- Enumerate every table key and component name from C.Tables (for marker registry).
 --- @return table[] { tableKey, componentKey? }

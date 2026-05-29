@@ -1,0 +1,16 @@
+---@diagnostic disable: lowercase-global
+--[[
+    CONTROL_BOARD_PALETTE object script (objects/npc_control_board_palette.ttslua).
+
+    TTS Editor — Script:
+    require("objects.npc_control_board_palette")
+
+    Installs a 20×40 snap grid and parks NPC control tokens by group (see lib/npc_control_board_palette).
+]]
+
+local Palette = require("lib.npc_control_board_palette")
+
+function onLoad()
+    Palette.installSnaps(self, { force = true })
+    Palette.syncTokensToPalette(self)
+end

@@ -12,6 +12,7 @@ local C = require("lib.constants")
 local G = require("lib.guids")
 local S = require("core.state")
 local DATA = require("lib.npc_gameboard_data")
+local Palette = require("lib.npc_control_board_palette")
 
 local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
 local TAG_PC = DATA.TAG_GAMEBOARD_PC_SEAT
@@ -61,6 +62,11 @@ end
 --- @return Object|nil
 local function getControlBoard()
     return objectFromGuid(G.GUIDS.CONTROL_BOARD)
+end
+
+--- @return Object|nil
+local function getControlBoardPalette()
+    return objectFromGuid(G.GUIDS.CONTROL_BOARD_PALETTE)
 end
 
 --- @return table
@@ -204,21 +210,6 @@ local function uvFromWorldOnBoard(board, worldPos)
     return clamp(u, 0, 1), clamp(v, 0, 1)
 end
 
---- @param u number|nil
---- @param v number|nil
---- @return boolean
-local function isTokenPaletteUv(u, v)
-    if type(u) ~= "number" or type(v) ~= "number" then
-        return false
-    end
-    local uv = DATA.TOKEN_PALETTE_UV or {}
-    local uMin = tonumber(uv.uMin) or 0.04
-    local uMax = tonumber(uv.uMax) or 0.36
-    local vMin = tonumber(uv.vMin) or 0.64
-    local vMax = tonumber(uv.vMax) or 0.94
-    return u >= uMin and u <= uMax and v >= vMin and v <= vMax
-end
-
 --- Tagged objects on CONTROL_BOARD surface. Custom_Tile exposes getObjects but throws on call —
 --- never use `board.getObjects and board.getObjects()` (the `and` still invokes the method).
 --- @param board Object
@@ -336,49 +327,6 @@ function Gameboard.worldOnControlBoard(board, u, v, options)
     return boardLocalToWorld(board, boardLocalFromUv(board, u, v, extraLocalY))
 end
 
---- World position for an off-map palette slot on CONTROL_BOARD (UV grid on the minimap).
---- @param board Object
---- @param paletteIndex number 0-based
---- @param options table|nil { total?, columns?, uMin?, uMax?, vMin?, vMax? }
---- @return Vector|nil
-function Gameboard.paletteWorldPosition(board, paletteIndex, options)
-    if not isGameObject(board) or type(paletteIndex) ~= "number" then
-        return nil
-    end
-    local opts = options or {}
-    local total = tonumber(opts.total) or 61
-    if total < 1 then
-        total = 1
-    end
-    local columns = tonumber(opts.columns) or DATA.TOKEN_PALETTE_COLUMNS or 8
-    if columns < 1 then
-        columns = 8
-    end
-    local rows = math.ceil(total / columns)
-    if rows < 1 then
-        rows = 1
-    end
-    local col = paletteIndex % columns
-    local row = math.floor(paletteIndex / columns)
-    if row >= rows then
-        row = rows - 1
-    end
-    local uv = DATA.TOKEN_PALETTE_UV or {}
-    local uMin = tonumber(opts.uMin) or uv.uMin or 0.04
-    local uMax = tonumber(opts.uMax) or uv.uMax or 0.36
-    local vMin = tonumber(opts.vMin) or uv.vMin or 0.64
-    local vMax = tonumber(opts.vMax) or uv.vMax or 0.94
-    local u = uMin
-    local v = vMin
-    if columns > 1 then
-        u = uMin + (col / (columns - 1)) * (uMax - uMin)
-    end
-    if rows > 1 then
-        v = vMin + (row / (rows - 1)) * (vMax - vMin)
-    end
-    return Gameboard.worldOnControlBoard(board, u, v)
-end
-
 --- @param obj Object
 --- @return string|nil
 local function readMarkerKey(obj, prefix)
@@ -392,7 +340,7 @@ local function readMarkerKey(obj, prefix)
     if notes == "" and obj.getDescription ~= nil then
         notes = tostring(obj.getDescription() or "")
     end
-    local key = string.match(notes, "^" .. prefix .. "(.+)$")
+    local key = string.match(notes, "^" .. prefix .. "([^,\r\n]+)")
     if type(key) == "string" and key ~= "" then
         return key
     end
@@ -478,8 +426,9 @@ function Gameboard.scanControlBoardTokens(board)
             local characterKey = resolveTokenCharacterKey(obj)
             if type(characterKey) == "string" and characterKey ~= "" then
                 local u, v, yaw = tokenPlacementOnBoard(obj, board)
-                if isTokenPaletteUv(u, v) then
-                    -- Inactive storage strip — not an activated stage placement until dragged to snaps + Apply.
+                local palette = getControlBoardPalette()
+                if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, obj) then
+                    -- Inactive storage on CONTROL_BOARD_PALETTE — not a minimap placement until snapped + Apply.
                 elseif type(u) == "number" and type(v) == "number" then
                     out[#out + 1] = {
                         characterKey = characterKey,
@@ -532,25 +481,37 @@ end
 --- Remove tokens from control board and clear placements in state.
 --- @return boolean ok, string|nil message
 function Gameboard.clearControlBoard()
-    local board = getControlBoard()
     S.setStateVal({}, "sessionScene", "npcWorld", "placements")
-    if isGameObject(board) then
-        local tokens = objectsOnControlBoard(board, TAG_TOKEN)
-        local columns = DATA.TOKEN_PALETTE_COLUMNS or 8
-        for i, obj in ipairs(tokens) do
-            local pos = Gameboard.paletteWorldPosition(board, i - 1, {
-                total = #tokens,
-                columns = columns,
-            })
-            if pos ~= nil then
-                obj.setPosition(pos)
-            end
-        end
+    local palette = getControlBoardPalette()
+    if isGameObject(palette) then
+        local moved = Palette.syncTokensToPalette(palette)
+        print("[Gameboard] Clear: placements emptied; " .. tostring(moved) .. " token(s) parked on palette")
+    else
+        print("[Gameboard] Clear: placements emptied (CONTROL_BOARD_PALETTE missing — tokens not parked)")
     end
     local Sync = require("core.sync")
     Sync.npcs({ reason = "gameboard_clear", force = true })
-    print("[Gameboard] Clear: placements emptied")
     return true, nil
+end
+
+--- Park all NPC control tokens on CONTROL_BOARD_PALETTE (group layout from npcs_data).
+--- @return number moved
+function Gameboard.syncTokensToPalette()
+    local palette = getControlBoardPalette()
+    if not isGameObject(palette) then
+        print("[Gameboard] syncTokensToPalette: CONTROL_BOARD_PALETTE missing (GUID " .. tostring(G.GUIDS.CONTROL_BOARD_PALETTE) .. ")")
+        return 0
+    end
+    return Palette.syncTokensToPalette(palette)
+end
+
+--- Install 20×40 snaps on CONTROL_BOARD_PALETTE.
+--- @param board Object|nil
+--- @param options table|nil { force?: boolean }
+--- @return boolean
+function Gameboard.installPaletteSnaps(board, options)
+    board = board or getControlBoardPalette()
+    return Palette.installSnaps(board, options)
 end
 
 --- @param playerColor string|nil
@@ -845,7 +806,7 @@ local function resolveControlBoardSnapConfig(config)
 end
 
 --- @param cfg table
---- @return table cfg, number rings, number rays
+--- @return table cfg, number rings
 local function validateControlBoardSnapConfig(cfg)
     if type(cfg) ~= "table" then
         error("CONTROL_BOARD_SNAP config must be a table")
@@ -866,11 +827,7 @@ local function validateControlBoardSnapConfig(cfg)
     if innerRingMaxU == nil or innerRingMaxV == nil or outerRingMaxU == nil or outerRingMaxV == nil then
         error("CONTROL_BOARD_SNAP inner/outer RingMaxU/V must be numbers (absolute board u/v)")
     end
-    local rays = tonumber(cfg.rays)
-    if rays == nil or rays < 1 or math.floor(rays) ~= rays then
-        error("CONTROL_BOARD_SNAP.rays must be an integer >= 1")
-    end
-    rays = math.floor(rays)
+    local legacyRays = tonumber(cfg.rays)
     local snapGroups = cfg.snapGroups
     if type(snapGroups) ~= "table" or #snapGroups ~= rings then
         error("CONTROL_BOARD_SNAP.snapGroups must have exactly " .. tostring(rings) .. " entries (one per ring)")
@@ -887,8 +844,20 @@ local function validateControlBoardSnapConfig(cfg)
         if tonumber(group.angleDelta) == nil then
             error("CONTROL_BOARD_SNAP.snapGroups[" .. tostring(ringIndex) .. "].angleDelta must be a number")
         end
+        local rays = tonumber(group.rays)
+        if rays == nil and legacyRays ~= nil then
+            rays = legacyRays
+        end
+        if rays == nil or rays < 1 or math.floor(rays) ~= rays then
+            error(
+                "CONTROL_BOARD_SNAP.snapGroups["
+                    .. tostring(ringIndex)
+                    .. "].rays must be an integer >= 1 (or set legacy top-level rays)"
+            )
+        end
+        group.rays = math.floor(rays)
     end
-    return cfg, rings, rays
+    return cfg, rings
 end
 
 --- Absolute board maxU/maxV for ring index (1 = innermost).
@@ -939,11 +908,13 @@ end
 --- @param config table|nil
 --- @return number total, table perRingCounts indexed by ring
 function Gameboard.countControlBoardSnapPoints(config)
-    local cfg, rings, rays = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
+    local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
     local perRing = {}
     local total = 0
     for ringIndex = 1, rings do
-        local num = tonumber(cfg.snapGroups[ringIndex].num)
+        local group = cfg.snapGroups[ringIndex]
+        local num = tonumber(group.num)
+        local rays = tonumber(group.rays)
         local ringTotal = rays * num
         perRing[ringIndex] = ringTotal
         total = total + ringTotal
@@ -959,7 +930,7 @@ function Gameboard.buildControlBoardSnapPoints(board, config)
     if not isGameObject(board) then
         error("Gameboard.buildControlBoardSnapPoints: board object required")
     end
-    local cfg, rings, rays = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
+    local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
     local ou = cfg.origin.u
     local ov = cfg.origin.v
     local points = {}
@@ -967,6 +938,7 @@ function Gameboard.buildControlBoardSnapPoints(board, config)
         local maxU, maxV = ringMaxUvForIndex(cfg, ringIndex, rings)
         local group = cfg.snapGroups[ringIndex]
         local num = tonumber(group.num)
+        local rays = tonumber(group.rays)
         local angleDelta = tonumber(group.angleDelta) or 0
         local half = math.floor(num / 2)
         for rayIndex = 0, rays - 1 do
@@ -1006,13 +978,16 @@ local function controlBoardSnapFingerprintFor(board, config)
             cfg.outerRingMaxU,
             cfg.outerRingMaxV
         ),
-        tostring(cfg.rays),
     }
     local rings = tonumber(cfg.rings) or 0
     for ringIndex = 1, rings do
         local group = cfg.snapGroups[ringIndex]
         if type(group) == "table" then
-            parts[#parts + 1] = tostring(group.num) .. ":" .. tostring(group.angleDelta)
+            parts[#parts + 1] = tostring(group.num)
+                .. ":"
+                .. tostring(group.angleDelta)
+                .. ":"
+                .. tostring(group.rays)
         end
     end
     parts[#parts + 1] = "snapTag:" .. TAG_TOKEN

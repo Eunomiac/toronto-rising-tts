@@ -9,8 +9,8 @@ Physical **STAGE_BOARD** (hidden world floor) + **CONTROL_BOARD** (GM table mini
 | Surface | Role |
 | --- | --- |
 | `sessionScene.npcWorld.placements` | Authority: `{ characterKey = { u, v, yaw, npcLightMode } }` (0–1 on stage board) |
-| **Apply** | Scan `npc_control_token` on CONTROL_BOARD (snap/minimap only — **not** the palette strip `TOKEN_PALETTE_UV`) → write `placements` → `Sync.npcs` |
-| **Clear** | Double-click → empty `placements`, park tokens to palette, `Sync.npcs` |
+| **Apply** | Scan `npc_control_token` on CONTROL_BOARD minimap only (**not** on `CONTROL_BOARD_PALETTE`) → write `placements` → `Sync.npcs` |
+| **Clear** | Double-click → empty `placements`, `Gameboard.syncTokensToPalette()` (group layout from `npcs_data`), `Sync.npcs` |
 | Reconcile | `NPCS.reconcileAllFromState` → figurines; mirror board unless `layoutLock` |
 
 Legacy `byArea` still reconciles when `placements` does not claim a character (until Phase C retires areas).
@@ -53,7 +53,7 @@ Table/seat markers: compute playfield world XZ (table `centerPoint`; components 
 | `gameboard_pc_seat` | `gameboardPcSeat:Red` |
 | `gameboard_npc_seat` | `gameboardNpcSeat:NPC2` |
 
-GUIDs: `G.GUIDS.STAGE_BOARD`, `G.GUIDS.CONTROL_BOARD` in `lib/guids.ttslua`.
+GUIDs: `G.GUIDS.STAGE_BOARD`, `G.GUIDS.CONTROL_BOARD`, `G.GUIDS.CONTROL_BOARD_PALETTE` (`ee686e`) in `lib/guids.ttslua`.
 
 ## Control-board snaps (CONTROL_BOARD)
 
@@ -86,11 +86,21 @@ The extension may mirror these under `.tts/objects/CONTROL_BOARD.bea29a.*` (giti
 
 **In-game buttons:** Five **3D** `createButton` labels on the tile edge (Apply, Clear, Read, Lock, Load) — sized for a ~1-unit `Custom_Tile` with board yaw ≈ 180°. XmlUI is the object’s XML panel when selected. After pulling repo stubs, **Save & Play** so the save bundles script + XML onto `bea29a`. `reconcileControlBoardFromState` calls `Gameboard.ensureControlBoardObjectUi` each sync (clears stale oversized buttons from earlier layouts).
 
-**Palette vs activated:** Tokens in `TOKEN_PALETTE_UV` are inactive storage; **Apply** ignores them so figurines are not staged until a token is on a polar snap. If everything jumped to stage height after an old Apply, run **Clear** or `lua GlobalGameboardClear()` then `Sync.npcs` / Save & Play.
+**Palette vs activated:** Tokens on **CONTROL_BOARD_PALETTE** are inactive storage; **Apply** ignores them until a token is on a CONTROL_BOARD polar snap. **Clear** runs `Palette.syncTokensToPalette` (group order from `lib/npcs_data` `characters[].groups`, minus `PALETTE_GROUP_BLACKLIST` e.g. `princesCourt`).
 
 **Console fallback:** `lua GlobalGameboardApply()` / `lua GlobalGameboardClear()` (Storyteller only for Clear confirm).
 
-Config: `D.CONTROL_BOARD_SNAP` in `lib/npc_gameboard_data.ttslua` — elliptical rings with **absolute** `innerRingMaxU/V` and `outerRingMaxU/V`, `rays`, and per-ring `snapGroups` (`num`, `angleDelta`). Default install prints **~160** snaps (`16 × (1+3+5+1)`). Same `boardLocalFromUv` frame as token placement; each snap yaws toward `origin` and is tagged `npc_control_token` so only control tokens snap there.
+Config: `D.CONTROL_BOARD_SNAP` in `lib/npc_gameboard_data.ttslua` — elliptical rings with **absolute** `innerRingMaxU/V` and `outerRingMaxU/V`, and per-ring `snapGroups` (`num`, `angleDelta`, `rays`). Default install prints **136** snaps (`4×1 + 12×3 + 16×5 + 20×1`). Each snap yaws toward `origin` and is tagged `npc_control_token`.
+
+## Token palette (CONTROL_BOARD_PALETTE)
+
+Workshop object **CONTROL_BOARD_PALETTE** (typical scale `{5, 1, 10}` — wide on X, tall on Z). **20×40** snap grid (`800` points). Object script:
+
+```lua
+require("objects.npc_control_board_palette")
+```
+
+`lib/npc_control_board_palette.ttslua` installs snaps and parks tokens by **coterie group** from `lib/npcs_data` (`groups.fiveKeys = 1`, etc.). Groups in `D.PALETTE_GROUP_BLACKLIST` (currently `princesCourt`) are skipped when picking a character’s palette group. One surviving group → that group; several survivors → first non-blacklisted entry from `pairs()`. Layout: members adjacent in slot order, whole group moves to the next row when a row would wrap, one empty snap between groups, first token at top-left.
 
 Manual refresh / IDE tuning (after Save & Play):
 
@@ -113,7 +123,7 @@ Debug: `DEBUG.dumpNpcPlacements()` in TTS console.
 
 Gameboard control tokens are **Custom_Tile** objects — **circle** shape (`Type = 2`), **thickness 0.1**, two-sided (`image` + `image_bottom` / save `ImageURL` + `ImageSecondaryURL`). `DEBUG.spawnNpcControlBoardTokens` sets these in spawn data **and** calls `setCustomObject` + `reload` after spawn (TTS often ignores `CustomTile` on `spawnObjectData` alone). `DEBUG.applyNpcControlTokenHostedImages` applies the same shape to existing tokens. They flip with the normal **Flip** key (`Object.flip()`); there is no `is_face_up` on tiles — OFF vs STANDARD is inferred from X rotation.
 
-**Palette spawn:** tokens grid in `TOKEN_PALETTE_UV` on CONTROL_BOARD (normalized u,v, default 8 columns) via `Gameboard.paletteWorldPosition` — not raw local offsets (those overshoot the minimap and fall off the table).
+**Palette spawn:** Save & Play → `lua DEBUG.spawnNpcControlBoardTokens()` — spawns tokens then `Gameboard.syncTokensToPalette()` to group slots on **CONTROL_BOARD_PALETTE**.
 
 **Upload batch only** uses **Custom_Token** (single `image` per object — correct for Cloud upload, not for the minimap).
 
@@ -124,7 +134,7 @@ Source WEBPs:
 Pipeline (full detail: [`.dev/custom-ui-assets/README.md`](../custom-ui-assets/README.md)):
 
 1. `npm run custom-ui-assets:manifest-npc-tokens`
-2. **Gameboard tokens (61, paired front/back):** Save & Play → `lua DEBUG.spawnNpcControlBoardTokens()` — spawns flip tiles on **CONTROL_BOARD** with tag `npc_control_token` and GM notes `npcToken:<characterKey>`. Uses `file:///` from the manifest until hosted URLs exist.
+2. **Gameboard tokens (61, paired front/back):** Save & Play → `lua DEBUG.spawnNpcControlBoardTokens()` — spawns flip tiles with tag `npc_control_token` and GM notes `npcToken:<characterKey>`, then parks on **CONTROL_BOARD_PALETTE**. Uses `file:///` from the manifest until hosted URLs exist.
 3. **Cloud upload (122 single-face temp tokens):** `lua DEBUG.spawnNpcTokenUploadBatch({ columns = 12, gap = 2, startY = 3 })` → Cloud Manager → **Upload All Loaded Files** → save game → `lua DEBUG.clearCustomUiUploadTokens()`
 4. Merge with `npc-token-manifest.json`, then `npm run custom-ui-assets:extract-npc-token-urls`
 5. Save & Play → `lua DEBUG.applyNpcControlTokenHostedImages()` — refreshes existing control-board tokens from `lib/npc_token_hosted_urls` (or re-run `spawnNpcControlBoardTokens` after extract)

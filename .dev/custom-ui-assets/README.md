@@ -92,7 +92,7 @@ Batched upload (default **20 characters** = 40 upload tokens per manifest):
 npm run custom-ui-assets:manifest-npc-tokens:batch -- --batchStart myleneHamelin
 ```
 
-**TTS — control-board tokens (61 paired tiles, not upload temps):** Save & Play → `lua DEBUG.spawnNpcControlBoardTokens()` — places round flip tiles (`type=2`, `thickness=0.1`) on **CONTROL_BOARD** in the `TOKEN_PALETTE_UV` strip (`npc_control_token`, `npcToken:<key>`). Optional: `{ columns = 8, scale = 0.38 }` (spacing is UV-based, not world/local offsets).
+**TTS — control-board tokens (61 paired tiles, not upload temps):** Save & Play → `lua DEBUG.spawnNpcControlBoardTokens()` — places round flip tiles (`type=2`, `thickness=0.1`) on **CONTROL_BOARD_PALETTE** (`npc_control_token`, `npcToken:<key>`), grouped via `lib/npcs_data` (`PALETTE_GROUP_BLACKLIST` excludes `princesCourt`). Optional: `{ scale = 0.38 }`.
 
 **TTS — Cloud upload (122 single-face temps):** Save & Play → `lua DEBUG.spawnNpcTokenUploadBatch({ columns = 12, gap = 2, startY = 3 })` → Cloud Manager **Upload All Loaded Files** → save game.
 

@@ -1,0 +1,468 @@
+--[[
+    CONTROL_BOARD_PALETTE: rectangular snap grid + group-ordered token parking.
+
+    Group/slot from lib/npcs_data `characters[].groups`, with PALETTE_GROUP_BLACKLIST applied.
+]]
+
+local Palette = {}
+
+local U = require("lib.util")
+local C = require("lib.constants")
+local DATA = require("lib.npc_gameboard_data")
+local NPCS_DATA = require("lib.npcs_data")
+
+local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
+local TOKEN_PREFIX = DATA.TOKEN_GM_PREFIX
+
+--- @param groupId string|nil
+--- @return boolean
+function Palette.isGroupBlacklisted(groupId)
+    if type(groupId) ~= "string" or groupId == "" then
+        return false
+    end
+    local bl = DATA.PALETTE_GROUP_BLACKLIST
+    return type(bl) == "table" and bl[groupId] == true
+end
+
+--- Pick palette group + slot index from character def (npcs_data).
+--- Blacklisted groups are ignored. One survivor → that group; several → first from `pairs()`.
+--- @param characterDef table|nil
+--- @return string|nil groupId, number|nil slotIndex
+function Palette.resolvePaletteGroupForCharacter(characterDef)
+    if type(characterDef) ~= "table" or type(characterDef.groups) ~= "table" then
+        return nil, nil
+    end
+    local survivors = {}
+    for groupId, slotIndex in pairs(characterDef.groups) do
+        if type(groupId) == "string" and groupId ~= "" and not Palette.isGroupBlacklisted(groupId) then
+            survivors[#survivors + 1] = {
+                groupId = groupId,
+                slotIndex = tonumber(slotIndex) or 0,
+            }
+        end
+    end
+    if #survivors == 0 then
+        return nil, nil
+    end
+    if #survivors == 1 then
+        return survivors[1].groupId, survivors[1].slotIndex
+    end
+    for groupId, slotIndex in pairs(characterDef.groups) do
+        if type(groupId) == "string" and groupId ~= "" and not Palette.isGroupBlacklisted(groupId) then
+            return groupId, tonumber(slotIndex) or 0
+        end
+    end
+    return nil, nil
+end
+
+--- @return table cfg columns, rows, uMargin, vMargin
+local function paletteSnapConfig()
+    local cfg = DATA.CONTROL_BOARD_PALETTE_SNAP or {}
+    local columns = tonumber(cfg.columns) or 20
+    local rows = tonumber(cfg.rows) or 40
+    if columns < 1 then
+        columns = 20
+    end
+    if rows < 1 then
+        rows = 40
+    end
+    return {
+        columns = math.floor(columns),
+        rows = math.floor(rows),
+        uMargin = tonumber(cfg.uMargin) or 0.02,
+        vMargin = tonumber(cfg.vMargin) or 0.02,
+    }
+end
+
+--- @param board Object
+--- @return number halfX, number halfZ
+local function boardLocalHalfExtents(board)
+    if not U.isGameObject(board) then
+        return 0.5, 0.5
+    end
+    local halfX, halfZ = 0.5, 0.5
+    if board.getBounds ~= nil then
+        local b = board.getBounds()
+        if b ~= nil and b.size ~= nil then
+            local sx = b.size.x or b.size[1] or 1
+            local sz = b.size.z or b.size[3] or 1
+            if sx > 0.01 and sz > 0.01 and board.positionToLocal ~= nil then
+                local p0 = board.positionToLocal(Vector(0, 0, 0))
+                local px = board.positionToLocal(Vector(sx, 0, 0))
+                local pz = board.positionToLocal(Vector(0, 0, sz))
+                if p0 ~= nil and px ~= nil and pz ~= nil then
+                    halfX = math.abs((px.x or 0) - (p0.x or 0)) * 0.5
+                    halfZ = math.abs((pz.z or 0) - (p0.z or 0)) * 0.5
+                end
+            end
+        end
+    end
+    if halfX < 0.01 then
+        halfX = 0.5
+    end
+    if halfZ < 0.01 then
+        halfZ = 0.5
+    end
+    return halfX, halfZ
+end
+
+--- @param board Object
+--- @param col number 0-based; 0 = left
+--- @param row number 0-based; 0 = top
+--- @return number u, number v
+function Palette.uvForGridCell(board, col, row)
+    local cfg = paletteSnapConfig()
+    local columns = cfg.columns
+    local rows = cfg.rows
+    local uMin = cfg.uMargin
+    local uMax = 1 - cfg.uMargin
+    local vMin = cfg.vMargin
+    local vMax = 1 - cfg.vMargin
+    local u = uMin
+    local v = vMax
+    if columns > 1 then
+        u = uMin + (col / (columns - 1)) * (uMax - uMin)
+    end
+    if rows > 1 then
+        v = vMax - (row / (rows - 1)) * (vMax - vMin)
+    end
+    return u, v
+end
+
+--- @param board Object
+--- @param u number
+--- @param v number
+--- @return Vector
+local function boardLocalFromUv(board, u, v)
+    local halfX, halfZ = boardLocalHalfExtents(board)
+    local surfaceY = tonumber(DATA.PALETTE_SURFACE_LOCAL_Y) or 0.18
+    return Vector((u - 0.5) * 2 * halfX, surfaceY, (v - 0.5) * 2 * halfZ)
+end
+
+--- @param board Object
+--- @param localPos Vector
+--- @return Vector|nil
+local function boardLocalToWorld(board, localPos)
+    if type(board.positionToWorld) == "function" then
+        return board.positionToWorld(localPos)
+    end
+    local origin = board.getPosition()
+    local right = board.getTransformRight()
+    local up = board.getTransformUp()
+    local fwd = board.getTransformForward()
+    return origin + right * localPos.x + up * localPos.y + fwd * localPos.z
+end
+
+--- @param board Object
+--- @param snapIndex number 0-based linear index (row-major; col 0 = left, row 0 = top)
+--- @return Vector|nil
+function Palette.worldPositionForSnapIndex(board, snapIndex)
+    if not U.isGameObject(board) or type(snapIndex) ~= "number" then
+        return nil
+    end
+    local cfg = paletteSnapConfig()
+    local columns = cfg.columns
+    local col = snapIndex % columns
+    local row = math.floor(snapIndex / columns)
+    if row >= cfg.rows then
+        return nil
+    end
+    local u, v = Palette.uvForGridCell(board, col, row)
+    return boardLocalToWorld(board, boardLocalFromUv(board, u, v))
+end
+
+--- @param board Object
+--- @return table[] TTS snap point tables
+function Palette.buildSnapPoints(board)
+    if not U.isGameObject(board) then
+        error("Palette.buildSnapPoints: board object required")
+    end
+    local cfg = paletteSnapConfig()
+    local points = {}
+    for row = 0, cfg.rows - 1 do
+        for col = 0, cfg.columns - 1 do
+            local u, v = Palette.uvForGridCell(board, col, row)
+            local lp = boardLocalFromUv(board, u, v)
+            points[#points + 1] = {
+                position = { lp.x, lp.y, lp.z },
+                rotation = { 0, 0, 0 },
+                rotation_snap = true,
+                tags = { TAG_TOKEN },
+            }
+        end
+    end
+    return points
+end
+
+--- @return number
+function Palette.snapPointCount()
+    local cfg = paletteSnapConfig()
+    return cfg.columns * cfg.rows
+end
+
+--- Build characterKey → snapIndex (0-based) from npcs_data groups.
+--- @return table<string, number> assignments
+--- @return table<string, table[]> groupId → sorted members
+function Palette.buildTokenSnapAssignments()
+    local cfg = paletteSnapConfig()
+    local columns = cfg.columns
+    local byGroup = {}
+    local ungrouped = {}
+
+    for characterKey, def in pairs(NPCS_DATA.characters or {}) do
+        if type(characterKey) == "string" and type(def) == "table" then
+            local groupId, slotIndex = Palette.resolvePaletteGroupForCharacter(def)
+            if groupId ~= nil then
+                byGroup[groupId] = byGroup[groupId] or {}
+                byGroup[groupId][#byGroup[groupId] + 1] = {
+                    characterKey = characterKey,
+                    slotIndex = slotIndex or 0,
+                }
+            else
+                ungrouped[#ungrouped + 1] = characterKey
+            end
+        end
+    end
+
+    local groupIds = {}
+    for groupId, _ in pairs(byGroup) do
+        groupIds[#groupIds + 1] = groupId
+    end
+    table.sort(groupIds)
+    table.sort(ungrouped)
+
+    local assignments = {}
+    local row = 0
+    local col = 0
+
+    local function advanceGap()
+        if col >= columns then
+            row = row + 1
+            col = 0
+        end
+        col = col + 1
+        if col >= columns then
+            row = row + 1
+            col = 0
+        end
+    end
+
+    local function placeGroup(members)
+        table.sort(members, function(a, b)
+            if a.slotIndex == b.slotIndex then
+                return tostring(a.characterKey) < tostring(b.characterKey)
+            end
+            return a.slotIndex < b.slotIndex
+        end)
+        for _, member in ipairs(members) do
+            if col >= columns then
+                row = row + 1
+                col = 0
+            end
+            assignments[member.characterKey] = row * columns + col
+            col = col + 1
+        end
+    end
+
+    for gi, groupId in ipairs(groupIds) do
+        if gi > 1 then
+            advanceGap()
+            row = row + 1
+            col = 0
+        else
+            col = 0
+        end
+        placeGroup(byGroup[groupId])
+    end
+
+    if #ungrouped > 0 then
+        if next(assignments) ~= nil then
+            advanceGap()
+            row = row + 1
+            col = 0
+        end
+        local members = {}
+        for i, characterKey in ipairs(ungrouped) do
+            members[#members + 1] = { characterKey = characterKey, slotIndex = i }
+        end
+        placeGroup(members)
+    end
+
+    return assignments, byGroup
+end
+
+--- @param obj Object|nil
+--- @return string|nil
+local function tokenCharacterKey(obj)
+    if not U.isGameObject(obj) then
+        return nil
+    end
+    local notes = ""
+    if obj.getGMNotes ~= nil then
+        notes = tostring(obj.getGMNotes() or "")
+    end
+    if notes == "" and obj.getDescription ~= nil then
+        notes = tostring(obj.getDescription() or "")
+    end
+    local key = string.match(notes, "^" .. TOKEN_PREFIX .. "([^,]+)")
+    if type(key) == "string" and key ~= "" then
+        return key
+    end
+    if obj.getName ~= nil then
+        local name = tostring(obj.getName() or "")
+        if name ~= "" then
+            return name
+        end
+    end
+    return nil
+end
+
+--- @param board Object
+--- @param worldPos Vector|table
+--- @return boolean
+local function isWorldPosOnPaletteBoard(board, worldPos)
+    if not U.isGameObject(board) or worldPos == nil then
+        return false
+    end
+    if board.positionToLocal == nil then
+        return false
+    end
+    local lp = board.positionToLocal(Vector(worldPos))
+    if lp == nil then
+        return false
+    end
+    local halfX, halfZ = boardLocalHalfExtents(board)
+    local margin = 1.15
+    return math.abs(lp.x or 0) <= halfX * margin and math.abs(lp.z or 0) <= halfZ * margin
+end
+
+--- Tokens on palette surface (tag scan + board-local bounds).
+--- @param board Object
+--- @return table
+function Palette.tokensOnBoard(board)
+    if not U.isGameObject(board) then
+        return {}
+    end
+    local halfX, halfZ = boardLocalHalfExtents(board)
+    local margin = 1.15
+    local out = {}
+    local tagged = getObjectsWithTag(TAG_TOKEN) or {}
+    for _, obj in ipairs(tagged) do
+        if U.isGameObject(obj) and obj.hasTag ~= nil and obj.hasTag(TAG_TOKEN) == true then
+            if isWorldPosOnPaletteBoard(board, obj.getPosition()) then
+                out[#out + 1] = obj
+            end
+        end
+    end
+    return out
+end
+
+--- @param board Object
+--- @return boolean
+function Palette.isTokenOnPaletteBoard(board, token)
+    return isWorldPosOnPaletteBoard(board, token and token.getPosition and token.getPosition() or nil)
+end
+
+--- Move misplaced palette tokens, then park all tokens that belong on the palette.
+--- @param palette Object
+--- @return number moved
+function Palette.syncTokensToPalette(palette)
+    if not U.isGameObject(palette) then
+        print("[Palette] syncTokensToPalette: CONTROL_BOARD_PALETTE missing")
+        return 0
+    end
+    local assignments = Palette.buildTokenSnapAssignments()
+    local snapWorld = {}
+    local cfg = paletteSnapConfig()
+    local totalSnaps = cfg.columns * cfg.rows
+    for snapIndex = 0, totalSnaps - 1 do
+        snapWorld[snapIndex] = Palette.worldPositionForSnapIndex(palette, snapIndex)
+    end
+
+    local moved = 0
+    local boardRot = palette.getRotation()
+    local boardYaw = (boardRot and boardRot.y) or 0
+
+    --- Phase 1: tokens on palette → correct snap (nearest-snap detect via findSnapPoint).
+    local onPalette = Palette.tokensOnBoard(palette)
+    local snapPointsForFind = {}
+    for snapIndex = 0, totalSnaps - 1 do
+        local wp = snapWorld[snapIndex]
+        if wp ~= nil then
+            snapPointsForFind[#snapPointsForFind + 1] = { position = wp, snapIndex = snapIndex }
+        end
+    end
+    for _, token in ipairs(onPalette) do
+        local ck = tokenCharacterKey(token)
+        local wantIndex = ck ~= nil and assignments[ck] or nil
+        if type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
+            local pos = token.getPosition()
+            local nearestSlot = U.findSnapPoint(snapPointsForFind, pos, 0.35)
+            local nearestIndex = nil
+            if type(nearestSlot) == "number" and snapPointsForFind[nearestSlot] ~= nil then
+                nearestIndex = snapPointsForFind[nearestSlot].snapIndex
+            end
+            if nearestIndex ~= wantIndex then
+                token.setPosition(snapWorld[wantIndex])
+                moved = moved + 1
+            end
+        end
+    end
+
+    --- Phase 2: park every token with an assignment (control board, palette, or elsewhere).
+    local allTagged = getObjectsWithTag(TAG_TOKEN) or {}
+    for _, token in ipairs(allTagged) do
+        if U.isGameObject(token) then
+            local ck = tokenCharacterKey(token)
+            local wantIndex = ck ~= nil and assignments[ck] or nil
+            if type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
+                local onPalette = isWorldPosOnPaletteBoard(palette, token.getPosition())
+                local alreadyCorrect = false
+                if onPalette then
+                    local nearestSlot = U.findSnapPoint(snapPointsForFind, token.getPosition(), 0.35)
+                    if type(nearestSlot) == "number" and snapPointsForFind[nearestSlot] ~= nil then
+                        alreadyCorrect = snapPointsForFind[nearestSlot].snapIndex == wantIndex
+                    end
+                end
+                if not alreadyCorrect then
+                    token.setPosition(snapWorld[wantIndex])
+                    token.setRotation(Vector(0, boardYaw, 0))
+                    if token.setInvisibleTo ~= nil then
+                        token.setInvisibleTo(C.PlayerColors or {})
+                    end
+                    moved = moved + 1
+                end
+            end
+        end
+    end
+
+    return moved
+end
+
+--- @param board Object|nil
+--- @param options table|nil { force?: boolean }
+--- @return boolean
+function Palette.installSnaps(board, options)
+    options = type(options) == "table" and options or {}
+    if not U.isGameObject(board) or board.setSnapPoints == nil then
+        print("[Palette] installSnaps: board missing or no setSnapPoints")
+        return false
+    end
+    local points = Palette.buildSnapPoints(board)
+    if #points < 1 then
+        return false
+    end
+    local ok = board.setSnapPoints(points)
+    if ok then
+        print(
+            "[Palette] Snaps installed ("
+                .. tostring(#points)
+                .. " points on "
+                .. tostring(board.getGUID())
+                .. ")"
+        )
+    end
+    return ok == true
+end
+
+return Palette

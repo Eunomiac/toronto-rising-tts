@@ -20,8 +20,7 @@ Snap points are generated in polar coordinates on the control board. Several set
 | `rings` | Number of concentric elliptical rings |
 | `innerRingMaxU` & `innerRingMaxV` | **Absolute** board u/v reached by the **innermost** ring (distance along axes from the **0,0** corner — not a delta from `origin`) |
 | `outerRingMaxU` & `outerRingMaxV` | **Absolute** board u/v for the **outermost** ring; intermediate rings linearly interpolate inner → outer |
-| `rays` | Equally spaced rays from the origin (e.g. 16 → anchor every 22.5°) |
-| `snapGroups` | One entry per ring (**index 1 = innermost**): `{ num, angleDelta }` — family size and angular spacing around each ray anchor |
+| `snapGroups` | One entry per ring (**index 1 = innermost**): `{ num, angleDelta, rays }` — family size, angular spacing, and ray count **for that ring** |
 
 ### Example Configuration (shipped default)
 
@@ -33,17 +32,16 @@ D.CONTROL_BOARD_SNAP = {
   innerRingMaxV = 0.3,
   outerRingMaxU = 0.9,
   outerRingMaxV = 0.9,
-  rays = 16,
   snapGroups = {
-    { num = 1, angleDelta = 0 },
-    { num = 3, angleDelta = 3 },
-    { num = 5, angleDelta = 4 },
-    { num = 1, angleDelta = 0 },
+    { num = 1, angleDelta = 0, rays = 4 },
+    { num = 3, angleDelta = 3, rays = 12 },
+    { num = 5, angleDelta = 4, rays = 16 },
+    { num = 1, angleDelta = 0, rays = 20 },
   },
 }
 ```
 
-**Snap count:** `sum over rings r of rays * snapGroups[r].num` → default **16 × (1+3+5+1) = 160**.
+**Snap count:** `sum over rings r of snapGroups[r].rays * snapGroups[r].num` → default **4×1 + 12×3 + 16×5 + 20×1 = 136**.
 
 ### Ring interpolation
 
@@ -72,6 +70,7 @@ Sanity (example inner ring `maxU=0.6`, `maxV=0.3`, `origin={0.5,0.2}`): 0° → 
 Anchor snaps and family members are generated together (no separate anchor pass):
 
 ```lua
+rays = snapGroups[ringIndex].rays
 anchorDeg = (rayIndex / rays) * 360   -- rayIndex = 0 .. rays-1
 half = math.floor(num / 2)
 for k = -half, half do
@@ -108,12 +107,11 @@ lua DEBUG.installNpcControlBoardSnaps({
     innerRingMaxV = 0.3,
     outerRingMaxU = 0.9,
     outerRingMaxV = 0.9,
-    rays = 16,
     snapGroups = {
-      { num = 1, angleDelta = 0 },
-      { num = 3, angleDelta = 3 },
-      { num = 5, angleDelta = 4 },
-      { num = 1, angleDelta = 0 },
+      { num = 1, angleDelta = 0, rays = 4 },
+      { num = 3, angleDelta = 3, rays = 12 },
+      { num = 5, angleDelta = 4, rays = 16 },
+      { num = 1, angleDelta = 0, rays = 20 },
     },
   },
 })

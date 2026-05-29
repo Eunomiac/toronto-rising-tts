@@ -3369,15 +3369,16 @@ function DEBUG.spawnNpcControlBoardTokens(options)
         DEBUG.clearNpcControlBoardTokens()
     end
 
-    local board = getControlBoardObject()
-    if board == nil then
-        print("DEBUG.spawnNpcControlBoardTokens: CONTROL_BOARD missing (GUID " .. tostring(G.GUIDS.CONTROL_BOARD) .. ")")
+    local palette = getObjectFromGUID(G.GUIDS.CONTROL_BOARD_PALETTE)
+    if palette == nil then
+        print(
+            "DEBUG.spawnNpcControlBoardTokens: CONTROL_BOARD_PALETTE missing (GUID "
+                .. tostring(G.GUIDS.CONTROL_BOARD_PALETTE)
+                .. ")"
+        )
         return 0
     end
-    if type(board.positionToWorld) ~= "function" and type(board.getTransformRight) ~= "function" then
-        print("DEBUG.spawnNpcControlBoardTokens: CONTROL_BOARD cannot convert local positions to world")
-        return 0
-    end
+    Gameboard.installPaletteSnaps(palette, { force = true })
 
     local pairsByKey, source = loadNpcControlTokenPairUrls(opts)
     if pairsByKey == nil then
@@ -3391,8 +3392,8 @@ function DEBUG.spawnNpcControlBoardTokens(options)
         return 0
     end
 
-    local boardRot = board.getRotation()
-    local boardYaw = (boardRot and boardRot.y) or 0
+    local paletteRot = palette.getRotation()
+    local boardYaw = (paletteRot and paletteRot.y) or 0
     if U.Type(opts.boardYaw) == "number" then
         boardYaw = opts.boardYaw
     end
@@ -3402,77 +3403,68 @@ function DEBUG.spawnNpcControlBoardTokens(options)
         faceUp = true
     end
 
-    local columns = opts.columns or NPC_GAMEBOARD_DATA.TOKEN_PALETTE_COLUMNS or 8
-    if columns < 1 then
-        columns = 8
+    local Palette = require("lib.npc_control_board_palette")
+    local spawnPos = Palette.worldPositionForSnapIndex(palette, 0)
+    if spawnPos == nil then
+        print("DEBUG.spawnNpcControlBoardTokens: could not resolve palette snap world position")
+        return 0
     end
-    local paletteOpts = {
-        total = opts.total or #keys,
-        columns = columns,
-        uMin = opts.uMin,
-        uMax = opts.uMax,
-        vMin = opts.vMin,
-        vMax = opts.vMax,
-    }
 
     local spawned = 0
     local skipped = 0
     for i, characterKey in ipairs(keys) do
         local row = pairsByKey[characterKey]
-        local worldPos = Gameboard.paletteWorldPosition(board, i - 1, paletteOpts)
-        if worldPos == nil then
+        local worldPos = Vector(spawnPos.x, spawnPos.y, spawnPos.z)
+        local data = buildNpcControlTokenSpawnData(
+            { x = worldPos.x, y = worldPos.y, z = worldPos.z },
+            boardYaw,
+            characterKey,
+            row.front,
+            row.back,
+            opts.scale,
+            faceUp
+        )
+        ---@diagnostic disable-next-line: undefined-global
+        local obj = spawnObjectData({ data = data })
+        if obj == nil then
+            print("DEBUG.spawnNpcControlBoardTokens: spawn failed for " .. characterKey)
             skipped = skipped + 1
         else
-            local data = buildNpcControlTokenSpawnData(
-                { x = worldPos.x, y = worldPos.y, z = worldPos.z },
-                boardYaw,
-                characterKey,
-                row.front,
-                row.back,
-                opts.scale,
-                faceUp
-            )
-            ---@diagnostic disable-next-line: undefined-global
-            local obj = spawnObjectData({ data = data })
-            if obj == nil then
-                print("DEBUG.spawnNpcControlBoardTokens: spawn failed for " .. characterKey)
-                skipped = skipped + 1
-            else
-                applyNpcControlTokenTileShape(obj, row.front, row.back)
-                if obj.setTags ~= nil then
-                    obj.setTags({ NPC_CONTROL_TOKEN_TAG })
-                end
-                if obj.setGMNotes ~= nil then
-                    obj.setGMNotes(NPC_TOKEN_GM_PREFIX .. characterKey)
-                end
-                if obj.setName ~= nil then
-                    obj.setName(characterKey)
-                end
-                Gameboard.setHiddenFromPlayerColors(obj)
-                spawned = spawned + 1
+            applyNpcControlTokenTileShape(obj, row.front, row.back)
+            if obj.setTags ~= nil then
+                obj.setTags({ NPC_CONTROL_TOKEN_TAG })
             end
+            if obj.setGMNotes ~= nil then
+                obj.setGMNotes(NPC_TOKEN_GM_PREFIX .. characterKey)
+            end
+            if obj.setName ~= nil then
+                obj.setName(characterKey)
+            end
+            Gameboard.setHiddenFromPlayerColors(obj)
+            spawned = spawned + 1
         end
     end
 
+    local parked = Gameboard.syncTokensToPalette()
     print(
         "DEBUG.spawnNpcControlBoardTokens: Spawned "
             .. tostring(spawned)
             .. "/"
             .. tostring(#keys)
-            .. " on CONTROL_BOARD ("
+            .. " → parked on CONTROL_BOARD_PALETTE ("
             .. tostring(source)
             .. "; tile type="
             .. tostring(NPC_CONTROL_TOKEN_TILE_TYPE)
             .. " circle, thickness="
             .. tostring(NPC_CONTROL_TOKEN_TILE_THICKNESS)
-            .. ", columns="
-            .. tostring(columns)
+            .. "; layout sync moved "
+            .. tostring(parked)
             .. ")"
     )
     if skipped > 0 then
         print("DEBUG.spawnNpcControlBoardTokens: Skipped " .. tostring(skipped))
     end
-    print("  Drag tokens onto polar snaps, then Gameboard Apply (or lua GlobalGameboardApply())")
+    print("  Drag tokens onto CONTROL_BOARD polar snaps, then Apply (or lua GlobalGameboardApply())")
     return spawned
 end
 
