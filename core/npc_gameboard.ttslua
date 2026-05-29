@@ -991,6 +991,7 @@ local function controlBoardSnapFingerprintFor(board, config)
         end
     end
     parts[#parts + 1] = "snapTag:" .. TAG_TOKEN
+    parts[#parts + 1] = "yawOff:" .. tostring(tonumber(cfg.snapYawOffsetDeg) or 0)
     return table.concat(parts, ":")
 end
 

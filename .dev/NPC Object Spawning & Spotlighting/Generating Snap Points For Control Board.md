@@ -82,7 +82,7 @@ end
 Example: ring 3, `num=5`, `angleDelta=4`, `anchorDeg=90` → **82°, 86°, 90°, 94°, 98°**.
 
 - **Duplicates** at overlapping angles are allowed (no dedupe).
-- Every snap uses `rotation_snap = true`, `tags = { "npc_control_token" }` (tagged snaps match control tokens), and yaw **toward** `origin` in board-local XZ.
+- Every snap uses `rotation_snap = true`, `tags = { "npc_control_token" }` (tagged snaps match control tokens), and board-local yaw **toward** `origin` plus `snapYawOffsetDeg` (default **180** on `D.CONTROL_BOARD_SNAP` so tokens face correctly on the minimap tile).
 
 ## Visual illustrations
 

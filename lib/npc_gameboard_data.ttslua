@@ -52,6 +52,8 @@ D.DEFAULT_STAGE_WORLD = {
 --- See .dev/NPC Object Spawning & Spotlighting/Generating Snap Points For Control Board.md
 D.CONTROL_BOARD_SNAP = {
     origin = { u = 0.5, v = 0.2 },
+    --- Added to board-local snap yaw (toward origin); 180 flips inverted token facing on the minimap.
+    snapYawOffsetDeg = 180,
     rings = 4,
     innerRingMaxU = 0.6,
     innerRingMaxV = 0.3,
