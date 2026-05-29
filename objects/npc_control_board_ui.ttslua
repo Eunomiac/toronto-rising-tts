@@ -5,8 +5,8 @@
     minimap — buttons sit on the bottom edge (low v / negative Z), row grows toward +X.
 
     createButton `rotation` is object-local Euler (axes follow the tile, not world).
-    On this Custom_Tile (yaw ≈ 180°), `{0, 180, 0}` tilted labels edge-on (object Y → world X).
-    Trial: `{180, 0, 0}` for right-side-up text without leaving the board plane.
+    On this Custom_Tile (yaw ≈ 180°): `{0, 180, 0}` tilted edge-on; `{180, 0, 0}` wrong flip.
+    Use `{0, 0, 180}` (object Z) for right-side-up labels while staying on the board plane.
 ]]
 
 local U = require("lib.util")
@@ -15,10 +15,10 @@ local DATA = require("lib.npc_gameboard_data")
 local NPC_CONTROL_BOARD_UI = {}
 
 --- Bump when layout/size/rotation changes so reconcile replaces stale buttons.
-local UI_LAYOUT_VERSION = 5
+local UI_LAYOUT_VERSION = 6
 
 --- Object-local Euler passed to createButton (see file header).
-local LABEL_ROTATION = { 180, 0, 0 }
+local LABEL_ROTATION = { 0, 0, 180 }
 
 local BUTTON_SPECS = {
     { label = "Apply", click_function = "click_apply", width = 72, height = 22, font_size = 14, color = { 0.2, 0.55, 0.3, 0.92 } },
