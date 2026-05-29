@@ -3,13 +3,15 @@
 
     Board local frame: X = width (u), Z = depth (v), Y up. UV origin is bottom-left of the
     minimap — buttons sit on the bottom edge (low v / negative Z), row grows toward +X.
-    Tile is often authored with yaw ≈ 180°; per-button rotation keeps labels readable from above.
+    Do not set createButton rotation around X — that tilts labels edge-on into the tile.
 ]]
+
+local DATA = require("lib.npc_gameboard_data")
 
 local NPC_CONTROL_BOARD_UI = {}
 
 --- Bump when layout/size/rotation changes so reconcile replaces stale buttons.
-local UI_LAYOUT_VERSION = 3
+local UI_LAYOUT_VERSION = 4
 
 local BUTTON_SPECS = {
     { label = "Apply", click_function = "click_apply", width = 72, height = 22, font_size = 14, color = { 0.2, 0.55, 0.3, 0.92 } },
@@ -25,6 +27,23 @@ local function isBoardObject(obj)
     return obj ~= nil and obj.createButton ~= nil and obj.clearButtons ~= nil
 end
 
+--- Local Y just above the minimap play surface (same basis as snap/token height).
+--- @param obj Object
+--- @return number
+local function buttonSurfaceLocalY(obj)
+    local y = tonumber(DATA.MINIMAP_SURFACE_LOCAL_Y) or 0.18
+    if obj.getBounds ~= nil then
+        local bounds = obj.getBounds()
+        if bounds ~= nil and bounds.size ~= nil then
+            local sizeY = bounds.size.y or bounds.size[2]
+            if type(sizeY) == "number" and sizeY > 0.05 then
+                y = math.max(y, sizeY * 0.5 + 0.02)
+            end
+        end
+    end
+    return y
+end
+
 --- @param obj Object
 function NPC_CONTROL_BOARD_UI.installObjectButtons(obj)
     if not isBoardObject(obj) then
@@ -32,11 +51,10 @@ function NPC_CONTROL_BOARD_UI.installObjectButtons(obj)
     end
     obj.clearButtons()
 
-    local y = 0.16
+    local y = buttonSurfaceLocalY(obj)
     local z = -0.44
     local xStart = -0.44
     local xStep = 0.095
-    local labelRotation = { 0, 180, 0 }
 
     for i, spec in ipairs(BUTTON_SPECS) do
         obj.createButton({
@@ -44,7 +62,6 @@ function NPC_CONTROL_BOARD_UI.installObjectButtons(obj)
             click_function = spec.click_function,
             function_owner = obj,
             position = { xStart + (i - 1) * xStep, y, z },
-            rotation = labelRotation,
             width = spec.width,
             height = spec.height,
             font_size = spec.font_size,
