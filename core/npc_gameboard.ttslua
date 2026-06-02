@@ -1527,6 +1527,21 @@ function Gameboard.exportSnapFamiliesByRole(config, options)
     options = type(options) == "table" and options or {}
     local cfg = resolveControlBoardSnapConfig(config)
     if options.useInterpolatedRings == true then
+        local ringCount = tonumber(cfg.rings) or #(cfg.snapGroups or {})
+        local firstGroup = type(cfg.snapGroups) == "table" and cfg.snapGroups[1] or nil
+        local lastGroup = type(cfg.snapGroups) == "table" and cfg.snapGroups[ringCount] or nil
+        if cfg.innerRingMaxU == nil and type(firstGroup) == "table" then
+            cfg.innerRingMaxU = firstGroup.maxU
+        end
+        if cfg.innerRingMaxV == nil and type(firstGroup) == "table" then
+            cfg.innerRingMaxV = firstGroup.maxV
+        end
+        if cfg.outerRingMaxU == nil and type(lastGroup) == "table" then
+            cfg.outerRingMaxU = lastGroup.maxU
+        end
+        if cfg.outerRingMaxV == nil and type(lastGroup) == "table" then
+            cfg.outerRingMaxV = lastGroup.maxV
+        end
         for ringIndex = 1, #(cfg.snapGroups or {}) do
             local group = cfg.snapGroups[ringIndex]
             if type(group) == "table" then
@@ -1535,6 +1550,7 @@ function Gameboard.exportSnapFamiliesByRole(config, options)
             end
         end
     end
+    local rings
     cfg, rings = validateControlBoardSnapConfig(cfg)
     local board = getControlBoard()
     local byRole = {}
