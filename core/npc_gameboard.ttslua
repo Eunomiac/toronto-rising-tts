@@ -1109,9 +1109,10 @@ local function validateControlBoardSnapConfig(cfg)
     local innerRingMaxV = tonumber(cfg.innerRingMaxV)
     local outerRingMaxU = tonumber(cfg.outerRingMaxU)
     local outerRingMaxV = tonumber(cfg.outerRingMaxV)
-    if innerRingMaxU == nil or innerRingMaxV == nil or outerRingMaxU == nil or outerRingMaxV == nil then
-        error("CONTROL_BOARD_SNAP inner/outer RingMaxU/V must be numbers (absolute board u/v)")
-    end
+    local hasGlobalRingMax = innerRingMaxU ~= nil
+        and innerRingMaxV ~= nil
+        and outerRingMaxU ~= nil
+        and outerRingMaxV ~= nil
     local legacyRays = tonumber(cfg.rays)
     local snapGroups = cfg.snapGroups
     if type(snapGroups) ~= "table" or #snapGroups ~= rings then
@@ -1141,6 +1142,29 @@ local function validateControlBoardSnapConfig(cfg)
             )
         end
         group.rays = math.floor(rays)
+        local ringMaxU = tonumber(group.maxU)
+        local ringMaxV = tonumber(group.maxV)
+        if group.maxU ~= nil and ringMaxU == nil then
+            error(
+                "CONTROL_BOARD_SNAP.snapGroups["
+                    .. tostring(ringIndex)
+                    .. "].maxU must be a number when set"
+            )
+        end
+        if group.maxV ~= nil and ringMaxV == nil then
+            error(
+                "CONTROL_BOARD_SNAP.snapGroups["
+                    .. tostring(ringIndex)
+                    .. "].maxV must be a number when set"
+            )
+        end
+        if (ringMaxU ~= nil) ~= (ringMaxV ~= nil) then
+            error(
+                "CONTROL_BOARD_SNAP.snapGroups["
+                    .. tostring(ringIndex)
+                    .. "] must set both maxU and maxV together"
+            )
+        end
         if group.groundLevel ~= nil and tonumber(group.groundLevel) == nil then
             error(
                 "CONTROL_BOARD_SNAP.snapGroups["
@@ -1154,6 +1178,18 @@ local function validateControlBoardSnapConfig(cfg)
                     .. tostring(ringIndex)
                     .. "].radialStagger must be a number when set"
             )
+        end
+    end
+    if not hasGlobalRingMax then
+        for ringIndex = 1, rings do
+            local group = snapGroups[ringIndex]
+            if tonumber(group.maxU) == nil or tonumber(group.maxV) == nil then
+                error(
+                    "CONTROL_BOARD_SNAP.snapGroups["
+                        .. tostring(ringIndex)
+                        .. "].maxU/maxV required when inner/outer ring max omitted"
+                )
+            end
         end
     end
     return cfg, rings
@@ -1170,17 +1206,37 @@ local function resolveSnapGroupGroundLevel(group)
 end
 
 --- Absolute board maxU/maxV for ring index (1 = innermost).
+--- Per-ring `snapGroups[ringIndex].maxU/maxV` override inner→outer interpolation when set.
 --- @param cfg table
 --- @param ringIndex number
 --- @param rings number
 --- @return number maxU, number maxV
 local function ringMaxUvForIndex(cfg, ringIndex, rings)
+    local group = type(cfg.snapGroups) == "table" and cfg.snapGroups[ringIndex] or nil
+    if type(group) == "table" then
+        local maxU = tonumber(group.maxU)
+        local maxV = tonumber(group.maxV)
+        if maxU ~= nil and maxV ~= nil then
+            return maxU, maxV
+        end
+    end
+    local innerRingMaxU = tonumber(cfg.innerRingMaxU)
+    local innerRingMaxV = tonumber(cfg.innerRingMaxV)
+    local outerRingMaxU = tonumber(cfg.outerRingMaxU)
+    local outerRingMaxV = tonumber(cfg.outerRingMaxV)
+    if innerRingMaxU == nil or innerRingMaxV == nil or outerRingMaxU == nil or outerRingMaxV == nil then
+        error(
+            "CONTROL_BOARD_SNAP ring "
+                .. tostring(ringIndex)
+                .. " needs snapGroups.maxU/maxV or top-level inner/outer ring max"
+        )
+    end
     local t = 0
     if rings > 1 then
         t = (ringIndex - 1) / (rings - 1)
     end
-    local maxU = cfg.innerRingMaxU + t * (cfg.outerRingMaxU - cfg.innerRingMaxU)
-    local maxV = cfg.innerRingMaxV + t * (cfg.outerRingMaxV - cfg.innerRingMaxV)
+    local maxU = innerRingMaxU + t * (outerRingMaxU - innerRingMaxU)
+    local maxV = innerRingMaxV + t * (outerRingMaxV - innerRingMaxV)
     return maxU, maxV
 end
 
@@ -1406,6 +1462,143 @@ function Gameboard.countControlBoardSnapPoints(config)
     return total, perRing
 end
 
+local SNAP_FAMILY_ROLE_BY_K = {
+    [-2] = "farLeft",
+    [-1] = "nearLeft",
+    [0] = "center",
+    [1] = "nearRight",
+    [2] = "farRight",
+}
+
+--- @param familyK number
+--- @return string
+local function familyRoleLabelForK(familyK)
+    local label = SNAP_FAMILY_ROLE_BY_K[familyK]
+    if label ~= nil then
+        return label
+    end
+    return "k" .. tostring(familyK)
+end
+
+--- Collect on-board snap positions grouped by family role (farLeft … center … farRight).
+--- World X/Z use STAGE_BOARD via `worldFromUv`; Y omitted from each point.
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+--- @param options table|nil `{ useInterpolatedRings?: boolean }` when true, ignore per-ring maxU/maxV and interpolate inner→outer
+--- @return table<string, table[]> roleName → `{ { x, z, u, v, ringIndex, rayIndex, familyK }, ... }`
+function Gameboard.exportSnapFamiliesByRole(config, options)
+    options = type(options) == "table" and options or {}
+    local cfg = resolveControlBoardSnapConfig(config)
+    if options.useInterpolatedRings == true then
+        for ringIndex = 1, #(cfg.snapGroups or {}) do
+            local group = cfg.snapGroups[ringIndex]
+            if type(group) == "table" then
+                group.maxU = nil
+                group.maxV = nil
+            end
+        end
+    end
+    cfg, rings = validateControlBoardSnapConfig(cfg)
+    local board = getControlBoard()
+    local byRole = {}
+    for ringIndex = 1, rings do
+        local group = cfg.snapGroups[ringIndex]
+        local num = tonumber(group.num)
+        local rays = tonumber(group.rays)
+        local ringGroundLevel = resolveSnapGroupGroundLevel(group)
+        local half = math.floor(num / 2)
+        for rayIndex = 0, rays - 1 do
+            for k = -half, half do
+                local u, v = controlBoardSnapCandidate(board, cfg, rings, ringIndex, rayIndex, k)
+                if u ~= nil then
+                    local wp = Gameboard.worldFromUv(u, v, { groundLevel = ringGroundLevel })
+                    local role = familyRoleLabelForK(k)
+                    local bucket = byRole[role]
+                    if bucket == nil then
+                        bucket = {}
+                        byRole[role] = bucket
+                    end
+                    bucket[#bucket + 1] = {
+                        x = wp.x,
+                        z = wp.z,
+                        u = u,
+                        v = v,
+                        ringIndex = ringIndex,
+                        rayIndex = rayIndex,
+                        familyK = k,
+                    }
+                end
+            end
+        end
+    end
+    return byRole
+end
+
+--- Serialize `exportSnapFamiliesByRole` output as a Lua table literal (1-based slot indices per role).
+--- @param byRole table
+--- @return string
+function Gameboard.formatSnapFamiliesLua(byRole)
+    if type(byRole) ~= "table" then
+        return "return {}"
+    end
+    local roleNames = {}
+    for roleName, _ in pairs(byRole) do
+        roleNames[#roleNames + 1] = roleName
+    end
+    table.sort(roleNames)
+    local lines = { "return {" }
+    for _, roleName in ipairs(roleNames) do
+        lines[#lines + 1] = "  " .. roleName .. " = {"
+        local points = byRole[roleName]
+        if type(points) == "table" then
+            for slotIndex, pt in ipairs(points) do
+                if type(pt) == "table" and type(pt.x) == "number" and type(pt.z) == "number" then
+                    lines[#lines + 1] = string.format(
+                        "    [%d] = { x = %.6f, z = %.6f },",
+                        slotIndex,
+                        pt.x,
+                        pt.z
+                    )
+                end
+            end
+        end
+        lines[#lines + 1] = "  },"
+    end
+    lines[#lines + 1] = "}"
+    return table.concat(lines, "\n")
+end
+
+--- Serialize `exportSnapFamiliesByRole` as CSV: area, slot, x, z (area = family role name).
+--- @param byRole table
+--- @return string
+function Gameboard.formatSnapFamiliesCsv(byRole)
+    if type(byRole) ~= "table" then
+        return "area,slot,x,z"
+    end
+    local roleNames = {}
+    for roleName, _ in pairs(byRole) do
+        roleNames[#roleNames + 1] = roleName
+    end
+    table.sort(roleNames)
+    local lines = { "area,slot,x,z" }
+    for _, roleName in ipairs(roleNames) do
+        local points = byRole[roleName]
+        if type(points) == "table" then
+            for slotIndex, pt in ipairs(points) do
+                if type(pt) == "table" and type(pt.x) == "number" and type(pt.z) == "number" then
+                    lines[#lines + 1] = string.format(
+                        "%s,%d,%.6f,%.6f",
+                        roleName,
+                        slotIndex,
+                        pt.x,
+                        pt.z
+                    )
+                end
+            end
+        end
+    end
+    return table.concat(lines, "\n")
+end
+
 --- Snap catalog with family metadata (anchor = familyK 0 at each ray).
 --- @param board Object
 --- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
@@ -1451,13 +1644,12 @@ local function controlBoardSnapFingerprintFor(board, config)
         string.format("%.3f,%.3f", sx, sz),
         string.format("%.4f,%.4f", cfg.origin.u, cfg.origin.v),
         tostring(cfg.rings),
-        string.format(
-            "%.4f,%.4f,%.4f,%.4f",
-            cfg.innerRingMaxU,
-            cfg.innerRingMaxV,
-            cfg.outerRingMaxU,
-            cfg.outerRingMaxV
-        ),
+        table.concat({
+            tostring(cfg.innerRingMaxU or ""),
+            tostring(cfg.innerRingMaxV or ""),
+            tostring(cfg.outerRingMaxU or ""),
+            tostring(cfg.outerRingMaxV or ""),
+        }, ","),
     }
     local rings = tonumber(cfg.rings) or 0
     for ringIndex = 1, rings do
@@ -1472,6 +1664,10 @@ local function controlBoardSnapFingerprintFor(board, config)
                 .. tostring(group.groundLevel or "")
                 .. ":"
                 .. tostring(group.radialStagger or "")
+                .. ":"
+                .. tostring(group.maxU or "")
+                .. ":"
+                .. tostring(group.maxV or "")
         end
     end
     parts[#parts + 1] = "snapTag:" .. TAG_TOKEN
@@ -1519,6 +1715,315 @@ end
 
 --- Alias for installPolarSnaps (same behavior).
 Gameboard.installControlBoardSnaps = Gameboard.installPolarSnaps
+
+--- Anchor ray angle (degrees) for a catalog entry.
+--- @param cfg table
+--- @param entry table
+--- @return number
+local function anchorDegForSnapEntry(cfg, entry)
+    local group = type(cfg.snapGroups) == "table" and cfg.snapGroups[entry.ringIndex] or nil
+    local rays = tonumber(group and group.rays) or 1
+    if rays < 1 then
+        rays = 1
+    end
+    return (entry.rayIndex / rays) * 360
+end
+
+--- Family spread offset (degrees) = familyK * angleDelta on that ring.
+--- @param cfg table
+--- @param entry table
+--- @return number
+local function spreadOffsetForSnapEntry(cfg, entry)
+    local group = type(cfg.snapGroups) == "table" and cfg.snapGroups[entry.ringIndex] or nil
+    local angleDelta = tonumber(group and group.angleDelta) or 0
+    return (entry.familyK or 0) * angleDelta
+end
+
+--- @param a number degrees
+--- @param b number degrees
+--- @return number shortest arc distance in [0, 180]
+local function angularDeltaDeg(a, b)
+    local d = ((a - b) % 360 + 360) % 360
+    if d > 180 then
+        d = 360 - d
+    end
+    return d
+end
+
+--- Best snap on `ringIndex` matching spread offset, then anchor ray.
+--- @param catalog table[]
+--- @param cfg table
+--- @param ringIndex number
+--- @param targetSpread number
+--- @param targetAnchor number
+--- @return table|nil
+local function findBestCatalogEntryOnRing(catalog, cfg, ringIndex, targetSpread, targetAnchor)
+    local best = nil
+    local bestSpreadDiff = math.huge
+    local bestAnchorDiff = math.huge
+    for _, entry in ipairs(catalog) do
+        if entry.ringIndex == ringIndex then
+            local spreadDiff = math.abs(spreadOffsetForSnapEntry(cfg, entry) - targetSpread)
+            local anchorDiff = angularDeltaDeg(anchorDegForSnapEntry(cfg, entry), targetAnchor)
+            if spreadDiff < bestSpreadDiff
+                or (spreadDiff == bestSpreadDiff and anchorDiff < bestAnchorDiff) then
+                bestSpreadDiff = spreadDiff
+                bestAnchorDiff = anchorDiff
+                best = entry
+            end
+        end
+    end
+    return best
+end
+
+--- Park one token on its palette grid cell when `buildTokenSnapAssignments` has a slot.
+--- @param token Object
+--- @param characterKey string
+--- @return boolean
+local function parkNpcTokenOnPalette(token, characterKey)
+    local palette = getControlBoardPalette()
+    if not isGameObject(palette) or not isGameObject(token) or type(characterKey) ~= "string" then
+        return false
+    end
+    local assignments = Palette.buildTokenSnapAssignments()
+    local wantIndex = assignments[characterKey]
+    if type(wantIndex) ~= "number" then
+        return false
+    end
+    local wp = Palette.worldPositionForSnapIndex(palette, wantIndex)
+    if wp == nil then
+        return false
+    end
+    token.setPosition(wp)
+    if token.setInvisibleTo ~= nil then
+        token.setInvisibleTo(C.PlayerColors or {})
+    end
+    return true
+end
+
+--- Log each NPC token on CONTROL_BOARD (not palette) with ring from snap catalog match.
+--- @param board Object|nil
+--- @param config table|nil Snap config used to build the catalog for matching
+--- @return table[] rows { characterKey, ringIndex?, rayIndex?, familyK?, spreadOffset?, anchorDeg?, reason? }
+function Gameboard.logControlBoardTokenSnapRings(board, config)
+    board = board or getControlBoard()
+    local cfg = resolveControlBoardSnapConfig(config)
+    local fuzziness = isGameObject(board) and snapMatchFuzzinessForBoard(board) or CONTROL_BOARD_SNAP_MATCH_FUZZINESS
+    local rows = {}
+    if not isGameObject(board) then
+        print("[Gameboard] logControlBoardTokenSnapRings: CONTROL_BOARD missing")
+        return rows
+    end
+    for _, token in ipairs(objectsOnControlBoard(board, TAG_TOKEN)) do
+        if isGameObject(token) then
+            local characterKey = resolveTokenCharacterKey(token)
+            if type(characterKey) == "string" and characterKey ~= "" then
+                local palette = getControlBoardPalette()
+                if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
+                    rows[#rows + 1] = { characterKey = characterKey, reason = "on_palette" }
+                    print("[Gameboard] token " .. characterKey .. ": on palette (skipped)")
+                else
+                    local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, cfg)
+                    if entry ~= nil then
+                        local spread = spreadOffsetForSnapEntry(cfg, entry)
+                        local anchor = anchorDegForSnapEntry(cfg, entry)
+                        rows[#rows + 1] = {
+                            characterKey = characterKey,
+                            ringIndex = entry.ringIndex,
+                            rayIndex = entry.rayIndex,
+                            familyK = entry.familyK,
+                            spreadOffset = spread,
+                            anchorDeg = anchor,
+                        }
+                        print(
+                            "[Gameboard] token "
+                                .. characterKey
+                                .. ": ring "
+                                .. tostring(entry.ringIndex)
+                                .. " ray "
+                                .. tostring(entry.rayIndex)
+                                .. " familyK "
+                                .. tostring(entry.familyK)
+                                .. " spreadOffset "
+                                .. string.format("%.2f", spread)
+                                .. " anchorDeg "
+                                .. string.format("%.1f", anchor)
+                        )
+                    else
+                        rows[#rows + 1] = { characterKey = characterKey, reason = "no_snap_match" }
+                        print("[Gameboard] token " .. characterKey .. ": no snap match")
+                    end
+                end
+            end
+        end
+    end
+    return rows
+end
+
+--- Install a new CONTROL_BOARD snap grid and remap tokens + placements to the nearest snap on each ring (by spread offset).
+--- Tokens on a ring that no longer exists are parked on CONTROL_BOARD_PALETTE and removed from placements.
+--- @param oldConfig table|nil Config that matches current token positions (default DATA.CONTROL_BOARD_SNAP)
+--- @param newConfig table New CONTROL_BOARD_SNAP table to install
+--- @param options table|nil `{ skipSync?: boolean }`
+--- @return table stats
+function Gameboard.remapControlBoardSnapsToConfig(oldConfig, newConfig, options)
+    options = type(options) == "table" and options or {}
+    local board = getControlBoard()
+    local stats = {
+        logged = 0,
+        remapped = 0,
+        palette = 0,
+        skipped = 0,
+    }
+    if not isGameObject(board) then
+        print("[Gameboard] remapControlBoardSnapsToConfig: CONTROL_BOARD missing")
+        return stats
+    end
+    if type(newConfig) ~= "table" then
+        error("remapControlBoardSnapsToConfig: newConfig table required")
+    end
+    local oldCfg = resolveControlBoardSnapConfig(oldConfig)
+    local newCfg, newRings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(newConfig))
+    local fuzziness = snapMatchFuzzinessForBoard(board)
+
+    print("[Gameboard] remap: logging token rings (old snap config)")
+    local tokenPlans = {}
+    for _, token in ipairs(objectsOnControlBoard(board, TAG_TOKEN)) do
+        if isGameObject(token) then
+            local characterKey = resolveTokenCharacterKey(token)
+            if type(characterKey) == "string" and characterKey ~= "" then
+                local palette = getControlBoardPalette()
+                if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
+                    stats.skipped = stats.skipped + 1
+                else
+                    stats.logged = stats.logged + 1
+                    local oldEntry = resolveTokenSnapCatalogEntry(board, token, fuzziness, oldCfg)
+                    tokenPlans[#tokenPlans + 1] = {
+                        token = token,
+                        characterKey = characterKey,
+                        oldEntry = oldEntry,
+                        npcLightMode = tokenLightModeFromFlip(token),
+                    }
+                    if oldEntry ~= nil then
+                        print(
+                            "[Gameboard] remap log "
+                                .. characterKey
+                                .. ": ring "
+                                .. tostring(oldEntry.ringIndex)
+                        )
+                    else
+                        print("[Gameboard] remap log " .. characterKey .. ": no snap match (old config)")
+                    end
+                end
+            end
+        end
+    end
+
+    Gameboard.installPolarSnaps(board, { force = true, config = newCfg })
+    local newCatalog = Gameboard.buildControlBoardSnapCatalog(board, newCfg)
+    local placements = {}
+    local existing = S.getStateVal("sessionScene", "npcWorld", "placements")
+    if type(existing) == "table" then
+        for ck, row in pairs(existing) do
+            if type(ck) == "string" and type(row) == "table" then
+                placements[ck] = row
+            end
+        end
+    end
+    local boardYaw = board.getRotation().y or 0
+
+    for _, plan in ipairs(tokenPlans) do
+        local token = plan.token
+        local characterKey = plan.characterKey
+        local oldEntry = plan.oldEntry
+        if oldEntry == nil then
+            placements[characterKey] = nil
+            stats.skipped = stats.skipped + 1
+        elseif oldEntry.ringIndex > newRings then
+            placements[characterKey] = nil
+            if parkNpcTokenOnPalette(token, characterKey) then
+                stats.palette = stats.palette + 1
+            else
+                stats.skipped = stats.skipped + 1
+            end
+            print(
+                "[Gameboard] remap "
+                    .. characterKey
+                    .. ": ring "
+                    .. tostring(oldEntry.ringIndex)
+                    .. " removed → palette"
+            )
+        else
+            local targetSpread = spreadOffsetForSnapEntry(oldCfg, oldEntry)
+            local targetAnchor = anchorDegForSnapEntry(oldCfg, oldEntry)
+            local newEntry = findBestCatalogEntryOnRing(
+                newCatalog,
+                newCfg,
+                oldEntry.ringIndex,
+                targetSpread,
+                targetAnchor
+            )
+            if newEntry == nil then
+                placements[characterKey] = nil
+                stats.skipped = stats.skipped + 1
+                print("[Gameboard] remap " .. characterKey .. ": no target snap on ring " .. tostring(oldEntry.ringIndex))
+            else
+                placeTokenOnControlBoardSnap(token, newEntry, board, boardYaw)
+                local row = {
+                    u = newEntry.u,
+                    v = newEntry.v,
+                    yaw = newEntry.yawDeg,
+                    npcLightMode = plan.npcLightMode,
+                }
+                if newEntry.groundLevel ~= nil then
+                    row.groundLevel = newEntry.groundLevel
+                end
+                placements[characterKey] = row
+                stats.remapped = stats.remapped + 1
+                print(
+                    "[Gameboard] remap "
+                        .. characterKey
+                        .. ": ring "
+                        .. tostring(oldEntry.ringIndex)
+                        .. " → ray "
+                        .. tostring(newEntry.rayIndex)
+                        .. " familyK "
+                        .. tostring(newEntry.familyK)
+                )
+            end
+        end
+    end
+
+    S.setStateVal(placements, "sessionScene", "npcWorld", "placements")
+    local palette = getControlBoardPalette()
+    if isGameObject(palette) then
+        Palette.syncTokensToPalette(palette)
+    end
+
+    if options.skipSync ~= true then
+        local Sync = require("core.sync")
+        Sync.npcs({
+            reason = "gameboard_snap_remap",
+            force = true,
+            onlySteps = { 1, 5 },
+            deferUiRefresh = true,
+            skipAreaPopulate = true,
+            skipPreloadPopulate = true,
+        })
+    end
+
+    print(
+        "[Gameboard] remap complete: logged="
+            .. tostring(stats.logged)
+            .. " remapped="
+            .. tostring(stats.remapped)
+            .. " palette="
+            .. tostring(stats.palette)
+            .. " skipped="
+            .. tostring(stats.skipped)
+    )
+    return stats
+end
 
 --- Absolute world Y for a normalized u/v on the control-board snap grid (from matching ring `groundLevel`).
 --- When the ring omits `groundLevel`, returns nil and `worldFromUv` uses STAGE_BOARD surface world Y at u,v.

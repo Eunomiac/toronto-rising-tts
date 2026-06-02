@@ -31,7 +31,7 @@ bullets without evidence, confidence, or sourcing metadata.
 - Standard require order in modules is `lib.constants` (`C`) → `lib.guids` (`G`) → `lib.util` (`U`) → `core.state` (`S`) → other core modules.
 - All TTS object GUIDs live in `lib/guids.ttslua` under the `G` table; never read GUIDs from the legacy `C.GUIDS.*` location and prefer helpers like `G.GetHandZoneGUID(color)`.
 - `pcall` is forbidden in production paths and allowed only to mask a known, expected, non-actionable failure, with an adjacent comment explaining what is masked, why masking is safe, and what fallback or logging occurs.
-- The Tabletop Simulator MCP / External Editor bridge runs on localhost ports `39999` / `39998`; full setup, tooling (`tts_execute_lua`, `.tools/tts-bridge`), and pitfalls are in `.dev/TTS_MCP.md`.
+- TTS MCP / External Editor (`tts_execute_lua`, `.tools/tts-bridge`) is **manual-only** — conflicts with the TTS Tools extension on port `39998`. Do not enable or call MCP unless the user explicitly asks. Use Save & Play + in-game `DEBUG.*` instead. See `.dev/TTS_MCP.md` and `.cursor/rules/toronto-rising-tts-mcp.mdc`.
 - External Editor executes the **saved/bundled** Lua, not the on-disk repo, so use the extension's Save and Play before expecting repo edits to take effect in-game.
 - From Global (`guid` `"-1"`) executes, prefer `spawnObjectData` over `spawnObject` to avoid TTS `.NET` null-reference failures during MCP-driven spawns; see `core/npcs.ttslua` spawn patterns.
 - For structured return data from TTS, encode JSON in Lua (`JSON.encode` + `print` + `return`) and parse on the Node/TS side, falling back to parsing JSON out of `prints`, because nested tables do not round-trip reliably through `messageID` 5 `returnValue`.

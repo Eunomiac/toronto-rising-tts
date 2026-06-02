@@ -1,31 +1,29 @@
 ---
-description: Tabletop Simulator MCP / External Editor bridge (tts_execute_lua, ports 39999/39998), timeouts, and collecting structured return data from TTS.
+description: Tabletop Simulator MCP / External Editor bridge — manual-only; conflicts with TTS Tools extension on port 39998.
+alwaysApply: true
 ---
 
-# Toronto Rising — TTS MCP and External Editor
+# Toronto Rising — TTS MCP (manual only)
 
-When calling **`tts_execute_lua`**, using **`.tools/tts-bridge`**, or automating **Tabletop Simulator** over localhost **39999** / **39998**, read **`.dev/TTS_MCP.md`** for setup, tools, and orchestration notes.
+## Agents — do not use by default
 
-## Pitfalls (read before debugging “MCP failures”)
+- **Do not** call `tts_execute_lua`, `tts_send_custom_message`, or enable the Toronto Rising TTS MCP server unless the user **explicitly** asks to run MCP / External Editor automation in this session.
+- **Do not** add `toronto-rising-tts` to Cursor `mcp.json` on the user's behalf.
+- **Do not** run `npm run tts-mcp:start`, `npm run tts-bridge:listen`, or point Cursor at `.tools/tts-mcp/dist/index.js` unless the user requested it.
+- Normal mod work: **Save & Play** (TTS Tools extension) and in-game `lua DEBUG.*` — not MCP.
 
-Full detail: **`.dev/TTS_MCP.md` → *Pitfalls and obstacles (agents)***.
+**Why:** MCP and the TTS Tools extension both need inbound port **39998**. Only one listener can run; simultaneous use breaks Save & Play.
 
-- **Bundle drift:** External Editor runs the **saved/bundled** Lua, not the repo on disk. After editing mod files, **Save & Play** (or reload) so TTS matches the repo; otherwise fixes “in git” never run in-game.
-- **Global `local function` order:** In `core/global_script.ttslua`, every `local function` used by `function Global…()` or `Global.call` targets must be defined **earlier in that file** — otherwise runtime **attempt to call a nil value** (see [`docs/solutions/lua-local-function-order.md`](../../docs/solutions/lua-local-function-order.md)).
-- **`spawnObject` vs execute:** From **Global** (`guid` `"-1"`) **External Editor execute**, **`spawnObject`** can trigger a TTS **null-reference** (`.NET` **Object reference not set…**), sometimes with **empty `prints`**. Prefer **`spawnObjectData`** for MCP-driven spawns (see **`DEBUG.ensureEasingTestRig()`** in `core/debug.ttslua`).
-- **Diagnosis:** Use **`print` / tiny steps**; avoid broad **`pcall`** wrappers that hide failures. Only use `pcall` when masking a known, expected, non-actionable error, and add a nearby comment justifying why masking is safe. Avoid **`node -e`** with embedded Lua on Windows (**PowerShell quoting**). Prefer scripts under **`.tools/tts-bridge/scripts/`** (e.g. **`npm run tts-bridge:run-easing-mcp-test`**).
-- **Long sequences:** **`RunSequenceWithOptions`** is non-blocking from the execute chunk; use **`onComplete`**, **`U.mcpEmitResult`**, and generous **`maxWaitMs` / `idleTimeoutMs`** (see `.dev/TTS_MCP.md`).
-- **Apparent hang after last print:** completion is **`messageID` 5** or **`idleTimeoutMs`** after the **last** inbound2–5. A huge **`idleTimeoutMs`** (e.g. 120s) after the final **`TR_AGENT_V1`** line looks like “still waiting for nothing”. Use a **high `maxWaitMs`** for wall-clock cap but a **moderate `idleTimeoutMs`** when the final print pattern is known (see `.dev/TTS_MCP.md` *Pitfalls* §5).
+## Human manual use
 
-## Structured data and `returnValue` (common pitfall)
+See [`.dev/TTS_MCP.md`](../../.dev/TTS_MCP.md).
 
-- Completion may include inbound **`messageID` 5** with **`returnValue`**, but **nested Lua tables** often **do not** round-trip; the client may see **`returnValue` omitted** even when the script succeeded.
-- For queries and non-trivial payloads: in Lua use **`JSON.encode`**, **`print(encoded)`**, and **`return encoded`**; on Node/TS use **`JSON.parse`**, with a fallback that parses JSON from **`prints`** if needed.
-- Working example: `.tools/tts-bridge/scripts/export-color-object-tags-to-markdown.mjs`.
+1. Disable or remove the `toronto-rising-tts` MCP entry in Cursor while using the extension.
+2. `npm run tts-mcp:build` then `npm run tts-mcp:start` (sets `TR_TTS_MCP_ALLOW=1`).
+3. Optional: `npm run tts-bridge:listen` for write sink only (still conflicts with extension).
 
-Full guidance: `.dev/TTS_MCP.md` (section *Return values (`messageID` 5) and structured data*).
+MCP is **not** part of `npm run build` / Ctrl+Shift+B.
 
-## Agent-oriented prints (`TR_AGENT_V1`)
+## When the user explicitly requests MCP
 
-- In Lua, use **`U.emitForAgent(kind, data)`** or **`U.mcpEmitResult(data)`** (`lib/util.ttslua`) so each event is one line: prefix **`TR_AGENT_V1`** + JSON envelope (`seq`, `kind`, `t`, nested **`data`**). Easier to parse than raw `print` spam; **`seq`** helps if **`prints` order** is imperfect under coroutines.
-- See `.dev/TTS_MCP.md` section *Machine-readable agent lines*.
+Read `.dev/TTS_MCP.md` for pitfalls (bundle drift, `spawnObjectData`, return values, timeouts). Prefer in-game `DEBUG.*` when the extension is already connected.

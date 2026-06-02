@@ -11,6 +11,24 @@ import { TtsExternalEditorBridge } from "../../tts-bridge/dist/index.js";
 
 const bridge = new TtsExternalEditorBridge();
 
+/** When unset, tools refuse (avoids binding 39998 while TTS Tools extension is active). Set by `npm run tts-mcp:start`. */
+const MCP_ALLOWED = process.env.TR_TTS_MCP_ALLOW === "1";
+
+const MCP_DISABLED_MESSAGE =
+  "Toronto Rising TTS MCP is disabled. It conflicts with the TTS Tools extension on port 39998. " +
+  "Use Save & Play / in-game console for normal dev. To run MCP manually: disable the extension MCP entry in Cursor, " +
+  "then `npm run tts-mcp:build` and `npm run tts-mcp:start` (sets TR_TTS_MCP_ALLOW). See .dev/TTS_MCP.md.";
+
+function mcpDisabledResponse(): {
+  content: Array<{ type: "text"; text: string }>;
+  isError?: boolean;
+} {
+  return {
+    content: [{ type: "text", text: JSON.stringify({ ok: false, error: MCP_DISABLED_MESSAGE }, null, 2) }],
+    isError: true,
+  };
+}
+
 const server = new McpServer({
   name: "toronto-rising-tts",
   version: "1.0.0",
@@ -60,11 +78,14 @@ server.registerTool(
   "tts_execute_lua",
   {
     description:
-      "Use this tool whenever you need to run Lua against the **live Tabletop Simulator session** and read back results — e.g. inspect objects, validate state, reproduce bugs with print/return, or verify scripted behavior without asking the user to paste TTS console output. Prefer calling it **proactively** for Toronto Rising / TTS tasks when runtime feedback matters, not only when the user says \"run this in TTS\". Prerequisites: TTS is open with a table loaded and **External Editor** enabled in game options. Executes in script context of `guid` (default Global `\"-1\"`). Returns: `prints`, optional `returnValue` when TTS sends External Editor `messageID` 5, `error` on Lua failure, `customMessages` for `sendExternalMessage` during the call, and `timedOut`. **Return values:** treat `returnValue` as **best-effort**. Booleans, numbers, strings, and simple JSON-like values usually work. **Nested Lua tables** often produce **no** `returnValue` on the client even when the script succeeded — use **`return JSON.encode(payload)`** and **`print(encoded)`**, then **`JSON.parse`** on the host (fall back to scanning `prints` if needed). **Structured multi-line output:** in this mod use **`U.emitForAgent`** / **`U.mcpEmitResult`** (`lib/util.ttslua`) so each event is a **`TR_AGENT_V1 `** + JSON line (see `.dev/TTS_MCP.md` *Machine-readable agent lines*). Full return-value pattern: `.dev/TTS_MCP.md` *Return values (`messageID` 5) and structured data*; example script: `.tools/tts-bridge/scripts/export-color-object-tags-to-markdown.mjs`. Empty `return` may omit `returnValue`. **Timeouts (set explicitly when shape matters):** default `idleTimeoutMs` is 90s — good for long coroutine/sequence gaps; use a **shorter** `idleTimeoutMs` for quick print-only probes. Default `maxWaitMs` is 30s — use a **higher** `maxWaitMs` (up to 120s) when the whole run can exceed that. If `EADDRINUSE` on port 39998 appears, another editor bridge holds the inbound port — release it or pause that integration.",
+      "**Manual-only** (not for Cursor agents by default): run Lua in a live TTS session via External Editor. Disabled unless started with `npm run tts-mcp:start` (`TR_TTS_MCP_ALLOW=1`). Conflicts with the TTS Tools extension on port **39998** — do not enable in Cursor MCP while using Save & Play. Prerequisites: TTS loaded, External Editor on, port 39998 free. Returns `prints`, optional `returnValue`, `error`, `customMessages`, `timedOut`. See `.dev/TTS_MCP.md`.",
     inputSchema: executeInputSchema,
     outputSchema: executeOutputSchema,
   },
   async ({ script, guid, maxWaitMs, idleTimeoutMs }) => {
+    if (!MCP_ALLOWED) {
+      return mcpDisabledResponse();
+    }
     const result = await bridge.executeWithOutput({
       script,
       guid: guid ?? "-1",
@@ -95,10 +116,13 @@ server.registerTool(
   "tts_send_custom_message",
   {
     description:
-      "Use when the **game** exposes `onExternalMessage` handlers that respond to IDE-driven payloads. Sends External Editor **messageID 2**; TTS forwards `customMessage` as a Lua table. **Does not** collect prints or return values — for debugging or probes with feedback, use `tts_execute_lua` instead. **Note:** Lua `sendExternalMessage` with `type: \"write\"` is delivered as **messageID 4** from TTS to the editor; the repo **tts-bridge** persists those to **`.dev/.debug/`** when it listens on **39998** (Cursor MCP calls `ensureListening` on startup, or run `npm run tts-bridge:listen`). Same prerequisites as execute: TTS + External Editor; only **one** listener may bind **39998** (e.g. pause conflicting VS Code extensions).",
+      "**Manual-only** (same gate as `tts_execute_lua`): send External Editor messageID 2 to `onExternalMessage`. Disabled unless `npm run tts-mcp:start`. Conflicts with TTS Tools extension on port 39998. See `.dev/TTS_MCP.md`.",
     inputSchema: customMessageInputSchema,
   },
   async ({ customMessage }) => {
+    if (!MCP_ALLOWED) {
+      return mcpDisabledResponse();
+    }
     await bridge.sendCustomMessage(customMessage);
     return {
       content: [
@@ -112,7 +136,6 @@ server.registerTool(
 );
 
 async function main(): Promise<void> {
-  await bridge.ensureListening();
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }

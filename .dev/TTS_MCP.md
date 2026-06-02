@@ -1,39 +1,55 @@
-# Tabletop Simulator MCP (Cursor)
+# Tabletop Simulator MCP (manual only)
 
-This repo includes a small **Model Context Protocol** server that runs **Tabletop Simulator** Lua on your machine and returns `print` output, return values, and errors via the official [External Editor API](tts-api/Getting%20Started/External%20Editor%20API.md) (localhost **39999** → TTS, **39998** ← TTS).
+This repo includes an optional **Model Context Protocol** server that runs **Tabletop Simulator** Lua via the [External Editor API](tts-api/Getting%20Started/External%20Editor%20API.md) (localhost **39999** → TTS, **39998** ← TTS).
 
-## Prerequisites
+**Default workflow:** use the **TTS Tools extension** (Save & Play) and in-game `lua DEBUG.*`. MCP is **off** unless you start it manually — it **conflicts** with the extension on port **39998**.
 
-1. **Tabletop Simulator** is running with a game loaded.
-2. **Tabletop Simulator** is running with a game loaded (External Editor listens on **39999** automatically — no in-game toggle).
-3. **Node.js 18+** and project dependencies: `npm install` at the repo root.
-4. **Build** the MCP server when you change bridge/MCP TypeScript or after pull: `npm run tts-mcp:build` (runs `tts-bridge:build` then `tts-mcp:compile`). VS Code/Cursor task **Build: TTS MCP (Node)** runs the same command. This is **not** part of the default module build (`npm run build` / Ctrl+Shift+B). Outputs go to `.tools/tts-bridge/dist/` and `.tools/tts-mcp/dist/` (ignored by git).
+## Not in the main build
+
+`npm run build` / `build:all-tooling` / Ctrl+Shift+B **do not** compile or start MCP. Build MCP only when you change bridge code:
+
+```bash
+npm run tts-mcp:build
+```
+
+VS Code/Cursor task: **Manual: Build TTS MCP (Node)**.
 
 ## Port conflict (39998)
 
-Only **one** process may listen on **39998**. If another tool (e.g. a VS Code TTS extension’s inbound server) is already bound there, stop it or do not run the MCP server at the same time. Details: [TTS_BUNDLING_SETUP.md — Issue 0b](TTS_BUNDLING_SETUP.md#issue-0b-port-39998-already-in-use-eaddrinuse).
+Only **one** process may listen on **39998** (TTS Tools extension **or** this bridge — not both). See [TTS_BUNDLING_SETUP.md — Issue 0b](TTS_BUNDLING_SETUP.md#issue-0b-port-39998-already-in-use-eaddrinuse).
 
-## Cursor MCP configuration
+## Manual start (recommended)
 
-In Cursor, add an MCP server whose command runs the compiled entry (adjust the path if your clone lives elsewhere).
+1. **Disable** the `toronto-rising-tts` MCP server in Cursor MCP settings while using Save & Play (or leave it enabled — tools return a clear error and do not bind **39998** on startup unless `TR_TTS_MCP_ALLOW=1`).
+2. Tabletop Simulator open with a save loaded.
+3. From repo root:
 
-**Example (`mcp.json` or Cursor MCP settings):**
+```bash
+npm run tts-mcp:build
+npm run tts-mcp:start
+```
+
+`tts-mcp:start` runs `.tools/tts-mcp/scripts/start-manual.mjs`, which sets **`TR_TTS_MCP_ALLOW=1`** before loading the server. Tools refuse all requests without that env var.
+
+**Bridge only** (write sink to `.dev/.debug/`, no MCP): `npm run tts-bridge:listen` — still uses **39998**; disable the extension first.
+
+## Cursor MCP configuration (optional)
+
+Only when you want MCP in Cursor **and** the extension is disabled. Point at the **manual** entry script (not `dist/index.js` alone):
 
 ```json
 {
   "mcpServers": {
     "toronto-rising-tts": {
       "command": "node",
-      "args": ["D:\\Projects\\.CODING\\toronto-rising-tts\\.tools\\tts-mcp\\dist\\index.js"],
-      "cwd": "D:\\Projects\\.CODING\\toronto-rising-tts"
+      "args": ["D:/Projects/.CODING/toronto-rising-tts/.tools/tts-mcp/scripts/start-manual.mjs"],
+      "cwd": "D:/Projects/.CODING/toronto-rising-tts"
     }
   }
 }
 ```
 
-Use forward slashes if your environment prefers: `D:/Projects/.CODING/toronto-rising-tts/.tools/tts-mcp/dist/index.js`.
-
-After saving, reload MCP / restart Cursor if needed. The server speaks **stdio** only (no HTTP port).
+Agents are instructed **not** to enable or call MCP unless you explicitly request it (`.cursor/rules/toronto-rising-tts-mcp.mdc`).
 
 ## Tools exposed
 

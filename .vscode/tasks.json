@@ -31,7 +31,7 @@
       }
     },
     {
-      "label": "Build: TTS MCP (Node)",
+      "label": "Manual: Build TTS MCP (Node)",
       "type": "shell",
       "command": "npm run tts-mcp:build",
       "options": {

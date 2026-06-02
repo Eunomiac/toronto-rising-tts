@@ -553,6 +553,28 @@ function DEBUG.installNpcControlBoardSnaps(options)
     }) == true
 end
 
+--- Install a new CONTROL_BOARD snap grid, remap tokens by ring + spread offset, sync stage figurines.
+--- A. Logs each token's ring (old config catalog match).
+--- B. `installPolarSnaps` with `options` / `options.config` as the new snap table.
+--- C. Moves tokens + `sessionScene.npcWorld.placements` to best-matching snaps on the same ring; missing rings → palette; `Sync.npcs` unless `skipSync`.
+--- @param options table|nil New `CONTROL_BOARD_SNAP` (or `{ config = … }`); optional `oldConfig` for matching before remap (default `DATA.CONTROL_BOARD_SNAP`); `skipSync` to skip figurine reconcile
+--- @return table|nil stats from Gameboard.remapControlBoardSnapsToConfig
+function DEBUG.installAndRemapNpcControlBoardSnaps(options)
+    options = type(options) == "table" and options or {}
+    local Gameboard = require("core.npc_gameboard")
+    local DATA = require("lib.npc_gameboard_data")
+    local newConfig = resolveDebugControlBoardSnapConfig(options)
+    if type(newConfig) ~= "table" then
+        print("[DEBUG] installAndRemapNpcControlBoardSnaps: pass a CONTROL_BOARD_SNAP table or { config = … }")
+        return nil
+    end
+    local oldConfig = type(options.oldConfig) == "table" and options.oldConfig or DATA.CONTROL_BOARD_SNAP
+    print("[DEBUG] installAndRemapNpcControlBoardSnaps: begin (old config → new config)")
+    return Gameboard.remapControlBoardSnapsToConfig(oldConfig, newConfig, {
+        skipSync = options.skipSync == true,
+    })
+end
+
 --- Print snap count from config without installing (fast tuning).
 --- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
 function DEBUG.previewControlBoardSnapCount(config)
@@ -562,6 +584,22 @@ function DEBUG.previewControlBoardSnapCount(config)
     for ringIndex, ringTotal in ipairs(perRing) do
         print("  ring " .. tostring(ringIndex) .. ": " .. tostring(ringTotal))
     end
+end
+
+--- Print Lua table or CSV of snap family roles → world X/Z (STAGE) for tuning or migration.
+--- @param config table|nil Full CONTROL_BOARD_SNAP table or nil for DATA default
+--- @param options table|nil `{ useInterpolatedRings?: boolean, format?: "lua"|"csv" }`
+function DEBUG.exportControlBoardSnapFamilies(config, options)
+    local Gameboard = require("core.npc_gameboard")
+    options = type(options) == "table" and options or {}
+    local byRole = Gameboard.exportSnapFamiliesByRole(config, options)
+    local format = options.format == "csv" and "csv" or "lua"
+    local text = format == "csv"
+        and Gameboard.formatSnapFamiliesCsv(byRole)
+        or Gameboard.formatSnapFamiliesLua(byRole)
+    print("[DEBUG] CONTROL_BOARD snap families (world X/Z on STAGE, " .. format .. "):")
+    print(text)
+    return byRole
 end
 
 --- Display zone status

@@ -18,9 +18,9 @@ Snap points are generated in polar coordinates on the control board. Several set
 | :--: | :-- |
 | `origin` | Center of the polar system in board u/v |
 | `rings` | Number of concentric elliptical rings |
-| `innerRingMaxU` & `innerRingMaxV` | **Absolute** board u/v reached by the **innermost** ring (distance along axes from the **0,0** corner — not a delta from `origin`) |
-| `outerRingMaxU` & `outerRingMaxV` | **Absolute** board u/v for the **outermost** ring; intermediate rings linearly interpolate inner → outer |
-| `snapGroups` | One entry per ring (**index 1 = innermost**): `{ num, angleDelta, rays, groundLevel?, radialStagger? }` — family size, angular spacing, ray count, optional **absolute world Y** for figurines on that ring, and optional **STAGE world XZ** radial push per family step (see below) |
+| `innerRingMaxU` & `innerRingMaxV` | **Optional** when every `snapGroups[r]` sets `maxU`/`maxV`. Otherwise **absolute** board u/v for the **innermost** ring |
+| `outerRingMaxU` & `outerRingMaxV` | **Optional** when every ring has `maxU`/`maxV`. Otherwise **absolute** board u/v for the **outermost** ring; rings without per-ring max interpolate inner → outer |
+| `snapGroups` | One entry per ring (**index 1 = innermost**): `{ num, angleDelta, rays, maxU?, maxV?, groundLevel?, radialStagger? }` — family size, angular spacing, ray count, optional **per-ring** ellipse max (overrides interpolation), optional **absolute world Y** for figurines, optional **STAGE world XZ** radial push per family step (see below) |
 | `snapYawOffsetDeg` | Added to toward-origin yaw on each snap (default **0** on control board; palette uses **180**) |
 
 ### `groundLevel` (per ring, optional)
@@ -65,15 +65,17 @@ D.CONTROL_BOARD_SNAP = {
 
 **Snap count:** `sum over rings r of snapGroups[r].rays * snapGroups[r].num`, **minus** any candidate whose `(u,v)` falls outside `[0,1]`. Default config → **136** before filter; run `DEBUG.previewControlBoardSnapCount()` for the installed count (typically fewer when outer-ring rays dip below `v = 0`).
 
-### Ring interpolation
+### Ring max u/v (per ring or interpolated)
 
-For ring index `r` in `1 … rings`:
+Each ring’s ellipse uses **`snapGroups[ringIndex].maxU` and `.maxV`** when both are set. Otherwise, when top-level `innerRingMaxU/V` and `outerRingMaxU/V` are present, ring `r` interpolates:
 
 ```lua
 t = (rings == 1) and 0 or ((r - 1) / (rings - 1))
 maxU[r] = innerRingMaxU + t * (outerRingMaxU - innerRingMaxU)
 maxV[r] = innerRingMaxV + t * (outerRingMaxV - innerRingMaxV)
 ```
+
+Per-ring max is preferred for hand-tuned layouts (e.g. outer `maxV = 0.7` without changing inner rings). Validation requires either **all rings** to define `maxU`/`maxV` **or** top-level inner/outer max for fallback interpolation.
 
 ### Ellipse (axis-aligned in board u/v)
 
@@ -118,6 +120,39 @@ Step 3 dotted circles use the **same** ring geometry as Step 2.
 * **Step Four: Generate Anchor Snaps** — [View Image](./Snap%20Point%20Illustrations/Step%204%20-%20Anchor%20Snaps.png)
 * **Step Five: Generate Snap Point Families** — [View Image](./Snap%20Point%20Illustrations/Step%205%20-%20Snap%20Point%20Families.png)
 
+## Export family positions (world X/Z)
+
+Each snap **family** spreads by `familyK` (`-2 … 0 … +2` for `num = 5`): **farLeft**, **nearLeft**, **center** (anchor), **nearRight**, **farRight**.
+
+**In-game** (uses live STAGE_BOARD when present):
+
+```lua
+lua DEBUG.exportControlBoardSnapFamilies()
+lua DEBUG.exportControlBoardSnapFamilies(nil, { useInterpolatedRings = true })
+```
+
+**Offline** (DEFAULT_STAGE_WORLD X/Z projection; update `DEFAULT_CONFIG` in script when defaults change):
+
+```bash
+node .dev/scripts/export_control_board_snap_families.mjs --csv --out .dev/plans/control-board-snap-families.csv
+node .dev/scripts/export_control_board_snap_families.mjs --interpolated --csv --out .dev/plans/control-board-snap-families-interpolated.csv
+node .dev/scripts/export_control_board_snap_families.mjs --out .dev/plans/control-board-snap-families.lua
+```
+
+CSV columns: **area** (family role: `farLeft`, `nearLeft`, `center`, `nearRight`, `farRight`), **slot** (1-based index within area), **x**, **z** (STAGE world).
+
+Output shape (Lua):
+
+```lua
+return {
+  farLeft = {
+    [1] = { x = ..., z = ... },
+    ...
+  },
+  center = { ... },
+}
+```
+
 ## IDE iteration (Save & Play first)
 
 Preview count only:
@@ -147,6 +182,23 @@ lua DEBUG.installNpcControlBoardSnaps({
 ```
 
 **Note:** `groundLevel` on a ring is **absolute world Y** for figurines on Apply — CONTROL_BOARD snap XZ/Y on the tile are unchanged (`MINIMAP_SURFACE_LOCAL_Y`). **`Sync.npcs` / `Sync.full`** calls `reconcileControlBoardFromState` → `installPolarSnaps` with **`lib/npc_gameboard_data` defaults**, which overwrites a debug install unless you edit `D.CONTROL_BOARD_SNAP` or re-run `DEBUG.installNpcControlBoardSnaps` after sync.
+
+Install **and remap existing tokens/placements** to the new layout (same ring + closest spread offset, removed rings → palette):
+
+```lua
+lua DEBUG.installAndRemapNpcControlBoardSnaps({
+  origin = { u = 0.5, v = 0.2 },
+  snapYawOffsetDeg = 0,
+  rings = 4,
+  snapGroups = {
+    { num = 1, angleDelta = 0, rays = 4,  maxU = 0.6, maxV = 0.3, groundLevel = -15 },
+    { num = 3, angleDelta = 3, rays = 12, maxU = 0.7, maxV = 0.4, groundLevel = -15 },
+    { num = 5, angleDelta = 4, rays = 16, maxU = 0.8, maxV = 0.6, groundLevel = -40 },
+    { num = 1, angleDelta = 0, rays = 20, maxU = 0.9, maxV = 0.9, groundLevel = -40 },
+  },
+  -- oldConfig = { ... }, -- optional: defaults to lib/npc_gameboard_data CONTROL_BOARD_SNAP
+})
+```
 
 Or call the gameboard API directly:
 
