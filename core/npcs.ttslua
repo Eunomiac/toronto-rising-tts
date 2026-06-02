@@ -666,19 +666,33 @@ local function applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime)
     lightAlignFigOverride[npcName] = nil
 end
 
---- @param stored table|nil
---- @param placement table
+--- @param stored table|nil last applied stage pose on the instance record
+--- @param placement table current intent `{ u, v, groundLevel? }`
 --- @return boolean
 local function stagePlacementMatchesRecord(stored, placement)
     if type(stored) ~= "table" or type(placement) ~= "table" then
         return false
     end
-    local du = math.abs((tonumber(stored.u) or 0) - (tonumber(placement.u) or 0))
-    local dv = math.abs((tonumber(stored.v) or 0) - (tonumber(placement.v) or 0))
+    local u = tonumber(placement.u)
+    local v = tonumber(placement.v)
+    if u == nil or v == nil then
+        return false
+    end
+    local du = math.abs((tonumber(stored.u) or 0) - u)
+    local dv = math.abs((tonumber(stored.v) or 0) - v)
     if du >= 0.002 or dv >= 0.002 then
         return false
     end
-    return (tonumber(stored.groundLevel) or nil) == (tonumber(placement.groundLevel) or nil)
+    if (tonumber(stored.groundLevel) or nil) ~= (tonumber(placement.groundLevel) or nil) then
+        return false
+    end
+    local Gameboard = require("core.npc_gameboard")
+    local derivedYaw = 0
+    if type(Gameboard.placementBoardRelYawDeg) == "function" then
+        derivedYaw = Gameboard.placementBoardRelYawDeg(u, v)
+    end
+    local dy = math.abs((tonumber(stored.yaw) or 0) - derivedYaw)
+    return dy < 1
 end
 
 --- @param placement table

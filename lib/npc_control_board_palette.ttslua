@@ -516,28 +516,27 @@ function Palette.syncTokensToPalette(palette)
     for _, token in ipairs(allTagged) do
         if U.isGameObject(token) then
             local ck = tokenCharacterKey(token)
-            if placedOnStage[ck] == true then
-                -- Reconcile mirrors these onto CONTROL_BOARD at exact u,v.
-            else
-            local wantIndex = ck ~= nil and assignments[ck] or nil
-            if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
-                local onPalette = isWorldPosOnPaletteBoard(palette, token.getPosition())
-                local alreadyCorrect = false
-                if onPalette then
-                    local nearestSlot = U.findSnapPoint(snapPointsForFind, token.getPosition(), 0.35)
-                    if U.Type(nearestSlot) == "number" and snapPointsForFind[nearestSlot] ~= nil then
-                        alreadyCorrect = snapPointsForFind[nearestSlot].snapIndex == wantIndex
+            -- On-stage keys are mirrored onto CONTROL_BOARD by reconcile; do not park them here.
+            if placedOnStage[ck] ~= true then
+                local wantIndex = ck ~= nil and assignments[ck] or nil
+                if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
+                    local onPalette = isWorldPosOnPaletteBoard(palette, token.getPosition())
+                    local alreadyCorrect = false
+                    if onPalette then
+                        local nearestSlot = U.findSnapPoint(snapPointsForFind, token.getPosition(), 0.35)
+                        if U.Type(nearestSlot) == "number" and snapPointsForFind[nearestSlot] ~= nil then
+                            alreadyCorrect = snapPointsForFind[nearestSlot].snapIndex == wantIndex
+                        end
+                    end
+                    if not alreadyCorrect then
+                        token.setPosition(snapWorld[wantIndex])
+                        token.setRotation(tokenRotationForPalette(palette, token))
+                        if token.setInvisibleTo ~= nil then
+                            token.setInvisibleTo(C.PlayerColors or {})
+                        end
+                        moved = moved + 1
                     end
                 end
-                if not alreadyCorrect then
-                    token.setPosition(snapWorld[wantIndex])
-                    token.setRotation(tokenRotationForPalette(palette, token))
-                    if token.setInvisibleTo ~= nil then
-                        token.setInvisibleTo(C.PlayerColors or {})
-                    end
-                    moved = moved + 1
-                end
-            end
             end
         end
     end
