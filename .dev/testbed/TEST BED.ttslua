@@ -2352,37 +2352,47 @@ function DestroyTableClones()
 end
 -- #endregion
 
-SpawnTableClones()
+-- SpawnTableClones()
 -- DiagnoseTableClones()
 -- DestroyTableClones()
 
-DEBUG.clearCustomUiUploadTokens()
+-- DEBUG.clearCustomUiUploadTokens()
 
-DEBUG.clearNpcControlBoardTokens()
+-- DEBUG.clearNpcControlBoardTokens()
 
-DEBUG.spawnNpcControlBoardTokens()
+-- DEBUG.spawnNpcControlBoardTokens()
 
-DEBUG.spawnNpcTokenUploadBatch({ columns = 12, gap = 2, startY = 3 })
+-- DEBUG.spawnNpcTokenUploadBatch({ columns = 12, gap = 2, startY = 3 })
 
--- Snap UV layout (origin, ring maxU/V, snapGroups). groundLevel = absolute world Y for figurines on Apply (XZ from STAGE_BOARD u,v only).
--- Next Sync.npcs / reconcile reinstalls snaps from lib/npcs_data unless you re-run this or edit DATA.CONTROL_BOARD_SNAP.
+-- Snap UV layout (origin, per-ring maxU/maxV in snapGroups). groundLevel = absolute world Y for figurines on Apply (XZ from STAGE_BOARD u,v only).
+-- Export family world X/Z: DEBUG.exportControlBoardSnapFamilies(nil, { useInterpolatedRings = true }) for inner→outer interpolation baseline.
+-- Next Sync.npcs / reconcile reinstalls snaps from lib/npc_gameboard_data unless you re-run this or edit DATA.CONTROL_BOARD_SNAP.
 DEBUG.installNpcControlBoardSnaps({
   origin = { u = 0.5, v = 0.3 },
   snapYawOffsetDeg = 0,
   rings = 4,
-  innerRingMaxU = 0.6,
-  innerRingMaxV = 0.4,
-  outerRingMaxU = 0.9,
-  outerRingMaxV = 0.9,
   snapGroups = {
-    { num = 1, angleDelta = 0, rays = 16, groundLevel = -50, radialStagger = 1},
-    { num = 5, angleDelta = 3, rays = 12, groundLevel = -50, radialStagger = 1},
-    { num = 5, angleDelta = 3, rays = 16, groundLevel = -50, radialStagger = 1},
-    { num = 5, angleDelta = 2, rays = 20, groundLevel = -50, radialStagger = 1},
+    { num = 1, angleDelta = 0, rays = 16, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.42 },
+    { num = 5, angleDelta = 3, rays = 12, groundLevel = -50, radialStagger = 5, maxU = 0.7, maxV = 0.45 },
+    { num = 5, angleDelta = 3, rays = 16, groundLevel = -10, radialStagger = 5, maxU = 0.8, maxV = 0.6 },
+    { num = 5, angleDelta = 2, rays = 20, groundLevel = 20, radialStagger = 5, maxU = 0.9, maxV = 0.7 },
   },
 })
 
-for _, o in ipairs(getObjectsWithTag("npc_light") or {}) do if o then o.destroy() end end
-local n = 0; for _, o in ipairs(getObjectsWithTag("npc_figurine") or {}) do if o then o.destroy(); n = n + 1 end end; print("destroyed " .. n .. " npc figurines")
--- Sync.full below reinstalls default snaps from lib/npcs_data — run installNpcControlBoardSnaps again after if tuning layout.
-require("core.sync").full({ force = true })
+-- Remap variant: same call shape as installNpcControlBoardSnaps; uses currently installed board snaps as old-config baseline.
+-- DEBUG.installAndRemapNpcControlBoardSnaps({
+--   origin = { u = 0.5, v = 0.3 },
+--   snapYawOffsetDeg = 0,
+--   rings = 4,
+--   snapGroups = {
+--     { num = 1, angleDelta = 0, rays = 16, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.42 },
+--     { num = 5, angleDelta = 3, rays = 12, groundLevel = -50, radialStagger = 5, maxU = 0.7, maxV = 0.45 },
+--     { num = 5, angleDelta = 3, rays = 16, groundLevel = -10, radialStagger = 5, maxU = 0.8, maxV = 0.6 },
+--     { num = 5, angleDelta = 2, rays = 20, groundLevel = 20, radialStagger = 5, maxU = 0.9, maxV = 0.7 },
+--   },
+-- })
+
+-- for _, o in ipairs(getObjectsWithTag("npc_light") or {}) do if o then o.destroy() end end
+-- local n = 0; for _, o in ipairs(getObjectsWithTag("npc_figurine") or {}) do if o then o.destroy(); n = n + 1 end end; print("destroyed " .. n .. " npc figurines")
+-- -- Sync.full below reinstalls default snaps from lib/npcs_data — run installNpcControlBoardSnaps again after if tuning layout.
+-- require("core.sync").full({ force = true })

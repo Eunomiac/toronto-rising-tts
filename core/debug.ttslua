@@ -557,19 +557,23 @@ end
 --- A. Logs each token's ring (old config catalog match).
 --- B. `installPolarSnaps` with `options` / `options.config` as the new snap table.
 --- C. Moves tokens + `sessionScene.npcWorld.placements` to best-matching snaps on the same ring; missing rings → palette; `Sync.npcs` unless `skipSync`.
---- @param options table|nil New `CONTROL_BOARD_SNAP` (or `{ config = … }`); optional `oldConfig` for matching before remap (default `DATA.CONTROL_BOARD_SNAP`); `skipSync` to skip figurine reconcile
+--- @param options table|nil New `CONTROL_BOARD_SNAP` (or `{ config = … }`); optional `oldConfig` for matching override; by default old config comes from currently installed board snaps; `skipSync` to skip figurine reconcile
 --- @return table|nil stats from Gameboard.remapControlBoardSnapsToConfig
 function DEBUG.installAndRemapNpcControlBoardSnaps(options)
     options = type(options) == "table" and options or {}
     local Gameboard = require("core.npc_gameboard")
-    local DATA = require("lib.npc_gameboard_data")
     local newConfig = resolveDebugControlBoardSnapConfig(options)
     if type(newConfig) ~= "table" then
         print("[DEBUG] installAndRemapNpcControlBoardSnaps: pass a CONTROL_BOARD_SNAP table or { config = … }")
         return nil
     end
-    local oldConfig = type(options.oldConfig) == "table" and options.oldConfig or DATA.CONTROL_BOARD_SNAP
-    print("[DEBUG] installAndRemapNpcControlBoardSnaps: begin (old config → new config)")
+    local oldConfig = type(options.oldConfig) == "table" and options.oldConfig or nil
+    local hasInstalled = Gameboard.getInstalledControlBoardSnapConfig() ~= nil
+    local sourceLabel = hasInstalled and "installed snaps" or "DATA fallback"
+    if oldConfig ~= nil then
+        sourceLabel = "options.oldConfig"
+    end
+    print("[DEBUG] installAndRemapNpcControlBoardSnaps: begin (" .. sourceLabel .. " → new config)")
     return Gameboard.remapControlBoardSnapsToConfig(oldConfig, newConfig, {
         skipSync = options.skipSync == true,
     })

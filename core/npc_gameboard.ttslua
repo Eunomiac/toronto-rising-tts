@@ -22,11 +22,15 @@ local TAG_COMPONENT = DATA.TAG_GAMEBOARD_TABLE_COMPONENT
 
 local clearArmExpireByColor = {}
 local polarSnapInstallFingerprint = nil
+--- @type table|nil Last config installed by installPolarSnaps (for remap baselines).
+local installedPolarSnapConfig = nil
 local lastControlBoardMirrorFingerprint = nil
 --- @type table<string, { halfX: number, halfZ: number }>
 local boardUvHalfExtentsCache = {}
 --- @type table<string, boolean> token guid -> true when drop may trigger anchor-family spread.
 local anchorDropEligibleByTokenGuid = {}
+--- Forward declaration (Lua local-function order): defined after helper dependencies.
+local rebuildAnchorDropEligibilityCache
 --- World XZ tolerance when matching tokens to installed control-board snap points.
 local CONTROL_BOARD_SNAP_MATCH_FUZZINESS = 0.45
 --- Prevents recursive anchor-family spread when programmatic moves fire onObjectDrop.
@@ -1729,6 +1733,7 @@ function Gameboard.installPolarSnaps(board, options)
     local ok = board.setSnapPoints(points)
     if ok then
         polarSnapInstallFingerprint = fp
+        installedPolarSnapConfig = resolveControlBoardSnapConfig(cfg)
         print(
             "[Gameboard] Control-board snaps installed ("
                 .. tostring(#points)
@@ -1744,6 +1749,15 @@ end
 
 --- Alias for installPolarSnaps (same behavior).
 Gameboard.installControlBoardSnaps = Gameboard.installPolarSnaps
+
+--- Last installed CONTROL_BOARD snap config, captured from installPolarSnaps.
+--- @return table|nil
+function Gameboard.getInstalledControlBoardSnapConfig()
+    if type(installedPolarSnapConfig) ~= "table" then
+        return nil
+    end
+    return resolveControlBoardSnapConfig(installedPolarSnapConfig)
+end
 
 --- Anchor ray angle (degrees) for a catalog entry.
 --- @param cfg table
@@ -1911,7 +1925,10 @@ function Gameboard.remapControlBoardSnapsToConfig(oldConfig, newConfig, options)
     if type(newConfig) ~= "table" then
         error("remapControlBoardSnapsToConfig: newConfig table required")
     end
-    local oldCfg = resolveControlBoardSnapConfig(oldConfig)
+    local oldCfg = type(oldConfig) == "table"
+        and resolveControlBoardSnapConfig(oldConfig)
+        or Gameboard.getInstalledControlBoardSnapConfig()
+        or resolveControlBoardSnapConfig(DATA.CONTROL_BOARD_SNAP)
     local newCfg, newRings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(newConfig))
     local fuzziness = snapMatchFuzzinessForBoard(board)
 
@@ -2537,7 +2554,7 @@ end
 
 --- Build fast lookup for drop events: only group-leading (slotIndex 1) tokens that are currently off CONTROL_BOARD.
 --- @param board Object|nil
-local function rebuildAnchorDropEligibilityCache(board)
+rebuildAnchorDropEligibilityCache = function(board)
     anchorDropEligibleByTokenGuid = {}
     if not isGameObject(board) then
         return
