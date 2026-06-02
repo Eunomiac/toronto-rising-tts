@@ -2,8 +2,6 @@
 
 ## Active
 
-- review how NPCs are being positioned when the leader of their group is placed on an anchor snap, triggering the other members to be spawned in snap points surrounding them. Snap points should be assigned in index order, starting from the center snap point (the anchor snap, which goes to the leader, i.e. `<group> = 1`), and then moving further out, alternating sides with each index increment
-
 ---
 
 ## Needs clarification
@@ -55,7 +53,10 @@
 - 2026-05-27 TOR-166 — canceled — widen Far Left / Far Right NPC stage area angles superseded by TOR-169 (Storyteller gameboard); Linear Canceled, tasklist `[x]`
 - 2026-05-27 TOR-167 — canceled — Mid-Center / Far-Center NPC stage areas superseded by TOR-169; Linear Canceled, tasklist `[x]`
 - 2026-06-02 TOR-174 — [feature] NPC control token on ST dice bag initiates roll + return to board/palette (deferred — dice cycle; `blockedBy` TOR-169; child of TOR-79)
-- 2026-06-02 TOR-173 — [feature] Lerp figurine + light mode when moving between stage placements (Focus #5)
-- 2026-06-02 TOR-172 — [feature] `snapGroups.defaultLightMode` on palette drop only (Focus #4)
-- 2026-06-02 TOR-171 — [improvement] Figurine yaw from ring origin; ignore token Y rotation (Focus #3 — quick fix)
-- 2026-06-02 TOR-170 — [bug] Control board tokens missing on load with on-stage figurines (Focus #2 — quick fix)
+- 2026-06-02 TOR-172 — [feature] `snapGroups.defaultLightMode` on palette drop only (Focus #5)
+- 2026-06-02 TOR-171 — [improvement] Figurine yaw from master origin; ignore token Y rotation (Done)
+- 2026-06-02 TOR-170 — [bug] Control board tokens missing on load with on-stage figurines (Done)
+- 2026-06-02 TOR-173 — [feature] Lerp on Apply-only stage moves — scope expanded (blindfold gate, simultaneous, back/power eases, light timing; Focus #6)
+- 2026-06-02 TOR-177 — [bug] Duplicate SEAT_FIGURE when NPC seated on scene activate (Focus #2)
+- 2026-06-02 TOR-176 — [bug] Control board XmlUI visible to non-Host players (Focus #3)
+- 2026-06-02 TOR-175 — [bug] Anchor family spread slot order from center snap (Focus #4)

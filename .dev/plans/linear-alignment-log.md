@@ -203,5 +203,11 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-02 | UPDATE | RUNNING TASKLIST **Focus** | Gameboard cycle: TOR-169 + TOR-170/171/172/173; dice E2E 161/162/163 + TOR-174 deferred |
 | 2026-06-02 | COMMENT | TOR-169 | Session ship note + inbox promotion summary |
 | 2026-06-02 | DONE | TOR-170, TOR-171 | Load token mirror from palette; master-origin yaw; palette onLoad + local-order fix; author verified Save & Play |
+| 2026-06-02 | INBOX | 4 bullets | Anchor spread order, XmlUI Host-only, duplicate seat figure, TOR-173 lerp clarification |
+| 2026-06-02 | CREATE | TOR-175 | Anchor family spread slot order from center (child TOR-169; Focus #4) |
+| 2026-06-02 | CREATE | TOR-176 | Control board XmlUI Host-only (child TOR-169; Focus #3) |
+| 2026-06-02 | CREATE | TOR-177 | Duplicate SEAT_FIGURE on scene activate (child TOR-169; Focus #2; Urgent) |
+| 2026-06-02 | UPDATE | TOR-173 | Expanded Apply-only lerp spec from inbox clarification |
+| 2026-06-02 | UPDATE | RUNNING TASKLIST **Focus** | Quick fixes TOR-177/176 above TOR-175/172/173 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
