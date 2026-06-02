@@ -136,6 +136,9 @@ server.registerTool(
 );
 
 async function main(): Promise<void> {
+  if (MCP_ALLOWED) {
+    await bridge.ensureListening();
+  }
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }
