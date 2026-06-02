@@ -1157,11 +1157,6 @@ local function validateControlBoardSnapConfig(cfg)
     if type(origin) ~= "table" or type(origin.u) ~= "number" or type(origin.v) ~= "number" then
         error("CONTROL_BOARD_SNAP.origin must be { u = number, v = number }")
     end
-    local rings = tonumber(cfg.rings)
-    if rings == nil or rings < 1 or math.floor(rings) ~= rings then
-        error("CONTROL_BOARD_SNAP.rings must be an integer >= 1")
-    end
-    rings = math.floor(rings)
     local innerRingMaxU = tonumber(cfg.innerRingMaxU)
     local innerRingMaxV = tonumber(cfg.innerRingMaxV)
     local outerRingMaxU = tonumber(cfg.outerRingMaxU)
@@ -1172,8 +1167,18 @@ local function validateControlBoardSnapConfig(cfg)
         and outerRingMaxV ~= nil
     local legacyRays = tonumber(cfg.rays)
     local snapGroups = cfg.snapGroups
-    if type(snapGroups) ~= "table" or #snapGroups ~= rings then
-        error("CONTROL_BOARD_SNAP.snapGroups must have exactly " .. tostring(rings) .. " entries (one per ring)")
+    if type(snapGroups) ~= "table" or #snapGroups < 1 then
+        error("CONTROL_BOARD_SNAP.snapGroups must be a non-empty array (one entry per ring)")
+    end
+    local rings = #snapGroups
+    local legacyRings = tonumber(cfg.rings)
+    if legacyRings ~= nil then
+        if legacyRings < 1 or math.floor(legacyRings) ~= legacyRings then
+            error("CONTROL_BOARD_SNAP.rings must be an integer >= 1 when set")
+        end
+        if math.floor(legacyRings) ~= rings then
+            error("CONTROL_BOARD_SNAP.rings must match #CONTROL_BOARD_SNAP.snapGroups when set")
+        end
     end
     for ringIndex = 1, rings do
         local group = snapGroups[ringIndex]
@@ -1220,6 +1225,39 @@ local function validateControlBoardSnapConfig(cfg)
                 "CONTROL_BOARD_SNAP.snapGroups["
                     .. tostring(ringIndex)
                     .. "] must set both maxU and maxV together"
+            )
+        end
+        local ringOrigin = group.origin
+        if ringOrigin ~= nil then
+            if type(ringOrigin) ~= "table" then
+                error(
+                    "CONTROL_BOARD_SNAP.snapGroups["
+                        .. tostring(ringIndex)
+                        .. "].origin must be { u = number, v = number } when set"
+                )
+            end
+            local ringOriginU = tonumber(ringOrigin.u)
+            local ringOriginV = tonumber(ringOrigin.v)
+            if (ringOriginU ~= nil) ~= (ringOriginV ~= nil) then
+                error(
+                    "CONTROL_BOARD_SNAP.snapGroups["
+                        .. tostring(ringIndex)
+                        .. "].origin must set both u and v together"
+                )
+            end
+            if ringOriginU == nil or ringOriginV == nil then
+                error(
+                    "CONTROL_BOARD_SNAP.snapGroups["
+                        .. tostring(ringIndex)
+                        .. "].origin must be { u = number, v = number } when set"
+                )
+            end
+        end
+        if group.snapYawOffsetDeg ~= nil and tonumber(group.snapYawOffsetDeg) == nil then
+            error(
+                "CONTROL_BOARD_SNAP.snapGroups["
+                    .. tostring(ringIndex)
+                    .. "].snapYawOffsetDeg must be a number when set"
             )
         end
         if group.groundLevel ~= nil and tonumber(group.groundLevel) == nil then
@@ -1297,18 +1335,33 @@ local function ringMaxUvForIndex(cfg, ringIndex, rings)
     return maxU, maxV
 end
 
---- Board u/v on an axis-aligned ellipse: at angleDeg, u reaches maxU on +u axis and v reaches maxV on +v axis.
+--- Ring-local origin in board u/v, defaulting to top-level config origin.
 --- @param cfg table
+--- @param ringIndex number
+--- @return number originU, number originV
+local function ringOriginUvForIndex(cfg, ringIndex)
+    local group = type(cfg.snapGroups) == "table" and cfg.snapGroups[ringIndex] or nil
+    if type(group) == "table" and type(group.origin) == "table" then
+        local ringOriginU = tonumber(group.origin.u)
+        local ringOriginV = tonumber(group.origin.v)
+        if ringOriginU ~= nil and ringOriginV ~= nil then
+            return ringOriginU, ringOriginV
+        end
+    end
+    return cfg.origin.u, cfg.origin.v
+end
+
+--- Board u/v on an axis-aligned ellipse: at angleDeg, u reaches maxU on +u axis and v reaches maxV on +v axis.
+--- @param originU number
+--- @param originV number
 --- @param angleDeg number
 --- @param maxU number absolute board u at theta=0
 --- @param maxV number absolute board v at theta=90
 --- @return number u, number v
-local function uvOnEllipse(cfg, angleDeg, maxU, maxV)
-    local ou = cfg.origin.u
-    local ov = cfg.origin.v
+local function uvOnEllipse(originU, originV, angleDeg, maxU, maxV)
     local theta = math.rad(angleDeg)
-    local u = ou + math.cos(theta) * (maxU - ou)
-    local v = ov + math.sin(theta) * (maxV - ov)
+    local u = originU + math.cos(theta) * (maxU - originU)
+    local v = originV + math.sin(theta) * (maxV - originV)
     return u, v
 end
 
@@ -1325,27 +1378,26 @@ end
 
 --- Push snap u/v outward from polar origin by `abs(familyK) * radialStagger` along STAGE world XZ.
 --- Anchor (`familyK == 0`) is unchanged. Units are STAGE_BOARD / playfield world inches (not CONTROL_BOARD minimap inches).
---- @param cfg table validated CONTROL_BOARD_SNAP (for origin u/v)
+--- @param originU number
+--- @param originV number
 --- @param familyK number
 --- @param radialStagger number world XZ inches on STAGE_BOARD per family step from anchor
 --- @param u number
 --- @param v number
 --- @return number u, number v
-local function applyRadialStaggerUv(cfg, familyK, radialStagger, u, v)
+local function applyRadialStaggerUv(originU, originV, familyK, radialStagger, u, v)
     local k = tonumber(familyK) or 0
     local staggerStep = tonumber(radialStagger) or 0
     if k == 0 or staggerStep == 0 then
         return u, v
     end
-    local ou = cfg.origin.u
-    local ov = cfg.origin.v
-    local du = u - ou
-    local dv = v - ov
+    local du = u - originU
+    local dv = v - originV
     local stage = getStageBoard()
     if not isGameObject(stage) then
         local ext = defaultStageWorld()
-        local x0 = ext.centerX + (ou - 0.5) * 2 * ext.halfWidthX
-        local z0 = ext.centerZ + (ov - 0.5) * 2 * ext.halfDepthZ
+        local x0 = ext.centerX + (originU - 0.5) * 2 * ext.halfWidthX
+        local z0 = ext.centerZ + (originV - 0.5) * 2 * ext.halfDepthZ
         local x1 = ext.centerX + (u - 0.5) * 2 * ext.halfWidthX
         local z1 = ext.centerZ + (v - 0.5) * 2 * ext.halfDepthZ
         local dx = x1 - x0
@@ -1355,9 +1407,9 @@ local function applyRadialStaggerUv(cfg, familyK, radialStagger, u, v)
             return u, v
         end
         local scale = (worldDist + math.abs(k) * staggerStep) / worldDist
-        return ou + du * scale, ov + dv * scale
+        return originU + du * scale, originV + dv * scale
     end
-    local originLp = boardLocalFromUv(stage, ou, ov)
+    local originLp = boardLocalFromUv(stage, originU, originV)
     local snapLp = boardLocalFromUv(stage, u, v)
     local originWp = boardLocalToWorld(stage, originLp)
     local snapWp = boardLocalToWorld(stage, snapLp)
@@ -1391,11 +1443,12 @@ local function controlBoardSnapCandidate(board, cfg, rings, ringIndex, rayIndex,
     local angleDelta = tonumber(group.angleDelta) or 0
     local radialStagger = tonumber(group.radialStagger) or 0
     local maxU, maxV = ringMaxUvForIndex(cfg, ringIndex, rings)
+    local ringOriginU, ringOriginV = ringOriginUvForIndex(cfg, ringIndex)
     local anchorDeg = (rayIndex / rays) * 360
     local angleDeg = anchorDeg + familyK * angleDelta
-    local u, v = uvOnEllipse(cfg, angleDeg, maxU, maxV)
+    local u, v = uvOnEllipse(ringOriginU, ringOriginV, angleDeg, maxU, maxV)
     if radialStagger ~= 0 and familyK ~= 0 then
-        u, v = applyRadialStaggerUv(cfg, familyK, radialStagger, u, v)
+        u, v = applyRadialStaggerUv(ringOriginU, ringOriginV, familyK, radialStagger, u, v)
     end
     if not snapUvOnBoard(u, v) then
         return nil, nil, nil
@@ -1414,16 +1467,15 @@ end
 --- @param rings number
 --- @return number ringIndex 1-based
 local function resolveRingIndexForUv(cfg, u, v, rings)
-    local ou = cfg.origin.u
-    local ov = cfg.origin.v
-    local du = u - ou
-    local dv = v - ov
-    local angleDeg = math.deg(math.atan2(dv, du))
     local bestRing = 1
     local bestDist = math.huge
     for ringIndex = 1, rings do
+        local ringOriginU, ringOriginV = ringOriginUvForIndex(cfg, ringIndex)
+        local du = u - ringOriginU
+        local dv = v - ringOriginV
+        local angleDeg = math.deg(math.atan2(dv, du))
         local maxU, maxV = ringMaxUvForIndex(cfg, ringIndex, rings)
-        local eu, ev = uvOnEllipse(cfg, angleDeg, maxU, maxV)
+        local eu, ev = uvOnEllipse(ringOriginU, ringOriginV, angleDeg, maxU, maxV)
         local dist = (u - eu) * (u - eu) + (v - ev) * (v - ev)
         if dist < bestDist then
             bestDist = dist
@@ -1454,14 +1506,16 @@ end
 --- @param rings number
 --- @return table[]
 local function buildControlBoardSnapEntries(board, cfg, rings)
-    local ou = cfg.origin.u
-    local ov = cfg.origin.v
     local entries = {}
     for ringIndex = 1, rings do
         local group = cfg.snapGroups[ringIndex]
         local num = tonumber(group.num)
         local rays = tonumber(group.rays)
         local ringGroundLevel = resolveSnapGroupGroundLevel(group)
+        local ringYawOffsetDeg = tonumber(group.snapYawOffsetDeg)
+        if ringYawOffsetDeg == nil then
+            ringYawOffsetDeg = tonumber(cfg.snapYawOffsetDeg) or 0
+        end
         local half = math.floor(num / 2)
         for rayIndex = 0, rays - 1 do
             local familyId = tostring(ringIndex) .. ":" .. tostring(rayIndex)
@@ -1469,8 +1523,7 @@ local function buildControlBoardSnapEntries(board, cfg, rings)
                 local u, v, lp = controlBoardSnapCandidate(board, cfg, rings, ringIndex, rayIndex, k)
                 if u ~= nil and lp ~= nil then
                     --- ringGroundLevel (when set) is absolute world Y for figurines on Apply — catalog metadata only; snaps stay on tile surface.
-                    local yawOffset = tonumber(cfg.snapYawOffsetDeg) or 0
-                    local yawDeg = ((snapYawTowardOriginDeg(board, u, v, ou, ov) + yawOffset) % 360 + 360) % 360
+                    local yawDeg = ((snapYawTowardOriginDeg(board, u, v, cfg.origin.u, cfg.origin.v) + ringYawOffsetDeg) % 360 + 360) % 360
                     entries[#entries + 1] = {
                         snapIndex = #entries + 1,
                         ringIndex = ringIndex,
@@ -1546,7 +1599,7 @@ function Gameboard.exportSnapFamiliesByRole(config, options)
     options = type(options) == "table" and options or {}
     local cfg = resolveControlBoardSnapConfig(config)
     if options.useInterpolatedRings == true then
-        local ringCount = tonumber(cfg.rings) or #(cfg.snapGroups or {})
+        local ringCount = #(cfg.snapGroups or {})
         local firstGroup = type(cfg.snapGroups) == "table" and cfg.snapGroups[1] or nil
         local lastGroup = type(cfg.snapGroups) == "table" and cfg.snapGroups[ringCount] or nil
         if cfg.innerRingMaxU == nil and type(firstGroup) == "table" then
@@ -1716,7 +1769,7 @@ local function controlBoardSnapFingerprintFor(board, config)
         tostring(board.getGUID()),
         string.format("%.3f,%.3f", sx, sz),
         string.format("%.4f,%.4f", cfg.origin.u, cfg.origin.v),
-        tostring(cfg.rings),
+        tostring(#(cfg.snapGroups or {})),
         table.concat({
             tostring(cfg.innerRingMaxU or ""),
             tostring(cfg.innerRingMaxV or ""),
@@ -1724,7 +1777,7 @@ local function controlBoardSnapFingerprintFor(board, config)
             tostring(cfg.outerRingMaxV or ""),
         }, ","),
     }
-    local rings = tonumber(cfg.rings) or 0
+    local rings = #(cfg.snapGroups or {})
     for ringIndex = 1, rings do
         local group = cfg.snapGroups[ringIndex]
         if type(group) == "table" then
@@ -1741,6 +1794,12 @@ local function controlBoardSnapFingerprintFor(board, config)
                 .. tostring(group.maxU or "")
                 .. ":"
                 .. tostring(group.maxV or "")
+                .. ":"
+                .. tostring(type(group.origin) == "table" and group.origin.u or "")
+                .. ":"
+                .. tostring(type(group.origin) == "table" and group.origin.v or "")
+                .. ":"
+                .. tostring(group.snapYawOffsetDeg or "")
         end
     end
     parts[#parts + 1] = "snapTag:" .. TAG_TOKEN

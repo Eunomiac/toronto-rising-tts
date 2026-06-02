@@ -16,12 +16,11 @@ Snap points are generated in polar coordinates on the control board. Several set
 
 | Setting | Description |
 | :--: | :-- |
-| `origin` | Center of the polar system in board u/v |
-| `rings` | Number of concentric elliptical rings |
+| `origin` | **Master/default** center of the polar system in board u/v (also the fixed facing target for token yaw) |
 | `innerRingMaxU` & `innerRingMaxV` | **Optional** when every `snapGroups[r]` sets `maxU`/`maxV`. Otherwise **absolute** board u/v for the **innermost** ring |
 | `outerRingMaxU` & `outerRingMaxV` | **Optional** when every ring has `maxU`/`maxV`. Otherwise **absolute** board u/v for the **outermost** ring; rings without per-ring max interpolate inner → outer |
-| `snapGroups` | One entry per ring (**index 1 = innermost**): `{ num, angleDelta, rays, maxU?, maxV?, groundLevel?, radialStagger? }` — family size, angular spacing, ray count, optional **per-ring** ellipse max (overrides interpolation), optional **absolute world Y** for figurines, optional **STAGE world XZ** radial push per family step (see below) |
-| `snapYawOffsetDeg` | Added to toward-origin yaw on each snap (default **0** on control board; palette uses **180**) |
+| `snapGroups` | One entry per ring (**index 1 = innermost**): `{ num, angleDelta, rays, maxU?, maxV?, origin?, snapYawOffsetDeg?, groundLevel?, radialStagger? }` — family size, angular spacing, ray count, optional **per-ring** ellipse max, optional **per-ring** position origin, optional **per-ring** yaw offset, optional **absolute world Y** for figurines, optional **STAGE world XZ** radial push per family step (see below) |
+| `snapYawOffsetDeg` | Default yaw offset added to toward-master-origin yaw on each snap; rings may override via `snapGroups[ring].snapYawOffsetDeg` |
 
 ### `groundLevel` (per ring, optional)
 
@@ -49,7 +48,6 @@ Snap points are generated in polar coordinates on the control board. Several set
 D.CONTROL_BOARD_SNAP = {
   origin = { u = 0.5, v = 0.2 },
   snapYawOffsetDeg = 0,
-  rings = 4,
   innerRingMaxU = 0.6,
   innerRingMaxV = 0.3,
   outerRingMaxU = 0.9,
@@ -108,7 +106,8 @@ Example: ring 3, `num=5`, `angleDelta=4`, `anchorDeg=90` → **82°, 86°, 90°,
 
 - **Duplicates** at overlapping angles are allowed (no dedupe).
 - Candidates with `u` or `v` outside `[0, 1]` are omitted (not clamped).
-- Every snap uses `rotation_snap = true`, `tags = { "npc_control_token" }` (tagged snaps match control tokens), and board-local yaw **toward** `origin` plus `snapYawOffsetDeg`.
+- Every snap uses `rotation_snap = true`, `tags = { "npc_control_token" }` (tagged snaps match control tokens), and board-local yaw **toward the master/default `origin`** plus ring-level or default `snapYawOffsetDeg`.
+- If a ring sets `snapGroups[ring].origin`, only **position generation** for that ring uses the ring origin; **yaw still faces the master/default `origin`**.
 
 ## Visual illustrations
 

@@ -2370,9 +2370,10 @@ end
 -- DEBUG.installNpcControlBoardSnaps({
 --   origin = { u = 0.5, v = 0.3 },
 --   snapYawOffsetDeg = 0,
---   rings = 4,
 --   snapGroups = {
---     { num = 1, angleDelta = 0, rays = 16, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.42 },
+--     -- Optional per-ring origin/snapYawOffsetDeg affect position and ring yaw offset.
+--     -- Rotation still faces the top-level origin.
+--     { num = 1, angleDelta = 0, rays = 16, origin = { u = 0.5, v = 0.3 }, snapYawOffsetDeg = 0, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.42 },
 --     { num = 5, angleDelta = 3, rays = 12, groundLevel = -50, radialStagger = 5, maxU = 0.7, maxV = 0.45 },
 --     { num = 5, angleDelta = 3, rays = 16, groundLevel = -10, radialStagger = 5, maxU = 0.8, maxV = 0.6 },
 --     { num = 5, angleDelta = 2, rays = 20, groundLevel = 20, radialStagger = 5, maxU = 0.9, maxV = 0.7 },
@@ -2383,7 +2384,6 @@ end
 -- DEBUG.installAndRemapNpcControlBoardSnaps({
 --   origin = { u = 0.5, v = 0.3 },
 --   snapYawOffsetDeg = 0,
---   rings = 4,
 --   snapGroups = {
 --     { num = 1, angleDelta = 0, rays = 16, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.42 },
 --     { num = 5, angleDelta = 3, rays = 12, groundLevel = -50, radialStagger = 5, maxU = 0.7, maxV = 0.45 },

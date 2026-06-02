@@ -52,13 +52,13 @@ D.DEFAULT_STAGE_WORLD = {
     groundY = -15,
 }
 
---- CONTROL_BOARD snap grid: elliptical rings in board u/v; per-ring `rays` in snapGroups.
+--- CONTROL_BOARD snap grid: elliptical rings in board u/v; each `snapGroups` entry is one ring.
+--- Top-level `origin` / `snapYawOffsetDeg` are defaults; rings may override with `origin = {u,v}` / `snapYawOffsetDeg`.
 --- `radialStagger` (optional): STAGE_BOARD / playfield world XZ inches per family step from anchor (`abs(k) * radialStagger` along each snap's radial from `origin` on STAGE; anchor k=0 unchanged). Calibrate against STAGE size (~400), not CONTROL_BOARD minimap size (~40).
 --- See .dev/NPC Object Spawning & Spotlighting/Generating Snap Points For Control Board.md
 D.CONTROL_BOARD_SNAP = {
   origin = { u = 0.5, v = 0.3 },
   snapYawOffsetDeg = 0,
-  rings = 4,
   snapGroups = {
     { num = 1, angleDelta = 0, rays = 16, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.42 },
     { num = 5, angleDelta = 3, rays = 12, groundLevel = -50, radialStagger = 5, maxU = 0.7, maxV = 0.45 },
