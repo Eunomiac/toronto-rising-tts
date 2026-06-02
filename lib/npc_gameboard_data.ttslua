@@ -30,7 +30,8 @@ D.MARKER_STASH_WORLD_Y = -200
 --- Extra world Y yaw (degrees) for stage figurines from control-board token facing (`Figurine_Custom` front/back vs tile).
 D.STAGE_FIGURINE_YAW_OFFSET_DEG = 180
 
---- Minimap marker scale = playfield source `getScale()` ÷ this (stage ÷ control board, typically 40).
+--- Minimap marker Y-scale = playfield source `getScale().y` ÷ this.
+--- X/Z minimap marker scale now uses live STAGE_BOARD:CONTROL_BOARD axis ratios.
 D.MINIMAP_SCALE_DIVISOR = 40
 
 --- Local Y above CONTROL_BOARD tile surface for minimap marker placement (object-local units).
@@ -58,15 +59,11 @@ D.CONTROL_BOARD_SNAP = {
   origin = { u = 0.5, v = 0.3 },
   snapYawOffsetDeg = 0,
   rings = 4,
-  innerRingMaxU = 0.6,
-  innerRingMaxV = 0.4,
-  outerRingMaxU = 0.9,
-  outerRingMaxV = 0.9,
   snapGroups = {
-    { num = 1, angleDelta = 0, rays = 16, groundLevel = -50, radialStagger = 5},
-    { num = 5, angleDelta = 3, rays = 12, groundLevel = -50, radialStagger = 5},
-    { num = 5, angleDelta = 3, rays = 16, groundLevel = -50, radialStagger = 5},
-    { num = 5, angleDelta = 2, rays = 20, groundLevel = -50, radialStagger = 5},
+    { num = 1, angleDelta = 0, rays = 16, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.42 },
+    { num = 5, angleDelta = 3, rays = 12, groundLevel = -50, radialStagger = 5, maxU = 0.7, maxV = 0.45 },
+    { num = 5, angleDelta = 3, rays = 16, groundLevel = -50, radialStagger = 5, maxU = 0.8, maxV = 0.6 },
+    { num = 5, angleDelta = 2, rays = 20, groundLevel = -10, radialStagger = 5, maxU = 0.9, maxV = 0.7 },
   },
 }
 

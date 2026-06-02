@@ -1007,7 +1007,9 @@ local function objectScaleVector(source)
     return Vector(s.x or 1, s.y or 1, s.z or 1)
 end
 
---- Minimap marker scale = source playfield object scale ÷ MINIMAP_SCALE_DIVISOR (all three axes).
+--- Minimap marker scale:
+--- - X/Z: source playfield object scale ÷ live STAGE:CONTROL board axis ratios.
+--- - Y: source scale ÷ MINIMAP_SCALE_DIVISOR (fixed vertical lift control only).
 --- @param marker Object
 --- @param source Object|nil Playfield table, leaf, or seat chair being mimicked
 local function applyMinimapMarkerScale(marker, source)
@@ -1018,14 +1020,17 @@ local function applyMinimapMarkerScale(marker, source)
     if src == nil then
         return
     end
-    local divisor = tonumber(DATA.MINIMAP_SCALE_DIVISOR) or 40
-    if divisor < 0.01 then
-        divisor = 0.01
-    end
+    local ratioX, ratioZ, uniformRatio = Gameboard.minimapScaleRatios()
+    local xDivisor = tonumber(ratioX) or tonumber(uniformRatio) or 40
+    local zDivisor = tonumber(ratioZ) or tonumber(uniformRatio) or 40
+    local yDivisor = tonumber(DATA.MINIMAP_SCALE_DIVISOR) or 40
+    if xDivisor < 0.01 then xDivisor = 0.01 end
+    if yDivisor < 0.01 then yDivisor = 0.01 end
+    if zDivisor < 0.01 then zDivisor = 0.01 end
     marker.setScale({
-        x = src.x / divisor,
-        y = src.y / divisor,
-        z = src.z / divisor,
+        x = src.x / xDivisor,
+        y = src.y / yDivisor,
+        z = src.z / zDivisor,
     })
 end
 
