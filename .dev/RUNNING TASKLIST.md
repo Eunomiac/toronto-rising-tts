@@ -17,13 +17,11 @@ _Stack rank for the current cycle (2026-06-02, inbox refresh). **Precedence** (F
 | # | Issue | Why now |
 | --- | --- | --- |
 | 1 | **TOR-169** — Storyteller NPC gameboard (Phase A) | Umbrella — placements v3, Apply/Clear, control-board palette |
-| 2 | **TOR-177** — Duplicate SEAT_FIGURE on scene activate | Quick fix — seated NPC spawns twin seat figure (wrong Y on duplicate) |
-| 3 | **TOR-176** — Control board XmlUI Host-only | Quick fix — toolbar visible to all players today |
-| 4 | **TOR-175** — Anchor family spread slot order | Group spread should assign snaps center-out, alternating sides |
-| 5 | **TOR-172** — `snapGroups.defaultLightMode` on palette drop | Ring default flip on first palette→board drop |
-| 6 | **TOR-173** — Lerp stage moves on Apply only | Polish — expanded spec (no blindfold; simultaneous; back/power eases) |
+| 2 | **TOR-175** — Anchor family spread slot order | Group spread should assign snaps center-out, alternating sides |
+| 3 | **TOR-172** — `snapGroups.defaultLightMode` on palette drop | Ring default flip on first palette→board drop |
+| 4 | **TOR-173** — Lerp stage moves on Apply only | Polish — expanded spec (no blindfold; simultaneous; back/power eases) |
 
-**Done this cycle:** TOR-155 (roll panel pool dots color coding). TOR-164 (Dice-E2E harness + doc). TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions). **TOR-169 session:** circular-require load fix, Z-axis token flip, placements-only reconcile + byArea migration (commit `a0271ac`). **TOR-170/171:** load token mirror + master-origin figurine yaw; palette onLoad fix; `buildTokenByCharacterKey` local-order fix (author verified Save & Play).
+**Done this cycle:** TOR-155 (roll panel pool dots color coding). TOR-164 (Dice-E2E harness + doc). TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions). **TOR-169 session:** circular-require load fix, Z-axis token flip, placements-only reconcile + byArea migration (commit `a0271ac`). **TOR-170/171:** load token mirror + master-origin figurine yaw (commit `5c3d37b`). **TOR-176/177:** Host-only control-board XmlUI + hide workshop seat-figure anchors (pending verify).
 
 **Ongoing (not Focus stack):** TOR-141 — maintain E2E playbooks when dice/scenes/debug testing changes.
 
@@ -71,8 +69,8 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **`snapGroups.defaultLightMode`:** Optional per-ring default; apply Z flip only when token drops from palette onto that ring (not ring-to-ring or state sync). _(TOR-172)_
 - [ ] **Lerp stage placement moves (Apply only):** Animate position + light when moving stage→stage via control-board Apply; not on load/blindfold/preload/seat. Simultaneous multi-NPC; back ease position; power ease lights (OFF first half / ON last quarter). _(TOR-173)_
 - [ ] **Anchor family spread order:** On anchor drop, sibling tokens fill family snaps center-out by group slot index, alternating sides. _(TOR-175)_
-- [ ] **Control board XmlUI Host-only:** Apply/Clear toolbar not visible to seated PCs. _(TOR-176)_
-- [ ] **Duplicate SEAT_FIGURE on scene activate:** Seated NPC (e.g. NPC1) must not spawn a second visible seat figure without post-correction. _(TOR-177)_
+- [x] **Control board XmlUI Host-only:** Apply/Clear toolbar `visibility="Black|Host"` on `gb_root`. _(TOR-176)_
+- [x] **Duplicate SEAT_FIGURE on scene activate:** Step Four hides workshop `SEAT_FIGURE_*` anchors; only pooled figurine gets presence visibility. _(TOR-177)_
 - [x] **Widen Far Left / Far Right NPC angles:** Canceled — superseded by TOR-169 gameboard. _(TOR-166)_
 - [x] **Mid-Center + Far-Center NPC areas:** Canceled — superseded by TOR-169. _(TOR-167)_
 - [x] **NPC area cutouts on scene apply:** Mis-nested `npcWorld` at import root (spreadsheet JSON) left `sessionScene.npcWorld.byArea` empty — scene apply/reconcile was fine when data was nested correctly. Fixed spreadsheet; import validator now rejects unexpected root keys (no hoisting). _(TOR-135)_

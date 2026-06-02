@@ -184,12 +184,13 @@ Seat slots can be **assigned but inactive** when `present` is false.
 
 **NPC slot:**
 
-1. Figurine and chair invisible to all player colors
-2. Seat lights 1 and 2 off
+1. Pooled figurine visible to all when present; workshop `SEAT_FIGURE_*` layout anchors on the same tag stay hidden (reference mesh only — rotational layout moves the pooled cutout)
+2. Chair invisible to all player colors when not present; visible when present
+3. Seat lights 1 and 2 off when not present
 
 ### Activate (assigned, present)
 
-Reverse the above: PC hidden-object visibility per `C.HiddenObjects`; NPC figurine and chair visible to all; seat lights 1 and 2 per lighting mode.
+Reverse the above: PC hidden-object visibility per `C.HiddenObjects`; pooled NPC figurine and chair visible to all; workshop `SEAT_FIGURE_*` anchors remain hidden; seat lights 1 and 2 per lighting mode.
 
 *Implementation note:* PC and NPC paths may use different existing helpers (`O.reconcilePcSeatHiddenObjectsFromState` / `O.applyPcSeatHiddenObjectPresence` for `C.HiddenObjects`, `L.reconcileForPlayer`, NPC tag visibility in `core/npcs.ttslua`, etc.) as long as the outcomes above are met. `NPCS.reconcileAllFromState` Step Four applies PC hidden-object visibility and NPC figurine/chair invisibility and seat lights after layout commit A.
 

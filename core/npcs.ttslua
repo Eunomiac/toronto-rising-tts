@@ -2217,6 +2217,27 @@ local function reconcileStepThreeSeatPlacements(intent)
     return allOk
 end
 
+--- Workshop `SEAT_FIGURE_*` anchor on an NPC seat tag — layout reference only; pooled figurine owns the live seat pose.
+--- @param obj Object|nil
+--- @return boolean
+local function isWorkshopNpcSeatFigureAnchor(obj)
+    if not U.isGameObject(obj) or NPCS.isPooledFigurineObject(obj) then
+        return false
+    end
+    local nameRaw = obj.getName ~= nil and tostring(obj.getName() or "") or ""
+    if string.match(nameRaw, "^SEAT_FIGURE_") then
+        return true
+    end
+    if obj.getData ~= nil then
+        local data = obj.getData() or {}
+        local nick = tostring(data.Nickname or "")
+        if nick ~= "" and string.match(nick, "^SEAT_FIGURE_") then
+            return true
+        end
+    end
+    return false
+end
+
 --- Step Four: narrative presence visibility + seat lights for assigned PC and NPC seats.
 --- @param intent table
 local function reconcileSeatNarrativePresenceFromIntent(intent)
@@ -2236,7 +2257,9 @@ local function reconcileSeatNarrativePresenceFromIntent(intent)
                 for i = 1, #objs do
                     local obj = objs[i]
                     if obj ~= nil and obj.setInvisibleTo ~= nil then
-                        if visible then
+                        if isWorkshopNpcSeatFigureAnchor(obj) then
+                            obj.setInvisibleTo(hideColors)
+                        elseif visible then
                             obj.setInvisibleTo({})
                         else
                             obj.setInvisibleTo(hideColors)
