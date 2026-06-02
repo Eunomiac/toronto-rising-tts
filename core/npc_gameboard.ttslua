@@ -458,10 +458,20 @@ local function resolveTokenCharacterKey(obj)
     return nil
 end
 
---- Custom_Tile (and similar) have no `is_face_up` field — reading it throws. Use X rotation.
+--- Custom_Tile (and similar) have no `is_face_up` field — reading it throws.
+--- Prefer transform up-vector sign (robust to parent rotations); fall back to X rotation.
 --- @param token Object
 --- @return boolean
 local function tokenRotationIsFaceUp(token)
+    if token ~= nil and token.getTransformUp ~= nil then
+        local up = token.getTransformUp()
+        if up ~= nil then
+            local uy = up.y or up[2]
+            if type(uy) == "number" then
+                return uy >= 0
+            end
+        end
+    end
     local rot = token.getRotation()
     if rot == nil then
         return true
@@ -718,7 +728,6 @@ function Gameboard.applyFromControlBoard()
     local existing = S.getStateVal("sessionScene", "npcWorld", "placements")
     if placementsMapsEqual(placements, existing) then
         print("[Gameboard] Apply: placements unchanged (" .. tostring(#rows) .. " token(s)) — skipped figurine reconcile")
-        Gameboard.reconcileControlBoardFromState()
         return true, nil
     end
     S.setStateVal(placements, "sessionScene", "npcWorld", "placements")
