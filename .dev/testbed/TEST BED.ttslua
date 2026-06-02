@@ -2367,17 +2367,17 @@ end
 -- Snap UV layout (origin, per-ring maxU/maxV in snapGroups). groundLevel = absolute world Y for figurines on Apply (XZ from STAGE_BOARD u,v only).
 -- Export family world X/Z: DEBUG.exportControlBoardSnapFamilies(nil, { useInterpolatedRings = true }) for inner→outer interpolation baseline.
 -- Next Sync.npcs / reconcile reinstalls snaps from lib/npc_gameboard_data unless you re-run this or edit DATA.CONTROL_BOARD_SNAP.
-DEBUG.installNpcControlBoardSnaps({
-  origin = { u = 0.5, v = 0.3 },
-  snapYawOffsetDeg = 0,
-  rings = 4,
-  snapGroups = {
-    { num = 1, angleDelta = 0, rays = 16, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.42 },
-    { num = 5, angleDelta = 3, rays = 12, groundLevel = -50, radialStagger = 5, maxU = 0.7, maxV = 0.45 },
-    { num = 5, angleDelta = 3, rays = 16, groundLevel = -10, radialStagger = 5, maxU = 0.8, maxV = 0.6 },
-    { num = 5, angleDelta = 2, rays = 20, groundLevel = 20, radialStagger = 5, maxU = 0.9, maxV = 0.7 },
-  },
-})
+-- DEBUG.installNpcControlBoardSnaps({
+--   origin = { u = 0.5, v = 0.3 },
+--   snapYawOffsetDeg = 0,
+--   rings = 4,
+--   snapGroups = {
+--     { num = 1, angleDelta = 0, rays = 16, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.42 },
+--     { num = 5, angleDelta = 3, rays = 12, groundLevel = -50, radialStagger = 5, maxU = 0.7, maxV = 0.45 },
+--     { num = 5, angleDelta = 3, rays = 16, groundLevel = -10, radialStagger = 5, maxU = 0.8, maxV = 0.6 },
+--     { num = 5, angleDelta = 2, rays = 20, groundLevel = 20, radialStagger = 5, maxU = 0.9, maxV = 0.7 },
+--   },
+-- })
 
 -- Remap variant: same call shape as installNpcControlBoardSnaps; uses currently installed board snaps as old-config baseline.
 -- DEBUG.installAndRemapNpcControlBoardSnaps({
@@ -2391,6 +2391,11 @@ DEBUG.installNpcControlBoardSnaps({
 --     { num = 5, angleDelta = 2, rays = 20, groundLevel = 20, radialStagger = 5, maxU = 0.9, maxV = 0.7 },
 --   },
 -- })
+
+-- Control-board table-component diagnostics (leaf markers, usedBy seat gates, source object + UV checks):
+-- DEBUG.dumpControlBoardTableComponents()
+-- DEBUG.dumpControlBoardTableComponents({ forceReconcile = true })
+-- DEBUG.dumpControlBoardTableComponents({ forceReconcile = true, includeTagless = true })
 
 -- for _, o in ipairs(getObjectsWithTag("npc_light") or {}) do if o then o.destroy() end end
 -- local n = 0; for _, o in ipairs(getObjectsWithTag("npc_figurine") or {}) do if o then o.destroy(); n = n + 1 end end; print("destroyed " .. n .. " npc figurines")
