@@ -193,5 +193,14 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-05-27 | CANCEL | TOR-166, TOR-167 | Superseded by TOR-169 (Storyteller NPC gameboard); RUNNING TASKLIST Focus **Canceled** line + `[x]` bullets; INBOX Processed relabeled |
 | 2026-05-27 | DONE | TOR-155 | Roll panel pool dots color coding — author verified; Focus re-stack (162/161/163) |
 | 2026-05-27 | CREATE | TOR-168 | Audit Sync.full usage — narrow sync entry points (Urgent; Synchronization & State; parent TOR-30) |
+| 2026-06-02 | COMMIT | TOR-169 | `a0271ac` — circular-require fix, Z-flip token rotation, placements-only reconcile + byArea migration |
+| 2026-06-02 | INBOX | 5 bullets | NPC gameboard capture — promoted TOR-170–174; dice bag item deferred under TOR-79 |
+| 2026-06-02 | CREATE | TOR-170 | Bug: control board tokens missing on load with on-stage figurines (child TOR-169; Focus #2) |
+| 2026-06-02 | CREATE | TOR-171 | Improvement: figurine yaw from ring origin; ignore token Y (child TOR-169; Focus #3) |
+| 2026-06-02 | CREATE | TOR-172 | Feature: snapGroups defaultLightMode on palette drop only (child TOR-169; Focus #4) |
+| 2026-06-02 | CREATE | TOR-173 | Feature: lerp figurine moves between stage placements (child TOR-169; Focus #5) |
+| 2026-06-02 | CREATE | TOR-174 | Feature: NPC token on ST dice bag initiates roll (child TOR-79; `blockedBy` TOR-169; deferred) |
+| 2026-06-02 | UPDATE | RUNNING TASKLIST **Focus** | Gameboard cycle: TOR-169 + TOR-170/171/172/173; dice E2E 161/162/163 + TOR-174 deferred |
+| 2026-06-02 | COMMENT | TOR-169 | Session ship note + inbox promotion summary |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

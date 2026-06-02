@@ -12,20 +12,21 @@ This file is continuously updated with issues and plans for feature development.
 
 ## Focus
 
-_Stack rank for the current cycle (2026-05-27). **Precedence** (Focus + Linear `blockedBy`) — not Linear priority. **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). Deferred items may still be Medium/High importance in Linear._
+_Stack rank for the current cycle (2026-06-02). **Precedence** (Focus + Linear `blockedBy`) — not Linear priority. **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). Deferred items may still be Medium/High importance in Linear._
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-169** — Storyteller NPC gameboard (Phase A code; TTS workshop + Save & Play) | Placements v3, Apply/Clear, `Sync.npcs` — ahead of dice E2E |
-| 2 | **TOR-162** — ST per-roll Opts not sticking | Dice-E2E G6/G7 — `crits` / `bestialNull` ignored; wrong `resultClass` |
-| 3 | **TOR-161** — Normal bag right-click undo | Dice-E2E A2/K2 — cannot remove hunger via normal bag right-click |
-| 4 | **TOR-163** — Broadcast when no difficulty | Dice-E2E Suite E — confirm shows only "Roll Completed" |
+| 1 | **TOR-169** — Storyteller NPC gameboard (Phase A; workshop + Save & Play) | Umbrella — placements v3, Apply/Clear, control-board palette; sub-issues below |
+| 2 | **TOR-170** — Control board tokens missing on load | Quick fix — board must mirror `placements` u,v + Z flip, not snap-only reconcile |
+| 3 | **TOR-171** — Figurine yaw from ring origin | Quick fix — token Y/yaw meaningless; facing derived from ring geometry |
+| 4 | **TOR-172** — `snapGroups.defaultLightMode` on palette drop | Ring default flip when token first lands from palette; persist on ring-to-ring moves |
+| 5 | **TOR-173** — Lerp figurine stage moves | Polish — animate position + light when moving between on-stage placements |
 
-**Done this cycle:** TOR-155 (roll panel pool dots color coding). TOR-164 (Dice-E2E harness + doc). TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions).
+**Done this cycle:** TOR-155 (roll panel pool dots color coding). TOR-164 (Dice-E2E harness + doc). TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions). **TOR-169 session:** circular-require load fix, Z-axis token flip, placements-only reconcile + byArea migration (commit `a0271ac`).
 
 **Ongoing (not Focus stack):** TOR-141 — maintain E2E playbooks when dice/scenes/debug testing changes.
 
-**Deferred this cycle:** TOR-139 (scenes panel trim + 3-column library grid), TOR-140 (sound panel text + larger font), TOR-142 (four scene Apply clock buttons), TOR-143 (phase system + session lifecycle), TOR-146 (delete active scene ends live first), TOR-147 (blindfold soundscape fade + weather), TOR-148 (RT clock too fast), TOR-149 (ST dice tray lights), TOR-150 (thunder indoor ducking), TOR-151 (default no-scene environment), TOR-152 (Play load scene restore), TOR-73 (Take Half redesign + H2 rouse auto-parse), TOR-153 (map pins unmappable), TOR-154 (floor/plinth locked), TOR-156 (roll broadcast trim), TOR-157 (pre-Apply seat modal), TOR-165 (WP reroll wave partial settle), TOR-137 (Sites unicode minus), TOR-81 (light modes cleanup). **Canceled:** TOR-166 (widen far NPC angles), TOR-167 (mid/far center NPC areas) — superseded by TOR-169 gameboard. Other open bullets unchanged.
+**Deferred this cycle:** **Dice E2E (resume after gameboard):** TOR-161 (normal bag right-click undo), TOR-162 (ST Opts stick), TOR-163 (no-difficulty broadcast), TOR-174 (NPC token on dice bag → roll; `blockedBy` TOR-169, child of TOR-79). TOR-139 (scenes panel trim + 3-column library grid), TOR-140 (sound panel text + larger font), TOR-142 (four scene Apply clock buttons), TOR-143 (phase system + session lifecycle), TOR-146 (delete active scene ends live first), TOR-147 (blindfold soundscape fade + weather), TOR-148 (RT clock too fast), TOR-149 (ST dice tray lights), TOR-150 (thunder indoor ducking), TOR-151 (default no-scene environment), TOR-152 (Play load scene restore), TOR-73 (Take Half redesign + H2 rouse auto-parse), TOR-153 (map pins unmappable), TOR-154 (floor/plinth locked), TOR-156 (roll broadcast trim), TOR-157 (pre-Apply seat modal), TOR-165 (WP reroll wave partial settle), TOR-137 (Sites unicode minus), TOR-81 (light modes cleanup). **Canceled:** TOR-166 (widen far NPC angles), TOR-167 (mid/far center NPC areas) — superseded by TOR-169 gameboard. Other open bullets unchanged.
 
 ---
 
@@ -64,10 +65,15 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Seat tags:** `npc_figurine` ↔ `NPCnObject` on seat/unseat; layout matches pooled figurine by tag + `Figurine_Custom` (`NPCS.isPooledFigurineObject`). _(TOR-65)_
 - [ ] **Group spawn exclusion:** When spawning an NPC group into a stage area, do not pull members who are already seated (e.g. `fiveKeys` spawn must leave `myleneHamelin` in her table seat). _(TOR-76)_
 - [ ] **Storyteller NPC gameboard (Phase A):** `STAGE_BOARD` + `CONTROL_BOARD`, tokens, markers, configurable `CONTROL_BOARD_SNAP` grid (~160 snaps), Apply/Clear wired; `placements` v3 + `Sync.npcs`. Phase B: Read/Lock/Load, spotlight. Phase C: retire panel `byArea`. _(TOR-169)_ — workshop objects + GUIDs in TTS save required; Save & Play to confirm snap geometry/rotation
+- [ ] **Control board tokens on load:** Mirror on-stage NPCs from `sessionScene.npcWorld.placements` (exact u,v + Z flip); do not snap-only reconcile. _(TOR-170)_
+- [ ] **Figurine yaw from ring origin:** Stage facing from placement ring geometry; ignore control-board token Y rotation (Z flip only encodes light mode). _(TOR-171)_
+- [ ] **`snapGroups.defaultLightMode`:** Optional per-ring default; apply Z flip only when token drops from palette onto that ring (not ring-to-ring or state sync). _(TOR-172)_
+- [ ] **Lerp stage placement moves:** Animate figurine position (+ light transition) when moving between on-stage placements (not from preload). _(TOR-173)_
 - [x] **Widen Far Left / Far Right NPC angles:** Canceled — superseded by TOR-169 gameboard. _(TOR-166)_
 - [x] **Mid-Center + Far-Center NPC areas:** Canceled — superseded by TOR-169. _(TOR-167)_
 - [x] **NPC area cutouts on scene apply:** Mis-nested `npcWorld` at import root (spreadsheet JSON) left `sessionScene.npcWorld.byArea` empty — scene apply/reconcile was fine when data was nested correctly. Fixed spreadsheet; import validator now rejects unexpected root keys (no hoisting). _(TOR-135)_
 - [ ] _New feature:_ Storyteller rolls dice for NPCs from the dice control panel — spawn/show dice tray, appropriate camera angle, roll-controller wiring for NPC/non-player identity. _(TOR-79)_
+- [ ] **NPC token on ST dice bag:** Drop control token on dice bag → roll for that NPC with bag type; return token to prior board snap or palette. Deferred until TOR-169 stabilizes. _(TOR-174)_
 
 ## Soundscape
 

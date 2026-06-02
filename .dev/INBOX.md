@@ -2,9 +2,6 @@
 
 ## Active
 
-- dropping an NPC token onto one of the Storyteller dice bags should initiate a roll by that NPC of that type; after drop, it should be returned to its snap point on the Control Board (or back onto the palette if for some reason it wasn't on the control board)
-- when an NPC is moved from one position on the NPC stage to another (i.e. not brought in from preload), the movement should be lerped (as well as the light mode  change, if any)
-
 ---
 
 ## Needs clarification
@@ -55,3 +52,8 @@
 - 2026-05-27 duplicate — no-difficulty roll broadcast → TOR-163 (already in Focus + tasklist from Dice-E2E 2026-05-26)
 - 2026-05-27 TOR-166 — canceled — widen Far Left / Far Right NPC stage area angles superseded by TOR-169 (Storyteller gameboard); Linear Canceled, tasklist `[x]`
 - 2026-05-27 TOR-167 — canceled — Mid-Center / Far-Center NPC stage areas superseded by TOR-169; Linear Canceled, tasklist `[x]`
+- 2026-06-02 TOR-174 — [feature] NPC control token on ST dice bag initiates roll + return to board/palette (deferred — dice cycle; `blockedBy` TOR-169; child of TOR-79)
+- 2026-06-02 TOR-173 — [feature] Lerp figurine + light mode when moving between stage placements (Focus #5)
+- 2026-06-02 TOR-172 — [feature] `snapGroups.defaultLightMode` on palette drop only (Focus #4)
+- 2026-06-02 TOR-171 — [improvement] Figurine yaw from ring origin; ignore token Y rotation (Focus #3 — quick fix)
+- 2026-06-02 TOR-170 — [bug] Control board tokens missing on load with on-stage figurines (Focus #2 — quick fix)
