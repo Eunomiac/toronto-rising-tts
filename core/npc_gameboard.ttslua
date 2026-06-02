@@ -2280,6 +2280,111 @@ local function stashTableComponentMarker(marker, componentName)
     lockControlBoardMarker(marker)
 end
 
+--- Build diagnostics for a control-board table-component marker.
+--- @param marker Object
+--- @param activeTable string|nil
+--- @return table
+local function describeTableComponentMarker(marker, activeTable)
+    local row = {
+        markerGuid = isGameObject(marker) and marker.getGUID and marker.getGUID() or nil,
+        markerName = isGameObject(marker) and marker.getName and marker.getName() or nil,
+        activeTable = activeTable,
+        show = false,
+        reasons = {},
+    }
+    local compKey = readMarkerKey(marker, DATA.MARKER_COMPONENT_PREFIX)
+    row.compKey = compKey
+    local parentTable, componentName = parseComponentMarkerKey(compKey)
+    row.parentTable = parentTable
+    row.componentName = componentName
+    if type(parentTable) ~= "string" or parentTable == "" then
+        row.reasons[#row.reasons + 1] = "missing_parent_table"
+    end
+    if type(componentName) ~= "string" or componentName == "" then
+        row.reasons[#row.reasons + 1] = "missing_component_name"
+    end
+    local cfg = tableConfig(parentTable)
+    row.tableExists = type(cfg) == "table"
+    if row.tableExists ~= true then
+        row.reasons[#row.reasons + 1] = "table_cfg_missing"
+    end
+    local comp = nil
+    if row.tableExists and type(cfg.components) == "table" then
+        comp = cfg.components[componentName]
+    end
+    row.componentExists = type(comp) == "table"
+    if row.componentExists ~= true then
+        row.reasons[#row.reasons + 1] = "component_cfg_missing"
+    end
+    local usedBy = row.componentExists and comp.usedBy or nil
+    row.usedBy = usedBy
+    local usedByOccupied = nil
+    if type(usedBy) == "string" and usedBy ~= "" then
+        usedByOccupied = npcSeatOccupiedOnTable(usedBy)
+    end
+    row.usedByOccupied = usedByOccupied
+    if usedByOccupied == false then
+        row.reasons[#row.reasons + 1] = "used_by_seat_empty"
+    end
+    local show = parentTable == activeTable
+        and type(componentName) == "string"
+        and componentName ~= ""
+        and tableComponentActiveForOccupiedSlots(parentTable, componentName)
+    row.show = show
+    if parentTable ~= activeTable then
+        row.reasons[#row.reasons + 1] = "inactive_table"
+    end
+    local markerU, markerV = nil, nil
+    if type(parentTable) == "string" and type(componentName) == "string" then
+        markerU, markerV = mapUvForTableComponentMarker(parentTable, componentName)
+    end
+    row.markerU = markerU
+    row.markerV = markerV
+    local fallbackU, fallbackV = nil, nil
+    if markerU == nil or markerV == nil then
+        fallbackU, fallbackV = mapUvForTableComponent(parentTable, componentName)
+    end
+    row.fallbackU = fallbackU
+    row.fallbackV = fallbackV
+    row.targetU = markerU or fallbackU
+    row.targetV = markerV or fallbackV
+    if show and (row.targetU == nil or row.targetV == nil) then
+        row.reasons[#row.reasons + 1] = "uv_mapping_failed"
+    end
+    local source = sourceObjectForTableComponent(parentTable, componentName)
+    row.sourceExists = isGameObject(source)
+    row.sourceGuid = row.sourceExists and source.getGUID and source.getGUID() or nil
+    if show and row.sourceExists ~= true then
+        row.reasons[#row.reasons + 1] = "source_object_missing"
+    end
+    if isGameObject(marker) and marker.getPosition ~= nil then
+        row.markerPosition = marker.getPosition()
+    end
+    return row
+end
+
+--- Print one-line diagnostics for a component marker.
+--- @param row table
+local function printTableComponentMarkerRow(row)
+    local reasons = table.concat(row.reasons or {}, ",")
+    if reasons == "" then
+        reasons = "none"
+    end
+    print(
+        "[Gameboard] component marker "
+            .. tostring(row.componentName or row.compKey or "<unknown>")
+            .. " guid=" .. tostring(row.markerGuid or "")
+            .. " table=" .. tostring(row.parentTable or "")
+            .. " activeTable=" .. tostring(row.activeTable or "")
+            .. " show=" .. tostring(row.show == true)
+            .. " usedBy=" .. tostring(row.usedBy or "")
+            .. " occupied=" .. tostring(row.usedByOccupied)
+            .. " uv=(" .. tostring(row.targetU) .. "," .. tostring(row.targetV) .. ")"
+            .. " source=" .. tostring(row.sourceGuid or "")
+            .. " reasons=" .. reasons
+    )
+end
+
 --- @param marker Object
 --- @param board Object
 --- @param u number|nil
@@ -2356,17 +2461,17 @@ function Gameboard.reconcileControlBoardFromState(opts)
                     )
                 end
             elseif compKey ~= nil then
-                local parentTable, componentName = parseComponentMarkerKey(compKey)
-                local show = parentTable == activeTable
-                    and type(componentName) == "string"
-                    and componentName ~= ""
-                    and tableComponentActiveForOccupiedSlots(parentTable, componentName)
+                local markerRow = describeTableComponentMarker(obj, activeTable)
+                local parentTable = markerRow.parentTable
+                local componentName = markerRow.componentName
+                local show = markerRow.show == true
                 setMarkerVisible(obj, show)
+                if opts.debugComponentMarkers == true then
+                    printTableComponentMarkerRow(markerRow)
+                end
                 if show and parentTable ~= nil and componentName ~= nil then
-                    local u, v = mapUvForTableComponentMarker(parentTable, componentName)
-                    if u == nil or v == nil then
-                        u, v = mapUvForTableComponent(parentTable, componentName)
-                    end
+                    local u = markerRow.targetU
+                    local v = markerRow.targetV
                     if u ~= nil and v ~= nil then
                         placeControlBoardMarker(
                             obj,
@@ -2465,6 +2570,48 @@ function Gameboard.reconcileControlBoardFromState(opts)
 
     applyControlBoardComponentPlayerInvisibility()
     rebuildAnchorDropEligibilityCache(board)
+end
+
+--- Inspect control-board table-component markers and print placement decisions.
+--- @param options table|nil `{ includeTagless?: boolean }`
+--- @return table
+function Gameboard.debugDescribeControlBoardTableComponents(options)
+    options = type(options) == "table" and options or {}
+    local activeTable = S.getStateVal("seatLayout", "currentTableKey")
+    local rows = {}
+    local markers = getObjectsWithTag(TAG_COMPONENT) or {}
+    if options.includeTagless == true then
+        local all = getAllObjects() or {}
+        for _, obj in ipairs(all) do
+            if isGameObject(obj) then
+                local hasTag = obj.hasTag ~= nil and obj.hasTag(TAG_COMPONENT) == true
+                if not hasTag then
+                    local compKey = readMarkerKey(obj, DATA.MARKER_COMPONENT_PREFIX)
+                    if compKey ~= nil then
+                        markers[#markers + 1] = obj
+                    end
+                end
+            end
+        end
+    end
+    print(
+        "[Gameboard] component marker scan: activeTable="
+            .. tostring(activeTable)
+            .. " markerCount="
+            .. tostring(#markers)
+    )
+    for _, marker in ipairs(markers) do
+        if isGameObject(marker) then
+            local row = describeTableComponentMarker(marker, activeTable)
+            rows[#rows + 1] = row
+            printTableComponentMarkerRow(row)
+        end
+    end
+    return {
+        activeTable = activeTable,
+        count = #rows,
+        rows = rows,
+    }
 end
 
 --- @param obj Object|nil
