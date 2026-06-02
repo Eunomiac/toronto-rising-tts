@@ -2,7 +2,8 @@
 
 ## Active
 
-_(empty)_
+- dropping an NPC token onto one of the Storyteller dice bags should initiate a roll by that NPC of that type; after drop, it should be returned to its snap point on the Control Board (or back onto the palette if for some reason it wasn't on the control board)
+- when an NPC is moved from one position on the NPC stage to another (i.e. not brought in from preload), the movement should be lerped (as well as the light mode  change, if any)
 
 ---
 
