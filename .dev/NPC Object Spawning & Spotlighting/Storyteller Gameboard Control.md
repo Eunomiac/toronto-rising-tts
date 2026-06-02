@@ -13,7 +13,7 @@ Physical **STAGE_BOARD** (hidden world floor) + **CONTROL_BOARD** (GM table mini
 | **Clear** | Double-click → empty `placements`, `Gameboard.syncTokensToPalette()` (group layout from `npcs_data`), `Sync.npcs` |
 | Reconcile | `NPCS.reconcileAllFromState` → figurines; CONTROL_BOARD markers always; token mirror skipped when `layoutLock` |
 
-Legacy `byArea` still reconciles when `placements` does not claim a character (until Phase C retires areas).
+Legacy **`byArea` in import JSON** is converted to **`placements` on import** (`lib/npc_placements_convert.ttslua`). Reconcile uses **`placements` only**; `byArea` in live state is normalized on `S.validateState` or via `npm run npc-placements:migrate-byarea`.
 
 ## Coordinate mapping (STAGE ↔ CONTROL)
 
@@ -33,7 +33,7 @@ Table/seat markers: compute playfield world XZ (table `centerPoint`; components 
 
 **NPC seat markers:** Shown on the minimap only when `seatLayout.occupiedNPCSlots[npcSeat]` is a character key (not `false`) and the active table defines that seat in `playerToPositionMap`. Empty slots are **locked** and parked at world **Y = -200** (`MARKER_STASH_WORLD_Y`, slight X offset per slot so stashes do not stack).
 
-**Table leaf / component markers (`gameboard_table_component`):** Same activation rule as playfield leaves in `lib.rotational-seat-layout` — shown only when the active table matches **and** `occupiedNPCSlots[component.usedBy]` is a character key. Inactive leaves are stashed at **Y = -200**. Placement uses the **`usedBy` NPC seat arc** on the minimap (not table center). Table A mapping in `C.Tables`: **NPC1 → Table Leaf Near Right**, **NPC2 → Table Leaf Near Left**, **NPC3 → Table Leaf Far Right**, **NPC4 → Table Leaf Far Left**.
+**Table leaf / component markers (`gameboard_table_component`):** Same activation rule as playfield leaves in `lib.rotational-seat-layout` — shown only when the active table matches **and** `occupiedNPCSlots[component.usedBy]` is a character key. Inactive leaves are stashed at **Y = -200**. When active, each leaf marker gets the **same CONTROL_BOARD position, rotation, and scale** as the parent **`gameboard_table`** marker (models are authored table-relative on the playfield). Table A mapping in `C.Tables`: **NPC1 → Table Leaf Near Right**, **NPC2 → Table Leaf Near Left**, **NPC3 → Table Leaf Far Right**, **NPC4 → Table Leaf Far Left**.
 
 **Marker scale:** For each minimap marker, read `getScale()` on the playfield object it mimics (`C.Tables` table/leaf GUID, or `G.GetThroneGUID` seat chair for PC/NPC seats), then set marker scale to **source ÷ 40** on all three axes (`DATA.MINIMAP_SCALE_DIVISOR`). Do not use nearest `*Object` tag scan for scale — that often hits a scale-1 helper instead of `SEAT_CHAIR_*`.
 
@@ -153,7 +153,7 @@ Debug: `DEBUG.dumpNpcPlacements()` in TTS console.
 
 ## Token images (Custom UI upload)
 
-Gameboard control tokens are **Custom_Tile** objects — **circle** shape (`Type = 2`), **thickness 0.1**, two-sided (`image` + `image_bottom` / save `ImageURL` + `ImageSecondaryURL`). `DEBUG.spawnNpcControlBoardTokens` sets these in spawn data **and** calls `setCustomObject` + `reload` after spawn (TTS often ignores `CustomTile` on `spawnObjectData` alone). `DEBUG.applyNpcControlTokenHostedImages` applies the same shape to existing tokens. They flip with the normal **Flip** key (`Object.flip()`); there is no `is_face_up` on tiles — OFF vs STANDARD is inferred from X rotation.
+Gameboard control tokens are **Custom_Tile** objects — **circle** shape (`Type = 2`), **thickness 0.1**, two-sided (`image` + `image_bottom` / save `ImageURL` + `ImageSecondaryURL`). `DEBUG.spawnNpcControlBoardTokens` sets these in spawn data **and** calls `setCustomObject` + `reload` after spawn (TTS often ignores `CustomTile` on `spawnObjectData` alone). `DEBUG.applyNpcControlTokenHostedImages` applies the same shape to existing tokens. They flip with the normal **Flip** key (`Object.flip()`); there is no `is_face_up` on tiles — OFF vs STANDARD is inferred from **Z rotation** (0 = face up / STANDARD, 180 = face down / OFF). Board-plane orientation is **Y rotation** only and is independent of flip.
 
 **Palette spawn:** Save & Play → `lua DEBUG.spawnNpcControlBoardTokens()` — spawns tokens then `Gameboard.syncTokensToPalette()` to group slots on **CONTROL_BOARD_PALETTE**.
 

@@ -111,14 +111,23 @@ local function paletteSnapConfig()
     }
 end
 
+--- @param deg number|nil
+--- @return boolean
+local function eulerAxisFlippedDeg(deg)
+    local norm = ((tonumber(deg) or 0) % 360 + 360) % 360
+    return norm > 90 and norm < 270
+end
+
 --- @param rot Vector|nil
 --- @return boolean
 local function tokenFaceUpFromRotation(rot)
     if rot == nil then
         return true
     end
-    local norm = ((rot.x or 0) % 360 + 360) % 360
-    return not (norm > 90 and norm < 270)
+    if eulerAxisFlippedDeg(rot.z) or eulerAxisFlippedDeg(rot.x) then
+        return false
+    end
+    return true
 end
 
 --- @param palette Object
@@ -135,8 +144,8 @@ local function tokenRotationForPalette(palette, token)
     if U.isGameObject(token) and token.getRotation ~= nil then
         faceUp = tokenFaceUpFromRotation(token.getRotation())
     end
-    local rx = faceUp and 0 or 180
-    return Vector(rx, boardYaw + yawOffset, 0)
+    local rz = faceUp and 0 or 180
+    return Vector(0, boardYaw + yawOffset, rz)
 end
 
 --- @param board Object

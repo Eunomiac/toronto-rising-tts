@@ -78,7 +78,7 @@ local NPC_DISABLE_WORLD_Y = -200
 --- Fingerprint of authored `sessionScene.npcWorld` so repeated `Sync.full` does not re-run stash/spawn.
 local lastSessionNpcWorldFingerprint = nil
 
---- Unified NPC reconcile fingerprint (byArea + seats + table + presence).
+--- Unified NPC reconcile fingerprint (placements + seats + table + presence).
 local lastNpcReconcileFingerprint = nil
 
 --- Last successful layout commit for Step Three skip verification.
@@ -855,7 +855,7 @@ local function assignNpcToSeat(npcName, seatKey, opts)
     if opts.blockAreaBound == true then
         local intent = resolveNpcPlacementIntent()
         local ci = intent.byCharacter[npcName]
-        if U.Type(ci) == "table" and (ci.target == "area" or ci.target == "stage") then
+        if U.Type(ci) == "table" and ci.target == "stage" then
             return false, "NPC is stage-bound and cannot be seated."
         end
     end
@@ -1404,45 +1404,6 @@ function NPCS.collectSessionStagePlacements()
     return collectSessionStagePlacements()
 end
 
---- Sorted placements from `sessionScene.npcWorld.byArea` (numeric slot keys only).
---- @return table[]
-local function collectSessionByAreaPlacements()
-    local out = {}
-    local byArea = S.getStateVal("sessionScene", "npcWorld", "byArea")
-    if type(byArea) ~= "table" then
-        return out
-    end
-    local areaKeys = U.getKeys(byArea)
-    table.sort(areaKeys)
-    for _, areaKey in ipairs(areaKeys) do
-        if areaKey ~= PRELOAD_AREA_KEY and NPCS.areas[areaKey] ~= nil then
-            local slots = byArea[areaKey]
-            if type(slots) == "table" then
-                local slotNums = {}
-                for sk, _ in pairs(slots) do
-                    local si = tonumber(sk)
-                    if si ~= nil then
-                        slotNums[#slotNums + 1] = si
-                    end
-                end
-                table.sort(slotNums)
-                for _, si in ipairs(slotNums) do
-                    local row = slots[tostring(si)] or slots[si]
-                    if type(row) == "table" and type(row.characterKey) == "string" and row.characterKey ~= "" then
-                        out[#out + 1] = {
-                            characterKey = row.characterKey,
-                            areaKey = areaKey,
-                            slotIndex = si,
-                            npcLightMode = row.npcLightMode,
-                        }
-                    end
-                end
-            end
-        end
-    end
-    return out
-end
-
 --- @return string
 local function sessionNpcWorldFingerprint()
     local lines = {}
@@ -1460,24 +1421,16 @@ local function sessionNpcWorldFingerprint()
             tonumber(pl.groundLevel) or 0
         )
     end
-    local placements = collectSessionByAreaPlacements()
-    for _, pl in ipairs(placements) do
-        local lm = pl.npcLightMode
-        if type(lm) ~= "string" then
-            lm = ""
-        end
-        lines[#lines + 1] = string.format("a:%s:%d:%s:%s", pl.areaKey, pl.slotIndex, pl.characterKey, lm)
-    end
     table.sort(lines)
     return table.concat(lines, "\n")
 end
 
 --- @return boolean
 local function npcWorldHasPlacementIntent()
-    return #collectSessionStagePlacements() > 0 or #collectSessionByAreaPlacements() > 0
+    return #collectSessionStagePlacements() > 0
 end
 
---- Park every spawned NPC into the deterministic under-table preload grid so `byArea` can assign slots.
+--- Park every spawned NPC into the deterministic under-table preload grid before stage `placements` apply.
 local function stashAllNpcFigurinesForSessionSceneLayout()
     for name, rec in pairs(getInstances()) do
         if U.Type(name) == "string" and U.Type(rec) == "table" and U.Type(rec.figurineGuid) == "string" and rec.figurineGuid ~= "" then
@@ -1960,7 +1913,7 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
     return NPCS.spawnNpcAtSlot(npcName, PRELOAD_AREA_KEY, spawnSlot, opts)
 end
 
---- Applies `gameState.sessionScene.npcWorld.byArea`: legacy entry; forwards to unified orchestrator.
+--- Applies `gameState.sessionScene.npcWorld.placements`: forwards to unified orchestrator.
 --- @param opts table|nil `deferUiRefresh`, `forceSessionNpcWorld` (bypass fingerprint and re-apply)
 function NPCS.reconcileSessionSceneNpcWorldFromState(opts)
     opts = U.Type(opts) == "table" and opts or {}
@@ -1986,7 +1939,7 @@ occupiedNpcSeatsFingerprint = function()
     return table.concat(lines, "\n")
 end
 
---- Unified reconcile fingerprint: byArea + seats + table + NPC presence.
+--- Unified reconcile fingerprint: placements + seats + table + NPC presence.
 --- @return string
 local function npcReconcileFingerprint()
     local lines = {}
@@ -2014,16 +1967,6 @@ resolveNpcPlacementIntent = function()
             groundLevel = pl.groundLevel,
         }
     end
-    for _, pl in ipairs(collectSessionByAreaPlacements()) do
-        if byCharacter[pl.characterKey] == nil then
-            byCharacter[pl.characterKey] = {
-                target = "area",
-                areaKey = pl.areaKey,
-                slotIndex = pl.slotIndex,
-                npcLightMode = pl.npcLightMode,
-            }
-        end
-    end
 
     local tableKey = S.getStateVal("seatLayout", "currentTableKey")
     local tableCfg = U.Type(tableKey) == "string" and C.Tables[tableKey] or nil
@@ -2036,7 +1979,7 @@ resolveNpcPlacementIntent = function()
         local tableHasSlot = map[seatKey] ~= nil
         local present = resolveSeatPresenceForSeat(seatKey)
         local ciAssigned = assigned and U.Type(byCharacter[assignedChar]) == "table" and byCharacter[assignedChar] or nil
-        local areaBound = ciAssigned ~= nil and (ciAssigned.target == "area" or ciAssigned.target == "stage")
+        local areaBound = ciAssigned ~= nil and ciAssigned.target == "stage"
         local physicalSeatAllowed = assigned and tableHasSlot and not areaBound
         bySeat[seatKey] = {
             assigned = assigned,
@@ -2118,8 +2061,6 @@ local function reconcileStepOneAreaRemovals(intent)
                             -- Placement only: do not compare rec.npcLightMode here (step 5 applies intent mode).
                             keep = du < 0.002 and dv < 0.002 and dy < 1
                         end
-                    elseif ci.target == "area" then
-                        keep = ci.areaKey == rec.areaKey and ci.slotIndex == rec.slotIndex
                     end
                 end
                 if not keep then
@@ -2360,55 +2301,7 @@ local function reconcileStepFiveStagePlacements(intent)
     return allOk
 end
 
---- Step Five (b): place area-bound NPCs into legacy stage areas.
---- @param intent table
---- @return boolean allOk
-local function reconcileStepFiveAreaPopulate(intent)
-    local allOk = true
-    local needPool = false
-    for name, ci in pairs(intent.byCharacter) do
-        if U.Type(ci) == "table" and ci.target == "area" then
-            if getInstances()[name] == nil then
-                needPool = true
-            end
-        end
-    end
-    if needPool then
-        NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true, immediate = true })
-    end
-    for name, ci in pairs(intent.byCharacter) do
-        if U.Type(ci) == "table" and ci.target == "area" then
-            local modeOpt = {
-                preferredSlot = ci.slotIndex,
-                skipUiRefresh = true,
-                skipSeatSync = true,
-            }
-            if U.Type(ci.npcLightMode) == "string" then
-                modeOpt.forceNpcLightMode = ci.npcLightMode
-            end
-            local ok, err = NPCS.spawnOrMoveIndividual(name, ci.areaKey, modeOpt)
-            if not ok then
-                local repairOk, repairErr = NPCS.ensureNpcInPreloadZone(name, {
-                    deferUiRefresh = true,
-                    skipSeatSync = true,
-                    forceNpcLightMode = "OFF",
-                })
-                if repairOk then
-                    ok, err = NPCS.spawnOrMoveIndividual(name, ci.areaKey, modeOpt)
-                else
-                    print("[NPCS] step5 preload repair " .. tostring(name) .. ": " .. tostring(repairErr))
-                end
-            end
-            if not ok then
-                allOk = false
-                print("[NPCS] step5 area placement " .. tostring(name) .. ": " .. tostring(err))
-            end
-        end
-    end
-    return allOk
-end
-
---- Step Five (c): park resolved **Preload** targets at `areas.preload` groundLevel (-200).
+--- Step Five (b): park resolved **Preload** targets at `areas.preload` groundLevel (-200).
 --- @param intent table
 --- @return boolean allOk
 local function reconcileStepFivePreloadPopulate(intent)
@@ -2441,7 +2334,7 @@ local function reconcileStepFivePreloadPopulate(intent)
 end
 
 --- Unified NPC reconcile orchestrator (Steps Zero–Five). See `.dev/NPC Object Spawning & Spotlighting/NPC Reconciler Procedure.md`.
---- @param opts table|nil `{ deferUiRefresh?, force?, onlySteps?, skipAreaPopulate?, skipPreloadPopulate? }`
+--- @param opts table|nil `{ deferUiRefresh?, force?, onlySteps?, skipPreloadPopulate? }`
 function NPCS.reconcileAllFromState(opts)
     opts = U.Type(opts) == "table" and opts or {}
     local deferUiRefresh = opts.deferUiRefresh == true
@@ -2480,9 +2373,6 @@ function NPCS.reconcileAllFromState(opts)
     end
     if reconcileStepEnabled(opts, 5) then
         if not reconcileStepFiveStagePlacements(intent) then
-            allOk = false
-        end
-        if opts.skipAreaPopulate ~= true and not reconcileStepFiveAreaPopulate(intent) then
             allOk = false
         end
         if opts.skipPreloadPopulate ~= true and not reconcileStepFivePreloadPopulate(intent) then

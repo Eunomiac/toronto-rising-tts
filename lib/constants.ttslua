@@ -1768,40 +1768,27 @@ local function chronicleSpotlights(mainLightPatch, seatMode)
   return t
 end
 
---- Brighten a gradient stop toward white so `ambient_intensity` can scale visible luminance
---- (very dark RGB tints stay near-black regardless of intensity).
---- @param r number
---- @param g number
---- @param b number
---- @param lift number|nil fraction toward white; default `AMBIENT_GRADIENT_LIFT`
---- @return userdata
-local AMBIENT_GRADIENT_LIFT = 0.50
+--- Directional overhead tints for chronicle location presets (`Lighting.setLightColor`).
+local CHRONICLE_OVERHEAD_INDOOR = Color(1.00, 0.85, 0.62, 1)
+local CHRONICLE_OVERHEAD_OUTDOOR = Color(0.88, 0.93, 1.00, 1)
+local CHRONICLE_OVERHEAD_UNDERGROUND = Color(0.78, 0.90, 0.80, 1)
 
-local function liftAmbientColor(r, g, b, lift)
-  lift = lift or AMBIENT_GRADIENT_LIFT
-  local function ch(c)
-    return math.min(1, c + (1 - c) * lift)
-  end
-  return Color(ch(r), ch(g), ch(b), 1)
-end
-
---- Gradient ambient chronicle preset (`ambient_type = 2`) with full spotlight map.
---- Use `liftAmbientColor(r, g, b)` for gradient stops — not `Color({ r, g, b, a })` (TTS table ctor expects keys).
---- @param ambientIntensity number
+--- Chronicle location preset: zero ambient; former ambient fill on directional overhead (`light_intensity`).
+--- @param lightIntensity number
 --- @param reflectionIntensity number
---- @param gradientColor table `{ sky, equator, ground }` as `Color(...)`
+--- @param overheadTint userdata `Color` for `setLightColor`
 --- @param mainLightPatch table|string|nil
 --- @param seatMode string|nil
 --- @return table
-local function chronicleGradientPreset(ambientIntensity, reflectionIntensity, gradientColor, mainLightPatch, seatMode)
+local function chronicleOverheadPreset(lightIntensity, reflectionIntensity, overheadTint, mainLightPatch, seatMode)
   return {
-    ambient_intensity = ambientIntensity,
-    ambient_type = 2,
-    light_intensity = 0,
+    ambient_intensity = 0,
+    ambient_type = 1,
+    light_intensity = lightIntensity,
     lut_contribution = 0,
     lut_index = 1,
     reflection_intensity = reflectionIntensity,
-    gradientColor = gradientColor,
+    setLightColor = overheadTint,
     spotlights = chronicleSpotlights(mainLightPatch, seatMode),
   }
 end
@@ -1898,139 +1885,97 @@ C.LightModes = {
     reflection_intensity = 0,
     spotlights = spotlightMapUniform("OFF"),
   },
-  IndoorBright = chronicleGradientPreset(
+  IndoorBright = chronicleOverheadPreset(
     1.05,
     0.18,
-    {
-      sky = liftAmbientColor(0.92, 0.95, 1.00),
-      equator = liftAmbientColor(0.88, 0.91, 0.93),
-      ground = liftAmbientColor(0.82, 0.86, 0.84),
-    },
+    CHRONICLE_OVERHEAD_INDOOR,
     {
       color = Color(0.92, 0.95, 1.00, 1),
       intensity = 4.0,
     }
   ),
-  --- Warm incandescent / candle fill; equator kept darker than sky to avoid washout.
-  IndoorDim = chronicleGradientPreset(
+  IndoorDim = chronicleOverheadPreset(
     0.60,
     0.15,
-    {
-      sky = liftAmbientColor(1.00, 0.82, 0.55),
-      equator = liftAmbientColor(0.55, 0.38, 0.22),
-      ground = liftAmbientColor(0.30, 0.18, 0.10),
-    },
+    CHRONICLE_OVERHEAD_INDOOR,
     {
       color = Color(1.00, 0.78, 0.45, 1),
       intensity = 2.8,
     }
   ),
-  --- Low cool ambient; warm main + seat spotlights remain readable (preset controls spotlights, not name suffix).
-  IndoorDark = chronicleGradientPreset(
+  --- Low overhead fill; warm main + seat spotlights remain readable (preset controls spotlights, not name suffix).
+  IndoorDark = chronicleOverheadPreset(
     0.22,
     0.06,
-    {
-      sky = liftAmbientColor(0.12, 0.14, 0.22),
-      equator = liftAmbientColor(0.08, 0.07, 0.10),
-      ground = liftAmbientColor(0.06, 0.04, 0.03),
-    },
+    CHRONICLE_OVERHEAD_INDOOR,
     {
       color = Color(1.00, 0.70, 0.40, 1),
       intensity = 2.0,
     }
   ),
-  --- City at night: sodium streetlight equator band, dark sky.
-  OutdoorBright = chronicleGradientPreset(
+  OutdoorBright = chronicleOverheadPreset(
     0.70,
     0.10,
-    {
-      sky = liftAmbientColor(0.06, 0.08, 0.18),
-      equator = liftAmbientColor(0.45, 0.32, 0.12),
-      ground = liftAmbientColor(0.08, 0.06, 0.05),
-    },
+    CHRONICLE_OVERHEAD_OUTDOOR,
     {
       color = Color(1.00, 0.75, 0.35, 1),
       intensity = 3.0,
     }
   ),
-  --- Park / alley: night-sky ambient dominates; very dim cool main fill.
-  OutdoorDim = chronicleGradientPreset(
+  OutdoorDim = chronicleOverheadPreset(
     0.45,
     0.08,
-    {
-      sky = liftAmbientColor(0.04, 0.07, 0.20),
-      equator = liftAmbientColor(0.06, 0.10, 0.16),
-      ground = liftAmbientColor(0.03, 0.03, 0.04),
-    },
+    CHRONICLE_OVERHEAD_OUTDOOR,
     {
       color = Color(0.60, 0.65, 0.75, 1),
       intensity = 1.2,
     }
   ),
-  --- Moonlit exterior: blue ambient, faint desaturated main; seats stay on for readability.
-  OutdoorDark = chronicleGradientPreset(
+  --- Moonlit exterior: cool overhead fill; faint main table lights; seats stay on for readability.
+  OutdoorDark = chronicleOverheadPreset(
     0.28,
     0.04,
-    {
-      sky = liftAmbientColor(0.10, 0.14, 0.28),
-      equator = liftAmbientColor(0.06, 0.08, 0.14),
-      ground = liftAmbientColor(0.02, 0.02, 0.03),
-    },
+    CHRONICLE_OVERHEAD_OUTDOOR,
     {
       color = Color(0.75, 0.82, 0.95, 1),
       intensity = 1.0,
     }
   ),
-  --- Eerie green air overhead; warm candle bounce on ground + main lights (sewers / warrens).
-  UndergroundBright = chronicleGradientPreset(
+  UndergroundBright = chronicleOverheadPreset(
     0.55,
     0.05,
-    {
-      sky = liftAmbientColor(0.08, 0.18, 0.10),
-      equator = liftAmbientColor(0.12, 0.22, 0.14),
-      ground = liftAmbientColor(0.35, 0.22, 0.12),
-    },
+    CHRONICLE_OVERHEAD_UNDERGROUND,
     {
       color = Color(1.00, 0.78, 0.45, 1),
       intensity = 2.8,
     }
   ),
-  UndergroundDim = chronicleGradientPreset(
+  UndergroundDim = chronicleOverheadPreset(
     0.35,
     0.04,
-    {
-      sky = liftAmbientColor(0.05, 0.12, 0.07),
-      equator = liftAmbientColor(0.08, 0.16, 0.10),
-      ground = liftAmbientColor(0.22, 0.14, 0.08),
-    },
+    CHRONICLE_OVERHEAD_UNDERGROUND,
     {
       color = Color(1.00, 0.72, 0.40, 1),
       intensity = 2.0,
     }
   ),
-  UndergroundDark = chronicleGradientPreset(
+  UndergroundDark = chronicleOverheadPreset(
     0.20,
     0.03,
-    {
-      sky = liftAmbientColor(0.04, 0.10, 0.06),
-      equator = liftAmbientColor(0.05, 0.08, 0.06),
-      ground = liftAmbientColor(0.04, 0.03, 0.02),
-    },
+    CHRONICLE_OVERHEAD_UNDERGROUND,
     {
       color = Color(1.00, 0.68, 0.38, 1),
       intensity = 1.8,
     }
   ),
   MemoriamBright = {
-    ambient_intensity = 1.10933303833008,
-    ambient_type = 2,
-    light_intensity = 0,
+    ambient_intensity = 0,
+    ambient_type = 1,
+    light_intensity = 1.10933303833008,
     lut_contribution = 0,
     lut_index = 1,
     reflection_intensity = 0.21866674721241,
-    gradientColor = {
-      ground = Color(1, 0.85, 0.65, 1),
-    },
+    setLightColor = CHRONICLE_OVERHEAD_INDOOR,
     spotlights = {
       gmLight = "STANDARD",
       mainLightLeft = {
@@ -2065,15 +2010,13 @@ C.LightModes = {
     }
   },
   MemoriamDim = {
-    ambient_intensity = 1.10933303833008,
-    ambient_type = 2,
-    light_intensity = 0,
+    ambient_intensity = 0,
+    ambient_type = 1,
+    light_intensity = 1.10933303833008,
     lut_contribution = 0,
     lut_index = 1,
     reflection_intensity = 0.21866674721241,
-    gradientColor = {
-      ground = Color(1, 0.85, 0.65, 1),
-    },
+    setLightColor = CHRONICLE_OVERHEAD_INDOOR,
     spotlights = {
       gmLight = "STANDARD",
       mainLightLeft = {
@@ -2108,15 +2051,13 @@ C.LightModes = {
     }
   },
   MemoriamDark = {
-    ambient_intensity = 1.10933303833008,
-    ambient_type = 2,
-    light_intensity = 0,
+    ambient_intensity = 0,
+    ambient_type = 1,
+    light_intensity = 1.10933303833008,
     lut_contribution = 0,
     lut_index = 1,
     reflection_intensity = 0.21866674721241,
-    gradientColor = {
-      ground = Color(1, 0.85, 0.65, 1),
-    },
+    setLightColor = CHRONICLE_OVERHEAD_INDOOR,
     spotlights = {
       gmLight = "STANDARD",
       mainLightLeft = {

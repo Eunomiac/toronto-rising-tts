@@ -1,0 +1,279 @@
+--[[
+    Convert legacy `sessionScene.npcWorld.byArea` slot maps into gameboard `placements` (u, v, yaw).
+    Used on Scene Constructor import, `S.validateState`, and offline save migration.
+
+    Geometry matches `NPCS.computeSlotWorldPosition` / area figurine yaw in `core/npcs.ttslua`.
+    Agent: `.dev/NPC Object Spawning & Spotlighting/Storyteller Gameboard Control.md`
+]]
+
+local Convert = {}
+
+local U = require("lib.util")
+local DATA = require("lib.npcs_data")
+
+--- Lazy: `core.state` requires this module at load; eager `require("core.npc_gameboard")` would
+--- re-enter `core.state` while it is still registering and freeze `S = nil` in the gameboard chunk.
+--- @return table
+local function gameboardModule()
+    return require("core.npc_gameboard")
+end
+
+local AREAS = DATA.areas or {}
+local REF_AREA_KEY = "centerForward"
+local PRELOAD_AREA_KEY = "preload"
+local AREA_FIGURINE_YAW_OFFSET_DEG = 180
+
+--- @param x number
+--- @param z number
+--- @param rad number
+--- @return number, number
+local function rotateXZ(x, z, rad)
+    local cr, sr = math.cos(rad), math.sin(rad)
+    return x * cr - z * sr, x * sr + z * cr
+end
+
+--- World XZ for a legacy area slot (same math as `NPCS.computeSlotWorldPosition`).
+--- @param areaKey string
+--- @param slotIndex number
+--- @return number|nil x, number|nil z, number|nil groundLevel
+local function areaSlotWorldXZ(areaKey, slotIndex)
+    local area = AREAS[areaKey]
+    if type(area) ~= "table" or type(slotIndex) ~= "number" then
+        return nil, nil, nil
+    end
+    local refA = AREAS[REF_AREA_KEY]
+    local refDist = refA and tonumber(refA.distance) or nil
+    local slot
+    if refA and type(refA.positions) == "table" then
+        slot = refA.positions[slotIndex]
+    end
+    if slot == nil and type(area.positions) == "table" then
+        slot = area.positions[slotIndex]
+    end
+    if slot == nil then
+        return nil, nil, nil
+    end
+    local groundLevel = tonumber(area.groundLevel)
+    if refDist == nil or refDist < 1e-6 then
+        local rad = math.rad(area.rotation)
+        local rx, rz = rotateXZ(slot.x, slot.z, rad)
+        local cx = math.sin(rad) * area.distance
+        local cz = math.cos(rad) * area.distance
+        return cx + rx, cz + rz, groundLevel
+    end
+    local radNeg = -math.rad(area.rotation)
+    local rxO, rzO = rotateXZ(0, refDist, radNeg)
+    local rxD, rzD = rotateXZ(slot.x, slot.z, radNeg)
+    local sCenter = tonumber(area.distance) / refDist
+    if sCenter ~= sCenter or sCenter < 0 then
+        sCenter = 1
+    end
+    local blend = tonumber(area.spreadBlend)
+    if blend ~= blend then
+        blend = 0
+    end
+    if blend < 0 then
+        blend = 0
+    elseif blend > 1 then
+        blend = 1
+    end
+    local sSpread = 1 + (sCenter - 1) * blend
+    return rxO * sCenter + rxD * sSpread, rzO * sCenter + rzD * sSpread, groundLevel
+end
+
+--- Area-group world yaw (matches `NPCS.applyFigurinePlacement`).
+--- @param areaKey string
+--- @return number|nil
+local function areaSlotWorldYawDeg(areaKey)
+    local area = AREAS[areaKey]
+    if type(area) ~= "table" then
+        return nil
+    end
+    local rad = math.rad(area.rotation)
+    local pivotX = math.sin(rad) * area.distance
+    local pivotZ = math.cos(rad) * area.distance
+    return math.atan2(-pivotX, -pivotZ) * (180 / math.pi) + AREA_FIGURINE_YAW_OFFSET_DEG
+end
+
+--- Board-relative yaw for `placements` from legacy area facing.
+--- @param areaKey string
+--- @return number|nil
+local function placementYawFromAreaKey(areaKey)
+    local worldYaw = areaSlotWorldYawDeg(areaKey)
+    if worldYaw == nil then
+        return nil
+    end
+    local stageData = require("lib.npc_gameboard_data")
+    local offset = tonumber(stageData.STAGE_FIGURINE_YAW_OFFSET_DEG) or 0
+    local stageYaw = gameboardModule().getStageBoardYawDeg()
+    local rel = worldYaw - stageYaw - offset
+    rel = rel % 360
+    if rel < 0 then
+        rel = rel + 360
+    end
+    return rel
+end
+
+--- @param area table|nil
+--- @param row table|nil
+--- @return string
+local function resolveNpcLightMode(area, row)
+    if type(row) == "table" and type(row.npcLightMode) == "string" then
+        local lm = row.npcLightMode
+        if lm == "OFF" or lm == "STANDARD" or lm == "SPOTLIGHT" then
+            return lm
+        end
+    end
+    if type(area) == "table" and area.autoLight == true then
+        return "STANDARD"
+    end
+    return "OFF"
+end
+
+--- @param areaKey string
+--- @param slotIndex number
+--- @param row table|nil
+--- @return table|nil placement row `{ u, v, yaw, npcLightMode, groundLevel? }`
+function Convert.placementRowFromAreaSlot(areaKey, slotIndex, row)
+    if type(areaKey) ~= "string" or areaKey == "" or areaKey == PRELOAD_AREA_KEY then
+        return nil
+    end
+    if AREAS[areaKey] == nil then
+        return nil
+    end
+    local x, z, groundLevel = areaSlotWorldXZ(areaKey, slotIndex)
+    if x == nil or z == nil then
+        return nil
+    end
+    local u, v = gameboardModule().uvFromWorld({ x = x, y = groundLevel or 0, z = z })
+    if u == nil or v == nil then
+        return nil
+    end
+    local yaw = placementYawFromAreaKey(areaKey)
+    if yaw == nil then
+        yaw = 0
+    end
+    local out = {
+        u = u,
+        v = v,
+        yaw = yaw,
+        npcLightMode = resolveNpcLightMode(AREAS[areaKey], row),
+    }
+    if groundLevel ~= nil then
+        out.groundLevel = groundLevel
+    end
+    return out
+end
+
+--- @param byArea table|nil
+--- @return boolean
+function Convert.byAreaHasEntries(byArea)
+    if type(byArea) ~= "table" then
+        return false
+    end
+    for areaKey, slots in pairs(byArea) do
+        if type(areaKey) == "string" and areaKey ~= PRELOAD_AREA_KEY and type(slots) == "table" then
+            for sk, row in pairs(slots) do
+                if tonumber(sk) ~= nil and type(row) == "table" and type(row.characterKey) == "string" and row.characterKey ~= "" then
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+--- Merge `byArea` into `placements` (existing placement rows win per character). Clears `byArea`.
+--- @param npcWorld table|nil
+--- @return number migratedCount
+--- @return string|nil err
+function Convert.mergeByAreaIntoPlacements(npcWorld)
+    if type(npcWorld) ~= "table" then
+        return 0, nil
+    end
+    local byArea = npcWorld.byArea
+    if not Convert.byAreaHasEntries(byArea) then
+        npcWorld.byArea = {}
+        return 0, nil
+    end
+    if type(npcWorld.placements) ~= "table" then
+        npcWorld.placements = {}
+    end
+    local placements = npcWorld.placements
+    local migrated = 0
+    local areaKeys = U.getKeys(byArea)
+    table.sort(areaKeys)
+    for _, areaKey in ipairs(areaKeys) do
+        if areaKey ~= PRELOAD_AREA_KEY and AREAS[areaKey] ~= nil then
+            local slots = byArea[areaKey]
+            if type(slots) == "table" then
+                local slotNums = {}
+                for sk, _ in pairs(slots) do
+                    local si = tonumber(sk)
+                    if si ~= nil then
+                        slotNums[#slotNums + 1] = si
+                    end
+                end
+                table.sort(slotNums)
+                for _, si in ipairs(slotNums) do
+                    local row = slots[tostring(si)] or slots[si]
+                    if type(row) == "table" and type(row.characterKey) == "string" and row.characterKey ~= "" then
+                        local ck = row.characterKey
+                        if placements[ck] == nil then
+                            local placementRow = Convert.placementRowFromAreaSlot(areaKey, si, row)
+                            if placementRow ~= nil then
+                                placements[ck] = placementRow
+                                migrated = migrated + 1
+                            else
+                                print(
+                                    "[NpcPlacementsConvert] skip "
+                                        .. ck
+                                        .. " ("
+                                        .. areaKey
+                                        .. " slot "
+                                        .. tostring(si)
+                                        .. ": could not map to u,v)"
+                                )
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    npcWorld.byArea = {}
+    return migrated, nil
+end
+
+--- @param npcWorld table|nil
+--- @return boolean changed
+--- @return number migratedCount
+function Convert.normalizeNpcWorld(npcWorld)
+    if type(npcWorld) ~= "table" then
+        return false, 0
+    end
+    if not Convert.byAreaHasEntries(npcWorld.byArea) then
+        if type(npcWorld.byArea) ~= "table" then
+            npcWorld.byArea = {}
+        end
+        return false, 0
+    end
+    local n = Convert.mergeByAreaIntoPlacements(npcWorld)
+    return n > 0, n
+end
+
+--- @param sessionScene table|nil
+--- @return boolean changed
+--- @return number migratedCount
+function Convert.normalizeSessionScene(sessionScene)
+    if type(sessionScene) ~= "table" then
+        return false, 0
+    end
+    if type(sessionScene.npcWorld) ~= "table" then
+        sessionScene.npcWorld = { placements = {}, byArea = {}, layoutLock = false }
+        return false, 0
+    end
+    return Convert.normalizeNpcWorld(sessionScene.npcWorld)
+end
+
+return Convert

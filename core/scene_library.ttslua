@@ -12,6 +12,7 @@ local SceneLibrary = {}
 
 local C = require("lib.constants")
 local U = require("lib.util")
+local NpcPlacementsConvert = require("lib.npc_placements_convert")
 
 --- Highest `schemaVersion` this build accepts from import JSON.
 SceneLibrary.IMPORT_SCHEMA_VERSION = 2
@@ -174,6 +175,16 @@ local function normalizeSeatSlotsForImport(sessionScene)
     end
     SceneLibrary.syncNpcRoleOverrideFromSeatSlots(out)
     applyChronicleWeatherFromSoundscapeForImport(out)
+    if type(out.npcWorld) == "table" then
+        local migrated = NpcPlacementsConvert.mergeByAreaIntoPlacements(out.npcWorld)
+        if migrated > 0 then
+            print(
+                "[SceneLibrary] import: converted "
+                    .. tostring(migrated)
+                    .. " npcWorld.byArea slot(s) → placements (byArea cleared)"
+            )
+        end
+    end
     return out
 end
 
@@ -186,7 +197,7 @@ local function rejectNpcWorldPreload(npcWorld)
     end
     if npcWorld.preload ~= nil then
         return false,
-            "sessionScene.npcWorld.preload: remove this key — NPC preload is engine-managed; use byArea only."
+            "sessionScene.npcWorld.preload: remove this key — NPC preload is engine-managed; use byArea (import converts to placements) or placements."
     end
     return true, nil
 end

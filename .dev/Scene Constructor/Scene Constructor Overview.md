@@ -141,7 +141,7 @@ Use **flat** keys that already exist on live `sessionScene` (do not nest a separ
 | `chronicleWeatherManualHold` | boolean | When `true`, chronicle weather is not auto-applied on clock updates. **Import:** **`true`** when all three narrative weather fields are set; **`false`** when none are. |
 | `rollDefaults` | object | Same keys as `active.rollOptions` merges. |
 | `soundscapeNarrative` | object | Optional **intent** consumed **only on scene apply**: mapped into `gameState.soundscape` with the same setters / helpers the Storyteller UI uses. Empty `{}` if unused. **Import:** `wind`, `rain`, and `thunderstorm` must be **all** non-`null` together or **all** omitted / `null` — mixed is a validation error; when all three are set, the importer sets `chronicleWeatherManualHold` / `chronicleWeatherFollowSchedule` (see table above). See **Soundscape** below. |
-| `npcWorld` | object | `byArea` sparse slot maps — see **NPC world** below. |
+| `npcWorld` | object | `placements` (authoritative); optional import-only `byArea` — see **NPC world** below. |
 
 ### `npcRoleOverride` (`sessionScene.npcRoleOverride`)
 
@@ -199,26 +199,44 @@ Optional keys (all optional; `{}` means “no narrative-driven apply” for appl
 
 Live / non-import edits still set `chronicleWeather*` with `S.setStateVal` like any other mutation when the Storyteller UI (or scene apply) does so.
 
-### NPC world (`sessionScene.npcWorld`) — sparse tables
+### NPC world (`sessionScene.npcWorld`) — `placements` (authoritative)
 
-Avoid long arrays with empty placeholders. Use **sparse maps** keyed by string slot index (JSON object keys are always strings; Lua after `JSON.decode` matches TTS).
-
-**`byArea`** — keys are area ids (e.g. `centerForward`, `nearLeft`, `nearRight`, `farLeft`, `farRight`). Each value is an object whose keys are **slot indices** (`"1"`, `"3"`, …) and values are spawn descriptors (omit an index entirely to skip that slot).
+**Runtime and reconcile** use **`placements` only**: a sparse map keyed by **`characterKey`** → `{ u, v, yaw?, npcLightMode?, groundLevel? }` where **`u` / `v`** are **0–1** on **STAGE_BOARD** (same frame as control-board Apply). **`Sync.full`** → `NPCS.reconcileAllFromState` places figurines and mirrors control-board tokens from `placements`.
 
 ```jsonc
 "npcWorld": {
-  "byArea": {
-    "nearLeft": {
-      "1": { "characterKey": "adrianVarga", "npcLightMode": "OFF" },
-      "3": { "characterKey": "theAristocrat", "npcLightMode": "OFF" }
+  "placements": {
+    "adrianVarga": {
+      "u": 0.18,
+      "v": 0.72,
+      "yaw": 0,
+      "npcLightMode": "OFF",
+      "groundLevel": -15
     }
   }
 }
 ```
 
-- `byArea` — per area key (`nearLeft`, `centerForward`, …), numeric slot index → `{ characterKey, npcLightMode? }`. **`Sync.full`** calls `NPCS.reconcileSessionSceneNpcWorldFromState`, which fingerprints `npcWorld`; when it changes and there is placement intent, existing figurines are **parked into the global `preload` grid** (small scale, under playfield), then these placements run **synchronously**. `npcLightMode` from JSON overrides the area’s `autoLight` default when valid (`OFF` / `STANDARD` / `SPOTLIGHT`).
+- **`groundLevel`** — optional absolute world **Y** (from legacy area `groundLevel` when converting); omitted → derived from snap ring at `u,v` in play.
+- **`npcLightMode`** — `OFF` / `STANDARD` / `SPOTLIGHT`; invalid → `STANDARD`.
 
-Runtime NPC instances remain under **`gameState.npcs.instances`**; `npcWorld.byArea` is the **saved scene’s staging intent**, copied into live NPC flows during apply. **Do not author `npcWorld.preload`** — v2 import rejects it; the engine maintains an internal under-table preload pool automatically.
+**Import convenience — `byArea` (converted, not stored):** You may still paste the legacy sparse area layout in import JSON. The importer converts each slot to **`placements`** via the same geometry as `lib/npcs_data` area slots (`lib/npc_placements_convert.ttslua`) and **clears `byArea`** before the scene is saved. Existing **`placements`** rows win if both define the same `characterKey`.
+
+```jsonc
+"npcWorld": {
+  "byArea": {
+    "nearLeft": {
+      "1": { "characterKey": "adrianVarga", "npcLightMode": "OFF" }
+    }
+  }
+}
+```
+
+Area keys: `centerForward`, `nearLeft`, `nearRight`, `farLeft`, `farRight` (must match `lib/npcs_data.ttslua`). Slot keys are string indices (`"1"`, `"3"`, …).
+
+**Offline migration** for saves / library rows that still have `byArea`: `npm run npc-placements:migrate-byarea` (see `.dev/scripts/migrate_npc_byarea_to_placements.mjs`).
+
+Runtime NPC instances remain under **`gameState.npcs.instances`**. **Do not author `npcWorld.preload`** — v2 import rejects it; the engine maintains the under-table preload pool automatically.
 
 ### Present day clock (`clock.isPresentDay`)
 

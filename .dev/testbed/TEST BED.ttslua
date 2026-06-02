@@ -2367,30 +2367,28 @@ end
 -- Snap UV layout (origin, per-ring maxU/maxV in snapGroups). groundLevel = absolute world Y for figurines on Apply (XZ from STAGE_BOARD u,v only).
 -- Export family world X/Z: DEBUG.exportControlBoardSnapFamilies(nil, { useInterpolatedRings = true }) for inner→outer interpolation baseline.
 -- Next Sync.npcs / reconcile reinstalls snaps from lib/npc_gameboard_data unless you re-run this or edit DATA.CONTROL_BOARD_SNAP.
--- DEBUG.installNpcControlBoardSnaps({
---   origin = { u = 0.5, v = 0.3 },
---   snapYawOffsetDeg = 0,
---   snapGroups = {
---     -- Optional per-ring origin/snapYawOffsetDeg affect position and ring yaw offset.
---     -- Rotation still faces the top-level origin.
---     { num = 1, angleDelta = 0, rays = 16, origin = { u = 0.5, v = 0.3 }, snapYawOffsetDeg = 0, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.42 },
---     { num = 5, angleDelta = 3, rays = 12, groundLevel = -50, radialStagger = 5, maxU = 0.7, maxV = 0.45 },
---     { num = 5, angleDelta = 3, rays = 16, groundLevel = -10, radialStagger = 5, maxU = 0.8, maxV = 0.6 },
---     { num = 5, angleDelta = 2, rays = 20, groundLevel = 20, radialStagger = 5, maxU = 0.9, maxV = 0.7 },
---   },
--- })
+DEBUG.installNpcControlBoardSnaps({
+  origin = { u = 0.5, v = 0.35 },
+  snapYawOffsetDeg = 0,
+  snapGroups = {
+    { num = 7, angleDelta = 7, rays = 8, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.45, origin = {u = 0.5, v = 0.4 }},
+    { num = 5, angleDelta = 4, rays = 12, groundLevel = -20, radialStagger = 5, maxU = 0.7, maxV = 0.566 },
+    { num = 5, angleDelta = 3, rays = 20, groundLevel = 20, radialStagger = 5, maxU = 0.8, maxV = 0.7 },
+  },
+})
 
 -- Remap variant: same call shape as installNpcControlBoardSnaps; uses currently installed board snaps as old-config baseline.
--- DEBUG.installAndRemapNpcControlBoardSnaps({
---   origin = { u = 0.5, v = 0.3 },
---   snapYawOffsetDeg = 0,
---   snapGroups = {
---     { num = 1, angleDelta = 0, rays = 16, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.42 },
---     { num = 5, angleDelta = 3, rays = 12, groundLevel = -50, radialStagger = 5, maxU = 0.7, maxV = 0.45 },
---     { num = 5, angleDelta = 3, rays = 16, groundLevel = -10, radialStagger = 5, maxU = 0.8, maxV = 0.6 },
---     { num = 5, angleDelta = 2, rays = 20, groundLevel = 20, radialStagger = 5, maxU = 0.9, maxV = 0.7 },
---   },
--- })
+DEBUG.installAndRemapNpcControlBoardSnaps({
+
+  origin = { u = 0.5, v = 0.35 },
+  snapYawOffsetDeg = 0,
+  snapGroups = {
+    { num = 1, angleDelta = 0, rays = 16, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.42 },
+    { num = 5, angleDelta = 4, rays = 12, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.45 },
+    { num = 5, angleDelta = 3, rays = 16, groundLevel = -10, radialStagger = 5, maxU = 0.7, maxV = 0.566 },
+    { num = 5, angleDelta = 3, rays = 20, groundLevel = 20, radialStagger = 5, maxU = 0.8, maxV = 0.7 },
+  },
+})
 
 -- Control-board table-component diagnostics (leaf markers, usedBy seat gates, source object + UV checks):
 -- DEBUG.dumpControlBoardTableComponents()

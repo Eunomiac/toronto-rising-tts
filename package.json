@@ -7,6 +7,7 @@
     "check:effective-stats-gate": "node .tools/effective-stats-gate/check-effective-stats-gate.mjs",
     "csheet-defaults:generate": "node .dev/scripts/generate_csheet_defaults_lua.js",
     "npc-control-board-ui:generate": "node .dev/scripts/generate_npc_control_board_ui_lua.js",
+    "npc-placements:migrate-byarea": "node .dev/scripts/migrate_npc_byarea_to_placements.mjs",
     "ui-xml-templates:embed": "node .dev/scripts/embed_ui_xml_templates.js",
     "tts-objects:fix-stubs": "node .dev/scripts/fix_tts_object_stubs.js",
     "csheet-objects:fix-includes": "npm run tts-objects:fix-stubs",

@@ -10,8 +10,24 @@ local Gameboard = {}
 local U = require("lib.util")
 local C = require("lib.constants")
 local G = require("lib.guids")
-local S = require("core.state")
 local DATA = require("lib.npc_gameboard_data")
+
+--- First `require("core.state")` during luabundle registration can return nil (circular load).
+--- Re-fetch until `core.state` has finished registering.
+--- @type table|nil
+local stateModuleCache = nil
+
+--- @return table|nil
+local function stateModule()
+    if type(stateModuleCache) == "table" and type(stateModuleCache.getStateVal) == "function" then
+        return stateModuleCache
+    end
+    local loaded = require("core.state")
+    if type(loaded) == "table" then
+        stateModuleCache = loaded
+    end
+    return loaded
+end
 local Palette = require("lib.npc_control_board_palette")
 
 local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
@@ -40,6 +56,19 @@ local anchorFamilySpreadDepth = 0
 --- @return boolean
 local function isGameObject(obj)
     return U.isGameObject(obj)
+end
+
+--- @param obj Object|nil
+--- @return number
+local function objectYawDeg(obj)
+    if not isGameObject(obj) or obj.getRotation == nil then
+        return 0
+    end
+    local rot = obj.getRotation()
+    if type(rot) ~= "table" then
+        return 0
+    end
+    return rot.y or 0
 end
 
 --- @param board Object
@@ -360,11 +389,17 @@ end
 --- @param placementYaw number|nil
 --- @return number
 function Gameboard.stageFigurineWorldYawDeg(placementYaw)
-    local stage = getStageBoard()
-    local stageYaw = isGameObject(stage) and (stage.getRotation().y or 0) or 0
+    local stageYaw = Gameboard.getStageBoardYawDeg()
     local rel = tonumber(placementYaw) or 0
     local offset = tonumber(DATA.STAGE_FIGURINE_YAW_OFFSET_DEG) or 0
     return (stageYaw + rel + offset) % 360
+end
+
+--- STAGE_BOARD world Y rotation (degrees), or 0 when the board object is missing.
+--- @return number
+function Gameboard.getStageBoardYawDeg()
+    local stage = getStageBoard()
+    return objectYawDeg(stage)
 end
 
 --- @param worldPos Vector|table
@@ -458,8 +493,15 @@ local function resolveTokenCharacterKey(obj)
     return nil
 end
 
+--- @param deg number|nil
+--- @return boolean true when axis reads as flipped (~180°)
+local function eulerAxisFlippedDeg(deg)
+    local norm = ((tonumber(deg) or 0) % 360 + 360) % 360
+    return norm > 90 and norm < 270
+end
+
 --- Custom_Tile (and similar) have no `is_face_up` field — reading it throws.
---- Prefer transform up-vector sign (robust to parent rotations); fall back to X rotation.
+--- Prefer transform up-vector sign; flip is Z=180 (TTS Flip key). Legacy tokens may have X=180.
 --- @param token Object
 --- @return boolean
 local function tokenRotationIsFaceUp(token)
@@ -476,9 +518,10 @@ local function tokenRotationIsFaceUp(token)
     if rot == nil then
         return true
     end
-    local rx = rot.x or rot[1] or 0
-    local norm = ((rx % 360) + 360) % 360
-    return not (norm > 90 and norm < 270)
+    if eulerAxisFlippedDeg(rot.z) or eulerAxisFlippedDeg(rot.x) then
+        return false
+    end
+    return true
 end
 
 --- @param token Object
@@ -490,13 +533,14 @@ local function tokenLightModeFromFlip(token)
     return "OFF"
 end
 
+--- Board-plane yaw on Y; flip (face up/down) on Z only — independent axes for control tokens.
 --- @param boardYaw number
 --- @param yawDeg number
 --- @param faceUp boolean
 --- @return Vector
 local function rotationForNpcControlToken(boardYaw, yawDeg, faceUp)
-    local rx = faceUp and 0 or 180
-    return Vector(rx, boardYaw + (yawDeg or 0), 0)
+    local rz = faceUp and 0 or 180
+    return Vector(0, boardYaw + (yawDeg or 0), rz)
 end
 
 --- @param token Object
@@ -507,8 +551,8 @@ local function tokenPlacementOnBoard(token, board)
         return nil, nil, nil
     end
     local u, v = uvFromWorldOnBoard(board, token.getPosition())
-    local boardYaw = board.getRotation().y or 0
-    local tokenYaw = token.getRotation().y or 0
+    local boardYaw = objectYawDeg(board)
+    local tokenYaw = objectYawDeg(token)
     local yaw = ((tokenYaw - boardYaw) % 360 + 360) % 360
     return u, v, yaw
 end
@@ -637,7 +681,7 @@ local function controlBoardMirrorFingerprint(activeTable, layoutLocked, placemen
     local lines = {}
     lines[#lines + 1] = "table:" .. tostring(activeTable or "")
     lines[#lines + 1] = "lock:" .. tostring(layoutLocked == true)
-    local slots = S.getStateVal("seatLayout", "occupiedNPCSlots")
+    local slots = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
     if type(slots) == "table" then
         for _, seatKey in ipairs(C.NPCSeats or {}) do
             lines[#lines + 1] = "occ:" .. seatKey .. "=" .. tostring(slots[seatKey] or "")
@@ -711,7 +755,6 @@ local function syncNpcsFromControlBoard(reason)
         force = true,
         onlySteps = { 1, 5 },
         deferUiRefresh = true,
-        skipAreaPopulate = true,
         skipPreloadPopulate = true,
     })
 end
@@ -725,12 +768,12 @@ function Gameboard.applyFromControlBoard()
     end
     local rows = Gameboard.scanControlBoardTokens(board)
     local placements = placementsMapFromRows(rows)
-    local existing = S.getStateVal("sessionScene", "npcWorld", "placements")
+    local existing = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
     if placementsMapsEqual(placements, existing) then
         print("[Gameboard] Apply: placements unchanged (" .. tostring(#rows) .. " token(s)) — skipped figurine reconcile")
         return true, nil
     end
-    S.setStateVal(placements, "sessionScene", "npcWorld", "placements")
+    stateModule().setStateVal(placements, "sessionScene", "npcWorld", "placements")
     syncNpcsFromControlBoard("gameboard_apply")
     print("[Gameboard] Apply: " .. tostring(#rows) .. " token(s) → placements")
     return true, nil
@@ -739,9 +782,9 @@ end
 --- Remove tokens from control board and clear placements in state.
 --- @return boolean ok, string|nil message
 function Gameboard.clearControlBoard()
-    local hadPlacements = placementsCount(S.getStateVal("sessionScene", "npcWorld", "placements")) > 0
+    local hadPlacements = placementsCount(stateModule().getStateVal("sessionScene", "npcWorld", "placements")) > 0
     if hadPlacements then
-        S.setStateVal({}, "sessionScene", "npcWorld", "placements")
+        stateModule().setStateVal({}, "sessionScene", "npcWorld", "placements")
     end
     local palette = getControlBoardPalette()
     local moved = 0
@@ -862,7 +905,7 @@ local function npcSeatOccupiedOnTable(seatKey)
     if type(seatKey) ~= "string" or seatKey == "" then
         return false
     end
-    local slots = S.getStateVal("seatLayout", "occupiedNPCSlots")
+    local slots = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
     if type(slots) ~= "table" then
         return false
     end
@@ -934,50 +977,6 @@ local function mapUvForTableCenter(tableKey)
     return normalizedUvFromWorld(Vector(cfg.centerPoint))
 end
 
---- @param parentTable string
---- @param componentName string
---- @return number|nil u, number|nil v
-local function mapUvForTableComponent(parentTable, componentName)
-    local cfg = tableConfig(parentTable)
-    if cfg == nil or type(cfg.components) ~= "table" then
-        return nil, nil
-    end
-    local comp = cfg.components[componentName]
-    if type(comp) ~= "table" then
-        return nil, nil
-    end
-    if comp.activePosition ~= nil then
-        return normalizedUvFromWorld(Vector(comp.activePosition))
-    end
-    return mapUvForTableCenter(parentTable)
-end
-
---- UV for a table component marker: prefer the `usedBy` seat arc so leaves sit by their NPC slot.
---- @param parentTable string
---- @param componentName string
---- @return number|nil u, number|nil v
-local function mapUvForTableComponentMarker(parentTable, componentName)
-    local cfg = tableConfig(parentTable)
-    if cfg == nil or type(cfg.components) ~= "table" then
-        return nil, nil
-    end
-    local comp = cfg.components[componentName]
-    if type(comp) ~= "table" then
-        return nil, nil
-    end
-    local usedBy = comp.usedBy
-    if type(usedBy) == "string" and usedBy ~= "" and type(cfg.playerToPositionMap) == "table" then
-        local seg = cfg.playerToPositionMap[usedBy]
-        if type(seg) == "number" then
-            local worldSeat = worldPositionForTableSegment(cfg, seg)
-            if worldSeat ~= nil then
-                return normalizedUvFromWorld(worldSeat)
-            end
-        end
-    end
-    return mapUvForTableComponent(parentTable, componentName)
-end
-
 --- World-space XZ extents from `getBounds` (minimap marker scale ratios only — not UV math).
 --- @param board Object
 --- @return number sx, number sz
@@ -1023,6 +1022,9 @@ local function objectScaleVector(source)
         return nil
     end
     local s = source.getScale()
+    if type(s) ~= "table" then
+        return nil
+    end
     return Vector(s.x or 1, s.y or 1, s.z or 1)
 end
 
@@ -1075,9 +1077,11 @@ local function applyMinimapMarkerRotation(marker, board, source)
     local sz = 0
     if isGameObject(source) and source.getRotation ~= nil then
         local srcRot = source.getRotation()
-        sx = srcRot.x or 0
-        sy = srcRot.y or 0
-        sz = srcRot.z or 0
+        if type(srcRot) == "table" then
+            sx = srcRot.x or 0
+            sy = srcRot.y or 0
+            sz = srcRot.z or 0
+        end
     end
     marker.setRotation(Vector(sx + bx, sy + by, sz + bz))
 end
@@ -1090,21 +1094,6 @@ local function sourceObjectForTable(tableKey)
         return nil
     end
     return objectFromGuid(cfg.guid)
-end
-
---- @param parentTable string
---- @param componentName string
---- @return Object|nil
-local function sourceObjectForTableComponent(parentTable, componentName)
-    local cfg = tableConfig(parentTable)
-    if cfg == nil or type(cfg.components) ~= "table" then
-        return nil
-    end
-    local comp = cfg.components[componentName]
-    if type(comp) ~= "table" or type(comp.guid) ~= "string" or comp.guid == "" then
-        return nil
-    end
-    return objectFromGuid(comp.guid)
 end
 
 --- Playfield seat chair for minimap scale (SEAT_CHAIR_* via G.GetThroneGUID), not arbitrary *Object tags.
@@ -2067,7 +2056,7 @@ function Gameboard.remapControlBoardSnapsToConfig(oldConfig, newConfig, options)
     Gameboard.installPolarSnaps(board, { force = true, config = newCfg })
     local newCatalog = Gameboard.buildControlBoardSnapCatalog(board, newCfg)
     local placements = {}
-    local existing = S.getStateVal("sessionScene", "npcWorld", "placements")
+    local existing = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
     if type(existing) == "table" then
         for ck, row in pairs(existing) do
             if type(ck) == "string" and type(row) == "table" then
@@ -2075,7 +2064,7 @@ function Gameboard.remapControlBoardSnapsToConfig(oldConfig, newConfig, options)
             end
         end
     end
-    local boardYaw = board.getRotation().y or 0
+    local boardYaw = objectYawDeg(board)
 
     for _, plan in ipairs(tokenPlans) do
         local token = plan.token
@@ -2139,7 +2128,7 @@ function Gameboard.remapControlBoardSnapsToConfig(oldConfig, newConfig, options)
         end
     end
 
-    S.setStateVal(placements, "sessionScene", "npcWorld", "placements")
+    stateModule().setStateVal(placements, "sessionScene", "npcWorld", "placements")
     local palette = getControlBoardPalette()
     if isGameObject(palette) then
         Palette.syncTokensToPalette(palette)
@@ -2152,7 +2141,6 @@ function Gameboard.remapControlBoardSnapsToConfig(oldConfig, newConfig, options)
             force = true,
             onlySteps = { 1, 5 },
             deferUiRefresh = true,
-            skipAreaPopulate = true,
             skipPreloadPopulate = true,
         })
     end
@@ -2403,28 +2391,23 @@ local function describeTableComponentMarker(marker, activeTable)
     if parentTable ~= activeTable then
         row.reasons[#row.reasons + 1] = "inactive_table"
     end
-    local markerU, markerV = nil, nil
-    if type(parentTable) == "string" and type(componentName) == "string" then
-        markerU, markerV = mapUvForTableComponentMarker(parentTable, componentName)
+    local tableU, tableV = nil, nil
+    if type(parentTable) == "string" then
+        tableU, tableV = mapUvForTableCenter(parentTable)
     end
-    row.markerU = markerU
-    row.markerV = markerV
-    local fallbackU, fallbackV = nil, nil
-    if markerU == nil or markerV == nil then
-        fallbackU, fallbackV = mapUvForTableComponent(parentTable, componentName)
+    row.tableU = tableU
+    row.tableV = tableV
+    row.targetU = tableU
+    row.targetV = tableV
+    row.placementMode = "table_transform"
+    if show and (tableU == nil or tableV == nil) then
+        row.reasons[#row.reasons + 1] = "table_uv_mapping_failed"
     end
-    row.fallbackU = fallbackU
-    row.fallbackV = fallbackV
-    row.targetU = markerU or fallbackU
-    row.targetV = markerV or fallbackV
-    if show and (row.targetU == nil or row.targetV == nil) then
-        row.reasons[#row.reasons + 1] = "uv_mapping_failed"
-    end
-    local source = sourceObjectForTableComponent(parentTable, componentName)
-    row.sourceExists = isGameObject(source)
-    row.sourceGuid = row.sourceExists and source.getGUID and source.getGUID() or nil
-    if show and row.sourceExists ~= true then
-        row.reasons[#row.reasons + 1] = "source_object_missing"
+    local tableSource = sourceObjectForTable(parentTable)
+    row.tableSourceExists = isGameObject(tableSource)
+    row.tableSourceGuid = row.tableSourceExists and tableSource.getGUID and tableSource.getGUID() or nil
+    if show and row.tableSourceExists ~= true then
+        row.reasons[#row.reasons + 1] = "table_source_missing"
     end
     if isGameObject(marker) and marker.getPosition ~= nil then
         row.markerPosition = marker.getPosition()
@@ -2449,7 +2432,8 @@ local function printTableComponentMarkerRow(row)
             .. " usedBy=" .. tostring(row.usedBy or "")
             .. " occupied=" .. tostring(row.usedByOccupied)
             .. " uv=(" .. tostring(row.targetU) .. "," .. tostring(row.targetV) .. ")"
-            .. " source=" .. tostring(row.sourceGuid or "")
+            .. " tableSource=" .. tostring(row.tableSourceGuid or "")
+            .. " mode=" .. tostring(row.placementMode or "")
             .. " reasons=" .. reasons
     )
 end
@@ -2474,10 +2458,39 @@ local function placeControlBoardMarker(marker, board, u, v, source, options)
     lockControlBoardMarker(marker)
 end
 
+--- Active table-leaf markers use the parent table's CONTROL_BOARD transform (models are authored table-relative).
+--- @param marker Object
+--- @param board Object
+--- @param parentTable string
+--- @return boolean placed
+local function placeActiveTableComponentMarker(marker, board, parentTable)
+    local u, v = mapUvForTableCenter(parentTable)
+    if u == nil or v == nil then
+        return false
+    end
+    local tableSource = sourceObjectForTable(parentTable)
+    placeControlBoardMarker(
+        marker,
+        board,
+        u,
+        v,
+        tableSource,
+        {
+            extraLocalY = tonumber(DATA.MINIMAP_TABLE_EXTRA_LOCAL_Y) or 0.06,
+        }
+    )
+    return true
+end
+
 --- Position static table/seat markers for active table.
 --- @param opts table|nil `{ force?: boolean }`
 function Gameboard.reconcileControlBoardFromState(opts)
     opts = type(opts) == "table" and opts or {}
+    local S = stateModule()
+    if type(S) ~= "table" or type(S.getStateVal) ~= "function" then
+        print("[Gameboard] reconcileControlBoardFromState: core.state unavailable")
+        return
+    end
     boardUvHalfExtentsCache = {}
     local board = getControlBoard()
     if not isGameObject(board) then
@@ -2490,7 +2503,10 @@ function Gameboard.reconcileControlBoardFromState(opts)
     local npcWorld = S.getStateVal("sessionScene", "npcWorld")
     local activeTable = S.getStateVal("seatLayout", "currentTableKey")
     local layoutLocked = type(npcWorld) == "table" and npcWorld.layoutLock == true
-    local placements = type(npcWorld) == "table" and npcWorld.placements or {}
+    local placements = {}
+    if type(npcWorld) == "table" and type(npcWorld.placements) == "table" then
+        placements = npcWorld.placements
+    end
     local mirrorFp = controlBoardMirrorFingerprint(activeTable, layoutLocked, placements)
     if opts.force ~= true and mirrorFp == lastControlBoardMirrorFingerprint then
         rebuildAnchorDropEligibilityCache(board)
@@ -2538,24 +2554,14 @@ function Gameboard.reconcileControlBoardFromState(opts)
                 if opts.debugComponentMarkers == true then
                     printTableComponentMarkerRow(markerRow)
                 end
-                if show and parentTable ~= nil and componentName ~= nil then
-                    local u = markerRow.targetU
-                    local v = markerRow.targetV
-                    if u ~= nil and v ~= nil then
-                        placeControlBoardMarker(
-                            obj,
-                            board,
-                            u,
-                            v,
-                            sourceObjectForTableComponent(parentTable, componentName)
-                        )
-                    else
+                if show and parentTable ~= nil then
+                    if not placeActiveTableComponentMarker(obj, board, parentTable) then
                         print(
                             "[Gameboard] component marker "
                                 .. tostring(componentName)
                                 .. " active on "
                                 .. tostring(parentTable)
-                                .. " but u,v mapping failed"
+                                .. " but table minimap placement failed"
                         )
                         stashTableComponentMarker(obj, componentName)
                     end
@@ -2627,7 +2633,7 @@ function Gameboard.reconcileControlBoardFromState(opts)
                 local token = byChar[characterKey]
                 if isGameObject(token) then
                     token.setPosition(Gameboard.worldOnControlBoard(board, row.u, row.v))
-                    local boardYaw = board.getRotation().y or 0
+                    local boardYaw = objectYawDeg(board)
                     local yaw = tonumber(row.yaw) or 0
                     local faceUp = row.npcLightMode ~= "OFF"
                     token.setRotation(rotationForNpcControlToken(boardYaw, yaw, faceUp))
@@ -2646,7 +2652,7 @@ end
 --- @return table
 function Gameboard.debugDescribeControlBoardTableComponents(options)
     options = type(options) == "table" and options or {}
-    local activeTable = S.getStateVal("seatLayout", "currentTableKey")
+    local activeTable = stateModule().getStateVal("seatLayout", "currentTableKey")
     local rows = {}
     local markers = getObjectsWithTag(TAG_COMPONENT) or {}
     if options.includeTagless == true then
@@ -2951,7 +2957,7 @@ function Gameboard.tryAnchorFamilyGroupSpread(droppedToken)
     if #emptyFamilySnaps == 0 then
         return { placed = 0, reason = "family_has_no_sibling_snaps", groupId = groupId }
     end
-    local boardYaw = board.getRotation().y or 0
+    local boardYaw = objectYawDeg(board)
     anchorFamilySpreadDepth = anchorFamilySpreadDepth + 1
     local placed = 0
     local limit = math.min(#toPlace, #emptyFamilySnaps)
@@ -3002,11 +3008,11 @@ end
 
 --- @param placements table|nil
 function Gameboard.populateControlBoardFromPlacements(placements)
-    placements = type(placements) == "table" and placements or S.getStateVal("sessionScene", "npcWorld", "placements")
+    placements = type(placements) == "table" and placements or stateModule().getStateVal("sessionScene", "npcWorld", "placements")
     if type(placements) ~= "table" then
         placements = {}
     end
-    S.setStateVal(placements, "sessionScene", "npcWorld", "placements")
+    stateModule().setStateVal(placements, "sessionScene", "npcWorld", "placements")
     Gameboard.reconcileControlBoardFromState()
 end
 

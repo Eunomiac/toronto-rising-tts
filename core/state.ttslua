@@ -21,6 +21,7 @@ local U = require("lib.util")
 local C = require("lib.constants")
 local PC_BOOT = require("lib.pc_bootstrap")
 local SceneLibrary = require("core.scene_library")
+local NpcPlacementsConvert = require("lib.npc_placements_convert")
 local gameState = {}
 
 -- ============================================================================
@@ -339,7 +340,7 @@ function S.GetDefaultGameState()
             rollDefaults = {},
             --- Optional narrative soundscape columns consumed on scene apply (maps into `gameState.soundscape` / chronicle flags; no parallel weather stream).
             soundscapeNarrative = {},
-            --- Authoritative-for-import NPC staging: sparse `byArea` slot maps (see `.dev/Scene Constructor/Scene Constructor Overview.md`).
+            --- NPC stage layout: `placements` (u,v,yaw on STAGE_BOARD). Import may paste `byArea`; normalized to placements.
             npcWorld = {
                 layoutLock = false,
                 placements = {},
@@ -634,6 +635,10 @@ function S.validateState()
         gameState.sessionScene = {}
     end
     mergeSessionSceneDefaults(gameState.sessionScene, S.GetDefaultGameState().sessionScene)
+    local liveMigrated = NpcPlacementsConvert.normalizeSessionScene(gameState.sessionScene)
+    if liveMigrated then
+        print("[state] sessionScene.npcWorld: migrated legacy byArea → placements")
+    end
     local lpKey = gameState.sessionScene.lightingPresetKey
     if lpKey ~= nil and type(lpKey) == "string" and lpKey ~= "" and not C.isValidLightModeKey(lpKey) then
         print("[state] sessionScene.lightingPresetKey invalid: " .. tostring(lpKey) .. " — clearing.")
@@ -714,6 +719,10 @@ function S.validateState()
                 entry.sessionScene = {}
             end
             mergeSessionSceneDefaults(entry.sessionScene, S.GetDefaultGameState().sessionScene)
+            local _, libMigrated = NpcPlacementsConvert.normalizeSessionScene(entry.sessionScene)
+            if libMigrated then
+                print("[state] sceneLibrary: migrated legacy byArea → placements in a library row")
+            end
             if SceneLibrary and type(SceneLibrary.syncNpcRoleOverrideFromSeatSlots) == "function" then
                 SceneLibrary.syncNpcRoleOverrideFromSeatSlots(entry.sessionScene)
             end
