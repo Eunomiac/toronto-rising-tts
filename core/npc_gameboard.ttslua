@@ -740,17 +740,27 @@ end
 --- @return boolean ok, string|nil message
 function Gameboard.clearControlBoard()
     local hadPlacements = placementsCount(S.getStateVal("sessionScene", "npcWorld", "placements")) > 0
-    S.setStateVal({}, "sessionScene", "npcWorld", "placements")
+    if hadPlacements then
+        S.setStateVal({}, "sessionScene", "npcWorld", "placements")
+    end
     local palette = getControlBoardPalette()
     local moved = 0
     if isGameObject(palette) then
         moved = Palette.syncTokensToPalette(palette)
-        print("[Gameboard] Clear: placements emptied; " .. tostring(moved) .. " token(s) parked on palette")
+        if hadPlacements then
+            print("[Gameboard] Clear: placements emptied; " .. tostring(moved) .. " token(s) parked on palette")
+        else
+            print("[Gameboard] Clear: placements already empty; " .. tostring(moved) .. " token(s) parked on palette")
+        end
     else
-        print("[Gameboard] Clear: placements emptied (CONTROL_BOARD_PALETTE missing — tokens not parked)")
+        if hadPlacements then
+            print("[Gameboard] Clear: placements emptied (CONTROL_BOARD_PALETTE missing — tokens not parked)")
+        else
+            print("[Gameboard] Clear: placements already empty (CONTROL_BOARD_PALETTE missing — tokens not parked)")
+        end
     end
     if not hadPlacements and moved == 0 then
-        print("[Gameboard] Clear: no state/token changes — skipped figurine reconcile")
+        print("[Gameboard] Clear: no state/token changes — skipped figurine sync")
         Gameboard.reconcileControlBoardFromState({ force = true })
         return true, nil
     end
