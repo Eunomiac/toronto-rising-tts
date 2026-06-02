@@ -675,8 +675,7 @@ local function stagePlacementMatchesRecord(stored, placement)
     end
     local du = math.abs((tonumber(stored.u) or 0) - (tonumber(placement.u) or 0))
     local dv = math.abs((tonumber(stored.v) or 0) - (tonumber(placement.v) or 0))
-    local dy = math.abs((tonumber(stored.yaw) or 0) - (tonumber(placement.yaw) or 0))
-    if du >= 0.002 or dv >= 0.002 or dy >= 1 then
+    if du >= 0.002 or dv >= 0.002 then
         return false
     end
     return (tonumber(stored.groundLevel) or nil) == (tonumber(placement.groundLevel) or nil)
@@ -1144,7 +1143,7 @@ function NPCS.applyFigurinePlacementAtWorld(figurine, placement)
         groundLevel = groundLevel,
     })
     figurine.setPosition(pos)
-    local relYaw = tonumber(placement.yaw) or 0
+    local relYaw = Gameboard.placementBoardRelYawDeg(u, v)
     local yawDeg = relYaw
     if type(Gameboard.stageFigurineWorldYawDeg) == "function" then
         yawDeg = Gameboard.stageFigurineWorldYawDeg(relYaw)
@@ -1157,7 +1156,7 @@ function NPCS.applyFigurinePlacementAtWorld(figurine, placement)
     end
     local displayName = figurine.getName and figurine.getName() or "?"
     print(string.format(
-        "[NPCS] figurine stage placement %s (%s) u=%.4f v=%.4f relYaw=%.1f worldYaw=%.1f ground=%.3f → world (%.2f, %.2f, %.2f)",
+        "[NPCS] figurine stage placement %s (%s) u=%.4f v=%.4f ringYaw=%.1f worldYaw=%.1f ground=%.3f → world (%.2f, %.2f, %.2f)",
         tostring(displayName),
         notes ~= "" and notes or "?",
         u,
@@ -2615,10 +2614,15 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
     NPCS.applyFigurinePlacementAtWorld(fig, placement)
     rec.areaKey = STAGE_BOARD_AREA_KEY
     rec.slotIndex = 0
+    local Gameboard = require("core.npc_gameboard")
+    local derivedYaw = 0
+    if type(Gameboard.placementBoardRelYawDeg) == "function" then
+        derivedYaw = Gameboard.placementBoardRelYawDeg(placement.u, placement.v)
+    end
     rec.stagePlacement = {
         u = tonumber(placement.u),
         v = tonumber(placement.v),
-        yaw = tonumber(placement.yaw) or 0,
+        yaw = derivedYaw,
         groundLevel = tonumber(placement.groundLevel),
     }
     rec.npcLightMode = desiredMode

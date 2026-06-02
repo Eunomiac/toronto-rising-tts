@@ -8,10 +8,10 @@ Physical **STAGE_BOARD** (hidden world floor) + **CONTROL_BOARD** (GM table mini
 
 | Surface | Role |
 | --- | --- |
-| `sessionScene.npcWorld.placements` | Authority: `{ characterKey = { u, v, yaw, npcLightMode } }` (0–1 on stage board) |
-| **Apply** | Scan `npc_control_token` on CONTROL_BOARD minimap only (**not** on `CONTROL_BOARD_PALETTE`) → write `placements` → `Sync.npcs` |
+| `sessionScene.npcWorld.placements` | Authority: `{ characterKey = { u, v, yaw, npcLightMode } }` (0–1 on stage board). **`yaw` is derived** from master `origin` at `u,v` (`Gameboard.placementBoardRelYawDeg`); token Y rotation is ignored. |
+| **Apply** | Scan `npc_control_token` on CONTROL_BOARD minimap only (**not** on `CONTROL_BOARD_PALETTE`) → write `placements` (u,v, derived yaw, light mode) → `Sync.npcs` |
 | **Clear** | Double-click → empty `placements`, `Gameboard.syncTokensToPalette()` (group layout from `npcs_data`), `Sync.npcs` |
-| Reconcile | `NPCS.reconcileAllFromState` → figurines; CONTROL_BOARD markers always; token mirror skipped when `layoutLock` |
+| Reconcile | `NPCS.reconcileAllFromState` → figurines face **master `origin`** at u,v (`CONTROL_BOARD_SNAP.origin`); CONTROL_BOARD markers always; **token mirror** pulls tagged tokens from palette/board to exact placement u,v (not snap-only) when `layoutLock` is false |
 
 Legacy **`byArea` in import JSON** is converted to **`placements` on import** (`lib/npc_placements_convert.ttslua`). Reconcile uses **`placements` only**; `byArea` in live state is normalized on `S.validateState` or via `npm run npc-placements:migrate-byarea`.
 
@@ -132,7 +132,7 @@ Workshop object **CONTROL_BOARD_PALETTE** (typical scale `{5, 1, 10}` — wide o
 require("objects.npc_control_board_palette")
 ```
 
-`lib/npc_control_board_palette.ttslua` installs snaps and parks tokens by **coterie group** from `lib/npcs_data` (`groups.fiveKeys = 1`, etc.). Snap yaw uses `D.CONTROL_BOARD_PALETTE_SNAP.snapYawOffsetDeg` (default **180** on the rectangular palette). Minimap polar snaps use **toward-origin** yaw + `D.CONTROL_BOARD_SNAP.snapYawOffsetDeg` (default **0**). `syncTokensToPalette` applies matching world rotation when parking. Groups in `D.PALETTE_GROUP_BLACKLIST` (currently `princesCourt`) are skipped when picking a character’s palette group. One surviving group → that group; several survivors → lexicographically smallest non-blacklisted `groupId`. Layout: members adjacent in slot order, whole group moves to the next row when a row would wrap, **one empty snap** between groups (not a full blank row), first token at top-left. Token keys from GM notes use the same `npcToken:<key>` capture as the control board (stops at comma or newline).
+`lib/npc_control_board_palette.ttslua` installs snaps on palette `onLoad`; **`syncTokensToPalette`** is explicit (Clear, debug spawn) — it parks only tokens **without** a row in `sessionScene.npcWorld.placements`. On-stage keys are mirrored onto CONTROL_BOARD by `reconcileControlBoardFromState`. Snap yaw uses `D.CONTROL_BOARD_PALETTE_SNAP.snapYawOffsetDeg` (default **180** on the rectangular palette). Minimap polar snaps use **toward-origin** yaw + `D.CONTROL_BOARD_SNAP.snapYawOffsetDeg` (default **0**). `syncTokensToPalette` applies matching world rotation when parking. Groups in `D.PALETTE_GROUP_BLACKLIST` (currently `princesCourt`) are skipped when picking a character’s palette group. One surviving group → that group; several survivors → lexicographically smallest non-blacklisted `groupId`. Layout: members adjacent in slot order, whole group moves to the next row when a row would wrap, **one empty snap** between groups (not a full blank row), first token at top-left. Token keys from GM notes use the same `npcToken:<key>` capture as the control board (stops at comma or newline).
 
 Manual refresh / IDE tuning (after Save & Play):
 

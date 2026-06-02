@@ -416,7 +416,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/carol.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/carolBack.webp"
       },
-      scale = 53,
+      scale = 57,
       seatedScale = 66
     },
     groups = {
@@ -435,7 +435,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/ianRammond.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/ianRammondBack.webp"
       },
-      scale = 53,
+      scale = 63,
       seatedScale = 66
     },
     groups = {
@@ -454,7 +454,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/terry.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/terryBack.webp"
       },
-      scale = 53,
+      scale = 56,
       seatedScale = 66
     },
     groups = {
@@ -492,7 +492,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/iq.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/iqBack.webp"
       },
-      scale = 53,
+      scale = 45,
       seatedScale = 66
     },
     groups = {
@@ -511,7 +511,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/rubyRouge.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/rubyRougeBack.webp"
       },
-      scale = 53,
+      scale = 60,
       seatedScale = 66
     },
     groups = {
@@ -530,7 +530,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/evanescentBlue.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/evanescentBlueBack.webp"
       },
-      scale = 53,
+      scale = 50,
       seatedScale = 66
     },
     groups = {
@@ -625,7 +625,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/oliverGagnon.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/oliverGagnonBack.webp"
       },
-      scale = 53,
+      scale = 60,
       seatedScale = 66
     },
     groups = {
@@ -644,7 +644,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/scarlett.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/scarlettBack.webp"
       },
-      scale = 53,
+      scale = 60,
       seatedScale = 66
     },
     groups = {
@@ -663,7 +663,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/razorWhit.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/razorWhitBack.webp"
       },
-      scale = 53,
+      scale = 50,
       seatedScale = 66
     },
     groups = {
@@ -913,7 +913,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/christianne.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/christianneBack.webp"
       },
-      scale = 57,
+      scale = 63,
       seatedScale = 71
     },
     groups = {
@@ -951,7 +951,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/osborneLowell.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/osborneLowellBack.webp"
       },
-      scale = 53,
+      scale = 60,
       seatedScale = 66
     },
     groups = {
@@ -970,7 +970,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/emilyTheDuskRose.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/emilyTheDuskRoseBack.webp"
       },
-      scale = 53,
+      scale = 48,
       seatedScale = 66
     },
     groups = {
@@ -989,7 +989,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/sageSam.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/sageSamBack.webp"
       },
-      scale = 53,
+      scale = 50,
       seatedScale = 66
     },
     groups = {
@@ -1008,7 +1008,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/masonSchmidt.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/masonSchmidtBack.webp"
       },
-      scale = 53,
+      scale = 60,
       seatedScale = 66
     },
     groups = {
@@ -1027,7 +1027,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/jackBeNimble.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/jackBeNimbleBack.webp"
       },
-      scale = 53,
+      scale = 50,
       seatedScale = 66
     },
     groups = {
@@ -1065,7 +1065,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/suyin.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/suyinBack.webp"
       },
-      scale = 53,
+      scale = 45,
       seatedScale = 66
     },
     groups = {
@@ -1103,7 +1103,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/deaconReal.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/deaconRealBack.webp"
       },
-      scale = 60,
+      scale = 58,
       seatedScale = 75
     },
     groups = {
@@ -1122,7 +1122,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/sisterCicione.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/sisterCicioneBack.webp"
       },
-      scale = 48,
+      scale = 50,
       seatedScale = 60
     },
     groups = {
@@ -1389,7 +1389,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/bacchusGiovanni.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/bacchusGiovanniBack.webp"
       },
-      scale = 53,
+      scale = 60,
       seatedScale = 66
     },
     groups = {
@@ -1427,7 +1427,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/niccoloGiovanni.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/niccoloGiovanniBack.webp"
       },
-      scale = 53,
+      scale = 55,
       seatedScale = 66
     },
     groups = {
@@ -1446,7 +1446,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/theBleakBokor.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/theBleakBokorBack.webp"
       },
-      scale = 53,
+      scale = 62,
       seatedScale = 66
     },
     groups = {

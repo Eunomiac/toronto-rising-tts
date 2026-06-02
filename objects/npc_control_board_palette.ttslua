@@ -12,5 +12,4 @@ local Palette = require("lib.npc_control_board_palette")
 
 function onLoad()
     Palette.installSnaps(self, { force = true })
-    Palette.syncTokensToPalette(self)
 end

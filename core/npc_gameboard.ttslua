@@ -383,10 +383,8 @@ function Gameboard.worldFromUv(u, v, options)
     return Vector(x, y, z)
 end
 
---- World Y rotation for a figurine on STAGE_BOARD at the same u,v as a control-board token.
---- `placementYaw` is board-relative (token Y minus CONTROL_BOARD Y at scan/Apply).
---- Adds STAGE_BOARD yaw plus `D.STAGE_FIGURINE_YAW_OFFSET_DEG` for `Figurine_Custom` cutout orientation.
---- @param placementYaw number|nil
+--- World Y rotation for a figurine on STAGE_BOARD at u,v (master-origin facing; ignores stored placement yaw).
+--- @param placementYaw number|nil Legacy / unused when u,v supplied via caller; kept for API compat.
 --- @return number
 function Gameboard.stageFigurineWorldYawDeg(placementYaw)
     local stageYaw = Gameboard.getStageBoardYawDeg()
@@ -571,7 +569,7 @@ function Gameboard.scanControlBoardTokens(board)
         if isGameObject(obj) then
             local characterKey = resolveTokenCharacterKey(obj)
             if type(characterKey) == "string" and characterKey ~= "" then
-                local u, v, yaw = tokenPlacementOnBoard(obj, board)
+                local u, v, _ = tokenPlacementOnBoard(obj, board)
                 local palette = getControlBoardPalette()
                 if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, obj) then
                     -- Inactive storage on CONTROL_BOARD_PALETTE — not a minimap placement until snapped + Apply.
@@ -581,7 +579,7 @@ function Gameboard.scanControlBoardTokens(board)
                         characterKey = characterKey,
                         u = u,
                         v = v,
-                        yaw = type(yaw) == "number" and yaw or 0,
+                        yaw = Gameboard.placementBoardRelYawDeg(u, v),
                         npcLightMode = tokenLightModeFromFlip(obj),
                     }
                     if groundLevel ~= nil then
@@ -2180,6 +2178,34 @@ function Gameboard.resolveSnapRingIndexForUv(u, v, config)
     return resolveRingIndexForUv(cfg, u, v, rings)
 end
 
+--- Board-relative Y yaw for a placement at u,v: face the config master `origin` (token Y is cosmetic; figurines use the same math).
+--- @param u number
+--- @param v number
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+--- @return number yawDeg 0–360 board-local
+function Gameboard.placementBoardRelYawDeg(u, v, config)
+    u = tonumber(u)
+    v = tonumber(v)
+    if u == nil or v == nil then
+        return 0
+    end
+    local board = getControlBoard()
+    if not isGameObject(board) then
+        return 0
+    end
+    local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
+    local originU = tonumber(cfg.origin.u) or 0.5
+    local originV = tonumber(cfg.origin.v) or 0.5
+    local ringIndex = resolveRingIndexForUv(cfg, u, v, rings)
+    local group = cfg.snapGroups[ringIndex]
+    local ringYawOffsetDeg = tonumber(group.snapYawOffsetDeg)
+    if ringYawOffsetDeg == nil then
+        ringYawOffsetDeg = tonumber(cfg.snapYawOffsetDeg) or 0
+    end
+    local towardOrigin = snapYawTowardOriginDeg(board, u, v, originU, originV)
+    return ((towardOrigin + ringYawOffsetDeg) % 360 + 360) % 360
+end
+
 --- Minimal object Lua when the save has no bundled CONTROL_BOARD script (GUID bea29a).
 --- 3D/XmlUI buttons call `click_*` on the board object; Global reconcile installs buttons but cannot define handlers without this.
 local CONTROL_BOARD_FALLBACK_LUA_SCRIPT = [=[--- Toronto Rising — CONTROL_BOARD fallback (Global-injected when save LuaScript is empty).
@@ -2482,6 +2508,42 @@ local function placeActiveTableComponentMarker(marker, board, parentTable)
     return true
 end
 
+--- @return table<string, Object>
+local function buildTokenByCharacterKey()
+    local byKey = {}
+    local tagged = getObjectsWithTag(TAG_TOKEN) or {}
+    for _, tok in ipairs(tagged) do
+        if isGameObject(tok) then
+            local ck = resolveTokenCharacterKey(tok)
+            if type(ck) == "string" and ck ~= "" and byKey[ck] == nil then
+                byKey[ck] = tok
+            end
+        end
+    end
+    return byKey
+end
+
+--- Move one control token to exact placement u,v on CONTROL_BOARD (from palette or elsewhere).
+--- @param token Object
+--- @param board Object
+--- @param row table `{ u, v, npcLightMode? }`
+local function mirrorControlTokenToPlacementRow(token, board, row)
+    if not isGameObject(token) or not isGameObject(board) or type(row) ~= "table" then
+        return
+    end
+    local u = tonumber(row.u)
+    local v = tonumber(row.v)
+    if u == nil or v == nil then
+        return
+    end
+    token.setPosition(Gameboard.worldOnControlBoard(board, u, v))
+    local boardYaw = objectYawDeg(board)
+    local relYaw = Gameboard.placementBoardRelYawDeg(u, v)
+    local faceUp = row.npcLightMode ~= "OFF"
+    token.setRotation(rotationForNpcControlToken(boardYaw, relYaw, faceUp))
+    Gameboard.setHiddenFromPlayerColors(token)
+end
+
 --- Position static table/seat markers for active table.
 --- @param opts table|nil `{ force?: boolean }`
 function Gameboard.reconcileControlBoardFromState(opts)
@@ -2617,27 +2679,12 @@ function Gameboard.reconcileControlBoardFromState(opts)
 
     --- Mirror NPC tokens from placements (skip when layout locked — manual board edits preserved).
     if not layoutLocked then
-        --- Tag scan + board-local bounds — Custom_Tile has no working getObjects(); tokens lack getParent.
-        local byChar = {}
-        local tokenObjs = objectsOnControlBoard(board, TAG_TOKEN)
-        for _, obj in ipairs(tokenObjs) do
-            if isGameObject(obj) then
-                local ck = resolveTokenCharacterKey(obj)
-                if ck ~= nil then
-                    byChar[ck] = obj
-                end
-            end
-        end
+        local byChar = buildTokenByCharacterKey()
         for characterKey, row in pairs(placements) do
             if type(row) == "table" and type(row.u) == "number" and type(row.v) == "number" then
                 local token = byChar[characterKey]
                 if isGameObject(token) then
-                    token.setPosition(Gameboard.worldOnControlBoard(board, row.u, row.v))
-                    local boardYaw = objectYawDeg(board)
-                    local yaw = tonumber(row.yaw) or 0
-                    local faceUp = row.npcLightMode ~= "OFF"
-                    token.setRotation(rotationForNpcControlToken(boardYaw, yaw, faceUp))
-                    Gameboard.setHiddenFromPlayerColors(token)
+                    mirrorControlTokenToPlacementRow(token, board, row)
                 end
             end
         end
@@ -2787,21 +2834,6 @@ local function logAnchorSpreadResult(result)
             .. tostring(result.familyK)
     end
     print("[Gameboard] anchor spread skipped: " .. detail)
-end
-
---- @return table<string, Object>
-local function buildTokenByCharacterKey()
-    local byKey = {}
-    local tagged = getObjectsWithTag(TAG_TOKEN) or {}
-    for _, tok in ipairs(tagged) do
-        if isGameObject(tok) then
-            local ck = resolveTokenCharacterKey(tok)
-            if type(ck) == "string" and ck ~= "" and byKey[ck] == nil then
-                byKey[ck] = tok
-            end
-        end
-    end
-    return byKey
 end
 
 --- Build fast lookup for drop events: only group-leading (slotIndex 1) tokens that are currently off CONTROL_BOARD.

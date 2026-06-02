@@ -202,5 +202,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-02 | CREATE | TOR-174 | Feature: NPC token on ST dice bag initiates roll (child TOR-79; `blockedBy` TOR-169; deferred) |
 | 2026-06-02 | UPDATE | RUNNING TASKLIST **Focus** | Gameboard cycle: TOR-169 + TOR-170/171/172/173; dice E2E 161/162/163 + TOR-174 deferred |
 | 2026-06-02 | COMMENT | TOR-169 | Session ship note + inbox promotion summary |
+| 2026-06-02 | DONE | TOR-170, TOR-171 | Load token mirror from palette; master-origin yaw; palette onLoad + local-order fix; author verified Save & Play |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

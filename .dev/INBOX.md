@@ -2,6 +2,8 @@
 
 ## Active
 
+- review how NPCs are being positioned when the leader of their group is placed on an anchor snap, triggering the other members to be spawned in snap points surrounding them. Snap points should be assigned in index order, starting from the center snap point (the anchor snap, which goes to the leader, i.e. `<group> = 1`), and then moving further out, alternating sides with each index increment
+
 ---
 
 ## Needs clarification

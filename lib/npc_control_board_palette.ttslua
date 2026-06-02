@@ -14,6 +14,38 @@ local NPCS_DATA = require("lib.npcs_data")
 local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
 local TOKEN_PREFIX = DATA.TOKEN_GM_PREFIX
 
+local stateModule
+
+--- @return table|nil
+local function stateMod()
+    if stateModule == nil then
+        stateModule = require("core.state")
+    end
+    return stateModule
+end
+
+--- Character keys with an on-stage placement in state (tokens stay on CONTROL_BOARD, not palette).
+--- @return table<string, boolean>
+local function characterKeysWithStagePlacements()
+    local out = {}
+    local S = stateMod()
+    if type(S) ~= "table" or type(S.getStateVal) ~= "function" then
+        return out
+    end
+    local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
+    if type(placements) ~= "table" then
+        return out
+    end
+    for ck, row in pairs(placements) do
+        if type(ck) == "string" and ck ~= "" and type(row) == "table" then
+            if tonumber(row.u) ~= nil and tonumber(row.v) ~= nil then
+                out[ck] = true
+            end
+        end
+    end
+    return out
+end
+
 --- @param groupId string|nil
 --- @return boolean
 function Palette.isGroupBlacklisted(groupId)
@@ -478,11 +510,15 @@ function Palette.syncTokensToPalette(palette)
         end
     end
 
-    --- Phase 2: park every token with an assignment (control board, palette, or elsewhere).
+    --- Phase 2: park unplaced tokens (control board, palette, or elsewhere). Skip keys in `placements`.
+    local placedOnStage = characterKeysWithStagePlacements()
     local allTagged = getObjectsWithTag(TAG_TOKEN) or {}
     for _, token in ipairs(allTagged) do
         if U.isGameObject(token) then
             local ck = tokenCharacterKey(token)
+            if placedOnStage[ck] == true then
+                -- Reconcile mirrors these onto CONTROL_BOARD at exact u,v.
+            else
             local wantIndex = ck ~= nil and assignments[ck] or nil
             if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
                 local onPalette = isWorldPosOnPaletteBoard(palette, token.getPosition())
@@ -501,6 +537,7 @@ function Palette.syncTokensToPalette(palette)
                     end
                     moved = moved + 1
                 end
+            end
             end
         end
     end
