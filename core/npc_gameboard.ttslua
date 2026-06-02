@@ -25,6 +25,8 @@ local polarSnapInstallFingerprint = nil
 local lastControlBoardMirrorFingerprint = nil
 --- @type table<string, { halfX: number, halfZ: number }>
 local boardUvHalfExtentsCache = {}
+--- @type table<string, boolean> token guid -> true when drop may trigger anchor-family spread.
+local anchorDropEligibleByTokenGuid = {}
 --- World XZ tolerance when matching tokens to installed control-board snap points.
 local CONTROL_BOARD_SNAP_MATCH_FUZZINESS = 0.45
 --- Prevents recursive anchor-family spread when programmatic moves fire onObjectDrop.
@@ -671,6 +673,35 @@ local function placementsMapFromRows(rows)
     return placements
 end
 
+--- @param placements table|nil
+--- @return number
+local function placementsCount(placements)
+    if type(placements) ~= "table" then
+        return 0
+    end
+    local n = 0
+    for _, row in pairs(placements) do
+        if type(row) == "table" then
+            n = n + 1
+        end
+    end
+    return n
+end
+
+--- Shared fast Sync.npcs path used by control-board interactions.
+--- @param reason string
+local function syncNpcsFromControlBoard(reason)
+    local Sync = require("core.sync")
+    Sync.npcs({
+        reason = reason,
+        force = true,
+        onlySteps = { 1, 5 },
+        deferUiRefresh = true,
+        skipAreaPopulate = true,
+        skipPreloadPopulate = true,
+    })
+end
+
 --- Apply CONTROL_BOARD tokens → state → Sync.npcs.
 --- @return boolean ok, string|nil message
 function Gameboard.applyFromControlBoard()
@@ -687,15 +718,7 @@ function Gameboard.applyFromControlBoard()
         return true, nil
     end
     S.setStateVal(placements, "sessionScene", "npcWorld", "placements")
-    local Sync = require("core.sync")
-    Sync.npcs({
-        reason = "gameboard_apply",
-        force = true,
-        onlySteps = { 1, 5 },
-        deferUiRefresh = true,
-        skipAreaPopulate = true,
-        skipPreloadPopulate = true,
-    })
+    syncNpcsFromControlBoard("gameboard_apply")
     print("[Gameboard] Apply: " .. tostring(#rows) .. " token(s) → placements")
     return true, nil
 end
@@ -703,16 +726,22 @@ end
 --- Remove tokens from control board and clear placements in state.
 --- @return boolean ok, string|nil message
 function Gameboard.clearControlBoard()
+    local hadPlacements = placementsCount(S.getStateVal("sessionScene", "npcWorld", "placements")) > 0
     S.setStateVal({}, "sessionScene", "npcWorld", "placements")
     local palette = getControlBoardPalette()
+    local moved = 0
     if isGameObject(palette) then
-        local moved = Palette.syncTokensToPalette(palette)
+        moved = Palette.syncTokensToPalette(palette)
         print("[Gameboard] Clear: placements emptied; " .. tostring(moved) .. " token(s) parked on palette")
     else
         print("[Gameboard] Clear: placements emptied (CONTROL_BOARD_PALETTE missing — tokens not parked)")
     end
-    local Sync = require("core.sync")
-    Sync.npcs({ reason = "gameboard_clear", force = true })
+    if not hadPlacements and moved == 0 then
+        print("[Gameboard] Clear: no state/token changes — skipped figurine reconcile")
+        Gameboard.reconcileControlBoardFromState({ force = true })
+        return true, nil
+    end
+    syncNpcsFromControlBoard("gameboard_clear")
     return true, nil
 end
 
@@ -2243,6 +2272,7 @@ function Gameboard.reconcileControlBoardFromState(opts)
     local placements = type(npcWorld) == "table" and npcWorld.placements or {}
     local mirrorFp = controlBoardMirrorFingerprint(activeTable, layoutLocked, placements)
     if opts.force ~= true and mirrorFp == lastControlBoardMirrorFingerprint then
+        rebuildAnchorDropEligibilityCache(board)
         return
     end
     lastControlBoardMirrorFingerprint = mirrorFp
@@ -2387,6 +2417,7 @@ function Gameboard.reconcileControlBoardFromState(opts)
     end
 
     applyControlBoardComponentPlayerInvisibility()
+    rebuildAnchorDropEligibilityCache(board)
 end
 
 --- @param obj Object|nil
@@ -2502,6 +2533,24 @@ local function buildTokenByCharacterKey()
         end
     end
     return byKey
+end
+
+--- Build fast lookup for drop events: only group-leading (slotIndex 1) tokens that are currently off CONTROL_BOARD.
+--- @param board Object|nil
+local function rebuildAnchorDropEligibilityCache(board)
+    anchorDropEligibleByTokenGuid = {}
+    if not isGameObject(board) then
+        return
+    end
+    local byKey = buildTokenByCharacterKey()
+    for characterKey, token in pairs(byKey) do
+        if isGameObject(token) and not isTokenOnControlBoardSurface(board, token) then
+            local _, slotIndex = Palette.resolveGroupForCharacterKey(characterKey)
+            if tonumber(slotIndex) == 1 then
+                anchorDropEligibleByTokenGuid[tostring(token.getGUID())] = true
+            end
+        end
+    end
 end
 
 --- @param board Object
@@ -2656,6 +2705,10 @@ end
 --- @param playerColor string|nil
 function Gameboard.onNpcControlTokenDropped(token, playerColor)
     if not isNpcControlToken(token) then
+        return
+    end
+    local tokenGuid = tostring(token.getGUID() or "")
+    if tokenGuid == "" or anchorDropEligibleByTokenGuid[tokenGuid] ~= true then
         return
     end
     local board = getControlBoard()
