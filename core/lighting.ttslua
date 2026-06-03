@@ -102,14 +102,8 @@ function manualPlayerLight2Setup()
   L.SetLightMode(G.GUIDS.SEAT_LIGHT_3_PURPLE, { enabled = true, range = 48.018639, angle = 119.425003, intensity = 1.488999, color = Color(0.525551, 0.525551, 0.525551)}, nil, 5)
 
 
-  L.SetLightMode(G.GUIDS.SEAT_LIGHT_1_RED, {
-    enabled = true,
-    position = Vector(0.00, 23.00, -65.00),
-    rotation = Vector(330, 0.00, 0.00),
-    range = 50,
-    angle = 75,
-    intensity = 2
-}, "Red", 2)
+  L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_PINK,  { enabled = true,
+  position = Vector(0.000000, 19.932762, -53.254978), rotation = Vector(77.287727, 180.000000, 180.000000), range = 117.762299, angle = 80.670097, intensity = 1.627504, color = Color(0.819810, 0.689771, 0.583361)},  "Pink", 2)
 
 
   -- "OFF" modes should change only by having the angle go to zero.
@@ -446,14 +440,15 @@ L.LIGHTMODES = {
             angle = 0
         },
         STANDARD = {
-            enabled = true,
-            color = Color(255 / 255, 255 / 255, 200 / 255),
-            range = 48.645271,
-            angle = 68.982948,
-            intensity = 5.514803
+          enabled = true,
+          range = 117.762299,
+          angle = 80.670097,
+          intensity = 1.627504,
+          color = Color(0.819810, 0.689771, 0.583361)
         },
         HUNGRY = {
-          color = Color(1, 0, 0)
+          color = Color(0.5, 0, 0),
+          intensity = 1.75
         }
     },
     playerLight2Orange = {
@@ -465,14 +460,15 @@ L.LIGHTMODES = {
             angle = 0
         },
         STANDARD = {
-            enabled = true,
-            range = 48.645271,
-            angle = 68.982948,
-            intensity = 5.514803,
-            color = Color(0.718689, 0.657402, 0.810620)
+          enabled = true,
+          range = 117.762299,
+          angle = 80.670097,
+          intensity = 1.627504,
+          color = Color(0.819810, 0.689771, 0.583361)
         },
         HUNGRY = {
-          color = Color(1, 0, 0)
+          color = Color(0.5, 0, 0),
+          intensity = 1.75
         }
     },
     playerLight2Red = {
@@ -484,13 +480,15 @@ L.LIGHTMODES = {
             angle = 0,
         },
         STANDARD = {
-            enabled = true,
-            range = 48.645271,
-            angle = 68.982948,
-            intensity = 5.514803
+          enabled = true,
+          range = 117.762299,
+          angle = 80.670097,
+          intensity = 1.627504,
+          color = Color(0.819810, 0.689771, 0.583361)
         },
         HUNGRY = {
-          color = Color(1, 0, 0)
+          color = Color(0.5, 0, 0),
+          intensity = 1.75
         }
     },
     playerLight2Pink = {
@@ -502,13 +500,15 @@ L.LIGHTMODES = {
             angle = 0
         },
         STANDARD = {
-            enabled = true,
-            range = 48.645271,
-            angle = 68.982948,
-            intensity = 5.514803
+          enabled = true,
+          range = 117.762299,
+          angle = 80.670097,
+          intensity = 1.627504,
+          color = Color(0.819810, 0.689771, 0.583361)
         },
         HUNGRY = {
-          color = Color(1, 0, 0)
+          color = Color(0.5, 0, 0),
+          intensity = 1.75
         }
     },
     playerLight2Purple = {
@@ -520,14 +520,15 @@ L.LIGHTMODES = {
             angle = 0
         },
         STANDARD = {
-            enabled = true,
-            color = Color(255 / 255, 255 / 255, 200 / 255),
-            range = 48.645271,
-            angle = 68.982948,
-            intensity = 5.514803
+          enabled = true,
+          range = 117.762299,
+          angle = 80.670097,
+          intensity = 1.627504,
+          color = Color(0.819810, 0.689771, 0.583361)
         },
         HUNGRY = {
-          color = Color(1, 0, 0)
+          color = Color(0.5, 0, 0),
+          intensity = 1.75
         }
     },
     npcLight2NPC1 = {
@@ -539,14 +540,15 @@ L.LIGHTMODES = {
           angle = 0,
       },
       STANDARD = {
-          enabled = true,
-          color = Color(255 / 255, 255 / 255, 200 / 255),
-          range = 48.645271,
-          angle = 68.982948,
-          intensity = 5.514803
+        enabled = true,
+        range = 117.762299,
+        angle = 80.670097,
+        intensity = 1.627504,
+        color = Color(0.819810, 0.689771, 0.583361)
       },
       HUNGRY = {
-        color = Color(1, 0, 0)
+        color = Color(0.5, 0, 0),
+        intensity = 1.75
       }
     },
     npcLight2NPC2 = {
@@ -558,14 +560,15 @@ L.LIGHTMODES = {
           angle = 0,
       },
       STANDARD = {
-          enabled = true,
-          color = Color(255 / 255, 255 / 255, 200 / 255),
-          range = 48.645271,
-          angle = 68.982948,
-          intensity = 5.514803
+        enabled = true,
+        range = 117.762299,
+        angle = 80.670097,
+        intensity = 1.627504,
+        color = Color(0.819810, 0.689771, 0.583361)
       },
       HUNGRY = {
-        color = Color(1, 0, 0)
+        color = Color(0.5, 0, 0),
+        intensity = 1.75
       }
     },
     npcLight2NPC3 = {
@@ -577,14 +580,15 @@ L.LIGHTMODES = {
           angle = 0,
       },
       STANDARD = {
-          enabled = true,
-          color = Color(255 / 255, 255 / 255, 200 / 255),
-          range = 54.882030,
-          angle = 96.997147,
-          intensity = 5.514803
+        enabled = true,
+        range = 117.762299,
+        angle = 80.670097,
+        intensity = 1.627504,
+        color = Color(0.819810, 0.689771, 0.583361)
       },
       HUNGRY = {
-        color = Color(1, 0, 0)
+        color = Color(0.5, 0, 0),
+        intensity = 1.75
       }
     },
     npcLight2NPC4 = {
@@ -596,14 +600,15 @@ L.LIGHTMODES = {
           angle = 0,
       },
       STANDARD = {
-          enabled = true,
-          color = Color(255 / 255, 255 / 255, 200 / 255),
-          range = 48.645271,
-          angle = 68.982948,
-          intensity = 5.514803
+        enabled = true,
+        range = 117.762299,
+        angle = 80.670097,
+        intensity = 1.627504,
+        color = Color(0.819810, 0.689771, 0.583361)
       },
       HUNGRY = {
-        color = Color(1, 0, 0)
+        color = Color(0.5, 0, 0),
+        intensity = 1.75
       }
     },
     playerLight3Red = {

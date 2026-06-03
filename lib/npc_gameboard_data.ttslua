@@ -56,15 +56,20 @@ D.DEFAULT_STAGE_WORLD = {
 --- Top-level `origin` / `snapYawOffsetDeg` are defaults; rings may override with `origin = {u,v}` / `snapYawOffsetDeg`.
 --- `radialStagger` (optional): STAGE_BOARD / playfield world XZ inches per family step from anchor (`abs(k) * radialStagger` along each snap's radial from `origin` on STAGE; anchor k=0 unchanged). Calibrate against STAGE size (~400), not CONTROL_BOARD minimap size (~40).
 --- See .dev/NPC Object Spawning & Spotlighting/Generating Snap Points For Control Board.md
-D.CONTROL_BOARD_SNAP = {
+D.CONTROL_BOARD_SNAP =
+{
   origin = { u = 0.5, v = 0.35 },
   snapYawOffsetDeg = 0,
   snapGroups = {
-    { num = 7, angleDelta = 7, rays = 8, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.45, origin = {u = 0.5, v = 0.4 }, defaultLightMode = "STANDARD"},
+    { num = 5, angleDelta = 7, rays = 8, groundLevel = -50, radialStagger = 15, maxU = 0.6, maxV = 0.45, origin = {u = 0.5, v = 0.3}, defaultLightMode = "STANDARD"},
     { num = 5, angleDelta = 4, rays = 12, groundLevel = -23, radialStagger = 5, maxU = 0.7, maxV = 0.566, defaultLightMode = "OFF"},
-    { num = 5, angleDelta = 3, rays = 20, groundLevel = 20, radialStagger = 5, maxU = 0.8, maxV = 0.7, defaultLightMode = "OFF"},
-  },
-}
+    { num = 5, angleDelta = 360/5, rays = 1, groundLevel = -50, radialStagger = 0, maxU = 0.25, maxV = 0.55, origin = {u = 0.2, v = 0.5}, defaultLightMode = "OFF"  },
+    { num = 5, angleDelta = 360/5, rays = 1, groundLevel = -50, radialStagger = 0, maxU = 0.45, maxV = 0.85, origin = {u = 0.4, v = 0.8}, defaultLightMode = "OFF"  },
+    { num = 5, angleDelta = 360/5, rays = 1, groundLevel = -50, radialStagger = 0, maxU = 0.65, maxV = 0.85, origin = {u = 0.6, v = 0.8}, defaultLightMode = "OFF"  },
+    { num = 5, angleDelta = 360/5, rays = 1, groundLevel = -50, radialStagger = 0, maxU = 0.85, maxV = 0.55, origin = {u = 0.8, v = 0.5}, defaultLightMode = "OFF"
+  }
+
+}}
 
 --- CONTROL_BOARD_PALETTE: 20 columns × 40 rows (800 snaps). Object scale typically {5, 1, 10} (X wide, Z tall).
 D.CONTROL_BOARD_PALETTE_SNAP = {

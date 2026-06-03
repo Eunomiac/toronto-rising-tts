@@ -663,7 +663,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/razorWhit.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/razorWhitBack.webp"
       },
-      scale = 50,
+      scale = 60,
       seatedScale = 66
     },
     groups = {
@@ -818,7 +818,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/gabrielCollard.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/gabrielCollardBack.webp"
       },
-      scale = 53,
+      scale = 60,
       seatedScale = 66
     },
     groups = {
@@ -856,7 +856,7 @@ D.characters = {
         front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/ulyssesCelaj.webp",
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/ulyssesCelajBack.webp"
       },
-      scale = 53,
+      scale = 58,
       seatedScale = 66
     },
     groups = {
