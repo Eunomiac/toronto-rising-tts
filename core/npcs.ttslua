@@ -666,6 +666,20 @@ local function applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime)
     lightAlignFigOverride[npcName] = nil
 end
 
+--- Shortest angular distance in degrees (yaw wraps at 360).
+--- @param a number|nil
+--- @param b number|nil
+--- @return number
+local function yawDiffDeg(a, b)
+    local da = tonumber(a) or 0
+    local db = tonumber(b) or 0
+    local d = math.abs(da - db) % 360
+    if d > 180 then
+        d = 360 - d
+    end
+    return d
+end
+
 --- @param stored table|nil last applied stage pose on the instance record
 --- @param placement table current intent `{ u, v, groundLevel? }`
 --- @return boolean
@@ -691,8 +705,7 @@ local function stagePlacementMatchesRecord(stored, placement)
     if type(Gameboard.placementBoardRelYawDeg) == "function" then
         derivedYaw = Gameboard.placementBoardRelYawDeg(u, v)
     end
-    local dy = math.abs((tonumber(stored.yaw) or 0) - derivedYaw)
-    return dy < 1
+    return yawDiffDeg(stored.yaw, derivedYaw) < 1
 end
 
 --- @param placement table
@@ -2070,9 +2083,8 @@ local function reconcileStepOneAreaRemovals(intent)
                         if U.Type(sp) == "table" then
                             local du = math.abs((tonumber(sp.u) or 0) - (tonumber(ci.u) or 0))
                             local dv = math.abs((tonumber(sp.v) or 0) - (tonumber(ci.v) or 0))
-                            local dy = math.abs((tonumber(sp.yaw) or 0) - (tonumber(ci.yaw) or 0))
                             -- Placement only: do not compare rec.npcLightMode here (step 5 applies intent mode).
-                            keep = du < 0.002 and dv < 0.002 and dy < 1
+                            keep = du < 0.002 and dv < 0.002 and yawDiffDeg(sp.yaw, ci.yaw) < 1
                         end
                     end
                 end
