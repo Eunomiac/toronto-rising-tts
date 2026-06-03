@@ -1,0 +1,1078 @@
+--[[
+    Gameboard & Stage manual E2E harness (TOR-141 / TOR-169).
+    Loaded only via core/debug.ttslua console macros — not used in normal play.
+
+    Agent: .dev/E2E Playbooks/Gameboard-E2E.md
+]]
+
+local U = require("lib.util")
+local S = require("core.state")
+local C = require("lib.constants")
+local G = require("lib.guids")
+local Gameboard = require("core.npc_gameboard")
+local NPCS = require("core.npcs")
+local Sync = require("core.sync")
+local DATA = require("lib.npc_gameboard_data")
+local Palette = require("lib.npc_control_board_palette")
+
+local E2E_GB = {}
+
+--- Playbook constants — keep in sync with `.dev/E2E Playbooks/Gameboard-E2E.md`.
+E2E_GB.FIXTURE = {
+    sceneSlot = "scenes_lib_slot_03",
+    npcA = "myleneHamelin",
+    npcB = "adrianVarga",
+    tableKey = "Table A",
+    tableKeyNoNpc2 = "Table B1",
+    uvA = { u = 0.18, v = 0.72 },
+    uvB = { u = 0.42, v = 0.55 },
+    snapMinCount = 40,
+    uvTol = 0.002,
+    yawTolDeg = 1,
+    worldTol = 2.5,
+}
+
+local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
+local TOKEN_GM_PREFIX = DATA.TOKEN_GM_PREFIX
+local GM_FIG_PREFIX = "npcInstance:"
+
+local function fixture()
+    return E2E_GB.FIXTURE
+end
+
+local function yawDiffDeg(a, b)
+    local da = tonumber(a) or 0
+    local db = tonumber(b) or 0
+    local d = math.abs(da - db) % 360
+    if d > 180 then
+        d = 360 - d
+    end
+    return d
+end
+
+local function dist3(a, b)
+    if a == nil or b == nil then
+        return math.huge
+    end
+    local dx = (a.x or 0) - (b.x or 0)
+    local dy = (a.y or 0) - (b.y or 0)
+    local dz = (a.z or 0) - (b.z or 0)
+    return math.sqrt(dx * dx + dy * dy + dz * dz)
+end
+
+local function isRollExpectMatcher(expected)
+    if type(expected) ~= "table" then
+        return false
+    end
+    for k, _ in pairs(expected) do
+        if k ~= "present" and k ~= "min" and k ~= "max" and k ~= "gte" and k ~= "lte" and k ~= "oneOf" then
+            return false
+        end
+    end
+    return true
+end
+
+--- @param actual any
+--- @param expected any
+--- @param path string
+--- @param failures table
+local function compareExpected(actual, expected, path, failures)
+    if expected == nil then
+        return
+    end
+
+    if type(expected) == "table" and isRollExpectMatcher(expected) then
+        if expected.present == true then
+            if actual == nil then
+                failures[#failures + 1] = path .. ": expected value to be present, got nil"
+            end
+            return
+        end
+        if type(actual) ~= "number" then
+            failures[#failures + 1] = path .. ": expected number, got " .. type(actual)
+            return
+        end
+        if type(expected.min) == "number" and actual < expected.min then
+            failures[#failures + 1] = path .. ": " .. tostring(actual) .. " < min " .. tostring(expected.min)
+        end
+        if type(expected.max) == "number" and actual > expected.max then
+            failures[#failures + 1] = path .. ": " .. tostring(actual) .. " > max " .. tostring(expected.max)
+        end
+        if type(expected.gte) == "number" and actual < expected.gte then
+            failures[#failures + 1] = path .. ": " .. tostring(actual) .. " < gte " .. tostring(expected.gte)
+        end
+        if type(expected.lte) == "number" and actual > expected.lte then
+            failures[#failures + 1] = path .. ": " .. tostring(actual) .. " > lte " .. tostring(expected.lte)
+        end
+        if type(expected.oneOf) == "table" then
+            local found = false
+            for _, allowed in ipairs(expected.oneOf) do
+                if actual == allowed then
+                    found = true
+                    break
+                end
+            end
+            if not found then
+                failures[#failures + 1] = path .. ": " .. tostring(actual) .. " not in oneOf list"
+            end
+        end
+        return
+    end
+
+    if type(expected) ~= "table" then
+        if actual ~= expected then
+            failures[#failures + 1] = path .. ": got " .. tostring(actual) .. ", want " .. tostring(expected)
+        end
+        return
+    end
+
+    if type(actual) ~= "table" then
+        failures[#failures + 1] = path .. ": expected table, got " .. type(actual)
+        return
+    end
+
+    if expected.present == true and actual == nil then
+        failures[#failures + 1] = path .. ": expected value to be present, got nil"
+        return
+    end
+
+    for key, subExpected in pairs(expected) do
+        if key == "present" then
+            if subExpected == true and actual == nil then
+                failures[#failures + 1] = path .. ": expected value to be present, got nil"
+            end
+        else
+            compareExpected(actual[key], subExpected, path .. "." .. tostring(key), failures)
+        end
+    end
+end
+
+local function printGbResult(label, failures)
+    if #failures == 0 then
+        print("[gbConfirm] PASS — " .. label)
+        return true
+    end
+    print("[gbConfirm] FAIL — " .. label)
+    for i = 1, #failures do
+        print("  - " .. failures[i])
+    end
+    return false
+end
+
+local function getControlBoard()
+    return getObjectFromGUID(G.GUIDS.CONTROL_BOARD)
+end
+
+local function getStageBoard()
+    return getObjectFromGUID(G.GUIDS.STAGE_BOARD)
+end
+
+local function getPaletteBoard()
+    return getObjectFromGUID(G.GUIDS.CONTROL_BOARD_PALETTE)
+end
+
+local function resolveTokenCharacterKey(token)
+    if not U.isGameObject(token) then
+        return nil
+    end
+    local notes = token.getGMNotes and token.getGMNotes() or ""
+    if type(notes) ~= "string" then
+        notes = ""
+    end
+    local ck = string.match(notes, "^" .. TOKEN_GM_PREFIX .. "([%w_]+)$")
+    if ck ~= nil then
+        return ck
+    end
+    local name = token.getName and token.getName() or ""
+    if type(name) == "string" and NPCS.characters[name] ~= nil then
+        return name
+    end
+    return nil
+end
+
+local function findTokenByCharacterKey(characterKey)
+    local tagged = getObjectsWithTag(TAG_TOKEN) or {}
+    for _, tok in ipairs(tagged) do
+        if U.isGameObject(tok) and resolveTokenCharacterKey(tok) == characterKey then
+            return tok
+        end
+    end
+    return nil
+end
+
+local function figurineGmNpcName(obj)
+    if not U.isGameObject(obj) then
+        return nil
+    end
+    local notes = obj.getGMNotes and obj.getGMNotes() or ""
+    if type(notes) ~= "string" then
+        return nil
+    end
+    return string.match(notes, "^" .. GM_FIG_PREFIX .. "([%w_]+)$")
+end
+
+local function findFigurineForNpc(characterKey)
+    local tagged = getObjectsWithTag("npc_figurine") or {}
+    for _, obj in ipairs(tagged) do
+        if U.isGameObject(obj) and figurineGmNpcName(obj) == characterKey then
+            return obj
+        end
+    end
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local tag = tostring(seatKey) .. "Object"
+        local objs = getObjectsWithTag(tag) or {}
+        for _, obj in ipairs(objs) do
+            if U.isGameObject(obj) and figurineGmNpcName(obj) == characterKey then
+                return obj
+            end
+        end
+    end
+    return nil
+end
+
+local function boardYawDeg(board)
+    if not U.isGameObject(board) then
+        return 0
+    end
+    local rot = board.getRotation()
+    return (rot and rot.y) or 0
+end
+
+local function setTokenRotationFaceUp(token, board, u, v, faceUp)
+    if not U.isGameObject(token) or not U.isGameObject(board) then
+        return
+    end
+    local relYaw = Gameboard.placementBoardRelYawDeg(u, v)
+    local rz = faceUp and 0 or 180
+    token.setRotation(Vector(0, boardYawDeg(board) + relYaw, rz))
+end
+
+local function placeTokenOnBoard(characterKey, u, v, faceUp)
+    local fx = fixture()
+    local token = findTokenByCharacterKey(characterKey)
+    local board = getControlBoard()
+    if token == nil then
+        return false, "token missing for " .. tostring(characterKey)
+    end
+    if board == nil then
+        return false, "CONTROL_BOARD missing"
+    end
+    token.setPosition(Gameboard.worldOnControlBoard(board, u, v))
+    setTokenRotationFaceUp(token, board, u, v, faceUp ~= false)
+    Gameboard.setHiddenFromPlayerColors(token)
+    return true, nil
+end
+
+local function resolveSceneKeyFromFixtureSlot()
+    local slot = fixture().sceneSlot
+    local idx = tonumber(string.match(slot, "scenes_lib_slot_(%d+)$"))
+    if idx == nil then
+        return nil, "invalid scene slot id: " .. tostring(slot)
+    end
+    local order = S.getStateVal("sceneLibrary", "order") or {}
+    local key = order[idx]
+    if type(key) ~= "string" or key == "" then
+        return nil, "sceneLibrary.order[" .. tostring(idx) .. "] missing (slot " .. slot .. ")"
+    end
+    return key, nil
+end
+
+local function libraryPlacementsForSceneKey(sceneKey)
+    local sessionScene = S.getStateVal("sceneLibrary", "scenes", sceneKey, "sessionScene")
+    if type(sessionScene) ~= "table" then
+        return nil
+    end
+    local npcWorld = sessionScene.npcWorld
+    if type(npcWorld) ~= "table" then
+        return {}
+    end
+    local placements = npcWorld.placements
+    if type(placements) ~= "table" then
+        return {}
+    end
+    return placements
+end
+
+local function countPlacementKeys(placements)
+    local n = 0
+    if type(placements) ~= "table" then
+        return 0
+    end
+    for k, row in pairs(placements) do
+        if type(k) == "string" and type(row) == "table" and row.u ~= nil and row.v ~= nil then
+            n = n + 1
+        end
+    end
+    return n
+end
+
+local function clearNpcSeatsAndPlacements()
+    S.setStateVal({}, "sessionScene", "npcWorld", "placements")
+    S.setStateVal(false, "sessionScene", "npcWorld", "layoutLock")
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        S.setStateVal(false, "seatLayout", "occupiedNPCSlots", seatKey)
+    end
+    local seatSlots = S.getStateVal("sessionScene", "seatSlots")
+    if type(seatSlots) ~= "table" then
+        seatSlots = {}
+    end
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        seatSlots[seatKey] = { slotEmpty = true, isPresent = true }
+    end
+    S.setStateVal(seatSlots, "sessionScene", "seatSlots")
+    S.validateState()
+end
+
+local function retreatAllFixtureNpcs()
+    local fx = fixture()
+    for _, ck in ipairs({ fx.npcA, fx.npcB }) do
+        if NPCS.characters[ck] ~= nil then
+            NPCS.retreatNpcInstanceToPreloadPool(ck, { skipUiRefresh = true, skipSeatSync = true })
+        end
+    end
+end
+
+local function ensureFixtureNpcsInPreload()
+    local fx = fixture()
+    for _, ck in ipairs({ fx.npcA, fx.npcB }) do
+        if NPCS.characters[ck] == nil then
+            return false, "unknown NPC character: " .. tostring(ck)
+        end
+        local ok, err = NPCS.ensureNpcInPreloadZone(ck, { deferUiRefresh = true, skipSeatSync = true })
+        if not ok then
+            return false, err or ("preload failed for " .. ck)
+        end
+    end
+    return true, nil
+end
+
+local function setCurrentTableKey(tableKey)
+    S.setStateVal(tableKey, "seatLayout", "currentTableKey")
+    S.validateState()
+end
+
+local function setPlacementRow(characterKey, u, v, npcLightMode)
+    local placements = S.getStateVal("sessionScene", "npcWorld", "placements") or {}
+    placements[characterKey] = {
+        u = u,
+        v = v,
+        npcLightMode = npcLightMode or "STANDARD",
+    }
+    S.setStateVal(placements, "sessionScene", "npcWorld", "placements")
+    S.validateState()
+end
+
+local function assignSeatSlot(seatKey, characterKey, isPresent)
+    local seatSlots = S.getStateVal("sessionScene", "seatSlots") or {}
+    seatSlots[seatKey] = {
+        characterKey = characterKey,
+        slotEmpty = false,
+        isPresent = isPresent ~= false,
+    }
+    S.setStateVal(seatSlots, "sessionScene", "seatSlots")
+    S.setStateVal(characterKey, "seatLayout", "occupiedNPCSlots", seatKey)
+    S.validateState()
+end
+
+local function tokenOnPalette(characterKey)
+    local token = findTokenByCharacterKey(characterKey)
+    local palette = getPaletteBoard()
+    if token == nil or palette == nil then
+        return false
+    end
+    return Palette.isTokenOnPaletteBoard(palette, token)
+end
+
+local function tokenOnControlBoard(characterKey)
+    local board = getControlBoard()
+    local token = findTokenByCharacterKey(characterKey)
+    if board == nil or token == nil then
+        return false
+    end
+    local palette = getPaletteBoard()
+    if palette ~= nil and Palette.isTokenOnPaletteBoard(palette, token) then
+        return false
+    end
+    local scanned = Gameboard.scanControlBoardTokens(board)
+    for _, row in ipairs(scanned) do
+        if row.characterKey == characterKey then
+            return true
+        end
+    end
+    return false
+end
+
+--- @return table|nil placements map
+function E2E_GB.probePlacements()
+    local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
+    if type(placements) ~= "table" then
+        return {}
+    end
+    return placements
+end
+
+--- @return number|nil distance world units; nil if token missing
+function E2E_GB.probeTokenMirror(characterKey, u, v, tol)
+    tol = tonumber(tol) or fixture().worldTol
+    local board = getControlBoard()
+    local token = findTokenByCharacterKey(characterKey)
+    if board == nil or token == nil then
+        return nil
+    end
+    local want = Gameboard.worldOnControlBoard(board, u, v)
+    return dist3(token.getPosition(), want)
+end
+
+--- @return number|nil distance; nil if figurine missing
+function E2E_GB.probeFigurineAtStageUv(characterKey, u, v, tol)
+    tol = tonumber(tol) or fixture().worldTol
+    local fig = findFigurineForNpc(characterKey)
+    if fig == nil then
+        return nil
+    end
+    local row = (S.getStateVal("sessionScene", "npcWorld", "placements") or {})[characterKey]
+    local groundLevel = type(row) == "table" and row.groundLevel or nil
+    local want = Gameboard.worldFromUv(u, v, { groundLevel = groundLevel })
+    return dist3(fig.getPosition(), want)
+end
+
+--- @return number count of pooled seat figurines on `seatKey` tag
+function E2E_GB.probeDuplicateSeatFigure(seatKey)
+    local tag = tostring(seatKey) .. "Object"
+    local wantName = "SEAT_FIGURE_" .. tostring(seatKey)
+    local count = 0
+    local objs = getObjectsWithTag(tag) or {}
+    for _, obj in ipairs(objs) do
+        if NPCS.isPooledFigurineObject(obj) then
+            local name = obj.getName and obj.getName() or ""
+            if name == wantName or string.match(tostring(name), "^SEAT_FIGURE_") then
+                count = count + 1
+            end
+        end
+    end
+    return count
+end
+
+--- @return string|nil target stage|seat|preload
+function E2E_GB.probeIntentTarget(characterKey)
+    local intent = NPCS.resolveNpcPlacementIntent()
+    if type(intent) ~= "table" or type(intent.byCharacter) ~= "table" then
+        return nil
+    end
+    local ci = intent.byCharacter[characterKey]
+    if type(ci) ~= "table" then
+        return nil
+    end
+    return ci.target
+end
+
+--- @return number
+function E2E_GB.probeNpcSeatFigurineCount(seatKey)
+    return E2E_GB.probeDuplicateSeatFigure(seatKey)
+end
+
+--- Single assertion block (state + optional probes).
+--- @param label string
+--- @param expected table
+--- @return boolean
+function E2E_GB.confirm(label, expected)
+    expected = type(expected) == "table" and expected or {}
+    local failures = {}
+    if type(expected.placements) == "table" then
+        compareExpected(E2E_GB.probePlacements(), expected.placements, "placements", failures)
+    end
+    if type(expected.placementRow) == "table" then
+        local ck = expected.placementRow.characterKey
+        local placements = E2E_GB.probePlacements()
+        compareExpected(placements[ck], expected.placementRow.row, "placements." .. tostring(ck), failures)
+    end
+    if type(expected.intentTarget) == "table" then
+        compareExpected(
+            E2E_GB.probeIntentTarget(expected.intentTarget.characterKey),
+            expected.intentTarget.target,
+            "intent." .. tostring(expected.intentTarget.characterKey),
+            failures
+        )
+    end
+    if type(expected.tokenMirror) == "table" then
+        local tm = expected.tokenMirror
+        local dist = E2E_GB.probeTokenMirror(tm.characterKey, tm.u, tm.v, tm.tol)
+        if dist == nil then
+            failures[#failures + 1] = "tokenMirror: token missing for " .. tostring(tm.characterKey)
+        elseif dist > (tm.tol or fixture().worldTol) then
+            failures[#failures + 1] = "tokenMirror."
+                .. tostring(tm.characterKey)
+                .. ": dist "
+                .. tostring(dist)
+                .. " > "
+                .. tostring(tm.tol or fixture().worldTol)
+        end
+    end
+    if type(expected.figurineStage) == "table" then
+        local fs = expected.figurineStage
+        local dist = E2E_GB.probeFigurineAtStageUv(fs.characterKey, fs.u, fs.v, fs.tol)
+        if dist == nil then
+            failures[#failures + 1] = "figurineStage: figurine missing for " .. tostring(fs.characterKey)
+        elseif dist > (fs.tol or fixture().worldTol) then
+            failures[#failures + 1] = "figurineStage."
+                .. tostring(fs.characterKey)
+                .. ": dist "
+                .. tostring(dist)
+        end
+    end
+    if type(expected.duplicateSeatFigure) == "table" then
+        local ds = expected.duplicateSeatFigure
+        compareExpected(
+            E2E_GB.probeDuplicateSeatFigure(ds.seatKey),
+            ds.count,
+            "duplicateSeatFigure." .. tostring(ds.seatKey),
+            failures
+        )
+    end
+    return printGbResult(label, failures)
+end
+
+--- @return boolean
+function E2E_GB.runPrereqCheck()
+    local failures = {}
+    local fx = fixture()
+
+    if getStageBoard() == nil then
+        failures[#failures + 1] = "STAGE_BOARD missing (GUID " .. tostring(G.GUIDS.STAGE_BOARD) .. ")"
+    end
+    if getControlBoard() == nil then
+        failures[#failures + 1] = "CONTROL_BOARD missing (GUID " .. tostring(G.GUIDS.CONTROL_BOARD) .. ")"
+    end
+    if getPaletteBoard() == nil then
+        failures[#failures + 1] = "CONTROL_BOARD_PALETTE missing"
+    end
+
+    local tokens = getObjectsWithTag(TAG_TOKEN) or {}
+    if #tokens < 2 then
+        failures[#failures + 1] = "npc_control_token count < 2 (run DEBUG.spawnNpcControlBoardTokens)"
+    end
+
+    if findTokenByCharacterKey(fx.npcA) == nil then
+        failures[#failures + 1] = "token missing for " .. fx.npcA
+    end
+    if findTokenByCharacterKey(fx.npcB) == nil then
+        failures[#failures + 1] = "token missing for " .. fx.npcB
+    end
+
+    if NPCS.characters[fx.npcA] == nil or NPCS.characters[fx.npcB] == nil then
+        failures[#failures + 1] = "fixture NPC not in NPCS.characters"
+    end
+
+    local sceneKey, sceneErr = resolveSceneKeyFromFixtureSlot()
+    if sceneKey == nil then
+        failures[#failures + 1] = sceneErr or "scene row missing"
+    else
+        local libPlacements = libraryPlacementsForSceneKey(sceneKey)
+        if countPlacementKeys(libPlacements) < 1 then
+            failures[#failures + 1] = "scene row "
+                .. sceneKey
+                .. " has no npcWorld.placements (pick another GB_E2E_SCENE_ROW)"
+        end
+    end
+
+    return printGbResult("gbE2ePrereqCheck", failures)
+end
+
+--- @return boolean
+function E2E_GB.reset()
+    local failures = {}
+    clearNpcSeatsAndPlacements()
+    retreatAllFixtureNpcs()
+    if GlobalGameboardClear ~= nil then
+        GlobalGameboardClear({})
+    else
+        Gameboard.clearControlBoard()
+    end
+    local okPre, errPre = ensureFixtureNpcsInPreload()
+    if not okPre then
+        failures[#failures + 1] = errPre or "preload fixture NPCs failed"
+    end
+    setCurrentTableKey(fixture().tableKey)
+    Sync.npcs({ force = true, reason = "e2e_gb_reset" })
+    Gameboard.reconcileControlBoardFromState({ force = true })
+
+    local placements = E2E_GB.probePlacements()
+    if next(placements) ~= nil then
+        failures[#failures + 1] = "placements not empty after reset"
+    end
+
+    return printGbResult("gbE2eReset", failures)
+end
+
+local function assertPlacementUvYaw(failures, label, characterKey, u, v)
+    local fx = fixture()
+    local row = (E2E_GB.probePlacements() or {})[characterKey]
+    if type(row) ~= "table" then
+        failures[#failures + 1] = label .. ": placement row missing for " .. characterKey
+        return
+    end
+    local du = math.abs((tonumber(row.u) or 0) - u)
+    local dv = math.abs((tonumber(row.v) or 0) - v)
+    if du > fx.uvTol or dv > fx.uvTol then
+        failures[#failures + 1] = label
+            .. ": u/v drift du="
+            .. tostring(du)
+            .. " dv="
+            .. tostring(dv)
+    end
+    local wantYaw = Gameboard.placementBoardRelYawDeg(u, v)
+    local gotYaw = tonumber(row.yaw) or Gameboard.placementBoardRelYawDeg(tonumber(row.u), tonumber(row.v))
+    if yawDiffDeg(gotYaw, wantYaw) > fx.yawTolDeg then
+        failures[#failures + 1] = label
+            .. ": yaw drift got="
+            .. tostring(gotYaw)
+            .. " want="
+            .. tostring(wantYaw)
+    end
+end
+
+local function runSmokeAutomated(failures)
+    local fx = fixture()
+    local uvA = fx.uvA
+    local uvB = fx.uvB
+
+    if not E2E_GB.reset() then
+        failures[#failures + 1] = "S0: gbE2eReset failed"
+        return false
+    end
+
+    Gameboard.reconcileControlBoardFromState({ force = true })
+    local snapTotal = Gameboard.countControlBoardSnapPoints()
+    if snapTotal < fx.snapMinCount then
+        failures[#failures + 1] = "S1: snap count " .. tostring(snapTotal) .. " < " .. tostring(fx.snapMinCount)
+    end
+
+    local okPlace, errPlace = placeTokenOnBoard(fx.npcA, uvA.u, uvA.v, true)
+    if not okPlace then
+        failures[#failures + 1] = "S2: " .. tostring(errPlace)
+    else
+        local token = findTokenByCharacterKey(fx.npcA)
+        if token == nil or not U.isGameObject(token) then
+            failures[#failures + 1] = "S2: token not npc_control_token after place"
+        end
+    end
+
+    if GlobalGameboardApply ~= nil then
+        GlobalGameboardApply({})
+    else
+        Gameboard.applyFromControlBoard()
+    end
+    assertPlacementUvYaw(failures, "S3", fx.npcA, uvA.u, uvA.v)
+
+    Sync.npcs({ force = true, reason = "e2e_smoke_s4" })
+    local figDist = E2E_GB.probeFigurineAtStageUv(fx.npcA, uvA.u, uvA.v, fx.worldTol)
+    if figDist == nil then
+        failures[#failures + 1] = "S4: figurine missing at stage UV"
+    elseif figDist > fx.worldTol then
+        failures[#failures + 1] = "S4: figurine far from stage UV dist=" .. tostring(figDist)
+    end
+    local tagged = getObjectsWithTag("npc_figurine") or {}
+    local instanceCount = 0
+    for _, obj in ipairs(tagged) do
+        if figurineGmNpcName(obj) == fx.npcA then
+            instanceCount = instanceCount + 1
+        end
+    end
+    if instanceCount ~= 1 then
+        failures[#failures + 1] = "S4: expected 1 npc_figurine for A, got " .. tostring(instanceCount)
+    end
+
+    local tokDist = E2E_GB.probeTokenMirror(fx.npcA, uvA.u, uvA.v, fx.worldTol)
+    if tokDist == nil or tokDist > fx.worldTol then
+        failures[#failures + 1] = "S5: token not mirrored on board (dist=" .. tostring(tokDist) .. ")"
+    end
+
+    if GlobalGameboardClear ~= nil then
+        GlobalGameboardClear({})
+    else
+        Gameboard.clearControlBoard()
+    end
+    if next(E2E_GB.probePlacements() or {}) ~= nil then
+        failures[#failures + 1] = "S6: placements not empty after clear"
+    end
+    if E2E_GB.probeIntentTarget(fx.npcA) == "stage" then
+        failures[#failures + 1] = "S6: figurine still stage-bound after clear"
+    end
+
+    placeTokenOnBoard(fx.npcA, uvA.u, uvA.v, true)
+    if GlobalGameboardApply ~= nil then
+        GlobalGameboardApply({})
+    end
+    local modeUp = (E2E_GB.probePlacements() or {})[fx.npcA]
+    if type(modeUp) == "table" and modeUp.npcLightMode ~= "STANDARD" then
+        failures[#failures + 1] = "S7: face-up token should yield STANDARD, got " .. tostring(modeUp.npcLightMode)
+    end
+    GlobalGameboardClear({})
+    placeTokenOnBoard(fx.npcA, uvA.u, uvA.v, false)
+    if GlobalGameboardApply ~= nil then
+        GlobalGameboardApply({})
+    end
+    local modeDown = (E2E_GB.probePlacements() or {})[fx.npcA]
+    if type(modeDown) == "table" and modeDown.npcLightMode ~= "OFF" then
+        failures[#failures + 1] = "S7: face-down token should yield OFF, got " .. tostring(modeDown.npcLightMode)
+    end
+    GlobalGameboardClear({})
+
+    return true
+end
+
+local function printHumanGateSceneApply()
+    local fx = fixture()
+    local sceneKey, err = resolveSceneKeyFromFixtureSlot()
+    if sceneKey == nil then
+        print("[gbE2eRunSmoke] HUMAN GATE blocked: " .. tostring(err))
+        return
+    end
+    _G.gbE2ePending = "scene_apply"
+    _G.gbE2eSceneExpectedPlacements = libraryPlacementsForSceneKey(sceneKey)
+    _G.gbE2eSceneKey = sceneKey
+    print("\n[gbE2eRunSmoke] HUMAN GATE — scene_apply")
+    print("  1. Open Storyteller Scenes panel.")
+    print("  2. Apply library row: " .. fx.sceneSlot .. " (scene key: " .. sceneKey .. ").")
+    print("  3. Wait 12 seconds (blindfold + settle).")
+    print("  4. Run: lua gbE2eContinue()")
+end
+
+local function runContinueSceneApply(failures)
+    local fx = fixture()
+    local expected = _G.gbE2eSceneExpectedPlacements
+    if type(expected) ~= "table" then
+        failures[#failures + 1] = "scene_apply: missing _G.gbE2eSceneExpectedPlacements (re-run gbE2eRunSmoke)"
+        return
+    end
+    local live = E2E_GB.probePlacements() or {}
+    local matched = 0
+    for ck, row in pairs(expected) do
+        if type(ck) == "string" and type(row) == "table" then
+            local liveRow = live[ck]
+            if type(liveRow) == "table" then
+                matched = matched + 1
+                assertPlacementUvYaw(failures, "scene_apply." .. ck, ck, tonumber(row.u), tonumber(row.v))
+                if E2E_GB.probeIntentTarget(ck) ~= "stage" then
+                    failures[#failures + 1] = "scene_apply: intent for " .. ck .. " should be stage"
+                end
+                local figDist = E2E_GB.probeFigurineAtStageUv(ck, tonumber(row.u), tonumber(row.v), fx.worldTol * 2)
+                if figDist == nil then
+                    failures[#failures + 1] = "scene_apply: figurine missing on stage for " .. ck
+                end
+                local tokDist = E2E_GB.probeTokenMirror(ck, tonumber(row.u), tonumber(row.v), fx.worldTol * 2)
+                if tokDist == nil or tokDist > fx.worldTol * 2 then
+                    failures[#failures + 1] = "scene_apply: token not on CONTROL_BOARD for " .. ck
+                end
+            end
+        end
+    end
+    if matched < 1 then
+        failures[#failures + 1] = "scene_apply: live placements match no keys from library row"
+    end
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local occ = S.getStateVal("seatLayout", "occupiedNPCSlots", seatKey)
+        if occ == false or occ == nil then
+            local dup = E2E_GB.probeDuplicateSeatFigure(seatKey)
+            if dup > 0 then
+                failures[#failures + 1] = "TOR-177: unoccupied "
+                    .. seatKey
+                    .. " has "
+                    .. tostring(dup)
+                    .. " SEAT_FIGURE pooled duplicate(s)"
+            end
+        end
+    end
+end
+
+local function runContinueReload(failures)
+    local snap = _G.gbE2eReloadSnapshot
+    if type(snap) ~= "table" or type(snap.placements) ~= "table" then
+        failures[#failures + 1] = "reload: missing snapshot (re-run gbE2eRunFull before Save & Play)"
+        return
+    end
+    local live = E2E_GB.probePlacements() or {}
+    for ck, row in pairs(snap.placements) do
+        if type(ck) == "string" and type(row) == "table" then
+            assertPlacementUvYaw(failures, "reload." .. ck, ck, tonumber(row.u), tonumber(row.v))
+            if live[ck] == nil then
+                failures[#failures + 1] = "reload: placement missing for " .. ck
+            end
+        end
+    end
+end
+
+--- Resume after human gate (`_G.gbE2ePending`).
+--- @return boolean
+function E2E_GB.runContinue()
+    local pending = _G.gbE2ePending
+    if type(pending) ~= "string" or pending == "" then
+        print("[gbE2eContinue] FAIL: no pending gate (run gbE2eRunSmoke or gbE2eRunFull first)")
+        return false
+    end
+    local failures = {}
+    if pending == "scene_apply" then
+        runContinueSceneApply(failures)
+    elseif pending == "reload" then
+        runContinueReload(failures)
+    else
+        failures[#failures + 1] = "unknown pending gate: " .. tostring(pending)
+    end
+    _G.gbE2ePending = nil
+    return printGbResult("gbE2eContinue:" .. pending, failures)
+end
+
+--- @return boolean true when automated blocks pass (may stop at HUMAN GATE without failing)
+function E2E_GB.runSmoke()
+    local failures = {}
+    runSmokeAutomated(failures)
+    local ok = printGbResult("gbE2eRunSmoke (automated)", failures)
+    if ok then
+        printHumanGateSceneApply()
+    end
+    return ok
+end
+
+local function runFullSuites(failures)
+    local fx = fixture()
+
+    setPlacementRow(fx.npcA, fx.uvA.u, fx.uvA.v, "STANDARD")
+    assignSeatSlot("NPC1", fx.npcA, true)
+    Sync.npcs({ force = true, reason = "e2e_f1" })
+    if E2E_GB.probeIntentTarget(fx.npcA) ~= "stage" then
+        failures[#failures + 1] = "F1: intent should be stage when placement + seat slot assigned"
+    end
+    local atSeat = false
+    local tag = "NPC1Object"
+    for _, obj in ipairs(getObjectsWithTag(tag) or {}) do
+        if figurineGmNpcName(obj) == fx.npcA and NPCS.isPooledFigurineObject(obj) then
+            atSeat = true
+        end
+    end
+    if atSeat then
+        failures[#failures + 1] = "F1: figurine at NPC1 seat while stage placement active"
+    end
+
+    clearNpcSeatsAndPlacements()
+    assignSeatSlot("NPC1", fx.npcA, true)
+    Sync.npcs({ force = true, reason = "e2e_f2" })
+    if E2E_GB.probeIntentTarget(fx.npcA) ~= "seat" then
+        failures[#failures + 1] = "F2: intent should be seat when only seatSlots assigned"
+    end
+    local figDistF2 = E2E_GB.probeFigurineAtStageUv(fx.npcA, fx.uvA.u, fx.uvA.v, fx.worldTol * 3)
+    if figDistF2 ~= nil and figDistF2 < fx.worldTol * 3 then
+        failures[#failures + 1] = "F2: figurine still at stage UV while seated"
+    end
+
+    clearNpcSeatsAndPlacements()
+    setCurrentTableKey(fx.tableKeyNoNpc2)
+    assignSeatSlot("NPC2", fx.npcB, true)
+    Sync.npcs({ force = true, reason = "e2e_f3" })
+    if E2E_GB.probeIntentTarget(fx.npcB) ~= "preload" then
+        failures[#failures + 1] = "F3: NPC2 on Table B1 should retain preload intent, got "
+            .. tostring(E2E_GB.probeIntentTarget(fx.npcB))
+    end
+    if S.getStateVal("seatLayout", "occupiedNPCSlots", "NPC2") ~= fx.npcB then
+        failures[#failures + 1] = "F3: occupiedNPCSlots.NPC2 should remain " .. fx.npcB
+    end
+
+    setCurrentTableKey(fx.tableKey)
+    clearNpcSeatsAndPlacements()
+    assignSeatSlot("NPC1", fx.npcA, false)
+    Sync.npcs({ force = true, reason = "e2e_f4" })
+    local chairGuid = G.GUIDS.SEAT_CHAIR_NPC1
+    local chair = chairGuid ~= nil and getObjectFromGUID(chairGuid) or nil
+    if U.isGameObject(chair) and chair.getInvisibleTo ~= nil then
+        local inv = chair.getInvisibleTo()
+        if type(inv) ~= "table" or #inv < 1 then
+            failures[#failures + 1] = "F4: NPC1 chair should be hidden from PCs when isPresent=false"
+        end
+    end
+
+    clearNpcSeatsAndPlacements()
+    retreatAllFixtureNpcs()
+    setPlacementRow(fx.npcA, fx.uvA.u, fx.uvA.v, "STANDARD")
+    Gameboard.syncTokensToPalette()
+    if not tokenOnPalette(fx.npcA) then
+        failures[#failures + 1] = "G1: setup — token should start on palette"
+    end
+    Gameboard.reconcileControlBoardFromState({ force = true })
+    if not tokenOnControlBoard(fx.npcA) then
+        failures[#failures + 1] = "G1: token still on palette after reconcile with placement row (TOR-170)"
+    end
+
+    setPlacementRow(fx.npcA, fx.uvA.u, fx.uvA.v, "STANDARD")
+    placeTokenOnBoard(fx.npcA, fx.uvA.u, fx.uvA.v, true)
+    Sync.npcs({ force = true, reason = "e2e_g2_setup" })
+    Gameboard.syncTokensToPalette()
+    if tokenOnPalette(fx.npcA) then
+        failures[#failures + 1] = "G2: on-stage token parked to palette by syncTokensToPalette"
+    end
+
+    clearNpcSeatsAndPlacements()
+    setPlacementRow(fx.npcA, fx.uvA.u, fx.uvA.v, "STANDARD")
+    S.setStateVal(true, "sessionScene", "npcWorld", "layoutLock")
+    S.validateState()
+    placeTokenOnBoard(fx.npcA, fx.uvB.u, fx.uvB.v, true)
+    local before = Gameboard.scanControlBoardTokens(getControlBoard()) or {}
+    local scannedU, scannedV
+    for _, row in ipairs(before) do
+        if row.characterKey == fx.npcA then
+            scannedU = row.u
+            scannedV = row.v
+        end
+    end
+    Gameboard.reconcileControlBoardFromState({ force = true })
+    if scannedU ~= nil and (math.abs(scannedU - fx.uvA.u) > fx.uvTol or math.abs(scannedV - fx.uvA.v) > fx.uvTol) then
+        failures[#failures + 1] = "H1: layoutLock=true but token UV moved on reconcile"
+    end
+
+    S.setStateVal(true, "sessionScene", "npcWorld", "layoutLock")
+    assignSeatSlot("NPC1", fx.npcB, true)
+    Gameboard.reconcileControlBoardFromState({ force = true })
+    local stashY = DATA.MARKER_STASH_WORLD_Y or -200
+    local markers = getObjectsWithTag(DATA.TAG_GAMEBOARD_NPC_SEAT) or {}
+    local npc1MarkerStashed = true
+    for _, obj in ipairs(markers) do
+        if U.isGameObject(obj) then
+            local notes = obj.getGMNotes and obj.getGMNotes() or ""
+            if type(notes) == "string" and string.find(notes, "gameboardNpcSeat:NPC1", 1, true) then
+                local pos = obj.getPosition()
+                if pos ~= nil and math.abs((pos.y or 0) - stashY) > 5 then
+                    npc1MarkerStashed = false
+                end
+            end
+        end
+    end
+    if not npc1MarkerStashed then
+        failures[#failures + 1] = "H2: NPC1 seat marker should update while layoutLock (not all stashed)"
+    end
+
+    S.setStateVal(false, "sessionScene", "npcWorld", "layoutLock")
+    S.validateState()
+end
+
+--- @return boolean
+function E2E_GB.runFull()
+    local failures = {}
+    local smokeFailures = {}
+    runSmokeAutomated(smokeFailures)
+    if not printGbResult("gbE2eRunFull (smoke prereq)", smokeFailures) then
+        failures[#failures + 1] = "smoke automated blocks failed — fix before deep suite"
+        return printGbResult("gbE2eRunFull", failures)
+    end
+    E2E_GB.reset()
+    runFullSuites(failures)
+    local ok = printGbResult("gbE2eRunFull (automated)", failures)
+    if ok then
+        _G.gbE2eReloadSnapshot = { placements = U.clone(E2E_GB.probePlacements() or {}) }
+        _G.gbE2ePending = "reload"
+        print("\n[gbE2eRunFull] HUMAN GATE — reload (optional)")
+        print("  1. Save game, Save & Play reload.")
+        print("  2. lua gbE2ePrereqCheck()")
+        print("  3. lua gbE2eContinue()")
+    end
+    return ok
+end
+
+local function seedDuplicateSeatFigure(seatKey)
+    local tag = tostring(seatKey) .. "Object"
+    local template = nil
+    for _, obj in ipairs(getObjectsWithTag(tag) or {}) do
+        if NPCS.isPooledFigurineObject(obj) then
+            template = obj
+            break
+        end
+    end
+    if template == nil then
+        return false, "no pooled figurine on " .. tag .. " to clone"
+    end
+    if template.clone == nil then
+        return false, "Object.clone unavailable"
+    end
+    local pos = template.getPosition()
+    local cloneParams = { position = pos }
+    local clone = template.clone(cloneParams)
+    if not U.isGameObject(clone) then
+        return false, "clone failed"
+    end
+    if clone.setName ~= nil then
+        clone.setName("SEAT_FIGURE_" .. tostring(seatKey))
+    end
+    return true, nil
+end
+
+local function runDeferredD172(failures)
+    if type(Gameboard.applySnapGroupDefaultLightOnPaletteDrop) == "function" then
+        failures[#failures + 1] = "D172 unexpected: handler exists — move test to gbE2eRunFull"
+    else
+        failures[#failures + 1] = "D172 TOR-172: palette-drop defaultLightMode not implemented (expected until TOR-172)"
+    end
+end
+
+local function runDeferredD173(failures)
+    if type(NPCS.moveNpcToStagePlacementLerp) == "function" then
+        failures[#failures + 1] = "D173 unexpected: stage lerp API exists — move test to gbE2eRunFull"
+    else
+        failures[#failures + 1] = "D173 TOR-173: stage placement lerp not implemented (expected until TOR-173)"
+        print("[gbE2eRunDeferred] VISUAL_CAPTURE: when lerp ships, screenshot mid-flight between two Applies")
+    end
+end
+
+local function runDeferredD175(failures)
+    if Gameboard.anchorSpreadUsesCenterOutOrdering == true or type(Gameboard.anchorSpreadUsesCenterOutOrdering) == "function" then
+        local fn = Gameboard.anchorSpreadUsesCenterOutOrdering
+        if type(fn) == "function" and fn() == true then
+            failures[#failures + 1] = "D175 unexpected: center-out ordering enabled — move test to full"
+            return
+        end
+    end
+    failures[#failures + 1] = "D175 TOR-175: anchor spread uses slotIndex order, not center-out alternating (expected until TOR-175)"
+end
+
+local function runDeferredD174(failures)
+    if type(GlobalGameboardTokenDroppedOnDiceBag) == "function" then
+        failures[#failures + 1] = "D174 unexpected: dice-bag drop handler exists — move test to full"
+    else
+        failures[#failures + 1] = "D174 TOR-174: NPC token on ST dice bag roll+return not implemented (expected until TOR-174)"
+    end
+end
+
+local function runDeferredD177b(failures)
+    E2E_GB.reset()
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        S.setStateVal(false, "seatLayout", "occupiedNPCSlots", seatKey)
+    end
+    S.validateState()
+    local okSeed, errSeed = seedDuplicateSeatFigure("NPC1")
+    if not okSeed then
+        failures[#failures + 1] = "D177b: could not seed duplicate — " .. tostring(errSeed)
+        return
+    end
+    local before = E2E_GB.probeDuplicateSeatFigure("NPC1")
+    Sync.npcs({ force = true, reason = "e2e_d177b" })
+    local after = E2E_GB.probeDuplicateSeatFigure("NPC1")
+    if after == 0 and before >= 2 then
+        failures[#failures + 1] = "D177b unexpected PASS: duplicates deduped (update deferred suite)"
+    elseif after >= 2 then
+        failures[#failures + 1] = "D177b TOR-177: duplicate SEAT_FIGURE_NPC1 remain after reconcile (expected until dedupe ships)"
+    else
+        failures[#failures + 1] = "D177b: ambiguous duplicate count before=" .. tostring(before) .. " after=" .. tostring(after)
+    end
+end
+
+--- Expected FAIL probes until TOR-172/173/175/174 and dedupe ship.
+--- @return boolean always false until features land (FAIL lines are harness success)
+function E2E_GB.runDeferred()
+    local failures = {}
+    print("[gbE2eRunDeferred] Expected FAIL on D172–D177b until linked issues ship.")
+    runDeferredD172(failures)
+    runDeferredD173(failures)
+    runDeferredD175(failures)
+    runDeferredD174(failures)
+    runDeferredD177b(failures)
+    printGbResult("gbE2eRunDeferred (expected FAIL)", failures)
+    return false
+end
+
+return E2E_GB

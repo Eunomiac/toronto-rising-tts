@@ -128,15 +128,21 @@ print("phase", S.getStateVal("currentPhase"))
 
 #### Step A3 — Visual / audio
 
-**Human:** Lighting, center-top overlay date/time, NPC cutouts (`npcWorld.byArea`), BGM/location/weather without loud burst (TOR-136).
+**Human:** Lighting, center-top overlay date/time, NPC stage placements (`npcWorld.placements` on gameboard u/v), BGM/location/weather without loud burst (TOR-136).
 
 ```lua
 local nw = S.getStateVal("sessionScene", "npcWorld")
-if type(nw) == "table" and type(nw.byArea) == "table" then
-  for k, _ in pairs(nw.byArea) do print("area", k) end
+if type(nw) == "table" and type(nw.placements) == "table" then
+  for k, row in pairs(nw.placements) do
+    if type(row) == "table" then
+      print("placement", k, row.u, row.v)
+    end
+  end
 end
 DEBUG.inspectSoundscapeAudio()
 ```
+
+**Gameboard regression:** For a library row with **2+** `npcWorld.placements` keys, use that row as `GB_E2E_SCENE_ROW` in [Gameboard-E2E](Gameboard-E2E.md) (default `scenes_lib_slot_03`) and run `gbE2eRunSmoke()` → scene Apply gate → `gbE2eContinue()`.
 
 ---
 

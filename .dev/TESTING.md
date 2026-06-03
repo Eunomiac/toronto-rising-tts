@@ -7,7 +7,7 @@ Manual verification lives in **[E2E Playbooks](E2E%20Playbooks/README.md)** (TOR
 1. Load mod → **Save & Play** (bundled Lua must match repo).
 2. You are table **Host** (solo is fine — only one client). Seat **Black** for Scenes/DEBUG/ST; for Dice, use `rollTest` and change seat to the target color when bag/camera steps require it (no TTS View command).
 3. `lua debugHelp()` — list current commands.
-4. Run a playbook: [Scenes-E2E](E2E%20Playbooks/Scenes-E2E.md) or [Dice-E2E](E2E%20Playbooks/Dice-E2E.md). Dice steps are **deterministic** (exact click counts and `rollConfirm` literals — see Dice-E2E § Deterministic test conventions).
+4. Run a playbook: [Scenes-E2E](E2E%20Playbooks/Scenes-E2E.md), [Dice-E2E](E2E%20Playbooks/Dice-E2E.md), or [Gameboard-E2E](E2E%20Playbooks/Gameboard-E2E.md). Dice steps are **deterministic** (exact click counts and `rollConfirm` literals — see Dice-E2E § Deterministic test conventions).
 
 ## E2E playbooks (primary)
 
@@ -15,6 +15,7 @@ Manual verification lives in **[E2E Playbooks](E2E%20Playbooks/README.md)** (TOR
 | --- | --- |
 | [Scenes-E2E](E2E%20Playbooks/Scenes-E2E.md) | After scene/library/clock/map changes — smoke ~35 min (A–E), full ~100 min (present day, RT ticker, seat absence + map pins F–N) |
 | [Dice-E2E](E2E%20Playbooks/Dice-E2E.md) | After roll pipeline changes — smoke ~30 min (A–E), full ~90 min (G–P: Take Half, WP, compound rouse, bags, baton, Blood Surge, Werewolf, Oblivion corners) |
+| [Gameboard-E2E](E2E%20Playbooks/Gameboard-E2E.md) | After gameboard Apply/Clear, token mirror, or NPC stage reconcile — smoke ~25 min + scene Apply gate; full ~60 min |
 
 ## Console helpers (inspection)
 
@@ -56,6 +57,24 @@ lua rollE2eClearConditions("Brown")
 ```
 
 See [Dice-E2E.md](E2E%20Playbooks/Dice-E2E.md) § Solo Host for the full harness table.
+
+## Gameboard E2E (solo Host)
+
+Macros assert state + world probes; scene library Apply uses a **human gate** (same 12s settle as Scenes-E2E).
+
+```lua
+lua gbE2ePrereqCheck()
+lua gbE2eReset()
+lua gbE2eRunSmoke()      -- then human scene Apply + gbE2eContinue()
+lua gbE2eRunFull()
+lua gbE2eRunDeferred()   -- expected FAIL until TOR-172/173/175/174
+lua gbConfirm("probe", { placementRow = { characterKey = "myleneHamelin", row = { u = 0.18 } } })
+lua DEBUG.dumpNpcPlacements()
+lua GlobalGameboardApply()
+lua GlobalGameboardClear()
+```
+
+See [Gameboard-E2E.md](E2E%20Playbooks/Gameboard-E2E.md) for fixture constants and failure tables.
 
 ## Quick setters (prefer Scenes / Sound panels for narrative)
 

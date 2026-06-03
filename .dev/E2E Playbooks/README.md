@@ -12,6 +12,7 @@ Update these playbooks in the **same PR** when you change behavior they cover:
 | --- | --- |
 | Roll FSM, bags, WP, Take Half, rouse, ST rolls | [Dice-E2E.md](Dice-E2E.md) |
 | Scene library apply, clock, present day, RT ticker, seats, map pins | [Scenes-E2E.md](Scenes-E2E.md) |
+| NPC gameboard Apply/Clear, stage placements, tokens, reconcile | [Gameboard-E2E.md](Gameboard-E2E.md) |
 | New/removed `DEBUG.*` console helpers | [TESTING.md](../TESTING.md) + relevant playbook |
 | Purge/replace automated test panels | [TESTING.md](../TESTING.md), [RUNNING TASKLIST.md](../RUNNING%20TASKLIST.md) |
 
@@ -24,7 +25,7 @@ Agents: if shipped code diverges from a playbook step, fix the doc or file a **B
 3. **Seat choice:**
    - **Scenes + DEBUG + Storyteller toolbar:** Recommended seat **Black** (Storyteller). UI uses `visibility="Host"`; Black matches ST/dice-tray layout.
    - **Dice (physical bags / roll panel):** `rollTest` / `rollStTest` move Host to the roll seat, hide loading overlay, and spoof camera automatically. `rollCancel` returns Host to **Black** when testing a PC color.
-4. Scene library has **two distinct scenes** prepared for Suite B (different `siteKey`, lighting preset, and `npcWorld.byArea` if possible).
+4. Scene library has **two distinct scenes** prepared for Suite B (different `siteKey`, lighting preset, and `npcWorld.placements` if possible).
 5. TTS console (`~`) or **External Editor** execute on Global (`guid` `-1`) for Lua snippets below.
 
 ## Conventions
@@ -43,6 +44,7 @@ Snippets are diagnostic only. Do **not** call `Sync.full({ force = true })` duri
 | --- | --- |
 | [Scenes-E2E.md](Scenes-E2E.md) | Scene smoke (A–E) + deep suites: present day clock, RT autoprogression, clock draft, seat/map pins (absent vs present), library flush (F–N) |
 | [Dice-E2E.md](Dice-E2E.md) | Roll FSM smoke (A–E) + deep suites: classification, Take Half, WP, compound rouse, bags, baton/automation, Bestial Null, Blood Surge, ST/Werewolf, Oblivion multi-die (G–P) |
+| [Gameboard-E2E.md](Gameboard-E2E.md) | Gameboard smoke (Apply/Clear/mirror/Z flip) + scene library Apply gate + full reconcile suites + deferred TOR-172/173/175/174 probes |
 
 ## Related docs
 

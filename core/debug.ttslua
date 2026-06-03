@@ -527,6 +527,56 @@ function DEBUG.dumpNpcPlacements()
     end
 end
 
+--[[ Gameboard & Stage E2E (TOR-141 / TOR-169) — see .dev/E2E Playbooks/Gameboard-E2E.md ]]
+local E2E_GB = require("lib.e2e_gameboard")
+
+--- Assert gameboard/state probes; prints `[gbConfirm] PASS` / `FAIL`.
+--- @param labelOrExpected string|table test label, or `{ placements = … }` only
+--- @param maybeExpected table|nil
+--- @return boolean
+function DEBUG.gbConfirm(labelOrExpected, maybeExpected)
+    if type(labelOrExpected) == "table" and maybeExpected == nil then
+        return E2E_GB.confirm("gbConfirm", labelOrExpected)
+    end
+    return E2E_GB.confirm(tostring(labelOrExpected), maybeExpected or {})
+end
+
+--- Prerequisite check (boards, tokens, fixture NPCs, scene library row).
+--- @return boolean
+function DEBUG.gbE2ePrereqCheck()
+    return E2E_GB.runPrereqCheck()
+end
+
+--- Deterministic baseline before suites.
+--- @return boolean
+function DEBUG.gbE2eReset()
+    return E2E_GB.reset()
+end
+
+--- Smoke macro (automated blocks + scene Apply human gate).
+--- @return boolean
+function DEBUG.gbE2eRunSmoke()
+    return E2E_GB.runSmoke()
+end
+
+--- Full macro (deep suites + optional reload human gate).
+--- @return boolean
+function DEBUG.gbE2eRunFull()
+    return E2E_GB.runFull()
+end
+
+--- Deferred expected-FAIL probes (TOR-172/173/175/174/D177b).
+--- @return boolean
+function DEBUG.gbE2eRunDeferred()
+    return E2E_GB.runDeferred()
+end
+
+--- Resume after human gate (`_G.gbE2ePending`).
+--- @return boolean
+function DEBUG.gbE2eContinue()
+    return E2E_GB.runContinue()
+end
+
 --- Snap table from DEBUG.installNpcControlBoardSnaps options (flat fields or `{ config = … }`).
 --- @param options table|nil
 --- @return table|nil
@@ -3591,6 +3641,15 @@ function DEBUG.help()
     print("  rollCancelAll()          - Cancel all rolls + ST slots")
     print("  rollStTest(label?, type?) - ST NPC roll on Black (e2e seat/camera prep)")
     print("  rollStSlots()            - Print gameState.storytellerRolls")
+    print("\nGAMEBOARD E2E (TOR-141 — .dev/E2E Playbooks/Gameboard-E2E.md):")
+    print("  gbE2ePrereqCheck()       - Boards, tokens, fixture NPCs, scene row")
+    print("  gbE2eReset()             - Empty placements + fixture preload baseline")
+    print("  gbE2eRunSmoke()          - Smoke macro; then human scene Apply + gbE2eContinue()")
+    print("  gbE2eRunFull()           - Deep reconcile suites (+ optional reload gate)")
+    print("  gbE2eRunDeferred()       - Expected FAIL until TOR-172/173/175/174 dedupe")
+    print("  gbE2eContinue()          - Resume after HUMAN GATE (scene_apply / reload)")
+    print("  gbConfirm(label, expected) - Single assert (placements, intent, probes)")
+    print("  dumpNpcPlacements()      - Print sessionScene.npcWorld.placements")
     print("\nQUICK SETTERS (prefer Scenes/Sound panels for narrative apply):")
     print("  setHunger(color, value)  - Set player hunger (e.g., setHunger('Red', 3))")
     print("  soundscapeMusic(mood)    - Set music mood: main, intrigue, combat")
@@ -3695,6 +3754,13 @@ spawnCustomUiUploadBatch = DEBUG.spawnCustomUiUploadBatch
 spawnNpcTokenUploadBatch = DEBUG.spawnNpcTokenUploadBatch
 spawnNpcControlBoardTokens = DEBUG.spawnNpcControlBoardTokens
 clearNpcControlBoardTokens = DEBUG.clearNpcControlBoardTokens
+gbConfirm = DEBUG.gbConfirm
+gbE2ePrereqCheck = DEBUG.gbE2ePrereqCheck
+gbE2eReset = DEBUG.gbE2eReset
+gbE2eRunSmoke = DEBUG.gbE2eRunSmoke
+gbE2eRunFull = DEBUG.gbE2eRunFull
+gbE2eRunDeferred = DEBUG.gbE2eRunDeferred
+gbE2eContinue = DEBUG.gbE2eContinue
 applyNpcControlTokenHostedImages = DEBUG.applyNpcControlTokenHostedImages
 loadCustomUiUploadManifest = DEBUG.loadCustomUiUploadManifest
 clearCustomUiUploadTokens = DEBUG.clearCustomUiUploadTokens
