@@ -1261,6 +1261,34 @@ local function validateControlBoardSnapConfig(cfg)
                     .. "].radialStagger must be a number when set"
             )
         end
+        local validSnaps = group.validSnaps
+        if validSnaps ~= nil then
+            if type(validSnaps) ~= "table" then
+                error(
+                    "CONTROL_BOARD_SNAP.snapGroups["
+                        .. tostring(ringIndex)
+                        .. "].validSnaps must be { minU, maxU, minV, maxV } when set"
+                )
+            end
+            local minU = tonumber(validSnaps.minU)
+            local maxU = tonumber(validSnaps.maxU)
+            local minV = tonumber(validSnaps.minV)
+            local maxV = tonumber(validSnaps.maxV)
+            if minU == nil or maxU == nil or minV == nil or maxV == nil then
+                error(
+                    "CONTROL_BOARD_SNAP.snapGroups["
+                        .. tostring(ringIndex)
+                        .. "].validSnaps requires minU, maxU, minV, maxV numbers"
+                )
+            end
+            if minU > maxU or minV > maxV then
+                error(
+                    "CONTROL_BOARD_SNAP.snapGroups["
+                        .. tostring(ringIndex)
+                        .. "].validSnaps min must be <= max"
+                )
+            end
+        end
     end
     if not hasGlobalRingMax then
         for ringIndex = 1, rings do
@@ -1363,6 +1391,29 @@ local function snapUvOnBoard(u, v)
     return u >= 0 and u <= 1 and v >= 0 and v <= 1
 end
 
+--- Per-ring optional `validSnaps` box: all four bounds must pass (inclusive).
+--- @param group table snapGroups entry
+--- @param u number
+--- @param v number
+--- @return boolean
+local function snapUvPassesValidSnaps(group, u, v)
+    if type(group) ~= "table" then
+        return true
+    end
+    local box = group.validSnaps
+    if type(box) ~= "table" then
+        return true
+    end
+    local minU = tonumber(box.minU)
+    local maxU = tonumber(box.maxU)
+    local minV = tonumber(box.minV)
+    local maxV = tonumber(box.maxV)
+    if minU == nil or maxU == nil or minV == nil or maxV == nil then
+        return false
+    end
+    return u >= minU and u <= maxU and v >= minV and v <= maxV
+end
+
 --- Push snap u/v outward from polar origin by `abs(familyK) * radialStagger` along STAGE world XZ.
 --- Anchor (`familyK == 0`) is unchanged. Units are STAGE_BOARD / playfield world inches (not CONTROL_BOARD minimap inches).
 --- @param originU number
@@ -1438,6 +1489,9 @@ local function controlBoardSnapCandidate(board, cfg, rings, ringIndex, rayIndex,
         u, v = applyRadialStaggerUv(ringOriginU, ringOriginV, familyK, radialStagger, u, v)
     end
     if not snapUvOnBoard(u, v) then
+        return nil, nil, nil
+    end
+    if not snapUvPassesValidSnaps(group, u, v) then
         return nil, nil, nil
     end
     local lp = nil
