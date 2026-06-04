@@ -904,6 +904,12 @@ local function clearNpcSeatPhysical(seatKey, opts)
         local occupied = U.clone(getOccupiedNpcSeatMap())
         occupied[seatKey] = false
         setOccupiedNpcSeatMap(occupied)
+        local ss = S.getStateVal("sessionScene", "seatSlots")
+        if U.Type(ss) ~= "table" then
+            ss = {}
+        end
+        ss[seatKey] = { slotEmpty = true }
+        S.setStateVal(ss, "sessionScene", "seatSlots")
     end
     for i = 1, #toPark do
         local name = toPark[i]

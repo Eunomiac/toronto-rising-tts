@@ -322,6 +322,37 @@ local function isTokenOnControlBoardSurface(board, token)
     return false
 end
 
+--- Max board-local |Y − surface| for a token to count as on the minimap (not dragged off / in the air).
+local MINIMAP_TOKEN_SURFACE_Y_TOLERANCE = 0.4
+
+--- Token on CONTROL_BOARD face (not palette): tight XZ on tile + near surface Y.
+--- @param board Object
+--- @param token Object
+--- @return boolean
+local function isTokenOnMinimapTokenSurface(board, token)
+    if not isGameObject(board) or not isGameObject(token) then
+        return false
+    end
+    local palette = getControlBoardPalette()
+    if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
+        return false
+    end
+    local localPos = boardWorldToLocal(board, token.getPosition())
+    if localPos == nil then
+        return false
+    end
+    local halfX, halfZ = boardLocalSurfaceHalfExtents(board)
+    local xzMargin = 1.05
+    if math.abs(localPos.x or 0) > halfX * xzMargin or math.abs(localPos.z or 0) > halfZ * xzMargin then
+        return false
+    end
+    local surfaceY = tonumber(DATA.MINIMAP_SURFACE_LOCAL_Y) or 0.18
+    if math.abs((localPos.y or 0) - surfaceY) > MINIMAP_TOKEN_SURFACE_Y_TOLERANCE then
+        return false
+    end
+    return true
+end
+
 --- @param board Object
 --- @param u number
 --- @param v number
@@ -603,24 +634,19 @@ local function scanSeatRowTokensBySeatKey(board)
         return out
     end
     local fuzziness = snapMatchFuzzinessForBoard(board)
-    for _, obj in ipairs(objectsOnControlBoard(board, TAG_TOKEN)) do
-        if isGameObject(obj) then
+    for _, obj in ipairs(getObjectsWithTag(TAG_TOKEN) or {}) do
+        if isGameObject(obj) and isTokenOnMinimapTokenSurface(board, obj) then
             local characterKey = resolveTokenCharacterKey(obj)
             if type(characterKey) == "string" and characterKey ~= "" then
-                local palette = getControlBoardPalette()
-                if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, obj) then
-                    -- palette storage — not seat row
-                else
-                    local entry = resolveTokenSnapCatalogEntry(board, obj, fuzziness, nil)
-                    if type(entry) == "table"
-                        and entry.snapKind == SNAP_KIND_SEAT
-                        and isNpcSeatRowColumn({ seatKey = entry.seatKey, kind = "npc" }) then
-                        out[entry.seatKey] = {
-                            seatKey = entry.seatKey,
-                            characterKey = characterKey,
-                            present = tokenRotationIsFaceUp(obj),
-                        }
-                    end
+                local entry = resolveTokenSnapCatalogEntry(board, obj, fuzziness, nil)
+                if type(entry) == "table"
+                    and entry.snapKind == SNAP_KIND_SEAT
+                    and isNpcSeatRowColumn({ seatKey = entry.seatKey, kind = "npc" }) then
+                    out[entry.seatKey] = {
+                        seatKey = entry.seatKey,
+                        characterKey = characterKey,
+                        present = tokenRotationIsFaceUp(obj),
+                    }
                 end
             end
         end
@@ -638,16 +664,12 @@ function Gameboard.scanControlBoardTokens(board)
         return out
     end
     local fuzziness = snapMatchFuzzinessForBoard(board)
-    local objs = objectsOnControlBoard(board, TAG_TOKEN)
-    for _, obj in ipairs(objs) do
-        if isGameObject(obj) then
+    for _, obj in ipairs(getObjectsWithTag(TAG_TOKEN) or {}) do
+        if isGameObject(obj) and isTokenOnMinimapTokenSurface(board, obj) then
             local characterKey = resolveTokenCharacterKey(obj)
             if type(characterKey) == "string" and characterKey ~= "" then
                 local u, v, _ = tokenPlacementOnBoard(obj, board)
-                local palette = getControlBoardPalette()
-                if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, obj) then
-                    -- Inactive storage on CONTROL_BOARD_PALETTE — not a minimap placement until snapped + Apply.
-                elseif type(u) == "number" and type(v) == "number" then
+                if type(u) == "number" and type(v) == "number" then
                     local entry = resolveTokenSnapCatalogEntry(board, obj, fuzziness, nil)
                     if type(entry) == "table" and entry.snapKind == SNAP_KIND_SEAT then
                         -- Seat row: assign/presence via `applySeatRowFromControlBoard`, not `placements`.
@@ -839,7 +861,7 @@ local function syncNpcsFromControlBoard(reason, seatMutation)
     --- Clear empties stage placements but keeps seat assignments — Step Three re-seats (TOR-178).
     local onlySteps = { 1, 5 }
     if seatMutation == true then
-        onlySteps = { 1, 2, 3, 5 }
+        onlySteps = { 1, 2, 3, 4, 5 }
     end
     if reason == "gameboard_clear" then
         onlySteps = { 1, 3, 5 }
@@ -854,16 +876,16 @@ local function syncNpcsFromControlBoard(reason, seatMutation)
 end
 
 --- True when an empty NPC seat snap should clear `occupiedNPCSlots` on Apply.
---- Stage-bound characters keep homeland assignment (TOR-178 / NPC Reconciler Step Two case 4):
---- `placements` holds stage intent; seat row empty only means the token is on a polar snap, not unassign.
+--- Keep assignment only when the token is on a polar minimap snap this scan (TOR-178 case 4).
+--- Off-board / in-air tokens do not count as stage placement.
 --- @param characterKey string
---- @param stageByCharacter table<string, boolean>
+--- @param polarOnBoardByCharacter table<string, boolean>
 --- @return boolean
-local function shouldUnassignNpcSeatWhenSnapEmpty(characterKey, stageByCharacter)
+local function shouldUnassignNpcSeatWhenSnapEmpty(characterKey, polarOnBoardByCharacter)
     if type(characterKey) ~= "string" or characterKey == "" then
         return false
     end
-    if stageByCharacter[characterKey] == true then
+    if polarOnBoardByCharacter[characterKey] == true then
         return false
     end
     return true
@@ -871,10 +893,10 @@ end
 
 --- Seat-row Apply: assign/unassign NPC seats and narrative presence from seat snaps (TOR-180).
 --- @param board Object
---- @param stageByCharacter table<string, boolean> characters with polar/stage placement this scan
---- @return boolean changed
-local function applySeatRowFromControlBoard(board, stageByCharacter)
-    stageByCharacter = type(stageByCharacter) == "table" and stageByCharacter or {}
+--- @param polarOnBoardByCharacter table<string, boolean> characters on polar snaps (live scan)
+--- @return boolean changed, string[] vacatedCharacterKeys
+local function applySeatRowFromControlBoard(board, polarOnBoardByCharacter)
+    polarOnBoardByCharacter = type(polarOnBoardByCharacter) == "table" and polarOnBoardByCharacter or {}
     local bySeat = scanSeatRowTokensBySeatKey(board)
     local NPCS = require("core.npcs")
     local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
@@ -882,6 +904,7 @@ local function applySeatRowFromControlBoard(board, stageByCharacter)
         occupied = {}
     end
     local changed = false
+    local vacatedKeys = {}
     for _, seatKey in ipairs(C.NPCSeats or {}) do
         local scan = bySeat[seatKey]
         local current = occupied[seatKey]
@@ -889,12 +912,13 @@ local function applySeatRowFromControlBoard(board, stageByCharacter)
             current = nil
         end
         if scan == nil then
-            if current ~= nil and shouldUnassignNpcSeatWhenSnapEmpty(current, stageByCharacter) then
+            if current ~= nil and shouldUnassignNpcSeatWhenSnapEmpty(current, polarOnBoardByCharacter) then
                 local ok, err = NPCS.unseatNpc(current)
                 if not ok then
                     print("[Gameboard] Apply seat row: unseat " .. tostring(current) .. ": " .. tostring(err))
                 else
                     changed = true
+                    vacatedKeys[#vacatedKeys + 1] = current
                 end
             end
         else
@@ -918,7 +942,7 @@ local function applySeatRowFromControlBoard(board, stageByCharacter)
     if changed then
         print("[Gameboard] Apply: seat row updated")
     end
-    return changed
+    return changed, vacatedKeys
 end
 
 --- Apply CONTROL_BOARD tokens → state → Sync.npcs.
@@ -929,14 +953,22 @@ function Gameboard.applyFromControlBoard()
         return false, "CONTROL_BOARD not found — set G.GUIDS.CONTROL_BOARD in lib/guids.ttslua"
     end
     local rows = Gameboard.scanControlBoardTokens(board)
-    local stageByCharacter = {}
+    local polarOnBoardByCharacter = {}
     for _, row in ipairs(rows) do
         if type(row.characterKey) == "string" then
-            stageByCharacter[row.characterKey] = true
+            polarOnBoardByCharacter[row.characterKey] = true
         end
     end
-    local seatChanged = applySeatRowFromControlBoard(board, stageByCharacter)
+    local seatChanged, vacatedKeys = applySeatRowFromControlBoard(board, polarOnBoardByCharacter)
     local placements = placementsMapFromRows(rows)
+    if seatChanged and type(vacatedKeys) == "table" then
+        for i = 1, #vacatedKeys do
+            local ck = vacatedKeys[i]
+            if type(ck) == "string" and polarOnBoardByCharacter[ck] ~= true then
+                placements[ck] = nil
+            end
+        end
+    end
     local existing = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
     local placementChanged = not placementsMapsEqual(placements, existing)
     if not seatChanged and not placementChanged then
@@ -945,6 +977,10 @@ function Gameboard.applyFromControlBoard()
     end
     if placementChanged then
         stateModule().setStateVal(placements, "sessionScene", "npcWorld", "placements")
+    end
+    if seatChanged then
+        parkVacatedNpcControlTokensToPalette(vacatedKeys, board)
+        lastControlBoardMirrorFingerprint = nil
     end
     syncNpcsFromControlBoard("gameboard_apply", seatChanged)
     print(
@@ -1864,11 +1900,14 @@ local function buildSeatRowSnapEntries(board, polarCount)
     if uMax < uMin then
         uMin, uMax = uMax, uMin
     end
-    -- Seat-row snaps stay upright on the tile ({0,0,0} board-local); do not yaw toward polar origin.
+    -- Seat-row snaps stay upright on the tile; do not yaw toward polar origin. PC columns invert Z.
     local yawDeg = ((tonumber(seatCfg.snapYawOffsetDeg) or 0) % 360 + 360) % 360
+    local pcSnapZDeg = ((tonumber(seatCfg.pcSnapZDeg) or 0) % 360 + 360) % 360
     local entries = {}
     for i = 1, n do
         local col = columns[i]
+        local kind = col.kind or "pc"
+        local snapZDeg = kind == "pc" and pcSnapZDeg or 0
         local u = (uMin + uMax) * 0.5
         if n > 1 then
             u = uMin + (i - 1) * (uMax - uMin) / (n - 1)
@@ -1877,10 +1916,11 @@ local function buildSeatRowSnapEntries(board, polarCount)
         entries[#entries + 1] = {
             snapKind = SNAP_KIND_SEAT,
             seatKey = col.seatKey,
-            columnKind = col.kind or "pc",
+            columnKind = kind,
             u = u,
             v = v,
             yawDeg = yawDeg,
+            snapZDeg = snapZDeg,
             localPos = lp,
             worldPos = boardLocalToWorld(board, lp),
             groundLevel = nil,
@@ -2163,9 +2203,10 @@ function Gameboard.buildControlBoardSnapPoints(board, config)
     local entries = buildControlBoardSnapEntries(board, cfg, rings)
     local points = {}
     for _, entry in ipairs(entries) do
+        local snapZ = tonumber(entry.snapZDeg) or 0
         points[#points + 1] = {
             position = { entry.localPos.x, entry.localPos.y, entry.localPos.z },
-            rotation = { 0, entry.yawDeg, 0 },
+            rotation = { 0, entry.yawDeg, snapZ },
             rotation_snap = true,
             tags = { TAG_TOKEN },
         }
@@ -2223,6 +2264,7 @@ local function controlBoardSnapFingerprintFor(board, config)
     local seatCfg = resolveControlBoardSeatRowConfig()
     if seatCfg ~= nil then
         parts[#parts + 1] = "seatRow:v:" .. tostring(seatCfg.v)
+        parts[#parts + 1] = "seatRow:pcZ:" .. tostring(tonumber(seatCfg.pcSnapZDeg) or 0)
         for i = 1, #(seatCfg.columns or {}) do
             local col = seatCfg.columns[i]
             parts[#parts + 1] = "seatCol:" .. tostring(i) .. "=" .. tostring(col.seatKey) .. ":" .. tostring(col.kind)
@@ -2373,6 +2415,32 @@ local function parkNpcTokenOnPalette(token, characterKey)
         token.setInvisibleTo(C.PlayerColors or {})
     end
     return true
+end
+
+--- Park NPC control tokens removed from the seat row (off minimap / in the air).
+--- @param characterKeys string[]
+--- @param board Object|nil
+--- @return number moved
+local function parkVacatedNpcControlTokensToPalette(characterKeys, board)
+    if type(characterKeys) ~= "table" or #characterKeys < 1 then
+        return 0
+    end
+    board = board or getControlBoard()
+    local byChar = buildTokenByCharacterKey()
+    local moved = 0
+    for i = 1, #characterKeys do
+        local ck = characterKeys[i]
+        local token = type(ck) == "string" and byChar[ck] or nil
+        if isGameObject(token) and (not isGameObject(board) or not isTokenOnMinimapTokenSurface(board, token)) then
+            if parkNpcTokenOnPalette(token, ck) then
+                moved = moved + 1
+            end
+        end
+    end
+    if moved > 0 then
+        print("[Gameboard] Apply: parked " .. tostring(moved) .. " vacated token(s) on palette")
+    end
+    return moved
 end
 
 --- Log each NPC token on CONTROL_BOARD (not palette) with ring from snap catalog match.
@@ -3177,7 +3245,7 @@ function Gameboard.reconcileControlBoardFromState(opts)
                 if type(ck) == "string" and ck ~= "" then
                     local entry = seatCatalog[seatKey]
                     local token = byChar[ck]
-                    if entry ~= nil and isGameObject(token) then
+                    if entry ~= nil and isGameObject(token) and isTokenOnMinimapTokenSurface(board, token) then
                         local present = true
                         if type(NPCS.resolveSeatNarrativePresence) == "function" then
                             present = NPCS.resolveSeatNarrativePresence(seatKey) == true
@@ -3192,7 +3260,7 @@ function Gameboard.reconcileControlBoardFromState(opts)
         for characterKey, row in pairs(placements) do
             if type(row) == "table" and type(row.u) == "number" and type(row.v) == "number" then
                 local token = byChar[characterKey]
-                if isGameObject(token) then
+                if isGameObject(token) and isTokenOnMinimapTokenSurface(board, token) then
                     mirrorControlTokenToPlacementRow(token, board, row)
                 end
             end
