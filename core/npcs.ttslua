@@ -462,6 +462,24 @@ local function figurineHasSeatTag(fig, seatKey)
     return false
 end
 
+--- @param fig Object|nil
+--- @return boolean
+local function figurineHasAnySeatTag(fig)
+    if fig == nil or fig.getTags == nil then
+        return false
+    end
+    local tags = fig.getTags() or {}
+    if U.Type(tags) ~= "table" then
+        return false
+    end
+    for _, sk in ipairs(C.NPCSeats or {}) do
+        if figurineHasSeatTag(fig, sk) then
+            return true
+        end
+    end
+    return false
+end
+
 --- @param npcName string
 --- @return boolean
 local function npcInstanceInStageArea(npcName)
@@ -559,11 +577,62 @@ local function ensureNpcFigurinePhysicsLocked(fig)
     end
 end
 
+--- CustomImage.ImageScalar for stage vs table seat (`figurine.scale` / `figurine.seatedScale` in npcs_data).
+--- @param npcName string
+--- @param placementKind string `"stage"` | `"seat"` | `"preload"`
+--- @return number
+local function figurineImageScalarForNpc(npcName, placementKind)
+    local def = NPCS.characters[npcName]
+    local figDef = U.Type(def) == "table" and def.figurine or nil
+    local scalar
+    if placementKind == "seat" then
+        scalar = tonumber(figDef and figDef.seatedScale) or tonumber(figDef and figDef.scale)
+    else
+        scalar = tonumber(figDef and figDef.scale)
+    end
+    if scalar == nil or scalar ~= scalar or scalar < 1 then
+        scalar = 8
+    end
+    if scalar > 500 then
+        scalar = 500
+    end
+    return scalar
+end
+
+--- Apply npcs_data cutout scale via Custom Figurine `image_scalar` (Transform scale is uniform pool/active only).
+--- @param fig Object|nil
+--- @param npcName string
+--- @param placementKind string `"stage"` | `"seat"` | `"preload"`
+local function applyNpcFigurineImageScalar(fig, npcName, placementKind)
+    if not U.isGameObject(fig) or fig.setCustomObject == nil then
+        return
+    end
+    local def = NPCS.characters[npcName]
+    if U.Type(def) ~= "table" then
+        return
+    end
+    local front = def.figurine and def.figurine.images and def.figurine.images.front or ""
+    local back = def.figurine and def.figurine.images and def.figurine.images.back or ""
+    if U.Type(front) ~= "string" or front == "" then
+        return
+    end
+    local scalar = figurineImageScalarForNpc(npcName, placementKind)
+    fig.setCustomObject({
+        image = front,
+        image_secondary = back,
+        image_scalar = scalar,
+    })
+    if fig.reload ~= nil then
+        fig.reload()
+    end
+end
+
 --- Figurine scale + tooltip and paired spotlight scale (preload = small, tooltips off; active areas/seats = full, tooltips on).
 --- @param fig Object|nil
 --- @param lit Object|nil
 --- @param areaKey string
-local function applyNpcPairPhysicalPresentation(fig, lit, areaKey)
+--- @param npcName string|nil when set, applies figurine `scale` / `seatedScale` from npcs_data
+local function applyNpcPairPhysicalPresentation(fig, lit, areaKey, npcName)
     local isPreload = (areaKey == PRELOAD_AREA_KEY)
     local fs = isPreload and NPC_PRELOAD_FIGURE_SCALE or NPC_ACTIVE_FIGURE_SCALE
     local ls = isPreload and NPC_PRELOAD_LIGHT_SCALE or NPC_ACTIVE_LIGHT_SCALE
@@ -575,6 +644,15 @@ local function applyNpcPairPhysicalPresentation(fig, lit, areaKey)
     end
     if U.isGameObject(lit) and lit.setScale ~= nil then
         lit.setScale(Vector(ls, ls, ls))
+    end
+    if U.Type(npcName) == "string" and npcName ~= "" and U.isGameObject(fig) then
+        local placementKind = "stage"
+        if areaKey == PRELOAD_AREA_KEY then
+            placementKind = "preload"
+        elseif areaKey == SEAT_PLACEMENT_KEY then
+            placementKind = "seat"
+        end
+        applyNpcFigurineImageScalar(fig, npcName, placementKind)
     end
     ensureNpcFigurinePhysicsLocked(fig)
 end
@@ -613,7 +691,7 @@ local function applyNpcFigurineSeatIdentity(fig, lit, npcName, seatKey)
     if fig.setName ~= nil and def ~= nil then
         fig.setName(def.fullName or def.name or npcName)
     end
-    applyNpcPairPhysicalPresentation(fig, lit, SEAT_PLACEMENT_KEY)
+    applyNpcPairPhysicalPresentation(fig, lit, SEAT_PLACEMENT_KEY, npcName)
     setPooledSpotlightHidden(lit, true)
 end
 
@@ -904,7 +982,16 @@ local function assignNpcToSeat(npcName, seatKey, opts)
     end
     if not npcInstanceIsParkedInPreload(rec) then
         local seatedElsewhere = U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey)
-        if not seatedElsewhere then
+        if rec.areaKey == STAGE_BOARD_AREA_KEY then
+            rec.stagePlacement = nil
+            rec.areaKey = PRELOAD_AREA_KEY
+            local slot = stablePreloadSlotIndex(npcName)
+            if U.Type(slot) == "number" then
+                rec.slotIndex = slot
+            end
+            setInstanceRecord(npcName, rec)
+            rec = getInstances()[npcName]
+        elseif not seatedElsewhere then
             local rOk, rErr = NPCS.retreatNpcInstanceToPreloadPool(npcName, {
                 skipUiRefresh = true,
                 skipSeatSync = true,
@@ -964,6 +1051,7 @@ local function assignNpcToSeat(npcName, seatKey, opts)
         return false, placedErr
     end
     rec.seatedSeatKey = seatKey
+    rec.stagePlacement = nil
     rec.npcLightMode = "STANDARD"
     setInstanceRecord(npcName, rec)
     return true, nil
@@ -2098,13 +2186,17 @@ local function reconcileStepOneAreaRemovals(intent)
                     end
                 end
                 if not keep then
-                    local ok, err = NPCS.retreatNpcInstanceToPreloadPool(name, {
-                        skipUiRefresh = true,
-                        skipSeatSync = true,
-                    })
-                    if not ok then
-                        allOk = false
-                        print("[NPCS] step1 area removal: " .. tostring(name) .. ": " .. tostring(err))
+                    if U.Type(ci) == "table" and ci.target == "seat" then
+                        -- Step Three re-seats from stage; avoid parking to preload first.
+                    else
+                        local ok, err = NPCS.retreatNpcInstanceToPreloadPool(name, {
+                            skipUiRefresh = true,
+                            skipSeatSync = true,
+                        })
+                        if not ok then
+                            allOk = false
+                            print("[NPCS] step1 area removal: " .. tostring(name) .. ": " .. tostring(err))
+                        end
                     end
                 end
             elseif U.Type(ci) == "table" and ci.target == "preload" and rec.areaKey == PRELOAD_AREA_KEY then
@@ -2177,7 +2269,14 @@ local function reconcileStepTwoSeatRemovals(intent)
                         print("[NPCS] step2 wrong occupant " .. tostring(seatKey) .. ": " .. tostring(err))
                     end
                 elseif not info.physicalSeatAllowed and atSeat then
-                    local retain = info.assigned and not info.tableHasSlot
+                    local retain = false
+                    if info.assigned then
+                        if not info.tableHasSlot then
+                            retain = true
+                        elseif U.Type(info.areaBoundOccupant) == "string" and info.areaBoundOccupant ~= "" then
+                            retain = true
+                        end
+                    end
                     local ok, err = clearNpcSeatPhysical(seatKey, {
                         retainAssignment = retain,
                         skipLayoutSync = true,
@@ -2627,7 +2726,6 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
     end
     local didUnseat = false
     if U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey) then
-        local sk = rec.seatedSeatKey
         local seatFig = getObjectFromGUID(rec.figurineGuid or "")
         local seatLit = getObjectFromGUID(rec.lightGuid or "")
         if seatFig ~= nil then
@@ -2635,13 +2733,15 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
         end
         rec.seatedSeatKey = nil
         setInstanceRecord(npcName, rec)
-        local occ = U.clone(getOccupiedNpcSeatMap())
-        if occ[sk] == npcName then
-            occ[sk] = false
-        end
-        setOccupiedNpcSeatMap(occ)
         didUnseat = true
         rec = getInstances()[npcName]
+    elseif figurineHasAnySeatTag(getObjectFromGUID(rec.figurineGuid or "")) then
+        local seatFig = getObjectFromGUID(rec.figurineGuid or "")
+        local seatLit = getObjectFromGUID(rec.lightGuid or "")
+        if seatFig ~= nil then
+            clearNpcFigurineSeatIdentity(seatFig, seatLit)
+        end
+        didUnseat = true
     end
     local fig = getObjectFromGUID(rec.figurineGuid or "")
     local lit = getObjectFromGUID(rec.lightGuid or "")
@@ -2685,7 +2785,7 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
     }
     rec.npcLightMode = desiredMode
     setInstanceRecord(npcName, rec)
-    applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY)
+    applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY, npcName)
     setPooledSpotlightHidden(lit, false)
     applyNpcSpotlightAlignedToFigurine(npcName, fig, 0)
     if not skipSeatSync then

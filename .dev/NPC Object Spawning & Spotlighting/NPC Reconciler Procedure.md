@@ -121,6 +121,14 @@ The active table's `playerToPositionMap` does **not** include this seat key (e.g
 
 Do **not** use the case 1–2 state clear for case 3.
 
+### Case 4 — Stage-bound, physical seat off, assignment retained
+
+The assigned character has a row in `sessionScene.npcWorld.placements` (stage-bound) but is still listed in `occupiedNPCSlots` for a table seat.
+
+- **Physical:** Remove figurine from the seat (untag `NPC<#>Object`, hide seat spotlight pairing) — same as case 3 physical off.
+- **State:** **Keep** `occupiedNPCSlots` / `seatSlots` so **Clear** or empty `placements` returns the NPC to that seat (Step Three), not preload/palette as the end state.
+- **Step One:** When stage intent drops and resolved target is **Seat**, do not park to preload before Step Three (Step Three seats from stage or preload).
+
 ### Narrative absence — do not unseat
 
 If the seat is assigned and `present` is false, **do not** run Step Two for that slot. Assignment stands; Step Four deactivates presentation.

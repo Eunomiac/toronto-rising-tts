@@ -17,8 +17,9 @@ _Stack rank for the current cycle (2026-06-02, inbox refresh). **Precedence** (F
 | # | Issue | Why now |
 | --- | --- | --- |
 | 1 | **TOR-169** — Storyteller NPC gameboard (Phase A) | Umbrella — placements v3, Apply/Clear, control-board palette |
-| 2 | **TOR-172** — `snapGroups.defaultLightMode` on palette drop | Ring default flip on first palette→board drop |
-| 3 | **TOR-173** — Lerp stage moves on Apply only | Polish — expanded spec (no blindfold; simultaneous; back/power eases) |
+| 2 | **TOR-178** — Seat ↔ stage figurine transfer | Retain seat on Clear; same figurine; scale/tags/lights (phase A) |
+| 3 | **TOR-172** — `snapGroups.defaultLightMode` on palette drop | Ring default flip on first palette→board drop |
+| 4 | **TOR-173** — Lerp stage moves on Apply only | Polish — expanded spec (no blindfold; simultaneous; back/power eases) |
 
 **Done this cycle:** TOR-175 (anchor family spread center-out alternating). TOR-155 (roll panel pool dots color coding). TOR-164 (Dice-E2E harness + doc). TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions). **TOR-169 session:** circular-require load fix, Z-axis token flip, placements-only reconcile + byArea migration (`a0271ac`). **TOR-170/171:** load token mirror + master-origin figurine yaw (`5c3d37b`). **TOR-176/177:** Host-only control-board XmlUI + hide workshop seat-figure anchors (`b58e2fb`).
 
@@ -68,6 +69,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **`snapGroups.defaultLightMode`:** Optional per-ring default; apply Z flip only when token drops from palette onto that ring (not ring-to-ring or state sync). _(TOR-172)_
 - [ ] **Lerp stage placement moves (Apply only):** Animate position + light when moving stage→stage via control-board Apply; not on load/blindfold/preload/seat. Simultaneous multi-NPC; back ease position; power ease lights (OFF first half / ON last quarter). _(TOR-173)_
 - [x] **Anchor family spread order:** On anchor drop, sibling tokens fill family snaps center-out by group slot index, alternating sides. _(TOR-175)_
+- [ ] **Seat ↔ stage figurine transfer:** Same figurine table↔stage; retain `occupiedNPCSlots` on Apply; Clear returns to seat; `scale` / `seatedScale` on cutout. Phase C: table leaves off while on stage. _(TOR-178)_
 - [x] **Control board XmlUI Host-only:** Apply/Clear toolbar `visibility="Black|Host"` on `gb_root`. _(TOR-176)_
 - [x] **Duplicate SEAT_FIGURE on scene activate:** Step Four hides workshop `SEAT_FIGURE_*` anchors; only pooled figurine gets presence visibility. _(TOR-177)_
 - [x] **Widen Far Left / Far Right NPC angles:** Canceled — superseded by TOR-169 gameboard. _(TOR-166)_

@@ -16,6 +16,7 @@
 
 ## Processed
 
+- 2026-06-03 TOR-178 — [feature] Seat ↔ stage figurine transfer (retain seat on Clear; scale/seatedScale; phase A shipped — table leaves on stage still TODO phase C)
 - 2026-05-25 TOR-135 — [bug] NPC area cutouts missing on active scene apply
 - 2026-05-25 TOR-136 — [bug] Weather audio burst on scene switch
 - 2026-05-25 TOR-137 — [intent] Normalize unicode minus in C.Sites offsetXY on import

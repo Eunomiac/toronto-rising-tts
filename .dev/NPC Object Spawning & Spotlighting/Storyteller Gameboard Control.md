@@ -47,6 +47,8 @@ Table/seat markers: compute playfield world XZ (table `centerPoint`; components 
 
 **Layout lock:** When `sessionScene.npcWorld.layoutLock` is true, **token** positions on CONTROL_BOARD are not overwritten from state; **table/seat/component markers** still reconcile (Table A leaves follow `occupiedNPCSlots` for their `usedBy` seat).
 
+**Seat ↔ stage (TOR-178):** Apply with a placement for a seated NPC keeps `seatLayout.occupiedNPCSlots` (homeland seat). Clear / empty `placements` re-seats via `NPCS.reconcileAllFromState` Step Three — not palette/preload as the end state. Figurine uses `figurine.scale` on stage and `figurine.seatedScale` at the table (`image_scalar`). Table leaf markers still follow `occupiedNPCSlots` until phase C (hide leaves while stage-bound).
+
 ## Workshop tags
 
 | Tag | GM notes example |
