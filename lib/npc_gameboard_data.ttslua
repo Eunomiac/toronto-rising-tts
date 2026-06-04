@@ -57,10 +57,7 @@ D.DEFAULT_STAGE_WORLD = {
 --- `radialStagger` (optional): STAGE_BOARD / playfield world XZ inches per family step from anchor (`abs(k) * radialStagger` along each snap's radial from `origin` on STAGE; anchor k=0 unchanged). Calibrate against STAGE size (~400), not CONTROL_BOARD minimap size (~40).
 --- `validSnaps` (optional): `{ minU, maxU, minV, maxV }` inclusive box on board u/v; candidates outside the box are not installed (reduces unused snaps on dense rings).
 --- See .dev/NPC Object Spawning & Spotlighting/Generating Snap Points For Control Board.md
-D.CONTROL_BOARD_SNAP =
-
-
-{
+D.CONTROL_BOARD_SNAP = {
   origin = { u = 0.5, v = 0.35 },
   snapYawOffsetDeg = 0,
   snapGroups = {

@@ -52,6 +52,7 @@ local tokenPickedUpFromPaletteGuid = {}
 local rebuildAnchorDropEligibilityCache
 local resolveTokenSnapCatalogEntry
 local isNpcSeatRowColumn
+local parkVacatedNpcControlTokensToPalette
 --- World XZ tolerance when matching tokens to installed control-board snap points.
 local CONTROL_BOARD_SNAP_MATCH_FUZZINESS = 0.45
 --- Prevents recursive anchor-family spread when programmatic moves fire onObjectDrop.
@@ -2421,7 +2422,7 @@ end
 --- @param characterKeys string[]
 --- @param board Object|nil
 --- @return number moved
-local function parkVacatedNpcControlTokensToPalette(characterKeys, board)
+parkVacatedNpcControlTokensToPalette = function(characterKeys, board)
     if type(characterKeys) ~= "table" or #characterKeys < 1 then
         return 0
     end

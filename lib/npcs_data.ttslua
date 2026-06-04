@@ -637,7 +637,7 @@ D.characters = {
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/oliverGagnonBack.webp"
       },
       scale = 60,
-      seatedScale = 60
+      seatedScale = 50
     },
     groups = {
       scarlettAndTheBoys = 1
@@ -810,7 +810,7 @@ D.characters = {
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/nasirKhanBack.webp"
       },
       scale = 53,
-      seatedScale = 53
+      seatedScale = 47
     },
     groups = {
       freeChantry = 1,
@@ -1305,7 +1305,7 @@ D.characters = {
         back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/evangelineDupontBack.webp"
       },
       scale = 49,
-      seatedScale = 49
+      seatedScale = 43
     },
     groups = {
       regencyUniversityChantry = 1,
