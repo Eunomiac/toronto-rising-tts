@@ -1,0 +1,72 @@
+---
+description: Toronto Rising TTS — Lua local function order (top recurring runtime bug)
+alwaysApply: true
+---
+
+# Toronto Rising — Lua local function order (mandatory)
+
+**This is the single most common class of runtime bugs in this repo** (~majority of “attempt to call a nil value” in TTS). Agents must treat it as a **pre-flight check on every Lua edit**, not an afterthought.
+
+## The rule (one file = one chunk)
+
+In **each** `.ttslua` file (and `core/global_script.ttslua`), every **`local function`** (or `local name` + later assignment) must appear **above** every caller in **that same file**:
+
+- `function Global.*` / `Global.call` targets
+- `function HUD_*`, `onObject*`, `onLoad`, coroutine entry names
+- Other **`local function`** bodies in the same chunk
+
+`require("core.foo")` does **not** share scope across files — fixing order in `npc_gameboard.ttslua` does not help `global_script.ttslua`.
+
+## Why it fails silently in the editor
+
+Lua 5.1 compiles each function body when the chunk loads. A call to `myHelper()` inside `function GlobalFoo()` where `myHelper` is declared **later** as `local function myHelper` resolves to **`_G.myHelper`**, which is usually **nil** → **`attempt to call a nil value`** at first use in-game (Save & Play), not at save time.
+
+## Agent checklist (before marking Lua work done)
+
+1. **List every new or moved `local function`** in the file you touched.
+2. For each, **grep callers** in the same file (`myHelper(`) and confirm the definition line number is **less than** every caller line number — or use forward declare (below).
+3. If you added a helper **near the bottom** of a large file (`core/npcs.ttslua`, `core/npc_gameboard.ttslua`, `core/global_script.ttslua`), **stop** and move it up or forward-declare.
+4. After Save & Play, exercise the path once (button, Apply, roll cancel, etc.) — nil-call bugs do not show in `npm run build`.
+
+## Forward declaration (when order is awkward)
+
+```lua
+local resolveTokenSnapCatalogEntry
+local isNpcSeatRowColumn
+
+-- callers above ...
+
+isNpcSeatRowColumn = function(col)
+    -- ...
+end
+
+resolveTokenSnapCatalogEntry = function(board, token, fuzziness, config)
+    -- ...
+end
+```
+
+Use `local function foo` only when `foo` is defined **before** all callers. Otherwise: `local foo` at top + `foo = function(...)` later.
+
+## Highest-risk files
+
+| File | Risk |
+| --- | --- |
+| `core/global_script.ttslua` | Many `Global.*` entry points; helpers often appended at bottom |
+| `core/npc_gameboard.ttslua` | Long file; seat/stage Apply locals |
+| `core/npcs.ttslua` | `resolveNpcPlacementIntent` and other late-assigned locals |
+| `core/lighting.ttslua`, `core/scenes.ttslua` | Large reconciler/helper blocks |
+
+Prefer moving substantial logic into `require()` modules with a small ordered API instead of growing bottom-of-file locals in Global.
+
+## Symptom → fix
+
+| Console | Likely cause |
+| --- | --- |
+| `attempt to call a nil value` at `Global.call` / `GlobalGameboardApply` / HUD handler | Local helper defined **below** caller in same chunk |
+| Stack shows `(local)` at a function name | That name was not in scope at compile time of the caller |
+
+**Fix:** Move helper above caller, or forward-declare, then Save & Play.
+
+## Canonical doc
+
+Full patterns, incidents, and anti-patterns: [`docs/solutions/lua-local-function-order.md`](../../docs/solutions/lua-local-function-order.md)

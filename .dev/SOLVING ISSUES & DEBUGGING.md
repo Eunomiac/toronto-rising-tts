@@ -14,7 +14,8 @@ Quick chat commands: `/dbcheck` (compact) and `/dbfullcheck` (full).
 
 ## B) Root-cause discipline (anti-workaround)
 
-- [ ] Name the likely root cause category before coding (ordering/race, state mismatch, writer conflict, ID resolution, missing object, etc.).
+- [ ] **`attempt to call a nil value` in TTS console?** Check **Lua local function order** first (most common): was `local function helper` defined **below** the `Global.*` / `HUD_*` / `local function` caller in the **same file**? Fix: move helper up or forward-declare (`local foo` then `foo = function`). See [`docs/solutions/lua-local-function-order.md`](../docs/solutions/lua-local-function-order.md). Build does not catch this.
+- [ ] Name the likely root cause category before coding (ordering/race, state mismatch, writer conflict, ID resolution, missing object, **lua local order**, etc.).
 - [ ] Identify all writers for the affected subsystem; list any competing writers explicitly.
 - [ ] Verify single-authority ownership. If two paths can write the same thing, stop and consolidate.
 - [ ] If adding retries/timeouts, explain why root cause is still unknown and what evidence is missing.

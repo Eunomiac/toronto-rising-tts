@@ -38,6 +38,21 @@ This is a **Vampire: The Masquerade 5th Edition (VTM5E) Tabletop Simulator modul
 
 If something is wrong, fail fast and loudly so the exact failure appears in logs/chat immediately.
 
+### Lua local function order — ABSOLUTE REQUIREMENT (top recurring runtime bug)
+
+**~Majority of in-game `attempt to call a nil value` errors in this project are caused by this single mistake.**
+
+**In any single `.ttslua` / Global chunk, declare `local function` helpers BEFORE every caller in that file.**
+
+- A `function GlobalSomething()` / `HUD_*` / `onObject*` body that calls `myHelper()` only sees **`local function myHelper`** if `myHelper` is defined **earlier in the same file** (or forward-declared: `local myHelper` then `myHelper = function ...` later).
+- If the helper is defined **below** the Global handler, Lua resolves `myHelper` as a **global** → runtime **attempt to call a nil value** (e.g. `GlobalGameboardApply`, `GlobalCancelPendingRollCleanup`, seat-row Apply).
+- **`Global.call("GlobalX", …)`** from `roll_controller` or other modules does not bypass this — `GlobalX` still runs in the Global chunk.
+- **`npm run build` does not catch this** — verify with Save & Play on the touched path.
+- **Agent pre-flight:** grep new `local function` names; confirm definition line **<** every caller line in the same file; never append helpers at file bottom without checking callers above.
+- Prefer: locals + helpers at the top of the section → `Global.*` entry points → late handlers. For large logic, use a `require()` module instead of a bottom-of-file local.
+- Always-on rule: `.cursor/rules/toronto-rising-lua-local-function-order.mdc`
+- Full write-up: [`docs/solutions/lua-local-function-order.md`](docs/solutions/lua-local-function-order.md)
+
 ### Proactive Pushback - ABSOLUTE REQUIREMENT
 
 **Do not be a passive executor.** If a requested approach or ongoing implementation path is likely wrong, overengineered, or inconsistent with project architecture, you must proactively push back.
@@ -251,16 +266,6 @@ return ModuleName
   - `@usage` for usage examples
 - Add inline comments for complex logic
 - Document module purpose at the top of each file
-
-### Lua local function order — ABSOLUTE REQUIREMENT
-
-**In any single `.ttslua` / Global chunk, declare `local function` helpers BEFORE every caller in that file.**
-
-- A `function GlobalSomething()` / `HUD_*` / `onObject*` body that calls `myHelper()` only sees **`local function myHelper`** if `myHelper` is defined **earlier in the same file** (or forward-declared: `local myHelper` then assigned later).
-- If the helper is defined **below** the Global handler, Lua resolves `myHelper` as a **global** → runtime **attempt to call a nil value** (recurring production bug; e.g. `GlobalCancelPendingRollCleanup` / `rollCancel`).
-- **`Global.call("GlobalX", …)`** from `roll_controller` or other modules does not bypass this — `GlobalX` still runs in the Global chunk.
-- Prefer: locals + helpers at the top of the section → `Global.*` entry points → late handlers. For large logic, use a `require()` module instead of a bottom-of-file local.
-- Full write-up: [`docs/solutions/lua-local-function-order.md`](docs/solutions/lua-local-function-order.md)
 
 ### Error Handling
 

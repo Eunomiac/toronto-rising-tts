@@ -497,7 +497,7 @@ function DEBUG.showScene()
 end
 
 --- Scan `npc_light` for duplicate pooled spotlights per roster key (same as load audit).
---- @param opts table|nil forwarded to `NPCS.auditDuplicatePooledSpotlights` (e.g. `{ alert = true }`)
+--- @param opts table|nil forwarded to `NPCS.auditDuplicatePooledSpotlights` (e.g. `{ alert = true, destroyDuplicates = true }`)
 --- @return table audit result
 function DEBUG.auditDuplicatePooledSpotlights(opts)
     local NPCS = require("core.npcs")

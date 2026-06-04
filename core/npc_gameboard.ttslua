@@ -51,6 +51,7 @@ local tokenPickedUpFromPaletteGuid = {}
 --- Forward declaration (Lua local-function order): defined after helper dependencies.
 local rebuildAnchorDropEligibilityCache
 local resolveTokenSnapCatalogEntry
+local isNpcSeatRowColumn
 --- World XZ tolerance when matching tokens to installed control-board snap points.
 local CONTROL_BOARD_SNAP_MATCH_FUZZINESS = 0.45
 --- Prevents recursive anchor-family spread when programmatic moves fire onObjectDrop.
@@ -572,6 +573,13 @@ local function rotationForNpcControlToken(boardYaw, yawDeg, faceUp)
     return Vector(0, boardYaw + (yawDeg or 0), rz)
 end
 
+--- Seat-row tokens: upright on the minimap tile ({0,0,0} board-local + Z flip for presence).
+--- @param faceUp boolean
+--- @return Vector
+local function rotationForSeatRowControlToken(faceUp)
+    return Vector(0, 0, faceUp and 0 or 180)
+end
+
 --- @param token Object
 --- @param board Object
 --- @return number|nil u, number|nil v, number|nil yaw
@@ -845,6 +853,22 @@ local function syncNpcsFromControlBoard(reason, seatMutation)
     })
 end
 
+--- True when an empty NPC seat snap should clear `occupiedNPCSlots` on Apply.
+--- Stage-bound characters keep homeland assignment (TOR-178 / NPC Reconciler Step Two case 4):
+--- `placements` holds stage intent; seat row empty only means the token is on a polar snap, not unassign.
+--- @param characterKey string
+--- @param stageByCharacter table<string, boolean>
+--- @return boolean
+local function shouldUnassignNpcSeatWhenSnapEmpty(characterKey, stageByCharacter)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return false
+    end
+    if stageByCharacter[characterKey] == true then
+        return false
+    end
+    return true
+end
+
 --- Seat-row Apply: assign/unassign NPC seats and narrative presence from seat snaps (TOR-180).
 --- @param board Object
 --- @param stageByCharacter table<string, boolean> characters with polar/stage placement this scan
@@ -865,7 +889,7 @@ local function applySeatRowFromControlBoard(board, stageByCharacter)
             current = nil
         end
         if scan == nil then
-            if current ~= nil and stageByCharacter[current] ~= true then
+            if current ~= nil and shouldUnassignNpcSeatWhenSnapEmpty(current, stageByCharacter) then
                 local ok, err = NPCS.unseatNpc(current)
                 if not ok then
                     print("[Gameboard] Apply seat row: unseat " .. tostring(current) .. ": " .. tostring(err))
@@ -1819,7 +1843,7 @@ end
 
 --- @param col table|nil
 --- @return boolean
-local function isNpcSeatRowColumn(col)
+isNpcSeatRowColumn = function(col)
     return type(col) == "table" and col.kind == "npc" and U.isIn(col.seatKey, C.NPCSeats or {})
 end
 
@@ -1835,20 +1859,21 @@ local function buildSeatRowSnapEntries(board, polarCount)
     local columns = seatCfg.columns
     local n = #columns
     local v = tonumber(seatCfg.v) or 0.15
-    local uMargin = tonumber(seatCfg.uMargin) or 0.06
-    local polarSnap = resolveControlBoardSnapConfig(nil)
-    local originU = tonumber(polarSnap.origin.u) or 0.5
-    local originV = tonumber(polarSnap.origin.v) or 0.35
-    local yawOffset = tonumber(seatCfg.snapYawOffsetDeg) or 0
+    local uMin = tonumber(seatCfg.uMin) or 0.35
+    local uMax = tonumber(seatCfg.uMax) or 0.65
+    if uMax < uMin then
+        uMin, uMax = uMax, uMin
+    end
+    -- Seat-row snaps stay upright on the tile ({0,0,0} board-local); do not yaw toward polar origin.
+    local yawDeg = ((tonumber(seatCfg.snapYawOffsetDeg) or 0) % 360 + 360) % 360
     local entries = {}
     for i = 1, n do
         local col = columns[i]
-        local u = 0.5
+        local u = (uMin + uMax) * 0.5
         if n > 1 then
-            u = uMargin + (i - 1) * (1 - 2 * uMargin) / (n - 1)
+            u = uMin + (i - 1) * (uMax - uMin) / (n - 1)
         end
         local lp = boardLocalFromUv(board, u, v)
-        local yawDeg = ((snapYawTowardOriginDeg(board, u, v, originU, originV) + yawOffset) % 360 + 360) % 360
         entries[#entries + 1] = {
             snapKind = SNAP_KIND_SEAT,
             seatKey = col.seatKey,
@@ -2968,7 +2993,6 @@ function Gameboard.relocateHomelandSeatTokensAfterClear(board)
         return
     end
     local byChar = buildTokenByCharacterKey()
-    local boardYaw = objectYawDeg(board)
     for _, seatKey in ipairs(C.NPCSeats or {}) do
         local ck = occupied[seatKey]
         if type(ck) == "string" and ck ~= "" then
@@ -2980,7 +3004,7 @@ function Gameboard.relocateHomelandSeatTokensAfterClear(board)
                     present = NPCS.resolveSeatNarrativePresence(seatKey) == true
                 end
                 token.setPosition(Gameboard.worldOnControlBoard(board, entry.u, entry.v))
-                token.setRotation(rotationForNpcControlToken(boardYaw, entry.yawDeg, present))
+                token.setRotation(rotationForSeatRowControlToken(present))
                 Gameboard.setHiddenFromPlayerColors(token)
             end
         end
@@ -3148,7 +3172,6 @@ function Gameboard.reconcileControlBoardFromState(opts)
         local seatCatalog = seatRowCatalogByNpcSeatKey(Gameboard.buildControlBoardSnapCatalog(board, nil))
         local occupied = S.getStateVal("seatLayout", "occupiedNPCSlots")
         if type(occupied) == "table" then
-            local boardYaw = objectYawDeg(board)
             for _, seatKey in ipairs(C.NPCSeats or {}) do
                 local ck = occupied[seatKey]
                 if type(ck) == "string" and ck ~= "" then
@@ -3160,7 +3183,7 @@ function Gameboard.reconcileControlBoardFromState(opts)
                             present = NPCS.resolveSeatNarrativePresence(seatKey) == true
                         end
                         token.setPosition(Gameboard.worldOnControlBoard(board, entry.u, entry.v))
-                        token.setRotation(rotationForNpcControlToken(boardYaw, entry.yawDeg, present))
+                        token.setRotation(rotationForSeatRowControlToken(present))
                         Gameboard.setHiddenFromPlayerColors(token)
                     end
                 end

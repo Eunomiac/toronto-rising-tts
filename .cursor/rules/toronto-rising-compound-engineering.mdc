@@ -28,7 +28,7 @@ This project has **long-running** Tabletop Simulator systems (dice, roll pipelin
 | Feature or fix is “done” and non-trivial; before merge/PR | **Structured review** (`ce:review` skill): tiered review appropriate to risk/size. |
 | Shipping: commit message + PR body should match repo standards | **Git / PR** skills (`git-commit`, `git-commit-push-pr`, `ce-pr-description`): align with `.cursorrules` (Linear refs, clear narrative). |
 | After solving a non-obvious bug or pattern worth remembering | **Compound learnings** (`ce:compound` / `cecompound-refresh` when applicable): capture in `docs/solutions/` if that tree exists and the repo uses it. |
-| Editing `core/global_script.ttslua` or adding `Global.*` / `Global.call` helpers | Read [`docs/solutions/lua-local-function-order.md`](../../docs/solutions/lua-local-function-order.md) — **`local function` before callers** in the same file. |
+| **Any Lua edit** (especially `global_script`, `npc_gameboard`, `npcs`) | **Mandatory:** [`.cursor/rules/toronto-rising-lua-local-function-order.mdc`](../../.cursor/rules/toronto-rising-lua-local-function-order.mdc) + [`lua-local-function-order.md`](../../docs/solutions/lua-local-function-order.md) — `#1 nil-call bug`; locals **before** callers; forward-declare if needed; build does not catch. |
 
 ## Proportionality
 

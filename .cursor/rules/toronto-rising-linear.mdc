@@ -108,7 +108,13 @@ Parent epics: TOR-30 (Foundation) through TOR-43 (Workshop). Attach new issues u
 - `Feature`, `Improvement`, or `Bug`
 - `source:tasklist` when the item originates from RUNNING TASKLIST
 - `module:*` matching the domain (`module:dice`, `module:conditions`, etc.)
+- **`workshop-only`** — author-owned work outside the repo (TTS save, art, external tools); **agents do not implement**; keep issue **Backlog**/**Todo**, not **Canceled**
+- **`human-gate`** (when on team) — same agent skip rule; description must include `## Human gate` with the author’s next step
 - **`living-doc`** — documentation that must stay current when related code changes; issue stays **In Progress** (do not mark **Done** when only the baseline shipped)
+
+### Human-gated vs Canceled
+
+**Never** set **Canceled** on live author-owned work. **Canceled** = superseded, duplicate, or explicit descope. Deferral from Focus ≠ Canceled. See `DEVELOPMENT_WORKFLOW.md` § Human-gated work.
 
 ### Living documentation (`living-doc`)
 

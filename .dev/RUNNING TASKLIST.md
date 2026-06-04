@@ -176,7 +176,7 @@ _Blocked: author must define data binding approach before substantial implementa
 
 ## Out of Scope for Cursor
 
-_Workshop save, external art, or design TBD outside the repo. Each row has a Canceled Linear issue under epic TOR-43 for traceability._
+_Workshop save, external art, or design TBD outside the repo. Each row has an open **Backlog** Linear issue under epic **TOR-43** (`workshop-only` — agents do not implement; author-owned)._
 
 | Item | Notes | Linear |
 |------|--------|--------|

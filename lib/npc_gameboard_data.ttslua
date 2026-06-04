@@ -118,7 +118,8 @@ D.CONTROL_BOARD_PALETTE_SNAP = {
 --- PC columns are layout-only snaps (no assignment).
 D.CONTROL_BOARD_SEAT_ROW = {
   v = 0.15,
-  uMargin = 0.06,
+  uMin = 0.35,
+  uMax = 0.65,
   snapYawOffsetDeg = 0,
   columns = {
     { seatKey = "NPC4", kind = "npc" },

@@ -69,7 +69,15 @@ Audit trail for the 2026-05-22 Linear alignment pass. Inventory: [linear-alignme
 |------|--------|-----------------|-------|
 | 2026-05-22 | CREATE (Done) | TOR-44 – TOR-70 | Shipped features retroactively tracked |
 | 2026-05-22 | CREATE (Backlog) | TOR-72 – TOR-103 | Open RUNNING TASKLIST items |
-| 2026-05-22 | CREATE (Canceled) | TOR-105 – TOR-114 | Workshop out-of-scope rows |
+| 2026-05-22 | CREATE (Canceled) | TOR-105 – TOR-114 | Workshop out-of-scope rows — **superseded 2026-06-04:** reopen to **Backlog** (see below) |
+
+## 2026-06-04 — Workshop issues: Canceled → Backlog (human-gate)
+
+**Intent:** TOR-43, TOR-105–TOR-114 were wrongly **Canceled** at creation (“traceability”). They are live author-owned work — **Backlog** + **`workshop-only`** + `## Human gate` in description. Agents do not implement.
+
+**Repo:** `DEVELOPMENT_WORKFLOW.md` § Human-gated work; `.cursor/rules/toronto-rising-linear.mdc` § Human-gated vs Canceled; RUNNING TASKLIST §Out of Scope wording.
+
+**Linear MCP:** `save_issue` with `state: "Backlog"` (or state id `43add8cd-3f26-49b5-958c-a33fadd7bbf5`) did not transition canceled issues in-agent (2026-06-04) — **author:** bulk-select in Linear → set status **Backlog**, priority **Medium**, paste human-gate block from `.dev/plans/workshop-linear-reopen.md` if needed.
 
 ## 2026-05-22 — Repo docs
 

@@ -7,6 +7,7 @@ bullets without evidence, confidence, or sourcing metadata.
 
 ## Learned User Preferences
 
+- On every Lua edit: verify **local function order** before finishing — helpers must be declared above callers in the same file (or forward-declared); this causes most `attempt to call a nil value` bugs and is not caught by build.
 - Use double quotes for strings, and use string templates or `.join()` instead of direct concatenation.
 - Do not use the `any` type, the non-null assertion operator (`!`), or `as unknown as T` casts.
 - Generate full code with no placeholders; only emit code relevant to the change rather than regenerating whole files unless asked.
@@ -25,6 +26,7 @@ bullets without evidence, confidence, or sourcing metadata.
 
 ## Learned Workspace Facts
 
+- **Lua local function order (top recurring bug):** In each `.ttslua` chunk, declare every `local function` (or forward-declare `local foo` then assign) **before** any caller in that file — `Global.*`, `HUD_*`, `onObject*`, and other locals. A helper below the caller resolves as a global → `attempt to call a nil value` at runtime; `npm run build` does not catch it. Highest risk: `core/global_script.ttslua`, `core/npc_gameboard.ttslua`, `core/npcs.ttslua`. Canonical: `docs/solutions/lua-local-function-order.md`; always-on: `.cursor/rules/toronto-rising-lua-local-function-order.mdc`.
 - This repo is a Vampire: The Masquerade 5th Edition Tabletop Simulator module written in Lua 5.1; module files use `.ttslua`, entry-point stubs use `.lua`, and UI uses `.xml`.
 - Source layout: `lib/` for shared libraries (`constants`, `guids`, `util`), `core/` for game logic (`state`, `lighting`, `main`, `scenes`, `zones`, `debug`), `ui/` for UI XML, `.tts/` as TTS Tools auto-generated output, and `.dev/plans/` for new planning documents.
 - The real Global script lives at `core/global_script.ttslua`; `global/global_script.ttslua` is a shim that only does `require("core.global_script")` and must not hold game logic.
@@ -45,7 +47,7 @@ bullets without evidence, confidence, or sourcing metadata.
 - Scene APIs (`Scenes.loadScene` / `Scenes.fadeToScene`) are state-mutation helpers; live scene effects must be applied via `Scenes.reconcileFromState()` through `Sync.*`.
 - Coroutine helpers (`U.waitUntil`, `U.RunSequence`, `U.Lerp`) require `startLuaCoroutine(Global, "FunctionName")` and run in Global context where `self` refers to Global.
 - Do not call `Wait.time`, `Wait.condition`, or `Wait.stop` outside `lib/util.ttslua`; use `U.delay`, `U.stopDelay`, `U.waitForCondition`, `U.scheduleAtOffsets`, and higher-level sequence helpers. The build gate enforces zero raw Wait usage in game code (`docs/solutions/lua-wait-api-policy.md`).
-- In each Lua file/chunk, declare `local function` helpers before any caller in that file (`Global.*`, `HUD_*`, `onObject*`, other locals). A helper defined below a `function GlobalFoo()` is resolved as a global and is nil at runtime — especially in `core/global_script.ttslua` (`docs/solutions/lua-local-function-order.md`).
+- Lua local function order: see first bullet under Learned Workspace Facts (mandatory pre-flight on every Lua edit).
 - Before writing new helpers, check `.dev/AVAILABLE_FUNCTIONS.md` and `lib/util.ttslua` (75+ utilities) so existing `U.map`, `U.filter`, `U.Type`, `U.Val`, etc. are reused instead of reimplemented.
 - Implementation plans and design notes belong under `.dev/plans/` unless the user specifies another path; do not invent a top-level `docs/` tree for that purpose.
 - The canonical Miro board for Toronto Rising work is `https://miro.com/app/board/uXjVGfp9Sdk=/`; enumerate canvas content with `board_list_items` (paginating via `nextCursor`) because `context_explore` only surfaces high-level item kinds.

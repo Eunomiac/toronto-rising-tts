@@ -4,7 +4,8 @@
     only require()s this file. Edit here — not .tts/objects/Global.lua (that file may be overwritten on reload).
 
     Agent guidance (.dev/ documentation for this project):
-    docs/solutions/lua-local-function-order.md (declare local functions BEFORE callers in this file),
+    MANDATORY FIRST — docs/solutions/lua-local-function-order.md (top recurring bug: local function BEFORE every caller in THIS file; else nil at runtime),
+    .cursor/rules/toronto-rising-lua-local-function-order.mdc,
     DEVELOPMENT_WORKFLOW.md, TESTING.md, TTS_BUNDLING_SETUP.md, DEBUG_FILE_LOGGING.md, TTS_MCP.md,
     HUD_FUNCTIONS.md, HUDs & Overlays/Player HUD Overview.md,
     NPC Object Spawning & Spotlighting/NPC Object Overview.md,

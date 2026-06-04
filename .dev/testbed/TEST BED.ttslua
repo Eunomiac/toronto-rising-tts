@@ -2417,7 +2417,8 @@ for _, o in ipairs(getObjectsWithTag("NPC1Object")) do
   end
 end
 
-
+for _, o in ipairs(getObjectsWithTag("npc_control_token") or {}) do if o ~= nil and o.getCustomObject ~= nil and o.setCustomObject ~= nil then local p = o:getCustomObject(); if type(p) == "table" then p.thickness = 0.03; o:setCustomObject(p); if o.reload ~= nil then o:reload() end end end end
+DEBUG.auditDuplicatePooledSpotlights({ destroyDuplicates = true})
 -- Remap variant: same call shape as installNpcControlBoardSnaps; uses currently installed board snaps as old-config baseline.
 DEBUG.installAndRemapNpcControlBoardSnaps({
 
@@ -2430,7 +2431,7 @@ DEBUG.installAndRemapNpcControlBoardSnaps({
     { num = 5, angleDelta = 3, rays = 20, groundLevel = 20,  radialStagger = 5, maxU = 0.8, maxV = 0.7 },
   },
 })
-
+DEBUG.auditDuplicatePooledSpotlights({ alert = true })
 local o = getObjectFromGUID("3bbb1b"); if o then o.setName("CONTROL_BOARD"); print(o.getName()) end
 
 local o = getObjectFromGUID("3bbb1b");

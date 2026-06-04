@@ -1697,6 +1697,105 @@ local function findExistingPooledSpotlightForNpcName(npcName)
     return preferredMatch or fallback
 end
 
+--- When duplicate `npc_light` objects share a roster key, pick the GUID to keep (matches `findExistingPooledSpotlightForNpcName` priority).
+--- @param npcName string
+--- @param guidList string[]
+--- @return string|nil
+local function chooseKeeperPooledSpotlightGuid(npcName, guidList)
+    if not validateNpcNameKey(npcName) or U.Type(guidList) ~= "table" then
+        return nil
+    end
+    local candidates = {}
+    for i = 1, #guidList do
+        local g = guidList[i]
+        if U.Type(g) == "string" and g ~= "" then
+            candidates[#candidates + 1] = g
+        end
+    end
+    if #candidates == 0 then
+        return nil
+    end
+
+    local rec = getInstances()[npcName]
+    local stateGuid = U.Type(rec) == "table" and U.Type(rec.lightGuid) == "string" and rec.lightGuid or ""
+
+    if stateGuid ~= "" and getObjectFromGUID(stateGuid) ~= nil then
+        for i = 1, #candidates do
+            if candidates[i] == stateGuid then
+                return stateGuid
+            end
+        end
+    end
+
+    for i = 1, #candidates do
+        local g = candidates[i]
+        if getObjectFromGUID(g) ~= nil and not pooledSpotlightGuidClaimedByOtherInstance(npcName, g) then
+            return g
+        end
+    end
+
+    if stateGuid ~= "" then
+        for i = 1, #candidates do
+            if candidates[i] == stateGuid then
+                return stateGuid
+            end
+        end
+    end
+
+    for i = 1, #candidates do
+        if not pooledSpotlightGuidClaimedByOtherInstance(npcName, candidates[i]) then
+            return candidates[i]
+        end
+    end
+
+    return candidates[1]
+end
+
+--- Remove one pooled spotlight object and drop its dynamic lighting registration.
+--- @param lightGuid string
+--- @return boolean true when destroy was attempted for a non-empty guid
+local function destroyPooledSpotlightByGuid(lightGuid)
+    if U.Type(lightGuid) ~= "string" or lightGuid == "" then
+        return false
+    end
+    local lit = getObjectFromGUID(lightGuid)
+    if lit ~= nil then
+        if lit.getLock ~= nil and lit.getLock() and lit.setLock ~= nil then
+            lit.setLock(false)
+        end
+        if lit.destruct ~= nil then
+            lit.destruct()
+        end
+    end
+    unregisterDynamicLightModes(lightGuid)
+    local lights = U.clone(S.getStateVal("lights") or {})
+    lights[NPCS.lightRegistryName(lightGuid)] = nil
+    S.setStateVal(lights, "lights")
+    return true
+end
+
+--- Point `npcs.instances[npcName].lightGuid` at the surviving pooled spotlight after dedupe.
+--- @param npcName string
+--- @param keeperGuid string
+local function syncInstanceLightGuidAfterDedupe(npcName, keeperGuid)
+    if not validateNpcNameKey(npcName) or U.Type(keeperGuid) ~= "string" or keeperGuid == "" then
+        return
+    end
+    local rec = getInstances()[npcName]
+    if U.Type(rec) ~= "table" then
+        return
+    end
+    if rec.lightGuid == keeperGuid then
+        return
+    end
+    rec.lightGuid = keeperGuid
+    setInstanceRecord(npcName, rec)
+    if getObjectFromGUID(keeperGuid) ~= nil then
+        ensureSpotlightTag(getObjectFromGUID(keeperGuid))
+        L.registerNpcSpotlightModes(npcName, keeperGuid)
+    end
+end
+
 --- Spawn only the paired preload spotlight (figurine already exists in-world).
 --- @param npcName string
 --- @param slotIndex number
@@ -3349,11 +3448,12 @@ function NPCS.registerRestoredInstancesFromState()
 end
 
 --- Scan in-world `npc_light` objects; warn when more than one pooled spotlight exists per roster key.
---- @param opts table|nil `phase` (log label), `alert` (Storyteller popup when duplicates found)
---- @return table `{ ok, duplicateKeys, extraCount, totalTagged }`
+--- @param opts table|nil `phase`, `alert`, `destroyDuplicates` (remove extras; keep instance `lightGuid` else first live unclaimed)
+--- @return table `{ ok, duplicateKeys, extraCount, totalTagged, destroyedCount?, repairedKeys? }`
 function NPCS.auditDuplicatePooledSpotlights(opts)
     opts = U.Type(opts) == "table" and opts or {}
     local phase = U.Type(opts.phase) == "string" and opts.phase or "audit"
+    local destroyDuplicates = opts.destroyDuplicates == true
     local objs = getObjectsWithTag(TAG_LIT) or {}
     local byKey = {}
     local totalTagged = 0
@@ -3378,19 +3478,65 @@ function NPCS.auditDuplicatePooledSpotlights(opts)
         end
     end
 
-    local duplicateKeys = {}
-    local extraCount = 0
-    for key, guids in pairs(byKey) do
-        if #guids > 1 then
-            duplicateKeys[#duplicateKeys + 1] = key
-            extraCount = extraCount + (#guids - 1)
+    local function collectDuplicateKeys()
+        local keys = {}
+        local extras = 0
+        for key, guids in pairs(byKey) do
+            if #guids > 1 then
+                keys[#keys + 1] = key
+                extras = extras + (#guids - 1)
+            end
         end
+        table.sort(keys)
+        return keys, extras
     end
-    table.sort(duplicateKeys)
+
+    local duplicateKeys, extraCount = collectDuplicateKeys()
+    local destroyedCount = 0
+    local repairedKeys = {}
+
+    if destroyDuplicates and #duplicateKeys > 0 then
+        for _, key in ipairs(duplicateKeys) do
+            local guids = byKey[key]
+            local keeper = chooseKeeperPooledSpotlightGuid(key, guids)
+            if U.Type(keeper) == "string" and keeper ~= "" then
+                local recBefore = getInstances()[key]
+                local priorGuid = U.Type(recBefore) == "table" and recBefore.lightGuid or nil
+                syncInstanceLightGuidAfterDedupe(key, keeper)
+                if priorGuid ~= keeper then
+                    repairedKeys[#repairedKeys + 1] = key
+                end
+                for i = 1, #guids do
+                    local g = guids[i]
+                    if g ~= keeper and destroyPooledSpotlightByGuid(g) then
+                        destroyedCount = destroyedCount + 1
+                    end
+                end
+                byKey[key] = { keeper }
+            end
+        end
+        duplicateKeys, extraCount = collectDuplicateKeys()
+    end
 
     if #duplicateKeys == 0 then
-        print(string.format("[NPCS] %s: pooled spotlight audit OK (%d npc_light)", phase, totalTagged))
-        return { ok = true, duplicateKeys = {}, extraCount = 0, totalTagged = totalTagged }
+        if destroyedCount > 0 then
+            print(string.format(
+                "[NPCS] %s: pooled spotlight dedupe removed %d extra npc_light (%d instance lightGuid repaired)",
+                phase,
+                destroyedCount,
+                #repairedKeys
+            ))
+        else
+            print(string.format("[NPCS] %s: pooled spotlight audit OK (%d npc_light)", phase, totalTagged))
+        end
+        return {
+            ok = true,
+            duplicateKeys = {},
+            extraCount = 0,
+            totalTagged = totalTagged,
+            destroyedCount = destroyedCount,
+            repairedKeys = repairedKeys,
+        }
     end
 
     local lines = {}
@@ -3398,12 +3544,15 @@ function NPCS.auditDuplicatePooledSpotlights(opts)
         local guids = byKey[key]
         lines[#lines + 1] = string.format("  %s: %d (%s)", key, #guids, table.concat(guids, ", "))
     end
+    local suffix = destroyDuplicates
+        and " (destroyDuplicates ran but duplicates remain — manual review)"
+        or ". Orphans persist until removed; see console GUID list, destroyDuplicates opt, or destroyAllNpcWorldObjects."
     print(string.format(
-        "[NPCS] ERROR %s: duplicate pooled npc_light — %d character key(s), %d extra object(s). "
-            .. "Orphans persist until removed; see console GUID list or destroyAllNpcWorldObjects.\n%s",
+        "[NPCS] ERROR %s: duplicate pooled npc_light — %d character key(s), %d extra object(s)%s\n%s",
         phase,
         #duplicateKeys,
         extraCount,
+        suffix,
         table.concat(lines, "\n")
     ))
     if opts.alert == true then
@@ -3414,6 +3563,8 @@ function NPCS.auditDuplicatePooledSpotlights(opts)
         duplicateKeys = duplicateKeys,
         extraCount = extraCount,
         totalTagged = totalTagged,
+        destroyedCount = destroyedCount,
+        repairedKeys = repairedKeys,
     }
 end
 

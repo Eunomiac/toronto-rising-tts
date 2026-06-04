@@ -85,6 +85,20 @@ Cursor **auto-titles** agent threads from early messages. Chats that open with o
 - Use `.md` for documentation
 - Use `.xml` for UI definitions
 
+## Lua local function order (mandatory)
+
+**This is the most common cause of in-game `attempt to call a nil value` in this project** — not missing `require`s or GUIDs.
+
+| Rule | Detail |
+| --- | --- |
+| **Scope** | One `.ttslua` file = one Lua chunk. Order is **per file**, including `core/global_script.ttslua`. |
+| **Declaration** | Every `local function helper` (or `local helper` + assignment) must appear **above** every caller: `Global.*`, `HUD_*`, `onObject*`, other `local function`s. |
+| **Forward declare** | When helpers must live late in the file: `local myHelper` at top, then `myHelper = function(...)` after dependencies. |
+| **Verification** | `npm run build` does **not** detect this. Save & Play and exercise the changed handler. |
+| **Agent pre-flight** | After editing Lua, grep each new helper name in the same file; definition line must be **less than** all caller lines. |
+
+Canonical reference: [`docs/solutions/lua-local-function-order.md`](../docs/solutions/lua-local-function-order.md). Always-on Cursor rule: `.cursor/rules/toronto-rising-lua-local-function-order.mdc`.
+
 ## Development Best Practices
 
 ### Code Style
@@ -297,9 +311,23 @@ Some issues (e.g. **TOR-141** manual E2E playbooks) ship a **baseline** but stay
 
 See [E2E Playbooks README](E2E%20Playbooks/README.md) maintenance table and `.cursor/rules/toronto-rising-linear.mdc` § Living documentation.
 
+### Human-gated work (author-owned, not agent-owned)
+
+Work that requires **author action outside the IDE** (TTS workshop save, playtest, external art, design binding, Google Sheets workflow) must **not** use Linear **Canceled** — that reads as descoped.
+
+| Field | Rule |
+| --- | --- |
+| **Status** | **Backlog** (or **Todo** when actively scheduled) |
+| **Priority** | Intrinsic importance (**Medium** typical) — not **No priority** merely because agents cannot implement |
+| **Label** | **`workshop-only`** (Out of Scope table) and/or **`human-gate`** when added to the team |
+| **Description** | `## Human gate` — what the author must do; **Agents:** do not implement in repo |
+| **Tasklist** | **Out of Scope for Cursor** or domain `[ ]` bullet with `_(TOR-XX)_` |
+
+**Canceled** only for superseded design, duplicates, or explicit descope — not “waiting on author.”
+
 ### When descoping or deferring
 
-- Linear → **Canceled** or **Backlog** with reason; move or strikethrough the tasklist item.
+- Linear → **Canceled** (true descope) or **Backlog** with reason; move or strikethrough the tasklist item.
 - **Focus deferral:** add to **Deferred this cycle**; set **`blockedBy`** on the deferred issue toward prerequisites — do not auto-set **Low** priority.
 - Do not delete Linear issues.
 
