@@ -75,6 +75,17 @@ D.lights = {
   },
 }
 
+--- Beam overrides for NPCs on STAGE_BOARD (`__stage_board__` placements). Deep-merged on top of `D.lights` + per-character `lighting` when resolving modes; position/aim fields stay from the base mode unless listed here.
+D.stageLights = {
+  STANDARD = {
+    enabled = true,
+    range = 42.103451,
+    angle = 88.884521,
+    intensity = 5.389008,
+    color = Color(0.76, 0.76, 0.76),
+  },
+}
+
 --[[
     Optional per area: spreadBlend (0..1, default 0). Scales how much farther `distance` widens slot spacing:
     spreadBlend 0 = same lateral packing as centerForward; 1 = full similarity (spacing grows with distance).

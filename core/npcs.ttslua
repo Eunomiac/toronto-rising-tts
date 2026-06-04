@@ -17,6 +17,7 @@ local NLIGHT = require("lib.npcs_light_spawn_defaults")
 
 NPCS.characters = DATA.characters or {}
 NPCS.lights = DATA.lights or {}
+NPCS.stageLights = DATA.stageLights or {}
 NPCS.areas = DATA.areas or {}
 
 --- When true, `refreshStorytellerUI` / `refreshStorytellerUIIfVisible` are no-ops (static `ui/storyteller/panel_npcs.xml` only).
@@ -1204,7 +1205,15 @@ function NPCS.getMergedModeDefinition(npcName, modeKey)
     local def = NPCS.characters[npcName]
     local globalMode = NPCS.lights[modeKey] or {}
     local per = def and def.lighting and def.lighting[modeKey] or nil
-    return deepMerge(globalMode, per)
+    local merged = deepMerge(globalMode, per)
+    local rec = getInstances()[npcName]
+    if U.Type(rec) == "table" and rec.areaKey == STAGE_BOARD_AREA_KEY then
+        local stageOverride = NPCS.stageLights[modeKey]
+        if U.Type(stageOverride) == "table" then
+            merged = deepMerge(merged, stageOverride)
+        end
+    end
+    return merged
 end
 
 --- @param npcName string
