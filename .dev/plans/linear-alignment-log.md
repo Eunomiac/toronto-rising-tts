@@ -228,5 +228,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-04 | UPDATE | TOR-178 | Cleared `blockedBy` TOR-180 (prerequisite Done); remains In Progress / Focus #2 |
 | 2026-06-04 | RESURFACE | TOR-96 | Removed from Deferred this cycle; cleared `blockedBy`; gate TOR-180 Done |
 | 2026-06-04 | UPDATE | TOR-181 | `blockedBy` narrowed to TOR-174 only (TOR-180 Done) |
+| 2026-06-04 | DONE | TOR-182 | Apply vacate NPC seat when token off CONTROL_BOARD (`4a9370f`); related TOR-180, TOR-178; seat-row snap rotation |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
