@@ -150,10 +150,24 @@ local function eulerAxisFlippedDeg(deg)
     return norm > 90 and norm < 270
 end
 
+--- Face-up ⇒ STANDARD when later read by `Gameboard.tokenLightModeFromFlip`; palette parking is OFF (face-down).
+--- Prefer transform up-vector (matches control-board token logic); fall back to euler Z/X.
 --- @param token Object|nil
---- @return boolean true when token reads face-up (STANDARD on board), not palette OFF default
+--- @return boolean
 local function paletteTokenIsFaceUp(token)
-    if not U.isGameObject(token) or token.getRotation == nil then
+    if not U.isGameObject(token) then
+        return true
+    end
+    if token.getTransformUp ~= nil then
+        local up = token.getTransformUp()
+        if up ~= nil then
+            local uy = up.y or up[2]
+            if type(uy) == "number" then
+                return uy >= 0
+            end
+        end
+    end
+    if token.getRotation == nil then
         return true
     end
     local rot = token.getRotation()
@@ -164,6 +178,27 @@ local function paletteTokenIsFaceUp(token)
         return false
     end
     return true
+end
+
+--- Apply face-down parking rotation; re-apply once after snap settle (palette snaps use `rotation_snap`).
+--- @param palette Object
+--- @param token Object
+function Palette.applyPaletteParkingRotation(palette, token)
+    if not U.isGameObject(token) or token.setRotation == nil then
+        return
+    end
+    token.setRotation(Palette.rotationForPaletteParking(palette))
+    U.delay(function()
+        if not U.isGameObject(token) then
+            return
+        end
+        if not isWorldPosOnPaletteBoard(palette, token.getPosition()) then
+            return
+        end
+        if paletteTokenIsFaceUp(token) then
+            token.setRotation(Palette.rotationForPaletteParking(palette))
+        end
+    end, 0.05)
 end
 
 --- Palette parking: face-down (Z=180) so `tokenLightModeFromFlip` reads OFF on the control board.
@@ -311,7 +346,8 @@ local function snapPointForGridIndex(board, snapIndex)
     local lp = boardLocalFromUv(board, u, v)
     return {
         position = { lp.x, lp.y, lp.z },
-        rotation = { 0, yawDeg, 0 },
+        --- Match `rotationForPaletteParking` (Y offset + Z flip = lights OFF on the control board).
+        rotation = { 0, yawDeg, 180 },
         rotation_snap = true,
         tags = { TAG_TOKEN },
     }
@@ -555,12 +591,12 @@ function Palette.syncTokensToPalette(palette)
                 nearestIndex = snapPointsForFind[nearestSlot].snapIndex
             end
             local needPos = nearestIndex ~= wantIndex
-            local needFlip = paletteTokenIsFaceUp(token)
+            local wasFaceUp = paletteTokenIsFaceUp(token)
             if needPos then
                 token.setPosition(snapWorld[wantIndex])
             end
-            if needPos or needFlip then
-                token.setRotation(Palette.rotationForPaletteParking(palette))
+            Palette.applyPaletteParkingRotation(palette, token)
+            if needPos or wasFaceUp then
                 moved = moved + 1
             end
         end
@@ -584,15 +620,15 @@ function Palette.syncTokensToPalette(palette)
                             slotCorrect = snapPointsForFind[nearestSlot].snapIndex == wantIndex
                         end
                     end
-                    local needFlip = paletteTokenIsFaceUp(token)
-                    if not slotCorrect or needFlip then
-                        if not slotCorrect then
-                            token.setPosition(snapWorld[wantIndex])
-                        end
-                        token.setRotation(Palette.rotationForPaletteParking(palette))
-                        if token.setInvisibleTo ~= nil then
-                            token.setInvisibleTo(C.PlayerColors or {})
-                        end
+                    local wasFaceUp = paletteTokenIsFaceUp(token)
+                    if not slotCorrect then
+                        token.setPosition(snapWorld[wantIndex])
+                    end
+                    Palette.applyPaletteParkingRotation(palette, token)
+                    if token.setInvisibleTo ~= nil then
+                        token.setInvisibleTo(C.PlayerColors or {})
+                    end
+                    if not slotCorrect or wasFaceUp then
                         moved = moved + 1
                     end
                 end

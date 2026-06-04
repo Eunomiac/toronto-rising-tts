@@ -1978,7 +1978,7 @@ local function parkNpcTokenOnPalette(token, characterKey)
         return false
     end
     token.setPosition(wp)
-    token.setRotation(Palette.rotationForPaletteParking(palette))
+    Palette.applyPaletteParkingRotation(palette, token)
     if token.setInvisibleTo ~= nil then
         token.setInvisibleTo(C.PlayerColors or {})
     end
