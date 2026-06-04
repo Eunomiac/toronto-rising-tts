@@ -731,12 +731,14 @@ end
 
 --- Move misplaced palette tokens, then park all tokens that belong on the palette.
 --- @param palette Object
+--- @param options table|nil `{ skipParkIf?: fun(token: Object, characterKey: string|nil): boolean }` — when true, token is not repositioned in phase 2
 --- @return number moved
-function Palette.syncTokensToPalette(palette)
+function Palette.syncTokensToPalette(palette, options)
     if not U.isGameObject(palette) then
         print("[Palette] syncTokensToPalette: CONTROL_BOARD_PALETTE missing")
         return 0
     end
+    options = U.Type(options) == "table" and options or {}
     local assignments = Palette.buildTokenSnapAssignments()
     local snapIndices = uniqueAssignmentSnapIndices(assignments)
     local snapWorld = {}
@@ -783,8 +785,9 @@ function Palette.syncTokensToPalette(palette)
     for _, token in ipairs(allTagged) do
         if U.isGameObject(token) then
             local ck = tokenCharacterKey(token)
-            -- On-stage keys are mirrored onto CONTROL_BOARD by reconcile; do not park them here.
-            if placedOnStage[ck] ~= true then
+            if type(options.skipParkIf) == "function" and options.skipParkIf(token, ck) == true then
+                -- Caller preserves this token's board position (e.g. TOR-180 seat row on Clear).
+            elseif placedOnStage[ck] ~= true then
                 local wantIndex = ck ~= nil and assignments[ck] or nil
                 if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
                     local onPalette = Palette.isTokenOnPaletteBoard(palette, token)

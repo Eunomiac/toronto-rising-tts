@@ -3211,6 +3211,49 @@ function NPCS.collectGroupMembers(groupId)
     return rows
 end
 
+--- Narrative presence for an NPC table seat (`seatSlots.isPresent` wins over `seatPresent`).
+--- @param seatKey string
+--- @return boolean
+function NPCS.resolveSeatNarrativePresence(seatKey)
+    if not isValidNpcSeatKey(seatKey) then
+        return true
+    end
+    return resolveSeatPresenceForSeat(seatKey)
+end
+
+--- Writes `seatSlots.isPresent` and mirrored `seatPresent` for one NPC seat.
+--- @param seatKey string
+--- @param present boolean
+--- @return boolean
+function NPCS.setNpcSeatNarrativePresence(seatKey, present)
+    if not isValidNpcSeatKey(seatKey) then
+        return false
+    end
+    local ss = S.getStateVal("sessionScene", "seatSlots")
+    if U.Type(ss) ~= "table" then
+        ss = {}
+    end
+    local row = ss[seatKey]
+    if U.Type(row) ~= "table" then
+        row = {}
+    else
+        row = U.clone(row, true)
+    end
+    row.isPresent = present == true
+    ss = U.clone(ss, true)
+    ss[seatKey] = row
+    S.setStateVal(ss, "sessionScene", "seatSlots")
+
+    local sp = S.getStateVal("sessionScene", "seatPresent")
+    if U.Type(sp) ~= "table" then
+        sp = {}
+    end
+    sp = U.clone(sp, true)
+    sp[seatKey] = present == true
+    S.setStateVal(sp, "sessionScene", "seatPresent")
+    return true
+end
+
 --- @param npcName string
 --- @param seatKey string
 --- @return boolean, string|nil

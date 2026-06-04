@@ -12,16 +12,15 @@ This file is continuously updated with issues and plans for feature development.
 
 ## Focus
 
-_Stack rank for the current cycle (2026-06-04, inbox seat-row blocker). **Precedence** (Focus + Linear `blockedBy`) — not Linear priority. **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). Deferred items may still be Medium/High importance in Linear._
+_Stack rank for the current cycle (2026-06-04, TOR-180 seat row shipped). **Precedence** (Focus + Linear `blockedBy`) — not Linear priority. **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). Deferred items may still be Medium/High importance in Linear._
 
 | # | Issue | Why now |
 | --- | --- | --- |
 | 1 | **TOR-169** — Storyteller NPC gameboard (Phase A) | Umbrella — placements v3, Apply/Clear, control-board palette |
-| 2 | **TOR-180** — Control board seat-assignment snap row | **Blocks TOR-178** — assign/unassign/presence on board; nine-seat row at v=0.15 |
-| 3 | **TOR-178** — Seat ↔ stage figurine transfer | After TOR-180 — retain seat on Clear; figurine scale/tags (`blockedBy` TOR-180) |
-| 4 | **TOR-173** — Lerp stage moves on Apply only | Polish — expanded spec (no blindfold; simultaneous; back/power eases) |
+| 2 | **TOR-178** — Seat ↔ stage figurine transfer | TOR-180 shipped — phase C table leaves; retain seat on Clear; scale/seatedScale |
+| 3 | **TOR-173** — Lerp stage moves on Apply only | Polish — expanded spec (no blindfold; simultaneous; back/power eases) |
 
-**Done this cycle:** TOR-172 (palette-drop ring `defaultLightMode` flip + stage light preview). TOR-175 (anchor family spread center-out alternating). TOR-155 (roll panel pool dots color coding). TOR-164 (Dice-E2E harness + doc). TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions). **TOR-169 session:** circular-require load fix, Z-axis token flip, placements-only reconcile + byArea migration (`a0271ac`). **TOR-170/171:** load token mirror + master-origin figurine yaw (`5c3d37b`). **TOR-176/177:** Host-only control-board XmlUI + hide workshop seat-figure anchors (`b58e2fb`).
+**Done this cycle:** TOR-180 (control-board seat-assignment snap row — assign/presence/Clear homelands). TOR-172 (palette-drop ring `defaultLightMode` flip + stage light preview). TOR-175 (anchor family spread center-out alternating). TOR-155 (roll panel pool dots color coding). TOR-164 (Dice-E2E harness + doc). TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions). **TOR-169 session:** circular-require load fix, Z-axis token flip, placements-only reconcile + byArea migration (`a0271ac`). **TOR-170/171:** load token mirror + master-origin figurine yaw (`5c3d37b`). **TOR-176/177:** Host-only control-board XmlUI + hide workshop seat-figure anchors (`b58e2fb`).
 
 **Ongoing (not Focus stack):** TOR-141 — maintain E2E playbooks when dice/scenes/debug testing changes.
 
@@ -71,8 +70,8 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **`snapGroups.defaultLightMode`:** Optional per-ring default; apply Z flip only when token drops from palette onto that ring (not ring-to-ring or state sync). _(TOR-172)_
 - [ ] **Lerp stage placement moves (Apply only):** Animate position + light when moving stage→stage via control-board Apply; not on load/blindfold/preload/seat. Simultaneous multi-NPC; back ease position; power ease lights (OFF first half / ON last quarter). _(TOR-173)_
 - [x] **Anchor family spread order:** On anchor drop, sibling tokens fill family snaps center-out by group slot index, alternating sides. _(TOR-175)_
-- [ ] **Control board seat-assignment row:** Nine snaps (NPC4…NPC3); present/absent flip on NPC seats; assign/unassign via Apply; Clear keeps seated tokens / homelands stage→seat. Blocks TOR-178. _(TOR-180)_
-- [ ] **Seat ↔ stage figurine transfer:** Same figurine table↔stage; retain `occupiedNPCSlots` on Apply; Clear returns to seat; `scale` / `seatedScale` on cutout. Phase C: table leaves off while on stage. `blockedBy` TOR-180. _(TOR-178)_
+- [x] **Control board seat-assignment row:** Nine snaps (NPC4…NPC3); present/absent flip on NPC seats; assign/unassign via Apply; Clear keeps seated tokens / homelands stage→seat. _(TOR-180)_
+- [ ] **Seat ↔ stage figurine transfer:** Same figurine table↔stage; retain `occupiedNPCSlots` on Apply; Clear returns to seat; `scale` / `seatedScale` on cutout. Phase C: table leaves off while on stage. _(TOR-178)_
 - [ ] **Retire Storyteller NPC toolbar panel:** Remove panel when control board covers seats + rolls. _(TOR-181)_
 - [x] **Control board XmlUI Host-only:** Apply/Clear toolbar `visibility="Black|Host"` on `gb_root`. _(TOR-176)_
 - [x] **Duplicate SEAT_FIGURE on scene activate:** Step Four hides workshop `SEAT_FIGURE_*` anchors; only pooled figurine gets presence visibility. _(TOR-177)_

@@ -113,6 +113,26 @@ D.CONTROL_BOARD_PALETTE_SNAP = {
   snapYawOffsetDeg = 180,
 }
 
+--- Horizontal seat-assignment row on CONTROL_BOARD (TOR-180).
+--- NPC columns (`kind = "npc"`) drive `occupiedNPCSlots` + narrative presence on Apply.
+--- PC columns are layout-only snaps (no assignment).
+D.CONTROL_BOARD_SEAT_ROW = {
+  v = 0.15,
+  uMargin = 0.06,
+  snapYawOffsetDeg = 0,
+  columns = {
+    { seatKey = "NPC4", kind = "npc" },
+    { seatKey = "NPC2", kind = "npc" },
+    { seatKey = "Purple", kind = "pc" },
+    { seatKey = "Pink", kind = "pc" },
+    { seatKey = "Red", kind = "pc" },
+    { seatKey = "Orange", kind = "pc" },
+    { seatKey = "Brown", kind = "pc" },
+    { seatKey = "NPC1", kind = "npc" },
+    { seatKey = "NPC3", kind = "npc" },
+  },
+}
+
 --- Groups excluded when picking palette row membership from `npcs_data` character `groups`.
 --- After filtering, a single remaining group wins; if multiple remain, `pairs()` picks one.
 D.PALETTE_GROUP_BLACKLIST = {
