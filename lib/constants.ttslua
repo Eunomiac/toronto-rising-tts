@@ -642,7 +642,6 @@ C.LockedObjects = {
 -- C.HiddenObjects is a table of all objects that should be `setInvisibleTo`, and the values contain the colors to hide the object from. Objects are presented as GUIDs.
 C.HiddenObjects = {
   [G.GUIDS.GM_TABLE] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.GM_LIGHT] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
   [G.GUIDS.SEAT_CHAIR_RED] = { "Red" },
   [G.GUIDS.SEAT_CHAIR_ORANGE] = { "Orange" },
   [G.GUIDS.SEAT_CHAIR_PINK] = { "Pink" },
@@ -1714,7 +1713,6 @@ C.TableSourceObjects = {
 
 -- Registry keys matching `core/lighting.ttslua` `L.LIGHTMODES` (admin / uniform spotlight maps).
 local LIGHTMODES_REGISTRY_KEYS_ORDERED = {
-  "gmLight",
   "mainLightLeft",
   "mainLightRight",
   "playerLight1Brown",
@@ -1762,7 +1760,6 @@ end
 local function chronicleSpotlights(mainLightPatch, seatMode)
   seatMode = seatMode or "STANDARD"
   local t = spotlightMapUniform(seatMode)
-  t.gmLight = "STANDARD"
   local mainSpec = mainLightPatch or "STANDARD"
   t.mainLightLeft = mainSpec
   t.mainLightRight = mainSpec
@@ -1978,7 +1975,6 @@ C.LightModes = {
     reflection_intensity = 0.21866674721241,
     setLightColor = CHRONICLE_OVERHEAD_INDOOR,
     spotlights = {
-      gmLight = "STANDARD",
       mainLightLeft = {
         color = Color(1, 0.85, 0.65, 1)
       },
@@ -2019,7 +2015,6 @@ C.LightModes = {
     reflection_intensity = 0.21866674721241,
     setLightColor = CHRONICLE_OVERHEAD_INDOOR,
     spotlights = {
-      gmLight = "STANDARD",
       mainLightLeft = {
         color = Color(1, 0.85, 0.65, 1)
       },
@@ -2060,7 +2055,6 @@ C.LightModes = {
     reflection_intensity = 0.21866674721241,
     setLightColor = CHRONICLE_OVERHEAD_INDOOR,
     spotlights = {
-      gmLight = "STANDARD",
       mainLightLeft = {
         color = Color(1, 0.85, 0.65, 1)
       },

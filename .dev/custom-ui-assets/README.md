@@ -2,6 +2,38 @@
 
 Generated outputs in this folder (`manifest.json`, `manifest.lua`, `generated-assets.json`) are produced by scripts under `.tools/custom-ui-assets/`.
 
+## Save inventory (prune planning)
+
+### Custom UI assets (`CustomUIAssets`)
+
+These are **hosted image URLs** for HUD XML (`image="assetName"`). They are **not** 3D table objects, but TTS still loads them during the **Loading** progress — typically **579** entries in `TS_Save_230.json`.
+
+To list every `CustomUIAssets` / `CustomAssets` entry (Name, URL, category, reference sources, prune hints):
+
+```text
+npm run tts-save:extract-assets
+```
+
+Or point at any save file:
+
+```text
+node .tools/tts-save/extract-categorize-save-assets.js --save .dev/TS_Save_230.json --outBasename save-assets-latest
+```
+
+Writes JSON, CSV, and Markdown under `.dev/build-logs/`. Cross-checks repo `ui/*.xml`, `lib/constants.ttslua` (`image = "…"`), and manifest files. **`candidate_prune`** means no reference was detected — verify before removing. Site cards often show **`dynamic_only`** (used at runtime via `C.Sites`, not static HUD XML).
+
+After editing names to remove, use **Custom UI Assets: Prune** (`prune-custom-ui-assets-from-save-name.js`) with `.dev/custom-ui-assets/prune-custom-ui-assets.txt` (one `Name` per line).
+
+### World entities (`ObjectStates`)
+
+The **1000+** loading count is mostly **`CustomUIAssets` + every node in `ObjectStates`** (including cards inside bags via `ContainedObjects`). Workshop objects, dice, figurines, soundscape AssetBundles, and character sheets all live there — **not** in `CustomAssets`.
+
+```text
+npm run tts-save:extract-entities
+```
+
+Writes `.dev/build-logs/save-entities-latest.{json,csv,md}` with per-object GUID, name, category, lock state, AssetBundle URL, **`gGuidsKey` / `gGuidsKeys`** (from `lib/guids.ttslua` `G.GUIDS` when the GUID matches), **`gmNotes`** (full in JSON; newlines flattened to ` | ` in CSV for Sheets), and a loading breakdown. Both inventories: `npm run tts-save:extract-save-inventory`.
+
 ## VS Code / Cursor task
 
 **Tasks: Run Task** → **Custom UI Assets: Build Manifest from Image Files** runs `.tools/custom-ui-assets/build-manifest-from-task.js`. You are prompted for **mode** (`folder` or `sites`), then for a **folder path** (used only in `folder` mode; in `sites` mode you can accept the default). The task panel prints step banners and what to do next in TTS (Save & Play, spawn batch, merge task, clear tokens). For batched or `--skipMissing` site manifests, use the `npm` / `node` commands below instead of the task’s default `sites` run.
@@ -111,6 +143,15 @@ npm run custom-ui-assets:extract-npc-token-urls
 ```
 
 After extract: Save & Play → `lua DEBUG.applyNpcControlTokenHostedImages()` (or re-run `spawnNpcControlBoardTokens`).
+
+**Patch save file** (persists hosted URLs on existing `npc_control_token` objects in `ObjectStates` — use when tokens still have `file:///…/NPC Tokens/` after upload):
+
+```text
+npm run custom-ui-assets:patch-npc-token-urls-in-save:dry-run
+npm run custom-ui-assets:patch-npc-token-urls-in-save
+```
+
+Reads `.dev/custom-ui-assets/npc-token-hosted-urls.json` (or `npc-generated-assets.json` / save `CustomUIAssets` as fallback). Reload the save in TTS after patching.
 
 Outputs:
 

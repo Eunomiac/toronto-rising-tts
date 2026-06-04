@@ -45,6 +45,8 @@ local lastControlBoardMirrorFingerprint = nil
 local boardUvHalfExtentsCache = {}
 --- @type table<string, boolean> token guid -> true when drop may trigger anchor-family spread.
 local anchorDropEligibleByTokenGuid = {}
+--- @type table<string, boolean> token guid -> picked up while on CONTROL_BOARD_PALETTE (TOR-172 palette-drop flip).
+local tokenPickedUpFromPaletteGuid = {}
 --- Forward declaration (Lua local-function order): defined after helper dependencies.
 local rebuildAnchorDropEligibilityCache
 --- World XZ tolerance when matching tokens to installed control-board snap points.
@@ -296,6 +298,27 @@ local function objectsOnControlBoard(board, tag)
     return out
 end
 
+--- True when token is on CONTROL_BOARD minimap, excluding CONTROL_BOARD_PALETTE storage.
+--- Declared before `Gameboard.recoverStrayNpcTokensToPalette` (Lua local scope — see docs/solutions/lua-local-function-order.md).
+--- @param board Object
+--- @param token Object
+--- @return boolean
+local function isTokenOnControlBoardSurface(board, token)
+    if not isGameObject(board) or not isGameObject(token) then
+        return false
+    end
+    local palette = getControlBoardPalette()
+    if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
+        return false
+    end
+    for _, obj in ipairs(objectsOnControlBoard(board, TAG_TOKEN)) do
+        if obj == token then
+            return true
+        end
+    end
+    return false
+end
+
 --- @param board Object
 --- @param u number
 --- @param v number
@@ -503,7 +526,10 @@ end
 --- @param token Object
 --- @return boolean
 local function tokenRotationIsFaceUp(token)
-    if token ~= nil and token.getTransformUp ~= nil then
+    if not U.isGameObject(token) then
+        return true
+    end
+    if type(token.getTransformUp) == "function" then
         local up = token.getTransformUp()
         if up ~= nil then
             local uy = up.y or up[2]
@@ -511,6 +537,9 @@ local function tokenRotationIsFaceUp(token)
                 return uy >= 0
             end
         end
+    end
+    if type(token.getRotation) ~= "function" then
+        return true
     end
     local rot = token.getRotation()
     if rot == nil then
@@ -748,10 +777,15 @@ end
 --- @param reason string
 local function syncNpcsFromControlBoard(reason)
     local Sync = require("core.sync")
+    --- Clear empties stage placements but keeps seat assignments — Step Three re-seats (TOR-178).
+    local onlySteps = { 1, 5 }
+    if reason == "gameboard_clear" then
+        onlySteps = { 1, 3, 5 }
+    end
     Sync.npcs({
         reason = reason,
         force = true,
-        onlySteps = { 1, 5 },
+        onlySteps = onlySteps,
         deferUiRefresh = true,
         skipPreloadPopulate = true,
     })
@@ -809,6 +843,21 @@ function Gameboard.clearControlBoard()
     return true, nil
 end
 
+--- First Clear click: return lost tokens (not on CONTROL_BOARD or palette) to palette parking slots.
+--- @return number moved
+function Gameboard.recoverStrayNpcTokensToPalette()
+    local palette = getControlBoardPalette()
+    local board = getControlBoard()
+    if not isGameObject(palette) then
+        return 0
+    end
+    return Palette.recoverStrayTokensToPalette(palette, {
+        isOnControlBoard = function(token)
+            return isGameObject(board) and isTokenOnControlBoardSurface(board, token)
+        end,
+    })
+end
+
 --- Park all NPC control tokens on CONTROL_BOARD_PALETTE (group layout from npcs_data).
 --- @return number moved
 function Gameboard.syncTokensToPalette()
@@ -836,8 +885,19 @@ function Gameboard.tryConfirmClear(playerColor)
     local now = os.time()
     if clearArmExpireByColor[color] == nil or now > clearArmExpireByColor[color] then
         clearArmExpireByColor[color] = now + 5
+        local recovered = Gameboard.recoverStrayNpcTokensToPalette()
         if broadcastToColor ~= nil then
-            broadcastToColor("Click Clear again within 5s to confirm.", color, { 1, 0.35, 0.35 })
+            local msg = "Click Clear again within 5s to confirm."
+            if recovered > 0 then
+                msg = "Returned "
+                    .. tostring(recovered)
+                    .. " stray token(s) to the palette. "
+                    .. msg
+            end
+            broadcastToColor(msg, color, { 1, 0.35, 0.35 })
+        end
+        if recovered > 0 then
+            print("[Gameboard] Clear (arm): recovered " .. tostring(recovered) .. " stray token(s) to palette")
         end
         return false
     end
@@ -1134,6 +1194,23 @@ local function resolveControlBoardSnapConfig(config)
     return deepCopyPlainTable(src)
 end
 
+--- @param group table|nil snapGroups ring entry
+--- @return string|nil OFF|STANDARD when set
+local function snapGroupDefaultLightMode(group)
+    if type(group) ~= "table" then
+        return nil
+    end
+    local raw = group.defaultLightMode
+    if type(raw) ~= "string" or raw == "" then
+        return nil
+    end
+    local mode = string.upper(raw)
+    if mode == "OFF" or mode == "STANDARD" then
+        return mode
+    end
+    return nil
+end
+
 --- @param cfg table
 --- @return table cfg, number rings
 local function validateControlBoardSnapConfig(cfg)
@@ -1245,6 +1322,13 @@ local function validateControlBoardSnapConfig(cfg)
                 "CONTROL_BOARD_SNAP.snapGroups["
                     .. tostring(ringIndex)
                     .. "].snapYawOffsetDeg must be a number when set"
+            )
+        end
+        if group.defaultLightMode ~= nil and snapGroupDefaultLightMode(group) == nil then
+            error(
+                "CONTROL_BOARD_SNAP.snapGroups["
+                    .. tostring(ringIndex)
+                    .. "].defaultLightMode must be \"OFF\" or \"STANDARD\" when set"
             )
         end
         if group.groundLevel ~= nil and tonumber(group.groundLevel) == nil then
@@ -1621,6 +1705,7 @@ local function buildControlBoardSnapEntries(board, cfg, rings)
                         localPos = lp,
                         worldPos = boardLocalToWorld(board, lp),
                         groundLevel = ringGroundLevel,
+                        defaultLightMode = snapGroupDefaultLightMode(group),
                     }
                 end
             end
@@ -1884,6 +1969,8 @@ local function controlBoardSnapFingerprintFor(board, config)
                 .. tostring(type(group.origin) == "table" and group.origin.v or "")
                 .. ":"
                 .. tostring(group.snapYawOffsetDeg or "")
+                .. ":"
+                .. tostring(group.defaultLightMode or "")
         end
     end
     parts[#parts + 1] = "snapTag:" .. TAG_TOKEN
@@ -2847,26 +2934,6 @@ local function isNpcControlToken(obj)
     return isGameObject(obj) and obj.hasTag ~= nil and obj.hasTag(TAG_TOKEN) == true
 end
 
---- True when token is on CONTROL_BOARD minimap, excluding CONTROL_BOARD_PALETTE storage.
---- @param board Object
---- @param token Object
---- @return boolean
-local function isTokenOnControlBoardSurface(board, token)
-    if not isGameObject(board) or not isGameObject(token) then
-        return false
-    end
-    local palette = getControlBoardPalette()
-    if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
-        return false
-    end
-    for _, obj in ipairs(objectsOnControlBoard(board, TAG_TOKEN)) do
-        if obj == token then
-            return true
-        end
-    end
-    return false
-end
-
 --- Nearest installed snap catalog entry for a token on CONTROL_BOARD (world XZ within fuzziness).
 --- @param board Object
 --- @param token Object
@@ -3091,6 +3158,58 @@ function Gameboard.anchorSpreadUsesCenterOutOrdering()
     return true
 end
 
+--- Apply ring `defaultLightMode` flip + optional stage light preview for a token on a catalog snap.
+--- @param token Object
+--- @param entry table catalog entry (`ringIndex`, `yawDeg`)
+--- @param board Object
+--- @param cfg table|nil CONTROL_BOARD_SNAP config
+--- @return table { applied: boolean, reason: string, defaultLightMode?: string, ringIndex?: number }
+local function applySnapGroupDefaultLightAtEntry(token, entry, board, cfg)
+    local result = { applied = false, reason = "invalid_token" }
+    if not isNpcControlToken(token) or type(entry) ~= "table" then
+        return result
+    end
+    if type(cfg) ~= "table" then
+        cfg = resolveControlBoardSnapConfig(nil)
+    end
+    local group = type(cfg.snapGroups) == "table" and cfg.snapGroups[entry.ringIndex] or nil
+    local mode = snapGroupDefaultLightMode(group)
+    if mode == nil then
+        result.reason = "no_default_mode"
+        return result
+    end
+
+    local boardYaw = objectYawDeg(board)
+    local faceUp = mode == "STANDARD"
+    if token.setRotation ~= nil then
+        local rot = rotationForNpcControlToken(boardYaw, entry.yawDeg, faceUp)
+        token.setRotation(rot)
+        U.delay(function()
+            if not isGameObject(token) or not isTokenOnControlBoardSurface(board, token) then
+                return
+            end
+            if tokenRotationIsFaceUp(token) ~= faceUp then
+                token.setRotation(rot)
+            end
+        end, 0.05)
+    end
+    Gameboard.setHiddenFromPlayerColors(token)
+
+    local characterKey = resolveTokenCharacterKey(token)
+    if type(characterKey) == "string" and characterKey ~= "" then
+        local NPCS = require("core.npcs")
+        if type(NPCS.applyControlTokenLightMode) == "function" then
+            NPCS.applyControlTokenLightMode(characterKey, mode)
+        end
+    end
+
+    result.applied = true
+    result.reason = "ok"
+    result.defaultLightMode = mode
+    result.ringIndex = entry.ringIndex
+    return result
+end
+
 --- When an anchor snap receives a grouped token and the rest of the family is empty,
 --- park remaining group members on sibling snaps (lowest slotIndex first; snaps center-out alternating).
 --- @param droppedToken Object
@@ -3193,15 +3312,88 @@ function Gameboard.tryAnchorFamilyGroupSpread(droppedToken)
         return { placed = 0, reason = "family_has_no_sibling_snaps", groupId = groupId }
     end
     local boardYaw = objectYawDeg(board)
+    local snapCfg = Gameboard.getInstalledControlBoardSnapConfig()
+    if type(snapCfg) ~= "table" then
+        snapCfg = resolveControlBoardSnapConfig(nil)
+    end
     anchorFamilySpreadDepth = anchorFamilySpreadDepth + 1
     local placed = 0
     local limit = math.min(#toPlace, #emptyFamilySnaps)
     for i = 1, limit do
-        placeTokenOnControlBoardSnap(toPlace[i].token, emptyFamilySnaps[i], board, boardYaw)
+        local tok = toPlace[i].token
+        local snapEntry = emptyFamilySnaps[i]
+        local fromPalette = isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, tok)
+        placeTokenOnControlBoardSnap(tok, snapEntry, board, boardYaw)
+        if fromPalette then
+            local lightResult = applySnapGroupDefaultLightAtEntry(tok, snapEntry, board, snapCfg)
+            if lightResult.applied == true then
+                print(
+                    "[Gameboard] anchor spread palette light: "
+                        .. tostring(resolveTokenCharacterKey(tok))
+                        .. " ring "
+                        .. tostring(lightResult.ringIndex)
+                        .. " "
+                        .. tostring(lightResult.defaultLightMode)
+                )
+            end
+        end
         placed = placed + 1
     end
     anchorFamilySpreadDepth = anchorFamilySpreadDepth - 1
     return { placed = placed, reason = "ok", groupId = groupId }
+end
+
+--- Record palette origin on pick-up so the next CONTROL_BOARD drop can apply ring `defaultLightMode` (TOR-172).
+--- @param token Object|nil
+function Gameboard.onNpcControlTokenPickUp(token)
+    if not isNpcControlToken(token) then
+        return
+    end
+    local palette = getControlBoardPalette()
+    if not isGameObject(palette) then
+        return
+    end
+    if Palette.isTokenOnPaletteBoard(palette, token) then
+        local guid = tostring(token.getGUID() or "")
+        if guid ~= "" then
+            tokenPickedUpFromPaletteGuid[guid] = true
+        end
+    end
+end
+
+--- Apply per-ring `defaultLightMode` when a token is dropped from the palette onto CONTROL_BOARD (not ring-to-ring).
+--- @param token Object|nil
+--- @return table { applied: boolean, reason: string, defaultLightMode?: string, ringIndex?: number }
+function Gameboard.applySnapGroupDefaultLightOnPaletteDrop(token)
+    local result = { applied = false, reason = "invalid_token" }
+    if not isNpcControlToken(token) then
+        return result
+    end
+    local guid = tostring(token.getGUID() or "")
+    if guid == "" or tokenPickedUpFromPaletteGuid[guid] ~= true then
+        result.reason = "not_palette_drop"
+        return result
+    end
+    tokenPickedUpFromPaletteGuid[guid] = nil
+
+    local board = getControlBoard()
+    if not isGameObject(board) or not isTokenOnControlBoardSurface(board, token) then
+        result.reason = "not_on_board"
+        return result
+    end
+
+    local cfg = Gameboard.getInstalledControlBoardSnapConfig()
+    if type(cfg) ~= "table" then
+        cfg = resolveControlBoardSnapConfig(nil)
+    end
+    local fuzziness = snapMatchFuzzinessForBoard(board)
+    local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, cfg)
+    if entry == nil then
+        result.reason = "no_snap"
+        return result
+    end
+
+    return applySnapGroupDefaultLightAtEntry(token, entry, board, cfg)
 end
 
 --- Global onObjectDrop hook: wait for TTS snap to settle, then try anchor-family spread.
@@ -3212,7 +3404,9 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
         return
     end
     local tokenGuid = tostring(token.getGUID() or "")
-    if tokenGuid == "" or anchorDropEligibleByTokenGuid[tokenGuid] ~= true then
+    local wantPaletteLight = tokenGuid ~= "" and tokenPickedUpFromPaletteGuid[tokenGuid] == true
+    local wantAnchorSpread = tokenGuid ~= "" and anchorDropEligibleByTokenGuid[tokenGuid] == true
+    if not wantPaletteLight and not wantAnchorSpread then
         return
     end
     local board = getControlBoard()
@@ -3225,7 +3419,22 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
             if not isGameObject(token) then
                 return
             end
-            logAnchorSpreadResult(Gameboard.tryAnchorFamilyGroupSpread(token))
+            if wantPaletteLight then
+                local lightResult = Gameboard.applySnapGroupDefaultLightOnPaletteDrop(token)
+                if lightResult.applied == true then
+                    print(
+                        "[Gameboard] palette drop: ring "
+                            .. tostring(lightResult.ringIndex)
+                            .. " defaultLightMode "
+                            .. tostring(lightResult.defaultLightMode)
+                    )
+                elseif lightResult.reason ~= "not_palette_drop" then
+                    print("[Gameboard] palette drop defaultLightMode skipped: " .. tostring(lightResult.reason))
+                end
+            end
+            if wantAnchorSpread then
+                logAnchorSpreadResult(Gameboard.tryAnchorFamilyGroupSpread(token))
+            end
         end,
         function()
             if not isGameObject(token) then
@@ -3235,7 +3444,13 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
                 return false
             end
             local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
-            return entry ~= nil and entry.isAnchor == true
+            if entry == nil then
+                return false
+            end
+            if wantAnchorSpread and entry.isAnchor ~= true then
+                return false
+            end
+            return true
         end,
         1.0
     )

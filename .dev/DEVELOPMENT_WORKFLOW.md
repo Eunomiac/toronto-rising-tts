@@ -232,7 +232,7 @@ After inbox promotion or when the user asks **“what’s next”**, **“priori
 2. Cross-check **Linear**: open **Bug** issues, non-epic **In Progress**, Focus ids, and **`blockedBy`** on deferred work.
 3. Recommend **one** next item (usually top unchecked Focus row). Precedence favors bugs/regressions unless the user is blocked on ST workflow.
 4. When the user adjusts rank, **update Focus**; set Linear **priority** on intrinsic importance; add **`blockedBy`** for sequencing — not as a substitute for priority.
-5. On Focus item **Done**: check off in domain section, remove or renumber Focus row, update Linear **Done** + comment; remove obsolete **blocks** relations if applicable.
+5. On Focus item **Done**: check off in domain section, remove or renumber Focus row, update Linear **Done** + comment; run **deferred resurfacing** (below); remove obsolete **`blockedBy`** / **blocks** on dependents if applicable.
 6. **Inbox back-burner gate:** Before deferring **inbox-promoted-this-session** items from Focus, present **Back-burner proposal** (Focus + proposed blockers + proposed priority) and get author confirmation. See **`/tr-inbox`**.
 7. **Deferred this cycle** and all agent-facing id lists: every `TOR-XXX` gets a short label (e.g. `TOR-139 (scenes panel trim + library grid)`).
 
@@ -274,6 +274,16 @@ Linear is the source of truth for project state. [`.dev/RUNNING TASKLIST.md`](RU
 1. Mark the Linear issue **Done** with a comment (files changed, commits, verification).
 2. Change the tasklist checkbox to `[x]`; keep the TOR id.
 3. Reference the TOR id in git commit bodies (see `.cursorrules`).
+
+### Deferred resurfacing (when marking Done or Canceled)
+
+Run this **lightweight survey** when the closed issue is on **Focus**, in **Deferred this cycle**, or blocks other open work via **`blockedBy`**. Skip for trivial fixes unrelated to cycle gates (e.g. typo in an unrelated module).
+
+1. **Unblock** — In Linear, remove **`blockedBy`** links on dependents that listed this issue as a prerequisite (star pattern only; do not edit unrelated issues).
+2. **Scan** — Read **Deferred this cycle** in RUNNING TASKLIST and list open issues that **`blockedBy`** the closed id or cite it in their resurface note.
+3. **Propose** — In the **Done** comment or chat, suggest which deferred items should move up (Focus slot and/or priority), with labeled ids (`TOR-XXX (short title)`), typically 1–3 candidates. **Do not** auto-promote inbox-deferred items into Focus without **Back-burner** author OK.
+
+Full agent rule: `.cursor/rules/toronto-rising-linear.mdc` § Agent workflow step 3.
 
 ### Living documentation (`living-doc` label)
 
@@ -323,7 +333,7 @@ Do not create circular **`blockedBy`** chains. Do not use blocking where **`pare
 
 - **Before coding:** Search Linear for related `TOR-*` issues; read matching tasklist bullet; skim [`.dev/INBOX.md`](INBOX.md) Active if the task might overlap an unprocessed note.
 - **When starting:** Set issue **In Progress**; confirm tasklist has correct `_(TOR-XX)_`.
-- **When finishing:** Mark **Done** with comment (files, commits, verification); update tasklist `[x]`; reference `TOR-XX` in commit body. **`living-doc`:** keep issue **In Progress** after baseline; see § Living documentation.
+- **When finishing:** Mark **Done** with comment (files, commits, verification); update tasklist `[x]`; reference `TOR-XX` in commit body; run **§ Deferred resurfacing** when the issue is a Focus/Deferred gate or **`blockedBy` prerequisite**. **`living-doc`:** keep issue **In Progress** after baseline; see § Living documentation.
 - **New work:** Create Linear issue in domain project first; append `_(TOR-XX)_` to tasklist (or INBOX first if capture-only).
 - **Inbox triage:** Follow **§ Inbox capture & triage** on “process the inbox”: Phase 1 park + `?` in INBOX; Phase 2 promote when every `?` has inline **`Answer:`**.
 - **Never** leave tasklist and Linear diverged at end of session.
@@ -384,5 +394,5 @@ When working on this project:
 
 ---
 
-**Last Updated**: 2026-05-25 (Focus stack rank; `/tr-start` and `/tr-inbox`; Linear ID labels; inbox back-burner; precedence vs priority; liberal `blockedBy` + anti-gridlock; proactive commits + agent chat rename prompt)
+**Last Updated**: 2026-06-04 (deferred resurfacing on gate-close Done/Canceled; Focus stack rank; `/tr-start` and `/tr-inbox`; Linear ID labels; inbox back-burner; precedence vs priority; liberal `blockedBy` + anti-gridlock; proactive commits + agent chat rename prompt)
 **Maintained By**: Development Team

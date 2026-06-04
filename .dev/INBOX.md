@@ -16,6 +16,9 @@
 
 ## Processed
 
+- 2026-06-04 shipped — anchor spread palette `defaultLightMode` for siblings (TOR-172 follow-up; code in `tryAnchorFamilyGroupSpread`)
+- 2026-06-04 TOR-179 — [bug] Workshop SEAT_FIGURE anchor ID without name/nickname (tooltips vs layout anchors; not duplicate of TOR-177)
+- 2026-06-04 duplicate — Pink Tarot hide leaves drawn card on table → existing **TOR-96** (Tarot hide returns cards)
 - 2026-06-03 TOR-178 — [feature] Seat ↔ stage figurine transfer (retain seat on Clear; scale/seatedScale; phase A shipped — table leaves on stage still TODO phase C)
 - 2026-05-25 TOR-135 — [bug] NPC area cutouts missing on active scene apply
 - 2026-05-25 TOR-136 — [bug] Weather audio burst on scene switch
@@ -54,10 +57,10 @@
 - 2026-05-27 TOR-166 — canceled — widen Far Left / Far Right NPC stage area angles superseded by TOR-169 (Storyteller gameboard); Linear Canceled, tasklist `[x]`
 - 2026-05-27 TOR-167 — canceled — Mid-Center / Far-Center NPC stage areas superseded by TOR-169; Linear Canceled, tasklist `[x]`
 - 2026-06-02 TOR-174 — [feature] NPC control token on ST dice bag initiates roll + return to board/palette (deferred — dice cycle; `blockedBy` TOR-169; child of TOR-79)
-- 2026-06-02 TOR-172 — [feature] `snapGroups.defaultLightMode` on palette drop only (Focus #5)
+- 2026-06-02 TOR-172 — [feature] `snapGroups.defaultLightMode` on palette drop only (Done)
 - 2026-06-02 TOR-171 — [improvement] Figurine yaw from master origin; ignore token Y rotation (Done)
 - 2026-06-02 TOR-170 — [bug] Control board tokens missing on load with on-stage figurines (Done)
-- 2026-06-02 TOR-173 — [feature] Lerp on Apply-only stage moves — scope expanded (blindfold gate, simultaneous, back/power eases, light timing; Focus #6)
-- 2026-06-02 TOR-177 — [bug] Duplicate SEAT_FIGURE when NPC seated on scene activate (Focus #2)
-- 2026-06-02 TOR-176 — [bug] Control board XmlUI visible to non-Host players (Focus #3)
-- 2026-06-02 TOR-175 — [bug] Anchor family spread slot order from center snap (Focus #4)
+- 2026-06-02 TOR-173 — [feature] Lerp on Apply-only stage moves — scope expanded (blindfold gate, simultaneous, back/power eases, light timing; Focus #3)
+- 2026-06-02 TOR-177 — [bug] Duplicate SEAT_FIGURE when NPC seated on scene activate (Done)
+- 2026-06-02 TOR-176 — [bug] Control board XmlUI visible to non-Host players (Done)
+- 2026-06-02 TOR-175 — [bug] Anchor family spread slot order from center snap (Done)

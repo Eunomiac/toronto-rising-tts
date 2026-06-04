@@ -45,11 +45,11 @@ D.PALETTE_SURFACE_LOCAL_Y = 0.18
 
 --- Fallback world XZ footprint when STAGE_BOARD is not in the save yet.
 D.DEFAULT_STAGE_WORLD = {
-    centerX = 0,
-    centerZ = 120,
-    halfWidthX = 220,
-    halfDepthZ = 200,
-    groundY = -15,
+  centerX = 0,
+  centerZ = 120,
+  halfWidthX = 220,
+  halfDepthZ = 200,
+  groundY = -15,
 }
 
 --- CONTROL_BOARD snap grid: elliptical rings in board u/v; each `snapGroups` entry is one ring.
@@ -58,64 +58,92 @@ D.DEFAULT_STAGE_WORLD = {
 --- `validSnaps` (optional): `{ minU, maxU, minV, maxV }` inclusive box on board u/v; candidates outside the box are not installed (reduces unused snaps on dense rings).
 --- See .dev/NPC Object Spawning & Spotlighting/Generating Snap Points For Control Board.md
 D.CONTROL_BOARD_SNAP =
+
+
 {
   origin = { u = 0.5, v = 0.35 },
   snapYawOffsetDeg = 0,
   snapGroups = {
-    { num = 5, angleDelta = 7, rays = 8, groundLevel = -50, radialStagger = 15, maxU = 0.6, maxV = 0.45, origin = {u = 0.5, v = 0.3}, defaultLightMode = "STANDARD", validSnaps = {
-      minU = 0.38, maxU = 0.62, minV = 0.38, maxV = 0.5 }}, -- CENTER, Center Left, Center Right
-    { num = 5, angleDelta = 4, rays = 12, groundLevel = -30, radialStagger = 5, maxU = 0.7, maxV = 0.566, defaultLightMode = "OFF", validSnaps = {
-      minU = 0.35, maxU = 0.65, minV = 0.5, maxV = 0.6 }}, -- Mid Center, Mid Left, Mid Right
-    { num = 6, angleDelta = 360/6, rays = 1, groundLevel = -30, radialStagger = 0, maxU = 0.25, maxV = 0.55, origin = {u = 0.2, v = 0.5}, defaultLightMode = "OFF"  }, -- Far Left
-    { num = 6, angleDelta = 360/6, rays = 1, groundLevel = -10, radialStagger = 0, maxU = 0.45, maxV = 0.85, origin = {u = 0.4, v = 0.8}, defaultLightMode = "OFF"  }, -- Far Center-Left
-    { num = 6, angleDelta = 360/6, rays = 1, groundLevel = -10, radialStagger = 0, maxU = 0.65, maxV = 0.85, origin = {u = 0.6, v = 0.8}, defaultLightMode = "OFF"  }, -- Far Center-Right
-    { num = 6, angleDelta = 360/6, rays = 1, groundLevel = -30, radialStagger = 0, maxU = 0.85, maxV = 0.55, origin = {u = 0.8, v = 0.5}, defaultLightMode = "OFF"  }, -- Far Right
+    {
+      num = 5,
+      angleDelta = 7,
+      rays = 8,
+      groundLevel = -50,
+      radialStagger = 15,
+      maxU = 0.65,
+      maxV = 0.45,
+      origin = { u = 0.5, v = 0.3 },
+      defaultLightMode = "STANDARD",
+      validSnaps = {
+        minU = 0.3, maxU = 0.7, minV = 0.38, maxV = 0.5 }
+    }, -- CENTER, Center Left, Center Right
+    {
+      num = 5,
+      angleDelta = 4,
+      rays = 12,
+      groundLevel = -30,
+      radialStagger = 10,
+      maxU = 0.7,
+      maxV = 0.566,
+      defaultLightMode = "OFF",
+      validSnaps = {
+        minU = 0.35, maxU = 0.65, minV = 0.5, maxV = 0.6 }
+    }, -- Mid Center, Mid Left, Mid Right
+    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -30, radialStagger = 0, maxU = 0.25, maxV = 0.55, origin = { u = 0.2, v = 0.5 }, defaultLightMode = "OFF" }, -- Far Left
+    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -10, radialStagger = 0, maxU = 0.45, maxV = 0.85, origin = { u = 0.4, v = 0.8 }, defaultLightMode = "OFF" }, -- Far Center-Left
+    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -10, radialStagger = 0, maxU = 0.65, maxV = 0.85, origin = { u = 0.6, v = 0.8 }, defaultLightMode = "OFF" }, -- Far Center-Right
+    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -30, radialStagger = 0, maxU = 0.85, maxV = 0.55, origin = { u = 0.8, v = 0.5 }, defaultLightMode = "OFF" }, -- Far Right
   }
-
 }
 
---- CONTROL_BOARD_PALETTE: 20×40 logical grid for parking layout; physical snaps = one per token slot only.
---- Object scale typically {5, 1, 10} (X wide, Z tall).
+--- CONTROL_BOARD_PALETTE: 20×40 logical grid for coterie row layout; physical snaps = one per token slot.
+--- Columns span the parking u band; rows use the **actual** layout row count, evenly spaced on v.
+--- `parkingEdgePadding` (normalized 0–1) insets snap centers from the marble edges so token discs
+--- do not overhang (added on top of `uMargin` / `vMargin`). Tune if chips still clip a corner.
 D.CONTROL_BOARD_PALETTE_SNAP = {
-    columns = 20,
-    rows = 40,
-    uMargin = 0.02,
-    vMargin = 0.02,
-    --- Board-local snap yaw for rectangular grid (tokens inverted at 0 on palette tile).
-    snapYawOffsetDeg = 180,
+  columns = 20,
+  rows = 40,
+  uMargin = 0.02,
+  vMargin = 0.02,
+  parkingEdgePadding = 0.06,
+  --- Optional u/v band for token parking only (0–1 on tile). Omit to use margins + edge padding.
+  --- Example top-half only after shortening Z: parkingVMin = 0.52, parkingVMax = 0.98
+  parkingVMin = nil,
+  parkingVMax = nil,
+  snapYawOffsetDeg = 180,
 }
 
 --- Groups excluded when picking palette row membership from `npcs_data` character `groups`.
 --- After filtering, a single remaining group wins; if multiple remain, `pairs()` picks one.
 D.PALETTE_GROUP_BLACKLIST = {
-    princesCourt = true,
+  princesCourt = true,
 }
 
 --- Enumerate every table key and component name from C.Tables (for marker registry).
 --- @return table[] { tableKey, componentKey? }
 function D.enumerateTableMarkerEntries()
-    local out = {}
-    local keys = {}
-    for tableKey, _ in pairs(C.Tables or {}) do
-        keys[#keys + 1] = tableKey
+  local out = {}
+  local keys = {}
+  for tableKey, _ in pairs(C.Tables or {}) do
+    keys[#keys + 1] = tableKey
+  end
+  table.sort(keys)
+  for _, tableKey in ipairs(keys) do
+    out[#out + 1] = { tableKey = tableKey, componentKey = nil }
+    local cfg = C.Tables[tableKey]
+    local comps = type(cfg) == "table" and cfg.components or nil
+    if type(comps) == "table" then
+      local compNames = {}
+      for compName, _ in pairs(comps) do
+        compNames[#compNames + 1] = compName
+      end
+      table.sort(compNames)
+      for _, compName in ipairs(compNames) do
+        out[#out + 1] = { tableKey = tableKey, componentKey = compName }
+      end
     end
-    table.sort(keys)
-    for _, tableKey in ipairs(keys) do
-        out[#out + 1] = { tableKey = tableKey, componentKey = nil }
-        local cfg = C.Tables[tableKey]
-        local comps = type(cfg) == "table" and cfg.components or nil
-        if type(comps) == "table" then
-            local compNames = {}
-            for compName, _ in pairs(comps) do
-                compNames[#compNames + 1] = compName
-            end
-            table.sort(compNames)
-            for _, compName in ipairs(compNames) do
-                out[#out + 1] = { tableKey = tableKey, componentKey = compName }
-            end
-        end
-    end
-    return out
+  end
+  return out
 end
 
 return D

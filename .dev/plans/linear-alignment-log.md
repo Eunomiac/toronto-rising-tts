@@ -210,5 +210,10 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-02 | UPDATE | TOR-173 | Expanded Apply-only lerp spec from inbox clarification |
 | 2026-06-02 | UPDATE | RUNNING TASKLIST **Focus** | Quick fixes TOR-177/176 above TOR-175/172/173 |
 | 2026-06-02 | DONE | TOR-176, TOR-177 | Host-only XmlUI visibility; hide workshop SEAT_FIGURE anchors in Step Four |
+| 2026-06-04 | INBOX | 3 bullets | Anchor spread palette light → shipped (TOR-172 comment); seat figure ID → TOR-179; Tarot hide → duplicate TOR-96 |
+| 2026-06-04 | CREATE | TOR-179 | Workshop SEAT_FIGURE anchor ID without name/nickname (child TOR-169; Backlog Medium) |
+| 2026-06-04 | UPDATE | TOR-96 | INBOX re-capture comment; Linear priority Medium |
+| 2026-06-04 | UPDATE | Focus **Deferred** | Back-burner approved: TOR-179 (`blockedBy` TOR-178), TOR-96; resurfacing note in RUNNING TASKLIST Focus |
+| 2026-06-04 | DOC | Deferred resurfacing | Gate-close survey on Done/Canceled: `toronto-rising-linear.mdc`, `DEVELOPMENT_WORKFLOW.md`, RUNNING TASKLIST Focus, `AGENTS.md` |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

@@ -123,7 +123,53 @@ function Palette.getSortedGroupMembers(groupId)
     return out
 end
 
---- @return table cfg columns, rows, uMargin, vMargin
+--- Clamp parking band so min < max with a narrow fallback band at tile center.
+--- @param minVal number
+--- @param maxVal number
+--- @return number, number
+local function clampParkingBand(minVal, maxVal)
+    local lo = tonumber(minVal) or 0
+    local hi = tonumber(maxVal) or 1
+    if hi < lo then
+        local mid = (lo + hi) * 0.5
+        return mid - 0.01, mid + 0.01
+    end
+    return lo, hi
+end
+
+--- Normalized u/v rectangle for parking snaps (edge padding keeps token discs on the marble).
+--- @param cfg table raw `CONTROL_BOARD_PALETTE_SNAP`
+--- @return number uMin, number uMax, number vMin, number vMax
+local function parkingUvBoundsFromCfg(cfg)
+    local uMargin = tonumber(cfg.uMargin) or 0.02
+    local vMargin = tonumber(cfg.vMargin) or 0.02
+    local edge = tonumber(cfg.parkingEdgePadding)
+    if edge == nil then
+        edge = 0.06
+    end
+    if edge < 0 then
+        edge = 0
+    end
+    local uMin = uMargin + edge
+    local uMax = 1 - uMargin - edge
+    local vMin = tonumber(cfg.parkingVMin)
+    local vMax = tonumber(cfg.parkingVMax)
+    if vMin == nil then
+        vMin = vMargin + edge
+    else
+        vMin = math.max(vMin, vMargin + edge)
+    end
+    if vMax == nil then
+        vMax = 1 - vMargin - edge
+    else
+        vMax = math.min(vMax, 1 - vMargin - edge)
+    end
+    uMin, uMax = clampParkingBand(uMin, uMax)
+    vMin, vMax = clampParkingBand(vMin, vMax)
+    return uMin, uMax, vMin, vMax
+end
+
+--- @return table columns, rows, parking u/v band, snapYawOffsetDeg
 local function paletteSnapConfig()
     local cfg = DATA.CONTROL_BOARD_PALETTE_SNAP or {}
     local columns = tonumber(cfg.columns) or 20
@@ -134,13 +180,133 @@ local function paletteSnapConfig()
     if rows < 1 then
         rows = 40
     end
+    local uMin, uMax, vMin, vMax = parkingUvBoundsFromCfg(cfg)
     return {
         columns = math.floor(columns),
         rows = math.floor(rows),
-        uMargin = tonumber(cfg.uMargin) or 0.02,
-        vMargin = tonumber(cfg.vMargin) or 0.02,
+        parkingUMin = uMin,
+        parkingUMax = uMax,
+        parkingVMin = vMin,
+        parkingVMax = vMax,
+        parkingEdgePadding = tonumber(cfg.parkingEdgePadding) or 0.06,
         snapYawOffsetDeg = tonumber(cfg.snapYawOffsetDeg) or 180,
     }
+end
+
+--- Tile face half-extents from world bounds (same corner projection as CONTROL_BOARD minimap).
+--- @param board Object
+--- @return number halfX, number halfZ
+local function boardLocalHalfExtents(board)
+    if not U.isGameObject(board) then
+        return 0.5, 0.5
+    end
+    local halfX = 0.5
+    local halfZ = 0.5
+    if board.getBounds ~= nil and board.positionToLocal ~= nil then
+        local b = board.getBounds()
+        if b ~= nil and b.center ~= nil and b.size ~= nil then
+            local cx = b.center.x or b.center[1] or 0
+            local cy = b.center.y or b.center[2] or 0
+            local cz = b.center.z or b.center[3] or 0
+            local worldHalfX = (b.size.x or b.size[1] or 1) * 0.5
+            local worldHalfZ = (b.size.z or b.size[3] or 1) * 0.5
+            local cornerX = board.positionToLocal(Vector({ x = cx + worldHalfX, y = cy, z = cz }))
+            local cornerZ = board.positionToLocal(Vector({ x = cx, y = cy, z = cz + worldHalfZ }))
+            if cornerX ~= nil then
+                halfX = math.abs(cornerX.x or 0)
+            end
+            if cornerZ ~= nil then
+                halfZ = math.abs(cornerZ.z or 0)
+            end
+        end
+    end
+    if halfX < 0.01 then
+        halfX = 0.5
+    end
+    if halfZ < 0.01 then
+        halfZ = 0.5
+    end
+    return halfX, halfZ
+end
+
+--- Highest col/row index present in parking assignments (logical grid indices).
+--- @param assignments table<string, number>
+--- @param columns number
+--- @return number maxCol, number maxRow
+local function maxGridColRowFromAssignments(assignments, columns)
+    local maxCol = 0
+    local maxRow = 0
+    if U.Type(assignments) ~= "table" then
+        return maxCol, maxRow
+    end
+    for _, snapIndex in pairs(assignments) do
+        if U.Type(snapIndex) == "number" then
+            local col = snapIndex % columns
+            local row = math.floor(snapIndex / columns)
+            if col > maxCol then
+                maxCol = col
+            end
+            if row > maxRow then
+                maxRow = row
+            end
+        end
+    end
+    return maxCol, maxRow
+end
+
+--- Number of parking rows in use (max row index + 1); drives even vertical spacing on the tile.
+--- @return number at least 1
+function Palette.parkingUsedRowCount()
+    local cfg = paletteSnapConfig()
+    local assignments = Palette.buildTokenSnapAssignments()
+    local _, maxRow = maxGridColRowFromAssignments(assignments, cfg.columns)
+    return math.max(1, maxRow + 1)
+end
+
+--- Normalized v for a parking row: evenly spaced between `parkingVMax` (top) and `parkingVMin` (bottom).
+--- @param row number 0-based layout row
+--- @param usedRowCount number from `Palette.parkingUsedRowCount`
+--- @param cfg table from `paletteSnapConfig`
+--- @return number v
+local function parkingVForRow(row, usedRowCount, cfg)
+    local vMin = cfg.parkingVMin
+    local vMax = cfg.parkingVMax
+    local r = tonumber(row) or 0
+    local count = math.max(1, math.floor(tonumber(usedRowCount) or 1))
+    if count <= 1 then
+        return (vMin + vMax) * 0.5
+    end
+    return vMax - (r / (count - 1)) * (vMax - vMin)
+end
+
+--- @param col number 0-based
+--- @param row number 0-based
+--- @param usedRowCount number|nil defaults to live assignment scan
+--- @return number u, number v
+local function paletteUvForGridCell(col, row, usedRowCount)
+    local cfg = paletteSnapConfig()
+    local columns = cfg.columns
+    local uMin = cfg.parkingUMin
+    local uMax = cfg.parkingUMax
+    local u = uMin
+    if columns > 1 then
+        u = uMin + (col / (columns - 1)) * (uMax - uMin)
+    end
+    if usedRowCount == nil then
+        usedRowCount = Palette.parkingUsedRowCount()
+    end
+    local v = parkingVForRow(row, usedRowCount, cfg)
+    return u, v
+end
+
+--- @param board Object
+--- @param u number 0–1
+--- @param v number 0–1
+--- @return Vector board-local on palette surface
+local function boardLocalFromUv(board, u, v)
+    local halfX, halfZ = boardLocalHalfExtents(board)
+    local surfaceY = tonumber(DATA.PALETTE_SURFACE_LOCAL_Y) or 0.18
+    return Vector((u - 0.5) * 2 * halfX, surfaceY, (v - 0.5) * 2 * halfZ)
 end
 
 --- @param deg number|nil
@@ -158,7 +324,7 @@ local function paletteTokenIsFaceUp(token)
     if not U.isGameObject(token) then
         return true
     end
-    if token.getTransformUp ~= nil then
+    if type(token.getTransformUp) == "function" then
         local up = token.getTransformUp()
         if up ~= nil then
             local uy = up.y or up[2]
@@ -167,7 +333,7 @@ local function paletteTokenIsFaceUp(token)
             end
         end
     end
-    if token.getRotation == nil then
+    if type(token.getRotation) ~= "function" then
         return true
     end
     local rot = token.getRotation()
@@ -192,7 +358,9 @@ function Palette.applyPaletteParkingRotation(palette, token)
         if not U.isGameObject(token) then
             return
         end
-        if not isWorldPosOnPaletteBoard(palette, token.getPosition()) then
+        -- `isWorldPosOnPaletteBoard` is declared later in this file; use the table method so
+        -- the closure does not compile as a nil global lookup (one error per token on Clear).
+        if type(Palette.isTokenOnPaletteBoard) ~= "function" or not Palette.isTokenOnPaletteBoard(palette, token) then
             return
         end
         if paletteTokenIsFaceUp(token) then
@@ -214,69 +382,13 @@ function Palette.rotationForPaletteParking(palette)
     return Vector(0, boardYaw + yawOffset, 180)
 end
 
---- @param board Object
---- @return number halfX, number halfZ
-local function boardLocalHalfExtents(board)
-    if not U.isGameObject(board) then
-        return 0.5, 0.5
-    end
-    local halfX, halfZ = 0.5, 0.5
-    if board.getBounds ~= nil then
-        local b = board.getBounds()
-        if b ~= nil and b.size ~= nil then
-            local sx = b.size.x or b.size[1] or 1
-            local sz = b.size.z or b.size[3] or 1
-            if sx > 0.01 and sz > 0.01 and board.positionToLocal ~= nil then
-                local p0 = board.positionToLocal(Vector(0, 0, 0))
-                local px = board.positionToLocal(Vector(sx, 0, 0))
-                local pz = board.positionToLocal(Vector(0, 0, sz))
-                if p0 ~= nil and px ~= nil and pz ~= nil then
-                    halfX = math.abs((px.x or 0) - (p0.x or 0)) * 0.5
-                    halfZ = math.abs((pz.z or 0) - (p0.z or 0)) * 0.5
-                end
-            end
-        end
-    end
-    if halfX < 0.01 then
-        halfX = 0.5
-    end
-    if halfZ < 0.01 then
-        halfZ = 0.5
-    end
-    return halfX, halfZ
-end
-
---- @param board Object
+--- @param board Object|nil unused; kept for debug API stability
 --- @param col number 0-based; 0 = left
---- @param row number 0-based; 0 = top
---- @return number u, number v
-function Palette.uvForGridCell(board, col, row)
-    local cfg = paletteSnapConfig()
-    local columns = cfg.columns
-    local rows = cfg.rows
-    local uMin = cfg.uMargin
-    local uMax = 1 - cfg.uMargin
-    local vMin = cfg.vMargin
-    local vMax = 1 - cfg.vMargin
-    local u = uMin
-    local v = vMax
-    if columns > 1 then
-        u = uMin + (col / (columns - 1)) * (uMax - uMin)
-    end
-    if rows > 1 then
-        v = vMax - (row / (rows - 1)) * (vMax - vMin)
-    end
-    return u, v
-end
-
---- @param board Object
---- @param u number
---- @param v number
---- @return Vector
-local function boardLocalFromUv(board, u, v)
-    local halfX, halfZ = boardLocalHalfExtents(board)
-    local surfaceY = tonumber(DATA.PALETTE_SURFACE_LOCAL_Y) or 0.18
-    return Vector((u - 0.5) * 2 * halfX, surfaceY, (v - 0.5) * 2 * halfZ)
+--- @param row number 0-based; 0 = top (high v)
+--- @param usedRowCount number|nil optional; see `Palette.parkingUsedRowCount`
+--- @return number u, number v normalized 0–1 on tile face
+function Palette.uvForGridCell(board, col, row, usedRowCount)
+    return paletteUvForGridCell(col, row, usedRowCount)
 end
 
 --- @param board Object
@@ -307,7 +419,8 @@ function Palette.worldPositionForSnapIndex(board, snapIndex)
     if row >= cfg.rows then
         return nil
     end
-    local u, v = Palette.uvForGridCell(board, col, row)
+    local usedRowCount = Palette.parkingUsedRowCount()
+    local u, v = paletteUvForGridCell(col, row, usedRowCount)
     return boardLocalToWorld(board, boardLocalFromUv(board, u, v))
 end
 
@@ -332,8 +445,9 @@ end
 
 --- @param board Object
 --- @param snapIndex number 0-based linear index (row-major)
+--- @param usedRowCount number parking rows in use (even vertical spacing)
 --- @return table|nil TTS snap point table
-local function snapPointForGridIndex(board, snapIndex)
+local function snapPointForGridIndex(board, snapIndex, usedRowCount)
     local cfg = paletteSnapConfig()
     local columns = cfg.columns
     local col = snapIndex % columns
@@ -342,7 +456,7 @@ local function snapPointForGridIndex(board, snapIndex)
         return nil
     end
     local yawDeg = ((cfg.snapYawOffsetDeg % 360) + 360) % 360
-    local u, v = Palette.uvForGridCell(board, col, row)
+    local u, v = paletteUvForGridCell(col, row, usedRowCount)
     local lp = boardLocalFromUv(board, u, v)
     return {
         position = { lp.x, lp.y, lp.z },
@@ -362,9 +476,11 @@ function Palette.buildSnapPoints(board)
     end
     local assignments = Palette.buildTokenSnapAssignments()
     local indices = uniqueAssignmentSnapIndices(assignments)
+    local _, maxRow = maxGridColRowFromAssignments(assignments, paletteSnapConfig().columns)
+    local usedRowCount = math.max(1, maxRow + 1)
     local points = {}
     for _, snapIndex in ipairs(indices) do
-        local pt = snapPointForGridIndex(board, snapIndex)
+        local pt = snapPointForGridIndex(board, snapIndex, usedRowCount)
         if pt ~= nil then
             points[#points + 1] = pt
         end
@@ -523,8 +639,17 @@ local function isWorldPosOnPaletteBoard(board, worldPos)
         return false
     end
     local halfX, halfZ = boardLocalHalfExtents(board)
-    local margin = 1.15
-    return math.abs(lp.x or 0) <= halfX * margin and math.abs(lp.z or 0) <= halfZ * margin
+    if halfX < 0.01 or halfZ < 0.01 then
+        return false
+    end
+    local cfg = paletteSnapConfig()
+    local u = 0.5 + (lp.x or 0) / (2 * halfX)
+    local v = 0.5 + (lp.z or 0) / (2 * halfZ)
+    local slack = 0.015
+    return u >= cfg.parkingUMin - slack
+        and u <= cfg.parkingUMax + slack
+        and v >= cfg.parkingVMin - slack
+        and v <= cfg.parkingVMax + slack
 end
 
 --- Tokens on palette surface (tag scan + board-local bounds).
@@ -534,13 +659,11 @@ function Palette.tokensOnBoard(board)
     if not U.isGameObject(board) then
         return {}
     end
-    local halfX, halfZ = boardLocalHalfExtents(board)
-    local margin = 1.15
     local out = {}
     local tagged = getObjectsWithTag(TAG_TOKEN) or {}
     for _, obj in ipairs(tagged) do
         if U.isGameObject(obj) and obj.hasTag ~= nil and obj.hasTag(TAG_TOKEN) == true then
-            if isWorldPosOnPaletteBoard(board, obj.getPosition()) then
+            if type(obj.getPosition) == "function" and isWorldPosOnPaletteBoard(board, obj.getPosition()) then
                 out[#out + 1] = obj
             end
         end
@@ -551,7 +674,59 @@ end
 --- @param board Object
 --- @return boolean
 function Palette.isTokenOnPaletteBoard(board, token)
-    return isWorldPosOnPaletteBoard(board, token and token.getPosition and token.getPosition() or nil)
+    if not U.isGameObject(token) or type(token.getPosition) ~= "function" then
+        return false
+    end
+    return isWorldPosOnPaletteBoard(board, token.getPosition())
+end
+
+--- Park tokens that are off both CONTROL_BOARD and the palette (lost / fell off table).
+--- Does not move tokens on the minimap or already on the palette; skips on-stage placement keys.
+--- @param palette Object
+--- @param opts table|nil `{ isOnControlBoard?: fun(token: Object): boolean }`
+--- @return number moved
+function Palette.recoverStrayTokensToPalette(palette, opts)
+    if not U.isGameObject(palette) then
+        return 0
+    end
+    opts = U.Type(opts) == "table" and opts or {}
+    local isOnControlBoard = opts.isOnControlBoard
+    local placedOnStage = characterKeysWithStagePlacements()
+    local assignments = Palette.buildTokenSnapAssignments()
+    local snapIndices = uniqueAssignmentSnapIndices(assignments)
+    local snapWorld = {}
+    for _, snapIndex in ipairs(snapIndices) do
+        snapWorld[snapIndex] = Palette.worldPositionForSnapIndex(palette, snapIndex)
+    end
+
+    local moved = 0
+    local allTagged = getObjectsWithTag(TAG_TOKEN) or {}
+    for _, token in ipairs(allTagged) do
+        if U.isGameObject(token) then
+            if type(isOnControlBoard) == "function" and isOnControlBoard(token) == true then
+                -- On CONTROL_BOARD minimap — leave for Apply or second Clear click.
+            elseif Palette.isTokenOnPaletteBoard(palette, token) then
+                -- Already on palette tile.
+            else
+                local ck = tokenCharacterKey(token)
+                if placedOnStage[ck] ~= true then
+                    local wantIndex = ck ~= nil and assignments[ck] or nil
+                    if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
+                        token.setPosition(snapWorld[wantIndex])
+                        Palette.applyPaletteParkingRotation(palette, token)
+                        if token.setInvisibleTo ~= nil then
+                            token.setInvisibleTo(C.PlayerColors or {})
+                        end
+                        moved = moved + 1
+                    end
+                end
+            end
+        end
+    end
+    if moved > 0 then
+        print("[Palette] recoverStrayTokensToPalette: parked " .. tostring(moved) .. " token(s)")
+    end
+    return moved
 end
 
 --- Move misplaced palette tokens, then park all tokens that belong on the palette.
@@ -583,7 +758,7 @@ function Palette.syncTokensToPalette(palette)
     for _, token in ipairs(onPalette) do
         local ck = tokenCharacterKey(token)
         local wantIndex = ck ~= nil and assignments[ck] or nil
-        if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
+        if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil and type(token.getPosition) == "function" then
             local pos = token.getPosition()
             local nearestSlot = U.findSnapPoint(snapPointsForFind, pos, 0.35)
             local nearestIndex = nil
@@ -612,9 +787,9 @@ function Palette.syncTokensToPalette(palette)
             if placedOnStage[ck] ~= true then
                 local wantIndex = ck ~= nil and assignments[ck] or nil
                 if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
-                    local onPalette = isWorldPosOnPaletteBoard(palette, token.getPosition())
+                    local onPalette = Palette.isTokenOnPaletteBoard(palette, token)
                     local slotCorrect = false
-                    if onPalette then
+                    if onPalette and type(token.getPosition) == "function" then
                         local nearestSlot = U.findSnapPoint(snapPointsForFind, token.getPosition(), 0.35)
                         if U.Type(nearestSlot) == "number" and snapPointsForFind[nearestSlot] ~= nil then
                             slotCorrect = snapPointsForFind[nearestSlot].snapIndex == wantIndex
@@ -654,12 +829,31 @@ function Palette.installSnaps(board, options)
     end
     local ok = board.setSnapPoints(points)
     if ok then
+        local hx, hz = boardLocalHalfExtents(board)
+        local cfg = paletteSnapConfig()
+        local usedRows = Palette.parkingUsedRowCount()
         print(
             "[Palette] Snaps installed ("
                 .. tostring(#points)
-                .. " points on "
+                .. " on "
                 .. tostring(board.getGUID())
-                .. ")"
+                .. "; halfX="
+                .. string.format("%.3f", hx)
+                .. " halfZ="
+                .. string.format("%.3f", hz)
+                .. " u "
+                .. string.format("%.2f", cfg.parkingUMin)
+                .. "-"
+                .. string.format("%.2f", cfg.parkingUMax)
+                .. " v "
+                .. string.format("%.2f", cfg.parkingVMin)
+                .. "-"
+                .. string.format("%.2f", cfg.parkingVMax)
+                .. " pad="
+                .. string.format("%.2f", cfg.parkingEdgePadding)
+                .. " rows="
+                .. tostring(usedRows)
+                .. " even-spaced)"
         )
     end
     return ok == true

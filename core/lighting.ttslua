@@ -109,26 +109,6 @@ function manualPlayerLight2Setup()
   -- "OFF" modes should change only by having the angle go to zero.
 end
 L.LIGHTMODES = {
-    -- GM light  lua L.SetLightMode(G.GUIDS.GM_LIGHT, {position=Vector({0,60,-85}), rotation=Vector({-33, 180, 0}), intensity=5, range=80, angle=90})
-    gmLight = {
-      guid = G.GUIDS.GM_LIGHT,
-      isPlayerLight = false,
-      default = "STANDARD",
-      OFF = {
-        enabled = false,
-        range = 80,
-        angle = 0,
-        intensity = 0,
-        color = Color(255/255, 0/255, 0/255)
-      },
-      STANDARD = {
-        enabled = true,
-        range = 80,
-        angle = 80,
-        intensity = 2.8,
-        color = Color(0.501631, 0.501631, 0.501631)
-      }
-    },
     -- Main table lights
     mainLightLeft = {
       guid = G.GUIDS.MAIN_LIGHT_LEFT,

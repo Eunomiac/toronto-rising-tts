@@ -6,6 +6,8 @@
  * - **XML:** `CSHEET_PAGE_<n>_*.xml` → `<Include src="ui/player/csheets/page<n>.xml" />`
  * - **XML:** `CONTROL_BOARD.*.xml` → `<Include src="ui/objects/npc_control_board.xml" />`
  * - **XML:** `CONTROL_BOARD_PALETTE.*.xml` → `<Panel />` (palette has no XmlUI toolbar)
+ * - **XML:** remove stray `.xml` for Lua-only objects (`DICEBAG_*`, `SIGNAL_CANDLE_*`, `SOUNDSCAPE_*`,
+ *   `TAROT_BUTTON_*`) — they use `createButton`, not Custom UI (extension often pastes csheet Includes)
  * - **Lua / TTS Lua:** `.lua` or `.ttslua` files whose names start with a known prefix → a single
  *   `require("...")` line derived from the prefix (see `LUA_STUB_RULES`).
  *
@@ -32,6 +34,23 @@ const CSHEET_PAGE_XML_RE = /^CSHEET_PAGE_(\d+)_/i;
 /** Filename prefix patterns for gameboard object Custom UI stubs. */
 const CONTROL_BOARD_PALETTE_XML_RE = /^CONTROL_BOARD_PALETTE\./i;
 const CONTROL_BOARD_XML_RE = /^CONTROL_BOARD\./i;
+
+/**
+ * @param {string} objectFilename  e.g. `DICEBAG_NORMAL_PINK.4637da.xml`
+ * @returns {boolean}
+ */
+function isLuaOnlyObjectXmlStub(objectFilename) {
+  if (!objectFilename.toLowerCase().endsWith(".xml")) {
+    return false;
+  }
+  const stem = objectFilename.slice(0, -".xml".length).toUpperCase();
+  for (const prefix of LUA_ONLY_NO_XML_PREFIXES) {
+    if (stem.startsWith(prefix)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 /**
  * @param {string} objectFilename
@@ -70,6 +89,19 @@ function expectedControlBoardXmlIncludeLine(objectFilename) {
  *
  * @type {readonly { prefix: string, line: string }[]}
  */
+/**
+ * Object name prefixes that have a Lua stub but must not have a `.tts/objects` Custom UI stub.
+ * (Invisible `createButton` / Global routing — not XmlUI `<Include>` sheets.)
+ *
+ * @type {readonly string[]}
+ */
+const LUA_ONLY_NO_XML_PREFIXES = [
+  "DICEBAG",
+  "SIGNAL_CANDLE",
+  "SOUNDSCAPE",
+  "TAROT_BUTTON",
+];
+
 const LUA_STUB_RULES = [
   { prefix: "CONTROL_BOARD_PALETTE", line: `require("objects.npc_control_board_palette")` },
   { prefix: "CONTROL_BOARD", line: `require("objects.npc_control_board")` },
@@ -163,11 +195,37 @@ function logicalLines(raw) {
  * @param {string[]} entries
  * @returns {StubTarget[]}
  */
+/**
+ * @param {string} objectsDir
+ * @param {string[]} entries
+ * @returns {string[]} absolute paths of Lua-only object XML stubs to delete
+ */
+function collectLuaOnlyXmlRemovals(objectsDir, entries) {
+  /** @type {string[]} */
+  const out = [];
+  for (const name of entries) {
+    if (!isLuaOnlyObjectXmlStub(name)) {
+      continue;
+    }
+    out.push(path.join(objectsDir, name));
+  }
+  out.sort((a, b) => a.localeCompare(b, "en"));
+  return out;
+}
+
+/**
+ * @param {string} objectsDir
+ * @param {string[]} entries
+ * @returns {StubTarget[]}
+ */
 function collectCsheetXmlTargets(objectsDir, entries) {
   /** @type {StubTarget[]} */
   const out = [];
   for (const name of entries) {
     if (!name.toLowerCase().endsWith(".xml")) {
+      continue;
+    }
+    if (isLuaOnlyObjectXmlStub(name)) {
       continue;
     }
     const paletteXmlWant = expectedControlBoardPaletteXmlLine(name);
@@ -282,6 +340,41 @@ function fixStubTargets(repoRoot, targets, dryRun, quiet, errors) {
 }
 
 /**
+ * @param {string} repoRoot
+ * @param {string[]} paths
+ * @param {boolean} dryRun
+ * @param {boolean} quiet
+ * @param {string[]} errors
+ * @returns {{ removed: number }}
+ */
+function removeLuaOnlyXmlStubs(repoRoot, paths, dryRun, quiet, errors) {
+  let removed = 0;
+  for (const fullPath of paths) {
+    if (!fs.existsSync(fullPath)) {
+      continue;
+    }
+    if (dryRun) {
+      if (!quiet) {
+        console.log(`[dry-run] would remove: ${path.relative(repoRoot, fullPath)}`);
+      }
+      removed += 1;
+      continue;
+    }
+    try {
+      fs.unlinkSync(fullPath);
+    } catch (err) {
+      errors.push(`${fullPath}: delete failed: ${String(err)}`);
+      continue;
+    }
+    if (!quiet) {
+      console.log(`removed: ${path.relative(repoRoot, fullPath)}`);
+    }
+    removed += 1;
+  }
+  return { removed };
+}
+
+/**
  * @returns {void}
  */
 function main() {
@@ -299,16 +392,18 @@ function main() {
   }
 
   const entries = fs.readdirSync(objectsDir);
+  const xmlRemovePaths = collectLuaOnlyXmlRemovals(objectsDir, entries);
   const xmlTargets = collectCsheetXmlTargets(objectsDir, entries);
   const luaTargets = collectLuaStubTargets(objectsDir, entries);
 
-  if (quiet && xmlTargets.length === 0 && luaTargets.length === 0) {
+  if (quiet && xmlRemovePaths.length === 0 && xmlTargets.length === 0 && luaTargets.length === 0) {
     return;
   }
 
   /** @type {string[]} */
   const errors = [];
 
+  const xmlRemoveResult = removeLuaOnlyXmlStubs(repoRoot, xmlRemovePaths, dryRun, quiet, errors);
   const xmlResult = fixStubTargets(repoRoot, xmlTargets, dryRun, quiet, errors);
   const luaResult = fixStubTargets(repoRoot, luaTargets, dryRun, quiet, errors);
 
@@ -321,13 +416,16 @@ function main() {
   }
 
   if (quiet && !dryRun) {
-    const totalFixed = xmlResult.fixed + luaResult.fixed;
+    const totalFixed = xmlRemoveResult.removed + xmlResult.fixed + luaResult.fixed;
     if (totalFixed > 0) {
       console.log(`TTS object stubs: repaired ${totalFixed} file(s) under .tts/objects.`);
     }
     return;
   }
 
+  console.log(
+    `TTS object XML removals (Lua-only): ${xmlRemovePaths.length} file(s), ${xmlRemoveResult.removed} ${dryRun ? "would remove" : "removed"}.`,
+  );
   console.log(
     `TTS object XML stubs: ${xmlTargets.length} file(s), ${xmlResult.ok} already correct, ${xmlResult.fixed} ${dryRun ? "would change" : "updated"}.`,
   );

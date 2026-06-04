@@ -2350,6 +2350,7 @@ function DestroyTableClones()
   print(string.format("[table stack] Cleanup done — destroyed %d, skipped %d", destroyed, skipped))
   return destroyed
 end
+
 -- #endregion
 
 -- SpawnTableClones()
@@ -2368,19 +2369,44 @@ end
 -- Export family world X/Z: DEBUG.exportControlBoardSnapFamilies(nil, { useInterpolatedRings = true }) for inner→outer interpolation baseline.
 -- Next Sync.npcs / reconcile reinstalls snaps from lib/npc_gameboard_data unless you re-run this or edit DATA.CONTROL_BOARD_SNAP.
 DEBUG.installNpcControlBoardSnaps(
-  {
-    origin = { u = 0.5, v = 0.35 },
-    snapYawOffsetDeg = 0,
-    snapGroups = {
-      { num = 5, angleDelta = 7, rays = 8, groundLevel = -50, radialStagger = 15, maxU = 0.6, maxV = 0.45, origin = {u = 0.5, v = 0.3}, defaultLightMode = "STANDARD"},
-      { num = 5, angleDelta = 4, rays = 12, groundLevel = -30, radialStagger = 5, maxU = 0.7, maxV = 0.566, defaultLightMode = "OFF"},
-      { num = 6, angleDelta = 360/6, rays = 1, groundLevel = -30, radialStagger = 0, maxU = 0.25, maxV = 0.55, origin = {u = 0.2, v = 0.5}, defaultLightMode = "OFF"  },
-      { num = 6, angleDelta = 360/6, rays = 1, groundLevel = -10, radialStagger = 0, maxU = 0.45, maxV = 0.85, origin = {u = 0.4, v = 0.8}, defaultLightMode = "OFF"  },
-      { num = 6, angleDelta = 360/6, rays = 1, groundLevel = -10, radialStagger = 0, maxU = 0.65, maxV = 0.85, origin = {u = 0.6, v = 0.8}, defaultLightMode = "OFF"  },
-      { num = 6, angleDelta = 360/6, rays = 1, groundLevel = -30, radialStagger = 0, maxU = 0.85, maxV = 0.55, origin = {u = 0.8, v = 0.5}, defaultLightMode = "OFF"
-    }
 
-  }})
+{
+  origin = { u = 0.5, v = 0.35 },
+  snapYawOffsetDeg = 0,
+  snapGroups = {
+    {
+      num = 5,
+      angleDelta = 7,
+      rays = 8,
+      groundLevel = -50,
+      radialStagger = 15,
+      maxU = 0.65,
+      maxV = 0.45,
+      origin = { u = 0.5, v = 0.3 },
+      defaultLightMode = "STANDARD",
+      validSnaps = {
+        minU = 0.3, maxU = 0.7, minV = 0.38, maxV = 0.5 }
+    }, -- CENTER, Center Left, Center Right
+    {
+      num = 5,
+      angleDelta = 4,
+      rays = 12,
+      groundLevel = -30,
+      radialStagger = 10,
+      maxU = 0.7,
+      maxV = 0.566,
+      defaultLightMode = "OFF",
+      validSnaps = {
+        minU = 0.35, maxU = 0.65, minV = 0.5, maxV = 0.6 }
+    }, -- Mid Center, Mid Left, Mid Right
+    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -30, radialStagger = 0, maxU = 0.25, maxV = 0.55, origin = { u = 0.2, v = 0.5 }, defaultLightMode = "OFF" }, -- Far Left
+    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -10, radialStagger = 0, maxU = 0.45, maxV = 0.85, origin = { u = 0.4, v = 0.8 }, defaultLightMode = "OFF" }, -- Far Center-Left
+    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -10, radialStagger = 0, maxU = 0.65, maxV = 0.85, origin = { u = 0.6, v = 0.8 }, defaultLightMode = "OFF" }, -- Far Center-Right
+    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -30, radialStagger = 0, maxU = 0.85, maxV = 0.55, origin = { u = 0.8, v = 0.5 }, defaultLightMode = "OFF" }, -- Far Right
+  }
+}
+
+)
 
 print("NPC1Object count: " .. #getObjectsWithTag("NPC2Object"))
 -- Now, find all that are also named "SEAT_FIGURE_NPC1"
@@ -2401,9 +2427,15 @@ DEBUG.installAndRemapNpcControlBoardSnaps({
     { num = 1, angleDelta = 0, rays = 16, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.42 },
     { num = 5, angleDelta = 4, rays = 12, groundLevel = -50, radialStagger = 5, maxU = 0.6, maxV = 0.45 },
     { num = 5, angleDelta = 3, rays = 16, groundLevel = -10, radialStagger = 5, maxU = 0.7, maxV = 0.566 },
-    { num = 5, angleDelta = 3, rays = 20, groundLevel = 20, radialStagger = 5, maxU = 0.8, maxV = 0.7 },
+    { num = 5, angleDelta = 3, rays = 20, groundLevel = 20,  radialStagger = 5, maxU = 0.8, maxV = 0.7 },
   },
 })
+
+local o = getObjectFromGUID("3bbb1b"); if o then o.setName("CONTROL_BOARD"); print(o.getName()) end
+
+local o = getObjectFromGUID("3bbb1b");
+print(o.getName())
+
 
 -- Control-board table-component diagnostics (leaf markers, usedBy seat gates, source object + UV checks):
 -- DEBUG.dumpControlBoardTableComponents()
@@ -2414,3 +2446,11 @@ DEBUG.installAndRemapNpcControlBoardSnaps({
 -- local n = 0; for _, o in ipairs(getObjectsWithTag("npc_figurine") or {}) do if o then o.destroy(); n = n + 1 end end; print("destroyed " .. n .. " npc figurines")
 -- -- Sync.full below reinstalls default snaps from lib/npcs_data — run installNpcControlBoardSnaps again after if tuning layout.
 -- require("core.sync").full({ force = true })
+
+
+Player.Black.lookAt({
+  position = Vector({ 0, 100, 120 }),
+  pitch = 50,
+  yaw = 180,
+  distance = 0,
+})

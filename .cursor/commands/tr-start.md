@@ -52,7 +52,7 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 | **Lua local order** | `local function` helpers declared **above** every caller in the same chunk; see `lua-local-function-order.md`. |
 | **Player identity** | Per-player state keyed by **steam_id**; Storyteller = `Black`; PC colors per `C.PlayerColors`. |
 | **Minimal diff** | Remove dead code and obsolete shims; update `.dev/` docs in the same change when behavior or public APIs move. |
-| **Linear sync** | Part of **done**: In Progress when starting, Done + comment + tasklist `[x]` when finishing; never leave Focus/tasklist/Linear diverged. |
+| **Linear sync** | Part of **done**: In Progress when starting, Done + comment + tasklist `[x]` when finishing; on gate-close (**Focus** / **Deferred** / **`blockedBy` prerequisite**), run **deferred resurfacing** (unblock dependents, propose 1–3 labeled resurfacing candidates in comment or chat). Never leave Focus/tasklist/Linear diverged. |
 | **Commits** | After every logical unit of work — **without asking**. Never prompt “want me to commit?”; the answer is always **yes**. Reference `TOR-XX` in the commit body. See `.cursorrules` § Git Commits and `.dev/DEVELOPMENT_WORKFLOW.md` § Regular Commits. |
 
 ## 2b) Agent chat title (Cursor)

@@ -496,6 +496,18 @@ function DEBUG.showScene()
     end
 end
 
+--- Scan `npc_light` for duplicate pooled spotlights per roster key (same as load audit).
+--- @param opts table|nil forwarded to `NPCS.auditDuplicatePooledSpotlights` (e.g. `{ alert = true }`)
+--- @return table audit result
+function DEBUG.auditDuplicatePooledSpotlights(opts)
+    local NPCS = require("core.npcs")
+    opts = type(opts) == "table" and opts or {}
+    if opts.phase == nil then
+        opts.phase = "debug-audit"
+    end
+    return NPCS.auditDuplicatePooledSpotlights(opts)
+end
+
 --- Dump `sessionScene.npcWorld.placements` and live instance stage poses.
 function DEBUG.dumpNpcPlacements()
     printTestHeader("NPC gameboard placements")

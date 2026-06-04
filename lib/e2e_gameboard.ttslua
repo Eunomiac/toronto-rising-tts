@@ -1005,10 +1005,21 @@ local function seedDuplicateSeatFigure(seatKey)
 end
 
 local function runDeferredD172(failures)
-    if type(Gameboard.applySnapGroupDefaultLightOnPaletteDrop) == "function" then
-        failures[#failures + 1] = "D172 unexpected: handler exists — move test to gbE2eRunFull"
-    else
-        failures[#failures + 1] = "D172 TOR-172: palette-drop defaultLightMode not implemented (expected until TOR-172)"
+    if type(Gameboard.applySnapGroupDefaultLightOnPaletteDrop) ~= "function" then
+        failures[#failures + 1] = "D172: applySnapGroupDefaultLightOnPaletteDrop missing"
+        return
+    end
+    if type(Gameboard.onNpcControlTokenPickUp) ~= "function" then
+        failures[#failures + 1] = "D172: onNpcControlTokenPickUp missing"
+    end
+    local nilResult = Gameboard.applySnapGroupDefaultLightOnPaletteDrop(nil)
+    if type(nilResult) ~= "table" or nilResult.reason ~= "invalid_token" then
+        failures[#failures + 1] = "D172: nil token should return reason invalid_token"
+    end
+    local Gbd = require("lib.npc_gameboard_data")
+    local ring1 = Gbd.CONTROL_BOARD_SNAP and Gbd.CONTROL_BOARD_SNAP.snapGroups and Gbd.CONTROL_BOARD_SNAP.snapGroups[1]
+    if type(ring1) ~= "table" or ring1.defaultLightMode ~= "STANDARD" then
+        failures[#failures + 1] = "D172: center ring defaultLightMode should be STANDARD in npc_gameboard_data"
     end
 end
 

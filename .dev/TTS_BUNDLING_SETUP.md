@@ -234,8 +234,11 @@ require("ui.ui_csheet")
 | --- | --- | --- |
 | `CONTROL_BOARD.*` | `require("objects.npc_control_board")` | `<Include src="ui/objects/npc_control_board.xml" />` |
 | `CONTROL_BOARD_PALETTE.*` | `require("objects.npc_control_board_palette")` | `<Panel />` |
+| `DICEBAG_*` | `require("objects.dice_bag")` | **none** (invisible `createButton` roll target — no Custom UI file) |
+| `SIGNAL_CANDLE_*` | `require("ui.ui_signal_candle")` | **none** |
+| `SOUNDSCAPE_*` / `TAROT_BUTTON_*` | matching `require(...)` in fix script | **none** |
 
-The TTS extension often scrambles these (e.g. pasting a csheet `<Include>` or the Global-injected fallback `click_*` script onto the board object). Run **`npm run tts-objects:fix-stubs`** after Save & Play if stubs drift.
+The TTS extension often scrambles these (e.g. pasting a csheet `<Include>` or the Global-injected fallback `click_*` script onto the board object). Run **`npm run tts-objects:fix-stubs`** after Save & Play if stubs drift; the build task also **deletes** stray `.xml` stubs on Lua-only objects when the extension copies csheet UI onto dice bags, candles, etc.
 
 **Pages 3–6** (`CSHEET_PAGE_3_*` … `CSHEET_PAGE_6_*`) use separate entries so each page’s XML builder (and embedded templates when shipped) is **not** bundled into all ~80 sheet objects:
 

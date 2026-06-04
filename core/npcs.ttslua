@@ -27,6 +27,8 @@ local TAG_FIG = "npc_figurine"
 local TAG_LIT = "npc_light"
 local TAG_SPOTLIGHT = "Spotlight"
 local GM_PREFIX = "npcInstance:"
+--- Spawn nickname for pooled NPC spotlights (`spawnObjectData` / save `Nickname`).
+local NPC_LIGHT_NICKNAME_PREFIX = "NPC Light "
 
 --- Area key whose `distance` / `rotation = 0` define canonical slot layout in table XZ (similarity about origin).
 local REF_AREA_KEY = "centerForward"
@@ -342,6 +344,33 @@ end
 --- @return boolean
 local function isValidNpcSeatKey(seatKey)
     return U.Type(seatKey) == "string" and U.isIn(seatKey, C.NPCSeats or {})
+end
+
+--- @param npcName string
+--- @return boolean
+local function validateNpcNameKey(npcName)
+    return U.Type(npcName) == "string" and string.match(npcName, "^[%a_][%w_]*$") ~= nil
+end
+
+--- Deterministic preload grid slot per character key (sorted `NPCS.characters` keys).
+--- Must precede `assignNpcToSeat` / `resolvePreloadSlotForMove` (Lua local scope).
+--- @param npcName string
+--- @return number|nil
+local function stablePreloadSlotIndex(npcName)
+    if not validateNpcNameKey(npcName) or NPCS.characters[npcName] == nil then
+        return nil
+    end
+    local keys = {}
+    for k, _ in pairs(NPCS.characters or {}) do
+        keys[#keys + 1] = k
+    end
+    table.sort(keys)
+    for i, k in ipairs(keys) do
+        if k == npcName then
+            return i
+        end
+    end
+    return nil
 end
 
 --- Display label for ST roll HUD from an NPC panel `npc_roll_*` button id suffix.
@@ -1438,32 +1467,6 @@ function NPCS.onObjectDropped(obj)
     end
 end
 
---- @param npcName string
---- @return boolean
-local function validateNpcNameKey(npcName)
-    return U.Type(npcName) == "string" and string.match(npcName, "^[%a_][%w_]*$") ~= nil
-end
-
---- Deterministic preload grid slot per character key (sorted `NPCS.characters` keys).
---- @param npcName string
---- @return number|nil
-local function stablePreloadSlotIndex(npcName)
-    if not validateNpcNameKey(npcName) or NPCS.characters[npcName] == nil then
-        return nil
-    end
-    local keys = {}
-    for k, _ in pairs(NPCS.characters or {}) do
-        keys[#keys + 1] = k
-    end
-    table.sort(keys)
-    for i, k in ipairs(keys) do
-        if k == npcName then
-            return i
-        end
-    end
-    return nil
-end
-
 --- @param area table|nil
 --- @param opts table|nil
 --- @return string
@@ -1612,16 +1615,86 @@ local function findExistingPooledFigurineForNpcName(npcName)
 end
 
 --- @param npcName string
---- @return Object|nil paired spotlight when still in-world (saved instance `lightGuid` only)
+--- @return string
+local function npcPooledLightExpectedNickname(npcName)
+    return NPC_LIGHT_NICKNAME_PREFIX .. tostring(npcName)
+end
+
+--- Display name / save nickname for a pooled NPC spotlight object.
+--- @param obj Object|nil
+--- @return string|nil
+local function pooledSpotlightDisplayName(obj)
+    if not U.isGameObject(obj) then
+        return nil
+    end
+    local nameRaw = obj.getName ~= nil and tostring(obj.getName() or "") or ""
+    if nameRaw ~= "" then
+        return nameRaw
+    end
+    if obj.getData ~= nil then
+        local data = obj.getData() or {}
+        local nick = tostring(data.Nickname or "")
+        if nick ~= "" then
+            return nick
+        end
+    end
+    return nil
+end
+
+--- @param ownerNpcName string
+--- @param lightGuid string
+--- @return boolean
+local function pooledSpotlightGuidClaimedByOtherInstance(ownerNpcName, lightGuid)
+    if lightGuid == "" then
+        return false
+    end
+    for otherName, rec in pairs(getInstances()) do
+        if otherName ~= ownerNpcName and U.Type(rec) == "table" and rec.lightGuid == lightGuid then
+            return true
+        end
+    end
+    return false
+end
+
+--- @param npcName string
+--- @return Object|nil paired spotlight: instance `lightGuid`, else first unclaimed `npc_light` with matching nickname
 local function findExistingPooledSpotlightForNpcName(npcName)
     if not validateNpcNameKey(npcName) then
         return nil
     end
+    local expectedNick = npcPooledLightExpectedNickname(npcName)
     local rec = getInstances()[npcName]
+    local stalePreferredGuid = nil
     if U.Type(rec) == "table" and U.Type(rec.lightGuid) == "string" and rec.lightGuid ~= "" then
-        return getObjectFromGUID(rec.lightGuid)
+        local fromRec = getObjectFromGUID(rec.lightGuid)
+        if fromRec ~= nil then
+            return fromRec
+        end
+        stalePreferredGuid = rec.lightGuid
     end
-    return nil
+
+    local objs = getObjectsWithTag(TAG_LIT) or {}
+    local fallback = nil
+    local preferredMatch = nil
+    for i = 1, #objs do
+        local obj = objs[i]
+        if obj ~= nil and pooledSpotlightDisplayName(obj) == expectedNick then
+            local lg = obj.getGUID and obj.getGUID() or ""
+            if lg ~= "" then
+                if stalePreferredGuid ~= nil and lg == stalePreferredGuid then
+                    return obj
+                end
+                if pooledSpotlightGuidClaimedByOtherInstance(npcName, lg) then
+                    if fallback == nil then
+                        fallback = obj
+                    end
+                elseif preferredMatch == nil then
+                    preferredMatch = obj
+                end
+            end
+        end
+    end
+    return preferredMatch or fallback
 end
 
 --- Spawn only the paired preload spotlight (figurine already exists in-world).
@@ -1638,7 +1711,7 @@ local function spawnPreloadSpotlightForNpc(npcName, slotIndex)
     if lightData == nil then
         return nil, "NPC light spawn data copy failed"
     end
-    lightData.Nickname = "NPC Light " .. npcName
+    lightData.Nickname = npcPooledLightExpectedNickname(npcName)
     lightData.Tags = { TAG_LIT }
     local lightUniformScale = NPC_PRELOAD_LIGHT_SCALE
     if U.Type(lightData.Transform) == "table" then
@@ -1849,7 +1922,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                 if lightData == nil then
                     error("NPC light spawn data copy failed for " .. npcName)
                 end
-                lightData.Nickname = "NPC Light " .. npcName
+                lightData.Nickname = npcPooledLightExpectedNickname(npcName)
                 lightData.Tags = { TAG_LIT }
                 if U.Type(lightData.Transform) == "table" then
                     lightData.Transform.scaleX = lightUniformScale
@@ -3013,6 +3086,30 @@ function NPCS.destroyAllWorldAndState()
     NPCS.refreshStorytellerUIIfVisible()
 end
 
+--- Preview NPC spotlight when a control token lands on a ring after palette pick-up (TOR-172).
+--- Apply still reads flip via `scanControlBoardTokens`; only affects instances already on STAGE_BOARD.
+--- @param npcName string character key
+--- @param mode string OFF|STANDARD
+function NPCS.applyControlTokenLightMode(npcName, mode)
+    if mode ~= "OFF" and mode ~= "STANDARD" then
+        return
+    end
+    if not validateNpcNameKey(npcName) then
+        return
+    end
+    local rec = getInstances()[npcName]
+    if U.Type(rec) ~= "table" or rec.areaKey ~= STAGE_BOARD_AREA_KEY then
+        return
+    end
+    if rec.npcLightMode == mode then
+        NPCS.applyCurrentLightMode(npcName, 0)
+        return
+    end
+    rec.npcLightMode = mode
+    setInstanceRecord(npcName, rec)
+    NPCS.applyCurrentLightMode(npcName, 0)
+end
+
 --- @param npcName string
 function NPCS.toggleOffStandard(npcName)
     local rec = getInstances()[npcName]
@@ -3208,14 +3305,84 @@ function NPCS.registerRestoredInstancesFromState()
     requestSeatLayoutSync()
 end
 
+--- Scan in-world `npc_light` objects; warn when more than one pooled spotlight exists per roster key.
+--- @param opts table|nil `phase` (log label), `alert` (Storyteller popup when duplicates found)
+--- @return table `{ ok, duplicateKeys, extraCount, totalTagged }`
+function NPCS.auditDuplicatePooledSpotlights(opts)
+    opts = U.Type(opts) == "table" and opts or {}
+    local phase = U.Type(opts.phase) == "string" and opts.phase or "audit"
+    local objs = getObjectsWithTag(TAG_LIT) or {}
+    local byKey = {}
+    local totalTagged = 0
+
+    for i = 1, #objs do
+        local obj = objs[i]
+        if obj ~= nil then
+            totalTagged = totalTagged + 1
+            local nick = pooledSpotlightDisplayName(obj)
+            if U.Type(nick) == "string" and string.sub(nick, 1, #NPC_LIGHT_NICKNAME_PREFIX) == NPC_LIGHT_NICKNAME_PREFIX then
+                local key = string.sub(nick, #NPC_LIGHT_NICKNAME_PREFIX + 1)
+                if validateNpcNameKey(key) and NPCS.characters[key] ~= nil then
+                    local bucket = byKey[key]
+                    if bucket == nil then
+                        bucket = {}
+                        byKey[key] = bucket
+                    end
+                    local lg = obj.getGUID and obj.getGUID() or ""
+                    bucket[#bucket + 1] = lg
+                end
+            end
+        end
+    end
+
+    local duplicateKeys = {}
+    local extraCount = 0
+    for key, guids in pairs(byKey) do
+        if #guids > 1 then
+            duplicateKeys[#duplicateKeys + 1] = key
+            extraCount = extraCount + (#guids - 1)
+        end
+    end
+    table.sort(duplicateKeys)
+
+    if #duplicateKeys == 0 then
+        print(string.format("[NPCS] %s: pooled spotlight audit OK (%d npc_light)", phase, totalTagged))
+        return { ok = true, duplicateKeys = {}, extraCount = 0, totalTagged = totalTagged }
+    end
+
+    local lines = {}
+    for _, key in ipairs(duplicateKeys) do
+        local guids = byKey[key]
+        lines[#lines + 1] = string.format("  %s: %d (%s)", key, #guids, table.concat(guids, ", "))
+    end
+    print(string.format(
+        "[NPCS] ERROR %s: duplicate pooled npc_light — %d character key(s), %d extra object(s). "
+            .. "Orphans persist until removed; see console GUID list or destroyAllNpcWorldObjects.\n%s",
+        phase,
+        #duplicateKeys,
+        extraCount,
+        table.concat(lines, "\n")
+    ))
+    if opts.alert == true then
+        safeAlertGM("Duplicate NPC pooled lights (" .. tostring(#duplicateKeys) .. " keys). See TTS console.")
+    end
+    return {
+        ok = false,
+        duplicateKeys = duplicateKeys,
+        extraCount = extraCount,
+        totalTagged = totalTagged,
+    }
+end
+
 --- Register restored instances and warm the preload pool (save/load bootstrap entry point).
 function NPCS.restoreAfterStateLoad()
     NPCS.registerRestoredInstancesFromState()
-    NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true })
+    NPCS.auditDuplicatePooledSpotlights({ phase = "load-after-register" })
+    NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true, auditAfterPreload = true })
 end
 
 --- Spawn missing `NPCS.characters` entries into the under-table preload pool.
---- @param opts table|nil `deferUiRefresh`, `immediate` (when true, spawn all missing in one pass — required before session scene placement)
+--- @param opts table|nil `deferUiRefresh`, `immediate`, `auditAfterPreload` (load bootstrap: duplicate `npc_light` scan + alert)
 function NPCS.ensureAllNpcsPreloaded(opts)
     ensurePreloadLayoutCapacity()
     opts = U.Type(opts) == "table" and opts or {}
@@ -3238,6 +3405,9 @@ function NPCS.ensureAllNpcsPreloaded(opts)
     })
 
     if #missing == 0 then
+        if opts.auditAfterPreload == true then
+            NPCS.auditDuplicatePooledSpotlights({ phase = "load-after-preload", alert = true })
+        end
         return
     end
 
@@ -3252,6 +3422,9 @@ function NPCS.ensureAllNpcsPreloaded(opts)
         if opts.deferUiRefresh == true then
             NPCS.refreshStorytellerUIIfVisible()
             requestSeatLayoutSync()
+        end
+        if opts.auditAfterPreload == true then
+            NPCS.auditDuplicatePooledSpotlights({ phase = "load-after-preload", alert = true })
         end
     end
 

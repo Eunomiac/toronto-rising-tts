@@ -85,6 +85,11 @@ Before an item **promoted from INBOX** is excluded from Focus or marked **Deferr
 1. **Before starting** — Search Linear for related `TOR-*` issues; read matching tasklist bullet if present; skim INBOX Active if overlap is likely.
 2. **When starting** — Set issue **In Progress**; confirm tasklist bullet has the correct `_(TOR-XX)_`. Prompt the author once to rename the Cursor chat to **`TOR-XX — short title`** (agents cannot rename chats programmatically — see `.cursor/commands/tr-start.md` § Agent chat title).
 3. **When finishing** — Mark **Done** (or **Canceled** if descoped) with a comment: what changed, key files, verification, commit refs. Update tasklist `[ ]` → `[x]` if applicable. Reference `TOR-XX` in commit body when committing. **`living-doc` issues:** baseline may be `[x]` on tasklist but issue stays **In Progress** — see § Living documentation.
+
+   **Deferred resurfacing (gate closes):** When the closed issue is on **Focus**, listed in **Deferred this cycle**, or is a **`blockedBy` prerequisite** for other open work:
+   - Remove stale **`blockedBy`** on Linear dependents whose prerequisites are now **Done** or **Canceled**.
+   - Skim **Deferred this cycle** and Linear dependents (issues that **`blockedBy`** the closed id); note any that should **resurface** (unblocked or named in Deferred).
+   - In the **Done** comment or session chat, **propose** (do not auto-apply) Focus or priority changes — a short labeled list (`TOR-XXX (title)`), typically 1–3 items. **Inbox-promoted deferrals** still need author OK before moving into Focus (see § Inbox back-burner confirmation).
 4. **Commits during work** — After each logical unit, commit **without asking**; never prompt “want me to commit?” (always yes). See `.cursorrules` § Git Commits.
 5. **When discovering new work** — INBOX one-liner if capture-only; otherwise create Linear issue in the correct **domain project**, add `source:tasklist` if from tasklist, append `_(TOR-XX)_` to tasklist, set **In Progress** if starting immediately.
 6. **When finding bugs on shipped features** — Create a **Bug** issue; `relatedTo` the original **Done** feature issue. Do not reopen unrelated Done issues.
