@@ -5,7 +5,7 @@
     TTS Editor — Script:
     require("objects.npc_control_board_palette")
 
-    Installs a 20×40 snap grid and parks NPC control tokens by group (see lib/npc_control_board_palette).
+    Installs sparse snaps at token parking slots (20×40 logical layout) and parks by group (see lib/npc_control_board_palette).
 ]]
 
 local Palette = require("lib.npc_control_board_palette")

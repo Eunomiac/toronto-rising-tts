@@ -128,7 +128,7 @@ Config: `D.CONTROL_BOARD_SNAP` in `lib/npc_gameboard_data.ttslua` — elliptical
 
 ## Token palette (CONTROL_BOARD_PALETTE)
 
-Workshop object **CONTROL_BOARD_PALETTE** (typical scale `{5, 1, 10}` — wide on X, tall on Z). **20×40** snap grid (`800` points). Object script:
+Workshop object **CONTROL_BOARD_PALETTE** (typical scale `{5, 1, 10}` — wide on X, tall on Z). Parking uses a **20×40** logical grid; **physical snaps** are installed only at token parking slots (one per rostered character on the palette), not all 800 cells. Object script:
 
 ```lua
 require("objects.npc_control_board_palette")

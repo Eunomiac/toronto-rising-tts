@@ -277,34 +277,70 @@ function Palette.worldPositionForSnapIndex(board, snapIndex)
     return boardLocalToWorld(board, boardLocalFromUv(board, u, v))
 end
 
+--- Sorted unique 0-based grid indices used by `buildTokenSnapAssignments`.
+--- @param assignments table<string, number>
+--- @return number[]
+local function uniqueAssignmentSnapIndices(assignments)
+    local seen = {}
+    local list = {}
+    if U.Type(assignments) ~= "table" then
+        return list
+    end
+    for _, snapIndex in pairs(assignments) do
+        if U.Type(snapIndex) == "number" and seen[snapIndex] ~= true then
+            seen[snapIndex] = true
+            list[#list + 1] = snapIndex
+        end
+    end
+    table.sort(list)
+    return list
+end
+
+--- @param board Object
+--- @param snapIndex number 0-based linear index (row-major)
+--- @return table|nil TTS snap point table
+local function snapPointForGridIndex(board, snapIndex)
+    local cfg = paletteSnapConfig()
+    local columns = cfg.columns
+    local col = snapIndex % columns
+    local row = math.floor(snapIndex / columns)
+    if row >= cfg.rows then
+        return nil
+    end
+    local yawDeg = ((cfg.snapYawOffsetDeg % 360) + 360) % 360
+    local u, v = Palette.uvForGridCell(board, col, row)
+    local lp = boardLocalFromUv(board, u, v)
+    return {
+        position = { lp.x, lp.y, lp.z },
+        rotation = { 0, yawDeg, 0 },
+        rotation_snap = true,
+        tags = { TAG_TOKEN },
+    }
+end
+
+--- One snap per palette token parking slot (from npcs_data group layout), not the full columns×rows grid.
 --- @param board Object
 --- @return table[] TTS snap point tables
 function Palette.buildSnapPoints(board)
     if not U.isGameObject(board) then
         error("Palette.buildSnapPoints: board object required")
     end
-    local cfg = paletteSnapConfig()
-    local yawDeg = ((cfg.snapYawOffsetDeg % 360) + 360) % 360
+    local assignments = Palette.buildTokenSnapAssignments()
+    local indices = uniqueAssignmentSnapIndices(assignments)
     local points = {}
-    for row = 0, cfg.rows - 1 do
-        for col = 0, cfg.columns - 1 do
-            local u, v = Palette.uvForGridCell(board, col, row)
-            local lp = boardLocalFromUv(board, u, v)
-            points[#points + 1] = {
-                position = { lp.x, lp.y, lp.z },
-                rotation = { 0, yawDeg, 0 },
-                rotation_snap = true,
-                tags = { TAG_TOKEN },
-            }
+    for _, snapIndex in ipairs(indices) do
+        local pt = snapPointForGridIndex(board, snapIndex)
+        if pt ~= nil then
+            points[#points + 1] = pt
         end
     end
     return points
 end
 
---- @return number
+--- @return number count of installed palette snaps (token parking slots only)
 function Palette.snapPointCount()
-    local cfg = paletteSnapConfig()
-    return cfg.columns * cfg.rows
+    local assignments = Palette.buildTokenSnapAssignments()
+    return #uniqueAssignmentSnapIndices(assignments)
 end
 
 --- Build characterKey → snapIndex (0-based) from npcs_data groups.
@@ -361,11 +397,28 @@ function Palette.buildTokenSnapAssignments()
             end
             return a.slotIndex < b.slotIndex
         end)
-        for _, member in ipairs(members) do
-            if col >= columns then
-                row = row + 1
-                col = 0
+        local count = #members
+        if count < 1 then
+            return
+        end
+        if count > columns then
+            -- Wider than the grid: no single row fits; place contiguously with row breaks only inside this group.
+            for _, member in ipairs(members) do
+                if col >= columns then
+                    row = row + 1
+                    col = 0
+                end
+                assignments[member.characterKey] = row * columns + col
+                col = col + 1
             end
+            return
+        end
+        -- Keep the whole coterie on one row: move to next row if the group would wrap mid-row.
+        if col > 0 and col + count > columns then
+            row = row + 1
+            col = 0
+        end
+        for _, member in ipairs(members) do
             assignments[member.characterKey] = row * columns + col
             col = col + 1
         end
@@ -475,10 +528,9 @@ function Palette.syncTokensToPalette(palette)
         return 0
     end
     local assignments = Palette.buildTokenSnapAssignments()
+    local snapIndices = uniqueAssignmentSnapIndices(assignments)
     local snapWorld = {}
-    local cfg = paletteSnapConfig()
-    local totalSnaps = cfg.columns * cfg.rows
-    for snapIndex = 0, totalSnaps - 1 do
+    for _, snapIndex in ipairs(snapIndices) do
         snapWorld[snapIndex] = Palette.worldPositionForSnapIndex(palette, snapIndex)
     end
 
@@ -487,7 +539,7 @@ function Palette.syncTokensToPalette(palette)
     --- Phase 1: tokens on palette → correct snap (nearest-snap detect via findSnapPoint).
     local onPalette = Palette.tokensOnBoard(palette)
     local snapPointsForFind = {}
-    for snapIndex = 0, totalSnaps - 1 do
+    for _, snapIndex in ipairs(snapIndices) do
         local wp = snapWorld[snapIndex]
         if wp ~= nil then
             snapPointsForFind[#snapPointsForFind + 1] = { position = wp, snapIndex = snapIndex }

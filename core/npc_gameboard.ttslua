@@ -820,7 +820,7 @@ function Gameboard.syncTokensToPalette()
     return Palette.syncTokensToPalette(palette)
 end
 
---- Install 20×40 snaps on CONTROL_BOARD_PALETTE.
+--- Install palette snaps (one per token parking slot, not full 20×40 grid).
 --- @param board Object|nil
 --- @param options table|nil { force?: boolean }
 --- @return boolean

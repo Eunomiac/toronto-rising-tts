@@ -74,7 +74,8 @@ D.CONTROL_BOARD_SNAP =
 
 }
 
---- CONTROL_BOARD_PALETTE: 20 columns × 40 rows (800 snaps). Object scale typically {5, 1, 10} (X wide, Z tall).
+--- CONTROL_BOARD_PALETTE: 20×40 logical grid for parking layout; physical snaps = one per token slot only.
+--- Object scale typically {5, 1, 10} (X wide, Z tall).
 D.CONTROL_BOARD_PALETTE_SNAP = {
     columns = 20,
     rows = 40,
