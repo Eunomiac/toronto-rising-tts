@@ -1729,7 +1729,7 @@ local function adoptExistingPooledFigurineAtPreloadSlot(npcName, figurine, slotI
     if lit.setPosition ~= nil then
         lit.setPosition(Vector(pos.x + NPC_LIGHT_SPAWN_OFFSET.x, pos.y + NPC_LIGHT_SPAWN_OFFSET.y, pos.z + NPC_LIGHT_SPAWN_OFFSET.z))
     end
-    applyNpcPairPhysicalPresentation(figurine, lit, PRELOAD_AREA_KEY)
+    applyNpcPairPhysicalPresentation(figurine, lit, PRELOAD_AREA_KEY, npcName)
     if not skipSeatSync then
         requestSeatLayoutSync()
     end
@@ -1873,7 +1873,7 @@ function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
                     lit.AssetBundle.playLoopingEffect(1)
                 end
                 ensureSpotlightTag(lit)
-                applyNpcPairPhysicalPresentation(fig, lit, areaKey)
+                applyNpcPairPhysicalPresentation(fig, lit, areaKey, npcName)
                 local lg = lit.getGUID and lit.getGUID() or ""
                 if lg == "" then
                     error("spawned NPC light has no GUID for " .. npcName)
@@ -2014,7 +2014,7 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
                         .. tostring(litErr))
                 end
             end
-            applyNpcPairPhysicalPresentation(fig, lit, PRELOAD_AREA_KEY)
+            applyNpcPairPhysicalPresentation(fig, lit, PRELOAD_AREA_KEY, npcName)
             return true, nil
         end
         return NPCS.moveNpcToArea(npcName, PRELOAD_AREA_KEY, {
@@ -2694,7 +2694,7 @@ function NPCS.moveNpcToArea(npcName, areaKey, opts)
         local pos = NPCS.computeSlotWorldPosition(areaKey, slot)
         lit.setPosition(Vector(pos.x + NPC_LIGHT_SPAWN_OFFSET.x, pos.y + NPC_LIGHT_SPAWN_OFFSET.y, pos.z + NPC_LIGHT_SPAWN_OFFSET.z))
     end
-    applyNpcPairPhysicalPresentation(fig, lit, areaKey)
+    applyNpcPairPhysicalPresentation(fig, lit, areaKey, npcName)
     NPCS.applyCurrentLightMode(npcName, 0)
     if not skipSeatSync then
         requestSeatLayoutSync()
