@@ -2886,8 +2886,40 @@ local function placeTokenOnControlBoardSnap(token, snapEntry, board, boardYaw)
     Gameboard.setHiddenFromPlayerColors(token)
 end
 
+--- Compare sibling family snaps for anchor spread: nearest to anchor first (|familyK|), left (k<0) before right.
+--- @param a table catalog entry
+--- @param b table catalog entry
+--- @return boolean
+local function compareFamilySnapCenterOutAlternating(a, b)
+    local ka = tonumber(a.familyK) or 0
+    local kb = tonumber(b.familyK) or 0
+    local magA = math.abs(ka)
+    local magB = math.abs(kb)
+    if magA ~= magB then
+        return magA < magB
+    end
+    if ka ~= kb then
+        return ka < kb
+    end
+    return (tonumber(a.snapIndex) or 0) < (tonumber(b.snapIndex) or 0)
+end
+
+--- Sort non-anchor family catalog entries for anchor-group spread (mutates list).
+--- @param entries table[] catalog rows with `familyK`
+function Gameboard.orderFamilySnapsForAnchorSpread(entries)
+    if type(entries) ~= "table" then
+        return
+    end
+    table.sort(entries, compareFamilySnapCenterOutAlternating)
+end
+
+--- @return boolean true — anchor spread assigns snaps in center-out alternating order (TOR-175).
+function Gameboard.anchorSpreadUsesCenterOutOrdering()
+    return true
+end
+
 --- When an anchor snap receives a grouped token and the rest of the family is empty,
---- park remaining group members on sibling snaps (lowest slotIndex first).
+--- park remaining group members on sibling snaps (lowest slotIndex first; snaps center-out alternating).
 --- @param droppedToken Object
 --- @return table result { placed: number, reason?: string, groupId?: string }
 function Gameboard.tryAnchorFamilyGroupSpread(droppedToken)
@@ -2980,9 +3012,7 @@ function Gameboard.tryAnchorFamilyGroupSpread(droppedToken)
             emptyFamilySnaps[#emptyFamilySnaps + 1] = entry
         end
     end
-    table.sort(emptyFamilySnaps, function(a, b)
-        return a.familyK < b.familyK
-    end)
+    Gameboard.orderFamilySnapsForAnchorSpread(emptyFamilySnaps)
     if #toPlace == 0 then
         return { placed = 0, reason = "nothing_to_place", groupId = groupId }
     end

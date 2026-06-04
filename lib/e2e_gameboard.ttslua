@@ -718,6 +718,8 @@ local function runSmokeAutomated(failures)
     end
     GlobalGameboardClear({})
 
+    assertD175AnchorSpreadOrdering(failures)
+
     return true
 end
 
@@ -1019,15 +1021,30 @@ local function runDeferredD173(failures)
     end
 end
 
-local function runDeferredD175(failures)
-    if Gameboard.anchorSpreadUsesCenterOutOrdering == true or type(Gameboard.anchorSpreadUsesCenterOutOrdering) == "function" then
-        local fn = Gameboard.anchorSpreadUsesCenterOutOrdering
-        if type(fn) == "function" and fn() == true then
-            failures[#failures + 1] = "D175 unexpected: center-out ordering enabled — move test to full"
-            return
+--- TOR-175: sibling snap order is |familyK| ascending, negative k before positive at each ring.
+local function assertD175AnchorSpreadOrdering(failures)
+    if type(Gameboard.orderFamilySnapsForAnchorSpread) ~= "function" then
+        failures[#failures + 1] = "D175: Gameboard.orderFamilySnapsForAnchorSpread missing"
+        return
+    end
+    local snaps = {
+        { familyK = -2, snapIndex = 1 },
+        { familyK = 2, snapIndex = 2 },
+        { familyK = -1, snapIndex = 3 },
+        { familyK = 1, snapIndex = 4 },
+    }
+    Gameboard.orderFamilySnapsForAnchorSpread(snaps)
+    local expected = { -1, 1, -2, 2 }
+    for i, wantK in ipairs(expected) do
+        if tonumber(snaps[i].familyK) ~= wantK then
+            failures[#failures + 1] = "D175: order["
+                .. tostring(i)
+                .. "] want familyK="
+                .. tostring(wantK)
+                .. " got "
+                .. tostring(snaps[i].familyK)
         end
     end
-    failures[#failures + 1] = "D175 TOR-175: anchor spread uses slotIndex order, not center-out alternating (expected until TOR-175)"
 end
 
 local function runDeferredD174(failures)
@@ -1065,10 +1082,9 @@ end
 --- @return boolean always false until features land (FAIL lines are harness success)
 function E2E_GB.runDeferred()
     local failures = {}
-    print("[gbE2eRunDeferred] Expected FAIL on D172–D177b until linked issues ship.")
+    print("[gbE2eRunDeferred] Expected FAIL on D172–D174, D177b until linked issues ship (D175 in smoke).")
     runDeferredD172(failures)
     runDeferredD173(failures)
-    runDeferredD175(failures)
     runDeferredD174(failures)
     runDeferredD177b(failures)
     printGbResult("gbE2eRunDeferred (expected FAIL)", failures)

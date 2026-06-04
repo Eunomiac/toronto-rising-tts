@@ -152,7 +152,7 @@ lua gbE2eRunDeferred()
 | --- | --- | --- |
 | D172 | TOR-172 | No palette-drop `defaultLightMode` handler |
 | D173 | TOR-173 | No stage placement lerp |
-| D175 | TOR-175 | Anchor spread not center-out alternating |
+| D175 | TOR-175 | *(shipped — `assertD175AnchorSpreadOrdering` in smoke)* |
 | D174 | TOR-174 | No NPC token on ST dice bag roll+return |
 | D177b | TOR-177 follow-up | Duplicate `SEAT_FIGURE_NPC1` remain after reconcile |
 
