@@ -1021,28 +1021,31 @@ local function runDeferredD173(failures)
     end
 end
 
---- TOR-175: sibling snap order is |familyK| ascending, negative k before positive at each ring.
+--- TOR-175: spread snap order is center-out on board XZ (inner pair then outer), left before right per ring.
 local function assertD175AnchorSpreadOrdering(failures)
     if type(Gameboard.orderFamilySnapsForAnchorSpread) ~= "function" then
         failures[#failures + 1] = "D175: Gameboard.orderFamilySnapsForAnchorSpread missing"
         return
     end
+    local anchor = { worldPos = { x = 0, y = 0, z = 0 } }
+    -- familyK labels can invert vs screen-left; sort must use world/board lateral, not k sign.
     local snaps = {
-        { familyK = -2, snapIndex = 1 },
-        { familyK = 2, snapIndex = 2 },
-        { familyK = -1, snapIndex = 3 },
-        { familyK = 1, snapIndex = 4 },
+        { familyK = 2, snapIndex = 1, worldPos = { x = -10, y = 0, z = 0 } },
+        { familyK = -2, snapIndex = 2, worldPos = { x = -5, y = 0, z = 0 } },
+        { familyK = 1, snapIndex = 3, worldPos = { x = 5, y = 0, z = 0 } },
+        { familyK = -1, snapIndex = 4, worldPos = { x = 10, y = 0, z = 0 } },
     }
-    Gameboard.orderFamilySnapsForAnchorSpread(snaps)
-    local expected = { -1, 1, -2, 2 }
-    for i, wantK in ipairs(expected) do
-        if tonumber(snaps[i].familyK) ~= wantK then
+    Gameboard.orderFamilySnapsForAnchorSpread(snaps, anchor, nil)
+    local expectedX = { -5, 5, -10, 10 }
+    for i, wantX in ipairs(expectedX) do
+        local gotX = snaps[i].worldPos and snaps[i].worldPos.x
+        if tonumber(gotX) ~= wantX then
             failures[#failures + 1] = "D175: order["
                 .. tostring(i)
-                .. "] want familyK="
-                .. tostring(wantK)
+                .. "] want worldPos.x="
+                .. tostring(wantX)
                 .. " got "
-                .. tostring(snaps[i].familyK)
+                .. tostring(gotX)
         end
     end
 end
