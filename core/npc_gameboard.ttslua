@@ -53,6 +53,7 @@ local rebuildAnchorDropEligibilityCache
 local resolveTokenSnapCatalogEntry
 local isNpcSeatRowColumn
 local parkVacatedNpcControlTokensToPalette
+local buildTokenByCharacterKey
 --- World XZ tolerance when matching tokens to installed control-board snap points.
 local CONTROL_BOARD_SNAP_MATCH_FUZZINESS = 0.45
 --- Prevents recursive anchor-family spread when programmatic moves fire onObjectDrop.
@@ -979,8 +980,10 @@ function Gameboard.applyFromControlBoard()
     if placementChanged then
         stateModule().setStateVal(placements, "sessionScene", "npcWorld", "placements")
     end
-    if seatChanged then
+    if seatChanged and type(vacatedKeys) == "table" and #vacatedKeys > 0 then
         parkVacatedNpcControlTokensToPalette(vacatedKeys, board)
+        lastControlBoardMirrorFingerprint = nil
+    elseif seatChanged then
         lastControlBoardMirrorFingerprint = nil
     end
     syncNpcsFromControlBoard("gameboard_apply", seatChanged)
@@ -3034,7 +3037,7 @@ local function placeActiveTableComponentMarker(marker, board, parentTable)
 end
 
 --- @return table<string, Object>
-local function buildTokenByCharacterKey()
+buildTokenByCharacterKey = function()
     local byKey = {}
     local tagged = getObjectsWithTag(TAG_TOKEN) or {}
     for _, tok in ipairs(tagged) do
