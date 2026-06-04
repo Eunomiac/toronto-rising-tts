@@ -16,6 +16,9 @@
 
 ## Processed
 
+- 2026-06-04 TOR-180 — [feature] Control board seat-assignment snap row (INBOX Feature 2; blocks TOR-178; Focus #2)
+- 2026-06-04 TOR-181 — [improvement] Retire Storyteller toolbar NPC panel (umbrella note; deferred after TOR-180/TOR-174)
+- 2026-06-04 duplicate — NPC token on ST dice bag roll + return (INBOX Feature 1 → **TOR-174**)
 - 2026-06-04 shipped — anchor spread palette `defaultLightMode` for siblings (TOR-172 follow-up; code in `tryAnchorFamilyGroupSpread`)
 - 2026-06-04 TOR-179 — [bug] Workshop SEAT_FIGURE anchor ID without name/nickname (tooltips vs layout anchors; not duplicate of TOR-177)
 - 2026-06-04 duplicate — Pink Tarot hide leaves drawn card on table → existing **TOR-96** (Tarot hide returns cards)
@@ -60,7 +63,7 @@
 - 2026-06-02 TOR-172 — [feature] `snapGroups.defaultLightMode` on palette drop only (Done)
 - 2026-06-02 TOR-171 — [improvement] Figurine yaw from master origin; ignore token Y rotation (Done)
 - 2026-06-02 TOR-170 — [bug] Control board tokens missing on load with on-stage figurines (Done)
-- 2026-06-02 TOR-173 — [feature] Lerp on Apply-only stage moves — scope expanded (blindfold gate, simultaneous, back/power eases, light timing; Focus #3)
+- 2026-06-02 TOR-173 — [feature] Lerp on Apply-only stage moves — scope expanded (blindfold gate, simultaneous, back/power eases, light timing; Focus #4)
 - 2026-06-02 TOR-177 — [bug] Duplicate SEAT_FIGURE when NPC seated on scene activate (Done)
 - 2026-06-02 TOR-176 — [bug] Control board XmlUI visible to non-Host players (Done)
 - 2026-06-02 TOR-175 — [bug] Anchor family spread slot order from center snap (Done)

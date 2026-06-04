@@ -215,5 +215,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-04 | UPDATE | TOR-96 | INBOX re-capture comment; Linear priority Medium |
 | 2026-06-04 | UPDATE | Focus **Deferred** | Back-burner approved: TOR-179 (`blockedBy` TOR-178), TOR-96; resurfacing note in RUNNING TASKLIST Focus |
 | 2026-06-04 | DOC | Deferred resurfacing | Gate-close survey on Done/Canceled: `toronto-rising-linear.mdc`, `DEVELOPMENT_WORKFLOW.md`, RUNNING TASKLIST Focus, `AGENTS.md` |
+| 2026-06-04 | INBOX | NPC panel / Features 1–2 | TOR-180 seat row (Focus #2, blocks TOR-178); TOR-181 panel retire deferred; Feature 1 → TOR-174 duplicate |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
