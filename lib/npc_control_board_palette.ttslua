@@ -150,9 +150,13 @@ local function eulerAxisFlippedDeg(deg)
     return norm > 90 and norm < 270
 end
 
---- @param rot Vector|nil
---- @return boolean
-local function tokenFaceUpFromRotation(rot)
+--- @param token Object|nil
+--- @return boolean true when token reads face-up (STANDARD on board), not palette OFF default
+local function paletteTokenIsFaceUp(token)
+    if not U.isGameObject(token) or token.getRotation == nil then
+        return true
+    end
+    local rot = token.getRotation()
     if rot == nil then
         return true
     end
@@ -162,22 +166,17 @@ local function tokenFaceUpFromRotation(rot)
     return true
 end
 
+--- Palette parking: face-down (Z=180) so `tokenLightModeFromFlip` reads OFF on the control board.
 --- @param palette Object
---- @param token Object|nil
 --- @return Vector
-local function tokenRotationForPalette(palette, token)
+function Palette.rotationForPaletteParking(palette)
     local boardYaw = 0
     if U.isGameObject(palette) and palette.getRotation ~= nil then
         local boardRot = palette.getRotation()
         boardYaw = (boardRot and boardRot.y) or 0
     end
     local yawOffset = paletteSnapConfig().snapYawOffsetDeg
-    local faceUp = true
-    if U.isGameObject(token) and token.getRotation ~= nil then
-        faceUp = tokenFaceUpFromRotation(token.getRotation())
-    end
-    local rz = faceUp and 0 or 180
-    return Vector(0, boardYaw + yawOffset, rz)
+    return Vector(0, boardYaw + yawOffset, 180)
 end
 
 --- @param board Object
@@ -555,8 +554,13 @@ function Palette.syncTokensToPalette(palette)
             if U.Type(nearestSlot) == "number" and snapPointsForFind[nearestSlot] ~= nil then
                 nearestIndex = snapPointsForFind[nearestSlot].snapIndex
             end
-            if nearestIndex ~= wantIndex then
+            local needPos = nearestIndex ~= wantIndex
+            local needFlip = paletteTokenIsFaceUp(token)
+            if needPos then
                 token.setPosition(snapWorld[wantIndex])
+            end
+            if needPos or needFlip then
+                token.setRotation(Palette.rotationForPaletteParking(palette))
                 moved = moved + 1
             end
         end
@@ -573,16 +577,19 @@ function Palette.syncTokensToPalette(palette)
                 local wantIndex = ck ~= nil and assignments[ck] or nil
                 if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
                     local onPalette = isWorldPosOnPaletteBoard(palette, token.getPosition())
-                    local alreadyCorrect = false
+                    local slotCorrect = false
                     if onPalette then
                         local nearestSlot = U.findSnapPoint(snapPointsForFind, token.getPosition(), 0.35)
                         if U.Type(nearestSlot) == "number" and snapPointsForFind[nearestSlot] ~= nil then
-                            alreadyCorrect = snapPointsForFind[nearestSlot].snapIndex == wantIndex
+                            slotCorrect = snapPointsForFind[nearestSlot].snapIndex == wantIndex
                         end
                     end
-                    if not alreadyCorrect then
-                        token.setPosition(snapWorld[wantIndex])
-                        token.setRotation(tokenRotationForPalette(palette, token))
+                    local needFlip = paletteTokenIsFaceUp(token)
+                    if not slotCorrect or needFlip then
+                        if not slotCorrect then
+                            token.setPosition(snapWorld[wantIndex])
+                        end
+                        token.setRotation(Palette.rotationForPaletteParking(palette))
                         if token.setInvisibleTo ~= nil then
                             token.setInvisibleTo(C.PlayerColors or {})
                         end
