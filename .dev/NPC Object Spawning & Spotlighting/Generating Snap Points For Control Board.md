@@ -96,18 +96,22 @@ rays = snapGroups[ringIndex].rays
 anchorDeg = (rayIndex / rays) * 360   -- rayIndex = 0 .. rays-1
 half = math.floor(num / 2)
 for k = -half, half do
-  angleDeg = anchorDeg + k * angleDelta
+  -- Master-origin ring: angleDeg = anchorDeg + k * angleDelta
+  -- Satellite ring (ring origin ≠ master): anchor (k=0) on bearing ring→master, then spread by k
+  angleDeg = towardMasterDeg + anchorDeg + k * angleDelta   -- towardMasterDeg = 0 when origins match
   -- u,v on ring ellipse; optional radialStagger pushes non-anchor snaps outward in STAGE world XZ inches
   -- board-local snap position (Y = MINIMAP_SURFACE_LOCAL_Y on tile); figurine Y on Apply = optional absolute world groundLevel on ring
 end
 ```
 
-Example: ring 3, `num=5`, `angleDelta=4`, `anchorDeg=90` → **82°, 86°, 90°, 94°, 98°**.
+Example: ring 3, `num=5`, `angleDelta=4`, `anchorDeg=90` → **82°, 86°, 90°, 94°, 98°** (master-origin ring).
+
+**Satellite rings** (per-ring `origin` ≠ master `origin`, e.g. Far Left / Far Right with `rays = 1`, `num = 6`): `towardMasterDeg` is the u/v bearing from the ring origin to the master origin; the anchor snap (`k = 0`) sits on that radial on the ellipse, facing inward — not a fixed board direction (e.g. always “rightmost”).
 
 - **Duplicates** at overlapping angles are allowed (no dedupe).
 - Candidates with `u` or `v` outside `[0, 1]` are omitted (not clamped).
 - Every snap uses `rotation_snap = true`, `tags = { "npc_control_token" }` (tagged snaps match control tokens), and board-local yaw **toward the master/default `origin`** plus ring-level or default `snapYawOffsetDeg`.
-- If a ring sets `snapGroups[ring].origin`, only **position generation** for that ring uses the ring origin; **yaw still faces the master/default `origin`**.
+- Per-ring `origin` sets the ellipse center for that ring; when it differs from the master origin, **family angles** rotate so the anchor faces the master (token yaw still faces the master origin).
 
 ## Visual illustrations
 

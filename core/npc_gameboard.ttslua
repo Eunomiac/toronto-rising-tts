@@ -1366,6 +1366,50 @@ local function ringOriginUvForIndex(cfg, ringIndex)
     return cfg.origin.u, cfg.origin.v
 end
 
+--- True when this ring's polar origin is not the config master origin (satellite / outskirts rings).
+--- @param cfg table
+--- @param ringIndex number
+--- @return boolean
+local function ringOriginDiffersFromMaster(cfg, ringIndex)
+    local ringU, ringV = ringOriginUvForIndex(cfg, ringIndex)
+    local masterU = tonumber(cfg.origin and cfg.origin.u) or 0.5
+    local masterV = tonumber(cfg.origin and cfg.origin.v) or 0.5
+    local eps = 1e-4
+    return math.abs(ringU - masterU) > eps or math.abs(ringV - masterV) > eps
+end
+
+--- Board u/v bearing from (fromU,fromV) toward (toU,toV); 0° = +u, 90° = +v (matches `uvOnEllipse`).
+--- @param fromU number
+--- @param fromV number
+--- @param toU number
+--- @param toV number
+--- @return number degrees
+local function bearingUvDeg(fromU, fromV, toU, toV)
+    local du = toU - fromU
+    local dv = toV - fromV
+    return math.deg(math.atan2(dv, du))
+end
+
+--- Family angle on the ring ellipse: master-origin rings use ray anchors; satellite rings rotate so k=0 faces master.
+--- @param cfg table
+--- @param ringIndex number
+--- @param rayIndex number 0-based
+--- @param familyK number
+--- @param angleDelta number
+--- @param rays number
+--- @return number angleDeg
+local function familyAngleDegForSnap(cfg, ringIndex, rayIndex, familyK, angleDelta, rays)
+    local anchorDeg = (rayIndex / rays) * 360
+    if not ringOriginDiffersFromMaster(cfg, ringIndex) then
+        return anchorDeg + familyK * angleDelta
+    end
+    local ringOriginU, ringOriginV = ringOriginUvForIndex(cfg, ringIndex)
+    local masterU = tonumber(cfg.origin and cfg.origin.u) or 0.5
+    local masterV = tonumber(cfg.origin and cfg.origin.v) or 0.5
+    local towardMasterDeg = bearingUvDeg(ringOriginU, ringOriginV, masterU, masterV)
+    return towardMasterDeg + anchorDeg + familyK * angleDelta
+end
+
 --- Board u/v on an axis-aligned ellipse: at angleDeg, u reaches maxU on +u axis and v reaches maxV on +v axis.
 --- @param originU number
 --- @param originV number
@@ -1482,8 +1526,7 @@ local function controlBoardSnapCandidate(board, cfg, rings, ringIndex, rayIndex,
     local radialStagger = tonumber(group.radialStagger) or 0
     local maxU, maxV = ringMaxUvForIndex(cfg, ringIndex, rings)
     local ringOriginU, ringOriginV = ringOriginUvForIndex(cfg, ringIndex)
-    local anchorDeg = (rayIndex / rays) * 360
-    local angleDeg = anchorDeg + familyK * angleDelta
+    local angleDeg = familyAngleDegForSnap(cfg, ringIndex, rayIndex, familyK, angleDelta, rays)
     local u, v = uvOnEllipse(ringOriginU, ringOriginV, angleDeg, maxU, maxV)
     if radialStagger ~= 0 and familyK ~= 0 then
         u, v = applyRadialStaggerUv(ringOriginU, ringOriginV, familyK, radialStagger, u, v)
@@ -1909,7 +1952,14 @@ local function anchorDegForSnapEntry(cfg, entry)
     if rays < 1 then
         rays = 1
     end
-    return (entry.rayIndex / rays) * 360
+    local anchorDeg = (entry.rayIndex / rays) * 360
+    if not ringOriginDiffersFromMaster(cfg, entry.ringIndex) then
+        return anchorDeg
+    end
+    local ringOriginU, ringOriginV = ringOriginUvForIndex(cfg, entry.ringIndex)
+    local masterU = tonumber(cfg.origin and cfg.origin.u) or 0.5
+    local masterV = tonumber(cfg.origin and cfg.origin.v) or 0.5
+    return bearingUvDeg(ringOriginU, ringOriginV, masterU, masterV) + anchorDeg
 end
 
 --- Family spread offset (degrees) = familyK * angleDelta on that ring.
