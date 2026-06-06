@@ -1349,10 +1349,14 @@ end
 
 --- When a figurine is dropped after dragging, refresh its paired NPC spotlight.
 function onObjectDrop(playerColor, object)
-    if object ~= nil and NPCS and NPCS.onObjectDropped then
+    if object == nil or object.hasTag == nil then
+        return
+    end
+    -- TOR-197: O(1) tag gate — do not call NPCS for tokens, dice, cards, etc.
+    if object.hasTag("npc_figurine") == true and NPCS and NPCS.onObjectDropped then
         NPCS.onObjectDropped(object)
     end
-    if object ~= nil and object.hasTag ~= nil and object.hasTag("npc_control_token") == true then
+    if object.hasTag("npc_control_token") == true then
         local Gameboard = require("core.npc_gameboard")
         if Gameboard.onNpcControlTokenDropped then
             Gameboard.onNpcControlTokenDropped(object, playerColor)

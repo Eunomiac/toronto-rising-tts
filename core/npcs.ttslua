@@ -1466,6 +1466,9 @@ end
 --- Called when a figurine may have moved (drop or script move).
 --- @param obj Object
 function NPCS.onObjectDropped(obj)
+    if not NPCS.isPooledFigurineObject(obj) then
+        return
+    end
     local npcName = NPCS.resolveNpcNameFromFigurine(obj)
     if npcName then
         ensureNpcFigurinePhysicsLocked(obj)

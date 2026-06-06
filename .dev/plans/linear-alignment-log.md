@@ -229,5 +229,21 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-04 | RESURFACE | TOR-96 | Removed from Deferred this cycle; cleared `blockedBy`; gate TOR-180 Done |
 | 2026-06-04 | UPDATE | TOR-181 | `blockedBy` narrowed to TOR-174 only (TOR-180 Done) |
 | 2026-06-04 | DONE | TOR-182 | Apply vacate NPC seat when token off CONTROL_BOARD (`4a9370f`); related TOR-180, TOR-178; seat-row snap rotation |
+| 2026-06-06 | INBOX | 16 bullets | Performance audit, dice rouse double, gameboard scale/rot/lag/table, Hunger 5 rules, Compulsions, grimoire, resonance, chronicle content, roll conditions |
+| 2026-06-06 | CREATE | TOR-197 | Event listener early-return audit + policy (Urgent; Focus #1; parent TOR-39) |
+| 2026-06-06 | CREATE | TOR-198 | Bug: Rouse check Roll doubles staged dice (Urgent; Focus #2; parent TOR-31) |
+| 2026-06-06 | CREATE | TOR-199 | Seated snap row token 2× scale on Apply (Medium; parent TOR-169) |
+| 2026-06-06 | CREATE | TOR-200 | Bug: seat-assignment snap 180° Y rotation (High; parent TOR-169) |
+| 2026-06-06 | CREATE | TOR-201 | Clear / token-drop lag (`blockedBy` TOR-197; High; parent TOR-169) |
+| 2026-06-06 | CREATE | TOR-202 | Bug: duplicate table models on control board (High; parent TOR-169) |
+| 2026-06-06 | CREATE | TOR-203 | Hunger 5 lock voluntary rouse — Blood Surge + Obliv-Rouse (Medium; parent TOR-31) |
+| 2026-06-06 | CREATE | TOR-204 | Compulsions deck on Bestial Failure (Medium; parent TOR-42) |
+| 2026-06-06 | CREATE | TOR-205 | Discipline card grimoire storage (Backlog Medium; parent TOR-38) |
+| 2026-06-06 | CREATE | TOR-206 | Resonance type & temperament after hunting (Backlog Medium; parent TOR-42) |
+| 2026-06-06 | CREATE | TOR-207 | Chronicle: generic encounter NPC list (`workshop-only`; Backlog) |
+| 2026-06-06 | CREATE | TOR-208 | Chronicle: ST improv stats reference (`workshop-only`; Backlog) |
+| 2026-06-06 | CREATE | TOR-209 | Roll panel show active roll conditions (Backlog Medium; parent TOR-37) |
+| 2026-06-06 | UPDATE | RUNNING TASKLIST **Focus** | TOR-197/198 above TOR-169/178/173; back-burner pending for TOR-199–206, TOR-209 deferrals |
+| 2026-06-06 | UPDATE | Back-burner approved | TOR-199–202 **in Focus** (#3–#6); TOR-203/204/209 deferred + `blockedBy` TOR-198; TOR-205/206 deferred; TOR-207/208 workshop-only |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

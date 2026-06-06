@@ -12,13 +12,18 @@ This file is continuously updated with issues and plans for feature development.
 
 ## Focus
 
-_Stack rank for the current cycle (2026-06-04, TOR-180 seat row shipped). **Precedence** (Focus + Linear `blockedBy`) — not Linear priority. **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). Deferred items may still be Medium/High importance in Linear._
+_Stack rank for the current cycle (2026-06-06, inbox perf + dice bugs). **Precedence** (Focus + Linear `blockedBy`) — not Linear priority. **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). Deferred items may still be Medium/High importance in Linear._
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-169** — Storyteller NPC gameboard (Phase A) | Umbrella — placements v3, Apply/Clear, control-board palette |
-| 2 | **TOR-178** — Seat ↔ stage figurine transfer | TOR-180 shipped — phase C table leaves; retain seat on Clear; scale/seatedScale |
-| 3 | **TOR-173** — Lerp stage moves on Apply only | Polish — expanded spec (no blindfold; simultaneous; back/power eases) |
+| 1 | **TOR-197** — Event listener early-return audit + policy | Author-critical — unrelated drops trigger heavy listeners; guards + `.dev/` policy |
+| 2 | **TOR-198** — Rouse check Roll doubles staged dice | Session-blocking dice bug — duplicate Rouse/Obliv-Rouse spawn on Roll |
+| 3 | **TOR-201** — Clear / token-drop lag | Gameboard perf — optimize after listener audit (`blockedBy` TOR-197) |
+| 4 | **TOR-200** — Seat snap Y-rotation 180° | Seat-row snap should apply y-rotation 0, not 180° |
+| 5 | **TOR-202** — Duplicate table model on board | Only one CONTROL_BOARD table model for active `currentTableKey` |
+| 6 | **TOR-199** — Seated snap row token 2× scale | Seat-assignment tokens scale 2× on Apply; revert off seat snaps |
+
+**Also in cycle (below top stack):** **TOR-169** (Storyteller NPC gameboard umbrella), **TOR-178** (seat ↔ stage figurine transfer), **TOR-173** (lerp stage moves on Apply).
 
 **Done this cycle:** TOR-180 (control-board seat-assignment snap row — assign/presence/Clear homelands). TOR-172 (palette-drop ring `defaultLightMode` flip + stage light preview). TOR-175 (anchor family spread center-out alternating). TOR-155 (roll panel pool dots color coding). TOR-164 (Dice-E2E harness + doc). TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions). **TOR-169 session:** circular-require load fix, Z-axis token flip, placements-only reconcile + byArea migration (`a0271ac`). **TOR-170/171:** load token mirror + master-origin figurine yaw (`5c3d37b`). **TOR-176/177:** Host-only control-board XmlUI + hide workshop seat-figure anchors (`b58e2fb`).
 
@@ -26,7 +31,7 @@ _Stack rank for the current cycle (2026-06-04, TOR-180 seat row shipped). **Prec
 
 **Resurfaced this cycle:** **TOR-96** (Tarot hide returns drawn cards) — back-burner gate lifted after TOR-180 Done; no `blockedBy` (pick up on Pink table playtest or table-objects slice).
 
-**Deferred this cycle:** **NPC gameboard follow-ups:** TOR-181 (retire Storyteller toolbar NPC panel; `blockedBy` TOR-174 only — TOR-180 Done). TOR-179 (workshop SEAT_FIGURE anchor ID; `blockedBy` TOR-178 phase C). **Dice E2E (resume after gameboard):** TOR-161 (normal bag right-click undo), TOR-162 (ST Opts stick), TOR-163 (no-difficulty broadcast), TOR-174 (NPC token on dice bag → roll; inbox Feature 1 reaffirmed 2026-06-04; `blockedBy` TOR-169, child of TOR-79). TOR-139 (scenes panel trim + 3-column library grid), TOR-140 (sound panel text + larger font), TOR-142 (four scene Apply clock buttons), TOR-143 (phase system + session lifecycle), TOR-146 (delete active scene ends live first), TOR-147 (blindfold soundscape fade + weather), TOR-148 (RT clock too fast), TOR-149 (ST dice tray lights), TOR-150 (thunder indoor ducking), TOR-151 (default no-scene environment), TOR-152 (Play load scene restore), TOR-73 (Take Half redesign + H2 rouse auto-parse), TOR-153 (map pins unmappable), TOR-154 (floor/plinth locked), TOR-156 (roll broadcast trim), TOR-157 (pre-Apply seat modal), TOR-165 (WP reroll wave partial settle), TOR-137 (Sites unicode minus), TOR-81 (light modes cleanup). **Canceled:** TOR-166 (widen far NPC angles), TOR-167 (mid/far center NPC areas) — superseded by TOR-169 gameboard. Other open bullets unchanged.
+**Deferred this cycle:** **2026-06-06 inbox (author-approved):** TOR-203 (Hunger 5 voluntary rouse lockout; `blockedBy` TOR-198), TOR-204 (Compulsions deck; `blockedBy` TOR-198), TOR-205 (discipline grimoire), TOR-206 (resonance hunting), TOR-209 (roll panel conditions; `blockedBy` TOR-198). **NPC gameboard follow-ups:** TOR-181 (retire Storyteller toolbar NPC panel; `blockedBy` TOR-174 only — TOR-180 Done). TOR-179 (workshop SEAT_FIGURE anchor ID; `blockedBy` TOR-178 phase C). **Dice E2E (resume after gameboard):** TOR-161 (normal bag right-click undo), TOR-162 (ST Opts stick), TOR-163 (no-difficulty broadcast), TOR-174 (NPC token on dice bag → roll; inbox Feature 1 reaffirmed 2026-06-04; `blockedBy` TOR-169, child of TOR-79). TOR-139 (scenes panel trim + 3-column library grid), TOR-140 (sound panel text + larger font), TOR-142 (four scene Apply clock buttons), TOR-143 (phase system + session lifecycle), TOR-146 (delete active scene ends live first), TOR-147 (blindfold soundscape fade + weather), TOR-148 (RT clock too fast), TOR-149 (ST dice tray lights), TOR-150 (thunder indoor ducking), TOR-151 (default no-scene environment), TOR-152 (Play load scene restore), TOR-73 (Take Half redesign + H2 rouse auto-parse), TOR-153 (map pins unmappable), TOR-154 (floor/plinth locked), TOR-156 (roll broadcast trim), TOR-157 (pre-Apply seat modal), TOR-165 (WP reroll wave partial settle), TOR-137 (Sites unicode minus), TOR-81 (light modes cleanup). **Workshop-only (no agent impl):** TOR-207 (generic encounter NPC list), TOR-208 (ST improv stats reference). **Canceled:** TOR-166 (widen far NPC angles), TOR-167 (mid/far center NPC areas) — superseded by TOR-169 gameboard. Other open bullets unchanged.
 
 **How deferred work resurfaces:** Unchecked tasklist bullets stay in domain sections; Linear **`blockedBy`** gates sequencing; when a **Focus** or **Deferred** gate issue is marked **Done**, agents run the **deferred resurfacing** survey (unblock dependents, propose 1–3 labeled candidates in Done comment or chat — see `.cursor/rules/toronto-rising-linear.mdc` and `DEVELOPMENT_WORKFLOW.md` § Deferred resurfacing). Also: **`/tr-inbox`**, **“what’s next”**, and **`/tr-start`** re-read this line. No push notifier — resurfacing is intentional at gate-close, session start, or Focus refresh.
 
@@ -53,6 +58,8 @@ _Stack rank for the current cycle (2026-06-04, TOR-180 seat row shipped). **Prec
   - **Hard:** A combination of Standard and Series: The Target represents a total number of successes, but a Difficulty _is_ applied to each roll, and only the margin on each roll contributes to the Running Total. Failures (i.e. negative margins) do not subtract from the Running Total.
   - **Cascade:** As Standard, with two changes. First, the number of successes on each roll becomes a positive modifier to the dice pool of the next roll. Second, if any roll fails, the test ends immediately in failure.
 - [x] **Oblivion rouse checks:** Finish end-to-end (`C.RollType.ROUSE_OBLIVION` — UI, validation, result handling). _(Shipped in dice pt.2: TOR-51, TOR-131; in-game verification recommended.)_ _(TOR-75)_
+- [ ] **Rouse check Roll doubles pool:** Clicking Roll after PRE_ROLL staging spawns duplicate Rouse/Obliv-Rouse dice (pool doubles). _(TOR-198)_
+- [ ] **Hunger 5 voluntary rouse lockout:** At Hunger 5, lock Blood Surge + Obliv-Rouse bags; allow forced standard Rouse checks; failed rouse → frenzy resist D4. _(TOR-203)_
 
 ## Camera
 
@@ -83,6 +90,10 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **NPC area cutouts on scene apply:** Mis-nested `npcWorld` at import root (spreadsheet JSON) left `sessionScene.npcWorld.byArea` empty — scene apply/reconcile was fine when data was nested correctly. Fixed spreadsheet; import validator now rejects unexpected root keys (no hoisting). _(TOR-135)_
 - [ ] _New feature:_ Storyteller rolls dice for NPCs from the dice control panel — spawn/show dice tray, appropriate camera angle, roll-controller wiring for NPC/non-player identity. _(TOR-79)_
 - [ ] **NPC token on ST dice bag:** Drop control token on dice bag → roll for that NPC with bag type; return token to prior board snap or palette. Deferred until TOR-169 stabilizes. _(TOR-174)_
+- [ ] **Seated snap row token 2× scale:** On Apply, tokens on seat-assignment snaps scale 2×; revert when moved off seat snaps. _(TOR-199)_
+- [ ] **Seat snap Y-rotation zero:** Seat-assignment snaps should apply y-rotation 0, not 180°. _(TOR-200)_
+- [ ] **Clear / token-drop lag:** Memoize and optimize hot paths after listener audit. _(TOR-201)_
+- [ ] **Duplicate table model on board:** Only one table model on CONTROL_BOARD — active `currentTableKey` only. _(TOR-202)_
 
 ## Soundscape
 
@@ -119,6 +130,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **Real-time clock too fast (intermittent):** Narrative clock ~6–12× expected rate; investigate duplicate tickers, uncleared `U.delay` intervals on scene Apply/load, or compounded `realTimeSpeed`. _(TOR-148)_
 - [x] **Site fog:** Site controls whether the fog object is enabled/disabled (`C.Sites.isTopFogActive` or indoor/outdoor default → `sessionScene.isTopFogActive` → `Scenes.reconcileTopFogFromState`). _(TOR-56)_
 - [ ] **Site & district modifiers:** Apply to rolls (and possibly stats) only for characters marked **present** in the active scene/seat layout. _(TOR-85)_
+- [ ] **Resonance after hunting rolls:** Odds function (location + desired resonance + hunt result); presentation + random pick; optional victim deck. _(TOR-206)_
 
 ## UI Panels
 
@@ -136,6 +148,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **Phase system redesign:** Four primary phases (`Start`, `Play`, `Spotlight`, `End`); Play sub-phases (`Scene`, `Downtime`, `Memoriam`); trim PHASES panel copy; **Begin Session** / **End Session** buttons; `sessionNum` in gameState + spaced roman overlay; theme playlist on Start/End; silent Spotlight. _(TOR-143)_ _(Supersedes canceled TOR-90.)_
 - [ ] **Scrolling viewbox:** Author experimenting in TTS on scroll-container height — no implementation until after tinkering. _(TOR-91)_
 - [ ] **Sound panel UI trim + larger text:** Remove excess instructional copy; increase Text element font size. _(TOR-140)_
+- [ ] **Roll panel active conditions:** Show readable condition names on roll panel; registry display-name field. _(TOR-209)_
 
 ## Character Sheets
 
@@ -144,6 +157,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [ ] **Page 4:** PC relationships; Blood Bonds. _(Partial: `lib/json/PC_Relationships.json`, `lib/pcs_data.ttslua`.)_ _(TOR-93)_
 - [ ] **Page 5:** Projects; Equipment; Boons. _(TOR-99)_
 - [ ] **Page 6:** Character history; scrolling XP log. _(TOR-92)_
+- [ ] **Discipline card grimoire:** Drop zone + page navigation near sheet for stored power/ritual/ceremony cards. _(TOR-205)_
 - [x] **Decals:** Sheet object decals update from Blood Potency (state → UI reconcile). _(TOR-70)_
 
 ## Players & Connection
@@ -155,6 +169,7 @@ _Blocked: author must define data binding approach before substantial implementa
 
 - [ ] **Locked floor/plinth:** `THE_FLOOR` and `TABLE_PLINTH` in `C.LockedObjects` but still interactable after load — verify GUIDs vs workshop, re-apply lock, audit late `interactable` writes. _(TOR-154)_
 - [ ] **Tarot hide:** `G.GUIDS.TAROT_BUTTON_PINK` / [`ui/ui_tarot_button.ttslua`](../ui/ui_tarot_button.ttslua) — when hiding the deck, return all drawn tarot cards to the deck first, then hide (no orphans on table). _(TOR-96)_
+- [ ] **Compulsions deck:** Indistinct deck; face on draw per player; drop → lerp lock by sheet on Bestial Failure. _(TOR-204)_
 
 ## New Features (pending design)
 
@@ -173,6 +188,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [ ] **Multiplayer E2E playbook:** Pre-invite solo-suite checklist + multi-client test plan (sub-issue of TOR-141). _(TOR-144)_
 - [x] Agent prompt: **performance** hotspots (`Sync.full`, spawn pools, lighting lerps, UI refresh). → [Performance Audit](Sychronizing%20Game%20Functionality/Performance%20Audit.md); Prompt 4 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md) _(TOR-50)_
 - [ ] **Sync.full call-site audit:** Inventory every `Sync.full(` in production Lua; classify Keep full vs narrow (`Sync.player`, `Sync.soundscape`, `NPCS.reconcileAllFromState`, planned `Sync.npcs`); update Performance Audit with findings. _(TOR-168)_
+- [ ] **Event listener early-return audit + policy:** Single-operation guards on hot listeners; document standard in `.dev/`. _(TOR-197)_
 
 ## Out of Scope for Cursor
 
@@ -190,4 +206,6 @@ _Workshop save, external art, or design TBD outside the repo. Each row has an op
 | Hunger / frenzy overlays | Art and tuning in workshop | TOR-111 |
 | Tune seat lights | All table configs (use test-bed helpers in-repo when ready) | TOR-114 |
 | Tune audio volumes | Emitters, weather, ducking in save | TOR-112 |
+| Generic encounter NPC list | Chronicle content incl. Memoriams | TOR-207 |
+| ST improv stats reference | Pool spreads; lock stats when used in play | TOR-208 |
 | Scene Constructor (Google Sheets) | Import/export workflow — author to define approach first | TOR-113 |
