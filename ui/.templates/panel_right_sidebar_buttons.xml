@@ -58,18 +58,18 @@
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_@@color@@"
+        id="playerHud_RSidebarBtn_ref_physicalCombat_@@color@@"
         class="hover_button hover_button_base"
-        image="toggle_SocialCombat_inactive"
+        image="toggle_PhysicalCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_physicalCombat_@@color@@"
+        id="playerHud_RSidebarBtn_ref_socialCombat_@@color@@"
         class="hover_button hover_button_base"
-        image="toggle_PhysicalCombat_inactive"
+        image="toggle_SocialCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
@@ -194,14 +194,14 @@
         image="toggle_Rolls_hover"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_@@color@@_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_SocialCombat_hover"
-      />
-      <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_@@color@@_hover"
         class="hover_button hover_button_hover"
         image="toggle_PhysicalCombat_hover"
+      />
+      <Image
+        id="playerHud_RSidebarBtn_ref_socialCombat_@@color@@_hover"
+        class="hover_button hover_button_hover"
+        image="toggle_SocialCombat_hover"
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_@@color@@_hover"
@@ -287,14 +287,14 @@
         image="toggle_Rolls_active"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_@@color@@_active"
-        class="hover_button hover_button_active"
-        image="toggle_SocialCombat_active"
-      />
-      <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_@@color@@_active"
         class="hover_button hover_button_active"
         image="toggle_PhysicalCombat_active"
+      />
+      <Image
+        id="playerHud_RSidebarBtn_ref_socialCombat_@@color@@_active"
+        class="hover_button hover_button_active"
+        image="toggle_SocialCombat_active"
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_@@color@@_active"

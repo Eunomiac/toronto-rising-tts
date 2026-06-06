@@ -59,18 +59,18 @@
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Brown"
+        id="playerHud_RSidebarBtn_ref_physicalCombat_Brown"
         class="hover_button hover_button_base"
-        image="toggle_SocialCombat_inactive"
+        image="toggle_PhysicalCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_physicalCombat_Brown"
+        id="playerHud_RSidebarBtn_ref_socialCombat_Brown"
         class="hover_button hover_button_base"
-        image="toggle_PhysicalCombat_inactive"
+        image="toggle_SocialCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
@@ -195,14 +195,14 @@
         image="toggle_Rolls_hover"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_SocialCombat_hover"
-      />
-      <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_Brown_hover"
         class="hover_button hover_button_hover"
         image="toggle_PhysicalCombat_hover"
+      />
+      <Image
+        id="playerHud_RSidebarBtn_ref_socialCombat_Brown_hover"
+        class="hover_button hover_button_hover"
+        image="toggle_SocialCombat_hover"
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_Brown_hover"
@@ -288,14 +288,14 @@
         image="toggle_Rolls_active"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Brown_active"
-        class="hover_button hover_button_active"
-        image="toggle_SocialCombat_active"
-      />
-      <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_Brown_active"
         class="hover_button hover_button_active"
         image="toggle_PhysicalCombat_active"
+      />
+      <Image
+        id="playerHud_RSidebarBtn_ref_socialCombat_Brown_active"
+        class="hover_button hover_button_active"
+        image="toggle_SocialCombat_active"
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_Brown_active"
@@ -409,18 +409,18 @@
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Orange"
+        id="playerHud_RSidebarBtn_ref_physicalCombat_Orange"
         class="hover_button hover_button_base"
-        image="toggle_SocialCombat_inactive"
+        image="toggle_PhysicalCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_physicalCombat_Orange"
+        id="playerHud_RSidebarBtn_ref_socialCombat_Orange"
         class="hover_button hover_button_base"
-        image="toggle_PhysicalCombat_inactive"
+        image="toggle_SocialCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
@@ -545,14 +545,14 @@
         image="toggle_Rolls_hover"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_SocialCombat_hover"
-      />
-      <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_Orange_hover"
         class="hover_button hover_button_hover"
         image="toggle_PhysicalCombat_hover"
+      />
+      <Image
+        id="playerHud_RSidebarBtn_ref_socialCombat_Orange_hover"
+        class="hover_button hover_button_hover"
+        image="toggle_SocialCombat_hover"
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_Orange_hover"
@@ -638,14 +638,14 @@
         image="toggle_Rolls_active"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Orange_active"
-        class="hover_button hover_button_active"
-        image="toggle_SocialCombat_active"
-      />
-      <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_Orange_active"
         class="hover_button hover_button_active"
         image="toggle_PhysicalCombat_active"
+      />
+      <Image
+        id="playerHud_RSidebarBtn_ref_socialCombat_Orange_active"
+        class="hover_button hover_button_active"
+        image="toggle_SocialCombat_active"
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_Orange_active"
@@ -759,18 +759,18 @@
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Red"
+        id="playerHud_RSidebarBtn_ref_physicalCombat_Red"
         class="hover_button hover_button_base"
-        image="toggle_SocialCombat_inactive"
+        image="toggle_PhysicalCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_physicalCombat_Red"
+        id="playerHud_RSidebarBtn_ref_socialCombat_Red"
         class="hover_button hover_button_base"
-        image="toggle_PhysicalCombat_inactive"
+        image="toggle_SocialCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
@@ -895,14 +895,14 @@
         image="toggle_Rolls_hover"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_SocialCombat_hover"
-      />
-      <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_Red_hover"
         class="hover_button hover_button_hover"
         image="toggle_PhysicalCombat_hover"
+      />
+      <Image
+        id="playerHud_RSidebarBtn_ref_socialCombat_Red_hover"
+        class="hover_button hover_button_hover"
+        image="toggle_SocialCombat_hover"
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_Red_hover"
@@ -988,14 +988,14 @@
         image="toggle_Rolls_active"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Red_active"
-        class="hover_button hover_button_active"
-        image="toggle_SocialCombat_active"
-      />
-      <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_Red_active"
         class="hover_button hover_button_active"
         image="toggle_PhysicalCombat_active"
+      />
+      <Image
+        id="playerHud_RSidebarBtn_ref_socialCombat_Red_active"
+        class="hover_button hover_button_active"
+        image="toggle_SocialCombat_active"
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_Red_active"
@@ -1109,18 +1109,18 @@
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Pink"
+        id="playerHud_RSidebarBtn_ref_physicalCombat_Pink"
         class="hover_button hover_button_base"
-        image="toggle_SocialCombat_inactive"
+        image="toggle_PhysicalCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_physicalCombat_Pink"
+        id="playerHud_RSidebarBtn_ref_socialCombat_Pink"
         class="hover_button hover_button_base"
-        image="toggle_PhysicalCombat_inactive"
+        image="toggle_SocialCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
@@ -1245,14 +1245,14 @@
         image="toggle_Rolls_hover"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_SocialCombat_hover"
-      />
-      <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_Pink_hover"
         class="hover_button hover_button_hover"
         image="toggle_PhysicalCombat_hover"
+      />
+      <Image
+        id="playerHud_RSidebarBtn_ref_socialCombat_Pink_hover"
+        class="hover_button hover_button_hover"
+        image="toggle_SocialCombat_hover"
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_Pink_hover"
@@ -1338,14 +1338,14 @@
         image="toggle_Rolls_active"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Pink_active"
-        class="hover_button hover_button_active"
-        image="toggle_SocialCombat_active"
-      />
-      <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_Pink_active"
         class="hover_button hover_button_active"
         image="toggle_PhysicalCombat_active"
+      />
+      <Image
+        id="playerHud_RSidebarBtn_ref_socialCombat_Pink_active"
+        class="hover_button hover_button_active"
+        image="toggle_SocialCombat_active"
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_Pink_active"
@@ -1459,18 +1459,18 @@
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Purple"
+        id="playerHud_RSidebarBtn_ref_physicalCombat_Purple"
         class="hover_button hover_button_base"
-        image="toggle_SocialCombat_inactive"
+        image="toggle_PhysicalCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_physicalCombat_Purple"
+        id="playerHud_RSidebarBtn_ref_socialCombat_Purple"
         class="hover_button hover_button_base"
-        image="toggle_PhysicalCombat_inactive"
+        image="toggle_SocialCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
@@ -1595,14 +1595,14 @@
         image="toggle_Rolls_hover"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_SocialCombat_hover"
-      />
-      <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_Purple_hover"
         class="hover_button hover_button_hover"
         image="toggle_PhysicalCombat_hover"
+      />
+      <Image
+        id="playerHud_RSidebarBtn_ref_socialCombat_Purple_hover"
+        class="hover_button hover_button_hover"
+        image="toggle_SocialCombat_hover"
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_Purple_hover"
@@ -1688,14 +1688,14 @@
         image="toggle_Rolls_active"
       />
       <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Purple_active"
-        class="hover_button hover_button_active"
-        image="toggle_SocialCombat_active"
-      />
-      <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_Purple_active"
         class="hover_button hover_button_active"
         image="toggle_PhysicalCombat_active"
+      />
+      <Image
+        id="playerHud_RSidebarBtn_ref_socialCombat_Purple_active"
+        class="hover_button hover_button_active"
+        image="toggle_SocialCombat_active"
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_Purple_active"
