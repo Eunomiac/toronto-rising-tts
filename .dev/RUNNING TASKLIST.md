@@ -16,16 +16,14 @@ _Stack rank for the current cycle (2026-06-06, inbox perf + dice bugs). **Preced
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-197** — Event listener early-return audit + policy | Author-critical — unrelated drops trigger heavy listeners; guards + `.dev/` policy |
-| 2 | **TOR-198** — Rouse check Roll doubles staged dice | Session-blocking dice bug — duplicate Rouse/Obliv-Rouse spawn on Roll |
-| 3 | **TOR-201** — Clear / token-drop lag | Gameboard perf — optimize after listener audit (`blockedBy` TOR-197) |
-| 4 | **TOR-200** — Seat snap Y-rotation 180° | Seat-row snap should apply y-rotation 0, not 180° |
-| 5 | **TOR-202** — Duplicate table model on board | Only one CONTROL_BOARD table model for active `currentTableKey` |
-| 6 | **TOR-199** — Seated snap row token 2× scale | Seat-assignment tokens scale 2× on Apply; revert off seat snaps |
+| 1 | **TOR-198** — Rouse check Roll doubles staged dice | Session-blocking dice bug — duplicate Rouse/Obliv-Rouse spawn on Roll |
+| 2 | **TOR-200** — Seat snap Y-rotation 180° | Seat-row snap should apply y-rotation 0, not 180° |
+| 3 | **TOR-202** — Duplicate table model on board | Only one CONTROL_BOARD table model for active `currentTableKey` |
+| 4 | **TOR-199** — Seated snap row token 2× scale | Seat-assignment tokens scale 2× on Apply; revert off seat snaps |
 
 **Also in cycle (below top stack):** **TOR-169** (Storyteller NPC gameboard umbrella), **TOR-178** (seat ↔ stage figurine transfer), **TOR-173** (lerp stage moves on Apply).
 
-**Done this cycle:** TOR-180 (control-board seat-assignment snap row — assign/presence/Clear homelands). TOR-172 (palette-drop ring `defaultLightMode` flip + stage light preview). TOR-175 (anchor family spread center-out alternating). TOR-155 (roll panel pool dots color coding). TOR-164 (Dice-E2E harness + doc). TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions). **TOR-169 session:** circular-require load fix, Z-axis token flip, placements-only reconcile + byArea migration (`a0271ac`). **TOR-170/171:** load token mirror + master-origin figurine yaw (`5c3d37b`). **TOR-176/177:** Host-only control-board XmlUI + hide workshop seat-figure anchors (`b58e2fb`).
+**Done this cycle:** TOR-197 (event listener O(1) gates + Event Listener Policy). TOR-201 (Clear/token-drop lag — listener audit fix; reopen if lag persists). TOR-180 (control-board seat-assignment snap row — assign/presence/Clear homelands). TOR-172 (palette-drop ring `defaultLightMode` flip + stage light preview). TOR-175 (anchor family spread center-out alternating). TOR-155 (roll panel pool dots color coding). TOR-164 (Dice-E2E harness + doc). TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions). **TOR-169 session:** circular-require load fix, Z-axis token flip, placements-only reconcile + byArea migration (`a0271ac`). **TOR-170/171:** load token mirror + master-origin figurine yaw (`5c3d37b`). **TOR-176/177:** Host-only control-board XmlUI + hide workshop seat-figure anchors (`b58e2fb`).
 
 **Ongoing (not Focus stack):** TOR-141 — maintain E2E playbooks when dice/scenes/debug testing changes.
 
@@ -92,7 +90,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **NPC token on ST dice bag:** Drop control token on dice bag → roll for that NPC with bag type; return token to prior board snap or palette. Deferred until TOR-169 stabilizes. _(TOR-174)_
 - [ ] **Seated snap row token 2× scale:** On Apply, tokens on seat-assignment snaps scale 2×; revert when moved off seat snaps. _(TOR-199)_
 - [ ] **Seat snap Y-rotation zero:** Seat-assignment snaps should apply y-rotation 0, not 180°. _(TOR-200)_
-- [ ] **Clear / token-drop lag:** Memoize and optimize hot paths after listener audit. _(TOR-201)_
+- [x] **Clear / token-drop lag:** O(1) listener gates + figurine GUID cache (TOR-197); reopen if lag persists in play. _(TOR-201)_
 - [ ] **Duplicate table model on board:** Only one table model on CONTROL_BOARD — active `currentTableKey` only. _(TOR-202)_
 
 ## Soundscape
@@ -188,7 +186,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [ ] **Multiplayer E2E playbook:** Pre-invite solo-suite checklist + multi-client test plan (sub-issue of TOR-141). _(TOR-144)_
 - [x] Agent prompt: **performance** hotspots (`Sync.full`, spawn pools, lighting lerps, UI refresh). → [Performance Audit](Sychronizing%20Game%20Functionality/Performance%20Audit.md); Prompt 4 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md) _(TOR-50)_
 - [ ] **Sync.full call-site audit:** Inventory every `Sync.full(` in production Lua; classify Keep full vs narrow (`Sync.player`, `Sync.soundscape`, `NPCS.reconcileAllFromState`, planned `Sync.npcs`); update Performance Audit with findings. _(TOR-168)_
-- [ ] **Event listener early-return audit + policy:** Single-operation guards on hot listeners; document standard in `.dev/`. _(TOR-197)_
+- [x] **Event listener early-return audit + policy:** O(1) guards on all active physical Global listeners; `.dev/Sychronizing Game Functionality/Event Listener Policy.md`. _(TOR-197)_
 
 ## Out of Scope for Cursor
 

@@ -245,5 +245,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-06 | CREATE | TOR-209 | Roll panel show active roll conditions (Backlog Medium; parent TOR-37) |
 | 2026-06-06 | UPDATE | RUNNING TASKLIST **Focus** | TOR-197/198 above TOR-169/178/173; back-burner pending for TOR-199–206, TOR-209 deferrals |
 | 2026-06-06 | UPDATE | Back-burner approved | TOR-199–202 **in Focus** (#3–#6); TOR-203/204/209 deferred + `blockedBy` TOR-198; TOR-205/206 deferred; TOR-207/208 workshop-only |
+| 2026-06-06 | DONE | TOR-197 | O(1) physical listener gates, figurine GUID cache, zones deactivated on load; Event Listener Policy |
+| 2026-06-06 | DONE | TOR-201 | Clear/token-drop lag — resolved via TOR-197 listener audit; author may reopen if lag persists |
+| 2026-06-06 | UPDATE | RUNNING TASKLIST **Focus** | TOR-198 top; TOR-197/201 Done this cycle |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
