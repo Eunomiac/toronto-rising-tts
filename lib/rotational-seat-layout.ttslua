@@ -1724,7 +1724,8 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
                 local objNick = "unknown-nickname"
                 objGuid = tostring(o.getGUID() or objGuid)
                 objName = tostring(o.getName() or objName)
-                objNick = tostring(o.getNickname() or objNick)
+                local data = o.getData and o.getData() or {}
+                objNick = tostring(data.Nickname or objNick)
                 table.insert(
                   skippedNoPatternDetails,
                   string.format("%s [name='%s', nick='%s']", objGuid, objName, objNick)
