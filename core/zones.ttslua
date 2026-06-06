@@ -418,12 +418,13 @@ end
 -- Sets up zone-related state and prepares zones for use.
 -- @usage Z.onLoad() -- Called from core/main.ttslua during initialization
 function Z.onLoad()
-    -- Initialize zone state if needed
+    -- Scripting zones are unused in Toronto Rising; default locked and keep Global handlers nil.
     if S.getStateVal("zones") == nil then
-        S.setStateVal({allLocked = false}, "zones")
+        S.setStateVal({ allLocked = true }, "zones")
     end
-
-    print("Zones: Module initialized")
+    if Global and Global.call then
+        Global.call("DeactivateZones")
+    end
 end
 
 return Z

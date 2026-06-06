@@ -272,6 +272,40 @@ local function getInstances()
     return t
 end
 
+--- Runtime O(1) lookup: figurine GUID → npc instance name (TOR-197).
+local figurineGuidToNpcName = {}
+
+--- Rebuild figurine GUID cache from persisted instances (after load or bulk replace).
+local function rebuildFigurineGuidCache()
+    figurineGuidToNpcName = {}
+    for npcName, rec in pairs(getInstances()) do
+        if U.Type(npcName) == "string" and U.Type(rec) == "table" then
+            local figGuid = rec.figurineGuid
+            if U.Type(figGuid) == "string" and figGuid ~= "" then
+                figurineGuidToNpcName[figGuid] = npcName
+            end
+        end
+    end
+end
+
+--- @param npcName string
+--- @param prevRec table|nil
+--- @param newRec table|nil
+local function syncFigurineGuidCacheForRecord(npcName, prevRec, newRec)
+    if U.Type(prevRec) == "table" then
+        local prevGuid = prevRec.figurineGuid
+        if U.Type(prevGuid) == "string" and prevGuid ~= "" and figurineGuidToNpcName[prevGuid] == npcName then
+            figurineGuidToNpcName[prevGuid] = nil
+        end
+    end
+    if U.Type(newRec) == "table" then
+        local newGuid = newRec.figurineGuid
+        if U.Type(newGuid) == "string" and newGuid ~= "" then
+            figurineGuidToNpcName[newGuid] = npcName
+        end
+    end
+end
+
 --- @return table<string, string|boolean>
 local function getOccupiedNpcSeatMap()
     local seatLayout = S.getStateVal("seatLayout")
@@ -293,14 +327,17 @@ end
 --- @param instances table
 local function setAllInstances(instances)
     S.setStateVal(instances, "npcs", "instances")
+    rebuildFigurineGuidCache()
 end
 
 --- @param npcName string
 --- @param rec table|nil
 local function setInstanceRecord(npcName, rec)
+    local prev = getInstances()[npcName]
+    syncFigurineGuidCacheForRecord(npcName, prev, rec)
     local all = U.clone(getInstances())
     all[npcName] = rec
-    setAllInstances(all)
+    S.setStateVal(all, "npcs", "instances")
 end
 
 --- @param npcName string
@@ -576,6 +613,12 @@ end
 --- @param obj Object|nil
 --- @return boolean
 function NPCS.isPooledFigurineObject(obj)
+    if not U.isGameObject(obj) then
+        return false
+    end
+    if obj.hasTag ~= nil and obj.hasTag(TAG_FIG) ~= true then
+        return false
+    end
     if not hasNpcInstanceGmNotes(obj) then
         return false
     end
@@ -1452,15 +1495,22 @@ function NPCS.resolveNpcNameFromFigurine(obj)
     end
     local notes = obj.getGMNotes and obj.getGMNotes() or ""
     local name = string.match(notes, "^" .. GM_PREFIX .. "(.+)$")
+    local guid = obj.getGUID and obj.getGUID() or ""
     if name then
+        if guid ~= "" then
+            figurineGuidToNpcName[guid] = name
+        end
         return name
     end
-    for npcName, rec in pairs(getInstances()) do
-        if rec.figurineGuid == obj.getGUID() then
-            return npcName
-        end
+    if guid == "" then
+        return nil
     end
-    return nil
+    local cached = figurineGuidToNpcName[guid]
+    if cached ~= nil then
+        return cached
+    end
+    rebuildFigurineGuidCache()
+    return figurineGuidToNpcName[guid]
 end
 
 --- Called when a figurine may have moved (drop or script move).

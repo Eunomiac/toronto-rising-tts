@@ -2746,6 +2746,10 @@ end
 -- @param playerColor string  TTS seat color of the player who rolled (may be "")
 function onObjectRandomize(obj, playerColor)
     if obj == nil then return end
+    -- TOR-197: O(1) gate — all module dice carry tag `d10`; decks/shuffles exit here.
+    if obj.hasTag == nil or obj.hasTag("d10") ~= true then
+        return
+    end
     if RC == nil then return end
 
     local tags = obj.getTags()
@@ -2795,6 +2799,10 @@ end
 -- @param obj       Object  The object that was taken out
 function onObjectLeaveContainer(container, obj)
     if obj == nil then return end
+    -- TOR-197: O(1) gate — only module dice leave bags with tag `d10`.
+    if obj.hasTag == nil or obj.hasTag("d10") ~= true then
+        return
+    end
     if RC == nil then return end
 
     local tags = obj.getTags()

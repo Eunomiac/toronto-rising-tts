@@ -20,20 +20,29 @@ If the guard fails, **return immediately** — no logging in the hot path unless
 
 | Handler | File | Frequency | Guard status | Notes |
 | --- | --- | --- | --- | --- |
-| `onObjectDrop` | `core/global_script.ttslua` | **Very high** | **Fixed 2026-06-06** — figurine path gated on `npc_figurine` tag; token path gated on `npc_control_token` | Was calling `NPCS.onObjectDropped` on every drop |
-| `onObjectPickUp` | `core/global_script.ttslua` | High | OK — tag gate before `Gameboard` | Only `npc_control_token` |
-| `onObjectEnterZone` | `core/zones.ttslua` via Global | Medium | OK — `zones.allLocked` then (future) zone type | Stub; minimal work today |
-| `onObjectLeaveZone` | `core/zones.ttslua` via Global | Medium | OK — same as enter | Stub |
-| `onObjectRandomize` | `core/global_script.ttslua` | High (rolls) | OK — die tag + numeric value + owner color | Roll FSM only |
-| `onObjectLeaveContainer` | `core/global_script.ttslua` | Medium | OK — die tag + owner + active roll | Dice pool assembly |
+| `onObjectDrop` | `core/global_script.ttslua` | **Very high** | **Pass** | `hasTag("npc_figurine")` / `hasTag("npc_control_token")` only |
+| `onObjectPickUp` | `core/global_script.ttslua` | High | **Pass** | `hasTag("npc_control_token")` before `require("core.npc_gameboard")` |
+| `onObjectEnterZone` | `core/zones.ttslua` via Global | Medium | **N/A (disabled)** | Handlers `nil` until manual `ActivateZones()`; unused in Toronto Rising |
+| `onObjectLeaveZone` | `core/zones.ttslua` via Global | Medium | **N/A (disabled)** | Same; `Z.onLoad` calls `DeactivateZones` |
+| `onObjectRandomize` | `core/global_script.ttslua` | High (rolls) | **Pass** | `hasTag("d10")` before `getTags` / roll FSM |
+| `onObjectLeaveContainer` | `core/global_script.ttslua` | Medium | **Pass** | `hasTag("d10")` before bag-spawn path |
 
 ## Module handlers (called from Global)
 
 | Entry | Module | Guard | Notes |
 | --- | --- | --- | --- |
-| `NPCS.onObjectDropped` | `core/npcs.ttslua` | **Fixed 2026-06-06** — `isPooledFigurineObject` before resolve | Avoids O(n) instance scan for non-figurines |
-| `Gameboard.onNpcControlTokenDropped` | `core/npc_gameboard.ttslua` | OK — `isNpcControlToken` + palette/anchor flags | `waitForCondition` only when flags set |
-| `Gameboard.onNpcControlTokenPickUp` | `core/npc_gameboard.ttslua` | OK — token tag | Sets palette/anchor eligibility flags |
+| `NPCS.onObjectDropped` | `core/npcs.ttslua` | **Pass** | Global tag + `isPooledFigurineObject` (`npc_figurine` tag) |
+| `NPCS.resolveNpcNameFromFigurine` | `core/npcs.ttslua` | **Pass** | GM Notes, then O(1) `figurineGuidToNpcName` cache (rebuilt on bulk instance replace) |
+| `Gameboard.onNpcControlTokenDropped` | `core/npc_gameboard.ttslua` | **Pass** | `isNpcControlToken` + palette/anchor flags before `waitForCondition` |
+| `Gameboard.onNpcControlTokenPickUp` | `core/npc_gameboard.ttslua` | **Pass** | `isNpcControlToken` |
+
+## Zones (unused — performance)
+
+Scripting zones are **not** used in current play. Performance contract:
+
+- **`Z.onLoad`** — one state default (`allLocked = true`) + `Global.call("DeactivateZones")` so `onObjectEnterZone` / `onObjectLeaveZone` stay **`nil`** (zero per-event cost).
+- **`Z.hideZones` / `Z.showZones`** — scan `getObjects()` only when invoked manually (debug); not part of normal startup.
+- **`HUD_toggleZones`** — only path that can call `Z.activateZones()`; debug-only.
 
 ## Object-script handlers
 
@@ -81,9 +90,8 @@ end
 3. Implement **guard first**, handler body second — PR review checks guard line count ≤ 3 before any `require` / loop / sync.
 4. If the handler mutates world state, follow [Reconciler Contract](Reconciler%20Contract.md): mutate state, then narrow sync — never hide reconcile in a drop handler unless explicitly spec'd (Gameboard pick-up flags are ephemeral runtime context, not `gameState`).
 
-## Audit follow-ups (TOR-197 / TOR-201)
+## Follow-ups (outside TOR-197 scope)
 
-- [ ] Zone handlers: add zone GUID/type guard before any future card/scene logic (`core/zones.ttslua`).
-- [ ] `resolveNpcNameFromFigurine`: optional `figurineGuid → npcName` cache to avoid instance scan on GMNotes miss.
 - [ ] `Sync.full` / `Sync.npcs` call-site pass — see TOR-168, Performance Audit rank 1.
 - [ ] Agent review Prompt 2 — dual-apply on drop paths (TOR-102).
+- [ ] If scripting zones are adopted later: zone GUID/type guard before any logic in `Z.onObjectEnterZone` / `Z.onObjectLeaveZone`.
