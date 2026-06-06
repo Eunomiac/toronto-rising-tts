@@ -271,6 +271,28 @@ npm run tts-save:measure-bundles -- --estimate   # require-tree only
 
 Without `.tts/bundled/` output, the script prints a **require-tree estimate** from `ui.ui_csheet` and flags heavy modules (`core.*`, `lib.pc_stats`, `lib.constants`, …). After Save & Play bundles one CSHEET object, it also reports `.tts/bundled/CSHEET_*.lua` sizes and regression checks.
 
+**Save loading asset inventory (in-game “Loading (N/M)” bar)**
+
+When TTS opens a save it reports how many assets it is loading (e.g. **1020** for `TS_Save_230.json`). To export a CSV aligned with that progress bar:
+
+```powershell
+npm run tts-save:list-loading-assets
+# or
+node .tools/tts-save/list-save-loading-assets.js --save .dev/TS_Save_230.json --outBasename save-loading-assets-latest
+```
+
+**Model:** global `CustomUIAssets` registry (**579** in save 230) plus every `ObjectStates` node (recursive) **except** `HandTrigger`, `Block*`, and `Custom_Assetbundle` / `CustomAssetbundle` objects (**443** → **1022** total from JSON; in-game may show **1020** due to engine-side dedup).
+
+Outputs under `.dev/build-logs/`:
+
+| File | Contents |
+| --- | --- |
+| `save-loading-assets-latest.csv` | One row per loading-bar asset (header + N data rows) |
+| `save-loading-assets-latest-extras.csv` | Asset bundles (meshes), sky URL, decal pallet — loaded in-engine but excluded from the progress total |
+| `save-loading-assets-latest.json` | Full structured report |
+
+Columns include `customAssetName`, `objectGuid`, `primaryUrl`, `gGuidsKey` (from `lib/guids.ttslua`), `saveJsonPath`, `category`, and `gmNotes` (object `GMNotes` from the save JSON). The `notes` column is script extraction metadata, not GM Notes. Pair with `npm run tts-save:extract-assets` for prune/reference-source analysis of Custom UI only.
+
 **Smoke checklist (after re-bundle)**
 
 1. Page 1: dot/box refresh when ST panel or conditions change (`obj.call("refreshFromGameState")`).

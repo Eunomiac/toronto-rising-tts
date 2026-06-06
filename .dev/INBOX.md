@@ -17,6 +17,8 @@
 - devise list of generic NPCs players are likely to encounter during play (don't forget Memoriams)
 - create Storyteller reference of stats and abilities you can draw from while improvising encounters
   - get rough spreads of pool sizes; when you use one during play, write it down to lock in that stat for that character
+- player roll panel should display active roll conditions; conditions will need to provide a readable name in their config
+
 
 ---
 

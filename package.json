@@ -27,6 +27,7 @@
     "custom-ui-assets:merge-object-assets": "node .tools/custom-ui-assets/merge-object-custom-ui-assets-from-json.js --save .dev/TS_Save_230.json --manifest lib/json/PC_Relationship_Images.json",
     "tts-save:extract-assets": "node .tools/tts-save/extract-categorize-save-assets.js --save .dev/TS_Save_230.json",
     "tts-save:extract-entities": "node .tools/tts-save/extract-save-entities.js --save .dev/TS_Save_230.json --outBasename save-entities-latest",
+    "tts-save:list-loading-assets": "node .tools/tts-save/list-save-loading-assets.js --save .dev/TS_Save_230.json --outBasename save-loading-assets-latest",
     "tts-save:extract-save-inventory": "npm run tts-save:extract-assets -- --outBasename save-assets-latest && npm run tts-save:extract-entities",
     "tts-save:inject-global": "node .tools/tts-save/inject-bundled-global-from-save-name.js",
     "tts-save:measure-bundles": "node .tools/tts-save/measure-bundles.js",
