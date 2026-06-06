@@ -549,6 +549,47 @@ local function maybeCancelRollIfPoolEmpty(color)
     RC.cancelRoll(color)
 end
 
+--- Removes one main-pool die (Normal before Hunger) from the matching bag.
+-- @param color string
+-- @return boolean
+local function removeMainPoolDie(color)
+    if type(color) ~= "string" then
+        return false
+    end
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        return false
+    end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil then
+        return false
+    end
+    local pool = DK.normalizePool(active.pool)
+    local dieKind = nil
+    if (pool.normal or 0) > 0 then
+        dieKind = DK.KIND_NORMAL
+    elseif (pool.hunger or 0) > 0 then
+        dieKind = DK.KIND_HUNGER
+    end
+    if dieKind == nil then
+        return false
+    end
+    return removeDieFromBag(color, dieKind)
+end
+
+--- Spawns one die when GlobalRollSpawnDieRequest approves the kind.
+-- @param color string
+-- @param dieKind string  DK.KIND_*
+local function spawnRequestedDie(color, dieKind)
+    if type(color) ~= "string" or type(dieKind) ~= "string" then
+        return
+    end
+    local logical = GlobalRollSpawnDieRequest({ color = color, requested = dieKind })
+    if logical ~= nil then
+        GlobalSpawnDieFromBag(color, logical)
+    end
+end
+
 --- Player dice bag right-click: opposite of left-click (usually remove one die).
 -- @param params table  { color, dieKind, phase }
 function GlobalDiceBagRightClick(params)
@@ -570,45 +611,54 @@ function GlobalDiceBagRightClick(params)
 
     local meta = type(active.meta) == "table" and active.meta or {}
     local surgeActive = meta.bloodSurgeActive == true
-
-    if RO.isRouseFamilyRoll(active.rollType) then
-        -- Left-click Normal/Hunger resets the check pool — no right-click action.
-        if dieKind == DK.KIND_NORMAL or dieKind == DK.KIND_HUNGER then
-            return
-        end
-        if dieKind == DK.KIND_ROUSE or dieKind == DK.KIND_OBLIV_ROUSE then
-            if removeDieFromBag(color, dieKind) then
-                maybeCancelRollIfPoolEmpty(color)
-            end
-        end
-        return
-    end
+    local pool = DK.normalizePool(active.pool)
 
     if active.rollType == C.RollType.STANDARD then
+        if dieKind == DK.KIND_NORMAL then
+            if removeMainPoolDie(color) then
+                maybeCancelRollIfPoolEmpty(color)
+            end
+            return
+        end
         if dieKind == DK.KIND_HUNGER then
             if surgeActive then
                 RC.deactivateBloodSurge(color)
-                return
-            end
-            if removeDieFromBag(color, DK.KIND_HUNGER) then
-                maybeCancelRollIfPoolEmpty(color)
             end
             return
         end
         if dieKind == DK.KIND_ROUSE then
-            if removeDieFromBag(color, DK.KIND_ROUSE) then
+            if (pool.rouse or 0) > 0 and removeDieFromBag(color, dieKind) then
                 maybeCancelRollIfPoolEmpty(color)
             end
             return
         end
         if dieKind == DK.KIND_OBLIV_ROUSE then
-            if removeDieFromBag(color, DK.KIND_OBLIV_ROUSE) then
+            if (pool.oblivRouse or 0) > 0 and removeDieFromBag(color, dieKind) then
                 maybeCancelRollIfPoolEmpty(color)
             end
             return
         end
+        return
+    end
+
+    if RO.isRouseFamilyRoll(active.rollType) then
         if dieKind == DK.KIND_NORMAL then
-            if removeDieFromBag(color, DK.KIND_NORMAL) then
+            if (pool.normal or 0) + (pool.hunger or 0) > 0 and removeMainPoolDie(color) then
+                maybeCancelRollIfPoolEmpty(color)
+            end
+            return
+        end
+        if dieKind == DK.KIND_HUNGER then
+            return
+        end
+        if dieKind == DK.KIND_ROUSE and active.rollType == C.RollType.ROUSE then
+            if (pool.rouse or 0) > 0 and removeDieFromBag(color, dieKind) then
+                maybeCancelRollIfPoolEmpty(color)
+            end
+            return
+        end
+        if dieKind == DK.KIND_OBLIV_ROUSE and active.rollType == C.RollType.ROUSE_OBLIVION then
+            if (pool.oblivRouse or 0) > 0 and removeDieFromBag(color, dieKind) then
                 maybeCancelRollIfPoolEmpty(color)
             end
             return
@@ -682,13 +732,20 @@ function GlobalDiceBagClick(params)
     if active == nil then return end
 
     if RO.isRouseFamilyRoll(active.rollType) then
-        if dieKind == DK.KIND_NORMAL or dieKind == DK.KIND_HUNGER then
-            RC.resetRouseCheckPool(color, active.rollType)
-        elseif dieKind == DK.KIND_ROUSE or dieKind == DK.KIND_OBLIV_ROUSE then
-            local logical = GlobalRollSpawnDieRequest({ color = color, requested = dieKind })
-            if logical ~= nil then
-                GlobalSpawnDieFromBag(color, logical)
-            end
+        if dieKind == DK.KIND_HUNGER then
+            return
+        end
+        if dieKind == DK.KIND_NORMAL then
+            RC.promoteDedicatedRouseToStandard(color)
+            spawnRequestedDie(color, dieKind)
+            return
+        end
+        if active.rollType == C.RollType.ROUSE and dieKind == DK.KIND_ROUSE then
+            spawnRequestedDie(color, dieKind)
+            return
+        end
+        if active.rollType == C.RollType.ROUSE_OBLIVION and dieKind == DK.KIND_OBLIV_ROUSE then
+            spawnRequestedDie(color, dieKind)
         end
         return
     end
@@ -697,29 +754,18 @@ function GlobalDiceBagClick(params)
         if dieKind == DK.KIND_HUNGER then
             local meta = type(active.meta) == "table" and active.meta or {}
             if meta.bloodSurgeActive == true then
-                local logical = GlobalRollSpawnDieRequest({ color = color, requested = DK.KIND_HUNGER })
-                if logical ~= nil then
-                    GlobalSpawnDieFromBag(color, logical)
-                end
-            else
-                RC.activateBloodSurge(color)
+                return
             end
+            RC.activateBloodSurge(color)
             return
         end
         if dieKind == DK.KIND_ROUSE or dieKind == DK.KIND_OBLIV_ROUSE then
-            local logical = GlobalRollSpawnDieRequest({ color = color, requested = dieKind })
-            if logical ~= nil then
-                GlobalSpawnDieFromBag(color, logical)
-            end
+            spawnRequestedDie(color, dieKind)
             return
         end
     end
 
-    local logical = GlobalRollSpawnDieRequest({ color = color, requested = dieKind })
-    if logical == nil then
-        return
-    end
-    GlobalSpawnDieFromBag(color, logical)
+    spawnRequestedDie(color, dieKind)
 end
 
 --- Spawns one die from a Storyteller dice bag (Werewolf / Rage / ST vampire bags).
