@@ -249,9 +249,6 @@ local function phaseLabel(active, color)
             if noTakeHalf or not RO.getForActive(active, RO.ROLL_TAKE_HALF) then
                 return "Assemble pool, then ROLL (auto-throws dice)"
             end
-            if active.difficulty == nil then
-                return "Set difficulty (dashboard), then Roll or Take Half"
-            end
             return "Assemble pool, then Roll or Take Half"
         elseif phase == C.RollPhase.ROLLING then
             if active.willpower ~= nil and active.willpower.wpRerollWave == true then
@@ -306,6 +303,9 @@ local function phaseLabel(active, color)
     elseif phase == C.RollPhase.POST_ROLL then
         if active.result ~= nil then
             return "Result ready — confirm when done"
+        end
+        if active.difficulty == nil then
+            return "Dice read — awaiting classification..."
         end
         return "Dice read — awaiting difficulty..."
     elseif phase == C.RollPhase.RESOLVED then
@@ -516,7 +516,6 @@ function RUI.refreshPlayerRollPanel(color)
     local hasPool    = DK.poolTotal(pool) > 0
     local canHalf    = isPreRoll
         and hasPool
-        and active.difficulty ~= nil
         and C.RollTypesNoTakeHalf[active.rollType] ~= true
         and RO.getForActive(active, RO.ROLL_TAKE_HALF)
     -- Recalculate is shown in ROLLING (manual override) and POST_ROLL (corrections/WP reroll).

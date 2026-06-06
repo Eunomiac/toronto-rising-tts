@@ -547,8 +547,128 @@ local CLASSIFICATION_OPT_BUILDERS = {
 -- INTERNAL CLASSIFICATION (reads live dice)
 -- ============================================================================
 
+local IMPLICIT_CLASSIFICATION_DIFFICULTY = 1
+
+--- Effective difficulty for classification and whether ST-set margin should display.
+-- @param active table
+-- @return number|nil effectiveDifficulty
+-- @return boolean showMargin
+local function resolveClassificationDifficulty(active)
+    if type(active) ~= "table" then
+        return nil, false
+    end
+    if active.difficulty ~= nil then
+        return active.difficulty, true
+    end
+    if active.rollType == C.RollType.STANDARD
+        or active.rollType == C.RollType.WEREWOLF then
+        return IMPLICIT_CLASSIFICATION_DIFFICULTY, false
+    end
+    return nil, false
+end
+
+--- Clears margin on result when ST never set difficulty (implicit classification only).
+-- @param result table|nil
+-- @param showMargin boolean
+-- @return table|nil
+local function applyMarginPolicy(result, showMargin)
+    if type(result) ~= "table" then
+        return result
+    end
+    if not showMargin then
+        result.margin = nil
+    end
+    return result
+end
+
+--- Classifies vampire pool dice; applies optional-difficulty margin policy.
+-- @param normalDice table
+-- @param hungerDice table
+-- @param active table
+-- @return table|nil
+local function classifyVampireRollForActive(normalDice, hungerDice, active)
+    local effectiveDiff, showMargin = resolveClassificationDifficulty(active)
+    if effectiveDiff == nil then
+        return nil
+    end
+    local result = Dice.classifyRoll(
+        normalDice, hungerDice, effectiveDiff, RC.classifyOptsFromActive(active))
+    return applyMarginPolicy(result, showMargin)
+end
+
+--- Classifies werewolf pool dice; applies optional-difficulty margin policy.
+-- @param werewolfDice table
+-- @param rageDice table
+-- @param active table
+-- @return table|nil
+local function classifyWerewolfRollForActive(werewolfDice, rageDice, active)
+    local effectiveDiff, showMargin = resolveClassificationDifficulty(active)
+    if effectiveDiff == nil then
+        return nil
+    end
+    local result = Dice.classifyWerewolfRoll(
+        werewolfDice, rageDice, effectiveDiff, RC.classifyOptsFromActive(active))
+    return applyMarginPolicy(result, showMargin)
+end
+
+--- Builds Take Half main-roll result (non-Rouse portion); never crit/messy/bestial.
+-- @param successes number
+-- @param poolSize number
+-- @param active table
+-- @return table
+local function buildTakeHalfMainResult(successes, poolSize, active)
+    local effectiveDiff, showMargin = resolveClassificationDifficulty(active)
+    if effectiveDiff == nil then
+        effectiveDiff = IMPLICIT_CLASSIFICATION_DIFFICULTY
+        showMargin = false
+    end
+    local succ = math.max(0, tonumber(successes) or 0)
+    local passes = succ >= effectiveDiff
+    local resultClass
+    if passes then
+        resultClass = C.ResultClass.WIN
+    elseif succ == 0 then
+        resultClass = C.ResultClass.TOTAL_FAILURE
+    else
+        resultClass = C.ResultClass.FAILURE
+    end
+    local result = {
+        successes      = succ,
+        pairs          = 0,
+        bonusSuccesses = 0,
+        resultClass    = resultClass,
+        margin         = succ - effectiveDiff,
+        hasTens        = false,
+        hungerTens     = false,
+        hungerOnes     = false,
+    }
+    return applyMarginPolicy(result, showMargin)
+end
+
+--- Merges Take Half synthetic normal faces with physical rouse-family faces for display.
+-- @param poolSize number
+-- @param successes number
+-- @param valuesByKind table|nil
+-- @return table
+local function buildTakeHalfDisplayFaces(poolSize, successes, valuesByKind)
+    local faces = Dice.buildTakeHalfSyntheticFaces(poolSize, successes)
+    if type(valuesByKind) ~= "table" then
+        return faces
+    end
+    for _, kind in ipairs({ DK.KIND_ROUSE, DK.KIND_OBLIV_ROUSE }) do
+        for _, val in ipairs(valuesByKind[kind] or {}) do
+            faces[#faces + 1] = {
+                value = val,
+                kind = kind,
+                isHunger = false,
+            }
+        end
+    end
+    return faces
+end
+
 --- Reads live dice and attempts to classify the result for a player's active roll.
--- No-ops if difficulty is not yet set, if no dice are found, if tookHalf, or if the roll
+-- No-ops if no classifiable difficulty path, if tookHalf (except awaiting Rouse), or if the roll
 -- has not left PRE_ROLL yet (dice on the table are pool staging only until ROLLING).
 -- Updates active.result and active.diceDisplay in state.
 -- @param color string
@@ -557,14 +677,6 @@ local function tryClassifyResultInternal(color)
     if active == nil then return end
     if active.tookHalf and active.takeHalfAwaitingRouse ~= true then
         return  -- Take Half (no pending Rouse) sets result directly
-    end
-    if active.difficulty == nil then
-        -- Clear any stale result and display if difficulty was removed
-        active.result = nil
-        active.diceDisplay = nil
-        active.diceFaces = nil
-        setActive(color, active)
-        return
     end
 
     -- Do not classify staged dice while the player is still building the pool in PRE_ROLL
@@ -598,9 +710,8 @@ local function tryClassifyResultInternal(color)
     local isWerewolfRoll = active.rollType == C.RollType.WEREWOLF
     local hasWerewolfDice = #werewolfDice > 0 or #rageDice > 0
 
-    if isWerewolfRoll and active.difficulty ~= nil and hasWerewolfDice then
-        active.result = Dice.classifyWerewolfRoll(
-            werewolfDice, rageDice, active.difficulty, RC.classifyOptsFromActive(active))
+    if isWerewolfRoll and hasWerewolfDice then
+        active.result = classifyWerewolfRollForActive(werewolfDice, rageDice, active)
         active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
     elseif isDedicatedRouse and not hasVampireDice then
         local rouseVals = (active.rollType == C.RollType.ROUSE_OBLIVION)
@@ -612,9 +723,8 @@ local function tryClassifyResultInternal(color)
             active.pendingResolution = C.PendingResolution.OBLIV_HUNGER_STAIN
         end
         active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
-    elseif active.difficulty ~= nil and hasVampireDice then
-        active.result = Dice.classifyRoll(normalDice, hungerDice, active.difficulty,
-            RC.classifyOptsFromActive(active))
+    elseif hasVampireDice then
+        active.result = classifyVampireRollForActive(normalDice, hungerDice, active)
         active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
     else
         active.result = nil
@@ -903,25 +1013,6 @@ local function countRouseDiceByLock(color, rollId)
     return unlocked, locked
 end
 
---- Builds the main-roll result record for Take Half (non-Rouse portion).
--- @param successes number
--- @param poolSize number
--- @param difficulty number
--- @return table
-local function buildTakeHalfMainResult(successes, poolSize, difficulty)
-    local passes = successes >= difficulty
-    return {
-        successes      = successes,
-        pairs          = 0,
-        bonusSuccesses = 0,
-        resultClass    = passes and C.ResultClass.WIN or C.ResultClass.FAILURE,
-        margin         = successes - difficulty,
-        hasTens        = false,
-        hungerTens     = false,
-        hungerOnes     = false,
-    }
-end
-
 --- Recalculate while Take Half is waiting on Rouse dice to be thrown.
 -- @param color string
 -- @param active table
@@ -943,18 +1034,19 @@ local function recalculateTakeHalfAwaitingRouse(color, active, wasRolling)
     end
 
     local unlockedRouse, lockedRouse = countRouseDiceByLock(color, active.id)
-    if lockedRouse > 0 or unlockedRouse < expectedRouse then
+    local totalRouse = unlockedRouse + lockedRouse
+    if totalRouse < expectedRouse or lockedRouse < expectedRouse then
         return false
     end
 
     local successes = tonumber(partial.successes) or 0
     local nhPool = tonumber(partial.poolSize) or 0
-    active.result = buildTakeHalfMainResult(successes, nhPool, active.difficulty)
+    active.result = buildTakeHalfMainResult(successes, nhPool, active)
     active.diceDisplay = string.format("(took half: %d of %d)", successes, nhPool)
 
     local valuesByKind = RC._getDicePoolsForRoll(color, active.id)
     active.rouseOutcomeStrips = RC._buildRouseStripsForActive(color, active, valuesByKind)
-    active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
+    active.diceFaces = buildTakeHalfDisplayFaces(nhPool, successes, valuesByKind)
     active.pendingResolution = nil
     if active.rouseOutcomeStrips ~= nil then
         for _, strip in ipairs(active.rouseOutcomeStrips) do
@@ -982,7 +1074,7 @@ local function recalculateTakeHalfAwaitingRouse(color, active, wasRolling)
 end
 
 --- Player takes automatic successes (half pool, rounded down) instead of rolling.
--- Only available in PRE_ROLL when difficulty is set and the roll type permits it.
+-- Available in PRE_ROLL when the roll type permits Take Half (ST difficulty optional).
 -- When the pool includes Rouse/Oblivion-Rouse dice, non-Rouse dice are removed and the
 -- roll stays in ROLLING until those dice are thrown; then POST_ROLL merges Take Half + strips.
 --
@@ -1009,10 +1101,6 @@ function RC.takeHalf(color)
         print(string.format("[RC] takeHalf: Take Half disabled for this roll (%s)", color))
         return false
     end
-    if active.difficulty == nil then
-        print(string.format("[RC] takeHalf: %s roll has no difficulty set", color))
-        return false
-    end
 
     ensureActiveShape(active)
     local pool = DK.normalizePool(active.pool)
@@ -1025,7 +1113,7 @@ function RC.takeHalf(color)
     if hasRouse then
         active.takeHalfAwaitingRouse = true
         active.takeHalfPartial = { successes = successes, poolSize = nhPool }
-        active.result = buildTakeHalfMainResult(successes, nhPool, active.difficulty)
+        active.result = buildTakeHalfMainResult(successes, nhPool, active)
         active.diceDisplay = string.format("(took half: %d of %d)", successes, nhPool)
         active.diceFaces = nil
         active.rouseOutcomeStrips = {}
@@ -1047,8 +1135,8 @@ function RC.takeHalf(color)
     active.takeHalfAwaitingRouse = false
     active.takeHalfPartial = nil
     active.diceDisplay = string.format("(took half: %d of %d)", successes, nhPool)
-    active.diceFaces = nil
-    active.result = buildTakeHalfMainResult(successes, nhPool, active.difficulty)
+    active.diceFaces = Dice.buildTakeHalfSyntheticFaces(nhPool, successes)
+    active.result = buildTakeHalfMainResult(successes, nhPool, active)
     active.phase = C.RollPhase.POST_ROLL
     active.batonHolder = C.BatonHolder.STORYTELLER
     ensureWillpowerShape(active)
@@ -1196,9 +1284,8 @@ function RC.recalculate(color)
     local isWerewolfRoll = active.rollType == C.RollType.WEREWOLF
     local hasWerewolfDice = #werewolfDice > 0 or #rageDice > 0
 
-    if isWerewolfRoll and active.difficulty ~= nil and hasWerewolfDice then
-        active.result = Dice.classifyWerewolfRoll(
-            werewolfDice, rageDice, active.difficulty, RC.classifyOptsFromActive(active))
+    if isWerewolfRoll and hasWerewolfDice then
+        active.result = classifyWerewolfRollForActive(werewolfDice, rageDice, active)
         active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
         if RC._countBrutalRageDice(rageDice) >= 2 then
             active.pendingResolution = C.PendingResolution.BRUTAL_FAIL_VIOLENCE
@@ -1218,9 +1305,8 @@ function RC.recalculate(color)
             active.result = nil
         end
         active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
-    elseif active.difficulty ~= nil and hasVampireDice then
-        active.result = Dice.classifyRoll(normalDice, hungerDice, active.difficulty,
-            RC.classifyOptsFromActive(active))
+    elseif hasVampireDice then
+        active.result = classifyVampireRollForActive(normalDice, hungerDice, active)
         active.rouseOutcomeStrips = RC._buildRouseStripsForActive(color, active, valuesByKind)
         if active.pendingResolution == nil and active.rouseOutcomeStrips ~= nil then
             for _, strip in ipairs(active.rouseOutcomeStrips) do
@@ -1939,28 +2025,23 @@ function RC.confirmBrutalChoice(color, choice)
     return RC.confirmRoll(color)
 end
 
---- Destroys staged dice on all bags for a player and resets dedicated Rouse check pool.
+--- Promotes a dedicated Rouse/Oblivion check to a compound STANDARD roll when main-pool dice are added.
+-- Preserves rouse-family dice; optional ST difficulty (implicit 1 when unset at resolve).
 -- @param color string
--- @param rollType string  C.RollType.ROUSE or ROUSE_OBLIVION
 -- @return boolean
-function RC.resetRouseCheckPool(color, rollType)
+function RC.promoteDedicatedRouseToStandard(color)
     local active = getActive(color)
     if active == nil then return false end
+    if active.phase ~= C.RollPhase.PRE_ROLL then return false end
     if not RO.isRouseFamilyRoll(active.rollType) then return false end
 
-    Global.call("GlobalDestroyAllPlayerBagDice", { color = color })
-
-    local pool = DK.emptyPool()
-    if rollType == C.RollType.ROUSE_OBLIVION then
-        pool.oblivRouse = 1
-    else
-        pool.rouse = 1
-    end
-    active.pool = pool
-    active.meta = DK.defaultMeta()
+    active.rollType = C.RollType.STANDARD
+    active.difficulty = nil
+    RO.seedActiveRoll(active)
+    RC.applyRollPolicyToActive(active)
+    seedWillpowerBlock(active)
     setActive(color, active)
     notifyStateChanged(color)
-    Global.call("GlobalSpawnDefaultPoolDiceForActive", { color = color })
     return true
 end
 

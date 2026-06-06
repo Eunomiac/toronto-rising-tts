@@ -72,10 +72,11 @@ Once per roll (during `POST_ROLL` phase, before result is confirmed):
 
 ### 1.7 "Take Half" (Automatic Success)
 
-- Before rolling (in `PRE_ROLL` phase), a player may opt to take automatic successes equal to **half the pool size** (rounded down) instead of rolling.
-- Only available when a difficulty has been set by the Storyteller.
+- Before rolling (in `PRE_ROLL` phase), a player may opt to take automatic successes equal to **half the non-Rouse pool size** (rounded down) instead of rolling.
+- **ST difficulty is optional.** When unset, Take Half classifies vs implicit difficulty **1**; margin is omitted (same as physical rolls).
 - Not available for Rouse Checks, Remorse rolls, Frenzy rolls, or Humanity rolls.
-- Result class when taking half: **Win** (never Critical Win or Messy Critical since no dice are rolled).
+- Result class: **Win** / **Failure** / **Total failure** vs effective difficulty (never Critical or Messy Critical — synthetic normal dice only).
+- Broadcast shows full-pool synthetic normal faces: half with one success (ankh), remainder blank.
 
 ### 1.8 Extended Rolls *(Phase 3)*
 
@@ -372,13 +373,10 @@ active = {
 
 `active.difficulty` is **not** required when a roll is initiated. This is deliberate:
 
-- **Pre-roll difficulty:** ST sets `difficulty` during `SETUP` or `PRE_ROLL`; player rolls knowing the target.
-- **Post-roll difficulty:** ST sets `difficulty` after dice settle, during `POST_ROLL`. This naturally handles:
-  - **Opposed rolls:** ST sets `difficulty = opponent's successes` after both parties have rolled.
-  - **Hidden difficulty:** ST reveals the difficulty after seeing the outcome (narrative pacing).
-  - **Mistake correction:** ST can revise `difficulty` before confirming.
-- The result is only classified (`active.result`) when BOTH `active.dice` AND `active.difficulty` are non-nil.
-- `roll_controller.tryClassifyResult(color)` is called any time either field changes; it no-ops if either is still nil.
+- **Pre-roll difficulty:** ST sets `difficulty` during `SETUP` or `PRE_ROLL`; player rolls knowing the target; margin shown when set.
+- **Post-roll difficulty:** ST sets `difficulty` after dice settle, during `POST_ROLL` (opposed rolls, hidden difficulty, corrections).
+- **No ST difficulty:** For **Standard** and **Werewolf** rolls, classification uses implicit difficulty **1** once dice are read; `active.result` is populated and confirm/broadcast proceed; **margin is omitted** (`result.margin = nil`). Dedicated Rouse/Oblivion/Remorse/Simple Check auto-set `difficulty = 1` at initiate.
+- `RC.recalculate` / classification helpers apply effective difficulty without writing implicit `1` into `active.difficulty`.
 
 ---
 
@@ -938,14 +936,12 @@ New file. Included from `ui/Global.xml` after all existing includes.
 5. Player physically rolls their dice (DICEBAG_NORMAL_<COLOR> and/or DICEBAG_HUNGER_<COLOR>)
    → onObjectRandomize fires for each die → RC.onDieRandomized(color, dieType, value) accumulates
    → After C.DICE_SETTLE_DEBOUNCE_SECONDS of silence → RC.onDiceSettled(color)
-   → active.dice recorded; RC.tryClassifyResult(color)
-     → If difficulty set: result classified, phase=POST_ROLL, batonHolder=PLAYER
-     → If no difficulty: dice recorded, phase=POST_ROLL, result=nil, batonHolder=STORYTELLER
-        (ST must set difficulty before result can be confirmed)
+   → active.dice recorded; RC.recalculate(color)
+     → If ST set difficulty: result classified vs that value; margin shown
+     → If no ST difficulty: result classified vs implicit 1; margin omitted; confirm allowed
 
-6. If difficulty not yet set (POST_ROLL with no result):
-   → ST enters difficulty → RC.setDifficulty(color, D) → RC.tryClassifyResult(color)
-   → result classified, batonHolder=PLAYER
+6. (Optional) ST sets difficulty in POST_ROLL for opposed/hidden targets:
+   → RC.setDifficulty(color, D) → RC.recalculate(color) → margin shown
 
 7. Player reviews result panel (dice display, resultClass, margin)
    → "SPEND WILLPOWER" button shown if eligible

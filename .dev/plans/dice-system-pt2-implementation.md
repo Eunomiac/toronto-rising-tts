@@ -13,18 +13,21 @@
 |---------|----------|
 | Normal, no roll | Standard roll → SETUP (ST opens) |
 | Normal, standard pool | Add normal/hunger (auto-hunger rules) |
-| Normal, Rouse Check pool | Reset: destroy staged dice; pool = 1 unstaged Rouse |
+| Normal, dedicated Rouse/Obliv check | Promote to STANDARD compound roll + add normal/hunger (Auto-Hunger); optional ST difficulty |
+| Normal, right (standard/compound) | Remove main-pool die (Normal before Hunger); cancel if empty |
 | Hunger, no roll | Standard roll → SETUP |
-| Hunger, standard pool | Blood Surge **toggle** (see below) |
-| Hunger, Rouse Check pool | Reset to single unstaged Rouse |
-| Rouse/Obliv, no roll | Initiate appropriate Rouse type → **skip SETUP** → PRE_ROLL; auto-broadcast after settle when no pending resolution |
-| Rouse/Obliv, standard or Rouse pool | Add die to pool |
+| Hunger, standard pool | Surge off → Blood Surge; surge on → **no-op** |
+| Hunger, standard right | Surge on → undo Blood Surge; surge off → **no-op** |
+| Hunger, dedicated Rouse/Obliv check | **No-op** |
+| Rouse/Obliv, no roll | Initiate appropriate Rouse type → **skip SETUP** → PRE_ROLL; auto-broadcast when pool is rouse-only |
+| Rouse/Obliv, standard or matching dedicated pool | Add die to pool (mutual exclusion silent fail) |
+| Rouse/Obliv, right | Remove one die if pool count for that kind > 0; cancel if empty |
 
 ### Blood Surge (toggle)
 1. Add one Rouse die to the **single** rouse check (no tagging).
 2. Add `bloodSurge` count of normal/hunger via auto-hunger rules (`bloodSurgePool` script_state for undo).
 3. Hunger bag **right-click** while surge active: remove **all** rouse + surge normal/hunger; clear `bloodSurgeActive`.
-4. Second Hunger **left-click** while surge on adds one Hunger die.
+4. Second Hunger **left-click** while surge on is a **no-op**.
 
 ### Rouse/Obliv in pools (on confirm, if `PERM_AUTO_APPLY_ROUSE_OUTCOMES`)
 1. Obliv tree (132–140); (D) → **Confirm – Hunger** / **Confirm – Stain** after WP phase.

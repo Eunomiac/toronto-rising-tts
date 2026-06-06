@@ -8,6 +8,8 @@
 
 Ground truth: `[core/roll_controller.ttslua](../../core/roll_controller.ttslua)`, `[core/dice.ttslua](../../core/dice.ttslua)`, `[lib/dice_kinds.ttslua](../../lib/dice_kinds.ttslua)`, `[lib/rouse_outcomes.ttslua](../../lib/rouse_outcomes.ttslua)`, `[.dev/Dice System/Dice System Outline.md](../Dice%20System/Dice%20System%20Outline.md)`, `[.dev/Dice System/Dice System Modifications & Augmentations Pt. 2.md](../Dice%20System/Dice%20System%20Modifications%20%26%20Augmentations%20Pt.%202.md)`.
 
+**Optional difficulty (TOR-163):** Standard and Werewolf rolls may resolve when the ST never sets difficulty — classification uses implicit difficulty **1**, margin omitted, full broadcast (dice + class + successes).
+
 **Not implemented:** `DEBUG.testRollFlow_`* — use this playbook + `rollTest` / bags / UI.
 
 ---
@@ -32,7 +34,8 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 
 | Helper                                                                   | Purpose                                                                     |
 | ------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| `rollTest(color, diff?, type?, label?, hungerLevel?)`                    | Seat prep + arm **PRE_ROLL**; 5th arg sets hunger 0–5 when needed           |
+| `rollTest(color, diff?, type?, label?, hungerLevel?)`                    | Seat prep + arm **PRE_ROLL** with ST difficulty; 5th arg sets hunger 0–5 when needed |
+| `rollTestNoDiff(color, type?, label?, hungerLevel?)`                       | Same as `rollTest` but **no** `setDifficulty` — optional-difficulty E2E (Suite E2, H1b) |
 | `rollStTest(label?, type?)`                                              | Seat prep on **Black** + ST NPC roll                                        |
 | `rollSetFaces(color, { normal, hunger, rouse, oblivRouse })`             | After settle: set faces + `RC.recalculate`                                  |
 | `rollE2eApplyConditions` / `rollE2eClearConditions`                      | Suite F (`e2eBestialNull`)                                                  |
@@ -44,7 +47,7 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 | `rollE2eSetPoolAutoHunger(color, normalBagClicks)`                      | Auto-Hunger pool from virtual Normal-bag clicks + spawn (Suite G)                                           |
 | `rollE2eAddPoolKindSpawn(color, kind, count)`                           | Add pool kind (e.g. `"rouse"`) + spawn after base pool (H2, I4, J1)                                         |
 | `rollE2eSettlePresetCheck(color, faces)`                                 | Spawn pool + `startRolling` + preset faces + settle (Suites C–G; no panel Roll)                             |
-| `rollE2eExpectBroadcast({ visible, resultClass?, successes?, margin? })` | Assert shared `rollResult_*` panel after Confirm / `rollForceConfirm`                                         |
+| `rollE2eExpectBroadcast({ visible, resultClass?, successes?, margin?, marginAbsent? })` | Assert shared `rollResult_*` panel after Confirm / `rollForceConfirm` |
 | `rollStConfirm({ liveSlotIndex?, initiateBlocked? })`                    | ST slot assertions                                                          |
 | `setHumanityStains(color, n)` / `setWillpowerSuperficial(color, n)`      | Seed tracker before outcome tests                                           |
 
@@ -66,9 +69,12 @@ rollConfirm("Brown", {
 rollConfirm("Brown", { pool = { rouse = 1 }, meta = { bloodSurgeActive = true } })
 rollConfirm("Brown", { rouseStripLabel = "Rouse" })
 rollConfirm("Brown", { wpRerollChosenCount = 1 })  -- after WP reroll cap test (I2)
+rollConfirm("Brown", {
+  active = { result = { resultClass = "win", successes = 2, marginAbsent = true } },
+})
 ```
 
-**Matchers:** `{ present = true }` means the value must exist (not nil). You can combine with nested fields, e.g. `result = { present = true, resultClass = { present = true } }` — that asserts `active.result` and `active.result.resultClass` exist; it does **not** look for a literal `.present` key on the result record. Otherwise use **exact** literals (`pool = { normal = 5 }`). Shorthand keys `pool`, `meta`, `result` merge into `active.*`.
+**Matchers:** `{ present = true }` means the value must exist (not nil). `{ present = false }` means nil/absent. `marginAbsent = true` on `result` asserts `active.result.margin == nil`. You can combine with nested fields, e.g. `result = { present = true, resultClass = { present = true } }` — that asserts `active.result` and `active.result.resultClass` exist; it does **not** look for a literal `.present` key on the result record. Otherwise use **exact** literals (`pool = { normal = 5 }`). Shorthand keys `pool`, `meta`, `result` merge into `active.*`.
 
 ## Deterministic test conventions
 
@@ -87,7 +93,8 @@ Every step is **mandatory**. Do not improvise pool sizes, click counts, or asser
 | `rollE2eSetPoolAndSpawn` / `rollE2eSetPoolAutoHunger` | After `rollTest`: set pool + spawn staged dice (Suite F explicit counts; Suite G uses `rollE2eSetPoolAutoHunger` with Normal-bag click count) |
 | `rollE2eAddPoolKindSpawn`        | Add a pool kind (e.g. **rouse**) + spawn — use after `rollE2eSetPoolAndSpawn` when the test needs compound pools (H2, I4, J1) |
 | `rollE2eSettlePresetCheck`       | **After pool spawn** — `startRolling`, preset faces, settle (replaces panel Roll; **do not** click Roll between `rollTest` and this helper)                                                                                                                                                                                                                                              |
-| `rollE2eExpectBroadcast`         | After **Confirm** / `rollForceConfirm`: assert `rollResult_panel` visible and class/successes/margin text |
+| `rollE2eExpectBroadcast`         | After **Confirm** / `rollForceConfirm`: assert `rollResult_panel` visible and class/successes/margin text; use `marginAbsent = true` when ST never set difficulty |
+| **Optional difficulty**          | Steps using `rollTestNoDiff`: do **not** set ST dashboard difficulty; assert `marginAbsent` unless the step sets difficulty mid-test (E2b) |
 | Suites **H onward**              | Start each test with `rollCancel(color)`; spawn pool via helpers (**not** bag clicks) unless the step tests bag behavior (Suite **K**) |
 | **Pass if**                      | Every test block includes a **Pass if:** line; agent removes integrated 😀 notes |
 | `rollStConfirm`                  | Assert `liveSlotIndex` and ST initiate blocking                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -128,7 +135,7 @@ rollStSlots()                         -- ST drawer slots
 
 **Permanent automation** (`gameState.stRollSettings`): `autoHunger`, `autoWp`, `autoApplyRouseOutcomes`, `autoRemorse` — toggles in ST **Roll options** modal (`rollOpts_perm_`*).
 
-**Pool composition (standard rolls):** At most one **main** pool (normal + hunger), one **rouse** check (`pool.rouse` — extra Rouse clicks add to the same check), and one **oblivion-rouse** check. Rouse and Oblivion-Rouse are **mutually exclusive** (silent bag fail). Blood Surge adds rouse + bonus normal/hunger; **Hunger bag right-click** undoes surge and clears **all** rouse dice. See Dice System Pt. 2 § Pool composition.
+**Pool composition (standard rolls):** At most one **main** pool (normal + hunger), one **rouse** check (`pool.rouse` — extra Rouse clicks add to the same check), and one **oblivion-rouse** check. Rouse and Oblivion-Rouse are **mutually exclusive** (silent bag fail). Blood Surge: Hunger bag **left** activates (surge off only); **right** deactivates (surge on only). Normal bag **right** removes main-pool dice (Normal before Hunger). Dedicated Rouse/Obliv checks: Normal **left** promotes to compound STANDARD + adds main-pool die. See Dice System Pt. 2 § Pool composition.
 
 **Per-roll options:** Set with `RC.setRollOptions` **immediately after** `rollTest` and **before** **Roll** / **Spend WP**. Do not use the ST Opts modal during E2E (TOR-162).
 
@@ -356,6 +363,68 @@ rollCancel("Black")
 
 ---
 
+## Suite E2 — Optional difficulty (TOR-163)
+
+Use `rollTestNoDiff` unless the step sets difficulty mid-test. Pool via helpers only (no bag clicks).
+
+### E2a — Physical roll, no ST difficulty
+
+```lua
+rollCancel("Brown")
+rollTestNoDiff("Brown", C.RollType.STANDARD, "E2E E2a no diff", 0)
+rollE2eSetPoolAndSpawn("Brown", 3, 0)
+rollE2eSettlePresetCheck("Brown", { normal = { 7, 4, 3 } })
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    difficulty = { present = false },
+    result = { resultClass = "win", successes = 1, marginAbsent = true },
+  },
+})
+```
+
+**Human:** ST clicks **Confirm** on Brown (or `rollForceConfirm("Brown")`).
+
+```lua
+rollE2eExpectBroadcast({
+  visible = true,
+  resultClass = "Win",
+  successes = 1,
+  marginAbsent = true,
+})
+rollCancel("Brown")
+```
+
+**Pass if:** `rollConfirm` and `rollE2eExpectBroadcast` print **PASS**; broadcast is **not** “ROLL COMPLETE” only.
+
+### E2b — Post-hoc ST difficulty adds margin
+
+```lua
+rollCancel("Brown")
+rollTestNoDiff("Brown", C.RollType.STANDARD, "E2E E2b post hoc", 0)
+rollE2eSetPoolAndSpawn("Brown", 3, 0)
+rollE2eSettlePresetCheck("Brown", { normal = { 7, 4, 3 } })
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = { result = { successes = 1, marginAbsent = true } },
+})
+RC.setDifficulty("Brown", 3)
+RC.recalculate("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = { difficulty = 3, result = { resultClass = "failure", successes = 1, margin = -2 } },
+})
+rollCancel("Brown")
+```
+
+**Pass if:** After `setDifficulty`, `rollConfirm` shows **Failure** with margin **-2**.
+
+### E2c — Werewolf, no ST difficulty
+
+See **Suite O — O2b** (cross-ref).
+
+---
+
 ### Suite F — Conditions roll policy (`e2eBestialNull`)
 
 Uses manual condition `**e2eBestialNull**` (`roll.bestialNull = true` in `lib/condition_defs.ttslua`). Both runs use the **same** forced faces at difficulty **2** and the **same** pool build. F1 must classify `**messyCritical`**; F2 must classify `**bestialFailure**`.
@@ -549,9 +618,11 @@ rollCancel("Brown")
 
 ---
 
-## Suite H — Take Half
+## Suite H — Take Half (TOR-73)
 
-### H1 — Simple Take Half (no rouse in pool)
+Take Half uses `DK.nonRouseVampirePoolTotal` for halving; hunger counts toward pool size but synthetic broadcast faces are all **Normal** kind.
+
+### H1 — Take Half with ST difficulty (explicit margin)
 
 ```lua
 rollCancel("Brown")
@@ -562,17 +633,64 @@ rollConfirm("Brown", {
   phase = "postRoll",
   active = {
     tookHalf = true,
-    result = { resultClass = "failure", successes = 2 },
+    result = { resultClass = "failure", successes = 2, margin = -2 },
     batonHolder = "storyteller",
   },
 })
 ```
 
-**Pass if:** `rollConfirm` prints **PASS** (`tookHalf`, 2 successes, ST baton).
+**Pass if:** `rollConfirm` prints **PASS** (`tookHalf`, 2 successes vs diff 4, margin **-2**).
 
 > ✅
 
-### H2 — Take Half + rouse dice still in pool
+### H1b — Take Half, no ST difficulty
+
+```lua
+rollCancel("Brown")
+rollTestNoDiff("Brown", C.RollType.STANDARD, "E2E H1b no diff", 0)
+rollE2eSetPoolAndSpawn("Brown", 4, 0)
+RC.takeHalf("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    tookHalf = true,
+    result = { resultClass = "win", successes = 2, marginAbsent = true },
+  },
+})
+rollForceConfirm("Brown")
+rollE2eExpectBroadcast({
+  visible = true,
+  resultClass = "Win",
+  successes = 2,
+  marginAbsent = true,
+})
+rollCancel("Brown")
+```
+
+**Visual check:** Broadcast shows **4** normal die slots — **2** success (ankh), **2** blank.
+
+**Pass if:** `rollConfirm` and `rollE2eExpectBroadcast` print **PASS**.
+
+### H1c — Take Half, zero successes (pool 1)
+
+```lua
+rollCancel("Brown")
+rollTestNoDiff("Brown", C.RollType.STANDARD, "E2E H1c zero half", 0)
+rollE2eSetPoolAndSpawn("Brown", 1, 0)
+RC.takeHalf("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    tookHalf = true,
+    result = { resultClass = "totalFailure", successes = 0, marginAbsent = true },
+  },
+})
+rollCancel("Brown")
+```
+
+**Pass if:** `rollConfirm` prints **PASS** (0 successes vs implicit 1 → total failure).
+
+### H2 — Take Half + rouse dice (ST difficulty)
 
 ```lua
 rollCancel("Brown")
@@ -586,7 +704,7 @@ rollConfirm("Brown", {
 })
 ```
 
-**Preset rouse face and settle (no randomize):**
+**Human:** Throw Rouse dice (or preset + settle):
 
 ```lua
 rollSetFaces("Brown", { rouse = { 4 } })
@@ -610,11 +728,40 @@ rollE2eExpectBroadcast({
   successes = 2,
   margin = -1,
 })
+rollCancel("Brown")
 ```
 
-**Pass if:** Both `rollConfirm` calls print **PASS**; `rollE2eExpectBroadcast` prints **PASS** after confirm.
+**Pass if:** Both `rollConfirm` calls print **PASS**; rouse dice awaited player throw (not auto-completed on release); `rollE2eExpectBroadcast` prints **PASS** after confirm.
 
-> ✅
+### H2b — Take Half + rouse, no ST difficulty
+
+```lua
+rollCancel("Brown")
+rollTestNoDiff("Brown", C.RollType.STANDARD, "E2E H2b no diff rouse", 0)
+rollE2eSetPoolAndSpawn("Brown", 4, 0)
+rollE2eAddPoolKindSpawn("Brown", "rouse", 1)
+RC.takeHalf("Brown")
+rollConfirm("Brown", { phase = "rolling", active = { takeHalfAwaitingRouse = true } })
+rollSetFaces("Brown", { rouse = { 4 } })
+RC.onDiceSettled("Brown")
+rollConfirm("Brown", {
+  phase = "postRoll",
+  active = {
+    tookHalf = true,
+    result = { resultClass = "win", successes = 2, marginAbsent = true },
+  },
+})
+rollForceConfirm("Brown")
+rollE2eExpectBroadcast({
+  visible = true,
+  resultClass = "Win",
+  successes = 2,
+  marginAbsent = true,
+})
+rollCancel("Brown")
+```
+
+**Pass if:** Final `rollConfirm` and `rollE2eExpectBroadcast` print **PASS** with `marginAbsent`.
 
 ---
 
@@ -967,20 +1114,20 @@ rollConfirm("Brown", {
 rollCancel("Brown")
 ```
 
-#### K2d — Hunger bag left (surge on) adds hunger
+#### K2d — Hunger bag left (surge on) is no-op
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2d hunger", 0)
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2d hunger noop", 0)
 ```
 
-**Human:** **Left-click Hunger bag 1 time** (surge on), then **left-click Hunger bag 1 time** (hunger die).
+**Human:** **Left-click Hunger bag 1 time** (surge on), then **left-click Hunger bag 1 time** again (must not add a hunger die).
 
 **Check:**
 
 ```lua
 rollConfirm("Brown", {
   meta = { bloodSurgeActive = true },
-  pool = { hunger = 1, rouse = 1, normal = 2 },
+  pool = { hunger = 0, rouse = 1, normal = 2 },
 })
 ```
 
@@ -1027,6 +1174,24 @@ rollConfirm("Brown", {
 rollCancel("Brown")
 ```
 
+#### K2f2 — Hunger bag right (surge off) is no-op
+
+```lua
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2f2 hunger right noop", 0)
+```
+
+**Human:** **Left-click Normal bag 1 time** (no surge), then **right-click Hunger bag 1 time** (must not remove dice).
+
+**Check:**
+
+```lua
+rollConfirm("Brown", { active = { pool = { normal = 1 } } })
+```
+
+```lua
+rollCancel("Brown")
+```
+
 #### K2g-Brown — Rouse blocks Oblivion-Rouse (silent fail)
 
 ```lua
@@ -1057,7 +1222,7 @@ rollCancel("Purple")
 
 ### K3 — PRE_ROLL on dedicated ROUSE
 
-#### K3a — Normal bag resets rouse check to 1 die
+#### K3a — Normal bag promotes to compound standard roll
 
 ```lua
 rollTest("Brown", 1, C.RollType.ROUSE, "E2E K3a")
@@ -1068,7 +1233,13 @@ rollTest("Brown", 1, C.RollType.ROUSE, "E2E K3a")
 **Check:**
 
 ```lua
-rollConfirm("Brown", { active = { pool = { rouse = 1 } } })
+rollConfirm("Brown", {
+  active = {
+    rollType = C.RollType.STANDARD,
+    batonHolder = "player",
+    pool = { rouse = 3, normal = 1 },
+  },
+})
 ```
 
 ```lua
@@ -1086,8 +1257,32 @@ rollTest("Brown", 1, C.RollType.ROUSE, "E2E K3b")
 **Check:**
 
 ```lua
-rollConfirm("Brown", { active = { pool = { rouse = 1 } } })
+rollConfirm("Brown", { active = { pool = { rouse = 2 } } })
 rollCancel("Brown")
+```
+
+#### K3c — Oblivion dedicated: Normal promotes (Purple)
+
+```lua
+rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E K3c")
+```
+
+**Human:** **Left-click Oblivion-Rouse bag 1 time**, then **left-click Normal bag 1 time**.
+
+**Check:**
+
+```lua
+rollConfirm("Purple", {
+  active = {
+    rollType = C.RollType.STANDARD,
+    batonHolder = "player",
+    pool = { oblivRouse = 2, normal = 1 },
+  },
+})
+```
+
+```lua
+rollCancel("Purple")
 ```
 
 ---
@@ -1260,20 +1455,20 @@ rollCancel("Brown")
 
 ---
 
-### N2 — Second hunger click adds hunger die
+### N2 — Second hunger click is no-op (surge already on)
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E N2 hunger die", 0)
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E N2 hunger noop", 0)
 ```
 
-**Human:** **Left-click Hunger bag 1 time** (surge on), then **left-click Hunger bag 1 time** (hunger die).
+**Human:** **Left-click Hunger bag 1 time** (surge on), then **left-click Hunger bag 1 time** again (must not add a hunger die).
 
 **Check:**
 
 ```lua
 rollConfirm("Brown", {
   meta = { bloodSurgeActive = true },
-  pool = { hunger = 1, rouse = 1, normal = 2 },
+  pool = { rouse = 1, normal = 2, hunger = 0 },
 })
 ```
 
@@ -1348,7 +1543,7 @@ rollCancel("Black")
 
 ---
 
-### O2 — Werewolf roll (no V5 bestial/messy classes)
+### O2a — Werewolf roll with ST difficulty
 
 ```lua
 rollStTest("Garou", C.RollType.WEREWOLF)
@@ -1366,6 +1561,38 @@ rollConfirm("Black", {
 })
 rollCancel("Black")
 ```
+
+### O2b — Werewolf roll, no ST difficulty (Suite E2c)
+
+```lua
+rollCancel("Black")
+rollStTest("Garou E2E", C.RollType.WEREWOLF)
+```
+
+**Human:** **Left-click Werewolf bag 2 times**, **left-click Rage bag 2 times**. **Do not** set dashboard difficulty. Click **Roll** → wait for settle.
+
+```lua
+rollSetFaces("Black", { werewolf = { 8, 6 }, rage = { 5, 7 } })
+RC.startRolling("Black")
+RC.onDiceSettled("Black")
+rollConfirm("Black", {
+  phase = "postRoll",
+  active = {
+    difficulty = { present = false },
+    result = { resultClass = "win", successes = 3, marginAbsent = true },
+  },
+})
+rollForceConfirm("Black")
+rollE2eExpectBroadcast({
+  visible = true,
+  resultClass = "Win",
+  successes = 3,
+  marginAbsent = true,
+})
+rollCancel("Black")
+```
+
+**Pass if:** Classifies vs implicit 1; margin absent in state and broadcast.
 
 ---
 
@@ -1544,9 +1771,10 @@ rollCancel("Purple")
 | C Rouse dedicated               | ☐    | C1–C2                    |
 | D Oblivion dedicated (Purple)   | ☐    |                          |
 | E ST standard                   | ☐    |                          |
+| E2 Optional difficulty          | ☐    | E2a–E2c (+ O2b)           |
 | F Conditions (`e2eBestialNull`) | ☐    | F1–F2                    |
 | G Classification                | ☐    | G1–G7                    |
-| H Take Half                     | ☐    | H1–H2                    |
+| H Take Half                     | ☐    | H1–H1c, H2–H2b           |
 | I Spend WP                      | ☐    | I1–I4                    |
 | J Compound rouse                | ☐    | J1–J2                    |
 | K Bag clicks                    | ☐    | K1a–K4, K2g-Brown/Purple |

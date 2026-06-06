@@ -459,8 +459,6 @@ function Dice.remorsePool(currentHumanity, stains)
 end
 
 --- Calculates the "Take Half" automatic success count for a given pool size.
--- A player may choose this instead of rolling when a difficulty has been set.
--- Result class is always WIN when taking half (no critical pairs possible).
 -- @param poolSize number  Total dice in the pool (normal + hunger count)
 -- @return number  Floor of poolSize / 2 (always >= 0)
 -- @usage local successes = Dice.takeHalf(7)  -- returns 3
@@ -469,6 +467,30 @@ function Dice.takeHalf(poolSize)
         U.Type(poolSize) == "number" and poolSize >= 0,
         "poolSize must be a non-negative number")
     return math.floor(poolSize / 2)
+end
+
+--- Builds synthetic normal-die face records for Take Half display (half success, half blank).
+-- @param poolSize number  non-Rouse vampire pool size used for halving
+-- @param successes number  floor(poolSize / 2)
+-- @return table  Array of { value, kind = "normal", isHunger = false }
+function Dice.buildTakeHalfSyntheticFaces(poolSize, successes)
+    U.Val("Dice.buildTakeHalfSyntheticFaces()", { poolSize = poolSize, successes = successes },
+        U.Type(poolSize) == "number" and poolSize >= 0
+            and U.Type(successes) == "number" and successes >= 0,
+        "poolSize and successes must be non-negative numbers")
+
+    local faces = {}
+    local size = math.floor(poolSize)
+    local succ = math.floor(successes)
+    for i = 1, size do
+        local val = (i <= succ) and 6 or 3
+        faces[#faces + 1] = {
+            value = val,
+            kind = "normal",
+            isHunger = false,
+        }
+    end
+    return faces
 end
 
 --- Formats a set of die values as a display string for UI panels and chat.

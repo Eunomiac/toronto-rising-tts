@@ -1048,6 +1048,47 @@ function DEBUG.rollTest(color, difficulty, rollType, label, hungerLevel)
     print(string.format("[DEBUG.rollTest] %s PRE_ROLL — diff=%d type=%s label='%s'", color, diff, rType, lbl))
 end
 
+--- Arms PRE_ROLL without setting ST difficulty (optional-difficulty E2E).
+-- @param color string
+-- @param rollType string|nil
+-- @param label string|nil
+-- @param hungerLevel number|nil
+function DEBUG.rollTestNoDiff(color, rollType, label, hungerLevel)
+    if type(color) ~= "string" then
+        print("Usage: rollTestNoDiff(color, rollType?, label?, hungerLevel?)")
+        return
+    end
+    if RC == nil then
+        print("[DEBUG.rollTestNoDiff] RC (roll_controller) is not loaded yet.")
+        return
+    end
+
+    local opts = parseRollTestExtras(hungerLevel)
+    local rType = (type(rollType) == "string" and rollType ~= "") and rollType or C.RollType.STANDARD
+    local lbl   = (type(label) == "string" and label ~= "") and label or "Debug Test No Diff"
+
+    if rollE2eSeatPrepInternal(color) ~= true then
+        print("[DEBUG.rollTestNoDiff] E2E seat prep failed — aborting.")
+        return
+    end
+
+    if type(opts.hunger) == "number" then
+        setHungerAndSync(color, opts.hunger)
+    end
+
+    RC.cancelRoll(color)
+
+    local ok = RC.initiateRoll(color, { rollType = rType, label = lbl })
+    if not ok then
+        print(string.format("[DEBUG.rollTestNoDiff] initiateRoll failed for %s (already active?)", color))
+        rollE2eReturnHostSeat()
+        return
+    end
+    RC.openRoll(color)
+
+    print(string.format("[DEBUG.rollTestNoDiff] %s PRE_ROLL — no diff type=%s label='%s'", color, rType, lbl))
+end
+
 --- Normalizes E2E phase strings to C.RollPhase values.
 -- @param phase string|nil
 -- @return string|nil
@@ -1075,6 +1116,7 @@ local function isRollExpectMatcher(expected)
         return false
     end
     local hasMatcher = expected.present == true
+        or expected.present == false
         or type(expected.min) == "number"
         or type(expected.max) == "number"
         or type(expected.gte) == "number"
@@ -1102,6 +1144,12 @@ local function rollExpectCompare(actual, expected, path, failures)
     end
 
     if type(expected) == "table" and isRollExpectMatcher(expected) then
+        if expected.present == false then
+            if actual ~= nil then
+                failures[#failures + 1] = path .. ": expected nil/absent, got " .. tostring(actual)
+            end
+            return
+        end
         if expected.present == true then
             if actual == nil then
                 failures[#failures + 1] = path .. ": expected value to be present, got nil"
@@ -1160,7 +1208,15 @@ local function rollExpectCompare(actual, expected, path, failures)
     end
 
     for key, subExpected in pairs(expected) do
-        if key == "present" then
+        if key == "marginAbsent" then
+            if subExpected == true then
+                if type(actual) ~= "table" or actual.margin ~= nil then
+                    failures[#failures + 1] = path
+                        .. ": expected margin absent (nil), got "
+                        .. tostring(type(actual) == "table" and actual.margin or actual)
+                end
+            end
+        elseif key == "present" then
             if subExpected == true then
                 if actual == nil then
                     failures[#failures + 1] = path .. ": expected value to be present, got nil"
@@ -1921,6 +1977,7 @@ end
 --   `resultClass` — substring match (case-insensitive) on `rollResult_class`
 --   `successes` — integer N matches `"N success"` / `"N successes"` on `rollResult_successes`
 --   `margin` — integer matches `Margin: %+d` on `rollResult_margin`
+--   `marginAbsent` — when true, `rollResult_margin` must be empty
 -- @return boolean pass
 -- @usage lua rollE2eExpectBroadcast({ visible = true, resultClass = "Failure", successes = 2 })
 function DEBUG.rollE2eExpectBroadcast(expected)
@@ -1934,6 +1991,7 @@ function DEBUG.rollE2eExpectBroadcast(expected)
     local wantsContent = type(expected.resultClass) == "string"
         or type(expected.successes) == "number"
         or type(expected.margin) == "number"
+        or expected.marginAbsent == true
     -- Field assertions require a visible panel; omitting visible=true still implies it.
     local mustBeVisible = expected.visible == true
         or (expected.visible == nil and wantsContent)
@@ -1975,6 +2033,14 @@ function DEBUG.rollE2eExpectBroadcast(expected)
             if margText ~= wantMarg then
                 failures[#failures + 1] = "rollResult_margin: got \""
                     .. margText .. "\", want \"" .. wantMarg .. "\""
+            end
+        end
+
+        if expected.marginAbsent == true then
+            local margText = tostring(UI.getValue("rollResult_margin") or "")
+            if margText ~= "" then
+                failures[#failures + 1] = "rollResult_margin: expected empty, got \""
+                    .. margText .. "\""
             end
         end
     end
@@ -3638,6 +3704,7 @@ function DEBUG.help()
     print("  clearAllLogs()                    - Clear all log files (starts new session)")
     print("\nDICE DEBUG (solo — no second player):")
     print("  rollTest(color, diff?, type?, label?, hungerLevel?) - Arm PRE_ROLL (auto seat + camera prep)")
+    print("  rollTestNoDiff(color, type?, label?, hungerLevel?) - Arm PRE_ROLL without ST difficulty")
     print("  rollE2eSeatPrep(color)     - Manual prep only; rollTest/rollStTest include this")
     print("  rollSetFaces(color, { normal={7,7}, hunger={10,1} }) - Set faces + recalculate (POST_ROLL)")
     print("  rollE2eApplyConditions(color, { 'e2eBestialNull' }) / rollE2eClearConditions(color, ids?)")
@@ -3741,6 +3808,7 @@ soundscapeStopAll = DEBUG.soundscapeStopAll
 
 -- Expose dice system debug helpers
 rollTest      = DEBUG.rollTest
+rollTestNoDiff = DEBUG.rollTestNoDiff
 rollE2eSeatPrep = DEBUG.rollE2eSeatPrep
 rollSetFaces  = DEBUG.rollSetFaces
 rollE2eApplyConditions = DEBUG.rollE2eApplyConditions
