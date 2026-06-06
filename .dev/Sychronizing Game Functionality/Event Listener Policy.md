@@ -31,7 +31,8 @@ If the guard fails, **return immediately** — no logging in the hot path unless
 
 | Entry | Module | Guard | Notes |
 | --- | --- | --- | --- |
-| `NPCS.onObjectDropped` | `core/npcs.ttslua` | **Pass** | Global tag + `isPooledFigurineObject` (`npc_figurine` tag) |
+| `NPCS.onObjectDropped` | `core/npcs.ttslua` | **Pass** | Global `npc_figurine` tag only (seated figurines use seat `*Object` tag, not drop path) |
+| `NPCS.isPooledFigurineObject` | `core/npcs.ttslua` | **Pass** | `npc_figurine` **or** seat `*Object` tag + GM notes + Figurine_Custom |
 | `NPCS.resolveNpcNameFromFigurine` | `core/npcs.ttslua` | **Pass** | GM Notes, then O(1) `figurineGuidToNpcName` cache (rebuilt on bulk instance replace) |
 | `Gameboard.onNpcControlTokenDropped` | `core/npc_gameboard.ttslua` | **Pass** | `isNpcControlToken` + palette/anchor flags before `waitForCondition` |
 | `Gameboard.onNpcControlTokenPickUp` | `core/npc_gameboard.ttslua` | **Pass** | `isNpcControlToken` |

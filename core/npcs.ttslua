@@ -610,13 +610,15 @@ local function hasNpcInstanceGmNotes(obj)
 end
 
 --- True for pooled `Figurine_Custom` instances (`npcInstance:` GMNotes + custom object).
+--- Preload/stage: `npc_figurine` tag. Table seat: seat `*Object` tag ( `npc_figurine` stripped in applyNpcFigurineSeatIdentity ).
 --- @param obj Object|nil
 --- @return boolean
 function NPCS.isPooledFigurineObject(obj)
     if not U.isGameObject(obj) then
         return false
     end
-    if obj.hasTag ~= nil and obj.hasTag(TAG_FIG) ~= true then
+    local hasFigTag = obj.hasTag ~= nil and obj.hasTag(TAG_FIG) == true
+    if not hasFigTag and not figurineHasAnySeatTag(obj) then
         return false
     end
     if not hasNpcInstanceGmNotes(obj) then
