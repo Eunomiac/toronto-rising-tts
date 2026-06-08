@@ -66,8 +66,8 @@ rollConfirm("Brown", {
   phase = "postRoll",
   active = { result = { present = true, resultClass = { present = true } } },
 })
-rollConfirm("Brown", { pool = { rouse = 1 }, meta = { bloodSurgeActive = true } })
-rollConfirm("Brown", { rouseStripLabel = "Rouse" })
+rollConfirm("Brown", { pool = { bloodSurgeRouse = 1 }, meta = { bloodSurgeActive = true } })
+rollConfirm("Brown", { rouseStripLabel = "Blood Surge Rouse" })
 rollConfirm("Brown", { wpRerollChosenCount = 1 })  -- after WP reroll cap test (I2)
 rollConfirm("Brown", {
   active = { result = { resultClass = "win", successes = 2, marginAbsent = true } },
@@ -135,7 +135,7 @@ rollStSlots()                         -- ST drawer slots
 
 **Permanent automation** (`gameState.stRollSettings`): `autoHunger`, `autoWp`, `autoApplyRouseOutcomes`, `autoRemorse` — toggles in ST **Roll options** modal (`rollOpts_perm_`*).
 
-**Pool composition (standard rolls):** At most one **main** pool (normal + hunger), one **rouse** check (`pool.rouse` — extra Rouse clicks add to the same check), and one **oblivion-rouse** check. Rouse and Oblivion-Rouse are **mutually exclusive** (silent bag fail). Blood Surge: Hunger bag **left** activates (surge off only); **right** deactivates (surge on only). Normal bag **right** removes main-pool dice (Normal before Hunger). Dedicated Rouse/Obliv checks: Normal **left** promotes to compound STANDARD + adds main-pool die. See Dice System Pt. 2 § Pool composition.
+**Pool composition (standard rolls):** Main pool (`normal` + `hunger`), optional **Blood Surge rouse** (`pool.bloodSurgeRouse`), optional **manual rouse** (`pool.rouse`), optional **oblivion-rouse**. Manual rouse and Obliv are **mutually exclusive**; `bloodSurgeRouse` coexists with manual rouse. Blood Surge: Hunger **left** activates (surge off) or adds surge rouse (surge on); Hunger **right** removes one surge rouse then full undo when none remain. Hunger bag disabled until PRE_ROLL. Normal bag **right** removes main-pool dice. See Dice System Pt. 2 § Pool composition.
 
 **Per-roll options:** Set with `RC.setRollOptions` **immediately after** `rollTest` and **before** **Roll** / **Spend WP**. Do not use the ST Opts modal during E2E (TOR-162).
 
@@ -963,7 +963,7 @@ rollTest("Brown", 2, C.RollType.STANDARD, "E2E J2 Surge compound", 0)
 ```lua
 rollConfirm("Brown", {
   meta = { bloodSurgeActive = true },
-  pool = { rouse = 1, normal = 2, hunger = 0 },
+  pool = { bloodSurgeRouse = 1, normal = 2, hunger = 0 },
 })
 rollE2eSettlePresetCheck("Brown", { normal = { 7, 3 }, rouse = { 4 } })
 rollConfirm("Brown", {
@@ -1106,7 +1106,7 @@ rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2c surge", 0)
 ```lua
 rollConfirm("Brown", {
   meta = { bloodSurgeActive = true },
-  pool = { hunger = 0, rouse = 1, normal = 2 },
+  pool = { hunger = 0, bloodSurgeRouse = 1, normal = 2 },
 })
 ```
 
@@ -1114,20 +1114,20 @@ rollConfirm("Brown", {
 rollCancel("Brown")
 ```
 
-#### K2d — Hunger bag left (surge on) is no-op
+#### K2d — Hunger bag left (surge on) adds Blood Surge rouse
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2d hunger noop", 0)
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2d surge rouse", 0)
 ```
 
-**Human:** **Left-click Hunger bag 1 time** (surge on), then **left-click Hunger bag 1 time** again (must not add a hunger die).
+**Human:** **Left-click Hunger bag 1 time** (surge on), then **left-click Hunger bag 1 time** again (adds surge rouse, not hunger).
 
 **Check:**
 
 ```lua
 rollConfirm("Brown", {
   meta = { bloodSurgeActive = true },
-  pool = { hunger = 0, rouse = 1, normal = 2 },
+  pool = { hunger = 0, bloodSurgeRouse = 2, normal = 2 },
 })
 ```
 
@@ -1153,20 +1153,20 @@ rollConfirm("Brown", { active = { pool = { rouse = 1 } } })
 rollCancel("Brown")
 ```
 
-#### K2f — Hunger bag right with surge active deactivates surge
+#### K2f — Hunger bag right with surge active (full undo when last surge rouse removed)
 
 ```lua
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2f surge off", 0)
 ```
 
-**Human:** **Left-click Hunger bag 1 time** (surge on), then **right-click Hunger bag 1 time** (undo surge).
+**Human:** **Left-click Hunger bag 1 time** (surge on), then **right-click Hunger bag 1 time** (removes the one surge rouse → full undo including surge normal dice).
 
 **Check:**
 
 ```lua
 rollConfirm("Brown", {
   meta = { bloodSurgeActive = false },
-  pool = { rouse = 0, normal = 0, hunger = 0 },
+  pool = { bloodSurgeRouse = 0, rouse = 0, normal = 0, hunger = 0 },
 })
 ```
 
@@ -1187,6 +1187,45 @@ rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2f2 hunger right noop", 0)
 ```lua
 rollConfirm("Brown", { active = { pool = { normal = 1 } } })
 ```
+
+```lua
+rollCancel("Brown")
+```
+
+#### K2h — Blood Surge rouse + manual rouse coexist
+
+```lua
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2h compound rouse", 0)
+```
+
+**Human:** **Left-click Hunger bag 1 time** (activate surge), then **left-click Rouse bag 1 time**.
+
+**Check:**
+
+```lua
+rollConfirm("Brown", {
+  meta = { bloodSurgeActive = true },
+  pool = { bloodSurgeRouse = 1, rouse = 1, normal = 2 },
+})
+```
+
+```lua
+rollCancel("Brown")
+```
+
+#### K2i — Hunger bag disabled until open (visual)
+
+```lua
+rollCancel("Brown")
+```
+
+**Visual:** Hunger bag at y ≈ -200 / locked before `rollTest` + ST Open. After `rollTest` + ST opens roll, Hunger bag enabled at seat.
+
+```lua
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2i bag vis", 0)
+```
+
+**Human:** ST **Open Roll** if needed; confirm Hunger bag is reachable; **left-click Hunger** once for surge.
 
 ```lua
 rollCancel("Brown")
@@ -1445,7 +1484,7 @@ rollTest("Brown", 2, C.RollType.STANDARD, "E2E N1 surge", 0)
 ```lua
 rollConfirm("Brown", {
   meta = { bloodSurgeActive = true },
-  pool = { rouse = 1, normal = 2, hunger = 0 },
+  pool = { bloodSurgeRouse = 1, normal = 2, hunger = 0 },
 })
 ```
 
@@ -1455,20 +1494,20 @@ rollCancel("Brown")
 
 ---
 
-### N2 — Second hunger click is no-op (surge already on)
+### N2 — Second hunger click adds Blood Surge rouse (surge already on)
 
 ```lua
-rollTest("Brown", 2, C.RollType.STANDARD, "E2E N2 hunger noop", 0)
+rollTest("Brown", 2, C.RollType.STANDARD, "E2E N2 surge rouse add", 0)
 ```
 
-**Human:** **Left-click Hunger bag 1 time** (surge on), then **left-click Hunger bag 1 time** again (must not add a hunger die).
+**Human:** **Left-click Hunger bag 1 time** (surge on), then **left-click Hunger bag 1 time** again (adds surge rouse, not hunger).
 
 **Check:**
 
 ```lua
 rollConfirm("Brown", {
   meta = { bloodSurgeActive = true },
-  pool = { rouse = 1, normal = 2, hunger = 0 },
+  pool = { bloodSurgeRouse = 2, normal = 2, hunger = 0 },
 })
 ```
 
@@ -1478,20 +1517,20 @@ rollCancel("Brown")
 
 ---
 
-### N3 — Hunger bag right deactivates surge (clears all rouse)
+### N3 — Hunger bag right removes surge rouse (full undo when last)
 
 ```lua
 rollTest("Brown", 2, C.RollType.STANDARD, "E2E N3 surge cancel", 0)
 ```
 
-**Human:** **Left-click Hunger bag 1 time** (surge on), then **right-click Hunger bag 1 time**.
+**Human:** **Left-click Hunger bag 1 time** (surge on), then **right-click Hunger bag 1 time** (full undo when only one surge rouse).
 
 **Check:**
 
 ```lua
 rollConfirm("Brown", {
   meta = { bloodSurgeActive = false },
-  pool = { rouse = 0, normal = 0, hunger = 0 },
+  pool = { bloodSurgeRouse = 0, rouse = 0, normal = 0, hunger = 0 },
 })
 ```
 

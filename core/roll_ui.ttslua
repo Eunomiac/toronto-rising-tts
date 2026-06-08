@@ -107,6 +107,7 @@ end
 
 --- Pool dot Text ids per dice kind (suffix matches roll_panels.xml).
 local POOL_DOT_FIELDS = {
+    { poolKey = "bloodSurgeRouse", idSuffix = "surgeRouse" },
     { poolKey = "rouse",      idSuffix = "rouse" },
     { poolKey = "normal",     idSuffix = "normal" },
     { poolKey = "hunger",     idSuffix = "hunger" },
@@ -143,6 +144,7 @@ local function formatPoolCompact(pool)
     local parts = {}
     if pool.normal > 0 then parts[#parts + 1] = string.format("%dN", pool.normal) end
     if pool.hunger > 0 then parts[#parts + 1] = string.format("%dH", pool.hunger) end
+    if pool.bloodSurgeRouse > 0 then parts[#parts + 1] = string.format("%dSR", pool.bloodSurgeRouse) end
     if pool.rouse > 0 then parts[#parts + 1] = string.format("%dR", pool.rouse) end
     if pool.oblivRouse > 0 then parts[#parts + 1] = string.format("%dO", pool.oblivRouse) end
     if pool.werewolf > 0 then parts[#parts + 1] = string.format("%dW", pool.werewolf) end

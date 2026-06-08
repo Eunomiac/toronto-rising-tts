@@ -212,6 +212,7 @@ NPCS = require("core.npcs")
 PCST = require("core.pc_storyteller_panel")
 SoundscapeDebugPanel = require("core.soundscape_debug_panel")
 local DiceDrawer = require("lib.dice_drawer")
+local DBV = require("lib.dice_bag_visibility")
 
 -- Load debug module (only in development). Must be global so TTS console `lua DEBUG.foo()` works.
 DEBUG = require("core.debug")
@@ -410,8 +411,13 @@ function GlobalReportBagDiceCount(params)
     local pool = DK.normalizePool(active.pool)
     local prevTotal = DK.poolTotal(pool)
 
+    -- Rouse bag serves manual + Blood Surge rouse; pool counts come from GlobalOnBagDieSpawned.
+    if dieType == DK.KIND_ROUSE then
+        return
+    end
+
     local kind = dieType
-    if kind == "normal" or kind == "hunger" or kind == "rouse"
+    if kind == "normal" or kind == "hunger"
         or kind == "oblivRouse" or kind == "werewolf" or kind == "rage"
     then
         pool[kind] = count
@@ -600,6 +606,10 @@ function GlobalDiceBagRightClick(params)
     local phase = params.phase
     if type(color) ~= "string" or type(dieKind) ~= "string" then return end
 
+    if GlobalIsPlayerDiceBagEnabled({ color = color, dieKind = dieKind }) ~= true then
+        return
+    end
+
     if phase == nil or phase ~= C.RollPhase.PRE_ROLL then
         return
     end
@@ -622,7 +632,7 @@ function GlobalDiceBagRightClick(params)
         end
         if dieKind == DK.KIND_HUNGER then
             if surgeActive then
-                RC.deactivateBloodSurge(color)
+                RC.removeOneBloodSurgeRouse(color)
             end
             return
         end
@@ -686,13 +696,13 @@ function GlobalDiceBagClick(params)
     local phase = params.phase
     if type(color) ~= "string" or type(dieKind) ~= "string" then return end
 
+    if GlobalIsPlayerDiceBagEnabled({ color = color, dieKind = dieKind }) ~= true then
+        return
+    end
+
     if phase == nil then
         if dieKind == DK.KIND_HUNGER then
-            RC.initiateRoll(color, {
-                rollType = C.RollType.STANDARD,
-                label = "",
-                initiator = "player",
-            })
+            return
         elseif dieKind == DK.KIND_ROUSE then
             if RC.initiateRoll(color, {
                 rollType = C.RollType.ROUSE,
@@ -754,9 +764,10 @@ function GlobalDiceBagClick(params)
         if dieKind == DK.KIND_HUNGER then
             local meta = type(active.meta) == "table" and active.meta or {}
             if meta.bloodSurgeActive == true then
-                return
+                RC.addBloodSurgeRouse(color)
+            else
+                RC.activateBloodSurge(color)
             end
-            RC.activateBloodSurge(color)
             return
         end
         if dieKind == DK.KIND_ROUSE or dieKind == DK.KIND_OBLIV_ROUSE then
@@ -796,19 +807,82 @@ function GlobalSpawnDieFromStorytellerBag(params)
     })
 end
 
+--- Bag spawn hook: delta pool counts (rouse vs bloodSurgeRouse) or staged count for other kinds.
+-- @param params table
+function GlobalOnBagDieSpawned(params)
+    if type(params) ~= "table" or RC == nil then return end
+    local color = params.color
+    local dieType = params.dieType
+    local stagedCount = tonumber(params.stagedCount)
+    if type(color) ~= "string" or type(dieType) ~= "string" then return end
+
+    local pid = S.getPlayerID(color)
+    if pid == nil then return end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil then return end
+    local pool = DK.normalizePool(active.pool)
+    local prevTotal = DK.poolTotal(pool)
+
+    local ok = false
+    if params.bloodSurgeRouse == true then
+        ok = RC.adjustPoolKindCount(color, DK.KIND_BLOOD_SURGE_ROUSE, 1)
+    elseif dieType == DK.KIND_ROUSE then
+        ok = RC.adjustPoolKindCount(color, DK.KIND_ROUSE, 1)
+    elseif type(stagedCount) == "number" then
+        ok = RC.setPoolKindCount(color, dieType, stagedCount)
+    end
+
+    if ok and prevTotal == 0 then
+        local poolAfter = DK.normalizePool(active.pool)
+        if DK.poolTotal(poolAfter) > 0 then
+            GlobalRollSeatCamera({ color = color, mode = "roll" })
+        end
+    end
+end
+
+--- Bag remove hook: decrement the logical pool kind for the removed staged die.
+-- @param params table  { color, poolKind }
+function GlobalOnBagDieRemoved(params)
+    if type(params) ~= "table" or RC == nil then return end
+    local color = params.color
+    local poolKind = params.poolKind
+    if type(color) ~= "string" or type(poolKind) ~= "string" then return end
+    RC.adjustPoolKindCount(color, poolKind, -1)
+end
+
+--- Whether a player dice bag accepts clicks (visibility reconcile).
+-- @param params table  { color, dieKind }
+-- @return boolean
+function GlobalIsPlayerDiceBagEnabled(params)
+    if type(params) ~= "table" then return false end
+    local color = params.color
+    local dieKind = params.dieKind
+    if type(color) ~= "string" or type(dieKind) ~= "string" then return false end
+    return DBV.isBagEnabled(color, dieKind)
+end
+
 --- Spawns one die from the bag object registered for this logical kind (GUID lookup).
 -- Always uses that bag's contents; never redirects Rouse/Obliv spawns to Normal/Hunger bags.
--- @param color string
--- @param dieKind string  DK.KIND_* value
-function GlobalSpawnDieFromBag(color, dieKind, opts)
+-- @param colorOrParams string|table  seat color, or { color, dieKind, bloodSurgePool?, bloodSurgeRouse? }
+-- @param dieKind string|nil  DK.KIND_* value when first arg is color
+-- @param opts table|nil
+function GlobalSpawnDieFromBag(colorOrParams, dieKind, opts)
+    local color = colorOrParams
+    if type(colorOrParams) == "table" then
+        color = colorOrParams.color
+        dieKind = colorOrParams.dieKind
+        opts = colorOrParams
+    end
     if type(color) ~= "string" or type(dieKind) ~= "string" then
         return
     end
     local bloodSurgePool = type(opts) == "table" and opts.bloodSurgePool == true
+    local bloodSurgeRouse = type(opts) == "table" and opts.bloodSurgeRouse == true
     local guid = nil
     if dieKind == DK.KIND_NORMAL then guid = G.GetDiceNormalGUID(color)
     elseif dieKind == DK.KIND_HUNGER then guid = G.GetDiceHungerGUID(color)
-    elseif dieKind == DK.KIND_ROUSE then guid = G.GetDiceRouseGUID(color)
+    elseif dieKind == DK.KIND_ROUSE or dieKind == DK.KIND_BLOOD_SURGE_ROUSE then
+        guid = G.GetDiceRouseGUID(color)
     elseif dieKind == DK.KIND_OBLIV_ROUSE then guid = G.GetDiceOblivRouseGUID(color)
     end
     if type(guid) ~= "string" then
@@ -820,8 +894,9 @@ function GlobalSpawnDieFromBag(color, dieKind, opts)
     end
     bag.call("spawnDieRedirect", {
         bagColor = color,
-        dieType = dieKind,
+        dieType = (dieKind == DK.KIND_BLOOD_SURGE_ROUSE) and DK.KIND_ROUSE or dieKind,
         bloodSurgePool = bloodSurgePool,
+        bloodSurgeRouse = bloodSurgeRouse,
     })
     if bloodSurgePool and (dieKind == DK.KIND_NORMAL or dieKind == DK.KIND_HUNGER) then
         RC.recordBloodSurgePoolAdd(color, dieKind, 1)
@@ -870,7 +945,11 @@ function GlobalSpawnBloodSurgeDice(params)
     if type(rouseGuid) == "string" then
         local bag = getObjectFromGUID(rouseGuid)
         if bag ~= nil then
-            bag.call("spawnDieRedirect", { bagColor = color, dieType = DK.KIND_ROUSE })
+            bag.call("spawnDieRedirect", {
+                bagColor = color,
+                dieType = DK.KIND_ROUSE,
+                bloodSurgeRouse = true,
+            })
         end
     end
 
@@ -905,7 +984,7 @@ function GlobalStorytellerDiceBagClick(params)
     end
 end
 
---- Removes Blood Surge dice for a roll: all rouse + surge-spawned normal/hunger.
+--- Removes Blood Surge dice for a roll: tagged rouse + surge-spawned normal/hunger only.
 -- @param params table  { color, rollId }
 function GlobalDestroyBloodSurgeDice(params)
     if type(params) ~= "table" then return end
@@ -914,7 +993,7 @@ function GlobalDestroyBloodSurgeDice(params)
     if type(color) ~= "string" or type(rollId) ~= "string" then return end
     local ownerTag = color .. "Object"
     local kinds = {
-        { tag = DK.TAG_ROUSE, surgePoolOnly = false },
+        { tag = DK.TAG_ROUSE, surgeRouseOnly = true },
         { tag = DK.TAG_NORMAL, surgePoolOnly = true },
         { tag = DK.TAG_HUNGER, surgePoolOnly = true },
     }
@@ -922,9 +1001,13 @@ function GlobalDestroyBloodSurgeDice(params)
         local candidates = getObjectsWithAllTags({ spec.tag, "d10", ownerTag })
         for _, obj in ipairs(candidates) do
             if DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
-                local destroyIt = true
-                if spec.surgePoolOnly and obj.script_state ~= DK.SCRIPT_STATE_BLOOD_SURGE_POOL then
-                    destroyIt = false
+                local destroyIt = false
+                if spec.surgeRouseOnly == true then
+                    local _, isSurge = DK.decodeGmNotes(obj.getGMNotes())
+                    destroyIt = isSurge == true
+                        or obj.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE
+                elseif spec.surgePoolOnly == true then
+                    destroyIt = obj.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_POOL
                 end
                 if destroyIt then
                     destroyObject(obj)
@@ -932,19 +1015,39 @@ function GlobalDestroyBloodSurgeDice(params)
             end
         end
     end
-    for _, dieKind in ipairs({ DK.KIND_ROUSE, DK.KIND_NORMAL, DK.KIND_HUNGER }) do
-        local guid = nil
-        if dieKind == DK.KIND_NORMAL then guid = G.GetDiceNormalGUID(color)
-        elseif dieKind == DK.KIND_HUNGER then guid = G.GetDiceHungerGUID(color)
-        elseif dieKind == DK.KIND_ROUSE then guid = G.GetDiceRouseGUID(color)
-        end
-        if type(guid) == "string" then
-            local bag = getObjectFromGUID(guid)
+    local bagSpecs = {
+        { guid = G.GetDiceRouseGUID(color), scriptState = DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE },
+        { guid = G.GetDiceNormalGUID(color), scriptState = DK.SCRIPT_STATE_BLOOD_SURGE_POOL },
+        { guid = G.GetDiceHungerGUID(color), scriptState = DK.SCRIPT_STATE_BLOOD_SURGE_POOL },
+    }
+    for _, spec in ipairs(bagSpecs) do
+        if type(spec.guid) == "string" then
+            local bag = getObjectFromGUID(spec.guid)
             if bag ~= nil then
-                bag.call("destroyDice")
+                bag.call("destroyStagedByScriptState", { scriptState = spec.scriptState })
             end
         end
     end
+end
+
+--- Destroys one Blood Surge rouse die on the table (released dice).
+-- @param params table  { color, rollId }
+-- @return boolean
+function GlobalDestroyOneTableBloodSurgeRouse(params)
+    if type(params) ~= "table" then return false end
+    local color = params.color
+    local rollId = params.rollId
+    if type(color) ~= "string" or type(rollId) ~= "string" then return false end
+    local ownerTag = color .. "Object"
+    local candidates = getObjectsWithAllTags({ DK.TAG_ROUSE, "d10", ownerTag })
+    for _, obj in ipairs(candidates) do
+        local rid, isSurge = DK.decodeGmNotes(obj.getGMNotes())
+        if rid == rollId and (isSurge == true or obj.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE) then
+            destroyObject(obj)
+            return true
+        end
+    end
+    return false
 end
 
 --- Called by character sheet objects (via Global.call) to initiate a roll for their player.
@@ -1171,6 +1274,11 @@ function onLoad(saved_data)
     end
     local startupInitialSyncDone = true
     setStartupAction("initial-sync-full-complete")
+
+    setStartupAction("dice-bag-visibility-defaults")
+    U.delay(function()
+        DBV.disableHungerBagsForAllPlayers()
+    end, 1.0)
 
     -- Keep loading overlay visible until startup settles:
     -- - table sync callback has run
@@ -2652,6 +2760,13 @@ end
 -- No pcall here: errors in the UI layer should surface as TTS chat errors
 -- rather than being silently swallowed, making bugs easier to diagnose.
 RC.onRollStateChanged = function(color)
+    if type(color) == "string" and color ~= "Black" then
+        local pid = S.getPlayerID(color)
+        local active = pid ~= nil
+            and S.getStateVal("playerData", pid, "hud", "rollData", "active")
+            or nil
+        DBV.reconcileForPlayer(color, active)
+    end
     RUI.refreshPlayerRollPanel(color)
     RUI.refreshSTDashboard()
     if color == "Black" then
@@ -2827,7 +2942,8 @@ function onObjectLeaveContainer(container, obj)
     -- The roll ID is fixed from initiation, so writing it early is always correct.
     -- Skip only if the roll is already RESOLVED (die is unrelated to any active roll).
     if active.phase == C.RollPhase.RESOLVED then return end
-    obj.setGMNotes(active.id)
+    local isSurgeRouse = obj.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE
+    obj.setGMNotes(DK.encodeGmNotes(active.id, isSurgeRouse))
 
     -- Open drawer on first bag spawn (PRE_ROLL) or auto-spawn after Roll (ROLLING).
     if active.phase == C.RollPhase.PRE_ROLL or active.phase == C.RollPhase.ROLLING then

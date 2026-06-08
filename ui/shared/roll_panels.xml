@@ -406,6 +406,7 @@
     <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
       <!-- Pool dots (TOR-155): rouse left; normal/hunger/obliv/werewolf/rage colored ◆ -->
       <HorizontalLayout spacing="6" childAlignment="MiddleCenter" childForceExpandWidth="false">
+        <Text id="rollPanel_pool_surgeRouse_Brown" fontSize="14" color="#5C0A0A" text="" />
         <Text id="rollPanel_pool_rouse_Brown" fontSize="14" color="#8B1A1A" text="" />
         <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
           <Text id="rollPanel_pool_normal_Brown" fontSize="14" color="#FFFFFF" text="" />
@@ -555,6 +556,7 @@
     <Text id="rollPanel_phase_Orange"  fontSize="12" color="#CCCCCC" alignment="MiddleCenter" text="Awaiting Storyteller..." />
     <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
       <HorizontalLayout spacing="6" childAlignment="MiddleCenter" childForceExpandWidth="false">
+        <Text id="rollPanel_pool_surgeRouse_Orange" fontSize="14" color="#5C0A0A" text="" />
         <Text id="rollPanel_pool_rouse_Orange" fontSize="14" color="#8B1A1A" text="" />
         <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
           <Text id="rollPanel_pool_normal_Orange" fontSize="14" color="#FFFFFF" text="" />
@@ -612,6 +614,7 @@
     <Text id="rollPanel_phase_Red"  fontSize="12" color="#CCCCCC" alignment="MiddleCenter" text="Awaiting Storyteller..." />
     <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
       <HorizontalLayout spacing="6" childAlignment="MiddleCenter" childForceExpandWidth="false">
+        <Text id="rollPanel_pool_surgeRouse_Red" fontSize="14" color="#5C0A0A" text="" />
         <Text id="rollPanel_pool_rouse_Red" fontSize="14" color="#8B1A1A" text="" />
         <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
           <Text id="rollPanel_pool_normal_Red" fontSize="14" color="#FFFFFF" text="" />
@@ -669,6 +672,7 @@
     <Text id="rollPanel_phase_Pink"  fontSize="12" color="#CCCCCC" alignment="MiddleCenter" text="Awaiting Storyteller..." />
     <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
       <HorizontalLayout spacing="6" childAlignment="MiddleCenter" childForceExpandWidth="false">
+        <Text id="rollPanel_pool_surgeRouse_Pink" fontSize="14" color="#5C0A0A" text="" />
         <Text id="rollPanel_pool_rouse_Pink" fontSize="14" color="#8B1A1A" text="" />
         <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
           <Text id="rollPanel_pool_normal_Pink" fontSize="14" color="#FFFFFF" text="" />
@@ -726,6 +730,7 @@
     <Text id="rollPanel_phase_Purple"  fontSize="12" color="#CCCCCC" alignment="MiddleCenter" text="Awaiting Storyteller..." />
     <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
       <HorizontalLayout spacing="6" childAlignment="MiddleCenter" childForceExpandWidth="false">
+        <Text id="rollPanel_pool_surgeRouse_Purple" fontSize="14" color="#5C0A0A" text="" />
         <Text id="rollPanel_pool_rouse_Purple" fontSize="14" color="#8B1A1A" text="" />
         <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
           <Text id="rollPanel_pool_normal_Purple" fontSize="14" color="#FFFFFF" text="" />

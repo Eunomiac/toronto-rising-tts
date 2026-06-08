@@ -111,10 +111,10 @@ Under the new system, the addition of a third dice bag (`DICEBAG_ROUSE`) allows 
 | Player Clicks `DICEBAG_NORMAL` with no active roll | A player-initiated standard roll is triggered and sent to the Storyteller for approval to open the roll. _(No change)_ |
 | Player Clicks `DICEBAG_NORMAL` while assembling a dice pool for a standard roll | One die is added to the dice pool. Depending on the player's Hunger level, the die type added may be a Hunger die or a Normal die. _(No change)_ |
 | Player Clicks `DICEBAG_NORMAL` while assembling a dice pool for a dedicated Rouse or Oblivion-Rouse Check | ⭐ Promotes the roll to **STANDARD** (compound roll), then adds one Normal/Hunger die (Auto-Hunger). Existing rouse-family dice stay in the pool. ST difficulty is optional (implicit 1 at resolve when unset). |
-| Player Clicks `DICEBAG_HUNGER` with no active roll | A player-initiated ⭐ Standard Roll is triggered and sent to the Storyteller for approval to open the roll. |
-| Player **left-clicks** `DICEBAG_HUNGER` while assembling a dice pool for a **standard** roll | ⭐ If Blood Surge is **off**, trigger Blood Surge (below). If surge is **already on**, **no-op**. |
+| Player Clicks `DICEBAG_HUNGER` with no active roll | **No-op** (Hunger bag is disabled until a standard roll is opened to PRE_ROLL). |
+| Player **left-clicks** `DICEBAG_HUNGER` while assembling a dice pool for a **standard** roll | ⭐ If Blood Surge is **off**, trigger Blood Surge (below). If surge is **on**, add one **Blood Surge rouse** die (`pool.bloodSurgeRouse`). |
 | Player **right-clicks** `DICEBAG_NORMAL` during `PRE_ROLL` on a standard or compound roll | Remove one main-pool die (**Normal first**, else Hunger); cancel the roll if the pool total becomes zero. |
-| Player **right-clicks** `DICEBAG_HUNGER` during a standard roll while Blood Surge is **active** | Undo Blood Surge (see below). While surge is **off**, **no-op**. |
+| Player **right-clicks** `DICEBAG_HUNGER` during a standard roll while Blood Surge is **active** | Remove **one** Blood Surge rouse die; when none remain, full Blood Surge undo (surge normal/hunger + `bloodSurgeActive`). While surge is **off**, **no-op**. |
 | Player **right-clicks** `DICEBAG_ROUSE` / `DICEBAG_OBLIVROUSE` during `PRE_ROLL` | Remove one die of that kind **only if** the pool count for that kind is greater than zero; cancel if the pool becomes empty. |
 | Player **left-clicks** `DICEBAG_ROUSE` while the pool already has Oblivion-Rouse dice (or vice versa) | **Silent fail** — bag click does nothing. |
 | Player Clicks `DICEBAG_HUNGER` while assembling a dice pool for a dedicated Rouse or Oblivion-Rouse Check | **No-op** (Hunger bag does not add dice or reset the check). |
@@ -123,26 +123,31 @@ Under the new system, the addition of a third dice bag (`DICEBAG_ROUSE`) allows 
 
 #### Pool composition (standard rolls)
 
-Every standard roll assembles **at most three logical groups**:
+Every standard roll assembles **at most four logical groups**:
 
 | Group | Pool keys | Notes |
 | --- | --- | --- |
 | **Main roll** | `normal` + `hunger` | One success test after any rouse steps |
-| **Rouse check** | `rouse` | At most **one** rouse check per roll; extra Rouse bag clicks add dice to the **same** check (never a second or third rouse check) |
-| **Oblivion-Rouse check** | `oblivRouse` | At most **one** oblivion-rouse check per roll; same merge rule as rouse |
+| **Blood Surge rouse check** | `bloodSurgeRouse` | Tagged rouse dice (`script_state` / GM Notes); separate outcome strip from manual rouse |
+| **Manual rouse check** | `rouse` | Rouse bag adds only; extra clicks add to the **same** manual check |
+| **Oblivion-Rouse check** | `oblivRouse` | At most **one** oblivion-rouse check per roll |
 
-**Rouse vs Oblivion-Rouse are mutually exclusive** on the same roll. If the pool already has `rouse` dice, clicking the Oblivion-Rouse bag does nothing (silent fail). If the pool already has `oblivRouse` dice, clicking the Rouse bag does nothing (silent fail). Blood Surge activation also fails silently if `oblivRouse` is already in the pool.
+**Manual rouse vs Oblivion-Rouse are mutually exclusive** (`pool.rouse` blocks Obliv bag; `pool.oblivRouse` blocks manual Rouse bag). **`bloodSurgeRouse` does not block Obliv** and does not disable the Obliv bag. Blood Surge activation fails silently if `oblivRouse` is already in the pool.
 
-Blood Surge rouse dice are **not** tagged or resolved separately — they use the same single **Rouse** outcome strip as any other rouse dice in the pool.
+Blood Surge rouse dice are **tagged** (`DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE`, GM Notes `|bloodSurge` suffix) and resolve on a separate **Blood Surge Rouse** strip before the manual **Rouse** strip.
 
 #### Blood Surges
 
 When a "Blood Surge" is triggered (Hunger bag left-click while surge is off on a standard roll):
 
-1. Add **one** Rouse die to the pool (same rouse check as any later Rouse bag adds).
+1. Add **one** Blood Surge rouse die (`pool.bloodSurgeRouse`).
 2. Add a number of Standard or Hunger dice (per hunger rules) equal to the player's Blood Surge rating (`bloodPotencyDerived().bloodSurge`, with `bloodSurgeDiceMultiplier` from roll policy). Surge-spawned normal/hunger dice are tracked for undo only (`script_state` `bloodSurgePool`).
 
-**Undo Blood Surge:** Hunger bag **right-click** while `bloodSurgeActive`. Removes **all** rouse dice in the pool, all surge-spawned normal/hunger dice, clears `bloodSurgeActive`, and adjusts pool counts accordingly. (Any rouse dice present are treated as tied to the surge being reversed — including rouse dice added manually via the Rouse bag while surge was active.) Hunger bag **right-click** while surge is **off** is a **no-op**.
+**Additional surge rouse:** Hunger bag **left-click** while `bloodSurgeActive` adds another tagged rouse die.
+
+**Undo Blood Surge rouse:** Hunger bag **right-click** while `bloodSurgeActive` removes **one** Blood Surge rouse die. When `bloodSurgeRouse` reaches zero, full undo runs: all surge-spawned normal/hunger dice removed, `bloodSurgeActive` cleared — **manual** `pool.rouse` dice are preserved. Hunger bag **right-click** while surge is **off** is a **no-op**.
+
+**Bag visibility:** Hunger bag disabled (y = -200, locked) by default; enabled when ST opens a standard roll to PRE_ROLL. Rouse and Obliv bags disable each other when the opposite manual kind is in the pool (`bloodSurgeRouse` does not disable Obliv).
 
 #### Rouse/Oblivion-Rouse Dice in Standard Pools
 

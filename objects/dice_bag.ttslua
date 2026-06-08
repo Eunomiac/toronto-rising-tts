@@ -120,11 +120,20 @@ function spawnDieRedirect(params)
     if type(params) ~= "table" or type(params.bagColor) ~= "string" or type(params.dieType) ~= "string" then
         return
     end
-    spawnDie(params.bagColor, params.dieType, params.bloodSurgePool == true, params.arcCenter)
+    spawnDie(params.bagColor, params.dieType, {
+        bloodSurgePool = params.bloodSurgePool == true,
+        bloodSurgeRouse = params.bloodSurgeRouse == true,
+        arcCenter = params.arcCenter,
+    })
 end
 
+--- @param opts table|nil  { bloodSurgePool?, bloodSurgeRouse?, arcCenter? }
 --- @param arcCenter Vector|table|nil  World-space arc center (ST drawer tray); nil uses bag position
-function spawnDie(bagColor, dieType, bloodSurgePool, arcCenter)
+function spawnDie(bagColor, dieType, opts)
+    opts = type(opts) == "table" and opts or {}
+    local bloodSurgePool = opts.bloodSurgePool == true
+    local bloodSurgeRouse = opts.bloodSurgeRouse == true
+    local arcCenter = opts.arcCenter
     local newCount = #spawnedDice + 1
 
     local function worldArcPoint(i, total)
@@ -155,16 +164,19 @@ function spawnDie(bagColor, dieType, bloodSurgePool, arcCenter)
     die.setLock(true)
     die.script_state = " "
     if bloodSurgePool == true then
-        local DK = require("lib.dice_kinds")
         die.script_state = DK.SCRIPT_STATE_BLOOD_SURGE_POOL
+    elseif bloodSurgeRouse == true then
+        die.script_state = DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE
     end
 
     table.insert(spawnedDice, die)
 
-    Global.call("GlobalReportBagDiceCount", {
-        color   = bagColor,
+    Global.call("GlobalOnBagDieSpawned", {
+        color = bagColor,
         dieType = dieType,
-        count   = #spawnedDice,
+        bloodSurgePool = bloodSurgePool,
+        bloodSurgeRouse = bloodSurgeRouse,
+        stagedCount = #spawnedDice,
     })
 end
 
@@ -175,13 +187,47 @@ end
 --- Removes the most recently spawned die from this bag's staging arc (right-click).
 -- @param params table|nil  { arcCenter?: {x,y,z} } world arc center for ST drawer tray
 -- @return boolean
+local function isBloodSurgeRouseDie(die)
+    if die == nil then
+        return false
+    end
+    if die.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE then
+        return true
+    end
+    if die.getGMNotes ~= nil then
+        local _, isSurge = DK.decodeGmNotes(die.getGMNotes())
+        return isSurge == true
+    end
+    return false
+end
+
 function removeLastSpawnedDie(params)
+    params = type(params) == "table" and params or {}
     if #spawnedDice == 0 then
         return false
     end
 
-    local die = spawnedDice[#spawnedDice]
-    spawnedDice[#spawnedDice] = nil
+    local dieIndex = #spawnedDice
+    if params.bloodSurgeRouseOnly == true then
+        dieIndex = nil
+        for i = #spawnedDice, 1, -1 do
+            if isBloodSurgeRouseDie(spawnedDice[i]) then
+                dieIndex = i
+                break
+            end
+        end
+        if dieIndex == nil then
+            return false
+        end
+    end
+
+    local die = spawnedDice[dieIndex]
+    local removedSurgeRouse = isBloodSurgeRouseDie(die)
+    local removedKind = getDieType()
+    if removedSurgeRouse then
+        removedKind = DK.KIND_BLOOD_SURGE_ROUSE
+    end
+    table.remove(spawnedDice, dieIndex)
     if die ~= nil then
         destroyObject(die)
     end
@@ -211,12 +257,11 @@ function removeLastSpawnedDie(params)
     if reportColor == nil and isStorytellerBag() then
         reportColor = "Black"
     end
-    local dieType = getDieType()
-    if type(reportColor) == "string" and type(dieType) == "string" then
-        Global.call("GlobalReportBagDiceCount", {
-            color   = reportColor,
-            dieType = dieType,
-            count   = newCount,
+    if type(reportColor) == "string" and type(removedKind) == "string" then
+        Global.call("GlobalOnBagDieRemoved", {
+            color = reportColor,
+            poolKind = removedKind,
+            stagedCount = newCount,
         })
     end
     return true
@@ -239,7 +284,7 @@ function autoSpawn(params)
     end
 
     for _ = 1, count do
-        spawnDie(bagColor, dieType, false)
+        spawnDie(bagColor, dieType, {})
     end
 end
 
@@ -261,6 +306,26 @@ function destroyDice()
         if die ~= nil then destroyObject(die) end
     end
     spawnedDice = {}
+end
+
+--- Removes staged dice whose script_state matches (Blood Surge undo).
+-- @param params table  { scriptState: string }
+-- @return number removed
+function destroyStagedByScriptState(params)
+    if type(params) ~= "table" or type(params.scriptState) ~= "string" then
+        return 0
+    end
+    local target = params.scriptState
+    local removed = 0
+    for i = #spawnedDice, 1, -1 do
+        local die = spawnedDice[i]
+        if die ~= nil and die.script_state == target then
+            destroyObject(die)
+            table.remove(spawnedDice, i)
+            removed = removed + 1
+        end
+    end
+    return removed
 end
 
 function getLocalPointOnArc(i, points)

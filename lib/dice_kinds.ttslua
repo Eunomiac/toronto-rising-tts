@@ -10,8 +10,9 @@ local DK = {}
 --- Logical pool keys (counts on active.pool).
 DK.KIND_NORMAL      = "normal"
 DK.KIND_HUNGER      = "hunger"
-DK.KIND_ROUSE       = "rouse"
-DK.KIND_OBLIV_ROUSE = "oblivRouse"
+DK.KIND_ROUSE            = "rouse"
+DK.KIND_BLOOD_SURGE_ROUSE = "bloodSurgeRouse"
+DK.KIND_OBLIV_ROUSE      = "oblivRouse"
 DK.KIND_WEREWOLF    = "werewolf"
 DK.KIND_RAGE        = "rage"
 
@@ -30,6 +31,7 @@ DK.VAMPIRE_KINDS = {
     DK.KIND_NORMAL,
     DK.KIND_HUNGER,
     DK.KIND_ROUSE,
+    DK.KIND_BLOOD_SURGE_ROUSE,
     DK.KIND_OBLIV_ROUSE,
 }
 
@@ -44,6 +46,7 @@ DK.ALL_KINDS = {
     DK.KIND_NORMAL,
     DK.KIND_HUNGER,
     DK.KIND_ROUSE,
+    DK.KIND_BLOOD_SURGE_ROUSE,
     DK.KIND_OBLIV_ROUSE,
     DK.KIND_WEREWOLF,
     DK.KIND_RAGE,
@@ -75,6 +78,9 @@ DK.GM_NOTE_BLOOD_SURGE_SUFFIX = "|bloodSurge"
 --- script_state on Normal/Hunger dice spawned by Blood Surge (undo targeting).
 DK.SCRIPT_STATE_BLOOD_SURGE_POOL = "bloodSurgePool"
 
+--- script_state on Rouse dice spawned for Blood Surge (separate rouse check).
+DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE = "bloodSurgeRouse"
+
 --- Pending resolution kinds (active.pendingResolution).
 DK.PENDING_OBLIV_HUNGER_STAIN   = "oblivHungerStain"
 DK.PENDING_BRUTAL_FAIL_VIOLENCE = "brutalFailViolence"
@@ -83,12 +89,13 @@ DK.PENDING_BRUTAL_FAIL_VIOLENCE = "brutalFailViolence"
 -- @return table
 function DK.emptyPool()
     return {
-        normal      = 0,
-        hunger      = 0,
-        rouse       = 0,
-        oblivRouse  = 0,
-        werewolf    = 0,
-        rage        = 0,
+        normal           = 0,
+        hunger           = 0,
+        rouse            = 0,
+        bloodSurgeRouse  = 0,
+        oblivRouse       = 0,
+        werewolf         = 0,
+        rage             = 0,
     }
 end
 
@@ -116,8 +123,8 @@ function DK.poolTotal(pool)
     pool = DK.normalizePool(pool)
     local n = 0
     for _, k in pairs({
-        DK.KIND_NORMAL, DK.KIND_HUNGER, DK.KIND_ROUSE, DK.KIND_OBLIV_ROUSE,
-        DK.KIND_WEREWOLF, DK.KIND_RAGE,
+        DK.KIND_NORMAL, DK.KIND_HUNGER, DK.KIND_ROUSE, DK.KIND_BLOOD_SURGE_ROUSE,
+        DK.KIND_OBLIV_ROUSE, DK.KIND_WEREWOLF, DK.KIND_RAGE,
     }) do
         n = n + pool[k]
     end
@@ -129,7 +136,7 @@ end
 -- @return number
 function DK.vampirePoolTotal(pool)
     pool = DK.normalizePool(pool)
-    return pool.normal + pool.hunger + pool.rouse + pool.oblivRouse
+    return pool.normal + pool.hunger + pool.rouse + pool.bloodSurgeRouse + pool.oblivRouse
 end
 
 --- Sum normal + hunger only (Take Half sizing when Rouse dice remain to roll).
@@ -145,7 +152,7 @@ end
 -- @return boolean
 function DK.poolHasRouseKind(pool)
     pool = DK.normalizePool(pool)
-    return pool.rouse > 0 or pool.oblivRouse > 0
+    return pool.rouse > 0 or pool.bloodSurgeRouse > 0 or pool.oblivRouse > 0
 end
 
 --- True if pool contains any werewolf-kind dice.
@@ -161,7 +168,8 @@ end
 -- @return boolean
 function DK.poolHasVampireKind(pool)
     pool = DK.normalizePool(pool)
-    return pool.normal > 0 or pool.hunger > 0 or pool.rouse > 0 or pool.oblivRouse > 0
+    return pool.normal > 0 or pool.hunger > 0 or pool.rouse > 0
+        or pool.bloodSurgeRouse > 0 or pool.oblivRouse > 0
 end
 
 --- Default meta block for active rolls.
@@ -309,7 +317,7 @@ function DK.dieFaceImage(kind, value)
         elseif v <= 9 then return "dieFace_hunger_ankh"
         else return "dieFace_hunger_crit"
         end
-    elseif kind == DK.KIND_ROUSE then
+    elseif kind == DK.KIND_ROUSE or kind == DK.KIND_BLOOD_SURGE_ROUSE then
         if v <= 5 then return "dieFace_rouse_fang"
         else return "dieFace_rouse_blank"
         end
@@ -343,7 +351,7 @@ end
 -- @param faceValue number|nil  current face when locking
 -- @return boolean
 function DK.canRerollWithWillpower(kind, faceValue)
-    if kind == DK.KIND_ROUSE or kind == DK.KIND_OBLIV_ROUSE then
+    if kind == DK.KIND_ROUSE or kind == DK.KIND_BLOOD_SURGE_ROUSE or kind == DK.KIND_OBLIV_ROUSE then
         return false
     end
     if kind == DK.KIND_RAGE then

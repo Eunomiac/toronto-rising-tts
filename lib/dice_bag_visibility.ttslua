@@ -1,0 +1,152 @@
+--[[
+    Player dice bag enable/disable (lib/dice_bag_visibility.ttslua)
+
+    Disabled bags: locked + y = -200. Rest Y cached per bag GUID on first disable.
+]]
+
+local DBV = {}
+
+local DK = require("lib.dice_kinds")
+local G = require("lib.guids")
+local C = require("lib.constants")
+
+DBV.DISABLED_Y = -200
+
+--- @type table<string, number> guid -> rest world Y
+local restYByGuid = {}
+
+local function bagObject(guid)
+    if type(guid) ~= "string" then
+        return nil
+    end
+    return getObjectFromGUID(guid)
+end
+
+local function cacheRestY(guid, bag)
+    if restYByGuid[guid] ~= nil then
+        return
+    end
+    if bag == nil then
+        return
+    end
+    local pos = bag.getPosition()
+    if type(pos) == "table" and type(pos.y) == "number" and pos.y > -150 then
+        restYByGuid[guid] = pos.y
+    end
+end
+
+--- @param guid string
+--- @param enabled boolean
+local function setBagEnabled(guid, enabled)
+    local bag = bagObject(guid)
+    if bag == nil then
+        return
+    end
+    if enabled then
+        bag.setLock(false)
+        local restY = restYByGuid[guid]
+        if type(restY) == "number" then
+            local pos = bag.getPosition()
+            bag.setPosition({ x = pos.x, y = restY, z = pos.z })
+        end
+    else
+        cacheRestY(guid, bag)
+        bag.setLock(true)
+        local pos = bag.getPosition()
+        bag.setPosition({ x = pos.x, y = DBV.DISABLED_Y, z = pos.z })
+    end
+end
+
+--- @param color string
+--- @param kind string  DK.KIND_* bag logical kind
+--- @return string|nil guid
+local function bagGuidForKind(color, kind)
+    if kind == DK.KIND_NORMAL then
+        return G.GetDiceNormalGUID(color)
+    end
+    if kind == DK.KIND_HUNGER then
+        return G.GetDiceHungerGUID(color)
+    end
+    if kind == DK.KIND_ROUSE or kind == DK.KIND_BLOOD_SURGE_ROUSE then
+        return G.GetDiceRouseGUID(color)
+    end
+    if kind == DK.KIND_OBLIV_ROUSE then
+        return G.GetDiceOblivRouseGUID(color)
+    end
+    return nil
+end
+
+--- Whether a player bag should accept clicks (enabled and not locked at disabled Y).
+-- @param color string
+-- @param kind string
+-- @return boolean
+function DBV.isBagEnabled(color, kind)
+    local guid = bagGuidForKind(color, kind)
+    if type(guid) ~= "string" then
+        return false
+    end
+    local bag = bagObject(guid)
+    if bag == nil then
+        return false
+    end
+    if bag.getLock() == true then
+        local pos = bag.getPosition()
+        if type(pos) == "table" and type(pos.y) == "number" and pos.y < -150 then
+            return false
+        end
+    end
+    return true
+end
+
+--- Apply hunger / rouse / obliv bag visibility for one player seat.
+-- @param color string
+-- @param active table|nil  active roll record
+function DBV.reconcileForPlayer(color, active)
+    if type(color) ~= "string" or color == "Black" then
+        return
+    end
+
+    local pool = DK.normalizePool(type(active) == "table" and active.pool or nil)
+    local phase = type(active) == "table" and active.phase or nil
+    local rollType = type(active) == "table" and active.rollType or nil
+
+    local hungerOn = phase == C.RollPhase.PRE_ROLL
+        and rollType == C.RollType.STANDARD
+
+    local rouseOn = pool.oblivRouse == 0
+    local oblivOn = pool.rouse == 0
+
+    local hungerGuid = bagGuidForKind(color, DK.KIND_HUNGER)
+    local rouseGuid = bagGuidForKind(color, DK.KIND_ROUSE)
+    local oblivGuid = bagGuidForKind(color, DK.KIND_OBLIV_ROUSE)
+
+    if type(hungerGuid) == "string" then
+        setBagEnabled(hungerGuid, hungerOn)
+    end
+    if type(rouseGuid) == "string" then
+        setBagEnabled(rouseGuid, rouseOn)
+    end
+    if type(oblivGuid) == "string" then
+        setBagEnabled(oblivGuid, oblivOn)
+    end
+end
+
+--- Default layout: hunger off; rouse and obliv on for every player seat.
+function DBV.disableHungerBagsForAllPlayers()
+    for _, color in ipairs(C.PlayerColors) do
+        local guid = bagGuidForKind(color, DK.KIND_HUNGER)
+        if type(guid) == "string" then
+            setBagEnabled(guid, false)
+        end
+        local rouseGuid = bagGuidForKind(color, DK.KIND_ROUSE)
+        if type(rouseGuid) == "string" then
+            setBagEnabled(rouseGuid, true)
+        end
+        local oblivGuid = bagGuidForKind(color, DK.KIND_OBLIV_ROUSE)
+        if type(oblivGuid) == "string" then
+            setBagEnabled(oblivGuid, true)
+        end
+    end
+end
+
+return DBV
