@@ -29,7 +29,7 @@
     "tts-save:extract-entities": "node .tools/tts-save/extract-save-entities.js --save .dev/TS_Save_230.json --outBasename save-entities-latest",
     "tts-save:list-loading-assets": "node .tools/tts-save/list-save-loading-assets.js --save .dev/TS_Save_230.json --outBasename save-loading-assets-latest",
     "tts-save:list-object-tags": "node .tools/tts-save/list-save-object-tags.js --save .dev/TS_Save_230.json --outBasename save-object-tags-latest",
-    "tts-save:prune-component-tags": "node .tools/tts-save/prune-save-component-tags.js --save .dev/TS_Save_230.json --dry-run",
+    "tts-save:prune-component-tags": "node .tools/tts-save/prune-save-component-tags.js --save .dev/TS_Save_230.json --dryRun",
     "tts-save:prune-component-tags:apply": "node .tools/tts-save/prune-save-component-tags.js --save .dev/TS_Save_230.json",
     "tts-save:extract-save-inventory": "npm run tts-save:extract-assets -- --outBasename save-assets-latest && npm run tts-save:extract-entities",
     "tts-save:inject-global": "node .tools/tts-save/inject-bundled-global-from-save-name.js",

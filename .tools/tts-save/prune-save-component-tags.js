@@ -3,7 +3,7 @@
 
 // Remove unused entries from save JSON `ComponentTags.labels` (tag registry picker).
 // Keeps labels whose `displayed` name appears on at least one object `Tags` array,
-// plus optional extras from --keep-file (one tag per line, # comments).
+// plus optional extras from --keepFile (one tag per line, # comments).
 // Does not change object Tags — registry only. Writes timestamped backup before save.
 // Agent guidance: .dev/TTS_BUNDLING_SETUP.md; pair with list-save-object-tags.js
 
@@ -24,7 +24,7 @@ function parseArgs(argv) {
     if (!token.startsWith("--")) {
       continue;
     }
-    const key = token.slice(2).replace(/-/g, "");
+    const key = token.slice(2);
     const next = argv[i + 1];
     if (next === undefined || next.startsWith("--")) {
       args[key] = "1";
@@ -121,7 +121,7 @@ function collectUsedObjectTags(saveRoot) {
 
 /**
  * @param {Record<string, unknown>} saveRoot
- * @param {Set<string>} retainLabels union of used-on-object tags + --keep-file
+ * @param {Set<string>} retainLabels union of used-on-object tags + --keepFile
  * @returns {{
  *   beforeCount: number;
  *   afterCount: number;
@@ -219,8 +219,8 @@ function applyComponentTagsLabels(saveRoot, nextLabels) {
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  const dryRun = args.dryrun === "1" || args.dryRun === "1";
-  const noBackup = args.nobackup === "1" || args.noBackup === "1";
+  const dryRun = args.dryRun === "1";
+  const noBackup = args.noBackup === "1";
 
   let savePath;
   if (args.save) {
@@ -264,7 +264,7 @@ function main() {
   console.log(`Removed (unused registry):   ${plan.removed.length}`);
   console.log(`Kept (on objects):           ${plan.usedOnObjects.length}`);
   if (plan.keptViaKeepFile.length > 0) {
-    console.log(`Kept (--keep-file only):      ${plan.keptViaKeepFile.length}`);
+    console.log(`Kept (--keepFile only):      ${plan.keptViaKeepFile.length}`);
   }
   if (plan.usedNotInRegistryBefore.length > 0) {
     console.log("");
@@ -290,7 +290,7 @@ function main() {
 
   if (dryRun) {
     console.log("");
-    console.log("Dry-run complete — re-run without --dry-run to write.");
+    console.log("Dry-run complete — re-run without --dryRun to write.");
     return;
   }
 

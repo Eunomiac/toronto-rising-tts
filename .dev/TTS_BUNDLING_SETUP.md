@@ -319,7 +319,7 @@ npm run tts-save:prune-component-tags          # dry-run on .dev/TS_Save_230.jso
 npm run tts-save:prune-component-tags:apply    # write (349 → 32 labels for save 230)
 ```
 
-Optional: `--keep-file path/to/tags.txt` (one tag per line) to retain registry names not currently on objects.
+Optional: `--keepFile path/to/tags.txt` (one tag per line) to retain registry names not currently on objects.
 
 **Smoke checklist (after re-bundle)**
 
