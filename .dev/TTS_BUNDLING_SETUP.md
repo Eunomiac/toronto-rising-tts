@@ -293,6 +293,34 @@ Outputs under `.dev/build-logs/`:
 
 Columns include `customAssetName`, `objectGuid`, `primaryUrl`, `gGuidsKey` (from `lib/guids.ttslua`), `saveJsonPath`, `category`, and `gmNotes` (object `GMNotes` from the save JSON). The `notes` column is script extraction metadata, not GM Notes. Pair with `npm run tts-save:extract-assets` for prune/reference-source analysis of Custom UI only.
 
+**Object tag usage (prune ComponentTags registry)**
+
+To list tags **actually assigned** on table objects (ignores `ComponentTags.labels` registry and save-level Workshop `Tags`):
+
+```powershell
+npm run tts-save:list-object-tags
+```
+
+Outputs under `.dev/build-logs/`:
+
+| File | Contents |
+| --- | --- |
+| `save-object-tags-latest.csv` | `tag`, `objectCount` — every unique tag on `ObjectStates` / `ContainedObjects` |
+| `save-object-tags-latest-registry-unused.csv` | Registry labels never assigned to any object (prune candidates) |
+
+Pass `--noPruneCandidates` to skip the registry-unused file.
+
+**Prune unused registry labels (mutates save JSON)**
+
+Removes `ComponentTags.labels` entries whose `displayed` name is not on any object. Object `Tags` are unchanged. Timestamped backup beside the save unless `--noBackup`.
+
+```powershell
+npm run tts-save:prune-component-tags          # dry-run on .dev/TS_Save_230.json
+npm run tts-save:prune-component-tags:apply    # write (349 → 32 labels for save 230)
+```
+
+Optional: `--keep-file path/to/tags.txt` (one tag per line) to retain registry names not currently on objects.
+
 **Smoke checklist (after re-bundle)**
 
 1. Page 1: dot/box refresh when ST panel or conditions change (`obj.call("refreshFromGameState")`).

@@ -5,5 +5,13 @@
   "ttslua.fileManagement.includePaths": ["${workspaceFolder}"],
   "TTSLua.includeOtherFilesPaths": ["${workspaceFolder}"],
   "ttslua.misc.debugSearchPaths": true,
-  "ttslua.fileManagement.luaSearchPattern": ["?", "?.lua", "?.ttslua"]
+  "ttslua.fileManagement.luaSearchPattern": [
+    "?",
+    "?.lua",
+    "?.ttslua"
+  ],
+  "sonarlint.connectedMode.project": {
+    "connectionId": "eunomiac",
+    "projectKey": "Eunomiac_toronto-rising-tts"
+  }
 }
