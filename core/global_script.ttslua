@@ -3337,7 +3337,7 @@ local ROLL_UI_COLOR_SUFFIXES = { "Orange", "Purple", "Brown", "Black", "Pink", "
 --- Extracts a player/ST seat color from a UI element id of the form "<prefix>_<Color>".
 -- Matches suffix only (not substrings). ST slot CLEAR ids (`rollDash_stCancel_1`) have no
 -- color suffix and must be handled before calling this (see HUD_rollCancel).
--- @param id string  Element id (e.g. "rollPanel_btnRoll_Red")
+-- @param id string  Element id (e.g. "rollControl_btnRoll_Red" or "rollPanel_btnRoll_Black")
 -- @return string|nil
 local function colorFromRollElementId(id)
     if type(id) ~= "string" or id == "" then
@@ -3354,7 +3354,7 @@ local function colorFromRollElementId(id)
 end
 
 --- Player clicks "ROLL" button — advances PRE_ROLL → ROLLING and releases locked dice.
--- id format: "rollPanel_btnRoll_<Color>"
+-- id format: "rollControl_btnRoll_<Color>" (PC) or "rollPanel_btnRoll_Black" (ST)
 function HUD_rollRollButton(player, value, id)
     local color = colorFromRollElementId(id)
     if color == nil then return end
@@ -3390,7 +3390,7 @@ end
 
 --- Player clicks "TAKE HALF" — records take-half successes, skips rolling non-Rouse dice.
 -- When Rouse dice remain, only normal/hunger are destroyed; Rouse dice are released to roll.
--- id format: "rollPanel_btnHalf_<Color>"
+-- id format: "rollControl_btnHalf_<Color>" or "rollPanel_btnHalf_Black"
 function HUD_rollTakeHalf(player, value, id)
     local color = colorFromRollElementId(id)
     if color == nil then return end
@@ -3398,7 +3398,7 @@ function HUD_rollTakeHalf(player, value, id)
 end
 
 --- Player clicks "SPEND WILLPOWER" — spends 1 Superficial WP, re-enters ROLLING.
--- id format: "rollPanel_btnWP_<Color>"
+-- id format: "rollControl_btnWP_<Color>" or "rollPanel_btnWP_Black"
 function HUD_rollSpendWP(player, value, id)
     local color = colorFromRollElementId(id)
     if color == nil then return end
@@ -3408,14 +3408,14 @@ function HUD_rollSpendWP(player, value, id)
 end
 
 --- Player (or ST) clicks "CONFIRM" — finalises the roll result.
--- id format: "rollPanel_btnConfirm_<Color>"
+-- id format: "rollControl_btnConfirm_<Color>" or "rollPanel_btnConfirm_Black"
 function HUD_rollConfirm(player, value, id)
     local color = colorFromRollElementId(id)
     if color == nil then return end
     RC.confirmRoll(color)
 end
 
---- Oblivion (D) choice: Hunger or Stain (id rollPanel_btnOblivHunger_* / rollPanel_btnOblivStain_*).
+--- Oblivion (D) choice: Hunger or Stain (rollControl_btnObliv*_* or rollPanel_btnObliv*_Black).
 function HUD_rollConfirmOblivChoice(player, value, id)
     if type(id) ~= "string" then return end
     local color = colorFromRollElementId(id)
@@ -3430,7 +3430,7 @@ function HUD_rollConfirmOblivChoice(player, value, id)
     RC.confirmOblivionChoice(color, choice)
 end
 
---- Brutal Outcome: Fail or Violence (id rollPanel_btnBrutalFail_* / rollPanel_btnBrutalViolence_*).
+--- Brutal Outcome: Fail or Violence (rollControl_btnBrutal*_* or rollPanel_btnBrutal*_Black).
 function HUD_rollConfirmBrutalChoice(player, value, id)
     if type(id) ~= "string" then return end
     local color = colorFromRollElementId(id)
@@ -3447,7 +3447,7 @@ end
 
 --- Player (or ST) clicks "CANCEL" — cancels the active roll and queue.
 -- Any staged or released dice are destroyed immediately.
--- id format: "rollPanel_btnCancel_<Color>"
+-- id format: "rollControl_btnCancel_<Color>" or "rollPanel_btnCancel_Black"
 function HUD_rollCancel(player, value, id)
     -- ST drawer slot CLEAR buttons (rollDash_stCancel_1..3) have no color suffix.
     local stSlot = string.match(id or "", "^rollDash_stCancel_(%d)$")
@@ -3479,7 +3479,7 @@ end
 -- and re-classifies the result. The primary path for Willpower rerolls and
 -- manual corrections (player adjusts dice, then clicks this button).
 -- Available in ROLLING and POST_ROLL phases.
--- id format: "rollPanel_btnRecalc_<Color>"
+-- id format: "rollPanel_btnRecalc_Black" (ST only; no Recalculate on PC rollControl panel)
 function HUD_rollRecalculate(player, value, id)
     local color = colorFromRollElementId(id)
     if color == nil then return end

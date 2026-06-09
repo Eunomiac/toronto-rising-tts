@@ -4,7 +4,7 @@
     Translates roll state (playerData.rollData.active) into TTS XML UI updates.
     Manages the three roll-related UI surfaces:
       1. ST Roll Dashboard  (rollDash_ST)          — Storyteller only; shows all active rolls
-      2. Player Roll Panels (rollPanel_<Color>)     — Per-player; shows current roll details
+      2. Player Roll Panels (rollControl_<Color> PC; rollPanel_Black ST) — Per-player roll UI
       3. Result Broadcast   (rollResult_panel)      — Shared; shows last resolved result
 
     This module is the ONLY place that calls UI.show/hide/setValue for roll elements.
@@ -105,7 +105,7 @@ local function diamonds(count)
     return table.concat(parts, "")
 end
 
---- Pool dot Text ids per dice kind (suffix matches roll_panels.xml).
+--- Pool dot Text ids per dice kind (legacy rollPanel_Black / roll_panels.xml).
 local POOL_DOT_FIELDS = {
     { poolKey = "bloodSurgeRouse", idSuffix = "surgeRouse" },
     { poolKey = "rouse",      idSuffix = "rouse" },
@@ -192,9 +192,9 @@ local function uiToggleGet(elementId)
     return false
 end
 
--- Maximum number of die image slots pre-defined in the XML for each panel.
--- Must match the count of rollPanel_die_N_<Color> / rollResult_die_N elements in roll_panels.xml.
+-- Maximum die image slots: standard strip (PC rollControl_die_N) / Black panel / broadcast.
 local MAX_DIE_SLOTS = 15
+local MAX_ROUSE_SLOTS = 5
 
 --- Returns the image source name for a single die face.
 -- Source names correspond to TTS custom asset entries registered in the mod.
@@ -227,6 +227,152 @@ local function refreshDiceImages(idPrefix, diceFaces)
             U.setAttribute(id, "active", "false")
         end
     end
+end
+
+--- Returns the dice kind from a face record (Dice.buildDiceFaces entry).
+-- @param faceRecord table|boolean
+-- @return string
+local function getFaceKind(faceRecord)
+    if type(faceRecord) == "table" and type(faceRecord.kind) == "string" then
+        return faceRecord.kind
+    end
+    if type(faceRecord) == "boolean" and faceRecord == true then
+        return DK.KIND_HUNGER
+    end
+    return DK.KIND_NORMAL
+end
+
+--- Filters face records to those whose kind is in `allowedKinds`.
+-- @param diceFaces table|nil
+-- @param allowedKinds table  Array of DK.KIND_* strings
+-- @return table
+local function filterFacesByKinds(diceFaces, allowedKinds)
+    local faces = (U.Type(diceFaces) == "table") and diceFaces or {}
+    local allowed = {}
+    for _, kind in ipairs(allowedKinds) do
+        allowed[kind] = true
+    end
+    local out = {}
+    for _, face in ipairs(faces) do
+        if allowed[getFaceKind(face)] then
+            out[#out + 1] = face
+        end
+    end
+    return out
+end
+
+--- Fills up to `maxSlots` die images from `faces`; clears unused slots.
+-- @param idPrefix string  e.g. "rollControl_die_%d_Brown"
+-- @param faces table
+-- @param maxSlots number
+local function refreshDieImageStrip(idPrefix, faces, maxSlots)
+    for i = 1, maxSlots do
+        local id = string.format(idPrefix, i)
+        if i <= #faces then
+            U.setAttribute(id, "image", dieFaceImage(faces[i].value, faces[i]))
+            U.setAttribute(id, "active", "true")
+        else
+            U.setAttribute(id, "active", "false")
+        end
+    end
+end
+
+--- Builds a ◆ string for `count` dice continuing a global pool index (space after every 5th die total).
+-- @param count number
+-- @param globalOffset number  Dice already shown left of this field in the standard pool row
+-- @return string, number  Display text and updated global offset
+local function formatGroupedDiamonds(count, globalOffset)
+    if count <= 0 then
+        return "", globalOffset
+    end
+    local parts = {}
+    for i = 1, count do
+        local globalPos = globalOffset + i
+        if i > 1 and (globalPos - 1) % 5 == 0 then
+            parts[#parts + 1] = " "
+        end
+        parts[#parts + 1] = "◆"
+    end
+    return table.concat(parts, ""), globalOffset + count
+end
+
+--- Updates rollControl_* pool-dot Text elements for one PC roll panel.
+-- @param color string
+-- @param pool table  Normalized pool from DK.normalizePool
+local function refreshPoolDotsForControlPanel(color, pool)
+    pool = DK.normalizePool(pool)
+    uiSetValue(string.format("rollControl_oblivRouseDice_%s", color), diamonds(pool.oblivRouse))
+    uiSetValue(string.format("rollControl_rouseDice_%s", color), diamonds(pool.rouse))
+    uiSetValue(string.format("rollControl_bloodSurgeRouseDice_%s", color), diamonds(pool.bloodSurgeRouse))
+
+    local offset = 0
+    local hungerStr, offset2 = formatGroupedDiamonds(pool.hunger, offset)
+    offset = offset2
+    local rageStr, offset3 = formatGroupedDiamonds(pool.rage, offset)
+    offset = offset3
+    local normalStr, offset4 = formatGroupedDiamonds(pool.normal, offset)
+    offset = offset4
+    local wwStr, _ = formatGroupedDiamonds(pool.werewolf, offset)
+
+    uiSetValue(string.format("rollControl_hungerDice_%s", color), hungerStr)
+    uiSetValue(string.format("rollControl_rageDice_%s", color), rageStr)
+    uiSetValue(string.format("rollControl_standardDice_%s", color), normalStr)
+    uiSetValue(string.format("rollControl_wwDice_%s", color), wwStr)
+end
+
+--- Title-cases instruction strings for rollControl_rollInstructions_* (template contract).
+-- @param s string
+-- @return string
+local function titleCaseInstructions(s)
+    if type(s) ~= "string" or s == "" then
+        return ""
+    end
+    return (s:gsub("(%a)([%w']*)", function(first, rest)
+        return string.upper(first) .. string.lower(rest)
+    end))
+end
+
+--- UI text color for a result class on rollControl_resultDisplay_* / margin.
+-- @param resultClass string|nil
+-- @return string
+local function resultClassColor(resultClass)
+    if resultClass == C.ResultClass.CRITICAL_WIN
+        or resultClass == C.ResultClass.MESSY_CRITICAL then
+        return "#FFD700"
+    end
+    if resultClass == C.ResultClass.WIN then
+        return "#FFFFFF"
+    end
+    if resultClass == C.ResultClass.FAILURE
+        or resultClass == C.ResultClass.BESTIAL_FAILURE
+        or resultClass == C.ResultClass.TOTAL_FAILURE
+        or resultClass == C.ResultClass.TOTAL_BESTIAL_FAILURE then
+        return "#FF6666"
+    end
+    return "#FFFFFF"
+end
+
+--- Partitioned die images for rollControl_* PC panels (rouse / blood surge / standard strips).
+-- @param color string
+-- @param diceFaces table|nil
+-- @param pool table  Normalized pool counts
+local function refreshPlayerControlDiceImages(color, diceFaces, pool)
+    pool = DK.normalizePool(pool)
+    local rousePoolCount = (pool.rouse or 0) + (pool.oblivRouse or 0)
+    local bloodSurgeCount = pool.bloodSurgeRouse or 0
+
+    uiSetActive(string.format("rollControl_rouseDiceContainer_%s", color), rousePoolCount > 0)
+    uiSetActive(string.format("rollControl_bloodSurgeRouseDiceContainer_%s", color), bloodSurgeCount > 0)
+
+    local rouseFaces = filterFacesByKinds(diceFaces, { DK.KIND_ROUSE, DK.KIND_OBLIV_ROUSE })
+    local bloodSurgeFaces = filterFacesByKinds(diceFaces, { DK.KIND_BLOOD_SURGE_ROUSE })
+    local standardFaces = filterFacesByKinds(diceFaces, {
+        DK.KIND_NORMAL, DK.KIND_HUNGER, DK.KIND_WEREWOLF, DK.KIND_RAGE,
+    })
+
+    refreshDieImageStrip(string.format("rollControl_rouseDie_%%d_%s", color), rouseFaces, MAX_ROUSE_SLOTS)
+    refreshDieImageStrip(string.format("rollControl_bloodSurgeRouseDie_%%d_%s", color), bloodSurgeFaces, MAX_ROUSE_SLOTS)
+    refreshDieImageStrip(string.format("rollControl_die_%%d_%s", color), standardFaces, MAX_DIE_SLOTS)
 end
 
 --- Returns the human-readable phase label shown in the player roll panel.
@@ -395,15 +541,17 @@ local function formatRouseStrips(strips)
     return table.concat(lines, "\n")
 end
 
---- Shows or hides pending-resolution confirm buttons on a roll panel (player or Black/ST).
+--- Shows or hides pending-resolution confirm buttons on a roll panel (PC rollControl_* or ST rollPanel_*).
 -- @param color string
 -- @param active table|nil
-local function refreshPendingResolutionButtons(color, active)
-    local oblivHunger = string.format("rollPanel_btnOblivHunger_%s", color)
-    local oblivStain  = string.format("rollPanel_btnOblivStain_%s", color)
-    local brutalFail  = string.format("rollPanel_btnBrutalFail_%s", color)
-    local brutalViol  = string.format("rollPanel_btnBrutalViolence_%s", color)
-    local confirm     = string.format("rollPanel_btnConfirm_%s", color)
+-- @param useControlPanel boolean  true for PC rollControl_* ids; false for rollPanel_Black
+local function refreshPendingResolutionButtons(color, active, useControlPanel)
+    local idPrefix = useControlPanel and "rollControl" or "rollPanel"
+    local oblivHunger = string.format("%s_btnOblivHunger_%s", idPrefix, color)
+    local oblivStain  = string.format("%s_btnOblivStain_%s", idPrefix, color)
+    local brutalFail  = string.format("%s_btnBrutalFail_%s", idPrefix, color)
+    local brutalViol  = string.format("%s_btnBrutalViolence_%s", idPrefix, color)
+    local confirm     = string.format("%s_btnConfirm_%s", idPrefix, color)
 
     local pending = active ~= nil and active.pendingResolution or nil
     local isPostRoll = active ~= nil and active.phase == C.RollPhase.POST_ROLL
@@ -423,6 +571,109 @@ end
 -- PUBLIC API — PLAYER ROLL PANEL
 -- ============================================================================
 
+--- Refreshes a PC seat roll control panel (rollControl_* in ui/player/panel_roll_controls.xml).
+-- @param color string  Brown, Orange, Red, Pink, or Purple
+-- @param active table|nil
+local function refreshPcRollControlPanel(color, active)
+    local panelId = string.format("rollControl_root_%s", color)
+
+    if active == nil then
+        uiSetActive(panelId, false)
+        return
+    end
+
+    local showInSetup = active.initiator == "player"
+    if active.phase == C.RollPhase.SETUP and not showInSetup then
+        uiSetActive(panelId, false)
+        return
+    end
+
+    if active.phase == C.RollPhase.POST_ROLL then
+        local wpAvailable = active.willpower ~= nil and active.willpower.available == true
+        local pendingChoice = active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN
+            or active.pendingResolution == C.PendingResolution.BRUTAL_FAIL_VIOLENCE
+        if not wpAvailable and not pendingChoice then
+            uiSetActive(panelId, false)
+            return
+        end
+    end
+
+    uiSetActive(panelId, true)
+
+    local rollLabel = C.RollTypeLabel[active.rollType] or active.rollType or ""
+    if active.label and active.label ~= "" then
+        rollLabel = string.format("%s: %s", rollLabel, active.label)
+    end
+    uiSetValue(string.format("rollControl_rollType_%s", color), rollLabel)
+    uiSetValue(string.format("rollControl_rollInstructions_%s", color),
+        titleCaseInstructions(phaseLabel(active, color)))
+
+    local pool = DK.normalizePool(active.pool)
+    refreshPoolDotsForControlPanel(color, pool)
+    refreshPlayerControlDiceImages(color, active.diceFaces, pool)
+
+    local hidesDifficulty = active.rollType == C.RollType.SIMPLE_CHECK
+        or active.rollType == C.RollType.ROUSE
+        or active.rollType == C.RollType.ROUSE_OBLIVION
+        or active.rollType == C.RollType.REMORSE
+    local isPostRoll = active.phase == C.RollPhase.POST_ROLL
+    local showDifficulty = (not hidesDifficulty) and isPostRoll and active.difficulty ~= nil
+
+    uiSetActive(string.format("rollControl_difficultyDisplay_%s", color), showDifficulty)
+    uiSetValue(string.format("rollControl_difficulty_%s", color),
+        showDifficulty and difficultyStr(active.difficulty) or "")
+
+    local result = active.result
+    local showSuccessesRow = isPostRoll and result ~= nil and not hidesDifficulty
+    uiSetActive(string.format("rollControl_successesContainer_%s", color), showSuccessesRow)
+    if showSuccessesRow then
+        uiSetValue(string.format("rollControl_successes_%s", color), tostring(result.successes))
+    end
+
+    local showResultRow = isPostRoll and result ~= nil
+    uiSetActive(string.format("rollControl_resultDisplayContainer_%s", color), showResultRow)
+    if showResultRow then
+        local label = narrativeLabel(active.rollType, result)
+        local displayText = string.upper(label)
+        local textColor = resultClassColor(result.resultClass)
+        local resultId = string.format("rollControl_resultDisplay_%s", color)
+        local marginId = string.format("rollControl_marginDisplay_%s", color)
+        uiSetValue(resultId, displayText)
+        U.setAttribute(resultId, "color", textColor)
+        local showMargin = active.difficulty ~= nil and result.margin ~= nil
+        uiSetActive(marginId, showMargin)
+        if showMargin then
+            uiSetValue(marginId, string.format("%+d", result.margin))
+            U.setAttribute(marginId, "color", textColor)
+        end
+    end
+
+    local isPreRoll = active.phase == C.RollPhase.PRE_ROLL
+    local hasPool = DK.poolTotal(pool) > 0
+    local canHalf = isPreRoll
+        and hasPool
+        and C.RollTypesNoTakeHalf[active.rollType] ~= true
+        and RO.getForActive(active, RO.ROLL_TAKE_HALF)
+
+    uiSetActive(string.format("rollControl_btnRoll_%s", color), isPreRoll)
+    uiSetInteractable(string.format("rollControl_btnRoll_%s", color), hasPool)
+    uiSetActive(string.format("rollControl_btnHalf_%s", color), canHalf)
+
+    local wpAvailable = isPostRoll
+        and active.willpower ~= nil
+        and active.willpower.available == true
+    local pendingChoice = isPostRoll and (
+        active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN
+        or active.pendingResolution == C.PendingResolution.BRUTAL_FAIL_VIOLENCE
+    )
+    uiSetActive(string.format("rollControl_btnWP_%s", color), wpAvailable)
+    local showConfirm = isPostRoll and wpAvailable and not pendingChoice
+    uiSetActive(string.format("rollControl_btnConfirm_%s", color), showConfirm)
+    uiSetInteractable(string.format("rollControl_btnConfirm_%s", color), showConfirm)
+    refreshPendingResolutionButtons(color, active, true)
+    uiSetActive(string.format("rollControl_btnCancel_%s", color), true)
+end
+
 --- Refreshes a player's roll panel to match their current rollData.active.
 -- Shows the panel when a roll is active; hides it otherwise.
 -- Updates phase label, pool display, difficulty, dice display, result, and button visibility.
@@ -439,8 +690,13 @@ function RUI.refreshPlayerRollPanel(color)
         active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
     end
 
+    if color ~= "Black" then
+        refreshPcRollControlPanel(color, active)
+        return
+    end
+
     local panelId = string.format("rollPanel_%s", color)
-    local isStPanel = (color == "Black")
+    local isStPanel = true
 
     if active == nil then
         -- No active roll: hide the panel entirely
@@ -548,7 +804,7 @@ function RUI.refreshPlayerRollPanel(color)
     end
     uiSetActive(string.format("rollPanel_btnConfirm_%s", color), showConfirm)
     uiSetInteractable(string.format("rollPanel_btnConfirm_%s", color), showConfirm)
-    refreshPendingResolutionButtons(color, active)
+    refreshPendingResolutionButtons(color, active, false)
     -- Cancel is always visible when a roll is active
     uiSetActive(string.format("rollPanel_btnCancel_%s",  color), true)
 end

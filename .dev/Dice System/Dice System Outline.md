@@ -712,16 +712,18 @@ All roll-related UI element IDs follow a consistent naming pattern:
 | ST row for player color | `rollDash_row_<Color>` | One per player color |
 | ST difficulty input field | `rollDash_difficulty_<Color>` | `InputField` |
 | ST open/confirm button | `rollDash_btn_<Color>` | Label changes by phase |
-| Player Roll Panel | `rollPanel_<Color>` | Visibility: `"<Color>"` |
-| Player phase label | `rollPanel_phase_<Color>` | Text element |
-| Player pool display | `rollPanel_pool_<Color>` | "Nd + Mh" format |
-| Player difficulty display | `rollPanel_diff_<Color>` | "—" when nil |
-| Player dice display | `rollPanel_dice_<Color>` | Formatted per §6.1 |
-| Player result label | `rollPanel_result_<Color>` | ResultClass label |
-| Player "Roll" button | `rollPanel_btnRoll_<Color>` | `PRE_ROLL` only |
-| Player "Take Half" button | `rollPanel_btnHalf_<Color>` | `PRE_ROLL` when eligible |
-| Player "Spend WP" button | `rollPanel_btnWP_<Color>` | `POST_ROLL` when available |
-| Player "Confirm" button | `rollPanel_btnConfirm_<Color>` | `POST_ROLL` only |
+| Player Roll Panel (PC) | `rollControl_root_<Color>` | Generated: `ui/player/panel_roll_controls.xml` from `ui/.templates/panel_roll_controls.xml`; visibility `"<Color>"` |
+| ST live roll panel | `rollPanel_Black` | In `ui/shared/roll_panels.xml`; includes Recalculate |
+| Player roll type | `rollControl_rollType_<Color>` | Title-case `C.RollTypeLabel` |
+| Player instructions | `rollControl_rollInstructions_<Color>` | Phase guidance (title case) |
+| Player pool dots | `rollControl_*Dice_<Color>` | Colored ◆ per kind; see template comments |
+| Player difficulty | `rollControl_difficulty_<Color>` | Numeric; `rollControl_difficultyDisplay_<Color>` gates visibility |
+| Player die images | `rollControl_rouseDie_*`, `rollControl_die_*`, etc. | Partitioned strips per template |
+| Player result | `rollControl_resultDisplay_<Color>` | ALL CAPS + class color |
+| Player "Roll" button | `rollControl_btnRoll_<Color>` | `PRE_ROLL` only |
+| Player "Take Half" button | `rollControl_btnHalf_<Color>` | `PRE_ROLL` when eligible |
+| Player "Spend WP" button | `rollControl_btnWP_<Color>` | `POST_ROLL` when available |
+| Player "Confirm" button | `rollControl_btnConfirm_<Color>` | `POST_ROLL` when WP available (PC) |
 | Result Broadcast Panel | `rollResult_panel` | Shared; no visibility filter |
 | Broadcast roller name | `rollResult_name` | |
 | Broadcast dice display | `rollResult_dice` | |
@@ -831,9 +833,11 @@ function HUD_rollInitiate(player, value, id) end
 
 ---
 
-## 10. UI XML Design (`ui/shared/roll_panels.xml`)
+## 10. UI XML Design
 
-New file. Included from `ui/Global.xml` after all existing includes.
+**ST dashboard, `rollPanel_Black`, and result broadcast:** [`ui/shared/roll_panels.xml`](../../ui/shared/roll_panels.xml) (included from `ui/Global.xml` at root level).
+
+**PC player roll control panels:** generated [`ui/player/panel_roll_controls.xml`](../../ui/player/panel_roll_controls.xml) from [`ui/.templates/panel_roll_controls.xml`](../../ui/.templates/panel_roll_controls.xml) (`xml_color_template_generator.js`); included inside `HUD_PANEL_PLAYER` in `ui/Global.xml`.
 
 ### 10.1 ST Roll Dashboard
 
@@ -857,10 +861,12 @@ New file. Included from `ui/Global.xml` after all existing includes.
 </Panel>
 ```
 
-### 10.2 Player Roll Panels (one per player color)
+### 10.2 Player Roll Panels (PC colors — generated template)
+
+PC seats use `rollControl_*` element ids (see template). Legacy example below is **superseded** for Brown–Purple; only `rollPanel_Black` remains in `roll_panels.xml`.
 
 ```xml
-<!-- Player Roll Panel: Brown (visibility: Brown only) -->
+<!-- Superseded PC example (now rollControl_root_Brown in panel_roll_controls.xml) -->
 <Panel id="rollPanel_Brown"
   visibility="Brown"
   active="False"
