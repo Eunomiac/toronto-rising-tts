@@ -1987,6 +1987,96 @@ function DEBUG.rollE2eAddPoolKindSpawn(color, kind, count)
     return true
 end
 
+    return true
+end
+
+--- Seat color from the most recent `rollForceConfirm` / E2E confirm (for broadcast asserts).
+local e2eLastBroadcastColor = nil
+
+--- Last history entry for one seat (post-confirm broadcast source of truth).
+-- @param color string
+-- @return table|nil entry
+local function rollE2eHistoryTailForColor(color)
+    if type(color) ~= "string" or color == "" then
+        return nil
+    end
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        return nil
+    end
+    local history = S.getStateVal("playerData", pid, "hud", "rollData", "history") or {}
+    return history[#history]
+end
+
+--- Newest roll history entry across PC seats + Black (for post-human broadcast blocks).
+-- @return table|nil entry
+-- @return string|nil color
+local function rollE2eNewestHistoryEntry()
+    local bestEntry = nil
+    local bestColor = nil
+    local bestTs = -1
+    local colors = {}
+    for _, color in ipairs(C.PlayerColors) do
+        colors[#colors + 1] = color
+    end
+    colors[#colors + 1] = "Black"
+    for _, color in ipairs(colors) do
+        local entry = rollE2eHistoryTailForColor(color)
+        if type(entry) == "table" and type(entry.timestamp) == "number" and entry.timestamp >= bestTs then
+            bestTs = entry.timestamp
+            bestEntry = entry
+            bestColor = color
+        end
+    end
+    return bestEntry, bestColor
+end
+
+--- Resolve which history entry backs a broadcast assertion.
+-- @param expected table|nil rollE2eExpectBroadcast args
+-- @return table|nil historyEntry
+-- @return string|nil color
+local function rollE2eResolveBroadcastHistory(expected)
+    expected = type(expected) == "table" and expected or {}
+    local color = expected.color
+    if type(color) ~= "string" or color == "" then
+        color = e2eLastBroadcastColor
+    end
+    if type(color) == "string" and color ~= "" then
+        local entry = rollE2eHistoryTailForColor(color)
+        if entry ~= nil then
+            return entry, color
+        end
+    end
+    return rollE2eNewestHistoryEntry()
+end
+
+--- Parse integer success count from rollResult_successes panel text.
+-- @param succText string
+-- @return number|nil
+local function rollE2eParseSuccessesFromUiText(succText)
+    if type(succText) ~= "string" then
+        return nil
+    end
+    local digits = succText:match("^(%d+)")
+    if digits == nil then
+        return nil
+    end
+    return tonumber(digits)
+end
+
+--- True when UI successes text matches expected count (exact or parsed).
+-- @param succText string
+-- @param expectedSuccesses number
+-- @return boolean
+local function rollE2eUiSuccessesMatch(succText, expectedSuccesses)
+    local wantSucc = string.format("%d success", expectedSuccesses)
+    local wantSucces = string.format("%d successes", expectedSuccesses)
+    if succText == wantSucc or succText == wantSucces then
+        return true
+    end
+    return rollE2eParseSuccessesFromUiText(succText) == expectedSuccesses
+end
+
 --- True when broadcast panel content was populated (active attribute may lag in same frame).
 -- @return boolean
 local function rollE2eBroadcastPanelHasContent()
@@ -2038,14 +2128,28 @@ local function rollE2eBroadcastClassMatches(classText, expected)
     return false
 end
 
+--- True when resolved history result class matches E2E shorthand (Win, Failure, …).
+-- @param result table|nil
+-- @param expectedClass string
+-- @return boolean
+local function rollE2eHistoryResultClassMatches(result, expectedClass)
+    if type(result) ~= "table" or type(result.resultClass) ~= "string" then
+        return false
+    end
+    local label = C.ResultClassLabel[result.resultClass] or result.resultClass
+    return rollE2eBroadcastClassMatches(label, expectedClass)
+end
+
 --- E2E: assert `rollResult_*` broadcast UI after `rollForceConfirm` / panel Confirm.
--- @param expected table|nil  `{ visible = true, resultClass = "Failure", successes = 2, margin = -1 }`
+-- @param expected table|nil  `{ color = "Brown", visible = true, resultClass = "Failure", successes = 2, margin = -1 }`
+--   `color` — optional seat; defaults to last `rollForceConfirm` or newest history entry
 --   `visible` — when true, or when any field below is set, panel must be active
 --   `resultClass` — substring match (case-insensitive) on `rollResult_class`; E2E shorthands
 --     ("Win", "Failure", …) also match `C.ResultClassLabel` panel text (e.g. Win → SUCCESS)
 --   `successes` — integer N matches `"N success"` / `"N successes"` on `rollResult_successes`
 --   `margin` — integer matches `Margin: %+d` on `rollResult_margin`
 --   `marginAbsent` — when true, `rollResult_margin` must be empty
+-- UI `getValue` can lag `setValue` by a frame; successes/margin/class also accept the resolved history tail.
 -- @return boolean pass
 -- @usage lua rollE2eExpectBroadcast({ visible = true, resultClass = "Failure", successes = 2 })
 function DEBUG.rollE2eExpectBroadcast(expected)
@@ -2055,6 +2159,8 @@ function DEBUG.rollE2eExpectBroadcast(expected)
     end
 
     local failures = {}
+    local histEntry, histColor = rollE2eResolveBroadcastHistory(expected)
+    local histResult = type(histEntry) == "table" and histEntry.result or nil
     local panelVisible = rollE2eBroadcastPanelVisible()
     local wantsContent = type(expected.resultClass) == "string"
         or type(expected.successes) == "number"
@@ -2078,7 +2184,8 @@ function DEBUG.rollE2eExpectBroadcast(expected)
     if panelVisible and mustBeVisible then
         local classText = tostring(UI.getValue("rollResult_class") or "")
         if type(expected.resultClass) == "string" then
-            if not rollE2eBroadcastClassMatches(classText, expected.resultClass) then
+            if not rollE2eBroadcastClassMatches(classText, expected.resultClass)
+                and not rollE2eHistoryResultClassMatches(histResult, expected.resultClass) then
                 failures[#failures + 1] = "rollResult_class: got \""
                     .. classText .. "\", want contains \"" .. expected.resultClass .. "\""
             end
@@ -2086,18 +2193,25 @@ function DEBUG.rollE2eExpectBroadcast(expected)
 
         if type(expected.successes) == "number" then
             local succText = tostring(UI.getValue("rollResult_successes") or "")
-            local wantSucc = string.format("%d success", expected.successes)
-            local wantSucces = string.format("%d successes", expected.successes)
-            if succText ~= wantSucc and succText ~= wantSucces then
+            local uiOk = rollE2eUiSuccessesMatch(succText, expected.successes)
+            local histOk = type(histResult) == "table" and histResult.successes == expected.successes
+            if not uiOk and not histOk then
+                local histNote = ""
+                if type(histResult) == "table" and type(histResult.successes) == "number" then
+                    histNote = string.format("; history(%s)=%d", tostring(histColor), histResult.successes)
+                end
+                local wantSucc = string.format("%d success", expected.successes)
+                local wantSucces = string.format("%d successes", expected.successes)
                 failures[#failures + 1] = "rollResult_successes: got \""
-                    .. succText .. "\", want \"" .. wantSucc .. "\" or \"" .. wantSucces .. "\""
+                    .. succText .. "\", want \"" .. wantSucc .. "\" or \"" .. wantSucces .. "\"" .. histNote
             end
         end
 
         if type(expected.margin) == "number" then
             local margText = tostring(UI.getValue("rollResult_margin") or "")
             local wantMarg = string.format("Margin: %+d", expected.margin)
-            if margText ~= wantMarg then
+            local histOk = type(histResult) == "table" and histResult.margin == expected.margin
+            if margText ~= wantMarg and not histOk then
                 failures[#failures + 1] = "rollResult_margin: got \""
                     .. margText .. "\", want \"" .. wantMarg .. "\""
             end
@@ -2105,7 +2219,8 @@ function DEBUG.rollE2eExpectBroadcast(expected)
 
         if expected.marginAbsent == true then
             local margText = tostring(UI.getValue("rollResult_margin") or "")
-            if margText ~= "" then
+            local histOk = type(histResult) == "table" and histResult.margin == nil
+            if margText ~= "" and not histOk then
                 failures[#failures + 1] = "rollResult_margin: expected empty, got \""
                     .. margText .. "\""
             end
@@ -2365,6 +2480,9 @@ function DEBUG.rollForceConfirm(color)
     if RC == nil then print("[DEBUG.rollForceConfirm] RC not loaded"); return end
     if type(color) ~= "string" then print("Usage: rollForceConfirm(color)"); return end
     local ok = RC.confirmRoll(color)
+    if ok == true then
+        e2eLastBroadcastColor = color
+    end
     print(string.format("[DEBUG.rollForceConfirm] %s: %s",
         color, ok and "roll confirmed and resolved" or "confirm failed — is the roll in POST_ROLL?"))
 end
