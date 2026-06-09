@@ -1,62 +1,73 @@
-import { readdir, readFile } from "node:fs/promises";
-import path from "node:path";
+import type { DashboardConfig } from "./config.js";
 
-export type ChronicleContext = {
-  readonly text: string;
-  readonly files: readonly string[];
+export type ChronicleHealthInfo = {
+  readonly chronicleMode: "vector_store" | "unconfigured";
+  readonly hasVectorStore: boolean;
+  readonly chronicleStatus: string;
 };
 
-const MAX_CONTEXT_CHARS = 80_000;
-
-const isMarkdownFile = (filePath: string): boolean => filePath.toLowerCase().endsWith(".md");
-
-const collectMarkdownFiles = async (directory: string): Promise<string[]> => {
-  const entries = await readdir(directory, { withFileTypes: true });
-  const nested = await Promise.all(entries.map(async (entry) => {
-    const fullPath = path.join(directory, entry.name);
-    if (entry.isDirectory()) {
-      return collectMarkdownFiles(fullPath);
-    }
-
-    if (entry.isFile() && isMarkdownFile(fullPath)) {
-      return [fullPath];
-    }
-
-    return [];
-  }));
-
-  return nested.flat().sort((left, right) => left.localeCompare(right));
+export type ResolvedChronicleContext = {
+  readonly promptText: string;
+  readonly status: string;
+  readonly used: boolean;
 };
 
-export const loadChronicleContext = async (baseDir: string): Promise<ChronicleContext> => {
-  const absoluteDir = path.resolve(process.cwd(), baseDir);
+const vectorStorePrompt = [
+  "Use the file_search tool against the configured OpenAI vector store for chronicle facts.",
+  "Retrieve player character details, factions, locations, sites, and established NPCs before inventing continuity.",
+  "When retrieval is thin or ambiguous, mark chronicle ties as plausible Storyteller hooks instead of definitive canon."
+].join(" ");
 
-  try {
-    const files = await collectMarkdownFiles(absoluteDir);
-    const sections: string[] = [];
-    let remaining = MAX_CONTEXT_CHARS;
-
-    for (const file of files) {
-      if (remaining <= 0) {
-        break;
-      }
-
-      const relativePath = path.relative(process.cwd(), file);
-      const raw = await readFile(file, "utf8");
-      const trimmed = raw.slice(0, Math.max(0, remaining));
-      sections.push(`\n--- Chronicle file: ${relativePath} ---\n${trimmed}`);
-      remaining -= trimmed.length;
-    }
-
+export const chronicleHealthInfo = (config: DashboardConfig): ChronicleHealthInfo => {
+  const storeId = config.openAiVectorStoreId?.trim() ?? "";
+  if (!storeId) {
     return {
-      text: sections.join("\n"),
-      files: files.map((file) => path.relative(process.cwd(), file))
+      chronicleMode: "unconfigured",
+      hasVectorStore: false,
+      chronicleStatus: "OPENAI_VECTOR_STORE_ID is not set. NPC generation requires a configured OpenAI vector store."
     };
-  } catch (error: unknown) {
-    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
-      return { text: "", files: [] };
-    }
-
-    throw error;
   }
+
+  return {
+    chronicleMode: "vector_store",
+    hasVectorStore: true,
+    chronicleStatus: `Chronicle context: OpenAI vector store (${storeId}).`
+  };
+};
+
+export const resolveChronicleContext = (config: DashboardConfig): ResolvedChronicleContext => {
+  const storeId = config.openAiVectorStoreId?.trim() ?? "";
+  if (!storeId) {
+    throw new Error(
+      "OPENAI_VECTOR_STORE_ID is required. Upload chronicle files to an OpenAI vector store, set the store ID in .env, and restart the server."
+    );
+  }
+
+  return {
+    promptText: vectorStorePrompt,
+    status: `Chronicle context: OpenAI vector store (${storeId}).`,
+    used: true
+  };
+};
+
+export const vectorStoreFileSearchTool = (config: DashboardConfig): { readonly type: "file_search"; readonly vector_store_ids: readonly string[] } => {
+  const storeId = config.openAiVectorStoreId?.trim() ?? "";
+  if (!storeId) {
+    throw new Error(
+      "OPENAI_VECTOR_STORE_ID is required. Upload chronicle files to an OpenAI vector store, set the store ID in .env, and restart the server."
+    );
+  }
+
+  return { type: "file_search", vector_store_ids: [storeId] };
+};
+
+export const chronicleSystemPromptExtension = (config: DashboardConfig): string => {
+  if (!config.openAiVectorStoreId?.trim()) {
+    return "";
+  }
+
+  return [
+    "Chronicle knowledge lives in the attached OpenAI vector store. Use file_search before inventing continuity.",
+    "Ground PC ties, factions, locations, and established NPC references in retrieved chronicle material when possible."
+  ].join(" ");
 };

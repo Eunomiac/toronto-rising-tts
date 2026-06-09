@@ -184,7 +184,7 @@ const mergeLockedFields = (oldNpc: Npc, newNpc: Npc, locks: LockMap): Npc => ({
   imagePrompt: locks.imagePrompt ? oldNpc.imagePrompt : newNpc.imagePrompt
 });
 
-const parseNpcFromUnknown = (value: unknown): Npc => parseGenerateNpcResponse({ npcs: [value], chronicleContextUsed: false, chronicleContextFiles: [] }).npcs[0] ?? (() => { throw new Error("NPC parse failed."); })();
+const parseNpcFromUnknown = (value: unknown): Npc => parseGenerateNpcResponse({ npcs: [value], chronicleContextUsed: false, chronicleContextFiles: [], chronicleStatus: "" }).npcs[0] ?? (() => { throw new Error("NPC parse failed."); })();
 
 const generate = async (options: GenerateOptions): Promise<void> => {
   state.prompt = promptElement.value.trim();
@@ -198,7 +198,7 @@ const generate = async (options: GenerateOptions): Promise<void> => {
     const result = await generateNpcRequest(buildGenerateRequest(state.prompt, options.multiples ? 3 : 1, options.images, state.quickTags, options.direction));
     state.npcs = [...result.npcs];
     state.history = [...result.npcs, ...state.history].slice(0, 30);
-    setStatus("success", result.chronicleContextUsed ? `Generated with ${result.chronicleContextFiles.length} chronicle Markdown file(s).` : "Generated without chronicle Markdown context. Add files under data/chronicle when ready.");
+    setStatus("success", result.chronicleStatus.length > 0 ? result.chronicleStatus : (result.chronicleContextUsed ? "Generated with vector-store chronicle context." : "Generated without chronicle context."));
     render();
 
     if (options.images) {
@@ -453,4 +453,25 @@ promptElement.addEventListener("keydown", (event) => {
   event.preventDefault();
   void generate({ multiples: event.shiftKey, images: event.ctrlKey });
 });
+
+const refreshChronicleStatusFromHealth = async (): Promise<void> => {
+  try {
+    const response = await fetch("/api/health");
+    if (!response.ok) {
+      setStatus("error", "Dashboard API health check failed.");
+      return;
+    }
+    const payload: unknown = await response.json();
+    if (typeof payload === "object" && payload !== null && "chronicleStatus" in payload) {
+      const status = (payload as { chronicleStatus: unknown }).chronicleStatus;
+      if (typeof status === "string" && status.trim().length > 0) {
+        setStatus("idle", status);
+      }
+    }
+  } catch {
+    setStatus("error", "Could not reach the dashboard API.");
+  }
+};
+
+void refreshChronicleStatusFromHealth();
 render();

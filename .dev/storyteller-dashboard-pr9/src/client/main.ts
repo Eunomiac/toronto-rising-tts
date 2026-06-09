@@ -34,7 +34,7 @@ const state: AppState = {
   options: { ...defaultOptions },
   multipleCount: 3,
   npcs: loadSessionNpcs(),
-  chronicleStatus: "Chronicle context has not been loaded this session."
+  chronicleStatus: "Checking chronicle configuration..."
 };
 
 const rootElement = document.getElementById("root");
@@ -306,7 +306,7 @@ function render(): void {
         <p class="status">${escapeHtml(state.chronicleStatus)}</p>
       </section>
       <section class="npc-grid" aria-live="polite">
-        ${state.npcs.length === 0 ? `<div class="empty-state"><h2>No NPCs yet.</h2><p>Type rough table notes, choose a few chips, and hit Enter. Add chronicle Markdown later under <code>chronicle/</code>.</p></div>` : state.npcs.map(npcCardHtml).join("")}
+        ${state.npcs.length === 0 ? `<div class="empty-state"><h2>No NPCs yet.</h2><p>Type rough table notes, choose a few chips, and hit Enter. Chronicle context is retrieved from your configured OpenAI vector store.</p></div>` : state.npcs.map(npcCardHtml).join("")}
       </section>
       ${selectedNpc === undefined ? "" : modalHtml(selectedNpc)}
     </main>`;
@@ -381,4 +381,24 @@ function bindEvents(): void {
   }
 }
 
+async function refreshChronicleStatusFromHealth(): Promise<void> {
+  try {
+    const response = await fetch("/api/health");
+    if (!response.ok) {
+      state.chronicleStatus = "Dashboard API health check failed.";
+      return;
+    }
+    const payload: unknown = await response.json();
+    if (typeof payload === "object" && payload !== null && "chronicleStatus" in payload) {
+      const status = (payload as { chronicleStatus: unknown }).chronicleStatus;
+      if (typeof status === "string" && status.trim().length > 0) {
+        state.chronicleStatus = status;
+      }
+    }
+  } catch {
+    state.chronicleStatus = "Could not reach the dashboard API.";
+  }
+}
+
+void refreshChronicleStatusFromHealth().then(() => render());
 render();

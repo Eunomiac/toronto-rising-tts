@@ -294,7 +294,7 @@
       }
     },
     {
-      "label": "Storyteller Dashboard: Start server",
+      "label": "Storyteller Dashboard (PR10): Start server",
       "type": "shell",
       "command": "npm run dev",
       "options": {
@@ -310,7 +310,7 @@
       },
       "isBackground": true,
       "problemMatcher": {
-        "owner": "storyteller-dashboard",
+        "owner": "storyteller-dashboard-pr10",
         "pattern": {
           "regexp": "^(.*Storyteller dashboard listening on (https?://\\S+).*)$",
           "line": 1,
@@ -333,7 +333,79 @@
       }
     },
     {
-      "label": "Storyteller Dashboard: Open in browser",
+      "label": "Storyteller Dashboard (PR10): Open in browser",
+      "type": "shell",
+      "command": "start",
+      "args": ["chrome", "http://127.0.0.1:8788"],
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared",
+        "close": true
+      }
+    },
+    {
+      "label": "Storyteller Dashboard (PR10): Dev (server + browser)",
+      "dependsOn": [
+        "Storyteller Dashboard (PR10): Start server",
+        "Storyteller Dashboard (PR10): Open in browser"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": [],
+      "group": {
+        "kind": "none",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "Storyteller Dashboard (PR9): Start server",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": {
+        "cwd": "${workspaceFolder}/.dev/storyteller-dashboard-pr9"
+      },
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "storyteller-dashboard-pr9",
+        "pattern": {
+          "regexp": "^(.*Toronto Rising Storyteller Dashboard listening on (https?://\\S+).*)$",
+          "line": 1,
+          "column": 1,
+          "message": 1
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "Toronto Rising Storyteller Dashboard listening on"
+        }
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "Storyteller Dashboard (PR9): Open in browser",
       "type": "shell",
       "command": "start",
       "args": ["chrome", "http://127.0.0.1:8787"],
@@ -353,10 +425,10 @@
       }
     },
     {
-      "label": "Storyteller Dashboard: Dev (server + browser)",
+      "label": "Storyteller Dashboard (PR9): Dev (server + browser)",
       "dependsOn": [
-        "Storyteller Dashboard: Start server",
-        "Storyteller Dashboard: Open in browser"
+        "Storyteller Dashboard (PR9): Start server",
+        "Storyteller Dashboard (PR9): Open in browser"
       ],
       "dependsOrder": "sequence",
       "problemMatcher": [],

@@ -1,5 +1,11 @@
 # Dice — manual E2E playbook
 
+This has been wired into RunTest. Initialize with `RunTest("Dice")`, then `RunTest()` after each step.
+
+RunTest("Dice")
+RunTest()
+
+
 ```lua
 U.RunSequence({
   function()

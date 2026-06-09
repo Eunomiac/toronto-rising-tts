@@ -57,6 +57,7 @@ export type GenerateNpcResponse = {
   readonly npcs: readonly Npc[];
   readonly chronicleContextUsed: boolean;
   readonly chronicleContextFiles: readonly string[];
+  readonly chronicleStatus: string;
 };
 
 export type GenerateImageResponse = {
@@ -108,7 +109,8 @@ export const parseGenerateNpcResponse = (value: unknown): GenerateNpcResponse =>
   assertCondition(Array.isArray(value.npcs) && value.npcs.length > 0, "Generate response must include NPCs.");
   const chronicleContextUsed = typeof value.chronicleContextUsed === "boolean" ? value.chronicleContextUsed : false;
   const chronicleContextFiles = isStringArray(value.chronicleContextFiles) ? value.chronicleContextFiles : [];
-  return { npcs: value.npcs.map(parseNpc), chronicleContextUsed, chronicleContextFiles };
+  const chronicleStatus = typeof value.chronicleStatus === "string" ? value.chronicleStatus : "";
+  return { npcs: value.npcs.map(parseNpc), chronicleContextUsed, chronicleContextFiles, chronicleStatus };
 };
 
 export const parseGenerateNpcRequest = (value: unknown): GenerateNpcRequest => {

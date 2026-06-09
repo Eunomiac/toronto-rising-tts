@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { DashboardConfig } from "./config.js";
-import { loadChronicleContext } from "./chronicleContext.js";
+import { chronicleSystemPromptExtension, resolveChronicleContext, vectorStoreFileSearchTool } from "./chronicleContext.js";
 import {
   parseGenerateImageResponse,
   parseGenerateNpcResponse,
@@ -72,13 +72,22 @@ const npcJsonSchema = {
   }
 } as const;
 
-const systemPrompt = `You generate immediately playable Vampire: the Masquerade 5th Edition NPCs for a modern Toronto chronicle.
-Use gothic-punk, political, personal, dangerous, morally compromised modern-night details.
-Prefer concrete table utility over florid prose. Avoid generic fantasy.
-Use V5-like dice pools as short labels such as "Insight 6", "Subterfuge 5", "Firearms 4".
-For mortals, write "None" for disciplines unless supernatural traits are truly justified.
-If chronicle files are supplied, use them only when relevant; do not invent certainty about missing continuity.
-The user often enters rushed fragments or keywords. Preserve useful constraints and fill gaps with playable tension.`;
+const buildSystemPrompt = (config: DashboardConfig): string => {
+  const lines = [
+    "You generate immediately playable Vampire: the Masquerade 5th Edition NPCs for a modern Toronto chronicle.",
+    "Use gothic-punk, political, personal, dangerous, morally compromised modern-night details.",
+    "Prefer concrete table utility over florid prose. Avoid generic fantasy.",
+    "Use V5-like dice pools as short labels such as \"Insight 6\", \"Subterfuge 5\", \"Firearms 4\".",
+    "For mortals, write \"None\" for disciplines unless supernatural traits are truly justified.",
+    "For unknown chronicle references, do not invent definitive continuity. Mark uncertain ties as Storyteller hooks.",
+    "The user often enters rushed fragments or keywords. Preserve useful constraints and fill gaps with playable tension."
+  ];
+  const extension = chronicleSystemPromptExtension(config);
+  if (extension.length > 0) {
+    lines.push(extension);
+  }
+  return lines.join("\n");
+};
 
 const quickTagSummary = (quickTags: QuickTags): string => [
   `Species: ${quickTags.species}`,
@@ -125,7 +134,7 @@ export const generateNpcs = async (config: DashboardConfig, request: GenerateNpc
     throw new Error("OPENAI_API_KEY is required to generate NPCs.");
   }
 
-  const chronicle = await loadChronicleContext(config.chronicleContextDir);
+  const chronicle = resolveChronicleContext(config);
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
@@ -134,8 +143,9 @@ export const generateNpcs = async (config: DashboardConfig, request: GenerateNpc
     },
     body: JSON.stringify({
       model: config.textModel,
+      tools: [vectorStoreFileSearchTool(config)],
       input: [
-        { role: "system", content: systemPrompt },
+        { role: "system", content: buildSystemPrompt(config) },
         {
           role: "user",
           content: [
@@ -143,7 +153,7 @@ export const generateNpcs = async (config: DashboardConfig, request: GenerateNpc
             `Quick controls: ${quickTagSummary(request.quickTags)}.`,
             request.direction ? `Regeneration direction: ${request.direction}.` : "",
             `User prompt: ${request.prompt}`,
-            chronicle.text ? `Chronicle context:\n${chronicle.text}` : "No chronicle Markdown files are installed yet. Keep chronicle relationship fields honest and say what is unknown."
+            `Chronicle context: ${chronicle.promptText}`
           ].filter((line) => line.length > 0).join("\n\n")
         }
       ],
@@ -159,12 +169,13 @@ export const generateNpcs = async (config: DashboardConfig, request: GenerateNpc
   });
 
   const output = JSON.parse(extractResponseText(await readJsonResponse(response))) as unknown;
-  const parsed = parseGenerateNpcResponse({ npcs: (output as { readonly npcs?: unknown }).npcs, chronicleContextUsed: false, chronicleContextFiles: [] });
+  const parsed = parseGenerateNpcResponse({ npcs: (output as { readonly npcs?: unknown }).npcs, chronicleContextUsed: false, chronicleContextFiles: [], chronicleStatus: "" });
 
   return parseGenerateNpcResponse({
     npcs: withStableIds(parsed.npcs),
-    chronicleContextUsed: chronicle.files.length > 0,
-    chronicleContextFiles: chronicle.files
+    chronicleContextUsed: chronicle.used,
+    chronicleContextFiles: [],
+    chronicleStatus: chronicle.status
   });
 };
 

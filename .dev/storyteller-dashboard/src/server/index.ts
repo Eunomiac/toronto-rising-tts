@@ -3,10 +3,13 @@ import { stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { chronicleHealthInfo } from "./chronicleContext.js";
 import { getConfig } from "./config.js";
+import { loadEnvFile } from "./loadEnv.js";
 import { generateNpcImage, generateNpcs, rerollNpcField } from "./npcService.js";
 import { parseGenerateImageRequest, parseGenerateNpcRequest, parseRerollFieldRequest } from "../shared/npc.js";
 
+loadEnvFile();
 const config = getConfig();
 const distDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -63,7 +66,13 @@ const serveFile = async (response: ServerResponse, requestPath: string): Promise
 
 const handleApi = async (request: IncomingMessage, response: ServerResponse, pathname: string): Promise<void> => {
   if (request.method === "GET" && pathname === "/api/health") {
-    sendJson(response, 200, { ok: true, hasOpenAiKey: Boolean(config.openAiApiKey), textModel: config.textModel, imageModel: config.imageModel });
+    sendJson(response, 200, {
+      ok: true,
+      hasOpenAiKey: Boolean(config.openAiApiKey),
+      textModel: config.textModel,
+      imageModel: config.imageModel,
+      ...chronicleHealthInfo(config)
+    });
     return;
   }
 
@@ -104,4 +113,5 @@ createServer((request, response) => {
   })();
 }).listen(config.port, "127.0.0.1", () => {
   console.log(`Storyteller dashboard listening on http://127.0.0.1:${config.port}`);
+  console.log(chronicleHealthInfo(config).chronicleStatus);
 });

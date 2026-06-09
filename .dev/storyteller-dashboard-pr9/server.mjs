@@ -1,6 +1,5 @@
 import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
-import { readFile, readdir } from "node:fs/promises";
 import { createReadStream, existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,8 +7,6 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const appRoot = path.dirname(__filename);
 const distRoot = path.join(appRoot, "dist");
-const chronicleDir = path.join(appRoot, "chronicle");
-const maxInlineChronicleChars = 70000;
 const npcFieldKeys = [
   "name",
   "species",
@@ -180,41 +177,58 @@ function validateField(value) {
   return field;
 }
 
+function vectorStoreId() {
+  return process.env.OPENAI_VECTOR_STORE_ID?.trim() || "";
+}
+
+function chronicleHealthInfo() {
+  const storeId = vectorStoreId();
+  if (!storeId) {
+    return {
+      chronicleMode: "unconfigured",
+      hasVectorStore: false,
+      chronicleStatus: "OPENAI_VECTOR_STORE_ID is not set. NPC generation requires a configured OpenAI vector store."
+    };
+  }
+  return {
+    chronicleMode: "vector_store",
+    hasVectorStore: true,
+    chronicleStatus: `Chronicle context: OpenAI vector store (${storeId}).`
+  };
+}
+
 function buildSystemPrompt() {
-  return [
+  const lines = [
     "You are a fast live-play Storyteller assistant for a Vampire: The Masquerade 5th Edition chronicle set in the modern night.",
     "Generate playable NPCs, not fiction excerpts. Favor gothic-punk, politics, hunger, secrets, personal compromise, immediate table utility, and dangerous social leverage.",
     "Avoid generic fantasy, heroic fantasy races, purple prose, and lore dumps. If a user gives scraps or keywords, infer a useful NPC while preserving those clues.",
     "Use V5 terminology where helpful. Keep dice pools as concise attribute+skill pools with approximate dice counts, such as Manipulation + Subterfuge 6.",
     "For unknown chronicle references, do not invent definitive continuity. Mark the tie as a plausible hook for Storyteller approval."
-  ].join("\n");
+  ];
+  if (vectorStoreId()) {
+    lines.push(
+      "Chronicle knowledge lives in the attached OpenAI vector store. Use file_search before inventing continuity.",
+      "Ground PC ties, factions, locations, and established NPC references in retrieved chronicle material when possible."
+    );
+  }
+  return lines.join("\n");
 }
 
-async function readChronicleMarkdown() {
-  const vectorStoreId = process.env.OPENAI_VECTOR_STORE_ID?.trim();
-  if (vectorStoreId) {
-    return { context: "Chronicle context is available through the configured OpenAI vector store.", status: `Using OPENAI_VECTOR_STORE_ID=${vectorStoreId}` };
+function resolveChronicleContext() {
+  const storeId = vectorStoreId();
+  if (!storeId) {
+    throw new Error(
+      "OPENAI_VECTOR_STORE_ID is required. Upload chronicle files to an OpenAI vector store, set the store ID in .env, and restart the server."
+    );
   }
-  if (!existsSync(chronicleDir)) {
-    return { context: "No local chronicle Markdown files are present yet.", status: "No chronicle Markdown files found; add .md files under chronicle/." };
-  }
-  const entries = await readdir(chronicleDir);
-  const markdownFiles = entries.filter((entry) => entry.toLowerCase().endsWith(".md")).sort();
-  if (markdownFiles.length === 0) {
-    return { context: "No local chronicle Markdown files are present yet.", status: "No chronicle Markdown files found; add .md files under chronicle/." };
-  }
-  const chunks = [];
-  let usedChars = 0;
-  for (const fileName of markdownFiles) {
-    const content = await readFile(path.join(chronicleDir, fileName), "utf8");
-    const chunk = [`# ${fileName}`, content.trim()].join("\n\n");
-    if (usedChars + chunk.length > maxInlineChronicleChars) {
-      break;
-    }
-    chunks.push(chunk);
-    usedChars += chunk.length;
-  }
-  return { context: chunks.join("\n\n---\n\n"), status: `Loaded ${chunks.length} local chronicle Markdown file(s) from chronicle/.` };
+  return {
+    context: [
+      "Use the file_search tool against the configured OpenAI vector store for chronicle facts.",
+      "Retrieve player character details, factions, locations, sites, and established NPCs before inventing continuity.",
+      "When retrieval is thin or ambiguous, mark chronicle ties as plausible Storyteller hooks instead of definitive canon."
+    ].join(" "),
+    status: `Chronicle context: OpenAI vector store (${storeId}).`
+  };
 }
 
 function quickOptionText(options) {
@@ -237,10 +251,13 @@ function apiKey() {
 }
 
 function attachFileSearchTool(body) {
-  const vectorStoreId = process.env.OPENAI_VECTOR_STORE_ID?.trim();
-  if (vectorStoreId) {
-    body.tools = [{ type: "file_search", vector_store_ids: [vectorStoreId] }];
+  const storeId = vectorStoreId();
+  if (!storeId) {
+    throw new Error(
+      "OPENAI_VECTOR_STORE_ID is required. Upload chronicle files to an OpenAI vector store, set the store ID in .env, and restart the server."
+    );
   }
+  body.tools = [{ type: "file_search", vector_store_ids: [storeId] }];
 }
 
 async function postOpenAiResponses(body) {
@@ -295,7 +312,7 @@ function validateGeneratedNpc(npc) {
 }
 
 async function generateNpcs(request) {
-  const chronicle = await readChronicleMarkdown();
+  const chronicle = resolveChronicleContext();
   const body = {
     model: process.env.OPENAI_TEXT_MODEL?.trim() || "gpt-5-mini",
     instructions: buildSystemPrompt(),
@@ -321,7 +338,7 @@ async function generateNpcs(request) {
 }
 
 async function rerollField(npc, field, prompt, quickOptions) {
-  const chronicle = await readChronicleMarkdown();
+  const chronicle = resolveChronicleContext();
   const body = {
     model: process.env.OPENAI_TEXT_MODEL?.trim() || "gpt-5-mini",
     instructions: buildSystemPrompt(),
@@ -392,7 +409,7 @@ function sendError(response, error) {
 async function handleApi(request, response, pathname) {
   try {
     if (request.method === "GET" && pathname === "/api/health") {
-      sendJson(response, 200, { ok: true });
+      sendJson(response, 200, { ok: true, ...chronicleHealthInfo() });
       return;
     }
     const body = await readJsonBody(request);
@@ -460,4 +477,6 @@ createServer((request, response) => {
   serveStatic(request, response, url.pathname);
 }).listen(port, () => {
   console.log(`Toronto Rising Storyteller Dashboard listening on http://localhost:${port}`);
+  const chronicle = chronicleHealthInfo();
+  console.log(chronicle.chronicleStatus);
 });

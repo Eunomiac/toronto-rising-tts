@@ -24,7 +24,7 @@ A standalone, browser-based second-monitor dashboard for running a Vampire: The 
 
 ```text
 .dev/storyteller-dashboard/
-  chronicle/                 # Add chronicle Markdown context here later.
+  (no local chronicle folder) # Chronicle context comes from OPENAI_VECTOR_STORE_ID only.
   src/client/                # Vanilla TypeScript dashboard UI.
   server.mjs                 # Node HTTP API and OpenAI Responses API calls.
   src/shared/                # Shared schemas/types for NPC contracts.
@@ -32,26 +32,22 @@ A standalone, browser-based second-monitor dashboard for running a Vampire: The 
   README.md                  # This guide.
 ```
 
-This app is intentionally isolated under `.dev/storyteller-dashboard` so it does not interfere with the existing Tabletop Simulator Lua/XML tooling.
+This app is intentionally isolated under `.dev/storyteller-dashboard-pr9` so it does not interfere with the existing Tabletop Simulator Lua/XML tooling.
 
 ## OpenAI architecture notes
 
 The MVP uses the OpenAI Responses API from the server. Structured NPC text is requested with JSON schema output. Portraits use the Responses API image generation tool in a second request so text can render immediately.
 
-For chronicle knowledge, the best MVP path is:
+Chronicle knowledge is **vector-store only**. Upload your Custom GPT source Markdown/JSON files to an OpenAI vector store, then set `OPENAI_VECTOR_STORE_ID` in `.env`. The server attaches the Responses API `file_search` tool on every NPC generate/reroll request. No local `chronicle/` folder is required or read.
 
-1. Add your Custom GPT source Markdown files under `chronicle/`.
-2. Run locally with inline Markdown context while the notes are still small.
-3. When you want a more durable RAG setup, upload those same Markdown files to an OpenAI vector store and set `OPENAI_VECTOR_STORE_ID` in `.env`. The server will then attach the Responses API `file_search` tool instead of inline Markdown context.
-
-Do **not** call the existing Custom GPT directly from this app unless OpenAI provides a clean app/backend API for that specific GPT. Keeping chronicle notes as source files or vector-store files makes the dashboard portable, testable, and easier to evolve.
+Do **not** call the existing Custom GPT directly from this app unless OpenAI provides a clean app/backend API for that specific GPT.
 
 ## Setup
 
 From this folder:
 
 ```powershell
-cd .dev/storyteller-dashboard
+cd .dev/storyteller-dashboard-pr9
 npm install
 Copy-Item .env.example .env
 ```
@@ -60,6 +56,7 @@ Edit `.env` and set:
 
 ```text
 OPENAI_API_KEY=sk-...
+OPENAI_VECTOR_STORE_ID=vs_...
 ```
 
 Optional model/config overrides:
@@ -67,13 +64,12 @@ Optional model/config overrides:
 ```text
 OPENAI_TEXT_MODEL=gpt-5-mini
 OPENAI_IMAGE_MODEL=gpt-5-mini
-OPENAI_VECTOR_STORE_ID=
 DASHBOARD_PORT=8787
 ```
 
 ## Run locally
 
-**From Cursor / VS Code:** Run Task → **Storyteller Dashboard: Dev (server + browser)**. This builds the client, starts the Node server in a dedicated terminal (click the printed `http://localhost:8787` link), and opens Chrome to that URL.
+**From Cursor / VS Code:** Run Task → **Storyteller Dashboard (PR9): Dev (server + browser)**. This builds the client, starts the Node server on `http://127.0.0.1:8787`, and opens Chrome. PR #10 runs separately on port **8788**.
 
 **From a terminal:**
 
@@ -94,25 +90,13 @@ npm run build
 npm run preview
 ```
 
-## Add chronicle Markdown files
+## Chronicle vector store
 
-Copy your Custom GPT source Markdown files into:
+1. Create an OpenAI vector store and upload chronicle files (`.md`, `.json`, etc.) — include player data and NPC lore.
+2. Set `OPENAI_VECTOR_STORE_ID=vs_...` in `.env`.
+3. Restart the server. The status line in the UI should show `Chronicle context: OpenAI vector store (...)`.
 
-```text
-.dev/storyteller-dashboard/chronicle/
-```
-
-Use clear filenames, for example:
-
-```text
-.dev/storyteller-dashboard/chronicle/setting.md
-.dev/storyteller-dashboard/chronicle/player-characters.md
-.dev/storyteller-dashboard/chronicle/factions.md
-.dev/storyteller-dashboard/chronicle/locations.md
-.dev/storyteller-dashboard/chronicle/plot-threads.md
-```
-
-The local inline context mode is meant for MVP use. If the folder grows large, create an OpenAI vector store, upload the Markdown files, put that vector store ID in `.env`, and restart the server.
+`GET /api/health` also reports `chronicleMode`, `hasVectorStore`, and `chronicleStatus` for quick verification.
 
 ## Checks
 

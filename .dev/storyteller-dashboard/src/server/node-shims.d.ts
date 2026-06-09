@@ -1,5 +1,9 @@
 declare module "node:crypto" { export function randomUUID(): string; }
-declare module "node:fs" { export function createReadStream(path: string): { pipe(response: unknown): void }; }
+declare module "node:fs" {
+  export function createReadStream(path: string): { pipe(response: unknown): void };
+  export function existsSync(path: string): boolean;
+  export function readFileSync(path: string, encoding: "utf8"): string;
+}
 declare module "node:fs/promises" {
   export const promises: { readdir(directory: string, options: { withFileTypes: true }): Promise<{ name: string; isDirectory(): boolean; isFile(): boolean }[]>; readFile(file: string, encoding: "utf8"): Promise<string> };
   export function stat(path: string): Promise<{ isFile(): boolean }>;

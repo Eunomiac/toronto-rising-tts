@@ -596,6 +596,17 @@ local function spawnRequestedDie(color, dieKind)
     end
 end
 
+--- Whether a player dice bag accepts clicks (visibility reconcile).
+-- @param params table  { color, dieKind }
+-- @return boolean
+function GlobalIsPlayerDiceBagEnabled(params)
+    if type(params) ~= "table" then return false end
+    local color = params.color
+    local dieKind = params.dieKind
+    if type(color) ~= "string" or type(dieKind) ~= "string" then return false end
+    return DBV.isBagEnabled(color, dieKind)
+end
+
 --- Player dice bag right-click: opposite of left-click (usually remove one die).
 -- @param params table  { color, dieKind, phase }
 function GlobalDiceBagRightClick(params)
@@ -848,17 +859,6 @@ function GlobalOnBagDieRemoved(params)
     local poolKind = params.poolKind
     if type(color) ~= "string" or type(poolKind) ~= "string" then return end
     RC.adjustPoolKindCount(color, poolKind, -1)
-end
-
---- Whether a player dice bag accepts clicks (visibility reconcile).
--- @param params table  { color, dieKind }
--- @return boolean
-function GlobalIsPlayerDiceBagEnabled(params)
-    if type(params) ~= "table" then return false end
-    local color = params.color
-    local dieKind = params.dieKind
-    if type(color) ~= "string" or type(dieKind) ~= "string" then return false end
-    return DBV.isBagEnabled(color, dieKind)
 end
 
 --- Spawns one die from the bag object registered for this logical kind (GUID lookup).
