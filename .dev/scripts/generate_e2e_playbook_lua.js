@@ -132,14 +132,63 @@ function blockEndsWithHumanGate(blockText) {
   return /printHeader\("\[HUMAN\][^"]*"/.test(blockText);
 }
 
+/** Level-1 suite open banners only (not step substeps like H1). */
+const SUITE_L1_HEADER_RE =
+  /printHeader\("Dice E2E: SUITE (0|E2|[A-Z])\s*[-:][^"]*"\s*,\s*1\)/g;
+
+/**
+ * Maps top-level suite id → first RunSequence step index (1-based).
+ * @param {string[]} blocks
+ * @returns {{ suiteSteps: Record<string, number>, suiteIds: string[] }}
+ */
+function extractTopLevelSuiteSteps(blocks) {
+  /** @type {Record<string, number>} */
+  const suiteSteps = {};
+  /** @type {string[]} */
+  const suiteIds = [];
+  blocks.forEach((block, idx) => {
+    const stepNum = idx + 1;
+    SUITE_L1_HEADER_RE.lastIndex = 0;
+    let match = SUITE_L1_HEADER_RE.exec(block);
+    while (match !== null) {
+      const id = match[1];
+      if (suiteSteps[id] === undefined) {
+        suiteSteps[id] = stepNum;
+        suiteIds.push(id);
+      }
+      match = SUITE_L1_HEADER_RE.exec(block);
+    }
+  });
+  return { suiteSteps, suiteIds };
+}
+
+/**
+ * @param {Record<string, number>} suiteSteps
+ * @param {string[]} suiteIds
+ * @returns {string}
+ */
+function formatSuiteStepsLua(suiteSteps, suiteIds) {
+  const lines = suiteIds.map((id) => `    ["${id}"] = ${suiteSteps[id]},`);
+  const idsLiteral = suiteIds.map((id) => `"${id}"`).join(", ");
+  return [
+    "Playbook.suiteSteps = {",
+    lines.join("\n"),
+    "}",
+    "",
+    `Playbook.suiteIds = { ${idsLiteral} }`,
+  ].join("\n");
+}
+
 /**
  * @param {string} campaign
  * @param {string} sourceRel
  * @param {string[]} stepTables
  * @param {boolean[]} humanGates
+ * @param {Record<string, number>} suiteSteps
+ * @param {string[]} suiteIds
  * @returns {string}
  */
-function buildLuaModule(campaign, sourceRel, stepTables, humanGates) {
+function buildLuaModule(campaign, sourceRel, stepTables, humanGates, suiteSteps, suiteIds) {
   const stepLines = stepTables.map((tableText, idx) => {
     const lines = tableText.split("\n");
     const indented = lines.map((line) => `        ${line}`).join("\n");
@@ -165,6 +214,9 @@ function buildLuaModule(campaign, sourceRel, stepTables, humanGates) {
     "",
     "-- true when the markdown block ends with a [HUMAN] printHeader cue",
     `Playbook.humanGateAfterStep = { ${humanGateLiteral} }`,
+    "",
+    "-- Top-level suite id → first step index (RunTest campaign + suite jump)",
+    formatSuiteStepsLua(suiteSteps, suiteIds),
     "",
     "Playbook.steps = {",
     stepLines.join(",\n"),
@@ -201,7 +253,12 @@ function generateCampaign(repoRoot, campaign) {
     humanGates.push(blockEndsWithHumanGate(block));
   });
 
-  const lua = buildLuaModule(campaign, config.markdownRel, stepTables, humanGates);
+  const { suiteSteps, suiteIds } = extractTopLevelSuiteSteps(blocks);
+  if (suiteIds.length === 0) {
+    throw new Error(`No top-level SUITE banners found in ${config.markdownRel}`);
+  }
+
+  const lua = buildLuaModule(campaign, config.markdownRel, stepTables, humanGates, suiteSteps, suiteIds);
   const outAbs = path.join(repoRoot, config.moduleRel);
   fs.mkdirSync(path.dirname(outAbs), { recursive: true });
   fs.writeFileSync(outAbs, lua, "utf8");
@@ -212,6 +269,7 @@ function generateCampaign(repoRoot, campaign) {
   console.log(
     `[e2e-playbook] human gates: ${humanGates.filter(Boolean).length} / ${humanGates.length}`
   );
+  console.log(`[e2e-playbook] suites: ${suiteIds.join(", ")}`);
 }
 
 function main() {
@@ -239,5 +297,6 @@ module.exports = {
   extractRunSequenceTable,
   validateLuaTable,
   blockEndsWithHumanGate,
+  extractTopLevelSuiteSteps,
   buildLuaModule,
 };

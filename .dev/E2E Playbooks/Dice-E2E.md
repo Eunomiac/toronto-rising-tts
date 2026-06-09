@@ -1,8 +1,9 @@
 # Dice — manual E2E playbook
 
-This has been wired into RunTest. Initialize with `RunTest("Dice")`, then `RunTest()` after each step.
+This has been wired into RunTest. Initialize with `RunTest("Dice")` or `RunTest("Dice", "H")` to start at a suite, then `RunTest()` after each step.
 
 RunTest("Dice")
+RunTest("Dice", "H")
 RunTest()
 
 

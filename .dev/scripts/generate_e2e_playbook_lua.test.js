@@ -5,6 +5,7 @@ const {
   extractLuaBlocks,
   extractRunSequenceTable,
   blockEndsWithHumanGate,
+  extractTopLevelSuiteSteps,
   buildLuaModule,
 } = require("./generate_e2e_playbook_lua.js");
 
@@ -30,9 +31,13 @@ const markdown = "# Test\n\n```lua\n" + sampleBlock + "\n```\n\n```lua\n" + auto
 const blocks = extractLuaBlocks(markdown);
 assert.strictEqual(blocks.length, 2);
 
-const moduleText = buildLuaModule("Dice", ".dev/E2E Playbooks/Dice-E2E.md", [tableText], [false]);
-assert.ok(moduleText.includes('Playbook.campaign = "Dice"'));
-assert.ok(moduleText.includes("Playbook.steps = {"));
-assert.ok(!moduleText.includes("local M = {}"));
+const moduleText = buildLuaModule("Dice", ".dev/E2E Playbooks/Dice-E2E.md", [tableText], [false], { H: 12 }, ["H"]);
+assert.ok(moduleText.includes('Playbook.suiteSteps = {'));
+assert.ok(moduleText.includes('["H"] = 12'));
+
+const sampleMd = "# Test\n\n```lua\n" + sampleBlock + "\n```\n";
+const suiteBlocks = extractLuaBlocks(sampleMd);
+const suites = extractTopLevelSuiteSteps(suiteBlocks);
+assert.strictEqual(Object.keys(suites.suiteSteps).length, 0);
 
 console.log("generate_e2e_playbook_lua.test.js: OK");

@@ -17,9 +17,12 @@ Reference for the lean test playbook `Dice-E2E.md`. Run tests in order from Suit
 **Workflow (`RunTest`):** faster console driver — blocks are embedded at build time from this markdown into `lib/e2e_playbook_dice.ttslua`.
 
 ```lua
-lua RunTest("Dice")   -- prints [RunTest] Initialized 'Dice' only
-lua RunTest()         -- prints [RunTest] Dice step N/total, then runs the block
+lua RunTest("Dice")        -- prints [RunTest] Initialized 'Dice' only
+lua RunTest("Dice", "H")   -- initialized; first RunTest() begins at suite H
+lua RunTest()              -- prints [RunTest] Dice step N/total, then runs the block
 ```
+
+Top-level suite ids only: `0`, `A`–`P`, and `E2` (not substeps like `H1`). Skipping suites does not run prior cleanup — use suite `0` or manual prep when needed.
 
 `RunTest` adds no extra lines after the step — rely on level-3 `[HUMAN]` banners inside the playbook output. `RunTest("Scenes")` and `RunTest("Gameboard")` return **not yet prepared** until those playbooks are streamlined and wired. Regenerate: `npm run e2e-playbook:generate` (or full `npm run build`), then **Save & Play**.
 

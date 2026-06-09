@@ -35,10 +35,13 @@ Keep reference tables and long prose out of the lean test file. Suite and step n
 **Dice-E2E.md** is the reference for the collapsed format. Steps are also available as a generated module (`lib/e2e_playbook_dice.ttslua`, built from the markdown) and runnable via **`RunTest`** in the TTS console:
 
 ```lua
-lua RunTest("Dice")   -- [RunTest] Initialized 'Dice'
-lua RunTest()         -- [RunTest] Dice step N/total, then U.RunSequence (repeat after each [HUMAN] gate)
-lua RunTest("Scenes") -- not yet prepared
+lua RunTest("Dice")        -- [RunTest] Initialized 'Dice'
+lua RunTest("Dice", "H")   -- same, first RunTest() starts at suite H
+lua RunTest()              -- [RunTest] Dice step N/total, then U.RunSequence (repeat after each [HUMAN] gate)
+lua RunTest("Scenes")      -- not yet prepared
 ```
+
+Top-level suite ids only (`0`, `A`–`P`, `E2`) — not substeps like `H1` or `K2a`. Suite jumps skip earlier steps; run prerequisite setup manually if needed.
 
 Regenerate after editing `Dice-E2E.md`: `npm run e2e-playbook:generate` (included in `npm run build`), then **Save & Play**.
 
