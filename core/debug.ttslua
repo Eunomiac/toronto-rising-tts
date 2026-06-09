@@ -1843,8 +1843,19 @@ function DEBUG.rollSetFaces(color, facesByKind)
     if active.takeHalfAwaitingRouse == true then
         e2eLockRouseDiceForTakeHalf(color, active.id)
     end
-    RC.recalculate(color)
-    print(string.format("[DEBUG.rollSetFaces] %s: set %d face(s); recalculated.", color, setCount))
+    local recalcOk = RC.recalculate(color)
+    if recalcOk == true then
+        print(string.format("[DEBUG.rollSetFaces] %s: set %d face(s); recalculated.", color, setCount))
+    else
+        local after = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+        print(string.format(
+            "[DEBUG.rollSetFaces] %s: set %d face(s); recalculate returned false (phase=%s, takeHalfAwaitingRouse=%s)",
+            color,
+            setCount,
+            tostring(type(after) == "table" and after.phase or nil),
+            tostring(type(after) == "table" and after.takeHalfAwaitingRouse or nil)
+        ))
+    end
     return setCount
 end
 

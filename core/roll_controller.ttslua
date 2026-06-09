@@ -1052,6 +1052,34 @@ local function countRouseDiceByLock(color, rollId)
     return unlocked, locked
 end
 
+--- Counts rouse-family dice on the table with readable numeric faces for this roll.
+-- @param color string
+-- @param rollId string
+-- @return number readableCount
+-- @return table valuesByKind
+local function readableRouseValuesForRoll(color, rollId)
+    local valuesByKind = RC._getDicePoolsForRoll(color, rollId)
+    local readable = 0
+    for _, kind in ipairs({ DK.KIND_ROUSE, DK.KIND_OBLIV_ROUSE, DK.KIND_BLOOD_SURGE_ROUSE }) do
+        readable = readable + #(valuesByKind[kind] or {})
+    end
+    return readable, valuesByKind
+end
+
+--- Locks rouse-family dice for this roll that are still unlocked (Take Half merge path).
+-- @param color string
+-- @param rollId string
+local function lockRouseDiceForRoll(color, rollId)
+    local objsByKind = RC._getDiceObjectsByKindForRoll(color, rollId)
+    for _, kind in ipairs({ DK.KIND_ROUSE, DK.KIND_OBLIV_ROUSE, DK.KIND_BLOOD_SURGE_ROUSE }) do
+        for _, o in ipairs(objsByKind[kind] or {}) do
+            if o ~= nil and o.getLock() ~= true then
+                o.setLock(true)
+            end
+        end
+    end
+end
+
 --- Recalculate while Take Half is waiting on Rouse dice to be thrown.
 -- @param color string
 -- @param active table
@@ -1074,16 +1102,23 @@ local function recalculateTakeHalfAwaitingRouse(color, active, wasRolling)
 
     local unlockedRouse, lockedRouse = countRouseDiceByLock(color, active.id)
     local totalRouse = unlockedRouse + lockedRouse
-    if totalRouse < expectedRouse or lockedRouse < expectedRouse then
+    if totalRouse < expectedRouse then
         return false
     end
+
+    local readableRouse, valuesByKind = readableRouseValuesForRoll(color, active.id)
+    if readableRouse < expectedRouse then
+        return false
+    end
+
+    -- onDieSettled debounce means dice are quiet; lock before merge (WP reroll locks per die earlier).
+    lockRouseDiceForRoll(color, active.id)
 
     local successes = tonumber(partial.successes) or 0
     local nhPool = tonumber(partial.poolSize) or 0
     active.result = buildTakeHalfMainResult(successes, nhPool, active)
     active.diceDisplay = string.format("(took half: %d of %d)", successes, nhPool)
 
-    local valuesByKind = RC._getDicePoolsForRoll(color, active.id)
     active.rouseOutcomeStrips = RC._buildRouseStripsForActive(color, active, valuesByKind)
     active.diceFaces = buildTakeHalfDisplayFaces(nhPool, successes, valuesByKind)
     active.pendingResolution = nil

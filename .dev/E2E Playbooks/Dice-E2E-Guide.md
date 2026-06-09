@@ -256,7 +256,7 @@ Passed tests: ✅ beneath Pass if. Partial: ✅ + ⚠️. Failed: ❌ + notes.
 
 Record new failures in Linear; keep brief notes here when a step blocks the suite.
 
-- **H2 / H2b:** Re-verify Take Half + rouse after harness fix (`rollSetFaces` locks rouse dice before recalculate).
+- **H2 / H2b:** Take Half + rouse merge required all rouse dice **locked** before POST_ROLL (fixed in `recalculateTakeHalfAwaitingRouse` — use readable on-table faces after settle debounce).
 - **I4:** `rollE2eSettlePresetCheck` may lock dice before they drop to the tray (floating dice).
 - **I1:** If the WP reroll wave never ends on hesitation, see TOR-165 (WP reroll wave / Confirm).
 

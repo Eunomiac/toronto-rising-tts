@@ -267,6 +267,6 @@ Code paths: `lib/dice_kinds.ttslua`, `lib/rouse_outcomes.ttslua`, `core/roll_con
 - **Rouse/Obliv exclusivity:** `DK.rouseKindBlockedByPool` + `GlobalRollSpawnDieRequest` return `nil` (silent bag fail).
 - **Blood Surge activation:** `RC.activateBloodSurge` uses `EffectiveStats.forSeat` → `bloodPotencyDerived().bloodSurge` and fresh `ctx.rollPolicy()` for `bloodSurgeDiceMultiplier`; fails if `oblivRouse` already in pool.
 - **Blood Surge undo:** Hunger bag right-click → `RC.deactivateBloodSurge` → `GlobalDestroyBloodSurgeDice` (all rouse for roll + surge normal/hunger with `bloodSurgePool` script_state).
-- **Take Half + Rouse:** if the pool has Rouse/Oblivion-Rouse dice, Take Half applies only to normal+hunger (`DK.nonRouseVampirePoolTotal`), destroys those dice, releases Rouse dice to roll (`takeHalfAwaitingRouse`), then merges strips in `recalculate` before POST_ROLL.
+- **Take Half + Rouse:** if the pool has Rouse/Oblivion-Rouse dice, Take Half applies only to normal+hunger (`DK.nonRouseVampirePoolTotal`), destroys those dice, releases Rouse dice to roll (`takeHalfAwaitingRouse`), then `onDieSettledSignal` debounce → `recalculate` merges strips when all expected rouse dice are on-table with readable faces (locks them on merge) before POST_ROLL.
 - **Console helpers:** `rollTest`, `rollStTest`, `rollStSlots` (see `.dev/testbed/TEST BED.ttslua` region 11).
 - **Plan / checklist:** `.dev/plans/dice-system-pt2-implementation.md`.
