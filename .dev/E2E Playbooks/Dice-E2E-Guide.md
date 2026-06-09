@@ -12,7 +12,18 @@ Reference for the lean test playbook `Dice-E2E.md`. Run tests in order from Suit
 | **2** `=` | Step/substep open/close (`Step A1 - …`, `K2a - …`) |
 | **3** `-` | **`[HUMAN]`** — stop after this block and act in TTS |
 
-**Workflow:** paste **one** `lua` block → execute → if the last line is `[HUMAN]`, perform the action → paste the **next** block. Collapsed blocks may chain many automated steps (setup + spawn + `rollConfirm`) before the human gate. The **last block** of the file closes the run (`printHeader("", 1)` + `print("")`) with no `[HUMAN]`.
+**Workflow (manual):** paste **one** `lua` block → execute → if the last line is `[HUMAN]`, perform the action → paste the **next** block.
+
+**Workflow (`RunTest`):** faster console driver — blocks are embedded at build time from this markdown into `lib/e2e_playbook_dice.ttslua`.
+
+```lua
+lua RunTest("Dice")   -- initialize (step index 0; does not run a step)
+lua RunTest()         -- step 1, then step 2, … after each human gate
+```
+
+After each step, the console prints `[RunTest] HUMAN GATE` when the block ends with `[HUMAN]`. `RunTest("Scenes")` and `RunTest("Gameboard")` return **not yet prepared** until those playbooks are streamlined and wired. Regenerate: `npm run e2e-playbook:generate` (or full `npm run build`), then **Save & Play**.
+
+Collapsed blocks may chain many automated steps (setup + spawn + `rollConfirm`) before the human gate. The **last block** of the file closes the run (`printHeader("", 1)` + `print("")`) with no `[HUMAN]`.
 
 Cross-playbook rules: [TESTING.md § Streamlined block workflow](../TESTING.md#streamlined-block-workflow).
 
@@ -69,6 +80,7 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 | `rollStConfirm({ liveSlotIndex?, initiateBlocked? })`                    | ST slot assertions                                                          |
 | `setHumanityStains(color, n)` / `setWillpowerSuperficial(color, n)`      | Seed tracker before outcome tests                                           |
 | `printHeader(text, level)`                                               | E2E console banner (100 chars; level 1 `*`, 2 `=`, 3 `-`; `10pad + " " + text + " " + pad`) |
+| `RunTest("Dice")` / `RunTest()`                                          | Console step driver over generated `lib/e2e_playbook_dice.ttslua` (build: `npm run e2e-playbook:generate`) |
 
 
 ## Console output (`printHeader` + `U.RunSequence`)

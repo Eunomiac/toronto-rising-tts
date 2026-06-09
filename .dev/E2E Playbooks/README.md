@@ -43,6 +43,7 @@ Snippets are diagnostic only. Do **not** call `Sync.full({ force = true })` duri
 All manual playbooks should structure Lua steps like **[Dice-E2E.md](Dice-E2E.md)** so the TTS log is ordered and readable:
 
 - **Lean playbook file** — title + fenced `lua` blocks only; suite/step names in `printHeader`, not markdown headings. Split blocks **only** on human TTS interaction ([TESTING.md § Streamlined block workflow](../TESTING.md#streamlined-block-workflow)).
+- **`RunTest` driver** — `npm run e2e-playbook:generate` embeds Dice blocks into `lib/e2e_playbook_dice.ttslua`; in TTS: `RunTest("Dice")` then `RunTest()` per step. Scenes/Gameboard return not-yet-prepared until their markdown is processed the same way.
 - **`U.RunSequence`** — one paste per block; `printHeader` / `print` each in its own `function()` step.
 - **`printHeader(text, level)`** — level 1 `*` (suite), 2 `=` (step), 3 `-` (`[HUMAN]` instructions; never closed). Close suites/steps with `printHeader("", level)`; add `print("")` after each suite.
 - **`M.setCamera("ALL", "roll<Color>")`** — before human bag/dice/panel steps.

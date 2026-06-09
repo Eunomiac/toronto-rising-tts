@@ -32,7 +32,17 @@ Keep reference tables and long prose out of the lean test file. Suite and step n
 
 ### Streamlined block workflow
 
-**Dice-E2E.md** is the reference for the collapsed format:
+**Dice-E2E.md** is the reference for the collapsed format. Steps are also available as a generated module (`lib/e2e_playbook_dice.ttslua`, built from the markdown) and runnable via **`RunTest`** in the TTS console:
+
+```lua
+lua RunTest("Dice")   -- arm campaign; does not run a step
+lua RunTest()         -- run next U.RunSequence block (repeat after each [HUMAN] gate)
+lua RunTest("Scenes") -- not yet prepared
+```
+
+Regenerate after editing `Dice-E2E.md`: `npm run e2e-playbook:generate` (included in `npm run build`), then **Save & Play**.
+
+Manual paste workflow (same blocks):
 
 1. **Paste one `lua` block** into TTS console / External Editor and execute.
 2. When a block ends with **`printHeader("[HUMAN] …", 3)`**, perform that action in TTS before running the **next** block.

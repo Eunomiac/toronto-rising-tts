@@ -2211,6 +2211,138 @@ function DEBUG.printHeader(text, level)
     return line
 end
 
+--- Active campaign for DEBUG.RunTest / RunTest (console step runner).
+local e2eRunTestState = {
+    campaign = nil,
+    playbook = nil,
+    index = 0,
+}
+
+--- Normalize playbook campaign name (Dice, Scenes, Gameboard).
+-- @param name string|nil
+-- @return string|nil
+local function normalizeE2eCampaignName(name)
+    if type(name) ~= "string" then
+        return nil
+    end
+    local trimmed = name:match("^%s*(.-)%s*$")
+    if trimmed == "" then
+        return nil
+    end
+    local lower = string.lower(trimmed)
+    if lower == "dice" then
+        return "Dice"
+    end
+    if lower == "scenes" then
+        return "Scenes"
+    end
+    if lower == "gameboard" then
+        return "Gameboard"
+    end
+    return nil
+end
+
+--- Load generated playbook module for a prepared campaign.
+-- @param campaign string Dice | Scenes | Gameboard
+-- @return table|nil playbook
+-- @return string|nil err
+local function e2eLoadPlaybookModule(campaign)
+    if campaign == "Dice" then
+        local ok, mod = pcall(require, "lib.e2e_playbook_dice")
+        if not ok then
+            return nil, "require failed (run npm run e2e-playbook:generate && Save & Play): " .. tostring(mod)
+        end
+        if type(mod) ~= "table" or type(mod.steps) ~= "table" or type(mod.stepCount) ~= "number" then
+            return nil, "lib.e2e_playbook_dice is missing steps/stepCount — regenerate playbook Lua"
+        end
+        return mod, nil
+    end
+    return nil, "not yet prepared"
+end
+
+--- Run the next E2E playbook step, or initialize a campaign.
+-- With a campaign name: reset index and arm the playbook (does not run a step).
+-- With no args: advance index by one and execute the next U.RunSequence from the armed campaign.
+-- @param campaignName string|nil "Dice" | "Scenes" | "Gameboard"
+-- @usage lua RunTest("Dice")
+-- @usage lua RunTest()
+function DEBUG.RunTest(campaignName)
+    if campaignName ~= nil then
+        local key = normalizeE2eCampaignName(campaignName)
+        if key == nil then
+            print(string.format(
+                "[RunTest] Unknown campaign '%s'. Known: Dice, Scenes, Gameboard",
+                tostring(campaignName)
+            ))
+            return false
+        end
+
+        if key == "Scenes" or key == "Gameboard" then
+            print(string.format("[RunTest] Campaign '%s' is not yet prepared.", key))
+            return false
+        end
+
+        local playbook, err = e2eLoadPlaybookModule(key)
+        if playbook == nil then
+            print("[RunTest] " .. tostring(err))
+            return false
+        end
+
+        e2eRunTestState.campaign = key
+        e2eRunTestState.playbook = playbook
+        e2eRunTestState.index = 0
+        print(string.format(
+            "[RunTest] Initialized '%s' — %d steps from %s. Call RunTest() for step 1.",
+            key,
+            playbook.stepCount,
+            tostring(playbook.sourceMarkdown)
+        ))
+        return true
+    end
+
+    if e2eRunTestState.playbook == nil then
+        print("[RunTest] No campaign active. Start with RunTest(\"Dice\").")
+        return false
+    end
+
+    local nextIndex = e2eRunTestState.index + 1
+    local playbook = e2eRunTestState.playbook
+    if nextIndex > playbook.stepCount then
+        print(string.format(
+            "[RunTest] '%s' complete (%d steps). Re-init with RunTest(\"%s\") to restart.",
+            e2eRunTestState.campaign,
+            playbook.stepCount,
+            e2eRunTestState.campaign
+        ))
+        return false
+    end
+
+    local steps = playbook.steps
+    local sequence = steps[nextIndex]
+    if type(sequence) ~= "table" then
+        print(string.format("[RunTest] FAIL: step %d is not a sequence table", nextIndex))
+        return false
+    end
+
+    e2eRunTestState.index = nextIndex
+    print(string.format(
+        "[RunTest] %s step %d/%d",
+        e2eRunTestState.campaign,
+        nextIndex,
+        playbook.stepCount
+    ))
+    U.RunSequence(sequence)
+
+    local humanGates = playbook.humanGateAfterStep
+    if type(humanGates) == "table" and humanGates[nextIndex] == true then
+        print("[RunTest] HUMAN GATE — perform the [HUMAN] action, then call RunTest() for the next step.")
+    elseif nextIndex >= playbook.stepCount then
+        print("[RunTest] Final step dispatched. Campaign will report complete on the next RunTest().")
+    end
+
+    return true
+end
+
 --- Cancels all active rolls across every player color. Quick full reset between tests.
 -- @usage lua rollCancelAll()
 function DEBUG.rollCancelAll()
@@ -3831,6 +3963,8 @@ function DEBUG.help()
     print("  logAllToFiles()                   - Log all debug info to files")
     print("  clearAllLogs()                    - Clear all log files (starts new session)")
     print("\nDICE DEBUG (solo — no second player):")
+    print("  RunTest(\"Dice\")            - Arm Dice E2E playbook (npm run e2e-playbook:generate)")
+    print("  RunTest()                  - Run next playbook step (after each [HUMAN] gate)")
     print("  rollTest(color, diff?, type?, label?, hungerLevel?) - Arm PRE_ROLL (auto seat + camera prep)")
     print("  rollTestNoDiff(color, type?, label?, hungerLevel?) - Arm PRE_ROLL without ST difficulty")
     print("  rollE2eSeatPrep(color)     - Manual prep only; rollTest/rollStTest include this")
@@ -3945,6 +4079,7 @@ rollE2eClearConditions = DEBUG.rollE2eClearConditions
 rollState     = DEBUG.rollState
 rollCancel    = DEBUG.rollCancel
 rollCancelAll = DEBUG.rollCancelAll
+RunTest       = DEBUG.RunTest
 printHeader   = DEBUG.printHeader
 rollConfirm       = DEBUG.rollConfirm
 rollConfirmTracker = DEBUG.rollConfirmTracker
