@@ -1,12 +1,3 @@
-
-U.RunSequence({
-  rollCancelAll,
-  function()
-
-  end,
-  function() M.setCamera("ALL", "rollBrown") end
-})
-
 # Toronto Rising — testing guide
 
 Manual verification lives in **[E2E Playbooks](E2E%20Playbooks/README.md)** (TOR-141). This file indexes **remaining** console helpers in [`core/debug.ttslua`](../core/debug.ttslua).
@@ -25,6 +16,90 @@ Manual verification lives in **[E2E Playbooks](E2E%20Playbooks/README.md)** (TOR
 | [Scenes-E2E](E2E%20Playbooks/Scenes-E2E.md) | After scene/library/clock/map changes — smoke ~35 min (A–E), full ~100 min (present day, RT ticker, seat absence + map pins F–N) |
 | [Dice-E2E](E2E%20Playbooks/Dice-E2E.md) | After roll pipeline changes — smoke ~30 min (A–E), full ~90 min (G–P: Take Half, WP, compound rouse, bags, baton, Blood Surge, Werewolf, Oblivion corners) |
 | [Gameboard-E2E](E2E%20Playbooks/Gameboard-E2E.md) | After gameboard Apply/Clear, token mirror, or NPC stage reconcile — smoke ~25 min + scene Apply gate; full ~60 min |
+
+## E2E console output conventions
+
+Manual playbooks use **`U.RunSequence`** + **`printHeader`** so TTS console output stays ordered and scannable. **Dice-E2E.md** is the canonical example; new or revised playbooks should follow the same pattern.
+
+### Playbook file split
+
+| File | Contents |
+| --- | --- |
+| `*-E2E.md` | Title line + **only** fenced `U.RunSequence` Lua blocks — no markdown suite/step headers, no inline **Human:** / **Pass if:** prose |
+| `*-E2E-Guide.md` (when needed) | How to run blocks, helpers, prerequisites, deterministic rules, sign-off, known failures |
+
+Keep reference tables and long prose out of the lean test file. Suite and step names live in **`printHeader`** banners inside Lua (levels 1 and 2), not as markdown headings.
+
+### Streamlined block workflow
+
+**Dice-E2E.md** is the reference for the collapsed format:
+
+1. **Paste one `lua` block** into TTS console / External Editor and execute.
+2. When a block ends with **`printHeader("[HUMAN] …", 3)`**, perform that action in TTS before running the **next** block.
+3. **Merge** automated setup, spawns, and `rollConfirm` / `rollE2eExpectBroadcast` into the same block when no human action sits between them.
+4. **Split** only on human gates — **one `[HUMAN]` cue per block** (two level-3 headers in one `U.RunSequence` print back-to-back and skip the pause).
+5. **Last step of each block** — `[HUMAN]` for every block that needs tester input; automated-only blocks may end with assertions then suite/step close (`printHeader("", 2)` / `printHeader("", 1)` + `print("")`). The **final block** of the playbook closes the run only (`printHeader("", 1)` + `print("")`), with no `[HUMAN]`.
+
+### `printHeader(text, level)`
+
+Implemented in [`core/debug.ttslua`](../core/debug.ttslua) as `DEBUG.printHeader`; global alias `printHeader`.
+
+| Level | Char | Use |
+| --- | --- | --- |
+| **1** | `*` | **Suite** open (`Dice E2E: SUITE A - …`) and **close** (`printHeader("", 1)`) |
+| **2** | `=` | **Step/substep** open (`Step A1 - …`, `K2a - …`) and **close** (`printHeader("", 2)`) when that step ends |
+| **3** | `-` | **Human instructions** (`[HUMAN] Left-click Normal bag 5 times`) — **do not** close with a later `printHeader` |
+
+**Layout (100 chars fixed):** `10×padChar` + optional `" " + text + "` + `padChar` fill. Non-empty labels have a **space before and after** the text. Empty `text` (`printHeader("", level)`) prints a pad-only line (suite/step “close” banner).
+
+**Max label length:** 88 characters (including spaces in the string you pass — the helper adds the surrounding spaces).
+
+After each **suite** ends (level-1 close), add `print("")` in its own `U.RunSequence` step for a blank line in the log.
+
+### `U.RunSequence` ordering rules
+
+1. **Wrap every playbook Lua block** in `U.RunSequence({ … })` — no bare top-level `rollTest` / `rollConfirm` in the markdown.
+2. **Isolate prints** — each `printHeader` and each `print` call lives in its **own** `function() … end` step so coroutine sequencing preserves console order.
+3. **Group logic** — setup (`rollTest`, `rollCancelAll`, state seeding) and assertions (`rollConfirm`, `rollConfirmTracker`) may share a step when no human action sits between them.
+4. **Split on human gates** — when the tester must act between setup and assertion, end one `U.RunSequence` with a level-3 `[HUMAN]` header (+ `M.setCamera` when needed), then start a **new** block for post-action `rollConfirm` / `rollE2eExpectBroadcast`. **Never** put two level-3 `[HUMAN]` steps in the same block.
+5. **Function references** — pass harness helpers directly when they are single-call steps, e.g. `rollCancelAll` (no parentheses) as a sequence entry.
+6. **Suite close** — last step(s) of each suite: `printHeader("", 1)` then `print("")`. Mid-suite steps close with `printHeader("", 2)` only when that step/substep is finished (not between substeps that continue the same suite section).
+
+### Camera before human interaction
+
+When a step requires bag clicks, tray dice, or roll-panel UI, include **`M.setCamera("ALL", "roll<Color>")`** in the same sequence step as the level-3 `[HUMAN]` header (e.g. `rollBrown`, `rollPurple`, `rollBlack`).
+
+### Minimal template (copy for new suites)
+
+```lua
+U.RunSequence({
+  function() printHeader("<Playbook>: SUITE X - Title", 1) end,
+  function() printHeader("Step X1 - Short name", 2) end,
+  rollCancelAll,
+  function()
+    -- setup + assertions when no human gate between
+    rollTest("Brown", 3, C.RollType.STANDARD, "E2E X1", 0)
+    rollConfirm("Brown", { phase = "preRoll" })
+  end,
+  function()
+    M.setCamera("ALL", "rollBrown")
+    printHeader("[HUMAN] Describe exact clicks/actions", 3)
+  end
+})
+```
+
+```lua
+U.RunSequence({
+  function() rollConfirm("Brown", { /* post-human expected */ }) end,
+  function() printHeader("", 2) end,
+  function() printHeader("", 1) end,
+  function() print("") end
+})
+```
+
+Pass criteria and sign-off live in the companion **Guide** (e.g. [Dice-E2E-Guide.md](E2E%20Playbooks/Dice-E2E-Guide.md) § Sign-off), not in the lean playbook file.
+
+See [Dice-E2E-Guide.md](E2E%20Playbooks/Dice-E2E-Guide.md) § Running the playbook + § Console output for Dice-specific notes and [E2E Playbooks README](E2E%20Playbooks/README.md) § Conventions.
 
 ## Console helpers (inspection)
 
@@ -58,6 +133,9 @@ lua setWillpowerSuperficial("Brown", 3)
 lua rollState("Brown")         -- ad-hoc inspection only (not a pass/fail gate)
 lua rollCancel("Brown")      -- returns Host to Black; Black also clears ST slots
 lua rollCancelAll()
+lua printHeader("Suite 0: Cleanup", 1)   -- 100-char E2E banner (*, =, - by level; spaces around text)
+lua printHeader("", 1)                     -- pad-only separator line
+lua rollE2eExpectBroadcast({ visible = true, resultClass = "Win", successes = 1 })  -- Win matches panel SUCCESS
 lua rollForceConfirm("Brown")   -- automation only; human E2E steps use panel Confirm
 lua rollStTest("E2E", C.RollType.STANDARD)
 lua rollStSlots()

@@ -38,12 +38,23 @@ Agents: if shipped code diverges from a playbook step, fix the doc or file a **B
 
 Snippets are diagnostic only. Do **not** call `Sync.full({ force = true })` during normal passes except the labeled **repair** step in each playbook.
 
+### Console output (`printHeader` + `U.RunSequence`)
+
+All manual playbooks should structure Lua steps like **[Dice-E2E.md](Dice-E2E.md)** so the TTS log is ordered and readable:
+
+- **Lean playbook file** — title + fenced `lua` blocks only; suite/step names in `printHeader`, not markdown headings. Split blocks **only** on human TTS interaction ([TESTING.md § Streamlined block workflow](../TESTING.md#streamlined-block-workflow)).
+- **`U.RunSequence`** — one paste per block; `printHeader` / `print` each in its own `function()` step.
+- **`printHeader(text, level)`** — level 1 `*` (suite), 2 `=` (step), 3 `-` (`[HUMAN]` instructions; never closed). Close suites/steps with `printHeader("", level)`; add `print("")` after each suite.
+- **`M.setCamera("ALL", "roll<Color>")`** — before human bag/dice/panel steps.
+
+Full rules, layout (100-char banner with spaces around text), and a copy-paste template: [TESTING.md § E2E console output conventions](../TESTING.md#e2e-console-output-conventions). Dice workflow + detail: [Dice-E2E-Guide.md § Running the playbook](Dice-E2E-Guide.md#running-the-playbook-streamlined-blocks), [§ Console output](Dice-E2E-Guide.md#console-output-printheader--urunsequence).
+
 ## Playbooks
 
 | Doc | Scope |
 | --- | --- |
 | [Scenes-E2E.md](Scenes-E2E.md) | Scene smoke (A–E) + deep suites: present day clock, RT autoprogression, clock draft, seat/map pins (absent vs present), library flush (F–N) |
-| [Dice-E2E.md](Dice-E2E.md) | Dice E2E test steps only (run from Step 0) |
+| [Dice-E2E.md](Dice-E2E.md) | Dice E2E — streamlined `U.RunSequence` blocks only (run from Suite 0; see Guide for workflow) |
 | [Dice-E2E-Guide.md](Dice-E2E-Guide.md) | Dice E2E reference: helpers, conventions, prerequisites, sign-off |
 | [Gameboard-E2E.md](Gameboard-E2E.md) | Gameboard smoke (Apply/Clear/mirror/Z flip) + scene library Apply gate + full reconcile suites + deferred TOR-172/173/175/174 probes |
 

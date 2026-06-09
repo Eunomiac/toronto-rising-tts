@@ -1,7 +1,22 @@
 # Dice E2E — Guide
 
-Reference for the lean test playbook `Dice-E2E.md`. Run tests in order from Step 0.
+Reference for the lean test playbook `Dice-E2E.md`. Run tests in order from Suite 0.
 
+## Running the playbook (streamlined blocks)
+
+`Dice-E2E.md` contains **only** fenced `U.RunSequence` Lua blocks (no markdown suite/step headers). Context appears in console via **`printHeader`**:
+
+| Level | Meaning |
+| --- | --- |
+| **1** `*` | Suite open/close (`Dice E2E: SUITE A - …`) |
+| **2** `=` | Step/substep open/close (`Step A1 - …`, `K2a - …`) |
+| **3** `-` | **`[HUMAN]`** — stop after this block and act in TTS |
+
+**Workflow:** paste **one** `lua` block → execute → if the last line is `[HUMAN]`, perform the action → paste the **next** block. Collapsed blocks may chain many automated steps (setup + spawn + `rollConfirm`) before the human gate. The **last block** of the file closes the run (`printHeader("", 1)` + `print("")`) with no `[HUMAN]`.
+
+Cross-playbook rules: [TESTING.md § Streamlined block workflow](../TESTING.md#streamlined-block-workflow).
+
+---
 
 > **NOTE FOR AGENTS:** User edits to this document are called out via the "😀" emoji. When you find one, process it immediately if possible. When such a user comment is fully integrated (i.e. requested changes implemented, reported bugs fixed, etc.), delete the user comment.
 >
@@ -50,10 +65,43 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 | `rollE2eSetPoolAutoHunger(color, normalBagClicks)`                      | Auto-Hunger pool from virtual Normal-bag clicks + spawn (Suite G)                                           |
 | `rollE2eAddPoolKindSpawn(color, kind, count)`                           | Add pool kind (e.g. `"rouse"`) + spawn after base pool (H2, I4, J1)                                         |
 | `rollE2eSettlePresetCheck(color, faces)`                                 | Spawn pool + `startRolling` + preset faces + settle (Suites C–G; no panel Roll)                             |
-| `rollE2eExpectBroadcast({ visible, resultClass?, successes?, margin?, marginAbsent? })` | Assert shared `rollResult_*` panel after Confirm / `rollForceConfirm` |
+| `rollE2eExpectBroadcast({ visible, resultClass?, successes?, margin?, marginAbsent? })` | Assert shared `rollResult_*` panel after Confirm / `rollForceConfirm`; `resultClass` shorthands (`Win`, `Failure`, …) match `C.ResultClassLabel` text (`SUCCESS`, `FAILURE`, …) |
 | `rollStConfirm({ liveSlotIndex?, initiateBlocked? })`                    | ST slot assertions                                                          |
 | `setHumanityStains(color, n)` / `setWillpowerSuperficial(color, n)`      | Seed tracker before outcome tests                                           |
+| `printHeader(text, level)`                                               | E2E console banner (100 chars; level 1 `*`, 2 `=`, 3 `-`; `10pad + " " + text + " " + pad`) |
 
+
+## Console output (`printHeader` + `U.RunSequence`)
+
+Cross-playbook rules live in [TESTING.md § E2E console output conventions](../TESTING.md#e2e-console-output-conventions). **Dice-E2E.md** is the reference implementation.
+
+### Banner levels
+
+| Level | When to open | When to close |
+| --- | --- | --- |
+| **1** | Start of each suite (`Dice E2E: SUITE A - Standard roll`) | End of suite: `printHeader("", 1)` then `print("")` |
+| **2** | Start of each step (`Step A1 - Arm roll`, `G3 - …`) | End of that step when the next level-2 step begins — `printHeader("", 2)` |
+| **3** | Immediately before human action: `printHeader("[HUMAN] …", 3)` | **Never** — level-3 lines are cues, not section wrappers |
+
+### Sequence layout (typical step)
+
+1. Open level-2 header (own `function()` step).
+2. `rollCancelAll` or `rollCancel(color)` when the step requires a clean roll.
+3. Setup + pre-human assertions in one `function()` (e.g. `rollTest`, `rollE2eSetPoolAndSpawn`, `rollConfirm` for `preRoll`).
+4. `M.setCamera` + level-3 `[HUMAN]` header (own `function()` step) — tester performs UI actions.
+5. **Separate** `U.RunSequence` block after human acts: post-human `rollConfirm` / `rollE2eExpectBroadcast`, then `printHeader("", 2)` if the step ends.
+
+**One `[HUMAN]` per block** — never two level-3 headers in one `U.RunSequence` (e.g. Suite E: ST label check and bag click are separate blocks).
+
+Multi-phase steps within one level-2 section (e.g. Suite A Step A2 bag clicks) repeat steps 4–5 without closing level 2 until the step’s final assertion passes. Automated substeps with no human gate between them belong in the **same** block (see streamlined merges in `Dice-E2E.md`: E2a→E2b→F, G1–G6, etc.).
+
+### Dice-specific camera targets
+
+| Seat under test | `M.setCamera` target |
+| --- | --- |
+| Brown (default PC) | `"rollBrown"` |
+| Purple (Oblivion) | `"rollPurple"` |
+| Black (ST / Werewolf) | `"rollBlack"` |
 
 ### `rollConfirm` (assertions)
 
@@ -99,7 +147,7 @@ Every step is **mandatory**. Do not improvise pool sizes, click counts, or asser
 | `rollE2eExpectBroadcast`         | After **Confirm** / `rollForceConfirm`: assert `rollResult_panel` visible and class/successes/margin text; use `marginAbsent = true` when ST never set difficulty |
 | **Optional difficulty**          | Steps using `rollTestNoDiff`: do **not** set ST dashboard difficulty; assert `marginAbsent` unless the step sets difficulty mid-test (E2b) |
 | Suites **H onward**              | Start each test with `rollCancel(color)`; spawn pool via helpers (**not** bag clicks) unless the step tests bag behavior (Suite **K**) |
-| **Pass if**                      | Every test block includes a **Pass if:** line; agent removes integrated 😀 notes |
+| **Pass if**                      | Use the **Sign-off** checklist below; lean `Dice-E2E.md` has no per-step **Pass if:** lines |
 | `rollStConfirm`                  | Assert `liveSlotIndex` and ST initiate blocking                                                                                                                                                                                                                                                                                                                                                                                                         |
 | Panel actions                    | Prefer console `RC.takeHalf`, `RC.openRoll` when listed; otherwise click the named panel control                                                                                                                                                                                                                                                                                                                                                        |
 | Visual-only                      | **Only** when this doc explicitly says **Visual check** (dashboard label, known-bug UI)                                                                                                                                                                                                                                                                                                                                                                 |
@@ -191,9 +239,7 @@ Passed tests: ✅ beneath Pass if. Partial: ✅ + ⚠️. Failed: ❌ + notes.
 
 Record new failures in Linear; keep brief notes here when a step blocks the suite.
 
-- **E2a:** `rollE2eExpectBroadcast` may expect `Win` while panel shows `SUCCESS`.
-- **H1b:** `rollE2eExpectBroadcast` may report panel not visible even when it appeared on screen.
-- **H2 / H2b:** Take Half + rouse may stay in `rolling` after `RC.onDiceSettled`; ST Confirm may be unavailable until fixed.
+- **H2 / H2b:** Re-verify Take Half + rouse after harness fix (`rollSetFaces` locks rouse dice before recalculate).
 - **I4:** `rollE2eSettlePresetCheck` may lock dice before they drop to the tray (floating dice).
 - **I1:** If the WP reroll wave never ends on hesitation, see TOR-165 (WP reroll wave / Confirm).
 

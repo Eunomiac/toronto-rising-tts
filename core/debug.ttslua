@@ -1775,6 +1775,26 @@ local function e2eSetDieFaceValue(obj, faceVal)
     return true
 end
 
+--- Locks rouse-family dice so Take Half + rouse `recalculate` gate passes after E2E face preset.
+-- @param color string
+-- @param rollId string
+local function e2eLockRouseDiceForTakeHalf(color, rollId)
+    if RC == nil or type(rollId) ~= "string" then
+        return
+    end
+    local _, objectsByKind = RC._getDicePoolsForRoll(color, rollId)
+    for _, kind in ipairs({ DK.KIND_ROUSE, DK.KIND_BLOOD_SURGE_ROUSE, DK.KIND_OBLIV_ROUSE }) do
+        local objs = objectsByKind[kind]
+        if type(objs) == "table" then
+            for _, obj in ipairs(objs) do
+                if obj ~= nil then
+                    obj.setLock(true)
+                end
+            end
+        end
+    end
+end
+
 --- Sets physical die faces for the active roll (ROLLING or POST_ROLL), then recalculates.
 -- @param color string
 -- @param facesByKind table e.g. { normal = {7, 7}, hunger = {10, 1}, rouse = {4} }
@@ -1819,6 +1839,9 @@ function DEBUG.rollSetFaces(color, facesByKind)
                 end
             end
         end
+    end
+    if active.takeHalfAwaitingRouse == true then
+        e2eLockRouseDiceForTakeHalf(color, active.id)
     end
     RC.recalculate(color)
     print(string.format("[DEBUG.rollSetFaces] %s: set %d face(s); recalculated.", color, setCount))
@@ -1964,17 +1987,62 @@ function DEBUG.rollE2eAddPoolKindSpawn(color, kind, count)
     return true
 end
 
+--- True when broadcast panel content was populated (active attribute may lag in same frame).
+-- @return boolean
+local function rollE2eBroadcastPanelHasContent()
+    local classText = tostring(UI.getValue("rollResult_class") or "")
+    local nameText = tostring(UI.getValue("rollResult_name") or "")
+    return classText ~= "" or nameText ~= ""
+end
+
 --- True when the shared roll result broadcast panel is visible.
 -- @return boolean
 local function rollE2eBroadcastPanelVisible()
     local activeAttr = UI.getAttribute("rollResult_panel", "active")
-    return activeAttr == "True" or activeAttr == "true"
+    if string.lower(tostring(activeAttr or "")) == "true" then
+        return true
+    end
+    return rollE2eBroadcastPanelHasContent()
+end
+
+--- Maps E2E `resultClass` shorthands (e.g. "Win") to panel labels (`C.ResultClassLabel`).
+-- @param expected string
+-- @return boolean matches classText
+local function rollE2eBroadcastClassMatches(classText, expected)
+    if type(expected) ~= "string" or expected == "" then
+        return false
+    end
+    local hay = string.lower(classText)
+    local needles = { string.lower(expected) }
+    local norm = string.lower(expected):gsub("%s+", "")
+    local shorthandToKey = {
+        win = C.ResultClass.WIN,
+        success = C.ResultClass.WIN,
+        failure = C.ResultClass.FAILURE,
+        fail = C.ResultClass.FAILURE,
+        criticalwin = C.ResultClass.CRITICAL_WIN,
+        messycritical = C.ResultClass.MESSY_CRITICAL,
+        bestialfailure = C.ResultClass.BESTIAL_FAILURE,
+        totalfailure = C.ResultClass.TOTAL_FAILURE,
+        totalbestialfailure = C.ResultClass.TOTAL_BESTIAL_FAILURE,
+    }
+    local rcKey = shorthandToKey[norm]
+    if rcKey ~= nil and type(C.ResultClassLabel[rcKey]) == "string" then
+        needles[#needles + 1] = string.lower(C.ResultClassLabel[rcKey])
+    end
+    for _, needle in ipairs(needles) do
+        if needle ~= "" and string.find(hay, needle, 1, true) ~= nil then
+            return true
+        end
+    end
+    return false
 end
 
 --- E2E: assert `rollResult_*` broadcast UI after `rollForceConfirm` / panel Confirm.
 -- @param expected table|nil  `{ visible = true, resultClass = "Failure", successes = 2, margin = -1 }`
 --   `visible` — when true, or when any field below is set, panel must be active
---   `resultClass` — substring match (case-insensitive) on `rollResult_class`
+--   `resultClass` — substring match (case-insensitive) on `rollResult_class`; E2E shorthands
+--     ("Win", "Failure", …) also match `C.ResultClassLabel` panel text (e.g. Win → SUCCESS)
 --   `successes` — integer N matches `"N success"` / `"N successes"` on `rollResult_successes`
 --   `margin` — integer matches `Margin: %+d` on `rollResult_margin`
 --   `marginAbsent` — when true, `rollResult_margin` must be empty
@@ -2010,8 +2078,7 @@ function DEBUG.rollE2eExpectBroadcast(expected)
     if panelVisible and mustBeVisible then
         local classText = tostring(UI.getValue("rollResult_class") or "")
         if type(expected.resultClass) == "string" then
-            local needle = string.lower(expected.resultClass)
-            if string.find(string.lower(classText), needle, 1, true) == nil then
+            if not rollE2eBroadcastClassMatches(classText, expected.resultClass) then
                 failures[#failures + 1] = "rollResult_class: got \""
                     .. classText .. "\", want contains \"" .. expected.resultClass .. "\""
             end
@@ -2081,6 +2148,67 @@ function DEBUG.rollCancel(color)
     end
     print(string.format("[DEBUG.rollCancel] %s: %s",
         color, cancelled and "roll cancelled" or "no active roll to cancel"))
+end
+
+--- E2E console banner width (fixed line length for visual scan in TTS log).
+local E2E_PRINT_HEADER_WIDTH = 100
+local E2E_PRINT_HEADER_LEAD = 10
+
+--- Padding character for `printHeader` by level: 1 = *, 2 = =, 3 = -.
+-- @param level number 1..3
+-- @return string|nil
+local function e2ePrintHeaderPadChar(level)
+    if level == 1 then
+        return "*"
+    end
+    if level == 2 then
+        return "="
+    end
+    if level == 3 then
+        return "-"
+    end
+    return nil
+end
+
+--- Build a fixed-width E2E section banner (100 chars) and print it to the console.
+-- Layout: 10 pad chars + optional " " + text + " " + pad fill to 100.
+-- @param text string Banner label (use "" for pad-only separator line)
+-- @param level number Header level 1..3 (*, =, -)
+-- @return string|nil Printed line, or nil on validation error
+-- @usage lua printHeader("Suite 0: Cleanup", 1)
+-- @usage lua printHeader("", 1)
+function DEBUG.printHeader(text, level)
+    if type(text) ~= "string" then
+        print("[DEBUG.printHeader] FAIL: text must be a string")
+        return nil
+    end
+    if type(level) ~= "number" or level < 1 or level > 3 then
+        print("[DEBUG.printHeader] FAIL: level must be 1, 2, or 3")
+        return nil
+    end
+
+    local padChar = e2ePrintHeaderPadChar(level)
+    local lead = string.rep(padChar, E2E_PRINT_HEADER_LEAD)
+    local mid = ""
+    if text ~= "" then
+        mid = " " .. text .. " "
+    end
+
+    local used = E2E_PRINT_HEADER_LEAD + #mid
+    if used > E2E_PRINT_HEADER_WIDTH then
+        local maxText = E2E_PRINT_HEADER_WIDTH - E2E_PRINT_HEADER_LEAD - 2
+        print(string.format(
+            "[DEBUG.printHeader] FAIL: text too long (%d chars; max %d)",
+            #text,
+            maxText
+        ))
+        return nil
+    end
+
+    local trailLen = E2E_PRINT_HEADER_WIDTH - used
+    local line = lead .. mid .. string.rep(padChar, trailLen)
+    print(line)
+    return line
 end
 
 --- Cancels all active rolls across every player color. Quick full reset between tests.
@@ -3718,6 +3846,7 @@ function DEBUG.help()
     print("  rollForceConfirm(color)  - Force-confirm POST_ROLL (UI CONFIRM)")
     print("  rollCancel(color)        - Cancel roll; Black also clears ST slots/drawers")
     print("  rollCancelAll()          - Cancel all rolls + ST slots")
+    print("  printHeader(text, level) - E2E banner line (level 1..3: *, =, -; 100 chars)")
     print("  rollStTest(label?, type?) - ST NPC roll on Black (e2e seat/camera prep)")
     print("  rollStSlots()            - Print gameState.storytellerRolls")
     print("\nGAMEBOARD E2E (TOR-141 — .dev/E2E Playbooks/Gameboard-E2E.md):")
@@ -3816,6 +3945,7 @@ rollE2eClearConditions = DEBUG.rollE2eClearConditions
 rollState     = DEBUG.rollState
 rollCancel    = DEBUG.rollCancel
 rollCancelAll = DEBUG.rollCancelAll
+printHeader   = DEBUG.printHeader
 rollConfirm       = DEBUG.rollConfirm
 rollConfirmTracker = DEBUG.rollConfirmTracker
 rollForceConfirm  = DEBUG.rollForceConfirm
