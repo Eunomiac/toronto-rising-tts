@@ -1,9 +1,9 @@
 # Dice — manual E2E playbook
 
-This has been wired into RunTest. Initialize with `RunTest("Dice")` or `RunTest("Dice", "H")` to start at a suite, then `RunTest()` after each step.
+This has been wired into RunTest. Initialize with `RunTest("Dice")` or `RunTest("Dice", 8)` to start at step 8, then `RunTest()` after each step.
 
 RunTest("Dice")
-RunTest("Dice", "H")
+RunTest("Dice", 8)
 RunTest()
 
 
@@ -430,6 +430,8 @@ U.RunSequence({
       },
     })
     rollForceConfirm("Brown")
+  end,
+  function()
     rollE2eExpectBroadcast({
       visible = true,
       resultClass = "Win",
@@ -530,6 +532,8 @@ U.RunSequence({
       },
     })
     rollForceConfirm("Brown")
+  end,
+  function()
     rollE2eExpectBroadcast({
       visible = true,
       resultClass = "Win",
@@ -1371,6 +1375,8 @@ U.RunSequence({
       },
     })
     rollForceConfirm("Black")
+  end,
+  function()
     rollE2eExpectBroadcast({
       visible = true,
       resultClass = "Win",

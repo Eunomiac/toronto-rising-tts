@@ -18,13 +18,15 @@ Reference for the lean test playbook `Dice-E2E.md`. Run tests in order from Suit
 
 ```lua
 lua RunTest("Dice")        -- prints [RunTest] Initialized 'Dice' only
-lua RunTest("Dice", "H")   -- initialized; first RunTest() begins at suite H
+lua RunTest("Dice", 8)     -- initialized at step 8/56; first RunTest() runs that block
 lua RunTest()              -- prints [RunTest] Dice step N/total, then runs the block
 ```
 
-Top-level suite ids only: `0`, `A`–`P`, and `E2` (not substeps like `H1`). Skipping suites does not run prior cleanup — use suite `0` or manual prep when needed.
+Step index is **1-based** and matches each fenced `U.RunSequence` block (56 for Dice). Skipping steps does not run prior cleanup — use step `1` or manual prep when needed.
 
 `RunTest` adds no extra lines after the step — rely on level-3 `[HUMAN]` banners inside the playbook output. `RunTest("Scenes")` and `RunTest("Gameboard")` return **not yet prepared** until those playbooks are streamlined and wired. Regenerate: `npm run e2e-playbook:generate` (or full `npm run build`), then **Save & Play**.
+
+After `rollForceConfirm`, put `rollE2eExpectBroadcast` in the **next** `RunSequence` function (not the same step as confirm) so the default inter-step wait lets the broadcast panel populate.
 
 Collapsed blocks may chain many automated steps (setup + spawn + `rollConfirm`) before the human gate. The **last block** of the file closes the run (`printHeader("", 1)` + `print("")`) with no `[HUMAN]`.
 
@@ -79,7 +81,7 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 | `rollE2eSetPoolAutoHunger(color, normalBagClicks)`                      | Auto-Hunger pool from virtual Normal-bag clicks + spawn (Suite G)                                           |
 | `rollE2eAddPoolKindSpawn(color, kind, count)`                           | Add pool kind (e.g. `"rouse"`) + spawn after base pool (H2, I4, J1)                                         |
 | `rollE2eSettlePresetCheck(color, faces)`                                 | Spawn pool + `startRolling` + preset faces + settle (Suites C–G; no panel Roll)                             |
-| `rollE2eExpectBroadcast({ visible, color?, resultClass?, successes?, margin?, marginAbsent? })` | Assert shared `rollResult_*` panel after Confirm / `rollForceConfirm`; `resultClass` shorthands (`Win`, `Failure`, …) match `C.ResultClassLabel` text (`SUCCESS`, `FAILURE`, …). UI `getValue` can lag one frame — successes/margin/class also accept the resolved history tail (`color` optional; defaults to last `rollForceConfirm` or newest history). |
+| `rollE2eExpectBroadcast({ visible, color?, resultClass?, successes?, margin?, marginAbsent? })` | Assert shared `rollResult_*` panel after Confirm / `rollForceConfirm`; defer to the **next** RunSequence step after confirm. `resultClass` shorthands (`Win`, `Failure`, …) match `C.ResultClassLabel` text. History tail fallback when UI lags (`color` optional). |
 | `rollStConfirm({ liveSlotIndex?, initiateBlocked? })`                    | ST slot assertions                                                          |
 | `setHumanityStains(color, n)` / `setWillpowerSuperficial(color, n)`      | Seed tracker before outcome tests                                           |
 | `printHeader(text, level)`                                               | E2E console banner (100 chars; level 1 `*`, 2 `=`, 3 `-`; `10pad + " " + text + " " + pad`) |

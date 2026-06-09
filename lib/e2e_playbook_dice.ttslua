@@ -10,7 +10,7 @@ local Playbook = {}
 Playbook.campaign = "Dice"
 Playbook.sourceMarkdown = ".dev/E2E Playbooks/Dice-E2E.md"
 Playbook.stepCount = 56
-Playbook.generatedAt = "2026-06-09T18:12:10.495Z"
+Playbook.generatedAt = "2026-06-09T18:20:57.553Z"
 
 -- true when the markdown block ends with a [HUMAN] printHeader cue
 Playbook.humanGateAfterStep = { true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false }
@@ -449,6 +449,8 @@ Playbook.steps = {
               },
             })
             rollForceConfirm("Brown")
+          end,
+          function()
             rollE2eExpectBroadcast({
               visible = true,
               resultClass = "Win",
@@ -543,6 +545,8 @@ Playbook.steps = {
               },
             })
             rollForceConfirm("Brown")
+          end,
+          function()
             rollE2eExpectBroadcast({
               visible = true,
               resultClass = "Win",
@@ -1308,6 +1312,8 @@ Playbook.steps = {
               },
             })
             rollForceConfirm("Black")
+          end,
+          function()
             rollE2eExpectBroadcast({
               visible = true,
               resultClass = "Win",

@@ -2146,7 +2146,8 @@ end
 --   `successes` — integer N matches `"N success"` / `"N successes"` on `rollResult_successes`
 --   `margin` — integer matches `Margin: %+d` on `rollResult_margin`
 --   `marginAbsent` — when true, `rollResult_margin` must be empty
--- UI `getValue` can lag `setValue` by a frame; successes/margin/class also accept the resolved history tail.
+-- UI `getValue` can lag `setValue` by a frame; call from the RunSequence step *after*
+-- `rollForceConfirm` (default inter-step wait). Successes/margin/class also accept history tail.
 -- @return boolean pass
 -- @usage lua rollE2eExpectBroadcast({ visible = true, resultClass = "Failure", successes = 2 })
 function DEBUG.rollE2eExpectBroadcast(expected)
@@ -2371,72 +2372,44 @@ local function e2eLoadPlaybookModule(campaign)
     return nil, "not yet prepared"
 end
 
---- Normalize top-level suite id (0, A–P, E2). Rejects substeps (H1, K2a, …).
--- @param suiteId string|nil
--- @return string|nil
-local function normalizeE2eSuiteId(suiteId)
-    if type(suiteId) ~= "string" then
-        return nil
-    end
-    local trimmed = suiteId:match("^%s*(.-)%s*$")
-    if trimmed == "" then
-        return nil
-    end
-    local upper = string.upper(trimmed)
-    if upper == "0" then
-        return "0"
-    end
-    if upper == "E2" then
-        return "E2"
-    end
-    if #upper == 1 and upper:match("[A-P]") then
-        return upper
-    end
-    return nil
-end
-
---- Step index offset before first RunTest() for an optional suite jump.
+--- Normalize 1-based RunSequence step index for optional RunTest jump.
 -- @param playbook table
--- @param suiteIdRaw string|nil
+-- @param startStepRaw number|string|nil
 -- @return number|nil index offset (0 = start at step 1); nil on error (message printed)
-local function e2eResolveSuiteStartIndex(playbook, suiteIdRaw)
-    if suiteIdRaw == nil then
+local function e2eResolveStepStartIndex(playbook, startStepRaw)
+    if startStepRaw == nil then
         return 0
     end
-    local sid = normalizeE2eSuiteId(suiteIdRaw)
-    if sid == nil then
+    local stepNum = tonumber(startStepRaw)
+    if stepNum == nil or stepNum ~= math.floor(stepNum) or stepNum < 1 then
         print(string.format(
-            "[RunTest] Unknown suite '%s' (top-level only, e.g. H or E2)",
-            tostring(suiteIdRaw)
+            "[RunTest] Invalid start step '%s' (use integer 1..%d)",
+            tostring(startStepRaw),
+            playbook.stepCount
         ))
         return nil
     end
-    if type(playbook.suiteSteps) ~= "table" then
-        print("[RunTest] Playbook missing suiteSteps — run npm run e2e-playbook:generate && Save & Play")
+    if stepNum > playbook.stepCount then
+        print(string.format(
+            "[RunTest] Start step %d exceeds stepCount %d",
+            stepNum,
+            playbook.stepCount
+        ))
         return nil
     end
-    local stepIndex = playbook.suiteSteps[sid]
-    if type(stepIndex) ~= "number" then
-        local known = ""
-        if type(playbook.suiteIds) == "table" and #playbook.suiteIds > 0 then
-            known = table.concat(playbook.suiteIds, ", ")
-        end
-        print(string.format("[RunTest] Suite '%s' not found. Top-level suites: %s", sid, known))
-        return nil
-    end
-    return stepIndex - 1
+    return stepNum - 1
 end
 
 --- Run the next E2E playbook step, or initialize a campaign.
 -- With a campaign name: reset index and arm the playbook (does not run a step).
--- Optional second arg jumps to a top-level suite (e.g. "H", "E2") before the first RunTest().
+-- Optional second arg jumps to a 1-based step index before the first RunTest().
 -- With no args: advance index by one and execute the next U.RunSequence from the armed campaign.
 -- @param campaignName string|nil "Dice" | "Scenes" | "Gameboard"
--- @param suiteId string|nil Top-level suite id when initializing (0, A–P, E2)
+-- @param startStep number|string|nil 1-based step index when initializing (e.g. 8)
 -- @usage lua RunTest("Dice")
--- @usage lua RunTest("Dice", "H")
+-- @usage lua RunTest("Dice", 8)
 -- @usage lua RunTest()
-function DEBUG.RunTest(campaignName, suiteId)
+function DEBUG.RunTest(campaignName, startStep)
     if campaignName ~= nil then
         local key = normalizeE2eCampaignName(campaignName)
         if key == nil then
@@ -2458,7 +2431,7 @@ function DEBUG.RunTest(campaignName, suiteId)
             return false
         end
 
-        local startIndex = e2eResolveSuiteStartIndex(playbook, suiteId)
+        local startIndex = e2eResolveStepStartIndex(playbook, startStep)
         if startIndex == nil then
             return false
         end
@@ -2466,7 +2439,16 @@ function DEBUG.RunTest(campaignName, suiteId)
         e2eRunTestState.campaign = key
         e2eRunTestState.playbook = playbook
         e2eRunTestState.index = startIndex
-        print(string.format("[RunTest] Initialized '%s'", key))
+        if startStep ~= nil then
+            print(string.format(
+                "[RunTest] Initialized '%s' at step %d/%d",
+                key,
+                startIndex + 1,
+                playbook.stepCount
+            ))
+        else
+            print(string.format("[RunTest] Initialized '%s'", key))
+        end
         return true
     end
 
@@ -4121,7 +4103,7 @@ function DEBUG.help()
     print("  clearAllLogs()                    - Clear all log files (starts new session)")
     print("\nDICE DEBUG (solo — no second player):")
     print("  RunTest(\"Dice\")            - Arm Dice E2E playbook (npm run e2e-playbook:generate)")
-    print("  RunTest(\"Dice\", \"H\")       - Arm Dice at top-level suite H (0, A–P, E2)")
+    print("  RunTest(\"Dice\", 8)         - Arm Dice at step 8 (1-based RunSequence index)")
     print("  RunTest()                  - Run next playbook step (after each [HUMAN] gate)")
     print("  rollTest(color, diff?, type?, label?, hungerLevel?) - Arm PRE_ROLL (auto seat + camera prep)")
     print("  rollTestNoDiff(color, type?, label?, hungerLevel?) - Arm PRE_ROLL without ST difficulty")

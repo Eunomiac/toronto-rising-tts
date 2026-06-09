@@ -36,12 +36,12 @@ Keep reference tables and long prose out of the lean test file. Suite and step n
 
 ```lua
 lua RunTest("Dice")        -- [RunTest] Initialized 'Dice'
-lua RunTest("Dice", "H")   -- same, first RunTest() starts at suite H
+lua RunTest("Dice", 8)     -- [RunTest] Initialized 'Dice' at step 8/56; first RunTest() runs step 8
 lua RunTest()              -- [RunTest] Dice step N/total, then U.RunSequence (repeat after each [HUMAN] gate)
 lua RunTest("Scenes")      -- not yet prepared
 ```
 
-Top-level suite ids only (`0`, `A`–`P`, `E2`) — not substeps like `H1` or `K2a`. Suite jumps skip earlier steps; run prerequisite setup manually if needed.
+Step index is 1-based and matches each fenced `U.RunSequence` block in the markdown (56 for Dice). Jumping to step N skips earlier blocks — run prerequisite setup manually if needed.
 
 Regenerate after editing `Dice-E2E.md`: `npm run e2e-playbook:generate` (included in `npm run build`), then **Save & Play**.
 
