@@ -47,8 +47,87 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
 
 <Include src="csheet_defaults.xml" />
 
-<Panel id="paper_root" class="page_root">
+<Panel id="paper_root" class="page_root">  <!-- width="1545" height="2000" -->
   <Button id="pageBack" class="page_navigation page_back" />
   <Button id="pageInner" class="page_navigation page_inner_right" />
+
+
+  <Panel id="rollBroadcast_root" class="rollBroadcast_root">
+    <VerticalLayout id="rollBroadcast_container" class="rollBroadcast_container">
+
+
+    </VerticalLayout>
+  </Panel>
+
+  <Panel id="rollControl_root" class="rollControl_root">
+    <VerticalLayout id="rollControl_container" class="rollControl_container">
+      <HorizontalLayout id="rollControl_headerContainer" class="rollControl_headerContainer">
+        <Text id="rollControl_rollType" class="roll_text roll_header_text roll_type_text" text="Standard Roll" /> <!-- @@HEADER_TEXT@@ -->
+        <Panel id="rollControl_spacerHeader" class="rollControl_spacer" />
+        <Text id="rollControl_rollType" class="roll_text roll_body_text" text="Result Ready — 'CONFIRM' When Done" /> <!-- @@BODY_TEXT@@ -->
+      </HorizontalLayout>
+
+      <HorizontalLayout id="rollControl_rollAssembly" class="rollControl_rollAssembly">
+        <HorizontalLayout id="rollControl_dicePoolDisplay" class="rollControl_dicePoolDisplay">
+          <Text id="rollControl_oblivRouseDice" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_oblivRouseDiceText" text=""/> <!-- @@OBLIV_DICE_STRING@@ -->
+          <Text id="rollControl_rouseDice" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_rouseDiceText" text="◆"  /> <!-- @@ROUSE_DICE_STRING@@ -->
+          <Text id="rollControl_bloodSurgeRouseDice" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_bloodSurgeRouseDiceText" text=""  /> <!-- @@BLOOD_SURGE_DICE_STRING@@ -->
+          <Panel id="rollControl_spacerRouse" class="rollControl_spacer rollControl_rouseSpacer" />
+          <HorizontalLayout id="rollControl_standardDicePoolDisplay" class="rollControl_standardDicePoolDisplay" >
+            <Text id="rollControl_hungerDice" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_hungerDiceText" text="◆◆◆"/> <!-- @@HUNGER_DICE_STRING@@ -->
+            <Text id="rollControl_standardDice" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_standardDiceText" text="◆◆ ◆◆◆"/> <!-- @@STANDARD_DICE_STRING@@ -->
+          </HorizontalLayout>
+          <Panel id="rollControl_spacerRightA" class="rollControl_spacer" />
+        </HorizontalLayout>
+      </HorizontalLayout>
+
+      <HorizontalLayout id="diceImageDisplayStrip" class="rollControl_resultDisplayContainer" />
+
+      <HorizontalLayout class="rollControl_successesContainer">
+          <Panel id="rollControl_spacerLeftB" class="rollControl_spacer" />
+        <Text id="rollControl_successes" class="roll_text rollControl_successes" text="3" /> <!-- @@SUCCESSES@@ -->
+        <Text id="rollControl_successesPhrase" class="roll_text rollControl_successesPhrase" text="Successes" />
+        <Text id="rollControl_difficultyVS_bottom" class="roll_text rollControl_difficultyVS" text="vs. Difficulty" />
+        <Text id="rollControl_difficulty_bottom" class="roll_text rollControl_difficulty" text="5" /> <!-- @@DIFFICULTY@@ -->
+          <Panel id="rollControl_spacerRightB" class="rollControl_spacer" />
+      </HorizontalLayout>
+
+      <HorizontalLayout id="rollControl_resultDisplayContainer" class="rollControl_resultDisplayContainer" active="false">
+          <Panel id="rollControl_spacerLeftC" class="rollControl_spacer" />
+          <Text id="rollControl_resultDisplay" class="roll_text rollControl_resultDisplay" text="CRITICAL WIN" color="#FFFFFF" /> <!-- @@RESULT_DISPLAY@@, @@RESULT_DISPLAY_COLOR@@-->
+        <Text id="rollControl_marginDisplay" class="roll_text rollControl_resultDisplay" text="+10" color="#FFFFFF" /> <!-- @@MARGIN_DISPLAY@@, @@RESULT_DISPLAY_COLOR@@-->
+          <Panel id="rollControl_spacerRightC" class="rollControl_spacer" />
+      </HorizontalLayout>
+
+      <Panel id="rollControl_verticalSpacer" class="rollControl_verticalSpacer" />
+
+      <HorizontalLayout class="rollControl_buttonContainer">
+
+
+
+        <Button id="rollControl_btnRoll" class="rollControl_button rollControl_btnRoll" text="ROLL" />
+        <Button id="rollControl_btnHalf" class="rollControl_button rollControl_btnHalf" text="TAKE HALF" active="false" />
+        <Button id="rollControl_btnWP" class="rollControl_button rollControl_btnWP" text="SPEND WP"  active="false" />
+        <Button id="rollControl_btnConfirm" class="rollControl_button rollControl_btnConfirm" text="CONFIRM" active="false" />
+        <Button id="rollControl_btnOblivHunger_@@color@@" class="rollControl_button rollControl_btnOblivHunger" text="HUNGER" />
+        <Button id="rollControl_btnOblivStain_@@color@@" class="rollControl_button rollControl_btnOblivStain" text="STAIN" />
+        <Button id="rollControl_btnBrutalFail_@@color@@" class="rollControl_button rollControl_btnBrutalFail" text="FAILURE" />
+        <Button id="rollControl_btnBrutalViolence_@@color@@" class="rollControl_button rollControl_btnBrutalViolence" text="VIOLENCE" />
+        <Button id="rollControl_btnCancel" class="rollControl_button rollControl_btnCancel" text="CANCEL" />
+      </HorizontalLayout>
+
+
+
+    </VerticalLayout>
+  </Panel>
+
+
+
+  <Panel id="rollST_root" class="rollST_root">
+    <VerticalLayout id="rollST_container" class="rollST_container">
+
+
+    </VerticalLayout>
+  </Panel>
 
 </Panel>

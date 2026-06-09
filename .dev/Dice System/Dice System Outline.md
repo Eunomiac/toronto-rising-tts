@@ -723,7 +723,7 @@ All roll-related UI element IDs follow a consistent naming pattern:
 | Player "Roll" button | `rollControl_btnRoll_<Color>` | `PRE_ROLL` only |
 | Player "Take Half" button | `rollControl_btnHalf_<Color>` | `PRE_ROLL` when eligible |
 | Player "Spend WP" button | `rollControl_btnWP_<Color>` | `POST_ROLL` when available |
-| Player "Confirm" button | `rollControl_btnConfirm_<Color>` | `POST_ROLL` when WP available (PC) |
+| Player "Confirm" button | `rollControl_btnConfirm_<Color>` | `POST_ROLL` when no pending Obliv/Brutal choice; interactable only while `batonHolder` is `PLAYER` (greyed when ST confirms) |
 | Result Broadcast Panel | `rollResult_panel` | Shared; no visibility filter |
 | Broadcast roller name | `rollResult_name` | |
 | Broadcast dice display | `rollResult_dice` | |

@@ -1,96 +1,411 @@
-<!-- TARGET: ui/player/panel_roll_controls.xml -->
-<!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (map panels). -->
-<!-- Visibility: TTS `UI.show` / `UI.hide` play showAnimation/hideAnimation (tts-api UI API/Attributes.md). -->
-
-<Panel id="rollControl_root_@@color@@" class="rollControl_root" visibility="@@color@@" active="false"> <!-- ACTIVATE for open roll -->
-  <VerticalLayout class="rollControl_container">
-    <HorizontalLayout class="rollControl_headerContainer">
-      <Text id="rollControl_rollType_@@color@@" class="roll_header_text roll_type_text" text="" /> <!-- The type of roll, in title case, e.g. "Standard Roll", "Frenzy Roll" -->
-      <Panel class="rollControl_spacer" />
-      <Text id="rollControl_rollInstructions_@@color@@" class="roll_body_text" text="" /> <!-- Instructions for next step, in title case, e.g. "Result Ready — 'CONFIRM' When Done" -->
-    </HorizontalLayout>
-
-    <HorizontalLayout class="rollControl_rollAssembly">
-      <HorizontalLayout class="rollControl_dicePoolDisplay">
-        <Text id="rollControl_oblivRouseDice_@@color@@" class="rollControl_diceText rollControl_diceSymbols rollControl_oblivRouseDiceText" text=""/> <!-- One '◆' character per Oblivion Rouse Die in pool (empty string for none) -->
-        <Text id="rollControl_rouseDice_@@color@@" class="rollControl_diceText rollControl_diceSymbols rollControl_rouseDiceText" text=""  /> <!-- One '◆' character per (non-Blood Surge) Rouse Die in pool (empty string for none) -->
-        <Text id="rollControl_bloodSurgeRouseDice_@@color@@" class="rollControl_diceText rollControl_diceSymbols rollControl_bloodSurgeRouseDiceText" text=""  /> <!-- One '◆' character per Blood Surge Rouse Die in pool (empty string for none) -->
-        <Panel class="rollControl_spacer rollControl_rouseSpacer" />
-        <HorizontalLayout class="rollControl_standardDicePoolDisplay" >
-          <Text id="rollControl_hungerDice_@@color@@" class="rollControl_diceText rollControl_diceSymbols rollControl_hungerDiceText" text=""/> <!-- One '◆' character per Hunger Die in pool (empty string for none) -->
-          <Text id="rollControl_rageDice_@@color@@" class="rollControl_diceText rollControl_diceSymbols rollControl_rageDiceText" text=""/> <!-- One '◆' character per Rage Die in pool (empty string for none) -->
-          <Text id="rollControl_standardDice_@@color@@" class="rollControl_diceText rollControl_diceSymbols rollControl_standardDiceText" text=""/> <!-- One '◆' character per Normal Die in pool (empty string for none) -->
-          <Text id="rollControl_wwDice_@@color@@" class="rollControl_diceText rollControl_diceSymbols rollControl_wwDiceText" text=""/> <!-- One '◆' character per Werewolf Die in pool (empty string for none) -->
-        </HorizontalLayout> <!-- A whitespace should be introduced after every fifth die, TOTAL, displayed in the 'standardDicePoolDisplay'-->
-        <Panel class="rollControl_spacer" />
-      </HorizontalLayout>
-    </HorizontalLayout>
-
-    <HorizontalLayout class="rollControl_diceImageDisplayStrip">
-      <HorizontalLayout id="rollControl_rouseDiceContainer_@@color@@" class="rollControl_diceContainer" active="false"> <!-- ACTIVATE if Oblivion-Rouse or Rouse Dice in pool, DEACTIVATE if not -->
-        <Image id="rollControl_rouseDie_1_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_rouseDie_2_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_rouseDie_3_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_rouseDie_4_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_rouseDie_5_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-      </HorizontalLayout>
-      <HorizontalLayout id="rollControl_bloodSurgeRouseDiceContainer_@@color@@" class="rollControl_diceContainer" active="false"> <!-- ACTIVATE if Blood Surge Rouse Dice in pool, DEACTIVATE if not -->
-        <Image id="rollControl_bloodSurgeRouseDie_1_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_bloodSurgeRouseDie_2_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_bloodSurgeRouseDie_3_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_bloodSurgeRouseDie_4_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_bloodSurgeRouseDie_5_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-      </HorizontalLayout>
-      <HorizontalLayout class="rollControl_diceContainer">
-        <Image id="rollControl_die_1_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_die_2_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_die_3_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_die_4_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_die_5_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_die_6_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_die_7_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_die_8_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_die_9_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_die_10_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_die_11_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_die_12_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_die_13_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_die_14_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <Image id="rollControl_die_15_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-      </HorizontalLayout>
-    </HorizontalLayout>
-
-    <HorizontalLayout id="rollControl_successesContainer_@@color@@" class="rollControl_successesContainer" active="false"> <!-- ACTIVATE when successes are available to report, DEACTIVATE otherwise -->
-        <Panel class="rollControl_spacer" />
-        <Text id="rollControl_successes_@@color@@" class="rollControl_successes" text="" /> <!-- Number of successes rolled, as a number -->
-        <Text id="rollControl_successesPhrase" class="rollControl_successesPhrase" text="Successes" />
-        <HorizontalLayout id="rollControl_difficultyDisplay_@@color@@" active="true"> <!-- DEACTIVATE if no Difficulty -->
-          <Text class="rollControl_difficultyVS" text="vs. Difficulty" />
-          <Text id="rollControl_difficulty_@@color@@" class="rollControl_difficulty" text="" /> <!-- Difficulty, as a number -->
-        </HorizontalLayout>
-        <Panel class="rollControl_spacer" />
-    </HorizontalLayout>
-
-    <HorizontalLayout id="rollControl_resultDisplayContainer_@@color@@" class="rollControl_resultDisplayContainer" active="false"> <!-- ACTIVATE if a result is available to display, deactivate otherwise -->
-        <Panel class="rollControl_spacer" />
-        <Text id="rollControl_resultDisplay_@@color@@" class="rollControl_resultDisplay" text="CRITICAL WIN" color="#FFFFFF" /> <!-- Result in ALL CAPS, color set accordingly -->
-        <Text id="rollControl_marginDisplay_@@color@@" class="rollControl_resultDisplay" text="+10" color="#FFFFFF" /> <!-- Margin as signed number, color matches above; deactivate if no difficulty -->
-        <Panel class="rollControl_spacer" />
-    </HorizontalLayout>
-
-    <Panel class="rollControl_verticalSpacer" />
-
-    <HorizontalLayout class="rollControl_buttonContainer"> <!-- Activate/Deactivate buttons as they become available to the player -->
-      <Button id="rollControl_btnRoll_@@color@@" class="rollControl_button rollControl_btnRoll" onClick="HUD_rollRollButton" text="ROLL" active="true" />
-      <Button id="rollControl_btnHalf_@@color@@" class="rollControl_button rollControl_btnHalf" onClick="HUD_rollTakeHalf" text="TAKE HALF" active="false" />
-      <Button id="rollControl_btnWP_@@color@@" class="rollControl_button rollControl_btnWP" onClick="HUD_rollSpendWP" text="SPEND WP" active="false" />
-      <Button id="rollControl_btnConfirm_@@color@@" class="rollControl_button rollControl_btnConfirm" onClick="HUD_rollConfirm" text="CONFIRM" active="false" />
-      <Button id="rollControl_btnOblivHunger_@@color@@" class="rollControl_button rollControl_btnOblivHunger" onClick="HUD_rollConfirmOblivChoice" text="HUNGER" active="false" />
-      <Button id="rollControl_btnOblivStain_@@color@@" class="rollControl_button rollControl_btnOblivStain" onClick="HUD_rollConfirmOblivChoice" text="STAIN" active="false" />
-      <Button id="rollControl_btnBrutalFail_@@color@@" class="rollControl_button rollControl_btnBrutalFail" onClick="HUD_rollConfirmBrutalChoice" text="FAILURE" active="false" />
-      <Button id="rollControl_btnBrutalViolence_@@color@@" class="rollControl_button rollControl_btnBrutalViolence" onClick="HUD_rollConfirmBrutalChoice" text="VIOLENCE" active="false" />
-      <Button id="rollControl_btnCancel_@@color@@" class="rollControl_button rollControl_btnCancel" onClick="HUD_rollCancel" text="CANCEL" active="true" />
-    </HorizontalLayout>
-
-  </VerticalLayout>
-</Panel>
+<!-- TARGET: ui/player/panel_roll_controls.xml -->
+
+<!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (map panels). -->
+
+<!-- Visibility: TTS `UI.show` / `UI.hide` play showAnimation/hideAnimation (tts-api UI API/Attributes.md). -->
+
+
+
+
+
+<Panel id="rollControl_root_@@color@@" class="rollControl_root" visibility="@@color@@" active="false"> <!-- ACTIVATE for open roll -->
+<Defaults>
+
+  <VerticalLayout class="rollControl_container"
+    childAlignment="UpperCenter"
+    childForceExpandHeight="false"
+    spacing = "-10" />
+
+  <Text class="roll_text"
+    fontSize = "32"
+    fontStyle = "Bold"
+    color = "#FFFFFF"
+    />
+
+  <HorizontalLayout class="rollControl_headerContainer"
+    childForceExpandWidth = "false"
+    childAlignment = "MiddleCenter"
+    preferredWidth = "0"
+    spacing = "0"
+    flexibleHeight = "0"
+    preferredHeight = "60"
+    padding = "0 0 0 0"
+  />
+
+  <Text class="roll_header_text"
+    color = "#ffdd00"
+    fontSize = "36"
+    fontStyle = "Bold"
+    minHeight = "20"
+    alignment = "MiddleLeft" />
+
+  <Text class="roll_body_text"
+    alignment = "MiddleRight"
+    color = "#ffffff"
+    fontSize = "32"
+    fontStyle = "Bold"
+    minHeight = "20" />
+
+  <HorizontalLayout class="rollControl_rollAssembly"
+    childForceExpandWidth = "false"
+    childAlignment = "MiddleCenter"
+    preferredWidth = "0"
+    spacing = "0"
+    flexibleHeight = "0"
+    preferredHeight = "90"
+    padding = "50 50 0 0"
+
+  />
+  <HorizontalLayout class="rollControl_dicePoolDisplay"
+    childForceExpandWidth = "false"
+    childForceExpandHeight = "true"
+    childAlignment = "UpperLeft"
+    preferredWidth = "0"
+    spacing = "10"
+
+  />
+  <Text class="rollControl_diceText"
+    flexibleWidth = "0"
+  />
+
+  <Text class="rollControl_diceSymbols"
+    flexibleWidth = "0"
+    fontSize = "60"
+  />
+  <Text class="rollControl_oblivRouseDiceText"
+    fontSize = "40"
+    color="#1900ff"
+    outline="#FF0000"
+    flexibleHeight = "0"
+  />
+  <Text class="rollControl_rouseDiceText"
+    fontSize = "40"
+    color="#550000"
+    outline="#FF0000"
+    flexibleHeight = "0"
+  />
+  <Text class="rollControl_bloodSurgeRouseDiceText"
+    fontSize = "40"
+    color="#550000"
+    outline="#FF0000"
+    flexibleHeight = "0"
+  />
+  <Text class="rollControl_hungerDiceText"
+    color="#FF0000"
+  />
+  <Text class="rollControl_standardDiceText"
+
+  />
+
+
+  <HorizontalLayout class="rollControl_standardDicePoolDisplay"
+    rectAlignment="MiddleCenter" ignoreLayout = "true" childForceExpandWidth = "false" childAlignment = "MiddleCenter"
+  />
+
+  <HorizontalLayout class="rollControl_difficultyDisplay"
+    flexibleWidth = "0"
+    spacing = "10"
+  />
+
+  <Text class="rollControl_difficultyVS"
+    color="#990000"
+  />
+
+  <Text class="rollControl_difficulty"
+    fontSize = "80"
+    color="#FF0000"
+  />
+
+  <Panel class="rollControl_spacer" flexibleWidth = "1" />
+  <Panel class="rollControl_rouseSpacer" flexibleWidth = "0.15" />
+  <Panel class="rollControl_verticalSpacer" flexibleHeight = "0" preferredHeight = "40" />
+
+
+  <Panel class="diceImageDisplayStrip"
+    preferredHeight = "100"
+    flexibleHeight = "0"
+   />
+
+  <HorizontalLayout class="rollControl_diceImageDisplayStrip"
+    spacing = "2"
+    childAlignment = "MiddleCenter"
+    childForceExpandWidth = "false"
+    childForceExpandHeight = "false"
+    minHeight = "48"
+    preferredHeight = "48"
+  />
+
+  <Image class="rollControl_die"
+    preferredWidth = "30"
+    preserveAspect = "true" />
+
+  <HorizontalLayout class="rollControl_successesContainer"
+    childForceExpandWidth = "false"
+    childAlignment = "MiddleCenter"
+    preferredWidth = "0"
+    spacing = "20"
+    preferredHeight = "90"
+    flexibleHeight = "0"
+  />
+
+  <Text class="rollControl_successes"
+  fontSize = "80"
+    flexibleWidth = "0"
+  />
+  <Text class="rollControl_successesPhrase"
+    flexibleWidth = "0"
+  />
+  <Text class="rollControl_difficultyVS_bottom"
+    flexibleWidth = "0"
+
+  />
+  <Text class="rollControl_difficulty_bottom"
+    flexibleWidth = "0"
+
+  />
+
+  <HorizontalLayout class="rollControl_resultDisplayContainer"
+    childForceExpandWidth = "false"
+    childAlignment = "MiddleCenter"
+    preferredWidth = "0"
+    spacing = "20"
+    preferredHeight = "125"
+    flexibleHeight = "0"
+  />
+
+  <Text class="rollControl_resultDisplay"
+    flexibleWidth = "0"
+    fontSize = "100"
+  />
+
+  <HorizontalLayout class="rollControl_buttonContainer"
+    childForceExpandWidth = "false"
+    childAlignment = "MiddleCenter"
+    spacing = "5"
+    ignoreLayout = "true"
+    rectAlignment = "LowerCenter"
+    height = "50"
+  />
+
+  <Button class="rollControl_button"
+    preferredWidth = "200"
+    fontSize = "30"
+    fontStyle = "Bold"
+  />
+
+  <Button class="rollControl_btnRoll"
+    color = "#00FF00"
+  />
+  <Button class="rollControl_btnHalf"
+    color = "#FFDD00"
+
+  />
+  <Button class="rollControl_btnWP"
+    color = "#86a2ff"
+
+  />
+  <Button class="rollControl_btnConfirm"
+    color = "#00FF00"
+  />
+    <Button class="rollControl_btnOblivHunger"
+    color = "#330075"
+    textColor = "#ff3333"
+  />
+  <Button class="rollControl_btnOblivStain"
+    color = "#330075"
+    textColor = "#ffffff"
+  />
+  <Button class="rollControl_btnBrutalFail"
+    color = "#ff8800"
+    textColor = "#000000"
+  />
+  <Button class="rollControl_btnBrutalViolence"
+    color = "#990000"
+    textColor = "#ff8800"
+  />
+  <Button class="rollControl_btnCancel"
+    color = "#990000"
+    textColor = "#FFFFFF"
+  />
+</Defaults>
+  <VerticalLayout class="rollControl_container">
+
+    <HorizontalLayout class="rollControl_headerContainer">
+
+      <Text id="rollControl_rollType_@@color@@" class="roll_header_text roll_type_text" text="" /> <!-- The type of roll, in title case, e.g. "Standard Roll", "Frenzy Roll" -->
+
+      <Panel class="rollControl_spacer" />
+
+      <Text id="rollControl_rollInstructions_@@color@@" class="roll_body_text" text="" /> <!-- Instructions for next step, in title case, e.g. "Result Ready — 'CONFIRM' When Done" -->
+
+    </HorizontalLayout>
+
+
+
+    <HorizontalLayout class="rollControl_rollAssembly">
+
+      <HorizontalLayout class="rollControl_dicePoolDisplay">
+
+        <Text id="rollControl_oblivRouseDice_@@color@@" class="rollControl_diceText rollControl_diceSymbols rollControl_oblivRouseDiceText" text=""/> <!-- One '◆' character per Oblivion Rouse Die in pool (empty string for none) -->
+
+        <Text id="rollControl_rouseDice_@@color@@" class="rollControl_diceText rollControl_diceSymbols rollControl_rouseDiceText" text=""  /> <!-- One '◆' character per (non-Blood Surge) Rouse Die in pool (empty string for none) -->
+
+        <Text id="rollControl_bloodSurgeRouseDice_@@color@@" class="rollControl_diceText rollControl_diceSymbols rollControl_bloodSurgeRouseDiceText" text=""  /> <!-- One '◆' character per Blood Surge Rouse Die in pool (empty string for none) -->
+
+        <Panel class="rollControl_spacer rollControl_rouseSpacer" />
+
+        <HorizontalLayout class="rollControl_standardDicePoolDisplay" >
+
+          <Text id="rollControl_hungerDice_@@color@@" class="rollControl_diceText rollControl_diceSymbols rollControl_hungerDiceText" text=""/> <!-- One '◆' character per Hunger Die in pool (empty string for none) -->
+
+          <Text id="rollControl_rageDice_@@color@@" class="rollControl_diceText rollControl_diceSymbols rollControl_rageDiceText" text=""/> <!-- One '◆' character per Rage Die in pool (empty string for none) -->
+
+          <Text id="rollControl_standardDice_@@color@@" class="rollControl_diceText rollControl_diceSymbols rollControl_standardDiceText" text=""/> <!-- One '◆' character per Normal Die in pool (empty string for none) -->
+
+          <Text id="rollControl_wwDice_@@color@@" class="rollControl_diceText rollControl_diceSymbols rollControl_wwDiceText" text=""/> <!-- One '◆' character per Werewolf Die in pool (empty string for none) -->
+
+        </HorizontalLayout> <!-- A whitespace should be introduced after every fifth die, TOTAL, displayed in the 'standardDicePoolDisplay'-->
+
+        <Panel class="rollControl_spacer" />
+
+      </HorizontalLayout>
+
+    </HorizontalLayout>
+
+
+
+    <HorizontalLayout class="rollControl_diceImageDisplayStrip">
+
+      <HorizontalLayout id="rollControl_rouseDiceContainer_@@color@@" class="rollControl_diceContainer" active="false"> <!-- ACTIVATE if Oblivion-Rouse or Rouse Dice in pool, DEACTIVATE if not -->
+
+        <Image id="rollControl_rouseDie_1_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_rouseDie_2_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_rouseDie_3_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_rouseDie_4_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_rouseDie_5_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+      </HorizontalLayout>
+
+      <HorizontalLayout id="rollControl_bloodSurgeRouseDiceContainer_@@color@@" class="rollControl_diceContainer" active="false"> <!-- ACTIVATE if Blood Surge Rouse Dice in pool, DEACTIVATE if not -->
+
+        <Image id="rollControl_bloodSurgeRouseDie_1_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_bloodSurgeRouseDie_2_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_bloodSurgeRouseDie_3_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_bloodSurgeRouseDie_4_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_bloodSurgeRouseDie_5_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+      </HorizontalLayout>
+
+      <HorizontalLayout class="rollControl_diceContainer">
+
+        <Image id="rollControl_die_1_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_die_2_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_die_3_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_die_4_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_die_5_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_die_6_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_die_7_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_die_8_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_die_9_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_die_10_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_die_11_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_die_12_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_die_13_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_die_14_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+        <Image id="rollControl_die_15_@@color@@" class="rollControl_die" active="false" /> <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+
+      </HorizontalLayout>
+
+    </HorizontalLayout>
+
+
+
+    <HorizontalLayout id="rollControl_successesContainer_@@color@@" class="rollControl_successesContainer" active="false"> <!-- ACTIVATE when successes are available to report, DEACTIVATE otherwise -->
+
+        <Panel class="rollControl_spacer" />
+
+        <Text id="rollControl_successes_@@color@@" class="rollControl_successes" text="" /> <!-- Number of successes rolled, as a number -->
+
+        <Text id="rollControl_successesPhrase" class="rollControl_successesPhrase" text="Successes" />
+
+        <HorizontalLayout id="rollControl_difficultyDisplay_@@color@@" active="true"> <!-- DEACTIVATE if no Difficulty -->
+
+          <Text class="rollControl_difficultyVS" text="vs. Difficulty" />
+
+          <Text id="rollControl_difficulty_@@color@@" class="rollControl_difficulty" text="" /> <!-- Difficulty, as a number -->
+
+        </HorizontalLayout>
+
+        <Panel class="rollControl_spacer" />
+
+    </HorizontalLayout>
+
+
+
+    <HorizontalLayout id="rollControl_resultDisplayContainer_@@color@@" class="rollControl_resultDisplayContainer" active="false"> <!-- ACTIVATE if a result is available to display, deactivate otherwise -->
+
+        <Panel class="rollControl_spacer" />
+
+        <Text id="rollControl_resultDisplay_@@color@@" class="rollControl_resultDisplay" text="CRITICAL WIN" color="#FFFFFF" /> <!-- Result in ALL CAPS, color set accordingly -->
+
+        <Text id="rollControl_marginDisplay_@@color@@" class="rollControl_resultDisplay" text="+10" color="#FFFFFF" /> <!-- Margin as signed number, color matches above; deactivate if no difficulty -->
+
+        <Panel class="rollControl_spacer" />
+
+    </HorizontalLayout>
+
+
+
+    <Panel class="rollControl_verticalSpacer" />
+
+
+
+    <HorizontalLayout class="rollControl_buttonContainer"> <!-- Activate/Deactivate buttons as they become available to the player -->
+
+      <Button id="rollControl_btnRoll_@@color@@" class="rollControl_button rollControl_btnRoll" onClick="HUD_rollRollButton" text="ROLL" active="true" />
+
+      <Button id="rollControl_btnHalf_@@color@@" class="rollControl_button rollControl_btnHalf" onClick="HUD_rollTakeHalf" text="TAKE HALF" active="false" />
+
+      <Button id="rollControl_btnWP_@@color@@" class="rollControl_button rollControl_btnWP" onClick="HUD_rollSpendWP" text="SPEND WP" active="false" />
+
+      <Button id="rollControl_btnConfirm_@@color@@" class="rollControl_button rollControl_btnConfirm" onClick="HUD_rollConfirm" text="CONFIRM" active="false" />
+
+      <Button id="rollControl_btnOblivHunger_@@color@@" class="rollControl_button rollControl_btnOblivHunger" onClick="HUD_rollConfirmOblivChoice" text="HUNGER" active="false" />
+
+      <Button id="rollControl_btnOblivStain_@@color@@" class="rollControl_button rollControl_btnOblivStain" onClick="HUD_rollConfirmOblivChoice" text="STAIN" active="false" />
+
+      <Button id="rollControl_btnBrutalFail_@@color@@" class="rollControl_button rollControl_btnBrutalFail" onClick="HUD_rollConfirmBrutalChoice" text="FAILURE" active="false" />
+
+      <Button id="rollControl_btnBrutalViolence_@@color@@" class="rollControl_button rollControl_btnBrutalViolence" onClick="HUD_rollConfirmBrutalChoice" text="VIOLENCE" active="false" />
+
+      <Button id="rollControl_btnCancel_@@color@@" class="rollControl_button rollControl_btnCancel" onClick="HUD_rollCancel" text="CANCEL" active="true" />
+
+    </HorizontalLayout>
+
+
+
+  </VerticalLayout>
+
+</Panel>

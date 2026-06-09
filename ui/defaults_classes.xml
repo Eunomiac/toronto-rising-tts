@@ -242,4 +242,25 @@
     padding="5 5 5 5"
     childAlignment="UpperLeft"
     childForceExpandWidth="true" />
+
+  <!-- Roll Results Broadcast Panel -->
+  <Panel class="rollBroadcast_root"
+    rectAlignment="UpperCenter"
+    width = "900"
+    height = "500"
+    color = "rgba(0.25, 0, 0, 1)"
+    outline = "rgba(1, 1, 0, 1)"
+    padding = "25 25 25 25"
+  />
+
+  <!-- Roll Control Panel -->
+    <Panel class="rollControl_root"
+    rectAlignment="MiddleCenter"
+    width = "1100"
+    height = "500"
+    offsetXY = "0 200"
+    color = "rgba(0, 0, 0, 1)"
+    outline = "rgba(1, 1, 0, 1)"
+    padding = "25 25 0 0"
+  />
 </Defaults>

@@ -435,8 +435,8 @@ local function phaseLabel(active, color)
         end
     elseif phase == C.RollPhase.ROLLING then
         -- After a Willpower spend the phase reverts to ROLLING so the player panel stays
-        -- visible with a contextual instruction. Once the rerolled dice settle the debounce
-        -- fires recalculate(), which transitions back to POST_ROLL and hides the panel.
+        -- visible with a contextual instruction. Once dice settle, POST_ROLL keeps the panel
+        -- visible for review; Confirm is interactable only while batonHolder is PLAYER.
         if active.takeHalfAwaitingRouse == true then
             return "Take Half applied — roll your Rouse dice"
         end
@@ -450,7 +450,10 @@ local function phaseLabel(active, color)
         return "ROLLING — pick up your dice!"
     elseif phase == C.RollPhase.POST_ROLL then
         if active.result ~= nil then
-            return "Result ready — confirm when done"
+            if active.batonHolder == C.BatonHolder.PLAYER then
+                return "Result ready — confirm when done"
+            end
+            return "Result ready — awaiting Storyteller"
         end
         if active.difficulty == nil then
             return "Dice read — awaiting classification..."
@@ -588,16 +591,6 @@ local function refreshPcRollControlPanel(color, active)
         return
     end
 
-    if active.phase == C.RollPhase.POST_ROLL then
-        local wpAvailable = active.willpower ~= nil and active.willpower.available == true
-        local pendingChoice = active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN
-            or active.pendingResolution == C.PendingResolution.BRUTAL_FAIL_VIOLENCE
-        if not wpAvailable and not pendingChoice then
-            uiSetActive(panelId, false)
-            return
-        end
-    end
-
     uiSetActive(panelId, true)
 
     local rollLabel = C.RollTypeLabel[active.rollType] or active.rollType or ""
@@ -667,9 +660,11 @@ local function refreshPcRollControlPanel(color, active)
         or active.pendingResolution == C.PendingResolution.BRUTAL_FAIL_VIOLENCE
     )
     uiSetActive(string.format("rollControl_btnWP_%s", color), wpAvailable)
-    local showConfirm = isPostRoll and wpAvailable and not pendingChoice
+    local showConfirm = isPostRoll and not pendingChoice
+    local playerHoldsBaton = active.batonHolder == C.BatonHolder.PLAYER
+    local canConfirm = showConfirm and playerHoldsBaton
     uiSetActive(string.format("rollControl_btnConfirm_%s", color), showConfirm)
-    uiSetInteractable(string.format("rollControl_btnConfirm_%s", color), showConfirm)
+    uiSetInteractable(string.format("rollControl_btnConfirm_%s", color), canConfirm)
     refreshPendingResolutionButtons(color, active, true)
     uiSetActive(string.format("rollControl_btnCancel_%s", color), true)
 end

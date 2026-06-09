@@ -139,4 +139,15 @@
     onMouseEnter="HUD_highlight"
     onMouseExit="HUD_dim" />
 
+
+
+
+  <Panel class="rollST_root"
+    rectAlignment="LowerCenter"
+    width = "900"
+    height = "900"
+    color = "rgba(0, 0, 0.25, 1)"
+    outline = "rgba(1, 1, 0, 1)"
+  />
+
 </Defaults>

@@ -2148,17 +2148,60 @@ local function rollE2eHistoryResultClassMatches(result, expectedClass)
     return rollE2eBroadcastClassMatches(label, expectedClass)
 end
 
+--- True when roll history tail matches all field constraints in `expected`.
+-- @param expected table rollE2eExpectBroadcast args
+-- @param histResult table|nil
+-- @return boolean
+local function rollE2eHistorySatisfiesBroadcastFields(expected, histResult)
+    if type(histResult) ~= "table" then
+        return false
+    end
+    if type(expected.resultClass) == "string" then
+        if not rollE2eHistoryResultClassMatches(histResult, expected.resultClass) then
+            return false
+        end
+    end
+    if type(expected.successes) == "number" and histResult.successes ~= expected.successes then
+        return false
+    end
+    if type(expected.margin) == "number" and histResult.margin ~= expected.margin then
+        return false
+    end
+    if expected.marginAbsent == true and histResult.margin ~= nil then
+        return false
+    end
+    return true
+end
+
+--- History tail proves broadcast occurred (visibility + per-field UI lag fallback).
+-- @param expected table rollE2eExpectBroadcast args
+-- @param histResult table|nil
+-- @return boolean
+local function rollE2eHistorySatisfiesBroadcastExpected(expected, histResult)
+    if type(expected.resultClass) == "string"
+        or type(expected.successes) == "number"
+        or type(expected.margin) == "number"
+        or expected.marginAbsent == true then
+        return rollE2eHistorySatisfiesBroadcastFields(expected, histResult)
+    end
+    if expected.visible == true then
+        return type(histResult) == "table"
+    end
+    return false
+end
+
 --- E2E: assert `rollResult_*` broadcast UI after `rollForceConfirm` / panel Confirm.
 -- @param expected table|nil  `{ color = "Brown", visible = true, resultClass = "Failure", successes = 2, margin = -1 }`
 --   `color` — optional seat; defaults to last `rollForceConfirm` or newest history entry
---   `visible` — when true, or when any field below is set, panel must be active
+--   `visible` — when true, or when any field below is set, panel must be active or history must match
 --   `resultClass` — substring match (case-insensitive) on `rollResult_class`; E2E shorthands
 --     ("Win", "Failure", …) also match `C.ResultClassLabel` panel text (e.g. Win → SUCCESS)
 --   `successes` — integer N matches `"N success"` / `"N successes"` on `rollResult_successes`
 --   `margin` — integer matches `Margin: %+d` on `rollResult_margin`
 --   `marginAbsent` — when true, `rollResult_margin` must be empty
 -- UI `getValue` can lag `setValue` by a frame; call from the RunSequence step *after*
--- `rollForceConfirm` (default inter-step wait). Successes/margin/class also accept history tail.
+-- `rollForceConfirm` (default inter-step wait). Field checks run even when the panel is not
+-- visible yet; matching resolved history tail satisfies visibility and each field.
 -- @return boolean pass
 -- @usage lua rollE2eExpectBroadcast({ visible = true, resultClass = "Failure", successes = 2 })
 function DEBUG.rollE2eExpectBroadcast(expected)
@@ -2171,11 +2214,12 @@ function DEBUG.rollE2eExpectBroadcast(expected)
     local histEntry, histColor = rollE2eResolveBroadcastHistory(expected)
     local histResult = type(histEntry) == "table" and histEntry.result or nil
     local panelVisible = rollE2eBroadcastPanelVisible()
+    local historySatisfies = rollE2eHistorySatisfiesBroadcastExpected(expected, histResult)
+    local broadcastEvident = panelVisible or historySatisfies
     local wantsContent = type(expected.resultClass) == "string"
         or type(expected.successes) == "number"
         or type(expected.margin) == "number"
         or expected.marginAbsent == true
-    -- Field assertions require a visible panel; omitting visible=true still implies it.
     local mustBeVisible = expected.visible == true
         or (expected.visible == nil and wantsContent)
 
@@ -2186,12 +2230,12 @@ function DEBUG.rollE2eExpectBroadcast(expected)
         if wantsContent then
             failures[#failures + 1] = "rollResult_panel: field assertions require visible panel"
         end
-    elseif mustBeVisible and not panelVisible then
-        failures[#failures + 1] = "rollResult_panel: not visible"
+    elseif mustBeVisible and not broadcastEvident then
+        failures[#failures + 1] = "rollResult_panel: not visible (no matching history tail)"
     end
 
-    if panelVisible and mustBeVisible then
-        local classText = tostring(UI.getValue("rollResult_class") or "")
+    if mustBeVisible then
+        local classText = panelVisible and tostring(UI.getValue("rollResult_class") or "") or ""
         if type(expected.resultClass) == "string" then
             if not rollE2eBroadcastClassMatches(classText, expected.resultClass)
                 and not rollE2eHistoryResultClassMatches(histResult, expected.resultClass) then
