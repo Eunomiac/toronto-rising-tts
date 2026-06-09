@@ -1,4 +1,6 @@
-# Toronto Rising Storyteller Dashboard MVP
+# Toronto Rising Storyteller Dashboard MVP (PR #9 archive)
+
+> **Archived:** This is the PR #9 implementation (`server.mjs` monolith). The canonical app lives at `.dev/storyteller-dashboard/` (PR #10). Kept for comparison during merge.
 
 A standalone, browser-based second-monitor dashboard for running a Vampire: The Masquerade 5th Edition chronicle. The MVP focuses on AI-assisted NPC generation and does **not** integrate with Tabletop Simulator. It intentionally uses only Node built-ins at runtime plus a small TypeScript build step, keeping the tool easy to run during a game.
 

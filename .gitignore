@@ -2,8 +2,9 @@
 node_modules/
 yarn.lock
 
-# Storyteller dashboard secrets (copy from .dev/storyteller-dashboard/.env.example)
+# Storyteller dashboard secrets (copy from .env.example in each app folder)
 .dev/storyteller-dashboard/.env
+.dev/storyteller-dashboard-pr9/.env
 
 # IDE — track shared VS Code / Cursor tasks + TTS Lua workspace defaults; keep other settings local
 .vscode/*
@@ -55,3 +56,4 @@ build/
 # Extension sync targets (volatile; canonical Lua is under core/, lib/)
 .tts/bundled/*
 .tts/objects/*
+assets/images/Clipboard Image.jpg
