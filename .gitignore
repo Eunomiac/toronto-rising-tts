@@ -2,6 +2,9 @@
 node_modules/
 yarn.lock
 
+# Storyteller dashboard secrets (copy from .dev/storyteller-dashboard/.env.example)
+.dev/storyteller-dashboard/.env
+
 # IDE — track shared VS Code / Cursor tasks + TTS Lua workspace defaults; keep other settings local
 .vscode/*
 !.vscode/tasks.json

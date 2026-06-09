@@ -292,6 +292,78 @@
         "panel": "shared",
         "focus": true
       }
+    },
+    {
+      "label": "Storyteller Dashboard: Start server",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": {
+        "cwd": "${workspaceFolder}/.dev/storyteller-dashboard"
+      },
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "storyteller-dashboard",
+        "pattern": {
+          "regexp": "^(.*Storyteller Dashboard listening on (https?://\\S+).*)$",
+          "line": 1,
+          "column": 1,
+          "message": 1
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "Storyteller Dashboard listening on"
+        }
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "Storyteller Dashboard: Open in browser",
+      "type": "shell",
+      "command": "start",
+      "args": ["chrome", "http://localhost:8787"],
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared",
+        "close": true
+      }
+    },
+    {
+      "label": "Storyteller Dashboard: Dev (server + browser)",
+      "dependsOn": [
+        "Storyteller Dashboard: Start server",
+        "Storyteller Dashboard: Open in browser"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": [],
+      "group": {
+        "kind": "none",
+        "isDefault": false
+      }
     }
   ],
   "inputs": [

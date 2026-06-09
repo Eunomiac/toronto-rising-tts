@@ -71,6 +71,10 @@ DASHBOARD_PORT=8787
 
 ## Run locally
 
+**From Cursor / VS Code:** Run Task → **Storyteller Dashboard: Dev (server + browser)**. This builds the client, starts the Node server in a dedicated terminal (click the printed `http://localhost:8787` link), and opens Chrome to that URL.
+
+**From a terminal:**
+
 ```powershell
 npm run dev
 ```
