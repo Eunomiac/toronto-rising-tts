@@ -312,7 +312,7 @@
       "problemMatcher": {
         "owner": "storyteller-dashboard",
         "pattern": {
-          "regexp": "^(.*Storyteller Dashboard listening on (https?://\\S+).*)$",
+          "regexp": "^(.*Storyteller dashboard listening on (https?://\\S+).*)$",
           "line": 1,
           "column": 1,
           "message": 1
@@ -320,7 +320,7 @@
         "background": {
           "activeOnStart": true,
           "beginsPattern": ".",
-          "endsPattern": "Storyteller Dashboard listening on"
+          "endsPattern": "Storyteller dashboard listening on"
         }
       },
       "presentation": {
@@ -336,7 +336,7 @@
       "label": "Storyteller Dashboard: Open in browser",
       "type": "shell",
       "command": "start",
-      "args": ["chrome", "http://localhost:8787"],
+      "args": ["chrome", "http://127.0.0.1:8787"],
       "windows": {
         "options": {
           "shell": {

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toronto Rising Storyteller Dashboard</title>
+    <link rel="stylesheet" href="/client/styles.css" />
+  </head>
+  <body>
+    <main class="dashboard-shell">
+      <section class="control-panel">
+        <div class="brand-block">
+          <p class="eyebrow">Toronto Rising</p>
+          <h1>Storyteller Dashboard</h1>
+          <p>Second-monitor V5 NPC generator. No Tabletop Simulator integration in this MVP.</p>
+        </div>
+        <textarea id="prompt" placeholder="18, girl, has beef with Aishe, mortal…" rows="4"></textarea>
+        <div class="shortcut-bar">
+          <button id="generate-one" type="button">ENTER Generate</button>
+          <button id="generate-many" type="button">SHIFT+ENTER x3</button>
+          <button id="generate-image" type="button">CTRL+ENTER + Image</button>
+          <button id="generate-many-image" type="button">CTRL+SHIFT Both</button>
+        </div>
+        <div class="quick-grid" id="quick-grid"></div>
+        <div class="status idle" id="status">Ready.</div>
+        <div class="mutation-row" id="mutation-row"></div>
+      </section>
+      <section class="npc-grid" id="npc-grid" aria-label="Generated NPCs"></section>
+      <aside class="history-panel">
+        <h2>Session History</h2>
+        <div id="history-list"><p>No generated NPCs yet.</p></div>
+      </aside>
+    </main>
+    <div id="modal-root"></div>
+    <script type="module" src="/client/main.js"></script>
+  </body>
+</html>

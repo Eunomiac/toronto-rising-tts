@@ -56,4 +56,8 @@ build/
 # Extension sync targets (volatile; canonical Lua is under core/, lib/)
 .tts/bundled/*
 .tts/objects/*
+
+# Local Storyteller dashboard build output
+.dev/storyteller-dashboard/dist/
+
 assets/images/Clipboard Image.jpg
