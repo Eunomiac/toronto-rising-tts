@@ -1,3 +1,12 @@
+
+U.RunSequence({
+  rollCancelAll,
+  function()
+
+  end,
+  function() M.setCamera("ALL", "rollBrown") end
+})
+
 # Toronto Rising — testing guide
 
 Manual verification lives in **[E2E Playbooks](E2E%20Playbooks/README.md)** (TOR-141). This file indexes **remaining** console helpers in [`core/debug.ttslua`](../core/debug.ttslua).
@@ -7,7 +16,7 @@ Manual verification lives in **[E2E Playbooks](E2E%20Playbooks/README.md)** (TOR
 1. Load mod → **Save & Play** (bundled Lua must match repo). If you see **`attempt to call a nil value`** right after Lua changes, check [`docs/solutions/lua-local-function-order.md`](../docs/solutions/lua-local-function-order.md) first (local defined below caller).
 2. You are table **Host** (solo is fine — only one client). Seat **Black** for Scenes/DEBUG/ST; for Dice, use `rollTest` and change seat to the target color when bag/camera steps require it (no TTS View command).
 3. `lua debugHelp()` — list current commands.
-4. Run a playbook: [Scenes-E2E](E2E%20Playbooks/Scenes-E2E.md), [Dice-E2E](E2E%20Playbooks/Dice-E2E.md), or [Gameboard-E2E](E2E%20Playbooks/Gameboard-E2E.md). Dice steps are **deterministic** (exact click counts and `rollConfirm` literals — see Dice-E2E § Deterministic test conventions).
+4. Run a playbook: [Scenes-E2E](E2E%20Playbooks/Scenes-E2E.md), [Dice-E2E](E2E%20Playbooks/Dice-E2E.md) (+ [Dice-E2E-Guide](E2E%20Playbooks/Dice-E2E-Guide.md) for conventions), or [Gameboard-E2E](E2E%20Playbooks/Gameboard-E2E.md). Dice steps are **deterministic** (exact click counts and `rollConfirm` literals — see Dice-E2E-Guide § Deterministic test conventions).
 
 ## E2E playbooks (primary)
 
@@ -56,7 +65,7 @@ lua rollE2eApplyConditions("Brown", { "e2eBestialNull" })
 lua rollE2eClearConditions("Brown")
 ```
 
-See [Dice-E2E.md](E2E%20Playbooks/Dice-E2E.md) § Solo Host for the full harness table.
+See [Dice-E2E-Guide.md](E2E%20Playbooks/Dice-E2E-Guide.md) § Solo Host for the full harness table.
 
 ## Gameboard E2E (solo Host)
 

@@ -10,7 +10,7 @@ Update these playbooks in the **same PR** when you change behavior they cover:
 
 | Trigger | Update |
 | --- | --- |
-| Roll FSM, bags, WP, Take Half, rouse, ST rolls | [Dice-E2E.md](Dice-E2E.md) |
+| Roll FSM, bags, WP, Take Half, rouse, ST rolls | [Dice-E2E.md](Dice-E2E.md) + [Dice-E2E-Guide.md](Dice-E2E-Guide.md) |
 | Scene library apply, clock, present day, RT ticker, seats, map pins | [Scenes-E2E.md](Scenes-E2E.md) |
 | NPC gameboard Apply/Clear, stage placements, tokens, reconcile | [Gameboard-E2E.md](Gameboard-E2E.md) |
 | New/removed `DEBUG.*` console helpers | [TESTING.md](../TESTING.md) + relevant playbook |
@@ -43,7 +43,8 @@ Snippets are diagnostic only. Do **not** call `Sync.full({ force = true })` duri
 | Doc | Scope |
 | --- | --- |
 | [Scenes-E2E.md](Scenes-E2E.md) | Scene smoke (A–E) + deep suites: present day clock, RT autoprogression, clock draft, seat/map pins (absent vs present), library flush (F–N) |
-| [Dice-E2E.md](Dice-E2E.md) | Roll FSM smoke (A–E) + deep suites: classification, Take Half, WP, compound rouse, bags, baton/automation, Bestial Null, Blood Surge, ST/Werewolf, Oblivion multi-die (G–P) |
+| [Dice-E2E.md](Dice-E2E.md) | Dice E2E test steps only (run from Step 0) |
+| [Dice-E2E-Guide.md](Dice-E2E-Guide.md) | Dice E2E reference: helpers, conventions, prerequisites, sign-off |
 | [Gameboard-E2E.md](Gameboard-E2E.md) | Gameboard smoke (Apply/Clear/mirror/Z flip) + scene library Apply gate + full reconcile suites + deferred TOR-172/173/175/174 probes |
 
 ## Related docs
