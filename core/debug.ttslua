@@ -1987,9 +1987,6 @@ function DEBUG.rollE2eAddPoolKindSpawn(color, kind, count)
     return true
 end
 
-    return true
-end
-
 --- Seat color from the most recent `rollForceConfirm` / E2E confirm (for broadcast asserts).
 local e2eLastBroadcastColor = nil
 
