@@ -2290,36 +2290,23 @@ function DEBUG.RunTest(campaignName)
         e2eRunTestState.campaign = key
         e2eRunTestState.playbook = playbook
         e2eRunTestState.index = 0
-        print(string.format(
-            "[RunTest] Initialized '%s' — %d steps from %s. Call RunTest() for step 1.",
-            key,
-            playbook.stepCount,
-            tostring(playbook.sourceMarkdown)
-        ))
+        print(string.format("[RunTest] Initialized '%s'", key))
         return true
     end
 
     if e2eRunTestState.playbook == nil then
-        print("[RunTest] No campaign active. Start with RunTest(\"Dice\").")
         return false
     end
 
     local nextIndex = e2eRunTestState.index + 1
     local playbook = e2eRunTestState.playbook
     if nextIndex > playbook.stepCount then
-        print(string.format(
-            "[RunTest] '%s' complete (%d steps). Re-init with RunTest(\"%s\") to restart.",
-            e2eRunTestState.campaign,
-            playbook.stepCount,
-            e2eRunTestState.campaign
-        ))
         return false
     end
 
     local steps = playbook.steps
     local sequence = steps[nextIndex]
     if type(sequence) ~= "table" then
-        print(string.format("[RunTest] FAIL: step %d is not a sequence table", nextIndex))
         return false
     end
 
@@ -2331,14 +2318,6 @@ function DEBUG.RunTest(campaignName)
         playbook.stepCount
     ))
     U.RunSequence(sequence)
-
-    local humanGates = playbook.humanGateAfterStep
-    if type(humanGates) == "table" and humanGates[nextIndex] == true then
-        print("[RunTest] HUMAN GATE — perform the [HUMAN] action, then call RunTest() for the next step.")
-    elseif nextIndex >= playbook.stepCount then
-        print("[RunTest] Final step dispatched. Campaign will report complete on the next RunTest().")
-    end
-
     return true
 end
 

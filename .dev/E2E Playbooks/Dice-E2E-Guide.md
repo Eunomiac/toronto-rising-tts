@@ -17,11 +17,11 @@ Reference for the lean test playbook `Dice-E2E.md`. Run tests in order from Suit
 **Workflow (`RunTest`):** faster console driver — blocks are embedded at build time from this markdown into `lib/e2e_playbook_dice.ttslua`.
 
 ```lua
-lua RunTest("Dice")   -- initialize (step index 0; does not run a step)
-lua RunTest()         -- step 1, then step 2, … after each human gate
+lua RunTest("Dice")   -- prints [RunTest] Initialized 'Dice' only
+lua RunTest()         -- prints [RunTest] Dice step N/total, then runs the block
 ```
 
-After each step, the console prints `[RunTest] HUMAN GATE` when the block ends with `[HUMAN]`. `RunTest("Scenes")` and `RunTest("Gameboard")` return **not yet prepared** until those playbooks are streamlined and wired. Regenerate: `npm run e2e-playbook:generate` (or full `npm run build`), then **Save & Play**.
+`RunTest` adds no extra lines after the step — rely on level-3 `[HUMAN]` banners inside the playbook output. `RunTest("Scenes")` and `RunTest("Gameboard")` return **not yet prepared** until those playbooks are streamlined and wired. Regenerate: `npm run e2e-playbook:generate` (or full `npm run build`), then **Save & Play**.
 
 Collapsed blocks may chain many automated steps (setup + spawn + `rollConfirm`) before the human gate. The **last block** of the file closes the run (`printHeader("", 1)` + `print("")`) with no `[HUMAN]`.
 

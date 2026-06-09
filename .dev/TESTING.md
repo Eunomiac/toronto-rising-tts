@@ -35,8 +35,8 @@ Keep reference tables and long prose out of the lean test file. Suite and step n
 **Dice-E2E.md** is the reference for the collapsed format. Steps are also available as a generated module (`lib/e2e_playbook_dice.ttslua`, built from the markdown) and runnable via **`RunTest`** in the TTS console:
 
 ```lua
-lua RunTest("Dice")   -- arm campaign; does not run a step
-lua RunTest()         -- run next U.RunSequence block (repeat after each [HUMAN] gate)
+lua RunTest("Dice")   -- [RunTest] Initialized 'Dice'
+lua RunTest()         -- [RunTest] Dice step N/total, then U.RunSequence (repeat after each [HUMAN] gate)
 lua RunTest("Scenes") -- not yet prepared
 ```
 
