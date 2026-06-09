@@ -31,7 +31,8 @@ const blocks = extractLuaBlocks(markdown);
 assert.strictEqual(blocks.length, 2);
 
 const moduleText = buildLuaModule("Dice", ".dev/E2E Playbooks/Dice-E2E.md", [tableText], [false]);
-assert.ok(moduleText.includes('M.campaign = "Dice"'));
-assert.ok(moduleText.includes("M.steps = {"));
+assert.ok(moduleText.includes('Playbook.campaign = "Dice"'));
+assert.ok(moduleText.includes("Playbook.steps = {"));
+assert.ok(!moduleText.includes("local M = {}"));
 
 console.log("generate_e2e_playbook_lua.test.js: OK");

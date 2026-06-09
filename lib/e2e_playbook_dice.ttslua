@@ -4,17 +4,18 @@
     DO NOT EDIT BY HAND — regenerate: node .dev/scripts/generate_e2e_playbook_lua.js --campaign Dice
 ]]
 
-local M = {}
+-- Module export is Playbook, not M — steps call M.setCamera (core.main) as a global.
+local Playbook = {}
 
-M.campaign = "Dice"
-M.sourceMarkdown = ".dev/E2E Playbooks/Dice-E2E.md"
-M.stepCount = 56
-M.generatedAt = "2026-06-09T17:48:45.299Z"
+Playbook.campaign = "Dice"
+Playbook.sourceMarkdown = ".dev/E2E Playbooks/Dice-E2E.md"
+Playbook.stepCount = 56
+Playbook.generatedAt = "2026-06-09T17:54:40.361Z"
 
 -- true when the markdown block ends with a [HUMAN] printHeader cue
-M.humanGateAfterStep = { true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false }
+Playbook.humanGateAfterStep = { true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false }
 
-M.steps = {
+Playbook.steps = {
     -- step 1
         {
           function()
@@ -1462,4 +1463,4 @@ M.steps = {
         }
 }
 
-return M
+return Playbook
