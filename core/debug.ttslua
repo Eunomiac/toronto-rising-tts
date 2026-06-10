@@ -2204,6 +2204,8 @@ end
 -- UI `getValue` can lag `setValue` by a frame; call from the RunSequence step *after*
 -- `rollForceConfirm` (default inter-step wait). Field checks run even when the panel is not
 -- visible yet; matching resolved history tail for the same seat satisfies visibility and each field.
+-- Pinned context from `rollForceConfirm` is consumed only on PASS so a failed step can retry
+-- without passing `color` again.
 -- @return boolean pass
 -- @usage lua rollE2eExpectBroadcast({ color = "Brown", visible = true, resultClass = "Failure", successes = 2 })
 function DEBUG.rollE2eExpectBroadcast(expected)
@@ -2285,13 +2287,14 @@ function DEBUG.rollE2eExpectBroadcast(expected)
         end
     end
 
-    if e2eLastBroadcastContext ~= nil
-        and type(histColor) == "string"
-        and e2eLastBroadcastContext.color == histColor then
-        e2eLastBroadcastContext = nil
-    end
-
     if #failures == 0 then
+        -- Consume pinned context only after a successful assertion so a failed
+        -- step can retry without passing color again (same RunSequence block).
+        if e2eLastBroadcastContext ~= nil
+            and type(histColor) == "string"
+            and e2eLastBroadcastContext.color == histColor then
+            e2eLastBroadcastContext = nil
+        end
         print("[rollE2eExpectBroadcast] PASS")
         return true
     end
