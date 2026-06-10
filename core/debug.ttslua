@@ -2197,7 +2197,7 @@ end
 --   `color` — seat color; required unless the prior step called `rollForceConfirm` on that seat
 --   `visible` — when true, or when any field below is set, panel must be active or history must match
 --   `resultClass` — substring match (case-insensitive) on `rollResult_class`; E2E shorthands
---     ("Win", "Failure", …) also match `C.ResultClassLabel` panel text (e.g. Win → SUCCESS)
+--     ("Win", "Failure", …) also match `C.ResultClassLabel` panel text (e.g. Win → WIN)
 --   `successes` — integer N matches `"N success"` / `"N successes"` on `rollResult_successes`
 --   `margin` — integer matches `Margin: %+d` on `rollResult_margin`
 --   `marginAbsent` — when true, `rollResult_margin` must be empty

@@ -2040,19 +2040,7 @@ end
 -- @return string
 local function brutalNarrativeFor(resultClass, violence)
     if violence then
-        if resultClass == C.ResultClass.TOTAL_FAILURE then
-            return "Total Brutal Failure"
-        elseif resultClass == C.ResultClass.FAILURE then
-            return "Brutal Failure"
-        elseif resultClass == C.ResultClass.CRITICAL_WIN then
-            return "Brutal Critical"
-        elseif resultClass == C.ResultClass.WIN then
-            return "Brutal Win"
-        end
         return "Brutal Outcome"
-    end
-    if resultClass == C.ResultClass.TOTAL_FAILURE then
-        return "Total Brutal Failure"
     end
     return "Brutal Failure"
 end
