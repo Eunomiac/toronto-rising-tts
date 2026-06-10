@@ -148,7 +148,7 @@ lua rollCancel("Brown")      -- returns Host to Black; Black also clears ST slot
 lua rollCancelAll()
 lua printHeader("Suite 0: Cleanup", 1)   -- 100-char E2E banner (*, =, - by level; spaces around text)
 lua printHeader("", 1)                     -- pad-only separator line
-lua rollE2eExpectBroadcast({ visible = true, resultClass = "Win", successes = 1 })  -- Win matches panel SUCCESS
+lua rollE2eExpectBroadcast({ color = "Brown", visible = true, resultClass = "Win", successes = 1 })  -- Win matches panel SUCCESS
 lua rollForceConfirm("Brown")   -- automation only; human E2E steps use panel Confirm
 lua rollStTest("E2E", C.RollType.STANDARD)
 lua rollStSlots()

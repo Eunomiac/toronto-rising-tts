@@ -1998,8 +1998,9 @@ function DEBUG.rollE2eAddPoolKindSpawn(color, kind, count)
     return true
 end
 
---- Seat color from the most recent `rollForceConfirm` / E2E confirm (for broadcast asserts).
-local e2eLastBroadcastColor = nil
+--- Pinned broadcast context from the most recent successful `rollForceConfirm` on one seat.
+-- Used to assert against the confirmed roll without cross-seat history scans.
+local e2eLastBroadcastContext = nil
 
 --- Last history entry for one seat (post-confirm broadcast source of truth).
 -- @param color string
@@ -2016,46 +2017,47 @@ local function rollE2eHistoryTailForColor(color)
     return history[#history]
 end
 
---- Newest roll history entry across PC seats + Black (for post-human broadcast blocks).
--- @return table|nil entry
+--- Resolve seat color for a broadcast assertion (never scans other seats).
+-- @param expected table rollE2eExpectBroadcast args
 -- @return string|nil color
-local function rollE2eNewestHistoryEntry()
-    local bestEntry = nil
-    local bestColor = nil
-    local bestTs = -1
-    local colors = {}
-    for _, color in ipairs(C.PlayerColors) do
-        colors[#colors + 1] = color
-    end
-    colors[#colors + 1] = "Black"
-    for _, color in ipairs(colors) do
-        local entry = rollE2eHistoryTailForColor(color)
-        if type(entry) == "table" and type(entry.timestamp) == "number" and entry.timestamp >= bestTs then
-            bestTs = entry.timestamp
-            bestEntry = entry
-            bestColor = color
+-- @return string|nil errorMessage
+local function rollE2eResolveBroadcastColor(expected)
+    local color = expected.color
+    if type(color) ~= "string" or color == "" then
+        if e2eLastBroadcastContext ~= nil and type(e2eLastBroadcastContext.color) == "string" then
+            color = e2eLastBroadcastContext.color
         end
     end
-    return bestEntry, bestColor
+    if type(color) ~= "string" or color == "" then
+        return nil, "no seat color (pass expected.color or call rollForceConfirm first)"
+    end
+    return color, nil
 end
 
---- Resolve which history entry backs a broadcast assertion.
+--- Resolve which history entry backs a broadcast assertion for one seat only.
 -- @param expected table|nil rollE2eExpectBroadcast args
 -- @return table|nil historyEntry
 -- @return string|nil color
+-- @return string|nil errorMessage
 local function rollE2eResolveBroadcastHistory(expected)
     expected = type(expected) == "table" and expected or {}
-    local color = expected.color
-    if type(color) ~= "string" or color == "" then
-        color = e2eLastBroadcastColor
+    local color, colorErr = rollE2eResolveBroadcastColor(expected)
+    if color == nil then
+        return nil, nil, colorErr
     end
-    if type(color) == "string" and color ~= "" then
-        local entry = rollE2eHistoryTailForColor(color)
-        if entry ~= nil then
-            return entry, color
+
+    local tail = rollE2eHistoryTailForColor(color)
+    if e2eLastBroadcastContext ~= nil
+        and e2eLastBroadcastContext.color == color
+        and type(e2eLastBroadcastContext.entry) == "table" then
+        local pinned = e2eLastBroadcastContext.entry
+        if type(tail) == "table"
+            and type(pinned.timestamp) == "number"
+            and tail.timestamp == pinned.timestamp then
+            return pinned, color, nil
         end
     end
-    return rollE2eNewestHistoryEntry()
+    return tail, color, nil
 end
 
 --- Parse integer success count from rollResult_successes panel text.
@@ -2192,7 +2194,7 @@ end
 
 --- E2E: assert `rollResult_*` broadcast UI after `rollForceConfirm` / panel Confirm.
 -- @param expected table|nil  `{ color = "Brown", visible = true, resultClass = "Failure", successes = 2, margin = -1 }`
---   `color` — optional seat; defaults to last `rollForceConfirm` or newest history entry
+--   `color` — seat color; required unless the prior step called `rollForceConfirm` on that seat
 --   `visible` — when true, or when any field below is set, panel must be active or history must match
 --   `resultClass` — substring match (case-insensitive) on `rollResult_class`; E2E shorthands
 --     ("Win", "Failure", …) also match `C.ResultClassLabel` panel text (e.g. Win → SUCCESS)
@@ -2201,17 +2203,20 @@ end
 --   `marginAbsent` — when true, `rollResult_margin` must be empty
 -- UI `getValue` can lag `setValue` by a frame; call from the RunSequence step *after*
 -- `rollForceConfirm` (default inter-step wait). Field checks run even when the panel is not
--- visible yet; matching resolved history tail satisfies visibility and each field.
+-- visible yet; matching resolved history tail for the same seat satisfies visibility and each field.
 -- @return boolean pass
--- @usage lua rollE2eExpectBroadcast({ visible = true, resultClass = "Failure", successes = 2 })
+-- @usage lua rollE2eExpectBroadcast({ color = "Brown", visible = true, resultClass = "Failure", successes = 2 })
 function DEBUG.rollE2eExpectBroadcast(expected)
     if type(expected) ~= "table" then
-        print("[rollE2eExpectBroadcast] FAIL: usage rollE2eExpectBroadcast({ visible = true, ... })")
+        print("[rollE2eExpectBroadcast] FAIL: usage rollE2eExpectBroadcast({ color = \"Brown\", visible = true, ... })")
         return false
     end
 
     local failures = {}
-    local histEntry, histColor = rollE2eResolveBroadcastHistory(expected)
+    local histEntry, histColor, histErr = rollE2eResolveBroadcastHistory(expected)
+    if histErr ~= nil then
+        failures[#failures + 1] = histErr
+    end
     local histResult = type(histEntry) == "table" and histEntry.result or nil
     local panelVisible = rollE2eBroadcastPanelVisible()
     local historySatisfies = rollE2eHistorySatisfiesBroadcastExpected(expected, histResult)
@@ -2278,6 +2283,12 @@ function DEBUG.rollE2eExpectBroadcast(expected)
                     .. margText .. "\""
             end
         end
+    end
+
+    if e2eLastBroadcastContext ~= nil
+        and type(histColor) == "string"
+        and e2eLastBroadcastContext.color == histColor then
+        e2eLastBroadcastContext = nil
     end
 
     if #failures == 0 then
@@ -2579,7 +2590,10 @@ function DEBUG.rollForceConfirm(color)
     if type(color) ~= "string" then print("Usage: rollForceConfirm(color)"); return end
     local ok = RC.confirmRoll(color)
     if ok == true then
-        e2eLastBroadcastColor = color
+        e2eLastBroadcastContext = {
+            color = color,
+            entry = rollE2eHistoryTailForColor(color),
+        }
     end
     print(string.format("[DEBUG.rollForceConfirm] %s: %s",
         color, ok and "roll confirmed and resolved" or "confirm failed — is the roll in POST_ROLL?"))

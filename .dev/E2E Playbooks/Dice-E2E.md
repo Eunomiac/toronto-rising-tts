@@ -230,6 +230,7 @@ U.RunSequence({
 U.RunSequence({
   function()
     rollE2eExpectBroadcast({
+      color = "Brown",
       visible = true,
       resultClass = "Win",
       successes = 1,
@@ -433,6 +434,7 @@ U.RunSequence({
   end,
   function()
     rollE2eExpectBroadcast({
+      color = "Brown",
       visible = true,
       resultClass = "Win",
       successes = 2,
@@ -507,6 +509,7 @@ U.RunSequence({
 U.RunSequence({
   function()
     rollE2eExpectBroadcast({
+      color = "Brown",
       visible = true,
       resultClass = "Failure",
       successes = 2,
@@ -535,6 +538,7 @@ U.RunSequence({
   end,
   function()
     rollE2eExpectBroadcast({
+      color = "Brown",
       visible = true,
       resultClass = "Win",
       successes = 2,
@@ -1378,6 +1382,7 @@ U.RunSequence({
   end,
   function()
     rollE2eExpectBroadcast({
+      color = "Black",
       visible = true,
       resultClass = "Win",
       successes = 3,

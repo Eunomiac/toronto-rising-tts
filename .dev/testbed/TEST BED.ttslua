@@ -1980,6 +1980,7 @@ rollConfirm("Brown", {
 })
 rollForceConfirm("Brown")
 rollE2eExpectBroadcast({
+  color = "Brown",
   visible = true,
   resultClass = "Failure",
   successes = 2,
