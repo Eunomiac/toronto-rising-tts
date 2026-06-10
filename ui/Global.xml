@@ -44,6 +44,7 @@
   <Include src="player/panel_overlay_blindfold.xml" />
 
   <!-- Roll control panels (generated per player color) -->
+  <Include src="player/panel_roll_controls_defaults.xml" />
   <Include src="player/panel_roll_controls.xml" />
 
 </Panel>
