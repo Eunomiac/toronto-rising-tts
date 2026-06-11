@@ -3233,6 +3233,7 @@ local function spawnMissingPoolDiceForColor(color)
                     if bag ~= nil then
                         bag.call("autoSpawn", { count = needed })
                         bag.call("repositionStagedDice")
+                        bag.call("ensureRollTagsOnStagedDice")
                         didAutoSpawn = true
                     end
                 end
@@ -3256,6 +3257,9 @@ local function spawnActivePoolDiceForActive(color)
     local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
     if active == nil or active.phase ~= C.RollPhase.PRE_ROLL then
         return false
+    end
+    if color ~= "Black" then
+        DBV.reconcileForPlayer(color, active)
     end
     local pool = DK.normalizePool(active.pool)
     local RO = require("lib.roll_options")
@@ -3492,28 +3496,26 @@ function HUD_rollRollButton(player, value, id)
 
     local didAutoSpawn = spawnActivePoolDiceForActive(color)
 
-    if RC.startRolling(color) then
+    -- Release staged dice in PRE_ROLL while hunger/rouse bags are still at rest Y,
+    -- then advance to ROLLING (reconcile may lower optional bags after release).
+    local function releaseThenStartRolling()
+        releaseBagDice(color)
         if color == "Black" then
-            -- Unlock tray dice, then physical randomize (Object.randomize ≈ R key).
-            local function stReleaseThenPhysicalRoll()
-                releaseBagDice(color)
+            if RC.startRolling(color) then
                 Wait.frames(function()
                     local STR = require("core.storyteller_rolls")
                     STR.physicalRollTrayDice()
                 end, 3)
             end
-            if didAutoSpawn then
-                Wait.frames(stReleaseThenPhysicalRoll, 10)
-            else
-                stReleaseThenPhysicalRoll()
-            end
-        elseif didAutoSpawn then
-            Wait.frames(function()
-                releaseBagDice(color)
-            end, 10)
-        else
-            releaseBagDice(color)
+            return
         end
+        RC.startRolling(color)
+    end
+
+    if didAutoSpawn then
+        Wait.frames(releaseThenStartRolling, 10)
+    else
+        releaseThenStartRolling()
     end
 end
 

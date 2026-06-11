@@ -1726,14 +1726,12 @@ function DEBUG.rollE2eSettlePresetCheck(color, facesByKind)
     if active.phase == C.RollPhase.PRE_ROLL then
         if Global ~= nil and type(Global.call) == "function" then
             Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+            Global.call("GlobalReleaseBagDice", { color = color })
         end
         if RC.startRolling(color) ~= true then
             print("[rollE2eSettlePresetCheck] FAIL: RC.startRolling failed (phase="
                 .. tostring(active.phase) .. ")")
             return false
-        end
-        if Global ~= nil and type(Global.call) == "function" then
-            Global.call("GlobalReleaseBagDice", { color = color })
         end
     elseif active.phase ~= C.RollPhase.ROLLING and active.phase ~= C.RollPhase.POST_ROLL then
         print("[rollE2eSettlePresetCheck] FAIL: phase " .. tostring(active.phase)
@@ -2483,6 +2481,41 @@ local function e2ePrintHeaderPadChar(level)
     return nil
 end
 
+--- Active campaign for DEBUG.RunTest / RunTest (console step runner).
+local e2eRunTestState = {
+    campaign = nil,
+    playbook = nil,
+    index = 0,
+    sequenceCancel = nil,
+}
+
+local e2eEndRunTestPrintWatch
+
+--- While a RunTest step runs, intercept print() and abort on case-sensitive "FAIL".
+-- failAbortArmed stays false until a level-1 printHeader (10× *) opens a suite so
+-- mid-playbook RunTest("Dice", N) steps are not aborted by prerequisite FAIL lines.
+local e2eRunTestPrintWatch = {
+    active = false,
+    failAbortArmed = false,
+    originalPrint = nil,
+    cancelRegistry = nil,
+}
+
+--- Arms RunTest FAIL-abort after a level-1 suite banner (10 leading pad chars).
+-- @param line string Printed banner line
+local function e2eRunTestMaybeArmFailAbortOnSuiteHeader(line)
+    if not e2eRunTestPrintWatch.active or e2eRunTestPrintWatch.failAbortArmed then
+        return
+    end
+    if type(line) ~= "string" then
+        return
+    end
+    local lead = string.rep("*", E2E_PRINT_HEADER_LEAD)
+    if string.sub(line, 1, E2E_PRINT_HEADER_LEAD) == lead then
+        e2eRunTestPrintWatch.failAbortArmed = true
+    end
+end
+
 --- Build an E2E section banner and print it to the console.
 -- Layout when text fits in 100 chars: 10 pad chars + " " + text + " " + pad fill to 100.
 -- When text is too long: 10 pad chars + " " + full text (no trailing pad).
@@ -2517,25 +2550,11 @@ function DEBUG.printHeader(text, level)
         end
     end
     print(line)
+    if level == 1 then
+        e2eRunTestMaybeArmFailAbortOnSuiteHeader(line)
+    end
     return line
 end
-
---- Active campaign for DEBUG.RunTest / RunTest (console step runner).
-local e2eRunTestState = {
-    campaign = nil,
-    playbook = nil,
-    index = 0,
-    sequenceCancel = nil,
-}
-
-local e2eEndRunTestPrintWatch
-
---- While a RunTest step runs, intercept print() and abort on case-sensitive "FAIL".
-local e2eRunTestPrintWatch = {
-    active = false,
-    originalPrint = nil,
-    cancelRegistry = nil,
-}
 
 --- @return string
 local function e2eFormatPrintArgs(...)
@@ -2556,13 +2575,15 @@ local function e2eRunTestPrintWatchHandler(...)
     if original ~= nil then
         original(...)
     end
-    if e2eRunTestPrintWatch.active and msg:find("FAIL", 1, true) ~= nil then
+    if e2eRunTestPrintWatch.active
+        and e2eRunTestPrintWatch.failAbortArmed
+        and msg:find("FAIL", 1, true) ~= nil
+    then
         local cancel = e2eRunTestPrintWatch.cancelRegistry
         if type(cancel) == "table" then
             cancel.cancelled = true
             cancel.reason = "fail_detected"
         end
-        error("RunTest: FAIL detected in console output", 0)
     end
 end
 
@@ -2571,6 +2592,7 @@ e2eEndRunTestPrintWatch = function()
         print = e2eRunTestPrintWatch.originalPrint
     end
     e2eRunTestPrintWatch.active = false
+    e2eRunTestPrintWatch.failAbortArmed = false
     e2eRunTestPrintWatch.originalPrint = nil
     e2eRunTestPrintWatch.cancelRegistry = nil
 end
@@ -2580,6 +2602,7 @@ local function e2eBeginRunTestPrintWatch(cancelRegistry)
     e2eEndRunTestPrintWatch()
     e2eRunTestPrintWatch.originalPrint = print
     e2eRunTestPrintWatch.cancelRegistry = cancelRegistry
+    e2eRunTestPrintWatch.failAbortArmed = false
     e2eRunTestPrintWatch.active = true
     print = e2eRunTestPrintWatchHandler
 end
@@ -3736,33 +3759,11 @@ local DEBUG_UPLOAD_GMNOTES_PREFIX = "debug-custom-ui-upload:"
 local DEBUG_UPLOAD_TAG = "debug-custom-ui-upload"
 local DEBUG_UPLOAD_MANIFEST_MODULE = "lib.custom_ui_upload_manifest"
 
---- Load a generated manifest module at Global init without bricking Save & Play.
---- pcall: module file may be missing on a fresh clone, or fail parse before npm manifest scripts run;
---- propagating would abort core/debug.ttslua load. Literal require() in each caller keeps luabundle embedding
---- (TTS_BUNDLING_SETUP.md § Issue 2a). Empty fallback keeps unrelated DEBUG helpers usable.
---- @param moduleName string
---- @param fallback table
---- @return table
-local function loadGeneratedManifestAtInit(moduleName, fallback)
-    local ok, result = pcall(require, moduleName)
-    if ok and U.Type(result) == "table" then
-        return result
-    end
-    print(
-        "[DEBUG] Generated module '"
-            .. tostring(moduleName)
-            .. "' not loaded — using empty fallback. "
-            .. "Run the matching npm custom-ui-assets:manifest-* script, then Save & Play. "
-            .. "Error: "
-            .. tostring(result)
-    )
-    return fallback
-end
-
--- Module-level literal requires (via helper) so luabundle ships these modules (Issue 2a).
-local CUSTOM_UI_UPLOAD_MANIFEST = loadGeneratedManifestAtInit("lib.custom_ui_upload_manifest", { assets = {} })
-local NPC_TOKEN_UPLOAD_MANIFEST = loadGeneratedManifestAtInit("lib.npc_token_upload_manifest", { assets = {} })
-local NPC_TOKEN_HOSTED_URLS = loadGeneratedManifestAtInit("lib.npc_token_hosted_urls", {})
+-- Bundler tracing + init load for committed manifest stubs (TTS_BUNDLING_SETUP.md § Issue 2a).
+-- No init console noise — upload guidance prints only when DEBUG.loadCustomUiUploadManifest is invoked.
+local CUSTOM_UI_UPLOAD_MANIFEST = require("lib.custom_ui_upload_manifest")
+local NPC_TOKEN_UPLOAD_MANIFEST = require("lib.npc_token_upload_manifest")
+local NPC_TOKEN_HOSTED_URLS = require("lib.npc_token_hosted_urls")
 DEBUG.customUiUploadManifest = CUSTOM_UI_UPLOAD_MANIFEST
 
 --- Parse an optional options table for upload spawn settings.
@@ -3966,7 +3967,7 @@ function DEBUG.loadCustomUiUploadManifest(moduleName, forceReload)
         end
     end
 
-    -- pcall: same rationale as loadGeneratedManifestAtInit — runtime reload after npm regen must not throw.
+    -- pcall: runtime reload after npm regen must not throw during explicit DEBUG invocations.
     local ok, manifest = pcall(require, targetModule)
     if not ok then
         print(
@@ -4633,9 +4634,6 @@ findPotentialLights = DEBUG.findPotentialLights
 
 -- Auto-show help on load (optional - comment out if not desired)
 -- DEBUG.help()
-
--- Auto-load generated custom UI upload manifest module if available.
-DEBUG.loadCustomUiUploadManifest()
 
 --- Print active condition ids and resolved effects for one seat (MCP / console diagnosis).
 --- @param seatColor string e.g. "Brown"

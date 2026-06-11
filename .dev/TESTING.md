@@ -43,7 +43,7 @@ lua RunTest("Scenes")      -- not yet prepared
 
 Re-arming with `RunTest("Dice")` resets index and cancels any in-flight step. Step index is 1-based; suite second arg uses top-level ids (`0`, `A`–`P`, `E2`). **Save & Play** after updating harness code so playbook step tables are fresh.
 
-**Stop rule:** While a `RunTest()` step runs, the harness watches console output for the case-sensitive substring `FAIL` (e.g. `[rollConfirm] FAIL`). On detection it aborts the current step immediately and prints `[RunTest] Stopped at step N/total: FAIL detected in output` — do not advance until the failure is fixed (re-arm at the same step if needed).
+**Stop rule:** After a step prints a **level-1** `printHeader` (suite banner: line begins with ten `*`), `RunTest` arms FAIL-abort for that step only. While armed, any console line containing the case-sensitive substring `FAIL` (e.g. `[rollConfirm] FAIL`) cancels the in-flight `U.RunSequence` and prints `[RunTest] Stopped at step N/total: FAIL detected in output`. Lines before the suite banner (or mid-playbook `RunTest("Dice", N)` jumps without a fresh suite header) do **not** abort — prerequisite checks may FAIL without stopping the harness. Re-arm at the same step after fixing.
 
 Regenerate after editing `Dice-E2E.md`: `npm run e2e-playbook:generate` (included in `npm run build`), then **Save & Play**.
 
