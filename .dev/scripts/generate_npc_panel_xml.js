@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { writeFileResilient } = require("./write_file_resilient");
 
 /** Area keys wired by the button columns in ui/storyteller/partials/panel_npcs_*.xml */
 /** Areas in npcs_data with `excludeFromNpcPanel = true` are omitted from generated rows (e.g. preload). */
@@ -563,7 +564,7 @@ function main() {
   const groupIds = parseGroupIds(source);
   const groupDisplayNames = parseCoterieDisplayNames(constantsSource);
   const xml = buildPanelXml(projectRoot, { areas: panelAreas, characters, groupIds, groupDisplayNames });
-  fs.writeFileSync(outputPath, xml, "utf8");
+  writeFileResilient(outputPath, xml);
   console.log(`[npc_panel_xml_generator] Wrote ${path.relative(projectRoot, outputPath)}`);
 }
 

@@ -2,6 +2,8 @@
 
 ## Active
 
+- [Dice] Message after clicking roll should read "Roll Your Dice!" (Current Behavior: Reads "Rolling — Pick Up Your Dice!")
+
 ---
 
 ## Needs clarification

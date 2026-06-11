@@ -2352,8 +2352,9 @@ local function e2ePrintHeaderPadChar(level)
     return nil
 end
 
---- Build a fixed-width E2E section banner (100 chars) and print it to the console.
--- Layout: 10 pad chars + optional " " + text + " " + pad fill to 100.
+--- Build an E2E section banner and print it to the console.
+-- Layout when text fits in 100 chars: 10 pad chars + " " + text + " " + pad fill to 100.
+-- When text is too long: 10 pad chars + " " + full text (no trailing pad).
 -- @param text string Banner label (use "" for pad-only separator line)
 -- @param level number Header level 1..3 (*, =, -)
 -- @return string|nil Printed line, or nil on validation error
@@ -2371,24 +2372,19 @@ function DEBUG.printHeader(text, level)
 
     local padChar = e2ePrintHeaderPadChar(level)
     local lead = string.rep(padChar, E2E_PRINT_HEADER_LEAD)
-    local mid = ""
-    if text ~= "" then
-        mid = " " .. text .. " "
+    local line
+    if text == "" then
+        line = lead .. string.rep(padChar, E2E_PRINT_HEADER_WIDTH - E2E_PRINT_HEADER_LEAD)
+    else
+        local mid = " " .. text .. " "
+        local used = E2E_PRINT_HEADER_LEAD + #mid
+        if used > E2E_PRINT_HEADER_WIDTH then
+            line = lead .. " " .. text
+        else
+            local trailLen = E2E_PRINT_HEADER_WIDTH - used
+            line = lead .. mid .. string.rep(padChar, trailLen)
+        end
     end
-
-    local used = E2E_PRINT_HEADER_LEAD + #mid
-    if used > E2E_PRINT_HEADER_WIDTH then
-        local maxText = E2E_PRINT_HEADER_WIDTH - E2E_PRINT_HEADER_LEAD - 2
-        print(string.format(
-            "[DEBUG.printHeader] FAIL: text too long (%d chars; max %d)",
-            #text,
-            maxText
-        ))
-        return nil
-    end
-
-    local trailLen = E2E_PRINT_HEADER_WIDTH - used
-    local line = lead .. mid .. string.rep(padChar, trailLen)
     print(line)
     return line
 end
@@ -2401,8 +2397,65 @@ local e2eRunTestState = {
     sequenceCancel = nil,
 }
 
+local e2eEndRunTestPrintWatch
+
+--- While a RunTest step runs, intercept print() and abort on case-sensitive "FAIL".
+local e2eRunTestPrintWatch = {
+    active = false,
+    originalPrint = nil,
+    cancelRegistry = nil,
+}
+
+--- @return string
+local function e2eFormatPrintArgs(...)
+    local n = select("#", ...)
+    if n == 0 then
+        return ""
+    end
+    local parts = {}
+    for i = 1, n do
+        parts[i] = tostring(select(i, ...))
+    end
+    return table.concat(parts, "\t")
+end
+
+local function e2eRunTestPrintWatchHandler(...)
+    local original = e2eRunTestPrintWatch.originalPrint
+    local msg = e2eFormatPrintArgs(...)
+    if original ~= nil then
+        original(...)
+    end
+    if e2eRunTestPrintWatch.active and msg:find("FAIL", 1, true) ~= nil then
+        local cancel = e2eRunTestPrintWatch.cancelRegistry
+        if type(cancel) == "table" then
+            cancel.cancelled = true
+            cancel.reason = "fail_detected"
+        end
+        error("RunTest: FAIL detected in console output", 0)
+    end
+end
+
+e2eEndRunTestPrintWatch = function()
+    if e2eRunTestPrintWatch.active and e2eRunTestPrintWatch.originalPrint ~= nil then
+        print = e2eRunTestPrintWatch.originalPrint
+    end
+    e2eRunTestPrintWatch.active = false
+    e2eRunTestPrintWatch.originalPrint = nil
+    e2eRunTestPrintWatch.cancelRegistry = nil
+end
+
+--- @param cancelRegistry table|nil
+local function e2eBeginRunTestPrintWatch(cancelRegistry)
+    e2eEndRunTestPrintWatch()
+    e2eRunTestPrintWatch.originalPrint = print
+    e2eRunTestPrintWatch.cancelRegistry = cancelRegistry
+    e2eRunTestPrintWatch.active = true
+    print = e2eRunTestPrintWatchHandler
+end
+
 --- Cancel any in-flight RunSequence from a prior RunTest() (re-init or new step).
 local function e2eCancelActiveRunTestSequence()
+    e2eEndRunTestPrintWatch()
     local cancel = e2eRunTestState.sequenceCancel
     if type(cancel) == "table" then
         cancel.cancelled = true
@@ -2626,7 +2679,24 @@ function DEBUG.RunTest(campaignName, startAt)
         playbook.stepCount
     ))
     local sequenceCopy = e2eCopyRunSequenceStep(sequence)
-    U.RunSequenceWithOptions(sequenceCopy, { cancelRegistry = e2eRunTestState.sequenceCancel })
+    local cancelRegistry = e2eRunTestState.sequenceCancel
+    e2eBeginRunTestPrintWatch(cancelRegistry)
+    U.RunSequenceWithOptions(sequenceCopy, {
+        cancelRegistry = cancelRegistry,
+        onComplete = function(ok, detail)
+            local failDetected = type(cancelRegistry) == "table"
+                and cancelRegistry.reason == "fail_detected"
+            e2eEndRunTestPrintWatch()
+            if failDetected then
+                local stepCount = playbook.stepCount
+                print(string.format(
+                    "[RunTest] Stopped at step %d/%d: FAIL detected in output",
+                    nextIndex,
+                    stepCount
+                ))
+            end
+        end,
+    })
     return true
 end
 
@@ -4258,7 +4328,7 @@ function DEBUG.help()
     print("\nDICE DEBUG (solo — no second player):")
     print("  RunTest(\"Dice\")            - Arm Dice E2E playbook (npm run e2e-playbook:generate)")
     print("  RunTest(\"Dice\", 8)         - Arm at step 8; RunTest(\"Dice\", \"H\") at suite H")
-    print("  RunTest()                  - Run next playbook step (after each [HUMAN] gate)")
+    print("  RunTest()                  - Run next playbook step; stops step on console FAIL")
     print("  rollTest(color, diff?, type?, label?, hungerLevel?) - Arm PRE_ROLL (auto seat + camera prep)")
     print("  rollTestNoDiff(color, type?, label?, hungerLevel?) - Arm PRE_ROLL without ST difficulty")
     print("  rollE2eSeatPrep(color)     - Manual prep only; rollTest/rollStTest include this")
@@ -4274,7 +4344,7 @@ function DEBUG.help()
     print("  rollForceConfirm(color)  - Force-confirm POST_ROLL (UI CONFIRM)")
     print("  rollCancel(color)        - Cancel roll; Black also clears ST slots/drawers")
     print("  rollCancelAll()          - Cancel all rolls + ST slots")
-    print("  printHeader(text, level) - E2E banner line (level 1..3: *, =, -; 100 chars)")
+    print("  printHeader(text, level) - E2E banner (level 1..3: *, =, -; 100 chars or lead+text when long)")
     print("  rollStTest(label?, type?) - ST NPC roll on Black (e2e seat/camera prep)")
     print("  rollStSlots()            - Print gameState.storytellerRolls")
     print("\nGAMEBOARD E2E (TOR-141 — .dev/E2E Playbooks/Gameboard-E2E.md):")

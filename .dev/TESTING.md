@@ -43,6 +43,8 @@ lua RunTest("Scenes")      -- not yet prepared
 
 Re-arming with `RunTest("Dice")` resets index and cancels any in-flight step. Step index is 1-based; suite second arg uses top-level ids (`0`, `A`–`P`, `E2`). **Save & Play** after updating harness code so playbook step tables are fresh.
 
+**Stop rule:** While a `RunTest()` step runs, the harness watches console output for the case-sensitive substring `FAIL` (e.g. `[rollConfirm] FAIL`). On detection it aborts the current step immediately and prints `[RunTest] Stopped at step N/total: FAIL detected in output` — do not advance until the failure is fixed (re-arm at the same step if needed).
+
 Regenerate after editing `Dice-E2E.md`: `npm run e2e-playbook:generate` (included in `npm run build`), then **Save & Play**.
 
 Manual paste workflow (same blocks):
@@ -63,9 +65,7 @@ Implemented in [`core/debug.ttslua`](../core/debug.ttslua) as `DEBUG.printHeader
 | **2** | `=` | **Step/substep** open (`Step A1 - …`, `K2a - …`) and **close** (`printHeader("", 2)`) when that step ends |
 | **3** | `-` | **Human instructions** (`[HUMAN] Left-click Normal bag 5 times`) — **do not** close with a later `printHeader` |
 
-**Layout (100 chars fixed):** `10×padChar` + optional `" " + text + "` + `padChar` fill. Non-empty labels have a **space before and after** the text. Empty `text` (`printHeader("", level)`) prints a pad-only line (suite/step “close” banner).
-
-**Max label length:** 88 characters (including spaces in the string you pass — the helper adds the surrounding spaces).
+**Layout:** When the label fits in 100 chars: `10×padChar` + `" " + text + " "` + `padChar` fill. Empty `text` (`printHeader("", level)`) prints a pad-only line (suite/step “close” banner). When the label is too long for that layout, the line is `10×padChar` + `" "` + **full text** (no trailing pad).
 
 After each **suite** ends (level-1 close), add `print("")` in its own `U.RunSequence` step for a blank line in the log.
 

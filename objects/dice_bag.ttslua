@@ -159,6 +159,10 @@ function spawnDie(bagColor, dieType, opts)
         position = worldArcPoint(newCount, newCount),
         rotation = randomRotation(),
     })
+    if die == nil then
+        print("[DiceBag] spawnDie: takeObject returned nil (bag GUID " .. tostring(self.getGUID()) .. ")")
+        return
+    end
 
     die.setScale({ SCALE, SCALE, SCALE })
     die.setLock(true)

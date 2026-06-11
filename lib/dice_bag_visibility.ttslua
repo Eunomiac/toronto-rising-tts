@@ -1,7 +1,8 @@
 --[[
     Player dice bag enable/disable (lib/dice_bag_visibility.ttslua)
 
-    Disabled bags: locked + y = -200. Rest Y cached per bag GUID on first disable.
+    Bags stay locked for their whole lifecycle (script moves them; players use click zones).
+    Disabled bags: y = -200. Enabled bags: rest world Y. Rest Y cached per bag GUID.
 ]]
 
 local DBV = {}
@@ -37,6 +38,65 @@ local function cacheRestY(guid, bag)
     end
 end
 
+--- Hunger / rouse / obliv bags may load already at DISABLED_Y; infer rest Y from the normal bag.
+-- @param color string
+-- @return number|nil
+local function restYFromNormalBag(color)
+    if type(color) ~= "string" then
+        return nil
+    end
+    local normalGuid = G.GetDiceNormalGUID(color)
+    local normalBag = bagObject(normalGuid)
+    if normalBag == nil then
+        return nil
+    end
+    local pos = normalBag.getPosition()
+    if type(pos) == "table" and type(pos.y) == "number" and pos.y > DBV.ACTIVE_Y_THRESHOLD then
+        return pos.y
+    end
+    return nil
+end
+
+--- @param guid string
+-- @param bag Object|nil
+-- @param color string|nil  seat color for normal-bag rest Y fallback
+-- @return number|nil
+local function resolveRestY(guid, bag, color)
+    if restYByGuid[guid] ~= nil then
+        return restYByGuid[guid]
+    end
+    cacheRestY(guid, bag)
+    if restYByGuid[guid] ~= nil then
+        return restYByGuid[guid]
+    end
+    if type(color) == "string" then
+        local fallback = restYFromNormalBag(color)
+        if type(fallback) == "number" then
+            restYByGuid[guid] = fallback
+            return fallback
+        end
+    end
+    return nil
+end
+
+--- Seed rest Y when a bag is already hidden (save ships hunger bags at y = -200).
+-- @param guid string
+-- @param color string|nil
+local function seedRestYIfMissing(guid, color)
+    if restYByGuid[guid] ~= nil then
+        return
+    end
+    resolveRestY(guid, bagObject(guid), color)
+end
+
+--- Bags must remain locked; re-apply if save or tooling left one unlocked.
+-- @param bag Object
+local function ensureBagLocked(bag)
+    if bag ~= nil and bag.getLock() ~= true then
+        bag.setLock(true)
+    end
+end
+
 --- @param bag Object
 --- @return boolean
 local function isBagActiveAtRest(bag)
@@ -48,30 +108,39 @@ end
 
 --- @param guid string
 --- @param enabled boolean
-local function setBagEnabled(guid, enabled)
+--- @param color string|nil  seat color (rest Y fallback for bags that load at DISABLED_Y)
+local function setBagEnabled(guid, enabled, color)
     local bag = bagObject(guid)
     if bag == nil then
         return
     end
+    ensureBagLocked(bag)
     local active = isBagActiveAtRest(bag)
     if enabled and active then
         return
     end
     if not enabled and not active then
+        seedRestYIfMissing(guid, color)
         return
     end
     if enabled then
-        bag.setLock(false)
-        local restY = restYByGuid[guid]
-        if type(restY) == "number" then
-            local pos = bag.getPosition()
-            bag.setPosition({ x = pos.x, y = restY, z = pos.z })
+        local restY = resolveRestY(guid, bag, color)
+        if type(restY) ~= "number" then
+            print(string.format(
+                "[DBV] setBagEnabled: cannot raise bag %s — no rest Y (seat %s)",
+                tostring(guid),
+                tostring(color)))
+            return
         end
+        local pos = bag.getPosition()
+        bag.setPosition({ x = pos.x, y = restY, z = pos.z })
+        ensureBagLocked(bag)
     else
         cacheRestY(guid, bag)
-        bag.setLock(true)
+        seedRestYIfMissing(guid, color)
         local pos = bag.getPosition()
         bag.setPosition({ x = pos.x, y = DBV.DISABLED_Y, z = pos.z })
+        ensureBagLocked(bag)
     end
 end
 
@@ -94,7 +163,7 @@ local function bagGuidForKind(color, kind)
     return nil
 end
 
---- Whether a player bag should accept clicks (enabled and not locked at disabled Y).
+--- Whether a player bag should accept clicks (visible at rest Y, not hidden underground).
 -- @param color string
 -- @param kind string
 -- @return boolean
@@ -107,13 +176,7 @@ function DBV.isBagEnabled(color, kind)
     if bag == nil then
         return false
     end
-    if bag.getLock() == true then
-        local pos = bag.getPosition()
-        if type(pos) == "table" and type(pos.y) == "number" and pos.y < -150 then
-            return false
-        end
-    end
-    return true
+    return isBagActiveAtRest(bag)
 end
 
 --- Apply hunger / rouse / obliv bag visibility for one player seat.
@@ -139,13 +202,13 @@ function DBV.reconcileForPlayer(color, active)
     local oblivGuid = bagGuidForKind(color, DK.KIND_OBLIV_ROUSE)
 
     if type(hungerGuid) == "string" then
-        setBagEnabled(hungerGuid, hungerOn)
+        setBagEnabled(hungerGuid, hungerOn, color)
     end
     if type(rouseGuid) == "string" then
-        setBagEnabled(rouseGuid, rouseOn)
+        setBagEnabled(rouseGuid, rouseOn, color)
     end
     if type(oblivGuid) == "string" then
-        setBagEnabled(oblivGuid, oblivOn)
+        setBagEnabled(oblivGuid, oblivOn, color)
     end
 end
 
@@ -154,17 +217,44 @@ function DBV.disableHungerBagsForAllPlayers()
     for _, color in ipairs(C.PlayerColors) do
         local guid = bagGuidForKind(color, DK.KIND_HUNGER)
         if type(guid) == "string" then
-            setBagEnabled(guid, false)
+            setBagEnabled(guid, false, color)
         end
         local rouseGuid = bagGuidForKind(color, DK.KIND_ROUSE)
         if type(rouseGuid) == "string" then
-            setBagEnabled(rouseGuid, true)
+            setBagEnabled(rouseGuid, true, color)
         end
         local oblivGuid = bagGuidForKind(color, DK.KIND_OBLIV_ROUSE)
         if type(oblivGuid) == "string" then
-            setBagEnabled(oblivGuid, true)
+            setBagEnabled(oblivGuid, true, color)
         end
     end
+end
+
+--- Raise a hidden bag to rest Y before script-driven takeObject (e.g. Auto-Hunger redirect).
+-- @param color string
+-- @param kind string  DK.KIND_*
+-- @return boolean
+function DBV.ensureBagVisibleForSpawn(color, kind)
+    if type(color) ~= "string" or type(kind) ~= "string" then
+        return false
+    end
+    local guid = bagGuidForKind(color, kind)
+    if type(guid) ~= "string" then
+        return false
+    end
+    local bag = bagObject(guid)
+    if bag == nil then
+        return false
+    end
+    if isBagActiveAtRest(bag) then
+        return true
+    end
+    setBagEnabled(guid, true, color)
+    bag = bagObject(guid)
+    if bag == nil then
+        return false
+    end
+    return isBagActiveAtRest(bag)
 end
 
 return DBV

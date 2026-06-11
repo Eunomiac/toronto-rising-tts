@@ -24,7 +24,7 @@ lua RunTest()              -- prints [RunTest] Dice step N/total, then runs the 
 
 Re-arming with `RunTest("Dice")` resets the step index and cancels any in-flight step. Step index is **1-based** (each fenced `U.RunSequence` block). Suite ids (`0`, `A`–`P`, `E2`) map to the first block that opens that suite. After a **Save & Play** reload, all steps are replayable; without reload, steps already run in-session may be empty (playbook tables are mutated once per load).
 
-`RunTest` adds no extra lines after the step — rely on level-3 `[HUMAN]` banners inside the playbook output. `RunTest("Scenes")` and `RunTest("Gameboard")` return **not yet prepared** until those playbooks are streamlined and wired. Regenerate: `npm run e2e-playbook:generate` (or full `npm run build`), then **Save & Play**.
+`RunTest` adds no extra lines after the step — rely on level-3 `[HUMAN]` banners inside the playbook output. While a step runs, any console line containing **`FAIL`** (case-sensitive) aborts the step immediately (`[RunTest] Stopped at step N/total: FAIL detected in output`). `RunTest("Scenes")` and `RunTest("Gameboard")` return **not yet prepared** until those playbooks are streamlined and wired. Regenerate: `npm run e2e-playbook:generate` (or full `npm run build`), then **Save & Play**.
 
 After `rollForceConfirm`, put `rollE2eExpectBroadcast` in the **next** `RunSequence` function (not the same step as confirm) so the default inter-step wait lets the broadcast panel populate.
 
@@ -84,7 +84,7 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 | `rollE2eExpectBroadcast({ color, visible, resultClass?, successes?, margin?, marginAbsent? })` | Assert shared `rollResult_*` panel after Confirm / `rollForceConfirm`; defer to the **next** RunSequence step after confirm. Pass **`color`** explicitly on human-confirm steps; automation may omit it only when the prior function called `rollForceConfirm` on that seat. History tail fallback is **seat-scoped** (no cross-player newest scan). `resultClass` shorthands (`Win`, `Failure`, …) match `C.ResultClassLabel` text. |
 | `rollStConfirm({ liveSlotIndex?, initiateBlocked? })`                    | ST slot assertions                                                          |
 | `setHumanityStains(color, n)` / `setWillpowerSuperficial(color, n)`      | Seed tracker before outcome tests                                           |
-| `printHeader(text, level)`                                               | E2E console banner (100 chars; level 1 `*`, 2 `=`, 3 `-`; `10pad + " " + text + " " + pad`) |
+| `printHeader(text, level)`                                               | E2E console banner (level 1 `*`, 2 `=`, 3 `-`; 100 chars when short, else `10pad + " " + text`) |
 | `RunTest("Dice")` / `RunTest()`                                          | Console step driver over generated `lib/e2e_playbook_dice.ttslua` (build: `npm run e2e-playbook:generate`) |
 
 

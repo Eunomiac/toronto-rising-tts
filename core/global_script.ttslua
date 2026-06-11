@@ -888,6 +888,25 @@ function GlobalSpawnDieFromBag(colorOrParams, dieKind, opts)
     if type(guid) ~= "string" then
         return
     end
+    if color ~= "Black" then
+        local visibilityKind = dieKind
+        if visibilityKind == DK.KIND_BLOOD_SURGE_ROUSE then
+            visibilityKind = DK.KIND_ROUSE
+        end
+        if visibilityKind == DK.KIND_HUNGER
+            or visibilityKind == DK.KIND_ROUSE
+            or visibilityKind == DK.KIND_OBLIV_ROUSE
+        then
+            if DBV.ensureBagVisibleForSpawn(color, visibilityKind) ~= true then
+                print(string.format(
+                    "[Roll] GlobalSpawnDieFromBag: %s %s bag not at rest Y (GUID %s)",
+                    tostring(color),
+                    tostring(visibilityKind),
+                    tostring(guid)))
+                return
+            end
+        end
+    end
     local bag = getObjectFromGUID(guid)
     if bag == nil then
         return
