@@ -188,6 +188,35 @@ function getSpawnedCount()
     return #spawnedDice
 end
 
+--- Moves locked staged dice to the bag's current staging arc (e.g. after bag Y was raised).
+-- @param params table|nil  { arcCenter?: {x,y,z} }
+function repositionStagedDice(params)
+    params = type(params) == "table" and params or {}
+    local arcCenter = params.arcCenter
+    local total = #spawnedDice
+    if total < 1 then
+        return
+    end
+
+    local function worldArcPoint(i, count)
+        local localPt = getLocalPointOnArc(i, count)
+        if arcCenter ~= nil and type(arcCenter.x) == "number" then
+            return {
+                x = arcCenter.x + localPt.x,
+                y = arcCenter.y + (localPt.y or 0),
+                z = arcCenter.z + localPt.z,
+            }
+        end
+        return self.positionToWorld(localPt)
+    end
+
+    for i, die in ipairs(spawnedDice) do
+        if die ~= nil and die.getLock() == true then
+            die.setPosition(worldArcPoint(i, total))
+        end
+    end
+end
+
 --- Removes the most recently spawned die from this bag's staging arc (right-click).
 -- @param params table|nil  { arcCenter?: {x,y,z} } world arc center for ST drawer tray
 -- @return boolean

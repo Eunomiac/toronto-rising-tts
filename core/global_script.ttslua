@@ -917,6 +917,7 @@ function GlobalSpawnDieFromBag(colorOrParams, dieKind, opts)
         bloodSurgePool = bloodSurgePool,
         bloodSurgeRouse = bloodSurgeRouse,
     })
+    bag.call("repositionStagedDice")
     if bloodSurgePool and (dieKind == DK.KIND_NORMAL or dieKind == DK.KIND_HUNGER) then
         RC.recordBloodSurgePoolAdd(color, dieKind, 1)
     end
@@ -3102,6 +3103,41 @@ local function playerBagGuidForPoolKind(color, kindName)
     return nil
 end
 
+--- Maps spawn-plan kind name to DK.KIND_* for bag visibility (nil for normal).
+-- @param kindName string
+-- @return string|nil
+local function dkKindForPoolSpawnKind(kindName)
+    if kindName == "hunger" then
+        return DK.KIND_HUNGER
+    end
+    if kindName == "rouse" then
+        return DK.KIND_ROUSE
+    end
+    if kindName == "oblivRouse" then
+        return DK.KIND_OBLIV_ROUSE
+    end
+    return nil
+end
+
+--- Raises hidden hunger/rouse/obliv bags before takeObject; fails loud when rest Y unknown.
+-- @param color string
+-- @param kindName string
+-- @param guid string
+-- @return boolean
+local function ensurePlayerBagReadyForSpawn(color, kindName, guid)
+    local dkKind = dkKindForPoolSpawnKind(kindName)
+    if dkKind == nil then
+        return true
+    end
+    if DBV.ensureBagVisibleForSpawn(color, dkKind) == true then
+        return true
+    end
+    print(string.format(
+        "[Roll] spawnMissingPoolDice: cannot raise %s bag for %s (GUID %s)",
+        kindName, color, tostring(guid)))
+    return false
+end
+
 --- Auto-spawns missing pool dice on player bags (standard / extended pools).
 -- @param color string
 -- @return boolean true if any bag autoSpawn ran
@@ -3132,10 +3168,13 @@ local function spawnMissingPoolDiceForColor(color)
         if needed > 0 then
             local guid = playerBagGuidForPoolKind(color, kindName)
             if type(guid) == "string" then
-                local bag = getObjectFromGUID(guid)
-                if bag ~= nil then
-                    bag.call("autoSpawn", { count = needed })
-                    didAutoSpawn = true
+                if ensurePlayerBagReadyForSpawn(color, kindName, guid) then
+                    local bag = getObjectFromGUID(guid)
+                    if bag ~= nil then
+                        bag.call("autoSpawn", { count = needed })
+                        bag.call("repositionStagedDice")
+                        didAutoSpawn = true
+                    end
                 end
             end
         end
@@ -3200,6 +3239,16 @@ function GlobalSpawnActivePoolDiceForActive(params)
         return false
     end
     return spawnActivePoolDiceForActive(params.color)
+end
+
+--- Global.call entry: unlock staged bag dice (PRE_ROLL → ROLLING), same as panel Roll.
+-- @param params table  { color: string }
+function GlobalReleaseBagDice(params)
+    if type(params) ~= "table" or type(params.color) ~= "string" then
+        return false
+    end
+    releaseBagDice(params.color)
+    return true
 end
 
 --- Unlocks all hovering dice for a player so they fall and roll.

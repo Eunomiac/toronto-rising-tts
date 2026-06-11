@@ -2096,6 +2096,9 @@ function scaleNPCTokens()
   for _, o in ipairs(getObjectsWithTag("npc_control_token") or {}) do if o ~= nil and o.getCustomObject ~= nil and o.setCustomObject ~= nil then local p = o:getCustomObject(); if type(p) == "table" then p.thickness = 0.03; o:setCustomObject(p); if o.reload ~= nil then o:reload() end end end end
 end
 
+for _,o in ipairs(getObjectsWithTag("d10") or {}) do print(o.getName() .. " (" .. o.getGUID() .. ")") end
+
+
 -- Remap variant: same call shape as installNpcControlBoardSnaps; uses currently installed board snaps as old-config baseline.
 DEBUG.installAndRemapNpcControlBoardSnaps({
   origin = { u = 0.5, v = 0.35 },

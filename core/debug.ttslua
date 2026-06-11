@@ -905,6 +905,94 @@ end
 -- ============================================================================
 
 local DK = require("lib.dice_kinds")
+local DBV = require("lib.dice_bag_visibility")
+
+--- Pool kinds with per-seat bags (E2E staged-dice verification).
+local E2E_POOL_STAGED_KINDS = { "normal", "hunger", "rouse", "oblivRouse" }
+
+--- Staged die count in one player bag (PRE_ROLL arc), or 0 when bag missing.
+-- @param color string
+-- @param dieTypeName string  "normal"|"hunger"|"rouse"|"oblivRouse"
+-- @return number
+local function e2eBagStagedCount(color, dieTypeName)
+    local guid = nil
+    if dieTypeName == "hunger" then
+        guid = G.GetDiceHungerGUID(color)
+    elseif dieTypeName == "normal" then
+        guid = G.GetDiceNormalGUID(color)
+    elseif dieTypeName == "rouse" then
+        guid = G.GetDiceRouseGUID(color)
+    elseif dieTypeName == "oblivRouse" then
+        guid = G.GetDiceOblivRouseGUID(color)
+    end
+    if type(guid) ~= "string" then
+        return 0
+    end
+    local bag = getObjectFromGUID(guid)
+    if bag == nil then
+        return 0
+    end
+    local result = bag.call("getSpawnedCount")
+    return type(result) == "number" and result or 0
+end
+
+--- Compares expected pool counts to bag-staged dice (PRE_ROLL only).
+-- @param color string
+-- @param pool table  normalized or raw pool map
+-- @return table  failure lines (empty when all kinds match)
+local function e2ePoolStagedMismatchLines(color, pool)
+    local lines = {}
+    pool = DK.normalizePool(pool)
+    for _, kindName in ipairs(E2E_POOL_STAGED_KINDS) do
+        local want = pool[kindName] or 0
+        if want > 0 then
+            local got = e2eBagStagedCount(color, kindName)
+            if got ~= want then
+                lines[#lines + 1] = string.format("%s staged=%d want=%d", kindName, got, want)
+            end
+        end
+    end
+    return lines
+end
+
+--- Flags pool kinds whose bags must be at rest Y before staged spawn (hidden bags spawn underground).
+-- @param color string
+-- @param pool table
+-- @return table  failure lines (empty when visible)
+local function e2ePoolBagVisibilityLines(color, pool)
+    local lines = {}
+    pool = DK.normalizePool(pool)
+    if (pool.hunger or 0) > 0 and DBV.isBagEnabled(color, DK.KIND_HUNGER) ~= true then
+        lines[#lines + 1] = "hunger bag not at rest Y (still hidden at y=-200?)"
+    end
+    if (pool.rouse or 0) > 0 and DBV.isBagEnabled(color, DK.KIND_ROUSE) ~= true then
+        lines[#lines + 1] = "rouse bag not at rest Y"
+    end
+    if (pool.oblivRouse or 0) > 0 and DBV.isBagEnabled(color, DK.KIND_OBLIV_ROUSE) ~= true then
+        lines[#lines + 1] = "oblivRouse bag not at rest Y"
+    end
+    return lines
+end
+
+--- Total numeric face entries in a rollSetFaces / settlePresetCheck map.
+-- @param facesByKind table
+-- @return number
+local function e2eCountExpectedFaces(facesByKind)
+    local n = 0
+    if type(facesByKind) ~= "table" then
+        return 0
+    end
+    for _, values in pairs(facesByKind) do
+        if type(values) == "table" then
+            for _, faceVal in ipairs(values) do
+                if type(faceVal) == "number" then
+                    n = n + 1
+                end
+            end
+        end
+    end
+    return n
+end
 
 --- Optional 5th argument to rollTest: hunger level (number) only.
 -- @param extra number|nil
@@ -1319,6 +1407,16 @@ function DEBUG.rollConfirm(colorOrSpec, maybeExpected)
                     for k, v in pairs(expected.pool) do
                         expected.active.pool[k] = v
                     end
+                    if active.phase == C.RollPhase.PRE_ROLL or active.phase == C.RollPhase.SETUP then
+                        local stagedMismatches = e2ePoolStagedMismatchLines(color, expected.pool)
+                        for _, line in ipairs(stagedMismatches) do
+                            failures[#failures + 1] = "pool staged: " .. line
+                        end
+                        local visibilityMismatches = e2ePoolBagVisibilityLines(color, expected.pool)
+                        for _, line in ipairs(visibilityMismatches) do
+                            failures[#failures + 1] = "pool bag visibility: " .. line
+                        end
+                    end
                 end
                 if type(expected.meta) == "table" then
                     expected.active = expected.active or {}
@@ -1634,16 +1732,21 @@ function DEBUG.rollE2eSettlePresetCheck(color, facesByKind)
                 .. tostring(active.phase) .. ")")
             return false
         end
+        if Global ~= nil and type(Global.call) == "function" then
+            Global.call("GlobalReleaseBagDice", { color = color })
+        end
     elseif active.phase ~= C.RollPhase.ROLLING and active.phase ~= C.RollPhase.POST_ROLL then
         print("[rollE2eSettlePresetCheck] FAIL: phase " .. tostring(active.phase)
             .. " (expected preRoll, rolling, or postRoll)")
         return false
     end
 
+    local expectedFaces = e2eCountExpectedFaces(facesByKind)
     local facesSet = DEBUG.rollSetFaces(color, facesByKind)
-    if type(facesSet) ~= "number" or facesSet < 1 then
-        print("[rollE2eSettlePresetCheck] FAIL: no check dice on table to preset (facesSet="
-            .. tostring(facesSet) .. ")")
+    if type(facesSet) ~= "number" or facesSet < expectedFaces then
+        print(string.format(
+            "[rollE2eSettlePresetCheck] FAIL: preset %d/%d face(s) for %s",
+            type(facesSet) == "number" and facesSet or 0, expectedFaces, color))
         return false
     end
 
@@ -1825,20 +1928,31 @@ function DEBUG.rollSetFaces(color, facesByKind)
             color, tostring(active.phase)))
         return 0
     end
+    local expectedCount = e2eCountExpectedFaces(facesByKind)
     local _, objectsByKind = RC._getDicePoolsForRoll(color, active.id)
     local setCount = 0
     for kind, values in pairs(facesByKind) do
-        if type(values) == "table" and type(objectsByKind[kind]) == "table" then
-            local objs = objectsByKind[kind]
+        if type(values) == "table" then
+            local objs = type(objectsByKind[kind]) == "table" and objectsByKind[kind] or {}
             for i, faceVal in ipairs(values) do
-                local obj = objs[i]
-                if obj ~= nil and type(faceVal) == "number" then
-                    if e2eSetDieFaceValue(obj, faceVal) then
+                if type(faceVal) == "number" then
+                    local obj = objs[i]
+                    if obj == nil then
+                        print(string.format(
+                            "[DEBUG.rollSetFaces] WARN: no %s die #%d on table for face %d",
+                            tostring(kind), i, faceVal))
+                    elseif e2eSetDieFaceValue(obj, faceVal) then
                         setCount = setCount + 1
                     end
                 end
             end
         end
+    end
+    if expectedCount > 0 and setCount < expectedCount then
+        print(string.format(
+            "[DEBUG.rollSetFaces] FAIL — %s: set %d/%d face(s) (missing dice or face snap failed)",
+            color, setCount, expectedCount))
+        return 0
     end
     if active.takeHalfAwaitingRouse == true then
         e2eLockRouseDiceForTakeHalf(color, active.id)
@@ -1931,6 +2045,23 @@ function DEBUG.rollE2eSetPoolAndSpawn(color, normal, hunger)
         return false
     end
     Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+
+    local pid = S.getPlayerID(color)
+    local active = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    local pool = type(active) == "table" and DK.normalizePool(active.pool) or {}
+    local stagedMismatches = e2ePoolStagedMismatchLines(color, pool)
+    local visibilityMismatches = e2ePoolBagVisibilityLines(color, pool)
+    if #stagedMismatches > 0 or #visibilityMismatches > 0 then
+        print("[rollE2eSetPoolAndSpawn] FAIL — pool spawn check for " .. color)
+        for i, line in ipairs(stagedMismatches) do
+            print(string.format("  %d) %s", i, line))
+        end
+        for i, line in ipairs(visibilityMismatches) do
+            print(string.format("  %d) %s", i, line))
+        end
+        return false
+    end
+
     print(string.format(
         "[rollE2eSetPoolAndSpawn] %s: pool normal=%d hunger=%d spawned",
         color, normal, hunger))

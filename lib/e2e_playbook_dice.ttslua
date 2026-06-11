@@ -10,7 +10,7 @@ local Playbook = {}
 Playbook.campaign = "Dice"
 Playbook.sourceMarkdown = ".dev/E2E Playbooks/Dice-E2E.md"
 Playbook.stepCount = 54
-Playbook.generatedAt = "2026-06-11T17:37:25.232Z"
+Playbook.generatedAt = "2026-06-11T17:56:49.835Z"
 
 -- true when the markdown block ends with a [HUMAN] printHeader cue
 Playbook.humanGateAfterStep = { true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false }
