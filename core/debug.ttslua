@@ -1712,9 +1712,11 @@ function DEBUG.rollE2ePrepareRollRelease(color)
         print("[rollE2ePrepareRollRelease] FAIL: color required")
         return false
     end
-    if Global ~= nil and type(Global.call) == "function" then
-        Global.call("GlobalRollSeatCamera", { color = color, mode = "diceTray" })
+    if Global == nil or type(Global.call) ~= "function" then
+        print("[rollE2ePrepareRollRelease] FAIL: Global.call unavailable")
+        return false
     end
+    Global.call("GlobalRollSeatCamera", { color = color, mode = "diceTray" })
     local DiceDrawer = require("lib.dice_drawer")
     DiceDrawer.openForRoll(color)
     return true
@@ -2185,9 +2187,9 @@ function DEBUG.rollE2eAddPoolKindSpawn(color, kind, count)
         local current = pool[kind] or 0
         local needed = count - current
         if needed < 0 then
-            if RC.setPoolKindCount(color, kind, count) ~= true then
-                print("[rollE2eAddPoolKindSpawn] FAIL: RC.setPoolKindCount failed for " .. color)
-                return false
+            -- Rouse-family pool counts decrement via bag remove hook only (mirror right-click).
+            for _ = 1, -needed do
+                Global.call("GlobalRemoveDieFromBag", { color = color, dieKind = kind })
             end
         elseif needed > 0 then
             for _ = 1, needed do

@@ -769,7 +769,7 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = {7, 3}, rouse = {4} }, { skipSpawn = true })
+    rollE2eSettlePresetCheck("Brown", { normal = {7, 8}, rouse = {4} }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       rouseOutcomeStripsMin = 1,

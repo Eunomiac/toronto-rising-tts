@@ -238,7 +238,9 @@ require("ui.ui_csheet")
 | `SIGNAL_CANDLE_*` | `require("ui.ui_signal_candle")` | **none** |
 | `SOUNDSCAPE_*` / `TAROT_BUTTON_*` | matching `require(...)` in fix script | **none** |
 
-The TTS extension often scrambles these (e.g. pasting a csheet `<Include>` or the Global-injected fallback `click_*` script onto the board object). Run **`npm run tts-objects:fix-stubs`** after Save & Play if stubs drift; the build task also **deletes** stray `.xml` stubs on Lua-only objects when the extension copies csheet UI onto dice bags, candles, etc.
+The TTS extension often scrambles these (e.g. pasting a csheet `<Include>` or the Global-injected fallback `click_*` script onto the board object). Run **`npm run tts-objects:fix-stubs`** after Save & Play if stub **content** drifts; the build task also **deletes** stray `.xml` stubs on Lua-only objects when the extension copies csheet UI onto dice bags, candles, etc.
+
+**Stub filenames vs GUIDs:** Save & Play keys off `.tts/objects/{Nickname}.{guid}.lua`. `fix_tts_object_stubs` only normalizes file **content** (one-line `require(...)`); it does **not** check that the `{guid}` suffix matches `lib/guids.ttslua`. After workshop edits or a partial sync, nicknames can point at the wrong GUID (e.g. `DICEBAG_ROUSE_PURPLE.03cb81.lua` while the live rouse bag is `70c7cf`) — Save & Play then never repairs the broken object. **`npm run build`** runs **`check:tts-object-stub-guids`** after stub fix (skips when `.tts/objects` is absent). On failure: **Get Lua Scripts** from TTS to refresh filenames from the save, then `npm run tts-objects:fix-stubs`, then Save & Play.
 
 **Pages 3–6** (`CSHEET_PAGE_3_*` … `CSHEET_PAGE_6_*`) use separate entries so each page’s XML builder (and embedded templates when shipped) is **not** bundled into all ~80 sheet objects:
 

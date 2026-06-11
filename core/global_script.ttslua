@@ -3018,11 +3018,108 @@ end
 
 -- ============================================================================
 -- DICE BAG HELPERS
--- Call releaseDice() / destroyDice() on a player's two dice bags by GUID.
---- Calls a named function on both of a player's dice bags (normal + hunger).
+-- Call releaseDice() / destroyDice() on a player's dice bags by GUID.
+
+--- World Y threshold for locked staged dice on the bag arc (`objects/dice_bag` STAGING_WORLD_Y = 8).
+local STAGED_DICE_MIN_Y = 7
+
+--- True when a die is still locked on the PRE_ROLL staging arc (not released to the tray).
+-- @param obj Object
+-- @return boolean
+local function isStagedHoverDie(obj)
+    if obj == nil or obj.isLocked == nil then
+        return false
+    end
+    if obj.isLocked() ~= true then
+        return false
+    end
+    local pos = obj.getPosition()
+    return type(pos) == "table" and type(pos.y) == "number" and pos.y >= STAGED_DICE_MIN_Y
+end
+
+--- Destroy locked hover dice for one seat/kind when the bag script is missing or broken.
+-- @param color string
+-- @param dieKind string  DK.KIND_*
+-- @return number destroyed
+local function destroyStagedHoverDiceForKind(color, dieKind)
+    if type(color) ~= "string" or type(dieKind) ~= "string" then
+        return 0
+    end
+    local dieTag = DK.kindToTag(dieKind)
+    if dieTag == nil then
+        return 0
+    end
+    local ownerTag = color .. "Object"
+    local destroyed = 0
+    for _, obj in ipairs(getObjectsWithAllTags({ dieTag, "d10", ownerTag })) do
+        if isStagedHoverDie(obj) then
+            destroyObject(obj)
+            destroyed = destroyed + 1
+        end
+    end
+    return destroyed
+end
+
+--- True when the object's bundled Lua defines a global function (healthy dice_bag stub).
+-- @param bag Object
+-- @param funcName string
+-- @return boolean
+local function bagLuaScriptHasFunction(bag, funcName)
+    if bag == nil or type(funcName) ~= "string" or bag.getLuaScript == nil then
+        return false
+    end
+    local script = bag.getLuaScript()
+    if type(script) ~= "string" then
+        return false
+    end
+    return string.find(script, "function " .. funcName, 1, true) ~= nil
+end
+
+local PLAYER_BAG_KIND_TO_DK = {
+    normal = DK.KIND_NORMAL,
+    hunger = DK.KIND_HUNGER,
+    rouse = DK.KIND_ROUSE,
+    oblivRouse = DK.KIND_OBLIV_ROUSE,
+}
+
+--- Destroys staged dice on one bag; falls back to tag scan when save script drifted.
+-- @param color string
+-- @param bagKind string  key from GetAllPlayerDiceBagGUIDs
+-- @param guid string
+local function destroyBagStagedDiceAtGuid(color, bagKind, guid)
+    local bag = getObjectFromGUID(guid)
+    if bag == nil then
+        return
+    end
+    if bagLuaScriptHasFunction(bag, "destroyDice") then
+        bag.call("destroyDice")
+        return
+    end
+    local dieKind = PLAYER_BAG_KIND_TO_DK[bagKind]
+    if type(dieKind) ~= "string" then
+        return
+    end
+    local n = destroyStagedHoverDiceForKind(color, dieKind)
+    if n > 0 then
+        print(string.format(
+            "[Roll] destroyBagDice: bag %s (%s) missing destroyDice — removed %d staged die(s) via Global fallback",
+            tostring(guid), tostring(bagKind), n))
+    end
+end
+
+--- Calls a named function on all of a player's dice bags.
 -- @param color    string  Player seat color
--- @param funcName string  "releaseDice" or "destroyDice"
+-- @param funcName string  "releaseDice", "destroyDice", etc.
 function callBagFunction(color, funcName)
+    if funcName == "destroyDice" then
+        local bags = G.GetAllPlayerDiceBagGUIDs(color)
+        for bagKind, guid in pairs(bags) do
+            if type(guid) == "string" then
+                destroyBagStagedDiceAtGuid(color, bagKind, guid)
+            end
+        end
+        return
+    end
     local bags = G.GetAllPlayerDiceBagGUIDs(color)
     for _, guid in pairs(bags) do
         if type(guid) == "string" then
