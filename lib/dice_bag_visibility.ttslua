@@ -11,6 +11,8 @@ local G = require("lib.guids")
 local C = require("lib.constants")
 
 DBV.DISABLED_Y = -200
+--- World Y above this threshold means the bag is already active (visible at rest).
+DBV.ACTIVE_Y_THRESHOLD = -100
 
 --- @type table<string, number> guid -> rest world Y
 local restYByGuid = {}
@@ -35,11 +37,27 @@ local function cacheRestY(guid, bag)
     end
 end
 
+--- @param bag Object
+--- @return boolean
+local function isBagActiveAtRest(bag)
+    local pos = bag.getPosition()
+    return type(pos) == "table"
+        and type(pos.y) == "number"
+        and pos.y > DBV.ACTIVE_Y_THRESHOLD
+end
+
 --- @param guid string
 --- @param enabled boolean
 local function setBagEnabled(guid, enabled)
     local bag = bagObject(guid)
     if bag == nil then
+        return
+    end
+    local active = isBagActiveAtRest(bag)
+    if enabled and active then
+        return
+    end
+    if not enabled and not active then
         return
     end
     if enabled then

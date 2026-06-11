@@ -127,7 +127,7 @@ UI.setAttributes("rollControl_root_Brown", {})
       <!-- UI.setAttributes("rollControl_successes_Brown", {}) -->
       <Text id="rollControl_successes_@@color@@" class="roll_text rollControl_successes" text="" />      <!-- Number of successes rolled, as a number -->
       <!-- UI.setAttributes("rollControl_successesPhrase_Brown", {}) -->
-      <Text id="rollControl_successesPhrase" class="roll_text rollControl_successesPhrase" text="Successes" />
+      <Text id="rollControl_successesPhrase_@@color@@" class="roll_text rollControl_successesPhrase" text="" />  <!-- Set to "Success" if 1 success, "Successes" otherwise  -->
       <!-- UI.setAttributes("rollControl_difficultyDisplay_Brown", {}) -->
       <HorizontalLayout id="rollControl_difficultyDisplay_@@color@@" class="rollControl_difficultyDisplayContainer" spacing = "15" active="true">        <!-- DEACTIVATE if no Difficulty -->
         <!-- UI.setAttributes("DB_rollControl_difficultyVS_Brown", {}) -->
@@ -144,9 +144,10 @@ UI.setAttributes("rollControl_root_Brown", {})
       <!-- UI.setAttributes("DB_rollControl_spacer_result_Brown", {}) -->
       <Panel id="DB_rollControl_spacer_result_@@color@@" class="rollControl_spacer" />
       <!-- UI.setAttributes("rollControl_resultDisplay_Brown", {}) -->
-      <Text id="rollControl_resultDisplay_@@color@@" class="roll_text rollControl_resultDisplay" text="CRITICAL WIN" color="#FFFFFF" />      <!-- Result in ALL CAPS, color set accordingly -->
+      <Text id="rollControl_resultDisplay_@@color@@" class="roll_text rollControl_resultDisplay" text="" />       <!-- Result in ALL CAPS, class should be set via `UI.setClass` to "`roll_text rollControl_resultDisplay rollControl_result<resultClass>`" -->
       <!-- UI.setAttributes("rollControl_marginDisplay_Brown", {}) -->
-      <Text id="rollControl_marginDisplay_@@color@@" class="roll_text rollControl_resultDisplay" text="+10" color="#FFFFFF" />      <!-- Margin as signed number, color matches above; deactivate if no difficulty -->
+      <!-- UI.setAttributes("rollControl_marginDisplay_Brown", {}) -->
+      <Text id="rollControl_marginDisplay_@@color@@" class="roll_text rollControl_resultDisplay" text="" />      <!-- Margin as signed number, class should be set via `UI.setClass` to "`roll_text rollControl_resultDisplay rollControl_result<resultClass>`"; deactivate if no difficulty. Use actual minus sign for negative numbers, i.e. '−' not '-' -->
       <!-- UI.setAttributes("DB_rollControl_spacer_result2_Brown", {}) -->
       <Panel id="DB_rollControl_spacer_result2_@@color@@" class="rollControl_spacer" />
     </HorizontalLayout>

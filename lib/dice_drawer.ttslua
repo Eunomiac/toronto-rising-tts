@@ -10,6 +10,10 @@ local L = require("core.lighting")
 
 local DD = {}
 
+--- Per-seat drawer pose: skip re-open / re-close when already in that state.
+--- @type table<string, boolean>
+local drawerOpenByColor = {}
+
 --- @param color string Seat color e.g. "Brown"
 --- @return string|nil
 local function objectPositionsKey(color)
@@ -64,9 +68,14 @@ end
 --- Not tied to RC.openRoll — opens when dice actually spawn or when Roll is pressed.
 --- @param color string Seat color
 function DD.openForRoll(color)
-  if type(color) == "string" then
-    L.onDiceDrawerStateChanged(color, true)
+  if type(color) ~= "string" then
+    return
   end
+  if drawerOpenByColor[color] == true then
+    return
+  end
+  drawerOpenByColor[color] = true
+  L.onDiceDrawerStateChanged(color, true)
   local pose = getPoseEntry(color, true)
   if pose == nil then
     return
@@ -85,9 +94,14 @@ end
 --- or after result broadcast + cleanup). Not on resolve alone — keep open until then.
 --- @param color string Seat color
 function DD.closeAfterRoll(color)
-  if type(color) == "string" then
-    L.onDiceDrawerStateChanged(color, false)
+  if type(color) ~= "string" then
+    return
   end
+  if drawerOpenByColor[color] ~= true then
+    return
+  end
+  drawerOpenByColor[color] = false
+  L.onDiceDrawerStateChanged(color, false)
   local pose = getPoseEntry(color, false)
   if pose == nil then
     return

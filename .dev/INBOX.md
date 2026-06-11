@@ -2,8 +2,6 @@
 
 ## Active
 
-_(empty — 2026-06-06 `/tr-inbox` promoted 16 lines → TOR-197–TOR-209)_
-
 ---
 
 ## Needs clarification

@@ -2398,7 +2398,53 @@ local e2eRunTestState = {
     campaign = nil,
     playbook = nil,
     index = 0,
+    sequenceCancel = nil,
 }
+
+--- Cancel any in-flight RunSequence from a prior RunTest() (re-init or new step).
+local function e2eCancelActiveRunTestSequence()
+    local cancel = e2eRunTestState.sequenceCancel
+    if type(cancel) == "table" then
+        cancel.cancelled = true
+        cancel.reason = "reinitialized"
+    end
+    e2eRunTestState.sequenceCancel = { cancelled = false, reason = nil }
+end
+
+--- Shallow copy so U.RunSequence (U.shift) does not drain the embedded playbook step table.
+-- @param sequence table
+-- @return table
+local function e2eCopyRunSequenceStep(sequence)
+    local copy = {}
+    for i, fn in ipairs(sequence) do
+        copy[i] = fn
+    end
+    return copy
+end
+
+--- Normalize top-level suite id (0, A–P, E2). Rejects substeps (H1, K2a, …).
+-- @param suiteId string|nil
+-- @return string|nil
+local function normalizeE2eSuiteId(suiteId)
+    if type(suiteId) ~= "string" then
+        return nil
+    end
+    local trimmed = suiteId:match("^%s*(.-)%s*$")
+    if trimmed == "" then
+        return nil
+    end
+    local upper = string.upper(trimmed)
+    if upper == "0" then
+        return "0"
+    end
+    if upper == "E2" then
+        return "E2"
+    end
+    if #upper == 1 and upper:match("[A-P]") then
+        return upper
+    end
+    return nil
+end
 
 --- Normalize playbook campaign name (Dice, Scenes, Gameboard).
 -- @param name string|nil
@@ -2441,44 +2487,67 @@ local function e2eLoadPlaybookModule(campaign)
     return nil, "not yet prepared"
 end
 
---- Normalize 1-based RunSequence step index for optional RunTest jump.
+--- Resolve 1-based step index or top-level suite id for optional RunTest jump.
 -- @param playbook table
--- @param startStepRaw number|string|nil
+-- @param startRaw number|string|nil  e.g. 8, "8", "H", "E2"
 -- @return number|nil index offset (0 = start at step 1); nil on error (message printed)
-local function e2eResolveStepStartIndex(playbook, startStepRaw)
-    if startStepRaw == nil then
+local function e2eResolveStartIndex(playbook, startRaw)
+    if startRaw == nil then
         return 0
     end
-    local stepNum = tonumber(startStepRaw)
-    if stepNum == nil or stepNum ~= math.floor(stepNum) or stepNum < 1 then
-        print(string.format(
-            "[RunTest] Invalid start step '%s' (use integer 1..%d)",
-            tostring(startStepRaw),
-            playbook.stepCount
-        ))
-        return nil
+
+    local stepNum = tonumber(startRaw)
+    if stepNum ~= nil and stepNum == math.floor(stepNum) and stepNum >= 1 then
+        if stepNum > playbook.stepCount then
+            print(string.format(
+                "[RunTest] Start step %d exceeds stepCount %d",
+                stepNum,
+                playbook.stepCount
+            ))
+            return nil
+        end
+        return stepNum - 1
     end
-    if stepNum > playbook.stepCount then
-        print(string.format(
-            "[RunTest] Start step %d exceeds stepCount %d",
-            stepNum,
-            playbook.stepCount
-        ))
-        return nil
+
+    if type(startRaw) == "string" then
+        local sid = normalizeE2eSuiteId(startRaw)
+        if sid ~= nil then
+            if type(playbook.suiteSteps) ~= "table" then
+                print("[RunTest] Playbook missing suiteSteps — run npm run e2e-playbook:generate && Save & Play")
+                return nil
+            end
+            local suiteStep = playbook.suiteSteps[sid]
+            if type(suiteStep) == "number" then
+                return suiteStep - 1
+            end
+            local known = ""
+            if type(playbook.suiteIds) == "table" and #playbook.suiteIds > 0 then
+                known = table.concat(playbook.suiteIds, ", ")
+            end
+            print(string.format("[RunTest] Suite '%s' not found. Top-level suites: %s", sid, known))
+            return nil
+        end
     end
-    return stepNum - 1
+
+    print(string.format(
+        "[RunTest] Invalid start '%s' (use step 1..%d or suite 0, A–P, E2)",
+        tostring(startRaw),
+        playbook.stepCount
+    ))
+    return nil
 end
 
 --- Run the next E2E playbook step, or initialize a campaign.
--- With a campaign name: reset index and arm the playbook (does not run a step).
--- Optional second arg jumps to a 1-based step index before the first RunTest().
+-- With a campaign name: cancel any in-flight step, reset index, arm the playbook (does not run a step).
+-- Optional second arg: 1-based step index (8) or top-level suite id ("H", "E2") before the first RunTest().
 -- With no args: advance index by one and execute the next U.RunSequence from the armed campaign.
 -- @param campaignName string|nil "Dice" | "Scenes" | "Gameboard"
--- @param startStep number|string|nil 1-based step index when initializing (e.g. 8)
+-- @param startAt number|string|nil Step index or suite id when initializing
 -- @usage lua RunTest("Dice")
 -- @usage lua RunTest("Dice", 8)
+-- @usage lua RunTest("Dice", "H")
 -- @usage lua RunTest()
-function DEBUG.RunTest(campaignName, startStep)
+function DEBUG.RunTest(campaignName, startAt)
     if campaignName ~= nil then
         local key = normalizeE2eCampaignName(campaignName)
         if key == nil then
@@ -2500,23 +2569,29 @@ function DEBUG.RunTest(campaignName, startStep)
             return false
         end
 
-        local startIndex = e2eResolveStepStartIndex(playbook, startStep)
+        local startIndex = e2eResolveStartIndex(playbook, startAt)
         if startIndex == nil then
             return false
         end
 
+        e2eCancelActiveRunTestSequence()
+
         e2eRunTestState.campaign = key
         e2eRunTestState.playbook = playbook
         e2eRunTestState.index = startIndex
-        if startStep ~= nil then
+        if startAt ~= nil then
             print(string.format(
-                "[RunTest] Initialized '%s' at step %d/%d",
+                "[RunTest] Initialized '%s' at step %d/%d (next RunTest runs this step)",
                 key,
                 startIndex + 1,
                 playbook.stepCount
             ))
         else
-            print(string.format("[RunTest] Initialized '%s'", key))
+            print(string.format(
+                "[RunTest] Initialized '%s' (next RunTest runs step 1/%d)",
+                key,
+                playbook.stepCount
+            ))
         end
         return true
     end
@@ -2528,12 +2603,18 @@ function DEBUG.RunTest(campaignName, startStep)
     local nextIndex = e2eRunTestState.index + 1
     local playbook = e2eRunTestState.playbook
     if nextIndex > playbook.stepCount then
+        print(string.format("[RunTest] %s finished (%d steps)", e2eRunTestState.campaign, playbook.stepCount))
         return false
     end
 
     local steps = playbook.steps
     local sequence = steps[nextIndex]
-    if type(sequence) ~= "table" then
+    if type(sequence) ~= "table" or #sequence == 0 then
+        print(string.format(
+            "[RunTest] FAIL: step %d has no runnable functions — re-arm with RunTest(\"%s\")",
+            nextIndex,
+            e2eRunTestState.campaign
+        ))
         return false
     end
 
@@ -2544,7 +2625,8 @@ function DEBUG.RunTest(campaignName, startStep)
         nextIndex,
         playbook.stepCount
     ))
-    U.RunSequence(sequence)
+    local sequenceCopy = e2eCopyRunSequenceStep(sequence)
+    U.RunSequenceWithOptions(sequenceCopy, { cancelRegistry = e2eRunTestState.sequenceCancel })
     return true
 end
 
@@ -4175,7 +4257,7 @@ function DEBUG.help()
     print("  clearAllLogs()                    - Clear all log files (starts new session)")
     print("\nDICE DEBUG (solo — no second player):")
     print("  RunTest(\"Dice\")            - Arm Dice E2E playbook (npm run e2e-playbook:generate)")
-    print("  RunTest(\"Dice\", 8)         - Arm Dice at step 8 (1-based RunSequence index)")
+    print("  RunTest(\"Dice\", 8)         - Arm at step 8; RunTest(\"Dice\", \"H\") at suite H")
     print("  RunTest()                  - Run next playbook step (after each [HUMAN] gate)")
     print("  rollTest(color, diff?, type?, label?, hungerLevel?) - Arm PRE_ROLL (auto seat + camera prep)")
     print("  rollTestNoDiff(color, type?, label?, hungerLevel?) - Arm PRE_ROLL without ST difficulty")

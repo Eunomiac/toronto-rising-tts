@@ -178,16 +178,8 @@ U.RunSequence({
     rollStConfirm({ liveSlotIndex = 1 })
   end,
   function()
-    printHeader("[HUMAN] ST dashboard roll label reads E2E ST", 3)
-  end
-})
-```
-
-```lua
-U.RunSequence({
-  function()
     M.setCamera("ALL", "rollBlack")
-    printHeader("[HUMAN] Left-click Normal bag 1 time in ST drawer", 3)
+    printHeader("[HUMAN] Confirm ST dashboard roll label reads E2E ST, then left-click Normal bag 1 time in ST drawer", 3)
   end
 })
 ```
@@ -219,15 +211,8 @@ U.RunSequence({
       },
     })
   end,
-  function()
-    M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] ST clicks Confirm on Brown (or rollForceConfirm)", 3)
-  end
-})
-```
-
-```lua
-U.RunSequence({
+  function() M.setCamera("ALL", "rollBrown") end,
+  function() rollForceConfirm("Brown") end,
   function()
     rollE2eExpectBroadcast({
       color = "Brown",

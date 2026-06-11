@@ -9,11 +9,11 @@ local Playbook = {}
 
 Playbook.campaign = "Dice"
 Playbook.sourceMarkdown = ".dev/E2E Playbooks/Dice-E2E.md"
-Playbook.stepCount = 56
-Playbook.generatedAt = "2026-06-10T07:23:44.534Z"
+Playbook.stepCount = 54
+Playbook.generatedAt = "2026-06-11T16:31:34.021Z"
 
 -- true when the markdown block ends with a [HUMAN] printHeader cue
-Playbook.humanGateAfterStep = { true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false }
+Playbook.humanGateAfterStep = { true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false }
 
 -- Top-level suite id → first step index (RunTest campaign + suite jump)
 Playbook.suiteSteps = {
@@ -23,18 +23,18 @@ Playbook.suiteSteps = {
     ["C"] = 5,
     ["D"] = 5,
     ["E"] = 5,
-    ["E2"] = 7,
-    ["F"] = 8,
-    ["G"] = 8,
-    ["H"] = 8,
-    ["I"] = 11,
-    ["J"] = 15,
-    ["K"] = 18,
-    ["L"] = 37,
-    ["M"] = 41,
-    ["N"] = 42,
-    ["O"] = 45,
-    ["P"] = 50,
+    ["E2"] = 6,
+    ["F"] = 6,
+    ["G"] = 6,
+    ["H"] = 6,
+    ["I"] = 9,
+    ["J"] = 13,
+    ["K"] = 16,
+    ["L"] = 35,
+    ["M"] = 39,
+    ["N"] = 40,
+    ["O"] = 43,
+    ["P"] = 48,
 }
 
 Playbook.suiteIds = { "0", "A", "B", "C", "D", "E", "E2", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P" }
@@ -203,17 +203,11 @@ Playbook.steps = {
             rollStConfirm({ liveSlotIndex = 1 })
           end,
           function()
-            printHeader("[HUMAN] ST dashboard roll label reads E2E ST", 3)
+            M.setCamera("ALL", "rollBlack")
+            printHeader("[HUMAN] Confirm ST dashboard roll label reads E2E ST, then left-click Normal bag 1 time in ST drawer", 3)
           end
         },
     -- step 6
-        {
-          function()
-            M.setCamera("ALL", "rollBlack")
-            printHeader("[HUMAN] Left-click Normal bag 1 time in ST drawer", 3)
-          end
-        },
-    -- step 7
         {
           function()
             rollStConfirm({
@@ -240,13 +234,8 @@ Playbook.steps = {
               },
             })
           end,
-          function()
-            M.setCamera("ALL", "rollBrown")
-            printHeader("[HUMAN] ST clicks Confirm on Brown (or rollForceConfirm)", 3)
-          end
-        },
-    -- step 8
-        {
+          function() M.setCamera("ALL", "rollBrown") end,
+          function() rollForceConfirm("Brown") end,
           function()
             rollE2eExpectBroadcast({
               color = "Brown",
@@ -464,7 +453,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Broadcast shows 4 normal die slots — 2 success (ankh), 2 blank", 3)
           end
         },
-    -- step 9
+    -- step 7
         {
           function() printHeader("", 2) end,
           function() printHeader("H1c - Take Half, zero successes (pool 1)", 2) end,
@@ -499,7 +488,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Throw Rouse dice (or preset + settle)", 3)
           end
         },
-    -- step 10
+    -- step 8
         {
           function()
             rollSetFaces("Brown", { rouse = { 4 } })
@@ -518,7 +507,7 @@ Playbook.steps = {
             printHeader("[HUMAN] ST clicks Confirm on Brown (or rollForceConfirm)", 3)
           end
         },
-    -- step 11
+    -- step 9
         {
           function()
             rollE2eExpectBroadcast({
@@ -598,7 +587,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Click Spend WP; hover each of 3 normal dice and press R once; wait for settle", 3)
           end
         },
-    -- step 12
+    -- step 10
         {
           function()
             rollConfirm("Brown", {
@@ -629,7 +618,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Spend WP; reroll one die; verify second die does not reroll; wait for settle", 3)
           end
         },
-    -- step 13
+    -- step 11
         {
           function()
             rollConfirm("Brown", {
@@ -662,7 +651,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Spend WP; hover hunger die and press R once; wait for settle", 3)
           end
         },
-    -- step 14
+    -- step 12
         {
           function()
             rollConfirm("Brown", {
@@ -696,7 +685,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Spend WP; rouse die must stay locked; reroll each normal die once", 3)
           end
         },
-    -- step 15
+    -- step 13
         {
           function()
             rollConfirm("Brown", {
@@ -730,7 +719,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Click Confirm once", 3)
           end
         },
-    -- step 16
+    -- step 14
         {
           function() printHeader("", 2) end,
           function() printHeader("J2 - Blood surge + compound (same roll)", 2) end,
@@ -741,7 +730,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Hunger bag 1 time", 3)
           end
         },
-    -- step 17
+    -- step 15
         {
           function()
             rollConfirm("Brown", {
@@ -761,7 +750,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Click Confirm once", 3)
           end
         },
-    -- step 18
+    -- step 16
         {
           function() printHeader("", 2) end,
           function() printHeader("", 1) end,
@@ -774,7 +763,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Hunger bag 1 time (no roll active)", 3)
           end
         },
-    -- step 19
+    -- step 17
         {
           function()
             rollConfirm("Brown", {
@@ -791,7 +780,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Rouse bag 1 time", 3)
           end
         },
-    -- step 20
+    -- step 18
         {
           function()
             rollConfirm("Brown", {
@@ -808,7 +797,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Normal bag 1 time", 3)
           end
         },
-    -- step 21
+    -- step 19
         {
           function()
             rollConfirm("Brown", {
@@ -825,7 +814,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Normal bag 2 times", 3)
           end
         },
-    -- step 22
+    -- step 20
         {
           function() rollConfirm("Brown", { active = { pool = { normal = 2 } } }) end,
           function() printHeader("", 2) end,
@@ -836,7 +825,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Normal bag 2 times, then right-click Normal bag 1 time", 3)
           end
         },
-    -- step 23
+    -- step 21
         {
           function()
             rollConfirm("Brown", { active = { pool = { normal = 1 } } })
@@ -850,7 +839,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Hunger bag 1 time (surge not active)", 3)
           end
         },
-    -- step 24
+    -- step 22
         {
           function()
             rollConfirm("Brown", {
@@ -867,7 +856,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Hunger bag 1 time (surge on), then left-click Hunger bag 1 time again", 3)
           end
         },
-    -- step 25
+    -- step 23
         {
           function()
             rollConfirm("Brown", {
@@ -884,7 +873,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Rouse bag 1 time", 3)
           end
         },
-    -- step 26
+    -- step 24
         {
           function()
             rollConfirm("Brown", { active = { pool = { rouse = 1 } } })
@@ -898,7 +887,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Hunger bag 1 time (surge on), then right-click Hunger bag 1 time", 3)
           end
         },
-    -- step 27
+    -- step 25
         {
           function()
             rollConfirm("Brown", {
@@ -915,7 +904,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Normal bag 1 time, then right-click Hunger bag 1 time", 3)
           end
         },
-    -- step 28
+    -- step 26
         {
           function()
             rollConfirm("Brown", { active = { pool = { normal = 1 } } })
@@ -929,7 +918,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Hunger bag 1 time (activate surge), then left-click Rouse bag 1 time", 3)
           end
         },
-    -- step 29
+    -- step 27
         {
           function()
             rollConfirm("Brown", {
@@ -946,7 +935,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Visual: Hunger bag locked before rollTest + ST Open; after rollTest + Open, bag enabled", 3)
           end
         },
-    -- step 30
+    -- step 28
         {
           function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2i bag vis", 0) end,
           function()
@@ -954,7 +943,7 @@ Playbook.steps = {
             printHeader("[HUMAN] ST Open Roll if needed; confirm Hunger bag reachable; left-click Hunger once for surge", 3)
           end
         },
-    -- step 31
+    -- step 29
         {
           function() rollCancel("Brown") end,
           function() printHeader("", 2) end,
@@ -965,7 +954,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Rouse bag 1 time, then left-click Oblivion-Rouse bag 1 time", 3)
           end
         },
-    -- step 32
+    -- step 30
         {
           function()
             rollConfirm("Brown", { pool = { rouse = 1, oblivRouse = 0 } })
@@ -979,7 +968,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Oblivion-Rouse bag 1 time, then left-click Rouse bag 1 time", 3)
           end
         },
-    -- step 33
+    -- step 31
         {
           function()
             rollConfirm("Purple", { pool = { rouse = 0, oblivRouse = 1 } })
@@ -993,7 +982,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Rouse bag 2 times, then left-click Normal bag 1 time", 3)
           end
         },
-    -- step 34
+    -- step 32
         {
           function()
             rollConfirm("Brown", {
@@ -1013,7 +1002,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Rouse bag 2 times, then right-click Rouse bag 1 time", 3)
           end
         },
-    -- step 35
+    -- step 33
         {
           function()
             rollConfirm("Brown", { active = { pool = { rouse = 2 } } })
@@ -1027,7 +1016,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Oblivion-Rouse bag 1 time, then left-click Normal bag 1 time", 3)
           end
         },
-    -- step 36
+    -- step 34
         {
           function()
             rollConfirm("Purple", {
@@ -1047,7 +1036,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Normal bag 2 times, then right-click Normal bag 2 times", 3)
           end
         },
-    -- step 37
+    -- step 35
         {
           function() rollConfirm("Brown", { noActive = true }) end,
           function() printHeader("", 2) end,
@@ -1070,7 +1059,7 @@ Playbook.steps = {
             printHeader("[HUMAN] ST: Set difficulty 2 on dashboard for Brown, then click Open roll", 3)
           end
         },
-    -- step 38
+    -- step 36
         {
           function()
             rollConfirm("Brown", {
@@ -1085,7 +1074,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Normal bag 2 times, click Roll, wait for settle", 3)
           end
         },
-    -- step 39
+    -- step 37
         {
           function()
             rollConfirm("Brown", { phase = "postRoll" })
@@ -1102,7 +1091,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Normal bag 1 time (Brown below hunger cap)", 3)
           end
         },
-    -- step 40
+    -- step 38
         {
           function()
             rollConfirm("Brown", { pool = { normal = 1, hunger = 0 } })
@@ -1129,7 +1118,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Normal bag 3 times, Roll, settle, Spend WP, hover 3 normal dice and press R once each", 3)
           end
         },
-    -- step 41
+    -- step 39
         {
           function()
             rollConfirmTracker("Brown", { willpowerSuperficial = 3 })
@@ -1163,7 +1152,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Normal bag 3 times; Roll and wait for settle", 3)
           end
         },
-    -- step 42
+    -- step 40
         {
           function()
             rollSetFaces("Brown", { normal = {7, 3}, hunger = {1} })
@@ -1187,7 +1176,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Hunger bag 1 time", 3)
           end
         },
-    -- step 43
+    -- step 41
         {
           function()
             rollConfirm("Brown", {
@@ -1204,7 +1193,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Hunger bag 1 time (surge on), then left-click Hunger bag 1 time again", 3)
           end
         },
-    -- step 44
+    -- step 42
         {
           function()
             rollConfirm("Brown", {
@@ -1221,7 +1210,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Hunger bag 1 time (surge on), then right-click Hunger bag 1 time", 3)
           end
         },
-    -- step 45
+    -- step 43
         {
           function()
             rollConfirm("Brown", {
@@ -1259,7 +1248,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Normal bag 2 times in ST drawer; set difficulty 2; Roll, settle, Confirm on ST dashboard", 3)
           end
         },
-    -- step 46
+    -- step 44
         {
           function() rollStConfirm({ liveSlotIndex = 1 }) end,
           function()
@@ -1267,7 +1256,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Click CLEAR on slot 1 in ST dashboard", 3)
           end
         },
-    -- step 47
+    -- step 45
         {
           function()
             rollStConfirm({ liveSlotIndexAbsent = true })
@@ -1281,7 +1270,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Werewolf bag 2 times, Rage bag 2 times; set difficulty 3; Roll and wait for settle", 3)
           end
         },
-    -- step 48
+    -- step 46
         {
           function()
             rollSetFaces("Black", { werewolf = { 8, 6 }, rage = { 5, 7 } })
@@ -1302,7 +1291,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Werewolf bag 2 times, Rage bag 2 times; do not set difficulty; Roll and wait for settle", 3)
           end
         },
-    -- step 49
+    -- step 47
         {
           function()
             rollSetFaces("Black", { werewolf = { 8, 6 }, rage = { 5, 7 } })
@@ -1335,7 +1324,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Rage bag 2 times; set difficulty 2; Roll and wait for settle", 3)
           end
         },
-    -- step 50
+    -- step 48
         {
           function()
             rollSetFaces("Black", { rage = { 1, 2 } })
@@ -1365,7 +1354,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Oblivion-Rouse bag 2 times", 3)
           end
         },
-    -- step 51
+    -- step 49
         {
           function()
             rollE2eSettlePresetCheck("Purple", { oblivRouse = { 6, 6 } })
@@ -1387,7 +1376,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Oblivion-Rouse bag 2 times", 3)
           end
         },
-    -- step 52
+    -- step 50
         {
           function()
             rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 3 } })
@@ -1408,7 +1397,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Oblivion-Rouse bag 2 times", 3)
           end
         },
-    -- step 53
+    -- step 51
         {
           function()
             rollSetFaces("Purple", { oblivRouse = { 3, 10 } })
@@ -1434,7 +1423,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Oblivion-Rouse bag 2 times", 3)
           end
         },
-    -- step 54
+    -- step 52
         {
           function()
             rollE2eSettlePresetCheck("Purple", { oblivRouse = { 1, 10 } })
@@ -1456,7 +1445,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Oblivion-Rouse bag 2 times", 3)
           end
         },
-    -- step 55
+    -- step 53
         {
           function()
             rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 7 } })
@@ -1478,7 +1467,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Normal bag 2 times, Oblivion-Rouse bag 2 times; Roll and wait for settle", 3)
           end
         },
-    -- step 56
+    -- step 54
         {
           function()
             rollSetFaces("Purple", { normal = { 7, 7 }, oblivRouse = { 3, 10 } })

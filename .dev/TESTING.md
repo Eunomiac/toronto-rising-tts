@@ -35,13 +35,13 @@ Keep reference tables and long prose out of the lean test file. Suite and step n
 **Dice-E2E.md** is the reference for the collapsed format. Steps are also available as a generated module (`lib/e2e_playbook_dice.ttslua`, built from the markdown) and runnable via **`RunTest`** in the TTS console:
 
 ```lua
-lua RunTest("Dice")        -- [RunTest] Initialized 'Dice'
-lua RunTest("Dice", 8)     -- [RunTest] Initialized 'Dice' at step 8/56; first RunTest() runs step 8
+lua RunTest("Dice")        -- [RunTest] Initialized 'Dice' (next RunTest runs step 1)
+lua RunTest("Dice", 8)     -- arm at step 8/56; RunTest("Dice", "H") at suite H
 lua RunTest()              -- [RunTest] Dice step N/total, then U.RunSequence (repeat after each [HUMAN] gate)
 lua RunTest("Scenes")      -- not yet prepared
 ```
 
-Step index is 1-based and matches each fenced `U.RunSequence` block in the markdown (56 for Dice). Jumping to step N skips earlier blocks — run prerequisite setup manually if needed.
+Re-arming with `RunTest("Dice")` resets index and cancels any in-flight step. Step index is 1-based; suite second arg uses top-level ids (`0`, `A`–`P`, `E2`). **Save & Play** after updating harness code so playbook step tables are fresh.
 
 Regenerate after editing `Dice-E2E.md`: `npm run e2e-playbook:generate` (included in `npm run build`), then **Save & Play**.
 

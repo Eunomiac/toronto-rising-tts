@@ -332,24 +332,74 @@ local function titleCaseInstructions(s)
     end))
 end
 
---- UI text color for a result class on rollControl_resultDisplay_* / margin.
--- @param resultClass string|nil
+--- Sets the full class string on a UI element (TTS does not support toggling individual classes).
+-- @param elementId string
+-- @param classStr string
+local function uiSetClass(elementId, classStr)
+    UI.setClass(elementId, classStr)
+end
+
+--- Signed margin for roll panels: Unicode minus (−), not ASCII hyphen.
+-- @param margin number|nil
+-- @return string  e.g. "+2", "−1", or ""
+local function formatSignedMargin(margin)
+    if margin == nil then
+        return ""
+    end
+    local n = tonumber(margin)
+    if n == nil then
+        return ""
+    end
+    if n < 0 then
+        return string.format("−%d", -n)
+    end
+    return string.format("+%d", n)
+end
+
+--- Full `rollControl_resultDisplay` class string for a classified result.
+-- @param result table|nil
 -- @return string
-local function resultClassColor(resultClass)
-    if resultClass == C.ResultClass.CRITICAL_WIN
-        or resultClass == C.ResultClass.MESSY_CRITICAL then
-        return "#FFD700"
+local function rollControlResultClassString(result)
+    local base = "roll_text rollControl_resultDisplay"
+    if type(result) ~= "table" then
+        return base
     end
-    if resultClass == C.ResultClass.WIN then
-        return "#FFFFFF"
+    if type(result.brutalNarrative) == "string" and result.brutalNarrative ~= "" then
+        if result.brutalNarrative == "Brutal Outcome" then
+            return base .. " rollControl_result_brutalOutcome"
+        end
+        return base .. " rollControl_result_brutalFailure"
     end
-    if resultClass == C.ResultClass.FAILURE
-        or resultClass == C.ResultClass.BESTIAL_FAILURE
-        or resultClass == C.ResultClass.TOTAL_FAILURE
-        or resultClass == C.ResultClass.TOTAL_BESTIAL_FAILURE then
-        return "#FF6666"
+    local suffixByClass = {
+        [C.ResultClass.WIN]                   = "rollControl_result_win",
+        [C.ResultClass.FAILURE]               = "rollControl_result_failure",
+        [C.ResultClass.TOTAL_FAILURE]         = "rollControl_result_totalFailure",
+        [C.ResultClass.CRITICAL_WIN]          = "rollControl_result_criticalWin",
+        [C.ResultClass.MESSY_CRITICAL]        = "rollControl_result_messyCritical",
+        [C.ResultClass.BESTIAL_FAILURE]       = "rollControl_result_bestialFailure",
+        [C.ResultClass.TOTAL_BESTIAL_FAILURE] = "rollControl_result_totalBestialFailure",
+    }
+    local suffix = suffixByClass[result.resultClass]
+    if type(suffix) == "string" then
+        return base .. " " .. suffix
     end
-    return "#FFFFFF"
+    return base
+end
+
+--- Broadcast result line class string (shared color tokens with roll control panel).
+-- @param result table|nil
+-- @return string
+local function rollResultClassString(result)
+    local panelClass = rollControlResultClassString(result)
+    return panelClass:gsub("rollControl_resultDisplay", "rollResult_class", 1)
+end
+
+--- Broadcast margin line class string.
+-- @param result table|nil
+-- @return string
+local function rollResultMarginClassString(result)
+    local panelClass = rollControlResultClassString(result)
+    return panelClass:gsub("rollControl_resultDisplay", "rollResult_margin", 1)
 end
 
 --- Partitioned die images for rollControl_* PC panels (rouse / blood surge / standard strips).
@@ -502,6 +552,23 @@ local function narrativeLabel(rollType, result)
     return C.ResultClassLabel[rc] or rc or "?"
 end
 
+--- Panel result headline in ALL CAPS (standard wins read "WIN", not "SUCCESS").
+-- @param rollType string|nil
+-- @param result table|nil
+-- @return string
+local function panelResultHeadline(rollType, result)
+    if result == nil then
+        return ""
+    end
+    local label = narrativeLabel(rollType, result)
+    if rollType == C.RollType.STANDARD
+        and result.resultClass == C.ResultClass.WIN
+        and (type(result.brutalNarrative) ~= "string" or result.brutalNarrative == "") then
+        label = C.ResultClassLabel[C.ResultClass.WIN]
+    end
+    return string.upper(label)
+end
+
 --- Returns the result label and successes display string, or empty strings if no result.
 -- @param rollType string|nil  C.RollType value (used for narrative label overrides)
 -- @param result table|nil     Classified result record
@@ -514,8 +581,9 @@ local function resultDisplayStrings(rollType, result)
     local succStr = string.format("%d success%s",
         result.successes,
         result.successes == 1 and "" or "es")
-    local margStr = result.margin ~= nil
-        and string.format("Margin: %+d", result.margin)
+    local signedMargin = formatSignedMargin(result.margin)
+    local margStr = signedMargin ~= ""
+        and string.format("Margin: %s", signedMargin)
         or ""
     return label, succStr, margStr
 end
@@ -594,9 +662,6 @@ local function refreshPcRollControlPanel(color, active)
     uiSetActive(panelId, true)
 
     local rollLabel = C.RollTypeLabel[active.rollType] or active.rollType or ""
-    if active.label and active.label ~= "" then
-        rollLabel = string.format("%s: %s", rollLabel, active.label)
-    end
     uiSetValue(string.format("rollControl_rollType_%s", color), rollLabel)
     uiSetValue(string.format("rollControl_rollInstructions_%s", color),
         titleCaseInstructions(phaseLabel(active, color)))
@@ -621,23 +686,23 @@ local function refreshPcRollControlPanel(color, active)
     uiSetActive(string.format("rollControl_successesContainer_%s", color), showSuccessesRow)
     if showSuccessesRow then
         uiSetValue(string.format("rollControl_successes_%s", color), tostring(result.successes))
+        uiSetValue(string.format("rollControl_successesPhrase_%s", color),
+            result.successes == 1 and "Success" or "Successes")
     end
 
     local showResultRow = isPostRoll and result ~= nil
     uiSetActive(string.format("rollControl_resultDisplayContainer_%s", color), showResultRow)
     if showResultRow then
-        local label = narrativeLabel(active.rollType, result)
-        local displayText = string.upper(label)
-        local textColor = resultClassColor(result.resultClass)
+        local resultClassStr = rollControlResultClassString(result)
         local resultId = string.format("rollControl_resultDisplay_%s", color)
         local marginId = string.format("rollControl_marginDisplay_%s", color)
-        uiSetValue(resultId, displayText)
-        U.setAttribute(resultId, "color", textColor)
+        uiSetValue(resultId, panelResultHeadline(active.rollType, result))
+        uiSetClass(resultId, resultClassStr)
         local showMargin = active.difficulty ~= nil and result.margin ~= nil
         uiSetActive(marginId, showMargin)
         if showMargin then
-            uiSetValue(marginId, string.format("%+d", result.margin))
-            U.setAttribute(marginId, "color", textColor)
+            uiSetValue(marginId, formatSignedMargin(result.margin))
+            uiSetClass(marginId, resultClassStr)
         end
     end
 
@@ -666,7 +731,10 @@ local function refreshPcRollControlPanel(color, active)
     uiSetActive(string.format("rollControl_btnConfirm_%s", color), showConfirm)
     uiSetInteractable(string.format("rollControl_btnConfirm_%s", color), canConfirm)
     refreshPendingResolutionButtons(color, active, true)
-    uiSetActive(string.format("rollControl_btnCancel_%s", color), true)
+    local showCancel = active.takeHalfAwaitingRouse ~= true
+        and (active.phase == C.RollPhase.PRE_ROLL
+            or (active.phase == C.RollPhase.SETUP and active.initiator == "player"))
+    uiSetActive(string.format("rollControl_btnCancel_%s", color), showCancel)
 end
 
 --- Refreshes a player's roll panel to match their current rollData.active.
@@ -1020,8 +1088,10 @@ function RUI.showResultBroadcast(color, result, label)
         -- Die image slots: show sorted face images from the history entry.
         refreshDiceImages("rollResult_die_%d", diceFaces)
 
-        -- Narrative label: Rouse/Remorse override the generic class name
-        uiSetValue("rollResult_class", narrativeLabel(rollTypeKey, result))
+        local resultClassStr = rollResultClassString(result)
+        local marginClassStr = rollResultMarginClassString(result)
+        uiSetValue("rollResult_class", panelResultHeadline(rollTypeKey, result))
+        uiSetClass("rollResult_class", resultClassStr)
 
         local isRouseBroadcast = rollTypeKey == C.RollType.ROUSE
             or rollTypeKey == C.RollType.ROUSE_OBLIVION
@@ -1033,10 +1103,12 @@ function RUI.showResultBroadcast(color, result, label)
         else
             uiSetActive("rollResult_statsRow", true)
             uiSetValue("rollResult_successes",
-                string.format("%d success%s", result.successes,
-                    result.successes == 1 and "" or "es"))
+                string.format("%d %s", result.successes,
+                    result.successes == 1 and "Success" or "Successes"))
             if result.margin ~= nil then
-                uiSetValue("rollResult_margin", string.format("Margin: %+d", result.margin))
+                local signedMargin = formatSignedMargin(result.margin)
+                uiSetValue("rollResult_margin", string.format("Margin: %s", signedMargin))
+                uiSetClass("rollResult_margin", marginClassStr)
             else
                 uiSetValue("rollResult_margin", "")
             end
