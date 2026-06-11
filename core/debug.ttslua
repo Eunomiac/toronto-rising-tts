@@ -2584,13 +2584,17 @@ local function e2eBeginRunTestPrintWatch(cancelRegistry)
     print = e2eRunTestPrintWatchHandler
 end
 
---- Cancel any in-flight RunSequence from a prior RunTest() (re-init or new step).
+--- Cancel any in-flight RunSequence from a prior RunTest() (re-init or next step).
+-- Allocates a fresh cancelRegistry so stale cancelled flags do not abort the new step.
 local function e2eCancelActiveRunTestSequence()
     e2eEndRunTestPrintWatch()
     local cancel = e2eRunTestState.sequenceCancel
     if type(cancel) == "table" then
         cancel.cancelled = true
-        cancel.reason = "reinitialized"
+        -- Preserve fail_detected for a prior step's onComplete closure.
+        if cancel.reason ~= "fail_detected" then
+            cancel.reason = "reinitialized"
+        end
     end
     e2eRunTestState.sequenceCancel = { cancelled = false, reason = nil }
 end
@@ -2809,6 +2813,8 @@ function DEBUG.RunTest(campaignName, startAt)
         nextIndex,
         playbook.stepCount
     ))
+    -- Fresh cancelRegistry per step: prior FAIL sets cancelled=true on the shared table.
+    e2eCancelActiveRunTestSequence()
     local sequenceCopy = e2eCopyRunSequenceStep(sequence)
     local cancelRegistry = e2eRunTestState.sequenceCancel
     e2eBeginRunTestPrintWatch(cancelRegistry)
