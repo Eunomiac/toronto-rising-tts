@@ -214,10 +214,11 @@ function DBV.reconcileForPlayer(color, active)
     local phase = type(active) == "table" and active.phase or nil
     local rollType = type(active) == "table" and active.rollType or nil
 
-    -- Keep hunger bag at rest Y through ROLLING until dice are released (hiding on
-    -- startRolling left staged hunger dice on a bag at y = -200).
+    -- Keep hunger bag at rest Y through PRE_ROLL and ROLLING (standard rolls only).
+    -- Panel Roll releases staged dice before startRolling; staying raised through ROLLING
+    -- also guards direct startRolling paths and any locked staged dice still on the bag.
     local hungerOn = rollType == C.RollType.STANDARD
-        and phase == C.RollPhase.PRE_ROLL
+        and (phase == C.RollPhase.PRE_ROLL or phase == C.RollPhase.ROLLING)
 
     local rouseOn = pool.oblivRouse == 0
     local oblivOn = pool.rouse == 0

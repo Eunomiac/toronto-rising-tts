@@ -207,7 +207,7 @@ rollStSlots()                         -- ST drawer slots
 
 **Permanent automation** (`gameState.stRollSettings`): `autoHunger`, `autoWp`, `autoApplyRouseOutcomes`, `autoRemorse` — toggles in ST **Roll options** modal (`rollOpts_perm_`*).
 
-**Pool composition (standard rolls):** Main pool (`normal` + `hunger`), optional **Blood Surge rouse** (`pool.bloodSurgeRouse`), optional **manual rouse** (`pool.rouse`), optional **oblivion-rouse**. Manual rouse and Obliv are **mutually exclusive**; `bloodSurgeRouse` coexists with manual rouse. Blood Surge: Hunger **left** activates (surge off) or adds surge rouse (surge on); Hunger **right** removes one surge rouse then full undo when none remain. Hunger bag disabled until PRE_ROLL. Normal bag **right** removes main-pool dice. See Dice System Pt. 2 § Pool composition.
+**Pool composition (standard rolls):** Main pool (`normal` + `hunger`), optional **Blood Surge rouse** (`pool.bloodSurgeRouse`), optional **manual rouse** (`pool.rouse`), optional **oblivion-rouse**. Manual rouse and Obliv are **mutually exclusive**; `bloodSurgeRouse` coexists with manual rouse. Blood Surge: Hunger **left** activates (surge off) or adds surge rouse (surge on); Hunger **right** removes one surge rouse then full undo when none remain. Hunger bag hidden until a standard roll reaches PRE_ROLL (stays raised through ROLLING; hidden at POST_ROLL). Normal bag **right** removes main-pool dice. See Dice System Pt. 2 § Pool composition.
 
 **Per-roll options:** Set with `RC.setRollOptions` **immediately after** `rollTest` and **before** **Roll** / **Spend WP**. Do not use the ST Opts modal during E2E (TOR-162).
 

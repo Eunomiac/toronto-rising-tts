@@ -3441,7 +3441,7 @@ function HUD_rollRollButton(player, value, id)
     local didAutoSpawn = spawnActivePoolDiceForActive(color)
 
     -- Release staged dice in PRE_ROLL while hunger/rouse bags are still at rest Y,
-    -- then advance to ROLLING (reconcile may lower optional bags after release).
+    -- then advance to ROLLING (hunger bag stays raised through ROLLING; hidden at POST_ROLL).
     local function releaseThenStartRolling()
         releaseBagDice(color)
         if RC.startRolling(color) ~= true then
