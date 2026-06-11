@@ -97,9 +97,13 @@ local function ensureBagLocked(bag)
     end
 end
 
---- @param bag Object
---- @return boolean
+--- True when the bag exists and its world Y is above the hidden threshold.
+-- @param bag Object|nil
+--- @return boolean  false when bag is nil or missing/destroyed
 local function isBagActiveAtRest(bag)
+    if bag == nil or bag.getPosition == nil then
+        return false
+    end
     local pos = bag.getPosition()
     return type(pos) == "table"
         and type(pos.y) == "number"
@@ -115,6 +119,11 @@ local function setBagEnabled(guid, enabled, color)
         return
     end
     ensureBagLocked(bag)
+    -- Re-resolve in case the object was destroyed between lookups (e.g. bag recreate).
+    bag = bagObject(guid)
+    if bag == nil then
+        return
+    end
     local active = isBagActiveAtRest(bag)
     if enabled and active then
         return
@@ -132,13 +141,27 @@ local function setBagEnabled(guid, enabled, color)
                 tostring(color)))
             return
         end
+        bag = bagObject(guid)
+        if bag == nil then
+            return
+        end
         local pos = bag.getPosition()
+        if type(pos) ~= "table" or type(pos.x) ~= "number" or type(pos.z) ~= "number" then
+            return
+        end
         bag.setPosition({ x = pos.x, y = restY, z = pos.z })
         ensureBagLocked(bag)
     else
         cacheRestY(guid, bag)
         seedRestYIfMissing(guid, color)
+        bag = bagObject(guid)
+        if bag == nil then
+            return
+        end
         local pos = bag.getPosition()
+        if type(pos) ~= "table" or type(pos.x) ~= "number" or type(pos.z) ~= "number" then
+            return
+        end
         bag.setPosition({ x = pos.x, y = DBV.DISABLED_Y, z = pos.z })
         ensureBagLocked(bag)
     end
