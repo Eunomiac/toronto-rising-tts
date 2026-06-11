@@ -14,7 +14,7 @@ Tags: `BrownObject`, `OrangeObject`, `RedObject`, `PinkObject`, `PurpleObject`.
 - **CSHEET_PAGE_6_BROWN** — `f36758`
 - **CSHEET_PAGE_7_BROWN** — `35df08`
 - **CSHEET_PAGE_8_BROWN** — `07ead9`
-- **DICEBAG_HUNGER_BROWN** — `e3d48a`
+- **DICEBAG_HUNGER_BROWN** — `2cb469`
 - **DICEBAG_NORMAL_BROWN** — `b5b3bd`
 - **HUNGER_SMOKE_BROWN** — `6ab1fb`
 - **SEAT_FIGURE_BROWN** — `1c5b18`

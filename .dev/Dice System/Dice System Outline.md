@@ -386,7 +386,7 @@ Add the following to `G.GUIDS` (sourced from `.dev/tts-color-object-tags-by-seat
 
 ```lua
 -- Dice bags (one per seat color; each bag spawns d10 objects when rolled)
-DICEBAG_HUNGER_BROWN   = "e3d48a",
+DICEBAG_HUNGER_BROWN   = "2cb469",
 DICEBAG_HUNGER_ORANGE  = "846db1",
 DICEBAG_HUNGER_RED     = "6d1c15",
 DICEBAG_HUNGER_PINK    = "90f17d",
