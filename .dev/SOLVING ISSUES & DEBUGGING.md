@@ -11,6 +11,7 @@ Quick chat commands: `/dbcheck` (compact) and `/dbfullcheck` (full).
 - [ ] Collect one concrete artifact (log line, state row, screenshot, reproduction step).
 - [ ] Confirm exact reproduction steps and whether issue is deterministic or intermittent.
 - [ ] Confirm current runtime context (player color, role, scene, load vs runtime, host vs client).
+- [ ] **Ask the author** for any fact you cannot derive from code/logs (Save & Play after last change, manual vs automated repro, live object GUIDs, what they saw in-game). **Do not speculate** ("maybe you didn't Save & Play", "perhaps you clicked manually") — see `.cursor/rules/toronto-rising-author-session.mdc`.
 
 ## B) Root-cause discipline (anti-workaround)
 
