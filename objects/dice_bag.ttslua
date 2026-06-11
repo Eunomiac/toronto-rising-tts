@@ -9,8 +9,16 @@
 ]]
 
 local DK = require("lib.dice_kinds")
+local G = require("lib.guids")
 
 RADIUS   = 8
+-- Player staging rings (concentric arcs around the Normal bag). Normal ring uses RADIUS.
+RING_STEP = 2
+SPAWN_RING_HUNGER = 1
+SPAWN_RING_NORMAL = 2
+SPAWN_RING_ROUSE = 3
+SPAWN_RING_BLOOD_SURGE_ROUSE = 4
+-- Storyteller Rage dice use a tighter arc (legacy).
 HUNGER_RADIUS_SCALE = 0.75
 ARC      = 90
 ROTATION = 180
@@ -116,6 +124,89 @@ function click_roll(_, color, alt_click)
     })
 end
 
+--- World-space arc center for player bags: Normal bag position (hidden bags still spawn here).
+-- @param bagColor string|nil
+-- @param explicitCenter table|nil
+-- @return table|nil  { x, y, z }
+local function resolvePlayerArcCenter(bagColor, explicitCenter)
+    if type(explicitCenter) == "table" and type(explicitCenter.x) == "number" then
+        return explicitCenter
+    end
+    if isStorytellerBag() or type(bagColor) ~= "string" then
+        return nil
+    end
+    local normalGuid = G.GetDiceNormalGUID(bagColor)
+    if type(normalGuid) ~= "string" then
+        return nil
+    end
+    local normalBag = getObjectFromGUID(normalGuid)
+    if normalBag == nil then
+        return nil
+    end
+    return normalBag.getPosition()
+end
+
+local isBloodSurgeRouseDie
+
+--- Radial distance for one staging ring (Normal ring = RADIUS).
+-- @param ring number  SPAWN_RING_* constant
+-- @return number
+local function radiusForRing(ring)
+    return RADIUS + (ring - SPAWN_RING_NORMAL) * RING_STEP
+end
+
+--- Staging radius for a logical die kind (player multi-ring layout).
+-- @param dieKind string|nil
+-- @param bloodSurgeRouse boolean|nil
+-- @return number
+local function radiusForSpawnKind(dieKind, bloodSurgeRouse)
+    if bloodSurgeRouse == true or dieKind == DK.KIND_BLOOD_SURGE_ROUSE then
+        return radiusForRing(SPAWN_RING_BLOOD_SURGE_ROUSE)
+    end
+    if dieKind == DK.KIND_HUNGER then
+        return radiusForRing(SPAWN_RING_HUNGER)
+    end
+    if dieKind == DK.KIND_NORMAL then
+        return radiusForRing(SPAWN_RING_NORMAL)
+    end
+    if dieKind == DK.KIND_ROUSE or dieKind == DK.KIND_OBLIV_ROUSE then
+        return radiusForRing(SPAWN_RING_ROUSE)
+    end
+    return RADIUS
+end
+
+--- Per-die radius when a bag may hold mixed surge-rouse and manual rouse dice.
+-- @param die Object|nil
+-- @param bagKind string|nil
+-- @param bloodSurgeRouse boolean|nil
+-- @return number
+local function radiusForStagedDie(die, bagKind, bloodSurgeRouse)
+    if bloodSurgeRouse == true or isBloodSurgeRouseDie(die) then
+        return radiusForRing(SPAWN_RING_BLOOD_SURGE_ROUSE)
+    end
+    return radiusForSpawnKind(bagKind or getDieType(), false)
+end
+
+--- Local arc offset converted to world position for one staged die.
+-- @param bagColor string
+-- @param arcCenter table|nil
+-- @param i number  1-based index along this bag's arc
+-- @param total number  dice count on this bag's arc
+-- @param radius number
+-- @return table
+local function worldArcPoint(bagColor, arcCenter, i, total, radius)
+    local localPt = getLocalPointOnArc(i, total, radius)
+    local center = resolvePlayerArcCenter(bagColor, arcCenter)
+    if center ~= nil then
+        return {
+            x = center.x + localPt.x,
+            y = center.y + (localPt.y or 0),
+            z = center.z + localPt.z,
+        }
+    end
+    return self.positionToWorld(localPt)
+end
+
 function spawnDieRedirect(params)
     if type(params) ~= "table" or type(params.bagColor) ~= "string" or type(params.dieType) ~= "string" then
         return
@@ -128,35 +219,26 @@ function spawnDieRedirect(params)
 end
 
 --- @param opts table|nil  { bloodSurgePool?, bloodSurgeRouse?, arcCenter? }
---- @param arcCenter Vector|table|nil  World-space arc center (ST drawer tray); nil uses bag position
+--- @param arcCenter Vector|table|nil  World-space arc center (ST drawer tray); nil uses Normal bag for players
 function spawnDie(bagColor, dieType, opts)
     opts = type(opts) == "table" and opts or {}
     local bloodSurgePool = opts.bloodSurgePool == true
     local bloodSurgeRouse = opts.bloodSurgeRouse == true
     local arcCenter = opts.arcCenter
+    local bagKind = getDieType()
+    local spawnRadius = radiusForSpawnKind(dieType, bloodSurgeRouse)
     local newCount = #spawnedDice + 1
-
-    local function worldArcPoint(i, total)
-        local localPt = getLocalPointOnArc(i, total)
-        if arcCenter ~= nil and type(arcCenter.x) == "number" then
-            return {
-                x = arcCenter.x + localPt.x,
-                y = arcCenter.y + (localPt.y or 0),
-                z = arcCenter.z + localPt.z,
-            }
-        end
-        return self.positionToWorld(localPt)
-    end
 
     -- Only reposition dice still locked in this bag's staging arc (not released table dice).
     for i, die in ipairs(spawnedDice) do
         if die ~= nil and die.getLock() == true then
-            die.setPositionSmooth(worldArcPoint(i, newCount))
+            local r = radiusForStagedDie(die, bagKind, false)
+            die.setPositionSmooth(worldArcPoint(bagColor, arcCenter, i, newCount, r))
         end
     end
 
     local die = self.takeObject({
-        position = worldArcPoint(newCount, newCount),
+        position = worldArcPoint(bagColor, arcCenter, newCount, newCount, spawnRadius),
         rotation = randomRotation(),
     })
     if die == nil then
@@ -223,29 +305,21 @@ function repositionStagedDice(params)
         return
     end
 
-    local function worldArcPoint(i, count)
-        local localPt = getLocalPointOnArc(i, count)
-        if arcCenter ~= nil and type(arcCenter.x) == "number" then
-            return {
-                x = arcCenter.x + localPt.x,
-                y = arcCenter.y + (localPt.y or 0),
-                z = arcCenter.z + localPt.z,
-            }
-        end
-        return self.positionToWorld(localPt)
+    local bagColor = getBagColor()
+    if bagColor == nil and isStorytellerBag() then
+        bagColor = "Black"
     end
+    local bagKind = getDieType()
 
     for i, die in ipairs(spawnedDice) do
         if die ~= nil and die.getLock() == true then
-            die.setPosition(worldArcPoint(i, total))
+            local r = radiusForStagedDie(die, bagKind, false)
+            die.setPosition(worldArcPoint(bagColor, arcCenter, i, total, r))
         end
     end
 end
 
---- Removes the most recently spawned die from this bag's staging arc (right-click).
--- @param params table|nil  { arcCenter?: {x,y,z} } world arc center for ST drawer tray
--- @return boolean
-local function isBloodSurgeRouseDie(die)
+isBloodSurgeRouseDie = function(die)
     if die == nil then
         return false
     end
@@ -258,6 +332,10 @@ local function isBloodSurgeRouseDie(die)
     end
     return false
 end
+
+--- Removes the most recently spawned die from this bag's staging arc (right-click).
+-- @param params table|nil  { arcCenter?: {x,y,z} } world arc center for ST drawer tray
+-- @return boolean
 
 function removeLastSpawnedDie(params)
     params = type(params) == "table" and params or {}
@@ -292,26 +370,20 @@ function removeLastSpawnedDie(params)
 
     local newCount = #spawnedDice
     local arcCenter = (type(params) == "table" and params.arcCenter) or nil
-
-    local function worldArcPoint(i, total)
-        local localPt = getLocalPointOnArc(i, total)
-        if arcCenter ~= nil and type(arcCenter.x) == "number" then
-            return {
-                x = arcCenter.x + localPt.x,
-                y = arcCenter.y + (localPt.y or 0),
-                z = arcCenter.z + localPt.z,
-            }
-        end
-        return self.positionToWorld(localPt)
+    local bagColor = getBagColor()
+    if bagColor == nil and isStorytellerBag() then
+        bagColor = "Black"
     end
+    local bagKind = getDieType()
 
     for i, staged in ipairs(spawnedDice) do
         if staged ~= nil and staged.getLock() == true then
-            staged.setPositionSmooth(worldArcPoint(i, newCount))
+            local r = radiusForStagedDie(staged, bagKind, false)
+            staged.setPositionSmooth(worldArcPoint(bagColor, arcCenter, i, newCount, r))
         end
     end
 
-    local reportColor = getBagColor()
+    local reportColor = bagColor
     if reportColor == nil and isStorytellerBag() then
         reportColor = "Black"
     end
@@ -386,19 +458,27 @@ function destroyStagedByScriptState(params)
     return removed
 end
 
-function getLocalPointOnArc(i, points)
+--- Local offset on a staging arc (caller supplies ring radius for player bags).
+-- @param i number  1-based slot index
+-- @param points number  dice count on this arc
+-- @param radius number|nil  radial distance; ST Rage uses scaled default when omitted
+-- @return table
+function getLocalPointOnArc(i, points, radius)
     i = i - 0.5
     local angle  = ARC / points
     local offset = -ARC / 2 + ROTATION
-    local radius = RADIUS
-    local kind = getDieType()
-    if kind == DK.KIND_HUNGER or kind == DK.KIND_RAGE then
-        radius = radius * HUNGER_RADIUS_SCALE
+    local r = radius
+    if type(r) ~= "number" then
+        r = RADIUS
+        local kind = getDieType()
+        if kind == DK.KIND_RAGE then
+            r = r * HUNGER_RADIUS_SCALE
+        end
     end
     return {
-        x = math.sin(math.rad(angle * i + offset)) * radius,
+        x = math.sin(math.rad(angle * i + offset)) * r,
         y = HEIGHT,
-        z = math.cos(math.rad(angle * i + offset)) * radius,
+        z = math.cos(math.rad(angle * i + offset)) * r,
     }
 end
 

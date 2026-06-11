@@ -948,25 +948,6 @@ function GlobalSpawnDieFromBag(colorOrParams, dieKind, opts)
     if type(guid) ~= "string" then
         return
     end
-    if color ~= "Black" then
-        local visibilityKind = dieKind
-        if visibilityKind == DK.KIND_BLOOD_SURGE_ROUSE then
-            visibilityKind = DK.KIND_ROUSE
-        end
-        if visibilityKind == DK.KIND_HUNGER
-            or visibilityKind == DK.KIND_ROUSE
-            or visibilityKind == DK.KIND_OBLIV_ROUSE
-        then
-            if DBV.ensureBagVisibleForSpawn(color, visibilityKind) ~= true then
-                print(string.format(
-                    "[Roll] GlobalSpawnDieFromBag: %s %s bag not at rest Y (GUID %s)",
-                    tostring(color),
-                    tostring(visibilityKind),
-                    tostring(guid)))
-                return
-            end
-        end
-    end
     local bag = getObjectFromGUID(guid)
     if bag == nil then
         return
@@ -3163,41 +3144,6 @@ local function playerBagGuidForPoolKind(color, kindName)
     return nil
 end
 
---- Maps spawn-plan kind name to DK.KIND_* for bag visibility (nil for normal).
--- @param kindName string
--- @return string|nil
-local function dkKindForPoolSpawnKind(kindName)
-    if kindName == "hunger" then
-        return DK.KIND_HUNGER
-    end
-    if kindName == "rouse" then
-        return DK.KIND_ROUSE
-    end
-    if kindName == "oblivRouse" then
-        return DK.KIND_OBLIV_ROUSE
-    end
-    return nil
-end
-
---- Raises hidden hunger/rouse/obliv bags before takeObject; fails loud when rest Y unknown.
--- @param color string
--- @param kindName string
--- @param guid string
--- @return boolean
-local function ensurePlayerBagReadyForSpawn(color, kindName, guid)
-    local dkKind = dkKindForPoolSpawnKind(kindName)
-    if dkKind == nil then
-        return true
-    end
-    if DBV.ensureBagVisibleForSpawn(color, dkKind) == true then
-        return true
-    end
-    print(string.format(
-        "[Roll] spawnMissingPoolDice: cannot raise %s bag for %s (GUID %s)",
-        kindName, color, tostring(guid)))
-    return false
-end
-
 --- Auto-spawns missing pool dice on player bags (standard / extended pools).
 -- @param color string
 -- @return boolean true if any bag autoSpawn ran
@@ -3228,14 +3174,12 @@ local function spawnMissingPoolDiceForColor(color)
         if needed > 0 then
             local guid = playerBagGuidForPoolKind(color, kindName)
             if type(guid) == "string" then
-                if ensurePlayerBagReadyForSpawn(color, kindName, guid) then
-                    local bag = getObjectFromGUID(guid)
-                    if bag ~= nil then
-                        bag.call("autoSpawn", { count = needed })
-                        bag.call("repositionStagedDice")
-                        bag.call("ensureRollTagsOnStagedDice")
-                        didAutoSpawn = true
-                    end
+                local bag = getObjectFromGUID(guid)
+                if bag ~= nil then
+                    bag.call("autoSpawn", { count = needed })
+                    bag.call("repositionStagedDice")
+                    bag.call("ensureRollTagsOnStagedDice")
+                    didAutoSpawn = true
                 end
             end
         end
@@ -3500,16 +3444,15 @@ function HUD_rollRollButton(player, value, id)
     -- then advance to ROLLING (reconcile may lower optional bags after release).
     local function releaseThenStartRolling()
         releaseBagDice(color)
-        if color == "Black" then
-            if RC.startRolling(color) then
-                Wait.frames(function()
-                    local STR = require("core.storyteller_rolls")
-                    STR.physicalRollTrayDice()
-                end, 3)
-            end
+        if RC.startRolling(color) ~= true then
             return
         end
-        RC.startRolling(color)
+        if color == "Black" then
+            Wait.frames(function()
+                local STR = require("core.storyteller_rolls")
+                STR.physicalRollTrayDice()
+            end, 3)
+        end
     end
 
     if didAutoSpawn then

@@ -147,7 +147,7 @@ When a "Blood Surge" is triggered (Hunger bag left-click while surge is off on a
 
 **Undo Blood Surge rouse:** Hunger bag **right-click** while `bloodSurgeActive` removes **one** Blood Surge rouse die. When `bloodSurgeRouse` reaches zero, full undo runs: all surge-spawned normal/hunger dice removed, `bloodSurgeActive` cleared — **manual** `pool.rouse` dice are preserved. Hunger bag **right-click** while surge is **off** is a **no-op**.
 
-**Bag visibility:** Hunger bag hidden (`y = -200`) by default; raised to rest Y when ST opens a standard roll to PRE_ROLL and kept through ROLLING until staged dice are **released** (panel Roll / `releaseBagDice` runs in PRE_ROLL before `startRolling`). Bags stay **locked** always (script moves them and `takeObject` works while locked). Rest Y for bags that load hidden is inferred from the seat’s Normal bag. Rouse and Obliv bags disable each other when the opposite manual kind is in the pool (`bloodSurgeRouse` does not disable Obliv).
+**Bag visibility:** Hunger bag (Blood Surge UI) hidden (`y = -200`) by default; raised to rest Y only during **standard** rolls in **PRE_ROLL** so the player can toggle Blood Surge. Programmatic hunger spawns do **not** require raising it. **Staging arc:** all player dice stage around the **Normal bag** world position on concentric rings — Hunger (innermost), Normal, Rouse/Obliv-Rouse (shared ring), Blood Surge rouse (outermost). Bags stay **locked** always (script moves them and `takeObject` works while locked). Rest Y for bags that load hidden is inferred from the seat’s Normal bag. Rouse and Obliv bags disable each other when the opposite manual kind is in the pool (`bloodSurgeRouse` does not disable Obliv).
 
 #### Rouse/Oblivion-Rouse Dice in Standard Pools
 

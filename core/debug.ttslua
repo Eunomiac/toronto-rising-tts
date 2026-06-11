@@ -960,18 +960,8 @@ end
 -- @param pool table
 -- @return table  failure lines (empty when visible)
 local function e2ePoolBagVisibilityLines(color, pool)
-    local lines = {}
-    pool = DK.normalizePool(pool)
-    if (pool.hunger or 0) > 0 and DBV.isBagEnabled(color, DK.KIND_HUNGER) ~= true then
-        lines[#lines + 1] = "hunger bag not at rest Y (still hidden at y=-200?)"
-    end
-    if (pool.rouse or 0) > 0 and DBV.isBagEnabled(color, DK.KIND_ROUSE) ~= true then
-        lines[#lines + 1] = "rouse bag not at rest Y"
-    end
-    if (pool.oblivRouse or 0) > 0 and DBV.isBagEnabled(color, DK.KIND_OBLIV_ROUSE) ~= true then
-        lines[#lines + 1] = "oblivRouse bag not at rest Y"
-    end
-    return lines
+    -- Staged dice spawn at the Normal bag arc (per-kind rings); optional bags need not be raised.
+    return {}
 end
 
 --- Total numeric face entries in a rollSetFaces / settlePresetCheck map.

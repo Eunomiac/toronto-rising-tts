@@ -45,37 +45,37 @@ U.RunSequence({
     printHeader("A2 - Build pool (bags)", 2)
   end,
   rollCancelAll,
-  function() rollTest("Brown", 3, C.RollType.STANDARD, "E2E A2 pool", 0) end,
+  function() rollTest("Brown", 3, C.RollType.STANDARD, "E2E A2 pool", 4) end,
   function()
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Left-click Normal bag 5 times", 3)
+    printHeader("[HUMAN] Left-click Normal bag 5 times (auto-hunger @ 4: 4 Hunger + 1 Normal)", 3)
   end
 })
 ```
 
 ```lua
 U.RunSequence({
-  function() rollConfirm("Brown", { active = { pool = { normal = 5, hunger = 0 } } }) end,
+  function() rollConfirm("Brown", { active = { pool = { normal = 1, hunger = 4 } } }) end,
   function()
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Right-click Normal bag 1 time", 3)
+    printHeader("[HUMAN] Right-click Normal bag 2 times (removes 1 Normal, then 1 Hunger)", 3)
   end
 })
 ```
 
 ```lua
 U.RunSequence({
-  function() rollConfirm("Brown", { active = { pool = { normal = 4, hunger = 0 } } }) end,
+  function() rollConfirm("Brown", { active = { pool = { normal = 0, hunger = 3 } } }) end,
   function()
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Left-click Normal bag 1 time", 3)
+    printHeader("[HUMAN] Left-click Normal bag 2 times (auto-hunger: back to 4 Hunger + 1 Normal)", 3)
   end
 })
 ```
 
 ```lua
 U.RunSequence({
-  function() rollConfirm("Brown", { active = { pool = { normal = 5, hunger = 0 } } }) end,
+  function() rollConfirm("Brown", { active = { pool = { normal = 1, hunger = 4 } } }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("", 2)

@@ -217,7 +217,7 @@ function DBV.reconcileForPlayer(color, active)
     -- Keep hunger bag at rest Y through ROLLING until dice are released (hiding on
     -- startRolling left staged hunger dice on a bag at y = -200).
     local hungerOn = rollType == C.RollType.STANDARD
-        and (phase == C.RollPhase.PRE_ROLL or phase == C.RollPhase.ROLLING)
+        and phase == C.RollPhase.PRE_ROLL
 
     local rouseOn = pool.oblivRouse == 0
     local oblivOn = pool.rouse == 0
