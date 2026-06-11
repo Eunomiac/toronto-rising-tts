@@ -289,6 +289,29 @@ local function ownerTagForActive(color, active)
     return color .. "Object"
 end
 
+--- Reads a physical die face for pool scans (custom dice may lack numeric getValue before first roll).
+-- @param obj Object
+-- @return number|nil
+local function readPhysicalDieFace(obj)
+    if obj == nil then
+        return nil
+    end
+    local val = obj.getValue()
+    if type(val) == "number" then
+        return val
+    end
+    if obj.getRotationValue ~= nil then
+        local rv = obj.getRotationValue()
+        if type(rv) == "number" then
+            return math.floor(rv)
+        end
+        if type(rv) == "string" then
+            return tonumber(rv)
+        end
+    end
+    return 0
+end
+
 --- Locks every physical die for this roll (all kinds).
 -- @param color string
 -- @param rollId string
@@ -448,10 +471,10 @@ function RC._getDicePoolsForRoll(color, rollId)
                                 routeKind = DK.KIND_BLOOD_SURGE_ROUSE
                             end
                         end
-                        local val = obj.getValue()
+                        objectsByKind[routeKind][#objectsByKind[routeKind] + 1] = obj
+                        local val = readPhysicalDieFace(obj)
                         if type(val) == "number" then
                             valuesByKind[routeKind][#valuesByKind[routeKind] + 1] = val
-                            objectsByKind[routeKind][#objectsByKind[routeKind] + 1] = obj
                         end
                     end
                 end

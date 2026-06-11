@@ -818,6 +818,40 @@ function GlobalSpawnDieFromStorytellerBag(params)
     })
 end
 
+--- Writes active roll id to a spawned die's GM Notes (leave-container backup for programmatic takeObject).
+-- @param params table  { color: string, dieGuid: string, bloodSurgeRouse?: boolean }
+function GlobalTagDieForActiveRoll(params)
+    if type(params) ~= "table" then
+        return
+    end
+    local color = params.color
+    local dieGuid = params.dieGuid
+    if type(color) ~= "string" or type(dieGuid) ~= "string" then
+        return
+    end
+    local die = getObjectFromGUID(dieGuid)
+    if die == nil then
+        return
+    end
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        return
+    end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil or active.phase == C.RollPhase.RESOLVED then
+        return
+    end
+    if type(active.id) ~= "string" then
+        return
+    end
+    if DK.gmNotesMatchRoll(die.getGMNotes(), active.id) then
+        return
+    end
+    local isSurgeRouse = params.bloodSurgeRouse == true
+        or die.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE
+    die.setGMNotes(DK.encodeGmNotes(active.id, isSurgeRouse))
+end
+
 --- Opens the seat dice tray when the first die of any kind enters the PRE_ROLL/ROLLING pool.
 -- Authoritative for Auto-Hunger redirects (hunger bag spawn may not run leave-container drawer path).
 -- @param color string
@@ -3300,6 +3334,7 @@ function releaseBagDice(color)
         return
     end
     DiceDrawer.openForRoll(color)
+    callBagFunction(color, "ensureRollTagsOnStagedDice")
     callBagFunction(color, "releaseDice")
 end
 

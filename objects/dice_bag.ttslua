@@ -175,6 +175,11 @@ function spawnDie(bagColor, dieType, opts)
 
     table.insert(spawnedDice, die)
 
+    Global.call("GlobalTagDieForActiveRoll", {
+        color = bagColor,
+        dieGuid = die.getGUID(),
+        bloodSurgeRouse = bloodSurgeRouse,
+    })
     Global.call("GlobalOnBagDieSpawned", {
         color = bagColor,
         dieType = dieType,
@@ -182,6 +187,26 @@ function spawnDie(bagColor, dieType, opts)
         bloodSurgeRouse = bloodSurgeRouse,
         stagedCount = #spawnedDice,
     })
+end
+
+--- Tags staged dice with the active roll id when leave-container did not run (E2E auto-spawn path).
+function ensureRollTagsOnStagedDice()
+    local bagColor = getBagColor()
+    if bagColor == nil and isStorytellerBag() then
+        bagColor = "Black"
+    end
+    if type(bagColor) ~= "string" then
+        return
+    end
+    for _, die in ipairs(spawnedDice) do
+        if die ~= nil then
+            Global.call("GlobalTagDieForActiveRoll", {
+                color = bagColor,
+                dieGuid = die.getGUID(),
+                bloodSurgeRouse = die.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE,
+            })
+        end
+    end
 end
 
 function getSpawnedCount()
