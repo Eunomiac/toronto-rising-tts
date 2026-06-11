@@ -64,8 +64,8 @@ local function findDiceDrawerObject(color)
   return nil
 end
 
---- Move drawer to the "on" pose (first bag spawn, Roll release, or WP reroll path).
---- Not tied to RC.openRoll — opens when dice actually spawn or when Roll is pressed.
+--- Move drawer to the "on" pose (first pool die via GlobalOnBagDieSpawned, leave-container backup,
+--- Roll release, or WP reroll path). Not tied to RC.openRoll.
 --- @param color string Seat color
 function DD.openForRoll(color)
   if type(color) ~= "string" then

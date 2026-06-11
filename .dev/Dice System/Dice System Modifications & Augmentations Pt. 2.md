@@ -262,7 +262,8 @@ Code paths: `lib/dice_kinds.ttslua`, `lib/rouse_outcomes.ttslua`, `core/roll_con
 - **Brutal Outcome confirm** (`RC.confirmBrutalChoice` → `RC.confirmRoll`): `confirmRoll` must **not** call `recalculate` after a brutal choice; result carries `brutalNarrative` for broadcast (e.g. "Brutal Win") and adjusted successes/margin.
 - **Frenzy queue** (`maybeQueueFrenzyOnHungerCap`): after rouse hunger increases, queue Frenzy only when hunger was **already at** `C.MAX_HUNGER` before the bump (would exceed cap; not on first transition to max).
 - **ST bag → name modal** when no live roll; **NPC panel R** → `STR.initiateNpcRoll`.
-- **ST-initiated Rouse/Obliv (PCS panel or NPC roll):** after `RC.initiateRoll`, call `GlobalSpawnDefaultPoolDiceForActive` so the default staged die spawns and the drawer opens on first leave-container (player `DiceDrawer`, Black `STD.openForSlot`).
+- **First die in pool (any kind):** `GlobalOnBagDieSpawned` opens the player `DiceDrawer` or ST slot drawer when pool total goes from 0 → >0 in `PRE_ROLL`/`ROLLING` (covers Auto-Hunger hunger-bag spawns, not only normal-bag leave-container). `onObjectLeaveContainer` still opens as a backup on bag takeObject.
+- **ST-initiated Rouse/Obliv (PCS panel or NPC roll):** after `RC.initiateRoll`, call `GlobalSpawnDefaultPoolDiceForActive` so the default staged die spawns and the drawer opens on first pool die.
 - **Single rouse check:** `RC._buildRouseStripsForActive` emits one **Rouse** strip (all `pool.rouse` dice) and one **Oblivion Rouse** strip when applicable — no separate Blood Surge rouse strip.
 - **Rouse/Obliv exclusivity:** `DK.rouseKindBlockedByPool` + `GlobalRollSpawnDieRequest` return `nil` (silent bag fail).
 - **Blood Surge activation:** `RC.activateBloodSurge` uses `EffectiveStats.forSeat` → `bloodPotencyDerived().bloodSurge` and fresh `ctx.rollPolicy()` for `bloodSurgeDiceMultiplier`; fails if `oblivRouse` already in pool.

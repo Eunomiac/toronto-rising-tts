@@ -818,6 +818,28 @@ function GlobalSpawnDieFromStorytellerBag(params)
     })
 end
 
+--- Opens the seat dice tray when the first die of any kind enters the PRE_ROLL/ROLLING pool.
+-- Authoritative for Auto-Hunger redirects (hunger bag spawn may not run leave-container drawer path).
+-- @param color string
+-- @param active table  active roll after pool mutation
+local function openDiceTrayOnFirstPoolDie(color, active)
+    if type(color) ~= "string" or type(active) ~= "table" then
+        return
+    end
+    if active.phase ~= C.RollPhase.PRE_ROLL and active.phase ~= C.RollPhase.ROLLING then
+        return
+    end
+    if DK.poolTotal(DK.normalizePool(active.pool)) < 1 then
+        return
+    end
+    if color == "Black" and type(active.stDrawerSlot) == "number" then
+        local STR = require("core.storyteller_rolls")
+        STR.onFirstDieSpawned()
+    elseif color ~= "Black" then
+        DiceDrawer.openForRoll(color)
+    end
+end
+
 --- Bag spawn hook: delta pool counts (rouse vs bloodSurgeRouse) or staged count for other kinds.
 -- @param params table
 function GlobalOnBagDieSpawned(params)
@@ -844,9 +866,13 @@ function GlobalOnBagDieSpawned(params)
     end
 
     if ok and prevTotal == 0 then
-        local poolAfter = DK.normalizePool(active.pool)
-        if DK.poolTotal(poolAfter) > 0 then
-            GlobalRollSeatCamera({ color = color, mode = "roll" })
+        active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+        if active ~= nil then
+            local poolAfter = DK.normalizePool(active.pool)
+            if DK.poolTotal(poolAfter) > 0 then
+                openDiceTrayOnFirstPoolDie(color, active)
+                GlobalRollSeatCamera({ color = color, mode = "roll" })
+            end
         end
     end
 end
