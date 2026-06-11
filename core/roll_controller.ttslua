@@ -1278,6 +1278,29 @@ function RC.startRolling(color)
     return true
 end
 
+--- True when global onObjectRandomize should schedule the settle debounce for this die.
+-- Custom Dice expose faces via getRotationValue(); getValue() is not always numeric.
+-- @param obj Object
+-- @return boolean
+function RC.isPhysicalDieRandomizeEvent(obj)
+    if obj == nil then
+        return false
+    end
+    if type(obj.getValue()) == "number" then
+        return true
+    end
+    if obj.getRotationValue ~= nil then
+        local rv = obj.getRotationValue()
+        if type(rv) == "number" then
+            return true
+        end
+        if type(rv) == "string" and tonumber(rv) ~= nil then
+            return true
+        end
+    end
+    return false
+end
+
 --- Triggered by onObjectRandomize (via global_script) when any of a player's dice
 -- settle. Resets the debounce timer in both ROLLING and POST_ROLL phases.
 --

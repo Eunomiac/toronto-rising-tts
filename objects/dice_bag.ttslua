@@ -23,6 +23,8 @@ HUNGER_RADIUS_SCALE = 0.75
 ARC      = 90
 ROTATION = 180
 HEIGHT   = 1.5
+--- Fixed world Y for player-seat staged dice (bag pivot is near table height; arc faces via Y rotation).
+STAGING_WORLD_Y = 8
 SCALE    = 1.75
 
 spawnedDice = {}
@@ -197,12 +199,14 @@ local function worldArcPoint(bagColor, arcCenter, i, total, radius)
             z = arcCenter.z + localPt.z,
         }
     end
-    -- Player kinds share the Normal bag origin; use its rotation (not world-axis offsets).
+    -- Player arc: Normal bag Y-rotation for XZ; fixed world Y (pivot Y ≠ staging hover height).
     local normalBag = getPlayerNormalBag(bagColor)
     if normalBag ~= nil then
-        return normalBag.positionToWorld(localPt)
+        local world = normalBag.positionToWorld({ x = localPt.x, y = 0, z = localPt.z })
+        return { x = world.x, y = STAGING_WORLD_Y, z = world.z }
     end
-    return self.positionToWorld(localPt)
+    local world = self.positionToWorld({ x = localPt.x, y = 0, z = localPt.z })
+    return { x = world.x, y = STAGING_WORLD_Y, z = world.z }
 end
 
 function spawnDieRedirect(params)

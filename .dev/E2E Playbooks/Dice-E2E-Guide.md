@@ -79,8 +79,11 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 | `rollConfirmTracker(color, { hunger?, stains?, willpowerSuperficial? })` | Tracker PASS/FAIL after confirm/broadcast                                   |
 | `rollE2eSetPoolAndSpawn(color, normal, hunger)`                         | Set `active.pool` + spawn staged dice (PRE_ROLL)                                                            |
 | `rollE2eSetPoolAutoHunger(color, normalBagClicks)`                      | Auto-Hunger pool from virtual Normal-bag clicks + spawn (Suite G)                                           |
-| `rollE2eAddPoolKindSpawn(color, kind, count)`                           | Add pool kind (e.g. `"rouse"`) + spawn after base pool (H2, I4, J1)                                         |
-| `rollE2eSettlePresetCheck(color, faces)`                                 | Spawn pool + `startRolling` + preset faces + settle (Suites C–G; no panel Roll)                             |
+| `rollE2eAddPoolKindSpawn(color, kind, count)`                           | Add pool kind + spawn after base pool (H2, I4, J1). **Rouse-family** kinds spawn via bag hook (+1 pool per die); helper must not preset count before spawn. |
+| `rollE2eWaitForDiceTray`                                                | `U.RunSequence` step — returns ~0.75s pause after spawn (drawer smooth open) before release                 |
+| `rollE2eSpawnActivePool(color)`                                         | Spawn missing PRE_ROLL pool dice (dedicated rouse / after `rollTest`)                                       |
+| `rollE2ePrepareRollRelease(color)`                                      | Dice-tray camera + open drawer (mirrors panel Roll prep; used before Take Half + rouse release)             |
+| `rollE2eSettlePresetCheck(color, faces, { skipSpawn = true })`          | After spawn + wait: release, `startRolling`, preset faces, settle (no panel Roll)                           |
 | `rollE2eExpectBroadcast({ color, visible, resultClass?, successes?, margin?, marginAbsent? })` | Assert shared `rollResult_*` panel after Confirm / `rollForceConfirm`; defer to the **next** RunSequence step after confirm. Pass **`color`** explicitly on human-confirm steps; automation may omit it only when the prior function called `rollForceConfirm` on that seat. History tail fallback is **seat-scoped** (no cross-player newest scan). `resultClass` shorthands (`Win`, `Failure`, …) match `C.ResultClassLabel` text. |
 | `rollStConfirm({ liveSlotIndex?, initiateBlocked? })`                    | ST slot assertions                                                          |
 | `setHumanityStains(color, n)` / `setWillpowerSuperficial(color, n)`      | Seed tracker before outcome tests                                           |
@@ -105,12 +108,13 @@ Cross-playbook rules live in [TESTING.md § E2E console output conventions](../T
 1. Open level-2 header (own `function()` step).
 2. `rollCancelAll` or `rollCancel(color)` when the step requires a clean roll.
 3. Setup + pre-human assertions in one `function()` (e.g. `rollTest`, `rollE2eSetPoolAndSpawn`, `rollConfirm` for `preRoll`).
-4. `M.setCamera` + level-3 `[HUMAN]` header (own `function()` step) — tester performs UI actions.
-5. **Separate** `U.RunSequence` block after human acts: post-human `rollConfirm` / `rollE2eExpectBroadcast`, then `printHeader("", 2)` if the step ends.
+4. **`rollE2eWaitForDiceTray`** after any staged spawn (or human bag clicks) and **before** release / `rollE2eSettlePresetCheck` / Take Half that unlocks dice.
+5. `M.setCamera` + level-3 `[HUMAN]` header (own `function()` step) — tester performs UI actions.
+6. **Separate** `U.RunSequence` block after human acts: optional `rollE2eWaitForDiceTray` if human just spawned dice, then post-human `rollConfirm` / `rollE2eSettlePresetCheck({ skipSpawn = true })` / `rollE2eExpectBroadcast`, then `printHeader("", 2)` if the step ends.
 
 **One `[HUMAN]` per block** — never two level-3 headers in one `U.RunSequence` (e.g. Suite E: ST label check and bag click are separate blocks).
 
-Multi-phase steps within one level-2 section (e.g. Suite A Step A2 bag clicks) repeat steps 4–5 without closing level 2 until the step’s final assertion passes. Automated substeps with no human gate between them belong in the **same** block (see streamlined merges in `Dice-E2E.md`: E2a→E2b→F, G1–G6, etc.).
+Multi-phase steps within one level-2 section (e.g. Suite A Step A2 bag clicks) repeat steps 5–6 without closing level 2 until the step’s final assertion passes. Automated substeps with no human gate between them belong in the **same** block (see streamlined merges in `Dice-E2E.md`: E2a→E2b→F, G1–G6, etc.).
 
 ### Dice-specific camera targets
 
@@ -160,7 +164,8 @@ Every step is **mandatory**. Do not improvise pool sizes, click counts, or asser
 | `rollConfirmTracker`             | Assert hunger / stains / superficial willpower after consequences apply                                                                                                                                                                                                                                                                                                                                                                                 |
 | `rollE2eSetPoolAndSpawn` / `rollE2eSetPoolAutoHunger` | After `rollTest`: set pool + spawn staged dice (Suite F explicit counts; Suite G uses `rollE2eSetPoolAutoHunger` with Normal-bag click count) |
 | `rollE2eAddPoolKindSpawn`        | Add a pool kind (e.g. **rouse**) + spawn — use after `rollE2eSetPoolAndSpawn` when the test needs compound pools (H2, I4, J1) |
-| `rollE2eSettlePresetCheck`       | **After pool spawn** — `startRolling`, preset faces, settle (replaces panel Roll; **do not** click Roll between `rollTest` and this helper)                                                                                                                                                                                                                                              |
+| `rollE2eWaitForDiceTray`         | **Required** after spawn (or human bag clicks) — pause ~0.75s so the dice tray finishes opening before dice are released |
+| `rollE2eSettlePresetCheck`       | **After spawn + wait** — `{ skipSpawn = true }` when pool dice already staged; release + `startRolling`, preset faces, settle (replaces panel Roll) |
 | `rollE2eExpectBroadcast`         | After **Confirm** / `rollForceConfirm`: assert `rollResult_panel` visible and class/successes/margin text; use `marginAbsent = true` when ST never set difficulty |
 | **Optional difficulty**          | Steps using `rollTestNoDiff`: do **not** set ST dashboard difficulty; assert `marginAbsent` unless the step sets difficulty mid-test (E2b) |
 | Suites **H onward**              | Start each test with `rollCancel(color)`; spawn pool via helpers (**not** bag clicks) unless the step tests bag behavior (Suite **K**) |
@@ -256,8 +261,8 @@ Passed tests: ✅ beneath Pass if. Partial: ✅ + ⚠️. Failed: ❌ + notes.
 
 Record new failures in Linear; keep brief notes here when a step blocks the suite.
 
-- **H2 / H2b:** Take Half + rouse merge required all rouse dice **locked** before POST_ROLL (fixed in `recalculateTakeHalfAwaitingRouse` — use readable on-table faces after settle debounce).
-- **I4:** `rollE2eSettlePresetCheck` may lock dice before they drop to the tray (floating dice).
+- **H2 / H2b:** Take Half + rouse merge required all rouse dice **locked** before POST_ROLL (fixed in `recalculateTakeHalfAwaitingRouse` — use readable on-table faces after settle debounce). Manual rouse throws also need `onObjectRandomize` to accept Custom Dice via `getRotationValue` (`RC.isPhysicalDieRandomizeEvent`); allow ~3s debounce after the die rests. **`rollE2eAddPoolKindSpawn` double-count:** presetting `pool.rouse` then spawning fired `GlobalOnBagDieSpawned` (+1) → UI showed 2R with 1 die; merge waited forever for a second die (fixed — rouse spawn uses bag increment path only).
+- **Tray timing:** Automated spawn → release must include `rollE2eWaitForDiceTray` between staging and `rollE2eSettlePresetCheck({ skipSpawn = true })` (or Take Half + rouse release). Matches panel Roll’s drawer animation (~0.5s smooth + buffer).
 - **I1:** If the WP reroll wave never ends on hesitation, see TOR-165 (WP reroll wave / Confirm).
 
 ## Sign-off

@@ -910,6 +910,13 @@ local DBV = require("lib.dice_bag_visibility")
 --- Pool kinds with per-seat bags (E2E staged-dice verification).
 local E2E_POOL_STAGED_KINDS = { "normal", "hunger", "rouse", "oblivRouse" }
 
+--- Pool kinds that increment via `GlobalOnBagDieSpawned` (+1 per die), not `setPoolKindCount` preset.
+local E2E_ADJUST_ON_BAG_SPAWN_KINDS = {
+    [DK.KIND_ROUSE] = true,
+    [DK.KIND_OBLIV_ROUSE] = true,
+    [DK.KIND_BLOOD_SURGE_ROUSE] = true,
+}
+
 --- Staged die count in one player bag (PRE_ROLL arc), or 0 when bag missing.
 -- @param color string
 -- @param dieTypeName string  "normal"|"hunger"|"rouse"|"oblivRouse"
@@ -1683,21 +1690,69 @@ function DEBUG.rollStConfirm(expected)
     return false
 end
 
+--- Seconds to wait after staged dice spawn (or human bag clicks) before releasing to the tray.
+-- Matches drawer smooth transition (`OP.DEFAULT_TRANSITION_DURATION`) plus a small buffer.
+-- @return number
+function DEBUG.rollE2eDiceTrayWaitSeconds()
+    local OP = require("lib.object_positions")
+    return OP.DEFAULT_TRANSITION_DURATION + 0.25
+end
+
+--- `U.RunSequence` step: pause after spawn so the dice tray can finish opening before release.
+-- @return number seconds for RunSequence wait
+function DEBUG.rollE2eWaitForDiceTray()
+    return DEBUG.rollE2eDiceTrayWaitSeconds()
+end
+
+--- E2E: dice-tray camera + open drawer (mirrors panel Roll prep, without releasing dice).
+-- @param color string
+-- @return boolean
+function DEBUG.rollE2ePrepareRollRelease(color)
+    if type(color) ~= "string" then
+        print("[rollE2ePrepareRollRelease] FAIL: color required")
+        return false
+    end
+    if Global ~= nil and type(Global.call) == "function" then
+        Global.call("GlobalRollSeatCamera", { color = color, mode = "diceTray" })
+    end
+    local DiceDrawer = require("lib.dice_drawer")
+    DiceDrawer.openForRoll(color)
+    return true
+end
+
+--- E2E: spawn any missing active PRE_ROLL pool dice (same as panel Roll auto-spawn).
+-- @param color string
+-- @return boolean
+function DEBUG.rollE2eSpawnActivePool(color)
+    if type(color) ~= "string" then
+        print("[rollE2eSpawnActivePool] FAIL: color required")
+        return false
+    end
+    if Global == nil or type(Global.call) ~= "function" then
+        print("[rollE2eSpawnActivePool] FAIL: Global.call unavailable")
+        return false
+    end
+    Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+    return true
+end
+
 --- E2E: spawn pool dice, startRolling, preset faces, settle (no randomize).
--- Replaces panel **Roll** + manual face tweak. Run after `rollTest` + pool spawn
--- (`rollE2eSetPoolAndSpawn` / `rollE2eSetPoolAutoHunger` / Suite F `RC.setPool` + `GlobalSpawnDefaultPoolDiceForActive`).
+-- Replaces panel **Roll** + manual face tweak. Playbook flow: spawn (or human bags) →
+-- `rollE2eWaitForDiceTray` → this helper with `{ skipSpawn = true }`.
 -- Do not click panel Roll before this helper.
 -- @param color string
 -- @param facesByKind table
+-- @param opts table|nil  `{ skipSpawn = true }` when dice already staged
 -- @return boolean pass
--- @usage lua rollE2eSettlePresetCheck("Brown", { rouse = { 4 } })
-function DEBUG.rollE2eSettlePresetCheck(color, facesByKind)
+-- @usage lua rollE2eSettlePresetCheck("Brown", { rouse = { 4 } }, { skipSpawn = true })
+function DEBUG.rollE2eSettlePresetCheck(color, facesByKind, opts)
     if RC == nil then
         print("[rollE2eSettlePresetCheck] FAIL: RC not loaded")
         return false
     end
+    opts = type(opts) == "table" and opts or {}
     if type(color) ~= "string" or type(facesByKind) ~= "table" then
-        print("[rollE2eSettlePresetCheck] FAIL: usage rollE2eSettlePresetCheck(color, { rouse = { 4 } })")
+        print("[rollE2eSettlePresetCheck] FAIL: usage rollE2eSettlePresetCheck(color, { rouse = { 4 } }, { skipSpawn = true })")
         return false
     end
 
@@ -1714,8 +1769,11 @@ function DEBUG.rollE2eSettlePresetCheck(color, facesByKind)
     end
 
     if active.phase == C.RollPhase.PRE_ROLL then
+        if opts.skipSpawn ~= true then
+            DEBUG.rollE2eSpawnActivePool(color)
+        end
+        DEBUG.rollE2ePrepareRollRelease(color)
         if Global ~= nil and type(Global.call) == "function" then
-            Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
             Global.call("GlobalReleaseBagDice", { color = color })
         end
         if RC.startRolling(color) ~= true then
@@ -2090,6 +2148,7 @@ end
 
 --- E2E: add a pool kind count and spawn staged dice (PRE_ROLL only).
 -- Use after `rollE2eSetPoolAndSpawn` when a test needs rouse (or other kinds) in the pool.
+-- Rouse-family kinds match bag-click semantics: each spawn increments pool (+1); do not preset count.
 -- @param color string
 -- @param kind string  e.g. `DK.KIND_ROUSE` (`"rouse"`)
 -- @param count number
@@ -2104,15 +2163,64 @@ function DEBUG.rollE2eAddPoolKindSpawn(color, kind, count)
         print("[rollE2eAddPoolKindSpawn] FAIL: usage rollE2eAddPoolKindSpawn(color, kind, count)")
         return false
     end
-    if RC.setPoolKindCount(color, kind, count) ~= true then
-        print("[rollE2eAddPoolKindSpawn] FAIL: RC.setPoolKindCount failed for " .. color)
-        return false
-    end
     if Global == nil or type(Global.call) ~= "function" then
         print("[rollE2eAddPoolKindSpawn] FAIL: Global.call unavailable")
         return false
     end
-    Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+
+    count = math.max(0, math.floor(count))
+
+    if E2E_ADJUST_ON_BAG_SPAWN_KINDS[kind] == true then
+        local pid = S.getPlayerID(color)
+        if pid == nil then
+            print("[rollE2eAddPoolKindSpawn] FAIL: no playerID for " .. color)
+            return false
+        end
+        local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+        if active == nil or active.phase ~= C.RollPhase.PRE_ROLL then
+            print("[rollE2eAddPoolKindSpawn] FAIL: no PRE_ROLL active roll for " .. color)
+            return false
+        end
+        local pool = DK.normalizePool(active.pool)
+        local current = pool[kind] or 0
+        local needed = count - current
+        if needed < 0 then
+            if RC.setPoolKindCount(color, kind, count) ~= true then
+                print("[rollE2eAddPoolKindSpawn] FAIL: RC.setPoolKindCount failed for " .. color)
+                return false
+            end
+        elseif needed > 0 then
+            for _ = 1, needed do
+                Global.call("GlobalSpawnDieFromBag", { color = color, dieKind = kind })
+            end
+        end
+    else
+        if RC.setPoolKindCount(color, kind, count) ~= true then
+            print("[rollE2eAddPoolKindSpawn] FAIL: RC.setPoolKindCount failed for " .. color)
+            return false
+        end
+        Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+    end
+
+    local pid = S.getPlayerID(color)
+    local active = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    local pool = type(active) == "table" and DK.normalizePool(active.pool) or {}
+    local got = pool[kind] or 0
+    if got ~= count then
+        print(string.format(
+            "[rollE2eAddPoolKindSpawn] FAIL — %s: pool %s=%d want=%d (bag spawn hook mismatch?)",
+            color, kind, got, count))
+        return false
+    end
+    local stagedMismatches = e2ePoolStagedMismatchLines(color, pool)
+    if #stagedMismatches > 0 then
+        print("[rollE2eAddPoolKindSpawn] FAIL — staged dice check for " .. color)
+        for i, line in ipairs(stagedMismatches) do
+            print(string.format("  %d) %s", i, line))
+        end
+        return false
+    end
+
     print(string.format("[rollE2eAddPoolKindSpawn] %s: %s=%d spawned", color, kind, count))
     return true
 end
@@ -4463,11 +4571,12 @@ function DEBUG.help()
     print("  rollSetFaces(color, { normal={7,7}, hunger={10,1} }) - Set faces + recalculate (POST_ROLL)")
     print("  rollE2eApplyConditions(color, { 'e2eBestialNull' }) / rollE2eClearConditions(color, ids?)")
     print("  rollE2eSetPoolAndSpawn / rollE2eSetPoolAutoHunger / rollE2eAddPoolKindSpawn / rollE2eExpectBroadcast")
+    print("  rollE2eWaitForDiceTray / rollE2eSpawnActivePool / rollE2ePrepareRollRelease")
     print("  rollState(color)         - Print active roll record for a player")
     print("  rollConfirm(color, expected) - Assert roll state; prints PASS/FAIL (E2E)")
     print("  rollConfirmTracker(color, { hunger?, stains?, willpowerSuperficial? })")
     print("  rollStConfirm({ liveSlotIndex?, initiateBlocked? }) - ST slots E2E")
-    print("  rollE2eSettlePresetCheck(color, faces) - Spawn pool + startRolling + preset faces + settle")
+    print("  rollE2eSettlePresetCheck(color, faces, opts) - Release + startRolling + preset + settle (use skipSpawn after wait)")
     print("  setHumanityStains(color, n) / setWillpowerSuperficial(color, n)")
     print("  rollForceConfirm(color)  - Force-confirm POST_ROLL (UI CONFIRM)")
     print("  rollCancel(color)        - Cancel roll; Black also clears ST slots/drawers")
@@ -4583,6 +4692,9 @@ rollE2eSetPoolAndSpawn    = DEBUG.rollE2eSetPoolAndSpawn
 rollE2eSetPoolAutoHunger  = DEBUG.rollE2eSetPoolAutoHunger
 rollE2eAddPoolKindSpawn   = DEBUG.rollE2eAddPoolKindSpawn
 rollE2eSettlePresetCheck  = DEBUG.rollE2eSettlePresetCheck
+rollE2eWaitForDiceTray    = DEBUG.rollE2eWaitForDiceTray
+rollE2eSpawnActivePool    = DEBUG.rollE2eSpawnActivePool
+rollE2ePrepareRollRelease = DEBUG.rollE2ePrepareRollRelease
 rollE2eExpectBroadcast    = DEBUG.rollE2eExpectBroadcast
 tableRotateTo = DEBUG.tableRotateTo
 spawnCustomUiUploadBatchFromManifest = DEBUG.spawnCustomUiUploadBatchFromManifest

@@ -138,7 +138,7 @@ lua rollTest("Brown", 3, C.RollType.STANDARD, "E2E G2", 2)   -- 5th arg = hunger
 lua rollSetFaces("Brown", { normal = {4, 4}, hunger = {10, 1} })
 lua rollConfirm("Brown", { phase = "preRoll", active = { difficulty = 3 } })  -- E2E assertions (PASS/FAIL)
 lua rollConfirmTracker("Brown", { hunger = 2, stains = 1 })
-lua rollE2eSettlePresetCheck("Brown", { rouse = { 4 } })
+lua rollE2eSettlePresetCheck("Brown", { rouse = { 4 } }, { skipSpawn = true })
 lua rollStConfirm({ liveSlotIndex = 1 })
 lua rollStConfirm({ liveSlotIndexAbsent = true })
 lua setHumanityStains("Purple", 2)

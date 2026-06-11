@@ -133,8 +133,10 @@ U.RunSequence({
     rollTest("Brown", 1, C.RollType.ROUSE, "E2E C1 rouse auto on")
   end,
   function() M.setCamera("ALL", "rollBrown") end,
+  function() rollE2eSpawnActivePool("Brown") end,
+  rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { rouse = { 4 } })
+    rollE2eSettlePresetCheck("Brown", { rouse = { 4 } }, { skipSpawn = true })
     rollConfirm("Brown", { noActive = true })
     rollConfirmTracker("Brown", { hunger = 3 })
   end,
@@ -147,7 +149,11 @@ U.RunSequence({
     setHunger("Brown", 2)
     rollConfirmTracker("Brown", { hunger = 2 })
     rollTest("Brown", 1, C.RollType.ROUSE, "E2E C2 rouse auto off")
-    rollE2eSettlePresetCheck("Brown", { rouse = { 4 } })
+  end,
+  function() rollE2eSpawnActivePool("Brown") end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { rouse = { 4 } }, { skipSpawn = true })
     rollConfirm("Brown", { noActive = true })
     rollConfirmTracker("Brown", { hunger = 2 })
     S.setStateVal(true, "stRollSettings", "autoApplyRouseOutcomes")
@@ -164,7 +170,11 @@ U.RunSequence({
     setHumanityStains("Purple", 2)
     rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
     rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E D obliv face 3")
-    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3 } })
+  end,
+  function() rollE2eSpawnActivePool("Purple") end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3 } }, { skipSpawn = true })
     rollConfirm("Purple", { noActive = true })
     rollConfirmTracker("Purple", { hunger = 2, stains = 2 })
   end,
@@ -202,7 +212,10 @@ U.RunSequence({
   function()
     rollTestNoDiff("Brown", C.RollType.STANDARD, "E2E E2a no diff", 0)
     rollE2eSetPoolAndSpawn("Brown", 3, 0)
-    rollE2eSettlePresetCheck("Brown", { normal = { 7, 4, 3 } })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = { 7, 4, 3 } }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       active = {
@@ -228,7 +241,10 @@ U.RunSequence({
   function()
     rollTestNoDiff("Brown", C.RollType.STANDARD, "E2E E2b post hoc", 0)
     rollE2eSetPoolAndSpawn("Brown", 3, 0)
-    rollE2eSettlePresetCheck("Brown", { normal = { 7, 4, 3 } })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = { 7, 4, 3 } }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       active = { result = { successes = 1, marginAbsent = true } },
@@ -251,7 +267,10 @@ U.RunSequence({
     rollTest("Brown", 2, C.RollType.STANDARD, "E2E F baseline", 1)
     rollE2eSetPoolAndSpawn("Brown", 3, 1)
     rollConfirm("Brown", { pool = { normal = 3, hunger = 1, rouse = 0 } })
-    rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {10} })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {10} }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       active = {
@@ -268,7 +287,10 @@ U.RunSequence({
     rollTest("Brown", 2, C.RollType.STANDARD, "E2E F bestialNull", 1)
     rollE2eSetPoolAndSpawn("Brown", 3, 1)
     rollConfirm("Brown", { pool = { normal = 3, hunger = 1, rouse = 0 } })
-    rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {1} })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {1} }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       active = {
@@ -288,7 +310,10 @@ U.RunSequence({
   function()
     rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G1", 0)
     rollE2eSetPoolAutoHunger("Brown", 2)
-    rollE2eSettlePresetCheck("Brown", { normal = {7, 7} })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = {7, 7} }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       active = { result = { resultClass = "win", successes = 2, margin = 0 } },
@@ -301,7 +326,10 @@ U.RunSequence({
   function()
     rollTest("Brown", 3, C.RollType.STANDARD, "E2E Classify G2", 2)
     rollE2eSetPoolAutoHunger("Brown", 4)
-    rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {9, 1} })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {9, 1} }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       active = { result = { resultClass = "criticalWin", margin = 2 } },
@@ -314,7 +342,10 @@ U.RunSequence({
   function()
     rollTest("Brown", 3, C.RollType.STANDARD, "E2E Classify G3", 2)
     rollE2eSetPoolAutoHunger("Brown", 4)
-    rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {10, 1} })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {10, 1} }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       active = { result = { resultClass = "messyCritical" } },
@@ -327,7 +358,10 @@ U.RunSequence({
   function()
     rollTest("Brown", 7, C.RollType.STANDARD, "E2E Classify G4", 2)
     rollE2eSetPoolAutoHunger("Brown", 4)
-    rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {10, 1} })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {10, 1} }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       active = { result = { resultClass = "bestialFailure", margin = -2 } },
@@ -340,7 +374,10 @@ U.RunSequence({
   function()
     rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G5", 1)
     rollE2eSetPoolAutoHunger("Brown", 3)
-    rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, hunger = {1} })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, hunger = {1} }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       active = { result = { resultClass = "totalBestialFailure" } },
@@ -354,7 +391,10 @@ U.RunSequence({
     rollTest("Brown", 4, C.RollType.STANDARD, "E2E Classify G6", 1)
     RC.setRollOptions("Brown", { crits = false })
     rollE2eSetPoolAutoHunger("Brown", 5)
-    rollE2eSettlePresetCheck("Brown", { normal = {10, 8, 7, 6}, hunger = {10} })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = {10, 8, 7, 6}, hunger = {10} }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       active = {
@@ -371,7 +411,10 @@ U.RunSequence({
     rollTest("Brown", 2, C.RollType.STANDARD, "E2E Classify G7", 1)
     RC.setRollOptions("Brown", { bestialNull = true })
     rollE2eSetPoolAutoHunger("Brown", 4)
-    rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {1} })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {1} }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       active = {
@@ -456,10 +499,19 @@ U.RunSequence({
     rollTest("Brown", 3, C.RollType.STANDARD, "E2E Take Half Rouse", 0)
     rollE2eSetPoolAndSpawn("Brown", 4, 0)
     rollE2eAddPoolKindSpawn("Brown", "rouse", 1)
+    rollConfirm("Brown", {
+      phase = "preRoll",
+      pool = { normal = 4, hunger = 0, rouse = 1 },
+    })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2ePrepareRollRelease("Brown")
     RC.takeHalf("Brown")
     rollConfirm("Brown", {
       phase = "rolling",
       active = { takeHalfAwaitingRouse = true },
+      pool = { normal = 0, hunger = 0, rouse = 1 },
     })
   end,
   function()
@@ -508,6 +560,10 @@ U.RunSequence({
     rollTestNoDiff("Brown", C.RollType.STANDARD, "E2E H2b no diff rouse", 0)
     rollE2eSetPoolAndSpawn("Brown", 4, 0)
     rollE2eAddPoolKindSpawn("Brown", "rouse", 1)
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2ePrepareRollRelease("Brown")
     RC.takeHalf("Brown")
     rollConfirm("Brown", { phase = "rolling", active = { takeHalfAwaitingRouse = true } })
     rollSetFaces("Brown", { rouse = { 4 } })
@@ -555,7 +611,10 @@ U.RunSequence({
       canRerollHunger = false,
     })
     rollE2eSetPoolAndSpawn("Brown", 3, 0)
-    rollE2eSettlePresetCheck("Brown", { normal = {4, 4, 4} })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = {4, 4, 4} }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       active = {
@@ -595,7 +654,10 @@ U.RunSequence({
       canRerollHunger = false,
     })
     rollE2eSetPoolAndSpawn("Brown", 3, 0)
-    rollE2eSettlePresetCheck("Brown", { normal = {4, 4, 4} })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = {4, 4, 4} }, { skipSpawn = true })
     rollConfirm("Brown", { phase = "postRoll", active = { result = { resultClass = "totalFailure" } } })
   end,
   function()
@@ -627,7 +689,10 @@ U.RunSequence({
       canRerollHunger = true,
     })
     rollE2eSetPoolAutoHunger("Brown", 3)
-    rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, hunger = {4} })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, hunger = {4} }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       active = { rollOptions = { canRerollHunger = true } },
@@ -666,7 +731,10 @@ U.RunSequence({
     })
     rollE2eSetPoolAndSpawn("Brown", 2, 0)
     rollE2eAddPoolKindSpawn("Brown", "rouse", 1)
-    rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, rouse = {6} })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, rouse = {6} }, { skipSpawn = true })
     rollConfirm("Brown", { phase = "postRoll" })
   end,
   function()
@@ -698,7 +766,10 @@ U.RunSequence({
     rollTest("Brown", 2, C.RollType.STANDARD, "E2E J1 Compound", 0)
     rollE2eSetPoolAndSpawn("Brown", 2, 0)
     rollE2eAddPoolKindSpawn("Brown", "rouse", 1)
-    rollE2eSettlePresetCheck("Brown", { normal = {7, 3}, rouse = {4} })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = {7, 3}, rouse = {4} }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       rouseOutcomeStripsMin = 1,
@@ -727,12 +798,13 @@ U.RunSequence({
 
 ```lua
 U.RunSequence({
+  rollE2eWaitForDiceTray,
   function()
     rollConfirm("Brown", {
       meta = { bloodSurgeActive = true },
       pool = { bloodSurgeRouse = 1, normal = 2, hunger = 0 },
     })
-    rollE2eSettlePresetCheck("Brown", { normal = { 7, 3 }, rouse = { 4 } })
+    rollE2eSettlePresetCheck("Brown", { normal = { 7, 3 }, rouse = { 4 } }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       rouseOutcomeStripsMin = 1,
@@ -1175,7 +1247,11 @@ U.RunSequence({
     setHunger("Brown", 2)
     rollConfirmTracker("Brown", { hunger = 2 })
     rollTest("Brown", 1, C.RollType.ROUSE, "E2E L2c rouse no auto")
-    rollE2eSettlePresetCheck("Brown", { rouse = { 3 } })
+  end,
+  function() rollE2eSpawnActivePool("Brown") end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { rouse = { 3 } }, { skipSpawn = true })
     rollConfirm("Brown", { noActive = true })
     rollConfirmTracker("Brown", { hunger = 2 })
     S.setStateVal(true, "stRollSettings", "autoApplyRouseOutcomes")
@@ -1419,8 +1495,9 @@ U.RunSequence({
 
 ```lua
 U.RunSequence({
+  rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 6, 6 } })
+    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 6, 6 } }, { skipSpawn = true })
     rollConfirm("Purple", { noActive = true })
     rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
     rollCancel("Purple")
@@ -1443,8 +1520,9 @@ U.RunSequence({
 
 ```lua
 U.RunSequence({
+  rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 3 } })
+    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 3 } }, { skipSpawn = true })
     rollConfirm("Purple", { noActive = true })
     rollConfirmTracker("Purple", { hunger = 2, stains = 2 })
     rollCancel("Purple")
@@ -1494,8 +1572,9 @@ U.RunSequence({
 
 ```lua
 U.RunSequence({
+  rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 1, 10 } })
+    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 1, 10 } }, { skipSpawn = true })
     rollConfirm("Purple", { noActive = true })
     rollConfirmTracker("Purple", { hunger = 1, stains = 3 })
     rollCancel("Purple")
@@ -1518,8 +1597,9 @@ U.RunSequence({
 
 ```lua
 U.RunSequence({
+  rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 7 } })
+    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 7 } }, { skipSpawn = true })
     rollConfirm("Purple", { noActive = true })
     rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
     rollCancel("Purple")

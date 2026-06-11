@@ -2931,10 +2931,9 @@ function onObjectRandomize(obj, playerColor)
     local tags = obj.getTags()
     if type(tags) ~= "table" then return end
 
-    -- Only handle dice objects (see isDieTag); exclude bags/decks (no numeric die face).
+    -- Only handle dice objects (see isDieTag); exclude bags/decks.
     if not isDieTag(tags) then return end
-    local val = obj.getValue()
-    if type(val) ~= "number" then
+    if RC.isPhysicalDieRandomizeEvent(obj) ~= true then
         return
     end
 
