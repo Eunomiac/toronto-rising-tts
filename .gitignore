@@ -36,8 +36,14 @@ logs/
 .tts/output/**/*.log
 
 # Bridge / extension debug writes — runtime output only (see .dev/DEBUG_FILE_LOGGING.md).
-# Source test harnesses live under .dev/testbed/ (tracked).
 .dev/.debug/
+
+# Local dev artifacts — machine/session-specific; not versioned
+.dev/TS_Save_230.json
+.dev/build-logs/effective-stats-gate.txt
+.dev/build-logs/pcall-gate.txt
+.dev/testbed/TEST BED.ttslua
+lib/e2e_playbook_dice.ttslua
 
 # Compiled CSS (source SCSS is tracked)
 UI/styles.css
