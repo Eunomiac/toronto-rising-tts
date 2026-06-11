@@ -616,17 +616,6 @@ end
 -- @param color string
 -- @param active table|nil
 -- @param useControlPanel boolean  true for PC rollControl_* ids; false for rollPanel_Black
---- Roll type header with optional label (e.g. "Standard Roll: E2E H1c zero half").
--- @param active table
--- @return string
-local function rollTypeDisplayLabel(active)
-    local rollLabel = C.RollTypeLabel[active.rollType] or active.rollType or ""
-    if type(active.label) == "string" and active.label ~= "" then
-        rollLabel = string.format("%s: %s", rollLabel, active.label)
-    end
-    return rollLabel
-end
-
 local function refreshPendingResolutionButtons(color, active, useControlPanel)
     local idPrefix = useControlPanel and "rollControl" or "rollPanel"
     local oblivHunger = string.format("%s_btnOblivHunger_%s", idPrefix, color)
@@ -672,7 +661,8 @@ local function refreshPcRollControlPanel(color, active)
 
     uiSetActive(panelId, true)
 
-    uiSetValue(string.format("rollControl_rollType_%s", color), rollTypeDisplayLabel(active))
+    local rollTypeLabel = C.RollTypeLabel[active.rollType] or active.rollType or ""
+    uiSetValue(string.format("rollControl_rollType_%s", color), rollTypeLabel)
     uiSetValue(string.format("rollControl_rollInstructions_%s", color),
         titleCaseInstructions(phaseLabel(active, color)))
 
@@ -803,8 +793,12 @@ function RUI.refreshPlayerRollPanel(color)
     -- Phase label
     uiSetValue(string.format("rollPanel_phase_%s", color), phaseLabel(active, color))
 
-    -- Roll type label
-    uiSetValue(string.format("rollPanel_type_%s", color), rollTypeDisplayLabel(active))
+    -- Roll type label (ST panel may append active.label for dashboard context)
+    local rollLabel = C.RollTypeLabel[active.rollType] or active.rollType or ""
+    if type(active.label) == "string" and active.label ~= "" then
+        rollLabel = string.format("%s: %s", rollLabel, active.label)
+    end
+    uiSetValue(string.format("rollPanel_type_%s", color), rollLabel)
 
     -- Pool display: colored ◆ per kind (XML Text color); rouse strip left of main kinds (TOR-155).
     local pool = DK.normalizePool(active.pool)
