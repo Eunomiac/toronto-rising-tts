@@ -1,0 +1,424 @@
+********** Dice E2E: SUITE J - Compound roll (rouse in standard pool) ******************************
+========== J1 - One rouse in standard pool =========================================================
+[DEBUG.rollCancelAll] Cancelled 0 active roll(s).
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E J1 Compound'
+[rollE2eSetPoolAndSpawn] Brown: pool normal=2 hunger=0 spawned
+[rollE2eAddPoolKindSpawn] Brown: rouse=1 spawned
+[DEBUG.rollSetFaces] Brown: set 3 face(s); recalculated.
+[rollE2eSettlePresetCheck] PASS — preset faces applied and settle triggered for Brown
+[rollConfirm] PASS — Brown
+---------- [HUMAN] Click Confirm once --------------------------------------------------------------
+[RunTest] Dice step 14/54
+====================================================================================================
+========== J2 - Blood surge + compound (same roll) =================================================
+[DEBUG.rollCancelAll] Cancelled 0 active roll(s).
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E J2 Surge compound'
+---------- [HUMAN] Left-click Hunger bag 1 time ----------------------------------------------------
+[RunTest] Dice step 15/54
+[rollConfirm] PASS — Brown
+[DEBUG.rollSetFaces] FAIL — Brown: set 2/3 face(s) (missing dice or face snap failed)
+[DEBUG.rollSetFaces] WARN: no rouse die #1 on table for face 4
+[rollConfirm] FAIL — Brown
+  1) phase: got rolling, want postRoll
+[rollE2eSettlePresetCheck] FAIL: preset 0/3 face(s) for Brown
+  2) active.result: expected table, got nil
+  4) rouseOutcomeStrips: count 0 < min 1
+  3) rouseOutcomeStrips: no strip labeled Rouse
+---------- [HUMAN] Click Confirm once --------------------------------------------------------------
+[RunTest] Dice step 16/54
+====================================================================================================
+****************************************************************************************************
+
+********** Dice E2E: SUITE K - Dice bag clicks (left vs right) *************************************
+========== K1a - Hunger bag to STANDARD (no active roll) ===========================================
+[DEBUG.rollCancelAll] Cancelled 0 active roll(s).
+---------- [HUMAN] Left-click Hunger bag 1 time (no roll active) -----------------------------------
+M.setCamera: Invalid player object
+M.setCamera: Invalid player object
+[RunTest] Dice step 17/54
+[rollConfirm] PASS — Brown
+M.setCamera: Invalid player object
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== K1b - Rouse bag to ROUSE + 1 die ========================================================
+[DEBUG.rollCancelAll] Cancelled 0 active roll(s).
+---------- [HUMAN] Left-click Rouse bag 1 time -----------------------------------------------------
+M.setCamera: Invalid player object
+M.setCamera: Invalid player object
+  1) active.pool.rouse: got 2, want 1
+[RunTest] Dice step 18/54
+[rollConfirm] FAIL — Brown
+M.setCamera: Invalid player object
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== K1c - Normal bag to STANDARD ============================================================
+[DEBUG.rollCancelAll] Cancelled 0 active roll(s).
+---------- [HUMAN] Left-click Normal bag 1 time ----------------------------------------------------
+M.setCamera: Invalid player object
+[RunTest] Dice step 19/54
+[rollConfirm] FAIL — Brown
+  1) phase: got setup, want preRoll
+[DEBUG.rollCancel] Brown: roll cancelled
+M.setCamera: Invalid player object
+====================================================================================================
+========== K2a - Normal bag left adds die ==========================================================
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E K2a'
+---------- [HUMAN] Left-click Normal bag 2 times ---------------------------------------------------
+[RunTest] Dice step 20/54
+[rollConfirm] PASS — Brown
+====================================================================================================
+========== K2b - Normal bag right removes last normal/hunger =======================================
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E K2b'
+---------- [HUMAN] Left-click Normal bag 2 times, then right-click Normal bag 1 time ---------------
+[RunTest] Dice step 21/54
+[rollConfirm] PASS — Brown
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== K2c - Hunger bag left (surge off) to Blood Surge ========================================
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E K2c surge'
+---------- [HUMAN] Left-click Hunger bag 1 time (surge not active) ---------------------------------
+[RunTest] Dice step 22/54
+[rollConfirm] PASS — Brown
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== K2d - Hunger bag left (surge on) adds Blood Surge rouse =================================
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E K2d surge rouse'
+---------- [HUMAN] Left-click Hunger bag 1 time (surge on), then left-click Hunger bag 1 time again
+[RunTest] Dice step 23/54
+[rollConfirm] PASS — Brown
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== K2e - Rouse bag left adds rouse =========================================================
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E K2e rouse'
+---------- [HUMAN] Left-click Rouse bag 1 time -----------------------------------------------------
+[RunTest] Dice step 24/54
+[rollConfirm] PASS — Brown
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== K2f - Hunger bag right with surge active (full undo) ====================================
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E K2f surge off'
+---------- [HUMAN] Left-click Hunger bag 1 time (surge on), then right-click Hunger bag 1 time -----
+[RunTest] Dice step 25/54
+[rollConfirm] FAIL — Brown
+  1) expected active roll, got nil
+[DEBUG.rollCancel] Brown: no active roll to cancel
+====================================================================================================
+========== K2f2 - Hunger bag right (surge off) is no-op ============================================
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E K2f2 hunger right noop'
+---------- [HUMAN] Left-click Normal bag 1 time, then right-click Hunger bag 1 time ----------------
+[RunTest] Dice step 26/54
+[rollConfirm] PASS — Brown
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== K2h - Blood Surge rouse + manual rouse coexist ==========================================
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E K2h compound rouse'
+---------- [HUMAN] Left-click Hunger bag 1 time (activate surge), then left-click Rouse bag 1 time -
+[RunTest] Dice step 27/54
+[rollConfirm] FAIL — Brown
+  1) pool staged: rouse staged=2 want=1
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== K2i - Hunger bag disabled until open (visual) ===========================================
+[DEBUG.rollCancel] Brown: no active roll to cancel
+---------- [HUMAN] Visual: Hunger bag locked before rollTest + ST Open; after rollTest + Open, bag enabled
+[RunTest] Dice step 28/54
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E K2i bag vis'
+---------- [HUMAN] ST Open Roll if needed; confirm Hunger bag reachable; left-click Hunger once for surge
+[RunTest] Dice step 29/54
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== K2g-Brown - Rouse blocks Oblivion-Rouse (silent fail) ===================================
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E K2g Brown'
+---------- [HUMAN] Left-click Rouse bag 1 time, then left-click Oblivion-Rouse bag 1 time ----------
+[RunTest] Dice step 30/54
+[rollConfirm] FAIL — Brown
+  1) active.pool.rouse: got 0, want 1
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== K2g-Purple - Oblivion-Rouse blocks Rouse (silent fail) ==================================
+[DEBUG.rollTest] Purple PRE_ROLL — diff=2 type=standard label='E2E K2g Purple'
+---------- [HUMAN] Left-click Oblivion-Rouse bag 1 time, then left-click Rouse bag 1 time ----------
+[RunTest] Dice step 31/54
+[rollConfirm] PASS — Purple
+[DEBUG.rollCancel] Purple: roll cancelled
+====================================================================================================
+========== K3a - Normal bag promotes to compound standard roll =====================================
+[RC] openRoll: Brown roll is not in SETUP (phase: preRoll)
+[DEBUG.rollTest] Brown PRE_ROLL — diff=1 type=rouse label='E2E K3a'
+---------- [HUMAN] Left-click Rouse bag 2 times, then left-click Normal bag 1 time -----------------
+[RunTest] Dice step 32/54
+[rollConfirm] FAIL — Brown
+  1) active.pool.rouse: got 2, want 3
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== K3b - Rouse bag right removes last rouse ================================================
+[RC] openRoll: Brown roll is not in SETUP (phase: preRoll)
+[DEBUG.rollTest] Brown PRE_ROLL — diff=1 type=rouse label='E2E K3b'
+---------- [HUMAN] Left-click Rouse bag 2 times, then right-click Rouse bag 1 time -----------------
+[RunTest] Dice step 33/54
+[rollConfirm] PASS — Brown
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== K3c - Oblivion dedicated: Normal promotes (Purple) ======================================
+[RC] openRoll: Purple roll is not in SETUP (phase: preRoll)
+[DEBUG.rollTest] Purple PRE_ROLL — diff=1 type=rouseOblivion label='E2E K3c'
+---------- [HUMAN] Left-click Oblivion-Rouse bag 1 time, then left-click Normal bag 1 time ---------
+[RunTest] Dice step 34/54
+  1) active.pool.oblivRouse: got 1, want 2
+[rollConfirm] FAIL — Purple
+[DEBUG.rollCancel] Purple: roll cancelled
+====================================================================================================
+========== K4 - Empty pool right-click cancels roll ================================================
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E K4'
+---------- [HUMAN] Left-click Normal bag 2 times, then right-click Normal bag 2 times --------------
+[RunTest] Dice step 35/54
+[rollConfirm] PASS — Brown noActive
+====================================================================================================
+****************************************************************************************************
+
+********** Dice E2E: SUITE L - Baton passing and permanent automation ******************************
+========== L1a - Setup: baton with storyteller =====================================================
+[DEBUG.rollCancel] Brown: no active roll to cancel
+[rollConfirm] PASS — Brown
+====================================================================================================
+========== L1b - Open roll: baton to player ========================================================
+---------- [HUMAN] ST: Set difficulty 2 on dashboard for Brown, then click Open roll ---------------
+M.setCamera: Invalid player object
+[RunTest] Dice step 36/54
+[rollConfirm] PASS — Brown
+====================================================================================================
+========== L1c - Roll: phases through rolling to postRoll ==========================================
+---------- [HUMAN] Left-click Normal bag 2 times, click Roll, wait for settle ----------------------
+M.setCamera: Invalid player object
+[RunTest] Dice step 37/54
+[rollConfirm] FAIL — Brown
+  1) phase: got preRoll, want postRoll
+M.setCamera: Invalid player object
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== L2a - autoHunger off: normal bag spawns normal ==========================================
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E L2a autoHunger off'
+---------- [HUMAN] Left-click Normal bag 1 time (Brown below hunger cap) ---------------------------
+[RunTest] Dice step 38/54
+[rollConfirm] PASS — Brown
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== L2b - autoWp off: WP spend does not auto-damage =========================================
+[setWillpowerSuperficial] Brown superficial=3
+[rollConfirmTracker] PASS — Brown
+[DEBUG.rollCancel] Brown: no active roll to cancel
+[DEBUG.rollTest] Brown PRE_ROLL — diff=3 type=standard label='E2E L2b WP no auto'
+---------- [HUMAN] Left-click Normal bag 3 times, Roll, settle, Spend WP, hover 3 normal dice and press R once each
+[RunTest] Dice step 39/54
+[rollConfirmTracker] PASS — Brown
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== L2c - autoApplyRouseOutcomes off: confirm does not apply rouse hunger ===================
+Set Brown player (ID: 76561198062386601) hunger to 2
+[rollConfirmTracker] PASS — Brown
+[RC] openRoll: Brown roll is not in SETUP (phase: preRoll)
+[DEBUG.rollTest] Brown PRE_ROLL — diff=1 type=rouse label='E2E L2c rouse no auto'
+[DEBUG.rollSetFaces] Brown: set 1 face(s); recalculated.
+[RC] recalculate: no active roll for Brown
+[rollE2eSettlePresetCheck] PASS — preset faces applied and settle triggered for Brown
+[rollConfirm] PASS — Brown noActive
+[rollConfirmTracker] PASS — Brown
+[DEBUG.rollCancel] Brown: no active roll to cancel
+====================================================================================================
+****************************************************************************************************
+
+********** Dice E2E: SUITE M - Bestial Null via roll option (7 / 3 pool) ***************************
+========== M1 - Bestial Null roll option ===========================================================
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E M1 bestialNull opt'
+---------- [HUMAN] Left-click Normal bag 3 times; Roll and wait for settle -------------------------
+[RunTest] Dice step 40/54
+[DEBUG.rollSetFaces] Brown: set 3 face(s); recalculated.
+[rollConfirm] FAIL — Brown
+  1) active.result.resultClass: got totalBestialFailure, want failure
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+****************************************************************************************************
+
+********** Dice E2E: SUITE N - Blood Surge (hunger bag) ********************************************
+========== N1 - First hunger click activates surge =================================================
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E N1 surge'
+---------- [HUMAN] Left-click Hunger bag 1 time ----------------------------------------------------
+[RunTest] Dice step 41/54
+[rollConfirm] PASS — Brown
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== N2 - Second hunger click adds Blood Surge rouse =========================================
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E N2 surge rouse add'
+---------- [HUMAN] Left-click Hunger bag 1 time (surge on), then left-click Hunger bag 1 time again
+[RunTest] Dice step 42/54
+[rollConfirm] PASS — Brown
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== N3 - Hunger bag right removes surge rouse (full undo when last) =========================
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E N3 surge cancel'
+---------- [HUMAN] Left-click Hunger bag 1 time (surge on), then right-click Hunger bag 1 time -----
+[RunTest] Dice step 43/54
+[rollConfirm] PASS — Brown
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+****************************************************************************************************
+
+********** Dice E2E: SUITE O - Storyteller slots, Werewolf, brutal outcome *************************
+========== O1a - One live ST slot ==================================================================
+[DEBUG.rollCancel] Black: no active roll to cancel
+[rollStConfirm] PASS
+[DEBUG.rollStTest] initiate: ok
+[StorytellerRolls] Cannot initiate: no free drawer or a roll is still live.
+[StorytellerRolls] Cannot initiate: no free drawer or a roll is still live.
+[DEBUG.rollStTest] initiate: blocked
+[rollStConfirm] PASS
+[DEBUG.rollCancel] Black: roll cancelled
+====================================================================================================
+========== O1b - Slot persists until CLEAR =========================================================
+[DEBUG.rollCancel] Black: no active roll to cancel
+[DEBUG.rollStTest] initiate: ok
+[rollStConfirm] PASS
+M.setCamera: No camera angle data found for player 'Black' and camera mode 'rollBlack'
+---------- [HUMAN] Left-click Normal bag 2 times in ST drawer; set difficulty 2; Roll, settle, Confirm on ST dashboard
+[RunTest] Dice step 44/54
+[rollStConfirm] FAIL
+  1) liveSlotIndex: got nil, want 1
+M.setCamera: No camera angle data found for player 'Black' and camera mode 'rollBlack'
+---------- [HUMAN] Click CLEAR on slot 1 in ST dashboard -------------------------------------------
+[RunTest] Dice step 45/54
+[rollStConfirm] PASS
+[DEBUG.rollCancel] Black: no active roll to cancel
+====================================================================================================
+========== O2a - Werewolf roll with ST difficulty ==================================================
+[DEBUG.rollStTest] initiate: ok
+M.setCamera: No camera angle data found for player 'Black' and camera mode 'rollBlack'
+---------- [HUMAN] Left-click Werewolf bag 2 times, Rage bag 2 times; set difficulty 3; Roll and wait for settle
+[RunTest] Dice step 46/54
+[DEBUG.rollSetFaces] Black: set 4 face(s); recalculated.
+[RC] startRolling: Black roll is not in PRE_ROLL (phase: postRoll)
+  1) active.result.margin: got 0, want 1
+[rollConfirm] FAIL — Black
+[DEBUG.rollCancel] Black: roll cancelled
+====================================================================================================
+========== O2b - Werewolf roll, no ST difficulty (Suite E2c) =======================================
+[DEBUG.rollCancel] Black: no active roll to cancel
+[DEBUG.rollStTest] initiate: ok
+M.setCamera: No camera angle data found for player 'Black' and camera mode 'rollBlack'
+---------- [HUMAN] Left-click Werewolf bag 2 times, Rage bag 2 times; do not set difficulty; Roll and wait for settle
+[RunTest] Dice step 47/54
+[DEBUG.rollSetFaces] Black: set 4 face(s); recalculated.
+[RC] startRolling: Black roll is not in PRE_ROLL (phase: postRoll)
+[rollConfirm] PASS — Black
+[DEBUG.rollForceConfirm] Black: roll confirmed and resolved
+[rollE2eExpectBroadcast] PASS
+[DEBUG.rollCancel] Black: no active roll to cancel
+====================================================================================================
+========== O3 - Brutal outcome (rage 1 or 2) =======================================================
+[DEBUG.rollStTest] initiate: ok
+M.setCamera: No camera angle data found for player 'Black' and camera mode 'rollBlack'
+---------- [HUMAN] Left-click Rage bag 2 times; set difficulty 2; Roll and wait for settle ---------
+[RunTest] Dice step 48/54
+[DEBUG.rollSetFaces] Black: set 2 face(s); recalculated.
+[RC] startRolling: Black roll is not in PRE_ROLL (phase: postRoll)
+[rollConfirm] PASS — Black
+[DEBUG.rollCancel] Black: roll cancelled
+====================================================================================================
+****************************************************************************************************
+
+********** Dice E2E: SUITE P - Oblivion-Rouse multi-die (Purple) ***********************************
+========== P-A - All 6s: success, no hunger/stain ==================================================
+[DEBUG.rollCancel] Purple: no active roll to cancel
+Set Purple player (ID: 76561199015564654) hunger to 1
+[setHumanityStains] Purple stains=2
+[rollConfirmTracker] PASS — Purple
+[RC] openRoll: Purple roll is not in SETUP (phase: preRoll)
+[DEBUG.rollTest] Purple PRE_ROLL — diff=1 type=rouseOblivion label='E2E P-A'
+---------- [HUMAN] Left-click Oblivion-Rouse bag 2 times -------------------------------------------
+[RunTest] Dice step 49/54
+[DEBUG.rollSetFaces] Purple: set 2 face(s); recalculated.
+[RC] recalculate: no active roll for Purple
+[rollE2eSettlePresetCheck] PASS — preset faces applied and settle triggered for Purple
+[rollConfirm] PASS — Purple noActive
+[rollConfirmTracker] PASS — Purple
+[DEBUG.rollCancel] Purple: no active roll to cancel
+====================================================================================================
+========== P-B - All 3s: hunger +1 =================================================================
+[DEBUG.rollCancel] Purple: no active roll to cancel
+Set Purple player (ID: 76561199015564654) hunger to 1
+[setHumanityStains] Purple stains=2
+[rollConfirmTracker] PASS — Purple
+[RC] openRoll: Purple roll is not in SETUP (phase: preRoll)
+[DEBUG.rollTest] Purple PRE_ROLL — diff=1 type=rouseOblivion label='E2E P-B'
+---------- [HUMAN] Left-click Oblivion-Rouse bag 2 times -------------------------------------------
+[RunTest] Dice step 50/54
+[DEBUG.rollSetFaces] WARN: no oblivRouse die #2 on table for face 3
+[DEBUG.rollSetFaces] FAIL — Purple: set 0/2 face(s) (missing dice or face snap failed)
+[DEBUG.rollSetFaces] WARN: no oblivRouse die #1 on table for face 3
+[rollE2eSettlePresetCheck] FAIL: preset 0/2 face(s) for Purple
+[rollConfirm] FAIL — Purple noActive
+  1) expected no active roll, but active roll exists
+[rollConfirmTracker] FAIL — Purple
+[DEBUG.rollCancel] Purple: roll cancelled
+  1) hunger: got 1, want 2
+====================================================================================================
+========== P-C - 3 and 10: pending Hunger vs Stain =================================================
+[DEBUG.rollCancel] Purple: no active roll to cancel
+Set Purple player (ID: 76561199015564654) hunger to 1
+[setHumanityStains] Purple stains=2
+[RC] openRoll: Purple roll is not in SETUP (phase: preRoll)
+[DEBUG.rollTest] Purple PRE_ROLL — diff=1 type=rouseOblivion label='E2E P-C'
+---------- [HUMAN] Left-click Oblivion-Rouse bag 2 times -------------------------------------------
+[RunTest] Dice step 51/54
+[DEBUG.rollSetFaces] Purple: roll phase is preRoll (need rolling or postRoll)
+  1) expected active roll, got nil
+[rollConfirm] FAIL — Purple
+[DEBUG.rollCancel] Purple: no active roll to cancel
+====================================================================================================
+========== P-D - 1 and 10 (mixed): stained =========================================================
+[DEBUG.rollCancel] Purple: no active roll to cancel
+Set Purple player (ID: 76561199015564654) hunger to 1
+[setHumanityStains] Purple stains=2
+[rollConfirmTracker] PASS — Purple
+[RC] openRoll: Purple roll is not in SETUP (phase: preRoll)
+[DEBUG.rollTest] Purple PRE_ROLL — diff=1 type=rouseOblivion label='E2E P-D'
+---------- [HUMAN] Left-click Oblivion-Rouse bag 2 times -------------------------------------------
+[RunTest] Dice step 52/54
+[DEBUG.rollSetFaces] Purple: set 2 face(s); recalculated.
+[rollE2eSettlePresetCheck] PASS — preset faces applied and settle triggered for Purple
+[RC] recalculate: no active roll for Purple
+[rollConfirm] PASS — Purple noActive
+[rollConfirmTracker] PASS — Purple
+[DEBUG.rollCancel] Purple: no active roll to cancel
+====================================================================================================
+========== P-E - 3 and 7: success (6-9 present) ====================================================
+[DEBUG.rollCancel] Purple: no active roll to cancel
+Set Purple player (ID: 76561199015564654) hunger to 1
+[setHumanityStains] Purple stains=2
+[rollConfirmTracker] PASS — Purple
+[RC] openRoll: Purple roll is not in SETUP (phase: preRoll)
+[DEBUG.rollTest] Purple PRE_ROLL — diff=1 type=rouseOblivion label='E2E P-E'
+---------- [HUMAN] Left-click Oblivion-Rouse bag 2 times -------------------------------------------
+[RunTest] Dice step 53/54
+[DEBUG.rollSetFaces] Purple: set 2 face(s); recalculated.
+[RC] recalculate: no active roll for Purple
+[rollE2eSettlePresetCheck] PASS — preset faces applied and settle triggered for Purple
+[rollConfirmTracker] PASS — Purple
+[rollConfirm] PASS — Purple noActive
+[DEBUG.rollCancel] Purple: no active roll to cancel
+====================================================================================================
+========== P-F - Oblivion in STANDARD compound (Purple) ============================================
+[DEBUG.rollCancel] Purple: no active roll to cancel
+Set Purple player (ID: 76561199015564654) hunger to 1
+[setHumanityStains] Purple stains=2
+[rollConfirmTracker] PASS — Purple
+[DEBUG.rollTest] Purple PRE_ROLL — diff=2 type=standard label='E2E P-F compound'
+---------- [HUMAN] Left-click Normal bag 2 times, Oblivion-Rouse bag 2 times; Roll and wait for settle
+[RunTest] Dice step 54/54
+[DEBUG.rollSetFaces] Purple: set 4 face(s); recalculated.
+[RC] startRolling: Purple roll is not in PRE_ROLL (phase: postRoll)
+[rollConfirm] PASS — Purple
+[rollConfirmTracker] FAIL — Purple
+  1) hunger: got 0, want 1
+[DEBUG.rollCancel] Purple: roll cancelled
+====================================================================================================
+****************************************************************************************************

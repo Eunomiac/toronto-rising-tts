@@ -2,6 +2,8 @@
 
 Reference for the lean test playbook `Dice-E2E.md`. Run tests in order from Suite 0.
 
+**Run log reviews:** see [`Dice-E2E-Run-1-Findings.md`](Dice-E2E-Run-1-Findings.md) for script-vs-test triage from the first full suite pass.
+
 ## Running the playbook (streamlined blocks)
 
 `Dice-E2E.md` contains **only** fenced `U.RunSequence` Lua blocks (no markdown suite/step headers). Context appears in console via **`printHeader`**:
@@ -71,7 +73,7 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 | `rollTest(color, diff?, type?, label?, hungerLevel?)`                    | Seat prep + arm **PRE_ROLL** with ST difficulty; 5th arg sets hunger 0–5 when needed |
 | `rollTestNoDiff(color, type?, label?, hungerLevel?)`                       | Same as `rollTest` but **no** `setDifficulty` — optional-difficulty E2E (Suite E2, H1b) |
 | `rollStTest(label?, type?)`                                              | Seat prep on **Black** + ST NPC roll                                        |
-| `rollSetFaces(color, { normal, hunger, rouse, oblivRouse })`             | After settle: set faces + `RC.recalculate`                                  |
+| `rollSetFaces(color, { normal, hunger, rouse, bloodSurgeRouse, oblivRouse, werewolf, rage })` | After settle: set faces + `RC.recalculate` (use **`bloodSurgeRouse`**, not `rouse`, for surge dice) |
 | `rollE2eApplyConditions` / `rollE2eClearConditions`                      | Suite F (`e2eBestialNull`)                                                  |
 | `rollCancel(color)`                                                      | Cancel roll; non-Black returns Host to **Black**; **Black** clears ST slots |
 | `rollConfirm(color, expected)`                                           | Assert roll state; prints **PASS** / **FAIL** + mismatch list (E2E)         |

@@ -3,7 +3,7 @@
 This has been wired into RunTest. Initialize with `RunTest("Dice")` or `RunTest("Dice", 8)` to start at step 8, then `RunTest()` after each step.
 
 RunTest("Dice")
-RunTest("Dice", 6)
+RunTest("Dice", 13)
 RunTest()
 
 
@@ -804,7 +804,7 @@ U.RunSequence({
       meta = { bloodSurgeActive = true },
       pool = { bloodSurgeRouse = 1, normal = 2, hunger = 0 },
     })
-    rollE2eSettlePresetCheck("Brown", { normal = { 7, 3 }, rouse = { 4 } }, { skipSpawn = true })
+    rollE2eSettlePresetCheck("Brown", { normal = { 7, 7 }, bloodSurgeRouse = { 4 } }, { skipSpawn = true })
     rollConfirm("Brown", {
       phase = "postRoll",
       rouseOutcomeStripsMin = 1,
@@ -1280,7 +1280,7 @@ U.RunSequence({
     rollConfirm("Brown", {
       phase = "postRoll",
       active = {
-        result = { resultClass = "failure" },
+        result = { resultClass = "totalBestialFailure" },
         rollOptions = { bestialNull = true },
       },
     })
@@ -1411,7 +1411,7 @@ U.RunSequence({
     RC.onDiceSettled("Black")
     rollConfirm("Black", {
       phase = "postRoll",
-      active = { result = { resultClass = "win", successes = 3, margin = 1 } },
+      active = { result = { resultClass = "win", successes = 3, margin = 0 } },
     })
     rollCancel("Black")
   end,
