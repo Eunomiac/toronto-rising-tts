@@ -52,6 +52,27 @@
       }
     },
     {
+      "label": "Export PC reference markdown",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        ".dev/scripts/export_pc_reference_markdown.js"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "none",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      }
+    },
+    {
       "label": "Generate PCS data (pcs_data.ttslua from JSON)",
       "type": "shell",
       "command": "node",

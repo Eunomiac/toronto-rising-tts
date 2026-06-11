@@ -8,7 +8,7 @@ Nevertheless, for simplicity and clarity, a PC's full stat block will be stored 
 
 ## Source Data for Initial `playerData` Entries
 
-The source data for the initial `playerData` entries is stored in **`lib/json/PCS.json`** (embedded into `lib/pcs_data.ttslua` for TTS; regenerate with `node .dev/scripts/generate_pcs_data_lua.js`). When first populating the `playerData` table, derive all values from that file. Only the slices described in **`PCStatsPartA`–`D`** (and the root **`conditions`** object documented below) need to be reflected in runtime `stats` / `playerData`.
+The source data for the initial `playerData` entries is stored in **`lib/json/PCS.json`** (embedded into `lib/pcs_data.ttslua` for TTS; regenerate with `node .dev/scripts/generate_pcs_data_lua.js`). A storyteller-facing markdown digest (PCS + `lib/json/PC_Relationships.json`, one section per PC) is generated to **`.dev/PC Data & Tracking/PC Reference.md`** via the VS Code task **Export PC reference markdown** (`node .dev/scripts/export_pc_reference_markdown.js`). When first populating the `playerData` table, derive all values from that file. Only the slices described in **`PCStatsPartA`–`D`** (and the root **`conditions`** object documented below) need to be reflected in runtime `stats` / `playerData`.
 
 The steam ID numbers (used as keys in the `playerData` table) are stored in the `C.PlayerIDs` table in `lib/constants.ttslua`, along with the player's name and color, as well as the character key (used to look up the character data from **`lib/json/PCS.json`**) and full name.
 
