@@ -285,22 +285,10 @@ end
 
 --- @return boolean
 local function startupSeatLightsReadyForReveal()
-    if L == nil or type(L.GetLight) ~= "function" then
+    if L == nil or type(L.seatSpotlightsResolvable) ~= "function" then
         return false
     end
-    local savedLights = S.getStateVal("lights")
-    if type(savedLights) ~= "table" then
-        return true
-    end
-    for lightRef, _ in pairs(savedLights) do
-        if type(lightRef) == "string" then
-            local isSeatLight = U.lightRefIsSeatSpotlight(lightRef)
-            if isSeatLight and L.GetLight(lightRef, true) == nil then
-                return false
-            end
-        end
-    end
-    return true
+    return L.seatSpotlightsResolvable() == true
 end
 
 local function hideStartupLoadingOverlays()
@@ -862,8 +850,8 @@ function GlobalTagDieForActiveRoll(params)
     die.setGMNotes(DK.encodeGmNotes(active.id, isSurgeRouse))
 end
 
---- Opens the seat dice tray when the first die of any kind enters the PRE_ROLL/ROLLING pool.
--- Authoritative for Auto-Hunger redirects (hunger bag spawn may not run leave-container drawer path).
+--- Opens the seat dice tray when the active pool has staged dice (SETUP / PRE_ROLL / ROLLING).
+-- Authoritative for auto-spawn (pre-filled Remorse pool, ST Open) and Auto-Hunger bag spawns.
 -- @param color string
 -- @param active table  active roll after pool mutation
 local function openDiceTrayOnFirstPoolDie(color, active)
@@ -922,13 +910,15 @@ function GlobalOnBagDieSpawned(params)
         ok = RC.adjustPoolKindCount(color, DK.KIND_OBLIV_ROUSE, 1)
     end
 
-    if ok and prevTotal == 0 then
+    if ok then
         active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
         if active ~= nil then
             local poolAfter = DK.normalizePool(active.pool)
             if DK.poolTotal(poolAfter) > 0 then
                 openDiceTrayOnFirstPoolDie(color, active)
-                GlobalRollSeatCamera({ color = color, mode = "roll" })
+                if prevTotal == 0 then
+                    GlobalRollSeatCamera({ color = color, mode = "roll" })
+                end
             end
         end
     end
@@ -3350,11 +3340,18 @@ local function spawnActivePoolDiceForActive(color)
     if active.phase ~= C.RollPhase.PRE_ROLL and active.phase ~= C.RollPhase.SETUP then
         return false
     end
+    local pool = DK.normalizePool(active.pool)
+    local didSpawn = false
     if color == "Black" then
-        return autoSpawnBlackPool(DK.normalizePool(active.pool))
+        didSpawn = autoSpawnBlackPool(pool)
+    else
+        DBV.reconcileForPlayer(color, active)
+        didSpawn = spawnMissingPoolDiceForColor(color)
     end
-    DBV.reconcileForPlayer(color, active)
-    return spawnMissingPoolDiceForColor(color)
+    if DK.poolTotal(pool) > 0 then
+        openDiceTrayOnFirstPoolDie(color, active)
+    end
+    return didSpawn
 end
 
 --- Global.call entry: spawn active pool dice for SETUP / PRE_ROLL (player + ST bags).

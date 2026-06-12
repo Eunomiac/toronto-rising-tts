@@ -11,6 +11,7 @@
 - [x] POST_ROLL **Confirm** always player-held baton → immediate `confirmRoll` / broadcast (no ST re-confirm)
 - [x] SETUP instruction shortened to **"Continue Assembling — Awaiting Storyteller"**; **ROLL** button grey when visible but disabled (`roll_ui.ttslua`)
 - [x] `rollControl_resultDisplay_*`: Total / Bestial / Total Bestial Failure re-apply `rectAlignment = "MiddleCenter"` after class change (`roll_ui.ttslua`)
+- [x] Dice tray opens whenever active pool has staged dice after spawn (ST **Open**, auto-spawn, bag hook — incl. pre-filled Remorse pool)
 
 ---
 
