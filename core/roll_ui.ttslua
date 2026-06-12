@@ -399,6 +399,22 @@ local function rollControlResultClassString(result)
     return base
 end
 
+--- Result classes whose scaled XML offsets need `rectAlignment` re-applied after `setClass`.
+local ROLL_CONTROL_RESULT_NEEDS_MIDDLE_CENTER = {
+    [C.ResultClass.TOTAL_FAILURE]         = true,
+    [C.ResultClass.BESTIAL_FAILURE]       = true,
+    [C.ResultClass.TOTAL_BESTIAL_FAILURE] = true,
+}
+
+--- @param result table|nil
+-- @return boolean
+local function rollControlResultNeedsMiddleCenterAlignment(result)
+    if type(result) ~= "table" then
+        return false
+    end
+    return ROLL_CONTROL_RESULT_NEEDS_MIDDLE_CENTER[result.resultClass] == true
+end
+
 --- Broadcast result line class string (shared color tokens with roll control panel).
 -- @param result table|nil
 -- @return string
@@ -733,8 +749,12 @@ local function refreshPcRollControlPanel(color, active)
     if showResultRow then
         local resultClassStr = rollControlResultClassString(result)
         local resultId = string.format("rollControl_resultDisplay_%s", color)
-        uiSetValue(resultId, panelResultDisplayText(active.rollType, result, active.difficulty))
+        local resultText = panelResultDisplayText(active.rollType, result, active.difficulty)
+        uiSetValue(resultId, resultText)
         uiSetClass(resultId, resultClassStr)
+        if rollControlResultNeedsMiddleCenterAlignment(result) then
+            U.setAttribute(resultId, "rectAlignment", "MiddleCenter")
+        end
     end
 
     local isPreRoll = active.phase == C.RollPhase.PRE_ROLL
