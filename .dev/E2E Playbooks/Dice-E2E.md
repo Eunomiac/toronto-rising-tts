@@ -2,9 +2,12 @@
 
 This has been wired into RunTest. Initialize with `RunTest("Dice")` or `RunTest("Dice", 8)` to start at step 8, then `RunTest()` after each step.
 
+> NOTE: The following lines are present for convenient execution from the IDE and can be ignored.
 RunTest("Dice")
 
 RunTest()
+
+## Beginning of Dice E2E Testing Campaign
 
 ```lua
 U.RunSequence({
