@@ -17,6 +17,9 @@ local U = require("lib.util")
 --- elementId -> last visibility we applied (incremental UI.show / UI.hide)
 local lastVisible = {}
 
+--- Per-seat desired overlay inputs fingerprint (skip full reconcile when unchanged).
+local lastDesiredVisibilityFpBySeat = {}
+
 --- Tier images overlay_hunger_0 .. overlay_hunger_5 (mutually exclusive).
 local HUNGER_LEVELS = { 0, 1, 2, 3, 4, 5 }
 
@@ -90,6 +93,39 @@ local function computeDesiredVisibility(playerID, seatColor)
   end
 
   return want
+end
+
+--- @param seatColor string
+--- @return string
+local function overlayInputFingerprintForSeat(seatColor)
+  if type(seatColor) ~= "string" then
+    return ""
+  end
+  local playerID = S.getPlayerID(seatColor)
+  local want = computeDesiredVisibility(playerID, seatColor)
+  local keys = {}
+  for elId, on in pairs(want) do
+    if on == true and type(elId) == "string" then
+      keys[#keys + 1] = elId
+    end
+  end
+  table.sort(keys)
+  return seatColor .. ":" .. table.concat(keys, ",")
+end
+
+--- Stable fingerprint of overlay visibility inputs for all player seat rows.
+--- @return string
+function HO.computeOverlayInputFingerprint()
+  local lines = {}
+  for _, seatColor in ipairs(C.PlayerColors or {}) do
+    lines[#lines + 1] = overlayInputFingerprintForSeat(seatColor)
+  end
+  return table.concat(lines, "\n")
+end
+
+--- Clears per-seat desired-overlay input fingerprints (pair with `Sync.full({ force = true })`).
+function HO.invalidateOverlayInputCache()
+  lastDesiredVisibilityFpBySeat = {}
 end
 
 --- Hunger uses six mutually exclusive Image elements (overlay_hunger_0 .. overlay_hunger_5).
@@ -293,8 +329,14 @@ end
 
 --- Reconcile condition/hunger overlays and hunger smoke for one seat (no hunger pulse animation).
 --- @param seatColor string e.g. "Red"
-function HO.reconcileForSeat(seatColor)
+--- @param opts table|nil `{ force = boolean? }`
+function HO.reconcileForSeat(seatColor, opts)
   if type(seatColor) ~= "string" then
+    return
+  end
+  opts = type(opts) == "table" and opts or {}
+  local fp = overlayInputFingerprintForSeat(seatColor)
+  if opts.force ~= true and lastDesiredVisibilityFpBySeat[seatColor] == fp then
     return
   end
   local playerID = S.getPlayerID(seatColor)
@@ -319,12 +361,15 @@ function HO.reconcileForSeat(seatColor)
   local hungerLevel = desiredHungerLevelFromWant(want, seatColor)
   applyHungerOverlaysExclusive(seatColor, hungerLevel)
   syncHungerSmokeForSeat(seatColor, hungerLevel)
+  lastDesiredVisibilityFpBySeat[seatColor] = fp
 end
 
 --- Refresh overlay visibility for every player color row.
-function HO.syncAll()
+--- @param opts table|nil forwarded to `HO.reconcileForSeat` (e.g. `{ force = true }`)
+function HO.syncAll(opts)
+  opts = type(opts) == "table" and opts or {}
   for _, seatColor in ipairs(C.PlayerColors) do
-    HO.reconcileForSeat(seatColor)
+    HO.reconcileForSeat(seatColor, opts)
   end
 
   local HUP = require("core.hud_hunger_pulse")

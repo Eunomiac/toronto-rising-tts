@@ -2266,6 +2266,21 @@ function M.invalidateLayoutSyncCache()
   lastLayoutSyncFingerprint = nil
 end
 
+--- True when stable layout inputs match the last successful `resolveSeatObjectsFromTable`.
+--- @param tableKey string|nil defaults to `gameState.seatLayout.currentTableKey`
+--- @return boolean
+function M.isLayoutSyncCurrent(tableKey)
+  local key = tableKey
+  if U.Type(key) ~= "string" or key == "" then
+    key = S.getStateVal("seatLayout", "currentTableKey")
+  end
+  if U.Type(key) ~= "string" or key == "" or lastLayoutSyncFingerprint == nil then
+    return false
+  end
+  local fp = computeLayoutSyncFingerprint(key)
+  return fp ~= nil and fp == lastLayoutSyncFingerprint
+end
+
 --- @param obj Object|nil
 --- @param tableCfg table|nil
 --- @param isActive boolean

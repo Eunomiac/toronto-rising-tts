@@ -24,6 +24,8 @@ local RSL = require("lib.rotational-seat-layout")
 local didBootstrapFullSync = false
 --- Incremented when a new bootstrap retry schedule starts; stale callbacks no-op.
 local bootstrapRetryGeneration = 0
+--- Last successful `reconcileSeatPresentationFromState` input fingerprint (PC lights + overlays).
+local lastSeatPresentationFingerprint = nil
 
 --- UI sections refreshed after `Sync.full` when `force` is false — omits `overlays` because `HO.syncAll` already ran.
 --- Includes `gameStateOverlay` so district/site + narrative clock stay aligned after every `Sync.full` incremental pass.
@@ -38,8 +40,9 @@ local SYNC_INCREMENTAL_UI_DELTA = {
     playerHud = true,
 }
 
---- Offsets for unified bootstrap seat + overlay retries (lights deferred init + presentation + overlay UI).
-local BOOTSTRAP_RETRY_OFFSETS_SEC = { 0.35, 1.0, 1.5, 2.5, 3.0, 5.0, 8.0 }
+--- Bootstrap coordinator: poll until seat spotlights resolve or deadline (replaces fixed offset stacks).
+local BOOTSTRAP_POLL_INTERVAL_SEC = 0.35
+local BOOTSTRAP_MAX_WAIT_SEC = 10
 
 --- Opt-in via `Sync.setMetricsEnabled(true)` or `gameState.debug.syncMetricsEnabled`.
 Sync.metricsEnabled = false
@@ -103,43 +106,154 @@ local function finishSyncMetrics(pass, t0, fields)
     emitSyncMetrics(payload)
 end
 
+--- @return string
+local function computeSeatPresentationFingerprint()
+    local lines = {}
+    if type(L.computePcSeatPresentationInputFingerprint) == "function" then
+        lines[#lines + 1] = L.computePcSeatPresentationInputFingerprint()
+    end
+    if type(HO.computeOverlayInputFingerprint) == "function" then
+        lines[#lines + 1] = HO.computeOverlayInputFingerprint()
+    end
+    return table.concat(lines, "\n")
+end
+
+local function invalidateSeatPresentationFingerprint()
+    lastSeatPresentationFingerprint = nil
+end
+
 --- Reconcile seat-light and hunger-overlay state from persisted game state.
---- @param opts table|nil `{ force = boolean? }` forwarded to `L.reconcileAllPlayers`
+--- @param opts table|nil `{ force = boolean?, bootstrap = boolean? }` forwarded to `L.reconcileAllPlayers` / `HO.syncAll`
 local function reconcileSeatPresentationFromState(opts)
     opts = type(opts) == "table" and opts or {}
+    local force = opts.force == true
+    local fp = computeSeatPresentationFingerprint()
+    if not force and fp ~= "" and fp == lastSeatPresentationFingerprint then
+        callIfFunction(Scenes.reconcileTopFogFromState, opts)
+        return false
+    end
     local pcOpts = U.clone(opts, true)
     pcOpts.skipNpcSeats = true
     callIfFunction(L.reconcileAllPlayers, pcOpts)
-    callIfFunction(HO.syncAll)
+    callIfFunction(HO.syncAll, pcOpts)
     callIfFunction(Scenes.reconcileTopFogFromState, opts)
+    lastSeatPresentationFingerprint = fp
+    return true
 end
 
---- Bootstrap retry: deferred light init, seat presentation, overlay-only UI refresh.
---- @param passIndex number 1-based index into `BOOTSTRAP_RETRY_OFFSETS_SEC`
---- @param generation number schedule generation captured at schedule time
-local function runBootstrapRetryTick(passIndex, generation)
+--- Clears orchestrator-level reconcile skip caches (call before `Sync.full({ force = true })` repair).
+function Sync.invalidateAllReconcileCaches()
+    callIfFunction(L.invalidateReconcileCache)
+    callIfFunction(RSL.invalidateLayoutSyncCache)
+    callIfFunction(Scenes.invalidateReconcileCache)
+    callIfFunction(Soundscape.invalidateReconcileCache)
+    callIfFunction(HO.invalidateOverlayInputCache)
+    invalidateSeatPresentationFingerprint()
+end
+
+--- @param generation number
+--- @return boolean
+local function bootstrapSeatPresentationReady(generation)
     if generation ~= bootstrapRetryGeneration then
-        return
+        return true
+    end
+    if type(L.seatSpotlightsResolvable) == "function" and not L.seatSpotlightsResolvable() then
+        return false
+    end
+    if type(L.hasPendingInitLightsRetries) == "function" and L.hasPendingInitLightsRetries() then
+        return false
+    end
+    return true
+end
+
+--- One bootstrap poll tick: deferred init lights, seat presentation, overlay UI when still needed.
+--- @param generation number
+--- @param tickIndex number
+--- @return boolean skippedPresentation
+local function runBootstrapCoordinatorTick(generation, tickIndex)
+    if generation ~= bootstrapRetryGeneration then
+        return true
     end
     local t0 = os.clock()
-    callIfFunction(L.InitLightsDeferred)
-    reconcileSeatPresentationFromState({})
-    Sync.ui({ overlays = true })
+    local skippedPresentation = true
+    local ranDeferred = false
+    local ranPresentation = false
+
+    if type(L.hasPendingInitLightsRetries) == "function" and L.hasPendingInitLightsRetries() then
+        callIfFunction(L.InitLightsDeferred)
+        ranDeferred = true
+        skippedPresentation = false
+    end
+
+    if not bootstrapSeatPresentationReady(generation) then
+        if reconcileSeatPresentationFromState({ bootstrap = true }) then
+            ranPresentation = true
+            skippedPresentation = false
+            Sync.ui({ overlays = true })
+        else
+            skippedPresentation = true
+        end
+    end
+
+    local lightsDeferredRemaining = 0
+    if type(L.countPendingInitLightsRetries) == "function" then
+        lightsDeferredRemaining = L.countPendingInitLightsRetries()
+    end
+
     finishSyncMetrics("bootstrap_retry", t0, {
-        passIndex = passIndex,
-        offsetSec = BOOTSTRAP_RETRY_OFFSETS_SEC[passIndex],
+        tickIndex = tickIndex,
+        ranDeferred = ranDeferred,
+        ranPresentation = ranPresentation,
+        lightsDeferredRemaining = lightsDeferredRemaining,
+        skippedPresentation = skippedPresentation,
     })
+
+    return skippedPresentation
 end
 
---- Schedules unified bootstrap retries (seat lights + overlays); replaces separate overlay/light stacks.
-local function scheduleBootstrapRetries()
+--- Readiness-gated bootstrap loop (replaces blind `BOOTSTRAP_RETRY_OFFSETS_SEC` schedule).
+local function scheduleBootstrapCoordinator()
     bootstrapRetryGeneration = bootstrapRetryGeneration + 1
     local generation = bootstrapRetryGeneration
-    local passIndex = 0
-    U.scheduleAtOffsets(function()
-        passIndex = passIndex + 1
-        runBootstrapRetryTick(passIndex, generation)
-    end, BOOTSTRAP_RETRY_OFFSETS_SEC)
+    local tickIndex = 0
+    local deadline = os.clock() + BOOTSTRAP_MAX_WAIT_SEC
+
+    local function finishBootstrapCoordinator(timedOut)
+        local t0 = os.clock()
+        local remaining = 0
+        if type(L.countPendingInitLightsRetries) == "function" then
+            remaining = L.countPendingInitLightsRetries()
+        end
+        finishSyncMetrics("bootstrap_coordinator", t0, {
+            earlyExit = not timedOut and tickIndex < 7,
+            ticksRun = tickIndex,
+            lightsDeferredRemaining = remaining,
+            timedOut = timedOut == true,
+        })
+    end
+
+    U.RunSequence({
+        function()
+            return function()
+                if generation ~= bootstrapRetryGeneration then
+                    return true
+                end
+                if os.clock() >= deadline then
+                    finishBootstrapCoordinator(true)
+                    return true
+                end
+
+                tickIndex = tickIndex + 1
+                runBootstrapCoordinatorTick(generation, tickIndex)
+
+                if bootstrapSeatPresentationReady(generation) then
+                    finishBootstrapCoordinator(false)
+                    return true
+                end
+                return false
+            end
+        end,
+    }, BOOTSTRAP_MAX_WAIT_SEC, BOOTSTRAP_POLL_INTERVAL_SEC)
 end
 
 --- Reconcile one player scope (per-seat lights, HUD, overlays, hunger pulse, storyteller stat row).
@@ -160,6 +274,9 @@ function Sync.player(color)
 
     callIfFunction(HO.reconcileForSeat, color)
     callIfFunction(HUP.reconcileForSeat, color)
+
+    -- Keep orchestrator presentation fingerprint aligned after per-seat mutation.
+    lastSeatPresentationFingerprint = computeSeatPresentationFingerprint()
 
     if type(UpdateUIDisplays) == "function" then
         UpdateUIDisplays({
@@ -243,8 +360,7 @@ function Sync.full(opts)
     local reconcileOpts = force and { force = true } or {}
 
     if force then
-        callIfFunction(L.invalidateReconcileCache)
-        callIfFunction(RSL.invalidateLayoutSyncCache)
+        Sync.invalidateAllReconcileCaches()
     end
 
     callIfFunction(Scenes.reconcileFromState, reconcileOpts)
@@ -252,13 +368,14 @@ function Sync.full(opts)
     callIfFunction(Scenes.reconcileSkyboxFromState, reconcileOpts)
     callIfFunction(Soundscape.reconcileFromState, reconcileOpts)
 
+    local presentationSkippedThisPass = false
     if not didBootstrapFullSync then
         callIfFunction(NPCS.registerRestoredInstancesFromState)
         callIfFunction(L.InitLights)
-        reconcileSeatPresentationFromState(reconcileOpts)
-        scheduleBootstrapRetries()
+        presentationSkippedThisPass = reconcileSeatPresentationFromState(reconcileOpts) == false
+        scheduleBootstrapCoordinator()
     else
-        reconcileSeatPresentationFromState(reconcileOpts)
+        presentationSkippedThisPass = reconcileSeatPresentationFromState(reconcileOpts) == false
     end
 
     callIfFunction(NPCS.reconcileAllFromState, {
@@ -292,10 +409,38 @@ function Sync.full(opts)
 
     didBootstrapFullSync = true
 
+    if reason == "onLoad_startup_gate" and not force and syncMetricsEnabled() then
+        emitSyncMetrics({
+            pass = "full_startup_gate",
+            presentationSkipped = presentationSkippedThisPass,
+            reason = reason,
+        })
+    end
+
     finishSyncMetrics("full", t0, {
         reason = reason,
         force = force,
+        presentationSkipped = presentationSkippedThisPass,
     })
+end
+
+--- Snapshot of orchestrator reconcile skip caches (Save & Play diagnosis).
+--- @return table
+function Sync.debugReconcileCacheSnapshot()
+    local pendingLights = 0
+    if type(L.countPendingInitLightsRetries) == "function" then
+        pendingLights = L.countPendingInitLightsRetries()
+    end
+    local layoutCurrent = false
+    if type(RSL.isLayoutSyncCurrent) == "function" then
+        layoutCurrent = RSL.isLayoutSyncCurrent() == true
+    end
+    return {
+        seatPresentationFingerprintSet = lastSeatPresentationFingerprint ~= nil,
+        layoutSyncCurrent = layoutCurrent,
+        initLightsRetriesPending = pendingLights,
+        seatSpotlightsResolvable = type(L.seatSpotlightsResolvable) == "function" and L.seatSpotlightsResolvable() or nil,
+    }
 end
 
 return Sync

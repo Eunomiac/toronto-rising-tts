@@ -1499,6 +1499,12 @@ function L.reconcileForPlayer(seatKey, opts)
     end
     opts = type(opts) == "table" and opts or {}
     local force = opts.force == true
+    local transitionTime = L.DEFAULT_RECONCILE_LERP_SECONDS
+    if opts.bootstrap == true then
+        transitionTime = 0
+    elseif type(opts.transitionTime) == "number" then
+        transitionTime = opts.transitionTime
+    end
     for lightRef, lData in pairs(L.LIGHTMODES or {}) do
         if U.Type(lightRef) == "string"
             and U.Type(lData) == "table"
@@ -1509,12 +1515,12 @@ function L.reconcileForPlayer(seatKey, opts)
                 S.setStateVal(res.mode, "lights", lightRef)
                 local lit = getLight(lightRef, true)
                 if lit ~= nil and (force or not reconcileTargetAlreadyApplied(lightRef, res.mode)) then
-                    L.SetLightMode(lightRef, res.mode, seatKey, L.DEFAULT_RECONCILE_LERP_SECONDS)
+                    L.SetLightMode(lightRef, res.mode, seatKey, transitionTime)
                 end
             elseif U.Type(res) == "table" and res.kind == "inline" and U.Type(res.patch) == "table" then
                 local lit = getLight(lightRef, true)
                 if lit ~= nil and (force or not reconcileTargetAlreadyApplied(lightRef, res.patch)) then
-                    L.SetLightMode(lightRef, res.patch, seatKey, L.DEFAULT_RECONCILE_LERP_SECONDS)
+                    L.SetLightMode(lightRef, res.patch, seatKey, transitionTime)
                 end
             end
         end
@@ -1988,6 +1994,97 @@ local function tryApplySavedLight(lightName, mData, transitionT)
     end
 
     return true
+end
+
+--- Stable fingerprint of PC seat-light + layout inputs used by `reconcileForPlayer` (skip redundant presentation passes).
+--- @return string
+function L.computePcSeatPresentationInputFingerprint()
+    local lines = {}
+    lines[#lines + 1] = "tableKey:" .. tostring(S.getStateVal("seatLayout", "currentTableKey") or "")
+    local preset = S.getStateVal("sessionScene", "lightingSeatSpotlightPreset")
+    if U.Type(preset) == "table" then
+        local presetKeys = {}
+        for lightRef, mode in pairs(preset) do
+            if U.Type(lightRef) == "string" then
+                presetKeys[#presetKeys + 1] = lightRef .. "=" .. tostring(mode)
+            end
+        end
+        table.sort(presetKeys)
+        lines[#lines + 1] = "presets:" .. table.concat(presetKeys, ";")
+    end
+    for _, seatKey in ipairs(C.PlayerColors or {}) do
+        lines[#lines + 1] = "seat:" .. seatKey
+        lines[#lines + 1] = "present:" .. tostring(L.isPlayerPresentInActiveSeatLayout(seatKey))
+        lines[#lines + 1] = "rolling:" .. tostring(getPlayerRollingState(seatKey))
+        lines[#lines + 1] = "hunger:" .. tostring(S.getPlayerVal(seatKey, "hunger"))
+        local playerID = S.getPlayerID(seatKey)
+        if U.Type(playerID) == "string" then
+            local Conditions = require("core.conditions")
+            local resolved = Conditions.resolveForPlayer(playerID)
+            if U.Type(resolved.lightingModes) == "table" then
+                local condKeys = {}
+                for lightRef, mode in pairs(resolved.lightingModes) do
+                    if U.Type(lightRef) == "string" then
+                        condKeys[#condKeys + 1] = lightRef .. "=" .. tostring(mode)
+                    end
+                end
+                table.sort(condKeys)
+                if #condKeys > 0 then
+                    lines[#lines + 1] = "cond:" .. table.concat(condKeys, ";")
+                end
+            end
+        end
+        for lightRef, lData in pairs(L.LIGHTMODES or {}) do
+            if U.Type(lightRef) == "string"
+                and U.Type(lData) == "table"
+                and lightRefMatchesSeatColor(lightRef, seatKey)
+            then
+                local res = computeDesiredSeatLightResolution(lightRef, seatKey)
+                if U.Type(res) == "table" then
+                    if res.kind == "named" then
+                        lines[#lines + 1] = lightRef .. "=named:" .. tostring(res.mode)
+                    elseif res.kind == "inline" and U.Type(res.patch) == "table" then
+                        lines[#lines + 1] = lightRef .. "=inline:" .. reconcileModeFingerprint(res.patch)
+                    end
+                end
+            end
+        end
+    end
+    return table.concat(lines, "\n")
+end
+
+--- True when every persisted seat spotlight ref in `gameState.lights` resolves to a live object (bootstrap / overlay gate).
+--- @return boolean
+function L.seatSpotlightsResolvable()
+    local savedLights = S.getStateVal("lights")
+    if U.Type(savedLights) ~= "table" then
+        return true
+    end
+    for lightRef, _ in pairs(savedLights) do
+        if U.Type(lightRef) == "string" and U.lightRefIsSeatSpotlight(lightRef) then
+            if L.GetLight(lightRef, true) == nil then
+                return false
+            end
+        end
+    end
+    return true
+end
+
+--- @return boolean
+function L.hasPendingInitLightsRetries()
+    for _ in pairs(initLightsRetryKeys) do
+        return true
+    end
+    return false
+end
+
+--- @return number
+function L.countPendingInitLightsRetries()
+    local n = 0
+    for _ in pairs(initLightsRetryKeys) do
+        n = n + 1
+    end
+    return n
 end
 
 --- Loads saved light states: cleanup, apply all keys with instant transitions, record misses for deferred pass.

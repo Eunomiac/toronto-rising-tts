@@ -9,6 +9,20 @@ Related docs:
 - [SOLVING ISSUES & DEBUGGING](../SOLVING%20ISSUES%20%26%20DEBUGGING.md)
 - [`core/sync.ttslua`](../../core/sync.ttslua)
 
+## Standard reconciler shape
+
+Each domain reconciler should follow this template (gaps are called out in the mapping table below):
+
+| Method | Purpose |
+|--------|---------|
+| `reconcileFromState(opts?)` | Entry point; reads `gameState` inputs and applies world/UI diffs only |
+| `computeInputFingerprint()` | Stable hash from **state inputs only** (no live TTS reads) |
+| `invalidateReconcileCache()` | World may have drifted; next reconcile must not skip |
+| `opts.force` | Bypass fingerprint / applied-cache skip |
+| `markReconciledToCurrentState()` (optional) | After eager apply already matched state, prime fingerprint so `Sync.full` does not stack a second physical pass |
+
+Orchestrator hub: `Sync.invalidateAllReconcileCaches()` (on `Sync.full({ force = true })`) clears lighting, layout, scenes, soundscape, seat-presentation, and overlay-input caches. Diagnosis: `DEBUG.dumpSyncCacheState()` / `Sync.debugReconcileCacheSnapshot()`.
+
 ## Core rule
 
 `gameState` is the source of truth for intended game state. Mutation APIs write `gameState`; reconciler APIs apply the live TTS world so it matches `gameState`.
@@ -47,16 +61,15 @@ Runtime order:
 3. `Scenes.reconcileFromState(reconcileOpts)`.
 4. `Scenes.reconcileTopFogFromState(reconcileOpts)`.
 5. `Soundscape.reconcileFromState(reconcileOpts)`.
-6. Seat presentation:
+6. Seat presentation via `reconcileSeatPresentationFromState(reconcileOpts)`:
+   - Input fingerprint: `L.computePcSeatPresentationInputFingerprint()` + `HO.computeOverlayInputFingerprint()`; skip `L.reconcileAllPlayers` / `HO.syncAll` when unchanged unless `force`.
    - Bootstrap first pass only:
      1. `NPCS.registerRestoredInstancesFromState()`.
      2. `L.InitLights()`.
-     3. `L.reconcileAllPlayers()` + `HO.syncAll()` via `reconcileSeatPresentationFromState`.
-     4. Schedule unified bootstrap retries at `0.35`, `1.0`, `1.5`, `2.5`, `3.0`, `5.0`, and `8.0` seconds (each tick: `L.InitLightsDeferred()`, seat presentation, `Sync.ui({ overlays = true })`).
+     3. Seat presentation (may skip on fingerprint).
+     4. `scheduleBootstrapCoordinator()` — polls every `0.35s` up to `10s` until `L.seatSpotlightsResolvable()` and no pending `InitLightsDeferred` retries; each tick runs only deferred init lights and/or presentation when still needed (`opts.bootstrap = true` → zero lerp on PC seat lights).
      5. After UI refresh: `NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true })` (batched spawns).
-   - Runtime passes:
-     1. `L.reconcileAllPlayers({ skipNpcSeats = true })` — PC hunger/overlays only; NPC seat lights run in the NPC orchestrator (Step Four).
-     2. `HO.syncAll()`.
+   - Runtime passes: same bundle; PC-only seat lights (`skipNpcSeats = true`); NPC seat lights in orchestrator Step Four.
 7. `NPCS.reconcileAllFromState({ deferUiRefresh = true, force })` — Steps Zero–Five in order (area removals → seat removals → seat placements + synchronous layout commit → presence visibility/lights → area populate). Replaces the former split `reconcileSessionSceneNpcWorldFromState` + `reconcileOccupiedNpcSeatsFromState` calls.
 9. Bootstrap first pass only: `HUDP.reconcileCameraOverlaySelfMatchRowsFromXmlDefaults()`.
 10. UI refresh:
@@ -86,7 +99,7 @@ Order:
 
 It skips scene ambient lighting, top fog, soundscape, NPC scene layout, scene-library mirroring, bootstrap light initialization, deferred retries, and full Storyteller panel refresh. Those domains do not depend on a single PC hunger/roll/HUD mutation.
 
-When `Sync.full({ force = true })`, `L.invalidateReconcileCache()` runs before seat presentation, and `NPCS.reconcileAllFromState` receives `force = true`.
+When `Sync.full({ force = true })`, `Sync.invalidateAllReconcileCaches()` runs before domain reconcilers, and `NPCS.reconcileAllFromState` receives `force = true`.
 
 ## Public reconciler and sync entry points
 
@@ -107,8 +120,8 @@ When `Sync.full({ force = true })`, `L.invalidateReconcileCache()` runs before s
 | `NPCS.restoreAfterStateLoad()` | First `Sync.full` bootstrap; `Sync.npcCutouts` direct API | `gameState.npcs.instances`, occupied NPC seat map, `C.NPCSeats` | Figurine physics lock, spotlight tag registration, NPC spotlight mode registration, preload pool ensure, seat-layout sync request | Sanitizes and rewrites `gameState.npcs.instances`; may update seated records | Bootstrap-only in `Sync.full`; no fingerprint |
 | `HUDP.reconcileCameraOverlaySelfMatchRowsFromXmlDefaults()` | First `Sync.full` bootstrap before UI refresh | `C.PlayerColors`; XML defaults | `UI.setAttribute("cameraControls_otherControls<Seat>_<Seat>", "active", "false")` | Confirmed no state writes | One-shot via `didBootstrapFullSync` |
 | `HUDP.updatePlayerUI(player, color)` | `Sync.player`, `UpdateUIDisplays({ playerHud = true })`, HUD panel handlers | `gameState.playerData[id].hud`, `gameState.sessionScene.districtKey`, `gameState.sessionScene.siteKey`, other seats via player ID lookup, `C.Sites`, `C.Districts` | Player HUD `active`, sidebar hover/active colors, reference panels, coterie popup images, map pins, location dock cards, camera overlay rows | Confirmed no state writes in `updatePlayerUI`; HUD click handlers mutate state before calling it | Local UI caches including `lastLocationDockUiCache`; delegates local `reconcileLocationDockCardsFromState` |
-| `HO.reconcileForSeat(seatColor)` | `Sync.player` | Same as `HO.syncAll` for one seat | Condition/hunger overlays + hunger smoke for that seat | Confirmed no state writes | Does not run hunger pulse animation |
-| `HO.syncAll()` | `Sync.full`, `UpdateUIDisplays({ overlays = true })` | `gameState.playerData[id].conditions[*].hudChanges`, `gameState.playerData[id].stats.hunger`, `C.PlayerColors` | Loops `HO.reconcileForSeat`, then `HUP.syncHungerPulseAll()` | Confirmed no state writes | Uses `lastVisible` cache for non-hunger overlays; `HO.invalidateSeatCache(color)` |
+| `HO.reconcileForSeat(seatColor, opts?)` | `Sync.player`, `HO.syncAll` | Same as `HO.syncAll` for one seat | Condition/hunger overlays + hunger smoke for that seat | Confirmed no state writes | `lastDesiredVisibilityFpBySeat` skips when hunger/condition inputs unchanged; `opts.force` bypasses; does not run hunger pulse animation |
+| `HO.syncAll(opts?)` | `Sync.full`, `UpdateUIDisplays({ overlays = true })` | `gameState.playerData[id].conditions[*].hudChanges`, `gameState.playerData[id].stats.hunger`, `C.PlayerColors` | Loops `HO.reconcileForSeat`, then `HUP.syncHungerPulseAll()` | Confirmed no state writes | `lastVisible` write-skip; `HO.computeOverlayInputFingerprint()`; `HO.invalidateOverlayInputCache()` |
 | `HUP.reconcileForSeat(seatColor)` | `Sync.player` | Hunger per seat from player data / player value helpers | Pulse overlay alpha + heartbeat for hunger 5 on that seat | Confirmed no state writes | `pulseGenByColor` invalidates stale delayed callbacks |
 | `HUP.syncHungerPulseAll()` | End of `HO.syncAll()` | All `C.PlayerColors` | Loops `HUP.reconcileForSeat` | Confirmed no state writes | Full-seat pulse repair path |
 | `GameStateOverlay.reconcileFromState()` | `UpdateUIDisplays` when full, `gameStateOverlay`, `phase`, or `scenesPanel`; clock tick at zero speed | `gameState.currentPhase`, `gameState.sessionScene.districtKey`, `gameState.sessionScene.siteKey`, `gameState.sessionScene.clock`, `C.Sites`, `C.Districts` | Center-top overlay `UI.setValue` and `UI.setAttribute` | Confirmed no state writes | `overlayTextCache`, `overlayActiveCache`; hides/clears outside phases that show narrative clock |
@@ -119,7 +132,7 @@ When `Sync.full({ force = true })`, `L.invalidateReconcileCache()` runs before s
 
 | Helper | Owner | Trigger | Reads | Applies | Notes |
 |---|---|---|---|---|---|
-| `reconcileSeatPresentationFromState()` | `core/sync.ttslua` | `Sync.full` runtime and bootstrap/deferred retries | Delegates to lighting and overlays | `L.reconcileAllPlayers({ skipNpcSeats = true })`, `HO.syncAll`, `Scenes.reconcileTopFogFromState` | PC-only seat lights before NPC orchestrator; NPC lights in Step Four. |
+| `reconcileSeatPresentationFromState(opts?)` | `core/sync.ttslua` | `Sync.full` runtime and bootstrap coordinator ticks | PC lighting + overlay input fingerprints from state | `L.reconcileAllPlayers({ skipNpcSeats = true })`, `HO.syncAll`, `Scenes.reconcileTopFogFromState` when fingerprint changed or `force`; always runs top fog via its own fingerprint | `lastSeatPresentationFingerprint`; cleared by `Sync.invalidateAllReconcileCaches()` |
 | `reconcileLocationDockCardsFromState(seatColor)` | `core/hud_player.ttslua` | `HUDP.updatePlayerUI` | `gameState.sessionScene.districtKey`, `gameState.sessionScene.siteKey`, `C.Sites`, `C.Districts` | Location dock image visibility and current-site sprite refs | Local, not public. |
 | `reconcileLocationRowFromState()` | `core/game_state_overlay.ttslua` | `GameStateOverlay.reconcileFromState` | `gameState.sessionScene.districtKey`, `gameState.sessionScene.siteKey` | Center overlay district/site text and parent-site row active flags | Local, not public. |
 | `reconcileOverlayAfterClockTick(...)` | `core/game_state_overlay.ttslua` | `GameStateOverlay.tickRealTimeClock` after clock mutation | Current phase / overlay visibility helpers; new clock args | Date/time overlay text only | Local partial UI updater, not called from `Sync`. |

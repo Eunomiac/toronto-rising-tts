@@ -453,10 +453,18 @@ local function requestSeatLayoutSync()
     if seatSyncQueued then
         return
     end
+    local rsl = require("lib.rotational-seat-layout")
+    if rsl ~= nil and type(rsl.isLayoutSyncCurrent) == "function" and rsl.isLayoutSyncCurrent() then
+        print("[npcs] requestSeatLayoutSync skipped (layout fingerprint unchanged)")
+        return
+    end
     seatSyncQueued = true
     U.delay(function()
         seatSyncQueued = false
-        local rsl = require("lib.rotational-seat-layout")
+        if rsl ~= nil and type(rsl.isLayoutSyncCurrent) == "function" and rsl.isLayoutSyncCurrent() then
+            print("[npcs] requestSeatLayoutSync skipped (layout fingerprint unchanged)")
+            return
+        end
         if rsl ~= nil and type(rsl.SyncTable) == "function" then
             rsl.SyncTable()
         end

@@ -1,16 +1,18 @@
 # Performance Audit — Sync / World / UI Paths
 
-## Implementation status (2026-05-19)
+## Implementation status (2026-06-12)
 
 | Rank | Topic | Status |
 | --- | --- | --- |
 | 1 | `Sync.player` duplicate overlay/HUD | **Done** — `HO.reconcileForSeat` / `HUP.reconcileForSeat`; scoped `UpdateUIDisplays`; no duplicate `overlays` / all-player `playerHud` |
-| 2 | Startup bootstrap stacks | **Done** — unified `BOOTSTRAP_RETRY_OFFSETS_SEC` coordinator in `core/sync.ttslua`; `NPCS.registerRestoredInstancesFromState` split from batched preload |
-| 3 | Seat lighting redundant lerps | **Partial** — `lastReconciledModeByRef` + `L.invalidateReconcileCache()` + `force` on reconcile; 2s default lerp unchanged (measure before tuning) |
+| 2 | Startup bootstrap stacks | **Done** — readiness-gated `scheduleBootstrapCoordinator()` (poll `0.35s`, max `10s`) replaces blind `BOOTSTRAP_RETRY_OFFSETS_SEC`; `L.seatSpotlightsResolvable()` + pending init-light probe; bootstrap metrics (`earlyExit`, `ticksRun`, `lightsDeferredRemaining`) |
+| 3 | Seat lighting redundant lerps | **Partial** — `lastReconciledModeByRef` + `L.invalidateReconcileCache()`; bootstrap ticks use `opts.bootstrap` → `transitionTime = 0`; seat-presentation orchestrator fingerprint skips full `reconcileAllPlayers` when PC light + overlay inputs unchanged |
 | 4 | Soundscape deferred duplicates | **Done** — `pendingSoundscapeReconcileFingerprint` + `soundscapeReconcileGeneration`; fade-step metrics |
-| 5 | NPC preload / scene world | **Partial** — batched `ensureAllNpcsPreloaded`; scene reconcile fingerprint unchanged; `npc_preload` agent metrics |
+| 5 | NPC preload / scene world | **Partial** — batched `ensureAllNpcsPreloaded`; `requestSeatLayoutSync` + deferred `R.SyncTable` skip via `RSL.isLayoutSyncCurrent()` / `lastLayoutSyncFingerprint`; `npc_preload` agent metrics |
 | 6 | `UpdateUIDisplays` broad deltas | **Done** — `delta.colors` seat filter |
 | 7 | Map/HUD scoped refresh | **Deferred** — cross-seat HUD split (`reconcileSeatHud` / `reconcileCrossSeatRows`) not started |
+| — | Overlay desired-input fingerprint | **Done** — `HO.reconcileForSeat` per-seat `lastDesiredVisibilityFpBySeat`; `HO.invalidateOverlayInputCache()` on force |
+| — | Reconciler invalidation hub | **Done** — `Sync.invalidateAllReconcileCaches()`; `DEBUG.dumpSyncCacheState()` |
 
 Opt-in metrics: `Sync.setMetricsEnabled(true)` or `gameState.debug.syncMetricsEnabled` → `U.emitForAgent("sync_metrics", …)`. See [`.dev/TTS_MCP.md`](../TTS_MCP.md).
 
@@ -68,8 +70,8 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 **Evidence**
 
 - First on-load full sync: `Sync.full({ reason = "onLoad_initial" })`. Final startup-gate sync: `Sync.full({ reason = "onLoad_startup_gate" })`. See `core/global_script.ttslua:542-580`.
-- Bootstrap branch in `Sync.full` calls `NPCS.restoreAfterStateLoad`, `L.InitLights`, `reconcileSeatPresentationFromState`, then schedules `L.InitLightsDeferred` + seat presentation at `0.35, 1.5, 3.0, 5.0, 8.0`. See `core/sync.ttslua:147-157`.
-- The same bootstrap schedules overlays-only UI refreshes at `1.0, 2.5, 5.0, 8.0`, and schedules NPC panel refresh at `0.15`. See `core/sync.ttslua:181-196`.
+- Bootstrap branch calls `NPCS.registerRestoredInstancesFromState`, `L.InitLights`, fingerprint-aware `reconcileSeatPresentationFromState`, then `scheduleBootstrapCoordinator()` (readiness poll, early exit when spotlights resolve). See `core/sync.ttslua`.
+- `requestSeatLayoutSync` and deferred `R.SyncTable` no-op when `RSL.isLayoutSyncCurrent()` — gate still waits for deferred attempt, not full layout work.
 - `global_script` separately schedules `R.SyncTable()` at `0.5`; `R.SyncTable` ends by calling `L.reconcileAllPlayers()` and `HO.syncAll()`. See `core/global_script.ttslua:526-536` and `lib/rotational-seat-layout.ttslua:2876-2888`.
 - **Mitigated (2026-06):** `R.SyncTable` / `resolveSeatObjectsFromTable` short-circuit when stable layout fingerprint (table key + filtered `playerToPositionMap` seats) is unchanged; `opts.force` and `R.invalidateLayoutSyncCache()` bypass (same-table `SetTableTo`, `Sync.full({ force = true })`). Startup passes 2–3 should collapse to one full layout + skip logs.
 
