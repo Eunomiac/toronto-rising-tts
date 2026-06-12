@@ -19,6 +19,7 @@ local SceneLibrary = require("core.scene_library")
 local HUDP = require("core.hud_player")
 local HO = require("core.hud_overlays")
 local HUP = require("core.hud_hunger_pulse")
+local RSL = require("lib.rotational-seat-layout")
 
 local didBootstrapFullSync = false
 --- Incremented when a new bootstrap retry schedule starts; stale callbacks no-op.
@@ -243,6 +244,7 @@ function Sync.full(opts)
 
     if force then
         callIfFunction(L.invalidateReconcileCache)
+        callIfFunction(RSL.invalidateLayoutSyncCache)
     end
 
     callIfFunction(Scenes.reconcileFromState, reconcileOpts)

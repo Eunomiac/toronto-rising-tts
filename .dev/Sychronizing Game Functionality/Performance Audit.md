@@ -71,6 +71,7 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 - Bootstrap branch in `Sync.full` calls `NPCS.restoreAfterStateLoad`, `L.InitLights`, `reconcileSeatPresentationFromState`, then schedules `L.InitLightsDeferred` + seat presentation at `0.35, 1.5, 3.0, 5.0, 8.0`. See `core/sync.ttslua:147-157`.
 - The same bootstrap schedules overlays-only UI refreshes at `1.0, 2.5, 5.0, 8.0`, and schedules NPC panel refresh at `0.15`. See `core/sync.ttslua:181-196`.
 - `global_script` separately schedules `R.SyncTable()` at `0.5`; `R.SyncTable` ends by calling `L.reconcileAllPlayers()` and `HO.syncAll()`. See `core/global_script.ttslua:526-536` and `lib/rotational-seat-layout.ttslua:2876-2888`.
+- **Mitigated (2026-06):** `R.SyncTable` / `resolveSeatObjectsFromTable` short-circuit when stable layout fingerprint (table key + filtered `playerToPositionMap` seats) is unchanged; `opts.force` and `R.invalidateLayoutSyncCache()` bypass (same-table `SetTableTo`, `Sync.full({ force = true })`). Startup passes 2–3 should collapse to one full layout + skip logs.
 
 **Top call sites**
 
