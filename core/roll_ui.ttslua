@@ -750,10 +750,12 @@ local function refreshPcRollControlPanel(color, active)
         local resultClassStr = rollControlResultClassString(result)
         local resultId = string.format("rollControl_resultDisplay_%s", color)
         local resultText = panelResultDisplayText(active.rollType, result, active.difficulty)
-        uiSetValue(resultId, resultText)
         uiSetClass(resultId, resultClassStr)
         if rollControlResultNeedsMiddleCenterAlignment(result) then
-            U.setAttribute(resultId, "rectAlignment", "MiddleCenter")
+            -- Match panel_roll_controls.xml test pattern: setClass then text + rectAlignment together.
+            U.setAttributes(resultId, { text = resultText, rectAlignment = "MiddleCenter" })
+        else
+            uiSetValue(resultId, resultText)
         end
     end
 
