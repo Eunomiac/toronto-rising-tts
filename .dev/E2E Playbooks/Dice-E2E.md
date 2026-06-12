@@ -2,6 +2,9 @@
 
 This has been wired into RunTest. Initialize with `RunTest("Dice")` or `RunTest("Dice", 8)` to start at step 8, then `RunTest()` after each step.
 
+RunTest("Dice")
+
+RunTest()
 
 ```lua
 U.RunSequence({

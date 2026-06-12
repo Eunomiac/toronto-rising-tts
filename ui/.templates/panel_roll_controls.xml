@@ -2,208 +2,139 @@
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (map panels). -->
 <!-- Visibility: TTS `UI.show` / `UI.hide` play showAnimation/hideAnimation (tts-api UI API/Attributes.md). -->
 
-
-<!-- print(UI.getXml()) -->
-
-<!--
-UI.setAttributes("rollControl_root_Brown", {})
--->
-<Panel id="rollControl_root_@@color@@" class="rollControl_root" visibility="@@color@@" active="false">  <!-- ACTIVATE for open roll -->
-
-  <!--
-  UI.setAttributes("DB_rollControl_container_Brown", {})
-  -->
-  <VerticalLayout id="DB_rollControl_container_@@color@@" class="rollControl_container">
-
-    <!--
-    UI.setAttributes("DB_rollControl_headerContainer_Brown", {})
-    -->
-    <HorizontalLayout id="DB_rollControl_headerContainer_@@color@@" class="rollControl_headerContainer">
-      <!-- UI.setAttributes("rollControl_rollType_Brown", {}) -->
-      <Text id="rollControl_rollType_@@color@@" class="roll_text roll_header_text roll_type_text" text="" /> <!-- The type of roll, in title case, e.g. "Standard Roll", "Frenzy Roll" -->
-      <!-- UI.setAttributes("DB_rollControl_spacer_header_Brown", {}) -->
-      <Panel id="DB_rollControl_spacer_header_@@color@@" class="rollControl_spacer" />
-      <!-- UI.setAttributes("rollControl_rollInstructions_Brown", {}) -->
-      <Text id="rollControl_rollInstructions_@@color@@" class="roll_text roll_body_text" text="" /> <!-- Instructions for next step, in title case, e.g. "Result Ready — 'CONFIRM' When Done" -->
+<Panel id="rollControl_root_@@color@@" class="rollControl_root" visibility="@@color@@" active="false">
+<!-- ACTIVATE for open roll -->
+  <VerticalLayout class="rollControl_container">
+    <HorizontalLayout class="rollControl_headerContainer">
+      <Text id="rollControl_rollType_@@color@@" class="roll_text roll_header_text roll_type_text" text="" />
+      <!-- The type of roll, in title case, e.g. "Standard Roll", "Frenzy Roll" -->
+      <Panel class="rollControl_spacer" />
+      <Text id="rollControl_rollInstructions_@@color@@" class="roll_text roll_body_text" text="" />
+      <!-- Instructions for next step, in title case, e.g. "Result Ready — 'CONFIRM' When Done" -->
     </HorizontalLayout>
 
-    <!-- UI.setAttributes("DB_rollControl_rollAssembly_Brown", {}) -->
-    <HorizontalLayout id="DB_rollControl_rollAssembly_@@color@@" class="rollControl_rollAssembly">
-      <!-- UI.setAttributes("DB_rollControl_dicePoolDisplay_Brown", {}) -->
-      <HorizontalLayout id="DB_rollControl_dicePoolDisplay_@@color@@" class="rollControl_dicePoolDisplay">
-        <!-- UI.setAttributes("rollControl_oblivRouseDice_Brown", {}) -->
-        <Text id="rollControl_oblivRouseDice_@@color@@" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_oblivRouseDiceText" text=""/> <!-- One '◆' character per Oblivion Rouse Die in pool (empty string for none) -->
-        <!-- UI.setAttributes("rollControl_rouseDice_Brown", {}) -->
-        <Text id="rollControl_rouseDice_@@color@@" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_rouseDiceText" text="" />  <!-- One '◆' character per (non-Blood Surge) Rouse Die in pool (empty string for none) -->
-        <!-- UI.setAttributes("rollControl_bloodSurgeRouseDice_Brown", {}) -->
-        <Text id="rollControl_bloodSurgeRouseDice_@@color@@" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_bloodSurgeRouseDiceText" text="" /> <!-- One '◆' character per Blood Surge Rouse Die in pool (empty string for none) -->
-        <!-- UI.setAttributes("DB_rollControl_spacer_rouse_Brown", {}) -->
-        <Panel id="DB_rollControl_spacer_rouse_@@color@@" class="rollControl_spacer rollControl_rouseSpacer" />
-        <!-- UI.setAttributes("DB_rollControl_standardDicePoolDisplay_Brown", {}) -->
-        <HorizontalLayout id="DB_rollControl_standardDicePoolDisplay_@@color@@" class="rollControl_standardDicePoolDisplay">
-          <!-- UI.setAttributes("rollControl_hungerDice_Brown", {}) -->
-          <Text id="rollControl_hungerDice_@@color@@" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_hungerDiceText" text=""/> <!-- One '◆' character per Hunger Die in pool (empty string for none) -->
-          <!-- UI.setAttributes("rollControl_rageDice_Brown", {}) -->
-          <Text id="rollControl_rageDice_@@color@@" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_rageDiceText" text=""/> <!-- One '◆' character per Rage Die in pool (empty string for none) -->
-          <!-- UI.setAttributes("rollControl_standardDice_Brown", {}) -->
-          <Text id="rollControl_standardDice_@@color@@" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_standardDiceText" text=""/> <!-- One '◆' character per Normal Die in pool (empty string for none) -->
-          <!-- UI.setAttributes("rollControl_wwDice_Brown", {}) -->
-          <Text id="rollControl_wwDice_@@color@@" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_wwDiceText" text=""/> <!-- One '◆' character per Werewolf Die in pool (empty string for none) -->
-        </HorizontalLayout> <!-- A whitespace should be introduced after every fifth die, TOTAL, displayed in the 'standardDicePoolDisplay'-->
-        <!-- UI.setAttributes("DB_rollControl_spacer_pool_Brown", {}) -->
-        <Panel id="DB_rollControl_spacer_pool_@@color@@" class="rollControl_spacer" />
+    <HorizontalLayout class="rollControl_rollAssembly">
+      <HorizontalLayout class="rollControl_dicePoolDisplay">
+        <Text id="rollControl_oblivRouseDice_@@color@@" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_oblivRouseDiceText" text=""/>
+        <!-- One '◆' character per Oblivion Rouse Die in pool (empty string for none) -->
+        <Text id="rollControl_rouseDice_@@color@@" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_rouseDiceText" text="" />
+        <!-- One '◆' character per (non-Blood Surge) Rouse Die in pool (empty string for none) -->
+        <Text id="rollControl_bloodSurgeRouseDice_@@color@@" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_bloodSurgeRouseDiceText" text="" />
+        <!-- One '◆' character per Blood Surge Rouse Die in pool (empty string for none) -->
+        <Panel class="rollControl_spacer rollControl_rouseSpacer" />
+        <HorizontalLayout class="rollControl_standardDicePoolDisplay">
+          <Text id="rollControl_hungerDice_@@color@@" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_hungerDiceText" text=""/>
+          <!-- One '◆' character per Hunger Die in pool (empty string for none) -->
+          <Text id="rollControl_rageDice_@@color@@" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_rageDiceText" text=""/>
+          <!-- One '◆' character per Rage Die in pool (empty string for none) -->
+          <Text id="rollControl_standardDice_@@color@@" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_standardDiceText" text=""/>
+          <!-- One '◆' character per Normal Die in pool (empty string for none) -->
+          <Text id="rollControl_wwDice_@@color@@" class="roll_text rollControl_diceText rollControl_diceSymbols rollControl_wwDiceText" text=""/>
+          <!-- One '◆' character per Werewolf Die in pool (empty string for none) -->
+        </HorizontalLayout>
+        <!-- A whitespace should be introduced after every fifth die, TOTAL, displayed in the 'standardDicePoolDisplay'-->
+        <Panel class="rollControl_spacer" />
       </HorizontalLayout>
     </HorizontalLayout>
 
-    <!-- UI.setAttributes("DB_rollControl_diceImageDisplayStrip_Brown", {}) -->
-    <HorizontalLayout id="DB_rollControl_diceImageDisplayStrip_@@color@@" class="rollControl_diceImageDisplayStrip">
-      <!-- UI.setAttributes("rollControl_rouseDiceContainer_Brown", {}) -->
-      <HorizontalLayout id="rollControl_rouseDiceContainer_@@color@@" class="rollControl_diceContainer rollControl_diceContainer_small" active="false">        <!-- ACTIVATE if Oblivion-Rouse or Rouse Dice in pool, DEACTIVATE if not -->
-        <!-- UI.setAttributes("rollControl_rouseDie_1_Brown", {}) -->
-        <Image id="rollControl_rouseDie_1_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_rouseDie_2_Brown", {}) -->
-        <Image id="rollControl_rouseDie_2_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_rouseDie_3_Brown", {}) -->
-        <Image id="rollControl_rouseDie_3_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_rouseDie_4_Brown", {}) -->
-        <Image id="rollControl_rouseDie_4_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_rouseDie_5_Brown", {}) -->
-        <Image id="rollControl_rouseDie_5_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+    <HorizontalLayout class="rollControl_diceImageDisplayStrip">
+      <HorizontalLayout id="rollControl_rouseDiceContainer_@@color@@" class="rollControl_diceContainer rollControl_diceContainer_small" active="false">
+      <!-- ACTIVATE if Oblivion-Rouse or Rouse Dice in pool, DEACTIVATE if not -->
+        <Image id="rollControl_rouseDie_1_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_rouseDie_2_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_rouseDie_3_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_rouseDie_4_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_rouseDie_5_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
       </HorizontalLayout>
 
-      <!-- UI.setAttributes("rollControl_bloodSurgeRouseDiceContainer_Brown", {}) -->
-      <HorizontalLayout id="rollControl_bloodSurgeRouseDiceContainer_@@color@@" class="rollControl_diceContainer rollControl_diceContainer_small" active="false">        <!-- ACTIVATE if Blood Surge Rouse Dice in pool, DEACTIVATE if not -->
-        <!-- UI.setAttributes("rollControl_bloodSurgeRouseDie_1_Brown", {}) -->
-        <Image id="rollControl_bloodSurgeRouseDie_1_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_bloodSurgeRouseDie_2_Brown", {}) -->
-        <Image id="rollControl_bloodSurgeRouseDie_2_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_bloodSurgeRouseDie_3_Brown", {}) -->
-        <Image id="rollControl_bloodSurgeRouseDie_3_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_bloodSurgeRouseDie_4_Brown", {}) -->
-        <Image id="rollControl_bloodSurgeRouseDie_4_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_bloodSurgeRouseDie_5_Brown", {}) -->
-        <Image id="rollControl_bloodSurgeRouseDie_5_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+      <HorizontalLayout id="rollControl_bloodSurgeRouseDiceContainer_@@color@@" class="rollControl_diceContainer rollControl_diceContainer_small" active="false">
+      <!-- ACTIVATE if Blood Surge Rouse Dice in pool, DEACTIVATE if not -->
+        <Image id="rollControl_bloodSurgeRouseDie_1_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_bloodSurgeRouseDie_2_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_bloodSurgeRouseDie_3_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_bloodSurgeRouseDie_4_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_bloodSurgeRouseDie_5_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
       </HorizontalLayout>
 
-      <!-- UI.setAttributes("DB_rollControl_standardDiceImagesContainer_Brown", {}) -->
-      <HorizontalLayout id="DB_rollControl_standardDiceImagesContainer_@@color@@" class="rollControl_diceContainer">
-        <!-- UI.setAttributes("rollControl_die_1_Brown", {}) -->
-        <Image id="rollControl_die_1_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_die_2_Brown", {}) -->
-        <Image id="rollControl_die_2_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_die_3_Brown", {}) -->
-        <Image id="rollControl_die_3_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_die_4_Brown", {}) -->
-        <Image id="rollControl_die_4_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_die_5_Brown", {}) -->
-        <Image id="rollControl_die_5_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_die_6_Brown", {}) -->
-        <Image id="rollControl_die_6_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_die_7_Brown", {}) -->
-        <Image id="rollControl_die_7_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_die_8_Brown", {}) -->
-        <Image id="rollControl_die_8_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_die_9_Brown", {}) -->
-        <Image id="rollControl_die_9_@@color@@" class="rollControl_die" active="false" />        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_die_10_Brown", {}) -->
-        <Image id="rollControl_die_10_@@color@@" class="rollControl_die" active="false" />       <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_die_11_Brown", {}) -->
-        <Image id="rollControl_die_11_@@color@@" class="rollControl_die" active="false" />       <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_die_12_Brown", {}) -->
-        <Image id="rollControl_die_12_@@color@@" class="rollControl_die" active="false" />       <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_die_13_Brown", {}) -->
-        <Image id="rollControl_die_13_@@color@@" class="rollControl_die" active="false" />       <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_die_14_Brown", {}) -->
-        <Image id="rollControl_die_14_@@color@@" class="rollControl_die" active="false" />       <!-- ACTIVATE and set image, DEACTIVATE if no die -->
-        <!-- UI.setAttributes("rollControl_die_15_Brown", {}) -->
-        <Image id="rollControl_die_15_@@color@@" class="rollControl_die" active="false" />       <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+      <HorizontalLayout class="rollControl_diceContainer">
+        <Image id="rollControl_die_1_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_die_2_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_die_3_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_die_4_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_die_5_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_die_6_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_die_7_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_die_8_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_die_9_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_die_10_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_die_11_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_die_12_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_die_13_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_die_14_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollControl_die_15_@@color@@" class="rollControl_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
       </HorizontalLayout>
     </HorizontalLayout>
 
-    <!-- UI.setAttributes("rollControl_successesContainer_Brown", {}) -->
-    <HorizontalLayout id="rollControl_successesContainer_@@color@@" class="rollControl_successesContainer" active="false">      <!-- ACTIVATE when successes are available to report, DEACTIVATE otherwise -->
-      <!-- UI.setAttributes("DB_rollControl_spacer_successes_Brown", {}) -->
-      <Panel id="DB_rollControl_spacer_successes_@@color@@" class="rollControl_spacer" />
-      <!-- UI.setAttributes("rollControl_successes_Brown", {}) -->
-      <Text id="rollControl_successes_@@color@@" class="roll_text rollControl_successes" text="" />      <!-- Number of successes rolled, as a number -->
-      <!-- UI.setAttributes("rollControl_successesPhrase_Brown", {}) -->
-      <Text id="rollControl_successesPhrase_@@color@@" class="roll_text rollControl_successesPhrase" text="" />  <!-- Set to "Success" if 1 success, "Successes" otherwise  -->
-      <!-- UI.setAttributes("rollControl_difficultyDisplay_Brown", {}) -->
-      <HorizontalLayout id="rollControl_difficultyDisplay_@@color@@" class="rollControl_difficultyDisplayContainer" spacing = "15" active="true">        <!-- DEACTIVATE if no Difficulty -->
-        <!-- UI.setAttributes("DB_rollControl_difficultyVS_Brown", {}) -->
-        <Text id="DB_rollControl_difficultyVS_@@color@@" class="roll_text rollControl_difficultyVS" text="vs. Difficulty" />
-        <!-- UI.setAttributes("rollControl_difficulty_Brown", {}) -->
-        <Text id="rollControl_difficulty_@@color@@" class="roll_text rollControl_difficulty" text="" />        <!-- Difficulty, as a number -->
+    <HorizontalLayout id="rollControl_successesContainer_@@color@@" class="rollControl_successesContainer" active="false">
+    <!-- ACTIVATE when successes are available to report, DEACTIVATE otherwise -->
+      <Panel class="rollControl_spacer" />
+      <Text id="rollControl_successes_@@color@@" class="roll_text rollControl_successes" text="" />
+      <!-- Number of successes rolled, as a number -->
+      <Text id="rollControl_successesPhrase_@@color@@" class="roll_text rollControl_successesPhrase" text="" />
+      <!-- Set to "Success" if 1 success, "Successes" otherwise  -->
+      <HorizontalLayout id="rollControl_difficultyDisplay_@@color@@" class="rollControl_difficultyDisplayContainer" spacing = "15" active="true">
+      <!-- DEACTIVATE if no Difficulty -->
+        <Text class="roll_text rollControl_difficultyVS" text="vs. Difficulty" />
+        <Text id="rollControl_difficulty_@@color@@" class="roll_text rollControl_difficulty" text="" />
+        <!-- Difficulty, as a number -->
       </HorizontalLayout>
-      <!-- UI.setAttributes("DB_rollControl_spacer_successes2_Brown", {}) -->
-      <Panel id="DB_rollControl_spacer_successes2_@@color@@" class="rollControl_spacer" />
+      <Panel class="rollControl_spacer" />
     </HorizontalLayout>
 
-    <!--
-UI.setAttributes("rollControl_resultDisplayContainer_Brown", {})
-    -->
-    <HorizontalLayout id="rollControl_resultDisplayContainer_@@color@@" class="rollControl_resultDisplayContainer" active="false">      <!-- ACTIVATE if a result is available to display, deactivate otherwise -->
-      <!-- UI.setAttributes("DB_rollControl_spacer_result_Brown", {active = "false"}) -->
-      <Panel id="DB_rollControl_spacer_result_@@color@@" class="rollControl_spacer" />
-      <!-- UI.setAttributes("rollControl_resultDisplay_Brown", {}) -->
-      <Text id="rollControl_resultDisplay_@@color@@" class="roll_text rollControl_resultDisplay" text="" />       <!-- Result in ALL CAPS followed by margin (if any) as a signed integer. Class should be set via `UI.setClass` to "`roll_text rollControl_resultDisplay rollControl_result<resultClass>`". Margin should use actual minus sign for negative numbers, i.e. '−' not '-'  -->
-      <!--
-      UI.setClass("rollControl_resultDisplay_Purple", "roll_text rollControl_resultDisplay rollControl_result_bestialFailure")
-      UI.setAttributes("rollControl_resultDisplay_Purple", {text = "BESTIAL FAILURE −15", rectAlignment = "MiddleCenter"})
-
-      UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_totalFailure")
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "TOTAL FAILURE −15"})
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "TOTAL FAILURE −15", rectAlignment = "MiddleCenter"})
-
-      UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_totalBestialFailure")
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "TOTAL BESTIAL FAILURE −15"})
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "TOTAL BESTIAL FAILURE −15", rectAlignment = "MiddleCenter"})
-
-      UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_brutalFailure")
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "BRUTAL FAILURE −5"})
-
-      UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_brutalOutcome")
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "BRUTAL OUTCOME +12"})
-
-      UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_criticalWin")
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "CRITICAL WIN +8"})
-
-      UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_messyCritical")
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "MESSY CRITICAL +8"})
-
-      UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_failure")
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "FAILURE −8"})
-
-      UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_win")
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "WIN +2"})
-
-       -->
-      <!-- UI.setAttributes("DB_rollControl_spacer_result2_Brown", {active = "false"}) -->
-      <Panel id="DB_rollControl_spacer_result2_@@color@@" class="rollControl_spacer" />
+    <HorizontalLayout id="rollControl_resultDisplayContainer_@@color@@" class="rollControl_resultDisplayContainer" active="false">
+    <!-- ACTIVATE if a result is available to display, deactivate otherwise -->
+      <Panel class="rollControl_spacer" />
+      <Text id="rollControl_resultDisplay_@@color@@" class="roll_text rollControl_resultDisplay" text="" />
+      <!-- Result in ALL CAPS followed by margin (if any) as a signed integer. Class should be set via `UI.setClass` to "`roll_text rollControl_resultDisplay rollControl_result<resultClass>`". Margin should use actual minus sign for negative numbers, i.e. '−' not '-'  -->
+      <Panel class="rollControl_spacer" />
     </HorizontalLayout>
 
-    <!-- UI.setAttributes("DB_rollControl_verticalSpacer_Brown", {}) -->
-    <Panel id="DB_rollControl_verticalSpacer_@@color@@" class="rollControl_verticalSpacer" />
+    <Panel class="rollControl_verticalSpacer" />
 
-    <!-- UI.setAttributes("DB_rollControl_buttonContainer_Brown", {}) -->
-    <HorizontalLayout id="DB_rollControl_buttonContainer_@@color@@" class="rollControl_buttonContainer">      <!-- Activate/Deactivate buttons as they become available to the player -->
-      <!-- UI.setAttributes("rollControl_btnRoll_Brown", {}) -->
+    <HorizontalLayout class="rollControl_buttonContainer">      <!-- Activate/Deactivate buttons as they become available to the player -->
       <Button id="rollControl_btnRoll_@@color@@" class="rollControl_button rollControl_btnRoll" onClick="HUD_rollRollButton" text="ROLL" active="true" />
-      <!-- UI.setAttributes("rollControl_btnHalf_Brown", {}) -->
       <Button id="rollControl_btnHalf_@@color@@" class="rollControl_button rollControl_btnHalf" onClick="HUD_rollTakeHalf" text="TAKE HALF" active="false" />
-      <!-- UI.setAttributes("rollControl_btnWP_Brown", {}) -->
       <Button id="rollControl_btnWP_@@color@@" class="rollControl_button rollControl_btnWP" onClick="HUD_rollSpendWP" text="SPEND WP" active="false" />
-      <!-- UI.setAttributes("rollControl_btnConfirm_Brown", {}) -->
       <Button id="rollControl_btnConfirm_@@color@@" class="rollControl_button rollControl_btnConfirm" onClick="HUD_rollConfirm" text="CONFIRM" active="false" />
-      <!-- UI.setAttributes("rollControl_btnOblivHunger_Brown", {}) -->
       <Button id="rollControl_btnOblivHunger_@@color@@" class="rollControl_button rollControl_btnOblivHunger" onClick="HUD_rollConfirmOblivChoice" text="HUNGER" active="false" />
-      <!-- UI.setAttributes("rollControl_btnOblivStain_Brown", {}) -->
       <Button id="rollControl_btnOblivStain_@@color@@" class="rollControl_button rollControl_btnOblivStain" onClick="HUD_rollConfirmOblivChoice" text="STAIN" active="false" />
-      <!-- UI.setAttributes("rollControl_btnBrutalFail_Brown", {}) -->
       <Button id="rollControl_btnBrutalFail_@@color@@" class="rollControl_button rollControl_btnBrutalFail" onClick="HUD_rollConfirmBrutalChoice" text="FAILURE" active="false" />
-      <!-- UI.setAttributes("rollControl_btnBrutalViolence_Brown", {}) -->
       <Button id="rollControl_btnBrutalViolence_@@color@@" class="rollControl_button rollControl_btnBrutalViolence" onClick="HUD_rollConfirmBrutalChoice" text="VIOLENCE" active="false" />
-      <!-- UI.setAttributes("rollControl_btnCancel_Brown", {}) -->
       <Button id="rollControl_btnCancel_@@color@@" class="rollControl_button rollControl_btnCancel" onClick="HUD_rollCancel" text="CANCEL" active="true" />
     </HorizontalLayout>
 
