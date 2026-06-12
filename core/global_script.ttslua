@@ -3348,7 +3348,9 @@ local function spawnActivePoolDiceForActive(color)
         DBV.reconcileForPlayer(color, active)
         didSpawn = spawnMissingPoolDiceForColor(color)
     end
-    if DK.poolTotal(pool) > 0 then
+    -- Re-read after autoSpawn: bag hooks sync pool via GlobalOnBagDieSpawned (stagedCount).
+    active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active ~= nil and (didSpawn or DK.poolTotal(DK.normalizePool(active.pool)) > 0) then
         openDiceTrayOnFirstPoolDie(color, active)
     end
     return didSpawn
