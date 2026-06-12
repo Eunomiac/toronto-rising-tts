@@ -4,7 +4,7 @@ Source log: [`Dice E2E Run 1.txt`](Dice%20E2E%20Run%201.txt) (Suite J step 14/54
 
 **Test/playbook fixes applied in the same pass:** J2 face map + success math, M1 result class, O2a margin, `e2ePoolStagedMismatchLines` rouse-bag staging (K2h).
 
-This document lists failures that look like **game script behavior** (or human execution), not test configuration. Do **not** treat these as fixed until re-run after Save & Play.
+**Run 1:** [`Dice-E2E-Run-1-Findings.md`](Dice-E2E-Run-1-Findings.md) — K1b/P-F script bugs partially fixed in Run 2 pass.
 
 ---
 

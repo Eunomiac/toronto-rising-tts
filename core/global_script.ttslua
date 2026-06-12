@@ -893,10 +893,14 @@ function GlobalOnBagDieSpawned(params)
     local ok = false
     if params.bloodSurgeRouse == true then
         ok = RC.adjustPoolKindCount(color, DK.KIND_BLOOD_SURGE_ROUSE, 1)
+    elseif type(stagedCount) == "number" then
+        -- Bag spawns always pass stagedCount; sync pool to staged dice (avoids double-count
+        -- when initiateRoll already preset pool.rouse / pool.oblivRouse).
+        ok = RC.setPoolKindCount(color, dieType, stagedCount)
     elseif dieType == DK.KIND_ROUSE then
         ok = RC.adjustPoolKindCount(color, DK.KIND_ROUSE, 1)
-    elseif type(stagedCount) == "number" then
-        ok = RC.setPoolKindCount(color, dieType, stagedCount)
+    elseif dieType == DK.KIND_OBLIV_ROUSE then
+        ok = RC.adjustPoolKindCount(color, DK.KIND_OBLIV_ROUSE, 1)
     end
 
     if ok and prevTotal == 0 then

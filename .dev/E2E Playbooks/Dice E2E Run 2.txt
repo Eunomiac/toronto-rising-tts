@@ -1,0 +1,323 @@
+(NOTE: I'm only pasting in the full test suites that contained errors.)
+
+## SUITE H, STEP H2b
+
+```
+********** Dice E2E: SUITE H - Take Half ***********************************************************
+========== H1 - Take Half with ST difficulty (explicit margin) =====================================
+[DEBUG.rollCancelAll] Cancelled 1 active roll(s).
+[DEBUG.rollTest] Brown PRE_ROLL — diff=4 type=standard label='E2E Take Half'
+[rollE2eSetPoolAndSpawn] Brown: pool normal=4 hunger=0 spawned
+[rollConfirm] PASS — Brown
+====================================================================================================
+========== H1b - Take Half, no ST difficulty =======================================================
+[DEBUG.rollCancelAll] Cancelled 1 active roll(s).
+[DEBUG.rollTestNoDiff] Brown PRE_ROLL — no diff type=standard label='E2E H1b no diff'
+[rollE2eSetPoolAndSpawn] Brown: pool normal=4 hunger=0 spawned
+[rollConfirm] PASS — Brown
+[DEBUG.rollForceConfirm] Brown: roll confirmed and resolved
+[rollE2eExpectBroadcast] PASS
+---------- [HUMAN] Broadcast shows 4 normal die slots — 2 success (ankh), 2 blank ------------------
+[RunTest] Dice step 7/54
+====================================================================================================
+========== H1c - Take Half, zero successes (pool 1) ================================================
+[DEBUG.rollCancelAll] Cancelled 0 active roll(s).
+[DEBUG.rollTestNoDiff] Brown PRE_ROLL — no diff type=standard label='E2E H1c zero half'
+[rollE2eSetPoolAndSpawn] Brown: pool normal=1 hunger=0 spawned
+[rollConfirm] PASS — Brown
+====================================================================================================
+========== H2 - Take Half + rouse dice (ST difficulty) =============================================
+[DEBUG.rollCancelAll] Cancelled 1 active roll(s).
+[DEBUG.rollTest] Brown PRE_ROLL — diff=3 type=standard label='E2E Take Half Rouse'
+[rollE2eSetPoolAndSpawn] Brown: pool normal=4 hunger=0 spawned
+[rollE2eAddPoolKindSpawn] Brown: rouse=1 spawned
+[rollConfirm] PASS — Brown
+[rollConfirm] PASS — Brown
+---------- [HUMAN] Throw Rouse dice (or preset + settle) -------------------------------------------
+[RunTest] Dice step 8/54
+[RC] recalculate: Brown took half, no dice to read
+[DEBUG.rollSetFaces] Brown: set 1 face(s); recalculate returned false (phase=postRoll, takeHalfAwaitingRouse=nil)
+[RC] recalculate: Brown took half, no dice to read
+[rollConfirm] PASS — Brown
+---------- [HUMAN] ST clicks Confirm on Brown (or rollForceConfirm) --------------------------------
+[RunTest] Dice step 9/54
+[rollE2eExpectBroadcast] PASS
+====================================================================================================
+========== H2b - Take Half + rouse, no ST difficulty ===============================================
+[DEBUG.rollCancelAll] Cancelled 0 active roll(s).
+[DEBUG.rollTestNoDiff] Brown PRE_ROLL — no diff type=standard label='E2E H2b no diff rouse'
+[rollE2eSetPoolAndSpawn] Brown: pool normal=4 hunger=0 spawned
+[rollE2eAddPoolKindSpawn] Brown: rouse=1 spawned
+[rollConfirm] PASS — Brown
+[DEBUG.rollSetFaces] WARN: no rouse die #1 on table for face 4
+[DEBUG.rollSetFaces] FAIL — Brown: set 0/1 face(s) (missing dice or face snap failed)
+[rollConfirm] FAIL — Brown
+  1) phase: got rolling, want postRoll
+[RC] confirmRoll: Brown roll is not in POST_ROLL (phase: rolling)
+[DEBUG.rollForceConfirm] Brown: confirm failed — is the roll in POST_ROLL?
+[rollE2eExpectBroadcast] FAIL
+  1) rollResult_class: got "FAILURE", want contains "Win"
+  2) rollResult_margin: expected empty, got "Margin: −1"
+====================================================================================================
+****************************************************************************************************
+```
+
+### User Comments
+
+Not sure what happened in H2b, as the test suite continued automating through to the next test so I was unable to check the game state. If you're unable to figure out the issue from the above result, give me a series of step-by-step instructions to reproduce the same roll sequence in TTS and I'll report back.
+
+## SUITE J, STEP J2
+
+```
+********** Dice E2E: SUITE J - Compound roll (rouse in standard pool) ******************************
+========== J1 - One rouse in standard pool =========================================================
+[DEBUG.rollCancelAll] Cancelled 1 active roll(s).
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E J1 Compound'
+[rollE2eSetPoolAndSpawn] Brown: pool normal=2 hunger=0 spawned
+[rollE2eAddPoolKindSpawn] Brown: rouse=1 spawned
+[DEBUG.rollSetFaces] Brown: set 3 face(s); recalculated.
+[rollE2eSettlePresetCheck] PASS — preset faces applied and settle triggered for Brown
+[rollConfirm] PASS — Brown
+---------- [HUMAN] Click Confirm once --------------------------------------------------------------
+[RunTest] Dice step 14/54
+====================================================================================================
+========== J2 - Blood surge + compound (same roll) =================================================
+[DEBUG.rollCancelAll] Cancelled 0 active roll(s).
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E J2 Surge compound'
+---------- [HUMAN] Left-click Hunger bag 1 time ----------------------------------------------------
+[RunTest] Dice step 15/54
+[rollConfirm] PASS — Brown
+[DEBUG.rollSetFaces] Brown: set 3 face(s); recalculated.
+[rollE2eSettlePresetCheck] PASS — preset faces applied and settle triggered for Brown
+[rollConfirm] FAIL — Brown
+  1) rouseOutcomeStrips: no strip labeled Rouse
+---------- [HUMAN] Click Confirm once --------------------------------------------------------------
+[RunTest] Dice step 16/54
+====================================================================================================
+****************************************************************************************************
+```
+
+### User Comments
+
+If the test is expecting the results of the Rouse Check to be displayed somewhere in the player roll control panel, it shouldn't: There is no rouse result printed out in the control panel, only in the broadcast message.
+
+## SUITE K, STEP K1a - INVALID TEST
+
+
+```
+********** Dice E2E: SUITE K - Dice bag clicks (left vs right) *************************************
+========== K1a - Hunger bag to STANDARD (no active roll) ===========================================
+[DEBUG.rollCancelAll] Cancelled 0 active roll(s).
+---------- [HUMAN] Left-click Hunger bag 1 time (no roll active) -----------------------------------
+```
+
+### User Comments
+
+This test cannot be completed as written: The Hunger dice bag is disabled and inaccessible while no roll is active.
+
+I was able to get the test to "PASS" anyways by first opening a Standard Roll for the player, which activated the Hunger bag. Then I was able to click it once, then `RunTest()` to proceed as follows:
+
+```
+[RunTest] Dice step 17/54
+[rollConfirm] PASS — Brown
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+```
+
+## SUITE K, STEP K1b
+
+```
+========== K1b - Rouse bag to ROUSE + 1 die ========================================================
+[DEBUG.rollCancelAll] Cancelled 0 active roll(s).
+---------- [HUMAN] Left-click Rouse bag 1 time -----------------------------------------------------
+[RunTest] Dice step 18/54
+[rollConfirm] FAIL — Brown
+  1) active.pool.rouse: got 2, want 1
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+```
+
+### User Comments
+
+Unsure what happened here or what the test had done with the roll, or what it expected, but clicking the Rouse bag once with no active roll should add a single die to the pool. It _looked_ like a single die was added, but I had looked away from the screen to run the `RunTest()` command and didn't see what the pool was at the time the test failed (as it was cleared immediately thereafter). Did something in the test add another die, or was I perhaps mistaken about seeing only one die in the pool before I turned away to `RunTest()`?
+
+## SUITE K, STEP K1c
+
+```
+========== K1c - Normal bag to STANDARD ============================================================
+[DEBUG.rollCancelAll] Cancelled 0 active roll(s).
+---------- [HUMAN] Left-click Normal bag 1 time ----------------------------------------------------
+[RunTest] Dice step 19/54
+[rollConfirm] FAIL — Brown
+  1) phase: got setup, want preRoll
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+```
+
+### User Comments
+
+This test is incorrect. When a player clicks their Normal bag with no roll active, the baton is passed to the Storyteller to "OPEN" the roll: Immediately after clicking the Normal bag, the roll should have been in the setup phase (as the test detected), not preRoll (which it was expecting).
+
+## SUITE K, STEP K2g-Brown - INVALID TEST
+
+```
+========== K2g-Brown - Rouse blocks Oblivion-Rouse (silent fail) ===================================
+[DEBUG.rollTest] Brown PRE_ROLL — diff=2 type=standard label='E2E K2g Brown'
+---------- [HUMAN] Left-click Rouse bag 1 time, then left-click Oblivion-Rouse bag 1 time ----------
+```
+
+### User Comments
+
+The Brown player does not have an Oblivion-Rouse back to interact with, only the Purple player does. Any tests involving the Oblivion-Rouse bag must use the Purple color, not Brown.
+
+## SUITE K, STEP K2g-Purple - INVALID TEST
+
+```
+========== K2g-Purple - Oblivion-Rouse blocks Rouse (silent fail) ==================================
+[DEBUG.rollTest] Purple PRE_ROLL — diff=2 type=standard label='E2E K2g Purple'
+---------- [HUMAN] Left-click Oblivion-Rouse bag 1 time, then left-click Rouse bag 1 time ----------
+```
+
+### User Comments
+
+Once the Oblivion-Rouse bag is clicked and an Oblivion Rouse die is added to the pool, the Rouse dice bag is deactivated and hidden -- it cannot be clicked. This is expected behavior; the test should instead ask the user to confirm the Oblivion-Rouse bag is uninteractable.
+
+(Also, these tests are out of order: "K2g" comes before "K2h" and "K2i")
+
+## SUITE K, STEP K3a, K3b, K3c
+
+```
+========== K3a - Normal bag promotes to compound standard roll =====================================
+[RC] openRoll: Brown roll is not in SETUP (phase: preRoll)
+[DEBUG.rollTest] Brown PRE_ROLL — diff=1 type=rouse label='E2E K3a'
+---------- [HUMAN] Left-click Rouse bag 2 times, then left-click Normal bag 1 time -----------------
+[RunTest] Dice step 32/54
+[rollConfirm] PASS — Brown
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== K3b - Rouse bag right removes last rouse ================================================
+[RC] openRoll: Brown roll is not in SETUP (phase: preRoll)
+[DEBUG.rollTest] Brown PRE_ROLL — diff=1 type=rouse label='E2E K3b'
+---------- [HUMAN] Left-click Rouse bag 2 times, then right-click Rouse bag 1 time -----------------
+[RunTest] Dice step 33/54
+[rollConfirm] PASS — Brown
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+========== K3c - Oblivion dedicated: Normal promotes (Purple) ======================================
+[RC] openRoll: Purple roll is not in SETUP (phase: preRoll)
+[DEBUG.rollTest] Purple PRE_ROLL — diff=1 type=rouseOblivion label='E2E K3c'
+---------- [HUMAN] Left-click Oblivion-Rouse bag 1 time, then left-click Normal bag 1 time ---------
+[RunTest] Dice step 34/54
+[rollConfirm] FAIL — Purple
+  1) active.pool.oblivRouse: got 1, want 2
+[DEBUG.rollCancel] Purple: roll cancelled
+====================================================================================================
+```
+
+### User Comments
+
+CONFIRMED BUG: A Rouse Check should be autopopulated with a single Rouse die when it is opened. This was reflected in the player control panel (i.e. after clicking the Rouse bag twice, it showed three diamonds in the dice pool strip -- the automatic 1, plus the 2 added by the clicks). However, the autopopulated die was never spawned, nor was the dice tray opened -- the first click spawned the first die and the dice tray, the second click added a second die, for a total of two dice spawned but three dice displayed in the player roll control panel.
+
+I am not sure what the tests were checking to result in a "PASS", or what the test was expecting.  Taking the K3a test as an example, assuming the test had initialized a Rouse Check roll before asking me to click anything, it should have expected to find three Rouse Dice in the pool.  If the test only opened the Check in a way that bypassed the spawning in of the automatic die (and the opening of the dice tray), then it should have expected to find two Rouse Dice in the pool. Either way, the mismatch between dice spawned (2) and dice displayed in the control panel (3) is a confirmed bug.
+
+The same issue presented for test K3b -- the Rouse Check did not autospawn the automatic rouse die, leading to a mismatch between spawned dice and displayed dice.
+
+The same issue presented again for test K3c -- the Oblivion Rouse Check did not autospawn the automatic oblivion-rouse die, leading to a mismatch between spawned dice and displayed dice. However, this time the test appears to have expected the two oblivion-rouse dice that should have been there (one automatic, the other from the single click to the oblivion-rouse bag), and appropriately failed the test when it found only the one.
+
+## SUITE L, STEP L1c
+
+```
+********** Dice E2E: SUITE L - Baton passing and permanent automation ******************************
+========== L1a - Setup: baton with storyteller =====================================================
+[DEBUG.rollCancel] Brown: no active roll to cancel
+[rollConfirm] PASS — Brown
+====================================================================================================
+========== L1b - Open roll: baton to player ========================================================
+---------- [HUMAN] ST: Set difficulty 2 on dashboard for Brown, then click Open roll ---------------
+[RunTest] Dice step 36/54
+[rollConfirm] PASS — Brown
+====================================================================================================
+========== L1c - Roll: phases through rolling to postRoll ==========================================
+---------- [HUMAN] Left-click Normal bag 2 times, click Roll, wait for settle ----------------------
+[RunTest] Dice step 37/54
+[rollConfirm] FAIL — Brown
+  1) phase: got preRoll, want postRoll
+M.setCamera: Invalid player object
+[DEBUG.rollCancel] Brown: roll cancelled
+====================================================================================================
+```
+
+### User Comments
+
+Strange behavior here: No player roll control panel appeared after opening the roll, and I was unable to "click Roll" as instructed. The "FAIL" came after I simply ran `RunTest()` without doing anything (so the FAIL itself is expected; the missing control panel is not).
+
+## SUITE O
+
+### User General Comments
+
+I think this suite can be streamlined with a lot less user interaction -- only when the test is actually _testing_ the interactability of elements should be sequence be interrupted; for testing results or other things, the same process used to streamline Suite G (as an example) should be used.
+
+## SUITE O, STEP O1b
+
+```
+========== O1b - Slot persists until CLEAR =========================================================
+[DEBUG.rollCancel] Black: no active roll to cancel
+[DEBUG.rollStTest] initiate: ok
+[rollStConfirm] PASS
+---------- [HUMAN] Left-click Normal bag 2 times in ST drawer; set difficulty 2; Roll, settle, Confirm on ST dashboard
+M.setCamera: No camera angle data found for player 'Black' and camera mode 'rollBlack'
+[RunTest] Dice step 44/54
+[rollStConfirm] FAIL
+  1) liveSlotIndex: got nil, want 1
+---------- [HUMAN] Click CLEAR on slot 1 in ST dashboard -------------------------------------------
+```
+
+### User Comments
+
+After Confirming the first roll, the dice tray, dice, and row in the Storyteller roll control panel all remained (as is expected behavior). I'm not sure what `liveSlotIndex` is checking for -- if it's checking for which roll is "live", then it should have gotten `nil` because no roll was live.  This isn't the same as checking which dice drawers are occupied (or it shouldn't be) -- a roll can occupy a dice drawer slot without being live.
+
+## SUITE P, STEP P-C
+
+```
+========== P-C - 3 and 10: pending Hunger vs Stain =================================================
+[DEBUG.rollCancel] Purple: no active roll to cancel
+Set Purple player (ID: 76561199015564654) hunger to 1
+[setHumanityStains] Purple stains=2
+[RC] openRoll: Purple roll is not in SETUP (phase: preRoll)
+[DEBUG.rollTest] Purple PRE_ROLL — diff=1 type=rouseOblivion label='E2E P-C'
+---------- [HUMAN] Left-click Oblivion-Rouse bag 2 times -------------------------------------------
+[RunTest] Dice step 51/54
+[DEBUG.rollSetFaces] Purple: roll phase is preRoll (need rolling or postRoll)
+[rollConfirm] FAIL — Purple
+  1) expected active roll, got nil
+[DEBUG.rollCancel] Purple: no active roll to cancel
+====================================================================================================
+```
+
+### User Comments
+
+No idea what happened here -- sequence moved by really quickly. Check the test and see if corrections to the Rouse Dice logic above might resolve whatever caused this test to FAIL; if you're unclear on the issue, let me know and I'll manually run the test and watch more closely.
+
+## SUITE P, STEP P-F
+
+```
+========== P-F - Oblivion in STANDARD compound (Purple) ============================================
+[DEBUG.rollCancel] Purple: no active roll to cancel
+Set Purple player (ID: 76561199015564654) hunger to 1
+[setHumanityStains] Purple stains=2
+[rollConfirmTracker] PASS — Purple
+[DEBUG.rollTest] Purple PRE_ROLL — diff=2 type=standard label='E2E P-F compound'
+---------- [HUMAN] Left-click Normal bag 2 times, Oblivion-Rouse bag 2 times; Roll and wait for settle
+[RunTest] Dice step 54/54
+[DEBUG.rollSetFaces] Purple: set 4 face(s); recalculated.
+[rollConfirm] PASS — Purple
+[rollConfirmTracker] FAIL — Purple
+  1) hunger: got 0, want 1
+[RC] startRolling: Purple roll is not in PRE_ROLL (phase: postRoll)
+[DEBUG.rollCancel] Purple: roll cancelled
+====================================================================================================
+```
+
+### User Comments
+
+Not sure what the test set to expect that result; same issues with testing as above, and I'll rerun this one manually as well if you need more clarity.

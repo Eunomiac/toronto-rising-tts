@@ -2,7 +2,7 @@
 
 Reference for the lean test playbook `Dice-E2E.md`. Run tests in order from Suite 0.
 
-**Run log reviews:** see [`Dice-E2E-Run-1-Findings.md`](Dice-E2E-Run-1-Findings.md) for script-vs-test triage from the first full suite pass.
+**Run log reviews:** [`Dice-E2E-Run-1-Findings.md`](Dice-E2E-Run-1-Findings.md) (Run 1), [`Dice-E2E-Run-2-Findings.md`](Dice-E2E-Run-2-Findings.md) (Run 2, annotated).
 
 ## Running the playbook (streamlined blocks)
 
@@ -86,8 +86,9 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 | `rollE2eSpawnActivePool(color)`                                         | Spawn missing PRE_ROLL pool dice (dedicated rouse / after `rollTest`)                                       |
 | `rollE2ePrepareRollRelease(color)`                                      | Dice-tray camera + open drawer (mirrors panel Roll prep; used before Take Half + rouse release)             |
 | `rollE2eSettlePresetCheck(color, faces, { skipSpawn = true })`          | After spawn + wait: release, `startRolling`, preset faces, settle (no panel Roll)                           |
+| `rollE2eConfirmBagEnabled(color, dieKind, wantEnabled)`                  | Assert player bag enabled/disabled at rest Y (K1a, K2g-Purple)                                              |
 | `rollE2eExpectBroadcast({ color, visible, resultClass?, successes?, margin?, marginAbsent? })` | Assert shared `rollResult_*` panel after Confirm / `rollForceConfirm`; defer to the **next** RunSequence step after confirm. Pass **`color`** explicitly on human-confirm steps; automation may omit it only when the prior function called `rollForceConfirm` on that seat. History tail fallback is **seat-scoped** (no cross-player newest scan). `resultClass` shorthands (`Win`, `Failure`, …) match `C.ResultClassLabel` text. |
-| `rollStConfirm({ liveSlotIndex?, initiateBlocked? })`                    | ST slot assertions                                                          |
+| `rollStConfirm({ liveSlotIndex?, liveSlotIndexAbsent?, slotNotCleared?, initiateBlocked? })` | ST slots: `liveSlotIndex` while rolling; after Confirm use `liveSlotIndexAbsent` + `slotNotCleared` for occupied drawer |
 | `setHumanityStains(color, n)` / `setWillpowerSuperficial(color, n)`      | Seed tracker before outcome tests                                           |
 | `printHeader(text, level)`                                               | E2E console banner (level 1 `*`, 2 `=`, 3 `-`; 100 chars when short, else `10pad + " " + text`) |
 | `RunTest("Dice")` / `RunTest()`                                          | Console step driver over generated `lib/e2e_playbook_dice.ttslua` (build: `npm run e2e-playbook:generate`) |

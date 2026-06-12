@@ -1089,6 +1089,23 @@ function DEBUG.rollE2eSeatPrep(targetColor)
     rollE2eSeatPrepInternal(targetColor)
 end
 
+--- Spawns staged dice for auto-populated roll types after rollTest / rollTestNoDiff openRoll.
+-- @param color string
+-- @param rollType string  C.RollType value
+local function rollE2eSpawnDefaultPoolIfNeeded(color, rollType)
+    local RO = require("lib.roll_options")
+    if not RO.isRouseFamilyRoll(rollType)
+        and rollType ~= C.RollType.SIMPLE_CHECK
+        and rollType ~= C.RollType.REMORSE then
+        return
+    end
+    if Global == nil or type(Global.call) ~= "function" then
+        print("[rollE2eSpawnDefaultPoolIfNeeded] WARN: Global.call unavailable — pool die may be missing")
+        return
+    end
+    Global.call("GlobalSpawnDefaultPoolDiceForActive", { color = color })
+end
+
 --- Initiates, opens, and arms a roll for a player in one shot.
 -- Always runs E2E seat prep: Host changeColor → target seat, loading overlay hide, camera spoof.
 --
@@ -1133,6 +1150,7 @@ function DEBUG.rollTest(color, difficulty, rollType, label, hungerLevel)
     end
     RC.openRoll(color)
     RC.setDifficulty(color, diff)
+    rollE2eSpawnDefaultPoolIfNeeded(color, rType)
 
     print(string.format("[DEBUG.rollTest] %s PRE_ROLL — diff=%d type=%s label='%s'", color, diff, rType, lbl))
 end
@@ -1174,6 +1192,7 @@ function DEBUG.rollTestNoDiff(color, rollType, label, hungerLevel)
         return
     end
     RC.openRoll(color)
+    rollE2eSpawnDefaultPoolIfNeeded(color, rType)
 
     print(string.format("[DEBUG.rollTestNoDiff] %s PRE_ROLL — no diff type=%s label='%s'", color, rType, lbl))
 end
@@ -1651,8 +1670,36 @@ function DEBUG.setWillpowerSuperficial(color, value)
     print(string.format("[setWillpowerSuperficial] %s superficial=%d", color, n))
 end
 
+--- Asserts a player dice bag is enabled/disabled (visible at rest Y).
+-- @param color string
+-- @param dieKind string  DK.KIND_* value
+-- @param wantEnabled boolean
+-- @return boolean
+-- @usage lua rollE2eConfirmBagEnabled("Brown", "hunger", false)
+function DEBUG.rollE2eConfirmBagEnabled(color, dieKind, wantEnabled)
+    if type(color) ~= "string" or type(dieKind) ~= "string" or type(wantEnabled) ~= "boolean" then
+        print("[rollE2eConfirmBagEnabled] FAIL: usage rollE2eConfirmBagEnabled(color, dieKind, wantEnabled)")
+        return false
+    end
+    if Global == nil or type(Global.call) ~= "function" then
+        print("[rollE2eConfirmBagEnabled] FAIL: Global.call unavailable")
+        return false
+    end
+    local got = Global.call("GlobalIsPlayerDiceBagEnabled", { color = color, dieKind = dieKind }) == true
+    if got == wantEnabled then
+        print(string.format(
+            "[rollE2eConfirmBagEnabled] PASS — %s %s enabled=%s",
+            color, dieKind, tostring(got)))
+        return true
+    end
+    print(string.format(
+        "[rollE2eConfirmBagEnabled] FAIL — %s %s: got enabled=%s, want %s",
+        color, dieKind, tostring(got), tostring(wantEnabled)))
+    return false
+end
+
 --- Asserts gameState.storytellerRolls fields for E2E.
--- @param expected table  { liveSlotIndex?, initiateBlocked?, initiateLabel?, initiateRollType? }
+-- @param expected table  { liveSlotIndex?, slotNotCleared?, initiateBlocked?, initiateLabel?, initiateRollType? }
 -- @return boolean pass
 -- @usage lua rollStConfirm({ liveSlotIndex = 1 })
 function DEBUG.rollStConfirm(expected)
@@ -1672,6 +1719,15 @@ function DEBUG.rollStConfirm(expected)
         if actual ~= expected.liveSlotIndex then
             failures[#failures + 1] = "liveSlotIndex: got " .. tostring(actual)
                 .. ", want " .. tostring(expected.liveSlotIndex)
+        end
+    end
+    if type(expected.slotNotCleared) == "number" then
+        local idx = expected.slotNotCleared
+        local slot = type(root.slots) == "table" and root.slots[idx] or nil
+        if type(slot) ~= "table" or slot.cleared == true then
+            failures[#failures + 1] = string.format(
+                "slotNotCleared: slot %d should remain occupied (cleared=false), got %s",
+                idx, type(slot) == "table" and tostring(slot.cleared) or "no slot")
         end
     end
     if expected.initiateBlocked == true then
@@ -4701,6 +4757,7 @@ rollE2eSettlePresetCheck  = DEBUG.rollE2eSettlePresetCheck
 rollE2eWaitForDiceTray    = DEBUG.rollE2eWaitForDiceTray
 rollE2eSpawnActivePool    = DEBUG.rollE2eSpawnActivePool
 rollE2ePrepareRollRelease = DEBUG.rollE2ePrepareRollRelease
+rollE2eConfirmBagEnabled   = DEBUG.rollE2eConfirmBagEnabled
 rollE2eExpectBroadcast    = DEBUG.rollE2eExpectBroadcast
 tableRotateTo = DEBUG.tableRotateTo
 spawnCustomUiUploadBatchFromManifest = DEBUG.spawnCustomUiUploadBatchFromManifest

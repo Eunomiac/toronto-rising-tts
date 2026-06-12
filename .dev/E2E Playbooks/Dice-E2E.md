@@ -3,7 +3,7 @@
 This has been wired into RunTest. Initialize with `RunTest("Dice")` or `RunTest("Dice", 8)` to start at step 8, then `RunTest()` after each step.
 
 RunTest("Dice")
-RunTest("Dice", 13)
+RunTest("Dice", 47)
 RunTest()
 
 
@@ -566,6 +566,9 @@ U.RunSequence({
     rollE2ePrepareRollRelease("Brown")
     RC.takeHalf("Brown")
     rollConfirm("Brown", { phase = "rolling", active = { takeHalfAwaitingRouse = true } })
+  end,
+  rollE2eWaitForDiceTray,
+  function()
     rollSetFaces("Brown", { rouse = { 4 } })
     RC.onDiceSettled("Brown")
     rollConfirm("Brown", {
@@ -809,7 +812,7 @@ U.RunSequence({
       phase = "postRoll",
       rouseOutcomeStripsMin = 1,
       active = { result = { resultClass = "win", successes = 2 } },
-      rouseStripLabel = "Rouse",
+      rouseStripLabel = "Blood Surge Rouse",
     })
   end,
   function()
@@ -825,11 +828,18 @@ U.RunSequence({
   function() printHeader("", 1) end,
   function() print("") end,
   function() printHeader("Dice E2E: SUITE K - Dice bag clicks (left vs right)", 1) end,
-  function() printHeader("K1a - Hunger bag to STANDARD (no active roll)", 2) end,
+  function() printHeader("K1a - Hunger bag disabled with no active roll", 2) end,
   rollCancelAll,
   function()
+    rollE2eConfirmBagEnabled("Brown", "hunger", false)
+  end,
+  function() printHeader("", 2) end,
+  function() printHeader("K1a2 - Hunger bag on active STANDARD roll", 2) end,
+  rollCancelAll,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K1a2 hunger", 0) end,
+  function()
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Left-click Hunger bag 1 time (no roll active)", 3)
+    printHeader("[HUMAN] Left-click Hunger bag 1 time (surge off)", 3)
   end
 })
 ```
@@ -838,8 +848,8 @@ U.RunSequence({
 U.RunSequence({
   function()
     rollConfirm("Brown", {
-      phase = "preRoll",
-      active = { rollType = C.RollType.STANDARD },
+      meta = { bloodSurgeActive = true },
+      pool = { bloodSurgeRouse = 1, normal = 2, hunger = 0 },
     })
     rollCancel("Brown")
   end,
@@ -876,8 +886,8 @@ U.RunSequence({
 U.RunSequence({
   function()
     rollConfirm("Brown", {
-      phase = "preRoll",
-      active = { rollType = C.RollType.STANDARD },
+      phase = "setup",
+      active = { rollType = C.RollType.STANDARD, batonHolder = "storyteller" },
     })
     rollCancel("Brown")
   end,
@@ -1040,29 +1050,17 @@ U.RunSequence({
 
 ```lua
 U.RunSequence({
-  function() rollCancel("Brown") end,
   function() printHeader("", 2) end,
-  function() printHeader("K2g-Brown - Rouse blocks Oblivion-Rouse (silent fail)", 2) end,
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2g Brown", 0) end,
+  function() printHeader("K2g-Brown - SKIP (no Oblivion-Rouse bag on Brown)", 2) end,
   function()
-    M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Left-click Rouse bag 1 time, then left-click Oblivion-Rouse bag 1 time", 3)
-  end
-})
-```
-
-```lua
-U.RunSequence({
-  function()
-    rollConfirm("Brown", { pool = { rouse = 1, oblivRouse = 0 } })
-    rollCancel("Brown")
+    print("[K2g-Brown] SKIP — Oblivion-Rouse bag is Purple-only; see K2g-Purple")
   end,
   function() printHeader("", 2) end,
-  function() printHeader("K2g-Purple - Oblivion-Rouse blocks Rouse (silent fail)", 2) end,
+  function() printHeader("K2g-Purple - Oblivion-Rouse hides Rouse bag", 2) end,
   function() rollTest("Purple", 2, C.RollType.STANDARD, "E2E K2g Purple", 0) end,
   function()
     M.setCamera("ALL", "rollPurple")
-    printHeader("[HUMAN] Left-click Oblivion-Rouse bag 1 time, then left-click Rouse bag 1 time", 3)
+    printHeader("[HUMAN] Left-click Oblivion-Rouse bag 1 time", 3)
   end
 })
 ```
@@ -1071,6 +1069,7 @@ U.RunSequence({
 U.RunSequence({
   function()
     rollConfirm("Purple", { pool = { rouse = 0, oblivRouse = 1 } })
+    rollE2eConfirmBagEnabled("Purple", "rouse", false)
     rollCancel("Purple")
   end,
   function() printHeader("", 2) end,
@@ -1179,9 +1178,13 @@ U.RunSequence({
   function() printHeader("", 2) end,
   function() printHeader("L1c - Roll: phases through rolling to postRoll", 2) end,
   function()
-    M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Left-click Normal bag 2 times, click Roll, wait for settle", 3)
-  end
+    rollE2eSetPoolAndSpawn("Brown", 2, 0)
+  end,
+  rollE2eWaitForDiceTray,
+  function()
+    rollE2eSettlePresetCheck("Brown", { normal = { 7, 7 } }, { skipSpawn = true })
+    rollConfirm("Brown", { phase = "postRoll" })
+  end,
 })
 ```
 
@@ -1379,7 +1382,7 @@ U.RunSequence({
 
 ```lua
 U.RunSequence({
-  function() rollStConfirm({ liveSlotIndex = 1 }) end,
+  function() rollStConfirm({ liveSlotIndexAbsent = true, slotNotCleared = 1 }) end,
   function()
     M.setCamera("ALL", "rollBlack")
     printHeader("[HUMAN] Click CLEAR on slot 1 in ST dashboard", 3)
@@ -1544,10 +1547,9 @@ U.RunSequence({
 
 ```lua
 U.RunSequence({
+  rollE2eWaitForDiceTray,
   function()
-    rollSetFaces("Purple", { oblivRouse = { 3, 10 } })
-    RC.startRolling("Purple")
-    RC.onDiceSettled("Purple")
+    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 10 } }, { skipSpawn = true })
     rollConfirm("Purple", {
       phase = "postRoll",
       active = { pendingResolution = "oblivHungerStain" },
