@@ -895,10 +895,8 @@ function GlobalOnBagDieSpawned(params)
         ok = RC.adjustPoolKindCount(color, DK.KIND_BLOOD_SURGE_ROUSE, 1)
     elseif dieType == DK.KIND_ROUSE then
         -- Rouse bag may hold manual rouse + Blood Surge rouse; pool.rouse is manual only.
+        -- Never fall back to stagedCount (total on bag) — it mixes both die kinds.
         local manualCount = tonumber(params.manualRouseCount)
-        if manualCount == nil and type(stagedCount) == "number" then
-            manualCount = stagedCount
-        end
         if manualCount ~= nil then
             ok = RC.setPoolKindCount(color, DK.KIND_ROUSE, manualCount)
         else
@@ -935,8 +933,12 @@ function GlobalOnBagDieRemoved(params)
     local manualRouseCount = tonumber(params.manualRouseCount)
     if poolKind == DK.KIND_BLOOD_SURGE_ROUSE then
         RC.adjustPoolKindCount(color, DK.KIND_BLOOD_SURGE_ROUSE, -1)
-    elseif poolKind == DK.KIND_ROUSE and manualRouseCount ~= nil then
-        RC.setPoolKindCount(color, DK.KIND_ROUSE, manualRouseCount)
+    elseif poolKind == DK.KIND_ROUSE then
+        if manualRouseCount ~= nil then
+            RC.setPoolKindCount(color, DK.KIND_ROUSE, manualRouseCount)
+        else
+            RC.adjustPoolKindCount(color, DK.KIND_ROUSE, -1)
+        end
     elseif type(stagedCount) == "number" then
         RC.setPoolKindCount(color, poolKind, stagedCount)
     else
