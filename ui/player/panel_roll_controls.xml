@@ -141,9 +141,8 @@ UI.setAttributes("rollControl_resultDisplayContainer_Brown", {})
       <!-- UI.setAttributes("rollControl_resultDisplay_Brown", {}) -->
       <Text id="rollControl_resultDisplay_Brown" class="roll_text rollControl_resultDisplay" text="" />       <!-- Result in ALL CAPS followed by margin (if any) as a signed integer. Class should be set via `UI.setClass` to "`roll_text rollControl_resultDisplay rollControl_result<resultClass>`". Margin should use actual minus sign for negative numbers, i.e. '−' not '-'  -->
       <!--
-      UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_bestialFailure")
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "BESTIAL FAILURE −15"})
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "BESTIAL FAILURE −15", rectAlignment = "MiddleCenter"})
+      UI.setClass("rollControl_resultDisplay_Purple", "roll_text rollControl_resultDisplay rollControl_result_bestialFailure")
+      UI.setAttributes("rollControl_resultDisplay_Purple", {text = "BESTIAL FAILURE −15", rectAlignment = "MiddleCenter"})
 
       UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_totalFailure")
       UI.setAttributes("rollControl_resultDisplay_Brown", {text = "TOTAL FAILURE −15"})
@@ -345,9 +344,8 @@ UI.setAttributes("rollControl_resultDisplayContainer_Brown", {})
       <!-- UI.setAttributes("rollControl_resultDisplay_Brown", {}) -->
       <Text id="rollControl_resultDisplay_Orange" class="roll_text rollControl_resultDisplay" text="" />       <!-- Result in ALL CAPS followed by margin (if any) as a signed integer. Class should be set via `UI.setClass` to "`roll_text rollControl_resultDisplay rollControl_result<resultClass>`". Margin should use actual minus sign for negative numbers, i.e. '−' not '-'  -->
       <!--
-      UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_bestialFailure")
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "BESTIAL FAILURE −15"})
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "BESTIAL FAILURE −15", rectAlignment = "MiddleCenter"})
+      UI.setClass("rollControl_resultDisplay_Purple", "roll_text rollControl_resultDisplay rollControl_result_bestialFailure")
+      UI.setAttributes("rollControl_resultDisplay_Purple", {text = "BESTIAL FAILURE −15", rectAlignment = "MiddleCenter"})
 
       UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_totalFailure")
       UI.setAttributes("rollControl_resultDisplay_Brown", {text = "TOTAL FAILURE −15"})
@@ -549,9 +547,8 @@ UI.setAttributes("rollControl_resultDisplayContainer_Brown", {})
       <!-- UI.setAttributes("rollControl_resultDisplay_Brown", {}) -->
       <Text id="rollControl_resultDisplay_Red" class="roll_text rollControl_resultDisplay" text="" />       <!-- Result in ALL CAPS followed by margin (if any) as a signed integer. Class should be set via `UI.setClass` to "`roll_text rollControl_resultDisplay rollControl_result<resultClass>`". Margin should use actual minus sign for negative numbers, i.e. '−' not '-'  -->
       <!--
-      UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_bestialFailure")
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "BESTIAL FAILURE −15"})
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "BESTIAL FAILURE −15", rectAlignment = "MiddleCenter"})
+      UI.setClass("rollControl_resultDisplay_Purple", "roll_text rollControl_resultDisplay rollControl_result_bestialFailure")
+      UI.setAttributes("rollControl_resultDisplay_Purple", {text = "BESTIAL FAILURE −15", rectAlignment = "MiddleCenter"})
 
       UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_totalFailure")
       UI.setAttributes("rollControl_resultDisplay_Brown", {text = "TOTAL FAILURE −15"})
@@ -753,9 +750,8 @@ UI.setAttributes("rollControl_resultDisplayContainer_Brown", {})
       <!-- UI.setAttributes("rollControl_resultDisplay_Brown", {}) -->
       <Text id="rollControl_resultDisplay_Pink" class="roll_text rollControl_resultDisplay" text="" />       <!-- Result in ALL CAPS followed by margin (if any) as a signed integer. Class should be set via `UI.setClass` to "`roll_text rollControl_resultDisplay rollControl_result<resultClass>`". Margin should use actual minus sign for negative numbers, i.e. '−' not '-'  -->
       <!--
-      UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_bestialFailure")
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "BESTIAL FAILURE −15"})
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "BESTIAL FAILURE −15", rectAlignment = "MiddleCenter"})
+      UI.setClass("rollControl_resultDisplay_Purple", "roll_text rollControl_resultDisplay rollControl_result_bestialFailure")
+      UI.setAttributes("rollControl_resultDisplay_Purple", {text = "BESTIAL FAILURE −15", rectAlignment = "MiddleCenter"})
 
       UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_totalFailure")
       UI.setAttributes("rollControl_resultDisplay_Brown", {text = "TOTAL FAILURE −15"})
@@ -957,9 +953,8 @@ UI.setAttributes("rollControl_resultDisplayContainer_Brown", {})
       <!-- UI.setAttributes("rollControl_resultDisplay_Brown", {}) -->
       <Text id="rollControl_resultDisplay_Purple" class="roll_text rollControl_resultDisplay" text="" />       <!-- Result in ALL CAPS followed by margin (if any) as a signed integer. Class should be set via `UI.setClass` to "`roll_text rollControl_resultDisplay rollControl_result<resultClass>`". Margin should use actual minus sign for negative numbers, i.e. '−' not '-'  -->
       <!--
-      UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_bestialFailure")
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "BESTIAL FAILURE −15"})
-      UI.setAttributes("rollControl_resultDisplay_Brown", {text = "BESTIAL FAILURE −15", rectAlignment = "MiddleCenter"})
+      UI.setClass("rollControl_resultDisplay_Purple", "roll_text rollControl_resultDisplay rollControl_result_bestialFailure")
+      UI.setAttributes("rollControl_resultDisplay_Purple", {text = "BESTIAL FAILURE −15", rectAlignment = "MiddleCenter"})
 
       UI.setClass("rollControl_resultDisplay_Brown", "roll_text rollControl_resultDisplay rollControl_result_totalFailure")
       UI.setAttributes("rollControl_resultDisplay_Brown", {text = "TOTAL FAILURE −15"})
