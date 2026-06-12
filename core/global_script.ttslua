@@ -777,10 +777,8 @@ function GlobalDiceBagClick(params)
 
     if active.rollType == C.RollType.STANDARD then
         if dieKind == DK.KIND_HUNGER then
-            if phase == C.RollPhase.SETUP then
-                spawnRequestedDie(color, dieKind)
-                return
-            end
+            -- Hunger bag always toggles Blood Surge (SETUP and PRE_ROLL). Pool hunger dice
+            -- come from Normal-bag auto-hunger redirect only, not from the Hunger bag.
             local meta = type(active.meta) == "table" and active.meta or {}
             if meta.bloodSurgeActive == true then
                 RC.addBloodSurgeRouse(color)

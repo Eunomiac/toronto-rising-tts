@@ -53,7 +53,7 @@ Ground truth: `[core/roll_controller.ttslua](../../core/roll_controller.ttslua)`
 | Behavior | E2E impact |
 | --- | --- |
 | **SETUP** pool build before ST **Open** | Bag-click suites use `rollTest(..., { skipOpen = true })` (or `{ hunger = n, skipOpen = true }`); assert `phase = "setup"` while building pool |
-| **Open** → **PRE_ROLL** | Suite A Step A3 / K2i: human ST clicks **Open** on dashboard before **Roll**; automation may use `rollE2eOpenRoll(color)` |
+| **Open** → **PRE_ROLL** | Suite A Step A3 / K2i: hunger bag enabled in **SETUP** (Blood Surge); ST **Open** unlocks green **Roll**; automation: `rollE2eOpenRoll(color)` |
 | Drawer **y > 2.5** before `releaseDice` | `rollE2eWaitForDiceTray` (~1.0s); `rollE2eSettlePresetCheck` may **return wait seconds** → follow with `rollE2eSettlePresetCheckResume(color)` in the **next** `U.RunSequence` function |
 | **POST_ROLL Confirm** on player panel | `batonHolder = "player"` after settle/take-half; human **Brown/Purple Confirm** (not ST dashboard confirm); `rollForceConfirm` still valid for automation |
 | Pool spawn on **open** | Dedicated rouse/remorse: `rollE2eSpawnActivePool` after `rollTest` when bag auto-spawn is not used |

@@ -1088,21 +1088,30 @@ U.RunSequence({
     rollCancel("Brown")
   end,
   function() printHeader("", 2) end,
-  function() printHeader("K2i - Hunger bag disabled until open (visual)", 2) end,
+  function() printHeader("K2i - SETUP: hunger bag on, ROLL greyed until ST Open", 2) end,
   function() rollCancel("Brown") end,
   function()
+    rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2i setup ui", { hunger = 0, skipOpen = true })
+    rollE2eConfirmBagEnabled("Brown", "hunger", true)
+    rollConfirm("Brown", { phase = "setup" })
+  end,
+  function()
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Visual: Hunger bag locked before rollTest + ST Open; after rollTest + Open, bag enabled", 3)
+    printHeader("[HUMAN] SETUP: 'Continue Assembling — Awaiting Storyteller'; ROLL grey/disabled; Hunger bag toggles Blood Surge", 3)
   end
 })
 ```
 
 ```lua
 U.RunSequence({
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2i bag vis", { hunger = 0, skipOpen = true }) end,
+  function()
+    rollE2eOpenRoll("Brown")
+    rollE2eConfirmBagEnabled("Brown", "hunger", true)
+    rollConfirm("Brown", { phase = "preRoll" })
+  end,
   function()
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] ST Open Roll if needed; confirm Hunger bag reachable; left-click Hunger once for surge", 3)
+    printHeader("[HUMAN] PRE_ROLL: add Normal die if pool empty; ROLL turns green when pool non-empty", 3)
   end
 })
 ```

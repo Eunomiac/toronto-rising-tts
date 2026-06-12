@@ -58,6 +58,19 @@ local function uiSetInteractable(elementId, enabled)
     U.setAttribute(elementId, "interactable", enabled and "true" or "false")
 end
 
+--- Roll-control ROLL button colors (defaults.xml green when enabled).
+local ROLL_CONTROL_BTN_ROLL_COLOR_ENABLED = "#00FF00"
+local ROLL_CONTROL_BTN_ROLL_COLOR_DISABLED = "#555555"
+
+--- Sets a Button color attribute (interactable=false does not grey in TTS).
+-- @param elementId string
+-- @param colorHex string
+local function uiSetButtonColor(elementId, colorHex)
+    if type(colorHex) == "string" and colorHex ~= "" then
+        U.setAttribute(elementId, "color", colorHex)
+    end
+end
+
 --- Sets the displayed text of a TTS InputField via setAttribute.
 -- UI.setValue() on InputField elements is silently dropped by TTS when the element
 -- is inactive, leaving the stale value visible on the next show. Using setAttribute
@@ -472,7 +485,7 @@ local function phaseLabel(active, color)
         if DK.poolTotal(pool) == 0 then
             return "Ready — Assemble Your Dice Pool"
         end
-        return "Continue assembling — awaiting Storyteller to open"
+        return "Continue assembling — awaiting Storyteller"
     elseif phase == C.RollPhase.PRE_ROLL then
         -- Pool assembly guidance only. Do not reveal whether the ST has set difficulty yet;
         -- difficulty stays hidden from this panel until POST_ROLL (see rollPanel_diff_*).
@@ -733,8 +746,11 @@ local function refreshPcRollControlPanel(color, active)
         and RO.getForActive(active, RO.ROLL_TAKE_HALF)
     -- Take Half only after ST opens (PRE_ROLL); pool assembly in SETUP is roll-button gated only.
 
-    uiSetActive(string.format("rollControl_btnRoll_%s", color), isPreRoll or isSetup)
-    uiSetInteractable(string.format("rollControl_btnRoll_%s", color), isPreRoll and hasPool)
+    local rollBtnId = string.format("rollControl_btnRoll_%s", color)
+    local rollEnabled = isPreRoll and hasPool
+    uiSetActive(rollBtnId, isPreRoll or isSetup)
+    uiSetInteractable(rollBtnId, rollEnabled)
+    uiSetButtonColor(rollBtnId, rollEnabled and ROLL_CONTROL_BTN_ROLL_COLOR_ENABLED or ROLL_CONTROL_BTN_ROLL_COLOR_DISABLED)
     uiSetActive(string.format("rollControl_btnHalf_%s", color), canHalf)
 
     local wpAvailable = isPostRoll
