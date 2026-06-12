@@ -11,6 +11,7 @@ Prior pass: [`Dice-E2E-Run-1-Findings.md`](Dice-E2E-Run-1-Findings.md).
 | Area | Issue | Change |
 |------|--------|--------|
 | **Script** | Rouse/Obliv pool double-count on bag spawn (`K1b`, `K3a`/`K3c` panel vs staged mismatch) | `GlobalOnBagDieSpawned`: prefer `stagedCount` → `setPoolKindCount` before `adjustPoolKindCount` |
+| **Script** | Rouse/Obliv/Simple Check pool **doubled on ROLL** (tray + panel) | `spawnActivePoolDiceForActive`: spawn only `target - getBagSpawnedCount` (match standard-roll `spawnMissingPoolDiceForColor`) |
 | **Script** | `rollTest` did not spawn default rouse-family dice | `rollE2eSpawnDefaultPoolIfNeeded` after `openRoll` |
 | **H2b** | `rollSetFaces` before rouse die released post–Take Half | `rollE2eWaitForDiceTray` between `takeHalf` and preset |
 | **J2** | Strip label `"Rouse"` vs surge strip | Expect `"Blood Surge Rouse"` |
@@ -27,6 +28,22 @@ New helper: `rollE2eConfirmBagEnabled(color, dieKind, wantEnabled)`.
 ---
 
 ## Confirmed script bugs (still open or re-test)
+
+### Rouse/Obliv spawn vs display (manual repro — fixed, re-test after Save & Play)
+
+**Symptoms (author manual tests):**
+
+1. Panel showed **one extra** rouse/obliv die vs staged tray (e.g. 1 spawned, 2 displayed).
+2. Clicking **ROLL** **doubled** pool count in both tray and panel (e.g. 3 → 6).
+
+**Root cause:**
+
+- Init mismatch: bag spawn hook incremented pool via `adjustPoolKindCount` after `initiateRoll` already preset `pool.rouse` / `pool.oblivRouse` — fixed by `stagedCount` sync (Run 2).
+- ROLL doubling: `HUD_rollRollButton` → `spawnActivePoolDiceForActive` re-spawned the **full** pool target for rouse-family rolls instead of only missing staged dice.
+
+**Re-test:** All four author scenarios (Rouse/Obliv × 1 click / 3 clicks) after Save & Play.
+
+---
 
 ### P-F — Tracker hunger 0 with pending Oblivion choice
 

@@ -3313,25 +3313,33 @@ local function spawnActivePoolDiceForActive(color)
             kind = DK.KIND_OBLIV_ROUSE
         end
         local target = pool[kind] or 0
-        for _ = 1, target do
+        local staged = color == "Black"
+            and getBagSpawnedCountStoryteller(kind)
+            or getBagSpawnedCount(color, kind)
+        local needed = math.max(0, target - staged)
+        for _ = 1, needed do
             if color == "Black" then
                 GlobalSpawnDieFromStorytellerBag({ dieKind = kind })
             else
                 GlobalSpawnDieFromBag(color, kind)
             end
         end
-        return target > 0
+        return needed > 0
     end
     if active.rollType == C.RollType.SIMPLE_CHECK then
         local target = pool.normal or 0
-        for _ = 1, target do
+        local staged = color == "Black"
+            and getBagSpawnedCountStoryteller(DK.KIND_NORMAL)
+            or getBagSpawnedCount(color, "normal")
+        local needed = math.max(0, target - staged)
+        for _ = 1, needed do
             if color == "Black" then
                 GlobalSpawnDieFromStorytellerBag({ dieKind = DK.KIND_NORMAL })
             else
                 GlobalSpawnDieFromBag(color, DK.KIND_NORMAL)
             end
         end
-        return target > 0
+        return needed > 0
     end
     if color == "Black" then
         return autoSpawnBlackPool(pool)
