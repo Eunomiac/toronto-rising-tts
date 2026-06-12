@@ -2179,10 +2179,6 @@ function RC.activateBloodSurge(color)
     if active.meta.bloodSurgeActive then
         return false
     end
-    local poolCheck = DK.normalizePool(active.pool)
-    if DK.rouseKindBlockedByPool(poolCheck, DK.KIND_ROUSE) then
-        return false
-    end
 
     local stats = S.getPlayerVal(color, "stats") or {}
     local playerID = S.getPlayerID(color)

@@ -141,6 +141,7 @@ local function getPlayerNormalBag(bagColor)
 end
 
 local isBloodSurgeRouseDie
+local countManualRouseDice
 local repositionStagedDiceOnRingArc
 
 --- Radial distance for one staging ring (Normal ring = RADIUS).
@@ -273,6 +274,7 @@ function spawnDie(bagColor, dieType, opts)
         bloodSurgePool = bloodSurgePool,
         bloodSurgeRouse = bloodSurgeRouse,
         stagedCount = #spawnedDice,
+        manualRouseCount = bagKind == DK.KIND_ROUSE and countManualRouseDice() or nil,
     })
 end
 
@@ -330,6 +332,24 @@ isBloodSurgeRouseDie = function(die)
         return isSurge == true
     end
     return false
+end
+
+--- Manual (non–Blood Surge) rouse dice on this bag's staging arc.
+countManualRouseDice = function()
+    local n = 0
+    for _, die in ipairs(spawnedDice) do
+        if die ~= nil and not isBloodSurgeRouseDie(die) then
+            n = n + 1
+        end
+    end
+    return n
+end
+
+function getManualRouseSpawnedCount()
+    if getDieType() ~= DK.KIND_ROUSE then
+        return #spawnedDice
+    end
+    return countManualRouseDice()
 end
 
 --- Repositions locked staged dice using per-ring arc spacing (not bag-wide die count).
@@ -420,6 +440,7 @@ function removeLastSpawnedDie(params)
             color = reportColor,
             poolKind = removedKind,
             stagedCount = newCount,
+            manualRouseCount = bagKind == DK.KIND_ROUSE and countManualRouseDice() or nil,
         })
     end
     return true

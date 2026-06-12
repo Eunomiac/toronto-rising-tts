@@ -893,12 +893,21 @@ function GlobalOnBagDieSpawned(params)
     local ok = false
     if params.bloodSurgeRouse == true then
         ok = RC.adjustPoolKindCount(color, DK.KIND_BLOOD_SURGE_ROUSE, 1)
-    elseif type(stagedCount) == "number" then
-        -- Bag spawns always pass stagedCount; sync pool to staged dice (avoids double-count
-        -- when initiateRoll already preset pool.rouse / pool.oblivRouse).
-        ok = RC.setPoolKindCount(color, dieType, stagedCount)
     elseif dieType == DK.KIND_ROUSE then
-        ok = RC.adjustPoolKindCount(color, DK.KIND_ROUSE, 1)
+        -- Rouse bag may hold manual rouse + Blood Surge rouse; pool.rouse is manual only.
+        local manualCount = tonumber(params.manualRouseCount)
+        if manualCount == nil and type(stagedCount) == "number" then
+            manualCount = stagedCount
+        end
+        if manualCount ~= nil then
+            ok = RC.setPoolKindCount(color, DK.KIND_ROUSE, manualCount)
+        else
+            ok = RC.adjustPoolKindCount(color, DK.KIND_ROUSE, 1)
+        end
+    elseif type(stagedCount) == "number" then
+        -- Bag spawns pass stagedCount; sync pool to staged dice (avoids double-count
+        -- when initiateRoll already preset pool.oblivRouse).
+        ok = RC.setPoolKindCount(color, dieType, stagedCount)
     elseif dieType == DK.KIND_OBLIV_ROUSE then
         ok = RC.adjustPoolKindCount(color, DK.KIND_OBLIV_ROUSE, 1)
     end
@@ -915,14 +924,24 @@ function GlobalOnBagDieSpawned(params)
     end
 end
 
---- Bag remove hook: decrement the logical pool kind for the removed staged die.
--- @param params table  { color, poolKind }
+--- Bag remove hook: sync pool counts after a staged die is destroyed.
+-- @param params table  { color, poolKind, stagedCount?, manualRouseCount? }
 function GlobalOnBagDieRemoved(params)
     if type(params) ~= "table" or RC == nil then return end
     local color = params.color
     local poolKind = params.poolKind
     if type(color) ~= "string" or type(poolKind) ~= "string" then return end
-    RC.adjustPoolKindCount(color, poolKind, -1)
+    local stagedCount = tonumber(params.stagedCount)
+    local manualRouseCount = tonumber(params.manualRouseCount)
+    if poolKind == DK.KIND_BLOOD_SURGE_ROUSE then
+        RC.adjustPoolKindCount(color, DK.KIND_BLOOD_SURGE_ROUSE, -1)
+    elseif poolKind == DK.KIND_ROUSE and manualRouseCount ~= nil then
+        RC.setPoolKindCount(color, DK.KIND_ROUSE, manualRouseCount)
+    elseif type(stagedCount) == "number" then
+        RC.setPoolKindCount(color, poolKind, stagedCount)
+    else
+        RC.adjustPoolKindCount(color, poolKind, -1)
+    end
 end
 
 --- Spawns one die from the bag object registered for this logical kind (GUID lookup).
@@ -3167,7 +3186,13 @@ local function getBagSpawnedCount(color, dieTypeName)
             tostring(color), tostring(dieTypeName), tostring(guid)))
         return 0
     end
-    local result = bag.call("getSpawnedCount")
+    local result = nil
+    if dieTypeName == "rouse" then
+        result = bag.call("getManualRouseSpawnedCount")
+    end
+    if type(result) ~= "number" then
+        result = bag.call("getSpawnedCount")
+    end
     if type(result) ~= "number" then
         error("getBagSpawnedCount: getSpawnedCount returned non-number for GUID '" .. tostring(guid) .. "'")
     end

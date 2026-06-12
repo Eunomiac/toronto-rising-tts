@@ -939,7 +939,13 @@ local function e2eBagStagedCount(color, dieTypeName)
     if bag == nil then
         return 0
     end
-    local result = bag.call("getSpawnedCount")
+    local result = nil
+    if dieTypeName == "rouse" then
+        result = bag.call("getManualRouseSpawnedCount")
+    end
+    if type(result) ~= "number" then
+        result = bag.call("getSpawnedCount")
+    end
     return type(result) == "number" and result or 0
 end
 
@@ -952,10 +958,6 @@ local function e2ePoolStagedMismatchLines(color, pool)
     pool = DK.normalizePool(pool)
     for _, kindName in ipairs(E2E_POOL_STAGED_KINDS) do
         local want = pool[kindName] or 0
-        -- Blood Surge rouse dice stage on the Rouse bag arc; include them in rouse staged count.
-        if kindName == "rouse" then
-            want = want + (pool.bloodSurgeRouse or 0)
-        end
         if want > 0 then
             local got = e2eBagStagedCount(color, kindName)
             if got ~= want then

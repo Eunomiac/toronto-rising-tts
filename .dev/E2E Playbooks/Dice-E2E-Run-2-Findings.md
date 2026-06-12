@@ -11,7 +11,7 @@ Prior pass: [`Dice-E2E-Run-1-Findings.md`](Dice-E2E-Run-1-Findings.md).
 | Area | Issue | Change |
 |------|--------|--------|
 | **Script** | Rouse/Obliv pool double-count on bag spawn (`K1b`, `K3a`/`K3c` panel vs staged mismatch) | `GlobalOnBagDieSpawned`: prefer `stagedCount` → `setPoolKindCount` before `adjustPoolKindCount` |
-| **Script** | Rouse/Obliv/Simple Check pool **doubled on ROLL** (tray + panel) | `spawnActivePoolDiceForActive`: spawn only `target - getBagSpawnedCount`; refactored so **all** player roll types use `spawnMissingPoolDiceForColor` (no dedicated rollType fork) |
+| **Script** | Rouse/Obliv/Simple Check pool **doubled on ROLL** (tray + panel) | Unified `spawnMissingPoolDiceForColor`; manual vs Blood Surge rouse split on Rouse bag (`manualRouseCount`) |
 | **Script** | `rollTest` did not spawn default rouse-family dice | `rollE2eSpawnDefaultPoolIfNeeded` after `openRoll` |
 | **H2b** | `rollSetFaces` before rouse die released post–Take Half | `rollE2eWaitForDiceTray` between `takeHalf` and preset |
 | **J2** | Strip label `"Rouse"` vs surge strip | Expect `"Blood Surge Rouse"` |
