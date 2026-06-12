@@ -471,6 +471,20 @@ function DEBUG.showState()
     print(JSON.encode_pretty(state))
 end
 
+--- Print orchestrator reconcile skip-cache snapshot (fingerprints, layout, init-light retries).
+function DEBUG.dumpSyncCacheState()
+    printTestHeader("Sync reconcile caches")
+    local Sync = require("core.sync")
+    local snap = type(Sync.debugReconcileCacheSnapshot) == "function" and Sync.debugReconcileCacheSnapshot() or {}
+    if type(snap) ~= "table" then
+        print("(no snapshot)")
+        return
+    end
+    for k, v in pairs(snap) do
+        print(tostring(k) .. ": " .. tostring(v))
+    end
+end
+
 --- Display live session scene + library linkage (current authoring model).
 function DEBUG.showScene()
     printTestHeader("Session Scene + Library")
