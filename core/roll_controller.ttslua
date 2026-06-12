@@ -887,6 +887,11 @@ function RC.initiateRoll(color, config)
 
     if skipSetup then
         rollCamera(color, "roll")
+        if DK.poolTotal(pool) > 0 then
+            Wait.frames(function()
+                Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+            end, 2)
+        end
     end
 
     -- Dev/debug: when Auto-ST mode is on, automatically open the roll after a
@@ -1044,6 +1049,7 @@ function RC.openRoll(color)
     setActive(color, active)
     notifyStateChanged(color)
     rollCamera(color, "roll")
+    Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
     return true
 end
 
@@ -1157,7 +1163,7 @@ local function recalculateTakeHalfAwaitingRouse(color, active, wasRolling)
     active.takeHalfAwaitingRouse = false
     if wasRolling then
         active.phase = C.RollPhase.POST_ROLL
-        active.batonHolder = C.BatonHolder.STORYTELLER
+        active.batonHolder = C.BatonHolder.PLAYER
         active.willpower.available = false
         lockAllRollDiceObjects(color, active.id)
     end
@@ -1235,7 +1241,7 @@ function RC.takeHalf(color)
     active.diceFaces = Dice.buildTakeHalfSyntheticFaces(nhPool, successes)
     active.result = buildTakeHalfMainResult(successes, nhPool, active)
     active.phase = C.RollPhase.POST_ROLL
-    active.batonHolder = C.BatonHolder.STORYTELLER
+    active.batonHolder = C.BatonHolder.PLAYER
     ensureWillpowerShape(active)
     active.willpower.available = false
     setActive(color, active)
@@ -1453,7 +1459,7 @@ function RC.recalculate(color)
             and RO.isWillpowerSpendAllowedByOptions(active)
             and active.willpower.rerollsRemaining > 0
         active.willpower.available = wpOffered
-        active.batonHolder = wpOffered and C.BatonHolder.PLAYER or C.BatonHolder.STORYTELLER
+        active.batonHolder = C.BatonHolder.PLAYER
         if wasWpWave then
             active.willpower.wpRerollWave = false
         end

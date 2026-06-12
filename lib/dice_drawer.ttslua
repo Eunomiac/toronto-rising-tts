@@ -64,6 +64,21 @@ local function findDiceDrawerObject(color)
   return nil
 end
 
+--- Current world Y of the seat dice drawer prop (nil when missing).
+-- @param color string
+-- @return number|nil
+function DD.getPositionY(color)
+  local obj = findDiceDrawerObject(color)
+  if obj == nil then
+    return nil
+  end
+  local pos = obj.getPosition()
+  if type(pos) ~= "table" then
+    return nil
+  end
+  return pos.y
+end
+
 --- Move drawer to the "on" pose (first pool die via GlobalOnBagDieSpawned, leave-container backup,
 --- Roll release, or WP reroll path). Not tied to RC.openRoll.
 --- @param color string Seat color

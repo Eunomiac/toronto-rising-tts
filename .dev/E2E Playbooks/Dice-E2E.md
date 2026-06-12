@@ -2,10 +2,6 @@
 
 This has been wired into RunTest. Initialize with `RunTest("Dice")` or `RunTest("Dice", 8)` to start at step 8, then `RunTest()` after each step.
 
-RunTest("Dice")
-RunTest("Dice", 47)
-RunTest()
-
 
 ```lua
 U.RunSequence({
@@ -45,7 +41,7 @@ U.RunSequence({
     printHeader("A2 - Build pool (bags)", 2)
   end,
   rollCancelAll,
-  function() rollTest("Brown", 3, C.RollType.STANDARD, "E2E A2 pool", 4) end,
+  function() rollTest("Brown", 3, C.RollType.STANDARD, "E2E A2 pool", { hunger = 4, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Normal bag 5 times (auto-hunger @ 4: 4 Hunger + 1 Normal)", 3)
@@ -55,7 +51,7 @@ U.RunSequence({
 
 ```lua
 U.RunSequence({
-  function() rollConfirm("Brown", { active = { pool = { normal = 1, hunger = 4 } } }) end,
+  function() rollConfirm("Brown", { phase = "setup", active = { pool = { normal = 1, hunger = 4 } } }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Right-click Normal bag 2 times (removes 1 Normal, then 1 Hunger)", 3)
@@ -84,7 +80,7 @@ U.RunSequence({
     printHeader("A3 - Roll and confirm", 2)
   end,
   function()
-    printHeader("[HUMAN] Click Roll → Roll the dice → wait for settle", 3)
+    printHeader("[HUMAN] ST: Open roll on dashboard → Brown clicks Roll → throw dice → wait for settle", 3)
   end
 })
 ```
@@ -136,7 +132,10 @@ U.RunSequence({
   function() rollE2eSpawnActivePool("Brown") end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { rouse = { 4 } }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { rouse = { 4 } }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", { noActive = true })
     rollConfirmTracker("Brown", { hunger = 3 })
   end,
@@ -153,7 +152,10 @@ U.RunSequence({
   function() rollE2eSpawnActivePool("Brown") end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { rouse = { 4 } }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { rouse = { 4 } }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", { noActive = true })
     rollConfirmTracker("Brown", { hunger = 2 })
     S.setStateVal(true, "stRollSettings", "autoApplyRouseOutcomes")
@@ -174,7 +176,10 @@ U.RunSequence({
   function() rollE2eSpawnActivePool("Purple") end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3 } }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3 } }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Purple")
     rollConfirm("Purple", { noActive = true })
     rollConfirmTracker("Purple", { hunger = 2, stains = 2 })
   end,
@@ -215,7 +220,10 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = { 7, 4, 3 } }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = { 7, 4, 3 } }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", {
       phase = "postRoll",
       active = {
@@ -244,7 +252,10 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = { 7, 4, 3 } }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = { 7, 4, 3 } }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", {
       phase = "postRoll",
       active = { result = { successes = 1, marginAbsent = true } },
@@ -270,7 +281,10 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {10} }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {10} }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", {
       phase = "postRoll",
       active = {
@@ -290,7 +304,10 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {1} }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {1} }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", {
       phase = "postRoll",
       active = {
@@ -313,7 +330,10 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = {7, 7} }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = {7, 7} }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", {
       phase = "postRoll",
       active = { result = { resultClass = "win", successes = 2, margin = 0 } },
@@ -329,7 +349,10 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {9, 1} }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {9, 1} }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", {
       phase = "postRoll",
       active = { result = { resultClass = "criticalWin", margin = 2 } },
@@ -345,7 +368,10 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {10, 1} }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {10, 1} }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", {
       phase = "postRoll",
       active = { result = { resultClass = "messyCritical" } },
@@ -361,7 +387,10 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {10, 1} }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = {10, 10}, hunger = {10, 1} }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", {
       phase = "postRoll",
       active = { result = { resultClass = "bestialFailure", margin = -2 } },
@@ -377,7 +406,10 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, hunger = {1} }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, hunger = {1} }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", {
       phase = "postRoll",
       active = { result = { resultClass = "totalBestialFailure" } },
@@ -394,7 +426,10 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = {10, 8, 7, 6}, hunger = {10} }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = {10, 8, 7, 6}, hunger = {10} }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", {
       phase = "postRoll",
       active = {
@@ -414,7 +449,10 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {1} }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = {10, 10, 3}, hunger = {1} }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", {
       phase = "postRoll",
       active = {
@@ -439,7 +477,7 @@ U.RunSequence({
       active = {
         tookHalf = true,
         result = { resultClass = "failure", successes = 2, margin = -2 },
-        batonHolder = "storyteller",
+        batonHolder = "player",
       },
     })
   end,
@@ -537,7 +575,7 @@ U.RunSequence({
   end,
   function()
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] ST clicks Confirm on Brown (or rollForceConfirm)", 3)
+    printHeader("[HUMAN] Brown clicks Confirm on roll panel (or rollForceConfirm in next block)", 3)
   end
 })
 ```
@@ -545,6 +583,7 @@ U.RunSequence({
 ```lua
 U.RunSequence({
   function()
+    rollForceConfirm("Brown")
     rollE2eExpectBroadcast({
       color = "Brown",
       visible = true,
@@ -617,7 +656,10 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = {4, 4, 4} }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = {4, 4, 4} }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", {
       phase = "postRoll",
       active = {
@@ -660,7 +702,10 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = {4, 4, 4} }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = {4, 4, 4} }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", { phase = "postRoll", active = { result = { resultClass = "totalFailure" } } })
   end,
   function()
@@ -695,7 +740,10 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, hunger = {4} }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, hunger = {4} }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", {
       phase = "postRoll",
       active = { rollOptions = { canRerollHunger = true } },
@@ -737,7 +785,10 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, rouse = {6} }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = {4, 4}, rouse = {6} }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", { phase = "postRoll" })
   end,
   function()
@@ -772,7 +823,10 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = {7, 8}, rouse = {4} }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = {7, 8}, rouse = {4} }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", {
       phase = "postRoll",
       rouseOutcomeStripsMin = 1,
@@ -791,7 +845,7 @@ U.RunSequence({
   function() printHeader("", 2) end,
   function() printHeader("J2 - Blood surge + compound (same roll)", 2) end,
   rollCancelAll,
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E J2 Surge compound", 0) end,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E J2 Surge compound", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Hunger bag 1 time", 3)
@@ -807,7 +861,12 @@ U.RunSequence({
       meta = { bloodSurgeActive = true },
       pool = { bloodSurgeRouse = 1, normal = 2, hunger = 0 },
     })
-    rollE2eSettlePresetCheck("Brown", { normal = { 7, 7 }, bloodSurgeRouse = { 4 } }, { skipSpawn = true })
+  end,
+  function()
+    return rollE2eSettlePresetCheck("Brown", { normal = { 7, 7 }, bloodSurgeRouse = { 4 } }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", {
       phase = "postRoll",
       rouseOutcomeStripsMin = 1,
@@ -836,7 +895,7 @@ U.RunSequence({
   function() printHeader("", 2) end,
   function() printHeader("K1a2 - Hunger bag on active STANDARD roll", 2) end,
   rollCancelAll,
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K1a2 hunger", 0) end,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K1a2 hunger", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Hunger bag 1 time (surge off)", 3)
@@ -893,7 +952,7 @@ U.RunSequence({
   end,
   function() printHeader("", 2) end,
   function() printHeader("K2a - Normal bag left adds die", 2) end,
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2a", 0) end,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2a", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Normal bag 2 times", 3)
@@ -906,7 +965,7 @@ U.RunSequence({
   function() rollConfirm("Brown", { active = { pool = { normal = 2 } } }) end,
   function() printHeader("", 2) end,
   function() printHeader("K2b - Normal bag right removes last normal/hunger", 2) end,
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2b", 0) end,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2b", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Normal bag 2 times, then right-click Normal bag 1 time", 3)
@@ -922,7 +981,7 @@ U.RunSequence({
   end,
   function() printHeader("", 2) end,
   function() printHeader("K2c - Hunger bag left (surge off) to Blood Surge", 2) end,
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2c surge", 0) end,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2c surge", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Hunger bag 1 time (surge not active)", 3)
@@ -941,7 +1000,7 @@ U.RunSequence({
   end,
   function() printHeader("", 2) end,
   function() printHeader("K2d - Hunger bag left (surge on) adds Blood Surge rouse", 2) end,
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2d surge rouse", 0) end,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2d surge rouse", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Hunger bag 1 time (surge on), then left-click Hunger bag 1 time again", 3)
@@ -960,7 +1019,7 @@ U.RunSequence({
   end,
   function() printHeader("", 2) end,
   function() printHeader("K2e - Rouse bag left adds rouse", 2) end,
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2e rouse", 0) end,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2e rouse", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Rouse bag 1 time", 3)
@@ -976,7 +1035,7 @@ U.RunSequence({
   end,
   function() printHeader("", 2) end,
   function() printHeader("K2f - Hunger bag right with surge active (full undo)", 2) end,
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2f surge off", 0) end,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2f surge off", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Hunger bag 1 time (surge on), then right-click Hunger bag 1 time", 3)
@@ -995,7 +1054,7 @@ U.RunSequence({
   end,
   function() printHeader("", 2) end,
   function() printHeader("K2f2 - Hunger bag right (surge off) is no-op", 2) end,
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2f2 hunger right noop", 0) end,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2f2 hunger right noop", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Normal bag 1 time, then right-click Hunger bag 1 time", 3)
@@ -1011,7 +1070,7 @@ U.RunSequence({
   end,
   function() printHeader("", 2) end,
   function() printHeader("K2h - Blood Surge rouse + manual rouse coexist", 2) end,
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2h compound rouse", 0) end,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2h compound rouse", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Hunger bag 1 time (activate surge), then left-click Rouse bag 1 time", 3)
@@ -1040,7 +1099,7 @@ U.RunSequence({
 
 ```lua
 U.RunSequence({
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2i bag vis", 0) end,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2i bag vis", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] ST Open Roll if needed; confirm Hunger bag reachable; left-click Hunger once for surge", 3)
@@ -1057,7 +1116,7 @@ U.RunSequence({
   end,
   function() printHeader("", 2) end,
   function() printHeader("K2g-Purple - Oblivion-Rouse hides Rouse bag", 2) end,
-  function() rollTest("Purple", 2, C.RollType.STANDARD, "E2E K2g Purple", 0) end,
+  function() rollTest("Purple", 2, C.RollType.STANDARD, "E2E K2g Purple", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollPurple")
     printHeader("[HUMAN] Left-click Oblivion-Rouse bag 1 time", 3)
@@ -1074,7 +1133,7 @@ U.RunSequence({
   end,
   function() printHeader("", 2) end,
   function() printHeader("K3a - Normal bag promotes to compound standard roll", 2) end,
-  function() rollTest("Brown", 1, C.RollType.ROUSE, "E2E K3a") end,
+  function() rollTest("Brown", 1, C.RollType.ROUSE, "E2E K3a", { skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Rouse bag 2 times, then left-click Normal bag 1 time", 3)
@@ -1096,7 +1155,7 @@ U.RunSequence({
   end,
   function() printHeader("", 2) end,
   function() printHeader("K3b - Rouse bag right removes last rouse", 2) end,
-  function() rollTest("Brown", 1, C.RollType.ROUSE, "E2E K3b") end,
+  function() rollTest("Brown", 1, C.RollType.ROUSE, "E2E K3b", { skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Rouse bag 2 times, then right-click Rouse bag 1 time", 3)
@@ -1112,7 +1171,7 @@ U.RunSequence({
   end,
   function() printHeader("", 2) end,
   function() printHeader("K3c - Oblivion dedicated: Normal promotes (Purple)", 2) end,
-  function() rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E K3c") end,
+  function() rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E K3c", { skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollPurple")
     printHeader("[HUMAN] Left-click Oblivion-Rouse bag 1 time, then left-click Normal bag 1 time", 3)
@@ -1134,7 +1193,7 @@ U.RunSequence({
   end,
   function() printHeader("", 2) end,
   function() printHeader("K4 - Empty pool right-click cancels roll", 2) end,
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K4", 0) end,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K4", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Normal bag 2 times, then right-click Normal bag 2 times", 3)
@@ -1182,14 +1241,12 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { normal = { 7, 7 } }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { normal = { 7, 7 } }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", { phase = "postRoll" })
   end,
-})
-```
-
-```lua
-U.RunSequence({
   function()
     rollConfirm("Brown", { phase = "postRoll" })
     rollCancel("Brown")
@@ -1254,7 +1311,10 @@ U.RunSequence({
   function() rollE2eSpawnActivePool("Brown") end,
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Brown", { rouse = { 3 } }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Brown", { rouse = { 3 } }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", { noActive = true })
     rollConfirmTracker("Brown", { hunger = 2 })
     S.setStateVal(true, "stRollSettings", "autoApplyRouseOutcomes")
@@ -1294,7 +1354,7 @@ U.RunSequence({
   function() print("") end,
   function() printHeader("Dice E2E: SUITE N - Blood Surge (hunger bag)", 1) end,
   function() printHeader("N1 - First hunger click activates surge", 2) end,
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E N1 surge", 0) end,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E N1 surge", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Hunger bag 1 time", 3)
@@ -1313,7 +1373,7 @@ U.RunSequence({
   end,
   function() printHeader("", 2) end,
   function() printHeader("N2 - Second hunger click adds Blood Surge rouse", 2) end,
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E N2 surge rouse add", 0) end,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E N2 surge rouse add", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Hunger bag 1 time (surge on), then left-click Hunger bag 1 time again", 3)
@@ -1332,7 +1392,7 @@ U.RunSequence({
   end,
   function() printHeader("", 2) end,
   function() printHeader("N3 - Hunger bag right removes surge rouse (full undo when last)", 2) end,
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E N3 surge cancel", 0) end,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E N3 surge cancel", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Hunger bag 1 time (surge on), then right-click Hunger bag 1 time", 3)
@@ -1500,7 +1560,10 @@ U.RunSequence({
 U.RunSequence({
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 6, 6 } }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Purple", { oblivRouse = { 6, 6 } }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Purple")
     rollConfirm("Purple", { noActive = true })
     rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
     rollCancel("Purple")
@@ -1525,7 +1588,10 @@ U.RunSequence({
 U.RunSequence({
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 3 } }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 3 } }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Purple")
     rollConfirm("Purple", { noActive = true })
     rollConfirmTracker("Purple", { hunger = 2, stains = 2 })
     rollCancel("Purple")
@@ -1549,7 +1615,10 @@ U.RunSequence({
 U.RunSequence({
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 10 } }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 10 } }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Purple")
     rollConfirm("Purple", {
       phase = "postRoll",
       active = { pendingResolution = "oblivHungerStain" },
@@ -1576,7 +1645,10 @@ U.RunSequence({
 U.RunSequence({
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 1, 10 } }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Purple", { oblivRouse = { 1, 10 } }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Purple")
     rollConfirm("Purple", { noActive = true })
     rollConfirmTracker("Purple", { hunger = 1, stains = 3 })
     rollCancel("Purple")
@@ -1601,7 +1673,10 @@ U.RunSequence({
 U.RunSequence({
   rollE2eWaitForDiceTray,
   function()
-    rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 7 } }, { skipSpawn = true })
+    return rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 7 } }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Purple")
     rollConfirm("Purple", { noActive = true })
     rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
     rollCancel("Purple")
@@ -1613,7 +1688,7 @@ U.RunSequence({
     setHunger("Purple", 1)
     setHumanityStains("Purple", 2)
     rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
-    rollTest("Purple", 2, C.RollType.STANDARD, "E2E P-F compound", 0)
+    rollTest("Purple", 2, C.RollType.STANDARD, "E2E P-F compound", { hunger = 0, skipOpen = true })
   end,
   function()
     M.setCamera("ALL", "rollPurple")
@@ -1625,14 +1700,17 @@ U.RunSequence({
 ```lua
 U.RunSequence({
   function()
-    rollSetFaces("Purple", { normal = { 7, 7 }, oblivRouse = { 3, 10 } })
-    RC.startRolling("Purple")
-    RC.onDiceSettled("Purple")
     rollConfirm("Purple", {
       phase = "postRoll",
-      rouseOutcomeStripsMin = 1,
-      active = { pendingResolution = "oblivHungerStain" },
+      active = { result = { present = true } },
     })
+  end,
+  function()
+    M.setCamera("ALL", "rollPurple")
+    printHeader("[HUMAN] Resolve Oblivion choice if prompted; click Confirm on Purple roll panel", 3)
+  end,
+  function()
+    rollConfirm("Purple", { noActive = true })
     rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
     rollCancel("Purple")
   end,

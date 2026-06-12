@@ -444,7 +444,10 @@ function GlobalRollSpawnDieRequest(params)
     local pid = S.getPlayerID(color)
     if pid == nil then return requested end
     local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-    if active == nil or active.phase ~= C.RollPhase.PRE_ROLL then return requested end
+    if active == nil then return requested end
+    if active.phase ~= C.RollPhase.PRE_ROLL and active.phase ~= C.RollPhase.SETUP then
+        return requested
+    end
 
     local pool = DK.normalizePool(active.pool)
     if active.rollType == C.RollType.WEREWOLF then
@@ -621,7 +624,8 @@ function GlobalDiceBagRightClick(params)
         return
     end
 
-    if phase == nil or phase ~= C.RollPhase.PRE_ROLL then
+    if phase == nil
+        or (phase ~= C.RollPhase.PRE_ROLL and phase ~= C.RollPhase.SETUP) then
         return
     end
 
@@ -743,7 +747,7 @@ function GlobalDiceBagClick(params)
         return
     end
 
-    if phase ~= C.RollPhase.PRE_ROLL then
+    if phase ~= C.RollPhase.PRE_ROLL and phase ~= C.RollPhase.SETUP then
         return
     end
 
@@ -773,6 +777,10 @@ function GlobalDiceBagClick(params)
 
     if active.rollType == C.RollType.STANDARD then
         if dieKind == DK.KIND_HUNGER then
+            if phase == C.RollPhase.SETUP then
+                spawnRequestedDie(color, dieKind)
+                return
+            end
             local meta = type(active.meta) == "table" and active.meta or {}
             if meta.bloodSurgeActive == true then
                 RC.addBloodSurgeRouse(color)
@@ -860,7 +868,9 @@ local function openDiceTrayOnFirstPoolDie(color, active)
     if type(color) ~= "string" or type(active) ~= "table" then
         return
     end
-    if active.phase ~= C.RollPhase.PRE_ROLL and active.phase ~= C.RollPhase.ROLLING then
+    if active.phase ~= C.RollPhase.SETUP
+        and active.phase ~= C.RollPhase.PRE_ROLL
+        and active.phase ~= C.RollPhase.ROLLING then
         return
     end
     if DK.poolTotal(DK.normalizePool(active.pool)) < 1 then
@@ -3283,7 +3293,10 @@ local function spawnMissingPoolDiceForColor(color)
         return false
     end
     local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-    if active == nil or active.pool == nil or active.phase ~= C.RollPhase.PRE_ROLL then
+    if active == nil or active.pool == nil then
+        return false
+    end
+    if active.phase ~= C.RollPhase.PRE_ROLL and active.phase ~= C.RollPhase.SETUP then
         return false
     end
     local pool = DK.normalizePool(active.pool)
@@ -3329,7 +3342,10 @@ local function spawnActivePoolDiceForActive(color)
         return false
     end
     local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-    if active == nil or active.phase ~= C.RollPhase.PRE_ROLL then
+    if active == nil then
+        return false
+    end
+    if active.phase ~= C.RollPhase.PRE_ROLL and active.phase ~= C.RollPhase.SETUP then
         return false
     end
     if color == "Black" then
@@ -3339,7 +3355,7 @@ local function spawnActivePoolDiceForActive(color)
     return spawnMissingPoolDiceForColor(color)
 end
 
---- Global.call entry: spawn active PRE_ROLL pool dice (player + ST bags).
+--- Global.call entry: spawn active pool dice for SETUP / PRE_ROLL (player + ST bags).
 -- @param params table  { color: string }
 -- @return boolean|nil  true if any auto-spawn ran
 function GlobalSpawnActivePoolDiceForActive(params)
@@ -3349,20 +3365,12 @@ function GlobalSpawnActivePoolDiceForActive(params)
     return spawnActivePoolDiceForActive(params.color)
 end
 
---- Global.call entry: unlock staged bag dice (PRE_ROLL → ROLLING), same as panel Roll.
--- @param params table  { color: string }
-function GlobalReleaseBagDice(params)
-    if type(params) ~= "table" or type(params.color) ~= "string" then
-        return false
-    end
-    releaseBagDice(params.color)
-    return true
-end
+local DRAWER_RELEASE_MIN_Y = 2.5
+local pendingDrawerReleaseJob = nil
 
---- Unlocks all hovering dice for a player so they fall and roll.
--- Called after the player clicks "ROLL" (PRE_ROLL → ROLLING).
--- Opens the drawer if dice were already spawned earlier (no new leave-container event on this click).
-function releaseBagDice(color)
+--- Unlocks staged bag dice for one seat (drawer must already be opening or open).
+-- @param color string
+local function unlockStagedBagDice(color)
     if color == "Black" then
         local pid = S.getPlayerID(color)
         if pid ~= nil then
@@ -3381,9 +3389,66 @@ function releaseBagDice(color)
         end
         return
     end
-    DiceDrawer.openForRoll(color)
     callBagFunction(color, "ensureRollTagsOnStagedDice")
     callBagFunction(color, "releaseDice")
+end
+
+--- Coroutine: wait until dice drawer is raised, then unlock staged dice.
+function GlobalWaitDrawerThenReleaseBagDice()
+    local job = pendingDrawerReleaseJob
+    if type(job) ~= "table" or type(job.color) ~= "string" then
+        pendingDrawerReleaseJob = nil
+        return 1
+    end
+    U.waitUntil(function()
+        local current = pendingDrawerReleaseJob
+        pendingDrawerReleaseJob = nil
+        if type(current) ~= "table" or type(current.color) ~= "string" then
+            return
+        end
+        unlockStagedBagDice(current.color)
+        if type(current.onComplete) == "function" then
+            current.onComplete()
+        end
+    end, function()
+        local y = DiceDrawer.getPositionY(job.color)
+        return type(y) == "number" and y > DRAWER_RELEASE_MIN_Y
+    end, false, 10)
+    return 1
+end
+
+--- Opens drawer if needed, waits until y > 2.5, then unlocks staged dice.
+-- @param color string
+-- @param onComplete function|nil  optional callback after dice are released
+local function releaseBagDice(color, onComplete)
+    if color == "Black" then
+        unlockStagedBagDice(color)
+        if type(onComplete) == "function" then
+            onComplete()
+        end
+        return
+    end
+    DiceDrawer.openForRoll(color)
+    local y = DiceDrawer.getPositionY(color)
+    if type(y) == "number" and y > DRAWER_RELEASE_MIN_Y then
+        unlockStagedBagDice(color)
+        if type(onComplete) == "function" then
+            onComplete()
+        end
+        return
+    end
+    pendingDrawerReleaseJob = { color = color, onComplete = onComplete }
+    startLuaCoroutine(Global, "GlobalWaitDrawerThenReleaseBagDice")
+end
+
+--- Global.call entry: unlock staged bag dice (PRE_ROLL → ROLLING), same as panel Roll.
+-- @param params table  { color: string }
+function GlobalReleaseBagDice(params)
+    if type(params) ~= "table" or type(params.color) ~= "string" then
+        return false
+    end
+    releaseBagDice(params.color)
+    return true
 end
 
 --- Destroys normal/hunger staged bag dice and table dice for a roll (keeps Rouse kinds).
@@ -3542,8 +3607,7 @@ function HUD_rollRollButton(player, value, id)
 
     -- Release staged dice in PRE_ROLL while hunger/rouse bags are still at rest Y,
     -- then advance to ROLLING (hunger bag stays raised through ROLLING; hidden at POST_ROLL).
-    local function releaseThenStartRolling()
-        releaseBagDice(color)
+    local function afterDiceReleased()
         if RC.startRolling(color) ~= true then
             return
         end
@@ -3553,6 +3617,10 @@ function HUD_rollRollButton(player, value, id)
                 STR.physicalRollTrayDice()
             end, 3)
         end
+    end
+
+    local function releaseThenStartRolling()
+        releaseBagDice(color, afterDiceReleased)
     end
 
     if didAutoSpawn then

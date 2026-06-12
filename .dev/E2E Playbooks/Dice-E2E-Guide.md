@@ -48,6 +48,16 @@ Ground truth: `[core/roll_controller.ttslua](../../core/roll_controller.ttslua)`
 
 **Not implemented:** `DEBUG.testRollFlow_`* — use this playbook + `rollTest` / bags / UI.
 
+### Roll lifecycle (2026 INBOX — harness alignment)
+
+| Behavior | E2E impact |
+| --- | --- |
+| **SETUP** pool build before ST **Open** | Bag-click suites use `rollTest(..., { skipOpen = true })` (or `{ hunger = n, skipOpen = true }`); assert `phase = "setup"` while building pool |
+| **Open** → **PRE_ROLL** | Suite A Step A3 / K2i: human ST clicks **Open** on dashboard before **Roll**; automation may use `rollE2eOpenRoll(color)` |
+| Drawer **y > 2.5** before `releaseDice` | `rollE2eWaitForDiceTray` (~1.0s); `rollE2eSettlePresetCheck` may **return wait seconds** → follow with `rollE2eSettlePresetCheckResume(color)` in the **next** `U.RunSequence` function |
+| **POST_ROLL Confirm** on player panel | `batonHolder = "player"` after settle/take-half; human **Brown/Purple Confirm** (not ST dashboard confirm); `rollForceConfirm` still valid for automation |
+| Pool spawn on **open** | Dedicated rouse/remorse: `rollE2eSpawnActivePool` after `rollTest` when bag auto-spawn is not used |
+
 ---
 
 ## Solo Host (one client)
@@ -70,8 +80,9 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 
 | Helper                                                                   | Purpose                                                                     |
 | ------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| `rollTest(color, diff?, type?, label?, hungerLevel?)`                    | Seat prep + arm **PRE_ROLL** with ST difficulty; 5th arg sets hunger 0–5 when needed |
-| `rollTestNoDiff(color, type?, label?, hungerLevel?)`                       | Same as `rollTest` but **no** `setDifficulty` — optional-difficulty E2E (Suite E2, H1b) |
+| `rollTest(color, diff?, type?, label?, extra?)`                    | Seat prep + arm roll; default calls `openRoll` → **PRE_ROLL**. 5th arg: hunger `number` or `{ hunger?, skipOpen? }` — **`skipOpen = true`** leaves **SETUP** for bag build |
+| `rollTestNoDiff(color, type?, label?, extra?)`                       | Same as `rollTest` but **no** `setDifficulty` — optional-difficulty E2E (Suite E2, H1b) |
+| `rollE2eOpenRoll(color)`                                             | ST **Open** (SETUP → PRE_ROLL) after SETUP pool assembly |
 | `rollStTest(label?, type?)`                                              | Seat prep on **Black** + ST NPC roll                                        |
 | `rollSetFaces(color, { normal, hunger, rouse, bloodSurgeRouse, oblivRouse, werewolf, rage })` | After settle: set faces + `RC.recalculate` (use **`bloodSurgeRouse`**, not `rouse`, for surge dice) |
 | `rollE2eApplyConditions` / `rollE2eClearConditions`                      | Suite F (`e2eBestialNull`)                                                  |
@@ -82,10 +93,10 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 | `rollE2eSetPoolAndSpawn(color, normal, hunger)`                         | Set `active.pool` + spawn staged dice (PRE_ROLL)                                                            |
 | `rollE2eSetPoolAutoHunger(color, normalBagClicks)`                      | Auto-Hunger pool from virtual Normal-bag clicks + spawn (Suite G)                                           |
 | `rollE2eAddPoolKindSpawn(color, kind, count)`                           | Add pool kind + spawn after base pool (H2, I4, J1). **Rouse-family** kinds spawn via bag hook (+1 pool per die); helper must not preset count before spawn. |
-| `rollE2eWaitForDiceTray`                                                | `U.RunSequence` step — returns ~0.75s pause after spawn (drawer smooth open) before release                 |
+| `rollE2eWaitForDiceTray`                                                | `U.RunSequence` step — returns ~1.0s pause after spawn (drawer must reach y > 2.5 before dice unlock)         |
 | `rollE2eSpawnActivePool(color)`                                         | Spawn missing PRE_ROLL pool dice (dedicated rouse / after `rollTest`)                                       |
 | `rollE2ePrepareRollRelease(color)`                                      | Dice-tray camera + open drawer (mirrors panel Roll prep; used before Take Half + rouse release)             |
-| `rollE2eSettlePresetCheck(color, faces, { skipSpawn = true })`          | After spawn + wait: release, `startRolling`, preset faces, settle (no panel Roll)                           |
+| `rollE2eSettlePresetCheck(color, faces, opts?)`          | After spawn + wait: release, `startRolling`, preset faces, settle. Returns **wait seconds** when drawer release is async — pair with **`rollE2eSettlePresetCheckResume(color)`** in the next function |
 | `rollE2eConfirmBagEnabled(color, dieKind, wantEnabled)`                  | Assert player bag enabled/disabled at rest Y (K1a, K2g-Purple)                                              |
 | `rollE2eExpectBroadcast({ color, visible, resultClass?, successes?, margin?, marginAbsent? })` | Assert shared `rollResult_*` panel after Confirm / `rollForceConfirm`; defer to the **next** RunSequence step after confirm. Pass **`color`** explicitly on human-confirm steps; automation may omit it only when the prior function called `rollForceConfirm` on that seat. History tail fallback is **seat-scoped** (no cross-player newest scan). `resultClass` shorthands (`Win`, `Failure`, …) match `C.ResultClassLabel` text. |
 | `rollStConfirm({ liveSlotIndex?, liveSlotIndexAbsent?, slotNotCleared?, initiateBlocked? })` | ST slots: `liveSlotIndex` while rolling; after Confirm use `liveSlotIndexAbsent` + `slotNotCleared` for occupied drawer |
@@ -112,8 +123,8 @@ Cross-playbook rules live in [TESTING.md § E2E console output conventions](../T
 2. `rollCancelAll` or `rollCancel(color)` when the step requires a clean roll.
 3. Setup + pre-human assertions in one `function()` (e.g. `rollTest`, `rollE2eSetPoolAndSpawn`, `rollConfirm` for `preRoll`).
 4. **`rollE2eWaitForDiceTray`** after any staged spawn (or human bag clicks) and **before** release / `rollE2eSettlePresetCheck` / Take Half that unlocks dice.
-5. `M.setCamera` + level-3 `[HUMAN]` header (own `function()` step) — tester performs UI actions.
-6. **Separate** `U.RunSequence` block after human acts: optional `rollE2eWaitForDiceTray` if human just spawned dice, then post-human `rollConfirm` / `rollE2eSettlePresetCheck({ skipSpawn = true })` / `rollE2eExpectBroadcast`, then `printHeader("", 2)` if the step ends.
+5. `M.setCamera` + level-3 `[HUMAN]` header (own `function()` step) — tester performs UI actions (SETUP bag clicks, ST **Open**, player **Roll**, player **Confirm**).
+6. **Separate** `U.RunSequence` block after human acts: optional `rollE2eWaitForDiceTray` if human just spawned dice; then `return rollE2eSettlePresetCheck(...)` when automating settle; **`rollE2eSettlePresetCheckResume(color)`** in the following function when the prior step returned a wait; post-settle `rollConfirm` / `rollE2eExpectBroadcast`, then `printHeader("", 2)` if the step ends.
 
 **One `[HUMAN]` per block** — never two level-3 headers in one `U.RunSequence` (e.g. Suite E: ST label check and bag click are separate blocks).
 

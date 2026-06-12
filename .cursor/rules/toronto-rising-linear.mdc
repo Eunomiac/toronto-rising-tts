@@ -1,9 +1,13 @@
 ---
-description: Toronto Rising — Linear + RUNNING TASKLIST + INBOX sync; primary responsibility on every task (TOR-* status, Focus, blockedBy, triage).
-alwaysApply: true
+description: Linear Management + INBOX sync as PRIMARY RESPONSIBILITY
+alwaysApply: false
 ---
 
 # Toronto Rising — Linear tracking (primary responsibility)
+
+- check `TOR-*` issues before starting work; set **In Progress** when starting; mark **Done** with a comment when finishing; when closing a **Focus** / **Deferred** gate or **`blockedBy` prerequisite**, run the **deferred resurfacing** survey (unblock dependents, propose labeled resurfacing candidates — do not auto-promote inbox-deferred items to Focus); keep `.dev/RUNNING TASKLIST.md` checkboxes and `_(TOR-XX)_` ids aligned with Linear. Never treat Linear sync as optional or defer it. In chat and summaries, never cite a bare `TOR-XXX` without a few words of context (tasklist/Linear title).
+- **Precedence vs priority:** Use **Focus** + Linear **`blockedBy`** for work order; use Linear **Priority** for intrinsic importance. Deferral ≠ Low. Use **`blockedBy` liberally** for sequencing with **anti-gridlock** rules (star pattern, ~1–6 direct blockers, no peer meshes).
+- **Inbox back-burner:** On `/tr-inbox`, do not defer inbox-promoted work from Focus without a **Back-burner proposal** (Focus + proposed blockers + proposed priority) and author confirmation first.
 
 **Linear is a primary source of truth for project state**, alongside the codebase. Agents must treat Linear synchronization as part of completing work — not an optional follow-up.
 

@@ -468,7 +468,11 @@ local function phaseLabel(active, color)
     end
 
     if phase == C.RollPhase.SETUP then
-        return "Awaiting Storyteller..."
+        local pool = DK.normalizePool(active.pool)
+        if DK.poolTotal(pool) == 0 then
+            return "Ready — Assemble Your Dice Pool"
+        end
+        return "Continue assembling — awaiting Storyteller to open"
     elseif phase == C.RollPhase.PRE_ROLL then
         -- Pool assembly guidance only. Do not reveal whether the ST has set difficulty yet;
         -- difficulty stays hidden from this panel until POST_ROLL (see rollPanel_diff_*).
@@ -497,13 +501,10 @@ local function phaseLabel(active, color)
             end
             return string.format("Reroll up to %d dice — hover die, press R", cap)
         end
-        return "ROLLING — pick up your dice!"
+        return "Roll Your Dice!"
     elseif phase == C.RollPhase.POST_ROLL then
         if active.result ~= nil then
-            if active.batonHolder == C.BatonHolder.PLAYER then
-                return "Result ready — confirm when done"
-            end
-            return "Result ready — awaiting Storyteller"
+            return "Result ready — confirm when done"
         end
         if active.difficulty == nil then
             return "Dice read — awaiting classification..."
@@ -567,6 +568,30 @@ local function panelResultHeadline(rollType, result)
         label = C.ResultClassLabel[C.ResultClass.WIN]
     end
     return string.upper(label)
+end
+
+--- Single result line for rollControl_resultDisplay (headline + signed margin when difficulty set).
+-- @param rollType string|nil
+-- @param result table|nil
+-- @param difficulty number|nil
+-- @return string  e.g. "WIN +0", "FAILURE −2", or "WIN" when no difficulty
+local function panelResultDisplayText(rollType, result, difficulty)
+    if result == nil then
+        return ""
+    end
+    local headline = panelResultHeadline(rollType, result)
+    local hidesDifficulty = rollType == C.RollType.SIMPLE_CHECK
+        or rollType == C.RollType.ROUSE
+        or rollType == C.RollType.ROUSE_OBLIVION
+        or rollType == C.RollType.REMORSE
+    if hidesDifficulty or difficulty == nil or result.margin == nil then
+        return headline
+    end
+    local signed = formatSignedMargin(result.margin)
+    if signed == "" then
+        return headline
+    end
+    return string.format("%s %s", headline, signed)
 end
 
 --- Returns the result label and successes display string, or empty strings if no result.
@@ -695,26 +720,21 @@ local function refreshPcRollControlPanel(color, active)
     if showResultRow then
         local resultClassStr = rollControlResultClassString(result)
         local resultId = string.format("rollControl_resultDisplay_%s", color)
-        local marginId = string.format("rollControl_marginDisplay_%s", color)
-        uiSetValue(resultId, panelResultHeadline(active.rollType, result))
+        uiSetValue(resultId, panelResultDisplayText(active.rollType, result, active.difficulty))
         uiSetClass(resultId, resultClassStr)
-        local showMargin = active.difficulty ~= nil and result.margin ~= nil
-        uiSetActive(marginId, showMargin)
-        if showMargin then
-            uiSetValue(marginId, formatSignedMargin(result.margin))
-            uiSetClass(marginId, resultClassStr)
-        end
     end
 
     local isPreRoll = active.phase == C.RollPhase.PRE_ROLL
+    local isSetup = active.phase == C.RollPhase.SETUP
     local hasPool = DK.poolTotal(pool) > 0
     local canHalf = isPreRoll
         and hasPool
         and C.RollTypesNoTakeHalf[active.rollType] ~= true
         and RO.getForActive(active, RO.ROLL_TAKE_HALF)
+    -- Take Half only after ST opens (PRE_ROLL); pool assembly in SETUP is roll-button gated only.
 
-    uiSetActive(string.format("rollControl_btnRoll_%s", color), isPreRoll)
-    uiSetInteractable(string.format("rollControl_btnRoll_%s", color), hasPool)
+    uiSetActive(string.format("rollControl_btnRoll_%s", color), isPreRoll or isSetup)
+    uiSetInteractable(string.format("rollControl_btnRoll_%s", color), isPreRoll and hasPool)
     uiSetActive(string.format("rollControl_btnHalf_%s", color), canHalf)
 
     local wpAvailable = isPostRoll

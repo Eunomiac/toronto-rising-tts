@@ -1,8 +1,7 @@
 ---
-description: Toronto Rising — conditions registry, kinds, channels, and roll policy contract
-alwaysApply: true
+description: Toronto Rising — "Conditions" and "Roll Conditions" registry, kinds, channels, and roll policy contract
+alwaysApply: false
 ---
-
 # Toronto Rising — conditions
 
 Before adding or changing any condition, read the **Agent quick guide** in [`.dev/PC Data & Tracking/Conditions System Guide.md`](../../.dev/PC%20Data%20&%20Tracking/Conditions%20System%20Guide.md).

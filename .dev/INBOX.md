@@ -2,7 +2,16 @@
 
 ## Active
 
-- [Dice] Message after clicking roll should read "Roll Your Dice!" (Current Behavior: Reads "Rolling — Pick Up Your Dice!")
+### Second Round of Immediate Changes to Dice/Rolling
+- [ ] The message "Continue Assembling — Awaiting Storyteller To ..." is too long and is truncated as a result. "Continue Assembling — Awaiting Storyteller" should be enough.  Also, the "ROLL" button remains green, and is not greyed out. (It is disabled, i.e. not clickable, but there isn't a visual change to indicate this to the player.)
+
+### Changes to Dice/Rolling — shipped (session; not on Linear)
+- [x] Roll-phase instruction after Roll click: **"Roll Your Dice!"** (`core/roll_ui.ttslua`)
+- [x] `rollControl_resultDisplay_*` single string (headline + signed margin); margin element removed from Lua (`panelResultDisplayText`)
+- [x] Preloaded pool dice spawn on **open** (`RC.openRoll` → `GlobalSpawnActivePoolDiceForActive`) and **skipSetup initiate** (Remorse, etc.); spawn helpers allow SETUP + PRE_ROLL
+- [x] Drawer **y > 2.5** gate before `releaseDice` (`GlobalWaitDrawerThenReleaseBagDice` + `DiceDrawer.getPositionY`)
+- [x] **SETUP** pool build: bag clicks + hunger bag visibility; ROLL button visible but disabled until ST **Open** (PRE_ROLL); hunger in SETUP adds pool die (not Blood Surge)
+- [x] POST_ROLL **Confirm** always player-held baton → immediate `confirmRoll` / broadcast (no ST re-confirm)
 
 ---
 

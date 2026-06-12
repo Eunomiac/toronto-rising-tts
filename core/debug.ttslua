@@ -997,15 +997,40 @@ local function e2eCountExpectedFaces(facesByKind)
     return n
 end
 
---- Optional 5th argument to rollTest: hunger level (number) only.
--- @param extra number|nil
--- @return table opts { hunger? }
+--- Optional 5th argument to rollTest / rollTestNoDiff: hunger (number) or opts table.
+-- @param extra number|table|nil
+-- @return table opts { hunger?, skipOpen? }
 local function parseRollTestExtras(extra)
     local opts = {}
     if type(extra) == "number" then
         opts.hunger = extra
+    elseif type(extra) == "table" then
+        if type(extra.hunger) == "number" then
+            opts.hunger = extra.hunger
+        end
+        if extra.skipOpen == true then
+            opts.skipOpen = true
+        end
     end
     return opts
+end
+
+--- Pending async drawer release for rollE2eSettlePresetCheck (y > 2.5 gate).
+-- @type table<string, { facesByKind: table, opts: table }>
+local e2eSettlePresetPending = {}
+
+--- @param color string
+-- @return string|nil
+local function rollE2eDrawerReleaseMinY()
+    return 2.5
+end
+
+--- @param color string
+-- @return boolean
+local function rollE2eDrawerReadyForRelease(color)
+    local DiceDrawer = require("lib.dice_drawer")
+    local y = DiceDrawer.getPositionY(color)
+    return type(y) == "number" and y > rollE2eDrawerReleaseMinY()
 end
 
 --- Host seat color after E2E roll tests (Storyteller).
@@ -1150,11 +1175,17 @@ function DEBUG.rollTest(color, difficulty, rollType, label, hungerLevel)
         rollE2eReturnHostSeat()
         return
     end
-    RC.openRoll(color)
+    if opts.skipOpen ~= true then
+        RC.openRoll(color)
+    end
     RC.setDifficulty(color, diff)
     rollE2eSpawnDefaultPoolIfNeeded(color, rType)
 
-    print(string.format("[DEBUG.rollTest] %s PRE_ROLL — diff=%d type=%s label='%s'", color, diff, rType, lbl))
+    local pid = S.getPlayerID(color)
+    local phase = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active", "phase")
+    print(string.format(
+        "[DEBUG.rollTest] %s %s — diff=%d type=%s label='%s'",
+        color, tostring(phase or "unknown"), diff, rType, lbl))
 end
 
 --- Arms PRE_ROLL without setting ST difficulty (optional-difficulty E2E).
@@ -1193,10 +1224,37 @@ function DEBUG.rollTestNoDiff(color, rollType, label, hungerLevel)
         rollE2eReturnHostSeat()
         return
     end
-    RC.openRoll(color)
+    if opts.skipOpen ~= true then
+        RC.openRoll(color)
+    end
     rollE2eSpawnDefaultPoolIfNeeded(color, rType)
 
-    print(string.format("[DEBUG.rollTestNoDiff] %s PRE_ROLL — no diff type=%s label='%s'", color, rType, lbl))
+    local pid = S.getPlayerID(color)
+    local phase = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active", "phase")
+    print(string.format(
+        "[DEBUG.rollTestNoDiff] %s %s — no diff type=%s label='%s'",
+        color, tostring(phase or "unknown"), rType, lbl))
+end
+
+--- E2E: ST dashboard **Open** (SETUP → PRE_ROLL). Use after SETUP pool build before Roll.
+-- @param color string
+-- @return boolean
+function DEBUG.rollE2eOpenRoll(color)
+    if RC == nil then
+        print("[rollE2eOpenRoll] FAIL: RC not loaded")
+        return false
+    end
+    if type(color) ~= "string" then
+        print("[rollE2eOpenRoll] FAIL: color required")
+        return false
+    end
+    local ok = RC.openRoll(color)
+    if ok ~= true then
+        print("[rollE2eOpenRoll] FAIL: RC.openRoll failed for " .. color)
+        return false
+    end
+    print("[rollE2eOpenRoll] PASS — " .. color .. " opened to PRE_ROLL")
+    return true
 end
 
 --- Normalizes E2E phase strings to C.RollPhase values.
@@ -1753,11 +1811,11 @@ function DEBUG.rollStConfirm(expected)
 end
 
 --- Seconds to wait after staged dice spawn (or human bag clicks) before releasing to the tray.
--- Matches drawer smooth transition (`OP.DEFAULT_TRANSITION_DURATION`) plus a small buffer.
+-- Covers drawer smooth transition to y > 2.5 (`GlobalWaitDrawerThenReleaseBagDice` gate).
 -- @return number
 function DEBUG.rollE2eDiceTrayWaitSeconds()
     local OP = require("lib.object_positions")
-    return OP.DEFAULT_TRANSITION_DURATION + 0.25
+    return OP.DEFAULT_TRANSITION_DURATION + 0.5
 end
 
 --- `U.RunSequence` step: pause after spawn so the dice tray can finish opening before release.
@@ -1800,26 +1858,12 @@ function DEBUG.rollE2eSpawnActivePool(color)
     return true
 end
 
---- E2E: spawn pool dice, startRolling, preset faces, settle (no randomize).
--- Replaces panel **Roll** + manual face tweak. Playbook flow: spawn (or human bags) →
--- `rollE2eWaitForDiceTray` → this helper with `{ skipSpawn = true }`.
--- Do not click panel Roll before this helper.
+--- Internal: release (if needed), startRolling, preset faces, settle.
 -- @param color string
 -- @param facesByKind table
--- @param opts table|nil  `{ skipSpawn = true }` when dice already staged
+-- @param opts table
 -- @return boolean pass
--- @usage lua rollE2eSettlePresetCheck("Brown", { rouse = { 4 } }, { skipSpawn = true })
-function DEBUG.rollE2eSettlePresetCheck(color, facesByKind, opts)
-    if RC == nil then
-        print("[rollE2eSettlePresetCheck] FAIL: RC not loaded")
-        return false
-    end
-    opts = type(opts) == "table" and opts or {}
-    if type(color) ~= "string" or type(facesByKind) ~= "table" then
-        print("[rollE2eSettlePresetCheck] FAIL: usage rollE2eSettlePresetCheck(color, { rouse = { 4 } }, { skipSpawn = true })")
-        return false
-    end
-
+local function rollE2eFinishSettlePresetCheck(color, facesByKind, opts)
     local pid = S.getPlayerID(color)
     if pid == nil then
         print("[rollE2eSettlePresetCheck] FAIL: no playerID for " .. color)
@@ -1836,9 +1880,16 @@ function DEBUG.rollE2eSettlePresetCheck(color, facesByKind, opts)
         if opts.skipSpawn ~= true then
             DEBUG.rollE2eSpawnActivePool(color)
         end
-        DEBUG.rollE2ePrepareRollRelease(color)
-        if Global ~= nil and type(Global.call) == "function" then
-            Global.call("GlobalReleaseBagDice", { color = color })
+        if opts.skipRelease ~= true then
+            DEBUG.rollE2ePrepareRollRelease(color)
+            if Global ~= nil and type(Global.call) == "function" then
+                Global.call("GlobalReleaseBagDice", { color = color })
+            end
+        end
+        active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+        if active == nil or active.phase ~= C.RollPhase.PRE_ROLL then
+            print("[rollE2eSettlePresetCheck] FAIL: roll left PRE_ROLL before startRolling for " .. color)
+            return false
         end
         if RC.startRolling(color) ~= true then
             print("[rollE2eSettlePresetCheck] FAIL: RC.startRolling failed (phase="
@@ -1863,6 +1914,77 @@ function DEBUG.rollE2eSettlePresetCheck(color, facesByKind, opts)
     RC.onDiceSettled(color)
     print("[rollE2eSettlePresetCheck] PASS — preset faces applied and settle triggered for " .. color)
     return true
+end
+
+--- E2E: spawn pool dice, startRolling, preset faces, settle (no randomize).
+-- Replaces panel **Roll** + manual face tweak. Playbook flow: spawn (or human bags) →
+-- `rollE2eWaitForDiceTray` → this helper (returns wait seconds when drawer release is async)
+-- → `rollE2eSettlePresetCheckResume` → assertions.
+-- Do not click panel Roll before this helper.
+-- @param color string
+-- @param facesByKind table
+-- @param opts table|nil  `{ skipSpawn = true, skipRelease = true }`
+-- @return boolean|number  true/false when done; number = seconds to wait before Resume
+-- @usage lua rollE2eSettlePresetCheck("Brown", { rouse = { 4 } }, { skipSpawn = true })
+function DEBUG.rollE2eSettlePresetCheck(color, facesByKind, opts)
+    if RC == nil then
+        print("[rollE2eSettlePresetCheck] FAIL: RC not loaded")
+        return false
+    end
+    opts = type(opts) == "table" and opts or {}
+    if type(color) ~= "string" or type(facesByKind) ~= "table" then
+        print("[rollE2eSettlePresetCheck] FAIL: usage rollE2eSettlePresetCheck(color, { rouse = { 4 } }, { skipSpawn = true })")
+        return false
+    end
+
+    e2eSettlePresetPending[color] = nil
+
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        print("[rollE2eSettlePresetCheck] FAIL: no playerID for " .. color)
+        return false
+    end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil then
+        print("[rollE2eSettlePresetCheck] FAIL: no active roll for " .. color
+            .. " (run rollTest first; do not click panel Roll before this helper)")
+        return false
+    end
+
+    if active.phase == C.RollPhase.PRE_ROLL and opts.skipRelease ~= true then
+        if opts.skipSpawn ~= true then
+            DEBUG.rollE2eSpawnActivePool(color)
+        end
+        DEBUG.rollE2ePrepareRollRelease(color)
+        if not rollE2eDrawerReadyForRelease(color) then
+            if Global ~= nil and type(Global.call) == "function" then
+                Global.call("GlobalReleaseBagDice", { color = color })
+            end
+            e2eSettlePresetPending[color] = { facesByKind = facesByKind, opts = opts }
+            return DEBUG.rollE2eDiceTrayWaitSeconds()
+        end
+    end
+
+    return rollE2eFinishSettlePresetCheck(color, facesByKind, opts)
+end
+
+--- E2E: complete `rollE2eSettlePresetCheck` after async drawer release wait.
+-- No-op when the prior settle step finished synchronously.
+-- @param color string
+-- @return boolean|nil
+function DEBUG.rollE2eSettlePresetCheckResume(color)
+    if type(color) ~= "string" then
+        print("[rollE2eSettlePresetCheckResume] FAIL: color required")
+        return false
+    end
+    local pending = e2eSettlePresetPending[color]
+    if pending == nil then
+        return true
+    end
+    e2eSettlePresetPending[color] = nil
+    local opts = type(pending.opts) == "table" and pending.opts or {}
+    opts.skipRelease = true
+    return rollE2eFinishSettlePresetCheck(color, pending.facesByKind, opts)
 end
 
 --- Prints the full active roll record and queue for a player.
@@ -4640,7 +4762,9 @@ function DEBUG.help()
     print("  rollConfirm(color, expected) - Assert roll state; prints PASS/FAIL (E2E)")
     print("  rollConfirmTracker(color, { hunger?, stains?, willpowerSuperficial? })")
     print("  rollStConfirm({ liveSlotIndex?, initiateBlocked? }) - ST slots E2E")
-    print("  rollE2eSettlePresetCheck(color, faces, opts) - Release + startRolling + preset + settle (use skipSpawn after wait)")
+    print("  rollE2eSettlePresetCheck(color, faces, opts) - Release + startRolling + preset + settle; may return wait seconds")
+    print("  rollE2eSettlePresetCheckResume(color) - Finish settle after async drawer release wait")
+    print("  rollE2eOpenRoll(color) - ST Open (SETUP → PRE_ROLL) after SETUP bag build")
     print("  setHumanityStains(color, n) / setWillpowerSuperficial(color, n)")
     print("  rollForceConfirm(color)  - Force-confirm POST_ROLL (UI CONFIRM)")
     print("  rollCancel(color)        - Cancel roll; Black also clears ST slots/drawers")
@@ -4756,6 +4880,8 @@ rollE2eSetPoolAndSpawn    = DEBUG.rollE2eSetPoolAndSpawn
 rollE2eSetPoolAutoHunger  = DEBUG.rollE2eSetPoolAutoHunger
 rollE2eAddPoolKindSpawn   = DEBUG.rollE2eAddPoolKindSpawn
 rollE2eSettlePresetCheck  = DEBUG.rollE2eSettlePresetCheck
+rollE2eSettlePresetCheckResume = DEBUG.rollE2eSettlePresetCheckResume
+rollE2eOpenRoll           = DEBUG.rollE2eOpenRoll
 rollE2eWaitForDiceTray    = DEBUG.rollE2eWaitForDiceTray
 rollE2eSpawnActivePool    = DEBUG.rollE2eSpawnActivePool
 rollE2ePrepareRollRelease = DEBUG.rollE2ePrepareRollRelease

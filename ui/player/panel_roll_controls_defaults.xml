@@ -140,20 +140,24 @@
     flexibleHeight = "0" />
 
   <Text class="rollControl_resultDisplay"
-    flexibleWidth = "0"
-    fontSize = "100" outline="#000000" outlineSize="5 5" />
+    pivot = "0 0.75"
+    horizontalOverflow = "Overflow"
+    fontSize = "100"
+    outline="#000000"
+    outlineSize="3 3"
+    alignment = "MiddleCenter"
+    ignoreLayout = "true"
+    rectAlignment = "MiddleCenter" />
 
   <Text class="rollControl_result_win" color="#c8c8c8" />
   <Text class="rollControl_result_failure" color="#ff0000" />
-  <Text class="rollControl_result_totalFailure" color="#000000" outline="#FF0000" outlineSize="7 7" scale = "0.5 1" />
-  <Text class="rollControl_result_criticalWin" color="#ffffff" />
-  <Text class="rollControl_result_messyCritical" color="#ffffff" outline="#FF0000" outlineSize = "7 7" />
-  <Text class="rollControl_result_bestialFailure" color="#9b0000" outline="#FF0000" outlineSize = "7 7" />
-  <Text class="rollControl_result_totalBestialFailure" color="#000000" outline="#FF0000" outlineSize="7 7" scale = "0.5 1" />
-  <Text class="rollControl_result_brutalFailure" color="#804000" outline="#FF0000" outlineSize = "7 7" />
-  <Text class="rollControl_result_brutalOutcome" color="#ffffff" outline="#ff8000" outlineSize = "7 7" />
-
-  <Text class="rollResult_margin" color="#AAAAAA" />
+  <Text class="rollControl_result_totalFailure" color="#000000" outline="#990000" outlineSize="5 5" scale = "0.75 1" offsetXY = "-380 50" />
+  <Text class="rollControl_result_criticalWin" color="#ffffff" outline="#FFDD00" outlineSize = "2 2" />
+  <Text class="rollControl_result_messyCritical" color="#ffffff" outline="#FF0000" outlineSize = "3 3" />
+  <Text class="rollControl_result_bestialFailure" color="#990000" outline="#FF0000" outlineSize = "2 2" scale = "0.75 1"  offsetXY = "-420 50" />
+  <Text class="rollControl_result_totalBestialFailure" color="#440000" outline="#FF0000" outlineSize="5 5" scale = "0.75 1" offsetXY = "-545 50" rectAlignment = "MiddleCenter" />
+  <Text class="rollControl_result_brutalFailure" outline="#ff7300" outlineSize = "5 5" color="#990000" />
+  <Text class="rollControl_result_brutalOutcome" color="#ff9100" outline="#ff0000" outlineSize = "2 2" scale = "0.9 1" />
 
   <HorizontalLayout class="rollControl_buttonContainer"
     childForceExpandWidth = "false"
