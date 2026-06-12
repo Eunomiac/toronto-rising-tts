@@ -1955,14 +1955,16 @@ function DEBUG.rollE2eSettlePresetCheck(color, facesByKind, opts)
         if opts.skipSpawn ~= true then
             DEBUG.rollE2eSpawnActivePool(color)
         end
-        DEBUG.rollE2ePrepareRollRelease(color)
-        if not rollE2eDrawerReadyForRelease(color) then
-            if Global ~= nil and type(Global.call) == "function" then
-                Global.call("GlobalReleaseBagDice", { color = color })
-            end
-            e2eSettlePresetPending[color] = { facesByKind = facesByKind, opts = opts }
-            return DEBUG.rollE2eDiceTrayWaitSeconds()
+        -- Check drawer height before opening; openForRoll animates ~DEFAULT_TRANSITION_DURATION.
+        if rollE2eDrawerReadyForRelease(color) then
+            return rollE2eFinishSettlePresetCheck(color, facesByKind, opts)
         end
+        DEBUG.rollE2ePrepareRollRelease(color)
+        if Global ~= nil and type(Global.call) == "function" then
+            Global.call("GlobalReleaseBagDice", { color = color })
+        end
+        e2eSettlePresetPending[color] = { facesByKind = facesByKind, opts = opts }
+        return DEBUG.rollE2eDiceTrayWaitSeconds()
     end
 
     return rollE2eFinishSettlePresetCheck(color, facesByKind, opts)

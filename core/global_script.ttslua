@@ -777,8 +777,12 @@ function GlobalDiceBagClick(params)
 
     if active.rollType == C.RollType.STANDARD then
         if dieKind == DK.KIND_HUNGER then
-            -- Hunger bag always toggles Blood Surge (SETUP and PRE_ROLL). Pool hunger dice
-            -- come from Normal-bag auto-hunger redirect only, not from the Hunger bag.
+            if phase == C.RollPhase.SETUP then
+                spawnRequestedDie(color, dieKind)
+                return
+            end
+            -- PRE_ROLL: Hunger bag toggles Blood Surge. Pool hunger dice in SETUP come from
+            -- Hunger-bag spawn; auto-hunger redirect applies to Normal-bag clicks only.
             local meta = type(active.meta) == "table" and active.meta or {}
             if meta.bloodSurgeActive == true then
                 RC.addBloodSurgeRouse(color)
@@ -3364,7 +3368,8 @@ function GlobalSpawnActivePoolDiceForActive(params)
 end
 
 local DRAWER_RELEASE_MIN_Y = 2.5
-local pendingDrawerReleaseJob = nil
+--- FIFO jobs for `GlobalWaitDrawerThenReleaseBagDice` (one coroutine per enqueue; local `job` per run).
+local drawerReleaseJobQueue = {}
 
 --- Unlocks staged bag dice for one seat (drawer must already be opening or open).
 -- @param color string
@@ -3393,20 +3398,14 @@ end
 
 --- Coroutine: wait until dice drawer is raised, then unlock staged dice.
 function GlobalWaitDrawerThenReleaseBagDice()
-    local job = pendingDrawerReleaseJob
+    local job = table.remove(drawerReleaseJobQueue, 1)
     if type(job) ~= "table" or type(job.color) ~= "string" then
-        pendingDrawerReleaseJob = nil
         return 1
     end
     U.waitUntil(function()
-        local current = pendingDrawerReleaseJob
-        pendingDrawerReleaseJob = nil
-        if type(current) ~= "table" or type(current.color) ~= "string" then
-            return
-        end
-        unlockStagedBagDice(current.color)
-        if type(current.onComplete) == "function" then
-            current.onComplete()
+        unlockStagedBagDice(job.color)
+        if type(job.onComplete) == "function" then
+            job.onComplete()
         end
     end, function()
         local y = DiceDrawer.getPositionY(job.color)
@@ -3435,7 +3434,7 @@ local function releaseBagDice(color, onComplete)
         end
         return
     end
-    pendingDrawerReleaseJob = { color = color, onComplete = onComplete }
+    drawerReleaseJobQueue[#drawerReleaseJobQueue + 1] = { color = color, onComplete = onComplete }
     startLuaCoroutine(Global, "GlobalWaitDrawerThenReleaseBagDice")
 end
 

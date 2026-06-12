@@ -2,12 +2,14 @@
 
 ## Active
 
+- [Dice] Due to strange issues with XML scaling, an additional attribu
+
 ### Changes to Dice/Rolling — shipped (session; not on Linear)
 - [x] Roll-phase instruction after Roll click: **"Roll Your Dice!"** (`core/roll_ui.ttslua`)
 - [x] `rollControl_resultDisplay_*` single string (headline + signed margin); margin element removed from Lua (`panelResultDisplayText`)
 - [x] Preloaded pool dice spawn on **open** (`RC.openRoll` → `GlobalSpawnActivePoolDiceForActive`) and **skipSetup initiate** (Remorse, etc.); spawn helpers allow SETUP + PRE_ROLL
 - [x] Drawer **y > 2.5** gate before `releaseDice` (`GlobalWaitDrawerThenReleaseBagDice` + `DiceDrawer.getPositionY`)
-- [x] **SETUP** pool build: Normal/Rouse/Obliv bag clicks; hunger bag visible in SETUP + PRE_ROLL; ROLL visible but disabled until ST **Open**; Hunger bag always toggles **Blood Surge** (same in SETUP and PRE_ROLL)
+- [x] **SETUP** pool build: Normal/Rouse/Obliv/Hunger bag clicks; hunger bag visible in SETUP + PRE_ROLL; ROLL visible but disabled until ST **Open**; Hunger bag spawns pool dice in **SETUP**, toggles **Blood Surge** in **PRE_ROLL**
 - [x] POST_ROLL **Confirm** always player-held baton → immediate `confirmRoll` / broadcast (no ST re-confirm)
 - [x] SETUP instruction shortened to **"Continue Assembling — Awaiting Storyteller"**; **ROLL** button grey when visible but disabled (`roll_ui.ttslua`)
 

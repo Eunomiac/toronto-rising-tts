@@ -1097,7 +1097,7 @@ U.RunSequence({
   end,
   function()
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] SETUP: 'Continue Assembling — Awaiting Storyteller'; ROLL grey/disabled; Hunger bag toggles Blood Surge", 3)
+    printHeader("[HUMAN] SETUP: 'Continue Assembling — Awaiting Storyteller'; ROLL grey/disabled; Hunger bag adds pool die", 3)
   end
 })
 ```
@@ -1111,7 +1111,7 @@ U.RunSequence({
   end,
   function()
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] PRE_ROLL: add Normal die if pool empty; ROLL turns green when pool non-empty", 3)
+    printHeader("[HUMAN] PRE_ROLL: add Normal die if pool empty; ROLL green when pool non-empty; Hunger bag toggles Blood Surge", 3)
   end
 })
 ```
