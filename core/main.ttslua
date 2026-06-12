@@ -274,19 +274,16 @@ function M.setCamera(player, cameraMode, lookAtPos)
       if U.isIn("Black", Player.getAvailableColors()) then
         playerColor = "Black"
       else
-        U.AlertGM("M.setCamera: Invalid player color '" .. playerColor .. "'")
         return
       end
     end
     player = Player[playerColor]
     if player == nil then
-      U.AlertGM("M.setCamera: No player seated in color '" .. playerColor .. "'")
       return
     end
   end
 
   if not U.isPlayer(player) then
-    U.AlertGM("M.setCamera: Invalid player object")
     return
   end
 
