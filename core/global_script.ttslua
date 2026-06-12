@@ -3288,6 +3288,9 @@ local function spawnMissingPoolDiceForColor(color)
 end
 
 --- Spawns staged dice to match active.pool in PRE_ROLL (all roll types).
+-- Player seats: spawn only missing dice per bag (target − staged). Same path for dedicated
+-- Rouse/Oblivion/Simple Check and compound Standard rolls — rollType must not fork spawn logic.
+-- Storyteller (Black): autoSpawnBlackPool with the same target − staged rule per kind.
 -- @param color string
 -- @return boolean true if any dice were auto-spawned
 local function spawnActivePoolDiceForActive(color)
@@ -3302,48 +3305,10 @@ local function spawnActivePoolDiceForActive(color)
     if active == nil or active.phase ~= C.RollPhase.PRE_ROLL then
         return false
     end
-    if color ~= "Black" then
-        DBV.reconcileForPlayer(color, active)
-    end
-    local pool = DK.normalizePool(active.pool)
-    local RO = require("lib.roll_options")
-    if RO.isRouseFamilyRoll(active.rollType) then
-        local kind = DK.KIND_ROUSE
-        if active.rollType == C.RollType.ROUSE_OBLIVION then
-            kind = DK.KIND_OBLIV_ROUSE
-        end
-        local target = pool[kind] or 0
-        local staged = color == "Black"
-            and getBagSpawnedCountStoryteller(kind)
-            or getBagSpawnedCount(color, kind)
-        local needed = math.max(0, target - staged)
-        for _ = 1, needed do
-            if color == "Black" then
-                GlobalSpawnDieFromStorytellerBag({ dieKind = kind })
-            else
-                GlobalSpawnDieFromBag(color, kind)
-            end
-        end
-        return needed > 0
-    end
-    if active.rollType == C.RollType.SIMPLE_CHECK then
-        local target = pool.normal or 0
-        local staged = color == "Black"
-            and getBagSpawnedCountStoryteller(DK.KIND_NORMAL)
-            or getBagSpawnedCount(color, "normal")
-        local needed = math.max(0, target - staged)
-        for _ = 1, needed do
-            if color == "Black" then
-                GlobalSpawnDieFromStorytellerBag({ dieKind = DK.KIND_NORMAL })
-            else
-                GlobalSpawnDieFromBag(color, DK.KIND_NORMAL)
-            end
-        end
-        return needed > 0
-    end
     if color == "Black" then
-        return autoSpawnBlackPool(pool)
+        return autoSpawnBlackPool(DK.normalizePool(active.pool))
     end
+    DBV.reconcileForPlayer(color, active)
     return spawnMissingPoolDiceForColor(color)
 end
 
