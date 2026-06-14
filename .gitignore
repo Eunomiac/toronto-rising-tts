@@ -68,3 +68,9 @@ build/
 
 assets/images/Clipboard Image.jpg
 .dev/build-logs/tts-object-stub-guids-gate.txt
+# Local Sheets Obsidian dashboard runtime artifacts
+.dev/sheets-obsidian-dashboard/.env
+.dev/sheets-obsidian-dashboard/.local/
+.dev/sheets-obsidian-dashboard/dist/
+.dev/sheets-obsidian-dashboard/output/
+.dev/sheets-obsidian-dashboard/testing/testOutput/
