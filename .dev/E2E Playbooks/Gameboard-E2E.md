@@ -153,7 +153,7 @@ lua gbE2eRunDeferred()
 | D172 | TOR-172 | Palette-drop `defaultLightMode` handler + ring-1 STANDARD in data |
 | D173 | TOR-173 | No stage placement lerp |
 | D175 | TOR-175 | *(shipped — `assertD175AnchorSpreadOrdering` in smoke)* |
-| D174 | TOR-174 | Smoke: API guards (`GlobalGameboardTokenDroppedOnDiceBag`, restore home); manual Save & Play drop on ST bag |
+| D174 | TOR-174 | *(shipped — API guards in smoke; manual ST bag drop confirmed)* |
 | D177b | TOR-177 follow-up | Duplicate `SEAT_FIGURE_NPC1` remain after reconcile |
 
 When a feature lands, move its probe from deferred into `gbE2eRunFull` and expect **PASS**.
