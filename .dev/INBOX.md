@@ -2,6 +2,7 @@
 
 ## Active
 
+Add the tag `pc_control_token` to all nine of the snap points on the Control Stage that are beneath the table model, and that represent seated characters at the table. (This is so we can distinguish PC tokens from NPC tokens, preventing them from being cleared on Clear or otherwise handled like NPCs)
 
 ---
 
