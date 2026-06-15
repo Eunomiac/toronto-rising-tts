@@ -256,5 +256,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-15 | UPDATE | TOR-154 | Scope expanded to full `C.LockedObjects`; Focus #2 |
 | 2026-06-15 | DONE | TOR-154 | C.LockedObjects interactable lock — nil-hole + startup-gate apply; author confirmed 70/70 |
 | 2026-06-15 | UPDATE | RUNNING TASKLIST **Focus** | TOR-210 #1; TOR-202 #2; TOR-215 #3; TOR-154 Done |
+| 2026-06-15 | DONE | TOR-178 | Seat ↔ stage figurine transfer — phases A–C (leaves visible when stage-bound); spotlight defer/park + homeland OFF fingerprint; author confirmed |
+| 2026-06-15 | UPDATE | TOR-179 | Cleared `blockedBy` TOR-178; resurfaced Focus #3 |
+| 2026-06-15 | UPDATE | RUNNING TASKLIST **Focus** | TOR-174 #1; TOR-173 #2; TOR-179 #3; TOR-178 Done this cycle |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
