@@ -4,7 +4,7 @@
 <!--   1. ST Roll Dashboard (rollDash_ST)          — Black|Host only               -->
 <!--   2. Player Roll Panels — PC: ui/player/panel_roll_controls.xml (generated)   -->
 <!--      ST live roll: rollPanel_Black in this file                               -->
-<!--   3. Result Broadcast (rollResult_panel)      — no visibility filter (all)    -->
+<!--   3. Result Broadcast (rollResult_panel)      — ui/shared/panel_roll_results.xml -->
 <!-- Agent guidance: .dev/Dice System/Dice System Outline.md §8, §10               -->
 
 <Defaults>
@@ -29,23 +29,6 @@
   <VerticalLayout class="rollPanel_player_content"
     spacing="6"
     childAlignment="MiddleRight"
-    childForceExpandWidth="true"
-    childForceExpandHeight="false"
-    color="#000000" />
-
-  <Panel class="rollPanel_result"
-    active="False"
-    rectAlignment="UpperCenter"
-    childAlignment="UpperCenter"
-    childForceExpandWidth="true"
-    childForceExpandHeight="false"
-    offsetXY="0 -60"
-    width="560"
-    padding="16 12 16 12" />
-
-  <VerticalLayout class="rollPanel_result_content"
-    spacing="8"
-    childAlignment="UpperCenter"
     childForceExpandWidth="true"
     childForceExpandHeight="false"
     color="#000000" />
@@ -442,75 +425,11 @@
 </Panel>
 
 <!-- ============================================================================ -->
-<!-- 3. RESULT BROADCAST PANEL                                                     -->
+<!-- 3. RESULT BROADCAST PANEL (ui/shared/panel_roll_results.xml)                  -->
 <!-- Visible to ALL players (no visibility filter). Shown briefly when a roll     -->
-<!-- resolves; auto-hides after 12 seconds. Can be manually hidden by RUI.        -->
-<!-- Positioned upper-center over the play area.                                  -->
+<!-- resolves; auto-hides after C.ROLL_RESULT_BROADCAST_SECONDS.                  -->
 <!-- ============================================================================ -->
-<Panel id="rollResult_panel" class="rollPanel_result">
-
-  <VerticalLayout class="rollPanel_result_content">
-
-    <!-- Roller name + roll type label -->
-    <Text id="rollResult_name"
-      fontSize="16"
-      fontStyle="Bold"
-      color="#C9A84C"
-      alignment="MiddleCenter"
-      text="" />
-
-    <!-- Die face image row: 15 slots activated+image-set by refreshDiceImages() -->
-    <HorizontalLayout spacing="2" childAlignment="MiddleCenter"
-      childForceExpandWidth="false" childForceExpandHeight="false"
-      minHeight="54" preferredHeight="54">
-      <Image id="rollResult_die_1"  active="False" preferredWidth="34" preserveAspect="True" />
-      <Image id="rollResult_die_2"  active="False" preferredWidth="34" preserveAspect="True" />
-      <Image id="rollResult_die_3"  active="False" preferredWidth="34" preserveAspect="True" />
-      <Image id="rollResult_die_4"  active="False" preferredWidth="34" preserveAspect="True" />
-      <Image id="rollResult_die_5"  active="False" preferredWidth="34" preserveAspect="True" />
-      <Image id="rollResult_die_6"  active="False" preferredWidth="34" preserveAspect="True" />
-      <Image id="rollResult_die_7"  active="False" preferredWidth="34" preserveAspect="True" />
-      <Image id="rollResult_die_8"  active="False" preferredWidth="34" preserveAspect="True" />
-      <Image id="rollResult_die_9"  active="False" preferredWidth="34" preserveAspect="True" />
-      <Image id="rollResult_die_10" active="False" preferredWidth="34" preserveAspect="True" />
-      <Image id="rollResult_die_11" active="False" preferredWidth="34" preserveAspect="True" />
-      <Image id="rollResult_die_12" active="False" preferredWidth="34" preserveAspect="True" />
-      <Image id="rollResult_die_13" active="False" preferredWidth="34" preserveAspect="True" />
-      <Image id="rollResult_die_14" active="False" preferredWidth="34" preserveAspect="True" />
-      <Image id="rollResult_die_15" active="False" preferredWidth="34" preserveAspect="True" />
-    </HorizontalLayout>
-
-    <!-- Rouse / Oblivion outcome strips (compact rows above main result) -->
-    <Text id="rollResult_rouseStrips"
-      fontSize="12"
-      color="#BBBBBB"
-      alignment="MiddleCenter"
-      text="" />
-
-    <!-- Result class (large, gold) -->
-    <Text id="rollResult_class"
-      fontSize="26"
-      fontStyle="Bold"
-      color="#FFD700"
-      alignment="MiddleCenter"
-      text="" />
-
-    <!-- Successes and margin (side by side); hidden for Rouse / Rouse Oblivion broadcast -->
-    <HorizontalLayout id="rollResult_statsRow" spacing="30" childAlignment="MiddleCenter">
-      <Text id="rollResult_successes"
-        fontSize="14"
-        color="#FFFFFF"
-        alignment="MiddleCenter"
-        text="" />
-      <Text id="rollResult_margin"
-        fontSize="14"
-        color="#AAAAAA"
-        alignment="MiddleCenter"
-        text="" />
-    </HorizontalLayout>
-
-  </VerticalLayout>
-</Panel>
+<Include src="shared/panel_roll_results.xml" />
 
 <!-- Storyteller roll name modal (bag click without live roll) -->
 <Panel id="rollStName_modal" active="False" visibility="Black|Host"

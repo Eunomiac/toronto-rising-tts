@@ -415,20 +415,29 @@ local function rollControlResultNeedsMiddleCenterAlignment(result)
     return ROLL_CONTROL_RESULT_NEEDS_MIDDLE_CENTER[result.resultClass] == true
 end
 
---- Broadcast result line class string (shared color tokens with roll control panel).
+--- Broadcast `rollResult_resultDisplay` class string (mirrors rollControl result classes).
 -- @param result table|nil
 -- @return string
-local function rollResultClassString(result)
-    local panelClass = rollControlResultClassString(result)
-    return panelClass:gsub("rollControl_resultDisplay", "rollResult_class", 1)
+local function rollResultResultClassString(result)
+    return rollControlResultClassString(result):gsub("rollControl_", "rollResult_", 1)
 end
 
---- Broadcast margin line class string.
--- @param result table|nil
--- @return string
-local function rollResultMarginClassString(result)
-    local panelClass = rollControlResultClassString(result)
-    return panelClass:gsub("rollControl_resultDisplay", "rollResult_margin", 1)
+--- Partitioned die images for rollResult_* broadcast panel (mirrors refreshPlayerControlDiceImages).
+-- @param diceFaces table|nil
+local function refreshBroadcastDiceImages(diceFaces)
+    local faces = (U.Type(diceFaces) == "table") and diceFaces or {}
+    local rouseFaces = filterFacesByKinds(faces, { DK.KIND_ROUSE, DK.KIND_OBLIV_ROUSE })
+    local bloodSurgeFaces = filterFacesByKinds(faces, { DK.KIND_BLOOD_SURGE_ROUSE })
+    local standardFaces = filterFacesByKinds(faces, {
+        DK.KIND_NORMAL, DK.KIND_HUNGER, DK.KIND_WEREWOLF, DK.KIND_RAGE,
+    })
+
+    uiSetActive("rollResult_rouseDiceContainer", #rouseFaces > 0)
+    uiSetActive("rollResult_bloodSurgeRouseDiceContainer", #bloodSurgeFaces > 0)
+
+    refreshDieImageStrip("rollResult_rouseDie_%d", rouseFaces, MAX_ROUSE_SLOTS)
+    refreshDieImageStrip("rollResult_bloodSurgeRouseDie_%d", bloodSurgeFaces, MAX_ROUSE_SLOTS)
+    refreshDieImageStrip("rollResult_die_%d", standardFaces, MAX_DIE_SLOTS)
 end
 
 --- Partitioned die images for rollControl_* PC panels (rouse / blood surge / standard strips).
@@ -1142,42 +1151,47 @@ function RUI.showResultBroadcast(color, result, label)
 
     uiSetValue("rollResult_name", headerStr)
 
+    local hidesDifficulty = rollTypeKey == C.RollType.SIMPLE_CHECK
+        or rollTypeKey == C.RollType.ROUSE
+        or rollTypeKey == C.RollType.ROUSE_OBLIVION
+        or rollTypeKey == C.RollType.REMORSE
+
+    local difficulty = nil
+    if result ~= nil and result.margin ~= nil then
+        difficulty = result.successes - result.margin
+    end
+
     if result ~= nil then
-        -- Die image slots: show sorted face images from the history entry.
-        refreshDiceImages("rollResult_die_%d", diceFaces)
+        refreshBroadcastDiceImages(diceFaces)
 
-        local resultClassStr = rollResultClassString(result)
-        local marginClassStr = rollResultMarginClassString(result)
-        uiSetValue("rollResult_class", panelResultHeadline(rollTypeKey, result))
-        uiSetClass("rollResult_class", resultClassStr)
+        local showSuccessesRow = not hidesDifficulty
+        uiSetActive("rollResult_successesContainer", showSuccessesRow)
+        if showSuccessesRow then
+            uiSetValue("rollResult_successes", tostring(result.successes))
+            uiSetValue("rollResult_successesPhrase",
+                result.successes == 1 and "Success" or "Successes")
+            local showDifficulty = difficulty ~= nil
+            uiSetActive("rollResult_difficultyDisplay", showDifficulty)
+            uiSetValue("rollResult_difficulty",
+                showDifficulty and difficultyStr(difficulty) or "")
+        end
 
-        local isRouseBroadcast = rollTypeKey == C.RollType.ROUSE
-            or rollTypeKey == C.RollType.ROUSE_OBLIVION
-        if isRouseBroadcast then
-            -- Dice + "Success" / "Hunger Roused" only; no success count or margin for Rouse checks
-            uiSetActive("rollResult_statsRow", false)
-            uiSetValue("rollResult_successes", "")
-            uiSetValue("rollResult_margin", "")
+        uiSetActive("rollResult_resultDisplayContainer", true)
+        local resultId = "rollResult_resultDisplay"
+        local resultClassStr = rollResultResultClassString(result)
+        local resultText = panelResultDisplayText(rollTypeKey, result, difficulty)
+        uiSetClass(resultId, resultClassStr)
+        if rollControlResultNeedsMiddleCenterAlignment(result) then
+            U.setAttributes(resultId, { text = resultText, rectAlignment = "MiddleCenter" })
         else
-            uiSetActive("rollResult_statsRow", true)
-            uiSetValue("rollResult_successes",
-                string.format("%d %s", result.successes,
-                    result.successes == 1 and "Success" or "Successes"))
-            if result.margin ~= nil then
-                local signedMargin = formatSignedMargin(result.margin)
-                uiSetValue("rollResult_margin", string.format("Margin: %s", signedMargin))
-                uiSetClass("rollResult_margin", marginClassStr)
-            else
-                uiSetValue("rollResult_margin", "")
-            end
+            uiSetValue(resultId, resultText)
         end
     else
-        -- No classified result (difficulty was never set); clear all image slots.
-        refreshDiceImages("rollResult_die_%d", nil)
-        uiSetValue("rollResult_class",     "ROLL COMPLETE")
-        uiSetActive("rollResult_statsRow", false)
-        uiSetValue("rollResult_successes", "")
-        uiSetValue("rollResult_margin",    "")
+        refreshBroadcastDiceImages(nil)
+        uiSetActive("rollResult_successesContainer", false)
+        uiSetActive("rollResult_resultDisplayContainer", true)
+        uiSetClass("rollResult_resultDisplay", "roll_text rollResult_resultDisplay")
+        uiSetValue("rollResult_resultDisplay", "ROLL COMPLETE")
     end
 
     uiSetActive("rollResult_panel", true)

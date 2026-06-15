@@ -1,0 +1,208 @@
+<Defaults>
+
+  <Panel class="rollPanel_result"
+    active="False"
+    rectAlignment="UpperCenter"
+    childAlignment="UpperCenter"
+    childForceExpandWidth="true"
+    childForceExpandHeight="false"
+    offsetXY="0 -60"
+    width="560"
+    padding="16 12 16 12" />
+
+  <VerticalLayout class="rollPanel_result_content"
+    spacing="8"
+    childAlignment="UpperCenter"
+    childForceExpandWidth="true"
+    childForceExpandHeight="false"
+    color="#000000" />
+
+  <Text class="rollResult_name"
+    fontSize="16"
+    fontStyle="Bold"
+    color="#C9A84C"
+    alignment="MiddleCenter"
+    text="" />
+
+  <HorizontalLayout class="rollResult_diceRow"
+    spacing="20"
+    childAlignment="MiddleCenter"
+    childForceExpandWidth="false"
+    childForceExpandHeight="false"
+    minHeight="54"
+    preferredHeight="54"/>
+
+  <HorizontalLayout class="rollResult_diceContainer_small"
+    scale="0.7"
+    pivot="0 1" />
+
+  <Image class="rollResult_die"
+    active="false"
+    preferredWidth="34"
+    preserveAspect="True" />
+
+  <Text class="roll_text"
+    fontSize="32"
+    fontStyle="Bold"
+    color="#FFFFFF" />
+
+  <Panel class="rollResult_spacer" flexibleWidth="1" />
+
+  <HorizontalLayout class="rollResult_successesContainer"
+    childForceExpandWidth="false"
+    childAlignment="MiddleCenter"
+    preferredWidth="0"
+    spacing="20"
+    preferredHeight="100"
+    minHeight="100"
+    flexibleHeight="0" />
+
+  <Text class="rollResult_successes"
+    fontSize="80"
+    flexibleWidth="0"
+    outline="#000000"
+    outlineSize="5 5" />
+
+  <Text class="rollResult_successesPhrase"
+    flexibleWidth="0" />
+
+  <HorizontalLayout class="rollResult_difficultyDisplayContainer" spacing="15" />
+
+  <Text class="rollResult_difficultyVS" color="#990000" />
+
+  <Text class="rollResult_difficulty"
+    fontSize="80"
+    color="#FF0000"
+    outline="#000000"
+    outlineSize="5 5" />
+
+  <HorizontalLayout class="rollResult_resultDisplayContainer"
+    childForceExpandWidth="false"
+    childAlignment="MiddleCenter"
+    preferredWidth="0"
+    spacing="20"
+    preferredHeight="125"
+    flexibleHeight="0" />
+
+  <Text class="rollResult_resultDisplay"
+    pivot="0 0.75"
+    horizontalOverflow="Overflow"
+    fontSize="100"
+    outline="#000000"
+    outlineSize="3 3"
+    alignment="MiddleCenter"
+    ignoreLayout="true"
+    rectAlignment="MiddleCenter" />
+
+  <Text class="rollResult_result_win" color="#c8c8c8" />
+  <Text class="rollResult_result_failure" color="#ff0000" />
+  <Text class="rollResult_result_totalFailure" color="#000000" outline="#990000" outlineSize="5 5" scale="0.75 1" offsetXY="-380 50" />
+  <Text class="rollResult_result_criticalWin" color="#ffffff" outline="#FFDD00" outlineSize="2 2" />
+  <Text class="rollResult_result_messyCritical" color="#ffffff" outline="#FF0000" outlineSize="3 3" />
+  <Text class="rollResult_result_bestialFailure" color="#990000" outline="#FF0000" outlineSize="2 2" scale="0.75 1" offsetXY="-420 50" />
+  <Text class="rollResult_result_totalBestialFailure" color="#440000" outline="#FF0000" outlineSize="5 5" scale="0.75 1" offsetXY="-545 50" rectAlignment="MiddleCenter" />
+  <Text class="rollResult_result_brutalFailure" outline="#ff7300" outlineSize="5 5" color="#990000" />
+  <Text class="rollResult_result_brutalOutcome" color="#ff9100" outline="#ff0000" outlineSize="2 2" scale="0.9 1" />
+
+</Defaults>
+
+<Panel id="rollResult_panel" class="rollPanel_result"> <!-- Set ACTIVE when broadcasting roll result. -->
+
+  <VerticalLayout class="rollPanel_result_content">
+
+    <Text id="rollResult_name" class="rollResult_name" text="" />
+
+    <HorizontalLayout class="rollResult_diceRow">
+      <HorizontalLayout id="rollResult_rouseDiceContainer" class="rollResult_diceContainer rollResult_diceContainer_small" active="false">
+      <!-- ACTIVATE if Oblivion-Rouse or Rouse Dice in pool, DEACTIVATE if not -->
+        <Image id="rollResult_rouseDie_1" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_rouseDie_2" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_rouseDie_3" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_rouseDie_4" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_rouseDie_5" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+      </HorizontalLayout>
+
+      <HorizontalLayout id="rollResult_bloodSurgeRouseDiceContainer" class="rollResult_diceContainer rollResult_diceContainer_small" active="false">
+      <!-- ACTIVATE if Blood Surge Rouse Dice in pool, DEACTIVATE if not -->
+        <Image id="rollResult_bloodSurgeRouseDie_1" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_bloodSurgeRouseDie_2" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_bloodSurgeRouseDie_3" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_bloodSurgeRouseDie_4" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_bloodSurgeRouseDie_5" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+      </HorizontalLayout>
+
+      <HorizontalLayout class="rollResult_diceContainer">
+        <Image id="rollResult_die_1" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_die_2" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_die_3" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_die_4" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_die_5" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_die_6" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_die_7" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_die_8" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_die_9" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_die_10" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_die_11" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_die_12" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_die_13" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_die_14" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+        <Image id="rollResult_die_15" class="rollResult_die" active="false" />
+        <!-- ACTIVATE and set image, DEACTIVATE if no die -->
+      </HorizontalLayout>
+    </HorizontalLayout>
+
+    <Text id="rollResult_rouseStrips" fontSize="12" color="#BBBBBB" alignment="MiddleCenter" text="" active="false" />
+    <!-- ACTIVATE when rouse strips are available to display, deactivate otherwise -->
+
+
+    <HorizontalLayout id="rollResult_successesContainer" class="rollResult_successesContainer" active="false">
+    <!-- ACTIVATE when successes are available to report, DEACTIVATE otherwise -->
+      <Panel class="rollResult_spacer" />
+      <Text id="rollResult_successes" class="roll_text rollResult_successes" text="" />
+      <!-- Number of successes rolled, as a number -->
+      <Text id="rollResult_successesPhrase" class="roll_text rollResult_successesPhrase" text="" />
+      <!-- Set to "Success" if 1 success, "Successes" otherwise  -->
+      <HorizontalLayout id="rollResult_difficultyDisplay" class="rollResult_difficultyDisplayContainer" spacing = "15" active="true">
+      <!-- DEACTIVATE if no Difficulty -->
+        <Text class="roll_text rollResult_difficultyVS" text="vs. Difficulty" />
+        <Text id="rollResult_difficulty" class="roll_text rollResult_difficulty" text="" />
+        <!-- Difficulty, as a number -->
+      </HorizontalLayout>
+      <Panel class="rollResult_spacer" />
+    </HorizontalLayout>
+
+    <HorizontalLayout id="rollResult_resultDisplayContainer" class="rollResult_resultDisplayContainer" active="false">
+    <!-- ACTIVATE if a result is available to display, deactivate otherwise -->
+      <Panel class="rollResult_spacer" />
+      <Text id="rollResult_resultDisplay" class="roll_text rollResult_resultDisplay" text="" />
+      <!-- Result in ALL CAPS followed by margin (if any) as a signed integer. Class should be set via `UI.setClass` to "`roll_text rollResult_resultDisplay rollResult_result<resultClass>`". Margin should use actual minus sign for negative numbers, i.e. '−' not '-'  -->
+      <Panel class="rollResult_spacer" />
+    </HorizontalLayout>
+
+
+  </VerticalLayout>
+</Panel>

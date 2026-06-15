@@ -2489,6 +2489,31 @@ local function rollE2eResolveBroadcastHistory(expected)
     return tail, color, nil
 end
 
+--- Parse signed margin from rollResult_resultDisplay text (headline + optional margin).
+-- @param resultText string
+-- @return number|nil
+local function rollE2eParseMarginFromResultDisplay(resultText)
+    if type(resultText) ~= "string" or resultText == "" then
+        return nil
+    end
+    local signed = resultText:match(" ([+%−][%d]+)$")
+    if signed == nil then
+        signed = resultText:match(" ([+%-][%d]+)$")
+    end
+    if signed == nil then
+        return nil
+    end
+    local normalized = signed:gsub("−", "-")
+    return tonumber(normalized)
+end
+
+--- True when rollResult_resultDisplay has no trailing signed margin.
+-- @param resultText string
+-- @return boolean
+local function rollE2eResultDisplayMarginAbsent(resultText)
+    return rollE2eParseMarginFromResultDisplay(resultText) == nil
+end
+
 --- Parse integer success count from rollResult_successes panel text.
 -- @param succText string
 -- @return number|nil
@@ -2508,6 +2533,9 @@ end
 -- @param expectedSuccesses number
 -- @return boolean
 local function rollE2eUiSuccessesMatch(succText, expectedSuccesses)
+    if tonumber(succText) == expectedSuccesses then
+        return true
+    end
     local wantSucc = string.format("%d success", expectedSuccesses)
     local wantSucces = string.format("%d successes", expectedSuccesses)
     if succText == wantSucc or succText == wantSucces then
@@ -2519,9 +2547,9 @@ end
 --- True when broadcast panel content was populated (active attribute may lag in same frame).
 -- @return boolean
 local function rollE2eBroadcastPanelHasContent()
-    local classText = tostring(UI.getValue("rollResult_class") or "")
+    local resultText = tostring(UI.getValue("rollResult_resultDisplay") or "")
     local nameText = tostring(UI.getValue("rollResult_name") or "")
-    return classText ~= "" or nameText ~= ""
+    return resultText ~= "" or nameText ~= ""
 end
 
 --- True when the shared roll result broadcast panel is visible.
@@ -2625,11 +2653,11 @@ end
 -- @param expected table|nil  `{ color = "Brown", visible = true, resultClass = "Failure", successes = 2, margin = -1 }`
 --   `color` — seat color; required unless the prior step called `rollForceConfirm` on that seat
 --   `visible` — when true, or when any field below is set, panel must be active or history must match
---   `resultClass` — substring match (case-insensitive) on `rollResult_class`; E2E shorthands
+--   `resultClass` — substring match (case-insensitive) on `rollResult_resultDisplay`; E2E shorthands
 --     ("Win", "Failure", …) also match `C.ResultClassLabel` panel text (e.g. Win → WIN)
---   `successes` — integer N matches `"N success"` / `"N successes"` on `rollResult_successes`
---   `margin` — integer matches `Margin: %+d` on `rollResult_margin`
---   `marginAbsent` — when true, `rollResult_margin` must be empty
+--   `successes` — integer N matches `rollResult_successes` (number only) or history
+--   `margin` — integer matches trailing signed margin on `rollResult_resultDisplay`
+--   `marginAbsent` — when true, `rollResult_resultDisplay` must not end with a signed margin
 -- UI `getValue` can lag `setValue` by a frame; call from the RunSequence step *after*
 -- `rollForceConfirm` (default inter-step wait). Field checks run even when the panel is not
 -- visible yet; matching resolved history tail for the same seat satisfies visibility and each field.
@@ -2671,12 +2699,12 @@ function DEBUG.rollE2eExpectBroadcast(expected)
     end
 
     if mustBeVisible then
-        local classText = panelVisible and tostring(UI.getValue("rollResult_class") or "") or ""
+        local resultText = panelVisible and tostring(UI.getValue("rollResult_resultDisplay") or "") or ""
         if type(expected.resultClass) == "string" then
-            if not rollE2eBroadcastClassMatches(classText, expected.resultClass)
+            if not rollE2eBroadcastClassMatches(resultText, expected.resultClass)
                 and not rollE2eHistoryResultClassMatches(histResult, expected.resultClass) then
-                failures[#failures + 1] = "rollResult_class: got \""
-                    .. classText .. "\", want contains \"" .. expected.resultClass .. "\""
+                failures[#failures + 1] = "rollResult_resultDisplay: got \""
+                    .. resultText .. "\", want contains \"" .. expected.resultClass .. "\""
             end
         end
 
@@ -2689,29 +2717,26 @@ function DEBUG.rollE2eExpectBroadcast(expected)
                 if type(histResult) == "table" and type(histResult.successes) == "number" then
                     histNote = string.format("; history(%s)=%d", tostring(histColor), histResult.successes)
                 end
-                local wantSucc = string.format("%d success", expected.successes)
-                local wantSucces = string.format("%d successes", expected.successes)
                 failures[#failures + 1] = "rollResult_successes: got \""
-                    .. succText .. "\", want \"" .. wantSucc .. "\" or \"" .. wantSucces .. "\"" .. histNote
+                    .. succText .. "\", want number \"" .. tostring(expected.successes) .. "\"" .. histNote
             end
         end
 
         if type(expected.margin) == "number" then
-            local margText = tostring(UI.getValue("rollResult_margin") or "")
-            local wantMarg = string.format("Margin: %+d", expected.margin)
+            local margFromDisplay = rollE2eParseMarginFromResultDisplay(resultText)
             local histOk = type(histResult) == "table" and histResult.margin == expected.margin
-            if margText ~= wantMarg and not histOk then
-                failures[#failures + 1] = "rollResult_margin: got \""
-                    .. margText .. "\", want \"" .. wantMarg .. "\""
+            if margFromDisplay ~= expected.margin and not histOk then
+                failures[#failures + 1] = "rollResult_resultDisplay margin: got "
+                    .. tostring(margFromDisplay) .. ", want " .. tostring(expected.margin)
             end
         end
 
         if expected.marginAbsent == true then
-            local margText = tostring(UI.getValue("rollResult_margin") or "")
+            local marginPresent = not rollE2eResultDisplayMarginAbsent(resultText)
             local histOk = type(histResult) == "table" and histResult.margin == nil
-            if margText ~= "" and not histOk then
-                failures[#failures + 1] = "rollResult_margin: expected empty, got \""
-                    .. margText .. "\""
+            if marginPresent and not histOk then
+                failures[#failures + 1] = "rollResult_resultDisplay: expected no margin suffix, got \""
+                    .. resultText .. "\""
             end
         end
     end
