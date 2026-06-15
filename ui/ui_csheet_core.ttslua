@@ -707,25 +707,25 @@ function CSHEET.onPageInnerClick(player, value, id)
   })
 end
 
---- Register TTS global entry points (XmlUI onClick + lifecycle). Entry stubs require this module.
-function CSHEET.bindTtsEntryPoints()
-  function onLoad()
-    CSHEET.onLoad()
-  end
-  function onPageForward()
-    CSHEET.onPageForward()
-  end
-  function onPageBack()
-    CSHEET.onPageBack()
-  end
-  function onPageInnerClick(player, value, id)
-    CSHEET.onPageInnerClick(player, value, id)
-  end
-  function refreshFromGameState()
-    CSHEET.refreshFromGameState()
-  end
+--- TTS global entry points (XmlUI onClick + lifecycle). Must be chunk-level globals, not inside a helper.
+function onLoad()
+  CSHEET.onLoad()
 end
 
-CSHEET.bindTtsEntryPoints()
+function onPageForward()
+  CSHEET.onPageForward()
+end
+
+function onPageBack()
+  CSHEET.onPageBack()
+end
+
+function onPageInnerClick(player, value, id)
+  CSHEET.onPageInnerClick(player, value, id)
+end
+
+function refreshFromGameState()
+  CSHEET.refreshFromGameState()
+end
 
 return CSHEET
