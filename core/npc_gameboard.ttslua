@@ -780,6 +780,34 @@ local function tokenPlacementOnBoard(token, board)
     return u, v, yaw
 end
 
+--- @param reason string
+local function beginInteractionProfile(reason)
+    activeInteractionProfile = {
+        reason = reason,
+        catalog_builds = 0,
+        tag_scans = 0,
+        startedAt = os.clock(),
+    }
+end
+
+--- @param t0 number os.clock at interaction start
+local function finishInteractionProfile(t0)
+    if type(activeInteractionProfile) ~= "table" then
+        return
+    end
+    activeInteractionProfile.phaseA_ms = (os.clock() - (t0 or activeInteractionProfile.startedAt)) * 1000
+    lastInteractionProfile = activeInteractionProfile
+    activeInteractionProfile = nil
+end
+
+--- @param count number|nil defaults to 1
+local function noteInteractionTagScan(count)
+    if type(activeInteractionProfile) ~= "table" then
+        return
+    end
+    activeInteractionProfile.tag_scans = (activeInteractionProfile.tag_scans or 0) + (tonumber(count) or 1)
+end
+
 --- NPC seat-row tokens on CONTROL_BOARD (`snapKind = seat`, `kind = npc` columns only).
 --- @param board Object
 --- @return table<string, table> seatKey -> `{ seatKey, characterKey, present }`
@@ -1035,26 +1063,6 @@ local function syncNpcsFromControlBoard(reason, opts)
     })
 end
 
---- @param reason string
-local function beginInteractionProfile(reason)
-    activeInteractionProfile = {
-        reason = reason,
-        catalog_builds = 0,
-        tag_scans = 0,
-        startedAt = os.clock(),
-    }
-end
-
---- @param t0 number os.clock at interaction start
-local function finishInteractionProfile(t0)
-    if type(activeInteractionProfile) ~= "table" then
-        return
-    end
-    activeInteractionProfile.phaseA_ms = (os.clock() - (t0 or activeInteractionProfile.startedAt)) * 1000
-    lastInteractionProfile = activeInteractionProfile
-    activeInteractionProfile = nil
-end
-
 --- @return table|nil
 function Gameboard.getLastInteractionProfile()
     return lastInteractionProfile
@@ -1064,14 +1072,6 @@ end
 function Gameboard.resetInteractionProfile()
     lastInteractionProfile = nil
     activeInteractionProfile = nil
-end
-
---- @param count number|nil defaults to 1
-local function noteInteractionTagScan(count)
-    if type(activeInteractionProfile) ~= "table" then
-        return
-    end
-    activeInteractionProfile.tag_scans = (activeInteractionProfile.tag_scans or 0) + (tonumber(count) or 1)
 end
 
 --- @param board Object|nil When nil, clears entire default-config catalog cache.
