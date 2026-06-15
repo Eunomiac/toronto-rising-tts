@@ -1400,7 +1400,9 @@ function onLoad(saved_data)
         function()
             setStartupAction("startup-ready-wait-locked-objects")
             if O ~= nil and type(O.areLockedObjectsReadyForInteractableLock) == "function" then
-                return O.areLockedObjectsReadyForInteractableLock
+                return function()
+                    return O.areLockedObjectsReadyForInteractableLock()
+                end
             end
             return true
         end,
